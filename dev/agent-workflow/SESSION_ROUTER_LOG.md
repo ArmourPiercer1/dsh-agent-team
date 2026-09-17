@@ -3217,3 +3217,58 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - full suite 终态：**8 failed | 1878 passed (1886)** = 基线失败集（d3 D3-4、p6t3-mediation ×5、p6t3-restart ×2 + 3 个既有 load-failure 文件）；期间观察到 p6t1-parallel 在满载时 2–3 个 flake（隔离 9/9 ×2 全绿，负载回落即消失 — 与 backlog 第 3 条既有记录一致）。
 - git：2 commits（`b8e77b2` F1 fix + 证据；`a4395d8` F2 probe + 证据 + kit 稳健性修复 + 两轮 a2x 运行记录）→ 授权推送 `a42ebf4..a4395d8` 至 PR #17 分支；PR #17 body 按 §8 更新（explicit-Agent fix: GREEN on controlled fs-only permission surface / standard preset: probed separately, result: CASE B）。
 - 清理：tests/homes 全部清空（a2x ×3 失败腿 + f1 ×2 + f2 ×3 + .tmp-t12a-b2-home）；:3080 全程未触碰（各 run pre/post unreachable 入档）。
+
+## 2026-09-17 — rc2-repair 轮（用户指令轮：0.1.5-rc.2 兼容性修复 A6/A2/A1，0.1.2 EOL）— 收束
+
+### 任务与背景
+
+- 用户指令：按 `docs/plans/active/dsh-agent-team-rc2-repair-plan.md` 执行本轮修复；基线 = 0.1.5-rc.2；**后续不再为 0.1.2 提供支持**。三缺陷：A6（leader target-stale，P1）/ A2（binder persona 错误 blueprint authority，P2）/ A1（subtree containment 真宿主失效，P1，probe-first）。
+- 基线迁移（commit `c9e52ac`）：test-use 检出迁至 `fb2c4b9e69`（0.1.5-rc.2 官方发布点；用户选定推荐项，弃 npm-dist smoke 选项）+ `tests/paths.mjs` pin + TEST_METHODS/AGENTS 基线行 + 迁移/冒烟证据；`references/deepseek-harness` 工作树由用户切至 `stable-1-0.1.5-rc.2 @ fb2c4b9e69`（与 test-use 同提交）；冻结锚点 `a3ab319927` 双证复核未移动（本地 tag peel + 远端 ls-remote）。test-use 离线迁移（对象本地已有）+ `pnpm install --ignore-scripts` + `DSH_CLIENT_COMMIT_HASH=fb2c4b9e69` build exit 0（234 client artifacts）+ fresh-home 启动冒烟 GREEN。
+
+### A6 交付（commit `c549031`，branch `fix/rc2-runtime-compat`）
+
+- **根因**：`guardOperation` 的 leader liveness 读 `member.lifecycle` — 生产 v2 leader 行**无 lifecycle 字段** → `String(undefined)` 永不 ∈ GUARD_LIVE_LIFECYCLES → 批准后的最后一次 tool 执行恒 `target-stale`（RED 已在未修复代码实证：request→allow→guard = target-stale）。
+- **修复**：leader liveness = TeamSession(root) 存在性（leader/member 显式分支；`LEADER_INSTANCE_ID` 从 contracts import 禁字符串拷贝）；P6T4 世界 v1 式 leader 行（测试便利）不动，测试文件内以世界自身 repository API 建生产 v2 行形（主 Agent 裁决 APPROVED：guardOperation 仅按 scopeKey 字段匹配）。
+- 测试：`control-guard-leader.test.ts` A6-T1..T4 + live 证明（smoke S3c guard-verdict `allowed:true` + decisionSequence，无 target-stale）。
+
+### A2 交付（commit `dae8d00`）
+
+- **根因**：binder persona source 读 row-level `config.blueprintSource` 锚点而非 TeamSession 的 bound blueprint snapshot → B-only 模板 member 的 durable create 成功后 post-commit binder 失败（假 `rejected`）；leader persona 也从锚点解析。
+- **修复**：`createTeamProductionRoot` 可选 `resolveBoundBlueprint` 参数（host 注入与 live glue 同一 resolver 闭包，不复制解析逻辑）；persona source 按 target root 经 resolver 解析（Map 缓存；resolver 失败传播 = fail-closed，结构上不可能静默回落 row anchor）；factory world（无 resolver）= 现状 row-anchor 行为不变（零行为漂移）。
+- 测试：`bound-blueprint-persona-*.test.ts` A2-T1..T4（含多 Team 共用一 row 不串 persona + bound snapshot 不可解析 typed fail-closed）+ factory-world 回归 pin；live 证明（smoke S4b/S4e/S5b/S5c bound blueprint persona + 无跨 team 泄漏）。
+
+### A1 交付（commit `9b99aa3`）— probe-first 全流程
+
+- **§9 instrumentation（临时 probe commit，已按 §15 移出历史）**：host.ts fsBackend `{constructorName, resolveType, containsType}` + agent-bindings containsTargets `{backendType, hasContains, parent/child targetKey+displayPath}` + pre-execute-adapter cause 落盘。
+- **§10 live 复现（RED，run `11-02-31`，4/14）**：probe 行 `a1-contains-fault` = 生产签名 `TypeError: this.processPath is not a function`（upstream `fs-local/index.js:756`）→ **Branch B 确认**（facade 拷贝 method reference 丢失 receiver）。
+- **§11 修复（B1 闭包式，plan 首选形式，无 `.bind`）**：`fsBackend` 两个 seam 均改 `svc.X!(...)` 闭包调用 — `contains`（故障侧）+ `resolve`（**本轮新发现的潜在同类**：upstream `LocalFileSystem.resolve` 在调用方省略 `opts.cwd` 时读 `this.config.cwd`，旧 unbound 捕获为同类 receiver-loss；生产从未触发 = glue 恒传 cwd（FACT 3b），plan T1 要求 "resolve receiver 正确" 故两 seam 同修）。
+- **§12 收紧（rc.2-only）**：模板 policy 声明任一 exact/subtree 文件规则时，setup 要求公共 `contains` seam，缺 = typed boot 失败 `alpha2-permission-fs-containment-unavailable`（incomplete-seam 形态 = resolve-only provider；agent 不得运行在破损权威上）。**区分**：seam ACCESSOR 失败（fs 服务缺失）不是 setup 失败 — 保持既有 V1-1 resolve-time 契约（a6a World 7：per-call typed canonicalization denial，绝不 pass-through）。
+- **A1-T1..T6（`rc2a1-fs-containment.test.ts`，6 例全绿）**：vitest 下全生产链（`hostEntry.apply` + 生产 glue + bridge agents double + class 风格 fake fs，其 seam 经 `this` 调实例方法 = upstream `processPath` 模式；receiver 丢失会在 seam 调用内抛出 = 生产 A1 签名）：T1 双 seam receiver 保持（无 canonicalization-failure 行）/ T2 allow subtree 静态放行零 control request / T3 deny subtree 静态拒绝（rule 溯源）/ T4 sibling 陷阱（`team` 非 `teambar` 之父 — prefix 回归会被抓）/ T5 relative/absolute 同 cwd 等价（同一 canonical fingerprint + display + decision）/ T6 resolve-only + subtree policy = typed 启动拒绝（instanceId=inst-leader）。
+- **kit S1–S5 RED→GREEN 弧**（`rc2-real-host-smoke`，0.1.5-rc.2 真 host + mock 3496）：
+  - `11-02-31` RED 4/14（生产故障）→ `11-16-34` 17/18（S4a = **kit 侧设计死锁**：`team.create + initialWork` 的响应直到 leader 首 turn idle 才返回（`deliverRootInput` 末尾 `await whenIdle`），而 kit 在顺序 await create 之后才能发 S3 审批 → create 挂满 240s；**kit 重构** = create 以 pending promise 发出 + 审批 in-flight + `finishCreateB()` 在 bDone 后结算）→ `11-22-46` 17/18（S5c = **kit 侧误判**：re-scan 命中 title 生成 side-call（人消息 JSON 嵌套 delegation marker；无 tools）+ 缺 fail push → 扫描限定真实 model request（`tools.length > 0`）+ 补 fail）→ `11-34-29` FATAL（**环境假失败**：全量 vitest 套件与 kit 并行 → host 启动被 CPU 饥饿拖过 240s boot-marker 窗口；instance.log 证 host 最终正常 boot（web + remote MOUNTED）；教训入档：kit 与全量套件禁并行）→ `11-42-08` 18/18（验证，含 probe）→ **FORMAL `11-44-45` 18/18（probe 已除）**。
+- **kit 稳健性修复**：`waitForLogLine` 空文件 `['']` 幻影行会永久跳过日志第一物理行（潜在 bug，marker 通常在第二行故未触发）→ 空内容不推进 `seen`。
+
+### 门禁（全绿）
+
+- **targeted**：a2c7/a6a/bp1/rc2a1 = 97/97（T6 收紧与既有 World 7 契约共存验证）。
+- **回归**：runtime 全量失败集与 A1 前基线态**逐条相同**（同树 stash 对账：失败条目 diff 空；`8 failed | 1910 passed (1918)`；基线 8 = d3 D3-4 + p6t3-mediation ×5 + p6t3-restart ×2 + 3 既有 load-failure 文件；p6t1-parallel 满载 flake 本轮再现 2 例，隔离 9/9 全绿 — 与既有先例一致）；全仓 `pnpm test` 收尾核账（tools/testkit 等）。
+- **typecheck**：全仓 exit 0（A1 测试文件 3 处类型收窄修正后）。
+- **build**：全仓 exit 0 + **dist 确定性**（重构建零漂移；1116 artifacts `check:artifacts` OK）。
+- **zero-core**：test-use porcelain 0 @ `fb2c4b9e69`；references porcelain 0 @ `fb2c4b9e69`（stable-1-0.1.5-rc.2）；冻结锚点 `a3ab319927` 本地 tag peel + 远端 ls-remote 双证未移动；:3080/:3180 各 run pre/post 只读 probe 均 401（零触碰）；CORE PATCH BUDGET = 0（upstream 零源码改动/零 patch，全公开 seam）。
+- **instrumentation_removal**：probe 三 hunk（host.ts / agent-bindings.mjs / pre-execute-adapter.ts）+ dist 镜像 + 临时 probe 测试文件全删；删后全量复跑（正式 kit 18/18 + runtime 全量失败集不变）。
+
+### p4t6 pin（单写者，int-tip）
+
+- base pin @ 3b4912a = 702；A2 已随其提交 bump（含 bound-blueprint 测试文件）；本轮 A1 新增 `rc2a1-fs-containment.test.ts`（零 denylist token）→ **int 合并时 filesScanned +1 delta**（DEC-1 union 记账，int-tip 单写者执行，本轮不改 pin）。
+
+### git
+
+- branch `fix/rc2-runtime-compat`（worktree `.worktrees/rc2-repair`，未推送）：`c9e52ac`（基线迁移）→ `c549031`（A6）→ `dae8d00`（A2）→ `9b99aa3`（A1）→ 簿记提交（graph/kit/evidence/日志）。
+- 临时 probe commit（`c254c91`）已按 plan §15 "跑完 live probe 后可 squash/drop" 移出分支历史（本地未推送分支；soft-reset 重建 A2/A1 两提交，两提交树与原对象逐一 `git diff` 零差异验证）。
+- **无 push**（用户明确授权前不推；PR 创建/merge 待用户裁决）。
+
+### 清理与留痕
+
+- evidence：`dev/agent-workflow/evidence/rc2-repair/smoke/` 11 次 kit 运行全留档（RED→GREEN 弧 + 环境 FATAL 入档）；`a6/`、`a2/` 证据自 MAIN repo 归位 worktree；main repo `dev/agent-workflow/evidence/rc2-repair/` 仅留历史轮次。
+- scratch：`.rc2-smoke-blueprints-*`（kit 自留）+ `.tmp-t12a-b2-home`（t12a-b2 既有失败测试自留 scratch，与上轮同款）手工清理留痕；tests/homes 各 kit world 由 teardown 自清（11-44-45 末行 `world removed`）。
+- 已知开放项（非本轮）：PR #16 follow-up 4 项（含 F1 `mcpViews` prototype-unsafe）、followup-backlog 1–5（含 P1 CASE B post-gate surface expansion）、P10、G8-S/P8-S8 + TCM-M4 裁决。

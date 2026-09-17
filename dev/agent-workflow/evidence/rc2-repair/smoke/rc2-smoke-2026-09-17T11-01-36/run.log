@@ -1,0 +1,18 @@
+[2026-09-17T11:01:36.070Z] rc2 real-host smoke — stamp 2026-09-17T11-01-36
+[2026-09-17T11:01:36.071Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair
+[2026-09-17T11:01:36.071Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-17T11:01:36.071Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/dev/agent-workflow/evidence/rc2-repair/smoke/rc2-smoke-2026-09-17T11-01-36
+[2026-09-17T11:01:36.262Z] ports: host=3491 mock=3496
+[2026-09-17T11:01:36.273Z] stable pre-probe: 3080=401 3180=401
+[2026-09-17T11:01:36.274Z] world materialized (probe files in scratch workspace)
+[2026-09-17T11:01:36.279Z] mock model listening on 3496
+[2026-09-17T11:01:40.605Z] host booted at http://127.0.0.1:3491; row ready — toolCount=11
+[2026-09-17T11:01:40.605Z] ── LEG 0: discovery ──
+[2026-09-17T11:01:41.023Z] discovery surface (0 tools): 
+[2026-09-17T11:01:41.023Z] FAIL L0: discovery captured the surface; managed tools present (read, bash at minimum) — surface=0 missingManaged=[read,read_image,write,edit,lsp,bash,pwsh] denyList=[]
+[2026-09-17T11:01:41.024Z] saved blueprints B + C written (deny list = 0 names)
+[2026-09-17T11:01:41.025Z] teardown: stopping host + mock
+[2026-09-17T11:01:41.035Z] world removed (/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-01-36)
+[2026-09-17T11:01:41.035Z] VERDICT PASS — 0/1 criteria passed
+[2026-09-17T11:01:41.035Z] FATAL uncaught: Error: LEG 0 diagnostic abort: the DISC request (seq 1) got reply {"kind":"text","content":"RC2_NOOP_DONE"} — the mock did NOT match the marker it was served (see mock.log diag lines + raw-req-*.json + mock-dump-disc-noop.json)
+    at main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs:1018:15)

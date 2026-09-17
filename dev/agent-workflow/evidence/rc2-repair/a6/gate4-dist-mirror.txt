@@ -1,0 +1,20 @@
+# Gate 4 — dist mirror: tsc -p tsconfig.build.json (packages/runtime)
+# captured: 2026-09-17T10:21:17Z
+exit=0
+--- git status --porcelain (worktree, pre-commit) ---
+ M packages/runtime/control/service.ts
+ M packages/runtime/dist/packages/runtime/control/service.d.ts.map
+ M packages/runtime/dist/packages/runtime/control/service.js
+ M packages/runtime/dist/packages/runtime/control/service.js.map
+ M packages/testkit/test/p4t6-session-event-scan.test.ts
+?? packages/runtime/test/control-guard-leader.test.ts
+--- git diff --name-only (tracked changes) ---
+packages/runtime/control/service.ts
+packages/runtime/dist/packages/runtime/control/service.d.ts.map
+packages/runtime/dist/packages/runtime/control/service.js
+packages/runtime/dist/packages/runtime/control/service.js.map
+packages/testkit/test/p4t6-session-event-scan.test.ts
+--- dist diff file list (the required mirror) ---
+packages/runtime/dist/packages/runtime/control/service.d.ts.map
+packages/runtime/dist/packages/runtime/control/service.js
+packages/runtime/dist/packages/runtime/control/service.js.map

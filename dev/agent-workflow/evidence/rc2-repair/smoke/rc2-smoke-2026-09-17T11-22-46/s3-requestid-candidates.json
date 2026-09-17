@@ -1,0 +1,18 @@
+[
+  {
+    "source": "observations/request-created",
+    "line": "alpha2-perm: {\"stage\":\"request-created\",\"callId\":\"call-rc2-lnrf2oks\",\"requestId\":\"ctrl-1yavr6o07u0iev08qt0xq0ki\",\"kind\":\"user-approval\",\"correlation\":\"call-rc2-lnrf2oks\"}",
+    "requestId": "ctrl-1yavr6o07u0iev08qt0xq0ki"
+  },
+  {
+    "source": "storage:team_domain.json/ledger",
+    "requestId": "ctrl-1yavr6o07u0iev08qt0xq0ki",
+    "row": {
+      "factType": "control-request-recorded",
+      "rootSessionId": "session-rc2-smoke-b-2026-09-17T11-22-46",
+      "kind": "user-approval",
+      "toolName": "bash",
+      "createdAt": "2026-09-17T11:22:52.248Z"
+    }
+  }
+]

@@ -1,0 +1,143 @@
+{
+  "runStamp": "2026-09-17T11-42-08",
+  "hostBaseline": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "hostPort": 3491,
+  "mockPort": 3496,
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair",
+  "criteria": [
+    {
+      "id": "L0",
+      "name": "discovery captured the surface; read + bash present (minimal-style preset: 5/7 managed is the expected shape)",
+      "ok": true,
+      "detail": "surface=16 missingManaged=[lsp,pwsh] denyList=[]"
+    },
+    {
+      "id": "S4b",
+      "name": "B leader model request carries the BOUND blueprint B persona (not the row anchor A)",
+      "ok": true,
+      "detail": "hasB=true hasA=false"
+    },
+    {
+      "id": "S1a",
+      "name": "S1: read team/test.md returned the probe content (executed, not blocked)",
+      "ok": true,
+      "detail": "result=<path>/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-42-08/workspace/team/test.md</path>\n<type>file</type>\n<content>\n1: rc2-smoke-team-probe-2026-09-17"
+    },
+    {
+      "id": "S1b",
+      "name": "S1: static allow decision observed (decision:allow, rule provenance — subtree hit, no canonicalization failure)",
+      "ok": true,
+      "detail": "obs(7)=[alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-rc2-xc6dkfpk\",\"decision\":\"deny\",\"provenance\":{\"source\":\"rule\",\"effect\":\"deny\",\"lane\":\"deny\",\"ruleIndex\":0}} | alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-rc2-f4nwol5t\",\"tool\":\"bash\",\"resourceKind\":\"tool\",\"resourceDisplay\":\"bash\",\"fingerprint\":\"sha256:497064438e205c5958d7d850270680fa8dd9c3a705cf6cfc63307352678ce739\"} | alpha2-perm: {\"stage\":\"]"
+    },
+    {
+      "id": "S1c",
+      "name": "S1: no control request created for the allow-lane read",
+      "ok": true,
+      "detail": "requests=[]"
+    },
+    {
+      "id": "S2a",
+      "name": "S2: deny-subtree read produced an explicit static deny (decision:deny, NOT a canonicalization failure)",
+      "ok": true,
+      "detail": "result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-42-0 obs(7)=[alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-rc2-xc6dkfpk\",\"decision\":\"deny\",\"provenance\":{\"source\":\"rule\",\"effect\":\"deny\",\"lane\":\"deny\",\"ruleIndex\":0}} | alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-rc2-f4nwol5t\",\"tool\":\"bash\",\"resourceKind\":\"tool\",\"resourceDisplay\":\"bash\",\"fingerprint\":]"
+    },
+    {
+      "id": "S3a",
+      "name": "S3: scripted approval recorded a durable allow (human principal, boot root)",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"rc2s3-9gixwt0obd\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-00vy0md1suydy6088olzz1r6\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-rc2-smoke-b-2026-09-17T11-42-08\"},\"scope\":{\"rootSessionId\":\"session-rc2-smoke-b-2026-09-17T11-42-08\",\"targetInstanceId\":\"inst-leader\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-"
+    },
+    {
+      "id": "S3b",
+      "name": "S3: bash executed after approval — the echo output reached the model (guard passed, no target-stale)",
+      "ok": true,
+      "detail": "result=rc2-smoke\n[Command finished with exit code 0]"
+    },
+    {
+      "id": "S3c",
+      "name": "S3: last-mile guard verdict allowed:true for the approved leader request (NO target-stale — A6 proof)",
+      "ok": true,
+      "detail": "obs(9) guardRows=[alpha2-perm: {\"stage\":\"guard-verdict\",\"callId\":\"call-rc2-f4nwol5t\",\"allowed\":true,\"requestId\":\"ctrl-00vy0md1suydy6088olzz1r6\",\"decisionSequence\":3}]"
+    },
+    {
+      "id": "S4c",
+      "name": "S4: first create of the B-only template worker-b SUCCEEDED (no post-commit reject)",
+      "ok": true,
+      "detail": "result={\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-rc2-smoke-b-2026-09-17T11-42-08\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-07c7e410me6e\",\"templateId\":\"worker-b\",\"childSessionId\":\"session-team-child-531e2dd172cfb97604fcd58a681f8661\",\"operation"
+    },
+    {
+      "id": "S4d",
+      "name": "S4: team_delegate executed (tool result returned)",
+      "ok": true,
+      "detail": "delegate tool result observed"
+    },
+    {
+      "id": "S4e",
+      "name": "S4: the B member carries blueprint B worker persona (binder resolved the BOUND blueprint)",
+      "ok": true,
+      "detail": "hasB=true hasA=false"
+    },
+    {
+      "id": "S4f",
+      "name": "S4: the B leader turn completed (final text RC2_SMOKE_B_DONE)",
+      "ok": true,
+      "detail": "requests=11"
+    },
+    {
+      "id": "S4a",
+      "name": "team.create (B, bound blueprint) succeeds on the fresh root",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"rc2b-xlzdexd0dr\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-rc2-smoke-b-2026-09-17T11-42-08\",\"blueprint\":{\"blueprintId\":\"team.rc2-b\",\"revision\":\"1\",\"contentHash\":\"sha256:e6e05631768b1b64f7ffcad11ca8c4bd263236bd64ca94dbe3038c0769ee69d3\"},\"createdAt\":\"2026-09-17T11:42:12.703Z\",\"gener"
+    },
+    {
+      "id": "S5a",
+      "name": "team.create (C, same row, blueprint C) succeeds",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"rc2c-pyw9ti51ql\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-rc2-smoke-c-2026-09-17T11-42-08\",\"blueprint\":{\"blueprintId\":\"team.rc2-c\",\"revision\":\"1\",\"contentHash\":\"sha256:fc702d1cc1d5"
+    },
+    {
+      "id": "S5b",
+      "name": "S5: the C member carries blueprint C worker persona (root-scoped resolution)",
+      "ok": true,
+      "detail": "hasC=true hasB=false"
+    },
+    {
+      "id": "S5c",
+      "name": "S5: the B member still carries B worker persona (no cross-team leak)",
+      "ok": true,
+      "detail": "requests=17 memberReq=9"
+    },
+    {
+      "id": "S5d",
+      "name": "S5: the C leader turn completed (final text RC2_SMOKE_C_DONE)",
+      "ok": true,
+      "detail": "requests=17"
+    }
+  ],
+  "passed": 18,
+  "total": 18,
+  "failed": [],
+  "stable": {
+    "pre": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    },
+    "post": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    }
+  },
+  "verdict": "PASS"
+}

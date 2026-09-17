@@ -1,0 +1,8 @@
+[2026-09-17T11:34:29.293Z] rc2 real-host smoke — stamp 2026-09-17T11-34-29
+[2026-09-17T11:34:29.294Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair
+[2026-09-17T11:34:29.294Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-17T11:34:29.294Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/dev/agent-workflow/evidence/rc2-repair/smoke/rc2-smoke-2026-09-17T11-34-29
+[2026-09-17T11:34:29.707Z] ports: host=3491 mock=3496
+[2026-09-17T11:34:29.737Z] stable pre-probe: 3080=401 3180=401
+[2026-09-17T11:34:29.739Z] world materialized (probe files in scratch workspace)
+[2026-09-17T11:34:29.749Z] mock model listening on 3496

@@ -1,0 +1,5 @@
+[2026-09-17T10:44:18.718Z] rc2 real-host smoke — stamp 2026-09-17T10-44-18
+[2026-09-17T10:44:18.718Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair
+[2026-09-17T10:44:18.718Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-17T10:44:18.718Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/dev/agent-workflow/evidence/rc2-repair/smoke/rc2-smoke-2026-09-17T10-44-18
+[2026-09-17T10:44:18.735Z] FATAL required file missing: file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/root-binding/harness/seam.mjs

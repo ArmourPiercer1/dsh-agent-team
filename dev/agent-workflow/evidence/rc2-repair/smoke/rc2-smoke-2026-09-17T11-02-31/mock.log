@@ -1,0 +1,23 @@
+mock: listening on 127.0.0.1:3496
+diag: seq=1 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=583 head="RC2MK_DISC_2026-09-17T11-02-31\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCur" seesDISC=true seesB=false seesCMEM=false
+mock: 1 text reply (13 chars): "RC2_DISC_DONE"
+diag: seq=2 bodyKeys=["model","messages","stream","stream_options","thinking","max_tokens","dsh_plugin_packages"] userTextLen=118 head="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"RC2MK_DISC_2026-09-17T11-02-31\"}]" seesDISC=true seesB=false seesCMEM=false
+mock: 2 text reply (17 chars): "RC2 smoke session"
+diag: seq=3 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:0de59c1965a72d1a5a67333b95e8f6b65a2ef97127d669cd2b3705b0948" seesDISC=false seesB=true seesCMEM=false
+mock: 3 tool-call reply: read
+diag: seq=4 bodyKeys=["model","messages","stream","stream_options","thinking","max_tokens","dsh_plugin_packages"] userTextLen=242 head="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-c" seesDISC=false seesB=true seesCMEM=false
+mock: 4 text reply (17 chars): "RC2 smoke session"
+diag: seq=5 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:0de59c1965a72d1a5a67333b95e8f6b65a2ef97127d669cd2b3705b0948" seesDISC=false seesB=true seesCMEM=false
+mock: 5 tool-call reply: read
+diag: seq=6 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:0de59c1965a72d1a5a67333b95e8f6b65a2ef97127d669cd2b3705b0948" seesDISC=false seesB=true seesCMEM=false
+mock: 6 tool-call reply: bash
+diag: seq=7 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:0de59c1965a72d1a5a67333b95e8f6b65a2ef97127d669cd2b3705b0948" seesDISC=false seesB=true seesCMEM=false
+mock: 7 tool-call reply: team_create_member
+diag: seq=8 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:0de59c1965a72d1a5a67333b95e8f6b65a2ef97127d669cd2b3705b0948" seesDISC=false seesB=true seesCMEM=false
+mock: 8 text reply (181 chars): "RC2_B_EXTRACT_FAIL :: {\"status\":\"rejected\",\"code\":\"TEAM_TOOL_BAD_ARGUMENTS\",\"mes"
+diag: seq=9 bodyKeys=["model","messages","stream","stream_options","thinking","max_tokens","dsh_plugin_packages"] userTextLen=242 head="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-c" seesDISC=false seesB=false seesCMEM=false
+mock: 9 text reply (17 chars): "RC2 smoke session"
+diag: seq=10 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:3cb85fd629937bfdade909fa9d8d1feaa634216ba25f6b56ecab9886095" seesDISC=false seesB=false seesCMEM=false
+mock: 10 tool-call reply: team_create_member
+diag: seq=11 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:3cb85fd629937bfdade909fa9d8d1feaa634216ba25f6b56ecab9886095" seesDISC=false seesB=false seesCMEM=false
+mock: 11 text reply (181 chars): "RC2_C_EXTRACT_FAIL :: {\"status\":\"rejected\",\"code\":\"TEAM_TOOL_BAD_ARGUMENTS\",\"mes"

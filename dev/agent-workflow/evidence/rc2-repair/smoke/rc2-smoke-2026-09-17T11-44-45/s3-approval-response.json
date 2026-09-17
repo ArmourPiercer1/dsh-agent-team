@@ -1,0 +1,40 @@
+{
+  "type": "server-response",
+  "rpcId": "rc2s3-gwxnz7jgte",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "decision": {
+          "requestId": "ctrl-0p28w9b1smopqw02vsaf51as",
+          "decision": "allow",
+          "decider": {
+            "kind": "human",
+            "humanId": "session-rc2-smoke-b-2026-09-17T11-44-45"
+          },
+          "scope": {
+            "rootSessionId": "session-rc2-smoke-b-2026-09-17T11-44-45",
+            "targetInstanceId": "inst-leader",
+            "actionName": "parameter-permission",
+            "correlation": "call-rc2-ikdeivlb",
+            "toolName": "bash",
+            "operationFingerprint": "sha256:008c9fea59d267d74da7c2a58cb50f231a0c5cebef91bef18a1fd87eb133aaaf"
+          },
+          "requestSequence": 2,
+          "decisionSequence": 3,
+          "createdAt": "2026-09-17T11:44:50.340Z",
+          "note": "rc2 smoke S3 scripted human resolution (plan §17; GUI approve stand-in)"
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

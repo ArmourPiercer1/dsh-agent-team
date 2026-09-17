@@ -1,0 +1,18 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-a2
+
+ ✓ packages/runtime/test/bound-blueprint-persona-live.test.ts (4 tests) 3ms
+stderr | packages/runtime/test/bound-blueprint-persona-root.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/bound-blueprint-persona-root.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/bound-blueprint-persona-root.test.ts (8 tests) 4ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
+   Start at  18:39:18
+   Duration  888ms (transform 914ms, setup 0ms, import 1.43s, tests 7ms, environment 0ms)
+
+GREEN_EXIT:0

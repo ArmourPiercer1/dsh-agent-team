@@ -1,0 +1,35 @@
+mock: listening on 127.0.0.1:3496
+diag: seq=1 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=583 head="RC2MK_DISC_2026-09-17T11-44-45\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCur" seesDISC=true seesB=false seesCMEM=false
+mock: 1 text reply (13 chars): "RC2_DISC_DONE"
+diag: seq=2 bodyKeys=["model","messages","stream","stream_options","thinking","max_tokens","dsh_plugin_packages"] userTextLen=118 head="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"RC2MK_DISC_2026-09-17T11-44-45\"}]" seesDISC=true seesB=false seesCMEM=false
+mock: 2 text reply (17 chars): "RC2 smoke session"
+diag: seq=3 bodyKeys=["model","messages","stream","stream_options","thinking","max_tokens","dsh_plugin_packages"] userTextLen=242 head="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-c" seesDISC=false seesB=true seesCMEM=false
+mock: 3 text reply (17 chars): "RC2 smoke session"
+diag: seq=4 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:5ab78e06d3d5077983f232fb99635de85be9f473120e40c84b4813c90fe" seesDISC=false seesB=true seesCMEM=false
+mock: 4 tool-call reply: read
+diag: seq=5 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:5ab78e06d3d5077983f232fb99635de85be9f473120e40c84b4813c90fe" seesDISC=false seesB=true seesCMEM=false
+mock: 5 tool-call reply: read
+diag: seq=6 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:5ab78e06d3d5077983f232fb99635de85be9f473120e40c84b4813c90fe" seesDISC=false seesB=true seesCMEM=false
+mock: 6 tool-call reply: bash
+diag: seq=7 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:5ab78e06d3d5077983f232fb99635de85be9f473120e40c84b4813c90fe" seesDISC=false seesB=true seesCMEM=false
+mock: 7 tool-call reply: team_create_member
+diag: seq=8 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:5ab78e06d3d5077983f232fb99635de85be9f473120e40c84b4813c90fe" seesDISC=false seesB=true seesCMEM=false
+mock: 8 tool-call reply: team_delegate
+diag: seq=9 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=643 head="[team-work requestToken=rc2-b-delegate-2026-09-17T11-44-45] RC2MK_BMEM_2026-09-17T11-44-45\nCurrent runtime context. This" seesDISC=false seesB=false seesCMEM=false
+mock: 9 text reply (17 chars): "RC2_MEMBER_B_DONE"
+diag: seq=10 bodyKeys=["model","messages","stream","stream_options","thinking","max_tokens","dsh_plugin_packages"] userTextLen=178 head="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=rc2-b-deleg" seesDISC=false seesB=false seesCMEM=false
+mock: 10 text reply (17 chars): "RC2 smoke session"
+diag: seq=11 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:5ab78e06d3d5077983f232fb99635de85be9f473120e40c84b4813c90fe" seesDISC=false seesB=true seesCMEM=false
+mock: 11 text reply (16 chars): "RC2_SMOKE_B_DONE"
+diag: seq=12 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:99bf5302e0134a4ae6e10fa726e7142a8bc7cf4f2106c695ca4c55bdc9f" seesDISC=false seesB=false seesCMEM=false
+mock: 12 tool-call reply: team_create_member
+diag: seq=13 bodyKeys=["model","messages","stream","stream_options","thinking","max_tokens","dsh_plugin_packages"] userTextLen=242 head="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-c" seesDISC=false seesB=false seesCMEM=false
+mock: 13 text reply (17 chars): "RC2 smoke session"
+diag: seq=14 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:99bf5302e0134a4ae6e10fa726e7142a8bc7cf4f2106c695ca4c55bdc9f" seesDISC=false seesB=false seesCMEM=false
+mock: 14 tool-call reply: team_delegate
+diag: seq=15 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=643 head="[team-work requestToken=rc2-c-delegate-2026-09-17T11-44-45] RC2MK_CMEM_2026-09-17T11-44-45\nCurrent runtime context. This" seesDISC=false seesB=false seesCMEM=true
+mock: 15 text reply (17 chars): "RC2_MEMBER_C_DONE"
+diag: seq=16 bodyKeys=["model","messages","stream","stream_options","thinking","max_tokens","dsh_plugin_packages"] userTextLen=178 head="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=rc2-c-deleg" seesDISC=false seesB=false seesCMEM=true
+mock: 16 text reply (17 chars): "RC2 smoke session"
+diag: seq=17 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=707 head="[team-root-work requestToken=team-create:initial-work:sha256:99bf5302e0134a4ae6e10fa726e7142a8bc7cf4f2106c695ca4c55bdc9f" seesDISC=false seesB=false seesCMEM=false
+mock: 17 text reply (16 chars): "RC2_SMOKE_C_DONE"

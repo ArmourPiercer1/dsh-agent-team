@@ -1,0 +1,31 @@
+# p4t6 pin handling (scanner surface: every .ts/.mts/.mjs under packages/**)
+# captured: 2026-09-17T10:21:26Z
+
+## 1. Measured truth on the task worktree (before pin update):
+   pin at base 3b4912a: 702 (filesScanned + files.length, set by M2c 4feac8c)
+   measured: 705 — delta of +3 scannable files vs the pin commit tree:
+     + packages/runtime/test/alpha2-explicit-agent-setup.test.ts (a42ebf4, PR #17 — unrecorded)
+     + packages/runtime/test/f1-webserver-shim-isolation.test.ts   (b8e77b2, PR #17 F1 — unrecorded)
+     + packages/runtime/test/control-guard-leader.test.ts          (THIS commit, RC2-A6)
+   => pin updated 702 -> 705, comment-chain entry records all three (the
+      'missed increments since the M2c pin' convention of the sibling entries).
+
+## 2. Pre-update suite run (expected failure on the stale pin 702):
+   FAIL coverage test: 'AssertionError: expected 705 to be 702'
+   Test Files  1 failed (1)   Tests  1 failed | 9 passed (10)
+
+## 3. Post-update suite run (pin 705, fresh):
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-a6
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  18:21:27
+   Duration  241ms (transform 32ms, setup 0ms, import 157ms, tests 4ms, environment 0ms)
+
+
+## 4. Denylist status of the new file: zero hits (the 'zero denylist
+    violations outside the frozen quarantine set' test passes; quarantine
+    hit set stays fifteen).

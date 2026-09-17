@@ -1,0 +1,5 @@
+{
+  "runStamp": "2026-09-17T10-44-50",
+  "fatal": "row setup failed — setupError: the glue module does not export createAgentBindings\n--- log tail ---\n[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3491/?token=x3_neRg7JmZGGnjQ5aSJuBIFh1tuAmgy1zxr8_VSBj4\n[dsh-agent-team] bootstrap FAILED: TeamPluginError: the glue module does not export createAgentBindings\n    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/runtime/src/plugin/host.js:860:19)\n",
+  "criteria": []
+}

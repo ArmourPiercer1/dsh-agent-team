@@ -1,0 +1,5 @@
+{
+  "runStamp": "2026-09-17T11-34-29",
+  "fatal": "host boot failed: no boot marker within 240s\n--- log tail ---\n<no log>",
+  "criteria": []
+}

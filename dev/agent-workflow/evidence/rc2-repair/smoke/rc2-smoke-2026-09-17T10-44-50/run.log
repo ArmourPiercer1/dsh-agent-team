@@ -1,0 +1,15 @@
+[2026-09-17T10:44:50.928Z] rc2 real-host smoke — stamp 2026-09-17T10-44-50
+[2026-09-17T10:44:50.928Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair
+[2026-09-17T10:44:50.928Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-17T10:44:50.928Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/dev/agent-workflow/evidence/rc2-repair/smoke/rc2-smoke-2026-09-17T10-44-50
+[2026-09-17T10:44:50.951Z] ports: host=3491 mock=3496
+[2026-09-17T10:44:50.961Z] stable pre-probe: 3080=401 3180=401
+[2026-09-17T10:44:50.962Z] world materialized (probe files in scratch workspace)
+[2026-09-17T10:44:50.969Z] mock model listening on 3496
+[2026-09-17T10:44:53.984Z] FATAL row setup failed — setupError: the glue module does not export createAgentBindings
+--- log tail ---
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3491/?token=x3_neRg7JmZGGnjQ5aSJuBIFh1tuAmgy1zxr8_VSBj4
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the glue module does not export createAgentBindings
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/runtime/src/plugin/host.js:860:19)
+

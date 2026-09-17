@@ -1,0 +1,18 @@
+[
+  {
+    "seq": 1,
+    "status": 200,
+    "replyKind": "text",
+    "replyHead": "RC2_NOOP_DONE",
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"RC2MK_DISC_2026-09-17T11-01-36\"}]",
+    "nToolMsgs": 0
+  },
+  {
+    "seq": 2,
+    "status": 200,
+    "replyKind": "text",
+    "replyHead": "RC2_NOOP_DONE",
+    "userTextHead": "RC2MK_DISC_2026-09-17T11-01-36\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCur",
+    "nToolMsgs": 0
+  }
+]

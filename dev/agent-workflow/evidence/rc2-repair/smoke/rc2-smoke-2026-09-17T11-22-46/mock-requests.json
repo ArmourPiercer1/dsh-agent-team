@@ -1,0 +1,242 @@
+[
+  {
+    "seq": 1,
+    "receivedAt": "2026-09-17T11:22:51.749Z",
+    "userText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"RC2MK_DISC_2026-09-17T11-22-46\"}]",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "RC2 smoke session"
+    }
+  },
+  {
+    "seq": 2,
+    "receivedAt": "2026-09-17T11:22:51.750Z",
+    "userText": "RC2MK_DISC_2026-09-17T11-22-46\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/user/dsh-plugins/dsh-agent-team",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "RC2_DISC_DONE"
+    }
+  },
+  {
+    "seq": 3,
+    "receivedAt": "2026-09-17T11:22:52.197Z",
+    "userText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:86c43a44b847245120d7ae962fc65a32c15ea68953fabcb158a9b421327ef487] RC2MK_B_2026-09-17T11-22-46\"}]",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "RC2 smoke session"
+    }
+  },
+  {
+    "seq": 4,
+    "receivedAt": "2026-09-17T11:22:52.198Z",
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:86c43a44b847245120d7ae962fc65a32c15ea68953fabcb158a9b421327ef487] RC2MK_B_2026-09-17T11-22-46\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available ope",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-rc2-gu5r1qfc",
+          "name": "read",
+          "arguments": {
+            "file_path": "team/test.md"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 5,
+    "receivedAt": "2026-09-17T11:22:52.216Z",
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:86c43a44b847245120d7ae962fc65a32c15ea68953fabcb158a9b421327ef487] RC2MK_B_2026-09-17T11-22-46\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available ope",
+    "toolMsgCount": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-rc2-p17ka5ix",
+          "name": "read",
+          "arguments": {
+            "file_path": "runtime/forbidden.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 6,
+    "receivedAt": "2026-09-17T11:22:52.234Z",
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:86c43a44b847245120d7ae962fc65a32c15ea68953fabcb158a9b421327ef487] RC2MK_B_2026-09-17T11-22-46\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available ope",
+    "toolMsgCount": 2,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-rc2-lnrf2oks",
+          "name": "bash",
+          "arguments": {
+            "command": "echo rc2-smoke"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 7,
+    "receivedAt": "2026-09-17T11:22:53.097Z",
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:86c43a44b847245120d7ae962fc65a32c15ea68953fabcb158a9b421327ef487] RC2MK_B_2026-09-17T11-22-46\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available ope",
+    "toolMsgCount": 3,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-rc2-8a20jnng",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-rc2-smoke-b-2026-09-17T11-22-46",
+            "requestToken": "rc2-b-create-2026-09-17T11-22-46",
+            "delegationTemplateId": "worker-b",
+            "label": "worker-b-1"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 8,
+    "receivedAt": "2026-09-17T11:22:53.158Z",
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:86c43a44b847245120d7ae962fc65a32c15ea68953fabcb158a9b421327ef487] RC2MK_B_2026-09-17T11-22-46\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available ope",
+    "toolMsgCount": 4,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-rc2-f6hm5g4p",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-rc2-smoke-b-2026-09-17T11-22-46",
+            "requestToken": "rc2-b-delegate-2026-09-17T11-22-46",
+            "delegationInstanceId": "inst-0knyti10lcxq",
+            "label": "worker-b-1",
+            "prompt": "RC2MK_BMEM_2026-09-17T11-22-46"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 9,
+    "receivedAt": "2026-09-17T11:22:53.203Z",
+    "userText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=rc2-b-delegate-2026-09-17T11-22-46] RC2MK_BMEM_2026-09-17T11-22-46\"}]",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "RC2 smoke session"
+    }
+  },
+  {
+    "seq": 10,
+    "receivedAt": "2026-09-17T11:22:53.203Z",
+    "userText": "[team-work requestToken=rc2-b-delegate-2026-09-17T11-22-46] RC2MK_BMEM_2026-09-17T11-22-46\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under t",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "RC2_MEMBER_B_DONE"
+    }
+  },
+  {
+    "seq": 11,
+    "receivedAt": "2026-09-17T11:22:53.238Z",
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:86c43a44b847245120d7ae962fc65a32c15ea68953fabcb158a9b421327ef487] RC2MK_B_2026-09-17T11-22-46\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available ope",
+    "toolMsgCount": 5,
+    "reply": {
+      "kind": "text",
+      "content": "RC2_SMOKE_B_DONE"
+    }
+  },
+  {
+    "seq": 12,
+    "receivedAt": "2026-09-17T11:22:53.417Z",
+    "userText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:afbd6970ac8509cad92ea018a7d2aaec3606946c02f7060935d6501f0d3f5140] RC2MK_C_2026-09-17T11-22-46\"}]",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "RC2 smoke session"
+    }
+  },
+  {
+    "seq": 13,
+    "receivedAt": "2026-09-17T11:22:53.417Z",
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:afbd6970ac8509cad92ea018a7d2aaec3606946c02f7060935d6501f0d3f5140] RC2MK_C_2026-09-17T11-22-46\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available ope",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-rc2-7v3pikqx",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-rc2-smoke-c-2026-09-17T11-22-46",
+            "requestToken": "rc2-c-create-2026-09-17T11-22-46",
+            "delegationTemplateId": "worker-b",
+            "label": "worker-b-1"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 14,
+    "receivedAt": "2026-09-17T11:22:53.470Z",
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:afbd6970ac8509cad92ea018a7d2aaec3606946c02f7060935d6501f0d3f5140] RC2MK_C_2026-09-17T11-22-46\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available ope",
+    "toolMsgCount": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-rc2-jjrdmmh6",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-rc2-smoke-c-2026-09-17T11-22-46",
+            "requestToken": "rc2-c-delegate-2026-09-17T11-22-46",
+            "delegationInstanceId": "inst-0ienfmh0mozi",
+            "label": "worker-b-1",
+            "prompt": "RC2MK_CMEM_2026-09-17T11-22-46"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 15,
+    "receivedAt": "2026-09-17T11:22:53.511Z",
+    "userText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=rc2-c-delegate-2026-09-17T11-22-46] RC2MK_CMEM_2026-09-17T11-22-46\"}]",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "RC2 smoke session"
+    }
+  },
+  {
+    "seq": 16,
+    "receivedAt": "2026-09-17T11:22:53.512Z",
+    "userText": "[team-work requestToken=rc2-c-delegate-2026-09-17T11-22-46] RC2MK_CMEM_2026-09-17T11-22-46\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under t",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "RC2_MEMBER_C_DONE"
+    }
+  },
+  {
+    "seq": 17,
+    "receivedAt": "2026-09-17T11:22:53.543Z",
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:afbd6970ac8509cad92ea018a7d2aaec3606946c02f7060935d6501f0d3f5140] RC2MK_C_2026-09-17T11-22-46\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available ope",
+    "toolMsgCount": 2,
+    "reply": {
+      "kind": "text",
+      "content": "RC2_SMOKE_C_DONE"
+    }
+  }
+]
