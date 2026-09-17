@@ -3278,3 +3278,4 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - 用户指令："请你将修复内容作为PR提交" = 本分支一次性推送授权（AGENTS.md 红线例外条款）。
 - **推送**：本会话无 GitHub HTTPS 凭证（gh 未登录、环境无 token），按用户提示走 **SSH**（`~/.ssh/id_ed25519_github_wsl-dsh-dev`，wsl-init 配置；`ssh -T git@github.com` 认证 = Hi ArmourPiercer1）→ `git push git@github.com:ArmourPiercer1/dsh-agent-team.git fix/rc2-runtime-compat` 成功（new branch，5 提交 @ 7e6079e）。
 - **PR**：目标分支 master（= 分支基线 3b4912a）。本会话无 API token 无法程序化建 PR（gh/REST 均鉴权失败）→ PR body 已备（`/tmp/rc2-pr-body.md`，按 plan §21 八项报告要求 + PR #17 体例：三缺陷根因/修复、修改文件、新增测试、live evidence、门禁实数、compatibility backlog、备注）；创建入口 = GitHub quick-create 链接（推送回执给出）或用户粘贴 token 后由主 Agent 经 gh/REST 创建。
+- **PR #18 创建**（用户确认凭证就位后）：`gh pr create` → https://github.com/ArmourPiercer1/dsh-agent-team/pull/18（base master / head fix/rc2-runtime-compat；6 提交 @ b3c4253；204 files +15551/−73 — 主体为 smoke 证据 11 次运行 + kit + tracked dist；state OPEN，mergeable；CI check = P2-T1 characterization on pristine upstream，运行中）。
