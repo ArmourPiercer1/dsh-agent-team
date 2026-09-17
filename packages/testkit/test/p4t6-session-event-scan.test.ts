@@ -1009,8 +1009,21 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // All seven carry zero denylist vocabulary; the frozen quarantine
     // hit set is unchanged at fifteen. Scanner unchanged. Evidence:
     // dev/agent-workflow/evidence/rc2-repair/a6/ + a2/.
-    expect(scanResult.filesScanned).toBe(709)
-    expect(scanResult.files.length).toBe(709)
+    // RC2-A1 (measured on the integration tip, DEC-1): +1 = 710 — one
+    // new file, packages/runtime/test/rc2a1-fs-containment.test.ts
+    // (the A1-T1..T6 fs-containment receiver/closure suite: the
+    // production host-entry rig with the class-style fake fs whose
+    // seams call instance methods through `this`, so a receiver loss
+    // throws the production A1 fault signature — plus the World B
+    // resolve-only provider typed setup rejection,
+    // alpha2-permission-fs-containment-unavailable). Zero denylist
+    // vocabulary; the frozen quarantine hit set is unchanged at
+    // fifteen. Scanner unchanged. User-directed PR #18 closure
+    // (2026-09-17): the single-writer pin bump executed on the PR
+    // branch itself. Evidence:
+    // dev/agent-workflow/evidence/rc2-repair/smoke/.
+    expect(scanResult.filesScanned).toBe(710)
+    expect(scanResult.files.length).toBe(710)
 
   })
 
