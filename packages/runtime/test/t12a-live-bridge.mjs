@@ -139,10 +139,23 @@ export async function loadGlueModule() {
  * threaded at RESOLVE time. `targetKey` is a plain `file://`-prefixed
  * string standing in for the branded FsTargetKey (the glue unbrands with
  * String()).
- * @returns {{calls: Array<{path: string, cwd: string | undefined}>, resolve: (path: string, opts?: {cwd?: string}) => Promise<{targetKey: string, displayPath: string}>}}
+ *
+ * RC2-A1 (rc2-repair plan §12 tightening + A1-T1): the fake ALSO carries
+ * the upstream `contains` containment seam — the rc.2 tightening refuses
+ * exact/subtree file permissions on a provider without it, so every
+ * glue-level permission world (a6a / bp1, exact + subtree rules) needs
+ * the FULL seam. PURE upstream fs-local semantics over the normalized
+ * keys (no fs): `contains(parent, child)` is true iff the child key is
+ * EQUAL to the parent key or strictly below it — no `..` escape, no
+ * sibling prefix match (`/team` is NOT a parent of `/teambar`). The
+ * adapter passes RESOLVED targets (this fake's own resolve output), so
+ * the keys are already canonical; a raw string key is tolerated for
+ * direct test use. Every call is recorded in `containsCalls`.
+ * @returns {{calls: Array<{path: string, cwd: string | undefined}>, containsCalls: Array<{parent: unknown, child: unknown}>, resolve: (path: string, opts?: {cwd?: string}) => Promise<{targetKey: string, displayPath: string}>, contains: (parent: unknown, child: unknown) => boolean}}
  */
 function makeFakeFs() {
   const calls = []
+  const containsCalls = []
   function normalize(cwd) {
     return String(cwd).replace(/\\/g, '/').replace(/\/+$/, '')
   }
@@ -165,14 +178,25 @@ function makeFakeFs() {
     const key = '/' + out.join('/')
     return { targetKey: `file://${key}`, displayPath: key }
   }
+  function keyOf(target) {
+    const raw = typeof target === 'string' ? target : String(target?.targetKey ?? '')
+    return raw.startsWith('file://') ? raw.slice('file://'.length) : raw
+  }
   return {
     calls,
+    containsCalls,
     async resolve(path, opts = {}) {
       calls.push({
         path: String(path),
         cwd: opts.cwd === undefined ? undefined : String(opts.cwd),
       })
       return targetOf(path, opts.cwd)
+    },
+    contains(parent, child) {
+      containsCalls.push({ parent, child })
+      const pk = keyOf(parent)
+      const ck = keyOf(child)
+      return ck === pk || ck.startsWith(`${pk}/`)
     },
   }
 }

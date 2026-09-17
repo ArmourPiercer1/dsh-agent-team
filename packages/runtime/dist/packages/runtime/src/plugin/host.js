@@ -549,13 +549,41 @@ export async function apply(ctx, config) {
         if (svc === undefined || svc === null || typeof svc.resolve !== 'function') {
             throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING, 'the "fs" public service is absent (or lacks resolve) — it is resolved lazily per call and must be up before parameter-permission canonicalization resolves a file target (fail-closed: a typed canonicalization denial, never a pass-through)');
         }
-        const resolve = svc.resolve;
         // A2C-7: the containment seam rides the SAME lazy provider (only
         // exposed when the provider exposes it — an absent `contains` is
         // the pre-A2C-7 surface, not an error at install).
+        //
+        // RC2-A1 (live-verified 2026-09-17, smoke run 11-02-31, probe rows
+        // `a1-fs-backend` / `a1-contains-fault`; plan §11 Branch B / B1):
+        // `contains: svc.contains` copied the METHOD REFERENCE into the plain
+        // backend object WITHOUT its receiver. The host fs service is a
+        // `SandboxedFileSystem` instance whose `contains` calls
+        // `this.processPath` (upstream fs-local), so every subtree rule
+        // canonicalization threw `this.processPath is not a function` and
+        // the A2 adapter reported `containment-undeterminable` — fail-closed
+        // canonicalization denial of the deny lane, which (documented
+        // adapter semantics: a deny rule that cannot be canonicalized cannot
+        // be dropped) also blocked the allow lane.
+        //
+        // The plan-preferred form (§11 B1 "优先第一种"), applied to BOTH
+        // seams (A1-T1: the production facade must preserve the receiver on
+        // resolve AND contains): call `svc.X(...)` inside the closure — the
+        // receiver stays with the provider on EVERY call and the service
+        // proxy identity is not frozen at facade-construction time (no
+        // `.bind`). The resolve-side form matters too, not just as a T1
+        // mirror: the upstream `LocalFileSystem.resolve` reads
+        // `this.config.cwd` whenever the caller omits `opts.cwd` — an unbound
+        // method reference would throw the same receiver-loss class of
+        // TypeError on that path (latent in production: the glue always
+        // threads the session-header cwd, FACT 3b).
+        // The `!` is a type-level artifact only: the guards above prove
+        // presence, but property-access narrowing cannot cross the closure
+        // boundary.
         return {
-            resolve: (path, options) => resolve(path, options),
-            ...(typeof svc.contains === 'function' ? { contains: svc.contains } : {}),
+            resolve: (path, options) => svc.resolve(path, options),
+            ...(typeof svc.contains === 'function'
+                ? { contains: (parent, child) => svc.contains(parent, child) }
+                : {}),
         };
     };
     // The bootstrap (config validation, resolver hook arming, services,
