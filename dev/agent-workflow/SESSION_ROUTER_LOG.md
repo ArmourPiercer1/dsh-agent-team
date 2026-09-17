@@ -3272,3 +3272,9 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - evidence：`dev/agent-workflow/evidence/rc2-repair/smoke/` 11 次 kit 运行全留档（RED→GREEN 弧 + 环境 FATAL 入档）；`a6/`、`a2/` 证据自 MAIN repo 归位 worktree；main repo `dev/agent-workflow/evidence/rc2-repair/` 仅留历史轮次。
 - scratch：`.rc2-smoke-blueprints-*`（kit 自留）+ `.tmp-t12a-b2-home`（t12a-b2 既有失败测试自留 scratch，与上轮同款）手工清理留痕；tests/homes 各 kit world 由 teardown 自清（11-44-45 末行 `world removed`）。
 - 已知开放项（非本轮）：PR #16 follow-up 4 项（含 F1 `mcpViews` prototype-unsafe）、followup-backlog 1–5（含 P1 CASE B post-gate surface expansion）、P10、G8-S/P8-S8 + TCM-M4 裁决。
+
+### 2026-09-17（晚）— 用户授权推送 + PR 提交
+
+- 用户指令："请你将修复内容作为PR提交" = 本分支一次性推送授权（AGENTS.md 红线例外条款）。
+- **推送**：本会话无 GitHub HTTPS 凭证（gh 未登录、环境无 token），按用户提示走 **SSH**（`~/.ssh/id_ed25519_github_wsl-dsh-dev`，wsl-init 配置；`ssh -T git@github.com` 认证 = Hi ArmourPiercer1）→ `git push git@github.com:ArmourPiercer1/dsh-agent-team.git fix/rc2-runtime-compat` 成功（new branch，5 提交 @ 7e6079e）。
+- **PR**：目标分支 master（= 分支基线 3b4912a）。本会话无 API token 无法程序化建 PR（gh/REST 均鉴权失败）→ PR body 已备（`/tmp/rc2-pr-body.md`，按 plan §21 八项报告要求 + PR #17 体例：三缺陷根因/修复、修改文件、新增测试、live evidence、门禁实数、compatibility backlog、备注）；创建入口 = GitHub quick-create 链接（推送回执给出）或用户粘贴 token 后由主 Agent 经 gh/REST 创建。
