@@ -17,7 +17,7 @@ multi_mcp_quick_fix_20260914:
   followups: "PR #16 有界 follow-up 4 项（含 F1 prototype-unsafe mcpViews — agent-bindings.mjs:849 `const mcpViews = {}` 未执行；PR body 3 条已知事项留痕）— 未执行，待单独轮次/裁决；a2x 轮 followup-backlog.md 第 1–5 条（含 P1 CASE B post-gate surface expansion）同未执行"
 
 rc2_repair_20260917:
-  status: COMPLETE (2026-09-17，用户指令轮；A6/A2/A1 全部交付 + 全部门禁绿 + 正式 smoke 18/18；待用户 merge 裁决 — 无 push)
+  status: COMPLETE-CLOSED (2026-09-17，用户指令轮；A6/A2/A1 全部交付 + 全部门禁绿 + 正式 smoke 18/18 + 收束四项（p4t6 pin 710 / characterization CI 迁移 0.1.5-rc.2 + 降级 manual / 重跑基线一致 / PR body 更新）；PR #18 已开 master ← fix/rc2-runtime-compat，待用户 merge 裁决)
   plan: docs/plans/active/dsh-agent-team-rc2-repair-plan.md
   user_ruling: "本轮基线 = 0.1.5-rc.2；后续不再为 DSH 0.1.2 提供支持。test-use 检出迁移至 fb2c4b9e（用户选定推荐项，弃 npm-dist smoke 选项）；references/deepseek-harness 工作树已由用户切至 stable-1-0.1.5-rc.2 @ fb2c4b9e（冻结 legacy 锚点 a3ab319927 本环境 2026-09-17 双证复核未移动：本地 tag peel + 远端 ls-remote）"
   base: "3b4912aa41d458a02b3f1a0a511649d0ae7135ef (master = PR #17 merge 9b20bf5 + docs 3b4912a)"
@@ -35,9 +35,9 @@ rc2_repair_20260917:
     typecheck_build_artifacts: GREEN — pnpm -r typecheck exit 0（A1 测试文件 3 处类型收窄后）；pnpm -r build exit 0 + dist 零漂移（确定性）；check:artifacts OK 1116
     zero_core: GREEN — test-use porcelain 0 @ fb2c4b9e69；references porcelain 0 @ fb2c4b9e69 (stable-1-0.1.5-rc.2)；冻结锚点 a3ab319927 本地 tag peel + 远端 ls-remote 双证未移动；:3080/:3180 pre/post 401 零触碰；CORE PATCH BUDGET = 0
     instrumentation_removal: GREEN — probe 三 hunk（host.ts / agent-bindings.mjs / pre-execute-adapter.ts）+ dist 镜像 + 临时 probe 测试文件全删；删后正式 kit 18/18 + 全仓失败集不变
-  p4t6: "base pin @ 3b4912a = 702 → A2 提交 bump 709（含 A6/A2 测试文件 + rc2-repair 证据指针）；A1 新增 rc2a1-fs-containment.test.ts（零 denylist token）→ 全仓实测 filesScanned = 710（+1 delta 唯一新增）— int 合并时单写者 bump 710 并补 A1 文件名（DEC-1 union 记账），本轮不改 pin"
-  red_lines: "无 0.1.2 fallback（仅 factory-world row-anchor 行为保留，production 绝不）；leader 不加 lifecycle；无 prefix-string containment（必须 FileSystem.contains）；row config.blueprintSource 不作 bound-Team 运行时权威；无 MCP/skill/capability 架构扩张；无 A1 live evidence 前修复；CORE PATCH BUDGET = 0；无 push（除非用户本轮明确授权）；0.1.2 registry-pinned client devDeps 不动（minimum host 版本提升 = 后续独立 chore，plan §22）；CI characterization pin cd5ef814 不动（TEST_METHODS §4.2）"
-current_phase: "rc2-repair COMPLETE (2026-09-17, 用户指令轮): DSH 0.1.5-rc.2 兼容性修复 — A6 (c549031, leader liveness = TeamSession 存在性) / A2 (dae8d00, bound blueprint persona) / A1 (9b99aa3, B1 闭包双 seam + §12 收紧 + T1..T6) 全部 MERGED-INT @ fix/rc2-runtime-compat（worktree .worktrees/rc2-repair，未推送）；基线迁移 c9e52ac（test-use + references 同 @ fb2c4b9e69，0.1.2 EOL）；正式 smoke S1–S5 = 18/18 @ 11-44-45；全部门禁绿（typecheck/build/artifacts/zero-core/instrumentation-removal；全仓回归 = 既有基线 10 文件 + p4t6 预期 +1 pin delta + p6t1 flake 隔离 9/9）；probe 临时 commit 已移出历史（plan §15 授权，本地分支）；待用户 merge 裁决（无 push）。历史轮次见 SESSION_ROUTER_LOG.md；0.1.0-rc.1 (2026-09-08) 为用户裁决的未来基线 RC，stable 跟踪之"
+  p4t6: "base pin @ 3b4912a = 702 → A2 提交 bump 709 → **收束提交 6199003 bump 710**（用户裁决单写者在 PR 分支执行；+1 = rc2a1-fs-containment.test.ts，零 denylist token；p4t6 套件 10/10 绿；全仓 full test 20 failed | 3561 passed = 轮前基线失败集完全一致）"
+  red_lines: "无 0.1.2 fallback（仅 factory-world row-anchor 行为保留，production 绝不）；leader 不加 lifecycle；无 prefix-string containment（必须 FileSystem.contains）；row config.blueprintSource 不作 bound-Team 运行时权威；无 MCP/skill/capability 架构扩张；无 A1 live evidence 前修复；CORE PATCH BUDGET = 0；无 push（除非用户本轮明确授权 — 本收束轮 push/PR 均为用户明确指令）；0.1.2 registry-pinned client devDeps 不动（minimum host 版本提升 = 后续独立 chore，plan §22）；CI characterization pin 已按用户指令迁 fb2c4b9e69 并降级 manual（TEST_METHODS §4.2 记录；probe 重录 = 独立 bounded task）"
+current_phase: "rc2-repair COMPLETE-CLOSED (2026-09-17, 用户指令轮): DSH 0.1.5-rc.2 兼容性修复 — A6 (c549031) / A2 (dae8d00) / A1 (9b99aa3) + 基线迁移 c9e52ac + 收束 6199003（p4t6 pin 710 + characterization CI 迁移 0.1.5-rc.2 并降级 manual）@ fix/rc2-runtime-compat → **PR #18 已开（master ← 分支，OPEN/MERGEABLE，body 含收束四项）**；正式 smoke S1–S5 = 18/18 @ 11-44-45；全部门禁绿（typecheck/build 确定性/artifacts 1116/zero-core/instrumentation-removal；全仓回归 = 轮前基线失败集完全一致）；probe 临时 commit 已移出历史（plan §15 授权）。待用户 merge 裁决。历史轮次见 SESSION_ROUTER_LOG.md；0.1.0-rc.1 (2026-09-08) 为用户裁决的未来基线 RC，stable 跟踪之"
 integration_branch: int/P9-master-product-closure
 integration_sha: d23c606c5d77cfdb917c1338194be876d76cfddb
 p8s_base_sha: 3fa4c1f27ed1e8903c131dadc9aafe536ed9eb86

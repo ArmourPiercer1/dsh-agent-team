@@ -3286,3 +3286,13 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **既有破损判定**（历史运行全查）：PR #17 分支 3 次运行（2026-09-14，34820354696/34839839649/34839945182）与 PR #16 分支 3 次运行（2026-09-13）**全部在同一 step 同一签名失败**（38–47s 快速失败）；两 PR 均在该 check RED 下由用户裁决 merge → 该 check 非 required。
 - 附带事实（供后续 CI chore）：workflow 环境 `DSH_CLIENT_COMMIT_HASH=cd5ef814` 仍是 0.1.2 时代 pin（本轮 plan 红线 = 不动；minimum host 版本提升独立 chore 时一并处理）；修复方向 = 该 build step 改经 `pnpm run` 调用（upstream 脚本的明确契约）。
 - 本地等价门禁已全绿（本轮：runtime/tools 全量 0-regression + typecheck/build/artifacts + smoke 18/18），CI 红不构成本 PR 质量信号。
+
+### 2026-09-17（晚三）— 收束轮（用户指令四项：p4t6 pin / CI 迁移或降级 / 重跑 / PR body）
+
+- **1. p4t6 pin 709 → 710**（单写者 bump 在分支执行，用户裁决）：`p4t6-session-event-scan.test.ts` DEC-1 union 注释补 A1 文件（`rc2a1-fs-containment.test.ts`，零 denylist token）+ expect 710；**p4t6 套件 10/10 绿**。
+- **2. characterization CI 迁移 + 降级**（commit 6199003）：
+  - 迁移（infra 层）：workflow checkout ref + `DSH_CLIENT_COMMIT_HASH` → `fb2c4b9e69`；`host-version.json` fixture 经 `--fixture-write` 在本地 test-use（@ fb2c4b9e69）重录 — 本地全量自检 preflight/surface/fixture/static/lifecycle/byte-clean 全绿（evidence `evidence/rc2-repair/ci-migration-local/`，含 107 项 probe 段失败全清单）；**build step `node scripts/build.ts` → `pnpm run build`**（upstream 构建脚本 `npm_execpath` 契约；本地 shell 恰好有 npm_execpath 故直调本地不炸、CI 新 bash 必炸 — 既有红的精确机理）。
+  - 降级（trigger 层）：`pull_request` → **`workflow_dispatch` manual（archival）**。裁决依据 = 有界事实：P2 时代 probes 对 0.1.2 录制，新 pin 下 probe 段 107 项失败，**三个已定位根因**：(1) p2t2/p2t3 硬编码 `session.jsonl.zstd`，0.1.5-rc.2 发布 `session.v3.jsonl.zstd`（disk state 实证）；(2) p2t4 `tools.schemas()` row scope 在 0.1.5 返回 undefined（probe 134 行无 guard，fatal `reading 'map'`）；(3) p2t5 B1/B2 实例 boot exit 1（harness per-port 日志复用覆盖了失败现场，需留痕复诊）。probe 重录 = 独立 bounded follow-up task（backlog 已记）。降级无活跃门禁损失（该 check 在 CI 从未绿 — PR #16/#17/#18 全红于 build step）。
+  - TEST_METHODS §4.2 改写（pin 统一 fb2c4b9e69 + 降级状态 + follow-up 指针）；当日 09-17 条目内"不动"裁决标注为被本收束推翻。
+- **3. 重跑**：全仓 `pnpm test` = **20 failed | 3561 passed (3581) = 轮前 workspace 基线失败集完全一致**（p4t6 delta 消除；本轮无 p6t1 flake）；characterization CI manual trigger 对新 tip 运行（验证 build step 修复；probe 段红 = 预期留档）。
+- **4. PR body 更新**：`gh pr edit` 再次撞 Projects-classic GraphQL 弃用错（PR #16 同款）→ **REST PATCH /pulls/18 = 200**（node fetch 走 127.0.0.1:7897 代理 401 Bad credentials 的怪象 → curl 同 token 200，代理路径差异；token 本身有效 = /user 200）。body 新增"收束项"节（pin 710 / CI 迁移+降级三根因 / 重跑实数）+ backlog 增补 probe 重录任务 + 门禁表全仓行更新 + 备注提交链更新。
