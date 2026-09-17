@@ -133,7 +133,7 @@
  *
  * @module @dsh-agent-team/runtime/control/service
  */
-import { parseInstanceId, parseRootSessionId, } from '../../contracts/src/index.js';
+import { LEADER_INSTANCE_ID, parseInstanceId, parseRootSessionId, } from '../../contracts/src/index.js';
 import { CAPABILITY_NAME_VALUES, } from '../../domain/policy/src/index.js';
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError, ACTION_NAMES, actionSpecOf, callerEnvelope, enforceEnvelope, resolveCaller, resolveTeamAndTarget, } from '../admission/index.js';
 import { withTeamLock } from '../action-router/index.js';
@@ -961,14 +961,26 @@ export function createControlService(options) {
             throw guardMalformed('operationFingerprint', 'operationFingerprint must be a non-empty string when present');
         }
         return withTeamLock(teamLocks, root, async () => {
-            // (a) the team must still exist; (b) the target must be durably
-            // live and work-accepting (an allow only authorizes execution on a
-            // live target — missing/ARCHIVED/DISPOSED all block).
-            const member = repositories.memberInstances.get(root, target);
-            if (repositories.teamSessions.get(root) === undefined ||
-                member === undefined ||
-                !GUARD_LIVE_LIFECYCLES.includes(String(member.lifecycle))) {
+            // (a) the team must still exist — for the LEADER this check IS the
+            // whole liveness predicate: the Leader is the Root Session itself
+            // (invariant 15; the v2 LeaderInstance record carries NO lifecycle
+            // and no childSessionId), so leader live <=> TeamSession(root)
+            // exists, and no member-row lifecycle check ever applies to it.
+            if (repositories.teamSessions.get(root) === undefined) {
                 return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.TARGET_STALE };
+            }
+            // (b) an ORDINARY member must be durably live and work-accepting
+            // (an allow only authorizes execution on a live target —
+            // missing/ARCHIVED/DISPOSED all block). The member-row lifecycle
+            // check applies to members only (A6: folding the Leader into the
+            // compound check made `String(member.lifecycle)` read 'undefined'
+            // for the v2 leader row — a permanent target-stale).
+            if (target !== LEADER_INSTANCE_ID) {
+                const member = repositories.memberInstances.get(root, target);
+                if (member === undefined ||
+                    !GUARD_LIVE_LIFECYCLES.includes(String(member.lifecycle))) {
+                    return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.TARGET_STALE };
+                }
             }
             const state = loadControlState(root);
             const key = scopeKey(root, target, scope.actionName, scope.toolName, scope.correlation, scope.operationFingerprint);
