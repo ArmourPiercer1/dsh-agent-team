@@ -3279,3 +3279,10 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **推送**：本会话无 GitHub HTTPS 凭证（gh 未登录、环境无 token），按用户提示走 **SSH**（`~/.ssh/id_ed25519_github_wsl-dsh-dev`，wsl-init 配置；`ssh -T git@github.com` 认证 = Hi ArmourPiercer1）→ `git push git@github.com:ArmourPiercer1/dsh-agent-team.git fix/rc2-runtime-compat` 成功（new branch，5 提交 @ 7e6079e）。
 - **PR**：目标分支 master（= 分支基线 3b4912a）。本会话无 API token 无法程序化建 PR（gh/REST 均鉴权失败）→ PR body 已备（`/tmp/rc2-pr-body.md`，按 plan §21 八项报告要求 + PR #17 体例：三缺陷根因/修复、修改文件、新增测试、live evidence、门禁实数、compatibility backlog、备注）；创建入口 = GitHub quick-create 链接（推送回执给出）或用户粘贴 token 后由主 Agent 经 gh/REST 创建。
 - **PR #18 创建**（用户确认凭证就位后）：`gh pr create` → https://github.com/ArmourPiercer1/dsh-agent-team/pull/18（base master / head fix/rc2-runtime-compat；6 提交 @ b3c4253；204 files +15551/−73 — 主体为 smoke 证据 11 次运行 + kit + tracked dist；state OPEN，mergeable；CI check = P2-T1 characterization on pristine upstream，运行中）。
+
+### 2026-09-17（晚二）— PR #18 CI 状态判定：既有破损，非本 PR 回归
+
+- PR #18 的 `characterization` check RED（run 35239888899）：失败步 = **Build upstream runtime closure (TEST_METHODS §2)** — `node scripts/build.ts` 在 GitHub Actions（Node 24 + pnpm action-setup）中直接 node 调用，缺 `npm_execpath` 上下文 → upstream 脚本自抛 "pnpm invocation: npm_execpath is unavailable; invoke the script through pnpm run."；**未触及任何 team 套件**。
+- **既有破损判定**（历史运行全查）：PR #17 分支 3 次运行（2026-09-14，34820354696/34839839649/34839945182）与 PR #16 分支 3 次运行（2026-09-13）**全部在同一 step 同一签名失败**（38–47s 快速失败）；两 PR 均在该 check RED 下由用户裁决 merge → 该 check 非 required。
+- 附带事实（供后续 CI chore）：workflow 环境 `DSH_CLIENT_COMMIT_HASH=cd5ef814` 仍是 0.1.2 时代 pin（本轮 plan 红线 = 不动；minimum host 版本提升独立 chore 时一并处理）；修复方向 = 该 build step 改经 `pnpm run` 调用（upstream 脚本的明确契约）。
+- 本地等价门禁已全绿（本轮：runtime/tools 全量 0-regression + typecheck/build/artifacts + smoke 18/18），CI 红不构成本 PR 质量信号。
