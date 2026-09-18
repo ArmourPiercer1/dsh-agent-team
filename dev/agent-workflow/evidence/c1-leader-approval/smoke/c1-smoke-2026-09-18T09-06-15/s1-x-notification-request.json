@@ -1,0 +1,4 @@
+{
+  "seq": 9,
+  "text": "[team-control requestId=ctrl-1ez5zp90l9ng9q0gdgban0hn]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-1ez5zp90l9ng9q0gdgban0hn\nrequester: inst-0lrnjnv1dpjr\ntarget: inst-0lrnjnv1dpjr\ntool: bash\nsummary: bash [cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/tests/homes/c1-smoke-2026-09-18T09-06-15/workspace] [timeout=30000ms] echo c1-x-allow-2026-09-18T09-06-15 > /home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/t…\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+}

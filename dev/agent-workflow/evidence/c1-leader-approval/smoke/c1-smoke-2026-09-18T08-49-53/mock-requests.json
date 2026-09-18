@@ -1,0 +1,599 @@
+[
+  {
+    "seq": 1,
+    "receivedAt": "2026-09-18T08:49:58.178Z",
+    "status": 200,
+    "userTextHead": "C1MK_DISC_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1_DISC_DONE"
+    }
+  },
+  {
+    "seq": 2,
+    "receivedAt": "2026-09-18T08:49:58.180Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"C1MK_DISC_2026-09-18T08-49-53\"}]",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1 smoke session"
+    }
+  },
+  {
+    "seq": 3,
+    "receivedAt": "2026-09-18T08:49:58.654Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:db47524f0b3e85334e047fe0e861ff49cf91100e3bbf6a31d897c7",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1 smoke session"
+    }
+  },
+  {
+    "seq": 4,
+    "receivedAt": "2026-09-18T08:49:58.654Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:db47524f0b3e85334e047fe0e861ff49cf91100e3bbf6a31d897c70c753f8476] C1MK_X_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-2x3zinq5",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-x-2026-09-18T08-49-53",
+            "requestToken": "c1-x-create-2026-09-18T08-49-53",
+            "delegationTemplateId": "worker",
+            "label": "w-x"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 5,
+    "receivedAt": "2026-09-18T08:49:58.711Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:db47524f0b3e85334e047fe0e861ff49cf91100e3bbf6a31d897c70c753f8476] C1MK_X_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-khl0r09b",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-x-2026-09-18T08-49-53",
+            "requestToken": "c1-x-delegate-2026-09-18T08-49-53",
+            "delegationInstanceId": "inst-0crzs9n0tpqj",
+            "label": "w-x",
+            "prompt": "C1MK_XMEM_2026-09-18T08-49-53",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 6,
+    "receivedAt": "2026-09-18T08:49:58.752Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:db47524f0b3e85334e047fe0e861ff49cf91100e3bbf6a31d897c70c753f8476] C1MK_X_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 2,
+    "reply": {
+      "kind": "text",
+      "content": "C1_X_DONE"
+    }
+  },
+  {
+    "seq": 7,
+    "receivedAt": "2026-09-18T08:49:58.755Z",
+    "status": 200,
+    "userTextHead": "[team-work requestToken=c1-x-delegate-2026-09-18T08-49-53] C1MK_XMEM_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-u2w8yneo",
+          "name": "bash",
+          "arguments": {
+            "command": "echo c1-x-allow-2026-09-18T08-49-53 > /home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/tests/homes/c1-smoke-2026-09-18T08-49-53/workspace/c1-x-allow-2026-09-18T08-49-53.txt && echo x-allow-executed",
+            "timeoutMs": 30000
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 8,
+    "receivedAt": "2026-09-18T08:49:58.758Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=c1-x-delegate-2026-09-18T08-49-53] C1MK_XMEM_2026-09-18T08-49-53\"}]",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1 smoke session"
+    }
+  },
+  {
+    "seq": 9,
+    "receivedAt": "2026-09-18T08:49:58.789Z",
+    "status": 200,
+    "userTextHead": "[team-control requestId=ctrl-16v1s490eedhxa1hgqkez1li]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-16v1s490eedhxa1hgqkez1li\nrequester: inst-0crzs9n0tpqj\ntarget: inst-0crzs",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-woev4pdk",
+          "name": "team_list_pending_control",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-x-2026-09-18T08-49-53",
+            "requestToken": "c1-notif-list-ctrl-16v1s490eedhxa1hgqkez1li"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 10,
+    "receivedAt": "2026-09-18T08:49:58.801Z",
+    "status": 200,
+    "userTextHead": "[team-control requestId=ctrl-16v1s490eedhxa1hgqkez1li]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-16v1s490eedhxa1hgqkez1li\nrequester: inst-0crzs9n0tpqj\ntarget: inst-0crzs",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-nm8mqnep",
+          "name": "team_resolve_control",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-x-2026-09-18T08-49-53",
+            "requestToken": "c1-notif-res-ctrl-16v1s490eedhxa1hgqkez1li",
+            "requestId": "ctrl-16v1s490eedhxa1hgqkez1li",
+            "decision": "allow"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 11,
+    "receivedAt": "2026-09-18T08:49:58.824Z",
+    "status": 200,
+    "userTextHead": "[team-control requestId=ctrl-16v1s490eedhxa1hgqkez1li]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-16v1s490eedhxa1hgqkez1li\nrequester: inst-0crzs9n0tpqj\ntarget: inst-0crzs",
+    "toolMsgCountAfterLastUser": 2,
+    "reply": {
+      "kind": "text",
+      "content": "C1_NOTIF_DONE"
+    }
+  },
+  {
+    "seq": 12,
+    "receivedAt": "2026-09-18T08:49:59.358Z",
+    "status": 200,
+    "userTextHead": "[team-work requestToken=c1-x-delegate-2026-09-18T08-49-53] C1MK_XMEM_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-ltgdacqq",
+          "name": "bash",
+          "arguments": {
+            "command": "echo c1-x-deny-2026-09-18T08-49-53 > /home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/tests/homes/c1-smoke-2026-09-18T08-49-53/workspace/c1-x-deny-2026-09-18T08-49-53.txt && echo x-deny-executed",
+            "timeoutMs": 30000
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 13,
+    "receivedAt": "2026-09-18T08:49:59.381Z",
+    "status": 200,
+    "userTextHead": "[team-control requestId=ctrl-0npbqxq0o6jor10o57nc4116]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0npbqxq0o6jor10o57nc4116\nrequester: inst-0crzs9n0tpqj\ntarget: inst-0crzs",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-t4syuw83",
+          "name": "team_list_pending_control",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-x-2026-09-18T08-49-53",
+            "requestToken": "c1-notif-list-ctrl-0npbqxq0o6jor10o57nc4116"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 14,
+    "receivedAt": "2026-09-18T08:49:59.394Z",
+    "status": 200,
+    "userTextHead": "[team-control requestId=ctrl-0npbqxq0o6jor10o57nc4116]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0npbqxq0o6jor10o57nc4116\nrequester: inst-0crzs9n0tpqj\ntarget: inst-0crzs",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-0w95esuy",
+          "name": "team_resolve_control",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-x-2026-09-18T08-49-53",
+            "requestToken": "c1-notif-res-ctrl-0npbqxq0o6jor10o57nc4116",
+            "requestId": "ctrl-0npbqxq0o6jor10o57nc4116",
+            "decision": "deny"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 15,
+    "receivedAt": "2026-09-18T08:49:59.416Z",
+    "status": 200,
+    "userTextHead": "[team-control requestId=ctrl-0npbqxq0o6jor10o57nc4116]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0npbqxq0o6jor10o57nc4116\nrequester: inst-0crzs9n0tpqj\ntarget: inst-0crzs",
+    "toolMsgCountAfterLastUser": 2,
+    "reply": {
+      "kind": "text",
+      "content": "C1_NOTIF_DONE"
+    }
+  },
+  {
+    "seq": 16,
+    "receivedAt": "2026-09-18T08:49:59.630Z",
+    "status": 200,
+    "userTextHead": "[team-work requestToken=c1-x-delegate-2026-09-18T08-49-53] C1MK_XMEM_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 2,
+    "reply": {
+      "kind": "text",
+      "content": "C1_XMEM_DONE"
+    }
+  },
+  {
+    "seq": 17,
+    "receivedAt": "2026-09-18T08:50:00.067Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:b73d04a5c0ce2bb7b4b9fe9f169124fdc882f14a20ac486ecd7778",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1 smoke session"
+    }
+  },
+  {
+    "seq": 18,
+    "receivedAt": "2026-09-18T08:50:00.068Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:b73d04a5c0ce2bb7b4b9fe9f169124fdc882f14a20ac486ecd7778cd5f0471bb] C1MK_Z_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-0s9gnp3e",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-z-2026-09-18T08-49-53",
+            "requestToken": "c1-z-create-2026-09-18T08-49-53",
+            "delegationTemplateId": "worker",
+            "label": "w-z"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 19,
+    "receivedAt": "2026-09-18T08:50:00.116Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:b73d04a5c0ce2bb7b4b9fe9f169124fdc882f14a20ac486ecd7778cd5f0471bb] C1MK_Z_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-96tldbh8",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-z-2026-09-18T08-49-53",
+            "requestToken": "c1-z-delegate-2026-09-18T08-49-53",
+            "delegationInstanceId": "inst-0qyzehb0xs43",
+            "label": "w-z",
+            "prompt": "C1MK_ZMEM_2026-09-18T08-49-53",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 20,
+    "receivedAt": "2026-09-18T08:50:00.155Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:b73d04a5c0ce2bb7b4b9fe9f169124fdc882f14a20ac486ecd7778cd5f0471bb] C1MK_Z_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 2,
+    "reply": {
+      "kind": "text",
+      "content": "C1_Z_DONE"
+    }
+  },
+  {
+    "seq": 21,
+    "receivedAt": "2026-09-18T08:50:00.157Z",
+    "status": 200,
+    "userTextHead": "[team-work requestToken=c1-z-delegate-2026-09-18T08-49-53] C1MK_ZMEM_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-yyg8261e",
+          "name": "bash",
+          "arguments": {
+            "command": "echo c1-z-2026-09-18T08-49-53.txt > /home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/tests/homes/c1-smoke-2026-09-18T08-49-53/workspace/c1-z-2026-09-18T08-49-53.txt && echo z-executed",
+            "timeoutMs": 30000
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 22,
+    "receivedAt": "2026-09-18T08:50:00.160Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=c1-z-delegate-2026-09-18T08-49-53] C1MK_ZMEM_2026-09-18T08-49-53\"}]",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1 smoke session"
+    }
+  },
+  {
+    "seq": 23,
+    "receivedAt": "2026-09-18T08:50:00.187Z",
+    "status": 500,
+    "userTextHead": "[team-control requestId=ctrl-0zv41cl1nlw58m1jg8okn0f3]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0zv41cl1nlw58m1jg8okn0f3\nrequester: inst-0qyzehb0xs43\ntarget: inst-0qyze",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "error",
+      "status": 500,
+      "message": "c1 smoke S4: deliberate notification delivery failure",
+      "code": "c1-smoke-s4"
+    }
+  },
+  {
+    "seq": 24,
+    "receivedAt": "2026-09-18T08:50:00.678Z",
+    "status": 500,
+    "userTextHead": "[team-control requestId=ctrl-0zv41cl1nlw58m1jg8okn0f3]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0zv41cl1nlw58m1jg8okn0f3\nrequester: inst-0qyzehb0xs43\ntarget: inst-0qyze",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "error",
+      "status": 500,
+      "message": "c1 smoke S4: deliberate notification delivery failure",
+      "code": "c1-smoke-s4"
+    }
+  },
+  {
+    "seq": 25,
+    "receivedAt": "2026-09-18T08:50:01.671Z",
+    "status": 500,
+    "userTextHead": "[team-control requestId=ctrl-0zv41cl1nlw58m1jg8okn0f3]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0zv41cl1nlw58m1jg8okn0f3\nrequester: inst-0qyzehb0xs43\ntarget: inst-0qyze",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "error",
+      "status": 500,
+      "message": "c1 smoke S4: deliberate notification delivery failure",
+      "code": "c1-smoke-s4"
+    }
+  },
+  {
+    "seq": 26,
+    "receivedAt": "2026-09-18T08:50:03.713Z",
+    "status": 500,
+    "userTextHead": "[team-control requestId=ctrl-0zv41cl1nlw58m1jg8okn0f3]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0zv41cl1nlw58m1jg8okn0f3\nrequester: inst-0qyzehb0xs43\ntarget: inst-0qyze",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "error",
+      "status": 500,
+      "message": "c1 smoke S4: deliberate notification delivery failure",
+      "code": "c1-smoke-s4"
+    }
+  },
+  {
+    "seq": 27,
+    "receivedAt": "2026-09-18T08:50:07.858Z",
+    "status": 500,
+    "userTextHead": "[team-control requestId=ctrl-0zv41cl1nlw58m1jg8okn0f3]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0zv41cl1nlw58m1jg8okn0f3\nrequester: inst-0qyzehb0xs43\ntarget: inst-0qyze",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "error",
+      "status": 500,
+      "message": "c1 smoke S4: deliberate notification delivery failure",
+      "code": "c1-smoke-s4"
+    }
+  },
+  {
+    "seq": 28,
+    "receivedAt": "2026-09-18T08:50:15.543Z",
+    "status": 500,
+    "userTextHead": "[team-control requestId=ctrl-0zv41cl1nlw58m1jg8okn0f3]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0zv41cl1nlw58m1jg8okn0f3\nrequester: inst-0qyzehb0xs43\ntarget: inst-0qyze",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "error",
+      "status": 500,
+      "message": "c1 smoke S4: deliberate notification delivery failure",
+      "code": "c1-smoke-s4"
+    }
+  },
+  {
+    "seq": 29,
+    "receivedAt": "2026-09-18T08:58:01.395Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:c47aeaa30c57a7b5279e0e72b123c49f8bda0da35f41219b25c648",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1 smoke session"
+    }
+  },
+  {
+    "seq": 30,
+    "receivedAt": "2026-09-18T08:58:01.395Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:c47aeaa30c57a7b5279e0e72b123c49f8bda0da35f41219b25c648e917a8fbd7] C1MK_Y_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-2b9anx9d",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-y-2026-09-18T08-49-53",
+            "requestToken": "c1-y-create-2026-09-18T08-49-53",
+            "delegationTemplateId": "worker",
+            "label": "w-y"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 31,
+    "receivedAt": "2026-09-18T08:58:01.454Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:c47aeaa30c57a7b5279e0e72b123c49f8bda0da35f41219b25c648e917a8fbd7] C1MK_Y_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-i7v1md8k",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-y-2026-09-18T08-49-53",
+            "requestToken": "c1-y-delegate-2026-09-18T08-49-53",
+            "delegationInstanceId": "inst-12eaukd1lw36",
+            "label": "w-y",
+            "prompt": "C1MK_YMEM_2026-09-18T08-49-53"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 32,
+    "receivedAt": "2026-09-18T08:58:01.497Z",
+    "status": 200,
+    "userTextHead": "[team-work requestToken=c1-y-delegate-2026-09-18T08-49-53] C1MK_YMEM_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-l9c2puch",
+          "name": "bash",
+          "arguments": {
+            "command": "echo c1-y-2026-09-18T08-49-53 > /home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/tests/homes/c1-smoke-2026-09-18T08-49-53/workspace/c1-y-2026-09-18T08-49-53.txt && echo y-executed",
+            "timeoutMs": 30000
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 33,
+    "receivedAt": "2026-09-18T08:58:01.498Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=c1-y-delegate-2026-09-18T08-49-53] C1MK_YMEM_2026-09-18T08-49-53\"}]",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1 smoke session"
+    }
+  },
+  {
+    "seq": 34,
+    "receivedAt": "2026-09-18T09:02:01.748Z",
+    "status": 200,
+    "userTextHead": "[team-work requestToken=c1-y-delegate-2026-09-18T08-49-53] C1MK_YMEM_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "text",
+      "content": "C1_YMEM_DONE"
+    }
+  },
+  {
+    "seq": 35,
+    "receivedAt": "2026-09-18T09:02:01.781Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:c47aeaa30c57a7b5279e0e72b123c49f8bda0da35f41219b25c648e917a8fbd7] C1MK_Y_2026-09-18T08-49-53",
+    "toolMsgCountAfterLastUser": 2,
+    "reply": {
+      "kind": "text",
+      "content": "C1_Y_DONE"
+    }
+  },
+  {
+    "seq": 36,
+    "receivedAt": "2026-09-18T09:02:01.794Z",
+    "status": 200,
+    "userTextHead": "[team-control requestId=ctrl-1doah581kw7ll31kyohki12b]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-1doah581kw7ll31kyohki12b\nrequester: inst-12eaukd1lw36\ntarget: inst-12eau",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-vtfjdohl",
+          "name": "team_list_pending_control",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-y-2026-09-18T08-49-53",
+            "requestToken": "c1-notif-list-ctrl-1doah581kw7ll31kyohki12b"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 37,
+    "receivedAt": "2026-09-18T09:02:01.807Z",
+    "status": 200,
+    "userTextHead": "[team-control requestId=ctrl-1doah581kw7ll31kyohki12b]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-1doah581kw7ll31kyohki12b\nrequester: inst-12eaukd1lw36\ntarget: inst-12eau",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-zskte02l",
+          "name": "team_resolve_control",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-y-2026-09-18T08-49-53",
+            "requestToken": "c1-notif-res-ctrl-1doah581kw7ll31kyohki12b",
+            "requestId": "ctrl-1doah581kw7ll31kyohki12b",
+            "decision": "allow"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 38,
+    "receivedAt": "2026-09-18T09:02:01.825Z",
+    "status": 200,
+    "userTextHead": "[team-control requestId=ctrl-1doah581kw7ll31kyohki12b]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-1doah581kw7ll31kyohki12b\nrequester: inst-12eaukd1lw36\ntarget: inst-12eau",
+    "toolMsgCountAfterLastUser": 2,
+    "reply": {
+      "kind": "text",
+      "content": "C1_NOTIF_DONE"
+    }
+  }
+]

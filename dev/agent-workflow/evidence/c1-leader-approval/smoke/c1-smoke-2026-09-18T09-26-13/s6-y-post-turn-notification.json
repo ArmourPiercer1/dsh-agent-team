@@ -1,0 +1,6 @@
+{
+  "yDoneAt": "2026-09-18T09:26:48.906Z",
+  "yNotifAt": "2026-09-18T09:26:48.920Z",
+  "queuedThenProcessed": true,
+  "listResult": "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-y-2026-09-18T09-26-13\",\"pending\":[],\"count\":0,\"truncated\":false}"
+}

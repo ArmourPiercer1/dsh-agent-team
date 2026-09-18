@@ -1,0 +1,51 @@
+{
+  "requests": [
+    {
+      "sequence": 5,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-1he372z1qd2tjw0pk9gkl1vz",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "targetInstanceId": "inst-0d0qnl716mq4",
+      "correlation": "call-c1-fxt2lys5",
+      "createdAt": "2026-09-18T09:27:27.913Z"
+    },
+    {
+      "sequence": 9,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-1i5xs1c0gxcafb1uyd7li1wl",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "targetInstanceId": "inst-0d0qnl716mq4",
+      "correlation": "call-c1-k8odkieh",
+      "createdAt": "2026-09-18T09:27:28.511Z"
+    }
+  ],
+  "decisions": [
+    {
+      "sequence": 7,
+      "factType": "control-decision-recorded",
+      "requestId": "ctrl-1he372z1qd2tjw0pk9gkl1vz",
+      "decision": "allow",
+      "createdAt": "2026-09-18T09:27:27.956Z"
+    },
+    {
+      "sequence": 10,
+      "factType": "control-decision-recorded",
+      "requestId": "ctrl-1i5xs1c0gxcafb1uyd7li1wl",
+      "decision": "deny",
+      "createdAt": "2026-09-18T09:27:28.546Z"
+    }
+  ],
+  "consumptions": [
+    {
+      "sequence": 8,
+      "factType": "control-allow-consumed",
+      "requestId": "ctrl-1he372z1qd2tjw0pk9gkl1vz",
+      "createdAt": "2026-09-18T09:27:28.178Z"
+    }
+  ],
+  "error": null
+}

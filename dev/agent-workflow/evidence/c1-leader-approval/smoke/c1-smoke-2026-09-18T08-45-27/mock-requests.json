@@ -1,0 +1,24 @@
+[
+  {
+    "seq": 1,
+    "receivedAt": "2026-09-18T08:45:31.967Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"C1MK_DISC_2026-09-18T08-45-27\"}]",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1 smoke session"
+    }
+  },
+  {
+    "seq": 2,
+    "receivedAt": "2026-09-18T08:45:31.969Z",
+    "status": 200,
+    "userTextHead": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify file",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1_NOOP_DONE"
+    }
+  }
+]

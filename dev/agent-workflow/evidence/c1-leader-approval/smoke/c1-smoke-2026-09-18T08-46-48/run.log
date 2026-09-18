@@ -1,0 +1,15 @@
+[2026-09-18T08:46:48.969Z] c1 real-host smoke — stamp 2026-09-18T08-46-48
+[2026-09-18T08:46:48.970Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval
+[2026-09-18T08:46:48.970Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-18T08:46:48.970Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/dev/agent-workflow/evidence/c1-leader-approval/smoke/c1-smoke-2026-09-18T08-46-48
+[2026-09-18T08:46:49.172Z] ports: host=3501 mock=3506
+[2026-09-18T08:46:49.184Z] stable pre-probe: 3080=401 3180=401
+[2026-09-18T08:46:49.185Z] world materialized (scratch workspace)
+[2026-09-18T08:46:49.190Z] mock model listening on 3506
+[2026-09-18T08:46:53.821Z] host booted at http://127.0.0.1:3501; row ready — toolCount=12
+[2026-09-18T08:46:53.821Z] ── L0: discovery ──
+[2026-09-18T08:46:54.236Z] discovery surface (17 tools): bash, edit, read, read_image, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, write
+[2026-09-18T08:46:54.236Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=17 missingTeam=[] denyList=[]
+[2026-09-18T08:46:54.237Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-09-18T08:46:54.237Z] ── S1–S3: team X (async delegate; the liveness arc) ──
+[2026-09-18T08:46:54.251Z] FAIL S1.0: team.create (X) succeeds on the fresh root — status=200 body={"type":"server-response","rpcId":"c1x-79nt68reu8","result":{"ok":false,"error":{"code":"MALFORMED_DTO","message":"deny entry at $.members[0].capabilities.teamTools must not have extra fields: items (source: c1-x.yaml)","details":{"method":"team.create","endpoint":"team.create","contractVersion":1,"requestToken":null,"reason":"domain-error","cause":{"code":"MALFORMED_DTO","message":"deny entry at 

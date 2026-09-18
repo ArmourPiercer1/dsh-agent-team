@@ -1,0 +1,238 @@
+{
+  "runStamp": "2026-09-18T09-20-40",
+  "hostBaseline": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "hostPort": 3501,
+  "mockPort": 3506,
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval",
+  "criteria": [
+    {
+      "id": "L0",
+      "name": "discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder)",
+      "ok": true,
+      "detail": "surface=17 missingTeam=[] denyList=[]"
+    },
+    {
+      "id": "S1.0",
+      "name": "team.create (X) succeeds on the fresh root",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"c1x-te7ngw8jzc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-c1-smoke-x-2026-09-18T09-20-40\",\"blueprint\":{\"blueprintId\":\"team.c1-x\",\"revision\":\"1\",\"contentHash\":\"sha256:e6bf3076ebf3f4aecbdd1cee5fe05783970017b96fca38ea1024c4190a31e65b\"},\"createdAt\":\"2026-09-18T09:20:45.442Z\",\"generati"
+    },
+    {
+      "id": "S1b",
+      "name": "the member bash ask created a durable leader-approval request (pending)",
+      "ok": true,
+      "detail": "requests=[{\"sequence\":5,\"factType\":\"control-request-recorded\",\"requestId\":\"ctrl-00w3re21mano6t1n59z9k09l\",\"kind\":\"leader-approval\",\"toolName\":\"bash\",\"actionName\":\"parameter-permission\",\"targetInstanceId\":\"inst-036qyi30bx4e\",\"correlation\":\"call-c1-3sob560v\",\"createdAt\":\"2026-09-18T09:20:45.650Z\"}]"
+    },
+    {
+      "id": "S1c",
+      "name": "the C1 liveness notification reached the Leader (token-leading, the exact requestId + both approval-loop tools named)",
+      "ok": true,
+      "detail": "text=[team-control requestId=ctrl-00w3re21mano6t1n59z9k09l]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-00w3re21mano6t1n59z9k09l\nrequester: inst-036qyi30bx4e\ntarget: inst-036qy"
+    },
+    {
+      "id": "S1d",
+      "name": "S1: team_list_pending_control returned the EXACT pending requestId",
+      "ok": true,
+      "detail": "result={\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-x-2026-09-18T09-20-40\",\"pending\":[{\"requestId\":\"ctrl-00w3re21mano6t1n59z9k09l\",\"rootSessionId\":\"session-c1-smoke-x-2026-09-18T09-20-40\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-036qyi30bx4e\",\"role\""
+    },
+    {
+      "id": "S2b",
+      "name": "S2: the member bash EXECUTED after the Leader allow (guard passed, output returned)",
+      "ok": true,
+      "detail": "result=x-allow-executed\n[Command finished with exit code 0]"
+    },
+    {
+      "id": "S2c",
+      "name": "S2: the side effect landed (the allow file exists)",
+      "ok": true,
+      "detail": "file=/home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/tests/homes/c1-smoke-2026-09-18T09-20-40/workspace/c1-x-allow-2026-09-18T09-20-40.txt"
+    },
+    {
+      "id": "S3a",
+      "name": "S3: the second member ask created a second durable request + notification",
+      "ok": true,
+      "detail": "requestId=ctrl-1jr7wxp0e5da8e000wanf0j2 notifSeq=13"
+    },
+    {
+      "id": "S3b",
+      "name": "S3: the denied member bash was BLOCKED (verdict returned, no output)",
+      "ok": true,
+      "detail": "result=Error: the approval was denied"
+    },
+    {
+      "id": "S3c",
+      "name": "S3: the denied bash had ZERO side effects (the deny file does NOT exist)",
+      "ok": true,
+      "detail": "file=/home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/tests/homes/c1-smoke-2026-09-18T09-20-40/workspace/c1-x-deny-2026-09-18T09-20-40.txt"
+    },
+    {
+      "id": "S2d",
+      "name": "S2: exactly ONE consumption fact for the allowed request (allow-once)",
+      "ok": true,
+      "detail": "consumptions=[{\"sequence\":8,\"factType\":\"control-allow-consumed\",\"requestId\":\"ctrl-00w3re21mano6t1n59z9k09l\",\"createdAt\":\"2026-09-18T09:20:45.914Z\"}]"
+    },
+    {
+      "id": "S3d",
+      "name": "S3: the denied request has a deny decision and ZERO consumptions",
+      "ok": true,
+      "detail": "denyDecision={\"sequence\":10,\"factType\":\"control-decision-recorded\",\"requestId\":\"ctrl-1jr7wxp0e5da8e000wanf0j2\",\"decision\":\"deny\",\"createdAt\":\"2026-09-18T09:20:46.307Z\"} denyConsumptions=0"
+    },
+    {
+      "id": "S2e",
+      "name": "S2: the allow decision is durable in the ledger (recorded by the model-facing tool)",
+      "ok": true,
+      "detail": "allowDecision={\"sequence\":7,\"factType\":\"control-decision-recorded\",\"requestId\":\"ctrl-00w3re21mano6t1n59z9k09l\",\"decision\":\"allow\",\"createdAt\":\"2026-09-18T09:20:45.695Z\"}"
+    },
+    {
+      "id": "S4.0",
+      "name": "team.create (Z) succeeds",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"c1z-3qwj2tbwjo\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-c1-smoke-z-2026-09-18T09-20-40\",\"blueprint\":{\"blueprintId\":\"team.c1-z\",\"revision\":\"1\",\"contentHash\":\"sha256:a594c5c0770a06e"
+    },
+    {
+      "id": "S4a",
+      "name": "S4: the notification delivery was attempted and failed (mock refused the Leader notification turn, HTTP 500)",
+      "ok": true,
+      "detail": "seq=23 status=500"
+    },
+    {
+      "id": "S4b",
+      "name": "S4: after the notification failure the request is still durable + pending (no decision row; not removed)",
+      "ok": true,
+      "detail": "requests=[{\"sequence\":17,\"factType\":\"control-request-recorded\",\"requestId\":\"ctrl-0qml0z317wcb0s0k0lqbp1tn\",\"kind\":\"leader-approval\",\"toolName\":\"bash\",\"actionName\":\"parameter-permission\",\"targetInstanceId\":\"inst-11wolev03zgy\",\"correlation\":\"call-c1-1g0d5tza\",\"createdAt\":\"2026-09-18T09:20:47.047Z\"}] decisions=[]"
+    },
+    {
+      "id": "S4c",
+      "name": "S4: team_list_pending_control (explicit read, NO notification) discovered the exact pending requestId",
+      "ok": true,
+      "detail": "result={\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-z-2026-09-18T09-20-40\",\"pending\":[{\"requestId\":\"ctrl-0qml0z317wcb0s0k0lqbp1tn\",\"rootSessionId\":\"session-c1-smoke-z-2026-09-18T09-20-40\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-11wolev03zgy\",\"role\""
+    },
+    {
+      "id": "S4d",
+      "name": "S4: the Leader resolved the recovered request through team_resolve_control (chain completed)",
+      "ok": true,
+      "detail": "requests=33"
+    },
+    {
+      "id": "S4e",
+      "name": "S4: the recovered member bash EXECUTED (the operation proceeded after the pending-list recovery)",
+      "ok": true,
+      "detail": "result=z-executed\n[Command finished with exit code 0]"
+    },
+    {
+      "id": "S4f",
+      "name": "S4: the recovered side effect landed (the z file exists)",
+      "ok": true,
+      "detail": "file=/home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/tests/homes/c1-smoke-2026-09-18T09-20-40/workspace/c1-z-2026-09-18T09-20-40.txt"
+    },
+    {
+      "id": "S5a",
+      "name": "S5: the same scope + same correlation retried through team_request_control returned the SAME requestId",
+      "ok": false,
+      "detail": "probe=null retry=null"
+    },
+    {
+      "id": "S5b",
+      "name": "S5: the idempotent retry wrote exactly ONE durable request row for the scope",
+      "ok": false,
+      "detail": "rows=[{\"id\":\"ctrl-0qml0z317wcb0s0k0lqbp1tn\",\"correlation\":\"call-c1-1g0d5tza\"}]"
+    },
+    {
+      "id": "S5c",
+      "name": "S5: exactly ONE notification delivery attempt for the S5 probe request (the idempotent retry did NOT re-notify)",
+      "ok": false,
+      "detail": "attempts=0"
+    },
+    {
+      "id": "S4g",
+      "name": "S4: the recovered allow produced exactly ONE consumption fact (allow-once)",
+      "ok": true,
+      "detail": "consumptions=[{\"sequence\":20,\"factType\":\"control-allow-consumed\",\"requestId\":\"ctrl-0qml0z317wcb0s0k0lqbp1tn\",\"createdAt\":\"2026-09-18T09:21:13.648Z\"}]"
+    },
+    {
+      "id": "S5d",
+      "name": "S5: the S5 probe request was resolved through the liveness chain (the decision is durable)",
+      "ok": false,
+      "detail": "decision=none"
+    },
+    {
+      "id": "S6a",
+      "name": "S6: the member bash ask created a durable request while the Leader turn was blocked in the sync delegate",
+      "ok": true,
+      "detail": "requestId=ctrl-00it2dz1yj55hk0nxxezx0x6"
+    },
+    {
+      "id": "S6b",
+      "name": "S6 (characterization): while the Leader is blocked, the root notification is QUEUED — not yet processed (its model request is absent; the delegate result is absent)",
+      "ok": true,
+      "detail": "delegateReturned=false notifSeen=false"
+    },
+    {
+      "id": "S6c",
+      "name": "S6: the plugin row stays healthy while the Leader is blocked (no row-level deadlock)",
+      "ok": true,
+      "detail": "health={\"ok\":true,\"boot\":1,\"ready\":true,\"rootSessionId\":\"session-c1-smoke-root-2026-09-18T09-20-40\",\"liveSessions\":[\"session-c1-smoke-root-2026-09-18T09-20-40\",\"session-c1-smoke-x-2026-09-18T09-20-40\",\"sessi"
+    },
+    {
+      "id": "S6d",
+      "name": "S6: the human resolver channel works WHILE the Leader is busy + the notification in flight (no control-lock deadlock)",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"c1s6-cmxs6f6zwx\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-00it2dz1yj55hk0nxxezx0x6\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-c1-smoke-y-2026-09-18T09-20-40\"},\"scope\":{\"rootSessionId\":\"session-c1-smoke-y-2026-09-18T09"
+    },
+    {
+      "id": "S6.0",
+      "name": "team.create (Y) succeeds (the RPC awaits the boot turn; the human allow unblocked it)",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"c1y-4fymoib8bp\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-c1-smoke-y-2026-09-18T09-20-40\",\"blueprint\":{\"blueprintId\":\"team.c1-y\",\"revision\":\"1\",\"contentHash\":\"sha256:48da3f77cc15755"
+    },
+    {
+      "id": "S6e",
+      "name": "S6: after the human allow the member bash executed and the blocked Leader turn COMPLETED (the sync delegate returned)",
+      "ok": true,
+      "detail": "yDone=41 fileExists=true"
+    },
+    {
+      "id": "S6f",
+      "name": "S6 (characterization): the queued notification was processed AFTER the Leader turn completed (immediate decision NOT schedulable in this topology)",
+      "ok": true,
+      "detail": "doneAt=2026-09-18T09:25:15.742Z notifAt=2026-09-18T09:25:15.753Z"
+    },
+    {
+      "id": "S6g",
+      "name": "S6: on the post-turn Leader the pending list reflects the recorded decision (the request is no longer pending)",
+      "ok": true,
+      "detail": "listResult={\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-y-2026-09-18T09-20-40\",\"pending\":[],\"count\":0,\"truncated\":false}"
+    }
+  ],
+  "passed": 29,
+  "total": 33,
+  "failed": [
+    "S5a",
+    "S5b",
+    "S5c",
+    "S5d"
+  ],
+  "stable": {
+    "pre": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    },
+    "post": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    }
+  },
+  "verdict": "FAIL"
+}

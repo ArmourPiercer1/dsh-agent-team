@@ -1,0 +1,17 @@
+[2026-09-18T08:45:27.032Z] c1 real-host smoke — stamp 2026-09-18T08-45-27
+[2026-09-18T08:45:27.033Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval
+[2026-09-18T08:45:27.033Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-18T08:45:27.033Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/dev/agent-workflow/evidence/c1-leader-approval/smoke/c1-smoke-2026-09-18T08-45-27
+[2026-09-18T08:45:27.253Z] ports: host=3501 mock=3506
+[2026-09-18T08:45:27.266Z] stable pre-probe: 3080=401 3180=401
+[2026-09-18T08:45:27.268Z] world materialized (scratch workspace)
+[2026-09-18T08:45:27.275Z] mock model listening on 3506
+[2026-09-18T08:45:31.916Z] host booted at http://127.0.0.1:3501; row ready — toolCount=12
+[2026-09-18T08:45:31.916Z] ── L0: discovery ──
+[2026-09-18T08:45:32.332Z] discovery surface (17 tools): bash, edit, read, read_image, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, write
+[2026-09-18T08:45:32.333Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=17 missingTeam=[] denyList=[]
+[2026-09-18T08:45:32.333Z] teardown: stopping host + mock
+[2026-09-18T08:45:32.341Z] world removed (/home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/tests/homes/c1-smoke-2026-09-18T08-45-27)
+[2026-09-18T08:45:32.341Z] VERDICT PASS — 1/1 criteria passed
+[2026-09-18T08:45:32.341Z] FATAL uncaught: Error: L0 diagnostic abort: the DISC request (seq 2) got reply {"kind":"text","content":"C1_NOOP_DONE"}
+    at main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs:1186:15)
