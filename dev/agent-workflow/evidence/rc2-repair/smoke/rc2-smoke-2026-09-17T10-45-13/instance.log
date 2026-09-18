@@ -1,0 +1,11 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3491/?token=3Gytvz4tSLw0reabvUghQ1YouNAZqBHZF4J1pkMKJmU
+[dsh-agent-team] bootstrap FAILED: TeamContractError: $.memberEnvelopes[0] has unknown fields: persona
+    at teamContractError (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/contracts/src/errors.js:96:12)
+    at assertNoUnknownFields (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/contracts/src/dto/common.js:50:15)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/domain/blueprint/src/validate.js:536:9
+    at Array.forEach (<anonymous>)
+    at validateBlueprintDocument (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/domain/blueprint/src/validate.js:533:24)
+    at parseBlueprint (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/domain/blueprint/src/validate.js:668:18)
+    at createBlueprintAuthority (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.js:103:23)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/runtime/src/plugin/host.js:882:36)

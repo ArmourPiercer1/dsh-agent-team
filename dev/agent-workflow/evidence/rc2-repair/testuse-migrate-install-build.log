@@ -1,0 +1,22 @@
+    at async installDeps (file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:195655:17)
+    at async file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:304415:19
+    at async main4 (file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:304383:30)
+    at async runPnpm (file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:304656:5)
+    at async file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:304649:3
+=== INSTALL DONE, building ===
+[ELIFECYCLE] Command failed with exit code 2.
+[ELIFECYCLE] Command failed with exit code 2.
+file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/scripts/build.ts:27
+    throw new Error(`build: ${script} exited with ${String(result.status ?? result.signal)}`)
+          ^
+
+Error: build: build:lib exited with 2
+    at runScript (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/scripts/build.ts:27:11)
+    at main (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/scripts/build.ts:45:3)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/scripts/build.ts:53:23
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.21.0
+=== BUILD DONE rc2 ===

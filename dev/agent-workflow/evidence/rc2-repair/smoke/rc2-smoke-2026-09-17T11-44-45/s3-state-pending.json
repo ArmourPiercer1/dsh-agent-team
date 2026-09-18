@@ -1,0 +1,114 @@
+{
+  "boot": 1,
+  "phase": "create",
+  "rootSessionId": "session-rc2-smoke-root-2026-09-17T11-44-45",
+  "teamSession": {
+    "rootSessionId": "session-rc2-smoke-root-2026-09-17T11-44-45",
+    "blueprintId": "team.rc2-anchor-a",
+    "revision": "1",
+    "contentHash": "sha256:56dd909aee732a096e6a45f11925603a0efe92bed6d57e799ba077d48c32383b",
+    "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-44-45/workspace",
+    "createdAt": "2026-09-17T11:44:48.389Z",
+    "generation": 2
+  },
+  "members": [
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": []
+  },
+  "activity": [],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [],
+    "sessions": {
+      "session-rc2-smoke-b-2026-09-17T11-44-45": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      },
+      "session-rc2-smoke-root-2026-09-17T11-44-45": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      }
+    }
+  },
+  "observations": [
+    "alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-rc2-n5t2htcb\",\"tool\":\"read\",\"resourceKind\":\"file\",\"resourceDisplay\":\"/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-44-45/workspace/team/test.md\",\"fingerprint\":\"sha256:2e1a57ee0b27cc6127c80bc1ce0f18a46c806d65cd9b60bbc31b09f6810328e0\"}",
+    "alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-rc2-n5t2htcb\",\"decision\":\"allow\",\"provenance\":{\"source\":\"rule\",\"effect\":\"allow\",\"lane\":\"allow\",\"ruleIndex\":0}}",
+    "alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-rc2-ls3e4yrc\",\"tool\":\"read\",\"resourceKind\":\"file\",\"resourceDisplay\":\"/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-44-45/workspace/runtime/forbidden.txt\",\"fingerprint\":\"sha256:7cfa27a6c36f7d418389d610e2b0cc3f2414a338935e67d708d136f6f58b2918\"}",
+    "alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-rc2-ls3e4yrc\",\"decision\":\"deny\",\"provenance\":{\"source\":\"rule\",\"effect\":\"deny\",\"lane\":\"deny\",\"ruleIndex\":0}}",
+    "alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-rc2-ikdeivlb\",\"tool\":\"bash\",\"resourceKind\":\"tool\",\"resourceDisplay\":\"bash\",\"fingerprint\":\"sha256:008c9fea59d267d74da7c2a58cb50f231a0c5cebef91bef18a1fd87eb133aaaf\"}",
+    "alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-rc2-ikdeivlb\",\"decision\":\"ask\",\"provenance\":{\"source\":\"rule\",\"effect\":\"ask\",\"lane\":\"ask\",\"ruleIndex\":0}}",
+    "alpha2-perm: {\"stage\":\"request-created\",\"callId\":\"call-rc2-ikdeivlb\",\"requestId\":\"ctrl-0p28w9b1smopqw02vsaf51as\",\"kind\":\"user-approval\",\"correlation\":\"call-rc2-ikdeivlb\"}"
+  ]
+}

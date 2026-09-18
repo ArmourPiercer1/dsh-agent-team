@@ -1,0 +1,12 @@
+{
+  "runStamp": "2026-09-17T11-01-36",
+  "fatal": "LEG 0 diagnostic abort: the DISC request (seq 1) got reply {\"kind\":\"text\",\"content\":\"RC2_NOOP_DONE\"} — the mock did NOT match the marker it was served (see mock.log diag lines + raw-req-*.json + mock-dump-disc-noop.json)",
+  "criteria": [
+    {
+      "id": "L0",
+      "name": "discovery captured the surface; managed tools present (read, bash at minimum)",
+      "ok": false,
+      "detail": "surface=0 missingManaged=[read,read_image,write,edit,lsp,bash,pwsh] denyList=[]"
+    }
+  ]
+}

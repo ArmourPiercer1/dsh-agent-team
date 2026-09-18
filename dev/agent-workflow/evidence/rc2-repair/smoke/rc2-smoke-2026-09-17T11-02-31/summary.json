@@ -1,0 +1,129 @@
+{
+  "runStamp": "2026-09-17T11-02-31",
+  "hostBaseline": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "hostPort": 3491,
+  "mockPort": 3496,
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair",
+  "criteria": [
+    {
+      "id": "L0",
+      "name": "discovery captured the surface; managed tools present (read, bash at minimum)",
+      "ok": false,
+      "detail": "surface=16 missingManaged=[lsp,pwsh] denyList=[]"
+    },
+    {
+      "id": "S4a",
+      "name": "team.create (B, bound blueprint) succeeds on the fresh root",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"rc2b-h6wwvdftgr\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-rc2-smoke-b-2026-09-17T11-02-31\",\"blueprint\":{\"blueprintId\":\"team.rc2-b\",\"revision\":\"1\",\"contentHash\":\"sha256:bf9b3ee0ee475c8695fd455046bef06ac2223fbc664f2f86b5a33a65826e6760\"},\"createdAt\":\"2026-09-17T11:02:35.028Z\",\"gener"
+    },
+    {
+      "id": "S4b",
+      "name": "B leader model request carries the BOUND blueprint B persona (not the row anchor A)",
+      "ok": true,
+      "detail": "hasB=true hasA=false"
+    },
+    {
+      "id": "S1a",
+      "name": "S1: read team/test.md returned the probe content (executed, not blocked)",
+      "ok": false,
+      "detail": "result=Error: permission denied: a static deny rule could not be canonicalized (runtime) — the rule cannot be dropped (fail-closed)"
+    },
+    {
+      "id": "S1b",
+      "name": "S1: static allow decision observed (decision:allow, rule provenance — subtree hit, no canonicalization failure)",
+      "ok": false,
+      "detail": "obs(7)=[alpha2-perm: {\"stage\":\"deny-canonicalization-failure\",\"callId\":\"call-rc2-3qrmrl05\",\"tool\":\"read\",\"paths\":[\"runtime\"],\"causes\":[{\"path\":\"runtime\",\"kind\":\"subtree\",\"cause\":\"containment-undeterminable\"}]} | alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-rc2-jpj4di42\",\"tool\":\"bash\",\"resourceKind\":\"tool\",\"resourceDisplay\":\"bash\",\"fingerprint\":\"sha256:8fabbd7162b090bbe10589041e1bf276d359dd9716b7a4]"
+    },
+    {
+      "id": "S1c",
+      "name": "S1: no control request created for the allow-lane read",
+      "ok": true,
+      "detail": "requests=[]"
+    },
+    {
+      "id": "S2a",
+      "name": "S2: deny-subtree read produced an explicit static deny (decision:deny, NOT a canonicalization failure)",
+      "ok": false,
+      "detail": "result=Error: permission denied: a static deny rule could not be canonicalized (runtime) — the rule cannot be dropped (fail-closed) obs(7)=[alpha2-perm: {\"stage\":\"deny-canonicalization-failure\",\"callId\":\"call-rc2-3qrmrl05\",\"tool\":\"read\",\"paths\":[\"runtime\"],\"causes\":[{\"path\":\"runtime\",\"kind\":\"subtree\",\"cause\":\"containment-undeterminable\"}]} | alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-rc2-jpj4di42\",\"tool\":\"bash\",\"resourceKind\":]"
+    },
+    {
+      "id": "S3a",
+      "name": "S3: pending bash control requestId discovered (observations or storage)",
+      "ok": false,
+      "detail": "candidates=[]"
+    },
+    {
+      "id": "S4c",
+      "name": "S4: first create of the B-only template worker-b SUCCEEDED (no post-commit reject)",
+      "ok": false,
+      "detail": "result={\"status\":\"rejected\",\"code\":\"TEAM_TOOL_BAD_ARGUMENTS\",\"message\":\"team-tools: required argument 'rootSessionId' is missing\",\"details\":{\"field\":\"rootSessionId\"}}"
+    },
+    {
+      "id": "S4d",
+      "name": "S4: team_delegate executed (tool result returned)",
+      "ok": false,
+      "detail": "requests=8"
+    },
+    {
+      "id": "S4f",
+      "name": "S4: the B leader turn completed (final text RC2_SMOKE_B_DONE)",
+      "ok": false,
+      "detail": "requests=8"
+    },
+    {
+      "id": "S5a",
+      "name": "team.create (C, same row, blueprint C) succeeds",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"rc2c-pwdprim7yh\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-rc2-smoke-c-2026-09-17T11-02-31\",\"blueprint\":{\"blueprintId\":\"team.rc2-c\",\"revision\":\"1\",\"contentHash\":\"sha256:f15f700a160b"
+    },
+    {
+      "id": "S5b",
+      "name": "S5: the C member turn started",
+      "ok": false,
+      "detail": "requests=11"
+    },
+    {
+      "id": "S5d",
+      "name": "S5: the C leader turn completed (final text RC2_SMOKE_C_DONE)",
+      "ok": false,
+      "detail": "requests=11"
+    }
+  ],
+  "passed": 4,
+  "total": 14,
+  "failed": [
+    "S1a",
+    "S1b",
+    "S2a",
+    "S3",
+    "S4c",
+    "S4d",
+    "S4f",
+    "S5b",
+    "S5d"
+  ],
+  "stable": {
+    "pre": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    },
+    "post": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    }
+  },
+  "verdict": "FAIL"
+}

@@ -987,8 +987,44 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // scanSessionEventVocabulary; quarantine hit set stays at fifteen).
     // Zero denylist vocabulary in the new file.
     // Evidence: dev/agent-workflow/evidence/multi-mcp/c-tests/.
-    expect(scanResult.filesScanned).toBe(702)
-    expect(scanResult.files.length).toBe(702)
+    // RC2-A6 + RC2-A2 union (measured on the integration tip, DEC-1):
+    // +7 = 709 — the two task suites' new files on top of the 702 base,
+    // recording the two increments missed since the M2c pin (the same
+    // "record the missed pin" precedent as the A2 alpha.2 / TCM-D4
+    // stale-base entries — the rc2 repair round added them without
+    // recording the increment): a42ebf4 alpha2-explicit-agent-setup
+    // compat (packages/runtime/test/alpha2-explicit-agent-setup.test.ts)
+    // and b8e77b2 webServer shim scoping (packages/runtime/test/
+    // f1-webserver-shim-isolation.test.ts); RC2-A6 added packages/
+    // runtime/test/control-guard-leader.test.ts (the A6-T1..T4 leader
+    // last-mile guard liveness suite); RC2-A2 added packages/runtime/
+    // test/bound-blueprint-persona-helpers.ts (the shared diverged-
+    // blueprint fixtures + ref/identity-block builders), bound-
+    // blueprint-persona-root.test.ts (the production-host-entry binder
+    // suite A2-T1/T3/T4 + the missing-row typed throw + the factory-
+    // world unchanged pin), bound-blueprint-persona-live.test.ts (the
+    // T12 lane-A live-bridge persona-text suite A2-T1/T2/T3) and
+    // p8s5a-stub-glue.d.mts (the stub-glue bundle's .d.mts type
+    // surface so tsc (NodeNext) resolves the factory-world import).
+    // All seven carry zero denylist vocabulary; the frozen quarantine
+    // hit set is unchanged at fifteen. Scanner unchanged. Evidence:
+    // dev/agent-workflow/evidence/rc2-repair/a6/ + a2/.
+    // RC2-A1 (measured on the integration tip, DEC-1): +1 = 710 — one
+    // new file, packages/runtime/test/rc2a1-fs-containment.test.ts
+    // (the A1-T1..T6 fs-containment receiver/closure suite: the
+    // production host-entry rig with the class-style fake fs whose
+    // seams call instance methods through `this`, so a receiver loss
+    // throws the production A1 fault signature — plus the World B
+    // resolve-only provider typed setup rejection,
+    // alpha2-permission-fs-containment-unavailable). Zero denylist
+    // vocabulary; the frozen quarantine hit set is unchanged at
+    // fifteen. Scanner unchanged. User-directed PR #18 closure
+    // (2026-09-17): the single-writer pin bump executed on the PR
+    // branch itself. Evidence:
+    // dev/agent-workflow/evidence/rc2-repair/smoke/.
+    expect(scanResult.filesScanned).toBe(710)
+    expect(scanResult.files.length).toBe(710)
+
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

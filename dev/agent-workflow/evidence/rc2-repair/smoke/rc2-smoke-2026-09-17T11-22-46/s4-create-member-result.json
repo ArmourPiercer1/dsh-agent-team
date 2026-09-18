@@ -1,0 +1,3 @@
+{
+  "result": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-rc2-smoke-b-2026-09-17T11-22-46\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0knyti10lcxq\",\"templateId\":\"worker-b\",\"childSessionId\":\"session-team-child-8f098ca656b4f4e3db646e1ec6126b87\",\"operationId\":\"op-01rl6m5124gfq20hertz70ib\",\"replayed\":false,\"ledgerSequence\":5,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"rc2-b-create-2026-09-17T11-22-46\"}"
+}

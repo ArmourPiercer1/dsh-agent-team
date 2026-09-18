@@ -1,0 +1,13 @@
+# worktree git status --porcelain — post-commit (HEAD 4583b66 on task/rc2-a6-control-guard)
+# captured: 2026-09-17T10:22:15Z
+(only the pre-provisioned node_modules symlink remains untracked)
+
+# committed file list:
+4583b66 fix(control): RC2-A6 — leader liveness is TeamSession existence
+ packages/runtime/control/service.ts                |  31 +-
+ .../dist/packages/runtime/control/service.d.ts.map |   2 +-
+ .../dist/packages/runtime/control/service.js       |  28 +-
+ .../dist/packages/runtime/control/service.js.map   |   2 +-
+ packages/runtime/test/control-guard-leader.test.ts | 510 +++++++++++++++++++++
+ .../testkit/test/p4t6-session-event-scan.test.ts   |  22 +-
+ 6 files changed, 574 insertions(+), 21 deletions(-)

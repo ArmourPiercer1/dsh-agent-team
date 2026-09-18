@@ -39,18 +39,21 @@ export const TEST_USE_REL = 'tests/deepseek-harness-test-use'
 export const TEST_HOME_ROOT_REL = 'tests/homes'
 
 /**
- * Pinned upstream baseline (0.1.2-rc.1 — the official `release(dsh): 0.1.2-rc.1`
- * commit). `TEST_USE_BASELINE_SHA` is the full commit; `CLIENT_COMMIT_HASH`
+ * Pinned upstream baseline (0.1.5-rc.2 — the official 0.1.5-rc.2 release
+ * point: branch `stable-1-0.1.5-rc.2` tip = the `release(dsh): 0.1.5-rc.2`
+ * merge). `TEST_USE_BASELINE_SHA` is the full commit; `CLIENT_COMMIT_HASH`
  * is the short form consumed by the DSH build orchestrator's
  * DSH_CLIENT_COMMIT_HASH env (skips a git spawn inside the build — keep
  * setting it in restricted environments; it is also the deterministic pin).
  * Baseline history: cd5ef814 (0.1.2-alpha.1, P0-P1 era) → 76fda72979
  * (same rc line, PR #3481 descendant merge — never the checkout point) →
- * a66e470204 (the actual checkout point; AGENTS.md aligned 2026-09-11,
- * H1 D9; TEST_METHODS.md §1 aligned by this standardization).
+ * a66e470204 (0.1.2-rc.1 checkout point, 2026-09-11 … 2026-09-17) →
+ * fb2c4b9e69 (0.1.5-rc.2, from 2026-09-17 — user ruling: DSH 0.1.2 is no
+ * longer supported; the rc2-repair round baseline per
+ * docs/plans/active/dsh-agent-team-rc2-repair-plan.md §0.1).
  */
-export const TEST_USE_BASELINE_SHA = 'a66e4702047846cdaa10c66c9d3df3951f5ea70d'
-export const CLIENT_COMMIT_HASH = 'a66e470204'
+export const TEST_USE_BASELINE_SHA = 'fb2c4b9e698e30edb738bca4cf0618587db7d203'
+export const CLIENT_COMMIT_HASH = 'fb2c4b9e69'
 
 /**
  * The nearest ancestor of `start` containing the test-use checkout at its

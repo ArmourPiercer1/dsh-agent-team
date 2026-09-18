@@ -1,0 +1,41 @@
+[2026-09-17T11:42:08.203Z] rc2 real-host smoke — stamp 2026-09-17T11-42-08
+[2026-09-17T11:42:08.203Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair
+[2026-09-17T11:42:08.203Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-17T11:42:08.203Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/dev/agent-workflow/evidence/rc2-repair/smoke/rc2-smoke-2026-09-17T11-42-08
+[2026-09-17T11:42:08.225Z] ports: host=3491 mock=3496
+[2026-09-17T11:42:08.236Z] stable pre-probe: 3080=401 3180=401
+[2026-09-17T11:42:08.237Z] world materialized (probe files in scratch workspace)
+[2026-09-17T11:42:08.242Z] mock model listening on 3496
+[2026-09-17T11:42:12.266Z] host booted at http://127.0.0.1:3491; row ready — toolCount=11
+[2026-09-17T11:42:12.266Z] ── LEG 0: discovery ──
+[2026-09-17T11:42:12.686Z] discovery surface (16 tools): bash, edit, read, read_image, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, write
+[2026-09-17T11:42:12.687Z] PASS L0: discovery captured the surface; read + bash present (minimal-style preset: 5/7 managed is the expected shape) — surface=16 missingManaged=[lsp,pwsh] denyList=[]
+[2026-09-17T11:42:12.687Z] saved blueprints B + C written (deny list = 0 names)
+[2026-09-17T11:42:12.687Z] ── S1–S4: team B (bound blueprint) ──
+[2026-09-17T11:42:13.088Z] PASS S4b: B leader model request carries the BOUND blueprint B persona (not the row anchor A) — hasB=true hasA=false
+[2026-09-17T11:42:13.088Z] PASS S1a: S1: read team/test.md returned the probe content (executed, not blocked) — result=<path>/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-42-08/workspace/team/test.md</path>
+<type>file</type>
+<content>
+1: rc2-smoke-team-probe-2026-09-17
+[2026-09-17T11:42:13.092Z] PASS S1b: S1: static allow decision observed (decision:allow, rule provenance — subtree hit, no canonicalization failure) — obs(7)=[alpha2-perm: {"stage":"decision","callId":"call-rc2-xc6dkfpk","decision":"deny","provenance":{"source":"rule","effect":"deny","lane":"deny","ruleIndex":0}} | alpha2-perm: {"stage":"canonicalized","callId":"call-rc2-f4nwol5t","tool":"bash","resourceKind":"tool","resourceDisplay":"bash","fingerprint":"sha256:497064438e205c5958d7d850270680fa8dd9c3a705cf6cfc63307352678ce739"} | alpha2-perm: {"stage":"]
+[2026-09-17T11:42:13.092Z] PASS S1c: S1: no control request created for the allow-lane read — requests=[]
+[2026-09-17T11:42:13.095Z] PASS S2a: S2: deny-subtree read produced an explicit static deny (decision:deny, NOT a canonicalization failure) — result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-42-0 obs(7)=[alpha2-perm: {"stage":"decision","callId":"call-rc2-xc6dkfpk","decision":"deny","provenance":{"source":"rule","effect":"deny","lane":"deny","ruleIndex":0}} | alpha2-perm: {"stage":"canonicalized","callId":"call-rc2-f4nwol5t","tool":"bash","resourceKind":"tool","resourceDisplay":"bash
+[2026-09-17T11:42:13.095Z] bash issued — waiting for the durable control request…
+[2026-09-17T11:42:13.098Z] pending requestId=ctrl-00vy0md1suydy6088olzz1r6 (source=observations/request-created)
+[2026-09-17T11:42:13.113Z] PASS S3a: S3: scripted approval recorded a durable allow (human principal, boot root) — status=200 body={"type":"server-response","rpcId":"rc2s3-9gixwt0obd","result":{"ok":true,"value":{"data":{"decision":{"requestId":"ctrl-00vy0md1suydy6088olzz1r6","decision":"allow","decider":{"kind":"human","humanId":"session-rc2-smoke-b-2026-09-17T11-42-08"},"scope":{"rootSessionId":"session-rc2-smoke-b-2026-09-17T11-42-08","targetInstanceId":"inst-leader","actionName":"parameter-permission","correlation":"call-
+[2026-09-17T11:42:13.913Z] PASS S3b: S3: bash executed after approval — the echo output reached the model (guard passed, no target-stale) — result=rc2-smoke
+[Command finished with exit code 0]
+[2026-09-17T11:42:13.917Z] PASS S3c: S3: last-mile guard verdict allowed:true for the approved leader request (NO target-stale — A6 proof) — obs(9) guardRows=[alpha2-perm: {"stage":"guard-verdict","callId":"call-rc2-f4nwol5t","allowed":true,"requestId":"ctrl-00vy0md1suydy6088olzz1r6","decisionSequence":3}]
+[2026-09-17T11:42:13.918Z] PASS S4c: S4: first create of the B-only template worker-b SUCCEEDED (no post-commit reject) — result={"status":"executed","action":"create-member","rootSessionId":"session-rc2-smoke-b-2026-09-17T11-42-08","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-07c7e410me6e","templateId":"worker-b","childSessionId":"session-team-child-531e2dd172cfb97604fcd58a681f8661","operation
+[2026-09-17T11:42:13.918Z] PASS S4d: S4: team_delegate executed (tool result returned) — delegate tool result observed
+[2026-09-17T11:42:13.918Z] PASS S4e: S4: the B member carries blueprint B worker persona (binder resolved the BOUND blueprint) — hasB=true hasA=false
+[2026-09-17T11:42:13.918Z] PASS S4f: S4: the B leader turn completed (final text RC2_SMOKE_B_DONE) — requests=11
+[2026-09-17T11:42:13.918Z] PASS S4a: team.create (B, bound blueprint) succeeds on the fresh root — status=200 body={"type":"server-response","rpcId":"rc2b-xlzdexd0dr","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rc2-smoke-b-2026-09-17T11-42-08","blueprint":{"blueprintId":"team.rc2-b","revision":"1","contentHash":"sha256:e6e05631768b1b64f7ffcad11ca8c4bd263236bd64ca94dbe3038c0769ee69d3"},"createdAt":"2026-09-17T11:42:12.703Z","gener
+[2026-09-17T11:42:13.918Z] ── S5: team C (same row, blueprint C) ──
+[2026-09-17T11:42:14.132Z] PASS S5a: team.create (C, same row, blueprint C) succeeds — status=200 body={"type":"server-response","rpcId":"rc2c-pyw9ti51ql","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rc2-smoke-c-2026-09-17T11-42-08","blueprint":{"blueprintId":"team.rc2-c","revision":"1","contentHash":"sha256:fc702d1cc1d5
+[2026-09-17T11:42:14.133Z] PASS S5b: S5: the C member carries blueprint C worker persona (root-scoped resolution) — hasC=true hasB=false
+[2026-09-17T11:42:14.133Z] PASS S5c: S5: the B member still carries B worker persona (no cross-team leak) — requests=17 memberReq=9
+[2026-09-17T11:42:14.133Z] PASS S5d: S5: the C leader turn completed (final text RC2_SMOKE_C_DONE) — requests=17
+[2026-09-17T11:42:14.133Z] teardown: stopping host + mock
+[2026-09-17T11:42:14.141Z] world removed (/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-42-08)
+[2026-09-17T11:42:14.141Z] VERDICT PASS — 18/18 criteria passed

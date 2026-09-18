@@ -1,0 +1,22 @@
+[
+  {
+    "seq": 1,
+    "receivedAt": "2026-09-17T11:01:40.658Z",
+    "userText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"RC2MK_DISC_2026-09-17T11-01-36\"}]",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "RC2_NOOP_DONE"
+    }
+  },
+  {
+    "seq": 2,
+    "receivedAt": "2026-09-17T11:01:40.659Z",
+    "userText": "RC2MK_DISC_2026-09-17T11-01-36\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/user/dsh-plugins/dsh-agent-team",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "RC2_NOOP_DONE"
+    }
+  }
+]

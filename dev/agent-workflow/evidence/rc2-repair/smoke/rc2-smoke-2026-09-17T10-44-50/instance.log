@@ -1,0 +1,4 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3491/?token=x3_neRg7JmZGGnjQ5aSJuBIFh1tuAmgy1zxr8_VSBj4
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the glue module does not export createAgentBindings
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/runtime/src/plugin/host.js:860:19)

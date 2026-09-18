@@ -1,0 +1,22 @@
+[2026-09-17T10:45:13.244Z] rc2 real-host smoke — stamp 2026-09-17T10-45-13
+[2026-09-17T10:45:13.245Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair
+[2026-09-17T10:45:13.245Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-17T10:45:13.245Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/dev/agent-workflow/evidence/rc2-repair/smoke/rc2-smoke-2026-09-17T10-45-13
+[2026-09-17T10:45:13.268Z] ports: host=3491 mock=3496
+[2026-09-17T10:45:13.279Z] stable pre-probe: 3080=401 3180=401
+[2026-09-17T10:45:13.280Z] world materialized (probe files in scratch workspace)
+[2026-09-17T10:45:13.285Z] mock model listening on 3496
+[2026-09-17T10:45:16.321Z] FATAL row setup failed — setupError: $.memberEnvelopes[0] has unknown fields: persona
+--- log tail ---
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3491/?token=3Gytvz4tSLw0reabvUghQ1YouNAZqBHZF4J1pkMKJmU
+[dsh-agent-team] bootstrap FAILED: TeamContractError: $.memberEnvelopes[0] has unknown fields: persona
+    at teamContractError (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/contracts/src/errors.js:96:12)
+    at assertNoUnknownFields (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/contracts/src/dto/common.js:50:15)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/domain/blueprint/src/validate.js:536:9
+    at Array.forEach (<anonymous>)
+    at validateBlueprintDocument (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/domain/blueprint/src/validate.js:533:24)
+    at parseBlueprint (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/domain/blueprint/src/validate.js:668:18)
+    at createBlueprintAuthority (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.js:103:23)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/runtime/src/plugin/host.js:882:36)
+

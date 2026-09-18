@@ -1,0 +1,5 @@
+mock: listening on 127.0.0.1:3496
+diag: seq=1 bodyKeys=["model","messages","stream","stream_options","thinking","max_tokens","dsh_plugin_packages"] userTextLen=0 head="" seesDISC=false seesB=false seesCMEM=false
+mock: 1 text reply (13 chars): "RC2_NOOP_DONE"
+diag: seq=2 bodyKeys=["model","messages","stream","stream_options","thinking","reasoning_effort","tools","max_tokens","dsh_plugin_packages"] userTextLen=0 head="" seesDISC=false seesB=false seesCMEM=false
+mock: 2 text reply (13 chars): "RC2_NOOP_DONE"

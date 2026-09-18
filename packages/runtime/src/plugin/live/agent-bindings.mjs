@@ -1505,6 +1505,50 @@ export function createAgentBindings(deps) {
         if (typeof fsBackend !== 'function') {
           throw permissionFsBackendUnavailable(sessionId, instanceId)
         }
+        // RC2-A1 (rc2-repair plan §12 — applies regardless of the A1
+        // branch outcome; rc.2-only tightening): a template that
+        // declares an exact/subtree FILE permission needs the COMPLETE
+        // fs containment seam. A provider without a public `contains`
+        // cannot decide subtree containment (the rule root's
+        // containment test is the seam call) — with the seam missing
+        // every subtree rule would canonicalize as
+        // containment-undeterminable: a DENY lane fails closed on a
+        // canonicalization error (the agent runs on a broken
+        // authority, its legitimate reads blocked), an ALLOW lane
+        // silently never matches. The typed setup failure below
+        // refuses that shape at mount time (the AgentSetup contract:
+        // the unpublished agent rolls back). A rule with an
+        // exact/subtree resource is necessarily a file-tool rule: the
+        // blueprint grammar rejects shell-class rules with
+        // exact/subtree resources (the A2C-1 shell contract is `any`
+        // only), so the seam call below only ever canonicalizes FILE
+        // paths.
+        if (permissionPolicyDeclaresFileContainment(permissionPolicy)) {
+          // The seam ACCESSOR failure (the "fs" public service absent or
+          // malformed) is NOT a setup failure: that is the pinned V1-1
+          // resolve-time contract (a6a World 7 — the accessor's typed
+          // service-missing throw at the first canonicalization, every
+          // file decision denied, never a pass-through). The setup check
+          // below targets only the INCOMPLETE-SEAM shape: a provider that
+          // resolves but exposes no `contains`.
+          let accessorFailed = false
+          let containmentBackend
+          try {
+            containmentBackend = fsBackend(agentCtx)
+          } catch {
+            accessorFailed = true // the resolve-time contract owns this
+          }
+          if (
+            accessorFailed === false &&
+            (
+              containmentBackend === null ||
+              containmentBackend === undefined ||
+              typeof containmentBackend.contains !== 'function'
+            )
+          ) {
+            throw permissionFsContainmentUnavailable(sessionId, instanceId)
+          }
+        }
         const teamRoot = teamRootSid !== undefined ? String(teamRootSid) : rootSid
         // The routing bit (plan §9.5): leader install -> ask routes to
         // user-approval (human-only resolver closure); member ->
@@ -1824,7 +1868,13 @@ export function createAgentBindings(deps) {
    * The setup-time persona install for one session (agentSetup calls it AFTER
    * the team tools are registered and BEFORE the mcp reconcile — the persona
    * must be in the prompt before any work on the session):
-   *  - an empty blueprintSource -> no persona authority exists, skip;
+   *  - an empty blueprintSource with NO resolver injected (the factory world)
+   *    -> no persona authority exists, skip. A2 (RC2 repair, plan §5.3): in
+   *    PRODUCTION the resolver IS injected and the bound snapshot is the
+   *    persona authority — an empty row anchor never skips the install; a
+   *    root without a durable TeamSession row fails closed through the
+   *    resolver's typed throw (the setup rejection rolls the unpublished
+   *    agent back), never a silent persona-less agent;
    *  - the root: the substrate target is the root identity; the durable
    *    teamSessions row (when the repository carries it) is the step record;
    *  - a member: the MemberInstance row looked up by childSessionId is the
@@ -1835,7 +1885,14 @@ export function createAgentBindings(deps) {
    *    persona-less member).
    */
   function installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath, teamRootSid) {
-    if (String(config.blueprintSource ?? '') === '') return
+    // A2 (RC2 repair, plan §5.3): the row-config skip is FACTORY-WORLD ONLY
+    // (no resolver injected — there the empty anchor means no persona
+    // authority at all). With the resolver injected (the production host
+    // ALWAYS passes one) the bound snapshot is the authority: proceed to
+    // slot.apply and let a missing row / unresolvable snapshot fail closed
+    // through the resolver's typed throw — NEVER a silent skip, never a
+    // row-anchor fallback.
+    if (resolveBoundBlueprint === undefined && String(config.blueprintSource ?? '') === '') return
     const slot = getPersonaSlot()
     // T12-GLUE: the session may be the root of its OWN team in this row's
     // domain (the handoff target) — it then embodies that team's leader
@@ -2517,6 +2574,53 @@ export function createAgentBindings(deps) {
     if (instanceId !== undefined) error.instanceId = String(instanceId)
     observations.push(
       `alpha2-perm: permission-fs-unavailable for ${sessionId} (instanceId=${instanceId})`,
+    )
+    return error
+  }
+
+  /** RC2-A1 (rc2-repair plan §12): whether the parsed permission policy
+   *  declares a rule with an exact/subtree resource (the
+   *  containment-requiring shape). A shell-class rule cannot carry an
+   *  exact/subtree resource (the A2C-1 shell contract — the blueprint
+   *  grammar rejects it; the shell keeps only the whole-tool `any`
+   *  resource), so ANY exact/subtree resource implies a FILE tool rule
+   *  and therefore the containment seam requirement. */
+  function permissionPolicyDeclaresFileContainment(policy) {
+    if (policy === null || policy === undefined || typeof policy !== 'object') return false
+    for (const lane of ['allow', 'ask', 'deny']) {
+      const rules = policy[lane]
+      if (!Array.isArray(rules)) continue
+      for (const rule of rules) {
+        const resource = rule !== null && typeof rule === 'object' ? rule.resource : undefined
+        if (resource !== null && typeof resource === 'object' && (resource.kind === 'exact' || resource.kind === 'subtree')) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+
+  /** RC2-A1 (rc2-repair plan §12): the typed fail-closed SETUP error for
+   *  a permission policy that needs file containment (an exact/subtree
+   *  rule) while the fs provider exposes no public `contains` seam —
+   *  the agent would otherwise run on a broken authority (subtree
+   *  containment undeterminable: a deny lane that cannot canonicalize
+   *  cannot be dropped and fails closed, an allow lane silently never
+   *  matches). Carries code
+   *  'alpha2-permission-fs-containment-unavailable'; the rejection
+   *  propagates out of the AgentSetup callback and rolls the unpublished
+   *  agent back (the AgentSetup contract) — a permissions agent never
+   *  runs on an incomplete seam. */
+  function permissionFsContainmentUnavailable(sessionId, instanceId) {
+    const parts = [
+      'the fs provider exposes no public contains() seam while the template declares exact/subtree file permission (the containment authority is incomplete)',
+    ]
+    if (instanceId !== undefined) parts.push(`instanceId=${instanceId}`)
+    const error = new Error(`agent-bindings: alpha.2 permission fs containment unavailable for '${sessionId}' (${parts.join(', ')}) (code: alpha2-permission-fs-containment-unavailable)`)
+    error.code = 'alpha2-permission-fs-containment-unavailable'
+    if (instanceId !== undefined) error.instanceId = String(instanceId)
+    observations.push(
+      `alpha2-perm: permission-fs-containment-unavailable for ${sessionId} (instanceId=${instanceId})`,
     )
     return error
   }

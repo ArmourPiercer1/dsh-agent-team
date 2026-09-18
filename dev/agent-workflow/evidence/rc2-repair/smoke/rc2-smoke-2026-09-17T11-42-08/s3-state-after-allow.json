@@ -1,0 +1,149 @@
+{
+  "boot": 1,
+  "phase": "create",
+  "rootSessionId": "session-rc2-smoke-root-2026-09-17T11-42-08",
+  "teamSession": {
+    "rootSessionId": "session-rc2-smoke-root-2026-09-17T11-42-08",
+    "blueprintId": "team.rc2-anchor-a",
+    "revision": "1",
+    "contentHash": "sha256:fd9f1374941bcc12f1420c85391ed84b795407ecbf10382c1fc549e59d46d58b",
+    "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-42-08/workspace",
+    "createdAt": "2026-09-17T11:42:11.372Z",
+    "generation": 2
+  },
+  "members": [
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": []
+  },
+  "activity": [],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [],
+    "sessions": {
+      "session-rc2-smoke-b-2026-09-17T11-42-08": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      },
+      "session-rc2-smoke-root-2026-09-17T11-42-08": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      },
+      "session-team-child-531e2dd172cfb97604fcd58a681f8661": {
+        "instanceId": "inst-07c7e410me6e",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "rc2-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      }
+    }
+  },
+  "observations": [
+    "alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-rc2-6j5qn94f\",\"tool\":\"read\",\"resourceKind\":\"file\",\"resourceDisplay\":\"/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-42-08/workspace/team/test.md\",\"fingerprint\":\"sha256:c0f98a3b0ac47239af4891586b0607ec430c846308b0feaa9102c38d51b9f993\"}",
+    "alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-rc2-6j5qn94f\",\"decision\":\"allow\",\"provenance\":{\"source\":\"rule\",\"effect\":\"allow\",\"lane\":\"allow\",\"ruleIndex\":0}}",
+    "alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-rc2-xc6dkfpk\",\"tool\":\"read\",\"resourceKind\":\"file\",\"resourceDisplay\":\"/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-42-08/workspace/runtime/forbidden.txt\",\"fingerprint\":\"sha256:2602be398fbc6984740cb4b9b5ca40a99599a96e3ca5f5f7fbc24b39c5d2b70e\"}",
+    "alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-rc2-xc6dkfpk\",\"decision\":\"deny\",\"provenance\":{\"source\":\"rule\",\"effect\":\"deny\",\"lane\":\"deny\",\"ruleIndex\":0}}",
+    "alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-rc2-f4nwol5t\",\"tool\":\"bash\",\"resourceKind\":\"tool\",\"resourceDisplay\":\"bash\",\"fingerprint\":\"sha256:497064438e205c5958d7d850270680fa8dd9c3a705cf6cfc63307352678ce739\"}",
+    "alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-rc2-f4nwol5t\",\"decision\":\"ask\",\"provenance\":{\"source\":\"rule\",\"effect\":\"ask\",\"lane\":\"ask\",\"ruleIndex\":0}}",
+    "alpha2-perm: {\"stage\":\"request-created\",\"callId\":\"call-rc2-f4nwol5t\",\"requestId\":\"ctrl-00vy0md1suydy6088olzz1r6\",\"kind\":\"user-approval\",\"correlation\":\"call-rc2-f4nwol5t\"}",
+    "alpha2-perm: {\"stage\":\"decision-arrived\",\"callId\":\"call-rc2-f4nwol5t\",\"requestId\":\"ctrl-00vy0md1suydy6088olzz1r6\",\"decision\":\"allow\",\"decisionSequence\":3}",
+    "alpha2-perm: {\"stage\":\"guard-verdict\",\"callId\":\"call-rc2-f4nwol5t\",\"allowed\":true,\"requestId\":\"ctrl-00vy0md1suydy6088olzz1r6\",\"decisionSequence\":3}"
+  ]
+}

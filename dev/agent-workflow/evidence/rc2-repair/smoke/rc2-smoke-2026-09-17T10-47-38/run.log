@@ -1,0 +1,24 @@
+[2026-09-17T10:47:38.649Z] rc2 real-host smoke — stamp 2026-09-17T10-47-38
+[2026-09-17T10:47:38.649Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair
+[2026-09-17T10:47:38.649Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-17T10:47:38.650Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/dev/agent-workflow/evidence/rc2-repair/smoke/rc2-smoke-2026-09-17T10-47-38
+[2026-09-17T10:47:38.673Z] ports: host=3491 mock=3496
+[2026-09-17T10:47:38.683Z] stable pre-probe: 3080=401 3180=401
+[2026-09-17T10:47:38.683Z] world materialized (probe files in scratch workspace)
+[2026-09-17T10:47:38.688Z] mock model listening on 3496
+[2026-09-17T10:47:43.040Z] host booted at http://127.0.0.1:3491; row ready — toolCount=11
+[2026-09-17T10:47:43.041Z] ── LEG 0: discovery ──
+[2026-09-17T10:47:43.456Z] discovery surface (16 tools): bash, edit, read, read_image, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, write
+[2026-09-17T10:47:43.456Z] FAIL L0: discovery captured the surface; managed tools present (read, bash at minimum) — surface=16 missingManaged=[lsp,pwsh] denyList=[]
+[2026-09-17T10:47:43.457Z] saved blueprints B + C written (deny list = 0 names)
+[2026-09-17T10:47:43.457Z] ── S1–S4: team B (bound blueprint) ──
+[2026-09-17T10:47:43.558Z] PASS S4a: team.create (B, bound blueprint) succeeds on the fresh root — status=200 body={"type":"server-response","rpcId":"rc2b-siwjo42b5r","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rc2-smoke-b-2026-09-17T10-47-38","blueprint":{"blueprintId":"team.rc2-b","revision":"1","contentHash":"sha256:c56ae8bba7a854a9a73469e5d09e3c6400c12de726eadb5f81914e79257d0394"},"createdAt":"2026-09-17T10:47:43.479Z","gener
+[2026-09-17T10:47:43.558Z] FAIL S4b: B leader model request carries the BOUND blueprint B persona (not the row anchor A) — hasB=false hasA=false
+[2026-09-17T10:50:43.819Z] mock wait timed out: B chain step 1 (S1 read executed) (requests=4)
+[2026-09-17T10:50:43.819Z] FAIL S1: allow-subtree read executed (tool result returned to the model) — requests=4
+[2026-09-17T10:53:44.058Z] mock wait timed out: B chain step 2 (S2 read executed) (requests=4)
+[2026-09-17T10:53:44.059Z] FAIL S2: deny-subtree read reached a decision (tool result returned to the model) — requests=4
+[2026-09-17T10:55:44.213Z] mock wait timed out: B chain step 3 (bash issued) (requests=4)
+[2026-09-17T10:55:44.214Z] FAIL S3: bash issued by the B leader (mock tool-call observed) — requests=4
+[2026-09-17T10:59:44.549Z] mock wait timed out: B chain step 4 (create_member executed) (requests=4)
+[2026-09-17T10:59:44.550Z] FAIL S4c: S4: team_create_member(worker-b) executed (tool result returned) — requests=4

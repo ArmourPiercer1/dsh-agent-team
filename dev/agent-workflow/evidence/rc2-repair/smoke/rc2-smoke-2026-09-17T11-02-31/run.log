@@ -1,0 +1,36 @@
+[2026-09-17T11:02:31.527Z] rc2 real-host smoke — stamp 2026-09-17T11-02-31
+[2026-09-17T11:02:31.527Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair
+[2026-09-17T11:02:31.527Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-17T11:02:31.527Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/dev/agent-workflow/evidence/rc2-repair/smoke/rc2-smoke-2026-09-17T11-02-31
+[2026-09-17T11:02:31.550Z] ports: host=3491 mock=3496
+[2026-09-17T11:02:31.560Z] stable pre-probe: 3080=401 3180=401
+[2026-09-17T11:02:31.561Z] world materialized (probe files in scratch workspace)
+[2026-09-17T11:02:31.566Z] mock model listening on 3496
+[2026-09-17T11:02:34.584Z] host booted at http://127.0.0.1:3491; row ready — toolCount=11
+[2026-09-17T11:02:34.585Z] ── LEG 0: discovery ──
+[2026-09-17T11:02:35.003Z] discovery surface (16 tools): bash, edit, read, read_image, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, write
+[2026-09-17T11:02:35.003Z] FAIL L0: discovery captured the surface; managed tools present (read, bash at minimum) — surface=16 missingManaged=[lsp,pwsh] denyList=[]
+[2026-09-17T11:02:35.004Z] saved blueprints B + C written (deny list = 0 names)
+[2026-09-17T11:02:35.004Z] ── S1–S4: team B (bound blueprint) ──
+[2026-09-17T11:02:35.160Z] PASS S4a: team.create (B, bound blueprint) succeeds on the fresh root — status=200 body={"type":"server-response","rpcId":"rc2b-h6wwvdftgr","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rc2-smoke-b-2026-09-17T11-02-31","blueprint":{"blueprintId":"team.rc2-b","revision":"1","contentHash":"sha256:bf9b3ee0ee475c8695fd455046bef06ac2223fbc664f2f86b5a33a65826e6760"},"createdAt":"2026-09-17T11:02:35.028Z","gener
+[2026-09-17T11:02:35.160Z] PASS S4b: B leader model request carries the BOUND blueprint B persona (not the row anchor A) — hasB=true hasA=false
+[2026-09-17T11:02:35.160Z] FAIL S1a: S1: read team/test.md returned the probe content (executed, not blocked) — result=Error: permission denied: a static deny rule could not be canonicalized (runtime) — the rule cannot be dropped (fail-closed)
+[2026-09-17T11:02:35.163Z] FAIL S1b: S1: static allow decision observed (decision:allow, rule provenance — subtree hit, no canonicalization failure) — obs(7)=[alpha2-perm: {"stage":"deny-canonicalization-failure","callId":"call-rc2-3qrmrl05","tool":"read","paths":["runtime"],"causes":[{"path":"runtime","kind":"subtree","cause":"containment-undeterminable"}]} | alpha2-perm: {"stage":"canonicalized","callId":"call-rc2-jpj4di42","tool":"bash","resourceKind":"tool","resourceDisplay":"bash","fingerprint":"sha256:8fabbd7162b090bbe10589041e1bf276d359dd9716b7a4]
+[2026-09-17T11:02:35.163Z] PASS S1c: S1: no control request created for the allow-lane read — requests=[]
+[2026-09-17T11:02:35.165Z] FAIL S2a: S2: deny-subtree read produced an explicit static deny (decision:deny, NOT a canonicalization failure) — result=Error: permission denied: a static deny rule could not be canonicalized (runtime) — the rule cannot be dropped (fail-closed) obs(7)=[alpha2-perm: {"stage":"deny-canonicalization-failure","callId":"call-rc2-3qrmrl05","tool":"read","paths":["runtime"],"causes":[{"path":"runtime","kind":"subtree","cause":"containment-undeterminable"}]} | alpha2-perm: {"stage":"canonicalized","callId":"call-rc2-jpj4di42","tool":"bash","resourceKind":]
+[2026-09-17T11:02:35.165Z] bash issued — waiting for the durable control request…
+[2026-09-17T11:02:35.168Z] FAIL S3a: S3: pending bash control requestId discovered (observations or storage) — candidates=[]
+[2026-09-17T11:02:35.168Z] FAIL S4c: S4: first create of the B-only template worker-b SUCCEEDED (no post-commit reject) — result={"status":"rejected","code":"TEAM_TOOL_BAD_ARGUMENTS","message":"team-tools: required argument 'rootSessionId' is missing","details":{"field":"rootSessionId"}}
+[2026-09-17T11:06:35.546Z] mock wait timed out: B chain step 5 (delegate executed) (requests=8)
+[2026-09-17T11:06:35.546Z] FAIL S4d: S4: team_delegate executed (tool result returned) — requests=8
+[2026-09-17T11:08:35.714Z] mock wait timed out: B chain final text (requests=8)
+[2026-09-17T11:08:35.714Z] FAIL S4f: S4: the B leader turn completed (final text RC2_SMOKE_B_DONE) — requests=8
+[2026-09-17T11:08:35.715Z] ── S5: team C (same row, blueprint C) ──
+[2026-09-17T11:08:35.838Z] PASS S5a: team.create (C, same row, blueprint C) succeeds — status=200 body={"type":"server-response","rpcId":"rc2c-pwdprim7yh","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rc2-smoke-c-2026-09-17T11-02-31","blueprint":{"blueprintId":"team.rc2-c","revision":"1","contentHash":"sha256:f15f700a160b
+[2026-09-17T11:13:35.885Z] mock wait timed out: C member turn (requests=11)
+[2026-09-17T11:13:35.893Z] FAIL S5b: S5: the C member turn started — requests=11
+[2026-09-17T11:15:36.076Z] mock wait timed out: C chain final text (requests=11)
+[2026-09-17T11:15:36.076Z] FAIL S5d: S5: the C leader turn completed (final text RC2_SMOKE_C_DONE) — requests=11
+[2026-09-17T11:15:36.076Z] teardown: stopping host + mock
+[2026-09-17T11:15:36.101Z] world removed (/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-02-31)
+[2026-09-17T11:15:36.101Z] VERDICT FAIL — 4/14 criteria passed; failed: S1a,S1b,S2a,S3,S4c,S4d,S4f,S5b,S5d

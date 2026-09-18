@@ -1,0 +1,4 @@
+{
+  "error": "the glue module does not export createAgentBindings",
+  "stack": "TeamPluginError: the glue module does not export createAgentBindings\n    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/packages/runtime/dist/packages/runtime/src/plugin/host.js:860:19)"
+}

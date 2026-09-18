@@ -1,0 +1,49 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-a2
+
+ ✓ packages/runtime/test/bound-blueprint-persona-live.test.ts (4 tests) 3ms
+stderr | packages/runtime/test/bound-blueprint-persona-root.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/bound-blueprint-persona-root.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ❯ packages/runtime/test/bound-blueprint-persona-root.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/bound-blueprint-persona-root.test.ts [ packages/runtime/test/bound-blueprint-persona-root.test.ts ]
+TeamAgentBinderError: binder overlay effect 'persona' failed during 'fresh-member' bind of session 'session-child-a2bppb1': no blueprint member template with templateId "worker-b"
+ ❯ TeamAgentBinder.overlayFailure packages/runtime/agent-setup/binder/binder.ts:417:12
+    415|     error: unknown,
+    416|   ): TeamAgentBinderError {
+    417|     return new TeamAgentBinderError(
+       |            ^
+    418|       CODES.BINDER_OVERLAY_FAILED,
+    419|       `binder overlay effect '${origin}' failed during '${path}' bind …
+ ❯ TeamAgentBinder.bind packages/runtime/agent-setup/binder/binder.ts:360:22
+ ❯ TeamAgentBinder.bindFreshMember packages/runtime/agent-setup/binder/binder.ts:213:17
+ ❯ packages/runtime/test/bound-blueprint-persona-root.test.ts:306:26
+ ❯ packages/runtime/test/bound-blueprint-persona-root.test.ts:204:21
+
+Caused by: TeamPluginError: no blueprint member template with templateId "worker-b"
+ ❯ Object.getMemberPersona packages/runtime/src/plugin/root.ts:765:15
+ ❯ TeamPersonaPresetAdapter.buildScopedIdentity packages/runtime/agent-setup/persona/adapter.ts:194:40
+ ❯ TeamPersonaPresetAdapter.apply packages/runtime/agent-setup/persona/adapter.ts:249:27
+ ❯ Object.apply packages/runtime/agent-setup/persona/adapter.ts:272:15
+ ❯ TeamAgentBinder.bind packages/runtime/agent-setup/binder/binder.ts:358:16
+ ❯ TeamAgentBinder.bindFreshMember packages/runtime/agent-setup/binder/binder.ts:213:17
+ ❯ packages/runtime/test/bound-blueprint-persona-root.test.ts:306:26
+ ❯ packages/runtime/test/bound-blueprint-persona-root.test.ts:204:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'TEAM_PLUGIN_CONFIG_INVALID', detail: undefined }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 passed (4)
+   Start at  18:39:10
+   Duration  851ms (transform 852ms, setup 0ms, import 620ms, tests 3ms, environment 0ms)
+
+RED_EXIT:1

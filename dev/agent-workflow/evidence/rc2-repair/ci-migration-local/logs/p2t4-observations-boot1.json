@@ -1,0 +1,6 @@
+{
+  "boot": 1,
+  "done": true,
+  "fatal": "TypeError: Cannot read properties of undefined (reading 'map')",
+  "results": {}
+}

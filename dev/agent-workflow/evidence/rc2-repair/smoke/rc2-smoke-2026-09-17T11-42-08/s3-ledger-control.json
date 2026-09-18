@@ -1,0 +1,30 @@
+{
+  "entries": [
+    {
+      "sequence": "2",
+      "entry": {
+        "createdAt": "2026-09-17T11:42:12.811Z",
+        "factType": "control-request-recorded",
+        "payload": {
+          "actionName": "parameter-permission",
+          "correlation": "call-rc2-f4nwol5t",
+          "kind": "user-approval",
+          "operationFingerprint": "sha256:497064438e205c5958d7d850270680fa8dd9c3a705cf6cfc63307352678ce739",
+          "requestId": "ctrl-00vy0md1suydy6088olzz1r6",
+          "requester": {
+            "instanceId": "inst-leader",
+            "kind": "instance",
+            "role": "leader"
+          },
+          "summary": "bash [cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-repair/tests/homes/rc2-smoke-2026-09-17T11-42-08/workspace] echo rc2-smoke",
+          "targetInstanceId": "inst-leader",
+          "toolName": "bash"
+        },
+        "rootSessionId": "session-rc2-smoke-b-2026-09-17T11-42-08",
+        "schemaVersion": 2,
+        "sequence": 2
+      }
+    }
+  ],
+  "error": null
+}

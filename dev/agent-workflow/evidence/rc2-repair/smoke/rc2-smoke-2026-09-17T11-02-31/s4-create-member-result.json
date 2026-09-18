@@ -1,0 +1,3 @@
+{
+  "result": "{\"status\":\"rejected\",\"code\":\"TEAM_TOOL_BAD_ARGUMENTS\",\"message\":\"team-tools: required argument 'rootSessionId' is missing\",\"details\":{\"field\":\"rootSessionId\"}}"
+}

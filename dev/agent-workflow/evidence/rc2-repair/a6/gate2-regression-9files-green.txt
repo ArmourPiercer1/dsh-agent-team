@@ -1,0 +1,20 @@
+# Gate 2 — control regression set (9 files), FIXED code
+# captured: 2026-09-17T10:20:49Z
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-a6
+
+ ✓ packages/runtime/test/f9-s6-resolve-control.test.ts (14 tests) 5ms
+ ✓ packages/runtime/test/f9-control-exactly-once.test.ts (8 tests) 3ms
+ ✓ packages/runtime/test/p6t4-allow-once.test.ts (4 tests) 4ms
+ ✓ packages/runtime/test/p6t4-restart.test.ts (3 tests) 3ms
+ ✓ packages/runtime/test/p6t4-deny.test.ts (3 tests) 5ms
+ ✓ packages/runtime/test/p6t4-stale.test.ts (5 tests) 3ms
+ ✓ packages/runtime/test/p6t4-external-policy.test.ts (6 tests) 3ms
+ ✓ packages/runtime/test/p6t4-negatives.test.ts (11 tests) 5ms
+ ✓ packages/runtime/test/a4a-control-exact-scope.test.ts (28 tests) 6ms
+
+ Test Files  9 passed (9)
+      Tests  82 passed (82)
+   Start at  18:20:49
+   Duration  939ms (transform 4.00s, setup 0ms, import 6.24s, tests 37ms, environment 1ms)
+

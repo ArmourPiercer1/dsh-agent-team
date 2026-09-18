@@ -1,0 +1,76 @@
+[
+  {
+    "seq": 3,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-rc2-qgkj7376",
+          "name": "read",
+          "arguments": {
+            "file_path": "team/test.md"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 4,
+    "reply": {
+      "kind": "text",
+      "content": "RC2 smoke session"
+    }
+  },
+  {
+    "seq": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-rc2-3qrmrl05",
+          "name": "read",
+          "arguments": {
+            "file_path": "runtime/forbidden.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 6,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-rc2-jpj4di42",
+          "name": "bash",
+          "arguments": {
+            "command": "echo rc2-smoke"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 7,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-rc2-c3eq008v",
+          "name": "team_create_member",
+          "arguments": {
+            "templateId": "worker-b"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 8,
+    "reply": {
+      "kind": "text",
+      "content": "RC2_B_EXTRACT_FAIL :: {\"status\":\"rejected\",\"code\":\"TEAM_TOOL_BAD_ARGUMENTS\",\"message\":\"team-tools: required argument 'rootSessionId' is missing\",\"details\":{\"field\":\"rootSessionId\"}}"
+    }
+  }
+]

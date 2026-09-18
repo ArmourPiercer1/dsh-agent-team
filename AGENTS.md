@@ -7,7 +7,7 @@
 在本仓库工作的一切 agent（主 Agent、任务子代理、review 子代理、workflow 拉起的任意代理），**会话/子任务开始后的第一步**必须读取：
 
 1. `docs/ROUTER_RULES.md` — 无人值守执行协议：Phase DAG（P0→G0→…→P10→G10→RELEASE）、每任务 ≤3 次执行、Gate 三独立 reviewer 规则与四种裁决、blocker 类型与固定格式、git 纪律（1 task=1 branch=1 worktree=1 writer、cherry-pick -x 到 int 分支、Gate 过后才进 master）。
-2. `docs/TEST_METHODS.md` — 测试基础设施约束：测试 DSH 源码 = `tests/deepseek-harness-test-use`（pristine upstream，基线 0.1.2-rc.1 @ `a66e470204`；路径唯一来源 = `tests/paths.mjs`），DSH_HOME = `tests/homes/<world>`（**必须工作区内**，workspace-write 沙箱约束；命名/清理协议见其 §7），port = `3180` 族；构建/启动链与沙箱实测见其 §2/§5；**严禁影响稳定开发实例**（:3080 及其 DSH_HOME）。
+2. `docs/TEST_METHODS.md` — 测试基础设施约束：测试 DSH 源码 = `tests/deepseek-harness-test-use`（pristine upstream，基线 0.1.5-rc.2 @ `fb2c4b9e69`（2026-09-17 起；**DSH 0.1.2 不再支持**；路径唯一来源 = `tests/paths.mjs`），DSH_HOME = `tests/homes/<world>`（**必须工作区内**，workspace-write 沙箱约束；命名/清理协议见其 §7），port = `3180` 族；构建/启动链与沙箱实测见其 §2/§5；**严禁影响稳定开发实例**（:3080 及其 DSH_HOME）。
 
 读取之后才可执行任务；不得以"上下文已熟悉"为由跳过，不得违反其中禁止项。
 
@@ -26,8 +26,8 @@ upstream 公开契约 → `docs/plans/paused/` 四份 20260829 冻结文档（Ar
 | `docs/contracts/` | contracts v1 冻结确认记录（P3-T6） |
 | `docs/migration/` | legacy 行为清单、reuse map |
 | `dev/agent-workflow/` | 编排状态 `graph.yaml`、只追加日志 `SESSION_ROUTER_LOG.md`、证据 `evidence/<task>/` |
-| `references/deepseek-harness/` | 冻结 legacy fork 参考（只读；冻结点 = 分支 `feat/team-vnext-integration-20260829` tip 与 tag `legacy-agent-team-pre-vnext`，均锁 `a3ab319927...`（2026-09-05 复核未移动；2026-09-12 本环境再复核未移动）；工作树 HEAD 现于 `master @ c291e7961a`（0.1.5 sync，本环境迁移状态——原 Windows 机为 `cd5ef814...` 基线对比检出）；禁止任何 vNext 开发；**不得移动**） |
-| `tests/` | 测试基础设施（2026-09-12 标准化，test-infra-standardization）：`characterization/`（P2 harness）、`mock/`（mock model 部署 + 证据）、`kits/`（可复用 kit 归位，tracked）、`paths.mjs`（**测试路径与基线 pin 唯一来源**）、`deepseek-harness-test-use/`（pristine upstream 测试运行时 checkout，**gitignored**，自身 git 仓，detached @ `a66e470204` = 0.1.2-rc.1 官方 release 提交；唯一允许的运行时源码；基线代差注记与 home 协议见 TEST_METHODS.md §4.2/§7）、`homes/`（一切 DSH_HOME 世界，**gitignored**）；旧 `references/.dsh-test*` 世界不迁移 |
+| `references/deepseek-harness/` | 冻结 legacy fork 参考（只读；冻结点 = 分支 `feat/team-vnext-integration-20260829` tip 与 tag `legacy-agent-team-pre-vnext`，均锁 `a3ab319927...`（2026-09-05 复核未移动；2026-09-12 本环境再复核未移动；2026-09-17 rc2-repair 轮再复核未移动——本地 tag peel + 远端 ls-remote 双证）；工作树 HEAD 现于 `stable-1-0.1.5-rc.2 @ fb2c4b9e69`（0.1.5-rc.2 官方发布点，2026-09-17 由用户切至本轮 rc.2 契约参考基线；此前本环境为 `master @ c291e7961a`（0.1.5 sync 迁移状态）；原 Windows 机为 `cd5ef814...` 基线对比检出）；禁止任何 vNext 开发；冻结锚点**不得移动**） |
+| `tests/` | 测试基础设施（2026-09-12 标准化，test-infra-standardization）：`characterization/`（P2 harness）、`mock/`（mock model 部署 + 证据）、`kits/`（可复用 kit 归位，tracked）、`paths.mjs`（**测试路径与基线 pin 唯一来源**）、`deepseek-harness-test-use/`（pristine upstream 测试运行时 checkout，**gitignored**，自身 git 仓，detached @ `fb2c4b9e698e30edb738bca4cf0618587db7d203` = 0.1.5-rc.2 官方发布点（2026-09-17 起；0.1.2 不再支持）；唯一允许的运行时源码；基线代差注记与 home 协议见 TEST_METHODS.md §4.2/§7）、`homes/`（一切 DSH_HOME 世界，**gitignored**）；旧 `references/.dsh-test*` 世界不迁移 |
 | `.worktrees/` | 任务 worktree（gitignored；一个任务一个） |
 | 根 `packages/` | vNext 9-package 结构（contracts/domain/storage/runtime/tools/remote/client/legacy/testkit，TaskDoc §11 冻结；P0 骨架 → P1–P9 完整实现，P9 GO 2026-09-04）；**禁止**复制 legacy `packages/team` 源码进来 |
 

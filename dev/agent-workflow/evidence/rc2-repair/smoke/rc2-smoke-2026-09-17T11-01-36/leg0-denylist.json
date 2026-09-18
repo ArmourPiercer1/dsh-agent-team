@@ -1,0 +1,12 @@
+{
+  "denyList": [],
+  "missingManaged": [
+    "read",
+    "read_image",
+    "write",
+    "edit",
+    "lsp",
+    "bash",
+    "pwsh"
+  ]
+}

@@ -1,0 +1,114 @@
+# RED evidence (core red->green proof) — captured on the UNFIXED base 3b4912a
+# (git checkout -- packages/runtime/control/service.ts, i.e. the original compound liveness check)
+# captured: 2026-09-17T10:21:33Z
+
+## A. Probe run (a6-red-probe-tmp.test.ts, temporary, deleted after capture):
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-a6
+
+stdout | packages/runtime/test/a6-red-probe-tmp.test.ts > a6 red probe > dumps
+STOCK_WORLD_LEADER_ROW {"present":true,"schemaVersion":1,"hasLifecycleKey":true,"lifecycle":"RUNNING","hasChildSessionIdKey":true,"childSessionId":"session-child-p6t4-leader"}
+STOCK_WORLD_FLOW {"requestStatus":"pending","decision":"allow","verdict":{"allowed":true,"requestId":"ctrl-1chqo190ivhcyw02iw3271mb","decisionSequence":2}}
+V2_LEADER_ROW {"present":true,"schemaVersion":2,"hasLifecycleKey":false,"hasChildSessionIdKey":false}
+V2_FLOW_UNFIXED {"requestStatus":"pending","decision":"allow","verdict":{"allowed":false,"reason":"target-stale"}}
+
+ ✓ packages/runtime/test/a6-red-probe-tmp.test.ts (1 test) 2ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  18:20:38
+   Duration  611ms (transform 393ms, setup 0ms, import 529ms, tests 2ms, environment 0ms)
+
+
+## Reading:
+   - stock P6T4 world leader row: v1-STYLE (schemaVersion 1, lifecycle RUNNING,
+     childSessionId present) -> unfixed guard verdict allowed:true (the bug is
+     MASKED on the stock world; that is why the suite replaces the row).
+   - production v2 leader row (schemaVersion 2, NO lifecycle, NO childSessionId):
+     request (leader, leader-approval, leader target) -> pending, resolve -> allow,
+     UNFIXED guard -> {allowed:false, reason:'target-stale'}  = the A6 bug, RED.
+
+## B. Suite-level RED (the actual A6 suite against the unfixed code):
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/rc2-a6
+
+ ❯ packages/runtime/test/control-guard-leader.test.ts (13 tests | 3 failed) 8ms
+     ✓ the world carries the PRODUCTION leader row shape: schemaVersion 2, no lifecycle key, no childSessionId key (the stock P6T4 v1-style seed is replaced, not modified) 1ms
+     ✓ request (leader asks, leader target, leader-approval kind) + allow decision are durable 0ms
+     × the guard returns allowed: true for the live leader (unfixed code returned target-stale here) 4ms
+     × the successful guard consumed the one-shot allow exactly once 1ms
+     ✓ the TeamSession row was deleted while the leader row lingers 0ms
+     ✓ the guard blocks the leader: target-stale (the liveness predicate is TeamSession existence, not a member row) 0ms
+     ✓ RUNNING member + allow -> allowed: true 0ms
+     ✓ ARCHIVED member + allow -> target-stale (the suspended target cannot execute) 0ms
+     ✓ SETTLED member + allow -> allowed: true (quiescent, not gone) 0ms
+     ✓ CREATED member + allow -> allowed: true 0ms
+     ✓ a MISSING member row (the team still exists) + a recorded allow -> target-stale (liveness precedes request state) 0ms
+     × leader path: the first guard allows (consuming the allow), the second identical guard -> allow-consumed, exactly one consumption fact 0ms
+     ✓ member path: the same sequence on a live member -> allow-consumed, exactly one consumption fact 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/control-guard-leader.test.ts > RC2-A6 T1: a live leader (v2 LeaderInstance row, no lifecycle) passes the last-mile guard after a leader-approval allow (RED→GREEN core) > the guard returns allowed: true for the live leader (unfixed code returned target-stale here)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/control-guard-leader.test.ts:428:32
+    426|
+    427|   it('the guard returns allowed: true for the live leader (unfixed cod…
+    428|     expect(T1.verdict.allowed).toBe(true)
+       |                                ^
+    429|     if (T1.verdict.allowed === true) {
+    430|       expect(T1.verdict.requestId).toBe(T1.request.requestId)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/runtime/test/control-guard-leader.test.ts > RC2-A6 T1: a live leader (v2 LeaderInstance row, no lifecycle) passes the last-mile guard after a leader-approval allow (RED→GREEN core) > the successful guard consumed the one-shot allow exactly once
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ packages/runtime/test/control-guard-leader.test.ts:435:29
+    433|
+    434|   it('the successful guard consumed the one-shot allow exactly once', …
+    435|     expect(T1.consumptions).toBe(1)
+       |                             ^
+    436|   })
+    437| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/runtime/test/control-guard-leader.test.ts > RC2-A6 T4: the one-shot allow is consumed exactly once — leader path and member path > leader path: the first guard allows (consuming the allow), the second identical guard -> allow-consumed, exactly one consumption fact
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/control-guard-leader.test.ts:488:37
+    486| describe('RC2-A6 T4: the one-shot allow is consumed exactly once — lea…
+    487|   it('leader path: the first guard allows (consuming the allow), the s…
+    488|     expect(T4.leader.first.allowed).toBe(true)
+       |                                     ^
+    489|     if (T4.leader.first.allowed === true) {
+    490|       expect(T4.leader.first.requestId).toBe(T4.leader.request.request…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 10 passed (13)
+   Start at  18:17:54
+   Duration  638ms (transform 390ms, setup 0ms, import 546ms, tests 8ms, environment 0ms)
+

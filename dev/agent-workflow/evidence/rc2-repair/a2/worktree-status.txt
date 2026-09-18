@@ -1,0 +1,17 @@
+ M packages/runtime/dist/packages/runtime/src/plugin/host.d.ts.map
+ M packages/runtime/dist/packages/runtime/src/plugin/host.js
+ M packages/runtime/dist/packages/runtime/src/plugin/host.js.map
+ M packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+ M packages/runtime/dist/packages/runtime/src/plugin/root.d.ts
+ M packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map
+ M packages/runtime/dist/packages/runtime/src/plugin/root.js
+ M packages/runtime/dist/packages/runtime/src/plugin/root.js.map
+ M packages/runtime/src/plugin/host.ts
+ M packages/runtime/src/plugin/live/agent-bindings.mjs
+ M packages/runtime/src/plugin/root.ts
+ M packages/testkit/test/p4t6-session-event-scan.test.ts
+?? .tmp-t12a-b2-home/
+?? packages/runtime/test/bound-blueprint-persona-helpers.ts
+?? packages/runtime/test/bound-blueprint-persona-live.test.ts
+?? packages/runtime/test/bound-blueprint-persona-root.test.ts
+?? packages/runtime/test/p8s5a-stub-glue.d.mts

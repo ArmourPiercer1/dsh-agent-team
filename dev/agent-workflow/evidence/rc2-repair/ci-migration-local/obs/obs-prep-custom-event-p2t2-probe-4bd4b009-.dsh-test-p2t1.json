@@ -1,0 +1,222 @@
+{
+  "probe": "p2t2-agent-lifecycle",
+  "scenario": "prep-custom-event",
+  "primaryId": "p2t2-probe-4bd4b009",
+  "writtenAt": 1789659282418,
+  "dshHome": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/.dsh-test-p2t1",
+  "trace": [
+    {
+      "seq": 1,
+      "ts": 1789659271766,
+      "phase": "activate",
+      "port": 3182,
+      "backendNames": [
+        "json"
+      ],
+      "dshHome": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/.dsh-test-p2t1",
+      "services": {
+        "sessions": true,
+        "agents": true,
+        "sessionPersistence": true,
+        "webServer": true,
+        "storage": true
+      }
+    },
+    {
+      "seq": 2,
+      "ts": 1789659272358,
+      "phase": "scenario-error",
+      "scenario": "__readiness__",
+      "code": "P2T2_UNEXPECTED_ERROR",
+      "error": "p2t2-agent-lifecycle: unknown scenario '__readiness__'"
+    },
+    {
+      "seq": 3,
+      "ts": 1789659272362,
+      "phase": "run-start",
+      "scenario": "fresh",
+      "rootId": "p2t2-root-4bd4b009",
+      "memberId": "p2t2-member-4bd4b009"
+    },
+    {
+      "seq": 4,
+      "ts": 1789659272368,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-root-4bd4b009",
+      "eventType": "permission/preset"
+    },
+    {
+      "seq": 5,
+      "ts": 1789659272368,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-root-4bd4b009",
+      "eventType": "sandbox/mode"
+    },
+    {
+      "seq": 6,
+      "ts": 1789659272368,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-root-4bd4b009",
+      "eventType": "approval/policy"
+    },
+    {
+      "seq": 7,
+      "ts": 1789659272368,
+      "phase": "event:session/created",
+      "sessionId": "p2t2-root-4bd4b009"
+    },
+    {
+      "seq": 8,
+      "ts": 1789659272372,
+      "phase": "event:agent/created",
+      "sessionId": "p2t2-root-4bd4b009"
+    },
+    {
+      "seq": 9,
+      "ts": 1789659272372,
+      "phase": "event:agent/session-start",
+      "sessionId": "p2t2-root-4bd4b009",
+      "source": "startup"
+    },
+    {
+      "seq": 10,
+      "ts": 1789659272381,
+      "phase": "binding-attach",
+      "sessionId": "p2t2-root-4bd4b009",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-4bd4b009"
+    },
+    {
+      "seq": 11,
+      "ts": 1789659272382,
+      "phase": "first-team-step",
+      "sessionId": "p2t2-root-4bd4b009",
+      "role": "root",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-4bd4b009",
+      "rootLive": true
+    },
+    {
+      "seq": 12,
+      "ts": 1789659272384,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-member-4bd4b009",
+      "eventType": "permission/preset"
+    },
+    {
+      "seq": 13,
+      "ts": 1789659272384,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-member-4bd4b009",
+      "eventType": "sandbox/mode"
+    },
+    {
+      "seq": 14,
+      "ts": 1789659272384,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-member-4bd4b009",
+      "eventType": "approval/policy"
+    },
+    {
+      "seq": 15,
+      "ts": 1789659272384,
+      "phase": "event:session/created",
+      "sessionId": "p2t2-member-4bd4b009"
+    },
+    {
+      "seq": 16,
+      "ts": 1789659272385,
+      "phase": "event:agent/created",
+      "sessionId": "p2t2-member-4bd4b009"
+    },
+    {
+      "seq": 17,
+      "ts": 1789659272385,
+      "phase": "event:agent/session-start",
+      "sessionId": "p2t2-member-4bd4b009",
+      "source": "startup"
+    },
+    {
+      "seq": 18,
+      "ts": 1789659272386,
+      "phase": "first-team-step",
+      "sessionId": "p2t2-member-4bd4b009",
+      "role": "member",
+      "rootId": "p2t2-root-4bd4b009",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-4bd4b009",
+      "rootLive": true
+    },
+    {
+      "seq": 19,
+      "ts": 1789659282410,
+      "phase": "scenario-error",
+      "scenario": "fresh",
+      "code": "P2T2_DURABILITY_VERIFY_TIMEOUT",
+      "error": "p2t2-agent-lifecycle: session log for \"p2t2-root-4bd4b009\" not durably published as the final session.jsonl.zstd within 10000ms; last disk state: {\"projectDir\":\"--home-user-dsh-plugins-dsh-agent-team-tests-deepseek-harness-test-use--\",\"files\":[{\"name\":\"session.lock\",\"size\":0,\"final\":false},{\"name\":\"session.v3.jsonl.zstd\",\"size\":318,\"final\":false}]}"
+    },
+    {
+      "seq": 20,
+      "ts": 1789659282414,
+      "phase": "run-start",
+      "scenario": "prep-custom-event",
+      "sessionId": "p2t2-probe-4bd4b009"
+    },
+    {
+      "seq": 21,
+      "ts": 1789659282416,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-probe-4bd4b009",
+      "eventType": "permission/preset"
+    },
+    {
+      "seq": 22,
+      "ts": 1789659282417,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-probe-4bd4b009",
+      "eventType": "sandbox/mode"
+    },
+    {
+      "seq": 23,
+      "ts": 1789659282417,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-probe-4bd4b009",
+      "eventType": "approval/policy"
+    },
+    {
+      "seq": 24,
+      "ts": 1789659282417,
+      "phase": "event:session/created",
+      "sessionId": "p2t2-probe-4bd4b009"
+    },
+    {
+      "seq": 25,
+      "ts": 1789659282417,
+      "phase": "event:agent/created",
+      "sessionId": "p2t2-probe-4bd4b009"
+    },
+    {
+      "seq": 26,
+      "ts": 1789659282418,
+      "phase": "event:agent/session-start",
+      "sessionId": "p2t2-probe-4bd4b009",
+      "source": "startup"
+    },
+    {
+      "seq": 27,
+      "ts": 1789659282418,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-probe-4bd4b009",
+      "eventType": "team/vnext/p2t2-probe-marker"
+    },
+    {
+      "seq": 28,
+      "ts": 1789659282418,
+      "phase": "scenario-error",
+      "scenario": "prep-custom-event",
+      "code": "P2T2_UNEXPECTED_ERROR",
+      "error": "Cannot read properties of undefined (reading 'length')"
+    }
+  ],
+  "traceLength": 19,
+  "ok": false,
+  "code": "P2T2_UNEXPECTED_ERROR",
+  "error": "Cannot read properties of undefined (reading 'length')"
+}
