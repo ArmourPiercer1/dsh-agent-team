@@ -3296,3 +3296,22 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   - TEST_METHODS §4.2 改写（pin 统一 fb2c4b9e69 + 降级状态 + follow-up 指针）；当日 09-17 条目内"不动"裁决标注为被本收束推翻。
 - **3. 重跑**：全仓 `pnpm test` = **20 failed | 3561 passed (3581) = 轮前 workspace 基线失败集完全一致**（p4t6 delta 消除；本轮无 p6t1 flake）；characterization CI manual trigger 对新 tip 运行（验证 build step 修复；probe 段红 = 预期留档）。
 - **4. PR body 更新**：`gh pr edit` 再次撞 Projects-classic GraphQL 弃用错（PR #16 同款）→ **REST PATCH /pulls/18 = 200**（node fetch 走 127.0.0.1:7897 代理 401 Bad credentials 的怪象 → curl 同 token 200，代理路径差异；token 本身有效 = /user 200）。body 新增"收束项"节（pin 710 / CI 迁移+降级三根因 / 重跑实数）+ backlog 增补 probe 重录任务 + 门禁表全仓行更新 + 备注提交链更新。
+
+### 2026-09-18 — C1 Leader Approval reachability 修复轮（用户指令：按 plan 修复 + 全部未同步结果提 PR）
+
+- **指令**：「请你按照 docs/plans/active/dsh-agent-team-c1-leader-approval-repair-plan.md 中的指示完成修复工作，随后将所有未同步的开发结果提PR」+「请你继续工作」。一次性推送授权覆盖两分支：task/exec-autonomy-contract（11ce582，committed 未推送）与本分支。
+- **C1 定性**：reachability/liveness（NOT authority）— 成员 ask 产生的 durable leader-approval 请求此前对 Leader **不可发现**（无工具投影账本）且**不可达**（无通知投递路径）。resolver roles / decision authority / request scope / guard semantics / 持久账本词汇 FROZEN；plan §11 禁止项全守（无 auto-allow / 无第二 ControlService / 无 messaging 路由 / 无锁内投递 / 无 C2 代码 / 无 core 改动，CORE PATCH BUDGET = 0）。
+- **实现**（3 提交 @ fix/c1-leader-approval-reachability，基线 040f410 = PR #18 merge 后 master）：
+  - 0838739 `feat(control)`：packages/tools 第 12 个 team 工具 `team_list_pending_control`（closed-union `pending-control-listed` 投影账本 pending 集合；leader-only；`requestControlSpec` correlation = `ctx.requestToken`）+ `TEAM_TOOL_PENDING_LIST_NOT_LEADER` + tool-count pins 11→12（6 suites + 2 comments）；packages/runtime/control `ControlRequestNotificationPort`（optional）+ `createLeaderControlNotifier` + 纯渲染器（token-leading `[team-control requestId=<id>]` + 两个审批环工具名）；requestControl 锁闭包返回 `{record, created}`，**锁外 fire-and-forget** 通知（仅 `created && kind === leader-approval`；rejecting notifier 不伤 durable 写入 case 4/5；重入 resolve 不死锁 case 6）；packages/runtime 接线：agent-bindings `deliverRootControlNotification` 活体桥（通知 = 根输入到 Leader）+ root 可选端口（ABSENT = 无通知，authority 不变）+ `LEADER_INSTANCE_ID` 行 seed + `resolveCaller`（root → leader）；p4t6 pin 710→716。
+  - 5ee4ce7 `test(control)`：real-host smoke kit（`tests/kits/c1-leader-approval-smoke/`，mock model + rc.2 test-use @ fb2c4b9e）+ 全部 evidence（7 次 run 留档）。
+  - 3bc24da `docs(skills)`：team-leader-operations（12 工具；§5 discovery + §5.1 async-first + §6/§7 词汇/错误）；team-blueprint-authoring（§5.2 C2 临时风险段 + §5.3 Leader teamTools 例）；C1 brief（scope/实现/两项偏差/证据/门禁）；followup-backlog item 6（C2 subagent 后代治理 deferred）。
+- **两项文档化偏差**（final report 论证）：(1) 结果判别符 `pending-control-listed`（closed-union 约定，plan §2.1/§6.8）；(2) 通知 = 锁释放后 fire-and-forget（锁内投递会卡死重入 resolve，plan §3.3/§3.4/§5）。
+- **real-host smoke 迭代弧**（kit 侧 design-around，无 core patch；6 项 LIVE-FOUND 事实入 brief §4）：
+  - run 1：runtime-context 注入（首条模型请求后追加 USER 消息）→ 链路由改按「最后一个含 trigger 的 user 消息」。
+  - run 2：blueprint DTO 闭包字段集 — `teamTools kind: deny` 条目禁带 `items` → worker 模板裸 deny。
+  - run 3/4：通知 turn mock 500 五连重试后死亡，**失败 turn 不再唤醒其后队列输入**（agent-loop `kick()` 的 `wakeRequested` 仅在 abort 驱动器上 latch；live 驱动器自领）→ 恢复输入须在静默后到达（kit：2s 轮询 × 10s 静默判 settled + 有界重提示 3 次）。另发现 **team.create 等待根 boot turn**（同步 delegate 的 boot 阻塞在 human 决议 → 内联 await create() 自死锁 240s，status=0 而服务端 create 完成）→ fire-and-collect。
+  - run 5：S5 probe 工具结果 = `Error: unknown tool "team_request_control"` — **已建 team 的 leader surface = blueprint teamTools allow**（boot root 17 工具不继承）→ leader 模板加入 `team_request_control`（9 工具 allow）。
+  - run 6/7：**VERDICT PASS 33/33 ×2**（`c1-smoke-2026-09-18T09-26-13` 首绿；`...09-27-24` 确认 — 确定性）；:3080/:3180 前后 401 未触；world 自清。
+- **门禁**（全部实数）：typecheck 全绿；build 幂等 + `[check-artifacts-committed] OK 1120`（dist 与源码同 commit；root.js 注释漂移 = 暂存后源码注释更新，重 build 后 re-stage）；eslint clean（改动源码）；p4t6 @716 10/10；zero-core（test-use porcelain 0 @ fb2c4b9e；tag peel a3ab3199 未动）；全仓 `pnpm test` = 21 failed | 3589 passed（= 轮前基线 10-file 失败集 + p6t1-parallel flake，isolated 9/9）；C1 专项 29/29。
+- **簿记**：graph.yaml 新块 `c1_leader_approval_20260918` + current_phase 更新；本日志条目。
+- **推送 + PR**（一次性授权）：PR #19 = `task/exec-autonomy-contract`（11ce582）base master @ 040f410；PR #20 = `fix/c1-leader-approval-reachability`（4 提交）base master @ 040f410（建议标题 `fix(control): make leader approval requests discoverable and reachable` + scope 声明）；rebase 依赖注记（重叠候选：agent-bindings.mjs / blueprint-authoring SKILL.md / p4t6 pin / 簿记文件）。
