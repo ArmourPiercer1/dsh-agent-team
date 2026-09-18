@@ -212,6 +212,58 @@ does not mount the spawn subagent (the shipped `minimal` preset has no
 that the model will still see `subagent` post-gate (open P1 finding as of
 2026-09-14; no shipped fix yet).
 
+**C2 (subagent descendant governance) — open backlog, temporary risk.**
+DSH subagent descendants do not inherit the Team member's agent-local
+parameter-permission / builtin-deny governance: a Team member can delegate
+to an in-process subagent that inherits the parent preset standing
+composition but NOT the member's agent-local permission listener/guard.
+No hard plugin-level deny exists in this release, and
+`builtinToolDeny: [subagent]` is **NOT** a reliable mitigation on the
+non-minimal presets (item 1 above proves the tool is not restrictable
+there). While C2 remains open, the safe authoring options are:
+
+1. use a preset that does not mount the spawn `subagent` tool (the shipped
+   `minimal` preset is the known example); or
+2. use a custom preset/composition that does not install `subagent`.
+
+If a project intentionally keeps a standard/cordis/ptc preset with
+`subagent` visible to the model, record C2 as an ACCEPTED TEMPORARY RISK in
+the team's design notes until the descendant-governance work is completed.
+If a future rc.2-compatible plugin change makes `subagent` genuinely
+restrictable by `builtinToolDeny`, update this guidance ONLY after a
+post-publication model-surface test proves the tool is actually removed
+from the model-facing surface.
+
+### 5.3 The Leader's team-tool surface (the approval loop)
+
+A Leader that must perform leader-level approvals should expose the closed
+approval-loop tools in its `teamTools` allow list:
+
+```yaml
+capabilities:
+  teamTools:
+    kind: allow
+    items:
+      - team_list_pending_control   # discover exact pending requestIds (read-only)
+      - team_resolve_control        # record the allow/deny decision
+```
+
+(`team_request_control` belongs on the surface only when the Leader itself
+issues explicit control requests for its own operations.)
+
+Two facts keep the loop honest:
+
+- **tool exposure is not authority**: listing these tools in `teamTools`
+  gives the Leader the model-facing surface; the resolver-role closure in
+  the control service (Leader or human for `leader-approval`; human only
+  for `user-approval`; a member is never a resolver) remains the
+  authoritative decision check — a denied resolve fails closed regardless
+  of the tool list.
+- **the envelope still gates the operation**: the Leader's Team envelope
+  must permit the existing `resolve-control` operation (and
+  `request-control` when that tool is exposed), exactly as before —
+  `team_list_pending_control` is a read and adds no envelope operation.
+
 ## 6. Pre-flight checklist (static)
 
 Run these in order on the authored file; stop at the first failure and fix:
