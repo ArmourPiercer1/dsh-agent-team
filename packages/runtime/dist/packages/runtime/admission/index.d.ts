@@ -44,6 +44,6 @@ export { ACTION_NAMES, ACTION_NAME_VALUES, ACTION_CATEGORIES, RUNTIME_OPS, PROGR
 export type { ActionCategory, ActionName, ActionSpec, ControlDecision, ProgressValue, RuntimeOp, } from './actions.js';
 export { checkCallerRoleAuthority, resolveCaller, resolveInstanceToken, resolveTeamAndTarget, } from './resolve.js';
 export type { ResolvedCaller, ResolvedTeamTarget } from './resolve.js';
-export { ALL_MUTATION_OPS, callerEnvelope, enforceEnvelope, overlayEnvelopeOf, } from './envelope.js';
+export { ALL_MUTATION_OPS, callerEnvelope, ENVELOPE_EXEC_OPS, enforceEnvelope, leaderExecEnvelopeOps, overlayEnvelopeOf, } from './envelope.js';
 export { enforceCompatibilityGate, enforceWorkAcceptingState, isNewWorkAdmission, mapActivationError, } from './gate.js';
 //# sourceMappingURL=index.d.ts.map

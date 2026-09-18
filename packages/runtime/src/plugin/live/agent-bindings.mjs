@@ -340,6 +340,14 @@ import {
   mcpIntroducedToolNames,
   PermissionCoverageUnmanagedError,
 } from '../../../operation-permission/index.js'
+// exec-autonomy-contract (user ruling 2026-09-18): the DUAL GATE input —
+// the leader's effective mutation-envelope exec-authorization tokens
+// (teamEnvelope ∩ the leader template's memberEnvelopes entry, fail
+// closed). Passed to the pre-execute install for LEADER installs only:
+// a leader exec-class ALLOW (the allow-lane whole-tool rule) stands only
+// when the matching token ('bash' / 'pwsh') is present; otherwise the
+// adapter downgrades it to the user-approval ask path.
+import { leaderExecEnvelopeOps } from '../../../admission/envelope.js'
 // A2C-2 (plan §7.2) + fix/alpha2-explicit-agent-setup-compat: the
 // agent-scoped tool surface is read through `tools.schemas(runtimeAgent)`
 // where `runtimeAgent` is the setup's CANONICAL runtime-Agent resolver
@@ -1569,6 +1577,22 @@ export function createAgentBindings(deps) {
         // leader position resolves to LEADER_INSTANCE_ID, a member to its
         // durable row) — so caller and targetInstanceId share it.
         const isLeader = sessionId === teamRoot
+        // exec-autonomy-contract (user ruling 2026-09-18) — the DUAL
+        // GATE input (leader install only): the exec-authorization
+        // tokens the leader's EFFECTIVE mutation envelope carries
+        // (teamEnvelope ∩ the leader template's memberEnvelopes entry —
+        // the same leader formula as the admission-plane callerEnvelope;
+        // fail-closed: an absent blueprint or an absent teamEnvelope =
+        // no exec authorization). A member install passes nothing: a
+        // member's exec call cannot be ALLOW under the contract (the
+        // member allow lane rejects shell-class rules at blueprint
+        // validation) and its ask already routes to leader-approval.
+        const execEnvelopeOps = isLeader
+          ? (() => {
+              const bound = getBoundBlueprint(teamRoot)
+              return bound === null || bound === undefined ? [] : leaderExecEnvelopeOps(bound)
+            })()
+          : undefined
         // FACT 3b (settled 2026-09-11, re-based by
         // fix/alpha2-explicit-agent-setup-compat): the session cwd is read
         // LAZILY at resolve time, off the CANONICAL runtime Agent's live
@@ -1635,6 +1659,7 @@ export function createAgentBindings(deps) {
           caller: { kind: 'instance', instanceId },
           targetInstanceId: instanceId,
           isLeader,
+          execEnvelopeOps,
           onObserve: (row) => {
             observations.push(`alpha2-perm: ${JSON.stringify(row)}`)
           },

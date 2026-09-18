@@ -158,7 +158,10 @@ const WORKER2_ID = String(P6T4_SEEDS.worker2.instanceId)
 const END_CAP_REASON =
   'permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)'
 
-// --- the shell-class policies (plan §5.3: any in ask/deny only) ----------------
+// --- the shell-class policies (plan §5.3: any in ask/deny in every role;
+//     the LEADER allow-lane whole-tool exception is the
+//     exec-autonomy-contract, user ruling 2026-09-18 — dual-gated at
+//     runtime by the leader's mutation-envelope exec token) -----------
 
 /** The strongest LEGAL static stop for pwsh: the deny lane. */
 const PWSH_DENY_POLICY: TemplatePermissionPolicy = {
@@ -233,6 +236,45 @@ function a2c1BlueprintSource(permissionLines: string[]): string {
   ].join('\n')
 }
 
+// exec-autonomy-contract (user ruling 2026-09-18): the allow-lane shell-
+// class rejection is MEMBER-scoped (the leader allow-lane whole-tool rule
+// is the new contract) — the allow-lane probe sources use this member
+// variant; the exact/ask/deny probes stay on the leader (rejected in
+// every role). The diagnostic text is byte-identical to the pre-change
+// (leader) pin.
+function a2c1MemberBlueprintSource(permissionLines: string[]): string {
+  return [
+    '---',
+    'schemaVersion: 1',
+    'blueprintId: a2c1-probe',
+    'revision: "1"',
+    'leader:',
+    '  templateId: leader',
+    '  persona: "Lead."',
+    'members:',
+    '  - templateId: worker',
+    '    persona: "Worker."',
+    '    capabilities:',
+    '      teamTools:',
+    '        kind: allow',
+    '        items: []',
+    '      builtinToolDeny: []',
+    '      skills:',
+    '        kind: allow',
+    '        items: []',
+    '      mcp:',
+    '        kind: allow',
+    '        items: []',
+    ...permissionLines.map((line) => (line === '' ? '' : '  ' + line)),
+    'requirements: []',
+    'memberEnvelopes: []',
+    'policyStates: []',
+    'metadata: {}',
+    '---',
+    '',
+  ].join('\n')
+}
+
 const SCHEMA_PWSH_ANY_ASK_SOURCE = a2c1BlueprintSource([
   '    permissions:',
   '      default: ask',
@@ -264,7 +306,10 @@ const SCHEMA_PWSH_EXACT_ASK_SOURCE = a2c1BlueprintSource([
   '            path: "C:/Windows"',
   '      deny: []',
 ])
-const SCHEMA_PWSH_ANY_ALLOW_SOURCE = a2c1BlueprintSource([
+// MEMBER-scoped probe (exec-autonomy-contract, user ruling 2026-09-18):
+// the allow-lane shell-class rejection applies to member templates —
+// the leader allow-lane whole-tool rule is the new contract.
+const SCHEMA_PWSH_ANY_ALLOW_SOURCE = a2c1MemberBlueprintSource([
   '    permissions:',
   '      default: deny',
   '      allow:',
@@ -1658,7 +1703,7 @@ describe('A2C-1 GREEN: classification + vocabulary (plan §5.2/§5.5)', () => {
     expect(p1['bashResourceKey']).toBe('bash')
   })
 
-  it('the shell-class rule contract (the schema): exact ✗ every lane, any ✗ the allow lane — for BOTH shell tools', () => {
+  it('the shell-class rule contract (the schema): exact ✗ every lane (every role), any ✗ the allow lane (MEMBER templates — the leader allow-lane exception is the exec-autonomy-contract) — for BOTH shell tools', () => {
     const p3 = R['p3'] as P3Capture
     expect(p3.exact.code).toBe('MALFORMED_DTO')
     expect(p3.exact.message.includes('exact')).toBe(true)

@@ -139,12 +139,21 @@ export const CAPABILITY_POLICY_DECISIONS: readonly string[] = ['allow', 'deny']
  * A2C-1, closed vocabulary). The shell class (`bash`, `pwsh`) allows
  * tool-level ask/deny via `resource: { kind: 'any' }` only — no positive
  * parameter-level allow. Enforced in validation: a shell-class rule in
- * the `allow` lane is rejected, and an `exact` shell-class resource is
- * rejected in every lane (the shell vocabulary is `any` in `ask`/`deny`
- * only). `bash authority != pwsh authority`: the two share the shell
- * class rules but are distinct tools (a rule for one never gates the
- * other, and the runtime fingerprints them with separate tool
- * identities).
+ * the `allow` lane is rejected on MEMBER templates, and an `exact`
+ * shell-class resource is rejected in every lane (the shell vocabulary is
+ * `any` in `ask`/`deny` in every role). LEADER exception
+ * (exec-autonomy-contract, user ruling 2026-09-18): the leader template's
+ * `allow` lane MAY carry a shell-class rule with the whole-tool `any`
+ * resource — an explicit, declared whole-tool exec authorization (there
+ * is NO implicit default-allow: an absent rule still resolves to
+ * `policy.default`). That leader authorization is inert unless the
+ * leader's effective mutation envelope carries the matching exec token
+ * (`'bash'` / `'pwsh'` — separate tokens): the runtime pre-execute dual
+ * gate downgrades the allow to the `user-approval` ask path otherwise
+ * (fail-closed). `bash authority != pwsh authority`: the two share the
+ * shell class rules but are distinct tools (a rule for one never gates
+ * the other, the runtime fingerprints them with separate tool
+ * identities, and the envelope gates them with separate tokens).
  */
 export const PERMISSION_TOOL_NAMES: readonly string[] = [
   'read',
@@ -221,7 +230,23 @@ export const REQUIREMENT_DOMAIN_PATTERN = /^[a-z][a-z0-9-]{0,63}$/
 export const REQUIREMENT_NAME_PATTERN = /^[a-z][a-z0-9._-]{0,127}$/
 /** PolicyState id: lowercase slug. */
 export const POLICY_STATE_ID_PATTERN = /^[a-z][a-z0-9-]{0,63}$/
-/** Envelope operation token: lowercase slug with dots/underscores. */
+/**
+ * Envelope operation token: lowercase slug with dots/underscores.
+ *
+ * Recognized token classes (exec-autonomy-contract, user ruling
+ * 2026-09-18):
+ * - team-governance operations (the closed `ALL_MUTATION_OPS`
+ *   vocabulary, `packages/runtime/admission/envelope.ts`): gate the
+ *   team-governance mutation actions;
+ * - exec-authorization tokens `'bash'` / `'pwsh'` (the closed
+ *   `ENVELOPE_EXEC_OPS` vocabulary): the leader's effective envelope
+ *   must carry the token for the leader's allow-lane shell-class rule
+ *   (the whole-tool `any` rule) to authorize the tool at runtime — the
+ *   pre-execute dual gate (fail-closed: missing token = downgrade to
+ *   the `user-approval` ask path).
+ * Tokens outside both classes parse (the envelope vocabulary stays open
+ * slugs) but are inert: nothing gates on them today.
+ */
 export const ENVELOPE_OPERATION_PATTERN = /^[a-z][a-z0-9._-]{0,127}$/
 /** Metadata key: starts alphanumeric, then alphanumerics, dot, underscore, dash. */
 export const METADATA_KEY_PATTERN = /^[a-zA-Z][a-zA-Z0-9._-]{0,63}$/

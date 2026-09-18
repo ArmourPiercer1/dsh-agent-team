@@ -275,8 +275,20 @@ function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
 // sub-structure validators
 // ---------------------------------------------------------------------------
 
-/** Validate one template (leader or member). Both share one closed schema. */
-function validateTemplate(raw: unknown, path: string): BlueprintTemplate {
+/**
+ * Validate one template (leader or member). Both share one closed schema.
+ *
+ * `role` is the template's role in the blueprint: it threads down to the
+ * permission-rule validation, where the shell-class contract carries a
+ * LEADER-scoped exception (exec-autonomy-contract, user ruling 2026-09-18):
+ * a `bash` / `pwsh` rule in the `allow` lane with the whole-tool `any`
+ * resource is accepted ONLY on the leader template (the dual-gate
+ * enforcement lives at the runtime install — the envelope must carry the
+ * matching exec token; see pre-execute-adapter). Member templates keep the
+ * A2C-1 contract verbatim (allow-lane shell rejected, diagnostics
+ * byte-identical).
+ */
+function validateTemplate(raw: unknown, path: string, role: 'leader' | 'member'): BlueprintTemplate {
   const record = assertPlainRecord(raw, `${path} (template)`)
   assertNoUnknownFields(record, BLUEPRINT_TEMPLATE_FIELDS, `${path} (template)`)
 
@@ -306,7 +318,7 @@ function validateTemplate(raw: unknown, path: string): BlueprintTemplate {
   const capabilitiesRaw = takeRecord(record, 'capabilities', path)
   const capabilities = capabilitiesRaw === undefined
     ? undefined
-    : validateTemplateCapabilities(capabilitiesRaw, `${path}.capabilities`)
+    : validateTemplateCapabilities(capabilitiesRaw, `${path}.capabilities`, role)
 
   return stripUndefined({
     templateId,
@@ -486,8 +498,15 @@ function validateAllowDenyEntry(raw: unknown, path: string): DenyEntry | { kind:
  * When absent → valid (legacy mode). When present → the four alpha.1
  * sub-fields are required and the optional `permissions` block (A1) is
  * validated as a closed TemplatePermissionPolicy.
+ *
+ * `role` threads through to the permission-rule validation (the
+ * leader-scoped shell-class allow-lane exception — see validateTemplate).
  */
-function validateTemplateCapabilities(raw: unknown, path: string): TemplateCapabilities {
+function validateTemplateCapabilities(
+  raw: unknown,
+  path: string,
+  role: 'leader' | 'member',
+): TemplateCapabilities {
   const record = assertPlainRecord(raw, `${path} (capabilities)`)
   assertNoUnknownFields(record, BLUEPRINT_CAPABILITIES_FIELDS, `${path} (capabilities)`)
 
@@ -521,7 +540,7 @@ function validateTemplateCapabilities(raw: unknown, path: string): TemplateCapab
   const permissions =
     permissionsRaw === undefined
       ? undefined
-      : validatePermissionPolicy(permissionsRaw, `${path}.permissions`)
+      : validatePermissionPolicy(permissionsRaw, `${path}.permissions`, role)
 
   return stripUndefined({ teamTools, builtinToolDeny, skills, mcp, permissions })
 }
@@ -542,8 +561,15 @@ function validateTemplateCapabilities(raw: unknown, path: string): TemplateCapab
  * declaration order, duplicates are preserved, no reordering — the lanes
  * are fresh plain copies of the source arrays, so the same source always
  * yields structurally identical output.
+ *
+ * `role` threads through to the permission-rule validation (the
+ * leader-scoped shell-class allow-lane exception — see validateTemplate).
  */
-function validatePermissionPolicy(raw: unknown, path: string): TemplatePermissionPolicy {
+function validatePermissionPolicy(
+  raw: unknown,
+  path: string,
+  role: 'leader' | 'member',
+): TemplatePermissionPolicy {
   const record = assertPlainRecord(raw, `${path} (permission policy)`)
   assertNoUnknownFields(record, PERMISSION_POLICY_FIELDS, `${path} (permission policy)`)
 
@@ -567,7 +593,7 @@ function validatePermissionPolicy(raw: unknown, path: string): TemplatePermissio
     }
     // Declaration order is preserved; duplicate rules are legal.
     return items.map((item, index) =>
-      validatePermissionRule(item, `${path}.${name}[${index}]`, name),
+      validatePermissionRule(item, `${path}.${name}[${index}]`, name, role),
     )
   }
 
@@ -586,22 +612,45 @@ function validatePermissionPolicy(raw: unknown, path: string): TemplatePermissio
  * ruling; A2C-1 extends it from `bash` to the shell class `bash`/`pwsh`,
  * whose rule semantics are identical — plan §5.3):
  *
- * - a shell-class tool + `exact` is rejected in EVERY lane: an `exact`
- *   key is a file key and can never match the tool-level resource, and
- *   alpha.2 has no parameter-level shell matcher — such a rule would be
- *   structurally inert, so it is rejected instead of silently parsed;
- * - a shell-class tool + `any` is rejected in the ALLOW lane: alpha.2
- *   grants no positive whole-tool permission for a shell tool (no
- *   parameter-level allow for shell commands). Shell-class `any` in the
- *   `ask` / `deny` lanes stays legal (the minimal shell permission).
+ * - a shell-class tool + `exact` is rejected in EVERY lane of EVERY
+ *   role: an `exact` key is a file key and can never match the tool-level
+ *   resource, and alpha.2 has no parameter-level shell matcher — such a
+ *   rule would be structurally inert, so it is rejected instead of
+ *   silently parsed. The trailing diagnostic is role-aware (the
+ *   exec-autonomy-contract review fix): the MEMBER keeps the byte-
+ *   identical pre-change text ("supports only the 'any' resource, in the
+ *   ask or deny lane"); the LEADER states both legal shapes (ask/deny
+ *   'any' in every role; the leader allow-lane whole-tool 'any' under
+ *   the mutation-envelope dual gate) instead of the stale pre-PR text
+ *   that denied the leader allow-lane exception;
+ * - a shell-class tool + `any` is rejected in the ALLOW lane — with ONE
+ *   role-scoped exception (exec-autonomy-contract, user ruling
+ *   2026-09-18): the LEADER template's allow lane MAY carry a shell-class
+ *   rule with the whole-tool `any` resource (an explicit, declared
+ *   whole-tool exec authorization — there is NO implicit default-allow;
+ *   an absent rule still resolves to `policy.default`). That leader
+ *   authorization is INERT at runtime unless the leader's effective
+ *   mutation envelope carries the matching exec token (`bash` / `pwsh` —
+ *   separate tokens, `bash authority != pwsh authority`): the pre-execute
+ *   dual gate downgrades the allow to the `user-approval` ask path
+ *   otherwise (fail-closed). MEMBER templates keep the A2C-1 contract
+ *   verbatim: a shell-class `any` in the allow lane is rejected (no
+ *   positive whole-tool permission for a member shell).
  *
  * The diagnostics are STABLE text (deterministic; no randoms) and
  * parameterized by the tool name: for `bash` the messages are byte-
  * identical to the original H2 text (the H2 pins stay verbatim), and for
- * `pwsh` the same contract is stated for `pwsh` (A2C-1 pins). Tests pin
- * the message verbatim.
+ * `pwsh` the same contract is stated for `pwsh` (A2C-1 pins). The
+ * member allow-lane rejection (above) keeps its exact pre-change text —
+ * the H2 / A2C-1 pins are byte-identical (only the role scope changed).
+ * Tests pin the messages verbatim.
  */
-function validatePermissionRule(raw: unknown, path: string, lane: 'allow' | 'ask' | 'deny'): PermissionRule {
+function validatePermissionRule(
+  raw: unknown,
+  path: string,
+  lane: 'allow' | 'ask' | 'deny',
+  role: 'leader' | 'member',
+): PermissionRule {
   const record = assertPlainRecord(raw, `${path} (permission rule)`)
   assertNoUnknownFields(record, PERMISSION_RULE_FIELDS, `${path} (permission rule)`)
 
@@ -622,9 +671,15 @@ function validatePermissionRule(raw: unknown, path: string, lane: 'allow' | 'ask
   // permission tools, so the class check is this two-name membership.
   const isShellTool = tool === 'bash' || tool === 'pwsh'
   if (isShellTool && resource.kind === 'exact') {
+    // Role-aware trailing (exec-autonomy-contract review fix): the
+    // pre-change diagnostic ("supports only the 'any' resource, in the
+    // ask or deny lane") is stale for the LEADER — the leader allow lane
+    // now accepts the whole-tool 'any' under the mutation-envelope dual
+    // gate. Member keeps its byte-identical pre-change text (pins stay
+    // verbatim); the leader half states both legal shapes.
     throw teamContractError(
       'MALFORMED_DTO',
-      `permission rule ${path} (lane '${lane}') is rejected: the ${tool} tool does not accept an 'exact' resource in any lane — an exact key is a file key and can never match the ${tool} tool-level resource, and alpha.2 has no parameter-level shell matcher (${tool} supports only the 'any' resource, in the ask or deny lane)`,
+      `permission rule ${path} (lane '${lane}') is rejected: the ${tool} tool does not accept an 'exact' resource in any lane — an exact key is a file key and can never match the ${tool} tool-level resource, and alpha.2 has no parameter-level shell matcher (${role === 'leader' ? "the ask or deny lane for members; the leader allow-lane exception is the whole-tool 'any' rule under the mutation-envelope dual gate — never 'exact'" : `${tool} supports only the 'any' resource, in the ask or deny lane`})`,
       { path: `${path}.resource.kind`, lane },
     )
   }
@@ -632,16 +687,24 @@ function validatePermissionRule(raw: unknown, path: string, lane: 'allow' | 'ask
   // resource in any lane — a subtree root is a FILE target (its
   // containment is judged by the pinned `FileSystem.contains` seam over
   // file identities) and can never match the tool-level shell resource;
-  // the shell keeps only the whole-tool 'any' resource (ask/deny; bash
-  // none in the allow lane — the A2C-1 contract, unchanged).
+  // the shell keeps only the whole-tool 'any' resource (ask/deny lanes in
+  // every role; the leader allow-lane exception — exec-autonomy-contract,
+  // user ruling 2026-09-18 — is the whole-tool 'any' rule ONLY, gated by
+  // the leader's mutation envelope; never 'subtree').
   if (isShellTool && resource.kind === 'subtree') {
     throw teamContractError(
       'MALFORMED_DTO',
-      `permission rule ${path} (lane '${lane}') is rejected: the ${tool} tool does not accept a 'subtree' resource in any lane — a subtree root is a file target and can never match the ${tool} tool-level resource; the shell class keeps only the 'any' resource (ask or deny lane; ${tool === 'bash' ? 'bash accepts no positive whole-tool allow' : 'see the allow-lane contract for bash'})`,
+      `permission rule ${path} (lane '${lane}') is rejected: the ${tool} tool does not accept a 'subtree' resource in any lane — a subtree root is a file target and can never match the ${tool} tool-level resource; the shell class keeps only the 'any' resource (${role === 'leader' ? "the ask or deny lane for members; the leader allow-lane exception is the whole-tool 'any' rule under the mutation-envelope dual gate — never 'subtree'" : `ask or deny lane; ${tool === 'bash' ? 'bash accepts no positive whole-tool allow' : 'see the allow-lane contract for bash'}`})`,
       { path: `${path}.resource.kind`, lane },
     )
   }
-  if (isShellTool && resource.kind === 'any' && lane === 'allow') {
+  // The allow-lane shell-class rule: rejected for MEMBER templates
+  // (A2C-1, diagnostics byte-identical — the H2 / A2C-1 pins stay
+  // verbatim); ACCEPTED for the LEADER template (exec-autonomy-contract,
+  // user ruling 2026-09-18) — the explicit whole-tool exec authorization,
+  // inert at runtime unless the leader's effective mutation envelope
+  // carries the matching exec token (the pre-execute dual gate).
+  if (isShellTool && resource.kind === 'any' && lane === 'allow' && role !== 'leader') {
     throw teamContractError(
       'MALFORMED_DTO',
       `permission rule ${path} (lane 'allow') is rejected: alpha.2 grants no positive whole-tool permission for ${tool} — the allow lane must not carry a ${tool} rule (no parameter-level allow for shell commands; use the ask or deny lane for { tool: ${tool}, resource: { kind: 'any' } })`,
@@ -780,11 +843,11 @@ export function validateBlueprintDocument(raw: unknown): TeamBlueprintCore {
   })
 
   // --- exactly one complete LeaderTemplate (Architecture §5.3) -------------
-  const leader = validateTemplate(requireField(record, 'leader', '$'), '$.leader')
+  const leader = validateTemplate(requireField(record, 'leader', '$'), '$.leader', 'leader')
 
   // --- 0..N MemberTemplates with unique identity ---------------------------
   const membersRaw = takeArray(record, 'members', '$') ?? []
-  const members = membersRaw.map((item, index) => validateTemplate(item, `$.members[${index}]`))
+  const members = membersRaw.map((item, index) => validateTemplate(item, `$.members[${index}]`, 'member'))
 
   const seenTemplateIds = new Set<string>([leader.templateId])
   for (const member of members) {

@@ -18,10 +18,17 @@
  *     ↓                                OperationPermissionError: deny,
  *                                       never next())
  *     resolveOperationPermission(...)         (A3 — pure static decision)
- *     ├ allow → checkExternalOperation(live)  (A2C-4 — the external hard
- *         │     last-mile recheck; fail closed)
- *         │   ├ allowed → await next()
- *         │   └ denied  → return { kind: 'deny' } (zero effect: NOT marked)
+ *     ├ allow
+ *     │   ├ LEADER exec-class (bash/pwsh) WITHOUT the matching exec token
+ *     │   │   in execEnvelopeOps (the mutation-envelope DUAL GATE —
+ *     │   │   exec-autonomy-contract, user ruling 2026-09-18; fail
+ *     │   │   closed: absent option = no exec authorization)
+ *     │   │   → fall through to the ask path below (kind
+ *     │   │     'user-approval'; zero effect until the human approves)
+ *     │   └ otherwise → checkExternalOperation(live)  (A2C-4 — the
+ *     │       │     external hard last-mile recheck; fail closed)
+ *     │       │   ├ allowed → await next()
+ *     │       │   └ denied  → return { kind: 'deny' } (zero effect: NOT marked)
  *     ├ deny  → return { kind: 'deny' }       (provenance in the reason)
  *     └ ask
  *         ↓
@@ -429,7 +436,7 @@ export function installParameterPermissionListener(agentCtx, params) {
                 'refusing to install the parameter permission listener without it');
         }
     }
-    const { policy, resolveTarget, controlService, rootSessionId, caller, targetInstanceId, isLeader, } = params;
+    const { policy, resolveTarget, controlService, rootSessionId, caller, targetInstanceId, isLeader, execEnvelopeOps, } = params;
     /** The request kind this install routes asks to (plan §9.5). */
     const requestKind = isLeader
         ? CONTROL_REQUEST_KINDS.USER_APPROVAL
@@ -786,45 +793,80 @@ export function installParameterPermissionListener(agentCtx, params) {
             },
         });
         if (decision.decision === 'allow') {
-            // A2C-4 (alpha.2 plan §6.3) — the live external hard LAST-MILE
-            // recheck of the static-allow path: the static decision resolved
-            // against the TEAM policy only; before the exec object is marked
-            // authorized (and the tool body dispatched) the operation must
-            // pass the CURRENT external hard policy through the shared
-            // read-only ControlService check (the same hard-cell semantics
-            // the resolve-time probe uses — invariant 34: no Team decision,
-            // human included, bypasses it). This static path carries no
-            // control request — this probe is its only external gate. A deny
-            // here is zero-effect: the exec is NOT marked (the monotonic
-            // end-cap stays armed against it), next() is never awaited (the
-            // tool body never runs), and no durable control row is written or
-            // consumed. A failing check fails closed (plan §10.3).
-            let external;
-            try {
-                external = await controlService.checkExternalOperation({
-                    capabilityDomain: 'tools',
-                    toolName: name,
+            // exec-autonomy-contract (user ruling 2026-09-18) — the DUAL
+            // GATE: a LEADER exec-class ALLOW (bash / pwsh — the shell class;
+            // the leader allow-lane whole-tool rule is the ONLY contract path
+            // to an exec ALLOW) stands ONLY when the leader's effective
+            // mutation envelope carries the matching exec token
+            // (`params.execEnvelopeOps` — an absent option or a missing token
+            // means NO exec authorization: fail-closed). A gated allow is
+            // NOT settled here: the flow continues to the ask path (4) below,
+            // where the durable control row is created with this install's
+            // request kind — `user-approval` for the leader install (the
+            // human-only resolver closure) — and the exec is marked
+            // authorized only on approval. Zero effect until then (no
+            // external recheck, no marking, next() never awaited). Members
+            // never reach this gate (isLeader=false): their exec ask already
+            // routes to `leader-approval` (the leader decides; the human may
+            // stand in).
+            const execClassTool = SHELL_PERMISSION_TOOL_VALUES.includes(name);
+            const execTokenPresent = execEnvelopeOps !== undefined && execEnvelopeOps.includes(name);
+            if (isLeader && execClassTool && !execTokenPresent) {
+                observe({
+                    stage: 'exec-envelope-downgrade',
+                    callId,
+                    tool: name,
+                    staticSource: decision.provenance.source,
+                    ...(decision.provenance.lane !== undefined
+                        ? { staticLane: decision.provenance.lane }
+                        : {}),
+                    ...(decision.provenance.ruleIndex !== undefined
+                        ? { staticRuleIndex: decision.provenance.ruleIndex }
+                        : {}),
                 });
+                // No return: the gated allow is settled by the ask path below.
             }
-            catch (error) {
-                return {
-                    kind: 'deny',
-                    reason: `permission denied: the external policy recheck failed (unexpected check failure: ${error instanceof Error ? error.message : String(error)})`,
-                };
+            else {
+                // A2C-4 (alpha.2 plan §6.3) — the live external hard LAST-MILE
+                // recheck of the static-allow path: the static decision resolved
+                // against the TEAM policy only; before the exec object is marked
+                // authorized (and the tool body dispatched) the operation must
+                // pass the CURRENT external hard policy through the shared
+                // read-only ControlService check (the same hard-cell semantics
+                // the resolve-time probe uses — invariant 34: no Team decision,
+                // human included, bypasses it). This static path carries no
+                // control request — this probe is its only external gate. A deny
+                // here is zero-effect: the exec is NOT marked (the monotonic
+                // end-cap stays armed against it), next() is never awaited (the
+                // tool body never runs), and no durable control row is written or
+                // consumed. A failing check fails closed (plan §10.3).
+                let external;
+                try {
+                    external = await controlService.checkExternalOperation({
+                        capabilityDomain: 'tools',
+                        toolName: name,
+                    });
+                }
+                catch (error) {
+                    return {
+                        kind: 'deny',
+                        reason: `permission denied: the external policy recheck failed (unexpected check failure: ${error instanceof Error ? error.message : String(error)})`,
+                    };
+                }
+                if (external.allowed === false) {
+                    observe({ stage: 'external-recheck-denied', callId, tool: name });
+                    return {
+                        kind: 'deny',
+                        reason: `permission denied: the external hard policy no longer allows ${name} (${external.reason})`,
+                    };
+                }
+                // R6 / H1 — mark THIS exec object as authorized by this install
+                // (the same object the pipeline then flows to the end-cap guard
+                // stage). Marking happens ONLY on final-allow paths — never on
+                // any deny/abort/failure path.
+                authorizedExecutions.add(exec);
+                return await next();
             }
-            if (external.allowed === false) {
-                observe({ stage: 'external-recheck-denied', callId, tool: name });
-                return {
-                    kind: 'deny',
-                    reason: `permission denied: the external hard policy no longer allows ${name} (${external.reason})`,
-                };
-            }
-            // R6 / H1 — mark THIS exec object as authorized by this install
-            // (the same object the pipeline then flows to the end-cap guard
-            // stage). Marking happens ONLY on final-allow paths — never on
-            // any deny/abort/failure path.
-            authorizedExecutions.add(exec);
-            return await next();
         }
         if (decision.decision === 'deny') {
             const provenance = decision.provenance.source === 'rule'

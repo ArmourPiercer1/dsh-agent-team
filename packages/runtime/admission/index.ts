@@ -102,7 +102,9 @@ export type { ResolvedCaller, ResolvedTeamTarget } from './resolve.js'
 export {
   ALL_MUTATION_OPS,
   callerEnvelope,
+  ENVELOPE_EXEC_OPS,
   enforceEnvelope,
+  leaderExecEnvelopeOps,
   overlayEnvelopeOf,
 } from './envelope.js'
 

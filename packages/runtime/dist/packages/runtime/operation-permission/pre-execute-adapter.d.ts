@@ -18,10 +18,17 @@
  *     ↓                                OperationPermissionError: deny,
  *                                       never next())
  *     resolveOperationPermission(...)         (A3 — pure static decision)
- *     ├ allow → checkExternalOperation(live)  (A2C-4 — the external hard
- *         │     last-mile recheck; fail closed)
- *         │   ├ allowed → await next()
- *         │   └ denied  → return { kind: 'deny' } (zero effect: NOT marked)
+ *     ├ allow
+ *     │   ├ LEADER exec-class (bash/pwsh) WITHOUT the matching exec token
+ *     │   │   in execEnvelopeOps (the mutation-envelope DUAL GATE —
+ *     │   │   exec-autonomy-contract, user ruling 2026-09-18; fail
+ *     │   │   closed: absent option = no exec authorization)
+ *     │   │   → fall through to the ask path below (kind
+ *     │   │     'user-approval'; zero effect until the human approves)
+ *     │   └ otherwise → checkExternalOperation(live)  (A2C-4 — the
+ *     │       │     external hard last-mile recheck; fail closed)
+ *     │       │   ├ allowed → await next()
+ *     │       │   └ denied  → return { kind: 'deny' } (zero effect: NOT marked)
  *     ├ deny  → return { kind: 'deny' }       (provenance in the reason)
  *     └ ask
  *         ↓
@@ -427,6 +434,30 @@ export interface InstallParameterPermissionListenerParams {
      * (ask → `leader-approval`, leader-or-human resolver closure).
      */
     readonly isLeader: boolean;
+    /**
+     * exec-autonomy-contract (user ruling 2026-09-18) — the DUAL GATE:
+     * the exec-authorization tokens present in the LEADER's effective
+     * mutation envelope (teamEnvelope ∩ the leader template's
+     * `memberEnvelopes` entry, fail-closed — compute with
+     * `leaderExecEnvelopeOps`).
+     *
+     * Leader install only: when the static policy resolves an exec-class
+     * tool call (`bash` / `pwsh` — the shell class) to ALLOW, the matching
+     * token must be present here for the allow to stand; a missing token —
+     * or an absent option (the option is optional for signature
+     * compatibility, but on a leader install its absence means NO exec
+     * authorization) — DOWNGRADES the allow into the existing ask path
+     * (`requestControl` kind `user-approval`, the human-only resolver
+     * closure): zero effect until the human approves (the tool body never
+     * runs, no exec is marked authorized).
+     *
+     * Member installs ignore this option: a member's exec call cannot be
+     * ALLOW under the contract (the member allow lane rejects shell-class
+     * rules at blueprint validation), so its ask path routes to
+     * `leader-approval` (the leader decides; the human may stand in)
+     * unchanged.
+     */
+    readonly execEnvelopeOps?: readonly string[];
     /**
      * The optional diagnostics hook (the A6 glue wires it to its
      * observation surface). Small structured rows only (no file contents,

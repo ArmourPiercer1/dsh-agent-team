@@ -381,16 +381,18 @@ describe('a3 static resolver — bash (recorded ruling, plan §4)', () => {
     expect(decision).toEqual(ruleDecision('deny', 0))
   })
 
-  it('bash op + bash any rule (allow lane) → allow (MATCHER TOTALNESS pin — not a legal policy)', () => {
-    // Defensive totalness pin (H2 ruling): the A1 schema is the
-    // enforcement point of the bash contract — it REJECTS a bash rule
-    // in the allow lane (no positive whole-tool bash grant in alpha.2)
-    // and an `exact` bash resource in every lane, so a LEGAL policy can
-    // never hand the matcher an allow-lane bash rule. The matcher
-    // itself stays total and lane-agnostic: whatever ruleset it is
-    // handed (hand-crafted or legacy-shaped), an `any` rule in the
-    // allow lane still yields a whole-tool ALLOW. This pin guards that
-    // totality — the enforcement lives in the schema, not here.
+  it('bash op + bash any rule (allow lane) → allow (MATCHER TOTALNESS pin)', () => {
+    // Defensive totalness pin (H2 ruling, re-scoped by the
+    // exec-autonomy-contract, user ruling 2026-09-18): the schema is
+    // the enforcement point of the bash contract — it REJECTS an
+    // allow-lane shell-class rule on MEMBER templates (and an `exact`
+    // bash resource in every lane of every role), but the LEADER
+    // allow-lane whole-tool rule IS a legal policy (runtime dual-gated
+    // by the leader's mutation envelope). The matcher itself stays
+    // total and lane-agnostic: whatever ruleset it is handed, an
+    // `any` rule in the allow lane still yields a whole-tool ALLOW.
+    // This pin guards that totality — the enforcement lives in the
+    // schema (and the dual gate), not here.
     const rules: CanonicalRules = { allow: [anyRule('bash')], ask: [], deny: [] }
     const decision = resolveOperationPermission(policyFrom('deny', rules), bashOp(), rules)
     expect(decision).toEqual(ruleDecision('allow', 0))

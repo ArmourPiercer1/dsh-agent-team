@@ -1,0 +1,42 @@
+[2026-09-19T11:16:48.899Z] exec-contract live smoke — stamp 2026-09-19T11-16-48
+[2026-09-19T11:16:48.899Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/exec-contract
+[2026-09-19T11:16:48.899Z] testuse=/home/user/dsh-plugins/dsh-agent-team/.worktrees/exec-contract/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-19T11:16:48.899Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/exec-contract/dev/agent-workflow/evidence/exec-contract/live-smoke/exec-live-2026-09-19T11-16-48
+[2026-09-19T11:16:48.932Z] ports: hostA=3512 mock=3516 (hostB picks after world A tears down)
+[2026-09-19T11:16:48.937Z] stable pre-probe: 3080=401 3180=401
+[2026-09-19T11:16:48.939Z] worlds materialized (A: no ceiling; B: hard tools deny)
+[2026-09-19T11:16:48.943Z] mock model listening on 3516
+[2026-09-19T11:16:48.943Z] ── WORLD A (no external ceiling): L1 + L2 ──
+[2026-09-19T11:16:53.003Z] host booted at http://127.0.0.1:3512 (root=session-exec-live-root-a-2026-09-19T11-16-48); row ready — toolCount=12
+[2026-09-19T11:16:53.420Z] L0(a) surface (17 tools): bash, edit, read, read_image, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, write
+[2026-09-19T11:16:53.420Z] saved blueprints L1 + L2 written (deny list = 0 names)
+[2026-09-19T11:16:53.420Z] ── L1: dual gate open (leader allow bash + envelope bash token) ──
+[2026-09-19T11:16:53.856Z] PASS L1.0: team.create (L1) succeeds on the fresh root — status=200 body={"type":"server-response","rpcId":"xl1-a8snb4aenx","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-exec-live-l1-2026-09-19T11-16-48","blueprint":{"blueprintId":"team.exec-l1","revision":"1","contentHash":"sha256:b708270463de2d695576cbedd47d8baafd14c2e05dc95d726bf89a131dfc45ae"},"createdAt":"2026-09-19T11:16:53.437Z","gen
+[2026-09-19T11:16:53.856Z] PASS L1.1: L1: the bash side effect LANDED (marker file written by the real host) — fileExists=true
+[2026-09-19T11:16:53.856Z] PASS L1.2: L1: the tool result reports execution (l1-executed marker printed) — result=l1-executed
+[Command finished with exit code 0]
+[2026-09-19T11:16:53.856Z] PASS L1.3: L1: ZERO durable control requests on the L1 root (the direct-allow path — the real bound-blueprint token reached the listener) — requests=[]
+[2026-09-19T11:16:53.856Z] ── L2: gate 1 open, gate 2 closed (envelope WITHOUT the bash token) ──
+[2026-09-19T11:16:54.356Z] PASS L2.1: L2: the downgrade created a durable user-approval request (kind=user-approval, tool=bash) — the fallback itself was NOT envelope-blocked — requests=[{"sequence":4,"factType":"control-request-recorded","requestId":"ctrl-16snxiy1lmv6b91vp3f2w0lt","kind":"user-approval","toolName":"bash","actionName":"parameter-permission","targetInstanceId":"inst-leader","correlation":"call-xl-rm6vojki","createdAt":"2026-09-19T11:16:53.928Z"}]
+[2026-09-19T11:16:56.357Z] PASS L2.2: L2: zero side effect before the human allow (marker file ABSENT at the pending moment AND at the pre-resolve re-check) — pre=false t2=false
+[2026-09-19T11:16:56.373Z] PASS L2.3: L2: the human resolution via team.resolveControl v4 succeeds (decision=allow recorded) — status=200 body={"type":"server-response","rpcId":"xl2res-phg5r66xwz","result":{"ok":true,"value":{"data":{"decision":{"requestId":"ctrl-16snxiy1lmv6b91vp3f2w0lt","decision":"allow","decider":{"kind":"human","humanId":"session-exec-live-l2-2026-09-19T11-16-48"},"scope":{"rootSessionId":"session-exec-live-l2-2026-09-19T11-16-48","targetInstanceId":"inst-leader","actionName":"parameter-permission","correlation":"ca
+[2026-09-19T11:16:56.799Z] PASS L2.4: L2: team.create (L2) succeeds (the RPC awaited the boot turn; the human allow unblocked it) — status=200 body={"type":"server-response","rpcId":"xl2-0xz5lsnbby","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-exec-live-l2-2026-09-19T11-16-48","blueprint":{"blueprintId":"team.exec-l2","revision":"1","contentHash":"sha256:4ed5119342
+[2026-09-19T11:16:56.800Z] PASS L2.5: L2: after the human allow the bash EXECUTED (marker file present with the marker content) — fileExists=true result=l2-executed
+[Command finished with exit code 0]
+[2026-09-19T11:16:56.800Z] PASS L2.6: L2: the durable ledger records exactly the user-approval request + the allow decision + the allow consumption — requests=1 decisions=[{"sequence":5,"factType":"control-decision-recorded","requestId":"ctrl-16snxiy1lmv6b91vp3f2w0lt","decision":"allow","createdAt":"2026-09-19T11:16:56.366Z"}] consumptions=1
+[2026-09-19T11:16:56.800Z] teardown: stopping host A + world A
+[2026-09-19T11:16:56.802Z] world A removed (/home/user/dsh-plugins/dsh-agent-team/.worktrees/exec-contract/tests/homes/exec-live-2026-09-19T11-16-48-a)
+[2026-09-19T11:16:56.806Z] ── WORLD B (external hard deny of the tools cell): L3 ──
+[2026-09-19T11:17:00.828Z] host booted at http://127.0.0.1:3512 (root=session-exec-live-root-b-2026-09-19T11-16-48); row ready — toolCount=12
+[2026-09-19T11:17:01.242Z] L0(b) surface (17 tools): bash, edit, read, read_image, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, write
+[2026-09-19T11:17:01.243Z] saved blueprint L3 written (both gates open — the ceiling is the HOST's, not the team's)
+[2026-09-19T11:17:01.243Z] ── L3: both gates open, external hard policy denies tools ──
+[2026-09-19T11:17:01.361Z] PASS L3.0: team.create (L3) succeeds on the fresh root — status=200 body={"type":"server-response","rpcId":"xl3-rawrl6baqi","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-exec-live-l3-2026-09-19T11-16-48","blueprint":{"blueprintId":"team.exec-l3","revision":"1","contentHash":"sha256:7c887b6dd72017cb99752d09600b442b708b31cd26ca2f591f3207e6fafd9380"},"createdAt":"2026-09-19T11:17:01.260Z","gen
+[2026-09-19T11:17:01.361Z] PASS L3.1: L3: the bash did NOT execute even though both gates passed (marker file ABSENT after the turn) — fileExists=false
+[2026-09-19T11:17:01.361Z] PASS L3.2: L3: the tool result is the external-hard-policy denial (the A2C-4 last-mile recheck over the live host facts) — result=Error: permission denied: the external hard policy no longer allows bash (the external hard policy denies capability 'tools' (the hard cell refuses the operation))
+[2026-09-19T11:17:01.361Z] PASS L3.3: L3: ZERO durable control rows on the L3 root (a recheck denial writes nothing) — requests=[]
+[2026-09-19T11:17:01.361Z] teardown: stopping host B + world B
+[2026-09-19T11:17:01.363Z] world B removed (/home/user/dsh-plugins/dsh-agent-team/.worktrees/exec-contract/tests/homes/exec-live-2026-09-19T11-16-48-b)
+[2026-09-19T11:17:01.363Z] teardown: closing the mock model
+[2026-09-19T11:17:01.368Z] PASS STABLE: the stable dev instances were untouched (:3080 / :3180 401 before AND after) — pre=401/401 post=401/401
+[2026-09-19T11:17:01.368Z] VERDICT PASS — 15/15 criteria passed

@@ -108,7 +108,14 @@ Structural rules (all fail loudly with a classified reason):
 - **permission rule**: `tool`, `resource`.
 - **requirement**: `domain`, `name`, `optional`.
 - **envelope**: `allow`, `deny` (arrays of operation tokens, lowercase slug
-  `[a-z][a-z0-9._-]{0,127}`).
+  `[a-z][a-z0-9._-]{0,127}`). Two recognized token classes: the
+  team-governance operations (`assign-task`, `create-member`,
+  `send-message`, `report-progress`, `request-control`, `resolve-control`,
+  `archive-member`, `restore-member`, `dispose-member`) and the
+  **exec-authorization tokens** `'bash'` / `'pwsh'` — the leader's
+  effective envelope must carry the token for the leader's allow-lane
+  shell-class permission rule to authorize the tool at runtime (the
+  pre-execute dual gate; §5.1). Other slugs parse but are inert.
 - **member envelope entry**: `templateId`, `envelope`.
 - **policy state**: `id` (lowercase slug ≤64), `description`, `fields`.
 - **quota spec**: `team`, `members`; each `{maxInstances, maxConcurrent}`.
@@ -154,6 +161,8 @@ permissions:
   allow:
     - { tool: read, resource: { kind: subtree, value: /home/user/data } }
     - { tool: write, resource: { kind: exact, value: out/report.md } }
+    # LEADER template only (dual-gated — see below):
+    # - { tool: bash, resource: { kind: any } }
   ask:
     - { tool: bash, resource: { kind: any } }
   deny:
@@ -172,12 +181,23 @@ Rules (closed vocabulary; anything else is a `MALFORMED_DTO`):
   — judged by the public `FileSystem.contains` seam over file identities), or
   `any` (the whole tool).
 - **Shell class (`bash` / `pwsh`)**:
-  - `exact` is rejected in EVERY lane (an exact key is a file key and can
-    never match the tool-level shell resource);
-  - `subtree` is rejected in EVERY lane (a subtree root is a file target);
-  - `any` in the **allow** lane is rejected (no positive whole-tool
-    permission for shell); `any` in the `ask` / `deny` lanes is the minimal
-    legal shell permission.
+  - `exact` is rejected in EVERY lane of EVERY role (an exact key is a
+    file key and can never match the tool-level shell resource);
+  - `subtree` is rejected in EVERY lane of EVERY role (a subtree root is
+    a file target);
+  - `any` in the **allow** lane is rejected on **MEMBER** templates (no
+    positive whole-tool permission for a member shell); on the **LEADER
+    template** the allow lane MAY carry `{ tool: bash|pwsh, resource:
+    { kind: any } }` (exec-autonomy-contract, user ruling 2026-09-18) —
+    an explicit, declared whole-tool exec authorization. It is INERT
+    unless the **DUAL GATE** holds: the leader's effective mutation
+    envelope (`teamEnvelope` ∩ the leader template's `memberEnvelopes`
+    entry, fail-closed) must carry the matching exec token (`'bash'` or
+    `'pwsh'` — separate tokens; `bash authority != pwsh authority`).
+    Missing token → the call is downgraded to the `user-approval` ask
+    path (human decides). There is NO implicit default-allow: an absent
+    rule still resolves to `policy.default`. `any` in the `ask` / `deny`
+    lanes stays legal in every role (the minimal shell permission).
 
 ### 5.2 Interaction with the host preset (live-verified on a 0.1.5-rc.2 host, 2026-09-14)
 
@@ -207,8 +227,10 @@ preset is a non-minimal shipped one:
 
 Practical rule: for a strict-permission agent, either choose a preset that
 does not mount the spawn subagent (the shipped `minimal` preset has no
-`subagent`, but its only managed tool `bash` cannot take an allow-lane rule —
-§5.1 shell class), or keep `subagent_fork` in `builtinToolDeny` and accept
+`subagent`; its only managed tool `bash` takes an allow-lane rule on the
+LEADER template — the §5.1 leader exception, dual-gated by the mutation
+envelope — and stays ask/deny-only on members), or keep `subagent_fork` in
+`builtinToolDeny` and accept
 that the model will still see `subagent` post-gate (open P1 finding as of
 2026-09-14; no shipped fix yet).
 
@@ -279,7 +301,9 @@ Run these in order on the authored file; stop at the first failure and fix:
 6. **Capabilities** (per template, when present) — the four required
    sub-fields; `permissions` (when present): `default` ∈ {ask, deny}; the
    three lanes present; rule `tool` in the seven-name vocabulary; resource
-   `kind` in {exact, subtree, any}; the shell-class rejections of §5.1.
+   `kind` in {exact, subtree, any}; the shell-class rejections of §5.1
+   (allow-lane `any` rejected on MEMBERS only — the leader exception is
+   legal but runtime-dual-gated; exact/subtree rejected for every role).
 7. **Requirements** — unique `(domain, name)`.
 8. **Envelopes** — operation token grammar; no operation in both `allow` and
    `deny`.
@@ -338,8 +362,10 @@ already bound to in place (frozen revisions replay their stored source).
   structural FATAL.
 - Putting an operation in both `allow` and `deny` of one envelope.
 - `permissions.default: allow` — always rejected.
-- Giving `bash`/`pwsh` an `exact`/`subtree` resource, or an allow-lane `any`
-  for a shell tool.
+- Giving `bash`/`pwsh` an `exact`/`subtree` resource (any role), or an
+  allow-lane `any` for a shell tool on a MEMBER template (the leader
+  allow-lane exception is legal but needs the mutation-envelope exec
+  token or the call downgrades to human approval — §5.1 dual gate).
 - Denying the preset's own-layer spawn `subagent` in `builtinToolDeny`
   (setup fails with `unknown global tool "subagent"`), or assuming its
   absence from the gate surface means the model never sees it (on 0.1.5-rc.2

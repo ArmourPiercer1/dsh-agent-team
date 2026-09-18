@@ -23,11 +23,18 @@ import type { BlueprintContentHash, BlueprintId, BlueprintRevision, TemplateId }
  * `write`, `edit`, `lsp`) address their target file as the primary
  * resource. The shell class (`bash`, `pwsh` — the pinned-upstream
  * standard preset exposes `bash` on POSIX and `pwsh` on Windows, with
- * isomorphic execution arguments) supports ONLY tool-level `ask`/`deny`
- * via the `any` resource — and the schema ENFORCES it (the validation
- * rejects a shell-class rule in the `allow` lane entirely, and an
- * `exact` shell-class resource in every lane: no positive whole-tool
- * grant and no parameter-level allow for shell commands in alpha.2).
+ * isomorphic execution arguments) supports tool-level `ask`/`deny` via
+ * the `any` resource in every role, and — LEADER ONLY
+ * (exec-autonomy-contract, user ruling 2026-09-18) — a whole-tool `any`
+ * rule in the `allow` lane: an explicit, declared exec authorization,
+ * inert at runtime unless the leader's effective mutation envelope
+ * carries the matching exec token (`'bash'` / `'pwsh'`; the runtime
+ * pre-execute dual gate downgrades otherwise — fail-closed). No implicit
+ * default-allow: an absent rule still resolves to `policy.default`. The
+ * schema ENFORCES it (the validation rejects a member-template
+ * shell-class rule in the `allow` lane — diagnostics byte-identical to
+ * the A2C-1 text — and an `exact` shell-class resource in every lane of
+ * every role: no parameter-level allow for shell commands in alpha.2).
  * The two shell tools are DISTINCT permission tools (`bash authority !=
  * pwsh authority`): a rule or an approval for one never gates or
  * authorizes the other.
@@ -45,7 +52,9 @@ export type PermissionTool = 'read' | 'read_image' | 'write' | 'edit' | 'lsp' | 
  *   the SAME provider — never a string authority over opaque keys);
  *   the shell class (bash/pwsh) does not accept a subtree resource in
  *   any lane (the A2C-1 shell contract — the shell keeps only the
- *   whole-tool `any` resource in ask/deny);
+ *   whole-tool `any` resource: ask/deny in every role, plus the
+ *   leader-only allow-lane exception under the mutation-envelope dual
+ *   gate);
  * - `any` — the whole tool, carrying no resource identity (the minimal
  *   shell permission: `{ tool: bash, resource: { kind: 'any' } }`).
  */
@@ -177,11 +186,24 @@ export interface CapabilityRequirement {
  * A Team or Member autonomy/mutation envelope: which mutation operations
  * are allowed or denied. Self-consistency: an operation may not appear in
  * both `allow` and `deny` (Architecture §5.5).
+ *
+ * Recognized token classes (exec-autonomy-contract, user ruling
+ * 2026-09-18): team-governance operations (the closed `ALL_MUTATION_OPS`
+ * vocabulary) plus the exec-authorization tokens `'bash'` / `'pwsh'`
+ * (the closed `ENVELOPE_EXEC_OPS` vocabulary, defined in
+ * `packages/runtime/admission/envelope.ts`). The leader's effective
+ * envelope (teamEnvelope ∩ the leader template's memberEnvelopes entry,
+ * fail-closed) must carry the token for the leader's allow-lane
+ * shell-class permission rule to authorize `bash` / `pwsh` at runtime —
+ * the pre-execute dual gate (missing token = downgrade to the
+ * `user-approval` ask path). The tokens are open slugs at parse time
+ * (the envelope vocabulary is unchanged); this is their RUNTIME
+ * recognition.
  */
 export interface MutationEnvelope {
-    /** Mutation operations this envelope allows. */
+    /** Mutation operations (and exec-authorization tokens) this envelope allows. */
     readonly allow: readonly string[];
-    /** Mutation operations this envelope denies. */
+    /** Mutation operations (and exec-authorization tokens) this envelope denies. */
     readonly deny: readonly string[];
 }
 /**

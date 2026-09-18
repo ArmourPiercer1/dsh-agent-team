@@ -1,0 +1,159 @@
+[
+  {
+    "seq": 1,
+    "receivedAt": "2026-09-19T11:16:53.049Z",
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"EXECLIVE_DISC_A_2026-09-19T11-16-48\"}]",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "exec-contract live smoke session"
+    }
+  },
+  {
+    "seq": 2,
+    "receivedAt": "2026-09-19T11:16:53.050Z",
+    "userTextHead": "EXECLIVE_DISC_A_2026-09-19T11-16-48",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "EXECLIVE_DISC_A_DONE"
+    }
+  },
+  {
+    "seq": 3,
+    "receivedAt": "2026-09-19T11:16:53.498Z",
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:1c9fa9cbbbcdba94c7eb9524afc8fe6465399f59bf37c73eb67df1b05f9e2c6b] EXECLIVE_L1_2026-09-19T11-16-48",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-xl-z5puxxt7",
+          "name": "bash",
+          "arguments": {
+            "command": "echo exec-l1-2026-09-19T11-16-48 > /home/user/dsh-plugins/dsh-agent-team/.worktrees/exec-contract/tests/homes/exec-live-2026-09-19T11-16-48-a/workspace/exec-l1-2026-09-19T11-16-48.txt && echo l1-executed",
+            "timeoutMs": 30000
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 4,
+    "receivedAt": "2026-09-19T11:16:53.499Z",
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:1c9fa9cbbbcdba94c7eb9524afc8fe6465399f59bf37c73eb67df1",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "exec-contract live smoke session"
+    }
+  },
+  {
+    "seq": 5,
+    "receivedAt": "2026-09-19T11:16:53.841Z",
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:1c9fa9cbbbcdba94c7eb9524afc8fe6465399f59bf37c73eb67df1b05f9e2c6b] EXECLIVE_L1_2026-09-19T11-16-48",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "text",
+      "content": "EXECLIVE_L1_DONE tools=1"
+    }
+  },
+  {
+    "seq": 6,
+    "receivedAt": "2026-09-19T11:16:53.919Z",
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:4e36a63920ea3ff295d22a91848b66d3c8a7d6dab47e08b0bf0d843ecea543f9] EXECLIVE_L2_2026-09-19T11-16-48",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-xl-rm6vojki",
+          "name": "bash",
+          "arguments": {
+            "command": "echo exec-l2-2026-09-19T11-16-48 > /home/user/dsh-plugins/dsh-agent-team/.worktrees/exec-contract/tests/homes/exec-live-2026-09-19T11-16-48-a/workspace/exec-l2-2026-09-19T11-16-48.txt && echo l2-executed",
+            "timeoutMs": 30000
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 7,
+    "receivedAt": "2026-09-19T11:16:53.921Z",
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:4e36a63920ea3ff295d22a91848b66d3c8a7d6dab47e08b0bf0d84",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "exec-contract live smoke session"
+    }
+  },
+  {
+    "seq": 8,
+    "receivedAt": "2026-09-19T11:16:56.782Z",
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:4e36a63920ea3ff295d22a91848b66d3c8a7d6dab47e08b0bf0d843ecea543f9] EXECLIVE_L2_2026-09-19T11-16-48",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "text",
+      "content": "EXECLIVE_L2_DONE tools=1"
+    }
+  },
+  {
+    "seq": 9,
+    "receivedAt": "2026-09-19T11:17:00.871Z",
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"EXECLIVE_DISC_B_2026-09-19T11-16-48\"}]",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "exec-contract live smoke session"
+    }
+  },
+  {
+    "seq": 10,
+    "receivedAt": "2026-09-19T11:17:00.871Z",
+    "userTextHead": "EXECLIVE_DISC_B_2026-09-19T11-16-48",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "EXECLIVE_DISC_B_DONE"
+    }
+  },
+  {
+    "seq": 11,
+    "receivedAt": "2026-09-19T11:17:01.330Z",
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:3d87988e41d5359a8e7e76b73b14828a7e4a2e2d91f0baaa103705",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "exec-contract live smoke session"
+    }
+  },
+  {
+    "seq": 12,
+    "receivedAt": "2026-09-19T11:17:01.330Z",
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:3d87988e41d5359a8e7e76b73b14828a7e4a2e2d91f0baaa10370535dc50dfd6] EXECLIVE_L3_2026-09-19T11-16-48",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-xl-6b4gtib9",
+          "name": "bash",
+          "arguments": {
+            "command": "echo exec-l3-2026-09-19T11-16-48 > /home/user/dsh-plugins/dsh-agent-team/.worktrees/exec-contract/tests/homes/exec-live-2026-09-19T11-16-48-b/workspace/exec-l3-2026-09-19T11-16-48.txt && echo l3-executed",
+            "timeoutMs": 30000
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 13,
+    "receivedAt": "2026-09-19T11:17:01.346Z",
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:3d87988e41d5359a8e7e76b73b14828a7e4a2e2d91f0baaa10370535dc50dfd6] EXECLIVE_L3_2026-09-19T11-16-48",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "text",
+      "content": "EXECLIVE_L3_DONE tools=1"
+    }
+  }
+]

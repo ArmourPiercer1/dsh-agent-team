@@ -138,6 +138,65 @@ export const ALL_MUTATION_OPS = [
     'dispose-member',
 ];
 /**
+ * The closed EXEC-authorization token vocabulary (exec-autonomy-contract,
+ * user ruling 2026-09-18): the envelope tokens that gate the shell-class
+ * TOOL CALLS (as opposed to the team-governance mutation actions of
+ * {@link ALL_MUTATION_OPS}).
+ *
+ * A leader's allow-lane shell-class permission rule (`bash` / `pwsh` with
+ * the whole-tool `any` resource — the leader-only allow-lane exception in
+ * blueprint validation) authorizes the tool at runtime ONLY when the
+ * leader's effective mutation envelope carries the matching token: the
+ * pre-execute dual gate (see
+ * `packages/runtime/operation-permission/pre-execute-adapter.ts`). The
+ * two tokens are SEPARATE (`bash authority != pwsh authority`): the
+ * envelope gates each shell tool independently.
+ *
+ * These tokens live in the same open-slug envelope fields as the
+ * governance ops (`blueprint.teamEnvelope` / `memberEnvelopes`); they are
+ * recognized HERE (the runtime) — the blueprint parse layer is unchanged
+ * (envelope tokens were always open slugs).
+ */
+export const ENVELOPE_EXEC_OPS = ['bash', 'pwsh'];
+/**
+ * The LEADER's effective envelope restricted to the exec-authorization
+ * tokens (exec-autonomy-contract, user ruling 2026-09-18) — the dual
+ * gate's input.
+ *
+ * Formula (the SAME leader branch as {@link callerEnvelope}):
+ * `teamEnvelope.allow − teamEnvelope.deny`, further intersected with the
+ * leader template's `memberEnvelopes` entry `allow − deny` when such an
+ * entry exists (it only tightens), ∩ {@link ENVELOPE_EXEC_OPS}.
+ *
+ * Fail closed: an absent `teamEnvelope` = the empty set (no exec
+ * authorization). The instance autonomy overlay does NOT apply here — it
+ * is a MEMBER mechanism (see {@link callerEnvelope}); the leader's
+ * effective envelope is the team ∩ template-entry intersection, full
+ * stop.
+ *
+ * @param blueprint - the resolved bound blueprint.
+ * @returns the exec tokens the leader's effective envelope carries
+ *   (deterministic order: the team allow-list order).
+ */
+export function leaderExecEnvelopeOps(blueprint) {
+    const teamDeny = new Set(blueprint.teamEnvelope?.deny ?? []);
+    const leaderTemplateId = String(blueprint.leader.templateId);
+    const memberEntry = blueprint.memberEnvelopes.find((entry) => String(entry.templateId) === leaderTemplateId);
+    const templateAllow = new Set(memberEntry?.envelope.allow ?? []);
+    const templateDeny = new Set(memberEntry?.envelope.deny ?? []);
+    const bounds = [];
+    for (const operation of blueprint.teamEnvelope?.allow ?? []) {
+        if (!ENVELOPE_EXEC_OPS.includes(operation))
+            continue;
+        if (teamDeny.has(operation) || templateDeny.has(operation))
+            continue;
+        if (memberEntry !== undefined && !templateAllow.has(operation))
+            continue;
+        bounds.push(operation);
+    }
+    return bounds;
+}
+/**
  * Step 3 — enforce the action's required ops against the caller's
  * effective envelope (fail closed).
  *

@@ -1,0 +1,19 @@
+{
+  "at": "2026-09-19T11:16:54.356Z",
+  "fileExists": false,
+  "fileContent": null,
+  "pendingRequests": [
+    {
+      "sequence": 4,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-16snxiy1lmv6b91vp3f2w0lt",
+      "kind": "user-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "targetInstanceId": "inst-leader",
+      "correlation": "call-xl-rm6vojki",
+      "createdAt": "2026-09-19T11:16:53.928Z"
+    }
+  ],
+  "fileExistsAtT2": false
+}

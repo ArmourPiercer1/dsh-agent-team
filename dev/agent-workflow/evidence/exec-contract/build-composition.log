@@ -1,0 +1,38 @@
+$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition: 87 modules, 11 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/exec-contract/packages/client/composition-shim/client-bundle.js (958553 B)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/exec-contract/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/exec-contract/packages/client/composition-shim/package.json
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/schema.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/schema.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/schema.js
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/schema.js.map
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/types.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/types.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/validate.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/validate.js
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/validate.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/envelope.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/envelope.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/envelope.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/envelope.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/index.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/index.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/index.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/index.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/permission-resolver.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/permission-resolver.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/permission-resolver.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/permission-resolver.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+[ELIFECYCLE] Command failed with exit code 1.
+BUILD:COMPOSITION EXIT: 1

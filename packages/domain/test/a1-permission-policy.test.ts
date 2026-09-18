@@ -410,15 +410,18 @@ describe('A1: validation rejections (closed schema, fail loudly)', () => {
 
 describe('A1: bash contract (H2 ruling — the schema is the enforcement point)', () => {
   // The alpha.2 bash contract, enforced in validation (stable diagnostics —
-  // the messages below are pinned VERBATIM):
+  // the messages below are pinned VERBATIM). After the exec-autonomy-
+  // contract (user ruling 2026-09-18) the contract is ROLE-SCOPED:
   //
-  // - `bash` + `any` in the ALLOW lane → REJECTED (no positive whole-tool
-  //   grant for bash in alpha.2);
-  // - `bash` + `exact` in ANY lane → REJECTED (an exact key is a file key
-  //   and can never match the bash tool-level resource; alpha.2 has no
-  //   parameter-level shell matcher);
-  // - `bash` + `any` in the ASK / DENY lanes → LEGAL (the minimal shell
-  //   permission; the deny-lane parse is pinned by
+  // - `bash` + `any` in the ALLOW lane → REJECTED on MEMBER templates
+  //   (the allow-lane shell-class exception is LEADER-only — see
+  //   exec-contract-a1-leader-allow.test.ts); the member diagnostic is
+  //   BYTE-IDENTICAL to the pre-change leader pin (H2 stays verbatim);
+  // - `bash` + `exact` in ANY lane (any role) → REJECTED (an exact key is
+  //   a file key and can never match the bash tool-level resource;
+  //   alpha.2 has no parameter-level shell matcher);
+  // - `bash` + `any` in the ASK / DENY lanes → LEGAL in every role (the
+  //   minimal shell permission; the deny-lane parse is pinned by
   //   PERMISSION_SOURCE_BASH_ANY above, the ask-lane parse below).
 
   /** A blueprint carrying ONE bash rule (index 0) in the given lane. */
@@ -468,51 +471,128 @@ describe('A1: bash contract (H2 ruling — the schema is the enforcement point)'
     ].join('\n')
   }
 
-  const EXACT_REJECTION =
+  /** A blueprint carrying ONE bash rule (index 0) in the given lane, on
+   * the MEMBER template (the exec-autonomy-contract, user ruling
+   * 2026-09-18, moved the A2C-1 allow-lane rejection pin HERE: the
+   * allow-lane shell-class exception is LEADER-only, and the member
+   * diagnostic stays byte-identical to the pre-change text). */
+  function memberBashContractSource(
+    lane: 'allow' | 'ask' | 'deny',
+    resource: { kind: 'exact'; path: string } | { kind: 'any' },
+  ): string {
+    const resourceLines =
+      resource.kind === 'any'
+        ? ['            resource:', '              kind: any']
+        : [
+            '            resource:',
+            '              kind: exact',
+            `              path: "${resource.path}"`,
+          ]
+    const laneOf = (name: 'allow' | 'ask' | 'deny'): string[] =>
+      name === lane
+        ? [`        ${name}:`, '          - tool: bash', ...resourceLines]
+        : [`        ${name}: []`]
+    return [
+      '---',
+      'schemaVersion: 1',
+      'blueprintId: team.min',
+      'revision: "1"',
+      'leader:',
+      '  templateId: leader',
+      '  persona: "Lead."',
+      'members:',
+      '  - templateId: worker',
+      '    persona: "Worker."',
+      '    capabilities:',
+      '      teamTools:',
+      '        kind: allow',
+      '        items: []',
+      '      builtinToolDeny: []',
+      '      skills:',
+      '        kind: allow',
+      '        items: []',
+      '      mcp:',
+      '        kind: allow',
+      '        items: []',
+      '      permissions:',
+      '        default: ask',
+      ...laneOf('allow'),
+      ...laneOf('ask'),
+      ...laneOf('deny'),
+      'requirements: []',
+      'memberEnvelopes: []',
+      'policyStates: []',
+      'metadata: {}',
+      '---',
+      '',
+    ].join('\n')
+  }
+
+  // Role-aware exact diagnostics (exec-autonomy-contract review fix):
+  // the MEMBER trailing stays byte-identical to the pre-PR text (the H2
+  // era pin, now pinned on a member source so the legacy wording can
+  // never drift); the LEADER trailing states both legal shapes instead
+  // of the stale pre-PR text that denied the leader allow-lane exception.
+  const EXACT_REJECTION_LEADER =
     "permission rule $.leader.capabilities.permissions.{lane}[0] (lane '{lane}') is rejected: " +
+    'the bash tool does not accept an \'exact\' resource in any lane — an exact key is a file key ' +
+    'and can never match the bash tool-level resource, and alpha.2 has no parameter-level shell ' +
+    "matcher (the ask or deny lane for members; the leader allow-lane exception is the whole-tool " +
+    '\'any\' rule under the mutation-envelope dual gate — never \'exact\')'
+  const EXACT_REJECTION_MEMBER =
+    "permission rule $.members[0].capabilities.permissions.{lane}[0] (lane '{lane}') is rejected: " +
     'the bash tool does not accept an \'exact\' resource in any lane — an exact key is a file key ' +
     'and can never match the bash tool-level resource, and alpha.2 has no parameter-level shell ' +
     'matcher (bash supports only the \'any\' resource, in the ask or deny lane)'
 
-  it('bash + any in the allow lane rejects (no positive whole-tool grant for bash)', () => {
+  it('member: bash + any in the allow lane rejects (A2C-1 unchanged for members — diagnostics byte-identical to the pre-change leader pin)', () => {
     const err = expectErrorDetails(
-      () => parseBlueprint(bashContractSource('allow', { kind: 'any' })),
+      () => parseBlueprint(memberBashContractSource('allow', { kind: 'any' })),
       'MALFORMED_DTO',
-      { path: '$.leader.capabilities.permissions.allow[0].resource.kind', lane: 'allow' },
+      { path: '$.members[0].capabilities.permissions.allow[0].resource.kind', lane: 'allow' },
     )
     expect(err.message).toBe(
-      "permission rule $.leader.capabilities.permissions.allow[0] (lane 'allow') is rejected: " +
+      "permission rule $.members[0].capabilities.permissions.allow[0] (lane 'allow') is rejected: " +
         'alpha.2 grants no positive whole-tool permission for bash — the allow lane must not ' +
         'carry a bash rule (no parameter-level allow for shell commands; use the ask or deny ' +
         'lane for { tool: bash, resource: { kind: \'any\' } })',
     )
   })
 
-  it('bash + exact in the allow lane rejects (an exact key is a file key)', () => {
+  it('leader: bash + exact in the allow lane rejects (role-aware trailing — the leader allow-lane exception is stated, never exact)', () => {
     const err = expectErrorDetails(
       () => parseBlueprint(bashContractSource('allow', { kind: 'exact', path: '/bin' })),
       'MALFORMED_DTO',
       { path: '$.leader.capabilities.permissions.allow[0].resource.kind', lane: 'allow' },
     )
-    expect(err.message).toBe(EXACT_REJECTION.replaceAll('{lane}', 'allow'))
+    expect(err.message).toBe(EXACT_REJECTION_LEADER.replaceAll('{lane}', 'allow'))
   })
 
-  it('bash + exact in the ask lane rejects (every lane is closed for exact bash)', () => {
+  it('leader: bash + exact in the ask lane rejects (every lane is closed for exact bash)', () => {
     const err = expectErrorDetails(
       () => parseBlueprint(bashContractSource('ask', { kind: 'exact', path: '/bin' })),
       'MALFORMED_DTO',
       { path: '$.leader.capabilities.permissions.ask[0].resource.kind', lane: 'ask' },
     )
-    expect(err.message).toBe(EXACT_REJECTION.replaceAll('{lane}', 'ask'))
+    expect(err.message).toBe(EXACT_REJECTION_LEADER.replaceAll('{lane}', 'ask'))
   })
 
-  it('bash + exact in the deny lane rejects (every lane is closed for exact bash)', () => {
+  it('leader: bash + exact in the deny lane rejects (every lane is closed for exact bash)', () => {
     const err = expectErrorDetails(
       () => parseBlueprint(bashContractSource('deny', { kind: 'exact', path: '/bin' })),
       'MALFORMED_DTO',
       { path: '$.leader.capabilities.permissions.deny[0].resource.kind', lane: 'deny' },
     )
-    expect(err.message).toBe(EXACT_REJECTION.replaceAll('{lane}', 'deny'))
+    expect(err.message).toBe(EXACT_REJECTION_LEADER.replaceAll('{lane}', 'deny'))
+  })
+
+  it('member: bash + exact in the allow lane rejects with the byte-identical pre-PR diagnostic', () => {
+    const err = expectErrorDetails(
+      () => parseBlueprint(memberBashContractSource('allow', { kind: 'exact', path: '/bin' })),
+      'MALFORMED_DTO',
+      { path: '$.members[0].capabilities.permissions.allow[0].resource.kind', lane: 'allow' },
+    )
+    expect(err.message).toBe(EXACT_REJECTION_MEMBER.replaceAll('{lane}', 'allow'))
   })
 
   it('bash + any in the ask lane PARSES (ask/deny stay the legal bash lanes)', () => {
