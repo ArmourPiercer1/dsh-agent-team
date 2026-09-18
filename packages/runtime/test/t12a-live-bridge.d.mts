@@ -434,6 +434,12 @@ export interface LiveWorld {
       readonly prompt: string
       readonly attachedContext?: string
     }): Promise<void>
+    /** C1: the leader-approval liveness notification port — one REAL model-visible input turn on the team root (the shared `deliverRootInput` path; the durable pending request + the pending-list tool are the recovery mechanism, so failures are non-fatal). */
+    deliverRootControlNotification(input: {
+      readonly rootSessionId: string
+      readonly requestId: string
+      readonly text: string
+    }): Promise<void>
     boot(): Promise<void>
     close(): Promise<void>
     [k: string]: unknown

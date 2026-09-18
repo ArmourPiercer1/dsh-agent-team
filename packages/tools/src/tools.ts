@@ -24,6 +24,10 @@
  * | team_resolve_control  | control service `resolveControl` (unguarded: |
  * |                       | the service's resolver role closure is the   |
  * |                       | authority; a member is never a resolver)     |
+ * | team_list_pending_control | control service `listControlState`     |
+ * |                       | (C1: the read-only Leader discovery of      |
+ * |                       | pending `leader-approval` requests — leader |
+ * |                       | only, zero writes, no query language)       |
  * | team_collect          | facade `work-status` (issue #1 / CCR-3: the  |
  * |                       | durable state read of admitted work units by |
  * |                       | request token — a read: unguarded, zero      |
@@ -85,10 +89,11 @@ import {
 import {
   TEAM_TOOL_BAD_ARGUMENTS,
   TEAM_TOOL_CALLER_UNRESOLVED,
+  TEAM_TOOL_PENDING_LIST_NOT_LEADER,
   TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH,
   TeamToolArgsError,
 } from './tokens.js'
-import { INSTANCE_ID_PATTERN } from '../../contracts/src/index.js'
+import { INSTANCE_ID_PATTERN, LEADER_INSTANCE_ID } from '../../contracts/src/index.js'
 import { consultGuard } from './guard.js'
 import type {
   TeamToolDefinition,
@@ -122,6 +127,12 @@ const ACTION_NAME_MAX_LENGTH = 128
 const TOOL_NAME_MAX_LENGTH = 128
 const REQUEST_ID_MAX_LENGTH = 128
 const NOTE_MAX_LENGTH = 256
+
+/** C1 — the pending-control list bounds (the first narrow version: no
+ *  query language, only the `limit` clamp). */
+const PENDING_LIST_LIMIT_DEFAULT = 50
+const PENDING_LIST_LIMIT_MIN = 1
+const PENDING_LIST_LIMIT_MAX = 100
 
 // --- shared argument descriptions (model-facing) ---------------------------------
 
@@ -414,7 +425,7 @@ function makeDefinition(
   }
 }
 
-// --- the eleven closed tools --------------------------------------------------------------
+// --- the twelve closed tools --------------------------------------------------------------
 
 function listMembersSpec(): ToolSpec {
   return {
@@ -971,11 +982,93 @@ function resolveControlSpec(): ToolSpec {
   }
 }
 
+/**
+ * C1 (leader-approval reachability): the read-only pending list. A Leader
+ * that has not been told a request id has no model-facing way to discover
+ * it (`team_resolve_control` takes the EXACT requestId) — this tool closes
+ * that gap over the existing durable read authority
+ * (`ControlService.listControlState`; a fresh ledger read, no cached
+ * authority — invariant 45).
+ *
+ * Authority rules:
+ * - a READ: it creates no request, resolves nothing, consumes no allow,
+ *   and mutates no member state (the service call is a durable read only);
+ * - LEADER ONLY (the model-facing surface): the durable ledger itself is
+ *   root-scoped and does not distinguish callers, but a member must not
+ *   use this tool to inspect other members' command/resource approval
+ *   metadata — the tool layer enforces `caller.instanceId ===
+ *   LEADER_INSTANCE_ID` before any read (human/UI inspection is a separate
+ *   remote/UI concern);
+ * - the first version stays deliberately narrow: `status === 'pending'`
+ *   AND `kind === 'leader-approval'`, sorted by durable `requestSequence`
+ *   ascending, clamped by `limit`. No target/template/regex filters and no
+ *   query language in this round.
+ */
+function listPendingControlSpec(): ToolSpec {
+  return {
+    name: 'team_list_pending_control',
+    description:
+      'List unresolved `leader-approval` control requests for this Team. Read-only: it creates no request and grants no authority. Use the returned exact `requestId` with `team_resolve_control` to allow or deny a request. (Leader-only; members are rejected.)',
+    properties: {
+      rootSessionId: ROOT_SESSION_ID_ARG,
+      requestToken: REQUEST_TOKEN_ARG,
+      limit: {
+        type: 'integer',
+        description: `Optional: the maximum number of pending requests to return (default ${PENDING_LIST_LIMIT_DEFAULT}, minimum ${PENDING_LIST_LIMIT_MIN}, maximum ${PENDING_LIST_LIMIT_MAX}).`,
+      },
+    },
+    required: ['rootSessionId', 'requestToken'],
+    async run(ctx, args) {
+      const limit = args.limit === undefined
+        ? PENDING_LIST_LIMIT_DEFAULT
+        : (() => {
+            if (
+              typeof args.limit !== 'number' ||
+              !Number.isInteger(args.limit) ||
+              args.limit < PENDING_LIST_LIMIT_MIN ||
+              args.limit > PENDING_LIST_LIMIT_MAX
+            ) {
+              throw new TeamToolArgsError(
+                `team-tools: argument 'limit' must be an integer in ${PENDING_LIST_LIMIT_MIN}..${PENDING_LIST_LIMIT_MAX}`,
+                { limit: args.limit },
+              )
+            }
+            return args.limit
+          })()
+      // Leader-only caller enforcement (BEFORE any read): a member caller
+      // never sees the ledger — the read itself is root-scoped, but the
+      // model-facing discovery surface is the Leader's.
+      const caller = ctx.caller
+      if (caller.kind !== 'instance' || caller.instanceId !== LEADER_INSTANCE_ID) {
+        return {
+          status: 'rejected',
+          code: TEAM_TOOL_PENDING_LIST_NOT_LEADER,
+          message:
+            'team-tools: team_list_pending_control is Leader-only (the pending leader-approval list is the Leader discovery surface; a member caller is rejected before any read)',
+        }
+      }
+      const state = await ctx.options.controlService.listControlState(ctx.rootSessionId)
+      const pending = state.requests
+        .filter((r) => r.status === 'pending' && r.kind === 'leader-approval')
+        .sort((a, b) => a.requestSequence - b.requestSequence)
+      const truncated = pending.length > limit
+      const page = truncated ? pending.slice(0, limit) : pending
+      return {
+        status: 'pending-control-listed',
+        rootSessionId: ctx.rootSessionId,
+        pending: page,
+        count: page.length,
+        truncated,
+      }
+    },
+  }
+}
+
 // --- the factory -----------------------------------------------------------------------
 
 /** The registered team tool set. */
 export interface TeamToolSet {
-  /** The eleven closed tool definitions (registration order). */
+  /** The twelve closed tool definitions (registration order). */
   readonly tools: readonly TeamToolDefinition[]
 }
 
@@ -984,7 +1077,7 @@ export interface TeamToolSet {
  *
  * @param options - the sanctioned runtime ports (facade, control service,
  *   messaging coordinator, activity ledger, caller resolver — SD-DEPS).
- * @returns the eleven tool definitions, ready for the host's public tool
+ * @returns the twelve tool definitions, ready for the host's public tool
  *   registration (each returns a disposer on register; the caller owns
  *   the effect lifetime).
  */
@@ -1001,6 +1094,7 @@ export function createTeamTools(options: TeamToolsOptions): TeamToolSet {
     reportProgressSpec(),
     requestControlSpec(),
     resolveControlSpec(),
+    listPendingControlSpec(),
   ]
   return {
     tools: specs.map((spec) => makeDefinition(options, spec)),

@@ -122,6 +122,12 @@ export type TeamToolsResult = {
     readonly status: 'control-resolved';
     readonly decision: ControlDecisionRecord;
 } | {
+    readonly status: 'pending-control-listed';
+    readonly rootSessionId: string;
+    readonly pending: readonly ControlRequestRecord[];
+    readonly count: number;
+    readonly truncated: boolean;
+} | {
     readonly status: 'blocked';
     readonly toolName: string;
     readonly correlation: string;

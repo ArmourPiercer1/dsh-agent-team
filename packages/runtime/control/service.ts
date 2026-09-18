@@ -179,6 +179,7 @@ import {
   CONTROL_DECISION_VALUES,
   CONTROL_DECISION_VALUE_VALUES,
   CONTROL_GUARD_BLOCK_REASONS,
+  CONTROL_REQUEST_KINDS,
   CONTROL_REQUEST_KIND_VALUES,
   CONTROL_RESOLVER_ROLES,
 } from './types.js'
@@ -875,7 +876,10 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)),
     )
 
-    return withTeamLock(teamLocks, root, async () => {
+    const outcome = await withTeamLock(teamLocks, root, async (): Promise<{
+      readonly record: ControlRequestRecord
+      readonly created: boolean
+    }> => {
       const state = loadControlState(root)
       const key = scopeKey(
         root,
@@ -899,8 +903,10 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       if (existing !== undefined) {
         // Idempotent: the same logical request returns its EXISTING row
         // (regardless of requester; a decided row says `decided` — a new
-        // attempt needs a new correlation).
-        return toRequestRecord(existing.entry, existing.payload, state)
+        // attempt needs a new correlation). An existing row NEVER
+        // re-notifies (C1: the liveness hint is for newly-created rows
+        // only — the pending-list tool is the recovery path).
+        return { record: toRequestRecord(existing.entry, existing.payload, state), created: false }
       }
       const requestId = requestIdOf(key)
       const requester = callerRefOf(caller)
@@ -929,26 +935,75 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         createdAt: options.now(),
       })
       return {
-        requestId,
-        rootSessionId: root,
-        kind: args.kind,
-        requester,
-        targetInstanceId: args.targetInstanceId,
-        actionName: args.actionName,
-        correlation: args.correlation,
-        status: 'pending',
-        createdAt: options.now(),
-        requestSequence: sequence,
-        ...(args.toolName !== undefined ? { toolName: args.toolName } : {}),
-        ...(args.capabilityDomain !== undefined
-          ? { capabilityDomain: args.capabilityDomain }
-          : {}),
-        ...(args.operationFingerprint !== undefined
-          ? { operationFingerprint: args.operationFingerprint }
-          : {}),
-        ...(args.summary !== undefined ? { summary: args.summary } : {}),
+        record: {
+          requestId,
+          rootSessionId: root,
+          kind: args.kind,
+          requester,
+          targetInstanceId: args.targetInstanceId,
+          actionName: args.actionName,
+          correlation: args.correlation,
+          status: 'pending',
+          createdAt: options.now(),
+          requestSequence: sequence,
+          ...(args.toolName !== undefined ? { toolName: args.toolName } : {}),
+          ...(args.capabilityDomain !== undefined
+            ? { capabilityDomain: args.capabilityDomain }
+            : {}),
+          ...(args.operationFingerprint !== undefined
+            ? { operationFingerprint: args.operationFingerprint }
+            : {}),
+          ...(args.summary !== undefined ? { summary: args.summary } : {}),
+        },
+        created: true,
       }
     })
+
+    // C1 (leader-approval reachability) — the Leader LIVENESS
+    // notification, after the per-team lock is released and ONLY for a
+    // newly-created durable `leader-approval` request:
+    // - AFTER the lock (withTeamLock has resolved — its chain entry has
+    //   settled), so a reentrant `resolveControl` (e.g. the Leader
+    //   deciding inside the notification turn) acquires the lock without
+    //   waiting on the request path: the notification NEVER runs inside
+    //   the critical section (no self-deadlock);
+    // - fire-and-forget (NOT awaited here): `requestControl` returns as
+    //   soon as the durable row is committed and returnable, so the
+    //   member's `awaitControlDecision` polling starts without waiting
+    //   for the notification's Leader model turn to drain. In the
+    //   synchronous-delegation topology the Leader can be busy INSIDE the
+    //   very work unit that produced this request — awaiting the
+    //   delivery here would form a cross-session wait cycle (member →
+    //   requestControl → Leader idle → Leader turn → the same work unit)
+    //   that only the human resolver could break; the known scheduling
+    //   limitation (queued delivery while the Leader is busy) is the
+    //   plan §5 characterization, documented, not a deadlock of the
+    //   request path itself;
+    // - a delivery failure is a LIVENESS failure only: no rollback, no
+    //   fake decision, no implicit allow — the durable row stands, and
+    //   the pending-list tool + the GUI remain the recovery paths.
+    if (outcome.created && outcome.record.kind === CONTROL_REQUEST_KINDS.LEADER_APPROVAL) {
+      const port = options.requestNotification
+      if (port !== undefined) {
+        void port
+          .notifyLeaderRequest(outcome.record)
+          .catch((error: unknown) => {
+            const sink = options.onNotificationFailure
+            if (sink !== undefined) {
+              try {
+                sink({
+                  requestId: outcome.record.requestId,
+                  kind: outcome.record.kind,
+                  error,
+                })
+              } catch {
+                // the diagnostic sink must never alter the request path
+              }
+            }
+          })
+      }
+    }
+    return outcome.record
   }
 
   // --- resolveControl ------------------------------------------------------------------

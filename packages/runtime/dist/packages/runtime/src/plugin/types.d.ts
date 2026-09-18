@@ -780,6 +780,23 @@ export interface TeamAgentBindings {
         readonly prompt: string;
         readonly attachedContext?: string;
     }) => Promise<void>;
+    /**
+     * C1 (leader-approval reachability) — deliver ONE control-plane
+     * liveness notification to the Root (Leader) Agent: a REAL model-visible
+     * input turn on the same root-input path the delegate work uses.
+     * NON-AUTHORITY: the glue writes no TeamDomain state and the
+     * notification cannot approve/deny/alter the durable request (the row +
+     * `team_resolve_control` stay the authority). At-least-once: the text
+     * is token-leading and deterministic per request, so a redelivery is
+     * recognizable. OPTIONAL — the same contract as `deliverRootWork`: a
+     * glue without this port simply does not notify (discovery stays
+     * functional through the pending-list tool + the GUI).
+     */
+    readonly deliverRootControlNotification?: (input: {
+        readonly rootSessionId: string;
+        readonly requestId: string;
+        readonly text: string;
+    }) => Promise<void>;
     /** The P8-S4B request boundary (re-apply the durable truth). */
     readonly prepareAgentForRequest: (sessionId: string) => Promise<void>;
     /** Execute one tool on the live agent's ctx (the /__p6t6/tool route). */

@@ -24,6 +24,10 @@
  * | team_resolve_control  | control service `resolveControl` (unguarded: |
  * |                       | the service's resolver role closure is the   |
  * |                       | authority; a member is never a resolver)     |
+ * | team_list_pending_control | control service `listControlState`     |
+ * |                       | (C1: the read-only Leader discovery of      |
+ * |                       | pending `leader-approval` requests — leader |
+ * |                       | only, zero writes, no query language)       |
  * | team_collect          | facade `work-status` (issue #1 / CCR-3: the  |
  * |                       | durable state read of admitted work units by |
  * |                       | request token — a read: unguarded, zero      |
@@ -60,7 +64,7 @@
 import type { TeamToolDefinition, TeamToolsOptions } from './types.js';
 /** The registered team tool set. */
 export interface TeamToolSet {
-    /** The eleven closed tool definitions (registration order). */
+    /** The twelve closed tool definitions (registration order). */
     readonly tools: readonly TeamToolDefinition[];
 }
 /**
@@ -68,7 +72,7 @@ export interface TeamToolSet {
  *
  * @param options - the sanctioned runtime ports (facade, control service,
  *   messaging coordinator, activity ledger, caller resolver — SD-DEPS).
- * @returns the eleven tool definitions, ready for the host's public tool
+ * @returns the twelve tool definitions, ready for the host's public tool
  *   registration (each returns a disposer on register; the caller owns
  *   the effect lifetime).
  */

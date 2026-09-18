@@ -26,6 +26,11 @@ export const TEAM_TOOL_BAD_ARGUMENTS = 'TEAM_TOOL_BAD_ARGUMENTS'
 /** The closed tool-layer caller-resolution error code. */
 export const TEAM_TOOL_CALLER_UNRESOLVED = 'TEAM_TOOL_CALLER_UNRESOLVED'
 
+/** The closed tool-layer leader-only caller error code (C1: the pending-
+ *  control list is a Leader discovery surface — a non-leader caller is
+ *  rejected before any read). */
+export const TEAM_TOOL_PENDING_LIST_NOT_LEADER = 'TEAM_TOOL_PENDING_LIST_NOT_LEADER'
+
 /**
  * The fail-closed tool-layer argument error (one of the closed rejection
  * codes the result union maps to `status: 'rejected'`).
