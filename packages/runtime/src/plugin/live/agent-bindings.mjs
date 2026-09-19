@@ -2843,6 +2843,14 @@ export function createAgentBindings(deps) {
 
   // SD-CALLER: the tool layer only LOOKS UP the caller identity from the
   // durable domain; the runtime re-validates it on every call.
+  //
+  // P0 (caller-root binding): the lookup ALSO returns the session's
+  // OWNING team root. The tool layer enforces owning-root == requested
+  // root before any downstream effect: every Team's leader resolves to
+  // the shared `inst-leader` identity, so without the root in this
+  // answer a Leader of Team A addressing root B would be re-validated
+  // against Team B's rows as Team B's leader (the pending-list +
+  // resolve-control cross-team chain).
   const resolveCaller = async (sessionId) => {
     const sid = String(sessionId)
     // TCM-D4: the caller resolves under the session's OWNING team root from
@@ -2854,12 +2862,18 @@ export function createAgentBindings(deps) {
     // sessions fail closed exactly as before.
     const teamRoot = teamRootOfSession(sid)
     if (teamRoot !== undefined && teamRoot === sid) {
-      return { kind: 'instance', instanceId: String(LEADER_INSTANCE_ID) }
+      return {
+        caller: { kind: 'instance', instanceId: String(LEADER_INSTANCE_ID) },
+        rootSessionId: String(teamRoot),
+      }
     }
     if (teamRoot !== undefined) {
       for (const member of domain.repositories.memberInstances.list(teamRoot)) {
         if (String(member.childSessionId) === sid) {
-          return { kind: 'instance', instanceId: String(member.instanceId) }
+          return {
+            caller: { kind: 'instance', instanceId: String(member.instanceId) },
+            rootSessionId: String(teamRoot),
+          }
         }
       }
     }

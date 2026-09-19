@@ -331,11 +331,23 @@ describe('TCM-D4 the second root in a boot-root world (the freshly created team)
   it('D4-2 resolveCaller: N is its OWN leader; the boot root and its member keep the pre-existing resolution; unknown fails closed', () => {
     // The freshly created team root resolves to its own leader instance —
     // the field-report failure ("not a registered team caller") is fixed.
-    expect(callerN).toEqual({ kind: 'instance', instanceId: 'inst-leader' })
-    // The boot root stays the leader of its own team (unchanged).
-    expect(callerBoot).toEqual({ kind: 'instance', instanceId: 'inst-leader' })
-    // The boot root's member stays its member instance (unchanged).
-    expect(callerWorker).toEqual({ kind: 'instance', instanceId: WORKER.instanceId })
+    // P0: the answer ALSO carries the owning root (the tool layer's
+    // caller-root binding gate consumes it).
+    expect(callerN).toEqual({
+      caller: { kind: 'instance', instanceId: 'inst-leader' },
+      rootSessionId: N,
+    })
+    // The boot root stays the leader of its own team (unchanged; owns BOOT).
+    expect(callerBoot).toEqual({
+      caller: { kind: 'instance', instanceId: 'inst-leader' },
+      rootSessionId: BOOT,
+    })
+    // The boot root's member stays its member instance (unchanged; owns
+    // the boot root).
+    expect(callerWorker).toEqual({
+      caller: { kind: 'instance', instanceId: WORKER.instanceId },
+      rootSessionId: BOOT,
+    })
     // Unknown sessions fail closed with the p6t6 caller-map error — the
     // boot root is NOT a fallback for sessions it does not own.
     expect(callerUnknownError instanceof Error).toBe(true)

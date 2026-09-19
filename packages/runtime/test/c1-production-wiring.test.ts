@@ -105,12 +105,14 @@ const S = await (async () => {
     controlService: control,
     messaging,
     activity,
-    async resolveCaller(sessionId: string): Promise<ActionCaller> {
+    async resolveCaller(sessionId: string): Promise<{ caller: ActionCaller; rootSessionId: string }> {
       const caller = bySession.get(sessionId)
       if (caller === undefined) {
         throw new Error(`c1 wiring: no caller for session ${sessionId}`)
       }
-      return caller
+      // P0: the single-root fixture world — every seeded session owns the
+      // fixture root.
+      return { caller, rootSessionId: String(P6T4_ROOT) }
     },
   })
   function execFor(sessionId: string, callId: string): TeamToolExecContext {

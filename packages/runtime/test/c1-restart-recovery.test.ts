@@ -38,7 +38,7 @@ const LEADER_ID = 'inst-leader'
 
 const S = await (async () => {
   const world = await createP6T4World('c1-restart', ['leader', 'worker'])
-  const runtime = createP6T2Runtime(world)
+  createP6T2Runtime(world) // world satellite setup (no direct consumer in this suite)
   const control = createControlService({
     teamDomain: world.domain,
     blueprintCatalog: world.catalog,
@@ -94,12 +94,14 @@ const S = await (async () => {
     controlService: control2,
     messaging: messaging2,
     activity: activity2,
-    async resolveCaller(sessionId: string): Promise<ActionCaller> {
+    async resolveCaller(sessionId: string): Promise<{ caller: ActionCaller; rootSessionId: string }> {
       const caller = bySession.get(sessionId)
       if (caller === undefined) {
         throw new Error(`c1 restart: no caller for session ${sessionId}`)
       }
-      return caller
+      // P0: the single-root fixture world — every seeded session owns the
+      // fixture root.
+      return { caller, rootSessionId: String(P6T4_ROOT) }
     },
   })
   async function runTool(

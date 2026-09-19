@@ -104,7 +104,12 @@ export function createAgentBindings(deps) {
       hasResidency: (sessionId) => state.live.has(sessionId),
       dropResidency: (sessionId) => state.live.delete(sessionId),
     },
-    resolveCaller: async () => ({ kind: 'human', humanId: 'p8s5a-operator' }),
+    // P0 caller-root binding: the synthetic operator caller owns the
+    // world's root (the T1 tool calls address rootSid).
+    resolveCaller: async () => ({
+      caller: { kind: 'human', humanId: 'p8s5a-operator' },
+      rootSessionId: rootSid,
+    }),
 
     // --- boot + observability ---
     boot: async () => {

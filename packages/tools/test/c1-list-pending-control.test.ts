@@ -45,7 +45,11 @@ import {
   createP6T4World,
 } from '../../runtime/test/p6t4-helpers.js'
 import { createTeamTools } from '../src/index.js'
-import type { TeamToolDefinition, TeamToolsResult } from '../src/index.js'
+import type {
+  ResolvedTeamToolCaller,
+  TeamToolDefinition,
+  TeamToolsResult,
+} from '../src/index.js'
 
 const WORKER_ID = String(P6T4_SEEDS.worker.instanceId)
 const WORKER_SESSION = String(P6T4_SEEDS.worker.childSessionId)
@@ -111,12 +115,14 @@ async function createC1ToolWorld(basename: string): Promise<C1ToolWorld> {
     controlService: control,
     messaging,
     activity,
-    async resolveCaller(sessionId: string): Promise<ActionCaller> {
+    async resolveCaller(sessionId: string): Promise<ResolvedTeamToolCaller> {
       const caller = bySession.get(sessionId)
       if (caller === undefined) {
         throw new Error(`c1 tool world: no caller for session ${sessionId}`)
       }
-      return caller
+      // P0: the single-root fixture world — every seeded session owns the
+      // fixture root.
+      return { caller, rootSessionId: String(P6T4_ROOT) }
     },
   })
   return {

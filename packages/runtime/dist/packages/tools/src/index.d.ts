@@ -26,5 +26,5 @@ export type { TeamToolSet } from './tools.js';
 export { selectTeamTools } from './tool-selector.js';
 export { applyBuiltInToolDeny } from './builtin-deny.js';
 export type { ToolRestrictionDisposer } from './builtin-deny.js';
-export type { TeamToolDefinition, TeamToolExecContext, TeamToolParameterSchema, TeamToolsOptions, TeamToolsResult, } from './types.js';
+export type { ResolvedTeamToolCaller, TeamToolDefinition, TeamToolExecContext, TeamToolParameterSchema, TeamToolsOptions, TeamToolsResult, } from './types.js';
 //# sourceMappingURL=index.d.ts.map

@@ -820,8 +820,14 @@ export interface TeamAgentBindings {
   ) => Promise<import('../../lifecycle/index.js').DescendantDrainReport>
   /** The ephemeral residency surface (lifecycle release + evict). */
   readonly residency: import('../../member-residency/index.js').ResidencyPort
-  /** Resolve the calling authority from the calling session id (tools). */
-  readonly resolveCaller: (sessionId: string) => Promise<ActionCaller>
+  /** Resolve the calling authority + its OWNING team root from the
+   *  calling session id (tools; P0 caller-root binding — the tool layer
+   *  enforces owning-root == requested root before any downstream
+   *  effect). */
+  readonly resolveCaller: (sessionId: string) => Promise<{
+    readonly caller: ActionCaller
+    readonly rootSessionId: string
+  }>
   /** T12-M2: the REAL scoped-prompt persona surface — the agent-scoped
    *  'deployment:persona' system-prompt section installs and restores. */
   readonly personaSurface: LivePersonaSurface

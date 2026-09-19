@@ -165,6 +165,23 @@ export type TeamToolsResult =
     }
 
 /**
+ * P0 (caller-root binding): the resolved tool caller — the caller
+ * identity AND the owning team root the calling session actually
+ * belongs to. The owning root comes from the durable domain (the
+ * session's team-root binding / membership row), NEVER from the tool
+ * arguments and never inferred by a tool body. The tool layer enforces
+ * `rootSessionId === the requested rootSessionId` at the common entry
+ * (a cross-root caller is rejected with
+ * `TEAM_TOOL_CALLER_ROOT_MISMATCH` before any downstream effect) —
+ * otherwise every Team's leader shares `inst-leader` and a Leader of
+ * Team A could address Team B's ledger as Team B's leader.
+ */
+export interface ResolvedTeamToolCaller {
+  readonly caller: ActionCaller
+  readonly rootSessionId: string
+}
+
+/**
  * The factory ports (SD-DEPS): the "TeamRuntime public surface" the tool
  * layer delegates to — the facade plus the sanctioned satellites. Every
  * durable write flows through them; the tool layer itself writes nothing.
@@ -179,11 +196,14 @@ export interface TeamToolsOptions {
   /** The activity ledger (guarded progress writes + durable reads). */
   readonly activity: ActivityLedger
   /**
-   * Resolves the calling authority from the calling session id (SD-CALLER,
-   * injected mock-first). The tool layer never trusts the session id alone:
-   * the runtime re-validates caller identity and role from the durable
-   * domain on every call.
+   * Resolves the calling authority + its OWNING team root from the
+   * calling session id (SD-CALLER, injected mock-first). The tool layer
+   * never trusts the session id alone: the runtime re-validates caller
+   * identity and role from the durable domain on every call, and the
+   * returned `rootSessionId` must be the session's real team ownership
+   * (the gate against a cross-root addressing — a tool argument can
+   * name any root, the caller can only own one).
    * @throws when the session cannot be resolved to a team caller.
    */
-  readonly resolveCaller: (sessionId: string) => Promise<ActionCaller>
+  readonly resolveCaller: (sessionId: string) => Promise<ResolvedTeamToolCaller>
 }

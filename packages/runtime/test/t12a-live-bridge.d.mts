@@ -382,8 +382,12 @@ export interface LiveWorld {
       installScopedPersona(sessionId: string, identity: unknown): void
       restoreScopedPersona(sessionId: string): void
     }
-    /** The caller map (SD-CALLER: the tool layer LOOKS UP the identity here). */
-    resolveCaller(sessionId: string): Promise<{ readonly kind: 'instance'; readonly instanceId: string }>
+    /** The caller map (SD-CALLER: the tool layer LOOKS UP the identity +
+     *  owning root here; P0 caller-root binding). */
+    resolveCaller(sessionId: string): Promise<{
+      readonly caller: { readonly kind: 'instance'; readonly instanceId: string }
+      readonly rootSessionId: string
+    }>
     /** The SessionInputPort over live agents (attributed relay delivery). */
     readonly sessionInput: {
       submitAttributedInput(input: {
