@@ -1,0 +1,9 @@
+mock: listening on 127.0.0.1:3506
+mock: 1 text reply (12 chars): "C1_DISC_DONE"
+mock: 2 text reply (16 chars): "C1 smoke session"
+mock: 3 tool-call reply: team_create_member
+mock: 4 text reply (16 chars): "C1 smoke session"
+mock: 5 text reply (243 chars): "C1_X_EXTRACT_FAIL :: {\"status\":\"rejected\",\"code\":\"TEAM_TOOL_CALLER_UNRESOLVED\",\""
+mock: 6 text reply (16 chars): "C1 smoke session"
+mock: 7 tool-call reply: team_create_member
+mock: 8 text reply (243 chars): "C1_Z_EXTRACT_FAIL :: {\"status\":\"rejected\",\"code\":\"TEAM_TOOL_CALLER_UNRESOLVED\",\""

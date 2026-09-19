@@ -1,0 +1,37 @@
+[2026-09-19T10:06:06.981Z] c1 real-host smoke — stamp 2026-09-19T10-06-06
+[2026-09-19T10:06:06.982Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval
+[2026-09-19T10:06:06.982Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-19T10:06:06.982Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/dev/agent-workflow/evidence/c1-leader-approval/smoke/c1-smoke-2026-09-19T10-06-06
+[2026-09-19T10:06:07.195Z] ports: host=3501 mock=3506
+[2026-09-19T10:06:07.209Z] stable pre-probe: 3080=401 3180=401
+[2026-09-19T10:06:07.210Z] world materialized (scratch workspace)
+[2026-09-19T10:06:07.215Z] mock model listening on 3506
+[2026-09-19T10:06:11.842Z] host booted at http://127.0.0.1:3501; row ready — toolCount=12
+[2026-09-19T10:06:11.842Z] ── L0: discovery ──
+[2026-09-19T10:06:12.258Z] discovery surface (17 tools): bash, edit, read, read_image, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, write
+[2026-09-19T10:06:12.258Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=17 missingTeam=[] denyList=[]
+[2026-09-19T10:06:12.259Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-09-19T10:06:12.259Z] ── S1–S3: team X (async delegate; the liveness arc) ──
+[2026-09-19T10:06:12.429Z] PASS S1.0: team.create (X) succeeds on the fresh root — status=200 body={"type":"server-response","rpcId":"c1x-2ztr0qr3yi","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-x-2026-09-19T10-06-06","blueprint":{"blueprintId":"team.c1-x","revision":"1","contentHash":"sha256:14775312995f77a6f822bab4ad2c12088af4d7bd9f5910d03a108ad79a674090"},"createdAt":"2026-09-19T10:06:12.279Z","generati
+[2026-09-19T10:11:12.446Z] mock wait timed out: X leader chain final (requests=5)
+[2026-09-19T10:11:12.447Z] FAIL S1: the X leader chain completed (create + async delegate admitted) — requests=5
+[2026-09-19T10:12:42.590Z] FAIL S1b: the member bash ask created a durable leader-approval request (pending) — requests=[]
+[2026-09-19T10:14:42.758Z] mock wait timed out: X notification turn start (requests=5)
+[2026-09-19T10:14:42.758Z] FAIL S1c: the C1 liveness notification reached the Leader as a model-visible input turn — requests=5
+[2026-09-19T10:16:42.922Z] mock wait timed out: X notification turn done (requests=5)
+[2026-09-19T10:16:42.923Z] FAIL S2a: the X leader resolved the allow through team_resolve_control (turn completed) — requests=5
+[2026-09-19T10:20:43.247Z] mock wait timed out: X member bash #1 result (requests=5)
+[2026-09-19T10:20:43.248Z] FAIL S2b: S2: the member bash executed after the allow (tool result returned) — requests=5
+[2026-09-19T10:24:43.571Z] mock wait timed out: X deny notification (requests=5)
+[2026-09-19T10:24:43.571Z] FAIL S3a: S3: the second member ask created a second durable request + notification — requests=[] notif=none
+[2026-09-19T10:24:43.571Z] FAIL S2d: S2: exactly ONE consumption fact for the allowed request (allow-once) — consumptions=[]
+[2026-09-19T10:24:43.572Z] FAIL S3d: S3: the denied request has a deny decision and ZERO consumptions — denyDecision=none denyConsumptions=0
+[2026-09-19T10:24:43.572Z] FAIL S2e: S2: the allow decision is durable in the ledger (recorded by the model-facing tool) — allowDecision=none
+[2026-09-19T10:24:43.572Z] ── S4–S5: team Z (notification failure recovery + idempotent retry) ──
+[2026-09-19T10:24:43.707Z] PASS S4.0: team.create (Z) succeeds — status=200 body={"type":"server-response","rpcId":"c1z-z9w8l9n586","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-z-2026-09-19T10-06-06","blueprint":{"blueprintId":"team.c1-z","revision":"1","contentHash":"sha256:112e030425a92e5
+[2026-09-19T10:26:43.868Z] mock wait timed out: Z notification attempt (the refused one) (requests=8)
+[2026-09-19T10:26:43.868Z] teardown: stopping host + mock
+[2026-09-19T10:26:43.880Z] world removed (/home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/tests/homes/c1-smoke-2026-09-19T10-06-06)
+[2026-09-19T10:26:43.880Z] VERDICT FAIL — 3/12 criteria passed; failed: S1,S1b,S1,S2,S2,S3,S2d,S3d,S2e
+[2026-09-19T10:26:43.880Z] FATAL uncaught: TypeError: Cannot read properties of null (reading 'seq')
+    at main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/c1-leader-approval/tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs:1420:22)

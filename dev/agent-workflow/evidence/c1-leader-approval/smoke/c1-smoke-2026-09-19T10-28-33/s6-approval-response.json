@@ -1,0 +1,40 @@
+{
+  "type": "server-response",
+  "rpcId": "c1s6-1zv8hvrmpx",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "decision": {
+          "requestId": "ctrl-1ga69wm11kvu4h0slc6e00of",
+          "decision": "allow",
+          "decider": {
+            "kind": "human",
+            "humanId": "session-c1-smoke-y-2026-09-19T10-28-33"
+          },
+          "scope": {
+            "rootSessionId": "session-c1-smoke-y-2026-09-19T10-28-33",
+            "targetInstanceId": "inst-07pbl9x0q4kd",
+            "actionName": "parameter-permission",
+            "correlation": "call-c1-zw11axee",
+            "toolName": "bash",
+            "operationFingerprint": "sha256:97bc04b5feccd67fa91a16f248fd160ce75699e97838b4b20cbc33fef2071836"
+          },
+          "requestSequence": 29,
+          "decisionSequence": 30,
+          "createdAt": "2026-09-19T10:29:08.784Z",
+          "note": "c1 smoke S6 scripted human resolution (the Leader is blocked in the sync delegate)"
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

@@ -47,6 +47,14 @@
  *        processed after the turn, where the pending list reflects the
  *        recorded decision. Guidance recorded: `async: true` for
  *        approval-capable work.
+ *   XCROSS — cross-ROOT rejection (PR #20 closure, RH2/RH3): while Team
+ *        Z's ask is pending, the X LEADER (a different team's leader on
+ *        the SAME production domain) addresses Z's ledger:
+ *        `team_list_pending_control(root=Z)` AND `team_resolve_control
+ *        (root=Z, requestId=Z-pending)` must BOTH be rejected with
+ *        `TEAM_TOOL_CALLER_ROOT_MISMATCH` in the common tool entry (no
+ *        pending data leaked, no decision recorded) and Z's request must
+ *        stay pending.
  *
  * TOPOLOGY (three created teams on one production row):
  *   - Team X: async delegation; the liveness path works end to end
@@ -231,6 +239,7 @@ const MK_YMEM = `C1MK_YMEM_${RUN_STAMP}`
 const MK_Z = `C1MK_Z_${RUN_STAMP}`
 const MK_ZMEM = `C1MK_ZMEM_${RUN_STAMP}`
 const MK_ZCHECK = `C1MK_ZCHECK_${RUN_STAMP}`
+const MK_XCROSS = `C1MK_XCROSS_${RUN_STAMP}`
 
 // The C1 notification prefix token (the renderer's first line).
 const NOTIF_PREFIX = '[team-control requestId='
@@ -893,7 +902,10 @@ function extractResultRequestId(content) {
  *   4. leader chains (X/Z: create_member → async delegate → done;
  *      Y: create_member → SYNC delegate → done — the S6 blocked turn;
  *      Z-check: list → resolve R_Z1 → request_control →
- *      request_control (same token, S5) → done).
+ *      request_control (same token, S5) → done;
+ *      XCROSS on the X leader: list pending for ROOTZ → resolve ZREQ for
+ *      ROOTZ → done — both must reject TEAM_TOOL_CALLER_ROOT_MISMATCH
+ *      (RH2/RH3, PR #20 closure)).
  */
 function makeDecide() {
   return function decide({ req }) {
@@ -1071,6 +1083,33 @@ function makeDecide() {
           })
         case 4: return { kind: 'text', content: 'C1_Z_LEADER_DONE' }
         default: return { kind: 'text', content: `C1_ZCHECK_FALLTHROUGH tools=${tools}` }
+      }
+    }
+    if (lastUser.includes(MK_XCROSS)) {
+      // RH2/RH3 (PR #20 closure): the X Leader — a DIFFERENT team's leader
+      // on the same production domain — addresses Team Z's ledger:
+      // list pending for ROOTZ → resolve ZREQ (decision allow) for ROOTZ.
+      // The tool-layer caller-root gate must reject BOTH with
+      // TEAM_TOOL_CALLER_ROOT_MISMATCH before any downstream effect;
+      // ROOTZ/ZREQ ride in the trigger text (the oracle is a closure that
+      // cannot see the later-computed zReq).
+      const mRootZ = /ROOTZ=(\S+)/.exec(lastUser)
+      const mZReq = /ZREQ=(\S+)/.exec(lastUser)
+      const rootZ = mRootZ === null ? '' : mRootZ[1]
+      const zReqId = mZReq === null ? '' : mZReq[1]
+      switch (tools) {
+        case 0: return toolCall('team_list_pending_control', {
+          rootSessionId: rootZ,
+          requestToken: `c1-xc-list-${RUN_STAMP}`,
+        })
+        case 1: return toolCall('team_resolve_control', {
+          rootSessionId: rootZ,
+          requestToken: `c1-xc-res-${RUN_STAMP}`,
+          requestId: zReqId,
+          decision: 'allow',
+        })
+        case 2: return { kind: 'text', content: 'C1_XCROSS_DONE' }
+        default: return { kind: 'text', content: `C1_XCROSS_FALLTHROUGH tools=${tools}` }
       }
     }
     return { kind: 'text', content: 'C1_NOOP_DONE' }
@@ -1377,16 +1416,16 @@ async function main() {
     // S4: the notification delivery was ATTEMPTED and REFUSED (mock 500
     // record for the Z member-ask notification request).
     const zNotifReq = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).startsWith(NOTIF_PREFIX) && lastUserTextOf(r).includes(SUM_Z_FILE), 120_000, 'Z notification attempt (the refused one)')
-    writeEvidence('s4-z-notification-attempt.json', zNotifReq === undefined ? { present: false } : {
+    writeEvidence('s4-z-notification-attempt.json', zNotifReq == null ? { present: false } : {
       seq: zNotifReq.seq,
       status: zNotifReq.status,
       error: zNotifReq.error,
       text: lastUserTextOf(zNotifReq).slice(0, 1200),
     })
     check('S4a', 'S4: the notification delivery was attempted and failed (mock refused the Leader notification turn, HTTP 500)',
-      zNotifReq !== undefined && zNotifReq.status === 500,
+      zNotifReq !== null && zNotifReq.status === 500,
       `seq=${zNotifReq?.seq} status=${zNotifReq?.status}`)
-    if (zNotifReq === undefined || zNotifReq.status !== 500) fail('S4a')
+    if (zNotifReq === null || zNotifReq.status !== 500) fail('S4a')
 
     // S4: the request REMAINS durable + pending (the failure did not
     // remove/deny/allow it). "pending" = no control-decision-recorded
@@ -1406,6 +1445,61 @@ async function main() {
       zPending,
       `requests=${JSON.stringify(zLedger.requests).slice(0, 300)} decisions=${JSON.stringify(zLedger.decisions).slice(0, 200)}`)
     if (zReq === undefined) fail('S4b')
+
+    // XCROSS (RH2/RH3, PR #20 closure): the X Leader — a DIFFERENT team's
+    // leader on the SAME production domain — addresses Team Z's ledger
+    // while Z's request is pending (before the S4 recovery input):
+    //   XC1/RH2: team_list_pending_control(root=Z) →
+    //            TEAM_TOOL_CALLER_ROOT_MISMATCH, no pending data;
+    //   XC2/RH3: team_resolve_control(root=Z, requestId=Z-pending) →
+    //            TEAM_TOOL_CALLER_ROOT_MISMATCH, no decision recorded;
+    //   XC3/RH3 closure: Z's request is STILL pending (zero decision /
+    //            zero consumption rows for it).
+    // The gate fires in the COMMON tool entry (before any
+    // ControlService/TeamRuntime effect), so the rejections must carry
+    // the typed P0 code and the Z ledger must be untouched.
+    if (zReq !== undefined) {
+      const xcPrompt = await apiPrompt(booted.origin, booted.cookie, CREATE_ROOT_X,
+        `${MK_XCROSS} cross-root probe: ROOTZ=${CREATE_ROOT_Z} ZREQ=${zReq.requestId} — call team_list_pending_control for ROOTZ, then team_resolve_control for ROOTZ with ZREQ (decision allow).`)
+      if (xcPrompt.status !== 200) fail('XC1')
+      const xcList = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_XCROSS) && toolMsgsOf(r).length === 1, 120_000, 'XCROSS list result')
+      const xcListResult = xcList === null ? '' : String(toolMsgsOf(xcList).pop()?.content ?? '')
+      writeEvidence('xcross-list-result.json', { seq: xcList?.seq ?? null, result: xcListResult.slice(0, 2000) })
+      const xcListRejected = xcListResult.includes('TEAM_TOOL_CALLER_ROOT_MISMATCH')
+      check('XC1', 'RH2: Leader X team_list_pending_control(root=Z) rejected with TEAM_TOOL_CALLER_ROOT_MISMATCH (no pending data leaked)',
+        xcListRejected && !xcListResult.includes(zReq.requestId),
+        `result=${xcListResult.slice(0, 300)}`)
+      if (!xcListRejected || xcListResult.includes(zReq.requestId)) fail('XC1')
+      const xcDone = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_XCROSS) && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_XCROSS_DONE', 120_000, 'XCROSS chain done')
+      const xcRes = xcDone === null ? '' : String(toolMsgsOf(xcDone).slice(-1)[0]?.content ?? '')
+      writeEvidence('xcross-resolve-result.json', { seq: xcDone?.seq ?? null, result: xcRes.slice(0, 2000) })
+      const xcResRejected = xcRes.includes('TEAM_TOOL_CALLER_ROOT_MISMATCH')
+      check('XC2', 'RH3: Leader X team_resolve_control(root=Z, requestId=Z-pending) rejected with TEAM_TOOL_CALLER_ROOT_MISMATCH (no decision recorded)',
+        xcDone !== null && xcResRejected,
+        `result=${xcRes.slice(0, 300)}`)
+      if (xcDone === null || !xcResRejected) fail('XC2')
+      const zLedgerAfterXcross = readControlLedger(CREATE_ROOT_Z)
+      writeEvidence('xcross-z-ledger-after.json', zLedgerAfterXcross)
+      const zStillPending = zLedgerAfterXcross.decisions.filter((d) => d.requestId === zReq.requestId).length === 0
+        && zLedgerAfterXcross.consumptions.filter((c) => c.requestId === zReq.requestId).length === 0
+        && zLedgerAfterXcross.requests.some((q) => q.requestId === zReq.requestId)
+      check('XC3', 'RH3: after the cross-root list + resolve attempts, Team Z request is STILL pending (zero decision rows, zero consumptions)',
+        zStillPending,
+        `decisions=${JSON.stringify(zLedgerAfterXcross.decisions).slice(0, 200)} consumptions=${JSON.stringify(zLedgerAfterXcross.consumptions).slice(0, 200)}`)
+      if (!zStillPending) fail('XC3')
+    } else {
+      // No pending Z request (an earlier failure — the chain needs a
+      // pending requestId to address); record the criteria as failed
+      // without crashing the run.
+      for (const [id, name] of [
+        ['XC1', 'RH2: Leader X team_list_pending_control(root=Z) rejected with TEAM_TOOL_CALLER_ROOT_MISMATCH (no pending data leaked)'],
+        ['XC2', 'RH3: Leader X team_resolve_control(root=Z, requestId=Z-pending) rejected with TEAM_TOOL_CALLER_ROOT_MISMATCH (no decision recorded)'],
+        ['XC3', 'RH3: after the cross-root list + resolve attempts, Team Z request is STILL pending (zero decision rows, zero consumptions)'],
+      ]) {
+        check(id, name, false, 'skipped: no pending Z request to probe (an earlier criterion failed)')
+        fail(id)
+      }
+    }
 
     // UPSTREAM LIVE-FACT (run 3, this round): a model-error turn dies
     // after a FINITE retry storm (observed: 5 retries — mock seq 23–28

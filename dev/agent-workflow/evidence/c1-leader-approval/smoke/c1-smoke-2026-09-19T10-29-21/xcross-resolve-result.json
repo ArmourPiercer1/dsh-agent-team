@@ -1,0 +1,4 @@
+{
+  "seq": 26,
+  "result": "{\"status\":\"rejected\",\"code\":\"TEAM_TOOL_CALLER_ROOT_MISMATCH\",\"message\":\"team-tools: caller session belongs to Team root 'session-c1-smoke-x-2026-09-19T10-29-21', but the tool request targets root 'session-c1-smoke-z-2026-09-19T10-29-21'\",\"details\":{\"callerRootSessionId\":\"session-c1-smoke-x-2026-09-19T10-29-21\",\"requestedRootSessionId\":\"session-c1-smoke-z-2026-09-19T10-29-21\"}}"
+}

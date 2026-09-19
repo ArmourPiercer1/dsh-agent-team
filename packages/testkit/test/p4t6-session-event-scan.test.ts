@@ -1038,8 +1038,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // durable restart recovery of the pending list). All six carry
     // zero denylist vocabulary; the frozen quarantine hit set is
     // unchanged at fifteen. Scanner unchanged.
-    expect(scanResult.filesScanned).toBe(716)
-    expect(scanResult.files.length).toBe(716)
+    // PR #20 closure (caller-root binding + notification fault
+    // closure, 2026-09-18): +1 = 717 — one new scannable file,
+    // packages/tools/test/c1-caller-root-binding.test.ts (the R1–R6
+    // cross-team caller-root binding suite over a real two-root
+    // durable domain + the real control service; the plan §3
+    // TEAM_TOOL_CALLER_ROOT_MISMATCH gate exercised end-to-end).
+    // Zero denylist vocabulary; the frozen quarantine hit set is
+    // unchanged at fifteen. Scanner unchanged.
+    expect(scanResult.filesScanned).toBe(717)
+    expect(scanResult.files.length).toBe(717)
 
   })
 
