@@ -1022,8 +1022,32 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (2026-09-17): the single-writer pin bump executed on the PR
     // branch itself. Evidence:
     // dev/agent-workflow/evidence/rc2-repair/smoke/.
-    expect(scanResult.filesScanned).toBe(710)
-    expect(scanResult.files.length).toBe(710)
+    // C1 (leader-approval reachability, DEC-1): +6 = 716 — the six new
+    // scannable files of this repair round on top of the 710 base:
+    // packages/runtime/control/leader-notification.ts (the pure C1
+    // notification renderer + notifier factory — zero durable state),
+    // packages/tools/test/c1-list-pending-control.test.ts (the
+    // team_list_pending_control nine-case tool suite),
+    // packages/runtime/test/c1-control-notification.test.ts (the
+    // service notification six-case suite + the re-entrant
+    // no-deadlock regression), packages/runtime/test/
+    // c1-leader-notification-glue.test.ts (the live-glue
+    // deliverRootControlNotification suite), packages/runtime/test/
+    // c1-production-wiring.test.ts (the end-to-end wiring integration)
+    // and packages/runtime/test/c1-restart-recovery.test.ts (the
+    // durable restart recovery of the pending list). All six carry
+    // zero denylist vocabulary; the frozen quarantine hit set is
+    // unchanged at fifteen. Scanner unchanged.
+    // PR #20 closure (caller-root binding + notification fault
+    // closure, 2026-09-18): +1 = 717 — one new scannable file,
+    // packages/tools/test/c1-caller-root-binding.test.ts (the R1–R6
+    // cross-team caller-root binding suite over a real two-root
+    // durable domain + the real control service; the plan §3
+    // TEAM_TOOL_CALLER_ROOT_MISMATCH gate exercised end-to-end).
+    // Zero denylist vocabulary; the frozen quarantine hit set is
+    // unchanged at fifteen. Scanner unchanged.
+    expect(scanResult.filesScanned).toBe(717)
+    expect(scanResult.files.length).toBe(717)
 
   })
 

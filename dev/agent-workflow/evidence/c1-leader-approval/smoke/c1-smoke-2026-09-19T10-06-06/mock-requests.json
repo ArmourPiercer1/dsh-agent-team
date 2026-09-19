@@ -1,0 +1,112 @@
+[
+  {
+    "seq": 1,
+    "receivedAt": "2026-09-19T10:06:11.889Z",
+    "status": 200,
+    "userTextHead": "C1MK_DISC_2026-09-19T10-06-06",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1_DISC_DONE"
+    }
+  },
+  {
+    "seq": 2,
+    "receivedAt": "2026-09-19T10:06:11.891Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"C1MK_DISC_2026-09-19T10-06-06\"}]",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1 smoke session"
+    }
+  },
+  {
+    "seq": 3,
+    "receivedAt": "2026-09-19T10:06:12.368Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:99ae35e9fd2ae080cbb1eff6c836d6d053e753690d7e35382e591be75b8a225b] C1MK_X_2026-09-19T10-06-06",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-bl42a0gk",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-x-2026-09-19T10-06-06",
+            "requestToken": "c1-x-create-2026-09-19T10-06-06",
+            "delegationTemplateId": "worker",
+            "label": "w-x"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 4,
+    "receivedAt": "2026-09-19T10:06:12.369Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:99ae35e9fd2ae080cbb1eff6c836d6d053e753690d7e35382e591b",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1 smoke session"
+    }
+  },
+  {
+    "seq": 5,
+    "receivedAt": "2026-09-19T10:06:12.396Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:99ae35e9fd2ae080cbb1eff6c836d6d053e753690d7e35382e591be75b8a225b] C1MK_X_2026-09-19T10-06-06",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "text",
+      "content": "C1_X_EXTRACT_FAIL :: {\"status\":\"rejected\",\"code\":\"TEAM_TOOL_CALLER_UNRESOLVED\",\"message\":\"team-tools: the caller resolver for session 'session-c1-smoke-x-2026-09-19T10-06-06' returned no owning team root; the caller-root binding fails closed\"}"
+    }
+  },
+  {
+    "seq": 6,
+    "receivedAt": "2026-09-19T10:24:43.677Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:74d44e038041842fd44d8fba8f48ecd064607afce00bc2bef3e66c",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "C1 smoke session"
+    }
+  },
+  {
+    "seq": 7,
+    "receivedAt": "2026-09-19T10:24:43.678Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:74d44e038041842fd44d8fba8f48ecd064607afce00bc2bef3e66c4bd7132e7c] C1MK_Z_2026-09-19T10-06-06",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-444wodo8",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-z-2026-09-19T10-06-06",
+            "requestToken": "c1-z-create-2026-09-19T10-06-06",
+            "delegationTemplateId": "worker",
+            "label": "w-z"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 8,
+    "receivedAt": "2026-09-19T10:24:43.692Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:74d44e038041842fd44d8fba8f48ecd064607afce00bc2bef3e66c4bd7132e7c] C1MK_Z_2026-09-19T10-06-06",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "text",
+      "content": "C1_Z_EXTRACT_FAIL :: {\"status\":\"rejected\",\"code\":\"TEAM_TOOL_CALLER_UNRESOLVED\",\"message\":\"team-tools: the caller resolver for session 'session-c1-smoke-z-2026-09-19T10-06-06' returned no owning team root; the caller-root binding fails closed\"}"
+    }
+  }
+]

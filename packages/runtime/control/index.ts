@@ -122,10 +122,17 @@ export type {
   ControlGuardVerdict,
   ControlOperationScope,
   ControlRequestKind,
+  ControlRequestNotificationPort,
   ControlRequestRecord,
   ControlService,
   ControlServiceOptions,
   ControlWaitSignal,
 } from './types.js'
+
+export {
+  createLeaderControlNotifier,
+  renderLeaderApprovalNotification,
+} from './leader-notification.js'
+export type { LeaderControlNotifierDeliver } from './leader-notification.js'
 
 export { createControlService } from './service.js'

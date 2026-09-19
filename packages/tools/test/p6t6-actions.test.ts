@@ -197,7 +197,9 @@ function buildTools(
       if (caller === undefined) {
         throw new Error(`p6t6 caller map: no caller for session ${sessionId}`)
       }
-      return caller
+      // P0: the single-root fixture world — every seeded session owns the
+      // fixture root.
+      return { caller, rootSessionId: String(P6T2_ROOT) }
     },
   }).tools
 }

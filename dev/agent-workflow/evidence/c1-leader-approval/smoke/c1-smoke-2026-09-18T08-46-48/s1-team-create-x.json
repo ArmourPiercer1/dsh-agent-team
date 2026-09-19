@@ -1,0 +1,29 @@
+{
+  "type": "server-response",
+  "rpcId": "c1x-79nt68reu8",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "MALFORMED_DTO",
+      "message": "deny entry at $.members[0].capabilities.teamTools must not have extra fields: items (source: c1-x.yaml)",
+      "details": {
+        "method": "team.create",
+        "endpoint": "team.create",
+        "contractVersion": 1,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "MALFORMED_DTO",
+          "message": "deny entry at $.members[0].capabilities.teamTools must not have extra fields: items (source: c1-x.yaml)",
+          "details": {
+            "path": "$.members[0].capabilities.teamTools",
+            "extraFields": [
+              "items"
+            ],
+            "sourceName": "c1-x.yaml"
+          }
+        }
+      }
+    }
+  }
+}

@@ -207,7 +207,9 @@ const T: TState = {
         if (caller === undefined) {
           throw new Error(`issue1-tools caller map: no caller for session ${sessionId}`)
         }
-        return caller
+        // P0: the single-root fixture world — every seeded session owns the
+        // fixture root.
+        return { caller, rootSessionId: String(P6T2_ROOT) }
       },
     }).tools
 

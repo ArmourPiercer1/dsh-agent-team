@@ -93,5 +93,6 @@
  */
 export { CONTROL_ERROR_CODES, CONTROL_ERROR_CODE_VALUES, ControlError, isControlError, } from './errors.js';
 export { CONTROL_DECISION_REASON_VALUES, CONTROL_DECISION_REASONS, CONTROL_DECISION_VALUES, CONTROL_DECISION_VALUE_VALUES, CONTROL_GUARD_BLOCK_REASON_VALUES, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KIND_VALUES, CONTROL_REQUEST_KINDS, CONTROL_RESOLVER_ROLES, } from './types.js';
+export { createLeaderControlNotifier, renderLeaderApprovalNotification, } from './leader-notification.js';
 export { createControlService } from './service.js';
 //# sourceMappingURL=index.js.map

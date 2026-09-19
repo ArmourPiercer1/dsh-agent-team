@@ -423,13 +423,19 @@ describe('D3 the member identity context block (Team D1-D6 repair v2, B2)', () =
   it('D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block', () => {
     // The block tells the model what to include; the closed layer stays
     // closed either way — no status 'executed' for any wrong claim.
+    // P0 (caller-root binding, PR #20 closure): a wrong root claim by a
+    // session that owns ANOTHER root is now rejected ONE STEP EARLIER —
+    // at the tool-layer caller-root gate (owning root != requested root)
+    // with the typed TEAM_TOOL_CALLER_ROOT_MISMATCH, before the runtime
+    // is ever consulted. The fail-closed outcome (rejected, never
+    // executed) is unchanged; the code below records the new boundary.
     expect(listUnknownRoot.status).toBe('rejected')
     if (listUnknownRoot.status === 'rejected') {
-      expect(listUnknownRoot.code).toBe('TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND')
+      expect(listUnknownRoot.code).toBe('TEAM_TOOL_CALLER_ROOT_MISMATCH')
     }
     expect(listForeignRoot.status).toBe('rejected')
     if (listForeignRoot.status === 'rejected') {
-      expect(listForeignRoot.code).toBe('TEAM_RUNTIME_CALLER_NOT_FOUND')
+      expect(listForeignRoot.code).toBe('TEAM_TOOL_CALLER_ROOT_MISMATCH')
     }
     expect(listMissingRoot.status).toBe('rejected')
     if (listMissingRoot.status === 'rejected') {

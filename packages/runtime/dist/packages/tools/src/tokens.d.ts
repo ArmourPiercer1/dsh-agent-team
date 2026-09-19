@@ -22,6 +22,15 @@ export declare const TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH = 128;
 export declare const TEAM_TOOL_BAD_ARGUMENTS = "TEAM_TOOL_BAD_ARGUMENTS";
 /** The closed tool-layer caller-resolution error code. */
 export declare const TEAM_TOOL_CALLER_UNRESOLVED = "TEAM_TOOL_CALLER_UNRESOLVED";
+/** The closed tool-layer leader-only caller error code (C1: the pending-
+ *  control list is a Leader discovery surface — a non-leader caller is
+ *  rejected before any read). */
+export declare const TEAM_TOOL_PENDING_LIST_NOT_LEADER = "TEAM_TOOL_PENDING_LIST_NOT_LEADER";
+/** The closed tool-layer caller-root binding error code (P0: the calling
+ *  session's owning team root must equal the requested root — every
+ *  Team's leader shares `inst-leader`, so a cross-root caller is
+ *  rejected typed at the common entry, before any downstream effect). */
+export declare const TEAM_TOOL_CALLER_ROOT_MISMATCH = "TEAM_TOOL_CALLER_ROOT_MISMATCH";
 /**
  * The fail-closed tool-layer argument error (one of the closed rejection
  * codes the result union maps to `status: 'rejected'`).

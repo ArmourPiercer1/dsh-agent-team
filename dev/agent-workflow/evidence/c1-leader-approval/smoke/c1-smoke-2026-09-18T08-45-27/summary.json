@@ -1,0 +1,12 @@
+{
+  "runStamp": "2026-09-18T08-45-27",
+  "fatal": "L0 diagnostic abort: the DISC request (seq 2) got reply {\"kind\":\"text\",\"content\":\"C1_NOOP_DONE\"}",
+  "criteria": [
+    {
+      "id": "L0",
+      "name": "discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder)",
+      "ok": true,
+      "detail": "surface=17 missingTeam=[] denyList=[]"
+    }
+  ]
+}

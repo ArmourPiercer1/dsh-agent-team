@@ -84,7 +84,12 @@ describe('D5 activation instance contract', () => {
       controlService: undefined,
       messaging: undefined,
       activity: undefined,
-      resolveCaller: async (): Promise<ActionCaller> => ({ kind: 'human', humanId: 'd5-human' }),
+      // P0 caller-root binding: the synthetic human caller owns the fixture
+      // root (the tool calls address ROOT).
+      resolveCaller: async (): Promise<{ caller: ActionCaller; rootSessionId: string }> => ({
+        caller: { kind: 'human', humanId: 'd5-human' },
+        rootSessionId: ROOT,
+      }),
     }
     const createMember = createTeamTools(options as unknown as TeamToolsOptions).tools.find(
       (tool) => tool.name === 'team_create_member',

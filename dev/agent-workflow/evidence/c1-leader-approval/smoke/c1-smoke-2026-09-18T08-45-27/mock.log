@@ -1,0 +1,3 @@
+mock: listening on 127.0.0.1:3506
+mock: 1 text reply (16 chars): "C1 smoke session"
+mock: 2 text reply (12 chars): "C1_NOOP_DONE"

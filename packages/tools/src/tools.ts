@@ -24,6 +24,10 @@
  * | team_resolve_control  | control service `resolveControl` (unguarded: |
  * |                       | the service's resolver role closure is the   |
  * |                       | authority; a member is never a resolver)     |
+ * | team_list_pending_control | control service `listControlState`     |
+ * |                       | (C1: the read-only Leader discovery of      |
+ * |                       | pending `leader-approval` requests — leader |
+ * |                       | only, zero writes, no query language)       |
  * | team_collect          | facade `work-status` (issue #1 / CCR-3: the  |
  * |                       | durable state read of admitted work units by |
  * |                       | request token — a read: unguarded, zero      |
@@ -84,11 +88,13 @@ import {
 } from './tokens.js'
 import {
   TEAM_TOOL_BAD_ARGUMENTS,
+  TEAM_TOOL_CALLER_ROOT_MISMATCH,
   TEAM_TOOL_CALLER_UNRESOLVED,
+  TEAM_TOOL_PENDING_LIST_NOT_LEADER,
   TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH,
   TeamToolArgsError,
 } from './tokens.js'
-import { INSTANCE_ID_PATTERN } from '../../contracts/src/index.js'
+import { INSTANCE_ID_PATTERN, LEADER_INSTANCE_ID } from '../../contracts/src/index.js'
 import { consultGuard } from './guard.js'
 import type {
   TeamToolDefinition,
@@ -122,6 +128,12 @@ const ACTION_NAME_MAX_LENGTH = 128
 const TOOL_NAME_MAX_LENGTH = 128
 const REQUEST_ID_MAX_LENGTH = 128
 const NOTE_MAX_LENGTH = 256
+
+/** C1 — the pending-control list bounds (the first narrow version: no
+ *  query language, only the `limit` clamp). */
+const PENDING_LIST_LIMIT_DEFAULT = 50
+const PENDING_LIST_LIMIT_MIN = 1
+const PENDING_LIST_LIMIT_MAX = 100
 
 // --- shared argument descriptions (model-facing) ---------------------------------
 
@@ -209,13 +221,21 @@ function rejectFromError(error: unknown): TeamToolsResult | undefined {
 // --- caller resolution -------------------------------------------------------------
 
 type CallerResolution =
-  | { readonly ok: true; readonly caller: ActionCaller }
+  | {
+      readonly ok: true
+      readonly caller: ActionCaller
+      /** The owning team root of the calling session (P0: the root
+       *  equality gate compares it against the requested root). */
+      readonly rootSessionId: string
+    }
   | { readonly ok: false; readonly result: TeamToolsResult }
 
 /**
- * Resolve the calling authority from the execution context (SD-CALLER):
- * the calling agent's session id through the injected resolver; any
- * failure settles as a `rejected` result (the runtime is never called).
+ * Resolve the calling authority + owning root from the execution context
+ * (SD-CALLER): the calling agent's session id through the injected
+ * resolver; any failure (or a malformed resolver answer that omits the
+ * owning root) settles as a `rejected` result (the runtime is never
+ * called).
  */
 async function resolveToolCaller(
   options: TeamToolsOptions,
@@ -237,8 +257,23 @@ async function resolveToolCaller(
     }
   }
   try {
-    const caller = await options.resolveCaller(sessionId)
-    return { ok: true, caller }
+    const resolved = await options.resolveCaller(sessionId)
+    if (
+      resolved === null ||
+      typeof resolved !== 'object' ||
+      typeof resolved.rootSessionId !== 'string' ||
+      resolved.rootSessionId.length === 0
+    ) {
+      return {
+        ok: false,
+        result: {
+          status: 'rejected',
+          code: TEAM_TOOL_CALLER_UNRESOLVED,
+          message: `team-tools: the caller resolver for session '${sessionId}' returned no owning team root; the caller-root binding fails closed`,
+        },
+      }
+    }
+    return { ok: true, caller: resolved.caller, rootSessionId: resolved.rootSessionId }
   } catch (error) {
     return {
       ok: false,
@@ -361,8 +396,10 @@ interface ToolSpec {
 
 /**
  * Wrap one spec in the registered definition: the common validation
- * (arguments object, rootSessionId, requestToken), the caller resolution,
- * and the typed-error mapping.
+ * (arguments object, rootSessionId, requestToken), the caller resolution
+ * + the P0 caller-root binding gate (the caller session's owning root
+ * must equal the requested root — a cross-root caller is rejected typed
+ * before any downstream effect), and the typed-error mapping.
  */
 function makeDefinition(
   options: TeamToolsOptions,
@@ -396,6 +433,25 @@ function makeDefinition(
         const requestToken = validateRequestToken(args)
         const callerResolution = await resolveToolCaller(options, exec)
         if (!callerResolution.ok) return callerResolution.result
+        // P0 (caller-root binding): the calling session's OWNING root must
+        // equal the requested root — enforced here, at the ONE common
+        // entry of every team tool, BEFORE `spec.run` and therefore before
+        // any downstream effect (ControlService read/write, TeamRuntime,
+        // messaging, activity). Every Team's leader resolves to the shared
+        // `inst-leader` identity, so without this gate a Leader of Team A
+        // addressing root B would be re-validated against Team B's rows as
+        // Team B's leader (read / resolve / request on the wrong team).
+        if (callerResolution.rootSessionId !== rootSessionId) {
+          return {
+            status: 'rejected',
+            code: TEAM_TOOL_CALLER_ROOT_MISMATCH,
+            message: `team-tools: caller session belongs to Team root '${callerResolution.rootSessionId}', but the tool request targets root '${rootSessionId}'`,
+            details: {
+              callerRootSessionId: callerResolution.rootSessionId,
+              requestedRootSessionId: rootSessionId,
+            },
+          }
+        }
         const ctx: ToolCallContext = {
           options,
           toolName: spec.name,
@@ -414,7 +470,7 @@ function makeDefinition(
   }
 }
 
-// --- the eleven closed tools --------------------------------------------------------------
+// --- the twelve closed tools --------------------------------------------------------------
 
 function listMembersSpec(): ToolSpec {
   return {
@@ -971,11 +1027,93 @@ function resolveControlSpec(): ToolSpec {
   }
 }
 
+/**
+ * C1 (leader-approval reachability): the read-only pending list. A Leader
+ * that has not been told a request id has no model-facing way to discover
+ * it (`team_resolve_control` takes the EXACT requestId) — this tool closes
+ * that gap over the existing durable read authority
+ * (`ControlService.listControlState`; a fresh ledger read, no cached
+ * authority — invariant 45).
+ *
+ * Authority rules:
+ * - a READ: it creates no request, resolves nothing, consumes no allow,
+ *   and mutates no member state (the service call is a durable read only);
+ * - LEADER ONLY (the model-facing surface): the durable ledger itself is
+ *   root-scoped and does not distinguish callers, but a member must not
+ *   use this tool to inspect other members' command/resource approval
+ *   metadata — the tool layer enforces `caller.instanceId ===
+ *   LEADER_INSTANCE_ID` before any read (human/UI inspection is a separate
+ *   remote/UI concern);
+ * - the first version stays deliberately narrow: `status === 'pending'`
+ *   AND `kind === 'leader-approval'`, sorted by durable `requestSequence`
+ *   ascending, clamped by `limit`. No target/template/regex filters and no
+ *   query language in this round.
+ */
+function listPendingControlSpec(): ToolSpec {
+  return {
+    name: 'team_list_pending_control',
+    description:
+      'List unresolved `leader-approval` control requests for this Team. Read-only: it creates no request and grants no authority. Use the returned exact `requestId` with `team_resolve_control` to allow or deny a request. (Leader-only; members are rejected.)',
+    properties: {
+      rootSessionId: ROOT_SESSION_ID_ARG,
+      requestToken: REQUEST_TOKEN_ARG,
+      limit: {
+        type: 'integer',
+        description: `Optional: the maximum number of pending requests to return (default ${PENDING_LIST_LIMIT_DEFAULT}, minimum ${PENDING_LIST_LIMIT_MIN}, maximum ${PENDING_LIST_LIMIT_MAX}).`,
+      },
+    },
+    required: ['rootSessionId', 'requestToken'],
+    async run(ctx, args) {
+      const limit = args.limit === undefined
+        ? PENDING_LIST_LIMIT_DEFAULT
+        : (() => {
+            if (
+              typeof args.limit !== 'number' ||
+              !Number.isInteger(args.limit) ||
+              args.limit < PENDING_LIST_LIMIT_MIN ||
+              args.limit > PENDING_LIST_LIMIT_MAX
+            ) {
+              throw new TeamToolArgsError(
+                `team-tools: argument 'limit' must be an integer in ${PENDING_LIST_LIMIT_MIN}..${PENDING_LIST_LIMIT_MAX}`,
+                { limit: args.limit },
+              )
+            }
+            return args.limit
+          })()
+      // Leader-only caller enforcement (BEFORE any read): a member caller
+      // never sees the ledger — the read itself is root-scoped, but the
+      // model-facing discovery surface is the Leader's.
+      const caller = ctx.caller
+      if (caller.kind !== 'instance' || caller.instanceId !== LEADER_INSTANCE_ID) {
+        return {
+          status: 'rejected',
+          code: TEAM_TOOL_PENDING_LIST_NOT_LEADER,
+          message:
+            'team-tools: team_list_pending_control is Leader-only (the pending leader-approval list is the Leader discovery surface; a member caller is rejected before any read)',
+        }
+      }
+      const state = await ctx.options.controlService.listControlState(ctx.rootSessionId)
+      const pending = state.requests
+        .filter((r) => r.status === 'pending' && r.kind === 'leader-approval')
+        .sort((a, b) => a.requestSequence - b.requestSequence)
+      const truncated = pending.length > limit
+      const page = truncated ? pending.slice(0, limit) : pending
+      return {
+        status: 'pending-control-listed',
+        rootSessionId: ctx.rootSessionId,
+        pending: page,
+        count: page.length,
+        truncated,
+      }
+    },
+  }
+}
+
 // --- the factory -----------------------------------------------------------------------
 
 /** The registered team tool set. */
 export interface TeamToolSet {
-  /** The eleven closed tool definitions (registration order). */
+  /** The twelve closed tool definitions (registration order). */
   readonly tools: readonly TeamToolDefinition[]
 }
 
@@ -984,7 +1122,7 @@ export interface TeamToolSet {
  *
  * @param options - the sanctioned runtime ports (facade, control service,
  *   messaging coordinator, activity ledger, caller resolver — SD-DEPS).
- * @returns the eleven tool definitions, ready for the host's public tool
+ * @returns the twelve tool definitions, ready for the host's public tool
  *   registration (each returns a disposer on register; the caller owns
  *   the effect lifetime).
  */
@@ -1001,6 +1139,7 @@ export function createTeamTools(options: TeamToolsOptions): TeamToolSet {
     reportProgressSpec(),
     requestControlSpec(),
     resolveControlSpec(),
+    listPendingControlSpec(),
   ]
   return {
     tools: specs.map((spec) => makeDefinition(options, spec)),

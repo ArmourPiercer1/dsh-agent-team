@@ -1,0 +1,18 @@
+{
+  "requests": [
+    {
+      "sequence": 29,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-1ga69wm11kvu4h0slc6e00of",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "targetInstanceId": "inst-07pbl9x0q4kd",
+      "correlation": "call-c1-zw11axee",
+      "createdAt": "2026-09-19T10:29:08.464Z"
+    }
+  ],
+  "decisions": [],
+  "consumptions": [],
+  "error": null
+}

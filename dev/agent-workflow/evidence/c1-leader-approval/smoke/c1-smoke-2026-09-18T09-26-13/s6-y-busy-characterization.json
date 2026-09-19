@@ -1,0 +1,233 @@
+{
+  "note": "captured while the Leader turn is blocked in the sync delegate and the notification is queued (immediate Leader decision NOT schedulable in this topology — the human resolver channel is the breaker; the guidance is async: true for approval-capable work)",
+  "yDelegateReturned": false,
+  "yNotifSeen": false,
+  "healthDuringBusy": {
+    "ok": true,
+    "boot": 1,
+    "ready": true,
+    "rootSessionId": "session-c1-smoke-root-2026-09-18T09-26-13",
+    "liveSessions": [
+      "session-c1-smoke-root-2026-09-18T09-26-13",
+      "session-c1-smoke-x-2026-09-18T09-26-13",
+      "session-c1-smoke-y-2026-09-18T09-26-13",
+      "session-c1-smoke-z-2026-09-18T09-26-13",
+      "session-team-child-79fbca53339978756bac6e72323e18f1",
+      "session-team-child-8253c23dda7f72058cceaf4391fc2261",
+      "session-team-child-ccb833b0f90b862b42f7aa1863522c74"
+    ],
+    "toolCount": 12
+  },
+  "mockTimeline": [
+    {
+      "seq": 1,
+      "receivedAt": "2026-09-18T09:26:18.599Z",
+      "userHead": "Generate the session title from this JSON array of human mes"
+    },
+    {
+      "seq": 2,
+      "receivedAt": "2026-09-18T09:26:18.600Z",
+      "userHead": "C1MK_DISC_2026-09-18T09-26-13"
+    },
+    {
+      "seq": 3,
+      "receivedAt": "2026-09-18T09:26:19.066Z",
+      "userHead": "[team-root-work requestToken=team-create:initial-work:sha256"
+    },
+    {
+      "seq": 4,
+      "receivedAt": "2026-09-18T09:26:19.067Z",
+      "userHead": "Generate the session title from this JSON array of human mes"
+    },
+    {
+      "seq": 5,
+      "receivedAt": "2026-09-18T09:26:19.132Z",
+      "userHead": "[team-root-work requestToken=team-create:initial-work:sha256"
+    },
+    {
+      "seq": 6,
+      "receivedAt": "2026-09-18T09:26:19.175Z",
+      "userHead": "[team-root-work requestToken=team-create:initial-work:sha256"
+    },
+    {
+      "seq": 7,
+      "receivedAt": "2026-09-18T09:26:19.177Z",
+      "userHead": "[team-work requestToken=c1-x-delegate-2026-09-18T09-26-13] C"
+    },
+    {
+      "seq": 8,
+      "receivedAt": "2026-09-18T09:26:19.180Z",
+      "userHead": "Generate the session title from this JSON array of human mes"
+    },
+    {
+      "seq": 9,
+      "receivedAt": "2026-09-18T09:26:19.212Z",
+      "userHead": "[team-control requestId=ctrl-16wpayz0pgld780g1esjd0e7]\nA Tea"
+    },
+    {
+      "seq": 10,
+      "receivedAt": "2026-09-18T09:26:19.226Z",
+      "userHead": "[team-control requestId=ctrl-16wpayz0pgld780g1esjd0e7]\nA Tea"
+    },
+    {
+      "seq": 11,
+      "receivedAt": "2026-09-18T09:26:19.248Z",
+      "userHead": "[team-control requestId=ctrl-16wpayz0pgld780g1esjd0e7]\nA Tea"
+    },
+    {
+      "seq": 12,
+      "receivedAt": "2026-09-18T09:26:19.801Z",
+      "userHead": "[team-work requestToken=c1-x-delegate-2026-09-18T09-26-13] C"
+    },
+    {
+      "seq": 13,
+      "receivedAt": "2026-09-18T09:26:19.825Z",
+      "userHead": "[team-control requestId=ctrl-0i0qa7z1qdqeuk1xnjaml1ej]\nA Tea"
+    },
+    {
+      "seq": 14,
+      "receivedAt": "2026-09-18T09:26:19.837Z",
+      "userHead": "[team-control requestId=ctrl-0i0qa7z1qdqeuk1xnjaml1ej]\nA Tea"
+    },
+    {
+      "seq": 15,
+      "receivedAt": "2026-09-18T09:26:19.860Z",
+      "userHead": "[team-control requestId=ctrl-0i0qa7z1qdqeuk1xnjaml1ej]\nA Tea"
+    },
+    {
+      "seq": 16,
+      "receivedAt": "2026-09-18T09:26:20.073Z",
+      "userHead": "[team-work requestToken=c1-x-delegate-2026-09-18T09-26-13] C"
+    },
+    {
+      "seq": 17,
+      "receivedAt": "2026-09-18T09:26:20.490Z",
+      "userHead": "[team-root-work requestToken=team-create:initial-work:sha256"
+    },
+    {
+      "seq": 18,
+      "receivedAt": "2026-09-18T09:26:20.491Z",
+      "userHead": "Generate the session title from this JSON array of human mes"
+    },
+    {
+      "seq": 19,
+      "receivedAt": "2026-09-18T09:26:20.545Z",
+      "userHead": "[team-root-work requestToken=team-create:initial-work:sha256"
+    },
+    {
+      "seq": 20,
+      "receivedAt": "2026-09-18T09:26:20.585Z",
+      "userHead": "[team-root-work requestToken=team-create:initial-work:sha256"
+    },
+    {
+      "seq": 21,
+      "receivedAt": "2026-09-18T09:26:20.589Z",
+      "userHead": "Generate the session title from this JSON array of human mes"
+    },
+    {
+      "seq": 22,
+      "receivedAt": "2026-09-18T09:26:20.590Z",
+      "userHead": "[team-work requestToken=c1-z-delegate-2026-09-18T09-26-13] C"
+    },
+    {
+      "seq": 23,
+      "receivedAt": "2026-09-18T09:26:20.617Z",
+      "userHead": "[team-control requestId=ctrl-1bthcdk02mcgr30r8eyqu0gm]\nA Tea"
+    },
+    {
+      "seq": 24,
+      "receivedAt": "2026-09-18T09:26:21.108Z",
+      "userHead": "[team-control requestId=ctrl-1bthcdk02mcgr30r8eyqu0gm]\nA Tea"
+    },
+    {
+      "seq": 25,
+      "receivedAt": "2026-09-18T09:26:22.116Z",
+      "userHead": "[team-control requestId=ctrl-1bthcdk02mcgr30r8eyqu0gm]\nA Tea"
+    },
+    {
+      "seq": 26,
+      "receivedAt": "2026-09-18T09:26:24.200Z",
+      "userHead": "[team-control requestId=ctrl-1bthcdk02mcgr30r8eyqu0gm]\nA Tea"
+    },
+    {
+      "seq": 27,
+      "receivedAt": "2026-09-18T09:26:28.233Z",
+      "userHead": "[team-control requestId=ctrl-1bthcdk02mcgr30r8eyqu0gm]\nA Tea"
+    },
+    {
+      "seq": 28,
+      "receivedAt": "2026-09-18T09:26:35.924Z",
+      "userHead": "[team-control requestId=ctrl-1bthcdk02mcgr30r8eyqu0gm]\nA Tea"
+    },
+    {
+      "seq": 29,
+      "receivedAt": "2026-09-18T09:26:47.054Z",
+      "userHead": "C1MK_ZCHECK_2026-09-18T09-26-13"
+    },
+    {
+      "seq": 30,
+      "receivedAt": "2026-09-18T09:26:47.067Z",
+      "userHead": "C1MK_ZCHECK_2026-09-18T09-26-13"
+    },
+    {
+      "seq": 31,
+      "receivedAt": "2026-09-18T09:26:47.097Z",
+      "userHead": "C1MK_ZCHECK_2026-09-18T09-26-13"
+    },
+    {
+      "seq": 32,
+      "receivedAt": "2026-09-18T09:26:47.125Z",
+      "userHead": "C1MK_ZCHECK_2026-09-18T09-26-13"
+    },
+    {
+      "seq": 33,
+      "receivedAt": "2026-09-18T09:26:47.142Z",
+      "userHead": "C1MK_ZCHECK_2026-09-18T09-26-13"
+    },
+    {
+      "seq": 34,
+      "receivedAt": "2026-09-18T09:26:47.154Z",
+      "userHead": "[team-control requestId=ctrl-11ncquk116umlp1vf7vve0qd]\nA Tea"
+    },
+    {
+      "seq": 35,
+      "receivedAt": "2026-09-18T09:26:47.166Z",
+      "userHead": "[team-control requestId=ctrl-11ncquk116umlp1vf7vve0qd]\nA Tea"
+    },
+    {
+      "seq": 36,
+      "receivedAt": "2026-09-18T09:26:47.193Z",
+      "userHead": "[team-control requestId=ctrl-11ncquk116umlp1vf7vve0qd]\nA Tea"
+    },
+    {
+      "seq": 37,
+      "receivedAt": "2026-09-18T09:26:47.549Z",
+      "userHead": "[team-work requestToken=c1-z-delegate-2026-09-18T09-26-13] C"
+    },
+    {
+      "seq": 38,
+      "receivedAt": "2026-09-18T09:26:47.933Z",
+      "userHead": "[team-root-work requestToken=team-create:initial-work:sha256"
+    },
+    {
+      "seq": 39,
+      "receivedAt": "2026-09-18T09:26:47.933Z",
+      "userHead": "Generate the session title from this JSON array of human mes"
+    },
+    {
+      "seq": 40,
+      "receivedAt": "2026-09-18T09:26:47.991Z",
+      "userHead": "[team-root-work requestToken=team-create:initial-work:sha256"
+    },
+    {
+      "seq": 41,
+      "receivedAt": "2026-09-18T09:26:48.043Z",
+      "userHead": "[team-work requestToken=c1-y-delegate-2026-09-18T09-26-13] C"
+    },
+    {
+      "seq": 42,
+      "receivedAt": "2026-09-18T09:26:48.046Z",
+      "userHead": "Generate the session title from this JSON array of human mes"
+    }
+  ]
+}

@@ -434,6 +434,43 @@ export interface ControlServiceOptions {
    * non-positive value falls back to the default. ABSENT = the default.
    */
   readonly waitPollIntervalMs?: number
+  /**
+   * C1 (leader-approval reachability) — the OPTIONAL Leader liveness
+   * notification port. INVOKED ONLY after the per-team lock is released,
+   * ONLY for a NEWLY-CREATED durable `leader-approval` request (an
+   * idempotent retry of an existing scope never notifies). The durable
+   * request is the SOLE authority: a notification cannot approve, deny,
+   * or alter it, and a delivery failure NEVER changes the request's
+   * outcome (no rollback, no fake decision, no implicit allow — the
+   * pending-list tool + the GUI remain the recovery paths). ABSENT =
+   * factory/unit worlds without a live Leader Agent; discovery stays
+   * functional through `listControlState`.
+   */
+  readonly requestNotification?: ControlRequestNotificationPort
+  /**
+   * C1 — the OPTIONAL diagnostic sink for a FAILED liveness notification
+   * (observability only — the sink must not alter the durable outcome).
+   * ABSENT = the failure is dropped silently (still non-fatal).
+   */
+  readonly onNotificationFailure?: (args: {
+    readonly requestId: string
+    readonly kind: ControlRequestKind
+    readonly error: unknown
+  }) => void
+}
+
+/**
+ * C1 (leader-approval reachability) — the non-authority notification port
+ * the control service invokes for a newly-created durable `leader-approval`
+ * request (AFTER the per-team lock is released). The implementation is
+ * expected to deliver a model-visible LIVENESS hint to the Leader (the
+ * live glue's `deliverRootControlNotification` over the shared root-input
+ * seam); it carries no decision authority and writes no TeamDomain state.
+ * A rejecting implementation is a liveness failure only (see
+ * `ControlServiceOptions.requestNotification`).
+ */
+export interface ControlRequestNotificationPort {
+  notifyLeaderRequest(request: ControlRequestRecord): Promise<void>
 }
 
 /**

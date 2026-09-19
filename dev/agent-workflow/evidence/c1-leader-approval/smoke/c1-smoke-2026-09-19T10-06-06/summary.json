@@ -1,0 +1,78 @@
+{
+  "runStamp": "2026-09-19T10-06-06",
+  "fatal": "Cannot read properties of null (reading 'seq')",
+  "criteria": [
+    {
+      "id": "L0",
+      "name": "discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder)",
+      "ok": true,
+      "detail": "surface=17 missingTeam=[] denyList=[]"
+    },
+    {
+      "id": "S1.0",
+      "name": "team.create (X) succeeds on the fresh root",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"c1x-2ztr0qr3yi\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-c1-smoke-x-2026-09-19T10-06-06\",\"blueprint\":{\"blueprintId\":\"team.c1-x\",\"revision\":\"1\",\"contentHash\":\"sha256:14775312995f77a6f822bab4ad2c12088af4d7bd9f5910d03a108ad79a674090\"},\"createdAt\":\"2026-09-19T10:06:12.279Z\",\"generati"
+    },
+    {
+      "id": "S1",
+      "name": "the X leader chain completed (create + async delegate admitted)",
+      "ok": false,
+      "detail": "requests=5"
+    },
+    {
+      "id": "S1b",
+      "name": "the member bash ask created a durable leader-approval request (pending)",
+      "ok": false,
+      "detail": "requests=[]"
+    },
+    {
+      "id": "S1c",
+      "name": "the C1 liveness notification reached the Leader as a model-visible input turn",
+      "ok": false,
+      "detail": "requests=5"
+    },
+    {
+      "id": "S2a",
+      "name": "the X leader resolved the allow through team_resolve_control (turn completed)",
+      "ok": false,
+      "detail": "requests=5"
+    },
+    {
+      "id": "S2b",
+      "name": "S2: the member bash executed after the allow (tool result returned)",
+      "ok": false,
+      "detail": "requests=5"
+    },
+    {
+      "id": "S3a",
+      "name": "S3: the second member ask created a second durable request + notification",
+      "ok": false,
+      "detail": "requests=[] notif=none"
+    },
+    {
+      "id": "S2d",
+      "name": "S2: exactly ONE consumption fact for the allowed request (allow-once)",
+      "ok": false,
+      "detail": "consumptions=[]"
+    },
+    {
+      "id": "S3d",
+      "name": "S3: the denied request has a deny decision and ZERO consumptions",
+      "ok": false,
+      "detail": "denyDecision=none denyConsumptions=0"
+    },
+    {
+      "id": "S2e",
+      "name": "S2: the allow decision is durable in the ledger (recorded by the model-facing tool)",
+      "ok": false,
+      "detail": "allowDecision=none"
+    },
+    {
+      "id": "S4.0",
+      "name": "team.create (Z) succeeds",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"c1z-z9w8l9n586\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-c1-smoke-z-2026-09-19T10-06-06\",\"blueprint\":{\"blueprintId\":\"team.c1-z\",\"revision\":\"1\",\"contentHash\":\"sha256:112e030425a92e5"
+    }
+  ]
+}

@@ -35,7 +35,7 @@ import type {
   ControlConsumptionRecord,
   ControlService,
 } from '../../runtime/control/index.js'
-import type { ActionCaller, TeamRuntime } from '../../runtime/admission/index.js'
+import type { TeamRuntime } from '../../runtime/admission/index.js'
 import { flipLifecycle } from '../../runtime/test/p6t4-helpers.js'
 import { destroyP6T1World } from '../../runtime/test/p6t1-helpers.js'
 import {
@@ -46,7 +46,11 @@ import {
 import {
   createTeamTools,
 } from '../src/index.js'
-import type { TeamToolDefinition, TeamToolsResult } from '../src/index.js'
+import type {
+  ResolvedTeamToolCaller,
+  TeamToolDefinition,
+  TeamToolsResult,
+} from '../src/index.js'
 import {
   createP6T6World,
   execFor,
@@ -125,12 +129,14 @@ const G = await (async (): Promise<GuardScenario> => {
       controlService: controlSpy,
       messaging: env.messaging,
       activity: env.activity,
-      resolveCaller: (sessionId: string): Promise<ActionCaller> => {
+      resolveCaller: (sessionId: string): Promise<ResolvedTeamToolCaller> => {
         const caller = env.callerMap.bySession.get(sessionId)
         if (caller === undefined) {
           return Promise.reject(new Error(`p6t6-guard: no caller for '${sessionId}'`))
         }
-        return Promise.resolve(caller)
+        // P0: the single-root fixture world — every seeded session owns the
+        // fixture root.
+        return Promise.resolve({ caller, rootSessionId: String(P6T2_ROOT) })
       },
     })
     function spiedTool(name: string): TeamToolDefinition {

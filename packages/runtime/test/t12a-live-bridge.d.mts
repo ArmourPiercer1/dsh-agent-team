@@ -382,8 +382,12 @@ export interface LiveWorld {
       installScopedPersona(sessionId: string, identity: unknown): void
       restoreScopedPersona(sessionId: string): void
     }
-    /** The caller map (SD-CALLER: the tool layer LOOKS UP the identity here). */
-    resolveCaller(sessionId: string): Promise<{ readonly kind: 'instance'; readonly instanceId: string }>
+    /** The caller map (SD-CALLER: the tool layer LOOKS UP the identity +
+     *  owning root here; P0 caller-root binding). */
+    resolveCaller(sessionId: string): Promise<{
+      readonly caller: { readonly kind: 'instance'; readonly instanceId: string }
+      readonly rootSessionId: string
+    }>
     /** The SessionInputPort over live agents (attributed relay delivery). */
     readonly sessionInput: {
       submitAttributedInput(input: {
@@ -433,6 +437,12 @@ export interface LiveWorld {
       readonly requestToken: string
       readonly prompt: string
       readonly attachedContext?: string
+    }): Promise<void>
+    /** C1: the leader-approval liveness notification port — one REAL model-visible input turn on the team root (the shared `deliverRootInput` path; the durable pending request + the pending-list tool are the recovery mechanism, so failures are non-fatal). */
+    deliverRootControlNotification(input: {
+      readonly rootSessionId: string
+      readonly requestId: string
+      readonly text: string
     }): Promise<void>
     boot(): Promise<void>
     close(): Promise<void>

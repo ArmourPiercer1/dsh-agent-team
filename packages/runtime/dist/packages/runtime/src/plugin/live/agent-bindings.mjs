@@ -244,6 +244,18 @@
  *                                  at-least-once — NO dedupe here, the
  *                                  Root initial-work strategy's durable
  *                                  side owns replay/retry)
+ *   deliverRootControlNotification({rootSessionId, requestId, text})
+ *                                 (C1: one control-plane liveness
+ *                                  notification — a newly-created durable
+ *                                  leader-approval request — as a REAL
+ *                                  model-visible input turn on the same
+ *                                  root-input path; NON-AUTHORITY: no
+ *                                  TeamDomain write, the durable row +
+ *                                  team_resolve_control stay the
+ *                                  authority; the control service fires
+ *                                  it fire-and-forget AFTER the per-team
+ *                                  lock is released, so a delivery
+ *                                  failure is a liveness failure only)
  *   interrupt(target)            (agent.cancel({kind:'user'}))
  *   drainDescendants(childSessionId) -> {drained, quiescent}
  *                                 (T12-M3: the REAL recursive drain — whenIdle
@@ -2470,6 +2482,41 @@ export function createAgentBindings(deps) {
     })
   }
 
+  /**
+   * C1 (leader-approval reachability) — deliver ONE control-plane
+   * liveness notification to the Root (Leader) Agent: a NEWLY-CREATED
+   * durable `leader-approval` request becomes a model-visible input turn
+   * on the SAME private root-input path the delegate work uses (the
+   * shared deliverRootInput: boundary reconciliation + createUserMessage
+   * + followup + whenIdle + materialization). NON-AUTHORITY by
+   * construction: the glue writes no TeamDomain state, records no
+   * decision, and the notification CANNOT approve/deny/alter the request
+   * — the durable control row + `team_resolve_control` stay the
+   * authority. At-least-once: the text is token-leading
+   * (`[team-control requestId=<id>]`, deterministic per request) so a
+   * redelivery is recognizable; the control service fires this
+   * fire-and-forget AFTER the per-team lock is released (a delivery
+   * failure is a liveness failure only — it never blocks the request
+   * path and never changes the outcome).
+   * @param {{rootSessionId: string, requestId: string, text: string}} input
+   * @returns {Promise<void>}
+   */
+  async function deliverRootControlNotification(input) {
+    const sid = String(input?.rootSessionId ?? '')
+    const requestId = String(input?.requestId ?? '')
+    const text = String(input?.text ?? '')
+    if (sid === '') {
+      throw new Error('agent-bindings: deliverRootControlNotification requires a non-empty rootSessionId')
+    }
+    if (requestId === '') {
+      throw new Error('agent-bindings: deliverRootControlNotification requires a non-empty requestId')
+    }
+    if (text === '') {
+      throw new Error('agent-bindings: deliverRootControlNotification requires a non-empty text (the token-leading notification)')
+    }
+    await deliverRootInput({ rootSessionId: sid, text })
+  }
+
   // The P7-T3 lifecycle bindings over the REAL production surfaces: close-
   // admission stays with the production row (no separate in-process
   // admission gate — the router's per-team lock serializes the whole
@@ -2796,6 +2843,14 @@ export function createAgentBindings(deps) {
 
   // SD-CALLER: the tool layer only LOOKS UP the caller identity from the
   // durable domain; the runtime re-validates it on every call.
+  //
+  // P0 (caller-root binding): the lookup ALSO returns the session's
+  // OWNING team root. The tool layer enforces owning-root == requested
+  // root before any downstream effect: every Team's leader resolves to
+  // the shared `inst-leader` identity, so without the root in this
+  // answer a Leader of Team A addressing root B would be re-validated
+  // against Team B's rows as Team B's leader (the pending-list +
+  // resolve-control cross-team chain).
   const resolveCaller = async (sessionId) => {
     const sid = String(sessionId)
     // TCM-D4: the caller resolves under the session's OWNING team root from
@@ -2807,12 +2862,18 @@ export function createAgentBindings(deps) {
     // sessions fail closed exactly as before.
     const teamRoot = teamRootOfSession(sid)
     if (teamRoot !== undefined && teamRoot === sid) {
-      return { kind: 'instance', instanceId: String(LEADER_INSTANCE_ID) }
+      return {
+        caller: { kind: 'instance', instanceId: String(LEADER_INSTANCE_ID) },
+        rootSessionId: String(teamRoot),
+      }
     }
     if (teamRoot !== undefined) {
       for (const member of domain.repositories.memberInstances.list(teamRoot)) {
         if (String(member.childSessionId) === sid) {
-          return { kind: 'instance', instanceId: String(member.instanceId) }
+          return {
+            caller: { kind: 'instance', instanceId: String(member.instanceId) },
+            rootSessionId: String(teamRoot),
+          }
         }
       }
     }
@@ -3008,5 +3069,10 @@ export function createAgentBindings(deps) {
     // (the Root initial-work strategy's live adapter; the durable
     // replay/retry side is the strategy's own — the glue only submits)
     deliverRootWork,
+    // additive (C1): the control-plane Leader liveness notification
+    // delivery (non-authority — the durable control row +
+    // team_resolve_control stay the authority; a delivery failure is a
+    // liveness failure only, never a request-path failure)
+    deliverRootControlNotification,
   }
 }

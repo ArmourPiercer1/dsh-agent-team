@@ -1,0 +1,16 @@
+[
+  {
+    "seq": 1,
+    "reply": {
+      "kind": "text",
+      "content": "C1 smoke session"
+    }
+  },
+  {
+    "seq": 2,
+    "reply": {
+      "kind": "text",
+      "content": "C1_NOOP_DONE"
+    }
+  }
+]

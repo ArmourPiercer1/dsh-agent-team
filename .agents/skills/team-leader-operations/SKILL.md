@@ -1,13 +1,13 @@
 ---
 name: team-leader-operations
-description: Operate a DSH Agent Team as the Leader using the closed set of eleven team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report progress, request/resolve control — including request-token discipline, sync vs async delegation, guard-blocked semantics, and instance addressing. Use when you are the team Leader (your session exposes team_* tools) and need to create members, delegate work, track results, coordinate with members, or manage approval requests.
+description: Operate a DSH Agent Team as the Leader using the closed set of twelve team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report progress, request/resolve control, list pending approvals — including request-token discipline, sync vs async delegation, guard-blocked semantics, and instance addressing. Use when you are the team Leader (your session exposes team_* tools) and need to create members, delegate work, track results, coordinate with members, or manage approval requests.
 ---
 
 # Team Leader Operations
 
 Operate a DSH Agent Team from the Leader session. The Leader is the only agent
 role that can create members, delegate work, and resolve leader-level
-approvals. Everything below is the production behavior of the closed eleven
+approvals. Everything below is the production behavior of the closed twelve
 `team_*` tools — there are no other team tools, and no hidden side channels.
 
 ## 1. Preconditions
@@ -30,7 +30,7 @@ approvals. Everything below is the production behavior of the closed eleven
   (e.g. `inst-...`). Labels and template ids are rejected by live resolution —
   always resolve ids from `team_list_members` first.
 
-## 2. The eleven tools
+## 2. The twelve tools
 
 | Tool | What it does | Required args (besides the two common ones) |
 | --- | --- | --- |
@@ -45,6 +45,7 @@ approvals. Everything below is the production behavior of the closed eleven
 | `team_report_progress` | Record progress on one work subject of an instance | `instanceId`, `subject`, `progress` |
 | `team_request_control` | Request approval for one operation scope (idempotent over the scope identity) | `kind`, `targetInstanceId`, `actionName` |
 | `team_resolve_control` | Record an allow/deny decision on a pending control request | `requestId`, `decision` |
+| `team_list_pending_control` | List the team's unresolved `leader-approval` requests with their exact `requestId`s (read-only, Leader-only) | — |
 
 Optional args worth knowing:
 
@@ -61,6 +62,11 @@ Optional args worth knowing:
   `summary`.
 - `team_resolve_control`: `decision` is a closed enum `allow | deny`; plus
   `note`.
+- `team_list_pending_control`: optional `limit` (integer, default 50,
+  maximum 100). It returns ONLY pending `leader-approval` requests
+  (sorted by durable request sequence) — `user-approval` and
+  `envelope-mutation` requests are NOT listed; the GUI remains the
+  inspection surface for those.
 
 ## 3. Delegation: the standard loop
 
@@ -113,13 +119,46 @@ Optional args worth knowing:
      - `user-approval` — resolved by the human only;
      - `envelope-mutation` — resolved by Leader or human.
      A member is **never** a resolver.
-  3. the resolver records `team_resolve_control` (`allow` | `deny`). An
-     `allow` authorizes the **exact scope exactly once** — it is consumed by
-     the next guarded execution of that scope; it is not a standing grant.
-  4. retry the gated operation with a fresh request token for the NEW logical
-     execution (the same token only for retrying the same logical operation).
-- `team_request_control` is idempotent over the scope identity: retrying with
-  the same token returns the existing request.
+  3. **discover the requestId**: when a member's operation waits on a
+     `leader-approval`, the durable request carries the `requestId` and a
+     model-visible Leader notification arrives on your session for NEW
+     requests. When no `requestId` is at hand (e.g. after a restart —
+     notifications are at-least-once liveness, never a recovery
+     mechanism), read `team_list_pending_control` for the exact
+     `requestId` + summary. It is a pure read: it creates no request,
+     grants no authority, and writes nothing.
+  4. the resolver records `team_resolve_control` (`allow` | `deny`) with
+     that EXACT `requestId`. An `allow` authorizes the **exact scope
+     exactly once** — it is consumed by the next guarded execution of
+     that scope; it is not a standing grant.
+  5. retry the gated operation with a fresh request token for the NEW
+     logical execution (the same token only for retrying the same
+     logical operation).
+- `team_request_control` is idempotent over the scope identity: retrying
+  with the same token returns the existing request (and does NOT re-notify
+  you — one durable request, at most one notification).
+
+### 5.1 Approvals and delegation: prefer `async: true` for approval-gated work
+
+A **synchronous** `team_delegate` / `team_follow_up` blocks your turn on the
+member's work unit. If that member then hits an approval gate
+(`leader-approval`), the liveness notification for the request is queued
+until your current turn can progress — and your current turn is the one
+waiting on that member. That topology is a known scheduling limitation of
+this release (documented, not a deadlock of the request path: the request
+stays durable and the human resolver channel stays open, but you cannot
+decide it yourself from inside the blocked turn).
+
+For work likely to hit member approval gates, use:
+
+1. `team_delegate(..., async: true)` / `team_follow_up(..., async: true)` —
+   the admission returns immediately;
+2. handle the approval when it surfaces: the Leader notification (or a
+   `team_list_pending_control` read), inspect the `requestId` + summary,
+   then `team_resolve_control`;
+3. `team_collect` for the terminal member result.
+
+Synchronous delegation stays fine for work you know will not ask.
 
 ## 6. Reading results
 
@@ -136,6 +175,8 @@ field is a closed vocabulary:
   face).
 - `progress-recorded` / `control-requested` / `control-resolved` — the
   activity/control records.
+- `pending-control-listed` — the `team_list_pending_control` read (carries
+  the `pending` request records, `count`, and `truncated`).
 
 Treat `rejected` and `blocked` as normal control flow: read the `code` /
 `reason`, fix the input or resolve the approval, then act again. Only
@@ -155,3 +196,11 @@ unexpected errors surface as tool errors.
   authorizes the exact scope exactly once.
 - Resolving a `user-approval` request as the Leader — the human is the only
   resolver for that kind.
+- Using a synchronous delegation for approval-gated member work — the
+  request's liveness notification is queued behind your blocked turn;
+  delegate `async: true` and resolve via the notification /
+  `team_list_pending_control` (see §5.1).
+- Treating the Leader notification as a recovery mechanism — it is
+  best-effort liveness for NEW requests; the durable request + the pending
+  list are the recovery path (notifications are not replayed after a
+  restart).

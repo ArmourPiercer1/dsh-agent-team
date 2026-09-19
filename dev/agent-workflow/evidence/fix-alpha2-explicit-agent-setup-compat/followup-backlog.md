@@ -164,3 +164,36 @@ originating tasks; out of scope per plan §5.
      SAFE under an explicit strict grant, classify it accordingly — NOT
      recommended without a reviewed threat-model change (subagent spawns
      full agents).
+
+## 6. C2 — subagent descendant governance: in-process descendants escape the Team member's agent-local permission/deny governance (2026-09-18, recorded by the C1 leader-approval reachability repair — BACKLOG ONLY, no code in that round)
+
+- **Finding.** DSH subagent descendants (spawned in-process by the
+  `subagent` tool) do not inherit the Team member's agent-local
+  parameter-permission policy or `builtinToolDeny` governance: a Team
+  member can delegate to a descendant that carries the parent PRESET's
+  standing composition but NOT the member's agent-local permission
+  listener/guard. No hard plugin-level deny exists in this release
+  (CORE PATCH BUDGET = 0 forbids the upstream fix), and
+  `builtinToolDeny: [subagent]` is NOT a reliable mitigation — items 2
+  and 5 above prove the spawn `subagent` is own-layer and un-restrictable
+  on the non-minimal presets (`standard`, `cordis`, `ptc`): listing it
+  in `builtinToolDeny` fails setup with `unknown global tool
+  "subagent"`, and the gate-verified surface is not the model-facing
+  surface (the deferred install lands post-gate).
+- **Consequence for team authors (temporary guidance, shipped in the
+  C1 skill update).** While C2 remains open: (a) prefer a preset that
+  does not mount the spawn `subagent` tool (the shipped `minimal`
+  preset is the known example) or a custom preset/composition without it;
+  (b) if a standard/cordis/ptc preset is intentionally kept with
+  `subagent` visible to the model, record C2 as an ACCEPTED TEMPORARY
+  RISK in the team's design notes.
+- **Re-open criterion.** If a future rc.2-compatible plugin change makes
+  `subagent` genuinely restrictable (or descendants inherit the
+  member's agent-local governance), update the skill guidance ONLY
+  after a post-publication model-surface test proves the tool is
+  actually removed from the model-facing surface (or that descendants
+  are governed) — the gate read alone is not evidence (item 5).
+- **Status.** BACKLOG ONLY — no plugin or upstream code in the C1
+  round; the C1 skill update (`team-blueprint-authoring` §5.2)
+  corrects any earlier implication that `builtinToolDeny: [subagent]`
+  is an effective mitigation.

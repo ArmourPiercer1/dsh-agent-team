@@ -1,0 +1,48 @@
+mock: listening on 127.0.0.1:3506
+mock: 1 text reply (12 chars): "C1_DISC_DONE"
+mock: 2 text reply (16 chars): "C1 smoke session"
+mock: 3 tool-call reply: team_create_member
+mock: 4 text reply (16 chars): "C1 smoke session"
+mock: 5 tool-call reply: team_delegate
+mock: 6 text reply (9 chars): "C1_X_DONE"
+mock: 7 tool-call reply: bash
+mock: 8 text reply (16 chars): "C1 smoke session"
+mock: 9 tool-call reply: team_list_pending_control
+mock: 10 tool-call reply: team_resolve_control
+mock: 11 text reply (13 chars): "C1_NOTIF_DONE"
+mock: 12 tool-call reply: bash
+mock: 13 tool-call reply: team_list_pending_control
+mock: 14 tool-call reply: team_resolve_control
+mock: 15 text reply (13 chars): "C1_NOTIF_DONE"
+mock: 16 text reply (12 chars): "C1_XMEM_DONE"
+mock: 17 tool-call reply: team_create_member
+mock: 18 text reply (16 chars): "C1 smoke session"
+mock: 19 tool-call reply: team_delegate
+mock: 20 text reply (9 chars): "C1_Z_DONE"
+mock: 21 text reply (16 chars): "C1 smoke session"
+mock: 22 tool-call reply: bash
+mock: 23 -> 500 error reply
+mock: 24 -> 500 error reply
+mock: 25 -> 500 error reply
+mock: 26 -> 500 error reply
+mock: 27 -> 500 error reply
+mock: 28 -> 500 error reply
+mock: 29 tool-call reply: team_list_pending_control
+mock: 30 tool-call reply: team_resolve_control
+mock: 31 tool-call reply: team_request_control
+mock: 32 tool-call reply: team_request_control
+mock: 33 text reply (16 chars): "C1_Z_LEADER_DONE"
+mock: 34 tool-call reply: team_list_pending_control
+mock: 35 tool-call reply: team_resolve_control
+mock: 36 text reply (13 chars): "C1_NOTIF_DONE"
+mock: 37 text reply (12 chars): "C1_ZMEM_DONE"
+mock: 38 tool-call reply: team_create_member
+mock: 39 text reply (16 chars): "C1 smoke session"
+mock: 40 tool-call reply: team_delegate
+mock: 41 tool-call reply: bash
+mock: 42 text reply (16 chars): "C1 smoke session"
+mock: 43 text reply (12 chars): "C1_YMEM_DONE"
+mock: 44 text reply (9 chars): "C1_Y_DONE"
+mock: 45 tool-call reply: team_list_pending_control
+mock: 46 tool-call reply: team_resolve_control
+mock: 47 text reply (13 chars): "C1_NOTIF_DONE"

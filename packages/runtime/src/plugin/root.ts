@@ -190,7 +190,7 @@ import {
   createCompatibilityAuthority,
   createCompatibilityProber,
 } from '../../compatibility/index.js'
-import { createControlService } from '../../control/index.js'
+import { createControlService, createLeaderControlNotifier } from '../../control/index.js'
 import type { ControlService } from '../../control/index.js'
 import { createMessagingCoordinator } from '../../messaging/index.js'
 import {
@@ -1118,11 +1118,31 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   })
 
   // --- A25 the control service --------------------------------------------------------------
+  // C1 (leader-approval reachability): the optional Leader liveness
+  // notification port — a newly-created durable `leader-approval` request
+  // becomes a model-visible input turn on the Leader root through the
+  // SHARED root-input seam (`live.deliverRootControlNotification`, the
+  // same path the delegate work uses — NO MessagingCoordinator, no new
+  // durable channel). Non-authority: the durable row +
+  // `team_resolve_control` stay the authority; the service fires the
+  // notifier fire-and-forget AFTER the per-team lock is released, so a
+  // delivery failure is a liveness failure only (it never blocks the
+  // request path and never changes the outcome — the pending-list tool +
+  // the GUI remain the recovery paths). A glue bundle without the port
+  // simply does not notify (factory/unit worlds; discovery stays
+  // functional through `team_list_pending_control`).
   const control = createControlService({
     teamDomain: domain,
     blueprintCatalog: catalog,
     externalPolicyFacts,
     now,
+    ...(live.deliverRootControlNotification !== undefined
+      ? {
+          requestNotification: createLeaderControlNotifier({
+            deliver: live.deliverRootControlNotification,
+          }),
+        }
+      : {}),
   })
   // A6 (alpha.2 plan §11): publish the fully-constructed control service to
   // the shared ref the glue's setup callback reads LAZILY (the teamToolsRef
@@ -1878,7 +1898,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // --- A04 the intent surface (the remote method catalog) --------------------------------------------
   const intent = { catalog: REMOTE_METHOD_CATALOG }
 
-  // --- the eleven Team tools (the glue registers them on the agent setup) -------------------------------------
+  // --- the twelve Team tools (the glue registers them on the agent setup; C1 adds the pending-list tool) -------------------------------------
   const tools = createTeamTools({
     teamRuntime: runtime,
     controlService: control,
