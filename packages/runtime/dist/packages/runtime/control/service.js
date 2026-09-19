@@ -469,6 +469,28 @@ export function createControlService(options) {
     function durableFailure(stage, error) {
         return new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED, `ControlService: ${stage} failed: ${error instanceof Error ? error.message : String(error)}`, { stage });
     }
+    /**
+     * C1 (leader-approval reachability) — report ONE notification failure
+     * to the optional diagnostic sink. The sink is DIAGNOSTIC ONLY: it
+     * must never alter the request path, so a throwing sink is swallowed
+     * (a fault in the observability wiring cannot fault the durable
+     * control plane).
+     */
+    function reportNotificationFailure(record, error) {
+        const sink = options.onNotificationFailure;
+        if (sink === undefined)
+            return;
+        try {
+            sink({
+                requestId: record.requestId,
+                kind: record.kind,
+                error,
+            });
+        }
+        catch {
+            // the diagnostic sink must never alter the request path
+        }
+    }
     async function allocateSequence() {
         try {
             return await repositories.ledger.allocateSequence();
@@ -764,26 +786,25 @@ export function createControlService(options) {
         // - a delivery failure is a LIVENESS failure only: no rollback, no
         //   fake decision, no implicit allow — the durable row stands, and
         //   the pending-list tool + the GUI remain the recovery paths.
+        //   A fault is reported to the optional diagnostic sink whether it
+        //   arrives as a REJECTED promise (the async port) or SYNCHRONOUSLY
+        //   (a port implementation that throws before returning a promise —
+        //   `Promise.resolve(...)` normalizes a missing/undefined return
+        //   too); the request path itself never sees the fault.
         if (outcome.created && outcome.record.kind === CONTROL_REQUEST_KINDS.LEADER_APPROVAL) {
             const port = options.requestNotification;
             if (port !== undefined) {
-                void port
-                    .notifyLeaderRequest(outcome.record)
-                    .catch((error) => {
-                    const sink = options.onNotificationFailure;
-                    if (sink !== undefined) {
-                        try {
-                            sink({
-                                requestId: outcome.record.requestId,
-                                kind: outcome.record.kind,
-                                error,
-                            });
-                        }
-                        catch {
-                            // the diagnostic sink must never alter the request path
-                        }
-                    }
-                });
+                try {
+                    const pending = port.notifyLeaderRequest(outcome.record);
+                    void Promise.resolve(pending).catch((error) => {
+                        reportNotificationFailure(outcome.record, error);
+                    });
+                }
+                catch (error) {
+                    // the port threw synchronously (no promise was returned):
+                    // same liveness-failure reporting, request path untouched
+                    reportNotificationFailure(outcome.record, error);
+                }
             }
         }
         return outcome.record;

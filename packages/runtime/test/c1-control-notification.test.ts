@@ -15,6 +15,12 @@
  *      requested row ends decided. Proof the notification runs AFTER
  *      the per-team lock is released (a lock-held notification would
  *      hang on the re-entrant lock acquisition).
+ *   7. (P0 closure / plan §9.2 N7) a notifier that throws
+ *      SYNCHRONOUSLY (before any promise is returned) ->
+ *      requestControl STILL resolves, the diagnostic sink sees exactly
+ *      ONE failure, the row stays pending, zero decisions. The
+ *      `void promise.catch` shape alone would let the sync throw escape
+ *      the request path.
  *
  * World: the P6-T4 durable world with the control service wired to a
  * RECORDING notifier (the test stand-in for the live glue's
@@ -134,7 +140,7 @@ const S = await (async () => {
 
   // idempotent retry: the SAME logical scope (same correlation) — the
   // existing row is returned, the notifier must NOT fire again.
-  const retried = await service.requestControl({
+  await service.requestControl({
     ...workerScope('c1n-corr-1'),
     kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
   })
@@ -182,6 +188,9 @@ const S = await (async () => {
   // here) and (b) resolves the ORIGINAL request through the SAME
   // ControlService authority (the Leader answering inside its own
   // notification turn). The whole sequence must settle.
+  // assigned exactly once (below) — const is impossible: the notifier
+  // closure must capture the binding BEFORE the service is created.
+  // eslint-disable-next-line prefer-const
   let reentrantService: import('../control/index.js').ControlService
   let firstRequestId: string | undefined
   const reentrant = createRecordingNotifier(async (record) => {
@@ -243,6 +252,38 @@ const S = await (async () => {
   })
   const bareState = await bare.listControlState(P6T4_ROOT)
 
+  // --- N7 (plan §9.2): the SYNCHRONOUS-throw notifier ---------------------
+  // A port implementation that throws BEFORE returning a promise: the
+  // old `void port.notifyLeaderRequest(record).catch(...)` shape would
+  // let that throw escape requestControl entirely (no promise exists to
+  // attach the catch to). The hardened shape (try/catch around the call
+  // + `Promise.resolve(...).catch`) reports the fault to the diagnostic
+  // sink and keeps the request path green.
+  let syncSinkCalls = 0
+  let syncSinkError: unknown
+  const syncThrowing: ControlRequestNotificationPort = {
+    notifyLeaderRequest(_record: ControlRequestRecord): Promise<void> {
+      throw new Error('c1-notify: synchronous notifier fault (pre-promise throw)')
+    },
+  }
+  const syncService = createControlService({
+    ...base,
+    requestNotification: syncThrowing,
+    onNotificationFailure: (args) => {
+      syncSinkCalls += 1
+      syncSinkError = args.error
+    },
+  })
+  const syncCreate = await boundedAwait(
+    syncService.requestControl({
+      ...workerScope('c1n-corr-synct'),
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+    }),
+    2000,
+    'N7 requestControl with a synchronous-throwing notifier',
+  )
+  const syncState = await syncService.listControlState(P6T4_ROOT)
+
   await destroyP6T1World(world)
 
   return {
@@ -259,6 +300,10 @@ const S = await (async () => {
     reentrantState,
     bareCreated,
     bareState,
+    syncCreate,
+    syncSinkCalls,
+    syncSinkError,
+    syncState,
   }
 })()
 
@@ -314,6 +359,29 @@ describe('control-service Leader liveness notification (C1)', () => {
     )
     expect(probe).toBeDefined()
     expect(probe!.status).toBe('pending')
+  })
+
+  it('N7: a SYNCHRONOUS-throwing notifier does not fail requestControl (sink sees one failure, row stays pending, zero decisions)', () => {
+    // the request path is unaffected by the pre-promise throw
+    expect(S.syncCreate.status).toBe('pending')
+    expect(S.syncCreate.requestId).toBeTruthy()
+    expect(S.syncCreate.kind).toBe(CONTROL_REQUEST_KINDS.LEADER_APPROVAL)
+    // the diagnostic sink was invoked exactly ONCE, with the real fault
+    expect(S.syncSinkCalls).toBe(1)
+    expect(S.syncSinkError instanceof Error).toBe(true)
+    expect((S.syncSinkError as Error).message).toBe(
+      'c1-notify: synchronous notifier fault (pre-promise throw)',
+    )
+    // the durable row remains PENDING and discoverable; no decision was
+    // fabricated by the fault path
+    const pending = S.syncState.requests.filter(
+      (r) => r.requestId === S.syncCreate.requestId && r.status === 'pending',
+    )
+    expect(pending).toHaveLength(1)
+    const decisions = S.syncState.decisions.filter(
+      (d) => d.requestId === S.syncCreate.requestId,
+    )
+    expect(decisions).toHaveLength(0)
   })
 
   it('the service WITHOUT a notification port is unaffected (ABSENT = no notify, same authority)', () => {
