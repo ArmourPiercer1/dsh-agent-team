@@ -1,0 +1,84 @@
+---
+schemaVersion: 1
+blueprintId: team.exec-l3
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the exec-contract live smoke L3 team. EXECLIVE_L3_2026-09-19T11-16-48"
+  capabilities:
+    teamTools:
+      kind: allow
+      items: []
+    builtinToolDeny: []
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow:
+        - tool: bash
+          resource:
+            kind: any
+      ask:
+        - tool: read
+          resource:
+            kind: subtree
+            path: team
+      deny:
+        - tool: read
+          resource:
+            kind: subtree
+            path: runtime
+teamEnvelope:
+  allow:
+    - assign-task
+    - create-member
+    - send-message
+    - report-progress
+    - request-control
+    - resolve-control
+    - bash
+  deny: []
+members:
+  - templateId: worker
+    persona: "You are worker of the exec-contract live smoke L3 team."
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow:
+          - tool: read
+            resource:
+              kind: subtree
+              path: team
+        ask:
+          - tool: bash
+            resource:
+              kind: any
+        deny:
+          - tool: read
+            resource:
+              kind: subtree
+              path: runtime
+memberEnvelopes:
+  - templateId: worker
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+        - request-control
+      deny: []
+policyStates: []
+metadata: {}
+---

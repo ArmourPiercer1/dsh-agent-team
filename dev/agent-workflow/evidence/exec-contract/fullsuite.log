@@ -1,0 +1,61 @@
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+TypeError: Cannot read properties of undefined (reading 'attribution')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:471:18
+    469|     const scout = P6T3_SEEDS.scout
+    470|     const input = md.noGrant.input
+    471|     expect(input.attribution.kind).toBe('team-relay')
+       |                  ^
+    472|     expect(input.attribution.fromInstanceId).toBe(
+    473|       P6T3_SEEDS.worker.instanceId,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/23]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-restart.test.ts:404:18
+    402|
+    403|     const input = rt.inputMed
+    404|     expect(input.sessionId).toBe(P6T3_SEEDS.leader.childSessionId)
+       |                  ^
+    405|     expect(input.attribution).toEqual({
+    406|       kind: 'team-relay',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/23]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+Error: assertMessagingCode: expected MessagingError 'MESSAGING_DELIVERY_FAILED', got undefined
+ ❯ assertMessagingCode packages/runtime/test/p6t3-helpers.ts:358:11
+    356| ): { readonly code: string; readonly details?: Record<string, unknown>…
+    357|   if (!isMessagingError(error)) {
+    358|     throw new Error(
+       |           ^
+    359|       `assertMessagingCode: expected MessagingError '${code}', got ${d…
+    360|     )
+ ❯ packages/runtime/test/p6t3-restart.test.ts:451:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/23]⎯
+
+ FAIL  packages/tools/test/p6t6-actions.test.ts > P6-T6 tool set — delegated actions (unit level) > messaging: worker -> leader is delivered direct to the leader bound session
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t2-leader' // Object.is equality
+
+Expected: "session-child-p6t2-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/tools/test/p6t6-actions.test.ts:891:46
+    889|       expect(delivered.deliveryMode).toBe('direct')
+    890|       expect(delivered.deliveredToInstanceId).toBe(LEADER_ID)
+    891|       expect(delivered.deliveredToSessionId).toBe(String(P6T2_SEEDS.le…
+       |                                              ^
+    892|     }
+    893|     const inputs = A.recordedInputs
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/23]⎯
+
+
+ Test Files  10 failed | 287 passed (297)
+      Tests  20 failed | 3610 passed (3630)
+   Start at  14:24:46
+   Duration  11.79s (transform 36.29s, setup 0ms, import 138.77s, tests 3.83s, environment 32ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+FULLSUITE EXIT: 0

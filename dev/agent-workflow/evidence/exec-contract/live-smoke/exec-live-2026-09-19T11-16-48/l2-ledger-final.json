@@ -1,0 +1,33 @@
+{
+  "requests": [
+    {
+      "sequence": 4,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-16snxiy1lmv6b91vp3f2w0lt",
+      "kind": "user-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "targetInstanceId": "inst-leader",
+      "correlation": "call-xl-rm6vojki",
+      "createdAt": "2026-09-19T11:16:53.928Z"
+    }
+  ],
+  "decisions": [
+    {
+      "sequence": 5,
+      "factType": "control-decision-recorded",
+      "requestId": "ctrl-16snxiy1lmv6b91vp3f2w0lt",
+      "decision": "allow",
+      "createdAt": "2026-09-19T11:16:56.366Z"
+    }
+  ],
+  "consumptions": [
+    {
+      "sequence": 6,
+      "factType": "control-allow-consumed",
+      "requestId": "ctrl-16snxiy1lmv6b91vp3f2w0lt",
+      "createdAt": "2026-09-19T11:16:56.441Z"
+    }
+  ],
+  "error": null
+}

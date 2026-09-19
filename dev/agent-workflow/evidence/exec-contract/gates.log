@@ -1,0 +1,13 @@
+=== p4t6 scan (after pin bump 710 -> 712) ===
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 4ms
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+=== zero-core: test-use ===
+fb2c4b9e698e30edb738bca4cf0618587db7d203
+=== zero-core: references (main checkout) ===
+fb2c4b9e698e30edb738bca4cf0618587db7d203
+frozen anchor (tag peel):
+a3ab31992762c5d6560797eabc7e0885a9320ade
+=== build determinism ===
+43
+rebuild idempotent (diff state-1 state-2 empty)

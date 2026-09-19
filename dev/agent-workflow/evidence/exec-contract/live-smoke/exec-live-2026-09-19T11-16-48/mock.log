@@ -1,0 +1,14 @@
+mock: listening on 127.0.0.1:3516
+mock: 1 text reply (32 chars): "exec-contract live smoke session"
+mock: 2 text reply (20 chars): "EXECLIVE_DISC_A_DONE"
+mock: 3 tool-call reply: bash
+mock: 4 text reply (32 chars): "exec-contract live smoke session"
+mock: 5 text reply (24 chars): "EXECLIVE_L1_DONE tools=1"
+mock: 6 tool-call reply: bash
+mock: 7 text reply (32 chars): "exec-contract live smoke session"
+mock: 8 text reply (24 chars): "EXECLIVE_L2_DONE tools=1"
+mock: 9 text reply (32 chars): "exec-contract live smoke session"
+mock: 10 text reply (20 chars): "EXECLIVE_DISC_B_DONE"
+mock: 11 text reply (32 chars): "exec-contract live smoke session"
+mock: 12 tool-call reply: bash
+mock: 13 text reply (24 chars): "EXECLIVE_L3_DONE tools=1"

@@ -1,0 +1,4 @@
+{
+  "seq": 13,
+  "toolResult": "Error: permission denied: the external hard policy no longer allows bash (the external hard policy denies capability 'tools' (the hard cell refuses the operation))"
+}

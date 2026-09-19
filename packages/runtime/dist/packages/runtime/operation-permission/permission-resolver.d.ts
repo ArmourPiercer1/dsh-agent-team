@@ -100,13 +100,15 @@
  * - the matcher is TOTAL over whatever ruleset it is handed: a bash
  *   `any` rule it receives matches the bash operation in WHICHEVER
  *   lane it sits in, and the frozen priority below decides the
- *   outcome. A LEGAL policy can only carry a bash `any` rule in the
- *   ask or deny lane — the A1 schema rejects a bash rule in the allow
- *   lane entirely (no positive whole-tool bash grant in alpha.2). The
- *   matcher itself is UNCHANGED and keeps no lane special case: it
- *   still answers an allow-lane `any` bash rule with a whole-tool
- *   ALLOW if one is ever handed to it (hand-crafted or legacy-shaped
- *   input) — the a3 suite pins this totalness defensively;
+ *   outcome. A LEGAL policy can carry a bash `any` rule in the ask or
+ *   deny lane (every role), or — LEADER ONLY (exec-autonomy-contract,
+ *   user ruling 2026-09-18) — in the allow lane; the schema rejects an
+ *   allow-lane shell-class rule on MEMBER templates. The matcher
+ *   itself is UNCHANGED and keeps no lane special case: it still
+ *   answers an allow-lane `any` bash rule with a whole-tool ALLOW if
+ *   one is handed to it (legal for the leader — runtime dual-gated;
+ *   hand-crafted otherwise) — the a3 suite pins this totalness
+ *   defensively;
  * - a file rule (read/write/edit/lsp/read_image) NEVER matches a bash
  *   operation and vice-versa (the tool names differ, and the matcher
  *   checks the tool first).

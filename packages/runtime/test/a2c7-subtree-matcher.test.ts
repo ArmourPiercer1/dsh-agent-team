@@ -1483,17 +1483,24 @@ describe('A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, 
     )
     expect(bashExact.code).toBe('MALFORMED_DTO')
     expect(hasFrag(bashExact.message, 'does not accept an \'exact\' resource in any lane'), bashExact.message).toBe(true)
+    // exec-autonomy-contract (user ruling 2026-09-18): the allow-lane
+    // shell-class rejection is now MEMBER-scoped — the probe moves to a
+    // member template; the LEADER allow-lane whole-tool rule is the new
+    // contract (pinned in exec-contract-a1-leader-allow.test.ts + the
+    // a1 suite's re-pointed member pin). The diagnostic text stays
+    // byte-identical.
     const bashAnyAllow = runParse(
       [
         '---', 'schemaVersion: 1', 'blueprintId: a2c7-probe', 'revision: "1"',
-        'leader:', '  templateId: leader', '  persona: "Lead."', '  capabilities:',
-        '    teamTools:', '      kind: allow', '      items: []',
-        '    builtinToolDeny: []', '    skills:', '      kind: allow', '      items: []',
-        '    mcp:', '      kind: allow', '      items: []',
-        '    permissions:', '      default: ask', '      allow:',
-        '        - tool: bash', '          resource:', '            kind: any',
-        '      ask: []', '      deny: []',
-        'members: []', 'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'metadata: {}', '---',
+        'leader:', '  templateId: leader', '  persona: "Lead."',
+        'members:', '  - templateId: worker', '    persona: "Worker."', '    capabilities:',
+        '      teamTools:', '        kind: allow', '        items: []',
+        '      builtinToolDeny: []', '      skills:', '        kind: allow', '        items: []',
+        '      mcp:', '        kind: allow', '        items: []',
+        '      permissions:', '        default: ask', '        allow:',
+        '          - tool: bash', '            resource:', '              kind: any',
+        '        ask: []', '        deny: []',
+        'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'metadata: {}', '---',
       ].join('\n'),
     )
     expect(bashAnyAllow.code).toBe('MALFORMED_DTO')

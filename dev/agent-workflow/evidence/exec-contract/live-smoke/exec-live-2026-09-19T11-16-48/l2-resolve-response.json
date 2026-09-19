@@ -1,0 +1,40 @@
+{
+  "type": "server-response",
+  "rpcId": "xl2res-phg5r66xwz",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "decision": {
+          "requestId": "ctrl-16snxiy1lmv6b91vp3f2w0lt",
+          "decision": "allow",
+          "decider": {
+            "kind": "human",
+            "humanId": "session-exec-live-l2-2026-09-19T11-16-48"
+          },
+          "scope": {
+            "rootSessionId": "session-exec-live-l2-2026-09-19T11-16-48",
+            "targetInstanceId": "inst-leader",
+            "actionName": "parameter-permission",
+            "correlation": "call-xl-rm6vojki",
+            "toolName": "bash",
+            "operationFingerprint": "sha256:2ce63f82ebf60cac07b3fd1fa742f931ddc1e0c3f15d819a9e493eac53933283"
+          },
+          "requestSequence": 4,
+          "decisionSequence": 5,
+          "createdAt": "2026-09-19T11:16:56.371Z",
+          "note": "exec-contract live smoke L2: scripted human resolution (the production v4 ingress)"
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}
