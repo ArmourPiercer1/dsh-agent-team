@@ -2263,10 +2263,25 @@ export function createAgentBindings(deps) {
     recordSessionEvent(_sessionId, _event) {},
   }
 
-  // The REAL SessionInputPort over the public Session input API: the
-  // followup commit point is the inbox acceptance; the quiescence wait
-  // follows. Commit-or-throw: a rejection means the input was not
-  // delivered (the coordinator keeps the intent pending).
+  // The REAL SessionInputPort over the public Session input API. The
+  // commit point is the followup INBOX ACCEPTANCE: `followup` returning
+  // means the attributed input is durably in the recipient's session
+  // inbox, and that IS the delivery success boundary. Messaging is an
+  // input delivery primitive, NOT a work execution primitive — the
+  // recipient's own model turn runs independently from here (it may call
+  // tools, send messages, wait for approvals, or keep working), so this
+  // port does NOT await `whenIdle` (the same frozen liveness principle
+  // the work-completion wake-up uses: "Success boundary = acceptance, NO
+  // whenIdle, NO ensureMaterialized"). Awaiting the recipient's whole
+  // turn would hang the sender for its duration and — when the recipient
+  // replies mid-turn — form a cross-Agent lifecycle wait cycle (Leader
+  // waits Member idle ↔ Member waits Leader idle). Commit-or-throw is
+  // unchanged: a `followup` REJECTION means the input was not delivered
+  // (the coordinator keeps the intent pending for recovery); a later
+  // failure of the recipient's own turn is that turn's concern, never a
+  // delivery failure. (The sync `team_delegate` / `team_follow_up`
+  // completion boundary stays work-completion: `workDelivery.deliver`
+  // below still awaits `whenIdle` + materializes.)
   const sessionInput = {
     async submitAttributedInput(input) {
       const handle = await ensureLiveAgent(String(input.sessionId))
@@ -2279,14 +2294,10 @@ export function createAgentBindings(deps) {
         content: [{ type: 'text', text: input.text }],
         source: { kind: 'user' },
       })
+      // Success boundary = inbox acceptance: NO whenIdle, NO
+      // ensureMaterialized (the turn's durable log is materialized by the
+      // recipient's own turn settlement, not by the sender).
       handle.agent.followup(message)
-      try {
-        await handle.agent.whenIdle()
-      } catch (error) {
-        const note = `p6t6: whenIdle rejected after an accepted followup on ${input.sessionId}: ${error instanceof Error ? error.message : String(error)}`
-        observations.push(note)
-        throw error
-      }
     },
   }
 

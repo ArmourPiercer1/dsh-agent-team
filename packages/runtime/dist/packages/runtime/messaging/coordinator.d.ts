@@ -29,11 +29,15 @@
  *    its confirmation commits). INV-9.1 (repair-r1 F3-C — the
  *    private-chain extension of the F3-A rule): no chain, shared or
  *    private, may be held across a turn it observes. The port call (the
- *    recipient's ENTIRE model execution) therefore runs with the private
- *    chain RELEASED, so a `team_send_message` issued by the recipient
- *    inside the message-triggered turn re-enters this same coordinator
- *    and acquires the chain freely (pre-fix it queued behind the outer
- *    send's own pending tail — the H2 self-deadlock):
+ *    recipient session's input ACCEPTANCE — messaging is an input
+ *    delivery primitive; the recipient's own model turn runs
+ *    independently and is never observed by this coordinator) therefore
+ *    runs with the private chain RELEASED, so a `team_send_message`
+ *    issued by the recipient inside the message-triggered turn re-enters
+ *    this same coordinator and acquires the chain freely (pre-F3-C it
+ *    queued behind the outer send's own pending tail — the H2
+ *    self-deadlock; the release predates the acceptance-boundary fix and
+ *    is kept as the INV-9.1 invariant):
  *      - **Phase A** (chain held): the durable intent fact is read and
  *        validated; the delivery plan is re-derived from the intent
  *        (`payload.caller` + `payload.recipientInstanceId`) + the FRESH
@@ -100,8 +104,9 @@
  * - **R6 (ordering):** the coordinator's delivery DECISIONS (Phase A —
  *   plan + liveness + the recovery's scan/skip verdicts) and its
  *   CONFIRMATION COMMITS (Phase C) run under its own per-team lock; the
- *   session input port call (Phase B — the recipient's model execution)
- *   runs with the chain released (INV-9.1). The ledger sequence is the
+ *   session input port call (Phase B — the recipient session's input
+ *   acceptance; the recipient's model turn is never observed) runs with
+ *   the chain released (INV-9.1). The ledger sequence is the
  *   team-order authority (invariant 44) — the session-input order of two
  *   concurrent (or re-entering) sends may interleave, the ledger does
  *   not.

@@ -163,14 +163,30 @@ export interface AttributedSessionInput {
  * port is the only channel by which a send ever touches a session: the
  * module holds no session handles itself.
  *
+ * SUCCESS BOUNDARY = input acceptance. Resolving means the attributed
+ * input has been ACCEPTED by the recipient session (the real
+ * implementation: the followup inbox acceptance commit point). It does
+ * NOT mean the recipient's model processed the input: the recipient's
+ * own turn runs independently from acceptance (it may call tools, send
+ * messages, wait for approvals, or keep working), and the port MUST NOT
+ * await the recipient going idle — messaging is an input delivery
+ * primitive, not a work execution primitive. (The synchronous
+ * `team_delegate` / `team_follow_up` work delivery keeps its own
+ * work-completion boundary through a DIFFERENT port —
+ * `workDelivery.deliver` — which is deliberately not this interface.)
+ *
  * A rejection (throw) means the input was NOT delivered (the fake and the
- * intended real implementation both commit-or-throw); the coordinator maps
- * it to `MESSAGING_DELIVERY_FAILED` and the intent fact stays pending for
+ * real implementation both commit-or-throw); the coordinator maps it to
+ * `MESSAGING_DELIVERY_FAILED` and the intent fact stays pending for
  * recovery.
  */
 export interface SessionInputPort {
   /**
    * Submit one ordinary attributed input to a session.
+   *
+   * Resolves when the session has ACCEPTED the input (the delivery
+   * success boundary); the recipient's model processing of the input is
+   * NOT awaited.
    * @param input - the relay delivery (lossless JSON shape).
    * @throws when the input could not be delivered.
    */

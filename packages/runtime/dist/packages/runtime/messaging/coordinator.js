@@ -29,11 +29,15 @@
  *    its confirmation commits). INV-9.1 (repair-r1 F3-C — the
  *    private-chain extension of the F3-A rule): no chain, shared or
  *    private, may be held across a turn it observes. The port call (the
- *    recipient's ENTIRE model execution) therefore runs with the private
- *    chain RELEASED, so a `team_send_message` issued by the recipient
- *    inside the message-triggered turn re-enters this same coordinator
- *    and acquires the chain freely (pre-fix it queued behind the outer
- *    send's own pending tail — the H2 self-deadlock):
+ *    recipient session's input ACCEPTANCE — messaging is an input
+ *    delivery primitive; the recipient's own model turn runs
+ *    independently and is never observed by this coordinator) therefore
+ *    runs with the private chain RELEASED, so a `team_send_message`
+ *    issued by the recipient inside the message-triggered turn re-enters
+ *    this same coordinator and acquires the chain freely (pre-F3-C it
+ *    queued behind the outer send's own pending tail — the H2
+ *    self-deadlock; the release predates the acceptance-boundary fix and
+ *    is kept as the INV-9.1 invariant):
  *      - **Phase A** (chain held): the durable intent fact is read and
  *        validated; the delivery plan is re-derived from the intent
  *        (`payload.caller` + `payload.recipientInstanceId`) + the FRESH
@@ -100,8 +104,9 @@
  * - **R6 (ordering):** the coordinator's delivery DECISIONS (Phase A —
  *   plan + liveness + the recovery's scan/skip verdicts) and its
  *   CONFIRMATION COMMITS (Phase C) run under its own per-team lock; the
- *   session input port call (Phase B — the recipient's model execution)
- *   runs with the chain released (INV-9.1). The ledger sequence is the
+ *   session input port call (Phase B — the recipient session's input
+ *   acceptance; the recipient's model turn is never observed) runs with
+ *   the chain released (INV-9.1). The ledger sequence is the
  *   team-order authority (invariant 44) — the session-input order of two
  *   concurrent (or re-entering) sends may interleave, the ledger does
  *   not.
@@ -334,11 +339,15 @@ export function createMessagingCoordinator(options) {
     }
     /**
      * Delivery Phase B (NO chain held): the session input port call only.
-     * This IS the recipient's model execution — the long external
-     * execution the private chain must not span (INV-9.1, the H2 hazard):
-     * the recipient's own `team_send_message` re-enters this coordinator
-     * while the port call is in flight and must be able to acquire the
-     * chain. Commit-or-throws (the port contract): a rejection is
+     * The port call spans the recipient session's input ACCEPTANCE — the
+     * external execution the private chain must not span (INV-9.1, the H2
+     * hazard): the recipient's own `team_send_message` re-enters this
+     * coordinator while the port call is in flight and must be able to
+     * acquire the chain. The port's success boundary is acceptance: it
+     * resolves once the session has accepted the input; the recipient's
+     * model turn then runs independently and is NOT awaited (messaging is
+     * an input delivery primitive, not a work execution primitive).
+     * Commit-or-throws (the port contract): a rejection is
      * MESSAGING_DELIVERY_FAILED and the intent fact stays pending (R2/R3:
      * at-least-once input, the coordination is recoverable).
      */
@@ -369,7 +378,7 @@ export function createMessagingCoordinator(options) {
      */
     async function commitConfirmationLocked(prep) {
         const rootSessionId = String(prep.intent.rootSessionId);
-        const { requestToken, recipientInstanceId, plan, target } = prep;
+        const { requestToken, recipientInstanceId, plan } = prep;
         const existing = repositories.ledger.list().find((entry) => entry.factType === MESSAGING_FACT_DELIVERED &&
             String(entry.rootSessionId) === rootSessionId &&
             entry.payload['requestToken'] === requestToken &&
@@ -431,8 +440,9 @@ export function createMessagingCoordinator(options) {
      * Deliver one durable intent fact through the three lock-scope phases
      * (R1/R3; INV-9.1 private-chain extension): Phase A (plan + liveness +
      * input) under the coordinator's private chain → RELEASE → Phase B
-     * (the session input port call — the recipient's model execution)
-     * WITHOUT the chain → Phase C (the confirmation fact) re-acquiring the
+     * (the session input port call — the recipient session's input
+     * acceptance) WITHOUT the chain → Phase C (the confirmation fact)
+     * re-acquiring the
      * SAME private chain. Used by BOTH the live send path and recovery —
      * one code path (R1/R3).
      */
@@ -468,10 +478,11 @@ export function createMessagingCoordinator(options) {
         // COORDINATOR's per-team chain (R6; INV-9.1): the intent fact read
         // (the Phase A durable precondition) under the chain, then
         // deliverOne's Phase A (plan + liveness + input, chain held) →
-        // Phase B (the session input port call — the recipient's model
-        // turn, chain RELEASED — a re-entering `team_send_message` from
-        // inside that turn acquires the chain freely) → Phase C
-        // (confirmation fact, the SAME chain re-acquired).
+        // Phase B (the session input port call — the recipient session's
+        // input acceptance, chain RELEASED — a re-entering
+        // `team_send_message` from the recipient's own message-triggered
+        // turn acquires the chain freely) → Phase C (confirmation fact,
+        // the SAME chain re-acquired).
         const intent = await withTeamLock(teamLocks, request.rootSessionId, async () => {
             const fact = repositories.ledger.get(factSequence);
             if (fact === undefined ||
@@ -504,8 +515,8 @@ export function createMessagingCoordinator(options) {
         // yet, in intent-fact sequence order. The scan itself holds the chain
         // for ONE acquisition only; each pending intent is then delivered
         // through deliverOne's own three phases (Phase A + Phase C re-acquire
-        // the chain, Phase B — the recipient's model execution — runs with it
-        // released, INV-9.1).
+        // the chain, Phase B — the recipient session's input acceptance —
+        // runs with it released, INV-9.1).
         const pending = await withTeamLock(teamLocks, rootSessionId, async () => {
             const entries = repositories.ledger.list();
             const confirmedTokens = new Set();
@@ -583,7 +594,7 @@ export function createMessagingCoordinator(options) {
             }
             // R3/R5 — deliver + confirm (one code path with the live send; each
             // phase acquires/releases the private chain itself — the scan no
-            // longer holds it across the recipient's turn).
+            // longer holds it across the delivery's Phase B).
             const delivered = await deliverOne(intent);
             recovered.push({
                 requestToken: delivered.requestToken,
