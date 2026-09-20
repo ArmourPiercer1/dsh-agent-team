@@ -576,6 +576,13 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
  * @param {object} [options]
  * @param {(agent: object) => Promise<void>} [options.whenIdleBehavior]
  *   the per-agent whenIdle() behavior (default: resolves immediately).
+ * @param {(req: object) => Promise<void>} [options.resumeGate]
+ *   work-completion wake-up (teardown gate regression, G8): a per-resume
+ *   SUSPENSION point — awaited (after the resume request is recorded,
+ *   before the handle is built) so a test can interleave `close()` while
+ *   an `agents.resume()` is in flight (the real handle can outlive the
+ *   close snapshot only if the glue never re-checks its lifecycle).
+ *   Absent = resume settles immediately (the pre-G8 double behavior).
  * @param {Array<{name: string, order: number, text: string}>} [options.systemPromptGlobals]
  *   the world's global prompt layer for every agent ctx (T12-M2; default:
  *   the DSH service pair harness:identity + a global deployment:persona).
@@ -621,9 +628,13 @@ export function createAgentsDouble(options = {}) {
   const disposals = []
   const followups = []
   const steers = []
+  const injects = []
   const cancels = []
   const handles = new Map()
   const whenIdleBehavior = options.whenIdleBehavior ?? (() => Promise.resolve())
+  // work-completion wake-up (G8): the per-resume suspension point (absent =
+  // resume settles immediately, the pre-G8 double behavior).
+  const resumeGate = options.resumeGate
   // multi-mcp (Task C): the per-server activation behavior tables (shared
   // by every agent ctx; absent = the pre-multi-mcp double behavior).
   const mcpFailures = options.mcpFailures
@@ -672,6 +683,16 @@ export function createAgentsDouble(options = {}) {
       },
       steer(message) {
         steers.push({ sessionId, message })
+      },
+      // Work-completion wake-up (Stop-priority): the DSH rc.2 Agent's
+      // `inject` — the NON-WAKING next-step send (`send(input, 'next-step',
+      // false)` in agent-loop agent.ts @ fb2c4b9e69, vs `steer`'s
+      // `send(input, 'next-step', true)`: only waking sends are
+      // re-routed to next-turn on a cancelled-converging turn). The
+      // completion wake's busy path uses inject so a user Stop is never
+      // washed into an automatic replacement turn.
+      inject(message) {
+        injects.push({ sessionId, message })
       },
       whenIdle() {
         return whenIdleBehavior(agent)
@@ -742,6 +763,7 @@ export function createAgentsDouble(options = {}) {
     disposals,
     followups,
     steers,
+    injects,
     cancels,
     handles,
     globalSections,
@@ -753,6 +775,9 @@ export function createAgentsDouble(options = {}) {
     async resume(req) {
       const sessionId = String(req.resumeSessionId)
       resumes.push({ sessionId, setupProvided: req.setup !== undefined })
+      // G8: suspend AFTER the request is recorded so a test can observe
+      // the in-flight resume and interleave close() before it settles.
+      if (resumeGate !== undefined) await resumeGate(req)
       return makeHandle(sessionId, req)
     },
   }
@@ -1133,6 +1158,7 @@ export async function createLiveWorld(options = {}) {
       disposals: agents.disposals,
       followups: agents.followups,
       steers: agents.steers,
+      injects: agents.injects,
       cancels: agents.cancels,
       materialized: sessionPersistence.materialized,
     },

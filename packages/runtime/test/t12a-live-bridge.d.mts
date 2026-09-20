@@ -43,6 +43,14 @@ export interface RecordedSteer {
   readonly message: unknown
 }
 
+/** One recorded inject message (the session id + the LLM message) —
+ *  the DSH rc.2 Agent's NON-WAKING next-step send (work-completion
+ *  wake-up's busy path: Stop-priority). */
+export interface RecordedInject {
+  readonly sessionId: string
+  readonly message: unknown
+}
+
 /** One active listener registration on the agent ctx double. */
 export interface AgentListenerEntry {
   readonly event: string
@@ -202,6 +210,12 @@ export interface LiveAgentHandle {
     status: 'idle' | 'running'
     followup(message: unknown): void
     steer(message: unknown): void
+    /** Work-completion wake-up (Stop-priority): the NON-WAKING next-step
+     *  send (DSH rc.2 agent.ts @ fb2c4b9e69: `inject(input)` =
+     *  `send(input, 'next-step', false)` — unlike `steer`'s
+     *  `send(input, 'next-step', true)`, a non-waking send is never
+     *  re-routed to next-turn on a cancelled-converging turn). */
+    inject(message: unknown): void
     whenIdle(): Promise<void>
     cancel(args?: unknown): void
   }
@@ -215,6 +229,7 @@ export interface AgentsDouble {
   readonly disposals: string[]
   readonly followups: RecordedFollowup[]
   readonly steers: RecordedSteer[]
+  readonly injects: RecordedInject[]
   readonly cancels: RecordedCancel[]
   readonly handles: Map<string, LiveAgentHandle>
   /** The world's shared global prompt layer (T12-M2). */
@@ -227,6 +242,11 @@ export interface AgentsDouble {
 export interface AgentsDoubleOptions {
   /** The per-agent whenIdle() behavior (default: resolves immediately). */
   readonly whenIdleBehavior?: (agent: object) => Promise<void>
+  /** work-completion wake-up (G8 teardown-gate regression): a per-resume
+   *  SUSPENSION point — awaited after the resume request is recorded,
+   *  before the handle is built, so a test can interleave `close()` while
+   *  an `agents.resume()` is in flight (absent = settle immediately). */
+  readonly resumeGate?: (req: object) => Promise<void>
   /** The world's global prompt layer (T12-M2; default: the DSH service pair). */
   readonly systemPromptGlobals?: GlobalPromptSection[]
   /** multi-mcp (Task C, plan §6.7): per-server MCP activation failure
@@ -426,6 +446,8 @@ export interface LiveWorld {
     dropResidency(sessionId: string): Promise<{ readonly dropped: boolean; readonly disposeError?: string }>
     /** Whether the session has a live agent (the liveAgents map). */
     hasLive(sessionId: string): boolean
+    /** Whether the session's resume is in flight (the resumingSessions set). */
+    isResuming(sessionId: string): boolean
     /** The live-agent-or-resume resolver (creates on demand, cold-resumes over durable sessions). */
     ensureLiveAgent(sessionId: string): Promise<LiveAgentHandle>
     /** The Root initial-work delivery (token-leading text into the root agent, no dedupe). */
@@ -488,6 +510,7 @@ export interface LiveWorld {
     readonly disposals: string[]
     readonly followups: RecordedFollowup[]
     readonly steers: RecordedSteer[]
+    readonly injects: RecordedInject[]
     readonly cancels: RecordedCancel[]
     readonly materialized: string[]
   }

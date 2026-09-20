@@ -20,9 +20,11 @@
  *   L2 — two async members, staggered completion: the Leader admits TWO
  *        async work units in ONE turn. The first settlement wakes the
  *        idle Leader (followup); the second settlement reaches the
- *        Leader without any manual user input (running → steer at the
- *        next step boundary, or a fresh followup if the first wake turn
- *        already ended). Both tokens are `team_collect`-ed. The model-
+ *        Leader without any manual user input — either via `inject` into
+ *        the current turn's next step (Stop-priority: the non-waking
+ *        send), or via a fresh followup if the Leader is already idle
+ *        again; the two notifications may also be merged-observed within
+ *        one step/turn. Both tokens are `team_collect`-ed. The model-
  *        call count for the Leader session is recorded (the plan does
  *        NOT require strict single-turn proof).
  *   L3 — failed member completion wakes: the member's work turn fails
@@ -43,7 +45,7 @@
  * TOPOLOGY (four created teams on one production row — one per scenario,
  * the C1 kit's isolation pattern; each team = one blueprint, one root):
  *   - Team L1: the core wake arc (async → idle → followup wake → collect).
- *   - Team L2: two staggered async units (followup + steer/followup).
+ *   - Team L2: two staggered async units (followup + inject/followup).
  *   - Team L3: the fail-closed wake (controlled member model error).
  *   - Team L4: the sync no-notify regression.
  *
@@ -863,7 +865,7 @@ function notifUserTextOf(req, token) {
 function makeDecide() {
   // Wake-chain state: the tokens for which a team_collect call has been
   // issued (per run, not per request — the wake chain can span several
-  // model requests: followup → collect → [steer of the second token] →
+  // model requests: followup → collect → [inject of the second token] →
   // collect → done, or a fresh followup per token).
   const collecting = new Set()
   return function decide({ req }) {
@@ -875,9 +877,10 @@ function makeDecide() {
     const tools = toolMsgsOf(req).length
 
     // (2) the wake-up notification turns (token-leading, the observer's
-    // fire-and-forget delivery — idle → followup / running → steer).
+    // fire-and-forget delivery — idle → followup / running → inject
+    // [Stop-priority: the non-waking next-step send]).
     // ORDERING-ROBUST: a request may carry SEVERAL notification user
-    // messages (e.g. token B's steer lands in the same step as token
+    // messages (e.g. token B's inject lands in the same step as token
     // A's tool result). Collect EVERY uncollected token present in the
     // request's user messages in ONE team_collect call (the tool accepts
     // up to 64 tokens); when every token in the request is already
@@ -914,7 +917,7 @@ function makeDecide() {
       // within milliseconds of each other — the stagger emerges from
       // real session scheduling (the mock's decide() is synchronous, so
       // no artificial delay). The two interleavings are both asserted-
-      // robust: (a) B's notification steers into A's wake turn, or
+      // robust: (a) B's notification injects into A's wake turn, or
       // (b) both notifications queue and the wake request carries BOTH
       // (the mock then collects them in one multi-token call). The plan
       // records the Leader model-call count; it does not require a
@@ -1046,7 +1049,7 @@ function lastToolResult(req) {
  * notification AND (b) a tool message satisfying pred — i.e. the
  * team_collect result observed ON the wake chain (the tool result stays
  * in the session's history, so scanning all requests finds it no matter
- * how the wake chain's steps interleaved with steered notifications).
+ * how the wake chain's steps interleaved with injected notifications).
  */
 function findWakeCollectResult(mock, token, pred) {
   for (const r of mock.requests) {
@@ -1305,16 +1308,17 @@ async function main() {
       l2WakeA !== null, `requests=${mock.requests.length}`)
     if (l2WakeA === null) fail('L2b')
 
-    // Second settlement (B) reaches the Leader too — via steer (the
-    // Leader is awake processing A's wake turn) or a fresh followup
-    // (A's wake turn already ended) or MERGED into the same wake
-    // request (both notifications queue before the turn starts). NO
-    // manual input between: the kit never prompts; both tokens must be
-    // collected. (Both collect results are scanned corpus-robustly: the
-    // mock collects every uncollected token in a wake request in ONE
-    // call, so A and B's results may land in the same request history.)
+    // Second settlement (B) reaches the Leader too — via inject (the
+    // Leader is awake processing A's wake turn; the non-waking next-step
+    // send) or a fresh followup (A's wake turn already ended) or MERGED
+    // into the same wake request (both notifications queue before the
+    // turn starts). NO manual input between: the kit never prompts; both
+    // tokens must be collected. (Both collect results are scanned
+    // corpus-robustly: the mock collects every uncollected token in a
+    // wake request in ONE call, so A and B's results may land in the
+    // same request history.)
     const l2WakeB = await waitForMock(mock, (r) => hasNotifUserMessage(r, TOK_L2B), 180_000, 'L2 wake B')
-    check('L2c', 'L2: the SECOND (B) completion reached the Leader WITHOUT manual user input (steer, fresh followup, or merged wake request)',
+    check('L2c', 'L2: the SECOND (B) completion reached the Leader WITHOUT manual user input (inject, fresh followup, or merged wake request)',
       l2WakeB !== null, `requests=${mock.requests.length}`)
     if (l2WakeB === null) fail('L2c')
     // Poll for the collect tool results (they appear on the NEXT model
@@ -1355,7 +1359,7 @@ async function main() {
       const t = lastUserTextOf(r)
       return t.includes(MK_L2) || t.startsWith(NOTIF_PREFIX)
     }).length
-    writeEvidence('l2-model-call-count.json', { leaderModelCalls: l2LeaderCalls, note: 'leader session requests since scenario start (initial chain + wake/steer steps); the plan records the count, it does not require a single turn' })
+    writeEvidence('l2-model-call-count.json', { leaderModelCalls: l2LeaderCalls, note: 'leader session requests since scenario start (initial chain + wake/inject steps); the plan records the count, it does not require a single turn' })
     log(`L2 characterization: leader model-call count = ${l2LeaderCalls}`)
     // Durable: both settlement facts.
     const l2Facts = readWorkFacts(CREATE_ROOT_L2)

@@ -8,8 +8,8 @@
  *   retry, keeps NO ledger, and makes NO terminal judgment (the
  *   terminal scan is the router observer's job; plan §8–§10);
  * - the text is DETERMINISTIC per notification (the same input renders
- *   byte-identical bytes) so a best-effort redelivery is recognizable —
- *   it leads with the machine-dedup token
+ *   byte-identical bytes) — machine-readable and future-dedup friendly —
+ *   and it leads with the machine-dedup token
  *   `[team-work-settled requestToken=<token>]`;
  * - the text is MINIMAL metadata (plan §3.4 / architecture §4): it
  *   NEVER carries the member result body, a transcript, or any
@@ -40,9 +40,11 @@ export declare function renderWorkCompletionNotification(notification: Pick<Work
  *
  * The factory holds no state and performs no durable write — it renders
  * once, then delegates every target's model-visible delivery to the
- * seam (which owns the at-least-once / best-effort semantics). Delivery
- * faults PROPAGATE to the caller (the router observer swallows them —
- * plan §13); this module never retries and never swallows.
+ * seam (which owns the at-MOST-once best-effort wake-ATTEMPT semantics —
+ * there is no redelivery, no ledger, and no acknowledgement; the
+ * durable settlement fact + `team_collect` are the recovery authority).
+ * Delivery faults PROPAGATE to the caller (the router observer swallows
+ * them — plan §13); this module never retries and never swallows.
  */
 export declare function createWorkCompletionNotifier(options: {
     readonly deliver: WorkCompletionNotificationDeliveryPort;

@@ -619,6 +619,17 @@ export function createAgentBindings(deps) {
 
   /** @type {Map<string, object>} live agent handles keyed by session id. */
   const liveAgents = new Map()
+  /**
+   * @type {boolean} the row-stop (close) lifecycle gate — set at the VERY
+   * START of close() (before any snapshot/dispose work) and never cleared.
+   * Invariant: once close() has announced, no NEW live handle may ever
+   * join liveAgents — ensureLiveAgent enforces it at its entry AND after
+   * the resume await (a late-resumed handle is disposed, never set). The
+   * work-completion wake-up delivery checks it before its async sends, so
+   * a completion settling while the plugin tears down can never create,
+   * resume, or wake a Leader Agent behind the close.
+   */
+  let closing = false
   /** @type {Array<() => void>} tool-registration + model-selection disposers. */
   const toolDisposers = []
   /** @type {number} synthetic callId counter (the driver may omit callIds). */
@@ -1973,6 +1984,12 @@ export function createAgentBindings(deps) {
    * @returns {Promise<object>} the AgentHandle.
    */
   async function ensureLiveAgent(sessionId) {
+    // close lifecycle gate (entry): once close() has announced, no new
+    // live handle may be created/resumed (a completion settling during
+    // teardown must fail, not resurrect an agent behind the close).
+    if (closing) {
+      throw new Error(`agent-bindings: live bindings are closing — no new live handle for session '${sessionId}'`)
+    }
     const existing = liveAgents.get(sessionId)
     if (existing !== undefined) return existing
     if (!sessionIsDurable(sessionId)) {
@@ -1996,6 +2013,22 @@ export function createAgentBindings(deps) {
           teamRoot,
         ),
       })
+      // close lifecycle gate (post-resume re-check): close() may have
+      // started while the resume was in flight. A late-resumed handle
+      // must NEVER join liveAgents — it would outlive the close
+      // snapshot (the row-stop backstop has already passed). Dispose it
+      // best-effort and fail; the durable session stays on disk either
+      // way (the resume is a cold attach, not a migration).
+      if (closing) {
+        try {
+          await handle.dispose()
+        } catch (error) {
+          observations.push(
+            `agent-bindings: resumed agent dispose failed during close for '${sessionId}': ${error instanceof Error ? error.message : String(error)}`,
+          )
+        }
+        throw new Error(`agent-bindings: live bindings began closing while resuming agent for session '${sessionId}'`)
+      }
       liveAgents.set(sessionId, handle)
       return handle
     } finally {
@@ -2564,10 +2597,14 @@ export function createAgentBindings(deps) {
    * Wake-up semantics are the DSH v0.1.5-rc.2 Agent's own (plan §17 —
    * no Team-side state machine, no extra lock): `status === 'idle'` →
    * `followup` (starts a new turn; the idle Leader is woken); otherwise
-   * `steer` (joins the current turn at the next step boundary). The
-   * check→act race is benign by upstream design: `steer` can still wake
-   * an agent that just went idle, and a `followup` after a turn started
-   * simply queues as the next turn.
+   * `inject` (the NON-WAKING next-step send — Stop-priority: on a
+   * cancelled-converging turn a non-waking send is never re-routed to
+   * next-turn, so a user Stop is not washed into an automatic
+   * replacement turn). The check→act retirement race (status read
+   * `running`; the driver finishes its last inbox check; the inject
+   * waits in the inbox until the next input) is ACCEPTED by design —
+   * no scheduler/retry is built for it, because this is an at-most-once
+   * best-effort wake ATTEMPT, not a delivery guarantee.
    *
    * NON-AUTHORITY by construction: the glue writes no TeamDomain state
    * and carries no result — the text is pre-rendered (the
@@ -2575,7 +2612,11 @@ export function createAgentBindings(deps) {
    * `[team-work-settled requestToken=<token>]`-leading metadata) and the
    * durable settlement fact + `team_collect` stay the authority. A
    * rejection PROPAGATES to the caller (the router observer swallows it
-   * as a liveness failure — plan §13).
+   * as a liveness failure — plan §13). close lifecycle: once close()
+   * has announced, this delivery REJECTS at its send boundaries (entry
+   * and post-resume) and never creates/resumes/wakes a Leader behind
+   * the close (the resume path enforces the same gate, entry +
+   * post-resume).
    * @param {{rootSessionId: string, text: string}} input
    * @returns {Promise<void>}
    */
@@ -2588,14 +2629,30 @@ export function createAgentBindings(deps) {
     if (text === '') {
       throw new Error('agent-bindings: deliverRootWorkCompletionNotification requires a non-empty text (the token-leading notification)')
     }
+    // close lifecycle gate (send boundary, entry): once close() has
+    // started, no new model-visible input may be appended to a Leader
+    // whose teardown is under way. The rejection PROPAGATES (the router
+    // observer swallows it as a best-effort liveness failure) — the
+    // durable settlement fact is untouched either way.
+    if (closing) {
+      throw new Error('agent-bindings: live bindings are closing — work-completion wake dropped (best-effort)')
+    }
     // A not-live-but-durable Leader is resumed first (the same resolver
-    // every other input path uses); a session that is neither live nor
-    // durable has no agent to run on (typed throw, below).
+    // every other input path uses; it enforces the closing gate itself,
+    // entry AND post-resume); a session that is neither live nor durable
+    // has no agent to run on (typed throw, below).
     const handle = await ensureLiveAgent(sid)
     // The target root IS the team root of its own team — the request
     // boundary resolves under that root's durable truth (same rule as
     // the shared deliverRootInput).
     await prepareAgentForRequest(sid, sid)
+    // close lifecycle gate (send boundary, post-await): ensureLiveAgent
+    // and prepareAgentForRequest each cross an async boundary; if close()
+    // began in that window the send is dropped (the handle itself is the
+    // glue's concern — ensureLiveAgent already guards its lifecycle).
+    if (closing) {
+      throw new Error('agent-bindings: live bindings began closing before the work-completion wake — dropped (best-effort)')
+    }
     // Plugin-attributed user-visible input (the upstream MessageSource
     // plugin kind — distinct from the `kind: 'user'` human-input
     // attribution the delegate work path uses: this turn is a runtime
@@ -2604,10 +2661,24 @@ export function createAgentBindings(deps) {
       content: [{ type: 'text', text }],
       source: { kind: 'plugin', plugin: 'dsh-agent-team' },
     })
+    // Stop-priority (DSH v0.1.5-rc.2 Agent semantics, plan §17):
+    //   - idle Leader  → `followup` (a NEW turn — the idle Leader is woken);
+    //   - busy Leader  → `inject` (the NON-WAKING next-step send:
+    //     `send(input, 'next-step', false)` in agent-loop agent.ts —
+    //     unlike `steer`'s `send(input, 'next-step', true)`, a non-waking
+    //     send is never re-routed to next-turn on a cancelled-converging
+    //     turn, so a user Stop is not washed into an automatic
+    //     replacement turn — Stop wins over the completion wake).
+    // Accepted microtask race (documented, NOT fixed here): if the status
+    // read is `running` and the driver finishes its last inbox check
+    // before the inject lands, the notification waits in the inbox until
+    // the next input wakes the Leader. No scheduler/retry is built for
+    // it: this is an at-most-once best-effort wake attempt, and the
+    // durable settlement fact + `team_collect` are the recovery authority.
     if (handle.agent.status === 'idle') {
       handle.agent.followup(message)
     } else {
-      handle.agent.steer(message)
+      handle.agent.inject(message)
     }
     // Success boundary = acceptance (plan §16): NO whenIdle, NO
     // ensureMaterialized. The turn (if any) runs on its own.
@@ -3081,6 +3152,13 @@ export function createAgentBindings(deps) {
    * @returns {Promise<void>}
    */
   async function close() {
+    // close lifecycle gate: mark closing BEFORE any snapshot/dispose
+    // work — from this microtask on, ensureLiveAgent refuses new
+    // handles (entry) and disposes late resumes (post-resume re-check),
+    // and the completion wake-up delivery refuses to send. Idempotent:
+    // a second call is a no-op (the maps are already drained).
+    if (closing) return
+    closing = true
     for (const [sid, handle] of [...liveAgents]) {
       liveAgents.delete(sid)
       try {
