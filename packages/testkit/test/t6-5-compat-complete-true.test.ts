@@ -10,11 +10,14 @@
  * against the frozen contracts-v1 vocabulary across module boundaries
  * (compatibility engine ⇄ contracts).
  *
- * Authority: Architecture §13.5 (complete:true persona ⇒
- * TEAM_PERSONA_COMPLETE_PRESET_CONFLICT, structural FATAL), §27.1 (closed
- * requirement-type vocabulary), §27.2 (complete:true unmet ⇒ mandatory FATAL,
- * no downgrade, no Continue Anyway), §28 (admission states); contracts v1
- * (reason codes frozen); Development Plan §16.4 G3-5.
+ * Authority: Architecture §13.5 (a probe world providing the `complete`
+ * persona kind ⇒ TEAM_PERSONA_COMPLETE_PRESET_CONFLICT, structural FATAL —
+ * world-driven classification under the persona KIND convention, the P5-T2
+ * subject decision revised by the persona-requirement-preset-id bug
+ * report), §27.1 (closed requirement-type vocabulary), §27.2 (complete:true
+ * unmet ⇒ mandatory FATAL, no downgrade, no Continue Anyway), §28
+ * (admission states); contracts v1 (reason codes frozen); Development Plan
+ * §16.4 G3-5.
  */
 
 import { describe, expect, it } from 'vitest'
@@ -78,10 +81,14 @@ interface CellExpectation {
  * structural types, then ordinary capability mismatch):
  *
  * - available            => PASS / SATISFIED / OPEN
- * - !available & complete => FATAL / (persona ? TEAM_PERSONA_COMPLETE_PRESET_CONFLICT
- *                                       : COMPLETE_REQUIREMENT_NOT_MET) / BLOCKED_FATAL
+ * - !available & persona  => FATAL / (world provides a `complete` persona
+ *                                     kind ? TEAM_PERSONA_COMPLETE_PRESET_CONFLICT
+ *                                     : PERSONA_INCOMPATIBLE) / BLOCKED_FATAL
+ *   — the cube's persona world provides only the `standard` kind, so every
+ *   cube persona cell lands on PERSONA_INCOMPATIBLE (world-driven
+ *   classification, kind convention);
+ * - !available & complete (non-persona) => FATAL / COMPLETE_REQUIREMENT_NOT_MET
  * - !available & teamStructure => FATAL / STRUCTURAL_CAPABILITY_MISSING / BLOCKED_FATAL
- * - !available & persona    => FATAL / PERSONA_INCOMPATIBLE / BLOCKED_FATAL
  * - !available & ordinary   => WARNING / CAPABILITY_UNAVAILABLE / BLOCKED_WARNING
  */
 function expectedCell(type: RequirementType, complete: boolean, available: boolean): CellExpectation {
@@ -92,13 +99,23 @@ function expectedCell(type: RequirementType, complete: boolean, available: boole
       status: COMPATIBILITY_STATUS.OPEN,
     }
   }
+  // Persona is WORLD-driven: the cube's persona world provides only the
+  // `standard` kind (never `complete`), so an unmet persona requirement is
+  // PERSONA_INCOMPATIBLE in EVERY complete-mode. The frozen
+  // TEAM_PERSONA_COMPLETE_PRESET_CONFLICT code needs a world that provides
+  // the `complete` kind — pinned by the test above (conflict fixture) and
+  // by the dedicated domain t5-persona-kind matrix.
+  if (type === 'persona') {
+    return {
+      outcome: 'FATAL',
+      reasonCode: COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE,
+      status: COMPATIBILITY_STATUS.BLOCKED_FATAL,
+    }
+  }
   if (complete) {
     return {
       outcome: 'FATAL',
-      reasonCode:
-        type === 'persona'
-          ? COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT
-          : COMPATIBILITY_REASON_CODES.COMPLETE_REQUIREMENT_NOT_MET,
+      reasonCode: COMPATIBILITY_REASON_CODES.COMPLETE_REQUIREMENT_NOT_MET,
       status: COMPATIBILITY_STATUS.BLOCKED_FATAL,
     }
   }
@@ -106,13 +123,6 @@ function expectedCell(type: RequirementType, complete: boolean, available: boole
     return {
       outcome: 'FATAL',
       reasonCode: COMPATIBILITY_REASON_CODES.STRUCTURAL_CAPABILITY_MISSING,
-      status: COMPATIBILITY_STATUS.BLOCKED_FATAL,
-    }
-  }
-  if (type === 'persona') {
-    return {
-      outcome: 'FATAL',
-      reasonCode: COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE,
       status: COMPATIBILITY_STATUS.BLOCKED_FATAL,
     }
   }
@@ -136,9 +146,13 @@ describe('P3-T6 G3-5 complete:true compatibility fatal (cross-module)', () => {
     expect(persona.complete).toBe(true)
     expect(persona.reasonCode).toBe(COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT)
     expect(persona.reasonCode).toBe(TeamContractErrorCode.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT)
-    expect(persona.unavailableSubjects).toEqual(['cordis-preset'])
+    // Kind convention: requirement subject = the required persona kind
+    // (`standard`); the fixture world provides the `complete` kind, so the
+    // frozen conflict code is reported (world-driven classification; the
+    // full matrix lives in the domain t5-persona-kind suite).
+    expect(persona.unavailableSubjects).toEqual(['standard'])
     expect(persona.detail).toBe(
-      'complete:true persona requirement unmet: cordis-preset (structural FATAL, not downgradeable)',
+      'complete:true persona requirement unmet: standard; probe world persona kind(s): complete (unavailable) (structural FATAL, not downgradeable)',
     )
     expect(result.counts.fatal).toBe(1)
     expect(result.counts.pass).toBe(0)
@@ -194,7 +208,7 @@ describe('P3-T6 G3-5 complete:true compatibility fatal (cross-module)', () => {
   it('a satisfied complete:true requirement is PASS/SATISFIED and admits (OPEN)', () => {
     const result = evaluateCompatibility({
       requirements: [COMPLETE_PERSONA_REQUIREMENT],
-      environmentFacts: [{ domain: 'persona', subject: 'cordis-preset', available: true, generation: 2 }],
+      environmentFacts: [{ domain: 'persona', subject: 'standard', available: true, generation: 2 }],
     })
     expect(result.status).toBe(COMPATIBILITY_STATUS.OPEN)
     const persona = result.requirements.find((entry) => entry.requirementId === 'req-persona-complete')
@@ -225,13 +239,17 @@ describe('P3-T6 G3-5 complete:true compatibility fatal (cross-module)', () => {
       for (const mode of COMPLETE_MODES) {
         for (const available of [false, true]) {
           cells += 1
+          // Persona subjects are KINDS (the kind convention): the cube's
+          // persona requirement asks for the `standard` kind and the world
+          // probes exactly that kind.
+          const subject = type === 'persona' ? 'standard' : 'subj-x'
           const requirement: RequirementInput =
             mode === 'true'
-              ? { requirementId: `req-${type}-t-${available ? 'a' : 'n'}`, type, subjects: ['subj-x'], complete: true }
+              ? { requirementId: `req-${type}-t-${available ? 'a' : 'n'}`, type, subjects: [subject], complete: true }
               : mode === 'false'
-                ? { requirementId: `req-${type}-${available ? 'a' : 'n'}`, type, subjects: ['subj-x'], complete: false }
-                : { requirementId: `req-${type}-${available ? 'a' : 'n'}`, type, subjects: ['subj-x'] }
-          const fact: EnvironmentFact = { domain: type, subject: 'subj-x', available, generation: 1 }
+                ? { requirementId: `req-${type}-${available ? 'a' : 'n'}`, type, subjects: [subject], complete: false }
+                : { requirementId: `req-${type}-${available ? 'a' : 'n'}`, type, subjects: [subject] }
+          const fact: EnvironmentFact = { domain: type, subject, available, generation: 1 }
           const result = evaluateCompatibility({ requirements: [requirement], environmentFacts: [fact] })
           const expected = expectedCell(type, mode === 'true', available)
           expect(result.status).toBe(expected.status)
@@ -242,7 +260,7 @@ describe('P3-T6 G3-5 complete:true compatibility fatal (cross-module)', () => {
           expect(entry.complete).toBe(mode === 'true')
           expect(entry.outcome).toBe(expected.outcome)
           expect(entry.reasonCode).toBe(expected.reasonCode)
-          expect(entry.unavailableSubjects).toEqual(available ? [] : ['subj-x'])
+          expect(entry.unavailableSubjects).toEqual(available ? [] : [subject])
           expect(result.counts.pass + result.counts.warning + result.counts.fatal).toBe(
             result.requirements.length,
           )
@@ -276,7 +294,10 @@ describe('P3-T6 G3-5 complete:true compatibility fatal (cross-module)', () => {
     }
     expect(cells).toBe(36)
     // 6 types × 3 modes available=TRUE      -> 18 PASS
-    // 6 types × mode=true available=FALSE   ->  6 FATAL (1 persona-conflict, 5 complete-not-met)
+    // 6 types × mode=true available=FALSE   ->  6 FATAL (persona ->
+    //                                           persona-incompatible — the
+    //                                           cube world has no `complete`
+    //                                           kind; 5 complete-not-met)
     // {teamStructure,persona} × 2 modes FALSE -> 4 FATAL
     // 4 ordinary types × 2 modes FALSE       ->  8 WARNING
     expect(passCount).toBe(18)

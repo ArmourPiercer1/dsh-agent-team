@@ -70,3 +70,7 @@ export type {
 // --- engine ---------------------------------------------------------------------
 export { evaluateCompatibility, isCompatibilityResultValidForEnvironment } from './engine.js'
 export type { CompatibilityEvaluationInput } from './engine.js'
+
+// --- persona kind vocabulary ------------------------------------------------------
+export { PERSONA_KINDS, isPersonaKind } from './persona-kind.js'
+export type { PersonaKind } from './persona-kind.js'

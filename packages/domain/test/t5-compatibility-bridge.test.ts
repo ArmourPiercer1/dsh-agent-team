@@ -5,7 +5,7 @@
  * `packages/domain/compatibility/test/` (TaskDoc 11.4 P3-T5 owned path:
  * `packages/domain/compatibility/**`), but scripts/run-tests.mjs discovers
  * test files flat at `packages/<pkg>/test/*.test.ts` only. This file
- * re-executes the seven suites so the canonical chain (`node
+ * re-executes the eight suites so the canonical chain (`node
  * scripts/run-tests.mjs domain`) runs them.
  *
  * The specifiers are computed at runtime on purpose: the frozen package
@@ -30,6 +30,7 @@ const suiteFiles = [
   't5-drift-invalidation.test.ts',
   't5-complete-true.test.ts',
   't5-purity-serialization.test.ts',
+  't5-persona-kind.test.ts',
 ]
 
 for (const name of suiteFiles) {

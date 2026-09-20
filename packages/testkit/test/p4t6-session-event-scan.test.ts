@@ -1046,14 +1046,25 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // TEAM_TOOL_CALLER_ROOT_MISMATCH gate exercised end-to-end).
     // Zero denylist vocabulary; the frozen quarantine hit set is
     // unchanged at fifteen. Scanner unchanged.
-    // exec-autonomy-contract (user ruling 2026-09-18, rebased onto the
-    // PR #20 merge 2026-09-19): +2 = 719 — the two spec files of the
-    // leader allow-lane exec-class exception (the domain
-    // leader-allow-lane contract spec + the runtime dual-gate spec),
-    // union-accounted on top of the 717 base. Evidence:
-    // dev/agent-workflow/evidence/exec-contract/.
-    expect(scanResult.filesScanned).toBe(719)
-    expect(scanResult.files.length).toBe(719)
+    // exec-autonomy-contract (user ruling 2026-09-18, merged via PR #19
+    // at 9ec0d1f): +2 = 719 — the two spec files of the leader
+    // allow-lane exec-class exception (the domain leader-allow-lane
+    // contract spec + the runtime dual-gate spec), union-accounted on
+    // top of the 717 base.
+    // Persona KIND convention (the persona-requirement-preset-id fix,
+    // DEC-1): +4 = 723 on top of the 719 base — the four new scannable
+    // files of this fix: packages/domain/compatibility/src/
+    // persona-kind.ts (the closed `PERSONA_KINDS` vocabulary +
+    // `isPersonaKind`), packages/domain/compatibility/test/
+    // t5-persona-kind.test.ts (the thirteen-case kind + world-driven
+    // classification suite, re-executed by the t5-compatibility-bridge),
+    // packages/runtime/agent-setup/preset/persona-kind-of.ts (the pure
+    // composition-text -> persona-kind parser) and packages/runtime/test/
+    // preset-persona-kind.test.ts (the fourteen-case parser suite). All
+    // four carry zero denylist vocabulary; the frozen quarantine hit
+    // set is unchanged at fifteen. Scanner unchanged.
+    expect(scanResult.filesScanned).toBe(723)
+    expect(scanResult.files.length).toBe(723)
 
   })
 

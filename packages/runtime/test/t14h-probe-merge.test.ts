@@ -32,8 +32,18 @@
  *   unchanged (the §27.3 binding: an ack bound to this exact
  *   mismatch/environment pair satisfies it — DEGRADED_ACKNOWLEDGED);
  * - T4  persona mismatch UNCHANGED (the selected preset still drives the
- *   persona fact; the §7.4 complete:true preset-conflict FATAL is
- *   untouched; no selection ⇒ empty persona world ⇒ fail-closed);
+ *   persona fact; no selection ⇒ empty persona world ⇒ fail-closed; in a
+ *   NO-RESOLVER world the caller id subject passes through and the
+ *   engine's world-driven classification reports PERSONA_INCOMPATIBLE —
+ *   the world provides no `complete` kind);
+ * - T8  persona KIND convention (direction B, the bug fix — the
+ *   persona-requirement-preset-id report): WITH the host kind resolver
+ *   the caller's preset-id fact is rewritten to a kind fact before the
+ *   U5 merge: a composable NON-STANDARD id (`ptc`) now PASSES (the live
+ *   bug), a complete-persona preset (`minimal`) is FATAL with the FROZEN
+ *   code (the world provides the `complete` kind; the caller's own
+ *   available-claim is discarded), a no-persona preset (`absent`) and an
+ *   unresolvable preset are the honest PERSONA_INCOMPATIBLE lane;
  * - T5  fact-source precedence / NO client spoofing (the caller's
  *   capability claims are discarded in BOTH directions: claiming an
  *   unavailable host capability does not pass; denying an available one
@@ -227,12 +237,16 @@ const CALLER_MALFORMED: readonly RemoteSafeRecord[] = [
 // --- helpers -----------------------------------------------------------------
 
 /** Build the real production S6 ports over the fixture world (the probe under test). */
-function makeProbePorts(hostFacts: readonly EnvironmentFact[]): S6RemotePorts {
+function makeProbePorts(
+  hostFacts: readonly EnvironmentFact[],
+  presetPersonaKind?: (presetId: string) => Promise<string | undefined>,
+): S6RemotePorts {
   const opts = {
     rootSessionId: T14H_ROOT,
     catalog: T14H_CATALOG,
     blueprint: T14H_BLUEPRINT,
     environmentFacts: () => Promise.resolve(hostFacts),
+    ...(presetPersonaKind !== undefined ? { presetPersonaKind } : {}),
   } as unknown as S6RemoteOptions
   return createS6RemotePorts(opts)
 }
@@ -241,10 +255,51 @@ function makeProbePorts(hostFacts: readonly EnvironmentFact[]): S6RemotePorts {
 async function runProbe(
   hostFacts: readonly EnvironmentFact[],
   callerFacts: readonly RemoteSafeRecord[],
+  presetPersonaKind?: (presetId: string) => Promise<string | undefined>,
 ): Promise<CompatibilityResult> {
-  const ports = makeProbePorts(hostFacts)
+  const ports = makeProbePorts(hostFacts, presetPersonaKind)
   return (await ports.intent.probe('t14h-bp', 1, callerFacts)) as unknown as CompatibilityResult
 }
+
+// --- the persona KIND resolver worlds (direction B, the bug fix) -------------
+
+/**
+ * The production resolver shape over a mock preset roster: preset id ->
+ * effective persona kind (the preset's own `dsh-persona` row config). The
+ * mock roster mirrors the shipped preset kinds: `ptc` (composable
+ * non-standard id — the live bug case) and `standard` are `standard`;
+ * `minimal` is `complete`; `bare` has no persona section (`absent`);
+ * anything else is unresolvable (`undefined` — the fact passes through).
+ */
+const MOCK_PRESET_KINDS: Readonly<Record<string, string | undefined>> = {
+  ptc: 'standard',
+  standard: 'standard',
+  minimal: 'complete',
+  bare: 'absent',
+}
+
+const mockResolver: (presetId: string) => Promise<string | undefined> = async (presetId) =>
+  MOCK_PRESET_KINDS[presetId]
+
+/** The UI wire facts for the selected preset `ptc` (the live bug case: composable, non-`standard` id). */
+const CALLER_PTC: readonly RemoteSafeRecord[] = [
+  { domain: 'persona', subject: 'ptc', available: true, generation: 0 },
+]
+
+/** The UI wire facts for the selected preset `minimal` (complete:true — the §13.5 conflict). */
+const CALLER_MINIMAL: readonly RemoteSafeRecord[] = [
+  { domain: 'persona', subject: 'minimal', available: true, generation: 0 },
+]
+
+/** The UI wire facts for the selected preset `bare` (no persona section). */
+const CALLER_BARE: readonly RemoteSafeRecord[] = [
+  { domain: 'persona', subject: 'bare', available: true, generation: 0 },
+]
+
+/** The UI wire facts for a DELETED preset id (unresolvable — the fact passes through). */
+const CALLER_DELETED: readonly RemoteSafeRecord[] = [
+  { domain: 'persona', subject: 'deleted-preset', available: true, generation: 0 },
+]
 
 /** One captured gate verdict (the real admission gate over a real durable world). */
 interface GateVerdict {
@@ -326,6 +381,34 @@ const T14H = await (async () => {
     t7Error = error
   }
 
+  // (T8) persona KIND convention (direction B — the bug fix): the host
+  // completes the caller's preset-id persona fact with the authoritative
+  // kind BEFORE the U5 merge (the mock resolver mirrors the shipped
+  // preset kinds over a mock roster).
+  // T8a THE BUG FIX: the selected preset is a composable NON-STANDARD id
+  // (`ptc`) — the live user's world. Pre-fix this selection was a
+  // structural FATAL (id `ptc` ≠ subject `standard`); now the host
+  // rewrites the fact to `{persona, standard, available: true}` and the
+  // probe PASSES.
+  const t8a = await runProbe(HOST_FACTS_FULL, CALLER_PTC, mockResolver)
+  // T8b the §13.5 conflict is PRESERVED: the selected preset IS a
+  // complete persona (`minimal`) — the caller's own wire claim
+  // (`available: true`) is DISCARDED in favor of the host-resolved kind
+  // `{persona, complete, available: false}`: the world now provides the
+  // `complete` kind, so the engine's world-driven classification reports
+  // the FROZEN code TEAM_PERSONA_COMPLETE_PRESET_CONFLICT.
+  const t8b = await runProbe(HOST_FACTS_FULL, CALLER_MINIMAL, mockResolver)
+  // T8c the honest lane: the selected preset has NO persona section
+  // (`bare`) → kind `absent` → the persona requirement is unmet and the
+  // world provides no `complete` kind → PERSONA_INCOMPATIBLE (NOT the
+  // frozen code — the copy no longer lies about a "complete preset").
+  const t8c = await runProbe(HOST_FACTS_FULL, CALLER_BARE, mockResolver)
+  // T8d fail-loud: the selected preset no longer exists (unresolvable) →
+  // the fact passes through UNCHANGED (id subject `deleted-preset`) → the
+  // requirement is unmet, the world provides no `complete` kind →
+  // PERSONA_INCOMPATIBLE with the raw id visible in the detail.
+  const t8d = await runProbe(HOST_FACTS_FULL, CALLER_DELETED, mockResolver)
+
   // (T6) probe/gate parity — the predictor property (Architecture §7.4):
   // the real S6 probe and the REAL admission gate over a real durable
   // P6-T1 world (real repositories, `enforceCompatibilityGate`) on the
@@ -387,6 +470,10 @@ const T14H = await (async () => {
     t5b,
     t5c,
     t7Error,
+    t8a,
+    t8b,
+    t8c,
+    t8d,
     t6open,
     t6fatal,
     t6warning,
@@ -449,25 +536,33 @@ describe('T14-H: intent.probe merges the host row facts with the caller persona 
     }
   })
 
-  it('T4a: persona mismatch UNCHANGED — a divergent selection is FATAL (the row default does not rescue it; the probe is stricter than the gate, the safe direction)', () => {
+  it('T4a (no-resolver world): a divergent selection is FATAL (the row default does not rescue it; the probe is stricter than the gate, the safe direction) — the id subject passes through and the world-driven classification reports PERSONA_INCOMPATIBLE (the world provides no `complete` kind)', () => {
     const result = T14H.t4a
     expect(result.status).toBe(COMPATIBILITY_STATUS.BLOCKED_FATAL)
     const row = rowOf(result, 'req-persona-standard')
     expect(row.outcome).toBe('FATAL')
     expect(row.complete).toBe(true)
-    expect(row.reasonCode).toBe(COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT)
+    expect(row.reasonCode).toBe(COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE)
     expect(row.unavailableSubjects).toEqual(['standard'])
+    // The honest detail names the unmet kind AND the world's persona
+    // observation (the pass-through id subject, verbatim).
+    expect(row.detail).toBe(
+      'complete:true persona requirement unmet: standard; probe world persona kind(s): other (available) (structural FATAL, not downgradeable)',
+    )
     // The capability lane is still host-driven and passes.
     expect(rowOf(result, 'req-mcp-dtest-mini').outcome).toBe('PASS')
   })
 
-  it('T4b: no preset selected (empty caller facts) ⇒ EMPTY persona world ⇒ fail-closed FATAL (identical to the pre-fix pure-caller evaluation)', () => {
+  it('T4b (no-resolver world): no preset selected (empty caller facts) ⇒ EMPTY persona world ⇒ fail-closed FATAL (identical to the pre-fix pure-caller evaluation; the honest detail says so)', () => {
     const result = T14H.t4b
     expect(result.status).toBe(COMPATIBILITY_STATUS.BLOCKED_FATAL)
     const row = rowOf(result, 'req-persona-standard')
     expect(row.outcome).toBe('FATAL')
-    expect(row.reasonCode).toBe(COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT)
+    expect(row.reasonCode).toBe(COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE)
     expect(row.unavailableSubjects).toEqual(['standard'])
+    expect(row.detail).toBe(
+      'complete:true persona requirement unmet: standard; no persona fact in the probe world (structural FATAL, not downgradeable)',
+    )
   })
 
   it('T5a: NO client spoofing — claiming the unavailable required MCP available ⇒ still FATAL (the host fact wins)', () => {
@@ -531,5 +626,57 @@ describe('T14-H: intent.probe merges the host row facts with the caller persona 
         expect(T14H.t7Error.code).toBe('MALFORMED_DTO')
       }
     }
+  })
+
+  it('T8a (THE BUG FIX): a composable NON-STANDARD preset id (`ptc`) selected by the panel ⇒ the host rewrites the caller fact to the kind `standard` ⇒ pre-create PASS (pre-fix: structural FATAL TEAM_PERSONA_COMPLETE_PRESET_CONFLICT with a lying "complete preset" copy)', () => {
+    const result = T14H.t8a
+    expect(result.status).toBe(COMPATIBILITY_STATUS.OPEN)
+    expect(rowOf(result, 'req-persona-standard').outcome).toBe('PASS')
+    expect(rowOf(result, 'req-mcp-dtest-mini').outcome).toBe('PASS')
+    expect(result.counts).toEqual({
+      pass: 3,
+      warning: 0,
+      fatal: 0,
+      unackedWarning: 0,
+      staleAcknowledgement: 0,
+    })
+  })
+
+  it('T8b (§13.5 preserved): the selected preset IS a complete persona (`minimal`) ⇒ the caller wire claim (available: true) is DISCARDED for the host-resolved kind {complete, available: false} ⇒ FATAL with the FROZEN code (the world now provides the `complete` kind)', () => {
+    const result = T14H.t8b
+    expect(result.status).toBe(COMPATIBILITY_STATUS.BLOCKED_FATAL)
+    const row = rowOf(result, 'req-persona-standard')
+    expect(row.outcome).toBe('FATAL')
+    expect(row.complete).toBe(true)
+    expect(row.reasonCode).toBe(COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT)
+    expect(row.unavailableSubjects).toEqual(['standard'])
+    // The honest detail names the required kind and the world kind.
+    expect(row.detail).toBe(
+      'complete:true persona requirement unmet: standard; probe world persona kind(s): complete (unavailable) (structural FATAL, not downgradeable)',
+    )
+  })
+
+  it('T8c (honest lane): the selected preset has NO persona section (`bare` ⇒ kind `absent`) ⇒ FATAL PERSONA_INCOMPATIBLE (NOT the frozen code — the world provides no `complete` kind; the copy no longer lies)', () => {
+    const result = T14H.t8c
+    expect(result.status).toBe(COMPATIBILITY_STATUS.BLOCKED_FATAL)
+    const row = rowOf(result, 'req-persona-standard')
+    expect(row.outcome).toBe('FATAL')
+    expect(row.reasonCode).toBe(COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE)
+    expect(row.unavailableSubjects).toEqual(['standard'])
+    expect(row.detail).toBe(
+      'complete:true persona requirement unmet: standard; probe world persona kind(s): absent (unavailable) (structural FATAL, not downgradeable)',
+    )
+  })
+
+  it('T8d (fail-loud): the selected preset no longer exists (unresolvable) ⇒ the caller fact passes through UNCHANGED (the raw id subject stays visible) ⇒ FATAL PERSONA_INCOMPATIBLE — never a silent kind guess', () => {
+    const result = T14H.t8d
+    expect(result.status).toBe(COMPATIBILITY_STATUS.BLOCKED_FATAL)
+    const row = rowOf(result, 'req-persona-standard')
+    expect(row.outcome).toBe('FATAL')
+    expect(row.reasonCode).toBe(COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE)
+    expect(row.unavailableSubjects).toEqual(['standard'])
+    expect(row.detail).toBe(
+      'complete:true persona requirement unmet: standard; probe world persona kind(s): deleted-preset (available) (structural FATAL, not downgradeable)',
+    )
   })
 })

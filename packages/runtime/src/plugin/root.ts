@@ -682,6 +682,21 @@ export interface TeamProductionRootParams {
    * "templateId missing").
    */
   readonly resolveBoundBlueprint?: (teamRootSid: string) => TeamBlueprint
+  /**
+   * Persona KIND convention (the persona-requirement-preset-id fix,
+   * direction B, optional additive) — the narrow closure over the
+   * production host's public `agentPresets` service that resolves one
+   * preset id to its effective persona KIND (`absent` | `standard` |
+   * `complete`) — the preset's own `dsh-persona` row config (the
+   * upstream plugin's PUBLIC `complete` flag, read through the
+   * composition text). The S6 `intent.probe` port rewrites the
+   * caller's preset-id persona facts to kind facts with it (host-
+   * completed pre-creation probe, T14-H pattern). ABSENT (factory /
+   * test worlds without the host entry): the probe's persona facts
+   * pass through unchanged (the pre-fix behavior; the engine's
+   * world-driven classification keeps the diagnosis honest).
+   */
+  readonly presetPersonaKind?: (presetId: string) => Promise<string | undefined>
 }
 
 /**
@@ -710,6 +725,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     blueprintCatalog,
     blueprintAuthority,
     resolveBoundBlueprint,
+    presetPersonaKind,
   } = params
   const repos: TeamDomainRepositories = domain.repositories
   const rootSid: string = config.rootSessionId
@@ -1786,6 +1802,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // a required MCP present in the row facts now passes the pre-create
     // probe exactly as it passes the gate).
     environmentFacts,
+    // Persona KIND convention (direction B): the host completes the
+    // caller's preset-id persona facts with the authoritative kind
+    // (absent in factory worlds — the facts pass through unchanged).
+    ...(presetPersonaKind !== undefined ? { presetPersonaKind } : {}),
     repositories: repos,
     catalog,
     blueprint,

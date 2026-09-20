@@ -1,0 +1,80 @@
+{
+  "type": "server-response",
+  "rpcId": "pkfix-a-create-vds24e6sbb",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "path": "fresh-root",
+        "durable": {
+          "teamSession": {
+            "schemaVersion": 1,
+            "rootSessionId": "session-pkfix-a-2026-09-20T04-33-10",
+            "blueprint": {
+              "blueprintId": "team.pkfix-bp",
+              "revision": "1",
+              "contentHash": "sha256:4ddb1a925ed3d84e5e21616441ade5b0b8957c64a983f2a07ecb4211e4d03742"
+            },
+            "createdAt": "2026-09-20T04:33:14.944Z",
+            "generation": 1,
+            "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/persona-kind/tests/homes/persona-kind-2026-09-20T04-33-10-a/workspace"
+          },
+          "binding": {
+            "schemaVersion": 1,
+            "kind": "team-root",
+            "sessionId": "session-pkfix-a-2026-09-20T04-33-10"
+          },
+          "wrote": true,
+          "leaderRow": {
+            "schemaVersion": 2,
+            "rootSessionId": "session-pkfix-a-2026-09-20T04-33-10",
+            "instanceId": "inst-leader",
+            "templateId": "leader",
+            "label": "leader",
+            "createdAt": "2026-09-20T04:33:14.960Z",
+            "activityVersion": 1
+          }
+        },
+        "bind": {
+          "requested": "fresh-root",
+          "bound": true,
+          "installed": true,
+          "identity": {
+            "kind": "root",
+            "sessionId": "session-pkfix-a-2026-09-20T04-33-10",
+            "rootSessionId": "session-pkfix-a-2026-09-20T04-33-10"
+          },
+          "admitted": true,
+          "admissionCode": "ADMISSION_OPEN",
+          "emittedEvents": [
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "persona"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "model"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "capability"
+            },
+            {
+              "name": "agent-setup/admission-decided",
+              "detail": "ADMISSION_OPEN"
+            }
+          ]
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.create",
+        "endpoint": "team.create",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

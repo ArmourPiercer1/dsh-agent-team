@@ -3376,3 +3376,28 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **门禁（全部实数）**：typecheck 全绿；focused 108/108（a1 49 + leader-allow 35 + dual-gate 14 + p4t6 10）；**p4t6 @719 实证不变**（新 kit `.mjs` 非 scannable — C1 kit 入仓未动 pin 先例）；`pnpm build` + `build:composition`（validate.ts 改动 → dist `validate.js`/`.map`/`.d.ts.map` 重建漂移 — 源 + dist 同 commit）+ `check:artifacts`（提交后复核）；全量 `pnpm test` = **20 failed | 3647 passed (3667)** — 失败集 = 基线 10 文件完全一致（t1-capability-schema/t2-blueprint-hash/p7t6-teammates-adapter/d3-member-identity-context/p6t3-mediation/p6t3-restart/p8s3b-result-effects/t12a-b2-child-identity/t12a-glue-handoff-ports/p6t6-actions；p6t1-parallel flake 本轮未触发，isolated 基线 9/9 记录不变）；passed = 3646 + 1（新增 member exact 字节级 pin case）；zero-core：test-use porcelain 0 @ fb2c4b9e69、references porcelain 0 + 冻结锚点 tag peel = `a3ab31992762c5d6560797eabc7e0885a9320ade` 未移动（远端 annotated tag 对象 276b3f8b peel 同）；:3080/:3180 401 零触碰。
 - **PR #19 收束**：全部改动（validate.ts 诊断 + a1 pin 拆分 + dual-gate 7× await + live kit + evidence + 本簿记）amend 进 `d3749c5` 单提交（单提交身份保持）+ force-push（显式 lease = 推送前远端值）；body 新增「Production Live Verification」节（L1/L2/L3 实数表 + evidence 路径 + kit 复跑方式 + 零触碰记录）+ 诊断修复/await hygiene 备注。
 - **状态**：PR #19 已更新（OPEN/MERGEABLE），待用户审查 merge — 审查者已预先裁决：三 live case 符合预期即可直接 merge，无新一轮设计修复。
+---
+
+## 2026-09-20 persona-requirement-preset-id 修复轮（用户指令「执行修复，完成修复与测试后提PR」）
+
+- **任务**：执行 docs/issues/team-persona-requirement-preset-id-bug-report.md 修复。bug = blueprint persona requirement 按 preset ID 匹配（P5-T2 310e6f6 约定）而非 persona kind（§13.5 shape 语义）：用户实况 = 选 ptc 预设 -> probe FATAL `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` + 假「完整的系统人格」copy，不可自救（用户 0.1.1-alpha.2 / route-c-round2-team / team-small-ctx workaround）。用户裁决方向 = **B 为主 + A 的 code 拆分收边**（subject 约定改 persona kind + 引擎 world-driven 分类；无新 code；client 诚实 lane copy）。
+- **worktree**：`.worktrees/persona-kind` @ `fix/persona-requirement-kind`（base master `f2edc56` = PR #20 merge 处）。`pnpm install --frozen-lockfile` 完成（yaml 解析依赖）。
+- **代码（6 lane 全完成）**：
+  1. domain/compatibility：`persona-kind.ts`（PERSONA_KINDS closed vocab absent|standard|complete）+ engine world-driven 分类（unmet persona requirement 仅当 WORLD 提供 complete fact 才报 frozen code，否则 PERSONA_INCOMPATIBLE；detail 恒列 required + world kind(s)）。
+  2. domain/blueprint validate：persona name ∈ closed set（preset id -> MALFORMED_DTO + 迁移指引）。
+  3. P5-T2 adapter：personaRequirement() 无参 subjects=['standard']；facts subject = substrate.personaKind。
+  4. runtime：`persona-kind-of.ts` 纯解析器（composition text -> kind；!!js 条件 disabled 保守 enabled；解析失败 typed throw）+ host.ts lazy agentPresets 扩 readComposition（fail-closed）+ 窄端口 presetPersonaKind（root.ts -> S6RemoteOptions）+ s6-remote rewriteCallerPersonaFacts（U5 merge 前 caller persona 事实 preset-id -> kind 改写；unresolvable 透传 fail-loud）。
+  5. client：isPersonaPresetFatal 双码 + isPersonaIncompatibleFatal 诚实 lane copy（locale zh/en）。
+  6. SKILL.md §4.1 persona kind 文档 + §6/§9 条目。
+- **测试**：t5-persona-kind 13 + preset-persona-kind 14 + t2 +4 + t14h 14/14（T8a ptc->OPEN 修复证明 / T8b minimal->frozen FATAL / T8c bare->PERSONA_INCOMPATIBLE / T8d deleted->透传）+ client spec +1 + p4t6 pin 717->721（+4 scannable, DEC-1）。client 包 vitest 1 failed | 642 passed（唯一失败 = TCM M4 two-stage v2 时序 flake，stash 对照无 diff 同错）。全仓 pnpm test = 基线 10-file 失败集 + p6t1-parallel（全量负载 flake，isolated 3/3）。
+- **live smoke kit**：`tests/kits/persona-kind-live-smoke/`（mock model + rc.2 test-use @ fb2c4b9e，双 world 顺序，:3080/:3180 只读 pre/post，自清，动态避端口——并发 work-completion-wakeup kit 占 3491/3496 时自动让位）。WORLD A = A1 probe(ptc)->OPEN（修复证明）/ A2 probe(standard)->OPEN（零迁移）/ A3 team.create / A4 member 激活；WORLD B = B1 probe(minimal)->frozen FATAL（§13.5 保持）/ B2 probe(pkfix-bare)->PERSONA_INCOMPATIBLE（诚实 lane）/ B3 probe(pkfix-deleted)->PERSONA_INCOMPATIBLE（fail-loud 透传）。
+- **门禁**：typecheck 全绿；pnpm build + build:composition（41 dist 产物随最终 commit 同提交）；zero-core（test-use porcelain 0 @ fb2c4b9e；冻结锚点 a3ab3199 未动）。
+- **交付**：单一 commit（源码+测试+文档+dist+kit+evidence+簿记）-> 推送 PR（base master @ f2edc56，SSH；用户一次性授权覆盖）；PR body = 完整证据链（形成时间线 08-29..09-09 / 裁决 / 测试矩阵 / live 实数 / 门禁实数 / 已知限制「UI 选择预设仅驱动 probe 域，row preset 才是运行时」/ 用户侧 team-small-ctx workaround 移除指引）。
+
+## 2026-09-20 persona-kind 交付收束（rebase + PR #22）
+
+- **PR #19 先合 master**（9ec0d1f = exec-autonomy-contract，8e7479f）→ 触发 PR #20 收束轮注记的 rebase 依赖：本分支（首提交 471d77c @ f2edc56 之上）rebase 至 origin/master（9ec0d1f）→ 新 SHA **a1e7c2c**。
+- **8 重叠文件全解**：`validate.ts` 自动合并（双方改动俱在：persona closed-set 检查 + PR19 role threading，focused 180/180 验证）/ SKILL.md §6 双扩合并（PR19 §5.1 leader 例外措辞 + 本修 persona kind 条目）/ SESSION_ROUTER_LOG append 双留 / graph.yaml 双块俱存 + current_phase 取本修 / p4t6 pin 717→719(PR19)→**723**(+4，实跑 10/10 验证) / validate 双 dist map 取 PR19 侧后 `pnpm build`+`build:composition` 重建（validate.js 自动合并与重建字节一致）。
+- **合并树门禁**：pnpm build 0；build:composition 0（staged 后）；check:artifacts OK 1128；全仓 pnpm test = 20 failed | 3680 passed（3700）= 基线 10-file 失败集（PR19 新增 50 测试全过，零新增失败）；PR19 专项 6 文件 185/185；本修 focused 6 文件 180/180；p4t6 @723 10/10。
+- **live smoke 合并树复跑**：7/7 PASS（smoke-2026-09-20T04-40-03 — PR19 mutation-envelope dual gate 与本修交互验证：本修蓝图 legacy 无 capabilities → dual gate 不激活，probe/create/member 链全绿；:3080/:3180 前后 401 零触碰）。
+- **PR #22**：https://github.com/ArmourPiercer1/dsh-agent-team/pull/22（base master @ 9ec0d1f；标题 fix(compatibility): match persona requirements by persona kind, not preset id；body = 完整证据链 + 用户侧 workaround 移除指引）。待用户审查 merge。

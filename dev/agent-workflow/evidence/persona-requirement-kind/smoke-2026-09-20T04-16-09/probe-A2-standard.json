@@ -1,0 +1,18 @@
+{
+  "type": "server-response",
+  "rpcId": "pkfix-A2-do0blqfotl",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "internal-error",
+      "message": "remote method 'intent.probe' is unavailable while the team runtime is not ready (state: starting) — the live boot is still starting or it failed; the route stays registered and the catalog reads stay servable",
+      "details": {
+        "method": "intent.probe",
+        "endpoint": "intent.probe",
+        "contractVersion": 1,
+        "requestToken": null,
+        "reason": "runtime-not-ready"
+      }
+    }
+  }
+}

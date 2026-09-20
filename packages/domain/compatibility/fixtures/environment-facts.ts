@@ -25,7 +25,8 @@ export const FULLY_COMPATIBLE_FACTS: readonly EnvironmentFact[] = [
   { domain: 'skill', subject: 'code-review', available: true, generation: 1 },
   { domain: 'mcpServer', subject: 'abtem', available: true, generation: 2 },
   { domain: 'modelRoute', subject: 'qwen3.8-27b', available: true, generation: 5 },
-  { domain: 'persona', subject: 'team-preset-cordis', available: true, generation: 2 },
+  // Persona subject is a PERSONA KIND (the kind convention, §13.5).
+  { domain: 'persona', subject: 'standard', available: true, generation: 2 },
   { domain: 'teamStructure', subject: 'durable-persistence', available: true, generation: 4 },
   { domain: 'teamStructure', subject: 'agent-lifecycle-seam', available: true, generation: 4 },
   { domain: 'teamStructure', subject: 'leader-member-surface', available: true, generation: 4 },
@@ -64,22 +65,24 @@ export const STRUCTURE_MISSING_FACTS: readonly EnvironmentFact[] = [
   ),
 ]
 
-/** The persona probe reports incompatible (structural FATAL, non-complete). */
+/** The persona probe reports the required kind unavailable (structural FATAL). */
 export const PERSONA_INCOMPATIBLE_FACTS: readonly EnvironmentFact[] = [
   ...FULLY_COMPATIBLE_FACTS.map((fact) =>
-    fact.domain === 'persona' && fact.subject === 'team-preset-cordis'
+    fact.domain === 'persona' && fact.subject === 'standard'
       ? { ...fact, available: false }
       : fact,
   ),
 ]
 
 /**
- * The complete:true persona preset conflict environment (Architecture
- * §13.5): the preset's effective persona is complete, so Team identity
- * cannot be composed.
+ * The complete-persona preset conflict environment (Architecture §13.5):
+ * the probe world provides a `complete` persona kind (the preset's
+ * effective persona is complete), so Team identity cannot be composed —
+ * the engine reports the frozen TEAM_PERSONA_COMPLETE_PRESET_CONFLICT code
+ * because the WORLD says so (world-driven classification).
  */
 export const COMPLETE_PERSONA_CONFLICT_FACTS: readonly EnvironmentFact[] = [
-  { domain: 'persona', subject: 'cordis-preset', available: false, generation: 1, detail: 'effective persona section is complete:true' },
+  { domain: 'persona', subject: 'complete', available: false, generation: 1, detail: 'effective persona section is complete:true' },
 ]
 
 /** The skill probe is absent entirely (no fact row — never probed). */

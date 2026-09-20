@@ -15,14 +15,19 @@
  * 2. COMPLETE-TRUE DETECTION (DevPlan §18.3, Architecture §13.5) — via
  *    the P3-T5 compatibility engine (the allowed dependency, read-only):
  *    the adapter states the Team persona-composition requirement (type
- *    `persona`, structural `complete: true`) and the public environment
- *    fact (the preset's effective persona is composable or complete), and
- *    the ENGINE classifies. A FATAL outcome carrying the frozen contracts
- *    v1 code `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` becomes
- *    {@link TeamPersonaOverlayError} — thrown from the slot's `apply`,
- *    i.e. BEFORE the binder's admission decision, so Team work never
- *    starts (the binder's fail-closed wrap: no later slot, no surface
- *    effect, no event, no bound registration).
+ *    `persona`, structural `complete: true`, subject = the required
+ *    persona KIND `standard` — the kind convention, the P5-T2 subject
+ *    decision revised by the persona-requirement-preset-id bug report:
+ *    subjects are kinds, never preset ids) and the public environment
+ *    fact (subject = the preset's effective persona KIND: composable
+ *    `standard`, the §13.5-conflicting `complete`, or `absent`), and the
+ *    ENGINE classifies (world-driven: the frozen contracts v1 code
+ *    `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` is reported because the
+ *    world provides the `complete` kind). A FATAL outcome carrying that
+ *    frozen code becomes {@link TeamPersonaOverlayError} — thrown from
+ *    the slot's `apply`, i.e. BEFORE the binder's admission decision, so
+ *    Team work never starts (the binder's fail-closed wrap: no later
+ *    slot, no surface effect, no event, no bound registration).
  * 3. SCOPED IDENTITY (DevPlan §18.3, Architecture §13.3/§13.4) — for the
  *    compatible (standard) preset: the Team Blueprint persona text
  *    (LeaderTemplate for root, MemberTemplate for member — the Blueprint
@@ -69,13 +74,31 @@ export declare const PERSONA_PROBE_GENERATION = 1;
  * domain, §13.5): structural (`complete: true`) — if the preset's
  * effective persona cannot compose the Team identity, the outcome is a
  * mandatory FATAL with no downgrade and no Continue Anyway.
+ *
+ * Persona KIND convention (the P5-T2 subject decision, revised by the
+ * persona-requirement-preset-id bug report, direction B): the subject is
+ * the persona kind the Team RUNTIME needs — the composable `standard`
+ * kind — NOT the preset id. A preset id would pin the requirement to one
+ * exact preset (every other id unmet, misdiagnosed as a complete-persona
+ * conflict); the kind asks the compatibility question the §13.4/§13.5
+ * semantics are about: does the runtime preset provide a composable
+ * persona substrate? The requirement is a TEAM-LEVEL constant (it no
+ * longer depends on the substrate — the substrate states the FACT side).
  */
-export declare function personaRequirement(substrate: AgentPresetSubstrateFacts): RequirementInput;
+export declare function personaRequirement(): RequirementInput;
 /**
  * The public environment fact for the persona probe: the preset's
- * effective persona is COMPOSABLE (standard) or COMPLETE (the §13.5
- * conflict — the complete section restores itself as the sole system
- * prompt after the assemble waterfall, so the scoped shadow cannot hold).
+ * effective persona kind (the closed three-state, §13.5). The SUBJECT is
+ * the kind itself (the kind convention — never a preset id):
+ *
+ * - `standard` (composable, non-complete) — available: the scoped shadow
+ *   composes onto it;
+ * - `complete` (the §13.5 conflict) — unavailable: the complete section
+ *   restores itself as the sole system prompt after the assemble
+ *   waterfall, so the scoped shadow cannot hold;
+ * - `absent` — unavailable: no persona surface to install onto (the
+ *   adapter short-circuits absent before probing, so this row is stated
+ *   for fact-function completeness, not the apply path).
  */
 export declare function personaEnvironmentFacts(substrate: AgentPresetSubstrateFacts): readonly EnvironmentFact[];
 /**
