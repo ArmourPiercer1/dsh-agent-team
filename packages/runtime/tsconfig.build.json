@@ -9,6 +9,7 @@
     "action-router",
     "activation",
     "activity",
+    "artifact-read",
     "admission",
     "agent-setup",
     "compatibility",
