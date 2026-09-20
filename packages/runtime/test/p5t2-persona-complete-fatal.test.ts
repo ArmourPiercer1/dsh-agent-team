@@ -116,7 +116,11 @@ describe('P5-T2 group 3: complete:true preset — FATAL before admission, Team w
     expect(evaluated.requirements[0]?.reasonCode).toBe(
       COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT,
     )
-    expect(evaluated.requirements[0]?.unavailableSubjects).toEqual([COMPLETE_PRESET_ID])
+    // Kind convention: the requirement asks for the `standard` kind; the
+    // complete substrate states the `complete` kind, so the unmet subject
+    // is the REQUIRED kind (the frozen code is world-driven: the world
+    // provides `complete`).
+    expect(evaluated.requirements[0]?.unavailableSubjects).toEqual(['standard'])
   })
 
   it('a retry of the same complete-persona bind fails identically (the engine re-probes once per attempt)', () => {

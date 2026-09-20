@@ -15,8 +15,20 @@
  *   (`teamStructure`, `persona`) => `FATAL`
  *   (structural Team contract cannot hold)
  * - `complete:true` unmet => `FATAL` **mandatory, no downgrade, no ack**
- *   (Architecture §13.5; for `persona` the engine reports the frozen
- *   contracts-v1 code `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT`)
+ *   (Architecture §13.5; the `persona` reason code is WORLD-driven, see
+ *   below)
+ *
+ * Persona kind convention (the P5-T2 subject decision, revised by the
+ * team-persona-requirement-preset-id bug report): persona subjects are
+ * persona KINDS (`absent` | `standard` | `complete`, §13.5) — never preset
+ * ids. An unmet `persona` requirement is classified by the persona kind(s)
+ * the WORLD actually provides: a world persona kind `complete` reports the
+ * frozen contracts-v1 code `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` (the
+ * code names a fact about the environment, so it is reported only when the
+ * world says so); any other world state (an unavailable `standard`, an
+ * `absent` kind, or no persona fact at all) reports `PERSONA_INCOMPATIBLE`
+ * (Architecture §27.2: persona identity cannot be installed safely). The
+ * detail always states the required kind(s) AND the world persona kind(s).
  *
  * Acknowledgements (Architecture §27.3) bind to the specific mismatch +
  * environment generation: a WARNING is satisfied only by an ack whose
@@ -90,6 +102,25 @@ export function evaluateCompatibility(input: CompatibilityEvaluationInput): Comp
     factByKey.set(`${fact.domain}\u0000${fact.subject}`, fact)
   }
 
+  // Persona world kinds (kind convention, §13.5/§27.1): every persona fact
+  // in the world, labeled by availability, sorted for a stable diagnostic.
+  // `worldProvidesCompletePersona` is the classification driver for unmet
+  // persona requirements (see the module doc): the frozen
+  // TEAM_PERSONA_COMPLETE_PRESET_CONFLICT code names a fact about the
+  // environment, so the engine reports it only when the world provides a
+  // `complete` persona kind.
+  const personaWorldKinds = facts
+    .filter((fact) => fact.domain === 'persona')
+    .map((fact) => `${fact.subject} (${fact.available ? 'available' : 'unavailable'})`)
+    .sort()
+  const worldProvidesCompletePersona = facts.some(
+    (fact) => fact.domain === 'persona' && fact.subject === 'complete',
+  )
+  const personaWorldNote =
+    personaWorldKinds.length === 0
+      ? 'no persona fact in the probe world'
+      : `probe world persona kind(s): ${personaWorldKinds.join(', ')}`
+
   const results: RequirementResult[] = []
   const consumedAcks = new Set<WarningAcknowledgement>()
   let passCount = 0
@@ -145,22 +176,29 @@ export function evaluateCompatibility(input: CompatibilityEvaluationInput): Comp
     let detail: string
     if (requirement.complete) {
       outcome = 'FATAL'
-      reasonCode =
-        requirement.type === 'persona'
+      if (requirement.type === 'persona') {
+        // World-driven classification (module doc): the frozen conflict
+        // code is reported only when the world provides a `complete`
+        // persona kind; any other unmet persona world is the generic
+        // persona-incompatible FATAL.
+        reasonCode = worldProvidesCompletePersona
           ? COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT
-          : COMPATIBILITY_REASON_CODES.COMPLETE_REQUIREMENT_NOT_MET
-      detail =
-        requirement.type === 'persona'
-          ? `complete:true persona requirement unmet: ${unavailableSubjects.join(', ')} (structural FATAL, not downgradeable)`
-          : `complete:true requirement unmet: ${unavailableSubjects.join(', ')} (structural FATAL, not downgradeable)`
+          : COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE
+        detail = `complete:true persona requirement unmet: ${unavailableSubjects.join(', ')}; ${personaWorldNote} (structural FATAL, not downgradeable)`
+      } else {
+        reasonCode = COMPATIBILITY_REASON_CODES.COMPLETE_REQUIREMENT_NOT_MET
+        detail = `complete:true requirement unmet: ${unavailableSubjects.join(', ')} (structural FATAL, not downgradeable)`
+      }
     } else if (requirement.type === 'teamStructure') {
       outcome = 'FATAL'
       reasonCode = COMPATIBILITY_REASON_CODES.STRUCTURAL_CAPABILITY_MISSING
       detail = `structural team capability missing: ${unavailableSubjects.join(', ')}`
     } else if (requirement.type === 'persona') {
       outcome = 'FATAL'
-      reasonCode = COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE
-      detail = `persona/runtime-context cannot be composed safely for: ${unavailableSubjects.join(', ')}`
+      reasonCode = worldProvidesCompletePersona
+        ? COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT
+        : COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE
+      detail = `persona requirement unmet: ${unavailableSubjects.join(', ')}; ${personaWorldNote} (structural FATAL, not downgradeable)`
     } else {
       outcome = 'WARNING'
       reasonCode = COMPATIBILITY_REASON_CODES.CAPABILITY_UNAVAILABLE

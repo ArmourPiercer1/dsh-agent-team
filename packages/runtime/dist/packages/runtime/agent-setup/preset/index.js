@@ -9,4 +9,5 @@
  * @module @dsh-agent-team/runtime/agent-setup/preset
  */
 export { PRESET_PERSONA_KINDS } from './types.js';
+export { DSH_PERSONA_MODULE, PresetPersonaCompositionError, presetPersonaKindOfComposition, } from './persona-kind-of.js';
 //# sourceMappingURL=index.js.map

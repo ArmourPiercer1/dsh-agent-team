@@ -1,0 +1,34 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/persona-kind/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3492/?token=LcYf0UC59WUrf2A-QrbzfK_90W7mMSLwq6N_D1SohiQ
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+(node:289297) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 47, column 13:
+
+  disabled: !!js process.platform === 'win32'
+            ^^^^
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:289297) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 51, column 13:
+
+  disabled: !!js process.platform !== 'win32'
+            ^^^^
+
+(node:289297) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 32, column 17:
+
+      disabled: !!js process.platform === 'win32'
+                ^^^^
+
+(node:289297) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 38, column 17:
+
+      disabled: !!js process.platform === 'win32'
+                ^^^^
+
+(node:289297) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 52, column 17:
+
+      disabled: !!js process.platform !== 'win32'
+                ^^^^
+
+(node:289297) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 59, column 17:
+
+      disabled: !!js process.platform !== 'win32'
+                ^^^^
+

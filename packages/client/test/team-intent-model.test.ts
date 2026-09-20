@@ -18,6 +18,7 @@ import {
   emptyTeamIntentDraft,
   intentCreateGate,
   intentEnvironmentFacts,
+  isPersonaIncompatibleFatal,
   isPersonaPresetFatal,
   mintRootWorkRequestToken,
   parseBlueprintDetail,
@@ -192,19 +193,44 @@ describe('intentCreateGate', () => {
 })
 
 describe('isPersonaPresetFatal', () => {
-  it('is true only for the BLOCKED_FATAL verdict carrying the frozen conflict reason code', () => {
+  it('is true for the BLOCKED_FATAL verdict carrying EITHER persona conflict code (the frozen §7.4 conflict OR the world-driven PERSONA_INCOMPATIBLE — the persona KIND convention, the bug fix)', () => {
     const fatal = compat('BLOCKED_FATAL', [
       { outcome: 'FATAL', requirementId: 'req-persona-team', reasonCode: 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT' },
     ])
     expect(isPersonaPresetFatal(fatal)).toBe(true)
+    // The honest lane (absent-persona / unresolvable preset / divergent
+    // selection without the host resolver) carries the SAME remedy
+    // (change the preset) — same lane, honest copy.
     expect(isPersonaPresetFatal(compat('BLOCKED_FATAL', [
       { outcome: 'FATAL', requirementId: 'req-persona-team', reasonCode: 'PERSONA_INCOMPATIBLE' },
+    ]))).toBe(true)
+    // An unrelated FATAL code is not the persona-preset lane.
+    expect(isPersonaPresetFatal(compat('BLOCKED_FATAL', [
+      { outcome: 'FATAL', requirementId: 'req-mcp-x', reasonCode: 'COMPLETE_REQUIREMENT_NOT_MET' },
     ]))).toBe(false)
     expect(isPersonaPresetFatal(compat('BLOCKED_WARNING', [
       { outcome: 'FATAL', requirementId: 'req-persona-team', reasonCode: 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT' },
     ]))).toBe(false)
     expect(isPersonaPresetFatal(undefined)).toBe(false)
     expect(isPersonaPresetFatal({ ok: false, message: 'boom' })).toBe(false)
+  })
+})
+
+describe('isPersonaIncompatibleFatal', () => {
+  it('is true only for the BLOCKED_FATAL verdict carrying the world-driven PERSONA_INCOMPATIBLE code (the honest-lane copy branch)', () => {
+    expect(isPersonaIncompatibleFatal(compat('BLOCKED_FATAL', [
+      { outcome: 'FATAL', requirementId: 'req-persona-team', reasonCode: 'PERSONA_INCOMPATIBLE' },
+    ]))).toBe(true)
+    // The §7.4 complete-conflict verdict renders the ORIGINAL copy
+    // (not the honest-lane one).
+    expect(isPersonaIncompatibleFatal(compat('BLOCKED_FATAL', [
+      { outcome: 'FATAL', requirementId: 'req-persona-team', reasonCode: 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT' },
+    ]))).toBe(false)
+    expect(isPersonaIncompatibleFatal(compat('BLOCKED_WARNING', [
+      { outcome: 'FATAL', requirementId: 'req-persona-team', reasonCode: 'PERSONA_INCOMPATIBLE' },
+    ]))).toBe(false)
+    expect(isPersonaIncompatibleFatal(undefined)).toBe(false)
+    expect(isPersonaIncompatibleFatal({ ok: false, message: 'boom' })).toBe(false)
   })
 })
 

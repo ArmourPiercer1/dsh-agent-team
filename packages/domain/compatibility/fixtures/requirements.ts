@@ -20,7 +20,10 @@ export const BLUEPRINT_REQUIREMENTS: readonly RequirementInput[] = [
   { requirementId: 'req-skill-review', type: 'skill', subjects: ['code-review'] },
   { requirementId: 'req-mcp-abtem', type: 'mcpServer', subjects: ['abtem'] },
   { requirementId: 'req-model-route', type: 'modelRoute', subjects: ['qwen3.8-27b'] },
-  { requirementId: 'req-persona', type: 'persona', subjects: ['team-preset-cordis'] },
+  // Persona subjects are PERSONA KINDS (absent|standard|complete), never
+  // preset ids — the kind convention (Architecture §13.5; the P5-T2 subject
+  // decision revised by the persona-requirement-preset-id bug report).
+  { requirementId: 'req-persona', type: 'persona', subjects: ['standard'] },
   {
     requirementId: 'req-team-structure',
     type: 'teamStructure',
@@ -28,11 +31,16 @@ export const BLUEPRINT_REQUIREMENTS: readonly RequirementInput[] = [
   },
 ]
 
-/** A `complete:true` persona requirement (Architecture §13.5). */
+/**
+ * A `complete:true` persona requirement (Architecture §13.5): the blueprint
+ * requires the composable `standard` persona kind and the requirement is
+ * structurally mandatory (no downgrade). The SUBJECT is the required persona
+ * kind — never a preset id (the kind convention).
+ */
 export const COMPLETE_PERSONA_REQUIREMENT: RequirementInput = {
   requirementId: 'req-persona-complete',
   type: 'persona',
-  subjects: ['cordis-preset'],
+  subjects: ['standard'],
   complete: true,
 }
 

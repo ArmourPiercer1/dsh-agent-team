@@ -1,0 +1,9 @@
+[2026-09-20T04:16:09.067Z] persona-kind live smoke — run 2026-09-20T04-16-09 — worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/persona-kind testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-09-20T04:16:09.101Z] stable instances pre: {"p3080":{"url":"http://127.0.0.1:3080/","status":401},"p3180":{"url":"http://127.0.0.1:3180/","status":401}}
+[2026-09-20T04:16:09.102Z] ═══ WORLD A: the fix (probe ptc → PASS, create, member activation) ═══
+[2026-09-20T04:16:09.115Z] world A: mock model on 3497
+[2026-09-20T04:16:12.544Z] world a booted at http://127.0.0.1:3492; catalog resolves team.pkfix-bp
+[2026-09-20T04:16:12.548Z] FAIL A1 probe (caller fact persona/ptc, the composable non-standard id) ⇒ OPEN — the bug fix (pre-fix: FATAL TEAM_PERSONA_COMPLETE_PRESET_CONFLICT) — status=200 compatStatus=undefined personaRow=undefined
+[2026-09-20T04:16:12.552Z] FAIL A2 probe (caller fact persona/standard — id doubles as kind) ⇒ OPEN (zero config migration) — status=200 compatStatus=undefined
+[2026-09-20T04:16:12.689Z] PASS A3 team.create (fix blueprint, initialWork) succeeds on the fresh root (the post-creation admission gate admits) — status=200 body={"type":"server-response","rpcId":"pkfix-a-create-0d2s2ilo9u","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-pkfix-a-2026-09-20T04-16-09","blueprint":{"blueprintId":"team.pkfix-bp","revision":"1","contentH
+[2026-09-20T04:19:12.933Z] mock wait timed out: A leader turn start (requests=2)

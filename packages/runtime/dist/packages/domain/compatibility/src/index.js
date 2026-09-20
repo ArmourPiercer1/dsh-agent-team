@@ -27,4 +27,6 @@ export { parseWarningAcknowledgement, parseWarningAcknowledgements } from './ack
 export { REQUIREMENT_OUTCOMES, COMPATIBILITY_STATUS, COMPATIBILITY_REASON_CODES, COMPATIBILITY_REASON_CODE_VALUES, ACK_STATUSES, serializeCompatibilityResult, TEAM_CONTRACT_SCHEMA_VERSION, } from './result.js';
 // --- engine ---------------------------------------------------------------------
 export { evaluateCompatibility, isCompatibilityResultValidForEnvironment } from './engine.js';
+// --- persona kind vocabulary ------------------------------------------------------
+export { PERSONA_KINDS, isPersonaKind } from './persona-kind.js';
 //# sourceMappingURL=index.js.map

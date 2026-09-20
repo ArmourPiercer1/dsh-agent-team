@@ -1,0 +1,90 @@
+[
+  {
+    "seq": 1,
+    "toolCount": 0,
+    "userText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:45e6702ba81ae038062705e9281f28ad50bf8b3772b01582af3e2c4e6064507e] PKFIXMK_A_2026-09-28T12-17-00\"}]",
+    "toolMessages": [],
+    "reply": {
+      "kind": "text",
+      "content": "PKFIX_A_NOOP"
+    }
+  },
+  {
+    "seq": 2,
+    "toolCount": 39,
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:45e6702ba81ae038062705e9281f28ad50bf8b3772b01582af3e2c4e6064507e] PKFIXMK_A_2026-09-28T12-17-00\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instru",
+    "toolMessages": [],
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-pkfix-uoyu3yw7",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-pkfix-a-2026-09-28T12-17-00",
+            "requestToken": "pkfix-a-create-2026-09-28T12-17-00",
+            "delegationTemplateId": "worker",
+            "label": "pkfix worker"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 3,
+    "toolCount": 39,
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:45e6702ba81ae038062705e9281f28ad50bf8b3772b01582af3e2c4e6064507e] PKFIXMK_A_2026-09-28T12-17-00\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instru",
+    "toolMessages": [
+      "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-pkfix-a-2026-09-28T12-17-00\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0iatwjj1v2hs\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-a554a708c14cf882a6f2ecad09eea119\",\"operationId\":\"op-1njtif101hsoby1e1dzlj0sz\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"pkfix-a-create-2026-09-28T12-17-00\"}"
+    ],
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-pkfix-0eiqte5q",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-pkfix-a-2026-09-28T12-17-00",
+            "requestToken": "pkfix-a-delegate-2026-09-28T12-17-00",
+            "delegationInstanceId": "inst-0iatwjj1v2hs",
+            "label": "ping the worker",
+            "prompt": "Ping: reply with one word. PKFIXMK_AMEM_2026-09-28T12-17-00"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 4,
+    "toolCount": 39,
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:45e6702ba81ae038062705e9281f28ad50bf8b3772b01582af3e2c4e6064507e] PKFIXMK_A_2026-09-28T12-17-00\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instru",
+    "toolMessages": [
+      "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-pkfix-a-2026-09-28T12-17-00\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0iatwjj1v2hs\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-a554a708c14cf882a6f2ecad09eea119\",\"operationId\":\"op-1njtif101hsoby1e1dzlj0sz\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"pkfix-a-create-2026-09-28T12-17-00\"}",
+      "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-pkfix-a-2026-09-28T12-17-00\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0iatwjj1v2hs\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":3,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"pkfix-a-delegate-2026-09-28T12-17-00\"}"
+    ],
+    "reply": {
+      "kind": "text",
+      "content": "PKFIX_A_DONE"
+    }
+  },
+  {
+    "seq": 5,
+    "toolCount": 39,
+    "userText": "[team-work requestToken=pkfix-a-delegate-2026-09-28T12-17-00] Ping: reply with one word. PKFIXMK_AMEM_2026-09-28T12-17-00\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader",
+    "toolMessages": [],
+    "reply": {
+      "kind": "text",
+      "content": "PKFIX_A_NOOP"
+    }
+  },
+  {
+    "seq": 6,
+    "toolCount": 0,
+    "userText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=pkfix-a-delegate-2026-09-28T12-17-00] Ping: reply with one word. PKFIXMK_AMEM_2026-09-28T12-17-00\"}]",
+    "toolMessages": [],
+    "reply": {
+      "kind": "text",
+      "content": "PKFIX_A_NOOP"
+    }
+  }
+]

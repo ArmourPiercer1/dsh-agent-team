@@ -1331,8 +1331,21 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // fifteen. Scanner unchanged. Single-writer pin bump on the task
     // branch (caught by the full root-suite run at the second-follow-up
     // gate).
-    expect(scanResult.filesScanned).toBe(780)
-    expect(scanResult.files.length).toBe(780)
+    // Persona KIND convention (the persona-requirement-preset-id fix,
+    // DEC-1): +4 = 784 on top of the 780 pin — the four new scannable
+    // files of this fix: packages/domain/compatibility/src/
+    // persona-kind.ts (the closed `PERSONA_KINDS` vocabulary +
+    // `isPersonaKind`), packages/domain/compatibility/test/
+    // t5-persona-kind.test.ts (the thirteen-case kind + world-driven
+    // classification suite, re-executed by the t5-compatibility-bridge),
+    // packages/runtime/agent-setup/preset/persona-kind-of.ts (the pure
+    // composition-text -> persona-kind parser) and packages/runtime/test/
+    // preset-persona-kind.test.ts (the fourteen-case parser suite). All
+    // four carry zero denylist vocabulary; the frozen quarantine hit
+    // set is unchanged at fifteen. Scanner unchanged. Single-writer pin
+    // bump on the task branch (rebase of PR #22 onto the PR #35 pin).
+    expect(scanResult.filesScanned).toBe(784)
+    expect(scanResult.files.length).toBe(784)
 
   })
 

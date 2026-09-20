@@ -26,4 +26,6 @@ export { REQUIREMENT_OUTCOMES, COMPATIBILITY_STATUS, COMPATIBILITY_REASON_CODES,
 export type { RequirementOutcome, CompatibilityStatus, CompatibilityReasonCode, AckStatus, WarningAcknowledgementRef, RequirementResult, CompatibilityResultCounts, CompatibilityResult, } from './result.js';
 export { evaluateCompatibility, isCompatibilityResultValidForEnvironment } from './engine.js';
 export type { CompatibilityEvaluationInput } from './engine.js';
+export { PERSONA_KINDS, isPersonaKind } from './persona-kind.js';
+export type { PersonaKind } from './persona-kind.js';
 //# sourceMappingURL=index.d.ts.map

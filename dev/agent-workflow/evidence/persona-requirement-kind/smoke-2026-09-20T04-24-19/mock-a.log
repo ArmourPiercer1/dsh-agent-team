@@ -1,0 +1,6 @@
+mock: listening on 127.0.0.1:3496
+mock: 1 text reply (12 chars): "PKFIX_A_NOOP"
+mock: 2 tool-call reply: team_create_member
+mock: 3 tool-call reply: team_delegate
+mock: 4 text reply (12 chars): "PKFIX_A_DONE"
+mock: 5 GET / -> 405

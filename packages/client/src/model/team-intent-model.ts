@@ -275,16 +275,43 @@ export function intentCreateGate(
 }
 
 /**
- * Whether the FATAL verdict is the §7.4 complete-persona preset conflict
- * (the panel then offers "change runtime preset" as the remedy and keeps
- * Create disabled with no Continue-anyway path).
+ * Whether the FATAL verdict is a persona-preset conflict of ANY kind (the
+ * panel then offers "change runtime preset" as the remedy and keeps Create
+ * disabled with no Continue-anyway path). The persona KIND convention
+ * (the persona-requirement-preset-id fix) widened the lane: in addition to
+ * the §7.4 complete-persona conflict (the frozen
+ * `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` code) the world-driven engine
+ * now reports `PERSONA_INCOMPATIBLE` when the probe world provides no
+ * usable persona kind at all (an absent-persona preset, an unresolvable
+ * preset id, …) — same remedy (change the preset), honest copy.
  * @param compat - the parsed probe result, if one has landed.
- * @returns true when a FATAL row carries the frozen conflict reason code.
+ * @returns true when a FATAL row carries either persona conflict code.
  */
 export function isPersonaPresetFatal(compat: IntentCompatibility | undefined): boolean {
   if (compat === undefined || !compat.ok) return false
   if (compat.status !== 'BLOCKED_FATAL') return false
-  return compat.fatals.some(row => row.reasonCode === 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT')
+  return compat.fatals.some(
+    row =>
+      row.reasonCode === 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT' ||
+      row.reasonCode === 'PERSONA_INCOMPATIBLE',
+  )
+}
+
+/**
+ * Whether the FATAL verdict is the HONEST-LANE persona mismatch (the
+ * world-driven `PERSONA_INCOMPATIBLE` code: the probe world provides no
+ * usable persona kind for the blueprint's requirement — an absent-persona
+ * or unresolvable preset, or a divergent selection in a world without the
+ * host kind resolver). The panel renders the dedicated
+ * `intent.fatal.presetIncompatible` copy (no false "complete preset"
+ * claim) instead of the §7.4 complete-conflict copy.
+ * @param compat - the parsed probe result, if one has landed.
+ * @returns true when a FATAL row carries the PERSONA_INCOMPATIBLE code.
+ */
+export function isPersonaIncompatibleFatal(compat: IntentCompatibility | undefined): boolean {
+  if (compat === undefined || !compat.ok) return false
+  if (compat.status !== 'BLOCKED_FATAL') return false
+  return compat.fatals.some(row => row.reasonCode === 'PERSONA_INCOMPATIBLE')
 }
 
 // ---------------------------------------------------------------------------

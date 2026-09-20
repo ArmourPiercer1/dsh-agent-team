@@ -1,0 +1,10 @@
+packages/domain/test/t1-capability-schema.test.ts 29ms
+packages/domain/test/t2-blueprint-hash.test.ts 48ms
+packages/runtime/test/d3-member-identity-context.test.ts 14ms
+packages/runtime/test/p6t1-parallel.test.ts 16ms
+packages/runtime/test/p6t3-mediation.test.ts 17ms
+packages/runtime/test/p6t3-restart.test.ts 8ms
+packages/runtime/test/p8s3b-result-effects.test.ts
+packages/runtime/test/t12a-b2-child-identity.test.ts
+packages/runtime/test/t12a-glue-handoff-ports.test.ts
+packages/tools/test/p6t6-actions.test.ts 25ms

@@ -1,0 +1,4 @@
+{
+  "runStamp": "2026-09-20T04-15-09",
+  "fatal": "listen EADDRINUSE: address already in use 127.0.0.1:3496"
+}

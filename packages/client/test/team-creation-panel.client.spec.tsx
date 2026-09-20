@@ -97,6 +97,27 @@ const FATAL_PERSONA_DATA = {
   },
 }
 
+/**
+ * The world-driven persona mismatch (the HONEST LANE of the persona KIND
+ * convention — the bug fix): the probe world provides no usable persona
+ * kind (an absent-persona or unresolvable preset) ⇒ FATAL
+ * PERSONA_INCOMPATIBLE with the honest detail (no false "complete
+ * preset" claim).
+ */
+const FATAL_PERSONA_INCOMPATIBLE_DATA = {
+  compatibility: {
+    status: 'BLOCKED_FATAL',
+    requirements: [
+      {
+        outcome: 'FATAL', requirementId: 'req-persona', unavailableSubjects: ['standard'],
+        detail: 'complete:true persona requirement unmet: standard; no persona fact in the probe world (structural FATAL, not downgradeable)',
+        complete: true,
+        reasonCode: 'PERSONA_INCOMPATIBLE',
+      },
+    ],
+  },
+}
+
 const PRESETS: readonly TeamPresetRow[] = [
   { id: 'team', name: 'Team 运行时', isDefault: false },
   { id: 'solo', name: 'Solo', isDefault: true },
@@ -374,6 +395,27 @@ describe('TeamCreationPanel', () => {
       .toBe('✕ 团队无法创建需求 req-persona — preset owns a complete system persona该运行时预设拥有完整的系统人格，无法承载此团队蓝图的 Leader/Member 身份（不改变 DSH 核心语义）。')
     expect(ackCheckbox(view.container)).toBeNull()
     expect(view.container.querySelector('[data-intent-retry]')).toBeNull()
+    expect(createButton(view.container).disabled).toBe(true)
+  })
+
+  it('a world-driven persona mismatch FATAL (PERSONA_INCOMPATIBLE) disables Create with the HONEST-LANE copy (no false "complete preset" claim — the bug fix)', async () => {
+    const face = makeFace({
+      probeCompatibility: vi.fn(() => Promise.resolve(okResponse(FATAL_PERSONA_INCOMPATIBLE_DATA, 'intent.probe'))),
+    })
+    const view = render(<PanelHarness face={face} initialDraft={BP_DRAFT} />)
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-intent-fatal]')).toBeTruthy()
+    })
+    const text = view.container.querySelector('[data-intent-fatal]')?.textContent ?? ''
+    expect(text).toContain('✕ 团队无法创建')
+    // The engine's honest detail renders verbatim (row.detail per fatal row).
+    expect(text).toContain(
+      '需求 req-persona — complete:true persona requirement unmet: standard; no persona fact in the probe world (structural FATAL, not downgradeable)',
+    )
+    // The honest-lane remedy copy — NOT the §7.4 "complete preset" copy.
+    expect(text).toContain('该运行时预设未提供此团队蓝图所需的 persona 基底')
+    expect(text).not.toContain('拥有完整的系统人格')
+    expect(ackCheckbox(view.container)).toBeNull()
     expect(createButton(view.container).disabled).toBe(true)
   })
 

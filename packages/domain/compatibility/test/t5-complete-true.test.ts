@@ -8,6 +8,14 @@
  * (TEAM_PERSONA_COMPLETE_PRESET_CONFLICT frozen for exactly this engine);
  * T5 ruling ("complete:true on a requirement means FATAL is mandatory
  * (no downgrade)").
+ *
+ * Persona kind convention (the P5-T2 subject decision, revised by the
+ * persona-requirement-preset-id bug report): the persona requirement
+ * subject is the REQUIRED persona kind (`standard` in this suite); the
+ * fixture world provides the `complete` kind, and the engine's FATAL
+ * classification is world-driven — the frozen conflict code is reported
+ * only when the world provides a `complete` persona kind (the full
+ * matrix lives in t5-persona-kind).
  */
 
 import { describe, expect, it } from 'vitest'
@@ -58,9 +66,13 @@ describe('P3-T5 complete:true (mandatory FATAL, no downgrade)', () => {
     expect(persona.complete).toBe(true)
     expect(persona.reasonCode).toBe('TEAM_PERSONA_COMPLETE_PRESET_CONFLICT')
     expect(persona.reasonCode).toBe(TeamContractErrorCode.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT)
-    expect(persona.unavailableSubjects).toEqual(['cordis-preset'])
+    // Kind convention: the requirement asks for the `standard` kind; the
+    // fixture world provides the `complete` kind -> the frozen conflict
+    // code is reported because the WORLD says so (world-driven
+    // classification; dedicated cases in t5-persona-kind).
+    expect(persona.unavailableSubjects).toEqual(['standard'])
     expect(persona.detail).toBe(
-      'complete:true persona requirement unmet: cordis-preset (structural FATAL, not downgradeable)',
+      'complete:true persona requirement unmet: standard; probe world persona kind(s): complete (unavailable) (structural FATAL, not downgradeable)',
     )
     expect(result.counts.fatal).toBe(1)
   })
@@ -132,7 +144,7 @@ describe('P3-T5 complete:true (mandatory FATAL, no downgrade)', () => {
   it('a satisfied complete:true requirement is PASS (complete only binds the unmet case)', () => {
     const result = evaluateCompatibility({
       requirements: [COMPLETE_PERSONA_REQUIREMENT],
-      environmentFacts: [{ domain: 'persona', subject: 'cordis-preset', available: true, generation: 2 }],
+      environmentFacts: [{ domain: 'persona', subject: 'standard', available: true, generation: 2 }],
     })
     expect(result.status).toBe(COMPATIBILITY_STATUS.OPEN)
     const persona = result.requirements.find((entry) => entry.requirementId === 'req-persona-complete')
