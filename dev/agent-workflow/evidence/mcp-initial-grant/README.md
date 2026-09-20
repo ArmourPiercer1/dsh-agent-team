@@ -199,3 +199,16 @@ mcp/team/other）— finding 4 的实证底账。
 
 **DoD（指南 §14）**：逐项达成；CORE PATCH BUDGET = 0（test-use porcelain 空
 @ `fb2c4b9e69`，kit H1 每轮自证）；不宣称"multi-live-Team stability verified"。
+
+**rebase PR#24 轮（2026-09-20，master 前进至 01fa598 = PR #24 merge → PR #23 CONFLICTING → 用户指令 rebase）**：
+`git rebase 01fa598`（提交链 `336f6ab` + `db43b42`）。3 冲突全 union/ours（p4t6 pin **727** =
+719+6+2；graph.yaml current_phase 取本任务侧 + 任务块双方保留；router log append-only union）；
+`agent-bindings.mjs` 源+dist auto-merge 干净（本任务 P1-A/bridge 区域 × PR#24 sessionInput
+inbox-acceptance 区域不交叠；dist 重建零漂移）。门禁全复测（合并构建 @ 01fa598）：
+typecheck 8 包 / check:artifacts **OK 1132**（零漂移）/ focused 5 套件 **85/85**
+（含 PR#24 send-message-liveness 4/4 = 双活共存实证）/ 全量 **20 failed | 3721 passed
+(3741)**（`full-suite/rebase-pr24-post.log`；失败集 = 基线 10 文件完全一致；
+3721 = 修复轮 3717 + PR#24 4）/ p4t6 **@727 10/10** / Gate D **11/11** @
+`smoke/mgis-2026-09-20T12-40-25/` + d-smoke **38/38 exit 0** @
+`dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260920T12-41-02Z/`
+（C8 自证扫描面 pre==post=727）。force-with-lease 推送 → PR #23 MERGEABLE 恢复。

@@ -1,0 +1,97 @@
+[2026-09-20T12:40:25.177Z] === mcp-initial-grant Gate D real-host smoke mgis-2026-09-20T12-40-25 ===
+[2026-09-20T12:40:25.178Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant
+[2026-09-20T12:40:25.178Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-20T12:40:25.178Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/mcp-initial-grant/smoke/mgis-2026-09-20T12-40-25 keep=false
+[2026-09-20T12:40:25.195Z] stable pre-probes: 3080=401 3180=401
+[2026-09-20T12:40:25.219Z] ports: host=3181 mcpA=3491 mcpB=3492 mock=3496
+[2026-09-20T12:40:25.220Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/tests/homes/mgis-2026-09-20T12-40-25 blueprints=/home/user/dsh-plugins/dsh-agent-team/tests/homes/mgis-2026-09-20T12-40-25/blueprints (t1=[A] t2=[B] — disjoint: upstream mcp-client name registry, see header)
+[2026-09-20T12:40:25.225Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-20T12:40:25.225Z] mock DeepSeek endpoint up at 127.0.0.1:3496
+[2026-09-20T12:40:25.238Z] mini MCP A up on 127.0.0.1:3491 (mcp_signal); B up on 127.0.0.1:3492 (mcp_designer)
+[2026-09-20T12:40:25.239Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-20T12:40:27.997Z] throwaway boot OK: http://127.0.0.1:3181/?token=v38PH7Hdx9w3CJEipEFc-FC0mwxahz4ixR-LKGUDQR8
+[2026-09-20T12:40:28.347Z] web profile ensured (throwaway boot if first use)
+[2026-09-20T12:40:28.348Z] HOST1-CREATE: patch (bootPhase=create) + directive (boot=1) written
+[2026-09-20T12:40:31.429Z] HOST1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-20T12:40:31.432Z] HOST1-CREATE: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-20T12:40:32.584Z] HOST1-CREATE: row ready — toolCount=12 liveSessions=["session-mgis-boot-mgis-2026-09-20T12-40-25"]
+[2026-09-20T12:40:32.588Z] HOST1: state ready (teamSession=team.mgis-anchor)
+[2026-09-20T12:40:32.588Z] Z1 PASS — governance.overrides is EMPTY at world boot (zero durable seeds — the forbidden initial override.set was never performed) :: overrides=[]
+[2026-09-20T12:40:32.589Z] Z1: PASS (1/1 checks)
+[2026-09-20T12:40:32.736Z] mock: mock: 1 text reply (18 chars): "mgis smoke session"
+[2026-09-20T12:40:32.737Z] mock: mock: 2 tool-call reply: mcp__mcp_signal__ping
+[2026-09-20T12:40:32.772Z] mock: mock: 3 text reply (12 chars): "MGIS_T1_DONE"
+[2026-09-20T12:40:32.796Z] D1 PASS — team.create v2 (Team-1) succeeds on the fresh root (path=fresh-root; open Root + admitInitialWork) :: status=200 data={"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-mgis-t1-mgis-2026-09-20T12-40-25","blueprint":{"blueprintId":"team.mgis-t1","revision":"1","contentHash":"sha256:4f5259ff515a327e815ab00dcb09b26dea55dd31ffd31d20f49f71ff86391fc7"},"createdAt":"2
+[2026-09-20T12:40:32.796Z] D1: PASS (1/1 checks)
+[2026-09-20T12:40:32.810Z] D2 PASS — Team-1 leader FIRST-turn initial work DIRECTLY CALLED MCP: mcp__mcp_signal__ping executed (pong result observed) — no override.set, no boundary trigger: the initial work itself is the first boundary :: toolResults=["pong:a:t1-a"]
+[2026-09-20T12:40:32.810Z] D2: PASS (1/1 checks)
+[2026-09-20T12:40:32.814Z] D3 PASS — Team-1 leader state: I5 shape, A mounted, B NOT mounted (the bound initial allow is [A] only — the mount is exactly the Blueprint initial grant, zero overrides) :: eff={"mcp_signal":{"present":true,"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"deniedBy":null},"mcp_designer":{"present":true,"mounted":false,"allowed":false,"source":{"layer":"template","origin":"static","recordId":null},"deniedBy":null}} shape=i5-s
+[2026-09-20T12:40:32.814Z] D3 PASS — Team-1 leader state carries the FULL initial-grant truth: A mounted+allowed with source={layer:template, origin:static, recordId:null} and NO deniedBy (plan §8.2 — the evidence may not report mounted=true/allowed=false) :: A={"present":true,"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"deniedBy":null} B={"present":true,"mounted":false,"allowed":false,"source":{"layer":"template","origin":"static","recordId":null},"deniedBy":null}
+[2026-09-20T12:40:32.814Z] D3 PASS — the healthy Team-1 root carries NO capability-template-unresolved observation (the P1-A/P1-B swallowed-fault channel is closed — plan §8.2) :: observations=[]
+[2026-09-20T12:40:32.814Z] D3 PASS — Team-1 leader schema carries EXACTLY [A] mcp tools (the initial grant is what mounted it) :: schema=["mcp__mcp_signal__ping"]
+[2026-09-20T12:40:32.814Z] D3 PASS — governance.overrides is STILL EMPTY after Team-1 creation + its MCP mounts (the mount came from the Blueprint, not from any record) :: overrides=[]
+[2026-09-20T12:40:32.814Z] D3: PASS (5/5 checks)
+[2026-09-20T12:40:32.824Z] mock: mock: 4 tool-call reply: mcp__mcp_signal__ping
+[2026-09-20T12:40:32.852Z] mock: mock: 5 text reply (12 chars): "MGIS_T1_DONE"
+[2026-09-20T12:40:32.918Z] mock: mock: 6 tool-call reply: mcp__mcp_designer__ping
+[2026-09-20T12:40:32.918Z] mock: mock: 7 text reply (18 chars): "mgis smoke session"
+[2026-09-20T12:40:32.940Z] mock: mock: 8 text reply (12 chars): "MGIS_T2_DONE"
+[2026-09-20T12:40:32.954Z] D4 PASS — team.create v2 (Team-2) — the MANDATORY second fresh root — succeeds independently of Team-1 (path=fresh-root) :: status=200 data={"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-mgis-t2-mgis-2026-09-20T12-40-25","blueprint":{"blueprintId":"team.mgis-t2","revision":"1","contentHash":"sha256:4224032a34cc517f8234dc18fd62c22ebd555a5ca3aefdf56df8b5e805bc0afe"},"createdAt":"2
+[2026-09-20T12:40:32.954Z] D4: PASS (1/1 checks)
+[2026-09-20T12:40:32.964Z] D5 PASS — Team-2 leader FIRST-turn initial work DIRECTLY CALLED MCP: mcp__mcp_designer__ping executed (pong result observed) — the second fresh root did NOT reset MCP to zero :: toolResults=["pong:b:t2-b"]
+[2026-09-20T12:40:32.969Z] D5 PASS — Team-2 leader state: B mounted, A NOT mounted (its bound initial allow is [B] — a cross-root leak onto Team-1's template would have mounted A INSTEAD; the row anchor is capabilities-LESS so a row-anchor leak would mount NOTHING) :: eff={"mcp_signal":{"present":true,"mounted":false,"allowed":false,"source":{"layer":"template","origin":"static","recordId":null},"deniedBy":null},"mcp_designer":{"present":true,"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"deniedBy":null}}
+[2026-09-20T12:40:32.969Z] D5 PASS — Team-2 leader state carries the FULL initial-grant truth: B mounted+allowed with source={layer:template, origin:static, recordId:null} and NO deniedBy (the created root resolves under ITSELF — not the boot root — plan §8.2) :: B={"present":true,"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"deniedBy":null} A={"present":true,"mounted":false,"allowed":false,"source":{"layer":"template","origin":"static","recordId":null},"deniedBy":null}
+[2026-09-20T12:40:32.969Z] D5 PASS — the healthy Team-2 root carries NO capability-template-unresolved observation (plan §8.2) :: observations=[]
+[2026-09-20T12:40:32.969Z] D5 PASS — Team-2 leader schema carries EXACTLY [B] mcp tools :: schema=["mcp__mcp_designer__ping"]
+[2026-09-20T12:40:32.969Z] D5 PASS — governance.overrides is EMPTY for Team-2 too (its mount came from its own bound Blueprint) :: overrides=[]
+[2026-09-20T12:40:32.969Z] D5: PASS (6/6 checks)
+[2026-09-20T12:40:32.977Z] mock: mock: 9 tool-call reply: mcp__mcp_designer__ping
+[2026-09-20T12:40:32.998Z] mock: mock: 10 text reply (12 chars): "MGIS_T2_DONE"
+[2026-09-20T12:40:33.017Z] mock: mock: 11 text reply (18 chars): "mgis smoke session"
+[2026-09-20T12:40:33.018Z] mock: mock: 12 text reply (14 chars): "MGIS_BOOT_DONE"
+[2026-09-20T12:40:33.481Z] D6 PASS — boot-root legacy control: NOTHING mounted (the capabilities-LESS anchor has no initial grant — the legacy fail-closed baseline is unchanged in the production world) :: eff={"mcp_signal":{"present":true,"mounted":false,"allowed":false,"source":{"layer":"unspecified","origin":"static","recordId":null},"deniedBy":{"by":"team","reason":"unspecifiedFailClosed"}},"mcp_designer":{"present":true,"mounted":false,"allowed":false,"source":{"layer":"unspecified","origin":"sta
+[2026-09-20T12:40:33.481Z] D6 PASS — boot-root legacy control: ZERO mcp tools in the model-facing schema :: schema=[]
+[2026-09-20T12:40:33.481Z] D6: PASS (2/2 checks)
+[2026-09-20T12:40:33.489Z] D7 PASS — post-creation durable tighten admitted (Team-1 leader mcp [A] -> DENY; instance scope — the legitimate dynamic-governance scenario; the record must now beat the static initial grant) :: record={"recordId":"ovr-mcp-inst-leader-g0","kind":"human-override","scope":"instance","rootSessionId":"session-mgis-t1-mgis-2026-09-20T12-40-25","values":{"mcp":{"kind":"deny"}},"generation":1,"updatedAt":"2026-09-20T12:40:33.484Z","instanceId":"inst-leader"}
+[2026-09-20T12:40:33.493Z] D7 boundary trigger: team_list_members on session-mgis-t1-mgis-2026-09-20T12-40-25 (status=[object Object])
+[2026-09-20T12:40:33.511Z] mock: mock: 13 tool-call reply: mcp__mcp_signal__ping
+[2026-09-20T12:40:33.530Z] mock: mock: 14 text reply (13 chars): "MGIS_T1B_DONE"
+[2026-09-20T12:40:34.005Z] D7 PASS — after the next boundary, A is NOT mounted in the Team-1 leader state (the record-backed DENY beat the static initial grant; deny-first dispose) :: eff={"mcp_signal":{"present":true,"mounted":false,"allowed":false,"source":{"layer":"humanOverride","origin":"human","recordId":"ovr-mcp-inst-leader-g0"},"deniedBy":{"by":"team","reason":"teamDeny","layer":"humanOverride","origin":"human","recordId":"ovr-mcp-inst-leader-g0"}},"mcp_designer":{"presen
+[2026-09-20T12:40:34.005Z] D7 PASS — ALL mcp tools are GONE from the leader model-facing schema (the scripted call to the now-absent A tool degrades to an unknown-tool error result — the turn still completes) :: turnErr=- schema=[] results=["pong:a:t1-a","pong:a:t1-a","Error: unknown tool \"mcp__mcp_signal__ping\""]
+[2026-09-20T12:40:34.005Z] D7 PASS — the tighten record was durably admitted (instance scope, T1 root, mcp deny — the record the boundary just consumed) :: record={"recordId":"ovr-mcp-inst-leader-g0","kind":"human-override","scope":"instance","rootSessionId":"session-mgis-t1-mgis-2026-09-20T12-40-25","values":{"mcp":{"kind":"deny"}},"generation":1,"updatedAt":"2026-09-20T12:40:33.484Z","instanceId":"inst-leader"}
+[2026-09-20T12:40:34.005Z] D7: PASS (4/4 checks)
+[2026-09-20T12:40:34.009Z] D8: pre-restart effective sets: {"session-mgis-t1-mgis-2026-09-20T12-40-25":{"mcp_signal":{"present":true,"mounted":false,"allowed":false,"source":{"layer":"humanOverride","origin":"human","recordId":"ovr-mcp-inst-leader-g0"},"deniedBy":{"by":"team","reason":"teamDeny","layer":"humanOverride","origin":"human","recordId":"ovr-mcp-inst-leader-g0"}},"mcp_designer":{"present":true,"mounted":false,"allowed":false,"source":{"layer":"humanOverride","origin":"human","recordId":"ovr-mcp-inst-leader-g0"},"deniedBy":{"by":"team","reason":"teamDeny","layer":"humanOverride","origin":"human","recordId":"ovr-mcp-inst-leader-g0"}}},"session-mgis-t2-mgis-2026-09-20T12-40-25":{"mcp_signal":{"present":true,"mounted":false,"allowed":false,"source":{"layer":"template","origin":"static","recordId":null},"deniedBy":null},"mcp_designer":{"present":true,"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"deniedBy":null}}}
+[2026-09-20T12:40:34.355Z] HOST1-CREATE: stopped (killed=true portFree=true)
+[2026-09-20T12:40:34.355Z] HOST2-RESUME: patch (bootPhase=resume) + directive (boot=2) written
+[2026-09-20T12:40:37.620Z] HOST2-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-20T12:40:37.622Z] HOST2-RESUME: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-20T12:40:37.689Z] HOST2-RESUME: row ready — toolCount=12 liveSessions=["session-mgis-boot-mgis-2026-09-20T12-40-25"]
+[2026-09-20T12:40:37.692Z] HOST2: state ready after restart (phase=resume)
+[2026-09-20T12:40:37.693Z] D8: home sessions tree dumped (top=["--home-user-dsh-plugins-dsh-agent-team-tests-deepseek-harness-test-use--"])
+[2026-09-20T12:40:37.695Z] D8: live sessions BEFORE the re-attach triggers: ["session-mgis-boot-mgis-2026-09-20T12-40-25"]
+[2026-09-20T12:40:37.742Z] D8: T2 trigger unwrap error: team_list_members: tool error: {"ok":false,"error":{"message":"unknown tool \"team_list_members\"","info":{"name":"ToolNotFoundError","code":"UNKNOWN_TOOL"}}}
+[2026-09-20T12:40:37.742Z] D8: T2 re-attach trigger (team_list_members) status={"message":"unknown tool \"team_list_members\"","info":{"name":"ToolNotFoundError","code":"UNKNOWN_TOOL"}}
+[2026-09-20T12:40:37.762Z] D8: T1 trigger unwrap error: team_list_members: tool error: {"ok":false,"error":{"message":"unknown tool \"team_list_members\"","info":{"name":"ToolNotFoundError","code":"UNKNOWN_TOOL"}}}
+[2026-09-20T12:40:37.762Z] D8: T1 re-attach trigger (team_list_members) status={"message":"unknown tool \"team_list_members\"","info":{"name":"ToolNotFoundError","code":"UNKNOWN_TOOL"}}
+[2026-09-20T12:40:37.820Z] mock: mock: 15 text reply (13 chars): "MGIS_RT1_DONE"
+[2026-09-20T12:40:38.322Z] mock: mock: 16 tool-call reply: mcp__mcp_designer__ping
+[2026-09-20T12:40:38.344Z] mock: mock: 17 text reply (13 chars): "MGIS_RT2_DONE"
+[2026-09-20T12:40:38.792Z] D8 PASS — cold resume: the product-path re-attach (team-tool execution = ensure-live resume WITH the shared setup + the request boundary) ran on BOTH created roots — they were NOT live right after the resume boot (boot re-attaches only the boot root + its members) and are LIVE in the post-resume state with their configured servers in the view :: preTriggerLive=["session-mgis-boot-mgis-2026-09-20T12-40-25"] t1={"mcp_signal":{"present":true,"mounted":false,"allowed":false,"source":{"layer":"humanOverride","origin":"human","recordId":"ovr-mcp-inst-leader-g0"},"deniedBy":{"by":"team","reason":"teamDeny","layer":"humanOverride","origin":"human",
+[2026-09-20T12:40:38.792Z] D8 PASS — cold resume: Team-2 leader re-derives [B] from its bound Blueprint (ZERO overrides — no synthetic record to lean on) and the tool call EXECUTES (the live view proves the row agent re-attached with the shared setup) — WITH the full initial-grant state truth (allowed=true, source=template/static, no deniedBy) :: eff={"mcp_signal":{"present":true,"mounted":false,"allowed":false,"source":{"layer":"template","origin":"static","recordId":null},"deniedBy":null},"mcp_designer":{"present":true,"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"deniedBy":null}} overrides=
+[2026-09-20T12:40:38.792Z] D8 PASS — cold resume: Team-1 leader is LIVE with its configured servers in the view but NOTHING mounted — the durable DENY SURVIVED the restart and beats the re-derived initial allow [A] (a record-backed layer beats the static initial grant; the initial grant does NOT resurrect a denied server — T2 proves the re-derivation itself works on the same path) :: eff={"mcp_signal":{"present":true,"mounted":false,"allowed":false,"source":{"layer":"humanOverride","origin":"human","recordId":"ovr-mcp-inst-leader-g0"},"deniedBy":{"by":"team","reason":"teamDeny","layer":"humanOverride","origin":"human","recordId":"ovr-mcp-inst-leader-g0"}},"mcp_designer":{"presen
+[2026-09-20T12:40:38.792Z] D8 PASS — cold resume: effective sets match pre-restart exactly (no drift across the restart) :: pre={"session-mgis-t1-mgis-2026-09-20T12-40-25":{"mcp_signal":{"present":true,"mounted":false,"allowed":false,"source":{"layer":"humanOverride","origin":"human","recordId":"ovr-mcp-inst-leader-g0"},"deniedBy":{"by":"team","reason":"teamDeny","layer":"humanOverride","origin":"human","recordId":"ovr-m
+[2026-09-20T12:40:38.792Z] D8: PASS (4/4 checks)
+[2026-09-20T12:40:39.146Z] HOST2-RESUME: stopped (killed=true portFree=true)
+[2026-09-20T12:40:39.147Z] mock request surface evidence -> mock-requests.json (17 requests)
+[2026-09-20T12:40:39.147Z] mini MCP A closed
+[2026-09-20T12:40:39.147Z] mini MCP B closed
+[2026-09-20T12:40:39.147Z] mock model closed
+[2026-09-20T12:40:39.149Z] H2 PASS — all run ports released after teardown :: {"host":true,"mcpA":true,"mcpB":true,"mock":true}
+[2026-09-20T12:40:39.149Z] H2: PASS (1/1 checks)
+[2026-09-20T12:40:39.177Z] H1 PASS — test-use worktree porcelain EMPTY after the run :: statusEmpty=true diffEmpty=true head=fb2c4b9e698e30edb738bca4cf0618587db7d203
+[2026-09-20T12:40:39.177Z] H1 PASS — test-use HEAD still at baseline fb2c4b9e698e30edb738bca4cf0618587db7d203 :: post=fb2c4b9e698e30edb738bca4cf0618587db7d203
+[2026-09-20T12:40:39.177Z] H1 PASS — :3080/:3180 untouched (read-only probes, status unchanged pre==post) :: 3080: 401->401 3180: 401->401
+[2026-09-20T12:40:39.177Z] H1: PASS (3/3 checks)
+[2026-09-20T12:40:39.179Z] home deleted: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mgis-2026-09-20T12-40-25
+[2026-09-20T12:40:39.179Z] summary -> /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/mcp-initial-grant/smoke/mgis-2026-09-20T12-40-25/summary.json
+[2026-09-20T12:40:39.179Z] VERDICT PASS — passed [Z1, D1, D2, D3, D4, D5, D6, D7, D8, H1, H2] failed []

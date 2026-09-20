@@ -1,0 +1,80 @@
+{
+  "type": "server-response",
+  "rpcId": "t1-1q7zcy8lb6",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "path": "fresh-root",
+        "durable": {
+          "teamSession": {
+            "schemaVersion": 1,
+            "rootSessionId": "session-mgis-t1-mgis-2026-09-20T12-40-25",
+            "blueprint": {
+              "blueprintId": "team.mgis-t1",
+              "revision": "1",
+              "contentHash": "sha256:4f5259ff515a327e815ab00dcb09b26dea55dd31ffd31d20f49f71ff86391fc7"
+            },
+            "createdAt": "2026-09-20T12:40:32.605Z",
+            "generation": 1,
+            "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+          },
+          "binding": {
+            "schemaVersion": 1,
+            "kind": "team-root",
+            "sessionId": "session-mgis-t1-mgis-2026-09-20T12-40-25"
+          },
+          "wrote": true,
+          "leaderRow": {
+            "schemaVersion": 2,
+            "rootSessionId": "session-mgis-t1-mgis-2026-09-20T12-40-25",
+            "instanceId": "inst-leader",
+            "templateId": "leader",
+            "label": "leader",
+            "createdAt": "2026-09-20T12:40:32.612Z",
+            "activityVersion": 1
+          }
+        },
+        "bind": {
+          "requested": "fresh-root",
+          "bound": true,
+          "installed": true,
+          "identity": {
+            "kind": "root",
+            "sessionId": "session-mgis-t1-mgis-2026-09-20T12-40-25",
+            "rootSessionId": "session-mgis-t1-mgis-2026-09-20T12-40-25"
+          },
+          "admitted": true,
+          "admissionCode": "ADMISSION_OPEN",
+          "emittedEvents": [
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "persona"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "model"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "capability"
+            },
+            {
+              "name": "agent-setup/admission-decided",
+              "detail": "ADMISSION_OPEN"
+            }
+          ]
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.create",
+        "endpoint": "team.create",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

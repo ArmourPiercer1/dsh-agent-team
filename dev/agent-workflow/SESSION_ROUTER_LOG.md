@@ -3572,3 +3572,15 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **PR body 更新（指南 §13）**：finding 1 措辞改写为 Agent-keyed scope 兼容适配（"已做兼容适配，不宣称 multi-live-Team 稳定"）；新增 §1 修复轮小节 / §8 审查修复轮记录节；文件/测试/Gate 节全部刷新为修复轮实数。
 - **证据/簿记**：`evidence/mcp-initial-grant/README.md` 追加 §6 修复轮节 + `full-suite/fix-round-post.log` + 两个新 kit run 目录（Gate D + d-smoke）全部入库；graph.yaml 任务块追加 `fix_round_20260920` 字段 + current_phase 更新。
 - **状态**：修复轮完成 — 同分支追加提交 + 推送（fast-forward，无 force）+ PR body 更新；**PR #23 OPEN，待用户审查 merge**。
+
+### 2026-09-20 — mcp-blueprint-initial-grant rebase 轮（master 前进至 PR #24 merge → rebase + 门禁全复测）
+
+- **起因**：用户先合并了另一个 bug fix — **PR #24 team_send_message liveness**（messaging 成功边界 = 收件方 session inbox acceptance，`sessionInput.submitAttributedInput` 去 `whenIdle`；合并点 `01fa598`）→ PR #23 变 **CONFLICTING**。用户指令：「请你 rebase 并解决合并冲突」。
+- **rebase**：`git rebase 01fa598`（2 提交链重放：d3a8cb4→`336f6ab`，94d2292→`db43b42`）。commit 1 冲突 3 处，commit 2 干净重放：
+  1. `p4t6-session-event-scan.test.ts` — pin union（DEC-1 先例）：719（基线）+ 6（PR#21）+ 1（PR#24 send-message-liveness.test.ts）+ 1（本任务 mcp-blueprint-initial-grant.test.ts）= **727**；
+  2. `graph.yaml` — current_phase 冲突取本任务侧（让修复轮提交的补丁干净重放；最终 current_phase 由本簿记提交刷新）+ 任务块冲突 = 双方块保留（`send_message_liveness_20260920` + `mcp_blueprint_initial_grant_20260920` union，append 时间序）；
+  3. `SESSION_ROUTER_LOG.md` — append-only union（PR#24 条目在前 + 本任务条目在后，全部保留）。
+- **代码实体零语义冲突**：`agent-bindings.mjs` 源 + dist 均 git auto-merge 干净 — 本任务改动区域（`resolveConsumptionViews` ownership / `agentSetup` scope bridge / boot 调用点）与 PR#24 改动区域（`sessionInput` messaging port 去 whenIdle + "Success boundary = inbox acceptance" 注释 marker）不交叠；双活共存实证 = 自动合并 dist 与 `pnpm build` 重建**字节一致（零漂移）** + PR#24 send-message-liveness 套件 4/4 绿 + 本任务三套件 71/71 绿（focused 5 套件 85/85 含 p4t6 10/10）。
+- **rebase 后门禁全复测实数（合并构建 @ 01fa598）**：typecheck 8 包全绿；`pnpm build` + `pnpm build:composition` + `pnpm check:artifacts` **OK 1132**（零漂移）；focused 5 套件 **85/85**（glue 32 + p8s4b 25 + a2c3 14 + p4t6 @727 + PR#24 4）；全量 `pnpm test` = **20 failed | 3721 passed (3741)**（`full-suite/rebase-pr24-post.log`；失败集 = 基线 10 文件完全一致；3721 = 修复轮 3717 + PR#24 4 测试，精确加和）；real-host 双 kit 串行（禁并行纪律，端口 pre-check 全 free，test-use pre-check pristine @ fb2c4b9e）：Gate D kit **VERDICT PASS 11/11** @ `mgis-2026-09-20T12-40-25`（§8.2 强化验收全绿 — 合并构建实机共存实证：initial-grant 派生 × messaging acceptance 边界同 host 双活）+ d-smoke **38/38 exit 0** @ `mm-smoke-20260920T12-41-02Z`（C8 自证 p4t6 扫描面 pre==post=**727**，与 pin 一致；:3080/:3180 401→401；test-use porcelain 空）。
+- **推送**：rebase 重写分支历史（2 提交 SHA 变更）→ `GIT_SSH_COMMAND=… git push --force-with-lease`（用户「rebase 并解决合并冲突」指令范围内 — 更新 PR 分支为 rebase 后线性历史，`--force-with-lease` 防覆盖未知远端推进；非 gated 历史，红线合规）。PR #23 自动跟踪新 head（`db43b42` → 本簿记提交），CONFLICTING → **MERGEABLE 恢复**。
+- **状态**：rebase 完成 + 门禁复测全绿 + 证据/簿记同步（full-suite/rebase-pr24-post.log + 两个新 kit run 目录 + 本 graph 块字段 `rebase_pr24_20260920` + current_phase 更新 + PR #24 块状态回写 COMPLETE-CLOSED）— **PR #23 OPEN（MERGEABLE），待用户审查 merge**。
