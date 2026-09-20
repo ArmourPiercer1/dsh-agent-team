@@ -17,5 +17,6 @@
 export { ARTIFACT_READ_GRANTED_FACT_TYPE, ARTIFACT_READ_PAYLOAD_VERSION, buildArtifactReadGrantedPayload, encodeArtifactSource, isArtifactReadGrantedFact, parseArtifactReadGranted, } from './fact.js';
 export { TARGET_KEY_DIGEST_DOMAIN, VERSION_DIGEST_DOMAIN, isDigest, targetKeyDigest, versionDigest, } from './digest.js';
 export { ArtifactGrantRegistry } from './registry.js';
+export { SHELL_OBSERVER_DEFAULT_TOOLS, installShellResultObserver, } from './shell-result-observer.js';
 export { ArtifactRecordError, TeamArtifactAuthority, } from './authority.js';
 //# sourceMappingURL=index.js.map

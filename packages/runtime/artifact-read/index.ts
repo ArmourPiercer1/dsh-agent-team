@@ -36,6 +36,20 @@ export {
 export { ArtifactGrantRegistry } from './registry.js'
 
 export {
+  SHELL_OBSERVER_DEFAULT_TOOLS,
+  installShellResultObserver,
+} from './shell-result-observer.js'
+export type {
+  AgentShellResultCtx,
+  ForegroundShellValueMirror,
+  ForegroundStreamMirror,
+  InstallShellResultObserverParams,
+  ShellExecMirror,
+  ShellObserverFaultContext,
+  ShellResultMirror,
+} from './shell-result-observer.js'
+
+export {
   ArtifactRecordError,
   TeamArtifactAuthority,
 } from './authority.js'
