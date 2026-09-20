@@ -149,7 +149,18 @@ When present, all four base sub-fields are required:
   installs into the agent's **own** tool layer are not deny-able this way
   (see §5.2).
 - `skills` — allow/deny entry for Team-managed skills.
-- `mcp` — allow/deny entry for MCP servers.
+- `mcp` — allow/deny entry for MCP servers. **Initial grant
+  (mcp-blueprint-initial-grant fix)**: a template
+  `capabilities.mcp: {kind: allow, items: [...]}` is the role's INITIAL
+  governance grant — after team creation (fresh root / fresh member) and
+  across cold resumes, those servers are mounted immediately WITHOUT any
+  `override.set` (the effective governance cell's initial value; later
+  record-backed layers — PolicyState / overlays / human override — and the
+  external hard policy still intersect on top). `kind: deny`, an EMPTY
+  `allow` (`items: []`, legal YAML but normalizes to "no initial grant"),
+  and legacy templates (no `capabilities` at all) grant NOTHING — the cell
+  stays `unspecified` (fail-closed: nothing mounts). Names must be among
+  the row's configured `mcpServers`.
 
 `items` entries are non-empty strings, max 128 chars.
 

@@ -1,0 +1,417 @@
+{
+  "task": "mcp-initial-grant real-host smoke (plan Gate D: team.create v2 -> open Root -> admitInitialWork, zero initial override.set, two fresh roots, cold resume, post-creation tighten)",
+  "runStamp": "mgis-2026-09-20T09-46-17",
+  "generatedAt": "2026-09-20T09:46:32.997Z",
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant",
+  "hostTree": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+  "testUseBaseline": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "ports": {
+    "host": 3181,
+    "mcpA": 3491,
+    "mcpB": 3492,
+    "mock": 3496
+  },
+  "home": {
+    "path": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/mgis-2026-09-20T09-46-17",
+    "kept": false,
+    "lockFile": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/mgis-2026-09-20T09-46-17.lock"
+  },
+  "servers": {
+    "mcp_signal": {
+      "port": 3491
+    },
+    "mcp_designer": {
+      "port": 3492
+    }
+  },
+  "roots": {
+    "boot": "session-mgis-boot-mgis-2026-09-20T09-46-17",
+    "team1": "session-mgis-t1-mgis-2026-09-20T09-46-17",
+    "team2": "session-mgis-t2-mgis-2026-09-20T09-46-17"
+  },
+  "created": {
+    "t1": {
+      "path": "fresh-root",
+      "durable": {
+        "teamSession": {
+          "schemaVersion": 1,
+          "rootSessionId": "session-mgis-t1-mgis-2026-09-20T09-46-17",
+          "blueprint": {
+            "blueprintId": "team.mgis-t1",
+            "revision": "1",
+            "contentHash": "sha256:2167772e2127ae1caf42183d9c2a52c46b85afbd68c83c482da6ac237aba7fde"
+          },
+          "createdAt": "2026-09-20T09:46:26.227Z",
+          "generation": 1,
+          "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+        },
+        "binding": {
+          "schemaVersion": 1,
+          "kind": "team-root",
+          "sessionId": "session-mgis-t1-mgis-2026-09-20T09-46-17"
+        },
+        "wrote": true,
+        "leaderRow": {
+          "schemaVersion": 2,
+          "rootSessionId": "session-mgis-t1-mgis-2026-09-20T09-46-17",
+          "instanceId": "inst-leader",
+          "templateId": "leader",
+          "label": "leader",
+          "createdAt": "2026-09-20T09:46:26.245Z",
+          "activityVersion": 1
+        }
+      },
+      "bind": {
+        "requested": "fresh-root",
+        "bound": true,
+        "installed": true,
+        "identity": {
+          "kind": "root",
+          "sessionId": "session-mgis-t1-mgis-2026-09-20T09-46-17",
+          "rootSessionId": "session-mgis-t1-mgis-2026-09-20T09-46-17"
+        },
+        "admitted": true,
+        "admissionCode": "ADMISSION_OPEN",
+        "emittedEvents": [
+          {
+            "name": "agent-setup/overlay-installed",
+            "detail": "persona"
+          },
+          {
+            "name": "agent-setup/overlay-installed",
+            "detail": "model"
+          },
+          {
+            "name": "agent-setup/overlay-installed",
+            "detail": "capability"
+          },
+          {
+            "name": "agent-setup/admission-decided",
+            "detail": "ADMISSION_OPEN"
+          }
+        ]
+      }
+    },
+    "t2": {
+      "path": "fresh-root",
+      "durable": {
+        "teamSession": {
+          "schemaVersion": 1,
+          "rootSessionId": "session-mgis-t2-mgis-2026-09-20T09-46-17",
+          "blueprint": {
+            "blueprintId": "team.mgis-t2",
+            "revision": "1",
+            "contentHash": "sha256:180d55aff0e5b9ff723ce6bbdae87d42626daeffde9af97dcc9d8b9bc73e9579"
+          },
+          "createdAt": "2026-09-20T09:46:26.549Z",
+          "generation": 1,
+          "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+        },
+        "binding": {
+          "schemaVersion": 1,
+          "kind": "team-root",
+          "sessionId": "session-mgis-t2-mgis-2026-09-20T09-46-17"
+        },
+        "wrote": true,
+        "leaderRow": {
+          "schemaVersion": 2,
+          "rootSessionId": "session-mgis-t2-mgis-2026-09-20T09-46-17",
+          "instanceId": "inst-leader",
+          "templateId": "leader",
+          "label": "leader",
+          "createdAt": "2026-09-20T09:46:26.570Z",
+          "activityVersion": 1
+        }
+      },
+      "bind": {
+        "requested": "fresh-root",
+        "bound": true,
+        "installed": true,
+        "identity": {
+          "kind": "root",
+          "sessionId": "session-mgis-t2-mgis-2026-09-20T09-46-17",
+          "rootSessionId": "session-mgis-t2-mgis-2026-09-20T09-46-17"
+        },
+        "admitted": true,
+        "admissionCode": "ADMISSION_OPEN",
+        "emittedEvents": [
+          {
+            "name": "agent-setup/overlay-installed",
+            "detail": "persona"
+          },
+          {
+            "name": "agent-setup/overlay-installed",
+            "detail": "model"
+          },
+          {
+            "name": "agent-setup/overlay-installed",
+            "detail": "capability"
+          },
+          {
+            "name": "agent-setup/admission-decided",
+            "detail": "ADMISSION_OPEN"
+          }
+        ]
+      }
+    }
+  },
+  "tighten": {
+    "recordId": "ovr-mcp-inst-leader-g0",
+    "kind": "human-override",
+    "scope": "instance",
+    "rootSessionId": "session-mgis-t1-mgis-2026-09-20T09-46-17",
+    "values": {
+      "mcp": {
+        "kind": "deny"
+      }
+    },
+    "generation": 1,
+    "updatedAt": "2026-09-20T09:46:27.296Z",
+    "instanceId": "inst-leader"
+  },
+  "modelPath": {
+    "used": "mock-env",
+    "note": "DEEPSEEK_BASE_URL=http://127.0.0.1:3496 + DEEPSEEK_API_KEY=mgis-smoke-mock-key exported to host launches; the created leaders' first turns were scripted to DIRECTLY CALL the MCP tools (tool-call oracle replies).",
+    "baseUrl": "http://127.0.0.1:3496"
+  },
+  "stable": {
+    "pre": {
+      "http://127.0.0.1:3080/": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "http://127.0.0.1:3180/": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    },
+    "post": "(see stable-post.json)"
+  },
+  "criteria": [
+    {
+      "id": "Z1",
+      "name": "zero-seed proof: governance.overrides = [] at world boot (before any team.create)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "governance.overrides is EMPTY at world boot (zero durable seeds — the forbidden initial override.set was never performed)",
+          "ok": true,
+          "detail": "overrides=[]"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "D1",
+      "name": "team.create v2 (Team-1) succeeds on the fresh root (open Root + admitInitialWork)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "team.create v2 (Team-1) succeeds on the fresh root (path=fresh-root; open Root + admitInitialWork)",
+          "ok": true,
+          "detail": "status=200 data={\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-mgis-t1-mgis-2026-09-20T09-46-17\",\"blueprint\":{\"blueprintId\":\"team.mgis-t1\",\"revision\":\"1\",\"contentHash\":\"sha256:2167772e2127ae1caf42183d9c2a52c46b85afbd68c83c482da6ac237aba7fde\"},\"createdAt\":\"2026-09-20T09:46:"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "D2",
+      "name": "Team-1 leader FIRST-turn initial work DIRECTLY CALLS MCP (A executes — live pong result), zero overrides in existence",
+      "status": "run",
+      "checks": [
+        {
+          "name": "Team-1 leader FIRST-turn initial work DIRECTLY CALLED MCP: mcp__mcp_signal__ping executed (pong result observed) — no override.set, no boundary trigger: the initial work itself is the first boundary",
+          "ok": true,
+          "detail": "toolResults=[\"pong:a:t1-a\"]"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "D3",
+      "name": "Team-1 state post-create: leader effective MCP set EXACTLY [A] (I5 shape, B not mounted) and governance.overrides STILL []",
+      "status": "run",
+      "checks": [
+        {
+          "name": "Team-1 leader state: I5 shape, A mounted, B NOT mounted (the bound initial allow is [A] only — the mount is exactly the Blueprint initial grant, zero overrides)",
+          "ok": true,
+          "detail": "eff={\"mcp_signal\":{\"present\":true,\"mounted\":true,\"allowed\":false},\"mcp_designer\":{\"present\":true,\"mounted\":false,\"allowed\":false}} shape=i5-servers"
+        },
+        {
+          "name": "Team-1 leader schema carries EXACTLY [A] mcp tools (the initial grant is what mounted it)",
+          "ok": true,
+          "detail": "schema=[\"mcp__mcp_signal__ping\"]"
+        },
+        {
+          "name": "governance.overrides is STILL EMPTY after Team-1 creation + its MCP mounts (the mount came from the Blueprint, not from any record)",
+          "ok": true,
+          "detail": "overrides=[]"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "D4",
+      "name": "team.create v2 (Team-2) — the MANDATORY second fresh root — succeeds independently of Team-1",
+      "status": "run",
+      "checks": [
+        {
+          "name": "team.create v2 (Team-2) — the MANDATORY second fresh root — succeeds independently of Team-1 (path=fresh-root)",
+          "ok": true,
+          "detail": "status=200 data={\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-mgis-t2-mgis-2026-09-20T09-46-17\",\"blueprint\":{\"blueprintId\":\"team.mgis-t2\",\"revision\":\"1\",\"contentHash\":\"sha256:180d55aff0e5b9ff723ce6bbdae87d42626daeffde9af97dcc9d8b9bc73e9579\"},\"createdAt\":\"2026-09-20T09:46:"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "D5",
+      "name": "Team-2 leader first-turn initial work directly calls MCP (B executes), effective set exactly [B] (no cross-root leak), overrides []",
+      "status": "run",
+      "checks": [
+        {
+          "name": "Team-2 leader FIRST-turn initial work DIRECTLY CALLED MCP: mcp__mcp_designer__ping executed (pong result observed) — the second fresh root did NOT reset MCP to zero",
+          "ok": true,
+          "detail": "toolResults=[\"pong:b:t2-b\"]"
+        },
+        {
+          "name": "Team-2 leader state: B mounted, A NOT mounted (its bound initial allow is [B] — a cross-root leak onto Team-1's template would have mounted A INSTEAD; the row anchor is capabilities-LESS so a row-anchor leak would mount NOTHING)",
+          "ok": true,
+          "detail": "eff={\"mcp_signal\":{\"present\":true,\"mounted\":false,\"allowed\":false},\"mcp_designer\":{\"present\":true,\"mounted\":true,\"allowed\":false}}"
+        },
+        {
+          "name": "Team-2 leader schema carries EXACTLY [B] mcp tools",
+          "ok": true,
+          "detail": "schema=[\"mcp__mcp_designer__ping\"]"
+        },
+        {
+          "name": "governance.overrides is EMPTY for Team-2 too (its mount came from its own bound Blueprint)",
+          "ok": true,
+          "detail": "overrides=[]"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "D6",
+      "name": "boot-root legacy control: the capabilities-LESS row anchor mounts NOTHING (no mcp tools in schema, nothing mounted in state)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "boot-root legacy control: NOTHING mounted (the capabilities-LESS anchor has no initial grant — the legacy fail-closed baseline is unchanged in the production world)",
+          "ok": true,
+          "detail": "eff={\"mcp_signal\":{\"present\":true,\"mounted\":false,\"allowed\":false},\"mcp_designer\":{\"present\":true,\"mounted\":false,\"allowed\":false}} shape=i5-servers"
+        },
+        {
+          "name": "boot-root legacy control: ZERO mcp tools in the model-facing schema",
+          "ok": true,
+          "detail": "schema=[]"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "D7",
+      "name": "post-creation durable tighten (DENY, instance/leader) beats the initial grant at the next boundary (A unmounted: state + schema double proof, record in overrides)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "post-creation durable tighten admitted (Team-1 leader mcp [A] -> DENY; instance scope — the legitimate dynamic-governance scenario; the record must now beat the static initial grant)",
+          "ok": true,
+          "detail": "record={\"recordId\":\"ovr-mcp-inst-leader-g0\",\"kind\":\"human-override\",\"scope\":\"instance\",\"rootSessionId\":\"session-mgis-t1-mgis-2026-09-20T09-46-17\",\"values\":{\"mcp\":{\"kind\":\"deny\"}},\"generation\":1,\"updatedAt\":\"2026-09-20T09:46:27.296Z\",\"instanceId\":\"inst-leader\"}"
+        },
+        {
+          "name": "after the next boundary, A is NOT mounted in the Team-1 leader state (the record-backed DENY beat the static initial grant; deny-first dispose)",
+          "ok": true,
+          "detail": "eff={\"mcp_signal\":{\"present\":true,\"mounted\":false,\"allowed\":false},\"mcp_designer\":{\"present\":true,\"mounted\":false,\"allowed\":false}}"
+        },
+        {
+          "name": "ALL mcp tools are GONE from the leader model-facing schema (the scripted call to the now-absent A tool degrades to an unknown-tool error result — the turn still completes)",
+          "ok": true,
+          "detail": "turnErr=- schema=[] results=[\"pong:a:t1-a\",\"pong:a:t1-a\",\"Error: unknown tool \\\"mcp__mcp_signal__ping\\\"\"]"
+        },
+        {
+          "name": "the tighten record now appears in governance.overrides (exactly one)",
+          "ok": false,
+          "detail": "overrides=[]"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "id": "D8",
+      "name": "cold resume: initial grant re-derived from the bound Blueprint (Team-2 [B] with zero overrides + live pong; Team-1 mounts NOTHING — the durable DENY survives the restart and wins over the re-derived [A])",
+      "status": "run",
+      "checks": [
+        {
+          "name": "cold resume: Team-2 leader re-derives [B] from its bound Blueprint (ZERO overrides — no synthetic record to lean on) and the tool call EXECUTES",
+          "ok": false,
+          "detail": "eff={\"mcp_signal\":{\"present\":false,\"mounted\":false,\"allowed\":null},\"mcp_designer\":{\"present\":false,\"mounted\":false,\"allowed\":null}} overrides=[] results=[\"pong:b:t2-b\",\"pong:b:t2-b\",\"Error: unknown tool \\\"mcp__mcp_designer__ping\\\"\"]"
+        },
+        {
+          "name": "cold resume: Team-1 leader shows NOTHING mounted — the durable DENY SURVIVED the restart and beats the re-derived initial allow [A] (a record-backed layer beats the static initial grant; the initial grant does NOT resurrect a denied server)",
+          "ok": true,
+          "detail": "eff={\"mcp_signal\":{\"present\":false,\"mounted\":false,\"allowed\":null},\"mcp_designer\":{\"present\":false,\"mounted\":false,\"allowed\":null}} results=[\"pong:a:t1-a\",\"pong:a:t1-a\",\"Error: unknown tool \\\"mcp__mcp_signal__ping\\\"\"]"
+        },
+        {
+          "name": "cold resume: effective sets match pre-restart exactly (no drift across the restart)",
+          "ok": false,
+          "detail": "pre={\"session-mgis-t1-mgis-2026-09-20T09-46-17\":{\"mcp_signal\":{\"present\":true,\"mounted\":false,\"allowed\":false},\"mcp_designer\":{\"present\":true,\"mounted\":false,\"allowed\":false}},\"session-mgis-t2-mgis-2026-09-20T09-46-17\":{\"mcp_signal\":{\"present\":true,\"mounted\":false,\"allowed\":false},\"mcp_designer\":{\"present\":true,\"mounted\":true,\"allowed\":false}}} post t1={\"mcp_signal\":{\"present\":false,\"mounted\":false,\"allowed\":null},\"mcp_designer\":{\"present\":false,\"mounted\":false,\"allowed\":null}} t2={\"mcp_signal\":{\"present\":false,\"mounted\":false,\"allowed\":null},\"mcp_designer\":{\"present\":false,\"mounted\":false,\"allowed\":null}}"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "id": "H1",
+      "name": "test-use porcelain EMPTY + HEAD baseline; :3080/:3180 zero-touch (read-only probes pre==post)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "test-use worktree porcelain EMPTY after the run",
+          "ok": true,
+          "detail": "statusEmpty=true diffEmpty=true head=fb2c4b9e698e30edb738bca4cf0618587db7d203"
+        },
+        {
+          "name": "test-use HEAD still at baseline fb2c4b9e698e30edb738bca4cf0618587db7d203",
+          "ok": true,
+          "detail": "post=fb2c4b9e698e30edb738bca4cf0618587db7d203"
+        },
+        {
+          "name": ":3080/:3180 untouched (read-only probes, status unchanged pre==post)",
+          "ok": true,
+          "detail": "3080: 401->401 3180: 401->401"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "H2",
+      "name": "run ports released after teardown (host 3491 3492 3496)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "all run ports released after teardown",
+          "ok": true,
+          "detail": "{\"host\":true,\"mcpA\":true,\"mcpB\":true,\"mock\":true}"
+        }
+      ],
+      "pass": true
+    }
+  ],
+  "passed": [
+    "Z1",
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "H1",
+    "H2"
+  ],
+  "failed": [
+    "D7",
+    "D8"
+  ],
+  "pass": false,
+  "exitCode": 2
+}

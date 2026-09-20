@@ -32,7 +32,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { resolveActivationPolicy } from '../activation/index.js'
+import { ACTIVATION_ERROR_CODES, resolveActivationPolicy } from '../activation/index.js'
 import { MCP_FACET_WILDCARD, mcpFacetView, resolveDurableMcpFacet } from '../agent-setup/capability/index.js'
 import { parseGovernanceOverride, type GovernanceOverrideRecord } from '../../storage/schema/index.js'
 
@@ -225,5 +225,170 @@ describe('P8-S4B M6 durable MCP facet consumption', () => {
   it('F7 a later allow re-issue (gen 3) restores the mount on the next boundary', () => {
     expect(fullBoundaryReAllow.view.allowed).toBe(true)
     expect(fullBoundaryReAllow.view.source.recordId).toBe('p8s4b-mcp-again')
+  })
+})
+
+// ===========================================================================
+// The INITIAL STATIC MCP grant (the bound Blueprint template's
+// `capabilities.mcp` kind === 'allow' as the governance cell's static initial
+// layer — plan MCP_BLUEPRINT_INITIAL_GRANT §6 Gate A). The initial grant
+// enters the policy resolver at the `template` value layer (provenance
+// template/static — NO synthetic durable record); the record-backed layers
+// (templateOverlay / instanceOverlay / humanOverride) and the external hard
+// facts keep their precedence over it. The input is the optional
+// `initialTemplateMcp` of `resolveDurableMcpFacet` (absent = the unchanged
+// unspecifiedFailClosed baseline for legacy / capabilities-less templates).
+// ===========================================================================
+
+const gA1 = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [],
+  external: EMPTY_EXTERNAL,
+  serverName: SERVER,
+  initialTemplateMcp: { kind: 'allow', items: [SERVER] },
+})
+
+const gA2 = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [],
+  external: EMPTY_EXTERNAL,
+  serverName: 'some-other-server',
+  initialTemplateMcp: { kind: 'allow', items: [SERVER] },
+})
+
+const gA3 = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [],
+  external: EMPTY_EXTERNAL,
+  serverName: 'whatever-server',
+  initialTemplateMcp: { kind: 'allow', items: [MCP_FACET_WILDCARD] },
+})
+
+const gA5 = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [],
+  external: EMPTY_EXTERNAL,
+  serverName: SERVER,
+  // no initialTemplateMcp: a legacy / capabilities-less template.
+})
+
+const gA6 = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [],
+  external: { hard: { mcp: { kind: 'deny' } }, capabilityExists: {} },
+  serverName: SERVER,
+  initialTemplateMcp: { kind: 'allow', items: [SERVER] },
+})
+
+const gA7 = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [override('p8s4b-g-a7-deny', mcpDeny, { kind: 'human-override' })],
+  external: EMPTY_EXTERNAL,
+  serverName: SERVER,
+  initialTemplateMcp: { kind: 'allow', items: [SERVER] },
+})
+
+const gA8humanAllow = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [override('p8s4b-g-a8-allow', mcpAllow, { kind: 'human-override' })],
+  external: EMPTY_EXTERNAL,
+  serverName: SERVER,
+  initialTemplateMcp: { kind: 'allow', items: [SERVER] },
+})
+
+const gA8overlayDeny = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [
+    override('p8s4b-g-a8-den', mcpDeny, {
+      kind: 'autonomy-overlay',
+      scope: 'team',
+      origin: 'leader',
+    }),
+  ],
+  external: EMPTY_EXTERNAL,
+  serverName: SERVER,
+  initialTemplateMcp: { kind: 'allow', items: [SERVER] },
+})
+
+describe('initial static MCP grant (the bound Blueprint template mcp.allow)', () => {
+  it('A1 fresh static allow, no overrides: allowed, provenance template/static (the bug)', () => {
+    expect(gA1.view.allowed).toBe(true)
+    expect(gA1.view.source).toEqual({ layer: 'template', origin: 'static', recordId: null })
+    expect(gA1.view.deniedBy).toBe(undefined)
+  })
+
+  it('A2 a server not named in the initial allow is not granted', () => {
+    expect(gA2.view.allowed).toBe(false)
+    expect(gA2.view.source.layer).toBe('template')
+  })
+
+  it('A3 a wildcard initial allow grants every server', () => {
+    expect(gA3.view.allowed).toBe(true)
+    expect(gA3.view.source.layer).toBe('template')
+  })
+
+  it('A4 a raw empty initial allow is rejected FAIL CLOSED by the frozen resolver (the glue normalizes it to "no grant")', () => {
+    // Frozen resolver contract: 'allow' items must be non-empty (an empty
+    // allow is not a legal policy value at ANY layer). The live glue never
+    // feeds it through: an empty template allow normalizes to "no initial
+    // grant" (unspecified baseline — the live-glue matrix pins the
+    // no-mount, no-crash outcome for that blueprint shape).
+    let caught: unknown
+    try {
+      resolveDurableMcpFacet({
+        rootSessionId: ROOT,
+        instanceId: INSTANCE,
+        overrides: [],
+        external: EMPTY_EXTERNAL,
+        serverName: SERVER,
+        initialTemplateMcp: { kind: 'allow', items: [] },
+      })
+    } catch (error) {
+      caught = error
+    }
+    expect(caught).toBeDefined()
+    expect((caught as { code?: string }).code).toBe(ACTIVATION_ERROR_CODES.POLICY_RESOLUTION_FAILED)
+  })
+
+  it('A5 no static grant (absent) + no overrides: the unchanged unspecifiedFailClosed baseline', () => {
+    expect(gA5.view.allowed).toBe(false)
+    expect(gA5.view.source.layer).toBe('unspecified')
+    expect(gA5.view.deniedBy).toEqual({ by: 'team', reason: 'unspecifiedFailClosed' })
+  })
+
+  it('A6 the external hard deny vetoes the static initial grant', () => {
+    expect(gA6.view.allowed).toBe(false)
+    expect(gA6.view.deniedBy).toEqual({ by: 'external', reason: 'externalHardDeny' })
+  })
+
+  it('A7 a durable human deny beats the static initial grant at the next boundary', () => {
+    expect(gA7.view.allowed).toBe(false)
+    expect(gA7.view.deniedBy).toEqual({
+      by: 'team',
+      reason: 'teamDeny',
+      layer: 'humanOverride',
+      origin: 'human',
+      recordId: 'p8s4b-g-a7-deny',
+    })
+  })
+
+  it('A8 a record-backed human allow keeps precedence over the static initial layer', () => {
+    expect(gA8humanAllow.view.allowed).toBe(true)
+    expect(gA8humanAllow.view.source.layer).toBe('humanOverride')
+    expect(gA8humanAllow.view.source.recordId).toBe('p8s4b-g-a8-allow')
+  })
+
+  it('A8 a record-backed autonomy deny keeps precedence over the static initial layer', () => {
+    expect(gA8overlayDeny.view.allowed).toBe(false)
+    expect(gA8overlayDeny.view.deniedBy?.['layer']).toBe('templateOverlay')
+    expect(gA8overlayDeny.view.deniedBy?.['recordId']).toBe('p8s4b-g-a8-den')
   })
 })

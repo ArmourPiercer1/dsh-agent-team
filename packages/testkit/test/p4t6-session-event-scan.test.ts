@@ -1053,9 +1053,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // union-accounted on top of the 717 base. Evidence:
     // dev/agent-workflow/evidence/exec-contract/.
     // work-completion-wakeup (async work completion -> Leader
-    // wakeup, 2026-09-20, rebased onto the PR #19 merge): +6 =
-    // 725 — the six new scannable files of this round on top of
-    // the 719 base (PR #19 exec-autonomy-contract +2):
+    // wakeup, 2026-09-20, rebased onto the PR #19 merge): +6 on top
+    // of the 719 base (PR #19 exec-autonomy-contract +2):
     // packages/runtime/work-completion-notification/types.ts (the
     // closed notification DTO + target union + the notifier/delivery
     // port types), packages/runtime/work-completion-notification/
@@ -1075,17 +1074,26 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // zero denylist vocabulary; the frozen quarantine hit set is
     // unchanged at fifteen. Scanner unchanged.
     // team-send-message-liveness (the team_send_message acceptance
-    // boundary fix, 2026-09-21, on top of the PR #21 merge): +1 = 726 —
-    // one new scannable file on top of the 725 base:
+    // boundary fix, 2026-09-20, PR #24, merged at 01fa598): +1 — one
+    // new scannable file:
     // packages/runtime/test/send-message-liveness.test.ts (the T1–T4
     // acceptance-boundary regression suite over the real
     // agent-bindings.mjs port + the MessagingCoordinator: acceptance
     // boundary, long-running recipient, the two-agent reply cycle, and
-    // the fail-closed acceptance failure). Zero denylist vocabulary;
-    // the frozen quarantine hit set is unchanged at fifteen. Scanner
-    // unchanged.
-    expect(scanResult.filesScanned).toBe(726)
-    expect(scanResult.files.length).toBe(726)
+    // the fail-closed acceptance failure). Zero denylist vocabulary.
+    // mcp-blueprint-initial-grant (plan MCP_BLUEPRINT_INITIAL_GRANT_FIX,
+    // 2026-09-20): +1 — one new scannable file,
+    // packages/runtime/test/mcp-blueprint-initial-grant.test.ts (the
+    // real-glue regression of the initial static MCP grant matrix B1/B3/
+    // B4/B5/C1/L/G4 over the live agent-bindings bridge doubles). The
+    // extended p8s4b-mcp-facet.test.ts and the modified
+    // agent-bindings.mjs are already-scanned files (no count delta).
+    // UNION (DEC-1 precedent, rebase 2026-09-20 onto PR #21 merge
+    // d63cb71, then onto PR #24 merge 01fa598): 719 + 6 + 2 = 727.
+    // All eight new files carry zero denylist vocabulary; the frozen
+    // quarantine hit set is unchanged at fifteen. Scanner unchanged.
+    expect(scanResult.filesScanned).toBe(727)
+    expect(scanResult.files.length).toBe(727)
 
   })
 

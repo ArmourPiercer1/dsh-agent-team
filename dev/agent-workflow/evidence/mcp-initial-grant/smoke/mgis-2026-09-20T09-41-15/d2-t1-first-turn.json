@@ -1,0 +1,10 @@
+{
+  "schema": [
+    "mcp__mcp_designer__ping",
+    "mcp__mcp_signal__ping"
+  ],
+  "toolResults": [
+    "pong:a:t1-a",
+    "pong:b:t1-b"
+  ]
+}

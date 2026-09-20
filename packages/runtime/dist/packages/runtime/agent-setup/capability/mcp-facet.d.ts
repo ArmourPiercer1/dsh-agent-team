@@ -24,7 +24,7 @@
  *
  * @module @dsh-agent-team/runtime/agent-setup/capability/mcp-facet
  */
-import type { EffectivePolicy, ExternalPolicyFacts, SuppressedOverlayRecord } from '../../../domain/policy/src/index.js';
+import type { EffectivePolicy, ExternalPolicyFacts, PolicyEntry, SuppressedOverlayRecord } from '../../../domain/policy/src/index.js';
 import type { GovernanceOverrideRecord } from '../../../storage/schema/index.js';
 import { type CellDeniedBy, type CellProvenanceOptions, type CellSource, type PendingBoundaryRecord } from '../../mutation/cell-provenance.js';
 /** The allow-list wildcard naming every MCP server. */
@@ -76,6 +76,21 @@ export interface DurableMcpFacetArgs {
     readonly serverName: string;
     /** The record ids this session has already applied at its last boundary. */
     readonly appliedRecordIds?: readonly string[];
+    /**
+     * The bound Blueprint template's INITIAL STATIC grant for the `mcp` cell
+     * (plan MCP_BLUEPRINT_INITIAL_GRANT §4.1): the template's
+     * `capabilities.mcp` entry when `kind === 'allow'` — the role's initial
+     * governance grant, available from team creation (fresh root, fresh
+     * member, cold resume) without any governance record. It resolves at the
+     * policy resolver's `template` value layer (provenance template/static):
+     * record-backed layers (templateOverlay / instanceOverlay /
+     * humanOverride) and the external hard facts keep their precedence over
+     * it, and it is NOT persisted as a synthetic durable record. Absent
+     * (legacy template / `kind !== 'allow'`) = the unchanged
+     * unspecifiedFailClosed baseline — a deny or a future non-allow state is
+     * NEVER converted into a grant here.
+     */
+    readonly initialTemplateMcp?: PolicyEntry;
 }
 /** The resolved durable MCP facet decision + its provenance. */
 export interface DurableMcpFacet {

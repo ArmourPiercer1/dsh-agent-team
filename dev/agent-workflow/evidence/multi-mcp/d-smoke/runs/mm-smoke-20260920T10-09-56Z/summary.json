@@ -1,0 +1,59 @@
+{
+  "task": "Task D multi-mcp dual mini-MCP real-host smoke",
+  "runStamp": "mm-smoke-20260920T10-09-56Z",
+  "generatedAt": "2026-09-20T10:09:56.545Z",
+  "targetRepo": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant",
+  "fatal": "Error: host tree pnpm hoist has no link for @deepseek-ai/dsh-agent at /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-agent — cannot wire runtime module links (is the test-use checkout pnpm-installed?)\n    at ensureJunctions (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs:715:13)\n    at main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs:1101:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+  "criteria": [
+    {
+      "id": "C1",
+      "name": "per-agent model-facing MCP tools EXACT (I5 state + schema double proof): leader A+B / m1 A / m2 B",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C2",
+      "name": "A/B namespaces do not collide (same underlying tool ping; distinct mounted names)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C3",
+      "name": "member isolation (m1 sees A only; m2 sees B only)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C4",
+      "name": "durable override tighten (leader [A,B]->[A]) really unmounts B at the next boundary",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C5",
+      "name": "host restart (same home, resume) rebuilds the SAME effective set",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C6",
+      "name": "teardown releases 3491/3492 (+3496 mock, +host port)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C7",
+      "name": "test-use porcelain empty + HEAD baseline; :3080 untouched",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C8",
+      "name": "target-tree scan surface unchanged (kit link dirs removed, pnpm junctions restored)",
+      "status": "not-run",
+      "checks": []
+    }
+  ],
+  "pass": false,
+  "exitCode": 1
+}

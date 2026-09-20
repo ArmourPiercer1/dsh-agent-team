@@ -1,0 +1,6 @@
+{
+  "note": "Plan §7: the initial success path no longer seeds override.set allow. This file is the anti-cheat evidence that the durable store is empty at the moment the mounts below are observed.",
+  "at": "2026-09-20T10:28:37.100Z",
+  "overrides": [],
+  "historicalSeed": "override.set(capability=mcp, allow=[mcp_signal,mcp_designer], scope=team) — REMOVED (see plan §7)"
+}

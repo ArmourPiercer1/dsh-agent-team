@@ -1,0 +1,125 @@
+# RED re-capture 2026-09-20T10:29:02Z — sources stashed (pre-fix); dist staged = fixed
+9ec0d1f Merge pull request #19 from ArmourPiercer1/task/exec-autonomy-contract
+
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant
+
+ ❯ packages/runtime/test/p8s4b-mcp-facet.test.ts (20 tests | 5 failed) 11ms
+     ✓ F1 the baseline (no Team allow) is fail-closed: no mount, deny surfaced 1ms
+     ✓ F2 an explicit allow naming the server permits the mount 0ms
+     ✓ F3 an allow-list that does not name the server does not grant it 0ms
+     ✓ F3 the wildcard grants every server 0ms
+     ✓ F4 a later generation deny re-issue beats the earlier allow 0ms
+     ✓ F4 a standalone instance-layer deny denies with instance provenance 0ms
+     ✓ F5 invariant 34: a human grant survives an instance autonomy deny 0ms
+     ✓ F5 a human re-grant beats an autonomy deny 0ms
+     ✓ F6 an absent capability denies with unavailable provenance 0ms
+     ✓ F7 the boundary re-resolution re-reads the durable truth (deny wins at gen 2) 0ms
+     ✓ F7 a later allow re-issue (gen 3) restores the mount on the next boundary 0ms
+     × A1 fresh static allow, no overrides: allowed, provenance template/static (the bug) 3ms
+     × A2 a server not named in the initial allow is not granted 1ms
+     × A3 a wildcard initial allow grants every server 0ms
+     × A4 a raw empty initial allow is rejected FAIL CLOSED by the frozen resolver (the glue normalizes it to "no grant") 0ms
+     ✓ A5 no static grant (absent) + no overrides: the unchanged unspecifiedFailClosed baseline 0ms
+     × A6 the external hard deny vetoes the static initial grant 1ms
+     ✓ A7 a durable human deny beats the static initial grant at the next boundary 0ms
+     ✓ A8 a record-backed human allow keeps precedence over the static initial layer 0ms
+     ✓ A8 a record-backed autonomy deny keeps precedence over the static initial layer 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p8s4b-mcp-facet.test.ts > initial static MCP grant (the bound Blueprint template mcp.allow) > A1 fresh static allow, no overrides: allowed, provenance template/static (the bug)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/p8s4b-mcp-facet.test.ts:323:30
+    321| describe('initial static MCP grant (the bound Blueprint template mcp.a…
+    322|   it('A1 fresh static allow, no overrides: allowed, provenance templat…
+    323|     expect(gA1.view.allowed).toBe(true)
+       |                              ^
+    324|     expect(gA1.view.source).toEqual({ layer: 'template', origin: 'stat…
+    325|     expect(gA1.view.deniedBy).toBe(undefined)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  packages/runtime/test/p8s4b-mcp-facet.test.ts > initial static MCP grant (the bound Blueprint template mcp.allow) > A2 a server not named in the initial allow is not granted
+AssertionError: expected 'unspecified' to be 'template' // Object.is equality
+
+Expected: "template"
+Received: "unspecified"
+
+ ❯ packages/runtime/test/p8s4b-mcp-facet.test.ts:330:35
+    328|   it('A2 a server not named in the initial allow is not granted', () =…
+    329|     expect(gA2.view.allowed).toBe(false)
+    330|     expect(gA2.view.source.layer).toBe('template')
+       |                                   ^
+    331|   })
+    332|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  packages/runtime/test/p8s4b-mcp-facet.test.ts > initial static MCP grant (the bound Blueprint template mcp.allow) > A3 a wildcard initial allow grants every server
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/p8s4b-mcp-facet.test.ts:334:30
+    332|
+    333|   it('A3 a wildcard initial allow grants every server', () => {
+    334|     expect(gA3.view.allowed).toBe(true)
+       |                              ^
+    335|     expect(gA3.view.source.layer).toBe('template')
+    336|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  packages/runtime/test/p8s4b-mcp-facet.test.ts > initial static MCP grant (the bound Blueprint template mcp.allow) > A4 a raw empty initial allow is rejected FAIL CLOSED by the frozen resolver (the glue normalizes it to "no grant")
+AssertionError: expected undefined to be defined
+ ❯ packages/runtime/test/p8s4b-mcp-facet.test.ts:357:20
+    355|       caught = error
+    356|     }
+    357|     expect(caught).toBeDefined()
+       |                    ^
+    358|     expect((caught as { code?: string }).code).toBe(ACTIVATION_ERROR_C…
+    359|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  packages/runtime/test/p8s4b-mcp-facet.test.ts > initial static MCP grant (the bound Blueprint template mcp.allow) > A6 the external hard deny vetoes the static initial grant
+AssertionError: expected { by: 'team', …(1) } to deeply equal { by: 'external', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "by": "external",
+-   "reason": "externalHardDeny",
++   "by": "team",
++   "reason": "unspecifiedFailClosed",
+  }
+
+ ❯ packages/runtime/test/p8s4b-mcp-facet.test.ts:369:31
+    367|   it('A6 the external hard deny vetoes the static initial grant', () =…
+    368|     expect(gA6.view.allowed).toBe(false)
+    369|     expect(gA6.view.deniedBy).toEqual({ by: 'external', reason: 'exter…
+       |                               ^
+    370|   })
+    371|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 15 passed (20)
+   Start at  18:29:03
+   Duration  430ms (transform 260ms, setup 0ms, import 327ms, tests 11ms, environment 0ms)
+

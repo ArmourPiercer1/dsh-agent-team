@@ -1,0 +1,32 @@
+{
+  "type": "server-response",
+  "rpcId": "tighten-bc9r41vqqi",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "recordId": "ovr-mcp-inst-leader-g0",
+        "kind": "human-override",
+        "scope": "instance",
+        "rootSessionId": "session-mgis-t1-mgis-2026-09-20T10-02-49",
+        "values": {
+          "mcp": {
+            "kind": "deny"
+          }
+        },
+        "generation": 1,
+        "updatedAt": "2026-09-20T10:02:57.865Z",
+        "instanceId": "inst-leader"
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "override.set",
+        "endpoint": "override.set",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

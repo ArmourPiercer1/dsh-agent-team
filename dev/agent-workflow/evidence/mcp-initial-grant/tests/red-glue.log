@@ -1,0 +1,268 @@
+# RED re-capture 2026-09-20T10:29:06Z — sources stashed (pre-fix); live bridge imports SOURCE agent-bindings.mjs
+9ec0d1f Merge pull request #19 from ArmourPiercer1/task/exec-autonomy-contract
+
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant
+
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts (18 tests | 11 failed) 12ms
+   × G3V — cold resume with VERSIONED generation roots (session.v3.jsonl.zstd): the initial grant is re-derived exactly as with the v0 root 5ms
+     × the leader mounts exactly its template allow set {A,B} 1ms
+     × worker-1 mounts exactly {A} (its own template, no cross-role leak) 1ms
+     × worker-2 mounts exactly {B} (its own template, no cross-role leak) 0ms
+     ✓ worker-3 (template mcp deny) mounts nothing 0ms
+     × the leader facet provenance is the STATIC template layer (no durable record) 1ms
+     ✓ worker-3 facet: a template mcp DENY contributes no initial grant (unspecified cell; the static template gate blocks the mount) 0ms
+     × the leader still mounts {A,B} after its next boundary 0ms
+     × worker-1 still mounts exactly {A} after its next boundary 1ms
+     ✓ the leader unmounts everything after the deny + boundary 0ms
+     ✓ the post-deny facet view is denied by the humanOverride record 0ms
+     × Team-X leader mounts exactly {A} (its bound allow) 0ms
+     × Team-Y leader mounts exactly {B} (its bound allow — never the row anchor / Team-X snapshot) 0ms
+     × create phase: leader {A,B}, worker {A} (initial grant) 0ms
+     × resume phase: the SAME sets survive the host restart (no override to lean on) 0ms
+     ✓ nothing is mounted and the facet is the unchanged unspecified baseline 0ms
+     ✓ nothing mounts at setup and the facet stays the unspecified baseline (no malformed-input crash) 0ms
+     ✓ the next boundary re-resolution does not break either 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/mcp-blueprint-initial-grant.test.ts > G3V — cold resume with VERSIONED generation roots (session.v3.jsonl.zstd): the initial grant is re-derived exactly as with the v0 root
+AssertionError: expected [] to deeply equal [ 'mcp-alpha', 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts:442:36
+    440|   const g3vW1 = world.agents.handles.get(G3V_W1)!.agent.ctx
+    441|   it('G3V — cold resume with VERSIONED generation roots (session.v3.js…
+    442|     expect(liveServers(g3vLeader)).toEqual([A, B])
+       |                                    ^
+    443|     expect(liveServers(g3vW1)).toEqual([A])
+    444|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  packages/runtime/test/mcp-blueprint-initial-grant.test.ts > B1 — fresh team role split from the Blueprint initial grant (ZERO overrides) > the leader mounts exactly its template allow set {A,B}
+AssertionError: expected [] to deeply equal [ 'mcp-alpha', 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts:515:32
+    513|   it('the leader mounts exactly its template allow set {A,B}', () => {
+    514|     expect(g1OverridesAtBoot).toBe(0) // no initial seed (anti-cheat)
+    515|     expect(g1LeaderLiveAtBoot).toEqual([A, B])
+       |                                ^
+    516|   })
+    517|   it('worker-1 mounts exactly {A} (its own template, no cross-role lea…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  packages/runtime/test/mcp-blueprint-initial-grant.test.ts > B1 — fresh team role split from the Blueprint initial grant (ZERO overrides) > worker-1 mounts exactly {A} (its own template, no cross-role leak)
+AssertionError: expected [] to deeply equal [ 'mcp-alpha' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+- ]
++ []
+
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts:518:31
+    516|   })
+    517|   it('worker-1 mounts exactly {A} (its own template, no cross-role lea…
+    518|     expect(liveServers(g1W1)).toEqual([A])
+       |                               ^
+    519|   })
+    520|   it('worker-2 mounts exactly {B} (its own template, no cross-role lea…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  packages/runtime/test/mcp-blueprint-initial-grant.test.ts > B1 — fresh team role split from the Blueprint initial grant (ZERO overrides) > worker-2 mounts exactly {B} (its own template, no cross-role leak)
+AssertionError: expected [] to deeply equal [ 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts:521:31
+    519|   })
+    520|   it('worker-2 mounts exactly {B} (its own template, no cross-role lea…
+    521|     expect(liveServers(g1W2)).toEqual([B])
+       |                               ^
+    522|   })
+    523|   it('worker-3 (template mcp deny) mounts nothing', () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  packages/runtime/test/mcp-blueprint-initial-grant.test.ts > B1 — fresh team role split from the Blueprint initial grant (ZERO overrides) > the leader facet provenance is the STATIC template layer (no durable record)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts:527:47
+    525|   })
+    526|   it('the leader facet provenance is the STATIC template layer (no dur…
+    527|     expect(g1LeaderViewsAtBoot?.[A]?.allowed).toBe(true)
+       |                                               ^
+    528|     expect(g1LeaderViewsAtBoot?.[A]?.source).toEqual({ layer: 'templat…
+    529|     expect(g1LeaderViewsAtBoot?.[B]?.allowed).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  packages/runtime/test/mcp-blueprint-initial-grant.test.ts > B3 — the request-boundary re-resolution keeps the initial grant > the leader still mounts {A,B} after its next boundary
+AssertionError: expected [] to deeply equal [ 'mcp-alpha', 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts:546:39
+    544| describe('B3 — the request-boundary re-resolution keeps the initial gr…
+    545|   it('the leader still mounts {A,B} after its next boundary', () => {
+    546|     expect(g1LeaderLiveAfterBoundary).toEqual([A, B])
+       |                                       ^
+    547|   })
+    548|   it('worker-1 still mounts exactly {A} after its next boundary', () =…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  packages/runtime/test/mcp-blueprint-initial-grant.test.ts > B3 — the request-boundary re-resolution keeps the initial grant > worker-1 still mounts exactly {A} after its next boundary
+AssertionError: expected [] to deeply equal [ 'mcp-alpha' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+- ]
++ []
+
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts:549:35
+    547|   })
+    548|   it('worker-1 still mounts exactly {A} after its next boundary', () =…
+    549|     expect(g1W1LiveAfterBoundary).toEqual([A])
+       |                                   ^
+    550|   })
+    551| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  packages/runtime/test/mcp-blueprint-initial-grant.test.ts > B5 — cross-root isolation (each root uses its OWN bound blueprint) > Team-X leader mounts exactly {A} (its bound allow)
+AssertionError: expected [] to deeply equal [ 'mcp-alpha' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+- ]
++ []
+
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts:569:36
+    567| describe('B5 — cross-root isolation (each root uses its OWN bound blue…
+    568|   it('Team-X leader mounts exactly {A} (its bound allow)', () => {
+    569|     expect(liveServers(g2XLeader)).toEqual([A])
+       |                                    ^
+    570|   })
+    571|   it('Team-Y leader mounts exactly {B} (its bound allow — never the ro…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  packages/runtime/test/mcp-blueprint-initial-grant.test.ts > B5 — cross-root isolation (each root uses its OWN bound blueprint) > Team-Y leader mounts exactly {B} (its bound allow — never the row anchor / Team-X snapshot)
+AssertionError: expected [] to deeply equal [ 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts:572:36
+    570|   })
+    571|   it('Team-Y leader mounts exactly {B} (its bound allow — never the ro…
+    572|     expect(liveServers(g2YLeader)).toEqual([B])
+       |                                    ^
+    573|   })
+    574| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  packages/runtime/test/mcp-blueprint-initial-grant.test.ts > C1 — cold resume with zero overrides (the bound Blueprint re-derives the grant) > create phase: leader {A,B}, worker {A} (initial grant)
+AssertionError: expected [] to deeply equal [ 'mcp-alpha', 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts:578:36
+    576| describe('C1 — cold resume with zero overrides (the bound Blueprint re…
+    577|   it('create phase: leader {A,B}, worker {A} (initial grant)', () => {
+    578|     expect(liveServers(g3cLeader)).toEqual([A, B])
+       |                                    ^
+    579|     expect(liveServers(g3cW1)).toEqual([A])
+    580|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  packages/runtime/test/mcp-blueprint-initial-grant.test.ts > C1 — cold resume with zero overrides (the bound Blueprint re-derives the grant) > resume phase: the SAME sets survive the host restart (no override to lean on)
+AssertionError: expected [] to deeply equal [ 'mcp-alpha', 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts:582:36
+    580|   })
+    581|   it('resume phase: the SAME sets survive the host restart (no overrid…
+    582|     expect(liveServers(g3rLeader)).toEqual([A, B])
+       |                                    ^
+    583|     expect(liveServers(g3rW1)).toEqual([A])
+    584|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 7 passed (18)
+   Start at  18:29:07
+   Duration  885ms (transform 524ms, setup 0ms, import 783ms, tests 12ms, environment 0ms)
+

@@ -1,0 +1,126 @@
+[2026-09-20T10:28:24.524Z] === Task D multi-mcp real-host smoke kit mm-smoke-20260920T10-28-24Z ===
+[2026-09-20T10:28:24.524Z] targetRepo=/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant
+[2026-09-20T10:28:24.524Z] hostRepoRoot=/home/user/dsh-plugins/dsh-agent-team hostTree=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-09-20T10:28:24.525Z] evidenceDir=/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260920T10-28-24Z keep=false
+[2026-09-20T10:28:24.538Z] :3080 pre: 401
+[2026-09-20T10:28:24.558Z] test-use pre: head=fb2c4b9e698e30edb738bca4cf0618587db7d203 statusEmpty=true diffEmpty=true baseline=fb2c4b9e698e30edb738bca4cf0618587db7d203
+[2026-09-20T10:28:24.560Z] host port selected: 3181
+[2026-09-20T10:28:24.561Z] ports free: host=3181 mcpA=3491 mcpB=3492 mock=3496
+[2026-09-20T10:28:24.561Z] fresh home asserted: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mm-smoke-20260920T10-28-24Z (lock: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mm-smoke-20260920T10-28-24Z.lock)
+[2026-09-20T10:28:24.684Z] target-tree scan pre (C8): mode=scanner packageDirs=9 filesScanned=720
+[2026-09-20T10:28:24.684Z] runtime link FALLBACK: hoist link absent for @deepseek-ai/dsh-agent (workspace package) — using top-level /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/@deepseek-ai/dsh-agent
+[2026-09-20T10:28:24.685Z] runtime link: @deepseek-ai/dsh-agent -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/@deepseek-ai/dsh-agent
+[2026-09-20T10:28:24.685Z] runtime link: @deepseek-ai/dsh-llm -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-llm
+[2026-09-20T10:28:24.685Z] runtime link: @deepseek-ai/dsh-mcp-client -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-mcp-client
+[2026-09-20T10:28:24.685Z] runtime link: @deepseek-ai/dsh-session -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-session
+[2026-09-20T10:28:24.685Z] runtime link: @deepseek-ai/dsh-storage-domain -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-storage-domain
+[2026-09-20T10:28:24.685Z] runtime link: zod -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/zod
+[2026-09-20T10:28:24.686Z] packages link FALLBACK: hoist link absent for @deepseek-ai/dsh-agent (workspace package) — using top-level /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/@deepseek-ai/dsh-agent
+[2026-09-20T10:28:24.686Z] packages link: @deepseek-ai/dsh-agent -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/@deepseek-ai/dsh-agent
+[2026-09-20T10:28:24.686Z] packages link: @deepseek-ai/dsh-llm -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-llm
+[2026-09-20T10:28:24.686Z] packages link: @deepseek-ai/dsh-mcp-client -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-mcp-client
+[2026-09-20T10:28:24.686Z] packages link: @deepseek-ai/dsh-session -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-session
+[2026-09-20T10:28:24.686Z] packages link: @deepseek-ai/dsh-storage-domain -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-storage-domain
+[2026-09-20T10:28:24.686Z] packages link: @deepseek-ai/dsh-scope -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-scope
+[2026-09-20T10:28:24.686Z] packages link: @deepseek-ai/dsh-system-prompt -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-system-prompt
+[2026-09-20T10:28:24.686Z] module resolution links wired (runtime + packages level; 13 entries snapshotted for teardown restore)
+[2026-09-20T10:28:24.686Z] building target repo: pnpm build && pnpm build:composition …
+[2026-09-20T10:28:28.916Z] pnpm build ok (log: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260920T10-28-24Z/build.log)
+[2026-09-20T10:28:29.360Z] pnpm build:composition ok (install-surface freshness gate passed)
+[2026-09-20T10:28:29.477Z] dist host import probe ok
+[2026-09-20T10:28:29.482Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-20T10:28:29.482Z] mock DeepSeek endpoint up at 127.0.0.1:3496 (DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to host launches)
+[2026-09-20T10:28:29.504Z] mini MCP A up on 127.0.0.1:3491 (mcp_signal); B up on 127.0.0.1:3492 (mcp_designer)
+[2026-09-20T10:28:29.516Z] mini tools/list: A=["ping"] B=["ping"]
+[2026-09-20T10:28:29.516Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-20T10:28:32.774Z] throwaway boot OK: http://127.0.0.1:3181/?token=t9c0er0MbXOYOqENX_i2gd57TsJo4T1_aT9zbxsccuc
+[2026-09-20T10:28:33.084Z] web profile ensured (throwaway boot if first use)
+[2026-09-20T10:28:33.085Z] HOST1-CREATE: patch (bootPhase=create) + directive (boot=1) written
+[2026-09-20T10:28:35.932Z] HOST1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-20T10:28:35.935Z] HOST1-CREATE: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-20T10:28:37.094Z] HOST1-CREATE: row ready — toolCount=12 liveSessions=["session-mm-smoke-root-mm-smoke-20260920T10-28-24Z"]
+[2026-09-20T10:28:37.098Z] HOST1: state ready (teamSession=mm-smoke-bp-1 rev=1)
+[2026-09-20T10:28:37.100Z] C1 PASS — zero-seed proof: governance.overrides is EMPTY before the initial probes (the initial mounts must come from the Blueprint initial grant, not from any record) :: overrides=[]
+[2026-09-20T10:28:37.100Z] zero-seed proof: governance.overrides = [] (no initial override.set — the Blueprint initial grant is the only source of the mounts)
+[2026-09-20T10:28:37.160Z] member-1: created instanceId=inst-0x5twoo1s8rr childSessionId=session-team-child-b1843b3acf914f750e4b1b42288c5398 (template worker-a)
+[2026-09-20T10:28:37.208Z] member-2: created instanceId=inst-1xxefrt13brx childSessionId=session-team-child-8314c77aecd60ea8c78de617d56ec9f2 (template worker-b)
+[2026-09-20T10:28:37.212Z] leader boundary trigger: team_list_members executed (status=executed)
+[2026-09-20T10:28:37.274Z] mock: mock: 1 text reply (40 chars): "MM_ACK_MM_L1_mm-smoke-20260920T10-28-24Z"
+[2026-09-20T10:28:37.274Z] mock: mock: 2 text reply (42 chars): "MM_DEFAULT_ACK_mm-smoke-20260920T10-28-24Z"
+[2026-09-20T10:28:39.777Z] mock: mock: 3 text reply (40 chars): "MM_ACK_MM_M1_mm-smoke-20260920T10-28-24Z"
+[2026-09-20T10:28:39.778Z] mock: mock: 4 text reply (42 chars): "MM_DEFAULT_ACK_mm-smoke-20260920T10-28-24Z"
+[2026-09-20T10:28:41.836Z] mock: mock: 5 text reply (40 chars): "MM_ACK_MM_M2_mm-smoke-20260920T10-28-24Z"
+[2026-09-20T10:28:41.837Z] mock: mock: 6 text reply (42 chars): "MM_DEFAULT_ACK_mm-smoke-20260920T10-28-24Z"
+[2026-09-20T10:28:43.860Z] state mcp shape (leader session): i5-servers
+[2026-09-20T10:28:43.860Z] C1 PASS — leader: /__p6t6/state mcp shape is I5 (mcp.servers map) :: observed shape=i5-servers raw={"servers":{"mcp_signal":{"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"unavailable":false,"pendingNextBoundary":[],"explanation":"mcp: effective allow[mcp_signal,mcp_designer]; team template(origin=static) allow[mcp_sign
+[2026-09-20T10:28:43.860Z] C1 PASS — leader: state servers.mcp_signal.mounted === true :: observed={"present":true,"mounted":true,"allowed":true}
+[2026-09-20T10:28:43.860Z] C1 PASS — leader: state servers.mcp_designer.mounted === true :: observed={"present":true,"mounted":true,"allowed":true}
+[2026-09-20T10:28:43.860Z] C1 PASS — leader: model-facing MCP tool set EXACT === ["mcp__mcp_signal__ping","mcp__mcp_designer__ping"] :: observed=["mcp__mcp_designer__ping","mcp__mcp_signal__ping"] (mock req seq=2 [turn kick request — the first request of a fresh-create first turn can carry an empty assembly; see header FINDING + mock-requests-c1.json] model=mm-smoke-model)
+[2026-09-20T10:28:43.860Z] C1 PASS — leader: double proof consistent (state-mounted servers appear in the model schema) :: state mounted=["mcp_signal","mcp_designer"] schema=["mcp__mcp_designer__ping","mcp__mcp_signal__ping"]
+[2026-09-20T10:28:43.860Z] C1 PASS — member-1: /__p6t6/state mcp shape is I5 (mcp.servers map) :: observed shape=i5-servers raw={"servers":{"mcp_signal":{"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"unavailable":false,"pendingNextBoundary":[],"explanation":"mcp: effective allow[mcp_signal]; team template(origin=static) allow[mcp_signal]; external
+[2026-09-20T10:28:43.860Z] C1 PASS — member-1: state servers.mcp_signal.mounted === true :: observed={"present":true,"mounted":true,"allowed":true}
+[2026-09-20T10:28:43.860Z] C1 PASS — member-1: state servers.mcp_designer.mounted === false :: observed={"present":true,"mounted":false,"allowed":false}
+[2026-09-20T10:28:43.860Z] C1 PASS — member-1: model-facing MCP tool set EXACT === ["mcp__mcp_signal__ping"] :: observed=["mcp__mcp_signal__ping"] (mock req seq=4 [turn kick request — the first request of a fresh-create first turn can carry an empty assembly; see header FINDING + mock-requests-c1.json] model=mm-smoke-model)
+[2026-09-20T10:28:43.860Z] C1 PASS — member-1: double proof consistent (state-mounted servers appear in the model schema) :: state mounted=["mcp_signal"] schema=["mcp__mcp_signal__ping"]
+[2026-09-20T10:28:43.860Z] C1 PASS — member-2: /__p6t6/state mcp shape is I5 (mcp.servers map) :: observed shape=i5-servers raw={"servers":{"mcp_signal":{"mounted":false,"allowed":false,"source":{"layer":"template","origin":"static","recordId":null},"unavailable":false,"pendingNextBoundary":[],"explanation":"mcp: effective allow[mcp_designer]; team template(origin=static) allow[mcp_designer]; ex
+[2026-09-20T10:28:43.860Z] C1 PASS — member-2: state servers.mcp_signal.mounted === false :: observed={"present":true,"mounted":false,"allowed":false}
+[2026-09-20T10:28:43.860Z] C1 PASS — member-2: state servers.mcp_designer.mounted === true :: observed={"present":true,"mounted":true,"allowed":true}
+[2026-09-20T10:28:43.860Z] C1 PASS — member-2: model-facing MCP tool set EXACT === ["mcp__mcp_designer__ping"] :: observed=["mcp__mcp_designer__ping"] (mock req seq=6 [turn kick request — the first request of a fresh-create first turn can carry an empty assembly; see header FINDING + mock-requests-c1.json] model=mm-smoke-model)
+[2026-09-20T10:28:43.860Z] C1 PASS — member-2: double proof consistent (state-mounted servers appear in the model schema) :: state mounted=["mcp_designer"] schema=["mcp__mcp_designer__ping"]
+[2026-09-20T10:28:43.860Z] C1: PASS (16/16 checks)
+[2026-09-20T10:28:43.860Z] C2 PASS — both mini endpoints expose the SAME underlying tool name "ping" (MCP-level) :: A tools=["ping"] B tools=["ping"]
+[2026-09-20T10:28:43.860Z] C2 PASS — leader schema carries BOTH mounted names as distinct tools (prefix separation, no collision) :: leader mcp tools=["mcp__mcp_designer__ping","mcp__mcp_signal__ping"] (seq=2)
+[2026-09-20T10:28:43.861Z] C2 PASS — no colliding duplicate tool names in the leader schema :: leader mcp tools=["mcp__mcp_designer__ping","mcp__mcp_signal__ping"]
+[2026-09-20T10:28:43.861Z] C2: PASS (3/3 checks)
+[2026-09-20T10:28:43.861Z] C3 PASS — member-1 schema: A tool present, B tool ABSENT :: m1 mcp tools=["mcp__mcp_signal__ping"]
+[2026-09-20T10:28:43.861Z] C3 PASS — member-2 schema: B tool present, A tool ABSENT :: m2 mcp tools=["mcp__mcp_designer__ping"]
+[2026-09-20T10:28:43.861Z] C3 PASS — member-1 state: A mounted, B NOT mounted :: m1 eff={"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":false}}
+[2026-09-20T10:28:43.861Z] C3 PASS — member-2 state: B mounted, A NOT mounted :: m2 eff={"mcp_signal":{"present":true,"mounted":false,"allowed":false},"mcp_designer":{"present":true,"mounted":true,"allowed":true}}
+[2026-09-20T10:28:43.861Z] C3: PASS (4/4 checks)
+[2026-09-20T10:28:43.867Z] C4: override.set admitted (recordId=ovr-mcp-inst-leader-g0)
+[2026-09-20T10:28:43.867Z] C4 PASS — durable override tighten admitted (leader mcp allow [A,B] -> [A]) :: record={"recordId":"ovr-mcp-inst-leader-g0","kind":"human-override","scope":"instance","rootSessionId":"session-mm-smoke-root-mm-smoke-20260920T10-28-24Z","values":{"mcp":{"kind":"allow","items":["mcp_signal"]}},"generation":1,"updatedAt":"2026-09-20T10:28:43.863Z","instanceId":"inst-leader"}
+[2026-09-20T10:28:43.872Z] C4 boundary trigger: team_list_members executed (status=executed)
+[2026-09-20T10:28:43.891Z] mock: mock: 7 text reply (40 chars): "MM_ACK_MM_L2_mm-smoke-20260920T10-28-24Z"
+[2026-09-20T10:28:52.402Z] C4 PASS — after the next boundary, B is NOT mounted in the leader state (deny-first dispose) :: leader eff post-override={"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":false}} shape=i5-servers
+[2026-09-20T10:28:52.402Z] C4 PASS — B tool really GONE from the leader model-facing schema (A still present) :: leader mcp tools post-override=["mcp__mcp_signal__ping"] (mock req seq=7)
+[2026-09-20T10:28:52.402Z] C4: PASS (3/3 checks)
+[2026-09-20T10:28:52.402Z] C5: pre-restart effective sets: {"session-mm-smoke-root-mm-smoke-20260920T10-28-24Z":{"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":false}},"session-team-child-b1843b3acf914f750e4b1b42288c5398":{"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":false}},"session-team-child-8314c77aecd60ea8c78de617d56ec9f2":{"mcp_signal":{"present":true,"mounted":false,"allowed":false},"mcp_designer":{"present":true,"mounted":true,"allowed":true}}}
+[2026-09-20T10:28:52.715Z] HOST1-CREATE: stopped (killed=true portFree=true)
+[2026-09-20T10:28:52.715Z] HOST2-RESUME: patch (bootPhase=resume) + directive (boot=2) written
+[2026-09-20T10:28:55.727Z] HOST2-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-20T10:28:55.728Z] HOST2-RESUME: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-20T10:28:55.790Z] HOST2-RESUME: row ready — toolCount=12 liveSessions=["session-mm-smoke-root-mm-smoke-20260920T10-28-24Z","session-team-child-8314c77aecd60ea8c78de617d56ec9f2","session-team-child-b1843b3acf914f750e4b1b42288c5398"]
+[2026-09-20T10:28:55.794Z] HOST2: state ready after restart (phase=resume teamSession=mm-smoke-bp-1)
+[2026-09-20T10:28:55.849Z] mock: mock: 8 text reply (40 chars): "MM_ACK_MM_RL_mm-smoke-20260920T10-28-24Z"
+[2026-09-20T10:29:04.385Z] mock: mock: 9 text reply (41 chars): "MM_ACK_MM_RM1_mm-smoke-20260920T10-28-24Z"
+[2026-09-20T10:29:12.475Z] mock: mock: 10 text reply (41 chars): "MM_ACK_MM_RM2_mm-smoke-20260920T10-28-24Z"
+[2026-09-20T10:29:20.515Z] C5 PASS — leader: post-restart effective set === pre-restart set (I5 shape) :: pre={"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":false}} post={"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":false}} shape=i5-servers
+[2026-09-20T10:29:20.515Z] C5 PASS — leader model-facing MCP tools after restart == [A] (durable override survived) :: post-restart leader mcp tools=["mcp__mcp_signal__ping"]
+[2026-09-20T10:29:20.515Z] C5 PASS — member-1: post-restart effective set === pre-restart set (I5 shape) :: pre={"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":false}} post={"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":false}} shape=i5-servers
+[2026-09-20T10:29:20.515Z] C5 PASS — member-2: post-restart effective set === pre-restart set (I5 shape) :: pre={"mcp_signal":{"present":true,"mounted":false,"allowed":false},"mcp_designer":{"present":true,"mounted":true,"allowed":true}} post={"mcp_signal":{"present":true,"mounted":false,"allowed":false},"mcp_designer":{"present":true,"mounted":true,"allowed":true}} shape=i5-servers
+[2026-09-20T10:29:20.515Z] C5: PASS (4/4 checks)
+[2026-09-20T10:29:20.857Z] HOST2-RESUME: stopped (killed=true portFree=true)
+[2026-09-20T10:29:20.858Z] mini MCP A closed
+[2026-09-20T10:29:20.858Z] mini MCP B closed
+[2026-09-20T10:29:20.858Z] mock model closed
+[2026-09-20T10:29:20.860Z] C6 PASS — all run ports released after teardown (host=3181 3491 3492 3496) :: {"host":true,"mcpA":true,"mcpB":true,"mock":true}
+[2026-09-20T10:29:20.860Z] C6: PASS (1/1 checks)
+[2026-09-20T10:29:20.883Z] C7 PASS — test-use worktree porcelain EMPTY after the run :: statusEmpty=true diffEmpty=true head=fb2c4b9e698e30edb738bca4cf0618587db7d203
+[2026-09-20T10:29:20.883Z] C7 PASS — test-use HEAD still at baseline fb2c4b9e698e30edb738bca4cf0618587db7d203 :: pre=fb2c4b9e698e30edb738bca4cf0618587db7d203 post=fb2c4b9e698e30edb738bca4cf0618587db7d203
+[2026-09-20T10:29:20.883Z] C7 PASS — :3080 untouched (read-only probe, status unchanged pre==post) :: pre=401 post=401
+[2026-09-20T10:29:20.883Z] C7: PASS (3/3 checks)
+[2026-09-20T10:29:20.883Z] teardown link restored: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/runtime/node_modules/@deepseek-ai/dsh-agent -> ../../../../node_modules/.pnpm/@deepseek-ai+dsh-agent@0.1.2-rc.1_6f833cf90b9dd3f0d529840b1aebfb48/node_modules/@deepseek-ai/dsh-agent
+[2026-09-20T10:29:20.884Z] teardown link restored: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/runtime/node_modules/@deepseek-ai/dsh-llm -> ../../../../node_modules/.pnpm/@deepseek-ai+dsh-llm@0.1.2-rc.1_@deepseek-ai+cordis@4.0.2/node_modules/@deepseek-ai/dsh-llm
+[2026-09-20T10:29:20.884Z] teardown link restored: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/runtime/node_modules/@deepseek-ai/dsh-mcp-client -> ../../../../node_modules/.pnpm/@deepseek-ai+dsh-mcp-client@0.1.2-rc.1_@deepseek-ai+cordis@4.0.2_@deepseek-ai+dsh-attac_69ead0b2892bfd58c08f0037043f6a92/node_modules/@deepseek-ai/dsh-mcp-client
+[2026-09-20T10:29:20.884Z] teardown link restored: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/runtime/node_modules/@deepseek-ai/dsh-session -> ../../../../node_modules/.pnpm/@deepseek-ai+dsh-session@0.1.2-rc.1_@deepseek-ai+cordis@4.0.2_@deepseek-ai+dsh-scope@0._ee5063a80d448ae764858c08e7528ed1/node_modules/@deepseek-ai/dsh-session
+[2026-09-20T10:29:20.884Z] teardown link restored: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/runtime/node_modules/@deepseek-ai/dsh-storage-domain -> ../../../../node_modules/.pnpm/@deepseek-ai+dsh-storage-domain@0.1.2-rc.1_@deepseek-ai+cordis@4.0.2_@deepseek-ai+dsh-i_9f44d404e0b20c2f6e8599234336f27b/node_modules/@deepseek-ai/dsh-storage-domain
+[2026-09-20T10:29:20.884Z] teardown link restored: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/runtime/node_modules/zod -> ../../../node_modules/.pnpm/zod@4.4.3/node_modules/zod
+[2026-09-20T10:29:20.884Z] teardown rmdir (kit-created, now empty): /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/node_modules/@deepseek-ai
+[2026-09-20T10:29:20.884Z] teardown rmdir (kit-created, now empty): /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/node_modules
+[2026-09-20T10:29:21.002Z] C8 PASS — target-tree packages/* dir set unchanged (no kit-created dir left) :: pre=["client","contracts","domain","legacy","remote","runtime","storage","testkit","tools"] post=["client","contracts","domain","legacy","remote","runtime","storage","testkit","tools"]
+[2026-09-20T10:29:21.002Z] C8 PASS — p4t6 scanner filesScanned unchanged (no junction follow into host tree) :: pre=720 post=720
+[2026-09-20T10:29:21.002Z] C8 PASS — all kit-created link dirs removed :: none
+[2026-09-20T10:29:21.002Z] C8 PASS — pre-existing pnpm junctions restored to original targets :: all 6 restored
+[2026-09-20T10:29:21.002Z] C8: PASS (4/4 checks)
+[2026-09-20T10:29:21.004Z] home deleted: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mm-smoke-20260920T10-28-24Z
+[2026-09-20T10:29:21.005Z] summary -> /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260920T10-28-24Z/summary.json

@@ -1,0 +1,75 @@
+{
+  "task": "mcp-initial-grant real-host smoke (Gate D)",
+  "runStamp": "mgis-2026-09-20T09-41-04",
+  "fatal": "--host-port must be an integer in 3181..3186 (3180/3080 forbidden)",
+  "criteria": [
+    {
+      "id": "Z1",
+      "name": "zero-seed proof: governance.overrides = [] at world boot (before any team.create)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "D1",
+      "name": "team.create v2 (Team-1) succeeds on the fresh root (open Root + admitInitialWork)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "D2",
+      "name": "Team-1 leader FIRST-turn initial work DIRECTLY CALLS MCP (A + B both execute — live pong results), zero overrides in existence",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "D3",
+      "name": "Team-1 state post-create: leader effective MCP set EXACTLY [A,B] (I5 shape) and governance.overrides STILL []",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "D4",
+      "name": "team.create v2 (Team-2) — the MANDATORY second fresh root — succeeds independently of Team-1",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "D5",
+      "name": "Team-2 leader first-turn initial work directly calls MCP (A executes), effective set exactly [A], overrides []",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "D6",
+      "name": "boot-root legacy control: the capabilities-LESS row anchor mounts NOTHING (no mcp tools in schema, nothing mounted in state)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "D7",
+      "name": "post-creation durable tighten (allow [A], instance/leader) beats the initial grant at the next boundary (B unmounted: state + schema double proof)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "D8",
+      "name": "cold resume: initial grant re-derived from the bound Blueprint (Team-2 [A] with zero overrides; Team-1 [A] — the durable tighten survives and still wins)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "H1",
+      "name": "test-use porcelain EMPTY + HEAD baseline; :3080/:3180 zero-touch (read-only probes pre==post)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "H2",
+      "name": "run ports released after teardown (host 3491 3492 3496)",
+      "status": "not-run",
+      "checks": []
+    }
+  ],
+  "pass": false,
+  "exitCode": 1
+}

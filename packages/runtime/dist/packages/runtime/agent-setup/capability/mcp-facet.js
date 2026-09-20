@@ -68,8 +68,14 @@ export function mcpFacetView(policy, serverName, options = {}) {
  *   malformed (fail closed).
  */
 export function resolveDurableMcpFacet(args) {
-    const { rootSessionId, instanceId, overrides, external, serverName, appliedRecordIds } = args;
-    const policy = resolveActivationPolicy({ rootSessionId, instanceId, overrides, external });
+    const { rootSessionId, instanceId, overrides, external, serverName, appliedRecordIds, initialTemplateMcp } = args;
+    const policy = resolveActivationPolicy({
+        rootSessionId,
+        instanceId,
+        overrides,
+        external,
+        ...(initialTemplateMcp !== undefined ? { templateValues: { mcp: initialTemplateMcp } } : {}),
+    });
     const refs = overrides.map((record) => ({
         recordId: record.recordId,
         kind: record.kind,

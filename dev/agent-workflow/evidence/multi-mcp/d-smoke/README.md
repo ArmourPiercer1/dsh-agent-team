@@ -67,13 +67,20 @@ node dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs
    p6t6 观测行）→ 写 `p6t6-directive.json`（boot 1, phase create）→
    boot host（boot 行 + 裸 `GET /` 401 + token→cookie 303）→ 行健康
    （`/__p6t6/health` ok）→ `p6t6StateReady`（root+phase+teamSession）。
-6. **durable seed**：`/team-remote/override.set`（capability mcp,
-   allow [A,B], **scope: team**）——blueprint 的 `capabilities.mcp` 只是静态
-   模板门，**不 seed durable cell**（冻结语义：team cell unspecified =
-   fail-closed 不挂）；没有这条治理记录，world 契约正确但零挂载。
+6. **zero-seed proof**（mcp-blueprint-initial-grant 去 seed，2026-09-20，plan
+   `MCP_BLUEPRINT_INITIAL_GRANT_FIX_PLAN.md` §7）：旧版此步是 team-scope
+   `override.set` durable seed（allow [A,B]）——它同时**掩盖了** initial-grant
+   缺陷（种子记录替静态模板"背锅"）。现改为**断言零 seed**：boot 后任何
+   `governance.overrides` 非空即 throw（违例 = kit 世界被污染），并落盘
+   `zero-seed-proof.json`。挂载自此完全来自 bound Blueprint 模板的
+   `capabilities.mcp`（kind=allow）初始静态授权（provenance
+   `template/static`，无 durable 记录）。record-backed 动态层仍由 **C4**
+   （instance-scope tighten [A,B]→[A]）覆盖——去 seed 后唯一保留的
+   dynamic-governance override 场景。
 7. 成员创建：经 `POST /__p6t6/tool` 执行 shipped `team_create_member`
    （worker-a / worker-b 各一实例；anti-cheat：不 seed）。成员创建时的
-   fresh setup 解析（seed 之后）→ m1 挂 A、m2 挂 B（C2/C3 在创建相即成立）。
+   fresh setup 解析（**无任何 seed**）→ m1 挂 A、m2 挂 B，来源 = 各自 bound
+   模板的 initial grant（C2/C3 在创建相即成立）。
 8. **leader 边界触发**：`POST /__p6t6/tool` 执行 `team_list_members`
    （as = root session）→ `executeTool` → `prepareAgentForRequest(root)` →
    mcp reconcile，挂上 leader 的 [A,B]。根因注记：root **原生 prompt 路径
@@ -83,7 +90,15 @@ node dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs
    tool 执行不产生 model 请求（mock seq 不受影响）。
 9. 判据 C1–C5：每 agent 一次真实 turn（leader 走 `POST /api/session/prompt`，
    member 走 `/team-remote/member.send`）→ mock 捕获 model-facing tools +
-   `GET /__p6t6/state` 快照 → 逐判据断言；C4 = `/team-remote/override.set`
+   `GET /__p6t6/state` 快照 → 逐判据断言。**表面权威 = turn working surface**
+   （`probeAgent` settle 阶段：该 turn 的**最后一个**携带 marker 的 model
+   请求）——fresh-create host 上 session 首个 turn 的首个请求可能带空工具面
+   （runtime-context kick 前的竞态；characterized 2026-09-20，见
+   `mm-smoke-20260920T10-21-37Z/mock-requests-c1.json` 账本与
+   mcp-initial-grant 证据 README finding 4），kick 请求才是该 turn 的完整
+   表面；后续 turn / resume 世界无此竞态。每次 C1/C4/C5 后 dump
+   `mock-requests-c*.json`（每请求 seq/model/toolCount/mcp/team/other 全量
+   工具账本）。C4 = `/team-remote/override.set`
    把 leader 的 durable mcp cell 从 allow[A,B] 收紧到 allow[A]（**scope:
    instance**），随后再发一次 `team_list_members` 边界触发（同上），断言 B
    真消失（state deny-first dispose + model schema 无 B、A 在）；C5 = 同
@@ -169,6 +184,35 @@ base 树（`b49f4239`，B 未合入）不支持 `mcpServers`：行配置中
   **会跑 `prepareAgentForRequest` 的操作**触发（team tool 执行路径），root 原生
   prompt 不跑 team 边界（既有 glue 布线）。
 
+### 去 seed GREEN 形态（已达成）
+
+**最终 GREEN（rebase 后合并构建）：`runs/mm-smoke-20260920T10-44-14Z`**
+@ worktree fix/mcp-blueprint-initial-grant（base = PR #21 merge d63cb71）：
+zero-seed-proof（`governance.overrides = []`）+ C1 **16/16**（I5 state
+`source: {layer: template, origin: static, recordId: null}` + turn working
+surface 双证：leader `[A,B]` / m1 `[A]` / m2 `[B]`）、C2 **3/3**、C3 **4/4**、
+C4 **3/3**（去 seed 后唯一的 dynamic override 场景：instance tighten）、
+C5 **4/4**（restart 后模板重新派生同一有效集）、C6 **1/1**、C7 **3/3**、
+C8 **4/4** → **exit 0，37/37**。rebase 前 GREEN = `runs/mm-smoke-20260920T10-28-24Z`
+（同 37/37，base 9ec0d1f）。
+
+- rebase 弧线（3 run，合并构建复测）：
+  1. `runs/mm-smoke-20260920T10-40-11Z` — C1 14/16 + C3 3/4：finding 4 **双向**
+     化（member-2 的 marker 请求全表面 28 工具 + kick 请求空 0 工具 —— 之前
+     各 run 是 marker 空 + kick 全；每 turn 恰一个全表面，两个槽位任一）。
+  2. `runs/mm-smoke-20260920T10-43-19Z` — kit settle 段 reduce 初值 bug
+     （单元素 carrying → `toolCountOf(undefined)` TypeError）→ 崩溃早退；
+     非产品问题。
+  3. `runs/mm-smoke-20260920T10-44-14Z` — settle 改"turn 内最大工具数请求"
+     （fullest-of-turn）后 **ALL-GREEN 37/37 exit 0**。
+- 诊断弧线（去 seed 后 5 个 pre-rebase run + 3 个 rebase run，顺序即发现顺序）
+  见 `../mcp-initial-grant/README.md` §6；finding 4（fresh-create 首 turn
+  模型请求与行工具装配竞态，**两个请求任一**可空面 → probe 改读 turn working
+  surface = fullest-of-turn）的账本实证 =
+  `runs/mm-smoke-20260920T10-21-37Z/mock-requests-c1.json`（marker 空 + kick 全）
+  + `runs/mm-smoke-20260920T10-40-11Z/mock-requests-c1.json`（member-2 marker
+  全 + kick 空）。
+
 ## 7. 证据文件（每次运行 = `runs/<stamp>/` 一目录）
 
 | 文件 | 内容 |
@@ -181,6 +225,8 @@ base 树（`b49f4239`，B 未合入）不支持 `mcpServers`：行配置中
 | `instances/<label>/instance-port*.log` | host 进程 stdout/stderr（boot 行、remote-mount、setup） |
 | `instances/<label>/dump-config.txt` | 组合后 profile（行挂载证据） |
 | `mini-probes.json` | 两端点 `tools/list` 直连探针（C2 MCP 层直证） |
+| `zero-seed-proof.json` | 去 seed 证明：boot 后 `governance.overrides = []`（plan §7） |
+| `mock-requests-c1/c4/c5.json` | mock 全量工具账本（每请求 seq/model/toolCount/mcpTools/teamTools/otherTools/userTail — model-facing 表面证据） |
 | `state-after-c1.json` / `state-after-c4.json` / `state-after-c5.json` | `/__p6t6/state` 全量快照（I5/legacy 形状原始证据） |
 | `git-pre/` + `git-post/` + `testuse-pre.json` / `testuse-post.json` | test-use pristine 复核（C7） |
 | `port3080-pre.txt` / `port3080-post.txt` | `:3080` 只读探测（C7） |

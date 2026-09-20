@@ -1,0 +1,81 @@
+[2026-09-20T10:43:19.527Z] === Task D multi-mcp real-host smoke kit mm-smoke-20260920T10-43-19Z ===
+[2026-09-20T10:43:19.527Z] targetRepo=/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant
+[2026-09-20T10:43:19.527Z] hostRepoRoot=/home/user/dsh-plugins/dsh-agent-team hostTree=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-09-20T10:43:19.527Z] evidenceDir=/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260920T10-43-19Z keep=false
+[2026-09-20T10:43:19.541Z] :3080 pre: 401
+[2026-09-20T10:43:19.562Z] test-use pre: head=fb2c4b9e698e30edb738bca4cf0618587db7d203 statusEmpty=true diffEmpty=true baseline=fb2c4b9e698e30edb738bca4cf0618587db7d203
+[2026-09-20T10:43:19.564Z] host port selected: 3181
+[2026-09-20T10:43:19.565Z] ports free: host=3181 mcpA=3491 mcpB=3492 mock=3496
+[2026-09-20T10:43:19.565Z] fresh home asserted: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mm-smoke-20260920T10-43-19Z (lock: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mm-smoke-20260920T10-43-19Z.lock)
+[2026-09-20T10:43:19.689Z] target-tree scan pre (C8): mode=scanner packageDirs=9 filesScanned=726
+[2026-09-20T10:43:19.689Z] runtime link FALLBACK: hoist link absent for @deepseek-ai/dsh-agent (workspace package) — using top-level /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/@deepseek-ai/dsh-agent
+[2026-09-20T10:43:19.690Z] runtime link: @deepseek-ai/dsh-agent -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/@deepseek-ai/dsh-agent
+[2026-09-20T10:43:19.690Z] runtime link: @deepseek-ai/dsh-llm -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-llm
+[2026-09-20T10:43:19.690Z] runtime link: @deepseek-ai/dsh-mcp-client -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-mcp-client
+[2026-09-20T10:43:19.691Z] runtime link: @deepseek-ai/dsh-session -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-session
+[2026-09-20T10:43:19.691Z] runtime link: @deepseek-ai/dsh-storage-domain -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-storage-domain
+[2026-09-20T10:43:19.691Z] runtime link: zod -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/zod
+[2026-09-20T10:43:19.691Z] packages link FALLBACK: hoist link absent for @deepseek-ai/dsh-agent (workspace package) — using top-level /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/@deepseek-ai/dsh-agent
+[2026-09-20T10:43:19.691Z] packages link: @deepseek-ai/dsh-agent -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/@deepseek-ai/dsh-agent
+[2026-09-20T10:43:19.691Z] packages link: @deepseek-ai/dsh-llm -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-llm
+[2026-09-20T10:43:19.691Z] packages link: @deepseek-ai/dsh-mcp-client -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-mcp-client
+[2026-09-20T10:43:19.692Z] packages link: @deepseek-ai/dsh-session -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-session
+[2026-09-20T10:43:19.692Z] packages link: @deepseek-ai/dsh-storage-domain -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-storage-domain
+[2026-09-20T10:43:19.692Z] packages link: @deepseek-ai/dsh-scope -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-scope
+[2026-09-20T10:43:19.692Z] packages link: @deepseek-ai/dsh-system-prompt -> /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-system-prompt
+[2026-09-20T10:43:19.692Z] module resolution links wired (runtime + packages level; 13 entries snapshotted for teardown restore)
+[2026-09-20T10:43:19.692Z] building target repo: pnpm build && pnpm build:composition …
+[2026-09-20T10:43:23.896Z] pnpm build ok (log: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260920T10-43-19Z/build.log)
+[2026-09-20T10:43:24.334Z] pnpm build:composition ok (install-surface freshness gate passed)
+[2026-09-20T10:43:24.443Z] dist host import probe ok
+[2026-09-20T10:43:24.448Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-20T10:43:24.448Z] mock DeepSeek endpoint up at 127.0.0.1:3496 (DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to host launches)
+[2026-09-20T10:43:24.461Z] mini MCP A up on 127.0.0.1:3491 (mcp_signal); B up on 127.0.0.1:3492 (mcp_designer)
+[2026-09-20T10:43:24.472Z] mini tools/list: A=["ping"] B=["ping"]
+[2026-09-20T10:43:24.473Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-20T10:43:27.231Z] throwaway boot OK: http://127.0.0.1:3181/?token=gg578DVrK0RBNNUjif91oZh2r3OTkksN5GDq5Q9UlbY
+[2026-09-20T10:43:27.567Z] web profile ensured (throwaway boot if first use)
+[2026-09-20T10:43:27.568Z] HOST1-CREATE: patch (bootPhase=create) + directive (boot=1) written
+[2026-09-20T10:43:30.345Z] HOST1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-20T10:43:30.352Z] HOST1-CREATE: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-20T10:43:31.484Z] HOST1-CREATE: row ready — toolCount=12 liveSessions=["session-mm-smoke-root-mm-smoke-20260920T10-43-19Z"]
+[2026-09-20T10:43:31.489Z] HOST1: state ready (teamSession=mm-smoke-bp-1 rev=1)
+[2026-09-20T10:43:31.491Z] C1 PASS — zero-seed proof: governance.overrides is EMPTY before the initial probes (the initial mounts must come from the Blueprint initial grant, not from any record) :: overrides=[]
+[2026-09-20T10:43:31.491Z] zero-seed proof: governance.overrides = [] (no initial override.set — the Blueprint initial grant is the only source of the mounts)
+[2026-09-20T10:43:31.558Z] member-1: created instanceId=inst-0drzrx01i8sg childSessionId=session-team-child-27c39cfcd4a1af43f3de13dba009904f (template worker-a)
+[2026-09-20T10:43:31.615Z] member-2: created instanceId=inst-059zn1l14iby childSessionId=session-team-child-e6a40cfc57481f508b626c79ec2623de (template worker-b)
+[2026-09-20T10:43:31.620Z] leader boundary trigger: team_list_members executed (status=executed)
+[2026-09-20T10:43:31.684Z] mock: mock: 1 text reply (40 chars): "MM_ACK_MM_L1_mm-smoke-20260920T10-43-19Z"
+[2026-09-20T10:43:31.685Z] mock: mock: 2 text reply (42 chars): "MM_DEFAULT_ACK_mm-smoke-20260920T10-43-19Z"
+[2026-09-20T10:43:32.131Z] sweep: stopping still-live host HOST1-CREATE
+[2026-09-20T10:43:32.482Z] HOST1-CREATE: stopped (killed=true portFree=true)
+[2026-09-20T10:43:32.482Z] mini MCP A closed
+[2026-09-20T10:43:32.483Z] mini MCP B closed
+[2026-09-20T10:43:32.483Z] mock model closed
+[2026-09-20T10:43:32.485Z] C6 PASS — all run ports released after teardown (host=3181 3491 3492 3496) :: {"host":true,"mcpA":true,"mcpB":true,"mock":true}
+[2026-09-20T10:43:32.485Z] C6: PASS (1/1 checks)
+[2026-09-20T10:43:32.509Z] C7 PASS — test-use worktree porcelain EMPTY after the run :: statusEmpty=true diffEmpty=true head=fb2c4b9e698e30edb738bca4cf0618587db7d203
+[2026-09-20T10:43:32.509Z] C7 PASS — test-use HEAD still at baseline fb2c4b9e698e30edb738bca4cf0618587db7d203 :: pre=fb2c4b9e698e30edb738bca4cf0618587db7d203 post=fb2c4b9e698e30edb738bca4cf0618587db7d203
+[2026-09-20T10:43:32.509Z] C7 PASS — :3080 untouched (read-only probe, status unchanged pre==post) :: pre=401 post=401
+[2026-09-20T10:43:32.509Z] C7: PASS (3/3 checks)
+[2026-09-20T10:43:32.509Z] teardown link restored: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/runtime/node_modules/@deepseek-ai/dsh-agent -> ../../../../node_modules/.pnpm/@deepseek-ai+dsh-agent@0.1.2-rc.1_6f833cf90b9dd3f0d529840b1aebfb48/node_modules/@deepseek-ai/dsh-agent
+[2026-09-20T10:43:32.509Z] teardown link restored: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/runtime/node_modules/@deepseek-ai/dsh-llm -> ../../../../node_modules/.pnpm/@deepseek-ai+dsh-llm@0.1.2-rc.1_@deepseek-ai+cordis@4.0.2/node_modules/@deepseek-ai/dsh-llm
+[2026-09-20T10:43:32.509Z] teardown link restored: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/runtime/node_modules/@deepseek-ai/dsh-mcp-client -> ../../../../node_modules/.pnpm/@deepseek-ai+dsh-mcp-client@0.1.2-rc.1_@deepseek-ai+cordis@4.0.2_@deepseek-ai+dsh-attac_69ead0b2892bfd58c08f0037043f6a92/node_modules/@deepseek-ai/dsh-mcp-client
+[2026-09-20T10:43:32.510Z] teardown link restored: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/runtime/node_modules/@deepseek-ai/dsh-session -> ../../../../node_modules/.pnpm/@deepseek-ai+dsh-session@0.1.2-rc.1_@deepseek-ai+cordis@4.0.2_@deepseek-ai+dsh-scope@0._ee5063a80d448ae764858c08e7528ed1/node_modules/@deepseek-ai/dsh-session
+[2026-09-20T10:43:32.510Z] teardown link restored: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/runtime/node_modules/@deepseek-ai/dsh-storage-domain -> ../../../../node_modules/.pnpm/@deepseek-ai+dsh-storage-domain@0.1.2-rc.1_@deepseek-ai+cordis@4.0.2_@deepseek-ai+dsh-i_9f44d404e0b20c2f6e8599234336f27b/node_modules/@deepseek-ai/dsh-storage-domain
+[2026-09-20T10:43:32.510Z] teardown link restored: /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/runtime/node_modules/zod -> ../../../node_modules/.pnpm/zod@4.4.3/node_modules/zod
+[2026-09-20T10:43:32.510Z] teardown rmdir (kit-created, now empty): /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/node_modules/@deepseek-ai
+[2026-09-20T10:43:32.510Z] teardown rmdir (kit-created, now empty): /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/node_modules
+[2026-09-20T10:43:32.626Z] C8 PASS — target-tree packages/* dir set unchanged (no kit-created dir left) :: pre=["client","contracts","domain","legacy","remote","runtime","storage","testkit","tools"] post=["client","contracts","domain","legacy","remote","runtime","storage","testkit","tools"]
+[2026-09-20T10:43:32.626Z] C8 PASS — p4t6 scanner filesScanned unchanged (no junction follow into host tree) :: pre=726 post=726
+[2026-09-20T10:43:32.626Z] C8 PASS — all kit-created link dirs removed :: none
+[2026-09-20T10:43:32.626Z] C8 PASS — pre-existing pnpm junctions restored to original targets :: all 6 restored
+[2026-09-20T10:43:32.626Z] C8: PASS (4/4 checks)
+[2026-09-20T10:43:32.628Z] home deleted: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mm-smoke-20260920T10-43-19Z
+[2026-09-20T10:43:32.628Z] summary -> /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260920T10-43-19Z/summary.json
+[2026-09-20T10:43:32.629Z] FATAL (kit-level, run aborted): TypeError: Cannot read properties of undefined (reading 'body')
+    at toolCountOf (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs:1118:33)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs:1126:65
+    at Array.reduce (<anonymous>)
+    at probeAgent (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs:1126:30)
+    at async main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs:1331:25)

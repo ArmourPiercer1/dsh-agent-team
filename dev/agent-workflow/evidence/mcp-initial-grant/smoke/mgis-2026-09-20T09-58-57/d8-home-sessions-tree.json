@@ -1,0 +1,16 @@
+{
+  "--home-user-dsh-plugins-dsh-agent-team-tests-deepseek-harness-test-use--": {
+    "session-mgis-boot-mgis-2026-09-20T09-58-57": [
+      "session.lock",
+      "session.v3.jsonl.zstd"
+    ],
+    "session-mgis-t1-mgis-2026-09-20T09-58-57": [
+      "session.lock",
+      "session.v3.jsonl.zstd"
+    ],
+    "session-mgis-t2-mgis-2026-09-20T09-58-57": [
+      "session.lock",
+      "session.v3.jsonl.zstd"
+    ]
+  }
+}

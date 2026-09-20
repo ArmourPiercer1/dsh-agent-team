@@ -1196,10 +1196,10 @@ export async function withDshHome(home, fn) {
  * @param {string} [profile] the profile dir name (any non-empty name)
  * @returns {string} the fixture home root (for cleanup).
  */
-export function writeDurableFixture(home, sessionId, profile = 'test-profile') {
+export function writeDurableFixture(home, sessionId, profile = 'test-profile', logFile = 'session.jsonl.zstd') {
   const dir = join(home, 'sessions', profile, sessionId)
   mkdirSync(dir, { recursive: true })
-  writeFileSync(join(dir, 'session.jsonl.zstd'), '', 'utf8')
+  writeFileSync(join(dir, logFile), '', 'utf8')
   return home
 }
 

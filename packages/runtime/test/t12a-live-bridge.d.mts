@@ -629,7 +629,7 @@ export declare function createLiveWorld(options?: LiveWorldOptions): Promise<Liv
 export declare function withDshHome<T>(home: string, fn: () => T | Promise<T>): Promise<T>
 
 /** Write an empty durable-session fixture under a fake DSH_HOME. */
-export declare function writeDurableFixture(home: string, sessionId: string, profile?: string): string
+export declare function writeDurableFixture(home: string, sessionId: string, profile?: string, logFile?: string): string
 
 /** Remove a whole fixture home tree (idempotent). */
 export declare function removeFixtureHome(home: string): void

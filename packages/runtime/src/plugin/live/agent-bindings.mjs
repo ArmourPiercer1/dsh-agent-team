@@ -711,10 +711,19 @@ export function createAgentBindings(deps) {
   }
 
   /**
-   * Whether a session already has FINAL durable artifacts on disk
-   * (`session.jsonl.zstd` under <DSH_HOME>/sessions/<project>/<sessionId>/) —
-   * the cold-resume eligibility check (the write-behind publication is long
-   * settled by the time a restarted boot asks).
+   * Whether a session already has FINAL durable artifacts on disk under
+   * <DSH_HOME>/sessions/<project>/<sessionId>/ — the cold-resume eligibility
+   * check (the write-behind publication is long settled by the time a
+   * restarted boot asks). The canonical log file is ANY generation root the
+   * upstream session-persistence-jsonl backend may hold: `session.jsonl`
+   * (released v0) and `session.vN.jsonl` (released vN), each in the zstd
+   * (`...jsonl.zstd`) or raw encoding — 0.1.5-rc.2 resumes publish VERSIONED
+   * generation roots (e.g. `session.v3.jsonl.zstd`), so the v0 bare name is
+   * NOT the only shape; matching any canonical generation is what makes a
+   * resumed-then-restarted session eligible again (real-host probe,
+   * Gate D run mgis-2026-09-20T09-58-57: all three sessions present on
+   * disk as `session.v3.jsonl.zstd`, the v0-only match returned false for
+   * every one of them).
    * @param {string} sessionId
    * @returns {boolean}
    */
@@ -736,7 +745,7 @@ export function createAgentBindings(deps) {
       } catch {
         continue
       }
-      if (entries.some((e) => e.isFile() && e.name === 'session.jsonl.zstd')) return true
+      if (entries.some((e) => e.isFile() && /^session(\.v\d+)?\.jsonl(\.zstd)?$/.test(e.name))) return true
     }
     return false
   }
@@ -831,14 +840,31 @@ export function createAgentBindings(deps) {
    *   projection).
    * @param {string} [teamRootSid] - the team root the session belongs to
    *   (T12-GLUE; absent = this row's boot root, as before).
+   * @param {string} [templateIdHint] - the fresh-create window template id
+   *   (the MCP initial-grant locate ONLY — the same hint gate as
+   *   locateTemplate: used for the fresh-member window, never elsewhere).
+   * @param {string} [bindPath] - the T1 bind path (gates the
+   *   templateIdHint for the initial-grant locate, exactly like
+   *   locateTemplate's P0-1 rule).
    * @returns {{instanceId: string, modelView: object, mcpViews: Record<string, object>}}
    *   `mcpViews` is the per-configured-server facet views (the multi-mcp C5
    *   generalization of the single T12-H1 mcpView): the EMPTY object when
    *   no MCP server is configured (config.mcpServers = [] / legacy
    *   mcpServer = null): no MCP facet exists, so consumers treat {} as
    *   "no MCP" (never expect an entry).
+   *
+   *   MCP initial static grant (plan MCP_BLUEPRINT_INITIAL_GRANT §4.3):
+   *   EVERY resolution here feeds the bound Blueprint template's
+   *   `capabilities.mcp` (kind === 'allow') into the per-server facet as
+   *   its INITIAL static governance layer — fresh root / fresh member /
+   *   cold root / cold member setup AND every request boundary share this
+   *   ONE derivation (no second grant path, no synthetic durable record).
+   *   A locate failure fails CLOSED to "no initial grant" (the pre-fix
+   *   unspecified baseline): the setup's own locateTemplate call carries
+   *   the typed rejection for a broken identity, and the static template
+   *   filter (filterMcpServers) remains the second mount gate.
    */
-  function resolveConsumptionViews(sessionId, instanceIdHint, teamRootSid) {
+  function resolveConsumptionViews(sessionId, instanceIdHint, teamRootSid, templateIdHint, bindPath) {
     const existing = consumptionState.get(sessionId)
     // T12-GLUE: the consumption cell is keyed by the TEAM ROOT the session
     // belongs to — the handoff target resolves under its own root's durable
@@ -874,6 +900,38 @@ export function createAgentBindings(deps) {
       modelArgs.appliedRecordIds = applied
     }
     const { view: modelView } = consumption.model.resolveDurableModelSelection(modelArgs)
+    // MCP initial static grant (plan MCP_BLUEPRINT_INITIAL_GRANT §4.3):
+    // the bound template's capabilities.mcp (kind === 'allow') is the
+    // role's INITIAL governance grant for the mcp cell — re-derived from
+    // the immutable bound snapshot HERE so fresh setup / cold resume /
+    // every request boundary share one derivation. Only an EXPLICIT allow
+    // enters (a deny / a legacy capabilities-less template / a future
+    // non-allow state contributes nothing — fail-closed or dynamic
+    // governance in Alpha.3+, never auto-converted into a grant). A locate
+    // failure fails closed to "no initial grant" (the pre-fix baseline):
+    // the setup's own locateTemplate call (the typed rejection for a
+    // broken identity) and the static template filter (the second mount
+    // gate) are unchanged.
+    let initialTemplateMcp
+    try {
+      const grantTemplate = locateTemplate(sessionId, instanceId, templateIdHint, teamRootSid, bindPath)
+      const grantCaps = staticCapabilitiesOf(getBoundBlueprint(teamRootSid), grantTemplate)
+      // Only an allow that NAMES at least one server is a grant. An
+      // explicit EMPTY allow is a legal blueprint value (the static
+      // template gate already blocks every mount for it) but NOT a legal
+      // policy value (the frozen resolver rejects empty 'allow' items as
+      // malformed) — it normalizes to "no initial grant" (the cell stays
+      // unspecified and fails closed; the agent never breaks).
+      if (
+        grantCaps.mode === 'selective' &&
+        grantCaps.mcp.kind === 'allow' &&
+        grantCaps.mcp.items.length > 0
+      ) {
+        initialTemplateMcp = grantCaps.mcp
+      }
+    } catch {
+      initialTemplateMcp = undefined
+    }
     // multi-mcp (contract I4; T12-H1 generalized to 0..N): the PER-SERVER
     // views — one resolveDurableMcpFacet call per CONFIGURED server (the
     // resolver is the unchanged C4 policy authority; the serverName
@@ -888,6 +946,7 @@ export function createAgentBindings(deps) {
         external,
         serverName: server.name,
         ...(applied.length > 0 ? { appliedRecordIds: applied } : {}),
+        ...(initialTemplateMcp !== undefined ? { initialTemplateMcp } : {}),
       }).view
     }
     return { instanceId, modelView, mcpViews }
@@ -1252,7 +1311,17 @@ export function createAgentBindings(deps) {
       // resolver's lazy `session.header.cwd` basis below — both consumed
       // through this one value (one Agent, one identity, one cwd basis).
       const runtimeAgent = resolveSetupAgent(agentCtx, setupAgent)
-      const { modelView, mcpViews, instanceId } = resolveConsumptionViews(sessionId, instanceIdHint, teamRootSid)
+      // The initial-grant locate rides the setup's fresh-create window
+      // hints (templateIdHint + bindPath) — the SAME gate locateTemplate
+      // applies below (P0-1: the hint bridges ONLY the fresh-member
+      // window; a cold path missing its durable row fails closed).
+      const { modelView, mcpViews, instanceId } = resolveConsumptionViews(
+        sessionId,
+        instanceIdHint,
+        teamRootSid,
+        templateIdHint,
+        bindPath,
+      )
       // alpha.1 (plan §10): the static template capabilities of this
       // session — the durable identity (row templateId / leader position /
       // fresh-create hint) -> the bound blueprint's per-template declaration.

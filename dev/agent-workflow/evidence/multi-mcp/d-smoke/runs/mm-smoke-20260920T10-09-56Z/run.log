@@ -1,0 +1,14 @@
+[2026-09-20T10:09:56.097Z] === Task D multi-mcp real-host smoke kit mm-smoke-20260920T10-09-56Z ===
+[2026-09-20T10:09:56.097Z] targetRepo=/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant
+[2026-09-20T10:09:56.097Z] hostRepoRoot=/home/user/dsh-plugins/dsh-agent-team hostTree=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-09-20T10:09:56.097Z] evidenceDir=/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260920T10-09-56Z keep=false
+[2026-09-20T10:09:56.111Z] :3080 pre: 401
+[2026-09-20T10:09:56.336Z] test-use pre: head=fb2c4b9e698e30edb738bca4cf0618587db7d203 statusEmpty=true diffEmpty=true baseline=fb2c4b9e698e30edb738bca4cf0618587db7d203
+[2026-09-20T10:09:56.338Z] host port selected: 3181
+[2026-09-20T10:09:56.340Z] ports free: host=3181 mcpA=3491 mcpB=3492 mock=3496
+[2026-09-20T10:09:56.341Z] fresh home asserted: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mm-smoke-20260920T10-09-56Z (lock: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mm-smoke-20260920T10-09-56Z.lock)
+[2026-09-20T10:09:56.544Z] target-tree scan pre (C8): mode=scanner packageDirs=9 filesScanned=720
+[2026-09-20T10:09:56.545Z] FATAL (kit-level, run aborted): Error: host tree pnpm hoist has no link for @deepseek-ai/dsh-agent at /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/node_modules/@deepseek-ai/dsh-agent — cannot wire runtime module links (is the test-use checkout pnpm-installed?)
+    at ensureJunctions (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs:715:13)
+    at main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs:1101:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

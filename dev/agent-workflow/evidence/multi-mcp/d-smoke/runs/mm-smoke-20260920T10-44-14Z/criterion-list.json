@@ -1,0 +1,270 @@
+[
+  {
+    "id": "C1",
+    "name": "zero-seed initial grant per-agent model-facing MCP tools EXACT (I5 state + turn-surface schema double proof): leader A+B / m1 A / m2 B",
+    "status": "run",
+    "checks": [
+      {
+        "name": "zero-seed proof: governance.overrides is EMPTY before the initial probes (the initial mounts must come from the Blueprint initial grant, not from any record)",
+        "ok": true,
+        "detail": "overrides=[]"
+      },
+      {
+        "name": "leader: /__p6t6/state mcp shape is I5 (mcp.servers map)",
+        "ok": true,
+        "detail": "observed shape=i5-servers raw={\"servers\":{\"mcp_signal\":{\"mounted\":true,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null},\"unavailable\":false,\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective allow[mcp_signal,mcp_designer]; team template(origin=static) allow[mcp_signal,mcp_designer]; external exi"
+      },
+      {
+        "name": "leader: state servers.mcp_signal.mounted === true",
+        "ok": true,
+        "detail": "observed={\"present\":true,\"mounted\":true,\"allowed\":true}"
+      },
+      {
+        "name": "leader: state servers.mcp_designer.mounted === true",
+        "ok": true,
+        "detail": "observed={\"present\":true,\"mounted\":true,\"allowed\":true}"
+      },
+      {
+        "name": "leader: model-facing MCP tool set EXACT === [\"mcp__mcp_signal__ping\",\"mcp__mcp_designer__ping\"]",
+        "ok": true,
+        "detail": "observed=[\"mcp__mcp_designer__ping\",\"mcp__mcp_signal__ping\"] (mock req seq=2 [turn working surface = fullest of the turn's 1/2 requests — a fresh-create first-turn request can carry an empty assembly; see header FINDING + mock-requests-c1.json] model=mm-smoke-model)"
+      },
+      {
+        "name": "leader: double proof consistent (state-mounted servers appear in the model schema)",
+        "ok": true,
+        "detail": "state mounted=[\"mcp_signal\",\"mcp_designer\"] schema=[\"mcp__mcp_designer__ping\",\"mcp__mcp_signal__ping\"]"
+      },
+      {
+        "name": "member-1: /__p6t6/state mcp shape is I5 (mcp.servers map)",
+        "ok": true,
+        "detail": "observed shape=i5-servers raw={\"servers\":{\"mcp_signal\":{\"mounted\":true,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null},\"unavailable\":false,\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective allow[mcp_signal]; team template(origin=static) allow[mcp_signal]; external exists=yes, hard=unspecified\""
+      },
+      {
+        "name": "member-1: state servers.mcp_signal.mounted === true",
+        "ok": true,
+        "detail": "observed={\"present\":true,\"mounted\":true,\"allowed\":true}"
+      },
+      {
+        "name": "member-1: state servers.mcp_designer.mounted === false",
+        "ok": true,
+        "detail": "observed={\"present\":true,\"mounted\":false,\"allowed\":false}"
+      },
+      {
+        "name": "member-1: model-facing MCP tool set EXACT === [\"mcp__mcp_signal__ping\"]",
+        "ok": true,
+        "detail": "observed=[\"mcp__mcp_signal__ping\"] (mock req seq=4 [turn working surface = fullest of the turn's 3/4 requests — a fresh-create first-turn request can carry an empty assembly; see header FINDING + mock-requests-c1.json] model=mm-smoke-model)"
+      },
+      {
+        "name": "member-1: double proof consistent (state-mounted servers appear in the model schema)",
+        "ok": true,
+        "detail": "state mounted=[\"mcp_signal\"] schema=[\"mcp__mcp_signal__ping\"]"
+      },
+      {
+        "name": "member-2: /__p6t6/state mcp shape is I5 (mcp.servers map)",
+        "ok": true,
+        "detail": "observed shape=i5-servers raw={\"servers\":{\"mcp_signal\":{\"mounted\":false,\"allowed\":false,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null},\"unavailable\":false,\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective allow[mcp_designer]; team template(origin=static) allow[mcp_designer]; external exists=yes, hard=unspec"
+      },
+      {
+        "name": "member-2: state servers.mcp_signal.mounted === false",
+        "ok": true,
+        "detail": "observed={\"present\":true,\"mounted\":false,\"allowed\":false}"
+      },
+      {
+        "name": "member-2: state servers.mcp_designer.mounted === true",
+        "ok": true,
+        "detail": "observed={\"present\":true,\"mounted\":true,\"allowed\":true}"
+      },
+      {
+        "name": "member-2: model-facing MCP tool set EXACT === [\"mcp__mcp_designer__ping\"]",
+        "ok": true,
+        "detail": "observed=[\"mcp__mcp_designer__ping\"] (mock req seq=6 [turn working surface = fullest of the turn's 5/6 requests — a fresh-create first-turn request can carry an empty assembly; see header FINDING + mock-requests-c1.json] model=mm-smoke-model)"
+      },
+      {
+        "name": "member-2: double proof consistent (state-mounted servers appear in the model schema)",
+        "ok": true,
+        "detail": "state mounted=[\"mcp_designer\"] schema=[\"mcp__mcp_designer__ping\"]"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "id": "C2",
+    "name": "A/B namespaces do not collide (same underlying tool ping; distinct mounted names)",
+    "status": "run",
+    "checks": [
+      {
+        "name": "both mini endpoints expose the SAME underlying tool name \"ping\" (MCP-level)",
+        "ok": true,
+        "detail": "A tools=[\"ping\"] B tools=[\"ping\"]"
+      },
+      {
+        "name": "leader schema carries BOTH mounted names as distinct tools (prefix separation, no collision)",
+        "ok": true,
+        "detail": "leader mcp tools=[\"mcp__mcp_designer__ping\",\"mcp__mcp_signal__ping\"] (seq=2)"
+      },
+      {
+        "name": "no colliding duplicate tool names in the leader schema",
+        "ok": true,
+        "detail": "leader mcp tools=[\"mcp__mcp_designer__ping\",\"mcp__mcp_signal__ping\"]"
+      }
+    ],
+    "miniProbe": {
+      "a": {
+        "initStatus": 200,
+        "tools": [
+          "ping"
+        ]
+      },
+      "b": {
+        "initStatus": 200,
+        "tools": [
+          "ping"
+        ]
+      }
+    },
+    "pass": true
+  },
+  {
+    "id": "C3",
+    "name": "member isolation (m1 sees A only; m2 sees B only)",
+    "status": "run",
+    "checks": [
+      {
+        "name": "member-1 schema: A tool present, B tool ABSENT",
+        "ok": true,
+        "detail": "m1 mcp tools=[\"mcp__mcp_signal__ping\"]"
+      },
+      {
+        "name": "member-2 schema: B tool present, A tool ABSENT",
+        "ok": true,
+        "detail": "m2 mcp tools=[\"mcp__mcp_designer__ping\"]"
+      },
+      {
+        "name": "member-1 state: A mounted, B NOT mounted",
+        "ok": true,
+        "detail": "m1 eff={\"mcp_signal\":{\"present\":true,\"mounted\":true,\"allowed\":true},\"mcp_designer\":{\"present\":true,\"mounted\":false,\"allowed\":false}}"
+      },
+      {
+        "name": "member-2 state: B mounted, A NOT mounted",
+        "ok": true,
+        "detail": "m2 eff={\"mcp_signal\":{\"present\":true,\"mounted\":false,\"allowed\":false},\"mcp_designer\":{\"present\":true,\"mounted\":true,\"allowed\":true}}"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "id": "C4",
+    "name": "durable override tighten (leader [A,B]->[A]) really unmounts B at the next boundary",
+    "status": "run",
+    "checks": [
+      {
+        "name": "durable override tighten admitted (leader mcp allow [A,B] -> [A])",
+        "ok": true,
+        "detail": "record={\"recordId\":\"ovr-mcp-inst-leader-g0\",\"kind\":\"human-override\",\"scope\":\"instance\",\"rootSessionId\":\"session-mm-smoke-root-mm-smoke-20260920T10-44-14Z\",\"values\":{\"mcp\":{\"kind\":\"allow\",\"items\":[\"mcp_signal\"]}},\"generation\":1,\"updatedAt\":\"2026-09-20T10:44:32.113Z\",\"instanceId\":\"inst-leader\"}"
+      },
+      {
+        "name": "after the next boundary, B is NOT mounted in the leader state (deny-first dispose)",
+        "ok": true,
+        "detail": "leader eff post-override={\"mcp_signal\":{\"present\":true,\"mounted\":true,\"allowed\":true},\"mcp_designer\":{\"present\":true,\"mounted\":false,\"allowed\":false}} shape=i5-servers"
+      },
+      {
+        "name": "B tool really GONE from the leader model-facing schema (A still present)",
+        "ok": true,
+        "detail": "leader mcp tools post-override=[\"mcp__mcp_signal__ping\"] (mock req seq=7)"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "id": "C5",
+    "name": "host restart (same home, resume) rebuilds the SAME effective set",
+    "status": "run",
+    "checks": [
+      {
+        "name": "leader: post-restart effective set === pre-restart set (I5 shape)",
+        "ok": true,
+        "detail": "pre={\"mcp_signal\":{\"present\":true,\"mounted\":true,\"allowed\":true},\"mcp_designer\":{\"present\":true,\"mounted\":false,\"allowed\":false}} post={\"mcp_signal\":{\"present\":true,\"mounted\":true,\"allowed\":true},\"mcp_designer\":{\"present\":true,\"mounted\":false,\"allowed\":false}} shape=i5-servers"
+      },
+      {
+        "name": "leader model-facing MCP tools after restart == [A] (durable override survived)",
+        "ok": true,
+        "detail": "post-restart leader mcp tools=[\"mcp__mcp_signal__ping\"]"
+      },
+      {
+        "name": "member-1: post-restart effective set === pre-restart set (I5 shape)",
+        "ok": true,
+        "detail": "pre={\"mcp_signal\":{\"present\":true,\"mounted\":true,\"allowed\":true},\"mcp_designer\":{\"present\":true,\"mounted\":false,\"allowed\":false}} post={\"mcp_signal\":{\"present\":true,\"mounted\":true,\"allowed\":true},\"mcp_designer\":{\"present\":true,\"mounted\":false,\"allowed\":false}} shape=i5-servers"
+      },
+      {
+        "name": "member-2: post-restart effective set === pre-restart set (I5 shape)",
+        "ok": true,
+        "detail": "pre={\"mcp_signal\":{\"present\":true,\"mounted\":false,\"allowed\":false},\"mcp_designer\":{\"present\":true,\"mounted\":true,\"allowed\":true}} post={\"mcp_signal\":{\"present\":true,\"mounted\":false,\"allowed\":false},\"mcp_designer\":{\"present\":true,\"mounted\":true,\"allowed\":true}} shape=i5-servers"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "id": "C6",
+    "name": "teardown releases 3491/3492 (+3496 mock, +host port)",
+    "status": "run",
+    "checks": [
+      {
+        "name": "all run ports released after teardown (host=3181 3491 3492 3496)",
+        "ok": true,
+        "detail": "{\"host\":true,\"mcpA\":true,\"mcpB\":true,\"mock\":true}"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "id": "C7",
+    "name": "test-use porcelain empty + HEAD baseline; :3080 untouched",
+    "status": "run",
+    "checks": [
+      {
+        "name": "test-use worktree porcelain EMPTY after the run",
+        "ok": true,
+        "detail": "statusEmpty=true diffEmpty=true head=fb2c4b9e698e30edb738bca4cf0618587db7d203"
+      },
+      {
+        "name": "test-use HEAD still at baseline fb2c4b9e698e30edb738bca4cf0618587db7d203",
+        "ok": true,
+        "detail": "pre=fb2c4b9e698e30edb738bca4cf0618587db7d203 post=fb2c4b9e698e30edb738bca4cf0618587db7d203"
+      },
+      {
+        "name": ":3080 untouched (read-only probe, status unchanged pre==post)",
+        "ok": true,
+        "detail": "pre=401 post=401"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "id": "C8",
+    "name": "target-tree scan surface unchanged (kit link dirs removed, pnpm junctions restored)",
+    "status": "run",
+    "checks": [
+      {
+        "name": "target-tree packages/* dir set unchanged (no kit-created dir left)",
+        "ok": true,
+        "detail": "pre=[\"client\",\"contracts\",\"domain\",\"legacy\",\"remote\",\"runtime\",\"storage\",\"testkit\",\"tools\"] post=[\"client\",\"contracts\",\"domain\",\"legacy\",\"remote\",\"runtime\",\"storage\",\"testkit\",\"tools\"]"
+      },
+      {
+        "name": "p4t6 scanner filesScanned unchanged (no junction follow into host tree)",
+        "ok": true,
+        "detail": "pre=726 post=726"
+      },
+      {
+        "name": "all kit-created link dirs removed",
+        "ok": true,
+        "detail": "none"
+      },
+      {
+        "name": "pre-existing pnpm junctions restored to original targets",
+        "ok": true,
+        "detail": "all 6 restored"
+      }
+    ],
+    "pass": true
+  }
+]
