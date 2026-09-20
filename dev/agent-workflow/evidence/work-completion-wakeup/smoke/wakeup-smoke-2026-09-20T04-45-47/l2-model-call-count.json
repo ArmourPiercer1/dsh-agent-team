@@ -1,0 +1,4 @@
+{
+  "leaderModelCalls": 8,
+  "note": "leader session requests since scenario start (initial chain + wake/steer steps); the plan records the count, it does not require a single turn"
+}
