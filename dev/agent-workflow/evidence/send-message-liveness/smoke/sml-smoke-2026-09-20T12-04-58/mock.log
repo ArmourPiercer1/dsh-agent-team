@@ -1,0 +1,13 @@
+mock: listening on 127.0.0.1:3496
+mock: 1 text reply (17 chars): "sml smoke session"
+mock: 2 text reply (45 chars): "sml smoke: no scenario marker — nothing to do"
+mock: 3 tool-call reply: team_create_member
+mock: 4 text reply (17 chars): "sml smoke session"
+mock: 5 tool-call reply: team_list_members
+mock: 6 tool-call reply: team_send_message
+mock: 8 text reply (17 chars): "sml smoke session"
+mock: 9 text reply (36 chars): "SMLW_LEADER_DONE_2026-09-20T12-04-58"
+mock: 7 tool-call reply: team_list_members
+mock: 10 tool-call reply: team_send_message
+mock: 11 text reply (37 chars): "SMLW_LEADER2_DONE_2026-09-20T12-04-58"
+mock: 12 text reply (36 chars): "SMLW_MEMBER_DONE_2026-09-20T12-04-58"

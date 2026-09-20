@@ -1,0 +1,72 @@
+{
+  "runStamp": "2026-09-20T12-04-58",
+  "fatal": "postStable is not defined",
+  "criteria": [
+    {
+      "id": "S0",
+      "name": "discovery captured the surface; the 12-tool catalog is present on the boot root",
+      "ok": true,
+      "detail": "surface=17 missingTeam=[]"
+    },
+    {
+      "id": "S1a",
+      "name": "A: the Leader created the worker and its turn ENDED after the send (the leader did not wait for the member work)",
+      "ok": true,
+      "detail": "leaderDone=seq=9 @2026-09-20T12:05:04.399Z"
+    },
+    {
+      "id": "S1b",
+      "name": "A: the member independently processed the message (a new model request carrying the probe body)",
+      "ok": true,
+      "detail": "w1=seq=7 @2026-09-20T12:05:04.383Z"
+    },
+    {
+      "id": "S2",
+      "name": "A: the Leader team_send_message returned status=delivered (the tool result is in the leader chain history, correlated by token)",
+      "ok": true,
+      "detail": "l4=seq=9 @2026-09-20T12:05:04.399Z result={\"status\":\"delivered\",\"rootSessionId\":\"session-sml-smoke-team-2026-09-20T12-04-58\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-1b0u6vv1ot3s\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-1b0u6vv1ot3s\",\"deliveredToSessionId"
+    },
+    {
+      "id": "S3",
+      "name": "C: THE CORE — the sender's send returned while the recipient was still running (tL4 < tW2; the recipient's turn really was long: 8016 ms)",
+      "ok": true,
+      "detail": "tW1=2026-09-20T12:05:04.383Z tL4=2026-09-20T12:05:04.399Z tW2=2026-09-20T12:05:12.399Z gapMs=8016 w1BeforeL4=true"
+    },
+    {
+      "id": "S4",
+      "name": "C: the member turn completed independently (the long turn ran to its own end; nothing waited for it)",
+      "ok": true,
+      "detail": "memberDone=seq=12 @2026-09-20T12:05:12.436Z"
+    },
+    {
+      "id": "S5",
+      "name": "B: the Member team_send_message(Leader) also returned status=delivered (the reverse direction is not blocked)",
+      "ok": true,
+      "detail": "w4=seq=12 @2026-09-20T12:05:12.436Z result={\"status\":\"delivered\",\"rootSessionId\":\"session-sml-smoke-team-2026-09-20T12-04-58\",\"action\":\"send-message\",\"callerRole\":\"member\",\"recipientInstanceId\":\"inst-leader\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-leader\",\"deliveredToSessionId\":\"session-s"
+    },
+    {
+      "id": "S6",
+      "name": "B: the Leader ran a NEW turn on the member reply (no cross-Agent whenIdle cycle; both agents continued their own turns)",
+      "ok": true,
+      "detail": "leaderReply=seq=11 @2026-09-20T12:05:12.423Z"
+    },
+    {
+      "id": "S7",
+      "name": "the SML team.create succeeded on the fresh root",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"smlteam-fflfjsia55\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-sml-smoke-team-2026-09-20T12-04-58\",\"blueprint\":{\"blueprintId\":\"team.sml-smoke\",\"revision\":\"1\",\"contentHash\":\"sha256:8c"
+    },
+    {
+      "id": "S8",
+      "name": "durable: exactly the two team-coordination-recorded intents + the two team-message-delivered confirmations (correlated; confirmation after intent)",
+      "ok": true,
+      "detail": "sml-send-2026-09-20T12-04-58: intents=1 delivered=1 seqIntent=3 seqDelivered=4 | sml-reply-2026-09-20T12-04-58: intents=1 delivered=1 seqIntent=6 seqDelivered=7"
+    },
+    {
+      "id": "S9",
+      "name": "zero-touch: the stable instances :3080/:3180 are untouched (read-only probes identical pre/post)",
+      "ok": true,
+      "detail": "pre={\"a\":401,\"b\":401} post={\"a\":401,\"b\":401}"
+    }
+  ]
+}

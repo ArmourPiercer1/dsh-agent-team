@@ -1,0 +1,5 @@
+{
+  "seq": 9,
+  "receivedAt": "2026-09-20T12:06:12.370Z",
+  "result": "{\"status\":\"delivered\",\"rootSessionId\":\"session-sml-smoke-team-2026-09-20T12-06-07\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-0v5q7jf1ktsn\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-0v5q7jf1ktsn\",\"deliveredToSessionId\":\"session-team-child-1790d3e08f671cfd0bac501babc9212f\",\"factSequence\":3,\"deliveredSequence\":4,\"requestToken\":\"sml-send-2026-09-20T12-06-07\"}"
+}

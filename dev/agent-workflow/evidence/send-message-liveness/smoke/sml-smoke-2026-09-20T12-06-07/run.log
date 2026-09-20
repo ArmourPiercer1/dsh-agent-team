@@ -1,0 +1,38 @@
+[2026-09-20T12:06:07.621Z] send-message liveness smoke — stamp 2026-09-20T12-06-07
+[2026-09-20T12:06:07.621Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/send-message-liveness
+[2026-09-20T12:06:07.621Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-20T12:06:07.621Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/send-message-liveness/dev/agent-workflow/evidence/send-message-liveness/smoke/sml-smoke-2026-09-20T12-06-07
+[2026-09-20T12:06:07.645Z] ports: host=3491 mock=3496
+[2026-09-20T12:06:07.655Z] stable pre-probe: 3080=401 3180=401
+[2026-09-20T12:06:07.656Z] world materialized (scratch workspace)
+[2026-09-20T12:06:07.660Z] mock model listening on 3496
+[2026-09-20T12:06:11.757Z] host booted at http://127.0.0.1:3491; row ready — toolCount=12
+[2026-09-20T12:06:11.757Z] ── S0: discovery ──
+[2026-09-20T12:06:11.801Z] mock-req seq=1 trigger="" toolsAfterTrigger=0
+[2026-09-20T12:06:11.803Z] mock-req seq=2 trigger="" toolsAfterTrigger=0
+[2026-09-20T12:06:12.173Z] discovery surface (17 tools): bash, edit, read, read_image, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, write
+[2026-09-20T12:06:12.174Z] PASS S0: discovery captured the surface; the 12-tool catalog is present on the boot root — surface=17 missingTeam=[]
+[2026-09-20T12:06:12.183Z] saved blueprint team.sml-smoke (deny list: 0 unmanaged names)
+[2026-09-20T12:06:12.183Z] ── SML: team.create (fresh root) — scenarios A/B/C ──
+[2026-09-20T12:06:12.257Z] mock-req seq=3 trigger="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"te" toolsAfterTrigger=0 toolContents=[]
+[2026-09-20T12:06:12.257Z] mock-req seq=4 trigger="[team-root-work requestToken=team-create:initial-work:sha256:381258f7f857b82d271" toolsAfterTrigger=0 toolContents=[]
+[2026-09-20T12:06:12.317Z] mock-req seq=5 trigger="[team-root-work requestToken=team-create:initial-work:sha256:381258f7f857b82d271" toolsAfterTrigger=1 toolContents=["{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-sml-smoke-team-2026-09-20T12-06-07\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0v5q7jf1ktsn\",\"t"]
+[2026-09-20T12:06:12.331Z] mock-req seq=6 trigger="[team-root-work requestToken=team-create:initial-work:sha256:381258f7f857b82d271" toolsAfterTrigger=2 toolContents=["{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-sml-smoke-team-2026-09-20T12-06-07\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0v5q7jf1ktsn\",\"t","{\"status\":\"executed\",\"action\":\"list-members\",\"rootSessionId\":\"session-sml-smoke-team-2026-09-20T12-06-07\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-0v5q7jf"]
+[2026-09-20T12:06:12.359Z] mock-req seq=7 trigger="[team-relay] from=inst-leader (label: leader) to=inst-0v5q7jf1ktsn (label: sml-w" toolsAfterTrigger=0
+[2026-09-20T12:06:12.360Z] mock-req seq=8 trigger="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"te" toolsAfterTrigger=0
+[2026-09-20T12:06:12.370Z] mock-req seq=9 trigger="[team-root-work requestToken=team-create:initial-work:sha256:381258f7f857b82d271" toolsAfterTrigger=3 toolContents=["{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-sml-smoke-team-2026-09-20T12-06-07\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0v5q7jf1ktsn\",\"t","{\"status\":\"executed\",\"action\":\"list-members\",\"rootSessionId\":\"session-sml-smoke-team-2026-09-20T12-06-07\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-0v5q7jf","{\"status\":\"delivered\",\"rootSessionId\":\"session-sml-smoke-team-2026-09-20T12-06-07\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-0v5q7jf1ktsn\",\"deliveryMode\":\"direct\",\"deli"]
+[2026-09-20T12:06:12.582Z] PASS S1a: A: the Leader created the worker and its turn ENDED after the send (the leader did not wait for the member work) — leaderDone=seq=9 @2026-09-20T12:06:12.370Z
+[2026-09-20T12:06:12.582Z] PASS S1b: A: the member independently processed the message (a new model request carrying the probe body) — w1=seq=7 @2026-09-20T12:06:12.359Z
+[2026-09-20T12:06:12.582Z] PASS S2: A: the Leader team_send_message returned status=delivered (the tool result is in the leader chain history, correlated by token) — l4=seq=9 @2026-09-20T12:06:12.370Z result={"status":"delivered","rootSessionId":"session-sml-smoke-team-2026-09-20T12-06-07","action":"send-message","callerRole":"leader","recipientInstanceId":"inst-0v5q7jf1ktsn","deliveryMode":"direct","deliveredToInstanceId":"inst-0v5q7jf1ktsn","deliveredToSessionId
+[2026-09-20T12:06:20.385Z] mock-req seq=10 trigger="[team-relay] from=inst-leader (label: leader) to=inst-0v5q7jf1ktsn (label: sml-w" toolsAfterTrigger=1
+[2026-09-20T12:06:20.410Z] mock-req seq=11 trigger="[team-relay] from=inst-0v5q7jf1ktsn (label: sml-worker) to=inst-leader (label: l" toolsAfterTrigger=0
+[2026-09-20T12:06:20.423Z] mock-req seq=12 trigger="[team-relay] from=inst-leader (label: leader) to=inst-0v5q7jf1ktsn (label: sml-w" toolsAfterTrigger=2
+[2026-09-20T12:06:20.592Z] PASS S3: C: THE CORE — the sender's send returned while the recipient was still running (tL4 < tW2; the recipient's turn really was long: 8026 ms) — tW1=2026-09-20T12:06:12.359Z tL4=2026-09-20T12:06:12.370Z tW2=2026-09-20T12:06:20.385Z gapMs=8026 w1BeforeL4=true
+[2026-09-20T12:06:20.592Z] PASS S4: C: the member turn completed independently (the long turn ran to its own end; nothing waited for it) — memberDone=seq=12 @2026-09-20T12:06:20.423Z
+[2026-09-20T12:06:20.593Z] PASS S5: B: the Member team_send_message(Leader) also returned status=delivered (the reverse direction is not blocked) — w4=seq=12 @2026-09-20T12:06:20.423Z result={"status":"delivered","rootSessionId":"session-sml-smoke-team-2026-09-20T12-06-07","action":"send-message","callerRole":"member","recipientInstanceId":"inst-leader","deliveryMode":"direct","deliveredToInstanceId":"inst-leader","deliveredToSessionId":"session-s
+[2026-09-20T12:06:20.593Z] PASS S6: B: the Leader ran a NEW turn on the member reply (no cross-Agent whenIdle cycle; both agents continued their own turns) — leaderReply=seq=11 @2026-09-20T12:06:20.409Z
+[2026-09-20T12:06:20.593Z] PASS S7: the SML team.create succeeded on the fresh root — status=200 body={"type":"server-response","rpcId":"smlteam-rictqmm05z","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-sml-smoke-team-2026-09-20T12-06-07","blueprint":{"blueprintId":"team.sml-smoke","revision":"1","contentHash":"sha256:62
+[2026-09-20T12:06:20.593Z] PASS S8: durable: exactly the two team-coordination-recorded intents + the two team-message-delivered confirmations (correlated; confirmation after intent) — sml-send-2026-09-20T12-06-07: intents=1 delivered=1 seqIntent=3 seqDelivered=4 | sml-reply-2026-09-20T12-06-07: intents=1 delivered=1 seqIntent=6 seqDelivered=7
+[2026-09-20T12:06:20.600Z] PASS S9: zero-touch: the stable instances :3080/:3180 are untouched (read-only probes identical pre/post) — pre={"a":401,"b":401} post={"a":401,"b":401}
+[2026-09-20T12:06:20.602Z] world cleaned (home + blueprint dir removed)
+[2026-09-20T12:06:20.602Z] VERDICT PASS — 11/11 criteria passed

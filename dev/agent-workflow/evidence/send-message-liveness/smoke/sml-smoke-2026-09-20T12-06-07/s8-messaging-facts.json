@@ -1,0 +1,29 @@
+{
+  "intents": [
+    {
+      "sequence": 3,
+      "requestToken": "sml-send-2026-09-20T12-06-07",
+      "recipientInstanceId": "inst-0v5q7jf1ktsn",
+      "action": "send-message"
+    },
+    {
+      "sequence": 6,
+      "requestToken": "sml-reply-2026-09-20T12-06-07",
+      "recipientInstanceId": "inst-leader",
+      "action": "send-message"
+    }
+  ],
+  "delivered": [
+    {
+      "sequence": 4,
+      "requestToken": "sml-send-2026-09-20T12-06-07",
+      "deliveredToInstanceId": "inst-0v5q7jf1ktsn"
+    },
+    {
+      "sequence": 7,
+      "requestToken": "sml-reply-2026-09-20T12-06-07",
+      "deliveredToInstanceId": "inst-leader"
+    }
+  ],
+  "error": null
+}

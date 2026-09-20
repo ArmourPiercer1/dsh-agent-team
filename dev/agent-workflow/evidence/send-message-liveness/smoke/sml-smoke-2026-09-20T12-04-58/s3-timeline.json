@@ -1,0 +1,11 @@
+{
+  "tW1": "2026-09-20T12:05:04.383Z",
+  "tL4": "2026-09-20T12:05:04.399Z",
+  "tW2": "2026-09-20T12:05:12.399Z",
+  "order": {
+    "w1BeforeL4": true,
+    "l4BeforeW2": true
+  },
+  "longTurnGapMs": 8016,
+  "note": "tL4 < tW2 = the sender tool completed before the recipient turn; tW1 < tL4 = kick-race, recorded not gated"
+}

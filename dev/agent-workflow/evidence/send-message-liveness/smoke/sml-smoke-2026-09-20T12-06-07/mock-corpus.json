@@ -1,0 +1,132 @@
+[
+  {
+    "seq": 1,
+    "receivedAt": "2026-09-20T12:06:11.801Z",
+    "lastUser": "",
+    "toolMsgs": 0,
+    "reply": {
+      "kind": "text",
+      "content": "sml smoke: no scenario marker — nothing to do"
+    }
+  },
+  {
+    "seq": 2,
+    "receivedAt": "2026-09-20T12:06:11.802Z",
+    "lastUser": "",
+    "toolMsgs": 0,
+    "reply": {
+      "kind": "text",
+      "content": "sml smoke session"
+    }
+  },
+  {
+    "seq": 3,
+    "receivedAt": "2026-09-20T12:06:12.257Z",
+    "lastUser": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:381258f7f857b82d27161cd95de523293c61aa1ab342aa7191627a989b190148] SMLK_START_2026-09-20T12-06-07 create one worker member, then send it ONE team_send_mess",
+    "toolMsgs": 0,
+    "reply": {
+      "kind": "text",
+      "content": "sml smoke session"
+    }
+  },
+  {
+    "seq": 4,
+    "receivedAt": "2026-09-20T12:06:12.257Z",
+    "lastUser": "[team-root-work requestToken=team-create:initial-work:sha256:381258f7f857b82d27161cd95de523293c61aa1ab342aa7191627a989b190148] SMLK_START_2026-09-20T12-06-07 create one worker member, then send it ONE team_send_message with a short probe body, and stop — do NOT wait for its work",
+    "toolMsgs": 0,
+    "reply": {
+      "kind": "tool-call",
+      "names": [
+        "team_create_member"
+      ]
+    }
+  },
+  {
+    "seq": 5,
+    "receivedAt": "2026-09-20T12:06:12.317Z",
+    "lastUser": "[team-root-work requestToken=team-create:initial-work:sha256:381258f7f857b82d27161cd95de523293c61aa1ab342aa7191627a989b190148] SMLK_START_2026-09-20T12-06-07 create one worker member, then send it ONE team_send_message with a short probe body, and stop — do NOT wait for its work",
+    "toolMsgs": 1,
+    "reply": {
+      "kind": "tool-call",
+      "names": [
+        "team_list_members"
+      ]
+    }
+  },
+  {
+    "seq": 6,
+    "receivedAt": "2026-09-20T12:06:12.331Z",
+    "lastUser": "[team-root-work requestToken=team-create:initial-work:sha256:381258f7f857b82d27161cd95de523293c61aa1ab342aa7191627a989b190148] SMLK_START_2026-09-20T12-06-07 create one worker member, then send it ONE team_send_message with a short probe body, and stop — do NOT wait for its work",
+    "toolMsgs": 2,
+    "reply": {
+      "kind": "tool-call",
+      "names": [
+        "team_send_message"
+      ]
+    }
+  },
+  {
+    "seq": 7,
+    "receivedAt": "2026-09-20T12:06:12.359Z",
+    "lastUser": "[team-relay] from=inst-leader (label: leader) to=inst-0v5q7jf1ktsn (label: sml-worker)\nSMLK_PAYLOAD_2026-09-20T12-06-07 probe message: do the long turn, then reply to the leader — do not stop the reply until it is sent",
+    "toolMsgs": 0,
+    "reply": {
+      "kind": "tool-call",
+      "names": [
+        "team_list_members"
+      ]
+    }
+  },
+  {
+    "seq": 8,
+    "receivedAt": "2026-09-20T12:06:12.359Z",
+    "lastUser": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-relay] from=inst-leader (label: leader) to=inst-0v5q7jf1ktsn (label: sml-worker)\\nSMLK_PAYLOAD_2026-09-20T12-06-07 probe message: do the long turn, then reply to the leader — do not stop the reply until it is ",
+    "toolMsgs": 0,
+    "reply": {
+      "kind": "text",
+      "content": "sml smoke session"
+    }
+  },
+  {
+    "seq": 9,
+    "receivedAt": "2026-09-20T12:06:12.370Z",
+    "lastUser": "[team-root-work requestToken=team-create:initial-work:sha256:381258f7f857b82d27161cd95de523293c61aa1ab342aa7191627a989b190148] SMLK_START_2026-09-20T12-06-07 create one worker member, then send it ONE team_send_message with a short probe body, and stop — do NOT wait for its work",
+    "toolMsgs": 3,
+    "reply": {
+      "kind": "text",
+      "content": "SMLW_LEADER_DONE_2026-09-20T12-06-07"
+    }
+  },
+  {
+    "seq": 10,
+    "receivedAt": "2026-09-20T12:06:20.385Z",
+    "lastUser": "[team-relay] from=inst-leader (label: leader) to=inst-0v5q7jf1ktsn (label: sml-worker)\nSMLK_PAYLOAD_2026-09-20T12-06-07 probe message: do the long turn, then reply to the leader — do not stop the reply until it is sent",
+    "toolMsgs": 1,
+    "reply": {
+      "kind": "tool-call",
+      "names": [
+        "team_send_message"
+      ]
+    }
+  },
+  {
+    "seq": 11,
+    "receivedAt": "2026-09-20T12:06:20.409Z",
+    "lastUser": "[team-relay] from=inst-0v5q7jf1ktsn (label: sml-worker) to=inst-leader (label: leader)\nSMLK_REPLY_2026-09-20T12-06-07 ack: the long turn is still underway; replying to the leader before it finishes",
+    "toolMsgs": 0,
+    "reply": {
+      "kind": "text",
+      "content": "SMLW_LEADER2_DONE_2026-09-20T12-06-07"
+    }
+  },
+  {
+    "seq": 12,
+    "receivedAt": "2026-09-20T12:06:20.423Z",
+    "lastUser": "[team-relay] from=inst-leader (label: leader) to=inst-0v5q7jf1ktsn (label: sml-worker)\nSMLK_PAYLOAD_2026-09-20T12-06-07 probe message: do the long turn, then reply to the leader — do not stop the reply until it is sent",
+    "toolMsgs": 2,
+    "reply": {
+      "kind": "text",
+      "content": "SMLW_MEMBER_DONE_2026-09-20T12-06-07"
+    }
+  }
+]
