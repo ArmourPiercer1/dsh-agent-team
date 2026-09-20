@@ -64,6 +64,52 @@ import type {
 } from '../admission/index.js'
 import { executeEffect, executeEffectLocked, isWorkChainStage, withTeamLock, asAbortLike } from './effects.js'
 import type { EffectContext, WorkChainStage } from './effects.js'
+import { scanWorkStatus } from './work-execution.js'
+import type { TeamDomainRepositories } from '../../storage/repositories/index.js'
+import type { WorkCompletionNotificationPort } from '../work-completion-notification/index.js'
+
+/**
+ * Work-completion wake-up (plan §8) — the durable terminal observation:
+ * after a DETACHED (`execution: 'async'`) work unit's Phase B/C settles
+ * (fulfilled OR rejected — N3 throw-after-settle makes both land on a
+ * durable read), re-read the durable work status and notify ONLY when
+ * the terminal settlement fact exists.
+ *
+ * The SOLE terminal authority is `entry.settledSequence !== undefined`
+ * (plan §10) — never the promise outcome, never the member lifecycle,
+ * never "a memberResult exists": a unit whose settlement fact did not
+ * commit (a durable write fault) is still `running` here and must NOT
+ * be reported as settled (plan §12), and a fail-closed
+ * `WORK_DELIVERY_FAILED` settlement IS terminal (the fail-closed fact
+ * is durable before the throw — plan §11) and MUST notify.
+ *
+ * This helper never swallows: a scan or notification fault PROPAGATES
+ * to the caller (the router's observer swallows it as a liveness
+ * failure — plan §13).
+ */
+async function notifyAsyncWorkCompletionIfTerminal(args: {
+  readonly repositories: TeamDomainRepositories
+  readonly rootSessionId: string
+  readonly requestToken: string
+  readonly instanceId?: string
+  readonly taskSummary?: string
+  readonly notifier?: WorkCompletionNotificationPort
+}): Promise<void> {
+  const { notifier } = args
+  if (notifier === undefined) return
+  const entry = scanWorkStatus(args.repositories, args.rootSessionId, [args.requestToken])[0]
+  if (entry === undefined || entry.settledSequence === undefined) return
+  await notifier.notifyWorkCompletion({
+    rootSessionId: args.rootSessionId,
+    requestToken: args.requestToken,
+    // The receipt-carried instance id (captured at the async branch —
+    // plan §9) is authoritative; the durable fact is the fallback (the
+    // same value the admission fact records).
+    instanceId: args.instanceId ?? entry.instanceId ?? '',
+    ...(args.taskSummary !== undefined ? { taskSummary: args.taskSummary } : {}),
+    targets: [{ kind: 'leader' }],
+  })
+}
 
 /**
  * Create the TeamRuntime over the injected ports.
@@ -184,14 +230,51 @@ export function createTeamRuntime(
       if (workExecutionModeOf(request) === 'async') {
         const task = staged.complete(undefined)
         inFlightDetachedWork.add(task)
-        void task.then(
-          () => {
-            inFlightDetachedWork.delete(task)
-          },
-          () => {
-            inFlightDetachedWork.delete(task)
-          },
-        )
+        // Work-completion wake-up (plan §7.2): the completion observer runs
+        // on BOTH the fulfillment and the rejection settlement — N3:
+        // `completeWorkChainAfterAdmission` throws `WORK_DELIVERY_FAILED`
+        // AFTER its fail-closed settle, so the detached promise rejects on
+        // a DURABLY SETTLED unit and still must notify. The observer:
+        //   1. removes the task from `inFlightDetachedWork` (unchanged
+        //      Phase B/C observability contract — settlement or fail-closed
+        //      throw);
+        //   2. fires the best-effort completion notification (plan §8):
+        //      re-read the durable work status, notify only when the
+        //      terminal settlement fact exists. The notification promise
+        //      is NEVER added to `inFlightDetachedWork` (plan §7.2 note):
+        //      the set stays Phase B/C only (no new in-flight surface, no
+        //      new lifecycle dependency).
+        // A scan or delivery fault is a liveness failure only (plan §13):
+        // swallowed here — never rethrown, never mutating the settled work,
+        // never retried (the durable fact + `team_collect` are the recovery
+        // paths). Absent port → pure deletion (the pre-wake-up behavior).
+        const receiptEffect = staged.receipt
+        const receiptInstanceId =
+          receiptEffect.kind === 'work-admitted' || receiptEffect.kind === 'member-activated'
+            ? receiptEffect.instanceId
+            : undefined
+        const payloadTaskSummary =
+          typeof request.payload?.['taskSummary'] === 'string'
+            ? request.payload['taskSummary']
+            : undefined
+        const notifier = options.workCompletionNotification
+        const observeCompletion = (): void => {
+          inFlightDetachedWork.delete(task)
+          if (notifier === undefined) return
+          void notifyAsyncWorkCompletionIfTerminal({
+            repositories,
+            rootSessionId,
+            requestToken: request.requestToken,
+            instanceId: receiptInstanceId,
+            taskSummary: payloadTaskSummary,
+            notifier,
+          }).catch(() => {
+            // plan §13: diagnostic-only liveness fault. The router has no
+            // logger dependency (minimal change); the durable settlement
+            // fact + `team_collect` read-back are the recovery paths.
+          })
+        }
+        void task.then(observeCompletion, observeCompletion)
         effect = staged.receipt
       } else {
         effect = await staged.complete(request.signal)

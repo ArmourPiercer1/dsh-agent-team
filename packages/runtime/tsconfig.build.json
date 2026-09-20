@@ -22,6 +22,7 @@
     "operation-permission",
     "projection",
     "root-binding",
+    "work-completion-notification",
     "policy-adapter.ts"
   ]
 }

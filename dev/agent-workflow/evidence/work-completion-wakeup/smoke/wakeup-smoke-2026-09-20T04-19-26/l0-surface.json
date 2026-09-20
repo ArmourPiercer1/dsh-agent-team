@@ -1,0 +1,43 @@
+{
+  "surface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_send_message",
+    "write"
+  ],
+  "discRequest": {
+    "seq": 4,
+    "tools": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_send_message",
+      "write"
+    ]
+  }
+}

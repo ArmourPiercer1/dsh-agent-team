@@ -1,0 +1,489 @@
+[
+  {
+    "seq": 1,
+    "receivedAt": "2026-09-20T04:19:51.631Z",
+    "status": 405,
+    "userTextHead": "",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  },
+  {
+    "seq": 2,
+    "receivedAt": "2026-09-20T04:22:56.237Z",
+    "status": 405,
+    "userTextHead": "",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  },
+  {
+    "seq": 3,
+    "receivedAt": "2026-09-20T04:23:26.750Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"WCMK_DISC_2026-09-20T04-19-26\"}]",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "wcn smoke session"
+    }
+  },
+  {
+    "seq": 4,
+    "receivedAt": "2026-09-20T04:23:26.751Z",
+    "status": 200,
+    "userTextHead": "WCMK_DISC_2026-09-20T04-19-26",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "W_DISC_DONE"
+    }
+  },
+  {
+    "seq": 5,
+    "receivedAt": "2026-09-20T04:23:27.216Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:6dd3c7a9e58a5b8962b7099acbb75bb0875d88d3e8a47f500e99b61ccc91d91c] WCMK_L1_2026-09-20T04-19-26 admit the L1 async probe work on a fresh work",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-wcn-qr1p6krm",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-wcn-smoke-l1-2026-09-20T04-19-26",
+            "requestToken": "wcn-l1-delegate-2026-09-20T04-19-26",
+            "delegationTemplateId": "worker",
+            "label": "w-l1",
+            "prompt": "WCMK_L1MEM_2026-09-20T04-19-26 do the L1 probe work and answer with the result body",
+            "taskSummary": "L1 probe work (async)",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 6,
+    "receivedAt": "2026-09-20T04:23:27.216Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:6dd3c7a9e58a5b8962b7099acbb75bb0875d88d3e8a47f500e99b6",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "wcn smoke session"
+    }
+  },
+  {
+    "seq": 7,
+    "receivedAt": "2026-09-20T04:23:27.324Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:6dd3c7a9e58a5b8962b7099acbb75bb0875d88d3e8a47f500e99b61ccc91d91c] WCMK_L1_2026-09-20T04-19-26 admit the L1 async probe work on a fresh work",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "text",
+      "content": "W_L1_DONE"
+    }
+  },
+  {
+    "seq": 8,
+    "receivedAt": "2026-09-20T04:23:27.327Z",
+    "status": 200,
+    "userTextHead": "[team-work requestToken=wcn-l1-delegate-2026-09-20T04-19-26] WCMK_L1MEM_2026-09-20T04-19-26 do the L1 probe work and answer with the result body",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "WCMK_RESULT_L1_BODY"
+    }
+  },
+  {
+    "seq": 9,
+    "receivedAt": "2026-09-20T04:23:27.331Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=wcn-l1-delegate-2026-09-20T04-19-26] WCMK_L1MEM_2026-09-20T04-19-26 do the L1 probe work an",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "wcn smoke session"
+    }
+  },
+  {
+    "seq": 10,
+    "receivedAt": "2026-09-20T04:23:27.374Z",
+    "status": 200,
+    "userTextHead": "[team-work-settled requestToken=wcn-l1-delegate-2026-09-20T04-19-26]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-1imvwgx0j90b\ntaskSummary: L1 probe work (async)\nrequestToken: wcn-l1-",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-wcn-nvcju0bm",
+          "name": "team_collect",
+          "arguments": {
+            "rootSessionId": "session-wcn-smoke-l1-2026-09-20T04-19-26",
+            "requestToken": "wcn-wake-wcn-l1-delegate-2026-09-20T04-19-26",
+            "requestTokens": [
+              "wcn-l1-delegate-2026-09-20T04-19-26"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 11,
+    "receivedAt": "2026-09-20T04:23:27.392Z",
+    "status": 200,
+    "userTextHead": "[team-work-settled requestToken=wcn-l1-delegate-2026-09-20T04-19-26]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-1imvwgx0j90b\ntaskSummary: L1 probe work (async)\nrequestToken: wcn-l1-",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "text",
+      "content": "W_WAKE_DONE"
+    }
+  },
+  {
+    "seq": 12,
+    "receivedAt": "2026-09-20T04:23:27.590Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:07a39eff878dd502087d28fb869a3c6ff9ac655a429b8303a9130e",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "wcn smoke session"
+    }
+  },
+  {
+    "seq": 13,
+    "receivedAt": "2026-09-20T04:23:27.591Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:07a39eff878dd502087d28fb869a3c6ff9ac655a429b8303a9130e86dce6aa95] WCMK_L2_2026-09-20T04-19-26 admit BOTH L2 async work units on two fresh w",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-wcn-6jhqco2m",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-wcn-smoke-l2-2026-09-20T04-19-26",
+            "requestToken": "wcn-l2a-delegate-2026-09-20T04-19-26",
+            "delegationTemplateId": "worker",
+            "label": "w-l2a",
+            "prompt": "WCMK_L2A_2026-09-20T04-19-26 do the L2-A work",
+            "taskSummary": "L2-A work (async)",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 14,
+    "receivedAt": "2026-09-20T04:23:27.672Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:07a39eff878dd502087d28fb869a3c6ff9ac655a429b8303a9130e86dce6aa95] WCMK_L2_2026-09-20T04-19-26 admit BOTH L2 async work units on two fresh w",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-wcn-apabu7bf",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-wcn-smoke-l2-2026-09-20T04-19-26",
+            "requestToken": "wcn-l2b-delegate-2026-09-20T04-19-26",
+            "delegationTemplateId": "worker",
+            "label": "w-l2b",
+            "prompt": "WCMK_L2B_2026-09-20T04-19-26 do the L2-B work",
+            "taskSummary": "L2-B work (async)",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 15,
+    "receivedAt": "2026-09-20T04:23:27.678Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=wcn-l2a-delegate-2026-09-20T04-19-26] WCMK_L2A_2026-09-20T04-19-26 do the L2-A work\"}]",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "wcn smoke session"
+    }
+  },
+  {
+    "seq": 16,
+    "receivedAt": "2026-09-20T04:23:27.678Z",
+    "status": 200,
+    "userTextHead": "[team-work requestToken=wcn-l2a-delegate-2026-09-20T04-19-26] WCMK_L2A_2026-09-20T04-19-26 do the L2-A work",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "WCMK_RESULT_L2A_BODY"
+    }
+  },
+  {
+    "seq": 17,
+    "receivedAt": "2026-09-20T04:23:27.718Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:07a39eff878dd502087d28fb869a3c6ff9ac655a429b8303a9130e86dce6aa95] WCMK_L2_2026-09-20T04-19-26 admit BOTH L2 async work units on two fresh w",
+    "toolMsgCountAfterLastUser": 2,
+    "reply": {
+      "kind": "text",
+      "content": "W_L2_DONE"
+    }
+  },
+  {
+    "seq": 18,
+    "receivedAt": "2026-09-20T04:23:27.719Z",
+    "status": 200,
+    "userTextHead": "[team-work requestToken=wcn-l2b-delegate-2026-09-20T04-19-26] WCMK_L2B_2026-09-20T04-19-26 do the L2-B work",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "WCMK_RESULT_L2B_BODY"
+    }
+  },
+  {
+    "seq": 19,
+    "receivedAt": "2026-09-20T04:23:27.783Z",
+    "status": 200,
+    "userTextHead": "[team-work-settled requestToken=wcn-l2a-delegate-2026-09-20T04-19-26]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-0uioihc0nfdo\ntaskSummary: L2-A work (async)\nrequestToken: wcn-l2a-de",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-wcn-a9ortfqk",
+          "name": "team_collect",
+          "arguments": {
+            "rootSessionId": "session-wcn-smoke-l2-2026-09-20T04-19-26",
+            "requestToken": "wcn-wake-wcn-l2a-delegate-2026-09-20T04-19-26",
+            "requestTokens": [
+              "wcn-l2a-delegate-2026-09-20T04-19-26"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 20,
+    "receivedAt": "2026-09-20T04:23:27.814Z",
+    "status": 200,
+    "userTextHead": "[team-work-settled requestToken=wcn-l2a-delegate-2026-09-20T04-19-26]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-0uioihc0nfdo\ntaskSummary: L2-A work (async)\nrequestToken: wcn-l2a-de",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "text",
+      "content": "W_WAKE_DONE"
+    }
+  },
+  {
+    "seq": 21,
+    "receivedAt": "2026-09-20T04:23:27.863Z",
+    "status": 200,
+    "userTextHead": "[team-work-settled requestToken=wcn-l2b-delegate-2026-09-20T04-19-26]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-0uioihc0nfdo\ntaskSummary: L2-B work (async)\nrequestToken: wcn-l2b-de",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-wcn-b821a21u",
+          "name": "team_collect",
+          "arguments": {
+            "rootSessionId": "session-wcn-smoke-l2-2026-09-20T04-19-26",
+            "requestToken": "wcn-wake-wcn-l2b-delegate-2026-09-20T04-19-26",
+            "requestTokens": [
+              "wcn-l2b-delegate-2026-09-20T04-19-26"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 22,
+    "receivedAt": "2026-09-20T04:23:27.891Z",
+    "status": 200,
+    "userTextHead": "[team-work-settled requestToken=wcn-l2b-delegate-2026-09-20T04-19-26]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-0uioihc0nfdo\ntaskSummary: L2-B work (async)\nrequestToken: wcn-l2b-de",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "text",
+      "content": "W_WAKE_DONE"
+    }
+  },
+  {
+    "seq": 23,
+    "receivedAt": "2026-09-20T04:23:28.058Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:a46092e8d2927b6debdb259bb55596ed12d99f1cf15846e597a131",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "wcn smoke session"
+    }
+  },
+  {
+    "seq": 24,
+    "receivedAt": "2026-09-20T04:23:28.059Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:a46092e8d2927b6debdb259bb55596ed12d99f1cf15846e597a1310f07d29b94] WCMK_L3_2026-09-20T04-19-26 admit the L3 async work on a fresh worker and",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-wcn-x6v42wwq",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-wcn-smoke-l3-2026-09-20T04-19-26",
+            "requestToken": "wcn-l3-delegate-2026-09-20T04-19-26",
+            "delegationTemplateId": "worker",
+            "label": "w-l3",
+            "prompt": "WCMK_L3MEM_2026-09-20T04-19-26 do the L3 work (it will fail)",
+            "taskSummary": "L3 work (async, expected to fail)",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 25,
+    "receivedAt": "2026-09-20T04:23:28.226Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:a46092e8d2927b6debdb259bb55596ed12d99f1cf15846e597a1310f07d29b94] WCMK_L3_2026-09-20T04-19-26 admit the L3 async work on a fresh worker and",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "text",
+      "content": "W_L3_DONE"
+    }
+  },
+  {
+    "seq": 26,
+    "receivedAt": "2026-09-20T04:23:28.232Z",
+    "status": 400,
+    "userTextHead": "[team-work requestToken=wcn-l3-delegate-2026-09-20T04-19-26] WCMK_L3MEM_2026-09-20T04-19-26 do the L3 work (it will fail)",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "error",
+      "status": 400,
+      "message": "wcn smoke L3: controlled member model failure",
+      "code": "wcn-smoke-l3"
+    }
+  },
+  {
+    "seq": 27,
+    "receivedAt": "2026-09-20T04:23:28.236Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=wcn-l3-delegate-2026-09-20T04-19-26] WCMK_L3MEM_2026-09-20T04-19-26 do the L3 work (it will",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "wcn smoke session"
+    }
+  },
+  {
+    "seq": 28,
+    "receivedAt": "2026-09-20T04:23:28.335Z",
+    "status": 200,
+    "userTextHead": "[team-work-settled requestToken=wcn-l3-delegate-2026-09-20T04-19-26]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-0bsqrx11ukv4\ntaskSummary: L3 work (async, expected to fail)\nrequestTo",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-wcn-ko1efy32",
+          "name": "team_collect",
+          "arguments": {
+            "rootSessionId": "session-wcn-smoke-l3-2026-09-20T04-19-26",
+            "requestToken": "wcn-wake-wcn-l3-delegate-2026-09-20T04-19-26",
+            "requestTokens": [
+              "wcn-l3-delegate-2026-09-20T04-19-26"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 29,
+    "receivedAt": "2026-09-20T04:23:28.362Z",
+    "status": 200,
+    "userTextHead": "[team-work-settled requestToken=wcn-l3-delegate-2026-09-20T04-19-26]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-0bsqrx11ukv4\ntaskSummary: L3 work (async, expected to fail)\nrequestTo",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "text",
+      "content": "W_WAKE_DONE"
+    }
+  },
+  {
+    "seq": 30,
+    "receivedAt": "2026-09-20T04:23:28.865Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:bbd09a08746563a28053cce141a404f5c11c08d1d64f6d5ded76a8",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "wcn smoke session"
+    }
+  },
+  {
+    "seq": 31,
+    "receivedAt": "2026-09-20T04:23:28.865Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:bbd09a08746563a28053cce141a404f5c11c08d1d64f6d5ded76a8f59f4c57d2] WCMK_L4_2026-09-20T04-19-26 delegate the L4 work SYNCHRONOUSLY on a fresh",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-wcn-5qs667q5",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-wcn-smoke-l4-2026-09-20T04-19-26",
+            "requestToken": "wcn-l4-delegate-2026-09-20T04-19-26",
+            "delegationTemplateId": "worker",
+            "label": "w-l4",
+            "prompt": "WCMK_L4MEM_2026-09-20T04-19-26 do the L4 work (sync)",
+            "taskSummary": "L4 work (sync)"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 32,
+    "receivedAt": "2026-09-20T04:23:29.060Z",
+    "status": 200,
+    "userTextHead": "[team-work requestToken=wcn-l4-delegate-2026-09-20T04-19-26] WCMK_L4MEM_2026-09-20T04-19-26 do the L4 work (sync)",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "WCMK_RESULT_L4_BODY"
+    }
+  },
+  {
+    "seq": 33,
+    "receivedAt": "2026-09-20T04:23:29.060Z",
+    "status": 200,
+    "userTextHead": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=wcn-l4-delegate-2026-09-20T04-19-26] WCMK_L4MEM_2026-09-20T04-19-26 do the L4 work (sync)\"}",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "wcn smoke session"
+    }
+  },
+  {
+    "seq": 34,
+    "receivedAt": "2026-09-20T04:23:29.144Z",
+    "status": 200,
+    "userTextHead": "[team-root-work requestToken=team-create:initial-work:sha256:bbd09a08746563a28053cce141a404f5c11c08d1d64f6d5ded76a8f59f4c57d2] WCMK_L4_2026-09-20T04-19-26 delegate the L4 work SYNCHRONOUSLY on a fresh",
+    "toolMsgCountAfterLastUser": 1,
+    "reply": {
+      "kind": "text",
+      "content": "W_L4_DONE"
+    }
+  }
+]

@@ -1,0 +1,33 @@
+mock: listening on 127.0.0.1:3497
+mock: 1 text reply (11 chars): "W_DISC_DONE"
+mock: 2 text reply (17 chars): "wcn smoke session"
+mock: 3 tool-call reply: team_delegate
+mock: 4 text reply (17 chars): "wcn smoke session"
+mock: 5 text reply (9 chars): "W_L1_DONE"
+mock: 6 text reply (19 chars): "WCMK_RESULT_L1_BODY"
+mock: 7 text reply (17 chars): "wcn smoke session"
+mock: 8 tool-call reply: team_collect
+mock: 9 text reply (11 chars): "W_WAKE_DONE"
+mock: 10 text reply (17 chars): "wcn smoke session"
+mock: 11 tool-call reply: team_delegate
+mock: 12 tool-call reply: team_delegate
+mock: 13 text reply (20 chars): "WCMK_RESULT_L2A_BODY"
+mock: 14 text reply (17 chars): "wcn smoke session"
+mock: 15 text reply (20 chars): "WCMK_RESULT_L2B_BODY"
+mock: 16 text reply (9 chars): "W_L2_DONE"
+mock: 17 tool-call reply: team_collect
+mock: 18 text reply (11 chars): "W_WAKE_DONE"
+mock: 19 tool-call reply: team_collect
+mock: 20 text reply (11 chars): "W_WAKE_DONE"
+mock: 21 text reply (17 chars): "wcn smoke session"
+mock: 22 tool-call reply: team_delegate
+mock: 23 text reply (9 chars): "W_L3_DONE"
+mock: 24 text reply (17 chars): "wcn smoke session"
+mock: 25 -> 400 error reply
+mock: 26 tool-call reply: team_collect
+mock: 27 text reply (11 chars): "W_WAKE_DONE"
+mock: 28 text reply (17 chars): "wcn smoke session"
+mock: 29 tool-call reply: team_delegate
+mock: 30 text reply (17 chars): "wcn smoke session"
+mock: 31 text reply (19 chars): "WCMK_RESULT_L4_BODY"
+mock: 32 text reply (9 chars): "W_L4_DONE"

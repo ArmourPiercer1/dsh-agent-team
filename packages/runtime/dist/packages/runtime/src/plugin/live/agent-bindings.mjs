@@ -619,6 +619,19 @@ export function createAgentBindings(deps) {
 
   /** @type {Map<string, object>} live agent handles keyed by session id. */
   const liveAgents = new Map()
+  /**
+   * @type {boolean} the row-stop (close) lifecycle gate — set at the VERY
+   * START of close() (before any snapshot/dispose work) and never cleared.
+   * The closing gate protects ensureLiveAgent and work-completion delivery
+   * from resurrecting / waking a Leader during row teardown:
+   * ensureLiveAgent enforces it at its entry AND after the resume await
+   * (a late-resumed handle is disposed, never set), and the
+   * work-completion wake-up delivery checks it before its async sends.
+   * NOTE (scope): the other liveAgents write paths (boot, childFactory,
+   * createRootAgent) are INDEPENDENT and NOT gated by this state — the
+   * invariant covers the ensureLiveAgent + completion-delivery paths only.
+   */
+  let closing = false
   /** @type {Array<() => void>} tool-registration + model-selection disposers. */
   const toolDisposers = []
   /** @type {number} synthetic callId counter (the driver may omit callIds). */
@@ -1973,6 +1986,12 @@ export function createAgentBindings(deps) {
    * @returns {Promise<object>} the AgentHandle.
    */
   async function ensureLiveAgent(sessionId) {
+    // close lifecycle gate (entry): once close() has announced, no new
+    // live handle may be created/resumed (a completion settling during
+    // teardown must fail, not resurrect an agent behind the close).
+    if (closing) {
+      throw new Error(`agent-bindings: live bindings are closing — no new live handle for session '${sessionId}'`)
+    }
     const existing = liveAgents.get(sessionId)
     if (existing !== undefined) return existing
     if (!sessionIsDurable(sessionId)) {
@@ -1996,6 +2015,22 @@ export function createAgentBindings(deps) {
           teamRoot,
         ),
       })
+      // close lifecycle gate (post-resume re-check): close() may have
+      // started while the resume was in flight. A late-resumed handle
+      // must NEVER join liveAgents — it would outlive the close
+      // snapshot (the row-stop backstop has already passed). Dispose it
+      // best-effort and fail; the durable session stays on disk either
+      // way (the resume is a cold attach, not a migration).
+      if (closing) {
+        try {
+          await handle.dispose()
+        } catch (error) {
+          observations.push(
+            `agent-bindings: resumed agent dispose failed during close for '${sessionId}': ${error instanceof Error ? error.message : String(error)}`,
+          )
+        }
+        throw new Error(`agent-bindings: live bindings began closing while resuming agent for session '${sessionId}'`)
+      }
       liveAgents.set(sessionId, handle)
       return handle
     } finally {
@@ -2542,6 +2577,121 @@ export function createAgentBindings(deps) {
     await deliverRootInput({ rootSessionId: sid, text })
   }
 
+  /**
+   * Work-completion wake-up (async work completion → Leader wakeup) —
+   * deliver ONE best-effort completion notification to the Root (Leader)
+   * Agent as a NEWLY-CREATED model-visible input turn. A DELIBERATELY
+   * SEPARATE primitive from the C1 `deliverRootControlNotification` /
+   * `deliverRootInput` path (plan §15/§16/§19):
+   *
+   *   - the C1/root-input path awaits `whenIdle` + materializes AFTER the
+   *     delivery (its callers — work delivery, Root initial work, the
+   *     control notifier — own the turn's completion as part of their
+   *     own flow);
+   *   - THIS path's success boundary is the followup/steer ACCEPTANCE
+   *     only (plan §16): it does NOT await `whenIdle` and does NOT
+   *     `ensureMaterialized` as a success condition (the inbox splice is
+   *     itself durable — the upstream Agent records the normalized
+   *     pending input in the session log; awaiting the turn here would
+   *     block the observer behind the Leader's whole wake-up turn and
+   *     re-introduce the liveness coupling this mechanism removes).
+   *
+   * Wake-up semantics are the DSH v0.1.5-rc.2 Agent's own (plan §17 —
+   * no Team-side state machine, no extra lock): `status === 'idle'` →
+   * `followup` (starts a new turn; the idle Leader is woken); otherwise
+   * `steer` (joins the current turn at the next step boundary — the
+   * WAKING send: if the turn is retiring/aborted-converging at that
+   * moment, its waking semantics still wake an idle Leader rather than
+   * leaving the notification stranded in the inbox; liveness over the
+   * narrow abort window).
+   *
+   * Stop semantics (frozen for this Alpha): a user Stop terminates the
+   * CURRENT Leader turn. A later asynchronous Team event may legitimately
+   * activate the Leader again — every Team-originated activation carries
+   * a stable model-visible provenance envelope (here: the
+   * `[team-work-settled requestToken=<token>]` leading line; siblings:
+   * `[team-control requestId=<id>]` for approvals, `[team-relay...]` for
+   * member relay) so the Leader can tell WHY it resumed. This version
+   * deliberately does NOT freeze strong/weak Stop-priority.
+   *
+   * The wake is an at-most-once best-effort ATTEMPT (no redelivery, no
+   * ledger, no retry): the durable settlement fact + `team_collect` are
+   * the authority and the recovery path when no wake arrives or it
+   * arrives late.
+   *
+   * NON-AUTHORITY by construction: the glue writes no TeamDomain state
+   * and carries no result — the text is pre-rendered (the
+   * work-completion-notification module's deterministic
+   * `[team-work-settled requestToken=<token>]`-leading metadata) and the
+   * durable settlement fact + `team_collect` stay the authority. A
+   * rejection PROPAGATES to the caller (the router observer swallows it
+   * as a liveness failure — plan §13). close lifecycle: once close()
+   * has announced, this delivery REJECTS at its send boundaries (entry
+   * and post-resume) and never creates/resumes/wakes a Leader behind
+   * the close (the resume path enforces the same gate, entry +
+   * post-resume).
+   * @param {{rootSessionId: string, text: string}} input
+   * @returns {Promise<void>}
+   */
+  async function deliverRootWorkCompletionNotification(input) {
+    const sid = String(input?.rootSessionId ?? '')
+    const text = String(input?.text ?? '')
+    if (sid === '') {
+      throw new Error('agent-bindings: deliverRootWorkCompletionNotification requires a non-empty rootSessionId')
+    }
+    if (text === '') {
+      throw new Error('agent-bindings: deliverRootWorkCompletionNotification requires a non-empty text (the token-leading notification)')
+    }
+    // close lifecycle gate (send boundary, entry): once close() has
+    // started, no new model-visible input may be appended to a Leader
+    // whose teardown is under way. The rejection PROPAGATES (the router
+    // observer swallows it as a best-effort liveness failure) — the
+    // durable settlement fact is untouched either way.
+    if (closing) {
+      throw new Error('agent-bindings: live bindings are closing — work-completion wake dropped (best-effort)')
+    }
+    // A not-live-but-durable Leader is resumed first (the same resolver
+    // every other input path uses; it enforces the closing gate itself,
+    // entry AND post-resume); a session that is neither live nor durable
+    // has no agent to run on (typed throw, below).
+    const handle = await ensureLiveAgent(sid)
+    // The target root IS the team root of its own team — the request
+    // boundary resolves under that root's durable truth (same rule as
+    // the shared deliverRootInput).
+    await prepareAgentForRequest(sid, sid)
+    // close lifecycle gate (send boundary, post-await): ensureLiveAgent
+    // and prepareAgentForRequest each cross an async boundary; if close()
+    // began in that window the send is dropped (the handle itself is the
+    // glue's concern — ensureLiveAgent already guards its lifecycle).
+    if (closing) {
+      throw new Error('agent-bindings: live bindings began closing before the work-completion wake — dropped (best-effort)')
+    }
+    // Plugin-attributed user-visible input (the upstream MessageSource
+    // plugin kind — distinct from the `kind: 'user'` human-input
+    // attribution the delegate work path uses: this turn is a runtime
+    // event, not a human message).
+    const message = createUserMessage({
+      content: [{ type: 'text', text }],
+      source: { kind: 'plugin', plugin: 'dsh-agent-team' },
+    })
+    // DSH v0.1.5-rc.2 Agent semantics (plan §17): idle Leader →
+    // `followup` (a NEW turn — the idle Leader is woken); busy Leader →
+    // `steer` (the WAKING next-step send — `send(input, 'next-step',
+    // true)`; if the turn is retiring at that moment it still wakes an
+    // idle Leader rather than leaving the notification stranded in the
+    // inbox — liveness over the narrow abort window; this version does
+    // NOT freeze strong Stop-priority, and the leading
+    // `[team-work-settled requestToken=...]` envelope tells the Leader
+    // why it was activated).
+    if (handle.agent.status === 'idle') {
+      handle.agent.followup(message)
+    } else {
+      handle.agent.steer(message)
+    }
+    // Success boundary = acceptance (plan §16): NO whenIdle, NO
+    // ensureMaterialized. The turn (if any) runs on its own.
+  }
+
   // The P7-T3 lifecycle bindings over the REAL production surfaces: close-
   // admission stays with the production row (no separate in-process
   // admission gate — the router's per-team lock serializes the whole
@@ -3010,6 +3160,13 @@ export function createAgentBindings(deps) {
    * @returns {Promise<void>}
    */
   async function close() {
+    // close lifecycle gate: mark closing BEFORE any snapshot/dispose
+    // work — from this microtask on, ensureLiveAgent refuses new
+    // handles (entry) and disposes late resumes (post-resume re-check),
+    // and the completion wake-up delivery refuses to send. Idempotent:
+    // a second call is a no-op (the maps are already drained).
+    if (closing) return
+    closing = true
     for (const [sid, handle] of [...liveAgents]) {
       liveAgents.delete(sid)
       try {
@@ -3099,5 +3256,12 @@ export function createAgentBindings(deps) {
     // team_resolve_control stay the authority; a delivery failure is a
     // liveness failure only, never a request-path failure)
     deliverRootControlNotification,
+    // additive (work-completion wake-up): the async work-completion
+    // notification delivery to the Leader root (idle → followup /
+    // running → steer; success boundary = acceptance; non-authority —
+    // the durable settlement fact + team_collect stay the authority; a
+    // delivery failure is a liveness failure only, swallowed by the
+    // router's completion observer)
+    deliverRootWorkCompletionNotification,
   }
 }

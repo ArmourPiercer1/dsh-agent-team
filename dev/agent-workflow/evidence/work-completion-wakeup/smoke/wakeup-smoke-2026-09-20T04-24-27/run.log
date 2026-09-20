@@ -1,0 +1,5 @@
+[2026-09-20T04:24:27.663Z] work-completion wake-up real-host smoke — stamp 2026-09-20T04-24-27
+[2026-09-20T04:24:27.664Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/work-completion-wakeup
+[2026-09-20T04:24:27.664Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-20T04:24:27.664Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/work-completion-wakeup/dev/agent-workflow/evidence/work-completion-wakeup/smoke/wakeup-smoke-2026-09-20T04-24-27
+[2026-09-20T04:24:27.697Z] FATAL mock port 3496 busy

@@ -1,0 +1,16 @@
+[2026-09-20T04:11:02.061Z] work-completion wake-up real-host smoke — stamp 2026-09-20T04-11-02
+[2026-09-20T04:11:02.061Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/work-completion-wakeup
+[2026-09-20T04:11:02.061Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-20T04:11:02.061Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/work-completion-wakeup/dev/agent-workflow/evidence/work-completion-wakeup/smoke/wakeup-smoke-2026-09-20T04-11-02
+[2026-09-20T04:11:02.084Z] ports: host=3491 mock=3496
+[2026-09-20T04:11:02.096Z] stable pre-probe: 3080=401 3180=401
+[2026-09-20T04:11:02.097Z] world materialized (scratch workspace)
+[2026-09-20T04:11:02.103Z] mock model listening on 3496
+[2026-09-20T04:11:06.789Z] host booted at http://127.0.0.1:3491; row ready — toolCount=12
+[2026-09-20T04:11:06.789Z] ── L0: discovery ──
+[2026-09-20T04:11:07.208Z] discovery surface (17 tools): bash, edit, read, read_image, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, write
+[2026-09-20T04:11:07.208Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool catalog is present on the boot root — surface=17 missingTeam=[]
+[2026-09-20T04:11:07.209Z] saved blueprints L1–L4 written (deny list = 0 names)
+[2026-09-20T04:11:07.209Z] ── L1: single async completion wakes the idle Leader ──
+[2026-09-20T04:16:07.600Z] mock wait timed out: L1 leader chain final (requests=3)
+[2026-09-20T04:16:07.601Z] FAIL L1a: L1: the Leader admitted the async delegate and its turn ENDED (Leader now idle; no user input after) — l1Done=null requests=3

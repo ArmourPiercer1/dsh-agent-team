@@ -576,6 +576,13 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
  * @param {object} [options]
  * @param {(agent: object) => Promise<void>} [options.whenIdleBehavior]
  *   the per-agent whenIdle() behavior (default: resolves immediately).
+ * @param {(req: object) => Promise<void>} [options.resumeGate]
+ *   work-completion wake-up (teardown gate regression, G8): a per-resume
+ *   SUSPENSION point — awaited (after the resume request is recorded,
+ *   before the handle is built) so a test can interleave `close()` while
+ *   an `agents.resume()` is in flight (the real handle can outlive the
+ *   close snapshot only if the glue never re-checks its lifecycle).
+ *   Absent = resume settles immediately (the pre-G8 double behavior).
  * @param {Array<{name: string, order: number, text: string}>} [options.systemPromptGlobals]
  *   the world's global prompt layer for every agent ctx (T12-M2; default:
  *   the DSH service pair harness:identity + a global deployment:persona).
@@ -620,9 +627,14 @@ export function createAgentsDouble(options = {}) {
   const resumes = []
   const disposals = []
   const followups = []
+  const steers = []
+  const injects = []
   const cancels = []
   const handles = new Map()
   const whenIdleBehavior = options.whenIdleBehavior ?? (() => Promise.resolve())
+  // work-completion wake-up (G8): the per-resume suspension point (absent =
+  // resume settles immediately, the pre-G8 double behavior).
+  const resumeGate = options.resumeGate
   // multi-mcp (Task C): the per-server activation behavior tables (shared
   // by every agent ctx; absent = the pre-multi-mcp double behavior).
   const mcpFailures = options.mcpFailures
@@ -660,8 +672,26 @@ export function createAgentsDouble(options = {}) {
       // constructor order: `this.scope = createScope(loopCtx, this);
       // this.ctx = this.scope.ctx.extend({ agent: this })`).
       ctx: undefined,
+      // Work-completion wake-up: the real Agent's `status` is a getter
+      // over its phase ('idle' | 'running'); the double models it as a
+      // plain MUTABLE property (default 'idle' — a freshly created or
+      // resumed agent has no in-flight turn), so a test can pin the
+      // busy/idle observation the wake-up primitive branches on.
+      status: 'idle',
       followup(message) {
         followups.push({ sessionId, message })
+      },
+      steer(message) {
+        steers.push({ sessionId, message })
+      },
+      // The DSH rc.2 Agent's `inject` — the NON-WAKING next-step send
+      // (`send(input, 'next-step', false)` in agent-loop agent.ts @
+      // fb2c4b9e69, vs `steer`'s `send(input, 'next-step', true)`),
+      // modeled for faithful recording. The work-completion wake's glue
+      // must pick followup (idle) or steer (busy) — inject stays
+      // untouched by the glue (pinned to 0 by the glue suite).
+      inject(message) {
+        injects.push({ sessionId, message })
       },
       whenIdle() {
         return whenIdleBehavior(agent)
@@ -731,6 +761,8 @@ export function createAgentsDouble(options = {}) {
     resumes,
     disposals,
     followups,
+    steers,
+    injects,
     cancels,
     handles,
     globalSections,
@@ -742,6 +774,9 @@ export function createAgentsDouble(options = {}) {
     async resume(req) {
       const sessionId = String(req.resumeSessionId)
       resumes.push({ sessionId, setupProvided: req.setup !== undefined })
+      // G8: suspend AFTER the request is recorded so a test can observe
+      // the in-flight resume and interleave close() before it settles.
+      if (resumeGate !== undefined) await resumeGate(req)
       return makeHandle(sessionId, req)
     },
   }
@@ -1121,6 +1156,8 @@ export async function createLiveWorld(options = {}) {
       resumes: agents.resumes,
       disposals: agents.disposals,
       followups: agents.followups,
+      steers: agents.steers,
+      injects: agents.injects,
       cancels: agents.cancels,
       materialized: sessionPersistence.materialized,
     },

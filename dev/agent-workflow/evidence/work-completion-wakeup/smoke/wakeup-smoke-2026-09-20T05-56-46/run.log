@@ -1,0 +1,51 @@
+[2026-09-20T05:56:46.916Z] work-completion wake-up real-host smoke — stamp 2026-09-20T05-56-46
+[2026-09-20T05:56:46.916Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/work-completion-wakeup
+[2026-09-20T05:56:46.916Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-20T05:56:46.916Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/work-completion-wakeup/dev/agent-workflow/evidence/work-completion-wakeup/smoke/wakeup-smoke-2026-09-20T05-56-46
+[2026-09-20T05:56:47.101Z] ports: host=3494 mock=3499
+[2026-09-20T05:56:47.112Z] stable pre-probe: 3080=401 3180=401
+[2026-09-20T05:56:47.113Z] world materialized (scratch workspace)
+[2026-09-20T05:56:47.119Z] mock model listening on 3499
+[2026-09-20T05:56:51.771Z] host booted at http://127.0.0.1:3494; row ready — toolCount=12
+[2026-09-20T05:56:51.771Z] ── L0: discovery ──
+[2026-09-20T05:56:52.187Z] discovery surface (17 tools): bash, edit, read, read_image, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, write
+[2026-09-20T05:56:52.187Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool catalog is present on the boot root — surface=17 missingTeam=[]
+[2026-09-20T05:56:52.199Z] saved blueprints L1–L4 written + identity-inspected OK (deny list = 0 names)
+[2026-09-20T05:56:52.199Z] ── L1: single async completion wakes the idle Leader ──
+[2026-09-20T05:56:52.601Z] PASS L1a: L1: the Leader admitted the async delegate and its turn ENDED (Leader now idle; no user input after) — l1Done=5 requests=9
+[2026-09-20T05:56:52.601Z] PASS L1b: L1: the idle Leader was automatically woken (token-leading text: the machine token + the team_collect guidance + the token field) — text=[team-work-settled requestToken=wcn-l1-delegate-2026-09-20T05-56-46]
+
+An asynchronous Team work unit has settled.
+instanceId: inst-07ysxch1xhdr
+taskSummary: L1 probe work (async)
+requestToken: wcn-l1-delegate-2026-09-20T05-56-46
+
+Use team_collect with this requestToken to read the durable result.
+[2026-09-20T05:56:52.602Z] PASS L1c: L1: team_collect served the member DURABLE result (the exact body, status succeeded) — result={"status":"executed","action":"work-status","rootSessionId":"session-wcn-smoke-l1-2026-09-20T05-56-46","callerRole":"leader","effect":{"kind":"work-status","entries":[{"requestToken":"wcn-l1-delegate-2026-09-20T05-56-46","status":"succeeded","instanceId":"inst-07ysxch1xhdr","admittedSequence":3,"settledSequence":7,"memberResult":{"body":"WCMK_RESULT_L1_BODY","requestToken":"wcn-l1-delegate-2026-09
+[2026-09-20T05:56:52.602Z] PASS L1d: L1: the wake turn completed (the Leader consumed the notification and finished) — requests=9
+[2026-09-20T05:56:52.602Z] PASS L1e: L1: team.create (L1) succeeded on the fresh root — status=200 body={"type":"server-response","rpcId":"wcnl1-5e3qqduxnp","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-wcn-smoke-l1-2026-09-20T05-56-46","blueprint":{"blueprintId":"team.wcn-l1","revision":"1","contentHash":"sha256:e1bcac42b
+[2026-09-20T05:56:52.602Z] PASS L1f: L1: the durable settlement fact exists (member-lifecycle-changed to=SETTLED, the terminal authority the observer re-read) — settlement={"sequence":7,"requestToken":"wcn-l1-delegate-2026-09-20T05-56-46","instanceId":"inst-07ysxch1xhdr","workOutcome":"settled","memberResult":{"body":"WCMK_RESULT_L1_BODY","requestToken":"wcn-l1-delegate-2026-09-20T05-56-46","status":"succeeded"}}
+[2026-09-20T05:56:52.602Z] ── L2: two async members (staggered) ──
+[2026-09-20T05:56:53.003Z] PASS L2a: L2: the Leader admitted TWO async delegates in one turn and its turn ended — l2Done=16
+[2026-09-20T05:56:53.003Z] PASS L2b: L2: the FIRST (A) completion woke the Leader (token-leading model request, no user input) — requests=20
+[2026-09-20T05:56:53.003Z] PASS L2c: L2: the SECOND (B) completion reached the Leader WITHOUT manual user input (steer, fresh followup, or merged wake request) — requests=20
+[2026-09-20T05:56:53.004Z] PASS L2d: L2: both tokens were team_collect-ed with the durable results (both bodies, both succeeded) — A={"status":"executed","action":"work-status","rootSessionId":"session-wcn-smoke-l2-2026-09-20T05-56-46","callerRole":"leader","effect":{"kind":"work-status","entries":[{"requestToken":"wcn-l2a-delegate B={"status":"executed","action":"work-status","rootSessionId":"session-wcn-smoke-l2-2026-09-20T05-56-46","callerRole":"leader","effect":{"kind":"work-status","entries":[{"requestToken":"wcn-l2b-delegate
+[2026-09-20T05:56:53.004Z] PASS L2e: L2: team.create (L2) succeeded — status=200 body={"type":"server-response","rpcId":"wcnl2-atdd9tzv2n","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-wcn-smoke-l2-2026-09-20T05-56-46","blueprint":{"blueprintId":"team.wcn-l2","revision":"1","contentHash":"sha256:2bf14442f
+[2026-09-20T05:56:53.004Z] L2 characterization: leader model-call count = 8
+[2026-09-20T05:56:53.004Z] PASS L2f: L2: both durable settlement facts exist (the terminal authority for each token) — A={"sequence":15,"requestToken":"wcn-l2a-delegate-2026-09-20T05-56-46","instanceId":"inst-057ah880tvxl","workOutcome":"settled","memberResult":{"body":"WCMK_RESULT_L2A_BODY","requestToken":"wcn-l2a-dele B={"sequence":18,"requestToken":"wcn-l2b-delegate-2026-09-20T05-56-46","instanceId":"inst-057ah880tvxl","workOutcome":"settled","memberResult":{"body":"WCMK_RESULT_L2B_BODY","requestToken":"wcn-l2b-dele
+[2026-09-20T05:56:53.004Z] ── L3: failed member completion wakes ──
+[2026-09-20T05:56:53.406Z] PASS L3a: L3: the Leader admitted the (failing) async delegate and its turn ended — l3Done=23
+[2026-09-20T05:56:53.406Z] PASS L3b: L3: a failed member completion still wakes the Leader (the token-leading notification arrived) — wake=26
+[2026-09-20T05:56:53.407Z] PASS L3c: L3: team_collect reported the FAILED/UNAVAILABLE result (no fake success — the fail-closed fact is served) — result={"status":"executed","action":"work-status","rootSessionId":"session-wcn-smoke-l3-2026-09-20T05-56-46","callerRole":"leader","effect":{"kind":"work-status","entries":[{"requestToken":"wcn-l3-delegate-2026-09-20T05-56-46","status":"failed","instanceId":"inst-0karesp1904g","admittedSequence":21,"settledSequence":25,"memberResult":{"error":{"code":"INVALID_REQUEST","message":"wcn smoke L3: controlled
+[2026-09-20T05:56:53.407Z] PASS L3d: L3: the wake turn completed — requests=27
+[2026-09-20T05:56:53.407Z] PASS L3e: L3: team.create (L3) succeeded — status=200 body={"type":"server-response","rpcId":"wcnl3-82cltyrpaf","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-wcn-smoke-l3-2026-09-20T05-56-46","blueprint":{"blueprintId":"team.wcn-l3","revision":"1","contentHash":"sha256:9c3fc115e
+[2026-09-20T05:56:53.407Z] PASS L3f: L3: the durable terminal settlement fact exists and carries the FAILURE (persisted failed member result, or the fail-closed delivery-failed outcome — both are terminal facts the observer read) — settlement={"sequence":25,"requestToken":"wcn-l3-delegate-2026-09-20T05-56-46","instanceId":"inst-0karesp1904g","workOutcome":"settled","memberResult":{"error":{"code":"INVALID_REQUEST","message":"wcn smoke L3: controlled member model failure"},"requestToken":"wcn-l3-delegate-2026-09-20T05-56-46","status":"failed"}}
+[2026-09-20T05:56:53.407Z] ── L4: sync regression (in-band result, no notification) ──
+[2026-09-20T05:56:53.593Z] PASS L4a: L4: the sync delegate tool result CARRIES the member result in-band (the exact body, status succeeded) — result={"status":"executed","action":"delegate","rootSessionId":"session-wcn-smoke-l4-2026-09-20T05-56-46","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-13w84vr0w9ug","templateId":"worker","childSessionId":"session-team-child-f9540f668cc97881d399d25ff50a0000","operationId":"op-1hdzbuf1bsr0by0j0idnp1tm","replayed":false,"ledgerSequence":27,"admissionCode":"ADMISSION_OPEN","w
+[2026-09-20T05:56:53.593Z] PASS L4b: L4: team.create (L4) succeeded — status=200 body={"type":"server-response","rpcId":"wcnl4-z4uys7kgsf","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-wcn-smoke-l4-2026-09-20T05-56-46","blueprint":{"blueprintId":"team.wcn-l4","revision":"1","contentHash":"sha256:af6d51a48
+[2026-09-20T05:56:58.595Z] PASS L4c: L4: NO separate completion notification turn exists for the sync token (the tool result IS the completion channel) — l4Notif=absent (correct)
+[2026-09-20T05:56:58.595Z] PASS L4d: L4: the sync settlement fact is durable (unchanged sync path) — settlement={"sequence":31,"requestToken":"wcn-l4-delegate-2026-09-20T05-56-46","instanceId":"inst-13w84vr0w9ug","workOutcome":"settled","memberResult":{"body":"WCMK_RESULT_L4_BODY","requestToken":"wcn-l4-delegate-2026-09-20T05-56-46","status":"succeeded"}}
+[2026-09-20T05:56:58.595Z] L4 requests since scenario start: 5
+[2026-09-20T05:56:58.595Z] teardown: stopping host + mock
+[2026-09-20T05:56:58.604Z] world removed (/home/user/dsh-plugins/dsh-agent-team/.worktrees/work-completion-wakeup/tests/homes/wcn-smoke-2026-09-20T05-56-46)
+[2026-09-20T05:56:58.604Z] VERDICT PASS — 23/23 criteria passed

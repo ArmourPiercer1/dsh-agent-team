@@ -37,6 +37,21 @@ export interface RecordedCancel {
   readonly args: unknown
 }
 
+/** One recorded steer message (the session id + the LLM message). */
+export interface RecordedSteer {
+  readonly sessionId: string
+  readonly message: unknown
+}
+
+/** One recorded inject message (the session id + the LLM message) —
+ *  the DSH rc.2 Agent's NON-WAKING next-step send (`send(input,
+ *  'next-step', false)`), modeled for faithful recording; the
+ *  work-completion glue must never call it (the glue suite pins it to 0). */
+export interface RecordedInject {
+  readonly sessionId: string
+  readonly message: unknown
+}
+
 /** One active listener registration on the agent ctx double. */
 export interface AgentListenerEntry {
   readonly event: string
@@ -190,7 +205,18 @@ export interface LiveAgentHandle {
      *  reads it at RESOLVE time, never captured at install). */
     readonly session: { readonly id: string; header: { cwd?: string } }
     readonly ctx: AgentCtxDouble
+    /** Work-completion wake-up: the real Agent's `status` getter
+     *  ('idle' | 'running') modeled as a MUTABLE plain property (default
+     *  'idle') so a test can pin the busy/idle observation. */
+    status: 'idle' | 'running'
     followup(message: unknown): void
+    steer(message: unknown): void
+    /** The DSH rc.2 Agent's `inject` — the NON-WAKING next-step send
+     *  (`send(input, 'next-step', false)` in agent.ts @ fb2c4b9e69, vs
+     *  `steer`'s `send(input, 'next-step', true)`), modeled for faithful
+     *  recording; the work-completion glue must never call it (the glue
+     *  suite pins injects to 0). */
+    inject(message: unknown): void
     whenIdle(): Promise<void>
     cancel(args?: unknown): void
   }
@@ -203,6 +229,8 @@ export interface AgentsDouble {
   readonly resumes: RecordedResume[]
   readonly disposals: string[]
   readonly followups: RecordedFollowup[]
+  readonly steers: RecordedSteer[]
+  readonly injects: RecordedInject[]
   readonly cancels: RecordedCancel[]
   readonly handles: Map<string, LiveAgentHandle>
   /** The world's shared global prompt layer (T12-M2). */
@@ -215,6 +243,11 @@ export interface AgentsDouble {
 export interface AgentsDoubleOptions {
   /** The per-agent whenIdle() behavior (default: resolves immediately). */
   readonly whenIdleBehavior?: (agent: object) => Promise<void>
+  /** work-completion wake-up (G8 teardown-gate regression): a per-resume
+   *  SUSPENSION point — awaited after the resume request is recorded,
+   *  before the handle is built, so a test can interleave `close()` while
+   *  an `agents.resume()` is in flight (absent = settle immediately). */
+  readonly resumeGate?: (req: object) => Promise<void>
   /** The world's global prompt layer (T12-M2; default: the DSH service pair). */
   readonly systemPromptGlobals?: GlobalPromptSection[]
   /** multi-mcp (Task C, plan §6.7): per-server MCP activation failure
@@ -414,6 +447,8 @@ export interface LiveWorld {
     dropResidency(sessionId: string): Promise<{ readonly dropped: boolean; readonly disposeError?: string }>
     /** Whether the session has a live agent (the liveAgents map). */
     hasLive(sessionId: string): boolean
+    /** Whether the session's resume is in flight (the resumingSessions set). */
+    isResuming(sessionId: string): boolean
     /** The live-agent-or-resume resolver (creates on demand, cold-resumes over durable sessions). */
     ensureLiveAgent(sessionId: string): Promise<LiveAgentHandle>
     /** The Root initial-work delivery (token-leading text into the root agent, no dedupe). */
@@ -444,6 +479,11 @@ export interface LiveWorld {
       readonly requestId: string
       readonly text: string
     }): Promise<void>
+    /** Work-completion wake-up: the async work-completion notification port — one NEW model-visible input turn on the team root (idle → followup / running → steer; success boundary = acceptance; the durable settlement fact + team_collect are the recovery mechanism, so failures are non-fatal at the router observer). */
+    deliverRootWorkCompletionNotification(input: {
+      readonly rootSessionId: string
+      readonly text: string
+    }): Promise<void>
     boot(): Promise<void>
     close(): Promise<void>
     [k: string]: unknown
@@ -470,6 +510,8 @@ export interface LiveWorld {
     readonly resumes: RecordedResume[]
     readonly disposals: string[]
     readonly followups: RecordedFollowup[]
+    readonly steers: RecordedSteer[]
+    readonly injects: RecordedInject[]
     readonly cancels: RecordedCancel[]
     readonly materialized: string[]
   }

@@ -96,6 +96,7 @@ import { createTeamOperationCoordinator } from '../../coordination/index.js';
 import { createLifecycleService } from '../../lifecycle/index.js';
 import { PROBE_TRIGGERS, createCompatibilityAuthority, createCompatibilityProber, } from '../../compatibility/index.js';
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js';
+import { createWorkCompletionNotifier } from '../../work-completion-notification/index.js';
 import { createMessagingCoordinator } from '../../messaging/index.js';
 import { createActivityLedger, createWorkActivityWriter, } from '../../activity/index.js';
 import { createTeamDomainForkPort, reconcileForkSidecar, } from '../../fork-reconciliation/index.js';
@@ -651,6 +652,39 @@ export function createTeamProductionRoot(params) {
     const lifecycleService = createLifecycleService(lifecyclePorts, coordination.chains);
     // --- A17 + A18 + A19 the TeamRuntime facade (the P8-S3 work chain) -----------------------
     const workActivity = createWorkActivityWriter({ teamDomain: domain, now });
+    // Work-completion wake-up (plan §18): the async work-completion
+    // notification port — a DETACHED (`execution: 'async'`) work unit that
+    // reaches its durable terminal settlement wakes the Leader through the
+    // glue's SEPARATE wake-up primitive (`deliverRootWorkCompletionNotification` —
+    // idle → followup / running → steer; acceptance boundary only), NOT
+    // through the C1/root-input path (which awaits the turn). At-most-once
+    // best-effort wake attempt (no redelivery): the durable settlement fact
+    // + `team_collect` stay the authority and the recovery path; a delivery
+    // failure (including the live bindings' close having started) is a
+    // liveness failure only (the router's completion observer swallows it).
+    // Wake provenance = the `[team-work-settled requestToken=...]` leading
+    // envelope (a later Team runtime event may activate the Leader after a
+    // user Stop — the envelope identifies the activation source). A glue
+    // bundle without the port simply does not wake (factory/unit worlds —
+    // same contract as the C1 `deliverRootControlNotification` wiring
+    // below).
+    const workCompletionNotifier = live.deliverRootWorkCompletionNotification !== undefined
+        ? createWorkCompletionNotifier({
+            deliver: {
+                deliver: async (args) => {
+                    // Current production: the target set is exactly
+                    // `[{ kind: 'leader' }]` and the delivery port's `target`
+                    // field is the leader — the glue takes the root session id
+                    // + the pre-rendered text (the token-leading text carries
+                    // the work-unit identity).
+                    await live.deliverRootWorkCompletionNotification({
+                        rootSessionId: args.rootSessionId,
+                        text: args.text,
+                    });
+                },
+            },
+        })
+        : undefined;
     const runtime = createTeamRuntime({
         teamDomain: domain,
         activationProvider: provider,
@@ -663,6 +697,7 @@ export function createTeamProductionRoot(params) {
         teamLocks: coordination.chains,
         workDelivery: live.workDelivery,
         workActivity,
+        ...(workCompletionNotifier !== undefined ? { workCompletionNotification: workCompletionNotifier } : {}),
     });
     // --- A25 the control service --------------------------------------------------------------
     // C1 (leader-approval reachability): the optional Leader liveness

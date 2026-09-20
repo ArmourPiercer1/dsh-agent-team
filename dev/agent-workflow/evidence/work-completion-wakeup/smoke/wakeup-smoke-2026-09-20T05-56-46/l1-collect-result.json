@@ -1,0 +1,4 @@
+{
+  "seq": 9,
+  "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-wcn-smoke-l1-2026-09-20T05-56-46\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"wcn-l1-delegate-2026-09-20T05-56-46\",\"status\":\"succeeded\",\"instanceId\":\"inst-07ysxch1xhdr\",\"admittedSequence\":3,\"settledSequence\":7,\"memberResult\":{\"body\":\"WCMK_RESULT_L1_BODY\",\"requestToken\":\"wcn-l1-delegate-2026-09-20T05-56-46\",\"status\":\"succeeded\"}}]},\"requestToken\":\"wcn-wake-wcn-l1-delegate-2026-09-20T05-56-46\"}"
+}

@@ -1,0 +1,10 @@
+{
+  "a": {
+    "seq": 18,
+    "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-wcn-smoke-l2-2026-09-20T05-11-31\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"wcn-l2a-delegate-2026-09-20T05-11-31\",\"status\":\"succeeded\",\"instanceId\":\"inst-1qifyhy07va1\",\"admittedSequence\":10,\"settledSequence\":15,\"memberResult\":{\"body\":\"WCMK_RESULT_L2A_BODY\",\"requestToken\":\"wcn-l2a-delegate-2026-09-20T05-11-31\",\"status\":\"succeeded\"}}]},\"requestToken\":\"wcn-wake-wcn-l2a-delegate-2026-09-20T05-11-31\"}"
+  },
+  "b": {
+    "seq": 20,
+    "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-wcn-smoke-l2-2026-09-20T05-11-31\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"wcn-l2b-delegate-2026-09-20T05-11-31\",\"status\":\"succeeded\",\"instanceId\":\"inst-1qifyhy07va1\",\"admittedSequence\":12,\"settledSequence\":18,\"memberResult\":{\"body\":\"WCMK_RESULT_L2B_BODY\",\"requestToken\":\"wcn-l2b-delegate-2026-09-20T05-11-31\",\"status\":\"succeeded\"}}]},\"requestToken\":\"wcn-wake-wcn-l2b-delegate-2026-09-20T05-11-31\"}"
+  }
+}
