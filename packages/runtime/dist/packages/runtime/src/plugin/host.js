@@ -55,14 +55,18 @@ import { existsSync } from 'fs';
 import { register } from 'module';
 import { fileURLToPath } from 'url';
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js';
+import { ARTIFACT_READ_GRANTED_FACT_TYPE, TeamArtifactAuthority, } from '../../artifact-read/index.js';
 import { resolveDurableMcpFacet } from '../../agent-setup/capability/index.js';
 import { resolveDurableModelSelection } from '../../agent-setup/model/index.js';
 import { createOrOpenTeamDomainDetailed, createTeamDomain, openTeamDomain, } from '../../../storage/repositories/index.js';
+import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../../storage/schema/index.js';
+import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js';
 import { createBlueprintAuthority } from './blueprint-authority.js';
 import { createLiveBlueprintCatalog } from './blueprint-live-catalog.js';
 import { createBlueprintSourceIndex } from './blueprint-source-index.js';
 import { registerTeamSkills } from './team-skills.js';
 import { mcpSupplyValidationIssue } from './mcp-supply.js';
+import { TEAM_ARTIFACT_AUTHORITY_SERVICE } from './artifact-grant-bridge.js';
 import { parseBlueprint } from '../../../domain/blueprint/src/index.js';
 import { createTeamProductionRoot } from './root.js';
 import { TEAM_PLUGIN_ERROR_CODES, TeamPluginError, } from './types.js';
@@ -597,6 +601,29 @@ export async function apply(ctx, config) {
     // backstop below).
     let remoteRegistration;
     let remoteMountState;
+    // strict-read + core-spill (Phase E, implementation guide §4): the
+    // shared artifact-authority reference (the controlServiceRef pattern)
+    // — created here in the ENTRY scope (unlike the controlServiceRef, it
+    // must outlive the bootstrap function body: the row-scope bridge
+    // provision below and the row-stop backstop both consume it OUTSIDE
+    // bootstrap), passed to the glue (which reads it lazily in
+    // agentSetup), and filled by the bootstrap ONCE the authority of this
+    // production root is constructed and REBUILT from the durable ledger
+    // (one authority per production root — it shares the open TeamDomain
+    // with the other runtime services; the durable facts are the source
+    // of truth, the runtime projection a rebuilt cache).
+    const artifactAuthorityRef = { current: undefined };
+    // The row-scope BRIDGE the host provides under
+    // TEAM_ARTIFACT_AUTHORITY_SERVICE (module docs for the visibility and
+    // lifetime contract): the Team-aware spill provider row (the
+    // `dsh-agent-team/spill-local` replacement in the bundle layer) reads
+    // the authority lazily on every saveText. Provided SYNCHRONOUSLY (next
+    // to the teamRoot facade, before the first await); the bootstrap fills
+    // `.authority` once it has constructed + rebuilt it. A consumer that
+    // observes a bridge WITHOUT an authority (bootstrap still running or
+    // failed) treats every session as UNMANAGED — the upstream-equivalent
+    // path, never a crash.
+    const artifactAuthorityBridge = { authority: undefined };
     /**
      * Remote-mount-race observability (root cause C): every TERMINAL remote
      * mount outcome is logged to the host process's stderr. The Cordis
@@ -940,6 +967,11 @@ export async function apply(ctx, config) {
             // strict ctx.get('fs') global-store read — see the accessor's
             // rationale). Additive optional dep: never in the hard inject array.
             fsBackend,
+            // strict-read + core-spill (Phase D/E): the shared artifact-authority
+            // reference (filled by the bootstrap after the authority is
+            // constructed + rebuilt — see the ref's rationale). Additive optional
+            // dep: never in the hard inject array.
+            artifactAuthorityRef,
         });
         // --- the frozen legacy reader (A29): layout-agnostic candidate search, --
         // --- production layout FIRST; the root never imports the legacy sources
@@ -1005,6 +1037,107 @@ export async function apply(ctx, config) {
             remoteReadiness: () => teamRuntimeReadiness,
         });
         root = builtRoot;
+        // --- strict-read + core-spill (Phase E, implementation guide §4/§13)
+        // --- one artifact-read authority per production root, built over the
+        // --- OPEN domain's durable repositories (session identity + the
+        // --- artifact-read-granted fact family) and the host's lazy `fs`
+        // --- seam (resolve + stat — the ONLY path to fs identity, the
+        // --- same strict ctx.get('fs') basis as fsBackend), then REBUILT
+        // --- from the durable ledger BEFORE `ready` settles (cold-restart
+        // --- recovery, implementation guide §3: the durable facts are the
+        // --- source of truth; stale facts are installed inert — they fail
+        // --- the fresh identity check at use). A construction or rebuild
+        // --- failure FAILS the boot (a failed boot is a failed world — the
+        // --- grant vertical never comes up half-built).
+        const artifactFsService = () => {
+            // RC2-A1 receiver convention (the fsBackend precedent): the service
+            // proxy is read per call and the method is invoked INSIDE the
+            // closure, so the provider's receiver is never lost and the proxy
+            // identity is not frozen at construction time.
+            const svc = ctx.get('fs');
+            if (svc === undefined ||
+                svc === null ||
+                typeof svc.resolve !== 'function' ||
+                typeof svc.stat !== 'function') {
+                throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING, 'the "fs" public service is absent (or lacks resolve/stat) — the artifact-read authority resolves fs identity through it (fail-closed: a typed record/authorize fault, never a pass-through)');
+            }
+            return {
+                resolve: (path, options) => svc.resolve(path, options),
+                stat: (target) => svc.stat(target),
+            };
+        };
+        const artifactFsPort = {
+            async resolve(path) {
+                const target = await artifactFsService().resolve(path);
+                return { targetKey: String(target.targetKey), displayPath: String(target.displayPath) };
+            },
+            async stat(target) {
+                return artifactFsService().stat(target);
+            },
+        };
+        const artifactIdentityPort = {
+            instanceForSession(sessionId) {
+                // The DURABLE session → instance binding (the session-bindings
+                // repository — the same rows the team tools read; no live agents
+                // consulted). Unbound / ordinary sessions are unmanaged (their
+                // spill path stays upstream-equivalent — no grant, no record I/O).
+                const binding = domain.repositories.sessionBindings.get(sessionId);
+                if (binding === undefined)
+                    return undefined;
+                switch (binding.kind) {
+                    case 'ordinary':
+                        return undefined;
+                    case 'team-root':
+                        // The root DSH session IS the TeamSession (invariant 9); its
+                        // identity is the leader instance (invariant 13 — no member
+                        // lifecycle).
+                        return { rootSessionId: binding.sessionId, instanceId: LEADER_INSTANCE_ID };
+                    case 'team-member':
+                        return { rootSessionId: binding.rootSessionId, instanceId: binding.instanceId };
+                }
+            },
+            lifecycleOf(rootSessionId, instanceId) {
+                // The leader (no lifecycle, invariant 13) is always eligible; a
+                // member's eligibility is its DURABLE lifecycle state (D6).
+                if (instanceId === LEADER_INSTANCE_ID)
+                    return 'leader';
+                const record = domain.repositories.memberInstances.get(rootSessionId, instanceId);
+                return record === undefined ? undefined : record.lifecycle;
+            },
+        };
+        const artifactLedgerPort = {
+            async appendGranted(rootSessionId, payload) {
+                // Allocate + put serialize on the domain's single write chain (the
+                // repository's atomic seam update); the fact is durable before the
+                // authority installs its runtime candidate.
+                const sequence = await domain.repositories.ledger.allocateSequence();
+                await domain.repositories.ledger.put({
+                    schemaVersion: TEAM_DOMAIN_SCHEMA_VERSION,
+                    sequence,
+                    rootSessionId,
+                    factType: ARTIFACT_READ_GRANTED_FACT_TYPE,
+                    payload,
+                    createdAt: new Date().toISOString(),
+                });
+            },
+            async listGranted() {
+                // Every fact in the domain, in sequence order (the reader filters
+                // to the grant family and validates each row fail-safe).
+                return domain.repositories.ledger.list();
+            },
+        };
+        const artifactAuthority = new TeamArtifactAuthority({
+            fs: artifactFsPort,
+            identity: artifactIdentityPort,
+            ledger: artifactLedgerPort,
+        });
+        await artifactAuthority.rebuildFromLedger();
+        // Fill BOTH consumers' views only AFTER the rebuild: the bridge (the
+        // spill provider row) and the glue reference (the observer + the read
+        // lane) never see an authority whose runtime projection is not yet
+        // the durable facts' cache.
+        artifactAuthorityRef.current = artifactAuthority;
+        artifactAuthorityBridge.authority = artifactAuthority;
         // --- T12-M4 + BP-G (issue #2 blueprint-loading, plan §12.1): the
         // production Remote mount — BEFORE the awaited live boot: the route
         // registration needs the CONSTRUCTED root only, never a successful
@@ -1131,6 +1264,16 @@ export async function apply(ctx, config) {
         },
     };
     ctx.provide('teamRoot', facade);
+    // strict-read + core-spill (Phase C/E): the artifact-authority BRIDGE
+    // under its row-scope service name — provided SYNCHRONOUSLY (next to
+    // the teamRoot facade, before the first await) so the sibling
+    // Team-aware spill provider row (the `dsh-agent-team/spill-local`
+    // replacement) can observe every setup failure through `ready` exactly
+    // like the teamRoot consumers; the bootstrap fills `.authority` once
+    // it has constructed + rebuilt the authority of this root. (Module
+    // docs in artifact-grant-bridge.ts for the cross-row visibility and
+    // the unmanaged-session contract of a not-yet-filled bridge.)
+    ctx.provide(TEAM_ARTIFACT_AUTHORITY_SERVICE, artifactAuthorityBridge);
     // Row-stop backstop: settle the bootstrap (if it is still running), then
     // close the live bundle + the durable domain (idempotent; the observability
     // row may also close live — the root's close() is idempotent). When the
@@ -1144,6 +1287,17 @@ export async function apply(ctx, config) {
             // DSH effect disposal runs in the connection fiber).
             try {
                 remoteRegistration?.dispose();
+            }
+            catch {
+                // a throwing disposer is swallowed: the row teardown proceeds
+            }
+            // strict-read + core-spill (Phase E): drop the authority's
+            // RUNTIME projection (the durable facts remain on the medium —
+            // the next boot rebuilds from the ledger; dispose is idempotent
+            // and a no-op when the bootstrap never filled the ref). Never
+            // fails the row teardown.
+            try {
+                artifactAuthorityRef.current?.dispose();
             }
             catch {
                 // a throwing disposer is swallowed: the row teardown proceeds

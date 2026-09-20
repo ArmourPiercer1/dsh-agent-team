@@ -187,6 +187,32 @@
  *                        (fail-closed, never a pass-through). Templates
  *                        WITHOUT a permissions policy never call it
  *                        (alpha.1 / legacy: zero listeners).
+ *   artifactAuthorityRef (OPTIONAL) - strict-read + core-spill (Phase
+ *                        D/E, implementation guide §13): the plain
+ *                        { current: <TeamArtifactAuthority | undefined> }
+ *                        object the production host fills once its
+ *                        bootstrap has constructed the artifact-read
+ *                        authority of the production root (the
+ *                        controlServiceRef pattern: construction-time
+ *                        object, filled during bootstrap, read LAZILY
+ *                        when the setup callback runs). For every
+ *                        permissions-carrying template the setup ALSO
+ *                        installs the tools/result observer
+ *                        (installShellResultObserver) on this agent's
+ *                        scope — it records the durable shell-foreground
+ *                        artifact grants of this agent's spilled shell
+ *                        output (successful foreground bash/pwsh only;
+ *                        the structured canonical value only — rendered
+ *                        text is never read) so the agent can READ BACK
+ *                        its own spill artifact under a strict-read
+ *                        policy through the Phase B grant lane. The
+ *                        returned disposer rides the SAME toolDisposers
+ *                        drain as the permission listener (row stop +
+ *                        agent disposal; cold resume reinstalls).
+ *                        ABSENT / UNFILLED at setup time -> NO observer
+ *                        (the shell spill stays upstream-equivalent —
+ *                        alpha.1 behavior; the permission lane itself
+ *                        is unaffected and simply finds no grants).
  * Returned bindings (the harness observability surface first — the
  * production host exposes this WHOLE bundle as the teamRoot.live field):
  *   listLiveSessions()                  (sorted live session id strings)
@@ -340,6 +366,19 @@ import {
   mcpIntroducedToolNames,
   PermissionCoverageUnmanagedError,
 } from '../../../operation-permission/index.js'
+// strict-read + core-spill (Phase D, implementation guide §13): the
+// tools/result observer — records the durable shell-foreground
+// artifact grants of THIS agent's spilled shell output (one
+// recordShellArtifact per non-empty stdout/stderr spillPath of a
+// successful foreground bash/pwsh result; the structured canonical
+// value only, rendered text never read). Installed per agent lifecycle
+// alongside the permission listener (the grant lane only exists with a
+// policy — a policy-free agent's grants would be inert dead facts) and
+// riding the SAME toolDisposers drain (cold-resume re-setup reinstalls
+// both as a unit). Absent authority (the host reference unfilled —
+// factory world / not wired) → NO observer: the shell spill stays
+// upstream-equivalent (alpha.1 behavior).
+import { installShellResultObserver } from '../../../artifact-read/index.js'
 // exec-autonomy-contract (user ruling 2026-09-18): the DUAL GATE input —
 // the leader's effective mutation-envelope exec-authorization tokens
 // (teamEnvelope ∩ the leader template's memberEnvelopes entry, fail
@@ -599,7 +638,7 @@ export function createAgentBindings(deps) {
   // D1 (v2): agentPresets is OPTIONAL (the host serves it as a lazy accessor;
   // a test world may omit it) — the member bind paths fail closed with the
   // typed member-base-tools-unavailable when it is absent or unusable.
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef } = deps
   if (agents === undefined) throw new Error('agent-bindings: deps.agents is required')
   if (sessionPersistence === undefined) throw new Error('agent-bindings: deps.sessionPersistence is required')
   if (config === undefined || config === null) throw new Error('agent-bindings: deps.config is required')
@@ -1816,6 +1855,19 @@ export function createAgentBindings(deps) {
           }
           return backend.contains(parent, child)
         }
+        // strict-read + core-spill (Phase D/E): the artifact-read
+        // authority of this production root, read LAZILY from the
+        // host-filled reference (the controlServiceRef pattern — the
+        // bootstrap fills it after construction + the ledger rebuild).
+        // Drives BOTH the read-time grant lane below (the Phase B port)
+        // and the shell-spill observer installed after this listener
+        // (Phase D). Absent (ref unfilled — factory world / not wired)
+        // -> neither is wired: the pipeline stays byte-for-byte
+        // unchanged (alpha.1 behavior).
+        const artifactAuthority =
+          artifactAuthorityRef !== undefined && artifactAuthorityRef !== null
+            ? artifactAuthorityRef.current
+            : undefined
         const disposePermission = installParameterPermissionListener(agentCtx, {
           policy: permissionPolicy,
           resolveTarget,
@@ -1826,11 +1878,81 @@ export function createAgentBindings(deps) {
           targetInstanceId: instanceId,
           isLeader,
           execEnvelopeOps,
+          // strict-read + core-spill (Phase B/E): the artifact-grant
+          // authorization port — for `read` decisions only, it consults
+          // the Team's durable artifact-read grants: a valid grant
+          // authorizes the read WITHOUT a control request (after the
+          // same external-hard last-mile recheck as the static-allow
+          // path). The authority re-verifies EVERYTHING fresh behind
+          // this port (composite producing identity + exact requested
+          // locator + fresh resolve/stat digests); the adapter supplies
+          // the decision's own fresh canonicalization inputs (the
+          // opaque target key + handle from this batch's resolveTarget).
+          // A faulting port fails closed: the read proceeds through the
+          // unchanged pipeline (no grant). Absent authority -> no port
+          // (the installers-without-it keep today's pipeline exactly).
+          ...(artifactAuthority !== undefined ? {
+            authorizeArtifactRead: async ({ instanceId: readingInstanceId, rawPath, canonicalResourceKey, targetHandle }) => {
+              try {
+                const verdict = await artifactAuthority.authorizeRead({
+                  rootSessionId: teamRoot,
+                  instanceId: readingInstanceId,
+                  locator: rawPath,
+                  target: {
+                    targetKey: canonicalResourceKey,
+                    // The handle's displayPath (the resolver's own
+                    // display for this batch); the raw path as the
+                    // fallback (display is never an identity — the
+                    // authority binds the targetKey digest).
+                    displayPath:
+                      targetHandle !== null && typeof targetHandle === 'object' && typeof targetHandle.displayPath === 'string'
+                        ? targetHandle.displayPath
+                        : rawPath,
+                  },
+                })
+                return verdict.valid
+              } catch {
+                // Contained: a faulting port = no grant (the unchanged
+                // pipeline decides — fail-closed, never a minted
+                // authorization). The Phase B adapter contains port
+                // faults too; this keeps the observation deterministic.
+                observations.push(`alpha2-artifact-grant: authorize-failed path=${rawPath}: read proceeds unchanged (no grant)`)
+                return false
+              }
+            },
+          } : {}),
           onObserve: (row) => {
             observations.push(`alpha2-perm: ${JSON.stringify(row)}`)
           },
         })
         toolDisposers.push(disposePermission)
+        // strict-read + core-spill (Phase D): the tools/result observer —
+        // record the durable shell-foreground artifact grants of THIS
+        // agent's spilled shell output, so the agent can READ BACK its
+        // own spill artifact under a strict-read policy through the
+        // Phase B grant lane. Installed alongside the permission
+        // listener (the grant lane only exists with a policy — a
+        // policy-free agent would only mint inert dead facts) and
+        // riding the SAME toolDisposers drain (cold-resume re-setup
+        // reinstalls both as a unit). Absent authority (the host
+        // reference unfilled — factory world / not wired) -> NO
+        // observer: the shell spill stays upstream-equivalent (alpha.1
+        // behavior). Faults are contained inside the observer (a failed
+        // record = no grant; the committed tool result is untouched).
+        if (artifactAuthority !== undefined) {
+          const disposeShellObserver = installShellResultObserver(agentCtx, {
+            authority: artifactAuthority,
+            rootSessionId: teamRoot,
+            instanceId,
+            onFault: (fault, context) => {
+              observations.push(
+                `alpha2-artifact-grant: shell-record-failed tool=${context.toolName ?? 'unknown'} callId=${context.callId ?? 'unknown'} stream=${context.stream ?? '-'}: ${fault instanceof Error ? fault.message : String(fault)}`,
+              )
+            },
+          })
+          toolDisposers.push(disposeShellObserver)
+          observations.push('alpha2-artifact-grant: shell-result-observer installed')
+        }
       }
     }
   }
