@@ -1,0 +1,75 @@
+{
+  "runStamp": "2026-09-20T04-40-03",
+  "hostBaseline": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/persona-kind",
+  "criteria": [
+    {
+      "id": "A1",
+      "name": "probe (caller fact persona/ptc, the composable non-standard id) ⇒ OPEN — the bug fix (pre-fix: FATAL TEAM_PERSONA_COMPLETE_PRESET_CONFLICT)",
+      "ok": true,
+      "detail": "status=200 compatStatus=OPEN personaRow={\"requirementId\":\"req-persona-standard\",\"type\":\"persona\",\"complete\":true,\"outcome\":\"PASS\",\"reasonCode\":\"SATISFIED\",\"detail\":\"all 1 required subject(s) available\",\"unavailableSubjects\":[],\"mismatchFing"
+    },
+    {
+      "id": "A2",
+      "name": "probe (caller fact persona/standard — id doubles as kind) ⇒ OPEN (zero config migration)",
+      "ok": true,
+      "detail": "status=200 compatStatus=OPEN"
+    },
+    {
+      "id": "A3",
+      "name": "team.create (fix blueprint, initialWork) succeeds on the fresh root (the post-creation admission gate admits)",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"pkfix-a-create-5diui4ksy9\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-pkfix-a-2026-09-20T04-40-03\",\"blueprint\":{\"blueprintId\":\"team.pkfix-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:aeeff3b6b5401440ddc110a02de28be573190c926a7d23b3a0dad546aa8416ec\"},\"createdAt\":\"2026-09-20T04:40:07.600"
+    },
+    {
+      "id": "A4",
+      "name": "member activation: the Leader created the worker + delegated; the member turn carries the blueprint worker persona (root-scoped resolution)",
+      "ok": true,
+      "detail": "start=2 member=4 done=true hasPersona=true"
+    },
+    {
+      "id": "B1",
+      "name": "probe (caller fact persona/minimal — a complete:true preset) ⇒ BLOCKED_FATAL with the FROZEN code + honest detail (the §13.5 conflict preserved; the caller available:true claim is discarded)",
+      "ok": true,
+      "detail": "status=200 compatStatus=BLOCKED_FATAL row={\"requirementId\":\"req-persona-standard\",\"type\":\"persona\",\"complete\":true,\"outcome\":\"FATAL\",\"reasonCode\":\"TEAM_PERSONA_COMPLETE_PRESET_CONFLICT\",\"detail\":\"complete:true persona requirement unmet: standard; probe world persona kind(s): complete (unavailable) (structural FATAL, not downgradeable)\",\"una"
+    },
+    {
+      "id": "B2",
+      "name": "probe (caller fact persona/pkfix-bare — a preset with NO persona section) ⇒ BLOCKED_FATAL PERSONA_INCOMPATIBLE (the honest lane — NOT the frozen code; the copy no longer lies)",
+      "ok": true,
+      "detail": "status=200 compatStatus=BLOCKED_FATAL row={\"requirementId\":\"req-persona-standard\",\"type\":\"persona\",\"complete\":true,\"outcome\":\"FATAL\",\"reasonCode\":\"PERSONA_INCOMPATIBLE\",\"detail\":\"complete:true persona requirement unmet: standard; probe world persona kind(s): absent (unavailable) (structural FATAL, not downgradeable)\",\"unavailableSubjects\":["
+    },
+    {
+      "id": "B3",
+      "name": "probe (caller fact persona/pkfix-deleted — an unresolvable id) ⇒ BLOCKED_FATAL PERSONA_INCOMPATIBLE with the raw id visible (fail-loud — never a silent kind guess)",
+      "ok": true,
+      "detail": "status=200 compatStatus=BLOCKED_FATAL row={\"requirementId\":\"req-persona-standard\",\"type\":\"persona\",\"complete\":true,\"outcome\":\"FATAL\",\"reasonCode\":\"PERSONA_INCOMPATIBLE\",\"detail\":\"complete:true persona requirement unmet: standard; probe world persona kind(s): pkfix-deleted (available) (structural FATAL, not downgradeable)\",\"unavailableSubjec"
+    }
+  ],
+  "passed": 7,
+  "total": 7,
+  "failed": [],
+  "stable": {
+    "pre": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    },
+    "post": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    }
+  },
+  "verdict": "PASS"
+}

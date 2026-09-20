@@ -1,0 +1,10 @@
+[2026-09-20T04:27:47.188Z] persona-kind live smoke — run 2026-09-20T04-27-47 — worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/persona-kind testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-09-20T04:27:47.404Z] stable instances pre: {"p3080":{"url":"http://127.0.0.1:3080/","status":401},"p3180":{"url":"http://127.0.0.1:3180/","status":401}}
+[2026-09-20T04:27:47.404Z] ═══ WORLD A: the fix (probe ptc → PASS, create, member activation) ═══
+[2026-09-20T04:27:47.413Z] world A: mock model on 3496
+[2026-09-20T04:31:47.526Z] FATAL: world a boot failed (no boot marker)
+--- log tail ---
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/persona-kind/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3491/?token=vXc_bBIwIAbPcq0c_AAdMqGdwGRRD9qQpmll9GGdWxs
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+

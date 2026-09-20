@@ -1,0 +1,8 @@
+[2026-09-20T04:15:09.287Z] persona-kind live smoke — run 2026-09-20T04-15-09 — worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/persona-kind testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-09-20T04:15:09.320Z] stable instances pre: {"p3080":{"url":"http://127.0.0.1:3080/","status":401},"p3180":{"url":"http://127.0.0.1:3180/","status":401}}
+[2026-09-20T04:15:09.320Z] ═══ WORLD A: the fix (probe ptc → PASS, create, member activation) ═══
+[2026-09-20T04:15:09.330Z] FATAL uncaught: Error: listen EADDRINUSE: address already in use 127.0.0.1:3496
+    at Server.setupListenHandle [as _listen2] (node:net:2328:16)
+    at listenInCluster (node:net:2437:12)
+    at node:net:2666:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)

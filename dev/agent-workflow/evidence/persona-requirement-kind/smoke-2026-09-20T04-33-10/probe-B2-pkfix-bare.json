@@ -1,0 +1,48 @@
+{
+  "type": "server-response",
+  "rpcId": "pkfix-B2-6q0gsusnma",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "compatibility": {
+          "schemaVersion": 1,
+          "environmentFingerprint": "fp-v1:6cb31629da76b43f",
+          "status": "BLOCKED_FATAL",
+          "requirements": [
+            {
+              "requirementId": "req-persona-standard",
+              "type": "persona",
+              "complete": true,
+              "outcome": "FATAL",
+              "reasonCode": "PERSONA_INCOMPATIBLE",
+              "detail": "complete:true persona requirement unmet: standard; probe world persona kind(s): absent (unavailable) (structural FATAL, not downgradeable)",
+              "unavailableSubjects": [
+                "standard"
+              ],
+              "mismatchFingerprint": "fp-v1:d12c9d7c6edaba1a",
+              "acknowledgement": null
+            }
+          ],
+          "counts": {
+            "pass": 0,
+            "warning": 0,
+            "fatal": 1,
+            "unackedWarning": 0,
+            "staleAcknowledgement": 0
+          },
+          "unappliedAcknowledgements": []
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "intent.probe",
+        "endpoint": "intent.probe",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

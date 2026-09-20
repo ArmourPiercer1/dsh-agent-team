@@ -57,6 +57,7 @@ import { fileURLToPath } from 'url';
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js';
 import { resolveDurableMcpFacet } from '../../agent-setup/capability/index.js';
 import { resolveDurableModelSelection } from '../../agent-setup/model/index.js';
+import { presetPersonaKindOfComposition } from '../../agent-setup/preset/index.js';
 import { createOrOpenTeamDomainDetailed, createTeamDomain, openTeamDomain, } from '../../../storage/repositories/index.js';
 import { createBlueprintAuthority } from './blueprint-authority.js';
 import { createLiveBlueprintCatalog } from './blueprint-live-catalog.js';
@@ -524,6 +525,26 @@ export async function apply(ctx, config) {
             }
             return svc.composedPreset(agentCtx);
         },
+        // Persona KIND convention (the persona-requirement-preset-id fix,
+        // direction B): the probe-side reader — one preset's composition text
+        // (the `dsh-persona` row config is the authoritative statement of its
+        // effective persona kind). LAZY per call (the same row-ordering
+        // immunity as mount/composedPreset). Fail-closed with the stable typed
+        // code when the service is absent or unreadable — the S6 port's
+        // closure maps that to `undefined` (the caller fact passes through
+        // unchanged; the engine's world-driven detail stays honest).
+        readComposition(presetId) {
+            const svc = ctx.get('agentPresets');
+            if (svc === undefined || svc === null || typeof svc.readDocument !== 'function') {
+                throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING, 'the "agentPresets" public service is absent (or lacks readDocument) — it is resolved lazily per call and must be up before the probe resolves a preset persona kind');
+            }
+            return svc.readDocument(presetId).then((doc) => {
+                if (doc === null || typeof doc !== 'object' || typeof doc.content !== 'string') {
+                    throw new Error(`the "agentPresets" readDocument answer for '${presetId}' carries no composition text (unreadable preset)`);
+                }
+                return doc.content;
+            });
+        },
     };
     // alpha.2 (A6 live fix V1-1): the per-agent `fs` seam accessor (served to
     // the glue under its `fsBackend` deps key): resolved per call via the
@@ -963,6 +984,23 @@ export async function apply(ctx, config) {
         // --- a failed world; the route stays registered, the catalog reads
         // --- stay servable, every other remote method fails closed).
         let teamRuntimeReadiness = 'starting';
+        // Persona KIND convention (the persona-requirement-preset-id fix,
+        // direction B): the probe-side kind resolver closure over the lazy
+        // agentPresets accessor — one preset id -> its effective persona kind
+        // (the preset's own `dsh-persona` row config; the roster seam carries
+        // no persona data, so the composition text is the authoritative
+        // observation). Every failure path resolves to `undefined` — the S6
+        // probe port then passes the caller's preset-id fact through UNCHANGED
+        // (the engine's world-driven classification yields the honest FATAL
+        // detail; never a silent kind guess, never a broken probe).
+        const presetPersonaKind = async (presetId) => {
+            try {
+                return presetPersonaKindOfComposition(await agentPresets.readComposition(presetId));
+            }
+            catch {
+                return undefined;
+            }
+        };
         // --- the production root (the SINGLE assembly point, A01–A29 + seams) -----
         const builtRoot = createTeamProductionRoot({
             config: resolvedRowConfig,
@@ -1003,6 +1041,15 @@ export async function apply(ctx, config) {
             // readiness — the mounted remote dispatcher gates the non-catalog
             // methods on it (the mount happens BEFORE the live boot is awaited).
             remoteReadiness: () => teamRuntimeReadiness,
+            // Persona KIND convention (the persona-requirement-preset-id fix,
+            // direction B): the probe-side kind resolver — one preset id -> its
+            // effective persona kind (the dsh-persona row config in the preset's
+            // own composition text, read through the lazy agentPresets accessor
+            // above). EVERY failure (service not up, preset unknown, composition
+            // unreadable) maps to `undefined`: the probe keeps the caller's
+            // preset-id fact unchanged (the engine's world-driven classification
+            // still yields an honest FATAL detail — never a silent kind guess).
+            presetPersonaKind,
         });
         root = builtRoot;
         // --- T12-M4 + BP-G (issue #2 blueprint-loading, plan §12.1): the

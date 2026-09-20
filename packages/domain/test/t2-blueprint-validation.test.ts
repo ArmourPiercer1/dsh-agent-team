@@ -160,4 +160,49 @@ describe('t2 validation: validateBlueprintDocument on decoded values', () => {
       'MALFORMED_DTO',
     )
   })
+
+  it('accepts a persona requirement named by a persona KIND (all three closed kinds)', () => {
+    for (const kind of ['absent', 'standard', 'complete'] as const) {
+      expect(() =>
+        validateBlueprintDocument(jsDoc({ requirements: [{ domain: 'persona', name: kind }] })),
+      ).not.toThrow()
+    }
+  })
+
+  it('rejects a persona requirement named by a preset ID (the bug-report pattern) with migration guidance', () => {
+    expectErrorDetails(
+      () =>
+        validateBlueprintDocument(
+          jsDoc({
+            requirements: [{ domain: 'persona', name: 'team-small-ctx' }],
+          }),
+        ),
+      'MALFORMED_DTO',
+      {
+        path: '$.requirements[0].name',
+        domain: 'persona',
+        name: 'team-small-ctx',
+      },
+    )
+  })
+
+  it('rejects a persona requirement named by a kind LOOKALIKE (case/whitespace do not count)', () => {
+    expectCode(
+      () =>
+        validateBlueprintDocument(
+          jsDoc({
+            requirements: [{ domain: 'persona', name: 'Complete' }],
+          }),
+        ),
+      'MALFORMED_DTO',
+    )
+  })
+
+  it('leaves non-persona requirement names unconstrained by the kind vocabulary', () => {
+    expect(() =>
+      validateBlueprintDocument(
+        jsDoc({ requirements: [{ domain: 'mcp', name: 'team-small-ctx' }] }),
+      ),
+    ).not.toThrow()
+  })
 })

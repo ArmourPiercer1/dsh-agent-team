@@ -1,0 +1,71 @@
+[
+  {
+    "seq": 1,
+    "userText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:3c9cf4420ff3374db362bb9465e1ac39354b162c10cf2c2eaa394c97bb448d75] PKFIXMK_A_2026-09-20T04-19-51\"}]",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-pkfix-g7bje6cw",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-pkfix-a-2026-09-20T04-19-51",
+            "requestToken": "pkfix-a-create-2026-09-20T04-19-51",
+            "delegationTemplateId": "worker",
+            "label": "pkfix worker"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 2,
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:3c9cf4420ff3374db362bb9465e1ac39354b162c10cf2c2eaa394c97bb448d75] PKFIXMK_A_2026-09-20T04-19-51\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instru",
+    "toolMsgCount": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-pkfix-fffj5yvq",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-pkfix-a-2026-09-20T04-19-51",
+            "requestToken": "pkfix-a-create-2026-09-20T04-19-51",
+            "delegationTemplateId": "worker",
+            "label": "pkfix worker"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 3,
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:3c9cf4420ff3374db362bb9465e1ac39354b162c10cf2c2eaa394c97bb448d75] PKFIXMK_A_2026-09-20T04-19-51\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instru",
+    "toolMsgCount": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-pkfix-pun72xqg",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-pkfix-a-2026-09-20T04-19-51",
+            "requestToken": "pkfix-a-delegate-2026-09-20T04-19-51",
+            "label": "ping the worker",
+            "prompt": "Ping: reply with one word. PKFIXMK_AMEM_2026-09-20T04-19-51"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 4,
+    "userText": "[team-root-work requestToken=team-create:initial-work:sha256:3c9cf4420ff3374db362bb9465e1ac39354b162c10cf2c2eaa394c97bb448d75] PKFIXMK_A_2026-09-20T04-19-51\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instru",
+    "toolMsgCount": 2,
+    "reply": {
+      "kind": "text",
+      "content": "PKFIX_A_DONE"
+    }
+  }
+]

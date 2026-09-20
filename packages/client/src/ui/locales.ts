@@ -132,6 +132,7 @@ export type TeamKey =
   | 'intent.workError'
   | 'intent.workKept'
   | 'intent.fatal.preset'
+  | 'intent.fatal.presetIncompatible'
   | 'member.action.sendWork'
   | 'member.action.followup'
   | 'member.action.resume'
@@ -372,6 +373,7 @@ export const zh: Record<TeamKey, string> = {
   'intent.workError': '初始任务发送失败：{message}',
   'intent.workKept': '团队已创建且 Root 已打开；初始任务未投递，可重试（重试复用同一任务令牌，Root 保持打开）。',
   'intent.fatal.preset': '该运行时预设拥有完整的系统人格，无法承载此团队蓝图的 Leader/Member 身份（不改变 DSH 核心语义）。',
+  'intent.fatal.presetIncompatible': '该运行时预设未提供此团队蓝图所需的 persona 基底（详见上方探针详情）。请改选提供可组合 persona 的预设（如 standard），或调整蓝图的 persona 需求。',
   'member.action.sendWork': '发送任务…',
   'member.action.followup': '发送跟进',
   'member.action.resume': '恢复…',
@@ -612,6 +614,7 @@ export const en: Record<TeamKey, string> = {
   'intent.workError': 'Initial work failed: {message}',
   'intent.workKept': 'The team is created and the Root is open; the initial work was not delivered — retry it (the retry reuses the same work token and the Root stays open).',
   'intent.fatal.preset': "This runtime preset owns a complete system persona and cannot host this Team Blueprint's Leader/Member identity without changing DSH core semantics.",
+  'intent.fatal.presetIncompatible': 'This runtime preset does not provide the persona base this Team Blueprint requires (see the probe detail above). Select a preset with a composable persona (e.g. standard), or adjust the blueprint\'s persona requirement.',
   'member.action.sendWork': 'Send work…',
   'member.action.followup': 'Send follow-up',
   'member.action.resume': 'Resume…',

@@ -73,9 +73,13 @@ export type PresetPersonaKind = (typeof PRESET_PERSONA_KINDS)[keyof typeof PRESE
  *
  * 1. `presetId` — the substrate's stable identity: the scoped identity
  *    records WHICH preset substrate it composes with (invariant: Member
- *    inherits the Root's substrate, §13.1), and the compatibility
- *    requirement probes it by subject (§27.1: persona subjects are preset
- *    ids). The id alone — no plugin graph, no composition content;
+ *    inherits the Root's substrate, §13.1). The id alone — no plugin
+ *    graph, no composition content. (The compatibility persona SUBJECT is
+ *    the `personaKind`, NOT the preset id — the kind convention, §27.1:
+ *    the P5-T2 "subject is the preset id" decision, revised by the
+ *    persona-requirement-preset-id bug report, pinned the requirement to
+ *    one exact preset and misdiagnosed every other id as a
+ *    complete-persona conflict.)
  * 2. `personaKind` — the public effective-persona three-state: the input
  *    of the §13.4/§13.5 decision (compatible → scoped identity; complete →
  *    structural FATAL; absent → no scoped identity). It is the observable

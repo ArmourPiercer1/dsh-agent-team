@@ -304,7 +304,7 @@ function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances)
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params) {
-    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, } = params;
+    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, presetPersonaKind, } = params;
     const repos = domain.repositories;
     const rootSid = config.rootSessionId;
     // --- A02 handle / write ports ------------------------------------------------------
@@ -1258,6 +1258,10 @@ export function createTeamProductionRoot(params) {
         // a required MCP present in the row facts now passes the pre-create
         // probe exactly as it passes the gate).
         environmentFacts,
+        // Persona KIND convention (direction B): the host completes the
+        // caller's preset-id persona facts with the authoritative kind
+        // (absent in factory worlds — the facts pass through unchanged).
+        ...(presetPersonaKind !== undefined ? { presetPersonaKind } : {}),
         repositories: repos,
         catalog,
         blueprint,

@@ -67,6 +67,7 @@ import type {
 import {
   intentCreateGate,
   intentEnvironmentFacts,
+  isPersonaIncompatibleFatal,
   isPersonaPresetFatal,
   mintRootSessionId,
   parseBlueprintDetail,
@@ -1104,7 +1105,16 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
               </p>
             ))}
             {isPersonaPresetFatal(compat) && (
-              <p className={styles.fatalPreset}>{t('intent.fatal.preset')}</p>
+              // The persona KIND convention (the persona-requirement-
+              // preset-id fix): the honest-lane copy (no false "complete
+              // preset" claim) takes precedence when the verdict is the
+              // world-driven PERSONA_INCOMPATIBLE; the §7.4 complete-
+              // conflict copy otherwise.
+              <p className={styles.fatalPreset}>
+                {isPersonaIncompatibleFatal(compat)
+                  ? t('intent.fatal.presetIncompatible')
+                  : t('intent.fatal.preset')}
+              </p>
             )}
           </div>
         )}

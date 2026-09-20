@@ -135,6 +135,28 @@ Structural rules (all fail loudly with a classified reason):
 6. **policyStates**: referenced fields must exist in the frozen field set.
 7. **quotas**: positive integers; `maxConcurrent ≤ maxInstances` per block.
 
+### 4.1 The `persona` requirement: declare the KIND, never a preset id
+
+A `requirements` entry with `domain: persona` names the **persona kind**
+the team runtime needs — a closed three-state, NOT a runtime-preset id:
+
+| `name`     | meaning                                                           | a preset satisfies it when its effective persona section is …     |
+| ---------- | ----------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `standard` | a composable persona base (the usual team requirement)            | present and composable (any preset id — `standard`, `ptc`, …)     |
+| `complete` | the preset must own a COMPLETE system persona (rare; §13.5)       | `complete: true` — the probe reports the structural FATAL `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` against a blueprint that requires a different kind |
+| `absent`   | the team must run with NO persona section                         | the preset has no effective persona row                           |
+
+Why kind, not id: a preset id pins the requirement to ONE exact preset —
+any other composable preset would make every pre-create probe fail with a
+structural FATAL even though its persona is exactly what the blueprint
+needs (the persona-requirement-preset-id bug, fixed 2026-09-19: the probe
+now resolves the selected preset's effective persona kind host-side).
+Blueprint validation REJECTS a persona requirement whose `name` is not one
+of the three kinds (`MALFORMED_DTO` with migration guidance). Existing
+`name: standard` blueprints stay valid unchanged (`standard` is both a
+preset id and a kind); a bespoke id like `team-small-ctx` must become
+`standard`.
+
 ## 5. Capabilities (per template)
 
 Absent `capabilities` = legacy mode (rc.1 behavior, everything inherited).
@@ -304,7 +326,9 @@ Run these in order on the authored file; stop at the first failure and fix:
    `kind` in {exact, subtree, any}; the shell-class rejections of §5.1
    (allow-lane `any` rejected on MEMBERS only — the leader exception is
    legal but runtime-dual-gated; exact/subtree rejected for every role).
-7. **Requirements** — unique `(domain, name)`.
+7. **Requirements** — unique `(domain, name)`; a `persona` requirement's
+   `name` is one of the three persona KINDS (`absent` / `standard` /
+   `complete`) — never a preset id (§4.1).
 8. **Envelopes** — operation token grammar; no operation in both `allow` and
    `deny`.
 9. **policyStates** — `fields` reference only frozen fields.
@@ -360,6 +384,9 @@ already bound to in place (frozen revisions replay their stored source).
 - A `blueprintId` containing `@` or whitespace.
 - Forgetting `persona` on the leader (or leaving it empty) — the most common
   structural FATAL.
+- Writing a runtime-preset id (e.g. `team-small-ctx`) as a `persona`
+  requirement `name` — rejected at validation (`MALFORMED_DTO`); declare the
+  persona KIND instead (§4.1).
 - Putting an operation in both `allow` and `deny` of one envelope.
 - `permissions.default: allow` — always rejected.
 - Giving `bash`/`pwsh` an `exact`/`subtree` resource (any role), or an

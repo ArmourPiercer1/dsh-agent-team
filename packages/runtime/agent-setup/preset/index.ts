@@ -11,3 +11,8 @@
 
 export { PRESET_PERSONA_KINDS } from './types.js'
 export type { AgentPresetSeam, AgentPresetSubstrateFacts, PresetPersonaKind } from './types.js'
+export {
+  DSH_PERSONA_MODULE,
+  PresetPersonaCompositionError,
+  presetPersonaKindOfComposition,
+} from './persona-kind-of.js'

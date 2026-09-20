@@ -521,6 +521,23 @@ export interface S6RemoteOptions {
      */
     readonly environmentFacts?: () => Promise<readonly EnvironmentFact[]>;
     /**
+     * Persona KIND convention (the persona-requirement-preset-id fix,
+     * direction B, T14-H spirit: the host completes the caller's pre-creation
+     * observation) — the narrow host port that resolves the effective
+     * persona KIND (`absent` | `standard` | `complete`) of one preset id.
+     * The client sends the caller's persona facts keyed by the SELECTED
+     * PRESET ID (the upstream roster seam carries no persona data — the id
+     * is the selection token); `intent.probe` rewrites each caller persona
+     * fact into a KIND fact (subject = kind, available = kind ===
+     * `standard`) BEFORE the U5 merge ({@link rewriteCallerPersonaFacts}).
+     * Absent (factory / test worlds without the host entry): the rewrite is
+     * skipped — the caller facts pass through unchanged and the engine's
+     * world-driven classification still yields an honest FATAL detail.
+     * Returns `undefined` (never throws) when the preset is unknown or its
+     * composition is unreadable (the fact then passes through unchanged).
+     */
+    readonly presetPersonaKind?: (presetId: string) => Promise<string | undefined>;
+    /**
      * TCM vNext §15.5 (M2) — the narrow workspace attach port (the host
      * entry's closure over the hard-injected public `workspaceRegistry`
      * service). A v2 `team.create` carrying `workspace` resolves it through
@@ -724,6 +741,44 @@ export interface S6RemoteOptions {
  * @returns the merged environment fact list for the probe evaluation.
  */
 export declare function mergeProbeEnvironmentFacts(hostFacts: readonly EnvironmentFact[], callerFacts: readonly EnvironmentFact[]): readonly EnvironmentFact[];
+/**
+ * Rewrite the caller's persona facts from PRESET-ID subjects to KIND
+ * subjects (the persona KIND convention — the persona-requirement-preset-id
+ * fix, direction B; the U5 caller-origin rule is preserved: the caller
+ * still contributes ONLY the persona domain, the host COMPLETES that
+ * observation with the authoritative kind — the same host-completed
+ * pre-creation probe pattern T14-H established for the other domains).
+ *
+ * Semantics:
+ *
+ * - `resolveKind` absent (factory / test worlds without the host entry):
+ *   the caller facts pass through UNCHANGED (the pre-fix behavior — the
+ *   engine's world-driven classification still yields an honest FATAL
+ *   detail for an id that matches no requirement subject);
+ * - each caller `persona` fact is resolved through `resolveKind`:
+ *   - resolved kind `standard` => the fact is restated as
+ *     `{persona, standard, available: true}` (the composable case — any
+ *     preset id, not just `standard`);
+ *   - resolved kind `complete` => `{persona, complete, available: false}`
+ *     (the §13.5 conflict — the engine's world-driven classification
+ *     reports the frozen TEAM_PERSONA_COMPLETE_PRESET_CONFLICT code
+ *     because the WORLD provides the `complete` kind);
+ *   - resolved kind `absent` => `{persona, absent, available: false}`;
+ *   - `undefined` (preset unknown / composition unreadable / resolver
+ *     threw): the fact passes through UNCHANGED (the id subject remains —
+ *     fail-loud, never a silent kind guess);
+ * - non-persona caller facts are never touched (the U5 merge rule is
+ *   applied AFTER this rewrite and still discards them).
+ *
+ * Pure over its inputs (no mutation of the deep-frozen facts; the
+ * resolver is the only effect, called at most once per distinct persona
+ * subject).
+ *
+ * @param callerFacts - the caller's (already-validated) wire facts.
+ * @param resolveKind - the host kind port, or `undefined` to skip.
+ * @returns the caller facts with persona subjects rewritten to kinds.
+ */
+export declare function rewriteCallerPersonaFacts(callerFacts: readonly EnvironmentFact[], resolveKind: ((presetId: string) => Promise<string | undefined>) | undefined): Promise<readonly EnvironmentFact[]>;
 /**
  * Build the thirteen production remote ports over the host's owned roots
  * (the bound root + any TeamSession root the host durably owns — P9-S8:

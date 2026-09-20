@@ -15,8 +15,20 @@
  *   (`teamStructure`, `persona`) => `FATAL`
  *   (structural Team contract cannot hold)
  * - `complete:true` unmet => `FATAL` **mandatory, no downgrade, no ack**
- *   (Architecture §13.5; for `persona` the engine reports the frozen
- *   contracts-v1 code `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT`)
+ *   (Architecture §13.5; the `persona` reason code is WORLD-driven, see
+ *   below)
+ *
+ * Persona kind convention (the P5-T2 subject decision, revised by the
+ * team-persona-requirement-preset-id bug report): persona subjects are
+ * persona KINDS (`absent` | `standard` | `complete`, §13.5) — never preset
+ * ids. An unmet `persona` requirement is classified by the persona kind(s)
+ * the WORLD actually provides: a world persona kind `complete` reports the
+ * frozen contracts-v1 code `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` (the
+ * code names a fact about the environment, so it is reported only when the
+ * world says so); any other world state (an unavailable `standard`, an
+ * `absent` kind, or no persona fact at all) reports `PERSONA_INCOMPATIBLE`
+ * (Architecture §27.2: persona identity cannot be installed safely). The
+ * detail always states the required kind(s) AND the world persona kind(s).
  *
  * Acknowledgements (Architecture §27.3) bind to the specific mismatch +
  * environment generation: a WARNING is satisfied only by an ack whose

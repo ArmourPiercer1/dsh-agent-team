@@ -1,0 +1,46 @@
+{
+  "type": "server-response",
+  "rpcId": "pkfix-A2-2okkjy1nau",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "compatibility": {
+          "schemaVersion": 1,
+          "environmentFingerprint": "fp-v1:73e6deee0dc5dc58",
+          "status": "OPEN",
+          "requirements": [
+            {
+              "requirementId": "req-persona-standard",
+              "type": "persona",
+              "complete": true,
+              "outcome": "PASS",
+              "reasonCode": "SATISFIED",
+              "detail": "all 1 required subject(s) available",
+              "unavailableSubjects": [],
+              "mismatchFingerprint": null,
+              "acknowledgement": null
+            }
+          ],
+          "counts": {
+            "pass": 1,
+            "warning": 0,
+            "fatal": 0,
+            "unackedWarning": 0,
+            "staleAcknowledgement": 0
+          },
+          "unappliedAcknowledgements": []
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "intent.probe",
+        "endpoint": "intent.probe",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

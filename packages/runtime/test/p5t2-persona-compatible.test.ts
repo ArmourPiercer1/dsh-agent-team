@@ -67,21 +67,23 @@ describe('P5-T2 group 2: compatible preset (complete:false) — scoped identity 
     expect(rig.personaSource.memberQueries.length).toBe(0)
 
     // The REAL compatibility engine probed exactly once with the canonical
-    // persona-composition requirement + composable fact.
+    // persona-composition requirement (subject = the required persona KIND
+    // `standard` — the kind convention, never a preset id) + the composable
+    // fact (subject = the substrate's effective kind).
     expect(rig.evaluator.count).toBe(1)
     expect(rig.evaluator.inputs[0]).toEqual({
       requirements: [
         {
           requirementId: 'team-persona-composition',
           type: 'persona',
-          subjects: ['preset-p5t2'],
+          subjects: ['standard'],
           complete: true,
         },
       ],
       environmentFacts: [
         {
           domain: 'persona',
-          subject: 'preset-p5t2',
+          subject: 'standard',
           available: true,
           generation: 1,
           detail: 'effective persona section is composable (non-complete)',

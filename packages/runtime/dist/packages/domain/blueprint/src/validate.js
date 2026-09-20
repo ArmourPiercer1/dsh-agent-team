@@ -39,6 +39,7 @@
  */
 import { assertRemoteSafeJsonValue, deepFreeze, LEGACY_FORBIDDEN_FIELDS, parseBlueprintId, parseBlueprintRevision, parseTemplateId, teamContractError, toRemoteSafeDetail, } from '../../../contracts/src/index.js';
 import { assertNoUnknownFields, assertPlainRecord, } from '../../../contracts/src/dto/common.js';
+import { isPersonaKind } from '../../compatibility/src/persona-kind.js';
 import { BLUEPRINT_CAPABILITIES_FIELDS, BLUEPRINT_DOCUMENT_SCHEMA_VERSION, BLUEPRINT_ENVELOPE_FIELDS, BLUEPRINT_MEMBER_ENVELOPE_ENTRY_FIELDS, BLUEPRINT_POLICY_REFERENCEABLE_FIELDS, BLUEPRINT_POLICY_STATE_FIELDS, BLUEPRINT_QUOTA_FIELDS, BLUEPRINT_QUOTA_SPEC_FIELDS, BLUEPRINT_REQUIREMENT_FIELDS, BLUEPRINT_TEMPLATE_FIELDS, BLUEPRINT_TOP_LEVEL_FIELDS, CAPABILITY_ITEM_MAX_LENGTH, CAPABILITY_POLICY_DECISIONS, CONTEXT_POLICY_MAX_LENGTH, DESCRIPTION_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH, ENVELOPE_OPERATION_MAX_LENGTH, ENVELOPE_OPERATION_PATTERN, METADATA_KEY_MAX_LENGTH, METADATA_KEY_PATTERN, METADATA_VALUE_MAX_LENGTH, MODEL_PREFERENCE_MAX_LENGTH, PERSONA_MAX_LENGTH, PERMISSION_PATH_MAX_LENGTH, PERMISSION_POLICY_DEFAULTS, PERMISSION_POLICY_FIELDS, PERMISSION_RESOURCE_KINDS, PERMISSION_RULE_FIELDS, PERMISSION_TOOL_NAMES, POLICY_STATE_ID_MAX_LENGTH, POLICY_STATE_ID_PATTERN, REQUIREMENT_DOMAIN_MAX_LENGTH, REQUIREMENT_DOMAIN_PATTERN, REQUIREMENT_NAME_MAX_LENGTH, REQUIREMENT_NAME_PATTERN, SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS, } from './schema.js';
 import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js';
 import { deriveContentHash } from './hash.js';
@@ -219,6 +220,18 @@ function validateRequirement(raw, path) {
         name.length > REQUIREMENT_NAME_MAX_LENGTH ||
         !REQUIREMENT_NAME_PATTERN.test(name)) {
         throw teamContractError('MALFORMED_DTO', `field ${path}.name must be a lowercase slug with dots (max ${REQUIREMENT_NAME_MAX_LENGTH}), got ${JSON.stringify(name)}`, { path: `${path}.name` });
+    }
+    // Persona kind convention (the P5-T2 subject decision, revised by the
+    // persona-requirement-preset-id bug report, direction B): a persona
+    // requirement's name must be a persona KIND (absent|standard|complete —
+    // the closed three-state effective-persona vocabulary, Architecture
+    // §13.5), NEVER a preset id. A preset id pins the requirement to one
+    // exact preset while the compatibility question is about the preset's
+    // persona SHAPE: any composable (non-complete) preset satisfies the
+    // `standard` kind, so id-pinning rejects every preset whose id differs
+    // and misdiagnoses the conflict as a complete-persona one.
+    if (domain === 'persona' && !isPersonaKind(name)) {
+        throw teamContractError('MALFORMED_DTO', `field ${path}.name for a persona requirement must be a persona kind ('absent' | 'standard' | 'complete'), got ${JSON.stringify(name)} — a preset id pins the requirement to one exact preset; declare the persona kind the team runtime needs instead`, { path: `${path}.name`, domain, name });
     }
     let optional = false;
     if (Object.hasOwn(record, 'optional') && record['optional'] !== undefined) {

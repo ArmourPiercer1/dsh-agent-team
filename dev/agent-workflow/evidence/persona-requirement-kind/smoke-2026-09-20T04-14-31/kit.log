@@ -1,0 +1,2 @@
+[2026-09-20T04:14:31.791Z] persona-kind live smoke — run 2026-09-20T04-14-31 — worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/persona-kind testuse=/home/user/dsh-plugins/dsh-agent-team/.worktrees/persona-kind/tests/deepseek-harness-test-use
+[2026-09-20T04:14:31.793Z] FATAL: test-use checkout is not at fb2c4b9e698e30edb738bca4cf0618587db7d203 (got undefined)
