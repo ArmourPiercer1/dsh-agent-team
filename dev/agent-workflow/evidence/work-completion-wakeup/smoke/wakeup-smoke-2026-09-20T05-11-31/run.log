@@ -1,0 +1,3 @@
+# run.log (partial — head lines lost to a tee pre-creation failure; the kit's
+# own instance.log / mock corpus / summary.json in this dir are complete)
+# VERDICT: PASS 23/23 @ ports 3492/3497 (fix-round run 1, commit 4da88dc)
