@@ -613,6 +613,17 @@ export interface TeamRuntimeOptions {
     /** The in-facade activity-interval writer (P8-S3). Absent in the P6-T2
      *  default wiring: no work-unit activity interval is opened/closed. */
     readonly workActivity?: WorkActivityPort;
+    /** The async work-completion (wake-up) notification port
+     *  (work-completion-wakeup plan §6). After a DETACHED
+     *  (`execution: 'async'`) work unit settles, the router's completion
+     *  observer re-reads the durable work status and, when the terminal
+     *  settlement fact exists, invokes this port (best-effort: the
+     *  notification is a liveness edge, never a durable write, and a
+     *  delivery failure is a liveness failure only). Absent (unit/fake
+     *  worlds without a live Leader) → the work still executes and settles
+     *  durably; there is simply no wake notification. The sync path NEVER
+     *  invokes it (the tool result is the completion channel). */
+    readonly workCompletionNotification?: import('../work-completion-notification/index.js').WorkCompletionNotificationPort;
     /** The P8-S5B shared team operation chain (the single CR-8 coordinator
      *  map). When installed, this runtime's per-team effect lock IS that
      *  shared chain: every durable effect — and, for NEW WORK admissions,

@@ -620,6 +620,7 @@ export function createAgentsDouble(options = {}) {
   const resumes = []
   const disposals = []
   const followups = []
+  const steers = []
   const cancels = []
   const handles = new Map()
   const whenIdleBehavior = options.whenIdleBehavior ?? (() => Promise.resolve())
@@ -660,8 +661,17 @@ export function createAgentsDouble(options = {}) {
       // constructor order: `this.scope = createScope(loopCtx, this);
       // this.ctx = this.scope.ctx.extend({ agent: this })`).
       ctx: undefined,
+      // Work-completion wake-up: the real Agent's `status` is a getter
+      // over its phase ('idle' | 'running'); the double models it as a
+      // plain MUTABLE property (default 'idle' — a freshly created or
+      // resumed agent has no in-flight turn), so a test can pin the
+      // busy/idle observation the wake-up primitive branches on.
+      status: 'idle',
       followup(message) {
         followups.push({ sessionId, message })
+      },
+      steer(message) {
+        steers.push({ sessionId, message })
       },
       whenIdle() {
         return whenIdleBehavior(agent)
@@ -731,6 +741,7 @@ export function createAgentsDouble(options = {}) {
     resumes,
     disposals,
     followups,
+    steers,
     cancels,
     handles,
     globalSections,
@@ -1121,6 +1132,7 @@ export async function createLiveWorld(options = {}) {
       resumes: agents.resumes,
       disposals: agents.disposals,
       followups: agents.followups,
+      steers: agents.steers,
       cancels: agents.cancels,
       materialized: sessionPersistence.materialized,
     },

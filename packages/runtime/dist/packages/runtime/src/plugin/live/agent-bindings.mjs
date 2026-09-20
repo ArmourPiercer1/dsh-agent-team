@@ -2542,6 +2542,77 @@ export function createAgentBindings(deps) {
     await deliverRootInput({ rootSessionId: sid, text })
   }
 
+  /**
+   * Work-completion wake-up (async work completion → Leader wakeup) —
+   * deliver ONE best-effort completion notification to the Root (Leader)
+   * Agent as a NEWLY-CREATED model-visible input turn. A DELIBERATELY
+   * SEPARATE primitive from the C1 `deliverRootControlNotification` /
+   * `deliverRootInput` path (plan §15/§16/§19):
+   *
+   *   - the C1/root-input path awaits `whenIdle` + materializes AFTER the
+   *     delivery (its callers — work delivery, Root initial work, the
+   *     control notifier — own the turn's completion as part of their
+   *     own flow);
+   *   - THIS path's success boundary is the followup/steer ACCEPTANCE
+   *     only (plan §16): it does NOT await `whenIdle` and does NOT
+   *     `ensureMaterialized` as a success condition (the inbox splice is
+   *     itself durable — the upstream Agent records the normalized
+   *     pending input in the session log; awaiting the turn here would
+   *     block the observer behind the Leader's whole wake-up turn and
+   *     re-introduce the liveness coupling this mechanism removes).
+   *
+   * Wake-up semantics are the DSH v0.1.5-rc.2 Agent's own (plan §17 —
+   * no Team-side state machine, no extra lock): `status === 'idle'` →
+   * `followup` (starts a new turn; the idle Leader is woken); otherwise
+   * `steer` (joins the current turn at the next step boundary). The
+   * check→act race is benign by upstream design: `steer` can still wake
+   * an agent that just went idle, and a `followup` after a turn started
+   * simply queues as the next turn.
+   *
+   * NON-AUTHORITY by construction: the glue writes no TeamDomain state
+   * and carries no result — the text is pre-rendered (the
+   * work-completion-notification module's deterministic
+   * `[team-work-settled requestToken=<token>]`-leading metadata) and the
+   * durable settlement fact + `team_collect` stay the authority. A
+   * rejection PROPAGATES to the caller (the router observer swallows it
+   * as a liveness failure — plan §13).
+   * @param {{rootSessionId: string, text: string}} input
+   * @returns {Promise<void>}
+   */
+  async function deliverRootWorkCompletionNotification(input) {
+    const sid = String(input?.rootSessionId ?? '')
+    const text = String(input?.text ?? '')
+    if (sid === '') {
+      throw new Error('agent-bindings: deliverRootWorkCompletionNotification requires a non-empty rootSessionId')
+    }
+    if (text === '') {
+      throw new Error('agent-bindings: deliverRootWorkCompletionNotification requires a non-empty text (the token-leading notification)')
+    }
+    // A not-live-but-durable Leader is resumed first (the same resolver
+    // every other input path uses); a session that is neither live nor
+    // durable has no agent to run on (typed throw, below).
+    const handle = await ensureLiveAgent(sid)
+    // The target root IS the team root of its own team — the request
+    // boundary resolves under that root's durable truth (same rule as
+    // the shared deliverRootInput).
+    await prepareAgentForRequest(sid, sid)
+    // Plugin-attributed user-visible input (the upstream MessageSource
+    // plugin kind — distinct from the `kind: 'user'` human-input
+    // attribution the delegate work path uses: this turn is a runtime
+    // event, not a human message).
+    const message = createUserMessage({
+      content: [{ type: 'text', text }],
+      source: { kind: 'plugin', plugin: 'dsh-agent-team' },
+    })
+    if (handle.agent.status === 'idle') {
+      handle.agent.followup(message)
+    } else {
+      handle.agent.steer(message)
+    }
+    // Success boundary = acceptance (plan §16): NO whenIdle, NO
+    // ensureMaterialized. The turn (if any) runs on its own.
+  }
+
   // The P7-T3 lifecycle bindings over the REAL production surfaces: close-
   // admission stays with the production row (no separate in-process
   // admission gate — the router's per-team lock serializes the whole
@@ -3099,5 +3170,12 @@ export function createAgentBindings(deps) {
     // team_resolve_control stay the authority; a delivery failure is a
     // liveness failure only, never a request-path failure)
     deliverRootControlNotification,
+    // additive (work-completion wake-up): the async work-completion
+    // notification delivery to the Leader root (idle → followup /
+    // running → steer; success boundary = acceptance; non-authority —
+    // the durable settlement fact + team_collect stay the authority; a
+    // delivery failure is a liveness failure only, swallowed by the
+    // router's completion observer)
+    deliverRootWorkCompletionNotification,
   }
 }

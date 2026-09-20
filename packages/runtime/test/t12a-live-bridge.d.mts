@@ -37,6 +37,12 @@ export interface RecordedCancel {
   readonly args: unknown
 }
 
+/** One recorded steer message (the session id + the LLM message). */
+export interface RecordedSteer {
+  readonly sessionId: string
+  readonly message: unknown
+}
+
 /** One active listener registration on the agent ctx double. */
 export interface AgentListenerEntry {
   readonly event: string
@@ -190,7 +196,12 @@ export interface LiveAgentHandle {
      *  reads it at RESOLVE time, never captured at install). */
     readonly session: { readonly id: string; header: { cwd?: string } }
     readonly ctx: AgentCtxDouble
+    /** Work-completion wake-up: the real Agent's `status` getter
+     *  ('idle' | 'running') modeled as a MUTABLE plain property (default
+     *  'idle') so a test can pin the busy/idle observation. */
+    status: 'idle' | 'running'
     followup(message: unknown): void
+    steer(message: unknown): void
     whenIdle(): Promise<void>
     cancel(args?: unknown): void
   }
@@ -203,6 +214,7 @@ export interface AgentsDouble {
   readonly resumes: RecordedResume[]
   readonly disposals: string[]
   readonly followups: RecordedFollowup[]
+  readonly steers: RecordedSteer[]
   readonly cancels: RecordedCancel[]
   readonly handles: Map<string, LiveAgentHandle>
   /** The world's shared global prompt layer (T12-M2). */
@@ -444,6 +456,11 @@ export interface LiveWorld {
       readonly requestId: string
       readonly text: string
     }): Promise<void>
+    /** Work-completion wake-up: the async work-completion notification port — one NEW model-visible input turn on the team root (idle → followup / running → steer; success boundary = acceptance; the durable settlement fact + team_collect are the recovery mechanism, so failures are non-fatal at the router observer). */
+    deliverRootWorkCompletionNotification(input: {
+      readonly rootSessionId: string
+      readonly text: string
+    }): Promise<void>
     boot(): Promise<void>
     close(): Promise<void>
     [k: string]: unknown
@@ -470,6 +487,7 @@ export interface LiveWorld {
     readonly resumes: RecordedResume[]
     readonly disposals: string[]
     readonly followups: RecordedFollowup[]
+    readonly steers: RecordedSteer[]
     readonly cancels: RecordedCancel[]
     readonly materialized: string[]
   }

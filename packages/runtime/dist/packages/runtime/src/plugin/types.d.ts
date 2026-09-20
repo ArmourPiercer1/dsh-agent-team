@@ -803,6 +803,25 @@ export interface TeamAgentBindings {
         readonly requestId: string;
         readonly text: string;
     }) => Promise<void>;
+    /**
+     * Work-completion wake-up — deliver ONE best-effort async work-completion
+     * notification to the Root (Leader) Agent as a NEW model-visible input
+     * turn (the DSH Agent semantics: `status === 'idle'` → followup,
+     * otherwise steer at the next step boundary). Success boundary = the
+     * followup/steer ACCEPTANCE only (no whenIdle, no materialize as a
+     * success condition). NON-AUTHORITY: the glue writes no TeamDomain state
+     * and carries no result — the durable settlement fact + `team_collect`
+     * stay the authority. At-least-once / best-effort: the text is
+     * token-leading and deterministic per work unit, so a redelivery is
+     * recognizable; a delivery failure is a liveness failure only (the
+     * router's completion observer swallows it). OPTIONAL — same contract as
+     * `deliverRootControlNotification`: a glue without this port simply does
+     * not wake (the `team_collect` read-back stays the recovery path).
+     */
+    readonly deliverRootWorkCompletionNotification?: (input: {
+        readonly rootSessionId: string;
+        readonly text: string;
+    }) => Promise<void>;
     /** The P8-S4B request boundary (re-apply the durable truth). */
     readonly prepareAgentForRequest: (sessionId: string) => Promise<void>;
     /** Execute one tool on the live agent's ctx (the /__p6t6/tool route). */
