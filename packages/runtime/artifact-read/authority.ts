@@ -44,7 +44,11 @@ import type {
   GrantVerdict,
   SpillStoreSource,
 } from './types.js'
-import { memberIdentityKey } from '../../contracts/src/index.js'
+import {
+  memberIdentityKey,
+  type InstanceId,
+  type RootSessionId,
+} from '../../contracts/src/index.js'
 
 /** The ports the authority needs (implementation guide §2.5). */
 export interface TeamArtifactAuthorityPorts {
@@ -109,6 +113,26 @@ export interface AuthorizeReadArgs {
 function lifecycleEligible(lifecycle: ArtifactInstanceLifecycle | undefined): boolean {
   if (lifecycle === undefined) return false
   return lifecycle === 'leader' || lifecycle === 'CREATED' || lifecycle === 'RUNNING' || lifecycle === 'SETTLED'
+}
+
+/**
+ * The single branding boundary of the module: the ports (and the grant
+ * records) are string-based — the pure core is seam-free by contract —
+ * while `memberIdentityKey` consumes the branded domain ids. The brand is
+ * a nominal marker over the same string (no runtime conversion), so the
+ * assertion here is type-only; every registry key in the module is built
+ * through this one helper (the same boundary-cast convention as
+ * s6-remote / fresh-member).
+ *
+ * @param rootSessionId - the TeamSession (a durable session id string).
+ * @param instanceId - the instance within it (a durable instance id string).
+ * @returns the canonical composite member identity key.
+ */
+function toIdentityKey(rootSessionId: string, instanceId: string): string {
+  return memberIdentityKey({
+    rootSessionId: rootSessionId as RootSessionId,
+    instanceId: instanceId as InstanceId,
+  })
 }
 
 /**
@@ -177,10 +201,7 @@ export class TeamArtifactAuthority {
    * non-regular → inactive) → fresh version digest.
    */
   async authorizeRead(args: AuthorizeReadArgs): Promise<GrantVerdict> {
-    const identityKey = memberIdentityKey({
-      rootSessionId: args.rootSessionId,
-      instanceId: args.instanceId,
-    })
+    const identityKey = toIdentityKey(args.rootSessionId, args.instanceId)
     const freshTargetKeyDigest = targetKeyDigest(args.target.targetKey)
     const candidates = this.registry.findCandidates(identityKey, freshTargetKeyDigest)
     if (candidates.length === 0) return { valid: false, reason: 'no-candidate' }
@@ -219,7 +240,7 @@ export class TeamArtifactAuthority {
         continue
       }
       this.registry.install(
-        memberIdentityKey({ rootSessionId: grant.rootSessionId, instanceId: grant.instanceId }),
+        toIdentityKey(grant.rootSessionId, grant.instanceId),
         grant,
       )
       rebuilt++
@@ -273,7 +294,7 @@ export class TeamArtifactAuthority {
         `artifact grant rejected: the durable grant fact could not be written: ${errorMessage(error)}`,
       )
     }
-    this.registry.install(memberIdentityKey({ rootSessionId, instanceId }), grant)
+    this.registry.install(toIdentityKey(rootSessionId, instanceId), grant)
     return { recorded: true, grant }
   }
 

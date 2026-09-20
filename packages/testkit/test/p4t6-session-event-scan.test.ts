@@ -1103,8 +1103,27 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // rejection, the disposed target-stale block, and the closed
     // argument validation). Zero denylist vocabulary; the frozen
     // quarantine hit set is unchanged at fifteen. Scanner unchanged.
-    expect(scanResult.filesScanned).toBe(728)
-    expect(scanResult.files.length).toBe(728)
+     // strict-read core-spill (task/strict-read-core-spill, the spill
+     // content-read vertical per the implementation guide + architecture
+     // + ADR-strict-read-core-spill-plugin-layer): +12 on top of the 728
+     // base (rebased onto the PR #25 merge 0597757, 2026-09-21 — DEC-1
+     // union) = 740 — the twelve new scannable files: Phase A the six pure
+     // core modules (packages/runtime/artifact-read/ types.ts + digest.ts
+     // + fact.ts + registry.ts + authority.ts + index.ts) and the two unit
+     // suites (packages/runtime/test/artifact-read-digest-fact.test.ts +
+     // test/artifact-read-authority.test.ts); Phase B the permission-lane
+     // suite (packages/runtime/test/
+     // artifact-read-permission-lane.test.ts); Phase C the artifact-grant
+     // bridge module (packages/runtime/src/plugin/
+     // artifact-grant-bridge.ts), the Team-aware local spill provider
+     // (packages/runtime/src/plugin/team-spill-local.ts) and its
+     // eight-case vertical suite (packages/runtime/test/
+     // team-spill-local.test.ts). All twelve carry zero denylist
+     // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
+     // Scanner unchanged. Single-writer pin bump on the task branch (the
+     // PR #18 closure precedent).
+     expect(scanResult.filesScanned).toBe(740)
+     expect(scanResult.files.length).toBe(740)
 
   })
 

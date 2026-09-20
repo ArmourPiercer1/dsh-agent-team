@@ -34,6 +34,20 @@
 # SWALLOWED that rejection (zero terminal signal: the /team-remote routes
 # never registered and the team UI failed with the frontend static
 # handler's HTTP 405).
+#
+# Strict-read + core-spill (Phase C): the base `spill-local` row is
+# DISABLED and replaced by this package's Team-aware provider
+# (`dsh-agent-team/spill-local` → packages/runtime/dist/.../
+# team-spill-local.js, the `./spill-local` subpath export). The provider
+# is a strict superset of the base row — same `spillStore` service name,
+# same config surface (no config here = the base row's defaults: private
+# temp root, 30-day cleanup sweep) — plus the durable artifact-read
+# grant record for managed Team sessions (the producer side of the
+# content-read vertical; the host row fills the `teamArtifactAuthority`
+# bridge the provider reads lazily per save). An unmanaged session
+# (no team binding) stays byte-for-byte upstream-equivalent.
+- id: spill-local
+  disabled: true
 
 - insert:
     - id: "dsh-agent-team"
@@ -94,5 +108,7 @@
         externalPolicyFacts:
           hard: {}
           capabilityExists: {}
+    - id: "team-spill-local"
+      name: "dsh-agent-team/spill-local"
     - id: "dsh-agent-team-client"
       name: "dsh-agent-team"

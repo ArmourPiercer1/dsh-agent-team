@@ -124,7 +124,7 @@ function makeControl(world: ControlWorld): ControlService {
     throw new Error('fake control: method must not be reached in this scenario')
   }
   return {
-    async requestControl(args) {
+    async requestControl(args: unknown) {
       world.requestCalls.push(args)
       // Fail loud: a control request in a grant-authorized case is a
       // test failure; in the G7 fall-through case the recorded call is
@@ -293,9 +293,9 @@ describe('artifact-grant lane (implementation guide §9)', () => {
     )
     expect(decision).toEqual({ kind: 'allow' })
     expect(env.grantCalls.length).toBe(1)
-    expect(env.grantCalls[0].instanceId).toBe(INSTANCE)
-    expect(env.grantCalls[0].rawPath).toBe(ARTIFACT)
-    expect(env.grantCalls[0].canonicalResourceKey).toBe(TK_ARTIFACT)
+    expect(env.grantCalls[0]!.instanceId).toBe(INSTANCE)
+    expect(env.grantCalls[0]!.rawPath).toBe(ARTIFACT)
+    expect(env.grantCalls[0]!.canonicalResourceKey).toBe(TK_ARTIFACT)
     // no control request (the grant authorizes WITHOUT the ask flow)
     expect(env.controlWorld.requestCalls.length).toBe(0)
     expect(next.calls()).toBe(1)

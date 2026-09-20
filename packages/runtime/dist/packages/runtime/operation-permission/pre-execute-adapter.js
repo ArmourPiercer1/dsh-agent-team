@@ -18,6 +18,16 @@
  *     ↓                                OperationPermissionError: deny,
  *                                       never next())
  *     resolveOperationPermission(...)         (A3 — pure static decision)
+ *     ┌ artifact-grant lane (strict-read + core-spill, guide §9) —
+ *     │ read tool + injected port + (ask OR default-deny) decision:
+ *     │ valid grant → checkExternalOperation(live) (the SAME external
+ *     │ hard ceiling as the static-allow path; fail closed)
+ *     │   ├ allowed → mark + await next()   (ALLOW WITHOUT a control
+ *     │   └ denied  → return { kind: 'deny' })
+ *     │ an explicit rule DENY and a static ALLOW never consult it —
+ *     │ a grant is a floor, never a ceiling override; a port fault
+ *     │ fails closed (no grant, unchanged pipeline)
+ *     └
  *     ├ allow
  *     │   ├ LEADER exec-class (bash/pwsh) WITHOUT the matching exec token
  *     │   │   in execEnvelopeOps (the mutation-envelope DUAL GATE —
@@ -436,7 +446,7 @@ export function installParameterPermissionListener(agentCtx, params) {
                 'refusing to install the parameter permission listener without it');
         }
     }
-    const { policy, resolveTarget, controlService, rootSessionId, caller, targetInstanceId, isLeader, execEnvelopeOps, } = params;
+    const { policy, resolveTarget, controlService, rootSessionId, caller, targetInstanceId, isLeader, execEnvelopeOps, authorizeArtifactRead, } = params;
     /** The request kind this install routes asks to (plan §9.5). */
     const requestKind = isLeader
         ? CONTROL_REQUEST_KINDS.USER_APPROVAL
@@ -792,6 +802,88 @@ export function installParameterPermissionListener(agentCtx, params) {
                     : {}),
             },
         });
+        // (3b) Strict-read + Core-spill (implementation guide §9,
+        // architecture §12) — the ARTIFACT-GRANT lane of the read decision.
+        //
+        // Eligibility (the frozen decision order — a grant is a floor,
+        // never a ceiling override):
+        // - an explicit rule DENY never reaches here (it settles as a deny
+        //   below — explicit deny + grant → DENY, guide §9 critical case);
+        // - a static ALLOW never reaches here (the unchanged allow path
+        //   already carries the external-hard last-mile recheck);
+        // - `ask` (explicit-ask rule OR default-ask) and default-`deny`
+        //   reads consult the port: a valid grant authorizes the read
+        //   WITHOUT a control request (explicit ask + grant → ALLOW, no
+        //   request; default deny + grant → ALLOW — the strict-read core
+        //   use case: the producer reads back its own out-of-workspace
+        //   spill artifact).
+        //
+        // The port receives ONLY this decision's own fresh canonicalization
+        // inputs (the exact raw path, the freshly resolved resource key +
+        // opaque handle) — the authority re-verifies the fs identity FRESH
+        // behind the port (H4: no cache anywhere on this path). A port
+        // fault, a missing raw path, or a missing handle fails closed: the
+        // read proceeds through the unchanged pipeline (no grant).
+        //
+        // A valid grant is authorized only AFTER the SAME external-hard
+        // last-mile recheck the static-allow path carries (external hard +
+        // grant → DENY — invariant 34: no Team decision bypasses the
+        // external hard policy); marking + next() follow the frozen
+        // allow-path convention (mark only on final-allow paths).
+        if (name === 'read' && authorizeArtifactRead !== undefined) {
+            const grantLaneEligible = decision.decision === 'ask' ||
+                (decision.decision === 'deny' && decision.provenance.source === 'default');
+            if (grantLaneEligible && operation.resource.kind === 'file') {
+                const rawArguments = typeof exec.arguments === 'object' && exec.arguments !== null && !Array.isArray(exec.arguments)
+                    ? exec.arguments
+                    : undefined;
+                const rawPath = rawArguments !== undefined ? rawArguments['file_path'] : undefined;
+                const targetHandle = targetHandles.get(operation.resource.key);
+                if (typeof rawPath === 'string' && rawPath.length > 0 && targetHandle !== undefined) {
+                    let grantValid = false;
+                    try {
+                        grantValid = await authorizeArtifactRead({
+                            instanceId: targetInstanceId,
+                            rawPath,
+                            canonicalResourceKey: operation.resource.key,
+                            targetHandle,
+                        });
+                    }
+                    catch {
+                        // A faulting port fails closed (no grant — the unchanged
+                        // pipeline decides below).
+                        grantValid = false;
+                    }
+                    observe({ stage: 'artifact-grant-check', callId, tool: name, valid: grantValid });
+                    if (grantValid) {
+                        let external;
+                        try {
+                            external = await controlService.checkExternalOperation({
+                                capabilityDomain: 'tools',
+                                toolName: name,
+                            });
+                        }
+                        catch (error) {
+                            return {
+                                kind: 'deny',
+                                reason: `permission denied: the external policy recheck failed (unexpected check failure: ${error instanceof Error ? error.message : String(error)})`,
+                            };
+                        }
+                        if (external.allowed === false) {
+                            observe({ stage: 'external-recheck-denied', callId, tool: name, via: 'artifact-grant' });
+                            return {
+                                kind: 'deny',
+                                reason: `permission denied: the external hard policy no longer allows ${name} (${external.reason})`,
+                            };
+                        }
+                        // R6 / H1 — mark THIS exec object (the same object the
+                        // pipeline flows to the end-cap guard stage) and dispatch.
+                        authorizedExecutions.add(exec);
+                        return await next();
+                    }
+                }
+            }
+        }
         if (decision.decision === 'allow') {
             // exec-autonomy-contract (user ruling 2026-09-18) — the DUAL
             // GATE: a LEADER exec-class ALLOW (bash / pwsh — the shell class;

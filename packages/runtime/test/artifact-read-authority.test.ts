@@ -59,7 +59,24 @@ import type {
   ArtifactLedgerPort,
   ArtifactReadGrant,
 } from '../artifact-read/index.js'
-import { memberIdentityKey } from '../../contracts/src/index.js'
+import {
+  memberIdentityKey,
+  type InstanceId,
+  type RootSessionId,
+} from '../../contracts/src/index.js'
+
+/**
+ * The test's identity constants are plain strings; `memberIdentityKey`
+ * consumes the branded domain ids. This is the test-side mirror of the
+ * authority's single branding boundary (type-only — the brand is a
+ * nominal marker over the same string).
+ */
+function mkKey(rootSessionId: string, instanceId: string): string {
+  return memberIdentityKey({
+    rootSessionId: rootSessionId as RootSessionId,
+    instanceId: instanceId as InstanceId,
+  })
+}
 
 // --- fakes ------------------------------------------------------------------------
 
@@ -202,8 +219,8 @@ describe('ArtifactGrantRegistry', () => {
 
   it('keys by the COMPOSITE identity (invariant 18): the same instanceId under two roots is separate', () => {
     const registry = new ArtifactGrantRegistry()
-    const keyA = memberIdentityKey({ rootSessionId: ROOT_A, instanceId: MEMBER })
-    const keyB = memberIdentityKey({ rootSessionId: ROOT_B, instanceId: MEMBER })
+    const keyA = mkKey(ROOT_A, MEMBER)
+    const keyB = mkKey(ROOT_B, MEMBER)
     expect(keyA).not.toBe(keyB)
     registry.install(keyA, grant('/a/x'))
     expect(registry.findCandidates(keyA, targetKeyDigest('tk:1')).length).toBe(1)
@@ -213,7 +230,7 @@ describe('ArtifactGrantRegistry', () => {
 
   it('findCandidates narrows by fresh target digest; the locator is NOT a filter here', () => {
     const registry = new ArtifactGrantRegistry()
-    const key = memberIdentityKey({ rootSessionId: ROOT_A, instanceId: MEMBER })
+    const key = mkKey(ROOT_A, MEMBER)
     registry.install(key, grant('/a/x'))
     expect(registry.findCandidates(key, targetKeyDigest('tk:1')).length).toBe(1)
     expect(registry.findCandidates(key, targetKeyDigest('tk:other')).length).toBe(0)
@@ -222,17 +239,17 @@ describe('ArtifactGrantRegistry', () => {
 
   it('re-installing the same identity + locator replaces the candidate', () => {
     const registry = new ArtifactGrantRegistry()
-    const key = memberIdentityKey({ rootSessionId: ROOT_A, instanceId: MEMBER })
+    const key = mkKey(ROOT_A, MEMBER)
     registry.install(key, grant('/a/x'))
     const replacement = { ...grant('/a/x'), versionDigest: versionDigest('v2') }
     registry.install(key, replacement)
     expect(registry.size).toBe(1)
-    expect(registry.listForIdentity(key)[0].versionDigest).toBe(versionDigest('v2'))
+    expect(registry.listForIdentity(key)[0]!.versionDigest).toBe(versionDigest('v2'))
   })
 
   it('clear drops everything', () => {
     const registry = new ArtifactGrantRegistry()
-    registry.install(memberIdentityKey({ rootSessionId: ROOT_A, instanceId: MEMBER }), grant('/a/x'))
+    registry.install(mkKey(ROOT_A, MEMBER), grant('/a/x'))
     registry.clear()
     expect(registry.size).toBe(0)
   })
@@ -262,8 +279,8 @@ describe('authority: issuance (D5/A5)', () => {
     }
     // exactly one durable put, carrying the closed payload, under the producing root
     expect(world.ledger.appended.length).toBe(1)
-    expect(world.ledger.appended[0].rootSessionId).toBe(ROOT_A)
-    expect(Object.keys(world.ledger.appended[0].payload).sort()).toEqual([
+    expect(world.ledger.appended[0]!.rootSessionId).toBe(ROOT_A)
+    expect(Object.keys(world.ledger.appended[0]!.payload).sort()).toEqual([
       'instanceId',
       'locator',
       'schemaVersion',
@@ -272,7 +289,7 @@ describe('authority: issuance (D5/A5)', () => {
       'versionDigest',
     ])
     // the runtime projection holds the grant (installed AFTER the put — same order)
-    const key = memberIdentityKey({ rootSessionId: ROOT_A, instanceId: MEMBER })
+    const key = mkKey(ROOT_A, MEMBER)
     expect(world.authority.registry.findCandidates(key, targetKeyDigest(`tk:${locator}`)).length).toBe(1)
   })
 
@@ -649,7 +666,7 @@ describe('authority: cold-restart rebuild', () => {
     const world = makeWorld()
     // runtime-installed grant with NO durable fact (the forbidden state must not survive a rebuild)
     world.authority.registry.install(
-      memberIdentityKey({ rootSessionId: ROOT_A, instanceId: MEMBER }),
+      mkKey(ROOT_A, MEMBER),
       {
         rootSessionId: ROOT_A,
         instanceId: MEMBER,
