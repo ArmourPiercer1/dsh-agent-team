@@ -3440,3 +3440,73 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **提交 + 推送**（一次性授权内，同分支 fast-forward，无 force）：① 修复提交（源/测试/kit 回滚 + 注释收窄 + 重建 dist）；② 本簿记提交（graph 块 +2 字段 `final_fix_round_pr21_20260920` / `smoke_final_fix_round` + current_phase 更新 + 本日志条目 + finalfix-full-test.log + kit 证据）。PR #21 自动跟踪新 head；body 增「终审修复」节（设计重新调整 + 回滚 + G7 删 + provenance contract + 新门禁实数）。
 - **红线守纪**：CORE PATCH BUDGET = 0（test-use pristine @ fb2c4b9e69 只读，zero-core 通过）；:3080/:3180 零触碰；未并行 kit + 全量 vitest；无 `[team-notification]`/TeamNotificationService/registry/bus 新增；messaging/control/TeamDomain schema/Blueprint 契约/Remote/UI/DSH-core 零改动；source.kind 本轮不统一（§10 下轮候选）；无新 wake budget；terminal authority 不变（`scanWorkStatus(...)[0].settledSequence !== undefined` RE-READ）；C1 自己的 at-least-once 文档零触碰；at-most-once 措辞保留（仅解除与 inject/Stop 的绑定）；plan/fix-guide 文档（用户产物）零触碰；`.tmp-*` 无残留提交。
 - **状态**：PR #21 已更新至终审修复轮 tip（OPEN/MERGEABLE 待复核），待用户 merge 裁决。
+
+## 2026-09-20 — team_send_message liveness 修复轮（用户指令轮：guide = docs/plans/active/team_send_message_liveness_fix_guide.md）
+
+### 任务与背景
+
+- 用户指令：读取工作区代码与文档，了解目标、路线图、代码架构、工作进度，随后按 `docs/plans/active/team_send_message_liveness_fix_guide.md` 执行 `team_send_message` 工具修复。
+- 修复定位（guide §16 冻结原则）：Messaging is an input delivery primitive, not a work execution primitive — `team_send_message` 成功边界从「收件方收到 + 跑完整个 turn + 回到 idle」（whenIdle）改为「收件方 session **ACCEPTED** 该 attributed input」。`team_delegate`/`team_follow_up` 工作完成语义不变。CORE PATCH BUDGET = 0（仅插件仓）。
+- 基线 d63cb71 = origin/master（PR #21 merge 点）；branch `fix/team-send-message-liveness`，1 task = 1 branch = 1 worktree（`.worktrees/send-message-liveness`）= 1 writer。
+- **模型路由**（ROUTER_RULES 要求）：会话模型 = `qwen3.8-27b` = 路由要求 `qiyuan-self/qwen3.8-27b`（会话即该路由，满足；记录于此）。
+
+### 修复内容（fix commit）
+
+- **核心**（`packages/runtime/src/plugin/live/agent-bindings.mjs` `sessionInput.submitAttributedInput`）：`ensureLiveAgent` → `prepareAgentForRequest` → `createUserMessage` → `handle.agent.followup(message)`；**仅 messaging port 移除 `await whenIdle()`**（其余 whenIdle 站点 workDelivery.deliver / deliverRootContext / drainDescendants 全保留）；无 ensureMaterialized。注释 marker `Success boundary = inbox acceptance`（kit preflight 用它防止对 stale dist 做假绿测试；dist glue 同含）。
+- **文档层**：`messaging/types.ts` JSDoc（成功边界 = input acceptance；MUST NOT await whenIdle；sync 路径用不同 port workDelivery.deliver）；`messaging/coordinator.ts` 7 处注释（Phase B = acceptance）。
+- **顺带 lint 修复（零行为变更）**：`commitConfirmationLocked` destructure 删未用 `target` — base d63cb71 既有 lint 错误（`git show d63cb71:... | eslint --stdin` 验证）。
+- **回归测试**（新 `packages/runtime/test/send-message-liveness.test.ts`，4/4 绿，T1/T3/T4 修复前 RED 已验证）：T1 live glue（真实 agent-bindings 经 t12a-live-bridge；never-settling deferred + 3s watchdog race：修复后 `submit-resolved`、`whenIdleCalls===0`、恰 1 followup、text 逐字、0 steers/injects；修复前 = `watchdog-timeout` 实锤旧边界 hang）；T2 coordinator（AcceptanceBoundaryPort acceptance 即 resolve、turn flag 25ms 后到 → `delivered` 先于 turn 完成；1 intent + 1 confirmation）；T3 reply cycle（嵌套 send L→A→L→A-2：3 intents + 3 confirmations，无 mutual whenIdle）；T4 fail-closed（port 失败 → MESSAGING_DELIVERY_FAILED，拒绝时刻 inputCount=0；恢复后恰 1 input + 1 confirmation）。
+- **p4t6 单写者 pin**（DEC-1 union 记账）：725 → 726（+1 = 本轮新测试文件；scanner 直跑 10/10；`it()` 标题 + union 注释同步）。
+- **mock harness 扩展**（`packages/tools/harness/mock-deepseek.mjs`，向后兼容）：`decide` 支持返回 Promise（`await Promise.resolve(decide(...))`；sync decide 经 passthrough 行为逐字不变 — 既有 kit 全不受影响）。场景 C 的「接收方长 turn」实现为 **8s 长 in-flight model call**（async decide 持响应），理由见 LIVE-FOUND α.2。
+- **real-host kit**（新 `tests/kits/send-message-liveness-smoke/`，C1/WCN kit 模式：真实 host spawn test-use @ fb2c4b9e69 + mock oracle + DSH_HOME 自清 + :3080/:3180 只读 pre/post 探测）：11 criteria = S0 discovery（17 工具 boot 面 + 12 工具 team catalog + deny list 0）+ S1a/S1b A（leader send 返回后 turn 结束 + member 独立处理）+ S2 A（tool result = `status:"delivered"` 全 shape，token 关联）+ **S3 C 核心（tL4 < tW2 硬判据 + gap ≥ 7s；tW1 < tL4 为 kick-race，记录不门控）** + S4 C（member turn 独立完成）+ S5 B（member→leader reply 亦 delivered）+ S6 B（leader 对 reply 跑新 turn，无 cross-Agent whenIdle）+ S7（team.create 200 durable）+ S8（ledger 恰 2 intents + 2 confirmations、confirmation 在 intent 后）+ S9（:3080/:3180 前后 401 零触碰）。preflight = test-use @ fb2c4b9e69 pristine + dist glue 含修复 marker。
+
+### real-host smoke（VERDICT PASS）
+
+- 规范 run = `sml-smoke-2026-09-20T12-06-07`：**VERDICT PASS 11/11**（KIT_EXIT=0）。
+- **核心场景 C 的 wire-level 证明**（s3-timeline.json）：tW1=12:06:12.359Z（member 首个 model request = 长 turn 开始）→ tL4=12:06:12.370Z（**发送方 tool result 已 delivered，仅 +11ms**）→ tW2=12:06:20.385Z（member 仍在运行，长 turn 后 8026ms）；`l4BeforeW2=true` + `longTurnGapMs=8026` + `w1BeforeL4=true`（本 run 连 kick-race 方向亦满足，判据仍只门控 tL4 < tW2）。
+- 场景 A：leader send 即刻返回 delivered（S2 shape：deliveryMode=direct、deliveredToInstanceId=inst-0v5q7jf1ktsn），member 随后独立处理（S1b w1=seq=7）。
+- 场景 B：member→leader reply 亦返回 delivered（S5：deliveredToInstanceId=inst-leader），leader 对 reply 跑新 turn（S6 leaderReply=seq=11）— 双向无 mutual whenIdle。
+- 持久性（S8）：sml-send intent seq=3 → delivered seq=4；sml-reply intent seq=6 → delivered seq=7（confirmation 在 intent 后，恰 2+2，无多余事实）。
+- 失败弧（6 个失败/不完整 run 留档，全部收敛于规范 run）：① kit 自身语法错误（单引号串内未转义撇号）；② ③ ④ ⑤ 见下 LIVE-FOUND；⑥ 12-02-31 run = 孤儿 host 占 3491 致 EADDRINUSE 挂 boot（基础设施，非 kit 逻辑）；12-04-58 run 11/11 criteria 全 PASS 但 summary 块 `postStable` 块作用域 bug → false FAIL（该 run 证据留档，规范 run 为其后修复重跑）。
+- 证据：`dev/agent-workflow/evidence/send-message-liveness/smoke/sml-smoke-2026-09-20T12-06-07/`（summary.json + s3-timeline + s2/s5 结果 + s8 facts + s0 surface + mock-corpus + pre/post stable probes + run/instance/mock 日志）+ 父目录 `full-test-final.log`（最终门禁全量测试 20|3672 (3692)）+ `full-test-postfix.log`（中间 run 留档）+ `smoke/sml-smoke-2026-09-20T12-00-41/`（LIVE-FOUND requestToken 诊断留档：toolContents 实锤 list-members rejected）。
+
+### LIVE-FOUND（本轮新，kit/域契约级）
+
+1. **α.2 权限契约（member 侧实锤）**：MEMBER 模板 allow lane 拒绝 shell-class 整工具规则（worker `allow: bash {kind:any}` → team.create `MALFORMED_DTO: alpha.2 grants no positive whole-tool permission for bash`，source 定位到 blueprint YAML 行）。allow-lane exec 例外为 **LEADER-scoped only**（exec-contract-a1-leader-allow 契约：member 模板 A2C-1 逐字保持）— C1 live 案例只验证过 leader 侧，本轮实锤 member 侧。推论：kit 场景 C 的长 turn 不能用 member bash，改用 8s 长 in-flight model call（async decide）。
+2. **permissions schema 三 lane 在场**：`allow`/`ask`/`deny` 三字段均必填（缺 `ask` → `MALFORMED_DTO: blueprint is missing required field 'ask'`）；worker 采用 WCN 已验证形状（allow=read-subtree-team，ask=bash-any，deny=read-subtree-runtime）。
+3. **chain-selector marker 纪律**：一条 user message 携带两个 scenario marker 会误路由（leader initialWork prompt 嵌入 MK_PAYLOAD 正文 → member 链先命中 → 500 重试循环）；每条消息恰携一个 marker，marker 正文由 mock 注入实际 tool-call 参数。
+4. **team 工具全族必填 requestToken**（含 team_list_members — `required: ['rootSessionId','requestToken']`）；mock 漏传 → `TEAM_TOOL_BAD_ARGUMENTS` rejected → 下游 instance 解析 500 循环。
+5. **initialWork 到达形态**：leader 首个 user message = `[team-root-work requestToken=team-create:initial-work:sha256:<hash>]` envelope 包裹（prompt 原文在内、marker 幸存）；create-member effect kind = `member-activated` 且 `instanceId` 在 effect 内（非顶层 targetInstanceId）。
+6. **kit 基础设施**：job kill 不达 host 子进程（跨 PID 命名空间不可见）— 孤儿 host 持端口直至 kit 自身 300s 超时自清；同命令内 `pkill -f` 会自匹配杀己 shell（模式串在自身 cmdline 内）。
+
+### 门禁复测实数（最终，全部源变更之后）
+
+- `pnpm typecheck` = **9/9 全绿**（零错误）。
+- `pnpm test` 全量 = **20 failed | 3672 passed (3692)** — 与冻结基线参考（@9ec0d1f 24 FAIL 行 / 21 failed / 11 文件）**逐测试行一致 − p4t6，零新增失败**（p4t6 @726 转绿；本轮 +4 测试全绿；文件级失败 p8s3b/t12a-b2/t12a-glue 维持基线）。
+- `pnpm build` + `pnpm build:composition` + `pnpm check:artifacts` = **OK 1132 files**（dist 三方一致；coordinator.js/.map 单 token 变更漂移已 stage，零残留漂移）。
+- `pnpm lint`（`eslint .`）：本轮变更 6 源文件单独 eslint **exit 0（clean）**；全仓 48 既有 errors / 21 文件（与 base d63cb71 **字节一致**、与本轮 diff **零交集** — 错误文件清单 × diff 文件清单 comm 双证）= master 自身既有状态，有界修复不动（guide 最小补丁），记 follow-up 候选。
+- real-host smoke kit = **VERDICT PASS 11/11**（规范 run 见上）。
+- zero-core：test-use porcelain clean @ `fb2c4b9e69`（0 行）；冻结锚点 tag `legacy-agent-team-pre-vnext` = `a3ab31992762c5d6560797eabc7e0885a9320ade` 未移动（本地 tag peel）。
+- :3080/:3180 零触碰（kit S9 pre/post 401×401 逐次留档）。
+
+### 红线守纪
+
+- CORE PATCH BUDGET = 0（test-use pristine @ fb2c4b9e69 只读；references/ 冻结锚点未移动）。
+- **无 push**（本轮无用户授权）— 两提交仅本地，待用户 merge/PR 裁决。
+- 1 task = 1 branch = 1 worktree = 1 writer；kit 位于 tests/kits/（.mjs 非 scannable，C1 先例；p4t6 pin 不受 kit 文件影响）；homes 自清（teardown 后 tests/homes 空）；未并行 kit + 全量 vitest。
+- coordinator Phase A/B/C 拆分 + at-least-once/exactly-once 持久语义不变；commitConfirmationLocked 收敛路径不变（仅删未用 destructure 变量）；messaging port 之外的 whenIdle 站点全保留。
+- plan/fix-guide 文档（用户产物）零触碰；`.tmp-*` 无残留提交（worktree `.tmp-t12a-b2-home/` = 基线既有失败测试 t12a-b2 的运行残留，非本轮产物，不提交）。
+
+### 状态
+
+- branch `fix/team-send-message-liveness` 本地两提交（① fix：`fix(runtime): make team messaging complete on input acceptance` — 源/测试/kit/harness/dist；② 本簿记提交：graph 块 + current_phase + 本日志条目 + 证据）。**未 push**，待用户 merge 裁决（或另行授权 push + 开 PR）。
+
+## 2026-09-20（推送轮）— team_send_message liveness 修复轮：用户授权推送 + PR #24
+
+- 用户指令：「请你推送并开一个PR」（一次性推送授权）。
+- 推送前复核：`git fetch origin` → origin/master 仍在 d63cb71（= 本分支 base；PR #22 persona-requirement-kind CONFLICTING / #23 mcp-blueprint-initial-grant MERGEABLE 均未 merge，无 rebase 需要）；zero-core 复核（test-use porcelain 0 @ fb2c4b9e69 + 冻结锚点 a3ab319927 未移动）+ kit 端口全释放 + :3080/:3180 仍 401（零触碰未破）。
+- **推送**：`git push origin fix/team-send-message-liveness`（新分支，fast-forward 自 d63cb71，无 force）— 提交链 88865e9（fix）+ 64beeb2（簿记）。
+- **PR #24 OPEN** = https://github.com/ArmourPiercer1/dsh-agent-team/pull/24（base master；title = `fix(runtime): make team messaging complete on input acceptance`；body = 概述 / 核心变更 / 测试与证据 / real-host smoke VERDICT PASS 11/11 + 核心场景 C wire 时间线表（tW1 → tL4 +11ms → tW2 8026ms）/ 门禁实数表 / 6 项 LIVE-FOUND / 红线守纪）。
+- graph.yaml 状态回写（本提交）：task block state → COMPLETE-PUSHED（PR #24 OPEN）+ delivery 字段（推送/PR 细节）+ current_phase 同步。
+- 红线守纪：同分支 fast-forward 追加本簿记提交（一次性授权内，无 force，未碰 master/stable/gated 历史）；:3080/:3180 未触碰。
+- 状态：PR #24 OPEN 待用户 merge 裁决（如需 rebase 到先行 merge 的 #22/#23，另行指令）。

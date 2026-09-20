@@ -1,0 +1,5 @@
+{
+  "seq": 12,
+  "receivedAt": "2026-09-20T12:06:20.423Z",
+  "result": "{\"status\":\"delivered\",\"rootSessionId\":\"session-sml-smoke-team-2026-09-20T12-06-07\",\"action\":\"send-message\",\"callerRole\":\"member\",\"recipientInstanceId\":\"inst-leader\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-leader\",\"deliveredToSessionId\":\"session-sml-smoke-team-2026-09-20T12-06-07\",\"factSequence\":6,\"deliveredSequence\":7,\"requestToken\":\"sml-reply-2026-09-20T12-06-07\"}"
+}

@@ -1,0 +1,12 @@
+mock: listening on 127.0.0.1:3496
+mock: 1 text reply (45 chars): "sml smoke: no scenario marker — nothing to do"
+mock: 2 text reply (17 chars): "sml smoke session"
+mock: 3 tool-call reply: team_create_member
+mock: 4 text reply (17 chars): "sml smoke session"
+mock: 5 tool-call reply: team_list_members
+mock: 6 -> 500 error reply
+mock: 7 -> 500 error reply
+mock: 8 -> 500 error reply
+mock: 9 -> 500 error reply
+mock: 10 -> 500 error reply
+mock: 11 -> 500 error reply

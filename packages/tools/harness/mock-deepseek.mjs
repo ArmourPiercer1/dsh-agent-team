@@ -63,8 +63,10 @@ function splitArgs(argsJson) {
  * Start the mock on 127.0.0.1:<port>.
  * @param {object} opts
  * @param {number} opts.port - the fixed port to listen on (0 = ephemeral).
- * @param {(ctx: { seq: number, req: object }) => object} opts.decide -
- *   maps one parsed request to a reply descriptor:
+ * @param {(ctx: { seq: number, req: object }) => object | Promise<object>} opts.decide -
+ *   maps one parsed request to a reply descriptor (sync return, or a
+ *   Promise resolving to one — an async decide keeps the model call in
+ *   flight until it resolves; sync decides are unaffected):
  *   - { kind: 'text', content: string }
  *   - { kind: 'tool-call', toolCalls: [{ id: string, name: string, arguments: object|string }] }
  *   - { kind: 'error', status: number, message: string, code?: string, type?: string }
@@ -85,9 +87,9 @@ export async function startMockModel({ port, decide, log = () => {} }) {
         req.destroy()
       }
     })
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
-        handle(req, res, body)
+        await handle(req, res, body)
       } catch (err) {
         log(`mock: unhandled error: ${String((err && err.stack) ?? err)}`)
         if (!res.headersSent) {
@@ -100,7 +102,7 @@ export async function startMockModel({ port, decide, log = () => {} }) {
     })
   })
 
-  function handle(req, res, rawBody) {
+  async function handle(req, res, rawBody) {
     const record = {
       seq: requests.length + 1,
       method: req.method,
@@ -157,7 +159,11 @@ export async function startMockModel({ port, decide, log = () => {} }) {
 
     let reply
     try {
-      reply = decide({ seq: record.seq, req: parsed })
+      // decide may be sync OR async: an async decide keeps the response
+      // (the client's model call) in flight until it resolves — the
+      // liveness-window scenario (a deliberately long recipient turn).
+      // Sync decides behave exactly as before (Promise.resolve passthrough).
+      reply = await Promise.resolve(decide({ seq: record.seq, req: parsed }))
     } catch (err) {
       record.status = 500
       record.error = `decide() threw: ${String((err && err.stack) ?? err)}`
