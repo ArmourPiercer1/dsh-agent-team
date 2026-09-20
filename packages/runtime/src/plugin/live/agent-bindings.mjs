@@ -622,12 +622,14 @@ export function createAgentBindings(deps) {
   /**
    * @type {boolean} the row-stop (close) lifecycle gate — set at the VERY
    * START of close() (before any snapshot/dispose work) and never cleared.
-   * Invariant: once close() has announced, no NEW live handle may ever
-   * join liveAgents — ensureLiveAgent enforces it at its entry AND after
-   * the resume await (a late-resumed handle is disposed, never set). The
-   * work-completion wake-up delivery checks it before its async sends, so
-   * a completion settling while the plugin tears down can never create,
-   * resume, or wake a Leader Agent behind the close.
+   * The closing gate protects ensureLiveAgent and work-completion delivery
+   * from resurrecting / waking a Leader during row teardown:
+   * ensureLiveAgent enforces it at its entry AND after the resume await
+   * (a late-resumed handle is disposed, never set), and the
+   * work-completion wake-up delivery checks it before its async sends.
+   * NOTE (scope): the other liveAgents write paths (boot, childFactory,
+   * createRootAgent) are INDEPENDENT and NOT gated by this state — the
+   * invariant covers the ensureLiveAgent + completion-delivery paths only.
    */
   let closing = false
   /** @type {Array<() => void>} tool-registration + model-selection disposers. */
@@ -2597,14 +2599,25 @@ export function createAgentBindings(deps) {
    * Wake-up semantics are the DSH v0.1.5-rc.2 Agent's own (plan §17 —
    * no Team-side state machine, no extra lock): `status === 'idle'` →
    * `followup` (starts a new turn; the idle Leader is woken); otherwise
-   * `inject` (the NON-WAKING next-step send — Stop-priority: on a
-   * cancelled-converging turn a non-waking send is never re-routed to
-   * next-turn, so a user Stop is not washed into an automatic
-   * replacement turn). The check→act retirement race (status read
-   * `running`; the driver finishes its last inbox check; the inject
-   * waits in the inbox until the next input) is ACCEPTED by design —
-   * no scheduler/retry is built for it, because this is an at-most-once
-   * best-effort wake ATTEMPT, not a delivery guarantee.
+   * `steer` (joins the current turn at the next step boundary — the
+   * WAKING send: if the turn is retiring/aborted-converging at that
+   * moment, its waking semantics still wake an idle Leader rather than
+   * leaving the notification stranded in the inbox; liveness over the
+   * narrow abort window).
+   *
+   * Stop semantics (frozen for this Alpha): a user Stop terminates the
+   * CURRENT Leader turn. A later asynchronous Team event may legitimately
+   * activate the Leader again — every Team-originated activation carries
+   * a stable model-visible provenance envelope (here: the
+   * `[team-work-settled requestToken=<token>]` leading line; siblings:
+   * `[team-control requestId=<id>]` for approvals, `[team-relay...]` for
+   * member relay) so the Leader can tell WHY it resumed. This version
+   * deliberately does NOT freeze strong/weak Stop-priority.
+   *
+   * The wake is an at-most-once best-effort ATTEMPT (no redelivery, no
+   * ledger, no retry): the durable settlement fact + `team_collect` are
+   * the authority and the recovery path when no wake arrives or it
+   * arrives late.
    *
    * NON-AUTHORITY by construction: the glue writes no TeamDomain state
    * and carries no result — the text is pre-rendered (the
@@ -2661,24 +2674,19 @@ export function createAgentBindings(deps) {
       content: [{ type: 'text', text }],
       source: { kind: 'plugin', plugin: 'dsh-agent-team' },
     })
-    // Stop-priority (DSH v0.1.5-rc.2 Agent semantics, plan §17):
-    //   - idle Leader  → `followup` (a NEW turn — the idle Leader is woken);
-    //   - busy Leader  → `inject` (the NON-WAKING next-step send:
-    //     `send(input, 'next-step', false)` in agent-loop agent.ts —
-    //     unlike `steer`'s `send(input, 'next-step', true)`, a non-waking
-    //     send is never re-routed to next-turn on a cancelled-converging
-    //     turn, so a user Stop is not washed into an automatic
-    //     replacement turn — Stop wins over the completion wake).
-    // Accepted microtask race (documented, NOT fixed here): if the status
-    // read is `running` and the driver finishes its last inbox check
-    // before the inject lands, the notification waits in the inbox until
-    // the next input wakes the Leader. No scheduler/retry is built for
-    // it: this is an at-most-once best-effort wake attempt, and the
-    // durable settlement fact + `team_collect` are the recovery authority.
+    // DSH v0.1.5-rc.2 Agent semantics (plan §17): idle Leader →
+    // `followup` (a NEW turn — the idle Leader is woken); busy Leader →
+    // `steer` (the WAKING next-step send — `send(input, 'next-step',
+    // true)`; if the turn is retiring at that moment it still wakes an
+    // idle Leader rather than leaving the notification stranded in the
+    // inbox — liveness over the narrow abort window; this version does
+    // NOT freeze strong Stop-priority, and the leading
+    // `[team-work-settled requestToken=...]` envelope tells the Leader
+    // why it was activated).
     if (handle.agent.status === 'idle') {
       handle.agent.followup(message)
     } else {
-      handle.agent.inject(message)
+      handle.agent.steer(message)
     }
     // Success boundary = acceptance (plan §16): NO whenIdle, NO
     // ensureMaterialized. The turn (if any) runs on its own.

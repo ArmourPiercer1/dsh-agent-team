@@ -46,9 +46,10 @@ export interface WorkCompletionNotification {
  * The delivery port: put ONE model-visible input turn on ONE target's
  * session (the production implementation is the live glue's
  * `deliverRootWorkCompletionNotification` — idle → followup / running →
- * inject over the DSH Agent semantics; it performs ONE at-most-once
- * best-effort wake attempt — no redelivery, no acknowledgement; the
- * durable settlement fact + `team_collect` are the recovery authority).
+ * steer over the DSH Agent semantics; it performs ONE best-effort wake
+ * attempt — the notifier does no redelivery, no acknowledgement, no
+ * retry; the durable settlement fact + `team_collect` are the recovery
+ * authority).
  */
 export interface WorkCompletionNotificationDeliveryPort {
     deliver(args: {

@@ -656,15 +656,18 @@ export function createTeamProductionRoot(params) {
     // notification port — a DETACHED (`execution: 'async'`) work unit that
     // reaches its durable terminal settlement wakes the Leader through the
     // glue's SEPARATE wake-up primitive (`deliverRootWorkCompletionNotification` —
-    // idle → followup / running → inject [Stop-priority, the non-waking
-    // next-step send]; acceptance boundary only), NOT through the
-    // C1/root-input path (which awaits the turn). At-most-once best-effort
-    // wake attempt: the durable settlement fact + `team_collect` stay the
-    // authority and the recovery path; a delivery failure (including the
-    // live bindings' close having started) is a liveness failure only (the
-    // router's completion observer swallows it). A glue bundle without the
-    // port simply does not wake (factory/unit worlds — same contract as
-    // the C1 `deliverRootControlNotification` wiring below).
+    // idle → followup / running → steer; acceptance boundary only), NOT
+    // through the C1/root-input path (which awaits the turn). At-most-once
+    // best-effort wake attempt (no redelivery): the durable settlement fact
+    // + `team_collect` stay the authority and the recovery path; a delivery
+    // failure (including the live bindings' close having started) is a
+    // liveness failure only (the router's completion observer swallows it).
+    // Wake provenance = the `[team-work-settled requestToken=...]` leading
+    // envelope (a later Team runtime event may activate the Leader after a
+    // user Stop — the envelope identifies the activation source). A glue
+    // bundle without the port simply does not wake (factory/unit worlds —
+    // same contract as the C1 `deliverRootControlNotification` wiring
+    // below).
     const workCompletionNotifier = live.deliverRootWorkCompletionNotification !== undefined
         ? createWorkCompletionNotifier({
             deliver: {

@@ -684,13 +684,12 @@ export function createAgentsDouble(options = {}) {
       steer(message) {
         steers.push({ sessionId, message })
       },
-      // Work-completion wake-up (Stop-priority): the DSH rc.2 Agent's
-      // `inject` — the NON-WAKING next-step send (`send(input, 'next-step',
-      // false)` in agent-loop agent.ts @ fb2c4b9e69, vs `steer`'s
-      // `send(input, 'next-step', true)`: only waking sends are
-      // re-routed to next-turn on a cancelled-converging turn). The
-      // completion wake's busy path uses inject so a user Stop is never
-      // washed into an automatic replacement turn.
+      // The DSH rc.2 Agent's `inject` — the NON-WAKING next-step send
+      // (`send(input, 'next-step', false)` in agent-loop agent.ts @
+      // fb2c4b9e69, vs `steer`'s `send(input, 'next-step', true)`),
+      // modeled for faithful recording. The work-completion wake's glue
+      // must pick followup (idle) or steer (busy) — inject stays
+      // untouched by the glue (pinned to 0 by the glue suite).
       inject(message) {
         injects.push({ sessionId, message })
       },

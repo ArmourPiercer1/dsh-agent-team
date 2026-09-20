@@ -1,43 +1,32 @@
 /**
  * Work-completion wake-up — the live-glue
- * `deliverRootWorkCompletionNotification` tests (plan §24, G1–G8):
+ * `deliverRootWorkCompletionNotification` tests (plan §24, G1–G6 + G8):
  *
  *   G1. idle Leader — `status === 'idle'` → followup called exactly once,
  *       steer/inject 0, and NO whenIdle await (the success boundary is the
- *       followup/inject ACCEPTANCE, plan §16);
- *   G2. busy Leader — `status === 'running'` → inject called exactly once
- *       (Stop-priority: the NON-WAKING next-step send), followup 0,
- *       steer 0, no whenIdle await;
+ *       followup/steer ACCEPTANCE, plan §16);
+ *   G2. busy Leader — `status === 'running'` → steer called exactly once
+ *       (the WAKING next-step send — joins the current turn at the next
+ *       step boundary; if the turn is retiring at that moment its waking
+ *       semantics still wake an idle Leader rather than leaving the
+ *       notification stranded in the inbox), followup/inject 0, no
+ *       whenIdle await;
  *   G3. message source — the delivered input carries the upstream
  *       plugin attribution (`source.kind === 'plugin'`,
  *       `source.plugin === 'dsh-agent-team'`) and the rendered text
- *       verbatim (a runtime event, not a human message);
+ *       verbatim (a runtime event, not a human message); the
+ *       `[team-work-settled requestToken=...]` leading line is the wake
+ *       provenance envelope (the frozen Alpha contract alongside
+ *       `[team-control requestId=...]` for approvals and `[team-relay...]`
+ *       for member relay);
  *   G4. missing root id — clear rejection (no agent touched);
  *   G5. missing text — clear rejection (no agent touched);
- *   G6. delivery throw propagates to the notifier (followup / inject
+ *   G6. delivery throw propagates to the notifier (followup / steer
  *       throwing rejects the glue promise — the router observer is the
  *       layer that swallows it; the glue never swallows);
- *   G7. Stop-priority (interface pin) — a cancelled-converging Leader is
- *       OBSERVED as `status === 'running'` (the public Agent `status`
- *       getter has no separate aborting value — the abort signal is
- *       phase-internal), and the completion wake uses `inject`, never
- *       `steer`: DSH v0.1.5-rc.2 agent-loop `agent.ts` @ fb2c4b9e69
- *       defines `inject(input) = send(input, 'next-step', false)` while
- *       `steer(input) = send(input, 'next-step', true`), and
- *       `wakingAfterAbort` re-routes to next-turn (re-waking the driver)
- *       ONLY for WAKING sends on an aborted non-idle phase — a non-waking
- *       inject therefore never re-opens a turn the user Stopped. The
- *       double records which primitive the glue picked (the honest
- *       interface-level scope: the redirect/wake semantics live in the
- *       DSH core, not in this boundary); the known retirement
- *       microtask race (status read `running`; the driver finishes its
- *       last inbox check; the inject waits in the inbox until the next
- *       input) is ACCEPTED by design — the notification is an
- *       at-most-once best-effort wake attempt, and the durable
- *       settlement fact + `team_collect` are the recovery authority.
  *   G8. close race must NOT resurrect the Leader:
  *       (a) once `close()` has started, a completion delivery REJECTS
- *           (no followup/inject/steer reaches the agent); after close
+ *           (no followup/steer/inject reaches the agent); after close
  *           completes the root carries no live handle;
  *       (b) the strong race — an in-flight `agents.resume()` suspended
  *           in the agents seam while `close()` runs to completion: the
@@ -45,12 +34,20 @@
  *           NEVER written into `liveAgents` (`hasLive(root) === false`
  *           after close; exactly one dispose of the late handle).
  *
+ * Stop semantics (frozen for this Alpha, per the final fix guide §5): a
+ * user Stop terminates the CURRENT Leader turn; a later asynchronous Team
+ * event may legitimately activate the Leader again (the leading
+ * provenance envelope tells the Leader why it resumed). This suite does
+ * NOT pin strong/weak Stop-priority — no test asserts a Stop-suppression
+ * behavior.
+ *
  * Harness: the t12a-live-bridge doubles driving the REAL
  * agent-bindings.mjs (the same boundary the C1 glue suite asserts on;
  * the double's agent `status` is a mutable plain property modeling the
- * real Agent's `status` getter, default 'idle'; `inject` is recorded
- * alongside `followup`/`steer`; `resumeGate` suspends a resume for the
- * G8(b) interleaving).
+ * real Agent's `status` getter, default 'idle'; `followup`/`steer`/
+ * `inject` are all recorded — the glue must pick followup/steer and
+ * leave inject untouched; `resumeGate` suspends a resume for the G8(b)
+ * interleaving).
  */
 
 import { describe, expect, it } from 'vitest'
@@ -113,8 +110,7 @@ const S = await (async () => {
   const g1AddedInjects = world.records.injects.slice(injectsBefore)
   const g1WhenIdleDelta = whenIdleCalls - whenIdleBefore
 
-  // (G2) busy Leader: inject only (Stop-priority — the non-waking
-  // next-step send; no steer, no followup).
+  // (G2) busy Leader: steer only (the waking next-step send).
   leaderHandle.agent.status = 'running'
   const followupsBeforeBusy = world.records.followups.length
   const steersBeforeBusy = world.records.steers.length
@@ -128,23 +124,6 @@ const S = await (async () => {
   const g2AddedSteers = world.records.steers.slice(steersBeforeBusy)
   const g2AddedInjects = world.records.injects.slice(injectsBeforeBusy)
   const g2WhenIdleDelta = whenIdleCalls - whenIdleBeforeBusy
-
-  // (G7) Stop-priority interface pin — a cancelled-converging turn is
-  // observed as `status === 'running'` (the public getter has no abort
-  // value; the abort signal is phase-internal to the DSH core). The
-  // completion wake must pick inject (non-waking next-step), never
-  // steer (waking next-step — the one primitive DSH re-routes to
-  // next-turn after an abort, re-opening the Stopped turn).
-  const followupsBeforeStop = world.records.followups.length
-  const steersBeforeStop = world.records.steers.length
-  const injectsBeforeStop = world.records.injects.length
-  await world.binding.deliverRootWorkCompletionNotification({
-    rootSessionId: ROOT,
-    text: NOTIFICATION_TEXT,
-  })
-  const g7AddedFollowups = world.records.followups.slice(followupsBeforeStop)
-  const g7AddedSteers = world.records.steers.slice(steersBeforeStop)
-  const g7AddedInjects = world.records.injects.slice(injectsBeforeStop)
   leaderHandle.agent.status = 'idle'
 
   // (G4) missing root id.
@@ -180,19 +159,19 @@ const S = await (async () => {
     }),
   )
   leaderHandle.agent.followup = originalFollowup
-  // (G6b) inject throwing propagates (busy path).
-  const originalInject = leaderHandle.agent.inject
+  // (G6b) steer throwing propagates (busy path).
+  const originalSteer = leaderHandle.agent.steer
   leaderHandle.agent.status = 'running'
-  leaderHandle.agent.inject = () => {
-    throw new Error('glue: agent inject unavailable (injected)')
+  leaderHandle.agent.steer = () => {
+    throw new Error('glue: agent steer unavailable (injected)')
   }
-  const rejectInjectThrow = await captureReject(() =>
+  const rejectSteerThrow = await captureReject(() =>
     world.binding.deliverRootWorkCompletionNotification({
       rootSessionId: ROOT,
       text: NOTIFICATION_TEXT,
     }),
   )
-  leaderHandle.agent.inject = originalInject
+  leaderHandle.agent.steer = originalSteer
   leaderHandle.agent.status = 'idle'
 
   // (G8a) close race — a delivery that starts AFTER close() has begun
@@ -225,17 +204,11 @@ const S = await (async () => {
     g2AddedSteers,
     g2AddedInjects,
     g2WhenIdleDelta,
-    g7AddedFollowups,
-    g7AddedSteers,
-    g7AddedInjects,
     rejectEmptyRoot,
     rejectEmptyText,
     recordsAfterRejections,
     rejectFollowupThrow,
-    rejectInjectThrow,
-    totalFollowups: world.records.followups.length,
-    totalSteers: world.records.steers.length,
-    totalInjects: world.records.injects.length,
+    rejectSteerThrow,
     rejectClosing,
     hasLiveAfterClose,
     g8aNoWakeCalls:
@@ -330,12 +303,12 @@ describe('deliverRootWorkCompletionNotification (work-completion wake-up) — th
     expect(S.g1AddedFollowups[0]!.sessionId).toBe(ROOT)
   })
 
-  it('G2: a busy Leader gets ONE inject — no followup/steer and no whenIdle await', () => {
-    expect(S.g2AddedInjects).toHaveLength(1)
+  it('G2: a busy Leader gets ONE steer — no followup/inject and no whenIdle await', () => {
+    expect(S.g2AddedSteers).toHaveLength(1)
     expect(S.g2AddedFollowups).toHaveLength(0)
-    expect(S.g2AddedSteers).toHaveLength(0)
+    expect(S.g2AddedInjects).toHaveLength(0)
     expect(S.g2WhenIdleDelta).toBe(0)
-    expect(S.g2AddedInjects[0]!.sessionId).toBe(ROOT)
+    expect(S.g2AddedSteers[0]!.sessionId).toBe(ROOT)
   })
 
   it('G3: the delivered input carries the plugin attribution and the text verbatim', () => {
@@ -360,24 +333,17 @@ describe('deliverRootWorkCompletionNotification (work-completion wake-up) — th
   it('G5: an empty text REJECTS with a clear error (no agent touched)', () => {
     expect(S.rejectEmptyText).toBeInstanceOf(Error)
     expect(String(S.rejectEmptyText)).toContain('non-empty text')
-    // neither rejection path reached the agent (G1 followup, G2+G7 injects)
+    // neither rejection path reached the agent (G1 followup, G2 steer)
     expect(S.recordsAfterRejections.followups).toBe(1) // only the G1 delivery
-    expect(S.recordsAfterRejections.steers).toBe(0) // steer is gone (Stop-priority)
-    expect(S.recordsAfterRejections.injects).toBe(2) // G2 + G7 deliveries
+    expect(S.recordsAfterRejections.steers).toBe(1) // only the G2 delivery
+    expect(S.recordsAfterRejections.injects).toBe(0) // the glue never uses inject
   })
 
-  it('G6: a followup/inject throw REJECTS the glue promise (the router observer swallows, not the glue)', () => {
+  it('G6: a followup/steer throw REJECTS the glue promise (the router observer swallows, not the glue)', () => {
     expect(S.rejectFollowupThrow).toBeInstanceOf(Error)
     expect(String(S.rejectFollowupThrow)).toContain('agent followup unavailable')
-    expect(S.rejectInjectThrow).toBeInstanceOf(Error)
-    expect(String(S.rejectInjectThrow)).toContain('agent inject unavailable')
-  })
-
-  it('G7: a cancelled-converging (running) Leader gets ONE inject, never steer — Stop wins (rc.2: inject = next-step + wakeup:false)', () => {
-    expect(S.g7AddedInjects).toHaveLength(1)
-    expect(S.g7AddedFollowups).toHaveLength(0)
-    expect(S.g7AddedSteers).toHaveLength(0)
-    expect(S.g7AddedInjects[0]!.sessionId).toBe(ROOT)
+    expect(S.rejectSteerThrow).toBeInstanceOf(Error)
+    expect(String(S.rejectSteerThrow)).toContain('agent steer unavailable')
   })
 
   it('G8a: a completion delivery that starts after close() REJECTS — no wake call, no live handle after close', () => {

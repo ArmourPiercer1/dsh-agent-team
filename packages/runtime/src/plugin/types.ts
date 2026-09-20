@@ -915,18 +915,22 @@ export interface TeamAgentBindings {
    * Work-completion wake-up — deliver ONE best-effort async work-completion
    * notification to the Root (Leader) Agent as a NEW model-visible input
    * turn (the DSH Agent semantics: `status === 'idle'` → followup,
-   * otherwise `inject` at the next step boundary — Stop-priority: the
-   * non-waking send, so a user Stop/cancel is never washed into an
-   * automatic replacement turn). Success boundary = the followup/inject
-   * ACCEPTANCE only (no whenIdle, no materialize as a success condition).
-   * NON-AUTHORITY: the glue writes no TeamDomain state and carries no
-   * result — the durable settlement fact + `team_collect` stay the
-   * authority. At-MOST-once best-effort wake ATTEMPT (not a delivery
-   * guarantee): the text is token-leading and deterministic per work unit
-   * (future-dedup friendly); a delivery failure is a liveness failure
-   * only (the router's completion observer swallows it). The glue also
-   * refuses once the live bindings' close has started (no resume/wake
-   * behind the close). OPTIONAL — same contract as
+   * otherwise steer at the next step boundary). Success boundary = the
+   * followup/steer ACCEPTANCE only (no whenIdle, no materialize as a
+   * success condition). NON-AUTHORITY: the glue writes no TeamDomain state
+   * and carries no result — the durable settlement fact + `team_collect`
+   * stay the authority. At-MOST-once best-effort wake ATTEMPT (the
+   * notifier performs no redelivery — not a delivery guarantee): the text
+   * is token-leading and deterministic per work unit (future-dedup
+   * friendly); a delivery failure is a liveness failure only (the router's
+   * completion observer swallows it). Wake provenance: the leading
+   * `[team-work-settled requestToken=<token>]` envelope is the
+   * model-visible activation source (the frozen Alpha contract alongside
+   * `[team-control requestId=<id>]` for approvals and `[team-relay...]`
+   * for member relay); a later Team runtime event may activate the Leader
+   * after a user Stop — the leading envelope identifies the activation
+   * source. The glue also refuses once the live bindings' close has
+   * started (no resume/wake behind the close). OPTIONAL — same contract as
    * `deliverRootControlNotification`: a glue without this port simply does
    * not wake (the `team_collect` read-back stays the recovery path).
    */

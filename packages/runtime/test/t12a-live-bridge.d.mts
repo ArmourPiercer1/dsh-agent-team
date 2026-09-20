@@ -44,8 +44,9 @@ export interface RecordedSteer {
 }
 
 /** One recorded inject message (the session id + the LLM message) —
- *  the DSH rc.2 Agent's NON-WAKING next-step send (work-completion
- *  wake-up's busy path: Stop-priority). */
+ *  the DSH rc.2 Agent's NON-WAKING next-step send (`send(input,
+ *  'next-step', false)`), modeled for faithful recording; the
+ *  work-completion glue must never call it (the glue suite pins it to 0). */
 export interface RecordedInject {
   readonly sessionId: string
   readonly message: unknown
@@ -210,11 +211,11 @@ export interface LiveAgentHandle {
     status: 'idle' | 'running'
     followup(message: unknown): void
     steer(message: unknown): void
-    /** Work-completion wake-up (Stop-priority): the NON-WAKING next-step
-     *  send (DSH rc.2 agent.ts @ fb2c4b9e69: `inject(input)` =
-     *  `send(input, 'next-step', false)` — unlike `steer`'s
-     *  `send(input, 'next-step', true)`, a non-waking send is never
-     *  re-routed to next-turn on a cancelled-converging turn). */
+    /** The DSH rc.2 Agent's `inject` — the NON-WAKING next-step send
+     *  (`send(input, 'next-step', false)` in agent.ts @ fb2c4b9e69, vs
+     *  `steer`'s `send(input, 'next-step', true)`), modeled for faithful
+     *  recording; the work-completion glue must never call it (the glue
+     *  suite pins injects to 0). */
     inject(message: unknown): void
     whenIdle(): Promise<void>
     cancel(args?: unknown): void
