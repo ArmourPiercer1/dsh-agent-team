@@ -12,7 +12,10 @@
  *     - worker-a (m1)    : capabilities.mcp allow [A]
  *     - worker-b (m2)    : capabilities.mcp allow [B]
  *   and satisfies the seven acceptance criteria (d-docs-smoke.md):
- *     C1 per-agent model-facing MCP tools EXACT (I5 state shape + schema double proof)
+ *     C1 zero-seed initial grant per-agent EXACT: governance.overrides = []
+ *        + I5 state (leader A+B / m1 A / m2 B, source template/static) +
+ *        MEMBER schema double proof + leader first-surface finding
+ *        characterization (fresh-create boot-root nuance — see world design)
  *     C2 A/B namespaces do not collide (same underlying tool `ping`, distinct
  *        mounted names mcp__A__ping / mcp__B__ping)
  *     C3 member isolation (m1 sees A only; m2 sees B only)
@@ -27,23 +30,48 @@
  *
  * World design (frozen-contract semantics — verified against mcp-facet.ts /
  * cell-provenance.ts / agent-bindings.mjs, int tree @ 4feac8c, Gate C round 1):
- *   - The blueprint's capabilities.mcp is the STATIC template gate only. It
- *     NEVER seeds the durable cell: an unspecified team cell is fail-closed
- *     (NO mount). So after boot:1 the kit seeds a TEAM-SCOPE governance
- *     override (override.set, capability mcp, allow [A,B], scope team) —
- *     the durable policy record that grants the cell.
- *   - Members created AFTER the seed resolve fresh at creation and mount
- *     their template subsets (m1 → A, m2 → B) immediately.
- *   - The leader (root session) reconciles only at a REQUEST BOUNDARY. The
- *     root native prompt path (/api/session/prompt) does NOT run the team
- *     boundary (pre-existing glue wiring: prepareAgentForRequest is invoked
- *     from submitAttributedInput / workDelivery.deliver / deliverRootInput /
- *     executeTool only). Therefore the kit triggers the boundary with a
- *     team-TOOL execution on the root (team_list_members via the p6t6 tool
- *     route → executeTool → prepareAgentForRequest(root) → reconcile) —
- *     once before the C1 probes, and once more as the C4 "next boundary"
- *     op after the instance-scope tighten. Tool executions issue no model
- *     requests (mock seq accounting unaffected).
+ *   - mcp-blueprint-initial-grant de-seed (plan
+ *     MCP_BLUEPRINT_INITIAL_GRANT_FIX_PLAN.md §7, 2026-09-20): the bound
+ *     Blueprint template's `capabilities.mcp` (kind === 'allow') IS the
+ *     role's INITIAL static governance grant — it no longer needs a
+ *     durable record. The old TEAM-SCOPE override.set seed (which masked
+ *     the initial-grant defect in the historical runs) is REMOVED from
+ *     the initial path: the kit now PROVES `governance.overrides = []`
+ *     after boot (the zero-seed check) and the mounts come from the
+ *     Blueprint alone. The record-backed layer is still exercised —
+ *     AFTER creation — by the C4 instance-scope tighten (the dynamic
+ *     governance scenario this kit keeps per plan §7).
+ *   - Members created after boot resolve fresh at creation and mount
+ *     their template subsets (m1 → A, m2 → B) immediately from their
+ *     OWN bound template's initial grant (no override exists).
+ *   - The leader (root session) mounts from its bound template's initial
+ *     grant at setup; the kit still triggers a REQUEST BOUNDARY before
+ *     the C1 probes (team_list_members via the p6t6 tool route →
+ *     executeTool → prepareAgentForRequest(root) → reconcile) to prove
+ *     the boundary RE-RESOLUTION keeps the grant, and once more as the
+ *     C4 "next boundary" op after the instance-scope tighten. The root
+ *     native prompt path (/api/session/prompt) does NOT run the team
+ *     boundary (pre-existing glue wiring), so a prompt-only probe would
+ *     not exercise it. Tool executions issue no model requests (mock
+ *     seq accounting unaffected).
+ *   - FINDING (characterized 2026-09-20, de-seed runs mm-smoke-20260920T10-12-42Z
+ *     + mm-smoke-20260920T10-21-37Z + rebased run mm-smoke-20260920T10-40-2xZ;
+ *     NOT fixed — CORE PATCH BUDGET = 0, upstream assembly semantics): on a
+ *     FRESH-CREATE host, a session's FIRST-turn model requests race the row's
+ *     tool assembly: EITHER request of the turn can be assembled with an EMPTY
+ *     tool surface (runs 10-12-42/10-21-37/10-28-24: marker request empty +
+ *     the DSH-core "Current runtime context" injection kick [C1 leader-approval
+ *     live-found #1] full; rebased run 10-40-2x: member-2's marker FULL + the
+ *     kick EMPTY — one full surface per turn, either slot). Later turns and
+ *     RESUME-world turns show the full surface on the marker request itself
+ *     (mock-requests-c4/c5.json). The turn still completes and the model acts
+ *     on the fully-assembled request, so no work is lost — but one of the two
+ *     model responses in a brand-new session's first turn is text-only by
+ *     race. The kit's probes therefore read the TURN'S WORKING SURFACE = the
+ *     turn's request with the MOST tools (probeAgent settle phase), and the
+ *     §7 proof is: state-level initial grant (C1, overrides=[] +
+ *     template/static) + turn-surface double proof (C1/C2) + tighten (C4) +
+ *     resume (C5).
  *   - pendingNextBoundary is bookkeeping/diagnostics, not a second gate:
  *     effective = current durable policy; a boundary (or a fresh setup,
  *     e.g. boot:2) applies it.
@@ -52,13 +80,14 @@
  *   mcpServers: [{ name: mcp_signal, port: 3491 }, { name: mcp_designer, port: 3492 }]
  *   mcpServer:  null
  * On the base tree (before Task A/B merge) the row still boots (legacy check
- * passes with null; `mcpServers` is an ignored unknown field); the team-scope
- * seed and the boundary-trigger tool calls are all ADMITTED there too
- * (governance override + team tools pre-date multi-MCP), but nothing ever
- * mounts (no mcpServers support) and the kit observes the LEGACY single-value
- * /__p6t6/state mcp shape — the EXPECTED base dry-run failure mode (criteria
- * C1-C5 FAIL with that detail; C6/C7/C8 still PASS). Do not chase GREEN on a
- * base tree.
+ * passes with null; `mcpServers` is an ignored unknown field); the
+ * boundary-trigger tool calls are still ADMITTED there (team tools pre-date
+ * multi-MCP), but nothing ever mounts (no mcpServers support — and before
+ * the mcp-blueprint-initial-grant fix, no initial grant at all: the
+ * zero-seed world mounts nothing either way) and the kit observes the
+ * LEGACY single-value /__p6t6/state mcp shape — the EXPECTED base dry-run
+ * failure mode (criteria C1-C5 FAIL with that detail; C6/C7/C8 still PASS).
+ * Do not chase GREEN on a base tree.
  *
  * Usage
  *   node multi-mcp-real-host-smoke.mjs [--repo <target repo root>] [--keep] [--host-port <n>]
@@ -702,9 +731,21 @@ function ensureJunctions(base, links, logTag, snap) {
   mkdirSync(base, { recursive: true })
   for (const [scope, name] of links) {
     const label = scope ? `${scope}/${name}` : name
-    const target = scope ? join(hoist, scope, name) : join(hoist, name)
+    let target = scope ? join(hoist, scope, name) : join(hoist, name)
     if (!existsSync(target)) {
-      throw new Error(`host tree pnpm hoist has no link for ${label} at ${target} — cannot wire ${logTag} module links (is the test-use checkout pnpm-installed?)`)
+      // rc.2 install drift (2026-09-20): the pnpm hoist does NOT carry links
+      // for WORKSPACE packages (e.g. @deepseek-ai/dsh-agent =
+      // packages/core/agent — no .pnpm store entry at all); the top-level
+      // workspace symlink is the resolution source. Fall back to it.
+      const topLevel = scope
+        ? join(HOST_TREE, 'node_modules', scope, name)
+        : join(HOST_TREE, 'node_modules', name)
+      if (existsSync(topLevel)) {
+        target = topLevel
+        log(`${logTag} link FALLBACK: hoist link absent for ${label} (workspace package) — using top-level ${topLevel}`)
+      } else {
+        throw new Error(`host tree pnpm hoist has no link for ${label} at ${target} (top-level fallback ${topLevel} also absent) — cannot wire ${logTag} module links (is the test-use checkout pnpm-installed?)`)
+      }
     }
     const scopeDir = scope ? join(base, scope) : base
     if (scope && !existsSync(scopeDir)) snap.createdDirs.push(scopeDir)
@@ -818,6 +859,38 @@ function mcpToolsOf(req) {
     .filter((n) => typeof n === 'string' && n.startsWith('mcp__'))
 }
 
+/**
+ * Persist the mock's per-request model-surface ledger (evidence): every
+ * captured model request with its FULL tool list split by family
+ * (mcp__ / team_* / other) — the ground truth for the model-facing
+ * surface questions (e.g. the C1 leader first-surface finding).
+ */
+function dumpMockRequests(mock, fileBase) {
+  try {
+    const rows = (mock?.requests ?? []).map((r, i) => {
+      const names = (r.body?.tools ?? [])
+        .map((t) => t?.function?.name ?? t?.name)
+        .filter((n) => typeof n === 'string')
+      const msgs = r.body?.messages ?? []
+      const lastUser = [...msgs].reverse().find((m) => m?.role === 'user')
+      return {
+        seq: i + 1,
+        model: r.body?.model ?? null,
+        toolCount: names.length,
+        mcpTools: names.filter((n) => n.startsWith('mcp__')),
+        teamTools: names.filter((n) => n.startsWith('team_')),
+        otherTools: names.filter((n) => !n.startsWith('mcp__') && !n.startsWith('team_')).slice(0, 40),
+        userTail: lastUser ? String(lastUser.content ?? '').slice(-80) : '',
+      }
+    })
+    writeFileSync(join(RUN_DIR, `${fileBase}.json`), JSON.stringify(rows, null, 2))
+    return rows
+  } catch (error) {
+    log(`mock request dump failed: ${error.message}`)
+    return null
+  }
+}
+
 // ── /__p6t6/state mcp shape classification (base vs int I5) ─────────────────
 
 function classifyMcpShape(mcp) {
@@ -860,7 +933,7 @@ function effectiveMcpMap(stateBody, sessionId, configuredNames) {
 // ── criteria bookkeeping ────────────────────────────────────────────────────
 
 const CRITERIA = [
-  { id: 'C1', name: 'per-agent model-facing MCP tools EXACT (I5 state + schema double proof): leader A+B / m1 A / m2 B' },
+  { id: 'C1', name: 'zero-seed initial grant per-agent model-facing MCP tools EXACT (I5 state + turn-surface schema double proof): leader A+B / m1 A / m2 B' },
   { id: 'C2', name: 'A/B namespaces do not collide (same underlying tool ping; distinct mounted names)' },
   { id: 'C3', name: 'member isolation (m1 sees A only; m2 sees B only)' },
   { id: 'C4', name: 'durable override tighten (leader [A,B]->[A]) really unmounts B at the next boundary' },
@@ -1018,11 +1091,56 @@ async function probeAgent({ label, host, kind, marker, cookie }) {
     turnDetail = `member.send outcome=${JSON.stringify(outcome ?? null).slice(0, 200)}`
   }
   if (!turnOk) throw new Error(`${label}: turn not admitted (${turnDetail})`)
-  const req = await waitForMockRequest(mockRef.current, marker, 300_000)
+  const mock = mockRef.current
+  const req = await waitForMockRequest(mock, marker, 300_000)
   if (req === null) throw new Error(`${label}: no model request carrying marker ${marker} reached the mock within 300s`)
+  // THE TURN'S WORKING SURFACE — the LAST model request of the turn, not
+  // the marker request. On a session's FIRST turn in the FRESH-CREATE
+  // world the DSH core re-invokes the model once after the first response
+  // (the "Current runtime context" user-message injection kick — C1
+  // leader-approval live-found #1), and the FRESH-CREATE first request can
+  // be assembled with an EMPTY tool surface (before the row's plugin tools
+  // are attached to the assembly) while the kick carries the full surface
+  // (characterized + ledger-proven: run mm-smoke-20260920T10-21-37Z
+  // mock-requests-c1.json — seq 1/3/5 tools=0, seq 2/4/6 full; later turns
+  // and resume-world turns show the full surface on the marker request
+  // itself — mock-requests-c4/c5.json). The turn ends text-only (this
+  // world's mock issues no tool calls). SURFACE AUTHORITY = the turn's
+  // request with the MOST tools (the fully-assembled one) — the
+  // fresh-create assembly race can empty EITHER request of the turn
+  // (runs 10-12-42 / 10-21-37 / 10-28-24: the marker request empty + the
+  // kick full; rebased run 10-40-2x: member-2's marker FULL + the kick
+  // EMPTY — one full surface per turn, either slot — see header FINDING).
+  // NOTE: match across the whole mock capture (not a count slice anchored
+  // at detection time) — the kick can reach the mock BEFORE the 500ms-
+  // polling waitForMockRequest notices the marker request (run
+  // mm-smoke-20260920T10-26-21Z lesson).
+  const toolCountOf = (r) => (r.body?.tools ?? []).length
+  let surfaceReq = req
+  let kickSeen = false
+  const settleDeadline = Date.now() + 8_000
+  let quietSince = null
+  for (;;) {
+    const carrying = mock.requests.filter((r) => (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(marker)))
+    if (carrying.length > 1) kickSeen = true
+    let fullest = undefined
+    for (const r of carrying) if (fullest === undefined || toolCountOf(r) > toolCountOf(fullest)) fullest = r
+    if (fullest !== undefined && fullest !== surfaceReq && toolCountOf(fullest) > toolCountOf(surfaceReq)) {
+      surfaceReq = fullest
+      quietSince = Date.now()
+    }
+    if (kickSeen && quietSince === null) quietSince = Date.now()
+    if ((kickSeen && quietSince !== null && Date.now() - quietSince >= 2_000) || Date.now() >= settleDeadline) break
+    await new Promise((r) => setTimeout(r, 200))
+  }
   const state = await p6t6State(host.port)
   if (state.status !== 200 || state.body === null) throw new Error(`${label}: state route unavailable: HTTP ${state.status} ${JSON.stringify(state.body).slice(0, 300)}`)
-  return { label, marker, reqSeq: req.seq, reqModel: req.body?.model, turnDetail, stateBody: state.body, req }
+  return {
+    label, marker,
+    reqSeq: surfaceReq.seq, reqModel: surfaceReq.body?.model,
+    markerSeq: req.seq, kickSeen, turnDetail, stateBody: state.body,
+    req: surfaceReq, markerReq: req,
+  }
 }
 
 const mockRef = { current: null }
@@ -1036,7 +1154,6 @@ async function main() {
   let host2 = null
   let memberA = null
   let memberB = null
-  let seedRec = null
   let linkSnap = null
   let scanPre = null
   let scanPost = null
@@ -1148,35 +1265,29 @@ async function main() {
     const st1 = await p6t6StateReady(host1.port, { rootSessionId: ROOT, phase: 'create' })
     log(`HOST1: state ready (teamSession=${st1.body?.teamSession?.blueprintId} rev=${st1.body?.teamSession?.revision})`)
 
-    // ── seed the durable TEAM-scoped mcp allow (governance record) ─────────
-    // The blueprint's capabilities.mcp is only the STATIC template gate —
-    // it never seeds the durable cell (frozen mcp-facet semantics: an
-    // unspecified team cell is fail-closed = NO mount). Mounting therefore
-    // requires a governance record. This team-scope override (allow [A,B])
-    // makes the durable policy grant the cell, so that:
-    //   - fresh member-setup resolution at creation sees team-allow ∩
-    //     template → member-1 mounts A, member-2 mounts B (C2/C3 hold from
-    //     the creation phase);
-    //   - the leader's next REQUEST BOUNDARY (a team-tool execution on the
-    //     root — see the boundary trigger below) reconciles [A,B].
-    // Fail loud: without this record the world is contract-correct but
-    // mounts nothing, which would look like a runtime regression.
-    const seedRes = await remoteCall(host1.origin, host1.cookie, 'override.set', {
-      teamSessionId: ROOT,
-      capability: 'mcp',
-      value: { kind: 'allow', items: [SERVER_A, SERVER_B] },
-      actor: { kind: 'human' },
-      scope: 'team',
-    })
-    let seedRecLocal = null
-    try {
-      seedRecLocal = remoteValue(seedRes, 'override.set')?.record ?? remoteValue(seedRes, 'override.set')
-      if (typeof seedRecLocal?.recordId !== 'string') throw new Error(`no recordId in admission: ${JSON.stringify(seedRecLocal).slice(0, 200)}`)
-    } catch (error) {
-      throw new Error(`team-scope mcp allow seed REJECTED (precondition for the whole smoke): ${String(error.message ?? error)}`)
-    }
-    seedRec = seedRecLocal
-    log(`durable seed: team-scope mcp allow [${SERVER_A}, ${SERVER_B}] admitted (recordId=${seedRec.recordId})`)
+    // ── ZERO-SEED PROOF (de-seed, plan §7) ─────────────────────────────────
+    // The historical runs seeded a TEAM-SCOPE mcp allow (override.set)
+    // before the initial probes — that seed MASKED the initial-grant
+    // defect (the bound Blueprint template's capabilities.mcp never fed
+    // the governance cell; see the plan's §1 defect location). The seed
+    // is REMOVED from the initial path: the mounts below must come from
+    // the bound Blueprint's INITIAL static grant ALONE. Fail loud if any
+    // governance record exists at this point (nothing has written one
+    // yet — the world is fresh).
+    const seedProofState = await p6t6State(host1.port)
+    const seedProofOverrides = seedProofState.body?.governance?.overrides
+    const seedProofOk = seedProofState.status === 200 && Array.isArray(seedProofOverrides) && seedProofOverrides.length === 0
+    check('C1', 'zero-seed proof: governance.overrides is EMPTY before the initial probes (the initial mounts must come from the Blueprint initial grant, not from any record)',
+      seedProofOk,
+      `overrides=${JSON.stringify(seedProofOverrides).slice(0, 300)}`)
+    writeFileSync(join(RUN_DIR, 'zero-seed-proof.json'), JSON.stringify({
+      note: 'Plan §7: the initial success path no longer seeds override.set allow. This file is the anti-cheat evidence that the durable store is empty at the moment the mounts below are observed.',
+      at: new Date().toISOString(),
+      overrides: seedProofOverrides,
+      historicalSeed: 'override.set(capability=mcp, allow=[mcp_signal,mcp_designer], scope=team) — REMOVED (see plan §7)',
+    }, null, 2))
+    if (!seedProofOk) throw new Error(`zero-seed precondition violated: ${JSON.stringify(seedProofOverrides).slice(0, 300)}`)
+    log('zero-seed proof: governance.overrides = [] (no initial override.set — the Blueprint initial grant is the only source of the mounts)')
 
     // ── create members (shipped tool via the p6t6 seam) ────────────────────
     const mkMember = async (tmpl, label, tag) => {
@@ -1204,10 +1315,12 @@ async function main() {
     // is wired into submitAttributedInput / workDelivery.deliver /
     // deliverRootInput / executeTool only). A team-TOOL execution on the
     // root goes through executeTool → prepareAgentForRequest(root) → mcp
-    // reconcile, which mounts [A,B] for the leader (team allow [A,B] ∩
-    // leader template allow [A,B]). Run it BEFORE the first leader probe so
-    // C1 observes the post-boundary state. (Tool executions issue no model
-    // requests — mock seq accounting is unaffected.)
+    // re-resolution. The leader already mounts [A,B] from its bound
+    // template's INITIAL static grant at setup (the de-seeded world); this
+    // boundary proves the RE-RESOLUTION keeps the grant. Run it BEFORE the
+    // first leader probe so C1 observes the post-boundary state. (Tool
+    // executions issue no model requests — mock seq accounting is
+    // unaffected.)
     const trig1Res = await p6t6Tool(host1.port, 'team_list_members', {
       rootSessionId: ROOT,
       requestToken: `mms-trig1-${RUN_STAMP}`,
@@ -1246,16 +1359,17 @@ async function main() {
         check('C1', `${label}: state servers.${s}.mounted === ${expMounted}`, eff.map[s].mounted === expMounted,
           `observed=${JSON.stringify(eff.map[s])}`)
       }
-      const schemaTools = mcpToolsOf(snap.req)
+      const schemaTools = mcpToolsOf(snap.req) // snap.req = the turn's WORKING surface request (see probeAgent)
       const expTools = expected[sid].schema
       const sameSet = Array.isArray(schemaTools) && schemaTools.length === expTools.length && expTools.every((t) => schemaTools.includes(t))
       check('C1', `${label}: model-facing MCP tool set EXACT === ${JSON.stringify(expTools)}`, sameSet,
-        `observed=${JSON.stringify(schemaTools)} (mock req seq=${snap.reqSeq} model=${snap.reqModel})`)
+        `observed=${JSON.stringify(schemaTools)} (mock req seq=${snap.reqSeq}${snap.kickSeen ? ` [turn working surface = fullest of the turn's ${snap.markerSeq}/${snap.reqSeq} requests — a fresh-create first-turn request can carry an empty assembly; see header FINDING + mock-requests-c1.json]` : ''} model=${snap.reqModel})`)
       check('C1', `${label}: double proof consistent (state-mounted servers appear in the model schema)`,
         Array.isArray(schemaTools) && expected[sid].mounted.every((s) => schemaTools.includes(`mcp__${s}__ping`))
         && cfgNames.filter((s) => !expected[sid].mounted.includes(s)).every((s) => !schemaTools.includes(`mcp__${s}__ping`)),
         `state mounted=${JSON.stringify(expected[sid].mounted)} schema=${JSON.stringify(schemaTools)}`)
     }
+    dumpMockRequests(mockRef.current, 'mock-requests-c1')
     finishCriterion('C1')
 
     // ── C2: namespace separation ───────────────────────────────────────────
@@ -1264,10 +1378,10 @@ async function main() {
     check('C2', 'both mini endpoints expose the SAME underlying tool name "ping" (MCP-level)',
       miniA?.tools?.join(',') === 'ping' && miniB?.tools?.join(',') === 'ping',
       `A tools=${JSON.stringify(miniA?.tools)} B tools=${JSON.stringify(miniB?.tools)}`)
-    const leaderTools = mcpToolsOf(snapLeader1.req) ?? []
+    const leaderTools = mcpToolsOf(snapLeader1.req) ?? [] // turn's working surface request
     check('C2', 'leader schema carries BOTH mounted names as distinct tools (prefix separation, no collision)',
       leaderTools.includes(TOOL_A) && leaderTools.includes(TOOL_B) && TOOL_A !== TOOL_B,
-      `leader mcp tools=${JSON.stringify(leaderTools)}`)
+      `leader mcp tools=${JSON.stringify(leaderTools)} (seq=${snapLeader1.reqSeq})`)
     check('C2', 'no colliding duplicate tool names in the leader schema',
       new Set(leaderTools).size === leaderTools.length,
       `leader mcp tools=${JSON.stringify(leaderTools)}`)
@@ -1325,6 +1439,7 @@ async function main() {
     log(`C4 boundary trigger: team_list_members executed (status=${trig2?.status})`)
     const snapLeader2 = await probeAgent({ label: 'leader#2', host: host1, kind: 'leader', marker: MK_L2, cookie: host1.cookie })
     writeFileSync(join(RUN_DIR, 'state-after-c4.json'), JSON.stringify(snapLeader2.stateBody, null, 2))
+    dumpMockRequests(mockRef.current, 'mock-requests-c4')
     const leader2Tools = mcpToolsOf(snapLeader2.req) ?? []
     const effLeader2 = effectiveMcpMap(snapLeader2.stateBody, ROOT, cfgNames)
     check('C4', 'after the next boundary, B is NOT mounted in the leader state (deny-first dispose)',
@@ -1352,6 +1467,7 @@ async function main() {
     writeFileSync(join(RUN_DIR, 'state-after-c5.json'), JSON.stringify({
       leader: rSnapLeader.stateBody, member1: rSnapM1.stateBody, member2: rSnapM2.stateBody,
     }, null, 2))
+    dumpMockRequests(mockRef.current, 'mock-requests-c5')
     const postShaper = effectiveMcpMap(rSnapLeader.stateBody, ROOT, cfgNames)
     for (const [sid, preMap] of Object.entries(preRestart)) {
       const post = effectiveMcpMap(sid === ROOT ? rSnapLeader.stateBody : sid === memberA.childSessionId ? rSnapM1.stateBody : rSnapM2.stateBody, sid, cfgNames)
@@ -1468,7 +1584,10 @@ async function main() {
         baseUrl: process.env.DEEPSEEK_BASE_URL,
       },
       members: { member1: memberA, member2: memberB },
-      seed: seedRec,
+      seed: {
+        removed: true,
+        note: 'de-seed (plan MCP_BLUEPRINT_INITIAL_GRANT_FIX §7): the historical team-scope override.set(mcp allow [A,B]) initial seed is REMOVED from the initial path; see zero-seed-proof.json (governance.overrides = [] at the moment the mounts are observed).',
+      },
       targetTreeScan: { pre: scanPre, post: scanPost },
       criteria: Object.values(results),
       pass: Object.values(results).every((r) => r.pass === true),

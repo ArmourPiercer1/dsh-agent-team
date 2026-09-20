@@ -1,0 +1,22 @@
+{
+  "type": "server-response",
+  "rpcId": "t2-h6nquvpz5t",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED",
+      "message": "team.create: starting the root (leader) agent for 'session-mgis-t2-mgis-2026-09-20T09-41-15' failed: mcp-client: serverName \"mcp_signal\" is already in use by another mcp-client instance — pick a unique serverName in cordis.yml",
+      "details": {
+        "method": "team.create",
+        "endpoint": "team.create",
+        "contractVersion": 1,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED",
+          "message": "team.create: starting the root (leader) agent for 'session-mgis-t2-mgis-2026-09-20T09-41-15' failed: mcp-client: serverName \"mcp_signal\" is already in use by another mcp-client instance — pick a unique serverName in cordis.yml"
+        }
+      }
+    }
+  }
+}

@@ -435,6 +435,118 @@ const A2C3_RT: RemoteResponse = await (async () => {
   )
 })()
 
+// --- PR #23 review fix (plan §9): the inspect-config focused regression ------
+//
+// The generic `effective` view of team_inspect_config must carry the SAME
+// initial static MCP grant the live MCP consumption resolves (the shared
+// `initialMcpGrantOf(staticCapabilitiesOf(...))` derivation — the P1
+// inconsistency was: the MCP mounted and callable while the inspection
+// reported the mcp cell unspecified/deny). T1: a member template whose
+// bound `capabilities.mcp` is an explicit non-empty allow resolves
+// `effective.mcp` to that allow with ZERO overrides. T2: the controls —
+// a template-level mcp DENY and a legacy (capabilities-less) template
+// must NOT be auto-converted into a grant (the cell stays the unchanged
+// fail-closed deny; an EMPTY allow normalizes to no grant too — the
+// A2C3 world above pins exactly that on both of its templates).
+
+/** The PR #23 MCP fixture blueprint: worker `mcp allow [a-mcp-server]`
+ *  (T1); leader `mcp deny` (T2 control); scout NO capabilities (T2
+ *  legacy control). */
+const A2C3_MCP_BLUEPRINT_SOURCE = [
+  '---',
+  'schemaVersion: 1',
+  'blueprintId: A2C3-MCP-BP',
+  'revision: "1"',
+  'leader:',
+  '  templateId: leader',
+  '  persona: You lead the A2C3-MCP team.',
+  '  capabilities:',
+  '    teamTools:',
+  '      kind: allow',
+  '      items: []',
+  '    builtinToolDeny: []',
+  '    skills:',
+  '      kind: allow',
+  '      items: []',
+  '    mcp:',
+  '      kind: deny',
+  'members:',
+  '  - templateId: worker',
+  '    displayName: Worker',
+  '    persona: You do the A2C3-MCP work.',
+  '    capabilities:',
+  '      teamTools:',
+  '        kind: allow',
+  '        items: []',
+  '      builtinToolDeny: []',
+  '      skills:',
+  '        kind: allow',
+  '        items: []',
+  '      mcp:',
+  '        kind: allow',
+  '        items:',
+  '          - a-mcp-server',
+  '  - templateId: scout',
+  '    displayName: Scout',
+  '    persona: You scout for the A2C3-MCP team.',
+  'requirements: []',
+  'memberEnvelopes: []',
+  'policyStates: []',
+  'metadata: {}',
+  '---',
+  '',
+].join('\n')
+
+const A2C3_MCP = await (async () => {
+  const world: P6T1World = await createP6T2World(
+    'a2c3-mcp-inspect',
+    ['leader', 'worker', 'scout'],
+    { blueprintSource: A2C3_MCP_BLUEPRINT_SOURCE },
+  )
+  try {
+    const runtime = createP6T2Runtime(world)
+    const inspectWorker = await runtime.performAction(
+      makeActionRequest({
+        action: 'inspect-config',
+        targetInstanceId: A2C3_WORKER_ID,
+        requestToken: 'tok-a2c3-mcp-w',
+      }),
+    )
+    const inspectLeader = await runtime.performAction(
+      makeActionRequest({
+        action: 'inspect-config',
+        targetInstanceId: A2C3_LEADER_ID,
+        requestToken: 'tok-a2c3-mcp-l',
+      }),
+    )
+    const inspectScout = await runtime.performAction(
+      makeActionRequest({
+        action: 'inspect-config',
+        targetInstanceId: A2C3_SCOUT_ID,
+        requestToken: 'tok-a2c3-mcp-s',
+      }),
+    )
+    return { inspectWorker, inspectLeader, inspectScout }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+describe('A2C-3 + PR #23: team_inspect_config carries the bound template initial MCP grant (plan §9)', () => {
+  it('T1: a template mcp allow [A] with ZERO overrides resolves effective.mcp to allow [A]', () => {
+    expect(inspectLike(A2C3_MCP.inspectWorker).effective?.['mcp']).toEqual({
+      kind: 'allow',
+      items: ['a-mcp-server'],
+    })
+  })
+  it('T2: a template mcp DENY is never auto-converted (the cell stays the fail-closed deny)', () => {
+    expect(inspectLike(A2C3_MCP.inspectLeader).effective?.['mcp']).toEqual({ kind: 'deny' })
+  })
+  it('T2: a legacy (capabilities-less) template yields no grant (the cell stays the fail-closed deny)', () => {
+    expect(inspectLike(A2C3_MCP.inspectScout).effective?.['mcp']).toEqual({ kind: 'deny' })
+  })
+})
+
 describe('A2C-3: team_inspect_config exposes the real operation permission (plan §10)', () => {
   it('R1: the config-inspected payload carries the independent operationPermissions field', () => {
     for (const outcome of [

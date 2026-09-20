@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant
+
+ ✓ packages/runtime/test/p8s4b-mcp-facet.test.ts (20 tests) 4ms
+ ✓ packages/runtime/test/mcp-blueprint-initial-grant.test.ts (18 tests) 5ms
+
+ Test Files  2 passed (2)
+      Tests  38 passed (38)
+   Start at  18:01:05
+   Duration  898ms (transform 784ms, setup 0ms, import 1.21s, tests 9ms, environment 0ms)
+

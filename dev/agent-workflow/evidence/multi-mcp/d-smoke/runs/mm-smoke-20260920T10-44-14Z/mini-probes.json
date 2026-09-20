@@ -1,0 +1,14 @@
+{
+  "a": {
+    "initStatus": 200,
+    "tools": [
+      "ping"
+    ]
+  },
+  "b": {
+    "initStatus": 200,
+    "tools": [
+      "ping"
+    ]
+  }
+}

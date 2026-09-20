@@ -52,8 +52,12 @@
 
 import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js'
 import type { MemberInstanceRecordDto } from '../../contracts/src/index.js'
-import type { TeamBlueprint, TemplatePermissionPolicy } from '../../domain/blueprint/src/index.js'
-import { CAPABILITY_NAME_VALUES } from '../../domain/policy/src/index.js'
+import type { BlueprintTemplate, TeamBlueprint } from '../../domain/blueprint/src/index.js'
+import {
+  CAPABILITY_NAME_VALUES,
+  initialMcpGrantOf,
+  staticCapabilitiesOf,
+} from '../../domain/policy/src/index.js'
 import type { ExternalPolicyFacts } from '../../domain/policy/src/index.js'
 import {
   applyLifecycleOperation,
@@ -283,7 +287,7 @@ export function withTeamLock<T>(
 function boundTemplateOf(
   blueprint: TeamBlueprint,
   target: MemberInstanceRecordDto,
-): { readonly capabilities?: { readonly permissions?: TemplatePermissionPolicy } } {
+): BlueprintTemplate {
   if (target.instanceId === LEADER_INSTANCE_ID) {
     return blueprint.leader
   }
@@ -319,6 +323,18 @@ async function runEffect(ctx: EffectContext): Promise<RuntimeActionEffect | Work
       const target = ctx.target
       if (target === undefined) internalInvariant('inspect-config requires a resolved target')
       const external = await ctx.externalPolicyFacts()
+      // PR #23 review fix (plan §3): inspect-config resolves the SAME
+      // effective policy the live consumption and the activation step 8
+      // resolve — including the bound template's INITIAL static mcp grant
+      // (the shared `initialMcpGrantOf(staticCapabilitiesOf(...))`
+      // derivation; an absent / non-allow / legacy template contributes
+      // nothing, never a synthesized override). Without this layer the
+      // inspection reported the template's allow as an unspecified
+      // fail-closed mcp cell while the agent actually ran with the grant
+      // (the P1 inconsistency: state showed allowed=false /
+      // source=unspecified while the MCP was mounted).
+      const boundTemplate = boundTemplateOf(ctx.blueprint, target)
+      const initialMcpGrant = initialMcpGrantOf(staticCapabilitiesOf(ctx.blueprint, boundTemplate))
       let policy
       try {
         policy = resolveActivationPolicy({
@@ -326,6 +342,7 @@ async function runEffect(ctx: EffectContext): Promise<RuntimeActionEffect | Work
           instanceId: target.instanceId,
           overrides: ctx.repositories.overrides.list(ctx.rootSessionId),
           external,
+          ...(initialMcpGrant !== undefined ? { templateValues: { mcp: initialMcpGrant } } : {}),
         })
       } catch (error) {
         if (isActivationError(error)) throw mapActivationError(error)

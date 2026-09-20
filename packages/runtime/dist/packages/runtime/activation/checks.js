@@ -436,6 +436,19 @@ export function selectPolicyOverrides(overrides, rootSessionId, instanceId) {
  * PolicyState is the implicit `default` state of v1 (the TeamSession has no
  * durable transition store yet; invariant 40 owns transitions).
  *
+ * The OPTIONAL `templateValues` carries the bound Blueprint template's
+ * INITIAL STATIC grant for the `mcp` cell (plan MCP_BLUEPRINT_INITIAL_GRANT
+ * §4.1): the template's `capabilities.mcp` entry ONLY when
+ * `kind === 'allow'` (a deny / a capabilities-less legacy template / a
+ * future non-allow state contribute nothing — they stay fail-closed or
+ * governed dynamically in Alpha.3+). The value sits at the policy
+ * resolver's `template` value layer (provenance template/static, no record
+ * id): above the PolicyState, below the record-backed templateOverlay /
+ * instanceOverlay / humanOverride layers and the external hard facts — so
+ * a durable deny/tighten still wins at the next boundary, and no synthetic
+ * durable record is ever created (the bound Blueprint snapshot itself is
+ * the durable, immutable source of the grant).
+ *
  * @param args - the resolution inputs.
  * @returns the frozen effective policy (explainable per-cell, provenance
  *   included).
@@ -444,7 +457,7 @@ export function selectPolicyOverrides(overrides, rootSessionId, instanceId) {
  *   — fail closed).
  */
 export function resolveActivationPolicy(args) {
-    const { rootSessionId, instanceId, overrides, external } = args;
+    const { rootSessionId, instanceId, overrides, external, templateValues } = args;
     const selected = selectPolicyOverrides(overrides, rootSessionId, instanceId);
     let policy;
     try {
@@ -452,7 +465,7 @@ export function resolveActivationPolicy(args) {
             teamSessionId: teamSessionIdOf(parseRootSessionId(rootSessionId)),
             member: createMemberIdentity(parseRootSessionId(rootSessionId), parseInstanceId(instanceId)),
             blueprint: {},
-            template: {},
+            template: templateValues === undefined ? {} : { values: templateValues },
             policyState: { stateId: DEFAULT_POLICY_STATE_ID },
             ...(selected.templateOverlay !== undefined ? { templateOverlay: selected.templateOverlay } : {}),
             ...(selected.instanceOverlay !== undefined ? { instanceOverlay: selected.instanceOverlay } : {}),

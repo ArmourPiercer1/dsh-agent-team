@@ -1,0 +1,116 @@
+[
+  {
+    "id": "C1",
+    "name": "zero-seed initial grant per-agent model-facing MCP tools EXACT (I5 state + turn-surface schema double proof): leader A+B / m1 A / m2 B",
+    "status": "run",
+    "checks": [
+      {
+        "name": "zero-seed proof: governance.overrides is EMPTY before the initial probes (the initial mounts must come from the Blueprint initial grant, not from any record)",
+        "ok": true,
+        "detail": "overrides=[]"
+      }
+    ]
+  },
+  {
+    "id": "C2",
+    "name": "A/B namespaces do not collide (same underlying tool ping; distinct mounted names)",
+    "status": "not-run",
+    "checks": [],
+    "miniProbe": {
+      "a": {
+        "initStatus": 200,
+        "tools": [
+          "ping"
+        ]
+      },
+      "b": {
+        "initStatus": 200,
+        "tools": [
+          "ping"
+        ]
+      }
+    }
+  },
+  {
+    "id": "C3",
+    "name": "member isolation (m1 sees A only; m2 sees B only)",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C4",
+    "name": "durable override tighten (leader [A,B]->[A]) really unmounts B at the next boundary",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C5",
+    "name": "host restart (same home, resume) rebuilds the SAME effective set",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C6",
+    "name": "teardown releases 3491/3492 (+3496 mock, +host port)",
+    "status": "run",
+    "checks": [
+      {
+        "name": "all run ports released after teardown (host=3181 3491 3492 3496)",
+        "ok": true,
+        "detail": "{\"host\":true,\"mcpA\":true,\"mcpB\":true,\"mock\":true}"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "id": "C7",
+    "name": "test-use porcelain empty + HEAD baseline; :3080 untouched",
+    "status": "run",
+    "checks": [
+      {
+        "name": "test-use worktree porcelain EMPTY after the run",
+        "ok": true,
+        "detail": "statusEmpty=true diffEmpty=true head=fb2c4b9e698e30edb738bca4cf0618587db7d203"
+      },
+      {
+        "name": "test-use HEAD still at baseline fb2c4b9e698e30edb738bca4cf0618587db7d203",
+        "ok": true,
+        "detail": "pre=fb2c4b9e698e30edb738bca4cf0618587db7d203 post=fb2c4b9e698e30edb738bca4cf0618587db7d203"
+      },
+      {
+        "name": ":3080 untouched (read-only probe, status unchanged pre==post)",
+        "ok": true,
+        "detail": "pre=401 post=401"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "id": "C8",
+    "name": "target-tree scan surface unchanged (kit link dirs removed, pnpm junctions restored)",
+    "status": "run",
+    "checks": [
+      {
+        "name": "target-tree packages/* dir set unchanged (no kit-created dir left)",
+        "ok": true,
+        "detail": "pre=[\"client\",\"contracts\",\"domain\",\"legacy\",\"remote\",\"runtime\",\"storage\",\"testkit\",\"tools\"] post=[\"client\",\"contracts\",\"domain\",\"legacy\",\"remote\",\"runtime\",\"storage\",\"testkit\",\"tools\"]"
+      },
+      {
+        "name": "p4t6 scanner filesScanned unchanged (no junction follow into host tree)",
+        "ok": true,
+        "detail": "pre=726 post=726"
+      },
+      {
+        "name": "all kit-created link dirs removed",
+        "ok": true,
+        "detail": "none"
+      },
+      {
+        "name": "pre-existing pnpm junctions restored to original targets",
+        "ok": true,
+        "detail": "all 6 restored"
+      }
+    ],
+    "pass": true
+  }
+]

@@ -1,0 +1,3 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3181/?token=_M_jFG_hLsoEzF7_HPeIAQS7GpemS7v64DhQWr4O_z8
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote

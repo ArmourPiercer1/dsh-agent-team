@@ -45,6 +45,30 @@ export type StaticTemplateCapabilities = {
  */
 export declare function staticCapabilitiesOf(_blueprint: TeamBlueprint, memberTemplate: BlueprintTemplate): StaticTemplateCapabilities;
 /**
+ * The bound template's INITIAL static MCP governance grant — the SINGLE
+ * derivation shared by every consumer of the template layer (the MCP live
+ * consumption derivation, `team_inspect_config`, and the activation
+ * step-8 policy resolution; PR #23 review fix):
+ *
+ * - only an EXPLICIT `allow` that NAMES at least one server produces a
+ *   grant (an `allow(items: [])` normalizes to NO grant — the frozen
+ *   resolver rejects empty allow items as malformed, and the cell stays
+ *   unspecified / fail-closed, never a deny-everything surprise);
+ * - a `deny`, a future `ask`, any other non-allow state, and a legacy
+ *   (capabilities-less) template contribute NOTHING — they are never
+ *   auto-converted into a grant (fail-closed or dynamically governed in
+ *   Alpha.3+);
+ * - the result sits at the resolver's `template` value layer (provenance
+ *   template/static, no record id): above the PolicyState, below the
+ *   record-backed overlays and the external hard facts; no synthetic
+ *   durable record is ever created.
+ *
+ * @param capabilities - the static template capabilities (legacy or selective).
+ * @returns the `mcp` PolicyEntry to feed the resolver's `templateValues.mcp`,
+ *          or `undefined` when the template declares no initial MCP grant.
+ */
+export declare function initialMcpGrantOf(capabilities: StaticTemplateCapabilities): PolicyEntry | undefined;
+/**
  * Map a selective {@link StaticTemplateCapabilities} into the
  * {@link TemplatePolicy['values']} shape the policy resolver consumes.
  *

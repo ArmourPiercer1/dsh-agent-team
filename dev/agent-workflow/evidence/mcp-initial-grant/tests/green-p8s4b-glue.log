@@ -1,0 +1,12 @@
+# GREEN re-verify 2026-09-20T10:29:14Z — sources restored (post-stash-pop)
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant
+
+ ✓ packages/runtime/test/p8s4b-mcp-facet.test.ts (20 tests) 5ms
+ ✓ packages/runtime/test/mcp-blueprint-initial-grant.test.ts (18 tests) 5ms
+
+ Test Files  2 passed (2)
+      Tests  38 passed (38)
+   Start at  18:29:14
+   Duration  777ms (transform 721ms, setup 0ms, import 1.06s, tests 10ms, environment 0ms)
+

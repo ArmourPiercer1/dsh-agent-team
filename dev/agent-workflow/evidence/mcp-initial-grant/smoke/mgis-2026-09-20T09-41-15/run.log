@@ -1,0 +1,49 @@
+[2026-09-20T09:41:15.294Z] === mcp-initial-grant Gate D real-host smoke mgis-2026-09-20T09-41-15 ===
+[2026-09-20T09:41:15.294Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant
+[2026-09-20T09:41:15.294Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-20T09:41:15.294Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/mcp-initial-grant/smoke/mgis-2026-09-20T09-41-15 keep=false
+[2026-09-20T09:41:15.312Z] stable pre-probes: 3080=401 3180=401
+[2026-09-20T09:41:15.337Z] ports: host=3181 mcpA=3491 mcpB=3492 mock=3496
+[2026-09-20T09:41:15.339Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/tests/homes/mgis-2026-09-20T09-41-15 blueprints=/home/user/dsh-plugins/dsh-agent-team/tests/homes/mgis-2026-09-20T09-41-15/blueprints (t1=[A,B] t2=[A])
+[2026-09-20T09:41:15.344Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-20T09:41:15.344Z] mock DeepSeek endpoint up at 127.0.0.1:3496
+[2026-09-20T09:41:15.367Z] mini MCP A up on 127.0.0.1:3491 (mcp_signal); B up on 127.0.0.1:3492 (mcp_designer)
+[2026-09-20T09:41:15.367Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-20T09:41:18.876Z] throwaway boot OK: http://127.0.0.1:3181/?token=3s3SxqIwEw5y_4-IWcxfLwrVG5uPaYwqcYT-w88l4_w
+[2026-09-20T09:41:19.206Z] web profile ensured (throwaway boot if first use)
+[2026-09-20T09:41:19.207Z] HOST1-CREATE: patch (bootPhase=create) + directive (boot=1) written
+[2026-09-20T09:41:22.305Z] HOST1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-20T09:41:22.308Z] HOST1-CREATE: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-20T09:41:23.484Z] HOST1-CREATE: row ready — toolCount=12 liveSessions=["session-mgis-boot-mgis-2026-09-20T09-41-15"]
+[2026-09-20T09:41:23.488Z] HOST1: state ready (teamSession=team.mgis-anchor)
+[2026-09-20T09:41:23.488Z] Z1 PASS — governance.overrides is EMPTY at world boot (zero durable seeds — the forbidden initial override.set was never performed) :: overrides=[]
+[2026-09-20T09:41:23.643Z] mock: mock: 1 text reply (18 chars): "mgis smoke session"
+[2026-09-20T09:41:23.644Z] mock: mock: 2 tool-call reply: mcp__mcp_signal__ping
+[2026-09-20T09:41:23.678Z] mock: mock: 3 tool-call reply: mcp__mcp_designer__ping
+[2026-09-20T09:41:23.697Z] mock: mock: 4 text reply (12 chars): "MGIS_T1_DONE"
+[2026-09-20T09:41:23.712Z] D1 PASS — team.create v2 (Team-1) succeeds on the fresh root (path=fresh-root; open Root + admitInitialWork) :: status=200 data={"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-mgis-t1-mgis-2026-09-20T09-41-15","blueprint":{"blueprintId":"team.mgis-t1","revision":"1","contentHash":"sha256:3daa7b9d3841453b21864acf9ed049c2f6a0c66ec9cb2ab4f8a6c333b7903acb"},"createdAt":"2
+[2026-09-20T09:41:23.725Z] D2 PASS — Team-1 leader FIRST-turn initial work DIRECTLY CALLED MCP: mcp__mcp_signal__ping executed (pong result observed) :: toolResults=["pong:a:t1-a","pong:b:t1-b"]
+[2026-09-20T09:41:23.726Z] D2 PASS — Team-1 leader FIRST-turn initial work DIRECTLY CALLED MCP: mcp__mcp_designer__ping executed (pong result observed) :: toolResults=["pong:a:t1-a","pong:b:t1-b"]
+[2026-09-20T09:41:23.730Z] D3 PASS — Team-1 leader state: I5 shape, A mounted, B mounted (the bound initial allow [A,B] — zero overrides) :: eff={"mcp_signal":{"present":true,"mounted":true,"allowed":false},"mcp_designer":{"present":true,"mounted":true,"allowed":false}} shape=i5-servers
+[2026-09-20T09:41:23.730Z] D3 FAIL — Team-1 leader schema carries EXACTLY [A,B] mcp tools (the initial grant is what mounted them) :: schema=["mcp__mcp_designer__ping","mcp__mcp_signal__ping"]
+[2026-09-20T09:41:23.730Z] D3 PASS — governance.overrides is STILL EMPTY after Team-1 creation + its MCP mounts (the mount came from the Blueprint, not from any record) :: overrides=[]
+[2026-09-20T09:41:23.738Z] mock: mock: 5 tool-call reply: mcp__mcp_signal__ping
+[2026-09-20T09:41:23.764Z] mock: mock: 6 tool-call reply: mcp__mcp_designer__ping
+[2026-09-20T09:41:23.779Z] D4 FAIL — team.create v2 (Team-2) — the MANDATORY second fresh root — succeeds independently of Team-1 (path=fresh-root) :: status=200 data={"type":"server-response","rpcId":"t2-h6nquvpz5t","result":{"ok":false,"error":{"code":"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED","message":"team.create: starting the root (leader) agent for 'session-mgis-t2-mgis-2026-09-20T09-41-15' failed: mcp-client: serverName \"mcp_signal\" is 
+[2026-09-20T09:41:23.779Z] sweep: stopping still-live host HOST1-CREATE
+[2026-09-20T09:41:24.119Z] HOST1-CREATE: stopped (killed=true portFree=true)
+[2026-09-20T09:41:24.119Z] mini MCP A closed
+[2026-09-20T09:41:24.119Z] mini MCP B closed
+[2026-09-20T09:41:24.119Z] mock model closed
+[2026-09-20T09:41:24.121Z] H2 PASS — all run ports released after teardown :: {"host":true,"mcpA":true,"mcpB":true,"mock":true}
+[2026-09-20T09:41:24.122Z] H2: PASS (1/1 checks)
+[2026-09-20T09:41:24.148Z] H1 PASS — test-use worktree porcelain EMPTY after the run :: statusEmpty=true diffEmpty=true head=fb2c4b9e698e30edb738bca4cf0618587db7d203
+[2026-09-20T09:41:24.148Z] H1 PASS — test-use HEAD still at baseline fb2c4b9e698e30edb738bca4cf0618587db7d203 :: post=fb2c4b9e698e30edb738bca4cf0618587db7d203
+[2026-09-20T09:41:24.148Z] H1 PASS — :3080/:3180 untouched (read-only probes, status unchanged pre==post) :: 3080: 401->401 3180: 401->401
+[2026-09-20T09:41:24.148Z] H1: PASS (3/3 checks)
+[2026-09-20T09:41:24.150Z] home deleted: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mgis-2026-09-20T09-41-15
+[2026-09-20T09:41:24.151Z] summary -> /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/mcp-initial-grant/smoke/mgis-2026-09-20T09-41-15/summary.json
+[2026-09-20T09:41:24.151Z] VERDICT FAIL — passed [H1, H2] failed [Z1, D1, D2, D3, D4, D5, D6, D7, D8]
+[2026-09-20T09:41:24.151Z] FATAL (kit-level, run aborted): Error: D4 failed — aborting before the T2 assertions
+    at main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs:970:32)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

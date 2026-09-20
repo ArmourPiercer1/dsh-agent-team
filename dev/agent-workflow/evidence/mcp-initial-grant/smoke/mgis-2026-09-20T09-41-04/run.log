@@ -1,0 +1,6 @@
+[2026-09-20T09:41:04.515Z] === mcp-initial-grant Gate D real-host smoke mgis-2026-09-20T09-41-04 ===
+[2026-09-20T09:41:04.516Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant
+[2026-09-20T09:41:04.516Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-20T09:41:04.516Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/dev/agent-workflow/evidence/mcp-initial-grant/smoke/mgis-2026-09-20T09-41-04 keep=false
+[2026-09-20T09:41:04.533Z] stable pre-probes: 3080=401 3180=401
+[2026-09-20T09:41:04.555Z] FATAL --host-port must be an integer in 3181..3186 (3180/3080 forbidden)

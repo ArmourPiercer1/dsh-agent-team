@@ -241,12 +241,32 @@ mcpServers:
   `mcpServer: null` 并存不影响 RC 线）。
 
 **挂载目标**：每个 agent 在每次 request boundary 实际挂载的 server 集 =
-行配置 servers ∩ 该模板 `capabilities.mcp` allow 集 ∩ durable mcp cell
-（governance override / 外部策略，每次 boundary 重读 durable truth）三者的交集；
-不在 allow 内的 server **不挂载**（不是「先挂再隐藏」）。模型可见的工具名为
-`mcp__<name>__<tool>`：不同 server 即使暴露同名 tool 也互不冲突。
-allow 集可用通配 `*`（放行全部已配置 server）。模板不声明 `capabilities.mcp`
-时 cell 为 unspecified，fail-closed = 不挂任何 MCP。
+行配置 servers ∩ 模板 materialization eligibility（该模板 `capabilities.mcp`
+的 static gate：selective 模式下 allow 必须点名已配置 server、deny = 不挂；
+模板未声明 `capabilities.mcp` 时 gate 直通，决定完全交给治理 cell）
+∩ **effective governance MCP cell** 三者的交集；不在允许集内的 server
+**不挂载**（不是「先挂再隐藏」）。模型可见的工具名为 `mcp__<name>__<tool>`：
+不同 server 即使暴露同名 tool 也互不冲突。allow 集可用通配 `*`
+（放行全部已配置 server）。
+
+effective governance cell 的来源（分层，记录层高于静态层，外部 hard 最终否决）：
+
+```text
+初始值（静态层，无记录；bound Blueprint template 中显式 allow 的 MCP）：
+  角色的初始治理授权 —— team 创建（fresh root / fresh member）与 cold
+  resume 起立即可用，无需任何 override.set
+
+之后（记录层，每次 boundary 重读 durable truth）：
+  PolicyState / Leader overlay / Member overlay / Human override
+  （可收紧，也可放宽——如运行期新增 allow）
+
+最终：
+  与 external hard policy 求交（external hard deny 拥有最终否决权）
+```
+
+模板 `capabilities.mcp` 为 `kind: deny`、legacy 模板（未声明 `capabilities`）、
+或未来的非 `allow` 状态，**不产生初始 grant**（cell 为 unspecified，
+fail-closed = 不挂任何 MCP）。
 
 per-template 子集示例（同一行 `mcpServers` 配 2 个 server，不同模板用不同子集）：
 

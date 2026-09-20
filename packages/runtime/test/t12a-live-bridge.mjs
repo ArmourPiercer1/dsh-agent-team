@@ -987,7 +987,7 @@ export async function observeAssembly(agentCtx) {
  *   snapshot ref must name an entry here; the parse's contentHash is
  *   verified against the ref — strict, like the host resolver). Absent =
  *   an empty store (a row bound to a non-anchor snapshot fails closed).
- * @param {(teamRootSid: string) => object} [options.resolveBoundBlueprint]
+ * @param {(teamRootSid: string) => (object|null)} [options.resolveBoundBlueprint]
  *   BP-F: an OVERRIDE per-root bound-blueprint resolver passed straight
  *   through to the glue (e.g. a production-shaped live-authority
  *   resolver). Absent = the bridge's default strict map resolver over
@@ -1196,10 +1196,10 @@ export async function withDshHome(home, fn) {
  * @param {string} [profile] the profile dir name (any non-empty name)
  * @returns {string} the fixture home root (for cleanup).
  */
-export function writeDurableFixture(home, sessionId, profile = 'test-profile') {
+export function writeDurableFixture(home, sessionId, profile = 'test-profile', logFile = 'session.jsonl.zstd') {
   const dir = join(home, 'sessions', profile, sessionId)
   mkdirSync(dir, { recursive: true })
-  writeFileSync(join(dir, 'session.jsonl.zstd'), '', 'utf8')
+  writeFileSync(join(dir, logFile), '', 'utf8')
   return home
 }
 

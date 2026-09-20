@@ -1,0 +1,10 @@
+$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition: 87 modules, 11 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/client/composition-shim/client-bundle.js (958553 B)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant/packages/client/composition-shim/package.json
+[check-artifacts-committed] OK: 1132 files; committed install-surface artifacts match the fresh build

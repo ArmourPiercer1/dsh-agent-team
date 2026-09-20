@@ -1,0 +1,11 @@
+# GREEN 2026-09-20T10:30:26Z — p8s4b resolver gate (post-fix)
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/mcp-initial-grant
+
+ ✓ packages/runtime/test/p8s4b-mcp-facet.test.ts (20 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  18:30:26
+   Duration  410ms (transform 261ms, setup 0ms, import 327ms, tests 5ms, environment 0ms)
+

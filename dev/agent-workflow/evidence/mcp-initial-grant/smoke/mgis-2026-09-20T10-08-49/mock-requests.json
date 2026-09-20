@@ -1,0 +1,205 @@
+[
+  {
+    "seq": 1,
+    "at": "2026-09-20T10:08:57.408Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 0,
+    "mcpTools": [],
+    "teamTools": [],
+    "userTail": "1cbc652b44e89f2f601dd4e7e] MGIS_T1_mgis-2026-09-20T10-08-49 Your first task: ping the mcp server now — call the mcp__mcp_signal__ping tool with msg \\\"t1-a\\\".\"}]",
+    "replyKind": "text"
+  },
+  {
+    "seq": 2,
+    "at": "2026-09-20T10:08:57.409Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 28,
+    "mcpTools": [
+      "mcp__mcp_signal__ping"
+    ],
+    "teamTools": [],
+    "userTail": "kill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>",
+    "replyKind": "tool-call"
+  },
+  {
+    "seq": 3,
+    "at": "2026-09-20T10:08:57.444Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 28,
+    "mcpTools": [
+      "mcp__mcp_signal__ping"
+    ],
+    "teamTools": [],
+    "userTail": "kill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>",
+    "replyKind": "text"
+  },
+  {
+    "seq": 4,
+    "at": "2026-09-20T10:08:57.496Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 28,
+    "mcpTools": [
+      "mcp__mcp_signal__ping"
+    ],
+    "teamTools": [],
+    "userTail": "MGIS_T1_mgis-2026-09-20T10-08-49",
+    "replyKind": "tool-call"
+  },
+  {
+    "seq": 5,
+    "at": "2026-09-20T10:08:57.528Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 28,
+    "mcpTools": [
+      "mcp__mcp_signal__ping"
+    ],
+    "teamTools": [],
+    "userTail": "MGIS_T1_mgis-2026-09-20T10-08-49",
+    "replyKind": "text"
+  },
+  {
+    "seq": 6,
+    "at": "2026-09-20T10:08:57.597Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 0,
+    "mcpTools": [],
+    "teamTools": [],
+    "userTail": "5eb2a10676bf9ab2af36a8b] MGIS_T2_mgis-2026-09-20T10-08-49 Your first task: ping the mcp server now — call the mcp__mcp_designer__ping tool with msg \\\"t2-b\\\".\"}]",
+    "replyKind": "text"
+  },
+  {
+    "seq": 7,
+    "at": "2026-09-20T10:08:57.598Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 28,
+    "mcpTools": [
+      "mcp__mcp_designer__ping"
+    ],
+    "teamTools": [],
+    "userTail": "kill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>",
+    "replyKind": "tool-call"
+  },
+  {
+    "seq": 8,
+    "at": "2026-09-20T10:08:57.622Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 28,
+    "mcpTools": [
+      "mcp__mcp_designer__ping"
+    ],
+    "teamTools": [],
+    "userTail": "kill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>",
+    "replyKind": "text"
+  },
+  {
+    "seq": 9,
+    "at": "2026-09-20T10:08:57.660Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 28,
+    "mcpTools": [
+      "mcp__mcp_designer__ping"
+    ],
+    "teamTools": [],
+    "userTail": "MGIS_T2_mgis-2026-09-20T10-08-49",
+    "replyKind": "tool-call"
+  },
+  {
+    "seq": 10,
+    "at": "2026-09-20T10:08:57.686Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 28,
+    "mcpTools": [
+      "mcp__mcp_designer__ping"
+    ],
+    "teamTools": [],
+    "userTail": "MGIS_T2_mgis-2026-09-20T10-08-49",
+    "replyKind": "text"
+  },
+  {
+    "seq": 11,
+    "at": "2026-09-20T10:08:57.709Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 39,
+    "mcpTools": [],
+    "teamTools": [
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_send_message"
+    ],
+    "userTail": "kill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>",
+    "replyKind": "text"
+  },
+  {
+    "seq": 12,
+    "at": "2026-09-20T10:08:57.710Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 0,
+    "mcpTools": [],
+    "teamTools": [],
+    "userTail": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"MGIS_BOOT_mgis-2026-09-20T10-08-49\"}]",
+    "replyKind": "text"
+  },
+  {
+    "seq": 13,
+    "at": "2026-09-20T10:08:58.201Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 27,
+    "mcpTools": [],
+    "teamTools": [],
+    "userTail": "MGIS_T1B_mgis-2026-09-20T10-08-49",
+    "replyKind": "tool-call"
+  },
+  {
+    "seq": 14,
+    "at": "2026-09-20T10:08:58.217Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 27,
+    "mcpTools": [],
+    "teamTools": [],
+    "userTail": "MGIS_T1B_mgis-2026-09-20T10-08-49",
+    "replyKind": "text"
+  },
+  {
+    "seq": 15,
+    "at": "2026-09-20T10:09:02.588Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 27,
+    "mcpTools": [],
+    "teamTools": [],
+    "userTail": "MGIS_RT1_mgis-2026-09-20T10-08-49",
+    "replyKind": "text"
+  },
+  {
+    "seq": 16,
+    "at": "2026-09-20T10:09:03.083Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 28,
+    "mcpTools": [
+      "mcp__mcp_designer__ping"
+    ],
+    "teamTools": [],
+    "userTail": "MGIS_RT2_mgis-2026-09-20T10-08-49",
+    "replyKind": "tool-call"
+  },
+  {
+    "seq": 17,
+    "at": "2026-09-20T10:09:03.110Z",
+    "model": "mgis-smoke-model",
+    "toolCount": 28,
+    "mcpTools": [
+      "mcp__mcp_designer__ping"
+    ],
+    "teamTools": [],
+    "userTail": "MGIS_RT2_mgis-2026-09-20T10-08-49",
+    "replyKind": "text"
+  }
+]

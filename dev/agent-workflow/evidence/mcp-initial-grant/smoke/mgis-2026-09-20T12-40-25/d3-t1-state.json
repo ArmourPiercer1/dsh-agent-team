@@ -1,0 +1,160 @@
+{
+  "boot": 1,
+  "phase": "create",
+  "rootSessionId": "session-mgis-boot-mgis-2026-09-20T12-40-25",
+  "teamSession": {
+    "rootSessionId": "session-mgis-boot-mgis-2026-09-20T12-40-25",
+    "blueprintId": "team.mgis-anchor",
+    "revision": "1",
+    "contentHash": "sha256:28e3add72b8ea29b144d0b2ed538de426d2a25c4fc5e5737d518f959fc09958a",
+    "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "createdAt": "2026-09-20T12:40:31.430Z",
+    "generation": 2
+  },
+  "members": [
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": []
+  },
+  "activity": [],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [],
+    "sessions": {
+      "session-mgis-boot-mgis-2026-09-20T12-40-25": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "mgis-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "mgis-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {
+            "mcp_signal": {
+              "mounted": false,
+              "allowed": false,
+              "source": {
+                "layer": "unspecified",
+                "origin": "static",
+                "recordId": null
+              },
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "unspecifiedFailClosed"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+            },
+            "mcp_designer": {
+              "mounted": false,
+              "allowed": false,
+              "source": {
+                "layer": "unspecified",
+                "origin": "static",
+                "recordId": null
+              },
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "unspecifiedFailClosed"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+            }
+          }
+        }
+      },
+      "session-mgis-t1-mgis-2026-09-20T12-40-25": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "mgis-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "mgis-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "mgis-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {
+            "mcp_signal": {
+              "mounted": true,
+              "allowed": true,
+              "source": {
+                "layer": "template",
+                "origin": "static",
+                "recordId": null
+              },
+              "unavailable": false,
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective allow[mcp_signal]; team template(origin=static) allow[mcp_signal]; external exists=yes, hard=unspecified"
+            },
+            "mcp_designer": {
+              "mounted": false,
+              "allowed": false,
+              "source": {
+                "layer": "template",
+                "origin": "static",
+                "recordId": null
+              },
+              "unavailable": false,
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective allow[mcp_signal]; team template(origin=static) allow[mcp_signal]; external exists=yes, hard=unspecified"
+            }
+          }
+        }
+      }
+    }
+  },
+  "observations": []
+}

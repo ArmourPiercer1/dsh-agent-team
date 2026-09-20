@@ -32,9 +32,15 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { resolveActivationPolicy } from '../activation/index.js'
+import { ACTIVATION_ERROR_CODES, resolveActivationPolicy } from '../activation/index.js'
 import { MCP_FACET_WILDCARD, mcpFacetView, resolveDurableMcpFacet } from '../agent-setup/capability/index.js'
 import { parseGovernanceOverride, type GovernanceOverrideRecord } from '../../storage/schema/index.js'
+import {
+  initialMcpGrantOf,
+  staticCapabilitiesOf,
+  type StaticTemplateCapabilities,
+} from '../../domain/policy/src/index.js'
+import type { BlueprintTemplate } from '../../domain/blueprint/src/index.js'
 
 const ROOT = 'session-p8s4btest'
 const INSTANCE = 'inst-p8s4btest1'
@@ -225,5 +231,215 @@ describe('P8-S4B M6 durable MCP facet consumption', () => {
   it('F7 a later allow re-issue (gen 3) restores the mount on the next boundary', () => {
     expect(fullBoundaryReAllow.view.allowed).toBe(true)
     expect(fullBoundaryReAllow.view.source.recordId).toBe('p8s4b-mcp-again')
+  })
+})
+
+// ===========================================================================
+// The INITIAL STATIC MCP grant (the bound Blueprint template's
+// `capabilities.mcp` kind === 'allow' as the governance cell's static initial
+// layer — plan MCP_BLUEPRINT_INITIAL_GRANT §6 Gate A). The initial grant
+// enters the policy resolver at the `template` value layer (provenance
+// template/static — NO synthetic durable record); the record-backed layers
+// (templateOverlay / instanceOverlay / humanOverride) and the external hard
+// facts keep their precedence over it. The input is the optional
+// `initialTemplateMcp` of `resolveDurableMcpFacet` (absent = the unchanged
+// unspecifiedFailClosed baseline for legacy / capabilities-less templates).
+// ===========================================================================
+
+const gA1 = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [],
+  external: EMPTY_EXTERNAL,
+  serverName: SERVER,
+  initialTemplateMcp: { kind: 'allow', items: [SERVER] },
+})
+
+const gA2 = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [],
+  external: EMPTY_EXTERNAL,
+  serverName: 'some-other-server',
+  initialTemplateMcp: { kind: 'allow', items: [SERVER] },
+})
+
+const gA3 = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [],
+  external: EMPTY_EXTERNAL,
+  serverName: 'whatever-server',
+  initialTemplateMcp: { kind: 'allow', items: [MCP_FACET_WILDCARD] },
+})
+
+const gA5 = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [],
+  external: EMPTY_EXTERNAL,
+  serverName: SERVER,
+  // no initialTemplateMcp: a legacy / capabilities-less template.
+})
+
+const gA6 = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [],
+  external: { hard: { mcp: { kind: 'deny' } }, capabilityExists: {} },
+  serverName: SERVER,
+  initialTemplateMcp: { kind: 'allow', items: [SERVER] },
+})
+
+const gA7 = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [override('p8s4b-g-a7-deny', mcpDeny, { kind: 'human-override' })],
+  external: EMPTY_EXTERNAL,
+  serverName: SERVER,
+  initialTemplateMcp: { kind: 'allow', items: [SERVER] },
+})
+
+const gA8humanAllow = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [override('p8s4b-g-a8-allow', mcpAllow, { kind: 'human-override' })],
+  external: EMPTY_EXTERNAL,
+  serverName: SERVER,
+  initialTemplateMcp: { kind: 'allow', items: [SERVER] },
+})
+
+const gA8overlayDeny = resolveDurableMcpFacet({
+  rootSessionId: ROOT,
+  instanceId: INSTANCE,
+  overrides: [
+    override('p8s4b-g-a8-den', mcpDeny, {
+      kind: 'autonomy-overlay',
+      scope: 'team',
+      origin: 'leader',
+    }),
+  ],
+  external: EMPTY_EXTERNAL,
+  serverName: SERVER,
+  initialTemplateMcp: { kind: 'allow', items: [SERVER] },
+})
+
+describe('initial static MCP grant (the bound Blueprint template mcp.allow)', () => {
+  it('A1 fresh static allow, no overrides: allowed, provenance template/static (the bug)', () => {
+    expect(gA1.view.allowed).toBe(true)
+    expect(gA1.view.source).toEqual({ layer: 'template', origin: 'static', recordId: null })
+    expect(gA1.view.deniedBy).toBe(undefined)
+  })
+
+  it('A2 a server not named in the initial allow is not granted', () => {
+    expect(gA2.view.allowed).toBe(false)
+    expect(gA2.view.source.layer).toBe('template')
+  })
+
+  it('A3 a wildcard initial allow grants every server', () => {
+    expect(gA3.view.allowed).toBe(true)
+    expect(gA3.view.source.layer).toBe('template')
+  })
+
+  it('A4 a raw empty initial allow is rejected FAIL CLOSED by the frozen resolver (the glue normalizes it to "no grant")', () => {
+    // Frozen resolver contract: 'allow' items must be non-empty (an empty
+    // allow is not a legal policy value at ANY layer). The live glue never
+    // feeds it through: an empty template allow normalizes to "no initial
+    // grant" (unspecified baseline — the live-glue matrix pins the
+    // no-mount, no-crash outcome for that blueprint shape).
+    let caught: unknown
+    try {
+      resolveDurableMcpFacet({
+        rootSessionId: ROOT,
+        instanceId: INSTANCE,
+        overrides: [],
+        external: EMPTY_EXTERNAL,
+        serverName: SERVER,
+        initialTemplateMcp: { kind: 'allow', items: [] },
+      })
+    } catch (error) {
+      caught = error
+    }
+    expect(caught).toBeDefined()
+    expect((caught as { code?: string }).code).toBe(ACTIVATION_ERROR_CODES.POLICY_RESOLUTION_FAILED)
+  })
+
+  it('A5 no static grant (absent) + no overrides: the unchanged unspecifiedFailClosed baseline', () => {
+    expect(gA5.view.allowed).toBe(false)
+    expect(gA5.view.source.layer).toBe('unspecified')
+    expect(gA5.view.deniedBy).toEqual({ by: 'team', reason: 'unspecifiedFailClosed' })
+  })
+
+  it('A6 the external hard deny vetoes the static initial grant', () => {
+    expect(gA6.view.allowed).toBe(false)
+    expect(gA6.view.deniedBy).toEqual({ by: 'external', reason: 'externalHardDeny' })
+  })
+
+  it('A7 a durable human deny beats the static initial grant at the next boundary', () => {
+    expect(gA7.view.allowed).toBe(false)
+    expect(gA7.view.deniedBy).toEqual({
+      by: 'team',
+      reason: 'teamDeny',
+      layer: 'humanOverride',
+      origin: 'human',
+      recordId: 'p8s4b-g-a7-deny',
+    })
+  })
+
+  it('A8 a record-backed human allow keeps precedence over the static initial layer', () => {
+    expect(gA8humanAllow.view.allowed).toBe(true)
+    expect(gA8humanAllow.view.source.layer).toBe('humanOverride')
+    expect(gA8humanAllow.view.source.recordId).toBe('p8s4b-g-a8-allow')
+  })
+
+  it('A8 a record-backed autonomy deny keeps precedence over the static initial layer', () => {
+    expect(gA8overlayDeny.view.allowed).toBe(false)
+    expect(gA8overlayDeny.view.deniedBy?.['layer']).toBe('templateOverlay')
+    expect(gA8overlayDeny.view.deniedBy?.['recordId']).toBe('p8s4b-g-a8-den')
+  })
+})
+
+// ── PR #23 review fix (plan §2): the SHARED initial-grant derivation ─────────
+// `initialMcpGrantOf(staticCapabilitiesOf(...))` is the single producer of
+// the template layer's mcp value consumed by the MCP facet, the
+// team_inspect_config effect, and the activation step-8 policy — these
+// unit cases pin its normalization: ONLY an explicit non-empty allow is a
+// grant; an empty allow (a legal blueprint value, an illegal policy value)
+// normalizes to NO grant; a deny and a legacy template contribute nothing
+// (never auto-converted — fail-closed or dynamic governance in Alpha.3+).
+
+function templateWithMcp(mcp: { kind: string; items?: string[] } | undefined): BlueprintTemplate {
+  return {
+    templateId: 'tpl-h',
+    capabilities:
+      mcp === undefined
+        ? undefined
+        : {
+            teamTools: { kind: 'deny' },
+            builtinToolDeny: [],
+            skills: { kind: 'allow', items: [] },
+            mcp: mcp as never,
+          },
+  } as BlueprintTemplate
+}
+
+describe('PR #23 (plan §2): initialMcpGrantOf — the shared single derivation', () => {
+  const cap = (template: BlueprintTemplate): StaticTemplateCapabilities =>
+    staticCapabilitiesOf(null as never, template)
+  it('H1 an explicit non-empty allow is the grant (the value as declared)', () => {
+    const entry = initialMcpGrantOf(cap(templateWithMcp({ kind: 'allow', items: ['srv-a'] })))
+    expect(entry).toEqual({ kind: 'allow', items: ['srv-a'] })
+  })
+  it('H2 an EMPTY allow (blueprint-legal, policy-illegal) normalizes to NO grant', () => {
+    expect(initialMcpGrantOf(cap(templateWithMcp({ kind: 'allow', items: [] })))).toBeUndefined()
+  })
+  it('H3 a template mcp DENY contributes nothing (never auto-converted into a grant)', () => {
+    expect(initialMcpGrantOf(cap(templateWithMcp({ kind: 'deny' })))).toBeUndefined()
+  })
+  it('H4 a legacy (capabilities-less) template contributes nothing', () => {
+    expect(initialMcpGrantOf(cap(templateWithMcp(undefined)))).toBeUndefined()
+  })
+  it('H5 the legacy marker is the ONLY non-selective mode and yields no grant', () => {
+    expect(cap(templateWithMcp(undefined))).toEqual({ mode: 'legacy' })
   })
 })
