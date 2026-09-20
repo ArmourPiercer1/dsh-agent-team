@@ -3500,3 +3500,13 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 ### 状态
 
 - branch `fix/team-send-message-liveness` 本地两提交（① fix：`fix(runtime): make team messaging complete on input acceptance` — 源/测试/kit/harness/dist；② 本簿记提交：graph 块 + current_phase + 本日志条目 + 证据）。**未 push**，待用户 merge 裁决（或另行授权 push + 开 PR）。
+
+## 2026-09-20（推送轮）— team_send_message liveness 修复轮：用户授权推送 + PR #24
+
+- 用户指令：「请你推送并开一个PR」（一次性推送授权）。
+- 推送前复核：`git fetch origin` → origin/master 仍在 d63cb71（= 本分支 base；PR #22 persona-requirement-kind CONFLICTING / #23 mcp-blueprint-initial-grant MERGEABLE 均未 merge，无 rebase 需要）；zero-core 复核（test-use porcelain 0 @ fb2c4b9e69 + 冻结锚点 a3ab319927 未移动）+ kit 端口全释放 + :3080/:3180 仍 401（零触碰未破）。
+- **推送**：`git push origin fix/team-send-message-liveness`（新分支，fast-forward 自 d63cb71，无 force）— 提交链 88865e9（fix）+ 64beeb2（簿记）。
+- **PR #24 OPEN** = https://github.com/ArmourPiercer1/dsh-agent-team/pull/24（base master；title = `fix(runtime): make team messaging complete on input acceptance`；body = 概述 / 核心变更 / 测试与证据 / real-host smoke VERDICT PASS 11/11 + 核心场景 C wire 时间线表（tW1 → tL4 +11ms → tW2 8026ms）/ 门禁实数表 / 6 项 LIVE-FOUND / 红线守纪）。
+- graph.yaml 状态回写（本提交）：task block state → COMPLETE-PUSHED（PR #24 OPEN）+ delivery 字段（推送/PR 细节）+ current_phase 同步。
+- 红线守纪：同分支 fast-forward 追加本簿记提交（一次性授权内，无 force，未碰 master/stable/gated 历史）；:3080/:3180 未触碰。
+- 状态：PR #24 OPEN 待用户 merge 裁决（如需 rebase 到先行 merge 的 #22/#23，另行指令）。
