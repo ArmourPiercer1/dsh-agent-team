@@ -223,12 +223,12 @@ const CRITERIA = [
   { id: 'Z1', name: 'zero-seed proof: governance.overrides = [] at world boot (before any team.create)' },
   { id: 'D1', name: 'team.create v2 (Team-1) succeeds on the fresh root (open Root + admitInitialWork)' },
   { id: 'D2', name: 'Team-1 leader FIRST-turn initial work DIRECTLY CALLS MCP (A executes — live pong result), zero overrides in existence' },
-  { id: 'D3', name: 'Team-1 state post-create: leader effective MCP set EXACTLY [A] (I5 shape, B not mounted) and governance.overrides STILL []' },
+  { id: 'D3', name: 'Team-1 state post-create: leader effective MCP set EXACTLY [A] (I5 shape, B not mounted), the FULL initial-grant state truth (A mounted+allowed, source={layer:template,origin:static,recordId:null}, NO deniedBy), NO capability-template-unresolved observation, and governance.overrides STILL [] (plan §8.2)' },
   { id: 'D4', name: 'team.create v2 (Team-2) — the MANDATORY second fresh root — succeeds independently of Team-1' },
-  { id: 'D5', name: 'Team-2 leader first-turn initial work directly calls MCP (B executes), effective set exactly [B] (no cross-root leak), overrides []' },
+  { id: 'D5', name: 'Team-2 leader first-turn initial work directly calls MCP (B executes), effective set exactly [B] (no cross-root leak), the FULL initial-grant state truth (B mounted+allowed, source=template/static, no deniedBy, no unresolved observation — the created root resolves under ITSELF), overrides [] (plan §8.2)' },
   { id: 'D6', name: 'boot-root legacy control: the capabilities-LESS row anchor mounts NOTHING (no mcp tools in schema, nothing mounted in state)' },
   { id: 'D7', name: 'post-creation durable tighten (DENY, instance/leader) beats the initial grant at the next boundary (A unmounted: state + schema double proof, record in overrides)' },
-  { id: 'D8', name: 'cold resume (product path: team-tool re-attach after restart): initial grant re-derived from the bound Blueprint (Team-2 [B] with zero overrides + live pong; Team-1 LIVE but mounts NOTHING — the durable DENY survives the restart and wins over the re-derived [A]); effective sets == pre-restart' },
+  { id: 'D8', name: 'cold resume (product path: team-tool re-attach after restart): initial grant re-derived from the bound Blueprint (Team-2 [B] with zero overrides + live pong + the FULL initial-grant state truth; Team-1 LIVE but mounts NOTHING — the durable DENY survives the restart and wins over the re-derived [A]); effective sets == pre-restart (plan §8.2)' },
   { id: 'H1', name: 'test-use porcelain EMPTY + HEAD baseline; :3080/:3180 zero-touch (read-only probes pre==post)' },
   { id: 'H2', name: 'run ports released after teardown (host 3491 3492 3496)' },
 ]
@@ -726,7 +726,15 @@ function classifyMcpShape(mcp) {
   return 'unknown'
 }
 
-/** Per-session effective MCP map from a state body (I5 shape). */
+/** Per-session effective MCP map from a state body (I5 shape).
+ *
+ * PR #23 review fix (plan §8.2): the map now carries the FULL state truth
+ * per server (`source` + `deniedBy` alongside mounted/allowed) — a
+ * healthy initial-grant mount must report mounted=true AND allowed=true
+ * AND source={layer:template, origin:static, recordId:null} with NO
+ * deniedBy; "mounted === true" alone is NOT sufficient acceptance
+ * (the pre-fix evidence carried mounted=true / allowed=false /
+ * source=unspecified — an internal contradiction). */
 function effectiveMcpMap(stateBody, sessionId, configuredNames) {
   const mcp = stateBody?.governance?.sessions?.[sessionId]?.mcp
   const shape = classifyMcpShape(mcp)
@@ -734,10 +742,29 @@ function effectiveMcpMap(stateBody, sessionId, configuredNames) {
   for (const name of configuredNames) {
     const s = shape === 'i5-servers' ? mcp?.servers?.[name] : undefined
     map[name] = s === undefined || s === null
-      ? { present: false, mounted: false, allowed: null }
-      : { present: true, mounted: s.mounted === true, allowed: typeof s.allowed === 'boolean' ? s.allowed : null }
+      ? { present: false, mounted: false, allowed: null, source: null, deniedBy: null }
+      : {
+          present: true,
+          mounted: s.mounted === true,
+          allowed: typeof s.allowed === 'boolean' ? s.allowed : null,
+          source: (s.source !== undefined && s.source !== null) ? s.source : null,
+          deniedBy: (s.deniedBy !== undefined && s.deniedBy !== null) ? s.deniedBy : null,
+        }
   }
   return { shape, map, raw: mcp }
+}
+
+/** The static initial-grant source (the template layer provenance). */
+const TEMPLATE_STATIC_SOURCE = { layer: 'template', origin: 'static', recordId: null }
+
+/** True when the state's observations array carries NO
+ *  `capability-template-unresolved` entry for the healthy roots (plan
+ *  §8.2: a swallowed resolution fault leaking into observations is
+ *  exactly the P1-A/P1-B channel — it must be gone for healthy roots). */
+function noTemplateUnresolvedObservation(stateBody) {
+  const obs = stateBody?.observations
+  if (!Array.isArray(obs)) return true // absent channel = nothing leaked
+  return !obs.some((o) => String(o).includes('capability-template-unresolved'))
 }
 
 // ── world boot / stop ───────────────────────────────────────────────────────
@@ -982,6 +1009,20 @@ async function main() {
     check('D3', 'Team-1 leader state: I5 shape, A mounted, B NOT mounted (the bound initial allow is [A] only — the mount is exactly the Blueprint initial grant, zero overrides)',
       t1Eff.shape === 'i5-servers' && t1Eff.map[SERVER_A].mounted === true && t1Eff.map[SERVER_B].mounted === false,
       `eff=${JSON.stringify(t1Eff.map)} shape=${t1Eff.shape}`)
+    // PR #23 review fix (plan §8.2): the FULL state truth — a healthy
+    // initial-grant mount is mounted=true AND allowed=true AND
+    // source=template/static with NO deniedBy (the pre-fix evidence
+    // contradiction mounted=true / allowed=false / source=unspecified is
+    // exactly what this check now fails on).
+    check('D3', 'Team-1 leader state carries the FULL initial-grant truth: A mounted+allowed with source={layer:template, origin:static, recordId:null} and NO deniedBy (plan §8.2 — the evidence may not report mounted=true/allowed=false)',
+      t1Eff.map[SERVER_A].mounted === true && t1Eff.map[SERVER_A].allowed === true
+      && JSON.stringify(t1Eff.map[SERVER_A].source) === JSON.stringify(TEMPLATE_STATIC_SOURCE)
+      && t1Eff.map[SERVER_A].deniedBy === null
+      && t1Eff.map[SERVER_B].mounted === false,
+      `A=${JSON.stringify(t1Eff.map[SERVER_A])} B=${JSON.stringify(t1Eff.map[SERVER_B])}`)
+    check('D3', 'the healthy Team-1 root carries NO capability-template-unresolved observation (the P1-A/P1-B swallowed-fault channel is closed — plan §8.2)',
+      noTemplateUnresolvedObservation(t1State.body),
+      `observations=${JSON.stringify(t1State.body?.observations ?? []).slice(0, 300)}`)
     check('D3', 'Team-1 leader schema carries EXACTLY [A] mcp tools (the initial grant is what mounted it)',
       JSON.stringify([...(t1Turn.schema ?? [])].sort()) === JSON.stringify([TOOL_A]),
       `schema=${JSON.stringify(t1Turn.schema)}`)
@@ -1017,6 +1058,19 @@ async function main() {
     check('D5', 'Team-2 leader state: B mounted, A NOT mounted (its bound initial allow is [B] — a cross-root leak onto Team-1\'s template would have mounted A INSTEAD; the row anchor is capabilities-LESS so a row-anchor leak would mount NOTHING)',
       t2Eff.shape === 'i5-servers' && t2Eff.map[SERVER_B].mounted === true && t2Eff.map[SERVER_A].mounted === false,
       `eff=${JSON.stringify(t2Eff.map)}`)
+    // PR #23 review fix (plan §8.2): the FULL state truth on the SECOND
+    // dynamic root — the rootless state-route re-resolution must run under
+    // the OWNING root (P1-A): B allowed from ITS OWN template, source
+    // template/static, no deniedBy, and no unresolved-fault observation.
+    check('D5', 'Team-2 leader state carries the FULL initial-grant truth: B mounted+allowed with source={layer:template, origin:static, recordId:null} and NO deniedBy (the created root resolves under ITSELF — not the boot root — plan §8.2)',
+      t2Eff.map[SERVER_B].mounted === true && t2Eff.map[SERVER_B].allowed === true
+      && JSON.stringify(t2Eff.map[SERVER_B].source) === JSON.stringify(TEMPLATE_STATIC_SOURCE)
+      && t2Eff.map[SERVER_B].deniedBy === null
+      && t2Eff.map[SERVER_A].mounted === false,
+      `B=${JSON.stringify(t2Eff.map[SERVER_B])} A=${JSON.stringify(t2Eff.map[SERVER_A])}`)
+    check('D5', 'the healthy Team-2 root carries NO capability-template-unresolved observation (plan §8.2)',
+      noTemplateUnresolvedObservation(t2State.body),
+      `observations=${JSON.stringify(t2State.body?.observations ?? []).slice(0, 300)}`)
     check('D5', 'Team-2 leader schema carries EXACTLY [B] mcp tools',
       JSON.stringify([...(t2Turn.schema ?? [])].sort()) === JSON.stringify([TOOL_B]),
       `schema=${JSON.stringify(t2Turn.schema)}`)
@@ -1193,8 +1247,16 @@ async function main() {
       && rt1Eff.map[SERVER_A].present === true && rt1Eff.map[SERVER_B].present === true
       && rt2Eff.map[SERVER_A].present === true && rt2Eff.map[SERVER_B].present === true,
       `preTriggerLive=${JSON.stringify(preTriggerLive)} t1=${JSON.stringify(rt1Eff.map)} t2=${JSON.stringify(rt2Eff.map)}`)
-    check('D8', 'cold resume: Team-2 leader re-derives [B] from its bound Blueprint (ZERO overrides — no synthetic record to lean on) and the tool call EXECUTES (the live view proves the row agent re-attached with the shared setup)',
+    // PR #23 review fix (plan §8.2): the re-derived cold-resume mount is an
+    // initial-grant mount too — the FULL state truth applies (mounted +
+    // allowed + source template/static + no deniedBy + no unresolved
+    // observation), not just mounted=true.
+    check('D8', 'cold resume: Team-2 leader re-derives [B] from its bound Blueprint (ZERO overrides — no synthetic record to lean on) and the tool call EXECUTES (the live view proves the row agent re-attached with the shared setup) — WITH the full initial-grant state truth (allowed=true, source=template/static, no deniedBy)',
       rt2Eff.map[SERVER_B].present === true && rt2Eff.map[SERVER_B].mounted === true && rt2Eff.map[SERVER_A].mounted === false
+      && rt2Eff.map[SERVER_B].allowed === true
+      && JSON.stringify(rt2Eff.map[SERVER_B].source) === JSON.stringify(TEMPLATE_STATIC_SOURCE)
+      && rt2Eff.map[SERVER_B].deniedBy === null
+      && noTemplateUnresolvedObservation(rtState.body)
       && rt2Turn.results.some((r) => r.includes('pong:b:rt2-b')),
       `eff=${JSON.stringify(rt2Eff.map)} overrides=${JSON.stringify(rtState.body?.governance?.overrides).slice(0, 200)} results=${JSON.stringify(rt2Turn.results).slice(0, 200)}`)
     check('D8', 'cold resume: Team-1 leader is LIVE with its configured servers in the view but NOTHING mounted — the durable DENY SURVIVED the restart and beats the re-derived initial allow [A] (a record-backed layer beats the static initial grant; the initial grant does NOT resurrect a denied server — T2 proves the re-derivation itself works on the same path)',

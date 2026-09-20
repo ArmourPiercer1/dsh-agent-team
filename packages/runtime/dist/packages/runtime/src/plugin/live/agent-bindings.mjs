@@ -304,7 +304,7 @@ import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
 // the blueprint parser (the domain facade) — the composition that puts the
 // blueprint persona onto the real DSH Agent at create/setup.
 import { parseBlueprint, PERMISSION_TOOL_NAMES } from '../../../../domain/blueprint/src/index.js'
-import { staticCapabilitiesOf } from '../../../../domain/policy/src/index.js'
+import { initialMcpGrantOf, staticCapabilitiesOf } from '../../../../domain/policy/src/index.js'
 import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
 // alpha.1 (plan §10): the capability wiring adapters — the team tool
 // selector + built-in tool deny (T2) and the skill/MCP adapters + catalog
@@ -358,7 +358,7 @@ import { leaderExecEnvelopeOps } from '../../../admission/envelope.js'
 // which is unreadable across duplicate @deepseek-ai/dsh-scope module
 // instances because the tag is a module-private Symbol, so it is the
 // least reliable of the three and must never shadow the explicit Agent).
-import { scopeOf } from '@deepseek-ai/dsh-scope'
+import { createScope, scopeOf } from '@deepseek-ai/dsh-scope'
 
 /**
  * The canonical runtime-Agent identity of one AgentSetup invocation —
@@ -839,15 +839,27 @@ export function createAgentBindings(deps) {
    *   authoritative for every other caller (boot, request boundary,
    *   projection).
    * @param {string} [teamRootSid] - the team root the session belongs to
-   *   (T12-GLUE; absent = this row's boot root, as before).
+   *   (T12-GLUE). PR #23 review fix (P1-A): when ABSENT the owning root is
+   *   NEVER defaulted to this row's boot root — it is derived from (a) the
+   *   already-persisted consumption state's `teamRootSessionId` (set by the
+   *   session's own setup), then (b) the durable domain ownership
+   *   ({@link teamRootOfSession}). A session with NO resolvable owning
+   *   team root THROWS — the boot-root fallback is exactly what made the
+   *   state route serve a dynamically created root's session under the
+   *   boot root's blueprint / overrides (the state showed
+   *   mounted=true/allowed=false/source=unspecified while the MCP was
+   *   actually mounted).
    * @param {string} [templateIdHint] - the fresh-create window template id
    *   (the MCP initial-grant locate ONLY — the same hint gate as
    *   locateTemplate: used for the fresh-member window, never elsewhere).
    * @param {string} [bindPath] - the T1 bind path (gates the
    *   templateIdHint for the initial-grant locate, exactly like
    *   locateTemplate's P0-1 rule).
-   * @returns {{instanceId: string, modelView: object, mcpViews: Record<string, object>}}
-   *   `mcpViews` is the per-configured-server facet views (the multi-mcp C5
+   * @returns {{instanceId: string, teamRoot: string, modelView: object, mcpViews: Record<string, object>}}
+   *   `teamRoot` is the OWNING team root the resolution ran under (the
+   *   normalized value every downstream read used — the setup persists it
+   *   in the consumption state as `teamRootSessionId`). `mcpViews` is the
+   *   per-configured-server facet views (the multi-mcp C5
    *   generalization of the single T12-H1 mcpView): the EMPTY object when
    *   no MCP server is configured (config.mcpServers = [] / legacy
    *   mcpServer = null): no MCP facet exists, so consumers treat {} as
@@ -859,17 +871,40 @@ export function createAgentBindings(deps) {
    *   its INITIAL static governance layer — fresh root / fresh member /
    *   cold root / cold member setup AND every request boundary share this
    *   ONE derivation (no second grant path, no synthetic durable record).
-   *   A locate failure fails CLOSED to "no initial grant" (the pre-fix
-   *   unspecified baseline): the setup's own locateTemplate call carries
-   *   the typed rejection for a broken identity, and the static template
-   *   filter (filterMcpServers) remains the second mount gate.
+   *   The derivation is the shared `initialMcpGrantOf(staticCapabilitiesOf(...))`
+   *   (plan §5 — the same helper as team_inspect_config and the activation
+   *   step-8 policy). PR #23 review fix (P1-B): a bound-blueprint or
+   *   template RESOLUTION fault (the blueprint unavailable, the template
+   *   not found, the identity unresolved) FAILS LOUD — the typed
+   *   `capability-template-unresolved` rejection propagates; ONLY a
+   *   successfully resolved template whose `capabilities.mcp` is not an
+   *   explicit non-empty allow contributes no initial grant (the
+   *   unspecified / fail-closed baseline). The static template filter
+   *   (filterMcpServers) remains the second mount gate.
    */
   function resolveConsumptionViews(sessionId, instanceIdHint, teamRootSid, templateIdHint, bindPath) {
     const existing = consumptionState.get(sessionId)
     // T12-GLUE: the consumption cell is keyed by the TEAM ROOT the session
     // belongs to — the handoff target resolves under its own root's durable
     // truth (its own governance overrides, never the boot team's).
-    const teamRoot = teamRootSid !== undefined ? String(teamRootSid) : rootSid
+    // PR #23 review fix (P1-A): the owning root is NEVER defaulted to the
+    // boot root when absent. Explicit callers (boot / fresh create / cold
+    // resume / handoff / team tool) pass it; the state route and the fresh
+    // create window omit it — there the root comes from the session's own
+    // persisted state first (set at setup), then the durable domain
+    // ownership. An unresolved owning root is a loud error: a session
+    // that belongs to NO team must not be served from the boot root's
+    // blueprint / overrides / template (that mismatch is the P1-A bug —
+    // state showed mounted=true/allowed=false/source=unspecified while the
+    // MCP was actually mounted, with the locate failure swallowed and only
+    // its observation leaked).
+    const explicitRoot = teamRootSid !== undefined ? String(teamRootSid) : undefined
+    const teamRoot = explicitRoot ?? existing?.teamRootSessionId ?? teamRootOfSession(sessionId)
+    if (teamRoot === undefined) {
+      throw new Error(
+        `p6t6 consumption: no owning team root for session '${sessionId}' (neither an explicit root, a persisted consumption state, nor a durable domain ownership resolved it)`,
+      )
+    }
     let instanceId
     if (existing !== undefined) instanceId = existing.instanceId
     else if (instanceIdHint !== undefined) instanceId = String(instanceIdHint)
@@ -904,34 +939,24 @@ export function createAgentBindings(deps) {
     // the bound template's capabilities.mcp (kind === 'allow') is the
     // role's INITIAL governance grant for the mcp cell — re-derived from
     // the immutable bound snapshot HERE so fresh setup / cold resume /
-    // every request boundary share one derivation. Only an EXPLICIT allow
-    // enters (a deny / a legacy capabilities-less template / a future
-    // non-allow state contributes nothing — fail-closed or dynamic
-    // governance in Alpha.3+, never auto-converted into a grant). A locate
-    // failure fails closed to "no initial grant" (the pre-fix baseline):
-    // the setup's own locateTemplate call (the typed rejection for a
-    // broken identity) and the static template filter (the second mount
-    // gate) are unchanged.
-    let initialTemplateMcp
-    try {
-      const grantTemplate = locateTemplate(sessionId, instanceId, templateIdHint, teamRootSid, bindPath)
-      const grantCaps = staticCapabilitiesOf(getBoundBlueprint(teamRootSid), grantTemplate)
-      // Only an allow that NAMES at least one server is a grant. An
-      // explicit EMPTY allow is a legal blueprint value (the static
-      // template gate already blocks every mount for it) but NOT a legal
-      // policy value (the frozen resolver rejects empty 'allow' items as
-      // malformed) — it normalizes to "no initial grant" (the cell stays
-      // unspecified and fails closed; the agent never breaks).
-      if (
-        grantCaps.mode === 'selective' &&
-        grantCaps.mcp.kind === 'allow' &&
-        grantCaps.mcp.items.length > 0
-      ) {
-        initialTemplateMcp = grantCaps.mcp
-      }
-    } catch {
-      initialTemplateMcp = undefined
-    }
+    // every request boundary share one derivation.
+    // PR #23 review fix (P1-B): the locate + bound-blueprint calls FAIL
+    // LOUD — a resolution fault (blueprint unavailable / template not
+    // found / identity unresolved) propagates its typed
+    // `capability-template-unresolved` rejection instead of being swallowed
+    // into "no initial grant" (the broad catch was exactly what let a
+    // healthy dynamic root read its grant under the wrong root's blueprint
+    // and serve an unspecified view with a leaked observation). Only a
+    // SUCCESSFULLY resolved template whose capabilities carry no explicit
+    // non-empty allow contributes no grant (the shared helper normalizes
+    // the empty-allow and non-allow cases; plan §5).
+    // PR #23 review fix (P1-A): BOTH the locate and the bound-blueprint
+    // read run under the NORMALIZED owning teamRoot (never the raw
+    // `teamRootSid`, which is `undefined` for the state route and the
+    // fresh-create window and would silently resolve the boot root).
+    const grantTemplate = locateTemplate(sessionId, instanceId, templateIdHint, teamRoot, bindPath)
+    const grantCaps = staticCapabilitiesOf(getBoundBlueprint(teamRoot), grantTemplate)
+    const initialTemplateMcp = initialMcpGrantOf(grantCaps)
     // multi-mcp (contract I4; T12-H1 generalized to 0..N): the PER-SERVER
     // views — one resolveDurableMcpFacet call per CONFIGURED server (the
     // resolver is the unchanged C4 policy authority; the serverName
@@ -949,7 +974,11 @@ export function createAgentBindings(deps) {
         ...(initialTemplateMcp !== undefined ? { initialTemplateMcp } : {}),
       }).view
     }
-    return { instanceId, modelView, mcpViews }
+    // PR #23 review fix (P1-A): the OWNING root the resolution ran under is
+    // part of the contract — the setup persists it in the consumption
+    // state (`teamRootSessionId`) so every later rootless re-resolution
+    // (the state route) runs under the same root.
+    return { instanceId, teamRoot, modelView, mcpViews }
   }
 
   /**
@@ -989,14 +1018,21 @@ export function createAgentBindings(deps) {
    * side effect) — and the error propagates (fail-closed: the setup /
    * request boundary fails, the request never runs on a partial MCP
    * surface; a failed server is simply absent, never half-mounted).
-   * @param {object} agentCtx
    * @param {object} state - the session's consumption state (holds the
-   *   per-server fibers / activation errors / last-applied views).
+   *   per-server fibers / activation errors / last-applied views) AND —
+   *   PR #23 review fix (Finding 1, plan §6) — `mcpMountCtx`: the
+   *   Agent-keyed scope context every serverName is registered under
+   *   (the agent's own ctx when it already carries the agent's scope tag,
+   *   else the per-agent bridge scope minted at setup). Mounting under
+   *   this per-agent context keeps upstream mcp-client's
+   *   `scopeOf(ctx) ?? ctx.root` serverName registry namespaced PER
+   *   AGENT (two agents may mount the same serverName; the model-visible
+   *   `mcp__<serverName>__<tool>` names stay unchanged).
    * @param {readonly string[]} targetServerNames - the exact server set
    *   this agent may mount NOW (the caller's template ∩ durable decision —
    *   contract I4 §2.3; an empty set = dispose everything, mount nothing).
    */
-  async function reconcileMcpSet(agentCtx, state, targetServerNames) {
+  async function reconcileMcpSet(state, targetServerNames) {
     const configured = configuredMcpServers(config)
     const byName = new Map(configured.map((s) => [s.name, s]))
     // (1) structural guard: the target is always computed FROM the
@@ -1041,7 +1077,10 @@ export function createAgentBindings(deps) {
         if (server.port === null) {
           throw new Error(`p6t6: the durable policy allows mcp server '${server.name}' but no mini-MCP port is configured (config.mcpServers port for '${server.name}')`)
         }
-        const fiber = agentCtx.plugin(mcpClient, {
+        // Finding 1 bridge (plan §6): mount under the Agent-keyed scope
+        // context (state.mcpMountCtx) — NEVER the shared row ctx — so the
+        // upstream serverName registry is per-Agent, not global.
+        const fiber = state.mcpMountCtx.plugin(mcpClient, {
           transport: 'streamable-http',
           serverName: server.name,
           url: `http://127.0.0.1:${server.port}/mcp`,
@@ -1315,7 +1354,11 @@ export function createAgentBindings(deps) {
       // hints (templateIdHint + bindPath) — the SAME gate locateTemplate
       // applies below (P0-1: the hint bridges ONLY the fresh-member
       // window; a cold path missing its durable row fails closed).
-      const { modelView, mcpViews, instanceId } = resolveConsumptionViews(
+      // PR #23 review fix (P1-A): `teamRoot` is the OWNING root the
+      // resolution ran under — persisted into the consumption state so the
+      // rootless state-route re-resolution of the SAME session runs under
+      // the same root (no boot-root default anywhere).
+      const { modelView, mcpViews, instanceId, teamRoot } = resolveConsumptionViews(
         sessionId,
         instanceIdHint,
         teamRootSid,
@@ -1335,28 +1378,69 @@ export function createAgentBindings(deps) {
       // FACT 3a: the projection deliberately does not carry it). ABSENT
       // policy = no permission listener at all (the alpha.1 / legacy path,
       // byte-for-byte unchanged — the absent-permissions test is the proof).
-      const boundTemplate = locateTemplate(sessionId, instanceId, templateIdHint, teamRootSid, bindPath)
+      // PR #23 review fix (P1-A): the setup's own locate + bound-blueprint
+      // read run under the SAME normalized owning teamRoot the consumption
+      // resolution used (never the raw hint — absent hint = the boot root,
+      // which is WRONG for a session owned by another team root).
+      const boundTemplate = locateTemplate(sessionId, instanceId, templateIdHint, teamRoot, bindPath)
       // BP-F (issue #2 blueprint-loading, plan §11.2): the projection uses
       // the SAME per-root bound snapshot locateTemplate just resolved (the
       // per-root cache returns the identical parsed object — one bound
       // snapshot per AgentSetup).
-      const capabilities = staticCapabilitiesOf(getBoundBlueprint(teamRootSid), boundTemplate)
+      const capabilities = staticCapabilitiesOf(getBoundBlueprint(teamRoot), boundTemplate)
       const permissionPolicy = boundTemplate.capabilities?.permissions
       const ref = { current: modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection, assembled: undefined }
       const state = {
         instanceId,
+        // PR #23 review fix (P1-A): the owning team root this session's
+        // consumption resolution runs under (explicit hint / this setup's
+        // domain derivation). Process-local bookkeeping like the fibers —
+        // NOT part of the durable state; the domain row (teamSessions /
+        // memberInstances) remains the durable authority.
+        teamRootSessionId: teamRoot,
         ref,
         modelView,
         mcpViews,
         mcpFibers: new Map(),
         mcpActivationErrors: new Map(),
         appliedRecordIds: new Set(),
+        // PR #23 review fix (Finding 1, plan §6): the Agent-keyed MCP
+        // scope bridge. `mcpMountCtx` is the context every mini-MCP
+        // serverName is registered under; `mcpMountScope` is the
+        // scope fiber it came from (undefined when the agent's own ctx
+        // already carries the agent's scope tag — the common case,
+        // zero overhead).
+        mcpMountCtx: agentCtx,
+        mcpMountScope: undefined,
         // A2C-2 (plan §7.3-C): the strict-mode pre-MCP surface snapshot —
         // the OTHER_MANAGED_MCP ownership proof is the ACTUAL delta between
         // this snapshot and the FINAL surface after the reconcile (no
         // name-prefix guessing). Undefined on every legacy / alpha.1 setup
         // (the gate and the snapshot are both strict-mode only).
         a2c2PreMcpSurface: undefined,
+      }
+      // Finding 1 compatibility bridge (PR #23 review fix, plan §6.2):
+      // upstream mcp-client registers its per-serverName registry under
+      // `scopeOf(ctx) ?? ctx.root` with ITS OWN dsh-scope module instance.
+      // When the agent's ctx carries no scope tag readable through that
+      // instance (no tag at all, or a tag written by a DIFFERENT dsh-scope
+      // module instance — the duplicate-package case the production host
+      // hit: two roots mounting one serverName collided at the global
+      // root), mount under a scope we mint HERE, keyed by the canonical
+      // runtime Agent: a per-AGENT namespace that neither collides
+      // cross-agent nor renames the model-visible `mcp__<serverName>__*`
+      // tool names. Each Agent gets its own scope (NEVER a shared
+      // cross-agent MCP registration scope); the scope fiber is a child of
+      // the agent's ctx, so the agent's disposal unwinds every
+      // scope-registered MCP fiber with it.
+      if (
+        runtimeAgent !== null &&
+        runtimeAgent !== undefined &&
+        scopeOf(agentCtx) !== runtimeAgent
+      ) {
+        const mcpMountScope = createScope(agentCtx, runtimeAgent)
+        state.mcpMountScope = mcpMountScope
+        state.mcpMountCtx = mcpMountScope.ctx
       }
       consumptionState.set(sessionId, state)
       toolDisposers.push(installModelSelection(agentCtx, ref))
@@ -1527,7 +1611,7 @@ export function createAgentBindings(deps) {
         state.a2c2PreMcpSurface = coverageSurfaceNames(agentCtx, sessionId, runtimeAgent)
       }
       if (mcpMountTarget.length > 0) {
-        await reconcileMcpSet(agentCtx, state, mcpMountTarget)
+        await reconcileMcpSet(state, mcpMountTarget)
       }
       applyBoundaryRecords(state, modelView, mcpViews)
       // alpha.2 A2C-2 (plan §7): the Permission Coverage Gate — the FINAL
@@ -2142,7 +2226,7 @@ export function createAgentBindings(deps) {
           ? filterMcpServers(configuredMcpNames, caps.mcp)
           : [...configuredMcpNames]
       const target = templateAllowedNames.filter((name) => mcpViews[name]?.allowed === true)
-      await reconcileMcpSet(handle.agent.ctx, state, target)
+      await reconcileMcpSet(state, target)
     }
     applyBoundaryRecords(state, modelView, mcpViews)
     state.modelView = modelView
@@ -2253,11 +2337,14 @@ export function createAgentBindings(deps) {
             // T12-M1: the root agent works in the team's effective default
             // workspace (config.defaultWorkspace) — never DSH_HOME.
             meta: { cwd: config.defaultWorkspace },
-            setup: agentSetup(rootSid, undefined, undefined, 'fresh-root'),
+            // PR #23 review fix (P1-A): the boot root OWNS itself — the
+            // caller asserts the owner explicitly (the resolver no longer
+            // infers ownership from an absent argument).
+            setup: agentSetup(rootSid, undefined, undefined, 'fresh-root', rootSid),
           })
           : await agents.resume({
             resumeSessionId: SessionId(rootSid),
-            setup: agentSetup(rootSid, undefined, undefined, 'cold-root'),
+            setup: agentSetup(rootSid, undefined, undefined, 'cold-root', rootSid),
           })
       } finally {
         if (rootResuming) resumingSessions.delete(rootSid)
@@ -2276,7 +2363,13 @@ export function createAgentBindings(deps) {
             // workspace (never DSH_HOME); the child factory path uses the
             // request-explicit workspace when one is passed.
             meta: { cwd: config.defaultWorkspace },
-            setup: agentSetup(child, String(seed.instanceId), seed.templateId, 'fresh-member'),
+            // PR #23 review fix (P1-A): a boot seed member is a member of
+            // THIS world's boot root BY DEFINITION (the loop iterates the
+            // boot config's own seed list) — the caller asserts the owner
+            // explicitly instead of relying on the resolver's durable
+            // ownership read (a config-only seed may carry no durable
+            // MemberInstance row at all).
+            setup: agentSetup(child, String(seed.instanceId), seed.templateId, 'fresh-member', rootSid),
           })
           liveAgents.set(child, handle)
           await sessionPersistence.ensureMaterialized(handle.agent.session)
@@ -2309,7 +2402,11 @@ export function createAgentBindings(deps) {
           try {
             handle = await agents.resume({
               resumeSessionId: SessionId(child),
-              setup: agentSetup(child, undefined, undefined, 'cold-member'),
+              // PR #23 review fix (P1-A): this loop iterates
+              // memberInstances.list(rootSid) — every child here is a
+              // member of the boot root BY CONSTRUCTION; assert the owner
+              // explicitly (no resolver inference).
+              setup: agentSetup(child, undefined, undefined, 'cold-member', rootSid),
             })
           } finally {
             resumingSessions.delete(child)
@@ -3285,6 +3382,14 @@ export function createAgentBindings(deps) {
       }
       state.mcpFibers.clear()
       state.mcpActivationErrors.clear()
+      // Finding 1 bridge (plan §6): the per-agent MCP scope fiber (a child
+      // of the agent's ctx — the agent disposal already unwinds it, this
+      // is the deterministic belt for a state outliving its agent).
+      const mcpMountScope = state.mcpMountScope
+      if (mcpMountScope !== undefined) {
+        try { await mcpMountScope.dispose() } catch { /* the scope unwind covers it */ }
+        state.mcpMountScope = undefined
+      }
     }
     consumptionState.clear()
   }

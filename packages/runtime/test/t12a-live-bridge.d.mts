@@ -390,8 +390,20 @@ export interface LiveWorld {
      */
     resolveConsumptionViews(sessionId: string): {
       readonly instanceId: string
+      /**
+       * PR #23 review fix (P1-A): the OWNING team root the resolution ran
+       * under (explicit root arg -> persisted consumption state -> durable
+       * domain ownership; ABSENT ownership rejects typed — the boot root
+       * is NOT a fallback).
+       */
+      readonly teamRoot: string
       readonly modelView: { readonly selection: { readonly provider: string; readonly model: string } | undefined; readonly [k: string]: unknown }
-      readonly mcpViews: Record<string, { readonly allowed: boolean; readonly [k: string]: unknown }>
+      readonly mcpViews: Record<string, {
+        readonly allowed: boolean
+        readonly source?: { readonly layer?: string; readonly origin?: string; readonly recordId?: unknown }
+        readonly deniedBy?: { readonly by: string; readonly reason: string; readonly recordId?: string }
+        readonly [k: string]: unknown
+      }>
     }
     /**
      * The per-session consumption STATE (contract I4):
@@ -581,7 +593,7 @@ export interface LiveWorldOptions {
    *  production-shaped live-authority resolver). Absent = the bridge's
    *  default strict map resolver over `blueprintSources` + the row-anchor
    *  fallback (exactly like the host resolver). */
-  readonly resolveBoundBlueprint?: (teamRootSid: string) => object
+  readonly resolveBoundBlueprint?: (teamRootSid: string) => object | null
 }
 
 /** The worktree root (the bridge lives at packages/runtime/test). */

@@ -35,6 +35,12 @@ import { describe, expect, it } from 'vitest'
 import { ACTIVATION_ERROR_CODES, resolveActivationPolicy } from '../activation/index.js'
 import { MCP_FACET_WILDCARD, mcpFacetView, resolveDurableMcpFacet } from '../agent-setup/capability/index.js'
 import { parseGovernanceOverride, type GovernanceOverrideRecord } from '../../storage/schema/index.js'
+import {
+  initialMcpGrantOf,
+  staticCapabilitiesOf,
+  type StaticTemplateCapabilities,
+} from '../../domain/policy/src/index.js'
+import type { BlueprintTemplate } from '../../domain/blueprint/src/index.js'
 
 const ROOT = 'session-p8s4btest'
 const INSTANCE = 'inst-p8s4btest1'
@@ -390,5 +396,50 @@ describe('initial static MCP grant (the bound Blueprint template mcp.allow)', ()
     expect(gA8overlayDeny.view.allowed).toBe(false)
     expect(gA8overlayDeny.view.deniedBy?.['layer']).toBe('templateOverlay')
     expect(gA8overlayDeny.view.deniedBy?.['recordId']).toBe('p8s4b-g-a8-den')
+  })
+})
+
+// ── PR #23 review fix (plan §2): the SHARED initial-grant derivation ─────────
+// `initialMcpGrantOf(staticCapabilitiesOf(...))` is the single producer of
+// the template layer's mcp value consumed by the MCP facet, the
+// team_inspect_config effect, and the activation step-8 policy — these
+// unit cases pin its normalization: ONLY an explicit non-empty allow is a
+// grant; an empty allow (a legal blueprint value, an illegal policy value)
+// normalizes to NO grant; a deny and a legacy template contribute nothing
+// (never auto-converted — fail-closed or dynamic governance in Alpha.3+).
+
+function templateWithMcp(mcp: { kind: string; items?: string[] } | undefined): BlueprintTemplate {
+  return {
+    templateId: 'tpl-h',
+    capabilities:
+      mcp === undefined
+        ? undefined
+        : {
+            teamTools: { kind: 'deny' },
+            builtinToolDeny: [],
+            skills: { kind: 'allow', items: [] },
+            mcp: mcp as never,
+          },
+  } as BlueprintTemplate
+}
+
+describe('PR #23 (plan §2): initialMcpGrantOf — the shared single derivation', () => {
+  const cap = (template: BlueprintTemplate): StaticTemplateCapabilities =>
+    staticCapabilitiesOf(null as never, template)
+  it('H1 an explicit non-empty allow is the grant (the value as declared)', () => {
+    const entry = initialMcpGrantOf(cap(templateWithMcp({ kind: 'allow', items: ['srv-a'] })))
+    expect(entry).toEqual({ kind: 'allow', items: ['srv-a'] })
+  })
+  it('H2 an EMPTY allow (blueprint-legal, policy-illegal) normalizes to NO grant', () => {
+    expect(initialMcpGrantOf(cap(templateWithMcp({ kind: 'allow', items: [] })))).toBeUndefined()
+  })
+  it('H3 a template mcp DENY contributes nothing (never auto-converted into a grant)', () => {
+    expect(initialMcpGrantOf(cap(templateWithMcp({ kind: 'deny' })))).toBeUndefined()
+  })
+  it('H4 a legacy (capabilities-less) template contributes nothing', () => {
+    expect(initialMcpGrantOf(cap(templateWithMcp(undefined)))).toBeUndefined()
+  })
+  it('H5 the legacy marker is the ONLY non-selective mode and yields no grant', () => {
+    expect(cap(templateWithMcp(undefined))).toEqual({ mode: 'legacy' })
   })
 })

@@ -987,7 +987,7 @@ export async function observeAssembly(agentCtx) {
  *   snapshot ref must name an entry here; the parse's contentHash is
  *   verified against the ref — strict, like the host resolver). Absent =
  *   an empty store (a row bound to a non-anchor snapshot fails closed).
- * @param {(teamRootSid: string) => object} [options.resolveBoundBlueprint]
+ * @param {(teamRootSid: string) => (object|null)} [options.resolveBoundBlueprint]
  *   BP-F: an OVERRIDE per-root bound-blueprint resolver passed straight
  *   through to the glue (e.g. a production-shaped live-authority
  *   resolver). Absent = the bridge's default strict map resolver over

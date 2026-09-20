@@ -143,3 +143,59 @@ mcp/team/other）— finding 4 的实证底账。
 | `mm-smoke-20260920T10-40-11Z`（rebase 后） | C1 14/16 · C3 3/4 | **finding 4 双向化实证**：member-2 marker 全表面 + kick 空（账本 `mock-requests-c1.json` seq 5/6）→ settle 改 fullest-of-turn |
 | `mm-smoke-20260920T10-43-19Z`（rebase 后） | 崩溃早退（C6-C8 仍绿） | kit settle reduce 初值 bug（`toolCountOf(undefined)`）— kit 侧修复，非产品问题 |
 | `mm-smoke-20260920T10-44-14Z`（rebase 后） | **全判据绿 37/37 exit 0** | **rebase 后终判**（合并构建 @ d63cb71） |
+
+## 6. 审查修复轮（PR23_MCP_INITIAL_GRANT_REVIEW_FIX_GUIDE.md，2026-09-20）
+
+按 996 行审查指导执行的修复轮（同分支追加提交，base 不变）：
+
+- **P1-A**：`resolveConsumptionViews` root ownership 统一解析（显式 root 参数 →
+  持久化 consumption state 的 `teamRootSessionId` → durable domain ownership；
+  解析不到 owner = typed 失败，**boot root 不再是任何未知 session 的 fallback**）；
+  所有后续读取（overrides.list / instanceIdForSession / locateTemplate /
+  getBoundBlueprint）用规范化 teamRoot。boot 序列调用点改为**显式断言 owner**
+  （boot root=自己；boot seed member=本 world root；resume 重挂 member 来自
+  `memberInstances.list(rootSid)` 构造即属于该 root）——语义零变化，ownership
+  从"缺省推断"变"调用方断言"。
+- **P1-B**：bound-template resolution fault 响亮失败（typed
+  `capability-template-unresolved`；无 broad catch；仅"模板解析成功但不产生初始
+  授权"落无授权）。
+- **§2/§3/§4/§5 单一 helper**：`initialMcpGrantOf(staticCapabilitiesOf(...))`
+  （`packages/domain/policy/src/static-capability-source.ts`）统一三个生产消费者
+  （glue 消费视图 / `team_inspect_config` effects.ts INSPECT_CONFIG /
+  activation provider step 8）——同一 resolver 不再有两套初始语义。
+- **§6 Finding 1 兼容适配**：Agent-keyed MCP scope bridge（glue：
+  `scopeOf(agentCtx) !== runtimeAgent` 时 `createScope(agentCtx, runtimeAgent)`
+  铸造 per-Agent scope，MCP mount 经 `state.mcpMountCtx` 执行；公共路径零开销；
+  bridge fiber 随 Agent 回收 + close() 确定性兜底；**serverName 与模型 namespace
+  不变、无全局共享 fiber、不宣称 multi-live-Team 稳定**）。
+- **§8.2 kit 验收强化**：Gate D 的 D3/D5/D8 现断言完整 state truth
+  （mounted ∧ allowed ∧ source={layer:template, origin:static, recordId:null} ∧
+  无 deniedBy）+ 健康动态 root observations **无 `capability-template-unresolved`**
+  ——修复前矛盾（mounted=true/allowed=false/source=unspecified）现在会 FAIL。
+
+**修复轮测试**：glue 18→**32**（+D×6 P1-A rootless 真值与跨 root deny 隔离、
++D2×3 P1-B 响亮失败、+S×4 same-serverName 双 Agent scope bridge probe、+S0×1
+公共路径零开销）；p8s4b 20→**25**（+H1–H5 shared-helper 单元：非空 allow=授权 /
+空 allow=无授权 / deny=无 / legacy=无 / legacy marker）；a2c3 inspect 11→**14**
+（+T1 allow→`effective.mcp=allow[A]`、+T2×2 deny/legacy 不误授）。零新 test 文件
+（p4t6 pin union 保持 **726**）。
+
+**修复轮门禁**（全部修复轮构建上复测）：
+- typecheck 8 包全绿（含 `t12a-live-bridge.d.mts` 声明同步：
+  `resolveConsumptionViews` 返回型 +`teamRoot` + mcpViews source/deniedBy；
+  `resolveBoundBlueprint` 选项允许 `null` = P1-B 故障形态）。
+- `pnpm build` + `pnpm build:composition` + `check:artifacts` **OK 1132**
+  （源→dist 同提交；drift 文件 = 本改动 4 源文件的产物 + 其 maps）。
+- 全量 `pnpm test` = **20 failed | 3717 passed (3737)**（`full-suite/fix-round-post.log`；
+  失败集 = 基线 10 文件**完全一致**；+22 全为本轮新增通过）。
+- p4t6 扫描器 pin **726**（10/10）。
+- Gate D kit **VERDICT PASS 11/11** @ `smoke/mgis-2026-09-20T12-16-25/`
+  （§8.2 强化验收全绿：D3/D5 完整 state truth + 无 unresolved observation；
+  D8 cold-resume 重推导带完整 truth；Team-2 实证 rootless state-route 再解析跑在
+  创建 root 自己的 root 下 = P1-A 真值）。
+- d-smoke 去 seed 复跑 **38/38 exit 0** @
+  `dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260920T12-17-06Z/`
+  （C8 自证 p4t6 扫描面 pre==post=726；finding 4 维持记录不修）。
+
+**DoD（指南 §14）**：逐项达成；CORE PATCH BUDGET = 0（test-use porcelain 空
+@ `fb2c4b9e69`，kit H1 每轮自证）；不宣称"multi-live-Team stability verified"。

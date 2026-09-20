@@ -50,7 +50,7 @@
  * documented H3 overlap semantics.
  */
 import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js';
-import { CAPABILITY_NAME_VALUES } from '../../domain/policy/src/index.js';
+import { CAPABILITY_NAME_VALUES, initialMcpGrantOf, staticCapabilitiesOf, } from '../../domain/policy/src/index.js';
 import { applyLifecycleOperation, isLifecycleTransitionError, LIFECYCLE_OPERATIONS, } from '../../domain/lifecycle/src/index.js';
 import { ACTIVATION_SOURCES, effectivePolicyValues, isActivationError, resolveActivationPolicy, } from '../activation/index.js';
 import { isTeamDomainError } from '../../storage/schema/index.js';
@@ -180,6 +180,18 @@ async function runEffect(ctx) {
             if (target === undefined)
                 internalInvariant('inspect-config requires a resolved target');
             const external = await ctx.externalPolicyFacts();
+            // PR #23 review fix (plan §3): inspect-config resolves the SAME
+            // effective policy the live consumption and the activation step 8
+            // resolve — including the bound template's INITIAL static mcp grant
+            // (the shared `initialMcpGrantOf(staticCapabilitiesOf(...))`
+            // derivation; an absent / non-allow / legacy template contributes
+            // nothing, never a synthesized override). Without this layer the
+            // inspection reported the template's allow as an unspecified
+            // fail-closed mcp cell while the agent actually ran with the grant
+            // (the P1 inconsistency: state showed allowed=false /
+            // source=unspecified while the MCP was mounted).
+            const boundTemplate = boundTemplateOf(ctx.blueprint, target);
+            const initialMcpGrant = initialMcpGrantOf(staticCapabilitiesOf(ctx.blueprint, boundTemplate));
             let policy;
             try {
                 policy = resolveActivationPolicy({
@@ -187,6 +199,7 @@ async function runEffect(ctx) {
                     instanceId: target.instanceId,
                     overrides: ctx.repositories.overrides.list(ctx.rootSessionId),
                     external,
+                    ...(initialMcpGrant !== undefined ? { templateValues: { mcp: initialMcpGrant } } : {}),
                 });
             }
             catch (error) {

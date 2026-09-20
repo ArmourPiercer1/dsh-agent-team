@@ -52,6 +52,7 @@
  * @module @dsh-agent-team/runtime/test/mcp-blueprint-initial-grant
  */
 import { describe, expect, it } from 'vitest'
+import { scopeOf } from '@deepseek-ai/dsh-scope'
 import { parseGovernanceOverride, type GovernanceOverrideRecord } from '../../storage/schema/index.js'
 import { parseBlueprint, toBlueprintSnapshotRef } from '../../domain/blueprint/src/index.js'
 import {
@@ -506,6 +507,200 @@ await g4.binding.prepareAgentForRequest(G4_ROOT, G4_ROOT) // the boundary must n
 const g4LeaderLiveAfterBoundary = liveServers(g4Leader)
 
 // ===========================================================================
+// World D (PR #23 review fix P1-A — the state route's ROOTLESS re-
+// resolution) — the exact production shape: two roots on ONE row, each
+// bound to its OWN blueprint (Team-X allow [A]; Team-Y allow [B]), and
+// the harness `__p6t6/state` route's rootless `resolveConsumptionViews(sid)`.
+// Before the fix this path defaulted an absent teamRootSid to the BOOT
+// root: the created root's session resolved under the boot root's
+// blueprint + overrides -> the typed locate failure was swallowed by the
+// broad catch -> state showed mounted=true / allowed=false /
+// source=unspecified / deniedBy=unspecifiedFailClosed while the MCP was
+// actually mounted, with only the `capability-template-unresolved`
+// observation leaking. After the fix the owning root comes from the
+// session's persisted `teamRootSessionId` (set at setup) / the durable
+// domain ownership — never the boot root.
+// ===========================================================================
+const D_X_ROOT = 'mg-d-x-root'
+const D_Y_ROOT = 'mg-d-y-root'
+const D_X_BLUEPRINT = buildBlueprint(
+  'team.mg-d-x',
+  { templateId: 'leader', persona: 'You are the leader of the mg-d-x team.', mcpItems: [A] },
+  [],
+)
+const D_Y_BLUEPRINT = buildBlueprint(
+  'team.mg-d-y',
+  { templateId: 'leader', persona: 'You are the leader of the mg-d-y team.', mcpItems: [B] },
+  [],
+)
+const D_X_REF = toBlueprintSnapshotRef(parseBlueprint(D_X_BLUEPRINT))
+const D_Y_REF = toBlueprintSnapshotRef(parseBlueprint(D_Y_BLUEPRINT))
+// Per-root override arrays — the D-tighten push below is the backend-truth
+// mutation the rootless re-resolution must re-read UNDER THE OWNING ROOT
+// (a boot-root default would never see this array).
+const dYOverrides: GovernanceOverrideRecord[] = []
+const d = await createLiveWorld({
+  rootSessionId: D_X_ROOT,
+  teamTools: { tools: p6t6.tools },
+  agentPresets: createAgentPresetsDouble(),
+  teamSessions: [
+    { rootSessionId: D_X_ROOT, sessionId: D_X_ROOT, blueprintId: D_X_REF.blueprintId, generation: 1, blueprint: D_X_REF },
+    { rootSessionId: D_Y_ROOT, sessionId: D_Y_ROOT, blueprintId: D_Y_REF.blueprintId, generation: 1, blueprint: D_Y_REF },
+  ],
+  blueprintSources: [
+    { blueprintId: D_X_REF.blueprintId, revision: D_X_REF.revision, source: D_X_BLUEPRINT },
+    { blueprintId: D_Y_REF.blueprintId, revision: D_Y_REF.revision, source: D_Y_BLUEPRINT },
+  ],
+  overrides: [],
+  overridesByRoot: { [D_Y_ROOT]: dYOverrides },
+  configOverrides: {
+    mcpServer: null,
+    mcpServers: [
+      { name: A, port: A_PORT },
+      { name: B, port: B_PORT },
+    ],
+    // The row anchor is Team-X's blueprint — a boot-root default on the
+    // rootless path would serve Team-Y from it (B5's leak, state-route form).
+    blueprintSource: D_X_BLUEPRINT,
+  },
+})
+await d.binding.boot()
+await d.binding.createRootAgent(D_Y_ROOT)
+// The STATE ROUTE path: rootless re-resolution (the harness contract —
+// exactly the P1-A trigger).
+const dYRootlessViews = d.binding.resolveConsumptionViews(D_Y_ROOT) as {
+  instanceId: string
+  teamRoot: string
+  mcpViews: Record<string, { allowed: boolean; source?: { layer?: string; origin?: string; recordId?: unknown }; deniedBy?: { by: string; reason: string; recordId?: string } }>
+}
+const dXRootlessViews = d.binding.resolveConsumptionViews(D_X_ROOT) as typeof dYRootlessViews
+const dYState = d.binding.getConsumptionState(D_Y_ROOT) as { teamRootSessionId?: string } | undefined
+// The durable tighten ON THE CREATED ROOT's own override array (a
+// team-scope human mcp deny) — the next rootless re-resolution must see it.
+dYOverrides.push(teamMcpDeny(D_Y_ROOT, 'mg-d-y-deny'))
+const dYRootlessViewsAfterDeny = d.binding.resolveConsumptionViews(D_Y_ROOT) as typeof dYRootlessViews
+const dXRootlessViewsAfterDeny = d.binding.resolveConsumptionViews(D_X_ROOT) as typeof dYRootlessViews
+
+// ===========================================================================
+// World D2 (PR #23 review fix P1-B — a bound-blueprint RESOLUTION fault
+// fails loud) — a created root whose bound blueprint is UNAVAILABLE
+// (the resolver returns null: the snapshot is gone / unparseable). The
+// rootless re-resolution MUST reject with the typed
+// `capability-template-unresolved` error — the pre-fix broad catch
+// swallowed it into "no initial grant" (an unspecified view for a broken
+// identity, the exact P1-A leak channel).
+// ===========================================================================
+const D2_X_ROOT = 'mg-d2-x-root'
+const D2_Y_ROOT = 'mg-d2-y-root'
+const D2_X_BLUEPRINT = buildBlueprint(
+  'team.mg-d2-x',
+  { templateId: 'leader', persona: 'You are the leader of the mg-d2-x team.', mcpItems: [A] },
+  [],
+)
+const D2_X_REF = toBlueprintSnapshotRef(parseBlueprint(D2_X_BLUEPRINT))
+const d2 = await createLiveWorld({
+  rootSessionId: D2_X_ROOT,
+  teamTools: { tools: p6t6.tools },
+  agentPresets: createAgentPresetsDouble(),
+  teamSessions: [
+    { rootSessionId: D2_X_ROOT, sessionId: D2_X_ROOT, blueprintId: D2_X_REF.blueprintId, generation: 1, blueprint: D2_X_REF },
+    { rootSessionId: D2_Y_ROOT, sessionId: D2_Y_ROOT, blueprintId: D2_X_REF.blueprintId, generation: 1, blueprint: D2_X_REF },
+  ],
+  blueprintSources: [
+    { blueprintId: D2_X_REF.blueprintId, revision: D2_X_REF.revision, source: D2_X_BLUEPRINT },
+  ],
+  overrides: [],
+  resolveBoundBlueprint: (root: string) => {
+    // The production-shaped fault: the created root's bound snapshot is
+    // UNAVAILABLE (null) — the boot root's stays resolvable.
+    return root === D2_X_ROOT ? parseBlueprint(D2_X_BLUEPRINT) : null
+  },
+  configOverrides: {
+    mcpServer: null,
+    mcpServers: [{ name: A, port: A_PORT }],
+    blueprintSource: D2_X_BLUEPRINT,
+  },
+})
+await d2.binding.boot()
+let d2SetupError: unknown
+try {
+  await d2.binding.createRootAgent(D2_Y_ROOT)
+} catch (error) {
+  d2SetupError = error
+}
+let d2RootlessError: unknown
+try {
+  d2.binding.resolveConsumptionViews(D2_Y_ROOT)
+} catch (error) {
+  d2RootlessError = error
+}
+
+// ===========================================================================
+// World S (PR #23 review fix, Finding 1 — the Agent-keyed MCP scope
+// bridge) — the 0.1.5 host shape across DUPLICATE dsh-scope package
+// instances: the setup ctx carries NO plugin-readable scope tag
+// (mintScope: false) and no ctx.agent back-reference (legacyCtxAgent:
+// false) — only the explicit AgentSetup agent. Two roots on ONE row,
+// each bound to a template that allows the SAME mini-MCP serverName
+// (`mcp-same`). Upstream mcp-client registers its per-serverName registry
+// under `scopeOf(ctx) ?? ctx.root`: pre-fix both roots registered at the
+// GLOBAL root -> the second mount rejected with "serverName ... is already
+// in use". The bridge mints a PER-AGENT scope (keyed by the canonical
+// runtime Agent) when the agent's own tag is unreadable, so each root's
+// mounts live under their OWN scope — no cross-agent collision, no
+// serverName rename, no shared cross-agent fiber scope.
+// ===========================================================================
+const S_A_ROOT = 'mg-s-a-root'
+const S_B_ROOT = 'mg-s-b-root'
+const S_SERVER = 'mcp-same'
+const S_PORT = 3994
+const S_A_BLUEPRINT = buildBlueprint(
+  'team.mg-s-a',
+  { templateId: 'leader', persona: 'You are the leader of the mg-s-a team.', mcpItems: [S_SERVER] },
+  [],
+)
+const S_B_BLUEPRINT = buildBlueprint(
+  'team.mg-s-b',
+  { templateId: 'leader', persona: 'You are the leader of the mg-s-b team.', mcpItems: [S_SERVER] },
+  [],
+)
+const S_A_REF = toBlueprintSnapshotRef(parseBlueprint(S_A_BLUEPRINT))
+const S_B_REF = toBlueprintSnapshotRef(parseBlueprint(S_B_BLUEPRINT))
+const s = await createLiveWorld({
+  rootSessionId: S_A_ROOT,
+  teamTools: { tools: p6t6.tools },
+  agentPresets: createAgentPresetsDouble(),
+  teamSessions: [
+    { rootSessionId: S_A_ROOT, sessionId: S_A_ROOT, blueprintId: S_A_REF.blueprintId, generation: 1, blueprint: S_A_REF },
+    { rootSessionId: S_B_ROOT, sessionId: S_B_ROOT, blueprintId: S_B_REF.blueprintId, generation: 1, blueprint: S_B_REF },
+  ],
+  blueprintSources: [
+    { blueprintId: S_A_REF.blueprintId, revision: S_A_REF.revision, source: S_A_BLUEPRINT },
+    { blueprintId: S_B_REF.blueprintId, revision: S_B_REF.revision, source: S_B_BLUEPRINT },
+  ],
+  overrides: [],
+  // The 0.1.5 / duplicate-package-instance shape: the explicit agent is
+  // passed, the ctx.agent back-reference is gone, and the scope tag is
+  // UNREADABLE by the plugin (a second dsh-scope module instance).
+  agents: { passExplicitAgent: true, legacyCtxAgent: false, mintScope: false },
+  mcpToolNames: { [S_SERVER]: ['mcp__mcp-same__ping'] },
+  configOverrides: {
+    mcpServer: null,
+    mcpServers: [{ name: S_SERVER, port: S_PORT }],
+    blueprintSource: S_A_BLUEPRINT,
+  },
+})
+await s.binding.boot()
+await s.binding.createRootAgent(S_B_ROOT)
+const sA = s.agents.handles.get(S_A_ROOT)!
+const sB = s.agents.handles.get(S_B_ROOT)!
+const sAState = s.binding.getConsumptionState(S_A_ROOT) as {
+  mcpMountCtx?: object
+  mcpMountScope?: { dispose(): Promise<void> }
+} | undefined
+const sBState = s.binding.getConsumptionState(S_B_ROOT) as typeof sAState
+
+// ===========================================================================
 // the matrix
 // ===========================================================================
 
@@ -601,6 +796,98 @@ describe('G4 — an empty template allow (allow[]) normalizes to "no grant" with
   })
   it('the next boundary re-resolution does not break either', () => {
     expect(g4LeaderLiveAfterBoundary).toEqual([])
+  })
+})
+
+describe('D — the state route ROOTLESS re-resolution runs under the OWNING root (P1-A)', () => {
+  it('the created root Y resolves under its OWN root: the template allow [B] is the effective grant', () => {
+    expect(dYRootlessViews.teamRoot).toBe(D_Y_ROOT)
+    expect(dYRootlessViews.mcpViews?.[B]?.allowed).toBe(true)
+    expect(dYRootlessViews.mcpViews?.[B]?.source).toEqual({ layer: 'template', origin: 'static', recordId: null })
+    expect(dYRootlessViews.mcpViews?.[B]?.deniedBy).toBeUndefined()
+    // A is configured but outside Y's own template allow: never granted
+    // (no boot-root / row-anchor / cross-root leak into the view).
+    expect(dYRootlessViews.mcpViews?.[A]?.allowed).toBe(false)
+  })
+  it('the boot root X still resolves under its own root on the SAME rootless path', () => {
+    expect(dXRootlessViews.teamRoot).toBe(D_X_ROOT)
+    expect(dXRootlessViews.mcpViews?.[A]?.allowed).toBe(true)
+    expect(dXRootlessViews.mcpViews?.[A]?.source).toEqual({ layer: 'template', origin: 'static', recordId: null })
+  })
+  it('the consumption state persists the owning root (teamRootSessionId)', () => {
+    expect(dYState?.teamRootSessionId).toBe(D_Y_ROOT)
+  })
+  it('no capability-template-unresolved observation leaked (the P1-A swallowed-error channel is closed)', () => {
+    for (const observation of d.binding.observations) {
+      expect(observation).not.toContain('capability-template-unresolved')
+    }
+  })
+  it('a durable mcp deny on the CREATED root is seen by the rootless re-resolution (overrides read under the owning root)', () => {
+    const view = dYRootlessViewsAfterDeny.mcpViews?.[B]
+    expect(view?.allowed).toBe(false)
+    expect(view?.deniedBy?.by).toBe('team')
+    expect(view?.deniedBy?.reason).toBe('teamDeny')
+    expect(view?.deniedBy?.recordId).toBe('mg-d-y-deny')
+  })
+  it('the deny does NOT leak across roots: boot root X keeps its grant', () => {
+    expect(dXRootlessViewsAfterDeny.mcpViews?.[A]?.allowed).toBe(true)
+  })
+})
+
+describe('D2 — a bound-blueprint resolution fault FAILS LOUD (P1-B)', () => {
+  it('the created root setup rejects with the typed capability-template-unresolved error (no half-state)', () => {
+    expect(d2SetupError).toBeInstanceOf(Error)
+    expect(d2SetupError).toMatchObject({
+      code: 'capability-template-unresolved',
+      reason: 'blueprint-unavailable',
+    })
+  })
+  it('the rootless re-resolution rejects with the SAME typed error (never a swallowed unspecified view)', () => {
+    expect(d2RootlessError).toBeInstanceOf(Error)
+    expect(d2RootlessError).toMatchObject({
+      code: 'capability-template-unresolved',
+      reason: 'blueprint-unavailable',
+    })
+  })
+  it('the boot root is unaffected (its own bound snapshot is resolvable)', () => {
+    const views = d2.binding.resolveConsumptionViews(D2_X_ROOT) as { mcpViews?: Record<string, { allowed: boolean }> }
+    expect(views.mcpViews?.[A]?.allowed).toBe(true)
+  })
+})
+
+describe('S — the Agent-keyed MCP scope bridge (Finding 1: same serverName across agents)', () => {
+  it('both agents mount the SAME serverName (no cross-agent duplicate collision)', () => {
+    expect(liveServers(sAState!.mcpMountCtx as AgentCtxDouble)).toEqual([S_SERVER])
+    expect(liveServers(sBState!.mcpMountCtx as AgentCtxDouble)).toEqual([S_SERVER])
+  })
+  it('each mount is registered under its OWN per-agent scope context (never a shared scope)', () => {
+    expect(sAState?.mcpMountScope).toBeDefined()
+    expect(sBState?.mcpMountScope).toBeDefined()
+    expect(sAState?.mcpMountCtx).toBeDefined()
+    expect(sBState?.mcpMountCtx).toBeDefined()
+    // 0.1.5 shape: the agent's own ctx carries no readable tag — the
+    // bridge minted a distinct per-agent context for the mounts.
+    expect(sAState?.mcpMountCtx).not.toBe(sA.agent.ctx)
+    expect(sBState?.mcpMountCtx).not.toBe(sB.agent.ctx)
+    expect(sAState?.mcpMountCtx).not.toBe(sBState?.mcpMountCtx)
+  })
+  it('the per-agent scope is tagged with the canonical runtime Agent (the owner the co-located mcp-client registry reads)', () => {
+    expect(scopeOf(sAState!.mcpMountCtx as never)).toBe(sA.agent)
+    expect(scopeOf(sBState!.mcpMountCtx as never)).toBe(sB.agent)
+  })
+  it('both agents expose the SAME stable model-visible tool name (no root suffix, no rename)', () => {
+    const namesOf = (ctx: AgentCtxDouble, agent: object) =>
+      (ctx.tools.schemas(agent) as { name: string }[]).map((schema) => schema.name)
+    expect(namesOf(sA.agent.ctx, sA.agent)).toContain('mcp__mcp-same__ping')
+    expect(namesOf(sB.agent.ctx, sB.agent)).toContain('mcp__mcp-same__ping')
+  })
+})
+
+describe('S0 — the common case: a readable agent scope tag keeps the zero-overhead passthrough', () => {
+  it('no bridge scope is minted (mcpMountCtx IS the agent ctx itself)', () => {
+    const state = mcpState(g1.binding, G1_ROOT) as { mcpMountCtx?: object; mcpMountScope?: object } | undefined
+    expect(state?.mcpMountScope).toBeUndefined()
+    expect(state?.mcpMountCtx).toBe(g1Leader)
   })
 })
 

@@ -90,6 +90,7 @@ import {
   resolveTeamSession,
   resolveTemplate,
 } from './checks.js'
+import { initialMcpGrantOf, staticCapabilitiesOf } from '../../domain/policy/src/index.js'
 import { ACTIVATION_ERROR_CODES, ActivationError, isActivationError } from './errors.js'
 import { activationOperationIdentity } from './identity.js'
 import type {
@@ -692,11 +693,20 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
 
       // step 8: policy (frozen at creation, invariant 29)
       const external = await ports.externalPolicyFacts()
+      // PR #23 review fix (plan §4): the creation-frozen policy carries the
+      // bound template's INITIAL static mcp grant — the SAME shared
+      // derivation as the MCP live consumption and team_inspect_config
+      // (the step-3 `template` is the resolved member template of the
+      // bound snapshot). A deny / legacy / non-allow template contributes
+      // nothing (fail-closed or dynamic governance; never a synthetic
+      // durable record).
+      const initialMcpGrant = initialMcpGrantOf(staticCapabilitiesOf(blueprint, template))
       const policy = resolveActivationPolicy({
         rootSessionId,
         instanceId: identity.instanceId,
         overrides: repositories.overrides.list(rootSessionId),
         external,
+        ...(initialMcpGrant !== undefined ? { templateValues: { mcp: initialMcpGrant } } : {}),
       })
 
       // step 9: overlay bounds (the operation-level intersection)
