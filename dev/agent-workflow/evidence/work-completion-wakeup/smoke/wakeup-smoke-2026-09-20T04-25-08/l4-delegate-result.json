@@ -1,0 +1,4 @@
+{
+  "seq": 32,
+  "result": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-wcn-smoke-l4-2026-09-20T04-25-08\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-05c2jpr0o1qw\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-f58c54a732aee63f847872942cf9d79e\",\"operationId\":\"op-1wmf6w508w9rg01hricfb08l\",\"replayed\":false,\"ledgerSequence\":27,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":28,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"wcn-l4-delegate-2026-09-20T04-25-08\",\"status\":\"succeeded\",\"body\":\"WCMK_RESULT_L4_BODY\"}},\"requestToken\":\"wcn-l4-delegate-2026-09-20T04-25-08\"}"
+}

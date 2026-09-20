@@ -1,0 +1,175 @@
+{
+  "runStamp": "2026-09-20T04-19-26",
+  "hostBaseline": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "hostPort": 3491,
+  "mockPort": 3496,
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/work-completion-wakeup",
+  "criteria": [
+    {
+      "id": "L0",
+      "name": "discovery captured the surface; read + bash present; the 12-tool catalog is present on the boot root",
+      "ok": true,
+      "detail": "surface=17 missingTeam=[]"
+    },
+    {
+      "id": "L1a",
+      "name": "L1: the Leader admitted the async delegate and its turn ENDED (Leader now idle; no user input after)",
+      "ok": true,
+      "detail": "l1Done=7 requests=11"
+    },
+    {
+      "id": "L1b",
+      "name": "L1: the idle Leader was automatically woken (token-leading text: the machine token + the team_collect guidance + the token field)",
+      "ok": true,
+      "detail": "text=[team-work-settled requestToken=wcn-l1-delegate-2026-09-20T04-19-26]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-1imvwgx0j90b\ntaskSummary: L1 probe work (async)\nrequestToken: wcn-l1-delegate-2026-09-20T04-19-26\n\nUse team_collect with this requestToken to read the durable result."
+    },
+    {
+      "id": "L1c",
+      "name": "L1: team_collect served the member DURABLE result (the exact body, status succeeded)",
+      "ok": true,
+      "detail": "result={\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-wcn-smoke-l1-2026-09-20T04-19-26\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"wcn-l1-delegate-2026-09-20T04-19-26\",\"status\":\"succeeded\",\"instanceId\":\"inst-1imvwgx0j90b\",\"admittedSequence\":3,\"settledSequence\":7,\"memberResult\":{\"body\":\"WCMK_RESULT_L1_BODY\",\"requestToken\":\"wcn-l1-delegate-2026-09"
+    },
+    {
+      "id": "L1d",
+      "name": "L1: the wake turn completed (the Leader consumed the notification and finished)",
+      "ok": true,
+      "detail": "requests=11"
+    },
+    {
+      "id": "L1e",
+      "name": "L1: team.create (L1) succeeded on the fresh root",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"wcnl1-epi45g2qed\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-wcn-smoke-l1-2026-09-20T04-19-26\",\"blueprint\":{\"blueprintId\":\"team.wcn-l1\",\"revision\":\"1\",\"contentHash\":\"sha256:b6637a05b"
+    },
+    {
+      "id": "L1f",
+      "name": "L1: the durable settlement fact exists (member-lifecycle-changed to=SETTLED, the terminal authority the observer re-read)",
+      "ok": true,
+      "detail": "settlement={\"sequence\":7,\"requestToken\":\"wcn-l1-delegate-2026-09-20T04-19-26\",\"instanceId\":\"inst-1imvwgx0j90b\",\"workOutcome\":\"settled\",\"memberResult\":{\"body\":\"WCMK_RESULT_L1_BODY\",\"requestToken\":\"wcn-l1-delegate-2026-09-20T04-19-26\",\"status\":\"succeeded\"}}"
+    },
+    {
+      "id": "L2a",
+      "name": "L2: the Leader admitted TWO async delegates in one turn and its turn ended",
+      "ok": true,
+      "detail": "l2Done=17"
+    },
+    {
+      "id": "L2b",
+      "name": "L2: the FIRST (A) completion woke the Leader (token-leading model request, no user input)",
+      "ok": true,
+      "detail": "requests=22"
+    },
+    {
+      "id": "L2c",
+      "name": "L2: the SECOND (B) completion reached the Leader WITHOUT manual user input (steer, fresh followup, or merged wake request)",
+      "ok": true,
+      "detail": "requests=22"
+    },
+    {
+      "id": "L2d",
+      "name": "L2: both tokens were team_collect-ed with the durable results (both bodies, both succeeded)",
+      "ok": true,
+      "detail": "A={\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-wcn-smoke-l2-2026-09-20T04-19-26\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"wcn-l2a-delegate B={\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-wcn-smoke-l2-2026-09-20T04-19-26\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"wcn-l2b-delegate"
+    },
+    {
+      "id": "L2e",
+      "name": "L2: team.create (L2) succeeded",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"wcnl2-5li86o222x\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-wcn-smoke-l2-2026-09-20T04-19-26\",\"blueprint\":{\"blueprintId\":\"team.wcn-l2\",\"revision\":\"1\",\"contentHash\":\"sha256:bf6078b49"
+    },
+    {
+      "id": "L2f",
+      "name": "L2: both durable settlement facts exist (the terminal authority for each token)",
+      "ok": true,
+      "detail": "A={\"sequence\":15,\"requestToken\":\"wcn-l2a-delegate-2026-09-20T04-19-26\",\"instanceId\":\"inst-0uioihc0nfdo\",\"workOutcome\":\"settled\",\"memberResult\":{\"body\":\"WCMK_RESULT_L2A_BODY\",\"requestToken\":\"wcn-l2a-dele B={\"sequence\":17,\"requestToken\":\"wcn-l2b-delegate-2026-09-20T04-19-26\",\"instanceId\":\"inst-0uioihc0nfdo\",\"workOutcome\":\"settled\",\"memberResult\":{\"body\":\"WCMK_RESULT_L2B_BODY\",\"requestToken\":\"wcn-l2b-dele"
+    },
+    {
+      "id": "L3a",
+      "name": "L3: the Leader admitted the (failing) async delegate and its turn ended",
+      "ok": true,
+      "detail": "l3Done=25"
+    },
+    {
+      "id": "L3b",
+      "name": "L3: a failed member completion still wakes the Leader (the token-leading notification arrived)",
+      "ok": true,
+      "detail": "wake=28"
+    },
+    {
+      "id": "L3c",
+      "name": "L3: team_collect reported the FAILED/UNAVAILABLE result (no fake success — the fail-closed fact is served)",
+      "ok": true,
+      "detail": "result={\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-wcn-smoke-l3-2026-09-20T04-19-26\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"wcn-l3-delegate-2026-09-20T04-19-26\",\"status\":\"failed\",\"instanceId\":\"inst-0bsqrx11ukv4\",\"admittedSequence\":21,\"settledSequence\":25,\"memberResult\":{\"error\":{\"code\":\"INVALID_REQUEST\",\"message\":\"wcn smoke L3: controlled"
+    },
+    {
+      "id": "L3d",
+      "name": "L3: the wake turn completed",
+      "ok": true,
+      "detail": "requests=29"
+    },
+    {
+      "id": "L3e",
+      "name": "L3: team.create (L3) succeeded",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"wcnl3-714wgh14t2\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-wcn-smoke-l3-2026-09-20T04-19-26\",\"blueprint\":{\"blueprintId\":\"team.wcn-l3\",\"revision\":\"1\",\"contentHash\":\"sha256:9249dddeb"
+    },
+    {
+      "id": "L3f",
+      "name": "L3: the durable FAIL-CLOSED settlement fact exists (workOutcome delivery-failed — the terminal fact the observer read)",
+      "ok": false,
+      "detail": "settlement={\"sequence\":25,\"requestToken\":\"wcn-l3-delegate-2026-09-20T04-19-26\",\"instanceId\":\"inst-0bsqrx11ukv4\",\"workOutcome\":\"settled\",\"memberResult\":{\"error\":{\"code\":\"INVALID_REQUEST\",\"message\":\"wcn smoke L3: controlled member model failure\"},\"requestToken\":\"wcn-l3-delegate-2026-09-20T04-19-26\",\"status\":\"failed\"}}"
+    },
+    {
+      "id": "L4a",
+      "name": "L4: the sync delegate tool result CARRIES the member result in-band (the exact body, status succeeded)",
+      "ok": true,
+      "detail": "result={\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-wcn-smoke-l4-2026-09-20T04-19-26\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1ntrax71utmq\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-562097b5d802b001e6adde78ebb60276\",\"operationId\":\"op-18bljdh12wsgqw1tkkem70gk\",\"replayed\":false,\"ledgerSequence\":27,\"admissionCode\":\"ADMISSION_OPEN\",\"w"
+    },
+    {
+      "id": "L4b",
+      "name": "L4: team.create (L4) succeeded",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"wcnl4-5yo8nrngfc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-wcn-smoke-l4-2026-09-20T04-19-26\",\"blueprint\":{\"blueprintId\":\"team.wcn-l4\",\"revision\":\"1\",\"contentHash\":\"sha256:5ec412c7a"
+    },
+    {
+      "id": "L4c",
+      "name": "L4: NO separate completion notification turn exists for the sync token (the tool result IS the completion channel)",
+      "ok": true,
+      "detail": "l4Notif=absent (correct)"
+    },
+    {
+      "id": "L4d",
+      "name": "L4: the sync settlement fact is durable (unchanged sync path)",
+      "ok": true,
+      "detail": "settlement={\"sequence\":31,\"requestToken\":\"wcn-l4-delegate-2026-09-20T04-19-26\",\"instanceId\":\"inst-1ntrax71utmq\",\"workOutcome\":\"settled\",\"memberResult\":{\"body\":\"WCMK_RESULT_L4_BODY\",\"requestToken\":\"wcn-l4-delegate-2026-09-20T04-19-26\",\"status\":\"succeeded\"}}"
+    }
+  ],
+  "passed": 22,
+  "total": 23,
+  "failed": [
+    "L3f"
+  ],
+  "stable": {
+    "pre": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    },
+    "post": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    }
+  },
+  "verdict": "FAIL"
+}

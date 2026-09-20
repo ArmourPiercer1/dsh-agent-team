@@ -1,0 +1,5 @@
+mock: listening on 127.0.0.1:3496
+mock: 1 text reply (11 chars): "W_DISC_DONE"
+mock: 2 text reply (17 chars): "wcn smoke session"
+mock: 3 GET / -> 405
+mock: 4 GET / -> 405
