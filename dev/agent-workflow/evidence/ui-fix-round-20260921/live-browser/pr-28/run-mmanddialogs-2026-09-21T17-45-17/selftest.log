@@ -1,0 +1,13 @@
+ok    single-instance full chain (settle ×2, ARCHIVED) satisfies the drive
+ok    UI restore after archive appends SETTLED — chain still satisfied (subsequence)
+ok    never archived (only settles) does NOT satisfy
+ok    SETTLED on one instance + ARCHIVED on another (old broken assumption) does NOT satisfy
+ok    archived after a single settle cycle does NOT satisfy (needs settle ×2)
+ok    archive before the settle cycles (wrong order) does NOT satisfy
+ok    empty ledger does NOT satisfy
+ok    drive timeout (sent, not done) can NEVER produce a PASS verdict
+ok    drive error (sent, not done) can NEVER produce a PASS verdict
+ok    a failed criterion still FAILs even with a completed drive
+ok    no drive sent is neutral — criteria alone decide (PASS case)
+ok    completed drive + all criteria ok → PASS
+SELFTEST PASS
