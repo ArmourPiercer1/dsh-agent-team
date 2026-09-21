@@ -102,3 +102,36 @@ stop-priority / wake-up 改动；无新大型 real-host kit；无 Blueprint 自�
 无 team_restore_member / team_dispose_member。生产 lifecycle 代码零改动
 （测试真实发现 = 无 bug：生产 P7-T3 行经 tool 面闭环全绿）。
 
+## 8. P2 文案收口轮（2026-09-21 三，用户复审后唯一剩余 finding）
+
+用户复审结论：三个实质 finding 已关闭，无新 P0/P1；仅余 1 个 **P2 模型面文案
+一致性问题**（纯文案修正，无需新增测试）：
+
+- **`packages/tools/src/tools.ts` 的 `team_archive_member.description`**（模型可见
+  工具描述）仍写「A SETTLED member is archived directly; a RUNNING member is
+  quiesced first...」→ 改为与 P7-T3 真实语义一致：**legal archive target
+  （RUNNING/SETTLED）先 quiesce**（current work interrupted + resident
+  descendants drained），SETTLED 一次 durable ARCHIVE commit，RUNNING 一次
+  durable SETTLE + 一次 durable ARCHIVE（FSM 无 RUNNING→ARCHIVED 边）；
+  **CREATED / ARCHIVED / DISPOSED 在任何 live effect 前拒绝**。
+- **`team-leader-operations/SKILL.md`** 的「QUIESCES the target member first in
+  **every state**」→ 改为 legal target（RUNNING 或 SETTLED）先 quiesce；
+  CREATED/ARCHIVED/DISPOSED 在任何 live effect 前拒绝（**从不被 quiesce**）。
+
+### 8.1 门禁实数（P2 收口轮）
+
+| 门禁 | 结果 |
+| --- | --- |
+| typecheck | 全绿（exit 0） |
+| `pnpm build` + `build:composition` + `check:artifacts` | **OK 1132**（dist 漂移 = `tools.js` + `tools.js.map` 2 文件，源与 dist 同提交入库；`.d.ts` 零变化 — description 是 string 字面量） |
+| focused | archive-member-tool **11/11** + p4t6 **10/10 @728**（无新文件） |
+| lint（改动文件） | 零发现 |
+| 全量 `pnpm test` | **20 failed \| 3733 passed (3753)**（`full-suite/review-round3-post.log`）— 失败集与 review-round2 基线**逐项 diff 为空** |
+| flake 注记 | 首次全量运行（`full-suite/review-round3-flake-run1.log`）出现 2 个基线外失败 = `p6t1-parallel`（N=2 并行激活 committedOps 1≠2）— 三次独立单跑分别落在 P1/P3/P2 三个不同测试、第四次 9/9 通过；该文件只 import activation/storage/p6t1-helpers，**与 tools 描述字符串无代码路径** → 环境时序 flake，非本轮引入、非 deterministic；复跑全量即回基线。按用户纪律不顺手修无关既有债务，仅留痕 |
+
+### 8.2 范围纪律
+
+纯文案：不改 lifecycle 生产实现 / FSM / registry / Remote / UI / upstream /
+schema；无新测试（用户明示）；master 未前进 → 无 rebase、无 force-push，
+纯追加提交。
+
