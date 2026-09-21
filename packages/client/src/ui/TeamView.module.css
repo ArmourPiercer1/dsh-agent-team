@@ -1,3 +1,9 @@
+/* The zero-state container shares the tab's content column (the same host
+   width axis as .body below) so its centered content sits in the same
+   column the populated sections do. The border-box + calc(W + 48px)
+   geometry (48px = the horizontal padding) guarantees the content stays
+   exactly W wide on wide hosts and never exceeds the container on narrow
+   ones — see the .body note. */
 .zero {
   display: flex;
   align-items: center;
@@ -5,6 +11,10 @@
   min-height: 100%;
   padding: 24px;
   color: var(--dsw-alias-label-tertiary);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: calc(var(--dsh-chat-content-width, 100%) + 48px);
+  margin: 0 auto;
 }
 
 .zeroInner {
@@ -40,12 +50,32 @@
   outline-offset: 1px;
 }
 
+/* The tab's single content column: pinned to the host conversation width
+   axis (--dsh-chat-content-width, declared on the conversation root and
+   user-draggable through the width handles; the fallback keeps the legacy
+   full-width behavior on hosts without the axis). Every section — its
+   title AND its cards, including the governance section — lives inside
+   this one box, so the titles track the cards on a width drag and the
+   governance column resizes exactly like the other four.
+
+   Geometry (2026-09-21 supplemental review): the column is border-box with
+   a cap of W + 48px (48px = the horizontal padding), NOT content-box
+   width:100% capped at W — under the default content-box sizing the
+   padded column would overflow its narrow container by 48px. The border-box
+   cap guarantees: wide host → content exactly W (the host's own content
+   width); narrow container → border-box clamps to the container and the
+   content shrinks to (container − 48px) — it can never exceed the
+   container's client width. */
 .body {
   display: flex;
   flex-direction: column;
   gap: 16px;
   min-height: 100%;
   padding: 16px 24px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: calc(var(--dsh-chat-content-width, 100%) + 48px);
+  margin: 0 auto;
 }
 
 .section {
