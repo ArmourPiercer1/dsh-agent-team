@@ -78,6 +78,20 @@ const FACT_ROW_KIND: Readonly<Record<string, TeamLedgerRowKind>> = {
   'policy-state-transitioned': 'policy-transitioned',
 }
 
+/**
+ * The INTERNAL authority fact types that never become Events rows
+ * (PR #26 P2 — the client Team Events hygiene): they are Team
+ * authority/audit state, not user activity. They stay in the loaded
+ * ledger model (`entries` — the raw projection / TeamLedger) and only
+ * the Events section skips them: without the skip, `artifact-read-granted`
+ * lands in the `unknown` family and the generic row `JSON.stringify`s
+ * the whole payload — exposing the spill locator and the opaque
+ * target/version digests in the activity feed.
+ */
+const INTERNAL_FACT_TYPES: ReadonlySet<string> = new Set([
+  'artifact-read-granted',
+])
+
 /** One rendered Events-section row (one loaded ledger fact). */
 export interface TeamLedgerEventRow {
   readonly kind: TeamLedgerRowKind
@@ -385,6 +399,10 @@ export function deriveTeamLedgerSection(input: TeamLedgerSectionInput): TeamLedg
 
   const items: LedgerItem[] = []
   for (const row of ledger.entries) {
+    // Internal authority facts (PR #26 P2): kept in the raw model, never
+    // rendered as Events rows (a generic row would serialize the grant
+    // payload — locator + opaque digests — into the activity feed).
+    if (INTERNAL_FACT_TYPES.has(row.factType)) continue
     if (filter.category !== 'all' && (row.category === undefined || row.category !== filter.category)) continue
     const built = buildRow(row, labels, navSessions, templates, pendingRequestIds, intervalInstance)
     if (filter.instanceId !== null) {

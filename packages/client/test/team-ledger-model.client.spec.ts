@@ -410,3 +410,82 @@ describe('deriveTeamLedgerSection', () => {
     expect(empty.hasMore).toBe(false)
   })
 })
+
+// PR #26 P2 — the internal authority facts stay out of the Events feed:
+// `artifact-read-granted` is Team authority/audit state, not user
+// activity. The fact stays in the loaded raw model (the TeamLedger /
+// raw projection) and only the Events section skips it — without the
+// skip it lands in the `unknown` family and the generic row serializes
+// the whole grant payload (locator + opaque digests) into the feed.
+describe('deriveTeamLedgerSection — internal authority facts (PR #26 P2)', () => {
+  /** A realistic artifact-read-granted payload (the durable fact shape). */
+  const grantPayload = {
+    instanceId: 'mate',
+    locator: '/tmp/dsh-spill-xyz/session-abc123/deadbeef0011-bash.txt',
+    targetKeyDigest: 'sha256:0123456789abcdef',
+    versionDigest: 'sha256:fedcba9876543210',
+    source: { kind: 'spill-store', spillSource: { kind: 'tool', toolName: 'bash', callId: 'c1', label: 'result' } },
+  }
+  const grantLocator = grantPayload.locator as string
+  const grantTargetDigest = grantPayload.targetKeyDigest as string
+  const grantVersionDigest = grantPayload.versionDigest as string
+
+  it('filters artifact-read-granted OUT of the Events rows while keeping it in the raw model', () => {
+    const entries = [
+      uiEntry(1, 'team-message-delivered', T, { recipientInstanceId: 'mate', subject: 'visible' }, 'message'),
+      uiEntry(2, 'artifact-read-granted', T + 1000, grantPayload),
+    ]
+    const model = derive({ ledger: ledger(entries) })
+    // The fact is still LOADED (raw model untouched — the TeamLedger and
+    // the raw projection keep the audit state)…
+    expect(ledger(entries).entries).toHaveLength(2)
+    // …but it never becomes an Events row: only the message survives.
+    expect(model.rows).toHaveLength(1)
+    expect(model.rows[0]?.sequence).toBe(1)
+    expect(model.rows[0]?.factType).toBe('team-message-delivered')
+    expect(model.total).toBe(1)
+  })
+
+  it('leaks no grant internals (locator / targetKeyDigest / versionDigest) into ANY rendered row', () => {
+    // Surrounding rows of every family + the grant fact itself: whatever
+    // renders, none of the authority payload may surface.
+    const entries = [
+      uiEntry(1, 'team-message-delivered', T, { recipientInstanceId: 'mate', subject: 's1' }, 'message'),
+      uiEntry(2, 'artifact-read-granted', T + 1000, grantPayload),
+      uiEntry(3, 'control-request-recorded', T + 2000, { targetInstanceId: 'mate', actionName: 'bash' }, 'control'),
+      uiEntry(4, 'activity-progress-recorded', T + 3000, { instanceId: 'mate', subject: 's4', progress: 'completed' }, 'progress'),
+      uiEntry(5, 'artifact-read-granted', T + 4000, { ...grantPayload, instanceId: 'lead' }),
+      uiEntry(6, 'future-fact-type', T + 5000, { unrelated: true }),
+    ]
+    const model = derive({ ledger: ledger(entries) })
+    expect(model.rows).toHaveLength(4) // two grants filtered, four rendered
+    for (const row of model.rows) {
+      expect(row.factType).not.toBe('artifact-read-granted')
+      expect(row.summary).not.toContain(grantLocator)
+      expect(row.detail).not.toContain(grantLocator)
+      expect(row.summary).not.toContain(grantTargetDigest)
+      expect(row.detail).not.toContain(grantTargetDigest)
+      expect(row.summary).not.toContain(grantVersionDigest)
+      expect(row.detail).not.toContain(grantVersionDigest)
+    }
+  })
+
+  it('keeps the INV-9.2 remainder math on the LOADED entry count (filtered grants do not change it)', () => {
+    // total 10, 7 loaded (5 rendered + 2 grants): the remainder is
+    // total − loaded UNIQUE ENTRY COUNT = 3 — the Events-side filter
+    // must not rebase the count-domain subtraction.
+    const entries = [
+      uiEntry(1, 'team-message-delivered', T, { recipientInstanceId: 'mate', subject: 'a' }, 'message'),
+      uiEntry(2, 'artifact-read-granted', T + 1000, grantPayload),
+      uiEntry(3, 'team-message-delivered', T + 2000, { recipientInstanceId: 'mate', subject: 'b' }, 'message'),
+      uiEntry(4, 'artifact-read-granted', T + 3000, grantPayload),
+      uiEntry(5, 'team-message-delivered', T + 4000, { recipientInstanceId: 'mate', subject: 'c' }, 'message'),
+      uiEntry(6, 'team-message-delivered', T + 5000, { recipientInstanceId: 'mate', subject: 'd' }, 'message'),
+      uiEntry(7, 'team-message-delivered', T + 6000, { recipientInstanceId: 'mate', subject: 'e' }, 'message'),
+    ]
+    const model = derive({ ledger: ledger(entries), total: 10 })
+    expect(model.rows).toHaveLength(5)
+    expect(model.total).toBe(5)
+    expect(model.remainingCount).toBe(3) // 10 − 7 loaded, NOT 10 − 5 rendered
+  })
+})
