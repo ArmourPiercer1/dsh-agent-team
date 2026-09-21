@@ -1,0 +1,116 @@
+{
+  "verdict": "PASS",
+  "branch": "fix/team-tab-width-column",
+  "worktreeHead": "a45b088b91aeed7a526a47f3e118c73504de8901",
+  "origin": "http://127.0.0.1:3181",
+  "port": 3181,
+  "world": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-bwidthcolumn-2026-09-21T15-36-43",
+  "drive": {
+    "sent": false,
+    "done": false,
+    "detail": ""
+  },
+  "memberLifecyclesAtTeardown": {},
+  "mockDecisions": 2,
+  "criteria": [
+    {
+      "leg": "PRE",
+      "name": "test-use pinned @ fb2c4b9e69 + byte-clean",
+      "ok": true,
+      "detail": "fb2c4b9e698e"
+    },
+    {
+      "leg": "PRE",
+      "name": "branch install surface built (runtime dist + bundle patch + client bundle)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "PRE",
+      "name": "ports free (3180 family) + world fresh",
+      "ok": true,
+      "detail": "host=3181 mock=3491 control=3492"
+    },
+    {
+      "leg": "INST",
+      "name": "the real-CLI git install succeeds (prebuilt surface, zero lifecycle scripts)",
+      "ok": true,
+      "detail": "exit=0 tail=d 0, downloaded 1, added 1, done | Done in 3.3s using pnpm v11.7.0 | dsh: initialized profile web at /home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-bwidthcolumn-2026-09-21T15-36-43/profiles/web | "
+    },
+    {
+      "leg": "INST",
+      "name": "dsh.profile.bundles AUTO-contains dsh-agent-team (bundle layer, no hand-written row)",
+      "ok": true,
+      "detail": "[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+    },
+    {
+      "leg": "INST",
+      "name": "profile config override + user preset written (boot team, mock staticModel, preset)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "BOOT",
+      "name": "the real host booted to the `dsh web:` marker",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "BOOT",
+      "name": "NO ERR_MODULE_NOT_FOUND in the instance log",
+      "ok": true,
+      "detail": "hits=0"
+    },
+    {
+      "leg": "BOOT",
+      "name": "auth proven (303 + session cookie)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "SESS",
+      "name": "root session created over the public session channel",
+      "ok": true,
+      "detail": "status=200 {\"type\":\"server-response\",\"rpcId\":\"liveui-root-l30ebi7h3w\",\"result\":{\"ok\":false,\"error\":{\"code\":\"agent-preset/conflict\",\"message\":\"session \\\"team-root\\\" records no agent preset and cannot be adopted u"
+    },
+    {
+      "leg": "POST",
+      "name": "stable instances :3080/:3180 unchanged (read-only probes pre == post)",
+      "ok": true,
+      "detail": "pre={\"p3080\":{\"reachable\":true,\"status\":401},\"p3180\":{\"reachable\":true,\"status\":401}} post={\"p3080\":{\"reachable\":true,\"status\":401},\"p3180\":{\"reachable\":true,\"status\":401}}"
+    },
+    {
+      "leg": "POST",
+      "name": "test-use working tree byte-clean after the run",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "POST",
+      "name": "host port released after teardown",
+      "ok": true,
+      "detail": "port=3181"
+    }
+  ],
+  "preStable": {
+    "p3080": {
+      "reachable": true,
+      "status": 401
+    },
+    "p3180": {
+      "reachable": true,
+      "status": 401
+    }
+  },
+  "postStable": {
+    "p3080": {
+      "reachable": true,
+      "status": 401
+    },
+    "p3180": {
+      "reachable": true,
+      "status": 401
+    }
+  },
+  "worldRetained": false
+}
