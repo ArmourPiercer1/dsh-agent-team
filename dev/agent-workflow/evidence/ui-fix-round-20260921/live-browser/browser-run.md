@@ -1,133 +1,95 @@
-# browser-run.md — live-browser session log, PR #28 (guide §9)
+# browser-run.md — live-browser session log (guide §9)
 
 Real Chromium Agent Window driven by the installed `browser-skill`
 (browser_* tools + the bsk CLI on the same daemon). No jsdom/RTL
-substitution. Companion to the PR #27 session log committed on branch
-`fix/team-tab-width-column`.
+substitution anywhere in this round.
 
-## Run history (two worlds)
+Environment notes (deviations from the happy path, all logged):
 
-1. **World 1 (aborted)** `liveui-mmanddialogs-2026-09-21T16-04-06` —
-   kit `run-mmanddialogs-2026-09-21T16-04-06.aborted-missing-teamEnvelope/`.
-   The inline blueprint shipped **without a `teamEnvelope` field**; the
-   runtime admission layer fails closed (`envelope.ts`: "an absent
-   `teamEnvelope` = the empty set"), so both `team_delegate` calls were
-   rejected `TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS` and the drive chain
-   dead-ended (`LIVEUI_EXTRACT_FAIL`). Run aborted, world removed,
-   logs token-scrubbed and retained for the record.
-2. **World 2 (the evidence run)** `liveui-mmanddialogs-2026-09-21T16-09-22` —
-   kit `run-mmanddialogs-2026-09-21T16-09-22/`. Kit fixed: the blueprint
-   now carries `teamEnvelope.allow` = the full closed mutation-op
-   vocabulary (`assign-task, create-member, send-message,
-   report-progress, request-control, resolve-control, archive-member,
-   restore-member, dispose-member`), `deny: []`. (The fix went into the
-   kit in both worktrees; the kit is evidence tooling, not plugin
-   source.)
+- The first Agent Window session (`bvvm`) was closed by the user
+  mid-run ("浏览器似乎没有正确启动") — the bsk daemon log records
+  `session removed: user closed Agent Window` at 15:38:06. A second
+  session (`qkco`) was started and did the 27-A capture.
+- The bsk daemon's **full-page screenshot** path hangs indefinitely on
+  this page (4 attempts × 30s RPC timeouts; the daemon keeps the
+  session busy afterwards). **Viewport-only captures** (bsk CLI
+  `screenshot` without `--full-page`) and **scoped element captures**
+  work reliably. All evidence screenshots here are viewport captures.
+- The guide lists DOM-evaluate geometry probes as optional (「可以用」).
+  The plugin's injected browser_* tools intentionally expose no
+  arbitrary eval; the bsk CLI on the same daemon does
+  (`bsk evaluate`), and was used for the geometry probes below
+  (read-only `getComputedStyle` / `getBoundingClientRect` — no
+  mutation).
+- The DSH Web UI hides `blank: true` sessions (a session with zero
+  turns) from the sidebar list — verified against the host
+  `session/list` response. The boot-created `team-root` session was
+  therefore given one mock-driven NOOP probe turn (no team tools
+  involved) before it appeared in the list. This is a UI listing
+  detail, not a team defect.
+- Session `team-root` was pre-created by the team boot
+  (`bootPhase: create-or-open`); the kit's explicit `session/create`
+  adoption then returned `agent-preset/conflict` ("records no agent
+  preset and cannot be adopted") — expected for an already-existing
+  root session; the prompt path (which drives all scenarios) works.
 
-## World 2 session
+## PR #27 — branch `fix/team-tab-width-column` @ a45b088 (world run-bwidthcolumn-2026-09-21T15-36-43)
 
 Host `http://127.0.0.1:3181`, mock 3491, control 3492; auth via boot
-token (303 + cookie). Session `team-root` un-blanked with one mock NOOP
-probe turn (the Web UI hides zero-turn `blank: true` sessions from the
-sidebar list — a UI listing detail, not a team defect), then
-`POST /drive` ran the scripted leader chain (mock decisions, from the
-kit log): `team_delegate → WORK_DONE_A` (instance
-`inst-19ze2gq0ux9r` RUNNING→**SETTLED**), `team_delegate → WORK_DONE`
-(same instance RUNNING→**SETTLED**), `team_archive_member`
-(SETTLED→**ARCHIVED**), final text `LIVEUI-TEAM-DONE`.
+token (303 + cookie). Session `team-root` opened → tabs
+对话/轨迹/**团队** present (the 团队 tab renders for every session;
+this one is the bound team root) → 团队 tab activated.
 
-**Runtime shape note (drives the scenario order below):** `team_delegate`
-targets a *template* and resolves to the template's existing live
-instance — the runtime admitted the second work on the **same** instance
-(`inst-19ze2gq0ux9r`) instead of creating a second one (see the
-`member-lifecycle-changed` facts in 团队事件: two `delegate` facts, both
-`targetInstanceId: inst-19ze2gq0ux9r`). The world therefore contains
-**one** member that walked ARCHIVED via a full lifecycle, rather than the
-kit's nominal two-member end state (worker-a SETTLED + worker-b
-ARCHIVED). All five guide scenarios are still fully coverable: the single
-ARCHIVED member serves 28-E, and after the direct restore it is the
-SETTLED member for 28-A/B/C/D. Scenario execution order was therefore
-**E → A → B → C → D** (the guide's listed order assumes two members and
-cannot be followed literally in a one-member world).
+Host axis (measured live): `--dsh-chat-content-width:
+clamp(680px, calc(<hostBody>px * .64), 920px)` set by the host on its
+content container (inherited by the team view).
 
-## Scenarios (world 2, branch head 14a6b25)
+### 27-A — default/wide window, axis cap active (2140×1048 viewport)
 
-### 28-E — ARCHIVED 「恢复」 → NO modal, direct restore (executed first)
+DOM probe (real page, post-fix build):
 
-UI state: 成员组 shows the member row `worker · 0 活跃` with instance row
-**已归档 暂无动作** and buttons **[「恢复」, 「处置」]** (「恢复」 without
-ellipsis — the direct-action affordance per §23.4). Screenshot:
-`28-E-pre.png`. Clicked 「恢复」.
-
-Immediate verification (real page):
-- DOM: `document.querySelectorAll('[role=dialog]')` → **0** (no modal
-  opened; the two host overlay-layer containers are the app's permanent
-  portal infrastructure, empty).
-- Row flipped in place to **已结算** with the 4-button SETTLED set
-  [「发送消息…」「恢复…」「归档」「处置」].
-- Durable ledger: new fact `restore-member`
-  `{action: "restore-member", caller: {kind: "human", humanId:
-  "team-root"}, from: "ARCHIVED", to: "SETTLED", steps:
-  ["commit-restore"]}` — a **human** caller (not the leader), exactly the
-  direct-restore semantics the existing spec test pins.
-- Screenshot after: `28-E.png`.
-
-**28-E: PASS** — no dialog, direct effect.
-
-### 28-A — narrow width: all SETTLED-row action buttons visible
-
-Emulated per-tab viewports on the live tab: 640×800 and 480×800.
-
-DOM probes (real page, `.actions` cluster of the SETTLED row):
-
-| viewport | visible buttons | cluster | overflow | document |
+| element | box-sizing | total box | content | position |
 | --- | --- | --- | --- | --- |
-| 640×800 | 4/4 — 发送消息…(69px) 恢复…(47px) 归档(39px) 处置(39px), one line y=357 | scrollW 213 == clientW 213, `flex-wrap: wrap` armed | none | `scrollWidth 640 == clientWidth 640` |
-| 480×800 | 4/4, one line (x 131..344) | scrollW 213 == clientW 213 | none | `scrollWidth 480 == clientWidth 480` |
+| host viewArea | content-box | 1850px @ x=280 | — | viewport minus 280px sidebar |
+| TeamView `.body` | **border-box** | **968px** @ x=721 | 920px | **centered**: column center 1205.0 = viewArea center 1205.0 |
+| section title (H3) / `.section` | content-box | 920px @ x=745 | 920px | exactly the axis value |
 
-No clipping, no horizontal scrollbar at either width; the wrap safety net
-stays armed for sub-213px cluster space. Screenshot (480px, the
-narrowest tested): `28-A.png`.
+axis resolved = 920px (the clamp max); column total = 920 + 48px
+horizontal padding = 968px border-box = `max-width:
+calc(var(--dsh-chat-content-width, 100%) + 48px)` exactly as written.
+Document: `scrollWidth 2140 == clientWidth 2140` → no horizontal
+overflow. Screenshot: `27-A.png` (viewport). `27-A-default-window.png`
+retained as the first capture (default 1044px window, axis min clamp).
 
-**28-A: PASS.**
+### 27-B — narrow host width (default 1044×1041 Agent Window)
 
-### 28-B — SETTLED 「恢复…」 → followup dialog, centered
+axis resolved = 680px (the clamp **min**: 1044·0.64 = 668 < 680).
 
-Clicked 「恢复…」 on the SETTLED row (default 1044×1041 window).
+| element | measured |
+| --- | --- |
+| TeamView `.body` | **border-box**, 728px @ x=293, `max-width: 728px` (= 680+48) |
+| centering | viewArea 280..1044 (764px); column 293..1021 → margins 13px left / 23px right (sidebar-adjacent container; column centered in the available area) |
+| document | `scrollWidth 1044 == clientWidth 1044` → no overflow |
 
-DOM probe (real page): `[role=dialog]` present — rect x=332 y=417
-w=380 h=206 → center **(522, 521)** vs viewport center **(522, 520.5)**:
-centered to <0.5px. Title 「向 worker-a 发送任务」, text field, footer
-[「取消」「发送」], header × close, masked parent. Screenshot: `28-B.png`.
-Closed with **Escape** → dialog count 0, `mockDecisions` unchanged (9),
-lifecycle unchanged → Escape = cancel, **no command ran**.
+The column **followed the axis down** from 920→680 (wide→narrow)
+while staying a single centered column. Screenshot: `27-B.png`.
 
-**28-B: PASS.**
+### 27-C — small viewport (640×800 emulated, per-tab CDP)
 
-### 28-C — 「发送消息…」 message modal renders
+axis resolved = 680px (min clamp; host body 584px) → wanted column
+728px, but the container is only 574px wide:
 
-Clicked 「发送消息…」。 DOM probe: `[role=dialog]` — title 「给
-worker-a 发消息」, center **(522, 521)** == viewport center, fields:
-INPUT + TEXTAREA, **both `box-sizing: border-box`** (the supplemental
-form-control fix), width 332px each, right edge 688 ≤ card right 712
-(fields stay inside the card — the pre-fix content-box math overflowed
-by the padding). Footer [「取消」「发送消息」]. Screenshot: `28-C.png`.
-Closed with Escape → no message sent (mock decision count unchanged).
+| element | measured |
+| --- | --- |
+| TeamView `.body` | **border-box**, clamped to **574px** @ x=56 (width:100% of container) — total box ≤ container |
+| content region | 526px (574 − 48 padding); section title box = 526px @ x=80 (the +24 padding offset) — titles and cards share the column exactly |
+| document | `scrollWidth 640 == clientWidth 640` → **no horizontal overflow** (this is the case the pre-fix content-box math overflowed by the full 48px padding) |
 
-**28-C: PASS.**
+Screenshot: `27-C.png`.
 
-### 28-D — 「归档」 confirm modal (closed WITHOUT confirming)
+**PR #27 real-browser verdict: PASS (27-A, 27-B, 27-C)** — see
+`vision-review.md` for the Vision Toolkit per-scenario verdicts.
 
-Clicked 「归档」. DOM probe: `[role=dialog]` — title 「归档该成员？」,
-body 「归档后，该成员将不再接收新的团队任务，直到恢复。」, footer
-[「取消」「归档」], header × close, center (522, 521) == viewport center.
-Observe confirmed the modal layer: `L1 modal cover=100%` (mask covers the
-whole page). Screenshot: `28-D.png`. Closed by clicking the explicit
-**「取消」** button → dialog count 0, lifecycle **still SETTLED**,
-`ledgerFacts` unchanged (no archive fact), `mockDecisions` unchanged —
-**no confirmation executed**.
-
-**28-D: PASS.**
-
-**PR #28 real-browser verdict: PASS (28-A, 28-B, 28-C, 28-D, 28-E)** —
-see `vision-review.md` for the Vision Toolkit per-scenario verdicts.
+(The PR #28 scenarios were run in a separate world on branch
+`fix/member-command-dialogs`; their session log lives in that branch's
+evidence package in the same directory.)

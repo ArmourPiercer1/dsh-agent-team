@@ -1,0 +1,33 @@
+[2026-09-21T15:36:43.083Z] live-ui world kit — branch=fix/team-tab-width-column worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-team-tab-width-column
+[2026-09-21T15:36:43.084Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use home=/home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-bwidthcolumn-2026-09-21T15-36-43 runDir=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-team-tab-width-column/dev/agent-workflow/evidence/ui-fix-round-20260921/live-browser/run-bwidthcolumn-2026-09-21T15-36-43
+[2026-09-21T15:36:43.104Z] PASS [PRE] test-use pinned @ fb2c4b9e69 + byte-clean — fb2c4b9e698e
+[2026-09-21T15:36:43.104Z] PASS [PRE] branch install surface built (runtime dist + bundle patch + client bundle)
+[2026-09-21T15:36:43.107Z] worktree head: a45b088b91aeed7a526a47f3e118c73504de8901
+[2026-09-21T15:36:43.127Z] ZERO-TOUCH probe :3080 pre: {"reachable":true,"status":401}
+[2026-09-21T15:36:43.127Z] ZERO-TOUCH probe :3180 pre: {"reachable":true,"status":401}
+[2026-09-21T15:36:43.148Z] PASS [PRE] ports free (3180 family) + world fresh — host=3181 mock=3491 control=3492
+[2026-09-21T15:36:43.149Z] bare repo: cloning /home/user/dsh-plugins/dsh-agent-team → /home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-bwidthcolumn-2026-09-21T15-36-43/repo.git
+[2026-09-21T15:36:43.213Z] bare repo cloned (local branches included)
+[2026-09-21T15:36:43.213Z] installing: git+file:////home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-bwidthcolumn-2026-09-21T15-36-43/repo.git#fix/team-tab-width-column
+[2026-09-21T15:36:46.723Z] plugin add exit=0
+[2026-09-21T15:36:46.723Z] PASS [INST] the real-CLI git install succeeds (prebuilt surface, zero lifecycle scripts) — exit=0 tail=d 0, downloaded 1, added 1, done | Done in 3.3s using pnpm v11.7.0 | dsh: initialized profile web at /home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-bwidthcolumn-2026-09-21T15-36-43/profiles/web | 
+[2026-09-21T15:36:46.723Z] PASS [INST] dsh.profile.bundles AUTO-contains dsh-agent-team (bundle layer, no hand-written row) — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-21T15:36:46.724Z] PASS [INST] profile config override + user preset written (boot team, mock staticModel, preset)
+[2026-09-21T15:36:46.726Z] mock: mock: listening on 127.0.0.1:3491
+[2026-09-21T15:36:46.726Z] mock model listening on 127.0.0.1:3491
+[2026-09-21T15:36:46.728Z] host spawned (pid=157, port=3181)
+[2026-09-21T15:36:50.731Z] PASS [BOOT] the real host booted to the `dsh web:` marker
+[2026-09-21T15:36:50.731Z] PASS [BOOT] NO ERR_MODULE_NOT_FOUND in the instance log — hits=0
+[2026-09-21T15:36:50.737Z] PASS [BOOT] auth proven (303 + session cookie)
+[2026-09-21T15:36:50.749Z] PASS [SESS] root session created over the public session channel — status=200 {"type":"server-response","rpcId":"liveui-root-l30ebi7h3w","result":{"ok":false,"error":{"code":"agent-preset/conflict","message":"session \"team-root\" records no agent preset and cannot be adopted u
+[2026-09-21T15:36:50.750Z] control server on 127.0.0.1:3492
+[2026-09-21T15:36:50.751Z] READY origin=http://127.0.0.1:3181 token=[SCRUBBED-TOKEN] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-bwidthcolumn-2026-09-21T15-36-43
+[2026-09-21T15:40:09.748Z] mock: mock: 1 text reply (11 chars): "LIVEUI-NOOP"
+[2026-09-21T15:40:09.749Z] mock: mock: 2 text reply (28 chars): "live UI verification session"
+[2026-09-21T15:59:49.897Z] scenarios-done: true — tearing down
+[2026-09-21T15:59:50.505Z] ZERO-TOUCH probe :3080 post: {"reachable":true,"status":401}
+[2026-09-21T15:59:50.505Z] ZERO-TOUCH probe :3180 post: {"reachable":true,"status":401}
+[2026-09-21T15:59:50.505Z] PASS [POST] stable instances :3080/:3180 unchanged (read-only probes pre == post) — pre={"p3080":{"reachable":true,"status":401},"p3180":{"reachable":true,"status":401}} post={"p3080":{"reachable":true,"status":401},"p3180":{"reachable":true,"status":401}}
+[2026-09-21T15:59:50.521Z] PASS [POST] test-use working tree byte-clean after the run
+[2026-09-21T15:59:50.522Z] PASS [POST] host port released after teardown — port=3181
+[2026-09-21T15:59:50.614Z] world removed: /home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-bwidthcolumn-2026-09-21T15-36-43 (evidence retained in /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-team-tab-width-column/dev/agent-workflow/evidence/ui-fix-round-20260921/live-browser/run-bwidthcolumn-2026-09-21T15-36-43)

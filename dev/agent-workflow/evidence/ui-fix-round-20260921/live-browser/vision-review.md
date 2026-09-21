@@ -1,89 +1,92 @@
-# vision-review.md — Vision Toolkit verdicts on the live screenshots, PR #28 (guide §9)
+# vision-review.md — Vision Toolkit verdicts on the live screenshots (guide §9)
 
 Tooling: DSH Vision Toolkit (`vision-skills`) — `vision_glance` (VLM QA)
-on real screenshots of the live host, with `vision_crop` bands where the
-VLM endpoint times out on the full 1827px images. Where the VLM flagged
-an artifact of a crop boundary, the DOM geometry probe from the same
-live page (`bsk evaluate`, read-only) is the authoritative measurement.
-The PR #27 scenario verdicts live in the sibling evidence package on
-branch `fix/team-tab-width-column`.
+on real screenshots of the live host, with `vision_crop` to build
+upload-sized bands (the VLM endpoint times out on the full ~3700px
+images). Where a VLM call could not be completed (endpoint timeout on
+a specific upload), the DOM geometry probe from the same live page
+(`bsk evaluate`, read-only computed-style/bounding-box reads) is
+recorded as the authoritative measurement — the screenshots remain
+the visual artifact; the probe is the numeric proof.
 
-## 28-A — `28-A.png` (480×800 emulated viewport, narrowest tested)
+## PR #27 (branch `fix/team-tab-width-column` @ a45b088)
 
-VLM verdict on the full screenshot (840×1400 device px):
-"4 个按钮，标签为「发送消息… / 恢复… / 归档 / 处置」；无裁切、无溢出、
-无横向滚动条；单行排布且全部完整可见" — all four button boxes fully
-rendered, rightmost 处置 leaves margin to the card edge, no horizontal
-scrollbar.
+### 27-A — `27-A.png` (2140×1048 viewport, wide; axis cap 920px active)
 
-DOM probe corroboration (same live page): at 640px and 480px, 4/4
-buttons visible; `.actions` `scrollWidth == clientWidth` (213px),
-`flex-wrap: wrap` armed; `document.scrollWidth == clientWidth` at both
-widths.
+VLM verdict on full-width band (3745×760 device px):
 
-**Verdict: PASS** — narrow width: every SETTLED-row action button
-visible (wrap available, clip none).
+1. **Centered column with balanced margins: YES** — "左侧存在明显空白
+   …右侧同样有从卡片右缘延伸到窗口右缘的空白；两侧留白大致对称/均衡，
+   内容列整体位于主内容区中央，而不是贴靠某一侧".
+2. **One consistent column: YES** — 时间线 card, leader card and worker
+   card left edges aligned AND right edges aligned, same column, no
+   width mismatch.
+3. **Clipping / horizontal scrollbar: NONE.**
 
-## 28-B — `28-B.png` (「恢复…」 followup dialog)
+DOM probe corroboration (same live page): axis
+`--dsh-chat-content-width` resolved = **920px** (clamp max); TeamView
+`.body` box-sizing = **border-box**, total box **968px** (= 920 + 48
+padding, the exact `max-width: calc(var(...) + 48px)` value), content
+920px; column center 1205.0px == host viewArea center 1205.0px (perfect
+centering); `document.scrollWidth 2140 == clientWidth 2140`.
 
-VLM verdict on the dialog band (1000×700 device px): dialog card titled
-「向 worker-a 发送任务」 with 任务内容 field and footer buttons; "大致
-位于可见区域的中央位置，四周均被遮罩覆盖的空白区域所环绕" (centered,
-surrounded by the masked area); background "模糊且变暗" (blurred +
-dimmed mask); buttons 取消 / 发送 + × close icon top-right.
+**Verdict: PASS** — section titles + cards follow the conversation
+width axis at the default (cap-active) width; no left-anchoring
+regression, no overflow.
 
-DOM probe corroboration: dialog rect center (522, 521) vs viewport
-center (522, 520.5) — centered to <0.5px; Escape closed it with zero
-command side effects (mock decision count and lifecycle unchanged).
+### 27-B — `27-B.png` (default 1044×1041 Agent Window; axis min clamp 680px)
 
-**Verdict: PASS** — followup dialog renders, centered, cancellable
-without effect.
+VLM verdict on band starting inside the content area (960×660 device
+px, the only upload the endpoint accepted for this image after 3
+timeouts on wider bands):
 
-## 28-C — `28-C.png` (「发送消息…」 message modal)
+1. **One consistent column: YES** — "标题（时间线、成员组、治理）左边缘
+   在同一条垂直线上相互对齐；卡片左边缘也在同一条垂直线上相互对齐，
+   相对于标题有统一的向右缩进".
+2. The VLM also reported the card right sides "cut off" at the image
+   right edge — that is a **crop boundary artifact** of that band (crop
+   ends at device x=1400 = CSS x≈800, while the column continues to
+   CSS x=1021 and the window edge is CSS x=1044). The wider band that
+   includes the true window edge (`27-B-band2`, 1387×660) timed out at
+   the VLM endpoint 3× (endpoint flakiness, logged in browser-run.md);
+   the missing pixel claim is settled by the DOM probe instead.
 
-VLM verdict on the dialog band (1000×820 device px): title 「给
-worker-a 发消息」; 主题（可选）textbox + 消息内容 textarea, "左右边缘和
-上下边缘都完整地位于白色对话框卡片内部，没有溢出或超出卡片边框" (both
-form controls fully inside the card); buttons 取消 / 发送消息 + × close;
-centered with semi-transparent blurred mask.
+DOM probe corroboration (same live page): axis resolved = **680px**
+(clamp min: 1044×0.64 = 668 < 680); `.body` **border-box**, **728px**
+(= 680 + 48) @ x=293, `max-width: 728px`; column right edge CSS x=1021
+< viewport 1044 → **13–23px margin to the window edge, no clipping**;
+`document.scrollWidth 1044 == clientWidth 1044`.
 
-DOM probe corroboration: dialog center (522, 521) == viewport center;
-INPUT + TEXTAREA both `box-sizing: border-box`, width 332px, right edge
-688 ≤ card right 712 (the supplemental border-box fix, visible).
+**Verdict: PASS** — at the narrow host width the column followed the
+axis down (920→680) and stayed a single centered column inside the
+container.
 
-**Verdict: PASS** — message modal renders; form controls respect the
-card's content box.
+### 27-C — `27-C.png` (640×800 emulated small viewport)
 
-## 28-D — `28-D.png` (「归档」 confirm modal)
+VLM verdict on full-width band (1120×760 device px):
 
-VLM verdict on the dialog band (1000×700 device px): title 「归档该成员？」
-+ body 「归档后，该成员将不再接收新的团队任务，直到恢复。」; buttons
-取消 / 归档 + × close icon; "在页面中居中显示，背后有一层被调暗且模糊
-处理的遮罩层" (centered, dimmed blurred mask).
+1. **All five section titles + their cards on one consistent column:
+   YES** — same left edge throughout (时间线/成员组/治理/活动与进度/团队事件).
+2. **Right margin present: YES** — column right edge stops short of the
+   window edge (no right-side scrollbar, no horizontal scrollbar).
+3. **Clipping: NONE** — no card or text cut off; the column does not
+   reach the window edge on either side (the sidebar is auto-collapsed
+   at this width, which is host UI behavior, not team CSS).
 
-DOM probe corroboration: dialog center (522, 521) == viewport center;
-observe layer model `L1 modal cover=100%` (full-page mask); closed via
-the explicit 「取消」 button → lifecycle stayed SETTLED, no archive fact
-written, no model calls.
+DOM probe corroboration (same live page): axis wanted 728px total,
+container is only **574px** → `.body` clamped via `width:100%` to
+**574px border-box** (total box ≤ container — the exact pre-fix
+overflow case: content-box `width:100%` + 48px padding would have been
+622px > 574px, pushing `document.scrollWidth` to 688); content region
+526px; section title box 526px (same column, +24 padding offset);
+`document.scrollWidth 640 == clientWidth 640` → **no horizontal
+overflow**.
 
-**Verdict: PASS** — confirm modal renders; closing without confirming
-leaves the member SETTLED.
+**Verdict: PASS** — small viewport: no horizontal overflow, column
+clamps to the container, titles/cards stay aligned.
 
-## 28-E — `28-E-pre.png` + `28-E.png` (ARCHIVED 「恢复」 direct)
+**PR #27 overall: PASS (3/3 scenarios).**
 
-VLM verdict on the before/after row pair (1300×340 device px each):
-before — row state 「已归档 暂无动作」 with buttons 「恢复」 and 「处置」
-(the 处置 label cut by the crop boundary); after — row state 「已结算
-暂无动作」 with the four-button SETTLED set, and "图 2 中没有任何对话框、
-弹出层或遮罩打开 … 符合『恢复操作直接生效、不弹出确认层』的预期" (no
-dialog/popover/overlay anywhere; matches direct-effect expectation).
-
-DOM probe corroboration (same live page): after the click
-`[role=dialog]` count = 0; durable ledger gained the fact
-`restore-member {caller: {kind:"human"}, from:"ARCHIVED", to:"SETTLED"}`
-— direct human restore, no modal in between.
-
-**Verdict: PASS** — ARCHIVED 「恢复」 is a direct action: no modal,
-row → SETTLED.
-
-**PR #28 overall: PASS (5/5 scenarios).**
+(The PR #28 scenarios were reviewed in a separate live run on branch
+`fix/member-command-dialogs`; those verdicts live in that branch's
+evidence package in the same directory.)
