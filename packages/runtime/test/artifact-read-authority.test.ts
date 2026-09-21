@@ -45,6 +45,7 @@ import { describe, expect, it } from 'vitest'
 import {
   ArtifactGrantRegistry,
   ArtifactRecordError,
+  PendingShellGrantTable,
   TeamArtifactAuthority,
   targetKeyDigest,
   versionDigest,
@@ -58,6 +59,7 @@ import type {
   ArtifactLedgerEntry,
   ArtifactLedgerPort,
   ArtifactReadGrant,
+  RecordShellArtifactArgs,
 } from '../artifact-read/index.js'
 import {
   memberIdentityKey,
@@ -680,5 +682,272 @@ describe('authority: cold-restart rebuild', () => {
     const counts = await world.authority.rebuildFromLedger()
     expect(counts).toEqual({ rebuilt: 0, skipped: 0 })
     expect(world.authority.registry.size).toBe(0)
+  })
+})
+
+// --- PR #26 P1 — the pending grant barrier (deterministic race tests) -------------
+
+const SPILL_X = '/dsh/spill/x'
+const SPILL_Y = '/dsh/spill/y'
+const MEMBER2 = 'inst-worker-2'
+
+/** One gate (latch or rejection) over the record's durable put. */
+function makeGate(): { release: () => void; reject: (error: Error) => void; gate: Promise<void> } {
+  let releaseFn: () => void = () => undefined
+  let rejectFn: (error: Error) => void = () => undefined
+  const gate = new Promise<void>((resolve, reject) => {
+    releaseFn = resolve
+    rejectFn = reject
+  })
+  return {
+    release: () => releaseFn(),
+    reject: (error: Error) => rejectFn(error),
+    gate,
+  }
+}
+
+/**
+ * A world whose ledger `appendGranted` awaits the given gates (one per
+ * call) — the record stalls at the DURABLE stage (after resolve + stat +
+ * digests), which is the in-flight window the barrier bridges.
+ */
+function makeBarrierWorld(gates: Array<Promise<void>>): World {
+  const fs = makeFsWorld()
+  const identity = makeIdentityWorld()
+  const ledger = makeLedgerWorld()
+  let call = 0
+  const ledgerPort: ArtifactLedgerPort = {
+    async appendGranted(rootSessionId: string, payload: Record<string, unknown>) {
+      if (ledger.putFault) throw new Error('ledger put fault')
+      await gates[call++]
+      ledger.appended.push({ rootSessionId, payload })
+      ledger.entries.push({
+        schemaVersion: 2,
+        sequence: ledger.entries.length + 1,
+        rootSessionId,
+        factType: 'artifact-read-granted',
+        payload,
+        createdAt: '2026-09-20T00:00:00.000Z',
+      })
+    },
+    async listGranted() {
+      return [...ledger.entries]
+    },
+  }
+  const authority = new TeamArtifactAuthority({ fs: fsPort(fs), identity: identityPort(identity), ledger: ledgerPort })
+  identity.lifecycles.set(lifecycleKey(ROOT_A, MEMBER), 'RUNNING')
+  return { fs, identity, ledger, authority, ledgerPort }
+}
+
+const shellArgs = (locator: string, instanceId: string = MEMBER): RecordShellArtifactArgs => ({
+  rootSessionId: ROOT_A,
+  instanceId,
+  source: { kind: 'shell-foreground', toolName: 'bash', callId: 'call-race', stream: 'stdout' },
+  locator,
+})
+
+const readArgs = (locator: string, instanceId: string = MEMBER) => ({
+  rootSessionId: ROOT_A,
+  instanceId,
+  locator,
+  target: { targetKey: `tk:${locator}`, displayPath: locator },
+})
+
+/** A few event-loop turns (drains all pending microtasks). */
+async function turn(n = 4): Promise<void> {
+  for (let i = 0; i < n; i++) await new Promise((resolve) => setImmediate(resolve))
+}
+
+describe('TeamArtifactAuthority — the pending grant barrier (PR #26 P1)', () => {
+  it('Race-1: same-instance immediate read WAITS on the exact pending; release → valid (the pending itself never authorizes)', async () => {
+    const gate = makeGate()
+    const world = makeBarrierWorld([gate.gate])
+    seedFile(world, SPILL_X)
+    // The record is entered through the barrier method (the observer's
+    // entry): the pending is registered SYNCHRONOUSLY, the record then
+    // stalls at the latched durable put.
+    world.authority.beginShellArtifactRecord(shellArgs(SPILL_X))
+    expect(world.authority.pendingShellGrants.size).toBe(1)
+    expect(world.authority.registry.size).toBe(0)
+    expect(world.ledger.appended).toHaveLength(0)
+
+    // The immediate read must NOT settle while the record is in flight —
+    // it awaits the EXACT pending (same composite identity, same locator).
+    let settled = false
+    const readP = world.authority.authorizeRead(readArgs(SPILL_X)).then((v) => {
+      settled = true
+      return v
+    })
+    await turn(4)
+    expect(settled).toBe(false)
+    // No durable fact yet, no registry candidate: the pending alone has
+    // minted NOTHING.
+    expect(world.ledger.appended).toHaveLength(0)
+    expect(world.authority.registry.size).toBe(0)
+
+    // Release → the issuance completes (durable put → install) → the
+    // read RE-RUNS the durable verification → valid.
+    gate.release()
+    const verdict = await readP
+    expect(verdict).toEqual({ valid: true })
+    expect(settled).toBe(true)
+    expect(world.authority.pendingShellGrants.size).toBe(0)
+    expect(world.ledger.appended).toHaveLength(1)
+    expect(world.authority.registry.size).toBe(1)
+  })
+
+  it('Race-2: issuance failure — the read settles to the ordinary pipeline (no-candidate); the registry stays empty; the pending drains', async () => {
+    const gate = makeGate()
+    const world = makeBarrierWorld([gate.gate])
+    seedFile(world, SPILL_X)
+    let faults: Array<{ fault: unknown }> = []
+    world.authority.beginShellArtifactRecord(shellArgs(SPILL_X), (fault) => {
+      faults.push({ fault })
+    })
+    expect(world.authority.pendingShellGrants.size).toBe(1)
+
+    // The read waits on the pending (in flight, not yet failed).
+    let settled = false
+    const readP = world.authority.authorizeRead(readArgs(SPILL_X)).then((v) => {
+      settled = true
+      return v
+    })
+    await turn(4)
+    expect(settled).toBe(false)
+
+    // The durable put REJECTS → the pending settles failure.
+    gate.reject(new Error('ledger down'))
+    const verdict = await readP
+    // The failed issuance mints nothing: the read settles to the
+    // ordinary pipeline (no-candidate — the read would be governed by
+    // the unchanged strict-read policy, never by the pending).
+    expect(verdict).toEqual({ valid: false, reason: 'no-candidate' })
+    expect(world.ledger.appended).toHaveLength(0)
+    expect(world.authority.registry.size).toBe(0)
+    expect(world.authority.pendingShellGrants.size).toBe(0)
+    // The guarded fault hook reported the record failure (R4).
+    expect(faults).toHaveLength(1)
+    expect(faults[0]?.fault).toBeInstanceOf(ArtifactRecordError)
+  })
+
+  it('Race-3: cross-instance — B must NOT wait on A\'s pending (no grant)', async () => {
+    const gate = makeGate()
+    const world = makeBarrierWorld([gate.gate])
+    // Instance B (same root, different instance) is a known RUNNING
+    // identity — its read settles independently of A's in-flight record.
+    world.identity.lifecycles.set(lifecycleKey(ROOT_A, MEMBER2), 'RUNNING')
+    seedFile(world, SPILL_X)
+    world.authority.beginShellArtifactRecord(shellArgs(SPILL_X))
+    expect(world.authority.pendingShellGrants.size).toBe(1)
+
+    // B reads A's spill locator: NO wait on A's pending (the table key
+    // carries the composite identity — a foreign identity never
+    // matches), NO grant.
+    const verdict = await world.authority.authorizeRead(readArgs(SPILL_X, MEMBER2))
+    expect(verdict).toEqual({ valid: false, reason: 'no-candidate' })
+    // A's record is still in flight (the latch is untouched).
+    expect(world.authority.pendingShellGrants.size).toBe(1)
+    expect(world.ledger.appended).toHaveLength(0)
+    gate.release()
+    await turn(4)
+    expect(world.ledger.appended).toHaveLength(1)
+    // Even AFTER A's grant is durable, B still has none (D3 — the
+    // producer instance is the only principal).
+    const verdictAfter = await world.authority.authorizeRead(readArgs(SPILL_X, MEMBER2))
+    expect(verdictAfter).toEqual({ valid: false, reason: 'no-candidate' })
+  })
+
+  it('Race-4: wrong locator — A reads Y while A\'s pending is for X (no wait, no grant)', async () => {
+    const gate = makeGate()
+    const world = makeBarrierWorld([gate.gate])
+    seedFile(world, SPILL_X)
+    seedFile(world, SPILL_Y)
+    world.authority.beginShellArtifactRecord(shellArgs(SPILL_X))
+    expect(world.authority.pendingShellGrants.size).toBe(1)
+
+    // A reads a DIFFERENT locator: the exact-pending lookup misses (the
+    // key carries the locator) → NO wait, NO grant.
+    const verdict = await world.authority.authorizeRead(readArgs(SPILL_Y))
+    expect(verdict).toEqual({ valid: false, reason: 'no-candidate' })
+    // A's record for X is still in flight.
+    expect(world.authority.pendingShellGrants.size).toBe(1)
+    gate.release()
+    await turn(4)
+    expect(world.ledger.appended).toHaveLength(1)
+    // After X's grant is durable, Y still has none (X's grant is for X).
+    const verdictY = await world.authority.authorizeRead(readArgs(SPILL_Y))
+    expect(verdictY).toEqual({ valid: false, reason: 'no-candidate' })
+  })
+
+  it('a read with an EXISTING durable candidate never waits on a pending (the guide\'s first branch: verify normally)', async () => {
+    const gate = makeGate()
+    // Gate 0 = immediate (the first record settles → the durable grant);
+    // gate 1 = the latch (the re-issuance stays in flight).
+    const world = makeBarrierWorld([Promise.resolve(), gate.gate])
+    seedFile(world, SPILL_X)
+    // A DURABLE grant for X is already installed (a prior, settled
+    // issuance).
+    await world.authority.recordShellArtifact(shellArgs(SPILL_X))
+    expect(world.authority.registry.size).toBe(1)
+    // A SECOND record for the same locator is in flight (a re-spill).
+    world.authority.beginShellArtifactRecord(shellArgs(SPILL_X))
+    expect(world.authority.pendingShellGrants.size).toBe(1)
+    // The read finds the durable candidate first → verifies normally →
+    // valid, WITHOUT waiting on the in-flight re-issuance.
+    const verdict = await world.authority.authorizeRead(readArgs(SPILL_X))
+    expect(verdict).toEqual({ valid: true })
+    expect(world.authority.pendingShellGrants.size).toBe(1)
+    gate.release()
+    await turn(4)
+    expect(world.authority.pendingShellGrants.size).toBe(0)
+  })
+
+  it('dispose() resets the pending table with the registry', async () => {
+    const gate = makeGate()
+    const world = makeBarrierWorld([gate.gate])
+    seedFile(world, SPILL_X)
+    world.authority.beginShellArtifactRecord(shellArgs(SPILL_X))
+    expect(world.authority.pendingShellGrants.size).toBe(1)
+    world.authority.dispose()
+    expect(world.authority.pendingShellGrants.size).toBe(0)
+    expect(world.authority.registry.size).toBe(0)
+    // The in-flight record settles after the close: its finally removal
+    // is a no-op on the cleared table, the durable fact still lands (the
+    // ledger is the source of truth), and its late install lands in the
+    // CLOSED domain's projection — dead state no consumer reads (the
+    // next setup builds a fresh authority and rebuilds from the ledger).
+    gate.release()
+    await turn(4)
+    expect(world.authority.pendingShellGrants.size).toBe(0)
+    expect(world.ledger.appended).toHaveLength(1)
+  })
+})
+
+describe('PendingShellGrantTable — the table semantics (PR #26 P1)', () => {
+  it('keys by (identity, locator): foreign identity / foreign locator never match', () => {
+    const table = new PendingShellGrantTable()
+    const p = Promise.resolve()
+    table.register('id-A', '/x', p)
+    expect(table.size).toBe(1)
+    expect(table.lookup('id-A', '/x')?.promise).toBe(p)
+    expect(table.lookup('id-B', '/x')).toBeUndefined()
+    expect(table.lookup('id-A', '/y')).toBeUndefined()
+  })
+
+  it('re-registration replaces; removeIfSame only removes the entry holding the same promise', async () => {
+    const table = new PendingShellGrantTable()
+    const p1 = Promise.resolve()
+    const p2 = Promise.resolve()
+    table.register('id-A', '/x', p1)
+    table.register('id-A', '/x', p2)
+    expect(table.size).toBe(1)
+    expect(table.lookup('id-A', '/x')?.promise).toBe(p2)
+    // The OLDER promise\'s finally removal must NOT drop the newer entry.
+    table.removeIfSame('id-A', '/x', p1)
+    expect(table.size).toBe(1)
+    expect(table.lookup('id-A', '/x')?.promise).toBe(p2)
+    // The newer one removes itself.
+    table.removeIfSame('id-A', '/x', p2)
+    expect(table.size).toBe(0)
   })
 })

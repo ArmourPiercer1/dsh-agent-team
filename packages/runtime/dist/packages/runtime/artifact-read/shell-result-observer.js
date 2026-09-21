@@ -60,16 +60,23 @@
  *   second, upstream-owned layer this module deliberately does not rely
  *   on: its containment is the pipeline's, not the grant vertical's.
  *
- * R5 — ASYNC, OFF THE CRITICAL PATH: the listener is `async` and the
+ * R5 — SYNC ENTRY, ASYNC RECORD, OFF THE CRITICAL PATH (PR #26 P1 —
+ *   the PENDING-GRANT BARRIER): the listener is synchronous and the
  *   emitter does not await observation listeners (the pinned
  *   `notifyResult` does `void Promise.resolve(returned).catch(…)`), so
  *   the durable record (a couple of fs identity reads + one ledger
- *   append) never delays the tool result commit. Ordering inside one
- *   execution (stdout before stderr) is preserved by the sequential
- *   await within the listener; a read of the artifact that arrives
- *   before the record settles simply finds no grant yet and proceeds
- *   through the unchanged pipeline (the model's next tool call is a
- *   round trip later — the record settles in the meantime).
+ *   append) never delays the tool result commit. The observer enters
+ *   the record through the authority's `beginShellArtifactRecord`
+ *   barrier method, which registers the in-flight issuance
+ *   SYNCHRONOUSLY (before the record is allowed to settle) and then
+ *   runs it: the model's IMMEDIATE `read(spillPath)` — landing in the
+ *   permission pipeline while the record is still in flight — finds
+ *   the exact pending and AWAITs it, then re-runs the durable-grant
+ *   verification (fix guide §1.2: the pending itself never authorizes).
+ *   The observer does NOT manage the pending table — the authority
+ *   owns it (register → record → durable ledger → registry install →
+ *   finally remove). Ordering inside one execution (stdout before
+ *   stderr) is preserved by the sequential synchronous entry calls.
  *
  * @module @dsh-agent-team/runtime/artifact-read/shell-result-observer
  */
@@ -125,7 +132,7 @@ export function installShellResultObserver(ctx, params) {
             // available as the second layer for anything that escapes).
         }
     };
-    const listener = async (exec, result) => {
+    const listener = (exec, result) => {
         // Shape guards (malformed payloads are inert, never faults): the
         // pinned upstream invariants make exec/result plain frozen objects,
         // but the observer never assumes — a non-object is simply not
@@ -161,15 +168,20 @@ export function installShellResultObserver(ctx, params) {
                 source: { kind: 'shell-foreground', toolName, callId, stream },
                 locator,
             };
-            try {
-                await params.authority.recordShellArtifact(args);
-            }
-            catch (fault) {
-                // R4 — a failed record = no grant (fail-closed: the strict-read
-                // read stays denied as before; the committed tool result is
-                // untouched). Diagnostics through the guarded hook only.
-                reportFault(fault, { toolName, callId, stream });
-            }
+            // R4/R5 (PR #26 P1) — the PENDING-GRANT BARRIER entry: the
+            // authority registers the in-flight issuance synchronously (BEFORE
+            // the record is allowed to settle) and runs it off the critical
+            // path. A failed record = no grant (fail-closed: the strict-read
+            // read stays denied as before; the committed tool result is
+            // untouched), reported through the guarded hook only. The
+            // observer does NOT manage the pending table (fix guide §1.2).
+            params.authority.beginShellArtifactRecord(args, (fault, context) => {
+                reportFault(fault, {
+                    toolName: context.toolName,
+                    callId: context.callId,
+                    stream: context.stream === 'stdout' || context.stream === 'stderr' ? context.stream : undefined,
+                });
+            });
         }
     };
     return ctx.on('tools/result', listener);

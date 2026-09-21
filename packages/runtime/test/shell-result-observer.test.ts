@@ -196,6 +196,23 @@ async function dispatch(world: World, exec: ShellExecMirror, result: ShellResult
   await listener(exec, result)
 }
 
+/**
+ * PR #26 P1 — drain the in-flight records: the barrier design means the
+ * listener returns BEFORE the record settles (the emitter never awaits
+ * the observer), so a test that started a record must await the pending
+ * table draining before asserting on durable state (the same wait the
+ * permission pipeline performs through the barrier).
+ */
+async function settleRecords(world: World): Promise<void> {
+  for (let i = 0; i < 200 && world.authority.pendingShellGrants.size > 0; i++) {
+    await new Promise((resolve) => setImmediate(resolve))
+  }
+  // One more turn: the finally-removal + fault reporting land after the
+  // record settles (both are chained on the record's promise).
+  await new Promise((resolve) => setImmediate(resolve))
+  expect(world.authority.pendingShellGrants.size).toBe(0)
+}
+
 // --- the fixture --------------------------------------------------------------------
 
 interface World {
@@ -262,6 +279,9 @@ describe('installShellResultObserver (Phase D — tools/result adapter)', () => 
     )
 
     await dispatch(world, bashExec, result)
+    // PR #26 P1 — the record runs off the critical path: drain the
+    // pending table before asserting on durable state.
+    await settleRecords(world)
 
     // Two durable facts (stdout first — the OBSERVED_STREAMS order),
     // each under the agent's durable composite identity.
@@ -380,6 +400,11 @@ describe('installShellResultObserver (Phase D — tools/result adapter)', () => 
     // The listener must SETTLE (never reject into the pipeline).
     await expect(dispatch(world, bashExec, result)).resolves.toBeUndefined()
 
+    // PR #26 P1 — the fault reporting now rides the barrier (the record
+    // rejects → the pending settles failure → the guarded hook fires):
+    // drain before asserting.
+    await settleRecords(world)
+
     expect(world.ledger.appended).toHaveLength(0)
     expect(world.faults).toHaveLength(2)
     expect(world.faults.map((f) => f.context.stream)).toEqual(['stdout', 'stderr'])
@@ -428,6 +453,7 @@ describe('installShellResultObserver (Phase D — tools/result adapter)', () => 
       },
     } as unknown as ShellResultMirror
     await dispatch(world, bashExec, result)
+    await settleRecords(world)
     expect(world.ledger.appended).toHaveLength(1)
     expect(world.ledger.appended[0]?.payload['locator']).toBe(SPILL_OUT)
 
@@ -438,6 +464,7 @@ describe('installShellResultObserver (Phase D — tools/result adapter)', () => 
     await dispatch(custom, bashExec, okResult(foregroundValue({ stderr: { text: 'x', truncated: true, spillPath: SPILL_ERR } })))
     expect(custom.ledger.appended).toHaveLength(0)
     await dispatch(custom, { name: 'myshell', callId: 'call-9' }, okResult(foregroundValue({ stderr: { text: 'x', truncated: true, spillPath: SPILL_ERR } })))
+    await settleRecords(custom)
     expect(custom.ledger.appended).toHaveLength(1)
   })
 
@@ -445,6 +472,7 @@ describe('installShellResultObserver (Phase D — tools/result adapter)', () => 
     const world = makeWorld()
     seedFile(world.fs, SPILL_OUT, 'v1')
     await dispatch(world, bashExec, okResult(foregroundValue({ stdout: { text: 'x', truncated: true, spillPath: SPILL_OUT } })))
+    await settleRecords(world)
     // A same-path retarget: the file's targetKey changes (the symlink /
     // replacement class) → the fresh targetKey digest mismatches → the
     // grant is inert (no-candidate for the NEW identity).
@@ -459,5 +487,137 @@ describe('installShellResultObserver (Phase D — tools/result adapter)', () => 
     // The ORIGINAL digests are what was recorded (the issue-time identity).
     expect(world.ledger.appended[0]?.payload['targetKeyDigest']).toBe(targetKeyDigest('tk:/dsh/spill/out-1'))
     expect(world.ledger.appended[0]?.payload['versionDigest']).toBe(versionDigest('v1'))
+  })
+
+  // --- PR #26 P1 — the pending grant barrier (through the observer entry) ---
+
+  /** A ledger port whose Nth `appendGranted` awaits the Nth gate. */
+  function makeGatedLedgerPort(ledger: LedgerWorld, gates: Array<Promise<void>>) {
+    let call = 0
+    return {
+      async appendGranted(rootSessionId: string, payload: Record<string, unknown>) {
+        await gates[call++]
+        ledger.appended.push({ rootSessionId, payload })
+        ledger.entries.push({
+          schemaVersion: 2,
+          sequence: ledger.entries.length + 1,
+          rootSessionId,
+          factType: 'artifact-read-granted',
+          payload,
+          createdAt: '2026-09-20T00:00:00.000Z',
+        })
+      },
+      async listGranted() {
+        return [...ledger.entries]
+      },
+    } satisfies ArtifactLedgerPort
+  }
+
+  it('B1 (PR #26 P1): the observer registers the pending SYNCHRONOUSLY; an immediate read AWAITs it; release → valid (the pending never authorizes by itself)', async () => {
+    // A world with a GATED ledger put (the record stalls at the durable
+    // stage — exactly the in-flight window the barrier bridges).
+    const fs = makeFsWorld()
+    const identity = makeIdentityWorld()
+    identity.lifecycles.set(lifecycleKey(ROOT, MEMBER), 'RUNNING')
+    const ledger = makeLedgerWorld()
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => { release = resolve })
+    const authority = new TeamArtifactAuthority({
+      fs: fsPort(fs),
+      identity: identityPort(identity),
+      ledger: makeGatedLedgerPort(ledger, [gate]),
+    })
+    const ctx = makeAgentCtxWorld()
+    const faults: Array<{ fault: unknown; context: ShellObserverFaultContext }> = []
+    installShellResultObserver(asAgentCtx(ctx), {
+      authority,
+      rootSessionId: ROOT,
+      instanceId: MEMBER,
+      onFault: (fault, context) => { faults.push({ fault, context }) },
+    })
+    seedFile(fs, SPILL_OUT)
+
+    // The observation: the (synchronous) listener returns BEFORE the
+    // record settles — the emitter never awaits it.
+    ctx.listener!(bashExec, okResult(foregroundValue({ stdout: { text: 'x', truncated: true, spillPath: SPILL_OUT } })))
+
+    // The pending is registered (synchronously) while the record is in
+    // flight; NO durable grant exists yet.
+    expect(authority.pendingShellGrants.size).toBe(1)
+    expect(authority.registry.size).toBe(0)
+    expect(ledger.appended).toHaveLength(0)
+
+    // The immediate read must NOT settle while the record is in flight —
+    // it awaits the EXACT pending (same identity, same locator).
+    let settled = false
+    const readP = authority.authorizeRead({
+      rootSessionId: ROOT,
+      instanceId: MEMBER,
+      locator: SPILL_OUT,
+      target: { targetKey: `tk:${SPILL_OUT}`, displayPath: SPILL_OUT },
+    }).then((v) => { settled = true; return v })
+    await new Promise((resolve) => setImmediate(resolve))
+    expect(settled).toBe(false)
+
+    // Release → the issuance completes → the read RE-RUNS the durable
+    // verification → valid (the pending itself never authorized it).
+    release()
+    const verdict = await readP
+    expect(verdict).toEqual({ valid: true })
+    expect(authority.pendingShellGrants.size).toBe(0)
+    expect(ledger.appended).toHaveLength(1)
+    expect(faults).toHaveLength(0)
+  })
+
+  it('B2 (PR #26 P1): a re-issuance for the same (identity, locator) replaces the pending entry; the older record cannot remove the newer one', async () => {
+    const fs = makeFsWorld()
+    const identity = makeIdentityWorld()
+    identity.lifecycles.set(lifecycleKey(ROOT, MEMBER), 'RUNNING')
+    const ledger = makeLedgerWorld()
+    let release1!: () => void
+    const gate1 = new Promise<void>((resolve) => { release1 = resolve })
+    let release2!: () => void
+    const gate2 = new Promise<void>((resolve) => { release2 = resolve })
+    const authority = new TeamArtifactAuthority({
+      fs: fsPort(fs),
+      identity: identityPort(identity),
+      ledger: makeGatedLedgerPort(ledger, [gate1, gate2]),
+    })
+    seedFile(fs, SPILL_OUT)
+    const args = {
+      rootSessionId: ROOT,
+      instanceId: MEMBER,
+      source: { kind: 'shell-foreground', toolName: 'bash', callId: 'call-1', stream: 'stdout' },
+      locator: SPILL_OUT,
+    } as const
+
+    // Issuance #1 (latched at its put).
+    authority.beginShellArtifactRecord(args)
+    const pending1 = authority.pendingShellGrants.lookup(mkKey(ROOT, MEMBER), SPILL_OUT)
+    expect(pending1).toBeDefined()
+    // Issuance #2 (a re-spill of the same locator) REPLACES the entry.
+    authority.beginShellArtifactRecord(args)
+    const pending2 = authority.pendingShellGrants.lookup(mkKey(ROOT, MEMBER), SPILL_OUT)
+    expect(pending2).toBeDefined()
+    expect(pending2!.promise).not.toBe(pending1!.promise)
+
+    // The OLDER record settles first: its `finally` must NOT remove the
+    // newer entry (removeIfSame compares the promise identity).
+    release1()
+    await new Promise((resolve) => setImmediate(resolve))
+    await new Promise((resolve) => setImmediate(resolve))
+    expect(authority.pendingShellGrants.size).toBe(1)
+    expect(authority.pendingShellGrants.lookup(mkKey(ROOT, MEMBER), SPILL_OUT)?.promise).toBe(pending2!.promise)
+
+    // The newer record settles → the table drains.
+    release2()
+    for (let i = 0; i < 200 && authority.pendingShellGrants.size > 0; i++) {
+      await new Promise((resolve) => setImmediate(resolve))
+    }
+    await new Promise((resolve) => setImmediate(resolve))
+    expect(authority.pendingShellGrants.size).toBe(0)
+    // Both durable facts landed (the re-spill supersedes at the registry,
+    // but the ledger is append-only — the frozen vocabulary has no revoke).
+    expect(ledger.appended).toHaveLength(2)
   })
 })

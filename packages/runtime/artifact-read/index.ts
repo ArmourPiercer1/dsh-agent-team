@@ -36,6 +36,12 @@ export {
 export { ArtifactGrantRegistry } from './registry.js'
 
 export {
+  PendingShellGrantTable,
+  pendingGrantKey,
+} from './pending.js'
+export type { PendingShellGrant } from './pending.js'
+
+export {
   SHELL_OBSERVER_DEFAULT_TOOLS,
   installShellResultObserver,
 } from './shell-result-observer.js'
@@ -57,6 +63,7 @@ export type {
   AuthorizeReadArgs,
   RecordShellArtifactArgs,
   RecordSpillStoreArtifactArgs,
+  ShellRecordFaultContext,
   TeamArtifactAuthorityPorts,
 } from './authority.js'
 

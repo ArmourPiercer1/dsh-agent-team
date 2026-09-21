@@ -29,6 +29,7 @@
  *
  * @module @dsh-agent-team/runtime/artifact-read/authority
  */
+import { PendingShellGrantTable } from './pending.js';
 import { ArtifactGrantRegistry } from './registry.js';
 import type { ArtifactFsTarget, ArtifactIdentityPort, ArtifactLedgerPort, ArtifactReadGrant, ArtifactSource, GrantVerdict, SpillStoreSource } from './types.js';
 /** The ports the authority needs (implementation guide §2.5). */
@@ -87,12 +88,26 @@ export interface AuthorizeReadArgs {
     readonly target: ArtifactFsTarget;
 }
 /**
+ * The fault context of a failed shell-grant record (the observer's
+ * diagnostics hook; the same fields the pre-fix observer reported).
+ */
+export interface ShellRecordFaultContext {
+    readonly toolName: string;
+    readonly callId: string;
+    readonly stream: string;
+}
+/**
  * The artifact-read authority of one production root.
  */
 export declare class TeamArtifactAuthority {
     private readonly ports;
     /** The runtime candidate projection (rebuilt from the ledger on cold start). */
     readonly registry: ArtifactGrantRegistry;
+    /** The process-local pending shell-grant issuance table (PR #26 P1 —
+     *  the pending grant barrier; module docs in ./pending.ts). A pending
+     *  entry NEVER authorizes: it only synchronizes an immediate read with
+     *  the in-flight record that mints the durable grant. */
+    readonly pendingShellGrants: PendingShellGrantTable;
     constructor(ports: TeamArtifactAuthorityPorts);
     /**
      * Record a spill-store artifact (Phase C wrapper path).
@@ -119,15 +134,57 @@ export declare class TeamArtifactAuthority {
      */
     recordShellArtifact(args: RecordShellArtifactArgs): Promise<ArtifactRecordOutcome>;
     /**
-     * The read-time grant check (architecture §12). PURE with respect to
-     * the permission pipeline: it only ever ADDS authorization for the
-     * `read` tool; a `valid: false` verdict means "no grant applies —
-     * proceed through the unchanged pipeline" (it never denies by
-     * itself).
+     * The PENDING-GRANT BARRIER entry (PR #26 P1, fix guide §1.2): the
+     * `tools/result` observer calls THIS (synchronous, void) instead of
+     * `recordShellArtifact`.
+     *
+     * Why: the DSH `tools/result` emitter does not await its observation
+     * listeners (the pinned `notifyResult` runs
+     * `void Promise.resolve(returned).catch(…)`), so the durable record is
+     * in flight when the committed result reaches the model — and the
+     * model's IMMEDIATE `read(spillPath)` must find the grant, not a gap.
+     *
+     * Ordering (the frozen barrier contract):
+     * 1. the pending entry is registered SYNCHRONOUSLY, in the same call
+     *    section as the record start (no await between them — no read can
+     *    observe "record in flight, no pending");
+     * 2. the record runs (resolve → stat → digests → durable put →
+     *    registry install) exactly as before;
+     * 3. the pending entry is removed in `finally` — success OR failure;
+     * 4. a FAILED record reports through the guarded `onFault` hook (the
+     *    observer's diagnostics) and settles to NO grant — the read stays
+     *    denied as before (fail-closed, the committed tool result is
+     *    untouched).
+     *
+     * The pending entry NEVER authorizes by itself:
+     * {@link authorizeRead} awaits it ONLY to re-run the durable-grant
+     * verification against whatever the record produced (fix guide §1.2 —
+     * "pending 本身绝不能直接授权").
+     *
+     * @param args - the record input (the same as `recordShellArtifact`).
+     * @param onFault - OPTIONAL guarded diagnostics hook for a failed
+     *   record (the observer passes its `onFault` wrapper — a throwing
+     *   hook never affects the observation).
+     */
+    beginShellArtifactRecord(args: RecordShellArtifactArgs, onFault?: (fault: unknown, context: ShellRecordFaultContext) => void): void;
+    /**
+     * The read-time grant check (architecture §12 + PR #26 P1 barrier).
+     * PURE with respect to the permission pipeline: it only ever ADDS
+     * authorization for the `read` tool; a `valid: false` verdict means
+     * "no grant applies — proceed through the unchanged pipeline" (it
+     * never denies by itself).
      *
      * Check order: candidate lookup (identity + fresh target digest) →
      * exact locator match → lifecycle eligibility → fresh stat (missing /
      * non-regular → inactive) → fresh version digest.
+     *
+     * The PENDING BARRIER (fix guide §1.2): when the durable check finds
+     * NO candidate for this (identity, target) pair and EXACTLY the
+     * pending issuance (same composite identity, SAME locator) is in
+     * flight, the check AWAITs that pending and RE-RUNS the durable
+     * verification. A failed (or foreign / wrong-locator) pending is
+     * simply not awaited / settles to nothing — the ordinary pipeline
+     * decides. A pending NEVER authorizes by itself.
      */
     authorizeRead(args: AuthorizeReadArgs): Promise<GrantVerdict>;
     /**
@@ -143,8 +200,23 @@ export declare class TeamArtifactAuthority {
         rebuilt: number;
         skipped: number;
     }>;
-    /** Drop every runtime candidate (domain close). Durable facts remain. */
+    /** Drop every runtime candidate (domain close). Durable facts remain.
+     *  The pending table is the runtime projection's in-flight view too —
+     *  it resets with the domain. A record that SETTLES after the close
+     *  still lands its durable fact (the ledger is the source of truth)
+     *  and may install into the closed domain's registry — dead state no
+     *  consumer reads (the next setup builds a fresh authority and
+     *  rebuilds from the ledger); the barrier's `finally` removal is a
+     *  no-op on the cleared table. */
     dispose(): void;
+    /**
+     * The durable-grant verification (architecture §12) — the check-order
+     * core that {@link authorizeRead} runs (and, after a pending barrier
+     * wait, re-runs): candidate lookup (identity + fresh target digest) →
+     * exact locator match → lifecycle eligibility → fresh stat (missing /
+     * non-regular → inactive) → fresh version digest.
+     */
+    private verifyGrant;
     /**
      * Shared record core: fresh resolve + stat → digests → durable put →
      * runtime install. Throws {@link ArtifactRecordError} on any failure

@@ -18,9 +18,11 @@ export { ARTIFACT_READ_GRANTED_FACT_TYPE, ARTIFACT_READ_PAYLOAD_VERSION, buildAr
 export type { ArtifactReadGrantedBuildInput } from './fact.js';
 export { TARGET_KEY_DIGEST_DOMAIN, VERSION_DIGEST_DOMAIN, isDigest, targetKeyDigest, versionDigest, } from './digest.js';
 export { ArtifactGrantRegistry } from './registry.js';
+export { PendingShellGrantTable, pendingGrantKey, } from './pending.js';
+export type { PendingShellGrant } from './pending.js';
 export { SHELL_OBSERVER_DEFAULT_TOOLS, installShellResultObserver, } from './shell-result-observer.js';
 export type { AgentShellResultCtx, ForegroundShellValueMirror, ForegroundStreamMirror, InstallShellResultObserverParams, ShellExecMirror, ShellObserverFaultContext, ShellResultMirror, } from './shell-result-observer.js';
 export { ArtifactRecordError, TeamArtifactAuthority, } from './authority.js';
-export type { AuthorizeReadArgs, RecordShellArtifactArgs, RecordSpillStoreArtifactArgs, TeamArtifactAuthorityPorts, } from './authority.js';
+export type { AuthorizeReadArgs, RecordShellArtifactArgs, RecordSpillStoreArtifactArgs, ShellRecordFaultContext, TeamArtifactAuthorityPorts, } from './authority.js';
 export type { ArtifactFsInfo, ArtifactFsPort, ArtifactFsTarget, ArtifactIdentityPort, ArtifactInstanceLifecycle, ArtifactLedgerEntry, ArtifactLedgerPort, ArtifactReadGrant, ArtifactSource, GrantInvalidateReason, GrantVerdict, SpillStoreSource, } from './types.js';
 //# sourceMappingURL=index.d.ts.map

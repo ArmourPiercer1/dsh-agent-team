@@ -31,6 +31,7 @@
  */
 import { targetKeyDigest, versionDigest } from './digest.js';
 import { buildArtifactReadGrantedPayload, parseArtifactReadGranted } from './fact.js';
+import { PendingShellGrantTable } from './pending.js';
 import { ArtifactGrantRegistry } from './registry.js';
 import { memberIdentityKey, } from '../../contracts/src/index.js';
 /** The stable error of a record-path failure (the wrapper rejects saveText on it). */
@@ -74,6 +75,11 @@ export class TeamArtifactAuthority {
     ports;
     /** The runtime candidate projection (rebuilt from the ledger on cold start). */
     registry = new ArtifactGrantRegistry();
+    /** The process-local pending shell-grant issuance table (PR #26 P1 —
+     *  the pending grant barrier; module docs in ./pending.ts). A pending
+     *  entry NEVER authorizes: it only synchronizes an immediate read with
+     *  the in-flight record that mints the durable grant. */
+    pendingShellGrants = new PendingShellGrantTable();
     constructor(ports) {
         this.ports = ports;
     }
@@ -117,37 +123,111 @@ export class TeamArtifactAuthority {
         return this.recordArtifact(args.rootSessionId, args.instanceId, args.locator, args.source);
     }
     /**
-     * The read-time grant check (architecture §12). PURE with respect to
-     * the permission pipeline: it only ever ADDS authorization for the
-     * `read` tool; a `valid: false` verdict means "no grant applies —
-     * proceed through the unchanged pipeline" (it never denies by
-     * itself).
+     * The PENDING-GRANT BARRIER entry (PR #26 P1, fix guide §1.2): the
+     * `tools/result` observer calls THIS (synchronous, void) instead of
+     * `recordShellArtifact`.
+     *
+     * Why: the DSH `tools/result` emitter does not await its observation
+     * listeners (the pinned `notifyResult` runs
+     * `void Promise.resolve(returned).catch(…)`), so the durable record is
+     * in flight when the committed result reaches the model — and the
+     * model's IMMEDIATE `read(spillPath)` must find the grant, not a gap.
+     *
+     * Ordering (the frozen barrier contract):
+     * 1. the pending entry is registered SYNCHRONOUSLY, in the same call
+     *    section as the record start (no await between them — no read can
+     *    observe "record in flight, no pending");
+     * 2. the record runs (resolve → stat → digests → durable put →
+     *    registry install) exactly as before;
+     * 3. the pending entry is removed in `finally` — success OR failure;
+     * 4. a FAILED record reports through the guarded `onFault` hook (the
+     *    observer's diagnostics) and settles to NO grant — the read stays
+     *    denied as before (fail-closed, the committed tool result is
+     *    untouched).
+     *
+     * The pending entry NEVER authorizes by itself:
+     * {@link authorizeRead} awaits it ONLY to re-run the durable-grant
+     * verification against whatever the record produced (fix guide §1.2 —
+     * "pending 本身绝不能直接授权").
+     *
+     * @param args - the record input (the same as `recordShellArtifact`).
+     * @param onFault - OPTIONAL guarded diagnostics hook for a failed
+     *   record (the observer passes its `onFault` wrapper — a throwing
+     *   hook never affects the observation).
+     */
+    beginShellArtifactRecord(args, onFault) {
+        const identityKey = toIdentityKey(args.rootSessionId, args.instanceId);
+        const promise = this.recordShellArtifact(args);
+        // 1. — register BEFORE the record is allowed to settle: this call is
+        // synchronous end-to-end (the record's body runs only up to its first
+        // await before the registration), so every read that starts in a
+        // later turn sees the pending entry while the record is in flight.
+        this.pendingShellGrants.register(identityKey, args.locator, promise);
+        // Diagnostics context for a FAILED record (R4): the shell source
+        // variants are distinguished (foreground carries the callId,
+        // background the jobId); the diagnostics field is the callId slot
+        // either way (observability only — never a decision input).
+        const source = args.source;
+        const faultContext = source.kind === 'shell-foreground'
+            ? { toolName: source.toolName, callId: source.callId, stream: source.stream }
+            : source.kind === 'shell-background'
+                ? { toolName: source.toolName, callId: source.jobId, stream: source.stream }
+                : { toolName: 'unknown', callId: 'unknown', stream: 'unknown' };
+        // 3./4. — removal in finally (success OR failure); a rejection
+        // reports through the guarded hook and is otherwise swallowed here
+        // (the emitter's own containment is the pipeline's, not ours — a
+        // failed record = no grant, never a crash).
+        const settled = promise.finally(() => {
+            this.pendingShellGrants.removeIfSame(identityKey, args.locator, promise);
+        });
+        void settled.catch((fault) => {
+            try {
+                onFault?.(fault, faultContext);
+            }
+            catch {
+                // A throwing hook never affects the observation (R4).
+            }
+        });
+    }
+    /**
+     * The read-time grant check (architecture §12 + PR #26 P1 barrier).
+     * PURE with respect to the permission pipeline: it only ever ADDS
+     * authorization for the `read` tool; a `valid: false` verdict means
+     * "no grant applies — proceed through the unchanged pipeline" (it
+     * never denies by itself).
      *
      * Check order: candidate lookup (identity + fresh target digest) →
      * exact locator match → lifecycle eligibility → fresh stat (missing /
      * non-regular → inactive) → fresh version digest.
+     *
+     * The PENDING BARRIER (fix guide §1.2): when the durable check finds
+     * NO candidate for this (identity, target) pair and EXACTLY the
+     * pending issuance (same composite identity, SAME locator) is in
+     * flight, the check AWAITs that pending and RE-RUNS the durable
+     * verification. A failed (or foreign / wrong-locator) pending is
+     * simply not awaited / settles to nothing — the ordinary pipeline
+     * decides. A pending NEVER authorizes by itself.
      */
     async authorizeRead(args) {
         const identityKey = toIdentityKey(args.rootSessionId, args.instanceId);
-        const freshTargetKeyDigest = targetKeyDigest(args.target.targetKey);
-        const candidates = this.registry.findCandidates(identityKey, freshTargetKeyDigest);
-        if (candidates.length === 0)
-            return { valid: false, reason: 'no-candidate' };
-        const grant = candidates.find((candidate) => candidate.locator === args.locator);
-        if (grant === undefined)
-            return { valid: false, reason: 'locator-mismatch' };
-        if (!lifecycleEligible(this.ports.identity.lifecycleOf(args.rootSessionId, args.instanceId))) {
-            return { valid: false, reason: 'instance-ineligible' };
+        const verdict = await this.verifyGrant(args, identityKey);
+        if (verdict.valid === false && verdict.reason === 'no-candidate') {
+            const pending = this.pendingShellGrants.lookup(identityKey, args.locator);
+            if (pending !== undefined) {
+                try {
+                    await pending.promise;
+                }
+                catch {
+                    // Issuance failed → no grant was minted; the ordinary pipeline
+                    // (no-candidate) applies below on the re-run.
+                }
+                // Re-run the FULL durable verification against whatever the
+                // record produced (a valid grant authorizes ONLY through the
+                // ordinary candidate checks — never through the pending entry).
+                return this.verifyGrant(args, identityKey);
+            }
         }
-        const info = await this.freshStat(args.target);
-        if (info === undefined)
-            return { valid: false, reason: 'artifact-missing' };
-        if (info.type !== 'file')
-            return { valid: false, reason: 'not-regular-file' };
-        if (versionDigest(info.version) !== grant.versionDigest) {
-            return { valid: false, reason: 'version-mismatch' };
-        }
-        return { valid: true };
+        return verdict;
     }
     /**
      * Cold-restart rebuild (implementation guide §3): clear the runtime
@@ -174,11 +254,47 @@ export class TeamArtifactAuthority {
         }
         return { rebuilt, skipped };
     }
-    /** Drop every runtime candidate (domain close). Durable facts remain. */
+    /** Drop every runtime candidate (domain close). Durable facts remain.
+     *  The pending table is the runtime projection's in-flight view too —
+     *  it resets with the domain. A record that SETTLES after the close
+     *  still lands its durable fact (the ledger is the source of truth)
+     *  and may install into the closed domain's registry — dead state no
+     *  consumer reads (the next setup builds a fresh authority and
+     *  rebuilds from the ledger); the barrier's `finally` removal is a
+     *  no-op on the cleared table. */
     dispose() {
         this.registry.clear();
+        this.pendingShellGrants.clear();
     }
     // --- internals -----------------------------------------------------------------
+    /**
+     * The durable-grant verification (architecture §12) — the check-order
+     * core that {@link authorizeRead} runs (and, after a pending barrier
+     * wait, re-runs): candidate lookup (identity + fresh target digest) →
+     * exact locator match → lifecycle eligibility → fresh stat (missing /
+     * non-regular → inactive) → fresh version digest.
+     */
+    async verifyGrant(args, identityKey) {
+        const freshTargetKeyDigest = targetKeyDigest(args.target.targetKey);
+        const candidates = this.registry.findCandidates(identityKey, freshTargetKeyDigest);
+        if (candidates.length === 0)
+            return { valid: false, reason: 'no-candidate' };
+        const grant = candidates.find((candidate) => candidate.locator === args.locator);
+        if (grant === undefined)
+            return { valid: false, reason: 'locator-mismatch' };
+        if (!lifecycleEligible(this.ports.identity.lifecycleOf(args.rootSessionId, args.instanceId))) {
+            return { valid: false, reason: 'instance-ineligible' };
+        }
+        const info = await this.freshStat(args.target);
+        if (info === undefined)
+            return { valid: false, reason: 'artifact-missing' };
+        if (info.type !== 'file')
+            return { valid: false, reason: 'not-regular-file' };
+        if (versionDigest(info.version) !== grant.versionDigest) {
+            return { valid: false, reason: 'version-mismatch' };
+        }
+        return { valid: true };
+    }
     /**
      * Shared record core: fresh resolve + stat → digests → durable put →
      * runtime install. Throws {@link ArtifactRecordError} on any failure
