@@ -329,25 +329,47 @@ artifact-read grant 记录（非 Team 会话行为与上游逐字节等价）。
 ```
 
 升级后这些值**不会自动传给** `team-spill-local`（spill 会落回默认：
-私有临时根 + 30 天清理）。迁移 = 把同一 config 写到同 id 的新行（profile
-行整体替换 bundle 行，见 §2 层覆盖语义；config schema 与 base 行一致：
-`root` 字符串、`cleanupPeriodDays` 整数、min 0、缺省 30）：
+私有临时根 + 30 天清理）。
+
+**迁移 = 在 profile/user patch 层用 `id: team-spill-local` 覆盖 bundle
+已插入的同名 row 的 config**（同 id patch 在已存在的 row 上就地覆盖
+`config` 字段 — config 对象整体替换、非字段级 merge；row 的其他字段如
+`name` 保留；同 id patch 永远不会新建 row）：
 
 ```yaml
-# After（profile 层 cordis.patch.yml —— 顶层 patch 条目）
-- insert:
-  - id: "team-spill-local"
-    name: "dsh-agent-team/spill-local"
-    config:
-      root: /path/to/my/spill
-      cleanupPeriodDays: 14
+# After（profile 层 cordis.patch.yml —— 覆盖 bundle 已存在的 row）
+- id: team-spill-local
+  config:
+    root: /path/to/my/spill
+    cleanupPeriodDays: 14
 ```
+
+如希望保留 module mismatch guard（`name` 与 row 不符时 patch 会带
+warning 被跳过、不生效），可以显式写出 `name`：
+
+```yaml
+- id: team-spill-local
+  name: dsh-agent-team/spill-local
+  config:
+    root: /path/to/my/spill
+    cleanupPeriodDays: 14
+```
+
+**迁移中不要再次使用 `- insert:`**：不带目标 row id 的 `insert` 会向
+树**追加一条新 row**，从而产生第二个同 id 的 `team-spill-local` row →
+duplicate `spillStore` provider → boot 失败。同 id patch 只命中 bundle
+已插入的那一行并就地覆盖，不产生第二行。
 
 旧 `- id: spill-local` 条目可删除（该行已被 bundle 禁用；留着也不生效）。
 两个字段都缺省时不写 `team-spill-local` 行即可（bundle 行 = base 默认）。
-配置生效的回归保障见 `packages/runtime/test/team-spill-local.test.ts`
-的 C1/C2（自定义 `root` 生效 + 非缺省 `cleanupPeriodDays` 传入 inherited
-`LocalSpillStore` 并实际按其过期清理）。
+config schema 与 upstream `LocalSpillStore` 一致：`root` 字符串、
+`cleanupPeriodDays` 整数、min 0、缺省 30。配置生效的回归保障见
+`packages/runtime/test/team-spill-local.test.ts` 的 C1/C2（自定义 `root`
+生效 + 非缺省 `cleanupPeriodDays` 传入 inherited `LocalSpillStore` 并
+实际按其过期清理）与
+`packages/runtime/test/team-spill-local-composition.test.ts`（真实 bundle
++ profile 同 id patch 的 composition 树：恰好一个 active
+`team-spill-local` row、无 duplicate `spillStore`）。
 
 > 未提供升级期 warning（指南 §3.1-C 的可选项）：检测「disabled
 > `spill-local` 带 config + active `team-spill-local` 无 config」需要读取
