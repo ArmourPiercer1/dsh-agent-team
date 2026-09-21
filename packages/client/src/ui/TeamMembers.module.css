@@ -110,9 +110,14 @@
   opacity: 0.55;
 }
 
+/* flex-wrap: when the row is narrower than the full button cluster,
+   the buttons wrap onto a second line INSIDE the card instead of
+   overflowing the group's right edge (where the group's overflow:hidden
+   clipped them, leaving the trailing buttons cut off). */
 .actions {
   display: flex;
   flex: none;
+  flex-wrap: wrap;
   gap: 4px;
 }
 

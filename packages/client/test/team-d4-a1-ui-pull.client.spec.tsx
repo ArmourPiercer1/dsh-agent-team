@@ -571,7 +571,7 @@ describe('D4-A1 — representative already-covered paths', () => {
       face,
     )} />)
     fireEvent.click(rowActions(view.container, 'settled')[2]!) // archive
-    fireEvent.click(view.container.querySelector('[data-member-confirm-ok]')!)
+    fireEvent.click(document.querySelector('[data-member-confirm-ok]')!)
     await vi.waitFor(() => {
       expect(face.pullProjection).toHaveBeenCalledTimes(1)
     })
@@ -594,7 +594,7 @@ describe('D4-A1 — representative already-covered paths', () => {
       face,
     )} />)
     fireEvent.click(rowActions(view.container, 'running')[3]!) // dispose
-    fireEvent.click(view.container.querySelector('[data-member-confirm-ok]')!)
+    fireEvent.click(document.querySelector('[data-member-confirm-ok]')!)
     await vi.waitFor(() => {
       expect(view.container.querySelector('[data-member-command-error]')).toBeTruthy()
     })

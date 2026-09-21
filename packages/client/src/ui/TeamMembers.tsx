@@ -711,6 +711,7 @@ export function TeamMembers({
                 cancelLabel={t('member.archive.cancel')}
                 onConfirm={() => { runInstanceCommand('archive', open.instance) }}
                 onCancel={() => { setOpen(null) }}
+                t={t}
               />
             )
             : open.kind === 'dispose'
@@ -722,6 +723,7 @@ export function TeamMembers({
                   cancelLabel={t('member.dispose.cancel')}
                   onConfirm={() => { runInstanceCommand('dispose', open.instance) }}
                   onCancel={() => { setOpen(null) }}
+                  t={t}
                 />
               )
               : open.kind === 'followup'
