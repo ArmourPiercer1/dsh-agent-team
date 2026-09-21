@@ -53,6 +53,8 @@
   * workspace options; the fixtures return an undefined feed → empty
   * options).
  */
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
@@ -499,5 +501,53 @@ describe('TeamView', () => {
     fireEvent.change(initialWork, { target: { value: 'ab' } })
     expect(prepare).toHaveBeenCalledTimes(1)
     expect(initialWork.value).toBe('ab')
+  })
+})
+
+/**
+ * 2026-09-21 supplemental review — the host-width column geometry
+ * contract (PR #27). A source-level guard over the `.body` / `.zero`
+ * column rules: border-box sizing with a cap of W + 48px (48px = the
+ * horizontal padding) guarantees the padded column can never overflow a
+ * narrow container while its content stays exactly the host's
+ * `--dsh-chat-content-width` on wide hosts. The regression this pins:
+ * `width: 100%` + padding under the default content-box sizing overflows
+ * the container by 48px at narrow widths (the 2026-09-21 review finding
+ * on the first round of this PR). Targeted declaration checks — not a
+ * whole-file string match, so unrelated style edits do not break it.
+ */
+describe('TeamView.module.css host-width column geometry contract', () => {
+  // The package test script runs vitest with cwd = packages/client; the
+  // root-level fallback covers a root-launched `vitest run`.
+  const cssPath = [
+    resolve(process.cwd(), 'src/ui/TeamView.module.css'),
+    resolve(process.cwd(), 'packages/client/src/ui/TeamView.module.css'),
+  ].find((p) => existsSync(p))
+  if (cssPath === undefined) throw new Error('TeamView.module.css not found (cwd=' + process.cwd() + ')')
+  const css = readFileSync(cssPath, 'utf8')
+
+  function rule(selector: string): string {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const m = new RegExp(`(^|\\n)\\s*${escaped}(?:\\s*,\\s*[^{]+)?\\s*\\{([^}]*)\\}`).exec(css)
+    if (m === null) throw new Error(`CSS rule not found in TeamView.module.css: ${selector}`)
+    const body = m[2]
+    if (body === undefined) throw new Error(`CSS rule body not captured: ${selector}`)
+    return body
+  }
+
+  it('pins .body to the border-box column capped at W + 48px', () => {
+    const body = rule('.body')
+    expect(body).toContain('box-sizing: border-box')
+    expect(body).toContain('width: 100%')
+    expect(body).toContain('max-width: calc(var(--dsh-chat-content-width, 100%) + 48px)')
+    expect(body).toContain('margin: 0 auto')
+  })
+
+  it('pins .zero to the same column geometry', () => {
+    const zero = rule('.zero')
+    expect(zero).toContain('box-sizing: border-box')
+    expect(zero).toContain('width: 100%')
+    expect(zero).toContain('max-width: calc(var(--dsh-chat-content-width, 100%) + 48px)')
+    expect(zero).toContain('margin: 0 auto')
   })
 })
