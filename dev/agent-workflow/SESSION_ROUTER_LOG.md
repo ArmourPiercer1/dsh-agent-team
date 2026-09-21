@@ -3663,3 +3663,17 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **推送与 PR**：fast-forward 推送（master 未动 0597757 无需 rebase；任务分支非 gated 历史，用户一次性 PR 更新授权范围内，mcp/PR#25 推送先例）→ origin `task/strict-read-core-spill` 新 tip = 本提交；PR #26 body 增**最终收口节**（2 项修复 + merge-ready checklist 10/10 + 新终判 run 引用）。
 - **状态**：最终收口轮完成 — 2 项收口意见全执行 + §2 推荐 composition 回归 + 新终判 33/33 自一致 + 三提交 fast-forward 已推送 + PR #26 body 已更新；**PR #26 OPEN（MERGEABLE），merge-ready，待用户审查 merge**。worktree/两个 world 保留（PR 合并后按 TEST_METHODS §7 协议清理）。
 
+
+### 2026-09-21（五）— 用户 UI 问题修复轮 ②：成员操作按钮（2 问题 → 2 PR 之 PR #27；模型路由 qiyuan-self/qwen3.8-27b）
+
+- **用户指令**：问题②（完整轮次背景见上一条目（四））——「成员组」标签中各 member 的操作按钮（发送消息/恢复等）点击后没有任何反应；且按钮显示不全：只有「发送消息…」「恢复…」「归档」三个被完全显示，剩下的按钮超出了卡片。要求：排查并修复，**独立 PR** 等待审查与合并。
+- **问题②排查（root cause，两缺陷叠加）**：
+  - **① 「死按钮」= 反馈不可见，不是 handler 断了**：四个成员命令对话框（创建 / 发消息 / 跟进 / 归档 / 处置）此前渲染为**成员组节末尾的 inline 卡片**（`TeamMemberDialogs.module.css` 的 `.dialog` = 静态 in-flow 块，无 portal / mask / fixed / z-index）。长成员列表下对话框开在**视口之外**（页面底部），点击行本身无任何视觉反馈 → 用户感知「点了没反应」。handler 全部连着（spec 已证：命令确实会发出）。
+  - **② 「按钮显示不全」= 行内按钮簇溢出裁剪**：成员行的 `.actions` 按钮簇 `flex: none` 且无 wrap — 行宽小于簇宽（按钮 + 省略号截断后的中文标签）时，尾部按钮（处置）超出卡片右缘，被 `.group { overflow: hidden }` 裁掉 → 只剩「发送消息…/恢复…/归档」三个完整可见。
+- **问题②修复**（分支 `fix/member-command-dialogs` @ `.worktrees/fix-member-command-dialogs`，base `origin/master 0597757`）：
+  - **① 对话框改走共享 `Modal` primitive**（`@deepseek-ai/dsh-client-ui-primitives` 的 `Modal` — client AGENTS 新组件检查表第 1 项「先查 ui-primitives 目录再写控件」；该包是基线共享模块且 composition bundle externals 含它 → 运行时可用；0.1.2-rc.1 devDep 与 0.1.5-rc.2 宿主同 API 已核）：`createPortal` 到 `document.body` + mask（blur 压暗）+ 居中卡片（`min(380px, 100%)` / r24）+ `role=dialog aria-modal` + 头部标题与**本地化关闭钮**（新 locale key `member.dialog.close`：zh「关闭」/ en「Close」，经 typed `t` 落位；`TeamConfirmDialog` 因此新增 `t` prop，归档/处置两个调用点已传）+ **Escape / mask 点击关闭 = cancel 按钮的精确语义**（关闭不跑任何命令；已打出的 typed error 仍落行内注记）+ 行动作行入卡片 footer（保留全部 data-* 测试锚点与 `styles.button`）。对话框内部字段结构不变 → 用户点按钮后对话框**立即以屏幕中央模态出现**（mask + 标题 + 关闭钮），感知问题消除。
+  - **② `.actions` 加 `flex-wrap: wrap`**：窄行时按钮簇在卡片内折到第二行，永不溢出裁剪（`.group` 的 `overflow: hidden` 保留 — 它是卡片圆角裁剪所需，现在没有内容会被它裁到）。
+  - **③ 测试适配 + 新用例**：2 个 spec 的对话框内容查询从 `view.container` 改为 `document` scope（匹配 portal 行为；行/组级查询不动）— `team-members-actions.client.spec.tsx`（9 处）+ `team-d4-a1-ui-pull.client.spec.tsx`（2 处）；新 1 用例钉住 modal 行为（对话框 portaled 于 section 之上 / `aria-modal="true"` / 头部关闭钮可访问名「关闭」/ Escape 关闭且**不跑命令**）。
+- **门禁实数（PR #27）**：typecheck 9 包全绿；build 全绿；`build:composition` + `check:artifacts` 漂移门满足（bundle 958553→959031B 与源同提交入库）；lint `packages/client` 0 发现；client 套件 **641/642**（唯一失败 = 既有 TCM-M4 时序用例 — 在基线 worktree 独立复跑**同样失败**，与本轮改动零关联；全量跑法下该用例通过）；全量 **20 failed | 3733 passed (3753)** 失败集与基线**逐项 diff 空**（`evidence/member-command-dialogs/full-suite/`，含 baseline-failure-set.txt 对照件）；zero-core：test-use @ fb2c4b9e69 / references / :3080 / :3180 全部 zero-touch（纯 in-process 单测，无 real-host）；p4t6：无新 scanner-visible 文件（spec 为就地修改）→ pin 不动（@728）。
+- **红线守纪**：两缺陷均在 client 包内闭环，零 core / 零 messaging / 零 control / 零 Remote / 零 DSH-core 触碰；无 force-push（纯追加 commit on 0597757）；push = 用户指令一次性授权（本 fix 分支）；Modal 为**复用**既有共享 primitive，非新造控件；locale 新增经 typed `t`（无裸字符串）。
+- **状态**：修复 commit `fc29e19` + 本簿记 commit 已推送 → **PR #27**（fix/member-command-dialogs → master，OPEN，body 含 base SHA / root cause / 门禁实数 / 用户侧验证步骤 / 双 PR 簿记 rebase 注记）— 待用户审查 merge。与 PR #26 同触 `current_phase` + graph 尾部（内容相同）— 若 PR #26 先合并，PR #27 需 rebase 新 base + 门禁复测（repo 先例 db43b42）。
