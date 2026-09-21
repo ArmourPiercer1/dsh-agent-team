@@ -1193,6 +1193,7 @@ async function main() {
   const fail = (leg) => { if (!FAILS.includes(leg)) FAILS.push(leg) }
 
   let fatalError = null
+  let producerPathsOk = false
   let booted = null
   try {
     booted = await bootHost({ boot: 1, phase: 'create', expectedPhase: 'create' })
@@ -1643,16 +1644,31 @@ async function main() {
     // verticals (S1 generic spill-policy, S2 tool-owned grep) — reported as
     // an explicit split so the smoke summary proves the provider replacement
     // covers tool-owned spill, not just the shell path.
-    const producerOk = (leg) => CRITERIA.some((c) => c.leg === leg && c.ok)
+    // A producer path is closed only when EVERY one of its required legs
+    // passes — a CLOSED required-leg set, not "some criterion with a leg
+    // prefix passed": an informational leg added later (e.g. S1x) must not
+    // silently widen or narrow the vertical's acceptance meaning. (The S1d /
+    // S2c leg names each carry two mutually-exclusive criteria — the pass
+    // branch or the 'no grant locator' failure branch — so `every` over the
+    // recorded criterion is exact: a recorded failure branch fails the leg.)
+    const allCriteriaPass = (requiredLegs) => requiredLegs.every((leg) => {
+      const legs = CRITERIA.filter((c) => c.leg === leg)
+      return legs.length > 0 && legs.every((c) => c.ok)
+    })
     const producerPaths = {
-      'foreground-shell-early-spill': { leg: 'E2', ok: producerOk('E2') },
-      'spill-store-generic-spill-policy': { leg: 'S1', ok: producerOk('S1') },
-      'spill-store-tool-owned-grep': { leg: 'S2', ok: producerOk('S2') },
+      'foreground-shell-early-spill': { leg: 'E2', ok: allCriteriaPass(['E2a', 'E2b']) },
+      'spill-store-generic-spill-policy': { leg: 'S1', ok: allCriteriaPass(['S1a', 'S1b', 'S1c', 'S1d', 'S1e']) },
+      'spill-store-tool-owned-grep': { leg: 'S2', ok: allCriteriaPass(['S2a', 'S2b', 'S2c', 'S2d']) },
     }
     writeEvidence('producer-paths.json', producerPaths)
     const passed = CRITERIA.filter((c) => c.ok).length
     const failed = CRITERIA.filter((c) => !c.ok)
-    const anyFail = failed.length > 0 || fatalError !== null
+    // Self-consistency hard gate: a false producer path can never coexist
+    // with a PASS verdict — the summary and the explicit producer split must
+    // agree (the old exact-leg match produced verdict PASS alongside
+    // producerPaths ok:false, a self-contradictory summary).
+    producerPathsOk = Object.values(producerPaths).every((p) => p.ok)
+    const anyFail = failed.length > 0 || !producerPathsOk || fatalError !== null
     const verdict = anyFail ? 'FAIL' : 'PASS'
     writeEvidence('summary.json', {
       verdict,
@@ -1675,7 +1691,7 @@ async function main() {
       log(`world removed: ${HOME}`)
     }
   }
-  process.exit(CRITERIA.some((c) => !c.ok) || fatalError !== null ? 1 : 0)
+  process.exit(CRITERIA.some((c) => !c.ok) || !producerPathsOk || fatalError !== null ? 1 : 0)
 }
 
 /** Extract the leader instanceId from a team_list_members value (tolerant:
