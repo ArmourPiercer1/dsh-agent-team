@@ -68,14 +68,18 @@ Optional args worth knowing:
   (sorted by durable request sequence) — `user-approval` and
   `envelope-mutation` requests are NOT listed; the GUI remains the
   inspection surface for those.
-- `team_archive_member`: no optional args. It archives a SETTLED member
-  directly; a RUNNING member is quiesced first (its current work is
-  interrupted and its resident descendants drained) and durably SETTLED
-  before the ARCHIVED commit. The archived member no longer accepts new
-  Team work until it is explicitly restored. Like every work operation on a
-  well-formed instance, it is guarded on the target: a pending control
-  request for the scope blocks it. A member caller is rejected
-  (`TEAM_TOOL_ARCHIVE_NOT_LEADER`) before any effect.
+- `team_archive_member`: no optional args. It QUIESCES the target member
+  first in every state (its current work is interrupted and its resident
+  descendants drained), then commits durably: a SETTLED member takes ONE
+  durable ARCHIVE commit (no intermediate SETTLE transition is needed —
+  "direct" in that sense only; the quiesce still runs); a RUNNING member
+  is durably SETTLED FIRST and then durably ARCHIVED (two durable commits
+  — the frozen lifecycle FSM has no RUNNING → ARCHIVED edge). The
+  archived member no longer accepts new Team work until it is explicitly
+  restored. Like other guarded instance-targeted mutations, it is guarded
+  on the target: a pending control request for the scope blocks it. A
+  member caller is rejected (`TEAM_TOOL_ARCHIVE_NOT_LEADER`) before any
+  effect.
 
 ## 3. Delegation: the standard loop
 

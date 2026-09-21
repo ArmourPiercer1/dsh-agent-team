@@ -51,7 +51,22 @@
  *   A8 guard last-mile, disposed target: a DISPOSED member → blocked
  *        `target-stale`, zero commits;
  *   A9 argument validation: a missing targetInstanceId is rejected
- *        `TEAM_TOOL_BAD_ARGUMENTS` (the closed argument contract).
+ *        `TEAM_TOOL_BAD_ARGUMENTS` (the closed argument contract);
+ *   B1 the PRODUCTION P7-T3 row (the step ports installed — the
+ *        production archive behavior, Architecture §30): the SAME
+ *        `team_archive_member.execute(...)` against a RUNNING resident
+ *        member runs the real P7-T3 `archiveMember` core through the
+ *        router — quiesce FIRST (close admission → interrupt → drain →
+ *        wait quiescence → release residency), then the two durable
+ *        commits in the frozen order: RUNNING → SETTLE → SETTLED, then
+ *        SETTLED → ARCHIVE → ARCHIVED — `executed` with the
+ *        `lifecycle-changed` effect (from RUNNING, to ARCHIVED), the
+ *        durable record ARCHIVED, and the commit port recording exactly
+ *        those two CAS transitions;
+ *   B2 quiesce failure (the same production row): a live-effect fault
+ *        in the interrupt step aborts the procedure → rejected
+ *        `LIFECYCLE_LIVE_EFFECT_FAILED`, ZERO durable lifecycle commits,
+ *        the target stays RUNNING, the residency unreleased.
  */
 import { describe, expect, it } from 'vitest'
 import { createActivityLedger } from '../../runtime/activity/index.js'
@@ -75,6 +90,16 @@ import {
   p6t2Seed,
 } from '../../runtime/test/p6t2-helpers.js'
 import type { P6T2LifecycleCommitCall } from '../../runtime/test/p6t2-helpers.js'
+import type { LifecyclePorts } from '../../runtime/lifecycle/index.js'
+import {
+  P7T3ActivityFake,
+  P7T3AdmissionFake,
+  P7T3Clock,
+  P7T3CommitFake,
+  P7T3DescendantsFake,
+  P7T3ResidencyFake,
+} from '../../runtime/test/p7t3-helpers.js'
+import type { P7T3CommitCall } from '../../runtime/test/p7t3-helpers.js'
 import { createTeamTools } from '../src/index.js'
 import type { TeamToolsResult } from '../src/index.js'
 import {
@@ -382,6 +407,195 @@ const A = await (async (): Promise<ArchiveScenario> => {
   }
 })()
 
+/**
+ * The production P7-T3 row (B1 + B2): the REAL `archiveMember` core wired
+ * into the router through the lifecycle step ports (the same `LifecyclePorts`
+ * shape the production root builds — real P4 domain + real repository CAS
+ * commits, the P7-T3 mock-first live port fakes for the five quiesce steps).
+ * The call path is the same as every other scenario: the tool's
+ * `execute(...)` → guard → facade → action router → `runLifecycle` (ports
+ * present) → the P7-T3 core.
+ */
+interface ProductionScenario {
+  readonly executed: TeamToolsResult
+  readonly workerAvBefore: number
+  readonly workerFinal: string
+  readonly workerAvFinal: number
+  readonly commitCalls: readonly P7T3CommitCall[]
+  readonly clockKinds: readonly string[]
+  readonly residencyDrops: readonly { readonly dropped: boolean }[]
+  readonly admissionCalls: number
+  readonly activityCalls: number
+  readonly drainCalls: number
+  readonly failedQuiesce: TeamToolsResult
+  readonly failedWorkerFinal: string
+  readonly failedCommitCalls: number
+  readonly failedResidencyDrops: number
+  readonly failedClockKinds: readonly string[]
+}
+
+const B = await (async (): Promise<ProductionScenario> => {
+  // Build one production-row world (the P7-T3 step ports over the real P4
+  // domain; the B2 world arms a quiesce fault before the call).
+  const buildProductionWorld = async (
+    basename: string,
+    armInterruptFault: boolean,
+  ): Promise<{
+    readonly env: P6T6World
+    readonly world: Awaited<ReturnType<typeof createP6T2World>>
+    readonly commit: P7T3CommitFake
+    readonly clock: P7T3Clock
+    readonly residency: P7T3ResidencyFake
+    readonly admission: P7T3AdmissionFake
+    readonly activity: P7T3ActivityFake
+    readonly descendants: P7T3DescendantsFake
+  }> => {
+    const world = await createP6T2World(basename, ['leader', 'worker'])
+    const clock = new P7T3Clock()
+    const admission = new P7T3AdmissionFake(clock)
+    const activity = new P7T3ActivityFake(clock)
+    const descendants = new P7T3DescendantsFake(clock) // default report: quiescent
+    const residency = new P7T3ResidencyFake(clock)
+    // The RUNNING worker is a RESIDENT member (a live Agent handle) — the
+    // production shape: quiesce must release the residency before the
+    // commits.
+    residency.markResident(String(P6T2_SEEDS.worker.childSessionId))
+    const commit = new P7T3CommitFake(clock, world.domain)
+    if (armInterruptFault) {
+      // B2: the interrupt step faults (a live-effect failure mid-quiesce).
+      activity.failNext = new Error(`injected quiesce fault (${basename})`)
+    }
+    const lifecyclePorts: LifecyclePorts = {
+      teamDomain: world.domain,
+      commit,
+      admission,
+      activity,
+      descendants,
+      residency,
+    }
+    const runtime = createP6T2Runtime(world, { lifecycleCommit: commit, lifecyclePorts })
+    const control = createControlService({
+      teamDomain: world.domain,
+      blueprintCatalog: world.catalog,
+      externalPolicyFacts: world.ports.externalPolicyFacts,
+      now: () => P6T2_NOW,
+    })
+    const sessionInput = createFakeSessionInput()
+    const messaging = createMessagingCoordinator({
+      teamRuntime: runtime,
+      teamDomain: world.domain,
+      sessionInput,
+      now: () => P6T2_NOW,
+    })
+    const activityLedger = createActivityLedger({
+      teamDomain: world.domain,
+      runtime,
+      now: () => P6T2_NOW,
+    })
+    const callerMap = createP6T6CallerMap(['leader', 'worker'])
+    const { tools } = createTeamTools({
+      teamRuntime: runtime,
+      controlService: control,
+      messaging,
+      activity: activityLedger,
+      async resolveCaller(sessionId: string) {
+        const caller = callerMap.bySession.get(sessionId)
+        if (caller === undefined) {
+          throw new Error(`archive-member-tool (${basename}): no caller for session ${sessionId}`)
+        }
+        return { caller, rootSessionId: String(P6T2_ROOT) }
+      },
+    })
+    const env: P6T6World = {
+      world,
+      runtime,
+      control,
+      sessionInput,
+      messaging,
+      activity: activityLedger,
+      callerMap,
+      tools,
+      findTool(name: string) {
+        const tool = tools.find((candidate) => candidate.name === name)
+        if (tool === undefined) {
+          throw new Error(`archive-member-tool (${basename}): no registered tool named ${name}`)
+        }
+        return tool
+      },
+    }
+    return { env, world, commit, clock, residency, admission, activity, descendants }
+  }
+
+  // ── B1: the production row, the happy RUNNING archive ───────────────────
+  let b1: Omit<ProductionScenario, 'failedQuiesce' | 'failedWorkerFinal' | 'failedCommitCalls' | 'failedResidencyDrops' | 'failedClockKinds'>
+  {
+    const { env, world, commit, clock, residency, admission, activity, descendants } =
+      await buildProductionWorld('archive-member-tool-f2', false)
+    try {
+      const readWorker = () => {
+        const record = world.domain.repositories.memberInstances.get(P6T2_ROOT, WORKER_ID)
+        if (record === undefined) {
+          throw new Error('archive-member-tool (B1): the worker vanished')
+        }
+        return record
+      }
+      const workerAvBefore = Number(readWorker().activityVersion)
+      // The production row: the tool call quiesces the RUNNING member and
+      // durably settles-then-archives it (two CAS commits).
+      const executed = await runTool(
+        env,
+        'team_archive_member',
+        archiveArgs('tok-am-prod', WORKER_ID),
+        P6T2_ROOT,
+      )
+      const finalRecord = readWorker()
+      b1 = {
+        executed,
+        workerAvBefore,
+        workerFinal: String(finalRecord.lifecycle),
+        workerAvFinal: Number(finalRecord.activityVersion),
+        commitCalls: commit.calls.slice(),
+        clockKinds: clock.kinds(),
+        residencyDrops: residency.dropCalls.slice(),
+        admissionCalls: admission.calls.length,
+        activityCalls: activity.calls.length,
+        drainCalls: descendants.calls.length,
+      }
+    } finally {
+      await destroyP6T1World(world)
+    }
+  }
+
+  // ── B2: the quiesce failure arm (its own world so B1's durable state is
+  // untouched) ──────────────────────────────────────────────────────────────
+  const b2 = await (async () => {
+    const { env, world, commit, clock, residency } = await buildProductionWorld(
+      'archive-member-tool-f2b',
+      true,
+    )
+    try {
+      const failedQuiesce = await runTool(
+        env,
+        'team_archive_member',
+        archiveArgs('tok-am-prod-fault', WORKER_ID),
+        P6T2_ROOT,
+      )
+      const record = world.domain.repositories.memberInstances.get(P6T2_ROOT, WORKER_ID)
+      return {
+        failedQuiesce,
+        failedWorkerFinal: record === undefined ? 'MISSING' : String(record.lifecycle),
+        failedCommitCalls: commit.calls.length,
+        failedResidencyDrops: residency.dropCalls.length,
+        failedClockKinds: clock.kinds(),
+      }
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })()
+
+  return { ...b1, ...b2 }
+})()
+
 describe('team_archive_member — the 13th closed team tool (the archive-member round)', () => {
   it('A1 the catalog: the 13th (LAST) tool with the closed argument shape', () => {
     expect(A.toolNames).toHaveLength(13)
@@ -517,5 +731,76 @@ describe('team_archive_member — the 13th closed team tool (the archive-member 
     if (A.rejectedArgs.status !== 'rejected') return
     expect(A.rejectedArgs.code).toBe('TEAM_TOOL_BAD_ARGUMENTS')
     expect(A.portCallsFinal).toBe(1)
+  })
+})
+
+describe('team_archive_member — the production P7-T3 row (quiesce, then the two durable commits)', () => {
+  it('B1 the tool call quiesces a RUNNING resident member and settle-thens-archives it (two CAS commits)', () => {
+    expect(B.executed.status).toBe('executed')
+    if (B.executed.status !== 'executed') return
+    expect(B.executed.action).toBe('archive-member')
+    expect(B.executed.rootSessionId).toBe(P6T2_ROOT)
+    expect(B.executed.targetInstanceId).toBe(WORKER_ID)
+    expect(B.executed.effect.kind).toBe('lifecycle-changed')
+    if (B.executed.effect.kind !== 'lifecycle-changed') return
+    expect(B.executed.effect.instanceId).toBe(WORKER_ID)
+    // The effect reports the member's ORIGINAL state to its final state —
+    // the settle is an intermediate durable step of the procedure, not a
+    // second action.
+    expect(B.executed.effect.from).toBe('RUNNING')
+    expect(B.executed.effect.to).toBe('ARCHIVED')
+    expect(B.executed.effect.sequence).toBeGreaterThan(0)
+    // The durable record is ARCHIVED; the activity version advanced by
+    // exactly the two durable commits (the domain D3 rule: +1 each).
+    expect(B.workerFinal).toBe('ARCHIVED')
+    expect(B.workerAvFinal).toBe(B.workerAvBefore + 2)
+    // The commit port (the REAL repository CAS) recorded exactly the two
+    // probed transitions, in the frozen order.
+    expect(B.commitCalls).toHaveLength(2)
+    const settle = B.commitCalls[0]!
+    expect(settle.rootSessionId).toBe(P6T2_ROOT)
+    expect(settle.instanceId).toBe(WORKER_ID)
+    expect(settle.from).toBe('RUNNING')
+    expect(settle.operation).toBe('SETTLE')
+    expect(settle.to).toBe('SETTLED')
+    expect(settle.expectedActivityVersion).toBe(B.workerAvBefore)
+    const archive = B.commitCalls[1]!
+    expect(archive.rootSessionId).toBe(P6T2_ROOT)
+    expect(archive.instanceId).toBe(WORKER_ID)
+    expect(archive.from).toBe('SETTLED')
+    expect(archive.operation).toBe('ARCHIVE')
+    expect(archive.to).toBe('ARCHIVED')
+    expect(archive.expectedActivityVersion).toBe(B.workerAvBefore + 1)
+    // The procedure order (the machine-checkable clock): the five quiesce
+    // live steps COMPLETE BEFORE the first durable commit; the resident
+    // handle is released by the fifth step.
+    expect(B.clockKinds).toEqual([
+      'admission.close',
+      'activity.interrupt',
+      'descendants.drain',
+      'residency.drop',
+      'commit',
+      'commit',
+    ])
+    expect(B.admissionCalls).toBe(1)
+    expect(B.activityCalls).toBe(1)
+    expect(B.drainCalls).toBe(1)
+    expect(B.residencyDrops).toHaveLength(1)
+    expect(B.residencyDrops[0]?.dropped).toBe(true)
+  })
+
+  it('B2 a quiesce live-effect fault aborts before any durable commit (stays RUNNING; residency unreleased)', () => {
+    expect(B.failedQuiesce.status).toBe('rejected')
+    if (B.failedQuiesce.status !== 'rejected') return
+    expect(B.failedQuiesce.code).toBe(
+      TEAM_RUNTIME_ERROR_CODES.LIFECYCLE_LIVE_EFFECT_FAILED,
+    )
+    expect(B.failedWorkerFinal).toBe('RUNNING')
+    expect(B.failedCommitCalls).toBe(0)
+    expect(B.failedResidencyDrops).toBe(0)
+    // The clock proves the abort point: admission closed, the interrupt
+    // faulted — nothing after it ran (no drain observation recorded a
+    // commit, no residency release).
+    expect(B.failedClockKinds).toEqual(['admission.close', 'activity.interrupt'])
   })
 })

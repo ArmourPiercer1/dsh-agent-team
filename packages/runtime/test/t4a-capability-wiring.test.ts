@@ -24,9 +24,9 @@
  * shared/wired capability would fail:
  *
  *   - LEADER (root session): teamTools allow [team_send_message,
- *     team_list_members]; builtinToolDeny [bash]; skills allow
- *     [leader-skill]; mcp allow [the configured server] -> MCP MOUNTS
- *     (the durable human-override allows it too).
+ *     team_list_members, team_archive_member]; builtinToolDeny [bash];
+ *     skills allow [leader-skill]; mcp allow [the configured server] ->
+ *     MCP MOUNTS (the durable human-override allows it too).
  *   - MEMBER A: teamTools allow [team_delegate]; builtinToolDeny [write];
  *     skills allow [a-skill]; mcp deny -> NO MCP mount (the template denies
  *     it even though the durable override allows).
@@ -116,6 +116,7 @@ const CAPABILITY_BLUEPRINT = [
   '      items:',
   '        - team_send_message',
   '        - team_list_members',
+  '        - team_archive_member',
   '    builtinToolDeny:',
   '      - bash',
   '    skills:',
@@ -368,9 +369,29 @@ await destroyP6T1World(p6t6.world)
 describe('alpha.1 T4 — the production capability wiring on the REAL live glue', () => {
   describe('the create phase (fresh-create window) wires each identity distinctly', () => {
     it('leader: the teamTools allow-selects the catalog sub-set (catalog order)', () => {
-      // allow [team_send_message, team_list_members] -> catalog order:
-      // team_list_members (idx 0) before team_send_message (idx 6).
-      expect(cLeaderTools).toEqual(['team_list_members', 'team_send_message'])
+      // allow [team_send_message, team_list_members, team_archive_member]
+      // -> catalog order: team_list_members (idx 0) before
+      // team_send_message (idx 6) before team_archive_member (idx 12, the
+      // 13th tool — the archive-member round).
+      expect(cLeaderTools).toEqual([
+        'team_list_members',
+        'team_send_message',
+        'team_archive_member',
+      ])
+    })
+    it('leader: the lifecycle tool is surfaced ONLY because its template allow list names it (exposure vs. authority)', () => {
+      // The plugin catalog (teamTools.tools) contains team_archive_member
+      // for EVERY world of this file. The selective leader SURFACES it
+      // because its teamTools allow list names it; members A (allow
+      // [team_delegate]) and B (deny) never see it — the catalog entry
+      // alone grants no exposure (the frozen-snapshot rollout contract of
+      // the blueprint-authoring skill §5.4: no implicit auto-grant of a
+      // newly-added tool to an existing selective template).
+      const catalogNames = p6t6.tools.map((tool) => String(tool.name))
+      expect(catalogNames).toContain('team_archive_member')
+      expect(cLeaderTools).toContain('team_archive_member')
+      expect(cATools).not.toContain('team_archive_member')
+      expect(cBTools).not.toContain('team_archive_member')
     })
     it('leader: builtinToolDeny [bash] is applied through tools.restrict (one call)', () => {
       expect(cLeaderDeny).toEqual([['bash']])
@@ -428,7 +449,11 @@ describe('alpha.1 T4 — the production capability wiring on the REAL live glue'
 
   describe('the cold-resume phase re-derives the SAME capabilities from the durable rows', () => {
     it('leader: the same team tools, the same builtin deny, the same skill, the MCP still mounts', () => {
-      expect(rLeaderTools).toEqual(['team_list_members', 'team_send_message'])
+      expect(rLeaderTools).toEqual([
+        'team_list_members',
+        'team_send_message',
+        'team_archive_member',
+      ])
       expect(rLeaderDeny).toEqual([['bash']])
       expect(rLeaderSkills).toEqual(['leader-skill'])
       expect(rLeaderMcp).toBe(1)
