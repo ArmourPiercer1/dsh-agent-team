@@ -113,10 +113,18 @@
 /* flex-wrap: when the row is narrower than the full button cluster,
    the buttons wrap onto a second line INSIDE the card instead of
    overflowing the group's right edge (where the group's overflow:hidden
-   clipped them, leaving the trailing buttons cut off). */
+   clipped them, leaving the trailing buttons cut off). 2026-09-21
+   supplemental review: `flex: none` (non-shrinkable, fixed basis) kept
+   the cluster wider than its row even with wrap enabled — it must be
+   shrinkable: flex 0 1 auto + min-width 0 + max-width 100% so the cluster
+   can never exceed the row, wrapping its buttons instead of clipping
+   them; justify-content flex-end keeps the original right alignment. */
 .actions {
   display: flex;
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  justify-content: flex-end;
   flex-wrap: wrap;
   gap: 4px;
 }

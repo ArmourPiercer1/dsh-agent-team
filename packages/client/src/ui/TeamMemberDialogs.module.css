@@ -39,8 +39,13 @@
   font: var(--dsw-font-xxxs-11);
 }
 
+/* 2026-09-21 supplemental review: border-box so `width: 100%` + padding +
+   border stay inside the modal body's content box — under the default
+   content-box sizing every control overflowed the dialog's right edge by
+   padding+border (18px here). */
 .field input,
 .field select {
+  box-sizing: border-box;
   width: 100%;
   padding: 5px 8px;
   border: 1px solid var(--dsw-alias-border-l2);
@@ -58,6 +63,7 @@
 }
 
 .field textarea {
+  box-sizing: border-box;
   width: 100%;
   padding: 5px 8px;
   border: 1px solid var(--dsw-alias-border-l2);

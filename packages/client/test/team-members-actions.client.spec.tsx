@@ -19,6 +19,8 @@
  * document scope while the row/group-scoped ones stay on the render
  * container.
  */
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
@@ -625,3 +627,52 @@ function deferred(): {
   })
   return { promise, resolve }
 }
+
+/**
+ * 2026-09-21 supplemental review — the member action cluster + dialog form
+ * CSS contract (PR #28). Source-level guards: the `.actions` cluster must
+ * stay SHRINKABLE (the first round's `flex: none` kept it wider than its
+ * row even with wrap enabled, so the trailing buttons clipped under the
+ * group's overflow:hidden) and the dialog form controls must stay inside
+ * the modal body (border-box, not content-box width:100% + padding).
+ * Targeted declaration checks — not a whole-file string match, so
+ * unrelated style edits do not break them.
+ */
+describe('member action cluster and dialog form CSS contract', () => {
+  // The package test script runs vitest with cwd = packages/client; the
+  // root-level fallback covers a root-launched `vitest run`.
+  function cssPath(rel: string): string {
+    const hit = [
+      resolve(process.cwd(), rel),
+      resolve(process.cwd(), 'packages/client', rel),
+    ].find((p) => existsSync(p))
+    if (hit === undefined) throw new Error(`${rel} not found (cwd=${process.cwd()})`)
+    return hit
+  }
+  const membersCss = readFileSync(cssPath('src/ui/TeamMembers.module.css'), 'utf8')
+  const dialogsCss = readFileSync(cssPath('src/ui/TeamMemberDialogs.module.css'), 'utf8')
+
+  function rule(source: string, file: string, selector: string): string {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const m = new RegExp(`(^|\\n)\\s*${escaped}(?:\\s*,\\s*[^{]+)?\\s*\\{([^}]*)\\}`).exec(source)
+    if (m === null) throw new Error(`CSS rule not found in ${file}: ${selector}`)
+    const body = m[2]
+    if (body === undefined) throw new Error(`CSS rule body not captured: ${selector}`)
+    return body
+  }
+
+  it('keeps .actions shrinkable (never a non-shrinkable fixed basis)', () => {
+    const actions = rule(membersCss, 'TeamMembers.module.css', '.actions')
+    expect(actions).not.toContain('flex: none')
+    expect(actions).toContain('flex: 0 1 auto')
+    expect(actions).toContain('min-width: 0')
+    expect(actions).toContain('max-width: 100%')
+    expect(actions).toContain('flex-wrap: wrap')
+  })
+
+  it('keeps dialog form controls inside the modal content box', () => {
+    expect(rule(dialogsCss, 'TeamMemberDialogs.module.css', '.field input')).toContain('box-sizing: border-box')
+    expect(rule(dialogsCss, 'TeamMemberDialogs.module.css', '.field select')).toContain('box-sizing: border-box')
+    expect(rule(dialogsCss, 'TeamMemberDialogs.module.css', '.field textarea')).toContain('box-sizing: border-box')
+  })
+})
