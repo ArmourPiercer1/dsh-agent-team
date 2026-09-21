@@ -15,7 +15,7 @@
  *      the whole-tree scanner).
  *
  * On top of the source scan, the model-facing surface is pinned at
- * CONSTRUCTION time: `createTeamTools` must expose exactly the twelve
+ * CONSTRUCTION time: `createTeamTools` must expose exactly the thirteen
  * sanctioned tools, each requiring `rootSessionId` + `requestToken` and
  * closing `additionalProperties` (SD-TOKEN: the correlation token is
  * model/driver-supplied on every call).
@@ -113,10 +113,12 @@ const NEGATIVE_SAMPLE = [
 ].join('\n')
 const NEGATIVE_HITS = matchBypassRulesInText(NEGATIVE_SAMPLE)
 
-// --- the twelve sanctioned model-facing tool names (sorted; C1 adds
-// --- team_list_pending_control) ----------------------------------------------
+// --- the thirteen sanctioned model-facing tool names (sorted; C1 adds
+// --- team_list_pending_control; the archive-member round adds
+// --- team_archive_member) -----------------------------------------------------
 
 const EXPECTED_TOOL_NAMES = [
+  'team_archive_member',
   'team_collect',
   'team_create_member',
   'team_delegate',
@@ -218,8 +220,8 @@ describe('P6-T6 tool set — the static bypass scan (brief §6b, G6 criterion 7)
     expect(NEGATIVE_HITS.length).toBe(0)
   })
 
-  it('the model-facing surface is EXACTLY the twelve sanctioned tools (SD-CREATE/SD-GUARD scope; C1 adds the pending-list tool)', () => {
-    expect(TOOL_SET.length).toBe(12)
+  it('the model-facing surface is EXACTLY the thirteen sanctioned tools (SD-CREATE/SD-GUARD scope; C1 adds the pending-list tool; the archive-member round adds team_archive_member)', () => {
+    expect(TOOL_SET.length).toBe(13)
     const names = TOOL_SET.map((tool) => tool.name).slice()
     names.sort()
     expect(names).toEqual(EXPECTED_TOOL_NAMES)

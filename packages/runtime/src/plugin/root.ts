@@ -1934,7 +1934,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // --- A04 the intent surface (the remote method catalog) --------------------------------------------
   const intent = { catalog: REMOTE_METHOD_CATALOG }
 
-  // --- the twelve Team tools (the glue registers them on the agent setup; C1 adds the pending-list tool) -------------------------------------
+  // --- the thirteen Team tools (the glue registers them on the agent setup; C1 adds the pending-list tool; the archive-member round adds team_archive_member) -------------------------------------
   const tools = createTeamTools({
     teamRuntime: runtime,
     controlService: control,
