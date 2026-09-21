@@ -1,3 +1,6 @@
+/* The zero-state container shares the tab's content column (the same host
+   width axis as .body below) so its centered content sits in the same
+   column the populated sections do. */
 .zero {
   display: flex;
   align-items: center;
@@ -5,6 +8,9 @@
   min-height: 100%;
   padding: 24px;
   color: var(--dsw-alias-label-tertiary);
+  width: 100%;
+  max-width: var(--dsh-chat-content-width, none);
+  margin: 0 auto;
 }
 
 .zeroInner {
@@ -40,12 +46,22 @@
   outline-offset: 1px;
 }
 
+/* The tab's single content column: pinned to the host conversation width
+   axis (--dsh-chat-content-width, declared on the conversation root and
+   user-draggable through the width handles; the fallback keeps the legacy
+   full-width behavior on hosts without the axis). Every section — its
+   title AND its cards, including the governance section — lives inside
+   this one box, so the titles track the cards on a width drag and the
+   governance column resizes exactly like the other four. */
 .body {
   display: flex;
   flex-direction: column;
   gap: 16px;
   min-height: 100%;
   padding: 16px 24px;
+  width: 100%;
+  max-width: var(--dsh-chat-content-width, none);
+  margin: 0 auto;
 }
 
 .section {
