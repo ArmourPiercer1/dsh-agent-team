@@ -69,6 +69,46 @@
  *        facts for the plain spill(s) (the artifact authority is a no-op on
  *        unmanaged sessions — no grant I/O). The probe-read outcome (allow
  *        vs deny under the upstream default policy) is INFORMATIONAL.
+ *   S1 — the GENERIC dsh-spill-policy SpillStore vertical (PR #26
+ *        supplemental §2.1): the leader runs a bash whose stdout is
+ *        50,500 bytes — INSIDE bash-local's 64,000-byte early-spill
+ *        threshold (NO `stdout.spillPath`, the shell observer records
+ *        nothing — the shell-foreground grant count is asserted unchanged)
+ *        but ABOVE the base bundle's spill-policy `maxInlineBytes: 50000`
+ *        and BELOW the read tool's 51,200-byte return cap: the generic
+ *        policy saves the FULL rendered text through the agent's
+ *        `spillStore` — the bundle layer's
+ *        `team-spill-local`/`TeamAwareLocalSpillStore` replacement — and
+ *        the sibling bridge records EXACTLY ONE durable grant with
+ *        `source.kind: 'spill-store'` / `spillSource.toolName: 'bash'`.
+ *        Same-instance (leader) read of the locator SUCCEEDS and
+ *        round-trips the head+tail markers; another instance (worker-1)
+ *        read of the same locator is DENIED.
+ *   S2 — the TOOL-OWNED grep over-cap SpillStore vertical (PR #26
+ *        supplemental §2.1): a 320-line `match-NNNN` fixture in the
+ *        workspace; the BOOT team's leader `grep`s it (the preset mounts
+ *        `dsh-tool-fs-search`; the boot team declares NO
+ *        capabilities.permissions, so the A2C-2 Permission Coverage Gate
+ *        never runs for it and its surface keeps `grep` — no strict
+ *        instance can call grep itself: the frozen coverage gate
+ *        classifies grep/glob KNOWN_SENSITIVE_UNMANAGED, A2C-6 deferred,
+ *        and the strict agents remove them via the computed
+ *        `builtinToolDeny`, the gate's own remediation). 320 > the tool's
+ *        250-match inline cap, so grep's post-execute handler saves the
+ *        COMPLETE formatted result through `spillStore.saveText`
+ *        (`suggestedName: grep-results.txt`) — the SAME bundle-layer
+ *        `team-spill-local` provider as every other session — and the
+ *        bridge records EXACTLY ONE durable grant, under the boot root,
+ *        with the provenance
+ *        `{ kind: 'spill-store', spillSource: { kind: 'tool', toolName:
+ *        'grep' } }`. Same-instance (boot-leader) read of the locator
+ *        returns the FULL result (all 320 match lines round-trip); the
+ *        STRICT team's leader (a different (root, instance) composite,
+ *        default-deny) read of the same locator is DENIED — the grant is
+ *        scoped to the producing instance. (Guide §2.1 phrasing: the
+ *        producer is "managed Team agent" — strict-by-construction grep
+ *        callers are excluded by the frozen A2C-2 gate; deviation noted
+ *        in the round report.)
  *
  * DESIGN (pattern source: tests/kits/rc2-real-host-smoke — same mock
  * model, same host launch chain, same p6t6 observability row; the
@@ -200,6 +240,48 @@ const spillCommand = (tag) =>
 const bashArgs = (tag) => ({ command: spillCommand(tag), description: `Emit a 200 KiB stdout payload for spill leg ${tag}` })
 const NO_GRANT_PROBE = join(WORLD_TMP, `no-grant-${RUN_STAMP.replace(/[-:]/g, '')}.txt`)
 
+// ── S1: the generic spill-policy band (PR #26 supplemental §2.1) ─────
+// bash-local early-spills at `maxOutputBytes` (64_000); the base bundle's
+// dsh-spill-policy row spills any plain-text tool result over
+// `maxInlineBytes` (50_000) through the agent's spillStore; the read tool
+// itself returns at most `readMaxBytes` (51_200) of a file AND truncates
+// any single line longer than 2_000 chars (`readMaxLineLength`). A stdout
+// of 50,500 bytes laid out as head-line + 25 short x-lines (1_999 x each)
+// + a short remainder x-line + tail-line sits in ALL FOUR gaps at once:
+// no bash-local `stdout.spillPath` (the shell observer records nothing),
+// the generic policy saves the full rendered text via
+// TeamAwareLocalSpillStore → a `spill-store` grant, and the SAME-instance
+// read-back round-trips the WHOLE file (head+tail markers, no line or
+// byte truncation).
+const S1_TOTAL_BYTES = 50500
+const s1Stamp = RUN_STAMP.replace(/[-:]/g, '')
+const s1Head = `STRICTREAD_SPILL_HEAD_S1_${s1Stamp}`
+const s1Tail = `STRICTREAD_SPILL_TAIL_S1_${s1Stamp}`
+// stdout = head + \n + 25 lines of (1999 x + \n) + (R x + \n) + tail + \n,
+// total EXACTLY S1_TOTAL_BYTES (so the band membership is deterministic,
+// not a range); every line < 2000 chars (the read line cap). R = the x
+// count of the remainder line (printf adds the trailing \n, so the line
+// is R+1 bytes).
+const s1FillLines = 25
+const s1FillLineBytes = 2000 // 1999 x + \n
+const s1FillRemainderX = S1_TOTAL_BYTES - (s1Head.length + 1) - (s1Tail.length + 1) - s1FillLines * s1FillLineBytes - 1
+const s1Command = [
+  'XLINE=$(head -c 1999 /dev/zero | tr \'\\0\' x)',
+  `echo ${s1Head}`,
+  `for i in $(seq ${s1FillLines}); do echo "$XLINE"; done`,
+  `printf '%s\\n' "$(head -c ${s1FillRemainderX} /dev/zero | tr '\\0' x)"`,
+  `echo ${s1Tail}`,
+].join('; ')
+const s1Args = { command: s1Command, description: `Emit a 50500 byte stdout payload in the spill-policy band` }
+
+// ── S2: the grep over-cap fixture (PR #26 supplemental §2.1) ──────────
+// 320 `match-NNNN` lines > the grep tool's 250-match inline cap, so the
+// tool's post-execute handler spills the COMPLETE formatted result.
+const GREP_FIXTURE = join(WORKSPACE, `grep-fixture-${s1Stamp}.txt`)
+const GREP_MATCH_LINES = 320
+const grepFixtureLines = Array.from({ length: GREP_MATCH_LINES }, (_, n) => `match-${String(n + 1).padStart(4, '0')} payload line ${n + 1}`)
+const grepArgs = { pattern: 'match-', path: GREP_FIXTURE }
+
 // The team tool catalog of THIS host baseline (the rc2 kit proven set —
 // the same fb2c4b9e69 baseline this smoke launches).
 const TEAM_TOOL_CATALOG = new Set([
@@ -207,6 +289,16 @@ const TEAM_TOOL_CATALOG = new Set([
   'team_delegate', 'team_follow_up', 'team_collect', 'team_send_message',
   'team_report_progress', 'team_request_control', 'team_resolve_control',
 ])
+// NOTE (PR #26 supplemental S2): grep/glob are deliberately ABSENT from this
+// list — they must land in the strict agents' `builtinToolDeny`. The A2C-2
+// Permission Coverage Gate (frozen; runs for every template that declares
+// `capabilities.permissions`) classifies grep/glob as
+// KNOWN_SENSITIVE_UNMANAGED (A2C-6 deferred, plan §11.3) and fails setup
+// closed when they are on a strict final surface. The gate's own
+// remediation is `builtinToolDeny` removal — which the computed denyList
+// below performs. The boot team (NO capabilities.permissions) is outside
+// the gate and keeps grep on its surface — S2 uses the boot leader as the
+// managed grep producer (see the S2 block and the header doc).
 const MANAGED_TOOL_NAMES = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh']
 
 // ── state / logging / criteria ──────────────────────────────────────────
@@ -572,6 +664,45 @@ function grantFor(locator) {
   })
 }
 /**
+ * All durable grants whose provenance is a SpillStore producer with a given
+ * tool name (PR #26 supplemental S1/S2): `source.kind === 'spill-store'` and
+ * `source.spillSource.toolName === toolName`. The SpillStore bridge records
+ * the grant during the tool's `post-execute` spill, so this is the S1/S2
+ * producer assertion (the shell-foreground observer uses `source.kind ===
+ * 'shell-foreground'` — a disjoint provenance, asserted separately).
+ *
+ * `sinceSequences` (a Set of ledger sequence numbers snapshotted BEFORE the
+ * producing call) filters to the NEW grants only — required because an
+ * early-spilled foreground bash mints BOTH a shell-foreground grant (the
+ * shell observer) AND a spill-store/bash grant (the generic spill-policy
+ * still sees a >maxInlineBytes model-facing result) — so the absolute
+ * spill-store count is not stable across legs.
+ */
+function spillStoreGrantsFor(toolName, sinceSequences) {
+  return grantFacts().filter((e) => {
+    const p = e.payload
+    return p !== null && typeof p === 'object'
+      && p.source?.kind === 'spill-store'
+      && p.source?.spillSource?.toolName === toolName
+      && (sinceSequences === undefined || !sinceSequences.has(e.sequence))
+  })
+}
+/**
+ * Poll the durable ledger until a SpillStore grant for `toolName` appears
+ * (the bridge records it asynchronously during post-execute), or `null` on
+ * timeout. Mirrors the E2/E6 grant-discovery loop. `sinceSequences` limits
+ * the wait (and the returned set) to grants minted AFTER the snapshot.
+ */
+async function waitForSpillGrant(toolName, timeoutMs = 10000, sinceSequences) {
+  const start = Date.now()
+  while (Date.now() - start < timeoutMs) {
+    const hits = spillStoreGrantsFor(toolName, sinceSequences)
+    if (hits.length > 0) return hits
+    await sleep(250)
+  }
+  return []
+}
+/**
  * Inventory the executor spill files under WORLD_TMP ($TMPDIR redirect):
  * `dsh-subprocess-<rand>/dsh-subprocess-<pid>-<n>-{stdout,stderr}.log`.
  * Used to verify the plain-session spill from the filesystem (the
@@ -714,6 +845,14 @@ function savedBlueprintS(denyList, tmpdirForDeny) {
     teamToolsKind: 'allow',
     teamToolsItems: teamToolsAllow,
     denyList,
+    // S2 (PR #26 supplemental): the strict agents carry NO grep/glob on
+    // their final surface — the computed `builtinToolDeny` (the MANAGED
+    // list above deliberately excludes them) removes them, which is the
+    // A2C-2 Permission Coverage Gate's own remediation: grep/glob are
+    // KNOWN_SENSITIVE_UNMANAGED (A2C-6 deferred) and FATAL on any
+    // capabilities.permissions surface. The S2 vertical therefore uses
+    // the boot team's leader (managed, no permissions → gate absent) as
+    // the grep producer; see the S2 block and the header doc.
     permissions: permsYaml(4, { default: 'deny', allow: [{ tool: 'bash', resource: { kind: 'any' } }] }),
   })
   // member list items (caps base 4 — aligned with templateId/persona)
@@ -909,6 +1048,15 @@ function materializeWorld() {
     '      You are the strict-read smoke agent. Follow instructions precisely; keep replies short.',
     '- id: tool-fs',
     "  name: '@deepseek-ai/dsh-tool-fs'",
+    '# S2 (PR #26 supplemental): the fs-search row mounts grep+glob so the',
+    '# strict leader can drive a tool-owned over-cap spill through the',
+    '# TeamAwareLocalSpillStore (the provider-replacement coverage). The',
+    '# base bundle row carries `sampleOverCapGlobResults: false` (a',
+    '# REQUIRED config on this baseline) — the preset row repeats it.',
+    '- id: tool-fs-search',
+    "  name: '@deepseek-ai/dsh-tool-fs-search'",
+    '  config:',
+    '    sampleOverCapGlobResults: false',
     '- id: bash',
     "  name: '@deepseek-ai/dsh-tool-bash'",
     '',
@@ -917,6 +1065,9 @@ function materializeWorld() {
   writeP6t6Directive(1, 'create')
   // The no-grant probe file (out-of-workspace, inside the world tmp).
   writeFileSync(NO_GRANT_PROBE, `strict-read no-grant probe ${RUN_STAMP}\n`)
+  // The S2 grep fixture: 320 `match-NNNN` lines in the shared workspace
+  // (over the grep tool's 250-match inline cap → the tool-owned spill).
+  writeFileSync(GREP_FIXTURE, grepFixtureLines.join('\n') + '\n')
   log(`world materialized at ${HOME} (profile bundles=[base, web-app, dsh-agent-team], TMPDIR=${WORLD_TMP})`)
 }
 function writeP6t6Directive(boot, phase) {
@@ -1223,6 +1374,109 @@ async function main() {
     writeEvidence('e5-cross-instance.json', { readX: readX.body, w1Id })
     if (!xDenied) fail('E5')
 
+    // ── S1: generic dsh-spill-policy → TeamAwareLocalSpillStore → grant ──
+    log('── S1: generic spill-policy vertical (50,500 B stdout, no early-spill) ──')
+    // Delta snapshot: an early-spilled foreground bash (E2) mints a
+    // spill-store/bash grant TOO (the generic spill-policy still sees a
+    // >maxInlineBytes model-facing result behind the early-spill), so the
+    // S1 assertion is on the NEW grants only.
+    const s1SeqsBefore = new Set(grantFacts().map((f) => f.sequence))
+    const sfBefore = grantFacts().filter((e) => e.payload?.source?.kind === 'shell-foreground').length
+    const s1Bash = await p6t6Tool(HOST_PORT, 'bash', s1Args, CREATED_ROOT)
+    const s1Value = s1Bash.body?.ok === true ? s1Bash.body.value : null
+    const s1NoEarlySpill = s1Value?.stdout?.spillPath === undefined && s1Value?.stdout?.truncated === false
+    check('S1a', 'leader bash (50,500 B stdout) succeeded WITHOUT a bash-local early-spill (no stdout.spillPath — the 50k<51.2k<64k band)',
+      s1Bash.body?.ok === true && s1NoEarlySpill,
+      `status=${s1Bash.status} ok=${s1Bash.body?.ok} spillPath=${String(s1Value?.stdout?.spillPath).slice(0, 120)} truncated=${s1Value?.stdout?.truncated} stdoutLen=${s1Value?.stdout?.text?.length ?? 0} err=${String(s1Bash.body?.error?.message ?? '').slice(0, 200)}`)
+    if (!s1NoEarlySpill) { fail('S1'); writeEvidence('s1-no-early-spill.json', { s1Bash: s1Bash.body }); }
+    const s1Grants = await waitForSpillGrant('bash', 10000, s1SeqsBefore)
+    const s1GrantOk = s1Grants.length === 1
+      && s1Grants[0].payload?.source?.kind === 'spill-store'
+      && s1Grants[0].payload?.source?.spillSource?.kind === 'tool'
+      && s1Grants[0].payload?.source?.spillSource?.toolName === 'bash'
+    check('S1b', 'S1 bash minted EXACTLY ONE NEW durable spill-store grant (provenance spill-store/bash — the Team-aware SpillStore bridge, NOT the shell observer)', s1GrantOk,
+      `newCount=${s1Grants.length} first=${JSON.stringify(s1Grants[0] ?? null).slice(0, 320)}`)
+    const sfAfter = grantFacts().filter((e) => e.payload?.source?.kind === 'shell-foreground').length
+    check('S1c', 'the S1 bash minted NO shell-foreground grant (no early-spill → the shell observer saw no spillPath; the shell-foreground count is unchanged)', sfAfter === sfBefore,
+      `shellForeground before=${sfBefore} after=${sfAfter}`)
+    const s1Locator = s1Grants[0]?.payload?.locator
+    let s1ReadOk = false
+    if (typeof s1Locator === 'string') {
+      const s1Read = await p6t6Tool(HOST_PORT, 'read', { file_path: s1Locator }, CREATED_ROOT)
+      const s1Text = readTextOf(s1Read.body)
+      s1ReadOk = s1Read.body?.ok === true && s1Text.includes(s1Head) && s1Text.includes(s1Tail)
+      check('S1d', 'leader (same instance) read of the S1 SpillStore locator SUCCEEDS and round-trips the head+tail markers', s1ReadOk,
+        `ok=${s1Read.body?.ok} hasHead=${s1Text.includes(s1Head)} hasTail=${s1Text.includes(s1Tail)} err=${String(s1Read.body?.error?.message ?? '').slice(0, 200)}`)
+      const s1ReadX = await p6t6Tool(HOST_PORT, 'read', { file_path: s1Locator }, w1Session)
+      check('S1e', 'worker-1 (another instance) read of the S1 locator is DENIED (no grant for worker-1 identity)', s1ReadX.body?.ok === false,
+        `ok=${s1ReadX.body?.ok} err=${String(s1ReadX.body?.error?.message ?? '').slice(0, 240)}`)
+      writeEvidence('s1-spill-store.json', { s1Bash: s1Bash.body, s1Grants, s1Locator, s1Read: s1Read.body, s1ReadX: s1ReadX.body })
+      if (!s1ReadOk || s1ReadX.body?.ok !== false) fail('S1')
+    } else {
+      check('S1d', 'leader (same instance) read of the S1 SpillStore locator SUCCEEDS and round-trips the head+tail markers', false, 'no spill-store/bash grant locator (S1b failed)')
+      fail('S1')
+    }
+    if (!s1GrantOk) { fail('S1'); writeEvidence('s1-grant-missing.json', { s1Bash: s1Bash.body, allGrants: grantFacts() }); }
+
+    // ── S2: grep over-cap → tool-owned spill → TeamAwareLocalSpillStore ──
+    // Producer = the BOOT team's leader (row anchor `team-root`): it is a
+    // MANAGED Team session (TeamDomain-bound root) but declares NO
+    // capabilities.permissions, so (a) the A2C-2 Permission Coverage Gate
+    // never runs for it and its surface keeps `grep` (the frozen
+    // KNOWN_SENSITIVE registry makes grep FATAL on any strict surface —
+    // A2C-6 is deferred — so no strict instance in this world can call
+    // grep itself; the guide's "managed strict Team agent → grep" is
+    // realized here as "managed Team agent → grep" + a strict read-back
+    // cross-check below) and (b) its tool dispatch still flows through
+    // the agent's real tool pipeline (pre-execute waterfall included),
+    // so the grep spill is produced exactly as in model-driven operation.
+    // The grant is recorded by the SAME TeamAwareLocalSpillStore the
+    // strict team uses (the bundle-layer provider replacement), through
+    // the sibling bridge → TeamArtifactAuthority → durable ledger.
+    log('── S2: grep over-cap vertical (boot-leader producer; 320 matches > 250 cap) ──')
+    const s2SeqsBefore = new Set(grantFacts().map((f) => f.sequence))
+    const s2Grep = await p6t6Tool(HOST_PORT, 'grep', grepArgs, ROOT)
+    const s2Matches = s2Grep.body?.ok === true ? s2Grep.body?.value?.matches : null
+    check('S2a', 'boot-leader grep over the 320-line fixture succeeded (320 canonical matches — over the 250 inline cap)',
+      s2Grep.body?.ok === true && Array.isArray(s2Matches) && s2Matches.length === GREP_MATCH_LINES,
+      `status=${s2Grep.status} ok=${s2Grep.body?.ok} matches=${Array.isArray(s2Matches) ? s2Matches.length : 'n/a'} err=${String(s2Grep.body?.error?.message ?? '').slice(0, 200)}`)
+    const s2Grants = await waitForSpillGrant('grep', 10000, s2SeqsBefore)
+    const s2GrantOk = s2Grants.length === 1
+      && s2Grants[0].payload?.source?.kind === 'spill-store'
+      && s2Grants[0].payload?.source?.spillSource?.kind === 'tool'
+      && s2Grants[0].payload?.source?.spillSource?.toolName === 'grep'
+      && s2Grants[0].rootSessionId === ROOT
+    check('S2b', 'exactly ONE durable spill-store grant for the grep, under the BOOT root (provenance spill-store/{kind:tool, toolName:grep} — the tool-owned post-execute spill through the Team-aware SpillStore)', s2GrantOk,
+      `count=${s2Grants.length} first=${JSON.stringify(s2Grants[0] ?? null).slice(0, 320)}`)
+    const s2Locator = s2Grants[0]?.payload?.locator
+    let s2ReadOk = false
+    if (typeof s2Locator === 'string') {
+      // Same-instance read-back: the boot leader (unmanaged-style read
+      // path — no Team permission plane on that instance) reads the
+      // locator; the assertion is that the FULL result round-trips
+      // through the SpillStore file (all 320 lines).
+      const s2Read = await p6t6Tool(HOST_PORT, 'read', { file_path: s2Locator }, ROOT)
+      const s2Text = readTextOf(s2Read.body)
+      const s2MatchCount = (s2Text.match(/match-\d{4}/g) ?? []).length
+      s2ReadOk = s2Read.body?.ok === true && s2Text.includes('match-0001') && s2Text.includes(`match-${String(GREP_MATCH_LINES).padStart(4, '0')}`) && s2MatchCount === GREP_MATCH_LINES
+      check('S2c', 'boot-leader (same instance) read of the grep SpillStore locator returns the FULL result (all 320 match lines round-trip)', s2ReadOk,
+        `ok=${s2Read.body?.ok} matchLines=${s2MatchCount} hasFirst=${s2Text.includes('match-0001')} hasLast=${s2Text.includes(`match-${String(GREP_MATCH_LINES).padStart(4, '0')}`)} err=${String(s2Read.body?.error?.message ?? '').slice(0, 200)}`)
+      // Cross-instance strict check: the STRICT team's leader (a different
+      // (root, instance) composite — and a strict default-deny surface)
+      // reads the SAME locator: no grant covers its identity → DENIED.
+      // This is the grant-scoping half of the vertical (the grant-lane
+      // allow half is exercised identically by S1d on the S1 locator).
+      const s2ReadStrict = await p6t6Tool(HOST_PORT, 'read', { file_path: s2Locator }, CREATED_ROOT)
+      check('S2d', 'strict-leader (another root/instance) read of the grep SpillStore locator is DENIED (grant scoped to the boot-leader composite)', s2ReadStrict.body?.ok === false,
+        `ok=${s2ReadStrict.body?.ok} err=${String(s2ReadStrict.body?.error?.message ?? '').slice(0, 240)}`)
+      writeEvidence('s2-grep-spill-store.json', { s2Grep: s2Grep.body, s2Grants, s2Locator, s2Read: s2Read.body, s2MatchCount, s2ReadStrict: s2ReadStrict.body })
+      if (!s2ReadOk || s2ReadStrict.body?.ok !== false) fail('S2')
+    } else {
+      check('S2c', 'boot-leader (same instance) read of the grep SpillStore locator returns the FULL result (all 320 match lines round-trip)', false, 'no spill-store/grep grant locator (S2b failed)')
+      fail('S2')
+    }
+    if (!s2GrantOk) { fail('S2'); writeEvidence('s2-grant-missing.json', { s2Grep: s2Grep.body, allGrants: grantFacts() }); }
+
     // ── E6: explicit deny wins over a valid grant (worker-2) ──────────
     log('── E6: worker-2 ask -> leader approval -> spill -> explicit deny wins ──')
     // The bash call BLOCKS at the durable control wait (leader-approval ask).
@@ -1384,6 +1638,18 @@ async function main() {
     check('POST', 'stable instances :3080/:3180 state unchanged (read-only probes pre == post)', stableUntouched,
       `pre=${JSON.stringify(preStable)} post=${JSON.stringify(postStable)}`)
     check('POST', 'test-use working tree byte-clean after the run', testuseClean, '')
+    // The THREE artifact-read producer paths (PR #26 supplemental §2/§7):
+    // the shell-foreground early-spill observer (E2) and the two SpillStore
+    // verticals (S1 generic spill-policy, S2 tool-owned grep) — reported as
+    // an explicit split so the smoke summary proves the provider replacement
+    // covers tool-owned spill, not just the shell path.
+    const producerOk = (leg) => CRITERIA.some((c) => c.leg === leg && c.ok)
+    const producerPaths = {
+      'foreground-shell-early-spill': { leg: 'E2', ok: producerOk('E2') },
+      'spill-store-generic-spill-policy': { leg: 'S1', ok: producerOk('S1') },
+      'spill-store-tool-owned-grep': { leg: 'S2', ok: producerOk('S2') },
+    }
+    writeEvidence('producer-paths.json', producerPaths)
     const passed = CRITERIA.filter((c) => c.ok).length
     const failed = CRITERIA.filter((c) => !c.ok)
     const anyFail = failed.length > 0 || fatalError !== null
@@ -1394,11 +1660,13 @@ async function main() {
       elapsedMs: Date.now() - t0,
       fails: FAILS,
       criteria: CRITERIA,
+      producerPaths,
       stable: { pre: preStable, post: postStable, untouched: stableUntouched },
       testuseClean,
       keep: KEEP,
       home: HOME,
     })
+    log(`producer paths: shell-early-spill(E2)=${producerPaths['foreground-shell-early-spill'].ok} spill-policy(S1)=${producerPaths['spill-store-generic-spill-policy'].ok} grep(S2)=${producerPaths['spill-store-tool-owned-grep'].ok}`)
     log(`── verdict: ${verdict} (${passed}/${CRITERIA.length} criteria; fails=${JSON.stringify(failed.map((f) => f.leg))}${fatalError !== null ? `; FATAL: ${String(fatalError.message).slice(0, 160)}` : ''}) ──`)
     if (KEEP) {
       log(`--keep: world retained at ${HOME}`)

@@ -32,12 +32,25 @@
  *      durable file);
  *  S8  an ineligible (DISPOSED) managed instance: saveText REJECTS
  *      (D6 eligibility at issuance) — no put, no install.
+ *  C1  CONFIG MIGRATION REGRESSION (PR #26 supplemental §3.1-B): a
+ *      custom `root` on the team-spill-local row is honored by the
+ *      INHERITED LocalSpillStore (resolved absolute, not the private
+ *      `dsh-spill-*` default; saveText lands under it) — the config a
+ *      profile already carries for the old `spill-local` row survives
+ *      the provider replacement;
+ *  C2  CONFIG MIGRATION REGRESSION (PR #26 supplemental §3.1-B): a
+ *      non-default `cleanupPeriodDays` propagates into the inherited
+ *      LocalSpillStore — the resolved config carries it (not the 30-day
+ *      default, not the 0-disable) AND the inherited startup sweep runs
+ *      at THAT period (exercised through the documented LocalSpillStore
+ *      `gatherRoots` test seam with an isolated root set — expired
+ *      session content is reclaimed, fresh content is kept).
  *
  * @module @dsh-agent-team/runtime/test/team-spill-local
  */
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { basename, join, resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { SaveTextSpill } from '@deepseek-ai/dsh-spill'
 import {
@@ -143,8 +156,14 @@ function makeLedgerPort(world: LedgerWorld): ArtifactLedgerPort {
 
 // --- the minimal structural Cordis context (the Service base's surface) ----------
 
+interface RecordedEffect {
+  readonly factory: () => Generator<unknown, unknown, unknown>
+  readonly label: string | undefined
+}
+
 interface FakeCtxWorld {
   readonly provided: Map<string, unknown>
+  readonly effects: RecordedEffect[]
   bridge: TeamArtifactAuthorityBridge | undefined
 }
 
@@ -156,11 +175,13 @@ function makeFakeCtx(world: FakeCtxWorld) {
       },
       get: (name: string): unknown => (name === 'teamArtifactAuthority' ? world.bridge : undefined),
     },
-    effect: (): void => {
-      // The cleanup-sweep effect (a generator factory) is not run in
-      // these unit tests: the config disables the sweep
-      // (`cleanupPeriodDays: 0`) and the storage path under test does
-      // not touch it.
+    effect: (factory: () => Generator<unknown, unknown, unknown>, label?: string): void => {
+      // Recorded (not run): the unit tests that disable the sweep
+      // (`cleanupPeriodDays: 0`) never need the body, and the C2
+      // config-propagation test RUNS the recorded generator explicitly
+      // (the documented LocalSpillStore test seam) to observe the
+      // startup cleanup at the PROPAGATED period.
+      world.effects.push({ factory, label })
     },
     logger: { warn: (): void => {} },
   }
@@ -190,6 +211,7 @@ function makeStoreWorld(options?: {
   const ledger: LedgerWorld = { appended: [], putFault: options?.putFault ?? false }
   const ctx: FakeCtxWorld = {
     provided: new Map(),
+    effects: [],
     bridge: options?.bridge === false ? undefined : { authority: undefined },
   }
   const authority = new TeamArtifactAuthority({
@@ -367,7 +389,7 @@ describe('TeamAwareLocalSpillStore (strict-read core-spill C)', () => {
     identity.bindings.set('session-6', { rootSessionId: ROOT, instanceId: MEMBER })
     identity.lifecycles.set(`${ROOT}::${MEMBER}`, 'RUNNING')
     const ledger: LedgerWorld = { appended: [], putFault: false }
-    const ctx: FakeCtxWorld = { provided: new Map(), bridge: { authority: undefined } }
+    const ctx: FakeCtxWorld = { provided: new Map(), effects: [], bridge: { authority: undefined } }
     const authority = new TeamArtifactAuthority({
       fs: makeFsPort(fs),
       identity: makeIdentityPort(identity),
@@ -402,5 +424,96 @@ describe('TeamAwareLocalSpillStore (strict-read core-spill C)', () => {
     expect(error).toBeInstanceOf(ArtifactRecordError)
     expect(world.ledger.appended.length).toBe(0)
     expect(world.authority.registry.size).toBe(0)
+  })
+
+  // --- the config-migration regression tests (PR #26 supplemental §3.1-B) ------
+
+  it('C1: a custom config.root is honored by the inherited LocalSpillStore (the old spill-local config survives the provider replacement)', async () => {
+    // A profile that already carries `root` (and friends) on its
+    // `spill-local` row carries the SAME config onto the `team-spill-local`
+    // row — the regression risk is that the subclass/loader drops it and
+    // falls back to the private default. The assertion is on the INHERITED
+    // LocalSpillStore surface: the resolved root is the custom path (not a
+    // fresh `dsh-spill-*` mkdtemp) and saveText lands under it.
+    const base = mkdtempSync(join(tmpdir(), 'team-spill-root-'))
+    tmpRoots.push(base)
+    const customRoot = join(base, 'custom', 'spill-root') // nested: created on demand by the storage path
+    const ctx: FakeCtxWorld = { provided: new Map(), effects: [], bridge: undefined } // unmanaged: storage path only
+    const store = new TeamAwareLocalSpillStore(makeFakeCtx(ctx) as never, {
+      root: customRoot,
+      cleanupPeriodDays: 0,
+    })
+    expect(store.root).toBe(resolve(customRoot))
+    expect(basename(store.root)).not.toMatch(/^dsh-spill-/) // not the private default shape
+    const ref = await store.saveText(saveInput('session-c1'))
+    expect(ref.locator.startsWith(store.root)).toBe(true)
+    expect(existsSync(ref.locator)).toBe(true)
+  })
+
+  it('C2: a non-default cleanupPeriodDays propagates into the inherited LocalSpillStore (config carried + the startup sweep runs at the propagated period)', async () => {
+    // Same migration surface: `cleanupPeriodDays` set on the row must
+    // survive into the inherited LocalSpillStore — (a) the resolved config
+    // carries the custom value (not the 30-day default, not the 0-disable)
+    // and (b) the INHERITED startup sweep actually expires at THAT period.
+    // The sweep is exercised through the documented LocalSpillStore test
+    // seam: a subclass overrides `gatherRoots` to the isolated root set
+    // (no real tmpdir scan, no foreign I/O) and the recorded startup
+    // effect is run explicitly (its generator body is the inherited
+    // cleanup registration).
+    const root = mkdtempSync(join(tmpdir(), 'team-spill-cleanup-'))
+    tmpRoots.push(root)
+    const expiredDir = join(root, 'session-aaaabbbbcccc')
+    const freshDir = join(root, 'session-111122223333')
+    mkdirSync(expiredDir, { recursive: true })
+    mkdirSync(freshDir)
+    const expiredFile = join(expiredDir, 'old.txt')
+    const freshFile = join(freshDir, 'fresh.txt')
+    writeFileSync(expiredFile, 'old')
+    writeFileSync(freshFile, 'fresh')
+    const twoDaysAgo = new Date(Date.now() - 2 * 86_400_000)
+    utimesSync(expiredFile, twoDaysAgo, twoDaysAgo) // strictly older than the 1-day cutoff
+
+    class IsolatedSpillStore extends TeamAwareLocalSpillStore {
+      // The documented LocalSpillStore test seam: an isolated root set for
+      // the sweep (the production `gatherRoots` would scan the OS tmpdir
+      // for prior-default roots — foreign to this unit test).
+      override async gatherRoots(
+        warn: (message: string) => void,
+      ): Promise<Array<{ path: string; pruneWhenEmpty: boolean }>> {
+        void warn
+        return [{ path: this.root, pruneWhenEmpty: false }]
+      }
+    }
+
+    const ctx: FakeCtxWorld = { provided: new Map(), effects: [], bridge: undefined } // unmanaged: storage path only
+    const store = new IsolatedSpillStore(makeFakeCtx(ctx) as never, {
+      root,
+      cleanupPeriodDays: 1, // a non-default, non-zero period
+    })
+
+    // (a) the inherited LocalSpillStore carries the RESOLVED custom period
+    // (the config survived the subclass constructor pass-through) and the
+    // custom root.
+    expect(store.config.cleanupPeriodDays).toBe(1)
+    expect(store.root).toBe(resolve(root))
+
+    // (b) the inherited constructor registered the startup sweep effect…
+    const sweepEffect = ctx.effects.find((e) => e.label === 'spill-local cleanup sweep')
+    expect(sweepEffect).toBeDefined()
+    if (sweepEffect === undefined) throw new Error('sweep effect missing (the expect above is the assertion)')
+    // …and, run at the PROPAGATED period (cutoff = now − 1 day), it expires
+    // the 2-day-old file and prunes its emptied session dir, while the
+    // fresh session survives.
+    const gen = sweepEffect.factory()
+    const rawDisposer = gen.next().value
+    if (rawDisposer === undefined) throw new Error('sweep effect yielded no disposer')
+    // The upstream sweep generator yields its async disposer as the first
+    // value (LocalSpillStore 'spill-local cleanup sweep' contract).
+    const disposer = rawDisposer as () => Promise<void>
+    await disposer()
+    expect(existsSync(expiredFile)).toBe(false)
+    expect(existsSync(expiredDir)).toBe(false)
+    expect(existsSync(freshFile)).toBe(true)
+    expect(existsSync(freshDir)).toBe(true)
   })
 })

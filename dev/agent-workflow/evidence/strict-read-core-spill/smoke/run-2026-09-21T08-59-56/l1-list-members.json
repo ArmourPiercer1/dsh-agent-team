@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "value": {
+    "status": "executed",
+    "action": "list-members",
+    "rootSessionId": "session-strict-read-085956",
+    "callerRole": "leader",
+    "effect": {
+      "kind": "members-listed",
+      "members": [
+        {
+          "instanceId": "inst-leader",
+          "templateId": "leader",
+          "label": "leader"
+        }
+      ]
+    },
+    "requestToken": "tok-list-2026-09-21T08-59-56"
+  }
+}
