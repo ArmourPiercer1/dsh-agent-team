@@ -1,0 +1,85 @@
+{
+  "branch": "task/strict-read-core-spill",
+  "spec": "git+file:////home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/dsh-homes/git-install-2026-09-21T09-28-53/repo.git#task/strict-read-core-spill",
+  "worktreeHead": "e535dcf4b7acdf299a73f0ab4dc3814be9adb3cc",
+  "installedHead": "e535dcf4b7acdf299a73f0ab4dc3814be9adb3cc",
+  "firstAddExit": 0,
+  "bundles": [
+    "@deepseek-ai/dsh-base",
+    "@deepseek-ai/dsh-web-app",
+    "dsh-agent-team"
+  ],
+  "webProbe": {
+    "reachable": true,
+    "status": 401
+  },
+  "mockRequests": 0,
+  "criteria": [
+    {
+      "leg": "S1",
+      "name": "the FIRST `add` succeeds (exit 0) with NO ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (prebuilt install surface, zero lifecycle scripts)",
+      "ok": true,
+      "detail": "exit=0 outTail=ne | Done in 4.2s using pnpm v11.7.0 | dsh: initialized profile web at /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/dsh-homes/git-install-2026-09-21T09-28-53/profiles/web | "
+    },
+    {
+      "leg": "S1",
+      "name": "profile pnpm-workspace.yaml carries NO allowBuilds entry",
+      "ok": true,
+      "detail": "yamlPresent=true (61 B)"
+    },
+    {
+      "leg": "S2",
+      "name": "dsh.profile.bundles AUTO-contains the dsh-agent-team bundle (no hand-written row)",
+      "ok": true,
+      "detail": "[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+    },
+    {
+      "leg": "S2",
+      "name": "the profile patch layer carries NO dsh-agent-team product row (the bundle layer alone supplies it)",
+      "ok": true,
+      "detail": "userPatchPresent=true (217 B)"
+    },
+    {
+      "leg": "S3",
+      "name": "installed package dir carries the team-spill-local provider artifact (the committed prebuilt dist)",
+      "ok": true,
+      "detail": "pkgDir=true"
+    },
+    {
+      "leg": "S3",
+      "name": "the installed bundle layer DISABLES the base spill-local row and INSERTS team-spill-local",
+      "ok": true,
+      "detail": "disablesBase=true insertsTeam=true"
+    },
+    {
+      "leg": "B1",
+      "name": "the real host booted to the `dsh web:` marker",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "B1",
+      "name": "NO ERR_MODULE_NOT_FOUND in the instance log (the git checkout dist resolves end-to-end)",
+      "ok": true,
+      "detail": "hits=0 first="
+    },
+    {
+      "leg": "B2",
+      "name": "NO duplicate spillStore service collision (base spill-local disabled; team-spill-local active in the installed form)",
+      "ok": true,
+      "detail": "spillLines=[\"[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/dsh-homes/git-install-2026-09-21T09-28-53/profiles/web/node_modules/dsh-agent-team/.agents/skills (source \\\"dsh-agent-team\\\", provider \\\"dsh-agent-team\\\", rank 550"
+    },
+    {
+      "leg": "B3",
+      "name": "the installed-form web endpoint answers (401 without the boot token — same probe family as the smoke stable checks)",
+      "ok": true,
+      "detail": "{\"reachable\":true,\"status\":401}"
+    },
+    {
+      "leg": "B3",
+      "name": "the mock model served at least the boot turn traffic without error",
+      "ok": true,
+      "detail": "mockRequests=0"
+    }
+  ]
+}

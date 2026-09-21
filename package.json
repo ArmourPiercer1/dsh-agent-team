@@ -19,6 +19,7 @@
   "exports": {
     ".": "./packages/client/composition-shim/index.js",
     "./host": "./packages/runtime/dist/packages/runtime/src/plugin/host.js",
+    "./spill-local": "./packages/runtime/dist/packages/runtime/src/plugin/team-spill-local.js",
     "./client": "./packages/client/composition-shim/client-bundle.js",
     "./package.json": "./package.json"
   },

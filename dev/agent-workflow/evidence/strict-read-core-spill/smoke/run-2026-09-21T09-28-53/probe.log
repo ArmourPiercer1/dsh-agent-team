@@ -1,0 +1,30 @@
+[2026-09-21T09:28:53.899Z] git-install boot probe — branch=task/strict-read-core-spill worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill
+[2026-09-21T09:28:53.901Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/dev/agent-workflow/evidence/strict-read-core-spill/smoke/run-2026-09-21T09-28-53
+[2026-09-21T09:28:54.236Z] ZERO-TOUCH probe :3080 pre: {"reachable":true,"status":401}
+[2026-09-21T09:28:54.237Z] ZERO-TOUCH probe :3180 pre: {"reachable":true,"status":401}
+[2026-09-21T09:28:54.237Z] preflight OK: test-use pinned + clean; worktree install surface present
+[2026-09-21T09:28:54.256Z] ports: host=3495 mock=3505
+[2026-09-21T09:28:54.257Z] bare repo: cloning /home/user/dsh-plugins/dsh-agent-team → /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/dsh-homes/git-install-2026-09-21T09-28-53/repo.git
+[2026-09-21T09:28:54.332Z] bare repo cloned (all branches; the probe installs the task branch tip)
+[2026-09-21T09:28:54.332Z] SPEC = git+file:////home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/dsh-homes/git-install-2026-09-21T09-28-53/repo.git#task/strict-read-core-spill
+[2026-09-21T09:28:54.332Z] first add (expect SUCCESS, zero allowBuilds) …
+[2026-09-21T09:28:58.862Z] first add exit=0
+[2026-09-21T09:28:58.862Z] PASS [S1] the FIRST `add` succeeds (exit 0) with NO ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (prebuilt install surface, zero lifecycle scripts) — exit=0 outTail=ne | Done in 4.2s using pnpm v11.7.0 | dsh: initialized profile web at /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/dsh-homes/git-install-2026-09-21T09-28-53/profiles/web | 
+[2026-09-21T09:28:58.863Z] PASS [S1] profile pnpm-workspace.yaml carries NO allowBuilds entry — yamlPresent=true (61 B)
+[2026-09-21T09:28:58.863Z] PASS [S2] dsh.profile.bundles AUTO-contains the dsh-agent-team bundle (no hand-written row) — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-21T09:28:58.863Z] PASS [S2] the profile patch layer carries NO dsh-agent-team product row (the bundle layer alone supplies it) — userPatchPresent=true (217 B)
+[2026-09-21T09:28:58.863Z] PASS [S3] installed package dir carries the team-spill-local provider artifact (the committed prebuilt dist) — pkgDir=true
+[2026-09-21T09:28:58.863Z] PASS [S3] the installed bundle layer DISABLES the base spill-local row and INSERTS team-spill-local — disablesBase=true insertsTeam=true
+[2026-09-21T09:28:58.865Z] mock model listening on 127.0.0.1:3505
+[2026-09-21T09:28:58.868Z] host spawned (pid=155, port=3495, log=/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/dev/agent-workflow/evidence/strict-read-core-spill/smoke/run-2026-09-21T09-28-53/instance-1.log)
+[2026-09-21T09:29:04.877Z] PASS [B1] the real host booted to the `dsh web:` marker
+[2026-09-21T09:29:04.878Z] PASS [B1] NO ERR_MODULE_NOT_FOUND in the instance log (the git checkout dist resolves end-to-end) — hits=0 first=
+[2026-09-21T09:29:04.878Z] PASS [B2] NO duplicate spillStore service collision (base spill-local disabled; team-spill-local active in the installed form) — spillLines=["[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/dsh-homes/git-install-2026-09-21T09-28-53/profiles/web/node_modules/dsh-agent-team/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550
+[2026-09-21T09:29:05.019Z] PASS [B3] the installed-form web endpoint answers (401 without the boot token — same probe family as the smoke stable checks) — {"reachable":true,"status":401}
+[2026-09-21T09:29:05.019Z] PASS [B3] the mock model served at least the boot turn traffic without error — mockRequests=0
+[2026-09-21T09:29:05.588Z] ZERO-TOUCH probe :3080 post: {"reachable":true,"status":401}
+[2026-09-21T09:29:05.589Z] ZERO-TOUCH probe :3180 post: {"reachable":true,"status":401}
+[2026-09-21T09:29:05.589Z] PASS [POST] stable instances :3080/:3180 state unchanged (read-only probes pre == post) — pre={"p3080":{"reachable":true,"status":401},"p3180":{"reachable":true,"status":401}} post={"p3080":{"reachable":true,"status":401},"p3180":{"reachable":true,"status":401}}
+[2026-09-21T09:29:05.613Z] PASS [POST] test-use working tree byte-clean after the run
+[2026-09-21T09:29:05.613Z] ── verdict: PASS (13/13 criteria; fails=[]) ──
+[2026-09-21T09:29:05.613Z] --keep: world retained at /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/dsh-homes/git-install-2026-09-21T09-28-53

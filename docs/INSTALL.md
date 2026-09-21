@@ -298,6 +298,84 @@ leader 模板同理：`capabilities.mcp.items` 写 leader 应见的 server 集�
 server 即被 unmount，模型可见工具随之消失；宿主重启后 durable truth 不变，
 effective 集不变。
 
+## 3.4 `spill-local` → `team-spill-local` 配置迁移（升级必读）
+
+strict-read + core-spill（PR #26 系列）起，本包的 bundle 层（仓库根
+`cordis.patch.yml`）**禁用** base 的 `spill-local` 行并挂载 Team-aware
+provider 行：
+
+```yaml
+- id: spill-local
+  disabled: true
+- insert:
+  - id: "team-spill-local"
+    name: "dsh-agent-team/spill-local"
+```
+
+provider 是 base 行的严格超集：同一个 `spillStore` 服务名、同一 config
+面（`root` / `cleanupPeriodDays`），外加 managed Team 会话的 durable
+artifact-read grant 记录（非 Team 会话行为与上游逐字节等价）。
+
+**影响**：bundle 只禁用 + 插入，**不会**搬运你 profile 层已有的
+`spill-local` 配置。如果你的 profile `cordis.patch.yml`（或 user 层）
+曾经写过：
+
+```yaml
+# Before（旧行 —— 升级后已被 bundle 禁用，配置静默失效）
+- id: spill-local
+  config:
+    root: /path/to/my/spill
+    cleanupPeriodDays: 14
+```
+
+升级后这些值**不会自动传给** `team-spill-local`（spill 会落回默认：
+私有临时根 + 30 天清理）。
+
+**迁移 = 在 profile/user patch 层用 `id: team-spill-local` 覆盖 bundle
+已插入的同名 row 的 config**（同 id patch 在已存在的 row 上就地覆盖
+`config` 字段 — config 对象整体替换、非字段级 merge；row 的其他字段如
+`name` 保留；同 id patch 永远不会新建 row）：
+
+```yaml
+# After（profile 层 cordis.patch.yml —— 覆盖 bundle 已存在的 row）
+- id: team-spill-local
+  config:
+    root: /path/to/my/spill
+    cleanupPeriodDays: 14
+```
+
+如希望保留 module mismatch guard（`name` 与 row 不符时 patch 会带
+warning 被跳过、不生效），可以显式写出 `name`：
+
+```yaml
+- id: team-spill-local
+  name: dsh-agent-team/spill-local
+  config:
+    root: /path/to/my/spill
+    cleanupPeriodDays: 14
+```
+
+**迁移中不要再次使用 `- insert:`**：不带目标 row id 的 `insert` 会向
+树**追加一条新 row**，从而产生第二个同 id 的 `team-spill-local` row →
+duplicate `spillStore` provider → boot 失败。同 id patch 只命中 bundle
+已插入的那一行并就地覆盖，不产生第二行。
+
+旧 `- id: spill-local` 条目可删除（该行已被 bundle 禁用；留着也不生效）。
+两个字段都缺省时不写 `team-spill-local` 行即可（bundle 行 = base 默认）。
+config schema 与 upstream `LocalSpillStore` 一致：`root` 字符串、
+`cleanupPeriodDays` 整数、min 0、缺省 30。配置生效的回归保障见
+`packages/runtime/test/team-spill-local.test.ts` 的 C1/C2（自定义 `root`
+生效 + 非缺省 `cleanupPeriodDays` 传入 inherited `LocalSpillStore` 并
+实际按其过期清理）与
+`packages/runtime/test/team-spill-local-composition.test.ts`（真实 bundle
++ profile 同 id patch 的 composition 树：恰好一个 active
+`team-spill-local` row、无 duplicate `spillStore`）。
+
+> 未提供升级期 warning（指南 §3.1-C 的可选项）：检测「disabled
+> `spill-local` 带 config + active `team-spill-local` 无 config」需要读取
+> profile 层的 resolved 行配置 —— 该信息不在公开 seam 暴露，实现需侵入
+> loader，按指南「不强求」从略；本节文档 + C1/C2 回归为最低修复面。
+
 ## 4. 真实模型
 
 - `staticModel` 必须指向目标机器上**真实可用**的 provider/model，且该 DSH 实例已配置

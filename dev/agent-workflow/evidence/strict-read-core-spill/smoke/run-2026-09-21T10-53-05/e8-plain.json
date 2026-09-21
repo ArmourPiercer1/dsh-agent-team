@@ -1,0 +1,37 @@
+{
+  "plainCreate": {
+    "type": "server-response",
+    "rpcId": "e8-create-we0d2ixoy1",
+    "result": {
+      "ok": true,
+      "value": {
+        "sessionId": "session-strict-read-plain-105305",
+        "agentPreset": "strict-read-smoke"
+      }
+    }
+  },
+  "plainRes": 200,
+  "surface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "write"
+  ],
+  "spillBefore": 2,
+  "plainSpills": [
+    "/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T10-53-05/tmp/dsh-subprocess-D3ptSm/dsh-subprocess-110-3-4a79196565ae-stdout.log"
+  ],
+  "readOutcome": "allowed",
+  "readPText": "<path>/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T10-53-05/tmp/no-grant-20260921T105305.txt</path>\n<type>file</type>\n<content>\n1: strict-read no-grant probe 2026-09-21T10-53-05\n\n(End of file - total 1 lines)\n</content>",
+  "plainGrantFacts": [
+    []
+  ],
+  "bashResultHead": "\nSTRICTREAD_L_PLAIN_20260921T105305\nSTRICTREAD_L_PLAIN_20260921T105305\nSTRICTREAD_L_PLAIN_20260921T105305\nSTRICTREAD_L_PLAIN_20260921T105305\nSTRICTREAD_L_PLAIN_20260921T105305\nSTRICTREAD_L_PLAIN_20260",
+  "lastReply": {
+    "kind": "text",
+    "content": "STRICTREAD_PLAIN_DONE"
+  }
+}

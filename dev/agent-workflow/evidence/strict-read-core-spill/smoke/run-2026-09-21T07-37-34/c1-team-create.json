@@ -1,0 +1,80 @@
+{
+  "type": "server-response",
+  "rpcId": "strict-read-59bfcsr8st",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "path": "fresh-root",
+        "durable": {
+          "teamSession": {
+            "schemaVersion": 1,
+            "rootSessionId": "session-strict-read-073734",
+            "blueprint": {
+              "blueprintId": "team.strict-read-s",
+              "revision": "1",
+              "contentHash": "sha256:a97d6d0ba7d4a317aac57ef0a4bc9fb3f727183ef8e3092d7e657cfdbfde98be"
+            },
+            "createdAt": "2026-09-21T07:37:40.181Z",
+            "generation": 1,
+            "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T07-37-34/workspace"
+          },
+          "binding": {
+            "schemaVersion": 1,
+            "kind": "team-root",
+            "sessionId": "session-strict-read-073734"
+          },
+          "wrote": true,
+          "leaderRow": {
+            "schemaVersion": 2,
+            "rootSessionId": "session-strict-read-073734",
+            "instanceId": "inst-leader",
+            "templateId": "leader",
+            "label": "leader",
+            "createdAt": "2026-09-21T07:37:40.188Z",
+            "activityVersion": 1
+          }
+        },
+        "bind": {
+          "requested": "fresh-root",
+          "bound": true,
+          "installed": true,
+          "identity": {
+            "kind": "root",
+            "sessionId": "session-strict-read-073734",
+            "rootSessionId": "session-strict-read-073734"
+          },
+          "admitted": true,
+          "admissionCode": "ADMISSION_OPEN",
+          "emittedEvents": [
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "persona"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "model"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "capability"
+            },
+            {
+              "name": "agent-setup/admission-decided",
+              "detail": "ADMISSION_OPEN"
+            }
+          ]
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.create",
+        "endpoint": "team.create",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

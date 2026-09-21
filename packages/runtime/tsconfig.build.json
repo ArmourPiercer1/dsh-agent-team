@@ -2,13 +2,15 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "../..",
-    "outDir": "dist"
+    "outDir": "dist",
+    "types": ["node"]
   },
   "include": [
     "src",
     "action-router",
     "activation",
     "activity",
+    "artifact-read",
     "admission",
     "agent-setup",
     "compatibility",

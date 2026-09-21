@@ -1,0 +1,110 @@
+---
+schemaVersion: 1
+blueprintId: team.strict-read-s
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You lead the strict-read smoke team. Keep replies short."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+        - team_create_member
+        - team_resolve_control
+    builtinToolDeny:
+      - glob
+      - grep
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: deny
+      allow:
+      - tool: bash
+        resource:
+          kind: any
+      ask: []
+      deny: []
+teamEnvelope:
+  allow:
+    - assign-task
+    - create-member
+    - send-message
+    - report-progress
+    - request-control
+    - resolve-control
+    - bash
+  deny: []
+members:
+  - templateId: worker-1
+    persona: "You are worker-1 of the strict-read smoke team."
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny:
+        - glob
+        - grep
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: deny
+        allow: []
+        ask: []
+        deny: []
+  - templateId: worker-2
+    persona: "You are worker-2 of the strict-read smoke team."
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny:
+        - glob
+        - grep
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: deny
+        allow: []
+        ask:
+        - tool: bash
+          resource:
+            kind: any
+        deny:
+        - tool: read
+          resource:
+            kind: subtree
+            path: /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T08-59-56/tmp
+memberEnvelopes:
+  - templateId: worker-1
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+      deny: []
+  # worker-2 NEEDS request-control in its own envelope: the ask-bash
+  # flow mints the leader-approval request by performing the
+  # request-control operation AS THE MEMBER (run 15 lesson: without it
+  # the ask decision fails with "operation request-control is outside
+  # the callers mutation envelope" and the call errors instead of
+  # blocking on the approval).
+  - templateId: worker-2
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+        - request-control
+      deny: []
+policyStates: []
+metadata: {}
+---

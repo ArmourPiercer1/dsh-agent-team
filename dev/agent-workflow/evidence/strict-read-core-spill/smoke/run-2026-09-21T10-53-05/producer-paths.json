@@ -1,0 +1,14 @@
+{
+  "foreground-shell-early-spill": {
+    "leg": "E2",
+    "ok": true
+  },
+  "spill-store-generic-spill-policy": {
+    "leg": "S1",
+    "ok": true
+  },
+  "spill-store-tool-owned-grep": {
+    "leg": "S2",
+    "ok": true
+  }
+}

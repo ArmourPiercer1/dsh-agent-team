@@ -1,0 +1,9 @@
+{
+  "readX": {
+    "ok": false,
+    "error": {
+      "message": "permission denied by the static permission policy: the template's default (deny) denies read on /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T10-53-05/tmp/dsh-subprocess-D3ptSm/dsh-subprocess-110-1-db9fda1e7041-stdout.log"
+    }
+  },
+  "w1Id": "inst-1af5y9w0lo34"
+}

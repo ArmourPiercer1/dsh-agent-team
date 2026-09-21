@@ -1,0 +1,685 @@
+$ vitest run
+
+ RUN  v4.1.8 /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb
+
+ ❯ packages/runtime/test/a2c2-permission-coverage.test.ts (0 test)
+ ❯ packages/runtime/test/h1a-pre-execute-endcap.test.ts (0 test)
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts (0 test)
+ ❯ packages/runtime/test/a2c1-pwsh-permission.test.ts (0 test)
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 9ms
+ ❯ packages/runtime/test/a6a-production-wiring.test.ts (0 test)
+ ❯ packages/domain/test/a1-permission-policy.test.ts (0 test)
+ ❯ packages/runtime/test/p8s5b-operation-fencing.test.ts (0 test)
+ ❯ packages/tools/test/p6t6-actions.test.ts (0 test)
+ ❯ packages/runtime/test/tcm-m3-root-initial-work.test.ts (0 test)
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+ ❯ packages/runtime/test/p8s3-work-chain.test.ts (0 test)
+ ❯ packages/runtime/test/issue1-async-delegation.test.ts (0 test)
+ ❯ packages/runtime/test/f3a-lock-scope.test.ts (0 test)
+ ❯ packages/runtime/test/p6t2-actions.test.ts (0 test)
+ ✓ packages/domain/test/t4-policy-negative.test.ts (34 tests) 92ms
+ ❯ packages/runtime/test/issue2-capability-permission-precedence.test.ts (0 test)
+ ❯ packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts (0 test)
+ ❯ packages/runtime/test/a2c3-inspect-operation-permission.test.ts (0 test)
+ ❯ packages/runtime/test/p8s7r1-initial-work.test.ts (0 test)
+ ❯ packages/runtime/test/tcm-g1-s6-integration.test.ts (0 test)
+ ✓ packages/remote/test/tcm-m1-remote-v2.test.ts (26 tests) 15ms
+ ✓ packages/client/test/team-ledger-store.test.ts (24 tests) 16ms
+ ✓ packages/remote/test/f9-remote-v4.test.ts (31 tests) 15ms
+ ❯ packages/client/test/client-plugin-mount.test.ts (0 test)
+ ✓ packages/client/test/ledger-adapter.test.ts (27 tests) 22ms
+ ❯ packages/runtime/test/p8s5a-production-assembly.test.ts (0 test)
+ ✓ packages/runtime/test/artifact-read-authority.test.ts (26 tests) 24ms
+ ❯ packages/runtime/test/p6t3-send-delivery.test.ts (0 test)
+ ❯ packages/runtime/test/p6t4-negatives.test.ts (0 test)
+ ❯ packages/runtime/test/a2c4-external-lastmile.test.ts (0 test)
+ ❯ packages/runtime/test/h4-rule-identity.test.ts (0 test)
+ ❯ packages/runtime/test/a5a-pre-execute.test.ts (0 test)
+ ❯ packages/runtime/test/a4a-control-exact-scope.test.ts (0 test)
+ ❯ packages/runtime/test/h5-bash-effects.test.ts (0 test)
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts (0 test)
+ ❯ packages/runtime/test/a2-canonical-operation.test.ts (0 test)
+ ❯ packages/runtime/test/bp1-blueprint-authority.test.ts (0 test)
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (0 test)
+ ✓ packages/client/test/team-projection-store.test.ts (14 tests) 14ms
+ ❯ packages/runtime/test/t14h-probe-merge.test.ts (0 test)
+ ❯ packages/testkit/test/t6-9-negative-matrix.test.ts (0 test)
+ ❯ packages/runtime/test/tcm-d4-root-context.test.ts (0 test)
+ ❯ packages/runtime/test/exec-contract-dual-gate.test.ts (0 test)
+ ❯ packages/runtime/test/work-completion-async-wakeup.test.ts (0 test)
+ ❯ packages/runtime/test/a3-permission-resolver.test.ts (0 test)
+ ✓ packages/runtime/test/p7t2-escalation.test.ts (22 tests) 12ms
+ ✓ packages/domain/test/t4-policy-explain.test.ts (15 tests) 25ms
+ ❯ packages/runtime/test/t4a-capability-wiring.test.ts (0 test)
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts (0 test)
+ ✓ packages/domain/test/t4-policy-matrix.test.ts (14 tests) 93ms
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts (0 test)
+ ❯ packages/runtime/test/p8s2-leader-contract.test.ts (0 test)
+ ❯ packages/runtime/test/control-guard-leader.test.ts (0 test)
+ ❯ packages/client/test/d3-open-ordinary-mode.test.ts (0 test)
+ ❯ packages/domain/test/t1-capability-schema.test.ts (0 test)
+ ❯ packages/runtime/test/f9-s6-resolve-control.test.ts (0 test)
+ ✓ packages/runtime/test/p8s7r2-disposed-history.test.ts (10 tests) 17ms
+ ❯ packages/runtime/test/p7t5-failure-before-root-create.test.ts (0 test)
+ ✓ packages/testkit/test/t6-4-policy-precedence.test.ts (11 tests) 93ms
+ ❯ packages/runtime/test/bp1-dual-team-gate.test.ts (0 test)
+ ✓ packages/runtime/test/p5t6-cold-member.test.ts (8 tests) 11ms
+ ✓ packages/remote/test/p8t4-sync.test.ts (11 tests) 13ms
+ ✓ packages/runtime/test/d1-team-ownership-index.test.ts (16 tests) 15ms
+ ✓ packages/testkit/test/p4t5-corrupt-version.test.ts (10 tests) 14ms
+ ✓ packages/storage/test/p4t4-one-committed-invariant.test.ts (21 tests) 22ms
+ ✓ packages/runtime/test/p5t6-fresh-member.test.ts (24 tests) 19ms
+ ✓ packages/remote/test/d1-remote-v3.test.ts (24 tests) 18ms
+ ✓ packages/runtime/test/shell-result-observer.test.ts (12 tests) 17ms
+ ❯ packages/tools/test/issue1-collect-tools.test.ts (0 test)
+ ❯ packages/runtime/test/issue2-real-preset-restriction.test.ts (0 test)
+ ❯ packages/runtime/test/send-message-liveness.test.ts (0 test)
+ ❯ packages/runtime/test/f3c-messaging-sibling.test.ts (0 test)
+ ✓ packages/testkit/test/p4t5-retry-restart.test.ts (10 tests) 10ms
+ ❯ packages/runtime/test/p6t1-checks.test.ts (0 test)
+ ✓ packages/client/test/team-remote-client.test.ts (15 tests) 12ms
+ ❯ packages/runtime/test/p6t1-explicit.test.ts (0 test)
+ ❯ packages/runtime/test/p6t1-recovery.test.ts (0 test)
+ ❯ packages/runtime/test/p6t1-delegate.test.ts (0 test)
+ ❯ packages/runtime/test/a2c5-read-fingerprint.test.ts (0 test)
+ ❯ packages/runtime/test/g8s1-generation-stamp.test.ts (0 test)
+ ✓ packages/remote/test/p8t3-round-trip.test.ts (14 tests) 16ms
+ ✓ packages/runtime/test/p7t2-policy-state.test.ts (11 tests) 9ms
+ ✓ packages/legacy/test/p7t7-legacy-read.test.ts (28 tests) 15ms
+ ✓ packages/client/test/team-governance.test.ts (43 tests) 22ms
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (0 test)
+ ❯ packages/runtime/test/d1-member-base-tools.test.ts (0 test)
+ ❯ packages/runtime/test/p7t1-ack-fingerprint.test.ts (0 test)
+ ✓ packages/runtime/test/p5t4-intersection.test.ts (15 tests) 45ms
+ ❯ packages/tools/test/p6t6-guard.test.ts (0 test)
+ ❯ packages/runtime/test/p8s4a-entrypoints.test.ts (0 test)
+ ❯ packages/runtime/test/alpha2-explicit-agent-setup.test.ts (0 test)
+ ✓ packages/runtime/test/p7t2-future-boundary.test.ts (16 tests) 14ms
+ ❯ packages/runtime/test/p8s6-remote-commands.test.ts (0 test)
+ ❯ packages/runtime/test/p8s6-principal.test.ts (0 test)
+ ❯ packages/runtime/test/p8s6-projection.test.ts (0 test)
+ ❯ packages/runtime/test/p8s6-pagination.test.ts (0 test)
+ ❯ packages/runtime/test/p8s7r4-handoff-wiring.test.ts (0 test)
+ ❯ packages/runtime/test/p8s7r2-effective-config.test.ts (0 test)
+ ❯ packages/runtime/test/rc2a1-fs-containment.test.ts (0 test)
+ ❯ packages/runtime/test/t12b6-handoff-agent-start.test.ts (0 test)
+ ❯ packages/runtime/test/p8s7r2-model-state.test.ts (0 test)
+ ❯ packages/runtime/test/bound-blueprint-persona-root.test.ts (0 test)
+ ❯ packages/runtime/test/tcm-m2-workspace-attach.test.ts (0 test)
+ ❯ packages/runtime/test/t12b2-resume-separation.test.ts (0 test)
+ ❯ packages/runtime/test/p8s7r2-policy-state-durable.test.ts (0 test)
+ ❯ packages/runtime/test/artifact-read-permission-lane.test.ts (0 test)
+ ❯ packages/runtime/test/p6t3-restart.test.ts (0 test)
+ ❯ packages/runtime/test/f9-control-exactly-once.test.ts (0 test)
+ ✓ packages/client/test/projection-adapter.test.ts (16 tests) 11ms
+ ❯ packages/runtime/test/p6t5-progress.test.ts (0 test)
+ ❯ packages/tools/test/c1-caller-root-binding.test.ts (0 test)
+ ✓ packages/runtime/test/p5t6-evict-readmit.test.ts (7 tests) 8ms
+ ✓ packages/runtime/test/p8s4b-override-admission.test.ts (28 tests) 9ms
+ ❯ packages/runtime/test/d1-s6-remote-v3.test.ts (0 test)
+ ❯ packages/tools/test/c1-list-pending-control.test.ts (0 test)
+ ❯ packages/runtime/test/work-completion-notification-glue.test.ts (0 test)
+ ✓ packages/remote/test/p8t4-engine.test.ts (23 tests) 16ms
+ ❯ packages/client/test/d2-open-team-mode.test.ts (0 test)
+ ✓ packages/storage/test/p4t2-conflicts.test.ts (25 tests) 21ms
+ ❯ packages/runtime/test/p7t1-probe-generation.test.ts (0 test)
+ ❯ packages/runtime/test/p6t4-external-policy.test.ts (0 test)
+ ❯ packages/runtime/test/team-spill-local.test.ts (0 test)
+ ❯ packages/runtime/test/c1-control-notification.test.ts (0 test)
+ ✓ packages/testkit/test/p4t5-crash-matrix.test.ts (13 tests) 25ms
+ ❯ packages/runtime/test/t12a-glue-handoff-ports.test.ts (0 test)
+ ❯ packages/runtime/test/p7t1-inflight-drift.test.ts (0 test)
+ ❯ packages/testkit/test/t6-10-composition-pipeline.test.ts (0 test)
+ ✓ packages/runtime/test/p8s4b-mcp-facet.test.ts (25 tests) 12ms
+ ✓ packages/storage/test/p4t4-orphan-detect.test.ts (21 tests) 16ms
+ ❯ packages/runtime/test/rmr-remote-mount-race.test.ts (0 test)
+ ❯ packages/runtime/test/p8s7r4-fork-describe.test.ts (0 test)
+ ❯ packages/runtime/test/d2-s6-ensure-root-live.test.ts (0 test)
+ ✓ packages/storage/test/p4t2-crash-recovery.test.ts (19 tests) 13ms
+ ❯ packages/runtime/test/team-skills.test.ts (0 test)
+ ✓ packages/runtime/test/p7t4-root-fork.test.ts (17 tests) 12ms
+ ❯ packages/runtime/test/p8s6-push-reconnect.test.ts (0 test)
+ ❯ packages/runtime/test/p6t4-stale.test.ts (0 test)
+ ❯ packages/runtime/test/p7t3-archive-running.test.ts (0 test)
+ ❯ packages/runtime/test/p6t2-authority.test.ts (0 test)
+ ❯ packages/runtime/test/p6t5-authority.test.ts (0 test)
+ ✓ packages/client/test/team-intent-model.test.ts (22 tests) 15ms
+ ✓ packages/domain/test/t3-member-context-policy.test.ts (17 tests) 21ms
+ ✓ packages/domain/test/t3-member-n-instances.test.ts (14 tests) 31ms
+ ❯ packages/runtime/test/p6t5-intervals.test.ts (0 test)
+ ✓ packages/testkit/test/t6-5-compat-complete-true.test.ts (6 tests) 37ms
+ ❯ packages/runtime/test/f1-webserver-shim-isolation.test.ts (0 test)
+ ✓ packages/domain/test/t3-lifecycle-transitions.test.ts (14 tests) 36ms
+ ❯ packages/runtime/test/rmr-create-or-open-boot.test.ts (0 test)
+ ✓ packages/runtime/test/p7t2-creation-fields.test.ts (9 tests) 14ms
+ ❯ packages/runtime/test/t12a-m2-persona.test.ts (0 test)
+ ❯ packages/runtime/test/t12m4-remote-mount.test.ts (0 test)
+ ❯ packages/runtime/test/t12b1-real-create.test.ts (0 test)
+ ❯ packages/legacy/test/p7t7-integrated-fork-handoff.test.ts (0 test)
+ ❯ packages/runtime/test/mcp-supply-config.test.ts (0 test)
+ ✓ packages/runtime/test/p7t2-override-precedence.test.ts (12 tests) 12ms
+ ❯ packages/runtime/test/p7t1-cold-resume.test.ts (0 test)
+ ❯ packages/runtime/test/p7t5-snapshot-once.test.ts (0 test)
+ ❯ packages/runtime/test/p6t2-addressing.test.ts (0 test)
+ ❯ packages/runtime/test/bp1-red-probe.test.ts (0 test)
+ ❯ packages/domain/test/exec-contract-a1-leader-allow.test.ts (0 test)
+ ✓ packages/client/test/team-create-flow.test.ts (10 tests) 8ms
+ ✓ packages/storage/test/p4t3-reconciler.test.ts (17 tests) 19ms
+ ❯ packages/runtime/test/p5t5-cold-root.test.ts (0 test)
+ ❯ packages/runtime/test/p5t5-fresh-root.test.ts (0 test)
+ ✓ packages/storage/test/p4t4-per-stage-retry.test.ts (20 tests) 36ms
+ ✓ packages/runtime/test/p5t1-double-bind.test.ts (8 tests) 29ms
+ ❯ packages/runtime/test/p6t5-projection.test.ts (0 test)
+ ❯ packages/runtime/test/tcm-m3-root-work-glue.test.ts (0 test)
+ ❯ packages/runtime/test/p8s7r4-bc23-24-no-mutation.test.ts (0 test)
+ ✓ packages/remote/test/p8t3-version.test.ts (16 tests) 10ms
+ ✓ packages/client/test/d1-team-remote-v3.test.ts (8 tests) 8ms
+ ✓ packages/runtime/test/p5t1-fresh-cold-paths.test.ts (8 tests) 16ms
+ ❯ packages/runtime/test/p7t3-dispose-race.test.ts (0 test)
+ ✓ packages/storage/test/bp1-blueprint-registry.test.ts (12 tests) 11ms
+ ❯ packages/runtime/test/p6t2-quota.test.ts (0 test)
+ ✓ packages/runtime/test/p8s7r1-create-params.test.ts (8 tests) 14ms
+ ❯ packages/runtime/test/tcm-m1-s6-v2-routing.test.ts (0 test)
+ ❯ packages/runtime/test/p6t5-restart.test.ts (0 test)
+ ✓ packages/domain/test/t3-member-workspace.test.ts (14 tests) 20ms
+ ✓ packages/domain/test/t3-member-lifecycle.test.ts (7 tests) 20ms
+ ✓ packages/storage/test/p8s3-member-cas.test.ts (9 tests) 10ms
+ ❯ packages/runtime/test/p7t3-restore-no-agent.test.ts (0 test)
+ ❯ packages/runtime/test/p8s4a-chain.test.ts (0 test)
+ ❯ packages/runtime/test/p8s7r4-bc22-idempotency.test.ts (0 test)
+ ✓ packages/runtime/test/p5t1-overlay-slots.test.ts (8 tests) 20ms
+ ✓ packages/runtime/test/p7t4-repeat-reconcile.test.ts (8 tests) 13ms
+ ❯ packages/runtime/test/p6t4-allow-once.test.ts (0 test)
+ ✓ packages/runtime/test/p5t3-future-boundary.test.ts (9 tests) 27ms
+ ✓ packages/contracts/test/leader-instance-record.test.ts (13 tests) 20ms
+ ✓ packages/runtime/test/p7t2-provenance.test.ts (12 tests) 13ms
+ ✓ packages/contracts/test/p8t1-projection-negative.test.ts (23 tests) 30ms
+ ✓ packages/tools/test/t2-tool-selector-deny.test.ts (19 tests) 18ms
+ ✓ packages/storage/test/g8s1-stamp-advance.test.ts (10 tests) 10ms
+ ❯ packages/testkit/test/t6-7-fresh-per-delegation.test.ts (0 test)
+ ❯ packages/domain/test/bp1-blueprint-inspector.test.ts (0 test)
+ ✓ packages/client/test/team-command-flow.test.ts (6 tests) 7ms
+ ✓ packages/client/test/team-handoff.test.ts (23 tests) 14ms
+ ❯ packages/testkit/test/t6-8-serialization-roundtrip.test.ts (0 test)
+ ❯ packages/runtime/test/p7t3-lifecycle-fact.test.ts (0 test)
+ ✓ packages/storage/test/p4t4-adapter.test.ts (12 tests) 13ms
+ ❯ packages/runtime/test/t12b4-principal-context.test.ts (0 test)
+ ✓ packages/remote/test/p8t3-admission.test.ts (6 tests) 12ms
+ ✓ packages/runtime/test/artifact-read-digest-fact.test.ts (14 tests) 15ms
+ ✓ packages/storage/test/p4t3-binding-service.test.ts (17 tests) 12ms
+ ❯ packages/runtime/test/c1-production-wiring.test.ts (0 test)
+ ✓ packages/client/test/client-architecture-negatives.test.ts (9 tests) 13ms
+ ✓ packages/contracts/test/negative.test.ts (21 tests) 20ms
+ ❯ packages/tools/test/p6t6-bypass-scan.test.ts (0 test)
+ ✓ packages/client/test/team-remote-categories.test.ts (5 tests) 8ms
+ ✓ packages/client/test/f9-remote-client-v4.test.ts (5 tests) 8ms
+ ✓ packages/runtime/test/p7t4-crash-sidecar.test.ts (9 tests) 9ms
+ ✓ packages/runtime/test/t3-skills-mcp-adapter.test.ts (11 tests) 18ms
+ ✓ packages/runtime/test/p5t1-binder-core.test.ts (15 tests) 21ms
+ ✓ packages/contracts/test/serialization.test.ts (16 tests) 24ms
+ ✓ packages/runtime/test/p8s7r4-handoff-surface.test.ts (7 tests) 10ms
+ ✓ packages/storage/test/p4-06-journal.test.ts (13 tests) 13ms
+ ❯ packages/legacy/test/p7t7-integrated-lifecycle-restore.test.ts (0 test)
+ ✓ packages/storage/test/p4-01-schema-meta.test.ts (11 tests) 19ms
+ ❯ packages/runtime/test/bp1-freeze-barrier.test.ts (0 test)
+ ✓ packages/legacy/test/p7t7-integrated-override-admission.test.ts (7 tests) 10ms
+ ❯ packages/runtime/test/bound-blueprint-persona-live.test.ts (0 test)
+ ❯ packages/runtime/test/p6t4-restart.test.ts (0 test)
+ ✓ packages/runtime/test/p8s4b-cell-provenance.test.ts (10 tests) 13ms
+ ❯ packages/runtime/test/p5t5-admission.test.ts (0 test)
+ ✓ packages/client/test/team-legacy.test.ts (12 tests) 13ms
+ ❯ packages/runtime/test/d5-instance-contract.test.ts (0 test)
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (0 test)
+ ✓ packages/runtime/test/p8s7r2-residency-resuming.test.ts (7 tests) 9ms
+ ✓ packages/tools/test/issue2-builtin-deny-focused.test.ts (8 tests) 17ms
+ ❯ packages/testkit/test/t6-3-lifecycle-matrix.test.ts (0 test)
+ ❯ packages/runtime/test/issue1-serial-blocking.test.ts (0 test)
+ ✓ packages/legacy/test/p7t7-mutation-reject.test.ts (11 tests) 18ms
+ ❯ packages/runtime/test/t12a-h1-nullable-mcp.test.ts (0 test)
+ ❯ packages/legacy/test/p7t7-integrated-drift-ack.test.ts (0 test)
+ ✓ packages/runtime/test/p5t3-restart.test.ts (3 tests) 21ms
+ ✓ packages/runtime/test/p8s4b-model-consumption.test.ts (11 tests) 16ms
+ ✓ packages/domain/test/t3-lifecycle-property.test.ts (4 tests) 792ms
+ ✓ packages/runtime/test/p8t2-negative.test.ts (6 tests) 10ms
+ ❯ packages/runtime/test/p7t3-descendant-drain.test.ts (0 test)
+ ❯ packages/runtime/test/p6t4-deny.test.ts (0 test)
+ ❯ packages/testkit/test/bp1h-blueprint-authoring.test.ts (0 test)
+ ✓ packages/runtime/test/p8t2-cold.test.ts (7 tests) 10ms
+ ✓ packages/runtime/test/p8t2-overlay.test.ts (7 tests) 13ms
+ ✓ packages/client/test/team-member-commands.test.ts (11 tests) 11ms
+ ❯ packages/domain/test/t2-blueprint-parse.test.ts (0 test)
+ ✓ packages/client/test/team-session-resolution.test.ts (9 tests) 10ms
+ ❯ packages/runtime/test/t12a-team-tools-registration.test.ts (0 test)
+ ❯ packages/runtime/test/bp1-red-glue-probe.test.ts (0 test)
+ ✓ packages/contracts/test/ids.test.ts (18 tests) 14ms
+ ✓ packages/storage/test/p4t3-fork-reconciliation.test.ts (12 tests) 13ms
+ ✓ packages/runtime/test/p7t4-ordinary-fork.test.ts (7 tests) 8ms
+ ✓ packages/runtime/test/p7t4-member-fork.test.ts (6 tests) 8ms
+ ✓ packages/runtime/test/work-completion-notification.test.ts (7 tests) 13ms
+ ❯ packages/runtime/test/p7t5-target-inspect.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-b3-external-deny.test.ts (0 test)
+ ❯ packages/testkit/test/t6-6-snapshot-immutability.test.ts (0 test)
+ ✓ packages/storage/test/p4-05-governance.test.ts (11 tests) 13ms
+ ✓ packages/storage/test/p4t2-journal.test.ts (12 tests) 13ms
+ ❯ packages/runtime/test/p8s3-work-request.test.ts (0 test)
+ ❯ packages/runtime/test/c1-leader-notification-glue.test.ts (0 test)
+ ❯ packages/runtime/test/p7t5-source-mutate.test.ts (0 test)
+ ❯ packages/domain/test/t2-blueprint-catalog.test.ts (0 test)
+ ✓ packages/client/test/f9u-control-surface-model.test.ts (11 tests) 11ms
+ ✓ packages/runtime/test/p8t2-fifty.test.ts (6 tests) 7ms
+ ✓ packages/contracts/test/p8t1-projection-serialization.test.ts (11 tests) 43ms
+ ✓ packages/remote/test/p8t3-invalid-ids.test.ts (9 tests) 13ms
+ ❯ packages/runtime/test/c1-restart-recovery.test.ts (0 test)
+ ✓ packages/storage/test/rmr-create-or-open.test.ts (5 tests) 8ms
+ ✓ packages/runtime/test/p5t2-persona-cold-bind.test.ts (3 tests) 11ms
+ ✓ packages/runtime/test/p5t2-persona-compatible.test.ts (3 tests) 21ms
+ ❯ packages/runtime/test/t12a-m3-recursive-drain.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts (0 test)
+ ❯ packages/testkit/test/t6-1-no-agent-dependency.test.ts (0 test)
+ ❯ packages/testkit/test/t6-2-template-n-instances.test.ts (0 test)
+ ✓ packages/runtime/test/p7t5-no-creation-scan.test.ts (5 tests) 11ms
+ ✓ packages/remote/test/p8t3-negative.test.ts (7 tests) 89ms
+ ❯ packages/runtime/test/t12h4-s6-fail-closed.test.ts (0 test)
+ ✓ packages/client/test/team-members-model.test.ts (5 tests) 18ms
+ ✓ packages/remote/test/p8t4-negative.test.ts (7 tests) 53ms
+ ✓ packages/runtime/test/p5t1-ordinary-noop.test.ts (5 tests) 19ms
+ ✓ packages/runtime/test/p8t2-terminal.test.ts (5 tests) 6ms
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts (0 test)
+ ❯ packages/domain/test/t2-blueprint-validation.test.ts (0 test)
+ ✓ packages/runtime/test/p5t2-persona-complete-fatal.test.ts (3 tests) 34ms
+ ✓ packages/runtime/test/p5t4-cold-resume.test.ts (1 test) 20ms
+ ✓ packages/contracts/test/identity.test.ts (12 tests) 17ms
+ ❯ packages/runtime/test/t12a-m1-effective-cwd.test.ts (0 test)
+ ✓ packages/contracts/test/remote-safe.test.ts (10 tests) 15ms
+ ✓ packages/storage/test/p4-07-durability-crash.test.ts (6 tests) 9ms
+ ✓ packages/storage/test/p4-03-member-instances.test.ts (9 tests) 10ms
+ ✓ packages/contracts/test/types.test.ts (1 test) 4ms
+ ✓ packages/contracts/test/p8t1-projection-overlay.test.ts (8 tests) 22ms
+ ❯ packages/domain/test/t2-blueprint-immutability.test.ts (0 test)
+ ✓ packages/storage/test/p4-02-team-sessions.test.ts (9 tests) 9ms
+ ✓ packages/storage/test/p4-04-session-bindings.test.ts (8 tests) 11ms
+ ✓ packages/domain/test/domain.test.ts (2 tests) 4ms
+ ✓ packages/contracts/test/errors.test.ts (7 tests) 9ms
+ ❯ packages/client/test/client.test.ts (0 test)
+ ✓ packages/storage/test/storage.test.ts (2 tests) 4ms
+ ✓ packages/testkit/test/testkit.test.ts (2 tests) 4ms
+ ✓ packages/runtime/test/p5t2-persona-no-persona.test.ts (3 tests) 11ms
+ ❯ packages/domain/test/t2-blueprint-revision.test.ts (0 test)
+ ✓ packages/contracts/test/p8t1-projection-generation.test.ts (8 tests) 19ms
+ ✓ packages/remote/test/remote.test.ts (2 tests) 4ms
+ ✓ packages/contracts/test/contracts.test.ts (2 tests) 4ms
+ ✓ packages/storage/test/p4-08-independence-negative.test.ts (6 tests) 7ms
+ ❯ packages/runtime/test/pbf-default-artifact-urls.test.ts (0 test)
+ ❯ packages/tools/test/tools.test.ts (0 test)
+ ❯ packages/runtime/test/p8s5a-host-loadability.test.ts (0 test)
+ ✓ packages/domain/test/t5-compatibility-bridge.test.ts (75 tests) 55ms
+ ❯ packages/runtime/test/runtime.test.ts (0 test)
+ ✓ packages/tools/test/h3-hostile-seam.test.ts (10 tests) 9ms
+
+⎯⎯⎯⎯⎯ Failed Suites 175 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/client/test/client-plugin-mount.test.ts [ packages/client/test/client-plugin-mount.test.ts ]
+Error: Cannot find package '@deepseek-ai/dsh-client-store' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/client/src/plugin/team-mount-core.ts
+ ❯ packages/client/src/plugin/team-mount-core.ts:49:1
+     47|  * TS only. @module @dsh-agent-team/client/plugin/team-mount-core
+     48|  */
+     49| import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+       | ^
+     50| import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
+     51| import type { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/cli…
+ ❯ packages/client/test/client-plugin-mount.test.ts:38:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/175]⎯
+
+ FAIL  packages/client/test/client.test.ts [ packages/client/test/client.test.ts ]
+Error: Cannot find package '@deepseek-ai/dsh-client-store' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/client/src/plugin/team-mount-core.ts
+ ❯ packages/client/src/plugin/team-mount-core.ts:49:1
+     47|  * TS only. @module @dsh-agent-team/client/plugin/team-mount-core
+     48|  */
+     49| import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+       | ^
+     50| import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
+     51| import type { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/cli…
+ ❯ packages/client/test/client.test.ts:13:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/175]⎯
+
+ FAIL  packages/client/test/d2-open-team-mode.test.ts [ packages/client/test/d2-open-team-mode.test.ts ]
+Error: Cannot find package '@deepseek-ai/dsh-client-store' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/client/src/plugin/team-mount-core.ts
+ ❯ packages/client/src/plugin/team-mount-core.ts:49:1
+     47|  * TS only. @module @dsh-agent-team/client/plugin/team-mount-core
+     48|  */
+     49| import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+       | ^
+     50| import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
+     51| import type { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/cli…
+ ❯ packages/client/test/d2-open-team-mode.test.ts:42:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/175]⎯
+
+ FAIL  packages/client/test/d3-open-ordinary-mode.test.ts [ packages/client/test/d3-open-ordinary-mode.test.ts ]
+Error: Cannot find package '@deepseek-ai/dsh-client-store' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/client/src/plugin/team-mount-core.ts
+ ❯ packages/client/src/plugin/team-mount-core.ts:49:1
+     47|  * TS only. @module @dsh-agent-team/client/plugin/team-mount-core
+     48|  */
+     49| import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+       | ^
+     50| import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
+     51| import type { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/cli…
+ ❯ packages/client/test/d3-open-ordinary-mode.test.ts:54:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/175]⎯
+
+ FAIL  packages/domain/test/a1-permission-policy.test.ts [ packages/domain/test/a1-permission-policy.test.ts ]
+ FAIL  packages/domain/test/bp1-blueprint-inspector.test.ts [ packages/domain/test/bp1-blueprint-inspector.test.ts ]
+ FAIL  packages/domain/test/exec-contract-a1-leader-allow.test.ts [ packages/domain/test/exec-contract-a1-leader-allow.test.ts ]
+ FAIL  packages/domain/test/t2-blueprint-catalog.test.ts [ packages/domain/test/t2-blueprint-catalog.test.ts ]
+ FAIL  packages/domain/test/t2-blueprint-hash.test.ts [ packages/domain/test/t2-blueprint-hash.test.ts ]
+ FAIL  packages/domain/test/t2-blueprint-immutability.test.ts [ packages/domain/test/t2-blueprint-immutability.test.ts ]
+ FAIL  packages/domain/test/t2-blueprint-parse.test.ts [ packages/domain/test/t2-blueprint-parse.test.ts ]
+ FAIL  packages/domain/test/t2-blueprint-revision.test.ts [ packages/domain/test/t2-blueprint-revision.test.ts ]
+ FAIL  packages/domain/test/t2-blueprint-validation.test.ts [ packages/domain/test/t2-blueprint-validation.test.ts ]
+ FAIL  packages/legacy/test/p7t6-teammates-adapter.test.ts [ packages/legacy/test/p7t6-teammates-adapter.test.ts ]
+ FAIL  packages/legacy/test/p7t7-integrated-drift-ack.test.ts [ packages/legacy/test/p7t7-integrated-drift-ack.test.ts ]
+ FAIL  packages/legacy/test/p7t7-integrated-fork-handoff.test.ts [ packages/legacy/test/p7t7-integrated-fork-handoff.test.ts ]
+ FAIL  packages/legacy/test/p7t7-integrated-lifecycle-restore.test.ts [ packages/legacy/test/p7t7-integrated-lifecycle-restore.test.ts ]
+ FAIL  packages/testkit/test/bp1h-blueprint-authoring.test.ts [ packages/testkit/test/bp1h-blueprint-authoring.test.ts ]
+ FAIL  packages/testkit/test/t6-1-no-agent-dependency.test.ts [ packages/testkit/test/t6-1-no-agent-dependency.test.ts ]
+ FAIL  packages/testkit/test/t6-10-composition-pipeline.test.ts [ packages/testkit/test/t6-10-composition-pipeline.test.ts ]
+ FAIL  packages/testkit/test/t6-2-template-n-instances.test.ts [ packages/testkit/test/t6-2-template-n-instances.test.ts ]
+ FAIL  packages/testkit/test/t6-3-lifecycle-matrix.test.ts [ packages/testkit/test/t6-3-lifecycle-matrix.test.ts ]
+ FAIL  packages/testkit/test/t6-6-snapshot-immutability.test.ts [ packages/testkit/test/t6-6-snapshot-immutability.test.ts ]
+ FAIL  packages/testkit/test/t6-7-fresh-per-delegation.test.ts [ packages/testkit/test/t6-7-fresh-per-delegation.test.ts ]
+ FAIL  packages/testkit/test/t6-8-serialization-roundtrip.test.ts [ packages/testkit/test/t6-8-serialization-roundtrip.test.ts ]
+ FAIL  packages/testkit/test/t6-9-negative-matrix.test.ts [ packages/testkit/test/t6-9-negative-matrix.test.ts ]
+ FAIL  packages/tools/test/c1-caller-root-binding.test.ts [ packages/tools/test/c1-caller-root-binding.test.ts ]
+ FAIL  packages/tools/test/c1-list-pending-control.test.ts [ packages/tools/test/c1-list-pending-control.test.ts ]
+ FAIL  packages/tools/test/issue1-collect-tools.test.ts [ packages/tools/test/issue1-collect-tools.test.ts ]
+ FAIL  packages/tools/test/p6t6-actions.test.ts [ packages/tools/test/p6t6-actions.test.ts ]
+ FAIL  packages/tools/test/p6t6-bypass-scan.test.ts [ packages/tools/test/p6t6-bypass-scan.test.ts ]
+ FAIL  packages/tools/test/p6t6-guard.test.ts [ packages/tools/test/p6t6-guard.test.ts ]
+ FAIL  packages/tools/test/tools.test.ts [ packages/tools/test/tools.test.ts ]
+ FAIL  packages/runtime/test/a2-canonical-operation.test.ts [ packages/runtime/test/a2-canonical-operation.test.ts ]
+ FAIL  packages/runtime/test/a2c3-inspect-operation-permission.test.ts [ packages/runtime/test/a2c3-inspect-operation-permission.test.ts ]
+ FAIL  packages/runtime/test/a2c4-external-lastmile.test.ts [ packages/runtime/test/a2c4-external-lastmile.test.ts ]
+ FAIL  packages/runtime/test/a2c5-read-fingerprint.test.ts [ packages/runtime/test/a2c5-read-fingerprint.test.ts ]
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts [ packages/runtime/test/a2c7-subtree-matcher.test.ts ]
+ FAIL  packages/runtime/test/a3-permission-resolver.test.ts [ packages/runtime/test/a3-permission-resolver.test.ts ]
+ FAIL  packages/runtime/test/a4a-control-exact-scope.test.ts [ packages/runtime/test/a4a-control-exact-scope.test.ts ]
+ FAIL  packages/runtime/test/a5a-pre-execute.test.ts [ packages/runtime/test/a5a-pre-execute.test.ts ]
+ FAIL  packages/runtime/test/a6a-production-wiring.test.ts [ packages/runtime/test/a6a-production-wiring.test.ts ]
+ FAIL  packages/runtime/test/artifact-read-permission-lane.test.ts [ packages/runtime/test/artifact-read-permission-lane.test.ts ]
+ FAIL  packages/runtime/test/bound-blueprint-persona-live.test.ts [ packages/runtime/test/bound-blueprint-persona-live.test.ts ]
+ FAIL  packages/runtime/test/bound-blueprint-persona-root.test.ts [ packages/runtime/test/bound-blueprint-persona-root.test.ts ]
+ FAIL  packages/runtime/test/bp1-blueprint-authority.test.ts [ packages/runtime/test/bp1-blueprint-authority.test.ts ]
+ FAIL  packages/runtime/test/bp1-dual-team-gate.test.ts [ packages/runtime/test/bp1-dual-team-gate.test.ts ]
+ FAIL  packages/runtime/test/bp1-freeze-barrier.test.ts [ packages/runtime/test/bp1-freeze-barrier.test.ts ]
+ FAIL  packages/runtime/test/bp1-red-glue-probe.test.ts [ packages/runtime/test/bp1-red-glue-probe.test.ts ]
+ FAIL  packages/runtime/test/bp1-red-probe.test.ts [ packages/runtime/test/bp1-red-probe.test.ts ]
+ FAIL  packages/runtime/test/c1-control-notification.test.ts [ packages/runtime/test/c1-control-notification.test.ts ]
+ FAIL  packages/runtime/test/c1-leader-notification-glue.test.ts [ packages/runtime/test/c1-leader-notification-glue.test.ts ]
+ FAIL  packages/runtime/test/c1-production-wiring.test.ts [ packages/runtime/test/c1-production-wiring.test.ts ]
+ FAIL  packages/runtime/test/c1-restart-recovery.test.ts [ packages/runtime/test/c1-restart-recovery.test.ts ]
+ FAIL  packages/runtime/test/control-guard-leader.test.ts [ packages/runtime/test/control-guard-leader.test.ts ]
+ FAIL  packages/runtime/test/d1-member-base-tools.test.ts [ packages/runtime/test/d1-member-base-tools.test.ts ]
+ FAIL  packages/runtime/test/d1-s6-remote-v3.test.ts [ packages/runtime/test/d1-s6-remote-v3.test.ts ]
+ FAIL  packages/runtime/test/d2-s6-ensure-root-live.test.ts [ packages/runtime/test/d2-s6-ensure-root-live.test.ts ]
+ FAIL  packages/runtime/test/d3-member-identity-context.test.ts [ packages/runtime/test/d3-member-identity-context.test.ts ]
+ FAIL  packages/runtime/test/d5-instance-contract.test.ts [ packages/runtime/test/d5-instance-contract.test.ts ]
+ FAIL  packages/runtime/test/exec-contract-dual-gate.test.ts [ packages/runtime/test/exec-contract-dual-gate.test.ts ]
+ FAIL  packages/runtime/test/f3a-lock-scope.test.ts [ packages/runtime/test/f3a-lock-scope.test.ts ]
+ FAIL  packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts [ packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts ]
+ FAIL  packages/runtime/test/f3c-messaging-sibling.test.ts [ packages/runtime/test/f3c-messaging-sibling.test.ts ]
+ FAIL  packages/runtime/test/f9-control-exactly-once.test.ts [ packages/runtime/test/f9-control-exactly-once.test.ts ]
+ FAIL  packages/runtime/test/f9-s6-resolve-control.test.ts [ packages/runtime/test/f9-s6-resolve-control.test.ts ]
+ FAIL  packages/runtime/test/g8s1-generation-stamp.test.ts [ packages/runtime/test/g8s1-generation-stamp.test.ts ]
+ FAIL  packages/runtime/test/h4-rule-identity.test.ts [ packages/runtime/test/h4-rule-identity.test.ts ]
+ FAIL  packages/runtime/test/h5-bash-effects.test.ts [ packages/runtime/test/h5-bash-effects.test.ts ]
+ FAIL  packages/runtime/test/issue1-async-delegation.test.ts [ packages/runtime/test/issue1-async-delegation.test.ts ]
+ FAIL  packages/runtime/test/issue1-serial-blocking.test.ts [ packages/runtime/test/issue1-serial-blocking.test.ts ]
+ FAIL  packages/runtime/test/mcp-supply-config.test.ts [ packages/runtime/test/mcp-supply-config.test.ts ]
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts [ packages/runtime/test/multi-mcp-wiring.test.ts ]
+ FAIL  packages/runtime/test/p5t5-admission.test.ts [ packages/runtime/test/p5t5-admission.test.ts ]
+ FAIL  packages/runtime/test/p5t5-cold-root.test.ts [ packages/runtime/test/p5t5-cold-root.test.ts ]
+ FAIL  packages/runtime/test/p5t5-fresh-root.test.ts [ packages/runtime/test/p5t5-fresh-root.test.ts ]
+ FAIL  packages/runtime/test/p6t1-checks.test.ts [ packages/runtime/test/p6t1-checks.test.ts ]
+ FAIL  packages/runtime/test/p6t1-delegate.test.ts [ packages/runtime/test/p6t1-delegate.test.ts ]
+ FAIL  packages/runtime/test/p6t1-explicit.test.ts [ packages/runtime/test/p6t1-explicit.test.ts ]
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts [ packages/runtime/test/p6t1-parallel.test.ts ]
+ FAIL  packages/runtime/test/p6t1-recovery.test.ts [ packages/runtime/test/p6t1-recovery.test.ts ]
+ FAIL  packages/runtime/test/p6t2-actions.test.ts [ packages/runtime/test/p6t2-actions.test.ts ]
+ FAIL  packages/runtime/test/p6t2-addressing.test.ts [ packages/runtime/test/p6t2-addressing.test.ts ]
+ FAIL  packages/runtime/test/p6t2-authority.test.ts [ packages/runtime/test/p6t2-authority.test.ts ]
+ FAIL  packages/runtime/test/p6t2-quota.test.ts [ packages/runtime/test/p6t2-quota.test.ts ]
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts [ packages/runtime/test/p6t3-mediation.test.ts ]
+ FAIL  packages/runtime/test/p6t3-restart.test.ts [ packages/runtime/test/p6t3-restart.test.ts ]
+ FAIL  packages/runtime/test/p6t3-send-delivery.test.ts [ packages/runtime/test/p6t3-send-delivery.test.ts ]
+ FAIL  packages/runtime/test/p6t4-allow-once.test.ts [ packages/runtime/test/p6t4-allow-once.test.ts ]
+ FAIL  packages/runtime/test/p6t4-deny.test.ts [ packages/runtime/test/p6t4-deny.test.ts ]
+ FAIL  packages/runtime/test/p6t4-external-policy.test.ts [ packages/runtime/test/p6t4-external-policy.test.ts ]
+ FAIL  packages/runtime/test/p6t4-negatives.test.ts [ packages/runtime/test/p6t4-negatives.test.ts ]
+ FAIL  packages/runtime/test/p6t4-restart.test.ts [ packages/runtime/test/p6t4-restart.test.ts ]
+ FAIL  packages/runtime/test/p6t4-stale.test.ts [ packages/runtime/test/p6t4-stale.test.ts ]
+ FAIL  packages/runtime/test/p6t5-authority.test.ts [ packages/runtime/test/p6t5-authority.test.ts ]
+ FAIL  packages/runtime/test/p6t5-intervals.test.ts [ packages/runtime/test/p6t5-intervals.test.ts ]
+ FAIL  packages/runtime/test/p6t5-progress.test.ts [ packages/runtime/test/p6t5-progress.test.ts ]
+ FAIL  packages/runtime/test/p6t5-projection.test.ts [ packages/runtime/test/p6t5-projection.test.ts ]
+ FAIL  packages/runtime/test/p6t5-restart.test.ts [ packages/runtime/test/p6t5-restart.test.ts ]
+ FAIL  packages/runtime/test/p7t1-ack-fingerprint.test.ts [ packages/runtime/test/p7t1-ack-fingerprint.test.ts ]
+ FAIL  packages/runtime/test/p7t1-cold-resume.test.ts [ packages/runtime/test/p7t1-cold-resume.test.ts ]
+ FAIL  packages/runtime/test/p7t1-inflight-drift.test.ts [ packages/runtime/test/p7t1-inflight-drift.test.ts ]
+ FAIL  packages/runtime/test/p7t1-probe-generation.test.ts [ packages/runtime/test/p7t1-probe-generation.test.ts ]
+ FAIL  packages/runtime/test/p7t3-archive-running.test.ts [ packages/runtime/test/p7t3-archive-running.test.ts ]
+ FAIL  packages/runtime/test/p7t3-descendant-drain.test.ts [ packages/runtime/test/p7t3-descendant-drain.test.ts ]
+ FAIL  packages/runtime/test/p7t3-dispose-race.test.ts [ packages/runtime/test/p7t3-dispose-race.test.ts ]
+ FAIL  packages/runtime/test/p7t3-lifecycle-fact.test.ts [ packages/runtime/test/p7t3-lifecycle-fact.test.ts ]
+ FAIL  packages/runtime/test/p7t3-restore-no-agent.test.ts [ packages/runtime/test/p7t3-restore-no-agent.test.ts ]
+ FAIL  packages/runtime/test/p7t5-failure-before-root-create.test.ts [ packages/runtime/test/p7t5-failure-before-root-create.test.ts ]
+ FAIL  packages/runtime/test/p7t5-snapshot-once.test.ts [ packages/runtime/test/p7t5-snapshot-once.test.ts ]
+ FAIL  packages/runtime/test/p7t5-source-mutate.test.ts [ packages/runtime/test/p7t5-source-mutate.test.ts ]
+ FAIL  packages/runtime/test/p7t5-target-inspect.test.ts [ packages/runtime/test/p7t5-target-inspect.test.ts ]
+ FAIL  packages/runtime/test/p8s2-leader-contract.test.ts [ packages/runtime/test/p8s2-leader-contract.test.ts ]
+ FAIL  packages/runtime/test/p8s3-work-chain.test.ts [ packages/runtime/test/p8s3-work-chain.test.ts ]
+ FAIL  packages/runtime/test/p8s3-work-request.test.ts [ packages/runtime/test/p8s3-work-request.test.ts ]
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts [ packages/runtime/test/p8s3b-result-effects.test.ts ]
+ FAIL  packages/runtime/test/p8s4a-chain.test.ts [ packages/runtime/test/p8s4a-chain.test.ts ]
+ FAIL  packages/runtime/test/p8s4a-entrypoints.test.ts [ packages/runtime/test/p8s4a-entrypoints.test.ts ]
+ FAIL  packages/runtime/test/p8s5a-host-loadability.test.ts [ packages/runtime/test/p8s5a-host-loadability.test.ts ]
+ FAIL  packages/runtime/test/p8s5a-production-assembly.test.ts [ packages/runtime/test/p8s5a-production-assembly.test.ts ]
+ FAIL  packages/runtime/test/p8s5b-operation-fencing.test.ts [ packages/runtime/test/p8s5b-operation-fencing.test.ts ]
+ FAIL  packages/runtime/test/p8s6-pagination.test.ts [ packages/runtime/test/p8s6-pagination.test.ts ]
+ FAIL  packages/runtime/test/p8s6-principal.test.ts [ packages/runtime/test/p8s6-principal.test.ts ]
+ FAIL  packages/runtime/test/p8s6-projection.test.ts [ packages/runtime/test/p8s6-projection.test.ts ]
+ FAIL  packages/runtime/test/p8s6-push-reconnect.test.ts [ packages/runtime/test/p8s6-push-reconnect.test.ts ]
+ FAIL  packages/runtime/test/p8s6-remote-commands.test.ts [ packages/runtime/test/p8s6-remote-commands.test.ts ]
+ FAIL  packages/runtime/test/p8s7r1-initial-work.test.ts [ packages/runtime/test/p8s7r1-initial-work.test.ts ]
+ FAIL  packages/runtime/test/p8s7r2-effective-config.test.ts [ packages/runtime/test/p8s7r2-effective-config.test.ts ]
+ FAIL  packages/runtime/test/p8s7r2-model-state.test.ts [ packages/runtime/test/p8s7r2-model-state.test.ts ]
+ FAIL  packages/runtime/test/p8s7r2-policy-state-durable.test.ts [ packages/runtime/test/p8s7r2-policy-state-durable.test.ts ]
+ FAIL  packages/runtime/test/p8s7r4-bc22-idempotency.test.ts [ packages/runtime/test/p8s7r4-bc22-idempotency.test.ts ]
+ FAIL  packages/runtime/test/p8s7r4-bc23-24-no-mutation.test.ts [ packages/runtime/test/p8s7r4-bc23-24-no-mutation.test.ts ]
+ FAIL  packages/runtime/test/p8s7r4-fork-describe.test.ts [ packages/runtime/test/p8s7r4-fork-describe.test.ts ]
+ FAIL  packages/runtime/test/p8s7r4-handoff-wiring.test.ts [ packages/runtime/test/p8s7r4-handoff-wiring.test.ts ]
+ FAIL  packages/runtime/test/pbf-default-artifact-urls.test.ts [ packages/runtime/test/pbf-default-artifact-urls.test.ts ]
+ FAIL  packages/runtime/test/rc2a1-fs-containment.test.ts [ packages/runtime/test/rc2a1-fs-containment.test.ts ]
+ FAIL  packages/runtime/test/rmr-create-or-open-boot.test.ts [ packages/runtime/test/rmr-create-or-open-boot.test.ts ]
+ FAIL  packages/runtime/test/rmr-remote-mount-race.test.ts [ packages/runtime/test/rmr-remote-mount-race.test.ts ]
+ FAIL  packages/runtime/test/runtime.test.ts [ packages/runtime/test/runtime.test.ts ]
+ FAIL  packages/runtime/test/send-message-liveness.test.ts [ packages/runtime/test/send-message-liveness.test.ts ]
+ FAIL  packages/runtime/test/t12a-b2-child-identity.test.ts [ packages/runtime/test/t12a-b2-child-identity.test.ts ]
+ FAIL  packages/runtime/test/t12a-b3-external-deny.test.ts [ packages/runtime/test/t12a-b3-external-deny.test.ts ]
+ FAIL  packages/runtime/test/t12a-glue-handoff-ports.test.ts [ packages/runtime/test/t12a-glue-handoff-ports.test.ts ]
+ FAIL  packages/runtime/test/t12a-h1-nullable-mcp.test.ts [ packages/runtime/test/t12a-h1-nullable-mcp.test.ts ]
+ FAIL  packages/runtime/test/t12a-m1-effective-cwd.test.ts [ packages/runtime/test/t12a-m1-effective-cwd.test.ts ]
+ FAIL  packages/runtime/test/t12a-m2-persona.test.ts [ packages/runtime/test/t12a-m2-persona.test.ts ]
+ FAIL  packages/runtime/test/t12a-m3-recursive-drain.test.ts [ packages/runtime/test/t12a-m3-recursive-drain.test.ts ]
+ FAIL  packages/runtime/test/t12a-team-tools-registration.test.ts [ packages/runtime/test/t12a-team-tools-registration.test.ts ]
+ FAIL  packages/runtime/test/t12b1-real-create.test.ts [ packages/runtime/test/t12b1-real-create.test.ts ]
+ FAIL  packages/runtime/test/t12b2-resume-separation.test.ts [ packages/runtime/test/t12b2-resume-separation.test.ts ]
+ FAIL  packages/runtime/test/t12b4-principal-context.test.ts [ packages/runtime/test/t12b4-principal-context.test.ts ]
+ FAIL  packages/runtime/test/t12b6-handoff-agent-start.test.ts [ packages/runtime/test/t12b6-handoff-agent-start.test.ts ]
+ FAIL  packages/runtime/test/t12h4-s6-fail-closed.test.ts [ packages/runtime/test/t12h4-s6-fail-closed.test.ts ]
+ FAIL  packages/runtime/test/t12m4-remote-mount.test.ts [ packages/runtime/test/t12m4-remote-mount.test.ts ]
+ FAIL  packages/runtime/test/t14h-probe-merge.test.ts [ packages/runtime/test/t14h-probe-merge.test.ts ]
+ FAIL  packages/runtime/test/t4a-capability-wiring.test.ts [ packages/runtime/test/t4a-capability-wiring.test.ts ]
+ FAIL  packages/runtime/test/tcm-d4-root-context.test.ts [ packages/runtime/test/tcm-d4-root-context.test.ts ]
+ FAIL  packages/runtime/test/tcm-g1-s6-integration.test.ts [ packages/runtime/test/tcm-g1-s6-integration.test.ts ]
+ FAIL  packages/runtime/test/tcm-m1-s6-v2-routing.test.ts [ packages/runtime/test/tcm-m1-s6-v2-routing.test.ts ]
+ FAIL  packages/runtime/test/tcm-m2-workspace-attach.test.ts [ packages/runtime/test/tcm-m2-workspace-attach.test.ts ]
+ FAIL  packages/runtime/test/tcm-m3-root-initial-work.test.ts [ packages/runtime/test/tcm-m3-root-initial-work.test.ts ]
+ FAIL  packages/runtime/test/tcm-m3-root-work-glue.test.ts [ packages/runtime/test/tcm-m3-root-work-glue.test.ts ]
+ FAIL  packages/runtime/test/work-completion-async-wakeup.test.ts [ packages/runtime/test/work-completion-async-wakeup.test.ts ]
+ FAIL  packages/runtime/test/work-completion-notification-glue.test.ts [ packages/runtime/test/work-completion-notification-glue.test.ts ]
+Error: Cannot find package 'yaml' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/domain/blueprint/src/parse.ts
+ ❯ packages/domain/blueprint/src/parse.ts:34:1
+     32| // object. yaml v2 has no `YAMLException` (a v1 name): `parse()` throws
+     33| // `YAMLParseError` (extends `YAMLError`) on syntax and duplicate-key …
+     34| import yamlModule from 'yaml'
+       | ^
+     35|
+     36| const { parse: yamlParse, YAMLError } = yamlModule
+ ❯ packages/domain/blueprint/src/index.ts:71:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/175]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts [ packages/domain/test/t1-capability-schema.test.ts ]
+Error: Cannot find package 'yaml' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/domain/blueprint/src/parse.ts
+ ❯ packages/domain/blueprint/src/parse.ts:34:1
+     32| // object. yaml v2 has no `YAMLException` (a v1 name): `parse()` throws
+     33| // `YAMLParseError` (extends `YAMLError`) on syntax and duplicate-key …
+     34| import yamlModule from 'yaml'
+       | ^
+     35|
+     36| const { parse: yamlParse, YAMLError } = yamlModule
+ ❯ packages/domain/blueprint/src/validate.ts:100:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/175]⎯
+
+ FAIL  packages/runtime/test/a2c1-pwsh-permission.test.ts [ packages/runtime/test/a2c1-pwsh-permission.test.ts ]
+Error: Cannot find package '@deepseek-ai/cordis' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/runtime/test/a2c1-pwsh-permission.test.ts
+ ❯ packages/runtime/test/a2c1-pwsh-permission.test.ts:100:1
+     98|  */
+     99| import { describe, expect, it } from 'vitest'
+    100| import { Context } from '@deepseek-ai/cordis'
+       | ^
+    101| import { createScope } from '@deepseek-ai/dsh-scope'
+    102| import type { Scope } from '@deepseek-ai/dsh-scope'
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/175]⎯
+
+ FAIL  packages/runtime/test/a2c2-permission-coverage.test.ts [ packages/runtime/test/a2c2-permission-coverage.test.ts ]
+Error: Cannot find package '@deepseek-ai/cordis' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/runtime/test/a2c2-permission-coverage.test.ts
+ ❯ packages/runtime/test/a2c2-permission-coverage.test.ts:57:1
+     55|  */
+     56| import { describe, expect, it } from 'vitest'
+     57| import { Context } from '@deepseek-ai/cordis'
+       | ^
+     58| import { createScope, scopeOf } from '@deepseek-ai/dsh-scope'
+     59| import type { Scope } from '@deepseek-ai/dsh-scope'
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/175]⎯
+
+ FAIL  packages/runtime/test/alpha2-explicit-agent-setup.test.ts [ packages/runtime/test/alpha2-explicit-agent-setup.test.ts ]
+Error: Cannot find package '@deepseek-ai/dsh-scope' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/runtime/test/alpha2-explicit-agent-setup.test.ts
+ ❯ packages/runtime/test/alpha2-explicit-agent-setup.test.ts:55:1
+     53| import { describe, expect, it } from 'vitest'
+     54| import type { Context } from '@deepseek-ai/cordis'
+     55| import { scopeOf } from '@deepseek-ai/dsh-scope'
+       | ^
+     56| import {
+     57|   createLiveWorld,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/175]⎯
+
+ FAIL  packages/runtime/test/f1-webserver-shim-isolation.test.ts [ packages/runtime/test/f1-webserver-shim-isolation.test.ts ]
+Error: Cannot find package '@deepseek-ai/cordis' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/runtime/test/f1-webserver-shim-isolation.test.ts
+ ❯ packages/runtime/test/f1-webserver-shim-isolation.test.ts:58:1
+     56|  */
+     57| import { describe, expect, it } from 'vitest'
+     58| import { Context, Service } from '@deepseek-ai/cordis'
+       | ^
+     59| import {
+     60|   destroyDir,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/175]⎯
+
+ FAIL  packages/runtime/test/h1a-pre-execute-endcap.test.ts [ packages/runtime/test/h1a-pre-execute-endcap.test.ts ]
+Error: Cannot find package '@deepseek-ai/cordis' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/runtime/test/h1a-pre-execute-endcap.test.ts
+ ❯ packages/runtime/test/h1a-pre-execute-endcap.test.ts:126:1
+    124|  */
+    125| import { describe, expect, it } from 'vitest'
+    126| import { Context } from '@deepseek-ai/cordis'
+       | ^
+    127| import { createScope } from '@deepseek-ai/dsh-scope'
+    128| import type { Scope } from '@deepseek-ai/dsh-scope'
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/175]⎯
+
+ FAIL  packages/runtime/test/issue2-capability-permission-precedence.test.ts [ packages/runtime/test/issue2-capability-permission-precedence.test.ts ]
+Error: Cannot find package '@deepseek-ai/cordis' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/runtime/test/issue2-capability-permission-precedence.test.ts
+ ❯ packages/runtime/test/issue2-capability-permission-precedence.test.ts:76:1
+     74|  */
+     75| import { describe, expect, it } from 'vitest'
+     76| import { Context } from '@deepseek-ai/cordis'
+       | ^
+     77| import { createScope } from '@deepseek-ai/dsh-scope'
+     78| import type { Scope } from '@deepseek-ai/dsh-scope'
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/175]⎯
+
+ FAIL  packages/runtime/test/issue2-real-preset-restriction.test.ts [ packages/runtime/test/issue2-real-preset-restriction.test.ts ]
+Error: Cannot find package '@deepseek-ai/cordis' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/runtime/test/issue2-real-preset-restriction.test.ts
+ ❯ packages/runtime/test/issue2-real-preset-restriction.test.ts:61:1
+     59| import { fileURLToPath, pathToFileURL } from 'node:url'
+     60| import { describe, expect, it } from 'vitest'
+     61| import { Context } from '@deepseek-ai/cordis'
+       | ^
+     62| import Loader from '@deepseek-ai/cordis-plugin-loader'
+     63| import Include from '@deepseek-ai/cordis-plugin-include'
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/175]⎯
+
+ FAIL  packages/runtime/test/mcp-blueprint-initial-grant.test.ts [ packages/runtime/test/mcp-blueprint-initial-grant.test.ts ]
+Error: Cannot find package '@deepseek-ai/dsh-scope' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/runtime/test/mcp-blueprint-initial-grant.test.ts
+ ❯ packages/runtime/test/mcp-blueprint-initial-grant.test.ts:55:1
+     53|  */
+     54| import { describe, expect, it } from 'vitest'
+     55| import { scopeOf } from '@deepseek-ai/dsh-scope'
+       | ^
+     56| import { parseGovernanceOverride, type GovernanceOverrideRecord } from…
+     57| import { parseBlueprint, toBlueprintSnapshotRef } from '../../domain/b…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/175]⎯
+
+ FAIL  packages/runtime/test/team-skills.test.ts [ packages/runtime/test/team-skills.test.ts ]
+Error: Cannot find package '@deepseek-ai/cordis' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/runtime/test/team-skills.test.ts
+ ❯ packages/runtime/test/team-skills.test.ts:35:1
+     33| import { fileURLToPath, pathToFileURL } from 'node:url'
+     34| import { describe, expect, it } from 'vitest'
+     35| import { Context } from '@deepseek-ai/cordis'
+       | ^
+     36| import SkillRegistry from '@deepseek-ai/dsh-skill'
+     37| import {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/175]⎯
+
+ FAIL  packages/runtime/test/team-spill-local.test.ts [ packages/runtime/test/team-spill-local.test.ts ]
+Error: Cannot find package '@deepseek-ai/dsh-spill-local' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/base-check-73b6feb/packages/runtime/src/plugin/team-spill-local.ts
+ ❯ packages/runtime/src/plugin/team-spill-local.ts:47:1
+     45|  */
+     46| import type { Context } from '@deepseek-ai/cordis'
+     47| import { LocalSpillStore } from '@deepseek-ai/dsh-spill-local'
+       | ^
+     48| import type { Config } from '@deepseek-ai/dsh-spill-local'
+     49| import type { SaveTextSpill, SpillRef } from '@deepseek-ai/dsh-spill'
+ ❯ packages/runtime/test/team-spill-local.test.ts:58:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/175]⎯
+
+
+ Test Files  175 failed | 138 passed (313)
+      Tests  1723 passed (1723)
+   Start at  17:37:31
+   Duration  12.57s (transform 138.12s, setup 0ms, import 93.21s, tests 3.25s, environment 57ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

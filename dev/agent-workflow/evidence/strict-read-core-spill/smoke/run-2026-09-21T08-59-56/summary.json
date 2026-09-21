@@ -1,0 +1,246 @@
+{
+  "verdict": "PASS",
+  "fatalError": null,
+  "elapsedMs": 17428,
+  "fails": [],
+  "criteria": [
+    {
+      "leg": "L0",
+      "name": "discovery surface carries read + bash (minimal-style preset mounted)",
+      "ok": true,
+      "detail": "surface=[bash,edit,glob,grep,read,read_image,team_collect,team_create_member,team_delegate,team_follow_up,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_send_message,write]"
+    },
+    {
+      "leg": "C1",
+      "name": "team.create (S, strict blueprint, no initialWork) succeeds on the fresh root",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"strict-read-91f5y0opfy\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-strict-read-085956\",\"blueprint\":{\"blueprintId\":\"team.strict-read-s\",\"revision\":\"1\",\"contentHash\":\"sha256:14b58e92f640aececb06fb4f0d32c5825084feeaaff4b3e89073c52ad6823789\"},\"createdAt\":\"2026-09-21T09:00:03.086Z\",\"generation\":1,\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spi"
+    },
+    {
+      "leg": "L1",
+      "name": "worker-1 + worker-2 created (strict policies applied at setup)",
+      "ok": true,
+      "detail": "w1={\"ok\":true,\"value\":{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-strict-read-085956\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0zdm1wo0hpxk\" w2={\"ok\":true,\"value\":{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-strict-read-085956\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0hcxpjh188ah\""
+    },
+    {
+      "leg": "L1",
+      "name": "both member childSessionIds resolvable (p6t6 as-values)",
+      "ok": true,
+      "detail": "w1=session-team-child-6c7376e710d9c49cedcd4558af102e45 w2=session-team-child-1b10c8e881161e889db12605274c593f"
+    },
+    {
+      "leg": "E2a",
+      "name": "leader bash (200 KiB output) succeeded and spilled stdout",
+      "ok": true,
+      "detail": "status=200 ok=true spillPath=/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T08-59-56/tmp/dsh-subprocess-4gA9Js/dsh-subprocess-71- truncated=true err="
+    },
+    {
+      "leg": "E2b",
+      "name": "exactly ONE durable artifact-read-granted fact for the leader spill (source shell-foreground/stdout)",
+      "ok": true,
+      "detail": "count=1 first={\"sequence\":4,\"createdAt\":\"2026-09-21T09:00:03.562Z\",\"factType\":\"artifact-read-granted\",\"payload\":{\"instanceId\":\"inst-leader\",\"locator\":\"/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T08-59-56/tmp/dsh-subprocess-4gA9Js/dsh-subprocess-71-1-6"
+    },
+    {
+      "leg": "E3a",
+      "name": "leader read of its own spill path SUCCEEDS (default-deny policy + valid grant -> ALLOW, no control request)",
+      "ok": true,
+      "detail": "ok=true contentHead=STRICTREAD_SPILL_HEAD_L_20260921T085956\nSTRICTREAD_L_L_20260921T085956\nSTRICTREAD_L_L_20260921T085956\nSTRICTREAD_L_L_202 err="
+    },
+    {
+      "leg": "E3b",
+      "name": "the decision observation shows the grant lane fired (artifact-grant-check valid:true)",
+      "ok": true,
+      "detail": "hits=1 line=alpha2-perm: {\"stage\":\"artifact-grant-check\",\"callId\":\"strict-read-2wn0q68yef\",\"tool\":\"read\",\"valid\":true}"
+    },
+    {
+      "leg": "E4a",
+      "name": "leader read of the no-grant probe file (out-of-workspace) is DENIED",
+      "ok": true,
+      "detail": "ok=false err=permission denied by the static permission policy: the template's default (deny) denies read on /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T08-59-56/tmp/no-grant-20260921T085956"
+    },
+    {
+      "leg": "E4b",
+      "name": "no durable grant exists for the probe locator (the deny is policy, not grant absence confusion)",
+      "ok": true,
+      "detail": "count=0"
+    },
+    {
+      "leg": "E5",
+      "name": "worker-1 read of the LEADER spill locator is DENIED (no grant for worker-1 identity)",
+      "ok": true,
+      "detail": "ok=false err=permission denied by the static permission policy: the template's default (deny) denies read on /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T08-59-56/tmp/dsh-subprocess-4gA9Js/ds"
+    },
+    {
+      "leg": "S1a",
+      "name": "leader bash (50,500 B stdout) succeeded WITHOUT a bash-local early-spill (no stdout.spillPath — the 50k<51.2k<64k band)",
+      "ok": true,
+      "detail": "status=200 ok=true spillPath=undefined truncated=false stdoutLen=50500 err="
+    },
+    {
+      "leg": "S1b",
+      "name": "S1 bash minted EXACTLY ONE NEW durable spill-store grant (provenance spill-store/bash — the Team-aware SpillStore bridge, NOT the shell observer)",
+      "ok": true,
+      "detail": "newCount=1 first={\"sequence\":5,\"createdAt\":\"2026-09-21T09:00:04.020Z\",\"factType\":\"artifact-read-granted\",\"payload\":{\"instanceId\":\"inst-leader\",\"locator\":\"/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T08-59-56/tmp/dsh-spill-aGN4hr/session-9cec43ccab75/da58ef720c71-bash.txt\",\"s"
+    },
+    {
+      "leg": "S1c",
+      "name": "the S1 bash minted NO shell-foreground grant (no early-spill → the shell observer saw no spillPath; the shell-foreground count is unchanged)",
+      "ok": true,
+      "detail": "shellForeground before=1 after=1"
+    },
+    {
+      "leg": "S1d",
+      "name": "leader (same instance) read of the S1 SpillStore locator SUCCEEDS and round-trips the head+tail markers",
+      "ok": true,
+      "detail": "ok=true hasHead=true hasTail=true err="
+    },
+    {
+      "leg": "S1e",
+      "name": "worker-1 (another instance) read of the S1 locator is DENIED (no grant for worker-1 identity)",
+      "ok": true,
+      "detail": "ok=false err=permission denied by the static permission policy: the template's default (deny) denies read on /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T08-59-56/tmp/dsh-spill-aGN4hr/session"
+    },
+    {
+      "leg": "S2a",
+      "name": "boot-leader grep over the 320-line fixture succeeded (320 canonical matches — over the 250 inline cap)",
+      "ok": true,
+      "detail": "status=200 ok=true matches=320 err="
+    },
+    {
+      "leg": "S2b",
+      "name": "exactly ONE durable spill-store grant for the grep, under the BOOT root (provenance spill-store/{kind:tool, toolName:grep} — the tool-owned post-execute spill through the Team-aware SpillStore)",
+      "ok": true,
+      "detail": "count=1 first={\"sequence\":6,\"createdAt\":\"2026-09-21T09:00:04.144Z\",\"factType\":\"artifact-read-granted\",\"payload\":{\"instanceId\":\"inst-leader\",\"locator\":\"/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T08-59-56/tmp/dsh-spill-aGN4hr/session-09f05e496c64/c71247b6bd4d-grep-results"
+    },
+    {
+      "leg": "S2c",
+      "name": "boot-leader (same instance) read of the grep SpillStore locator returns the FULL result (all 320 match lines round-trip)",
+      "ok": true,
+      "detail": "ok=true matchLines=320 hasFirst=true hasLast=true err="
+    },
+    {
+      "leg": "S2d",
+      "name": "strict-leader (another root/instance) read of the grep SpillStore locator is DENIED (grant scoped to the boot-leader composite)",
+      "ok": true,
+      "detail": "ok=false err=permission denied by the static permission policy: the template's default (deny) denies read on /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T08-59-56/tmp/dsh-spill-aGN4hr/session"
+    },
+    {
+      "leg": "E6a",
+      "name": "worker-2 bash created a durable leader-approval control request (requestId discovered)",
+      "ok": true,
+      "detail": "requestId=ctrl-08nambr0w0phkg1dahd511k3"
+    },
+    {
+      "leg": "E6b",
+      "name": "leader team_resolve_control(allow) succeeds (leader-approval: leader is a valid resolver)",
+      "ok": true,
+      "detail": "ok=true body={\"ok\":true,\"value\":{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-08nambr0w0phkg1dahd511k3\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-strict-rea"
+    },
+    {
+      "leg": "E6c",
+      "name": "worker-2 bash executed after approval and spilled stdout",
+      "ok": true,
+      "detail": "ok=true spillPath=/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T08-59-56/tmp/dsh-subprocess-4gA9Js/dsh-subprocess-71- err="
+    },
+    {
+      "leg": "E6d",
+      "name": "the durable grant for the worker-2 OWN spill IS recorded (producer side is policy-independent)",
+      "ok": true,
+      "detail": "count=1 first={\"sequence\":11,\"createdAt\":\"2026-09-21T09:00:05.077Z\",\"factType\":\"artifact-read-granted\",\"payload\":{\"instanceId\":\"inst-0hcxpjh188ah\",\"locator\":\"/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T08-59-56/tmp/dsh-subprocess-4gA9Js/dsh-subprocess"
+    },
+    {
+      "leg": "E6e",
+      "name": "worker-2 read of its OWN (granted) spill is DENIED by the explicit rule — deny wins over the valid grant",
+      "ok": true,
+      "detail": "ok=false err=permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T08-59-56/tmp/dsh-subprocess-4gA9Js/dsh-s"
+    },
+    {
+      "leg": "E8a",
+      "name": "plain session created via the public session/create seam (explicit-id adoption on the smoke preset, NOT team-managed)",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"e8-create-b0ayluuk57\",\"result\":{\"ok\":true,\"value\":{\"sessionId\":\"session-strict-read-plain-085956\",\"agentPreset\":\"strict-read-smoke\"}}}"
+    },
+    {
+      "leg": "E8",
+      "name": "plain session: upstream bash spill works (new spill file in WORLD_TMP) + ZERO artifact-read-granted facts (the Team authority is inert on the unmanaged session)",
+      "ok": true,
+      "detail": "surfaceHasBash=true plainSpills=1 dsh-subprocess-71-3-0b69e54772e2-stdout.log readOutcome=allowed grantFacts=0 bashTextLen=50000 surface=[bash,edit,glob,grep,read,read_image,write]"
+    },
+    {
+      "leg": "E7a",
+      "name": "after restart: leader read of the SAME spill path still SUCCEEDS (authority rebuilt from the durable ledger)",
+      "ok": true,
+      "detail": "ok=true err="
+    },
+    {
+      "leg": "E7b",
+      "name": "after restart: the grant lane observation fired again (the rebuilt grant is live)",
+      "ok": true,
+      "detail": "hits=1"
+    },
+    {
+      "leg": "E1a",
+      "name": "host booted WITHOUT a duplicate spillStore service collision (base spill-local disabled by the bundle layer; team-spill-local active)",
+      "ok": true,
+      "detail": "logSpillLines=[\"[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/.agents/skills (source \\\"dsh-agent-team\\\", provider \\\"dsh-agent-team\\\", rank 550)\"]"
+    },
+    {
+      "leg": "E1b",
+      "name": "the durable grant I/O below is produced ONLY by the Team-aware provider (behavioral proof of the effective replacement)",
+      "ok": true,
+      "detail": "grantsRecorded=6 (E2b/E6d asserted the exact shapes)"
+    },
+    {
+      "leg": "POST",
+      "name": "stable instances :3080/:3180 state unchanged (read-only probes pre == post)",
+      "ok": true,
+      "detail": "pre={\"p3080\":{\"reachable\":true,\"status\":401},\"p3180\":{\"reachable\":true,\"status\":401}} post={\"p3080\":{\"reachable\":true,\"status\":401},\"p3180\":{\"reachable\":true,\"status\":401}}"
+    },
+    {
+      "leg": "POST",
+      "name": "test-use working tree byte-clean after the run",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "producerPaths": {
+    "foreground-shell-early-spill": {
+      "leg": "E2",
+      "ok": false
+    },
+    "spill-store-generic-spill-policy": {
+      "leg": "S1",
+      "ok": false
+    },
+    "spill-store-tool-owned-grep": {
+      "leg": "S2",
+      "ok": false
+    }
+  },
+  "stable": {
+    "pre": {
+      "p3080": {
+        "reachable": true,
+        "status": 401
+      },
+      "p3180": {
+        "reachable": true,
+        "status": 401
+      }
+    },
+    "post": {
+      "p3080": {
+        "reachable": true,
+        "status": 401
+      },
+      "p3180": {
+        "reachable": true,
+        "status": 401
+      }
+    },
+    "untouched": true
+  },
+  "testuseClean": true,
+  "keep": true,
+  "home": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T08-59-56"
+}

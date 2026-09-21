@@ -1,0 +1,69 @@
+[2026-09-21T07:37:34.791Z] ── strict-read real-profile smoke ──
+[2026-09-21T07:37:34.791Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill
+testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/dev/agent-workflow/evidence/strict-read-core-spill/smoke/run-2026-09-21T07-37-34
+[2026-09-21T07:37:34.801Z] ZERO-TOUCH probe :3080 pre: {"reachable":true,"status":401}
+[2026-09-21T07:37:34.806Z] ZERO-TOUCH probe :3180 pre: {"reachable":true,"status":401}
+[2026-09-21T07:37:35.022Z] preflight OK: test-use fb2c4b9e69 clean; worktree dist + bundle layer present
+[2026-09-21T07:37:35.164Z] ports: host=3491 mock=3501
+[2026-09-21T07:37:35.165Z] world materialized at /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T07-37-34 (profile bundles=[base, web-app, dsh-agent-team], TMPDIR=/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T07-37-34/tmp)
+[2026-09-21T07:37:35.173Z] mock: mock: listening on 127.0.0.1:3501
+[2026-09-21T07:37:35.173Z] mock model listening on 127.0.0.1:3501
+[2026-09-21T07:37:35.175Z] host 1 spawned (pid=71, port=3491, log=/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/dev/agent-workflow/evidence/strict-read-core-spill/smoke/run-2026-09-21T07-37-34/instance-1.log)
+[2026-09-21T07:37:39.996Z] host 1 ready: p6t6 root=team-root phase=create boot=1 toolCount=undefined
+[2026-09-21T07:37:39.996Z] ── L0: surface discovery (boot team) ──
+[2026-09-21T07:37:40.045Z] mock: mock: 1 text reply (21 chars): "strict-read smoke run"
+[2026-09-21T07:37:40.046Z] mock: mock: 2 text reply (20 chars): "STRICTREAD_DISC_DONE"
+[2026-09-21T07:37:40.164Z] PASS [L0] discovery surface carries read + bash (minimal-style preset mounted) — surface=[bash,edit,read,read_image,team_collect,team_create_member,team_delegate,team_follow_up,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_send_message,write]
+[2026-09-21T07:37:40.164Z] L0 surface=17 tools; computed builtinToolDeny=[]
+[2026-09-21T07:37:40.164Z] ── C1: saved blueprint S + team.create ──
+[2026-09-21T07:37:40.213Z] PASS [C1] team.create (S, strict blueprint, no initialWork) succeeds on the fresh root — status=200 body={"type":"server-response","rpcId":"strict-read-59bfcsr8st","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-strict-read-073734","blueprint":{"blueprintId":"team.strict-read-s","revision":"1","contentHash":"s
+[2026-09-21T07:37:40.213Z] ── L1: create worker-1 + worker-2 (p6t6 as leader) ──
+[2026-09-21T07:37:40.221Z] S leader instanceId=inst-leader (as=CREATED_ROOT=session-strict-read-073734)
+[2026-09-21T07:37:40.326Z] PASS [L1] worker-1 + worker-2 created (strict policies applied at setup) — w1={"ok":true,"value":{"status":"executed","action":"create-member","rootSessionId":"session-strict-read-073734","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-127j8ek0rsx4" w2={"ok":true,"value":{"status":"executed","action":"create-member","rootSessionId":"session-str
+[2026-09-21T07:37:40.326Z] PASS [L1] both member childSessionIds resolvable (p6t6 as-values) — w1=session-team-child-380abe7ba91a7adae4b83a6e88617ff3 w2=session-team-child-d47774419de147a5aab99f258bea2781
+[2026-09-21T07:37:40.326Z] workers: w1=inst-127j8ek0rsx4@session-team-child-380abe7ba91a7adae4b83a6e88617ff3 w2=inst-1gr91qp059eo@session-team-child-d47774419de147a5aab99f258bea2781
+[2026-09-21T07:37:40.326Z] ── E2: leader bash spill -> durable artifact-read grant ──
+[2026-09-21T07:37:40.384Z] PASS [E2a] leader bash (200 KiB output) succeeded and spilled stdout — status=200 ok=true spillPath=/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T07-37-34/tmp/dsh-subprocess-9GwlB7/dsh-subprocess-71- truncated=true err=
+[2026-09-21T07:37:40.635Z] PASS [E2b] exactly ONE durable artifact-read-granted fact for the leader spill (source shell-foreground/stdout) — count=1 first={"sequence":4,"createdAt":"2026-09-21T07:37:40.385Z","factType":"artifact-read-granted","payload":{"instanceId":"inst-leader","locator":"/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T07-37-34/tmp/dsh-subprocess-9GwlB7/dsh-sub
+[2026-09-21T07:37:40.636Z] ── E3: leader read-back of its own spill (the grant lane) ──
+[2026-09-21T07:37:40.666Z] PASS [E3a] leader read of its own spill path SUCCEEDS (default-deny policy + valid grant -> ALLOW, no control request) — ok=true contentHead=STRICTREAD_SPILL_HEAD_L_20260921T073734
+STRICTREAD_L_L_20260921T073734
+STRICTREAD_L_L_20260921T073734
+STRICTREAD_L_L_202 err=
+[2026-09-21T07:37:40.669Z] PASS [E3b] the decision observation shows the grant lane fired (artifact-grant-check valid:true) — hits=1 line=alpha2-perm: {"stage":"artifact-grant-check","callId":"strict-read-bbs43ur6eo","tool":"read","valid":true}
+[2026-09-21T07:37:40.669Z] ── E4: no-grant out-of-workspace read stays denied ──
+[2026-09-21T07:37:40.672Z] PASS [E4a] leader read of the no-grant probe file (out-of-workspace) is DENIED — ok=false err=permission denied by the static permission policy: the template's default (deny) denies read on /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T07-37-34/tmp/no-grant-20260921T073734
+[2026-09-21T07:37:40.672Z] PASS [E4b] no durable grant exists for the probe locator (the deny is policy, not grant absence confusion) — count=0
+[2026-09-21T07:37:40.672Z] ── E5: worker-1 cannot read the leader spill locator ──
+[2026-09-21T07:37:40.674Z] PASS [E5] worker-1 read of the LEADER spill locator is DENIED (no grant for worker-1 identity) — ok=false err=permission denied by the static permission policy: the template's default (deny) denies read on /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T07-37-34/tmp/dsh-subprocess-9GwlB7/ds
+[2026-09-21T07:37:40.674Z] ── E6: worker-2 ask -> leader approval -> spill -> explicit deny wins ──
+[2026-09-21T07:37:40.706Z] mock: mock: 3 text reply (15 chars): "STRICTREAD_NOOP"
+[2026-09-21T07:37:40.706Z] mock: mock: 4 text reply (21 chars): "strict-read smoke run"
+[2026-09-21T07:37:41.185Z] PASS [E6a] worker-2 bash created a durable leader-approval control request (requestId discovered) — requestId=ctrl-1cpdjdz02dgc6s0744ild04e
+[2026-09-21T07:37:41.198Z] PASS [E6b] leader team_resolve_control(allow) succeeds (leader-approval: leader is a valid resolver) — ok=true body={"ok":true,"value":{"status":"control-resolved","decision":{"requestId":"ctrl-1cpdjdz02dgc6s0744ild04e","decision":"allow","decider":{"kind":"instance","instanceId":"inst-leader","role":"leader"},"scope":{"rootSessionId":"session-strict-rea
+[2026-09-21T07:37:41.487Z] PASS [E6c] worker-2 bash executed after approval and spilled stdout — ok=true spillPath=/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T07-37-34/tmp/dsh-subprocess-9GwlB7/dsh-subprocess-71- err=
+[2026-09-21T07:37:41.738Z] PASS [E6d] the durable grant for the worker-2 OWN spill IS recorded (producer side is policy-independent) — count=1 first={"sequence":9,"createdAt":"2026-09-21T07:37:41.488Z","factType":"artifact-read-granted","payload":{"instanceId":"inst-1gr91qp059eo","locator":"/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T07-37-34/tmp/dsh-subprocess-9GwlB7/d
+[2026-09-21T07:37:41.742Z] PASS [E6e] worker-2 read of its OWN (granted) spill is DENIED by the explicit rule — deny wins over the valid grant — ok=false err=permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T07-37-34/tmp/dsh-subprocess-9GwlB7/dsh-s
+[2026-09-21T07:37:41.742Z] ── E8: plain session (no team binding) upstream-equivalence ──
+[2026-09-21T07:37:41.759Z] PASS [E8a] plain session created via the public session/create seam (explicit-id adoption on the smoke preset, NOT team-managed) — status=200 body={"type":"server-response","rpcId":"e8-create-29w3o0rq8j","result":{"ok":true,"value":{"sessionId":"session-strict-read-plain-073734","agentPreset":"strict-read-smoke"}}}
+[2026-09-21T07:37:41.784Z] mock: mock: 5 text reply (21 chars): "strict-read smoke run"
+[2026-09-21T07:37:41.784Z] mock: mock: 6 tool-call reply: bash
+[2026-09-21T07:37:41.831Z] mock: mock: 7 tool-call reply: read
+[2026-09-21T07:37:41.847Z] mock: mock: 8 text reply (21 chars): "STRICTREAD_PLAIN_DONE"
+[2026-09-21T07:37:41.916Z] PASS [E8] plain session: upstream bash spill works (new spill file in WORLD_TMP) + ZERO artifact-read-granted facts (the Team authority is inert on the unmanaged session) — surfaceHasBash=true plainSpills=1 dsh-subprocess-71-3-bc974354f80f-stdout.log readOutcome=allowed grantFacts=0 bashTextLen=50000 surface=[bash,edit,read,read_image,write]
+[2026-09-21T07:37:41.916Z] ── E7: same-home restart (boot 2, adopt) — grant rebuild ──
+[2026-09-21T07:37:42.316Z] host 1 stopped
+[2026-09-21T07:37:42.318Z] host 2 spawned (pid=105, port=3491, log=/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/dev/agent-workflow/evidence/strict-read-core-spill/smoke/run-2026-09-21T07-37-34/instance-2.log)
+[2026-09-21T07:37:46.089Z] host 2 ready: p6t6 root=team-root phase=resume boot=2 toolCount=undefined
+[2026-09-21T07:37:46.145Z] PASS [E7a] after restart: leader read of the SAME spill path still SUCCEEDS (authority rebuilt from the durable ledger) — ok=true err=
+[2026-09-21T07:37:46.148Z] PASS [E7b] after restart: the grant lane observation fired again (the rebuilt grant is live) — hits=1
+[2026-09-21T07:37:46.149Z] ── E1: effective provider composition ──
+[2026-09-21T07:37:46.149Z] PASS [E1a] host booted WITHOUT a duplicate spillStore service collision (base spill-local disabled by the bundle layer; team-spill-local active) — logSpillLines=["[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)"]
+[2026-09-21T07:37:46.149Z] PASS [E1b] the durable grant I/O below is produced ONLY by the Team-aware provider (behavioral proof of the effective replacement) — grantsRecorded=4 (E2b/E6d asserted the exact shapes)
+[2026-09-21T07:37:46.553Z] ZERO-TOUCH probe :3080 post: {"reachable":true,"status":401}
+[2026-09-21T07:37:46.555Z] ZERO-TOUCH probe :3180 post: {"reachable":true,"status":401}
+[2026-09-21T07:37:46.572Z] PASS [POST] stable instances :3080/:3180 state unchanged (read-only probes pre == post) — pre={"p3080":{"reachable":true,"status":401},"p3180":{"reachable":true,"status":401}} post={"p3080":{"reachable":true,"status":401},"p3180":{"reachable":true,"status":401}}
+[2026-09-21T07:37:46.572Z] PASS [POST] test-use working tree byte-clean after the run
+[2026-09-21T07:37:46.572Z] ── verdict: PASS (24/24 criteria; fails=[]) ──
+[2026-09-21T07:37:46.572Z] --keep: world retained at /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T07-37-34

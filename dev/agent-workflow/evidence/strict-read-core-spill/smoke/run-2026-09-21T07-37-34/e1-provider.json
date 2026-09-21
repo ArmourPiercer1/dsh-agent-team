@@ -1,0 +1,22 @@
+{
+  "dupService": false,
+  "spillLines": [
+    "[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)"
+  ],
+  "homePackageJson": {
+    "name": "dsh-profile-web-strict-read-smoke",
+    "private": true,
+    "dependencies": {
+      "dsh-agent-team": "file:/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill"
+    },
+    "dsh": {
+      "profile": {
+        "bundles": [
+          "@deepseek-ai/dsh-base",
+          "@deepseek-ai/dsh-web-app",
+          "dsh-agent-team"
+        ]
+      }
+    }
+  }
+}

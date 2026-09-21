@@ -1,0 +1,46 @@
+{
+  "w1Res": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "create-member",
+      "rootSessionId": "session-strict-read-085956",
+      "callerRole": "leader",
+      "effect": {
+        "kind": "member-activated",
+        "instanceId": "inst-0zdm1wo0hpxk",
+        "templateId": "worker-1",
+        "childSessionId": "session-team-child-6c7376e710d9c49cedcd4558af102e45",
+        "operationId": "op-0hlx58c0g656vx1ceeirq07m",
+        "replayed": false,
+        "ledgerSequence": 1,
+        "admissionCode": "ADMISSION_OPEN"
+      },
+      "requestToken": "tok-cw1-2026-09-21T08-59-56"
+    }
+  },
+  "w2Res": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "create-member",
+      "rootSessionId": "session-strict-read-085956",
+      "callerRole": "leader",
+      "effect": {
+        "kind": "member-activated",
+        "instanceId": "inst-0hcxpjh188ah",
+        "templateId": "worker-2",
+        "childSessionId": "session-team-child-1b10c8e881161e889db12605274c593f",
+        "operationId": "op-0aadyus1l2pup90hvkzcm01x",
+        "replayed": false,
+        "ledgerSequence": 2,
+        "admissionCode": "ADMISSION_OPEN"
+      },
+      "requestToken": "tok-cw2-2026-09-21T08-59-56"
+    }
+  },
+  "memberSessions": {
+    "inst-0zdm1wo0hpxk": "session-team-child-6c7376e710d9c49cedcd4558af102e45",
+    "inst-0hcxpjh188ah": "session-team-child-1b10c8e881161e889db12605274c593f"
+  }
+}

@@ -18,6 +18,16 @@
  *     ↓                                OperationPermissionError: deny,
  *                                       never next())
  *     resolveOperationPermission(...)         (A3 — pure static decision)
+ *     ┌ artifact-grant lane (strict-read + core-spill, guide §9) —
+ *     │ read tool + injected port + (ask OR default-deny) decision:
+ *     │ valid grant → checkExternalOperation(live) (the SAME external
+ *     │ hard ceiling as the static-allow path; fail closed)
+ *     │   ├ allowed → mark + await next()   (ALLOW WITHOUT a control
+ *     │   └ denied  → return { kind: 'deny' })
+ *     │ an explicit rule DENY and a static ALLOW never consult it —
+ *     │ a grant is a floor, never a ceiling override; a port fault
+ *     │ fails closed (no grant, unchanged pipeline)
+ *     └
  *     ├ allow
  *     │   ├ LEADER exec-class (bash/pwsh) WITHOUT the matching exec token
  *     │   │   in execEnvelopeOps (the mutation-envelope DUAL GATE —
@@ -508,6 +518,41 @@ export interface InstallParameterPermissionListenerParams {
    */
   readonly execEnvelopeOps?: readonly string[]
   /**
+   * Strict-read + Core-spill (implementation guide §9) — the injected
+   * artifact-grant authorization port: for `read` decisions only, it
+   * consults the Team's durable artifact-read grants (the
+   * `artifact-read-granted` fact family) and reports whether a VALID
+   * grant authorizes this exact read (composite producing identity +
+   * exact requested locator + fresh fs identity — the authority owns
+   * the fresh resolve+stat re-verification; the adapter supplies the
+   * decision's own fresh canonicalization inputs).
+   *
+   * The port is the ONLY grant seam: the adapter never sees grants,
+   * the registry, or fs identity beyond the opaque values already in
+   * this decision's canonicalization (H4: nothing cached).
+   *
+   * The decision order it participates in (architecture §12): an
+   * explicit rule DENY never consults it (the ceiling); a static ALLOW
+   * never consults it (the unchanged path already rechecks the external
+   * hard policy); for `ask` and default-`deny` reads a valid grant
+   * authorizes the read WITHOUT a control request — after the SAME
+   * external-hard last-mile recheck as the static-allow path (external
+   * hard + grant → DENY). A faulting port fails closed: the read
+   * proceeds through the unchanged pipeline (no grant).
+   *
+   * Optional — installers without it keep today's pipeline exactly.
+   */
+  readonly authorizeArtifactRead?: (args: {
+    /** The reading agent's instance id (this install's target instance). */
+    readonly instanceId: string
+    /** The EXACT raw path the model requested (`read`'s `file_path`). */
+    readonly rawPath: string
+    /** The decision's freshly canonicalized resource key (the opaque fs target key). */
+    readonly canonicalResourceKey: string
+    /** The decision's freshly resolved opaque fs target handle (this batch only). */
+    readonly targetHandle: unknown
+  }) => Promise<boolean>
+  /**
    * The optional diagnostics hook (the A6 glue wires it to its
    * observation surface). Small structured rows only (no file contents,
    * no full argument payloads); a throwing hook never affects the
@@ -676,6 +721,7 @@ export function installParameterPermissionListener(
     targetInstanceId,
     isLeader,
     execEnvelopeOps,
+    authorizeArtifactRead,
   } = params
 
   /** The request kind this install routes asks to (plan §9.5). */
@@ -1085,6 +1131,91 @@ export function installParameterPermissionListener(
           : {}),
       },
     })
+
+    // (3b) Strict-read + Core-spill (implementation guide §9,
+    // architecture §12) — the ARTIFACT-GRANT lane of the read decision.
+    //
+    // Eligibility (the frozen decision order — a grant is a floor,
+    // never a ceiling override):
+    // - an explicit rule DENY never reaches here (it settles as a deny
+    //   below — explicit deny + grant → DENY, guide §9 critical case);
+    // - a static ALLOW never reaches here (the unchanged allow path
+    //   already carries the external-hard last-mile recheck);
+    // - `ask` (explicit-ask rule OR default-ask) and default-`deny`
+    //   reads consult the port: a valid grant authorizes the read
+    //   WITHOUT a control request (explicit ask + grant → ALLOW, no
+    //   request; default deny + grant → ALLOW — the strict-read core
+    //   use case: the producer reads back its own out-of-workspace
+    //   spill artifact).
+    //
+    // The port receives ONLY this decision's own fresh canonicalization
+    // inputs (the exact raw path, the freshly resolved resource key +
+    // opaque handle) — the authority re-verifies the fs identity FRESH
+    // behind the port (H4: no cache anywhere on this path). A port
+    // fault, a missing raw path, or a missing handle fails closed: the
+    // read proceeds through the unchanged pipeline (no grant).
+    //
+    // A valid grant is authorized only AFTER the SAME external-hard
+    // last-mile recheck the static-allow path carries (external hard +
+    // grant → DENY — invariant 34: no Team decision bypasses the
+    // external hard policy); marking + next() follow the frozen
+    // allow-path convention (mark only on final-allow paths).
+    if (name === 'read' && authorizeArtifactRead !== undefined) {
+      const grantLaneEligible =
+        decision.decision === 'ask' ||
+        (decision.decision === 'deny' && decision.provenance.source === 'default')
+      if (grantLaneEligible && operation.resource.kind === 'file') {
+        const rawArguments =
+          typeof exec.arguments === 'object' && exec.arguments !== null && !Array.isArray(exec.arguments)
+            ? (exec.arguments as Record<string, unknown>)
+            : undefined
+        const rawPath = rawArguments !== undefined ? rawArguments['file_path'] : undefined
+        const targetHandle = targetHandles.get(operation.resource.key)
+        if (typeof rawPath === 'string' && rawPath.length > 0 && targetHandle !== undefined) {
+          let grantValid = false
+          try {
+            grantValid = await authorizeArtifactRead({
+              instanceId: targetInstanceId,
+              rawPath,
+              canonicalResourceKey: operation.resource.key,
+              targetHandle,
+            })
+          } catch {
+            // A faulting port fails closed (no grant — the unchanged
+            // pipeline decides below).
+            grantValid = false
+          }
+          observe({ stage: 'artifact-grant-check', callId, tool: name, valid: grantValid })
+          if (grantValid) {
+            let external
+            try {
+              external = await controlService.checkExternalOperation({
+                capabilityDomain: 'tools',
+                toolName: name,
+              })
+            } catch (error: unknown) {
+              return {
+                kind: 'deny',
+                reason: `permission denied: the external policy recheck failed (unexpected check failure: ${
+                  error instanceof Error ? error.message : String(error)
+                })`,
+              }
+            }
+            if (external.allowed === false) {
+              observe({ stage: 'external-recheck-denied', callId, tool: name, via: 'artifact-grant' })
+              return {
+                kind: 'deny',
+                reason: `permission denied: the external hard policy no longer allows ${name} (${external.reason})`,
+              }
+            }
+            // R6 / H1 — mark THIS exec object (the same object the
+            // pipeline flows to the end-cap guard stage) and dispatch.
+            authorizedExecutions.add(exec)
+            return await next()
+          }
+        }
+      }
+    }
 
     if (decision.decision === 'allow') {
       // exec-autonomy-contract (user ruling 2026-09-18) — the DUAL

@@ -1,0 +1,2944 @@
+{
+  "s2Grep": {
+    "ok": true,
+    "value": {
+      "matches": [
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 1,
+          "line": "match-0001 payload line 1"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 2,
+          "line": "match-0002 payload line 2"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 3,
+          "line": "match-0003 payload line 3"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 4,
+          "line": "match-0004 payload line 4"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 5,
+          "line": "match-0005 payload line 5"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 6,
+          "line": "match-0006 payload line 6"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 7,
+          "line": "match-0007 payload line 7"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 8,
+          "line": "match-0008 payload line 8"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 9,
+          "line": "match-0009 payload line 9"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 10,
+          "line": "match-0010 payload line 10"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 11,
+          "line": "match-0011 payload line 11"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 12,
+          "line": "match-0012 payload line 12"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 13,
+          "line": "match-0013 payload line 13"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 14,
+          "line": "match-0014 payload line 14"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 15,
+          "line": "match-0015 payload line 15"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 16,
+          "line": "match-0016 payload line 16"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 17,
+          "line": "match-0017 payload line 17"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 18,
+          "line": "match-0018 payload line 18"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 19,
+          "line": "match-0019 payload line 19"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 20,
+          "line": "match-0020 payload line 20"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 21,
+          "line": "match-0021 payload line 21"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 22,
+          "line": "match-0022 payload line 22"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 23,
+          "line": "match-0023 payload line 23"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 24,
+          "line": "match-0024 payload line 24"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 25,
+          "line": "match-0025 payload line 25"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 26,
+          "line": "match-0026 payload line 26"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 27,
+          "line": "match-0027 payload line 27"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 28,
+          "line": "match-0028 payload line 28"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 29,
+          "line": "match-0029 payload line 29"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 30,
+          "line": "match-0030 payload line 30"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 31,
+          "line": "match-0031 payload line 31"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 32,
+          "line": "match-0032 payload line 32"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 33,
+          "line": "match-0033 payload line 33"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 34,
+          "line": "match-0034 payload line 34"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 35,
+          "line": "match-0035 payload line 35"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 36,
+          "line": "match-0036 payload line 36"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 37,
+          "line": "match-0037 payload line 37"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 38,
+          "line": "match-0038 payload line 38"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 39,
+          "line": "match-0039 payload line 39"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 40,
+          "line": "match-0040 payload line 40"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 41,
+          "line": "match-0041 payload line 41"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 42,
+          "line": "match-0042 payload line 42"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 43,
+          "line": "match-0043 payload line 43"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 44,
+          "line": "match-0044 payload line 44"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 45,
+          "line": "match-0045 payload line 45"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 46,
+          "line": "match-0046 payload line 46"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 47,
+          "line": "match-0047 payload line 47"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 48,
+          "line": "match-0048 payload line 48"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 49,
+          "line": "match-0049 payload line 49"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 50,
+          "line": "match-0050 payload line 50"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 51,
+          "line": "match-0051 payload line 51"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 52,
+          "line": "match-0052 payload line 52"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 53,
+          "line": "match-0053 payload line 53"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 54,
+          "line": "match-0054 payload line 54"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 55,
+          "line": "match-0055 payload line 55"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 56,
+          "line": "match-0056 payload line 56"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 57,
+          "line": "match-0057 payload line 57"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 58,
+          "line": "match-0058 payload line 58"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 59,
+          "line": "match-0059 payload line 59"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 60,
+          "line": "match-0060 payload line 60"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 61,
+          "line": "match-0061 payload line 61"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 62,
+          "line": "match-0062 payload line 62"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 63,
+          "line": "match-0063 payload line 63"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 64,
+          "line": "match-0064 payload line 64"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 65,
+          "line": "match-0065 payload line 65"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 66,
+          "line": "match-0066 payload line 66"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 67,
+          "line": "match-0067 payload line 67"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 68,
+          "line": "match-0068 payload line 68"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 69,
+          "line": "match-0069 payload line 69"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 70,
+          "line": "match-0070 payload line 70"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 71,
+          "line": "match-0071 payload line 71"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 72,
+          "line": "match-0072 payload line 72"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 73,
+          "line": "match-0073 payload line 73"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 74,
+          "line": "match-0074 payload line 74"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 75,
+          "line": "match-0075 payload line 75"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 76,
+          "line": "match-0076 payload line 76"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 77,
+          "line": "match-0077 payload line 77"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 78,
+          "line": "match-0078 payload line 78"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 79,
+          "line": "match-0079 payload line 79"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 80,
+          "line": "match-0080 payload line 80"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 81,
+          "line": "match-0081 payload line 81"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 82,
+          "line": "match-0082 payload line 82"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 83,
+          "line": "match-0083 payload line 83"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 84,
+          "line": "match-0084 payload line 84"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 85,
+          "line": "match-0085 payload line 85"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 86,
+          "line": "match-0086 payload line 86"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 87,
+          "line": "match-0087 payload line 87"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 88,
+          "line": "match-0088 payload line 88"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 89,
+          "line": "match-0089 payload line 89"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 90,
+          "line": "match-0090 payload line 90"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 91,
+          "line": "match-0091 payload line 91"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 92,
+          "line": "match-0092 payload line 92"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 93,
+          "line": "match-0093 payload line 93"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 94,
+          "line": "match-0094 payload line 94"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 95,
+          "line": "match-0095 payload line 95"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 96,
+          "line": "match-0096 payload line 96"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 97,
+          "line": "match-0097 payload line 97"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 98,
+          "line": "match-0098 payload line 98"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 99,
+          "line": "match-0099 payload line 99"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 100,
+          "line": "match-0100 payload line 100"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 101,
+          "line": "match-0101 payload line 101"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 102,
+          "line": "match-0102 payload line 102"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 103,
+          "line": "match-0103 payload line 103"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 104,
+          "line": "match-0104 payload line 104"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 105,
+          "line": "match-0105 payload line 105"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 106,
+          "line": "match-0106 payload line 106"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 107,
+          "line": "match-0107 payload line 107"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 108,
+          "line": "match-0108 payload line 108"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 109,
+          "line": "match-0109 payload line 109"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 110,
+          "line": "match-0110 payload line 110"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 111,
+          "line": "match-0111 payload line 111"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 112,
+          "line": "match-0112 payload line 112"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 113,
+          "line": "match-0113 payload line 113"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 114,
+          "line": "match-0114 payload line 114"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 115,
+          "line": "match-0115 payload line 115"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 116,
+          "line": "match-0116 payload line 116"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 117,
+          "line": "match-0117 payload line 117"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 118,
+          "line": "match-0118 payload line 118"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 119,
+          "line": "match-0119 payload line 119"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 120,
+          "line": "match-0120 payload line 120"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 121,
+          "line": "match-0121 payload line 121"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 122,
+          "line": "match-0122 payload line 122"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 123,
+          "line": "match-0123 payload line 123"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 124,
+          "line": "match-0124 payload line 124"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 125,
+          "line": "match-0125 payload line 125"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 126,
+          "line": "match-0126 payload line 126"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 127,
+          "line": "match-0127 payload line 127"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 128,
+          "line": "match-0128 payload line 128"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 129,
+          "line": "match-0129 payload line 129"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 130,
+          "line": "match-0130 payload line 130"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 131,
+          "line": "match-0131 payload line 131"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 132,
+          "line": "match-0132 payload line 132"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 133,
+          "line": "match-0133 payload line 133"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 134,
+          "line": "match-0134 payload line 134"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 135,
+          "line": "match-0135 payload line 135"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 136,
+          "line": "match-0136 payload line 136"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 137,
+          "line": "match-0137 payload line 137"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 138,
+          "line": "match-0138 payload line 138"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 139,
+          "line": "match-0139 payload line 139"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 140,
+          "line": "match-0140 payload line 140"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 141,
+          "line": "match-0141 payload line 141"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 142,
+          "line": "match-0142 payload line 142"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 143,
+          "line": "match-0143 payload line 143"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 144,
+          "line": "match-0144 payload line 144"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 145,
+          "line": "match-0145 payload line 145"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 146,
+          "line": "match-0146 payload line 146"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 147,
+          "line": "match-0147 payload line 147"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 148,
+          "line": "match-0148 payload line 148"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 149,
+          "line": "match-0149 payload line 149"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 150,
+          "line": "match-0150 payload line 150"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 151,
+          "line": "match-0151 payload line 151"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 152,
+          "line": "match-0152 payload line 152"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 153,
+          "line": "match-0153 payload line 153"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 154,
+          "line": "match-0154 payload line 154"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 155,
+          "line": "match-0155 payload line 155"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 156,
+          "line": "match-0156 payload line 156"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 157,
+          "line": "match-0157 payload line 157"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 158,
+          "line": "match-0158 payload line 158"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 159,
+          "line": "match-0159 payload line 159"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 160,
+          "line": "match-0160 payload line 160"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 161,
+          "line": "match-0161 payload line 161"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 162,
+          "line": "match-0162 payload line 162"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 163,
+          "line": "match-0163 payload line 163"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 164,
+          "line": "match-0164 payload line 164"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 165,
+          "line": "match-0165 payload line 165"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 166,
+          "line": "match-0166 payload line 166"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 167,
+          "line": "match-0167 payload line 167"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 168,
+          "line": "match-0168 payload line 168"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 169,
+          "line": "match-0169 payload line 169"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 170,
+          "line": "match-0170 payload line 170"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 171,
+          "line": "match-0171 payload line 171"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 172,
+          "line": "match-0172 payload line 172"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 173,
+          "line": "match-0173 payload line 173"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 174,
+          "line": "match-0174 payload line 174"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 175,
+          "line": "match-0175 payload line 175"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 176,
+          "line": "match-0176 payload line 176"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 177,
+          "line": "match-0177 payload line 177"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 178,
+          "line": "match-0178 payload line 178"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 179,
+          "line": "match-0179 payload line 179"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 180,
+          "line": "match-0180 payload line 180"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 181,
+          "line": "match-0181 payload line 181"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 182,
+          "line": "match-0182 payload line 182"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 183,
+          "line": "match-0183 payload line 183"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 184,
+          "line": "match-0184 payload line 184"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 185,
+          "line": "match-0185 payload line 185"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 186,
+          "line": "match-0186 payload line 186"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 187,
+          "line": "match-0187 payload line 187"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 188,
+          "line": "match-0188 payload line 188"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 189,
+          "line": "match-0189 payload line 189"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 190,
+          "line": "match-0190 payload line 190"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 191,
+          "line": "match-0191 payload line 191"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 192,
+          "line": "match-0192 payload line 192"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 193,
+          "line": "match-0193 payload line 193"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 194,
+          "line": "match-0194 payload line 194"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 195,
+          "line": "match-0195 payload line 195"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 196,
+          "line": "match-0196 payload line 196"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 197,
+          "line": "match-0197 payload line 197"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 198,
+          "line": "match-0198 payload line 198"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 199,
+          "line": "match-0199 payload line 199"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 200,
+          "line": "match-0200 payload line 200"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 201,
+          "line": "match-0201 payload line 201"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 202,
+          "line": "match-0202 payload line 202"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 203,
+          "line": "match-0203 payload line 203"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 204,
+          "line": "match-0204 payload line 204"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 205,
+          "line": "match-0205 payload line 205"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 206,
+          "line": "match-0206 payload line 206"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 207,
+          "line": "match-0207 payload line 207"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 208,
+          "line": "match-0208 payload line 208"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 209,
+          "line": "match-0209 payload line 209"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 210,
+          "line": "match-0210 payload line 210"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 211,
+          "line": "match-0211 payload line 211"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 212,
+          "line": "match-0212 payload line 212"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 213,
+          "line": "match-0213 payload line 213"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 214,
+          "line": "match-0214 payload line 214"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 215,
+          "line": "match-0215 payload line 215"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 216,
+          "line": "match-0216 payload line 216"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 217,
+          "line": "match-0217 payload line 217"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 218,
+          "line": "match-0218 payload line 218"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 219,
+          "line": "match-0219 payload line 219"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 220,
+          "line": "match-0220 payload line 220"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 221,
+          "line": "match-0221 payload line 221"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 222,
+          "line": "match-0222 payload line 222"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 223,
+          "line": "match-0223 payload line 223"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 224,
+          "line": "match-0224 payload line 224"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 225,
+          "line": "match-0225 payload line 225"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 226,
+          "line": "match-0226 payload line 226"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 227,
+          "line": "match-0227 payload line 227"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 228,
+          "line": "match-0228 payload line 228"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 229,
+          "line": "match-0229 payload line 229"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 230,
+          "line": "match-0230 payload line 230"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 231,
+          "line": "match-0231 payload line 231"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 232,
+          "line": "match-0232 payload line 232"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 233,
+          "line": "match-0233 payload line 233"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 234,
+          "line": "match-0234 payload line 234"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 235,
+          "line": "match-0235 payload line 235"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 236,
+          "line": "match-0236 payload line 236"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 237,
+          "line": "match-0237 payload line 237"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 238,
+          "line": "match-0238 payload line 238"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 239,
+          "line": "match-0239 payload line 239"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 240,
+          "line": "match-0240 payload line 240"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 241,
+          "line": "match-0241 payload line 241"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 242,
+          "line": "match-0242 payload line 242"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 243,
+          "line": "match-0243 payload line 243"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 244,
+          "line": "match-0244 payload line 244"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 245,
+          "line": "match-0245 payload line 245"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 246,
+          "line": "match-0246 payload line 246"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 247,
+          "line": "match-0247 payload line 247"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 248,
+          "line": "match-0248 payload line 248"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 249,
+          "line": "match-0249 payload line 249"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 250,
+          "line": "match-0250 payload line 250"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 251,
+          "line": "match-0251 payload line 251"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 252,
+          "line": "match-0252 payload line 252"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 253,
+          "line": "match-0253 payload line 253"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 254,
+          "line": "match-0254 payload line 254"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 255,
+          "line": "match-0255 payload line 255"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 256,
+          "line": "match-0256 payload line 256"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 257,
+          "line": "match-0257 payload line 257"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 258,
+          "line": "match-0258 payload line 258"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 259,
+          "line": "match-0259 payload line 259"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 260,
+          "line": "match-0260 payload line 260"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 261,
+          "line": "match-0261 payload line 261"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 262,
+          "line": "match-0262 payload line 262"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 263,
+          "line": "match-0263 payload line 263"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 264,
+          "line": "match-0264 payload line 264"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 265,
+          "line": "match-0265 payload line 265"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 266,
+          "line": "match-0266 payload line 266"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 267,
+          "line": "match-0267 payload line 267"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 268,
+          "line": "match-0268 payload line 268"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 269,
+          "line": "match-0269 payload line 269"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 270,
+          "line": "match-0270 payload line 270"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 271,
+          "line": "match-0271 payload line 271"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 272,
+          "line": "match-0272 payload line 272"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 273,
+          "line": "match-0273 payload line 273"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 274,
+          "line": "match-0274 payload line 274"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 275,
+          "line": "match-0275 payload line 275"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 276,
+          "line": "match-0276 payload line 276"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 277,
+          "line": "match-0277 payload line 277"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 278,
+          "line": "match-0278 payload line 278"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 279,
+          "line": "match-0279 payload line 279"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 280,
+          "line": "match-0280 payload line 280"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 281,
+          "line": "match-0281 payload line 281"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 282,
+          "line": "match-0282 payload line 282"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 283,
+          "line": "match-0283 payload line 283"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 284,
+          "line": "match-0284 payload line 284"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 285,
+          "line": "match-0285 payload line 285"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 286,
+          "line": "match-0286 payload line 286"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 287,
+          "line": "match-0287 payload line 287"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 288,
+          "line": "match-0288 payload line 288"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 289,
+          "line": "match-0289 payload line 289"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 290,
+          "line": "match-0290 payload line 290"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 291,
+          "line": "match-0291 payload line 291"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 292,
+          "line": "match-0292 payload line 292"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 293,
+          "line": "match-0293 payload line 293"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 294,
+          "line": "match-0294 payload line 294"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 295,
+          "line": "match-0295 payload line 295"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 296,
+          "line": "match-0296 payload line 296"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 297,
+          "line": "match-0297 payload line 297"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 298,
+          "line": "match-0298 payload line 298"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 299,
+          "line": "match-0299 payload line 299"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 300,
+          "line": "match-0300 payload line 300"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 301,
+          "line": "match-0301 payload line 301"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 302,
+          "line": "match-0302 payload line 302"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 303,
+          "line": "match-0303 payload line 303"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 304,
+          "line": "match-0304 payload line 304"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 305,
+          "line": "match-0305 payload line 305"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 306,
+          "line": "match-0306 payload line 306"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 307,
+          "line": "match-0307 payload line 307"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 308,
+          "line": "match-0308 payload line 308"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 309,
+          "line": "match-0309 payload line 309"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 310,
+          "line": "match-0310 payload line 310"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 311,
+          "line": "match-0311 payload line 311"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 312,
+          "line": "match-0312 payload line 312"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 313,
+          "line": "match-0313 payload line 313"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 314,
+          "line": "match-0314 payload line 314"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 315,
+          "line": "match-0315 payload line 315"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 316,
+          "line": "match-0316 payload line 316"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 317,
+          "line": "match-0317 payload line 317"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 318,
+          "line": "match-0318 payload line 318"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 319,
+          "line": "match-0319 payload line 319"
+        },
+        {
+          "path": "grep-fixture-20260921T105305.txt",
+          "lineNumber": 320,
+          "line": "match-0320 payload line 320"
+        }
+      ]
+    }
+  },
+  "s2Grants": [
+    {
+      "sequence": 6,
+      "createdAt": "2026-09-21T10:53:11.412Z",
+      "factType": "artifact-read-granted",
+      "payload": {
+        "instanceId": "inst-leader",
+        "locator": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T10-53-05/tmp/dsh-spill-89AzOV/session-09f05e496c64/6c8d047c92d1-grep-results.txt",
+        "schemaVersion": 1,
+        "source": {
+          "kind": "spill-store",
+          "spillSource": {
+            "callId": "strict-read-ndfk933fv2",
+            "kind": "tool",
+            "label": "result",
+            "toolName": "grep"
+          }
+        },
+        "targetKeyDigest": "sha256:82e259ac5c085d300ff200a0024a8ddbbe49a1afdeacc333e993a0737ac63d9f",
+        "versionDigest": "sha256:9ac8e0434f2655c685333a33b15e6551d51ae3797dd5c139eec6d7e831ab677c"
+      },
+      "rootSessionId": "team-root",
+      "schemaVersion": 2
+    }
+  ],
+  "s2Locator": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T10-53-05/tmp/dsh-spill-89AzOV/session-09f05e496c64/6c8d047c92d1-grep-results.txt",
+  "s2Read": {
+    "ok": true,
+    "value": {
+      "path": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T10-53-05/tmp/dsh-spill-89AzOV/session-09f05e496c64/6c8d047c92d1-grep-results.txt",
+      "offset": 1,
+      "lines": [
+        {
+          "number": 1,
+          "text": "Found 320 matches"
+        },
+        {
+          "number": 2,
+          "text": ""
+        },
+        {
+          "number": 3,
+          "text": "grep-fixture-20260921T105305.txt"
+        },
+        {
+          "number": 4,
+          "text": "Line 1: match-0001 payload line 1"
+        },
+        {
+          "number": 5,
+          "text": "Line 2: match-0002 payload line 2"
+        },
+        {
+          "number": 6,
+          "text": "Line 3: match-0003 payload line 3"
+        },
+        {
+          "number": 7,
+          "text": "Line 4: match-0004 payload line 4"
+        },
+        {
+          "number": 8,
+          "text": "Line 5: match-0005 payload line 5"
+        },
+        {
+          "number": 9,
+          "text": "Line 6: match-0006 payload line 6"
+        },
+        {
+          "number": 10,
+          "text": "Line 7: match-0007 payload line 7"
+        },
+        {
+          "number": 11,
+          "text": "Line 8: match-0008 payload line 8"
+        },
+        {
+          "number": 12,
+          "text": "Line 9: match-0009 payload line 9"
+        },
+        {
+          "number": 13,
+          "text": "Line 10: match-0010 payload line 10"
+        },
+        {
+          "number": 14,
+          "text": "Line 11: match-0011 payload line 11"
+        },
+        {
+          "number": 15,
+          "text": "Line 12: match-0012 payload line 12"
+        },
+        {
+          "number": 16,
+          "text": "Line 13: match-0013 payload line 13"
+        },
+        {
+          "number": 17,
+          "text": "Line 14: match-0014 payload line 14"
+        },
+        {
+          "number": 18,
+          "text": "Line 15: match-0015 payload line 15"
+        },
+        {
+          "number": 19,
+          "text": "Line 16: match-0016 payload line 16"
+        },
+        {
+          "number": 20,
+          "text": "Line 17: match-0017 payload line 17"
+        },
+        {
+          "number": 21,
+          "text": "Line 18: match-0018 payload line 18"
+        },
+        {
+          "number": 22,
+          "text": "Line 19: match-0019 payload line 19"
+        },
+        {
+          "number": 23,
+          "text": "Line 20: match-0020 payload line 20"
+        },
+        {
+          "number": 24,
+          "text": "Line 21: match-0021 payload line 21"
+        },
+        {
+          "number": 25,
+          "text": "Line 22: match-0022 payload line 22"
+        },
+        {
+          "number": 26,
+          "text": "Line 23: match-0023 payload line 23"
+        },
+        {
+          "number": 27,
+          "text": "Line 24: match-0024 payload line 24"
+        },
+        {
+          "number": 28,
+          "text": "Line 25: match-0025 payload line 25"
+        },
+        {
+          "number": 29,
+          "text": "Line 26: match-0026 payload line 26"
+        },
+        {
+          "number": 30,
+          "text": "Line 27: match-0027 payload line 27"
+        },
+        {
+          "number": 31,
+          "text": "Line 28: match-0028 payload line 28"
+        },
+        {
+          "number": 32,
+          "text": "Line 29: match-0029 payload line 29"
+        },
+        {
+          "number": 33,
+          "text": "Line 30: match-0030 payload line 30"
+        },
+        {
+          "number": 34,
+          "text": "Line 31: match-0031 payload line 31"
+        },
+        {
+          "number": 35,
+          "text": "Line 32: match-0032 payload line 32"
+        },
+        {
+          "number": 36,
+          "text": "Line 33: match-0033 payload line 33"
+        },
+        {
+          "number": 37,
+          "text": "Line 34: match-0034 payload line 34"
+        },
+        {
+          "number": 38,
+          "text": "Line 35: match-0035 payload line 35"
+        },
+        {
+          "number": 39,
+          "text": "Line 36: match-0036 payload line 36"
+        },
+        {
+          "number": 40,
+          "text": "Line 37: match-0037 payload line 37"
+        },
+        {
+          "number": 41,
+          "text": "Line 38: match-0038 payload line 38"
+        },
+        {
+          "number": 42,
+          "text": "Line 39: match-0039 payload line 39"
+        },
+        {
+          "number": 43,
+          "text": "Line 40: match-0040 payload line 40"
+        },
+        {
+          "number": 44,
+          "text": "Line 41: match-0041 payload line 41"
+        },
+        {
+          "number": 45,
+          "text": "Line 42: match-0042 payload line 42"
+        },
+        {
+          "number": 46,
+          "text": "Line 43: match-0043 payload line 43"
+        },
+        {
+          "number": 47,
+          "text": "Line 44: match-0044 payload line 44"
+        },
+        {
+          "number": 48,
+          "text": "Line 45: match-0045 payload line 45"
+        },
+        {
+          "number": 49,
+          "text": "Line 46: match-0046 payload line 46"
+        },
+        {
+          "number": 50,
+          "text": "Line 47: match-0047 payload line 47"
+        },
+        {
+          "number": 51,
+          "text": "Line 48: match-0048 payload line 48"
+        },
+        {
+          "number": 52,
+          "text": "Line 49: match-0049 payload line 49"
+        },
+        {
+          "number": 53,
+          "text": "Line 50: match-0050 payload line 50"
+        },
+        {
+          "number": 54,
+          "text": "Line 51: match-0051 payload line 51"
+        },
+        {
+          "number": 55,
+          "text": "Line 52: match-0052 payload line 52"
+        },
+        {
+          "number": 56,
+          "text": "Line 53: match-0053 payload line 53"
+        },
+        {
+          "number": 57,
+          "text": "Line 54: match-0054 payload line 54"
+        },
+        {
+          "number": 58,
+          "text": "Line 55: match-0055 payload line 55"
+        },
+        {
+          "number": 59,
+          "text": "Line 56: match-0056 payload line 56"
+        },
+        {
+          "number": 60,
+          "text": "Line 57: match-0057 payload line 57"
+        },
+        {
+          "number": 61,
+          "text": "Line 58: match-0058 payload line 58"
+        },
+        {
+          "number": 62,
+          "text": "Line 59: match-0059 payload line 59"
+        },
+        {
+          "number": 63,
+          "text": "Line 60: match-0060 payload line 60"
+        },
+        {
+          "number": 64,
+          "text": "Line 61: match-0061 payload line 61"
+        },
+        {
+          "number": 65,
+          "text": "Line 62: match-0062 payload line 62"
+        },
+        {
+          "number": 66,
+          "text": "Line 63: match-0063 payload line 63"
+        },
+        {
+          "number": 67,
+          "text": "Line 64: match-0064 payload line 64"
+        },
+        {
+          "number": 68,
+          "text": "Line 65: match-0065 payload line 65"
+        },
+        {
+          "number": 69,
+          "text": "Line 66: match-0066 payload line 66"
+        },
+        {
+          "number": 70,
+          "text": "Line 67: match-0067 payload line 67"
+        },
+        {
+          "number": 71,
+          "text": "Line 68: match-0068 payload line 68"
+        },
+        {
+          "number": 72,
+          "text": "Line 69: match-0069 payload line 69"
+        },
+        {
+          "number": 73,
+          "text": "Line 70: match-0070 payload line 70"
+        },
+        {
+          "number": 74,
+          "text": "Line 71: match-0071 payload line 71"
+        },
+        {
+          "number": 75,
+          "text": "Line 72: match-0072 payload line 72"
+        },
+        {
+          "number": 76,
+          "text": "Line 73: match-0073 payload line 73"
+        },
+        {
+          "number": 77,
+          "text": "Line 74: match-0074 payload line 74"
+        },
+        {
+          "number": 78,
+          "text": "Line 75: match-0075 payload line 75"
+        },
+        {
+          "number": 79,
+          "text": "Line 76: match-0076 payload line 76"
+        },
+        {
+          "number": 80,
+          "text": "Line 77: match-0077 payload line 77"
+        },
+        {
+          "number": 81,
+          "text": "Line 78: match-0078 payload line 78"
+        },
+        {
+          "number": 82,
+          "text": "Line 79: match-0079 payload line 79"
+        },
+        {
+          "number": 83,
+          "text": "Line 80: match-0080 payload line 80"
+        },
+        {
+          "number": 84,
+          "text": "Line 81: match-0081 payload line 81"
+        },
+        {
+          "number": 85,
+          "text": "Line 82: match-0082 payload line 82"
+        },
+        {
+          "number": 86,
+          "text": "Line 83: match-0083 payload line 83"
+        },
+        {
+          "number": 87,
+          "text": "Line 84: match-0084 payload line 84"
+        },
+        {
+          "number": 88,
+          "text": "Line 85: match-0085 payload line 85"
+        },
+        {
+          "number": 89,
+          "text": "Line 86: match-0086 payload line 86"
+        },
+        {
+          "number": 90,
+          "text": "Line 87: match-0087 payload line 87"
+        },
+        {
+          "number": 91,
+          "text": "Line 88: match-0088 payload line 88"
+        },
+        {
+          "number": 92,
+          "text": "Line 89: match-0089 payload line 89"
+        },
+        {
+          "number": 93,
+          "text": "Line 90: match-0090 payload line 90"
+        },
+        {
+          "number": 94,
+          "text": "Line 91: match-0091 payload line 91"
+        },
+        {
+          "number": 95,
+          "text": "Line 92: match-0092 payload line 92"
+        },
+        {
+          "number": 96,
+          "text": "Line 93: match-0093 payload line 93"
+        },
+        {
+          "number": 97,
+          "text": "Line 94: match-0094 payload line 94"
+        },
+        {
+          "number": 98,
+          "text": "Line 95: match-0095 payload line 95"
+        },
+        {
+          "number": 99,
+          "text": "Line 96: match-0096 payload line 96"
+        },
+        {
+          "number": 100,
+          "text": "Line 97: match-0097 payload line 97"
+        },
+        {
+          "number": 101,
+          "text": "Line 98: match-0098 payload line 98"
+        },
+        {
+          "number": 102,
+          "text": "Line 99: match-0099 payload line 99"
+        },
+        {
+          "number": 103,
+          "text": "Line 100: match-0100 payload line 100"
+        },
+        {
+          "number": 104,
+          "text": "Line 101: match-0101 payload line 101"
+        },
+        {
+          "number": 105,
+          "text": "Line 102: match-0102 payload line 102"
+        },
+        {
+          "number": 106,
+          "text": "Line 103: match-0103 payload line 103"
+        },
+        {
+          "number": 107,
+          "text": "Line 104: match-0104 payload line 104"
+        },
+        {
+          "number": 108,
+          "text": "Line 105: match-0105 payload line 105"
+        },
+        {
+          "number": 109,
+          "text": "Line 106: match-0106 payload line 106"
+        },
+        {
+          "number": 110,
+          "text": "Line 107: match-0107 payload line 107"
+        },
+        {
+          "number": 111,
+          "text": "Line 108: match-0108 payload line 108"
+        },
+        {
+          "number": 112,
+          "text": "Line 109: match-0109 payload line 109"
+        },
+        {
+          "number": 113,
+          "text": "Line 110: match-0110 payload line 110"
+        },
+        {
+          "number": 114,
+          "text": "Line 111: match-0111 payload line 111"
+        },
+        {
+          "number": 115,
+          "text": "Line 112: match-0112 payload line 112"
+        },
+        {
+          "number": 116,
+          "text": "Line 113: match-0113 payload line 113"
+        },
+        {
+          "number": 117,
+          "text": "Line 114: match-0114 payload line 114"
+        },
+        {
+          "number": 118,
+          "text": "Line 115: match-0115 payload line 115"
+        },
+        {
+          "number": 119,
+          "text": "Line 116: match-0116 payload line 116"
+        },
+        {
+          "number": 120,
+          "text": "Line 117: match-0117 payload line 117"
+        },
+        {
+          "number": 121,
+          "text": "Line 118: match-0118 payload line 118"
+        },
+        {
+          "number": 122,
+          "text": "Line 119: match-0119 payload line 119"
+        },
+        {
+          "number": 123,
+          "text": "Line 120: match-0120 payload line 120"
+        },
+        {
+          "number": 124,
+          "text": "Line 121: match-0121 payload line 121"
+        },
+        {
+          "number": 125,
+          "text": "Line 122: match-0122 payload line 122"
+        },
+        {
+          "number": 126,
+          "text": "Line 123: match-0123 payload line 123"
+        },
+        {
+          "number": 127,
+          "text": "Line 124: match-0124 payload line 124"
+        },
+        {
+          "number": 128,
+          "text": "Line 125: match-0125 payload line 125"
+        },
+        {
+          "number": 129,
+          "text": "Line 126: match-0126 payload line 126"
+        },
+        {
+          "number": 130,
+          "text": "Line 127: match-0127 payload line 127"
+        },
+        {
+          "number": 131,
+          "text": "Line 128: match-0128 payload line 128"
+        },
+        {
+          "number": 132,
+          "text": "Line 129: match-0129 payload line 129"
+        },
+        {
+          "number": 133,
+          "text": "Line 130: match-0130 payload line 130"
+        },
+        {
+          "number": 134,
+          "text": "Line 131: match-0131 payload line 131"
+        },
+        {
+          "number": 135,
+          "text": "Line 132: match-0132 payload line 132"
+        },
+        {
+          "number": 136,
+          "text": "Line 133: match-0133 payload line 133"
+        },
+        {
+          "number": 137,
+          "text": "Line 134: match-0134 payload line 134"
+        },
+        {
+          "number": 138,
+          "text": "Line 135: match-0135 payload line 135"
+        },
+        {
+          "number": 139,
+          "text": "Line 136: match-0136 payload line 136"
+        },
+        {
+          "number": 140,
+          "text": "Line 137: match-0137 payload line 137"
+        },
+        {
+          "number": 141,
+          "text": "Line 138: match-0138 payload line 138"
+        },
+        {
+          "number": 142,
+          "text": "Line 139: match-0139 payload line 139"
+        },
+        {
+          "number": 143,
+          "text": "Line 140: match-0140 payload line 140"
+        },
+        {
+          "number": 144,
+          "text": "Line 141: match-0141 payload line 141"
+        },
+        {
+          "number": 145,
+          "text": "Line 142: match-0142 payload line 142"
+        },
+        {
+          "number": 146,
+          "text": "Line 143: match-0143 payload line 143"
+        },
+        {
+          "number": 147,
+          "text": "Line 144: match-0144 payload line 144"
+        },
+        {
+          "number": 148,
+          "text": "Line 145: match-0145 payload line 145"
+        },
+        {
+          "number": 149,
+          "text": "Line 146: match-0146 payload line 146"
+        },
+        {
+          "number": 150,
+          "text": "Line 147: match-0147 payload line 147"
+        },
+        {
+          "number": 151,
+          "text": "Line 148: match-0148 payload line 148"
+        },
+        {
+          "number": 152,
+          "text": "Line 149: match-0149 payload line 149"
+        },
+        {
+          "number": 153,
+          "text": "Line 150: match-0150 payload line 150"
+        },
+        {
+          "number": 154,
+          "text": "Line 151: match-0151 payload line 151"
+        },
+        {
+          "number": 155,
+          "text": "Line 152: match-0152 payload line 152"
+        },
+        {
+          "number": 156,
+          "text": "Line 153: match-0153 payload line 153"
+        },
+        {
+          "number": 157,
+          "text": "Line 154: match-0154 payload line 154"
+        },
+        {
+          "number": 158,
+          "text": "Line 155: match-0155 payload line 155"
+        },
+        {
+          "number": 159,
+          "text": "Line 156: match-0156 payload line 156"
+        },
+        {
+          "number": 160,
+          "text": "Line 157: match-0157 payload line 157"
+        },
+        {
+          "number": 161,
+          "text": "Line 158: match-0158 payload line 158"
+        },
+        {
+          "number": 162,
+          "text": "Line 159: match-0159 payload line 159"
+        },
+        {
+          "number": 163,
+          "text": "Line 160: match-0160 payload line 160"
+        },
+        {
+          "number": 164,
+          "text": "Line 161: match-0161 payload line 161"
+        },
+        {
+          "number": 165,
+          "text": "Line 162: match-0162 payload line 162"
+        },
+        {
+          "number": 166,
+          "text": "Line 163: match-0163 payload line 163"
+        },
+        {
+          "number": 167,
+          "text": "Line 164: match-0164 payload line 164"
+        },
+        {
+          "number": 168,
+          "text": "Line 165: match-0165 payload line 165"
+        },
+        {
+          "number": 169,
+          "text": "Line 166: match-0166 payload line 166"
+        },
+        {
+          "number": 170,
+          "text": "Line 167: match-0167 payload line 167"
+        },
+        {
+          "number": 171,
+          "text": "Line 168: match-0168 payload line 168"
+        },
+        {
+          "number": 172,
+          "text": "Line 169: match-0169 payload line 169"
+        },
+        {
+          "number": 173,
+          "text": "Line 170: match-0170 payload line 170"
+        },
+        {
+          "number": 174,
+          "text": "Line 171: match-0171 payload line 171"
+        },
+        {
+          "number": 175,
+          "text": "Line 172: match-0172 payload line 172"
+        },
+        {
+          "number": 176,
+          "text": "Line 173: match-0173 payload line 173"
+        },
+        {
+          "number": 177,
+          "text": "Line 174: match-0174 payload line 174"
+        },
+        {
+          "number": 178,
+          "text": "Line 175: match-0175 payload line 175"
+        },
+        {
+          "number": 179,
+          "text": "Line 176: match-0176 payload line 176"
+        },
+        {
+          "number": 180,
+          "text": "Line 177: match-0177 payload line 177"
+        },
+        {
+          "number": 181,
+          "text": "Line 178: match-0178 payload line 178"
+        },
+        {
+          "number": 182,
+          "text": "Line 179: match-0179 payload line 179"
+        },
+        {
+          "number": 183,
+          "text": "Line 180: match-0180 payload line 180"
+        },
+        {
+          "number": 184,
+          "text": "Line 181: match-0181 payload line 181"
+        },
+        {
+          "number": 185,
+          "text": "Line 182: match-0182 payload line 182"
+        },
+        {
+          "number": 186,
+          "text": "Line 183: match-0183 payload line 183"
+        },
+        {
+          "number": 187,
+          "text": "Line 184: match-0184 payload line 184"
+        },
+        {
+          "number": 188,
+          "text": "Line 185: match-0185 payload line 185"
+        },
+        {
+          "number": 189,
+          "text": "Line 186: match-0186 payload line 186"
+        },
+        {
+          "number": 190,
+          "text": "Line 187: match-0187 payload line 187"
+        },
+        {
+          "number": 191,
+          "text": "Line 188: match-0188 payload line 188"
+        },
+        {
+          "number": 192,
+          "text": "Line 189: match-0189 payload line 189"
+        },
+        {
+          "number": 193,
+          "text": "Line 190: match-0190 payload line 190"
+        },
+        {
+          "number": 194,
+          "text": "Line 191: match-0191 payload line 191"
+        },
+        {
+          "number": 195,
+          "text": "Line 192: match-0192 payload line 192"
+        },
+        {
+          "number": 196,
+          "text": "Line 193: match-0193 payload line 193"
+        },
+        {
+          "number": 197,
+          "text": "Line 194: match-0194 payload line 194"
+        },
+        {
+          "number": 198,
+          "text": "Line 195: match-0195 payload line 195"
+        },
+        {
+          "number": 199,
+          "text": "Line 196: match-0196 payload line 196"
+        },
+        {
+          "number": 200,
+          "text": "Line 197: match-0197 payload line 197"
+        },
+        {
+          "number": 201,
+          "text": "Line 198: match-0198 payload line 198"
+        },
+        {
+          "number": 202,
+          "text": "Line 199: match-0199 payload line 199"
+        },
+        {
+          "number": 203,
+          "text": "Line 200: match-0200 payload line 200"
+        },
+        {
+          "number": 204,
+          "text": "Line 201: match-0201 payload line 201"
+        },
+        {
+          "number": 205,
+          "text": "Line 202: match-0202 payload line 202"
+        },
+        {
+          "number": 206,
+          "text": "Line 203: match-0203 payload line 203"
+        },
+        {
+          "number": 207,
+          "text": "Line 204: match-0204 payload line 204"
+        },
+        {
+          "number": 208,
+          "text": "Line 205: match-0205 payload line 205"
+        },
+        {
+          "number": 209,
+          "text": "Line 206: match-0206 payload line 206"
+        },
+        {
+          "number": 210,
+          "text": "Line 207: match-0207 payload line 207"
+        },
+        {
+          "number": 211,
+          "text": "Line 208: match-0208 payload line 208"
+        },
+        {
+          "number": 212,
+          "text": "Line 209: match-0209 payload line 209"
+        },
+        {
+          "number": 213,
+          "text": "Line 210: match-0210 payload line 210"
+        },
+        {
+          "number": 214,
+          "text": "Line 211: match-0211 payload line 211"
+        },
+        {
+          "number": 215,
+          "text": "Line 212: match-0212 payload line 212"
+        },
+        {
+          "number": 216,
+          "text": "Line 213: match-0213 payload line 213"
+        },
+        {
+          "number": 217,
+          "text": "Line 214: match-0214 payload line 214"
+        },
+        {
+          "number": 218,
+          "text": "Line 215: match-0215 payload line 215"
+        },
+        {
+          "number": 219,
+          "text": "Line 216: match-0216 payload line 216"
+        },
+        {
+          "number": 220,
+          "text": "Line 217: match-0217 payload line 217"
+        },
+        {
+          "number": 221,
+          "text": "Line 218: match-0218 payload line 218"
+        },
+        {
+          "number": 222,
+          "text": "Line 219: match-0219 payload line 219"
+        },
+        {
+          "number": 223,
+          "text": "Line 220: match-0220 payload line 220"
+        },
+        {
+          "number": 224,
+          "text": "Line 221: match-0221 payload line 221"
+        },
+        {
+          "number": 225,
+          "text": "Line 222: match-0222 payload line 222"
+        },
+        {
+          "number": 226,
+          "text": "Line 223: match-0223 payload line 223"
+        },
+        {
+          "number": 227,
+          "text": "Line 224: match-0224 payload line 224"
+        },
+        {
+          "number": 228,
+          "text": "Line 225: match-0225 payload line 225"
+        },
+        {
+          "number": 229,
+          "text": "Line 226: match-0226 payload line 226"
+        },
+        {
+          "number": 230,
+          "text": "Line 227: match-0227 payload line 227"
+        },
+        {
+          "number": 231,
+          "text": "Line 228: match-0228 payload line 228"
+        },
+        {
+          "number": 232,
+          "text": "Line 229: match-0229 payload line 229"
+        },
+        {
+          "number": 233,
+          "text": "Line 230: match-0230 payload line 230"
+        },
+        {
+          "number": 234,
+          "text": "Line 231: match-0231 payload line 231"
+        },
+        {
+          "number": 235,
+          "text": "Line 232: match-0232 payload line 232"
+        },
+        {
+          "number": 236,
+          "text": "Line 233: match-0233 payload line 233"
+        },
+        {
+          "number": 237,
+          "text": "Line 234: match-0234 payload line 234"
+        },
+        {
+          "number": 238,
+          "text": "Line 235: match-0235 payload line 235"
+        },
+        {
+          "number": 239,
+          "text": "Line 236: match-0236 payload line 236"
+        },
+        {
+          "number": 240,
+          "text": "Line 237: match-0237 payload line 237"
+        },
+        {
+          "number": 241,
+          "text": "Line 238: match-0238 payload line 238"
+        },
+        {
+          "number": 242,
+          "text": "Line 239: match-0239 payload line 239"
+        },
+        {
+          "number": 243,
+          "text": "Line 240: match-0240 payload line 240"
+        },
+        {
+          "number": 244,
+          "text": "Line 241: match-0241 payload line 241"
+        },
+        {
+          "number": 245,
+          "text": "Line 242: match-0242 payload line 242"
+        },
+        {
+          "number": 246,
+          "text": "Line 243: match-0243 payload line 243"
+        },
+        {
+          "number": 247,
+          "text": "Line 244: match-0244 payload line 244"
+        },
+        {
+          "number": 248,
+          "text": "Line 245: match-0245 payload line 245"
+        },
+        {
+          "number": 249,
+          "text": "Line 246: match-0246 payload line 246"
+        },
+        {
+          "number": 250,
+          "text": "Line 247: match-0247 payload line 247"
+        },
+        {
+          "number": 251,
+          "text": "Line 248: match-0248 payload line 248"
+        },
+        {
+          "number": 252,
+          "text": "Line 249: match-0249 payload line 249"
+        },
+        {
+          "number": 253,
+          "text": "Line 250: match-0250 payload line 250"
+        },
+        {
+          "number": 254,
+          "text": "Line 251: match-0251 payload line 251"
+        },
+        {
+          "number": 255,
+          "text": "Line 252: match-0252 payload line 252"
+        },
+        {
+          "number": 256,
+          "text": "Line 253: match-0253 payload line 253"
+        },
+        {
+          "number": 257,
+          "text": "Line 254: match-0254 payload line 254"
+        },
+        {
+          "number": 258,
+          "text": "Line 255: match-0255 payload line 255"
+        },
+        {
+          "number": 259,
+          "text": "Line 256: match-0256 payload line 256"
+        },
+        {
+          "number": 260,
+          "text": "Line 257: match-0257 payload line 257"
+        },
+        {
+          "number": 261,
+          "text": "Line 258: match-0258 payload line 258"
+        },
+        {
+          "number": 262,
+          "text": "Line 259: match-0259 payload line 259"
+        },
+        {
+          "number": 263,
+          "text": "Line 260: match-0260 payload line 260"
+        },
+        {
+          "number": 264,
+          "text": "Line 261: match-0261 payload line 261"
+        },
+        {
+          "number": 265,
+          "text": "Line 262: match-0262 payload line 262"
+        },
+        {
+          "number": 266,
+          "text": "Line 263: match-0263 payload line 263"
+        },
+        {
+          "number": 267,
+          "text": "Line 264: match-0264 payload line 264"
+        },
+        {
+          "number": 268,
+          "text": "Line 265: match-0265 payload line 265"
+        },
+        {
+          "number": 269,
+          "text": "Line 266: match-0266 payload line 266"
+        },
+        {
+          "number": 270,
+          "text": "Line 267: match-0267 payload line 267"
+        },
+        {
+          "number": 271,
+          "text": "Line 268: match-0268 payload line 268"
+        },
+        {
+          "number": 272,
+          "text": "Line 269: match-0269 payload line 269"
+        },
+        {
+          "number": 273,
+          "text": "Line 270: match-0270 payload line 270"
+        },
+        {
+          "number": 274,
+          "text": "Line 271: match-0271 payload line 271"
+        },
+        {
+          "number": 275,
+          "text": "Line 272: match-0272 payload line 272"
+        },
+        {
+          "number": 276,
+          "text": "Line 273: match-0273 payload line 273"
+        },
+        {
+          "number": 277,
+          "text": "Line 274: match-0274 payload line 274"
+        },
+        {
+          "number": 278,
+          "text": "Line 275: match-0275 payload line 275"
+        },
+        {
+          "number": 279,
+          "text": "Line 276: match-0276 payload line 276"
+        },
+        {
+          "number": 280,
+          "text": "Line 277: match-0277 payload line 277"
+        },
+        {
+          "number": 281,
+          "text": "Line 278: match-0278 payload line 278"
+        },
+        {
+          "number": 282,
+          "text": "Line 279: match-0279 payload line 279"
+        },
+        {
+          "number": 283,
+          "text": "Line 280: match-0280 payload line 280"
+        },
+        {
+          "number": 284,
+          "text": "Line 281: match-0281 payload line 281"
+        },
+        {
+          "number": 285,
+          "text": "Line 282: match-0282 payload line 282"
+        },
+        {
+          "number": 286,
+          "text": "Line 283: match-0283 payload line 283"
+        },
+        {
+          "number": 287,
+          "text": "Line 284: match-0284 payload line 284"
+        },
+        {
+          "number": 288,
+          "text": "Line 285: match-0285 payload line 285"
+        },
+        {
+          "number": 289,
+          "text": "Line 286: match-0286 payload line 286"
+        },
+        {
+          "number": 290,
+          "text": "Line 287: match-0287 payload line 287"
+        },
+        {
+          "number": 291,
+          "text": "Line 288: match-0288 payload line 288"
+        },
+        {
+          "number": 292,
+          "text": "Line 289: match-0289 payload line 289"
+        },
+        {
+          "number": 293,
+          "text": "Line 290: match-0290 payload line 290"
+        },
+        {
+          "number": 294,
+          "text": "Line 291: match-0291 payload line 291"
+        },
+        {
+          "number": 295,
+          "text": "Line 292: match-0292 payload line 292"
+        },
+        {
+          "number": 296,
+          "text": "Line 293: match-0293 payload line 293"
+        },
+        {
+          "number": 297,
+          "text": "Line 294: match-0294 payload line 294"
+        },
+        {
+          "number": 298,
+          "text": "Line 295: match-0295 payload line 295"
+        },
+        {
+          "number": 299,
+          "text": "Line 296: match-0296 payload line 296"
+        },
+        {
+          "number": 300,
+          "text": "Line 297: match-0297 payload line 297"
+        },
+        {
+          "number": 301,
+          "text": "Line 298: match-0298 payload line 298"
+        },
+        {
+          "number": 302,
+          "text": "Line 299: match-0299 payload line 299"
+        },
+        {
+          "number": 303,
+          "text": "Line 300: match-0300 payload line 300"
+        },
+        {
+          "number": 304,
+          "text": "Line 301: match-0301 payload line 301"
+        },
+        {
+          "number": 305,
+          "text": "Line 302: match-0302 payload line 302"
+        },
+        {
+          "number": 306,
+          "text": "Line 303: match-0303 payload line 303"
+        },
+        {
+          "number": 307,
+          "text": "Line 304: match-0304 payload line 304"
+        },
+        {
+          "number": 308,
+          "text": "Line 305: match-0305 payload line 305"
+        },
+        {
+          "number": 309,
+          "text": "Line 306: match-0306 payload line 306"
+        },
+        {
+          "number": 310,
+          "text": "Line 307: match-0307 payload line 307"
+        },
+        {
+          "number": 311,
+          "text": "Line 308: match-0308 payload line 308"
+        },
+        {
+          "number": 312,
+          "text": "Line 309: match-0309 payload line 309"
+        },
+        {
+          "number": 313,
+          "text": "Line 310: match-0310 payload line 310"
+        },
+        {
+          "number": 314,
+          "text": "Line 311: match-0311 payload line 311"
+        },
+        {
+          "number": 315,
+          "text": "Line 312: match-0312 payload line 312"
+        },
+        {
+          "number": 316,
+          "text": "Line 313: match-0313 payload line 313"
+        },
+        {
+          "number": 317,
+          "text": "Line 314: match-0314 payload line 314"
+        },
+        {
+          "number": 318,
+          "text": "Line 315: match-0315 payload line 315"
+        },
+        {
+          "number": 319,
+          "text": "Line 316: match-0316 payload line 316"
+        },
+        {
+          "number": 320,
+          "text": "Line 317: match-0317 payload line 317"
+        },
+        {
+          "number": 321,
+          "text": "Line 318: match-0318 payload line 318"
+        },
+        {
+          "number": 322,
+          "text": "Line 319: match-0319 payload line 319"
+        },
+        {
+          "number": 323,
+          "text": "Line 320: match-0320 payload line 320"
+        }
+      ],
+      "totalLines": 323
+    }
+  },
+  "s2MatchCount": 320,
+  "s2ReadStrict": {
+    "ok": false,
+    "error": {
+      "message": "permission denied by the static permission policy: the template's default (deny) denies read on /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T10-53-05/tmp/dsh-spill-89AzOV/session-09f05e496c64/6c8d047c92d1-grep-results.txt"
+    }
+  }
+}
