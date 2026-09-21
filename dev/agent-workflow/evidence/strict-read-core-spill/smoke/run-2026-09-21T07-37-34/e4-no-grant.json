@@ -1,0 +1,8 @@
+{
+  "readNoGrant": {
+    "ok": false,
+    "error": {
+      "message": "permission denied by the static permission policy: the template's default (deny) denies read on /home/user/dsh-plugins/dsh-agent-team/.worktrees/strict-read-core-spill/tests/homes/strict-read-2026-09-21T07-37-34/tmp/no-grant-20260921T073734.txt"
+    }
+  }
+}
