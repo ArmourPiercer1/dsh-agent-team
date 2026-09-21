@@ -1117,7 +1117,7 @@ function archiveMemberSpec(): ToolSpec {
   return {
     name: 'team_archive_member',
     description:
-      'Archive ONE member instance (move it out of the main active work set; durable, Leader-only). A SETTLED member is archived directly; a RUNNING member is quiesced first (its current work is interrupted and its resident descendants drained) and durably SETTLED before the ARCHIVED commit. The archived member no longer accepts new Team work until it is explicitly restored. The durable change is committed through the lifecycle authority and recorded as a member-lifecycle-changed fact. Guarded on the target (a pending control request blocks the operation).',
+      'Archive ONE member instance (move it out of the main active work set; durable, Leader-only). For a legal archive target (RUNNING or SETTLED), the lifecycle authority quiesces the member first (its current work is interrupted and its resident descendants drained), then commits durably: a SETTLED member takes one durable ARCHIVE commit, while a RUNNING member takes a durable SETTLE commit followed by the ARCHIVE commit (two durable commits — the frozen lifecycle FSM has no RUNNING → ARCHIVED edge). CREATED, ARCHIVED, and DISPOSED targets are rejected before any live effect. The archived member no longer accepts new Team work until it is explicitly restored. The durable change is committed through the lifecycle authority and recorded as a member-lifecycle-changed fact. Guarded on the target (a pending control request blocks the operation).',
     properties: {
       rootSessionId: ROOT_SESSION_ID_ARG,
       requestToken: REQUEST_TOKEN_ARG,
