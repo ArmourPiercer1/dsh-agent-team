@@ -26,6 +26,11 @@ export declare const TEAM_TOOL_CALLER_UNRESOLVED = "TEAM_TOOL_CALLER_UNRESOLVED"
  *  control list is a Leader discovery surface — a non-leader caller is
  *  rejected before any read). */
 export declare const TEAM_TOOL_PENDING_LIST_NOT_LEADER = "TEAM_TOOL_PENDING_LIST_NOT_LEADER";
+/** The closed tool-layer leader-only caller error code (team_archive_member:
+ *  member archiving is the Leader lifecycle-management surface — a
+ *  non-leader caller is rejected before the guard consult and any
+ *  runtime effect, the C1 leader-gate precedent). */
+export declare const TEAM_TOOL_ARCHIVE_NOT_LEADER = "TEAM_TOOL_ARCHIVE_NOT_LEADER";
 /** The closed tool-layer caller-root binding error code (P0: the calling
  *  session's owning team root must equal the requested root — every
  *  Team's leader shares `inst-leader`, so a cross-root caller is

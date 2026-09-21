@@ -151,7 +151,7 @@ function teamMcpDeny(rootSessionId: string, recordId: string): GovernanceOverrid
   })
 }
 
-// ── the REAL twelve-tool team stack (the shared teamToolsRef substrate) ─────
+// ── the REAL thirteen-tool team stack (the shared teamToolsRef substrate) ─────
 // Pre-create cleanup: a leftover world dir (a crashed previous run) would
 // break createTeamDomain with TEAM_DOMAIN_EXISTS (the p7t7 pattern).
 destroyDir(scratchDir('mcp-initial-grant'))

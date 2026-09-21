@@ -297,6 +297,46 @@ Two facts keep the loop honest:
   `request-control` when that tool is exposed), exactly as before —
   `team_list_pending_control` is a read and adds no envelope operation.
 
+### 5.4 The lifecycle tool: `team_archive_member` (exposure vs. authority)
+
+`team_archive_member` (the 13th closed team tool; the Leader's
+lifecycle-management surface — moving a member out of the active work set)
+behaves like every other team tool under a **selective** template:
+
+```yaml
+capabilities:
+  teamTools:
+    kind: allow
+    items:
+      - team_archive_member
+```
+
+- **`teamTools` is model-facing exposure ONLY**: it decides whether the
+  tool appears on that Agent's model surface. It grants no authority by
+  itself — a selective LeaderTemplate whose allow list does NOT contain
+  `team_archive_member` never sees the tool, even though the plugin's
+  catalog offers it.
+- **the envelope must still permit the operation**: the Leader's
+  effective envelope must allow the existing `archive-member` operation
+  token (the LIFECYCLE class). Exposure without the envelope token yields
+  a tool that is rejected at the runtime authority; the envelope token
+  without exposure yields an authority the model cannot reach. **Both are
+  required; neither implies the other.**
+- **legacy templates are unaffected**: a blueprint WITHOUT a
+  `capabilities` field stays in legacy mode and inherits the FULL
+  thirteen-tool catalog — `team_archive_member` is part of it.
+- **already-created Teams use the frozen Blueprint snapshot**: the bound
+  blueprint source is snapshotted into the TeamSession at creation. A
+  plugin upgrade that adds a NEW tool to the catalog does NOT inject it
+  into an existing selective Team — that Team's snapshot keeps its
+  original allow list. To give an old blueprint DESIGN the archive
+  surface, author a NEW blueprint revision (the allow list gains
+  `team_archive_member`; the Leader envelope already carries
+  `archive-member` in the standard shape) and bind a NEW TeamSession to
+  that revision. Bypassing the frozen snapshot — or dynamically patching
+  a bound blueprint at runtime — is NOT a supported way to roll the tool
+  out.
+
 ## 6. Pre-flight checklist (static)
 
 Run these in order on the authored file; stop at the first failure and fix:

@@ -1,13 +1,13 @@
 ---
 name: team-leader-operations
-description: Operate a DSH Agent Team as the Leader using the closed set of twelve team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report progress, request/resolve control, list pending approvals — including request-token discipline, sync vs async delegation, guard-blocked semantics, and instance addressing. Use when you are the team Leader (your session exposes team_* tools) and need to create members, delegate work, track results, coordinate with members, or manage approval requests.
+description: Operate a DSH Agent Team as the Leader using the closed set of thirteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report progress, request/resolve control, list pending approvals, archive member — including request-token discipline, sync vs async delegation, guard-blocked semantics, and instance addressing. Use when you are the team Leader (your session exposes team_* tools) and need to create members, delegate work, track results, coordinate with members, manage approval requests, or move a member out of the active work set.
 ---
 
 # Team Leader Operations
 
 Operate a DSH Agent Team from the Leader session. The Leader is the only agent
 role that can create members, delegate work, and resolve leader-level
-approvals. Everything below is the production behavior of the closed twelve
+approvals. Everything below is the production behavior of the closed thirteen
 `team_*` tools — there are no other team tools, and no hidden side channels.
 
 ## 1. Preconditions
@@ -30,7 +30,7 @@ approvals. Everything below is the production behavior of the closed twelve
   (e.g. `inst-...`). Labels and template ids are rejected by live resolution —
   always resolve ids from `team_list_members` first.
 
-## 2. The twelve tools
+## 2. The thirteen tools
 
 | Tool | What it does | Required args (besides the two common ones) |
 | --- | --- | --- |
@@ -46,6 +46,7 @@ approvals. Everything below is the production behavior of the closed twelve
 | `team_request_control` | Request approval for one operation scope (idempotent over the scope identity) | `kind`, `targetInstanceId`, `actionName` |
 | `team_resolve_control` | Record an allow/deny decision on a pending control request | `requestId`, `decision` |
 | `team_list_pending_control` | List the team's unresolved `leader-approval` requests with their exact `requestId`s (read-only, Leader-only) | — |
+| `team_archive_member` | Archive ONE member instance — move it out of the active work set (durable, Leader-only) | `targetInstanceId` |
 
 Optional args worth knowing:
 
@@ -67,6 +68,20 @@ Optional args worth knowing:
   (sorted by durable request sequence) — `user-approval` and
   `envelope-mutation` requests are NOT listed; the GUI remains the
   inspection surface for those.
+- `team_archive_member`: no optional args. For a legal archive target
+  (RUNNING or SETTLED), the lifecycle authority QUIESCES the member
+  first (its current work is interrupted and its resident descendants
+  drained) and then commits durably: a SETTLED member takes ONE durable
+  ARCHIVE commit (no intermediate SETTLE transition is needed — the
+  quiesce still runs); a RUNNING member is durably SETTLED FIRST and
+  then durably ARCHIVED (two durable commits — the frozen lifecycle
+  FSM has no RUNNING → ARCHIVED edge). CREATED, ARCHIVED, and DISPOSED
+  targets are rejected before any live effect (they are never
+  quiesced). The archived member no longer accepts new Team work until
+  it is explicitly restored. Like other guarded instance-targeted
+  mutations, it is guarded on the target: a pending control request for
+  the scope blocks it. A member caller is rejected
+  (`TEAM_TOOL_ARCHIVE_NOT_LEADER`) before any effect.
 
 ## 3. Delegation: the standard loop
 

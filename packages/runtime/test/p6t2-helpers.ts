@@ -54,6 +54,7 @@ import type {
   TeamRuntimeActionRequest,
   TeamRuntimeError,
 } from '../admission/index.js'
+import type { LifecyclePorts } from '../lifecycle/index.js'
 
 /** The P6-T2 world's team root (the P6-T1 fixture root: one world, one team). */
 export const P6T2_ROOT = String(P6T1_FIXTURE.rootSessionId)
@@ -255,20 +256,28 @@ export async function putDurableCompatibilityState(
 /**
  * The optional P6-T2 runtime wiring: the lifecycle commit port (the P7-T3
  * lifecycle module's surface; absent in the default P6-T2 wiring — the
- * production contract under test).
+ * production contract under test) and, for the PRODUCTION step-port row,
+ * the full P7-T3 lifecycle step ports (when installed, the router's
+ * lifecycle actions run the P7-T3 quiesce-then-commit cores — the
+ * production archive/restore/dispose behavior, Architecture §30).
  */
 export interface P6T2RuntimeOptions {
   /** The injected lifecycle transition commit port (test fake or absent). */
   readonly lifecycleCommit?: LifecycleCommitPort
+  /** The P7-T3 lifecycle step ports (the production row; absent = the P6-T2
+   *  default FSM wiring). */
+  readonly lifecyclePorts?: LifecyclePorts
 }
 
 /**
  * Build the P6-T2 TeamRuntime over one world (the production wiring:
  * the injected ports, no router-owned counters; the lifecycle commit port
- * is optional — its absence IS the P6-T2 default wiring under test).
+ * and the lifecycle step ports are optional — their absence IS the P6-T2
+ * default wiring under test; the step ports install the production P7-T3
+ * quiesce-then-commit row).
  *
  * @param world - the P6-T2 world.
- * @param options - the optional lifecycle commit port.
+ * @param options - the optional lifecycle ports.
  * @returns the action router facade.
  */
 export function createP6T2Runtime(
@@ -284,6 +293,9 @@ export function createP6T2Runtime(
     now: () => P6T2_NOW,
     ...(options.lifecycleCommit !== undefined
       ? { lifecycleCommit: options.lifecycleCommit }
+      : {}),
+    ...(options.lifecyclePorts !== undefined
+      ? { lifecyclePorts: options.lifecyclePorts }
       : {}),
   })
 }

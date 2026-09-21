@@ -1092,8 +1092,19 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // d63cb71, then onto PR #24 merge 01fa598): 719 + 6 + 2 = 727.
     // All eight new files carry zero denylist vocabulary; the frozen
     // quarantine hit set is unchanged at fifteen. Scanner unchanged.
-    expect(scanResult.filesScanned).toBe(727)
-    expect(scanResult.files.length).toBe(727)
+    // team-archive-member (user-directed Leader lifecycle tool round,
+    // 2026-09-21, rebased onto the PR #24 merge): +1 on top of the 727
+    // base — one new scannable file,
+    // packages/tools/test/archive-member-tool.test.ts (the A1–A9 suite
+    // for team_archive_member over the P6-T2 durable world with the fake
+    // lifecycle commit port: the 13th-tool catalog order, the guard's
+    // pending/deny/allow/consumed-and-liveness blocks, the RUNNING
+    // LIFECYCLE_TRANSITION_REJECTED passthrough, the leader-gate
+    // rejection, the disposed target-stale block, and the closed
+    // argument validation). Zero denylist vocabulary; the frozen
+    // quarantine hit set is unchanged at fifteen. Scanner unchanged.
+    expect(scanResult.filesScanned).toBe(728)
+    expect(scanResult.files.length).toBe(728)
 
   })
 

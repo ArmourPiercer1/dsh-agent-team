@@ -856,8 +856,8 @@ describe('P8-S5A T1 production assembly (source entry, real storage, stub glue)'
     expect(t11.liveIsStub).toBe(true)
     expect(t11.bootCount).toBe(1)
 
-    // The tool stack is filled (twelve team tools; C1 adds the pending-list tool).
-    expect(t11.toolsCount).toBe(12)
+    // The tool stack is filled (thirteen team tools; C1 adds the pending-list tool; the archive-member round adds team_archive_member).
+    expect(t11.toolsCount).toBe(13)
 
     // The create-phase boot seeded the durable world (real storage).
     expect(t11.rootRecordPresent).toBe(true)

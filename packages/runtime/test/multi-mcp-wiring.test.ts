@@ -213,7 +213,7 @@ function instanceMcpAllow(
   })
 }
 
-// ── the REAL twelve-tool team stack (the shared teamToolsRef substrate; C1 adds the pending-list tool) ─────
+// ── the REAL thirteen-tool team stack (the shared teamToolsRef substrate; C1 adds the pending-list tool; the archive-member round adds team_archive_member) ─────
 const p6t6 = await createP6T6World('multi-mcp-wiring')
 
 // ── assertion helpers (the ctx doubles are separate scopes per agent) ──────

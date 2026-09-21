@@ -32,6 +32,9 @@
  * |                       | durable state read of admitted work units by |
  * |                       | request token — a read: unguarded, zero      |
  * |                       | writes, zero delivery)                       |
+ * | team_archive_member   | facade `archive-member` (lifecycle ARCHIVED; |
+ * |                       | guarded on the target, SD-GUARD; leader     |
+ * |                       | only — the lifecycle-management surface)    |
  *
  * Async work execution (issue #1 / CCR-2): `team_delegate` and
  * `team_follow_up` accept an optional `async: true` argument — the call
@@ -64,7 +67,7 @@
 import type { TeamToolDefinition, TeamToolsOptions } from './types.js';
 /** The registered team tool set. */
 export interface TeamToolSet {
-    /** The twelve closed tool definitions (registration order). */
+    /** The thirteen closed tool definitions (registration order). */
     readonly tools: readonly TeamToolDefinition[];
 }
 /**
@@ -72,9 +75,9 @@ export interface TeamToolSet {
  *
  * @param options - the sanctioned runtime ports (facade, control service,
  *   messaging coordinator, activity ledger, caller resolver — SD-DEPS).
- * @returns the twelve tool definitions, ready for the host's public tool
- *   registration (each returns a disposer on register; the caller owns
- *   the effect lifetime).
+ * @returns the thirteen tool definitions, ready for the host's public
+ *   tool registration (each returns a disposer on register; the caller
+ *   owns the effect lifetime).
  */
 export declare function createTeamTools(options: TeamToolsOptions): TeamToolSet;
 //# sourceMappingURL=tools.d.ts.map

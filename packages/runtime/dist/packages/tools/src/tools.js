@@ -32,6 +32,9 @@
  * |                       | durable state read of admitted work units by |
  * |                       | request token — a read: unguarded, zero      |
  * |                       | writes, zero delivery)                       |
+ * | team_archive_member   | facade `archive-member` (lifecycle ARCHIVED; |
+ * |                       | guarded on the target, SD-GUARD; leader     |
+ * |                       | only — the lifecycle-management surface)    |
  *
  * Async work execution (issue #1 / CCR-2): `team_delegate` and
  * `team_follow_up` accept an optional `async: true` argument — the call
@@ -66,7 +69,7 @@ import { CONTROL_DECISION_VALUES, CONTROL_REQUEST_KIND_VALUES, isControlError, }
 import { isMessagingError } from '../../runtime/messaging/index.js';
 import { ACTIVITY_ERROR_CODES, isActivityError, } from '../../runtime/activity/index.js';
 import { isArgsRecord, isTeamToolArgsError, optionalStringField, requireStringField, validateRequestToken, } from './tokens.js';
-import { TEAM_TOOL_BAD_ARGUMENTS, TEAM_TOOL_CALLER_ROOT_MISMATCH, TEAM_TOOL_CALLER_UNRESOLVED, TEAM_TOOL_PENDING_LIST_NOT_LEADER, TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH, TeamToolArgsError, } from './tokens.js';
+import { TEAM_TOOL_ARCHIVE_NOT_LEADER, TEAM_TOOL_BAD_ARGUMENTS, TEAM_TOOL_CALLER_ROOT_MISMATCH, TEAM_TOOL_CALLER_UNRESOLVED, TEAM_TOOL_PENDING_LIST_NOT_LEADER, TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH, TeamToolArgsError, } from './tokens.js';
 import { INSTANCE_ID_PATTERN, LEADER_INSTANCE_ID } from '../../contracts/src/index.js';
 import { consultGuard } from './guard.js';
 /** The maximum root-session-id length accepted by the tool layer. */
@@ -360,7 +363,7 @@ function makeDefinition(options, spec) {
         },
     };
 }
-// --- the twelve closed tools --------------------------------------------------------------
+// --- the thirteen closed tools --------------------------------------------------------------
 function listMembersSpec() {
     return {
         name: 'team_list_members',
@@ -934,14 +937,48 @@ function listPendingControlSpec() {
         },
     };
 }
+function archiveMemberSpec() {
+    return {
+        name: 'team_archive_member',
+        description: 'Archive ONE member instance (move it out of the main active work set; durable, Leader-only). For a legal archive target (RUNNING or SETTLED), the lifecycle authority quiesces the member first (its current work is interrupted and its resident descendants drained), then commits durably: a SETTLED member takes one durable ARCHIVE commit, while a RUNNING member takes a durable SETTLE commit followed by the ARCHIVE commit (two durable commits — the frozen lifecycle FSM has no RUNNING → ARCHIVED edge). CREATED, ARCHIVED, and DISPOSED targets are rejected before any live effect. The archived member no longer accepts new Team work until it is explicitly restored. The durable change is committed through the lifecycle authority and recorded as a member-lifecycle-changed fact. Guarded on the target (a pending control request blocks the operation).',
+        properties: {
+            rootSessionId: ROOT_SESSION_ID_ARG,
+            requestToken: REQUEST_TOKEN_ARG,
+            targetInstanceId: TARGET_INSTANCE_ARG,
+        },
+        required: ['rootSessionId', 'requestToken', 'targetInstanceId'],
+        async run(ctx, args) {
+            // Leader-only (the lifecycle-management surface — the C1 leader-gate
+            // precedent): rejected BEFORE the guard consult and any runtime
+            // effect, so a blueprint that grants this tool to a member cannot
+            // materialize a member-side archive.
+            const caller = ctx.caller;
+            if (caller.kind !== 'instance' || caller.instanceId !== LEADER_INSTANCE_ID) {
+                return {
+                    status: 'rejected',
+                    code: TEAM_TOOL_ARCHIVE_NOT_LEADER,
+                    message: 'team-tools: team_archive_member is Leader-only (member archiving is the Leader lifecycle-management surface; a member caller is rejected before any effect)',
+                };
+            }
+            const targetInstanceId = requireStringField(args, 'targetInstanceId', INSTANCE_ID_MAX_LENGTH);
+            return executeGuarded(ctx, targetInstanceId, ACTION_NAMES.ARCHIVE_MEMBER, async () => toExecutedResult(await performRuntimeAction(ctx, {
+                rootSessionId: ctx.rootSessionId,
+                action: ACTION_NAMES.ARCHIVE_MEMBER,
+                caller: ctx.caller,
+                targetInstanceId,
+                requestToken: ctx.requestToken,
+            })));
+        },
+    };
+}
 /**
  * Build the model-facing team tool set over one runtime satellite wiring.
  *
  * @param options - the sanctioned runtime ports (facade, control service,
  *   messaging coordinator, activity ledger, caller resolver — SD-DEPS).
- * @returns the twelve tool definitions, ready for the host's public tool
- *   registration (each returns a disposer on register; the caller owns
- *   the effect lifetime).
+ * @returns the thirteen tool definitions, ready for the host's public
+ *   tool registration (each returns a disposer on register; the caller
+ *   owns the effect lifetime).
  */
 export function createTeamTools(options) {
     const specs = [
@@ -957,6 +994,7 @@ export function createTeamTools(options) {
         requestControlSpec(),
         resolveControlSpec(),
         listPendingControlSpec(),
+        archiveMemberSpec(),
     ];
     return {
         tools: specs.map((spec) => makeDefinition(options, spec)),
