@@ -33,18 +33,47 @@
  *   5. BOOT — the real host (test-use built CLI) on a 3180-family port
  *      (3180 itself is the live session GUI — off-limits; :3080 stable
  *      instance untouched). Boot marker + auth (303 + cookie) proven.
- *   6. SESSION — the root DSH session is created over the public
- *      session channel (the same seam the Web UI's "New session" uses)
- *      so the browser sees it in the session list.
+ *   6. SESSION — the root DSH session is OWNED by the plugin bootstrap
+ *      (host row bootPhase: create-or-open, rootSessionId: team-root).
+ *      The kit only waits for the bootstrap to commit the session to
+ *      durable home storage and fails closed on 'bootstrap FAILED'.
+ *      (The kit must NOT create team-root itself — an explicit
+ *      session/create races the bootstrap's existence check; world 3,
+ *      2026-09-22: the kit won the race → bootstrap
+ *      SessionAlreadyExists → team tools never wired on the root
+ *      session.)
  *   7. CONTROL — a tiny 127.0.0.1 control server (controlPort):
  *         GET  /state    — phase + mock request count + member lifecycles
  *         POST /drive    — send the leader prompt (MK_LEAD) and poll the
- *                          durable ledger until worker-a SETTLED +
- *                          worker-b ARCHIVED (or timeout)
+ *                          durable ledger until the preparation chain is
+ *                          complete (or timeout): delegate×2 → settle×2 →
+ *                          archive. NOTE the runtime admits the second
+ *                          team_delegate on the SAME live instance (template
+ *                          reuse — actions.ts WORK category "new work on an
+ *                          existing instance"), so the real chain is ONE
+ *                          instance walking CREATED → RUNNING → SETTLED →
+ *                          RUNNING → SETTLED → ARCHIVED; the predicate is
+ *                          built from the durable lifecycle-fact sequence,
+ *                          NOT from "one SETTLED + one ARCHIVED member".
  *      The agent (browser side) triggers /drive, works the browser
  *      scenarios, then creates <world>/SCENARIOS-DONE; the kit tears
  *      down (host SIGTERM, mock close, world removal unless --keep),
  *      writes summary.json, and exits.
+ *
+ *      Durable-schema note (measured on a live world, 2026-09-22): the
+ *      runtime does NOT persist the admit → RUNNING transition as a
+ *      `member-lifecycle-changed` fact (root.ts: the locked evidence port
+ *      commits archive/restore/dispose; the work-chain settlement commits
+ *      the settle; admission state is in-process). The durable per-
+ *      instance sequence for the scripted chain is therefore
+ *      [SETTLED, SETTLED, ARCHIVED] — the durable form of
+ *      delegate/settle ×2 + archive.
+ *
+ *      VERDICT INVARIANT (2026-09-22 review fix): a drive that was sent but
+ *      never completed (done=false) can NEVER produce a PASS summary —
+ *      computeVerdict() gates PASS on driveOk = !sent || done, and a failed
+ *      drive is recorded as a failed DRIVE criterion. Run the built-in
+ *      check with: node live-ui-world.mjs --selftest
  *
  * DISCIPLINE: test-use stays pristine (post-assert); the stable instance
  * probes pre == post; the world holds the launch token → NEVER committed
@@ -56,8 +85,8 @@
  *     [--port 3181] [--mock-port 3491] [--control-port 3492] [--keep]
  */
 import {
-  appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync,
-  rmSync, writeFileSync,
+  appendFileSync, closeSync, existsSync, mkdirSync, openSync, readdirSync,
+  readFileSync, rmSync, writeFileSync,
 } from 'node:fs'
 import { createServer } from 'node:http'
 import { spawn, spawnSync } from 'node:child_process'
@@ -77,8 +106,9 @@ const PORT = Number(arg('port', '3181'))
 const MOCK_PORT = Number(arg('mock-port', '3491'))
 const CONTROL_PORT = Number(arg('control-port', '3492'))
 const KEEP = argv.includes('--keep')
-if (BRANCH === null) { console.error('usage: --branch <b> --worktree <path> [--port P] [--mock-port P] [--control-port P] [--keep]'); process.exit(2) }
-const BRANCH_SHORT = BRANCH.replace(/[^A-Za-z0-9]/g, '').slice(-12)
+const SELFTEST = argv.includes('--selftest')
+if (BRANCH === null && !SELFTEST) { console.error('usage: --branch <b> --worktree <path> [--port P] [--mock-port P] [--control-port P] [--keep] [--selftest]'); process.exit(2) }
+const BRANCH_SHORT = (BRANCH ?? 'selftest').replace(/[^A-Za-z0-9]/g, '').slice(-12)
 const STAMP = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
 
 // ── paths ────────────────────────────────────────────────────────────────
@@ -185,6 +215,17 @@ async function apiSessionCreate(origin, cookie, sessionId, cwd, presetId, tag) {
     }),
   }, 120000)
 }
+/** True once the plugin bootstrap has committed the root session to durable
+ *  home storage (sessions/<escaped-workspace>/<rootId>). The host row owns
+ *  this session (bootPhase: create-or-open); the kit only observes it. */
+function rootSessionCommitted(rootId) {
+  const sessionsRoot = join(HOME, 'sessions')
+  if (!existsSync(sessionsRoot)) return false
+  for (const entry of readdirSync(sessionsRoot)) {
+    if (existsSync(join(sessionsRoot, entry, rootId))) return true
+  }
+  return false
+}
 /** Durable ledger scan (the rc2 kit pattern, read-only). */
 function readDurableLedger() {
   const file = join(HOME, 'storages', 'team_domain.json')
@@ -212,6 +253,14 @@ function extractInstanceId(content) {
 }
 
 // ── the blueprint (inline via the host row's blueprintSource) ───────────
+// Envelope note (measured on live worlds, 2026-09-22): the runtime's
+// callerEnvelope (packages/runtime/admission/envelope.ts) gives a MEMBER
+// caller `teamEnvelope.allow ∩ <that template's memberEnvelopes entry
+// allow>` — with `memberEnvelopes: []` every member fails closed on ALL
+// mutation ops (observed: team_report_progress → TEAM_RUNTIME_ENVELOPE_
+// OUT_OF_BOUNDS, inBounds: []). The worker entry therefore carries the
+// single op the wrap scenario needs (report-progress); no entry is added
+// for the leader template, so the leader keeps the full teamEnvelope.
 const BLUEPRINT_YAML = [
   '---',
   'schemaVersion: 1',
@@ -235,7 +284,12 @@ const BLUEPRINT_YAML = [
   '    - restore-member',
   '    - dispose-member',
   '  deny: []',
-  'memberEnvelopes: []',
+  'memberEnvelopes:',
+  '  - templateId: worker',
+  '    envelope:',
+  '      allow:',
+  '        - report-progress',
+  '      deny: []',
   'requirements: []',
   'policyStates: []',
   'metadata: {}',
@@ -317,10 +371,42 @@ function makeDecide(state) {
     }
     const text = userTextOf(req)
     const tools = toolMsgsOf(req)
-    // Member turns (separate sessions; the delegated prompt carries the marker).
+    // Member turns (separate sessions; the delegated prompt carries the
+    // marker). CRITICAL ORDERING: both delegates are admitted on the SAME
+    // live instance (template reuse), so work B's member session is the
+    // SAME session as work A's — its user-text history contains BOTH
+    // markers. MK_WB must be tested first: once work B is in flight the
+    // text always contains MK_WB, while work A's turns contain only MK_WA.
+    if (text.includes(MK_WB)) {
+      // Wrap scenario (28-A2, supplemental round 2): during work, the member
+      // reports progress with a LONG lastAction (<=256 chars). activity
+      // facts are durable, so after settle + (archive) + (UI restore) the
+      // SETTLED row keeps `currentAction = activity.lastAction` (the
+      // projection-adapter fallback) — the row then renders the same
+      // 4-button cluster as 28-A next to a long ellipsized action text,
+      // which is what squeezes `.actions` under its single-line intrinsic
+      // width at a narrow (~480px) emulation and forces a real wrap.
+      // The instance id is embedded in the delegated prompt by the leader
+      // (second delegate below) because the member session only knows it
+      // from its own prompt.
+      if (tools.length === 0) {
+        const m = text.match(/inst-[a-z0-9-]+/)
+        if (m === null) return { kind: 'text', content: 'LIVEUI_WRAP_NO_ID' }
+        return toolCall('team_report_progress', {
+          rootSessionId: ROOT,
+          requestToken: `liveui-prog-${STAMP}`,
+          instanceId: m[0],
+          subject: 'live-ui-wrap-check',
+          progress: 'in-progress',
+          summary: 'narrow-viewport wrap verification in progress',
+          lastAction: '窄视口换行验证：记录按钮簇几何探针数据',
+        })
+      }
+      return { kind: 'text', content: 'WORK_DONE_B' }
+    }
     if (text.includes(MK_WA)) return { kind: 'text', content: 'WORK_DONE_A' }
-    if (text.includes(MK_WB)) return { kind: 'text', content: 'WORK_DONE_B' }
-    // The leader chain: delegate(worker-a) → delegate(worker-b) → archive(worker-b) → done.
+    // The leader chain: delegate(worker-a) → delegate(worker-b, prompt
+    // embeds the instance id) → archive(worker-b) → done.
     if (text.includes(MK_LEAD)) {
       switch (tools.length) {
         case 0:
@@ -332,15 +418,18 @@ function makeDecide(state) {
             taskSummary: 'live UI: settle worker-a',
             prompt: MK_WA,
           })
-        case 1:
+        case 1: {
+          const id = extractInstanceId(tools[0]?.content)
+          if (id === null) return { kind: 'text', content: `LIVEUI_EXTRACT_FAIL :: ${String(tools[0]?.content).slice(0, 300)}` }
           return toolCall('team_delegate', {
             rootSessionId: ROOT,
             requestToken: `liveui-dlgb-${STAMP}`,
             delegationTemplateId: 'worker',
             label: 'worker-b',
-            taskSummary: 'live UI: settle then archive worker-b',
-            prompt: MK_WB,
+            taskSummary: 'live UI: report long progress, settle, then archive worker-b',
+            prompt: `${MK_WB} ${id}`,
           })
+        }
         case 2: {
           const id = extractInstanceId(tools[1]?.content)
           if (id === null) return { kind: 'text', content: `LIVEUI_EXTRACT_FAIL :: ${String(tools[1]?.content).slice(0, 300)}` }
@@ -351,7 +440,7 @@ function makeDecide(state) {
           })
         }
         case 3:
-          return { kind: 'text', content: 'LIVEUI-TEAM-DONE: worker-a settled, worker-b archived.' }
+          return { kind: 'text', content: 'LIVEUI-TEAM-DONE: worker-a settled, worker-b progress-reported, settled and archived.' }
         default:
           return { kind: 'text', content: `LIVEUI_FALLTHROUGH tools=${tools.length}` }
       }
@@ -376,10 +465,72 @@ function memberLifecycles() {
   }
   return Object.fromEntries(latest)
 }
-function driveSatisfied() {
-  const l = memberLifecycles()
-  const values = Object.values(l)
-  return values.includes('SETTLED') && values.includes('ARCHIVED')
+/**
+ * The preparation chain the mock leader chain produces, expressed on the
+ * DURABLE lifecycle-fact sequence (2026-09-22 review fix):
+ *   delegate #1 → work settles → SETTLED,
+ *   delegate #2 (admitted on the SAME live instance — template reuse,
+ *   actions.ts WORK category "new work on an existing instance") → settles
+ *   again → SETTLED, archive → ARCHIVED.
+ * Durable-schema note (measured on a live world): the runtime does NOT
+ * persist the admit → RUNNING transition as a `member-lifecycle-changed`
+ * fact (root.ts: the locked evidence port commits archive/restore/dispose;
+ * the work-chain settlement commits the settle; admission state is
+ * in-process). The durable per-instance sequence for the scripted chain is
+ * therefore [SETTLED, SETTLED, ARCHIVED] — the durable form of
+ * delegate/settle ×2 + archive.
+ * The needle is that sequence as an ordered subsequence of ONE instance's
+ * lifecycle transitions — NOT "one SETTLED member + one ARCHIVED member"
+ * (the old predicate assumed two members, which the runtime never produces
+ * for same-template delegates, so drive.done could never be true while the
+ * world was perfectly healthy). Fail-closed: a world that never archives,
+ * or with a single settle cycle, does NOT satisfy the drive.
+ */
+const DRIVE_CHAIN_NEEDLE = ['SETTLED', 'SETTLED', 'ARCHIVED']
+
+/** True when `seq` contains `needle` as an ordered subsequence. */
+export function hasSubsequence(seq, needle) {
+  let i = 0
+  for (const s of seq) {
+    if (i < needle.length && s === needle[i]) i += 1
+  }
+  return i === needle.length
+}
+
+/** Per-instance ordered lifecycle-transition sequence from the durable ledger facts. */
+export function lifecycleSequences(facts) {
+  const seqs = new Map()
+  for (const e of facts) {
+    if (!/lifecycle/i.test(String(e.factType ?? ''))) continue
+    const p = e.payload ?? {}
+    const instanceId = p.instanceId ?? p.targetInstanceId ?? p.memberInstanceId
+    const to = p.to ?? p.after ?? p.newLifecycle
+    if (typeof instanceId !== 'string' || typeof to !== 'string') continue
+    if (!seqs.has(instanceId)) seqs.set(instanceId, [])
+    seqs.get(instanceId).push(to)
+  }
+  return Object.fromEntries(seqs)
+}
+
+/** The drive is satisfied when the full preparation chain is durable (see needle above). */
+export function driveChainSatisfied(facts, needle = DRIVE_CHAIN_NEEDLE) {
+  for (const seq of Object.values(lifecycleSequences(facts))) {
+    if (hasSubsequence(seq, needle)) return true
+  }
+  return false
+}
+
+/**
+ * Verdict gate (2026-09-22 review fix). PASS requires every criterion ok AND
+ * a consistent drive: a drive that was SENT but never completed
+ * (done=false — timeout or error) can never produce a PASS summary
+ * ("驱动准备阶段失败或超时，不得产生 PASS summary"). A drive that was
+ * never sent (sent=false) is neutral — the agent may legitimately run the
+ * world without driving it.
+ */
+export function computeVerdict(criteria, drive) {
+  const driveOk = !drive.sent || drive.done
+  return criteria.every((c) => c.ok) && driveOk ? 'PASS' : 'FAIL'
 }
 
 // ── main ─────────────────────────────────────────────────────────────────
@@ -509,10 +660,28 @@ async function main() {
   const cookie = await authenticate(origin, token).catch((e) => { throw new Error(`auth failed: ${e.message}`) })
   check('BOOT', 'auth proven (303 + session cookie)', true, '')
 
-  // ── root session (the Web UI's "New session" seam) ─────────────────────
-  const created = await apiSessionCreate(origin, cookie, ROOT, WORKSPACE, PRESET_ID, 'liveui-root')
-  check('SESS', 'root session created over the public session channel', created.status === 200,
-    `status=${created.status} ${JSON.stringify(created.body).slice(0, 200)}`)
+  // ── root session (owned by the plugin bootstrap, NOT the kit) ─────────
+  // World 3 (2026-09-22) showed why the kit must not create team-root
+  // itself: an explicit session/create races the host row's bootPhase
+  // create-or-open — when the kit's create lands between the bootstrap's
+  // existence check and its create, the bootstrap fails with
+  // SessionAlreadyExists and the team runtime never wires the root
+  // session's team tools (observed: mock answered "unknown tool
+  // team_delegate"). The plugin owns the session; the kit waits for the
+  // bootstrap to commit it and fails closed on 'bootstrap FAILED'.
+  let sessDetail = 'timeout: team-root never committed to durable session storage'
+  for (let i = 0; i < 240 && !rootSessionCommitted(ROOT); i++) {
+    const instLog = existsSync(INSTANCE_LOG) ? readFileSync(INSTANCE_LOG, 'utf8') : ''
+    if (instLog.includes('bootstrap FAILED')) {
+      const line = instLog.split('bootstrap FAILED').slice(1)[0] ?? ''
+      sessDetail = `instance log: bootstrap FAILED${line.trim() ? ': ' + line.trim().slice(0, 160) : ''}`
+      break
+    }
+    await sleep(250)
+  }
+  const instLog2 = existsSync(INSTANCE_LOG) ? readFileSync(INSTANCE_LOG, 'utf8') : ''
+  check('SESS', 'team-root committed by the plugin bootstrap (bootPhase create-or-open); kit created nothing (no race)',
+    rootSessionCommitted(ROOT) && !instLog2.includes('bootstrap FAILED'), sessDetail)
 
   writeFileSync(STATE_FILE, JSON.stringify({
     origin, port: PORT, token, cookie, world: HOME, runDir: RUN_DIR,
@@ -548,10 +717,10 @@ async function main() {
           STATE.drive.detail = `prompt status=${pr.status}`
           const deadline = Date.now() + 240000
           while (Date.now() < deadline) {
-            if (driveSatisfied()) { STATE.drive.done = true; STATE.phase = 'driven'; return }
+            if (driveChainSatisfied(readDurableLedger())) { STATE.drive.done = true; STATE.phase = 'driven'; return }
             await sleep(1000)
           }
-          STATE.drive.detail += ' | TIMEOUT: member lifecycles never reached SETTLED+ARCHIVED'
+          STATE.drive.detail += ' | TIMEOUT: durable ledger never recorded the preparation chain (settle ×2 then ARCHIVED on one instance)'
           STATE.phase = 'drive-timeout'
         } catch (error) {
           STATE.drive.detail += ` | ERROR: ${String(error?.message ?? error).slice(0, 200)}`
@@ -593,12 +762,18 @@ async function main() {
   // Ports released (the host is dead; assert nothing listens on our ports).
   check('POST', 'host port released after teardown', (await isFree(PORT)) === true, `port=${PORT}`)
 
+  // 2026-09-22 review fix: a sent-but-not-done drive is a failed criterion
+  // AND gates the verdict (see computeVerdict; asserted by --selftest).
+  if (STATE.drive.sent && !STATE.drive.done) {
+    check('DRIVE', 'drive preparation chain completed before teardown (drive.done=true)', false, STATE.drive.detail)
+  }
   const summary = {
-    verdict: CRITERIA.every((c) => c.ok) ? 'PASS' : 'FAIL',
+    verdict: computeVerdict(CRITERIA, STATE.drive),
     branch: BRANCH, worktreeHead: wtHead,
     origin, port: PORT, world: HOME,
     drive: STATE.drive,
     memberLifecyclesAtTeardown: memberLifecycles(),
+    lifecycleSequencesAtTeardown: lifecycleSequences(readDurableLedger()),
     mockDecisions: STATE.mockDecisions,
     criteria: CRITERIA,
     preStable, postStable,
@@ -614,9 +789,59 @@ async function main() {
   process.exit(summary.verdict === 'PASS' ? 0 : 1)
 }
 
-main().catch((e) => {
-  console.error(`kit fatal: ${e?.stack ?? e}`)
-  try { hostProc?.kill('SIGKILL') } catch { /* n/a */ }
-  if (mock !== null) { try { void mock.close() } catch { /* n/a */ } }
-  process.exit(1)
-})
+// ── selftest (2026-09-22 review fix) ──────────────────────────────────────
+// node live-ui-world.mjs --selftest
+// Asserts the two invariants the old kit violated:
+//   (1) the drive predicate matches the runtime's single-instance chain —
+//       it requires the durable delegate/settle ×2 + archive chain, never a
+//       SETTLED+ARCHIVED coexistence that the runtime cannot produce;
+//   (2) the verdict gate — a sent-but-not-done drive can never PASS.
+function runSelftest() {
+  let failures = 0
+  const t = (name, cond) => {
+    console.log(`${cond ? 'ok  ' : 'FAIL'}  ${name}`)
+    if (!cond) failures += 1
+  }
+  const fact = (instanceId, to) => ({ factType: 'member-lifecycle-changed', payload: { instanceId, to } })
+  const fullChain = [
+    fact('inst-a', 'SETTLED'), fact('inst-a', 'SETTLED'),
+    fact('inst-a', 'ARCHIVED'),
+  ]
+  t('single-instance full chain (settle ×2, ARCHIVED) satisfies the drive',
+    driveChainSatisfied(fullChain) === true)
+  t('UI restore after archive appends SETTLED — chain still satisfied (subsequence)',
+    driveChainSatisfied([...fullChain, fact('inst-a', 'SETTLED')]) === true)
+  t('never archived (only settles) does NOT satisfy',
+    driveChainSatisfied([fact('inst-a', 'SETTLED'), fact('inst-a', 'SETTLED')]) === false)
+  t('SETTLED on one instance + ARCHIVED on another (old broken assumption) does NOT satisfy',
+    driveChainSatisfied([fact('inst-a', 'SETTLED'),
+      fact('inst-b', 'SETTLED'), fact('inst-b', 'ARCHIVED')]) === false)
+  t('archived after a single settle cycle does NOT satisfy (needs settle ×2)',
+    driveChainSatisfied([fact('inst-a', 'SETTLED'), fact('inst-a', 'ARCHIVED')]) === false)
+  t('archive before the settle cycles (wrong order) does NOT satisfy',
+    driveChainSatisfied([fact('inst-a', 'ARCHIVED'), fact('inst-a', 'SETTLED'), fact('inst-a', 'SETTLED')]) === false)
+  t('empty ledger does NOT satisfy', driveChainSatisfied([]) === false)
+  t('drive timeout (sent, not done) can NEVER produce a PASS verdict',
+    computeVerdict([{ ok: true }], { sent: true, done: false }) === 'FAIL')
+  t('drive error (sent, not done) can NEVER produce a PASS verdict',
+    computeVerdict([{ ok: true }], { sent: true, done: false, detail: 'TIMEOUT' }) === 'FAIL')
+  t('a failed criterion still FAILs even with a completed drive',
+    computeVerdict([{ ok: false }], { sent: true, done: true }) === 'FAIL')
+  t('no drive sent is neutral — criteria alone decide (PASS case)',
+    computeVerdict([{ ok: true }], { sent: false, done: false }) === 'PASS')
+  t('completed drive + all criteria ok → PASS',
+    computeVerdict([{ ok: true }, { ok: true }], { sent: true, done: true }) === 'PASS')
+  console.log(failures === 0 ? 'SELFTEST PASS' : `SELFTEST FAIL (${failures} failed)`)
+  process.exit(failures === 0 ? 0 : 1)
+}
+
+if (SELFTEST) {
+  runSelftest()
+} else {
+  main().catch((e) => {
+    console.error(`kit fatal: ${e?.stack ?? e}`)
+    try { hostProc?.kill('SIGKILL') } catch { /* n/a */ }
+    if (mock !== null) { try { void mock.close() } catch { /* n/a */ } }
+    process.exit(1)
+  })
+}

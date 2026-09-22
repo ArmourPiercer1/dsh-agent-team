@@ -17,9 +17,15 @@
   border-color: var(--dsw-alias-state-business-primary);
 }
 
+/* border-box: the leader header is a <button> (already border-box via the
+   #28 form-control rule) but the worker header is a DIV — content-box made
+   `width:100% + 20px padding` overflow the card by 20px and the group's
+   overflow:hidden clipped the right-aligned `+` create button by 10px.
+   2026-09-22 supplemental live-browser measurement. */
 .groupRow {
   display: flex;
   align-items: center;
+  box-sizing: border-box;
   width: 100%;
   padding: 6px 10px;
   border: 0;
@@ -59,11 +65,22 @@
   flex-direction: column;
 }
 
+/* border-box (2026-09-22 supplemental, live-browser measurement): the row
+   is `width: 100%` + 28px horizontal padding on a DIV — as content-box it
+   overflowed the group card by 28px and the group's overflow:hidden
+   clipped the right-aligned action cluster's trailing button by 18px at
+   every width where the cluster stays on line 1 (and the right-aligned
+   content of any row). The <button> groupRow variant was already saved by
+   the #28 form-control border-box rule; the DIV rows need it explicitly.
+   With border-box the row box == the card content box, so the #28
+   .actions shrink+wrap contract (never exceed the row) lands the buttons
+   INSIDE the card at all widths. */
 .instanceRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 8px;
+  box-sizing: border-box;
   width: 100%;
   padding: 6px 10px 6px 18px;
   border-bottom: 1px solid var(--dsw-alias-border-l1);
@@ -110,9 +127,22 @@
   opacity: 0.55;
 }
 
+/* flex-wrap: when the row is narrower than the full button cluster,
+   the buttons wrap onto a second line INSIDE the card instead of
+   overflowing the group's right edge (where the group's overflow:hidden
+   clipped them, leaving the trailing buttons cut off). 2026-09-21
+   supplemental review: `flex: none` (non-shrinkable, fixed basis) kept
+   the cluster wider than its row even with wrap enabled — it must be
+   shrinkable: flex 0 1 auto + min-width 0 + max-width 100% so the cluster
+   can never exceed the row, wrapping its buttons instead of clipping
+   them; justify-content flex-end keeps the original right alignment. */
 .actions {
   display: flex;
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 4px;
 }
 

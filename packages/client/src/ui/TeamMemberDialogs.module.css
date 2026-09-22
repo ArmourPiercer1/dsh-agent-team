@@ -1,26 +1,12 @@
+/* The dialog CONTENT wrapper: the card chrome (mask, radius, fill,
+   elevation), the header (title + close), and the footer (the action
+   row) come from the shared Modal primitive — this box only stacks the
+   fields inside the modal's content column. */
 .dialog {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: min(420px, 100%);
-  padding: 14px 16px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-1);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 18%);
-}
-
-.title {
-  margin: 0;
-  color: var(--dsw-alias-label-primary);
-  font: var(--dsw-font-s-14);
-  font-weight: 600;
-}
-
-.body {
-  color: var(--dsw-alias-label-secondary);
-  font: var(--dsw-font-xs-13);
-  line-height: 1.5;
+  gap: 12px;
+  min-width: 0;
 }
 
 .warning {
@@ -53,8 +39,13 @@
   font: var(--dsw-font-xxxs-11);
 }
 
+/* 2026-09-21 supplemental review: border-box so `width: 100%` + padding +
+   border stay inside the modal body's content box — under the default
+   content-box sizing every control overflowed the dialog's right edge by
+   padding+border (18px here). */
 .field input,
 .field select {
+  box-sizing: border-box;
   width: 100%;
   padding: 5px 8px;
   border: 1px solid var(--dsw-alias-border-l2);
@@ -72,6 +63,7 @@
 }
 
 .field textarea {
+  box-sizing: border-box;
   width: 100%;
   padding: 5px 8px;
   border: 1px solid var(--dsw-alias-border-l2);
@@ -87,13 +79,8 @@
   font: var(--dsw-font-xs-13);
 }
 
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 4px;
-}
-
+/* The action row renders in the Modal's card footer (its own flex-end
+   row + gap) — only the button skin stays local. */
 .button {
   padding: 5px 12px;
   border: 1px solid var(--dsw-alias-border-l2);

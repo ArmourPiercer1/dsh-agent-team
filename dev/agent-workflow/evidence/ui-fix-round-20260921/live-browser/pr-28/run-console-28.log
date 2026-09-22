@@ -1,0 +1,40 @@
+[2026-09-21T16:09:22.150Z] live-ui world kit — branch=fix/member-command-dialogs worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-member-command-dialogs
+[2026-09-21T16:09:22.150Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use home=/home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-mmanddialogs-2026-09-21T16-09-22 runDir=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-member-command-dialogs/dev/agent-workflow/evidence/ui-fix-round-20260921/live-browser/run-mmanddialogs-2026-09-21T16-09-22
+[2026-09-21T16:09:22.352Z] PASS [PRE] test-use pinned @ fb2c4b9e69 + byte-clean — fb2c4b9e698e
+[2026-09-21T16:09:22.352Z] PASS [PRE] branch install surface built (runtime dist + bundle patch + client bundle)
+[2026-09-21T16:09:22.355Z] worktree head: 14a6b258b276989395113d5620415e8d56fbe108
+[2026-09-21T16:09:22.372Z] ZERO-TOUCH probe :3080 pre: {"reachable":true,"status":401}
+[2026-09-21T16:09:22.372Z] ZERO-TOUCH probe :3180 pre: {"reachable":true,"status":401}
+[2026-09-21T16:09:22.399Z] PASS [PRE] ports free (3180 family) + world fresh — host=3181 mock=3491 control=3492
+[2026-09-21T16:09:22.399Z] bare repo: cloning /home/user/dsh-plugins/dsh-agent-team → /home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-mmanddialogs-2026-09-21T16-09-22/repo.git
+[2026-09-21T16:09:22.482Z] bare repo cloned (local branches included)
+[2026-09-21T16:09:22.482Z] installing: git+file:////home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-mmanddialogs-2026-09-21T16-09-22/repo.git#fix/member-command-dialogs
+[2026-09-21T16:09:25.862Z] plugin add exit=0
+[2026-09-21T16:09:25.862Z] PASS [INST] the real-CLI git install succeeds (prebuilt surface, zero lifecycle scripts) — exit=0 tail=d 0, downloaded 1, added 1, done | Done in 3.2s using pnpm v11.7.0 | dsh: initialized profile web at /home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-mmanddialogs-2026-09-21T16-09-22/profiles/web | 
+[2026-09-21T16:09:25.862Z] PASS [INST] dsh.profile.bundles AUTO-contains dsh-agent-team (bundle layer, no hand-written row) — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-21T16:09:25.863Z] PASS [INST] profile config override + user preset written (boot team, mock staticModel, preset)
+[2026-09-21T16:09:25.865Z] mock: mock: listening on 127.0.0.1:3491
+[2026-09-21T16:09:25.865Z] mock model listening on 127.0.0.1:3491
+[2026-09-21T16:09:25.867Z] host spawned (pid=157, port=3181)
+[2026-09-21T16:09:29.871Z] PASS [BOOT] the real host booted to the `dsh web:` marker
+[2026-09-21T16:09:29.872Z] PASS [BOOT] NO ERR_MODULE_NOT_FOUND in the instance log — hits=0
+[2026-09-21T16:09:29.875Z] PASS [BOOT] auth proven (303 + session cookie)
+[2026-09-21T16:09:29.888Z] PASS [SESS] root session created over the public session channel — status=200 {"type":"server-response","rpcId":"liveui-root-fdo8ly4hmb","result":{"ok":false,"error":{"code":"agent-preset/conflict","message":"session \"team-root\" records no agent preset and cannot be adopted u
+[2026-09-21T16:09:29.890Z] control server on 127.0.0.1:3492
+[2026-09-21T16:09:29.890Z] READY origin=http://127.0.0.1:3181 token=[SCRUBBED-TOKEN] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-mmanddialogs-2026-09-21T16-09-22
+[2026-09-21T16:10:43.910Z] mock: mock: 1 text reply (11 chars): "LIVEUI-NOOP"
+[2026-09-21T16:10:43.912Z] mock: mock: 2 text reply (28 chars): "live UI verification session"
+[2026-09-21T16:10:43.940Z] mock: mock: 3 tool-call reply: team_delegate
+[2026-09-21T16:10:44.028Z] mock: mock: 4 text reply (11 chars): "WORK_DONE_A"
+[2026-09-21T16:10:44.029Z] mock: mock: 5 text reply (28 chars): "live UI verification session"
+[2026-09-21T16:10:44.065Z] mock: mock: 6 tool-call reply: team_delegate
+[2026-09-21T16:10:44.109Z] mock: mock: 7 text reply (11 chars): "WORK_DONE_A"
+[2026-09-21T16:10:44.142Z] mock: mock: 8 tool-call reply: team_archive_member
+[2026-09-21T16:10:44.175Z] mock: mock: 9 text reply (54 chars): "LIVEUI-TEAM-DONE: worker-a settled, worker-b archived."
+[2026-09-21T16:16:18.108Z] scenarios-done: true — tearing down
+[2026-09-21T16:16:18.516Z] ZERO-TOUCH probe :3080 post: {"reachable":true,"status":401}
+[2026-09-21T16:16:18.516Z] ZERO-TOUCH probe :3180 post: {"reachable":true,"status":401}
+[2026-09-21T16:16:18.516Z] PASS [POST] stable instances :3080/:3180 unchanged (read-only probes pre == post) — pre={"p3080":{"reachable":true,"status":401},"p3180":{"reachable":true,"status":401}} post={"p3080":{"reachable":true,"status":401},"p3180":{"reachable":true,"status":401}}
+[2026-09-21T16:16:18.734Z] PASS [POST] test-use working tree byte-clean after the run
+[2026-09-21T16:16:18.735Z] PASS [POST] host port released after teardown — port=3181
+[2026-09-21T16:16:19.042Z] world removed: /home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-mmanddialogs-2026-09-21T16-09-22 (evidence retained in /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-member-command-dialogs/dev/agent-workflow/evidence/ui-fix-round-20260921/live-browser/run-mmanddialogs-2026-09-21T16-09-22)

@@ -142,6 +142,7 @@ export type TeamKey =
   | 'member.action.create'
   | 'member.command.pending'
   | 'member.command.error'
+  | 'member.dialog.close'
   | 'member.create.title'
   | 'member.create.template'
   | 'member.create.label'
@@ -382,6 +383,7 @@ export const zh: Record<TeamKey, string> = {
   'member.action.create': '创建成员实例',
   'member.command.pending': '处理中…',
   'member.command.error': '命令失败：{code}: {message}',
+  'member.dialog.close': '关闭',
   'member.create.title': '创建成员实例',
   'member.create.template': '模板',
   'member.create.label': '标签',
@@ -622,6 +624,7 @@ export const en: Record<TeamKey, string> = {
   'member.action.create': 'Create a MemberInstance',
   'member.command.pending': 'Pending…',
   'member.command.error': 'Command failed: {code}: {message}',
+  'member.dialog.close': 'Close',
   'member.create.title': 'Create MemberInstance',
   'member.create.template': 'Template',
   'member.create.label': 'Label',

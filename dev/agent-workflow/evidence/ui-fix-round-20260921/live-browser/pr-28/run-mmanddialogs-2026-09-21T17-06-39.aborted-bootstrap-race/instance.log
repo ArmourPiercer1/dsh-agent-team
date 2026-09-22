@@ -1,0 +1,7 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/tests/homes/liveui-mmanddialogs-2026-09-21T17-06-39/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3181/?token=REDACTED
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] bootstrap FAILED: SessionAlreadyExistsError: session "team-root" already exists
+    at Proxy.create (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/session/session-persistence-jsonl/lib/index.js:2329:114)
+    at async Proxy.createStoredSession (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1790:12)
+    at async file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1827:42

@@ -12,7 +12,15 @@
  * `transport-loss` note, a success pulls the projection (the final-state
  * authority) and applies NO optimistic authority patch — the row keeps
  * its projection-driven status until a new frame lands.
+ *
+ * The command dialogs render through the shared Modal primitive
+ * (ui-primitives): the dialog content is portaled to document.body
+ * (above the members section), so the dialog-scoped queries below use
+ * document scope while the row/group-scoped ones stay on the render
+ * container.
  */
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
@@ -273,15 +281,16 @@ describe('TeamMembers S5-B command flows', () => {
       face,
     )} />)
     fireEvent.click(rowActions(view.container, 'running')[1]!) // followup
-    // The prompt dialog (the send-new-work interaction).
+    // The prompt dialog (the send-new-work interaction) — portaled by the
+    // shared Modal primitive (document scope).
     expect(screen.getByText('向 Alpha 发送任务')).toBeTruthy()
-    const input = view.container.querySelector<HTMLInputElement>('[data-member-prompt-input]')
+    const input = document.querySelector<HTMLInputElement>('[data-member-prompt-input]')
     if (input === null) throw new Error('the prompt input did not render')
-    expect(view.container.querySelector<HTMLButtonElement>('[data-member-prompt-submit]')?.disabled).toBe(true)
+    expect(document.querySelector<HTMLButtonElement>('[data-member-prompt-submit]')?.disabled).toBe(true)
     fireEvent.change(input, { target: { value: '  继续 ' } })
-    fireEvent.click(view.container.querySelector('[data-member-prompt-submit]')!)
+    fireEvent.click(document.querySelector('[data-member-prompt-submit]')!)
     // The dialog closes; the row shows the in-flight command.
-    expect(view.container.querySelector('[data-member-prompt-dialog]')).toBeNull()
+    expect(document.querySelector('[data-member-prompt-dialog]')).toBeNull()
     const row = view.container.querySelector<HTMLElement>('[data-member-instance][data-status="running"]')
     expect(row?.dataset.memberCommandPending).toBe('followup')
     expect(face.memberFollowup).toHaveBeenCalledTimes(1)
@@ -323,10 +332,10 @@ describe('TeamMembers S5-B command flows', () => {
     )} />)
     fireEvent.click(rowActions(view.container, 'running')[0]!) // send (message)
     expect(screen.getByText('给 Alpha 发消息')).toBeTruthy()
-    const body = view.container.querySelector<HTMLTextAreaElement>('[data-member-message-body]')
+    const body = document.querySelector<HTMLTextAreaElement>('[data-member-message-body]')
     if (body === null) throw new Error('the message body did not render')
     fireEvent.change(body, { target: { value: ' hello ' } })
-    fireEvent.click(view.container.querySelector('[data-member-message-submit]')!)
+    fireEvent.click(document.querySelector('[data-member-message-submit]')!)
     expect(sendCalls).toHaveLength(1)
     expect(sendCalls[0]).toEqual({
       teamSessionId: LEADER,
@@ -344,13 +353,13 @@ describe('TeamMembers S5-B command flows', () => {
     // Second message, this time with a subject (the dialog state is
     // dialog-local: the reopened dialog starts blank again).
     fireEvent.click(rowActions(view.container, 'running')[0]!)
-    const subject = view.container.querySelector<HTMLInputElement>('[data-member-message-subject]')
+    const subject = document.querySelector<HTMLInputElement>('[data-member-message-subject]')
     if (subject === null) throw new Error('the message subject did not render')
-    const reopenedBody = view.container.querySelector<HTMLTextAreaElement>('[data-member-message-body]')
+    const reopenedBody = document.querySelector<HTMLTextAreaElement>('[data-member-message-body]')
     if (reopenedBody === null) throw new Error('the reopened message body did not render')
     fireEvent.change(subject, { target: { value: ' sync ' } })
     fireEvent.change(reopenedBody, { target: { value: ' sync text ' } })
-    fireEvent.click(view.container.querySelector('[data-member-message-submit]')!)
+    fireEvent.click(document.querySelector('[data-member-message-submit]')!)
     expect(sendCalls).toHaveLength(2)
     expect(sendCalls[1]).toEqual({
       teamSessionId: LEADER,
@@ -379,10 +388,10 @@ describe('TeamMembers S5-B command flows', () => {
       face,
     )} />)
     fireEvent.click(rowActions(view.container, 'running')[1]!)
-    const input = view.container.querySelector<HTMLInputElement>('[data-member-prompt-input]')
+    const input = document.querySelector<HTMLInputElement>('[data-member-prompt-input]')
     if (input === null) throw new Error('the prompt input did not render')
     fireEvent.change(input, { target: { value: 'x' } })
-    fireEvent.click(view.container.querySelector('[data-member-prompt-submit]')!)
+    fireEvent.click(document.querySelector('[data-member-prompt-submit]')!)
     await vi.waitFor(() => {
       expect(view.container.querySelector('[data-member-command-error]')).toBeTruthy()
     })
@@ -409,10 +418,10 @@ describe('TeamMembers S5-B command flows', () => {
       face,
     )} />)
     fireEvent.click(rowActions(view.container, 'running')[1]!)
-    const input = view.container.querySelector<HTMLInputElement>('[data-member-prompt-input]')
+    const input = document.querySelector<HTMLInputElement>('[data-member-prompt-input]')
     if (input === null) throw new Error('the prompt input did not render')
     fireEvent.change(input, { target: { value: 'x' } })
-    fireEvent.click(view.container.querySelector('[data-member-prompt-submit]')!)
+    fireEvent.click(document.querySelector('[data-member-prompt-submit]')!)
     await vi.waitFor(() => {
       expect(view.container.querySelector('[data-member-command-error]')).toBeTruthy()
     })
@@ -436,13 +445,13 @@ describe('TeamMembers S5-B command flows', () => {
     expect(screen.getByText('归档该成员？')).toBeTruthy()
     expect(screen.getByText('该成员正在运行。归档将停止当前工作，并在归档前排空其驻留子成员。')).toBeTruthy()
     // Cancel closes the dialog without running the command.
-    fireEvent.click(view.container.querySelector('[data-member-confirm-cancel]')!)
-    expect(view.container.querySelector('[data-member-confirm-dialog]')).toBeNull()
+    fireEvent.click(document.querySelector('[data-member-confirm-cancel]')!)
+    expect(document.querySelector('[data-member-confirm-dialog]')).toBeNull()
     expect(face.memberArchive).not.toHaveBeenCalled()
 
     // Confirm runs the frozen lifecycle command.
     fireEvent.click(rowActions(view.container, 'running')[2]!)
-    fireEvent.click(view.container.querySelector('[data-member-confirm-ok]')!)
+    fireEvent.click(document.querySelector('[data-member-confirm-ok]')!)
     expect(face.memberArchive).toHaveBeenCalledTimes(1)
     expect(face.memberArchive).toHaveBeenCalledWith({
       teamSessionId: LEADER,
@@ -465,7 +474,7 @@ describe('TeamMembers S5-B command flows', () => {
       face,
     )} />)
     fireEvent.click(rowActions(view.container, 'archived')[0]!) // restore
-    expect(view.container.querySelector('[data-member-dialog]')).toBeNull()
+    expect(document.querySelector('[data-member-dialog]')).toBeNull()
     expect(face.memberRestore).toHaveBeenCalledTimes(1)
     expect(face.memberRestore).toHaveBeenCalledWith({
       teamSessionId: LEADER,
@@ -490,7 +499,7 @@ describe('TeamMembers S5-B command flows', () => {
     fireEvent.click(rowActions(view.container, 'settled')[3]!) // dispose
     expect(screen.getByText('处置该成员？')).toBeTruthy()
     expect(screen.getByText('该成员无法再恢复或接收新的团队任务。其会话历史、Chat、Trajectory 与团队审计历史将保留。')).toBeTruthy()
-    const ok = view.container.querySelector<HTMLButtonElement>('[data-member-confirm-ok]')
+    const ok = document.querySelector<HTMLButtonElement>('[data-member-confirm-ok]')
     if (ok === null) throw new Error('the confirm ok button did not render')
     expect(ok.textContent).toBe('处置')
     fireEvent.click(ok)
@@ -509,17 +518,45 @@ describe('TeamMembers S5-B command flows', () => {
       makeFace(),
     )} />)
     fireEvent.click(createEntry(view.container))
-    const dialog = view.container.querySelector('[data-member-create-dialog]')
+    const dialog = document.querySelector('[data-member-create-dialog]')
     expect(dialog).toBeTruthy()
     expect(screen.getByText('创建成员实例')).toBeTruthy()
     // The template is the fresh_per_delegation one → the notice shows.
-    expect(view.container.querySelector('[data-member-create-template-name]')?.textContent).toBe('Beta')
+    expect(document.querySelector('[data-member-create-template-name]')?.textContent).toBe('Beta')
     expect(screen.getByText('新的委派会创建新实例。')).toBeTruthy()
-    expect(view.container.querySelector<HTMLInputElement>('[data-member-create-label]')?.placeholder).toBe('例如：研究员-1')
+    expect(document.querySelector<HTMLInputElement>('[data-member-create-label]')?.placeholder).toBe('例如：研究员-1')
     // No workspace feed → the field is hidden.
-    expect(view.container.querySelector('[data-member-create-workspace]')).toBeNull()
+    expect(document.querySelector('[data-member-create-workspace]')).toBeNull()
     // The submit is disabled while the label is blank.
-    expect(view.container.querySelector<HTMLButtonElement>('[data-member-create-submit]')?.disabled).toBe(true)
+    expect(document.querySelector<HTMLButtonElement>('[data-member-create-submit]')?.disabled).toBe(true)
+  })
+
+  it('member command dialogs are real modals: portaled above the section, aria-modal, Escape closes without running the command', () => {
+    const face = makeFace()
+    const view = render(<TeamMembers {...makeProps(
+      snapshot([
+        instance({
+          instanceId: 'a', templateId: 'tpl-a', label: 'Alpha', childSessionId: SA,
+          lifecycle: LIFECYCLE.running, displayStatus: 'running',
+        }),
+      ]),
+      face,
+    )} />)
+    fireEvent.click(rowActions(view.container, 'running')[1]!) // followup
+    // The dialog is the shared Modal primitive: a body-portaled,
+    // aria-modal card ABOVE the members section — not an inline card
+    // below the clicked row (which made the buttons look dead).
+    const modal = screen.getByRole('dialog')
+    expect(modal.getAttribute('aria-modal')).toBe('true')
+    expect(view.container.contains(modal)).toBe(false)
+    // The header carries the localized close affordance (the Modal
+    // chrome), alongside the dialog's own cancel action.
+    expect(screen.getByRole('button', { name: '关闭' })).toBeTruthy()
+    // Escape closes the dialog exactly like the cancel action — NO
+    // command runs.
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(document.querySelector('[data-member-prompt-dialog]')).toBeNull()
+    expect(face.memberFollowup).not.toHaveBeenCalled()
   })
 
   it('the create dialog submits member.create with the template delegation and the trimmed payload', async () => {
@@ -530,15 +567,15 @@ describe('TeamMembers S5-B command flows', () => {
       [{ id: 'wsp-1', title: '工作区一', path: 'C:\\work\\one' }],
     )} />)
     fireEvent.click(createEntry(view.container))
-    const label = view.container.querySelector<HTMLInputElement>('[data-member-create-label]')
+    const label = document.querySelector<HTMLInputElement>('[data-member-create-label]')
     if (label === null) throw new Error('the create label input did not render')
     fireEvent.change(label, { target: { value: '  研究员-1  ' } })
-    fireEvent.change(view.container.querySelector('[data-member-create-group]')!, { target: { value: ' g1 ' } })
-    fireEvent.change(view.container.querySelector('[data-member-create-workspace]')!, { target: { value: 'C:\\work\\one' } })
-    expect(view.container.querySelector<HTMLButtonElement>('[data-member-create-submit]')?.disabled).toBe(false)
-    fireEvent.click(view.container.querySelector('[data-member-create-submit]')!)
+    fireEvent.change(document.querySelector('[data-member-create-group]')!, { target: { value: ' g1 ' } })
+    fireEvent.change(document.querySelector('[data-member-create-workspace]')!, { target: { value: 'C:\\work\\one' } })
+    expect(document.querySelector<HTMLButtonElement>('[data-member-create-submit]')?.disabled).toBe(false)
+    fireEvent.click(document.querySelector('[data-member-create-submit]')!)
     // The dialog closes; the command settles on the template key.
-    expect(view.container.querySelector('[data-member-create-dialog]')).toBeNull()
+    expect(document.querySelector('[data-member-create-dialog]')).toBeNull()
     expect(face.memberCreate).toHaveBeenCalledTimes(1)
     expect(face.memberCreate).toHaveBeenCalledWith({
       teamSessionId: LEADER,
@@ -560,10 +597,10 @@ describe('TeamMembers S5-B command flows', () => {
       face,
     )} />)
     fireEvent.click(createEntry(view.container))
-    const label = view.container.querySelector<HTMLInputElement>('[data-member-create-label]')
+    const label = document.querySelector<HTMLInputElement>('[data-member-create-label]')
     if (label === null) throw new Error('the create label input did not render')
     fireEvent.change(label, { target: { value: '研究员-1' } })
-    fireEvent.click(view.container.querySelector('[data-member-create-submit]')!)
+    fireEvent.click(document.querySelector('[data-member-create-submit]')!)
     // While the create is in flight, the "+" entry is disabled.
     expect(createEntry(view.container).disabled).toBe(true)
     await act(async () => {
@@ -590,3 +627,52 @@ function deferred(): {
   })
   return { promise, resolve }
 }
+
+/**
+ * 2026-09-21 supplemental review — the member action cluster + dialog form
+ * CSS contract (PR #28). Source-level guards: the `.actions` cluster must
+ * stay SHRINKABLE (the first round's `flex: none` kept it wider than its
+ * row even with wrap enabled, so the trailing buttons clipped under the
+ * group's overflow:hidden) and the dialog form controls must stay inside
+ * the modal body (border-box, not content-box width:100% + padding).
+ * Targeted declaration checks — not a whole-file string match, so
+ * unrelated style edits do not break them.
+ */
+describe('member action cluster and dialog form CSS contract', () => {
+  // The package test script runs vitest with cwd = packages/client; the
+  // root-level fallback covers a root-launched `vitest run`.
+  function cssPath(rel: string): string {
+    const hit = [
+      resolve(process.cwd(), rel),
+      resolve(process.cwd(), 'packages/client', rel),
+    ].find((p) => existsSync(p))
+    if (hit === undefined) throw new Error(`${rel} not found (cwd=${process.cwd()})`)
+    return hit
+  }
+  const membersCss = readFileSync(cssPath('src/ui/TeamMembers.module.css'), 'utf8')
+  const dialogsCss = readFileSync(cssPath('src/ui/TeamMemberDialogs.module.css'), 'utf8')
+
+  function rule(source: string, file: string, selector: string): string {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const m = new RegExp(`(^|\\n)\\s*${escaped}(?:\\s*,\\s*[^{]+)?\\s*\\{([^}]*)\\}`).exec(source)
+    if (m === null) throw new Error(`CSS rule not found in ${file}: ${selector}`)
+    const body = m[2]
+    if (body === undefined) throw new Error(`CSS rule body not captured: ${selector}`)
+    return body
+  }
+
+  it('keeps .actions shrinkable (never a non-shrinkable fixed basis)', () => {
+    const actions = rule(membersCss, 'TeamMembers.module.css', '.actions')
+    expect(actions).not.toContain('flex: none')
+    expect(actions).toContain('flex: 0 1 auto')
+    expect(actions).toContain('min-width: 0')
+    expect(actions).toContain('max-width: 100%')
+    expect(actions).toContain('flex-wrap: wrap')
+  })
+
+  it('keeps dialog form controls inside the modal content box', () => {
+    expect(rule(dialogsCss, 'TeamMemberDialogs.module.css', '.field input')).toContain('box-sizing: border-box')
+    expect(rule(dialogsCss, 'TeamMemberDialogs.module.css', '.field select')).toContain('box-sizing: border-box')
+    expect(rule(dialogsCss, 'TeamMemberDialogs.module.css', '.field textarea')).toContain('box-sizing: border-box')
+  })
+})

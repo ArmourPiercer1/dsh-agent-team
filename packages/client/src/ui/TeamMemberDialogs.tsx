@@ -11,10 +11,18 @@
  * within the page run); the parent (`TeamMembers`) owns the in-flight
  * command, the error note, and the injected command face.
  *
+ * Every dialog renders through the shared `Modal` primitive
+ * (ui-primitives): a body-portaled, mask-backed, centered card with the
+ * header title and close affordance, Escape and mask-click close, and
+ * the action row in the card footer. The Escape/mask-close paths behave
+ * exactly like the dialog's own cancel action.
+ *
  * @module @dsh-agent-team/client/ui/TeamMemberDialogs
  */
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+import { Modal } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { TeamUiTemplate } from '../model/team-ui-snapshot.js'
 import type { TeamWorkspaceOption } from '../model/team-intent-model.js'
 import styles from './TeamMemberDialogs.module.css'
@@ -64,67 +72,76 @@ export function TeamCreateMemberDialog({
       ...(workspace !== '' ? { workspace } : {}),
     })
   }
+  const footer = (
+    <>
+      <button type="button" className={styles.button} data-member-create-cancel onClick={onCancel}>
+        {t('member.create.cancel')}
+      </button>
+      <button
+        type="button"
+        className={styles.button}
+        data-member-create-submit
+        disabled={label.trim() === ''}
+        onClick={submit}
+      >
+        {t('member.create.submit')}
+      </button>
+    </>
+  )
   return (
-    <div className={styles.dialog} data-member-dialog data-member-create-dialog role="dialog" aria-modal="true">
-      <h3 className={styles.title} data-member-create-title>{t('member.create.title')}</h3>
-      <div className={styles.field} data-member-create-template>
-        <span className={styles.fieldLabel}>{t('member.create.template')}</span>
-        <span className={styles.templateName} data-member-create-template-name>{template.displayName}</span>
+    <Modal
+      open
+      title={t('member.create.title')}
+      closeLabel={t('member.dialog.close')}
+      onClose={onCancel}
+      footer={footer}
+    >
+      <div className={styles.dialog} data-member-dialog data-member-create-dialog>
+        <div className={styles.field} data-member-create-template>
+          <span className={styles.fieldLabel}>{t('member.create.template')}</span>
+          <span className={styles.templateName} data-member-create-template-name>{template.displayName}</span>
+        </div>
+        {template.contextPolicy === 'fresh_per_delegation'
+          ? <div className={styles.notice} data-member-fresh-notice>{t('member.create.fresh')}</div>
+          : null}
+        <label className={styles.field} data-member-create-label-field>
+          <span className={styles.fieldLabel}>{t('member.create.label')}</span>
+          <input
+            type="text"
+            data-member-create-label
+            placeholder={t('member.create.label.placeholder')}
+            value={label}
+            onChange={event => { setLabel(event.target.value) }}
+          />
+        </label>
+        <label className={styles.field} data-member-create-group-field>
+          <span className={styles.fieldLabel}>{t('member.create.group')}</span>
+          <input
+            type="text"
+            data-member-create-group
+            value={groupId}
+            onChange={event => { setGroupId(event.target.value) }}
+          />
+        </label>
+        {workspaces.length > 0
+          ? (
+            <label className={styles.field} data-member-create-workspace-field>
+              <span className={styles.fieldLabel}>{t('member.create.workspace')}</span>
+              <select
+                data-member-create-workspace
+                value={workspace}
+                onChange={event => { setWorkspace(event.target.value) }}
+              >
+                <option value="">{t('intent.workspace.placeholder')}</option>
+                {workspaces.map(option => (
+                  <option key={option.id} value={option.path}>{option.title}</option>
+                ))}
+              </select>
+            </label>
+          )
+          : null}
       </div>
-      {template.contextPolicy === 'fresh_per_delegation'
-        ? <div className={styles.notice} data-member-fresh-notice>{t('member.create.fresh')}</div>
-        : null}
-      <label className={styles.field} data-member-create-label-field>
-        <span className={styles.fieldLabel}>{t('member.create.label')}</span>
-        <input
-          type="text"
-          data-member-create-label
-          placeholder={t('member.create.label.placeholder')}
-          value={label}
-          onChange={event => { setLabel(event.target.value) }}
-        />
-      </label>
-      <label className={styles.field} data-member-create-group-field>
-        <span className={styles.fieldLabel}>{t('member.create.group')}</span>
-        <input
-          type="text"
-          data-member-create-group
-          value={groupId}
-          onChange={event => { setGroupId(event.target.value) }}
-        />
-      </label>
-      {workspaces.length > 0
-        ? (
-          <label className={styles.field} data-member-create-workspace-field>
-            <span className={styles.fieldLabel}>{t('member.create.workspace')}</span>
-            <select
-              data-member-create-workspace
-              value={workspace}
-              onChange={event => { setWorkspace(event.target.value) }}
-            >
-              <option value="">{t('intent.workspace.placeholder')}</option>
-              {workspaces.map(option => (
-                <option key={option.id} value={option.path}>{option.title}</option>
-              ))}
-            </select>
-          </label>
-        )
-        : null}
-      <div className={styles.actions} data-member-create-actions>
-        <button type="button" className={styles.button} data-member-create-cancel onClick={onCancel}>
-          {t('member.create.cancel')}
-        </button>
-        <button
-          type="button"
-          className={styles.button}
-          data-member-create-submit
-          disabled={label.trim() === ''}
-          onClick={submit}
-        >
-          {t('member.create.submit')}
-        </button>
-      </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -157,34 +174,43 @@ export function TeamMemberPromptDialog({
   title, placeholder, submitLabel, cancelLabel, onSubmit, onCancel, t,
 }: TeamMemberPromptDialogProps): React.JSX.Element {
   const [text, setText] = useState('')
+  const footer = (
+    <>
+      <button type="button" className={styles.button} data-member-prompt-cancel onClick={onCancel}>
+        {cancelLabel}
+      </button>
+      <button
+        type="button"
+        className={styles.button}
+        data-member-prompt-submit
+        disabled={text.trim() === ''}
+        onClick={() => { onSubmit(text.trim()) }}
+      >
+        {submitLabel}
+      </button>
+    </>
+  )
   return (
-    <div className={styles.dialog} data-member-dialog data-member-prompt-dialog role="dialog" aria-modal="true">
-      <h3 className={styles.title} data-member-prompt-title>{title}</h3>
-      <label className={styles.field} data-member-prompt-field>
-        <span className={styles.fieldLabel}>{t('member.send.prompt')}</span>
-        <input
-          type="text"
-          data-member-prompt-input
-          placeholder={placeholder}
-          value={text}
-          onChange={event => { setText(event.target.value) }}
-        />
-      </label>
-      <div className={styles.actions} data-member-prompt-actions>
-        <button type="button" className={styles.button} data-member-prompt-cancel onClick={onCancel}>
-          {cancelLabel}
-        </button>
-        <button
-          type="button"
-          className={styles.button}
-          data-member-prompt-submit
-          disabled={text.trim() === ''}
-          onClick={() => { onSubmit(text.trim()) }}
-        >
-          {submitLabel}
-        </button>
+    <Modal
+      open
+      title={title}
+      closeLabel={t('member.dialog.close')}
+      onClose={onCancel}
+      footer={footer}
+    >
+      <div className={styles.dialog} data-member-dialog data-member-prompt-dialog>
+        <label className={styles.field} data-member-prompt-field>
+          <span className={styles.fieldLabel}>{t('member.send.prompt')}</span>
+          <input
+            type="text"
+            data-member-prompt-input
+            placeholder={placeholder}
+            value={text}
+            onChange={event => { setText(event.target.value) }}
+          />
+        </label>
       </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -212,47 +238,56 @@ export function TeamMemberMessageDialog({
 }: TeamMemberMessageDialogProps): React.JSX.Element {
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
+  const footer = (
+    <>
+      <button type="button" className={styles.button} data-member-message-cancel onClick={onCancel}>
+        {t('member.message.cancel')}
+      </button>
+      <button
+        type="button"
+        className={styles.button}
+        data-member-message-submit
+        disabled={body.trim() === ''}
+        onClick={() => {
+          const trimmedBody = body.trim()
+          const trimmedSubject = subject.trim()
+          onSubmit(trimmedBody, trimmedSubject === '' ? undefined : trimmedSubject)
+        }}
+      >
+        {t('member.message.submit')}
+      </button>
+    </>
+  )
   return (
-    <div className={styles.dialog} data-member-dialog data-member-message-dialog role="dialog" aria-modal="true">
-      <h3 className={styles.title} data-member-message-title>{title}</h3>
-      <label className={styles.field} data-member-message-subject-field>
-        <span className={styles.fieldLabel}>{t('member.message.subject')}</span>
-        <input
-          type="text"
-          data-member-message-subject
-          value={subject}
-          onChange={event => { setSubject(event.target.value) }}
-        />
-      </label>
-      <label className={styles.field} data-member-message-body-field>
-        <span className={styles.fieldLabel}>{t('member.message.body')}</span>
-        <textarea
-          data-member-message-body
-          placeholder={t('member.message.body.placeholder')}
-          rows={3}
-          value={body}
-          onChange={event => { setBody(event.target.value) }}
-        />
-      </label>
-      <div className={styles.actions} data-member-message-actions>
-        <button type="button" className={styles.button} data-member-message-cancel onClick={onCancel}>
-          {t('member.message.cancel')}
-        </button>
-        <button
-          type="button"
-          className={styles.button}
-          data-member-message-submit
-          disabled={body.trim() === ''}
-          onClick={() => {
-            const trimmedBody = body.trim()
-            const trimmedSubject = subject.trim()
-            onSubmit(trimmedBody, trimmedSubject === '' ? undefined : trimmedSubject)
-          }}
-        >
-          {t('member.message.submit')}
-        </button>
+    <Modal
+      open
+      title={title}
+      closeLabel={t('member.dialog.close')}
+      onClose={onCancel}
+      footer={footer}
+    >
+      <div className={styles.dialog} data-member-dialog data-member-message-dialog>
+        <label className={styles.field} data-member-message-subject-field>
+          <span className={styles.fieldLabel}>{t('member.message.subject')}</span>
+          <input
+            type="text"
+            data-member-message-subject
+            value={subject}
+            onChange={event => { setSubject(event.target.value) }}
+          />
+        </label>
+        <label className={styles.field} data-member-message-body-field>
+          <span className={styles.fieldLabel}>{t('member.message.body')}</span>
+          <textarea
+            data-member-message-body
+            placeholder={t('member.message.body.placeholder')}
+            rows={3}
+            value={body}
+            onChange={event => { setBody(event.target.value) }}
+          />
+        </label>
       </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -272,33 +307,47 @@ export interface TeamConfirmDialogProps {
   readonly onConfirm: () => void
   /** Close without confirming. */
   readonly onCancel: () => void
+  /** The team dictionary translate seat (the modal close affordance label). */
+  readonly t: PropsLocale<'team'>['t']
 }
 
 /**
  * The §23 lifecycle confirmation: title, body, the optional drain
  * warning, and the two actions (the primary is the lifecycle verb —
  * "Archive" / "Dispose" — never a delete framing).
- * @param props - the copy, the callbacks.
+ * @param props - the copy, the callbacks, the dictionary.
  * @returns the dialog.
  */
 export function TeamConfirmDialog({
-  title, body, warning, confirmLabel, cancelLabel, onConfirm, onCancel,
+  title, body, warning, confirmLabel, cancelLabel, onConfirm, onCancel, t,
 }: TeamConfirmDialogProps): React.JSX.Element {
-  return (
-    <div className={styles.dialog} data-member-dialog data-member-confirm-dialog role="dialog" aria-modal="true">
-      <h3 className={styles.title} data-member-confirm-title>{title}</h3>
-      <div className={styles.body} data-member-confirm-body>{body}</div>
-      {warning !== undefined
-        ? <div className={styles.warning} data-member-confirm-warning>{warning}</div>
-        : null}
-      <div className={styles.actions} data-member-confirm-actions>
-        <button type="button" className={styles.button} data-member-confirm-cancel onClick={onCancel}>
-          {cancelLabel}
-        </button>
-        <button type="button" className={styles.button} data-member-confirm-ok onClick={onConfirm}>
-          {confirmLabel}
-        </button>
+  const footer = (
+    <>
+      <button type="button" className={styles.button} data-member-confirm-cancel onClick={onCancel}>
+        {cancelLabel}
+      </button>
+      <button type="button" className={styles.button} data-member-confirm-ok onClick={onConfirm}>
+        {confirmLabel}
+      </button>
+    </>
+  )
+  const warningBlock: ReactNode = warning !== undefined
+    ? (
+      <div className={styles.dialog} data-member-dialog data-member-confirm-dialog>
+        <div className={styles.warning} data-member-confirm-warning>{warning}</div>
       </div>
-    </div>
+    )
+    : null
+  return (
+    <Modal
+      open
+      title={title}
+      closeLabel={t('member.dialog.close')}
+      description={body}
+      onClose={onCancel}
+      footer={footer}
+    >
+      {warningBlock}
+    </Modal>
   )
 }
