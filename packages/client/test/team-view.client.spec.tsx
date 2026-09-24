@@ -241,6 +241,11 @@ function viewProps(
     useInput: () => { throw new Error('unused') },
     inputActions: { setDraft: () => {}, submit: () => {} } as unknown as TeamViewProps['inputActions'],
     useSessions: () => { throw new Error('unused') },
+    // 0.1.7: the ui-session GlobalStandardProps merge now carries
+    // useSessionStatus/useSessionRetainInfo (0.1.5's useSessionPendingInteraction
+    // was removed upstream) — never read by the Team components.
+    useSessionStatus: (() => undefined) as TeamViewProps['useSessionStatus'],
+    useSessionRetainInfo: (() => undefined) as TeamViewProps['useSessionRetainInfo'],
     useWorkspaces: (() => undefined) as TeamViewProps['useWorkspaces'],
     // The injected face (projection-only after the T6 collapse).
     useProjectionMirror: selector => selector(projectionMirror),
@@ -258,13 +263,15 @@ function viewProps(
     viewRequest: null,
     openView: () => {},
     completeViewRequest: () => {},
+    // 0.1.7: ConvViewOwnerProps gained the tool-call inspector opener.
+    inspectCall: undefined,
     // SessionStandardProps merges (ui-conversation: useConversation;
-    // ui-chat: useChat) and the GlobalStandardProps merge (ui-session:
-    // useSessionPendingInteraction) are absent from these fixtures;
+    // ui-chat: useChat) are absent from these fixtures;
+    // 0.1.7: the GlobalStandardProps merge no longer carries
+    // useSessionPendingInteraction (removed upstream) — no stub.
     // TeamView never reads them, so empty stubs.
     useConversation: (() => undefined) as TeamViewProps['useConversation'],
     useChat: (() => undefined) as TeamViewProps['useChat'],
-    useSessionPendingInteraction: (() => undefined) as TeamViewProps['useSessionPendingInteraction'],
   }
 }
 

@@ -255,8 +255,9 @@ export interface TeamViewInjected {
   /**
    * D3 (Team D1-D6 repair v2, D6): the EXPLICIT ordinary-mode fallback
    * entry ("以普通模式打开", v2 plan §1.1.3) on the SAME rows as the
-   * Team-mode entry: the pure native session open (Seam 3
-   * `ctx.sessions.open`) — NO team-remote call, NO ensure-live step. The
+   * Team-mode entry: the pure native session open (0.1.7
+   * `uiWorkspace.openSession`; 0.1.5: `ctx.sessions.open`) — NO
+   * team-remote call, NO ensure-live step. The
    * entry's promise is "no Team ensure is performed / team_* tools are
    * NOT guaranteed" — it is NOT a tool-removal operation (a root whose
    * agent is already live with the Team setup is adopted as-is; the mode

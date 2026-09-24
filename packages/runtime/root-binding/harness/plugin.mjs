@@ -59,7 +59,7 @@
  *   agents.create / agents.resume / handle.dispose
  *     — @deepseek-ai/dsh-agent (public agent lifecycle)
  *   agentPresets.resolve / mount / composedPreset
- *     — @deepseek-ai/dsh-agent-presets (public preset seam)
+ *     — @deepseek-ai/dsh-agent-preset-registry (public preset seam, 0.1.7)
  *   systemPrompt.assemble({ scope })
  *     — @deepseek-ai/dsh-system-prompt (public prompt assembly boundary)
  *   scopeOf(agentCtx)

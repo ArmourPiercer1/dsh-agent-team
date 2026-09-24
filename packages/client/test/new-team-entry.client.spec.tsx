@@ -158,7 +158,11 @@ function entryProps(
   return {
     wide,
     useSessions: () => { throw new Error('unused') },
-    useSessionPendingInteraction: (() => undefined) as NewTeamEntryProps['useSessionPendingInteraction'],
+    // 0.1.7: the ui-session GlobalStandardProps merge now carries
+    // useSessionStatus/useSessionRetainInfo (0.1.5's useSessionPendingInteraction
+    // was removed upstream) — never read by the Team components.
+    useSessionStatus: (() => undefined) as NewTeamEntryProps['useSessionStatus'],
+    useSessionRetainInfo: (() => undefined) as NewTeamEntryProps['useSessionRetainInfo'],
     useWorkspaces: workspaceItems.length > 0
       ? workspacesHook(workspaceItems)
       : (() => undefined) as NewTeamEntryProps['useWorkspaces'],

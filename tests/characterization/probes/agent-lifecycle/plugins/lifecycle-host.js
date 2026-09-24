@@ -191,13 +191,12 @@ export function apply(ctx) {
   })
   ctx.on('agent/created', (payload) => {
     const agent = payload && payload.agent
-    if (agent && isOurs(agent.id)) record('event:agent/created', { sessionId: String(agent.id) })
-  })
-  ctx.on('agent/session-start', (payload) => {
-    const agent = payload && payload.agent
     if (agent && isOurs(agent.id)) {
+      // 0.1.7 re-record: the serial `agent/created` payload carries the
+      // start source ('startup'|'resume'|'clear'|'compact'); 0.1.5 delivered
+      // it via the now-removed `agent/session-start` event (U3).
       sessionStartSources[String(agent.id)] = String(payload.source)
-      record('event:agent/session-start', { sessionId: String(agent.id), source: String(payload.source) })
+      record('event:agent/created', { sessionId: String(agent.id), source: String(payload.source) })
     }
   })
 

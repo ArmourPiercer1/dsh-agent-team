@@ -403,12 +403,21 @@ describe('TeamCreationPanel', () => {
     const teamCreateV2Mock = vi.fn(
       (_params: RemoteTeamCreateParamsV2): Promise<RemoteResponse> => created.promise,
     )
+    // Call-order recorder (the frozen §1.1 order, race-free: the assertion
+    // is on the relative order of the two calls, not on a zero-call window
+    // that a microtask flush can cross — the window form flaked under the
+    // post-TCM-M4 environment, reproduced 3/3 on the 0.1.5 graph too).
+    const callOrder: string[] = []
     const admitMock = vi.fn(
-      (_params: RemoteTeamAdmitInitialWorkParams): Promise<RemoteResponse> =>
-        Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork')),
+      (_params: RemoteTeamAdmitInitialWorkParams): Promise<RemoteResponse> => {
+        callOrder.push('admit')
+        return Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))
+      },
     )
     const face = makeFace({ teamCreateV2: teamCreateV2Mock, teamAdmitInitialWorkV2: admitMock })
-    const openCreatedSession = vi.fn(async () => undefined)
+    const openCreatedSession = vi.fn(async () => {
+      callOrder.push('open')
+    })
     const onCreated = vi.fn(() => undefined)
     const view = render(
       <PanelHarness
@@ -450,10 +459,13 @@ describe('TeamCreationPanel', () => {
       expect(openCreatedSession).toHaveBeenCalledTimes(1)
     })
     expect(openCreatedSession).toHaveBeenCalledWith(createParams.rootSessionId)
-    expect(admitMock).toHaveBeenCalledTimes(0)
     await vi.waitFor(() => {
       expect(admitMock).toHaveBeenCalledTimes(1)
     })
+    // …and strictly before: the open call precedes the admit call (the
+    // race-free form of the window assertion above).
+    expect(callOrder.indexOf('open')).toBeGreaterThanOrEqual(0)
+    expect(callOrder.indexOf('open')).toBeLessThan(callOrder.indexOf('admit'))
     // The admit reuses the SAME root + the draft-owned stable token + the
     // TRIMMED prompt (the frozen §7.7 retry identity).
     const admitParams = admitMock.mock.calls[0]![0]!

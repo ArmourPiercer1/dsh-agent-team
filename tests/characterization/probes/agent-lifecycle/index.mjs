@@ -182,13 +182,13 @@ export default {
             ['activate', {}],
             ['run-start', { scenario: 'fresh' }],
             ['event:session/created', { sessionId: rootId }],
-            ['event:agent/created', { sessionId: rootId }],
-            ['event:agent/session-start', { sessionId: rootId, source: 'startup' }],
+            // 0.1.7 re-record: the serial agent/created carries the start
+            // source (0.1.5: a separate agent/session-start event followed).
+            ['event:agent/created', { sessionId: rootId, source: 'startup' }],
             ['binding-attach', { sessionId: rootId }],
             ['first-team-step', { sessionId: rootId, role: 'root' }],
             ['event:session/created', { sessionId: memberId }],
-            ['event:agent/created', { sessionId: memberId }],
-            ['event:agent/session-start', { sessionId: memberId, source: 'startup' }],
+            ['event:agent/created', { sessionId: memberId, source: 'startup' }],
             ['first-team-step', { sessionId: memberId, role: 'member' }],
             ['durable', { sessionId: rootId }],
             ['durable', { sessionId: memberId }],
@@ -263,7 +263,9 @@ export default {
           [
             ['activate', {}],
             ['run-start', { scenario: 'resume-member' }],
-            ['event:agent/session-start', { sessionId: memberId, source: 'resume' }],
+            // 0.1.7 re-record: resume announces agent/created (source 'resume');
+            // 0.1.5 delivered the resume edge as agent/session-start only.
+            ['event:agent/created', { sessionId: memberId, source: 'resume' }],
             ['binding-recovered', { sessionId: memberId, rootId }],
             ['first-team-step', { sessionId: memberId, role: 'member' }],
             ['run-end', { scenario: 'resume-member' }],
@@ -288,7 +290,8 @@ export default {
           obs.trace,
           [
             ['run-start', { scenario: 'resume-root' }],
-            ['event:agent/session-start', { sessionId: rootId, source: 'resume' }],
+            // 0.1.7 re-record: resume announces agent/created (source 'resume').
+            ['event:agent/created', { sessionId: rootId, source: 'resume' }],
             ['binding-recovered', { sessionId: rootId }],
             ['first-team-step', { sessionId: rootId, role: 'root' }],
             ['run-end', { scenario: 'resume-root' }],
@@ -297,7 +300,7 @@ export default {
           'resume-root',
         )
         check(r.body.marker === rootMarker, `resume-root: bound value recovered BEFORE the first Team step (${String(r.body.marker)})`)
-        check(r.body.source === 'resume', `resume-root: session-start source is 'resume' (${String(r.body.source)})`)
+        check(r.body.source === 'resume', `resume-root: agent/created source is 'resume' (0.1.7; the 0.1.5 session-start edge) (${String(r.body.source)})`)
         // A cold resume APPENDS an end-seed event to the log, so the intact
         // invariant is "never shrinks": fresh length <= resumed length.
         check(

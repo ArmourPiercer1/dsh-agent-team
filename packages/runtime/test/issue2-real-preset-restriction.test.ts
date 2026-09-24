@@ -5,8 +5,12 @@
  * INHERITS from its joined agent preset — through the real seam:
  *
  *   createAgentBindings-equivalent setup
- *     -> AgentPresets.mount()            (REAL, over preset cordis.yml files
- *                                          loaded by the REAL Loader)
+ *     -> AgentPresetRegistry.mount()     (REAL, over a PresetDefinition
+ *                                          registered on the REAL registry —
+ *                                          the 0.1.7 plugin-composition
+ *                                          declaration model; the entry rows
+ *                                          still load through the REAL
+ *                                          Loader)
  *     -> ToolRuntime                     (REAL registry; the model-facing
  *                                          surface is read through
  *                                          `ctx.tools.schemas(agent)`)
@@ -55,6 +59,7 @@
  *
  * @module @dsh-agent-team/runtime/test/issue2-real-preset-restriction
  */
+import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -69,25 +74,46 @@ import ToolRuntime from '@deepseek-ai/dsh-tools'
 import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
 import AgentRegistry from '@deepseek-ai/dsh-agent'
 import AgentLoop from '@deepseek-ai/dsh-agent-loop'
-import AgentPresets from '@deepseek-ai/dsh-agent-presets'
-import type { Config } from '@deepseek-ai/dsh-agent-presets'
+import AgentPresetRegistry from '@deepseek-ai/dsh-agent-preset-registry'
+import { parse as parseYaml } from 'yaml'
 import { applyBuiltInToolDeny } from '../../tools/src/index.js'
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), 'issue2-fixtures')
-const PRESET_ROOTS: Config['roots'] = [
-  { path: join(FIXTURES, 'presets'), trust: 'user' },
-]
+const PRESET_FIXTURE_YML = join(FIXTURES, 'presets', 'i2-standard', 'agent.cordis.yml')
+
+/**
+ * 0.1.7 preset declaration model (U2 migration): presets are no longer
+ * loaded from trusted directory roots — the declaring side registers a
+ * `PresetDefinition` (identity + child Cordis entry rows) on the live
+ * registry. The fixture YAML stays the single source of truth for the
+ * entry rows; the `name` specifier (relative in the file) is rewritten to
+ * an absolute file URL — `EntryOptions.name` is a module specifier the
+ * Loader resolves through Node's ESM resolver.
+ */
+async function declareFixturePreset(ctx: Context): Promise<() => Promise<void>> {
+  const rows = parseYaml(
+    readFileSync(PRESET_FIXTURE_YML, 'utf8'),
+  ) as readonly { id: string; name: string; config: unknown }[]
+  return ctx.agentPresets.register({
+    id: 'i2-standard',
+    name: 'I2 standard (fixture)',
+    plugins: rows.map((row) => ({
+      id: row.id,
+      name: pathToFileURL(join(dirname(PRESET_FIXTURE_YML), row.name)).href,
+      config: row.config,
+    })),
+  })
+}
 
 /**
  * The real upstream composition (the upstream mount.spec.ts recipe, the
  * standing registries a preset contributes to, plus the preset roster).
+ * The registry's apply-time config is the non-volatile projection
+ * (`selectedDefault` / `modeSelectionEnabled` are volatile with defaults).
  */
 async function harness(
-  roster: Config = {
+  roster: { readonly default: string } = {
     default: 'i2-standard',
-    roots: PRESET_ROOTS,
-    includeShippedRoot: false,
-    includeUserRoot: false,
   },
 ): Promise<Context> {
   const ctx = new Context()
@@ -97,12 +123,13 @@ async function harness(
   ctx.loader.builtins.group = Group
   await ctx.plugin(LlmRuntime)
   await ctx.plugin(SessionStore)
-  await ctx.plugin(SystemPrompt, { persona: '' })
+  await ctx.plugin(SystemPrompt)
   await ctx.plugin(ToolRuntime)
   await ctx.plugin(AgentRegistry)
   await ctx.plugin(SessionProjectionRegistry)
   await ctx.plugin(AgentLoop, { agents: [] })
-  await ctx.plugin(AgentPresets, roster)
+  await ctx.plugin(AgentPresetRegistry, roster)
+  await declareFixturePreset(ctx)
   return ctx
 }
 
@@ -219,23 +246,37 @@ const W = await (async () => {
   adopted.surface = toolNames(ctx, adoptedHandle.agent)
   out.adopted = adopted
 
-  // ── S6 — the guard's rationale (documented glue invariant): a second
-  //      explicit mount on an already-joined agent context rejects (the
-  //      roster's mount is the ONE bind). Captured on a throwaway agent. ─
-  let s6Message: string | null = null
+  // ── S6 — the guard's rationale, 0.1.7 re-pin (U2 migration): the 0.1.5
+  //      "single bind" rejection is GONE upstream — `mount()` is IDEMPOTENT
+  //      for a same-revision re-bind (upstream `bind()`: early return when
+  //      the binding already holds this generation; a DIFFERENT preset id
+  //      now REBINDS instead of rejecting). The glue guard (S5) still skips
+  //      the redundant mount; this scenario pins the new contract: the
+  //      second explicit mount resolves, the composition is unchanged, and
+  //      the agent stays alive (no rollback semantics). Throwaway agent. ──
+  let s6Mounts = 0
+  let s6Composed: string | undefined
+  let s6Error: string | null = null
   try {
-    await ctx.agents.create({
+    const s6Handle = await ctx.agents.create({
       sessionId: SessionId('i2-double'),
       setup: async (agentCtx: Context) => {
         await ctx.agentPresets.mount(agentCtx, 'i2-standard')
+        s6Mounts++
         await ctx.agentPresets.mount(agentCtx, 'i2-standard')
+        s6Mounts++
+        s6Composed = ctx.agentPresets.composedPreset(agentCtx)
       },
     })
+    out.s6Alive = ctx.agents.get(SessionId('i2-double')) !== undefined
+    await s6Handle.dispose()
   } catch (error: unknown) {
-    s6Message = error instanceof Error ? error.message : String(error)
+    s6Error = error instanceof Error ? error.message : String(error)
+    out.s6Alive = ctx.agents.get(SessionId('i2-double')) !== undefined
   }
-  out.s6Message = s6Message
-  out.s6RolledBack = ctx.agents.get(SessionId('i2-double')) === undefined
+  out.s6Error = s6Error
+  out.s6Mounts = s6Mounts
+  out.s6Composed = s6Composed
 
   // ── S7 — dispatch-level proof: a DIRECT execution of the denied tool
   //      on the researcher COLD agent (the live post-resume handle — the
@@ -353,10 +394,11 @@ describe('I2-P1 real-seam preset restriction (plan §10.2 fixture leg)', () => {
     expect(surface.includes('fixture-base')).toBe(true)
   })
 
-  it('S6: a second explicit mount on an already-joined context rejects (the guard\'s documented rationale; the throwaway agent rolls back)', () => {
-    const message = W['s6Message'] as string | null
-    expect(typeof message).toBe('string')
-    expect(W['s6RolledBack']).toBe(true)
+  it('S6 (0.1.7 re-pin): a second explicit mount on an already-joined context is IDEMPOTENT (no 0.1.5 rejection) — composition unchanged, agent stays alive', () => {
+    expect(W['s6Error']).toBe(null)
+    expect(W['s6Mounts']).toBe(2)
+    expect(W['s6Composed']).toBe('i2-standard')
+    expect(W['s6Alive']).toBe(true)
   })
 
   it('S7: direct dispatch of the denied tool fails on the researcher (registry-level mask) and executes on the expert (scoped, not global)', () => {

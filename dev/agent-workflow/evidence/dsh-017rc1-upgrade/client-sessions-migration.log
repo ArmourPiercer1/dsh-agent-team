@@ -1,0 +1,96 @@
+# U5 — Client Sessions / slots 兼容（0.1.5-rc.2 → 0.1.7-rc.1）
+
+任务来源：`docs/plans/active/dsh-agent-team-0.1.7-rc.1-upgrade-plan.md` §8（U5）。
+方法（plan §8.2）：U1 依赖升级后直接 `pnpm --filter @dsh-agent-team/client typecheck`，对每个 error 按 A–E 分类，修复优先级 public 0.1.7 API > public adapter > graceful degradation。
+执行：2026-09-24，worktree `.worktrees/dsh-017rc1-upgrade`。
+裁决：**U5 gate PASS — 含 D 类 public seam 断裂的 `TeamSessions`/`TeamUiWorkspace` port remap（0.1.7 多实例 session 模型：`open`/`list.current` 移除）；typecheck TC:0；client 套件 47/47 文件、649/649 测试全绿；零 private store / internal module / DOM query 引入。**
+
+## 错误分类与修复记录
+
+### A. symbol/path rename（icon 换名）
+
+0.1.7 client icons 换为 stroke 分层命名（无尺寸后缀；`Regular` = 1px stroke、`Medium` = 1.3px stroke）。上游约定：disclosure chevron 用 `Regular`，16px 用户图标用 `Medium`；artwork 默认尺寸保留（chevron 14、user 16）。
+
+| 文件 | 旧 | 新 |
+| --- | --- | --- |
+| `src/ui/NewTeamEntry.tsx`（import + 用法 `size={wide ? 14 : 18}` + 注释） | `IconUserOutline16` | `IconUserOutlineMedium` |
+| `src/ui/TeamDock.tsx`（import + 用法） | `IconChevronDownOutline14` / `IconChevronUpOutline14` | `IconChevronDownOutlineRegular` / `IconChevronUpOutlineRegular` |
+
+### C. slot props change（0.1.7 contract merge）
+
+1. **`useSessionPendingInteraction` 移除**：0.1.7 `GlobalStandardProps` merge 不再携带该 hook → 删除 7 个 spec 的 stub（共 15 行；`team-view.client.spec.tsx` 注释更新为“0.1.7 merge 不再携带”）。
+2. **`GlobalStandardProps` 新成员**（0.1.7 `dsh-client-ui-session` 的 `declare module '@deepseek-ai/dsh-client-ui-slots'` 扩展，`lib/types/client/index.d.ts`）：`useSessions` / `useSessionStatus` / `useSessionRetainInfo`（0.1.5 的 `useSessionPendingInteraction` 被后两者取代）→ 7 个 spec fixture 增加
+   `useSessionStatus: (() => undefined) as <Props>['useSessionStatus']`、
+   `useSessionRetainInfo: (() => undefined) as <Props>['useSessionRetainInfo']`
+   （沿用既有 fixture 的 typed-cast stub 模式；Team 组件从不读取这两个 hook）。
+3. **`ConvViewOwnerProps.inspectCall` 新必填**（0.1.7 `dsh-client-ui-conversation` `lib/types/client/contract/slots.d.ts`：`((callId: string) => void) | undefined`）→ 6 个 TeamView spec fixture 在 `completeViewRequest` 旁增加 `inspectCall: undefined,`（TeamView 按既有 Seam-4 降级面渲染，不消费 inspector opener）。
+
+### D. session identity（instance-aware）—— **已确认 public seam 断裂，执行 remap**
+
+**断裂事实**（test-use 46a7f68b09 直接核验，推翻初版“无代码改动”判断）：
+
+- 0.1.7 `ISessions`（`packages/api/session-controller/src/client/contract/sessions.ts:49`）= `list / retain / using / retainInfo / create / subagentAddress / refreshProjections / refresh`——**`open`、`clear`、`list.current` 全部移除**（多实例 session 模型：selection 不再是 list 快照上的指针）。
+- `SessionListState`（`client/sessions/service.ts:54`）= `{ids, byId, phase, projectionsBySession}`（无 `current`）；`SessionSummary.byId` 行携带 `readonly retainedBy: SessionRetainInfo['retainedBy']`（service.ts:39）。
+- **“当前主会话”公开读法** = byId 行中 `retainedBy.mainView > 0` 的行（first-party 模式：`ui-agent-preset/src/client/index.ts:82`、`ui-session/src/client/index.ts:440-458` publishMain + watchMainRetention 订阅 `retainInfo(currentId)`）。
+- **`open` 的公开替代** = `UiWorkspace.openSession(target)`（`ui-workspace/src/client/navigation.ts:200` → `replaceMain` → `retain(target, {source:'mainView'})` + selection + 释放上一主引用；服务经 cordis Context merge 注册为 `ctx.uiWorkspace`，类型 `ui-workspace/client/index.ts:52` 导出）。
+- 未知 id 的 open 仍同步 throw：`resolveTarget` → `sessions.retain: unknown session <id>` → **D-3 的 try/catch→refresh→retry 结构原样保留**。
+- `publishRetention`（service.ts:560-571）在**每次 retain/release 变化时把 byId 行计数折入 list 快照重发布** → reset effect 只需 list 订阅即可 1:1 移植 0.1.5 行为（另镜像 first-party 加 `retainInfo(current)` watch 覆盖“已 retain 但行未入目录”窗口）。
+- typecheck 盲点成因：插件经冻结的 `TeamSessions` port 消费 seam，port 未升级前 tsc 不报错；断裂在**运行时**显现（D 类），故本项属 U0.4 扫描 + 直接 src 核验确认的 seam 断裂，port remap 为 plan 红线允许的“已验证 seam 断裂”处置（全部使用公开 contract，零 private/internal API）。
+
+**代码改动**（`packages/client`）：
+
+| 文件 | 改动 |
+| --- | --- |
+| `src/plugin/team-mount-core.ts` | `TeamSessionListSnapshot` → `{byId: Record<string, TeamSessionSummary>}`（`TeamSessionSummary {id, retainedBy}`）；`TeamSessions` 去 `open`、加 `retainInfo(sessionId)`、`list` 面收窄并注释 `publishRetention` 重发布语义；新增 `TeamUiWorkspace {openSession}` + ctx 面 + `inject` 数组（`'uiWorkspace'` 入位）；新增 `currentMainSessionId(snapshot)`（byId 扫 `retainedBy.mainView > 0`）；open 三处调用点（`openSession`/`openTeamMode`(b) 相/`openCreatedSession` try+retry 两处）→ `ctx.uiWorkspace.openSession`；open-mode reset effect 重写（list 订阅 + 当前行 `retainInfo` watch，镜像 first-party watchMainRetention，复合 disposer）；NewTeamEntry 注入 `currentSessionId` → helper；全部注释同步 |
+| `src/ui/NewTeamEntry.tsx` | 头注释 + `currentSessionId` 文档注释（0.1.7 mainView 读法） |
+| `src/ui/TeamView.tsx` | D3 entry 注释（`uiWorkspace.openSession`，0.1.5 注记） |
+
+**语义保持**：D-3 健壮 open（throw 文案升级为 0.1.7 `sessions.retain: unknown session <id>` 契约文案）；reset effect 的“切走即清 mark”行为逐行等价（0.1.5 `list.current` 切换 ↔ 0.1.7 `retainedBy.mainView` 变化，均由 list 重发布驱动）；NewTeamEntry `currentSessionId` 无选择时返回 `null` 不变；**插件自身不 retain mainView**（host `replaceMain` 持单一 mainReference 并负责释放上一引用，插件自行 retain 会造成泄漏）——open 全部经 `UiWorkspace.openSession` 单一公开面。
+
+**测试 fixture remap**：
+
+| 文件 | 改动 |
+| --- | --- |
+| `test/client-plugin-mount.test.ts` | sessions double：去 `open`、`list` 改 byId 形、加 `retainInfo` double；`open` 双移入新 `uiWorkspace` double（未知 id 同步 throw，文案换 0.1.7 契约）；ctx 加 `uiWorkspace`；MountFixture `opened` 移归 `uiWorkspace` 面；D-3 断言消息更新 |
+| `test/d2-open-team-mode.test.ts` | open 双移入 `uiWorkspace`；`current` 指针 → byId 行 `retainedBy.mainView` 模型（`setMainView`：新行 1、旧行清零，等价 host replaceMain）；`setCurrent` → `setMainView + publishList`；throw 文案更新；import 加 snapshot/summary 类型 |
+| `test/d3-open-ordinary-mode.test.ts` | 同 d2（含 `refreshCount` 保留） |
+| `test/team-plugin.client.spec.tsx` | sessions double 换 0.1.7 形 + 新 `uiWorkspace` 面 |
+| `test/client.test.ts` | inject 数组 pin 更新（`'uiWorkspace'` 入位）+ 注释 |
+
+**U5 gate PASS — typecheck TC:0；client 套件 47/47 文件、649/649 测试全绿；零 private store / internal module / DOM query 引入。**
+
+### E. test-runtime-only drift
+
+- **jsdom ResizeObserver**：0.1.7 `Tooltip` primitive（test-use `ui-primitives/src/Tooltip.tsx:123`）新增 `ResizeObserver` 消费（bubble 初始 `visibility: hidden`，首个 observer 回调 `borderBoxSize` 翻 visible）。jsdom 无此全局 → 新增 `test/setup-jsdom.ts`（vitest `setupFiles`）：no-layout stub，`observe` 时**同步**回调（名义 box 120×24）——同步是刻意的：spec 用同步 `act` + fake timers 驱动 show 路径，真实 observer 的 microtask 批处理会落在断言之后。
+- **team-creation-panel 时序竞态（PRE_EXISTING，非 0.1.7 引入）**：happy-path 的“open 已调用 → admit 必须为 0 次”窗口断言在当前环境 100% 触发微任务 flush 竞态（0.1.7 graph 3/3 失败；**在 0.1.5 graph 的 baseline worktree 同样 3/3 失败**——非升级差分）。修复：改为**调用序断言**（`callOrder.indexOf('open') < callOrder.indexOf('admit')`），冻结 §1.1 “open 先于 admit” 语义不变，零产品代码改动；修复后 3/3 稳定。
+
+### Roster 映射（U2 交叉，client 侧落点）
+
+`team-mount-core.ts`：`TeamAgentPresetRow` 去 `trust`、加 `broken?: string`；list 结果 `authorable` → `modeSelectionEnabled`（0.1.7 roster `{ presets, modeSelectionEnabled }`）。映射代码（过滤 broken、投影 `{id,name,description,isDefault}`）字段兼容未动；4 个 spec fixture 同步换形。
+
+## 验证证据
+
+- typecheck（D 类 remap 后终态）：`npx tsc -p tsconfig.json --noEmit` → **TC:0**（scratch log `.tmp-evidence/dsh-017rc1-tc-client-u5f.log`）。
+- vitest（0.1.7 graph，remap 后终态）：**47/47 文件、649/649 测试通过，exit 0**（scratch log `.tmp-evidence/dsh-017rc1-client-test-u5f.log`）。中间态：remap 前 47 文件/649 测试曾全绿（`.tmp-evidence/dsh-017rc1-client-test-u5-final2.log`）——但 typecheck 盲点（D 类）意味着该全绿不覆盖运行时 seam；remap 后重新全绿为有效终态。迁移前同一套件为 401 pass + 20 file-level import 失败（icon named-import 断链）→ 全部消除。
+- 注：client 套件（`.client.spec.*`）不在根 `pnpm test`（根 config `include` = `packages/*/test/**/*.test.ts`，315 文件）之内，属包级独立套件；U9 回归对比不受其影响，本日志作为其 0.1.7 全绿证据。
+
+## §8.3 必测行为覆盖
+
+| 行为 | 覆盖 |
+| --- | --- |
+| Team tab mount/unmount | `team-view.client.spec.tsx`、`team-legacy.client.spec.tsx` |
+| New Team entry | `new-team-entry.client.spec.tsx`、`d2/d3-*-entry`、`team-creation-panel` |
+| Team Activity rendering | `f9u-control-surface-probe`、`team-activity` 相关 spec |
+| session open/create | `team-creation-panel`（D-3 minted-id + open-before-admit，0.1.7 `uiWorkspace.openSession` + `sessions.retain` throw 文案）、`new-team-entry`、`client-plugin-mount`（D-3 lag/fail/known 三态，0.1.7 seam 形） |
+| ordinary ↔ Team 切换（含 open-mode reset effect） | `d2-team-mode-entry` / `d3-ordinary-mode-entry`（0.1.7：`retainedBy.mainView` 行模型驱动 reset，`setCurrent` 语义等价移植） |
+| reload 后 projection 重读 | `team-view` zero-state / `team-roots-zero-state` |
+| 两 client session instance 共存不串 Team projection | 单实例 test harness 无法覆盖 → U8 real-host 面（插件经 `ctx` 实例 scope seam 读取自身 projection；双实例共存为 host 能力，V2/V3 单 Team 主路径验证） |
+
+## U5 结论
+
+| 项 | 状态 |
+| --- | --- |
+| typecheck 全绿 | ✅ TC:0 |
+| client 套件全绿 | ✅ 47/47、649/649 |
+| 零 private/internal/DOM hack | ✅（全部公开 seam + fixture stub） |
+| 新增失败 | 0（唯一曾失败项为 PRE_EXISTING 竞态，已修断言） |

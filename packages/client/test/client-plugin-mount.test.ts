@@ -18,7 +18,8 @@
  * legacyInspect), the single-flight cold read (D-T9-5) with the frozen
  * `team.getProjection` endpoint shape, the first-frame ledger auto-open,
  * the ordinary-session typed failure (zero state), the preset mapping
- * (broken filtered, trust dropped — D-T9-9), the native sessions seam
+ * (broken filtered — D-T9-9; 0.1.7: the upstream roster row dropped the
+ * trust lane, so the mapping has no trust to drop), the native sessions seam
  * members (D-T9-10), the generation rebaseline (D-T9-7: loss schedules the
  * CLIENT_LOCAL backoff retry, restore cancels it and fires exactly one
  * pull), teardown (no carrier call after dispose), and the D-T9-1
@@ -43,6 +44,7 @@ import {
   type TeamPluginClientConfig,
   type TeamPluginClientContext,
   type TeamPluginEffect,
+  type TeamSessionListSnapshot,
   type TeamSlots,
 } from '../src/plugin/team-mount-core.js'
 import type { TeamRpcCarrier } from '../src/transport/host-seams.js'
@@ -148,12 +150,15 @@ interface MountFixture {
     readonly set: (snapshot: { readonly id: number } | undefined) => void
   }
   readonly sessions: {
-    readonly opened: string[]
     readonly created: Array<{ workspaceId?: string } | null>
     /** Park a host-created session id for the next `refresh` (D-3 lag). */
     readonly announceHostSession: (sessionId: string) => void
     /** The `refresh` call count (the creation-path re-pull lane). */
     readonly refreshCount: () => number
+  }
+  /** The 0.1.7 navigation seam double (0.1.5: `sessions.open`). */
+  readonly uiWorkspace: {
+    readonly opened: string[]
   }
 }
 
@@ -218,18 +223,22 @@ function makeMount(
     },
   }
 
-  // The public sessions seam double (Seam 3, RENAMED open/create; the `list`
-  // read face is the R121 prefill source — no current session in the
-  // fixture, so `currentSessionId()` answers null). D-3: `open` throws for
-  // an unknown id (the real `sessions.select` contract) — the host-created
-  // root may not be in the client list store when the RPC lands, so the
-  // double models the lag: `announceHostSession` parks an id that the next
-  // `refresh` lands in the known set.
+  // The public sessions seam double (Seam 3, 0.1.7 shape: `open` left the
+  // face with the multi-instance session model — the main-view open moved
+  // to the `uiWorkspace` double below; the `byId` read face is the R121
+  // prefill source — no main-view session in the fixture (every row's
+  // `retainedBy` is empty), so the mount's `currentMainSessionId` answers
+  // null). D-3: the open throws for an unknown id (the 0.1.7
+  // `resolveTarget` contract) — the host-created root may not be in the
+  // client list store when the RPC lands, so the double models the lag:
+  // `announceHostSession` parks an id that the next `refresh` lands in the
+  // known set.
   const opened: string[] = []
   const created: Array<{ workspaceId?: string } | null> = []
   const knownSessions = new Set<string>(['m1'])
   const pendingHostSessions: string[] = []
   let refreshCount = 0
+  const listSnapshot: TeamSessionListSnapshot = { byId: {} }
   const sessions = {
     create: async (o?: { readonly workspaceId?: string }): Promise<string> => {
       created.push(o ?? null)
@@ -237,19 +246,28 @@ function makeMount(
       knownSessions.add(id)
       return id
     },
-    open: (sessionId: string): void => {
-      if (!knownSessions.has(sessionId)) {
-        throw new Error(`sessions.select: unknown session ${sessionId}`)
-      }
-      opened.push(sessionId)
-    },
     refresh: async (): Promise<void> => {
       refreshCount++
       for (const id of pendingHostSessions.splice(0)) knownSessions.add(id)
     },
     list: {
-      getSnapshot: () => ({ current: undefined }),
+      getSnapshot: () => listSnapshot,
       subscribe: () => () => {},
+    },
+    retainInfo: () => ({
+      getSnapshot: () => ({ referenceCount: 0, retainedBy: {} }),
+      subscribe: () => () => {},
+    }),
+  }
+  // The 0.1.7 public navigation seam double (0.1.5: `sessions.open`): the
+  // main-view selection through `UiWorkspace.openSession`; unknown id
+  // throws synchronously (the upstream `resolveTarget` contract).
+  const uiWorkspace = {
+    openSession: (sessionId: string): void => {
+      if (!knownSessions.has(sessionId)) {
+        throw new Error(`sessions.retain: unknown session ${sessionId}`)
+      }
+      opened.push(sessionId)
     },
   }
   const announceHostSession = (sessionId: string): void => {
@@ -264,7 +282,7 @@ function makeMount(
     agentPresets: {
       list: async (): Promise<TeamAgentPresetsListResult> => ({
         ok: true,
-        value: { presets, authorable: false },
+        value: { presets, modeSelectionEnabled: false },
       }),
     },
   }
@@ -332,6 +350,7 @@ function makeMount(
     slots,
     locale,
     sessions,
+    uiWorkspace,
     connection: { rpc: carrier, generation },
     remote,
     effect,
@@ -370,7 +389,8 @@ function makeMount(
     effects,
     disposeAll,
     generation: { set: generation.set },
-    sessions: { opened, created, announceHostSession, refreshCount: () => refreshCount },
+    sessions: { created, announceHostSession, refreshCount: () => refreshCount },
+    uiWorkspace: { opened },
   }
 }
 
@@ -401,9 +421,9 @@ const aScenario = await (async () => {
   const a = makeMount({
     config: { dshHome: '/dsh-home' },
     presets: [
-      { id: 'a', trust: 'system', isDefault: false },
-      { id: 'b', trust: 'user', name: 'B', isDefault: true, broken: { code: 'x' } },
-      { id: 'team', trust: 'system', isDefault: false },
+      { id: 'a', isDefault: false },
+      { id: 'b', name: 'B', isDefault: true, broken: 'x' },
+      { id: 'team', isDefault: false },
     ],
   })
   applyTeamMount(a.ctx, { config: a.config, components: a.components })
@@ -451,7 +471,7 @@ const aScenario = await (async () => {
   // The dshHome-bound legacyInspect face.
   await viewFace.legacyInspect?.()
 
-  // The preset mapping (broken filtered, trust dropped).
+  // The preset mapping (broken filtered — 0.1.7 rows carry no trust).
   const presetsOut = await creation.listAgentPresets()
 
   // The ledger refresh re-requests the page (one more typed failure).
@@ -535,7 +555,7 @@ const aScenario = await (async () => {
     refreshAfterKnown,
     failingOpenMessage,
     created: a.sessions.created,
-    opened: a.sessions.opened,
+    opened: a.uiWorkspace.opened,
   }
 })()
 
@@ -847,7 +867,7 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     })
   })
 
-  it('the preset face filters the broken rows and drops the trust lane', () => {
+  it('the preset face filters the broken rows (0.1.7: no trust lane in the roster)', () => {
     expect(aScenario.presetsOut).toEqual([
       { id: 'a', name: undefined, description: undefined, isDefault: false },
       { id: 'team', name: undefined, description: undefined, isDefault: false },
@@ -873,7 +893,7 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
   })
 
   it('a creation-path open that survives the re-pull rejects verbatim (D-3)', () => {
-    expect(aScenario.failingOpenMessage).toBe('sessions.select: unknown session host-root-2')
+    expect(aScenario.failingOpenMessage).toBe('sessions.retain: unknown session host-root-2')
     // The failed open still consumed exactly one re-pull attempt.
     expect(aScenario.refreshAfterFail).toBe(aScenario.refreshAfterLag + 1)
   })

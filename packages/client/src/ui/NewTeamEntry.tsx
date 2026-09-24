@@ -11,17 +11,18 @@
  * Visual pattern: the native sidebar New Session row (SidebarRoot.tsx
  * L189–200: Tooltip delay 500ms disabled in the wide state, where the
  * button carries its own label; icon-only + tooltip on the rail). The
- * glyph is IconUserOutline16 (a member icon, deliberately NOT the native
+ * glyph is IconUserOutlineMedium (a member icon, deliberately NOT the native
  * New Session chat glyph — §3.1: "不与原生 New Session 使用完全相同 icon").
  *
  * The component is registered by the mount core through the
  * `sidebar.footer.action` slot (id `team-new`, order 10); the inject face
  * carries the frozen S5-A creation wrappers plus the native session
  * switch, so the overlay's create-success navigation goes through the
- * same public `ctx.sessions.open` seam as every other Team surface.
+ * same public `ctx.uiWorkspace.openSession` seam as every other Team
+ * surface (0.1.5: `ctx.sessions.open`).
  */
 import { useMemo, useState } from 'react'
-import { IconUserOutline16, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconUserOutlineMedium, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: the ui-conversation contract merge carries the global
 // `useWorkspaces` seat (GlobalStandardProps) this component reads; the
@@ -84,7 +85,7 @@ export interface NewTeamEntryInjected {
   readonly pullProjection: (teamSessionId: string) => Promise<unknown>
   /** The runtime preset rows (the S0 seam-6 mapping; broken rows filtered). */
   readonly listAgentPresets: () => Promise<readonly TeamPresetRow[]>
-  /** The currently selected native session id (the Seam 3 list read face; null = none). */
+  /** The currently selected native session id (the 0.1.7 main-view read, `retainedBy.mainView`; null = none). */
   readonly currentSessionId: () => string | null
 }
 
@@ -156,7 +157,7 @@ export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
           data-new-team-entry
           onClick={openOverlay}
         >
-          <IconUserOutline16 size={wide ? 14 : 18} />
+          <IconUserOutlineMedium size={wide ? 14 : 18} />
           {wide && <span className={styles.label}>{t('entry.label')}</span>}
         </button>
       </Tooltip>
