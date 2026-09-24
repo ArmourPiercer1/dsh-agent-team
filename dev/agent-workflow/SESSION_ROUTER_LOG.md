@@ -3731,3 +3731,14 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   - **run 清单（pr-28/run-*/）**：1 `16-04-06.aborted-missing-teamEnvelope` / 2 `16-09-22`（round-1 完整 PASS）/ 3 `16-54-33.aborted-mock-ordering` / 4 `16-57-49.aborted-progress-envelope`（summary = 谓词证明）/ 5 `17-06-39.aborted-bootstrap-race` / 6 `17-14-58.superseded-pre-row-fix`（bug 记录：drive PASS + 18px 截断实测）/ 7 `17-45-17`（**FINAL**：`summary.json` `verdict: PASS, drive: {sent: true, done: true}`，13/13 criteria）。所有 run 日志 token 已 scrub（0 残留）。
   - **状态**：PR #28 分支 fast-forward 推送至 final head（3acb7bc + 本簿记/证据提交），`mergeable_state: clean`，**未自动 merge，待用户审查裁决**。
 - **红线守纪**：CORE PATCH BUDGET = 0（test-use 原样 @ fb2c4b9e69 零触碰）；:3080/:3180 只读探测；无自动 merge（#27 为用户手动 merge）；无 force-push；产品设计零变更（唯一产品改动 = 28-A2 揭示 bug 的 2 行 border-box CSS，guide §1 应急条款）；世界 token 全部 scrub 后入库；guide 文件（用户产物）只读；单写者纪律（1 task=1 branch=1 worktree=1 writer）。
+
+### 2026-09-24 — references/deepseek-harness 新分支 stable-2-0.1.7-rc.1 创建 + origin 同步（用户直接指令，一次性推送授权）
+
+- **指令**：「创建一个新的 stable-2-0.1.7-rc.1 分支，在这个分支中保存 dsh 的 0.1.7-rc.1 版本源码；将新的分支与 git 仓库状态推送到我的 github 对应仓库中（deepseek-harness）」。授权性质 = 用户明确许可的一次性推送（红线例外条款）。
+- **provenance**：upstream `deepseek-ai/deepseek-harness`（TEST_METHODS.md §1）`git ls-remote` 证实 tag `dsh-v0.1.7-rc.1`（lightweight）→ `46a7f68b0922371ce7144b668b90e377d8e799f4`（`Merge pull request #5073 from deepseek-harness/rel/dsh-0.1.7-rc.1`，2026-09-23 +0800；树内根/cli `package.json` 均 `version: 0.1.7-rc.1`）。一次性按 URL fetch（无持久 remote 新增；auto-follow 带入 4 个官方 tag：dsh-v0.1.5-rc.3 / 0.1.7-alpha.1 / 0.1.7-alpha.2 / 0.1.7-rc.1）。
+- **本地 ref 变更**：新分支 `stable-2-0.1.7-rc.1` @ `46a7f68b09`（未 checkout，工作树 HEAD 保持 `stable-1-0.1.5-rc.2 @ fb2c4b9e69` 零扰动）；本地 `master` FF `0d1f50007f → ddefc45fbc`（对齐 fetch 后的 origin/master，`--is-ancestor` 预检 FF_OK，非 checkout 分支）；冗余临时 ref `refs/upstream/dsh-v0.1.7-rc.1` 移除（与 tag 同指，SHA 留痕）。
+- **推送**：`git push origin stable-2-0.1.7-rc.1 'refs/tags/dsh-v*:refs/tags/dsh-v*'`（exit 0；1 new branch + 23 new tags，全部 upstream 官方 release tag；**零 force-push**；master 无新增内容未推）。
+- **终验（ls-remote 远端复核）**：`origin/stable-2-0.1.7-rc.1` = `46a7f68b09` ✅；origin 23 `dsh-v*` tags 与本地逐一 diff 一致 ✅；冻结锚点未移动（`origin/feat/team-vnext-integration-20260829` = `a3ab319927` + tag `legacy-agent-team-pre-vnext` = `276b3f8b8e`/peel `a3ab319927`）✅；工作树 HEAD/porcelain 不变 ✅。
+- **红线核对**：CORE PATCH BUDGET = 0（分支内容 = upstream 官方 release 提交原样）；冻结锚点未移动；无 force-push；test-use @ fb2c4b9e69 与 :3080/:3180 零触碰；stable 分支仅跟踪已官方发布的 RC 基线（stable-1 先例同构）。
+- **簿记**：evidence `dev/agent-workflow/evidence/stable2-0.1.7-rc.1-sync/evidence-note.md`（完整 before/after + 推送清单 + 终验 + 可逆性）；AGENTS.md references 行同步注记（R123 文档对齐先例）。
+- **状态**：完成。用户 GitHub（`ArmourPiercer1/deepseek-harness`）现含分支 `stable-2-0.1.7-rc.1` + 全量 `dsh-v*` 官方 release tags。
