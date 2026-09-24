@@ -3753,3 +3753,10 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **红线守纪**：CORE PATCH BUDGET = 0（upstream 零修改；15 项差异 = kit/插件侧适配或 follow-up）；零 push；冻结锚点 a3ab319927/fb2c4b9e69 未移动；references/ 零触碰；worktree symlink 未入库；12 个 U8 world 按 §7 登记留档。
 - **簿记**：证据 `dev/agent-workflow/evidence/dsh-017rc1-upgrade/`（upgrade-summary.md + failure-classification.md + post-upgrade-followups.md F1–F6 + u8/vertical-summary.md（a–f）+ 各 U 项日志 + u8 全套证据含 vertical.mjs kit）；graph.yaml `dsh_017rc1_upgrade_20260924` 块 + current_phase 刷新。
 - **状态**：COMPLETE（本地）。分支 `task/dsh-017rc1-upgrade` 待用户推送/merge 裁决。POST-UPGRADE FOLLOW-UPS = F1 session-resume 0.1.7 重基线（含 U3 fixture 重录 + B/B+ resume 重分析）/ F2 发布件打包 quirk（upstream 反馈候选）/ F3 0.1.7 行为面注记（含 compat gate 建议声明 peer）/ F4 test-infra 加固 ×4 / F5 基线 test debt / F6 U8 专项 ×10（详见 post-upgrade-followups.md）。
+
+### 2026-09-24 — DSH 0.1.7-rc.1 升级轮推送 + PR #29 创建（用户指令「请你推送为一个新的PR」，一次性推送授权）
+
+- **推送**：`git push origin task/dsh-017rc1-upgrade`（新分支，exit 0；**零 force-push**；无 rebase 需要 —— origin/master 3e402b1 为分支祖先，线性基座）。
+- **PR #29** = https://github.com/ArmourPiercer1/dsh-agent-team/pull/29（base master ← task/dsh-017rc1-upgrade，OPEN/MERGEABLE）。body 含：概述（U0–U9 全交付，G1–G7 全过）/ 提交链（8 提交，含 dc6fb6f = 原本地 master 滞留的 stable-2 簿记，PR 一并带入）/ 核心变更 / 门禁实数（静态闸 OK 1172 零漂移 + U8 75/75 + 回归 10F|20F|3822P(3842) 零新增）/ 15 项 0.1.7 差异摘要 / F1–F6 follow-ups / 验证步骤 / 红线守纪。
+- **注意（本轮执行中修正的疏漏）**：簿记三文件（graph.yaml / SESSION_ROUTER_LOG / STATUS.md）最初误改在主检出（master）工作树，已迁移入 task 分支提交（a78058d amend 链）并复原 master 工作树（`git checkout --`）；master 现与 origin/master 仅差 dc6fb6f（PR merge 后本地 master 可 FF）。
+- **状态**：PR #29 OPEN 待用户审查 merge；未自动 merge。
