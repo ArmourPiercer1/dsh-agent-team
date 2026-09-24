@@ -1,0 +1,71 @@
+# U6 — MCP / capability 兼容（0.1.5-rc.2 → 0.1.7-rc.1）
+
+任务来源：`docs/plans/active/dsh-agent-team-0.1.7-rc.1-upgrade-plan.md` §9（U6）。
+执行：2026-09-24，worktree `.worktrees/dsh-017rc1-upgrade`。
+裁决：**U6 unit gate PASS — dsh-mcp-client 0.1.7 公开 seam 逐字段核验通过；真实 `apply()` × plan §9.3 三变体（single/paginated/none）全绿；根套件失败集与基线 10F|20F 逐文件相同（零新增失败）。全宿主面（per-agent visibility + 单 live Team 稳定）归 U8 real-host 垂直（§9.2 本轮只要求单 live Team 稳定；多 live Team 共用 server 明确不入 blocking gate）。**
+
+## 9.2 公开 seam 重新核验
+
+插件消费的**唯一**上游 MCP 面 = 把 `@deepseek-ai/dsh-mcp-client` 整包作为 namespace plugin 挂载（`agent-bindings.mjs:328` import + `:1122` `state.mcpMountCtx.plugin(mcpClient, {...})`，Agent-keyed scope = Finding 1 bridge，serverName 注册表 per-Agent 而非 global）：
+
+| 面 | 0.1.7 核验（test-use 46a7f68b09 源码） | 结论 |
+| --- | --- | --- |
+| plugin 形态 | namespace plugin：`name='mcp-client'`、`inject=['tools']`、`async apply(ctx, config)`（`packages/mcp/mcp-client/src/index.ts:31-154`） | SAME（生产 `ctx.plugin(mcpClient, config)` → fiber，`fiber.dispose()` = apply 注册的 connection effect disposer） |
+| `transport: 'streamable-http'` | `StreamableHttpConfig`（index.ts:80-103） | 字段在 |
+| `serverName` | 同上；pattern `[A-Za-z0-9_-]{1,32}`；**新增 per-scope 独占**（`activeServerNames` WeakMap，`scopeOf(ctx) ?? ctx.root`；同 Agent 内重名在 load 时显式 throw，跨 Agent 可复用）— 与插件 per-Agent 挂载设计**互相强化** | 字段在 + 语义增强 |
+| `url` / `headers` | 同上（`headers` 为 MCP 请求附加头） | SAME |
+| `toolCallTimeoutMs` | 同上（每次 tool call / resource request 超时） | SAME |
+| `failOnStartupError` | 同上（`true` 时初始连接/工具同步失败 → fiber reject → Cordis 回滚）— 插件 fail-closed 启动语义**保留** | SAME |
+| 新增可选项 | `maxInstructionBytes`（默认 32768）、`reconnect`（默认 enabled=true, initialDelayMs=500, maxDelayMs=30000, maxAttempts=10）— 插件**刻意省略**两者，走 schema 默认（unit test 钉住默认值）。0.1.7 新增 reconnect supervisor：启动失败/断连后进入重连循环而非静默死亡 → 单 live Team 稳定性**改善**（D-3 类健壮性同向） | 兼容（省略 = 默认） |
+| 工具命名 | `mcp__<serverName>__<rawName>`（publicToolName，超长走 sha256 尾缀） | SAME |
+| tool list 发现 | `client.listTools(undefined, {cacheMode:'refresh'})` — **SDK（@modelcontextprotocol/client 2.0.0）内聚 cursor 分页聚合**（tools.ts:94 注释 + connection.ts:374/378 转发 `request.cursor`） | 分页对插件透明 |
+| `mcp-facet.ts` / `mcp-adapter.ts` | **纯模块**：facet 只 import 本仓库 domain/storage/activation（mcp-facet.ts:28-43）；adapter 只 import domain PolicyEntry（mcp-adapter.ts:28）— 零上游导入，SDK 升级不可达 | 不受影响 |
+
+结论：**插件的 MCP 挂载契约在 0.1.7 下逐字段存活**（U0.4 预判“兼容”经源码核验坐实；无 U5 式 seam 断裂）。
+
+## 9.3 mini-MCP fixture 扩展（plan 三场景）
+
+`packages/runtime/root-binding/harness/mini-mcp.mjs` 增加 `options.tools` 选择器（**默认 `'single'` 逐字节保留 legacy 行为**：同一 `ping` tool、同一 `pong:<msg>` 响应、同一 serverInfo、同一端口候选回退逻辑；现有 12+ 调用方零改动）：
+
+| 变体 | 行为 | plan §9.3 对应 |
+| --- | --- | --- |
+| `'single'`（默认） | 单 tool `ping`，单页 list | 一个普通 tool |
+| `'paginated'` | `tools/list` cursor 序列：page1=[alpha]+`nextCursor:'page-2'`，page2=[beta]；未知 cursor → -32602 | 分页行为不破坏发现 |
+| `'none'` | `tools/list` → `{tools: []}`；`apply` 必须 resolve（failOnStartupError:true 下空列表**不是**启动错误） | server 无 tools 不导致 Team 初始化崩溃 |
+
+## 新回归套件 `packages/runtime/test/u6-mcp-017-regression.test.ts`（5/5 绿）
+
+两层证据，都在公开 seam 边界（唯一 double = 宿主 Cordis ctx —— 即生产 `agentCtx.plugin(...)` 提供的同一面，按 0.1.7 源码逐点钉住：`root`（scopeOf 未打标时的 owner 回退）/ `tools.register` / `logger` / `effect` / `on('internal/plugin', {global:true})` / `get`（仅 tool-CALL 路径，发现不触达）/ `inject`（server-context 的 mcpResources + systemPrompt 贡献））：
+
+1. **SEAM PIN**：`name==='mcp-client'`、`inject` 深度等于 `['tools']`、`apply` 可调用；`Config`（Schemastery = Standard Schema `~standard.validate`，非 zod 面）接受**生产六字段字面量原样**（agent-bindings.mjs:1122-1129），并钉住 0.1.7 新可选项的 schema 默认（`maxInstructionBytes=32768`、`reconnect` 已定义）。
+2. **LIVE DISCOVERY**（真实 plugin 代码 + 真实 SDK v2 + 真实 HTTP mini server）：
+   - single → 恰注册 `mcp__u6plain__ping`（1 个）+ 两个 0.1.7 effect（serverName 预留 + connection 监督）+ 全局 unload 钩子；
+   - paginated → **两页全部聚合**：`mcp__u6paged__alpha` + `mcp__u6paged__beta`（SDK cursor 跟随坐实）；
+   - none → `apply` resolve，注册 0 个 tool（无 tools server 挂载干净，不崩初始化）。
+
+## 验证证据
+
+- U6 套件：`npx vitest run packages/runtime/test/u6-mcp-017-regression.test.ts` → **5/5，exit 0**（scratch `.tmp-evidence/dsh-017rc1-u6-test3.log`；中间态：Schemastery 非 zod 面 → Standard Schema `~standard.validate` 修正 `.tmp-evidence/dsh-017rc1-u6-test2.log`）。
+- 既有 MCP/capability 单测（0.1.7 graph）：8 文件 191 测试全绿（`multi-mcp-wiring` 47 / `mcp-blueprint-initial-grant` 32 / `mcp-supply-config` 39 / `p8s4b-mcp-facet` 25 / `t4a-capability-wiring` 28 / `issue2-capability-permission-precedence` 12 / `t3-skills-mcp-adapter` 11 / `t12a-h1-nullable-mcp` 7）。
+- **根套件全量**（含本轮全部 U2-U6 改动）：`npx vitest run --config vitest.config.ts` → **10 failed files | 20 failed tests | 3822 passed (3842)**（scratch `.tmp-evidence/dsh-017rc1-root-test-u6-final.log`）——失败文件集与 U0 基线 `baseline-canonical-dc6fb6f.log`（10F|20F|3817P(3837)）**逐文件相同**；总数 +5 = U6 新增测试。零新增失败。
+
+## 本轮同现的图漂移（非 U6 引入，随 U6 全量跑首次暴露，已修）
+
+- **发布件未声明运行时依赖（上游打包 quirk，系统性）**：published `@deepseek-ai/dsh-client-store@0.1.7-rc.1` 的 `dependencies` 为空（仅 peer cordis），但其 lib import `zustand/vanilla|middleware|shallow` + `immer`（upstream 源码 `packages/client/store/package.json` 把两者放在 **devDependencies**；生产宿主 apps/web 壳自带 → 真宿主无感）。client 包 vitest 经 `linked-dsh-source-redirect` 指到 test-use 源码（zustand/immer 在 test-use 图内可解析）故此前全绿；**根 config** 走发布件 → 4 个 client `.test.ts` 文件级 import 失败。修复：`packages/client` devDeps 加 `zustand ~4.4.7` + `immer ^10.1.1`（与 0.1.7 图版本一致）→ 4 文件在根 config 下 52/52 绿。同类 quirk 面（发布件依赖缺口清单）已扫描记录于本条，仅 dsh-client-store 落在本插件根的 import 链上，其余 client 库（ui-primitives/ui-renderer/ui-session/ui-slots/web）的缺口依赖在本套件 import 链中未被触及。
+- **p4t6 denylist 扫描 file-count pin**：744 → 746（单写者惯例 bump，注释记录本轮两个新增 scannable 文件：`packages/client/test/setup-jsdom.ts`（U5）+ `packages/runtime/test/u6-mcp-017-regression.test.ts`（U6）；denylist 词汇零命中，冻结 quarantine 命中集不变 fifteen）。
+
+## U8 移交项（real-host 面，plan §9.2 的宿主半边）
+
+1. 三变体 mini server 经**真实宿主**挂载验证：row config `mcpServers` 配置 single/paginated/none 三端（`startMiniMcpServer(ports, {tools})` 现成），blueprint `capabilities.mcp` allow 三 serverName；断言成员 agent 工具面 = `mcp__<single>__ping` + `mcp__<paged>__alpha` + `mcp__<paged>__beta`（两页）+ none 零工具，且 Team 初始化/创建/委托全链路不崩。
+2. per-agent visibility（Finding 1 bridge 在 0.1.7 的 per-scope serverName 注册下复核）+ 同 DSH 进程单 live Team 稳定性（本轮唯一要求；多 live Team 共用 server 不入 gate）。
+3. 若真宿主对 `protocol negotiation`（0.1.7 新）有行为差（mini 端回显客户端 protocolVersion），在 V 序列证据中记录。
+
+## U6 结论
+
+| 项 | 状态 |
+| --- | --- |
+| 公开 seam 逐字段核验（唯一挂载面 + 两纯模块） | ✅ 兼容，无断裂 |
+| plan §9.3 三场景 fixture + 回归套件 | ✅ 5/5（真实 plugin + SDK v2 + HTTP） |
+| 既有 MCP 单测 0.1.7 全绿 | ✅ 191/191 |
+| 根套件 vs 基线 | ✅ 失败集逐文件相同，零新增失败 |
+| 零 private/internal API | ✅（唯一 double = 生产同面 ctx，按 0.1.7 源码钉住） |

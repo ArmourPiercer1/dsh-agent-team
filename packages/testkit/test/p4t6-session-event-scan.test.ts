@@ -1149,8 +1149,19 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // denylist vocabulary; the frozen quarantine hit set is unchanged at
     // fifteen. Scanner unchanged. Single-writer pin bump on the task
     // branch.
-    expect(scanResult.filesScanned).toBe(744)
-    expect(scanResult.files.length).toBe(744)
+    // DSH 0.1.7-rc.1 upgrade (task/dsh-017rc1-upgrade, this round): +2 on
+    // top of the 744 base (rebased onto dc6fb6f) = 746 — the two new
+    // scannable files: the jsdom ResizeObserver functional stub
+    // (packages/client/test/setup-jsdom.ts — the 0.1.7 Tooltip primitive
+    // consumes it; the client vitest setupFiles entry) and the U6 MCP
+    // regression suite (packages/runtime/test/u6-mcp-017-regression.test.ts
+    // — the dsh-mcp-client 0.1.7 public seam pin + the real apply()
+    // discovery over the plan §9.3 single/paginated/no-tools mini-MCP
+    // variants). Both carry zero denylist vocabulary; the frozen
+    // quarantine hit set is unchanged at fifteen. Scanner unchanged.
+    // Single-writer pin bump on the task branch.
+    expect(scanResult.filesScanned).toBe(746)
+    expect(scanResult.files.length).toBe(746)
 
   })
 
