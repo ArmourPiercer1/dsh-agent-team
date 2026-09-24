@@ -1,0 +1,224 @@
+{
+  "session-team-child-6d8f8a5bc34afc5d5e1447629262b219": {
+    "instanceId": "inst-0ee7wpn0c0z6",
+    "model": {
+      "current": {
+        "provider": "deepseek-official",
+        "model": "u8-model-2026-09-24T14-48-13"
+      },
+      "assembled": {
+        "provider": "deepseek-official",
+        "model": "u8-model-2026-09-24T14-48-13"
+      },
+      "selection": {
+        "provider": "deepseek-official",
+        "model": "u8-model-2026-09-24T14-48-13"
+      },
+      "source": {
+        "layer": "unspecified",
+        "origin": "static",
+        "recordId": null
+      },
+      "suppressed": [],
+      "unavailable": false,
+      "deniedBy": {
+        "by": "team",
+        "reason": "unspecifiedFailClosed"
+      },
+      "pendingNextBoundary": [],
+      "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+    },
+    "mcp": {
+      "servers": {
+        "u8single": {
+          "mounted": true,
+          "allowed": true,
+          "source": {
+            "layer": "template",
+            "origin": "static",
+            "recordId": null
+          },
+          "unavailable": false,
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective allow[u8single,u8paged,u8none]; team template(origin=static) allow[u8single,u8paged,u8none]; external exists=yes, hard=unspecified"
+        },
+        "u8paged": {
+          "mounted": true,
+          "allowed": true,
+          "source": {
+            "layer": "template",
+            "origin": "static",
+            "recordId": null
+          },
+          "unavailable": false,
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective allow[u8single,u8paged,u8none]; team template(origin=static) allow[u8single,u8paged,u8none]; external exists=yes, hard=unspecified"
+        },
+        "u8none": {
+          "mounted": true,
+          "allowed": true,
+          "source": {
+            "layer": "template",
+            "origin": "static",
+            "recordId": null
+          },
+          "unavailable": false,
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective allow[u8single,u8paged,u8none]; team template(origin=static) allow[u8single,u8paged,u8none]; external exists=yes, hard=unspecified"
+        }
+      }
+    }
+  },
+  "session-u8-root-2026-09-24T14-48-13": {
+    "instanceId": "inst-leader",
+    "model": {
+      "current": {
+        "provider": "deepseek-official",
+        "model": "u8-model-2026-09-24T14-48-13"
+      },
+      "assembled": {
+        "provider": "deepseek-official",
+        "model": "u8-model-2026-09-24T14-48-13"
+      },
+      "selection": {
+        "provider": "deepseek-official",
+        "model": "u8-model-2026-09-24T14-48-13"
+      },
+      "source": {
+        "layer": "unspecified",
+        "origin": "static",
+        "recordId": null
+      },
+      "suppressed": [],
+      "unavailable": false,
+      "deniedBy": {
+        "by": "team",
+        "reason": "unspecifiedFailClosed"
+      },
+      "pendingNextBoundary": [],
+      "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+    },
+    "mcp": {
+      "servers": {
+        "u8single": {
+          "mounted": false,
+          "allowed": false,
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "u8paged": {
+          "mounted": false,
+          "allowed": false,
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "u8none": {
+          "mounted": false,
+          "allowed": false,
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        }
+      }
+    }
+  },
+  "session-u8-team-2026-09-24T14-48-13": {
+    "instanceId": "inst-leader",
+    "model": {
+      "current": {
+        "provider": "deepseek-official",
+        "model": "u8-model-2026-09-24T14-48-13"
+      },
+      "assembled": {
+        "provider": "deepseek-official",
+        "model": "u8-model-2026-09-24T14-48-13"
+      },
+      "selection": {
+        "provider": "deepseek-official",
+        "model": "u8-model-2026-09-24T14-48-13"
+      },
+      "source": {
+        "layer": "unspecified",
+        "origin": "static",
+        "recordId": null
+      },
+      "suppressed": [],
+      "unavailable": false,
+      "deniedBy": {
+        "by": "team",
+        "reason": "unspecifiedFailClosed"
+      },
+      "pendingNextBoundary": [],
+      "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+    },
+    "mcp": {
+      "servers": {
+        "u8single": {
+          "mounted": true,
+          "allowed": true,
+          "source": {
+            "layer": "template",
+            "origin": "static",
+            "recordId": null
+          },
+          "unavailable": false,
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective allow[u8single,u8paged,u8none]; team template(origin=static) allow[u8single,u8paged,u8none]; external exists=yes, hard=unspecified"
+        },
+        "u8paged": {
+          "mounted": true,
+          "allowed": true,
+          "source": {
+            "layer": "template",
+            "origin": "static",
+            "recordId": null
+          },
+          "unavailable": false,
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective allow[u8single,u8paged,u8none]; team template(origin=static) allow[u8single,u8paged,u8none]; external exists=yes, hard=unspecified"
+        },
+        "u8none": {
+          "mounted": true,
+          "allowed": true,
+          "source": {
+            "layer": "template",
+            "origin": "static",
+            "recordId": null
+          },
+          "unavailable": false,
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective allow[u8single,u8paged,u8none]; team template(origin=static) allow[u8single,u8paged,u8none]; external exists=yes, hard=unspecified"
+        }
+      }
+    }
+  }
+}

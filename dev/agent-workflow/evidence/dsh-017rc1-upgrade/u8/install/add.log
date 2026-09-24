@@ -1,0 +1,24 @@
+# exit=0
+# stdout
+
+   ╭──────────────────────────────────────────────╮
+   │                                              │
+   │      Update available! 11.7.0 → 12.6.0.      │
+   │     Changelog: https://pnpm.io/v/12.6.0      │
+   │   To update, run: corepack use pnpm@12.6.0   │
+   │                                              │
+   ╰──────────────────────────────────────────────╯
+
+Progress: resolved 0, reused 0, downloaded 1, added 0
+
+dependencies:
++ dsh-agent-team git+file:////home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/repo.git#task/dsh-017rc1-upgrade
+
+Packages: +1
++
+Progress: resolved 1, reused 0, downloaded 1, added 1, done
+Done in 3s using pnpm v11.7.0
+
+# stderr
+dsh: initialized profile web at /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/profiles/web
+

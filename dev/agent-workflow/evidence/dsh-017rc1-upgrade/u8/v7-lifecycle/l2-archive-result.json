@@ -1,0 +1,4 @@
+{
+  "toolMessage": "{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-48-13\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0ee7wpn0c0z6\",\"effect\":{\"kind\":\"lifecycle-changed\",\"instanceId\":\"inst-0ee7wpn0c0z6\",\"from\":\"SETTLED\",\"to\":\"ARCHIVED\",\"sequence\":24},\"requestToken\":\"u8-tok-2026-09-24T14-48-13-6\"}",
+  "memberInstanceId": "inst-0ee7wpn0c0z6"
+}

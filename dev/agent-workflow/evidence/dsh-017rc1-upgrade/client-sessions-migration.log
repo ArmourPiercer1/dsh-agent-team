@@ -70,8 +70,8 @@
 
 ## 验证证据
 
-- typecheck（D 类 remap 后终态）：`npx tsc -p tsconfig.json --noEmit` → **TC:0**（scratch log `.tmp-evidence/dsh-017rc1-tc-client-u5f.log`）。
-- vitest（0.1.7 graph，remap 后终态）：**47/47 文件、649/649 测试通过，exit 0**（scratch log `.tmp-evidence/dsh-017rc1-client-test-u5f.log`）。中间态：remap 前 47 文件/649 测试曾全绿（`.tmp-evidence/dsh-017rc1-client-test-u5-final2.log`）——但 typecheck 盲点（D 类）意味着该全绿不覆盖运行时 seam；remap 后重新全绿为有效终态。迁移前同一套件为 401 pass + 20 file-level import 失败（icon named-import 断链）→ 全部消除。
+- typecheck（D 类 remap 后终态）：`npx tsc -p tsconfig.json --noEmit` → **TC:0**（scratch log `scratch-logs/dsh-017rc1-tc-client-u5f.log`）。
+- vitest（0.1.7 graph，remap 后终态）：**47/47 文件、649/649 测试通过，exit 0**（scratch log `scratch-logs/dsh-017rc1-client-test-u5f.log`）。中间态：remap 前 47 文件/649 测试曾全绿（`scratch-logs/dsh-017rc1-client-test-u5-final2.log`）——但 typecheck 盲点（D 类）意味着该全绿不覆盖运行时 seam；remap 后重新全绿为有效终态。迁移前同一套件为 401 pass + 20 file-level import 失败（icon named-import 断链）→ 全部消除。
 - 注：client 套件（`.client.spec.*`）不在根 `pnpm test`（根 config `include` = `packages/*/test/**/*.test.ts`，315 文件）之内，属包级独立套件；U9 回归对比不受其影响，本日志作为其 0.1.7 全绿证据。
 
 ## §8.3 必测行为覆盖

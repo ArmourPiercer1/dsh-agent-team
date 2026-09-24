@@ -1,0 +1,9 @@
+{
+  "note": "reset log records INSTALL_EXIT=1/BUILD_EXIT=1 (ERR_PNPM_EROFS on the global pnpm store /home/user/.local/share/pnpm/store/v11 — read-only in the workspace-write sandbox; the reset did not set XDG_DATA_HOME); build artifacts postdate the log and the CLI runs 0.1.7-rc.1 — functional precondition met, log discrepancy is a post-upgrade follow-up",
+  "resetLog": "/home/user/dsh-plugins/dsh-agent-team/scratch-logs/dsh-017rc1-u8-reset.log",
+  "lastInstallExit": 1,
+  "lastBuildExit": 1,
+  "empiricalCliVersion": "0.1.7-rc.1",
+  "binExists": true,
+  "fsLocalLibExists": true
+}

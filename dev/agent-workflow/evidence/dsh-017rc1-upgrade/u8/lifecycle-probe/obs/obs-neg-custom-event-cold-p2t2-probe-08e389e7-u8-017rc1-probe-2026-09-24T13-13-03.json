@@ -1,0 +1,157 @@
+{
+  "probe": "p2t2-agent-lifecycle",
+  "scenario": "neg-custom-event-cold",
+  "primaryId": "p2t2-probe-08e389e7",
+  "writtenAt": 1790255597824,
+  "dshHome": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-probe-2026-09-24T13-13-03",
+  "trace": [
+    {
+      "seq": 1,
+      "ts": 1790255597680,
+      "phase": "activate",
+      "port": 3492,
+      "backendNames": [
+        "json"
+      ],
+      "dshHome": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-probe-2026-09-24T13-13-03",
+      "services": {
+        "sessions": true,
+        "agents": true,
+        "sessionPersistence": true,
+        "webServer": true,
+        "storage": true
+      }
+    },
+    {
+      "seq": 2,
+      "ts": 1790255597781,
+      "phase": "scenario-error",
+      "scenario": "__readiness__",
+      "code": "P2T2_UNEXPECTED_ERROR",
+      "error": "p2t2-agent-lifecycle: unknown scenario '__readiness__'"
+    },
+    {
+      "seq": 3,
+      "ts": 1790255597784,
+      "phase": "run-start",
+      "scenario": "resume-member",
+      "memberId": "p2t2-member-08e389e7",
+      "rootId": "p2t2-root-08e389e7"
+    },
+    {
+      "seq": 4,
+      "ts": 1790255597801,
+      "phase": "event:session/created",
+      "sessionId": "p2t2-member-08e389e7"
+    },
+    {
+      "seq": 5,
+      "ts": 1790255597807,
+      "phase": "event:agent/created",
+      "sessionId": "p2t2-member-08e389e7",
+      "source": "resume"
+    },
+    {
+      "seq": 6,
+      "ts": 1790255597808,
+      "phase": "binding-recovered",
+      "sessionId": "p2t2-member-08e389e7",
+      "role": "member",
+      "rootId": "p2t2-root-08e389e7",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-08e389e7",
+      "rootLive": false,
+      "via": "sidecar-only"
+    },
+    {
+      "seq": 7,
+      "ts": 1790255597808,
+      "phase": "first-team-step",
+      "sessionId": "p2t2-member-08e389e7",
+      "role": "member",
+      "rootId": "p2t2-root-08e389e7",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-08e389e7",
+      "rootLive": false,
+      "source": "resume"
+    },
+    {
+      "seq": 8,
+      "ts": 1790255597809,
+      "phase": "scenario-error",
+      "scenario": "resume-member",
+      "code": "P2T2_UNEXPECTED_ERROR",
+      "error": "Cannot read properties of undefined (reading 'length')"
+    },
+    {
+      "seq": 9,
+      "ts": 1790255597811,
+      "phase": "run-start",
+      "scenario": "resume-root",
+      "rootId": "p2t2-root-08e389e7"
+    },
+    {
+      "seq": 10,
+      "ts": 1790255597816,
+      "phase": "event:session/created",
+      "sessionId": "p2t2-root-08e389e7"
+    },
+    {
+      "seq": 11,
+      "ts": 1790255597817,
+      "phase": "event:agent/created",
+      "sessionId": "p2t2-root-08e389e7",
+      "source": "resume"
+    },
+    {
+      "seq": 12,
+      "ts": 1790255597818,
+      "phase": "binding-recovered",
+      "sessionId": "p2t2-root-08e389e7",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-08e389e7",
+      "rootLive": true
+    },
+    {
+      "seq": 13,
+      "ts": 1790255597818,
+      "phase": "first-team-step",
+      "sessionId": "p2t2-root-08e389e7",
+      "role": "root",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-08e389e7",
+      "rootLive": true,
+      "source": "resume"
+    },
+    {
+      "seq": 14,
+      "ts": 1790255597818,
+      "phase": "scenario-error",
+      "scenario": "resume-root",
+      "code": "P2T2_UNEXPECTED_ERROR",
+      "error": "Cannot read properties of undefined (reading 'length')"
+    },
+    {
+      "seq": 15,
+      "ts": 1790255597821,
+      "phase": "run-start",
+      "scenario": "neg-custom-event-cold",
+      "sessionId": "p2t2-probe-08e389e7"
+    },
+    {
+      "seq": 16,
+      "ts": 1790255597824,
+      "phase": "session-log-cold-read-refused",
+      "sessionId": "p2t2-probe-08e389e7",
+      "refusal": "session \"p2t2-probe-08e389e7\" contains event type \"team/vnext/p2t2-probe-marker\" (seq 3) unknown to this harness and not marked ignorable; refusing to interpret the log — it was likely written by a newer harness (raw log: /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-probe-2026-09-24T13-13-03/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-deepseek-harness-test-use--/p2t2-probe-08e389e7/session.v4.jsonl.zstd)"
+    },
+    {
+      "seq": 17,
+      "ts": 1790255597824,
+      "phase": "run-end",
+      "scenario": "neg-custom-event-cold",
+      "sessionId": "p2t2-probe-08e389e7"
+    }
+  ],
+  "traceLength": 14,
+  "ok": false,
+  "code": "P2T2_CUSTOM_EVENT_COLD_READ_REFUSED",
+  "sessionId": "p2t2-probe-08e389e7",
+  "error": "session \"p2t2-probe-08e389e7\" contains event type \"team/vnext/p2t2-probe-marker\" (seq 3) unknown to this harness and not marked ignorable; refusing to interpret the log — it was likely written by a newer harness (raw log: /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-probe-2026-09-24T13-13-03/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-deepseek-harness-test-use--/p2t2-probe-08e389e7/session.v4.jsonl.zstd)"
+}

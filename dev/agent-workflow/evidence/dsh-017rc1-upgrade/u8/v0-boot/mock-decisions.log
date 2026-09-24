@@ -1,0 +1,58 @@
+seq=1 userHead="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"te" nToolMsgs=0 tools=0 bodyKeys=["model","stream","messages","max_tokens","thinking","system","dsh_session_log","dsh_plugin_packages"]
+seq=2 userHead="U8MK_ORD_2026-09-24T14-48-13 Please read the file team/test.md and confirm you c" nToolMsgs=0 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=2 -> tool-call read {"file_path":"team/test.md"}
+seq=3 userHead="U8MK_ORD_2026-09-24T14-48-13 Please read the file team/test.md and confirm you c" nToolMsgs=1 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=3 -> text "U8_ORD_DONE"
+seq=4 userHead="U8MK_DISC_2026-09-24T14-48-13 List your tools and answer done.\n<system-reminder>" nToolMsgs=0 tools=39 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=4 -> text "U8_DISC_DONE"
+seq=5 userHead="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"te" nToolMsgs=0 tools=0 bodyKeys=["model","stream","messages","max_tokens","thinking","system","dsh_session_log","dsh_plugin_packages"]
+seq=6 userHead="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"te" nToolMsgs=0 tools=0 bodyKeys=["model","stream","messages","max_tokens","thinking","system","dsh_session_log","dsh_plugin_packages"]
+seq=7 userHead="[team-root-work requestToken=team-create:initial-work:sha256:e65bb7b4d46000ffeb3" nToolMsgs=0 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=7 -> tool-call read {"file_path":"team/test.md"}
+seq=8 userHead="[team-root-work requestToken=team-create:initial-work:sha256:e65bb7b4d46000ffeb3" nToolMsgs=1 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=8 -> tool-call read {"file_path":"runtime/forbidden.txt"}
+seq=9 userHead="[team-root-work requestToken=team-create:initial-work:sha256:e65bb7b4d46000ffeb3" nToolMsgs=2 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=9 -> tool-call bash {"command":"echo u8-smoke-2026-09-24T14-48-13","description":"U8 vertical smoke echo (V4 last-mile guard leg)"}
+seq=10 userHead="[team-root-work requestToken=team-create:initial-work:sha256:e65bb7b4d46000ffeb3" nToolMsgs=3 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=10 -> tool-call team_create_member {"rootSessionId":"session-u8-team-2026-09-24T14-48-13","requestToken":"u8-tok-2026-09-24T14-48-13-1","delegationTemplate
+seq=11 userHead="[team-root-work requestToken=team-create:initial-work:sha256:e65bb7b4d46000ffeb3" nToolMsgs=4 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=11 -> tool-call team_delegate {"rootSessionId":"session-u8-team-2026-09-24T14-48-13","requestToken":"u8-tok-2026-09-24T14-48-13-2","delegationInstance
+seq=12 userHead="[team-work requestToken=u8-tok-2026-09-24T14-48-13-2] U8MK_BMEM_2026-09-24T14-48" nToolMsgs=0 tools=15 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=12 -> tool-call read {"file_path":"team/test.md"}
+seq=13 userHead="Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"te" nToolMsgs=0 tools=0 bodyKeys=["model","stream","messages","max_tokens","thinking","system","dsh_session_log","dsh_plugin_packages"]
+seq=14 userHead="[team-work requestToken=u8-tok-2026-09-24T14-48-13-2] U8MK_BMEM_2026-09-24T14-48" nToolMsgs=1 tools=15 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=14 -> tool-call read {"file_path":"runtime/forbidden.txt"}
+seq=15 userHead="[team-work requestToken=u8-tok-2026-09-24T14-48-13-2] U8MK_BMEM_2026-09-24T14-48" nToolMsgs=2 tools=15 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=15 -> text "U8_MEMBER_DONE"
+seq=16 userHead="[team-root-work requestToken=team-create:initial-work:sha256:e65bb7b4d46000ffeb3" nToolMsgs=5 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=16 -> tool-call team_send_message {"rootSessionId":"session-u8-team-2026-09-24T14-48-13","requestToken":"u8-tok-2026-09-24T14-48-13-3","recipientInstanceI
+seq=17 userHead="[team-relay] from=inst-leader (label: leader) to=inst-0ee7wpn0c0z6 (label: worke" nToolMsgs=0 tools=15 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=17 -> text "U8_MEMBER_MSG_ACK"
+seq=18 userHead="[team-root-work requestToken=team-create:initial-work:sha256:e65bb7b4d46000ffeb3" nToolMsgs=6 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=18 -> tool-call team_report_progress {"rootSessionId":"session-u8-team-2026-09-24T14-48-13","requestToken":"u8-tok-2026-09-24T14-48-13-4","instanceId":"inst-
+seq=19 userHead="[team-root-work requestToken=team-create:initial-work:sha256:e65bb7b4d46000ffeb3" nToolMsgs=7 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=19 -> tool-call mcp__u8single__ping {"msg":"u8-v5"}
+seq=20 userHead="[team-root-work requestToken=team-create:initial-work:sha256:e65bb7b4d46000ffeb3" nToolMsgs=8 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=20 -> tool-call mcp__u8paged__alpha {"msg":"u8-alpha"}
+seq=21 userHead="[team-root-work requestToken=team-create:initial-work:sha256:e65bb7b4d46000ffeb3" nToolMsgs=9 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=21 -> text "U8_TEAM_B_DONE"
+seq=22 userHead="U8MK_SPILL_2026-09-24T14-48-13 Run exactly this bash command: yes u8spillfiller " nToolMsgs=0 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=22 -> tool-call bash {"command":"yes u8spillfiller | head -c 250000","description":"U8 vertical token-budget spill generator (V6)"}
+seq=23 userHead="U8MK_SPILL_2026-09-24T14-48-13 Run exactly this bash command: yes u8spillfiller " nToolMsgs=1 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=23 -> tool-call read {"file_path":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/spill/session-68c9927b195e
+seq=24 userHead="U8MK_SPILL_2026-09-24T14-48-13 Run exactly this bash command: yes u8spillfiller " nToolMsgs=2 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=24 -> text "U8_SPILL_OWNER_DONE"
+seq=25 userHead="U8MK_DELEGATE_DENY_2026-09-24T14-48-13 Delegate to worker-b-1: make it read the " nToolMsgs=0 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=25 -> tool-call team_delegate {"rootSessionId":"session-u8-team-2026-09-24T14-48-13","requestToken":"u8-tok-2026-09-24T14-48-13-5","delegationInstance
+seq=26 userHead="[team-work requestToken=u8-tok-2026-09-24T14-48-13-5] U8MK_SPILLDENY_2026-09-24T" nToolMsgs=0 tools=15 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=26 -> tool-call read {"file_path":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/spill/session-68c9927b195e
+seq=27 userHead="[team-work requestToken=u8-tok-2026-09-24T14-48-13-5] U8MK_SPILLDENY_2026-09-24T" nToolMsgs=1 tools=15 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=27 -> text "U8_MEMBER_DENY_DONE"
+seq=28 userHead="U8MK_DELEGATE_DENY_2026-09-24T14-48-13 Delegate to worker-b-1: make it read the " nToolMsgs=1 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=28 -> text "U8_DELEGATE_DENY_DONE"
+seq=29 userHead="U8MK_LIFE_2026-09-24T14-48-13 Archive the worker-b-1 member instance now and con" nToolMsgs=0 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=29 -> tool-call team_archive_member {"rootSessionId":"session-u8-team-2026-09-24T14-48-13","requestToken":"u8-tok-2026-09-24T14-48-13-6","targetInstanceId":
+seq=30 userHead="U8MK_LIFE_2026-09-24T14-48-13 Archive the worker-b-1 member instance now and con" nToolMsgs=1 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=30 -> text "U8_LIFE_DONE"
+seq=31 userHead="U8MK_LIFE2_2026-09-24T14-48-13 Confirm you are back after the residency drop.\n<s" nToolMsgs=0 tools=26 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"]
+seq=31 -> text "U8_LEADER_RESUME_DONE"

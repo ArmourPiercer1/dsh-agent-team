@@ -1,0 +1,4 @@
+{
+  "toolMessage": "Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed",
+  "denyResolution": null
+}

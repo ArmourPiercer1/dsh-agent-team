@@ -1,0 +1,3 @@
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1172 files; committed install-surface artifacts match the fresh build
+EXIT:0

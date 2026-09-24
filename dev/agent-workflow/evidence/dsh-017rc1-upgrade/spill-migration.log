@@ -31,7 +31,7 @@
 ## 编译与单元测试证据（0.1.7 graph）
 
 - `packages/runtime` typecheck：`npx tsc -p tsconfig.json --noEmit` → **TC:0**（U2 后复验，见 `preset-migration.log` §验证）。
-- `packages/runtime` vitest（0.1.7 graph，`npx vitest run`，scratch log `.tmp-evidence/dsh-017rc1-runtime-test-u4.log`）：
+- `packages/runtime` vitest（0.1.7 graph，`npx vitest run`，scratch log `scratch-logs/dsh-017rc1-runtime-test-u4.log`）：
   - **183/189 文件通过；2102/2110 测试通过**。
   - `test/team-spill-local.test.ts` → **10/10 通过**（22ms）。
   - `test/team-spill-local-composition.test.ts` → **3/3 通过**（29ms）。

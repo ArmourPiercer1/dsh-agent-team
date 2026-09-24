@@ -43,7 +43,7 @@
 
 - runtime typecheck：`tsc -p tsconfig.json --noEmit` exit 0（迁移前 7 错 → 0 错）；
 - `test/issue2-real-preset-restriction.test.ts`（real-seam：真 registry + 真 Loader + 真 ToolRuntime + 真 applyBuiltInToolDeny）：**13/13 PASS**（迁移首轮 12/13，S6 按 §3.1 重录后全绿）；
-- client typecheck + client 包 vitest：见 `dsh-017rc1-tc-client-u2.log` / `dsh-017rc1-client-test-u2.log`（.tmp-evidence，随轮归档）。
+- client typecheck + client 包 vitest：见 `dsh-017rc1-tc-client-u2.log` / `dsh-017rc1-client-test-u2.log`（scratch-logs/，随轮归档）。
 
 ## 5. 遗留 / 移交
 

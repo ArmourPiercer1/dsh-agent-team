@@ -121,10 +121,13 @@ export async function startMockModel({ port, decide, log = () => {} }) {
     }
     requests.push(record)
 
-    if (req.method !== 'POST' || (req.url ?? '').split('?')[0] !== '/chat/completions') {
+    const route = (req.url ?? '').split('?')[0]
+    const messagesApi = route === '/v1/messages'
+    const chatCompletions = route === '/chat/completions'
+    if (req.method !== 'POST' || (!messagesApi && !chatCompletions)) {
       record.status = req.method !== 'POST' ? 405 : 404
       res.writeHead(record.status, { 'content-type': 'application/json' })
-      res.end(JSON.stringify({ error: { message: `mock: ${req.method} ${req.url} not served (only POST /chat/completions)`, type: 'invalid_request_error', code: 'not-found' } }))
+      res.end(JSON.stringify({ error: { message: `mock: ${req.method} ${req.url} not served (only POST /chat/completions and POST /v1/messages)`, type: 'invalid_request_error', code: 'not-found' } }))
       log(`mock: ${record.seq} ${req.method} ${req.url} -> ${record.status}`)
       return
     }
@@ -195,6 +198,55 @@ export async function startMockModel({ port, decide, log = () => {} }) {
 
     let promptTokens = 0
     let completionTokens = 0
+    if (messagesApi) {
+      // DeepSeek Messages API (DSH 0.1.7): Anthropic-style SSE events.
+      // message_start -> content_block_start/delta/stop (per block) ->
+      // message_delta(stop_reason) -> message_stop. The 0.1.7 translator
+      // requires message_stop after settled blocks + a stop reason, and a
+      // tool_use block's final input JSON to parse to a JSON object.
+      const model = typeof parsed.model === 'string' ? parsed.model : 'mock-model'
+      promptTokens = countTokens(parsed.messages)
+      send({ type: 'message_start', message: { id: `msg_u8_${record.seq}`, type: 'message', role: 'assistant', model, content: [], usage: { input_tokens: promptTokens, output_tokens: 0 } } })
+      if (reply.kind === 'text') {
+        const content = String(reply.content ?? '')
+        send({ type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } })
+        for (const piece of splitChunks(content)) {
+          send({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: piece } })
+          completionTokens += piece.length
+        }
+        send({ type: 'content_block_stop', index: 0 })
+        send({ type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: completionTokens } })
+        send({ type: 'message_stop' })
+        record.status = 200
+        log(`mock: ${record.seq} [messages] text reply (${content.length} chars): ${JSON.stringify(content.slice(0, 80))}`)
+        res.end()
+        return
+      }
+      if (reply.kind === 'tool-call') {
+        const calls = Array.isArray(reply.toolCalls) ? reply.toolCalls : [reply.toolCalls]
+        calls.forEach((call, i) => {
+          const argsJson = typeof call.arguments === 'string' ? call.arguments : JSON.stringify(call.arguments ?? {})
+          send({ type: 'content_block_start', index: i, content_block: { type: 'tool_use', id: String(call.id ?? `toolu_u8_${record.seq}_${i}`), name: String(call.name), input: {} } })
+          for (const fragment of splitArgs(argsJson)) {
+            send({ type: 'content_block_delta', index: i, delta: { type: 'input_json_delta', partial_json: fragment } })
+          }
+          completionTokens += argsJson.length + String(call.name).length
+          send({ type: 'content_block_stop', index: i })
+        })
+        send({ type: 'message_delta', delta: { stop_reason: 'tool_use' }, usage: { output_tokens: completionTokens } })
+        send({ type: 'message_stop' })
+        record.status = 200
+        log(`mock: ${record.seq} [messages] tool-call reply: ${calls.map((c) => c.name).join(',')}`)
+        res.end()
+        return
+      }
+      record.status = 500
+      record.error = `unknown reply kind: ${JSON.stringify(reply && reply.kind)}`
+      res.writeHead(500, { 'content-type': 'application/json' })
+      res.end(JSON.stringify({ error: { message: record.error, type: 'internal_error', code: 'bad-reply' } }))
+      return
+    }
+
     if (reply.kind === 'text') {
       const content = String(reply.content ?? '')
       send({ choices: [{ delta: { role: 'assistant', content: '' }, index: 0 }], usage: undefined })

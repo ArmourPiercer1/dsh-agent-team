@@ -1,0 +1,3 @@
+{
+  "toolMessage": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-48-13\",\"instanceId\":\"inst-0ee7wpn0c0z6\",\"row\":{\"globalSequence\":13,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-48-13\",\"instanceId\":\"inst-0ee7wpn0c0z6\",\"subject\":\"u8-v3-lane\",\"sequence\":1,\"op\":\"progress\",\"progress\":\"completed\",\"requestToken\":\"u8-tok-2026-09-24T14-48-13-4\",\"reportedByInstanceId\":\"inst-leader\",\"createdAt\":\"2026-09-24T14:49:26.555Z\",\"summary\":\"u8 vertical V3 lane completed\"}}"
+}

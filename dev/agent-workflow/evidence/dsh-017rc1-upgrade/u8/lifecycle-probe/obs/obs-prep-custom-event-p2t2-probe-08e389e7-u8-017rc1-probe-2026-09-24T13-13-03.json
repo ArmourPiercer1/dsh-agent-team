@@ -1,0 +1,204 @@
+{
+  "probe": "p2t2-agent-lifecycle",
+  "scenario": "prep-custom-event",
+  "primaryId": "p2t2-probe-08e389e7",
+  "writtenAt": 1790255596643,
+  "dshHome": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-probe-2026-09-24T13-13-03",
+  "trace": [
+    {
+      "seq": 1,
+      "ts": 1790255586357,
+      "phase": "activate",
+      "port": 3492,
+      "backendNames": [
+        "json"
+      ],
+      "dshHome": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-probe-2026-09-24T13-13-03",
+      "services": {
+        "sessions": true,
+        "agents": true,
+        "sessionPersistence": true,
+        "webServer": true,
+        "storage": true
+      }
+    },
+    {
+      "seq": 2,
+      "ts": 1790255586584,
+      "phase": "scenario-error",
+      "scenario": "__readiness__",
+      "code": "P2T2_UNEXPECTED_ERROR",
+      "error": "p2t2-agent-lifecycle: unknown scenario '__readiness__'"
+    },
+    {
+      "seq": 3,
+      "ts": 1790255586587,
+      "phase": "run-start",
+      "scenario": "fresh",
+      "rootId": "p2t2-root-08e389e7",
+      "memberId": "p2t2-member-08e389e7"
+    },
+    {
+      "seq": 4,
+      "ts": 1790255586593,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-root-08e389e7",
+      "eventType": "permission/preset"
+    },
+    {
+      "seq": 5,
+      "ts": 1790255586593,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-root-08e389e7",
+      "eventType": "sandbox/mode"
+    },
+    {
+      "seq": 6,
+      "ts": 1790255586593,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-root-08e389e7",
+      "eventType": "approval/policy"
+    },
+    {
+      "seq": 7,
+      "ts": 1790255586593,
+      "phase": "event:session/created",
+      "sessionId": "p2t2-root-08e389e7"
+    },
+    {
+      "seq": 8,
+      "ts": 1790255586597,
+      "phase": "event:agent/created",
+      "sessionId": "p2t2-root-08e389e7",
+      "source": "startup"
+    },
+    {
+      "seq": 9,
+      "ts": 1790255586611,
+      "phase": "binding-attach",
+      "sessionId": "p2t2-root-08e389e7",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-08e389e7"
+    },
+    {
+      "seq": 10,
+      "ts": 1790255586612,
+      "phase": "first-team-step",
+      "sessionId": "p2t2-root-08e389e7",
+      "role": "root",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-08e389e7",
+      "rootLive": true
+    },
+    {
+      "seq": 11,
+      "ts": 1790255586613,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-member-08e389e7",
+      "eventType": "permission/preset"
+    },
+    {
+      "seq": 12,
+      "ts": 1790255586613,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-member-08e389e7",
+      "eventType": "sandbox/mode"
+    },
+    {
+      "seq": 13,
+      "ts": 1790255586614,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-member-08e389e7",
+      "eventType": "approval/policy"
+    },
+    {
+      "seq": 14,
+      "ts": 1790255586614,
+      "phase": "event:session/created",
+      "sessionId": "p2t2-member-08e389e7"
+    },
+    {
+      "seq": 15,
+      "ts": 1790255586615,
+      "phase": "event:agent/created",
+      "sessionId": "p2t2-member-08e389e7",
+      "source": "startup"
+    },
+    {
+      "seq": 16,
+      "ts": 1790255586615,
+      "phase": "first-team-step",
+      "sessionId": "p2t2-member-08e389e7",
+      "role": "member",
+      "rootId": "p2t2-root-08e389e7",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-08e389e7",
+      "rootLive": true
+    },
+    {
+      "seq": 17,
+      "ts": 1790255596635,
+      "phase": "scenario-error",
+      "scenario": "fresh",
+      "code": "P2T2_DURABILITY_VERIFY_TIMEOUT",
+      "error": "p2t2-agent-lifecycle: session log for \"p2t2-root-08e389e7\" not durably published as the final session.jsonl.zstd within 10000ms; last disk state: {\"projectDir\":\"--home-user-dsh-plugins-dsh-agent-team-tests-deepseek-harness-test-use--\",\"files\":[{\"name\":\"session.lock\",\"size\":0,\"final\":false},{\"name\":\"session.v4.jsonl.zstd\",\"size\":318,\"final\":false}]}"
+    },
+    {
+      "seq": 18,
+      "ts": 1790255596639,
+      "phase": "run-start",
+      "scenario": "prep-custom-event",
+      "sessionId": "p2t2-probe-08e389e7"
+    },
+    {
+      "seq": 19,
+      "ts": 1790255596641,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-probe-08e389e7",
+      "eventType": "permission/preset"
+    },
+    {
+      "seq": 20,
+      "ts": 1790255596641,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-probe-08e389e7",
+      "eventType": "sandbox/mode"
+    },
+    {
+      "seq": 21,
+      "ts": 1790255596641,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-probe-08e389e7",
+      "eventType": "approval/policy"
+    },
+    {
+      "seq": 22,
+      "ts": 1790255596641,
+      "phase": "event:session/created",
+      "sessionId": "p2t2-probe-08e389e7"
+    },
+    {
+      "seq": 23,
+      "ts": 1790255596642,
+      "phase": "event:agent/created",
+      "sessionId": "p2t2-probe-08e389e7",
+      "source": "startup"
+    },
+    {
+      "seq": 24,
+      "ts": 1790255596643,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-probe-08e389e7",
+      "eventType": "team/vnext/p2t2-probe-marker"
+    },
+    {
+      "seq": 25,
+      "ts": 1790255596643,
+      "phase": "scenario-error",
+      "scenario": "prep-custom-event",
+      "code": "P2T2_UNEXPECTED_ERROR",
+      "error": "Cannot read properties of undefined (reading 'length')"
+    }
+  ],
+  "traceLength": 17,
+  "ok": false,
+  "code": "P2T2_UNEXPECTED_ERROR",
+  "error": "Cannot read properties of undefined (reading 'length')"
+}

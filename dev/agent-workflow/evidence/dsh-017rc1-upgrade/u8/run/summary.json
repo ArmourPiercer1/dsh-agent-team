@@ -1,0 +1,466 @@
+{
+  "task": "U8 pristine 0.1.7 real-host vertical (plan §11)",
+  "runStamp": "2026-09-24T14-48-13",
+  "hostPin": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "worktreePin": "adad20c00c75413f4c1fa1fe6832fb0fad746f6c",
+  "world": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13",
+  "worldRetained": true,
+  "hostPort": 3491,
+  "criteria": [
+    {
+      "leg": "preflight",
+      "name": "test-use pristine @ 46a7f68b09 (HEAD + empty porcelain)",
+      "ok": true,
+      "detail": "verified before any mutation"
+    },
+    {
+      "leg": "preflight",
+      "name": "boot precondition: the test-use CLI empirically runs 0.1.7-rc.1 (reset-log discrepancy recorded as a follow-up)",
+      "ok": true,
+      "detail": "cliVersion=0.1.7-rc.1 lastBuildExit=1"
+    },
+    {
+      "leg": "install",
+      "name": "S0 bare clone of the upgraded branch; cloned tip == worktree HEAD",
+      "ok": true,
+      "detail": "cloned=adad20c00c75413f4c1fa1fe6832fb0fad746f6c worktree=adad20c00c75413f4c1fa1fe6832fb0fad746f6c"
+    },
+    {
+      "leg": "install",
+      "name": "S1 first `dsh plugin add` exits 0 (0.1.7 compat check PASS by construction: no peerDependencies)",
+      "ok": true,
+      "detail": "exit=0"
+    },
+    {
+      "leg": "install",
+      "name": "S1 NO 0.1.7 incompat line / allow-version exemption prompt in the add output",
+      "ok": true,
+      "detail": "output had no matches (full output in install/add.log)"
+    },
+    {
+      "leg": "install",
+      "name": "S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (install surface is committed prebuilt; zero lifecycle scripts)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "install",
+      "name": "S1 no allowBuilds entry in the profile pnpm-workspace.yaml",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "install",
+      "name": "S2 dsh.profile.bundles AUTO-contains dsh-agent-team (CLI reconcile of the root dsh.bundle.patch declaration)",
+      "ok": true,
+      "detail": "bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+    },
+    {
+      "leg": "install",
+      "name": "S2 the profile patch carries NO hand-written dsh-agent-team row (the bundle layer owns it)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "install",
+      "name": "S3 installed package dir carries the committed install surface (host.js + agent-bindings.mjs + team-spill-local.js + cordis.patch.yml)",
+      "ok": true,
+      "detail": "all 4 present under /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/profiles/web/node_modules/dsh-agent-team"
+    },
+    {
+      "leg": "install",
+      "name": "S3 the installed root cordis.patch.yml carries the spill replacement rows (base spill-local disabled + team-spill-local inserted)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "v0",
+      "name": "V0 host boot marker present (dsh web: …?token=…)",
+      "ok": true,
+      "detail": "dsh web: http://127.0.0.1:3491/?token=REDACTED"
+    },
+    {
+      "leg": "v0",
+      "name": "V0 unauthenticated GET / → 401 (launch-token gate active)",
+      "ok": true,
+      "detail": "status=401"
+    },
+    {
+      "leg": "v0",
+      "name": "V0 row ready: p6t6 health ok + phase=create + root teamSession adopted (create-or-open fresh world)",
+      "ok": true,
+      "detail": "phase=create teamSession={\"rootSessionId\":\"session-u8-root-2026-09-24T14-48-13\",\"blueprintId\":\"team.u8-anchor\",\"revision\":\"1\",\"contentHash\":\"sha2"
+    },
+    {
+      "leg": "v0",
+      "name": "V0 no ERR_MODULE_NOT_FOUND in the instance log (installed dist resolves end-to-end)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "v0",
+      "name": "V0 the dsh-agent-team CLIENT row is live (authenticated GET / serves the web app shell)",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "leg": "v0",
+      "name": "V0 no duplicate service collision in the instance log",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "v0",
+      "name": "V0 no pending REQUIRED service (0.1.7 startup diagnostics)",
+      "ok": true,
+      "detail": "diagLines=0"
+    },
+    {
+      "leg": "v0",
+      "name": "V0 profile-patch layer carries EXACTLY ONE named dsh-agent-team host row (0.1.7 layered dump: the bundle layer keeps its machine-agnostic row; runtime override proven by the p6t6 teamSession above)",
+      "ok": true,
+      "detail": "exit=0 patchLayerRows=1 bundleLayerRows=1 totalIdLines=2"
+    },
+    {
+      "leg": "v0",
+      "name": "V0 team-spill-local row present in the composed tree",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "v0",
+      "name": "V0 base spill-local row DISABLED in the composed tree",
+      "ok": true,
+      "detail": "baseRows=1"
+    },
+    {
+      "leg": "v1",
+      "name": "V1 ordinary session explicitly created via /api/session/create (0.1.7: prompt no longer auto-creates)",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"u8create-43c0h0c38q\",\"result\":{\"ok\":true,\"value\":{\"sessionId\":\"session-u8-ord-2026-09-24T14-48-13\",\"agentPreset\":\"standard\"}}"
+    },
+    {
+      "leg": "v1",
+      "name": "V1 ordinary session turn started on the shipped preset surface",
+      "ok": true,
+      "detail": "tools=26 model=deepseek-flash"
+    },
+    {
+      "leg": "v1",
+      "name": "V1 ordinary surface carries NO team_ tools (the plugin does not pollute the ordinary loop)",
+      "ok": true,
+      "detail": "teamTools=[]"
+    },
+    {
+      "leg": "v1",
+      "name": "V1 ordinary fs read returned the workspace probe content (strict-read ordinary path intact)",
+      "ok": true,
+      "detail": "toolHead=\"<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/workspace/team/test.md</path>\\n<typ\""
+    },
+    {
+      "leg": "v1",
+      "name": "V1 ordinary prompt accepted (0.1.7 remote: session/prompt resolves on accept, not turn end)",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"u8ord-5e1ocl0ckf\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+    },
+    {
+      "leg": "v2",
+      "name": "LEG0 discovery captured the boot-root surface; read + bash present (the shipped standard preset mounts the managed stack)",
+      "ok": true,
+      "detail": "surface=39 missingManaged=[\"lsp\",\"pwsh\"]"
+    },
+    {
+      "leg": "v2",
+      "name": "V2 model selection correct: the leader model request carries the row staticModel id",
+      "ok": true,
+      "detail": "model=u8-model-2026-09-24T14-48-13 expected=u8-model-2026-09-24T14-48-13"
+    },
+    {
+      "leg": "v2",
+      "name": "V2 persona visible: the leader system prompt carries the bound blueprint persona",
+      "ok": true,
+      "detail": "sysHead=\"You are an AI agent powered by DeepSeek Harness.\\n\\nYou are the leader of the u8 vertical team. U8LEADER_PERSONA_2026-09-2\""
+    },
+    {
+      "leg": "v2",
+      "name": "V2 preset mount: the leader surface carries the shipped standard preset managed tools (read + bash)",
+      "ok": true,
+      "detail": "tools=26"
+    },
+    {
+      "leg": "v5",
+      "name": "V5 leader MCP surface is EXACTLY ping + alpha + beta (two-page aggregate); zero tools from the none server",
+      "ok": true,
+      "detail": "mcpTools=[\"mcp__u8paged__alpha\",\"mcp__u8paged__beta\",\"mcp__u8single__ping\"]"
+    },
+    {
+      "leg": "v4",
+      "name": "V4 leader ALLOWED read (allow read subtree team): silent pass, probe content returned",
+      "ok": true,
+      "detail": "head=\"<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/workspace/team\""
+    },
+    {
+      "leg": "v4",
+      "name": "V4 leader DENIED read (deny read subtree runtime): explicit static deny with provenance in the tool result",
+      "ok": true,
+      "detail": "head=\"Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/workspace/runtime/fo\""
+    },
+    {
+      "leg": "v4",
+      "name": "V4 bash ask created a durable pending control request (discovered)",
+      "ok": true,
+      "detail": "requestId=ctrl-086sk671x96sve1jk0ext0oc"
+    },
+    {
+      "leg": "v4",
+      "name": "V4 scripted human approval (team.resolveControl v4) admitted",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "leg": "v4",
+      "name": "V4 the approved bash EXECUTED on the last-mile guard (marker in the tool result)",
+      "ok": true,
+      "detail": "head=\"u8-smoke-2026-09-24T14-48-13\\n\""
+    },
+    {
+      "leg": "v2",
+      "name": "V2 member create succeeded (the team tool returned the new instance id)",
+      "ok": true,
+      "detail": "instanceId=inst-0ee7wpn0c0z6"
+    },
+    {
+      "leg": "v3",
+      "name": "V3 team_delegate executed (the core work path exited with a result)",
+      "ok": true,
+      "detail": "head=\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-u8-team-2026-09-24T14-48-13\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-admitted\\\",\\\"instanceI\""
+    },
+    {
+      "leg": "v5",
+      "name": "V5 member MCP surface is EXACTLY ping + alpha + beta (per-member initial grant, none contributes zero)",
+      "ok": true,
+      "detail": "mcpTools=[\"mcp__u8paged__alpha\",\"mcp__u8paged__beta\",\"mcp__u8single__ping\"]"
+    },
+    {
+      "leg": "v2",
+      "name": "V2 member persona visible (worker-b persona in the member system prompt)",
+      "ok": true,
+      "detail": "sysHead=\"You are an AI agent powered by DeepSeek Harness.\\n\\nYou are worker-b of the u8 vertical team. U8WORKER_PERSONA_2026-09-24T\""
+    },
+    {
+      "leg": "v2",
+      "name": "V2 member model selection correct (staticModel id)",
+      "ok": true,
+      "detail": "model=u8-model-2026-09-24T14-48-13"
+    },
+    {
+      "leg": "v4",
+      "name": "V4 member ALLOWED read (allow read subtree team): silent pass",
+      "ok": true,
+      "detail": "head=\"<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/workspace/team\""
+    },
+    {
+      "leg": "v4",
+      "name": "V4 member DENIED read (deny read subtree runtime): explicit static deny, provenance distinguishable from a canonicalization failure",
+      "ok": true,
+      "detail": "head=\"Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/workspace/runtime/fo\""
+    },
+    {
+      "leg": "v3",
+      "name": "V3 team_send_message EXITED (tool result observed — the historical hang regression point does not reproduce)",
+      "ok": true,
+      "detail": "head=\"{\\\"status\\\":\\\"delivered\\\",\\\"rootSessionId\\\":\\\"session-u8-team-2026-09-24T14-48-13\\\",\\\"action\\\":\\\"send-message\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"recipientInstanceId\\\":\\\"inst-0ee7wpn0c0\""
+    },
+    {
+      "leg": "v3",
+      "name": "V3 team_report_progress recorded (progress-recorded status in the tool result)",
+      "ok": true,
+      "detail": "head=\"{\\\"status\\\":\\\"progress-recorded\\\",\\\"rootSessionId\\\":\\\"session-u8-team-2026-09-24T14-48-13\\\",\\\"instanceId\\\":\\\"inst-0ee7wpn0c0z6\\\",\\\"row\\\":{\\\"globalSequence\\\":13,\\\"factType\\\":\\\"acti\""
+    },
+    {
+      "leg": "v5",
+      "name": "V5 live MCP call (single): mcp__u8single__ping returned pong:u8-v5",
+      "ok": true,
+      "detail": "head=\"pong:u8-v5\""
+    },
+    {
+      "leg": "v5",
+      "name": "V5 live MCP call (paginated page-2 tool reachable via page-1 aggregate): mcp__u8paged__alpha returned alpha:u8-alpha",
+      "ok": true,
+      "detail": "head=\"alpha:u8-alpha\""
+    },
+    {
+      "leg": "v2",
+      "name": "V2 team.create (v2 product path) succeeded with path=fresh-root (projection established)",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"u8b-m9bbhtp6e2\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-u8-team-2026-09-24T14-48-13\",\"blueprint\":{\"blueprintId\":\"team.u8-main\",\"revision\":\"1\",\"contentHash\":\"sha256:7e85dbad909a739"
+    },
+    {
+      "leg": "v2",
+      "name": "V2 Team projection durable: the created root + member instance rows exist in team_domain storage",
+      "ok": true,
+      "detail": "teamRows=25 memberRows=8"
+    },
+    {
+      "leg": "v5",
+      "name": "V5 per-server state: single/paged/none all mounted+allowed (the none variant did NOT crash Team init)",
+      "ok": true,
+      "detail": "{\"u8single\":{\"mounted\":true,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null},\"unavailable\":false,\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective allow[u8single,u8paged,u8none]; team template(origin=static) allow[u8single,u8paged,u8none]; external exists=yes, hard"
+    },
+    {
+      "leg": "v5",
+      "name": "V5 no activationError on any of the three servers",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "v6",
+      "name": "V6 the spill bash ask created a durable control request (ask bash any)",
+      "ok": true,
+      "detail": "requestId=ctrl-13ppi1h0zqipp203k3qv71e8"
+    },
+    {
+      "leg": "v6",
+      "name": "V6 the 250KB bash output was SPILLED by the 0.1.7 token budget (spill notice with locator in the tool result; base row maxInlineTokens: 12500 — no byte threshold in play)",
+      "ok": true,
+      "detail": "notice=true path=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/spill/session-68c9927b195e/3373eadba47c-bash.txt"
+    },
+    {
+      "leg": "v6",
+      "name": "V6 the inline result is the RETAINED preview (head/tail + notice), not the full 250KB output",
+      "ok": true,
+      "detail": "inlineBytes=49931"
+    },
+    {
+      "leg": "v6",
+      "name": "V6 the OWNER agent READS the spill file (the durable artifact grant admits it)",
+      "ok": true,
+      "detail": "head=\"<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/spill/session-68c9927b195e/3373ead\""
+    },
+    {
+      "leg": "v6",
+      "name": "V6 the spill file is DURABLE on disk under the world-pinned spill root",
+      "ok": true,
+      "detail": "bytes=64105"
+    },
+    {
+      "leg": "v6",
+      "name": "V6 the spill turn ended (apiPrompt settled)",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "leg": "v6",
+      "name": "V6 the OTHER instance (member) CANNOT read the spill file (no grant outside the workspace → deny; the owner-only grant scope holds)",
+      "ok": true,
+      "detail": "head=\"Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed\""
+    },
+    {
+      "leg": "v7",
+      "name": "V7 team_archive_member executed (the durable archive transition was committed)",
+      "ok": true,
+      "detail": "head=\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"archive-member\\\",\\\"rootSessionId\\\":\\\"session-u8-team-2026-09-24T14-48-13\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"targetInstanceId\\\":\\\"inst-0ee7wpn0c0z6\\\",\\\"effect\\\":{\\\"kind\\\":\\\"lifecycle-changed\\\",\\\"\""
+    },
+    {
+      "leg": "v7",
+      "name": "V7 the archive turn ended (apiPrompt settled)",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "leg": "v7",
+      "name": "V7 the member lifecycle is DURABLY archived (the storage row lifecycle=archived — the 0.1.7 durable transition survived)",
+      "ok": true,
+      "detail": "lifecycle=[\"ARCHIVED\",null,null,null,null,null,null,null,null,null,null,null]"
+    },
+    {
+      "leg": "v6",
+      "name": "V6 TeamAwareLocalSpillStore recorded a DURABLE artifact grant (the locator appears in durable world storage; read back after the V7 archive commit boundary)",
+      "ok": true,
+      "detail": "files=[\"<world>/storages/team_domain.json\"]"
+    },
+    {
+      "leg": "v7",
+      "name": "V7 leader stop: the live leader handle was disposed (residency/drop)",
+      "ok": true,
+      "detail": "body={\"sessionId\":\"session-u8-team-2026-09-24T14-48-13\",\"dropped\":true}"
+    },
+    {
+      "leg": "v7",
+      "name": "V7 the leader agent COLD-RESUMED after the stop (a fresh model request on the same session — the 0.1.7 agents.resume path)",
+      "ok": true,
+      "detail": "requests=31"
+    },
+    {
+      "leg": "v7",
+      "name": "V7 the leader resume turn ended (apiPrompt settled)",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "leg": "v7",
+      "name": "V7 0.1.7 event vocabulary: no agent/session-start references in the boot log (the event is gone in 0.1.7)",
+      "ok": true,
+      "detail": "refs=0"
+    },
+    {
+      "leg": "v8",
+      "name": "V8 host stopped and the port freed",
+      "ok": true,
+      "detail": "port=3491"
+    },
+    {
+      "leg": "v8",
+      "name": "V8 the host RE-BOOTS after the process stop (fresh boot marker, same profile)",
+      "ok": true,
+      "detail": "dsh web: http://127.0.0.1:3491/?token=REDACTED"
+    },
+    {
+      "leg": "v8",
+      "name": "V8 row ready on the resume boot (p6t6 health ok)",
+      "ok": true,
+      "detail": "body={\"ok\":true,\"boot\":2,\"ready\":true,\"rootSessionId\":\"session-u8-root-2026-09-24T14-48-13\",\"liveSessions\":[\"session-u8-root-2026-09-24T14-48-13\"],\"toolCount\":13}"
+    },
+    {
+      "leg": "v8",
+      "name": "V8 old Team RE-ADOPTED on the resume boot (strict load-only: the durable TeamSession was loaded — resume worked this round)",
+      "ok": true,
+      "detail": "{\"rootSessionId\":\"session-u8-root-2026-09-24T14-48-13\",\"blueprintId\":\"team.u8-anchor\",\"revision\":\"1\",\"contentHash\":\"sha256:c3234236e25af99dd34bbdf2b27251ec3004d10e9eac1f24ddc32ec7361c31d6\",\"defaultWor"
+    },
+    {
+      "leg": "v8",
+      "name": "V8 session logs use the 0.1.7 V4 naming (session.v4.jsonl.zstd)",
+      "ok": true,
+      "detail": "v4=4 total=4"
+    },
+    {
+      "leg": "closing",
+      "name": ":3080/:3180 state unchanged (read-only probes pre == post)",
+      "ok": true,
+      "detail": "pre={\"p3080\":{\"port\":3080,\"reachable\":true,\"status\":401},\"p3180\":{\"port\":3180,\"reachable\":true,\"status\":401}} post={\"p3080\":{\"port\":3080,\"reachable\":true,\"status\":401},\"p3180\":{\"port\":3180,\"reachable\":true,\"status\":401}}"
+    },
+    {
+      "leg": "closing",
+      "name": "all U8 ports released (host + mock + mini-MCP)",
+      "ok": true,
+      "detail": "{\"3491\":true,\"3496\":true,\"3497\":true,\"3498\":true,\"3499\":true}"
+    },
+    {
+      "leg": "closing",
+      "name": "test-use working tree still byte-clean after the run",
+      "ok": true,
+      "detail": "porcelain="
+    },
+    {
+      "leg": "closing",
+      "name": "test-use HEAD unchanged (46a7f68b09)",
+      "ok": true,
+      "detail": "head=46a7f68b0922371ce7144b668b90e377d8e799f4"
+    }
+  ],
+  "passed": 75,
+  "total": 75,
+  "failed": [],
+  "fatalError": null,
+  "verdict": "PASS"
+}

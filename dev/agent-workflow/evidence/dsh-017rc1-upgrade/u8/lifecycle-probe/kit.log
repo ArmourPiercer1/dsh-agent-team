@@ -1,0 +1,8 @@
+[2026-09-24T13:13:03.885Z] U3 agent-lifecycle probe re-measurement — stamp 2026-09-24T13-13-03
+[2026-09-24T13:13:03.886Z] host=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4; worktree @ adad20c00c75413f4c1fa1fe6832fb0fad746f6c; world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-probe-2026-09-24T13-13-03
+[2026-09-24T13:13:03.906Z] preflight: test-use pristine @ 46a7f68b09; worktree @ adad20c
+[2026-09-24T13:13:03.914Z] port=3492
+[2026-09-24T13:13:03.916Z] building the live public-exports surface against the 0.1.7 tree …
+[2026-09-24T13:13:04.001Z] surface: 342 packages
+[2026-09-24T13:13:04.003Z] probe group: agent-lifecycle — P2-T2: setup ordering + fresh/member/root-cold resume of the Root TeamDomain binding (storage-sidecar), with negative controls
+[2026-09-24T13:13:20.104Z] VERDICT FAIL — 20/34 checks passed; failures=14

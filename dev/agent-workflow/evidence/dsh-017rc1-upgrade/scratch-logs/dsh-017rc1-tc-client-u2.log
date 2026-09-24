@@ -1,0 +1,38 @@
+src/ui/NewTeamEntry.tsx(24,10): error TS2305: Module '"@deepseek-ai/dsh-client-ui-primitives"' has no exported member 'IconUserOutline16'.
+src/ui/TeamDock.tsx(31,3): error TS2724: '"@deepseek-ai/dsh-client-ui-primitives"' has no exported member named 'IconChevronDownOutline14'. Did you mean 'IconChevronDownOutlineMedium'?
+src/ui/TeamDock.tsx(31,29): error TS2724: '"@deepseek-ai/dsh-client-ui-primitives"' has no exported member named 'IconChevronUpOutline14'. Did you mean 'IconChevronUpOutlineMedium'?
+test/d2-open-team-mode.test.ts(225,5): error TS2322: Type '{ agentPresets: { list: () => Promise<{ ok: true; value: { presets: []; authorable: boolean; }; }>; }; }' is not assignable to type 'TeamRemote'.
+  The types returned by 'agentPresets.list()' are incompatible between these types.
+    Type 'Promise<{ ok: true; value: { presets: []; authorable: boolean; }; }>' is not assignable to type 'Promise<TeamAgentPresetsListResult>'.
+      Type '{ ok: true; value: { presets: []; authorable: boolean; }; }' is not assignable to type 'TeamAgentPresetsListResult'.
+        Type '{ ok: true; value: { presets: []; authorable: boolean; }; }' is not assignable to type '{ readonly ok: true; readonly value: { readonly presets: readonly TeamAgentPresetRow[]; readonly modeSelectionEnabled: boolean; }; }'.
+          Types of property 'value' are incompatible.
+            Property 'modeSelectionEnabled' is missing in type '{ presets: []; authorable: boolean; }' but required in type '{ readonly presets: readonly TeamAgentPresetRow[]; readonly modeSelectionEnabled: boolean; }'.
+test/d2-team-mode-entry.client.spec.tsx(147,5): error TS2353: Object literal may only specify known properties, and 'useSessionPendingInteraction' does not exist in type 'TeamViewProps'.
+test/d2-team-mode-entry.client.spec.tsx(147,70): error TS2339: Property 'useSessionPendingInteraction' does not exist on type 'ConvViewOwnerProps & SessionStandardProps & GlobalStandardProps & Omit<TeamViewInjected, "hooks"> & PropsHooks<...> & { ...; }'.
+test/d3-open-ordinary-mode.test.ts(244,5): error TS2322: Type '{ agentPresets: { list: () => Promise<{ ok: true; value: { presets: []; authorable: boolean; }; }>; }; }' is not assignable to type 'TeamRemote'.
+  The types returned by 'agentPresets.list()' are incompatible between these types.
+    Type 'Promise<{ ok: true; value: { presets: []; authorable: boolean; }; }>' is not assignable to type 'Promise<TeamAgentPresetsListResult>'.
+      Type '{ ok: true; value: { presets: []; authorable: boolean; }; }' is not assignable to type 'TeamAgentPresetsListResult'.
+        Type '{ ok: true; value: { presets: []; authorable: boolean; }; }' is not assignable to type '{ readonly ok: true; readonly value: { readonly presets: readonly TeamAgentPresetRow[]; readonly modeSelectionEnabled: boolean; }; }'.
+          Types of property 'value' are incompatible.
+            Property 'modeSelectionEnabled' is missing in type '{ presets: []; authorable: boolean; }' but required in type '{ readonly presets: readonly TeamAgentPresetRow[]; readonly modeSelectionEnabled: boolean; }'.
+test/d3-ordinary-mode-entry.client.spec.tsx(150,5): error TS2353: Object literal may only specify known properties, and 'useSessionPendingInteraction' does not exist in type 'TeamViewProps'.
+test/d3-ordinary-mode-entry.client.spec.tsx(150,70): error TS2339: Property 'useSessionPendingInteraction' does not exist on type 'ConvViewOwnerProps & SessionStandardProps & GlobalStandardProps & Omit<TeamViewInjected, "hooks"> & PropsHooks<...> & { ...; }'.
+test/f9u-control-surface-probe.client.spec.tsx(230,5): error TS2353: Object literal may only specify known properties, and 'useSessionPendingInteraction' does not exist in type 'TeamViewProps'.
+test/f9u-control-surface-probe.client.spec.tsx(230,70): error TS2339: Property 'useSessionPendingInteraction' does not exist on type 'ConvViewOwnerProps & SessionStandardProps & GlobalStandardProps & Omit<TeamViewInjected, "hooks"> & PropsHooks<...> & { ...; }'.
+test/new-team-entry.client.spec.tsx(161,5): error TS2353: Object literal may only specify known properties, and 'useSessionPendingInteraction' does not exist in type 'NewTeamEntryProps'.
+test/new-team-entry.client.spec.tsx(161,74): error TS2339: Property 'useSessionPendingInteraction' does not exist on type 'TeamNewTeamEntryOwner & GlobalStandardProps & NewTeamEntryInjected & { t: TranslateNS<"team">; }'.
+test/team-legacy.client.spec.tsx(196,5): error TS2353: Object literal may only specify known properties, and 'useSessionPendingInteraction' does not exist in type 'TeamViewProps'.
+test/team-legacy.client.spec.tsx(196,70): error TS2339: Property 'useSessionPendingInteraction' does not exist on type 'ConvViewOwnerProps & SessionStandardProps & GlobalStandardProps & Omit<TeamViewInjected, "hooks"> & PropsHooks<...> & { ...; }'.
+test/team-plugin.client.spec.tsx(142,27): error TS2353: Object literal may only specify known properties, and 'authorable' does not exist in type '{ readonly presets: readonly TeamAgentPresetRow[]; readonly modeSelectionEnabled: boolean; }'.
+test/team-roots-zero-state.client.spec.tsx(183,5): error TS2353: Object literal may only specify known properties, and 'useSessionPendingInteraction' does not exist in type 'TeamViewProps'.
+test/team-roots-zero-state.client.spec.tsx(183,70): error TS2339: Property 'useSessionPendingInteraction' does not exist on type 'ConvViewOwnerProps & SessionStandardProps & GlobalStandardProps & Omit<TeamViewInjected, "hooks"> & PropsHooks<...> & { ...; }'.
+test/team-view.client.spec.tsx(267,5): error TS2353: Object literal may only specify known properties, and 'useSessionPendingInteraction' does not exist in type 'TeamViewProps'.
+test/team-view.client.spec.tsx(267,70): error TS2339: Property 'useSessionPendingInteraction' does not exist on type 'ConvViewOwnerProps & SessionStandardProps & GlobalStandardProps & Omit<TeamViewInjected, "hooks"> & PropsHooks<...> & { ...; }'.
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.1.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.1.0
+npm notice To update run: npm install -g npm@12.1.0
+npm notice
+TC:2

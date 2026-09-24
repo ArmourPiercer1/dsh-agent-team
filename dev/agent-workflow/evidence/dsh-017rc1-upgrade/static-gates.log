@@ -6,7 +6,7 @@
 
 ## 10.1 clean install ✅
 
-`rm -rf node_modules && CI=true pnpm install --frozen-lockfile --store-dir <repo-local>` → **exit 0**（scratch `.tmp-evidence/dsh-017rc1-u7-cleaninstall.log`）。frozen lockfile 通过 = lockfile 与全部 9 包 manifest 一致。
+`rm -rf node_modules && CI=true pnpm install --frozen-lockfile --store-dir <repo-local>` → **exit 0**（scratch `scratch-logs/dsh-017rc1-u7-cleaninstall.log`）。frozen lockfile 通过 = lockfile 与全部 9 包 manifest 一致。
 
 环境记录（计划要求）：
 
@@ -22,13 +22,13 @@ DSH test-use HEAD   46a7f68b0922371ce7144b668b90e377d8e799f4 (dsh-v0.1.7-rc.1)
 `pnpm typecheck`（= `pnpm -r run typecheck`）：首次跑 **runtime 失败**——
 `test/u6-mcp-017-regression.test.ts(38,53): error TS7016: Could not find a declaration file for module '../root-binding/harness/mini-mcp.mjs'`。
 修复：按仓库既有 `.mjs` + 相邻 `.d.mts` 模式（`test/t12a-live-bridge.d.mts` / testkit `session-event-scan` 先例）新增 `packages/runtime/root-binding/harness/mini-mcp.d.mts`（`MiniMcpToolsVariant` / `StartMiniMcpOptions` / `MiniMcpServer` + 两函数声明）。
-复跑：**8/8 包 Done，exit 0**（scratch `.tmp-evidence/dsh-017rc1-u7-typecheck2.log`）。全部 workspace package typecheck green（计划要求）。
+复跑：**8/8 包 Done，exit 0**（scratch `scratch-logs/dsh-017rc1-u7-typecheck2.log`）。全部 workspace package typecheck green（计划要求）。
 
 ## 10.3 build / composition / artifacts ✅
 
 - `pnpm build`（= `pnpm -r run build`）→ exit 0。
 - `pnpm build:composition` → exit 0：87 modules、11 css、entry `plugin/client.js`、externals `[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]`，写出 `packages/client/composition-shim/client-bundle.js`（965977 B）+ node 半 `index.js` + `package.json`。
-- `pnpm check:artifacts`（= `node scripts/check-artifacts-committed.mjs`）：首跑 **STALE**——`client-bundle.js` content-drift（U5 的 0.1.7 client 源改动使 0.1.5 期提交的 bundle 过期；该 check 的设计即强制"重建产物与源改动同提交"）。重建后随 U7 提交 `becd759` 再同步 → 复跑 **`OK: 1172 files; committed install-surface artifacts match the fresh build`，exit 0**（scratch `.tmp-evidence/dsh-017rc1-u7-artifacts.log`）。
+- `pnpm check:artifacts`（= `node scripts/check-artifacts-committed.mjs`）：首跑 **STALE**——`client-bundle.js` content-drift（U5 的 0.1.7 client 源改动使 0.1.5 期提交的 bundle 过期；该 check 的设计即强制"重建产物与源改动同提交"）。重建后随 U7 提交 `becd759` 再同步 → 复跑 **`OK: 1172 files; committed install-surface artifacts match the fresh build`，exit 0**（scratch `scratch-logs/dsh-017rc1-u7-artifacts.log`）。
 
 计划点名工件逐项核验：
 
@@ -49,7 +49,7 @@ DSH test-use HEAD   46a7f68b0922371ce7144b668b90e377d8e799f4 (dsh-v0.1.7-rc.1)
 
 ## 10.5 public-import scan（P4-T6 equivalent）✅
 
-`npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts` → **10/10，exit 0**（scratch `.tmp-evidence/dsh-017rc1-u7-p4t6.log`）。
+`npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts` → **10/10，exit 0**（scratch `scratch-logs/dsh-017rc1-u7-p4t6.log`）。
 
 pin 变化（仅因真实新增 scannable 文件，单写者惯例，未放宽任何规则）：
 

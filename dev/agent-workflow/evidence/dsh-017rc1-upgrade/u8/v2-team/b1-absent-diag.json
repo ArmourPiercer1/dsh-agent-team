@@ -1,0 +1,14 @@
+{
+  "mockRequests": 5,
+  "mockDiagTail": [
+    "seq=1 userHead=\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"te\" nToolMsgs=0 tools=0 bodyKeys=[\"model\",\"stream\",\"messages\",\"max_tokens\",\"thinking\",\"system\",\"dsh_session_log\",\"dsh_plugin_packages\"]",
+    "seq=2 userHead=\"U8MK_ORD_2026-09-24T13-33-14 Please read the file team/test.md and confirm you c\" nToolMsgs=0 tools=26 bodyKeys=[\"model\",\"stream\",\"messages\",\"max_tokens\",\"thinking\",\"output_config\",\"system\",\"tools\",\"dsh_session_log\",\"dsh_plugin_packages\"]",
+    "seq=2 -> tool-call read {\"file_path\":\"team/test.md\"}",
+    "seq=3 userHead=\"U8MK_ORD_2026-09-24T13-33-14 Please read the file team/test.md and confirm you c\" nToolMsgs=1 tools=26 bodyKeys=[\"model\",\"stream\",\"messages\",\"max_tokens\",\"thinking\",\"output_config\",\"system\",\"tools\",\"dsh_session_log\",\"dsh_plugin_packages\"]",
+    "seq=3 -> text \"U8_ORD_DONE\"",
+    "seq=4 userHead=\"U8MK_DISC_2026-09-24T13-33-14 List your tools and answer done.\\n<system-reminder>\" nToolMsgs=0 tools=39 bodyKeys=[\"model\",\"stream\",\"messages\",\"max_tokens\",\"thinking\",\"output_config\",\"system\",\"tools\",\"dsh_session_log\",\"dsh_plugin_packages\"]",
+    "seq=4 -> text \"U8_DISC_DONE\"",
+    "seq=5 userHead=\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"te\" nToolMsgs=0 tools=0 bodyKeys=[\"model\",\"stream\",\"messages\",\"max_tokens\",\"thinking\",\"system\",\"dsh_session_log\",\"dsh_plugin_packages\"]"
+  ],
+  "instanceLogTail": "[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-33-14/profiles/web/node_modules/dsh-agent-team/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3491/?token=REDACTED\n[dsh-agent-team] remote mount: MOUNTED channel=/team-remote\n"
+}

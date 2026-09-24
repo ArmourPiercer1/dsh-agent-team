@@ -45,9 +45,9 @@
 
 ## 验证证据
 
-- U6 套件：`npx vitest run packages/runtime/test/u6-mcp-017-regression.test.ts` → **5/5，exit 0**（scratch `.tmp-evidence/dsh-017rc1-u6-test3.log`；中间态：Schemastery 非 zod 面 → Standard Schema `~standard.validate` 修正 `.tmp-evidence/dsh-017rc1-u6-test2.log`）。
+- U6 套件：`npx vitest run packages/runtime/test/u6-mcp-017-regression.test.ts` → **5/5，exit 0**（scratch `scratch-logs/dsh-017rc1-u6-test3.log`；中间态：Schemastery 非 zod 面 → Standard Schema `~standard.validate` 修正 `scratch-logs/dsh-017rc1-u6-test2.log`）。
 - 既有 MCP/capability 单测（0.1.7 graph）：8 文件 191 测试全绿（`multi-mcp-wiring` 47 / `mcp-blueprint-initial-grant` 32 / `mcp-supply-config` 39 / `p8s4b-mcp-facet` 25 / `t4a-capability-wiring` 28 / `issue2-capability-permission-precedence` 12 / `t3-skills-mcp-adapter` 11 / `t12a-h1-nullable-mcp` 7）。
-- **根套件全量**（含本轮全部 U2-U6 改动）：`npx vitest run --config vitest.config.ts` → **10 failed files | 20 failed tests | 3822 passed (3842)**（scratch `.tmp-evidence/dsh-017rc1-root-test-u6-final.log`）——失败文件集与 U0 基线 `baseline-canonical-dc6fb6f.log`（10F|20F|3817P(3837)）**逐文件相同**；总数 +5 = U6 新增测试。零新增失败。
+- **根套件全量**（含本轮全部 U2-U6 改动）：`npx vitest run --config vitest.config.ts` → **10 failed files | 20 failed tests | 3822 passed (3842)**（scratch `scratch-logs/dsh-017rc1-root-test-u6-final.log`）——失败文件集与 U0 基线 `baseline-canonical-dc6fb6f.log`（10F|20F|3817P(3837)）**逐文件相同**；总数 +5 = U6 新增测试。零新增失败。
 
 ## 本轮同现的图漂移（非 U6 引入，随 U6 全量跑首次暴露，已修）
 

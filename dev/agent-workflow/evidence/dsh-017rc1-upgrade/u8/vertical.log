@@ -1,0 +1,866 @@
+[2026-09-24T13:12:30.703Z] U8 pristine 0.1.7 real-host vertical — stamp 2026-09-24T13-12-30
+[2026-09-24T13:12:30.704Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T13:12:30.704Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade (branch task/dsh-017rc1-upgrade)
+[2026-09-24T13:12:30.704Z] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-12-30
+[2026-09-24T13:12:30.704Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8
+[2026-09-24T13:12:30.727Z] PASS [preflight] test-use pristine @ 46a7f68b09 (HEAD + empty porcelain) — verified before any mutation
+[2026-09-24T13:12:30.727Z] preflight: test-use pristine @ 46a7f68b09; worktree @ adad20c
+[2026-09-24T13:12:30.786Z] PASS [preflight] boot precondition: the test-use CLI empirically runs 0.1.7-rc.1 (reset-log discrepancy recorded as a follow-up) — cliVersion=0.1.7-rc.1 lastBuildExit=1
+[2026-09-24T13:12:30.803Z] stable pre-probe: 3080=401 3180=401
+[2026-09-24T13:12:30.809Z] ports: host=3491 mock=3496 mcp=3497/3498/3499
+[2026-09-24T13:12:30.810Z] FATAL uncaught: Error: ENOENT: no such file or directory, open '/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-12-30/workspace/team/test.md'
+    at writeFileSync (node:fs:2482:20)
+    at main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8/vertical.mjs:1020:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[2026-09-24T13:13:03.865Z] U8 pristine 0.1.7 real-host vertical — stamp 2026-09-24T13-13-03
+[2026-09-24T13:13:03.866Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T13:13:03.866Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade (branch task/dsh-017rc1-upgrade)
+[2026-09-24T13:13:03.866Z] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-13-03
+[2026-09-24T13:13:03.866Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8
+[2026-09-24T13:13:03.887Z] PASS [preflight] test-use pristine @ 46a7f68b09 (HEAD + empty porcelain) — verified before any mutation
+[2026-09-24T13:13:03.887Z] preflight: test-use pristine @ 46a7f68b09; worktree @ adad20c
+[2026-09-24T13:13:03.942Z] PASS [preflight] boot precondition: the test-use CLI empirically runs 0.1.7-rc.1 (reset-log discrepancy recorded as a follow-up) — cliVersion=0.1.7-rc.1 lastBuildExit=1
+[2026-09-24T13:13:03.958Z] stable pre-probe: 3080=401 3180=401
+[2026-09-24T13:13:03.962Z] ports: host=3491 mock=3496 mcp=3497/3498/3499
+[2026-09-24T13:13:03.963Z] world materialized (probe files + anchor blueprint)
+[2026-09-24T13:13:03.973Z] mock model listening on 3496
+[2026-09-24T13:13:03.973Z] ── step 0: git-install (S1–S3) ──
+[2026-09-24T13:13:04.078Z] PASS [install] S0 bare clone of the upgraded branch; cloned tip == worktree HEAD — cloned=adad20c00c75413f4c1fa1fe6832fb0fad746f6c worktree=adad20c00c75413f4c1fa1fe6832fb0fad746f6c
+[2026-09-24T13:13:07.690Z] PASS [install] S1 first `dsh plugin add` exits 0 (0.1.7 compat check PASS by construction: no peerDependencies) — exit=0
+[2026-09-24T13:13:07.690Z] PASS [install] S1 NO 0.1.7 incompat line / allow-version exemption prompt in the add output — output had no matches (full output in install/add.log)
+[2026-09-24T13:13:07.690Z] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (install surface is committed prebuilt; zero lifecycle scripts)
+[2026-09-24T13:13:07.690Z] PASS [install] S1 no allowBuilds entry in the profile pnpm-workspace.yaml
+[2026-09-24T13:13:07.690Z] add warnings (recorded, not asserted): none
+[2026-09-24T13:13:07.690Z] PASS [install] S2 dsh.profile.bundles AUTO-contains dsh-agent-team (CLI reconcile of the root dsh.bundle.patch declaration) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-24T13:13:07.690Z] PASS [install] S2 the profile patch carries NO hand-written dsh-agent-team row (the bundle layer owns it)
+[2026-09-24T13:13:07.690Z] PASS [install] S3 installed package dir carries the committed install surface (host.js + agent-bindings.mjs + team-spill-local.js + cordis.patch.yml) — all 4 present under /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-13-03/profiles/web/node_modules/dsh-agent-team
+[2026-09-24T13:13:07.691Z] PASS [install] S3 the installed root cordis.patch.yml carries the spill replacement rows (base spill-local disabled + team-spill-local inserted)
+[2026-09-24T13:13:07.715Z] mini-MCP: single@3497 (logging) paged@3498 none@3499
+[2026-09-24T13:13:07.715Z] ── V0: host boot ──
+[2026-09-24T13:13:08.919Z] PASS [v0] V0 host boot marker present (dsh web: …?token=…) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T13:13:08.925Z] PASS [v0] V0 unauthenticated GET / → 401 (launch-token gate active) — status=401
+[2026-09-24T13:17:09.362Z] FATAL: row health not ready in 240s — health=null
+--- log tail ---
+dsh: disabling profile plugin row "dsh-agent-team": its declared peer dependencies cannot be validated: Cannot read properties of undefined (reading 'startsWith')
+dsh: disabling profile plugin row "team-spill-local": its declared peer dependencies cannot be validated: Cannot read properties of undefined (reading 'startsWith')
+dsh: warning: 1 entry did not activate
+p6t6-team-tools (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/packages/tools/harness/plugin.mjs): pending (waiting for service: teamRoot)
+dsh web: http://127.0.0.1:3491/?token=REDACTED
+dsh: disabling profile plugin row "dsh-agent-team": its declared peer dependencies cannot be validated: Cannot read properties of undefined (reading 'startsWith')
+dsh: disabling profile plugin row "team-spill-local": its declared peer dependencies cannot be validated: Cannot read properties of undefined (reading 'startsWith')
+
+[2026-09-24T13:17:09.371Z] VERDICT FAIL — 13/13 criteria passed
+[2026-09-24T13:19:09.274Z] U8 pristine 0.1.7 real-host vertical — stamp 2026-09-24T13-19-09
+[2026-09-24T13:19:09.275Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T13:19:09.275Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade (branch task/dsh-017rc1-upgrade)
+[2026-09-24T13:19:09.275Z] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-19-09
+[2026-09-24T13:19:09.275Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8
+[2026-09-24T13:19:09.379Z] PASS [preflight] test-use pristine @ 46a7f68b09 (HEAD + empty porcelain) — verified before any mutation
+[2026-09-24T13:19:09.379Z] preflight: test-use pristine @ 46a7f68b09; worktree @ adad20c
+[2026-09-24T13:19:09.450Z] PASS [preflight] boot precondition: the test-use CLI empirically runs 0.1.7-rc.1 (reset-log discrepancy recorded as a follow-up) — cliVersion=0.1.7-rc.1 lastBuildExit=1
+[2026-09-24T13:19:09.468Z] stable pre-probe: 3080=401 3180=401
+[2026-09-24T13:19:09.473Z] ports: host=3491 mock=3496 mcp=3497/3498/3499
+[2026-09-24T13:19:09.475Z] world materialized (probe files + anchor blueprint)
+[2026-09-24T13:19:09.485Z] mock model listening on 3496
+[2026-09-24T13:19:09.485Z] ── step 0: git-install (S1–S3) ──
+[2026-09-24T13:19:09.598Z] PASS [install] S0 bare clone of the upgraded branch; cloned tip == worktree HEAD — cloned=adad20c00c75413f4c1fa1fe6832fb0fad746f6c worktree=adad20c00c75413f4c1fa1fe6832fb0fad746f6c
+[2026-09-24T13:19:13.034Z] PASS [install] S1 first `dsh plugin add` exits 0 (0.1.7 compat check PASS by construction: no peerDependencies) — exit=0
+[2026-09-24T13:19:13.035Z] PASS [install] S1 NO 0.1.7 incompat line / allow-version exemption prompt in the add output — output had no matches (full output in install/add.log)
+[2026-09-24T13:19:13.035Z] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (install surface is committed prebuilt; zero lifecycle scripts)
+[2026-09-24T13:19:13.035Z] PASS [install] S1 no allowBuilds entry in the profile pnpm-workspace.yaml
+[2026-09-24T13:19:13.035Z] add warnings (recorded, not asserted): none
+[2026-09-24T13:19:13.035Z] PASS [install] S2 dsh.profile.bundles AUTO-contains dsh-agent-team (CLI reconcile of the root dsh.bundle.patch declaration) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-24T13:19:13.035Z] PASS [install] S2 the profile patch carries NO hand-written dsh-agent-team row (the bundle layer owns it)
+[2026-09-24T13:19:13.035Z] PASS [install] S3 installed package dir carries the committed install surface (host.js + agent-bindings.mjs + team-spill-local.js + cordis.patch.yml) — all 4 present under /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-19-09/profiles/web/node_modules/dsh-agent-team
+[2026-09-24T13:19:13.035Z] PASS [install] S3 the installed root cordis.patch.yml carries the spill replacement rows (base spill-local disabled + team-spill-local inserted)
+[2026-09-24T13:19:13.051Z] mini-MCP: single@3497 (logging) paged@3498 none@3499
+[2026-09-24T13:19:13.051Z] ── V0: host boot ──
+[2026-09-24T13:19:14.555Z] PASS [v0] V0 host boot marker present (dsh web: …?token=…) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T13:19:14.580Z] PASS [v0] V0 unauthenticated GET / → 401 (launch-token gate active) — status=401
+[2026-09-24T13:19:15.600Z] PASS [v0] V0 row ready: p6t6 health ok + phase=create + root teamSession adopted (create-or-open fresh world) — phase=create teamSession={"rootSessionId":"session-u8-root-2026-09-24T13-19-09","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha2
+[2026-09-24T13:19:15.601Z] PASS [v0] V0 no ERR_MODULE_NOT_FOUND in the instance log (installed dist resolves end-to-end)
+[2026-09-24T13:19:15.606Z] PASS [v0] V0 the dsh-agent-team CLIENT row is live (authenticated GET / serves the web app shell) — status=200
+[2026-09-24T13:19:15.606Z] PASS [v0] V0 no duplicate service collision in the instance log
+[2026-09-24T13:19:15.606Z] PASS [v0] V0 no pending REQUIRED service (0.1.7 startup diagnostics) — diagLines=0
+[2026-09-24T13:19:15.685Z] FAIL [v0] V0 composed tree carries EXACTLY ONE dsh-agent-team host row (profile override merged into the bundle row, last-write-wins — no duplicate row) — exit=0 idLines=2
+[2026-09-24T13:19:15.686Z] PASS [v0] V0 team-spill-local row present in the composed tree
+[2026-09-24T13:19:15.686Z] PASS [v0] V0 base spill-local row DISABLED in the composed tree — baseRows=1
+[2026-09-24T13:19:15.686Z] ── V1: ordinary session ──
+[2026-09-24T13:22:15.724Z] FAIL [v1] V1 ordinary session turn started (model request observed) — requests=0
+[2026-09-24T13:22:15.724Z] ── LEG 0: discovery (boot root surface → main blueprint deny list) ──
+[2026-09-24T13:33:14.076Z] U8 pristine 0.1.7 real-host vertical — stamp 2026-09-24T13-33-14
+[2026-09-24T13:33:14.077Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T13:33:14.077Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade (branch task/dsh-017rc1-upgrade)
+[2026-09-24T13:33:14.077Z] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-33-14
+[2026-09-24T13:33:14.077Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8
+[2026-09-24T13:33:14.308Z] PASS [preflight] test-use pristine @ 46a7f68b09 (HEAD + empty porcelain) — verified before any mutation
+[2026-09-24T13:33:14.308Z] preflight: test-use pristine @ 46a7f68b09; worktree @ adad20c
+[2026-09-24T13:33:14.383Z] PASS [preflight] boot precondition: the test-use CLI empirically runs 0.1.7-rc.1 (reset-log discrepancy recorded as a follow-up) — cliVersion=0.1.7-rc.1 lastBuildExit=1
+[2026-09-24T13:33:14.398Z] stable pre-probe: 3080=401 3180=401
+[2026-09-24T13:33:14.404Z] ports: host=3491 mock=3496 mcp=3497/3498/3499
+[2026-09-24T13:33:14.405Z] world materialized (probe files + anchor blueprint)
+[2026-09-24T13:33:14.415Z] mock model listening on 3496
+[2026-09-24T13:33:14.415Z] ── step 0: git-install (S1–S3) ──
+[2026-09-24T13:33:14.527Z] PASS [install] S0 bare clone of the upgraded branch; cloned tip == worktree HEAD — cloned=adad20c00c75413f4c1fa1fe6832fb0fad746f6c worktree=adad20c00c75413f4c1fa1fe6832fb0fad746f6c
+[2026-09-24T13:33:17.913Z] PASS [install] S1 first `dsh plugin add` exits 0 (0.1.7 compat check PASS by construction: no peerDependencies) — exit=0
+[2026-09-24T13:33:17.914Z] PASS [install] S1 NO 0.1.7 incompat line / allow-version exemption prompt in the add output — output had no matches (full output in install/add.log)
+[2026-09-24T13:33:17.914Z] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (install surface is committed prebuilt; zero lifecycle scripts)
+[2026-09-24T13:33:17.914Z] PASS [install] S1 no allowBuilds entry in the profile pnpm-workspace.yaml
+[2026-09-24T13:33:17.914Z] add warnings (recorded, not asserted): none
+[2026-09-24T13:33:17.914Z] PASS [install] S2 dsh.profile.bundles AUTO-contains dsh-agent-team (CLI reconcile of the root dsh.bundle.patch declaration) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-24T13:33:17.914Z] PASS [install] S2 the profile patch carries NO hand-written dsh-agent-team row (the bundle layer owns it)
+[2026-09-24T13:33:17.914Z] PASS [install] S3 installed package dir carries the committed install surface (host.js + agent-bindings.mjs + team-spill-local.js + cordis.patch.yml) — all 4 present under /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-33-14/profiles/web/node_modules/dsh-agent-team
+[2026-09-24T13:33:17.914Z] PASS [install] S3 the installed root cordis.patch.yml carries the spill replacement rows (base spill-local disabled + team-spill-local inserted)
+[2026-09-24T13:33:17.933Z] mini-MCP: single@3497 (logging) paged@3498 none@3499
+[2026-09-24T13:33:17.934Z] ── V0: host boot ──
+[2026-09-24T13:33:19.438Z] PASS [v0] V0 host boot marker present (dsh web: …?token=…) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T13:33:19.475Z] PASS [v0] V0 unauthenticated GET / → 401 (launch-token gate active) — status=401
+[2026-09-24T13:33:20.487Z] PASS [v0] V0 row ready: p6t6 health ok + phase=create + root teamSession adopted (create-or-open fresh world) — phase=create teamSession={"rootSessionId":"session-u8-root-2026-09-24T13-33-14","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha2
+[2026-09-24T13:33:20.488Z] PASS [v0] V0 no ERR_MODULE_NOT_FOUND in the instance log (installed dist resolves end-to-end)
+[2026-09-24T13:33:20.491Z] PASS [v0] V0 the dsh-agent-team CLIENT row is live (authenticated GET / serves the web app shell) — status=200
+[2026-09-24T13:33:20.491Z] PASS [v0] V0 no duplicate service collision in the instance log
+[2026-09-24T13:33:20.492Z] PASS [v0] V0 no pending REQUIRED service (0.1.7 startup diagnostics) — diagLines=0
+[2026-09-24T13:33:20.567Z] PASS [v0] V0 profile-patch layer carries EXACTLY ONE named dsh-agent-team host row (0.1.7 layered dump: the bundle layer keeps its machine-agnostic row; runtime override proven by the p6t6 teamSession above) — exit=0 patchLayerRows=1 bundleLayerRows=1 totalIdLines=2
+[2026-09-24T13:33:20.567Z] PASS [v0] V0 team-spill-local row present in the composed tree
+[2026-09-24T13:33:20.567Z] PASS [v0] V0 base spill-local row DISABLED in the composed tree — baseRows=1
+[2026-09-24T13:33:20.567Z] ── V1: ordinary session ──
+[2026-09-24T13:33:20.583Z] PASS [v1] V1 ordinary session explicitly created via /api/session/create (0.1.7: prompt no longer auto-creates) — status=200 body={"type":"server-response","rpcId":"u8create-iaay8a9lr6","result":{"ok":true,"value":{"sessionId":"session-u8-ord-2026-09-24T13-33-14","agentPreset":"standard"}}
+[2026-09-24T13:33:20.835Z] PASS [v1] V1 ordinary session turn started on the shipped preset surface — tools=26 model=deepseek-flash
+[2026-09-24T13:33:20.835Z] PASS [v1] V1 ordinary surface carries NO team_ tools (the plugin does not pollute the ordinary loop) — teamTools=[]
+[2026-09-24T13:33:50.887Z] PASS [v1] V1 ordinary fs read returned the workspace probe content (strict-read ordinary path intact) — toolHead="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-33-14/workspace/team/test.md</path>\n<typ"
+[2026-09-24T13:33:50.887Z] PASS [v1] V1 ordinary prompt accepted (0.1.7 remote: session/prompt resolves on accept, not turn end) — status=200 body={"type":"server-response","rpcId":"u8ord-oz4fze7443","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-24T13:33:50.887Z] ── LEG 0: discovery (boot root surface → main blueprint deny list) ──
+[2026-09-24T13:33:51.148Z] PASS [v2] LEG0 discovery captured the boot-root surface; read + bash present (the shipped standard preset mounts the managed stack) — surface=39 missingManaged=["lsp","pwsh"]
+[2026-09-24T13:33:51.148Z] main blueprint written (deny list = 20 unmanaged names)
+[2026-09-24T13:33:51.148Z] ── V2–V5: team.create (B) + the continuous scripted leader turn ──
+[2026-09-24T13:36:51.211Z] FAIL [v2] V2 B leader turn started (model request observed) — requests=5
+[2026-09-24T13:36:51.212Z] FAIL [v2] V2 team.create (product path) — SKIPPED (no B leader turn observed) — create failed or the initial-work turn never started — see v2-team/team-create-b-failed.json + b1-absent-diag.json
+[2026-09-24T13:36:51.212Z] FAIL [v3] V3 team tools chain — SKIPPED (no created team) — create failed or the initial-work turn never started — see v2-team/team-create-b-failed.json + b1-absent-diag.json
+[2026-09-24T13:36:51.212Z] FAIL [v4] V4 permission legs — SKIPPED (no created team) — create failed or the initial-work turn never started — see v2-team/team-create-b-failed.json + b1-absent-diag.json
+[2026-09-24T13:36:51.212Z] FAIL [v5] V5 MCP three-variant real-host — SKIPPED (no created team) — create failed or the initial-work turn never started — see v2-team/team-create-b-failed.json + b1-absent-diag.json
+[2026-09-24T13:36:51.212Z] FAIL [v6] V6 token-budget spill + artifact grant — SKIPPED (no created team) — create failed or the initial-work turn never started — see v2-team/team-create-b-failed.json + b1-absent-diag.json
+[2026-09-24T13:36:51.212Z] FAIL [v7] V7 lifecycle — SKIPPED (no created team) — create failed or the initial-work turn never started — see v2-team/team-create-b-failed.json + b1-absent-diag.json
+[2026-09-24T13:36:51.213Z] PASS [v7] V7 0.1.7 event vocabulary: no agent/session-start references in the boot log (the event is gone in 0.1.7) — refs=0
+[2026-09-24T13:36:51.213Z] ── V8: process stop + fresh reboot (bootPhase resume) ──
+[2026-09-24T13:36:51.518Z] PASS [v8] V8 host stopped and the port freed — port=3491
+[2026-09-24T13:41:51.730Z] PASS [v8] V8 the host RE-BOOTS after the process stop (fresh boot marker, same profile) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T13:41:51.749Z] PASS [v8] V8 row ready on the resume boot (p6t6 health ok) — body={"ok":true,"boot":2,"ready":true,"rootSessionId":"session-u8-root-2026-09-24T13-33-14","liveSessions":["session-u8-root-2026-09-24T13-33-14"],"toolCount":13}
+[2026-09-24T13:41:51.749Z] PASS [v8] V8 old Team RE-ADOPTED on the resume boot (strict load-only: the durable TeamSession was loaded — resume worked this round) — {"rootSessionId":"session-u8-root-2026-09-24T13-33-14","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha256:08ba0eb25b1d45d90e1841ff7b7878a64867cbb4e3a7cc0a40292bd6a1438e6e","defaultWor
+[2026-09-24T13:41:51.750Z] PASS [v8] V8 session logs use the 0.1.7 V4 naming (session.v4.jsonl.zstd) — v4=2 total=2
+[2026-09-24T13:41:51.750Z] ── teardown ──
+[2026-09-24T13:41:51.751Z] mock decision trace: /home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8/v0-boot/mock-decisions.log (8 lines); 5 model requests recorded
+[2026-09-24T13:41:51.758Z] PASS [closing] :3080/:3180 state unchanged (read-only probes pre == post) — pre={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}} post={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}}
+[2026-09-24T13:41:51.805Z] FAIL [closing] all U8 ports released (host + mock + mini-MCP) — {"3491":false,"3496":true,"3497":true,"3498":true,"3499":true}
+[2026-09-24T13:41:52.050Z] PASS [closing] test-use working tree still byte-clean after the run — porcelain=
+[2026-09-24T13:41:52.050Z] PASS [closing] test-use HEAD unchanged (46a7f68b09) — head=46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T13:41:52.050Z] world RETAINED as evidence: /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-33-14 (registered in this run's evidence; session files + spill root + profile state inside)
+[2026-09-24T13:41:52.050Z] VERDICT FAIL — 36/44 criteria passed; failed: v2,v2,v3,v4,v5,v6,v7,closing
+[2026-09-24T13:44:59.454Z] U8 pristine 0.1.7 real-host vertical — stamp 2026-09-24T13-44-59
+[2026-09-24T13:44:59.454Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T13:44:59.454Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade (branch task/dsh-017rc1-upgrade)
+[2026-09-24T13:44:59.455Z] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-44-59
+[2026-09-24T13:44:59.455Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8
+[2026-09-24T13:44:59.485Z] PASS [preflight] test-use pristine @ 46a7f68b09 (HEAD + empty porcelain) — verified before any mutation
+[2026-09-24T13:44:59.485Z] preflight: test-use pristine @ 46a7f68b09; worktree @ adad20c
+[2026-09-24T13:44:59.554Z] PASS [preflight] boot precondition: the test-use CLI empirically runs 0.1.7-rc.1 (reset-log discrepancy recorded as a follow-up) — cliVersion=0.1.7-rc.1 lastBuildExit=1
+[2026-09-24T13:44:59.569Z] stable pre-probe: 3080=401 3180=401
+[2026-09-24T13:44:59.574Z] ports: host=3491 mock=3496 mcp=3497/3498/3499
+[2026-09-24T13:44:59.575Z] world materialized (probe files + anchor blueprint)
+[2026-09-24T13:44:59.578Z] mock model listening on 3496
+[2026-09-24T13:44:59.578Z] ── step 0: git-install (S1–S3) ──
+[2026-09-24T13:44:59.690Z] PASS [install] S0 bare clone of the upgraded branch; cloned tip == worktree HEAD — cloned=adad20c00c75413f4c1fa1fe6832fb0fad746f6c worktree=adad20c00c75413f4c1fa1fe6832fb0fad746f6c
+[2026-09-24T13:45:03.220Z] PASS [install] S1 first `dsh plugin add` exits 0 (0.1.7 compat check PASS by construction: no peerDependencies) — exit=0
+[2026-09-24T13:45:03.221Z] PASS [install] S1 NO 0.1.7 incompat line / allow-version exemption prompt in the add output — output had no matches (full output in install/add.log)
+[2026-09-24T13:45:03.221Z] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (install surface is committed prebuilt; zero lifecycle scripts)
+[2026-09-24T13:45:03.221Z] PASS [install] S1 no allowBuilds entry in the profile pnpm-workspace.yaml
+[2026-09-24T13:45:03.221Z] add warnings (recorded, not asserted): none
+[2026-09-24T13:45:03.221Z] PASS [install] S2 dsh.profile.bundles AUTO-contains dsh-agent-team (CLI reconcile of the root dsh.bundle.patch declaration) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-24T13:45:03.221Z] PASS [install] S2 the profile patch carries NO hand-written dsh-agent-team row (the bundle layer owns it)
+[2026-09-24T13:45:03.221Z] PASS [install] S3 installed package dir carries the committed install surface (host.js + agent-bindings.mjs + team-spill-local.js + cordis.patch.yml) — all 4 present under /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-44-59/profiles/web/node_modules/dsh-agent-team
+[2026-09-24T13:45:03.221Z] PASS [install] S3 the installed root cordis.patch.yml carries the spill replacement rows (base spill-local disabled + team-spill-local inserted)
+[2026-09-24T13:45:03.247Z] mini-MCP: single@3497 (logging) paged@3498 none@3499
+[2026-09-24T13:45:03.247Z] ── V0: host boot ──
+[2026-09-24T13:45:04.752Z] PASS [v0] V0 host boot marker present (dsh web: …?token=…) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T13:45:04.772Z] PASS [v0] V0 unauthenticated GET / → 401 (launch-token gate active) — status=401
+[2026-09-24T13:45:05.783Z] PASS [v0] V0 row ready: p6t6 health ok + phase=create + root teamSession adopted (create-or-open fresh world) — phase=create teamSession={"rootSessionId":"session-u8-root-2026-09-24T13-44-59","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha2
+[2026-09-24T13:45:05.784Z] PASS [v0] V0 no ERR_MODULE_NOT_FOUND in the instance log (installed dist resolves end-to-end)
+[2026-09-24T13:45:05.788Z] PASS [v0] V0 the dsh-agent-team CLIENT row is live (authenticated GET / serves the web app shell) — status=200
+[2026-09-24T13:45:05.788Z] PASS [v0] V0 no duplicate service collision in the instance log
+[2026-09-24T13:45:05.788Z] PASS [v0] V0 no pending REQUIRED service (0.1.7 startup diagnostics) — diagLines=0
+[2026-09-24T13:45:05.862Z] PASS [v0] V0 profile-patch layer carries EXACTLY ONE named dsh-agent-team host row (0.1.7 layered dump: the bundle layer keeps its machine-agnostic row; runtime override proven by the p6t6 teamSession above) — exit=0 patchLayerRows=1 bundleLayerRows=1 totalIdLines=2
+[2026-09-24T13:45:05.862Z] PASS [v0] V0 team-spill-local row present in the composed tree
+[2026-09-24T13:45:05.862Z] PASS [v0] V0 base spill-local row DISABLED in the composed tree — baseRows=1
+[2026-09-24T13:45:05.862Z] ── V1: ordinary session ──
+[2026-09-24T13:45:05.878Z] PASS [v1] V1 ordinary session explicitly created via /api/session/create (0.1.7: prompt no longer auto-creates) — status=200 body={"type":"server-response","rpcId":"u8create-bdgovxz2zr","result":{"ok":true,"value":{"sessionId":"session-u8-ord-2026-09-24T13-44-59","agentPreset":"standard"}}
+[2026-09-24T13:45:06.130Z] PASS [v1] V1 ordinary session turn started on the shipped preset surface — tools=26 model=deepseek-flash
+[2026-09-24T13:45:06.130Z] PASS [v1] V1 ordinary surface carries NO team_ tools (the plugin does not pollute the ordinary loop) — teamTools=[]
+[2026-09-24T13:45:36.180Z] PASS [v1] V1 ordinary fs read returned the workspace probe content (strict-read ordinary path intact) — toolHead="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-44-59/workspace/team/test.md</path>\n<typ"
+[2026-09-24T13:45:36.180Z] PASS [v1] V1 ordinary prompt accepted (0.1.7 remote: session/prompt resolves on accept, not turn end) — status=200 body={"type":"server-response","rpcId":"u8ord-ld5zf0ah88","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-24T13:45:36.180Z] ── LEG 0: discovery (boot root surface → main blueprint deny list) ──
+[2026-09-24T13:45:36.441Z] PASS [v2] LEG0 discovery captured the boot-root surface; read + bash present (the shipped standard preset mounts the managed stack) — surface=39 missingManaged=["lsp","pwsh"]
+[2026-09-24T13:45:36.442Z] main blueprint written (deny list = 19 unmanaged names; filtered non-restrictable on 0.1.7: 1)
+[2026-09-24T13:45:36.442Z] ── V2–V5: team.create (B) + the continuous scripted leader turn ──
+[2026-09-24T13:45:36.692Z] PASS [v2] V2 model selection correct: the leader model request carries the row staticModel id — model=u8-model-2026-09-24T13-44-59 expected=u8-model-2026-09-24T13-44-59
+[2026-09-24T13:45:36.692Z] FAIL [v2] V2 persona visible: the leader system prompt carries the bound blueprint persona — sysHead=""
+[2026-09-24T13:45:36.692Z] PASS [v2] V2 preset mount: the leader surface carries the shipped standard preset managed tools (read + bash) — tools=26
+[2026-09-24T13:45:36.692Z] PASS [v5] V5 leader MCP surface is EXACTLY ping + alpha + beta (two-page aggregate); zero tools from the none server — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T13:45:57.970Z] PASS [v4] V4 leader ALLOWED read (allow read subtree team): silent pass, probe content returned — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-44-59/workspace/team"
+[2026-09-24T13:48:58.433Z] FAIL [v4] V4 bash ask created a durable pending control request (discovered) — requestId=null
+[2026-09-24T13:51:54.156Z] U8 pristine 0.1.7 real-host vertical — stamp 2026-09-24T13-51-54
+[2026-09-24T13:51:54.157Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T13:51:54.157Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade (branch task/dsh-017rc1-upgrade)
+[2026-09-24T13:51:54.157Z] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-51-54
+[2026-09-24T13:51:54.157Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8
+[2026-09-24T13:51:54.400Z] PASS [preflight] test-use pristine @ 46a7f68b09 (HEAD + empty porcelain) — verified before any mutation
+[2026-09-24T13:51:54.400Z] preflight: test-use pristine @ 46a7f68b09; worktree @ adad20c
+[2026-09-24T13:51:54.472Z] PASS [preflight] boot precondition: the test-use CLI empirically runs 0.1.7-rc.1 (reset-log discrepancy recorded as a follow-up) — cliVersion=0.1.7-rc.1 lastBuildExit=1
+[2026-09-24T13:51:54.487Z] stable pre-probe: 3080=401 3180=401
+[2026-09-24T13:51:54.491Z] ports: host=3491 mock=3496 mcp=3497/3498/3499
+[2026-09-24T13:51:54.493Z] world materialized (probe files + anchor blueprint)
+[2026-09-24T13:51:54.503Z] mock model listening on 3496
+[2026-09-24T13:51:54.503Z] ── step 0: git-install (S1–S3) ──
+[2026-09-24T13:51:54.614Z] PASS [install] S0 bare clone of the upgraded branch; cloned tip == worktree HEAD — cloned=adad20c00c75413f4c1fa1fe6832fb0fad746f6c worktree=adad20c00c75413f4c1fa1fe6832fb0fad746f6c
+[2026-09-24T13:51:58.080Z] PASS [install] S1 first `dsh plugin add` exits 0 (0.1.7 compat check PASS by construction: no peerDependencies) — exit=0
+[2026-09-24T13:51:58.080Z] PASS [install] S1 NO 0.1.7 incompat line / allow-version exemption prompt in the add output — output had no matches (full output in install/add.log)
+[2026-09-24T13:51:58.080Z] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (install surface is committed prebuilt; zero lifecycle scripts)
+[2026-09-24T13:51:58.080Z] PASS [install] S1 no allowBuilds entry in the profile pnpm-workspace.yaml
+[2026-09-24T13:51:58.080Z] add warnings (recorded, not asserted): none
+[2026-09-24T13:51:58.080Z] PASS [install] S2 dsh.profile.bundles AUTO-contains dsh-agent-team (CLI reconcile of the root dsh.bundle.patch declaration) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-24T13:51:58.080Z] PASS [install] S2 the profile patch carries NO hand-written dsh-agent-team row (the bundle layer owns it)
+[2026-09-24T13:51:58.081Z] PASS [install] S3 installed package dir carries the committed install surface (host.js + agent-bindings.mjs + team-spill-local.js + cordis.patch.yml) — all 4 present under /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-51-54/profiles/web/node_modules/dsh-agent-team
+[2026-09-24T13:51:58.081Z] PASS [install] S3 the installed root cordis.patch.yml carries the spill replacement rows (base spill-local disabled + team-spill-local inserted)
+[2026-09-24T13:51:58.105Z] mini-MCP: single@3497 (logging) paged@3498 none@3499
+[2026-09-24T13:51:58.105Z] ── V0: host boot ──
+[2026-09-24T13:51:59.610Z] PASS [v0] V0 host boot marker present (dsh web: …?token=…) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T13:51:59.616Z] PASS [v0] V0 unauthenticated GET / → 401 (launch-token gate active) — status=401
+[2026-09-24T13:52:00.630Z] PASS [v0] V0 row ready: p6t6 health ok + phase=create + root teamSession adopted (create-or-open fresh world) — phase=create teamSession={"rootSessionId":"session-u8-root-2026-09-24T13-51-54","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha2
+[2026-09-24T13:52:00.630Z] PASS [v0] V0 no ERR_MODULE_NOT_FOUND in the instance log (installed dist resolves end-to-end)
+[2026-09-24T13:52:00.635Z] PASS [v0] V0 the dsh-agent-team CLIENT row is live (authenticated GET / serves the web app shell) — status=200
+[2026-09-24T13:52:00.635Z] PASS [v0] V0 no duplicate service collision in the instance log
+[2026-09-24T13:52:00.635Z] PASS [v0] V0 no pending REQUIRED service (0.1.7 startup diagnostics) — diagLines=0
+[2026-09-24T13:52:00.722Z] PASS [v0] V0 profile-patch layer carries EXACTLY ONE named dsh-agent-team host row (0.1.7 layered dump: the bundle layer keeps its machine-agnostic row; runtime override proven by the p6t6 teamSession above) — exit=0 patchLayerRows=1 bundleLayerRows=1 totalIdLines=2
+[2026-09-24T13:52:00.722Z] PASS [v0] V0 team-spill-local row present in the composed tree
+[2026-09-24T13:52:00.722Z] PASS [v0] V0 base spill-local row DISABLED in the composed tree — baseRows=1
+[2026-09-24T13:52:00.722Z] ── V1: ordinary session ──
+[2026-09-24T13:52:00.740Z] PASS [v1] V1 ordinary session explicitly created via /api/session/create (0.1.7: prompt no longer auto-creates) — status=200 body={"type":"server-response","rpcId":"u8create-lwlhqsildt","result":{"ok":true,"value":{"sessionId":"session-u8-ord-2026-09-24T13-51-54","agentPreset":"standard"}}
+[2026-09-24T13:52:00.990Z] PASS [v1] V1 ordinary session turn started on the shipped preset surface — tools=26 model=deepseek-flash
+[2026-09-24T13:52:00.990Z] PASS [v1] V1 ordinary surface carries NO team_ tools (the plugin does not pollute the ordinary loop) — teamTools=[]
+[2026-09-24T13:52:31.046Z] PASS [v1] V1 ordinary fs read returned the workspace probe content (strict-read ordinary path intact) — toolHead="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-51-54/workspace/team/test.md</path>\n<typ"
+[2026-09-24T13:52:31.046Z] PASS [v1] V1 ordinary prompt accepted (0.1.7 remote: session/prompt resolves on accept, not turn end) — status=200 body={"type":"server-response","rpcId":"u8ord-et8ybtppvn","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-24T13:52:31.046Z] ── LEG 0: discovery (boot root surface → main blueprint deny list) ──
+[2026-09-24T13:52:31.312Z] PASS [v2] LEG0 discovery captured the boot-root surface; read + bash present (the shipped standard preset mounts the managed stack) — surface=39 missingManaged=["lsp","pwsh"]
+[2026-09-24T13:52:31.312Z] main blueprint written (deny list = 19 unmanaged names; filtered non-restrictable on 0.1.7: 1)
+[2026-09-24T13:52:31.312Z] ── V2–V5: team.create (B) + the continuous scripted leader turn ──
+[2026-09-24T13:52:31.563Z] PASS [v2] V2 model selection correct: the leader model request carries the row staticModel id — model=u8-model-2026-09-24T13-51-54 expected=u8-model-2026-09-24T13-51-54
+[2026-09-24T13:52:31.563Z] PASS [v2] V2 persona visible: the leader system prompt carries the bound blueprint persona — sysHead="You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the u8 vertical team. U8LEADER_PERSONA_2026-09-2"
+[2026-09-24T13:52:31.564Z] PASS [v2] V2 preset mount: the leader surface carries the shipped standard preset managed tools (read + bash) — tools=26
+[2026-09-24T13:52:31.564Z] PASS [v5] V5 leader MCP surface is EXACTLY ping + alpha + beta (two-page aggregate); zero tools from the none server — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T13:52:52.841Z] PASS [v4] V4 leader ALLOWED read (allow read subtree team): silent pass, probe content returned — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-51-54/workspace/team"
+[2026-09-24T13:52:52.842Z] PASS [v4] V4 leader DENIED read (deny read subtree runtime): explicit static deny with provenance in the tool result — head="Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-51-54/workspace/runtime/fo"
+[2026-09-24T13:54:53.158Z] FAIL [v4] V4 bash ask created a durable pending control request (discovered) — requestId=null
+[2026-09-24T13:56:53.350Z] FAIL [v4] V4 approved bash executed (tool result observed)
+[2026-09-24T13:58:53.568Z] FAIL [v2] V2 member create observed (tool result)
+[2026-09-24T13:59:55.318Z] U8 pristine 0.1.7 real-host vertical — stamp 2026-09-24T13-59-55
+[2026-09-24T13:59:55.319Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T13:59:55.319Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade (branch task/dsh-017rc1-upgrade)
+[2026-09-24T13:59:55.319Z] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-59-55
+[2026-09-24T13:59:55.319Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8
+[2026-09-24T13:59:55.433Z] PASS [preflight] test-use pristine @ 46a7f68b09 (HEAD + empty porcelain) — verified before any mutation
+[2026-09-24T13:59:55.433Z] preflight: test-use pristine @ 46a7f68b09; worktree @ adad20c
+[2026-09-24T13:59:55.504Z] PASS [preflight] boot precondition: the test-use CLI empirically runs 0.1.7-rc.1 (reset-log discrepancy recorded as a follow-up) — cliVersion=0.1.7-rc.1 lastBuildExit=1
+[2026-09-24T13:59:55.519Z] stable pre-probe: 3080=401 3180=401
+[2026-09-24T13:59:55.524Z] ports: host=3491 mock=3496 mcp=3497/3498/3499
+[2026-09-24T13:59:55.526Z] world materialized (probe files + anchor blueprint)
+[2026-09-24T13:59:55.528Z] mock model listening on 3496
+[2026-09-24T13:59:55.528Z] ── step 0: git-install (S1–S3) ──
+[2026-09-24T13:59:55.637Z] PASS [install] S0 bare clone of the upgraded branch; cloned tip == worktree HEAD — cloned=adad20c00c75413f4c1fa1fe6832fb0fad746f6c worktree=adad20c00c75413f4c1fa1fe6832fb0fad746f6c
+[2026-09-24T13:59:59.146Z] PASS [install] S1 first `dsh plugin add` exits 0 (0.1.7 compat check PASS by construction: no peerDependencies) — exit=0
+[2026-09-24T13:59:59.146Z] PASS [install] S1 NO 0.1.7 incompat line / allow-version exemption prompt in the add output — output had no matches (full output in install/add.log)
+[2026-09-24T13:59:59.146Z] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (install surface is committed prebuilt; zero lifecycle scripts)
+[2026-09-24T13:59:59.146Z] PASS [install] S1 no allowBuilds entry in the profile pnpm-workspace.yaml
+[2026-09-24T13:59:59.147Z] add warnings (recorded, not asserted): none
+[2026-09-24T13:59:59.147Z] PASS [install] S2 dsh.profile.bundles AUTO-contains dsh-agent-team (CLI reconcile of the root dsh.bundle.patch declaration) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-24T13:59:59.147Z] PASS [install] S2 the profile patch carries NO hand-written dsh-agent-team row (the bundle layer owns it)
+[2026-09-24T13:59:59.147Z] PASS [install] S3 installed package dir carries the committed install surface (host.js + agent-bindings.mjs + team-spill-local.js + cordis.patch.yml) — all 4 present under /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-59-55/profiles/web/node_modules/dsh-agent-team
+[2026-09-24T13:59:59.147Z] PASS [install] S3 the installed root cordis.patch.yml carries the spill replacement rows (base spill-local disabled + team-spill-local inserted)
+[2026-09-24T13:59:59.172Z] mini-MCP: single@3497 (logging) paged@3498 none@3499
+[2026-09-24T13:59:59.172Z] ── V0: host boot ──
+[2026-09-24T14:00:00.677Z] PASS [v0] V0 host boot marker present (dsh web: …?token=…) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T14:00:00.696Z] PASS [v0] V0 unauthenticated GET / → 401 (launch-token gate active) — status=401
+[2026-09-24T14:00:01.706Z] PASS [v0] V0 row ready: p6t6 health ok + phase=create + root teamSession adopted (create-or-open fresh world) — phase=create teamSession={"rootSessionId":"session-u8-root-2026-09-24T13-59-55","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha2
+[2026-09-24T14:00:01.706Z] PASS [v0] V0 no ERR_MODULE_NOT_FOUND in the instance log (installed dist resolves end-to-end)
+[2026-09-24T14:00:01.710Z] PASS [v0] V0 the dsh-agent-team CLIENT row is live (authenticated GET / serves the web app shell) — status=200
+[2026-09-24T14:00:01.710Z] PASS [v0] V0 no duplicate service collision in the instance log
+[2026-09-24T14:00:01.710Z] PASS [v0] V0 no pending REQUIRED service (0.1.7 startup diagnostics) — diagLines=0
+[2026-09-24T14:00:01.789Z] PASS [v0] V0 profile-patch layer carries EXACTLY ONE named dsh-agent-team host row (0.1.7 layered dump: the bundle layer keeps its machine-agnostic row; runtime override proven by the p6t6 teamSession above) — exit=0 patchLayerRows=1 bundleLayerRows=1 totalIdLines=2
+[2026-09-24T14:00:01.789Z] PASS [v0] V0 team-spill-local row present in the composed tree
+[2026-09-24T14:00:01.789Z] PASS [v0] V0 base spill-local row DISABLED in the composed tree — baseRows=1
+[2026-09-24T14:00:01.789Z] ── V1: ordinary session ──
+[2026-09-24T14:00:01.805Z] PASS [v1] V1 ordinary session explicitly created via /api/session/create (0.1.7: prompt no longer auto-creates) — status=200 body={"type":"server-response","rpcId":"u8create-vqo0hxpla7","result":{"ok":true,"value":{"sessionId":"session-u8-ord-2026-09-24T13-59-55","agentPreset":"standard"}}
+[2026-09-24T14:00:02.056Z] PASS [v1] V1 ordinary session turn started on the shipped preset surface — tools=26 model=deepseek-flash
+[2026-09-24T14:00:02.057Z] PASS [v1] V1 ordinary surface carries NO team_ tools (the plugin does not pollute the ordinary loop) — teamTools=[]
+[2026-09-24T14:00:32.107Z] PASS [v1] V1 ordinary fs read returned the workspace probe content (strict-read ordinary path intact) — toolHead="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-59-55/workspace/team/test.md</path>\n<typ"
+[2026-09-24T14:00:32.108Z] PASS [v1] V1 ordinary prompt accepted (0.1.7 remote: session/prompt resolves on accept, not turn end) — status=200 body={"type":"server-response","rpcId":"u8ord-pyocbte1vg","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-24T14:00:32.108Z] ── LEG 0: discovery (boot root surface → main blueprint deny list) ──
+[2026-09-24T14:00:32.368Z] PASS [v2] LEG0 discovery captured the boot-root surface; read + bash present (the shipped standard preset mounts the managed stack) — surface=39 missingManaged=["lsp","pwsh"]
+[2026-09-24T14:00:32.368Z] main blueprint written (deny list = 19 unmanaged names; filtered non-restrictable on 0.1.7: 1)
+[2026-09-24T14:00:32.368Z] ── V2–V5: team.create (B) + the continuous scripted leader turn ──
+[2026-09-24T14:00:32.619Z] PASS [v2] V2 model selection correct: the leader model request carries the row staticModel id — model=u8-model-2026-09-24T13-59-55 expected=u8-model-2026-09-24T13-59-55
+[2026-09-24T14:00:32.620Z] PASS [v2] V2 persona visible: the leader system prompt carries the bound blueprint persona — sysHead="You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the u8 vertical team. U8LEADER_PERSONA_2026-09-2"
+[2026-09-24T14:00:32.620Z] PASS [v2] V2 preset mount: the leader surface carries the shipped standard preset managed tools (read + bash) — tools=26
+[2026-09-24T14:00:32.620Z] PASS [v5] V5 leader MCP surface is EXACTLY ping + alpha + beta (two-page aggregate); zero tools from the none server — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T14:00:53.895Z] PASS [v4] V4 leader ALLOWED read (allow read subtree team): silent pass, probe content returned — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-59-55/workspace/team"
+[2026-09-24T14:00:53.896Z] PASS [v4] V4 leader DENIED read (deny read subtree runtime): explicit static deny with provenance in the tool result — head="Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-59-55/workspace/runtime/fo"
+[2026-09-24T14:00:53.901Z] PASS [v4] V4 bash ask created a durable pending control request (discovered) — requestId=ctrl-0ui80jr0as5ymy0j0qaeh19s
+[2026-09-24T14:00:53.918Z] PASS [v4] V4 scripted human approval (team.resolveControl v4) admitted — status=200
+[2026-09-24T14:00:54.169Z] FAIL [v4] V4 the approved bash EXECUTED on the last-mile guard (marker in the tool result) — head="Error: invalid arguments: missing required property \"description\""
+[2026-09-24T14:00:54.420Z] PASS [v2] V2 member create succeeded (the team tool returned the new instance id) — instanceId=inst-03k4r2f1pc7o
+[2026-09-24T14:01:19.212Z] PASS [v3] V3 team_delegate executed (the core work path exited with a result) — head="{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u8-team-2026-09-24T13-59-55\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceI"
+[2026-09-24T14:01:19.212Z] PASS [v5] V5 member MCP surface is EXACTLY ping + alpha + beta (per-member initial grant, none contributes zero) — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T14:01:19.212Z] FAIL [v2] V2 member persona visible (worker-b persona in the member system prompt) — sysHead=""
+[2026-09-24T14:01:19.212Z] PASS [v2] V2 member model selection correct (staticModel id) — model=u8-model-2026-09-24T13-59-55
+[2026-09-24T14:01:19.212Z] PASS [v4] V4 member ALLOWED read (allow read subtree team): silent pass — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-59-55/workspace/team"
+[2026-09-24T14:01:19.212Z] PASS [v4] V4 member DENIED read (deny read subtree runtime): explicit static deny, provenance distinguishable from a canonicalization failure — head="Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-59-55/workspace/runtime/fo"
+[2026-09-24T14:01:19.212Z] PASS [v3] V3 team_send_message EXITED (tool result observed — the historical hang regression point does not reproduce) — head="{\"status\":\"delivered\",\"rootSessionId\":\"session-u8-team-2026-09-24T13-59-55\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-03k4r2f1pc"
+[2026-09-24T14:01:19.213Z] PASS [v3] V3 team_report_progress recorded (progress-recorded status in the tool result) — head="{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-u8-team-2026-09-24T13-59-55\",\"instanceId\":\"inst-03k4r2f1pc7o\",\"row\":{\"globalSequence\":13,\"factType\":\"acti"
+[2026-09-24T14:01:19.213Z] PASS [v5] V5 live MCP call (single): mcp__u8single__ping returned pong:u8-v5 — head="pong:u8-v5"
+[2026-09-24T14:01:19.213Z] PASS [v5] V5 live MCP call (paginated page-2 tool reachable via page-1 aggregate): mcp__u8paged__alpha returned alpha:u8-alpha — head="alpha:u8-alpha"
+[2026-09-24T14:01:22.638Z] PASS [v2] V2 team.create (v2 product path) succeeded with path=fresh-root (projection established) — status=200 body={"type":"server-response","rpcId":"u8b-zocmapdoa1","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-u8-team-2026-09-24T13-59-55","blueprint":{"blueprintId":"team.u8-main","revision":"1","contentHash":"sha256:ce3c43af1038287
+[2026-09-24T14:01:22.638Z] FAIL [v2] V2 Team projection durable: the created root + member instance rows exist in team_domain storage — teamRows=0 memberRows=0
+[2026-09-24T14:01:22.643Z] PASS [v5] V5 per-server state: single/paged/none all mounted+allowed (the none variant did NOT crash Team init) — {"u8single":{"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"unavailable":false,"pendingNextBoundary":[],"explanation":"mcp: effective allow[u8single,u8paged,u8none]; team template(origin=static) allow[u8single,u8paged,u8none]; external exists=yes, hard
+[2026-09-24T14:01:22.643Z] PASS [v5] V5 no activationError on any of the three servers
+[2026-09-24T14:01:22.643Z] V5 mount state recorded (none-variant stability: team init + full chain on the same live Team)
+[2026-09-24T14:01:22.643Z] ── V6: token-budget spill + artifact grant ──
+[2026-09-24T14:01:26.423Z] PASS [v6] V6 the spill bash ask created a durable control request (ask bash any) — requestId=ctrl-0p9vglo1cwv81f1lswqz213b
+[2026-09-24T14:01:26.690Z] FAIL [v6] V6 the 64KB bash output was SPILLED by the 0.1.7 token budget (spill notice with locator in the tool result; base row maxInlineTokens: 12500 — no byte threshold in play) — notice=false path=null
+[2026-09-24T14:01:26.691Z] PASS [v6] V6 the inline result is the RETAINED preview (head/tail + notice), not the full 64KB output — inlineBytes=65
+[2026-09-24T14:04:26.802Z] FAIL [v6] V6 the spill file exists on disk — path=null
+[2026-09-24T14:04:26.802Z] PASS [v6] V6 the spill turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:09:27.387Z] FAIL [v6] V6 the member denied read observed (tool result) — d0=true dm1=false
+[2026-09-24T14:09:57.446Z] ── V7: lifecycle (archive + leader stop + cold resume) ──
+[2026-09-24T14:10:01.952Z] PASS [v7] V7 team_archive_member executed (the durable archive transition was committed) — head="{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-u8-team-2026-09-24T13-59-55\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-03k4r2f1pc7o\",\"effect\":{\"kind\":\"lifecycle-changed\",\""
+[2026-09-24T14:10:01.952Z] PASS [v7] V7 the archive turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:10:01.952Z] FAIL [v7] V7 the member lifecycle is DURABLY archived (the storage row lifecycle=archived — the 0.1.7 durable transition survived) — lifecycle=[]
+[2026-09-24T14:10:05.261Z] PASS [v7] V7 leader stop: the live leader handle was disposed (residency/drop) — body={"sessionId":"session-u8-team-2026-09-24T13-59-55","dropped":true}
+[2026-09-24T14:10:06.262Z] PASS [v7] V7 the leader agent COLD-RESUMED after the stop (a fresh model request on the same session — the 0.1.7 agents.resume path) — requests=28
+[2026-09-24T14:10:06.263Z] PASS [v7] V7 the leader resume turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:10:06.263Z] PASS [v7] V7 0.1.7 event vocabulary: no agent/session-start references in the boot log (the event is gone in 0.1.7) — refs=0
+[2026-09-24T14:10:06.263Z] ── V8: process stop + fresh reboot (bootPhase resume) ──
+[2026-09-24T14:10:06.566Z] PASS [v8] V8 host stopped and the port freed — port=3491
+[2026-09-24T14:10:08.070Z] PASS [v8] V8 the host RE-BOOTS after the process stop (fresh boot marker, same profile) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T14:10:08.082Z] PASS [v8] V8 row ready on the resume boot (p6t6 health ok) — body={"ok":true,"boot":2,"ready":true,"rootSessionId":"session-u8-root-2026-09-24T13-59-55","liveSessions":["session-u8-root-2026-09-24T13-59-55"],"toolCount":13}
+[2026-09-24T14:10:08.082Z] PASS [v8] V8 old Team RE-ADOPTED on the resume boot (strict load-only: the durable TeamSession was loaded — resume worked this round) — {"rootSessionId":"session-u8-root-2026-09-24T13-59-55","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha256:95a4e8a5e0415cf6335a776c71fe35aabacc485a969cf1d804560be27c37b09d","defaultWor
+[2026-09-24T14:10:08.082Z] PASS [v8] V8 session logs use the 0.1.7 V4 naming (session.v4.jsonl.zstd) — v4=4 total=4
+[2026-09-24T14:10:08.082Z] ── teardown ──
+[2026-09-24T14:10:08.083Z] mock decision trace: /home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8/v0-boot/mock-decisions.log (52 lines); 28 model requests recorded
+[2026-09-24T14:10:08.088Z] PASS [closing] :3080/:3180 state unchanged (read-only probes pre == post) — pre={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}} post={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}}
+[2026-09-24T14:10:08.121Z] FAIL [closing] all U8 ports released (host + mock + mini-MCP) — {"3491":false,"3496":true,"3497":true,"3498":true,"3499":true}
+[2026-09-24T14:10:08.144Z] PASS [closing] test-use working tree still byte-clean after the run — porcelain=
+[2026-09-24T14:10:08.144Z] PASS [closing] test-use HEAD unchanged (46a7f68b09) — head=46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T14:10:08.144Z] world RETAINED as evidence: /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-59-55 (registered in this run's evidence; session files + spill root + profile state inside)
+[2026-09-24T14:10:08.144Z] VERDICT FAIL — 65/73 criteria passed; failed: v4,v2,v2,v6,v6,v6,v7,closing
+[2026-09-24T14:15:33.449Z] U8 pristine 0.1.7 real-host vertical — stamp 2026-09-24T14-15-33
+[2026-09-24T14:15:33.458Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T14:15:33.458Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade (branch task/dsh-017rc1-upgrade)
+[2026-09-24T14:15:33.458Z] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-15-33
+[2026-09-24T14:15:33.458Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8
+[2026-09-24T14:15:33.704Z] PASS [preflight] test-use pristine @ 46a7f68b09 (HEAD + empty porcelain) — verified before any mutation
+[2026-09-24T14:15:33.704Z] preflight: test-use pristine @ 46a7f68b09; worktree @ adad20c
+[2026-09-24T14:15:33.773Z] PASS [preflight] boot precondition: the test-use CLI empirically runs 0.1.7-rc.1 (reset-log discrepancy recorded as a follow-up) — cliVersion=0.1.7-rc.1 lastBuildExit=1
+[2026-09-24T14:15:33.789Z] stable pre-probe: 3080=401 3180=401
+[2026-09-24T14:15:33.794Z] ports: host=3491 mock=3496 mcp=3497/3498/3499
+[2026-09-24T14:15:33.796Z] world materialized (probe files + anchor blueprint)
+[2026-09-24T14:15:33.805Z] mock model listening on 3496
+[2026-09-24T14:15:33.805Z] ── step 0: git-install (S1–S3) ──
+[2026-09-24T14:15:33.913Z] PASS [install] S0 bare clone of the upgraded branch; cloned tip == worktree HEAD — cloned=adad20c00c75413f4c1fa1fe6832fb0fad746f6c worktree=adad20c00c75413f4c1fa1fe6832fb0fad746f6c
+[2026-09-24T14:15:37.431Z] PASS [install] S1 first `dsh plugin add` exits 0 (0.1.7 compat check PASS by construction: no peerDependencies) — exit=0
+[2026-09-24T14:15:37.431Z] PASS [install] S1 NO 0.1.7 incompat line / allow-version exemption prompt in the add output — output had no matches (full output in install/add.log)
+[2026-09-24T14:15:37.431Z] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (install surface is committed prebuilt; zero lifecycle scripts)
+[2026-09-24T14:15:37.431Z] PASS [install] S1 no allowBuilds entry in the profile pnpm-workspace.yaml
+[2026-09-24T14:15:37.432Z] add warnings (recorded, not asserted): none
+[2026-09-24T14:15:37.432Z] PASS [install] S2 dsh.profile.bundles AUTO-contains dsh-agent-team (CLI reconcile of the root dsh.bundle.patch declaration) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-24T14:15:37.432Z] PASS [install] S2 the profile patch carries NO hand-written dsh-agent-team row (the bundle layer owns it)
+[2026-09-24T14:15:37.432Z] PASS [install] S3 installed package dir carries the committed install surface (host.js + agent-bindings.mjs + team-spill-local.js + cordis.patch.yml) — all 4 present under /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-15-33/profiles/web/node_modules/dsh-agent-team
+[2026-09-24T14:15:37.432Z] PASS [install] S3 the installed root cordis.patch.yml carries the spill replacement rows (base spill-local disabled + team-spill-local inserted)
+[2026-09-24T14:15:37.457Z] mini-MCP: single@3497 (logging) paged@3498 none@3499
+[2026-09-24T14:15:37.457Z] ── V0: host boot ──
+[2026-09-24T14:15:38.963Z] PASS [v0] V0 host boot marker present (dsh web: …?token=…) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T14:15:38.969Z] PASS [v0] V0 unauthenticated GET / → 401 (launch-token gate active) — status=401
+[2026-09-24T14:15:39.980Z] PASS [v0] V0 row ready: p6t6 health ok + phase=create + root teamSession adopted (create-or-open fresh world) — phase=create teamSession={"rootSessionId":"session-u8-root-2026-09-24T14-15-33","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha2
+[2026-09-24T14:15:39.981Z] PASS [v0] V0 no ERR_MODULE_NOT_FOUND in the instance log (installed dist resolves end-to-end)
+[2026-09-24T14:15:39.985Z] PASS [v0] V0 the dsh-agent-team CLIENT row is live (authenticated GET / serves the web app shell) — status=200
+[2026-09-24T14:15:39.985Z] PASS [v0] V0 no duplicate service collision in the instance log
+[2026-09-24T14:15:39.985Z] PASS [v0] V0 no pending REQUIRED service (0.1.7 startup diagnostics) — diagLines=0
+[2026-09-24T14:15:40.060Z] PASS [v0] V0 profile-patch layer carries EXACTLY ONE named dsh-agent-team host row (0.1.7 layered dump: the bundle layer keeps its machine-agnostic row; runtime override proven by the p6t6 teamSession above) — exit=0 patchLayerRows=1 bundleLayerRows=1 totalIdLines=2
+[2026-09-24T14:15:40.061Z] PASS [v0] V0 team-spill-local row present in the composed tree
+[2026-09-24T14:15:40.061Z] PASS [v0] V0 base spill-local row DISABLED in the composed tree — baseRows=1
+[2026-09-24T14:15:40.061Z] ── V1: ordinary session ──
+[2026-09-24T14:15:40.080Z] PASS [v1] V1 ordinary session explicitly created via /api/session/create (0.1.7: prompt no longer auto-creates) — status=200 body={"type":"server-response","rpcId":"u8create-c4axnba78q","result":{"ok":true,"value":{"sessionId":"session-u8-ord-2026-09-24T14-15-33","agentPreset":"standard"}}
+[2026-09-24T14:15:40.331Z] PASS [v1] V1 ordinary session turn started on the shipped preset surface — tools=26 model=deepseek-flash
+[2026-09-24T14:15:40.331Z] PASS [v1] V1 ordinary surface carries NO team_ tools (the plugin does not pollute the ordinary loop) — teamTools=[]
+[2026-09-24T14:16:10.379Z] PASS [v1] V1 ordinary fs read returned the workspace probe content (strict-read ordinary path intact) — toolHead="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-15-33/workspace/team/test.md</path>\n<typ"
+[2026-09-24T14:16:10.379Z] PASS [v1] V1 ordinary prompt accepted (0.1.7 remote: session/prompt resolves on accept, not turn end) — status=200 body={"type":"server-response","rpcId":"u8ord-r1khx3yic7","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-24T14:16:10.379Z] ── LEG 0: discovery (boot root surface → main blueprint deny list) ──
+[2026-09-24T14:16:10.641Z] PASS [v2] LEG0 discovery captured the boot-root surface; read + bash present (the shipped standard preset mounts the managed stack) — surface=39 missingManaged=["lsp","pwsh"]
+[2026-09-24T14:16:10.641Z] main blueprint written (deny list = 19 unmanaged names; filtered non-restrictable on 0.1.7: 1)
+[2026-09-24T14:16:10.641Z] ── V2–V5: team.create (B) + the continuous scripted leader turn ──
+[2026-09-24T14:16:10.893Z] PASS [v2] V2 model selection correct: the leader model request carries the row staticModel id — model=u8-model-2026-09-24T14-15-33 expected=u8-model-2026-09-24T14-15-33
+[2026-09-24T14:16:10.893Z] PASS [v2] V2 persona visible: the leader system prompt carries the bound blueprint persona — sysHead="You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the u8 vertical team. U8LEADER_PERSONA_2026-09-2"
+[2026-09-24T14:16:10.893Z] PASS [v2] V2 preset mount: the leader surface carries the shipped standard preset managed tools (read + bash) — tools=26
+[2026-09-24T14:16:10.893Z] PASS [v5] V5 leader MCP surface is EXACTLY ping + alpha + beta (two-page aggregate); zero tools from the none server — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T14:16:32.170Z] PASS [v4] V4 leader ALLOWED read (allow read subtree team): silent pass, probe content returned — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-15-33/workspace/team"
+[2026-09-24T14:16:32.171Z] PASS [v4] V4 leader DENIED read (deny read subtree runtime): explicit static deny with provenance in the tool result — head="Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-15-33/workspace/runtime/fo"
+[2026-09-24T14:16:32.175Z] PASS [v4] V4 bash ask created a durable pending control request (discovered) — requestId=ctrl-1gyfete1gpkdvn0we2dd017u
+[2026-09-24T14:16:32.191Z] PASS [v4] V4 scripted human approval (team.resolveControl v4) admitted — status=200
+[2026-09-24T14:16:32.441Z] PASS [v4] V4 the approved bash EXECUTED on the last-mile guard (marker in the tool result) — head="u8-smoke-2026-09-24T14-15-33\n"
+[2026-09-24T14:16:32.441Z] PASS [v2] V2 member create succeeded (the team tool returned the new instance id) — instanceId=inst-1hujnef0v6vj
+[2026-09-24T14:16:57.252Z] PASS [v3] V3 team_delegate executed (the core work path exited with a result) — head="{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-15-33\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceI"
+[2026-09-24T14:16:57.252Z] PASS [v5] V5 member MCP surface is EXACTLY ping + alpha + beta (per-member initial grant, none contributes zero) — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T14:16:57.252Z] PASS [v2] V2 member persona visible (worker-b persona in the member system prompt) — sysHead="You are an AI agent powered by DeepSeek Harness.\n\nYou are worker-b of the u8 vertical team. U8WORKER_PERSONA_2026-09-24T"
+[2026-09-24T14:16:57.252Z] PASS [v2] V2 member model selection correct (staticModel id) — model=u8-model-2026-09-24T14-15-33
+[2026-09-24T14:16:57.252Z] PASS [v4] V4 member ALLOWED read (allow read subtree team): silent pass — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-15-33/workspace/team"
+[2026-09-24T14:16:57.252Z] PASS [v4] V4 member DENIED read (deny read subtree runtime): explicit static deny, provenance distinguishable from a canonicalization failure — head="Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-15-33/workspace/runtime/fo"
+[2026-09-24T14:16:57.252Z] PASS [v3] V3 team_send_message EXITED (tool result observed — the historical hang regression point does not reproduce) — head="{\"status\":\"delivered\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-15-33\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-1hujnef0v6"
+[2026-09-24T14:16:57.503Z] PASS [v3] V3 team_report_progress recorded (progress-recorded status in the tool result) — head="{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-15-33\",\"instanceId\":\"inst-1hujnef0v6vj\",\"row\":{\"globalSequence\":13,\"factType\":\"acti"
+[2026-09-24T14:16:57.504Z] PASS [v5] V5 live MCP call (single): mcp__u8single__ping returned pong:u8-v5 — head="pong:u8-v5"
+[2026-09-24T14:16:57.504Z] PASS [v5] V5 live MCP call (paginated page-2 tool reachable via page-1 aggregate): mcp__u8paged__alpha returned alpha:u8-alpha — head="alpha:u8-alpha"
+[2026-09-24T14:17:00.817Z] PASS [v2] V2 team.create (v2 product path) succeeded with path=fresh-root (projection established) — status=200 body={"type":"server-response","rpcId":"u8b-xmu3jmgs8t","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-u8-team-2026-09-24T14-15-33","blueprint":{"blueprintId":"team.u8-main","revision":"1","contentHash":"sha256:3be21b599cbd91b
+[2026-09-24T14:17:00.818Z] PASS [v2] V2 Team projection durable: the created root + member instance rows exist in team_domain storage — teamRows=25 memberRows=8
+[2026-09-24T14:17:00.822Z] PASS [v5] V5 per-server state: single/paged/none all mounted+allowed (the none variant did NOT crash Team init) — {"u8single":{"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"unavailable":false,"pendingNextBoundary":[],"explanation":"mcp: effective allow[u8single,u8paged,u8none]; team template(origin=static) allow[u8single,u8paged,u8none]; external exists=yes, hard
+[2026-09-24T14:17:00.822Z] PASS [v5] V5 no activationError on any of the three servers
+[2026-09-24T14:17:00.822Z] V5 mount state recorded (none-variant stability: team init + full chain on the same live Team)
+[2026-09-24T14:17:00.822Z] ── V6: token-budget spill + artifact grant ──
+[2026-09-24T14:17:04.602Z] PASS [v6] V6 the spill bash ask created a durable control request (ask bash any) — requestId=ctrl-0ovc3fj14bqu981q2f6bd1p7
+[2026-09-24T14:17:04.870Z] PASS [v6] V6 the 250KB bash output was SPILLED by the 0.1.7 token budget (spill notice with locator in the tool result; base row maxInlineTokens: 12500 — no byte threshold in play) — notice=true path=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-15-33/spill/session-c2d42ddc692b/9615e44d001b-bash.txt
+[2026-09-24T14:17:04.870Z] PASS [v6] V6 the inline result is the RETAINED preview (head/tail + notice), not the full 250KB output — inlineBytes=49931
+[2026-09-24T14:17:05.121Z] PASS [v6] V6 the OWNER agent READS the spill file (the durable artifact grant admits it) — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-15-33/spill/session-c2d42ddc692b/9615e44"
+[2026-09-24T14:17:05.122Z] PASS [v6] V6 the spill file is DURABLE on disk under the world-pinned spill root — bytes=64105
+[2026-09-24T14:17:05.198Z] FAIL [v6] V6 TeamAwareLocalSpillStore recorded a DURABLE artifact grant (the locator appears in durable world storage) — files=[]
+[2026-09-24T14:17:05.198Z] PASS [v6] V6 the spill turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:17:18.146Z] PASS [v6] V6 the OTHER instance (member) CANNOT read the spill file (no grant outside the workspace → deny; the owner-only grant scope holds) — head="Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed"
+[2026-09-24T14:17:18.146Z] ── V7: lifecycle (archive + leader stop + cold resume) ──
+[2026-09-24T14:17:26.666Z] PASS [v7] V7 team_archive_member executed (the durable archive transition was committed) — head="{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-15-33\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-1hujnef0v6vj\",\"effect\":{\"kind\":\"lifecycle-changed\",\""
+[2026-09-24T14:17:26.666Z] PASS [v7] V7 the archive turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:17:26.666Z] PASS [v7] V7 the member lifecycle is DURABLY archived (the storage row lifecycle=archived — the 0.1.7 durable transition survived) — lifecycle=["ARCHIVED",null,null,null,null,null,null,null,null,null,null,null]
+[2026-09-24T14:17:30.170Z] PASS [v7] V7 leader stop: the live leader handle was disposed (residency/drop) — body={"sessionId":"session-u8-team-2026-09-24T14-15-33","dropped":true}
+[2026-09-24T14:17:31.171Z] PASS [v7] V7 the leader agent COLD-RESUMED after the stop (a fresh model request on the same session — the 0.1.7 agents.resume path) — requests=31
+[2026-09-24T14:17:31.172Z] PASS [v7] V7 the leader resume turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:17:31.172Z] PASS [v7] V7 0.1.7 event vocabulary: no agent/session-start references in the boot log (the event is gone in 0.1.7) — refs=0
+[2026-09-24T14:17:31.172Z] ── V8: process stop + fresh reboot (bootPhase resume) ──
+[2026-09-24T14:17:31.475Z] PASS [v8] V8 host stopped and the port freed — port=3491
+[2026-09-24T14:22:31.702Z] PASS [v8] V8 the host RE-BOOTS after the process stop (fresh boot marker, same profile) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T14:22:31.713Z] PASS [v8] V8 row ready on the resume boot (p6t6 health ok) — body={"ok":true,"boot":2,"ready":true,"rootSessionId":"session-u8-root-2026-09-24T14-15-33","liveSessions":["session-u8-root-2026-09-24T14-15-33"],"toolCount":13}
+[2026-09-24T14:22:31.713Z] PASS [v8] V8 old Team RE-ADOPTED on the resume boot (strict load-only: the durable TeamSession was loaded — resume worked this round) — {"rootSessionId":"session-u8-root-2026-09-24T14-15-33","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha256:4517a49e89d77370077c077e74184816556e45fb5bd097d34fb30e949fb63769","defaultWor
+[2026-09-24T14:22:31.714Z] PASS [v8] V8 session logs use the 0.1.7 V4 naming (session.v4.jsonl.zstd) — v4=4 total=4
+[2026-09-24T14:22:31.714Z] ── teardown ──
+[2026-09-24T14:22:31.714Z] mock decision trace: /home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8/v0-boot/mock-decisions.log (58 lines); 31 model requests recorded
+[2026-09-24T14:22:31.718Z] PASS [closing] :3080/:3180 state unchanged (read-only probes pre == post) — pre={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}} post={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}}
+[2026-09-24T14:22:32.064Z] PASS [closing] all U8 ports released (host + mock + mini-MCP) — {"3491":true,"3496":true,"3497":true,"3498":true,"3499":true}
+[2026-09-24T14:22:32.086Z] PASS [closing] test-use working tree still byte-clean after the run — porcelain=
+[2026-09-24T14:22:32.086Z] PASS [closing] test-use HEAD unchanged (46a7f68b09) — head=46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T14:22:32.086Z] world RETAINED as evidence: /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-15-33 (registered in this run's evidence; session files + spill root + profile state inside)
+[2026-09-24T14:22:32.086Z] VERDICT FAIL — 74/75 criteria passed; failed: v6
+[2026-09-24T14:24:24.112Z] U8 pristine 0.1.7 real-host vertical — stamp 2026-09-24T14-24-24
+[2026-09-24T14:24:24.113Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T14:24:24.113Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade (branch task/dsh-017rc1-upgrade)
+[2026-09-24T14:24:24.113Z] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-24-24
+[2026-09-24T14:24:24.113Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8
+[2026-09-24T14:24:24.135Z] PASS [preflight] test-use pristine @ 46a7f68b09 (HEAD + empty porcelain) — verified before any mutation
+[2026-09-24T14:24:24.135Z] preflight: test-use pristine @ 46a7f68b09; worktree @ adad20c
+[2026-09-24T14:24:24.190Z] PASS [preflight] boot precondition: the test-use CLI empirically runs 0.1.7-rc.1 (reset-log discrepancy recorded as a follow-up) — cliVersion=0.1.7-rc.1 lastBuildExit=1
+[2026-09-24T14:24:24.205Z] stable pre-probe: 3080=401 3180=401
+[2026-09-24T14:24:24.211Z] ports: host=3491 mock=3496 mcp=3497/3498/3499
+[2026-09-24T14:24:24.212Z] world materialized (probe files + anchor blueprint)
+[2026-09-24T14:24:24.216Z] mock model listening on 3496
+[2026-09-24T14:24:24.216Z] ── step 0: git-install (S1–S3) ──
+[2026-09-24T14:24:24.258Z] PASS [install] S0 bare clone of the upgraded branch; cloned tip == worktree HEAD — cloned=adad20c00c75413f4c1fa1fe6832fb0fad746f6c worktree=adad20c00c75413f4c1fa1fe6832fb0fad746f6c
+[2026-09-24T14:24:27.441Z] PASS [install] S1 first `dsh plugin add` exits 0 (0.1.7 compat check PASS by construction: no peerDependencies) — exit=0
+[2026-09-24T14:24:27.441Z] PASS [install] S1 NO 0.1.7 incompat line / allow-version exemption prompt in the add output — output had no matches (full output in install/add.log)
+[2026-09-24T14:24:27.441Z] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (install surface is committed prebuilt; zero lifecycle scripts)
+[2026-09-24T14:24:27.441Z] PASS [install] S1 no allowBuilds entry in the profile pnpm-workspace.yaml
+[2026-09-24T14:24:27.442Z] add warnings (recorded, not asserted): none
+[2026-09-24T14:24:27.442Z] PASS [install] S2 dsh.profile.bundles AUTO-contains dsh-agent-team (CLI reconcile of the root dsh.bundle.patch declaration) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-24T14:24:27.442Z] PASS [install] S2 the profile patch carries NO hand-written dsh-agent-team row (the bundle layer owns it)
+[2026-09-24T14:24:27.442Z] PASS [install] S3 installed package dir carries the committed install surface (host.js + agent-bindings.mjs + team-spill-local.js + cordis.patch.yml) — all 4 present under /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-24-24/profiles/web/node_modules/dsh-agent-team
+[2026-09-24T14:24:27.442Z] PASS [install] S3 the installed root cordis.patch.yml carries the spill replacement rows (base spill-local disabled + team-spill-local inserted)
+[2026-09-24T14:24:27.498Z] mini-MCP: single@3497 (logging) paged@3498 none@3499
+[2026-09-24T14:24:27.499Z] ── V0: host boot ──
+[2026-09-24T14:24:28.704Z] PASS [v0] V0 host boot marker present (dsh web: …?token=…) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T14:24:28.744Z] PASS [v0] V0 unauthenticated GET / → 401 (launch-token gate active) — status=401
+[2026-09-24T14:24:29.756Z] PASS [v0] V0 row ready: p6t6 health ok + phase=create + root teamSession adopted (create-or-open fresh world) — phase=create teamSession={"rootSessionId":"session-u8-root-2026-09-24T14-24-24","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha2
+[2026-09-24T14:24:29.757Z] PASS [v0] V0 no ERR_MODULE_NOT_FOUND in the instance log (installed dist resolves end-to-end)
+[2026-09-24T14:24:29.760Z] PASS [v0] V0 the dsh-agent-team CLIENT row is live (authenticated GET / serves the web app shell) — status=200
+[2026-09-24T14:24:29.760Z] PASS [v0] V0 no duplicate service collision in the instance log
+[2026-09-24T14:24:29.760Z] PASS [v0] V0 no pending REQUIRED service (0.1.7 startup diagnostics) — diagLines=0
+[2026-09-24T14:24:29.835Z] PASS [v0] V0 profile-patch layer carries EXACTLY ONE named dsh-agent-team host row (0.1.7 layered dump: the bundle layer keeps its machine-agnostic row; runtime override proven by the p6t6 teamSession above) — exit=0 patchLayerRows=1 bundleLayerRows=1 totalIdLines=2
+[2026-09-24T14:24:29.835Z] PASS [v0] V0 team-spill-local row present in the composed tree
+[2026-09-24T14:24:29.835Z] PASS [v0] V0 base spill-local row DISABLED in the composed tree — baseRows=1
+[2026-09-24T14:24:29.835Z] ── V1: ordinary session ──
+[2026-09-24T14:24:29.851Z] PASS [v1] V1 ordinary session explicitly created via /api/session/create (0.1.7: prompt no longer auto-creates) — status=200 body={"type":"server-response","rpcId":"u8create-d5zzql55to","result":{"ok":true,"value":{"sessionId":"session-u8-ord-2026-09-24T14-24-24","agentPreset":"standard"}}
+[2026-09-24T14:24:30.103Z] PASS [v1] V1 ordinary session turn started on the shipped preset surface — tools=26 model=deepseek-flash
+[2026-09-24T14:24:30.103Z] PASS [v1] V1 ordinary surface carries NO team_ tools (the plugin does not pollute the ordinary loop) — teamTools=[]
+[2026-09-24T14:24:50.890Z] PASS [v1] V1 ordinary fs read returned the workspace probe content (strict-read ordinary path intact) — toolHead="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-24-24/workspace/team/test.md</path>\n<typ"
+[2026-09-24T14:24:50.890Z] PASS [v1] V1 ordinary prompt accepted (0.1.7 remote: session/prompt resolves on accept, not turn end) — status=200 body={"type":"server-response","rpcId":"u8ord-qvv9h1tmhe","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-24T14:24:50.890Z] ── LEG 0: discovery (boot root surface → main blueprint deny list) ──
+[2026-09-24T14:24:51.151Z] PASS [v2] LEG0 discovery captured the boot-root surface; read + bash present (the shipped standard preset mounts the managed stack) — surface=39 missingManaged=["lsp","pwsh"]
+[2026-09-24T14:24:51.151Z] main blueprint written (deny list = 19 unmanaged names; filtered non-restrictable on 0.1.7: 1)
+[2026-09-24T14:24:51.151Z] ── V2–V5: team.create (B) + the continuous scripted leader turn ──
+[2026-09-24T14:24:51.402Z] PASS [v2] V2 model selection correct: the leader model request carries the row staticModel id — model=u8-model-2026-09-24T14-24-24 expected=u8-model-2026-09-24T14-24-24
+[2026-09-24T14:24:51.402Z] PASS [v2] V2 persona visible: the leader system prompt carries the bound blueprint persona — sysHead="You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the u8 vertical team. U8LEADER_PERSONA_2026-09-2"
+[2026-09-24T14:24:51.402Z] PASS [v2] V2 preset mount: the leader surface carries the shipped standard preset managed tools (read + bash) — tools=26
+[2026-09-24T14:24:51.403Z] PASS [v5] V5 leader MCP surface is EXACTLY ping + alpha + beta (two-page aggregate); zero tools from the none server — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T14:25:12.688Z] PASS [v4] V4 leader ALLOWED read (allow read subtree team): silent pass, probe content returned — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-24-24/workspace/team"
+[2026-09-24T14:25:12.688Z] PASS [v4] V4 leader DENIED read (deny read subtree runtime): explicit static deny with provenance in the tool result — head="Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-24-24/workspace/runtime/fo"
+[2026-09-24T14:25:12.693Z] PASS [v4] V4 bash ask created a durable pending control request (discovered) — requestId=ctrl-0mnirkk1jj2rll069auuy0v5
+[2026-09-24T14:25:12.709Z] PASS [v4] V4 scripted human approval (team.resolveControl v4) admitted — status=200
+[2026-09-24T14:25:12.959Z] PASS [v4] V4 the approved bash EXECUTED on the last-mile guard (marker in the tool result) — head="u8-smoke-2026-09-24T14-24-24\n"
+[2026-09-24T14:25:12.960Z] PASS [v2] V2 member create succeeded (the team tool returned the new instance id) — instanceId=inst-0fdcsk70g9la
+[2026-09-24T14:25:37.749Z] PASS [v3] V3 team_delegate executed (the core work path exited with a result) — head="{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-24-24\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceI"
+[2026-09-24T14:25:37.750Z] PASS [v5] V5 member MCP surface is EXACTLY ping + alpha + beta (per-member initial grant, none contributes zero) — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T14:25:37.750Z] PASS [v2] V2 member persona visible (worker-b persona in the member system prompt) — sysHead="You are an AI agent powered by DeepSeek Harness.\n\nYou are worker-b of the u8 vertical team. U8WORKER_PERSONA_2026-09-24T"
+[2026-09-24T14:25:37.750Z] PASS [v2] V2 member model selection correct (staticModel id) — model=u8-model-2026-09-24T14-24-24
+[2026-09-24T14:25:37.750Z] PASS [v4] V4 member ALLOWED read (allow read subtree team): silent pass — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-24-24/workspace/team"
+[2026-09-24T14:25:37.750Z] PASS [v4] V4 member DENIED read (deny read subtree runtime): explicit static deny, provenance distinguishable from a canonicalization failure — head="Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-24-24/workspace/runtime/fo"
+[2026-09-24T14:25:37.750Z] PASS [v3] V3 team_send_message EXITED (tool result observed — the historical hang regression point does not reproduce) — head="{\"status\":\"delivered\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-24-24\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-0fdcsk70g9"
+[2026-09-24T14:25:37.751Z] PASS [v3] V3 team_report_progress recorded (progress-recorded status in the tool result) — head="{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-24-24\",\"instanceId\":\"inst-0fdcsk70g9la\",\"row\":{\"globalSequence\":13,\"factType\":\"acti"
+[2026-09-24T14:25:37.751Z] PASS [v5] V5 live MCP call (single): mcp__u8single__ping returned pong:u8-v5 — head="pong:u8-v5"
+[2026-09-24T14:25:37.751Z] PASS [v5] V5 live MCP call (paginated page-2 tool reachable via page-1 aggregate): mcp__u8paged__alpha returned alpha:u8-alpha — head="alpha:u8-alpha"
+[2026-09-24T14:25:41.258Z] PASS [v2] V2 team.create (v2 product path) succeeded with path=fresh-root (projection established) — status=200 body={"type":"server-response","rpcId":"u8b-tvmzwvb77p","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-u8-team-2026-09-24T14-24-24","blueprint":{"blueprintId":"team.u8-main","revision":"1","contentHash":"sha256:3f9eac8cab815f5
+[2026-09-24T14:25:41.259Z] PASS [v2] V2 Team projection durable: the created root + member instance rows exist in team_domain storage — teamRows=25 memberRows=8
+[2026-09-24T14:25:41.263Z] PASS [v5] V5 per-server state: single/paged/none all mounted+allowed (the none variant did NOT crash Team init) — {"u8single":{"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"unavailable":false,"pendingNextBoundary":[],"explanation":"mcp: effective allow[u8single,u8paged,u8none]; team template(origin=static) allow[u8single,u8paged,u8none]; external exists=yes, hard
+[2026-09-24T14:25:41.263Z] PASS [v5] V5 no activationError on any of the three servers
+[2026-09-24T14:25:41.263Z] V5 mount state recorded (none-variant stability: team init + full chain on the same live Team)
+[2026-09-24T14:25:41.263Z] ── V6: token-budget spill + artifact grant ──
+[2026-09-24T14:25:45.045Z] PASS [v6] V6 the spill bash ask created a durable control request (ask bash any) — requestId=ctrl-0y9e80p1icl98m19vdoef0ln
+[2026-09-24T14:25:45.312Z] PASS [v6] V6 the 250KB bash output was SPILLED by the 0.1.7 token budget (spill notice with locator in the tool result; base row maxInlineTokens: 12500 — no byte threshold in play) — notice=true path=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-24-24/spill/session-234f5b435c31/32c5253850a5-bash.txt
+[2026-09-24T14:25:45.313Z] PASS [v6] V6 the inline result is the RETAINED preview (head/tail + notice), not the full 250KB output — inlineBytes=49931
+[2026-09-24T14:25:45.563Z] PASS [v6] V6 the OWNER agent READS the spill file (the durable artifact grant admits it) — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-24-24/spill/session-234f5b435c31/32c5253"
+[2026-09-24T14:25:45.563Z] PASS [v6] V6 the spill file is DURABLE on disk under the world-pinned spill root — bytes=64105
+[2026-09-24T14:26:05.688Z] FAIL [v6] V6 TeamAwareLocalSpillStore recorded a DURABLE artifact grant (the locator appears in durable world storage) — files=[]
+[2026-09-24T14:26:05.689Z] PASS [v6] V6 the spill turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:26:15.870Z] PASS [v6] V6 the OTHER instance (member) CANNOT read the spill file (no grant outside the workspace → deny; the owner-only grant scope holds) — head="Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed"
+[2026-09-24T14:26:15.870Z] ── V7: lifecycle (archive + leader stop + cold resume) ──
+[2026-09-24T14:26:24.638Z] PASS [v7] V7 team_archive_member executed (the durable archive transition was committed) — head="{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-24-24\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0fdcsk70g9la\",\"effect\":{\"kind\":\"lifecycle-changed\",\""
+[2026-09-24T14:26:24.638Z] PASS [v7] V7 the archive turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:26:24.639Z] PASS [v7] V7 the member lifecycle is DURABLY archived (the storage row lifecycle=archived — the 0.1.7 durable transition survived) — lifecycle=["ARCHIVED",null,null,null,null,null,null,null,null,null,null,null]
+[2026-09-24T14:26:27.973Z] PASS [v7] V7 leader stop: the live leader handle was disposed (residency/drop) — body={"sessionId":"session-u8-team-2026-09-24T14-24-24","dropped":true}
+[2026-09-24T14:26:28.976Z] PASS [v7] V7 the leader agent COLD-RESUMED after the stop (a fresh model request on the same session — the 0.1.7 agents.resume path) — requests=31
+[2026-09-24T14:26:28.976Z] PASS [v7] V7 the leader resume turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:26:28.976Z] PASS [v7] V7 0.1.7 event vocabulary: no agent/session-start references in the boot log (the event is gone in 0.1.7) — refs=0
+[2026-09-24T14:26:28.976Z] ── V8: process stop + fresh reboot (bootPhase resume) ──
+[2026-09-24T14:26:29.279Z] PASS [v8] V8 host stopped and the port freed — port=3491
+[2026-09-24T14:28:59.546Z] PASS [v8] V8 the host RE-BOOTS after the process stop (fresh boot marker, same profile) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T14:28:59.559Z] PASS [v8] V8 row ready on the resume boot (p6t6 health ok) — body={"ok":true,"boot":2,"ready":true,"rootSessionId":"session-u8-root-2026-09-24T14-24-24","liveSessions":["session-u8-root-2026-09-24T14-24-24"],"toolCount":13}
+[2026-09-24T14:28:59.559Z] PASS [v8] V8 old Team RE-ADOPTED on the resume boot (strict load-only: the durable TeamSession was loaded — resume worked this round) — {"rootSessionId":"session-u8-root-2026-09-24T14-24-24","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha256:7037eb29d66a142d29fd54c9bd688b0ed6a29d32a2b4b807da0e025f27fbbc3f","defaultWor
+[2026-09-24T14:28:59.559Z] PASS [v8] V8 session logs use the 0.1.7 V4 naming (session.v4.jsonl.zstd) — v4=4 total=4
+[2026-09-24T14:28:59.559Z] ── teardown ──
+[2026-09-24T14:28:59.560Z] mock decision trace: /home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8/v0-boot/mock-decisions.log (58 lines); 31 model requests recorded
+[2026-09-24T14:28:59.564Z] PASS [closing] :3080/:3180 state unchanged (read-only probes pre == post) — pre={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}} post={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}}
+[2026-09-24T14:28:59.910Z] PASS [closing] all U8 ports released (host + mock + mini-MCP) — {"3491":true,"3496":true,"3497":true,"3498":true,"3499":true}
+[2026-09-24T14:28:59.931Z] PASS [closing] test-use working tree still byte-clean after the run — porcelain=
+[2026-09-24T14:28:59.931Z] PASS [closing] test-use HEAD unchanged (46a7f68b09) — head=46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T14:28:59.931Z] world RETAINED as evidence: /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-24-24 (registered in this run's evidence; session files + spill root + profile state inside)
+[2026-09-24T14:28:59.932Z] VERDICT FAIL — 74/75 criteria passed; failed: v6
+[2026-09-24T14:32:28.178Z] U8 pristine 0.1.7 real-host vertical — stamp 2026-09-24T14-32-28
+[2026-09-24T14:32:28.179Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T14:32:28.179Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade (branch task/dsh-017rc1-upgrade)
+[2026-09-24T14:32:28.179Z] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-32-28
+[2026-09-24T14:32:28.179Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8
+[2026-09-24T14:32:28.201Z] PASS [preflight] test-use pristine @ 46a7f68b09 (HEAD + empty porcelain) — verified before any mutation
+[2026-09-24T14:32:28.201Z] preflight: test-use pristine @ 46a7f68b09; worktree @ adad20c
+[2026-09-24T14:32:28.257Z] PASS [preflight] boot precondition: the test-use CLI empirically runs 0.1.7-rc.1 (reset-log discrepancy recorded as a follow-up) — cliVersion=0.1.7-rc.1 lastBuildExit=1
+[2026-09-24T14:32:28.271Z] stable pre-probe: 3080=401 3180=401
+[2026-09-24T14:32:28.277Z] ports: host=3491 mock=3496 mcp=3497/3498/3499
+[2026-09-24T14:32:28.277Z] world materialized (probe files + anchor blueprint)
+[2026-09-24T14:32:28.281Z] mock model listening on 3496
+[2026-09-24T14:32:28.281Z] ── step 0: git-install (S1–S3) ──
+[2026-09-24T14:32:28.325Z] PASS [install] S0 bare clone of the upgraded branch; cloned tip == worktree HEAD — cloned=adad20c00c75413f4c1fa1fe6832fb0fad746f6c worktree=adad20c00c75413f4c1fa1fe6832fb0fad746f6c
+[2026-09-24T14:32:31.503Z] PASS [install] S1 first `dsh plugin add` exits 0 (0.1.7 compat check PASS by construction: no peerDependencies) — exit=0
+[2026-09-24T14:32:31.503Z] PASS [install] S1 NO 0.1.7 incompat line / allow-version exemption prompt in the add output — output had no matches (full output in install/add.log)
+[2026-09-24T14:32:31.504Z] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (install surface is committed prebuilt; zero lifecycle scripts)
+[2026-09-24T14:32:31.504Z] PASS [install] S1 no allowBuilds entry in the profile pnpm-workspace.yaml
+[2026-09-24T14:32:31.504Z] add warnings (recorded, not asserted): none
+[2026-09-24T14:32:31.504Z] PASS [install] S2 dsh.profile.bundles AUTO-contains dsh-agent-team (CLI reconcile of the root dsh.bundle.patch declaration) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-24T14:32:31.504Z] PASS [install] S2 the profile patch carries NO hand-written dsh-agent-team row (the bundle layer owns it)
+[2026-09-24T14:32:31.504Z] PASS [install] S3 installed package dir carries the committed install surface (host.js + agent-bindings.mjs + team-spill-local.js + cordis.patch.yml) — all 4 present under /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-32-28/profiles/web/node_modules/dsh-agent-team
+[2026-09-24T14:32:31.504Z] PASS [install] S3 the installed root cordis.patch.yml carries the spill replacement rows (base spill-local disabled + team-spill-local inserted)
+[2026-09-24T14:32:31.529Z] mini-MCP: single@3497 (logging) paged@3498 none@3499
+[2026-09-24T14:32:31.529Z] ── V0: host boot ──
+[2026-09-24T14:32:32.733Z] PASS [v0] V0 host boot marker present (dsh web: …?token=…) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T14:32:32.741Z] PASS [v0] V0 unauthenticated GET / → 401 (launch-token gate active) — status=401
+[2026-09-24T14:32:33.755Z] PASS [v0] V0 row ready: p6t6 health ok + phase=create + root teamSession adopted (create-or-open fresh world) — phase=create teamSession={"rootSessionId":"session-u8-root-2026-09-24T14-32-28","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha2
+[2026-09-24T14:32:33.755Z] PASS [v0] V0 no ERR_MODULE_NOT_FOUND in the instance log (installed dist resolves end-to-end)
+[2026-09-24T14:32:33.759Z] PASS [v0] V0 the dsh-agent-team CLIENT row is live (authenticated GET / serves the web app shell) — status=200
+[2026-09-24T14:32:33.759Z] PASS [v0] V0 no duplicate service collision in the instance log
+[2026-09-24T14:32:33.759Z] PASS [v0] V0 no pending REQUIRED service (0.1.7 startup diagnostics) — diagLines=0
+[2026-09-24T14:32:33.836Z] PASS [v0] V0 profile-patch layer carries EXACTLY ONE named dsh-agent-team host row (0.1.7 layered dump: the bundle layer keeps its machine-agnostic row; runtime override proven by the p6t6 teamSession above) — exit=0 patchLayerRows=1 bundleLayerRows=1 totalIdLines=2
+[2026-09-24T14:32:33.836Z] PASS [v0] V0 team-spill-local row present in the composed tree
+[2026-09-24T14:32:33.836Z] PASS [v0] V0 base spill-local row DISABLED in the composed tree — baseRows=1
+[2026-09-24T14:32:33.836Z] ── V1: ordinary session ──
+[2026-09-24T14:32:33.852Z] PASS [v1] V1 ordinary session explicitly created via /api/session/create (0.1.7: prompt no longer auto-creates) — status=200 body={"type":"server-response","rpcId":"u8create-6jrzn5x3ld","result":{"ok":true,"value":{"sessionId":"session-u8-ord-2026-09-24T14-32-28","agentPreset":"standard"}}
+[2026-09-24T14:32:34.103Z] PASS [v1] V1 ordinary session turn started on the shipped preset surface — tools=26 model=deepseek-flash
+[2026-09-24T14:32:34.103Z] PASS [v1] V1 ordinary surface carries NO team_ tools (the plugin does not pollute the ordinary loop) — teamTools=[]
+[2026-09-24T14:32:54.888Z] PASS [v1] V1 ordinary fs read returned the workspace probe content (strict-read ordinary path intact) — toolHead="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-32-28/workspace/team/test.md</path>\n<typ"
+[2026-09-24T14:32:54.889Z] PASS [v1] V1 ordinary prompt accepted (0.1.7 remote: session/prompt resolves on accept, not turn end) — status=200 body={"type":"server-response","rpcId":"u8ord-pyzhm25ee1","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-24T14:32:54.889Z] ── LEG 0: discovery (boot root surface → main blueprint deny list) ──
+[2026-09-24T14:32:55.149Z] PASS [v2] LEG0 discovery captured the boot-root surface; read + bash present (the shipped standard preset mounts the managed stack) — surface=39 missingManaged=["lsp","pwsh"]
+[2026-09-24T14:32:55.149Z] main blueprint written (deny list = 19 unmanaged names; filtered non-restrictable on 0.1.7: 1)
+[2026-09-24T14:32:55.150Z] ── V2–V5: team.create (B) + the continuous scripted leader turn ──
+[2026-09-24T14:32:55.400Z] PASS [v2] V2 model selection correct: the leader model request carries the row staticModel id — model=u8-model-2026-09-24T14-32-28 expected=u8-model-2026-09-24T14-32-28
+[2026-09-24T14:32:55.400Z] PASS [v2] V2 persona visible: the leader system prompt carries the bound blueprint persona — sysHead="You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the u8 vertical team. U8LEADER_PERSONA_2026-09-2"
+[2026-09-24T14:32:55.400Z] PASS [v2] V2 preset mount: the leader surface carries the shipped standard preset managed tools (read + bash) — tools=26
+[2026-09-24T14:32:55.400Z] PASS [v5] V5 leader MCP surface is EXACTLY ping + alpha + beta (two-page aggregate); zero tools from the none server — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T14:33:16.683Z] PASS [v4] V4 leader ALLOWED read (allow read subtree team): silent pass, probe content returned — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-32-28/workspace/team"
+[2026-09-24T14:33:16.683Z] PASS [v4] V4 leader DENIED read (deny read subtree runtime): explicit static deny with provenance in the tool result — head="Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-32-28/workspace/runtime/fo"
+[2026-09-24T14:33:16.687Z] PASS [v4] V4 bash ask created a durable pending control request (discovered) — requestId=ctrl-1kxz7wq1o155hz11wi0jg05f
+[2026-09-24T14:33:16.705Z] PASS [v4] V4 scripted human approval (team.resolveControl v4) admitted — status=200
+[2026-09-24T14:33:17.205Z] PASS [v4] V4 the approved bash EXECUTED on the last-mile guard (marker in the tool result) — head="u8-smoke-2026-09-24T14-32-28\n"
+[2026-09-24T14:33:17.206Z] PASS [v2] V2 member create succeeded (the team tool returned the new instance id) — instanceId=inst-0jq5rr113l3g
+[2026-09-24T14:33:41.747Z] PASS [v3] V3 team_delegate executed (the core work path exited with a result) — head="{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-32-28\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceI"
+[2026-09-24T14:33:41.747Z] PASS [v5] V5 member MCP surface is EXACTLY ping + alpha + beta (per-member initial grant, none contributes zero) — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T14:33:41.747Z] PASS [v2] V2 member persona visible (worker-b persona in the member system prompt) — sysHead="You are an AI agent powered by DeepSeek Harness.\n\nYou are worker-b of the u8 vertical team. U8WORKER_PERSONA_2026-09-24T"
+[2026-09-24T14:33:41.747Z] PASS [v2] V2 member model selection correct (staticModel id) — model=u8-model-2026-09-24T14-32-28
+[2026-09-24T14:33:41.748Z] PASS [v4] V4 member ALLOWED read (allow read subtree team): silent pass — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-32-28/workspace/team"
+[2026-09-24T14:33:41.748Z] PASS [v4] V4 member DENIED read (deny read subtree runtime): explicit static deny, provenance distinguishable from a canonicalization failure — head="Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-32-28/workspace/runtime/fo"
+[2026-09-24T14:33:41.999Z] PASS [v3] V3 team_send_message EXITED (tool result observed — the historical hang regression point does not reproduce) — head="{\"status\":\"delivered\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-32-28\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-0jq5rr113l"
+[2026-09-24T14:33:41.999Z] PASS [v3] V3 team_report_progress recorded (progress-recorded status in the tool result) — head="{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-32-28\",\"instanceId\":\"inst-0jq5rr113l3g\",\"row\":{\"globalSequence\":13,\"factType\":\"acti"
+[2026-09-24T14:33:41.999Z] PASS [v5] V5 live MCP call (single): mcp__u8single__ping returned pong:u8-v5 — head="pong:u8-v5"
+[2026-09-24T14:33:41.999Z] PASS [v5] V5 live MCP call (paginated page-2 tool reachable via page-1 aggregate): mcp__u8paged__alpha returned alpha:u8-alpha — head="alpha:u8-alpha"
+[2026-09-24T14:33:45.418Z] PASS [v2] V2 team.create (v2 product path) succeeded with path=fresh-root (projection established) — status=200 body={"type":"server-response","rpcId":"u8b-l01iavm8z1","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-u8-team-2026-09-24T14-32-28","blueprint":{"blueprintId":"team.u8-main","revision":"1","contentHash":"sha256:efdaacf8e249e03
+[2026-09-24T14:33:45.418Z] PASS [v2] V2 Team projection durable: the created root + member instance rows exist in team_domain storage — teamRows=25 memberRows=8
+[2026-09-24T14:33:45.422Z] PASS [v5] V5 per-server state: single/paged/none all mounted+allowed (the none variant did NOT crash Team init) — {"u8single":{"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"unavailable":false,"pendingNextBoundary":[],"explanation":"mcp: effective allow[u8single,u8paged,u8none]; team template(origin=static) allow[u8single,u8paged,u8none]; external exists=yes, hard
+[2026-09-24T14:33:45.422Z] PASS [v5] V5 no activationError on any of the three servers
+[2026-09-24T14:33:45.422Z] V5 mount state recorded (none-variant stability: team init + full chain on the same live Team)
+[2026-09-24T14:33:45.422Z] ── V6: token-budget spill + artifact grant ──
+[2026-09-24T14:33:49.203Z] PASS [v6] V6 the spill bash ask created a durable control request (ask bash any) — requestId=ctrl-0t9igbz1ia75xc00u2ngl12p
+[2026-09-24T14:33:49.720Z] PASS [v6] V6 the 250KB bash output was SPILLED by the 0.1.7 token budget (spill notice with locator in the tool result; base row maxInlineTokens: 12500 — no byte threshold in play) — notice=true path=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-32-28/spill/session-f1bfcae1257f/b6a5f755887d-bash.txt
+[2026-09-24T14:33:49.720Z] PASS [v6] V6 the inline result is the RETAINED preview (head/tail + notice), not the full 250KB output — inlineBytes=49931
+[2026-09-24T14:33:49.721Z] PASS [v6] V6 the OWNER agent READS the spill file (the durable artifact grant admits it) — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-32-28/spill/session-f1bfcae1257f/b6a5f75"
+[2026-09-24T14:33:49.721Z] PASS [v6] V6 the spill file is DURABLE on disk under the world-pinned spill root — bytes=64105
+[2026-09-24T14:33:49.721Z] PASS [v6] V6 the spill turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:34:02.742Z] PASS [v6] V6 the OTHER instance (member) CANNOT read the spill file (no grant outside the workspace → deny; the owner-only grant scope holds) — head="Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed"
+[2026-09-24T14:35:03.036Z] FAIL [v6] V6 TeamAwareLocalSpillStore recorded a DURABLE artifact grant (the locator appears in durable world storage; read back after the V6b commit boundary) — files=[]
+[2026-09-24T14:35:03.037Z] ── V7: lifecycle (archive + leader stop + cold resume) ──
+[2026-09-24T14:35:07.548Z] PASS [v7] V7 team_archive_member executed (the durable archive transition was committed) — head="{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-32-28\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0jq5rr113l3g\",\"effect\":{\"kind\":\"lifecycle-changed\",\""
+[2026-09-24T14:35:07.548Z] PASS [v7] V7 the archive turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:35:07.549Z] PASS [v7] V7 the member lifecycle is DURABLY archived (the storage row lifecycle=archived — the 0.1.7 durable transition survived) — lifecycle=["ARCHIVED",null,null,null,null,null,null,null,null,null,null,null]
+[2026-09-24T14:35:10.788Z] PASS [v7] V7 leader stop: the live leader handle was disposed (residency/drop) — body={"sessionId":"session-u8-team-2026-09-24T14-32-28","dropped":true}
+[2026-09-24T14:35:11.788Z] PASS [v7] V7 the leader agent COLD-RESUMED after the stop (a fresh model request on the same session — the 0.1.7 agents.resume path) — requests=31
+[2026-09-24T14:35:11.789Z] PASS [v7] V7 the leader resume turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:35:11.789Z] PASS [v7] V7 0.1.7 event vocabulary: no agent/session-start references in the boot log (the event is gone in 0.1.7) — refs=0
+[2026-09-24T14:35:11.789Z] ── V8: process stop + fresh reboot (bootPhase resume) ──
+[2026-09-24T14:35:12.094Z] PASS [v8] V8 host stopped and the port freed — port=3491
+[2026-09-24T14:37:42.357Z] PASS [v8] V8 the host RE-BOOTS after the process stop (fresh boot marker, same profile) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T14:37:42.371Z] PASS [v8] V8 row ready on the resume boot (p6t6 health ok) — body={"ok":true,"boot":2,"ready":true,"rootSessionId":"session-u8-root-2026-09-24T14-32-28","liveSessions":["session-u8-root-2026-09-24T14-32-28"],"toolCount":13}
+[2026-09-24T14:37:42.371Z] PASS [v8] V8 old Team RE-ADOPTED on the resume boot (strict load-only: the durable TeamSession was loaded — resume worked this round) — {"rootSessionId":"session-u8-root-2026-09-24T14-32-28","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha256:392e3d7f0f5b62dc4e0f9ae576e89cbe2aacf9289930a2355f8a6821f4422412","defaultWor
+[2026-09-24T14:37:42.371Z] PASS [v8] V8 session logs use the 0.1.7 V4 naming (session.v4.jsonl.zstd) — v4=4 total=4
+[2026-09-24T14:37:42.372Z] ── teardown ──
+[2026-09-24T14:37:42.372Z] mock decision trace: /home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8/v0-boot/mock-decisions.log (58 lines); 31 model requests recorded
+[2026-09-24T14:37:42.376Z] PASS [closing] :3080/:3180 state unchanged (read-only probes pre == post) — pre={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}} post={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}}
+[2026-09-24T14:37:42.711Z] PASS [closing] all U8 ports released (host + mock + mini-MCP) — {"3491":true,"3496":true,"3497":true,"3498":true,"3499":true}
+[2026-09-24T14:37:42.733Z] PASS [closing] test-use working tree still byte-clean after the run — porcelain=
+[2026-09-24T14:37:42.733Z] PASS [closing] test-use HEAD unchanged (46a7f68b09) — head=46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T14:37:42.733Z] world RETAINED as evidence: /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-32-28 (registered in this run's evidence; session files + spill root + profile state inside)
+[2026-09-24T14:37:42.733Z] VERDICT FAIL — 74/75 criteria passed; failed: v6
+[2026-09-24T14:41:50.812Z] U8 pristine 0.1.7 real-host vertical — stamp 2026-09-24T14-41-50
+[2026-09-24T14:41:50.812Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T14:41:50.812Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade (branch task/dsh-017rc1-upgrade)
+[2026-09-24T14:41:50.812Z] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-41-50
+[2026-09-24T14:41:50.812Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8
+[2026-09-24T14:41:50.833Z] PASS [preflight] test-use pristine @ 46a7f68b09 (HEAD + empty porcelain) — verified before any mutation
+[2026-09-24T14:41:50.833Z] preflight: test-use pristine @ 46a7f68b09; worktree @ adad20c
+[2026-09-24T14:41:50.893Z] PASS [preflight] boot precondition: the test-use CLI empirically runs 0.1.7-rc.1 (reset-log discrepancy recorded as a follow-up) — cliVersion=0.1.7-rc.1 lastBuildExit=1
+[2026-09-24T14:41:50.911Z] stable pre-probe: 3080=401 3180=401
+[2026-09-24T14:41:50.918Z] ports: host=3491 mock=3496 mcp=3497/3498/3499
+[2026-09-24T14:41:50.919Z] world materialized (probe files + anchor blueprint)
+[2026-09-24T14:41:50.922Z] mock model listening on 3496
+[2026-09-24T14:41:50.922Z] ── step 0: git-install (S1–S3) ──
+[2026-09-24T14:41:50.963Z] PASS [install] S0 bare clone of the upgraded branch; cloned tip == worktree HEAD — cloned=adad20c00c75413f4c1fa1fe6832fb0fad746f6c worktree=adad20c00c75413f4c1fa1fe6832fb0fad746f6c
+[2026-09-24T14:41:54.101Z] PASS [install] S1 first `dsh plugin add` exits 0 (0.1.7 compat check PASS by construction: no peerDependencies) — exit=0
+[2026-09-24T14:41:54.101Z] PASS [install] S1 NO 0.1.7 incompat line / allow-version exemption prompt in the add output — output had no matches (full output in install/add.log)
+[2026-09-24T14:41:54.102Z] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (install surface is committed prebuilt; zero lifecycle scripts)
+[2026-09-24T14:41:54.102Z] PASS [install] S1 no allowBuilds entry in the profile pnpm-workspace.yaml
+[2026-09-24T14:41:54.102Z] add warnings (recorded, not asserted): none
+[2026-09-24T14:41:54.102Z] PASS [install] S2 dsh.profile.bundles AUTO-contains dsh-agent-team (CLI reconcile of the root dsh.bundle.patch declaration) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-24T14:41:54.102Z] PASS [install] S2 the profile patch carries NO hand-written dsh-agent-team row (the bundle layer owns it)
+[2026-09-24T14:41:54.102Z] PASS [install] S3 installed package dir carries the committed install surface (host.js + agent-bindings.mjs + team-spill-local.js + cordis.patch.yml) — all 4 present under /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-41-50/profiles/web/node_modules/dsh-agent-team
+[2026-09-24T14:41:54.102Z] PASS [install] S3 the installed root cordis.patch.yml carries the spill replacement rows (base spill-local disabled + team-spill-local inserted)
+[2026-09-24T14:41:54.127Z] mini-MCP: single@3497 (logging) paged@3498 none@3499
+[2026-09-24T14:41:54.127Z] ── V0: host boot ──
+[2026-09-24T14:41:55.331Z] PASS [v0] V0 host boot marker present (dsh web: …?token=…) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T14:41:55.361Z] PASS [v0] V0 unauthenticated GET / → 401 (launch-token gate active) — status=401
+[2026-09-24T14:41:56.374Z] PASS [v0] V0 row ready: p6t6 health ok + phase=create + root teamSession adopted (create-or-open fresh world) — phase=create teamSession={"rootSessionId":"session-u8-root-2026-09-24T14-41-50","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha2
+[2026-09-24T14:41:56.374Z] PASS [v0] V0 no ERR_MODULE_NOT_FOUND in the instance log (installed dist resolves end-to-end)
+[2026-09-24T14:41:56.378Z] PASS [v0] V0 the dsh-agent-team CLIENT row is live (authenticated GET / serves the web app shell) — status=200
+[2026-09-24T14:41:56.379Z] PASS [v0] V0 no duplicate service collision in the instance log
+[2026-09-24T14:41:56.379Z] PASS [v0] V0 no pending REQUIRED service (0.1.7 startup diagnostics) — diagLines=0
+[2026-09-24T14:41:56.457Z] PASS [v0] V0 profile-patch layer carries EXACTLY ONE named dsh-agent-team host row (0.1.7 layered dump: the bundle layer keeps its machine-agnostic row; runtime override proven by the p6t6 teamSession above) — exit=0 patchLayerRows=1 bundleLayerRows=1 totalIdLines=2
+[2026-09-24T14:41:56.457Z] PASS [v0] V0 team-spill-local row present in the composed tree
+[2026-09-24T14:41:56.457Z] PASS [v0] V0 base spill-local row DISABLED in the composed tree — baseRows=1
+[2026-09-24T14:41:56.457Z] ── V1: ordinary session ──
+[2026-09-24T14:41:56.473Z] PASS [v1] V1 ordinary session explicitly created via /api/session/create (0.1.7: prompt no longer auto-creates) — status=200 body={"type":"server-response","rpcId":"u8create-2nohc71bhy","result":{"ok":true,"value":{"sessionId":"session-u8-ord-2026-09-24T14-41-50","agentPreset":"standard"}}
+[2026-09-24T14:41:56.725Z] PASS [v1] V1 ordinary session turn started on the shipped preset surface — tools=26 model=deepseek-flash
+[2026-09-24T14:41:56.725Z] PASS [v1] V1 ordinary surface carries NO team_ tools (the plugin does not pollute the ordinary loop) — teamTools=[]
+[2026-09-24T14:42:17.762Z] PASS [v1] V1 ordinary fs read returned the workspace probe content (strict-read ordinary path intact) — toolHead="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-41-50/workspace/team/test.md</path>\n<typ"
+[2026-09-24T14:42:17.762Z] PASS [v1] V1 ordinary prompt accepted (0.1.7 remote: session/prompt resolves on accept, not turn end) — status=200 body={"type":"server-response","rpcId":"u8ord-j3sqby08rv","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-24T14:42:17.762Z] ── LEG 0: discovery (boot root surface → main blueprint deny list) ──
+[2026-09-24T14:42:18.023Z] PASS [v2] LEG0 discovery captured the boot-root surface; read + bash present (the shipped standard preset mounts the managed stack) — surface=39 missingManaged=["lsp","pwsh"]
+[2026-09-24T14:42:18.023Z] main blueprint written (deny list = 19 unmanaged names; filtered non-restrictable on 0.1.7: 1)
+[2026-09-24T14:42:18.023Z] ── V2–V5: team.create (B) + the continuous scripted leader turn ──
+[2026-09-24T14:42:18.274Z] PASS [v2] V2 model selection correct: the leader model request carries the row staticModel id — model=u8-model-2026-09-24T14-41-50 expected=u8-model-2026-09-24T14-41-50
+[2026-09-24T14:42:18.275Z] PASS [v2] V2 persona visible: the leader system prompt carries the bound blueprint persona — sysHead="You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the u8 vertical team. U8LEADER_PERSONA_2026-09-2"
+[2026-09-24T14:42:18.275Z] PASS [v2] V2 preset mount: the leader surface carries the shipped standard preset managed tools (read + bash) — tools=26
+[2026-09-24T14:42:18.275Z] PASS [v5] V5 leader MCP surface is EXACTLY ping + alpha + beta (two-page aggregate); zero tools from the none server — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T14:42:39.300Z] PASS [v4] V4 leader ALLOWED read (allow read subtree team): silent pass, probe content returned — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-41-50/workspace/team"
+[2026-09-24T14:42:39.550Z] PASS [v4] V4 leader DENIED read (deny read subtree runtime): explicit static deny with provenance in the tool result — head="Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-41-50/workspace/runtime/fo"
+[2026-09-24T14:42:39.555Z] PASS [v4] V4 bash ask created a durable pending control request (discovered) — requestId=ctrl-12lnx0v0mfvkde02xi7wl1ez
+[2026-09-24T14:42:39.572Z] PASS [v4] V4 scripted human approval (team.resolveControl v4) admitted — status=200
+[2026-09-24T14:42:39.823Z] PASS [v4] V4 the approved bash EXECUTED on the last-mile guard (marker in the tool result) — head="u8-smoke-2026-09-24T14-41-50\n"
+[2026-09-24T14:42:39.824Z] PASS [v2] V2 member create succeeded (the team tool returned the new instance id) — instanceId=inst-15nqh7f02f4g
+[2026-09-24T14:43:04.360Z] PASS [v3] V3 team_delegate executed (the core work path exited with a result) — head="{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-41-50\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceI"
+[2026-09-24T14:43:04.361Z] PASS [v5] V5 member MCP surface is EXACTLY ping + alpha + beta (per-member initial grant, none contributes zero) — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T14:43:04.361Z] PASS [v2] V2 member persona visible (worker-b persona in the member system prompt) — sysHead="You are an AI agent powered by DeepSeek Harness.\n\nYou are worker-b of the u8 vertical team. U8WORKER_PERSONA_2026-09-24T"
+[2026-09-24T14:43:04.361Z] PASS [v2] V2 member model selection correct (staticModel id) — model=u8-model-2026-09-24T14-41-50
+[2026-09-24T14:43:04.361Z] PASS [v4] V4 member ALLOWED read (allow read subtree team): silent pass — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-41-50/workspace/team"
+[2026-09-24T14:43:04.361Z] PASS [v4] V4 member DENIED read (deny read subtree runtime): explicit static deny, provenance distinguishable from a canonicalization failure — head="Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-41-50/workspace/runtime/fo"
+[2026-09-24T14:43:04.362Z] PASS [v3] V3 team_send_message EXITED (tool result observed — the historical hang regression point does not reproduce) — head="{\"status\":\"delivered\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-41-50\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-15nqh7f02f"
+[2026-09-24T14:43:04.613Z] PASS [v3] V3 team_report_progress recorded (progress-recorded status in the tool result) — head="{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-41-50\",\"instanceId\":\"inst-15nqh7f02f4g\",\"row\":{\"globalSequence\":13,\"factType\":\"acti"
+[2026-09-24T14:43:04.613Z] PASS [v5] V5 live MCP call (single): mcp__u8single__ping returned pong:u8-v5 — head="pong:u8-v5"
+[2026-09-24T14:43:04.614Z] PASS [v5] V5 live MCP call (paginated page-2 tool reachable via page-1 aggregate): mcp__u8paged__alpha returned alpha:u8-alpha — head="alpha:u8-alpha"
+[2026-09-24T14:43:07.922Z] PASS [v2] V2 team.create (v2 product path) succeeded with path=fresh-root (projection established) — status=200 body={"type":"server-response","rpcId":"u8b-9fqjc00g8v","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-u8-team-2026-09-24T14-41-50","blueprint":{"blueprintId":"team.u8-main","revision":"1","contentHash":"sha256:d30dd70f5a21dcf
+[2026-09-24T14:43:07.922Z] PASS [v2] V2 Team projection durable: the created root + member instance rows exist in team_domain storage — teamRows=25 memberRows=8
+[2026-09-24T14:43:07.927Z] PASS [v5] V5 per-server state: single/paged/none all mounted+allowed (the none variant did NOT crash Team init) — {"u8single":{"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"unavailable":false,"pendingNextBoundary":[],"explanation":"mcp: effective allow[u8single,u8paged,u8none]; team template(origin=static) allow[u8single,u8paged,u8none]; external exists=yes, hard
+[2026-09-24T14:43:07.927Z] PASS [v5] V5 no activationError on any of the three servers
+[2026-09-24T14:43:07.927Z] V5 mount state recorded (none-variant stability: team init + full chain on the same live Team)
+[2026-09-24T14:43:07.927Z] ── V6: token-budget spill + artifact grant ──
+[2026-09-24T14:43:11.708Z] PASS [v6] V6 the spill bash ask created a durable control request (ask bash any) — requestId=ctrl-0ym8pyw1mkb38j0b1rwhy0da
+[2026-09-24T14:43:11.975Z] PASS [v6] V6 the 250KB bash output was SPILLED by the 0.1.7 token budget (spill notice with locator in the tool result; base row maxInlineTokens: 12500 — no byte threshold in play) — notice=true path=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-41-50/spill/session-5e62ae2e098f/5947dfd079ca-bash.txt
+[2026-09-24T14:43:11.976Z] PASS [v6] V6 the inline result is the RETAINED preview (head/tail + notice), not the full 250KB output — inlineBytes=49931
+[2026-09-24T14:43:12.226Z] PASS [v6] V6 the OWNER agent READS the spill file (the durable artifact grant admits it) — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-41-50/spill/session-5e62ae2e098f/5947dfd"
+[2026-09-24T14:43:12.226Z] PASS [v6] V6 the spill file is DURABLE on disk under the world-pinned spill root — bytes=64105
+[2026-09-24T14:43:12.226Z] PASS [v6] V6 the spill turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:43:25.252Z] PASS [v6] V6 the OTHER instance (member) CANNOT read the spill file (no grant outside the workspace → deny; the owner-only grant scope holds) — head="Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed"
+[2026-09-24T14:43:25.252Z] ── V7: lifecycle (archive + leader stop + cold resume) ──
+[2026-09-24T14:43:34.017Z] PASS [v7] V7 team_archive_member executed (the durable archive transition was committed) — head="{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-41-50\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-15nqh7f02f4g\",\"effect\":{\"kind\":\"lifecycle-changed\",\""
+[2026-09-24T14:43:34.017Z] PASS [v7] V7 the archive turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:43:34.017Z] PASS [v7] V7 the member lifecycle is DURABLY archived (the storage row lifecycle=archived — the 0.1.7 durable transition survived) — lifecycle=["ARCHIVED",null,null,null,null,null,null,null,null,null,null,null]
+[2026-09-24T14:43:49.948Z] FAIL [v6] V6 TeamAwareLocalSpillStore recorded a DURABLE artifact grant (the locator appears in durable world storage; read back after the V7 archive commit boundary) — files=[]
+[2026-09-24T14:43:49.959Z] PASS [v7] V7 leader stop: the live leader handle was disposed (residency/drop) — body={"sessionId":"session-u8-team-2026-09-24T14-41-50","dropped":true}
+[2026-09-24T14:43:50.963Z] PASS [v7] V7 the leader agent COLD-RESUMED after the stop (a fresh model request on the same session — the 0.1.7 agents.resume path) — requests=31
+[2026-09-24T14:43:50.963Z] PASS [v7] V7 the leader resume turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:43:50.963Z] PASS [v7] V7 0.1.7 event vocabulary: no agent/session-start references in the boot log (the event is gone in 0.1.7) — refs=0
+[2026-09-24T14:43:50.963Z] ── V8: process stop + fresh reboot (bootPhase resume) ──
+[2026-09-24T14:43:51.265Z] PASS [v8] V8 host stopped and the port freed — port=3491
+[2026-09-24T14:46:21.529Z] PASS [v8] V8 the host RE-BOOTS after the process stop (fresh boot marker, same profile) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T14:46:21.543Z] PASS [v8] V8 row ready on the resume boot (p6t6 health ok) — body={"ok":true,"boot":2,"ready":true,"rootSessionId":"session-u8-root-2026-09-24T14-41-50","liveSessions":["session-u8-root-2026-09-24T14-41-50"],"toolCount":13}
+[2026-09-24T14:46:21.543Z] PASS [v8] V8 old Team RE-ADOPTED on the resume boot (strict load-only: the durable TeamSession was loaded — resume worked this round) — {"rootSessionId":"session-u8-root-2026-09-24T14-41-50","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha256:6c01f5f5f142aad2452dcd63c62359c90aed1facf42a5a0b65238a93a2392109","defaultWor
+[2026-09-24T14:46:21.544Z] PASS [v8] V8 session logs use the 0.1.7 V4 naming (session.v4.jsonl.zstd) — v4=4 total=4
+[2026-09-24T14:46:21.544Z] ── teardown ──
+[2026-09-24T14:46:21.544Z] mock decision trace: /home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8/v0-boot/mock-decisions.log (58 lines); 31 model requests recorded
+[2026-09-24T14:46:21.549Z] PASS [closing] :3080/:3180 state unchanged (read-only probes pre == post) — pre={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}} post={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}}
+[2026-09-24T14:46:21.885Z] PASS [closing] all U8 ports released (host + mock + mini-MCP) — {"3491":true,"3496":true,"3497":true,"3498":true,"3499":true}
+[2026-09-24T14:46:21.906Z] PASS [closing] test-use working tree still byte-clean after the run — porcelain=
+[2026-09-24T14:46:21.906Z] PASS [closing] test-use HEAD unchanged (46a7f68b09) — head=46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T14:46:21.906Z] world RETAINED as evidence: /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-41-50 (registered in this run's evidence; session files + spill root + profile state inside)
+[2026-09-24T14:46:21.906Z] VERDICT FAIL — 74/75 criteria passed; failed: v6
+[2026-09-24T14:48:13.011Z] U8 pristine 0.1.7 real-host vertical — stamp 2026-09-24T14-48-13
+[2026-09-24T14:48:13.012Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T14:48:13.012Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade (branch task/dsh-017rc1-upgrade)
+[2026-09-24T14:48:13.012Z] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13
+[2026-09-24T14:48:13.012Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8
+[2026-09-24T14:48:13.034Z] PASS [preflight] test-use pristine @ 46a7f68b09 (HEAD + empty porcelain) — verified before any mutation
+[2026-09-24T14:48:13.034Z] preflight: test-use pristine @ 46a7f68b09; worktree @ adad20c
+[2026-09-24T14:48:13.090Z] PASS [preflight] boot precondition: the test-use CLI empirically runs 0.1.7-rc.1 (reset-log discrepancy recorded as a follow-up) — cliVersion=0.1.7-rc.1 lastBuildExit=1
+[2026-09-24T14:48:13.104Z] stable pre-probe: 3080=401 3180=401
+[2026-09-24T14:48:13.110Z] ports: host=3491 mock=3496 mcp=3497/3498/3499
+[2026-09-24T14:48:13.111Z] world materialized (probe files + anchor blueprint)
+[2026-09-24T14:48:13.115Z] mock model listening on 3496
+[2026-09-24T14:48:13.115Z] ── step 0: git-install (S1–S3) ──
+[2026-09-24T14:48:13.158Z] PASS [install] S0 bare clone of the upgraded branch; cloned tip == worktree HEAD — cloned=adad20c00c75413f4c1fa1fe6832fb0fad746f6c worktree=adad20c00c75413f4c1fa1fe6832fb0fad746f6c
+[2026-09-24T14:48:16.378Z] PASS [install] S1 first `dsh plugin add` exits 0 (0.1.7 compat check PASS by construction: no peerDependencies) — exit=0
+[2026-09-24T14:48:16.378Z] PASS [install] S1 NO 0.1.7 incompat line / allow-version exemption prompt in the add output — output had no matches (full output in install/add.log)
+[2026-09-24T14:48:16.378Z] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (install surface is committed prebuilt; zero lifecycle scripts)
+[2026-09-24T14:48:16.378Z] PASS [install] S1 no allowBuilds entry in the profile pnpm-workspace.yaml
+[2026-09-24T14:48:16.379Z] add warnings (recorded, not asserted): none
+[2026-09-24T14:48:16.379Z] PASS [install] S2 dsh.profile.bundles AUTO-contains dsh-agent-team (CLI reconcile of the root dsh.bundle.patch declaration) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-24T14:48:16.379Z] PASS [install] S2 the profile patch carries NO hand-written dsh-agent-team row (the bundle layer owns it)
+[2026-09-24T14:48:16.379Z] PASS [install] S3 installed package dir carries the committed install surface (host.js + agent-bindings.mjs + team-spill-local.js + cordis.patch.yml) — all 4 present under /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/profiles/web/node_modules/dsh-agent-team
+[2026-09-24T14:48:16.379Z] PASS [install] S3 the installed root cordis.patch.yml carries the spill replacement rows (base spill-local disabled + team-spill-local inserted)
+[2026-09-24T14:48:16.403Z] mini-MCP: single@3497 (logging) paged@3498 none@3499
+[2026-09-24T14:48:16.403Z] ── V0: host boot ──
+[2026-09-24T14:48:17.606Z] PASS [v0] V0 host boot marker present (dsh web: …?token=…) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T14:48:17.669Z] PASS [v0] V0 unauthenticated GET / → 401 (launch-token gate active) — status=401
+[2026-09-24T14:48:18.683Z] PASS [v0] V0 row ready: p6t6 health ok + phase=create + root teamSession adopted (create-or-open fresh world) — phase=create teamSession={"rootSessionId":"session-u8-root-2026-09-24T14-48-13","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha2
+[2026-09-24T14:48:18.683Z] PASS [v0] V0 no ERR_MODULE_NOT_FOUND in the instance log (installed dist resolves end-to-end)
+[2026-09-24T14:48:18.686Z] PASS [v0] V0 the dsh-agent-team CLIENT row is live (authenticated GET / serves the web app shell) — status=200
+[2026-09-24T14:48:18.687Z] PASS [v0] V0 no duplicate service collision in the instance log
+[2026-09-24T14:48:18.687Z] PASS [v0] V0 no pending REQUIRED service (0.1.7 startup diagnostics) — diagLines=0
+[2026-09-24T14:48:18.766Z] PASS [v0] V0 profile-patch layer carries EXACTLY ONE named dsh-agent-team host row (0.1.7 layered dump: the bundle layer keeps its machine-agnostic row; runtime override proven by the p6t6 teamSession above) — exit=0 patchLayerRows=1 bundleLayerRows=1 totalIdLines=2
+[2026-09-24T14:48:18.766Z] PASS [v0] V0 team-spill-local row present in the composed tree
+[2026-09-24T14:48:18.766Z] PASS [v0] V0 base spill-local row DISABLED in the composed tree — baseRows=1
+[2026-09-24T14:48:18.766Z] ── V1: ordinary session ──
+[2026-09-24T14:48:18.782Z] PASS [v1] V1 ordinary session explicitly created via /api/session/create (0.1.7: prompt no longer auto-creates) — status=200 body={"type":"server-response","rpcId":"u8create-43c0h0c38q","result":{"ok":true,"value":{"sessionId":"session-u8-ord-2026-09-24T14-48-13","agentPreset":"standard"}}
+[2026-09-24T14:48:19.032Z] PASS [v1] V1 ordinary session turn started on the shipped preset surface — tools=26 model=deepseek-flash
+[2026-09-24T14:48:19.032Z] PASS [v1] V1 ordinary surface carries NO team_ tools (the plugin does not pollute the ordinary loop) — teamTools=[]
+[2026-09-24T14:48:39.821Z] PASS [v1] V1 ordinary fs read returned the workspace probe content (strict-read ordinary path intact) — toolHead="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/workspace/team/test.md</path>\n<typ"
+[2026-09-24T14:48:39.821Z] PASS [v1] V1 ordinary prompt accepted (0.1.7 remote: session/prompt resolves on accept, not turn end) — status=200 body={"type":"server-response","rpcId":"u8ord-5e1ocl0ckf","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-24T14:48:39.821Z] ── LEG 0: discovery (boot root surface → main blueprint deny list) ──
+[2026-09-24T14:48:40.082Z] PASS [v2] LEG0 discovery captured the boot-root surface; read + bash present (the shipped standard preset mounts the managed stack) — surface=39 missingManaged=["lsp","pwsh"]
+[2026-09-24T14:48:40.082Z] main blueprint written (deny list = 19 unmanaged names; filtered non-restrictable on 0.1.7: 1)
+[2026-09-24T14:48:40.082Z] ── V2–V5: team.create (B) + the continuous scripted leader turn ──
+[2026-09-24T14:48:40.333Z] PASS [v2] V2 model selection correct: the leader model request carries the row staticModel id — model=u8-model-2026-09-24T14-48-13 expected=u8-model-2026-09-24T14-48-13
+[2026-09-24T14:48:40.333Z] PASS [v2] V2 persona visible: the leader system prompt carries the bound blueprint persona — sysHead="You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the u8 vertical team. U8LEADER_PERSONA_2026-09-2"
+[2026-09-24T14:48:40.333Z] PASS [v2] V2 preset mount: the leader surface carries the shipped standard preset managed tools (read + bash) — tools=26
+[2026-09-24T14:48:40.334Z] PASS [v5] V5 leader MCP surface is EXACTLY ping + alpha + beta (two-page aggregate); zero tools from the none server — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T14:49:01.618Z] PASS [v4] V4 leader ALLOWED read (allow read subtree team): silent pass, probe content returned — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/workspace/team"
+[2026-09-24T14:49:01.618Z] PASS [v4] V4 leader DENIED read (deny read subtree runtime): explicit static deny with provenance in the tool result — head="Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/workspace/runtime/fo"
+[2026-09-24T14:49:01.624Z] PASS [v4] V4 bash ask created a durable pending control request (discovered) — requestId=ctrl-086sk671x96sve1jk0ext0oc
+[2026-09-24T14:49:01.639Z] PASS [v4] V4 scripted human approval (team.resolveControl v4) admitted — status=200
+[2026-09-24T14:49:01.889Z] PASS [v4] V4 the approved bash EXECUTED on the last-mile guard (marker in the tool result) — head="u8-smoke-2026-09-24T14-48-13\n"
+[2026-09-24T14:49:01.889Z] PASS [v2] V2 member create succeeded (the team tool returned the new instance id) — instanceId=inst-0ee7wpn0c0z6
+[2026-09-24T14:49:26.684Z] PASS [v3] V3 team_delegate executed (the core work path exited with a result) — head="{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-48-13\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceI"
+[2026-09-24T14:49:26.684Z] PASS [v5] V5 member MCP surface is EXACTLY ping + alpha + beta (per-member initial grant, none contributes zero) — mcpTools=["mcp__u8paged__alpha","mcp__u8paged__beta","mcp__u8single__ping"]
+[2026-09-24T14:49:26.684Z] PASS [v2] V2 member persona visible (worker-b persona in the member system prompt) — sysHead="You are an AI agent powered by DeepSeek Harness.\n\nYou are worker-b of the u8 vertical team. U8WORKER_PERSONA_2026-09-24T"
+[2026-09-24T14:49:26.684Z] PASS [v2] V2 member model selection correct (staticModel id) — model=u8-model-2026-09-24T14-48-13
+[2026-09-24T14:49:26.685Z] PASS [v4] V4 member ALLOWED read (allow read subtree team): silent pass — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/workspace/team"
+[2026-09-24T14:49:26.685Z] PASS [v4] V4 member DENIED read (deny read subtree runtime): explicit static deny, provenance distinguishable from a canonicalization failure — head="Error: permission denied by the static permission policy: the template's deny rule 0 denies read on /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/workspace/runtime/fo"
+[2026-09-24T14:49:26.685Z] PASS [v3] V3 team_send_message EXITED (tool result observed — the historical hang regression point does not reproduce) — head="{\"status\":\"delivered\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-48-13\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-0ee7wpn0c0"
+[2026-09-24T14:49:26.685Z] PASS [v3] V3 team_report_progress recorded (progress-recorded status in the tool result) — head="{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-48-13\",\"instanceId\":\"inst-0ee7wpn0c0z6\",\"row\":{\"globalSequence\":13,\"factType\":\"acti"
+[2026-09-24T14:49:26.686Z] PASS [v5] V5 live MCP call (single): mcp__u8single__ping returned pong:u8-v5 — head="pong:u8-v5"
+[2026-09-24T14:49:26.686Z] PASS [v5] V5 live MCP call (paginated page-2 tool reachable via page-1 aggregate): mcp__u8paged__alpha returned alpha:u8-alpha — head="alpha:u8-alpha"
+[2026-09-24T14:49:30.146Z] PASS [v2] V2 team.create (v2 product path) succeeded with path=fresh-root (projection established) — status=200 body={"type":"server-response","rpcId":"u8b-m9bbhtp6e2","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-u8-team-2026-09-24T14-48-13","blueprint":{"blueprintId":"team.u8-main","revision":"1","contentHash":"sha256:7e85dbad909a739
+[2026-09-24T14:49:30.146Z] PASS [v2] V2 Team projection durable: the created root + member instance rows exist in team_domain storage — teamRows=25 memberRows=8
+[2026-09-24T14:49:30.150Z] PASS [v5] V5 per-server state: single/paged/none all mounted+allowed (the none variant did NOT crash Team init) — {"u8single":{"mounted":true,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null},"unavailable":false,"pendingNextBoundary":[],"explanation":"mcp: effective allow[u8single,u8paged,u8none]; team template(origin=static) allow[u8single,u8paged,u8none]; external exists=yes, hard
+[2026-09-24T14:49:30.150Z] PASS [v5] V5 no activationError on any of the three servers
+[2026-09-24T14:49:30.150Z] V5 mount state recorded (none-variant stability: team init + full chain on the same live Team)
+[2026-09-24T14:49:30.150Z] ── V6: token-budget spill + artifact grant ──
+[2026-09-24T14:49:33.931Z] PASS [v6] V6 the spill bash ask created a durable control request (ask bash any) — requestId=ctrl-13ppi1h0zqipp203k3qv71e8
+[2026-09-24T14:49:34.446Z] PASS [v6] V6 the 250KB bash output was SPILLED by the 0.1.7 token budget (spill notice with locator in the tool result; base row maxInlineTokens: 12500 — no byte threshold in play) — notice=true path=/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/spill/session-68c9927b195e/3373eadba47c-bash.txt
+[2026-09-24T14:49:34.446Z] PASS [v6] V6 the inline result is the RETAINED preview (head/tail + notice), not the full 250KB output — inlineBytes=49931
+[2026-09-24T14:49:34.446Z] PASS [v6] V6 the OWNER agent READS the spill file (the durable artifact grant admits it) — head="<path>/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/spill/session-68c9927b195e/3373ead"
+[2026-09-24T14:49:34.446Z] PASS [v6] V6 the spill file is DURABLE on disk under the world-pinned spill root — bytes=64105
+[2026-09-24T14:49:34.446Z] PASS [v6] V6 the spill turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:49:47.474Z] PASS [v6] V6 the OTHER instance (member) CANNOT read the spill file (no grant outside the workspace → deny; the owner-only grant scope holds) — head="Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed"
+[2026-09-24T14:49:47.474Z] ── V7: lifecycle (archive + leader stop + cold resume) ──
+[2026-09-24T14:49:56.245Z] PASS [v7] V7 team_archive_member executed (the durable archive transition was committed) — head="{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-48-13\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0ee7wpn0c0z6\",\"effect\":{\"kind\":\"lifecycle-changed\",\""
+[2026-09-24T14:49:56.245Z] PASS [v7] V7 the archive turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:49:56.245Z] PASS [v7] V7 the member lifecycle is DURABLY archived (the storage row lifecycle=archived — the 0.1.7 durable transition survived) — lifecycle=["ARCHIVED",null,null,null,null,null,null,null,null,null,null,null]
+[2026-09-24T14:49:56.327Z] PASS [v6] V6 TeamAwareLocalSpillStore recorded a DURABLE artifact grant (the locator appears in durable world storage; read back after the V7 archive commit boundary) — files=["<world>/storages/team_domain.json"]
+[2026-09-24T14:49:59.486Z] PASS [v7] V7 leader stop: the live leader handle was disposed (residency/drop) — body={"sessionId":"session-u8-team-2026-09-24T14-48-13","dropped":true}
+[2026-09-24T14:50:00.488Z] PASS [v7] V7 the leader agent COLD-RESUMED after the stop (a fresh model request on the same session — the 0.1.7 agents.resume path) — requests=31
+[2026-09-24T14:50:00.488Z] PASS [v7] V7 the leader resume turn ended (apiPrompt settled) — status=200
+[2026-09-24T14:50:00.489Z] PASS [v7] V7 0.1.7 event vocabulary: no agent/session-start references in the boot log (the event is gone in 0.1.7) — refs=0
+[2026-09-24T14:50:00.489Z] ── V8: process stop + fresh reboot (bootPhase resume) ──
+[2026-09-24T14:50:00.795Z] PASS [v8] V8 host stopped and the port freed — port=3491
+[2026-09-24T14:52:31.072Z] PASS [v8] V8 the host RE-BOOTS after the process stop (fresh boot marker, same profile) — dsh web: http://127.0.0.1:3491/?token=REDACTED
+[2026-09-24T14:52:31.085Z] PASS [v8] V8 row ready on the resume boot (p6t6 health ok) — body={"ok":true,"boot":2,"ready":true,"rootSessionId":"session-u8-root-2026-09-24T14-48-13","liveSessions":["session-u8-root-2026-09-24T14-48-13"],"toolCount":13}
+[2026-09-24T14:52:31.085Z] PASS [v8] V8 old Team RE-ADOPTED on the resume boot (strict load-only: the durable TeamSession was loaded — resume worked this round) — {"rootSessionId":"session-u8-root-2026-09-24T14-48-13","blueprintId":"team.u8-anchor","revision":"1","contentHash":"sha256:c3234236e25af99dd34bbdf2b27251ec3004d10e9eac1f24ddc32ec7361c31d6","defaultWor
+[2026-09-24T14:52:31.085Z] PASS [v8] V8 session logs use the 0.1.7 V4 naming (session.v4.jsonl.zstd) — v4=4 total=4
+[2026-09-24T14:52:31.085Z] ── teardown ──
+[2026-09-24T14:52:31.086Z] mock decision trace: /home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8/v0-boot/mock-decisions.log (58 lines); 31 model requests recorded
+[2026-09-24T14:52:31.090Z] PASS [closing] :3080/:3180 state unchanged (read-only probes pre == post) — pre={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}} post={"p3080":{"port":3080,"reachable":true,"status":401},"p3180":{"port":3180,"reachable":true,"status":401}}
+[2026-09-24T14:52:31.436Z] PASS [closing] all U8 ports released (host + mock + mini-MCP) — {"3491":true,"3496":true,"3497":true,"3498":true,"3499":true}
+[2026-09-24T14:52:31.457Z] PASS [closing] test-use working tree still byte-clean after the run — porcelain=
+[2026-09-24T14:52:31.457Z] PASS [closing] test-use HEAD unchanged (46a7f68b09) — head=46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-24T14:52:31.457Z] world RETAINED as evidence: /home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13 (registered in this run's evidence; session files + spill root + profile state inside)
+[2026-09-24T14:52:31.457Z] VERDICT PASS — 75/75 criteria passed

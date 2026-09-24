@@ -1,0 +1,68 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/packages/client
+
+ ✓ test/team-ledger-model.client.spec.ts (24 tests) 16ms
+ ✓ test/team-create-flow.test.ts (10 tests) 4ms
+ ✓ test/team-members-model.client.spec.ts (10 tests) 8ms
+ ✓ test/ledger-adapter.test.ts (27 tests) 19ms
+ ✓ test/team-timeline-model.client.spec.ts (31 tests) 13ms
+ ✓ test/team-intent-model.test.ts (22 tests) 14ms
+ ✓ test/projection-adapter.test.ts (16 tests) 9ms
+ ✓ test/team-handoff.test.ts (23 tests) 12ms
+ ✓ test/team-session-resolution.test.ts (9 tests) 8ms
+ ✓ test/team-legacy.test.ts (12 tests) 11ms
+ ✓ test/team-ledger-store.test.ts (24 tests) 14ms
+ ✓ test/team-remote-client.test.ts (15 tests) 9ms
+ ✓ test/team-projection-store.test.ts (14 tests) 31ms
+ ✓ test/client.test.ts (2 tests) 4ms
+ ✓ test/d3-open-ordinary-mode.test.ts (11 tests) 8ms
+ ✓ test/client-plugin-mount.test.ts (33 tests) 9ms
+ ✓ test/team-member-commands.test.ts (11 tests) 8ms
+ ✓ test/client-architecture-negatives.test.ts (9 tests) 7ms
+ ✓ test/team-dock-model.client.spec.ts (9 tests) 4ms
+ ✓ test/team-members-model.test.ts (5 tests) 5ms
+ ✓ test/f9u-control-surface-model.test.ts (11 tests) 8ms
+ ✓ test/f9-remote-client-v4.test.ts (5 tests) 4ms
+ ✓ test/d1-team-remote-v3.test.ts (8 tests) 4ms
+ ✓ test/d2-open-team-mode.test.ts (6 tests) 3ms
+ ✓ test/team-command-flow.test.ts (6 tests) 3ms
+ ✓ test/team-remote-categories.test.ts (5 tests) 3ms
+ ✓ test/team-governance.test.ts (43 tests) 8ms
+ ✓ test/team-activity.client.spec.tsx (7 tests) 70ms
+ ✓ test/team-members.client.spec.tsx (12 tests) 124ms
+ ✓ test/team-creation-panel-refresh.client.spec.tsx (1 test) 144ms
+ ✓ test/team-dock.client.spec.tsx (12 tests) 166ms
+ ✓ test/f9u-control-panel.client.spec.tsx (15 tests) 105ms
+ ✓ test/team-timeline.client.spec.tsx (18 tests) 240ms
+ ✓ test/f9-resolve-control-ui.client.spec.tsx (9 tests) 139ms
+ ✓ test/team-legacy.client.spec.tsx (8 tests) 200ms
+ ✓ test/team-view.client.spec.tsx (15 tests) 214ms
+stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a successful two-stage create (with initial work) keeps the overlay open until the DEFERRED admit settles (plan §7 minimum UI constraint)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ test/team-roots-zero-state.client.spec.tsx (8 tests) 267ms
+ ✓ test/d2-team-mode-entry.client.spec.tsx (7 tests) 267ms
+ ✓ test/d3-ordinary-mode-entry.client.spec.tsx (11 tests) 282ms
+ ✓ test/team-members-actions.client.spec.tsx (19 tests) 621ms
+ ✓ test/f9u-control-surface-probe.client.spec.tsx (6 tests) 390ms
+ ✓ test/team-ledger.client.spec.tsx (20 tests) 554ms
+stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a second-stage (admit) failure keeps the overlay on the opened Root with the work lane + retry; the retry re-sends ONLY the admit and the success closes (plan §7; never a New Session)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ test/new-team-entry.client.spec.tsx (8 tests) 726ms
+ ✓ test/team-creation-handoff.client.spec.tsx (15 tests) 1171ms
+ ✓ test/team-governance.client.spec.tsx (24 tests) 972ms
+ ✓ test/team-creation-panel.client.spec.tsx (19 tests) 1414ms
+ ✓ test/team-d4-a1-ui-pull.client.spec.tsx (14 tests) 1961ms
+
+ Test Files  47 passed (47)
+      Tests  649 passed (649)
+   Start at  20:15:24
+   Duration  6.02s (transform 32.13s, setup 1.40s, import 60.11s, tests 10.27s, environment 20.44s)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.1.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.1.0
+npm notice To update run: npm install -g npm@12.1.0
+npm notice
+EXIT:0

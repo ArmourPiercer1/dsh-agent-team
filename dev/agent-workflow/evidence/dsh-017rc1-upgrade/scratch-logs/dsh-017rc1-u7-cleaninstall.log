@@ -1,0 +1,19 @@
+Scope: all 10 workspace projects
+? Verifying lockfile against supply-chain policies (348 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +317
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 317, reused 317, downloaded 0, added 317, done
+✓ Lockfile passes supply-chain policies (348 entries in 3.2s)
+
+devDependencies:
++ @eslint/js 9.39.5
++ eslint 9.39.5
++ globals 16.5.0
++ typescript 6.0.3
++ typescript-eslint 8.68.0
++ vitest 4.1.11
+
+Done in 3.7s using pnpm v11.7.0
+EXIT:0
