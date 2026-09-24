@@ -1160,8 +1160,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // variants). Both carry zero denylist vocabulary; the frozen
     // quarantine hit set is unchanged at fifteen. Scanner unchanged.
     // Single-writer pin bump on the task branch.
-    expect(scanResult.filesScanned).toBe(746)
-    expect(scanResult.files.length).toBe(746)
+    // DSH 0.1.7-rc.1 upgrade (task/dsh-017rc1-upgrade, this round): +1 on
+    // top of the 746 base = 747 — the one new scannable file: the tsc
+    // type surface of the mini-MCP harness (packages/runtime/root-binding/
+    // harness/mini-mcp.d.mts, the established adjacent .d.mts pattern).
+    // Zero denylist vocabulary; the frozen quarantine hit set is unchanged
+    // at fifteen. Scanner unchanged. Single-writer pin bump on the task
+    // branch.
+    expect(scanResult.filesScanned).toBe(747)
+    expect(scanResult.files.length).toBe(747)
 
   })
 
