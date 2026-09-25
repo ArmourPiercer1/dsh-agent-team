@@ -121,6 +121,34 @@ Structural rules (all fail loudly with a classified reason):
 - **quota spec**: `team`, `members`; each `{maxInstances, maxConcurrent}`.
 - the legacy field `memberId` is rejected at **any** depth.
 
+### 3.1 `modelPreference` (per-template model routing)
+
+Each template (leader and members share the schema) MAY declare a
+`modelPreference` — a model token that routes that member to a specific model
+from its **FIRST** turn, with zero governance overrides. (Delivered
+2026-09-26, model-preference-routing round: the value now reaches the real
+Agent model-selection path as a TEMPLATE-STATIC policy value.)
+
+- **Token grammar** (split at the FIRST `/`):
+  - `provider/model` — fully qualified (both parts non-empty).
+  - `model` (model-only) — LEGAL shorthand; inherits the deployment
+    `staticModel`'s provider (so `gpt-6-astra` → `<staticModel.provider>/gpt-6-astra`).
+  - malformed (empty / whitespace / control chars / `/model` / `provider/`)
+    REJECTS the whole blueprint (reason `invalid-model-preference`) and is
+    excluded from the Blueprint hash.
+- **Precedence**: `modelPreference` becomes a TEMPLATE-STATIC policy value
+  (the resolver `template` layer, provenance `member-template` /
+  `template` / `static`, recordId null). It sits **BELOW** any record-backed
+  override / `humanOverride` (a durable model override always wins) and
+  **ABOVE** the unspecified default (the deployment `staticModel` fallback).
+  External hard facts always win.
+- **No `model` param on team tools**: you do NOT (and cannot) set a member's
+  model through a team tool at runtime — `modelPreference` is the Blueprint's
+  declarative routing; a runtime model change goes through the durable
+  override path, which outranks the template value.
+- A template WITHOUT `modelPreference` falls back to the deployment
+  `staticModel` (unchanged legacy behavior).
+
 ## 4. Hard invariants (the ones that reject whole documents)
 
 1. **Exactly one complete LeaderTemplate**: the `leader` field is required; a

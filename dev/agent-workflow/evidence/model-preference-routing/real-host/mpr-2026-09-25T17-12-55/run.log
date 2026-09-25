@@ -1,0 +1,28 @@
+[mpr-smoke 2026-09-25T17:12:55.953Z] pre: stable-instance probe (read-only, zero-touch): [{"url":"http://127.0.0.1:3080","status":401,"error":null},{"url":"http://127.0.0.1:3180","status":401,"error":null}]
+[mpr-smoke 2026-09-25T17:12:55.979Z] pre: test-use pristine @ 46a7f68b09 (HEAD source: git)
+[mpr-smoke 2026-09-25T17:12:55.979Z] blueprints written: team.mpr-main, team.mpr-a, team.mpr-b (+ inline anchor team.mpr-anchor)
+[mpr-smoke 2026-09-25T17:12:55.985Z] mock: mock: listening on 127.0.0.1:3496
+[mpr-smoke 2026-09-25T17:12:55.985Z] mock model on 3496; DEEPSEEK_BASE_URL set
+[mpr-smoke 2026-09-25T17:12:55.985Z] profile: profile not initialized yet — running a throwaway boot to let the host create it
+[mpr-smoke 2026-09-25T17:12:56.989Z] profile: throwaway boot OK: http://127.0.0.1:3181/?token=Ehv4AZXr8IYGG59IsfewQKHhJXMvInwzQLRzMs8fxqE
+[mpr-smoke 2026-09-25T17:12:57.058Z] profile initialized by the throwaway boot
+[mpr-smoke 2026-09-25T17:12:57.059Z] booting host 1 (create) on port 3181 …
+[mpr-smoke 2026-09-25T17:12:58.364Z] host 1 up: http://127.0.0.1:3181 (token cookie acquired)
+[mpr-smoke 2026-09-25T17:12:58.437Z] dump-config: the row carries the production+p6t6 rows AND our anchor/staticModel/blueprintDir (insert-sequence shape verified); the 3 saved blueprints exist on disk
+[mpr-smoke 2026-09-25T17:12:58.445Z] p6t6 ready (boot 1, phase=create) — the live boot settled
+[mpr-smoke 2026-09-25T17:12:58.445Z] ── R1: team.create (T1) + leader initialWork ──
+[mpr-smoke 2026-09-25T17:12:58.604Z] mock: mock: 1 [messages] text reply (39 chars): "ack:role-leader:mpr-2026-09-25T17-12-55"
+[mpr-smoke 2026-09-25T17:12:58.605Z] mock: mock: 2 [messages] text reply (39 chars): "ack:role-leader:mpr-2026-09-25T17-12-55"
+[mpr-smoke 2026-09-25T17:12:58.631Z] R1 FAIL — team.create v1 (T1) succeeds on a fresh root (path=fresh-root) | value={"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-mpr-t1-mpr-2026-09-25T17-12-55","blueprint":{"blueprintId":"team.mpr-main","revision":"1","contentHash":"sha256:0586296ed45a2fa73afdd2e2bec3c411188388a06a598d037adb1f555065f0af"},"createdAt":"2026-09-25
+[mpr-smoke 2026-09-25T17:12:58.631Z] R1 PASS — the leader's FIRST LLM request body.model === 'role-leader' (NOT the staticModel baseline 'global-default')
+[mpr-smoke 2026-09-25T17:12:58.631Z] R1 PASS — the leader model surface carries the 13 team_ tools of the template allow list (the bound blueprint, not the legacy anchor)
+[mpr-smoke 2026-09-25T17:12:58.635Z] R1 PASS — zero-seed proof: governance override rows = 0 at that point (no override anywhere before team work)
+[mpr-smoke 2026-09-25T17:12:58.635Z] ── R2: leader DIRECTLY team_delegate(worker) — no create+override+follow-up ──
+[mpr-smoke 2026-09-25T17:12:58.755Z] mock: mock: 3 [messages] text reply (45 chars): "ack:role-worker:deleg:mpr-2026-09-25T17-12-55"
+[mpr-smoke 2026-09-25T17:12:58.756Z] mock: mock: 4 [messages] text reply (45 chars): "ack:role-worker:deleg:mpr-2026-09-25T17-12-55"
+[mpr-smoke 2026-09-25T17:12:58.787Z] R2 FAIL — team_delegate(delegationTemplateId=worker) resolves as ONE work-admitted effect (the create+work form — no team_create_member + override.set + team_follow_up sequence) | effect={"kind":"member-activated","instanceId":"inst-18mzv7b0xll1","templateId":"worker","childSessionId":"session-team-child-3d1f201eb27df18e257ac7870830b64d","operationId":"op-0xo4pga0eyow5714kgbsg09l","replayed":false,"ledgerSequence":3,"admissionCode":"ADMISSION_OPEN","workSequence":4,"workSettled":true,"memberResult":{"requestToken":"tok-r2-deleg-faxm1675","status":"succeeded","body":"ack:role-worke
+[mpr-smoke 2026-09-25T17:12:58.788Z] R2 PASS — the worker's FIRST LLM request body.model === 'role-worker' (the direct delegation created the member AND routed it to the Blueprint model — THE defect closure)
+[mpr-smoke 2026-09-25T17:12:58.792Z] FATAL (kit-level, run aborted): TypeError: Cannot read properties of undefined (reading 'slice')
+    at run (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:1074:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:1427:15)

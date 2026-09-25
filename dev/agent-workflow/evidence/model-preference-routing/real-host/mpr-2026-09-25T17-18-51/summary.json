@@ -1,0 +1,264 @@
+{
+  "task": "model-preference-routing real-host smoke (guide §7 R1–R8)",
+  "runStamp": "mpr-2026-09-25T17-18-51",
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing",
+  "testuse": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+  "baseline": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "home": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-25T17-18-51",
+  "retainedHome": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-25T17-18-51",
+  "fatal": null,
+  "criteria": {
+    "R1": {
+      "pass": false,
+      "checks": [
+        {
+          "label": "team.create v1 (T1) succeeds on a fresh root (data.path=fresh-root)",
+          "ok": true,
+          "detail": "value={\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-mpr-t1-mpr-2026-09-25T17-18-51\",\"blueprint\":{\"blueprintId\":\"team.mpr-main\",\"revision\":\"1\",\"contentHash\":\"sha256:0586296ed45a2fa73afdd2e2bec3c411188388a06a598d037adb1f555065f0af\"},\"createdAt\":\"2026-09-25"
+        },
+        {
+          "label": "the leader's FIRST LLM request body.model === 'role-leader' (NOT the staticModel baseline 'global-default')",
+          "ok": true,
+          "detail": "model=role-leader"
+        },
+        {
+          "label": "the leader model surface carries the 13 team_ tools of the template allow list (the bound blueprint, not the legacy anchor)",
+          "ok": false,
+          "detail": "teamTools=0/13 surface=0"
+        },
+        {
+          "label": "zero-seed proof: governance override rows = 0 at that point (no override anywhere before team work)",
+          "ok": true,
+          "detail": "overrides=[]"
+        }
+      ]
+    },
+    "R2": {
+      "pass": true,
+      "checks": [
+        {
+          "label": "team_delegate(delegationTemplateId=worker) resolves as ONE member-activated effect with the SETTLED work chain embedded (workSettled + memberResult — the create+work form; no team_create_member + override.set + team_follow_up sequence)",
+          "ok": true,
+          "detail": "effect={\"kind\":\"member-activated\",\"instanceId\":\"inst-1uec6md1yomf\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-4a46deb25815b040795c300d8755a1a2\",\"operationId\":\"op-0gg51gj05uljnm0vt8bhh1r5\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":4,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"tok-r2-deleg-cohxyjf6\",\"status\":\"succeeded\",\"body\":\"ack:role-worke"
+        },
+        {
+          "label": "the worker's FIRST LLM request body.model === 'role-worker' (the direct delegation created the member AND routed it to the Blueprint model — THE defect closure)",
+          "ok": true,
+          "detail": "model=role-worker"
+        },
+        {
+          "label": "NO governance override record exists for the worker after the direct delegation (the route is template-static, not record-backed)",
+          "ok": true,
+          "detail": "override=null"
+        }
+      ]
+    },
+    "R3": {
+      "pass": true,
+      "checks": [
+        {
+          "label": "team_create_member(worker) activates the instance (member-activated effect)",
+          "ok": true,
+          "detail": "effect={\"kind\":\"member-activated\",\"instanceId\":\"inst-1jzyvy90n6bm\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-b66a403f3cdb3b61c79bcd205a0c4fb3\",\"operationId\":\"op-0ttoddn1ytreha1bvw37h0bd\",\"replayed\":false,\"ledgerSequence\":8,\"admissionCode\":\"ADMISSION_OPEN\"}"
+        },
+        {
+          "label": "create ALONE did not deliver a substantive worker turn (no request carrying the follow-up marker exists yet)",
+          "ok": true,
+          "detail": "stray=0"
+        },
+        {
+          "label": "team_follow_up(w-create) resolves settled (the work unit ran on the follow-up)",
+          "ok": true,
+          "detail": "effect={\"kind\":\"work-admitted\",\"instanceId\":\"inst-1jzyvy90n6bm\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":9,\"replayed\":false,\"settled\":true,\"settledSequence\":12,\"memberResult\":{\"requestToken\":\"tok-r3-follow-e23hd2v4\",\"status\":\"succeeded\",\"body\":\"ack:role-worker:create:mpr-2026-09-25T17"
+        },
+        {
+          "label": "the worker's first (follow-up) LLM request body.model === 'role-worker'",
+          "ok": true,
+          "detail": "model=role-worker"
+        },
+        {
+          "label": "no SUBSTANTIVE worker model turn between create and follow-up (every new request in the window is the follow-up itself or a title side-call)",
+          "ok": true,
+          "detail": "unexplained=[]"
+        }
+      ]
+    },
+    "R4": {
+      "pass": true,
+      "checks": [
+        {
+          "label": "pre-write: NO override record for the worker (the template static route created no synthetic record, after its routed turn)",
+          "ok": true,
+          "detail": "override=null"
+        },
+        {
+          "label": "the durable HUMAN override.set (model allow deepseek-official/override-worker, instance scope) is admitted with a recordId",
+          "ok": true,
+          "detail": "record={\"recordId\":\"ovr-model-inst-1uec6md1yomf-g0\",\"kind\":\"human-override\",\"scope\":\"instance\",\"rootSessionId\":\"session-mpr-t1-mpr-2026-09-25T17-18-51\",\"values\":{\"model\":{\"kind\":\"allow\",\"items\":[\"deepseek-official/override-worker\"]}},\"generation\":1,\"updatedAt\":\"2026-09-25T17:18:56.294Z\",\"instanceId\":\"inst-"
+        },
+        {
+          "label": "post-write: EXACTLY the human override exists for the worker (the override row count reflects only the real human override — no synthetic record from the template static route)",
+          "ok": true,
+          "detail": "override={\"schemaVersion\":2,\"kind\":\"human-override\",\"recordId\":\"ovr-model-inst-1uec6md1yomf-g0\",\"scope\":\"instance\",\"rootSessionId\":\"session-mpr-t1-mpr-2026-09-25T17-18-51\",\"values\":{\"model\":{\"items\":[\"deepseek-official/override-worker\"],\"kind\":\"allow\"}},\"generation\":1,\"updatedAt\":\"2026-09-25T17:18:56.294Z\",\""
+        },
+        {
+          "label": "the live state shows the override PENDING at the next request boundary (record-backed, awaiting the boundary)",
+          "ok": true,
+          "detail": "pending=[{\"recordId\":\"ovr-model-inst-1uec6md1yomf-g0\",\"kind\":\"human-override\",\"scope\":\"instance\",\"generation\":1,\"updatedAt\":\"2026-09-25T17:18:56.294Z\",\"values\":{\"model\":{\"items\":[\"deepseek-official/override-worker\"],\"kind\":\"allow\"}}}] child=session-team-child-4a46deb25815b040795c300d8755a1a2"
+        },
+        {
+          "label": "team_follow_up(w-deleg) after the override resolves settled (the NEXT request boundary)",
+          "ok": true,
+          "detail": "effect={\"kind\":\"work-admitted\",\"instanceId\":\"inst-1uec6md1yomf\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":13,\"replayed\":false,\"settled\":true,\"settledSequence\":16,\"memberResult\":{\"requestToken\":\"tok-r4-follow-48hxvo8k\",\"status\":\"succeeded\",\"body\":\"ack:role-worker:override:mpr-2026-09-25"
+        },
+        {
+          "label": "the worker's NEXT LLM request (after the durable human override) body.model === 'override-worker' (the record-backed layer beats the template-static route)",
+          "ok": true,
+          "detail": "model=override-worker"
+        }
+      ]
+    },
+    "R5": {
+      "pass": true,
+      "checks": [
+        {
+          "label": "the expert member has ZERO model overrides (its route is purely template-static)",
+          "ok": true,
+          "detail": "override=null"
+        },
+        {
+          "label": "BEFORE restart: the expert's LLM request body.model === 'role-expert'",
+          "ok": true,
+          "detail": "model=role-expert"
+        },
+        {
+          "label": "post-restart team_follow_up(expert) resolves settled (the cold resume re-derived the member from the bound Blueprint)",
+          "ok": true,
+          "detail": "effect={\"kind\":\"work-admitted\",\"instanceId\":\"inst-09n273502vt0\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":41,\"replayed\":false,\"settled\":true,\"settledSequence\":44,\"memberResult\":{\"requestToken\":\"tok-r5-follow-post-7a809vlr\",\"status\":\"succeeded\",\"body\":\"ack:role-expert:post:mpr-2026-09-2"
+        },
+        {
+          "label": "AFTER restart: the expert's LLM request body.model === 'role-expert' (the source is the bound Blueprint snapshot, re-derived on cold resume — NOT a lost/denied selection)",
+          "ok": true,
+          "detail": "model=role-expert"
+        }
+      ]
+    },
+    "R6": {
+      "pass": true,
+      "checks": [
+        {
+          "label": "team.getProjection carries the member row with effectiveConfig + modelState lanes",
+          "ok": true,
+          "detail": "member={\"instanceId\":\"inst-1jzyvy90n6bm\",\"templateId\":\"worker\",\"label\":\"w-create\",\"workspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"createdAt\":\"2026-09-25T17:18:56.155Z\",\"lifecycle\":\"SETTLED\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"deepseek-offic"
+        },
+        {
+          "label": "effectiveConfig.model.value === 'deepseek-official/role-worker' (source 'member-template', state 'inherited')",
+          "ok": true,
+          "detail": "model={\"value\":\"deepseek-official/role-worker\",\"source\":\"member-template\",\"state\":\"inherited\"}"
+        },
+        {
+          "label": "modelState.current.value === 'deepseek-official/role-worker' with static template provenance (layer 'template', origin 'static', recordId null)",
+          "ok": true,
+          "detail": "current={\"value\":\"deepseek-official/role-worker\",\"source\":\"member-template\",\"state\":\"inherited\"} provenance={\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null,\"explanation\":\"model: effective allow[deepseek-official/role-worker]; team template(origin=static) allow[deepseek-official/role-worker]; external exists=yes, hard=unspecified\"}"
+        },
+        {
+          "label": "ACTUAL provider request body.model agrees with the projections (the three-way agreement: body.model == effectiveConfig.model.value == modelState.current.value)",
+          "ok": true,
+          "detail": "actual=role-worker eff=deepseek-official/role-worker modelState=deepseek-official/role-worker"
+        },
+        {
+          "label": "the LIVE p6t6 state agrees too (governance.sessions[<child>].model.current == {provider: deepseek-official, model: role-worker})",
+          "ok": true,
+          "detail": "liveModel={\"current\":{\"provider\":\"deepseek-official\",\"model\":\"role-worker\"},\"assembled\":{\"provider\":\"deepseek-official\",\"model\":\"role-worker\"},\"selection\":{\"provider\":\"deepseek-official\",\"model\":\"role-worker\"},\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null},\"suppressed\":[],\"unavailable\":false,"
+        }
+      ]
+    },
+    "R7": {
+      "pass": true,
+      "checks": [
+        {
+          "label": "the control member (NO modelPreference) LLM request body.model === 'global-default' (the staticModel baseline — backward compatibility locked)",
+          "ok": true,
+          "detail": "model=global-default"
+        }
+      ]
+    },
+    "R8": {
+      "pass": true,
+      "checks": [
+        {
+          "label": "team.create (Team A, Blueprint A) succeeds on the SAME row (fresh-root)",
+          "ok": true,
+          "detail": "value={\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-mpr-ta-mpr-2026-09-25T17-18-51\",\"blueprint\":{\"blueprintId\":\"team.mpr-a\",\"revision\":\"1\",\"contentHash\":\""
+        },
+        {
+          "label": "Team A leader first request body.model === 'role-a-leader'",
+          "ok": true,
+          "detail": "model=role-a-leader"
+        },
+        {
+          "label": "Team A's worker request body.model === 'role-a' (NOT role-b — no cross-root leak)",
+          "ok": true,
+          "detail": "model=role-a"
+        },
+        {
+          "label": "team.create (Team B, Blueprint B) succeeds on the SAME row (fresh-root, independent of Team A)",
+          "ok": true,
+          "detail": "value={\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-mpr-tb-mpr-2026-09-25T17-18-51\",\"blueprint\":{\"blueprintId\":\"team.mpr-b\",\"revision\":\"1\",\"contentHash\":\""
+        },
+        {
+          "label": "Team B leader first request body.model === 'role-b-leader'",
+          "ok": true,
+          "detail": "model=role-b-leader"
+        },
+        {
+          "label": "Team B's worker request body.model === 'role-b' (NOT role-a — no cross-root leak in the other direction)",
+          "ok": true,
+          "detail": "model=role-b"
+        }
+      ]
+    },
+    "H1": {
+      "pass": true,
+      "checks": [
+        {
+          "label": "test-use HEAD unchanged after the run (46a7f68b09)",
+          "ok": true,
+          "detail": "head=46a7f68b0922371ce7144b668b90e377d8e799f4 pre=46a7f68b0922371ce7144b668b90e377d8e799f4"
+        },
+        {
+          "label": "test-use porcelain EMPTY after the run (zero upstream effect — CORE PATCH BUDGET = 0)",
+          "ok": true,
+          "detail": "status=\"\""
+        },
+        {
+          "label": "stable instance zero-touch: the :3080/:3180 read-only probes are IDENTICAL before/after (those ports were never bound or driven)",
+          "ok": true,
+          "detail": "pre=[{\"url\":\"http://127.0.0.1:3080\",\"status\":401,\"error\":null},{\"url\":\"http://127.0.0.1:3180\",\"status\":401,\"error\":null}] post=[{\"url\":\"http://127.0.0.1:3080\",\"status\":401,\"error\":null},{\"url\":\"http://127.0.0.1:3180\",\"status\":401,\"error\":null}]"
+        }
+      ]
+    },
+    "H2": {
+      "pass": true,
+      "checks": [
+        {
+          "label": "host port released at teardown",
+          "ok": true,
+          "detail": "port 3181 still bound"
+        },
+        {
+          "label": "mock model port released at teardown",
+          "ok": true,
+          "detail": "port 3496 still bound"
+        }
+      ]
+    }
+  },
+  "pass": false,
+  "exitCode": 2,
+  "extra": {
+    "wDeleg": "inst-1uec6md1yomf",
+    "wCreate": "inst-1jzyvy90n6bm",
+    "expertId": "inst-09n273502vt0"
+  }
+}

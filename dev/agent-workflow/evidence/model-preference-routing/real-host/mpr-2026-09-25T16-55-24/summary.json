@@ -1,0 +1,55 @@
+{
+  "task": "model-preference-routing real-host smoke (guide §7 R1–R8)",
+  "runStamp": "mpr-2026-09-25T16-55-24",
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing",
+  "testuse": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+  "baseline": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "home": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-25T16-55-24",
+  "retainedHome": null,
+  "fatal": "Error: p6t6 readiness not reached in 180000ms (want root=session-mpr-boot-mpr-2026-09-25T16-55-24 phase=create)\n    at p6t6StateReady (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:727:39)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async run (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:983:3)\n    at async main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:1404:15)",
+  "criteria": {
+    "R1": {
+      "pass": false,
+      "checks": []
+    },
+    "R2": {
+      "pass": false,
+      "checks": []
+    },
+    "R3": {
+      "pass": false,
+      "checks": []
+    },
+    "R4": {
+      "pass": false,
+      "checks": []
+    },
+    "R5": {
+      "pass": false,
+      "checks": []
+    },
+    "R6": {
+      "pass": false,
+      "checks": []
+    },
+    "R7": {
+      "pass": false,
+      "checks": []
+    },
+    "R8": {
+      "pass": false,
+      "checks": []
+    },
+    "H1": {
+      "pass": false,
+      "checks": []
+    },
+    "H2": {
+      "pass": false,
+      "checks": []
+    }
+  },
+  "pass": false,
+  "exitCode": 1,
+  "extra": {}
+}

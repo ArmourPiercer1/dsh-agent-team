@@ -3780,3 +3780,39 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **终验**：`git ls-remote origin` = `6fd33c665f` = 本地 HEAD ✅；PR #29 = OPEN / MERGEABLE（REST mergeable=true）/ head = 6fd33c6 ✅。
 - **红线核对**：仅 FF 推送已授权分支；零 force-push；master/stable 零触碰；未 merge（merge 裁决归用户）。
 - **状态**：PR #29 MERGE-READY，待用户审查 merge。
+
+### 2026-09-26 — model-preference-routing 轮（用户指令：读取工作区代码与文档 → 按 `docs/plans/active/dsh-agent-team-model-preference-routing-fix-guide.md` 执行开发与测试 → 完成后提交 PR 等待审查；模型路由 qiyuan-self / qwen3.8-27b）
+
+- **范围**（guide 固定，A–G 七 Gate）：Blueprint `modelPreference` 在 schema/hash/Remote 中携带，但**从未进入真实 Agent 模型选择路径** —— member 的模型静默回退到 deployment `staticModel` 基线，Blueprint 声明的模型不生效。本轮将其作为 **TEMPLATE-STATIC 策略值**（resolver `template` 层 `templateValues.model = {kind:'allow', items:[route]}`，provenance template/static、recordId null），低于 record-backed overlay / humanOverride、高于 unspecified 默认；外部 hard-fact 恒赢。
+- **Gate A（token 语法冻结）** `agent-setup/model/route.ts`：首个 `/` 切分；provider/model 均非空；**model-only = 合法 shorthand**（继承 `staticModel.provider`）；malformed（空 / 空白 / 控制符 / `/model` / `provider/`）fail Blueprint validation（reason `invalid-model-preference`）且**排除出 hash**；takeString trim + 控制符拒绝在 token 检查之前。
+- **Gate B（template 静态 grant）** `agent-setup/model/template-model.ts`：`initialTemplateModelGrantOf(template, baseline)` —— absent / malformed → undefined；model-only → `${baseline.provider}/${model}`；qualified → 原样。
+- **Gate C（消费）** resolver `template` 层携带 `templateValues.model`；激活/读取侧（`activation/checks.ts` `resolveActivationPolicy`、`durable-consumption.ts`）按既有投影映射消费（`SOURCE_BY_LAYER.template = member_template`，无需 special-case）。
+- **Gate D（step-8）** `activation/provider.ts` step-8 grants 携带 templateValues（空则省略）；`model-activation-step8.test.ts` 4/4。
+- **Gate E（live glue）** `src/plugin/live/agent-bindings.mjs` `locateTemplate`-first 驱动 model + mcp grants（**一次 locateTemplate**），`boundTemplate` 复用，fresh-create `templateIdHint` 窗口 honored 到 member **首个**请求；`model-blueprint-initial-routing.test.ts` 23/23（E1–E9，含 E3 新 delegate 的 expert 首 turn 在模板模型上 = 主缺陷闭合 + E6 持久 override 胜过模板 + E7 冷 resume 重推导 + E8 跨 root 隔离 + E9 无 preference 对照）。
+- **Gate F（root 读取侧）** `src/plugin/root.ts` per-root `boundBlueprintFor` Map 缓存 + `policyReader` 读**所属 root** 的 bound Blueprint（**无 bootstrap 行 anchor closure**）经 `initialTemplateModelGrantOf` 返回 template 静态 MODEL grant（与 capability 值合并）；legacy 模板（无 capabilities）声明 modelPreference 时现 yield grant 而非空视图。回归测试 `p8s7r2-effective-config`（22，+3）/ `p8s7r2-model-state`（18，+2）锁定 F1–F4（template 层赢 / modelState provenance member-template·template·static·recordId null / human override 双 horizon pending-next-boundary / 一 root 行 3 roots 无 anchor-closure 泄漏）。
+- **Gate G（legacy importer）** `packages/legacy/teammates-adapter.ts`：provider+model → 可执行 `modelPreference` route（`provider/model`，provider 从 extras 移除）；model-only → 裸 model；provider-only → 无 modelPreference + `extras.provider`。`p7t6-teammates-adapter.test.ts` 22/22（含 G/G1/G2）。**附带修复**既有 Linux 环境失败：source-scan 测试 `split('\\')` → 跨平台 `split(/[\\/]/)`。
+- **门禁**：A validation `t2-blueprint-validation` 68 / A hash `t2-blueprint-hash`（既有 1 F0 = capabilities:null 投影债，非本轮）/ B `template-model-preference` 6 / C `p8s4b-model-consumption` 17 / D 4 / E 23 / F 22+18 / G 22；`p4t6` SessionEvent denylist 扫描 pin **748 → 753**（+5 新可扫描文件，零 denylist 词汇）10/10；typecheck 8 包 green（legacy noCheck by design）；`pnpm build` + `build:composition` + `check:artifacts` **OK 1180 零漂移**；全量套件 **19F | 3897P (3916)**，失败集与 baseline `master-baseline-4fb79fc.log` 逐文件比对 **post − baseline = ∅**（零新增失败；baseline − post 2 项 = p7t6 Linux 环境失败已修 + p6t1-parallel 负载 flake 本次通过）；zero-core：test-use pristine @ 46a7f68b09（run 前）。
+- **簿记**：`graph.yaml` 追加 `model_preference_routing_20260926` 块 + `current_phase` 更新（同时修复既有 YAML 坏点 ×1：`dsh_017rc1_upgrade_20260924.review_supplement` 值内 `"`PASS by construction: no peerDependencies`"` 未转义双引号 → 转义，PyYAML 复验 39 top-level keys OK）；`.agents/skills/team-blueprint-authoring/SKILL.md` 补 modelPreference 节；`docs/INSTALL.md` 最小示例。
+- **提交/推送**：commit `062d245` fix(runtime)（27 源/测试 + 50 dist；`git add packages/` 后 check:artifacts 通过）→ **用户一次性推送授权** → `git push origin fix/model-preference-routing`（new branch，FF from origin/master，零 force）→ **PR #30** OPEN / MERGEABLE（base master，body 含概述 / 核心设计 A–G / 红线守纪 / 门禁实数表 / 验证步骤；smoke kit 标注 pending merge-gate 补充轮）。
+- **红线核对**：CORE PATCH BUDGET = 0（upstream 零修改 / team tools 无 model 参数 / 无 patch-package）；无第二个平行字段；无 schemaVersion bump；effectiveConfig/modelState 无 special-case（仅回归测试）；MCP allow/deny 语义不变；无 MemberInstance schema 字段；staticModel = 纯 deployment 回退（injected port，无 ambient state）；:3080/:3180 零触碰；test-use pristine；冻结锚点未移动；仅 FF 推送已授权分支；未 merge（merge 裁决归用户）。
+- **状态**：PR #30 OPEN 待用户审查 merge。真实宿主 0.1.7 smoke kit（guide §7 R1–R8，merge gate）为后续补充轮（kit + 证据 + PR body 更新）。
+
+### 2026-09-26（二）— model-preference-routing 真实宿主 smoke kit 轮（merge gate，guide §7 R1–R8；模型路由 qiyuan-self / qwen3.8-27b）
+
+- **目的**：闭合 guide §7 的 merge gate —— 在真实 0.1.7-rc.1 宿主上验证 `modelPreference` 路由，**断言实际 provider 请求 `body.model`（非仅投影）**。
+- **Kit**：`tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs`（76,906 bytes，独立 node 脚本；host port 3181 / mock 3496；无 mini-MCP；复用 mcp-initial-grant kit 结构 + `startMockModel` 记录每请求 `body.model`）。
+- **判定 GREEN ×2**（连续两次 exit 0）：run `mpr-2026-09-25T17-21-11` + `mpr-2026-09-25T17-22-08`（home 留档 `tests/homes/mpr-…`，按 TEST_METHODS §7 不删）。
+- **逐条 PASS（36 checks，0 failed，fatal=null）**：
+  - R1 team.create(T1) fresh-root；leader 首请求 `body.model==='role-leader'`（**非** staticModel 基线 `global-default`）+ leader surface 13/13 team tools + zero-seed 0 override。
+  - R2 直接 `team_delegate(worker)` = 单个 `member-activated` create+work effect（**无** create+override.set+follow_up 序列）；worker 首请求 `body.model==='role-worker'`（**主缺陷闭合**）；`override.get`=null（无合成记录）。
+  - R3 `team_create_member` 激活；create 单独**无**实质 worker turn；`team_follow_up` → 请求 `body.model==='role-worker'`。
+  - R4 持久 human `override.set`（allow `deepseek-official/override-worker`，instance scope，recordId `ovr-model-inst-*`）；次请求 `body.model==='override-worker'`（record 层胜 template-static）；无合成 override 记录。
+  - R5 expert（零 override）冷 resume 前后均 `body.model==='role-expert'`（bound Blueprint 快照重推导）。
+  - R6 三方一致：`team.getProjection` effectiveConfig.model.value === `deepseek-official/role-worker`（source `member-template`，state `inherited`）=== modelState.current.value（provenance `{layer:'template',origin:'static',recordId:null}`）=== 实际 `body.model==='role-worker'`。
+  - R7 无 `modelPreference` 对照 member `body.model==='global-default'`（向后兼容锁定）。
+  - R8 同一 host row 跨 root：Team A leader/worker = `role-a-leader`/`role-a`，Team B = `role-b-leader`/`role-b`，双向无泄漏。
+  - H1 test-use pristine 前后双证 @ `46a7f68b0922371ce7144b668b90e377d8e799f4`（porcelain 空）+ :3080/:3180 只读 401 前后一致（从未 bind/drive）；H2 host 3181 + mock 3496 teardown 释放。
+- **Mock ledger**：20 请求全对（role-leader×2 / role-worker deleg×2 / role-worker create+follow×2 / override-worker×1 / role-expert×2(pre) / global-default×2 / role-a-leader×2 / role-a×2 / role-b-leader×2 / role-b×2 / role-expert×1(post-resume)）。
+- **迭代史（13 runs，全 kit 侧，零 production 补丁）**：preflight 顺序 / YAML emitters（row config 解析为 sequence → 逐字沿用 mcp kit emitters）/ p6t6 readiness fail-fast / blueprintSource 非空 string + environmentFacts / blueprint 闭 schema 形态（4 blueprint 离线过 `validateBlueprintDocument`）/ 缺 `<HOME>/p6t6-directive.json` / readiness shape（route 无 `status` 字段、字段为 `phase`、budget 180→300s）/ remote value envelopes（`data` 包裹、`member-activated` create+work effect）/ override envelopes + `pendingNextBoundary` 数组 / **title-side-call 竞争**（0.1.7 的 title prompt 内嵌 marker → 检测器 + 全部 11 处 first-request 查找排除 title side-call）。
+- **红线核对**：CORE PATCH BUDGET=0（worktree diff 仅 kit 文件 + 簿记 + 证据，零 production src）；:3080/:3180 零触碰；test-use pristine；ports 释放；homes 留档。
+- **状态**：guide §7 merge gate 闭合；本轮无剩余执行项（merge 裁决归用户）。PR #30 body 同步更新为 smoke GREEN。

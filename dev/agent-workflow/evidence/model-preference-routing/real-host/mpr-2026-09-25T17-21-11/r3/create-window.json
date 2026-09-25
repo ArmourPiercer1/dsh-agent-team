@@ -1,0 +1,11 @@
+{
+  "reqCountAfterCreate": 4,
+  "window": [
+    {
+      "seq": 5,
+      "model": "role-worker",
+      "firstText": "[team-work requestToken=tok-r3-follow-9jyr52it] mpr_r3_w_create_mpr-2026-09-25T17-21-11 Follow-up worker task: acknowledge and finish.\n<system-reminder>\nThe following workspace instructions may be rel",
+      "title": false
+    }
+  ]
+}
