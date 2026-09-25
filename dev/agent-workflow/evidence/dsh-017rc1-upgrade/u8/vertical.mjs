@@ -1231,7 +1231,15 @@ async function main() {
     const addOut = `# exit=${first.status}\n# stdout\n${first.stdout ?? ''}\n# stderr\n${first.stderr ?? ''}\n`
     writeEvidence('install', 'add.log', addOut)
     const all = `${first.stdout ?? ''}\n${first.stderr ?? ''}`
-    check('install', 'S1 first `dsh plugin add` exits 0 (0.1.7 compat check PASS by construction: no peerDependencies)', first.status === 0, `exit=${first.status}`)
+    // Supplement-round note (guide §1.4, 2026-09-25): the pre-supplement wording
+    // "PASS by construction: no peerDependencies" is RETIRED — at the U8 point the
+    // root manifest declared no peerDependencies, so the 0.1.7 gate passed by
+    // ABSENCE (unconstrained). The review-supplement round (F1, commit 1a3a3ad)
+    // declared `peerDependencies["@deepseek-ai/dsh"] = "0.1.7-rc.1"`, so the
+    // authoritative assertion is now: the gate EVALUATES the declared range and
+    // accepts it at the running 0.1.7-rc.1 runtime WITHOUT exemption (the
+    // fresh-world re-proof is review-supplement/real-host-smoke.md H1, 11/11).
+    check('install', 'S1 first `dsh plugin add` exits 0 (0.1.7 compat gate evaluates the declared @deepseek-ai/dsh peer — accepted at the running runtime, no exemption)', first.status === 0, `exit=${first.status}`)
     check('install', 'S1 NO 0.1.7 incompat line / allow-version exemption prompt in the add output',
       !/incompatible|allow-version/i.test(all),
       `output had ${/incompatible|allow-version/i.test(all) ? 'MATCHES' : 'no matches'} (full output in install/add.log)`)
