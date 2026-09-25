@@ -36,6 +36,14 @@
  * validator, so an oversized extras blob fails loudly instead of being
  * truncated.
  *
+ * `provider` + `model` mapping (the model-preference routing fix, guide
+ * §4.9): both present -> the template's `modelPreference` is the EXECUTABLE
+ * route `provider/model` (the provider is consumed and no longer repeated
+ * as an unmapped extra); model only -> `modelPreference` stays the bare
+ * model (a VALID model-only shorthand); provider only -> NO `modelPreference`
+ * (a provider without a model is not an executable route) and the provider
+ * stays in `legacy.*` extras.
+ *
  * Dependencies: contracts v1 + the P3-T2 blueprint public surface
  * (filesystem access lives in the separate `teammates-adapter-fs.mjs`
  * seam; this module is pure).
@@ -368,7 +376,11 @@ function parseLegacyTeammateFile(content: string, fileName: string): ParsedLegac
 /** The unmapped legacy optional fields, in fixed key order (deterministic JSON). */
 function collectExtras(def: LegacyTeammateDefinition): Record<string, unknown> {
   const extras: Record<string, unknown> = {}
-  if (def.provider !== undefined) extras.provider = def.provider
+  // The model-preference routing fix (guide §4.9): a provider WITH a model
+  // is consumed into the executable route (`modelPreference = provider/model`)
+  // and must not be repeated as an unmapped extra. A provider WITHOUT a
+  // model is not an executable route: it stays in the extras.
+  if (def.provider !== undefined && def.model === undefined) extras.provider = def.provider
   if (def.maxTokens !== undefined) extras.maxTokens = def.maxTokens
   if (def.tools !== undefined) extras.tools = def.tools
   if (def.requiresApproval !== undefined) extras.requiresApproval = def.requiresApproval
@@ -387,7 +399,14 @@ function toTemplate(def: LegacyTeammateDefinition): Record<string, unknown> {
     description: def.description,
     persona: def.persona,
   }
-  if (def.model !== undefined) template.modelPreference = def.model
+  // The model-preference routing fix (guide §4.9): restore the executable
+  // semantics of the legacy provider + model pair. Both present -> the
+  // qualified route `provider/model`; model only -> the bare model (a
+  // valid model-only shorthand); provider only -> no modelPreference
+  // (never invent a route without a model).
+  if (def.model !== undefined) {
+    template.modelPreference = def.provider !== undefined ? `${def.provider}/${def.model}` : def.model
+  }
   if (def.contextPolicy !== undefined) template.contextPolicy = def.contextPolicy
   return template
 }

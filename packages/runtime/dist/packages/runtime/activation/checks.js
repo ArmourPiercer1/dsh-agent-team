@@ -437,17 +437,27 @@ export function selectPolicyOverrides(overrides, rootSessionId, instanceId) {
  * durable transition store yet; invariant 40 owns transitions).
  *
  * The OPTIONAL `templateValues` carries the bound Blueprint template's
- * INITIAL STATIC grant for the `mcp` cell (plan MCP_BLUEPRINT_INITIAL_GRANT
- * §4.1): the template's `capabilities.mcp` entry ONLY when
- * `kind === 'allow'` (a deny / a capabilities-less legacy template / a
- * future non-allow state contribute nothing — they stay fail-closed or
- * governed dynamically in Alpha.3+). The value sits at the policy
- * resolver's `template` value layer (provenance template/static, no record
- * id): above the PolicyState, below the record-backed templateOverlay /
- * instanceOverlay / humanOverride layers and the external hard facts — so
- * a durable deny/tighten still wins at the next boundary, and no synthetic
- * durable record is ever created (the bound Blueprint snapshot itself is
- * the durable, immutable source of the grant).
+ * STATIC policy cells — the generic template value layer of the resolver
+ * (the model-preference routing fix generalized the former MCP-only shape;
+ * currently `model` and `mcp` are the production callers that depend on
+ * it):
+ *
+ * - `mcp` — the template's `capabilities.mcp` entry ONLY when
+ *   `kind === 'allow'` (plan MCP_BLUEPRINT_INITIAL_GRANT §4.1; a deny / a
+ *   capabilities-less legacy template / a future non-allow state
+ *   contribute nothing — they stay fail-closed or governed dynamically in
+ *   Alpha.3+);
+ * - `model` — the template's `modelPreference` as an `allow` grant
+ *   (derivation: `initialTemplateModelGrantOf`; an absent / malformed
+ *   preference contributes nothing).
+ *
+ * Every value sits at the policy resolver's `template` value layer
+ * (provenance template/static, no record id): above the PolicyState, below
+ * the record-backed templateOverlay / instanceOverlay / humanOverride
+ * layers and the external hard facts — so a durable deny/tighten still
+ * wins at the next boundary, and no synthetic durable record is ever
+ * created (the bound Blueprint snapshot itself is the durable, immutable
+ * source of the grants).
  *
  * @param args - the resolution inputs.
  * @returns the frozen effective policy (explainable per-cell, provenance

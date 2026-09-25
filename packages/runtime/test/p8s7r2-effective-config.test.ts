@@ -17,8 +17,8 @@
  *   [effectiveFrom] / [locked]
  *
  * This suite drives the PRODUCTION entry (`../src/plugin/host.js` apply)
- * over FIVE independent boot worlds (one scratch dir; distinct root session
- * ids) and carries the per-state named tests required by C2:
+ * over SEVEN independent boot worlds (one scratch dir; distinct root
+ * session ids) and carries the per-state named tests required by C2:
  *
  *   World A (baseline)    — model INHERITED (R22.1), autonomy neutral
  *   INHERITED (R22.2), workspace LOCKED (R22.3), workspace INHERITED and
@@ -36,6 +36,18 @@
  *   World E (hard-allow intersection) — the surviving item OVERRIDDEN
  *   (R22.14a), the removed item DENIED `external:hard-removed` (R22.14b),
  *   the policy-state model OVERRIDDEN (R22.15).
+ *   World T (template model, model-preference routing fix Gate F) — the
+ *   bound template's `modelPreference` wins the model cell at the TEMPLATE
+ *   layer (F1: source member-template, state inherited — NOT the
+ *   staticModel baseline), and a durable human override written over it
+ *   surfaces as pending-next-boundary on model AND autonomy at the
+ *   max-step horizon (F3, the two-horizon contract over a template-static
+ *   winner — the same shape the existing World B asserts).
+ *   World F (dynamic roots, model-preference routing fix Gate F) — ONE row,
+ *   THREE team roots (the boot root bound to the row anchor blueprint, two
+ *   seeded roots bound to two DISTINCT blueprints): the read-side template
+ *   policy resolves the OWNING root's bound snapshot per root (F4) — never
+ *   the bootstrap anchor closure, no cross-leak between roots.
  *   Direct resolver (R22.16) — the `effectiveFrom` MATERIALIZATION under
  *   deliberately overlapping mutation-record / governance-ref ids
  *   (production-disjoint residual), and the in-envelope lock SUPPRESSION
@@ -65,8 +77,16 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { parseRootSessionId } from '../../contracts/src/index.js'
+import {
+  createBlueprintSnapshotRef,
+  LEADER_INSTANCE_ID,
+  parseBlueprintContentHash,
+  parseBlueprintId,
+  parseBlueprintRevision,
+  parseRootSessionId,
+} from '../../contracts/src/index.js'
 import type { InstanceId } from '../../contracts/src/index.js'
+import { parseBlueprint } from '../../domain/blueprint/src/index.js'
 import {
   destroyDir,
   FileStorageSeam,
@@ -93,11 +113,24 @@ const ROOT_E = 'session-p8s7r2roote'
 const ROOT_X = 'session-p8s7r2rootx'
 const X_INSTANCE = 'inst-p8s7r2xdirect'
 
+/** World T (Gate F: F1/F3) — the bound template's modelPreference. */
+const ROOT_T = 'session-p8s7r2roott'
+/** World F (Gate F: F4) — one row, multiple team roots. */
+const ROOT_F = 'session-p8s7r2rootf'
+const ROOT_FX = 'session-p8s7r2rootfx'
+const ROOT_FY = 'session-p8s7r2rootfy'
+
 const WORKER_A = 'inst-p8s7r2wka'
 const WORKER_B = 'inst-p8s7r2wkb'
 const WORKER_C = 'inst-p8s7r2wkc'
 const WORKER_D = 'inst-p8s7r2wkd'
 const WORKER_E = 'inst-p8s7r2wke'
+const WORKER_T = 'inst-p8s7r2wkt'
+/** World F's boot-root worker (bound to the anchor blueprint). */
+const WORKER_F = 'inst-p8s7r2wkf'
+/** World F's seeded roots' workers (bound to the X / Y blueprints). */
+const WORKER_FX = 'inst-p8s7r2wkfx'
+const WORKER_FY = 'inst-p8s7r2wkfy'
 /** World A's fixture member (direct repository put; NO workspace key). */
 const FIXTURE_A = 'inst-p8s7r2fxa'
 
@@ -106,7 +139,14 @@ const WORKSPACE_B = 'C:/agent-team/work/p8s7r2e-b'
 const WORKSPACE_C = 'C:/agent-team/work/p8s7r2e-c'
 const WORKSPACE_D = 'C:/agent-team/work/p8s7r2e-d'
 const WORKSPACE_E = 'C:/agent-team/work/p8s7r2e-e'
+const WORKSPACE_T = 'C:/agent-team/work/p8s7r2e-t'
+const WORKSPACE_F = 'C:/agent-team/work/p8s7r2e-f'
 const WORKSPACE_X = 'C:/agent-team/work/p8s7r2e-x'
+
+/** The template modelPreference route asserted by World T (F1/F3). */
+const TEMPLATE_MODEL_VALUE = 'openai/gpt-6-astra'
+/** The durable human override route written over the template model (F3). */
+const OVERRIDDEN_MODEL_VALUE = 'prov-ovr/model-ovr'
 
 const BASELINE_MODEL = { provider: 'p8s7r2e-static', model: 'p8s7r2e-model-v1' }
 const BASELINE_MODEL_VALUE = `${BASELINE_MODEL.provider}/${BASELINE_MODEL.model}`
@@ -118,9 +158,15 @@ const STRICT_STATE_ID = 'strict'
 
 /**
  * One world blueprint (the P8S5A structure with the own id, the closed
- * default+strict policy-state set, and an optional `capabilityPolicy` map).
+ * default+strict policy-state set, an optional `capabilityPolicy` map, and —
+ * for the Gate F worlds — an optional worker `modelPreference`).
  */
-function blueprintSource(bpId: string, tag: string, capabilityPolicy: Record<string, string> | null): string {
+function blueprintSource(
+  bpId: string,
+  tag: string,
+  capabilityPolicy: Record<string, string> | null,
+  workerModelPreference?: string,
+): string {
   const lines = [
     '---',
     'schemaVersion: 1',
@@ -134,6 +180,9 @@ function blueprintSource(bpId: string, tag: string, capabilityPolicy: Record<str
     '    displayName: Worker',
     `    persona: You do the P8S7R2 ${tag} work.`,
   ]
+  if (workerModelPreference !== undefined) {
+    lines.push(`    modelPreference: ${workerModelPreference}`)
+  }
   if (capabilityPolicy !== null) {
     lines.push('capabilityPolicy:')
     for (const [capability, mode] of Object.entries(capabilityPolicy)) {
@@ -189,6 +238,17 @@ const BP_B = blueprintSource('P8S7R2B-BP', 'B', null)
 const BP_C = blueprintSource('P8S7R2C-BP', 'C', { model: 'deny', tools: 'allow' })
 const BP_D = blueprintSource('P8S7R2D-BP', 'D', { model: 'allow', permissions: 'allow' })
 const BP_E = blueprintSource('P8S7R2E-BP', 'E', { tools: 'allow' })
+// Gate F: World T — the worker template carries a modelPreference that is
+// DIFFERENT from the world staticModel baseline (the F1 discriminant).
+const BP_T = blueprintSource('P8S7R2T-BP', 'T', null, TEMPLATE_MODEL_VALUE)
+// Gate F: World F — the row ANCHOR blueprint (the boot root's bound
+// snapshot) declares NO modelPreference (the F4 control: the anchor must not
+// contribute a model), while the two seeded roots bind the X / Y blueprints,
+// each carrying a DISTINCT worker modelPreference (the no-cross-leak
+// discriminants).
+const BP_F = blueprintSource('P8S7R2F-BP', 'F', null)
+const BP_FX = blueprintSource('P8S7R2FX-BP', 'FX', null, 'prov-x/model-x')
+const BP_FY = blueprintSource('P8S7R2FY-BP', 'FY', null, 'prov-y/model-y')
 
 // --- the row configs ----------------------------------------------------------------
 
@@ -437,6 +497,21 @@ interface R22State {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   eEc1: Record<string, any>
   ePermissionsKeys: string[]
+  // World T — the bound template modelPreference (Gate F: F1 + F3)
+  tOverrideCode: string | null
+  tOverrideRecordId: string
+  tOverrideKind: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  tEc0: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  tEc1: Record<string, any>
+  // World F — one row, multiple team roots (Gate F: F4)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  fEc: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  fxEc: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  fyEc: Record<string, any>
   // Direct resolver — the two production-unreachable derivations
   x16aThrew: string | null
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
@@ -450,6 +525,8 @@ interface R22State {
   closeThrewC: string | null
   closeThrewD: string | null
   closeThrewE: string | null
+  closeThrewT: string | null
+  closeThrewF: string | null
 }
 
 // --- the scenario (module top level — the sync shim forbids async it()) -----------------
@@ -638,6 +715,111 @@ const r22: R22State = await (async (): Promise<R22State> => {
   const eEc1 = ecOf(projE1, WORKER_E)
   const closeThrewE = await closeWorld(rootE)
 
+  // --- World T — the bound template modelPreference (Gate F: F1 + F3) --------------------
+  // The worker template declares `modelPreference: openai/gpt-6-astra` — a
+  // TEMPLATE-STATIC policy value DIFFERENT from the world staticModel
+  // baseline (the F1 discriminant). F1 reads the pre-override projection;
+  // F3 then writes the durable human model override to a DIFFERENT route
+  // (the remote wire — the same shape World B drives) and reads the
+  // max-step-horizon projection again.
+  const worldT = makeWorld(openSeam('p8s7r2-ect'))
+  worlds.push(worldT)
+  const rootT = await applyWorld(
+    worldT,
+    rowConfigFor(ROOT_T, BP_T, WORKER_T, WORKSPACE_T, { hard: {}, capabilityExists: {} }),
+  )
+  const callT = attachRemoteCaller(rootT)
+  const projT0 = rootT.projection.project(parseRootSessionId(ROOT_T))
+  const tEc0 = ecOf(projT0, WORKER_T)
+  const tOverride = await callT('override.set', {
+    teamSessionId: ROOT_T,
+    capability: 'model',
+    value: { kind: 'allow', items: [OVERRIDDEN_MODEL_VALUE] },
+    actor: { kind: 'human' },
+  })
+  if (tOverride.ok !== true) throw new Error(`R2-2 world T: override.set failed (${remoteCode(tOverride)})`)
+  const tOverrideData = remoteData(tOverride)
+  const projT1 = rootT.projection.project(parseRootSessionId(ROOT_T))
+  const tEc1 = ecOf(projT1, WORKER_T)
+  const closeThrewT = await closeWorld(rootT)
+
+  // --- World F — one row, multiple team roots (Gate F: F4) --------------------------------
+  // The read-side change (guide §4.7): `readTemplatePolicy` reads the
+  // OWNING root's bound blueprint through the per-root `boundBlueprintFor`
+  // resolver — NOT a closure over the bootstrap row anchor. F4 proves it
+  // over ONE row carrying THREE team roots: the boot root (bound to the
+  // anchor blueprint, which declares NO modelPreference — the control) and
+  // two MORE roots seeded the cross-root way (the
+  // bound-blueprint-persona-root.test.ts pattern: TeamSession row +
+  // team-root binding + member rows + the frozen registry snapshot), each
+  // bound to a DISTINCT blueprint with a DISTINCT worker modelPreference.
+  // A bootstrap-anchor closure could only return the anchor's (absent)
+  // model; a cross-root leak would show one root's model in the other's.
+  const worldF = makeWorld(openSeam('p8s7r2-ecf'))
+  worlds.push(worldF)
+  const rootF = await applyWorld(
+    worldF,
+    rowConfigFor(ROOT_F, BP_F, WORKER_F, WORKSPACE_F, { hard: {}, capabilityExists: {} }),
+  )
+  const reposF = rootF.domain.repositories
+  const seedBoundRoot = async (rootSessionId: string, blueprint: string, workerId: string): Promise<void> => {
+    const parsed = parseBlueprint(blueprint)
+    const ref = createBlueprintSnapshotRef({
+      blueprintId: parseBlueprintId(String(parsed.blueprintId)),
+      revision: parseBlueprintRevision(String(parsed.revision)),
+      contentHash: parseBlueprintContentHash(String(parsed.contentHash)),
+    })
+    await reposF.teamSessions.put({
+      blueprint: ref,
+      createdAt: new Date(0).toISOString(),
+      defaultWorkspace: WORKSPACE_F,
+      generation: 1,
+      rootSessionId: parseRootSessionId(rootSessionId),
+    })
+    await reposF.sessionBindings.put({
+      kind: 'team-root',
+      schemaVersion: 1,
+      sessionId: rootSessionId,
+    })
+    // The leader row is the honest v2 LeaderInstance shape: NO
+    // childSessionId (invariant 14) and NO lifecycle key (the Leader is
+    // the Root Session itself — the v1 member shape would reject it).
+    await reposF.memberInstances.put({
+      rootSessionId: parseRootSessionId(rootSessionId),
+      instanceId: LEADER_INSTANCE_ID,
+      templateId: 'leader',
+      label: 'r22-fixture-leader',
+      createdAt: new Date(0).toISOString(),
+      activityVersion: 1,
+    })
+    await reposF.memberInstances.put({
+      rootSessionId: parseRootSessionId(rootSessionId),
+      instanceId: workerId,
+      templateId: 'worker',
+      label: 'r22-fixture-worker',
+      childSessionId: `session-child-${workerId}`,
+      lifecycle: 'CREATED',
+      createdAt: new Date(0).toISOString(),
+      activityVersion: 1,
+    })
+    await reposF.blueprintRegistry.freeze({
+      blueprintId: String(parsed.blueprintId),
+      revision: String(parsed.revision),
+      contentHash: String(parsed.contentHash),
+      source: blueprint,
+      frozenAt: new Date(0).toISOString(),
+    })
+  }
+  await seedBoundRoot(ROOT_FX, BP_FX, WORKER_FX)
+  await seedBoundRoot(ROOT_FY, BP_FY, WORKER_FY)
+  check(reposF.teamSessions.get(ROOT_FX) !== undefined, 'F4: the seeded TeamSession row for root X must exist')
+  check(reposF.teamSessions.get(ROOT_FY) !== undefined, 'F4: the seeded TeamSession row for root Y must exist')
+  const projF = rootF.projection.project(parseRootSessionId(ROOT_F))
+  const fEc = ecOf(projF, WORKER_F)
+  const fxEc = ecOf(rootF.projection.project(parseRootSessionId(ROOT_FX)), WORKER_FX)
+  const fyEc = ecOf(rootF.projection.project(parseRootSessionId(ROOT_FY)), WORKER_FY)
+  const closeThrewF = await closeWorld(rootF)
+
   // --- Direct resolver — the two production-unreachable derivations ---------------------
   // The in-envelope policy reader (the production reader surfaces no
   // envelope; these stubs restore the synthetic §19.4 envelope so the
@@ -774,6 +956,14 @@ const r22: R22State = await (async (): Promise<R22State> => {
     eSetCode: remoteCode(eSet),
     eEc1,
     ePermissionsKeys: Object.keys(eEc1['permissions'] as Record<string, unknown>).sort(),
+    tOverrideCode: remoteCode(tOverride),
+    tOverrideRecordId: String(tOverrideData['recordId']),
+    tOverrideKind: String(tOverrideData['kind']),
+    tEc0,
+    tEc1,
+    fEc,
+    fxEc,
+    fyEc,
     x16aThrew,
     x16aEc,
     x16bThrew,
@@ -783,6 +973,8 @@ const r22: R22State = await (async (): Promise<R22State> => {
     closeThrewC,
     closeThrewD,
     closeThrewE,
+    closeThrewT,
+    closeThrewF,
   }
 })()
 
@@ -989,6 +1181,78 @@ describe('p8s7r2-effective-config: the R2-2 resolved effective-config view (BQ-0
     })
   })
 
+  // --- World T — the bound template modelPreference (Gate F: F1 + F3) -----------------------
+
+  it('F1: the bound template modelPreference wins the model cell at the template layer (value openai/gpt-6-astra, source member-template, state inherited) — NOT the staticModel baseline (source capability)', () => {
+    // The world's staticModel baseline is p8s7r2e-static/p8s7r2e-model-v1 —
+    // a DIFFERENT route: the cell must NOT have fallen to the
+    // unspecified -> staticModel consumer rule.
+    expect(r22.tEc0['model']).toEqual({
+      value: TEMPLATE_MODEL_VALUE,
+      source: 'member-template',
+      state: 'inherited',
+    })
+    expect(r22.tEc0['model']['value']).not.toBe(BASELINE_MODEL_VALUE)
+    expect(r22.tEc0['model']['source']).not.toBe('capability')
+  })
+
+  it('F3: a durable human override over the template modelPreference surfaces as pending-next-boundary on model AND autonomy at the max-step horizon (the two-horizon contract over a template-static winner — the existing World B shape, applied to the template model)', () => {
+    expect(r22.tOverrideCode).toBe(null)
+    expect(r22.tOverrideKind).toBe('human-override')
+    // The server mints the record id in the frozen ovr-<capability>-<scope>-g<generation> shape.
+    expect(r22.tOverrideRecordId).toBe('ovr-model-team-g0')
+    // NEXT horizon (the max step — the effective-config projection's
+    // horizon): the override wins over the template layer, reported
+    // conservatively as pending (record-backed, not yet applied in this
+    // process — the same entry shape World B asserts over its baseline).
+    expect(r22.tEc1['model']).toEqual({
+      value: OVERRIDDEN_MODEL_VALUE,
+      source: 'explicit-human-override',
+      state: 'pending-next-boundary',
+    })
+    expect(r22.tEc1['autonomy']).toEqual({
+      value: `model: allow ${OVERRIDDEN_MODEL_VALUE}`,
+      source: 'explicit-human-override',
+      state: 'pending-next-boundary',
+    })
+    // CURRENT boundary (the pinned step 0) kept the template model up to
+    // the override admission: the pre-override capture (F1) is the
+    // current-boundary state (inherited, not pending), and the
+    // post-override entry is PENDING — never an applied selection. The
+    // full two-horizon surface (current + pendingNextBoundary) is asserted
+    // over the same world shape in p8s7r2-model-state.test.ts (F2/F3).
+    expect(r22.tEc0['model']['state']).toBe('inherited')
+    expect(r22.tEc1['model']['state']).toBe('pending-next-boundary')
+  })
+
+  // --- World F — one row, multiple team roots (Gate F: F4) -----------------------------------
+
+  it('F4: one row, multiple team roots — the read-side template policy resolves the OWNING root bound snapshot (root X -> prov-x/model-x, root Y -> prov-y/model-y; the row anchor declares NO modelPreference — no bootstrap-anchor closure, no cross-leak)', () => {
+    // Control: the boot root is bound to the row ANCHOR blueprint, which
+    // declares no modelPreference — its model cell falls to the baseline.
+    expect(r22.fEc['model']).toEqual({
+      value: BASELINE_MODEL_VALUE,
+      source: 'capability',
+      state: 'inherited',
+    })
+    // Root X resolves its own bound snapshot's worker modelPreference.
+    expect(r22.fxEc['model']).toEqual({
+      value: 'prov-x/model-x',
+      source: 'member-template',
+      state: 'inherited',
+    })
+    // Root Y resolves ITS OWN bound snapshot — not X's (no cross-leak),
+    // not the anchor (a bootstrap-anchor closure could only return the
+    // anchor's absent model).
+    expect(r22.fyEc['model']).toEqual({
+      value: 'prov-y/model-y',
+      source: 'member-template',
+      state: 'inherited',
+    })
+    expect(r22.fxEc['model']['value']).not.toBe(r22.fyEc['model']['value'])
+    expect(r22.fyEc['model']['value']).not.toBe(BASELINE_MODEL_VALUE)
+  })
+
   // --- Direct resolver — the production-unreachable derivations --------------------------------
 
   it('R22.16a H12 (direct resolver): an overlapping mutation-record / governance-ref id materializes effectiveFrom (production-disjoint residual)', () => {
@@ -1050,6 +1314,8 @@ describe('p8s7r2-effective-config: the R2-2 resolved effective-config view (BQ-0
     expect(r22.closeThrewC).toBe(null)
     expect(r22.closeThrewD).toBe(null)
     expect(r22.closeThrewE).toBe(null)
+    expect(r22.closeThrewT).toBe(null)
+    expect(r22.closeThrewF).toBe(null)
     r22.worlds.forEach((world) => {
       world.effectDisposers.forEach((dispose) => dispose())
       world.effectDisposers.length = 0

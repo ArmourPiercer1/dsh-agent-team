@@ -142,3 +142,54 @@ describe('t2 hash: hashable projection', () => {
     })
   })
 })
+
+// ---------------------------------------------------------------------------
+// Gate A4 — `modelPreference` participates in the content hash: a
+// same-id/same-revision blueprint whose ONLY difference is the leader's
+// modelPreference must hash differently (the bound snapshot ref's
+// contentHash then binds the exact token, and a token edit is a new
+// revision's identity).
+// ---------------------------------------------------------------------------
+
+describe('Gate A4: modelPreference content-hash sensitivity', () => {
+  function minimalSource(modelPreference: string | undefined): string {
+    const lines = [
+      '---',
+      'schemaVersion: 1',
+      'blueprintId: team.mp-hash',
+      'revision: "1"',
+      'leader:',
+      '  templateId: leader',
+      '  persona: "Lead."',
+      ...(modelPreference !== undefined ? [`  modelPreference: ${modelPreference}`] : []),
+      'members: []',
+      'requirements: []',
+      'memberEnvelopes: []',
+      'policyStates: []',
+      'metadata: {}',
+      '---',
+      '',
+    ]
+    return lines.join('\n')
+  }
+
+  it('changes when only the leader modelPreference changes', () => {
+    const a = parseBlueprint(minimalSource('qiyuan-self/qwen3.8-27b'))
+    const b = parseBlueprint(minimalSource('openai/gpt-6-astra'))
+    expect(a.blueprintId).toBe(b.blueprintId)
+    expect(a.revision).toBe(b.revision)
+    expect(a.contentHash).not.toBe(b.contentHash)
+  })
+
+  it('absent vs present modelPreference hash differently', () => {
+    const absent = parseBlueprint(minimalSource(undefined))
+    const present = parseBlueprint(minimalSource('qwen3.8-27b'))
+    expect(absent.contentHash).not.toBe(present.contentHash)
+  })
+
+  it('is deterministic for the same token', () => {
+    const a = parseBlueprint(minimalSource('qiyuan-self/qwen3.8-27b'))
+    const b = parseBlueprint(minimalSource('qiyuan-self/qwen3.8-27b'))
+    expect(a.contentHash).toBe(b.contentHash)
+  })
+})

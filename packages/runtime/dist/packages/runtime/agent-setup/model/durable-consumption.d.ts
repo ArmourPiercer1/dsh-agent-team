@@ -13,6 +13,13 @@
  *
  * - `allow` (well-formed)   -> the first `provider/model` item WINS (the
  *   durable value drives the next request's model call);
+ * - the bound template's static `model` value (its `modelPreference`,
+ *   fed through `templateValues` — the model-preference routing fix)
+ *   resolves at the resolver's `template` layer (provenance
+ *   template/static, no record id): it WINS over the `unspecified`
+ *   fail-closed default (so a declared preference never degrades to the
+ *   deployment default) but stays BELOW the record-backed overlays /
+ *   human override and the external hard facts;
  * - `unspecified` (the Team
  *   domain's fail-closed default — no Team layer granted the cell) -> the
  *   WORLD PROVIDER DEFAULT (the `baseline`) applies: the Team domain did
@@ -34,18 +41,12 @@
  *
  * @module @dsh-agent-team/runtime/agent-setup/model/durable-consumption
  */
-import type { EffectivePolicy, ExternalPolicyFacts, SuppressedOverlayRecord } from '../../../domain/policy/src/index.js';
+import type { EffectivePolicy, ExternalPolicyFacts, SuppressedOverlayRecord, TemplatePolicy } from '../../../domain/policy/src/index.js';
 import type { GovernanceOverrideRecord } from '../../../storage/schema/index.js';
 import { type CellDeniedBy, type CellProvenanceOptions, type CellSource, type PendingBoundaryRecord } from '../../mutation/cell-provenance.js';
+import { parseModelItem } from './route.js';
 import type { ModelSelection } from './types.js';
-/**
- * Parse one durable model allow item (`provider/model`, split at the first
- * `/`). Fail-closed: anything that does not parse yields `undefined`
- * (the consumer then refuses to select a model — never guessed).
- * @param item - the durable item string.
- * @returns the parsed selection, or undefined when malformed.
- */
-export declare function parseModelItem(item: string): ModelSelection | undefined;
+export { parseModelItem };
 /** The model-side consumption view of one member's durable policy. */
 export interface ModelConsumptionView {
     /**
@@ -92,6 +93,18 @@ export interface DurableModelSelectionArgs {
     readonly baseline: ModelSelection;
     /** The record ids this session has already applied at its last boundary. */
     readonly appliedRecordIds?: readonly string[];
+    /**
+     * The bound template's static policy values (the model-preference
+     * routing fix, generic like `resolveActivationPolicy`'s input): the
+     * `model` cell carries the template's `modelPreference` as its
+     * `template/static` value (derivation: `initialTemplateModelGrantOf`),
+     * so a declared preference resolves at the TEMPLATE layer instead of
+     * falling to the `unspecified` -> baseline consumer rule. The
+     * record-backed layers and the external hard facts keep their
+     * precedence over it. Absent = no template static values (the
+     * pre-fix behavior: baseline for `unspecified` cells).
+     */
+    readonly templateValues?: TemplatePolicy['values'];
 }
 /** The resolved durable model selection + its provenance. */
 export interface DurableModelSelection {

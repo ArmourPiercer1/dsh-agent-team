@@ -8,7 +8,11 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { parseBlueprint, validateBlueprintDocument } from '../blueprint/src/index.js'
+import {
+  parseBlueprint,
+  parseModelPreferenceToken,
+  validateBlueprintDocument,
+} from '../blueprint/src/index.js'
 import { NEGATIVE_FIXTURES } from '../blueprint/testdata/fixtures.js'
 import type { NegativeFixture } from '../blueprint/testdata/fixtures.js'
 import { expectCode, expectErrorDetails } from './t2-helpers.js'
@@ -159,5 +163,105 @@ describe('t2 validation: validateBlueprintDocument on decoded values', () => {
         ),
       'MALFORMED_DTO',
     )
+  })
+})
+
+/** A minimal valid document whose leader carries `modelPreference`. */
+function modelPreferenceDoc(token: string): Record<string, unknown> {
+  return jsDoc({ leader: { templateId: 'leader', persona: 'Lead.', modelPreference: token } })
+}
+
+/** A minimal valid document whose MEMBER carries `modelPreference`. */
+function modelPreferenceMemberDoc(token: string): Record<string, unknown> {
+  return jsDoc({ members: [{ templateId: 'm', persona: 'p', modelPreference: token }] })
+}
+
+// ---------------------------------------------------------------------------
+// Gate A — the `modelPreference` token grammar (the model-preference
+// routing fix): the field was always schema/hash/remote legal, but had no
+// SEMANTIC strong validation — a garbage token sailed through to the
+// runtime and was silently ignored. It now parses as either a qualified
+// `provider/model` route or a bare model-only shorthand, and rejects
+// everything that cannot be parsed as one.
+// ---------------------------------------------------------------------------
+
+describe('Gate A: modelPreference token grammar (strong validation)', () => {
+  it('A1 qualified route: parses and the value is unchanged', () => {
+    const core = validateBlueprintDocument(modelPreferenceDoc('qiyuan-self/qwen3.8-27b'))
+    expect(core.leader.modelPreference).toBe('qiyuan-self/qwen3.8-27b')
+  })
+
+  it('A1 qualified route on a MEMBER template: parses and unchanged', () => {
+    const core = validateBlueprintDocument(modelPreferenceMemberDoc('openai/gpt-6-astra'))
+    expect(core.members[0]?.modelPreference).toBe('openai/gpt-6-astra')
+  })
+
+  it('A2 model-only shorthand: parses and the value is unchanged', () => {
+    const core = validateBlueprintDocument(modelPreferenceDoc('qwen3.8-27b'))
+    expect(core.leader.modelPreference).toBe('qwen3.8-27b')
+  })
+
+  it('A3 malformed tokens fail loud with MALFORMED_DTO + reason', () => {
+    for (const bad of ['/model', 'provider/', 'provider /model', 'provider/ model']) {
+      expectErrorDetails(
+        () => validateBlueprintDocument(modelPreferenceDoc(bad)),
+        'MALFORMED_DTO',
+        { reason: 'invalid-model-preference' },
+      )
+      // …and the same rule applies to member templates.
+      expectErrorDetails(
+        () => validateBlueprintDocument(modelPreferenceMemberDoc(bad)),
+        'MALFORMED_DTO',
+        { reason: 'invalid-model-preference' },
+      )
+    }
+  })
+
+  it('A3 control characters are rejected by the field reader (MALFORMED_DTO)', () => {
+    // takeString's generic control-char check fires before the token check:
+    // the token is malformed, the code is the same, the reason detail is
+    // the field-level one (still MALFORMED_DTO, never a silent accept).
+    expectCode(
+      () => validateBlueprintDocument(modelPreferenceDoc('prov\u0001der/model')),
+      'MALFORMED_DTO',
+    )
+  })
+
+  it('A3 a further slash belongs to the model (openrouter-style ids)', () => {
+    const core = validateBlueprintDocument(modelPreferenceDoc('openrouter/meta/llama-x'))
+    expect(core.leader.modelPreference).toBe('openrouter/meta/llama-x')
+  })
+
+  it('absent modelPreference stays absent (no default is invented)', () => {
+    const core = validateBlueprintDocument(jsDoc())
+    expect(core.leader.modelPreference).toBe(undefined)
+  })
+})
+
+describe('Gate A: parseModelPreferenceToken (the pure parser)', () => {
+  it('qualified route splits at the FIRST slash', () => {
+    expect(parseModelPreferenceToken('qiyuan-self/qwen3.8-27b')).toEqual({
+      provider: 'qiyuan-self',
+      model: 'qwen3.8-27b',
+    })
+  })
+
+  it('a further slash stays in the model string', () => {
+    expect(parseModelPreferenceToken('openrouter/meta/llama-x')).toEqual({
+      provider: 'openrouter',
+      model: 'meta/llama-x',
+    })
+  })
+
+  it('model-only yields a token with NO provider field', () => {
+    expect(parseModelPreferenceToken('qwen3.8-27b')).toEqual({ model: 'qwen3.8-27b' })
+    const parsed = parseModelPreferenceToken('qwen3.8-27b')!
+    expect(Object.hasOwn(parsed, 'provider')).toBe(false)
+  })
+
+  it('malformed tokens yield undefined', () => {
+    for (const bad of ['', ' ', '/model', 'provider/', 'provider /model', 'provider/ model']) {
+      expect(parseModelPreferenceToken(bad)).toBe(undefined)
+    }
   })
 })

@@ -71,6 +71,10 @@ import {
   isActivationError,
   resolveActivationPolicy,
 } from '../activation/index.js'
+import {
+  initialTemplateModelGrantOf,
+  type ModelSelection,
+} from '../agent-setup/model/index.js'
 import type {
   ActivationProvider,
   MemberActivationRequest,
@@ -115,6 +119,13 @@ export interface EffectContext {
   readonly repositories: TeamDomainRepositories
   readonly activationProvider: ActivationProvider
   readonly externalPolicyFacts: () => Promise<ExternalPolicyFacts>
+  /** The deployment default model (the `staticModel`) — the baseline the
+   *  bound template's MODEL-ONLY `modelPreference` shorthand inherits its
+   *  provider from in the `team_inspect_config` effective-policy read
+   *  (the model-preference routing fix). Absent in the P6-T2 default
+   *  wiring: a modelPreference then contributes no inspect-time model
+   *  grant (an absent preference is unaffected either way). */
+  readonly staticModel?: ModelSelection
   readonly now: () => string
   readonly spec: ActionSpec
   readonly request: TeamRuntimeActionRequest
@@ -335,6 +346,22 @@ async function runEffect(ctx: EffectContext): Promise<RuntimeActionEffect | Work
       // source=unspecified while the MCP was mounted).
       const boundTemplate = boundTemplateOf(ctx.blueprint, target)
       const initialMcpGrant = initialMcpGrantOf(staticCapabilitiesOf(ctx.blueprint, boundTemplate))
+      // model-preference routing fix: the inspection ALSO carries the bound
+      // template's INITIAL static MODEL grant — the SAME
+      // `initialTemplateModelGrantOf` derivation the live consumption and
+      // the activation step 8 use — so team_inspect_config reports the
+      // SAME effective model cell the agent actually runs with (a
+      // declared `modelPreference` resolves at the template layer, not
+      // the unspecified -> staticModel baseline). The generic
+      // `templateValues` (model + mcp) feeds the ONE resolver.
+      const initialModelGrant =
+        ctx.staticModel !== undefined
+          ? initialTemplateModelGrantOf(boundTemplate, ctx.staticModel)
+          : undefined
+      const templateValues = {
+        ...(initialModelGrant !== undefined ? { model: initialModelGrant } : {}),
+        ...(initialMcpGrant !== undefined ? { mcp: initialMcpGrant } : {}),
+      }
       let policy
       try {
         policy = resolveActivationPolicy({
@@ -342,7 +369,7 @@ async function runEffect(ctx: EffectContext): Promise<RuntimeActionEffect | Work
           instanceId: target.instanceId,
           overrides: ctx.repositories.overrides.list(ctx.rootSessionId),
           external,
-          ...(initialMcpGrant !== undefined ? { templateValues: { mcp: initialMcpGrant } } : {}),
+          ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
         })
       } catch (error) {
         if (isActivationError(error)) throw mapActivationError(error)

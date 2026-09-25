@@ -151,6 +151,7 @@ export function createTeamRuntime(options) {
             workActivity: options.workActivity,
             lifecyclePorts: options.lifecyclePorts,
             teamLocks,
+            ...(options.staticModel !== undefined ? { staticModel: options.staticModel } : {}),
             ...(resolved.target !== undefined ? { target: resolved.target } : {}),
         };
         const staged = isNewWorkAdmission(spec)

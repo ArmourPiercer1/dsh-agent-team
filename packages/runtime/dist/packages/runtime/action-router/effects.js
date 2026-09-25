@@ -53,6 +53,7 @@ import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js';
 import { CAPABILITY_NAME_VALUES, initialMcpGrantOf, staticCapabilitiesOf, } from '../../domain/policy/src/index.js';
 import { applyLifecycleOperation, isLifecycleTransitionError, LIFECYCLE_OPERATIONS, } from '../../domain/lifecycle/src/index.js';
 import { ACTIVATION_SOURCES, effectivePolicyValues, isActivationError, resolveActivationPolicy, } from '../activation/index.js';
+import { initialTemplateModelGrantOf, } from '../agent-setup/model/index.js';
 import { isTeamDomainError } from '../../storage/schema/index.js';
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from '../admission/errors.js';
 import { enforceWorkAcceptingState, mapActivationError } from '../admission/gate.js';
@@ -192,6 +193,21 @@ async function runEffect(ctx) {
             // source=unspecified while the MCP was mounted).
             const boundTemplate = boundTemplateOf(ctx.blueprint, target);
             const initialMcpGrant = initialMcpGrantOf(staticCapabilitiesOf(ctx.blueprint, boundTemplate));
+            // model-preference routing fix: the inspection ALSO carries the bound
+            // template's INITIAL static MODEL grant — the SAME
+            // `initialTemplateModelGrantOf` derivation the live consumption and
+            // the activation step 8 use — so team_inspect_config reports the
+            // SAME effective model cell the agent actually runs with (a
+            // declared `modelPreference` resolves at the template layer, not
+            // the unspecified -> staticModel baseline). The generic
+            // `templateValues` (model + mcp) feeds the ONE resolver.
+            const initialModelGrant = ctx.staticModel !== undefined
+                ? initialTemplateModelGrantOf(boundTemplate, ctx.staticModel)
+                : undefined;
+            const templateValues = {
+                ...(initialModelGrant !== undefined ? { model: initialModelGrant } : {}),
+                ...(initialMcpGrant !== undefined ? { mcp: initialMcpGrant } : {}),
+            };
             let policy;
             try {
                 policy = resolveActivationPolicy({
@@ -199,7 +215,7 @@ async function runEffect(ctx) {
                     instanceId: target.instanceId,
                     overrides: ctx.repositories.overrides.list(ctx.rootSessionId),
                     external,
-                    ...(initialMcpGrant !== undefined ? { templateValues: { mcp: initialMcpGrant } } : {}),
+                    ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
                 });
             }
             catch (error) {

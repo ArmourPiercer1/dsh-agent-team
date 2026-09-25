@@ -57,6 +57,9 @@ import type {
 import type {
   SessionDurabilityPort,
 } from '../member-residency/index.js'
+import type {
+  ModelSelection,
+} from '../agent-setup/model/index.js'
 
 // --- sources -------------------------------------------------------------------
 
@@ -202,6 +205,14 @@ export interface ActivationPorts {
   /** The external hard policy + capability-existence facts (step 8: policy
    *  resolver stage 2, Architecture §19.2/§19.6). */
   readonly externalPolicyFacts: () => Promise<ExternalPolicyFacts>
+  /** The deployment default model (the `staticModel`): the world provider
+   *  default the bound template's MODEL-ONLY `modelPreference` shorthand
+   *  inherits its provider from, and the `unspecified`-cell consumer
+   *  fallback. Injected explicitly (no ambient state) so the step-8
+   *  creation-frozen policy derives the template's static model grant the
+   *  SAME way the live consumption and the read-side do (the model-
+   *  preference routing fix). */
+  readonly staticModel: ModelSelection
   /** The child-session factory (the one external effect; step 13). */
   readonly childSessionFactory: ChildSessionFactoryPort
   /** The session-durability barrier (step 13, UNCONDITIONAL; invariant 46). */

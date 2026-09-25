@@ -24,6 +24,11 @@
  * - template references resolvable: every `memberEnvelopes[].templateId`
  *   names a template declared in the same document;
  * - requirements well-formed with unique (domain, name) pairs;
+ * - `modelPreference`, when present, is a legal v1 model token — either a
+ *   qualified `provider/model` route (split at the first `/`, both sides
+ *   non-empty) or a bare model-only shorthand (its provider is inherited
+ *   from the deployment default at the runtime); no whitespace / control
+ *   characters (`MALFORMED_DTO`, reason `invalid-model-preference`);
  * - mutation envelopes self-consistent (no operation in both allow and
  *   deny);
  * - PolicyState definitions reference only fields that exist in the
@@ -149,9 +154,43 @@ function stripUndefined(obj) {
     }
     return obj;
 }
-// ---------------------------------------------------------------------------
-// sub-structure validators
-// ---------------------------------------------------------------------------
+/**
+ * The strict v1 `modelPreference` token grammar (the Blueprint strong
+ * validation's parser — the runtime model layer keeps a documented mirror,
+ * `parseModelPreferenceToken` in
+ * `@dsh-agent-team/runtime/agent-setup/model/route`, because the runtime
+ * cannot import this domain module into the model layer; ONE grammar, two
+ * mirror sites, both pure):
+ *
+ * - a non-empty token with NO whitespace and NO control characters;
+ * - a QUALIFIED route `provider/model` splits at the FIRST `/`: the
+ *   provider is the non-empty prefix, the model the non-empty suffix
+ *   (further `/` belong to the model string);
+ * - a MODEL-ONLY token (no `/`) names a model whose provider is resolved
+ *   at the derivation site (the deployment default stands in).
+ *
+ * Malformed tokens (empty, whitespace anywhere — e.g. `provider /model`
+ * or `provider/ model` — control characters, a missing provider
+ * (`/model`) or model (`provider/`)) yield `undefined`.
+ *
+ * @param value - the trimmed token (the field reader trims; the check
+ *   still re-verifies the interior, where trimming cannot reach).
+ * @returns the parsed token, or `undefined` when malformed.
+ */
+export function parseModelPreferenceToken(value) {
+    if (value.length === 0)
+        return undefined;
+    if (/\s/.test(value))
+        return undefined;
+    if (CONTROL_CHARS.test(value))
+        return undefined;
+    const sep = value.indexOf('/');
+    if (sep === -1)
+        return { model: value };
+    if (sep === 0 || sep === value.length - 1)
+        return undefined;
+    return { provider: value.slice(0, sep), model: value.slice(sep + 1) };
+}
 /**
  * Validate one template (leader or member). Both share one closed schema.
  *
@@ -185,6 +224,10 @@ function validateTemplate(raw, path, role) {
         required: false,
         maxLength: MODEL_PREFERENCE_MAX_LENGTH,
     });
+    if (modelPreference !== undefined &&
+        parseModelPreferenceToken(modelPreference) === undefined) {
+        throw teamContractError('MALFORMED_DTO', `field ${path}.modelPreference is not a legal model token: expected a qualified 'provider/model' route (split at the first '/', both sides non-empty) or a bare model id, with no whitespace — got ${JSON.stringify(modelPreference)}`, { path: `${path}.modelPreference`, reason: 'invalid-model-preference' });
+    }
     const contextPolicy = takeString(record, 'contextPolicy', path, {
         required: false,
         maxLength: CONTEXT_POLICY_MAX_LENGTH,

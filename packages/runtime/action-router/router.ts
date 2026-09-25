@@ -187,6 +187,7 @@ export function createTeamRuntime(
       workActivity: options.workActivity,
       lifecyclePorts: options.lifecyclePorts,
       teamLocks,
+      ...(options.staticModel !== undefined ? { staticModel: options.staticModel } : {}),
       ...(resolved.target !== undefined ? { target: resolved.target } : {}),
     }
     const staged: RuntimeActionEffect | WorkChainStage = isNewWorkAdmission(spec)
