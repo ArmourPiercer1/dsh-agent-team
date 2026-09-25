@@ -1,0 +1,52 @@
+# U2 — Agent Preset / Profile 兼容迁移日志
+
+**日期**：2026-09-24 ｜ **分支**：task/dsh-017rc1-upgrade ｜ **基线**：0.1.5-rc.2 → 0.1.7-rc.1（46a7f68b09）
+
+## 1. 上游模型变化（0.1.7 源码事实，非 release notes 推断）
+
+| 面 | 0.1.5（@deepseek-ai/dsh-agent-presets） | 0.1.7（@deepseek-ai/dsh-agent-preset-registry） |
+| --- | --- | --- |
+| preset 声明 | 目录式：Config `{ default, roots: [{path, trust}], includeShippedRoot, includeUserRoot }`，Loader 从受信根加载 `presets/<id>/agent.cordis.yml` | 程序式：`ctx.agentPresets.register(PresetDefinition)`；`PresetDefinition = { id, name?, description?, order?, plugins: EntryOptions[] }`（preset = 子 Cordis 插件条目列表，plugin-composition 模型） |
+| registry Config | 含 roots 字段 | `{ default, selectedDefault?: Volatile, modeSelectionEnabled?: Volatile }`（apply-time 全可选投影） |
+| `mount(ctx, id?)` | 存在；**重复 mount 同一 agent → reject**（"roster's mount is the ONE bind"） | 存在，返回 `Promise<AgentPreset>`；**重复 mount 同 generation → 幂等 no-op；不同 id → rebind**（upstream `bind()`：同 generation 早退 / 异 generation `parent.rebind`；证据：`packages/preset/agent-preset-registry/src/index.ts` bind/mount） |
+| `composedPreset(ctx)` / `composeFrom(ctx, parent)` / `resolve(id?)` | 存在 | 存在，签名兼容（`resolve` 返回 `AgentPreset` 含 `.id`） |
+| 新增 | — | `serviceFor(agent, name)` / `recompose(ctx, id)` / `select(agent, id)` / `acquireScope(id?)` / `compositionInventory()` / `readDocument(id)` / `remoteExportList()` |
+| roster（remote 面） | 行含 `trust: 'system'\|'user'`、`broken` 对象；roster 含 `authorable` 标志 | `AgentPresetRow { id, isDefault, name?, description?, broken?: string }`（**无 trust**；broken = 单行激活诊断字符串）；roster = `{ presets, modeSelectionEnabled }`（无 authorable） |
+| session 侧 | — | 新增 session log 事件 `agent-preset/selected` + `agentPreset` projection（session.ts 模块声明） |
+| SystemPrompt Config | `persona: string`（必填模板） | `personaPrefix?` / `personaSuffix?`（persona 移入 preset composition 声明，plugin config 全可选） |
+
+## 2. 插件消费面审计（迁移前实查）
+
+| 消费点 | 用法 | 0.1.7 兼容性 |
+| --- | --- | --- |
+| `packages/runtime/src/plugin/live/agent-bindings.mjs`（glue base-tools 块） | `agentPresets` 可选依赖；`composedPreset?(agentCtx)` 探测 + `mount(agentCtx, rootPresetId/memberPresetId)` | **SAME**（签名兼容；mount 返回值 await 安全） |
+| `packages/runtime/root-binding/harness/plugin.mjs`（测试 harness） | `ctx.get('agentPresets')` + `composedPreset` / `mount` / `resolve(id).id` | **SAME** |
+| `packages/runtime/member-residency/harness/plugin.mjs` | 仅文档注释提及 | 注释更新 |
+| `packages/runtime/test/issue2-real-preset-restriction.test.ts` | 旧包 import + roots 式 Config + fixture 目录加载 + 重复 mount reject 断言 | **CHANGED**（迁移，见 §3） |
+| `packages/client/src/plugin/team-mount-core.ts`（Seam 6） | remote `agentPresets.list()` envelope 解包 + broken 过滤 + `{id,name,description,isDefault}` 映射 | **CHANGED 类型声明**（映射代码字段兼容，wire 形状已变） |
+| `packages/client/test/client-plugin-mount.test.ts` | Seam 6 double 的 roster fixture（trust 行） | **CHANGED**（fixture 更新） |
+| `cordis.patch.yml` / 插件配置 | 无 preset 目录/roots/policy 配置 | 零改动 |
+
+## 3. 迁移改动（本提交）
+
+1. **`packages/runtime/test/issue2-real-preset-restriction.test.ts`**
+   - import → `@deepseek-ai/dsh-agent-preset-registry`（default `AgentPresetRegistry`）；
+   - harness → `ctx.plugin(AgentPresetRegistry, { default: 'i2-standard' })`（无 roots；apply-time 非 volatile 投影）；
+   - fixture 声明 → 新增 `declareFixturePreset()`：读 `issue2-fixtures/presets/i2-standard/agent.cordis.yml`（保留为条目行单一事实源），行 `name` 相对路径重写为绝对 file URL（`EntryOptions.name` = 模块说明符，Node ESM 解析），`ctx.agentPresets.register({ id: 'i2-standard', plugins: rows })`；
+   - `SystemPrompt` config `{ persona: '' }` → 无 config（0.1.7 全可选，persona 移入 preset composition）；
+   - **S6 语义重录**：0.1.5「重复 mount reject + 回滚」→ 0.1.7「重复 mount 幂等、composition 不变、agent 存活」（upstream `bind()` 早退证据见 §1；glue 的 composedPreset 探测 guard 语义不变，仍跳过冗余 mount）。
+2. **`packages/client/src/plugin/team-mount-core.ts`**：`TeamAgentPresetRow` 删 `trust`、`broken: unknown → broken?: string`；`TeamAgentPresetsListResult.value` 的 `authorable → modeSelectionEnabled`；注释更新（映射代码零改动——字段集兼容）。
+3. **`packages/client/test/client-plugin-mount.test.ts`**：roster fixture 去 trust 字段、`broken: {code:'x'} → broken: 'x'`、`authorable: false → modeSelectionEnabled: false`。
+4. **harness 文档注释**：root-binding / member-residency 两文件 preset seam 包名更新为 0.1.7 registry。
+
+## 4. 证据
+
+- runtime typecheck：`tsc -p tsconfig.json --noEmit` exit 0（迁移前 7 错 → 0 错）；
+- `test/issue2-real-preset-restriction.test.ts`（real-seam：真 registry + 真 Loader + 真 ToolRuntime + 真 applyBuiltInToolDeny）：**13/13 PASS**（迁移首轮 12/13，S6 按 §3.1 重录后全绿）；
+- client typecheck + client 包 vitest：见 `dsh-017rc1-tc-client-u2.log` / `dsh-017rc1-client-test-u2.log`（scratch-logs/，随轮归档）。
+
+## 5. 遗留 / 移交
+
+- remote `agentPresets.list` 上游 facade 在 0.1.7 客户端运行时的暴露位置：seam inventory（U0.4，`upstream-seams.md`）收录；wire 行形状已按 0.1.7 `AgentPresetRow` 对齐。
+- preset 声明 authority 在 0.1.7 = 声明插件的 `register()` 调用（profile/plugin composition）；插件自身不声明 preset，team member 经 glue 按 `rootPresetId`/`memberPresetId` 挂载 profile 声明的 preset —— U8 垂直验证「New Team → roster → create member 使用所选 Profile 声明的 preset」。
+- `dsh-agent-preset-registry` 已在 runtime devDependencies（U1）；本提交后其 import 为真实消费（测试 + 类型），依赖保留。

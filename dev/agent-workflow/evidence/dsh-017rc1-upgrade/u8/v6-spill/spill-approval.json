@@ -1,0 +1,43 @@
+{
+  "requestId": "ctrl-13ppi1h0zqipp203k3qv71e8",
+  "response": {
+    "type": "server-response",
+    "rpcId": "u8appr-cbzg9ut0n9",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "decision": {
+            "requestId": "ctrl-13ppi1h0zqipp203k3qv71e8",
+            "decision": "allow",
+            "decider": {
+              "kind": "human",
+              "humanId": "session-u8-team-2026-09-24T14-48-13"
+            },
+            "scope": {
+              "rootSessionId": "session-u8-team-2026-09-24T14-48-13",
+              "targetInstanceId": "inst-leader",
+              "actionName": "parameter-permission",
+              "correlation": "u8-22-26-tjna",
+              "toolName": "bash",
+              "operationFingerprint": "sha256:00b5f9f1056acd007150517dc1968c301593c837a1e4b106b1d5fd7542e4494f"
+            },
+            "requestSequence": 15,
+            "decisionSequence": 16,
+            "createdAt": "2026-09-24T14:49:33.944Z",
+            "note": "u8 vertical scripted human resolution (rc2 S3 pattern; GUI approve stand-in)"
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "team.resolveControl",
+          "endpoint": "team.resolveControl",
+          "contractVersion": 4,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  }
+}

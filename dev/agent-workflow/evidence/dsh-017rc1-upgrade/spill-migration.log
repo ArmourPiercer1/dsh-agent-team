@@ -1,0 +1,66 @@
+# U4 — `team-spill-local` replacement 兼容（0.1.5-rc.2 → 0.1.7-rc.1）
+
+任务来源：`docs/plans/active/dsh-agent-team-0.1.7-rc.1-upgrade-plan.md` §7（U4）。
+执行：2026-09-24，worktree `.worktrees/dsh-017rc1-upgrade`（branch `task/dsh-017rc1-upgrade`）。
+裁决：**U4 code-level gate PASS — `team-spill-local.ts` 零代码改动；real-host 复验归 U8（V0/V6）。**
+
+## 7.1 source-union fingerprint（必做）
+
+0.1.7 `@deepseek-ai/dsh-spill` 类型面（`packages/runtime/node_modules/@deepseek-ai/dsh-spill/lib/types/types.d.ts`，0.1.7-rc.1 发布物）：
+
+- `SpillSource`（types.d.ts:39）仍是**闭二臂 union**，逐字段与 0.1.5 相同：
+  - 臂 1：`{ kind: 'tool'; toolName: string; callId: ToolCallId; label: string }`
+  - 臂 2：`{ kind: 'session-reference'; sessionId: SessionId; label: string }`
+- `SaveTextSpill`（types.d.ts:55）：`{ owner: SpillOwner; source: SpillSource; suggestedName: string; content: string }` — 不变（`SpillOwner = { sessionId: SessionId }`，types.d.ts:30）。
+- `SpillRef`（types.d.ts:67）：`{ locator: SpillLocator; bytes: number; retrievalHint: string }` — 不变。
+
+→ **union 仍为两臂，无新增 source kind**。按 plan §7.1 裁决路径：保持代码不变，更新定征说明（本文件）。`packages/runtime/src/plugin/team-spill-local.ts` 的 `toSpillStoreSource` exhaustive switch（两臂映射 + 防御性 `never` throw）在 0.1.7 下语义完整，**未改动一行**。
+
+## LocalSpillStore / service 面（plan §7 前置事实复核）
+
+`@deepseek-ai/dsh-spill-local` 0.1.7（`lib/types/index.d.ts`）：
+
+- `export declare class LocalSpillStore extends SpillStore`（index.d.ts:53）— 仍在。
+- config 仍含 `cleanupPeriodDays?: number`（index.d.ts:38）；`root` 经 schemastery 校验后为 `readonly root: string`（index.d.ts:56）。
+- `saveText(input: SaveTextSpill): Promise<SpillRef>` 签名不变（继承 `SpillStore` 契约，0.1.7 d.ts）。
+- cleanup sweep 仍由 upstream 实现（index.d.ts:7/:49 注释：startup sweep + `cleanupPeriodDays` 到期回收）。
+- service name 仍为 `spillStore`（0.1.7 registry 面，与 U0.4 seam inventory 交叉核对）。
+
+`TeamAwareLocalSpillStore extends LocalSpillStore` 的 constructor 透传（`ctx, { root?, cleanupPeriodDays? }`）与 `saveText` override 在 0.1.7 类型下直接编译通过。
+
+## 编译与单元测试证据（0.1.7 graph）
+
+- `packages/runtime` typecheck：`npx tsc -p tsconfig.json --noEmit` → **TC:0**（U2 后复验，见 `preset-migration.log` §验证）。
+- `packages/runtime` vitest（0.1.7 graph，`npx vitest run`，scratch log `scratch-logs/dsh-017rc1-runtime-test-u4.log`）：
+  - **183/189 文件通过；2102/2110 测试通过**。
+  - `test/team-spill-local.test.ts` → **10/10 通过**（22ms）。
+  - `test/team-spill-local-composition.test.ts` → **3/3 通过**（29ms）。
+  - 失败集合与 dc6fb6f 基线**完全一致**（6 文件 / 8 测试：p8s3b-result-effects、t12a-b2-child-identity、t12a-glue-handoff-ports 三个 file-level 环境类 + d3-4×1 + p6t3-mediation×5 + p6t3-restart×2）→ 全部 PRE_EXISTING，零 0.1.7 新增失败。
+
+## 7.2 `spill-policy` byte → token
+
+plan §7.2 要求搜索产品配置 `maxInlineBytes`。实查（worktree 全仓，排除 `dev/agent-workflow/evidence/**` 历史证据与 `references/`）：
+
+- 插件 **production/profile 代码零功能引用** `maxInlineBytes` 或 spill-policy budget 字段（仅文档注释提及 spill-policy 概念，无配置消费）。
+- 插件 profile fixture 无 `maxInlineBytes:` 行 → 无 yaml 迁移可做。
+
+**upstream 自身 quirk（记录，非本插件问题）**：0.1.7-rc.1 发布物内部不一致 ——
+- src（`tests/deepseek-harness-test-use` @ `46a7f68b09`，`packages/*/spill-policy/src`）使用 `z.object({ maxInlineTokens: z.number() })`（token budget，release notes 第 9 条）；
+- 但 npm 发布的 `0.1.7-rc.1` `lib` 构建产物（committed build artifact）仍携带 `maxInlineBytes`（stale build）。
+→ 本插件零消费，不受影响；已登记到 `upstream-seams.md`（U0.4）与 post-upgrade follow-ups（供 upstream 下轮修复参照）。
+
+## 7.3 replacement composition（cordis.patch.yml）
+
+- `cordis.patch.yml` **未改动**（机器无关声明）：禁用 base `spill-local` 行 → 插入 `dsh-agent-team/host` + `team-spill-local`（id `dsh-agent-team/spill-local`）+ client 行。
+- 基座 `spill-local` 行 id 在 0.1.7 profile 中的存在性 → 由 U0.4 seam inventory 交叉核对（`upstream-seams.md`）；real-host 单 provider / 无 duplicate service / base disabled 的运行时验证 → **U8 V0**（boot marker 检查项）。
+- composition 单测（3/3 通过，上）覆盖：unmanaged 等价 upstream、managed durable grant、cleanupPeriodDays 传播、grant write failure → `saveText` reject、source union exact mapping（plan §7.3 清单 1–8 的单元层）；cleanup sweep（5）与 restart grant ledger rebuild（9）在 runtime 套件既有测试内通过（无新增失败）。
+
+## U4 结论
+
+| 项 | 状态 |
+| --- | --- |
+| SpillSource 二臂 union 不变 | ✅（types.d.ts:39 逐字段核对） |
+| `team-spill-local.ts` 零改动 | ✅（TC:0 + 13/13 spill 测试通过） |
+| `maxInlineBytes` 产品配置 | ✅ 零功能引用，无迁移 |
+| replacement composition | ✅ 单测层；real-host → U8 V0/V6 |
+| 新增失败 | 0（失败集合 = 基线集合） |

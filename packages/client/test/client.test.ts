@@ -25,11 +25,12 @@ describe('@dsh-agent-team/client (P9-T9 mount)', () => {
 describe('dsh-agent-team client plugin (P9-T9 mount core)', () => {
   it('has the public Cordis composition plugin shape', () => {
     // Plugin.Object contract: a stable display name, the injected service
-    // list, and a callable apply (the glue's `apply` delegates here).
+    // list (0.1.7: `uiWorkspace` — the main-view open left `sessions`),
+    // and a callable apply (the glue's `apply` delegates here).
     expect(typeof name).toBe('string')
     expect(name).toBe('dsh-agent-team-client')
     expect(Array.isArray(inject)).toBe(true)
-    expect(inject).toEqual(['slots', 'locale', 'sessions', 'connection', 'remote', 'remote.agentPresets'])
+    expect(inject).toEqual(['slots', 'locale', 'sessions', 'uiWorkspace', 'connection', 'remote', 'remote.agentPresets'])
     expect(typeof applyTeamMount).toBe('function')
   })
 })

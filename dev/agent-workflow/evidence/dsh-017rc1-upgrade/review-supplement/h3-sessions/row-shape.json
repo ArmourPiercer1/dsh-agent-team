@@ -1,0 +1,27 @@
+{
+  "note": "SessionSummary wire rows (session-controller types.ts) — retainedBy is NOT a wire field (client-local merge; see apiListSessions docs + client-main-retention.md H3 section)",
+  "rowCount": 3,
+  "rows": [
+    {
+      "sessionId": "session-rs-ord-2026-09-25T14-07-04",
+      "agentAvailable": true,
+      "running": false,
+      "blank": true,
+      "parentSessionId": null
+    },
+    {
+      "sessionId": "session-rs-team-2026-09-25T14-07-04",
+      "agentAvailable": true,
+      "running": false,
+      "blank": false,
+      "parentSessionId": null
+    },
+    {
+      "sessionId": "session-rs-root-2026-09-25T14-07-04",
+      "agentAvailable": true,
+      "running": false,
+      "blank": true,
+      "parentSessionId": null
+    }
+  ]
+}

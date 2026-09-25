@@ -116,17 +116,17 @@ var __dshFactory = (require) => {
 			const _jsx = __imp0.jsx;
 			const _jsxs = __imp0.jsxs;
 			const _Fragment = __imp0.Fragment;
-			const __imp23 = __extReq("react");
-			const useMemo = __imp23.useMemo;
-			const useState = __imp23.useState;
-			const __imp24 = __extReq("@deepseek-ai/dsh-client-ui-primitives");
-			const IconUserOutline16 = __imp24.IconUserOutline16;
-			const Tooltip = __imp24.Tooltip;
-			const __imp25 = __req("model/team-intent-model.js");
-			const emptyTeamIntentDraft = __imp25.emptyTeamIntentDraft;
-			const teamWorkspaceOptions = __imp25.teamWorkspaceOptions;
-			const __imp26 = __req("ui/TeamCreationPanel.js");
-			const TeamCreationPanel = __imp26.TeamCreationPanel;
+			const __imp24 = __extReq("react");
+			const useMemo = __imp24.useMemo;
+			const useState = __imp24.useState;
+			const __imp25 = __extReq("@deepseek-ai/dsh-client-ui-primitives");
+			const IconUserOutlineMedium = __imp25.IconUserOutlineMedium;
+			const Tooltip = __imp25.Tooltip;
+			const __imp26 = __req("model/team-intent-model.js");
+			const emptyTeamIntentDraft = __imp26.emptyTeamIntentDraft;
+			const teamWorkspaceOptions = __imp26.teamWorkspaceOptions;
+			const __imp27 = __req("ui/TeamCreationPanel.js");
+			const TeamCreationPanel = __imp27.TeamCreationPanel;
 			const styles = __css("ui/NewTeamEntry.module.css");
 			/**
 			 * The global New Team entry (frozen UI design §3.1 MUST, the R118 gap):
@@ -141,14 +141,15 @@ var __dshFactory = (require) => {
 			 * Visual pattern: the native sidebar New Session row (SidebarRoot.tsx
 			 * L189–200: Tooltip delay 500ms disabled in the wide state, where the
 			 * button carries its own label; icon-only + tooltip on the rail). The
-			 * glyph is IconUserOutline16 (a member icon, deliberately NOT the native
+			 * glyph is IconUserOutlineMedium (a member icon, deliberately NOT the native
 			 * New Session chat glyph — §3.1: "不与原生 New Session 使用完全相同 icon").
 			 *
 			 * The component is registered by the mount core through the
 			 * `sidebar.footer.action` slot (id `team-new`, order 10); the inject face
 			 * carries the frozen S5-A creation wrappers plus the native session
 			 * switch, so the overlay's create-success navigation goes through the
-			 * same public `ctx.sessions.open` seam as every other Team surface.
+			 * same public `ctx.uiWorkspace.openSession` seam as every other Team
+			 * surface (0.1.5: `ctx.sessions.open`).
 			 */
 			/**
 			 * The sidebar-foot New Team action (UI §3.1): the trigger row plus the
@@ -195,7 +196,7 @@ var __dshFactory = (require) => {
 			    // with the panel's typed error lane + the retryable token (no new banner
 			    // architecture); a failed open likewise keeps the overlay visible; the
 			    // root remains openable from the session list either way.
-			    return (_jsxs(_Fragment, { children: [_jsx(Tooltip, { label: t('entry.label'), delayMs: 500, disabled: wide, children: _jsxs("button", { type: "button", className: wide ? styles.wide : styles.rail, "aria-label": t('entry.label'), "data-new-team-entry": true, onClick: openOverlay, children: [_jsx(IconUserOutline16, { size: wide ? 14 : 18 }), wide && _jsx("span", { className: styles.label, children: t('entry.label') })] }) }), overlayOpen && (_jsx("div", { className: styles.backdrop, "data-new-team-overlay": true, onClick: closeOverlay, children: _jsx("div", { className: styles.dialog, role: "dialog", "aria-modal": "true", "aria-label": t('entry.label'), onClick: event => event.stopPropagation(), children: _jsx(TeamCreationPanel, { listCatalog: listCatalog, getCatalog: getCatalog, probeCompatibility: probeCompatibility, teamCreateV2: teamCreateV2, teamAdmitInitialWorkV2: teamAdmitInitialWorkV2, openCreatedSession: openCreatedSession, onCreated: closeOverlay, pullProjection: pullProjection, listAgentPresets: listAgentPresets, workspaces: workspaces, draft: draft, onDraftChange: setDraft, onCancel: closeOverlay, t: t }) }) }))] }));
+			    return (_jsxs(_Fragment, { children: [_jsx(Tooltip, { label: t('entry.label'), delayMs: 500, disabled: wide, children: _jsxs("button", { type: "button", className: wide ? styles.wide : styles.rail, "aria-label": t('entry.label'), "data-new-team-entry": true, onClick: openOverlay, children: [_jsx(IconUserOutlineMedium, { size: wide ? 14 : 18 }), wide && _jsx("span", { className: styles.label, children: t('entry.label') })] }) }), overlayOpen && (_jsx("div", { className: styles.backdrop, "data-new-team-overlay": true, onClick: closeOverlay, children: _jsx("div", { className: styles.dialog, role: "dialog", "aria-modal": "true", "aria-label": t('entry.label'), onClick: event => event.stopPropagation(), children: _jsx(TeamCreationPanel, { listCatalog: listCatalog, getCatalog: getCatalog, probeCompatibility: probeCompatibility, teamCreateV2: teamCreateV2, teamAdmitInitialWorkV2: teamAdmitInitialWorkV2, openCreatedSession: openCreatedSession, onCreated: closeOverlay, pullProjection: pullProjection, listAgentPresets: listAgentPresets, workspaces: workspaces, draft: draft, onDraftChange: setDraft, onCancel: closeOverlay, t: t }) }) }))] }));
 			}
 			Object.defineProperty(exports, "NewTeamEntry", { enumerable: true, get: () => NewTeamEntry });
 			//# sourceMappingURL=NewTeamEntry.js.map
@@ -216,8 +217,8 @@ var __dshFactory = (require) => {
 			const __imp20 = __req("model/projection-adapter.js");
 			const adaptTeamProjection = __imp20.adaptTeamProjection;
 			const __imp21 = __extReq("@deepseek-ai/dsh-client-ui-primitives");
-			const IconChevronDownOutline14 = __imp21.IconChevronDownOutline14;
-			const IconChevronUpOutline14 = __imp21.IconChevronUpOutline14;
+			const IconChevronDownOutlineRegular = __imp21.IconChevronDownOutlineRegular;
+			const IconChevronUpOutlineRegular = __imp21.IconChevronUpOutlineRegular;
 			const StateDot = __imp21.StateDot;
 			const __imp22 = __req("model/team-dock-model.js");
 			const deriveTeamDockContent = __imp22.deriveTeamDockContent;
@@ -307,7 +308,7 @@ var __dshFactory = (require) => {
 			        ...counts.runningSessions > 0 ? [t('dock.running', { count: counts.runningSessions })] : [],
 			        ...counts.pendingControls > 0 ? [t('dock.pending', { count: counts.pendingControls })] : [],
 			    ].join('\u2002·\u2002');
-			    return (_jsxs("section", { className: styles.root, "data-team-dock": true, "aria-label": t('dock.title'), children: [_jsxs("div", { className: styles.row, children: [_jsxs("button", { type: "button", className: styles.jump, "data-team-dock-jump": true, title: t('dock.jump'), onClick: () => { openTeamTab(); }, children: [_jsx("span", { className: styles.title, "data-dock-title": true, children: t('dock.title') }), readout !== '' && (_jsxs(_Fragment, { children: [_jsx("span", { className: styles.sep, "data-dock-sep": true, "aria-hidden": "true", children: '\u2002·\u2002' }), _jsx("span", { className: styles.readout, "data-dock-readout": true, children: readout })] }))] }), _jsx("button", { type: "button", className: styles.chevron, "data-team-dock-toggle": true, "aria-expanded": !collapsed, "aria-controls": collapsed ? undefined : bodyId, "aria-label": collapsed ? t('dock.expand') : t('dock.collapse'), onClick: () => { setCollapsed(value => !value); }, children: collapsed ? _jsx(IconChevronUpOutline14, {}) : _jsx(IconChevronDownOutline14, {}) })] }), !collapsed && (_jsxs("div", { id: bodyId, className: styles.expanded, "data-team-dock-expanded": true, children: [_jsx("ul", { className: styles.members, children: content.members.length === 0
+			    return (_jsxs("section", { className: styles.root, "data-team-dock": true, "aria-label": t('dock.title'), children: [_jsxs("div", { className: styles.row, children: [_jsxs("button", { type: "button", className: styles.jump, "data-team-dock-jump": true, title: t('dock.jump'), onClick: () => { openTeamTab(); }, children: [_jsx("span", { className: styles.title, "data-dock-title": true, children: t('dock.title') }), readout !== '' && (_jsxs(_Fragment, { children: [_jsx("span", { className: styles.sep, "data-dock-sep": true, "aria-hidden": "true", children: '\u2002·\u2002' }), _jsx("span", { className: styles.readout, "data-dock-readout": true, children: readout })] }))] }), _jsx("button", { type: "button", className: styles.chevron, "data-team-dock-toggle": true, "aria-expanded": !collapsed, "aria-controls": collapsed ? undefined : bodyId, "aria-label": collapsed ? t('dock.expand') : t('dock.collapse'), onClick: () => { setCollapsed(value => !value); }, children: collapsed ? _jsx(IconChevronUpOutlineRegular, {}) : _jsx(IconChevronDownOutlineRegular, {}) })] }), !collapsed && (_jsxs("div", { id: bodyId, className: styles.expanded, "data-team-dock-expanded": true, children: [_jsx("ul", { className: styles.members, children: content.members.length === 0
 			                            ? _jsx("li", { className: styles.empty, "data-dock-members-empty": true, children: t('dock.members.empty') })
 			                            : content.members.map(member => (_jsxs("li", { className: styles.member, "data-dock-member": true, "data-member-status": member.status, "aria-label": `${member.name} ${t(MEMBER_STATUS_KEYS[member.status])}`, children: [_jsx("span", { className: styles.dotSlot, "aria-hidden": "true", children: _jsx(StateDot, { state: memberDot(member.status) }) }), _jsx("span", { className: styles.name, children: member.name })] }, member.key))) }), _jsx("ul", { className: styles.tasks, children: content.activities.length === 0
 			                            ? _jsx("li", { className: styles.empty, "data-dock-activities-empty": true, children: t('dock.activities.empty') })
@@ -827,15 +828,43 @@ var __dshFactory = (require) => {
 			 * dotted key, so the bare `remote` service alone does not open the
 			 * namespace.
 			 */
-			const inject = ['slots', 'locale', 'sessions', 'connection', 'remote', 'remote.agentPresets'];
+			const inject = ['slots', 'locale', 'sessions', 'uiWorkspace', 'connection', 'remote', 'remote.agentPresets'];
 			Object.defineProperty(exports, "inject", { enumerable: true, get: () => inject });
 			/** Stable Cordis plugin name of the dsh-agent-team client half. */
 			const name = 'dsh-agent-team-client';
 			Object.defineProperty(exports, "name", { enumerable: true, get: () => name });
 			/**
+			 * The 0.1.7 "current main-view session" read in FIRST-PARTY ORDER (the
+			 * upstream `ui-session` `publishMain`): the previously resolved id is
+			 * checked through its own `retainInfo` source FIRST — the local retain
+			 * counts are independent of catalog membership, so the source keeps
+			 * reporting a live `mainView` retain while the catalog row is temporarily
+			 * absent (a generation replacement / catalog refresh / reconnect window).
+			 * Only a current whose retain is actually released falls through to the
+			 * byId scan (which also finds a freshly retained id whose catalog row is
+			 * not in the snapshot yet). `null` when the selection is cleared (no
+			 * `mainView` reference anywhere — the New Session view state releases it).
+			 *
+			 * PR #29 review supplement (F3): the pre-fix read scanned ONLY `byId`, so
+			 * a catalog gap on the current row answered `null` and the open-mode reset
+			 * wrongly cleared the current Team's mode mark in that window.
+			 */
+			function resolveCurrentMainSessionId(previousId, sessions) {
+			    if (previousId !== undefined) {
+			        const info = sessions.retainInfo(previousId).getSnapshot();
+			        if ((info.retainedBy.mainView ?? 0) > 0)
+			            return previousId;
+			    }
+			    for (const summary of Object.values(sessions.list.getSnapshot().byId)) {
+			        if ((summary.retainedBy.mainView ?? 0) > 0)
+			            return summary.id;
+			    }
+			    return null;
+			}
+			/**
 			 * Mount the Team client on the public seams (the full P9-S6 body).
 			 *
-			 * @param ctx - the Cordis client plugin context (the five public seams + effect).
+			 * @param ctx - the Cordis client plugin context (the six public seams + effect).
 			 * @param opts - the plugin row config (the `dshHome` bind) and the three
 			 *   concrete components (the `.tsx` entries).
 			 */
@@ -990,20 +1019,23 @@ var __dshFactory = (require) => {
 			            return Promise.resolve();
 			        return store.refresh();
 			    };
-			    // (9) Native session switch (Seam 3; the public `open` path).
+			    // (9) Native session switch (0.1.7: the public `UiWorkspace.openSession`
+			    // — main-view selection left `ctx.sessions` with the multi-instance
+			    // session model; 0.1.5 called `ctx.sessions.open`).
 			    const openSession = (sessionId) => {
-			        ctx.sessions.open(sessionId);
+			        ctx.uiWorkspace.openSession(sessionId);
 			    };
 			    // (9.0) D2 (Team D1-D6 repair v2, D6) — the explicit open-in-Team-mode
 			    // entry (the dedicated "以 Team 模式打开 / 回到 Leader" entry): the
 			    // AWAITED two-phase sequence (A3 Q1 live-first): (a) the v3
 			    // `team.ensureRootLive` guarantee MUST settle BEFORE (b) the native
-			    // `ctx.sessions.open` — on a typed ensure failure the session is NOT
-			    // opened (never a silent open, never a silent adoption) and the typed
-			    // error is returned for the UI's explicit error lane. On success the
-			    // per-root open-mode mark is set ('team'); the session switch itself
-			    // drives the badge re-render (the sessions.list effect below keeps the
-			    // map honest on every switch). NO remote field, NO push/event/polling.
+			    // `uiWorkspace.openSession` (0.1.5: `ctx.sessions.open`) — on a typed
+			    // ensure failure the session is NOT opened (never a silent open, never
+			    // a silent adoption) and the typed error is returned for the UI's
+			    // explicit error lane. On success the per-root open-mode mark is set
+			    // ('team'); the session switch itself drives the badge re-render (the
+			    // sessions.list effect below keeps the map honest on every switch).
+			    // NO remote field, NO push/event/polling.
 			    const openTeamMode = async (rootSessionId) => {
 			        const result = await teamRemote.teamEnsureRootLiveV3(rootSessionId);
 			        if (result.ok === false) {
@@ -1013,13 +1045,13 @@ var __dshFactory = (require) => {
 			            return { ok: false, code: result.error.code, message: result.error.message };
 			        }
 			        // (b) only AFTER the guarantee settled: the native switch.
-			        ctx.sessions.open(rootSessionId);
+			        ctx.uiWorkspace.openSession(rootSessionId);
 			        openModeByRoot.set(rootSessionId, 'team');
 			        return { ok: true };
 			    };
 			    // (9.0c) D3 (Team D1-D6 repair v2, D6) — the EXPLICIT ordinary-mode
 			    // fallback entry ("以普通模式打开", v2 plan §1.1.3): the EXISTING
-			    // `openSession` verbatim (Seam 3, the pure `ctx.sessions.open`) — NO
+			    // `openSession` verbatim (0.1.7: the pure `uiWorkspace.openSession`) — NO
 			    // team-remote call (no `team.ensureRootLive`, no other `team.*`
 			    // method), NO `session/create`-with-preset (A3 Q1 caveat: that path is
 			    // rejected on a live Team root), NO ensure-live step, NO list refresh.
@@ -1036,33 +1068,71 @@ var __dshFactory = (require) => {
 			        openSession(rootSessionId);
 			        openModeByRoot.set(rootSessionId, 'ordinary');
 			    };
-			    // (9.0b) D2 (D6) — the open-mode reset: when the session-list current
+			    // (9.0b) D2 (D6) — the open-mode reset: when the main-view current
 			    // selection changes, every root whose mark is NOT the new current
 			    // loses it (the mode badge is a per-client-session fact — the root is
 			    // only "opened in Team mode" while this client sits on it).
+			    // 0.1.7: `list.current` is gone — the current session is resolved in the
+			    // first-party `ui-session` publishMain order: the last resolved id
+			    // through its own `retainInfo` source first (the retain counts are
+			    // independent of catalog membership — a generation replacement /
+			    // catalog refresh window may drop the current row from `byId` while its
+			    // `mainView` retain is still live, and the mark must survive it), then
+			    // the byId scan (the list snapshot re-publishes on every retain/release,
+			    // the upstream `publishRetention`). The resolve state (`watchedMainId`)
+			    // lives at the mount scope so the sidebar entry's `currentSessionId`
+			    // read (19.1) shares the exact same retention-backed answer.
+			    let watchedMainId;
 			    ctx.effect(() => {
-			        return ctx.sessions.list.subscribe(() => {
-			            const current = ctx.sessions.list.getSnapshot().current;
+			        let disposeWatch;
+			        const reset = () => {
+			            const current = resolveCurrentMainSessionId(watchedMainId, ctx.sessions);
 			            for (const root of [...openModeByRoot.keys()]) {
 			                if (root !== current)
 			                    openModeByRoot.delete(root);
 			            }
+			            // The churn guard (the upstream `watchMainRetention`): re-subscribe
+			            // only when the resolved id CHANGES — a notification that resolves
+			            // to the same id keeps the existing subscription (no meaningless
+			            // unsubscribe/resubscribe per list/retain event).
+			            if (current !== watchedMainId) {
+			                watchedMainId = current === null ? undefined : current;
+			                disposeWatch?.();
+			                disposeWatch = undefined;
+			                if (current !== null) {
+			                    disposeWatch = ctx.sessions.retainInfo(current).subscribe(() => {
+			                        if (watchedMainId === current)
+			                            void reset();
+			                    });
+			                }
+			            }
+			        };
+			        const disposeList = ctx.sessions.list.subscribe(() => {
+			            void reset();
 			        });
+			        reset();
+			        return () => {
+			            disposeList();
+			            disposeWatch?.();
+			            disposeWatch = undefined;
+			            watchedMainId = undefined;
+			        };
 			    }, 'dsh-agent-team: open-mode reset on session switch');
 			    // (9.1) The creation-path session open (D-3): the host mints the root
 			    // session during `team.create` / `handoff.create`, and its list
-			    // increment may land AFTER the RPC response — a bare `open` of an
-			    // unknown id throws. Try the plain open; on failure re-pull the
+			    // increment may land AFTER the RPC response — a bare open of an unknown
+			    // id throws (0.1.7: the upstream `resolveTarget` contract, through
+			    // `UiWorkspace.openSession`). Try the plain open; on failure re-pull the
 			    // host-authoritative list once, then retry. A failure that survives the
 			    // retry rethrows (the panel's typed error lane keeps it loud).
 			    const openCreatedSession = (sessionId) => {
 			        try {
-			            ctx.sessions.open(sessionId);
+			            ctx.uiWorkspace.openSession(sessionId);
 			            return Promise.resolve();
 			        }
 			        catch {
 			            return ctx.sessions.refresh().then(() => {
-			                ctx.sessions.open(sessionId);
+			                ctx.uiWorkspace.openSession(sessionId);
 			            });
 			        }
 			    };
@@ -1083,7 +1153,8 @@ var __dshFactory = (require) => {
 			    const pullProjection = (teamSessionId) => projectionStoreOf(teamSessionId).pull(teamSessionId);
 			    // (12) The S5-A New Team creation face (frozen Remote wrappers + the
 			    // native seam members; the seam-6 preset mapping filters the `broken`
-			    // rows and drops the trust field before the UI sees it).
+			    // rows before the UI sees them — 0.1.7: no `trust` field to drop, the
+			    // 0.1.5 lane was removed from the upstream roster row).
 			    const creation = {
 			        listCatalog: () => teamRemote.catalogList(),
 			        getCatalog: (params) => teamRemote.catalogGet(params),
@@ -1101,13 +1172,33 @@ var __dshFactory = (require) => {
 			            // before the seam-6 row mapping. A refused envelope rejects: the
 			            // panel's catch degrades to the empty-roster state, the same failure
 			            // treatment the upstream `ui-agent-preset` consumer applies.
+			            //
+			            // 0.1.7 `modeSelectionEnabled` roster policy (PR #29 review
+			            // supplement, F2): the roster row the 0.1.5 `authorable` flag was
+			            // replaced by — "whether visible mode selection is enabled for
+			            // unnamed new sessions". `false` must NOT keep presenting the full
+			            // chooser roster (the pre-fix behavior): expose ONLY the
+			            // provider-flagged default row (default-only — the UI then offers no
+			            // mode switch and the default is auto-selected). Deliberately NOT an
+			            // empty roster: "chooser disabled" and "host has no presets" are
+			            // different states (an empty roster reads as the latter). And when
+			            // the chooser is disabled but no usable default exists, fail
+			            // VISIBLE — never fall back to another usable preset (that would be
+			            // the plugin deciding the host's policy).
 			            const result = await ctx.remote.agentPresets.list();
 			            if (result.ok === false) {
 			                throw new Error(`agentPresets/list: ${result.error.code} ${result.error.message}`);
 			            }
-			            return result.value.presets
-			                .filter((row) => row.broken === undefined)
-			                .map((row) => ({
+			            const { presets, modeSelectionEnabled } = result.value;
+			            const usable = presets.filter((row) => row.broken === undefined);
+			            const visible = modeSelectionEnabled
+			                ? usable
+			                : usable.filter((row) => row.isDefault === true);
+			            if (!modeSelectionEnabled && visible.length === 0) {
+			                throw new Error('agentPresets/list: mode selection is disabled (modeSelectionEnabled=false) ' +
+			                    'but the host roster declares no usable default preset');
+			            }
+			            return visible.map((row) => ({
 			                id: row.id,
 			                name: row.name,
 			                description: row.description,
@@ -1280,7 +1371,11 @@ var __dshFactory = (require) => {
 			            // generation-safe pull; targets the NEW team's id).
 			            pullProjection,
 			            listAgentPresets: creation.listAgentPresets,
-			            currentSessionId: () => ctx.sessions.list.getSnapshot().current ?? null,
+			            // 0.1.7: the main-view selection read — the retention-backed
+			            // first-party resolution (retainInfo-first, byId-scan fallback),
+			            // sharing the open-mode reset effect's `watchedMainId` so the
+			            // prefill answer survives a catalog-refresh window (review F3).
+			            currentSessionId: () => resolveCurrentMainSessionId(watchedMainId, ctx.sessions),
 			        }),
 			    }, components.newTeamEntry));
 			}

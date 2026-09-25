@@ -1,0 +1,35 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "rspresets-roster1-165mw7042q",
+    "result": {
+      "ok": true,
+      "value": {
+        "presets": [
+          {
+            "id": "standard",
+            "order": 1,
+            "isDefault": true
+          },
+          {
+            "id": "ptc",
+            "order": 2,
+            "isDefault": false
+          },
+          {
+            "id": "minimal",
+            "order": 3,
+            "isDefault": false
+          },
+          {
+            "id": "cordis",
+            "order": 4,
+            "isDefault": false
+          }
+        ],
+        "modeSelectionEnabled": true
+      }
+    }
+  }
+}

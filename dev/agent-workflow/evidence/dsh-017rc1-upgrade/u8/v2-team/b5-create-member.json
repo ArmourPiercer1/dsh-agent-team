@@ -1,0 +1,3 @@
+{
+  "toolMessage": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u8-team-2026-09-24T14-48-13\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0ee7wpn0c0z6\",\"templateId\":\"worker-b\",\"childSessionId\":\"session-team-child-6d8f8a5bc34afc5d5e1447629262b219\",\"operationId\":\"op-0fi1q6a1jtygfd0qmaeo01r9\",\"replayed\":false,\"ledgerSequence\":5,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u8-tok-2026-09-24T14-48-13-1\"}"
+}

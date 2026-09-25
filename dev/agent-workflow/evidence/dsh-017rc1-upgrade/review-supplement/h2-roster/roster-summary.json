@@ -1,0 +1,26 @@
+{
+  "modeSelectionEnabled": true,
+  "presetCount": 4,
+  "presets": [
+    {
+      "id": "standard",
+      "isDefault": true,
+      "broken": null
+    },
+    {
+      "id": "ptc",
+      "isDefault": false,
+      "broken": null
+    },
+    {
+      "id": "minimal",
+      "isDefault": false,
+      "broken": null
+    },
+    {
+      "id": "cordis",
+      "isDefault": false,
+      "broken": null
+    }
+  ]
+}

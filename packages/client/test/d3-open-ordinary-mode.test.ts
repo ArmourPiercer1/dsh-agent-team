@@ -7,7 +7,7 @@
  *
  * Coverage (D3 task card, client-mount half):
  *  - the ordinary entry is the EXISTING `openSession` verbatim (Seam 3,
- *    the pure `ctx.sessions.open` — A3 Q3): the session is opened exactly
+ *    the pure `ctx.uiWorkspace.openSession` (0.1.5: `ctx.sessions.open`) — A3 Q3): the session is opened exactly
  *    once with the root id and the remote-client spy records ZERO
  *    `team.*` calls (no `team.ensureRootLive`, no other team-remote
  *    method, no `session/create`-with-preset equivalent, no ensure-live
@@ -55,6 +55,8 @@ import {
   applyTeamMount,
   type TeamMountComponents,
   type TeamPluginClientContext,
+  type TeamSessionListSnapshot,
+  type TeamSessionSummary,
   type TeamSlots,
 } from '../src/plugin/team-mount-core.js'
 import type { TeamRpcCarrier } from '../src/transport/host-seams.js'
@@ -130,40 +132,61 @@ function makeMount(): MountFixture {
     },
   }
 
-  // The public sessions seam double: `open` records the switch and moves
-  // the list current selection (the real seam does this — the reset
-  // effect observes it); unknown ids throw (the real `sessions.select`).
+  // The public sessions seam double (0.1.7 shape): the main-view open moved
+  // to `uiWorkspace.openSession` and the `list.current` pointer became the
+  // byId row's `retainedBy.mainView` count (the host's replaceMain releases
+  // the previous row and retains the new one — modeled here). The reset
+  // effect observes the list re-publish; unknown ids throw (the real 0.1.7
+  // `resolveTarget`).
   const opened: string[] = []
   const knownSessions = new Set<string>([ROOT, OTHER])
   let refreshCount = 0
-  let current: string | undefined = undefined
+  const byId: Record<string, TeamSessionSummary> = {
+    [ROOT]: { id: ROOT, retainedBy: {} },
+    [OTHER]: { id: OTHER, retainedBy: {} },
+  }
   const listListeners = new Set<() => void>()
+  const publishList = (): void => {
+    for (const listener of [...listListeners]) listener()
+  }
+  const setMainView = (sessionId: string | undefined): void => {
+    for (const id of Object.keys(byId)) {
+      byId[id] = { id, retainedBy: id === sessionId ? { mainView: 1 } : {} }
+    }
+  }
   const sessions = {
     create: async (): Promise<string> => {
       const id = `root-${opened.length + 1}`
       knownSessions.add(id)
       return id
     },
-    open: (sessionId: string): void => {
-      if (!knownSessions.has(sessionId)) {
-        throw new Error(`sessions.select: unknown session ${sessionId}`)
-      }
-      opened.push(sessionId)
-      sequence.push({ op: 'open', id: sessionId })
-      current = sessionId
-      for (const listener of [...listListeners]) listener()
-    },
     refresh: async (): Promise<void> => {
       refreshCount++
     },
     list: {
-      getSnapshot: () => ({ current }),
+      getSnapshot: (): TeamSessionListSnapshot => ({ byId }),
       subscribe: (listener: () => void): (() => void) => {
         listListeners.add(listener)
         return () => {
           listListeners.delete(listener)
         }
       },
+    },
+    retainInfo: () => ({
+      getSnapshot: () => ({ referenceCount: 0, retainedBy: {} }),
+      subscribe: () => () => {},
+    }),
+  }
+  // The 0.1.7 navigation seam double (0.1.5: `sessions.open`).
+  const uiWorkspace = {
+    openSession: (sessionId: string): void => {
+      if (!knownSessions.has(sessionId)) {
+        throw new Error(`sessions.retain: unknown session ${sessionId}`)
+      }
+      opened.push(sessionId)
+      sequence.push({ op: 'open', id: sessionId })
+      setMainView(sessionId)
+      publishList()
     },
   }
 
@@ -179,9 +202,9 @@ function makeMount(): MountFixture {
   // The public remote seam double (Seam 6, SAME — no presets needed).
   const remote = {
     agentPresets: {
-      list: async (): Promise<{ ok: true; value: { presets: []; authorable: boolean } }> => ({
+      list: async (): Promise<{ ok: true; value: { presets: []; modeSelectionEnabled: boolean } }> => ({
         ok: true,
-        value: { presets: [], authorable: false },
+        value: { presets: [], modeSelectionEnabled: false },
       }),
     },
   }
@@ -240,6 +263,7 @@ function makeMount(): MountFixture {
     slots,
     locale,
     sessions,
+    uiWorkspace,
     connection: { rpc: carrier, generation },
     remote,
     effect,
@@ -286,8 +310,8 @@ function makeMount(): MountFixture {
     opened,
     refreshCount: () => refreshCount,
     setCurrent: (sessionId: string | undefined) => {
-      current = sessionId
-      for (const listener of [...listListeners]) listener()
+      setMainView(sessionId)
+      publishList()
     },
     viewFace,
   }

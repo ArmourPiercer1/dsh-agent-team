@@ -1,0 +1,44 @@
+{
+  "lifecycle": [
+    "ARCHIVED",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "rows": [
+    {
+      "activityVersion": 6,
+      "childSessionId": "session-team-child-6d8f8a5bc34afc5d5e1447629262b219",
+      "createdAt": "2026-09-24T14:49:01.805Z",
+      "instanceId": "inst-0ee7wpn0c0z6",
+      "label": "worker-b-1",
+      "lifecycle": "ARCHIVED",
+      "rootSessionId": "session-u8-team-2026-09-24T14-48-13",
+      "schemaVersion": 1,
+      "templateId": "worker-b",
+      "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/workspace"
+    },
+    {
+      "instanceId": "inst-0ee7wpn0c0z6",
+      "kind": "team-member",
+      "rootSessionId": "session-u8-team-2026-09-24T14-48-13",
+      "schemaVersion": 1,
+      "sessionId": "session-team-child-6d8f8a5bc34afc5d5e1447629262b219"
+    },
+    {
+      "instanceId": "inst-0ee7wpn0c0z6",
+      "label": "worker-b-1",
+      "rootSessionId": "session-u8-team-2026-09-24T14-48-13",
+      "templateId": "worker-b",
+      "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/workspace"
+    }
+  ]
+}

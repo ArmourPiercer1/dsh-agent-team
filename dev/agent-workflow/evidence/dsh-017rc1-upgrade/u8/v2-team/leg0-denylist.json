@@ -1,0 +1,31 @@
+{
+  "denyList": [
+    "ask_user_question",
+    "create_goal",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "send_message",
+    "skill",
+    "subagent_fork",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "workflow"
+  ],
+  "filteredNonRestrictable": [
+    "subagent"
+  ],
+  "missingManaged": [
+    "lsp",
+    "pwsh"
+  ],
+  "mainBlueprint": "---\nschemaVersion: 1\nblueprintId: team.u8-main\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the u8 vertical team. U8LEADER_PERSONA_2026-09-24T14-48-13\"\n  capabilities:\n    teamTools:\n      kind: allow\n      items:\n        - team_list_members\n        - team_list_templates\n        - team_inspect_config\n        - team_create_member\n        - team_delegate\n        - team_follow_up\n        - team_collect\n        - team_send_message\n        - team_report_progress\n        - team_request_control\n        - team_resolve_control\n        - team_list_pending_control\n        - team_archive_member\n    builtinToolDeny:\n        - ask_user_question\n        - create_goal\n        - exit_plan_mode\n        - get_goal\n        - glob\n        - grep\n        - interrupt_agent\n        - job_kill\n        - job_list\n        - job_output\n        - list_agents\n        - present\n        - send_message\n        - skill\n        - subagent_fork\n        - update_goal\n        - web_fetch\n        - web_search\n        - workflow\n    skills:\n      kind: allow\n      items: []\n    mcp:\n      kind: allow\n      items:\n        - u8single\n        - u8paged\n        - u8none\n    permissions:\n      default: ask\n      allow:\n        - tool: read\n          resource:\n            kind: subtree\n            path: team\n      ask:\n        - tool: bash\n          resource:\n            kind: any\n      deny:\n        - tool: read\n          resource:\n            kind: subtree\n            path: runtime\nteamEnvelope:\n  allow:\n    - assign-task\n    - create-member\n    - send-message\n    - report-progress\n    - request-control\n    - resolve-control\n    - archive-member\n    - restore-member\n  deny: []\nmembers:\n  - templateId: worker-b\n    displayName: \"Worker B\"\n    persona: \"You are worker-b of the u8 vertical team. U8WORKER_PERSONA_2026-09-24T14-48-13\"\n    capabilities:\n      teamTools:\n        kind: allow\n        items:\n          - team_send_message\n          - team_report_progress\n      builtinToolDeny:\n          - ask_user_question\n          - create_goal\n          - exit_plan_mode\n          - get_goal\n          - glob\n          - grep\n          - interrupt_agent\n          - job_kill\n          - job_list\n          - job_output\n          - list_agents\n          - present\n          - send_message\n          - skill\n          - subagent_fork\n          - update_goal\n          - web_fetch\n          - web_search\n          - workflow\n      skills:\n        kind: allow\n        items: []\n      mcp:\n        kind: allow\n        items:\n          - u8single\n          - u8paged\n          - u8none\n      permissions:\n        default: ask\n        allow:\n          - tool: read\n            resource:\n              kind: subtree\n              path: team\n        ask:\n          - tool: bash\n            resource:\n              kind: any\n        deny:\n          - tool: read\n            resource:\n              kind: subtree\n              path: runtime\nmemberEnvelopes:\n  - templateId: worker-b\n    envelope:\n      allow:\n        - send-message\n        - report-progress\n      deny: []\npolicyStates: []\nmetadata: {}\n---\n"
+}

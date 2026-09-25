@@ -48,6 +48,7 @@ import type {
   TeamAgentPresetRow,
   TeamAgentPresetsListResult,
   TeamPluginEffect,
+  TeamSessionListSnapshot,
   TeamSlots,
 } from '../src/plugin/team-mount-core.js'
 import type { TeamRpcCarrier } from '../src/transport/host-seams.js'
@@ -112,22 +113,30 @@ function makeFixture(): Fixture {
     },
   }
 
-  // The public sessions seam double (Seam 3, open/create/refresh; the
-  // `list` read face is the R121 prefill source — no current session in
-  // the fixture). `refresh` is the D-3 creation-path re-pull (unused by
-  // this spec's flows, present for the face contract).
+  // The public sessions seam double (0.1.7 shape: `open` left the face —
+  // the main-view open is on the `uiWorkspace` double below; the `byId`
+  // read face is the R121 prefill source — no main-view session in the
+  // fixture). `refresh` is the D-3 creation-path re-pull (unused by this
+  // spec's flows, present for the face contract).
   const sessions = {
     create: async (o?: { readonly workspaceId?: string }): Promise<string> => {
       void o
       return 'root-1'
     },
-    open: (sessionId: string): void => {
-      void sessionId
-    },
     refresh: async (): Promise<void> => undefined,
     list: {
-      getSnapshot: () => ({ current: undefined }),
+      getSnapshot: (): TeamSessionListSnapshot => ({ byId: {} }),
       subscribe: () => () => {},
+    },
+    retainInfo: () => ({
+      getSnapshot: () => ({ referenceCount: 0, retainedBy: {} }),
+      subscribe: () => () => {},
+    }),
+  }
+  // The 0.1.7 navigation seam double (0.1.5: `sessions.open`).
+  const uiWorkspace = {
+    openSession: (sessionId: string): void => {
+      void sessionId
     },
   }
 
@@ -139,7 +148,7 @@ function makeFixture(): Fixture {
     agentPresets: {
       list: async (): Promise<TeamAgentPresetsListResult> => ({
         ok: true,
-        value: { presets, authorable: false },
+        value: { presets, modeSelectionEnabled: false },
       }),
     },
   }
@@ -201,6 +210,7 @@ function makeFixture(): Fixture {
     slots,
     locale,
     sessions,
+    uiWorkspace,
     connection: { rpc: carrier, generation },
     remote,
     effect,

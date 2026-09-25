@@ -1,0 +1,71 @@
+# U7 — build / 静态闸（0.1.5-rc.2 → 0.1.7-rc.1）
+
+任务来源：`docs/plans/active/dsh-agent-team-0.1.7-rc.1-upgrade-plan.md` §10。
+执行：2026-09-24，worktree `.worktrees/dsh-017rc1-upgrade` @ `d09c010`（U6 收口后）。
+裁决：**U7 全闸 PASS（10.1 clean install / 10.2 typecheck / 10.3 build+composition+artifacts / 10.4 zero-core / 10.5 public-import 全绿；过程中修复 1 个 type-surface 缺口 + 1 个 composition 工件再同步 + 1 次 denylist pin bump，均为插件侧/测试基建，零核心改动）。**
+
+## 10.1 clean install ✅
+
+`rm -rf node_modules && CI=true pnpm install --frozen-lockfile --store-dir <repo-local>` → **exit 0**（scratch `scratch-logs/dsh-017rc1-u7-cleaninstall.log`）。frozen lockfile 通过 = lockfile 与全部 9 包 manifest 一致。
+
+环境记录（计划要求）：
+
+```text
+node version        v24.21.0
+pnpm version        11.7.0
+git HEAD            d09c0107ef2f887901814cdfcf2e92d261e1b1fd (task/dsh-017rc1-upgrade)
+DSH test-use HEAD   46a7f68b0922371ce7144b668b90e377d8e799f4 (dsh-v0.1.7-rc.1)
+```
+
+## 10.2 typecheck ✅
+
+`pnpm typecheck`（= `pnpm -r run typecheck`）：首次跑 **runtime 失败**——
+`test/u6-mcp-017-regression.test.ts(38,53): error TS7016: Could not find a declaration file for module '../root-binding/harness/mini-mcp.mjs'`。
+修复：按仓库既有 `.mjs` + 相邻 `.d.mts` 模式（`test/t12a-live-bridge.d.mts` / testkit `session-event-scan` 先例）新增 `packages/runtime/root-binding/harness/mini-mcp.d.mts`（`MiniMcpToolsVariant` / `StartMiniMcpOptions` / `MiniMcpServer` + 两函数声明）。
+复跑：**8/8 包 Done，exit 0**（scratch `scratch-logs/dsh-017rc1-u7-typecheck2.log`）。全部 workspace package typecheck green（计划要求）。
+
+## 10.3 build / composition / artifacts ✅
+
+- `pnpm build`（= `pnpm -r run build`）→ exit 0。
+- `pnpm build:composition` → exit 0：87 modules、11 css、entry `plugin/client.js`、externals `[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]`，写出 `packages/client/composition-shim/client-bundle.js`（965977 B）+ node 半 `index.js` + `package.json`。
+- `pnpm check:artifacts`（= `node scripts/check-artifacts-committed.mjs`）：首跑 **STALE**——`client-bundle.js` content-drift（U5 的 0.1.7 client 源改动使 0.1.5 期提交的 bundle 过期；该 check 的设计即强制"重建产物与源改动同提交"）。重建后随 U7 提交 `becd759` 再同步 → 复跑 **`OK: 1172 files; committed install-surface artifacts match the fresh build`，exit 0**（scratch `scratch-logs/dsh-017rc1-u7-artifacts.log`）。
+
+计划点名工件逐项核验：
+
+| 要求 | 核验 |
+| --- | --- |
+| committed dist 与 source 同步 | ✅ check-artifacts 1172 文件一致 |
+| `host.js` 可 import | ✅ `node -e "import dist/.../plugin/host.js"` → 命名导出 `apply, defaultGlueUrl, defaultSeamUrlCandidates, inject, name, validateTeamPluginConfig, withDefaultWorkspace` |
+| `client-bundle.js` 可生成 | ✅ 965977 B 重建成功 |
+| `team-spill-local.js` 存在 | ✅ `packages/runtime/dist/packages/runtime/src/plugin/team-spill-local.js` |
+| `upstream-resolver.mjs` install surface 存在 | ✅ `packages/runtime/src/plugin/upstream-resolver.mjs`（install-surface 1172 文件内） |
+
+## 10.4 zero-core ✅
+
+- **host-only**：`node scripts/verify-zero-core.mjs --host tests/deepseek-harness-test-use` → **PASS exit 0，0 findings**（唯一输出 = 校准 INFO：upstream 自己的 `patches/node-pty@1.2.0-beta.15.patch` 第三方依赖补丁，非 Team 改写；C1-C3 + C5 全空）。
+- **9 包全量 C4 扫描**（`--plugin` ×9）：1031 findings，**全部**为 C4a `private-relative-escape`，**0 个解析进 host 树**——1030 个解析到 worktree 内 sibling vNext 包（`packages/contracts|domain|...` 跨包相对导入，本仓库 monorepo 结构固有，与 T12 收口先例的 733 同类）；1 个为 `packages/remote/test/p8t3-negative-scan.mjs:182` 的**合成负例控制字符串**（`buildP8T3SpecifierControlText()` 内模板串，非真实 import；其字面路径 `packages/references/...` 在 worktree 内、目录不存在）。无 C1/C2/C3（patch 机制）、无 C4b（upstream 私有子路径）、无 C4c（未解析 `@deepseek-ai/*`）、无 C5（git 快照文件）finding。
+- **pristine 核验**：test-use `git status --porcelain` 空 + HEAD = `46a7f68b09`（0.1.7-rc.1 未动）；`references/deepseek-harness` HEAD = `fb2c4b9e69`（stable-1 未动）。
+- 结论：无 upstream patch、无 private subpath workaround、references 未被修改（计划四项全满足）。
+
+## 10.5 public-import scan（P4-T6 equivalent）✅
+
+`npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts` → **10/10，exit 0**（scratch `scratch-logs/dsh-017rc1-u7-p4t6.log`）。
+
+pin 变化（仅因真实新增 scannable 文件，单写者惯例，未放宽任何规则）：
+
+| pin | 增量 | 新增文件 |
+| --- | --- | --- |
+| 744 → 746 | +2 | `packages/client/test/setup-jsdom.ts`（U5 jsdom ResizeObserver stub）+ `packages/runtime/test/u6-mcp-017-regression.test.ts`（U6 回归套件） |
+| 746 → 747 | +1 | `packages/runtime/root-binding/harness/mini-mcp.d.mts`（U7 type-surface 声明） |
+
+denylist 词汇零命中；冻结 quarantine 命中集不变（fifteen）；扫描器本身未改动。
+
+## U7 结论
+
+| 闸 | 状态 |
+| --- | --- |
+| 10.1 clean install（frozen lockfile） | ✅ exit 0 |
+| 10.2 typecheck 全 workspace | ✅ 8/8（修 1 个 .d.mts 缺口） |
+| 10.3 build + composition + artifacts | ✅ 1172 文件一致（修 1 次 bundle 再同步 becd759） |
+| 10.4 zero-core（host 0 findings + 0 进 host 树 + 双树 pristine） | ✅ |
+| 10.5 public-import 扫描 | ✅ 10/10（pin 747，仅真实增量） |

@@ -1,0 +1,5 @@
+{
+  "note": "0.1.5-rc.2 (rc2 kit): the create response held until the initial-work turn went idle (in-flight scripted approval). 0.1.7: observed ordering recorded here (createResolvedAt vs first model request receivedAt).",
+  "createResolvedAt": "2026-09-24T14:49:30.146Z",
+  "firstModelRequestAt": "2026-09-24T14:48:40.250Z"
+}

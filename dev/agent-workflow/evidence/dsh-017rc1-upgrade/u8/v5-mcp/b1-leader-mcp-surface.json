@@ -1,0 +1,7 @@
+{
+  "mcpTools": [
+    "mcp__u8paged__alpha",
+    "mcp__u8paged__beta",
+    "mcp__u8single__ping"
+  ]
+}

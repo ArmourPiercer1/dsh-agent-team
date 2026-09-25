@@ -1,0 +1,14 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "rscreate-n1z3c02ibj",
+    "result": {
+      "ok": true,
+      "value": {
+        "sessionId": "session-rs-ord-2026-09-25T14-07-04",
+        "agentPreset": "standard"
+      }
+    }
+  }
+}

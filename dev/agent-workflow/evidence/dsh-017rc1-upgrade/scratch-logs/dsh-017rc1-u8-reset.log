@@ -1,0 +1,911 @@
+Removing apps/cli/lib/
+Removing apps/cli/node_modules/
+Removing apps/desktop-host/lib/
+Removing apps/desktop-host/node_modules/
+Removing apps/desktop/lib/
+Removing apps/desktop/node_modules/
+Removing apps/web/node_modules/
+Removing benchmarks/node_modules/
+Removing native/landlock-run/
+Removing native/system/.release/
+Removing native/system/node_modules/
+Removing native/system/packages/entry/lib/
+Removing native/system/packages/entry/node_modules/
+Removing native/system/packages/linux-x64/bin/
+Removing node_modules/
+Removing packages/acp/acp/lib/
+Removing packages/acp/acp/node_modules/
+Removing packages/api/account-controller/lib/
+Removing packages/api/account-controller/node_modules/
+Removing packages/api/gateway/lib/
+Removing packages/api/gateway/node_modules/
+Removing packages/api/job-controller/lib/
+Removing packages/api/job-controller/node_modules/
+Removing packages/api/remotes/lib/
+Removing packages/api/remotes/node_modules/
+Removing packages/api/session-controller/lib/
+Removing packages/api/session-controller/node_modules/
+Removing packages/api/settings-controller/lib/
+Removing packages/api/settings-controller/node_modules/
+Removing packages/api/terminal-controller/lib/
+Removing packages/api/terminal-controller/node_modules/
+Removing packages/api/workspace-controller/lib/
+Removing packages/api/workspace-controller/node_modules/
+Removing packages/api/workspace-files/lib/
+Removing packages/api/workspace-files/node_modules/
+Removing packages/attachment/attachment-local/lib/
+Removing packages/attachment/attachment-local/node_modules/
+Removing packages/attachment/attachment/lib/
+Removing packages/attachment/attachment/node_modules/
+Removing packages/boot/app-boot/lib/
+Removing packages/boot/app-boot/node_modules/
+Removing packages/boot/cmdline/lib/
+Removing packages/boot/cmdline/node_modules/
+Removing packages/boot/config-editor/lib/
+Removing packages/boot/config-editor/node_modules/
+Removing packages/boot/hmr/lib/
+Removing packages/boot/hmr/node_modules/
+Removing packages/boot/plugin-manager/lib/
+Removing packages/boot/plugin-manager/node_modules/
+Removing packages/browser-use/browser-use/lib/
+Removing packages/browser-use/browser-use/node_modules/
+Removing packages/bundle/acp-app/lib/
+Removing packages/bundle/acp-app/node_modules/
+Removing packages/bundle/base/lib/
+Removing packages/bundle/base/node_modules/
+Removing packages/bundle/headless/lib/
+Removing packages/bundle/headless/node_modules/
+Removing packages/bundle/sdk-app/lib/
+Removing packages/bundle/sdk-app/node_modules/
+Removing packages/bundle/sdk-minimal/lib/
+Removing packages/bundle/sdk-minimal/node_modules/
+Removing packages/bundle/web-app/lib/
+Removing packages/bundle/web-app/node_modules/
+Removing packages/client/connection/lib/
+Removing packages/client/connection/node_modules/
+Removing packages/client/file-upload/lib/
+Removing packages/client/file-upload/node_modules/
+Removing packages/client/hmr/node_modules/
+Removing packages/client/locale/lib/
+Removing packages/client/locale/node_modules/
+Removing packages/client/modules/lib/
+Removing packages/client/modules/node_modules/
+Removing packages/client/resources/node_modules/
+Removing packages/client/store/lib/
+Removing packages/client/store/node_modules/
+Removing packages/client/ui-agent-preset/node_modules/
+Removing packages/client/ui-approval/node_modules/
+Removing packages/client/ui-attachment/node_modules/
+Removing packages/client/ui-brand-official/node_modules/
+Removing packages/client/ui-chat/lib/
+Removing packages/client/ui-chat/node_modules/
+Removing packages/client/ui-commands/node_modules/
+Removing packages/client/ui-conversation/lib/
+Removing packages/client/ui-conversation/node_modules/
+Removing packages/client/ui-deliverables/lib/
+Removing packages/client/ui-deliverables/node_modules/
+Removing packages/client/ui-directory-picker-browse/node_modules/
+Removing packages/client/ui-directory-picker-native/node_modules/
+Removing packages/client/ui-dockkit/lib/
+Removing packages/client/ui-dockkit/node_modules/
+Removing packages/client/ui-goal/node_modules/
+Removing packages/client/ui-input-trigger/node_modules/
+Removing packages/client/ui-jobs/node_modules/
+Removing packages/client/ui-layout/node_modules/
+Removing packages/client/ui-message-feedback/node_modules/
+Removing packages/client/ui-model-selection/node_modules/
+Removing packages/client/ui-open-in-app/node_modules/
+Removing packages/client/ui-permission-presets/node_modules/
+Removing packages/client/ui-plan/node_modules/
+Removing packages/client/ui-plugin-manager/lib/
+Removing packages/client/ui-plugin-manager/node_modules/
+Removing packages/client/ui-primitives/lib/
+Removing packages/client/ui-primitives/node_modules/
+Removing packages/client/ui-reference/node_modules/
+Removing packages/client/ui-renderer/lib/
+Removing packages/client/ui-renderer/node_modules/
+Removing packages/client/ui-schedule/node_modules/
+Removing packages/client/ui-session/node_modules/
+Removing packages/client/ui-settings-account/node_modules/
+Removing packages/client/ui-settings-agent-loop/node_modules/
+Removing packages/client/ui-settings-general/lib/
+Removing packages/client/ui-settings-general/node_modules/
+Removing packages/client/ui-settings-models/node_modules/
+Removing packages/client/ui-settings-plugin-inventory/node_modules/
+Removing packages/client/ui-settings-plugins/node_modules/
+Removing packages/client/ui-settings-shell/node_modules/
+Removing packages/client/ui-settings-subagent/node_modules/
+Removing packages/client/ui-settings-web-search/node_modules/
+Removing packages/client/ui-settings/lib/
+Removing packages/client/ui-settings/node_modules/
+Removing packages/client/ui-sidebar-browser/lib/
+Removing packages/client/ui-sidebar-browser/node_modules/
+Removing packages/client/ui-sidebar-documentpreview/lib/
+Removing packages/client/ui-sidebar-documentpreview/node_modules/
+Removing packages/client/ui-sidebar-files/node_modules/
+Removing packages/client/ui-sidebar-right/node_modules/
+Removing packages/client/ui-sidebar-terminal/node_modules/
+Removing packages/client/ui-sidebar/node_modules/
+Removing packages/client/ui-skill/node_modules/
+Removing packages/client/ui-slots/lib/
+Removing packages/client/ui-slots/node_modules/
+Removing packages/client/ui-subagent/node_modules/
+Removing packages/client/ui-theme/lib/
+Removing packages/client/ui-theme/node_modules/
+Removing packages/client/ui-tool/node_modules/
+Removing packages/client/ui-trajectory/node_modules/
+Removing packages/client/ui-user-questions/node_modules/
+Removing packages/client/ui-workflow-run/node_modules/
+Removing packages/client/ui-workspace/node_modules/
+Removing packages/client/web/lib/
+Removing packages/client/web/node_modules/
+Removing packages/code-runtime/
+Removing packages/compaction/command-compact/lib/
+Removing packages/compaction/command-compact/node_modules/
+Removing packages/compaction/compaction-basic/lib/
+Removing packages/compaction/compaction-basic/node_modules/
+Removing packages/compaction/compaction-image-offload/lib/
+Removing packages/compaction/compaction-image-offload/node_modules/
+Removing packages/compaction/compaction-tool-result-pruner/lib/
+Removing packages/compaction/compaction-tool-result-pruner/node_modules/
+Removing packages/compaction/compaction/lib/
+Removing packages/compaction/compaction/node_modules/
+Removing packages/computer-use/computer-use/lib/
+Removing packages/computer-use/computer-use/node_modules/
+Removing packages/context/agent-instructions/lib/
+Removing packages/context/agent-instructions/node_modules/
+Removing packages/context/file-reference-local/lib/
+Removing packages/context/file-reference-local/node_modules/
+Removing packages/context/file-reference/lib/
+Removing packages/context/file-reference/node_modules/
+Removing packages/context/session-reference/lib/
+Removing packages/context/session-reference/node_modules/
+Removing packages/context/time-context/lib/
+Removing packages/context/time-context/node_modules/
+Removing packages/context/tmux-context/lib/
+Removing packages/context/tmux-context/node_modules/
+Removing packages/core/agent-default-model/lib/
+Removing packages/core/agent-default-model/node_modules/
+Removing packages/core/agent-loop/lib/
+Removing packages/core/agent-loop/node_modules/
+Removing packages/core/agent-tool-presentation/lib/
+Removing packages/core/agent-tool-presentation/node_modules/
+Removing packages/core/agent/lib/
+Removing packages/core/agent/node_modules/
+Removing packages/core/scope/lib/
+Removing packages/core/scope/node_modules/
+Removing packages/core/session/lib/
+Removing packages/core/session/node_modules/
+Removing packages/core/system-prompt/lib/
+Removing packages/core/system-prompt/node_modules/
+Removing packages/core/tools/lib/
+Removing packages/core/tools/node_modules/
+Removing packages/credentials/authorization/lib/
+Removing packages/credentials/authorization/node_modules/
+Removing packages/credentials/credentials-local/lib/
+Removing packages/credentials/credentials-local/node_modules/
+Removing packages/credentials/credentials/lib/
+Removing packages/credentials/credentials/node_modules/
+Removing packages/credentials/deepseek-account-platform/lib/
+Removing packages/credentials/deepseek-account-platform/node_modules/
+Removing packages/credentials/deepseek-account/lib/
+Removing packages/credentials/deepseek-account/node_modules/
+Removing packages/deliverables/tool-present/lib/
+Removing packages/deliverables/tool-present/node_modules/
+Removing packages/deliverables/workspace-changes/lib/
+Removing packages/deliverables/workspace-changes/node_modules/
+Removing packages/document/office-to-pdf/lib/
+Removing packages/document/office-to-pdf/node_modules/
+Removing packages/e2b/
+Removing packages/experimental/agent-team-profile/lib/
+Removing packages/experimental/agent-team-profile/node_modules/
+Removing packages/experimental/agent-team-web-profile/
+Removing packages/experimental/agent-team/lib/
+Removing packages/experimental/agent-team/node_modules/
+Removing packages/experimental/api-speech-to-text/lib/
+Removing packages/experimental/api-speech-to-text/node_modules/
+Removing packages/experimental/auto-review/lib/
+Removing packages/experimental/auto-review/node_modules/
+Removing packages/experimental/browser-use-chrome-devtools-mcp/lib/
+Removing packages/experimental/browser-use-chrome-devtools-mcp/node_modules/
+Removing packages/experimental/browser-use-playwright-mcp/lib/
+Removing packages/experimental/browser-use-playwright-mcp/node_modules/
+Removing packages/experimental/browser-use-runtime/lib/
+Removing packages/experimental/browser-use-runtime/node_modules/
+Removing packages/experimental/browser-use-stagehand-native/lib/
+Removing packages/experimental/browser-use-stagehand-native/node_modules/
+Removing packages/experimental/client-ui-agent-team/node_modules/
+Removing packages/experimental/client-ui-voice-input/node_modules/
+Removing packages/experimental/code-runtime-python/
+Removing packages/experimental/computer-use-cua-driver-mcp/lib/
+Removing packages/experimental/computer-use-cua-driver-mcp/node_modules/
+Removing packages/experimental/computer-use-cua-driver-native/lib/
+Removing packages/experimental/computer-use-cua-driver-native/node_modules/
+Removing packages/experimental/inspector/lib/
+Removing packages/experimental/inspector/node_modules/
+Removing packages/experimental/ptc-runtime-python/lib/
+Removing packages/experimental/ptc-runtime-python/node_modules/
+Removing packages/experimental/speech-to-text-sensevoice/lib/
+Removing packages/experimental/speech-to-text-sensevoice/node_modules/
+Removing packages/experimental/speech-to-text/lib/
+Removing packages/experimental/speech-to-text/node_modules/
+Removing packages/experimental/tool-agent-team/lib/
+Removing packages/experimental/tool-agent-team/node_modules/
+Removing packages/experimental/voice-input-bundle/lib/
+Removing packages/experimental/voice-input-bundle/node_modules/
+Removing packages/experimental/webworker-packer/lib/
+Removing packages/experimental/webworker-packer/node_modules/
+Removing packages/experimental/webworker-runtime/lib/
+Removing packages/experimental/webworker-runtime/node_modules/
+Removing packages/extensions/cordis-client-runner/node_modules/
+Removing packages/extensions/cordis-host-runner/lib/
+Removing packages/extensions/cordis-host-runner/node_modules/
+Removing packages/extensions/tool-cordis/lib/
+Removing packages/extensions/tool-cordis/node_modules/
+Removing packages/extensions/ui-cordis/node_modules/
+Removing packages/feedback/command-feedback/lib/
+Removing packages/feedback/command-feedback/node_modules/
+Removing packages/feedback/message-feedback/lib/
+Removing packages/feedback/message-feedback/node_modules/
+Removing packages/fs/fs-local/lib/
+Removing packages/fs/fs-local/node_modules/
+Removing packages/fs/fs-observation-policy/lib/
+Removing packages/fs/fs-observation-policy/node_modules/
+Removing packages/fs/fs-sandbox/lib/
+Removing packages/fs/fs-sandbox/node_modules/
+Removing packages/fs/fs/lib/
+Removing packages/fs/fs/node_modules/
+Removing packages/fs/tool-fs-search/lib/
+Removing packages/fs/tool-fs-search/node_modules/
+Removing packages/fs/tool-fs/lib/
+Removing packages/fs/tool-fs/node_modules/
+Removing packages/fs/tool-present/
+Removing packages/fs/tool-str-replace-editor/lib/
+Removing packages/fs/tool-str-replace-editor/node_modules/
+Removing packages/goal/command-goal/lib/
+Removing packages/goal/command-goal/node_modules/
+Removing packages/goal/goal-round-driver/lib/
+Removing packages/goal/goal-round-driver/node_modules/
+Removing packages/goal/goal/lib/
+Removing packages/goal/goal/node_modules/
+Removing packages/goal/tool-goal/lib/
+Removing packages/goal/tool-goal/node_modules/
+Removing packages/guard/repeat-tool-reminder/lib/
+Removing packages/guard/repeat-tool-reminder/node_modules/
+Removing packages/guard/timeout-policy/lib/
+Removing packages/guard/timeout-policy/node_modules/
+Removing packages/hooks/hook-protocol/lib/
+Removing packages/hooks/hook-protocol/node_modules/
+Removing packages/hooks/hooks-claude-code/lib/
+Removing packages/hooks/hooks-claude-code/node_modules/
+Removing packages/hooks/hooks-codex/lib/
+Removing packages/hooks/hooks-codex/node_modules/
+Removing packages/host/directory-picker-auto/lib/
+Removing packages/host/directory-picker-auto/node_modules/
+Removing packages/host/directory-picker-browse/lib/
+Removing packages/host/directory-picker-browse/node_modules/
+Removing packages/host/directory-picker-native/lib/
+Removing packages/host/directory-picker-native/node_modules/
+Removing packages/host/directory-picker/lib/
+Removing packages/host/directory-picker/node_modules/
+Removing packages/host/frontend-static/lib/
+Removing packages/host/frontend-static/node_modules/
+Removing packages/host/open-in-app/lib/
+Removing packages/host/open-in-app/node_modules/
+Removing packages/host/plugin-inventory/lib/
+Removing packages/host/plugin-inventory/node_modules/
+Removing packages/host/product-telemetry-otel/lib/
+Removing packages/host/product-telemetry-otel/node_modules/
+Removing packages/host/webserver/lib/
+Removing packages/host/webserver/node_modules/
+Removing packages/identity/anonymous-user-id/lib/
+Removing packages/identity/anonymous-user-id/node_modules/
+Removing packages/interaction/commands/lib/
+Removing packages/interaction/commands/node_modules/
+Removing packages/interaction/permission-presets/lib/
+Removing packages/interaction/permission-presets/node_modules/
+Removing packages/interaction/tool-ask-user/lib/
+Removing packages/interaction/tool-ask-user/node_modules/
+Removing packages/interaction/user-approval/lib/
+Removing packages/interaction/user-approval/node_modules/
+Removing packages/interaction/user-questions/lib/
+Removing packages/interaction/user-questions/node_modules/
+Removing packages/jobs/jobs-local/lib/
+Removing packages/jobs/jobs-local/node_modules/
+Removing packages/jobs/jobs/lib/
+Removing packages/jobs/jobs/node_modules/
+Removing packages/jobs/tool-jobs/lib/
+Removing packages/jobs/tool-jobs/node_modules/
+Removing packages/llm/deepseek-llm-api-extensions/lib/
+Removing packages/llm/deepseek-llm-api-extensions/node_modules/
+Removing packages/llm/llm-deepseek/lib/
+Removing packages/llm/llm-deepseek/node_modules/
+Removing packages/llm/llm-pi-ai/lib/
+Removing packages/llm/llm-pi-ai/node_modules/
+Removing packages/llm/llm-retry/lib/
+Removing packages/llm/llm-retry/node_modules/
+Removing packages/llm/llm/lib/
+Removing packages/llm/llm/node_modules/
+Removing packages/llm/plugin-package-inventory-deepseek/lib/
+Removing packages/llm/plugin-package-inventory-deepseek/node_modules/
+Removing packages/llm/token-meter/lib/
+Removing packages/llm/token-meter/node_modules/
+Removing packages/lsp/lsp-stdio/lib/
+Removing packages/lsp/lsp-stdio/node_modules/
+Removing packages/lsp/lsp/lib/
+Removing packages/lsp/lsp/node_modules/
+Removing packages/lsp/tool-lsp/lib/
+Removing packages/lsp/tool-lsp/node_modules/
+Removing packages/mcp/mcp-client/lib/
+Removing packages/mcp/mcp-client/node_modules/
+Removing packages/mcp/mcp-resources/lib/
+Removing packages/mcp/mcp-resources/node_modules/
+Removing packages/plan/plan-mode/lib/
+Removing packages/plan/plan-mode/node_modules/
+Removing packages/preset/agent-preset-registry/lib/
+Removing packages/preset/agent-preset-registry/node_modules/
+Removing packages/preset/agent-preset/lib/
+Removing packages/preset/agent-preset/node_modules/
+Removing packages/preset/agent-presets/
+Removing packages/preset/persona/lib/
+Removing packages/preset/persona/node_modules/
+Removing packages/ptc-runtime/ptc-runtime-node/lib/
+Removing packages/ptc-runtime/ptc-runtime-node/node_modules/
+Removing packages/ptc-runtime/ptc-runtime/lib/
+Removing packages/ptc-runtime/ptc-runtime/node_modules/
+Removing packages/runtime-diagnostics/invariants/lib/
+Removing packages/runtime-diagnostics/invariants/node_modules/
+Removing packages/sandbox/sandbox-local/lib/
+Removing packages/sandbox/sandbox-local/node_modules/
+Removing packages/sandbox/sandbox-policy/lib/
+Removing packages/sandbox/sandbox-policy/node_modules/
+Removing packages/sandbox/sandbox-windows-acl/lib/
+Removing packages/sandbox/sandbox-windows-acl/node_modules/
+Removing packages/sandbox/sandbox/lib/
+Removing packages/sandbox/sandbox/node_modules/
+Removing packages/schedule/schedule/lib/
+Removing packages/schedule/schedule/node_modules/
+Removing packages/sdk/client/lib/
+Removing packages/sdk/client/node_modules/
+Removing packages/sdk/protocol/lib/
+Removing packages/sdk/protocol/node_modules/
+Removing packages/sdk/server/lib/
+Removing packages/sdk/server/node_modules/
+Removing packages/session-query/session-log-export/lib/
+Removing packages/session-query/session-log-export/node_modules/
+Removing packages/session-query/session-query-sqlite/lib/
+Removing packages/session-query/session-query-sqlite/node_modules/
+Removing packages/session-query/session-query/lib/
+Removing packages/session-query/session-query/node_modules/
+Removing packages/session-query/tool-session-query/lib/
+Removing packages/session-query/tool-session-query/node_modules/
+Removing packages/session/session-checkpoint-policy/lib/
+Removing packages/session/session-checkpoint-policy/node_modules/
+Removing packages/session/session-format-catalog/lib/
+Removing packages/session/session-format-catalog/node_modules/
+Removing packages/session/session-format-v0-to-v1/lib/
+Removing packages/session/session-format-v0-to-v1/node_modules/
+Removing packages/session/session-format-v1-to-v2/lib/
+Removing packages/session/session-format-v1-to-v2/node_modules/
+Removing packages/session/session-format-v2-to-v3/lib/
+Removing packages/session/session-format-v2-to-v3/node_modules/
+Removing packages/session/session-format-v3-to-v4/lib/
+Removing packages/session/session-format-v3-to-v4/node_modules/
+Removing packages/session/session-format/lib/
+Removing packages/session/session-format/node_modules/
+Removing packages/session/session-log-deepseek/lib/
+Removing packages/session/session-log-deepseek/node_modules/
+Removing packages/session/session-persistence-jsonl/lib/
+Removing packages/session/session-persistence-jsonl/node_modules/
+Removing packages/session/session-persistence/lib/
+Removing packages/session/session-persistence/node_modules/
+Removing packages/session/session-projection-cache/lib/
+Removing packages/session/session-projection-cache/node_modules/
+Removing packages/session/session-projection/lib/
+Removing packages/session/session-projection/node_modules/
+Removing packages/session/session-stats/lib/
+Removing packages/session/session-stats/node_modules/
+Removing packages/session/session-telemetry-otel/lib/
+Removing packages/session/session-telemetry-otel/node_modules/
+Removing packages/session/session-telemetry/lib/
+Removing packages/session/session-telemetry/node_modules/
+Removing packages/session/session-title-all-prompts-llm/lib/
+Removing packages/session/session-title-all-prompts-llm/node_modules/
+Removing packages/session/session-title-first-prompt-llm/lib/
+Removing packages/session/session-title-first-prompt-llm/node_modules/
+Removing packages/session/session-title-llm/lib/
+Removing packages/session/session-title-llm/node_modules/
+Removing packages/session/session-title/lib/
+Removing packages/session/session-title/node_modules/
+Removing packages/session/session-turn-outline/lib/
+Removing packages/session/session-turn-outline/node_modules/
+Removing packages/settings/settings/lib/
+Removing packages/settings/settings/node_modules/
+Removing packages/shell/bash-local/lib/
+Removing packages/shell/bash-local/node_modules/
+Removing packages/shell/bash-sandbox/lib/
+Removing packages/shell/bash-sandbox/node_modules/
+Removing packages/shell/pwsh-local/lib/
+Removing packages/shell/pwsh-local/node_modules/
+Removing packages/shell/pwsh-sandbox/lib/
+Removing packages/shell/pwsh-sandbox/node_modules/
+Removing packages/shell/shell-env/lib/
+Removing packages/shell/shell-env/node_modules/
+Removing packages/shell/shell/lib/
+Removing packages/shell/shell/node_modules/
+Removing packages/shell/tool-bash-persistent/lib/
+Removing packages/shell/tool-bash-persistent/node_modules/
+Removing packages/shell/tool-bash/lib/
+Removing packages/shell/tool-bash/node_modules/
+Removing packages/shell/tool-pwsh-persistent/lib/
+Removing packages/shell/tool-pwsh-persistent/node_modules/
+Removing packages/shell/tool-pwsh/lib/
+Removing packages/shell/tool-pwsh/node_modules/
+Removing packages/skill/skill-badge/lib/
+Removing packages/skill/skill-badge/node_modules/
+Removing packages/skill/skill-filesystem/lib/
+Removing packages/skill/skill-filesystem/node_modules/
+Removing packages/skill/skill-office/lib/
+Removing packages/skill/skill-office/node_modules/
+Removing packages/skill/skill/lib/
+Removing packages/skill/skill/node_modules/
+Removing packages/skill/tool-skill/lib/
+Removing packages/skill/tool-skill/node_modules/
+Removing packages/skill/tool-workspace-dependencies/lib/
+Removing packages/skill/tool-workspace-dependencies/node_modules/
+Removing packages/spill/spill-local/lib/
+Removing packages/spill/spill-local/node_modules/
+Removing packages/spill/spill-policy/lib/
+Removing packages/spill/spill-policy/node_modules/
+Removing packages/spill/spill/lib/
+Removing packages/spill/spill/node_modules/
+Removing packages/ssh/fs-ssh/lib/
+Removing packages/ssh/fs-ssh/node_modules/
+Removing packages/ssh/sandbox-ssh/lib/
+Removing packages/ssh/sandbox-ssh/node_modules/
+Removing packages/ssh/ssh/lib/
+Removing packages/ssh/ssh/node_modules/
+Removing packages/ssh/subprocess-ssh/lib/
+Removing packages/ssh/subprocess-ssh/node_modules/
+Removing packages/storage/storage-domain/lib/
+Removing packages/storage/storage-domain/node_modules/
+Removing packages/storage/storage-json/lib/
+Removing packages/storage/storage-json/node_modules/
+Removing packages/storage/storage-sqlite/lib/
+Removing packages/storage/storage-sqlite/node_modules/
+Removing packages/storage/storage/lib/
+Removing packages/storage/storage/node_modules/
+Removing packages/subagent/subagent-acp/lib/
+Removing packages/subagent/subagent-acp/node_modules/
+Removing packages/subagent/subagent-claude-code/lib/
+Removing packages/subagent/subagent-claude-code/node_modules/
+Removing packages/subagent/subagent-codex/lib/
+Removing packages/subagent/subagent-codex/node_modules/
+Removing packages/subagent/subagent-dsh-sdk/lib/
+Removing packages/subagent/subagent-dsh-sdk/node_modules/
+Removing packages/subagent/subagent-fork-in-process/lib/
+Removing packages/subagent/subagent-fork-in-process/node_modules/
+Removing packages/subagent/subagent-in-process-driver/lib/
+Removing packages/subagent/subagent-in-process-driver/node_modules/
+Removing packages/subagent/subagent-spawn-in-process/lib/
+Removing packages/subagent/subagent-spawn-in-process/node_modules/
+Removing packages/subagent/subagent/lib/
+Removing packages/subagent/subagent/node_modules/
+Removing packages/subagent/tool-subagent-control/lib/
+Removing packages/subagent/tool-subagent-control/node_modules/
+Removing packages/subagent/tool-subagent/lib/
+Removing packages/subagent/tool-subagent/node_modules/
+Removing packages/subprocess/subprocess-local/lib/
+Removing packages/subprocess/subprocess-local/node_modules/
+Removing packages/subprocess/subprocess/lib/
+Removing packages/subprocess/subprocess/node_modules/
+Removing packages/subprocess/win32-process/lib/
+Removing packages/subprocess/win32-process/node_modules/
+Removing packages/terminal/terminal-bash/lib/
+Removing packages/terminal/terminal-bash/node_modules/
+Removing packages/terminal/terminal/lib/
+Removing packages/terminal/terminal/node_modules/
+Removing packages/terminal/tool-terminal/lib/
+Removing packages/terminal/tool-terminal/node_modules/
+Removing packages/test-support/agent-loop-testkit/lib/
+Removing packages/test-support/agent-loop-testkit/node_modules/
+Removing packages/test-support/client-runtime/node_modules/
+Removing packages/test-support/llm-mock-server/lib/
+Removing packages/test-support/llm-mock-server/node_modules/
+Removing packages/test-support/llm-replay/lib/
+Removing packages/test-support/llm-replay/node_modules/
+Removing packages/test-support/loader-smoke/lib/
+Removing packages/test-support/loader-smoke/node_modules/
+Removing packages/test-support/remote-mock/node_modules/
+Removing packages/test-support/session-snapshot/lib/
+Removing packages/test-support/session-snapshot/node_modules/
+Removing packages/todo/tool-todo/lib/
+Removing packages/todo/tool-todo/node_modules/
+Removing packages/typert/generator/lib/
+Removing packages/typert/generator/node_modules/
+Removing packages/typert/loader/lib/
+Removing packages/typert/loader/node_modules/
+Removing packages/typert/protocol/lib/
+Removing packages/typert/protocol/node_modules/
+Removing packages/typert/registry/lib/
+Removing packages/typert/registry/node_modules/
+Removing packages/util/atomic-write/lib/
+Removing packages/util/atomic-write/node_modules/
+Removing packages/util/brand/lib/
+Removing packages/util/brand/node_modules/
+Removing packages/util/chunked-list/lib/
+Removing packages/util/chunked-list/node_modules/
+Removing packages/util/crypto/lib/
+Removing packages/util/crypto/node_modules/
+Removing packages/util/deque/lib/
+Removing packages/util/deque/node_modules/
+Removing packages/util/home-paths/lib/
+Removing packages/util/home-paths/node_modules/
+Removing packages/util/http-proxy/lib/
+Removing packages/util/http-proxy/node_modules/
+Removing packages/util/launch-environment/lib/
+Removing packages/util/launch-environment/node_modules/
+Removing packages/util/lazy-require/lib/
+Removing packages/util/lazy-require/node_modules/
+Removing packages/util/native-command/lib/
+Removing packages/util/native-command/node_modules/
+Removing packages/util/output-retention/lib/
+Removing packages/util/output-retention/node_modules/
+Removing packages/util/package-manifest/lib/
+Removing packages/util/package-manifest/node_modules/
+Removing packages/util/time/lib/
+Removing packages/util/time/node_modules/
+Removing packages/util/timeout/lib/
+Removing packages/util/timeout/node_modules/
+Removing packages/util/values/lib/
+Removing packages/util/values/node_modules/
+Removing packages/util/workspace-path/lib/
+Removing packages/util/workspace-path/node_modules/
+Removing packages/web/tool-web/lib/
+Removing packages/web/tool-web/node_modules/
+Removing packages/web/web-fetch-http/lib/
+Removing packages/web/web-fetch-http/node_modules/
+Removing packages/web/web-search-deepseek/lib/
+Removing packages/web/web-search-deepseek/node_modules/
+Removing packages/web/web-search-exa/lib/
+Removing packages/web/web-search-exa/node_modules/
+Removing packages/web/web-search-perplexity/lib/
+Removing packages/web/web-search-perplexity/node_modules/
+Removing packages/web/web/lib/
+Removing packages/web/web/node_modules/
+Removing packages/webhook/webhook-github/lib/
+Removing packages/webhook/webhook-github/node_modules/
+Removing packages/webhook/webhook/lib/
+Removing packages/webhook/webhook/node_modules/
+Removing packages/workflow/tool-ralph/lib/
+Removing packages/workflow/tool-ralph/node_modules/
+Removing packages/workflow/tool-workflow/lib/
+Removing packages/workflow/tool-workflow/node_modules/
+Removing packages/workflow/workflow-ptc/lib/
+Removing packages/workflow/workflow-ptc/node_modules/
+Removing packages/workflow/workflow-worker-thread/
+Removing packages/workflow/workflow/lib/
+Removing packages/workflow/workflow/node_modules/
+Removing packages/workspace/workspace/lib/
+Removing packages/workspace/workspace/node_modules/
+Removing python/sdk-runtime/node_modules/
+Removing tsconfig.client.tsbuildinfo
+Removing tsconfig.host.tsbuildinfo
+Removing vendor/cordis/lib/
+Removing vendor/cordis/node_modules/
+Removing vendor/cosmokit/lib/
+Removing vendor/group/lib/
+Removing vendor/group/node_modules/
+Removing vendor/hmr/lib/
+Removing vendor/hmr/node_modules/
+Removing vendor/include/lib/
+Removing vendor/include/node_modules/
+Removing vendor/loader/lib/
+Removing vendor/loader/node_modules/
+Removing vendor/logger-console/lib/
+Removing vendor/logger-console/node_modules/
+Removing vendor/schemastery/lib/
+Removing vendor/schemastery/node_modules/
+Removing vendor/timer/lib/
+Removing vendor/timer/node_modules/
+Removing website/node_modules/
+clean done
+46a7f68b0922371ce7144b668b90e377d8e799f4
+native/system/packages/darwin-arm64      | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/darwin-x64        | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/linux-arm64       | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["linux"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+Scope: all 330 workspace projects
+[WARN] There are cyclic workspace dependencies: /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/apps/web, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/test-support/client-runtime, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/bundle/web-app; /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/remotes, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/client/ui-plugin-manager, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/client/ui-sidebar, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/client/ui-workspace, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/client/ui-conversation; /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/compaction/compaction-basic, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/compaction/compaction-image-offload; /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/compaction/compaction-tool-result-pruner, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/llm/token-meter, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/llm/llm-retry, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/llm/llm-deepseek, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/llm/plugin-package-inventory-deepseek, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/preset/agent-preset-registry, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/preset/agent-preset; /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-default-model, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/settings/settings; /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/sandbox/sandbox-local, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/sandbox/sandbox-windows-acl; /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/ssh/fs-ssh, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/ssh/ssh; /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/subagent/subagent-spawn-in-process, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/subagent/tool-subagent; /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis, /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/include
+? Verifying lockfile against supply-chain policies (1678 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +1383
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+[WARN] GET https://registry.npmjs.org/node-addon-native-custom-loader/-/node-addon-native-custom-loader-0.1.6.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/yauzl/-/yauzl-3.4.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/node-addon-require-builtin/-/node-addon-require-builtin-0.1.6.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/url-parse/-/url-parse-1.5.10.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/strnum/-/strnum-1.1.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/cos-request/-/cos-request-1.3.3.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/universalify/-/universalify-0.2.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/aws-sign2/-/aws-sign2-0.7.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/extsprintf/-/extsprintf-1.3.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/jsprim/-/jsprim-1.4.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/assert-plus/-/assert-plus-1.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/json-schema/-/json-schema-0.4.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/verror/-/verror-1.10.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/asn1/-/asn1-0.2.6.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/dashdash/-/dashdash-1.14.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/cos-nodejs-sdk-v5/-/cos-nodejs-sdk-v5-3.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/form-data/-/form-data-2.5.6.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/clone/-/clone-2.1.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/http-signature/-/http-signature-1.2.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/getpass/-/getpass-0.1.7.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/jsbn/-/jsbn-0.1.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/is-typedarray/-/is-typedarray-1.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/tweetnacl/-/tweetnacl-0.14.5.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/node-addon-require-builtin-linux-x64-gnu/-/node-addon-require-builtin-linux-x64-gnu-0.1.6.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/bcrypt-pbkdf/-/bcrypt-pbkdf-1.0.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/psl/-/psl-1.15.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/cos-fast-xml-parser/-/cos-fast-xml-parser-1.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/caseless/-/caseless-0.12.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/oauth-sign/-/oauth-sign-0.9.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@deepseek-ai/libreoffice-kit/-/libreoffice-kit-0.1.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/isstream/-/isstream-0.1.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/performance-now/-/performance-now-2.1.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+
+   ╭──────────────────────────────────────────────╮
+   │                                              │
+   │      Update available! 11.7.0 → 12.6.0.      │
+   │     Changelog: https://pnpm.io/v/12.6.0      │
+   │   To update, run: corepack use pnpm@12.6.0   │
+   │                                              │
+   ╰──────────────────────────────────────────────╯
+
+[WARN] GET https://registry.npmjs.org/tough-cookie/-/tough-cookie-4.1.4.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/open/-/open-11.0.4.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/wsl-utils/-/wsl-utils-1.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/powershell-utils/-/powershell-utils-0.2.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/archiver-utils/-/archiver-utils-3.0.4.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/zip-stream/-/zip-stream-4.1.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@swc/helpers/-/helpers-0.5.23.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/default-browser/-/default-browser-5.5.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/tiny-inflate/-/tiny-inflate-1.0.3.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/sshpk/-/sshpk-1.18.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/compress-commons/-/compress-commons-4.1.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/crc32-stream/-/crc32-stream-4.0.3.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/ecc-jsbn/-/ecc-jsbn-0.1.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/fast-csv/-/fast-csv-4.3.6.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/crc-32/-/crc-32-1.2.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.isboolean/-/lodash.isboolean-3.0.3.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.groupby/-/lodash.groupby-4.6.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/dfa/-/dfa-1.2.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.isfunction/-/lodash.isfunction-3.0.9.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@fast-csv/format/-/format-4.3.5.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/fflate/-/fflate-0.8.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/big.js/-/big.js-7.0.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/unicode-trie/-/unicode-trie-2.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@types/use-sync-external-store/-/use-sync-external-store-1.7.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.isnil/-/lodash.isnil-4.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/restructure/-/restructure-3.0.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/unzipper/-/unzipper-0.10.14.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@fast-csv/parse/-/parse-4.3.6.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/buffers/-/buffers-0.1.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@types/big.js/-/big.js-6.2.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/traverse/-/traverse-0.3.9.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/binary/-/binary-0.3.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/big-integer/-/big-integer-1.6.52.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/listenercount/-/listenercount-1.0.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/fstream/-/fstream-1.0.12.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/chainsaw/-/chainsaw-0.1.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/strnum/-/strnum-2.4.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/buffer-indexof-polyfill/-/buffer-indexof-polyfill-1.0.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/tiny-emitter/-/tiny-emitter-2.1.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/forever-agent/-/forever-agent-0.6.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/pako/-/pako-0.2.9.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/bluebird/-/bluebird-3.4.7.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@testing-library/dom/-/dom-10.4.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@xterm/addon-serialize/-/addon-serialize-0.14.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/querystringify/-/querystringify-2.2.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@types/node/-/node-14.18.63.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/jstat/-/jstat-1.9.6.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/immer/-/immer-9.0.21.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/numeral/-/numeral-2.0.6.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+Progress: resolved 1383, reused 1215, downloaded 0, added 315
+[WARN] GET https://registry.npmjs.org/brotli/-/brotli-1.3.3.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/unicode-properties/-/unicode-properties-1.4.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/bessel/-/bessel-1.0.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@fortune-sheet/formula-parser/-/formula-parser-0.2.13.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/fontkit/-/fontkit-2.0.4.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.11.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@nodable/entities/-/entities-3.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@formulajs/formulajs/-/formulajs-2.9.3.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@fortune-sheet/core/-/core-1.0.4.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+Progress: resolved 1383, reused 1215, downloaded 0, added 767
+Progress: resolved 1383, reused 1215, downloaded 0, added 1120
+Progress: resolved 1383, reused 1215, downloaded 0, added 1220
+[WARN] GET https://registry.npmjs.org/simple-icons/-/simple-icons-16.31.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/yauzl/-/yauzl-3.4.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/node-addon-native-custom-loader/-/node-addon-native-custom-loader-0.1.6.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/aws-sign2/-/aws-sign2-0.7.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/universalify/-/universalify-0.2.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/url-parse/-/url-parse-1.5.10.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/node-addon-require-builtin/-/node-addon-require-builtin-0.1.6.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/jsprim/-/jsprim-1.4.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/extsprintf/-/extsprintf-1.3.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/verror/-/verror-1.10.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/strnum/-/strnum-1.1.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/cos-request/-/cos-request-1.3.3.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/json-schema/-/json-schema-0.4.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@deepseek-ai/libreoffice-kit-wasm/-/libreoffice-kit-wasm-0.1.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/asn1/-/asn1-0.2.6.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/dashdash/-/dashdash-1.14.1.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/http-signature/-/http-signature-1.2.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/getpass/-/getpass-0.1.7.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/form-data/-/form-data-2.5.6.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/jsbn/-/jsbn-0.1.1.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/is-typedarray/-/is-typedarray-1.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/clone/-/clone-2.1.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/cos-nodejs-sdk-v5/-/cos-nodejs-sdk-v5-3.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/zip-stream/-/zip-stream-4.1.1.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/crc32-stream/-/crc32-stream-4.0.3.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/powershell-utils/-/powershell-utils-0.2.1.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/caseless/-/caseless-0.12.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/open/-/open-11.0.4.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/fast-csv/-/fast-csv-4.3.6.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/archiver-utils/-/archiver-utils-3.0.4.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.groupby/-/lodash.groupby-4.6.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/compress-commons/-/compress-commons-4.1.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/oauth-sign/-/oauth-sign-0.9.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/performance-now/-/performance-now-2.1.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/default-browser/-/default-browser-5.5.1.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.isboolean/-/lodash.isboolean-3.0.3.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/big.js/-/big.js-7.0.1.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/ecc-jsbn/-/ecc-jsbn-0.1.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/tweetnacl/-/tweetnacl-0.14.5.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.isnil/-/lodash.isnil-4.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.isfunction/-/lodash.isfunction-3.0.9.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@fast-csv/format/-/format-4.3.5.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/node-addon-require-builtin-linux-x64-gnu/-/node-addon-require-builtin-linux-x64-gnu-0.1.6.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/bcrypt-pbkdf/-/bcrypt-pbkdf-1.0.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@types/use-sync-external-store/-/use-sync-external-store-1.7.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/restructure/-/restructure-3.0.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/buffers/-/buffers-0.1.1.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/dfa/-/dfa-1.2.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/tough-cookie/-/tough-cookie-4.1.4.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/traverse/-/traverse-0.3.9.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@types/big.js/-/big.js-6.2.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/sshpk/-/sshpk-1.18.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/binary/-/binary-0.3.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/listenercount/-/listenercount-1.0.1.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@fast-csv/parse/-/parse-4.3.6.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@swc/helpers/-/helpers-0.5.23.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/fstream/-/fstream-1.0.12.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/chainsaw/-/chainsaw-0.1.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/strnum/-/strnum-2.4.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/buffer-indexof-polyfill/-/buffer-indexof-polyfill-1.0.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/tiny-emitter/-/tiny-emitter-2.1.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/forever-agent/-/forever-agent-0.6.1.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/big-integer/-/big-integer-1.6.52.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/wsl-utils/-/wsl-utils-1.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/isstream/-/isstream-0.1.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@deepseek-ai/libreoffice-kit/-/libreoffice-kit-0.1.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/psl/-/psl-1.15.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/unicode-trie/-/unicode-trie-2.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/crc-32/-/crc-32-1.2.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/bluebird/-/bluebird-3.4.7.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/querystringify/-/querystringify-2.2.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/cos-fast-xml-parser/-/cos-fast-xml-parser-1.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/numeral/-/numeral-2.0.6.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/unicode-properties/-/unicode-properties-1.4.1.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@testing-library/dom/-/dom-10.4.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/immer/-/immer-9.0.21.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/bessel/-/bessel-1.0.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/pako/-/pako-0.2.9.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/fflate/-/fflate-0.8.2.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@fortune-sheet/formula-parser/-/formula-parser-0.2.13.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+✓ Lockfile passes supply-chain policies (1678 entries in 11.6s)
+[WARN] GET https://registry.npmjs.org/tiny-inflate/-/tiny-inflate-1.0.3.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/unzipper/-/unzipper-0.10.14.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@nodable/entities/-/entities-3.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/jstat/-/jstat-1.9.6.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.11.1.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@formulajs/formulajs/-/formulajs-2.9.3.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@xterm/addon-serialize/-/addon-serialize-0.14.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/brotli/-/brotli-1.3.3.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/fontkit/-/fontkit-2.0.4.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@types/node/-/node-14.18.63.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@fortune-sheet/core/-/core-1.0.4.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/assert-plus/-/assert-plus-1.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/simple-icons/-/simple-icons-16.31.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@deepseek-ai/libreoffice-kit-wasm/-/libreoffice-kit-wasm-0.1.0.tgz error (ERR_PNPM_EROFS). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/anynum/-/anynum-1.0.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/uuid/-/uuid-8.3.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/archiver/-/archiver-5.3.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.uniq/-/lodash.uniq-4.5.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/is-unsafe/-/is-unsafe-2.0.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/saxes/-/saxes-5.0.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/xml-naming/-/xml-naming-0.3.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/lazystream/-/lazystream-1.0.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.flatten/-/lodash.flatten-4.4.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.14.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.difference/-/lodash.difference-4.5.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@types/regenerator-runtime/-/regenerator-runtime-0.13.8.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/readdir-glob/-/readdir-glob-1.1.3.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/archiver-utils/-/archiver-utils-2.1.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.defaults/-/lodash.defaults-4.2.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/path-expression-matcher/-/path-expression-matcher-1.6.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/papaparse/-/papaparse-5.5.3.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.union/-/lodash.union-4.6.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.isplainobject/-/lodash.isplainobject-4.0.6.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@xterm/addon-fit/-/addon-fit-0.11.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/normalize-path/-/normalize-path-3.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/agentkeepalive/-/agentkeepalive-4.6.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/undici-types/-/undici-types-5.26.5.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@types/node-fetch/-/node-fetch-2.6.13.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/humanize-ms/-/humanize-ms-1.2.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/get-east-asian-width/-/get-east-asian-width-1.6.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/yargs-parser/-/yargs-parser-22.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/string-width/-/string-width-8.2.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/lodash.isundefined/-/lodash.isundefined-3.0.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@playwright/mcp/-/mcp-0.0.80.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/string-width/-/string-width-7.2.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-9.0.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/modern-tar/-/modern-tar-0.8.5.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/cliui/-/cliui-9.0.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/yargs/-/yargs-18.1.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/tr46/-/tr46-0.0.3.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/proxy-addr/-/proxy-addr-2.0.8.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-3.0.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/web-streams-polyfill/-/web-streams-polyfill-4.0.0-beta.3.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/whatwg-url/-/whatwg-url-5.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@puppeteer/browsers/-/browsers-3.2.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/form-data-encoder/-/form-data-encoder-1.7.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/formdata-node/-/formdata-node-4.4.1.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/node-fetch/-/node-fetch-2.7.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/compression/-/compression-1.8.2.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@modelcontextprotocol/node/-/node-2.0.0.tgz error (ERR_PNPM_EROFS). Will retry in 10 seconds. 2 retries left.
+[ERR_PNPM_EROFS] Failed to add tarball from "https://registry.npmjs.org/node-addon-native-custom-loader/-/node-addon-native-custom-loader-0.1.6.tgz" to store: EROFS: read-only file system, open '/home/user/.local/share/pnpm/store/v11/files/58/df0b0addb0f72de5abda6364e5baff02262599b22423d72d72be4b2dbf0d1c5664ee5c9803c8b1598246e41ac2bf38de83890bc4643d51471802b6d5afdca0'
+INSTALL_EXIT:1
+$ tsx native/system/scripts/build.ts --host-addon-only
+build: built linux-x64/bin/glibc/system.node
+$ pnpm run build:lib:host && pnpm run build:lib:client
+$ node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc -b tsconfig.host.json && tsdown --env.DSH_BUILD_FACE host
+node:internal/modules/cjs/loader:1568
+  throw err;
+  ^
+
+Error: Cannot find module '/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/typescript/bin/tsc'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)
+    at Module._load (node:internal/modules/cjs/loader:1341:5)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v24.21.0
+[ELIFECYCLE] Command failed with exit code 1.
+[ELIFECYCLE] Command failed with exit code 1.
+file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/scripts/build.ts:27
+    throw new Error(`build: ${script} exited with ${String(result.status ?? result.signal)}`)
+          ^
+
+Error: build: build:lib exited with 1
+    at runScript (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/scripts/build.ts:27:11)
+    at main (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/scripts/build.ts:45:3)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/scripts/build.ts:53:23
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.21.0
+BUILD_EXIT:1
+0
+46a7f68b0922371ce7144b668b90e377d8e799f4

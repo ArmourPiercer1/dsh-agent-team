@@ -1,0 +1,32 @@
+mock: listening on 127.0.0.1:3496
+mock: 1 [messages] text reply (8 chars): "u8 title"
+mock: 2 [messages] tool-call reply: read
+mock: 3 [messages] text reply (11 chars): "U8_ORD_DONE"
+mock: 4 [messages] text reply (12 chars): "U8_DISC_DONE"
+mock: 5 [messages] text reply (8 chars): "u8 title"
+mock: 6 [messages] text reply (8 chars): "u8 title"
+mock: 7 [messages] tool-call reply: read
+mock: 8 [messages] tool-call reply: read
+mock: 9 [messages] tool-call reply: bash
+mock: 10 [messages] tool-call reply: team_create_member
+mock: 11 [messages] tool-call reply: team_delegate
+mock: 12 [messages] tool-call reply: read
+mock: 13 [messages] text reply (8 chars): "u8 title"
+mock: 14 [messages] tool-call reply: read
+mock: 15 [messages] text reply (14 chars): "U8_MEMBER_DONE"
+mock: 16 [messages] tool-call reply: team_send_message
+mock: 17 [messages] text reply (17 chars): "U8_MEMBER_MSG_ACK"
+mock: 18 [messages] tool-call reply: team_report_progress
+mock: 19 [messages] tool-call reply: mcp__u8single__ping
+mock: 20 [messages] tool-call reply: mcp__u8paged__alpha
+mock: 21 [messages] text reply (14 chars): "U8_TEAM_B_DONE"
+mock: 22 [messages] tool-call reply: bash
+mock: 23 [messages] tool-call reply: read
+mock: 24 [messages] text reply (19 chars): "U8_SPILL_OWNER_DONE"
+mock: 25 [messages] tool-call reply: team_delegate
+mock: 26 [messages] tool-call reply: read
+mock: 27 [messages] text reply (19 chars): "U8_MEMBER_DENY_DONE"
+mock: 28 [messages] text reply (21 chars): "U8_DELEGATE_DENY_DONE"
+mock: 29 [messages] tool-call reply: team_archive_member
+mock: 30 [messages] text reply (12 chars): "U8_LIFE_DONE"
+mock: 31 [messages] text reply (21 chars): "U8_LEADER_RESUME_DONE"

@@ -28,7 +28,7 @@ import {
 import { adaptTeamProjection } from '../model/projection-adapter.js'
 import type { TeamUiSnapshot } from '../model/team-ui-snapshot.js'
 import {
-  IconChevronDownOutline14, IconChevronUpOutline14, StateDot, type StateDotState,
+  IconChevronDownOutlineRegular, IconChevronUpOutlineRegular, StateDot, type StateDotState,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import {
   deriveTeamDockContent, deriveTeamDockCounts,
@@ -165,7 +165,7 @@ export function TeamDockPanel({ snapshot, openTeamTab, t }: TeamDockPanelProps):
           aria-label={collapsed ? t('dock.expand') : t('dock.collapse')}
           onClick={() => { setCollapsed(value => !value) }}
         >
-          {collapsed ? <IconChevronUpOutline14 /> : <IconChevronDownOutline14 />}
+          {collapsed ? <IconChevronUpOutlineRegular /> : <IconChevronDownOutlineRegular />}
         </button>
       </div>
       {!collapsed && (

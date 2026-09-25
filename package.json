@@ -42,6 +42,9 @@
     "test:node": "node scripts/run-tests.mjs",
     "smoke:composition": "node scripts/composition-smoke.mjs"
   },
+  "peerDependencies": {
+    "@deepseek-ai/dsh": "0.1.7-rc.1"
+  },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "eslint": "^9.0.0",

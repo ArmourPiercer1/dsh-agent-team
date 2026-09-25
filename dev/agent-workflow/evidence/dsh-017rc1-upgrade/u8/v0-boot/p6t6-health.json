@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "boot": 1,
+  "ready": true,
+  "rootSessionId": "session-u8-root-2026-09-24T14-48-13",
+  "liveSessions": [
+    "session-u8-root-2026-09-24T14-48-13"
+  ],
+  "toolCount": 13
+}

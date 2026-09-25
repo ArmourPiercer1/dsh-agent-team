@@ -1,0 +1,8 @@
+{
+  "fixtureSha": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "liveSha": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "drift": true,
+  "baselineFixtureSha": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "action": "RECORDED ONLY — fixture re-recording is a separate post-upgrade follow-up (brief: 本轮只复测记录，不重录 fixture; §4.2 two-pin precedent)",
+  "note": "the characterization `fixture` section (run by the full harness, not by this single-group re-measurement) would flag pin drift on 0.1.7; the public-surface build above used the LIVE 0.1.7 tree, so the probe ran against the live surface, not the stale fixture."
+}

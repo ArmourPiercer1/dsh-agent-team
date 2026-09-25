@@ -1,0 +1,10 @@
+{
+  "runStamp": "2026-09-25T14-07-04",
+  "world": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/rs-017rc1-2026-09-25T14-07-04",
+  "hostPin": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "branch": "task/dsh-017rc1-upgrade",
+  "checks": 26,
+  "passed": 26,
+  "failed": 0,
+  "failedChecks": []
+}

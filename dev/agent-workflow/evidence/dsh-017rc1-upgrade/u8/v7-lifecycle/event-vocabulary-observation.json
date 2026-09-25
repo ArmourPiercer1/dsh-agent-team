@@ -1,0 +1,4 @@
+{
+  "agentSessionStartLinesInInstanceLog": 0,
+  "note": "0.1.7 removed agent/session-start (upstream-seams §1.3); the U3 agent-lifecycle probe (which listens for it) is re-measured separately in lifecycle-probe/"
+}

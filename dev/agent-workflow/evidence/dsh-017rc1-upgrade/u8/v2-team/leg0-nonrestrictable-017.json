@@ -1,0 +1,6 @@
+{
+  "filtered": [
+    "subagent"
+  ],
+  "reason": "0.1.7: tool-subagent row registers `subagent` per agent scope (own layer); tools.restrict() only names inherited/global tools and throws on unknown names (exact host error recorded in the run-3 team-create-b-failed evidence)"
+}

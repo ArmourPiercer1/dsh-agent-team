@@ -1,0 +1,7 @@
+{
+  "spillPath": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T14-48-13/spill/session-68c9927b195e/3373eadba47c-bash.txt",
+  "filesContainingLocator": [
+    "<world>/storages/team_domain.json"
+  ],
+  "note": "read back after the V7 archive commit (the proven domain-store flush boundary; see vertical.mjs V6 note)"
+}

@@ -1,0 +1,102 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/packages/client
+
+ ✓ test/team-ledger-model.client.spec.ts (24 tests) 10ms
+ ✓ test/team-timeline-model.client.spec.ts (31 tests) 12ms
+ ✓ test/projection-adapter.test.ts (16 tests) 14ms
+ ✓ test/team-create-flow.test.ts (10 tests) 7ms
+ ✓ test/ledger-adapter.test.ts (27 tests) 15ms
+ ✓ test/team-intent-model.test.ts (22 tests) 11ms
+ ✓ test/team-dock-model.client.spec.ts (9 tests) 8ms
+ ✓ test/team-members-model.client.spec.ts (10 tests) 5ms
+ ✓ test/team-handoff.test.ts (23 tests) 11ms
+ ✓ test/d1-team-remote-v3.test.ts (8 tests) 7ms
+ ✓ test/team-projection-store.test.ts (14 tests) 12ms
+ ✓ test/team-ledger-store.test.ts (24 tests) 17ms
+ ✓ test/team-remote-client.test.ts (15 tests) 11ms
+ ✓ test/team-command-flow.test.ts (6 tests) 6ms
+ ✓ test/client-architecture-negatives.test.ts (9 tests) 8ms
+ ✓ test/d3-open-ordinary-mode.test.ts (11 tests) 10ms
+ ✓ test/d2-open-team-mode.test.ts (6 tests) 9ms
+ ✓ test/client-plugin-mount.test.ts (33 tests) 23ms
+ ✓ test/team-remote-categories.test.ts (5 tests) 5ms
+ ✓ test/team-legacy.test.ts (12 tests) 7ms
+ ✓ test/team-member-commands.test.ts (11 tests) 8ms
+ ✓ test/f9-remote-client-v4.test.ts (5 tests) 8ms
+ ✓ test/team-session-resolution.test.ts (9 tests) 8ms
+ ✓ test/team-governance.test.ts (43 tests) 14ms
+ ✓ test/team-members-model.test.ts (5 tests) 6ms
+ ✓ test/f9u-control-surface-model.test.ts (11 tests) 8ms
+ ✓ test/client.test.ts (2 tests) 5ms
+ ❯ test/team-d4-a1-ui-pull.client.spec.tsx (0 test)
+ ❯ test/team-ledger.client.spec.tsx (0 test)
+ ❯ test/f9u-control-panel.client.spec.tsx (0 test)
+ ❯ test/d2-team-mode-entry.client.spec.tsx (0 test)
+ ❯ test/team-activity.client.spec.tsx (0 test)
+ ❯ test/team-timeline.client.spec.tsx (0 test)
+ ❯ test/new-team-entry.client.spec.tsx (0 test)
+ ❯ test/f9-resolve-control-ui.client.spec.tsx (0 test)
+ ❯ test/d3-ordinary-mode-entry.client.spec.tsx (0 test)
+ ❯ test/team-legacy.client.spec.tsx (0 test)
+ ❯ test/team-dock.client.spec.tsx (0 test)
+ ❯ test/f9u-control-surface-probe.client.spec.tsx (0 test)
+ ❯ test/team-members.client.spec.tsx (0 test)
+ ❯ test/team-roots-zero-state.client.spec.tsx (0 test)
+ ❯ test/team-creation-panel.client.spec.tsx (0 test)
+ ❯ test/team-governance.client.spec.tsx (0 test)
+ ❯ test/team-creation-panel-refresh.client.spec.tsx (0 test)
+ ❯ test/team-creation-handoff.client.spec.tsx (0 test)
+ ❯ test/team-members-actions.client.spec.tsx (0 test)
+ ❯ test/team-view.client.spec.tsx (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 20 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/d2-team-mode-entry.client.spec.tsx [ test/d2-team-mode-entry.client.spec.tsx ]
+ FAIL  test/d3-ordinary-mode-entry.client.spec.tsx [ test/d3-ordinary-mode-entry.client.spec.tsx ]
+ FAIL  test/f9-resolve-control-ui.client.spec.tsx [ test/f9-resolve-control-ui.client.spec.tsx ]
+ FAIL  test/f9u-control-panel.client.spec.tsx [ test/f9u-control-panel.client.spec.tsx ]
+ FAIL  test/f9u-control-surface-probe.client.spec.tsx [ test/f9u-control-surface-probe.client.spec.tsx ]
+ FAIL  test/new-team-entry.client.spec.tsx [ test/new-team-entry.client.spec.tsx ]
+ FAIL  test/team-activity.client.spec.tsx [ test/team-activity.client.spec.tsx ]
+ FAIL  test/team-creation-handoff.client.spec.tsx [ test/team-creation-handoff.client.spec.tsx ]
+ FAIL  test/team-creation-panel-refresh.client.spec.tsx [ test/team-creation-panel-refresh.client.spec.tsx ]
+ FAIL  test/team-creation-panel.client.spec.tsx [ test/team-creation-panel.client.spec.tsx ]
+ FAIL  test/team-d4-a1-ui-pull.client.spec.tsx [ test/team-d4-a1-ui-pull.client.spec.tsx ]
+ FAIL  test/team-dock.client.spec.tsx [ test/team-dock.client.spec.tsx ]
+ FAIL  test/team-governance.client.spec.tsx [ test/team-governance.client.spec.tsx ]
+ FAIL  test/team-ledger.client.spec.tsx [ test/team-ledger.client.spec.tsx ]
+ FAIL  test/team-legacy.client.spec.tsx [ test/team-legacy.client.spec.tsx ]
+ FAIL  test/team-members-actions.client.spec.tsx [ test/team-members-actions.client.spec.tsx ]
+ FAIL  test/team-members.client.spec.tsx [ test/team-members.client.spec.tsx ]
+ FAIL  test/team-roots-zero-state.client.spec.tsx [ test/team-roots-zero-state.client.spec.tsx ]
+ FAIL  test/team-timeline.client.spec.tsx [ test/team-timeline.client.spec.tsx ]
+ FAIL  test/team-view.client.spec.tsx [ test/team-view.client.spec.tsx ]
+Error: Failed to resolve import "simple-icons" from "../../tests/deepseek-harness-test-use/packages/client/ui-primitives/src/SiteGlyph.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/tests/deepseek-harness-test-use/packages/client/ui-primitives/src/SiteGlyph.tsx:44:7
+  1  |  ...siWikipedia, siX, siYcombinator, siYoutube, siZhihu } from "simple-icons";
+     |                                                                 ^
+  2  |  var _jsxFileName = "/home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/tests/deepseek-harness-test-u...
+  3  |  import { jsxDEV as _jsxDEV } from "react/jsx-dev-runtime";
+ ❯ TransformPluginContext._formatLog ../../node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:31147:39
+ ❯ TransformPluginContext.error ../../node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:31144:14
+ ❯ normalizeUrl ../../node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:28083:18
+ ❯ ../../node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:28153:30
+ ❯ TransformPluginContext.transform ../../node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:28119:4
+ ❯ EnvironmentPluginContainer.transform ../../node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:30932:14
+ ❯ loadAndTransform ../../node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:20671:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/20]⎯
+
+
+ Test Files  20 failed | 27 passed (47)
+      Tests  401 passed (401)
+   Start at  19:51:58
+   Duration  2.55s (transform 14.40s, setup 0ms, import 6.23s, tests 263ms, environment 17.56s)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.1.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.1.0
+npm notice To update run: npm install -g npm@12.1.0
+npm notice
+VITEST:1

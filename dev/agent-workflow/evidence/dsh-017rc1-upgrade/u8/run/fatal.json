@@ -1,0 +1,3 @@
+{
+  "msg": "Error: ENOENT: no such file or directory, open '/home/user/dsh-plugins/dsh-agent-team/tests/homes/u8-017rc1-2026-09-24T13-12-30/workspace/team/test.md'\n    at writeFileSync (node:fs:2482:20)\n    at main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/u8/vertical.mjs:1020:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+}

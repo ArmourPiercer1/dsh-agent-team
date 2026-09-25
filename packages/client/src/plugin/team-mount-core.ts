@@ -172,19 +172,46 @@ export interface TeamConnection {
  * The session-list snapshot (the Seam 3 read face, narrowed to the current
  * selection).
  */
+/**
+ * 0.1.7: one catalog row as the plugin reads it — the identity plus the
+ * local ownership counts. The `mainView` count IS the main-view selection
+ * (the 0.1.5 `list.current` pointer no longer exists; the first-party read
+ * pattern is `ui-session` publishMain: the byId row with a positive
+ * `retainedBy.mainView`).
+ */
+export interface TeamSessionSummary {
+  readonly id: string
+  readonly retainedBy: Readonly<Record<string, number | undefined>>
+}
+
+/**
+ * The 0.1.7 session-list snapshot, narrowed to the rows the plugin reads
+ * (the upstream `SessionListState` carries more; the port keeps only the
+ * read face — R121 prefill + open-mode reset).
+ */
 export interface TeamSessionListSnapshot {
-  /** The currently selected session id; absent when no session is selected. */
-  readonly current: string | undefined
+  readonly byId: Readonly<Record<string, TeamSessionSummary>>
+}
+
+/** One session's local ownership counts (0.1.7 upstream `SessionRetainInfo`). */
+export interface TeamSessionRetainInfo {
+  readonly referenceCount: number
+  readonly retainedBy: Readonly<Record<string, number | undefined>>
 }
 
 /**
  * The public sessions seam face (Seam 3, RENAMED `open`/`create`, plus the
  * `list` read face the global New Team entry prefills from — R121).
+ * 0.1.7: `open` left this face with the multi-instance session model —
+ * main-view selection moved to the public `UiWorkspace.openSession`
+ * (see `TeamUiWorkspace`) — and the list read face narrowed to the
+ * `byId` rows (the selection is now derived from `retainedBy.mainView`).
  */
 export interface TeamSessions {
   /**
-   * The session-list snapshot (the Seam 3 read face, narrowed to the current
-   * selection).
+   * The session-list snapshot (the Seam 3 read face). Re-published on
+   * every local retain/release (the upstream `publishRetention` folds the
+   * row counts into the list snapshot).
    */
   readonly list: ObservableSnapshot<TeamSessionListSnapshot>
   /**
@@ -193,8 +220,13 @@ export interface TeamSessions {
    * @returns the new session id.
    */
   create(opts?: { readonly workspaceId?: string }): Promise<string>
-  /** Open (switch to) the named session. */
-  open(sessionId: string): void
+  /**
+   * Observe one session's local ownership counts without retaining (the
+   * 0.1.7 public `ISessions.retainInfo`). The open-mode reset watches the
+   * current main-view session's counts (the first-party `ui-session`
+   * watchMainRetention pattern).
+   */
+  retainInfo(sessionId: string): ObservableSnapshot<TeamSessionRetainInfo>
   /**
    * Re-pull the host-authoritative session list (the public `ISessions
    * .refresh`). The creation path needs it: a host-created root session
@@ -205,27 +237,45 @@ export interface TeamSessions {
   refresh(): Promise<void>
 }
 
-/** One runtime AgentPreset row (Seam 6, SAME). */
+/**
+ * The 0.1.7 public workspace-navigation seam (upstream `UiWorkspace`),
+ * narrowed to the one action the plugin performs. Main-view session
+ * selection left `ctx.sessions` in 0.1.7 (multi-instance model); this
+ * service is the public replacement: select the session and show its
+ * conversation as one UI navigation action. An unknown id throws
+ * synchronously (the upstream `resolveTarget` contract), which the
+ * creation-path robust open relies on.
+ */
+export interface TeamUiWorkspace {
+  openSession(sessionId: string): void
+}
+
+/**
+ * One runtime AgentPreset row (Seam 6, CHANGED at 0.1.7: the upstream
+ * roster row dropped the `trust` lane and the `authorable` roster flag;
+ * `broken` is now the one-line activation diagnostic string. The 0.1.7
+ * shape mirrors `AgentPresetRow` of
+ * `@deepseek-ai/dsh-agent-preset-registry`).
+ */
 export interface TeamAgentPresetRow {
   /** The preset id (the wire value, verbatim). */
   readonly id: string
-  /** The trust lane the preset belongs to. */
-  readonly trust: 'system' | 'user'
   /** The display name (absent for id-only rows). */
   readonly name?: string
   /** The description line (absent for id-only rows). */
   readonly description?: string
   /** True for the provider-flagged default row. */
   readonly isDefault: boolean
-  /** Present on rows the trust check broke (filtered out at the mount). */
-  readonly broken?: unknown
+  /** The activation diagnostic on rows that cannot compose (filtered at the mount). */
+  readonly broken?: string
 }
 
 /**
  * The frozen public seam's `agentPresets/list` payload — the upstream
  * generated remote client answers `RemoteResult<AgentPresetRoster>` (the
  * gateway facade never unwraps): the roster rides in `value` and carries
- * the row list plus the `authorable` flag. The error side is the typed
+ * the row list plus the 0.1.7 `modeSelectionEnabled` chooser policy
+ * (replaces the 0.1.5 `authorable` flag). The error side is the typed
  * Remote failure (`code` + `message`, e.g. `invocation-unavailable`).
  */
 export type TeamAgentPresetsListResult =
@@ -233,7 +283,7 @@ export type TeamAgentPresetsListResult =
       readonly ok: true
       readonly value: {
         readonly presets: readonly TeamAgentPresetRow[]
-        readonly authorable: boolean
+        readonly modeSelectionEnabled: boolean
       }
     }
   | {
@@ -285,8 +335,10 @@ export interface TeamPluginClientContext {
   readonly slots: TeamSlots
   /** The locale runtime (register the dictionaries, bind one translator). */
   readonly locale: Pick<LocaleRuntime, 'register' | 'bind'>
-  /** The public sessions seam (Seam 3). */
+  /** The public sessions seam (Seam 3; 0.1.7: no `open` — see TeamUiWorkspace). */
   readonly sessions: TeamSessions
+  /** The public workspace-navigation seam (0.1.7 `UiWorkspace`; the main-view open). */
+  readonly uiWorkspace: TeamUiWorkspace
   /** The public connection seam (Seam 5). */
   readonly connection: TeamConnection
   /** The public remote seam (Seam 6). */
@@ -323,7 +375,7 @@ export interface TeamMountComponents {
  * dotted key, so the bare `remote` service alone does not open the
  * namespace.
  */
-export const inject = ['slots', 'locale', 'sessions', 'connection', 'remote', 'remote.agentPresets'] as const
+export const inject = ['slots', 'locale', 'sessions', 'uiWorkspace', 'connection', 'remote', 'remote.agentPresets'] as const
 
 /** Stable Cordis plugin name of the dsh-agent-team client half. */
 export const name = 'dsh-agent-team-client'
@@ -332,7 +384,8 @@ export const name = 'dsh-agent-team-client'
  * D2 (Team D1-D6 repair v2, D6) — the settled outcome of the explicit
  * open-in-Team-mode entry (`openTeamMode`): the AWAITED two-phase
  * sequence (A3 Q1 live-first) — (a) the v3 `team.ensureRootLive`
- * guarantee MUST complete before (b) the native `sessions.open`. On a
+ * guarantee MUST complete before (b) the native `uiWorkspace.openSession`
+ * (0.1.5: `sessions.open`). On a
  * typed ensure failure the session is NOT opened (never a silent open,
  * never a silent adoption — the host's OUTSIDE_TEAM discipline) and the
  * typed error (code + message) is returned for the UI's explicit error
@@ -344,9 +397,39 @@ export type TeamOpenModeOutcome =
   | { readonly ok: false; readonly code: string; readonly message: string }
 
 /**
+ * The 0.1.7 "current main-view session" read in FIRST-PARTY ORDER (the
+ * upstream `ui-session` `publishMain`): the previously resolved id is
+ * checked through its own `retainInfo` source FIRST — the local retain
+ * counts are independent of catalog membership, so the source keeps
+ * reporting a live `mainView` retain while the catalog row is temporarily
+ * absent (a generation replacement / catalog refresh / reconnect window).
+ * Only a current whose retain is actually released falls through to the
+ * byId scan (which also finds a freshly retained id whose catalog row is
+ * not in the snapshot yet). `null` when the selection is cleared (no
+ * `mainView` reference anywhere — the New Session view state releases it).
+ *
+ * PR #29 review supplement (F3): the pre-fix read scanned ONLY `byId`, so
+ * a catalog gap on the current row answered `null` and the open-mode reset
+ * wrongly cleared the current Team's mode mark in that window.
+ */
+function resolveCurrentMainSessionId(
+  previousId: string | undefined,
+  sessions: TeamSessions,
+): string | null {
+  if (previousId !== undefined) {
+    const info = sessions.retainInfo(previousId).getSnapshot()
+    if ((info.retainedBy.mainView ?? 0) > 0) return previousId
+  }
+  for (const summary of Object.values(sessions.list.getSnapshot().byId)) {
+    if ((summary.retainedBy.mainView ?? 0) > 0) return summary.id
+  }
+  return null
+}
+
+/**
  * Mount the Team client on the public seams (the full P9-S6 body).
  *
- * @param ctx - the Cordis client plugin context (the five public seams + effect).
+ * @param ctx - the Cordis client plugin context (the six public seams + effect).
  * @param opts - the plugin row config (the `dshHome` bind) and the three
  *   concrete components (the `.tsx` entries).
  */
@@ -513,21 +596,24 @@ export function applyTeamMount(
       return store.refresh()
     }
 
-  // (9) Native session switch (Seam 3; the public `open` path).
+  // (9) Native session switch (0.1.7: the public `UiWorkspace.openSession`
+  // — main-view selection left `ctx.sessions` with the multi-instance
+  // session model; 0.1.5 called `ctx.sessions.open`).
   const openSession = (sessionId: string): void => {
-    ctx.sessions.open(sessionId)
+    ctx.uiWorkspace.openSession(sessionId)
   }
 
   // (9.0) D2 (Team D1-D6 repair v2, D6) — the explicit open-in-Team-mode
   // entry (the dedicated "以 Team 模式打开 / 回到 Leader" entry): the
   // AWAITED two-phase sequence (A3 Q1 live-first): (a) the v3
   // `team.ensureRootLive` guarantee MUST settle BEFORE (b) the native
-  // `ctx.sessions.open` — on a typed ensure failure the session is NOT
-  // opened (never a silent open, never a silent adoption) and the typed
-  // error is returned for the UI's explicit error lane. On success the
-  // per-root open-mode mark is set ('team'); the session switch itself
-  // drives the badge re-render (the sessions.list effect below keeps the
-  // map honest on every switch). NO remote field, NO push/event/polling.
+  // `uiWorkspace.openSession` (0.1.5: `ctx.sessions.open`) — on a typed
+  // ensure failure the session is NOT opened (never a silent open, never
+  // a silent adoption) and the typed error is returned for the UI's
+  // explicit error lane. On success the per-root open-mode mark is set
+  // ('team'); the session switch itself drives the badge re-render (the
+  // sessions.list effect below keeps the map honest on every switch).
+  // NO remote field, NO push/event/polling.
   const openTeamMode = async (rootSessionId: string): Promise<TeamOpenModeOutcome> => {
     const result = await teamRemote.teamEnsureRootLiveV3(rootSessionId)
     if (result.ok === false) {
@@ -537,14 +623,14 @@ export function applyTeamMount(
       return { ok: false, code: result.error.code, message: result.error.message }
     }
     // (b) only AFTER the guarantee settled: the native switch.
-    ctx.sessions.open(rootSessionId)
+    ctx.uiWorkspace.openSession(rootSessionId)
     openModeByRoot.set(rootSessionId, 'team')
     return { ok: true }
   }
 
   // (9.0c) D3 (Team D1-D6 repair v2, D6) — the EXPLICIT ordinary-mode
   // fallback entry ("以普通模式打开", v2 plan §1.1.3): the EXISTING
-  // `openSession` verbatim (Seam 3, the pure `ctx.sessions.open`) — NO
+  // `openSession` verbatim (0.1.7: the pure `uiWorkspace.openSession`) — NO
   // team-remote call (no `team.ensureRootLive`, no other `team.*`
   // method), NO `session/create`-with-preset (A3 Q1 caveat: that path is
   // rejected on a live Team root), NO ensure-live step, NO list refresh.
@@ -562,35 +648,72 @@ export function applyTeamMount(
     openModeByRoot.set(rootSessionId, 'ordinary')
   }
 
-  // (9.0b) D2 (D6) — the open-mode reset: when the session-list current
+  // (9.0b) D2 (D6) — the open-mode reset: when the main-view current
   // selection changes, every root whose mark is NOT the new current
   // loses it (the mode badge is a per-client-session fact — the root is
   // only "opened in Team mode" while this client sits on it).
+  // 0.1.7: `list.current` is gone — the current session is resolved in the
+  // first-party `ui-session` publishMain order: the last resolved id
+  // through its own `retainInfo` source first (the retain counts are
+  // independent of catalog membership — a generation replacement /
+  // catalog refresh window may drop the current row from `byId` while its
+  // `mainView` retain is still live, and the mark must survive it), then
+  // the byId scan (the list snapshot re-publishes on every retain/release,
+  // the upstream `publishRetention`). The resolve state (`watchedMainId`)
+  // lives at the mount scope so the sidebar entry's `currentSessionId`
+  // read (19.1) shares the exact same retention-backed answer.
+  let watchedMainId: string | undefined
   ctx.effect(
     () => {
-      return ctx.sessions.list.subscribe(() => {
-        const current = ctx.sessions.list.getSnapshot().current
+      let disposeWatch: (() => void) | undefined
+      const reset = (): void => {
+        const current = resolveCurrentMainSessionId(watchedMainId, ctx.sessions)
         for (const root of [...openModeByRoot.keys()]) {
           if (root !== current) openModeByRoot.delete(root)
         }
+        // The churn guard (the upstream `watchMainRetention`): re-subscribe
+        // only when the resolved id CHANGES — a notification that resolves
+        // to the same id keeps the existing subscription (no meaningless
+        // unsubscribe/resubscribe per list/retain event).
+        if (current !== watchedMainId) {
+          watchedMainId = current === null ? undefined : current
+          disposeWatch?.()
+          disposeWatch = undefined
+          if (current !== null) {
+            disposeWatch = ctx.sessions.retainInfo(current).subscribe(() => {
+              if (watchedMainId === current) void reset()
+            })
+          }
+        }
+      }
+      const disposeList = ctx.sessions.list.subscribe(() => {
+        void reset()
       })
+      reset()
+      return () => {
+        disposeList()
+        disposeWatch?.()
+        disposeWatch = undefined
+        watchedMainId = undefined
+      }
     },
     'dsh-agent-team: open-mode reset on session switch',
   )
 
   // (9.1) The creation-path session open (D-3): the host mints the root
   // session during `team.create` / `handoff.create`, and its list
-  // increment may land AFTER the RPC response — a bare `open` of an
-  // unknown id throws. Try the plain open; on failure re-pull the
+  // increment may land AFTER the RPC response — a bare open of an unknown
+  // id throws (0.1.7: the upstream `resolveTarget` contract, through
+  // `UiWorkspace.openSession`). Try the plain open; on failure re-pull the
   // host-authoritative list once, then retry. A failure that survives the
   // retry rethrows (the panel's typed error lane keeps it loud).
   const openCreatedSession = (sessionId: string): Promise<void> => {
     try {
-      ctx.sessions.open(sessionId)
+      ctx.uiWorkspace.openSession(sessionId)
       return Promise.resolve()
     } catch {
       return ctx.sessions.refresh().then(() => {
-        ctx.sessions.open(sessionId)
+        ctx.uiWorkspace.openSession(sessionId)
       })
     }
   }
@@ -615,7 +738,8 @@ export function applyTeamMount(
 
   // (12) The S5-A New Team creation face (frozen Remote wrappers + the
   // native seam members; the seam-6 preset mapping filters the `broken`
-  // rows and drops the trust field before the UI sees it).
+  // rows before the UI sees them — 0.1.7: no `trust` field to drop, the
+  // 0.1.5 lane was removed from the upstream roster row).
   const creation: TeamViewCreationFace = {
     listCatalog: () => teamRemote.catalogList(),
     getCatalog: (params) => teamRemote.catalogGet(params),
@@ -633,18 +757,40 @@ export function applyTeamMount(
       // before the seam-6 row mapping. A refused envelope rejects: the
       // panel's catch degrades to the empty-roster state, the same failure
       // treatment the upstream `ui-agent-preset` consumer applies.
+      //
+      // 0.1.7 `modeSelectionEnabled` roster policy (PR #29 review
+      // supplement, F2): the roster row the 0.1.5 `authorable` flag was
+      // replaced by — "whether visible mode selection is enabled for
+      // unnamed new sessions". `false` must NOT keep presenting the full
+      // chooser roster (the pre-fix behavior): expose ONLY the
+      // provider-flagged default row (default-only — the UI then offers no
+      // mode switch and the default is auto-selected). Deliberately NOT an
+      // empty roster: "chooser disabled" and "host has no presets" are
+      // different states (an empty roster reads as the latter). And when
+      // the chooser is disabled but no usable default exists, fail
+      // VISIBLE — never fall back to another usable preset (that would be
+      // the plugin deciding the host's policy).
       const result = await ctx.remote.agentPresets.list()
       if (result.ok === false) {
         throw new Error(`agentPresets/list: ${result.error.code} ${result.error.message}`)
       }
-      return result.value.presets
-        .filter((row) => row.broken === undefined)
-        .map((row) => ({
-          id: row.id,
-          name: row.name,
-          description: row.description,
-          isDefault: row.isDefault,
-        }))
+      const { presets, modeSelectionEnabled } = result.value
+      const usable = presets.filter((row) => row.broken === undefined)
+      const visible = modeSelectionEnabled
+        ? usable
+        : usable.filter((row) => row.isDefault === true)
+      if (!modeSelectionEnabled && visible.length === 0) {
+        throw new Error(
+          'agentPresets/list: mode selection is disabled (modeSelectionEnabled=false) ' +
+            'but the host roster declares no usable default preset',
+        )
+      }
+      return visible.map((row) => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        isDefault: row.isDefault,
+      }))
     },
   }
 
@@ -840,7 +986,11 @@ export function applyTeamMount(
           // generation-safe pull; targets the NEW team's id).
           pullProjection,
           listAgentPresets: creation.listAgentPresets,
-          currentSessionId: () => ctx.sessions.list.getSnapshot().current ?? null,
+          // 0.1.7: the main-view selection read — the retention-backed
+          // first-party resolution (retainInfo-first, byId-scan fallback),
+          // sharing the open-mode reset effect's `watchedMainId` so the
+          // prefill answer survives a catalog-refresh window (review F3).
+          currentSessionId: () => resolveCurrentMainSessionId(watchedMainId, ctx.sessions),
         }),
       },
       components.newTeamEntry,

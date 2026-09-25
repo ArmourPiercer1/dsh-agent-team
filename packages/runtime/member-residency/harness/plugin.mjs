@@ -112,7 +112,7 @@
  *     — @deepseek-ai/dsh-subagent (public continuable-subagent surface;
  *       the M5 negative probe — lineage authorization before submit)
  *   agentPresets.resolve / mount / composedPreset
- *     — @deepseek-ai/dsh-agent-presets (public preset seam)
+ *     — @deepseek-ai/dsh-agent-preset-registry (public preset seam, 0.1.7)
  *   systemPrompt.assemble({ scope })
  *     — @deepseek-ai/dsh-system-prompt (public prompt assembly boundary)
  *   scopeOf(agentCtx)

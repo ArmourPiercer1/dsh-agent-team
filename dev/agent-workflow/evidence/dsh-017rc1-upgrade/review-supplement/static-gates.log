@@ -1,0 +1,88 @@
+════ static-gates.log — PR29 review-supplement round (2026-09-25) ════
+state: commits 1a3a3ad (compat) + 730f83b (client) on task/dsh-017rc1-upgrade; evidence files uncommitted (not install surface)
+
+── [SG-1] root typecheck (9 packages) ──
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+TYPECHECK-EXIT=0
+
+── [SG-2] build (all packages) ──
+packages/storage build: Done
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+BUILD-EXIT=0
+
+── [SG-3] build:composition + resync ──
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/packages/client/composition-shim/client-bundle.js (969330 B)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/packages/client/composition-shim/package.json
+[check-artifacts-committed] OK: 1172 files; committed install-surface artifacts match the fresh build
+COMPOSITION-EXIT=0
+(client-bundle.js working-tree state after resync; empty status = in sync with committed 730f83b)
+
+── [SG-4] check:artifacts ──
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1172 files; committed install-surface artifacts match the fresh build
+ARTIFACTS-EXIT=0
+
+── [SG-5] zero-core (host-only) ──
+(note: the first capture in this log invoked the wrong script path —
+packages/runtime/scripts/ — and piped through tail, so the displayed
+MODULE_NOT_FOUND trace and ZERO-CORE-EXIT=0 are tail's, not node's;
+the authoritative re-run below uses the real path scripts/verify-zero-core.mjs
+with an unmasked exit code; full output: scratch-zerocore.log)
+$ node scripts/verify-zero-core.mjs --host /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+… INFO lines (upstream's own third-party patch files — not Team rewrites) …
+RESULT: PASS verify-zero-core (0 findings)
+ZERO-CORE-EXIT=0
+
+── [SG-6] focused: compat suite (new, F1) ──
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts (7 tests) 86ms
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+
+── [SG-7] focused: client suite (F2+F3) ──
+ Test Files  47 passed (47)
+      Tests  656 passed (656)
+── [SG-8] root suite (full, the deterministic floor) ──
+$ pnpm test   (root vitest, worker_threads pool — the same mode as the U9 floor capture)
+  Start at 22:07:43 · Duration 14.77s (test time)
+  Test Files  10 failed | 307 passed (317)
+       Tests  20 failed | 3836 passed (3856)
+  ROOTSUITE-EXIT=1  (ELIFECYCLE — from the PRE_EXISTING failures only; the gate
+  semantics is failure-set identity, same as the U9 floor capture)
+  full transcript: scratch-rootsuite.log
+  fail set (23 entries = 20 test-level + 3 file-level):
+    packages/domain/test/t1-capability-schema.test.ts            ×9  (tests 1,2,3,7,8,9,10,11,11b)
+    packages/domain/test/t2-blueprint-hash.test.ts               ×1  (projects absent optional singles as explicit null)
+    packages/legacy/test/p7t6-teammates-adapter.test.ts          ×1  (source scan)
+    packages/runtime/test/d3-member-identity-context.test.ts     ×1  (D3-4 FAIL CLOSED)
+    packages/runtime/test/p6t3-mediation.test.ts                 ×5  (tests 1,3,4,5,7)
+    packages/runtime/test/p6t3-restart.test.ts                   ×2  (tests 2,5)
+    packages/tools/test/p6t6-actions.test.ts                     ×1  (worker->leader direct delivery)
+    packages/runtime/test/p8s3b-result-effects.test.ts           file-level
+    packages/runtime/test/t12a-b2-child-identity.test.ts         file-level
+    packages/runtime/test/t12a-glue-handoff-ports.test.ts        file-level
+  identity vs the pre-supplement floor (scratch-logs/dsh-017rc1-root-test-u9-final.log,
+  10F|20F|3822P(3842)): the 23 FAIL entries are BYTE-IDENTICAL (diff = empty)
+  ⇒ F1' − F0 = ∅ and F0 − F1' = ∅; p6t1-parallel (9 tests) = 0 failures in this
+  full run (the class-E parallel-window flake — 7-row A/B matrix, mechanism and
+  the suggested per-root serialization fix — is documented separately in
+  p6t1-flake-attribution.md and registered as follow-up F7-1; it is not a gate
+  condition).

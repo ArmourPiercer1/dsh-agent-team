@@ -1,0 +1,267 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "rslist-c1-v18vu6atch",
+    "result": {
+      "ok": true,
+      "value": {
+        "items": [
+          {
+            "sessionId": "session-rs-ord-2026-09-25T14-07-04",
+            "updatedAt": 1790345255067,
+            "agentAvailable": true,
+            "running": false,
+            "blank": true,
+            "cwd": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/rs-017rc1-2026-09-25T14-07-04/workspace",
+            "projections": {
+              "kind": "sequenced",
+              "asOfSeq": 2,
+              "values": {
+                "title": null,
+                "goal": null,
+                "tokenUsage": {
+                  "uncachedInputTokens": 0,
+                  "outputTokens": 0,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "contextPressure": {},
+                "contextBreakdown": {
+                  "systemTokens": 0,
+                  "toolsTokens": 0,
+                  "messageTokens": 0
+                },
+                "inbox": {
+                  "next-turn": [],
+                  "next-step": []
+                },
+                "sessionStats": {
+                  "turns": 0,
+                  "steps": 0,
+                  "llmMs": 0,
+                  "toolMs": 0,
+                  "ttftMs": 0,
+                  "ttftSteps": 0,
+                  "decodeMs": 0,
+                  "decodeTokens": 0
+                },
+                "turnOutline": [],
+                "agentPreset": "standard",
+                "subagentCatalog": [],
+                "subagentTiming": {
+                  "settledMs": 0
+                },
+                "subagent": null,
+                "permissions": {
+                  "currentValue": "workspace-write"
+                },
+                "todos": null,
+                "plan": {
+                  "active": false,
+                  "pending": false
+                },
+                "modelSelection": {
+                  "lastUsed": null,
+                  "next": null
+                },
+                "sessionListMetadata": {
+                  "blank": true,
+                  "lastPromptAt": null
+                },
+                "imageLimits": {
+                  "maxImageBytes": 20971520,
+                  "maxImagesPerMessage": 20,
+                  "maxMessageImageBytes": 209715200,
+                  "maxImagePixels": 64000000,
+                  "maxImageDimension": 8192,
+                  "mediaTypes": [
+                    "image/png",
+                    "image/jpeg",
+                    "image/webp",
+                    "image/gif"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "sessionId": "session-rs-team-2026-09-25T14-07-04",
+            "updatedAt": 1790345234396,
+            "agentAvailable": true,
+            "running": false,
+            "blank": false,
+            "cwd": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/rs-017rc1-2026-09-25T14-07-04/workspace",
+            "projections": {
+              "kind": "sequenced",
+              "asOfSeq": 20,
+              "values": {
+                "title": "done",
+                "goal": null,
+                "tokenUsage": {
+                  "uncachedInputTokens": 1486,
+                  "outputTokens": 4,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "contextPressure": {
+                  "pressureTokens": 1486,
+                  "projectedTokens": 1495,
+                  "contextWindow": 1000000
+                },
+                "contextBreakdown": {
+                  "systemTokens": 1608,
+                  "toolsTokens": 6553,
+                  "messageTokens": 1485
+                },
+                "inbox": {
+                  "next-turn": [],
+                  "next-step": []
+                },
+                "sessionStats": {
+                  "turns": 1,
+                  "steps": 1,
+                  "llmMs": 40,
+                  "toolMs": 0,
+                  "ttftMs": 39,
+                  "ttftSteps": 1,
+                  "decodeMs": 1,
+                  "decodeTokens": 4
+                },
+                "turnOutline": [
+                  {
+                    "turn": 1,
+                    "seq": 4,
+                    "prompt": "[team-root-work requestToken=team-create:initial-…",
+                    "response": "done"
+                  }
+                ],
+                "agentPreset": null,
+                "subagentCatalog": [],
+                "subagentTiming": {
+                  "settledMs": 0
+                },
+                "subagent": null,
+                "permissions": {
+                  "currentValue": "workspace-write"
+                },
+                "todos": null,
+                "plan": {
+                  "active": false,
+                  "pending": false
+                },
+                "modelSelection": {
+                  "lastUsed": {
+                    "provider": "deepseek-official",
+                    "model": "rs-model-2026-09-25T14-07-04",
+                    "reasoningEffort": "high"
+                  },
+                  "next": {
+                    "provider": "deepseek-official",
+                    "model": "rs-model-2026-09-25T14-07-04",
+                    "reasoningEffort": "high"
+                  }
+                },
+                "sessionListMetadata": {
+                  "blank": false,
+                  "lastPromptAt": 1790345234396
+                },
+                "imageLimits": {
+                  "maxImageBytes": 20971520,
+                  "maxImagesPerMessage": 20,
+                  "maxMessageImageBytes": 209715200,
+                  "maxImagePixels": 64000000,
+                  "maxImageDimension": 8192,
+                  "mediaTypes": [
+                    "image/png",
+                    "image/jpeg",
+                    "image/webp",
+                    "image/gif"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "sessionId": "session-rs-root-2026-09-25T14-07-04",
+            "updatedAt": 1790345229278,
+            "agentAvailable": true,
+            "running": false,
+            "blank": true,
+            "cwd": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/rs-017rc1-2026-09-25T14-07-04/workspace",
+            "projections": {
+              "kind": "sequenced",
+              "asOfSeq": 2,
+              "values": {
+                "title": null,
+                "goal": null,
+                "tokenUsage": {
+                  "uncachedInputTokens": 0,
+                  "outputTokens": 0,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0
+                },
+                "contextPressure": {},
+                "contextBreakdown": {
+                  "systemTokens": 0,
+                  "toolsTokens": 0,
+                  "messageTokens": 0
+                },
+                "inbox": {
+                  "next-turn": [],
+                  "next-step": []
+                },
+                "sessionStats": {
+                  "turns": 0,
+                  "steps": 0,
+                  "llmMs": 0,
+                  "toolMs": 0,
+                  "ttftMs": 0,
+                  "ttftSteps": 0,
+                  "decodeMs": 0,
+                  "decodeTokens": 0
+                },
+                "turnOutline": [],
+                "agentPreset": null,
+                "subagentCatalog": [],
+                "subagentTiming": {
+                  "settledMs": 0
+                },
+                "subagent": null,
+                "permissions": {
+                  "currentValue": "workspace-write"
+                },
+                "todos": null,
+                "plan": {
+                  "active": false,
+                  "pending": false
+                },
+                "modelSelection": {
+                  "lastUsed": null,
+                  "next": null
+                },
+                "sessionListMetadata": {
+                  "blank": true,
+                  "lastPromptAt": null
+                },
+                "imageLimits": {
+                  "maxImageBytes": 20971520,
+                  "maxImagesPerMessage": 20,
+                  "maxMessageImageBytes": 209715200,
+                  "maxImagePixels": 64000000,
+                  "maxImageDimension": 8192,
+                  "mediaTypes": [
+                    "image/png",
+                    "image/jpeg",
+                    "image/webp",
+                    "image/gif"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

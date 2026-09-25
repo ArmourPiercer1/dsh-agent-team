@@ -162,6 +162,9 @@ export default defineConfig({
     ],
   },
   test: {
+    // 0.1.7: jsdom lacks ResizeObserver (the upstream Tooltip primitive now
+    // uses it) — see test/setup-jsdom.ts.
+    setupFiles: ['test/setup-jsdom.ts'],
     server: {
       deps: {
         // Safety net for anything that still resolves through the
