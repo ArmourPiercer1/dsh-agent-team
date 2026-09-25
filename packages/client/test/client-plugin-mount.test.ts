@@ -32,6 +32,7 @@ import { describe, expect, it } from 'vitest'
 import type { TeamSessionId } from '../../contracts/src/index.js'
 import {
   REMOTE_CONTRACT_VERSION,
+  REMOTE_CONTRACT_VERSION_V3,
   buildRemoteError,
   buildRemoteSuccess,
   type RemoteResponse,
@@ -155,6 +156,17 @@ interface MountFixture {
     readonly announceHostSession: (sessionId: string) => void
     /** The `refresh` call count (the creation-path re-pull lane). */
     readonly refreshCount: () => number
+    /** Make an id openable by the `uiWorkspace` double (the R-series tests). */
+    readonly addKnown: (sessionId: string) => void
+    /** Re-publish the session-list snapshot (drives the list subscriptions). */
+    readonly publishList: (snapshot: TeamSessionListSnapshot) => void
+    /**
+     * Set one session's local retain counts (independent of catalog
+     * membership — the 0.1.7 `retainInfo` contract) and notify watchers.
+     */
+    readonly setRetainInfo: (sessionId: string, retainedBy: Record<string, number>) => void
+    /** The active retainInfo subscription count for one id (churn proof). */
+    readonly retainInfoSubCount: (sessionId: string) => number
   }
   /** The 0.1.7 navigation seam double (0.1.5: `sessions.open`). */
   readonly uiWorkspace: {
@@ -167,6 +179,12 @@ function makeMount(
   opts: {
     readonly config?: TeamPluginClientConfig
     readonly presets?: readonly TeamAgentPresetRow[]
+    /**
+     * The 0.1.7 roster policy flag (default `true` — the public default,
+     * the upstream `remote-default-responses` value). The F2 policy cases
+     * flip it per scenario.
+     */
+    readonly modeSelectionEnabled?: boolean
   } = {},
 ): MountFixture {
   const log: CarrierCall[] = []
@@ -227,8 +245,9 @@ function makeMount(
   // face with the multi-instance session model — the main-view open moved
   // to the `uiWorkspace` double below; the `byId` read face is the R121
   // prefill source — no main-view session in the fixture (every row's
-  // `retainedBy` is empty), so the mount's `currentMainSessionId` answers
-  // null). D-3: the open throws for an unknown id (the 0.1.7
+  // `retainedBy` is empty), so the mount's retention-backed main-session
+  // resolution (retainInfo-first, byId-scan fallback — the 0.1.7
+  // first-party `ui-session` publishMain order) answers null). D-3: the open throws for an unknown id (the 0.1.7
   // `resolveTarget` contract) — the host-created root may not be in the
   // client list store when the RPC lands, so the double models the lag:
   // `announceHostSession` parks an id that the next `refresh` lands in the
@@ -238,7 +257,41 @@ function makeMount(
   const knownSessions = new Set<string>(['m1'])
   const pendingHostSessions: string[] = []
   let refreshCount = 0
-  const listSnapshot: TeamSessionListSnapshot = { byId: {} }
+  // The 0.1.7 list double (publishable — the R-series tests re-publish the
+  // byId rows to model catalog refresh / generation-replacement windows).
+  let listState: TeamSessionListSnapshot = { byId: {} }
+  const listListeners = new Set<() => void>()
+  // The 0.1.7 retainInfo double: per-id local retain counts INDEPENDENT of
+  // catalog membership (the upstream contract — zero counts when none is
+  // live), with per-id subscriptions (the open-mode reset watches the
+  // current main-view session's source, the `watchMainRetention` pattern).
+  const retainStates = new Map<string, Readonly<Record<string, number | undefined>>>()
+  const retainListeners = new Map<string, Set<() => void>>()
+  const retainInfo = (sessionId: string): {
+    readonly getSnapshot: () => {
+      readonly referenceCount: number
+      readonly retainedBy: Readonly<Record<string, number | undefined>>
+    }
+    readonly subscribe: (listener: () => void) => () => void
+  } => {
+    let listeners = retainListeners.get(sessionId)
+    if (listeners === undefined) {
+      listeners = new Set()
+      retainListeners.set(sessionId, listeners)
+    }
+    return {
+      getSnapshot: (): {
+        readonly referenceCount: number
+        readonly retainedBy: Readonly<Record<string, number | undefined>>
+      } => ({ referenceCount: 0, retainedBy: retainStates.get(sessionId) ?? {} }),
+      subscribe: (listener: () => void): (() => void) => {
+        listeners.add(listener)
+        return (): void => {
+          listeners.delete(listener)
+        }
+      },
+    }
+  }
   const sessions = {
     create: async (o?: { readonly workspaceId?: string }): Promise<string> => {
       created.push(o ?? null)
@@ -251,13 +304,27 @@ function makeMount(
       for (const id of pendingHostSessions.splice(0)) knownSessions.add(id)
     },
     list: {
-      getSnapshot: () => listSnapshot,
-      subscribe: () => () => {},
+      getSnapshot: (): TeamSessionListSnapshot => listState,
+      subscribe: (listener: () => void): (() => void) => {
+        listListeners.add(listener)
+        return (): void => {
+          listListeners.delete(listener)
+        }
+      },
     },
-    retainInfo: () => ({
-      getSnapshot: () => ({ referenceCount: 0, retainedBy: {} }),
-      subscribe: () => () => {},
-    }),
+    retainInfo,
+  }
+  const publishList = (snapshot: TeamSessionListSnapshot): void => {
+    listState = snapshot
+    for (const listener of [...listListeners]) listener()
+  }
+  const setRetainInfo = (sessionId: string, retainedBy: Record<string, number>): void => {
+    retainStates.set(sessionId, retainedBy)
+    for (const listener of [...(retainListeners.get(sessionId) ?? [])]) listener()
+  }
+  const retainInfoSubCount = (sessionId: string): number => retainListeners.get(sessionId)?.size ?? 0
+  const addKnown = (sessionId: string): void => {
+    knownSessions.add(sessionId)
   }
   // The 0.1.7 public navigation seam double (0.1.5: `sessions.open`): the
   // main-view selection through `UiWorkspace.openSession`; unknown id
@@ -276,13 +343,16 @@ function makeMount(
 
   // The public remote seam double (Seam 6, SAME). The upstream public
   // contract answers the RemoteResult envelope (roster in `value`), so the
-  // double wraps the rows accordingly.
+  // double wraps the rows accordingly. The 0.1.7 `modeSelectionEnabled`
+  // roster policy flag defaults to `true` (the public default); the F2
+  // policy cases flip it per scenario.
   const presets: readonly TeamAgentPresetRow[] = opts.presets ?? []
+  const modeSelectionEnabled = opts.modeSelectionEnabled ?? true
   const remote = {
     agentPresets: {
       list: async (): Promise<TeamAgentPresetsListResult> => ({
         ok: true,
-        value: { presets, modeSelectionEnabled: false },
+        value: { presets, modeSelectionEnabled },
       }),
     },
   }
@@ -389,7 +459,15 @@ function makeMount(
     effects,
     disposeAll,
     generation: { set: generation.set },
-    sessions: { created, announceHostSession, refreshCount: () => refreshCount },
+    sessions: {
+      created,
+      announceHostSession,
+      refreshCount: () => refreshCount,
+      addKnown,
+      publishList,
+      setRetainInfo,
+      retainInfoSubCount,
+    },
     uiWorkspace: { opened },
   }
 }
@@ -967,5 +1045,222 @@ describe('D4-A1 client mount — post-mutation pull wiring (scenario E)', () => 
 
   it('a typed pull failure settles in the store and never rejects', () => {
     expect(eScenario.pullRejected).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// F2 (PR #29 review supplement) — the 0.1.7 `modeSelectionEnabled` roster
+// policy: chooser enabled → every usable preset (unchanged); chooser
+// disabled → default-only (never the full roster, never an empty roster);
+// disabled + no usable default → fail-visible (no fallback to another
+// usable preset — the plugin must not decide the host's policy).
+// ---------------------------------------------------------------------------
+
+describe('F2 preset roster policy (0.1.7 modeSelectionEnabled)', () => {
+  const mountPresets = (
+    presets: readonly TeamAgentPresetRow[],
+    modeSelectionEnabled: boolean,
+  ): { readonly listAgentPresets: () => Promise<readonly unknown[]>; readonly dispose: () => void } => {
+    const f = makeMount({ presets, modeSelectionEnabled })
+    applyTeamMount(f.ctx, { config: undefined, components: f.components })
+    const viewFace = viewFaceOf(f, 't1')
+    const creation = viewFace.creation
+    if (creation === undefined) throw new Error('F2 test: creation face missing')
+    return {
+      listAgentPresets: () => creation.listAgentPresets(),
+      dispose: f.disposeAll,
+    }
+  }
+
+  it('T1 — chooser enabled: every usable preset is exposed (behavior unchanged, chooser stays)', async () => {
+    const m = mountPresets(
+      [
+        { id: 'standard', name: 'Standard', isDefault: true },
+        { id: 'minimal', name: 'Minimal', isDefault: false },
+      ],
+      true,
+    )
+    try {
+      expect(await m.listAgentPresets()).toEqual([
+        { id: 'standard', name: 'Standard', description: undefined, isDefault: true },
+        { id: 'minimal', name: 'Minimal', description: undefined, isDefault: false },
+      ])
+    } finally {
+      m.dispose()
+    }
+  })
+
+  it('T2 — chooser disabled: only the usable default is exposed (no chooser roster; deliberately not an empty roster)', async () => {
+    const m = mountPresets(
+      [
+        { id: 'standard', name: 'Standard', isDefault: true },
+        { id: 'minimal', name: 'Minimal', isDefault: false },
+      ],
+      false,
+    )
+    try {
+      expect(await m.listAgentPresets()).toEqual([
+        { id: 'standard', name: 'Standard', description: undefined, isDefault: true },
+      ])
+    } finally {
+      m.dispose()
+    }
+  })
+
+  it('T3 — chooser disabled + the default row broken: fail-visible (NO fallback to the other usable preset)', async () => {
+    const m = mountPresets(
+      [
+        { id: 'standard', name: 'Standard', isDefault: true, broken: 'preset activation failed' },
+        { id: 'minimal', name: 'Minimal', isDefault: false },
+      ],
+      false,
+    )
+    try {
+      await expect(m.listAgentPresets()).rejects.toThrow(
+        /modeSelectionEnabled=false.*no usable default/,
+      )
+    } finally {
+      m.dispose()
+    }
+  })
+
+  it('T4 — chooser disabled + no default row at all: fail-visible (no silent first-usable fallback)', async () => {
+    const m = mountPresets(
+      [{ id: 'minimal', name: 'Minimal', isDefault: false }],
+      false,
+    )
+    try {
+      await expect(m.listAgentPresets()).rejects.toThrow(
+        /modeSelectionEnabled=false.*no usable default/,
+      )
+    } finally {
+      m.dispose()
+    }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// F3 (PR #29 review supplement) — the retention-backed main-view
+// resolution: the catalog may temporarily drop the current row (generation
+// replacement / catalog refresh / reconnect window) while its `mainView`
+// retain is still live — the Team open-mode mark must survive the window,
+// the mark clears only when the retain is truly released, and the
+// `watchMainRetention` churn guard keeps exactly one subscription per
+// switch (no meaningless unsubscribe/resubscribe).
+// ---------------------------------------------------------------------------
+
+/** One frozen `team.ensureRootLive` v3 success envelope (the closed shape). */
+function ensureRootLiveSuccess(rootSessionId: string): RemoteResponse {
+  return buildRemoteSuccess(
+    { rootSessionId, mode: 'team', live: true },
+    {
+      method: 'team.ensureRootLive',
+      endpoint: 'team.ensureRootLive',
+      contractVersion: REMOTE_CONTRACT_VERSION_V3,
+      requestToken: null,
+    },
+  )
+}
+
+/** Resolve the sidebar footer entry inject face (the R121 prefill read). */
+function sidebarInjectOf(
+  fixture: MountFixture,
+): { readonly currentSessionId: () => string | null } {
+  const reg = fixture.registers.find(
+    (r) => (r.options as { name?: unknown }).name === 'sidebar.footer.action',
+  )
+  if (reg === undefined) throw new Error('F3 test: sidebar.footer.action registration missing')
+  return (reg.options as { inject: () => { currentSessionId: () => string | null } }).inject()
+}
+
+describe('F3 main-view retention (open-mode reset, 0.1.7 retainInfo-first)', () => {
+  const mountTeamRoot = async (
+    fixture: MountFixture,
+    root: string,
+  ): Promise<{
+    readonly teamOpenMode: (rootSessionId: string) => 'team' | 'ordinary' | null
+    readonly currentSessionId: () => string | null
+  }> => {
+    const viewFace = viewFaceOf(fixture, root)
+    const openTeamMode = viewFace.openTeamMode
+    const teamOpenMode = viewFace.teamOpenMode
+    if (openTeamMode === undefined || teamOpenMode === undefined) {
+      throw new Error('F3 test: injected openTeamMode/teamOpenMode face missing')
+    }
+    fixture.sessions.addKnown(root)
+    fixture.enqueue('team.ensureRootLive', () => ensureRootLiveSuccess(root))
+    const outcome = await openTeamMode(root)
+    if (outcome.ok === false) {
+      throw new Error(`F3 test: openTeamMode failed: ${outcome.code} ${outcome.message}`)
+    }
+    return { teamOpenMode, currentSessionId: sidebarInjectOf(fixture).currentSessionId }
+  }
+
+  it('R1 — catalog gap on the current row while its mainView retain is live: current is kept, the Team mark survives, no subscription churn', async () => {
+    const f = makeMount()
+    applyTeamMount(f.ctx, { config: undefined, components: f.components })
+    // Initial state: root is the main-view session (catalog + retain agree).
+    f.sessions.publishList({ byId: { root: { id: 'root', retainedBy: { mainView: 1 } } } })
+    f.sessions.setRetainInfo('root', { mainView: 1 })
+    const { teamOpenMode, currentSessionId } = await mountTeamRoot(f, 'root')
+    expect(teamOpenMode('root')).toBe('team')
+    expect(currentSessionId()).toBe('root')
+    expect(f.sessions.retainInfoSubCount('root')).toBe(1)
+    // The catalog temporarily drops root (a generation replacement /
+    // catalog refresh window); the retainInfo source still reports the
+    // mainView retain.
+    f.sessions.publishList({ byId: {} })
+    expect(currentSessionId()).toBe('root') // retention-backed — NOT null
+    expect(teamOpenMode('root')).toBe('team') // the mark is NOT cleared
+    // A flapping refresh (identical re-publish) must not re-subscribe.
+    f.sessions.publishList({ byId: {} })
+    expect(f.sessions.retainInfoSubCount('root')).toBe(1) // churn guard
+    f.disposeAll()
+  })
+
+  it('R2 — the mainView retain truly released: current clears and the stale mark is removed', async () => {
+    const f = makeMount()
+    applyTeamMount(f.ctx, { config: undefined, components: f.components })
+    f.sessions.publishList({ byId: { root: { id: 'root', retainedBy: { mainView: 1 } } } })
+    f.sessions.setRetainInfo('root', { mainView: 1 })
+    const { teamOpenMode, currentSessionId } = await mountTeamRoot(f, 'root')
+    expect(teamOpenMode('root')).toBe('team')
+    // The selection moves away (the New Session view state releases the
+    // mainView retain): the catalog row is gone AND the retain counts drop.
+    f.sessions.publishList({ byId: {} })
+    expect(teamOpenMode('root')).toBe('team') // the window: the mark still holds
+    f.sessions.setRetainInfo('root', { mainView: 0 })
+    expect(currentSessionId()).toBe(null) // truly released → cleared
+    expect(teamOpenMode('root')).toBe(null) // the stale mark is removed
+    expect(f.sessions.retainInfoSubCount('root')).toBe(0) // watcher disposed
+    f.disposeAll()
+  })
+
+  it('R3 — A→B switch: the A mark clears, B becomes current, the A watcher is disposed (no residue)', async () => {
+    const f = makeMount()
+    applyTeamMount(f.ctx, { config: undefined, components: f.components })
+    f.sessions.addKnown('B')
+    f.sessions.publishList({ byId: { A: { id: 'A', retainedBy: { mainView: 1 } } } })
+    f.sessions.setRetainInfo('A', { mainView: 1 })
+    const { teamOpenMode, currentSessionId } = await mountTeamRoot(f, 'A')
+    expect(teamOpenMode('A')).toBe('team')
+    expect(f.sessions.retainInfoSubCount('A')).toBe(1)
+    // The host switches the main view A → B: A's retain releases first (the
+    // retain event may land before the list re-publish — the retain watcher
+    // is exactly what covers that), then the catalog catches up.
+    f.sessions.setRetainInfo('A', { mainView: 0 })
+    f.sessions.setRetainInfo('B', { mainView: 1 })
+    f.sessions.publishList({
+      byId: {
+        A: { id: 'A', retainedBy: { mainView: 0 } },
+        B: { id: 'B', retainedBy: { mainView: 1 } },
+      },
+    })
+    expect(currentSessionId()).toBe('B')
+    expect(teamOpenMode('A')).toBe(null) // A's mark cleared
+    expect(teamOpenMode('B')).toBe(null) // B was never explicitly opened (no mark minted)
+    expect(f.sessions.retainInfoSubCount('A')).toBe(0) // the A watcher is disposed
+    expect(f.sessions.retainInfoSubCount('B')).toBe(1) // the B watcher is armed
+    f.disposeAll()
   })
 })

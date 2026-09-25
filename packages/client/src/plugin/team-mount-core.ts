@@ -397,13 +397,30 @@ export type TeamOpenModeOutcome =
   | { readonly ok: false; readonly code: string; readonly message: string }
 
 /**
- * The 0.1.7 "current main-view session" read: the byId row carrying a
- * positive local `mainView` retain count (the first-party `ui-session`
- * publishMain pattern). `null` when the selection is cleared (no row with
- * a `mainView` reference — the New Session view state releases it).
+ * The 0.1.7 "current main-view session" read in FIRST-PARTY ORDER (the
+ * upstream `ui-session` `publishMain`): the previously resolved id is
+ * checked through its own `retainInfo` source FIRST — the local retain
+ * counts are independent of catalog membership, so the source keeps
+ * reporting a live `mainView` retain while the catalog row is temporarily
+ * absent (a generation replacement / catalog refresh / reconnect window).
+ * Only a current whose retain is actually released falls through to the
+ * byId scan (which also finds a freshly retained id whose catalog row is
+ * not in the snapshot yet). `null` when the selection is cleared (no
+ * `mainView` reference anywhere — the New Session view state releases it).
+ *
+ * PR #29 review supplement (F3): the pre-fix read scanned ONLY `byId`, so
+ * a catalog gap on the current row answered `null` and the open-mode reset
+ * wrongly cleared the current Team's mode mark in that window.
  */
-function currentMainSessionId(snapshot: TeamSessionListSnapshot): string | null {
-  for (const summary of Object.values(snapshot.byId)) {
+function resolveCurrentMainSessionId(
+  previousId: string | undefined,
+  sessions: TeamSessions,
+): string | null {
+  if (previousId !== undefined) {
+    const info = sessions.retainInfo(previousId).getSnapshot()
+    if ((info.retainedBy.mainView ?? 0) > 0) return previousId
+  }
+  for (const summary of Object.values(sessions.list.getSnapshot().byId)) {
     if ((summary.retainedBy.mainView ?? 0) > 0) return summary.id
   }
   return null
@@ -635,32 +652,38 @@ export function applyTeamMount(
   // selection changes, every root whose mark is NOT the new current
   // loses it (the mode badge is a per-client-session fact — the root is
   // only "opened in Team mode" while this client sits on it).
-  // 0.1.7: `list.current` is gone — the current session is the byId row
-  // with a positive `retainedBy.mainView` (the list snapshot re-publishes
-  // on every retain/release, the upstream `publishRetention`); the
-  // current row's `retainInfo` source is watched as well, mirroring the
-  // first-party `ui-session` watchMainRetention (it covers a retained id
-  // whose catalog row is not in the snapshot yet).
+  // 0.1.7: `list.current` is gone — the current session is resolved in the
+  // first-party `ui-session` publishMain order: the last resolved id
+  // through its own `retainInfo` source first (the retain counts are
+  // independent of catalog membership — a generation replacement /
+  // catalog refresh window may drop the current row from `byId` while its
+  // `mainView` retain is still live, and the mark must survive it), then
+  // the byId scan (the list snapshot re-publishes on every retain/release,
+  // the upstream `publishRetention`). The resolve state (`watchedMainId`)
+  // lives at the mount scope so the sidebar entry's `currentSessionId`
+  // read (19.1) shares the exact same retention-backed answer.
+  let watchedMainId: string | undefined
   ctx.effect(
     () => {
-      let watchedId: string | undefined
       let disposeWatch: (() => void) | undefined
-      const disposeRetainWatch = (): void => {
-        watchedId = undefined
-        disposeWatch?.()
-        disposeWatch = undefined
-      }
       const reset = (): void => {
-        const current = currentMainSessionId(ctx.sessions.list.getSnapshot())
+        const current = resolveCurrentMainSessionId(watchedMainId, ctx.sessions)
         for (const root of [...openModeByRoot.keys()]) {
           if (root !== current) openModeByRoot.delete(root)
         }
-        disposeRetainWatch()
-        if (current !== null) {
-          watchedId = current
-          disposeWatch = ctx.sessions.retainInfo(current).subscribe(() => {
-            if (watchedId === current) void reset()
-          })
+        // The churn guard (the upstream `watchMainRetention`): re-subscribe
+        // only when the resolved id CHANGES — a notification that resolves
+        // to the same id keeps the existing subscription (no meaningless
+        // unsubscribe/resubscribe per list/retain event).
+        if (current !== watchedMainId) {
+          watchedMainId = current === null ? undefined : current
+          disposeWatch?.()
+          disposeWatch = undefined
+          if (current !== null) {
+            disposeWatch = ctx.sessions.retainInfo(current).subscribe(() => {
+              if (watchedMainId === current) void reset()
+            })
+          }
         }
       }
       const disposeList = ctx.sessions.list.subscribe(() => {
@@ -669,7 +692,9 @@ export function applyTeamMount(
       reset()
       return () => {
         disposeList()
-        disposeRetainWatch()
+        disposeWatch?.()
+        disposeWatch = undefined
+        watchedMainId = undefined
       }
     },
     'dsh-agent-team: open-mode reset on session switch',
@@ -732,18 +757,40 @@ export function applyTeamMount(
       // before the seam-6 row mapping. A refused envelope rejects: the
       // panel's catch degrades to the empty-roster state, the same failure
       // treatment the upstream `ui-agent-preset` consumer applies.
+      //
+      // 0.1.7 `modeSelectionEnabled` roster policy (PR #29 review
+      // supplement, F2): the roster row the 0.1.5 `authorable` flag was
+      // replaced by — "whether visible mode selection is enabled for
+      // unnamed new sessions". `false` must NOT keep presenting the full
+      // chooser roster (the pre-fix behavior): expose ONLY the
+      // provider-flagged default row (default-only — the UI then offers no
+      // mode switch and the default is auto-selected). Deliberately NOT an
+      // empty roster: "chooser disabled" and "host has no presets" are
+      // different states (an empty roster reads as the latter). And when
+      // the chooser is disabled but no usable default exists, fail
+      // VISIBLE — never fall back to another usable preset (that would be
+      // the plugin deciding the host's policy).
       const result = await ctx.remote.agentPresets.list()
       if (result.ok === false) {
         throw new Error(`agentPresets/list: ${result.error.code} ${result.error.message}`)
       }
-      return result.value.presets
-        .filter((row) => row.broken === undefined)
-        .map((row) => ({
-          id: row.id,
-          name: row.name,
-          description: row.description,
-          isDefault: row.isDefault,
-        }))
+      const { presets, modeSelectionEnabled } = result.value
+      const usable = presets.filter((row) => row.broken === undefined)
+      const visible = modeSelectionEnabled
+        ? usable
+        : usable.filter((row) => row.isDefault === true)
+      if (!modeSelectionEnabled && visible.length === 0) {
+        throw new Error(
+          'agentPresets/list: mode selection is disabled (modeSelectionEnabled=false) ' +
+            'but the host roster declares no usable default preset',
+        )
+      }
+      return visible.map((row) => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        isDefault: row.isDefault,
+      }))
     },
   }
 
@@ -939,8 +986,11 @@ export function applyTeamMount(
           // generation-safe pull; targets the NEW team's id).
           pullProjection,
           listAgentPresets: creation.listAgentPresets,
-          // 0.1.7: the main-view selection read (byId `retainedBy.mainView`).
-          currentSessionId: () => currentMainSessionId(ctx.sessions.list.getSnapshot()),
+          // 0.1.7: the main-view selection read — the retention-backed
+          // first-party resolution (retainInfo-first, byId-scan fallback),
+          // sharing the open-mode reset effect's `watchedMainId` so the
+          // prefill answer survives a catalog-refresh window (review F3).
+          currentSessionId: () => resolveCurrentMainSessionId(watchedMainId, ctx.sessions),
         }),
       },
       components.newTeamEntry,

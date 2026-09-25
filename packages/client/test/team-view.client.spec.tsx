@@ -247,6 +247,10 @@ function viewProps(
     useSessionStatus: (() => undefined) as TeamViewProps['useSessionStatus'],
     useSessionRetainInfo: (() => undefined) as TeamViewProps['useSessionRetainInfo'],
     useWorkspaces: (() => undefined) as TeamViewProps['useWorkspaces'],
+    // 0.1.7 full peer instantiation (F1 lockfile): the ui-layout
+    // GlobalStandardProps augmentation requires usePanelInfo — a constant
+    // snapshot selector, never read by the Team components.
+    usePanelInfo: (sel) => sel({ activePanelId: null }),
     // The injected face (projection-only after the T6 collapse).
     useProjectionMirror: selector => selector(projectionMirror),
     useTeamLedgers: selector => selector(teamLedgers),

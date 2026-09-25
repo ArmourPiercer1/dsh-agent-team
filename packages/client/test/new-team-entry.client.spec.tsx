@@ -166,6 +166,10 @@ function entryProps(
     useWorkspaces: workspaceItems.length > 0
       ? workspacesHook(workspaceItems)
       : (() => undefined) as NewTeamEntryProps['useWorkspaces'],
+    // 0.1.7 full peer instantiation (F1 lockfile): the ui-layout
+    // GlobalStandardProps augmentation requires usePanelInfo — a constant
+    // snapshot selector, never read by the Team components.
+    usePanelInfo: (sel) => sel({ activePanelId: null }),
     listCatalog: face.listCatalog,
     getCatalog: face.getCatalog,
     probeCompatibility: face.probeCompatibility,
