@@ -3772,3 +3772,11 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **红线守纪**：CORE PATCH BUDGET = 0（upstream 零修改；test-use pristine 冒烟前后双证）；**零 push**（本轮无推送授权，supplement 3 提交留本地）；冻结锚点未移动；worktree symlink 未入库；world 按 §7 留档（run-4 + run-5 两个 rs world）。
 - **簿记**：证据 `evidence/dsh-017rc1-upgrade/review-supplement/`（smoke.mjs kit + real-host-smoke.md + compatibility-peer.md + client-preset-policy.md + client-main-retention.md + p6t1-flake-attribution.md + static-gates.log SG-1–8 + focused-tests.log + smoke 4 轮 transcript + 全 leg 证据）随 commit `22b0a5f` 入库；四 living 文档更新（upgrade-summary §7 / failure-classification delta / post-upgrade-followups F3 闭合 + F7 / u8 vertical-summary 注记）。**附带修复**：graph.yaml 既有 YAML 语法坏点 ×6（a2724b4 前已存在：line 86 flow 序列 `?teamMode` 未加引号 / line 519 delivery 内嵌引号未转义 / lines 565/566/577/580 行尾多余 `)` / pr 行引号未闭合）—— 纯语法修复零语义改动，修复后全文件 pyyaml 解析通过（38 blocks）。
 - **状态**：supplement 轮 COMPLETE（本地）。分支 `task/dsh-017rc1-upgrade` = `a2724b4 → 1a3a3ad → 730f83b → 22b0a5f`（origin 头仍 = `a2724b4` STALE）；PR #29 待新一轮推送授权（推送 + PR body 补 supplement 节）后 MERGE-READY。
+
+### 2026-09-25 — PR #29 review-supplement 轮推送 + PR body 更新（用户一次性推送授权「推送 + 补 PR #29 body」）
+
+- **推送**：`git push origin task/dsh-017rc1-upgrade`（FF `a2724b4..6fd33c6`，4 提交：1a3a3ad fix(compat) / 730f83b fix(client) / 22b0a5f test 证据 / 6fd33c6 簿记；exit 0；**零 force-push**；`--is-ancestor` 预检 FF_OK）。
+- **PR #29 body 更新**：追加「PR29 review-supplement 轮（2026-09-25）」一节（F1/F2/F3 闭合方式 + G-S1–G-S5 门禁实数 + H1–H3 26/26 实宿主证据 + lockfile 再解析语义中性注记 + p6t1-parallel 类 E 归因 + F7-1 follow-up + 验证步骤计数修正 3822P(3842)→3836P(3856) 注记）。`gh pr edit` 触发 GraphQL Projects-classic 弃用 bug → 改 REST `PATCH /pulls/29` 成功（原 body 完整保留，仅追加）。
+- **终验**：`git ls-remote origin` = `6fd33c665f` = 本地 HEAD ✅；PR #29 = OPEN / MERGEABLE（REST mergeable=true）/ head = 6fd33c6 ✅。
+- **红线核对**：仅 FF 推送已授权分支；零 force-push；master/stable 零触碰；未 merge（merge 裁决归用户）。
+- **状态**：PR #29 MERGE-READY，待用户审查 merge。
