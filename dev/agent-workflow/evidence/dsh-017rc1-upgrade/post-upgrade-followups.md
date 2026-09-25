@@ -36,6 +36,12 @@ session log V4（`session.v4.jsonl.zstd` + v0→v4 迁移链）已在本轮适�
   本插件 root manifest 无 peerDependencies → 直接通过。**建议后续给插件声明显式
   `@deepseek-ai/dsh` peer range**（如 `>=0.1.7-rc.1`），让 0.1.7 的 compat 门对本插件真正生效
   （当前为空 = 恒通过 = 门形同虚设；声明是产品决策，超出本轮"验证通过"范围）。
+  → **CLOSED @ PR29 review-supplement 轮（F1 发现项，2026-09-25）**：按 review 裁决声明
+  **精确 RC range `0.1.7-rc.1`**（commit 1a3a3ad，非 `>=`——RC 期精确匹配，避免 rc.2 漂移误放行）；
+  新世界 git-install 复证 = 0.1.7-rc.1 运行时无豁免通过、0.1.5-rc.2 反事实 RAISE issue
+  （门现真正约束本插件；`review-supplement/real-host-smoke.md` H1 + `h1-peer/evaluation.json`）。
+  附注：声明触发 pnpm lockfile 再解析（多集 diff = 恰 +1 伞宿主树；实例 churn 语义中性）与
+  client 测试 fixture 的 usePanelInfo 编译适配（`review-supplement/compatibility-peer.md` §4/§5）。
 
 ## F4. test-infra 加固（本仓库面）
 
@@ -82,3 +88,31 @@ U8 在 pristine 0.1.7-rc.1 实宿主（test-use @ `46a7f68b09`）上跑了 8 轮
 15. **U3 探针复测**：20P/14F（vs 基线 34P）——两个根因均为 0.1.7 面（session log V4 命名 + `session.events` 词汇移除），非插件回归；fixture 重录 + probe 全量自检并入 F1 的 0.1.7 新基线重分析（probe world `u8-017rc1-probe-2026-09-24T13-13-03` RETAINED，`u8/lifecycle-probe/`）。
 
 **kit 侧沉淀（可入 `tests/kits/`）**：dual-protocol mock、named override 行生成、session/create+prompt-on-accept、durable-fact-store approval discovery（double-encoded 行走查）、requestToken 一次性、domain-store 轮询读回、multi-frame V4 解码、repetition-guard 安全的 decide 设计。
+
+## F7. PR29 review-supplement 轮新发现（2026-09-25，H1–H3 + 静态闸期间）
+
+1. **p6t1-parallel 间歇 flake = 插件自身 compatibility admission 链的既有并发竞态（类 E：新暴露的既有不稳定）**。
+   现象：supplement 状态全量并行跑 p6t1-parallel 约 40% 失败，错误 =
+   `activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)`
+   （`activation/provider.ts:654` ← `compatibility/authority.ts:259-270`）。
+   机制：每次 activation 请求新建 authority（`provider.ts:629`）→ 新 prober（`authority.ts:235`），
+   而 prober 的 `withLock` 序列化锁是 **per-prober-instance**（`probe.ts`，"one durable writer per prober"
+   的本意是 per-root）→ 同 root 的两个并行激活 = 两个未同步的 probe；probe 的持久写
+   `replaceState` = delete→put→advanceGeneration 三段独立 await（`probe.ts:256-260`），
+   交叠时第二个 probe 的 get 落入 delete→put 间隙 → probe reject → REPROBE_FAILED → fail-closed。
+   A/B 归因（7 行矩阵，含"新 lockfile node_modules + 基线源码"隔离行与 +16 核 OS 负载行，
+   全部 PASS → 排除 lockfile 再解析与 OS 负载两个假设；vitest `pool:'threads'` 全文件同进程 →
+   本轮 +14 测试扩大同进程调度窗口 = 触发器；p6t1 standalone 双状态 0/5）：
+   详见 `review-supplement/p6t1-flake-attribution.md`。
+   **建议修复（本轮不修，超文件范围——runtime compatibility 链）**：per-root-session 的
+   re-probe 序列化（跨 authority 实例共享的 root-keyed promise chain 包住 `probe` + replaceState 三元组），
+   恢复 P6-T1 "one durable writer" 的 root 语义；修复后 P1 交错变为确定性（第二 probe 读到
+   第一 probe 的 durable state，fingerprint 一致，不再 re-probe）。
+2. **dsh-client 测试运行时 peer 实例化的非确定性（upstream 反馈候选）**：F1 的 peer 声明使
+   pnpm 把 `dsh-client-test-runtime` 从旧 peer 邻集变体（32bb…）再实例化为全 peer 邻集变体（846f…），
+   激活 `dsh-client-ui-layout` 的 `GlobalStandardProps` 模块增强（`usePanelInfo`）→ 7 个 client spec
+   fixture 需要补一行 `usePanelInfo` 快照选择器（已做，`compatibility-peer.md` §5）。
+   同一 peer 集合的不同"声明顺序/邻集路径"会产生不同变体哈希 → fixture 程序面随宿主 lockfile
+   漂移。upstream 面候选：ui-layout 的全局增强应对"无宿主上下文"的 fixture 程序惰性/可选激活，
+   或在 client 测试运行时锁定最小 peer 邻集（dedupe 行为不稳定，`dedupe-peer-dependents=false`
+   实测无效——已验证记录）。

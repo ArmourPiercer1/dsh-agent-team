@@ -1,0 +1,8 @@
+[
+  {
+    "attempt": 1,
+    "code": "internal-error",
+    "reason": "runtime-not-ready",
+    "message": "remote method 'team.create' is unavailable while the team runtime is not ready (state: starting) — the live boot is still starting or it failed; the route stays"
+  }
+]

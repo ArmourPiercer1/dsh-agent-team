@@ -8,14 +8,14 @@ Evidence: this directory (`install/ v0-boot/ v1-ordinary/ v2-team/ v3-tools/ v4-
 
 ## (a) §11.2 git-install / compatibility verdict
 
-**VERDICT: PASS** — the 0.1.7 git-install path works end-to-end on the pristine host; the plugin's 0.1.7 version-compat check passes by construction (no `peerDependencies` declared), with no incompat line, no allow-version exemption prompt, and no pnpm git-prepare build rejection (the install surface is committed prebuilt; zero lifecycle scripts).
+**VERDICT: PASS** — the 0.1.7 git-install path works end-to-end on the pristine host; the plugin's 0.1.7 version-compat check passed with no incompat line, no allow-version exemption prompt, and no pnpm git-prepare build rejection (the install surface is committed prebuilt; zero lifecycle scripts). **Supplement-round note (post-U8):** at this U8 point the root manifest declared no `peerDependencies`, so the gate passed by absence (unconstrained); the PR #29 review-supplement round closed that finding (F1) by declaring `peerDependencies["@deepseek-ai/dsh"] = "0.1.7-rc.1"` and re-proving the install gate on a fresh world — see `../review-supplement/real-host-smoke.md` (H1: the declared range is read by the real host evaluator, accepted at the running 0.1.7-rc.1 runtime without any exemption, and counterfactually RAISES an issue at 0.1.5-rc.2).
 
 - S0: bare clone of `task/dsh-017rc1-upgrade`; cloned tip == worktree HEAD `adad20c0`.
 - S1: first `dsh plugin add git+file://<world>/repo.git#task/dsh-017rc1-upgrade` exits 0 (3.4s, pnpm 11.7.0, `+1` package); full output in `install/add.log` (no warning lines).
 - S2: `dsh.profile.bundles` auto-contains `dsh-agent-team` (CLI reconcile of the root `dsh.bundle.patch` declaration) — `["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]`; the profile patch carries NO hand-written row at install time (the bundle layer owns it).
 - S3: installed package dir carries the committed install surface (`host.js` + `agent-bindings.mjs` + `team-spill-local.js` + `cordis.patch.yml`); the installed root `cordis.patch.yml` carries the spill replacement rows (base `spill-local` disabled + `team-spill-local` inserted).
 
-Recommendation (follow-up F3): declare an explicit `@deepseek-ai/dsh` `peerDependencies` range so the 0.1.7 compat check validates a real range instead of passing by absence.
+Recommendation (follow-up F3) — **CLOSED by the PR #29 review-supplement round (F1)**: the root manifest now declares `peerDependencies["@deepseek-ai/dsh"] = "0.1.7-rc.1"` (the exact running RC; an explicit range so the 0.1.7 compat check validates a real range instead of passing by absence), and the fresh-world git-install re-proof (`../review-supplement/real-host-smoke.md`, H1) shows the gate now constraining the plugin: install exits 0 with no exemption at the running 0.1.7-rc.1 runtime, and the host's own evaluator raises an issue for the same manifest at a 0.1.5-rc.2 runtime.
 
 ## (b) V0–V8 verdict table (definitive run-11, 75/75; per-leg pass/fail in `run/summary.json`)
 

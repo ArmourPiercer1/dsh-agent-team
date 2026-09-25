@@ -1,0 +1,10 @@
+{
+  "world": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/rs-017rc1-2026-09-25T14-07-04",
+  "branch": "task/dsh-017rc1-upgrade",
+  "worktreeSha": "730f83b0d0b797d8e41e6bb1756c794206ef613f",
+  "hostPin": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "hostPort": 3491,
+  "origin": "http://127.0.0.1:3491",
+  "durationMs": 30523,
+  "note": "world kept for inspection (TEST_METHODS §7); safe to delete after the supplement evidence is archived"
+}

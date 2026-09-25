@@ -1,0 +1,36 @@
+── H1: git-install (S1–S3 + peer-read proof) ──
+PASS [h1] S0 bare clone of the supplement branch; cloned tip == worktree HEAD
+PASS [h1] S1 first `dsh plugin add` exits 0 (the F1 peer DECLARED — the 0.1.7 compat gate now evaluates it and it PASSES at the running runtime)
+PASS [h1] S1 NO 0.1.7 incompatible line / allow-version exemption prompt in the add output (no exemption needed: the declared range matches the running runtime)
+PASS [h1] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (install surface committed prebuilt; zero lifecycle scripts)
+PASS [h1] S1 no allowBuilds entry in the profile pnpm-workspace.yaml
+PASS [h1] S1 NO compatibility.json exemption grant file anywhere in the world (the install needed no exemption)
+PASS [h1] H1-peer the INSTALLED manifest carries peerDependencies["@deepseek-ai/dsh"] (the F1 declaration survived the git-install path)
+PASS [h1] H1-peer the host runtime reports the running DSH version
+PASS [h1] H1-peer the host evaluator ACCEPTS the supplement manifest at the running 0.1.7-rc.1 runtime (no issue, no exemption) → the install gate passes WITHOUT grant
+PASS [h1] H1-peer COUNTERFACTUAL: at a 0.1.5-rc.2 runtime the SAME manifest RAISES an issue naming the peer (the gate now CONSTRAINS the plugin — pre-supplement it was unconstrained by construction)
+PASS [h1] H1-peer counterfactual (no peer declared, the PRE-supplement shape) at 0.1.5-rc.2 → unconstrained (undefined): exactly the hole F1 closes
+mock model listening on 3496
+── H2: host boot (the install world) ──
+PASS [h2] H2 host boot marker present (dsh web: …?token=…)
+PASS [h2] H2 unauthenticated GET / → 401 (launch-token gate active)
+PASS [h2] H2 launch-token cookie obtained
+── H2: roster read (agentPresets/list) ──
+PASS [h2] H2-roster the roster endpoint responds ok on the fresh world
+PASS [h2] H2-roster the wire carries `modeSelectionEnabled` as a boolean (the F2 field is LIVE on 0.1.7 — the guide §11 deprecation note is answered by source + wire)
+roster: modeSelectionEnabled=true presets=4
+PASS [h2] H2-roster the F2 client policy yields a NON-EMPTY visible roster on the fresh world (the creation UI would not fail-visible)
+── H2: team.create (v2) with minimal initial work ──
+team.create attempt 1: runtime-not-ready — waiting for the live boot (5s)
+TIMEOUT waiting for: the created team leader first model request (requests=2)
+FAIL [h2] H2-team the created team leader turn started — SKIPPED (no leader request in 180s; requests=2)
+PASS [h2] H2-team team.create resolved ok (the product-path Team creation PASS on the supplement state; readiness retries: 1)
+── H3: ordinary + team coexistence, retention shape, fresh connection ──
+PASS [h3] H3 a freshly created ordinary session succeeds (ordinary path intact alongside the team root)
+PASS [h3] H3 connection-1 catalog carries the boot main root + the created team root + the new ordinary session (NO row loss while both session kinds coexist)
+PASS [h3] H3 wire row shape: session/list rows are SessionSummary (sessionId + agentAvailable + running on every row; retainedBy confirmed client-side, not wire)
+PASS [h3] H3 a second launch-token cookie (fresh client identity) obtained
+PASS [h3] H3 the FRESH connection sees the SAME catalog (reconnect stability: no spurious row loss / generation-replacement window on a new client)
+── teardown ──
+
+23/24 checks passed. world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/rs-017rc1-2026-09-25T14-01-31

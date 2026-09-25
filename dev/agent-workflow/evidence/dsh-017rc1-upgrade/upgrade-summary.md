@@ -46,7 +46,7 @@ adad20c  U7     mini-mcp.d.mts + p4t6 747 + static-gates.log
 
 ## 4. 0.1.7 新行为面（本轮实证，详见 `u8/vertical-summary.md` (c)）
 
-1. **plugin version-compat check**：`peerDependencies` 驱动（semver includePrerelease，fail-closed + `allow-version --accept-risk` 豁免）；本插件无 peers → 构造性通过（F3：建议后续声明显式 peer range 让门生效）。
+1. **plugin version-compat check**：`peerDependencies` 驱动（semver includePrerelease，fail-closed + `allow-version --accept-risk` 豁免）；U8 时点本插件无 peers → 构造性通过（无约束）——**该缺口已由 PR29 review-supplement 轮 F1 闭合**：根 manifest 现声明 `peerDependencies["@deepseek-ai/dsh"] = "0.1.7-rc.1"`，门从"因缺失而通过"变为"对真实 range 求值"；新世界的 git-install 复证（`review-supplement/real-host-smoke.md` H1）= 0.1.7-rc.1 运行时无豁免通过 + 0.1.5-rc.2 反事实 RAISE issue（门现真正约束本插件）。
 2. **compat preflight 对 nameless profile-override row 崩溃**（0.1.7 新特性真 bug，上游候选）：`manifestOf` 未 guard `row.name === undefined` → 配置覆盖行（无 name）被静默禁用 + 误导性 denial；named row 正常（rc2 kit 模式成立）。
 3. **remote session API**：无 auto-create（显式 `POST /api/session/create`）；`session/prompt` accept 即返回（turn 异步）。
 4. **LLM wire 协议**：OpenAI chat-completions → DeepSeek Messages API（Anthropic 风格 block + SSE；mock harness 已双协议化，commit 内 `packages/tools/harness/mock-deepseek.mjs`）。
@@ -66,7 +66,7 @@ adad20c  U7     mini-mcp.d.mts + p4t6 747 + static-gates.log
 
 - **F1 session-resume / restart**（plan 强制单列）：V8 实测六次全 PASS（load-only re-adopt + V4 日志），**但不得声称 B/B+ resume 架构问题已解决** —— 0.1.7 新基线下的 resume 重分析 + U3 fixture 重录 = 独立轮次。
 - **F2 发布件打包 quirk**：dsh-client-store 未声明 zustand/immer（本地已补 devDeps）；dsh-spill-policy lib stale `maxInlineBytes` 面 → upstream 反馈候选。
-- **F3 0.1.7 行为面注记**：mcp reconnect / scoped serverName / compat gate 空 peers 建议声明。
+- **F3 0.1.7 行为面注记**：mcp reconnect / scoped serverName / compat gate 空 peers 建议声明 → **该建议已由 PR29 review-supplement 轮 F1 闭合**（声明精确 RC peer `0.1.7-rc.1`，门从"因缺失而通过"变为对真实 range 求值；新世界复证见 §7）。
 - **F4 test-infra 加固**：a2c7 pinned-lib 依赖显式化；test-use 换基线 = 完全重置协议（本轮两次构建失败的教训）；pnpm store 沙箱 XDG 重定向注记；characterization fixture 重录。
 - **F5 基线 test debt**：10 文件/20 测试 PRE_EXISTING（t1 YAML 解析值得独立定位）。
 - **F6 U8 专项 10 项**：upstream compat-preflight bug 报告 / 插件 restrict 包装容错 / created-team approvals 可见性 / requestToken 文档 / 0.1.7 automation 断裂面（session API + wire + bash description）/ domain-store flush 延迟 / member envelope 拒绝模式 / kit 资产升格 tests/kits/ / 沙箱 boot-log 落盘延迟根因 / U3 0.1.7 重基线。
@@ -80,3 +80,23 @@ adad20c  U7     mini-mcp.d.mts + p4t6 747 + static-gates.log
 - 冻结锚点 `a3ab319927` / `fb2c4b9e69` 未移动；references/ 零触碰。
 - 端口 3491/3496–3499 释放；12 个 U8 world 留档（`tests/homes/u8-017rc1-*`，gitignored，§7 登记于 vertical-summary 头部）。
 - 未触碰其他 worktree；worktree 内 `tests/deepseek-harness-test-use` symlink 未入库。
+
+## 7. PR29 review-supplement 轮（2026-09-25，本 upgrade 的 review 修复轮）
+
+来源：`docs/plans/active/PR29-review-supplement-fix-guide.md`（用户指定，只读）——PR #29 评审补轮：闭合 3 项发现（F1 merge blocker / F2 / F3），G-S1–G-S5 闸。
+
+| 项 | 闭合方式 | 证据 |
+| --- | --- | --- |
+| **F1**（merge blocker）根 manifest 无 dsh peer → 0.1.7 compat 门从未约束本插件 | 声明 `peerDependencies["@deepseek-ai/dsh"] = "0.1.7-rc.1"`（精确 RC，review 裁决）；lockfile 再解析（版本多集 diff = 恰 +1 伞宿主树，integrity 348→793 全为伞树不可变 tarball，余为 peer-suffix 实例 churn 语义中性）；新 compat 套件 7/7（真宿主 evaluator：0.1.7-rc.1 接受 / 0.1.5-rc.2 RAISE issue 带 `name@version` 键 / 0.1.7-rc.2 精确性 unmet / peerless 双 runtime 不受约束 / exemption 路径）；**新世界 git-install 复证**（H1：installed manifest 带 peer + 宿主自身 evaluator 接受 + 0.1.5-rc.2 反事实 RAISE + pre-supplement 形态不受约束 = 门现真正生效） | commit 1a3a3ad + `review-supplement/compatibility-peer.md` + `h1-peer/evaluation.json` |
+| **F2** client 解析 `modeSelectionEnabled` 但 Team 创建 preset roster 忽略之 | `listAgentPresets` 应用宿主策略：visible = modeSelectionEnabled ? usable : usable∩{isDefault}；disabled 且无 usable default → **fail-visible throw**（记录与 upstream section/seat-store 内部 first-usable fallback 的有意分歧）；T1–T4 mount 测试；**实宿主 wire 实证**（H2：fresh world `agentPresets/list` 返回 `modeSelectionEnabled=true` + 4 presets，F2 策略产出非空 visible roster） | commit 730f83b + `review-supplement/client-preset-policy.md` + `h2-roster/roster-summary.json` |
+| **F3** main-view 会话推导只扫 byId（无 retainInfo-first）→ 目录刷新/代际更替窗口误清 Team open-mode 标记 | `resolveCurrentMainSessionId`（retainInfo-first → byId 扫描，镜像 upstream ui-session 模式）+ open-mode reset effect churn guard（同 id 目录抖动不再 dispose watch；真更换才重订阅）；R1–R3 mount 测试；**实宿主 wire 实证**（H3：boot main + created team root + fresh ordinary session 三行共存无丢失；**第二个 launch-token cookie = 真新连接**下目录相同；wire 行 `retainedBy` shape 记录在案；retainInfo 本身 = client-context service 无 wire RPC——源验证，open-mode 不变量由 R1–R3 锁定） | commit 730f83b + `review-supplement/client-main-retention.md` + `h3-sessions/` |
+
+**G-S 闸（supplement 静态闸 + 实宿主）**：
+
+- G-S1 静态：root typecheck 9 包全绿 / build + build:composition + check:artifacts（client-bundle.js 随 commit 730f83b 同步）/ zero-core 0 findings / compat 7/7 + client 47/47|656/656。
+- G-S2 回归：根套件确定性底 **10F|20F|3836P(3856)**（+14 = 7 compat + 7 client；失败集与 baseline F0 逐文件逐测试名相同）；client 套件 47/47|656/656。
+- G-S3 实宿主：H1–H3 全 PASS（fresh world `tests/homes/rs-017rc1-<stamp>`，`review-supplement/real-host-smoke.md`）。
+- G-S4 零 upstream 修改：test-use 保持 pristine @ `46a7f68b09`（冒烟前后双证）；guide 范围纪律 = 仅 3 发现 + 指定测试/证据；唯一范围外编译适配 = 7 fixture `usePanelInfo` 一行（可证明不可避免，因果链 `compatibility-peer.md` §5）。
+- G-S5 留痕：3 个 living 文档更新（本文件 §7 + F3 行、`failure-classification.md` supplement delta、`post-upgrade-followups.md` F3 闭合 + F7 新发现）；p6t1-parallel 既有竞态（类 E）全矩阵归因 `review-supplement/p6t1-flake-attribution.md`（本轮不修——修复在 runtime compatibility 链，超 guide 文件范围）。
+
+**supplement 提交**（本文件 §2 提交链之后）：`1a3a3ad` fix(compat) → `730f83b` fix(client) → `<evidence-commit>` test(upgrade): close PR29 review findings on real 0.1.7 host。

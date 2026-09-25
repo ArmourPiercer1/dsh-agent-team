@@ -64,6 +64,13 @@ F0 − F1 = ∅        → 零"消失"的失败（无隐藏修复掩盖）
 
 **G7 判定：无"原因未知的新失败"。** 每一处 0.1.7 图变化要么在 U2–U7 内闭环（适配 + 回归证据），要么被 U8 实宿主垂直裁决。
 
+## Review-supplement 轮 delta（2026-09-25，PR29 review F1–F3 修复轮）
+
+- 测试总数 3842 → **3856** = **+14**（compat 套件 `plugin-dsh-compat.test.ts` 7 + client mount F2/F3 T1–T4 + R1–R3 共 7；client 独立套件 649 → 656）。
+- 确定性底（serial 全量 + standalone + 逐包）= **10F|20F|3836P(3856)**，失败集与 F0 逐文件/逐测试名相同（`F1' − F0 = ∅`、`F0 − F1' = ∅` 保持；`review-supplement/static-gates.log` 含逐文件清单）。
+- **类 E（本轮新增类别：新暴露的既有不稳定）**：`p6t1-parallel.test.ts`（9 测试，PRE_EXISTING 文件）在 supplement 状态下全量**并行**跑约 40% 间歇失败（`compatibility … (reprobe-failed) … admission fails closed (invariant 50)`）。归因 = 插件自身 compatibility admission 链的**既有并发竞态**（per-request authority → per-prober `withLock` 不覆盖同 root 并发 probe → `replaceState` delete/put/advanceGeneration 交叠 → probe reject → fail-closed），触发器 = 本轮 +14 测试在 vitest `pool:'threads'`（全文件同进程共享事件循环）下扩大调度窗口；**排除**新 lockfile 再解析（隔离行"新 node_modules + 基线源码" 2/2 PASS + 共享 peer 无模块实例分裂）与 OS 负载（基线 +16 核 `yes` 2/2 PASS）。完整 7 行 A/B 矩阵 + 源码级机制 + 建议修复（per-root re-probe 序列化，超本轮文件范围 → follow-up F7-1）→ `review-supplement/p6t1-flake-attribution.md`。
+- 其余 10 文件 / 20 测试 PRE_EXISTING 集**未扩张**；B/C/D 裁决维持（supplement 零 production 行为回归信号）。
+
 ## 过程中的环境性失败（非图漂移，留痕）
 
 1. **client 包 devDeps 缺口暴露（U6 全量首跑）**：published `dsh-client-store@0.1.7-rc.1` lib import zustand/immer 但 `dependencies` 为空（upstream 打包 quirk，upstream 源码把两者放 devDependencies；真宿主 app 壳自带）。client 包 vitest（redirect 到 test-use 源码）此前无感；root config 走发布件 → 4 个 client .test.ts 文件级 import 失败。修复 = client devDeps 加 `zustand ~4.4.7` + `immer ^10.1.1`（commit d09c010；post-upgrade follow-up：upstream 打包面）。

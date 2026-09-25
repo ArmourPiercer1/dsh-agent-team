@@ -1,0 +1,4 @@
+{
+  "message": "unhandled: Error: Plugin manifest peerDependencies must be an object\n    at objectOf$1 (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:254:81)\n    at Module.evaluatePluginCompatibility (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:290:23)\n    at main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/dsh-017rc1-upgrade/dev/agent-workflow/evidence/dsh-017rc1-upgrade/review-supplement/smoke.mjs:609:37)",
+  "at": "2026-09-25T13:54:20.712Z"
+}
