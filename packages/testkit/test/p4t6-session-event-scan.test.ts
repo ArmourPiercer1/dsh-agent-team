@@ -1167,8 +1167,18 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // Zero denylist vocabulary; the frozen quarantine hit set is unchanged
     // at fifteen. Scanner unchanged. Single-writer pin bump on the task
     // branch.
-    expect(scanResult.filesScanned).toBe(747)
-    expect(scanResult.files.length).toBe(747)
+    // PR #29 review-supplement (task/dsh-017rc1-upgrade, this round): +1 on
+    // top of the 747 base = 748 — the one new scannable file: the DSH
+    // compatibility gate test (packages/testkit/test/
+    // plugin-dsh-compat.test.ts — finding F1: the host's own built
+    // evaluator from the pinned test-use checkout, positive/negative/
+    // vacuous/exemption cases over the declared 0.1.7-rc.1 peer). Zero
+    // denylist vocabulary; the frozen quarantine hit set is unchanged at
+    // fifteen. Scanner unchanged. Single-writer pin bump on the task
+    // branch. (tests/paths.d.mts lives under tests/, not a scanned package
+    // dir — not counted.)
+    expect(scanResult.filesScanned).toBe(748)
+    expect(scanResult.files.length).toBe(748)
 
   })
 
