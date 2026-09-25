@@ -3780,3 +3780,8 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **终验**：`git ls-remote origin` = `6fd33c665f` = 本地 HEAD ✅；PR #29 = OPEN / MERGEABLE（REST mergeable=true）/ head = 6fd33c6 ✅。
 - **红线核对**：仅 FF 推送已授权分支；零 force-push；master/stable 零触碰；未 merge（merge 裁决归用户）。
 - **状态**：PR #29 MERGE-READY，待用户审查 merge。
+
+### 2026-09-25 — guide §1.4 U8 install 断言更新（ba3c32a）+ graph.yaml 断行自伤修复
+
+- **§1.4 断言更新**：`u8/vertical.mjs` kit S1 断言标签 + `u8/vertical-summary.md` findings 第 1 项 + PR #29 body §11.2 句 —— 三处同步退役旧措辞「0.1.7 compat check PASS by construction: no peerDependencies」（U8 时点 gate 因**缺失** peer 而通过 = F1 发现的原缺口），改挂新权威断言（guide §1.4）：root manifest 声明 `@deepseek-ai/dsh: 0.1.7-rc.1` + running DSH = 0.1.7-rc.1 + compatibility preflight **无豁免接受**所声明 range（无 incompatible warning / 无 `allow-version` / 无 `compatibility.json` grant）——fresh world 复证 = review-supplement H1（11/11，含 0.1.5-rc.2 反事实 RAISE）。历史 run 日志保持原措辞（guide §14）。commit `ba3c32a`（2 文件）FF 推送 origin（授权 #2 范围内）。
+- **自伤修复**：ba3c32a 之前的簿记 commit（35273b8）在更新 graph.yaml `review_supplement` 双引号标量时内嵌了未转义 `"`（+ 切片重复字符）→ YAML 断行，**已随本提交修复**（内嵌引号改单引号 + 去重字符；`yaml.safe_load` 38 blocks 通过，ba3c32a 注记完整）。教训：graph.yaml 双引号标量内禁裸 `"`；长标量改动后必须 safe_load 复验再提交。
