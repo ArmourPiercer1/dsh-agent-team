@@ -576,13 +576,16 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
  * @param {object} [options]
  * @param {(agent: object) => Promise<void>} [options.whenIdleBehavior]
  *   the per-agent whenIdle() behavior (default: resolves immediately).
- * @param {(req: object) => Promise<void>} [options.resumeGate]
+ * @param {(req: { resumeSessionId: string; setup?: unknown }) => Promise<void>} [options.resumeGate]
  *   work-completion wake-up (teardown gate regression, G8): a per-resume
  *   SUSPENSION point — awaited (after the resume request is recorded,
  *   before the handle is built) so a test can interleave `close()` while
  *   an `agents.resume()` is in flight (the real handle can outlive the
- *   close snapshot only if the glue never re-checks its lifecycle).
- *   Absent = resume settles immediately (the pre-G8 double behavior).
+ *   close snapshot only if the glue never re-checks its lifecycle). The
+ *   request carries the RAW resume args — `setup` distinguishes a Team
+ *   glue resume (a wrapped AgentSetup is present) from a foreign raw
+ *   resume (S1 G7–G10 gate on it). Absent = resume settles immediately
+ *   (the pre-G8 double behavior).
  * @param {Array<{name: string, order: number, text: string}>} [options.systemPromptGlobals]
  *   the world's global prompt layer for every agent ctx (T12-M2; default:
  *   the DSH service pair harness:identity + a global deployment:persona).
@@ -688,6 +691,11 @@ export function createAgentsDouble(options = {}) {
       ? meta.cwd
       : join(WORKTREE_ROOT, 'fixture-ws', sessionId)
     const agent = {
+      // S1 (supplement INV-3): the generation identity — the real 0.1.7
+      // Agent exposes a top-level `id` (the fence's structural
+      // projection reads ONLY `.id`); the fake agent IS the object the
+      // created/disposed events carry and the setup receives.
+      id: sessionId,
       session: { id: sessionId, header: { cwd: createCwd } },
       // A2C-2: assigned AFTER the scope mint below (the real Agent's
       // constructor order: `this.scope = createScope(loopCtx, this);
@@ -784,7 +792,13 @@ export function createAgentsDouble(options = {}) {
         return undefined
       },
     }
-    handles.set(sessionId, handle)
+    // S1 (supplement INV-3): the generation identity is registered
+    // BEFORE the setup runs — the setup receives THIS object as the
+    // explicit Agent and the awaited-serial `agent/created` announcement
+    // (fired by the caller AFTER setup, mirroring the 0.1.7 in-host
+    // lifecycle `createAgent → setupAndPublish → … → announce`) carries
+    // the SAME object: the fence's exact-match claim key.
+    agentIdentities.set(sessionId, agent)
     // fix/alpha2-explicit-agent-setup-compat: the DSH 0.1.5+ factory
     // invokes `setup(agentCtx, agent)` — the explicit composed Agent as
     // the SECOND argument (0.1.5-rc.2 agent-loop: `setup?.(
@@ -793,6 +807,11 @@ export function createAgentsDouble(options = {}) {
     if (setup !== undefined) {
       await (passExplicitAgent ? setup(agent.ctx, agent) : setup(agent.ctx))
     }
+    // NOTE (S1): the handle is deliberately NOT published here — the
+    // caller publishes it AFTER the awaited-serial `agent/created`
+    // announcement passes (a vetoed announcement leaves no published
+    // handle — the unpublished-agent rollback shape the G-suite's
+    // handle-count invariants pin).
     return handle
   }
 
@@ -810,16 +829,20 @@ export function createAgentsDouble(options = {}) {
     async create(req) {
       const sessionId = String(req.sessionId)
       creates.push({ sessionId, meta: req.meta, setupProvided: req.setup !== undefined })
-      // C1 (guide §13.3): the awaited-serial `agent/created` event BEFORE
-      // the handle is published (source 'startup' — the upstream create
-      // announcement). A hook rejection rejects this create and the
-      // handle is never built (the unpublished-agent rollback shape).
-      const createdIdentity = { id: sessionId }
-      agentIdentities.set(sessionId, createdIdentity)
+      // C1 (guide §13.3) + S1 (supplement INV-3, 0.1.7 lifecycle
+      // verified in-host — Commit-4 defect evidence): setup runs BEFORE
+      // the awaited-serial `agent/created` announcement, and the
+      // announcement carries the SAME Agent object the setup received
+      // (createAgent → setupAndPublish → initializeAgent → runMaintenance
+      // → publish → announce). The handle is published ONLY after the
+      // announcement passes: a hook rejection rejects this create and no
+      // handle is ever published (the unpublished-agent rollback shape).
+      const handle = await makeHandle(sessionId, req)
       if (activationEvents !== undefined) {
-        await activationEvents({ kind: 'created', agent: createdIdentity, source: 'startup', sessionId })
+        await activationEvents({ kind: 'created', agent: agentIdentities.get(sessionId), source: 'startup', sessionId })
       }
-      return makeHandle(sessionId, req)
+      handles.set(sessionId, handle)
+      return handle
     },
     async resume(req) {
       const sessionId = String(req.resumeSessionId)
@@ -829,23 +852,25 @@ export function createAgentsDouble(options = {}) {
       if (resumeGate !== undefined) await resumeGate(req)
       // C1 (guide §13.3 G5/G6): the scripted writer-held fault — the
       // session-layer rejection fires AFTER the record, BEFORE any agent
-      // exists (no created event for a rejected resume).
+      // exists (no setup, no created event for a rejected resume).
       if (resumeFaults !== undefined) {
         const call = resumeCallCounts.get(sessionId) ?? 0
         resumeCallCounts.set(sessionId, call + 1)
         const fault = resumeFaults(sessionId, call)
         if (fault !== undefined && fault !== null) throw fault
       }
-      // C1 (guide §13.3): the awaited-serial `agent/created` event BEFORE
-      // the handle is published (source 'resume' — the upstream resume
-      // announcement; a cold-restart resume is exactly the ordinary
-      // SessionController path the fence vetoes when Team-managed).
-      const createdIdentity = { id: sessionId }
-      agentIdentities.set(sessionId, createdIdentity)
+      // C1 (guide §13.3) + S1 (supplement INV-3): setup runs BEFORE the
+      // awaited-serial `agent/created` announcement (source 'resume' —
+      // the upstream resume announcement; a cold-restart resume is
+      // exactly the ordinary SessionController path the fence vetoes
+      // when Team-managed), carrying the SAME Agent object; the handle
+      // is published only after the announcement passes.
+      const handle = await makeHandle(sessionId, req)
       if (activationEvents !== undefined) {
-        await activationEvents({ kind: 'created', agent: createdIdentity, source: 'resume', sessionId })
+        await activationEvents({ kind: 'created', agent: agentIdentities.get(sessionId), source: 'resume', sessionId })
       }
-      return makeHandle(sessionId, req)
+      handles.set(sessionId, handle)
+      return handle
     },
   }
 }
@@ -1109,6 +1134,16 @@ export async function observeAssembly(agentCtx) {
  *   resolver). Absent = the bridge's default strict map resolver over
  *   `options.blueprintSources` + the row-anchor fallback (a row without a
  *   bound snapshot ref resolves the row anchor, exactly like the host).
+ * @param {import('../src/plugin/team-session-activation.js').TeamSessionActivationFence} [options.activationFence]
+ *   C1 (restart-recovery, guide §4.3/§13.3): the activation fence the
+ *   world wires — auto-wired into the fake `agent/created` (AWAITED veto)
+ *   + `agent/disposed` (exact-generation barrier) listeners and passed to
+ *   the glue exactly like the production host. Typed with the REAL fence
+ *   interface (the structural inference from the old usage sites went
+ *   stale when the supplement round reworked the recovery signature —
+ *   `recoverWriterConflict` now takes `{ afterEpoch, deadlineMs }`),
+ *   so a world passing a real fence is checked against the true
+ *   surface. Absent = a pre-C1 world (no listeners, no fence dep).
  * @returns {Promise<object>} the world (binding + records + doubles).
  */
 export async function createLiveWorld(options = {}) {
@@ -1139,9 +1174,21 @@ export async function createLiveWorld(options = {}) {
     (options.agents !== undefined && options.agents.activationEvents !== undefined
       ? options.agents.activationEvents
       : autoActivationEvents)
+  // S1 (supplement INV-3): a world that FIRES `agent/created` models the
+  // 0.1.7 host — and the 0.1.7 factory's `AgentSetup` contract is the
+  // EXPLICIT-agent call (`setup(agentCtx, agent)` — the Commit-4 in-host
+  // evidence: setup receives the very Agent object the awaited-serial
+  // announce later carries). The fence's exact-generation claim keys on
+  // that object, so fired-event worlds run explicit-agent mode unless
+  // the caller opts out (the one-arg 0.1.2-era contract is only modeled
+  // by event-less worlds — the alpha2 compat matrix).
+  const firedEventsExplicitAgent =
+    activationEvents !== undefined &&
+    (options.agents === undefined || options.agents.passExplicitAgent === undefined)
   const agents = createAgentsDouble({
     ...(activationEvents !== undefined ? { activationEvents } : {}),
     ...(options.agents ?? {}),
+    ...(firedEventsExplicitAgent ? { passExplicitAgent: true } : {}),
     systemPromptGlobals: options.systemPromptGlobals,
     // multi-mcp (Task C): the per-server activation behavior tables
     // (plan §6.7 failure injection / §6.11 coverage tool names) — passed

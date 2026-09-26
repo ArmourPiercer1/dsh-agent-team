@@ -620,3 +620,15 @@ restart_recovery_017rc1_20260926:
   red_lines: "CORE PATCH BUDGET = 0 (upstream 零修改, test-use HEAD 未动) / push 面: 前几轮零 push (无授权); 本轮用户明确一次性授权 (直到完成测试并提交PR) = 仅 task/team-restart-017rc1 分支 FF push + 开 PR (零 force-push, 仅该分支) / 冻结锚点未移动 / 1 task = 1 branch = 1 worktree = 1 writer / 用户约束: 全程 workspace-write 零全局升级 (孤儿宿主 pid 671881 @ :3491 按用户裁决不动, world rst017-spike-2026-09-25T16-26-55 留档) / spike worlds 按 TEST_METHODS §7 登记 (15 个 rst017-spike world + 1 scratch 已删留档 [Commit 5 轮执行] + 孤儿 1 个未动) / :3080/:3180 零触碰 (每 run 只读 probe)"
   evidence: "dev/agent-workflow/evidence/restart-017rc1/ (phase0: spike.mjs + keepfinal.mjs + fence-probe.mjs + regressions + diagnostics + runs 5–20 + repros 1–6 + prof-run18 + verdict/GO-NO-GO.md + run-history.md + spike-run*.log / commit2: verify-full-suite-main.log = 主代理独立全量复跑 6F|187P(193) 文件, 8F|2140P(2148) 测试, 失败集逐名 = 既有债务 / commit3: test-results + typecheck-build + runtime-full-suite + verify-main / commit4: kit.mjs (5-world + 20×-race, S0 preflight pin 构建/CLI/端口, 自清理) + browser-leg-driver.mjs (Playwright 金标准: onboarding → veto → UI takeover → no-reload gate-5, stuck-page = 合法 switch-away/back 非 reload) + 首跑 BLOCKED 全套 (worlds-verdict-first-run-BLOCKED.md + DEFECT-c1-runOwned-guard-lifetime.md + first-run-blocked/ + world-A boot-1 in-host 定因 log + fence-semantics-repro + diag-hook-c4) + 重发 worlds-verdict.md (A wire 38P/0F, A browser 22P/0F 含金标准截图, B 30P/0F, C 7/7, D 30P/0F, E race 20/20: followOk/ensureOk/teamLive/singleWriter 各 20/20, created=20, disposed=0 — 主代理独立解析 race-iterations.json 复核) + fix-verify-full-runtime.log (2141P/2149 = 债务零新增 + A9) + 15 个 rst017-c4 home 保留登记 (tests/homes/, gitignored) / commit5: verification-17.md (§17 十六条 16/16 逐条证据 + 红线守纪 + follow-ups F-rc1/F-rc2) + final-battery.log (tc/build/composition/artifacts 1180 全绿) + root-full-suite{,-final,-run3}.log (run 3 静载 = 10F/20T 逐名 = 债务, 新失败集 ∅, 3897P/3917) + p4t6 pin 勘误 754→755 (Commit-3 簿记增量, 单写者规程 ledger) + p6t1-parallel 负载 flake 隔离归因 (import 图证明与分支改动无关) + scratch home 删除留档)"
   note: "graph.yaml line 594 既有解析坏点 (HEAD 4fb79fc 已坏, 双引号内未转义引号 ×2) 纯语法修复 (零语义改动), 修复后全文件 pyyaml 通过 38 blocks"
+
+restart_recovery_017rc1_supplement_20260926:
+  state: "IN-PROGRESS (2026-09-26 用户指令轮: 按 pr31_supplemental_fix_guide.md 收口 PR #31; P1x3 + P2x2 + contract x1; 顺序 S1→S6 严格)"
+  plan: docs/plans/active/pr31_supplemental_fix_guide.md
+  branch: task/team-restart-017rc1
+  worktree: .worktrees/team-restart-017rc1
+  base: "PR #31 head 449e1fc (= 分支 HEAD, = merge 3499d31 后簿记); base master @ 7c23610"
+  host_pin: "test-use = 46a7f68b0922371ce7144b668b90e377d8e799f4 (0.1.7-rc.1, 本轮不动)"
+  commits: "S1–S6 待入库 (S1 activation core: ownershipReady + exact generation claim + epoch/tombstone + absolute deadline + per-SID single-flight)"
+  gates: "guide §9 28 项 checklist; §12 四问最终 PR body 必答"
+  red_lines: "guide §8 禁止清单 + 前轮红线全数延续 (CORE PATCH BUDGET = 0 / 零 upstream 修改 / test-use pristine / :3080 零触碰 / 孤儿 world 不碰); push 仅本任务分支 FF"
+  evidence: "dev/agent-workflow/evidence/restart-017rc1/supplement-*/ (S1–S6)"

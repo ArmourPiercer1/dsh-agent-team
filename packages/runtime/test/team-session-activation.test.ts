@@ -152,13 +152,16 @@ describe('C1 (guide §13.1): the Team session-activation fence', () => {
     expect(after.settled).toBe(true)
   })
 
-  it('A3 Team-owned resume: under runOwned the activation passes and the guard returns to 0 in finally', async () => {
+  it('A3 Team-owned resume: the EXACT claimed generation passes under the guard and the guard returns to 0 in finally', async () => {
     const fence = createTeamSessionActivationFence()
     makeFence(fence)
     const own = agent(ROOT)
-    // the Team's own activation (the runOwned guard held) passes —
-    // NO rollback record is created for it.
+    // the Team's own activation (supplement INV-3): the glue's setup
+    // wrapper claims the EXACT Agent object while the runOwned guard is
+    // held — the announced object IS the claimed one → PASS, NO rollback
+    // record is created for it.
     await fence.runOwned(ROOT, async () => {
+      fence.claimOwnedGeneration(ROOT, own)
       await fence.beforeAgentCreated({ agent: own, source: 'resume' })
     })
     // the guard returned to 0 (the finally decrement): the NEXT foreign
@@ -166,31 +169,38 @@ describe('C1 (guide §13.1): the Team session-activation fence', () => {
     await expectIntercepted(fence, { agent: agent(ROOT), source: 'resume' })
   })
 
-  it('A4 nested ownership: the inner completion never clears the outer guard', async () => {
+  it('A4 nested ownership: the inner completion never clears the outer guard (a claim minted under the surviving outer is still accepted)', async () => {
     const fence = createTeamSessionActivationFence()
     makeFence(fence)
     await fence.runOwned(ROOT, async () => {
       // the inner activation completes here (its finally decrements 2→1 —
       // NOT to 0).
       await fence.runOwned(ROOT, async () => {
-        await fence.beforeAgentCreated({ agent: agent(ROOT), source: 'startup' })
+        const inner = agent(ROOT)
+        fence.claimOwnedGeneration(ROOT, inner)
+        await fence.beforeAgentCreated({ agent: inner, source: 'startup' })
       })
       // BETWEEN the inner settle and the outer settle the OUTER guard
       // still holds (guide §13.1 A4: the inner end must not clear it
-      // early) — a further activation of the same session still passes
-      // through the guard (ownedDepth > 0: the Team's activation window
-      // is open until the OUTER settles). NOTE: the pre-fix test asserted
-      // INTERCEPTION here — that expectation only held under the Commit-4
-      // defect (the sync `return operation()` released the outer guard
-      // after its sync prefix), so A4 green-lit the bug; the guide's
-      // semantics (guard held across the awaited lifetime) are what this
-      // step pins now.
-      await fence.beforeAgentCreated({ agent: agent(ROOT), source: 'resume' })
+      // early) — a further claimed activation of the same session still
+      // PASSES: the claim is only ACCEPTED while a guard is held (the
+      // claim-acceptance gate reads the ref-count — depth 1 from the
+      // outer alone). NOTE (attribution): under the Commit-4 defect
+      // (the sync `return operation()` released the outer guard after its
+      // sync prefix) this claim would be IGNORED (no guard) and the
+      // activation vetoed — A4 now pins the guard-lifetime semantics
+      // through the causal claim.
+      const outer = agent(ROOT)
+      fence.claimOwnedGeneration(ROOT, outer)
+      await fence.beforeAgentCreated({ agent: outer, source: 'resume' })
     })
-    // and only after the OUTER settle is the guard gone: the foreign
-    // activation is intercepted again (the guard was never held outside
-    // the owned window).
-    await expectIntercepted(fence, { agent: agent(ROOT), source: 'resume' })
+    // and only after the OUTER settle is the guard gone: a fresh claim
+    // is now IGNORED (no guard to accept it) and the activation — even
+    // for the Team's own session — is a plain foreign activation:
+    // intercepted (the guard was never held outside the owned window).
+    const after = agent(ROOT)
+    fence.claimOwnedGeneration(ROOT, after) // no guard held → ignored
+    await expectIntercepted(fence, { agent: after, source: 'resume' })
   })
 
   it('A5 exact-generation disposal: a stale/other-generation disposer does not resolve the barrier; the exact agent does', async () => {
@@ -300,7 +310,7 @@ describe('C1 (guide §13.1): the Team session-activation fence', () => {
     fence.close()
   })
 
-  it('A9 real-host shape: the guard spans the operation AWAITED lifetime (Commit-4 defect regression — agent/created fires after awaited hops, NOT in the sync prefix)', async () => {
+  it('A9 real-host shape: the guard spans the operation AWAITED lifetime — a claim minted after awaited hops is accepted (Commit-4 defect regression, causal-claim form)', async () => {
     const fence = createTeamSessionActivationFence()
     makeFence(fence)
     // The 0.1.7 create chain ANNOUNCES agent/created several AWAITED hops
@@ -308,31 +318,166 @@ describe('C1 (guide §13.1): the Team session-activation fence', () => {
     // boot: createAgent → setupAndPublish → initializeAgent →
     // runMaintenance → publish → announce → ctx.serial — every hop
     // awaited). The operation models EXACTLY that shape: several awaited
-    // hops, THEN the fence decision point. A synchronous `return
-    // operation()` in runOwned releases the guard after the operation's
-    // sync prefix only → the seam reads ownedDepth=0 for the Team's OWN
-    // activation → veto → bootstrap FATAL on every fresh home (the
-    // Commit-4 kit defect; unit tests A3/A4 missed it because their
+    // hops, THEN the glue setup (which claims the EXACT Agent object),
+    // THEN the AWAITED-serial agent/created decision point. A synchronous
+    // `return operation()` in runOwned releases the guard after the
+    // operation's sync prefix only → the claim minted after the awaited
+    // hops is NOT accepted (the claim-acceptance gate reads ownedDepth =
+    // 0) → the Team's OWN activation is vetoed → bootstrap FATAL on
+    // every fresh home (the Commit-4 kit defect, now expressed through
+    // the causal claim — unit tests A3/A4 missed it because their
     // operations put the fence decision in the sync prefix).
+    const owned = agent(ROOT)
     const ownedOutcome = await fence.runOwned(ROOT, async () => {
       // the awaited hops of the real create chain (each an await
       // boundary — model selection install, maintenance, publish).
       await Promise.resolve()
       await Promise.resolve()
       await new Promise<void>((resolve) => setTimeout(resolve, 0))
+      // setup runs here (the awaited hops above = the create chain's
+      // pre-announce phase): the EXACT claim, minted INSIDE the guarded
+      // awaited lifetime.
+      fence.claimOwnedGeneration(ROOT, owned)
       // the AWAITED-serial agent/created decision point (the seam): the
-      // Team's OWN startup activation must PASS (the guard is still held
-      // across the full awaited lifetime).
-      await fence.beforeAgentCreated({ agent: agent(ROOT), source: 'startup' })
+      // Team's OWN startup activation must PASS (the claimed object IS
+      // the announced one; the guard is still held across the full
+      // awaited lifetime, which is what made the claim accept).
+      await fence.beforeAgentCreated({ agent: owned, source: 'startup' })
       return 'live-handle'
     })
     expect(ownedOutcome).toBe('live-handle')
-    // the guard is released only AFTER the operation settles: a
-    // subsequent foreign activation (no guard, no permit) is vetoed
-    // again — the fence state is consistent post-activation (a leaked
-    // guard would have PASSED this foreign activation; the too-early
-    // release is exactly the fixed defect — both directions pinned).
-    await expectIntercepted(fence, { agent: agent(ROOT), source: 'resume' })
+    // CONTROL (the claim-acceptance gate): a claim minted OUTSIDE any
+    // guard is IGNORED — the activation is a plain foreign one → veto.
+    // (The too-early release of the fixed defect has the same observable
+    // signature: guard gone → claim ignored → veto. Both directions
+    // pinned.)
+    const foreign = agent(ROOT)
+    fence.claimOwnedGeneration(ROOT, foreign) // no guard held → ignored
+    await expectIntercepted(fence, { agent: foreign, source: 'resume' })
+    fence.close()
+  })
+
+  it('A10 ownership resolver pending + Team session: agent/created AWAITs the bind (classification pending — never "unmanaged"), then vetoes', async () => {
+    const fence = createTeamSessionActivationFence()
+    // NO resolver bound yet: classification PENDING (supplement INV-4) —
+    // the ordinary SessionController cannot steal the Team writer in the
+    // startup window.
+    const p = fence.beforeAgentCreated({ agent: agent(ROOT), source: 'resume' })
+    // the activation is PENDING — neither PASS nor veto before the bind
+    // (a PASS would have been the ownership-steal; a veto before
+    // classification would have broken the unmanaged world).
+    const pending = await settles(p, 50)
+    expect(pending.settled).toBe(false)
+    // the domain opens / the resolver binds: the root is Team-managed →
+    // the pending activation is VETOED (exact wording).
+    fence.bindOwnershipResolver((sid) => (sid === ROOT ? ROOT : undefined))
+    const error = await p.then(
+      () => null,
+      (e: unknown) => e,
+    )
+    expect(error).toBeInstanceOf(TeamSessionActivationInterceptedError)
+  })
+
+  it('A11 ownership resolver pending + ordinary session: agent/created AWAITs the bind, then passes unmanaged (upstream-equivalent)', async () => {
+    const fence = createTeamSessionActivationFence()
+    const p = fence.beforeAgentCreated({ agent: agent('session-ordinary'), source: 'resume' })
+    const pending = await settles(p, 50)
+    expect(pending.settled).toBe(false)
+    // the bind lands: the session classifies UNMANAGED → PASS (the
+    // ordinary session continues — the wait was bounded to the startup
+    // window, and the fence kept no state for it).
+    fence.bindOwnershipResolver(() => undefined)
+    await p
+    // no rollback record was kept for the unmanaged pass.
+    await fence.awaitRollback('session-ordinary')
+  })
+
+  it('A12 exact Team generation claim: the claimed object passes, a DIFFERENT object for the same sid is vetoed inside the SAME activation window (the temporal authority is gone)', async () => {
+    const fence = createTeamSessionActivationFence()
+    makeFence(fence)
+    const teamGen = agent(ROOT)
+    // a DIFFERENT Agent object, same session id (the ordinary
+    // SessionController's own generation).
+    const foreignGen = agent(ROOT)
+    await fence.runOwned(ROOT, async () => {
+      // the Team's own activation: claim + announce → PASS (the claim is
+      // consumed at the PASS).
+      fence.claimOwnedGeneration(ROOT, teamGen)
+      await fence.beforeAgentCreated({ agent: teamGen, source: 'resume' })
+      // the foreign activation arrives INSIDE the Team activation's
+      // window (the guard is still held — the pre-supplement temporal
+      // model would have PASSED it via ownedDepth > 0): the EXACT object
+      // does not match the consumed claim → VETO (supplement INV-3 — the
+      // key discriminator of this round).
+      await expectIntercepted(fence, { agent: foreignGen, source: 'resume' })
+    })
+    // the vetoed generation's barrier is settled by close (no dangling
+    // wait).
+    fence.close()
+  })
+
+  it('A13 completed rollback is observable after the record is deleted (the epoch tombstone) — recovery returns IMMEDIATELY, no timeout', async () => {
+    const fence = createTeamSessionActivationFence()
+    makeFence(fence)
+    const foreign = agent(ROOT)
+    await expectIntercepted(fence, { agent: foreign, source: 'resume' })
+    // the exact generation is disposed: `current` is CLEARED (the record
+    // is gone — the pre-supplement model deleted the same way) but the
+    // TOMBSTONE survives (completedEpoch = 1, the Agent object is NOT
+    // retained).
+    fence.onAgentDisposed(foreign)
+    expect(fence.getRollbackEpoch(ROOT)).toBe(1)
+    // the TOCTOU: a Team resume whose writer-held catch runs AFTER the
+    // completion — the pre-supplement glue read "no pending record →
+    // unrecoverable" and propagated the error; the tombstone answers the
+    // recovery from the pre-attempt baseline (0) IMMEDIATELY.
+    const t0 = Date.now()
+    const recoverable = await fence.recoverWriterConflict(ROOT, {
+      afterEpoch: 0,
+      deadlineMs: Date.now() + 60_000,
+    })
+    expect(recoverable).toBe(true)
+    expect(Date.now() - t0).toBeLessThan(200) // immediate — no bounded-window wait
+  })
+
+  it('A14 a stale completed epoch cannot unlock a NEW conflict (afterEpoch is the attempt baseline)', async () => {
+    const fence = createTeamSessionActivationFence()
+    makeFence(fence)
+    // a rollback from BEFORE this attempt completes (epoch 1).
+    const oldForeign = agent(ROOT)
+    await expectIntercepted(fence, { agent: oldForeign, source: 'resume' })
+    fence.onAgentDisposed(oldForeign)
+    // the attempt's baseline = 1. No NEW rollback appears after it.
+    const baseline = fence.getRollbackEpoch(ROOT)
+    expect(baseline).toBe(1)
+    const recoverable = await fence.recoverWriterConflict(ROOT, {
+      afterEpoch: baseline,
+      deadlineMs: Date.now() + 150,
+    })
+    expect(recoverable).toBe(false) // the stale completion never unlocks
+  })
+
+  it('A15 one absolute deadline: record-then-dispose never stretches to two full windows (≈ timeout, not 2× timeout)', async () => {
+    const fence = createTeamSessionActivationFence({ writerConflictTimeoutMs: 250 })
+    makeFence(fence)
+    const t0 = Date.now()
+    const deadline = t0 + 250
+    // the recovery starts with NO record; the foreign activation (the
+    // record appearance) lands well BEFORE the deadline; the exact
+    // disposal NEVER comes — stage (b) must consume only the REMAINING
+    // budget of the SAME absolute deadline (supplement INV-6).
+    const p = fence.recoverWriterConflict(ROOT, { afterEpoch: 0, deadlineMs: deadline })
+    await new Promise<void>((resolve) => setTimeout(resolve, 120))
+    // the veto is synchronous once the resolver is bound (no awaits in
+    // the decision path) — the record exists the moment this settles.
+    fence.beforeAgentCreated({ agent: agent(ROOT), source: 'resume' }).catch(() => undefined)
+    const result = await p
+    const elapsed = Date.now() - t0
+    expect(result).toBe(false) // the exact disposal never came
+    // ≈ 250 ms total (the absolute deadline), NOT ≈ 370–500 ms (a fresh
+    // window per stage: 120 + 250).
+    expect(elapsed).toBeGreaterThanOrEqual(230)
+    expect(elapsed).toBeLessThan(350)
     fence.close()
   })
 

@@ -99,6 +99,7 @@ import { createTeamProductionRoot } from './root.js'
 import { createTeamSessionActivationFence } from './team-session-activation.js'
 import type {
   TeamActivationAgent,
+  TeamSessionActivationFence,
   TeamSessionStartSource,
 } from './team-session-activation.js'
 import { resolveOwningTeamRoot } from './team-session-ownership.js'
@@ -326,15 +327,7 @@ interface GlueModule {
      * direct operations (guide §4.3 — no blanket break of the pre-C1
      * test doubles). The production host MUST pass it.
      */
-    readonly activationFence?: {
-      runOwned<T>(sessionId: string, op: () => Promise<T>): Promise<T>
-      awaitRollback(sessionId: string): Promise<void>
-      recoverWriterConflict(
-        sessionId: string,
-        options?: { timeoutMs?: number },
-      ): Promise<boolean>
-      permitOrdinaryOnce?(sessionId: string): void
-    }
+    readonly activationFence?: TeamSessionActivationFence
     /**
      * C1 (restart-recovery, guide §7.2, optional): the bounded window of
      * the glue's single writer-conflict recovery wait, in ms. The

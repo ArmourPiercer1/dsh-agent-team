@@ -732,6 +732,56 @@ export function createAgentBindings(deps) {
    * row is committed, so no projection row exists to carry the fact.
    */
   const resumingSessions = new Set()
+  // S1 (pr31_supplemental_fix_guide §2.2-A/§2.2-E, INV-2): the per-SID
+  // Team activation SINGLE-FLIGHT coordinators. Two deliberately
+  // SEPARATE maps (the guide's warning: avoid double single-flight that
+  // waits on itself):
+  //  - `activationInFlight` (LOW level, the ONE shared coordinator):
+  //    every Team create/resume of a session — boot root create/resume,
+  //    seed member create, boot member resume, childFactory create /
+  //    durable resume, createRootAgent, ensureLiveAgent's resume —
+  //    funnels through runOwnedActivation, so at most ONE in-flight
+  //    Team create/resume per SID process-wide (INV-2: "ONE in-flight
+  //    Team create/resume, ONE surviving AgentHandle"; concurrent
+  //    callers await the SAME promise, they never each call
+  //    agents.create/resume). Different SIDs stay concurrent (no
+  //    global lock).
+  //  - `ensureLiveAgentInFlight` (HIGH level): the WHOLE ensureLiveAgent
+  //    body (the guide §2.2-B target shape) — the second concurrent
+  //    caller of the same SID never re-enters the pre-resume flow
+  //    (awaitRollback / foreignLive / durable / owning-root /
+  //    rollback-epoch snapshot / resume / recovery / one retry); it
+  //    awaits the first caller's promise.
+  /** @type {Map<string, Promise<object>>} */
+  const activationInFlight = new Map()
+  /** @type {Map<string, Promise<object>>} */
+  const ensureLiveAgentInFlight = new Map()
+
+  /**
+   * S1 (guide §2.2-A, verbatim shape): one in-flight operation per map
+   * key — concurrent callers AWAIT THE SAME PROMISE (the identity check
+   * in `finally` keeps an early-finished entry from deleting a later
+   * caller's map entry — the guide's "同一个 Promise identity" note).
+   * @param {Map<string, Promise<object>>} map
+   * @param {string} sid
+   * @param {() => Promise<object>} operation
+   * @returns {Promise<object>}
+   */
+  async function singleFlightTeamActivation(map, sid, operation) {
+    const existing = map.get(sid)
+    if (existing !== undefined) return existing
+    const promise = (async () => {
+      return await operation()
+    })()
+    map.set(sid, promise)
+    try {
+      return await promise
+    } finally {
+      if (map.get(sid) === promise) {
+        map.delete(sid)
+      }
+    }
+  }
   // T12-M2: the persona surface state — the agent-scoped 'deployment:persona'
   // section disposers per session id, the identities installed before the
   // session's setup captured its agent ctx (queued until the setup flushes
@@ -869,26 +919,79 @@ export function createAgentBindings(deps) {
   // everywhere else).
 
   /**
-   * C1 (guide §6.1): wrap one Team activation in the fence's ownership
-   * guard (ref-counted `runOwned` — nested activations of the same session
-   * compose; the guard is released in `finally`, so a wrapper fault CLEARS
-   * the guard too — test G3). Fence absent → run the operation direct.
+   * S1 (supplement guide §2.2-E): the claim wrapper — the Team glue's
+   * EXACT generation claim (supplement INV-3). When the 0.1.7 lifecycle
+   * invokes the setup with the real `setupAgent`, the wrapper claims
+   * THAT object with the fence BEFORE delegating to the real setup:
+   * the 0.1.7 createAgent flow is `createAgent → setupAndPublish →
+   * initializeAgent → runMaintenance → publish → announce` (Commit-4
+   * in-host verified), so the claim is established before the
+   * AWAITED-serial `agent/created` announces the same object — the
+   * fence's exact-match PASS is causal (the announced Agent object IS
+   * the claimed one), not a time-window inference. Setup failure
+   * RELEASES the claim (no leak — the create is rejected, the announce
+   * never comes; supplement §2.2-C guarantees). Fence/claim API absent
+   * (test/factory world without the fence, or a partial fence) → the
+   * wrapper is a transparent passthrough.
+   * @param {string} sessionId
+   * @param {function} setup - the caller's composed agentSetup.
+   * @returns {function} the wrapped AgentSetup.
+   */
+  function teamOwnedSetup(sessionId, setup) {
+    const sid = String(sessionId)
+    return async (agentCtx, setupAgent) => {
+      const fence = activationFence
+      if (fence !== undefined && typeof fence.claimOwnedGeneration === 'function') {
+        // The claim is accepted only while the runOwned guard is held
+        // (the fence's claim-acceptance gate — this wrapper always runs
+        // inside runOwnedActivation's guarded operation).
+        fence.claimOwnedGeneration(sid, setupAgent)
+        try {
+          return await setup(agentCtx, setupAgent)
+        } catch (error) {
+          if (typeof fence.releaseOwnedGeneration === 'function') {
+            fence.releaseOwnedGeneration(sid, setupAgent)
+          }
+          throw error
+        }
+      }
+      return await setup(agentCtx, setupAgent)
+    }
+  }
+
+  /**
+   * C1 (guide §6.1) + S1 (supplement guide §2.2-E): wrap one Team
+   * activation in the fence's ownership guard (ref-counted `runOwned` —
+   * nested activations of the same session compose; the guard is
+   * released in `finally`, so a wrapper fault CLEARS the guard too —
+   * test G3) AND in the LOW-LEVEL per-SID single-flight coordinator —
+   * the ONE shared funnel for every Team create/resume entry (boot
+   * root/seed/boot-member, childFactory create/durable-resume,
+   * createRootAgent, ensureLiveAgent): concurrent activations of the
+   * same SID await the SAME in-flight operation (INV-2), different SIDs
+   * stay concurrent. Fence absent → run the operation direct (the
+   * single-flight still applies — it is a glue property, not a fence
+   * property).
    * @param {string} sessionId
    * @param {() => Promise<object>} operation
    * @returns {Promise<object>} the AgentHandle.
    */
   async function runOwnedActivation(sessionId, operation) {
-    if (activationFence !== undefined && typeof activationFence.runOwned === 'function') {
-      return await activationFence.runOwned(String(sessionId), operation)
-    }
-    return await operation()
+    const sid = String(sessionId)
+    return await singleFlightTeamActivation(activationInFlight, sid, async () => {
+      if (activationFence !== undefined && typeof activationFence.runOwned === 'function') {
+        return await activationFence.runOwned(sid, operation)
+      }
+      return await operation()
+    })
   }
 
   /**
-   * C1 (guide §6.1): the guarded Team RESUME (the one `agents.resume` call
-   * site). `setup` is the caller's composed agentSetup (the shared REAL
-   * setup — the durable model selection, the team tools, the persona, the
-   * MCP facet — unchanged by the fence).
+   * C1 (guide §6.1) + S1 (supplement guide §2.2-C): the guarded Team
+   * RESUME (the one `agents.resume` call site). `setup` is the caller's
+   * composed agentSetup (the shared REAL setup — the durable model
+   * selection, the team tools, the persona, the MCP facet — unchanged by
+   * the fence), wrapped in the exact-generation claim.
    * @param {{sessionId: string, setup: function}} args
    * @returns {Promise<object>} the AgentHandle.
    */
@@ -896,15 +999,16 @@ export function createAgentBindings(deps) {
     return await runOwnedActivation(sessionId, () =>
       agents.resume({
         resumeSessionId: SessionId(sessionId),
-        setup,
+        setup: teamOwnedSetup(sessionId, setup),
       }),
     )
   }
 
   /**
-   * C1 (guide §6.1): the guarded Team CREATE (the one `agents.create` call
-   * site). `meta` carries the create-time session header (the effective
-   * workspace cwd — never DSH_HOME).
+   * C1 (guide §6.1) + S1 (supplement guide §2.2-C): the guarded Team
+   * CREATE (the one `agents.create` call site). `meta` carries the
+   * create-time session header (the effective workspace cwd — never
+   * DSH_HOME); `setup` is wrapped in the exact-generation claim.
    * @param {{sessionId: string, meta: object, setup: function}} args
    * @returns {Promise<object>} the AgentHandle.
    */
@@ -913,7 +1017,7 @@ export function createAgentBindings(deps) {
       agents.create({
         sessionId: SessionId(sessionId),
         meta,
-        setup,
+        setup: teamOwnedSetup(sessionId, setup),
       }),
     )
   }
@@ -2382,6 +2486,36 @@ export function createAgentBindings(deps) {
     }
     const existing = liveAgents.get(sid)
     if (existing !== undefined) return existing
+    // S1 (supplement guide §2.2-B, verbatim target shape): the WHOLE
+    // ensureLiveAgent body is per-SID single-flighted (the HIGH-level
+    // coordinator) — the second concurrent caller of the same SID never
+    // re-enters the pre-resume flow; it awaits the first caller's
+    // promise (INV-2: "其余调用必须 await 同一个 Promise，而不是各自
+    // 进入 ctx.agents.resume()" — test G7). The low-level coordinator
+    // in runOwnedActivation additionally guarantees that this path's
+    // resume cannot run concurrently with ANY other entry's (boot /
+    // childFactory / createRootAgent) create/resume of the same SID.
+    return await singleFlightTeamActivation(
+      ensureLiveAgentInFlight,
+      sid,
+      () => ensureLiveAgentOnce(sid),
+    )
+  }
+
+  /**
+   * The single-flight BODY of ensureLiveAgent (S1, supplement guide
+   * §2.2-B). Runs exactly once per in-flight wave of concurrent
+   * same-SID callers; see the numbered steps in the wrapper's doc.
+   * @param {string} sid
+   * @returns {Promise<object>} the AgentHandle.
+   */
+  async function ensureLiveAgentOnce(sid) {
+    // S1 (guide §2.2-B double-check): the first caller may have already
+    // finished and populated liveAgents while this caller was queued
+    // behind its single-flight promise — return the surviving handle
+    // without re-entering the flow.
+    const existing = liveAgents.get(sid)
+    if (existing !== undefined) return existing
     // C1 (guide §7): a declared foreign rollback of this session must
     // converge first (the ordinary-promotion rollback is about to release
     // the session writer — resuming before it settles would re-hit the
@@ -2428,6 +2562,19 @@ export function createAgentBindings(deps) {
           teamRoot,
         ),
       })
+    // S1 (supplement guide §2.2-D, INV-5): the rollback EPOCH BASELINE,
+    // snapshotted BEFORE the first resume — the recovery wait then
+    // proves the handoff is FRESH for this attempt (`completedEpoch >
+    // afterEpoch`), and a rollback that COMPLETED between the veto and
+    // this catch still unlocks (the tombstone outlives the record
+    // deletion — the TOCTOU fix, test A13/G10). A stale completed epoch
+    // from BEFORE this attempt can never unlock a new conflict
+    // (test A14). Fence API absent (test/factory world) → baseline 0
+    // (the recovery is skipped below anyway — pre-C1 behavior).
+    const rollbackBaseline =
+      activationFence !== undefined && typeof activationFence.getRollbackEpoch === 'function'
+        ? activationFence.getRollbackEpoch(sid)
+        : 0
     resumingSessions.add(sid)
     try {
       let handle
@@ -2442,13 +2589,20 @@ export function createAgentBindings(deps) {
         // activation was a Team-managed foreign activation it
         // intercepted AND the exact foreign generation is disposed
         // (the writer released). Any other outcome — no fence, no
-        // record within the bounded window, timeout, a non-Team writer
-        // — propagates the ORIGINAL error: NO retry, no while-retry,
-        // no sleep, no backoff, no lock deletion.
+        // qualifying rollback after the baseline, deadline, a
+        // non-Team writer — propagates the ORIGINAL error: NO retry,
+        // no while-retry, no sleep, no backoff, no lock deletion.
         if (!isSessionWriterHeld(error)) throw error
         const recoverable =
           activationFence !== undefined && typeof activationFence.recoverWriterConflict === 'function'
-            ? await activationFence.recoverWriterConflict(sid, { timeoutMs: WRITER_HANDOFF_TIMEOUT_MS })
+            ? await activationFence.recoverWriterConflict(sid, {
+              afterEpoch: rollbackBaseline,
+              // S1 (supplement INV-6): ONE absolute deadline — computed
+              // NOW (the moment the conflict is observed), both of the
+              // fence's stages consume only the remaining budget; the
+              // wait can never stretch to two full windows (test A15).
+              deadlineMs: Date.now() + WRITER_HANDOFF_TIMEOUT_MS,
+            })
             : false
         if (recoverable !== true) throw error
         // the exact foreign generation must complete disposed / rollback

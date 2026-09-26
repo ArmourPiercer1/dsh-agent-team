@@ -458,6 +458,236 @@ const G = await (async () => {
     }
   }
 
+  // ── G7: ensureLiveAgent ∥ ensureLiveAgent (same cold SID) — ONE
+  // resume, ONE shared handle (S1, supplement INV-2 / guide §2.2-B) ──
+  {
+    const root = 'session-team-c1-g7-root'
+    const fence = createTeamSessionActivationFence()
+    let releaseGate: (() => void) | undefined
+    const world = await createLiveWorld({
+      rootSessionId: root,
+      activationFence: fence,
+      persistence: { exists: () => true },
+      agents: {
+        // gate the resume so BOTH callers are provably in flight on the
+        // same cold SID before any of them settles.
+        resumeGate: () =>
+          new Promise<void>((resolve) => {
+            releaseGate = resolve
+          }),
+      },
+    })
+    fence.bindOwnershipResolver((sid) => resolveOwningTeamRoot(world.domain, world.rootSessionId, sid))
+    try {
+      // caller A's synchronous prefix registers its promise in the
+      // HIGH-level single-flight map before caller B's call runs — B
+      // must JOIN A's promise, never re-enter the pre-resume flow.
+      const pA = world.binding.ensureLiveAgent(root)
+      const pB = world.binding.ensureLiveAgent(root)
+      await waitFor(() => world.agents.resumes.length >= 1, 'G7 resume#1 to reach the gate')
+      if (releaseGate === undefined) throw new Error('G7 guard: the resume gate never armed')
+      releaseGate()
+      const [hA, hB] = await Promise.all([pA, pB])
+      state.g7 = {
+        sameHandle: hA === hB,
+        resumesCount: world.agents.resumes.length,
+        hasLive: world.binding.hasLive(root),
+      }
+    } finally {
+      await world.binding.close().catch(() => undefined)
+    }
+  }
+
+  // ── G8: remote ensure ∥ work-delivery lazy ensure (same cold member) —
+  // ONE resume, both paths succeed (S1, supplement guide §2.2-B/§2.2-E) ──
+  {
+    const root = 'session-team-c1-g8-root'
+    const instance = 'inst-g8child'
+    const child = childSidOf(root, instance)
+    const fence = createTeamSessionActivationFence()
+    let releaseGate: (() => void) | undefined
+    const world = await createLiveWorld({
+      rootSessionId: root,
+      activationFence: fence,
+      persistence: { exists: () => true },
+      members: [{ childSessionId: child, instanceId: instance, templateId: 'tpl-t12a' }],
+      agents: {
+        // gate ONLY the member child's resume (the root's, if any,
+        // passes — this world has no root resume).
+        resumeGate: (req) =>
+          String(req.resumeSessionId) === child
+            ? new Promise<void>((resolve) => {
+                releaseGate = resolve
+              })
+            : Promise.resolve(),
+      },
+    })
+    fence.bindOwnershipResolver((sid) => resolveOwningTeamRoot(world.domain, world.rootSessionId, sid))
+    try {
+      // the remote-ensure path (the team.ensureRootLive port drives the
+      // SAME live.ensureLiveAgent) ∥ the work-delivery lazy ensure (the
+      // Leader's work delivered to the COLD member).
+      const pEnsure = world.binding.ensureLiveAgent(child)
+      const pDeliver = world.binding.workDelivery.deliver({
+        childSessionId: child,
+        prompt: 'g8 work',
+        requestToken: 'g8-token',
+      })
+      await waitFor(() => world.agents.resumes.length >= 1, 'G8 the child resume to reach the gate')
+      if (releaseGate === undefined) throw new Error('G8 guard: the resume gate never armed')
+      releaseGate()
+      const results = await Promise.allSettled([pEnsure, pDeliver])
+      state.g8 = {
+        bothFulfilled: results.every((r) => r.status === 'fulfilled'),
+        resumesCount: world.agents.resumes.length,
+        hasLive: world.binding.hasLive(child),
+        followupsCount: world.agents.followups.length,
+      }
+    } finally {
+      await world.binding.close().catch(() => undefined)
+    }
+  }
+
+  // ── G9: Team activation IN FLIGHT ∥ foreign ordinary activation —
+  // the foreign is VETOED (the temporal ownedDepth window is gone), the
+  // Team's exact claimed generation PASSES (S1, supplement INV-3) ──
+  {
+    const root = 'session-team-c1-g9-root'
+    const fence = createTeamSessionActivationFence()
+    let gateArmed = false
+    let releaseGate: (() => void) | undefined
+    const world = await createLiveWorld({
+      rootSessionId: root,
+      activationFence: fence,
+      persistence: { exists: () => true },
+      agents: {
+        // gate ONLY the Team resume (the first resume of the root); the
+        // foreign resume sails through to its announce.
+        resumeGate: (req) => {
+          if (!gateArmed && String(req.resumeSessionId) === root) {
+            gateArmed = true
+            return new Promise<void>((resolve) => {
+              releaseGate = resolve
+            })
+          }
+          return Promise.resolve()
+        },
+      },
+    })
+    fence.bindOwnershipResolver((sid) => resolveOwningTeamRoot(world.domain, world.rootSessionId, sid))
+    try {
+      // (1) the Team activation starts: its resume is gated — IN FLIGHT
+      // (the runOwned guard held, the setup/claim not yet run).
+      const pTeam = world.binding.ensureLiveAgent(root)
+      await waitFor(() => world.agents.resumes.length >= 1, 'G9 the team resume to reach the gate')
+      // (2) the foreign (ordinary) activation of the SAME session
+      // announces INSIDE the Team activation's in-flight window. The
+      // pre-supplement temporal model (ownedDepth > 0 → pass) would have
+      // let it steal the writer; the causal-claim model vetoes it.
+      const foreignErr = await captureReject(() => world.agents.resume({ resumeSessionId: root }))
+      // (3) the Team activation settles: its exact claimed generation
+      // PASSES (the claim was minted under the still-held guard).
+      if (releaseGate === undefined) throw new Error('G9 guard: the resume gate never armed')
+      releaseGate()
+      const handle = await pTeam
+      state.g9 = {
+        foreignIntercepted: foreignErr instanceof TeamSessionActivationInterceptedError,
+        teamPassed: handle !== undefined && handle !== null,
+        resumesCount: world.agents.resumes.length,
+        hasLive: world.binding.hasLive(root),
+      }
+    } finally {
+      await world.binding.close().catch(() => undefined)
+    }
+  }
+
+  // ── G10: the completed-before-Team-catch TOCTOU (guide §4.2, exact
+  // scripted timing):
+  //     ordinary activation takes the writer → fence veto → dispose
+  //     COMPLETES → the Team resume's writer-held rejection THEN enters
+  //     its catch.
+  // The baseline was snapshotted BEFORE the veto (0) — so what unlocks
+  // the recovery is the TOMBSTONE (the record is already gone: the
+  // pre-supplement delete-on-dispose model saw "no record →
+  // unrecoverable" and propagated the error without retrying).
+  // EXACTLY ONE retry must then succeed (S1, supplement INV-5) ──
+  {
+    const root = 'session-team-c1-g10-root'
+    const fault = writerHeldError(root)
+    const fence = createTeamSessionActivationFence()
+    let teamGated = false
+    let releaseGate: (() => void) | undefined
+    let faultArmed = false
+    let teamFaults = 0
+    const world = await createLiveWorld({
+      rootSessionId: root,
+      activationFence: fence,
+      persistence: { exists: () => true },
+      agents: {
+        // gate ONLY the Team resume (the one carrying the wrapped
+        // agentSetup — the foreign raw resume has none): it suspends
+        // AFTER the baseline snapshot, BEFORE its fault — the window the
+        // foreign veto + completion runs through.
+        resumeGate: (req) => {
+          if (!teamGated && req.setup !== undefined) {
+            teamGated = true
+            return new Promise<void>((resolve) => {
+              releaseGate = resolve
+            })
+          }
+          return Promise.resolve()
+        },
+        // the scripted writer-held fault fires ONLY on the Team's first
+        // resume and ONLY once the test arms it (call counting is
+        // unreliable under the gate — the gate suspends before the
+        // bridge's per-session call counter increments).
+        resumeFaults: (sid) => {
+          if (sid === root && faultArmed && teamFaults === 0) {
+            teamFaults += 1
+            return fault
+          }
+          return undefined
+        },
+      },
+    })
+    fence.bindOwnershipResolver((sid) => resolveOwningTeamRoot(world.domain, world.rootSessionId, sid))
+    try {
+      // (1) the Team's cold resume starts: the pre-resume barrier finds
+      // no declared rollback, the epoch baseline snapshots 0, and the
+      // resume suspends at the gate — its writer-held rejection has not
+      // been minted yet.
+      const pTeam = world.binding.ensureLiveAgent(root)
+      await waitFor(() => releaseGate !== undefined, 'G10 the team resume to reach the gate')
+      // (2) the ordinary (foreign) activation takes the writer: its
+      // announce is VETOED by the fence (the rollback record, epoch 1)
+      // and the exact foreign generation is disposed BEFORE the Team's
+      // rejection can enter its catch (the scripted TOCTOU order).
+      const foreignErr = await captureReject(() => world.agents.resume({ resumeSessionId: root }))
+      const externalIdentity = world.agents.agentIdentities.get(root)
+      if (externalIdentity === undefined) throw new Error('G10 guard: the foreign resume minted no agent identity')
+      fence.onAgentDisposed(externalIdentity)
+      if (fence.getRollbackEpoch(root) !== 1) throw new Error('G10 guard: the tombstone did not record epoch 1')
+      // (3) the Team's resume then faults (the writer was held) and its
+      // catch runs: the record is GONE — only the tombstone remains —
+      // and `completedEpoch (1) > baseline (0)` confirms the handoff
+      // IMMEDIATELY (the recovery never waited on a record that was
+      // already deleted). EXACTLY ONE retry, which passes via the
+      // Team's exact claim.
+      faultArmed = true
+      if (releaseGate === undefined) throw new Error('G10 guard: the resume gate never armed')
+      releaseGate()
+      const handle = await pTeam
+      state.g10 = {
+        foreignIntercepted: foreignErr instanceof TeamSessionActivationInterceptedError,
+        resumed: handle !== undefined && handle !== null,
+        resumesCount: world.agents.resumes.length,
+        hasLive: world.binding.hasLive(root),
+      }
+    } finally {
+      await world.binding.close().catch(() => undefined)
+    }
+  }
+
   return state
 })()
 
@@ -547,6 +777,39 @@ describe('C1 (guide §13.3): the live glue under the activation fence', () => {
     expect(g6.originalPropagated).toBe(true)
     expect(g6.resumesCount).toBe(1)
     expect(g6.hasLive).toBe(false)
+  })
+
+  it('G7 ensureLiveAgent ∥ ensureLiveAgent (same cold SID): EXACTLY ONE resume, both callers get the SAME handle', () => {
+    const g7 = G.g7 as { sameHandle: boolean; resumesCount: number; hasLive: boolean }
+    expect(g7.resumesCount).toBe(1)
+    expect(g7.sameHandle).toBe(true)
+    expect(g7.hasLive).toBe(true)
+  })
+
+  it('G8 remote ensure ∥ work-delivery lazy ensure (same cold member): one resume, both paths succeed', () => {
+    const g8 = G.g8 as { bothFulfilled: boolean; resumesCount: number; hasLive: boolean; followupsCount: number }
+    expect(g8.resumesCount).toBe(1)
+    expect(g8.bothFulfilled).toBe(true)
+    expect(g8.hasLive).toBe(true)
+    expect(g8.followupsCount).toBe(1)
+  })
+
+  it('G9 Team activation in flight ∥ foreign ordinary activation: the foreign is VETOED (the temporal window is gone), the Team PASSES', () => {
+    const g9 = G.g9 as { foreignIntercepted: boolean; teamPassed: boolean; resumesCount: number; hasLive: boolean }
+    // 1 Team resume + 1 recorded (vetoed) foreign resume.
+    expect(g9.resumesCount).toBe(2)
+    expect(g9.foreignIntercepted).toBe(true)
+    expect(g9.teamPassed).toBe(true)
+    expect(g9.hasLive).toBe(true)
+  })
+
+  it('G10 the completed-before-Team-catch TOCTOU: the tombstone (the record is gone) confirms the handoff and the retry happens EXACTLY once', () => {
+    const g10 = G.g10 as { foreignIntercepted: boolean; resumed: boolean; resumesCount: number; hasLive: boolean }
+    expect(g10.foreignIntercepted).toBe(true)
+    // 1 foreign (vetoed) + 1 faulted Team resume + 1 retry.
+    expect(g10.resumesCount).toBe(3)
+    expect(g10.resumed).toBe(true)
+    expect(g10.hasLive).toBe(true)
   })
 })
 

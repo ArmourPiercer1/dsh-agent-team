@@ -12,6 +12,8 @@
  * @module t12a-live-bridge
  */
 
+import type { TeamSessionActivationFence } from '../src/plugin/team-session-activation.js'
+
 /** One recorded agents.create request (sessionId + the passed meta). */
 export interface RecordedCreate {
   readonly sessionId: string
@@ -198,6 +200,11 @@ export interface AgentCtxDouble {
 /** One settled live-agent handle (the DSH handle seam the glue stores). */
 export interface LiveAgentHandle {
   readonly agent: {
+    /** The session id the Agent object carries (0.1.7 explicit-agent setup
+     *  contract: `setup(agentCtx, agent)` — the announced Agent IS the
+     *  setup's second argument; the fence's exact-generation identity
+     *  reads this `id`). */
+    readonly id: string
     /** alpha.2 (A6): the session header double (the lazy `cwd` read basis
      *  of the permission adapter's resolveTarget closure, FACT 3b). The
      *  `cwd` is MUTABLE on purpose (the bridge is a plain JS double; the
@@ -237,8 +244,12 @@ export interface AgentsDouble {
   readonly globalSections: GlobalPromptSection[]
   /** C1 (guide §8.2): the EXACT-GENERATION identity objects the double
    *  mints per activation (sessionId -> the latest agent identity; the
-   *  same object the created and matching disposed events carry). */
-  readonly agentIdentities: Map<string, { readonly id: string }>
+   *  same object the created and matching disposed events carry). The
+   *  FULL agent double is stored (the `LiveAgentHandle['agent']` shape —
+   *  the mint happens BEFORE `AgentSetup` runs, so a FATAL setup still
+   *  leaves its ctx reachable here, while `handles` only publishes
+   *  post-announce — the faithful 0.1.7 ordering). */
+  readonly agentIdentities: Map<string, LiveAgentHandle['agent']>
   create(req: { sessionId: unknown; meta?: Record<string, unknown>; setup?: (ctx: object) => unknown }): Promise<object>
   resume(req: { resumeSessionId: unknown; setup?: (ctx: object) => unknown }): Promise<object>
 }
@@ -250,8 +261,14 @@ export interface AgentsDoubleOptions {
   /** work-completion wake-up (G8 teardown-gate regression): a per-resume
    *  SUSPENSION point — awaited after the resume request is recorded,
    *  before the handle is built, so a test can interleave `close()` while
-   *  an `agents.resume()` is in flight (absent = settle immediately). */
-  readonly resumeGate?: (req: object) => Promise<void>
+   *  an `agents.resume()` is in flight (absent = settle immediately).
+   *  The request carries the RAW resume args — `setup` distinguishes a
+   *  Team glue resume (a wrapped AgentSetup is present) from a foreign
+   *  raw resume (S1 G7–G10 gate on it). */
+  readonly resumeGate?: (req: {
+    readonly resumeSessionId: unknown
+    readonly setup?: unknown
+  }) => Promise<void>
   /** The world's global prompt layer (T12-M2; default: the DSH service pair). */
   readonly systemPromptGlobals?: GlobalPromptSection[]
   /** multi-mcp (Task C, plan §6.7): per-server MCP activation failure
@@ -641,21 +658,12 @@ export interface LiveWorldOptions {
    *  agent/disposed -> the exact-generation barrier). Absent = the
    *  pre-C1 glue fallback (no guard, no waits — no pre-C1 test world
    *  breaks wholesale). The SAME object is exposed on the world
-   *  (`LiveWorld.activationFence`). */
-  readonly activationFence?: {
-    runOwned<T>(sessionId: string, op: () => Promise<T>): Promise<T>
-    beforeAgentCreated(input: {
-      agent: { readonly id: string }
-      source: string
-      signal?: unknown
-    }): Promise<void>
-    onAgentDisposed(agent: { readonly id: string }): void
-    awaitRollback(sessionId: string): Promise<void>
-    recoverWriterConflict(sessionId: string, options?: { timeoutMs?: number }): Promise<boolean>
-    permitOrdinaryOnce(sessionId: string): void
-    bindOwnershipResolver(resolver: (sessionId: string) => string | undefined): void
-    close(): void
-  }
+   *  (`LiveWorld.activationFence`). Typed with the REAL fence interface
+   *  (the supplement round reworked the recovery surface — exact
+   *  generation claims, `getRollbackEpoch`, and
+   *  `recoverWriterConflict({ afterEpoch, deadlineMs })` — so a stale
+   *  structural copy here would reject every real fence). */
+  readonly activationFence?: TeamSessionActivationFence
   /** C1 (guide §7.2): the bounded writer-conflict recovery window (ms)
    *  the glue passes to recoverWriterConflict (tiny for G5/G6
    *  determinism). Absent = the glue default (10 s). */

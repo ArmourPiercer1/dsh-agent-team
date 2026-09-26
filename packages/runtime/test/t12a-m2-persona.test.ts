@@ -158,7 +158,12 @@ try {
 } catch (error) {
   completeError = error
 }
-const rootCtxD = worldD.agents.handles.get(ROOT_D)?.agent.ctx
+// The FATAL setup throws BEFORE the announce, so no handle is published
+// (the faithful 0.1.7 ordering: `handles` only fills post-announce). The
+// identity object is minted BEFORE setup runs — it is the correct source
+// for the pre-setup ctx (the same object a successful announce would
+// carry).
+const rootCtxD = worldD.agents.agentIdentities.get(ROOT_D)?.ctx
 
 // ── world E: the resume phase (cold root, durable fixture under DSH_HOME) ──
 const ROOT_E = 'session-t12a-m2-root-resume'
