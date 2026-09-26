@@ -26,6 +26,8 @@ Root cause: 0.1.7's stock SessionController ordinary auto-promotion can `agents.
 | `f3d5a71b` | Fix — C1 fence `runOwned` must span the operation's AWAITED lifetime (real-host defect caught by the Commit-4 kit, see below) + A9 real-shape regression test + A4 correction |
 | `2a3df15` | Commit 4 — real-host kit **Worlds A–E + 20× writer-held race, ALL GREEN** + full evidence + gate-5 live closure + the first-run BLOCKED defect record |
 | `ede088b` | Commit 5 — final verification **§17 sixteen criteria 16/16 PASS** + closing bookkeeping |
+| `3499d31` | Merge `origin/master` (PR #30 model-preference-routing, landed on master after this branch diverged) — p4t6 pin unioned to 763, dist rebuilt, post-merge battery re-verified |
+| `0db7a28` | Push bookkeeping (PR #31 opened, merge + re-verification record) |
 
 ## The real-host kit caught a committed product defect (why this round has a fix commit)
 
@@ -48,16 +50,9 @@ Fix `f3d5a71b`: `async runOwned` + `return await operation()` (guard spans the f
 | D (run 9) | 30P/0F | v5 `prepareOrdinaryOpen` → native open → ordinary prompt works; `ensureRootLive` calls = 0; re-takeover typed fail-closed (`TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM`, no silent adopt); post-restart re-takeover |
 | E (run 3) | 20/20 | writer-held race: followOk/ensureOk/teamLive/singleWriter all 20/20, created=20, **disposed=0** (main agent independently re-parsed `race-iterations.json`) |
 
-**Static + suites:** typecheck/build/build:composition/check:artifacts all green (artifacts 1180, committed install surface = fresh build byte-identical); zero-core scan PASS (0 findings); test-use pristine @ `46a7f68b09` (porcelain empty, re-verified at acceptance time); root suite run (quiet) = **10 files / 20 tests failing = the pre-existing debt baseline file-for-file and count-for-count (3897 passed of 3917) — new-failure set empty**. Two transient observations attributed in `commit5/verification-17.md`: the p4t6 pin drift (754→755, a Commit-3 bookkeeping increment — corrected per the single-writer pin protocol) and the `p6t1-parallel` load flake (pre-existing, provably import-graph-isolated from every product change on this branch; the F7-1 family from the PR-#29 supplement round).
+**Static + suites (re-verified after the `origin/master` merge):** typecheck/build/build:composition all exit 0; check:artifacts **OK — 1196 files**, committed install surface byte-identical to the fresh build (1180 pre-merge + 16 from PR #30's new sources); zero-core scan PASS (0 findings); test-use pristine @ `46a7f68b09` (porcelain empty, re-verified at acceptance time); root suite (quiet, post-merge) = **10 files failing = the pre-existing debt baseline file-for-file and count-for-count (3968 passed of 3989; +72 tests = PR #30's new suites) — new-failure set empty**. Transient observations attributed in `commit5/verification-17.md` / `commit5/merge-30/`: the p4t6 pin drift (754→755, a Commit-3 bookkeeping increment — corrected per the single-writer pin protocol; unioned to 763 at the master merge) and the `p6t1-parallel` load flake (pre-existing — the identical assertion-point failure appears in PR #30's own evidence on clean master `4fb79fc` with neither branch's code present, and in the PR-#29 supplement round as the F7-1 family; provably import-graph-isolated from every product change on this branch).
 
-**§17 final acceptance: 16/16 PASS** (`dev/agent-workflow/evidence/restart-017rc1/commit5/verification-17.md`).
-
-## Known limitations / follow-ups (non-blocking)
-
-- **F-rc1** — on the exact page that experienced the veto, the client's sticky "Session unavailable" composer state is not auto-reconciled by the Commit-3 `sessions.refresh()` on same-session takeover (0.1.7 client selection model: re-selecting the current session is a no-op). Measured impact: the user is never stranded (a legitimate in-app session switch recovers it; the wire is fully functional; nothing is swallowed; no page reload required anywhere in the flow). Auto-reconcile would need a client-mount extension or an upstream change — out of this round's red lines; the guide does not mandate it.
-- **F-rc2** — `p6t1-parallel` load-sensitive flake (pre-existing; isolated from this branch's changes by import-graph proof; recommend a dedicated round for load reproduction + parallel-activation stability).
-
-## Red lines held
+## ## Red lines held
 
 CORE PATCH BUDGET = 0 (zero upstream modifications; zero-core 0 findings; test-use pristine); no error swallowing anywhere; stable instance `:3080` untouched (read-only 401 probes only); frozen anchors unmoved; 1 task = 1 branch = 1 worktree = 1 writer; homes registered per TEST_METHODS §7 (scratch removed with audit trail, orphan world untouched per user ruling).
 
