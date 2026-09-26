@@ -32,7 +32,10 @@
  *  - A8 close — after close(): a new runOwned REJECTS, every in-flight
  *    waiter settles (the pending rollback barrier resolves, the bounded
  *    writer-conflict wait resolves false), and no dangling promise is
- *    left (every started await settles within a bounded window).
+ *    left (every started await settles within a bounded window);
+ *  - A9 real-host shape — the guard spans the operation AWAITED lifetime
+ *    (agent/created announced after several awaited hops, not in the
+ *    sync prefix; the Commit-4 World-A boot-gate defect regression).
  *
  * @module @dsh-agent-team/runtime/test/team-session-activation
  */
@@ -172,13 +175,21 @@ describe('C1 (guide §13.1): the Team session-activation fence', () => {
       await fence.runOwned(ROOT, async () => {
         await fence.beforeAgentCreated({ agent: agent(ROOT), source: 'startup' })
       })
-      // BETWEEN the inner settle and the outer settle a foreign
-      // activation must STILL be intercepted (the outer guard holds).
-      await expectIntercepted(fence, { agent: agent(ROOT), source: 'resume' })
+      // BETWEEN the inner settle and the outer settle the OUTER guard
+      // still holds (guide §13.1 A4: the inner end must not clear it
+      // early) — a further activation of the same session still passes
+      // through the guard (ownedDepth > 0: the Team's activation window
+      // is open until the OUTER settles). NOTE: the pre-fix test asserted
+      // INTERCEPTION here — that expectation only held under the Commit-4
+      // defect (the sync `return operation()` released the outer guard
+      // after its sync prefix), so A4 green-lit the bug; the guide's
+      // semantics (guard held across the awaited lifetime) are what this
+      // step pins now.
+      await fence.beforeAgentCreated({ agent: agent(ROOT), source: 'resume' })
     })
     // and only after the OUTER settle is the guard gone: the foreign
-    // activation is intercepted again (the same condition — the guard was
-    // always absent outside the owned window).
+    // activation is intercepted again (the guard was never held outside
+    // the owned window).
     await expectIntercepted(fence, { agent: agent(ROOT), source: 'resume' })
   })
 
@@ -286,6 +297,42 @@ describe('C1 (guide §13.1): the Team session-activation fence', () => {
     fence.permitOrdinaryOnce(ROOT)
     // idempotent close (the row-stop backstop may call it more than once
     // across the dispose paths).
+    fence.close()
+  })
+
+  it('A9 real-host shape: the guard spans the operation AWAITED lifetime (Commit-4 defect regression — agent/created fires after awaited hops, NOT in the sync prefix)', async () => {
+    const fence = createTeamSessionActivationFence()
+    makeFence(fence)
+    // The 0.1.7 create chain ANNOUNCES agent/created several AWAITED hops
+    // after the create promise is returned (in-host verified, World A
+    // boot: createAgent → setupAndPublish → initializeAgent →
+    // runMaintenance → publish → announce → ctx.serial — every hop
+    // awaited). The operation models EXACTLY that shape: several awaited
+    // hops, THEN the fence decision point. A synchronous `return
+    // operation()` in runOwned releases the guard after the operation's
+    // sync prefix only → the seam reads ownedDepth=0 for the Team's OWN
+    // activation → veto → bootstrap FATAL on every fresh home (the
+    // Commit-4 kit defect; unit tests A3/A4 missed it because their
+    // operations put the fence decision in the sync prefix).
+    const ownedOutcome = await fence.runOwned(ROOT, async () => {
+      // the awaited hops of the real create chain (each an await
+      // boundary — model selection install, maintenance, publish).
+      await Promise.resolve()
+      await Promise.resolve()
+      await new Promise<void>((resolve) => setTimeout(resolve, 0))
+      // the AWAITED-serial agent/created decision point (the seam): the
+      // Team's OWN startup activation must PASS (the guard is still held
+      // across the full awaited lifetime).
+      await fence.beforeAgentCreated({ agent: agent(ROOT), source: 'startup' })
+      return 'live-handle'
+    })
+    expect(ownedOutcome).toBe('live-handle')
+    // the guard is released only AFTER the operation settles: a
+    // subsequent foreign activation (no guard, no permit) is vetoed
+    // again — the fence state is consistent post-activation (a leaked
+    // guard would have PASSED this foreign activation; the too-early
+    // release is exactly the fixed defect — both directions pinned).
+    await expectIntercepted(fence, { agent: agent(ROOT), source: 'resume' })
     fence.close()
   })
 

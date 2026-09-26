@@ -229,20 +229,35 @@ export function createTeamSessionActivationFence(options = {}) {
     }
     // ── the fence surface (guide §3) ────────────────────────────────────────
     return {
-        runOwned(sessionId, operation) {
+        async runOwned(sessionId, operation) {
             const sid = String(sessionId);
             if (closed) {
                 // test A8: a new runOwned after close REJECTS (async rejection —
                 // the caller's `await` sees it in its own catch).
-                return Promise.reject(new TeamSessionActivationClosedError());
+                throw new TeamSessionActivationClosedError();
             }
             ownedDepthBySession.set(sid, (ownedDepthBySession.get(sid) ?? 0) + 1);
             try {
-                return operation();
+                // COMMIT-4 DEFECT FIX (0.1.7 real-host kit, World A boot-gate FATAL,
+                // evidence/restart-017rc1/commit4/DEFECT-c1-runOwned-guard-lifetime.md):
+                // `runOwned` MUST be async and `return await operation()` — a
+                // SYNCHRONOUS `return operation()` fires the `finally` decrement
+                // the moment the operation PROMISE IS RETURNED (after the
+                // operation's synchronous prefix only), while the 0.1.7
+                // AWAITED-serial `agent/created` seam fires several AWAITED hops
+                // later (in-host verified: createAgent → setupAndPublish →
+                // initializeAgent → runMaintenance → publish → announce →
+                // ctx.serial) — the fence then read ownedDepth=0 for the Team's
+                // OWN activation and vetoed it (bootstrap FATAL on every fresh
+                // home). With `await`, the guard spans the operation's FULL
+                // AWAITED LIFETIME (regression test A9 pins the real host shape).
+                return await operation();
             }
             finally {
-                // guide §3.1 pseudocode, verbatim semantics: decrement in finally;
-                // the inner completion never clears the outer guard (test A4).
+                // guide §3.1 pseudocode, verbatim semantics: decrement in finally
+                // (AFTER the operation settles — the async/await is what makes
+                // "finally = teardown of the activation lifetime" true); the
+                // inner completion never clears the outer guard (test A4).
                 const next = (ownedDepthBySession.get(sid) ?? 1) - 1;
                 if (next === 0)
                     ownedDepthBySession.delete(sid);
