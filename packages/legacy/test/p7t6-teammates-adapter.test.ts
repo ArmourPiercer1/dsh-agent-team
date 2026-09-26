@@ -146,6 +146,9 @@ describe('p7t6 legacy teammates adapter: valid import', () => {
     expect(blueprint.leader.displayName).toBe('Alpha Leader')
     expect(blueprint.leader.description).toBe('Coordinates the P7-T6 import test team.')
     expect(blueprint.leader.persona).toBe('You are Alpha, the leader of the import test team. Keep the squad focused.')
+    // The leader fixture carries a model WITHOUT a provider: the bare model
+    // stays the VALID model-only shorthand (the runtime fills the provider
+    // from the deployment default — never a fabricated route).
     expect(blueprint.leader.modelPreference).toBe('deepseek-chat')
     expect(blueprint.leader.contextPolicy).toBe('persistent')
 
@@ -159,7 +162,10 @@ describe('p7t6 legacy teammates adapter: valid import', () => {
     const writer = blueprint.members[1]
     expect(writer).not.toBe(undefined)
     expect(writer?.persona).toBe('Draft documents carefully and cite your sources.')
-    expect(writer?.modelPreference).toBe('deepseek-writer')
+    // The model-preference routing fix (guide §4.9): the legacy
+    // provider + model pair becomes the EXECUTABLE qualified route
+    // (the provider is no longer dropped into inert extras).
+    expect(writer?.modelPreference).toBe('deepseek/deepseek-writer')
     expect(writer?.contextPolicy).toBe('fresh_per_delegation')
 
     // Inert provenance + lossless extras (unmapped legacy fields preserved).
@@ -170,7 +176,6 @@ describe('p7t6 legacy teammates adapter: valid import', () => {
     ])
     const expectedExtras = JSON.stringify({
       writer: {
-        provider: 'deepseek',
         maxTokens: 4096,
         tools: { allow: ['read'], deny: ['exec'] },
         requiresApproval: ['publish'],
@@ -185,6 +190,7 @@ describe('p7t6 legacy teammates adapter: valid import', () => {
     const extras = JSON.parse(String(blueprint.metadata['legacy.extras'])) as Record<string, Record<string, unknown>>
     expect(extras['writer']).not.toBe(undefined)
     expect(extras['writer']?.model).toBe(undefined) // mapped to modelPreference, not duplicated
+    expect(extras['writer']?.provider).toBe(undefined) // consumed into the executable route, not duplicated
     expect(extras['writer']?.contextPolicy).toBe(undefined) // mapped, not duplicated
     expect(extras['writer']?.permissionMode).toBe('default')
     expect(Object.keys(blueprint.metadata).sort()).toEqual(['legacy.extras', 'legacy.provenance', 'legacy.sourceFiles'])
@@ -232,6 +238,60 @@ describe('p7t6 legacy teammates adapter: valid import', () => {
     expect(blueprint.leader.templateId).toBe('leader-b')
     expect(blueprint.leader.persona).toBe('Second leader persona.')
     expect(blueprint.members.map((m) => m.templateId)).toEqual(['scribe'])
+  })
+
+  it('G1 model-only: a def with model and NO provider maps to the bare model (modelPreference "foo"), no extras provider', () => {
+    const solo: LegacyTeammateEntry = {
+      fileName: 'solo.md',
+      content:
+        '---\n' +
+        'schemaVersion: 1\n' +
+        'id: solo\n' +
+        'role: teammate\n' +
+        'name: Solo\n' +
+        'description: Model only.\n' +
+        'model: foo\n' +
+        '---\n' +
+        'Solo persona body.\n',
+    }
+    const { blueprint, warnings } = importLegacyTeammates([VALID_LEADER_ENTRY, solo], OPTIONS)
+    expect(warnings).toEqual([])
+    const member = blueprint.members.find((m) => m.templateId === 'solo')
+    expect(member).not.toBe(undefined)
+    // The bare model stays the model-only shorthand: no route is invented
+    // (the runtime fills the provider from the deployment default).
+    expect(member?.modelPreference).toBe('foo')
+    // Neither the leader nor the member carries any other unmapped field:
+    // the extras metadata key is absent entirely.
+    expect(blueprint.metadata['legacy.extras']).toBe(undefined)
+    expect(Object.keys(blueprint.metadata).sort()).toEqual(['legacy.provenance', 'legacy.sourceFiles'])
+  })
+
+  it('G2 provider-only: a def with provider and NO model maps to NO modelPreference, and the provider stays in extras', () => {
+    const solo: LegacyTeammateEntry = {
+      fileName: 'solo.md',
+      content:
+        '---\n' +
+        'schemaVersion: 1\n' +
+        'id: solo\n' +
+        'role: teammate\n' +
+        'name: Solo\n' +
+        'description: Provider only.\n' +
+        'provider: foo\n' +
+        '---\n' +
+        'Solo persona body.\n',
+    }
+    const { blueprint, warnings } = importLegacyTeammates([VALID_LEADER_ENTRY, solo], OPTIONS)
+    expect(warnings).toEqual([])
+    const member = blueprint.members.find((m) => m.templateId === 'solo')
+    expect(member).not.toBe(undefined)
+    // A provider without a model is NOT an executable route: the importer
+    // must not invent one — modelPreference stays absent.
+    expect(member?.modelPreference).toBe(undefined)
+    // The unconsumed provider is preserved losslessly in the extras.
+    expect(blueprint.metadata['legacy.extras']).toBe(JSON.stringify({ solo: { provider: 'foo' } }))
+    const extras = JSON.parse(String(blueprint.metadata['legacy.extras'])) as Record<string, Record<string, unknown>>
+    expect(extras['solo']?.provider).toBe('foo')
   })
 })
 
@@ -431,7 +491,9 @@ describe('p7t6 legacy teammates adapter: no runtime authority (negative)', () =>
   it('adapter sources carry no runtime authority vocabulary (source scan)', () => {
     const sources = adapterSourceTexts()
     expect(sources.length).toBe(3)
-    const names = sources.map((s) => s.path.split('\\').pop()).sort()
+    // Basename on every platform (the seam joins with the platform
+    // separator: backslash on Windows, forward slash elsewhere).
+    const names = sources.map((s) => s.path.split(/[\\/]/).pop()).sort()
     expect(names).toEqual(['teammates-adapter-fs.d.mts', 'teammates-adapter-fs.mjs', 'teammates-adapter.ts'])
 
     // Vocabulary that would mean the adapter reached into a live team:
@@ -457,7 +519,7 @@ describe('p7t6 legacy teammates adapter: no runtime authority (negative)', () =>
     const hits: string[] = []
     for (const source of sources) {
       for (const token of forbidden) {
-        if (source.content.includes(token)) hits.push(`${source.path.split('\\').pop()}:${token}`)
+        if (source.content.includes(token)) hits.push(`${source.path.split(/[\\/]/).pop()}:${token}`)
       }
     }
     expect(hits).toEqual([])

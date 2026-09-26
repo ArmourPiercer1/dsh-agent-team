@@ -104,6 +104,67 @@ const vExternalMissing = modelConsumptionView(
   BASELINE,
 )
 
+// Gate C — the bound template's STATIC model grant (`templateValues`) in
+// the SAME consumer pipeline: the template layer sits between the
+// PolicyState and the record-backed overlays (frozen resolver order),
+// so it beats the `unspecified` default but loses to every durable layer
+// and to the external hard facts.
+const TPL_A = 'prov-tpl/model-tpl'
+const TPL_MALFORMED = 'no-slash-item'
+const vTpl = modelConsumptionView(
+  resolveActivationPolicy({
+    rootSessionId: ROOT,
+    instanceId: INSTANCE,
+    overrides: [],
+    external: EMPTY_EXTERNAL,
+    templateValues: { model: { kind: 'allow', items: [TPL_A] } },
+  }),
+  BASELINE,
+)
+const vTplAndMcp = modelConsumptionView(
+  resolveActivationPolicy({
+    rootSessionId: ROOT,
+    instanceId: INSTANCE,
+    overrides: [],
+    external: EMPTY_EXTERNAL,
+    templateValues: {
+      model: { kind: 'allow', items: [TPL_A] },
+      mcp: { kind: 'allow', items: ['srv-a'] },
+    },
+  }),
+  BASELINE,
+)
+const vTplMalformed = modelConsumptionView(
+  resolveActivationPolicy({
+    rootSessionId: ROOT,
+    instanceId: INSTANCE,
+    overrides: [],
+    external: EMPTY_EXTERNAL,
+    templateValues: { model: { kind: 'allow', items: [TPL_MALFORMED] } },
+  }),
+  BASELINE,
+)
+const vTplBeatenByOverride = modelConsumptionView(
+  resolveActivationPolicy({
+    rootSessionId: ROOT,
+    instanceId: INSTANCE,
+    overrides: [rAllowB],
+    external: EMPTY_EXTERNAL,
+    templateValues: { model: { kind: 'allow', items: [TPL_A] } },
+  }),
+  BASELINE,
+)
+const vTplBeatenByExternal = modelConsumptionView(
+  resolveActivationPolicy({
+    rootSessionId: ROOT,
+    instanceId: INSTANCE,
+    overrides: [],
+    external: { hard: {}, capabilityExists: { model: false } },
+    templateValues: { model: { kind: 'allow', items: [TPL_A] } },
+  }),
+  BASELINE,
+)
+
 const fullBoundary = resolveDurableModelSelection({
   rootSessionId: ROOT,
   instanceId: INSTANCE,
@@ -206,5 +267,55 @@ describe('P8-S4B M6 durable model consumption', () => {
 
   it('D4 the next request N+1 uses B', () => {
     expect(selectionAtN1).toEqual(MODEL_B_SELECTION)
+  })
+})
+
+describe('Gate C: the bound template static model grant in the consumer pipeline', () => {
+  it('C1 the template model grant wins over the unspecified default', () => {
+    expect(vTpl.selection).toEqual({ provider: 'prov-tpl', model: 'model-tpl' })
+    expect(vTpl.source).toEqual({ layer: 'template', origin: 'static', recordId: null })
+    expect(vTpl.deniedBy).toBe(undefined)
+    expect(vTpl.unavailable).toBe(false)
+  })
+
+  it('C2 absent templateValues keeps the baseline (the pre-fix behavior)', () => {
+    expect(vBaseline.selection).toEqual(BASELINE)
+    expect(vBaseline.source.layer).toBe('unspecified')
+  })
+
+  it('C3 a durable human override beats the template grant', () => {
+    expect(vTplBeatenByOverride.selection).toEqual({ provider: 'p6t6-static', model: 'p6t6-model-v2' })
+    expect(vTplBeatenByOverride.source).toEqual({ layer: 'humanOverride', origin: 'human', recordId: 'p8s4b-md-allow' })
+  })
+
+  it('C4 template model + mcp coexist without interference', () => {
+    expect(vTplAndMcp.selection).toEqual({ provider: 'prov-tpl', model: 'model-tpl' })
+    expect(vTplAndMcp.source).toEqual({ layer: 'template', origin: 'static', recordId: null })
+    const policy = resolveActivationPolicy({
+      rootSessionId: ROOT,
+      instanceId: INSTANCE,
+      overrides: [],
+      external: EMPTY_EXTERNAL,
+      templateValues: {
+        model: { kind: 'allow', items: [TPL_A] },
+        mcp: { kind: 'allow', items: ['srv-a'] },
+      },
+    })
+    expect(policy.cells['mcp'].effective).toEqual({ kind: 'allow', items: ['srv-a'] })
+    expect(policy.cells['mcp'].team.layer).toBe('template')
+    expect(policy.cells['mcp'].team.origin).toBe('static')
+    expect(policy.cells['mcp'].team.recordId).toBe(null)
+    expect(policy.cells['model'].team.layer).toBe('template')
+  })
+
+  it('C5 a malformed template item fails closed (never guessed)', () => {
+    expect(vTplMalformed.selection).toBe(undefined)
+    expect(vTplMalformed.unavailable).toBe(true)
+  })
+
+  it('C6 the external hard facts beat the template grant', () => {
+    expect(vTplBeatenByExternal.selection).toBe(undefined)
+    expect(vTplBeatenByExternal.unavailable).toBe(true)
+    expect(vTplBeatenByExternal.deniedBy).toEqual({ by: 'external', reason: 'capabilityMissing' })
   })
 })

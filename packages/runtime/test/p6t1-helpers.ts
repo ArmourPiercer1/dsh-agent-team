@@ -75,6 +75,7 @@ import type {
 import { FakeAgentSetupSurface } from './p5t1-helpers.js'
 import { FakeSessionDurability, captureError } from './p5t6-helpers.js'
 import type { AdmissionGuard, OverlaySlot, OverlaySlotName } from '../agent-setup/binder/index.js'
+import type { ModelSelection } from '../agent-setup/model/index.js'
 
 /** The P6-T1 fixture identities (frozen contracts v1 branded ids). */
 export const P6T1_FIXTURE = {
@@ -85,6 +86,14 @@ export const P6T1_FIXTURE = {
   defaultWorkspace: 'C:/agent-team/work/p6t1',
   createdAt: '2026-08-30T08:00:00Z',
 } as const
+
+/** The P6-T1 fixture's deployment default model (the injected
+ *  `staticModel` port; the world provider default the model-only
+ *  `modelPreference` shorthand inherits its provider from). */
+export const P6T1_FIXTURE_STATIC_MODEL: ModelSelection = {
+  provider: 'p6t1-static',
+  model: 'p6t1-default-model',
+}
 
 /**
  * The fixture blueprint source (the closed v1 schema): two member templates
@@ -280,6 +289,9 @@ export interface P6T1WorldOptions {
   readonly environmentFacts?: () => Promise<readonly EnvironmentFact[]>
   /** The external policy facts port (default: empty facts). */
   readonly externalPolicyFacts?: () => Promise<ExternalPolicyFacts>
+  /** The deployment default model (the `staticModel` port; default: the
+   *  fixture's P6T1 static route). */
+  readonly staticModel?: ModelSelection
   /** Binder slot overrides. */
   readonly slots?: Partial<Record<OverlaySlotName, OverlaySlot>>
   /** The binder admission guard (default: the admitting guard). */
@@ -316,6 +328,7 @@ export interface P6T1World {
   readonly ports: {
     readonly environmentFacts: () => Promise<readonly EnvironmentFact[]>
     readonly externalPolicyFacts: () => Promise<ExternalPolicyFacts>
+    readonly staticModel: ModelSelection
     readonly slots?: Partial<Record<OverlaySlotName, OverlaySlot>>
     readonly admissionGuard?: AdmissionGuard
     readonly projectionPublisher?: (event: ActivationProjectionEvent) => void
@@ -404,11 +417,16 @@ export async function createP6T1World(
   })
   const environmentFacts = options.environmentFacts ?? (async () => makeEnvironmentFacts())
   const externalPolicyFacts = options.externalPolicyFacts ?? (async () => makeExternalPolicyFacts())
+  const staticModel = options.staticModel ?? {
+    provider: P6T1_FIXTURE_STATIC_MODEL.provider,
+    model: P6T1_FIXTURE_STATIC_MODEL.model,
+  }
   const provider = createActivationProvider({
     teamDomain: domain,
     blueprintCatalog: catalog,
     environmentFacts,
     externalPolicyFacts,
+    staticModel,
     childSessionFactory: childFactory,
     sessionDurability: durability,
     surface,
@@ -431,6 +449,7 @@ export async function createP6T1World(
     ports: {
       environmentFacts,
       externalPolicyFacts,
+      staticModel,
       ...(options.slots !== undefined ? { slots: options.slots } : {}),
       ...(options.admissionGuard !== undefined ? { admissionGuard: options.admissionGuard } : {}),
       ...(options.projectionPublisher !== undefined
@@ -476,6 +495,7 @@ export async function restartP6T1World(world: P6T1World): Promise<P6T1World> {
     blueprintCatalog: catalog,
     environmentFacts: world.ports.environmentFacts,
     externalPolicyFacts: world.ports.externalPolicyFacts,
+    staticModel: world.ports.staticModel,
     childSessionFactory: childFactory,
     sessionDurability: durability,
     surface,

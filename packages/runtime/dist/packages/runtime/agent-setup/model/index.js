@@ -14,8 +14,20 @@
  * from the durable governance overrides (backend truth) to the actual
  * future Agent model selection (DevPlan P8-S §18.1).
  *
+ * Model-preference routing fix additions: the pure route grammar
+ * (`parseModelItem` — now sourced from ./route.js, the single parse site;
+ * the public name is unchanged) and the bound template's INITIAL STATIC
+ * model grant derivation (`initialTemplateModelGrantOf`).
+ *
  * @module @dsh-agent-team/runtime/agent-setup/model
  */
 export { TeamModelOverlaySlot, TeamModelSelectionAdapter, } from './overlay.js';
-export { parseModelItem, modelConsumptionView, resolveDurableModelSelection, } from './durable-consumption.js';
+export { parseModelItem } from './route.js';
+// The strict v1 `modelPreference` token parser is the SINGLE domain parser
+// (P2-2) — re-exported from here so the runtime facade's public surface is
+// unchanged, but there is only ONE parser definition (domain).
+export { parseModelPreferenceToken, } from '../../../domain/blueprint/src/index.js';
+export { InvalidTemplateModelPreferenceError, isInvalidTemplateModelPreferenceError, MODEL_ERROR_CODES, } from './errors.js';
+export { initialTemplateModelGrantOf } from './template-model.js';
+export { modelConsumptionView, resolveDurableModelSelection, } from './durable-consumption.js';
 //# sourceMappingURL=index.js.map

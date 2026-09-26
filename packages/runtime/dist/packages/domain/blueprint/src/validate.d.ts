@@ -24,6 +24,11 @@
  * - template references resolvable: every `memberEnvelopes[].templateId`
  *   names a template declared in the same document;
  * - requirements well-formed with unique (domain, name) pairs;
+ * - `modelPreference`, when present, is a legal v1 model token — either a
+ *   qualified `provider/model` route (split at the first `/`, both sides
+ *   non-empty) or a bare model-only shorthand (its provider is inherited
+ *   from the deployment default at the runtime); no whitespace / control
+ *   characters (`MALFORMED_DTO`, reason `invalid-model-preference`);
  * - mutation envelopes self-consistent (no operation in both allow and
  *   deny);
  * - PolicyState definitions reference only fields that exist in the

@@ -161,6 +161,7 @@ import {
   TeamModelOverlaySlot,
   TeamModelSelectionAdapter,
   resolveDurableModelSelection,
+  initialTemplateModelGrantOf,
 } from '../../agent-setup/model/index.js'
 import type { ModelSelection, ModelSelectionSource } from '../../agent-setup/model/index.js'
 import {
@@ -729,6 +730,29 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const blueprint: TeamBlueprint = parseBlueprint(config.blueprintSource)
   const catalog: BlueprintCatalog = blueprintCatalog ?? createBlueprintCatalog([blueprint])
 
+  // The GENERIC per-root bound Blueprint resolver (model-preference routing
+  // fix, guide §4.7.1): ONE per-root cache shared by EVERY consumer that
+  // needs the owning root's bound snapshot (the persona source, the
+  // policyReader's blueprint envelope, the policyReader's template policy
+  // — and the live glue's own resolver). Production path (a resolver is
+  // injected): NEVER a silent fallback to the row anchor — the resolver is
+  // the authority (it fails closed on an unavailable / inconsistent
+  // snapshot, and the binder wraps that as BINDER_OVERLAY_FAILED).
+  // Factory/test world (no resolver): the bootstrap `blueprint` stands in
+  // for every root (the single-blueprint factory contract).
+  const boundBlueprintByRoot = new Map<string, TeamBlueprint>()
+  const boundBlueprintFor = (teamSessionId: string): TeamBlueprint => {
+    if (resolveBoundBlueprint === undefined) {
+      return blueprint // factory-world fallback only
+    }
+    const key = String(teamSessionId)
+    const cached = boundBlueprintByRoot.get(key)
+    if (cached !== undefined) return cached
+    const resolved = resolveBoundBlueprint(key)
+    boundBlueprintByRoot.set(key, resolved)
+    return resolved
+  }
+
   // --- A03b the bound blueprint snapshot ref (T12-B1/B6) --------------------------------
   // Every fresh-root binding of THIS row binds the same immutable identity:
   // the real create boot (T12-B1) and the handoff target creation (T12-B6)
@@ -818,17 +842,13 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     const key = String(rootSessionId)
     const cached = boundPersonaSources.get(key)
     if (cached !== undefined) return cached
-    const resolve = resolveBoundBlueprint
-    if (resolve === undefined) {
-      // Unreachable through the resolver-backed source (it is selected
-      // ONLY when a resolver is injected) — fail closed anyway; this
-      // path never falls back to the row anchor silently.
-      throw new TeamPluginError(
-        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CONFIG_INVALID,
-        `bound blueprint persona source has no resolver for root "${key}" — the production host always injects one`,
-      )
-    }
-    const bound = resolve(key)
+    // The shared per-root bound resolver (guide §4.7.1): the resolver-backed
+    // source is selected ONLY when a resolver is injected, so
+    // `boundBlueprintFor` here always resolves through the injected
+    // authority (never the row-anchor fallback) — the fail-closed ruling is
+    // unchanged (a resolver fault propagates; it is wrapped as
+    // BINDER_OVERLAY_FAILED at the binder boundary).
+    const bound = boundBlueprintFor(key)
     const source: TeamBlueprintPersonaSource = {
       getLeaderPersona: () => bound.leader.persona,
       getMemberPersona: (_owner, templateId) => {
@@ -977,6 +997,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     blueprintCatalog: catalog,
     environmentFacts,
     externalPolicyFacts,
+    staticModel: {
+      provider: config.staticModel.provider,
+      model: config.staticModel.model,
+    },
     childSessionFactory: live.childFactory,
     sessionDurability: live.sessionDurability,
     surface: live.surface,
@@ -1144,6 +1168,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     blueprintCatalog: catalog,
     environmentFacts,
     externalPolicyFacts,
+    staticModel: {
+      provider: config.staticModel.provider,
+      model: config.staticModel.model,
+    },
     now,
     lifecycleCommit,
     lifecyclePorts,
@@ -1588,25 +1616,46 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
 
   // --- A22 + A23 the mutation service + the governance override admission -------------------------
   const policyReader: PolicyReader = {
-    readBlueprintEnvelope: () => {
-      const values = capabilityValuesOf(blueprint.capabilityPolicy)
+    // model-preference routing fix (guide §4.7.2): the blueprint envelope
+    // reads the OWNING root's bound snapshot through the shared per-root
+    // resolver (the pre-fix closure read the bootstrap row anchor for
+    // every root — a dynamic Team root's own envelope was never read).
+    readBlueprintEnvelope: (teamSessionId) => {
+      const bound = boundBlueprintFor(teamSessionId)
+      const values = capabilityValuesOf(bound.capabilityPolicy)
       return values === undefined ? {} : { values }
     },
     // alpha.1 (plan §10.3): the bound blueprint snapshot + the DURABLE
     // member-instance templateId -> the template's static TemplatePolicy
     // (the production `readTemplatePolicy` is no longer the unconditional
     // empty placeholder — DoD #3). A LEGACY template (no `capabilities`
-    // field) keeps the original honest-empty reader (never a synthesized
-    // empty TemplatePolicy — the resolver's fail-closed must stay
-    // untouched, plan §10.3), and an identity the domain cannot resolve
-    // to a row also reads empty (honest: no template authority there).
+    // field) keeps the original honest-empty reader for the CAPABILITY
+    // cells (never a synthesized empty TemplatePolicy — the resolver's
+    // fail-closed must stay untouched, plan §10.3), and an identity the
+    // domain cannot resolve to a row also reads empty (honest: no template
+    // authority there).
+    // model-preference routing fix (guide §4.7.3): capabilities absence
+    // != template policy completely absent — a legacy template (no
+    // `capabilities`) that declares `modelPreference` still carries a
+    // legal static template MODEL (the shared
+    // `initialTemplateModelGrantOf` derivation, the SAME one the live
+    // consumption / step-8 / inspect-config use). The per-root bound
+    // snapshot is read through `boundBlueprintFor` (no bootstrap-anchor
+    // closure).
     readTemplatePolicy: (teamSessionId, member) => {
-      const template = staticTemplateOf(blueprint, teamSessionId, member.instanceId, repos.memberInstances)
+      const bound = boundBlueprintFor(teamSessionId)
+      const template = staticTemplateOf(bound, teamSessionId, member.instanceId, repos.memberInstances)
       if (template === undefined) return {}
-      const capabilities = staticCapabilitiesOf(blueprint, template)
-      if (capabilities.mode === 'legacy') return {}
-      const values = selectiveToTemplatePolicyValues(capabilities)
-      return values === undefined ? {} : { values }
+      const capValues = selectiveToTemplatePolicyValues(staticCapabilitiesOf(bound, template))
+      const modelValue = initialTemplateModelGrantOf(template, {
+        provider: config.staticModel.provider,
+        model: config.staticModel.model,
+      })
+      const values = {
+        ...(capValues ?? {}),
+        ...(modelValue !== undefined ? { model: modelValue } : {}),
+      }
+      return Object.keys(values).length === 0 ? {} : { values }
     },
     readExternalFacts: () => config.externalPolicyFacts as unknown as ExternalPolicyFacts,
   }

@@ -1,0 +1,86 @@
+{
+  "res": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "r8-tb1-9dnr4r8yfl",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "path": "fresh-root",
+            "durable": {
+              "teamSession": {
+                "schemaVersion": 1,
+                "rootSessionId": "session-mpr-tb-mpr-2026-09-25T17-20-12",
+                "blueprint": {
+                  "blueprintId": "team.mpr-b",
+                  "revision": "1",
+                  "contentHash": "sha256:26207d2895503a3e48e335e071f20eeb07460a764980135d31f1e75c1dd2aa5e"
+                },
+                "createdAt": "2026-09-25T17:20:17.423Z",
+                "generation": 1,
+                "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+              },
+              "binding": {
+                "schemaVersion": 1,
+                "kind": "team-root",
+                "sessionId": "session-mpr-tb-mpr-2026-09-25T17-20-12"
+              },
+              "wrote": true,
+              "leaderRow": {
+                "schemaVersion": 2,
+                "rootSessionId": "session-mpr-tb-mpr-2026-09-25T17-20-12",
+                "instanceId": "inst-leader",
+                "templateId": "leader",
+                "label": "leader",
+                "createdAt": "2026-09-25T17:20:17.430Z",
+                "activityVersion": 1
+              }
+            },
+            "bind": {
+              "requested": "fresh-root",
+              "bound": true,
+              "installed": true,
+              "identity": {
+                "kind": "root",
+                "sessionId": "session-mpr-tb-mpr-2026-09-25T17-20-12",
+                "rootSessionId": "session-mpr-tb-mpr-2026-09-25T17-20-12"
+              },
+              "admitted": true,
+              "admissionCode": "ADMISSION_OPEN",
+              "emittedEvents": [
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "persona"
+                },
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "model"
+                },
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "capability"
+                },
+                {
+                  "name": "agent-setup/admission-decided",
+                  "detail": "ADMISSION_OPEN"
+                }
+              ]
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.create",
+            "endpoint": "team.create",
+            "contractVersion": 1,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  "readinessNotes": []
+}

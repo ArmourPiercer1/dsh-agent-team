@@ -138,6 +138,11 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
             - templateId: worker
               displayName: "Worker A"
               persona: "You are a worker on this team."
+              # modelPreference（可选）：把该 member 从首个 turn 起路由到指定模型，
+              # 零 governance override。语法 `provider/model`（全限定）或裸 `model`
+              # （继承下方 staticModel.provider）。省略 = 回退 staticModel（旧行为）。
+              # 持久 override（governance / humanOverride）优先级高于它。
+              # modelPreference: <your-provider>/<your-model>
           requirements:
             - domain: persona
               name: standard

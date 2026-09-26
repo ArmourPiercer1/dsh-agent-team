@@ -18,7 +18,7 @@
  *   availability 'available' | 'unavailable'
  *
  * This suite drives the PRODUCTION entry (`../src/plugin/host.js` apply)
- * over SIX independent boot worlds (one scratch dir each; distinct root
+ * over SEVEN independent boot worlds (one scratch dir each; distinct root
  * session ids) and carries the per-state named tests required by C3:
  *
  *   World A (baseline)     — D09/H06: every row (leader + member) reports
@@ -37,6 +37,18 @@
  *   World F (human)        — H12: the human model override surfaces as
  *   pending-next-boundary with humanOverride provenance (record id
  *   ovr-model-team-g0) — the production-writable record-backed branch.
+ *   World G (template model, model-preference routing fix Gate F) — the
+ *   bound worker template's `modelPreference` (openai/gpt-6-astra,
+ *   DIFFERENT from the world staticModel baseline) surfaces in
+ *   `current` at the NOW horizon with the template provenance
+ *   (F2: value / source member-template / state inherited, provenance
+ *   layer template / origin static / recordId null, availability
+ *   available, NO pendingNextBoundary key); the durable human override
+ *   written over it then surfaces as pending-next-boundary in BOTH
+ *   horizons while the pre-override capture keeps the template model
+ *   (F3: the two-horizon contract over a template-static winner — the
+ *   same entry shape World F asserts, with the template model as the
+ *   pre-override current state instead of the baseline).
  *
  * RESIDUALS (documented, production-unreachable, no production write path):
  *  - the mutation-RECORD-lane pending branch (a winning model value backed
@@ -86,6 +98,8 @@ const ROOT_MC = 'session-p8s7r2msc'
 const ROOT_MD = 'session-p8s7r2msd'
 const ROOT_ME = 'session-p8s7r2mse'
 const ROOT_MF = 'session-p8s7r2msf'
+/** World G (Gate F: F2/F3) — the bound template's modelPreference. */
+const ROOT_MG = 'session-p8s7r2msg'
 
 const WORKER_MA = 'inst-p8s7r2mswa'
 const WORKER_MB = 'inst-p8s7r2mswb'
@@ -93,6 +107,7 @@ const WORKER_MC = 'inst-p8s7r2mswc'
 const WORKER_MD = 'inst-p8s7r2mswd'
 const WORKER_ME = 'inst-p8s7r2mswe'
 const WORKER_MF = 'inst-p8s7r2mswf'
+const WORKER_MG = 'inst-p8s7r2msgw'
 
 const WORKSPACE_MA = 'C:/agent-team/work/p8s7r2ms-a'
 const WORKSPACE_MB = 'C:/agent-team/work/p8s7r2ms-b'
@@ -100,6 +115,7 @@ const WORKSPACE_MC = 'C:/agent-team/work/p8s7r2ms-c'
 const WORKSPACE_MD = 'C:/agent-team/work/p8s7r2ms-d'
 const WORKSPACE_ME = 'C:/agent-team/work/p8s7r2ms-e'
 const WORKSPACE_MF = 'C:/agent-team/work/p8s7r2ms-f'
+const WORKSPACE_MG = 'C:/agent-team/work/p8s7r2ms-g'
 
 const BASELINE_MODEL = { provider: 'p8s7r2ms-static', model: 'p8s7r2ms-model-v1' }
 const BASELINE_MODEL_VALUE = `${BASELINE_MODEL.provider}/${BASELINE_MODEL.model}`
@@ -107,6 +123,11 @@ const BASELINE_MODEL_VALUE = `${BASELINE_MODEL.provider}/${BASELINE_MODEL.model}
 const STRICT_STATE_ID = 'strict'
 
 const LEADER_ROW = 'inst-leader'
+
+/** World G's template modelPreference route (DIFFERENT from the baseline). */
+const TEMPLATE_MODEL_VALUE = 'openai/gpt-6-astra'
+/** The durable human override route written over the template model (F3). */
+const OVERRIDDEN_MODEL_VALUE = 'prov-ovr/model-ovr'
 
 // --- the blueprints ---------------------------------------------------------------
 
@@ -116,7 +137,12 @@ const LEADER_ROW = 'inst-leader'
  * null (silent), model deny (World C). Every world declares the two
  * policy states `default` / `strict` (the policy-state wire target).
  */
-function blueprintSource(bpId: string, tag: string, capabilityPolicy: Record<string, string> | null): string {
+function blueprintSource(
+  bpId: string,
+  tag: string,
+  capabilityPolicy: Record<string, string> | null,
+  workerModelPreference?: string,
+): string {
   const lines = [
     '---',
     'schemaVersion: 1',
@@ -130,6 +156,9 @@ function blueprintSource(bpId: string, tag: string, capabilityPolicy: Record<str
     '    displayName: Worker',
     `    persona: You do the P8S7R2MS ${tag} work.`,
   ]
+  if (workerModelPreference !== undefined) {
+    lines.push(`    modelPreference: ${workerModelPreference}`)
+  }
   if (capabilityPolicy !== null) {
     lines.push('capabilityPolicy:')
     for (const [capability, mode] of Object.entries(capabilityPolicy)) {
@@ -186,6 +215,9 @@ const BP_MC = blueprintSource('P8S7R2MSC-BP', 'C', { model: 'deny' })
 const BP_MD = blueprintSource('P8S7R2MSD-BP', 'D', null)
 const BP_ME = blueprintSource('P8S7R2MSE-BP', 'E', null)
 const BP_MF = blueprintSource('P8S7R2MSF-BP', 'F', null)
+// Gate F: World G — the worker template carries a modelPreference that is
+// DIFFERENT from the world staticModel baseline (the F2 discriminant).
+const BP_MG = blueprintSource('P8S7R2MSG-BP', 'G', null, TEMPLATE_MODEL_VALUE)
 
 // --- the row configs ----------------------------------------------------------------
 
@@ -424,6 +456,17 @@ interface R23State {
   fLeaderMs: Record<string, any>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   fWorkerMs: Record<string, any>
+  // World G — the bound template modelPreference (Gate F: F2 + F3)
+  gOverrideCode: string | null
+  gOverrideRecordId: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  gWorkerMs0: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  gLeaderMs0: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  gWorkerMs1: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  gLeaderMs1: Record<string, any>
   // Reversibility
   closeThrewA: string | null
   closeThrewB: string | null
@@ -431,13 +474,14 @@ interface R23State {
   closeThrewD: string | null
   closeThrewE: string | null
   closeThrewF: string | null
+  closeThrewG: string | null
 }
 
 // --- the scenario (module top level — the sync shim forbids async it()) -----------------
 
 const r23: R23State = await (async (): Promise<R23State> => {
   // One scratch dir per world: a stamped TeamDomain is per-dir and a
-  // multi-root dir is not supported (create vs. open), so the six worlds
+  // multi-root dir is not supported (create vs. open), so the seven worlds
   // each boot over their own dir.
   const dirs: string[] = []
   const openSeam = (base: string): FileStorageSeamType => {
@@ -570,6 +614,39 @@ const r23: R23State = await (async (): Promise<R23State> => {
   const fWorkerMs = msOf(projF, WORKER_MF)
   const closeThrewF = await closeWorld(rootF)
 
+  // --- World G — the bound template modelPreference (Gate F: F2 + F3) ----------------
+  // The worker template declares `modelPreference: openai/gpt-6-astra` — a
+  // TEMPLATE-STATIC policy value DIFFERENT from the world staticModel
+  // baseline. F2 reads the pre-override projection (the NOW horizon carries
+  // the template model with the template/static provenance); F3 then writes
+  // the durable human model override to a DIFFERENT route (the remote wire —
+  // the same shape World F drives) and reads the two-horizon projection
+  // again.
+  const worldG = makeWorld(openSeam('p8s7r2-msg'))
+  worlds.push(worldG)
+  const rootG = await applyWorld(
+    worldG,
+    rowConfigFor(ROOT_MG, BP_MG, WORKER_MG, WORKSPACE_MG, { hard: {}, capabilityExists: {} }),
+  )
+  const callG = attachRemoteCaller(rootG)
+  const projG0 = rootG.projection.project(parseRootSessionId(ROOT_MG))
+  const gWorkerMs0 = msOf(projG0, WORKER_MG)
+  const gLeaderMs0 = msOf(projG0, LEADER_ROW)
+  const gOverride = await callG('override.set', {
+    teamSessionId: ROOT_MG,
+    capability: 'model',
+    value: { kind: 'allow', items: [OVERRIDDEN_MODEL_VALUE] },
+    actor: { kind: 'human' },
+  })
+  if (gOverride.ok !== true) {
+    throw new Error(`R2-3 world G: override.set failed (${remoteCode(gOverride)})`)
+  }
+  const gOverrideData = remoteData(gOverride)
+  const projG1 = rootG.projection.project(parseRootSessionId(ROOT_MG))
+  const gWorkerMs1 = msOf(projG1, WORKER_MG)
+  const gLeaderMs1 = msOf(projG1, LEADER_ROW)
+  const closeThrewG = await closeWorld(rootG)
+
   return {
     dirs,
     worlds,
@@ -591,12 +668,19 @@ const r23: R23State = await (async (): Promise<R23State> => {
     fOverrideRecordId: String(fOverrideData['recordId']),
     fLeaderMs,
     fWorkerMs,
+    gOverrideCode: remoteCode(gOverride),
+    gOverrideRecordId: String(gOverrideData['recordId']),
+    gWorkerMs0,
+    gLeaderMs0,
+    gWorkerMs1,
+    gLeaderMs1,
     closeThrewA,
     closeThrewB,
     closeThrewC,
     closeThrewD,
     closeThrewE,
     closeThrewF,
+    closeThrewG,
   }
 })()
 
@@ -778,6 +862,91 @@ describe('R2-3 (P8-S7-R2): BQ-11 the model state view', () => {
     expect(r23.fWorkerMs['availability']).toBe('available')
   })
 
+  // --- World G — the bound template modelPreference (Gate F: F2 + F3) -------------------
+
+  it('F2: the bound template modelPreference surfaces in modelState.current at the NOW horizon (value openai/gpt-6-astra, source member-template, state inherited; provenance layer template / origin static / recordId null; availability available; NO pendingNextBoundary key)', () => {
+    // The template model is a TEMPLATE-STATIC policy value: it wins over
+    // the unspecified -> baseline consumer rule (a DIFFERENT route — the
+    // cell did NOT fall through to the staticModel baseline).
+    expect(r23.gWorkerMs0['current']).toEqual({
+      value: TEMPLATE_MODEL_VALUE,
+      source: 'member-template',
+      state: 'inherited',
+    })
+    expect(r23.gWorkerMs0['current']['value']).not.toBe(BASELINE_MODEL_VALUE)
+    // The template provenance: no record id (the bound Blueprint snapshot
+    // itself is the durable, immutable source of the grant).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+    const prov0 = r23.gWorkerMs0['provenance'] as Record<string, any>
+    expect(prov0['layer']).toBe('template')
+    expect(prov0['origin']).toBe('static')
+    expect(prov0['recordId']).toBe(null)
+    expect(typeof prov0['explanation']).toBe('string')
+    expect((prov0['explanation'] as string).length).toBeGreaterThan(0)
+    // A concrete selection applies at the current boundary.
+    expect(r23.gWorkerMs0['availability']).toBe('available')
+    // Nothing is admitted-and-pending at the next boundary (no records).
+    expect('pendingNextBoundary' in r23.gWorkerMs0).toBe(false)
+    // The template modelPreference is per-TEMPLATE: the leader row (the
+    // leader template declares no modelPreference) keeps the world
+    // baseline — the template model is not a team-global model.
+    expect(r23.gLeaderMs0['current']).toEqual({
+      value: BASELINE_MODEL_VALUE,
+      source: 'capability',
+      state: 'inherited',
+    })
+    expect('pendingNextBoundary' in r23.gLeaderMs0).toBe(false)
+  })
+
+  it('F3: a durable human override over the template modelPreference fills BOTH horizons as pending-next-boundary (the two-horizon contract over a template-static winner — the existing World F entry shape, with the template model as the pre-override current boundary state)', () => {
+    expect(r23.gOverrideCode).toBe(null)
+    // The remote override.set mints the recordId server-side (s6-remote):
+    // the frozen ovr-<capability>-<scope>-g<generation> shape.
+    expect(r23.gOverrideRecordId).toBe('ovr-model-team-g0')
+    // NEXT horizon (the max step): the override wins over the template
+    // layer, conservatively pending (record-backed, not yet applied in
+    // this process) ...
+    expect(r23.gWorkerMs1['pendingNextBoundary']).toEqual({
+      value: OVERRIDDEN_MODEL_VALUE,
+      source: 'explicit-human-override',
+      state: 'pending-next-boundary',
+    })
+    // ... and the NOW horizon carries the SAME entry pending (the
+    // two-horizon ruling for record-backed winners at the pinned step 0) —
+    // the override never surfaces as an APPLIED current selection ...
+    expect(r23.gWorkerMs1['current']).toEqual({
+      value: OVERRIDDEN_MODEL_VALUE,
+      source: 'explicit-human-override',
+      state: 'pending-next-boundary',
+    })
+    // ... and the provenance follows the humanOverride winner.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+    const prov1 = r23.gWorkerMs1['provenance'] as Record<string, any>
+    expect(prov1['layer']).toBe('humanOverride')
+    expect(prov1['origin']).toBe('human')
+    expect(prov1['recordId']).toBe('ovr-model-team-g0')
+    expect(typeof prov1['explanation']).toBe('string')
+    expect(r23.gWorkerMs1['availability']).toBe('available')
+    // The override is TEAM-scoped: the leader row (no template
+    // modelPreference) is pending from its baseline current too.
+    expect(r23.gLeaderMs1['current']).toEqual({
+      value: OVERRIDDEN_MODEL_VALUE,
+      source: 'explicit-human-override',
+      state: 'pending-next-boundary',
+    })
+    expect(r23.gLeaderMs1['pendingNextBoundary']).toEqual({
+      value: OVERRIDDEN_MODEL_VALUE,
+      source: 'explicit-human-override',
+      state: 'pending-next-boundary',
+    })
+    // The CURRENT boundary (the pinned step 0) kept the TEMPLATE model up
+    // to the override admission: the pre-override capture is the
+    // current-boundary state — and it was the template model, not the
+    // baseline (the F2 capture above).
+    expect(r23.gWorkerMs0['current']['value']).toBe(TEMPLATE_MODEL_VALUE)
+    expect(r23.gWorkerMs0['current']['state']).toBe('inherited')
+  })
+
   // --- the contract: the closed model-state DTO --------------------------------------------------
 
   const validEntry = {
@@ -886,6 +1055,7 @@ describe('R2-3 (P8-S7-R2): BQ-11 the model state view', () => {
     expect(r23.closeThrewD).toBe(null)
     expect(r23.closeThrewE).toBe(null)
     expect(r23.closeThrewF).toBe(null)
+    expect(r23.closeThrewG).toBe(null)
     r23.worlds.forEach((world) => {
       world.effectDisposers.forEach((dispose) => dispose())
       world.effectDisposers.length = 0

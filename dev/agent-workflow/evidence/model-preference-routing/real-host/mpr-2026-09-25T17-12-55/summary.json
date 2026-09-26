@@ -1,0 +1,87 @@
+{
+  "task": "model-preference-routing real-host smoke (guide §7 R1–R8)",
+  "runStamp": "mpr-2026-09-25T17-12-55",
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing",
+  "testuse": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+  "baseline": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "home": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-25T17-12-55",
+  "retainedHome": null,
+  "fatal": "TypeError: Cannot read properties of undefined (reading 'slice')\n    at run (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:1074:37)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:1427:15)",
+  "criteria": {
+    "R1": {
+      "pass": false,
+      "checks": [
+        {
+          "label": "team.create v1 (T1) succeeds on a fresh root (path=fresh-root)",
+          "ok": false,
+          "detail": "value={\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-mpr-t1-mpr-2026-09-25T17-12-55\",\"blueprint\":{\"blueprintId\":\"team.mpr-main\",\"revision\":\"1\",\"contentHash\":\"sha256:0586296ed45a2fa73afdd2e2bec3c411188388a06a598d037adb1f555065f0af\"},\"createdAt\":\"2026-09-25"
+        },
+        {
+          "label": "the leader's FIRST LLM request body.model === 'role-leader' (NOT the staticModel baseline 'global-default')",
+          "ok": true,
+          "detail": "model=role-leader"
+        },
+        {
+          "label": "the leader model surface carries the 13 team_ tools of the template allow list (the bound blueprint, not the legacy anchor)",
+          "ok": true,
+          "detail": "teamTools=13/13 surface=39"
+        },
+        {
+          "label": "zero-seed proof: governance override rows = 0 at that point (no override anywhere before team work)",
+          "ok": true,
+          "detail": "overrides=[]"
+        }
+      ]
+    },
+    "R2": {
+      "pass": false,
+      "checks": [
+        {
+          "label": "team_delegate(delegationTemplateId=worker) resolves as ONE work-admitted effect (the create+work form — no team_create_member + override.set + team_follow_up sequence)",
+          "ok": false,
+          "detail": "effect={\"kind\":\"member-activated\",\"instanceId\":\"inst-18mzv7b0xll1\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-3d1f201eb27df18e257ac7870830b64d\",\"operationId\":\"op-0xo4pga0eyow5714kgbsg09l\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":4,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"tok-r2-deleg-faxm1675\",\"status\":\"succeeded\",\"body\":\"ack:role-worke"
+        },
+        {
+          "label": "the worker's FIRST LLM request body.model === 'role-worker' (the direct delegation created the member AND routed it to the Blueprint model — THE defect closure)",
+          "ok": true,
+          "detail": "model=role-worker"
+        }
+      ]
+    },
+    "R3": {
+      "pass": false,
+      "checks": []
+    },
+    "R4": {
+      "pass": false,
+      "checks": []
+    },
+    "R5": {
+      "pass": false,
+      "checks": []
+    },
+    "R6": {
+      "pass": false,
+      "checks": []
+    },
+    "R7": {
+      "pass": false,
+      "checks": []
+    },
+    "R8": {
+      "pass": false,
+      "checks": []
+    },
+    "H1": {
+      "pass": false,
+      "checks": []
+    },
+    "H2": {
+      "pass": false,
+      "checks": []
+    }
+  },
+  "pass": false,
+  "exitCode": 1,
+  "extra": {}
+}

@@ -1,0 +1,13 @@
+[mpr-smoke 2026-09-25T17:02:08.168Z] pre: stable-instance probe (read-only, zero-touch): [{"url":"http://127.0.0.1:3080","status":401,"error":null},{"url":"http://127.0.0.1:3180","status":401,"error":null}]
+[mpr-smoke 2026-09-25T17:02:08.194Z] pre: test-use pristine @ 46a7f68b09 (HEAD source: git)
+[mpr-smoke 2026-09-25T17:02:08.195Z] blueprints written: team.mpr-main, team.mpr-a, team.mpr-b (+ inline anchor team.mpr-anchor)
+[mpr-smoke 2026-09-25T17:02:08.199Z] mock: mock: listening on 127.0.0.1:3496
+[mpr-smoke 2026-09-25T17:02:08.200Z] mock model on 3496; DEEPSEEK_BASE_URL set
+[mpr-smoke 2026-09-25T17:02:08.200Z] profile: profile not initialized yet — running a throwaway boot to let the host create it
+[mpr-smoke 2026-09-25T17:02:09.203Z] profile: throwaway boot OK: http://127.0.0.1:3181/?token=bgCQneclu2m1gozolYo_lMeGUQAQ9sq-jBYjOgrwwT0
+[mpr-smoke 2026-09-25T17:02:09.275Z] profile initialized by the throwaway boot
+[mpr-smoke 2026-09-25T17:02:09.276Z] booting host 1 (create) on port 3181 …
+[mpr-smoke 2026-09-25T17:02:10.587Z] host 1 up: http://127.0.0.1:3181 (token cookie acquired)
+[mpr-smoke 2026-09-25T17:02:10.663Z] dump-config: the row carries the production+p6t6 rows AND our anchor/staticModel/blueprintDir (insert-sequence shape verified); the 3 saved blueprints exist on disk
+[mpr-smoke 2026-09-25T17:05:11.127Z] FATAL: p6t6 readiness not reached in 180000ms (want root=session-mpr-boot-mpr-2026-09-25T17-02-08 phase=create; last state=null)
+[mpr-smoke 2026-09-25T17:05:11.128Z] stopping host 1 (teardown) on port 3181 …

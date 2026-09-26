@@ -66,6 +66,7 @@ import {
   P6T2_NOW,
   P6T2_ROOT,
   P6T2_SEEDS,
+  TEST_STATIC_MODEL,
   createFakeLifecycleCommitPort,
   createP6T2World,
   expectRejection,
@@ -214,6 +215,7 @@ function createWorkChainRuntime(
     blueprintCatalog: world.catalog,
     environmentFacts: world.ports.environmentFacts,
     externalPolicyFacts: world.ports.externalPolicyFacts,
+    staticModel: TEST_STATIC_MODEL,
     now: () => P6T2_NOW,
     lifecycleCommit:
       options.lifecycleCommit ?? createFakeLifecycleCommitPort(world),
@@ -461,6 +463,7 @@ let c1s4: C1S4Case
       blueprintCatalog: world.catalog,
       environmentFacts: world.ports.environmentFacts,
       externalPolicyFacts: world.ports.externalPolicyFacts,
+      staticModel: TEST_STATIC_MODEL,
       now: () => P6T2_NOW,
       workDelivery: delivery.port,
       workActivity: createWorkActivityWriter({ teamDomain: world.domain, now: () => P6T2_NOW }),
@@ -498,6 +501,7 @@ let c1s4: C1S4Case
       blueprintCatalog: world.catalog,
       environmentFacts: world.ports.environmentFacts,
       externalPolicyFacts: world.ports.externalPolicyFacts,
+      staticModel: TEST_STATIC_MODEL,
       now: () => P6T2_NOW,
       lifecycleCommit: createFakeLifecycleCommitPort(world),
     })

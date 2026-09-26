@@ -1,0 +1,38 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "r4-ovset1-xmvurdf6qe",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "recordId": "ovr-model-inst-0m8cof305l4o-g0",
+          "kind": "human-override",
+          "scope": "instance",
+          "rootSessionId": "session-mpr-t1-mpr-2026-09-25T17-21-11",
+          "values": {
+            "model": {
+              "kind": "allow",
+              "items": [
+                "deepseek-official/override-worker"
+              ]
+            }
+          },
+          "generation": 1,
+          "updatedAt": "2026-09-25T17:21:15.745Z",
+          "instanceId": "inst-0m8cof305l4o"
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "override.set",
+          "endpoint": "override.set",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  }
+}

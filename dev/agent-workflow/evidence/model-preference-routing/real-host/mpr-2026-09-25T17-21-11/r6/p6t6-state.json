@@ -1,0 +1,121 @@
+{
+  "overrides": [],
+  "sessions": {
+    "session-mpr-boot-mpr-2026-09-25T17-21-11": {
+      "instanceId": "inst-leader",
+      "model": {
+        "current": {
+          "provider": "deepseek-official",
+          "model": "global-default"
+        },
+        "selection": {
+          "provider": "deepseek-official",
+          "model": "global-default"
+        },
+        "source": {
+          "layer": "unspecified",
+          "origin": "static",
+          "recordId": null
+        },
+        "suppressed": [],
+        "unavailable": false,
+        "deniedBy": {
+          "by": "team",
+          "reason": "unspecifiedFailClosed"
+        },
+        "pendingNextBoundary": [],
+        "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+      },
+      "mcp": {
+        "servers": {}
+      }
+    },
+    "session-mpr-t1-mpr-2026-09-25T17-21-11": {
+      "instanceId": "inst-leader",
+      "model": {
+        "current": {
+          "provider": "deepseek-official",
+          "model": "role-leader"
+        },
+        "assembled": {
+          "provider": "deepseek-official",
+          "model": "role-leader"
+        },
+        "selection": {
+          "provider": "deepseek-official",
+          "model": "role-leader"
+        },
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        },
+        "suppressed": [],
+        "unavailable": false,
+        "pendingNextBoundary": [],
+        "explanation": "model: effective allow[deepseek-official/role-leader]; team template(origin=static) allow[deepseek-official/role-leader]; external exists=yes, hard=unspecified"
+      },
+      "mcp": {
+        "servers": {}
+      }
+    },
+    "session-team-child-7cbad28d5ac7e14bc42a79b07f063147": {
+      "instanceId": "inst-1fbiuj511ie3",
+      "model": {
+        "current": {
+          "provider": "deepseek-official",
+          "model": "role-worker"
+        },
+        "assembled": {
+          "provider": "deepseek-official",
+          "model": "role-worker"
+        },
+        "selection": {
+          "provider": "deepseek-official",
+          "model": "role-worker"
+        },
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        },
+        "suppressed": [],
+        "unavailable": false,
+        "pendingNextBoundary": [],
+        "explanation": "model: effective allow[deepseek-official/role-worker]; team template(origin=static) allow[deepseek-official/role-worker]; external exists=yes, hard=unspecified"
+      },
+      "mcp": {
+        "servers": {}
+      }
+    },
+    "session-team-child-a4ae8ba2023b010df0cd1d156ccdd78a": {
+      "instanceId": "inst-0m8cof305l4o",
+      "model": {
+        "current": {
+          "provider": "deepseek-official",
+          "model": "role-worker"
+        },
+        "assembled": {
+          "provider": "deepseek-official",
+          "model": "role-worker"
+        },
+        "selection": {
+          "provider": "deepseek-official",
+          "model": "role-worker"
+        },
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        },
+        "suppressed": [],
+        "unavailable": false,
+        "pendingNextBoundary": [],
+        "explanation": "model: effective allow[deepseek-official/role-worker]; team template(origin=static) allow[deepseek-official/role-worker]; external exists=yes, hard=unspecified"
+      },
+      "mcp": {
+        "servers": {}
+      }
+    }
+  }
+}

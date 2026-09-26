@@ -76,7 +76,15 @@ export type {
   BlueprintSourceIdentity,
 } from './inspect.js'
 export { deriveContentHash, sha256Hex } from './hash.js'
-export { parseBlueprint, toHashableBlueprint, validateBlueprintDocument } from './validate.js'
+export {
+  parseBlueprint,
+  toHashableBlueprint,
+  validateBlueprintDocument,
+} from './validate.js'
+export {
+  parseModelPreferenceToken,
+  type ParsedModelPreferenceToken,
+} from './model-preference.js'
 export { blueprintSnapshotKeyOf, toBlueprintSnapshotRef } from './snapshot.js'
 export {
   blueprintNotFound,

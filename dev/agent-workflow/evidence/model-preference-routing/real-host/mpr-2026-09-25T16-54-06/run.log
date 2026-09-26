@@ -1,0 +1,12 @@
+[mpr-smoke 2026-09-25T16:54:06.814Z] pre: stable-instance probe (read-only, zero-touch): [{"url":"http://127.0.0.1:3080","status":401,"error":null},{"url":"http://127.0.0.1:3180","status":401,"error":null}]
+[mpr-smoke 2026-09-25T16:54:06.815Z] FATAL (kit-level, run aborted): Error: ENOENT: no such file or directory, open '/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-25T16-54-06/logs/git-head.log'
+    at Object.openSync (node:fs:621:18)
+    at writeFileSync (node:fs:2496:35)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/characterization/lib/util.mjs:55:5
+    at new Promise (<anonymous>)
+    at spawnToLog (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/characterization/lib/util.mjs:54:10)
+    at captureGitState (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/characterization/lib/tree-clean.mjs:25:28)
+    at checkPristine (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:846:23)
+    at run (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:912:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:1389:15)

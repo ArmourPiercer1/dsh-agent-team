@@ -1,0 +1,87 @@
+[mpr-smoke 2026-09-25T17:22:08.677Z] pre: stable-instance probe (read-only, zero-touch): [{"url":"http://127.0.0.1:3080","status":401,"error":null},{"url":"http://127.0.0.1:3180","status":401,"error":null}]
+[mpr-smoke 2026-09-25T17:22:08.705Z] pre: test-use pristine @ 46a7f68b09 (HEAD source: git)
+[mpr-smoke 2026-09-25T17:22:08.706Z] blueprints written: team.mpr-main, team.mpr-a, team.mpr-b (+ inline anchor team.mpr-anchor)
+[mpr-smoke 2026-09-25T17:22:08.711Z] mock: mock: listening on 127.0.0.1:3496
+[mpr-smoke 2026-09-25T17:22:08.711Z] mock model on 3496; DEEPSEEK_BASE_URL set
+[mpr-smoke 2026-09-25T17:22:08.711Z] profile: profile not initialized yet — running a throwaway boot to let the host create it
+[mpr-smoke 2026-09-25T17:22:09.715Z] profile: throwaway boot OK: http://127.0.0.1:3181/?token=pWL-yXDLSvv-AeAeSifiSNQR_gEz97U9fgCXhMYA1MY
+[mpr-smoke 2026-09-25T17:22:09.791Z] profile initialized by the throwaway boot
+[mpr-smoke 2026-09-25T17:22:09.792Z] booting host 1 (create) on port 3181 …
+[mpr-smoke 2026-09-25T17:22:11.137Z] host 1 up: http://127.0.0.1:3181 (token cookie acquired)
+[mpr-smoke 2026-09-25T17:22:11.234Z] dump-config: the row carries the production+p6t6 rows AND our anchor/staticModel/blueprintDir (insert-sequence shape verified); the 3 saved blueprints exist on disk
+[mpr-smoke 2026-09-25T17:22:11.241Z] p6t6 ready (boot 1, phase=create) — the live boot settled
+[mpr-smoke 2026-09-25T17:22:11.241Z] ── R1: team.create (T1) + leader initialWork ──
+[mpr-smoke 2026-09-25T17:22:11.402Z] mock: mock: 1 [messages] text reply (39 chars): "ack:role-leader:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:11.403Z] mock: mock: 2 [messages] text reply (39 chars): "ack:role-leader:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:11.585Z] R1 PASS — team.create v1 (T1) succeeds on a fresh root (data.path=fresh-root)
+[mpr-smoke 2026-09-25T17:22:11.585Z] R1 PASS — the leader's FIRST LLM request body.model === 'role-leader' (NOT the staticModel baseline 'global-default')
+[mpr-smoke 2026-09-25T17:22:11.585Z] R1 PASS — the leader model surface carries the 13 team_ tools of the template allow list (the bound blueprint, not the legacy anchor)
+[mpr-smoke 2026-09-25T17:22:11.588Z] R1 PASS — zero-seed proof: governance override rows = 0 at that point (no override anywhere before team work)
+[mpr-smoke 2026-09-25T17:22:11.588Z] ── R2: leader DIRECTLY team_delegate(worker) — no create+override+follow-up ──
+[mpr-smoke 2026-09-25T17:22:11.712Z] mock: mock: 3 [messages] text reply (45 chars): "ack:role-worker:deleg:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:11.714Z] mock: mock: 4 [messages] text reply (45 chars): "ack:role-worker:deleg:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:11.742Z] R2 PASS — team_delegate(delegationTemplateId=worker) resolves as ONE member-activated effect with the SETTLED work chain embedded (workSettled + memberResult — the create+work form; no team_create_member + override.set + team_follow_up sequence)
+[mpr-smoke 2026-09-25T17:22:11.742Z] R2 PASS — the worker's FIRST LLM request body.model === 'role-worker' (the direct delegation created the member AND routed it to the Blueprint model — THE defect closure)
+[mpr-smoke 2026-09-25T17:22:11.746Z] R2 PASS — NO governance override record exists for the worker after the direct delegation (the route is template-static, not record-backed)
+[mpr-smoke 2026-09-25T17:22:11.746Z] ── R3: team_create_member(worker) → no substantive turn → team_follow_up ──
+[mpr-smoke 2026-09-25T17:22:11.788Z] R3 PASS — team_create_member(worker) activates the instance (member-activated effect)
+[mpr-smoke 2026-09-25T17:22:11.788Z] R3 PASS — create ALONE did not deliver a substantive worker turn (no request carrying the follow-up marker exists yet)
+[mpr-smoke 2026-09-25T17:22:11.874Z] mock: mock: 5 [messages] text reply (46 chars): "ack:role-worker:create:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:11.875Z] mock: mock: 6 [messages] text reply (46 chars): "ack:role-worker:create:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:11.899Z] R3 PASS — team_follow_up(w-create) resolves settled (the work unit ran on the follow-up)
+[mpr-smoke 2026-09-25T17:22:11.899Z] R3 PASS — the worker's first (follow-up) LLM request body.model === 'role-worker'
+[mpr-smoke 2026-09-25T17:22:11.899Z] R3 PASS — no SUBSTANTIVE worker model turn between create and follow-up (every new request in the window is the follow-up itself or a title side-call)
+[mpr-smoke 2026-09-25T17:22:11.899Z] ── R6: projection agreement (actual body.model == effectiveConfig == modelState) ──
+[mpr-smoke 2026-09-25T17:22:11.909Z] R6 PASS — team.getProjection carries the member row with effectiveConfig + modelState lanes
+[mpr-smoke 2026-09-25T17:22:11.909Z] R6 PASS — effectiveConfig.model.value === 'deepseek-official/role-worker' (source 'member-template', state 'inherited')
+[mpr-smoke 2026-09-25T17:22:11.909Z] R6 PASS — modelState.current.value === 'deepseek-official/role-worker' with static template provenance (layer 'template', origin 'static', recordId null)
+[mpr-smoke 2026-09-25T17:22:11.909Z] R6 PASS — ACTUAL provider request body.model agrees with the projections (the three-way agreement: body.model == effectiveConfig.model.value == modelState.current.value)
+[mpr-smoke 2026-09-25T17:22:11.912Z] R6 PASS — the LIVE p6t6 state agrees too (governance.sessions[<child>].model.current == {provider: deepseek-official, model: role-worker})
+[mpr-smoke 2026-09-25T17:22:11.912Z] ── R4: durable human model override on the R2 worker (next request boundary) ──
+[mpr-smoke 2026-09-25T17:22:11.914Z] R4 PASS — pre-write: NO override record for the worker (the template static route created no synthetic record, after its routed turn)
+[mpr-smoke 2026-09-25T17:22:11.921Z] R4 PASS — the durable HUMAN override.set (model allow deepseek-official/override-worker, instance scope) is admitted with a recordId
+[mpr-smoke 2026-09-25T17:22:11.923Z] R4 PASS — post-write: EXACTLY the human override exists for the worker (the override row count reflects only the real human override — no synthetic record from the template static route)
+[mpr-smoke 2026-09-25T17:22:11.933Z] R4 PASS — the live state shows the override PENDING at the next request boundary (record-backed, awaiting the boundary)
+[mpr-smoke 2026-09-25T17:22:11.983Z] mock: mock: 7 [messages] text reply (48 chars): "ack:role-worker:override:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:12.017Z] R4 PASS — team_follow_up(w-deleg) after the override resolves settled (the NEXT request boundary)
+[mpr-smoke 2026-09-25T17:22:12.017Z] R4 PASS — the worker's NEXT LLM request (after the durable human override) body.model === 'override-worker' (the record-backed layer beats the template-static route)
+[mpr-smoke 2026-09-25T17:22:12.017Z] ── R5 (pre): expert follow-up → role-expert (ZERO model override) ──
+[mpr-smoke 2026-09-25T17:22:12.057Z] R5 PASS — the expert member has ZERO model overrides (its route is purely template-static)
+[mpr-smoke 2026-09-25T17:22:12.135Z] mock: mock: 8 [messages] text reply (43 chars): "ack:role-expert:pre:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:12.136Z] mock: mock: 9 [messages] text reply (43 chars): "ack:role-expert:pre:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:12.161Z] R5 PASS — BEFORE restart: the expert's LLM request body.model === 'role-expert'
+[mpr-smoke 2026-09-25T17:22:12.161Z] sessions before restart: 5 files
+[mpr-smoke 2026-09-25T17:22:12.161Z] ── R7: control template (no modelPreference) → global-default ──
+[mpr-smoke 2026-09-25T17:22:12.274Z] mock: mock: 10 [messages] text reply (42 chars): "ack:global-default:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:12.274Z] mock: mock: 11 [messages] text reply (42 chars): "ack:global-default:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:12.298Z] R7 PASS — the control member (NO modelPreference) LLM request body.model === 'global-default' (the staticModel baseline — backward compatibility locked)
+[mpr-smoke 2026-09-25T17:22:12.298Z] ── R8: cross-root — Team A (role-a) vs Team B (role-b) on the same row ──
+[mpr-smoke 2026-09-25T17:22:12.401Z] mock: mock: 12 [messages] text reply (41 chars): "ack:role-a-leader:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:12.401Z] mock: mock: 13 [messages] text reply (41 chars): "ack:role-a-leader:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:12.417Z] R8 PASS — team.create (Team A, Blueprint A) succeeds on the SAME row (fresh-root)
+[mpr-smoke 2026-09-25T17:22:12.417Z] R8 PASS — Team A leader first request body.model === 'role-a-leader'
+[mpr-smoke 2026-09-25T17:22:12.528Z] mock: mock: 14 [messages] text reply (34 chars): "ack:role-a:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:12.529Z] mock: mock: 15 [messages] text reply (34 chars): "ack:role-a:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:12.554Z] R8 PASS — Team A's worker request body.model === 'role-a' (NOT role-b — no cross-root leak)
+[mpr-smoke 2026-09-25T17:22:12.654Z] mock: mock: 16 [messages] text reply (41 chars): "ack:role-b-leader:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:12.656Z] mock: mock: 17 [messages] text reply (41 chars): "ack:role-b-leader:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:12.669Z] R8 PASS — team.create (Team B, Blueprint B) succeeds on the SAME row (fresh-root, independent of Team A)
+[mpr-smoke 2026-09-25T17:22:12.669Z] R8 PASS — Team B leader first request body.model === 'role-b-leader'
+[mpr-smoke 2026-09-25T17:22:12.779Z] mock: mock: 18 [messages] text reply (34 chars): "ack:role-b:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:12.780Z] mock: mock: 19 [messages] text reply (34 chars): "ack:role-b:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:12.808Z] R8 PASS — Team B's worker request body.model === 'role-b' (NOT role-a — no cross-root leak in the other direction)
+[mpr-smoke 2026-09-25T17:22:12.808Z] ── R5 (post): stop host, fresh boot the SAME DSH_HOME (phase=resume) ──
+[mpr-smoke 2026-09-25T17:22:12.808Z] stopping host 1 (R5 pre-legs done) on port 3181 …
+[mpr-smoke 2026-09-25T17:22:12.890Z] booting host 2 (resume) on port 3181 …
+[mpr-smoke 2026-09-25T17:22:14.656Z] host 2 up: http://127.0.0.1:3181 (token cookie acquired)
+[mpr-smoke 2026-09-25T17:22:14.663Z] p6t6 ready (boot 2, phase=resume)
+[mpr-smoke 2026-09-25T17:22:14.816Z] mock: mock: 20 [messages] text reply (44 chars): "ack:role-expert:post:mpr-2026-09-25T17-22-08"
+[mpr-smoke 2026-09-25T17:22:14.852Z] R5 PASS — post-restart team_follow_up(expert) resolves settled (the cold resume re-derived the member from the bound Blueprint)
+[mpr-smoke 2026-09-25T17:22:14.852Z] R5 PASS — AFTER restart: the expert's LLM request body.model === 'role-expert' (the source is the bound Blueprint snapshot, re-derived on cold resume — NOT a lost/denied selection)
+[mpr-smoke 2026-09-25T17:22:14.853Z] stopping host 2 (teardown) on port 3181 …
+[mpr-smoke 2026-09-25T17:22:14.993Z] H1 PASS — test-use HEAD unchanged after the run (46a7f68b09)
+[mpr-smoke 2026-09-25T17:22:14.993Z] H1 PASS — test-use porcelain EMPTY after the run (zero upstream effect — CORE PATCH BUDGET = 0)
+[mpr-smoke 2026-09-25T17:22:14.993Z] H1 PASS — stable instance zero-touch: the :3080/:3180 read-only probes are IDENTICAL before/after (those ports were never bound or driven)
+[mpr-smoke 2026-09-25T17:22:14.993Z] H2 PASS — host port released at teardown
+[mpr-smoke 2026-09-25T17:22:14.994Z] H2 PASS — mock model port released at teardown
+[mpr-smoke 2026-09-25T17:22:14.994Z] world home RETAINED (per TEST_METHODS §7): /home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-25T17-22-08

@@ -1,0 +1,24 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "r5-ovpre1-q1gyrnt9kr",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "override": null
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "override.get",
+          "endpoint": "override.get",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  }
+}
