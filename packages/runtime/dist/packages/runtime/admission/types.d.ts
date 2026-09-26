@@ -593,16 +593,18 @@ export interface TeamRuntimeOptions {
     readonly environmentFacts: () => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>;
     /** The external hard facts (effective-config read, stage 2). */
     readonly externalPolicyFacts: () => Promise<import('../../domain/policy/src/index.js').ExternalPolicyFacts>;
-    /** The deployment default model (the `staticModel`) — the baseline the
+    /** The deployment default model (the `staticModel`) — REQUIRED (PR #30
+     *  review-supplement P2-3, no longer silent-optional): the baseline the
      *  bound template's MODEL-ONLY `modelPreference` shorthand inherits its
      *  provider from in the `team_inspect_config` effective-policy read
      *  (the model-preference routing fix: the inspection resolves the SAME
      *  generic `templateValues` the live consumption and the activation
-     *  step 8 feed the resolver). Absent in the P6-T2 default wiring (unit
-     *  worlds whose blueprints carry no modelPreference are unaffected:
-     *  an absent preference contributes no model grant with or without a
-     *  baseline). */
-    readonly staticModel?: import('../agent-setup/model/index.js').ModelSelection;
+     *  step 8 feed the resolver). A bound template with an executable
+     *  modelPreference MUST have a baseline (a missing baseline + present
+     *  preference is a hard error at the derivation, P2-1/P2-3). An ABSENT
+     *  preference still contributes no model grant with or without a
+     *  baseline (no-preference behavior unchanged). */
+    readonly staticModel: import('../agent-setup/model/index.js').ModelSelection;
     /** The deterministic clock (ISO-8601) for durable fact timestamps. */
     readonly now: () => string;
     /** The lifecycle transition commit port (the P7-T3 lifecycle module).

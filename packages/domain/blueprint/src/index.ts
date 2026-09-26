@@ -78,11 +78,13 @@ export type {
 export { deriveContentHash, sha256Hex } from './hash.js'
 export {
   parseBlueprint,
-  parseModelPreferenceToken,
   toHashableBlueprint,
   validateBlueprintDocument,
-  type ParsedModelPreferenceToken,
 } from './validate.js'
+export {
+  parseModelPreferenceToken,
+  type ParsedModelPreferenceToken,
+} from './model-preference.js'
 export { blueprintSnapshotKeyOf, toBlueprintSnapshotRef } from './snapshot.js'
 export {
   blueprintNotFound,

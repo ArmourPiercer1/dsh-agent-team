@@ -45,45 +45,6 @@
 import type { RemoteSafeRecord } from '../../../contracts/src/index.js';
 import type { TeamBlueprint, TeamBlueprintCore } from './types.js';
 /**
- * One parsed `modelPreference` token (the strict v1 grammar).
- *
- * - `provider` — the qualified route's provider (ABSENT for a model-only
- *   token: its provider is inherited from the deployment default's
- *   `staticModel.provider` at the runtime derivation site);
- * - `model` — the model id (a qualified token keeps everything after the
- *   first `/`, further slashes included — e.g. an `openrouter` catalog id
- *   `openrouter/meta/llama-x` = provider `openrouter`, model
- *   `meta/llama-x`).
- */
-export interface ParsedModelPreferenceToken {
-    readonly provider?: string;
-    readonly model: string;
-}
-/**
- * The strict v1 `modelPreference` token grammar (the Blueprint strong
- * validation's parser — the runtime model layer keeps a documented mirror,
- * `parseModelPreferenceToken` in
- * `@dsh-agent-team/runtime/agent-setup/model/route`, because the runtime
- * cannot import this domain module into the model layer; ONE grammar, two
- * mirror sites, both pure):
- *
- * - a non-empty token with NO whitespace and NO control characters;
- * - a QUALIFIED route `provider/model` splits at the FIRST `/`: the
- *   provider is the non-empty prefix, the model the non-empty suffix
- *   (further `/` belong to the model string);
- * - a MODEL-ONLY token (no `/`) names a model whose provider is resolved
- *   at the derivation site (the deployment default stands in).
- *
- * Malformed tokens (empty, whitespace anywhere — e.g. `provider /model`
- * or `provider/ model` — control characters, a missing provider
- * (`/model`) or model (`provider/`)) yield `undefined`.
- *
- * @param value - the trimmed token (the field reader trims; the check
- *   still re-verifies the interior, where trimming cannot reach).
- * @returns the parsed token, or `undefined` when malformed.
- */
-export declare function parseModelPreferenceToken(value: string): ParsedModelPreferenceToken | undefined;
-/**
  * Validate a decoded blueprint frontmatter value into a normalized
  * `TeamBlueprintCore`.
  *

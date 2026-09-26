@@ -32,11 +32,20 @@ export {
   TeamModelSelectionAdapter,
 } from './overlay.js'
 
+export { parseModelItem } from './route.js'
+// The strict v1 `modelPreference` token parser is the SINGLE domain parser
+// (P2-2) — re-exported from here so the runtime facade's public surface is
+// unchanged, but there is only ONE parser definition (domain).
 export {
-  parseModelItem,
   parseModelPreferenceToken,
   type ParsedModelPreferenceToken,
-} from './route.js'
+} from '../../../domain/blueprint/src/index.js'
+export {
+  InvalidTemplateModelPreferenceError,
+  isInvalidTemplateModelPreferenceError,
+  MODEL_ERROR_CODES,
+  type ModelErrorCode,
+} from './errors.js'
 export { initialTemplateModelGrantOf } from './template-model.js'
 export {
   modelConsumptionView,

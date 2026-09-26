@@ -42,12 +42,17 @@
  *        the post-restart follow-up → `body.model === 'role-expert'`
  *        (the source is the bound Blueprint snapshot, re-derived on cold
  *        resume).
- *   R6 — projection agreement (one real member): actual provider request
- *        `body.model` == `effectiveConfig.model.value` ==
- *        `modelState.current.value` (read through the /team-remote
- *        projection + the /__p6t6/state seam), with the static template
- *        provenance source 'member-template', layer 'template', origin
- *        'static', recordId null.
+  *   R6 — projection agreement (one real member): `effectiveConfig.model.value`
+  *        == `modelState.current.value` == the full route
+  *        `deepseek-official/role-worker` (read through the /team-remote
+  *        projection + the /__p6t6/state seam), with the static template
+  *        provenance source 'member-template', layer 'template', origin
+  *        'static', recordId null — AND the actual provider request
+  *        `body.model` (the route's model id, `role-worker`) agrees with that
+  *        route: route.provider == deepseek-official, route.model ==
+  *        body.model. (The projection carries the full provider/model route
+  *        while the wire `body.model` is the model id, so they are compared
+  *        as route-vs-model, not literal string equality.)
  *   R7 — fallback control: a member on the NO-modelPreference control
  *        template → its LLM request `body.model === 'global-default'`
  *        (backward compatibility locked).
@@ -1141,7 +1146,7 @@ async function run() {
   }
 
   // ── R6: projection agreement (on the w-create worker, pre-override) ──────
-  log('── R6: projection agreement (actual body.model == effectiveConfig == modelState) ──')
+  log('── R6: projection agreement (the actual request model agrees with the provider/model route in both projections) ──')
   {
     const actualReq = firstRequestWithMarker(MOCK, MK_W_CREATE)
     const actualModel = modelOf(actualReq)
@@ -1165,7 +1170,7 @@ async function run() {
       msValue === expectedQualified && ms?.current?.source === 'member-template'
       && ms?.provenance?.layer === 'template' && ms?.provenance?.origin === 'static' && ms?.provenance?.recordId === null,
       `current=${JSON.stringify(ms?.current ?? null).slice(0, 300)} provenance=${JSON.stringify(ms?.provenance ?? null).slice(0, 300)}`)
-    check('R6', 'ACTUAL provider request body.model agrees with the projections (the three-way agreement: body.model == effectiveConfig.model.value == modelState.current.value)',
+    check('R6', 'effectiveConfig/modelState carry the full route deepseek-official/role-worker, and the ACTUAL provider request body.model is role-worker for that route (the projection is the full provider/model; body.model is the route\'s model — the two agree: route.provider==deepseek-official, route.model==body.model)',
       actualModel === M_WORKER && effValue !== null && msValue !== null
       && effValue.split('/').slice(1).join('/') === actualModel && msValue.split('/').slice(1).join('/') === actualModel
       && effValue.split('/')[0] === 'deepseek-official',
@@ -1481,8 +1486,10 @@ async function main() {
   {
     const hostFree = await waitForPortFree(HOST_PORT_ACTUAL ?? HOST_PORT_CANDIDATES[0], 15_000)
     const mockFree = await waitForPortFree(MOCK_PORT, 15_000)
-    check('H2', 'host port released at teardown', hostFree === true, `port ${HOST_PORT_ACTUAL} still bound`)
-    check('H2', 'mock model port released at teardown', mockFree === true, `port ${MOCK_PORT} still bound`)
+    check('H2', 'host port released at teardown', hostFree === true,
+      hostFree ? `port ${HOST_PORT_ACTUAL} free` : `port ${HOST_PORT_ACTUAL} still bound`)
+    check('H2', 'mock model port released at teardown', mockFree === true,
+      mockFree ? `port ${MOCK_PORT} free` : `port ${MOCK_PORT} still bound`)
     finishCriterion('H2')
   }
 

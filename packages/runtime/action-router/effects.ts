@@ -119,13 +119,14 @@ export interface EffectContext {
   readonly repositories: TeamDomainRepositories
   readonly activationProvider: ActivationProvider
   readonly externalPolicyFacts: () => Promise<ExternalPolicyFacts>
-  /** The deployment default model (the `staticModel`) — the baseline the
-   *  bound template's MODEL-ONLY `modelPreference` shorthand inherits its
-   *  provider from in the `team_inspect_config` effective-policy read
-   *  (the model-preference routing fix). Absent in the P6-T2 default
-   *  wiring: a modelPreference then contributes no inspect-time model
-   *  grant (an absent preference is unaffected either way). */
-  readonly staticModel?: ModelSelection
+  /** The deployment default model (the `staticModel`) — REQUIRED (PR #30
+   *  review-supplement P2-3; the P6-T2 default wiring always supplies the
+   *  deployment baseline): the baseline the bound template's MODEL-ONLY
+   *  `modelPreference` shorthand inherits its provider from in the
+   *  `team_inspect_config` effective-policy read (the model-preference
+   *  routing fix). An ABSENT preference still contributes no inspect-time
+   *  model grant (no-preference behavior unchanged). */
+  readonly staticModel: ModelSelection
   readonly now: () => string
   readonly spec: ActionSpec
   readonly request: TeamRuntimeActionRequest
@@ -354,10 +355,7 @@ async function runEffect(ctx: EffectContext): Promise<RuntimeActionEffect | Work
       // declared `modelPreference` resolves at the template layer, not
       // the unspecified -> staticModel baseline). The generic
       // `templateValues` (model + mcp) feeds the ONE resolver.
-      const initialModelGrant =
-        ctx.staticModel !== undefined
-          ? initialTemplateModelGrantOf(boundTemplate, ctx.staticModel)
-          : undefined
+      const initialModelGrant = initialTemplateModelGrantOf(boundTemplate, ctx.staticModel)
       const templateValues = {
         ...(initialModelGrant !== undefined ? { model: initialModelGrant } : {}),
         ...(initialMcpGrant !== undefined ? { mcp: initialMcpGrant } : {}),

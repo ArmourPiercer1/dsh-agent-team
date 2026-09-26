@@ -186,15 +186,18 @@ const e2WorkerView = e2.binding.resolveConsumptionViews(E2_CHILD) as unknown as 
 }
 
 // ===========================================================================
-// World E3 (direct team_delegate create form — the PRIMARY acceptance) —
-// Leader -> team_delegate(delegationTemplateId=expert) -> fresh member ->
-// FIRST member turn. The model-relevant production boundary of that arc is
-// the glue child factory (the activation's post-commit binder install calls
-// exactly this `createChildSession` in the fresh-create window); the bridge
-// world's domain is a read-only double (no full durable team runtime), so
-// the arc is driven at that SAME boundary. The FIRST member assembly must
-// already be the expert model (no staticModel fallback, no governance
-// workaround).
+// World E3 (the delegation FRESH-CREATE boundary — the arc that a real
+// `team_delegate(delegationTemplateId=expert)` create drives) —
+// Leader -> delegation -> fresh member -> FIRST member turn. The
+// model-relevant production boundary of that arc is the glue child factory
+// (the activation's post-commit binder install calls exactly this
+// `createChildSession` in the fresh-create window); the bridge world's
+// domain is a read-only double (no full durable team runtime), so the arc
+// is driven at that SAME boundary. The FIRST member assembly must already
+// be the expert model (no staticModel fallback, no governance workaround).
+// The FULL tool-level chain (team tool -> TeamRuntime -> ActivationProvider
+// -> child factory) is closed by real-host R2 — this leg is the fresh-create
+// boundary only (see the E3 describe scope note).
 // ===========================================================================
 const E3_ROOT = 'mp-e3-root'
 const E3_INST = 'inst-mp3exp'
@@ -520,8 +523,16 @@ describe('E2 — fresh member FIRST request (the fresh-create templateIdHint win
   })
 })
 
-describe('E3 — direct team_delegate (create form): the FIRST member turn uses the expert model', () => {
-  it('the freshly delegated expert FIRST assembly is already the expert model (primary acceptance)', () => {
+// SCOPE (review-supplement P2-4 §6): this unit/integration leg locks the
+// DELEGATION FRESH-CREATE BOUNDARY (the glue child factory's
+// `createChildSession` fresh-create window — the SAME boundary the
+// activation's post-commit binder install calls). It is NOT the full
+// `team tool -> TeamRuntime -> ActivationProvider -> child factory` chain:
+// the real direct `team_delegate` full-chain behavior (including the actual
+// provider request `body.model`) is PROVEN BY real-host R2. Do not read this
+// leg as having exercised the tool-level chain.
+describe('E3 — delegation fresh-create boundary: the member\'s FIRST assembly already uses the template model', () => {
+  it('the freshly delegated expert FIRST assembly is already the expert model (fresh-create boundary, not the full tool chain)', () => {
     expect(e3ExpertAsm.provider).toBe('mp-expert')
     expect(e3ExpertAsm.model).toBe('model-expert')
     // No staticModel fallback, no governance workaround.

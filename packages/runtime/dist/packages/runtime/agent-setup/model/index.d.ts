@@ -23,7 +23,9 @@
  */
 export type { ModelSelection, ModelSelectionSource, TeamModelRequest, } from './types.js';
 export { TeamModelOverlaySlot, TeamModelSelectionAdapter, } from './overlay.js';
-export { parseModelItem, parseModelPreferenceToken, type ParsedModelPreferenceToken, } from './route.js';
+export { parseModelItem } from './route.js';
+export { parseModelPreferenceToken, type ParsedModelPreferenceToken, } from '../../../domain/blueprint/src/index.js';
+export { InvalidTemplateModelPreferenceError, isInvalidTemplateModelPreferenceError, MODEL_ERROR_CODES, type ModelErrorCode, } from './errors.js';
 export { initialTemplateModelGrantOf } from './template-model.js';
 export { modelConsumptionView, resolveDurableModelSelection, type DurableModelSelection, type DurableModelSelectionArgs, type ModelConsumptionView, } from './durable-consumption.js';
 //# sourceMappingURL=index.d.ts.map

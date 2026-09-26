@@ -22,7 +22,12 @@
  * @module @dsh-agent-team/runtime/agent-setup/model
  */
 export { TeamModelOverlaySlot, TeamModelSelectionAdapter, } from './overlay.js';
-export { parseModelItem, parseModelPreferenceToken, } from './route.js';
+export { parseModelItem } from './route.js';
+// The strict v1 `modelPreference` token parser is the SINGLE domain parser
+// (P2-2) — re-exported from here so the runtime facade's public surface is
+// unchanged, but there is only ONE parser definition (domain).
+export { parseModelPreferenceToken, } from '../../../domain/blueprint/src/index.js';
+export { InvalidTemplateModelPreferenceError, isInvalidTemplateModelPreferenceError, MODEL_ERROR_CODES, } from './errors.js';
 export { initialTemplateModelGrantOf } from './template-model.js';
 export { modelConsumptionView, resolveDurableModelSelection, } from './durable-consumption.js';
 //# sourceMappingURL=index.js.map

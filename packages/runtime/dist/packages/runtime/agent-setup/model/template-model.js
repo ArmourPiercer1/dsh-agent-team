@@ -20,18 +20,24 @@
  * - an ABSENT `modelPreference` contributes NOTHING (the model cell stays
  *   `unspecified` -> the `baseline` applies at the consumer, the
  *   deployment fallback);
- * - a MALFORMED token (only possible via a template that bypassed the
- *   Blueprint strong validation) contributes NOTHING — fail closed, never
- *   a guessed provider/model, never a silent staticModel fallback.
+ * - a PRESENT-but-MALFORMED token (only possible via a template that
+ *   bypassed the Blueprint strong validation) THROWS a typed
+ *   `InvalidTemplateModelPreferenceError` (fail-loud, P2-1) — it is never
+ *   disguised as "absent" and never a silent `staticModel` fallback.
  *
  * NO synthetic durable record is ever created: the bound Blueprint
  * snapshot itself is the durable, immutable source of the grant (it
  * survives a host restart by re-derivation from the same snapshot).
  *
+ * The token is parsed by the SINGLE domain parser
+ * (`@dsh-agent-team/domain/blueprint` `model-preference.js`, P2-2) — ONE
+ * grammar shared with the Blueprint validator and the legacy importer.
+ *
  * Pure module: no I/O, no live Agent, no ambient state.
  * @module @dsh-agent-team/runtime/agent-setup/model/template-model
  */
-import { parseModelPreferenceToken } from './route.js';
+import { parseModelPreferenceToken } from '../../../domain/blueprint/src/index.js';
+import { InvalidTemplateModelPreferenceError } from './errors.js';
 /**
  * Derive the bound template's initial static `model` PolicyEntry for the
  * policy resolver's `template` value layer.
@@ -42,15 +48,22 @@ import { parseModelPreferenceToken } from './route.js';
  *   provider fills the MODEL-ONLY shorthand; it is NEVER substituted for
  *   a qualified route and never emitted when no preference is declared.
  * @returns the `model` PolicyEntry to feed `templateValues.model`, or
- *   `undefined` when the template declares no usable initial model grant.
+ *   `undefined` when the template declares NO `modelPreference`.
+ * @throws {InvalidTemplateModelPreferenceError} when the template declares
+ *   a PRESENT-but-MALFORMED `modelPreference` (fail-loud — never a silent
+ *   `staticModel` fallback).
  */
 export function initialTemplateModelGrantOf(template, baseline) {
     const token = template.modelPreference;
     if (token === undefined)
         return undefined;
     const parsed = parseModelPreferenceToken(token);
-    if (parsed === undefined)
-        return undefined;
+    if (parsed === undefined) {
+        throw new InvalidTemplateModelPreferenceError({
+            templateId: template.templateId,
+            token,
+        });
+    }
     const item = parsed.provider === undefined ? `${baseline.provider}/${parsed.model}` : token;
     return { kind: 'allow', items: [item] };
 }

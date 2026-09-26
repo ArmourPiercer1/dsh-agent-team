@@ -63,6 +63,17 @@ export const P6T2_ROOT = String(P6T1_FIXTURE.rootSessionId)
 export const P6T2_NOW = '2026-08-31T12:00:00Z'
 
 /**
+ * The unified TEST deployment-default baseline (PR #30 review-supplement P2-3):
+ * every test world that builds a TeamRuntime supplies the SAME staticModel so
+ * no test invents ad-hoc values. Tests that DO need a distinct baseline
+ * (e.g. the model-preference routing tests) set their own explicitly.
+ */
+export const TEST_STATIC_MODEL = {
+  provider: 'test-static',
+  model: 'test-default',
+} as const
+
+/**
  * The P6-T2 fixture blueprint source (own ids, quotas and envelopes — see
  * the file header for the deliberate test surface).
  */
@@ -290,6 +301,7 @@ export function createP6T2Runtime(
     blueprintCatalog: world.catalog,
     environmentFacts: world.ports.environmentFacts,
     externalPolicyFacts: world.ports.externalPolicyFacts,
+    staticModel: TEST_STATIC_MODEL,
     now: () => P6T2_NOW,
     ...(options.lifecycleCommit !== undefined
       ? { lifecycleCommit: options.lifecycleCommit }

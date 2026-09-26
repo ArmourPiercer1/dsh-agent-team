@@ -1,0 +1,30 @@
+{
+  "status": 200,
+  "body": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "delegate",
+      "rootSessionId": "session-mpr-t1-mpr-2026-09-26T04-36-32",
+      "callerRole": "leader",
+      "effect": {
+        "kind": "member-activated",
+        "instanceId": "inst-0bt4lte0l265",
+        "templateId": "control",
+        "childSessionId": "session-team-child-d00d88e79a122028d4b6e3e9e6a42fba",
+        "operationId": "op-1wr19981qnddil10deczu1hk",
+        "replayed": false,
+        "ledgerSequence": 22,
+        "admissionCode": "ADMISSION_OPEN",
+        "workSequence": 23,
+        "workSettled": true,
+        "memberResult": {
+          "requestToken": "tok-r7-control-ml5kmuga",
+          "status": "succeeded",
+          "body": "ack:global-default:mpr-2026-09-26T04-36-32"
+        }
+      },
+      "requestToken": "tok-r7-control-ml5kmuga"
+    }
+  }
+}

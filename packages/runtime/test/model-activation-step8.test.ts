@@ -1,7 +1,6 @@
 /**
- * Gate D — ActivationProvider step 8: the creation-frozen effective policy
- * carries the bound template's `modelPreference` at the TEMPLATE layer
- * (the model-preference routing fix).
+ * Gate D — activation step-8 composition contract (the model-preference
+ * routing fix).
  *
  * The target is NOT the Agent request (that is Gate E over the live glue) —
  * it is the effective policy resolved at MEMBER CREATION: the step-8
@@ -10,15 +9,23 @@
  * member's life — and NO synthetic durable record is ever created to fake
  * it (the bound Blueprint snapshot is the sole source).
  *
- * The step-8 resolution is the provider's internal composition of
+ * SCOPE (review-supplement P2-4 §5): this leg is a COMPOSITION CONTRACT —
+ * the step-8 composition of
  * `initialTemplateModelGrantOf(template, ports.staticModel)` +
  * `initialMcpGrantOf(staticCapabilitiesOf(blueprint, template))` + the
- * generic `templateValues` — the assertions below run that SAME
- * composition through the SAME `resolveActivationPolicy` the provider
- * calls (the provider itself is exercised end-to-end: every case here
- * activates a real member through the real provider over a real durable
- * world; the composition assertion pins the step-8 policy layer the
- * frozen result no longer re-exposes).
+ * generic `templateValues`, run through the SAME `resolveActivationPolicy`
+ * the provider calls. Each case activates a real member through the real
+ * provider over a real durable world (so `activate` does not crash and no
+ * override row is generated), and then RE-RUNS that composition to pin the
+ * step-8 policy layer. This is NOT a direct read of the ActivationProvider's
+ * internal frozen policy (the frozen result no longer re-exposes it), and it
+ * does not alone prove that `provider.ts` calls
+ * `initialTemplateModelGrantOf` at step 8.
+ *
+ * The PROVIDER WIRING's FINAL BEHAVIOR (the real provider actually feeding
+ * the template grant into the frozen policy, and the real live request
+ * boundary consuming it) is CLOSED BY Gate E (the live glue over the real
+ * world) + real-host R1/R2 (the actual provider request `body.model`).
  *
  * @module @dsh-agent-team/runtime/test/model-activation-step8
  */
@@ -126,10 +133,11 @@ function blueprintSource(
 }
 
 /**
- * The provider's step-8 composition, run through the SAME
+ * The step-8 COMPOSITION CONTRACT, run through the SAME
  * `resolveActivationPolicy` the provider calls — for the template the
- * provider resolved at step 3 of the activation (the world's bound
- * snapshot's member template).
+ * provider resolves at step 3 of the activation (the world's bound
+ * snapshot's member template). (This re-runs the composition; it is not a
+ * read of the provider's internal frozen policy — see the module docs.)
  */
 function step8Policy(world: Awaited<ReturnType<typeof createP6T1World>>, templateId: string) {
   const template =
@@ -152,7 +160,7 @@ function step8Policy(world: Awaited<ReturnType<typeof createP6T1World>>, templat
   })
 }
 
-describe('Gate D: the step-8 creation-frozen policy carries the template model', () => {
+describe('Gate D — activation step-8 composition contract (the template/static model grant)', () => {
   it('D1 member template model -> model effective allow at the template/static layer', async () => {
     const world = await createP6T1World('mp-step8-d1', {
       blueprintSource: blueprintSource('provider-worker/model-worker', undefined),

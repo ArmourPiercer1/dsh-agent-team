@@ -201,9 +201,7 @@ async function runEffect(ctx) {
             // declared `modelPreference` resolves at the template layer, not
             // the unspecified -> staticModel baseline). The generic
             // `templateValues` (model + mcp) feeds the ONE resolver.
-            const initialModelGrant = ctx.staticModel !== undefined
-                ? initialTemplateModelGrantOf(boundTemplate, ctx.staticModel)
-                : undefined;
+            const initialModelGrant = initialTemplateModelGrantOf(boundTemplate, ctx.staticModel);
             const templateValues = {
                 ...(initialModelGrant !== undefined ? { model: initialModelGrant } : {}),
                 ...(initialMcpGrant !== undefined ? { mcp: initialMcpGrant } : {}),

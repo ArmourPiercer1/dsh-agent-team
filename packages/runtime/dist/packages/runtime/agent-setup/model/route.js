@@ -1,12 +1,8 @@
 /**
  * The pure provider/model ROUTE grammar of the Team model layer — the
- * SINGLE parse site every model consumer shares (dedup of the former
- * `durable-consumption.ts` local `parseModelItem`; the model-blueprint
- * initial-routing fix adds `parseModelPreferenceToken`, the strict v1
- * Blueprint `modelPreference` token check that mirrors the domain
- * strong validation's parser — the runtime cannot import the domain
- * parser into the model layer without inverting the layering, so the
- * two are documented mirrors of ONE grammar, not two dialects):
+ * SINGLE parse site for the DURABLE model allow item (`provider/model`)
+ * that every durable-model consumer shares (dedup of the former
+ * `durable-consumption.ts` local `parseModelItem`):
  *
  * - a QUALIFIED route `provider/model` splits at the FIRST `/`: the
  *   provider is the non-empty prefix, the model is the non-empty suffix
@@ -16,6 +12,16 @@
  *   elsewhere (the Blueprint grammar treats it as a shorthand for the
  *   deployment default's provider; see the Blueprint validation and
  *   `initialTemplateModelGrantOf`).
+ *
+ * The strict v1 Blueprint `modelPreference` TOKEN check
+ * (`parseModelPreferenceToken`) is NOT mirrored here — it lives in the
+ * SINGLE domain parser (`@dsh-agent-team/domain/blueprint`
+ * `model-preference.js`) and is imported directly by the runtime
+ * derivation (PR #30 review-supplement P2-2: ONE grammar, ONE site).
+ * `parseModelItem` is kept because the durable policy-item entry point
+ * (always `provider/model`, both sides non-empty) has DIFFERENT entry
+ * semantics from the Blueprint token entry point (`provider/model` OR a
+ * bare `model`).
  *
  * Pure module: no I/O, no live references.
  * @module @dsh-agent-team/runtime/agent-setup/model/route
@@ -36,42 +42,5 @@ export function parseModelItem(item) {
     if (provider.length === 0 || model.length === 0)
         return undefined;
     return { provider, model };
-}
-/**
- * The strict v1 `modelPreference` token check (the defensive mirror of
- * the domain Blueprint strong validation's `parseModelPreferenceToken`).
- *
- * Legal: a non-empty token with NO whitespace and NO control characters,
- * either a bare model (`model-only`) or a qualified `provider/model`
- * route (provider and model both non-empty at the FIRST `/`; further
- * slashes belong to the model).
- *
- * Defensive purpose (Gate B5): even a malformed token that bypassed the
- * Blueprint validator (a synthetic / hand-built template) must fail
- * CLOSED here — `undefined` — never a guessed provider/model and never a
- * silent fallback to the deployment default.
- *
- * @param value - the token (already trimmed by the caller's field reader;
- *   the check re-verifies the interior, where trimming cannot reach).
- * @returns the parsed token, or `undefined` when malformed.
- */
-export function parseModelPreferenceToken(value) {
-    if (value.length === 0)
-        return undefined;
-    for (let i = 0; i < value.length; i += 1) {
-        const code = value.charCodeAt(i);
-        // whitespace class (incl. \u00a0, \u2000-\u200a, \u2028, \u202f,
-        // \u3000, BOM) + C0 control range + DEL: any of them makes the token
-        // unparseable — a route is a single opaque identifier pair.
-        if (code === 0x20 || code <= 0x1f || code === 0x7f || code === 0xa0 || (code >= 0x2000 && code <= 0x200a) || code === 0x2028 || code === 0x2029 || code === 0x202f || code === 0x205f || code === 0x3000 || code === 0xfeff) {
-            return undefined;
-        }
-    }
-    const sep = value.indexOf('/');
-    if (sep === -1)
-        return { model: value };
-    if (sep === 0 || sep === value.length - 1)
-        return undefined;
-    return { provider: value.slice(0, sep), model: value.slice(sep + 1) };
 }
 //# sourceMappingURL=route.js.map

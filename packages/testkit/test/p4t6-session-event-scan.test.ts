@@ -1194,8 +1194,21 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // test/model-blueprint-initial-routing.test.ts). All five carry zero
     // denylist vocabulary; the frozen quarantine hit set is unchanged.
     // Scanner unchanged. Single-writer pin bump on the task branch.
-    expect(scanResult.filesScanned).toBe(753)
-    expect(scanResult.files.length).toBe(753)
+    // PR #30 review-supplement (P2-1/P2-2/P2-4, this round): +3 on top of
+    // the 753 = 756 — the three new scannable files: (f) the SINGLE domain
+    // model-preference token parser (packages/domain/blueprint/src/
+    // model-preference.ts — parseModelPreferenceToken; P2-2: the runtime
+    // mirror in route.ts is DELETED, so there is ONE grammar, ONE site),
+    // (g) the model-overlay typed error (packages/runtime/agent-setup/
+    // model/errors.ts — InvalidTemplateModelPreferenceError; P2-1: a
+    // PRESENT-but-malformed preference is a fail-loud throw, never a silent
+    // staticModel fallback), and (h) the team_inspect_config effective-
+    // policy regression I1–I4 (packages/runtime/test/model-inspect-config.
+    // test.ts; P2-4 §4). All three carry zero denylist vocabulary; the
+    // frozen quarantine hit set is unchanged. Scanner unchanged.
+    // Single-writer pin bump on the task branch.
+    expect(scanResult.filesScanned).toBe(756)
+    expect(scanResult.files.length).toBe(756)
 
   })
 

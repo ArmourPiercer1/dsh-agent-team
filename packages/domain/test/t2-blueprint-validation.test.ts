@@ -264,4 +264,19 @@ describe('Gate A: parseModelPreferenceToken (the pure parser)', () => {
       expect(parseModelPreferenceToken(bad)).toBe(undefined)
     }
   })
+
+  it('Unicode whitespace (U+1680 OGHAM SPACE MARK) + C0 control chars are rejected — the SINGLE parser locks the grammar (S1/P2-2)', () => {
+    const ogham = '\u1680'
+    // U+1680 is matched by ECMAScript `\s` (a Unicode space separator) but was
+    // NOT in the old runtime hand-table — this case locks "only ONE parser".
+    expect(parseModelPreferenceToken(`provider${ogham}/model`)).toBe(undefined)
+    expect(parseModelPreferenceToken(`provider${ogham}model`)).toBe(undefined)
+    // a C0 control character (non-whitespace) is also rejected
+    expect(parseModelPreferenceToken('prov\x01der/model')).toBe(undefined)
+    // ...but a clean qualified route still parses (no over-rejection)
+    expect(parseModelPreferenceToken('qiyuan-self/qwen3.8-27b')).toEqual({
+      provider: 'qiyuan-self',
+      model: 'qwen3.8-27b',
+    })
+  })
 })

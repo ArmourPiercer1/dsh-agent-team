@@ -47,6 +47,7 @@ import { assertNoUnknownFields, assertPlainRecord, } from '../../../contracts/sr
 import { BLUEPRINT_CAPABILITIES_FIELDS, BLUEPRINT_DOCUMENT_SCHEMA_VERSION, BLUEPRINT_ENVELOPE_FIELDS, BLUEPRINT_MEMBER_ENVELOPE_ENTRY_FIELDS, BLUEPRINT_POLICY_REFERENCEABLE_FIELDS, BLUEPRINT_POLICY_STATE_FIELDS, BLUEPRINT_QUOTA_FIELDS, BLUEPRINT_QUOTA_SPEC_FIELDS, BLUEPRINT_REQUIREMENT_FIELDS, BLUEPRINT_TEMPLATE_FIELDS, BLUEPRINT_TOP_LEVEL_FIELDS, CAPABILITY_ITEM_MAX_LENGTH, CAPABILITY_POLICY_DECISIONS, CONTEXT_POLICY_MAX_LENGTH, DESCRIPTION_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH, ENVELOPE_OPERATION_MAX_LENGTH, ENVELOPE_OPERATION_PATTERN, METADATA_KEY_MAX_LENGTH, METADATA_KEY_PATTERN, METADATA_VALUE_MAX_LENGTH, MODEL_PREFERENCE_MAX_LENGTH, PERSONA_MAX_LENGTH, PERMISSION_PATH_MAX_LENGTH, PERMISSION_POLICY_DEFAULTS, PERMISSION_POLICY_FIELDS, PERMISSION_RESOURCE_KINDS, PERMISSION_RULE_FIELDS, PERMISSION_TOOL_NAMES, POLICY_STATE_ID_MAX_LENGTH, POLICY_STATE_ID_PATTERN, REQUIREMENT_DOMAIN_MAX_LENGTH, REQUIREMENT_DOMAIN_PATTERN, REQUIREMENT_NAME_MAX_LENGTH, REQUIREMENT_NAME_PATTERN, SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS, } from './schema.js';
 import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js';
 import { deriveContentHash } from './hash.js';
+import { parseModelPreferenceToken } from './model-preference.js';
 /** Control characters forbidden in any string field (mirrors contracts). */
 // eslint-disable-next-line no-control-regex -- intentional scanner: rejects control characters in blueprint strings
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
@@ -154,43 +155,13 @@ function stripUndefined(obj) {
     }
     return obj;
 }
-/**
- * The strict v1 `modelPreference` token grammar (the Blueprint strong
- * validation's parser — the runtime model layer keeps a documented mirror,
- * `parseModelPreferenceToken` in
- * `@dsh-agent-team/runtime/agent-setup/model/route`, because the runtime
- * cannot import this domain module into the model layer; ONE grammar, two
- * mirror sites, both pure):
- *
- * - a non-empty token with NO whitespace and NO control characters;
- * - a QUALIFIED route `provider/model` splits at the FIRST `/`: the
- *   provider is the non-empty prefix, the model the non-empty suffix
- *   (further `/` belong to the model string);
- * - a MODEL-ONLY token (no `/`) names a model whose provider is resolved
- *   at the derivation site (the deployment default stands in).
- *
- * Malformed tokens (empty, whitespace anywhere — e.g. `provider /model`
- * or `provider/ model` — control characters, a missing provider
- * (`/model`) or model (`provider/`)) yield `undefined`.
- *
- * @param value - the trimmed token (the field reader trims; the check
- *   still re-verifies the interior, where trimming cannot reach).
- * @returns the parsed token, or `undefined` when malformed.
- */
-export function parseModelPreferenceToken(value) {
-    if (value.length === 0)
-        return undefined;
-    if (/\s/.test(value))
-        return undefined;
-    if (CONTROL_CHARS.test(value))
-        return undefined;
-    const sep = value.indexOf('/');
-    if (sep === -1)
-        return { model: value };
-    if (sep === 0 || sep === value.length - 1)
-        return undefined;
-    return { provider: value.slice(0, sep), model: value.slice(sep + 1) };
-}
+// ---------------------------------------------------------------------------
+// sub-structure validators
+// ---------------------------------------------------------------------------
+// The strict v1 `modelPreference` token grammar lives in the SINGLE domain
+// parser (`./model-preference.js`, PR #30 review-supplement P2-2) and is
+// imported above — ONE grammar shared by the validator, the runtime
+// derivation, and the legacy importer (no mirror sites).
 /**
  * Validate one template (leader or member). Both share one closed schema.
  *
