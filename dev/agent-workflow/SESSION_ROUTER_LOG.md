@@ -3833,3 +3833,22 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **kit bug #1–#12 全部测试基础设施侧**（账本 worlds-verdict.md Ch.7；本轮 #11 = B9(5) 契约误读修正、#12 = hold 自动释放匹配 gate-5 文本请求），零产品侧改动。
 - **红线守纪**：CORE PATCH BUDGET = 0；test-use pristine @ 46a7f68b09（porcelain 空，主 workspace 复核）；零 push；:3080/:3180 零触碰（probe only）；scratch 清（无 .tmp 残留）。
 - **状态**：Commit 4 证据就绪（待入库）。余：Commit 4 提交 → Commit 5（§17 十六条全量验收 + 终簿记 + home 登记）→ **push + PR**（用户本轮授权）。
+
+### 2026-09-26 — restart-recovery：Commit 5 — §17 十六条 16/16 PASS（终验收）+ 终簿记；push + PR 执行中（用户本轮一次性授权）
+
+- **§17 终验收**（`dev/agent-workflow/evidence/restart-017rc1/commit5/verification-17.md`，16 条逐条证据）：
+  1 DSH_HOME-unset 恢复 = exists seam fail-closed（D1–D4 + R1–R8 绿 + kit fresh home 全链）；
+  2 零持久化文件名扫描 = 主代理独立 grep 产品 src 零命中（唯一近邻 = legacy session-reader 自有工件名类型联合，非 durable authority；readdir 仅插件自有目录）+ p4t6 绿；
+  3/4 动态 root/member 跨 restart = World A run4 38P/0F + World B run10 30P/0F；
+  5 follow 不抢 Team ownership = A4/A4b/A4c + D typed fail-closed + A7q1（veto 窗口 foreign 模型请求 0）；
+  6 glue 持真实 AgentHandle = A7(3)/(6)/(8) + gate-5 leader 面应答 + G 套件；
+  7 ordinary unchanged = World C 7/7；8 ordinary mode 继续 = World D 30P/0F；
+  9 20× race = 20/20 disposed=0（独立解析复核）；10 首请求完整 = A7(6)/(7)/(10)/(12) + B9(3)/(4)/(5)；
+  11 close/archive/dropResidency = lifecycle 套件全绿（失败集 = 债务）；
+  12 zero-core = verify-zero-core.mjs 本轮复跑 PASS 0 findings；13 test-use pristine = 46a7f68b09 + porcelain 空（验收时点复测）；
+  14 tc/build/composition/artifacts = 全绿（artifacts 1180）；
+  15 root suite 新失败集 = ∅（主代理直跑 3 次；run 3 静载 = 10F/20T 逐名 = 债务，3897P/3917；两处瞬态已归因：p4t6 pin 754→755 = Commit-3 簿记增量 [勘误入库]；p6t1-parallel 负载 flake = 既有且与分支 import 图隔离 [F-rc2，前轮 F7-1 同族]）；
+  16 kit deterministic green = Worlds A–E + 20× race 全绿 @ f3d5a71b。
+- **红线守纪终态**：CORE PATCH BUDGET = 0；:3080 验收时点复测 401 UNCHANGED（全程只读 probe）；孤儿宿主/world 未动；scratch `rst017-bisect-2026-09-26T04-50-21`（278M）按 TEST_METHODS §7 删除留档（引用 = 5 处保留日志内的路径字符串，无内容依赖）；homes 现存 32 个 rst017* 全部登记在案。
+- **簿记**：graph.yaml `restart_recovery_017rc1_20260926` → COMPLETE-VERIFIED（commits 链补全 2a3df15 + 本提交；red_lines 记本轮 push 授权范围）；docs/STATUS.md 对齐刷新（R123 先例）。
+- **push + PR**（用户本轮明确授权「直到完成测试并提交PR」= 一次性授权，仅本分支 FF）：task/team-restart-017rc1 → origin，开 PR → master（REST，PR #29 先例）。
