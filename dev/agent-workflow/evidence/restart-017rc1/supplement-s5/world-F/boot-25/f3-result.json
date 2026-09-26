@@ -1,0 +1,19 @@
+{
+  "barrier": true,
+  "barrierCreated": 1,
+  "barrierDisposed": 1,
+  "apiErrBarrier": 1,
+  "created": 2,
+  "disposed": 1,
+  "surviving": 1,
+  "live": [
+    "session-rst017s5-boot-2026-09-26T17-48-44",
+    "session-rst017s5-f3-2026-09-26T17-48-44"
+  ],
+  "ensureOk": true,
+  "noOutside": true,
+  "createdSources": [
+    "resume",
+    "resume"
+  ]
+}

@@ -1,0 +1,91 @@
+- button "New session"
+- button "Collapse sidebar"
+- button "New session": New Session
+- navigation "Global panels":
+  - button "Plugins"
+- text: Workspaces
+- button "Search sessions"
+- textbox "Search session names"
+- button "View options"
+- button "Add workspace"
+- tree "Sessions":
+  - treeitem "workspace" [expanded]
+  - treeitem "Ungrouped" [expanded]
+  - treeitem "c4 title 2min" [selected]
+- button "New Team"
+- button "Settings"
+- banner:
+  - navigation "Session hierarchy": c4 title
+  - button "Open in VS Code"
+  - button "More actions"
+  - button "Open right sidebar"
+  - tablist:
+    - tab "Chat"
+    - tab "Trajectory"
+    - tab "Team" [selected]
+- heading "Timeline" [level=3]
+- paragraph: No delegations yet
+- heading "Members" [level=3]
+- button "leader · 1 active"
+- button "Open in Team mode / back to Leader"
+- button "Open in ordinary mode"
+- text: Team mode
+- button "Running No action yet" [disabled]
+- text: Worker · 0 active
+- button "Create a MemberInstance": +
+- text: No instances yet
+- heading "Governance" [level=3]
+- text: Compatibility ✓ Compatible 0 warning(s) · 0 fatal · 0 acknowledged Generation 1 Last probed at 2026-09-26T18:09:24.297Z
+- button "Review"
+- button "Recheck"
+- button "Acknowledge warning" [disabled]
+- paragraph: Rechecking starts a new compatibility generation; old acknowledgements never cover it.
+- text: Policy [ default ]
+- paragraph: Policy controls the Team's current runtime governance envelope. It does not represent task progress.
+- button "Review"
+- button "Commit" [disabled]
+- text: Effective config leader model deepseek-official/rst017s5-model-2026-09-26T18-09-18 capability Inherited workspace /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-s5-2026-09-26T18-09-18-A/workspace blueprint Locked autonomy — autonomy-overlay Inherited
+- combobox:
+  - option "model" [selected]
+  - option "tools"
+  - option "permissions"
+  - option "skills"
+  - option "mcp"
+- combobox:
+  - option "Allow" [selected]
+  - option "Deny"
+- textbox "items"
+- button "Show override"
+- button "Set override" [disabled]
+- button "Reset override"
+- heading "Activity & Progress" [level=3]
+- text: No activity progress yet
+- heading "Team events" [level=3]
+- combobox:
+  - option "All" [selected]
+  - option "Team"
+  - option "Members"
+  - option "Lifecycle"
+  - option "Messages"
+  - option "Controls"
+  - option "Policy"
+  - option "Compatibility"
+  - option "Progress"
+- combobox:
+  - option "All" [selected]
+  - option "leader"
+  - option "leader"
+  - option "Worker"
+- 'button "02:09:24 Work admitted {\"at\":\"2026-09-26T18:09:24.302Z\",\"caller\":{\"humanId\":\"session-rst017s5-boot-2026-09-26T18-09-18\",\"kind\":\"human\"},\"payloadFingerprint\":\"sha256:d6f9db4cf5f2add5541d7a6df6c5cad80dec38946720e53ee9dae3bf8f623738\",\"prompt\":\"S5 dynamic team created. Acknowledge with the token RST017S5DONE_2026-09-26T18-09-18 and stop.\",\"requestToken\":\"team-create:initial-work:sha256:d6f9db4cf5f2add5541d7a6df6c5cad80dec38946720e53ee9dae3bf8f623738\",\"rootSessionId\":\"session-rst017s5-dyn-2026-09-26T18-09-18\",\"targetKind\":\"root\"}" [disabled]'
+- button "02:09:44 team-root-work-delivered team-root-work-delivered" [disabled]
+- region "Team":
+  - button "Team 1 running"
+  - button "Expand the team overview"
+- textbox "Session unavailable" [disabled]
+- button "Add files or run commands" [disabled]
+- 'button "Access mode, current: Workspace Write" [disabled]': Workspace Write
+- button "Select model, current deepseek-official/rst017s5-model-2026-09-26T18-09-18" [disabled]: deepseek-official/rst017s5-model-2026-09-26T18-09-18
+- button "Send message" [disabled]
+- button "1 turns 1 steps · 40000 tok/s": 1 turns 1 steps40000 tok/s
+- button "2K tok · Cache hit 0%": 2K tokCache hit 0%
+- button "0% of context used": 0%

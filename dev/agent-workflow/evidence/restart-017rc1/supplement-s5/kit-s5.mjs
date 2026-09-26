@@ -9,11 +9,12 @@
  *
  * S5 DELTAS VERSUS commit4/kit.mjs:
  *
- *   - Build under test = the accepted S1+S2 fix build at branch tip
- *     833c69997a2d1893e69753b9ab697488e82efe8a (S1 58d30de activation core +
- *     S2 673bb7c host/root contract; product changes S1+S2 only, S3
- *     833c699 is evidence-only). The installed plugin carries the S1+S2
- *     runtime fixes (committed install surface = 1196 files, verified by
+ *   - Build under test = the accepted fix build at branch tip
+ *     5e16fa774d1793ab00ae3652dac8fca439f0ecbb (S1 58d30de activation core +
+ *     S2 673bb7c host/root contract + S3 833c699 evidence-only + S5a 5e16fa7
+ *     stale pre-S1 dist-glue placement fix; S5a changes no product behavior).
+ *     The installed plugin carries the S1+S2 runtime fixes (committed
+ *     install surface = 1196 files, verified by
  *     `node scripts/check-artifacts-committed.mjs` in the preflight).
  *   - The production C1 fence (now with the S1 activation core: ownershipReady
  *     barrier, exact-generation claim, rollback epoch/tombstone, absolute
@@ -105,15 +106,16 @@ const RUN_STAMP_EARLY = process.env.RST017_STAMP ?? new Date().toISOString().rep
 
 const RUN_STAMP = RUN_STAMP_EARLY
 
-// The accepted S1+S2 fix build (PR #31 supplemental fix round, guide §7):
+// The accepted fix build (PR #31 supplemental fix round, guide §7):
 // S1 58d30de (activation core correctness: ownershipReady, exact-generation
 // claim, rollback epoch/tombstone, absolute deadline, per-SID single-flight)
-// + S2 673bb7c (prepareOrdinaryOpen conditional wiring) on top of the
-// Commit-4 fix (f3d5a71b). Branch tip = 833c6999 (S3 833c699 is
-// evidence-only — no product change). Committed install surface = 1196
-// files (verified in the preflight). The bare clone must reproduce this tip
-// exactly.
-const EXPECTED_BRANCH_SHA = '833c69997a2d1893e69753b9ab697488e82efe8a'
+// + S2 673bb7c (prepareOrdinaryOpen conditional wiring) + S3 833c699
+// (evidence-only) + S5a 5e16fa7 (stale pre-S1 dist-glue placement fixed —
+// the dist glue is now byte-identical to the S1 src glue; check-D parity
+// gate added; zero src behavior change). Branch tip = 5e16fa77.
+// Committed install surface = 1196 files (verified in the preflight).
+// The bare clone must reproduce this tip exactly.
+const EXPECTED_BRANCH_SHA = '5e16fa774d1793ab00ae3652dac8fca439f0ecbb'
 
 // ── world selection (argv) ─────────────────────────────────────────────────
 const argv = process.argv.slice(2)
@@ -1329,7 +1331,7 @@ async function bootWorldAndInstall() {
   const clone = spawnSync('git', ['clone', '--bare', '--branch', BRANCH, MAIN_REPO, REPO_GIT], { encoding: 'utf8', timeout: 120_000 })
   if (clone.status !== 0) die(`git clone --bare failed: ${String(clone.stderr ?? clone.stdout).slice(0, 400)}`)
   const clonedSha = spawnSync('git', ['--git-dir', REPO_GIT, 'rev-parse', `refs/heads/${BRANCH}`], { encoding: 'utf8' }).stdout.trim()
-  const shaOk = check('install', `S0 bare-clone tip == ${EXPECTED_BRANCH_SHA} (the accepted Commit-4 fix build with committed dist/composition)`, clonedSha === EXPECTED_BRANCH_SHA, `cloned=${clonedSha}`)
+  const shaOk = check('install', `S0 bare-clone tip == ${EXPECTED_BRANCH_SHA} (the accepted S1+S2+S5a fix build with committed dist/composition)`, clonedSha === EXPECTED_BRANCH_SHA, `cloned=${clonedSha}`)
   if (!shaOk) {
     die(`bare-clone tip mismatch: refusing to boot a world with the wrong plugin build (cloned=${clonedSha})`)
     return
@@ -2601,7 +2603,7 @@ async function main() {
   const porcelain = spawnSync('git', ['status', '--porcelain'], { cwd: TESTUSE, encoding: 'utf8' }).stdout
   check('s0', 'preflight: test-use working tree pristine (empty porcelain)', porcelain === '', porcelain.slice(0, 200))
   const wtRev = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: WORKTREE, encoding: 'utf8' })
-  check('s0', 'preflight: task worktree at the accepted S1+S2 fix tip (833c6999 = S1 58d30de + S2 673bb7c + S3 833c699 evidence-only)', wtRev.status === 0 && wtRev.stdout.trim() === EXPECTED_BRANCH_SHA, `HEAD=${wtRev.stdout.trim()}`)
+  check('s0', 'preflight: task worktree at the accepted S1+S2+S5a fix tip (5e16fa77 = S1 58d30de + S2 673bb7c + S3 833c699 evidence-only + S5a 5e16fa7 dist-glue placement fix)', wtRev.status === 0 && wtRev.stdout.trim() === EXPECTED_BRANCH_SHA, `HEAD=${wtRev.stdout.trim()}`)
   const cliVersion = spawnSync(process.execPath, [HOST_BIN, '--version'], { cwd: TESTUSE, encoding: 'utf8', timeout: 60_000 }).stdout.trim()
   check('s0', 'preflight: the test-use CLI reports 0.1.7-rc.1', cliVersion === '0.1.7-rc.1', `version=${cliVersion}`)
   // Committed install-surface artifact count (the installed plugin carries the

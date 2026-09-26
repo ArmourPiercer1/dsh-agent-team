@@ -1,0 +1,12 @@
+{
+  "memberInstanceId": "inst-05j17tm04d6o",
+  "memberChildSessionIdFromCreate": "session-team-child-baceb10416b500d8579c28282f28a375",
+  "childSessionId": "session-team-child-baceb10416b500d8579c28282f28a375",
+  "listMembersRow": {
+    "instanceId": "inst-05j17tm04d6o",
+    "templateId": "worker",
+    "label": "s5-worker--48-44",
+    "lifecycle": "RUNNING",
+    "childSessionId": "session-team-child-baceb10416b500d8579c28282f28a375"
+  }
+}

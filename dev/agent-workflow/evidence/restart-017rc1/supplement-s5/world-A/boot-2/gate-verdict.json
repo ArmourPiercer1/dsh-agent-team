@@ -1,0 +1,48 @@
+{
+  "gate": "pr31 §5 hard browser gate",
+  "verdict": "FAIL",
+  "failedStep": 10,
+  "expectedFailureStep": 10,
+  "prediction": "S3 NO-GO-C1 + Q2-FINDING: the published 0.1.7 client cannot clear the stuck failed generation without a reload — step 10 (composer enabled after the single click) is EXPECTED to fail. This FAIL is the documented finding, not a driver defect.",
+  "stepResults": [
+    {
+      "step": 5,
+      "name": "the fresh connected page opened the cold Team root from the UI session list",
+      "ok": true,
+      "note": "how=sessionTitle(prefix)(post-ungrouped) (pre-takeover reloads=0; pageLoadCount=1)",
+      "at": "2026-09-26T18:11:55.578Z"
+    },
+    {
+      "step": 7,
+      "name": "the page shows \"Session unavailable\" (会话不可用) with the composer disabled (the vetoed ordinary open's client state)",
+      "ok": true,
+      "note": "{\"bodyTextHead\":\"DSH Local Build\\n0.1.7-rc.1-46a7f68\\nNew Session\\nPlugins\\nWorkspaces\\nworkspace\\nNew Team\\nSettings\\nsession-rst017s5-dyn-2026-09-26T18-09-18\\nChat\\nTrajectory\\nTeam\\n[team-root-work requestToken=team-create:initial-work:s",
+      "at": "2026-09-26T18:11:55.609Z"
+    },
+    {
+      "step": 8,
+      "name": "\"Open in Team mode / Back to Leader\" (以 Team 模式打开) located in the a11y tree and clicked EXACTLY once",
+      "ok": true,
+      "note": "how=team-tab-button takeoverClicks=1",
+      "at": "2026-09-26T18:12:13.846Z"
+    },
+    {
+      "step": 9,
+      "name": "NO page reload / NO blank-navigation / NO session switch-away-and-back (structural — the action log never did any of these)",
+      "ok": true,
+      "note": "reloads=0 blank=0 switches=0 pageLoadCount=1",
+      "at": "2026-09-26T18:12:13.880Z"
+    },
+    {
+      "step": 10,
+      "name": "the composer is ENABLED after the single click WITHOUT any reload/blank/switch (GATE STEP — expected to FAIL)",
+      "ok": false,
+      "note": "{\"bodyTextHead\":\"DSH Local Build\\n0.1.7-rc.1-46a7f68\\nNew Session\\nPlugins\\nWorkspaces\\nworkspace\\nUngrouped\\nc4 title\\n2min\\nNew Team\\nSettings\\nc4 title\\nChat\\nTrajectory\\nTeam\\nTimeline\\n\\nNo delegations yet\\n\\nMembers\\nleader · 1 active\\nOpen in Team mode / back to Leader\\nOp",
+      "at": "2026-09-26T18:12:19.929Z"
+    }
+  ],
+  "noReload": true,
+  "noBlank": true,
+  "noSwitch": true,
+  "takeoverClicks": 1
+}

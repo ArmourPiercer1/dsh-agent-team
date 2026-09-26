@@ -1,0 +1,26 @@
+{
+  "completed": false,
+  "failedStep": 5,
+  "steps": [
+    {
+      "step": 5,
+      "name": "the fresh connected page opened the cold Team root from the UI session list",
+      "ok": false,
+      "note": "how=no-match (pre-takeover reloads=0; pageLoadCount=1)",
+      "at": "2026-09-26T17:50:01.043Z"
+    }
+  ],
+  "pageLoadCount": 1,
+  "reloads": 0,
+  "blankNavigations": 0,
+  "sessionSwitches": 0,
+  "takeoverClicks": 0,
+  "domState": null,
+  "screenshots": [
+    "01-landing.png",
+    "01d-main-screen.png",
+    "02-after-open.png"
+  ],
+  "pageErrors": [],
+  "finishedAt": "2026-09-26T17:50:01.044Z"
+}

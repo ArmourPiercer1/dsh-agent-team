@@ -1,0 +1,98 @@
+DSH Local Build
+0.1.7-rc.1-46a7f68
+New Session
+Plugins
+Workspaces
+workspace
+New Team
+Settings
+session-rst017s5-dyn-2026-09-26T18-09-18
+Chat
+Trajectory
+Team
+Timeline
+
+No delegations yet
+
+Members
+leader · 1 active
+Open in Team mode / back to Leader
+Open in ordinary mode
+Running
+No action yet
+Worker · 0 active
++
+No instances yet
+Governance
+Compatibility
+✓ Compatible
+0 warning(s) · 0 fatal · 0 acknowledged
+Generation 1
+Last probed at 2026-09-26T18:09:24.297Z
+Review
+Recheck
+Acknowledge warning
+
+Rechecking starts a new compatibility generation; old acknowledgements never cover it.
+
+Policy [ default ]
+
+Policy controls the Team's current runtime governance envelope. It does not represent task progress.
+
+Review
+Commit
+Effective config
+leader
+model
+deepseek-official/rst017s5-model-2026-09-26T18-09-18
+capability
+Inherited
+workspace
+/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-s5-2026-09-26T18-09-18-A/workspace
+blueprint
+Locked
+autonomy
+—
+autonomy-overlay
+Inherited
+model
+tools
+permissions
+skills
+mcp
+Allow
+Deny
+Show override
+Set override
+Reset override
+Activity & Progress
+No activity progress yet
+Team events
+All
+Team
+Members
+Lifecycle
+Messages
+Controls
+Policy
+Compatibility
+Progress
+All
+leader
+leader
+Worker
+02:09:24
+Work admitted
+{"at":"2026-09-26T18:09:24.302Z","caller":{"humanId":"session-rst017s5-boot-2026-09-26T18-09-18","kind":"human"},"payloadFingerprint":"sha256:d6f9db4cf5f2add5541d7a6df6c5cad80dec38946720e53ee9dae3bf8f623738","prompt":"S5 dynamic team created. Acknowledge with the token RST017S5DONE_2026-09-26T18-09-18 and stop.","requestToken":"team-create:initial-work:sha256:d6f9db4cf5f2add5541d7a6df6c5cad80dec38946720e53ee9dae3bf8f623738","rootSessionId":"session-rst017s5-dyn-2026-09-26T18-09-18","targetKind":"root"}
+02:09:44
+team-root-work-delivered
+team-root-work-delivered
+Team
+ · 
+1 running
+Session unavailable
+Workspace Write
+deepseek-official/rst017s5-model-2026-09-26T18-09-18
+1 turns 1 steps·40000 tok/s
+2K tok·Cache hit 0%
+0%

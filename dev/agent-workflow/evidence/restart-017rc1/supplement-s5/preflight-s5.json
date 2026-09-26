@@ -1,13 +1,13 @@
 {
-  "stamp": "2026-09-26T17-25-50",
-  "at": "2026-09-26T17:25:50.903Z",
+  "stamp": "2026-09-26T18-09-18",
+  "at": "2026-09-26T18:09:18.483Z",
   "testUse": {
     "pin": "46a7f68b0922371ce7144b668b90e377d8e799f4",
     "head": "46a7f68b0922371ce7144b668b90e377d8e799f4",
     "porcelain": "clean"
   },
-  "worktreeHead": "833c69997a2d1893e69753b9ab697488e82efe8a",
-  "expectedBranchSha": "833c69997a2d1893e69753b9ab697488e82efe8a",
+  "worktreeHead": "5e16fa774d1793ab00ae3652dac8fca439f0ecbb",
+  "expectedBranchSha": "5e16fa774d1793ab00ae3652dac8fca439f0ecbb",
   "cliVersion": "0.1.7-rc.1",
   "artifactCount": 1196,
   "artifactCheckExit": 0,

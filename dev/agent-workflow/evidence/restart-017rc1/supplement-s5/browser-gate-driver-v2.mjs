@@ -121,20 +121,39 @@ const dump = async (name) => {
 const readDomState = async () => {
   try {
     return await page.evaluate(() => {
-      const ta = [...document.querySelectorAll('textarea')].filter((t) => t.offsetParent !== null)
-      const ce = [...document.querySelectorAll('[contenteditable="true"]')].filter((t) => t.offsetParent !== null)
-      const pick = ta[ta.length - 1] || ce[ce.length - 1] || null
+      // The composer is an a11y "textbox". In the DOM it may be a <textarea>,
+      // a [contenteditable], an <input>, or a [role=textbox]. Query ALL
+      // textbox-like elements and pick the last visible one (the composer is
+      // the last textbox on the page). (The pre-fix query only covered
+      // textarea + contenteditable, so an <input>/<role=textbox> composer was
+      // invisible to it → composerCount 0 → step 7's "composer disabled"
+      // assertion could never be evaluated.)
+      const vis = (el) => el.offsetParent !== null
+      const ta = [...document.querySelectorAll('textarea')].filter(vis)
+      const ce = [...document.querySelectorAll('[contenteditable="true"], [contenteditable=""]')].filter(vis)
+      const inp = [...document.querySelectorAll('input[type="text"], input:not([type])')].filter(vis)
+      const rtb = [...document.querySelectorAll('[role="textbox"]')].filter(vis)
+      const all = [...ta, ...ce, ...inp, ...rtb]
+      const pick = all[all.length - 1] || null
       const body = (document.body?.innerText || '')
+      const ariaDisabled = (el) => el.getAttribute('aria-disabled') === 'true'
+      const disabledOf = (el) => el.disabled === true || ariaDisabled(el) || (el.tagName === 'DIV' && el.isContentEditable === false)
+      const enabledOf = (el) => {
+        if (!vis(el) || el.disabled === true || ariaDisabled(el)) return false
+        if (el.tagName === 'TEXTAREA') return !el.disabled
+        if (el.tagName === 'DIV') return el.isContentEditable
+        return true
+      }
       return {
         bodyTextHead: body.slice(0, 600),
         sessionUnavailable: body.includes('Session unavailable'),
         sessionUnavailableZh: body.includes('会话不可用'),
         composerTag: pick ? pick.tagName : null,
-        composerDisabled: pick ? (pick.disabled === true || pick.getAttribute('aria-disabled') === 'true' || (pick.tagName === 'DIV' && pick.isContentEditable === false)) : null,
-        composerEditable: pick ? (pick.tagName === 'TEXTAREA' ? !pick.disabled : pick.isContentEditable) : null,
-        composerEnabled: pick ? (pick.tagName === 'TEXTAREA' ? !pick.disabled && pick.offsetParent !== null : pick.isContentEditable && pick.offsetParent !== null) : false,
-        composerVisible: pick ? (pick.offsetParent !== null) : false,
-        composerCount: ta.length + ce.length,
+        composerDisabled: pick ? disabledOf(pick) : null,
+        composerEditable: pick ? (pick.tagName === 'TEXTAREA' ? !pick.disabled : (pick.tagName === 'DIV' ? pick.isContentEditable : true)) : null,
+        composerEnabled: pick ? enabledOf(pick) : false,
+        composerVisible: pick ? vis(pick) : false,
+        composerCount: all.length,
       }
     })
   } catch (e) { return { error: String(e.message ?? e).slice(0, 200) } }
@@ -179,7 +198,12 @@ async function runGate() {
         await fc.setFiles([workspacePath])
         await sleep(8000)
       } else {
-        const homeDir = (workspacePath || '').split('/').filter(Boolean).pop()
+        // The workspace path ends in "/workspace", so the world-dir name is
+        // the SECOND-to-last segment (the last is the literal "workspace").
+        // (The pre-fix `.pop()` returned "workspace" — the leaf — so the walk
+        // skipped the world-dir level and Open picked the wrong directory.)
+        const parts = (workspacePath || '').split('/').filter(Boolean)
+        const homeDir = parts.length >= 2 && parts[parts.length - 1] === 'workspace' ? parts[parts.length - 2] : ''
         const segs = homeDir ? ['dsh-plugins', 'dsh-agent-team', 'tests', 'homes', homeDir, 'workspace'] : []
         if (segs.length === 0) log('onboarding: no workspace path — cannot complete the picker (best-effort)')
         for (const seg of segs) {
@@ -208,11 +232,36 @@ async function runGate() {
   {
     let opened = false
     let how = 'no-match'
+    // The session-list row renders as "<title> <relative-time>" (e.g.
+    // "c4 title 1min"), so an EXACT title match never hits; the doneToken
+    // (last-message preview) is not shown on the row either. Match the title
+    // as a PREFIX (word-anchored) and, as a fallback, as a plain substring —
+    // both are real row text, not a DOM hack.
+    const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const byToken = hold.doneToken ? page.getByText(hold.doneToken).first() : null
-    const byTitle = hold.sessionTitle ? page.getByText(hold.sessionTitle, { exact: true }).first() : null
-    const candidates = []
-    if (byToken && await byToken.count().catch(() => 0) > 0) candidates.push({ how: 'doneToken', loc: byToken })
-    if (byTitle && await byTitle.count().catch(() => 0) > 0) candidates.push({ how: 'sessionTitle', loc: byTitle })
+    const byTitle = hold.sessionTitle ? page.getByText(new RegExp('^' + esc(hold.sessionTitle) + '(\\s|$)')).first() : null
+    const byTitleSub = hold.sessionTitle ? page.getByText(hold.sessionTitle).first() : null
+    const rowLocs = [byTitle, byTitleSub, byToken].filter(Boolean)
+    // The session list renders LAZILY after the workspace opens (the 01d dump
+    // shows an empty list; the row appears a few seconds later). WAIT for the
+    // cold root row to become visible before building the candidate list —
+    // otherwise the .count() checks race the render and every candidate comes
+    // up empty (a "no-match" false-negative, NOT a product finding).
+    const waitRow = async (ms) => {
+      for (const loc of rowLocs) {
+        try { await loc.waitFor({ state: 'visible', timeout: ms }); log(`step5: row rendered (waited) — proceeding`); return true } catch { /* try next */ }
+      }
+      return false
+    }
+    await waitRow(25_000)
+    const buildCandidates = async () => {
+      const c = []
+      if (byToken && await byToken.count().catch(() => 0) > 0) c.push({ how: 'doneToken', loc: byToken })
+      if (byTitle && await byTitle.count().catch(() => 0) > 0) c.push({ how: 'sessionTitle(prefix)', loc: byTitle })
+      if (byTitleSub && await byTitleSub.count().catch(() => 0) > 0) c.push({ how: 'sessionTitle(substring)', loc: byTitleSub })
+      return c
+    }
+    let candidates = await buildCandidates()
     for (const c of candidates) {
       try {
         if (await c.loc.isVisible().catch(() => false)) {
@@ -224,10 +273,13 @@ async function runGate() {
     }
     if (!opened) {
       // The team roots land in the collapsed "Ungrouped" bucket. Expand it
-      // like a user would (a real row click, not a DOM hack), then retry.
+      // like a user would (a real row click, not a DOM hack), then re-wait and
+      // rebuild the candidate list (the row may render after the expand).
       log('step5: row not visible — expanding the Ungrouped bucket, then re-searching')
       const ungrouped = page.getByText('Ungrouped', { exact: true }).first()
-      if (await ungrouped.count().catch(() => 0) > 0) { await ungrouped.click({ timeout: 8000 }).catch(() => {}); await sleep(5000) }
+      if (await ungrouped.count().catch(() => 0) > 0) { await ungrouped.click({ timeout: 8000 }).catch(() => {}); await sleep(3000) }
+      await waitRow(10_000)
+      candidates = await buildCandidates()
       for (const c of candidates) {
         try {
           if (await c.loc.isVisible().catch(() => false)) { await c.loc.scrollIntoViewIfNeeded().catch(() => {}); await c.loc.click({ timeout: 15_000 }); opened = true; how = `${c.how}(post-ungrouped)`; break }

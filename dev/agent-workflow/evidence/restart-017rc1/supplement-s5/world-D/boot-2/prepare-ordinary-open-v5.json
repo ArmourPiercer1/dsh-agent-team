@@ -1,0 +1,25 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "c4-permit-f31tok4q6b",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "rootSessionId": "session-rst017s5-dyn-2026-09-26T17-59-39",
+          "permitted": true
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "team.prepareOrdinaryOpen",
+          "endpoint": "team.prepareOrdinaryOpen",
+          "contractVersion": 5,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  }
+}

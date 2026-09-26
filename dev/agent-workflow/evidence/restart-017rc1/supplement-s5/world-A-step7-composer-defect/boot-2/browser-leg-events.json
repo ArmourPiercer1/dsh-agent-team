@@ -1,0 +1,91 @@
+{
+  "created": [
+    {
+      "t": "2026-09-26T18:07:48.124Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "source": "resume",
+      "agentId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "veto": false,
+      "permitted": false
+    },
+    {
+      "t": "2026-09-26T18:07:48.154Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "source": "resume",
+      "agentId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "veto": false,
+      "permitted": false
+    }
+  ],
+  "disposed": [
+    {
+      "t": "2026-09-26T18:07:48.127Z",
+      "kind": "agent/disposed",
+      "sessionId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "agentId": "session-rst017s5-dyn-2026-09-26T18-05-22"
+    },
+    {
+      "t": "2026-09-26T18:07:48.160Z",
+      "kind": "agent/disposed",
+      "sessionId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "agentId": "session-rst017s5-dyn-2026-09-26T18-05-22"
+    }
+  ],
+  "errors": [
+    {
+      "t": "2026-09-26T18:07:48.128Z",
+      "kind": "api-session/error",
+      "sessionId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "message": "resume failed for session \"session-rst017s5-dyn-2026-09-26T18-05-22\": TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \"session-rst017s5-dyn-2026-09-26T18-05-22\""
+    }
+  ],
+  "timeline": [
+    {
+      "t": "2026-09-26T18:06:21.920Z",
+      "kind": "agent/created",
+      "sessionId": "session-1b01fe0d-9445-4d6a-bbb4-6891cb2d99c3",
+      "source": "startup",
+      "agentId": "session-1b01fe0d-9445-4d6a-bbb4-6891cb2d99c3",
+      "veto": false,
+      "permitted": false
+    },
+    {
+      "t": "2026-09-26T18:07:48.124Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "source": "resume",
+      "agentId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "veto": false,
+      "permitted": false
+    },
+    {
+      "t": "2026-09-26T18:07:48.127Z",
+      "kind": "agent/disposed",
+      "sessionId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "agentId": "session-rst017s5-dyn-2026-09-26T18-05-22"
+    },
+    {
+      "t": "2026-09-26T18:07:48.128Z",
+      "kind": "api-session/error",
+      "sessionId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "message": "resume failed for session \"session-rst017s5-dyn-2026-09-26T18-05-22\": TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \"session-rst017s5-dyn-2026-09-26T18-05-22\""
+    },
+    {
+      "t": "2026-09-26T18:07:48.154Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "source": "resume",
+      "agentId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "veto": false,
+      "permitted": false
+    },
+    {
+      "t": "2026-09-26T18:07:48.160Z",
+      "kind": "agent/disposed",
+      "sessionId": "session-rst017s5-dyn-2026-09-26T18-05-22",
+      "agentId": "session-rst017s5-dyn-2026-09-26T18-05-22"
+    }
+  ]
+}

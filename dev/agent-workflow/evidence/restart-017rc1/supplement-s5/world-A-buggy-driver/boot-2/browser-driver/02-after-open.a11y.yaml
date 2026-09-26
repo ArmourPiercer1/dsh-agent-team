@@ -1,0 +1,29 @@
+- button "New session"
+- button "Collapse sidebar"
+- button "New session": New Session
+- navigation "Global panels":
+  - button "Plugins"
+- text: Workspaces
+- button "Search sessions"
+- textbox "Search session names"
+- button "View options"
+- button "Add workspace"
+- tree "Sessions":
+  - treeitem "homes" [expanded]
+  - treeitem "New Session" [selected]
+  - treeitem "Ungrouped New session in Ungrouped" [expanded]:
+    - text: Ungrouped
+    - button "New session in Ungrouped"
+  - treeitem "c4 title 1min"
+- button "New Team"
+- button "Settings"
+- banner:
+  - button "Open right sidebar"
+- text: Into the Unknown Preview
+- button "Choose workspace": homes
+- button "Standard mode"
+- textbox "Describe what you want to build, / commands, @ files or sessions"
+- button "Add files or run commands"
+- 'button "Access mode, current: Workspace Write"': Workspace Write
+- button "Select model, current DeepSeek-V41-Flash, reasoning effort High": DeepSeek-V41-Flash High
+- button "Send message" [disabled]

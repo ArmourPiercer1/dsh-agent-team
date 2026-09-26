@@ -161,3 +161,28 @@ boot (the exact-claim fence passes its own bootstrap) and proceed to the
 strict §5 browser gate (step 10 still expected FAIL per S3 NO-GO-C1 — the
 same-page closure remains the documented decision point; B/C/D/E/F legs run
 to completion).
+
+## 6. Addendum — S5a tip confirmed on the real host (2026-09-26T17:47–17:49Z)
+
+Before the subagent's full A–F re-run settled, the main agent ran a surgical
+boot probe (scratch home `rst017-s5verify-2026-09-26T17-47-40` — copied
+profile/node_modules from the retained blocked home, the S5a dist glue
+byte-installed into its node_modules, fresh rootSessionId, wiped runtime
+state; ports 3493/3498; home deleted after the probe per TEST_METHODS §7):
+
+- **Boot 1 SETTLED without `bootstrap FAILED`** (instance log ends at
+  `remote mount: MOUNTED channel=/team-remote`; the blocked run logged the
+  fence FATAL on the next line in the identical position) — the
+  exact-claim fence passed the plugin's own bootstrap with the S5a glue.
+- Corroborating real-host evidence from the subagent's re-run itself
+  (passive fence-probe row, `world-A/boot-1/probe-events/
+  fence-probe-events.jsonl`): World A boot root
+  `session-rst017s5-boot-2026-09-26T17-48-44` —
+  `17:48:50.108 agent/created source=startup veto=false` with **NO**
+  `agent/disposed` (the blocked run's created→disposed pair was 21 ms
+  apart); the dynamic root
+  `session-rst017s5-dyn-2026-09-26T17-48-44` likewise `veto=false`
+  (created→pass, Team-mode leg activation also claimed correctly).
+
+The S5a fix is confirmed effective on the real host; the full A–F verdict
+await the kit run's completion (this directory, fresh evidence).

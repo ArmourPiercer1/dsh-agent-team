@@ -1,0 +1,16 @@
+{
+  "created": [],
+  "disposed": [],
+  "errors": [],
+  "timeline": [
+    {
+      "t": "2026-09-26T17:49:47.961Z",
+      "kind": "agent/created",
+      "sessionId": "session-b36f169e-4904-40e2-b4e5-db57cca2c7a8",
+      "source": "startup",
+      "agentId": "session-b36f169e-4904-40e2-b4e5-db57cca2c7a8",
+      "veto": false,
+      "permitted": false
+    }
+  ]
+}

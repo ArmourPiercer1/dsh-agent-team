@@ -1,0 +1,26 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "s5-f1e2-14-xyle0idd4p",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "rootSessionId": "session-rst017s5-f1-2026-09-26T17-48-44",
+          "mode": "team",
+          "live": true
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "team.ensureRootLive",
+          "endpoint": "team.ensureRootLive",
+          "contractVersion": 3,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  }
+}
