@@ -49,7 +49,7 @@ import { createRemoteMemberHandler } from './member.js';
 import { createRemoteOverrideHandler } from './override.js';
 import { createRemotePolicyStateHandler } from './policy-state.js';
 import { createRemoteTeamHandler } from './team.js';
-/** Wire the sixteen ports into the nine category handlers. */
+/** Wire the eighteen ports into the nine category handlers. */
 function buildCategoryHandlers(deps) {
     return {
         [REMOTE_CATEGORIES.CATALOG]: createRemoteCatalogHandler(deps.catalog),
@@ -61,6 +61,7 @@ function buildCategoryHandlers(deps) {
             teamRoots: deps.teamRoots,
             teamEnsureRootLive: deps.teamEnsureRootLive,
             teamResolveControl: deps.teamResolveControl,
+            teamPrepareOrdinaryOpen: deps.teamPrepareOrdinaryOpen,
             projection: deps.projection,
             ledger: deps.ledger,
         }),
@@ -292,6 +293,16 @@ export const REMOTE_BACKING_ERROR_CODES = [
     'CONTROL_RESOLVER_NOT_AUTHORIZED',
     'CONTROL_REQUEST_STALE',
     'CONTROL_EXTERNAL_POLICY_DENIED',
+    // C1 (restart-0.1.7-rc.1 recovery, remote contract v5 — guide §10.2):
+    // the v5-only team.prepareOrdinaryOpen wire vocabulary. The S6 port
+    // emits TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE (the one-shot
+    // ordinary-open permit port is absent from the host wiring — fail
+    // closed, never a silent success; the armed-permit contract of guide
+    // §10.2 is host-side and typed, so the code must reach remote callers
+    // unmapped). TEAM_REMOTE_FOREIGN_TEAM (above, s6-principal) is the
+    // other reachable typed failure of the same port (a root outside the
+    // caller's team — assertBoundRoot).
+    'TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE',
 ];
 /** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */
 export const REMOTE_BACKING_ERROR_CODE_SET = new Set(REMOTE_BACKING_ERROR_CODES);

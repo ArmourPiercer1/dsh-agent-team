@@ -1,0 +1,31 @@
+=== remote ===
+ Test Files  13 passed (13)
+      Tests  192 passed (192)
+RC=0
+=== client ===
+ Test Files  47 passed (47)
+      Tests  668 passed (668)
+RC=0
+=== runtime ===
+ ❯ test/p6t3-mediation.test.ts:415:29
+ FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+ ❯ test/p6t3-mediation.test.ts:429:43
+ FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+ ❯ test/p6t3-mediation.test.ts:471:18
+ FAIL  test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+ ❯ test/p6t3-restart.test.ts:404:18
+ FAIL  test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+ ❯ assertMessagingCode test/p6t3-helpers.ts:358:11
+ ❯ test/p6t3-restart.test.ts:451:21
+ Test Files  6 failed | 187 passed (193)
+      Tests  8 failed | 2140 passed (2148)
+RC=0
+=== typecheck+build ===
+remote-tc=0
+client-tc=0
+runtime-tc=0
+remote-build=0
+client-build=0
+runtime-build=0
+=== artifacts ===
+[check-artifacts-committed] OK: 1180 files; committed install-surface artifacts match the fresh build

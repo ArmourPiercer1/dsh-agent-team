@@ -610,40 +610,92 @@ export function applyTeamMount(
   // `uiWorkspace.openSession` (0.1.5: `ctx.sessions.open`) — on a typed
   // ensure failure the session is NOT opened (never a silent open, never
   // a silent adoption) and the typed error is returned for the UI's
-  // explicit error lane. On success the per-root open-mode mark is set
-  // ('team'); the session switch itself drives the badge re-render (the
-  // sessions.list effect below keeps the map honest on every switch).
-  // NO remote field, NO push/event/polling.
+  // explicit error lane (no error swallowing). On success the per-root
+  // open-mode mark is set ('team'); the session switch itself drives the
+  // badge re-render (the sessions.list effect below keeps the map honest
+  // on every switch). NO remote field, NO push/event/polling.
+  //
+  // C1 (restart-0.1.7-rc.1 recovery, verdict gate-5 / Q2 finding): after
+  // a SUCCESSFUL takeover the mount ALSO re-pulls the host-authoritative
+  // session list (the D-3 robust-open seam: `ctx.sessions.refresh()`,
+  // whose list increment may lag the RPC response). The Q2 browser
+  // finding: a cold Team root ordinary-open → fence veto leaves the
+  // SPA's session-state sticky (the list-driven main-selection /
+  // session-binding derivation in the upstream ui-session publishMain
+  // order holds a stale window — the upstream doc's own "catalog
+  // refresh window" note); the successful Team-mode takeover does NOT
+  // clear that state within the same page load, so the composer stays
+  // locked ("会话不可用") until the user reloads. The refresh re-pulls
+  // the fresh host list, the list re-publishes, the main-selection /
+  // session-binding derivation re-runs with the current row present —
+  // the veto's error/unavailable state reconciles WITHOUT a reload.
+  // The takeover FAILURE path never reaches this step (no open, no
+  // refresh — the typed error lane stays loud, nothing is swallowed).
+  // No new global store, no private store reach: the public `sessions`
+  // seam only (CORE PATCH BUDGET = 0).
   const openTeamMode = async (rootSessionId: string): Promise<TeamOpenModeOutcome> => {
     const result = await teamRemote.teamEnsureRootLiveV3(rootSessionId)
     if (result.ok === false) {
-      // The ensure failed typed: never open, never mark (a stale 'team'
-      // mark from a prior attempt of the same root is cleared too).
+      // The ensure failed typed: never open, never mark, never refresh
+      // (a stale mark from a prior attempt of the same root is cleared
+      // too; the typed failure rides the UI's explicit error lane).
       openModeByRoot.delete(rootSessionId)
       return { ok: false, code: result.error.code, message: result.error.message }
     }
     // (b) only AFTER the guarantee settled: the native switch.
     ctx.uiWorkspace.openSession(rootSessionId)
     openModeByRoot.set(rootSessionId, 'team')
+    // (c) gate-5 (Q2 finding): the post-takeover session-state reconcile
+    // (above) — the composer must be usable again WITHOUT a reload.
+    await ctx.sessions.refresh()
     return { ok: true }
   }
 
   // (9.0c) D3 (Team D1-D6 repair v2, D6) — the EXPLICIT ordinary-mode
-  // fallback entry ("以普通模式打开", v2 plan §1.1.3): the EXISTING
-  // `openSession` verbatim (0.1.7: the pure `uiWorkspace.openSession`) — NO
-  // team-remote call (no `team.ensureRootLive`, no other `team.*`
-  // method), NO `session/create`-with-preset (A3 Q1 caveat: that path is
-  // rejected on a live Team root), NO ensure-live step, NO list refresh.
-  // The entry is a promise of "no Team ensure is performed / team_* tools
-  // are NOT guaranteed" — NOT a tool-removal operation (A3 Q1 caveat 2:
-  // a root whose agent is ALREADY live with the Team setup is adopted
-  // as-is; the `team_*` tools remain registered — the mode badge shows
-  // which entry was used, so the UI never claims a removal). Open first,
-  // mark after: the session switch (and the reset effect it drives)
-  // settles before the mode fact is written, and a failed open (unknown
-  // id — the seam's own throw) leaves the prior mark intact (a failed
-  // switch is no switch).
-  const openOrdinaryMode = (rootSessionId: string): void => {
+  // fallback entry ("以普通模式打开", v2 plan §1.1.3), REWIRE for the C1
+  // restart-0.1.7-rc.1 recovery (guide §10.2 client): the AWAITED
+  // two-phase sequence (the guide snippet, verbatim shape): (a) the v5
+  // `team.prepareOrdinaryOpen` one-shot permit MUST settle BEFORE (b)
+  // the native `openSession` — a typed permit failure throws (the UI's
+  // async error lane) and the session is NOT opened and NOT marked;
+  // (b) only after the permit settled, the EXISTING `openSession`
+  // verbatim (0.1.7: the pure `uiWorkspace.openSession`) and the
+  // 'ordinary' mode mark.
+  //
+  // SEMANTICS (C4 / A3 Q1 caveat 2): the entry promises "no Team ensure
+  // is performed / activated as an ordinary Session Agent" — it is NOT a
+  // tool-removal operation (a root whose agent is ALREADY live with the
+  // Team setup is adopted as-is; the `team_*` tools remain registered —
+  // the mode badge shows which entry was used, so the UI never claims a
+  // removal). The prepare permit is a Team CONTROL-PLANE RPC (the fence's
+  // one-shot activation-allow fact) — this entry therefore performs ZERO
+  // Team ensure and ZERO Team Agent side effects, but it is NOT
+  // "zero team.* remote calls" (the prepare permit itself is one). NO
+  // `session/create`-with-preset (A3 Q1 caveat: that path is rejected on
+  // a live Team root), NO ensure-live step, NO list refresh.
+  //
+  // Open first, mark after: the session switch (and the reset effect it
+  // drives) settles before the mode fact is written, and a failed native
+  // open (unknown id — the seam's own throw) leaves the prior mark
+  // intact (a failed switch is no switch). A native-open failure also
+  // leaves the armed permit to its TTL expiry — there is NO revoke RPC
+  // (guide §10.2: the armed permit simply expires).
+  const openOrdinaryMode = async (rootSessionId: string): Promise<void> => {
+    // (a) the one-shot ordinary-activation permit (v5 control-plane RPC —
+    // the ONLY team.* call of this entry; NO Team ensure, NO Team Agent
+    // side effect).
+    const permit = await teamRemote.teamPrepareOrdinaryOpenV5(rootSessionId)
+    if (permit.ok === false) {
+      // Typed permit failure (foreign root / no fence armed / port
+      // unavailable): never open, never mark (a stale mark from a prior
+      // attempt of the same root is cleared too); the typed error rides
+      // the UI's async error lane (no swallowing).
+      openModeByRoot.delete(rootSessionId)
+      throw new Error(`${permit.error.code}: ${permit.error.message}`)
+    }
+    // (b) only AFTER the permit settled: the native switch, then the
+    // mode mark (a failed open throws — no mark, the permit lapses by
+    // TTL).
     openSession(rootSessionId)
     openModeByRoot.set(rootSessionId, 'ordinary')
   }
@@ -897,10 +949,14 @@ export function applyTeamMount(
     // D2 (Team D1-D6 repair v2, D6): the explicit open-in-Team-mode entry
     // (the AWAITED two-phase sequence).
     openTeamMode,
-    // D3 (Team D1-D6 repair v2, D6): the explicit ordinary-mode fallback
-    // entry (the pure native open — no team-remote call, no ensure-live
-    // step; its promise is "no Team ensure is performed / team_* tools
-    // are NOT guaranteed", never a tool-removal claim).
+    // D3 (Team D1-D6 repair v2, D6) — C1 rewire (guide §10.2): the
+    // explicit ordinary-mode fallback entry (the AWAITED two-phase
+    // sequence — the v5 `team.prepareOrdinaryOpen` one-shot permit, then
+    // the pure native open; ZERO Team ensure / ZERO Team Agent side
+    // effects — the prepare permit is the entry's single Team
+    // control-plane RPC, never an ensure; its promise is "no Team ensure
+    // is performed / activated as an ordinary Session Agent", never a
+    // tool-removal claim).
     openOrdinaryMode,
     // D2/D3: the per-root client-local open-mode read face — the badge
     // source showing WHICH explicit entry was used ('team' / 'ordinary')

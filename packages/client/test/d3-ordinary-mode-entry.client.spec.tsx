@@ -7,16 +7,21 @@
  *  - the TeamView ZERO STATE persisted-roots picker rows;
  *  - the members section ROOT/LEADER row (the leader-kind group row).
  *
- * Coverage (D3 task card, client-UI half):
+ * Coverage (D3 task card, client-UI half; C1 restart-0.1.7-rc.1 rewire,
+ * guide §10.2 + §13.5):
  *  - the entry RENDERS on the picker rows and on the leader row, with
  *    the locale copy (zh + en) and triggers the injected
  *    `openOrdinaryMode` with the row's root id (the face-only trigger —
- *    the pure native open belongs to the mount, pinned in
+ *    the AWAITED two-phase sequence — the v5 `team.prepareOrdinaryOpen`
+ *    permit BEFORE the native open — belongs to the mount, pinned in
  *    d3-open-ordinary-mode.test.ts);
- *  - the entry copy carries the SEMANTIC promise (A3 Q1 caveat 2):
- *    "no Team ensure is performed / team_* tools are NOT guaranteed"
- *    (the title hint, zh + en) and claims NO tool removal (the copy must
- *    not say the tools are removed — a live Team agent is adopted as-is);
+ *  - the entry copy carries the C4 SEMANTIC promise: "no Team ensure is
+ *    performed / activated as an ordinary Session Agent" (the title
+ *    hint, zh + en) and claims NO tool removal (the copy must not say
+ *    the tools are removed — a live Team agent is adopted as-is);
+ *  - the entry's settled REJECTION renders the async error note
+ *    (`data-team-ordinary-open-error`, the typed `${code}: ${message}`
+ *    verbatim — never a silent failure, never swallowed);
  *  - the mode badge shows WHICH entry was used (v2 plan §1.1.5):
  *    'ordinary' ('普通模式' / 'Ordinary mode') for this entry, 'team'
  *    ('Team 模式' / 'Team mode') for openTeamMode (D2 state), absent for
@@ -165,7 +170,7 @@ describe('TeamView: the D3 ordinary-mode entry (zero-state picker rows)', () => 
   it('renders the explicit ordinary entry on each persisted-roots row (zh) and triggers openOrdinaryMode with the row root id', async () => {
     const roots = makeRootsFace(() => Promise.resolve(okV3({ roots: [ROW_A] }, 'team.listRoots')))
     const openTeamMode = vi.fn(async (): Promise<TeamOpenModeOutcome> => ({ ok: true }))
-    const openOrdinaryMode = vi.fn()
+    const openOrdinaryMode = vi.fn(() => Promise.resolve())
     const teamOpenMode = vi.fn(() => null as 'team' | 'ordinary' | null)
     const base = viewProps()
     const view = render(<TeamView {...{ ...base, roots, openTeamMode, openOrdinaryMode, teamOpenMode }} />)
@@ -194,7 +199,7 @@ describe('TeamView: the D3 ordinary-mode entry (zero-state picker rows)', () => 
 
   it('the ordinary entry copy carries the semantic promise (zh) and claims NO tool removal', async () => {
     const roots = makeRootsFace(() => Promise.resolve(okV3({ roots: [ROW_A] }, 'team.listRoots')))
-    const openOrdinaryMode = vi.fn()
+    const openOrdinaryMode = vi.fn(() => Promise.resolve())
     const view = render(
       <TeamView {...{ ...viewProps(), roots, openOrdinaryMode }} />,
     )
@@ -204,19 +209,48 @@ describe('TeamView: the D3 ordinary-mode entry (zero-state picker rows)', () => 
     const entry = view.container
       .querySelector<HTMLButtonElement>('[data-team-root-row][data-root-session-id="root-session-d3a"] [data-team-ordinary-open-root]')
     if (entry == null) throw new Error('the picker-row ordinary entry did not render')
-    // the promise: no Team ensure is performed / team_* tools NOT guaranteed
-    expect(entry.title).toBe('不执行 Team ensure，不保证 team_* 工具')
+    // the promise: no Team ensure is performed / activated as an ordinary
+    // Session Agent (C4 — the prepare permit is a control-plane RPC, not a
+    // tool-removal claim)
+    expect(entry.title).toBe('不执行 Team ensure；以普通 Session Agent 激活')
     // the copy must NOT claim a tool removal (A3 Q1 caveat 2: a live Team
     // agent is adopted as-is — the entry is a guarantee, not a removal)
     expect(entry.textContent ?? '').not.toContain('移除')
     expect(entry.title).not.toContain('移除')
+  })
+
+  it('a settled rejection renders the async error note (the typed code + message verbatim — never swallowed)', async () => {
+    const roots = makeRootsFace(() => Promise.resolve(okV3({ roots: [ROW_A] }, 'team.listRoots')))
+    // the mount's face throws the `${code}: ${message}` error (the async
+    // error lane) when the v5 permit settles typed-rejected.
+    const openOrdinaryMode = vi.fn(
+      () => Promise.reject(new Error('TEAM_REMOTE_FOREIGN_TEAM: root is not inside this team session')),
+    )
+    const view = render(
+      <TeamView {...{ ...viewProps(), roots, openOrdinaryMode }} />,
+    )
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-team-roots-list]')).not.toBeNull()
+    })
+    const entry = view.container
+      .querySelector<HTMLButtonElement>('[data-team-root-row][data-root-session-id="root-session-d3a"] [data-team-ordinary-open-root]')
+    if (entry == null) throw new Error('the picker-row ordinary entry did not render')
+    fireEvent.click(entry)
+    const note = await vi.waitFor(() => {
+      const found = view.container.querySelector('[data-team-ordinary-open-error]')
+      if (found == null) throw new Error('the ordinary-open error note did not render')
+      return found
+    })
+    expect(note.textContent).toBe(
+      '以普通模式打开失败：TEAM_REMOTE_FOREIGN_TEAM: root is not inside this team session',
+    )
   })
 })
 
 describe('TeamView: the D3 ordinary-mode entry (the members section leader row)', () => {
   it('renders the ordinary entry on the root/leader row (zh) and triggers openOrdinaryMode with the team session id', async () => {
     const openTeamMode = vi.fn(async (): Promise<TeamOpenModeOutcome> => ({ ok: true }))
-    const openOrdinaryMode = vi.fn()
+    const openOrdinaryMode = vi.fn(() => Promise.resolve())
     const teamOpenMode = vi.fn(() => null as 'team' | 'ordinary' | null)
     const view = render(
       <TeamView
@@ -239,7 +273,7 @@ describe('TeamView: the D3 ordinary-mode entry (the members section leader row)'
     const entry = leaderGroup?.querySelector<HTMLButtonElement>('[data-team-ordinary-open]')
     expect(entry).not.toBeNull()
     expect(entry?.textContent).toBe('以普通模式打开')
-    expect(entry?.title).toBe('不执行 Team ensure，不保证 team_* 工具')
+    expect(entry?.title).toBe('不执行 Team ensure；以普通 Session Agent 激活')
     fireEvent.click(entry as unknown as HTMLElement)
     await vi.waitFor(() => {
       expect(openOrdinaryMode).toHaveBeenCalledTimes(1)
@@ -250,7 +284,7 @@ describe('TeamView: the D3 ordinary-mode entry (the members section leader row)'
 
   it('renders the mode badge for the entry USED (zh): ordinary → 普通模式', async () => {
     const openTeamMode = vi.fn(async (): Promise<TeamOpenModeOutcome> => ({ ok: true }))
-    const openOrdinaryMode = vi.fn()
+    const openOrdinaryMode = vi.fn(() => Promise.resolve())
     const teamOpenMode = vi.fn(() => 'ordinary' as const)
     const view = render(
       <TeamView
@@ -273,7 +307,7 @@ describe('TeamView: the D3 ordinary-mode entry (the members section leader row)'
 
   it('renders the mode badge for the D2 team entry (regression): team → Team 模式', async () => {
     const openTeamMode = vi.fn(async (): Promise<TeamOpenModeOutcome> => ({ ok: true }))
-    const openOrdinaryMode = vi.fn()
+    const openOrdinaryMode = vi.fn(() => Promise.resolve())
     const teamOpenMode = vi.fn(() => 'team' as const)
     const view = render(
       <TeamView
@@ -296,7 +330,7 @@ describe('TeamView: the D3 ordinary-mode entry (the members section leader row)'
 
   it('renders NO badge when teamOpenMode reads null (the root was not explicitly opened here)', async () => {
     const openTeamMode = vi.fn(async (): Promise<TeamOpenModeOutcome> => ({ ok: true }))
-    const openOrdinaryMode = vi.fn()
+    const openOrdinaryMode = vi.fn(() => Promise.resolve())
     const teamOpenMode = vi.fn(() => null as 'team' | 'ordinary' | null)
     const view = render(
       <TeamView
@@ -319,7 +353,7 @@ describe('TeamView: the D3 ordinary-mode entry copy (en)', () => {
   it('renders the en entry copy on the picker row + leader row and the en badge for the ordinary entry', async () => {
     const roots = makeRootsFace(() => Promise.resolve(okV3({ roots: [ROW_A] }, 'team.listRoots')))
     const openTeamMode = vi.fn(async (): Promise<TeamOpenModeOutcome> => ({ ok: true }))
-    const openOrdinaryMode = vi.fn()
+    const openOrdinaryMode = vi.fn(() => Promise.resolve())
     const teamOpenMode = vi.fn(() => 'ordinary' as const)
     const base = viewProps(leaderFrame(LEADER_ROOT), LEADER_ROOT, {}, en)
     const view = render(<TeamView {...{ ...base, roots, openTeamMode, openOrdinaryMode, teamOpenMode }} />)
@@ -332,7 +366,7 @@ describe('TeamView: the D3 ordinary-mode entry copy (en)', () => {
       ?.closest('[data-member-group]')
     const leaderEntry = leaderGroup?.querySelector<HTMLButtonElement>('[data-team-ordinary-open]')
     expect(leaderEntry?.textContent).toBe('Open in ordinary mode')
-    expect(leaderEntry?.title).toBe('No Team ensure is performed; team_* tools are not guaranteed')
+    expect(leaderEntry?.title).toBe('No Team ensure is performed; activated as an ordinary Session Agent')
     // the copy must not claim tool removal (en)
     expect((leaderEntry?.textContent ?? '') + (leaderEntry?.title ?? '')).not.toContain('remov')
     const badge = view.container.querySelector('[data-team-mode-badge]')
@@ -342,7 +376,7 @@ describe('TeamView: the D3 ordinary-mode entry copy (en)', () => {
 
   it('renders the en picker-row entry with the en semantic promise (the en zero state carries the picker list)', async () => {
     const roots = makeRootsFace(() => Promise.resolve(okV3({ roots: [ROW_A] }, 'team.listRoots')))
-    const openOrdinaryMode = vi.fn()
+    const openOrdinaryMode = vi.fn(() => Promise.resolve())
     // non-team current session (OUTSIDER) → the zero state renders the
     // persisted-roots picker list
     const view = render(
@@ -354,7 +388,7 @@ describe('TeamView: the D3 ordinary-mode entry copy (en)', () => {
     const entry = view.container
       .querySelector<HTMLButtonElement>('[data-team-root-row][data-root-session-id="root-session-d3a"] [data-team-ordinary-open-root]')
     expect(entry?.textContent).toBe('Open in ordinary mode')
-    expect(entry?.title).toBe('No Team ensure is performed; team_* tools are not guaranteed')
+    expect(entry?.title).toBe('No Team ensure is performed; activated as an ordinary Session Agent')
   })
 })
 

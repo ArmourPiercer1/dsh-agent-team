@@ -268,14 +268,15 @@ const wireOk = await handler1(
   { version: 1, params: { teamSessionId: ROOT_SID } },
   undefined,
 )
-// TCM vNext §15.3: the closed supported set is now {1, 2, 3, 4} since the
-// F9 (F3/F11/F9/T1.4 repair round r1) v4 bump (the v4-only method
-// `team.resolveControl`) — the unsupported-version negative is pinned at
-// 5 (versions 1–4 are legal; version 2 is served with provenance echoing
-// 2).
+// TCM vNext §15.3: the closed supported set is now {1, 2, 3, 4, 5} since
+// the F9 (F3/F11/F9/T1.4 repair round r1) v4 bump (the v4-only method
+// `team.resolveControl`) and the C1 (restart-0.1.7-rc.1 recovery, guide
+// §10.2) v5 bump (the v5-only method `team.prepareOrdinaryOpen`) — the
+// unsupported-version negative is pinned at 6 (versions 1–5 are legal;
+// version 2 is served with provenance echoing 2).
 const wireVersion = await handler1(
   'team.getProjection',
-  { version: 5, params: { teamSessionId: ROOT_SID } },
+  { version: 6, params: { teamSessionId: ROOT_SID } },
   undefined,
 )
 // Row stop: the backstop must release the /team-remote channel ownership.
