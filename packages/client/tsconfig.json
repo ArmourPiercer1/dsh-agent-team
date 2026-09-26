@@ -8,5 +8,14 @@
     "src",
     "test",
     "vitest.config.ts"
+  ],
+  "exclude": [
+    // S3 (PR #31 supplemental) characterization spike: drives the PRISTINE
+    // upstream client services straight from the test-use checkout, i.e. from
+    // outside this package's tsc program rootDir (TS6059) and through
+    // bare specifiers tsc cannot resolve here (TS2307). It is runtime-verified
+    // by vitest (its own `include` glob still picks it up) and is evidence,
+    // not product code. See the file header.
+    "test/s3-client-generation-spike.test.ts"
   ]
 }
