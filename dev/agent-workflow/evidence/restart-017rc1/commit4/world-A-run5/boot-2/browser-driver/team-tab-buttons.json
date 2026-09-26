@@ -1,0 +1,57 @@
+[
+ {
+  "label": "Open right sidebar",
+  "text": "",
+  "disabled": false
+ },
+ {
+  "label": "Choose workspace",
+  "text": "workspace",
+  "disabled": false
+ },
+ {
+  "label": "",
+  "text": "Standard mode",
+  "disabled": false
+ },
+ {
+  "label": "Add files or run commands",
+  "text": "",
+  "disabled": false
+ },
+ {
+  "label": "Access mode, current: Workspace Write",
+  "text": "Workspace Write",
+  "disabled": false
+ },
+ {
+  "label": "Select model, current DeepSeek-V41-Flash, reasonin",
+  "text": "DeepSeek-V41-Flash High",
+  "disabled": false
+ },
+ {
+  "label": "Send message",
+  "text": "",
+  "disabled": true
+ },
+ {
+  "label": "New tab",
+  "text": "",
+  "disabled": false
+ },
+ {
+  "label": "Split",
+  "text": "",
+  "disabled": false
+ },
+ {
+  "label": "Fullscreen",
+  "text": "",
+  "disabled": false
+ },
+ {
+  "label": "Collapse right sidebar",
+  "text": "",
+  "disabled": false
+ }
+]

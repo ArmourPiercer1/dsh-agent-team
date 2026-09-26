@@ -1,0 +1,8 @@
+mock: listening on 127.0.0.1:3497
+mock: 1 [messages] text reply (8 chars): "c4 title"
+mock: 2 [messages] text reply (40 chars): "C4_DONE RST017C4DONE_2026-09-26T14-06-01"
+mock: 3 [messages] tool-call reply: team_create_member
+mock: 4 [messages] tool-call reply: team_delegate
+mock: 5 [messages] tool-call reply: read
+mock: 6 [messages] text reply (8 chars): "c4 title"
+mock: 7 [messages] tool-call reply: read

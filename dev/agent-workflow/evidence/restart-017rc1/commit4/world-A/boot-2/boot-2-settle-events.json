@@ -1,0 +1,16 @@
+{
+  "settleFor": [
+    "session-rst017c4-dyn-2026-09-26T13-56-16"
+  ],
+  "events": [
+    {
+      "t": "2026-09-26T13:56:52.119Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017c4-boot-2026-09-26T13-56-16",
+      "source": "resume",
+      "agentId": "session-rst017c4-boot-2026-09-26T13-56-16",
+      "veto": false,
+      "permitted": false
+    }
+  ]
+}

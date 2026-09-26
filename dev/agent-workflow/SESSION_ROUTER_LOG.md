@@ -3811,3 +3811,25 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **FLAGS 留痕**：`permit.ok`（guide 伪码）vs `permitted:true`（wire）经 RPC envelope 映射闭合 / 客户端 wrapper 命名 `teamPrepareOrdinaryOpenV5`（仓库版本后缀惯例）/ gate-5 根因 = 证据推断（upstream publishMain catalog refresh window，team-mount-core 9.0b 注释佐证），**live 验证留 Commit 4 实宿主世界**（World A/B 增加无 reload composer 断言）。
 - **红线守纪**：CORE PATCH BUDGET = 0；零 push；test-use pristine；1 task = 1 branch = 1 worktree = 1 writer；scratch（.tmp-t12a-b2-home 债务测试副产物）清。
 - **状态**：Commit 3 入库。余 Commit 4（实宿主 kit Worlds A–E + 20× race，含 gate-5 live 断言）+ Commit 5（§17 全量验收 16 条 + 终簿记）。
+
+### 2026-09-26 — restart-recovery：Commit 4 kit 首跑 BLOCKED → 实宿主产品缺陷定因 + 修复入库（`a997af3`），kit 重跑 Worlds A–E 中
+
+- **Commit 4 实宿主 kit**（`dev/agent-workflow/evidence/restart-017rc1/commit4/kit.mjs`，插件 = 61419de 构建 `git+file://` 安装，5 world + 20× race 全套断言就绪）**首跑 BLOCKED = 已入库产品缺陷**（子代理按协议不绕过、不降级，如实上报裁决）：**`runOwned` 同步缺陷** —— `return operation()` 无 await → try/finally 在 operation PROMISE 返回即释放 guard（只覆盖同步前缀），而 0.1.7 awaited-serial `agent/created` 在数个 AWAITED hop 后（in-host 验证链：createAgent → setupAndPublish → initializeAgent → runMaintenance → publish → announce → ctx.serial）读到 ownedDepth=0 → **veto Team 自己的 boot-root create** → `bootstrap FAILED: …intercepted foreign Agent activation…` → 每个 fresh home 都无法拉起 Team root（world-independent；2/5 world 复现同签名；定因证据链 = in-host registerHooks 观测：恰 1 个 apply()、1 个 fence 实例、guard 在 agents.create 调用栈上、同 fence 同 map 读 depth 0 + 隔离语义 repro + 单测审计（A3/A4 把 fence 决策放在同步前缀故 CI 漏掉）。
+- **修复（我直接实施，主代理 = 本轮 writer）**：`async runOwned` + `return await operation()`（guard 跨 operation 完整 AWAITED 生命周期；A4 嵌套语义保持；close 交互不变）+ **A9 新回归测试**（real-host shape：决策点跨数 await hop，owned 必过 + 后续 foreign 必拦，双向钉死）+ **A4 勘误**（原 step-2 断言恰是被缺陷满足的错误语义 —— A4 曾为 bug 亮绿灯，现按 guide 原义修正并注释留因）。验证：C1 套件 26/26；typecheck/build 0；runtime 全量 6F|8F = 既有债务逐名零新增（2141P/2149，+1 = A9）；dist 3 artifacts 同提交。= **`a997af3`**。
+- **状态**：kit 对 `a997af3` 重跑 Worlds A–E + 20× race（含 gate-5 live 闭合，浏览器金标准视基础设施）；worlds-verdict 重发。
+
+### 2026-09-26 — restart-recovery：Commit 4 重跑 ALL GREEN（Worlds A–E + 20× race + gate-5 live 闭合），勘误：修复提交 SHA a997af3 → f3d5a71b（同树 amend 改 message 致 SHA 变化，内容不变）
+
+- **勘误**：上条所称修复提交 `a997af3` 经 `git commit --amend -F`（修正提交 message 被 shell 反引号吞掉的问题）后 SHA 变为 **`f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5`**（同树、内容逐字节相同；a997af3 对象仍在对象库但不在分支上）。本轮实宿主 kit 全部跑在 `f3d5a71b`。
+- **Commit 4 重跑（kit.mjs，插件 = f3d5a71b 构建 git+file:// 安装）全部绿**（worlds-verdict.md 重发；首跑 BLOCKED 记录完整保留）：
+  - **World A wire（run 4）38P/0F**：team.create 闭集 + fence veto（精确措辞走 api-session/error lane，抛出非 console）+ exact-generation rollback + ensureRootLive ok/live（C1 修复路径）+ A7(1)–(13) 全断言（恰 1 个 live Agent / 13 个 team_* / team_list_members 真执行 / history 23→34 / 首请求 Team model selection / 无重复 listener 副作用 / 无 MCP double mount / stat 判据走 wire 等价非文件名）+ A7q1 mock 计数不变式（veto 窗口内恰 0 次 foreign 模型请求）。
+  - **World A 浏览器金标准（run 7）22P/0F**：gate-5 五连断言 —— veto（created=3 disposed=2 err=1）→ 精确措辞在用户可见 lane → UI takeover live → **无页面 reload** 下 typed prompt 到达模型并得应答（`C4_GATE5_ACK RST017C4GATE5_2026-09-26T13-56-16`）→ 应答在 **Team leader 面**（13 个 team_* + row staticModel；探针时间线：switch-away/back 零新 activation 事件）。截图 `world-A/boot-2/browser-driver/04-gate5-answer.png`。
+  - **World B（run 10）30P/0F**：member child 冷 resume 七项断言全过（含 B9(5) 修正后闭集断言：13 个 team_* 全挂载 + 零多余 —— kit bug #11 澄清：0.1.7 设计在**每个** team-owned session 挂载完整 13 工具目录，worker envelope 在 ACTION 层执行（`*_NOT_LEADER` guards + checkAgainstEnvelope），非挂载层）。
+  - **World C 7/7**（run 3）：ordinary non-Team 负对照照常成功（最重要的非回归）。
+  - **World D（run 9）30P/0F**：v5 wire prepareOrdinaryOpen → native open → ordinary prompt 成功；ensureRootLive 调用 0；**re-takeover typed fail closed**（`TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM`，无 silent adopt）；restart 后 ordinary owner 消失、Team 可再 takeover。
+  - **World E 20× race（run 3）20/20**：followOk 20/20 · ensureOk(200+ok:true) 20/20 · teamLive 20/20 · singleWriter 20/20 · created=20 · **disposed=0**（主代理独立解析 race-iterations.json 复核同数）；delayMicro 分布 0×4/1×4/2×7/3×5。
+  - **:3080 全程 UNCHANGED**（每 run post-probe 401-reachable，pre==post）；端口 3492/3497 每 run 自清理；15 个 rst017-c4 home 按 kit 策略保留（tests/homes/，登记在案）。
+- **gate-5 闭合定性（主代理裁决，留痕）**：wire 级全闭合 + 浏览器级**无 reload 恢复**闭合（合法 in-app 导航：veto 页 → 切空会话 → 切回 root，零 activation churn，composer 立即可用）。残余项：veto 发生页的 composer 粘性态在 takeover 成功后**不自动 reconcile**（0.1.7 client selection 模型：同 session 重开为 no-op；run 6 的 driver 误落空会话亦被 check-5 leader 面守卫正确拦截，无假 PASS 可能）。定性 = **已记录行为面 + follow-up**（非产品缺陷、非断言降级；guide §10/§17 未要求自动 reconcile；本裁决条件"不吞错 + 不 stranded + 不 reload"三要素实测满足）。follow-up F-rc1：same-session takeover 的 composer 自动 reconcile 候选（后续轮次，需 client-mount 或 upstream 扩展，本轮不动 native open 纯度）。
+- **kit bug #1–#12 全部测试基础设施侧**（账本 worlds-verdict.md Ch.7；本轮 #11 = B9(5) 契约误读修正、#12 = hold 自动释放匹配 gate-5 文本请求），零产品侧改动。
+- **红线守纪**：CORE PATCH BUDGET = 0；test-use pristine @ 46a7f68b09（porcelain 空，主 workspace 复核）；零 push；:3080/:3180 零触碰（probe only）；scratch 清（无 .tmp 残留）。
+- **状态**：Commit 4 证据就绪（待入库）。余：Commit 4 提交 → Commit 5（§17 十六条全量验收 + 终簿记 + home 登记）→ **push + PR**（用户本轮授权）。

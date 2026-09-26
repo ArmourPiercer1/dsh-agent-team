@@ -1,0 +1,94 @@
+{
+  "label": "B2 member first turn",
+  "needle": "RST017C4BMEM_2026-09-26T12-20-20",
+  "sinceAt": null,
+  "count": 5,
+  "requests": [
+    {
+      "seq": 1,
+      "path": "/v1/messages",
+      "status": 200,
+      "error": null,
+      "model": "rst017c4-model-2026-09-26T12-20-20",
+      "tools": 0,
+      "systemHead": "Create a concise title for an AI coding-assistant session from the supplied human messages.\nReturn only the title on one line, **in plain text of natural language**, with no quotes, prefix, explanatio",
+      "userTextsHead": [
+        "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:3efe845e854990c5c5211d0a1259c188ed4313358e96d9d1953692"
+      ],
+      "userTextsTail": [
+        "reate:initial-work:sha256:3efe845e854990c5c5211d0a1259c188ed4313358e96d9d1953692aeefce9675] Commit 4 member-world team created. Acknowledge with the token RST017C4DONE_2026-09-26T12-20-20 and stop.\"}]"
+      ],
+      "receivedAt": "2026-09-26T12:21:33.016Z"
+    },
+    {
+      "seq": 2,
+      "path": "/v1/messages",
+      "status": 200,
+      "error": null,
+      "model": "rst017c4-model-2026-09-26T12-20-20",
+      "tools": 39,
+      "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the rst017c4 dynamic team. RST017C4DYN_PERSONA_2026-09-26T12-20-20 Answer concisely and stop.\n\n[team-root-context rootSessionId=",
+      "userTextsHead": [
+        "[team-root-work requestToken=team-create:initial-work:sha256:3efe845e854990c5c5211d0a1259c188ed4313358e96d9d1953692aeefce9675] Commit 4 member-world team created. Acknowledge with the token RST017C4DO"
+      ],
+      "userTextsTail": [
+        " been loaded.\nA user may also invoke a skill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>"
+      ],
+      "receivedAt": "2026-09-26T12:21:33.017Z"
+    },
+    {
+      "seq": 3,
+      "path": "/v1/messages",
+      "status": 200,
+      "error": null,
+      "model": "rst017c4-model-2026-09-26T12-20-20",
+      "tools": 39,
+      "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the rst017c4 dynamic team. RST017C4DYN_PERSONA_2026-09-26T12-20-20 Answer concisely and stop.\n\n[team-root-context rootSessionId=",
+      "userTextsHead": [
+        "[team-root-work requestToken=team-create:initial-work:sha256:3efe845e854990c5c5211d0a1259c188ed4313358e96d9d1953692aeefce9675] Commit 4 member-world team created. Acknowledge with the token RST017C4DO",
+        "RST017C4TEAMUP_2026-09-26T12-20-20 Set up the team: create the worker member (template 'worker') and delegate the verification task to it."
+      ],
+      "userTextsTail": [
+        " been loaded.\nA user may also invoke a skill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>",
+        "RST017C4TEAMUP_2026-09-26T12-20-20 Set up the team: create the worker member (template 'worker') and delegate the verification task to it."
+      ],
+      "receivedAt": "2026-09-26T12:21:53.064Z"
+    },
+    {
+      "seq": 4,
+      "path": "/v1/messages",
+      "status": 200,
+      "error": null,
+      "model": "rst017c4-model-2026-09-26T12-20-20",
+      "tools": 39,
+      "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the rst017c4 dynamic team. RST017C4DYN_PERSONA_2026-09-26T12-20-20 Answer concisely and stop.\n\n[team-root-context rootSessionId=",
+      "userTextsHead": [
+        "[team-root-work requestToken=team-create:initial-work:sha256:3efe845e854990c5c5211d0a1259c188ed4313358e96d9d1953692aeefce9675] Commit 4 member-world team created. Acknowledge with the token RST017C4DO",
+        "RST017C4TEAMUP_2026-09-26T12-20-20 Set up the team: create the worker member (template 'worker') and delegate the verification task to it."
+      ],
+      "userTextsTail": [
+        " been loaded.\nA user may also invoke a skill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>",
+        "RST017C4TEAMUP_2026-09-26T12-20-20 Set up the team: create the worker member (template 'worker') and delegate the verification task to it."
+      ],
+      "receivedAt": "2026-09-26T12:21:56.391Z"
+    },
+    {
+      "seq": 5,
+      "path": "/v1/messages",
+      "status": 200,
+      "error": null,
+      "model": "rst017c4-model-2026-09-26T12-20-20",
+      "tools": 39,
+      "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the rst017c4 dynamic team. RST017C4DYN_PERSONA_2026-09-26T12-20-20 Answer concisely and stop.\n\n[team-root-context rootSessionId=",
+      "userTextsHead": [
+        "[team-root-work requestToken=team-create:initial-work:sha256:3efe845e854990c5c5211d0a1259c188ed4313358e96d9d1953692aeefce9675] Commit 4 member-world team created. Acknowledge with the token RST017C4DO",
+        "RST017C4TEAMUP_2026-09-26T12-20-20 Set up the team: create the worker member (template 'worker') and delegate the verification task to it."
+      ],
+      "userTextsTail": [
+        " been loaded.\nA user may also invoke a skill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>",
+        "RST017C4TEAMUP_2026-09-26T12-20-20 Set up the team: create the worker member (template 'worker') and delegate the verification task to it."
+      ],
+      "receivedAt": "2026-09-26T12:21:56.412Z"
+    }
+  ]
+}

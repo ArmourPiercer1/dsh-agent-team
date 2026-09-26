@@ -1,0 +1,45 @@
+{
+  "note": "Run-5 (exploratory browser leg, home rst017-c4-2026-09-26T12-42-57-A) A-browser checks RE-DERIVED from retained artifacts. The kit's SIGTERM finalization block (kit.mjs worldABrowserLeg) never executed: the job harness kill tears down the whole PID-namespace process group without letting the kit's SIGTERM handler run (run5-A-browser.log ends at the 'A BROWSER HOLD' line; ports 3492/3497 down; host+mock dead; no finalization artifacts written). The kit was then fixed to auto-release the hold on observing the gate-5 model request (self-contained finalization; job_kill only as failure backstop) — run 6 uses that path. No product behavior is affected by this: the kit is test infrastructure.",
+  "runStamp": "2026-09-26T12-42-57",
+  "kitBuild": "f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5 (S0 preflight PASS: bare-clone tip == tip)",
+  "checks": [
+    {
+      "id": "A-browser-1",
+      "check": "the UI-triggered ordinary open was vetoed by the production fence (created -> exact-generation disposed -> api-session/error)",
+      "result": "PASS",
+      "evidence": "boot-2/probe-events/fence-probe-events.jsonl: 3 complete veto sequences after the hold — 13:03:40.657/.691, 13:05:54.176/.203 (driver runs), 13:09:17.821/.824 (final clean run) each agent/created -> agent/disposed -> api-session/error; totals created=10 disposed=7 err=3 (the 13:08:58.112 dispose is the p6t6 residency/drop used to re-freeze the session between exploratory runs)"
+    },
+    {
+      "id": "A-browser-2",
+      "check": "the production veto wording on the user-visible lane (the fence throws, it never console-logs runtime vetoes)",
+      "result": "PASS",
+      "evidence": "api-session/error message (exact production wording, 3x): 'resume failed for session \"session-rst017c4-dyn-2026-09-26T12-42-57\": TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \"session-rst017c4-dyn-2026-09-26T12-42-57\"'; the browser rendered it on the error lane (02-after-open screenshot: 'Session unavailable' composer state + history still readable)"
+    },
+    {
+      "id": "A-browser-3",
+      "check": "the 'Open in Team mode / back to Leader' click took over (glue hasLive(root) == true after the UI takeover)",
+      "result": "PASS (attributed)",
+      "evidence": "probe-events: agent/created 13:09:37.935 (source=resume, veto=false) with NO subsequent disposed = the in-page takeover survived; the p6t6 /health liveSessions re-check was NOT possible after the process-group kill (host dead), but the session demonstrably stayed live: the 13:13 attach produced zero new activation events and the 13:12 gate-5 turn executed on it. Takeover click artifacts: browser-driver/02b-team-buttons.json (button inventory) + 03-team-open dump."
+    },
+    {
+      "id": "A-browser-4",
+      "check": "gate-5 gold standard: the composer was usable after the takeover WITHOUT a page reload (the typed prompt reached the model and got an answer)",
+      "result": "PASS (with UI nuance — see flags)",
+      "evidence": "browser-driver/04-gate5-answer.txt/.png: the exact gate-5 prompt rendered as a user message at 21:12 with an executed turn ('Worked / Took 27s', usage 2K->2.1K tok) and a rendered answer; the typed prompt reached the mock model (world-A-run5/mock.log run-5 generation, request #3 = the only post-hold model request). NO page reload occurred between the takeover (13:09:37) and the prompt (13:12) — same continuous page session (driver steps 2->3->4 in one browser context).",
+      "nuance": "the prompt reached the model and got a model answer, but the ANSWER TEXT was the initial-work scripted line ('C4_DONE RST017C4DONE_...') instead of 'C4_GATE5_ACK RST017C4GATE5_...' — kit bug #8: the mock's decide() joins ALL user messages of the conversation and tested MK_DONE before MK_G5, so the initial work in history shadowed the gate-5 prompt. Product unaffected (the prompt demonstrably reached the model turn; the kit's mock answered with the wrong scripted line). Fixed in kit.mjs (GATE5 branch first) — run 6 produces the clean C4_GATE5_ACK answer."
+    },
+    {
+      "id": "A-browser-5",
+      "check": "the composer prompt ran on the Team leader surface (13 team_* tools + row staticModel)",
+      "result": "PASS (attributed)",
+      "evidence": "durable session log (decoded with decode-session.mjs from the retained home): the gate-5 turn's request/header row (seq=28, t=1790428358105 = 13:12:38Z) carries model=rst017c4-model-2026-09-26T12-42-57 = the row staticModel (row persisted, row 29 of 34). The tool LIST is not persisted in the session log; the same build's wire run (run 4, 38P/0F, S0 preflight on the same tip f3d5a71b) verified the full request body: A7(6) 'ALL of the frozen 13 team_* tools present on the resumed leader surface — missing=[]' and A7(10) row staticModel."
+    }
+  ],
+  "uiFindings017": [
+    "Session list staleness right after restart: /api/session/list initially returned only the UI-created live session; a store change forced re-enumeration and all 3 sessions (blank + both team roots) appeared, stable afterwards. The team roots ARE listed (cold, full projections).",
+    "The sidebar tree puts sessions that are not members of any workspace into the collapsed 'Ungrouped' bucket (rows not rendered until the bucket row is expanded) — team roots sit there by default.",
+    "No session deep links exist in 0.1.7 (/?session=, /?sessionId=, /session/<id>, /#/<id>, /#session= all ignored; URL stays '/').",
+    "Composer-stuck-after-veto (the key nuance for gate-5): a page that experienced the ordinary-open veto keeps its client session object in the failed-resume state ('Session unavailable', composer disabled) even after the server-side Team takeover succeeds — the takeover does not re-point that page's session view. A page that attaches AFTER the takeover shows the composer ENABLED (normal placeholder 'Message or run a task, / commands, @ files or sessions'), and re-opening the session row on the stuck page re-attaches (no reload, no new veto — attaching to a live session produces zero activation events). Run 6's driver handles this: on the stuck state it re-opens the row (legitimate navigation, NOT a reload) and proceeds.",
+    "2 unidentified 404 console errors per session open in the headless shell (resource not captured; likely missing dev assets in the local build)."
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "unit": {
+    "name": "team_domain",
+    "version": 2
+  },
+  "global": null,
+  "tables": {
+    "schema_meta": {
+      "schema_meta": "{\"schemaVersion\":2,\"stampedAt\":\"2026-09-26T12:28:07.320Z\",\"store\":\"schema_meta\",\"version\":2}",
+      "team_sessions": "{\"schemaVersion\":2,\"stampedAt\":\"2026-09-26T12:28:07.393Z\",\"store\":\"team_sessions\",\"version\":2}",
+      "member_instances": "{\"schemaVersion\":2,\"stampedAt\":\"2026-09-26T12:28:07.396Z\",\"store\":\"member_instances\",\"version\":2}",
+      "session_bindings": "{\"schemaVersion\":2,\"stampedAt\":\"2026-09-26T12:28:07.398Z\",\"store\":\"session_bindings\",\"version\":2}",
+      "overrides": "{\"schemaVersion\":2,\"stampedAt\":\"2026-09-26T12:28:07.400Z\",\"store\":\"overrides\",\"version\":2}",
+      "compatibility": "{\"schemaVersion\":2,\"stampedAt\":\"2026-09-26T12:28:07.402Z\",\"store\":\"compatibility\",\"version\":2}",
+      "operations": "{\"schemaVersion\":2,\"stampedAt\":\"2026-09-26T12:28:07.404Z\",\"store\":\"operations\",\"version\":2}",
+      "ledger": "{\"schemaVersion\":2,\"stampedAt\":\"2026-09-26T12:28:07.407Z\",\"store\":\"ledger\",\"version\":2}",
+      "blueprint_registry": "{\"schemaVersion\":2,\"stampedAt\":\"2026-09-26T12:28:07.409Z\",\"store\":\"blueprint_registry\",\"version\":2}"
+    },
+    "team_sessions": {
+      "session-rst017c4-boot-2026-09-26T12-20-20": "{\"blueprint\":{\"blueprintId\":\"team.rst017c4-anchor\",\"contentHash\":\"sha256:5a2f9ff5015be619d95a4e4573b903500d23a354bbbdfbb1619a881d0d7bd95f\",\"revision\":\"1\"},\"createdAt\":\"2026-09-26T12:28:07.471Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-28-01-C/workspace\",\"generation\":2,\"rootSessionId\":\"session-rst017c4-boot-2026-09-26T12-20-20\",\"schemaVersion\":1}"
+    },
+    "member_instances": {
+      "{\"instanceId\":\"inst-leader\",\"rootSessionId\":\"session-rst017c4-boot-2026-09-26T12-20-20\"}": "{\"activityVersion\":1,\"createdAt\":\"2026-09-26T12:28:07.477Z\",\"instanceId\":\"inst-leader\",\"label\":\"leader\",\"rootSessionId\":\"session-rst017c4-boot-2026-09-26T12-20-20\",\"schemaVersion\":2,\"templateId\":\"leader\"}"
+    },
+    "session_bindings": {
+      "session-rst017c4-boot-2026-09-26T12-20-20": "{\"kind\":\"team-root\",\"schemaVersion\":1,\"sessionId\":\"session-rst017c4-boot-2026-09-26T12-20-20\"}"
+    },
+    "overrides": {},
+    "compatibility": {
+      "session-rst017c4-boot-2026-09-26T12-20-20": "{\"acknowledgements\":[],\"computedAt\":\"2026-09-26T12:28:07.486Z\",\"fingerprint\":\"fp-v1:ae11d8f689bbb7b0\",\"generation\":1,\"outcomes\":{\"counts\":{\"fatal\":0,\"pass\":0,\"staleAcknowledgement\":0,\"unackedWarning\":0,\"warning\":0},\"requirements\":[]},\"rootSessionId\":\"session-rst017c4-boot-2026-09-26T12-20-20\",\"schemaVersion\":2,\"status\":\"OPEN\"}"
+    },
+    "operations": {},
+    "ledger": {},
+    "blueprint_registry": {
+      "team.rst017c4-anchor@1": "{\"blueprintId\":\"team.rst017c4-anchor\",\"contentHash\":\"sha256:5a2f9ff5015be619d95a4e4573b903500d23a354bbbdfbb1619a881d0d7bd95f\",\"frozenAt\":\"2026-09-26T12:28:07.465Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.rst017c4-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the rst017 boot team. RST017C4BOOT_PERSONA_2026-09-26T12-20-20 Answer concisely and stop.\\\"\\nmembers:\\n  - templateId: worker\\n    persona: \\\"You are a worker of the rst017 boot team. RST017C4BOOT_PERSONA_2026-09-26T12-20-20\\\"\\nmemberEnvelopes: []\\nrequirements: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}"
+    }
+  }
+}

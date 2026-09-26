@@ -1,0 +1,48 @@
+[rst017-c4 2026-09-26T12-41-33] Commit 4 kit — stamp 2026-09-26T12-41-33 worlds=A browserHold=false keepHome=false race=20
+[rst017-c4 2026-09-26T12-41-33] PASS [s0] preflight: test-use HEAD == the 0.1.7-rc.1 pin — HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4
+[rst017-c4 2026-09-26T12-41-33] PASS [s0] preflight: test-use working tree pristine (empty porcelain)
+[rst017-c4 2026-09-26T12-41-33] PASS [s0] preflight: task worktree at the accepted Commit-4 fix tip (f3d5a71b — runOwned await fix) — HEAD=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T12-41-33] PASS [s0] preflight: the test-use CLI reports 0.1.7-rc.1 — version=0.1.7-rc.1
+[rst017-c4 2026-09-26T12-41-33] PASS [s0] preflight: host/mock ports free (3492/3497) — hostFree=true mockFree=true
+[rst017-c4 2026-09-26T12-41-33] ══ WORLD A — home /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-41-33-A ══
+[rst017-c4 2026-09-26T12-41-33] world A materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-41-33-A
+[rst017-c4 2026-09-26T12-41-33] PASS [install] S0 bare-clone tip == f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5 (the accepted Commit-4 fix build with committed dist/composition) — cloned=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T12-41-33] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-c4 2026-09-26T12-41-33] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-c4 2026-09-26T12-41-33] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-c4 2026-09-26T12-41-33] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-c4 2026-09-26T12-41-33] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-c4 2026-09-26T12-41-33] PASS [boot-1] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=create) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-41-33"]
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A1 team.create(dynamic root) accepted over the public remote seam (RPC ok:true — transport 200 alone is not success) — status=200 head={"type":"server-response","rpcId":"c4-createA-8oxtutw9z4","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rst017c4-dyn-202
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A2 dynamic leader live on boot 1 (first model request on the row staticModel) — seq=2 model=rst017c4-model-2026-09-26T12-41-33
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A2b boot-1 session history present (assistant rows ≥ 1 in the session log) — [{"path":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-41-33-A/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-homes-rst017-c4-2026-09-26T12-41-33-A-workspace--/session-rst017c4-dyn-2026-09-26T12-41-33/session.v4.jsonl.zstd","rows":23,"assistant":1,"rowTypes":["session","permission/preset","sandbox/mode","approval/policy","agent/inbox/spliced","turn/start","agent/inbox/spliced","step/start","system/message","user/message","user/message","user/message","user/message","request/header","request/context","session/title","session/title-llm-request","session-log-deepseek/delivery-accepted","session/title","session-log-deepseek/delivery-accepted","assistant/message","step/end","turn/end"]}]
+[rst017-c4 2026-09-26T12-41-33] A: boot 1 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-41-33] PASS [boot-2] boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-41-33"]
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A3 browser-style session/follow(dynamic root) yields the snapshot (the browser got in) — ""
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A4 the production fence veto fired (EXACT production wording on the user-visible api-session/error lane — the fence throws, it never console-logs runtime vetoes) — created=1 disposed=1 apiErr=1
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A4b exact-generation rollback: a disposed event follows the vetoed creation — created=resume disposed=1
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A4c api-session/error surfaced to the follow socket (the persistent user-visible error lane) — frame=["session-rst017c4-dyn-2026-09-26T12-41-33","resume failed for session \"session-rst017c4-dyn-2026-09-26T12-41-33\": TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent ac probeErr=resume failed for session "session-rst017c4-dyn-2026-09-26T12-41-33": TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session "session-rst0
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A5 the follow stream SURVIVES the rejection (socket still open after the error lane) — closed=false
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A6 team.ensureRootLive(dynamic root) SUCCEEDS (the C1 repair path) — status=200 head={"type":"server-response","rpcId":"c4-ensureA-txaa04029e","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017c4-dyn-2026-09-26T12-41-33","mode":"team","live":true},"provenance":{"origin":"team-remote","method":"team.ensureRootLive","endpoint":"team.ensureRootLive","contractVersion":
+[rst017-c4 2026-09-26T12-41-33] PASS [A] gate-5 wire: the prompt sent DIRECTLY after the takeover (no reload) gets a model answer — reqSeq=3
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7(1) no final session/writer-held in the takeover result — {"type":"server-response","rpcId":"c4-ensureA-txaa04029e","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017c4-dyn-2026-09-26T12-41-33","mode":"team","live":true},"provenance":{"orig
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7(2) same rootSessionId (the takeover resolved the SAME dynamic root) — {"type":"server-response","rpcId":"c4-ensureA-txaa04029e","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017c4-dyn-2026-09-26T12-41-33","mode":"team","live":true},"provenance":{"orig
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7(3) ctx.agents: exactly one live Agent for the root (glue liveAgents carries it, no duplicates) — liveSessions=["session-rst017c4-boot-2026-09-26T12-41-33","session-rst017c4-dyn-2026-09-26T12-41-33"]
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7(4) the Team glue hasLive(root) == true — ["session-rst017c4-boot-2026-09-26T12-41-33","session-rst017c4-dyn-2026-09-26T12-41-33"]
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7(5) the live Agent is the Team-owned handle (exactly one surviving creation; no api-error after the surviving created) — created=2 disposed=1 errAfterLast=0
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7(6) ALL of the frozen 13 team_* tools present on the resumed leader surface — missing=[]
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7(7) the Team root persona/context block present (the dynamic team persona in the system block) — system head: You are an AI agent powered by DeepSeek Harness.
+
+You are the leader of the rst017c4 dynamic team. RST017C4DYN_PERSONA_2026-09-26T12-41-33 Answer concisely and 
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7(8) team_list_members executed successfully on the resumed leader (REAL execution, not just mounted) — {"ok":true,"value":{"status":"executed","action":"list-members","rootSessionId":"session-rst017c4-dyn-2026-09-26T12-41-33","callerRole":"leader","effect":{"kind":"members-listed","members":[{"instanceId":"inst-leader","templateId":"leader","label":"leader"}]},"requestToken":"c4-ktok--41-33-1"}}
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7(9) history intact (session log rows present after restart; assistant rows ≥ boot-1 count) — before=23 after=34
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7(10) the first Team request after resume uses the Team model selection (row staticModel) — model=rst017c4-model-2026-09-26T12-41-33
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7(11) no duplicate model-selection listener side effect (exactly one model request for the gate-5 prompt) — count=1
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7(12) no MCP double mount (zero-MCP row: no server entries, no activationError in the session governance view) — mcp={} dynGov head={"instanceId":"inst-leader","model":{"current":{"provider":"deepseek-official","model":"rst017c4-model-2026-09-26T12-41-33"},"assembled":{"provider":"deepseek-official","model":"rst017c4-model-2026-09
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7(13) sessionPersistence.stat(root) present (wire-level equivalent: the durable session generation file exists and its content is readable — NOT the filename as a product criterion) — ["session.v4.jsonl.zstd"]
+[rst017-c4 2026-09-26T12-41-33] PASS [A] A7q1 no model request came from a vetoed foreign agent (across the veto→takeover window the mock count rose by exactly the one gate-5 request) — count=3 atVeto=2
+[rst017-c4 2026-09-26T12-41-33] A: boot 2 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-41-33] world A torn down (host SIGTERM'd, mock closed)
+[rst017-c4 2026-09-26T12-41-33] PASS [s0] post-run: the stable :3080 instance answer is UNCHANGED (no cross-world contamination) — before={"port":3080,"reachable":true,"status":401} after={"port":3080,"reachable":true,"status":401}
+[rst017-c4 2026-09-26T12-41-33] summary: 38 passed, 0 failed, fatal=none
+[rst017-c4 2026-09-26T12-41-33] evidence: /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/commit4

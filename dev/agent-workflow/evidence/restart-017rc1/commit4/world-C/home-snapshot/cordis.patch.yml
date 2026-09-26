@@ -1,0 +1,50 @@
+# rst017 Commit 4 kit patch layer (run 2026-09-26T12-20-20, world C, boot 2, bootPhase resume)
+# fence-probe FIRST: passive observer registered before the production
+# C1 fence (see writePatchFile docs). reject=false — the shipped fence vetoes.
+- insert:
+    - id: "team-restart-fence-probe"
+      name: "file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/tools/harness/fence-probe.mjs"
+      config:
+        reject: false
+        autoArm: false
+        teamSessions:
+          - "session-rst017c4-dyn-2026-09-26T12-20-20"
+        reportDir: "/home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/commit4/world-C/boot-2/probe-events"
+    - id: "dsh-agent-team"
+      name: "dsh-agent-team/host"
+      config:
+        bootPhase: "resume"
+        rootSessionId: "session-rst017c4-boot-2026-09-26T12-20-20"
+        blueprintSource: "---\nschemaVersion: 1\nblueprintId: team.rst017c4-anchor\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the rst017 boot team. RST017C4BOOT_PERSONA_2026-09-26T12-20-20 Answer concisely and stop.\"\nmembers:\n  - templateId: worker\n    persona: \"You are a worker of the rst017 boot team. RST017C4BOOT_PERSONA_2026-09-26T12-20-20\"\nmemberEnvelopes: []\nrequirements: []\npolicyStates: []\nmetadata: {}\n---\n"
+        blueprintDir: "/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-28-01-C/blueprints"
+        rootPresetId: "standard"
+        memberPresetId: "standard"
+        seedMembers: []
+        generation: 1
+        staticModel:
+          provider: "deepseek-official"
+          model: "rst017c4-model-2026-09-26T12-20-20"
+        deniedSelection: null
+        mcpServers: []
+        environmentFacts:
+          - domain: "tool"
+            subject: "web"
+            available: true
+            generation: 1
+          - domain: "skill"
+            subject: "base"
+            available: true
+            generation: 1
+          - domain: "persona"
+            subject: "standard"
+            available: true
+            generation: 1
+        externalPolicyFacts:
+          hard: {}
+          capabilityExists: {}
+    - id: "p6t6-team-tools"
+      name: "file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/tools/harness/plugin.mjs"
+    - id: "team-spill-local"
+      name: "dsh-agent-team/spill-local"
+      config:
+        root: "/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-28-01-C/spill"

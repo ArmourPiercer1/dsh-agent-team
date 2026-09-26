@@ -1,0 +1,36 @@
+{
+ "openUrl": "http://127.0.0.1:3492/",
+ "openText": "DSH Local Build\n0.1.7-rc.1-46a7f68\nNew Session\nPlugins\nWorkspaces\nworkspace\nNew Session\nUngrouped\nNew Team\nSettings\nInto the Unknown\nPreview\nworkspace\nStandard mode\nDescribe what you want to build, / ",
+ "results": [
+  {
+   "cand": "/?session=session-rst017c4-dyn-2026-09-26T12-42-57",
+   "url": "http://127.0.0.1:3492/?session=session-rst017c4-dyn-2026-09-26T12-42-57",
+   "hit": true,
+   "screen": "DSH Local Build | 0.1.7-rc.1-46a7f68 | New Session | Plugins | Workspaces | workspace | New Session | Ungrouped | New Team | Settings | Into the Unknown | Preview | workspace | Standard mode | Describe what you want to build, / commands, @ files or"
+  },
+  {
+   "cand": "/?sessionId=session-rst017c4-dyn-2026-09-26T12-42-57",
+   "url": "http://127.0.0.1:3492/?sessionId=session-rst017c4-dyn-2026-09-26T12-42-57",
+   "hit": true,
+   "screen": "DSH Local Build | 0.1.7-rc.1-46a7f68 | New Session | Plugins | Workspaces | workspace | New Session | Ungrouped | New Team | Settings | Into the Unknown | Preview | workspace | Standard mode | Describe what you want to build, / commands, @ files or"
+  },
+  {
+   "cand": "/session/session-rst017c4-dyn-2026-09-26T12-42-57",
+   "url": "http://127.0.0.1:3492/session/session-rst017c4-dyn-2026-09-26T12-42-57",
+   "hit": false,
+   "screen": ""
+  },
+  {
+   "cand": "/#/session-rst017c4-dyn-2026-09-26T12-42-57",
+   "url": "http://127.0.0.1:3492/#/session-rst017c4-dyn-2026-09-26T12-42-57",
+   "hit": true,
+   "screen": "DSH Local Build | 0.1.7-rc.1-46a7f68 | New Session | Plugins | Workspaces | workspace | New Session | Ungrouped | New Team | Settings | Into the Unknown | Preview | workspace | Standard mode | Describe what you want to build, / commands, @ files or"
+  },
+  {
+   "cand": "/#session=session-rst017c4-dyn-2026-09-26T12-42-57",
+   "url": "http://127.0.0.1:3492/#session=session-rst017c4-dyn-2026-09-26T12-42-57",
+   "hit": true,
+   "screen": "DSH Local Build | 0.1.7-rc.1-46a7f68 | New Session | Plugins | Workspaces | workspace | New Session | Ungrouped | New Team | Settings | Into the Unknown | Preview | workspace | Standard mode | Describe what you want to build, / commands, @ files or"
+  }
+ ]
+}

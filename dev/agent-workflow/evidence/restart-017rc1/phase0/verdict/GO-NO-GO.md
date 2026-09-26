@@ -96,3 +96,10 @@ one-shot permit) is exactly the flow C1 implements. B+ is NOT triggered.
    client-side error swallowing; it is a state-reconciliation gap closed by the
    designed two-phase open (Commit 3), with the wire-level veto behavior kept
    exactly as characterized.
+
+## Post-Phase-0 addendum (2026-09-26, Commit-4 re-run landing)
+
+Gate-5 closure status — live-confirmed on the real host (Commit 4 re-run, build f3d5a71b):
+- WIRE: fully closed (World A run 4: post-takeover prompt gets a model answer, reqSeq=3; zero foreign-agent model requests in the veto window, A7q1 invariant).
+- BROWSER (World A run 7 gold standard): composer recovered WITHOUT any page reload — via a legitimate in-app session switch (veto page → blank New Session → back to root; zero new activation events), typed prompt answered on the Team leader surface (13 team_* + row staticModel). Screenshot: commit4/world-A/boot-2/browser-driver/04-gate5-answer.png.
+- RESIDUAL (recorded, follow-up F-rc1): on the exact page that experienced the veto, the client's sticky "Session unavailable" composer state is NOT auto-reconciled by the Commit-3 sessions.refresh() on takeover success — re-selecting the same session is a no-op under the 0.1.7 client selection model. The user is never stranded (the in-app switch recovers; the wire is fully functional; no error is swallowed anywhere — the veto wording stays in the user-visible lane). Classification: recorded 0.1.7 client-behavior nuance + follow-up (same-session takeover composer auto-reconcile would require a client-mount extension or an upstream change — both out of scope for this round's red lines; the guide §10/§17 do not mandate auto-reconcile). This verdict's condition (no error swallowing + no stranded user + no reload required) is met on all three measured elements.

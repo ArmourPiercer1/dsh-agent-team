@@ -1,0 +1,22 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "c4-createB-pgq74kt665",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "malformed-params",
+        "message": "method 'team.create' has unknown param field 'teamSessionId' (closed fields: blueprintId, blueprintRevision, initialWork, rootSessionId)",
+        "details": {
+          "method": "team.create",
+          "endpoint": "team.create",
+          "contractVersion": 1,
+          "requestToken": null,
+          "field": "teamSessionId",
+          "reason": "unknown-field"
+        }
+      }
+    }
+  }
+}
