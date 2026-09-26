@@ -1177,8 +1177,26 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // fifteen. Scanner unchanged. Single-writer pin bump on the task
     // branch. (tests/paths.d.mts lives under tests/, not a scanned package
     // dir — not counted.)
-    expect(scanResult.filesScanned).toBe(748)
-    expect(scanResult.files.length).toBe(748)
+// C1 restart-recovery (task/team-restart-017rc1, this round): +6 on
+// top of the 748 base = 754 — the six new scannable files: the Phase 0
+// characterization probe (packages/tools/harness/fence-probe.mjs — the
+// zero-patch runtime observation probe added by commit 9cf57a0; +1
+// already in the tree at this commit, pin not bumped there) plus the
+// C1 activation fence (packages/runtime/src/plugin/
+// team-session-activation.ts — the process-local ownership guard:
+// the awaited-serial agent/created veto, the exact-generation
+// disposed barrier, the ref-counted runOwned guard, the one-shot
+// ordinary permit) and its single durable Team-ownership resolver
+// (packages/runtime/src/plugin/team-session-ownership.ts — the
+// shared boot-root/self-row/member-list algorithm, zero denylist
+// vocabulary), and the three C1 test suites (packages/runtime/test/
+// team-session-activation.test.ts A1–A8, team-session-durability.
+// test.ts D1–D4, team-session-activation-glue.test.ts G1–G6 + the
+// §6.2 static call-site assertion). All carry zero denylist
+// vocabulary; the frozen quarantine hit set is unchanged at fifteen.
+// Scanner unchanged. Single-writer pin bump on the task branch.
+    expect(scanResult.filesScanned).toBe(754)
+    expect(scanResult.files.length).toBe(754)
 
   })
 

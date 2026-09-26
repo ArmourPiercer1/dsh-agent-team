@@ -57,7 +57,7 @@
  *                        drainDescendants (drainContinuableDescendants,
  *                        listDescendants)
  */
-import { existsSync, lstatSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 // BP-F (issue #2 blueprint-loading, plan §11.1): the bridge's default
@@ -645,6 +645,27 @@ export function createAgentsDouble(options = {}) {
   const legacyCtxAgent = options.legacyCtxAgent !== false
   const mintScope = options.mintScope !== false
   const identityOverride = options.identityOverride
+  // C1 (restart-recovery, guide §13.3): the fake `agent/created` /
+  // `agent/disposed` event hook — fired (awaited) INSIDE create/resume
+  // BEFORE the handle is published (the production awaited-serial veto
+  // point: a hook rejection rejects the create/resume and the handle is
+  // never built — the unpublished agent), and inside handle.dispose()
+  // (fire-and-forget upstream — a hook fault never breaks the dispose).
+  // Absent = the pre-C1 double behavior (no events at all).
+  const activationEvents = options.activationEvents
+  // C1 (guide §13.3 G5/G6): per-session RESUME FAULT injection — a
+  // (sessionId, callIndex) => error|undefined script; a returned error
+  // REJECTS that resume call AFTER it is recorded, BEFORE the agent is
+  // created (models the session-layer writer-held rejection: no
+  // agent/created fires for a rejected resume). Absent = no faults.
+  const resumeFaults = options.resumeFaults
+  const resumeCallCounts = new Map()
+  // C1 (guide §8.2): the EXACT-GENERATION identity objects the double
+  // mints per activation — the same object the created and the matching
+  // disposed events carry (the strict-generation key; a test models the
+  // upstream AgentLoop rollback by feeding the created event's identity
+  // back as the disposed agent). Map: sessionId -> latest identity.
+  const agentIdentities = new Map()
   // T12-M2: one shared global prompt layer per world (the DSH service
   // registers harness:identity + a global deployment:persona section at
   // construction; the persona glue's scoped installs shadow that global).
@@ -738,10 +759,29 @@ export function createAgentsDouble(options = {}) {
     if (ctxAgent !== undefined) ctx.agent = ctxAgent
     const handle = {
       agent,
-      dispose() {
+      async dispose() {
         disposals.push(sessionId)
         handles.delete(sessionId)
-        return Promise.resolve()
+        // C1 (guide §8.2): the fire-and-forget `agent/disposed` event —
+        // the exact identity object the matching created event carried
+        // (the fence's strict-generation key). A hook fault never breaks
+        // the dispose (upstream logs listener errors, it does not
+        // propagate them).
+        const disposedIdentity = agentIdentities.get(sessionId)
+        if (activationEvents !== undefined && disposedIdentity !== undefined) {
+          try {
+            await activationEvents({
+              kind: 'disposed',
+              agent: disposedIdentity,
+              source: 'resume',
+              sessionId,
+            })
+          } catch {
+            // a throwing disposed listener is swallowed (fire-and-forget
+            // upstream semantics)
+          }
+        }
+        return undefined
       },
     }
     handles.set(sessionId, handle)
@@ -766,9 +806,19 @@ export function createAgentsDouble(options = {}) {
     cancels,
     handles,
     globalSections,
+    agentIdentities,
     async create(req) {
       const sessionId = String(req.sessionId)
       creates.push({ sessionId, meta: req.meta, setupProvided: req.setup !== undefined })
+      // C1 (guide §13.3): the awaited-serial `agent/created` event BEFORE
+      // the handle is published (source 'startup' — the upstream create
+      // announcement). A hook rejection rejects this create and the
+      // handle is never built (the unpublished-agent rollback shape).
+      const createdIdentity = { id: sessionId }
+      agentIdentities.set(sessionId, createdIdentity)
+      if (activationEvents !== undefined) {
+        await activationEvents({ kind: 'created', agent: createdIdentity, source: 'startup', sessionId })
+      }
       return makeHandle(sessionId, req)
     },
     async resume(req) {
@@ -777,19 +827,85 @@ export function createAgentsDouble(options = {}) {
       // G8: suspend AFTER the request is recorded so a test can observe
       // the in-flight resume and interleave close() before it settles.
       if (resumeGate !== undefined) await resumeGate(req)
+      // C1 (guide §13.3 G5/G6): the scripted writer-held fault — the
+      // session-layer rejection fires AFTER the record, BEFORE any agent
+      // exists (no created event for a rejected resume).
+      if (resumeFaults !== undefined) {
+        const call = resumeCallCounts.get(sessionId) ?? 0
+        resumeCallCounts.set(sessionId, call + 1)
+        const fault = resumeFaults(sessionId, call)
+        if (fault !== undefined && fault !== null) throw fault
+      }
+      // C1 (guide §13.3): the awaited-serial `agent/created` event BEFORE
+      // the handle is published (source 'resume' — the upstream resume
+      // announcement; a cold-restart resume is exactly the ordinary
+      // SessionController path the fence vetoes when Team-managed).
+      const createdIdentity = { id: sessionId }
+      agentIdentities.set(sessionId, createdIdentity)
+      if (activationEvents !== undefined) {
+        await activationEvents({ kind: 'created', agent: createdIdentity, source: 'resume', sessionId })
+      }
       return makeHandle(sessionId, req)
     },
   }
 }
 
-/** The sessionPersistence service double (records every materialization). */
-export function createSessionPersistenceDouble() {
+/**
+ * The sessionPersistence service double (records every materialization).
+ *
+ * C1 (restart-recovery, guide §5.1/§13.2): the double now ALSO serves
+ * `exists(sessionId)` — the glue's durable-existence seam (the production
+ * host wrapper's `stat(id) !== undefined`). DEFAULT: the test-world
+ * analogue of the upstream `SessionPersistence.stat()` truth — the
+ * canonical durable session file under the CURRENT `process.env.DSH_HOME`
+ * (the pre-C1 physical probe's semantics, MOVED into the test fixture:
+ * the production glue no longer guesses on disk — guide §5. Every
+ * pre-existing test that wrote a `writeDurableFixture` under a
+ * `withDshHome` home sees the same truth as before, byte-for-byte).
+ * A test may OVERRIDE with `options.exists` (a `(sessionId) =>
+ * boolean | Promise<boolean>`; a throwing override models the D4 backend
+ * fault that must PROPAGATE, never be read as "not durable").
+ */
+export function createSessionPersistenceDouble(options = {}) {
   const materialized = []
+  const existsCalls = []
+  const exists = options.exists
   return {
     materialized,
+    existsCalls,
     ensureMaterialized(session) {
       materialized.push(String(session.id))
       return Promise.resolve()
+    },
+    exists(sessionId) {
+      const sid = String(sessionId)
+      existsCalls.push(sid)
+      if (typeof exists === 'function') return Promise.resolve(exists(sid))
+      // the default: the upstream-stat analogue over the fixture home
+      // (the canonical session log — any generation root, zstd or raw;
+      // the same shapes the pre-C1 glue probe matched).
+      const home = process.env.DSH_HOME
+      if (home === undefined) return Promise.resolve(false)
+      const sessionsRoot = join(home, 'sessions')
+      let profiles
+      try {
+        profiles = readdirSync(sessionsRoot, { withFileTypes: true }).filter((e) => e.isDirectory())
+      } catch {
+        return Promise.resolve(false)
+      }
+      for (const pd of profiles) {
+        const dir = join(sessionsRoot, pd.name, sid)
+        let entries
+        try {
+          entries = readdirSync(dir, { withFileTypes: true })
+        } catch {
+          continue
+        }
+        if (entries.some((e) => e.isFile() && /^session(\.v\d+)?\.jsonl(\.zstd)?$/.test(e.name))) {
+          return Promise.resolve(true)
+        }
+      }
+      return Promise.resolve(false)
     },
   }
 }
@@ -998,7 +1114,33 @@ export async function observeAssembly(agentCtx) {
 export async function createLiveWorld(options = {}) {
   const glue = await loadGlueModule()
   const rootSessionId = options.rootSessionId ?? 'session-t12a-root'
+  // C1 (restart-recovery, guide §13.3): the auto-wired fake agent/created
+  // + agent/disposed events — the bridge plays the HOST stand-in, so when
+  // a fence is supplied it wires the SAME two listeners the production
+  // host registers at the top of apply(): created → the AWAITED veto
+  // (fence.beforeAgentCreated — a rejection rejects the activation),
+  // disposed → the exact-generation barrier (fence.onAgentDisposed,
+  // fire-and-forget). A test-provided options.agents.activationEvents
+  // (or options.activationEvents) wins over the auto-wire.
+  const autoActivationEvents =
+    options.activationFence !== undefined
+      ? (event) => {
+          if (event.kind === 'created') {
+            return options.activationFence.beforeAgentCreated({
+              agent: event.agent,
+              source: event.source,
+            })
+          }
+          options.activationFence.onAgentDisposed(event.agent)
+        }
+      : undefined
+  const activationEvents =
+    options.activationEvents ??
+    (options.agents !== undefined && options.agents.activationEvents !== undefined
+      ? options.agents.activationEvents
+      : autoActivationEvents)
   const agents = createAgentsDouble({
+    ...(activationEvents !== undefined ? { activationEvents } : {}),
     ...(options.agents ?? {}),
     systemPromptGlobals: options.systemPromptGlobals,
     // multi-mcp (Task C): the per-server activation behavior tables
@@ -1007,7 +1149,11 @@ export async function createLiveWorld(options = {}) {
     mcpFailures: options.mcpFailures,
     mcpToolNames: options.mcpToolNames,
   })
-  const sessionPersistence = createSessionPersistenceDouble()
+  // C1 (guide §5.1/§13.2): the sessionPersistence double serves `exists`
+  // (the glue's durable-existence seam) — default = the fixture-home
+  // analogue of the upstream stat() truth; options.persistence overrides
+  // (a throwing exists models the D4 backend fault).
+  const sessionPersistence = createSessionPersistenceDouble(options.persistence ?? {})
   const domain = await createDomainDouble({
     members: options.members ?? [],
     membersByRoot: options.membersByRoot ?? {},
@@ -1139,6 +1285,16 @@ export async function createLiveWorld(options = {}) {
         }
         return parsed
       }),
+    // C1 (restart-recovery, guide §4.3/§13.3): the activation fence dep
+    // (absent = the pre-C1 glue fallback: the wrappers run the operation
+    // direct; the ensureLiveAgent rollback / writer-conflict waits are
+    // skipped — so no pre-C1 test world breaks wholesale).
+    ...(options.activationFence !== undefined ? { activationFence: options.activationFence } : {}),
+    // C1 (guide §7.2): the bounded writer-conflict recovery window
+    // (tiny for the G5/G6 determinism; absent = the glue default 10 s).
+    ...(options.writerHandoffTimeoutMs !== undefined
+      ? { writerHandoffTimeoutMs: options.writerHandoffTimeoutMs }
+      : {}),
   })
   return {
     rootSessionId,
@@ -1151,6 +1307,9 @@ export async function createLiveWorld(options = {}) {
     controlServiceRef,
     subagents: options.subagents,
     agentPresets: agentPresetsDouble,
+    // C1 (guide §13.3): the fence the world wired (undefined = pre-C1
+    // world) — a test asserts its state (records, permits) through it.
+    activationFence: options.activationFence,
     records: {
       creates: agents.creates,
       resumes: agents.resumes,
@@ -1167,10 +1326,13 @@ export async function createLiveWorld(options = {}) {
 /**
  * Run `fn` with DSH_HOME pointed at `home` (restore the previous value —
  * including absent — afterwards, AFTER `fn` settles, so an async `fn` sees
- * the home for its whole lifetime). The glue's sessionIsDurable reads
- * process.env.DSH_HOME; tests that need durable fixtures on disk set it,
- * snapshot the recorded state, and let this restore it BEFORE any later
- * file's setup runs.
+ * the home for its whole lifetime). C1 (guide §5): the glue NO LONGER
+ * reads process.env.DSH_HOME (the physical probe is deleted); the home
+ * now feeds the sessionPersistence double's DEFAULT `exists` (the
+ * fixture-home analogue of the upstream stat() truth — see
+ * createSessionPersistenceDouble). Tests that need durable sessions set
+ * the home + writeDurableFixture, snapshot the recorded state, and let
+ * this restore it BEFORE any later file's setup runs.
  */
 export async function withDshHome(home, fn) {
   const previous = process.env.DSH_HOME
