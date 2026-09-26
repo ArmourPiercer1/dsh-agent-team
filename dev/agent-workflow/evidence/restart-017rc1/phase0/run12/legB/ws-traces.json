@@ -1,0 +1,29 @@
+[
+  {
+    "label": "legBC-follow",
+    "closeError": "ws closed by host",
+    "frames": [
+      {
+        "t": 3,
+        "dir": "tx",
+        "op": 1,
+        "len": 83,
+        "head": "{\"type\":\"open\",\"streamId\":\"ev-ec6ulcqd\",\"endpoint\":\"$events\",\"payload\":{\"args\":{}}}"
+      },
+      {
+        "t": 5,
+        "dir": "rx",
+        "op": 1,
+        "len": 144,
+        "head": "{\"type\":\"item\",\"streamId\":\"ev-ec6ulcqd\",\"value\":{\"type\":\"ready\",\"clientId\":\"4454b0bb-2fbb-4641-883d-1b5d1833df2a\",\"host\":{\"home\":\"/home/user\"}}}"
+      },
+      {
+        "t": 5,
+        "dir": "tx",
+        "op": 1,
+        "len": 184,
+        "head": "{\"type\":\"open\",\"streamId\":\"fol-qk9cudhq\",\"endpoint\":\"session/follow\",\"payload\":{\"args\":{\"request\":{\"address\":{\"kind\":\"session\",\"sessionId\":\"session-rst017-dyn-2026-09-26T05-14-10\"}}}}}"
+      }
+    ]
+  }
+]

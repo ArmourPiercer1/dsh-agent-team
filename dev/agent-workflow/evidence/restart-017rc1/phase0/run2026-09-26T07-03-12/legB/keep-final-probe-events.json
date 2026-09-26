@@ -1,0 +1,39 @@
+{
+  "reconstructed": true,
+  "at": "2026-09-26T07:22:21.164Z",
+  "note": "live GET /__fence/events after host-4 ensureRootLive (the kit would have written this on SIGTERM)",
+  "events": {
+    "ok": true,
+    "events": [
+      {
+        "t": "2026-09-26T07:22:20.780Z",
+        "kind": "armed",
+        "armed": true,
+        "source": "autoArm"
+      },
+      {
+        "t": "2026-09-26T07:22:21.075Z",
+        "kind": "agent/created",
+        "sessionId": "session-rst017-boot-2026-09-26T07-03-12",
+        "source": "resume",
+        "agentId": "session-rst017-boot-2026-09-26T07-03-12",
+        "veto": false,
+        "permitted": false
+      },
+      {
+        "t": "2026-09-26T07:22:21.134Z",
+        "kind": "permit",
+        "sessionId": "session-rst017-dyn-2026-09-26T07-03-12"
+      },
+      {
+        "t": "2026-09-26T07:22:21.157Z",
+        "kind": "agent/created",
+        "sessionId": "session-rst017-dyn-2026-09-26T07-03-12",
+        "source": "resume",
+        "agentId": "session-rst017-dyn-2026-09-26T07-03-12",
+        "veto": false,
+        "permitted": true
+      }
+    ]
+  }
+}

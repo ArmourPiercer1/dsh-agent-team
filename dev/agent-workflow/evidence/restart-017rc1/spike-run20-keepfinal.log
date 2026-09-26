@@ -1,0 +1,1 @@
+[rst017-keepfinal] PASS [legB] K1 keep-mode Q1: veto + disposed + Team resume + takeover all recorded — {"vetoes": 2, "disposed": 2, "teamResume": 2, "apiErrors": 1, "takeover": 200, "eventsTotal": 14}

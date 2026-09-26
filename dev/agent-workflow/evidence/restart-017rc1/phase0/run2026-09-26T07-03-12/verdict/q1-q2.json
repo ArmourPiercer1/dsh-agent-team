@@ -1,0 +1,49 @@
+{
+  "mode": "keep (browser Q2 leg done manually) — keep-final reconstructed by keepfinal.mjs (host 4); the kit's SIGTERM handler never ran because job_kill destroyed the bwrap namespace (--die-with-parent)",
+  "reconstructed": true,
+  "reconstructedAt": "2026-09-26T07:22:21.164Z",
+  "q1_writerReleased": true,
+  "q1_takeoverSucceeded": true,
+  "q1_takeoverResult": {
+    "status": 200,
+    "ok": true,
+    "value": {
+      "data": {
+        "rootSessionId": "session-rst017-dyn-2026-09-26T07-03-12",
+        "mode": "team",
+        "live": true
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.ensureRootLive",
+        "endpoint": "team.ensureRootLive",
+        "contractVersion": 3,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  },
+  "q1_teamResumeObserved": true,
+  "q1_teamResumeEvents": [
+    "2026-09-26T07:13:12.649Z",
+    "2026-09-26T07:22:21.157Z"
+  ],
+  "q1_modelRequestsAfterFirstVeto": 0,
+  "q1_modelRequestsNote": "host-4 mock instance: 0 requests. boot-1..3 mock logs died with the bash-105 namespace (never flushed). From the browser leg: exactly ONE model request after the first veto (07:12:23.148Z) — the 07:16Z leader reply to the manual Q2 verification message (Team-mode work by the leader, not a foreign ordinary Agent). Foreign ordinary Agent model requests after the first veto = 0 (gate 4).",
+  "q2_wireApiSessionError": {
+    "t": "2026-09-26T07:12:23.152Z",
+    "kind": "api-session/error",
+    "sessionId": "session-rst017-dyn-2026-09-26T07-03-12",
+    "message": "resume failed for session \"session-rst017-dyn-2026-09-26T07-03-12\": Error: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \"session-rst017-dyn-2026-09-26T07-03-12\""
+  },
+  "q2_browserPersistent": "YES within the veto page load (composer stuck at 会话不可用 despite the successful takeover); NO across reload (client re-opens in Team mode, composer enabled, session fully functional). See legB/q2-browser/Q2-FINDING.md",
+  "counts": {
+    "vetoes": 2,
+    "disposed": 2,
+    "teamResume": 2,
+    "apiErrors": 1,
+    "takeover": 200,
+    "eventsTotal": 14
+  }
+}

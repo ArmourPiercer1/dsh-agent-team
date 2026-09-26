@@ -1,0 +1,12 @@
+{
+  "p3080": {
+    "port": 3080,
+    "reachable": true,
+    "status": 401
+  },
+  "p3180": {
+    "port": 3180,
+    "reachable": true,
+    "status": 401
+  }
+}

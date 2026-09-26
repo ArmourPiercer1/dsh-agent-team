@@ -1,0 +1,13 @@
+{
+  "teamResumeEvents": [
+    {
+      "t": "2026-09-26T05:33:15.451Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017-dyn-2026-09-26T05-31-01",
+      "source": "resume",
+      "agentId": "session-rst017-dyn-2026-09-26T05-31-01",
+      "veto": false,
+      "permitted": true
+    }
+  ]
+}

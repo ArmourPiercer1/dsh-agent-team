@@ -1,0 +1,253 @@
+{
+  "stamp": "2026-09-26T05-44-39",
+  "passed": 37,
+  "failed": 2,
+  "results": [
+    {
+      "leg": "s0",
+      "name": "preflight: test-use pristine @ 46a7f68b09 (HEAD + empty porcelain)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: task worktree on task/team-restart-017rc1",
+      "ok": true,
+      "detail": "HEAD=4fb79fca77984552ccb6f0ad1badcab69bd97625"
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: the test-use CLI reports 0.1.7-rc.1",
+      "ok": true,
+      "detail": "version=0.1.7-rc.1"
+    },
+    {
+      "leg": "install",
+      "name": "S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer)",
+      "ok": true,
+      "detail": "exit=0"
+    },
+    {
+      "leg": "install",
+      "name": "S1 no 0.1.7 incompat / allow-version exemption line",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "install",
+      "name": "S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "install",
+      "name": "S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile)",
+      "ok": true,
+      "detail": "bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+    },
+    {
+      "leg": "install",
+      "name": "S3 installed package dir carries the committed install surface",
+      "ok": true,
+      "detail": "all present"
+    },
+    {
+      "leg": "legA",
+      "name": "boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, probeReject=false)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017-boot-2026-09-26T05-44-39\"]"
+    },
+    {
+      "leg": "legA",
+      "name": "A1 team.create(R1) accepted over the public remote seam",
+      "ok": true,
+      "detail": "status=200 bodyHead={\"type\":\"server-response\",\"rpcId\":\"rst-create-e8hfr3p12s\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-rst017-dyn-2026-"
+    },
+    {
+      "leg": "legA",
+      "name": "A2 dynamic leader live: first model request observed (row staticModel)",
+      "ok": true,
+      "detail": "seq=2 model=rst017-model-2026-09-26T05-44-39"
+    },
+    {
+      "leg": "legA",
+      "name": "A3 dynamic leader surface carries the team tools (legacy-mode full catalog)",
+      "ok": true,
+      "detail": "tools=[\"ask_user_question\",\"bash\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"present\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"team_archive_member\",\"team_collect\",\"team_create_member\",\"tea"
+    },
+    {
+      "leg": "legA",
+      "name": "boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, probeReject=false)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017-boot-2026-09-26T05-44-39\"]"
+    },
+    {
+      "leg": "legA",
+      "name": "A4 browser-equivalent session/follow(R1) yields the snapshot frame (the stream survives)",
+      "ok": true,
+      "detail": "snapshot ok"
+    },
+    {
+      "leg": "legA",
+      "name": "A4b the mux socket is still open after the follow (no host-side close)",
+      "ok": true,
+      "detail": "closed=false"
+    },
+    {
+      "leg": "legA",
+      "name": "A5 ordinary promotion observed: agent/created(R1, source=resume) fired unvetoed (the stock path)",
+      "ok": true,
+      "detail": "[{\"kind\":\"agent/created\",\"sid\":\"-26T05-44-39\",\"source\":\"resume\",\"veto\":false}]"
+    },
+    {
+      "leg": "legA",
+      "name": "A6 BASELINE BLOCKER: team.ensureRootLive(R1) FAILS after the ordinary promotion stole the session",
+      "ok": true,
+      "detail": "status=200 errHead={\"type\":\"server-response\",\"rpcId\":\"rst-ensureA-8o1erg8h2k\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED\",\"message\":\"team.ensureRootLive: the Team-mode ensure of 'session-rst017-dyn-2026-09-26T05-44-39' failed: session \\\"session-rst017-dyn-2026-09-26T05-44-39\\\" is alr"
+    },
+    {
+      "leg": "legA",
+      "name": "A6b baseline failure lane: typed OUTSIDE_TEAM (already registered) or the writer-held race",
+      "ok": true,
+      "detail": "outsideTeam=false writerHeld=true"
+    },
+    {
+      "leg": "legB",
+      "name": "boot 3 up (marker + auth + p6t6 ok + boot root live + fence probe ok, probeReject=true)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017-boot-2026-09-26T05-44-39\"]"
+    },
+    {
+      "leg": "legB",
+      "name": "B0 boot team root re-adopted on restart and NOT vetoed by the fence",
+      "ok": true,
+      "detail": "[{\"kind\":\"armed\",\"sid\":\"\",\"source\":\"autoArm\"},{\"kind\":\"agent/created\",\"sid\":\"-26T05-44-39\",\"source\":\"resume\",\"veto\":false}]"
+    },
+    {
+      "leg": "legB",
+      "name": "B1 fence auto-armed at row load (before the stock boot re-adoption)",
+      "ok": true,
+      "detail": "{\"ok\":true,\"reject\":true,\"armed\":true,\"teamSessions\":[\"session-rst017-dyn-2026-09-26T05-44-39\"],\"permits\":[],\"events\":2}"
+    },
+    {
+      "leg": "legB",
+      "name": "B1a BOOT-VETO: the stock host boot-time re-adopt of R1 was vetoed (source=resume) — the writer steal caught at the origin",
+      "ok": false,
+      "detail": "null"
+    },
+    {
+      "leg": "legB",
+      "name": "B2 session/follow(R1) snapshot arrives before the (background) promotion veto",
+      "ok": true,
+      "detail": "snapshot ok"
+    },
+    {
+      "leg": "legB",
+      "name": "B2b the follow stream survives the rejection (the follow promote’s api-session/error arrives on the same socket after the snapshot)",
+      "ok": false,
+      "detail": "null"
+    },
+    {
+      "leg": "legB",
+      "name": "B2c the mux socket is still open after the rejection (no host-side close)",
+      "ok": true,
+      "detail": "closed=false"
+    },
+    {
+      "leg": "legB",
+      "name": "B3 Q1: the fence veto fired on agent/created (source=resume)",
+      "ok": true,
+      "detail": "{\"t\":\"2026-09-26T05:46:20.466Z\",\"kind\":\"agent/created\",\"sessionId\":\"session-rst017-dyn-2026-09-26T05-44-39\",\"source\":\"resume\",\"agentId\":\"session-rst017-dyn-2026-09-26T05-44-39\",\"veto\":true,\"permitted\":false}"
+    },
+    {
+      "leg": "legB",
+      "name": "B4 Q1: agent/disposed arrived for the vetoed session (rollback completed)",
+      "ok": true,
+      "detail": "{\"t\":\"2026-09-26T05:46:20.468Z\",\"kind\":\"agent/disposed\",\"sessionId\":\"session-rst017-dyn-2026-09-26T05-44-39\",\"agentId\":\"session-rst017-dyn-2026-09-26T05-44-39\"}"
+    },
+    {
+      "leg": "legB",
+      "name": "B5 Q1: api-session/error surfaced (the SessionController promote() error surface, broadcast on the wire)",
+      "ok": true,
+      "detail": "{\"t\":\"2026-09-26T05:46:20.469Z\",\"kind\":\"api-session/error\",\"sessionId\":\"session-rst017-dyn-2026-09-26T05-44-39\",\"message\":\"resume failed for session \\\"session-rst017-dyn-2026-09-26T05-44-39\\\": Error: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \\\"session-rst017-dyn-2"
+    },
+    {
+      "leg": "legB",
+      "name": "B6 fence stays armed; one-shot permit granted for R1 (the Team's own activation passes via the permit)",
+      "ok": true,
+      "detail": "{\"ok\":true,\"permits\":[\"session-rst017-dyn-2026-09-26T05-44-39\"]}"
+    },
+    {
+      "leg": "legB",
+      "name": "B7 Q1: team.ensureRootLive(R1) SUCCEEDS after the rollback (the writer was released)",
+      "ok": true,
+      "detail": "status=200 bodyHead={\"type\":\"server-response\",\"rpcId\":\"rst-ensureB-af1t7js5sl\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"rootSessionId\":\"session-rst017-dyn-2026-09-26T05-44-39\",\"mode\":\"team\",\"live\":true},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"team.ensureRootLive\",\"e"
+    },
+    {
+      "leg": "legB",
+      "name": "B8 the Team's own resume fired exactly one permitted (non-vetoed) agent/created — the one-shot permit consumed by the owned activation",
+      "ok": true,
+      "detail": "count=1"
+    },
+    {
+      "leg": "legB",
+      "name": "B9 takeover turn live on the mock with the Team tools (full surface retained)",
+      "ok": true,
+      "detail": "seq=3 teamTools=13/39"
+    },
+    {
+      "leg": "legB",
+      "name": "B10 Q1: exactly one model request since the veto (the Team takeover turn — ZERO from the foreign agent)",
+      "ok": true,
+      "detail": "requestsSinceVeto=1"
+    },
+    {
+      "leg": "legB",
+      "name": "B11 session log intact and readable (durable rows present)",
+      "ok": true,
+      "detail": "files=1 rows=30 assistantRows=1"
+    },
+    {
+      "leg": "legC",
+      "name": "C0 fence re-armed for the ordinary control",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "legC",
+      "name": "C1 ordinary session created via the public seam",
+      "ok": true,
+      "detail": "status=200 bodyHead={\"type\":\"server-response\",\"rpcId\":\"rst-create-session-1kfbkbbkas\",\"result\":{\"ok\":true,\"value\":{\"sessionId\":\"session-rst017-ord-2026-09-26T05-44-39\",\"a"
+    },
+    {
+      "leg": "legC",
+      "name": "C3 ordinary promotion passed the ARMED fence (no veto for unmanaged sessions)",
+      "ok": true,
+      "detail": "[{\"kind\":\"agent/created\",\"sid\":\"-26T05-44-39\",\"veto\":false}]"
+    },
+    {
+      "leg": "legC",
+      "name": "C2 ordinary session/follow snapshot arrives (unaffected by the fence)",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "leg": "legC",
+      "name": "C2b the ordinary follow socket is still open (no host-side close)",
+      "ok": true,
+      "detail": "closed=false"
+    }
+  ],
+  "lagEvents": [
+    {
+      "at": "2026-09-26T05:44:44.850Z",
+      "lagMs": 4609,
+      "lastActivity": "boot"
+    },
+    {
+      "at": "2026-09-26T05:46:50.462Z",
+      "lagMs": 30086,
+      "lastActivity": "q1 poll @1790401610460"
+    }
+  ]
+}

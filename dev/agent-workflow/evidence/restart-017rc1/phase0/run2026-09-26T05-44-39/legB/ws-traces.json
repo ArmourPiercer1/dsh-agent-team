@@ -1,0 +1,64 @@
+[
+  {
+    "label": "legA-follow",
+    "closeError": null,
+    "frames": [
+      {
+        "t": 4,
+        "dir": "tx",
+        "op": 1,
+        "len": 83,
+        "head": "{\"type\":\"open\",\"streamId\":\"ev-388h9kmf\",\"endpoint\":\"$events\",\"payload\":{\"args\":{}}}"
+      },
+      {
+        "t": 5,
+        "dir": "rx",
+        "op": 1,
+        "len": 144,
+        "head": "{\"type\":\"item\",\"streamId\":\"ev-388h9kmf\",\"value\":{\"type\":\"ready\",\"clientId\":\"0511e1f7-ae55-4c9d-829a-d76c1be63698\",\"host\":{\"home\":\"/home/user\"}}}"
+      },
+      {
+        "t": 5,
+        "dir": "tx",
+        "op": 1,
+        "len": 184,
+        "head": "{\"type\":\"open\",\"streamId\":\"fol-2hlpuoz8\",\"endpoint\":\"session/follow\",\"payload\":{\"args\":{\"request\":{\"address\":{\"kind\":\"session\",\"sessionId\":\"session-rst017-dyn-2026-09-26T05-44-39\"}}}}}"
+      },
+      {
+        "t": 19,
+        "dir": "rx",
+        "op": 1,
+        "len": 73020,
+        "head": "{\"type\":\"item\",\"streamId\":\"fol-2hlpuoz8\",\"value\":{\"type\":\"snapshot\",\"header\":{\"version\":4,\"id\":\"session-rst017-dyn-2026-09-26T05-44-39\",\"createdAt\":1790401486951,\"cwd\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T05-44-39/workspace\",\"isSeeded\":false,\"delegationDepth\":0},\"cursor\":21,\"records\":[{\"type\":\"event\",\"event\":{\"type\":\"permission/preset\",\"seq\":0,\"time\":179040148"
+      },
+      {
+        "t": 28,
+        "dir": "rx",
+        "op": 1,
+        "len": 142,
+        "head": "{\"type\":\"item\",\"streamId\":\"fol-2hlpuoz8\",\"value\":{\"type\":\"event\",\"event\":{\"type\":\"session/end-seed\",\"seq\":22,\"time\":1790401518450,\"data\":{}}}}"
+      },
+      {
+        "t": 30,
+        "dir": "rx",
+        "op": 1,
+        "len": 1754,
+        "head": "{\"type\":\"item\",\"streamId\":\"ev-388h9kmf\",\"value\":{\"type\":\"emit\",\"event\":\"api-session/added\",\"args\":[{\"sessionId\":\"session-rst017-dyn-2026-09-26T05-44-39\",\"updatedAt\":1790401487035,\"agentAvailable\":true,\"running\":false,\"blank\":false,\"cwd\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T05-44-39/workspace\",\"projections\":{\"kind\":\"sequenced\",\"asOfSeq\":22,\"values\":{\"title\":\"RS"
+      },
+      {
+        "t": 30,
+        "dir": "rx",
+        "op": 1,
+        "len": 1754,
+        "head": "{\"type\":\"item\",\"streamId\":\"ev-388h9kmf\",\"value\":{\"type\":\"emit\",\"event\":\"api-session/added\",\"args\":[{\"sessionId\":\"session-rst017-dyn-2026-09-26T05-44-39\",\"updatedAt\":1790401487035,\"agentAvailable\":true,\"running\":false,\"blank\":false,\"cwd\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T05-44-39/workspace\",\"projections\":{\"kind\":\"sequenced\",\"asOfSeq\":22,\"values\":{\"title\":\"RS"
+      },
+      {
+        "t": 282,
+        "dir": "tx",
+        "op": 8,
+        "len": 2,
+        "head": ">\u0000"
+      }
+    ]
+  }
+]

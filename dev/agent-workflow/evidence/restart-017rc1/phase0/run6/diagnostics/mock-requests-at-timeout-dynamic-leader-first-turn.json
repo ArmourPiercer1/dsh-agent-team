@@ -1,0 +1,40 @@
+{
+  "label": "dynamic leader first turn",
+  "needle": "RST017DONE_2026-09-26T04-05-16",
+  "sinceAt": "2026-09-26T04:05:53.737Z",
+  "count": 2,
+  "requests": [
+    {
+      "seq": 1,
+      "path": "/v1/messages",
+      "status": 200,
+      "error": null,
+      "model": "rst017-model-2026-09-26T04-05-16",
+      "tools": 0,
+      "systemHead": "Create a concise title for an AI coding-assistant session from the supplied human messages.\nReturn only the title on one line, **in plain text of natural language**, with no quotes, prefix, explanatio",
+      "userTextsHead": [
+        "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:d679f696bb96c78ec9599d2363553bc3594cef8ffdc4e8290e4d15"
+      ],
+      "userTextsTail": [
+        "estToken=team-create:initial-work:sha256:d679f696bb96c78ec9599d2363553bc3594cef8ffdc4e8290e4d15f29a4df42e] Spike dynamic team created. Answer with the token RST017DONE_2026-09-26T04-05-16 and stop.\"}]"
+      ],
+      "receivedAt": "2026-09-26T04:05:23.585Z"
+    },
+    {
+      "seq": 2,
+      "path": "/v1/messages",
+      "status": 200,
+      "error": null,
+      "model": "rst017-model-2026-09-26T04-05-16",
+      "tools": 39,
+      "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the rst017 dynamic spike team. RST017DYN_PERSONA_2026-09-26T04-05-16 Answer concisely and stop.\n\n[team-root-context rootSessionI",
+      "userTextsHead": [
+        "[team-root-work requestToken=team-create:initial-work:sha256:d679f696bb96c78ec9599d2363553bc3594cef8ffdc4e8290e4d15f29a4df42e] Spike dynamic team created. Answer with the token RST017DONE_2026-09-26T0"
+      ],
+      "userTextsTail": [
+        " been loaded.\nA user may also invoke a skill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>"
+      ],
+      "receivedAt": "2026-09-26T04:05:23.587Z"
+    }
+  ]
+}

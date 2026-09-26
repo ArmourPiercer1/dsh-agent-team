@@ -1,0 +1,39 @@
+[
+  {
+    "path": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T05-05-16/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-homes-rst017-spike-2026-09-26T05-05-16-workspace--/session-rst017-dyn-2026-09-26T05-05-16/session.v4.jsonl.zstd",
+    "rows": 30,
+    "assistant": 1,
+    "rowTypes": [
+      "session",
+      "permission/preset",
+      "sandbox/mode",
+      "approval/policy",
+      "agent/inbox/spliced",
+      "turn/start",
+      "agent/inbox/spliced",
+      "step/start",
+      "system/message",
+      "user/message",
+      "user/message",
+      "user/message",
+      "user/message",
+      "request/header",
+      "request/context",
+      "session/title",
+      "session/title-llm-request",
+      "session-log-deepseek/delivery-accepted",
+      "session/title",
+      "session-log-deepseek/delivery-accepted",
+      "assistant/message",
+      "step/end",
+      "turn/end",
+      "session/end-seed",
+      "agent/inbox/spliced",
+      "turn/start",
+      "agent/inbox/spliced",
+      "step/start",
+      "user/message",
+      "request/header"
+    ]
+  }
+]
