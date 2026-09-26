@@ -24,6 +24,11 @@
  * - template references resolvable: every `memberEnvelopes[].templateId`
  *   names a template declared in the same document;
  * - requirements well-formed with unique (domain, name) pairs;
+ * - `modelPreference`, when present, is a legal v1 model token — either a
+ *   qualified `provider/model` route (split at the first `/`, both sides
+ *   non-empty) or a bare model-only shorthand (its provider is inherited
+ *   from the deployment default at the runtime); no whitespace / control
+ *   characters (`MALFORMED_DTO`, reason `invalid-model-preference`);
  * - mutation envelopes self-consistent (no operation in both allow and
  *   deny);
  * - PolicyState definitions reference only fields that exist in the
@@ -99,6 +104,7 @@ import {
 } from './schema.js'
 import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js'
 import { deriveContentHash } from './hash.js'
+import { parseModelPreferenceToken } from './model-preference.js'
 import type {
   BlueprintTemplate,
   CapabilityPolicy,
@@ -275,6 +281,11 @@ function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
 // sub-structure validators
 // ---------------------------------------------------------------------------
 
+// The strict v1 `modelPreference` token grammar lives in the SINGLE domain
+// parser (`./model-preference.js`, PR #30 review-supplement P2-2) and is
+// imported above — ONE grammar shared by the validator, the runtime
+// derivation, and the legacy importer (no mirror sites).
+
 /**
  * Validate one template (leader or member). Both share one closed schema.
  *
@@ -309,6 +320,16 @@ function validateTemplate(raw: unknown, path: string, role: 'leader' | 'member')
     required: false,
     maxLength: MODEL_PREFERENCE_MAX_LENGTH,
   })
+  if (
+    modelPreference !== undefined &&
+    parseModelPreferenceToken(modelPreference) === undefined
+  ) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `field ${path}.modelPreference is not a legal model token: expected a qualified 'provider/model' route (split at the first '/', both sides non-empty) or a bare model id, with no whitespace — got ${JSON.stringify(modelPreference)}`,
+      { path: `${path}.modelPreference`, reason: 'invalid-model-preference' },
+    )
+  }
   const contextPolicy = takeString(record, 'contextPolicy', path, {
     required: false,
     maxLength: CONTEXT_POLICY_MAX_LENGTH,

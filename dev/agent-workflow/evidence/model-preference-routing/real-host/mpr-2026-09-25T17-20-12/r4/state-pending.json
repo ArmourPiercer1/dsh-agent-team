@@ -1,0 +1,153 @@
+{
+  "overrides": [],
+  "sessions": {
+    "session-mpr-boot-mpr-2026-09-25T17-20-12": {
+      "instanceId": "inst-leader",
+      "model": {
+        "current": {
+          "provider": "deepseek-official",
+          "model": "global-default"
+        },
+        "selection": {
+          "provider": "deepseek-official",
+          "model": "global-default"
+        },
+        "source": {
+          "layer": "unspecified",
+          "origin": "static",
+          "recordId": null
+        },
+        "suppressed": [],
+        "unavailable": false,
+        "deniedBy": {
+          "by": "team",
+          "reason": "unspecifiedFailClosed"
+        },
+        "pendingNextBoundary": [],
+        "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+      },
+      "mcp": {
+        "servers": {}
+      }
+    },
+    "session-mpr-t1-mpr-2026-09-25T17-20-12": {
+      "instanceId": "inst-leader",
+      "model": {
+        "current": {
+          "provider": "deepseek-official",
+          "model": "role-leader"
+        },
+        "assembled": {
+          "provider": "deepseek-official",
+          "model": "role-leader"
+        },
+        "selection": {
+          "provider": "deepseek-official",
+          "model": "role-leader"
+        },
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        },
+        "suppressed": [],
+        "unavailable": false,
+        "pendingNextBoundary": [],
+        "explanation": "model: effective allow[deepseek-official/role-leader]; team template(origin=static) allow[deepseek-official/role-leader]; external exists=yes, hard=unspecified"
+      },
+      "mcp": {
+        "servers": {}
+      }
+    },
+    "session-team-child-4f9d124017bccc71d35810725159d21e": {
+      "instanceId": "inst-01yket31pky7",
+      "model": {
+        "current": {
+          "provider": "deepseek-official",
+          "model": "role-worker"
+        },
+        "assembled": {
+          "provider": "deepseek-official",
+          "model": "role-worker"
+        },
+        "selection": {
+          "provider": "deepseek-official",
+          "model": "role-worker"
+        },
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        },
+        "suppressed": [],
+        "unavailable": false,
+        "pendingNextBoundary": [
+          {
+            "recordId": "ovr-model-inst-055399j0ekmk-g0",
+            "kind": "human-override",
+            "scope": "instance",
+            "generation": 1,
+            "updatedAt": "2026-09-25T17:20:16.778Z",
+            "values": {
+              "model": {
+                "items": [
+                  "deepseek-official/override-worker"
+                ],
+                "kind": "allow"
+              }
+            }
+          }
+        ],
+        "explanation": "model: effective allow[deepseek-official/role-worker]; team template(origin=static) allow[deepseek-official/role-worker]; external exists=yes, hard=unspecified"
+      },
+      "mcp": {
+        "servers": {}
+      }
+    },
+    "session-team-child-67a8a7fac4a6a3abc72a1676490ef1f6": {
+      "instanceId": "inst-055399j0ekmk",
+      "model": {
+        "current": {
+          "provider": "deepseek-official",
+          "model": "role-worker"
+        },
+        "assembled": {
+          "provider": "deepseek-official",
+          "model": "role-worker"
+        },
+        "selection": {
+          "provider": "deepseek-official",
+          "model": "override-worker"
+        },
+        "source": {
+          "layer": "humanOverride",
+          "origin": "human",
+          "recordId": "ovr-model-inst-055399j0ekmk-g0"
+        },
+        "suppressed": [],
+        "unavailable": false,
+        "pendingNextBoundary": [
+          {
+            "recordId": "ovr-model-inst-055399j0ekmk-g0",
+            "kind": "human-override",
+            "scope": "instance",
+            "generation": 1,
+            "updatedAt": "2026-09-25T17:20:16.778Z",
+            "values": {
+              "model": {
+                "items": [
+                  "deepseek-official/override-worker"
+                ],
+                "kind": "allow"
+              }
+            }
+          }
+        ],
+        "explanation": "model: effective allow[deepseek-official/override-worker]; team humanOverride(origin=human, ovr-model-inst-055399j0ekmk-g0) allow[deepseek-official/override-worker]; external exists=yes, hard=unspecified"
+      },
+      "mcp": {
+        "servers": {}
+      }
+    }
+  }
+}

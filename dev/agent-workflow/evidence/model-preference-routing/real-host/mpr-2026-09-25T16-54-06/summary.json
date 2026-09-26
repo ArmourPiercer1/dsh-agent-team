@@ -1,0 +1,55 @@
+{
+  "task": "model-preference-routing real-host smoke (guide §7 R1–R8)",
+  "runStamp": "mpr-2026-09-25T16-54-06",
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing",
+  "testuse": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+  "baseline": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "home": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-25T16-54-06",
+  "retainedHome": null,
+  "fatal": "Error: ENOENT: no such file or directory, open '/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-25T16-54-06/logs/git-head.log'\n    at Object.openSync (node:fs:621:18)\n    at writeFileSync (node:fs:2496:35)\n    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/characterization/lib/util.mjs:55:5\n    at new Promise (<anonymous>)\n    at spawnToLog (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/characterization/lib/util.mjs:54:10)\n    at captureGitState (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/characterization/lib/tree-clean.mjs:25:28)\n    at checkPristine (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:846:23)\n    at run (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:912:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:1389:15)",
+  "criteria": {
+    "R1": {
+      "pass": false,
+      "checks": []
+    },
+    "R2": {
+      "pass": false,
+      "checks": []
+    },
+    "R3": {
+      "pass": false,
+      "checks": []
+    },
+    "R4": {
+      "pass": false,
+      "checks": []
+    },
+    "R5": {
+      "pass": false,
+      "checks": []
+    },
+    "R6": {
+      "pass": false,
+      "checks": []
+    },
+    "R7": {
+      "pass": false,
+      "checks": []
+    },
+    "R8": {
+      "pass": false,
+      "checks": []
+    },
+    "H1": {
+      "pass": false,
+      "checks": []
+    },
+    "H2": {
+      "pass": false,
+      "checks": []
+    }
+  },
+  "pass": false,
+  "exitCode": 1,
+  "extra": {}
+}

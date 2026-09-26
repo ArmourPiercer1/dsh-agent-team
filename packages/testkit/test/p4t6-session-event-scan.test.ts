@@ -49,7 +49,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration), and TCM-M1 adds its two v2-surface test files (remote versioned-contract dispatcher spec + runtime s6 production-dispatcher version-routing spec), and D2 (Team D1-D6 repair v2) adds its two v3-surface test files (runtime s6 ensureRootLive handler spec + client open-team-mode mount spec), recording the nine missed increments since the TCM-D4 pin, and D3 (Team D1-D6 repair v2) adds its one ordinary-mode client-mount spec, and A2 (alpha.2 canonical operation) adds its seven scannable operation-permission files (module core types + errors + canonical-operation + index, the fake-resolver unit spec, the real fs-local backend spec .mjs + its .d.mts type surface), recording the ten missed alpha.1 T1-T4 capability increments since the repair-r1 pin + the alpha.2 A1 permission-policy spec file + the A4 control exact-scope spec file + the A3 static resolver source and spec (int integration), and exec-autonomy-contract adds its two spec files (the domain leader-allow-lane contract spec + the runtime dual-gate spec), recording the two increments since the PR #18 pin, and the work-completion-wakeup adds its six scannable files (the runtime work-completion-notification module types + renderer + index, the pure-module spec, the live-glue spec, and the router-observer spec), and team-send-message-liveness adds its one acceptance-boundary regression spec and team-archive-member adds its one A1–A9 tool spec (packages/tools/test/archive-member-tool.test.ts) on the PR #25 merge, and strict-read-core-spill (PR #26 supplemental) adds its one pending-grant table source (runtime artifact-read pending.ts), and strict-read-core-spill (PR #26 final supplemental) adds its one composition override regression spec (runtime team-spill-local-composition.test.ts)', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration), and TCM-M1 adds its two v2-surface test files (remote versioned-contract dispatcher spec + runtime s6 production-dispatcher version-routing spec), and D2 (Team D1-D6 repair v2) adds its two v3-surface test files (runtime s6 ensureRootLive handler spec + client open-team-mode mount spec), recording the nine missed increments since the TCM-D4 pin, and D3 (Team D1-D6 repair v2) adds its one ordinary-mode client-mount spec, and A2 (alpha.2 canonical operation) adds its seven scannable operation-permission files (module core types + errors + canonical-operation + index, the fake-resolver unit spec, the real fs-local backend spec .mjs + its .d.mts type surface), recording the ten missed alpha.1 T1-T4 capability increments since the repair-r1 pin + the alpha.2 A1 permission-policy spec file + the A4 control exact-scope spec file + the A3 static resolver source and spec (int integration), and exec-autonomy-contract adds its two spec files (the domain leader-allow-lane contract spec + the runtime dual-gate spec), recording the two increments since the PR #18 pin, and the work-completion-wakeup adds its six scannable files (the runtime work-completion-notification module types + renderer + index, the pure-module spec, the live-glue spec, and the router-observer spec), and team-send-message-liveness adds its one acceptance-boundary regression spec and team-archive-member adds its one A1–A9 tool spec (packages/tools/test/archive-member-tool.test.ts) on the PR #25 merge, and strict-read-core-spill (PR #26 supplemental) adds its one pending-grant table source (runtime artifact-read pending.ts), and strict-read-core-spill (PR #26 final supplemental) adds its one composition override regression spec (runtime team-spill-local-composition.test.ts), and model-preference-routing (fix-model-preference-routing) adds its five scannable files (the runtime model token parser route.ts + the template model grant helper template-model.ts + the Gate B template-model-preference spec + the Gate D model-activation-step8 spec + the Gate E model-blueprint-initial-routing spec)', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -1177,8 +1177,38 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // fifteen. Scanner unchanged. Single-writer pin bump on the task
     // branch. (tests/paths.d.mts lives under tests/, not a scanned package
     // dir — not counted.)
-    expect(scanResult.filesScanned).toBe(748)
-    expect(scanResult.files.length).toBe(748)
+    // model-preference routing fix (task/fix-model-preference-routing, this
+    // round): +5 on top of the 748 base = 753 — the five new scannable
+    // files: (a) the model token parser
+    // (packages/runtime/agent-setup/model/route.ts — parseModelItem /
+    // parseModelPreferenceToken, the frozen token grammar) and (b) the
+    // template model grant helper
+    // (packages/runtime/agent-setup/model/template-model.ts —
+    // initialTemplateModelGrantOf: qualified token unchanged / model-only
+    // inherits the staticModel provider / absent is undefined), plus three
+    // regression specs: (c) the Gate B helper unit
+    // (packages/runtime/test/template-model-preference.test.ts), (d) the
+    // Gate D activation step-8 composition
+    // (packages/runtime/test/model-activation-step8.test.ts), and (e) the
+    // Gate E live-glue initial-routing acceptance E1-E9 (packages/runtime/
+    // test/model-blueprint-initial-routing.test.ts). All five carry zero
+    // denylist vocabulary; the frozen quarantine hit set is unchanged.
+    // Scanner unchanged. Single-writer pin bump on the task branch.
+    // PR #30 review-supplement (P2-1/P2-2/P2-4, this round): +3 on top of
+    // the 753 = 756 — the three new scannable files: (f) the SINGLE domain
+    // model-preference token parser (packages/domain/blueprint/src/
+    // model-preference.ts — parseModelPreferenceToken; P2-2: the runtime
+    // mirror in route.ts is DELETED, so there is ONE grammar, ONE site),
+    // (g) the model-overlay typed error (packages/runtime/agent-setup/
+    // model/errors.ts — InvalidTemplateModelPreferenceError; P2-1: a
+    // PRESENT-but-malformed preference is a fail-loud throw, never a silent
+    // staticModel fallback), and (h) the team_inspect_config effective-
+    // policy regression I1–I4 (packages/runtime/test/model-inspect-config.
+    // test.ts; P2-4 §4). All three carry zero denylist vocabulary; the
+    // frozen quarantine hit set is unchanged. Scanner unchanged.
+    // Single-writer pin bump on the task branch.
+    expect(scanResult.filesScanned).toBe(756)
+    expect(scanResult.files.length).toBe(756)
 
   })
 

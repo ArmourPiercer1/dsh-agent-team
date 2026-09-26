@@ -1,0 +1,22 @@
+[
+  {
+    "path": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-25T17-20-12/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-deepseek-harness-test-use--/session-team-child-779eb5dcb666a58b4f402cc7062146f0/session.v4.jsonl.zstd",
+    "size": 28126
+  },
+  {
+    "path": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-25T17-20-12/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-deepseek-harness-test-use--/session-team-child-67a8a7fac4a6a3abc72a1676490ef1f6/session.v4.jsonl.zstd",
+    "size": 44093
+  },
+  {
+    "path": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-25T17-20-12/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-deepseek-harness-test-use--/session-team-child-4f9d124017bccc71d35810725159d21e/session.v4.jsonl.zstd",
+    "size": 28116
+  },
+  {
+    "path": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-25T17-20-12/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-deepseek-harness-test-use--/session-mpr-t1-mpr-2026-09-25T17-20-12/session.v4.jsonl.zstd",
+    "size": 27986
+  },
+  {
+    "path": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-25T17-20-12/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-deepseek-harness-test-use--/session-mpr-boot-mpr-2026-09-25T17-20-12/session.v4.jsonl.zstd",
+    "size": 330
+  }
+]

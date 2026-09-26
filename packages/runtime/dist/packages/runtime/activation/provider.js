@@ -48,6 +48,7 @@ import { createCompatibilityAuthority } from '../compatibility/index.js';
 import { createActivationChildAdapter } from './adapter.js';
 import { allocateCheckedInstanceId, admitSource, checkCallerAuthority, checkQuota, computeOverlayBounds, countTeamQuota, resolveActivationPolicy, resolveBoundBlueprint, resolveCreationFields, resolveTeamSession, resolveTemplate, } from './checks.js';
 import { initialMcpGrantOf, staticCapabilitiesOf } from '../../domain/policy/src/index.js';
+import { initialTemplateModelGrantOf } from '../agent-setup/model/index.js';
 import { ACTIVATION_ERROR_CODES, ActivationError, isActivationError } from './errors.js';
 import { activationOperationIdentity } from './identity.js';
 import { ACTIVATION_SOURCES, ACTIVATION_SOURCE_VALUES, } from './types.js';
@@ -523,13 +524,27 @@ export function createActivationProvider(ports) {
             // bound snapshot). A deny / legacy / non-allow template contributes
             // nothing (fail-closed or dynamic governance; never a synthetic
             // durable record).
+            //
+            // model-preference routing fix: the SAME creation-frozen policy also
+            // carries the bound template's INITIAL static MODEL grant — the
+            // template's `modelPreference` as its `template`-layer value (the
+            // SAME `initialTemplateModelGrantOf` derivation the live consumption
+            // and the read-side use; a qualified route keeps its provider, a
+            // model-only shorthand inherits the injected `staticModel`
+            // provider). The generic `templateValues` (model + mcp) feeds the
+            // ONE resolver; an empty object never fakes template authority.
+            const initialModelGrant = initialTemplateModelGrantOf(template, ports.staticModel);
             const initialMcpGrant = initialMcpGrantOf(staticCapabilitiesOf(blueprint, template));
+            const templateValues = {
+                ...(initialModelGrant !== undefined ? { model: initialModelGrant } : {}),
+                ...(initialMcpGrant !== undefined ? { mcp: initialMcpGrant } : {}),
+            };
             const policy = resolveActivationPolicy({
                 rootSessionId,
                 instanceId: identity.instanceId,
                 overrides: repositories.overrides.list(rootSessionId),
                 external,
-                ...(initialMcpGrant !== undefined ? { templateValues: { mcp: initialMcpGrant } } : {}),
+                ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
             });
             // step 9: overlay bounds (the operation-level intersection)
             computeOverlayBounds(blueprint, createTemplateId);

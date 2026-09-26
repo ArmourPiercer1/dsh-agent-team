@@ -1,0 +1,249 @@
+{
+  "projection": {
+    "schemaVersion": 2,
+    "teamSessionId": "session-mpr-t1-mpr-2026-09-25T17-18-51",
+    "blueprint": {
+      "blueprintId": "team.mpr-main",
+      "revision": "1",
+      "contentHash": "sha256:0586296ed45a2fa73afdd2e2bec3c411188388a06a598d037adb1f555065f0af"
+    },
+    "generation": 14,
+    "generatedAt": "2026-09-25T17:18:56.284Z",
+    "root": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-25T17-18-51",
+      "createdAt": "2026-09-25T17:18:55.810Z",
+      "policyState": "default",
+      "admission": "OPEN",
+      "compatibility": {
+        "status": "OPEN",
+        "probeGeneration": 1,
+        "requirementFingerprint": "none",
+        "environmentFingerprint": "fp-v1:496d1037b98199e1",
+        "warningCount": 0,
+        "fatalCount": 0,
+        "acknowledgedWarningCount": 0,
+        "lastProbedAt": "2026-09-25T17:18:55.839Z"
+      },
+      "creationBudgetConsumed": 0,
+      "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+    },
+    "templates": [
+      {
+        "kind": "leader",
+        "templateId": "leader",
+        "displayName": "leader",
+        "contextPolicy": "persistent"
+      },
+      {
+        "kind": "member",
+        "templateId": "worker",
+        "displayName": "worker",
+        "contextPolicy": "persistent",
+        "instanceQuota": 8
+      },
+      {
+        "kind": "member",
+        "templateId": "expert",
+        "displayName": "expert",
+        "contextPolicy": "persistent",
+        "instanceQuota": 8
+      },
+      {
+        "kind": "member",
+        "templateId": "control",
+        "displayName": "control",
+        "contextPolicy": "persistent",
+        "instanceQuota": 8
+      }
+    ],
+    "members": [
+      {
+        "instanceId": "inst-1jzyvy90n6bm",
+        "templateId": "worker",
+        "label": "w-create",
+        "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+        "createdAt": "2026-09-25T17:18:56.155Z",
+        "lifecycle": "SETTLED",
+        "contextPolicy": "persistent",
+        "effectiveConfig": {
+          "model": {
+            "value": "deepseek-official/role-worker",
+            "source": "member-template",
+            "state": "inherited"
+          },
+          "workspace": {
+            "value": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+            "source": "instance-creation",
+            "state": "locked",
+            "locked": true
+          },
+          "permissions": {},
+          "autonomy": {
+            "value": null,
+            "source": "autonomy-overlay",
+            "state": "inherited"
+          }
+        },
+        "liveActivity": {
+          "residency": "resident",
+          "lastActivityAt": "2026-09-25T17:18:56.284Z"
+        },
+        "childSessionId": "session-team-child-b66a403f3cdb3b61c79bcd205a0c4fb3",
+        "modelState": {
+          "current": {
+            "value": "deepseek-official/role-worker",
+            "source": "member-template",
+            "state": "inherited"
+          },
+          "provenance": {
+            "layer": "template",
+            "origin": "static",
+            "recordId": null,
+            "explanation": "model: effective allow[deepseek-official/role-worker]; team template(origin=static) allow[deepseek-official/role-worker]; external exists=yes, hard=unspecified"
+          },
+          "availability": "available"
+        }
+      },
+      {
+        "instanceId": "inst-1uec6md1yomf",
+        "templateId": "worker",
+        "label": "w-deleg",
+        "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+        "createdAt": "2026-09-25T17:18:56.012Z",
+        "lifecycle": "SETTLED",
+        "contextPolicy": "persistent",
+        "effectiveConfig": {
+          "model": {
+            "value": "deepseek-official/role-worker",
+            "source": "member-template",
+            "state": "inherited"
+          },
+          "workspace": {
+            "value": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+            "source": "instance-creation",
+            "state": "locked",
+            "locked": true
+          },
+          "permissions": {},
+          "autonomy": {
+            "value": null,
+            "source": "autonomy-overlay",
+            "state": "inherited"
+          }
+        },
+        "liveActivity": {
+          "residency": "resident",
+          "lastActivityAt": "2026-09-25T17:18:56.284Z"
+        },
+        "childSessionId": "session-team-child-4a46deb25815b040795c300d8755a1a2",
+        "modelState": {
+          "current": {
+            "value": "deepseek-official/role-worker",
+            "source": "member-template",
+            "state": "inherited"
+          },
+          "provenance": {
+            "layer": "template",
+            "origin": "static",
+            "recordId": null,
+            "explanation": "model: effective allow[deepseek-official/role-worker]; team template(origin=static) allow[deepseek-official/role-worker]; external exists=yes, hard=unspecified"
+          },
+          "availability": "available"
+        }
+      },
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "label": "leader",
+        "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+        "createdAt": "2026-09-25T17:18:55.817Z",
+        "lifecycle": "RUNNING",
+        "contextPolicy": "persistent",
+        "effectiveConfig": {
+          "model": {
+            "value": null,
+            "source": "blueprint",
+            "state": "unavailable"
+          },
+          "workspace": {
+            "value": null,
+            "source": "blueprint",
+            "state": "unavailable"
+          },
+          "permissions": {},
+          "autonomy": {
+            "value": null,
+            "source": "blueprint",
+            "state": "unavailable"
+          }
+        },
+        "liveActivity": {
+          "residency": "resident",
+          "lastActivityAt": "2026-09-25T17:18:56.284Z"
+        }
+      }
+    ],
+    "ledger": {
+      "latestSequence": 12,
+      "totalEntries": 12,
+      "byCategory": {
+        "team": 4,
+        "member": 2,
+        "lifecycle": 2,
+        "message": 0,
+        "control": 0,
+        "policy": 0,
+        "compatibility": 0,
+        "progress": 4
+      },
+      "pendingControlCount": 0
+    }
+  },
+  "member": {
+    "instanceId": "inst-1jzyvy90n6bm",
+    "templateId": "worker",
+    "label": "w-create",
+    "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "createdAt": "2026-09-25T17:18:56.155Z",
+    "lifecycle": "SETTLED",
+    "contextPolicy": "persistent",
+    "effectiveConfig": {
+      "model": {
+        "value": "deepseek-official/role-worker",
+        "source": "member-template",
+        "state": "inherited"
+      },
+      "workspace": {
+        "value": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+        "source": "instance-creation",
+        "state": "locked",
+        "locked": true
+      },
+      "permissions": {},
+      "autonomy": {
+        "value": null,
+        "source": "autonomy-overlay",
+        "state": "inherited"
+      }
+    },
+    "liveActivity": {
+      "residency": "resident",
+      "lastActivityAt": "2026-09-25T17:18:56.284Z"
+    },
+    "childSessionId": "session-team-child-b66a403f3cdb3b61c79bcd205a0c4fb3",
+    "modelState": {
+      "current": {
+        "value": "deepseek-official/role-worker",
+        "source": "member-template",
+        "state": "inherited"
+      },
+      "provenance": {
+        "layer": "template",
+        "origin": "static",
+        "recordId": null,
+        "explanation": "model: effective allow[deepseek-official/role-worker]; team template(origin=static) allow[deepseek-official/role-worker]; external exists=yes, hard=unspecified"
+      },
+      "availability": "available"
+    }
+  }
+}

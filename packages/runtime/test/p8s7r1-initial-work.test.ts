@@ -80,6 +80,7 @@ import {
   P6T2_NOW,
   P6T2_ROOT,
   P6T2_SEEDS,
+  TEST_STATIC_MODEL,
   createFakeLifecycleCommitPort,
   createP6T2World,
 } from './p6t2-helpers.js'
@@ -118,6 +119,7 @@ function fenceRuntime(world: P6T1World): TeamRuntime {
     blueprintCatalog: world.catalog,
     environmentFacts: world.ports.environmentFacts,
     externalPolicyFacts: world.ports.externalPolicyFacts,
+    staticModel: TEST_STATIC_MODEL,
     now: () => P6T2_NOW,
     lifecycleCommit: createFakeLifecycleCommitPort(world),
     workDelivery: {

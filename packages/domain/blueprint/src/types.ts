@@ -178,7 +178,15 @@ export interface BlueprintTemplate {
   readonly description?: string
   /** The persona prose for this template (required, non-empty). */
   readonly persona: string
-  /** Base model preference/policy token (interpreted later by the runtime). */
+  /**
+   * The role's model preference — a v1 model token (validated by
+   * `parseModelPreferenceToken`): a qualified `provider/model` route, or a
+   * bare model id whose provider is inherited from the deployment
+   * default's `staticModel.provider` at the runtime. Absent = no model
+   * preference (the deployment default stands). The runtime maps it to the
+   * bound template's `model` policy cell (the template's static value
+   * layer), where it sits below durable overrides.
+   */
   readonly modelPreference?: string
   /** Context policy token (invariant 29: frozen at instance creation). */
   readonly contextPolicy?: string

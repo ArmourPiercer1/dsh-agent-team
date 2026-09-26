@@ -52,6 +52,7 @@
 import type { MemberInstanceRecordDto } from '../../contracts/src/index.js';
 import type { TeamBlueprint } from '../../domain/blueprint/src/index.js';
 import type { ExternalPolicyFacts } from '../../domain/policy/src/index.js';
+import { type ModelSelection } from '../agent-setup/model/index.js';
 import type { ActivationProvider } from '../activation/index.js';
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js';
 import type { ActionSpec } from '../admission/actions.js';
@@ -63,6 +64,14 @@ export interface EffectContext {
     readonly repositories: TeamDomainRepositories;
     readonly activationProvider: ActivationProvider;
     readonly externalPolicyFacts: () => Promise<ExternalPolicyFacts>;
+    /** The deployment default model (the `staticModel`) — REQUIRED (PR #30
+     *  review-supplement P2-3; the P6-T2 default wiring always supplies the
+     *  deployment baseline): the baseline the bound template's MODEL-ONLY
+     *  `modelPreference` shorthand inherits its provider from in the
+     *  `team_inspect_config` effective-policy read (the model-preference
+     *  routing fix). An ABSENT preference still contributes no inspect-time
+     *  model grant (no-preference behavior unchanged). */
+    readonly staticModel: ModelSelection;
     readonly now: () => string;
     readonly spec: ActionSpec;
     readonly request: TeamRuntimeActionRequest;

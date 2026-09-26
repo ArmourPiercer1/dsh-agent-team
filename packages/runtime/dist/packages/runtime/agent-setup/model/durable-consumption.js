@@ -13,6 +13,13 @@
  *
  * - `allow` (well-formed)   -> the first `provider/model` item WINS (the
  *   durable value drives the next request's model call);
+ * - the bound template's static `model` value (its `modelPreference`,
+ *   fed through `templateValues` — the model-preference routing fix)
+ *   resolves at the resolver's `template` layer (provenance
+ *   template/static, no record id): it WINS over the `unspecified`
+ *   fail-closed default (so a declared preference never degrades to the
+ *   deployment default) but stays BELOW the record-backed overlays /
+ *   human override and the external hard facts;
  * - `unspecified` (the Team
  *   domain's fail-closed default — no Team layer granted the cell) -> the
  *   WORLD PROVIDER DEFAULT (the `baseline`) applies: the Team domain did
@@ -36,23 +43,10 @@
  */
 import { resolveActivationPolicy } from '../../activation/index.js';
 import { cellProvenance, } from '../../mutation/cell-provenance.js';
-/**
- * Parse one durable model allow item (`provider/model`, split at the first
- * `/`). Fail-closed: anything that does not parse yields `undefined`
- * (the consumer then refuses to select a model — never guessed).
- * @param item - the durable item string.
- * @returns the parsed selection, or undefined when malformed.
- */
-export function parseModelItem(item) {
-    const sep = item.indexOf('/');
-    if (sep <= 0 || sep === item.length - 1)
-        return undefined;
-    const provider = item.slice(0, sep);
-    const model = item.slice(sep + 1);
-    if (provider.length === 0 || model.length === 0)
-        return undefined;
-    return { provider, model };
-}
+import { parseModelItem } from './route.js';
+// `parseModelItem` now lives in ./route.js (the single route-grammar
+// site; the public surface is unchanged through the ./index.js re-export).
+export { parseModelItem };
 /**
  * Map the frozen effective policy's `model` cell onto a concrete selection
  * plus the full §18.3 provenance. Pure and deterministic.
@@ -105,8 +99,14 @@ export function modelConsumptionView(policy, baseline, options = {}) {
  *   malformed (fail closed).
  */
 export function resolveDurableModelSelection(args) {
-    const { rootSessionId, instanceId, overrides, external, baseline, appliedRecordIds } = args;
-    const policy = resolveActivationPolicy({ rootSessionId, instanceId, overrides, external });
+    const { rootSessionId, instanceId, overrides, external, baseline, appliedRecordIds, templateValues } = args;
+    const policy = resolveActivationPolicy({
+        rootSessionId,
+        instanceId,
+        overrides,
+        external,
+        ...(templateValues !== undefined ? { templateValues } : {}),
+    });
     const refs = overrides.map((record) => ({
         recordId: record.recordId,
         kind: record.kind,

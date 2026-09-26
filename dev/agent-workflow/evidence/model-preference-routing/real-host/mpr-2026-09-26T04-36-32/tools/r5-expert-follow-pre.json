@@ -1,0 +1,29 @@
+{
+  "status": 200,
+  "body": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "follow-up",
+      "rootSessionId": "session-mpr-t1-mpr-2026-09-26T04-36-32",
+      "callerRole": "leader",
+      "targetInstanceId": "inst-0vgddd806xco",
+      "effect": {
+        "kind": "work-admitted",
+        "instanceId": "inst-0vgddd806xco",
+        "fromLifecycle": "CREATED",
+        "lifecycleCommitted": true,
+        "sequence": 18,
+        "replayed": false,
+        "settled": true,
+        "settledSequence": 21,
+        "memberResult": {
+          "requestToken": "tok-r5-follow-pre-hviitpon",
+          "status": "succeeded",
+          "body": "ack:role-expert:pre:mpr-2026-09-26T04-36-32"
+        }
+      },
+      "requestToken": "tok-r5-follow-pre-hviitpon"
+    }
+  }
+}

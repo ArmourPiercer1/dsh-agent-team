@@ -1,0 +1,37 @@
+{
+  "status": 200,
+  "body": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "list-members",
+      "rootSessionId": "session-mpr-t1-mpr-2026-09-25T17-16-32",
+      "callerRole": "leader",
+      "effect": {
+        "kind": "members-listed",
+        "members": [
+          {
+            "instanceId": "inst-0dp055m12a3d",
+            "templateId": "worker",
+            "label": "w-deleg",
+            "lifecycle": "SETTLED",
+            "childSessionId": "session-team-child-dfb1f9c1824f10a0ea1b1a7841b0999f"
+          },
+          {
+            "instanceId": "inst-1cxb05i1872g",
+            "templateId": "worker",
+            "label": "w-create",
+            "lifecycle": "SETTLED",
+            "childSessionId": "session-team-child-4a0a383b1bfbcf42398528fd07555108"
+          },
+          {
+            "instanceId": "inst-leader",
+            "templateId": "leader",
+            "label": "leader"
+          }
+        ]
+      },
+      "requestToken": "tok-r4-members-itlezztx"
+    }
+  }
+}

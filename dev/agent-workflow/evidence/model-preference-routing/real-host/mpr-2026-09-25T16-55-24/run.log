@@ -1,0 +1,16 @@
+[mpr-smoke 2026-09-25T16:55:24.516Z] pre: stable-instance probe (read-only, zero-touch): [{"url":"http://127.0.0.1:3080","status":401,"error":null},{"url":"http://127.0.0.1:3180","status":401,"error":null}]
+[mpr-smoke 2026-09-25T16:55:24.759Z] pre: test-use pristine @ 46a7f68b09 (HEAD source: git)
+[mpr-smoke 2026-09-25T16:55:24.760Z] blueprints written: team.mpr-main, team.mpr-a, team.mpr-b (+ inline anchor team.mpr-anchor)
+[mpr-smoke 2026-09-25T16:55:24.765Z] mock: mock: listening on 127.0.0.1:3496
+[mpr-smoke 2026-09-25T16:55:24.765Z] mock model on 3496; DEEPSEEK_BASE_URL set
+[mpr-smoke 2026-09-25T16:55:24.765Z] profile: profile not initialized yet — running a throwaway boot to let the host create it
+[mpr-smoke 2026-09-25T16:55:26.268Z] profile: throwaway boot OK: http://127.0.0.1:3181/?token=yc6xB48VHVDYJG2L2BLMkhZFtVxa68aGNjjG66osE5A
+[mpr-smoke 2026-09-25T16:55:26.326Z] profile initialized by the throwaway boot
+[mpr-smoke 2026-09-25T16:55:26.327Z] booting host 1 (create) on port 3181 …
+[mpr-smoke 2026-09-25T16:55:27.590Z] host 1 up: http://127.0.0.1:3181 (token cookie acquired)
+[mpr-smoke 2026-09-25T16:55:27.664Z] dump-config: the row carries the production+p6t6 rows AND our anchor/staticModel/blueprintDir (insert-sequence shape verified); the 3 saved blueprints exist on disk
+[mpr-smoke 2026-09-25T16:58:28.159Z] FATAL (kit-level, run aborted): Error: p6t6 readiness not reached in 180000ms (want root=session-mpr-boot-mpr-2026-09-25T16-55-24 phase=create)
+    at p6t6StateReady (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:727:39)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async run (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:983:3)
+    at async main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/model-preference-routing/tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs:1404:15)

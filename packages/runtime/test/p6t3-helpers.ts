@@ -53,6 +53,7 @@ import type {
   P6T1World,
   P6T1WorldOptions,
 } from './p6t1-helpers.js'
+import { TEST_STATIC_MODEL } from './p6t2-helpers.js'
 
 /** The P6-T3 world's team root (the P6-T1 fixture root: one world, one team). */
 export const P6T3_ROOT = String(P6T1_FIXTURE.rootSessionId)
@@ -231,6 +232,7 @@ export function createP6T3Runtime(world: P6T1World): TeamRuntime {
     blueprintCatalog: world.catalog,
     environmentFacts: world.ports.environmentFacts,
     externalPolicyFacts: world.ports.externalPolicyFacts,
+    staticModel: TEST_STATIC_MODEL,
     now: () => P6T3_NOW,
   })
 }

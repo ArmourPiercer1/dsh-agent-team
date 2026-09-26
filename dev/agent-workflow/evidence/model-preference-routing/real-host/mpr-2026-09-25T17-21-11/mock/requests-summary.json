@@ -1,0 +1,142 @@
+[
+  {
+    "seq": 1,
+    "path": "/v1/messages",
+    "model": "role-leader",
+    "firstText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:80f4edf19a91aacee97310767020153369c4110062dac938b1997653612fad96] mpr_r1_leader_mpr-2026-09-25",
+    "ack": "ack:role-leader:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 2,
+    "path": "/v1/messages",
+    "model": "role-leader",
+    "firstText": "[team-root-work requestToken=team-create:initial-work:sha256:80f4edf19a91aacee97310767020153369c4110062dac938b1997653612fad96] mpr_r1_leader_mpr-2026-09-25T17-21-11 You are the leader. Your first task: acknowledge your role.\n<system-reminde",
+    "ack": "ack:role-leader:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 3,
+    "path": "/v1/messages",
+    "model": "role-worker",
+    "firstText": "[team-work requestToken=tok-r2-deleg-xnn2v55k] mpr_r2_w_deleg_mpr-2026-09-25T17-21-11 Worker task: acknowledge your role and finish.\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance w",
+    "ack": "ack:role-worker:deleg:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 4,
+    "path": "/v1/messages",
+    "model": "role-worker",
+    "firstText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=tok-r2-deleg-xnn2v55k] mpr_r2_w_deleg_mpr-2026-09-25T17-21-11 Worker task: acknowledge your role and finish.\"}]",
+    "ack": "ack:role-worker:deleg:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 5,
+    "path": "/v1/messages",
+    "model": "role-worker",
+    "firstText": "[team-work requestToken=tok-r3-follow-9jyr52it] mpr_r3_w_create_mpr-2026-09-25T17-21-11 Follow-up worker task: acknowledge and finish.\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance",
+    "ack": "ack:role-worker:create:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 6,
+    "path": "/v1/messages",
+    "model": "role-worker",
+    "firstText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=tok-r3-follow-9jyr52it] mpr_r3_w_create_mpr-2026-09-25T17-21-11 Follow-up worker task: acknowledge and finish.\"}]",
+    "ack": "ack:role-worker:create:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 7,
+    "path": "/v1/messages",
+    "model": "override-worker",
+    "firstText": "[team-work requestToken=tok-r2-deleg-xnn2v55k] mpr_r2_w_deleg_mpr-2026-09-25T17-21-11 Worker task: acknowledge your role and finish.\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance w",
+    "ack": "ack:role-worker:override:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 8,
+    "path": "/v1/messages",
+    "model": "role-expert",
+    "firstText": "[team-work requestToken=tok-r5-follow-pre-fm6dv88b] mpr_r5_expert_pre_mpr-2026-09-25T17-21-11 Expert task (pre-restart): acknowledge and finish.\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them a",
+    "ack": "ack:role-expert:pre:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 9,
+    "path": "/v1/messages",
+    "model": "role-expert",
+    "firstText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=tok-r5-follow-pre-fm6dv88b] mpr_r5_expert_pre_mpr-2026-09-25T17-21-11 Expert task (pre-restart): acknowledge and finish.\"}]",
+    "ack": "ack:role-expert:pre:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 10,
+    "path": "/v1/messages",
+    "model": "global-default",
+    "firstText": "[team-work requestToken=tok-r7-control-zctmergt] mpr_r7_control_mpr-2026-09-25T17-21-11 Control task: acknowledge and finish.\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when app",
+    "ack": "ack:global-default:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 11,
+    "path": "/v1/messages",
+    "model": "global-default",
+    "firstText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=tok-r7-control-zctmergt] mpr_r7_control_mpr-2026-09-25T17-21-11 Control task: acknowledge and finish.\"}]",
+    "ack": "ack:global-default:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 12,
+    "path": "/v1/messages",
+    "model": "role-a-leader",
+    "firstText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:61d907af67bd043c9fa2be897b2127df33066b7450d64dd0d9485e88adf09723] mpr_r8_a_lead_mpr-2026-09-25",
+    "ack": "ack:role-a-leader:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 13,
+    "path": "/v1/messages",
+    "model": "role-a-leader",
+    "firstText": "[team-root-work requestToken=team-create:initial-work:sha256:61d907af67bd043c9fa2be897b2127df33066b7450d64dd0d9485e88adf09723] mpr_r8_a_lead_mpr-2026-09-25T17-21-11 Team A leader: acknowledge and finish.\n<system-reminder>\nThe following work",
+    "ack": "ack:role-a-leader:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 14,
+    "path": "/v1/messages",
+    "model": "role-a",
+    "firstText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=tok-r8-a-deleg-fxr0n6rb] mpr_r8_a_worker_mpr-2026-09-25T17-21-11 Team A worker task: acknowledge and finish.\"}]",
+    "ack": "ack:role-a:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 15,
+    "path": "/v1/messages",
+    "model": "role-a",
+    "firstText": "[team-work requestToken=tok-r8-a-deleg-fxr0n6rb] mpr_r8_a_worker_mpr-2026-09-25T17-21-11 Team A worker task: acknowledge and finish.\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance w",
+    "ack": "ack:role-a:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 16,
+    "path": "/v1/messages",
+    "model": "role-b-leader",
+    "firstText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:eed965cfce47a5e9854d4245e6489e5d4bcdef9a6f49eabfe33c2d7aac5eccc3] mpr_r8_b_lead_mpr-2026-09-25",
+    "ack": "ack:role-b-leader:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 17,
+    "path": "/v1/messages",
+    "model": "role-b-leader",
+    "firstText": "[team-root-work requestToken=team-create:initial-work:sha256:eed965cfce47a5e9854d4245e6489e5d4bcdef9a6f49eabfe33c2d7aac5eccc3] mpr_r8_b_lead_mpr-2026-09-25T17-21-11 Team B leader: acknowledge and finish.\n<system-reminder>\nThe following work",
+    "ack": "ack:role-b-leader:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 18,
+    "path": "/v1/messages",
+    "model": "role-b",
+    "firstText": "[team-work requestToken=tok-r8-b-deleg-e9t705jc] mpr_r8_b_worker_mpr-2026-09-25T17-21-11 Team B worker task: acknowledge and finish.\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance w",
+    "ack": "ack:role-b:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 19,
+    "path": "/v1/messages",
+    "model": "role-b",
+    "firstText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=tok-r8-b-deleg-e9t705jc] mpr_r8_b_worker_mpr-2026-09-25T17-21-11 Team B worker task: acknowledge and finish.\"}]",
+    "ack": "ack:role-b:mpr-2026-09-25T17-21-11"
+  },
+  {
+    "seq": 20,
+    "path": "/v1/messages",
+    "model": "role-expert",
+    "firstText": "[team-work requestToken=tok-r5-follow-pre-fm6dv88b] mpr_r5_expert_pre_mpr-2026-09-25T17-21-11 Expert task (pre-restart): acknowledge and finish.\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them a",
+    "ack": "ack:role-expert:post:mpr-2026-09-25T17-21-11"
+  }
+]

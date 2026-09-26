@@ -32,7 +32,7 @@ import type { MemberInstanceRecordDto, TeamSessionRecordDto } from '../../contra
 import type { BlueprintCatalog, QuotaSpec, TeamBlueprint } from '../../domain/blueprint/src/index.js';
 import type { CompatibilityResult, EnvironmentFact, RequirementInput, RequirementType, WarningAcknowledgement } from '../../domain/compatibility/src/index.js';
 import type { ContextPolicy } from '../../domain/member/src/index.js';
-import type { AutonomyOverlayRecord, EffectivePolicy, ExternalPolicyFacts, HumanOverrideRecord, PolicyEntry } from '../../domain/policy/src/index.js';
+import type { AutonomyOverlayRecord, EffectivePolicy, ExternalPolicyFacts, HumanOverrideRecord, PolicyEntry, TemplatePolicy } from '../../domain/policy/src/index.js';
 import type { GovernanceOverrideRecord, OperationRecord } from '../../storage/schema/index.js';
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js';
 import type { ActivationSource, MemberActivationRequest } from './types.js';
@@ -242,17 +242,27 @@ export declare function selectPolicyOverrides(overrides: readonly GovernanceOver
  * durable transition store yet; invariant 40 owns transitions).
  *
  * The OPTIONAL `templateValues` carries the bound Blueprint template's
- * INITIAL STATIC grant for the `mcp` cell (plan MCP_BLUEPRINT_INITIAL_GRANT
- * §4.1): the template's `capabilities.mcp` entry ONLY when
- * `kind === 'allow'` (a deny / a capabilities-less legacy template / a
- * future non-allow state contribute nothing — they stay fail-closed or
- * governed dynamically in Alpha.3+). The value sits at the policy
- * resolver's `template` value layer (provenance template/static, no record
- * id): above the PolicyState, below the record-backed templateOverlay /
- * instanceOverlay / humanOverride layers and the external hard facts — so
- * a durable deny/tighten still wins at the next boundary, and no synthetic
- * durable record is ever created (the bound Blueprint snapshot itself is
- * the durable, immutable source of the grant).
+ * STATIC policy cells — the generic template value layer of the resolver
+ * (the model-preference routing fix generalized the former MCP-only shape;
+ * currently `model` and `mcp` are the production callers that depend on
+ * it):
+ *
+ * - `mcp` — the template's `capabilities.mcp` entry ONLY when
+ *   `kind === 'allow'` (plan MCP_BLUEPRINT_INITIAL_GRANT §4.1; a deny / a
+ *   capabilities-less legacy template / a future non-allow state
+ *   contribute nothing — they stay fail-closed or governed dynamically in
+ *   Alpha.3+);
+ * - `model` — the template's `modelPreference` as an `allow` grant
+ *   (derivation: `initialTemplateModelGrantOf`; an absent / malformed
+ *   preference contributes nothing).
+ *
+ * Every value sits at the policy resolver's `template` value layer
+ * (provenance template/static, no record id): above the PolicyState, below
+ * the record-backed templateOverlay / instanceOverlay / humanOverride
+ * layers and the external hard facts — so a durable deny/tighten still
+ * wins at the next boundary, and no synthetic durable record is ever
+ * created (the bound Blueprint snapshot itself is the durable, immutable
+ * source of the grants).
  *
  * @param args - the resolution inputs.
  * @returns the frozen effective policy (explainable per-cell, provenance
@@ -266,10 +276,9 @@ export declare function resolveActivationPolicy(args: {
     readonly instanceId: string;
     readonly overrides: readonly GovernanceOverrideRecord[];
     readonly external: ExternalPolicyFacts;
-    /** The bound template's initial static `mcp` grant (absent = none). */
-    readonly templateValues?: {
-        readonly mcp?: PolicyEntry;
-    };
+    /** The bound template's static policy cells (`model` / `mcp`; absent =
+     *  no template static values — the empty-template contract). */
+    readonly templateValues?: TemplatePolicy['values'];
 }): EffectivePolicy;
 /** The per-capability effective values of one resolution (lossless-JSON view). */
 export declare function effectivePolicyValues(policy: EffectivePolicy): Record<string, PolicyEntry>;

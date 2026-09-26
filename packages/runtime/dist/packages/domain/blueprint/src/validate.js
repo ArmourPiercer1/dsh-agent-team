@@ -24,6 +24,11 @@
  * - template references resolvable: every `memberEnvelopes[].templateId`
  *   names a template declared in the same document;
  * - requirements well-formed with unique (domain, name) pairs;
+ * - `modelPreference`, when present, is a legal v1 model token — either a
+ *   qualified `provider/model` route (split at the first `/`, both sides
+ *   non-empty) or a bare model-only shorthand (its provider is inherited
+ *   from the deployment default at the runtime); no whitespace / control
+ *   characters (`MALFORMED_DTO`, reason `invalid-model-preference`);
  * - mutation envelopes self-consistent (no operation in both allow and
  *   deny);
  * - PolicyState definitions reference only fields that exist in the
@@ -42,6 +47,7 @@ import { assertNoUnknownFields, assertPlainRecord, } from '../../../contracts/sr
 import { BLUEPRINT_CAPABILITIES_FIELDS, BLUEPRINT_DOCUMENT_SCHEMA_VERSION, BLUEPRINT_ENVELOPE_FIELDS, BLUEPRINT_MEMBER_ENVELOPE_ENTRY_FIELDS, BLUEPRINT_POLICY_REFERENCEABLE_FIELDS, BLUEPRINT_POLICY_STATE_FIELDS, BLUEPRINT_QUOTA_FIELDS, BLUEPRINT_QUOTA_SPEC_FIELDS, BLUEPRINT_REQUIREMENT_FIELDS, BLUEPRINT_TEMPLATE_FIELDS, BLUEPRINT_TOP_LEVEL_FIELDS, CAPABILITY_ITEM_MAX_LENGTH, CAPABILITY_POLICY_DECISIONS, CONTEXT_POLICY_MAX_LENGTH, DESCRIPTION_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH, ENVELOPE_OPERATION_MAX_LENGTH, ENVELOPE_OPERATION_PATTERN, METADATA_KEY_MAX_LENGTH, METADATA_KEY_PATTERN, METADATA_VALUE_MAX_LENGTH, MODEL_PREFERENCE_MAX_LENGTH, PERSONA_MAX_LENGTH, PERMISSION_PATH_MAX_LENGTH, PERMISSION_POLICY_DEFAULTS, PERMISSION_POLICY_FIELDS, PERMISSION_RESOURCE_KINDS, PERMISSION_RULE_FIELDS, PERMISSION_TOOL_NAMES, POLICY_STATE_ID_MAX_LENGTH, POLICY_STATE_ID_PATTERN, REQUIREMENT_DOMAIN_MAX_LENGTH, REQUIREMENT_DOMAIN_PATTERN, REQUIREMENT_NAME_MAX_LENGTH, REQUIREMENT_NAME_PATTERN, SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS, } from './schema.js';
 import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js';
 import { deriveContentHash } from './hash.js';
+import { parseModelPreferenceToken } from './model-preference.js';
 /** Control characters forbidden in any string field (mirrors contracts). */
 // eslint-disable-next-line no-control-regex -- intentional scanner: rejects control characters in blueprint strings
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
@@ -152,6 +158,10 @@ function stripUndefined(obj) {
 // ---------------------------------------------------------------------------
 // sub-structure validators
 // ---------------------------------------------------------------------------
+// The strict v1 `modelPreference` token grammar lives in the SINGLE domain
+// parser (`./model-preference.js`, PR #30 review-supplement P2-2) and is
+// imported above — ONE grammar shared by the validator, the runtime
+// derivation, and the legacy importer (no mirror sites).
 /**
  * Validate one template (leader or member). Both share one closed schema.
  *
@@ -185,6 +195,10 @@ function validateTemplate(raw, path, role) {
         required: false,
         maxLength: MODEL_PREFERENCE_MAX_LENGTH,
     });
+    if (modelPreference !== undefined &&
+        parseModelPreferenceToken(modelPreference) === undefined) {
+        throw teamContractError('MALFORMED_DTO', `field ${path}.modelPreference is not a legal model token: expected a qualified 'provider/model' route (split at the first '/', both sides non-empty) or a bare model id, with no whitespace — got ${JSON.stringify(modelPreference)}`, { path: `${path}.modelPreference`, reason: 'invalid-model-preference' });
+    }
     const contextPolicy = takeString(record, 'contextPolicy', path, {
         required: false,
         maxLength: CONTEXT_POLICY_MAX_LENGTH,

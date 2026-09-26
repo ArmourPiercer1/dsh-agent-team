@@ -331,6 +331,7 @@ import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
 // blueprint persona onto the real DSH Agent at create/setup.
 import { parseBlueprint, PERMISSION_TOOL_NAMES } from '../../../../domain/blueprint/src/index.js'
 import { initialMcpGrantOf, staticCapabilitiesOf } from '../../../../domain/policy/src/index.js'
+import { initialTemplateModelGrantOf } from '../../../agent-setup/model/index.js'
 import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
 // alpha.1 (plan §10): the capability wiring adapters — the team tool
 // selector + built-in tool deny (T2) and the skill/MCP adapters + catalog
@@ -963,17 +964,6 @@ export function createAgentBindings(deps) {
       capabilityExists: { ...(facts?.capabilityExists ?? {}) },
     }
     const applied = existing !== undefined ? [...existing.appliedRecordIds] : []
-    const modelArgs = {
-      rootSessionId: teamRoot,
-      instanceId,
-      overrides,
-      external,
-      baseline: { ...config.staticModel },
-    }
-    if (applied.length > 0) {
-      modelArgs.appliedRecordIds = applied
-    }
-    const { view: modelView } = consumption.model.resolveDurableModelSelection(modelArgs)
     // MCP initial static grant (plan MCP_BLUEPRINT_INITIAL_GRANT §4.3):
     // the bound template's capabilities.mcp (kind === 'allow') is the
     // role's INITIAL governance grant for the mcp cell — re-derived from
@@ -993,9 +983,38 @@ export function createAgentBindings(deps) {
     // read run under the NORMALIZED owning teamRoot (never the raw
     // `teamRootSid`, which is `undefined` for the state route and the
     // fresh-create window and would silently resolve the boot root).
-    const grantTemplate = locateTemplate(sessionId, instanceId, templateIdHint, teamRoot, bindPath)
-    const grantCaps = staticCapabilitiesOf(getBoundBlueprint(teamRoot), grantTemplate)
-    const initialTemplateMcp = initialMcpGrantOf(grantCaps)
+    //
+    // model-preference routing fix (§4.6): the template locate runs BEFORE
+    // the model resolution (the pre-fix order resolved the model cell
+    // first, WITHOUT the template's static model value, so a declared
+    // `modelPreference` degraded to the `unspecified` -> staticModel
+    // baseline — the bug). The SAME bound template then drives BOTH
+    // initial grants (model + mcp) — one locate, two derivations, no
+    // second locate with a different fallback path anywhere in this setup.
+    const boundTemplate = locateTemplate(sessionId, instanceId, templateIdHint, teamRoot, bindPath)
+    const boundBlueprint = getBoundBlueprint(teamRoot)
+    const initialTemplateModel = initialTemplateModelGrantOf(boundTemplate, config.staticModel)
+    const initialTemplateMcp = initialMcpGrantOf(staticCapabilitiesOf(boundBlueprint, boundTemplate))
+    // The generic template static values (model + mcp) — the SAME shape
+    // `resolveActivationPolicy` (and the step-8 frozen policy) accepts;
+    // an empty object never fakes template authority (the `unspecified`
+    // contract stands when the template declares no static grants).
+    const templateValues = {
+      ...(initialTemplateModel !== undefined ? { model: initialTemplateModel } : {}),
+      ...(initialTemplateMcp !== undefined ? { mcp: initialTemplateMcp } : {}),
+    }
+    const modelArgs = {
+      rootSessionId: teamRoot,
+      instanceId,
+      overrides,
+      external,
+      baseline: { ...config.staticModel },
+      ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
+    }
+    if (applied.length > 0) {
+      modelArgs.appliedRecordIds = applied
+    }
+    const { view: modelView } = consumption.model.resolveDurableModelSelection(modelArgs)
     // multi-mcp (contract I4; T12-H1 generalized to 0..N): the PER-SERVER
     // views — one resolveDurableMcpFacet call per CONFIGURED server (the
     // resolver is the unchanged C4 policy authority; the serverName
@@ -1017,7 +1036,11 @@ export function createAgentBindings(deps) {
     // part of the contract — the setup persists it in the consumption
     // state (`teamRootSessionId`) so every later rootless re-resolution
     // (the state route) runs under the same root.
-    return { instanceId, teamRoot, modelView, mcpViews }
+    // model-preference routing fix (§4.6): `boundTemplate` is the SAME
+    // located template the model + mcp grants were derived from — the
+    // setup reuses it for the static-capabilities / permissions / persona
+    // projections (one bound snapshot, one template per setup).
+    return { instanceId, teamRoot, modelView, mcpViews, boundTemplate }
   }
 
   /**
@@ -1397,7 +1420,7 @@ export function createAgentBindings(deps) {
       // resolution ran under — persisted into the consumption state so the
       // rootless state-route re-resolution of the SAME session runs under
       // the same root (no boot-root default anywhere).
-      const { modelView, mcpViews, instanceId, teamRoot } = resolveConsumptionViews(
+      const { modelView, mcpViews, instanceId, teamRoot, boundTemplate } = resolveConsumptionViews(
         sessionId,
         instanceIdHint,
         teamRootSid,
@@ -1417,15 +1440,16 @@ export function createAgentBindings(deps) {
       // FACT 3a: the projection deliberately does not carry it). ABSENT
       // policy = no permission listener at all (the alpha.1 / legacy path,
       // byte-for-byte unchanged — the absent-permissions test is the proof).
-      // PR #23 review fix (P1-A): the setup's own locate + bound-blueprint
-      // read run under the SAME normalized owning teamRoot the consumption
-      // resolution used (never the raw hint — absent hint = the boot root,
-      // which is WRONG for a session owned by another team root).
-      const boundTemplate = locateTemplate(sessionId, instanceId, templateIdHint, teamRoot, bindPath)
-      // BP-F (issue #2 blueprint-loading, plan §11.2): the projection uses
-      // the SAME per-root bound snapshot locateTemplate just resolved (the
-      // per-root cache returns the identical parsed object — one bound
-      // snapshot per AgentSetup).
+      // PR #23 review fix (P1-A): the setup's own bound-blueprint read runs
+      // under the SAME normalized owning teamRoot the consumption resolution
+      // used (never the raw hint — absent hint = the boot root, which is
+      // WRONG for a session owned by another team root).
+      // model-preference routing fix (§4.6): `boundTemplate` IS the
+      // locateTemplate result the consumption resolution already derived
+      // under the owning teamRoot with the fresh-create hint gate — the
+      // setup reuses it (same owning root, same bound snapshot, same
+      // template) instead of a second locate with a different fallback
+      // path.
       const capabilities = staticCapabilitiesOf(getBoundBlueprint(teamRoot), boundTemplate)
       const permissionPolicy = boundTemplate.capabilities?.permissions
       const ref = { current: modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection, assembled: undefined }
