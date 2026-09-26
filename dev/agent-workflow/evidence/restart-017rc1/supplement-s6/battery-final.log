@@ -1,0 +1,47 @@
+=== S6 battery @ 2026-09-26T18:18:54Z tip=0ed706572cc181af00f19036adb04c7d32919caf ===
+=== [1/6] typecheck (all) ===
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+TYPECHECK_EXIT=0
+=== [2/6] build (all) ===
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+BUILD_EXIT=0
+=== [3/6] build:composition (incl. place-dist-glue + check-artifacts A-D) ===
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/client/composition-shim/client-bundle.js (987725 B)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/client/composition-shim/package.json
+[check-artifacts-committed] OK: 1196 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+COMPOSITION_EXIT=0
+=== [3b/6] check-artifacts-committed (explicit, post-commit gate) ===
+[check-artifacts-committed] OK: 1196 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+ARTIFACTS_EXIT=0
+=== [4/6] focused runtime suites (activation core + glue + startup fence + d2) ===
+ Test Files  4 passed (4)
+      Tests  58 passed (58)
+FOCUSED_RUNTIME_EXIT=0
+=== [5/6] focused client suite (S3 characterization spike) ===
+dev/agent-workflow/evidence/restart-017rc1/supplement-s6/s6-battery.sh: line 69: cd: packages/client: No such file or directory
+FOCUSED_CLIENT_EXIT=1
+=== [6/6] root full suite (fresh .tmp-fault in the SAME command) ===
+ Test Files  11 failed | 316 passed (327)
+      Tests  20 failed | 3987 passed (4007)
+ROOTTEST_PROCESS_EXIT=1
+--- failed file set (debt comparison) ---
+ ❯ packages/client/test/s3-client-generation-spike.test.ts (0 test)
+ ❯ packages/domain/test/t1-capability-schema.test.ts (17 tests | 9 failed) 24ms
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts (18 tests | 1 failed) 38ms
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (5 tests | 1 failed) 16ms
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 5 failed) 14ms
+ ❯ packages/runtime/test/p6t3-restart.test.ts (5 tests | 2 failed) 6ms
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-glue-handoff-ports.test.ts (0 test)
+ ❯ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests | 1 failed) 12ms
+ ❯ packages/tools/test/p6t6-actions.test.ts (14 tests | 1 failed) 11ms
+=== S6 BATTERY DONE ===
+BATTERY_EXIT=0

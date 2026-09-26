@@ -3999,3 +3999,21 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **S5a 修复实宿主确认**（重跑内）：World A boot-1/2 均 PASS（marker+auth+p6t6+boot root live+fence probe），fence 探针 `agent/created veto=false` 无 exact disposed 对 = exact-claim fence 通过自家 bootstrap（S5a 前为 21ms 内 created→disposed）。
 - **红线守纪**：:3080/:3180/:3491 零触碰（post-stable-probe 留痕）；kit 仅 3492/3497 且已停（端口空闲）；CORE PATCH BUDGET = 0；test-use pristine；:3080 用户 GUI 未动；全程 workspace-write；零上游修改。
 - **下一步**：S6 = 终 tip 电池（typecheck/build/build:composition+check-artifacts/verify-zero-core@main/focused 套件/root 全套件 + §6 三标记；`supplement-s6/s6-battery.sh` 已备，等 kit world 全清后跑）→ STATUS.md 补充行 → PR body 定稿（`pr-body-draft.md` 填 `<<S5:*>>`/`<<S6:*>>`；§12 Q4 = 诚实 NO-GO + NO-GO 文档指针 + A′/B+ 选项 + reload 为裁决前恢复手段；**显式请 lead-reviewer 裁决 A′ vs B+**）→ REST PATCH /pulls/31 → push（仅 `task/team-restart-017rc1` FF，零 force-push；GitHub 代理 TLS 仍 down，推送前复测）。
+
+---
+
+## 2026-09-27 S6 终验 + 簿记（主代理）— S6 ✅（本提交）
+
+- **终 tip 电池 @ `0ed70657`**（kit world 全清、端口空闲后执行；`supplement-s6/s6-battery.sh`）：
+  - `pnpm typecheck` 0 / `pnpm build` 0 / `pnpm build:composition` 0（place-dist-glue 步骤在列）/ `check-artifacts-committed` **1196 files OK（含 check-D glue placement）**；
+  - `verify-zero-core --host tests/deepseek-harness-test-use`（**main checkout** 执行）= **PASS 0 findings**（test-use pristine 终证）；
+  - focused：runtime 四套件（activation + glue + startup-fence + d2-s6）**4 文件 58 测试 0F**；client S3 spike **1/1**（包级命令 `cd packages/client && npx vitest run test/s3-client-generation-spike.test.ts`；电池脚本 step 5 发生一次 shell cd 漂移致该步未跑，主代理人工补跑闭环并留痕 `s6-focused-client-manual.log`）；
+  - root 全套件 **run-1**：11F/20T — 与债务基线（commit5 post-merge：10F/21T）对比抓到**两处漂移**，定因并勘误（下）。
+- **run-1 漂移定因与勘误（零产品行为）**：
+  1. `p4t6-session-event-scan` 1F：pin 陈旧（expected 763, received 765）— S2 `team-session-startup-fence.test.ts` + S3 `s3-client-generation-spike.test.ts` 两个新可扫描文件（dev/ 证据目录不入扫描面）。勘误 = pin 763→765 + 增量叙事（零 denylist 词汇；隔离命中集不变 at 15；scanner 不变；single-writer pin bump 先例 = commit5 754→755 同型）。勘误后 10/10 PASS。
+  2. S3 spike 在 root 套件 file-level 0 test：`ReferenceError: window is not defined`（`@deepseek-ai/dsh-client-locale/lib/client.js` import 期）— root vitest = node 环境 + 无 client setup（setup-jsdom / linked-dsh-source-redirect）；spike 为 evidence-only（tsc 排除、断言零产品行为、头注释即包级验证命令）。勘误 = root `vitest.config.ts` include 排除该文件（保留 node_modules/dist 默认排除语义 + 注释定因）。
+- **root 全套件 run-2**：`rm -rf packages/testkit/test/.tmp-fault && pnpm test`（同命令）= **9 文件失败 | 317 通过 (326)；19 测试失败 | 3988 通过 (4007)** — 失败集 = 债务子集逐名（t1-capability-schema 9F / t2-blueprint-hash 1F / d3 1F / p6t3-mediation 5F / p6t3-restart 2F / p8s3b + t12a-b2 + t12a-glue-handoff 文件级 / p6t6-actions 1F；p6t1-parallel 本次 0F = 负载 flake 在 0–2F 区间）→ **§6 三标记：`ROOTTEST_PROCESS_EXIT=1`（既有债务致非零，如实记录）/ `ROOTTEST_BASELINE_EQUIVALENT=true` / `ROOTTEST_NEW_FAILURE_COUNT=0`**。
+- **STATUS.md**：最近更新行 = 补充修复轮全貌（S1→S6 + 裁决请求）；当前行刷新；rc1 轮降级为「此前」。
+- **PR body 定稿**（`supplement-s6/pr-body-draft.md`，= PATCH /pulls/31 内容）：提交链表 S1–S6 填实（S5a 行 + S5 行 + S6 行）/ §12 四问（Q1 F1 20× 数字、Q3 F3 数字、**Q4 = 诚实 NO-GO + NO-GO 文档指针 + A′/B+ 选项 + 裁决请求 + 裁决前 reload 恢复**）/ 验证节 = S6 电池全数（1196 / zero-core 0 / focused / root 三标记 / install 腿指针）/ 缺陷记录 #3 = S5a stale dist glue（md5 取证 + 三层漏检 + 实宿主复核）/ 红线节 / 证据指针（+ ROOT-CAUSE-s5a + 终判文件）。
+- **红线守纪**：本提交零产品行为改动（p4t6 pin + vitest.config = 测试基础设施勘误，零 denylist 词汇 / 安装面不变 1196）；CORE PATCH BUDGET = 0；test-use pristine 双证；:3080/:3180/:3491 零触碰；全程 workspace-write。
+- **下一步（唯一剩余）**：GitHub 代理 TLS 复测（09-26/27 两次均 handshake failed）→ 恢复后 REST PATCH /pulls/31（token `gh auth token`）+ push 仅 `task/team-restart-017rc1` FF（零 force-push，master 零触碰）→ 验证 PR clean/mergeable 状态 + 最终报告（S1–S3 + S5a 定因 + S5 结果 + §12 回答 + **显式 A′/B+ 裁决请求**）。
