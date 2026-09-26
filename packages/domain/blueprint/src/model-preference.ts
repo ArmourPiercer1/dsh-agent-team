@@ -36,10 +36,12 @@ export interface ParsedModelPreferenceToken {
   readonly model: string
 }
 
-// ECMAScript `\s` is the whitespace class (WhiteSpace ∪ LineTerminator): it
-// covers the ASCII space, the C0/C1 whitespace controls, U+00A0, U+1680,
-// U+180E, U+2000–U+200A, U+2028/2029, U+202F, U+205F, U+3000 and the BOM —
-// the superset of what any hand-enumerated table must reject.
+// ECMAScript `\s` is the whitespace class (WhiteSpace ∪ LineTerminator).
+// Relying on `\s` (the spec-defined set) rather than a hand-enumerated code-
+// point list is what makes this the one, stable grammar: it rejects the ASCII
+// space plus the full spec-defined Unicode whitespace set — e.g. the OGHAM
+// SPACE MARK (U+1680), which the old runtime hand-table omitted — with no
+// drift risk from re-listing code points.
 const WHITESPACE = /\s/
 // Non-whitespace C0 control range + DEL: a route is a single opaque
 // identifier pair, so any of these makes the token unparseable.

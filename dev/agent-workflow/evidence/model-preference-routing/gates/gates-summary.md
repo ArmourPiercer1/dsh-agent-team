@@ -64,3 +64,24 @@ round 1; `p6t1-parallel` load flake is present in BOTH runs = same set). Log:
 
 S6 MCP suites (all green in the full run): `mcp-blueprint-initial-grant` 32 /
 `multi-mcp-wiring` 47 / `p8s4b-mcp-facet` 25.
+
+---
+
+## P3 text corrections (2026-09-26, post-supplement)
+
+Three minor text/accuracy corrections (no logic change, no gate change, no
+new evidence files). Verification: `build` + `check:artifacts` **OK 1188 zero
+drift** (the P3-2 comment is emitted to the dist `.js`/`.d.ts`, so the dist was
+rebuilt) + affected focused suites green (`template-model-preference` 10/10,
+`t2-blueprint-validation` 69/69, `model-inspect-config` 7/7,
+`model-activation-step8` 4/4, `model-blueprint-initial-routing` 23/23).
+
+- **P3-1** — PR-body R6 row now states the real relationship (projection =
+  full `provider/model` route; `route.model == body.model`), not a three-string
+  literal equality.
+- **P3-2** — `model-preference.ts` comment no longer lists U+180E (removed from
+  the ECMAScript `\s` set in ES2020; `/\s/.test('\u180e') === false`); it now
+  references the spec production (WhiteSpace ∪ LineTerminator).
+- **#8** — `template-model-preference.test.ts` `S2 integration` →
+  `S2 defensive derivation regression` (unit-level over the shared pure helper,
+  not a live-boundary integration).

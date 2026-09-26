@@ -3831,3 +3831,12 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **簿记**：`graph.yaml` `model_preference_routing_20260926` 块更新（state = PR-OPEN-REVIEW-SUPPLEMENT，8 字段；PyYAML 复验 39 top-level keys OK）+ 本 log 追加 + `gates/gates-summary.md` + `PR-body.md`；证据 `evidence/model-preference-routing/full-suite/post-supplement-full.log` + `real-host/mpr-2026-09-26T04-36-32/`。
 - **提交/推送**：一次性推送授权（仅 task 分支 `fix/model-preference-routing`，无 force）→ commit（补充代码+测试+证据+簿记）→ push（FF）→ PR #30 body 经 REST `PATCH /pulls/30` 更新（追加 P2-1..P2-5 补充节 + 更新门禁实数）。
 - **状态**：PR #30 review-supplement 轮 5 项全交付 + green；PR #30 OPEN / MERGEABLE，待用户审查 + merge 裁决。
+
+### 2026-09-26（四）— model-preference-routing PR #30 P3 文案/注释/命名小修正轮（用户审查意见：P3-1 + P3-2 + #8，均不影响 merge）
+
+- **P3-1（PR body R6 措辞，纯 PR 描述修正）**：主 Merge gate 表格 R6 行原写 `body.model == effectiveConfig.model.value == modelState.current.value`（三字符串 literal equality），与实际不符 —— projection 携带**完整 route** `deepseek-official/role-worker`，wire `body.model` = model id `role-worker`，真实关系是 `projection.provider = 选定 provider`、`projection.model == body.model`。已改为与新 kit label 一致（`route.provider` = 选定 provider，`route.model` = `body.model`，非三字符串 equality）。
+- **P3-2（`model-preference.ts` Unicode 注释事实误差，纯文档级）**：注释原列 `U+180E`（MONGOLIAN VOWEL SEPARATOR）为 `\s` 覆盖集成员，但现代 Node/ECMAScript（ES2020 起）`/\s/.test('\u180e') === false` —— U+180E 已移出 ECMAScript whitespace 集。**代码本身无问题**（parser 逻辑不变；U+1680 拒绝正确）。已把注释改为引用 spec 生产式（WhiteSpace ∪ LineTerminator）而非手写 code-point 清单（手写清单正是误差来源），保留 U+1680 为动机例。Node 实测确认：U+1680/U+2000–U+200A/U+2028/2029/U+202F/U+205F/U+3000/BOM 均 match `\s`（reject），仅 U+180E 不 match。
+- **#8（测试命名残余，非 blocker）**：`template-model-preference.test.ts` 的 `S2 integration` describe 实为对 `initialTemplateModelGrantOf(...)` 的**直接 helper 单测**（非 live boundary integration）。已更名 `S2 defensive derivation regression` + 头注/内注改精确（live boundary 由 Gates D/E/F + 真实宿主 R1/R2 证明，非此处）。
+- **验证（比例性：均零逻辑变更，不跑全量/smoke）**：`pnpm build` + `git add packages/` + `check:artifacts` **OK 1188 零漂移**（P3-2 注释被 emit 到 dist `.js`/`.d.ts`，已重建）；受影响 focused 套件全绿（`template-model-preference` 10/10 + `model-inspect-config` 7/7 + `model-activation-step8` 4/4 + `model-blueprint-initial-routing` 23/23 = 44；`t2-blueprint-validation` 69/69）。p4t6 pin 不变（无增删文件，scanner 计文件非内容）。
+- **提交/推送**：一次性推送授权（仅 `fix/model-preference-routing`，无 force）→ commit（3 文件 + 簿记 + dist；零逻辑变更）→ push（FF）→ PR #30 body 经 REST `PATCH /pulls/30` 同步（P3 注记 + R6 行修正）。
+- **状态**：P3-1/P3-2/#8 全处理；PR #30 OPEN / MERGEABLE，待用户审查 + merge 裁决。

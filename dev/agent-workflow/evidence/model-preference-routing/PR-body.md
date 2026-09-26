@@ -114,7 +114,7 @@ request (not just the projection). **GREEN ×2** (consecutive exit 0; 36 checks,
 | R3 | create alone = no substantive turn; follow-up → `role-worker` |
 | R4 | durable human override → next request `override-worker` (record layer beats template-static; no synthetic override record) |
 | R5 | expert `role-expert` identical before **and** after cold-resume (re-derived from the bound Blueprint snapshot) |
-| R6 | three-way agreement: `body.model` == effectiveConfig.model.value == modelState.current.value (provenance `member-template` / `template` / `static`, recordId null) |
+| R6 | three-way agreement: the projection (effectiveConfig.model.value == modelState.current.value, provenance `member-template` / `template` / `static`, recordId null) carries the FULL route `deepseek-official/role-worker`, and its `.model` equals the ACTUAL provider request `body.model` (`role-worker`) — i.e. `route.provider` = the selected provider, `route.model` = `body.model` (NOT a three-string literal equality) |
 | R7 | no-`modelPreference` control → `global-default` (backward-compat locked) |
 | R8 | cross-root on one row: Team A `role-a`/`role-a-leader`, Team B `role-b`/`role-b-leader`, no leak |
 
@@ -194,6 +194,30 @@ Supplement gates all green: typecheck 8 pkgs exit 0 · `build` +
 **post − baseline = ∅** · MCP suites green · real-host smoke re-run
 `mpr-2026-09-26T04-36-32` (exit 0, fatal=null, R1–R8 + H1–H2 all PASS, H2
 detail = "port 3181/3496 free", R6 label consistent).
+
+### P3 text corrections (2026-09-26, post-supplement)
+
+Three minor text/accuracy corrections from a follow-up review (none change
+behavior or affect the merge):
+
+- **P3-1** — the R6 row above now states the real relationship (the projection
+  carries the full `provider/model` route; `route.model == body.model`), not a
+  three-string literal equality — aligned with the current kit label.
+- **P3-2** — `model-preference.ts` no longer lists U+180E MONGOLIAN VOWEL
+  SEPARATOR as part of `\s` (it was removed from the ECMAScript whitespace set
+  in ES2020; `/\s/.test('\u180e') === false`). The comment now references the
+  spec production (WhiteSpace ∪ LineTerminator) instead of a hand-listed
+  code-point set, keeping U+1680 as the motivating example.
+- **#8** — the `S2 integration` describe in `template-model-preference.test.ts`
+  is renamed to `S2 defensive derivation regression` (it is a unit-level test
+  over the shared pure helper, not a live-boundary integration; the live
+  boundary is proven by Gates D/E/F + real-host R1/R2).
+
+Verification: `build` + `check:artifacts` **OK 1188 zero drift**; affected
+focused suites green (`template-model-preference` 10/10,
+`t2-blueprint-validation` 69/69, `model-inspect-config` 7/7,
+`model-activation-step8` 4/4, `model-blueprint-initial-routing` 23/23). No
+logic change → no full-suite / smoke re-run required.
 
 ## Verification
 

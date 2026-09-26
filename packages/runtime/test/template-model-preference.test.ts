@@ -24,10 +24,11 @@
  * The two semantics MUST stay apart (P2-1): ABSENT -> `undefined` (the
  * unspecified -> staticModel fallback); PRESENT+MALFORMED -> throw.
  *
- * Unit level over the REAL pure helper — no live world needed: the
- * live-glue / activation / read-side wiring of the SAME derivation is
- * covered by Gates D/E/F (the live "no staticModel fallback" integration
- * proof is S2 below + real-host R1/R2).
+ * Unit level over the REAL pure helper — no live world needed. S2 below is a
+ * defensive DERIVATION regression (still unit-level over the same pure helper):
+ * the LIVE boundary behavior of that derivation (the no-staticModel-fallback
+ * proof across the real request boundary / activation / read-side wiring) is
+ * covered by Gates D/E/F + real-host R1/R2.
  *
  * @module @dsh-agent-team/runtime/test/template-model-preference
  */
@@ -120,15 +121,18 @@ describe('Gate B: initialTemplateModelGrantOf (the bound template static model g
   })
 })
 
-describe('S2 integration — a hand-built malformed template REJECTS the shared derivation (no staticModel fallback, P2-1)', () => {
-  // This is the SINGLE derivation the live request boundary (observeAssembly /
-  // agent-bindings), the activation step-8, and the inspect-config effect all
-  // share. Proving it THROWS (rather than returning `undefined` -> the
-  // staticModel baseline) proves NO boundary — including observeAssembly — can
-  // silently fall back to the staticModel for a PRESENT-but-malformed
-  // `modelPreference`: the only outcome for a malformed token is the typed
-  // throw, so the rejected anti-pattern `catch { return staticModel }` cannot
-  // produce a baseline grant.
+describe('S2 defensive derivation regression — a hand-built malformed template REJECTS the shared derivation (no staticModel fallback, P2-1)', () => {
+  // UNIT-level (no live world): this exercises the SAME pure derivation
+  // `initialTemplateModelGrantOf` that the live request boundary
+  // (observeAssembly / agent-bindings), the activation step-8, and the
+  // inspect-config effect all share. Proving it THROWS (rather than returning
+  // `undefined` -> the staticModel baseline) shows NO boundary — including
+  // observeAssembly — CAN silently fall back to the staticModel for a
+  // PRESENT-but-malformed `modelPreference`: the only outcome for a malformed
+  // token is the typed throw, so the rejected anti-pattern
+  // `catch { return staticModel }` cannot produce a baseline grant. (The LIVE
+  // boundary behavior of the same derivation is proven by Gates D/E/F +
+  // real-host R1/R2, not here.)
   const staticModel: ModelSelection = { provider: 'qiyuan-self', model: 'deployment-default' }
 
   it('the derivation rejects a hand-built malformed template (it never returns the staticModel baseline)', () => {
