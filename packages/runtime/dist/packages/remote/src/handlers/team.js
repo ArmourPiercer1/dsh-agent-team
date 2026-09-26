@@ -1,14 +1,20 @@
 /**
  * The `team` category handler (design note §3): TeamSession creation,
- * whole-projection observation, ledger pages, and the v4-only human
- * control resolution (`team.resolveControl`, F3/F11/F9/T1.4 repair
- * round r1 F9). Backed by six ports:
+ * whole-projection observation, ledger pages, the v4-only human control
+ * resolution (`team.resolveControl`, F3/F11/F9/T1.4 repair round r1 F9),
+ * and the v5-only one-shot ordinary-activation permit
+ * (`team.prepareOrdinaryOpen`, C1 restart-0.1.7-rc.1 recovery — guide
+ * §10.2). Backed by nine ports:
  * {@link RemoteTeamCreatePort} (root binding, P5-T5),
  * {@link RemoteTeamCreateV2Port} (the v2 workspace-aware creation
  * variant, TCM vNext §15.6), {@link RemoteTeamAdmitInitialWorkPort}
  * (the v2-only creation-time initial work command, TCM vNext §15.6),
- * {@link RemoteTeamResolveControlPort} (the v4-only human control
- * resolution command, F9), {@link RemoteProjectionPort}
+ * {@link RemoteTeamRootsPort} (the v3-only durable root ownership list,
+ * D1), {@link RemoteTeamEnsureRootLivePort} (the v3-only Team-mode
+ * ensure, D2-wired), {@link RemoteTeamResolveControlPort} (the v4-only
+ * human control resolution command, F9),
+ * {@link RemoteTeamPrepareOrdinaryOpenPort} (the v5-only one-shot
+ * ordinary-activation permit, C1), {@link RemoteProjectionPort}
  * (ProjectionService, P8-T2), and {@link RemoteLedgerPort} (storage
  * ledger behind a slicing adapter, D-5).
  *
@@ -254,10 +260,33 @@ function normalizeTeamResolveControlValue(raw) {
     return raw;
 }
 /**
+ * Validate the `team.prepareOrdinaryOpen` success value against the
+ * closed v5 response shape (D-4 discipline: the top-level REQUIRED
+ * fields are checked — `{ rootSessionId, permitted: true }` — the
+ * response may carry MORE fields ("at least", guide §10.2) and any extra
+ * passes through): the armed one-shot ordinary-activation permit fact.
+ */
+function normalizeTeamPrepareOrdinaryOpenValue(raw) {
+    if (!isPlainRecord(raw)) {
+        throw portContractError('teamPrepareOrdinaryOpen', `expected an object, got ${String(raw)}`);
+    }
+    const rootSessionId = raw['rootSessionId'];
+    if (typeof rootSessionId !== 'string' || rootSessionId.length === 0) {
+        throw portContractError('teamPrepareOrdinaryOpen.rootSessionId', 'must be a non-empty string');
+    }
+    if (raw['permitted'] !== true) {
+        throw portContractError('teamPrepareOrdinaryOpen.permitted', `must be true, got ${String(raw['permitted'])}`);
+    }
+    // The port contract guarantees a lossless-JSON-safe record; the extra
+    // fields ("at least" — guide §10.2) pass through (D-4).
+    return raw;
+}
+/**
  * The team category handler (`team.create` [v1 + v2],
  * `team.admitInitialWork` [v2-only], `team.listRoots` [v3-only],
  * `team.ensureRootLive` [v3-only], `team.resolveControl` [v4-only],
- * `team.getProjection`, `team.getLedgerPage`).
+ * `team.prepareOrdinaryOpen` [v5-only], `team.getProjection`,
+ * `team.getLedgerPage`).
  *
  * Version-aware (TCM vNext §15.3): the dispatcher passes the request's
  * contract version; `team.create` routes to the v1 port (closed v1 field
@@ -325,6 +354,25 @@ export function createRemoteTeamHandler(ports) {
                 const resolveParams = params;
                 const decision = ports.teamResolveControl.resolveControl(resolveParams.teamSessionId, resolveParams.requestId, resolveParams.decision, resolveParams.note);
                 return { data: { decision: normalizeTeamResolveControlValue(decision) } };
+            }
+            case 'team.prepareOrdinaryOpen': {
+                // v5-only (the availability check guarantees version === 5). C1
+                // restart-0.1.7-rc.1 recovery (guide §10.2): the narrow one-shot
+                // ordinary-activation PERMIT of the Team fence — a Team
+                // CONTROL-PLANE RPC (no Team ensure, no Team Agent side effect,
+                // no TeamDomain mutation beyond the one-shot activation-allow
+                // fact). The wire params carry ONLY the root id (the host
+                // authority is the connection gate — no caller claim, no token).
+                // The production S6 handler (s6-remote, A33/A34) raises the
+                // typed failures TEAM_REMOTE_FOREIGN_TEAM (a root outside the
+                // caller's team — assertBoundRoot) and
+                // TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE (the permit
+                // port is absent from the host wiring — fail closed, never a
+                // silent success); both pass through the dispatcher unchanged
+                // (invariant 4b).
+                const prepareParams = params;
+                const permitted = ports.teamPrepareOrdinaryOpen.prepareOrdinaryOpen(prepareParams.teamSessionId);
+                return { data: normalizeTeamPrepareOrdinaryOpenValue(permitted) };
             }
             case 'team.getProjection': {
                 const projectionParams = params;

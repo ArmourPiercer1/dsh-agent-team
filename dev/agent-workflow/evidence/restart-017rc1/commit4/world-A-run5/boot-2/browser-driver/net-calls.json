@@ -1,0 +1,356 @@
+[
+ {
+  "method": "GET",
+  "path": "/?token=_4ZJePbabMrs2231JfZRcCfTvgtdhabfPgUvTIwbIzE",
+  "status": 303,
+  "body": null
+ },
+ {
+  "method": "GET",
+  "path": "/",
+  "status": 200,
+  "body": null
+ },
+ {
+  "method": "GET",
+  "path": "/plugins/??@deepseek-ai/dsh-client-modules/client.js&rev=81056941c4a3",
+  "status": 200,
+  "body": null
+ },
+ {
+  "method": "GET",
+  "path": "/plugins/??@deepseek-ai/dsh-client-connection/client.js,@deepseek-ai/dsh-api-workspace-controller/client.js,@deepseek-ai",
+  "status": 200,
+  "body": "window.__ModuleLoader__.load({\n\tid: \"@deepseek-ai/dsh-client-connection\",\n\tfactory: (require) => {\n\t\tvar module = { exports: {} };\n\t\tvar exports = module.exports;\n\t\tObject.defineProperty(exports, Symbol.toStringTag, { value: \"Module\" });\n\t\t//#region ../../../vendor/cosmokit/lib/index.js\n\t\t/** Return true when a value is `null` or `undefined`. */\n\t\tfunction isNullable(value) {\n\t\t\treturn value === null || value === void 0;\n\t\t}\n\t\t/** Return true for non-array object values. */\n\t\tfunction isPlainObject(data) {\n\t\t\treturn data && typeof data === \"object\" && !Array.isArray(data);\n\t\t}\n\t\t/** Filter object entries and return a new object. */\n\t\tfunction filterKeys(object, filter) {\n\t\t\treturn Object.fromEntries(Object.entries(object).filter(([key, value]) => filter(key, value)));\n\t\t}\n\t\t/** Map object values while preserving the original key set. */\n\t\tfunction mapValues(object, transform) {\n\t\t\treturn Object.fromEntries(Object.entries(object).map(([key, value]) => [key, transform(value, key)]));\n\t\t}\n\t\t/** Pick selected keys from an object, optionally including `undefined` values. */\n\t\tfunction pick(source, keys, forced) {\n\t\t\tif (!keys) return { ...source };\n\t\t\tconst result = {};\n\t\t\tfor (const ke"
+ },
+ {
+  "method": "GET",
+  "path": "/plugins/??@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-api-",
+  "status": 200,
+  "body": "window.__ModuleLoader__.load({\n\tid: \"@deepseek-ai/dsh-client-ui-open-in-app\",\n\tfactory: (require) => {\n\t\tvar module = { exports: {} };\n\t\tvar exports = module.exports;\n\t\tObject.defineProperty(exports, Symbol.toStringTag, { value: \"Module\" });\n\t\tlet _deepseek_ai_dsh_client_store = require(\"@deepseek-ai/dsh-client-store\");\n\t\tlet react_jsx_runtime = require(\"react/jsx-runtime\");\n\t\tlet react = require(\"react\");\n\t\tlet _deepseek_ai_dsh_client_ui_primitives = require(\"@deepseek-ai/dsh-client-ui-primitives\");\n\t\t/** Browser-relative form of {@link OPEN_IN_APP_APPS_PATH}. */\n\t\tconst OPEN_IN_APP_APPS_ROUTE = \"/open-in-app/apps\".slice(1);\n\t\t/** Browser-relative form of {@link OPEN_IN_APP_ICON_PREFIX_PATH}. */\n\t\tconst OPEN_IN_APP_ICON_PREFIX_ROUTE = \"/open-in-app/icon\".slice(1);\n\t\t/** Browser-relative form of {@link OPEN_IN_APP_OPEN_PATH}. */\n\t\tconst OPEN_IN_APP_OPEN_ROUTE = \"/open-in-app/open\".slice(1);\n\t\t//#endregion\n\t\t//#region lib/types/client/controller.js\n\t\t/** Browser availability/choice state and the launch carrier for the split button. */\n\t\t/**\n\t\t* Owns the once-per-page availability read, the persisted last choice, and\n\t\t* the launch POST. Availability and choice publish through uSES-s"
+ },
+ {
+  "method": "POST",
+  "path": "/api/settings/describe",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"318a8600-78a1-40fd-9b2e-85863342fd37\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"autoGenerate\":false,\"schema\":{\"uid\":20724,\"refs\":{\"20721\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"20722\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"20723\":{\"type\":\"string\",\"meta\":{}},\"20724\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":20721,\"model\":20722,\"reasoningEffort\":20723}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-flash\"},\"user\":{},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"llm-pi-ai\",\"autoGenerate\":false,\"schema\":{\"uid\":20871,\"refs\":{\"20728\":{\"type\":\"number\",\"meta\":{\"max\":2147483647,\"default\":500}},\"20729\":{\"type\":\"number\",\"meta\":{\"max\":2147483647,\"default\":10000}},\"20730\":{\"type\":\"number\",\"meta\":{\"min\":0,\"max\":1,\"default\":0.1}},\"20731\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"initialDelayMs\":20728,\"maxDelayMs\":20729,\"jitterRatio\":20730}},\"20732\":{\"type\":\"const\",\"meta\":{\"required\":true},\"value\":\"normal\"},\"20733\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":0,\"max\":9007199254740991,\"defau"
+ },
+ {
+  "method": "GET",
+  "path": "/open-in-app/apps",
+  "status": 200,
+  "body": "{\"apps\":[\"vscode\"]}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/dynamicCordisRunner/syncInspectManifest",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"2ba49ac8-b584-4fe5-b439-2d915c5ac3b3\",\"result\":{\"ok\":true,\"value\":null}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/credentials/describe",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"c68eb5ab-c5d8-4fb7-b211-39ddbc4808ea\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/dynamicCordisRunner/inventory",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"1b052dc1-d7c7-426d-85ee-1e32f5b3a58a\",\"result\":{\"ok\":true,\"value\":[]}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/session/modelCatalog",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"390b68b4-86e5-499a-8ce5-e85e6471a518\",\"result\":{\"ok\":true,\"value\":{\"default\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-flash\"},\"routableProviders\":[\"deepseek-official\"],\"groups\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\",\"models\":[{\"id\":\"deepseek-flash\",\"name\":\"DeepSeek-V41-Flash\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-pro\",\"name\":\"DeepSeek-V4-Pro\",\"description\":\"Stronger agentic coding, knowledge, and difficult reasoning; suited to complex or quality-critical tasks at higher cost.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agentPresets/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"cca5f624-5f78-4f54-95ca-18185ae67cb8\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"order\":1,\"isDefault\":true},{\"id\":\"ptc\",\"order\":2,\"isDefault\":false},{\"id\":\"minimal\",\"order\":3,\"isDefault\":false},{\"id\":\"cordis\",\"order\":4,\"isDefault\":false}],\"modeSelectionEnabled\":true}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/credentials/describe",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"f957dd39-8e11-4ac1-858c-5ad2aca0126e\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/session/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"878f6d13-46ed-4518-8420-b6a507fd3349\",\"result\":{\"ok\":true,\"value\":{\"items\":[{\"sessionId\":\"session-444a4e62-c735-4892-b3ac-1b6fdd53bef2\",\"updatedAt\":1790426763264,\"agentAvailable\":true,\"running\":false,\"blank\":true,\"cwd\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-42-57-A/workspace\",\"projections\":{\"kind\":\"sequenced\",\"asOfSeq\":2,\"values\":{\"title\":null,\"goal\":null,\"tokenUsage\":{\"uncachedInputTokens\":0,\"outputTokens\":0,\"cacheReadTokens\":0,\"cacheWriteTokens\":0},\"contextPressure\":{},\"contextBreakdown\":{\"systemTokens\":0,\"toolsTokens\":0,\"messageTokens\":0},\"inbox\":{\"next-turn\":[],\"next-step\":[]},\"sessionStats\":{\"turns\":0,\"steps\":0,\"llmMs\":0,\"toolMs\":0,\"ttftMs\":0,\"ttftSteps\":0,\"decodeMs\":0,\"decodeTokens\":0},\"turnOutline\":[],\"agentPreset\":\"standard\",\"subagentCatalog\":[],\"subagentTiming\":{\"settledMs\":0},\"subagent\":null,\"permissions\":{\"currentValue\":\"workspace-write\"},\"todos\":null,\"plan\":{\"active\":false,\"pending\":false},\"modelSelection\":{\"lastUsed\":null,\"next\":null},\"sessionListMetadata\":{\"blank\":true,\"lastPromptAt\":null},\"imageLimits\":{\"maxImageBytes\":20971520,\"maxImagesPerMessage\":20,\"maxMessageImageBytes\":209715200,\"maxImagePixels\":64000000,\"maxImageDimension\":8192,\"mediaTypes\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/gif\"]}}}},{\"sessionId\":\"session-rst017c4-dyn-2026-09-26T12-42-57\",\"updatedAt\":1790426582745,\"agentAvailable\":false,\"running\":false,\"blank\":false,\"cwd\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-42-57-A/workspace\",\"projections\":{\"kind\":\"cached\",\"asOfSeq\":21,\"values\":{\"title\":\"c4 title\",\"goal\":null,\"tokenUsage\":{\"uncachedInputTokens\":1958,\"outputTokens\":40,\"cacheReadTokens\":0,\"cacheWriteTokens\":0},\"contextPressure\":{\"pressureTokens\":1958,\"projectedTokens\":1976,\"contextWindow\":1000000},\"contextBreakdown\":{\"systemTokens\":2021,\"toolsTokens\":11046,\"messageTokens\":1964},\"inbox\":{\"next-turn\":[],\"next-step\":[]},\"sessionStats\":{\"turns\":1,\"steps\":1,\"llmMs\":40,\"toolMs\":0,\"ttftMs\":39,\"ttftSteps\":1,\"decodeMs\":1,\"decodeTokens\":40},\"turnOutline\":[{\"turn\":1,\"seq\":4,\"prompt\":\"[team-root-work requestToken=team-create:initial-…\",\"response\":\"C4_DONE RST017C4DONE_2026-09-26T12-42-57\"}],\"agentPreset\":null,\"subagentCatalog\":[],\"subagentTiming\":{\"settledMs\":0},\"subagent\":null,\"permissions\":{\"currentValue\":\"workspace-write\"},\"todos\":null,\"plan\":{\"active\":false,\"pending\":false},\"modelSelection\":{\"lastUsed\":{\"provider\":\"deepseek-official\",\"model\":\"rst017c4-model-2026-09-26T12-42-57\",\"reasoningEffort\":\"high\"},\"next\":{\"provider\":\"deepseek-official\",\"model\":\"rst017c4-model-2026-09-26T12-42-57\",\"reasoningEffort\":\"high\"}},\"sessionListMetadata\":{\"blank\":false,\"lastPromptAt\":1790426582745},\"imageLimits\":{\"maxImageBytes\":20971520,\"maxImagesPerMessage\":20,\"maxMessageImageBytes\":209715200,\"maxImagePixels\":64000000,\"maxImageDimension\":8192,\"mediaTypes\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/gif\"]}}}},{\"sessionId\":\"session-rst017c4-boot-2026-09-26T12-42-57\",\"updatedAt\":1790426582101,\"agentAvailable\":true,\"running\":false,\"blank\":true,\"cwd\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-42-57-A/workspace\",\"projections\":{\"kind\":\"sequenced\",\"asOfSeq\":3,\"values\":{\"title\":null,\"goal\":null,\"tokenUsage\":{\"uncachedInputTokens\":0,\"outputTokens\":0,\"cacheReadTokens\":0,\"cacheWriteTokens\":0},\"contextPressure\":{},\"contextBreakdown\":{\"systemTokens\":0,\"toolsTokens\":0,\"messageTokens\":0},\"inbox\":{\"next-turn\":[],\"next-step\":[]},\"sessionStats\":{\"turns\":0,\"steps\":0,\"llmMs\":0,\"toolMs\":0,\"ttftMs\":0,\"ttftSteps\":0,\"decodeMs\":0,\"decodeTokens\":0},\"turnOutline\":[],\"agentPreset\":null,\"subagentCatalog\":[],\"subagentTiming\":{\"settledMs\":0},\"subagent\":null,\"permissions\":{\"currentValue\":\"workspace-write\"},\"todos\":null,\"plan\":{\"active\":false,\"pending\":false},\"modelSelection\":{\"lastUsed\":null,\"next\":null},\"sessionListMetadata\":{\"blank\":true,\"lastPromptAt\":null},\"imageLimits\":{\"maxImageBytes\":20971520,\"maxImagesPerMessage\":20,\"maxMessageImageBytes\":209715200,\"maxImagePixels\":64000000,\"maxImageDimension\":8192,\"mediaTypes\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/gif\"]}}}}]}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/permissionPresets/catalog",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"4838e1a5-8681-4092-807e-737983524ee3\",\"result\":{\"ok\":true,\"value\":{\"options\":[{\"value\":\"read-only\",\"name\":\"read-only\"},{\"value\":\"workspace-write\",\"name\":\"workspace-write\"},{\"value\":\"danger-full-access\",\"name\":\"danger-full-access\"}],\"defaultOptions\":[{\"value\":\"read-only\",\"name\":\"read-only\"},{\"value\":\"workspace-write\",\"name\":\"workspace-write\"},{\"value\":\"danger-full-access\",\"name\":\"danger-full-access\"}],\"defaultPreset\":\"workspace-write\"}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/dynamicCordisRunner/inventory",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"07d05466-5bbe-4140-93bc-2fe41fe0bf3a\",\"result\":{\"ok\":true,\"value\":[]}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agentPresets/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"0536701b-cb11-4967-82a4-aef2fddc28b8\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"order\":1,\"isDefault\":true},{\"id\":\"ptc\",\"order\":2,\"isDefault\":false},{\"id\":\"minimal\",\"order\":3,\"isDefault\":false},{\"id\":\"cordis\",\"order\":4,\"isDefault\":false}],\"modeSelectionEnabled\":true}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agentPresets/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"2bd33511-2f47-4290-9193-d7bcd75273c7\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"order\":1,\"isDefault\":true},{\"id\":\"ptc\",\"order\":2,\"isDefault\":false},{\"id\":\"minimal\",\"order\":3,\"isDefault\":false},{\"id\":\"cordis\",\"order\":4,\"isDefault\":false}],\"modeSelectionEnabled\":true}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/session/modelCatalog",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"413405cb-2b0d-4219-a490-d318ef3b3aba\",\"result\":{\"ok\":true,\"value\":{\"default\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-flash\"},\"routableProviders\":[\"deepseek-official\"],\"groups\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\",\"models\":[{\"id\":\"deepseek-flash\",\"name\":\"DeepSeek-V41-Flash\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-pro\",\"name\":\"DeepSeek-V4-Pro\",\"description\":\"Stronger agentic coding, knowledge, and difficult reasoning; suited to complex or quality-critical tasks at higher cost.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":"
+ },
+ {
+  "method": "POST",
+  "path": "/api/settings/describe",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"91f00bca-c0ea-4ad3-bb91-7eefa04705cd\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"autoGenerate\":false,\"schema\":{\"uid\":21038,\"refs\":{\"21035\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"21036\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"21037\":{\"type\":\"string\",\"meta\":{}},\"21038\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":21035,\"model\":21036,\"reasoningEffort\":21037}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-flash\"},\"user\":{},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"llm-pi-ai\",\"autoGenerate\":false,\"schema\":{\"uid\":21185,\"refs\":{\"21042\":{\"type\":\"number\",\"meta\":{\"max\":2147483647,\"default\":500}},\"21043\":{\"type\":\"number\",\"meta\":{\"max\":2147483647,\"default\":10000}},\"21044\":{\"type\":\"number\",\"meta\":{\"min\":0,\"max\":1,\"default\":0.1}},\"21045\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"initialDelayMs\":21042,\"maxDelayMs\":21043,\"jitterRatio\":21044}},\"21046\":{\"type\":\"const\",\"meta\":{\"required\":true},\"value\":\"normal\"},\"21047\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":0,\"max\":9007199254740991,\"defau"
+ },
+ {
+  "method": "POST",
+  "path": "/api/dynamicCordisRunner/syncInspectManifest",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"96f59150-957b-4daf-9e33-65f1971473df\",\"result\":{\"ok\":true,\"value\":null}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/session/create",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"3c6c559c-d3a3-4eeb-94a3-88db784cca00\",\"result\":{\"ok\":true,\"value\":{\"sessionId\":\"session-444a4e62-c735-4892-b3ac-1b6fdd53bef2\",\"agentPreset\":\"standard\"}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/credentials/describe",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"6ea3a1f8-f71a-4474-81cd-2b1388f6f091\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/llm/listProviders",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"5a9be281-3307-4121-adf9-dc91f8cf63df\",\"result\":{\"ok\":true,\"value\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\"}]}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/llm/listConfigurableProviders",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"b67d0e3f-e790-420d-95b8-aa5538df4008\",\"result\":{\"ok\":true,\"value\":[{\"provider\":\"amazon-bedrock\",\"displayName\":\"amazon-bedrock\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"amazon-bedrock\"],\"declared\":false},{\"provider\":\"ant-ling\",\"displayName\":\"ant-ling\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"ant-ling\"],\"declared\":false},{\"provider\":\"anthropic\",\"displayName\":\"anthropic\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"anthropic\"],\"declared\":false},{\"provider\":\"azure-openai-responses\",\"displayName\":\"azure-openai-responses\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"azure-openai-responses\"],\"declared\":false},{\"provider\":\"baseten\",\"displayName\":\"baseten\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"baseten\"],\"declared\":false},{\"provider\":\"cerebras\",\"displayName\":\"cerebras\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"cerebras\"],\"declared\":false},{\"provider\":\"cloudflare-ai-gateway\",\"displayName\":\"cloudflare-ai-gateway\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"cloudflare-ai-gateway\"],\"declared\":false},{\"provider\":\"cloudflare-workers-ai\",\"displayName\":\"cloudflare-workers-ai\",\"setting"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agentPresets/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"990323ba-3764-48cc-968d-7440cfc324df\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"order\":1,\"isDefault\":true},{\"id\":\"ptc\",\"order\":2,\"isDefault\":false},{\"id\":\"minimal\",\"order\":3,\"isDefault\":false},{\"id\":\"cordis\",\"order\":4,\"isDefault\":false}],\"modeSelectionEnabled\":true}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/team-remote/team.getProjection",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"67d6c09e-f495-4d4d-8976-edd2c94f83b6\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-444a4e62-c735-4892-b3ac-1b6fdd53bef2' which this host does not own (bound root 'session-rst017c4-boot-2026-09-26T12-42-57')\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-444a4e62-c735-4892-b3ac-1b6fdd53bef2' which this host does not own (bound root 'session-rst017c4-boot-2026-09-26T12-42-57')\"}}}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/credentials/describe",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"520b2bbf-ec60-4b5d-9d5f-83e238b1016e\",\"result\":{\"ok\":true,\"value\":{\"AMAZON_BEDROCK_API_KEY\":{\"configured\":false,\"writable\":true},\"ANT_LING_API_KEY\":{\"configured\":false,\"writable\":true},\"ANTHROPIC_API_KEY\":{\"configured\":false,\"writable\":true},\"AZURE_OPENAI_RESPONSES_API_KEY\":{\"configured\":false,\"writable\":true},\"BASETEN_API_KEY\":{\"configured\":false,\"writable\":true},\"CEREBRAS_API_KEY\":{\"configured\":false,\"writable\":true},\"CLOUDFLARE_AI_GATEWAY_API_KEY\":{\"configured\":false,\"writable\":true},\"CLOUDFLARE_WORKERS_AI_API_KEY\":{\"configured\":false,\"writable\":true},\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false},\"FIREWORKS_API_KEY\":{\"configured\":false,\"writable\":true},\"GITHUB_COPILOT_API_KEY\":{\"configured\":false,\"writable\":true},\"GOOGLE_API_KEY\":{\"configured\":false,\"writable\":true},\"GOOGLE_VERTEX_API_KEY\":{\"configured\":false,\"writable\":true},\"GROQ_API_KEY\":{\"configured\":false,\"writable\":true},\"HUGGINGFACE_API_KEY\":{\"configured\":false,\"writable\":true},\"KIMI_CODING_API_KEY\":{\"configured\":false,\"writable\":true},\"MINIMAX_API_KEY\":{\"configured\":false,\"writable\":true},\"MINIMAX_CN_API_KEY\":{\"configured\":false,\"writable\":true},\"MISTRAL_API_KEY"
+ },
+ {
+  "method": "POST",
+  "path": "/api/commands/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"43974ca1-12ae-44f9-9a12-bc2cebb37c1e\",\"result\":{\"ok\":true,\"value\":[{\"definitionId\":\"@deepseek-ai/dsh-command-compact\",\"name\":\"compact\",\"description\":\"Compact older conversation history\"},{\"definitionId\":\"@deepseek-ai/dsh-session-log-export\",\"name\":\"export\",\"description\":\"Download this Session log as a ZIP archive\"},{\"definitionId\":\"@deepseek-ai/dsh-command-feedback\",\"name\":\"feedback\",\"description\":\"Record feedback about this session\",\"input\":{\"hint\":\"<text>\"}},{\"definitionId\":\"@deepseek-ai/dsh-command-goal\",\"name\":\"goal\",\"description\":\"Set or view the goal for a long-running task\",\"input\":{\"hint\":\"[<objective>|clear|edit <objective>|pause|resume]\",\"attachments\":true}},{\"definitionId\":\"@deepseek-ai/dsh-permission-presets\",\"name\":\"permission\",\"description\":\"Switch the permission preset (sandbox mode + approval policy)\",\"input\":{\"hint\":\"<preset>\"}},{\"definitionId\":\"@deepseek-ai/dsh-plan-mode\",\"name\":\"plan\",\"description\":\"Enter or leave plan mode\",\"input\":{\"hint\":\"[off|message]\",\"attachments\":true}}]}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/skills/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"4886b9dd-a8aa-4d6e-ba3d-c37256a80e13\",\"result\":{\"ok\":true,\"value\":{\"skills\":[{\"name\":\"team-blueprint-authoring\",\"path\":\"/home/user/dsh-plugins/dsh-agent-team/.agents/skills/team-blueprint-authoring/SKILL.md\",\"description\":\"Author a DSH Agent Team blueprint (a saved-source YAML document) and run pre-flight checks before creating a team — identity frontmatter, the frozen closed field sets, exactly one complete LeaderTemplate, member templates, capabilities (teamTools/builtinToolDeny/skills/mcp/permissions with allow-ask-deny lanes, exact/subtree/any resources, shell-class rules), envelopes, policyStates, quotas, the draft-file convention, and live checks over the /team-remote catalog.list / catalog.get endpoints. Use when asked to create, modify, or validate a team blueprint or a new team design.\",\"modelInvocable\":true},{\"name\":\"team-leader-operations\",\"path\":\"/home/user/dsh-plugins/dsh-agent-team/.agents/skills/team-leader-operations/SKILL.md\",\"description\":\"Operate a DSH Agent Team as the Leader using the closed set of thirteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report pr"
+ },
+ {
+  "method": "GET",
+  "path": "/plugins/??@deepseek-ai/dsh-client-modules/client.js&rev=81056941c4a3",
+  "status": 200,
+  "body": null
+ },
+ {
+  "method": "GET",
+  "path": "/",
+  "status": 200,
+  "body": null
+ },
+ {
+  "method": "GET",
+  "path": "/plugins/??@deepseek-ai/dsh-client-connection/client.js,@deepseek-ai/dsh-api-workspace-controller/client.js,@deepseek-ai",
+  "status": 200,
+  "body": "window.__ModuleLoader__.load({\n\tid: \"@deepseek-ai/dsh-client-connection\",\n\tfactory: (require) => {\n\t\tvar module = { exports: {} };\n\t\tvar exports = module.exports;\n\t\tObject.defineProperty(exports, Symbol.toStringTag, { value: \"Module\" });\n\t\t//#region ../../../vendor/cosmokit/lib/index.js\n\t\t/** Return true when a value is `null` or `undefined`. */\n\t\tfunction isNullable(value) {\n\t\t\treturn value === null || value === void 0;\n\t\t}\n\t\t/** Return true for non-array object values. */\n\t\tfunction isPlainObject(data) {\n\t\t\treturn data && typeof data === \"object\" && !Array.isArray(data);\n\t\t}\n\t\t/** Filter object entries and return a new object. */\n\t\tfunction filterKeys(object, filter) {\n\t\t\treturn Object.fromEntries(Object.entries(object).filter(([key, value]) => filter(key, value)));\n\t\t}\n\t\t/** Map object values while preserving the original key set. */\n\t\tfunction mapValues(object, transform) {\n\t\t\treturn Object.fromEntries(Object.entries(object).map(([key, value]) => [key, transform(value, key)]));\n\t\t}\n\t\t/** Pick selected keys from an object, optionally including `undefined` values. */\n\t\tfunction pick(source, keys, forced) {\n\t\t\tif (!keys) return { ...source };\n\t\t\tconst result = {};\n\t\t\tfor (const ke"
+ },
+ {
+  "method": "GET",
+  "path": "/plugins/??@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-api-",
+  "status": 200,
+  "body": "window.__ModuleLoader__.load({\n\tid: \"@deepseek-ai/dsh-client-ui-open-in-app\",\n\tfactory: (require) => {\n\t\tvar module = { exports: {} };\n\t\tvar exports = module.exports;\n\t\tObject.defineProperty(exports, Symbol.toStringTag, { value: \"Module\" });\n\t\tlet _deepseek_ai_dsh_client_store = require(\"@deepseek-ai/dsh-client-store\");\n\t\tlet react_jsx_runtime = require(\"react/jsx-runtime\");\n\t\tlet react = require(\"react\");\n\t\tlet _deepseek_ai_dsh_client_ui_primitives = require(\"@deepseek-ai/dsh-client-ui-primitives\");\n\t\t/** Browser-relative form of {@link OPEN_IN_APP_APPS_PATH}. */\n\t\tconst OPEN_IN_APP_APPS_ROUTE = \"/open-in-app/apps\".slice(1);\n\t\t/** Browser-relative form of {@link OPEN_IN_APP_ICON_PREFIX_PATH}. */\n\t\tconst OPEN_IN_APP_ICON_PREFIX_ROUTE = \"/open-in-app/icon\".slice(1);\n\t\t/** Browser-relative form of {@link OPEN_IN_APP_OPEN_PATH}. */\n\t\tconst OPEN_IN_APP_OPEN_ROUTE = \"/open-in-app/open\".slice(1);\n\t\t//#endregion\n\t\t//#region lib/types/client/controller.js\n\t\t/** Browser availability/choice state and the launch carrier for the split button. */\n\t\t/**\n\t\t* Owns the once-per-page availability read, the persisted last choice, and\n\t\t* the launch POST. Availability and choice publish through uSES-s"
+ },
+ {
+  "method": "POST",
+  "path": "/api/settings/describe",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"8b7cf0f0-d2b8-4fcb-a689-177ec34dd5c2\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"autoGenerate\":false,\"schema\":{\"uid\":21352,\"refs\":{\"21349\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"21350\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"21351\":{\"type\":\"string\",\"meta\":{}},\"21352\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":21349,\"model\":21350,\"reasoningEffort\":21351}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-flash\"},\"user\":{},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"llm-pi-ai\",\"autoGenerate\":false,\"schema\":{\"uid\":21499,\"refs\":{\"21356\":{\"type\":\"number\",\"meta\":{\"max\":2147483647,\"default\":500}},\"21357\":{\"type\":\"number\",\"meta\":{\"max\":2147483647,\"default\":10000}},\"21358\":{\"type\":\"number\",\"meta\":{\"min\":0,\"max\":1,\"default\":0.1}},\"21359\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"initialDelayMs\":21356,\"maxDelayMs\":21357,\"jitterRatio\":21358}},\"21360\":{\"type\":\"const\",\"meta\":{\"required\":true},\"value\":\"normal\"},\"21361\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":0,\"max\":9007199254740991,\"defau"
+ },
+ {
+  "method": "GET",
+  "path": "/open-in-app/apps",
+  "status": 200,
+  "body": "{\"apps\":[\"vscode\"]}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/dynamicCordisRunner/syncInspectManifest",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"369ade48-b2d4-4aab-92ab-e2d9332b9ca1\",\"result\":{\"ok\":true,\"value\":null}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/credentials/describe",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"fef465a0-4014-4d4e-89d2-4e0903af6a37\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/dynamicCordisRunner/inventory",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"2fb853da-a975-4120-999b-bae540cdb705\",\"result\":{\"ok\":true,\"value\":[]}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/session/modelCatalog",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"a614ef56-9690-405a-9b7f-7e13e8431819\",\"result\":{\"ok\":true,\"value\":{\"default\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-flash\"},\"routableProviders\":[\"deepseek-official\"],\"groups\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\",\"models\":[{\"id\":\"deepseek-flash\",\"name\":\"DeepSeek-V41-Flash\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-pro\",\"name\":\"DeepSeek-V4-Pro\",\"description\":\"Stronger agentic coding, knowledge, and difficult reasoning; suited to complex or quality-critical tasks at higher cost.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agentPresets/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"acf54f9a-ba74-495b-b6a7-ce70e14de11b\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"order\":1,\"isDefault\":true},{\"id\":\"ptc\",\"order\":2,\"isDefault\":false},{\"id\":\"minimal\",\"order\":3,\"isDefault\":false},{\"id\":\"cordis\",\"order\":4,\"isDefault\":false}],\"modeSelectionEnabled\":true}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/credentials/describe",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"0423fb93-5b0b-412f-b13a-7fe655d4ae2d\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/session/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"3f0ca7c8-aefc-4100-9c79-44ee5344124e\",\"result\":{\"ok\":true,\"value\":{\"items\":[{\"sessionId\":\"session-444a4e62-c735-4892-b3ac-1b6fdd53bef2\",\"updatedAt\":1790426763264,\"agentAvailable\":true,\"running\":false,\"blank\":true,\"cwd\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-42-57-A/workspace\",\"projections\":{\"kind\":\"sequenced\",\"asOfSeq\":2,\"values\":{\"title\":null,\"goal\":null,\"tokenUsage\":{\"uncachedInputTokens\":0,\"outputTokens\":0,\"cacheReadTokens\":0,\"cacheWriteTokens\":0},\"contextPressure\":{},\"contextBreakdown\":{\"systemTokens\":0,\"toolsTokens\":0,\"messageTokens\":0},\"inbox\":{\"next-turn\":[],\"next-step\":[]},\"sessionStats\":{\"turns\":0,\"steps\":0,\"llmMs\":0,\"toolMs\":0,\"ttftMs\":0,\"ttftSteps\":0,\"decodeMs\":0,\"decodeTokens\":0},\"turnOutline\":[],\"agentPreset\":\"standard\",\"subagentCatalog\":[],\"subagentTiming\":{\"settledMs\":0},\"subagent\":null,\"permissions\":{\"currentValue\":\"workspace-write\"},\"todos\":null,\"plan\":{\"active\":false,\"pending\":false},\"modelSelection\":{\"lastUsed\":null,\"next\":null},\"sessionListMetadata\":{\"blank\":true,\"lastPromptAt\":null},\"imageLimits\":{\"maxImageBytes\":20971520,\"maxImagesPerMessage\":20,\"maxMessageImageBytes\":209715200,\"maxImagePixels\":64000000,\"maxImageDimension\":8192,\"mediaTypes\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/gif\"]}}}},{\"sessionId\":\"session-rst017c4-dyn-2026-09-26T12-42-57\",\"updatedAt\":1790426582745,\"agentAvailable\":false,\"running\":false,\"blank\":false,\"cwd\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-42-57-A/workspace\",\"projections\":{\"kind\":\"cached\",\"asOfSeq\":21,\"values\":{\"title\":\"c4 title\",\"goal\":null,\"tokenUsage\":{\"uncachedInputTokens\":1958,\"outputTokens\":40,\"cacheReadTokens\":0,\"cacheWriteTokens\":0},\"contextPressure\":{\"pressureTokens\":1958,\"projectedTokens\":1976,\"contextWindow\":1000000},\"contextBreakdown\":{\"systemTokens\":2021,\"toolsTokens\":11046,\"messageTokens\":1964},\"inbox\":{\"next-turn\":[],\"next-step\":[]},\"sessionStats\":{\"turns\":1,\"steps\":1,\"llmMs\":40,\"toolMs\":0,\"ttftMs\":39,\"ttftSteps\":1,\"decodeMs\":1,\"decodeTokens\":40},\"turnOutline\":[{\"turn\":1,\"seq\":4,\"prompt\":\"[team-root-work requestToken=team-create:initial-…\",\"response\":\"C4_DONE RST017C4DONE_2026-09-26T12-42-57\"}],\"agentPreset\":null,\"subagentCatalog\":[],\"subagentTiming\":{\"settledMs\":0},\"subagent\":null,\"permissions\":{\"currentValue\":\"workspace-write\"},\"todos\":null,\"plan\":{\"active\":false,\"pending\":false},\"modelSelection\":{\"lastUsed\":{\"provider\":\"deepseek-official\",\"model\":\"rst017c4-model-2026-09-26T12-42-57\",\"reasoningEffort\":\"high\"},\"next\":{\"provider\":\"deepseek-official\",\"model\":\"rst017c4-model-2026-09-26T12-42-57\",\"reasoningEffort\":\"high\"}},\"sessionListMetadata\":{\"blank\":false,\"lastPromptAt\":1790426582745},\"imageLimits\":{\"maxImageBytes\":20971520,\"maxImagesPerMessage\":20,\"maxMessageImageBytes\":209715200,\"maxImagePixels\":64000000,\"maxImageDimension\":8192,\"mediaTypes\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/gif\"]}}}},{\"sessionId\":\"session-rst017c4-boot-2026-09-26T12-42-57\",\"updatedAt\":1790426582101,\"agentAvailable\":true,\"running\":false,\"blank\":true,\"cwd\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-42-57-A/workspace\",\"projections\":{\"kind\":\"sequenced\",\"asOfSeq\":3,\"values\":{\"title\":null,\"goal\":null,\"tokenUsage\":{\"uncachedInputTokens\":0,\"outputTokens\":0,\"cacheReadTokens\":0,\"cacheWriteTokens\":0},\"contextPressure\":{},\"contextBreakdown\":{\"systemTokens\":0,\"toolsTokens\":0,\"messageTokens\":0},\"inbox\":{\"next-turn\":[],\"next-step\":[]},\"sessionStats\":{\"turns\":0,\"steps\":0,\"llmMs\":0,\"toolMs\":0,\"ttftMs\":0,\"ttftSteps\":0,\"decodeMs\":0,\"decodeTokens\":0},\"turnOutline\":[],\"agentPreset\":null,\"subagentCatalog\":[],\"subagentTiming\":{\"settledMs\":0},\"subagent\":null,\"permissions\":{\"currentValue\":\"workspace-write\"},\"todos\":null,\"plan\":{\"active\":false,\"pending\":false},\"modelSelection\":{\"lastUsed\":null,\"next\":null},\"sessionListMetadata\":{\"blank\":true,\"lastPromptAt\":null},\"imageLimits\":{\"maxImageBytes\":20971520,\"maxImagesPerMessage\":20,\"maxMessageImageBytes\":209715200,\"maxImagePixels\":64000000,\"maxImageDimension\":8192,\"mediaTypes\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/gif\"]}}}}]}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/permissionPresets/catalog",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"7a4fb445-6ee3-4c87-8368-107c01d28d4f\",\"result\":{\"ok\":true,\"value\":{\"options\":[{\"value\":\"read-only\",\"name\":\"read-only\"},{\"value\":\"workspace-write\",\"name\":\"workspace-write\"},{\"value\":\"danger-full-access\",\"name\":\"danger-full-access\"}],\"defaultOptions\":[{\"value\":\"read-only\",\"name\":\"read-only\"},{\"value\":\"workspace-write\",\"name\":\"workspace-write\"},{\"value\":\"danger-full-access\",\"name\":\"danger-full-access\"}],\"defaultPreset\":\"workspace-write\"}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/dynamicCordisRunner/inventory",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"ad1491f9-f45c-469c-872c-7f6d56a1a739\",\"result\":{\"ok\":true,\"value\":[]}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agentPresets/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"8b341c25-be2b-405b-9ad3-f22b8b81e8df\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"order\":1,\"isDefault\":true},{\"id\":\"ptc\",\"order\":2,\"isDefault\":false},{\"id\":\"minimal\",\"order\":3,\"isDefault\":false},{\"id\":\"cordis\",\"order\":4,\"isDefault\":false}],\"modeSelectionEnabled\":true}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agentPresets/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"a3a8f4d7-1fdc-4e98-a1bb-53b85a893b2a\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"order\":1,\"isDefault\":true},{\"id\":\"ptc\",\"order\":2,\"isDefault\":false},{\"id\":\"minimal\",\"order\":3,\"isDefault\":false},{\"id\":\"cordis\",\"order\":4,\"isDefault\":false}],\"modeSelectionEnabled\":true}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/session/modelCatalog",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"601b3e65-ffbf-4726-9457-b7dd0018616e\",\"result\":{\"ok\":true,\"value\":{\"default\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-flash\"},\"routableProviders\":[\"deepseek-official\"],\"groups\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\",\"models\":[{\"id\":\"deepseek-flash\",\"name\":\"DeepSeek-V41-Flash\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-pro\",\"name\":\"DeepSeek-V4-Pro\",\"description\":\"Stronger agentic coding, knowledge, and difficult reasoning; suited to complex or quality-critical tasks at higher cost.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":"
+ },
+ {
+  "method": "POST",
+  "path": "/api/settings/describe",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"b0a0780a-7866-44bd-a3c3-139faad978d9\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"autoGenerate\":false,\"schema\":{\"uid\":21666,\"refs\":{\"21663\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"21664\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"21665\":{\"type\":\"string\",\"meta\":{}},\"21666\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":21663,\"model\":21664,\"reasoningEffort\":21665}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-flash\"},\"user\":{},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"llm-pi-ai\",\"autoGenerate\":false,\"schema\":{\"uid\":21813,\"refs\":{\"21670\":{\"type\":\"number\",\"meta\":{\"max\":2147483647,\"default\":500}},\"21671\":{\"type\":\"number\",\"meta\":{\"max\":2147483647,\"default\":10000}},\"21672\":{\"type\":\"number\",\"meta\":{\"min\":0,\"max\":1,\"default\":0.1}},\"21673\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"initialDelayMs\":21670,\"maxDelayMs\":21671,\"jitterRatio\":21672}},\"21674\":{\"type\":\"const\",\"meta\":{\"required\":true},\"value\":\"normal\"},\"21675\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":0,\"max\":9007199254740991,\"defau"
+ },
+ {
+  "method": "POST",
+  "path": "/api/dynamicCordisRunner/syncInspectManifest",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"0068286d-7cad-401e-be22-b973bb3835ef\",\"result\":{\"ok\":true,\"value\":null}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/session/create",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"5f5a7f1f-61f4-481a-9483-dfdb6c3d5109\",\"result\":{\"ok\":true,\"value\":{\"sessionId\":\"session-444a4e62-c735-4892-b3ac-1b6fdd53bef2\",\"agentPreset\":\"standard\"}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/credentials/describe",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"1ed988b8-5767-4871-8f94-e7687d56db11\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/llm/listProviders",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"47e838b5-f521-4807-9c54-7bae2f2ffcf7\",\"result\":{\"ok\":true,\"value\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\"}]}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/llm/listConfigurableProviders",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"1e61d93f-8351-408d-ae42-2b54b6ae66dd\",\"result\":{\"ok\":true,\"value\":[{\"provider\":\"amazon-bedrock\",\"displayName\":\"amazon-bedrock\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"amazon-bedrock\"],\"declared\":false},{\"provider\":\"ant-ling\",\"displayName\":\"ant-ling\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"ant-ling\"],\"declared\":false},{\"provider\":\"anthropic\",\"displayName\":\"anthropic\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"anthropic\"],\"declared\":false},{\"provider\":\"azure-openai-responses\",\"displayName\":\"azure-openai-responses\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"azure-openai-responses\"],\"declared\":false},{\"provider\":\"baseten\",\"displayName\":\"baseten\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"baseten\"],\"declared\":false},{\"provider\":\"cerebras\",\"displayName\":\"cerebras\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"cerebras\"],\"declared\":false},{\"provider\":\"cloudflare-ai-gateway\",\"displayName\":\"cloudflare-ai-gateway\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"cloudflare-ai-gateway\"],\"declared\":false},{\"provider\":\"cloudflare-workers-ai\",\"displayName\":\"cloudflare-workers-ai\",\"setting"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agentPresets/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"eccdca1e-63e5-4c6c-87bc-5c5eeaccfb40\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"order\":1,\"isDefault\":true},{\"id\":\"ptc\",\"order\":2,\"isDefault\":false},{\"id\":\"minimal\",\"order\":3,\"isDefault\":false},{\"id\":\"cordis\",\"order\":4,\"isDefault\":false}],\"modeSelectionEnabled\":true}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/team-remote/team.getProjection",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"b211657e-3077-4aee-84f8-9b16a6d36cf8\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-444a4e62-c735-4892-b3ac-1b6fdd53bef2' which this host does not own (bound root 'session-rst017c4-boot-2026-09-26T12-42-57')\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-444a4e62-c735-4892-b3ac-1b6fdd53bef2' which this host does not own (bound root 'session-rst017c4-boot-2026-09-26T12-42-57')\"}}}}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/credentials/describe",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"a6d1d061-bdf7-48bf-b4c9-80840ba3ee65\",\"result\":{\"ok\":true,\"value\":{\"AMAZON_BEDROCK_API_KEY\":{\"configured\":false,\"writable\":true},\"ANT_LING_API_KEY\":{\"configured\":false,\"writable\":true},\"ANTHROPIC_API_KEY\":{\"configured\":false,\"writable\":true},\"AZURE_OPENAI_RESPONSES_API_KEY\":{\"configured\":false,\"writable\":true},\"BASETEN_API_KEY\":{\"configured\":false,\"writable\":true},\"CEREBRAS_API_KEY\":{\"configured\":false,\"writable\":true},\"CLOUDFLARE_AI_GATEWAY_API_KEY\":{\"configured\":false,\"writable\":true},\"CLOUDFLARE_WORKERS_AI_API_KEY\":{\"configured\":false,\"writable\":true},\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false},\"FIREWORKS_API_KEY\":{\"configured\":false,\"writable\":true},\"GITHUB_COPILOT_API_KEY\":{\"configured\":false,\"writable\":true},\"GOOGLE_API_KEY\":{\"configured\":false,\"writable\":true},\"GOOGLE_VERTEX_API_KEY\":{\"configured\":false,\"writable\":true},\"GROQ_API_KEY\":{\"configured\":false,\"writable\":true},\"HUGGINGFACE_API_KEY\":{\"configured\":false,\"writable\":true},\"KIMI_CODING_API_KEY\":{\"configured\":false,\"writable\":true},\"MINIMAX_API_KEY\":{\"configured\":false,\"writable\":true},\"MINIMAX_CN_API_KEY\":{\"configured\":false,\"writable\":true},\"MISTRAL_API_KEY"
+ },
+ {
+  "method": "POST",
+  "path": "/api/commands/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"a3cddd84-412f-4fcb-84bd-552a1901cbd7\",\"result\":{\"ok\":true,\"value\":[{\"definitionId\":\"@deepseek-ai/dsh-command-compact\",\"name\":\"compact\",\"description\":\"Compact older conversation history\"},{\"definitionId\":\"@deepseek-ai/dsh-session-log-export\",\"name\":\"export\",\"description\":\"Download this Session log as a ZIP archive\"},{\"definitionId\":\"@deepseek-ai/dsh-command-feedback\",\"name\":\"feedback\",\"description\":\"Record feedback about this session\",\"input\":{\"hint\":\"<text>\"}},{\"definitionId\":\"@deepseek-ai/dsh-command-goal\",\"name\":\"goal\",\"description\":\"Set or view the goal for a long-running task\",\"input\":{\"hint\":\"[<objective>|clear|edit <objective>|pause|resume]\",\"attachments\":true}},{\"definitionId\":\"@deepseek-ai/dsh-permission-presets\",\"name\":\"permission\",\"description\":\"Switch the permission preset (sandbox mode + approval policy)\",\"input\":{\"hint\":\"<preset>\"}},{\"definitionId\":\"@deepseek-ai/dsh-plan-mode\",\"name\":\"plan\",\"description\":\"Enter or leave plan mode\",\"input\":{\"hint\":\"[off|message]\",\"attachments\":true}}]}}"
+ },
+ {
+  "method": "POST",
+  "path": "/api/skills/list",
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"d63379b9-0c06-4439-99d0-98ee100ca4b7\",\"result\":{\"ok\":true,\"value\":{\"skills\":[{\"name\":\"team-blueprint-authoring\",\"path\":\"/home/user/dsh-plugins/dsh-agent-team/.agents/skills/team-blueprint-authoring/SKILL.md\",\"description\":\"Author a DSH Agent Team blueprint (a saved-source YAML document) and run pre-flight checks before creating a team — identity frontmatter, the frozen closed field sets, exactly one complete LeaderTemplate, member templates, capabilities (teamTools/builtinToolDeny/skills/mcp/permissions with allow-ask-deny lanes, exact/subtree/any resources, shell-class rules), envelopes, policyStates, quotas, the draft-file convention, and live checks over the /team-remote catalog.list / catalog.get endpoints. Use when asked to create, modify, or validate a team blueprint or a new team design.\",\"modelInvocable\":true},{\"name\":\"team-leader-operations\",\"path\":\"/home/user/dsh-plugins/dsh-agent-team/.agents/skills/team-leader-operations/SKILL.md\",\"description\":\"Operate a DSH Agent Team as the Leader using the closed set of thirteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report pr"
+ }
+]

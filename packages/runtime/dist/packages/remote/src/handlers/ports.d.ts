@@ -2,9 +2,10 @@
  * The backing ports of the Remote handler layer (deviation D-2).
  *
  * The handler layer depends on NO runtime types: its entire dependency
- * surface is these 17 structural ports (12 frozen P8-T3 ports + the two
+ * surface is these 18 structural ports (12 frozen P8-T3 ports + the two
  * TCM vNext §15.6 v2 ports + the two Team D1-D6 repair v2 v3 ports + the
- * F3/F11/F9/T1.4 repair round r1 F9 v4 port),
+ * F3/F11/F9/T1.4 repair round r1 F9 v4 port + the C1
+ * restart-0.1.7-rc.1 recovery v5 port),
  * each of which the host wiring implements over the runtime APIs
  * (design note §3 table, "Backing API" column). Every port method returns
  * a lossless-JSON-safe record (or `null` where the wire shape allows it):
@@ -329,11 +330,38 @@ export interface RemoteTeamResolveControlPort {
     resolveControl(teamSessionId: string, requestId: string, decision: 'allow' | 'deny', note: string | undefined): RemoteSafeRecord;
 }
 /**
- * The complete dependency surface of the handler layer: exactly 17 ports
+ * The v5-only `team.prepareOrdinaryOpen` port: the narrow one-shot
+ * ordinary-activation PERMIT of the Team fence (guide §10.2). The host
+ * arms the fence's per-root one-shot activation permit for the given Team
+ * root (process-local, single-use, TTL-bounded; the armed permit expires
+ * silently if never consumed — there is NO revoke RPC; an unconsumed
+ * permit on a failed client-side native open simply lapses). This is a
+ * Team CONTROL-PLANE RPC: it performs NO Team ensure, NO Team Agent side
+ * effect, and no TeamDomain mutation beyond the one-shot activation-allow
+ * fact. The production S6 handler (the A33/A34 host wiring, s6-remote)
+ * raises the typed failures: a root outside the caller's team
+ * (`TEAM_REMOTE_FOREIGN_TEAM`, via `assertBoundRoot`) and the permit port
+ * absent from the host wiring
+ * (`TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE` — fail closed,
+ * never a silent success); both pass through the dispatcher unchanged
+ * (invariant 4b).
+ */
+export interface RemoteTeamPrepareOrdinaryOpenPort {
+    /**
+     * Arm the one-shot ordinary-activation permit for the named Team root.
+     * @param teamSessionId - the validated TeamSession (root session) id.
+     * @returns the closed success shape (lossless JSON): at least
+     *   `{ rootSessionId, permitted: true }`.
+     */
+    prepareOrdinaryOpen(teamSessionId: string): RemoteSafeRecord;
+}
+/**
+ * The complete dependency surface of the handler layer: exactly 18 ports
  * (the 12 frozen P8-T3 ports + the two TCM vNext §15.6 v2 ports + the
- * two Team D1-D6 repair v2 v3 ports + the F9 v4 port), none of which is a
- * mirror of the upstream session controller, a session log artifact, or
- * an upstream private API (G8).
+ * two Team D1-D6 repair v2 v3 ports + the F9 v4 port + the C1
+ * restart-0.1.7-rc.1 recovery v5 port), none of which is a mirror of the
+ * upstream session controller, a session log artifact, or an upstream
+ * private API (G8).
  */
 export interface RemoteHandlerDeps {
     readonly catalog: RemoteCatalogPort;
@@ -344,6 +372,7 @@ export interface RemoteHandlerDeps {
     readonly teamRoots: RemoteTeamRootsPort;
     readonly teamEnsureRootLive: RemoteTeamEnsureRootLivePort;
     readonly teamResolveControl: RemoteTeamResolveControlPort;
+    readonly teamPrepareOrdinaryOpen: RemoteTeamPrepareOrdinaryOpenPort;
     readonly projection: RemoteProjectionPort;
     readonly ledger: RemoteLedgerPort;
     readonly admission: RemoteAdmissionPort;

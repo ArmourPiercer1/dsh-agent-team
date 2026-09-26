@@ -1397,6 +1397,21 @@ export function createTeamProductionRoot(params) {
         ensureRootLive: async (rootSessionId) => {
             await live.ensureLiveAgent(rootSessionId);
         },
+        // C1 (restart-recovery, guide §10.2) — the D3 ordinary-mode one-shot
+        // activation permit behind the host-side team.prepareOrdinaryOpen:
+        // the live glue's allowOrdinaryActivationOnce (the fence's
+        // permitOrdinaryOnce passthrough — the ONE process-local permit
+        // fact: no Team ensure, no TeamDomain mutation, no governance, no
+        // tools, no persistence). The guide's literal form: `live.
+        // allowOrdinaryActivationOnce?.(sid)` — a world without the fence
+        // (the passthrough undefined) arms nothing, and the ordinary open
+        // proceeds upstream-equivalently (nothing vetoes it — the fence is
+        // the veto point); in the production host the fence ALWAYS exists
+        // (host.ts registers it at the top of apply()), so the passthrough
+        // is always defined there.
+        prepareOrdinaryOpen: (rootSessionId) => {
+            live.allowOrdinaryActivationOnce?.(rootSessionId);
+        },
         // F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the
         // durable control-service closure behind the v4-only
         // team.resolveControl: the EXISTING A25 control service (built

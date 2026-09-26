@@ -1,0 +1,20 @@
+DSH Local Build
+0.1.7-rc.1-46a7f68
+New Session
+Plugins
+Workspaces
+workspace
+New Session
+Ungrouped
+c4 title
+1min
+New Team
+Settings
+Into the Unknown
+Preview
+workspace
+Standard mode
+Describe what you want to build, / commands, @ files or sessions
+Workspace Write
+DeepSeek-V41-Flash
+High

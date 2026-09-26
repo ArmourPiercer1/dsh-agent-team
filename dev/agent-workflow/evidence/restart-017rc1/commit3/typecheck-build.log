@@ -1,0 +1,11 @@
+== typechecks (pnpm exec tsc -p tsconfig.json)
+packages/remote : exit 0 (clean)
+packages/client : exit 0 (clean)
+packages/runtime: exit 0 (clean)
+
+== builds (tsc -p tsconfig.build.json)
+remote=0 client=0 runtime=0
+
+== pnpm build:composition + check-artifacts-committed
+rebuilt packages/runtime/dist + packages/client/composition-shim; staged via git add (gate-prescribed, no commit)
+[check-artifacts-committed] OK: 1180 files; committed install-surface artifacts match the fresh build

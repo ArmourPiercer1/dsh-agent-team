@@ -1,0 +1,7 @@
+{
+  "note": "World A BROWSER gold-standard gate-5. Steps: (1) open the marker URL (boot-2/boot-2-marker.txt) in a browser tab; (2) open the cold dynamic session in the session list — the fence vetoes the ordinary open (会话不可用 error lane; screenshot); (3) click 以 Team 模式 打开 (Team-mode takeover); (4) WITHOUT reloading the page: the composer must be usable — type the prompt containing the gate-5 token below and send it (the leader must answer; screenshot). The kit AUTO-RELEASES the hold when the gate-5 prompt reaches the mock model (no external signal needed; job_kill only as the failure backstop).",
+  "kitPid": 11,
+  "gui": "http://127.0.0.1:3492",
+  "dynamicRoot": "session-rst017c4-dyn-2026-09-26T13-21-00",
+  "gate5Prompt": "Gate-5 composer check right after the Team takeover. Answer with the token RST017C4GATE5_2026-09-26T13-21-00 and stop."
+}

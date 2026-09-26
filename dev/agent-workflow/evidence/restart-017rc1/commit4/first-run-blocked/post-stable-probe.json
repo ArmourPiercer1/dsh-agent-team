@@ -1,0 +1,13 @@
+{
+  "at": "2026-09-26T12:00:37.351Z",
+  "p3080": {
+    "port": 3080,
+    "reachable": true,
+    "status": 401
+  },
+  "p3180": {
+    "port": 3180,
+    "reachable": false,
+    "status": null
+  }
+}

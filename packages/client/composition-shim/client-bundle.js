@@ -604,6 +604,49 @@ var __dshFactory = (require) => {
 			            });
 			        });
 			    };
+			    // D3 (D6) — C1 rewire (guide §10.2): the SAME async error lane for the
+			    // explicit ordinary-mode entry (the AWAITED two-phase sequence — v5
+			    // prepare permit, then the native open — lives in the mount; the row
+			    // only triggers it and renders the settled rejection). Rejections
+			    // arrive as the mount's typed `${code}: ${message}` Error (the code is
+			    // a closed SCREAMING_SNAKE constant with no colon, so the first
+			    // `': '` split is unambiguous) or the seam's own native-open error.
+			    // The error note is NEVER swallowed: every rejection renders the
+			    // verbatim typed note.
+			    const [rootOpenOrdinaryPending, setRootOpenOrdinaryPending] = useState({});
+			    const [rootOpenOrdinaryErrors, setRootOpenOrdinaryErrors] = useState({});
+			    /** Run the row's explicit ordinary-mode entry through the face (the
+			     *  two-phase sequence lives in the mount; the row only triggers it and
+			     *  renders the settled rejection when it comes back). */
+			    const runPickerOpenOrdinaryMode = (rootSessionId) => {
+			        const face = openOrdinaryMode;
+			        if (face === undefined)
+			            return;
+			        setRootOpenOrdinaryPending(prev => ({ ...prev, [rootSessionId]: true }));
+			        setRootOpenOrdinaryErrors(prev => {
+			            const next = { ...prev };
+			            delete next[rootSessionId];
+			            return next;
+			        });
+			        void face(rootSessionId).catch((error) => {
+			            const rawMessage = error instanceof Error ? error.message : String(error);
+			            const separatorIndex = rawMessage.indexOf(': ');
+			            const code = separatorIndex > 0 ? rawMessage.slice(0, separatorIndex) : 'ORDINARY_OPEN_FAILED';
+			            const message = separatorIndex > 0 ? rawMessage.slice(separatorIndex + 2) : rawMessage;
+			            setRootOpenOrdinaryErrors(prev => ({
+			                ...prev,
+			                [rootSessionId]: { code, message },
+			            }));
+			        }).finally(() => {
+			            setRootOpenOrdinaryPending(prev => {
+			                if (prev[rootSessionId] !== true)
+			                    return prev;
+			                const next = { ...prev };
+			                delete next[rootSessionId];
+			                return next;
+			            });
+			        });
+			    };
 			    const ledgerState = useTeamLedgers(map => map[snapshot?.teamSessionId ?? '']);
 			    const ledger = useMemo(() => ledgerModelFromStoreState(ledgerState), [ledgerState]);
 			    // F9 (remote contract v4) — the human control-resolution command face
@@ -702,10 +745,16 @@ var __dshFactory = (require) => {
 			    const rootsList = teamRoots !== null && teamRoots.status === 'ok' && teamRoots.rows.length > 0
 			        ? (_jsxs("div", { className: styles.roots, "data-team-roots": true, children: [_jsx("h3", { className: styles.rootsTitle, children: t('view.roots.title') }), _jsx("ul", { className: styles.rootsList, "data-team-roots-list": true, children: teamRoots.rows.map(row => {
 			                        const rowError = rootOpenTeamErrors[row.rootSessionId];
+			                        const rowOrdinaryError = rootOpenOrdinaryErrors[row.rootSessionId];
 			                        return (_jsxs("li", { className: styles.rootRow, "data-team-root-row": true, "data-root-session-id": row.rootSessionId, children: [_jsx("span", { className: styles.rootId, "data-root-id": true, children: row.rootSessionId }), _jsx("span", { "data-root-blueprint": true, children: `${row.blueprintId}@${row.revision}` }), _jsx("span", { "data-root-workspace": true, children: row.defaultWorkspace ?? t('view.roots.noWorkspace') }), _jsx("span", { "data-root-members": true, children: t('view.roots.members', { count: String(row.memberCount) }) }), _jsx("span", { "data-root-created": true, title: row.createdAt, children: row.createdAt }), openTeamMode !== undefined
 			                                    ? (_jsx("button", { type: "button", className: styles.rootRowOpen, "data-team-mode-open-root": row.rootSessionId, disabled: rootOpenTeamPending[row.rootSessionId] === true || undefined, onClick: () => { runPickerOpenTeamMode(row.rootSessionId); }, children: t('view.members.openTeamMode') }))
 			                                    : null, openOrdinaryMode !== undefined
-			                                    ? (_jsx("button", { type: "button", className: styles.rootRowOpen, "data-team-ordinary-open-root": row.rootSessionId, title: t('view.members.openOrdinaryMode.hint'), onClick: () => { openOrdinaryMode(row.rootSessionId); }, children: t('view.members.openOrdinaryMode') }))
+			                                    ? (_jsx("button", { type: "button", className: styles.rootRowOpen, "data-team-ordinary-open-root": row.rootSessionId, disabled: rootOpenOrdinaryPending[row.rootSessionId] === true || undefined, title: t('view.members.openOrdinaryMode.hint'), onClick: () => { runPickerOpenOrdinaryMode(row.rootSessionId); }, children: t('view.members.openOrdinaryMode') }))
+			                                    : null, rowOrdinaryError !== undefined
+			                                    ? (_jsx("div", { className: styles.legacyNote, "data-team-ordinary-open-error": true, children: t('view.members.openOrdinaryMode.error', {
+			                                            code: rowOrdinaryError.code,
+			                                            message: rowOrdinaryError.message,
+			                                        }) }))
 			                                    : null, rowError !== undefined
 			                                    ? (_jsx("div", { className: styles.legacyNote, "data-team-mode-open-error": true, children: t('view.members.openMode.error', {
 			                                            code: rowError.code,
@@ -1032,39 +1081,91 @@ var __dshFactory = (require) => {
 			    // `uiWorkspace.openSession` (0.1.5: `ctx.sessions.open`) — on a typed
 			    // ensure failure the session is NOT opened (never a silent open, never
 			    // a silent adoption) and the typed error is returned for the UI's
-			    // explicit error lane. On success the per-root open-mode mark is set
-			    // ('team'); the session switch itself drives the badge re-render (the
-			    // sessions.list effect below keeps the map honest on every switch).
-			    // NO remote field, NO push/event/polling.
+			    // explicit error lane (no error swallowing). On success the per-root
+			    // open-mode mark is set ('team'); the session switch itself drives the
+			    // badge re-render (the sessions.list effect below keeps the map honest
+			    // on every switch). NO remote field, NO push/event/polling.
+			    //
+			    // C1 (restart-0.1.7-rc.1 recovery, verdict gate-5 / Q2 finding): after
+			    // a SUCCESSFUL takeover the mount ALSO re-pulls the host-authoritative
+			    // session list (the D-3 robust-open seam: `ctx.sessions.refresh()`,
+			    // whose list increment may lag the RPC response). The Q2 browser
+			    // finding: a cold Team root ordinary-open → fence veto leaves the
+			    // SPA's session-state sticky (the list-driven main-selection /
+			    // session-binding derivation in the upstream ui-session publishMain
+			    // order holds a stale window — the upstream doc's own "catalog
+			    // refresh window" note); the successful Team-mode takeover does NOT
+			    // clear that state within the same page load, so the composer stays
+			    // locked ("会话不可用") until the user reloads. The refresh re-pulls
+			    // the fresh host list, the list re-publishes, the main-selection /
+			    // session-binding derivation re-runs with the current row present —
+			    // the veto's error/unavailable state reconciles WITHOUT a reload.
+			    // The takeover FAILURE path never reaches this step (no open, no
+			    // refresh — the typed error lane stays loud, nothing is swallowed).
+			    // No new global store, no private store reach: the public `sessions`
+			    // seam only (CORE PATCH BUDGET = 0).
 			    const openTeamMode = async (rootSessionId) => {
 			        const result = await teamRemote.teamEnsureRootLiveV3(rootSessionId);
 			        if (result.ok === false) {
-			            // The ensure failed typed: never open, never mark (a stale 'team'
-			            // mark from a prior attempt of the same root is cleared too).
+			            // The ensure failed typed: never open, never mark, never refresh
+			            // (a stale mark from a prior attempt of the same root is cleared
+			            // too; the typed failure rides the UI's explicit error lane).
 			            openModeByRoot.delete(rootSessionId);
 			            return { ok: false, code: result.error.code, message: result.error.message };
 			        }
 			        // (b) only AFTER the guarantee settled: the native switch.
 			        ctx.uiWorkspace.openSession(rootSessionId);
 			        openModeByRoot.set(rootSessionId, 'team');
+			        // (c) gate-5 (Q2 finding): the post-takeover session-state reconcile
+			        // (above) — the composer must be usable again WITHOUT a reload.
+			        await ctx.sessions.refresh();
 			        return { ok: true };
 			    };
 			    // (9.0c) D3 (Team D1-D6 repair v2, D6) — the EXPLICIT ordinary-mode
-			    // fallback entry ("以普通模式打开", v2 plan §1.1.3): the EXISTING
-			    // `openSession` verbatim (0.1.7: the pure `uiWorkspace.openSession`) — NO
-			    // team-remote call (no `team.ensureRootLive`, no other `team.*`
-			    // method), NO `session/create`-with-preset (A3 Q1 caveat: that path is
-			    // rejected on a live Team root), NO ensure-live step, NO list refresh.
-			    // The entry is a promise of "no Team ensure is performed / team_* tools
-			    // are NOT guaranteed" — NOT a tool-removal operation (A3 Q1 caveat 2:
-			    // a root whose agent is ALREADY live with the Team setup is adopted
-			    // as-is; the `team_*` tools remain registered — the mode badge shows
-			    // which entry was used, so the UI never claims a removal). Open first,
-			    // mark after: the session switch (and the reset effect it drives)
-			    // settles before the mode fact is written, and a failed open (unknown
-			    // id — the seam's own throw) leaves the prior mark intact (a failed
-			    // switch is no switch).
-			    const openOrdinaryMode = (rootSessionId) => {
+			    // fallback entry ("以普通模式打开", v2 plan §1.1.3), REWIRE for the C1
+			    // restart-0.1.7-rc.1 recovery (guide §10.2 client): the AWAITED
+			    // two-phase sequence (the guide snippet, verbatim shape): (a) the v5
+			    // `team.prepareOrdinaryOpen` one-shot permit MUST settle BEFORE (b)
+			    // the native `openSession` — a typed permit failure throws (the UI's
+			    // async error lane) and the session is NOT opened and NOT marked;
+			    // (b) only after the permit settled, the EXISTING `openSession`
+			    // verbatim (0.1.7: the pure `uiWorkspace.openSession`) and the
+			    // 'ordinary' mode mark.
+			    //
+			    // SEMANTICS (C4 / A3 Q1 caveat 2): the entry promises "no Team ensure
+			    // is performed / activated as an ordinary Session Agent" — it is NOT a
+			    // tool-removal operation (a root whose agent is ALREADY live with the
+			    // Team setup is adopted as-is; the `team_*` tools remain registered —
+			    // the mode badge shows which entry was used, so the UI never claims a
+			    // removal). The prepare permit is a Team CONTROL-PLANE RPC (the fence's
+			    // one-shot activation-allow fact) — this entry therefore performs ZERO
+			    // Team ensure and ZERO Team Agent side effects, but it is NOT
+			    // "zero team.* remote calls" (the prepare permit itself is one). NO
+			    // `session/create`-with-preset (A3 Q1 caveat: that path is rejected on
+			    // a live Team root), NO ensure-live step, NO list refresh.
+			    //
+			    // Open first, mark after: the session switch (and the reset effect it
+			    // drives) settles before the mode fact is written, and a failed native
+			    // open (unknown id — the seam's own throw) leaves the prior mark
+			    // intact (a failed switch is no switch). A native-open failure also
+			    // leaves the armed permit to its TTL expiry — there is NO revoke RPC
+			    // (guide §10.2: the armed permit simply expires).
+			    const openOrdinaryMode = async (rootSessionId) => {
+			        // (a) the one-shot ordinary-activation permit (v5 control-plane RPC —
+			        // the ONLY team.* call of this entry; NO Team ensure, NO Team Agent
+			        // side effect).
+			        const permit = await teamRemote.teamPrepareOrdinaryOpenV5(rootSessionId);
+			        if (permit.ok === false) {
+			            // Typed permit failure (foreign root / no fence armed / port
+			            // unavailable): never open, never mark (a stale mark from a prior
+			            // attempt of the same root is cleared too); the typed error rides
+			            // the UI's async error lane (no swallowing).
+			            openModeByRoot.delete(rootSessionId);
+			            throw new Error(`${permit.error.code}: ${permit.error.message}`);
+			        }
+			        // (b) only AFTER the permit settled: the native switch, then the
+			        // mode mark (a failed open throws — no mark, the permit lapses by
+			        // TTL).
 			        openSession(rootSessionId);
 			        openModeByRoot.set(rootSessionId, 'ordinary');
 			    };
@@ -1300,10 +1401,14 @@ var __dshFactory = (require) => {
 			        // D2 (Team D1-D6 repair v2, D6): the explicit open-in-Team-mode entry
 			        // (the AWAITED two-phase sequence).
 			        openTeamMode,
-			        // D3 (Team D1-D6 repair v2, D6): the explicit ordinary-mode fallback
-			        // entry (the pure native open — no team-remote call, no ensure-live
-			        // step; its promise is "no Team ensure is performed / team_* tools
-			        // are NOT guaranteed", never a tool-removal claim).
+			        // D3 (Team D1-D6 repair v2, D6) — C1 rewire (guide §10.2): the
+			        // explicit ordinary-mode fallback entry (the AWAITED two-phase
+			        // sequence — the v5 `team.prepareOrdinaryOpen` one-shot permit, then
+			        // the pure native open; ZERO Team ensure / ZERO Team Agent side
+			        // effects — the prepare permit is the entry's single Team
+			        // control-plane RPC, never an ensure; its promise is "no Team ensure
+			        // is performed / activated as an ordinary Session Agent", never a
+			        // tool-removal claim).
 			        openOrdinaryMode,
 			        // D2/D3: the per-root client-local open-mode read face — the badge
 			        // source showing WHICH explicit entry was used ('team' / 'ordinary')
@@ -3591,7 +3696,7 @@ var __dshFactory = (require) => {
 			                : null] }));
 			}
 			/** One member group: the container row (plus the §17 "+" on teammate rows) and the instance expansion. */
-			function MemberGroup({ group, current, currentSessionId, onSelectSession, onSelectLeader, onCommand, pendingByInstance, errorsByInstance, onCreateInstance, createPending, createError, openTeamMode, teamModePending, teamModeError, openOrdinaryMode, openMode, t, }) {
+			function MemberGroup({ group, current, currentSessionId, onSelectSession, onSelectLeader, onCommand, pendingByInstance, errorsByInstance, onCreateInstance, createPending, createError, openTeamMode, teamModePending, teamModeError, openOrdinaryMode, ordinaryPending, ordinaryError, openMode, t, }) {
 			    const name = group.name ?? t('member.leader');
 			    const label = `${name} · ${t('view.members.active', { count: group.activeCount })}`;
 			    return (_jsxs("div", { className: styles.group, "data-member-group": true, "data-current": current || undefined, children: [onSelectLeader === undefined
@@ -3602,7 +3707,7 @@ var __dshFactory = (require) => {
 			                            ? (_jsxs("div", { className: styles.teamModeRow, "data-team-mode-row": true, children: [openTeamMode !== undefined
 			                                        ? (_jsx("button", { type: "button", className: styles.teamModeOpen, "data-team-mode-open": true, disabled: teamModePending === true || undefined, onClick: openTeamMode, children: t('view.members.openTeamMode') }))
 			                                        : null, openOrdinaryMode !== undefined
-			                                        ? (_jsx("button", { type: "button", className: styles.teamModeOpen, "data-team-ordinary-open": true, title: t('view.members.openOrdinaryMode.hint'), onClick: openOrdinaryMode, children: t('view.members.openOrdinaryMode') }))
+			                                        ? (_jsx("button", { type: "button", className: styles.teamModeOpen, "data-team-ordinary-open": true, disabled: ordinaryPending === true || undefined, title: t('view.members.openOrdinaryMode.hint'), onClick: openOrdinaryMode, children: t('view.members.openOrdinaryMode') }))
 			                                        : null, (openMode === 'team' || openMode === 'ordinary')
 			                                        ? (_jsx("span", { className: styles.teamModeBadge, "data-team-mode-badge": true, "data-open-mode": openMode, children: openMode === 'team'
 			                                                ? t('view.members.openMode.team')
@@ -3612,6 +3717,11 @@ var __dshFactory = (require) => {
 			                            ? (_jsx("div", { className: styles.commandError, "data-member-command-error": true, "data-team-mode-error": true, children: t('view.members.openMode.error', {
 			                                    code: teamModeError.code,
 			                                    message: teamModeError.message,
+			                                }) }))
+			                            : null, ordinaryError !== undefined
+			                            ? (_jsx("div", { className: styles.commandError, "data-member-command-error": true, "data-team-ordinary-open-error": true, children: t('view.members.openOrdinaryMode.error', {
+			                                    code: ordinaryError.code,
+			                                    message: ordinaryError.message,
 			                                }) }))
 			                            : null] })), createError !== undefined
 			                ? (_jsxs("div", { className: styles.commandError, "data-member-command-error": true, "data-member-create-error": true, children: [t('member.command.error', { code: createError.code, message: createError.message }), createError.requestToken !== null ? ` [${createError.requestToken}]` : ''] }))
@@ -3644,6 +3754,12 @@ var __dshFactory = (require) => {
 			    // note). Page-run UI state only; the open-mode FACT stays in the mount.
 			    const [teamModePending, setTeamModePending] = useState(false);
 			    const [teamModeError, setTeamModeError] = useState(null);
+			    // D3 (D6) — C1 rewire (guide §10.2): the leader row's explicit
+			    // ordinary-mode entry — the in-flight mark + the last settled
+			    // rejection (ONE verbatim note). Page-run UI state only; the
+			    // open-mode FACT stays in the mount.
+			    const [ordinaryPending, setOrdinaryPending] = useState(false);
+			    const [ordinaryError, setOrdinaryError] = useState(null);
 			    const nextToken = useMemo(() => createRequestTokenGenerator('ui'), []);
 			    const teamSessionId = snapshot.teamSessionId;
 			    const workspaceOptions = workspaces ?? [];
@@ -3786,10 +3902,42 @@ var __dshFactory = (require) => {
 			            setTeamModePending(false);
 			        });
 			    };
+			    /**
+			     * D3 (D6) — C1 rewire (guide §10.2) — run the leader row's explicit
+			     * ordinary-mode entry through the face (the AWAITED two-phase
+			     * sequence: the v5 `team.prepareOrdinaryOpen` permit BEFORE the native
+			     * open — the mount owns the ordering and the client-local mode mark).
+			     * On a settled rejection the note renders verbatim under the row (the
+			     * typed code is the first `': '`-separated token of the mount's
+			     * `${code}: ${message}` error; the native-open seam error renders with
+			     * the fallback code) — never a silent failure, never swallowed. On
+			     * success the native switch (performed by the face) moves the current
+			     * session and the mode badge appears on the next render.
+			     */
+			    const runOpenOrdinaryMode = async () => {
+			        const face = openOrdinaryMode;
+			        if (face === undefined)
+			            return;
+			        setOrdinaryPending(true);
+			        setOrdinaryError(null);
+			        try {
+			            await face(teamSessionId);
+			        }
+			        catch (error) {
+			            const rawMessage = error instanceof Error ? error.message : String(error);
+			            const separatorIndex = rawMessage.indexOf(': ');
+			            const code = separatorIndex > 0 ? rawMessage.slice(0, separatorIndex) : 'ORDINARY_OPEN_FAILED';
+			            const message = separatorIndex > 0 ? rawMessage.slice(separatorIndex + 2) : rawMessage;
+			            setOrdinaryError({ code, message });
+			        }
+			        finally {
+			            setOrdinaryPending(false);
+			        }
+			    };
 			    const createTemplate = open?.kind === 'create'
 			        ? snapshot.templates.find(template => template.templateId === open.group.templateId)
 			        : undefined;
-			    return (_jsxs("div", { className: styles.root, "data-team-members": true, children: [_jsx(MemberGroup, { group: model.leader, current: snapshot.teamSessionId === currentSessionId, currentSessionId: currentSessionId, onSelectSession: onSelectSession, onSelectLeader: () => { onSelectSession(snapshot.teamSessionId); }, openTeamMode: openTeamMode === undefined ? undefined : runOpenTeamMode, teamModePending: teamModePending, teamModeError: teamModeError === null ? undefined : teamModeError, openOrdinaryMode: openOrdinaryMode === undefined ? undefined : () => { openOrdinaryMode(teamSessionId); }, openMode: teamOpenMode?.(teamSessionId) ?? null, t: t }), model.groups.map(group => (_jsx(MemberGroup, { group: group, current: group.instances.some(instance => instance.childSessionId === currentSessionId), currentSessionId: currentSessionId, onSelectSession: onSelectSession, onCommand: memberCommands === undefined ? undefined : (kind, instance) => {
+			    return (_jsxs("div", { className: styles.root, "data-team-members": true, children: [_jsx(MemberGroup, { group: model.leader, current: snapshot.teamSessionId === currentSessionId, currentSessionId: currentSessionId, onSelectSession: onSelectSession, onSelectLeader: () => { onSelectSession(snapshot.teamSessionId); }, openTeamMode: openTeamMode === undefined ? undefined : runOpenTeamMode, teamModePending: teamModePending, teamModeError: teamModeError === null ? undefined : teamModeError, openOrdinaryMode: openOrdinaryMode === undefined ? undefined : runOpenOrdinaryMode, ordinaryPending: ordinaryPending, ordinaryError: ordinaryError === null ? undefined : ordinaryError, openMode: teamOpenMode?.(teamSessionId) ?? null, t: t }), model.groups.map(group => (_jsx(MemberGroup, { group: group, current: group.instances.some(instance => instance.childSessionId === currentSessionId), currentSessionId: currentSessionId, onSelectSession: onSelectSession, onCommand: memberCommands === undefined ? undefined : (kind, instance) => {
 			                    if (kind === 'restore') {
 			                        // §23.4: restore is a direct click (no confirmation, no model
 			                        // call — ARCHIVED → SETTLED after the real admission).
@@ -5334,13 +5482,14 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=team-projection-store.js.map
 			}, exports: {} };
 		__mods["transport/team-remote-client.js"] = { done: false, fn: function (exports) {
-			const __imp36 = __req("../../remote/src/index.js");
-			const REMOTE_CONTRACT_VERSION = __imp36.REMOTE_CONTRACT_VERSION;
-			const REMOTE_CONTRACT_VERSION_V2 = __imp36.REMOTE_CONTRACT_VERSION_V2;
-			const REMOTE_CONTRACT_VERSION_V3 = __imp36.REMOTE_CONTRACT_VERSION_V3;
-			const REMOTE_CONTRACT_VERSION_V4 = __imp36.REMOTE_CONTRACT_VERSION_V4;
-			const REMOTE_RPC_CHANNEL = __imp36.REMOTE_RPC_CHANNEL;
-			const PushTransportLossError = __imp36.PushTransportLossError;
+			const __imp37 = __req("../../remote/src/index.js");
+			const REMOTE_CONTRACT_VERSION = __imp37.REMOTE_CONTRACT_VERSION;
+			const REMOTE_CONTRACT_VERSION_V2 = __imp37.REMOTE_CONTRACT_VERSION_V2;
+			const REMOTE_CONTRACT_VERSION_V3 = __imp37.REMOTE_CONTRACT_VERSION_V3;
+			const REMOTE_CONTRACT_VERSION_V4 = __imp37.REMOTE_CONTRACT_VERSION_V4;
+			const REMOTE_CONTRACT_VERSION_V5 = __imp37.REMOTE_CONTRACT_VERSION_V5;
+			const REMOTE_RPC_CHANNEL = __imp37.REMOTE_RPC_CHANNEL;
+			const PushTransportLossError = __imp37.PushTransportLossError;
 			/**
 			 * P9-T3 (S2-A) — the Team Remote client over the frozen public seam.
 			 *
@@ -5356,8 +5505,9 @@ var __dshFactory = (require) => {
 			 * every existing wrapper stamps contract version 1 (frozen v1 wire
 			 * behavior); ONLY `teamCreateV2` and `teamAdmitInitialWorkV2` stamp
 			 * contract version 2, the two D1 v3 wrappers stamp contract version 3,
-			 * and `teamResolveControlV4` (F3/F11/F9/T1.4 repair round r1 F9) stamps
-			 * contract version 4.
+			 * `teamResolveControlV4` (F3/F11/F9/T1.4 repair round r1 F9) stamps
+			 * contract version 4, and `teamPrepareOrdinaryOpenV5` (C1
+			 * restart-0.1.7-rc.1 recovery, guide §10.2) stamps contract version 5.
 			 *
 			 * Failure discipline (frozen `RemotePushTransport` contract, mirrored
 			 * here for the unary path): every RPC-level outcome arrives as a typed
@@ -5433,6 +5583,11 @@ var __dshFactory = (require) => {
 			        // resolution command (contract version 4; the host derives the human
 			        // principal — the closed v4 param set carries no caller fields).
 			        teamResolveControlV4: (params) => callWithVersion('team.resolveControl', params, REMOTE_CONTRACT_VERSION_V4),
+			        // C1 restart-0.1.7-rc.1 recovery (guide §10.2) — the v5-only one-shot
+			        // ordinary-activation permit (contract version 5; a Team control-plane
+			        // RPC — NO Team ensure, NO Team Agent side effect, no revoke RPC: an
+			        // unconsumed permit expires by TTL).
+			        teamPrepareOrdinaryOpenV5: (teamSessionId) => callWithVersion('team.prepareOrdinaryOpen', { teamSessionId }, REMOTE_CONTRACT_VERSION_V5),
 			        memberCreate: (params) => call('member.create', params),
 			        memberSend: (params) => call('member.send', params),
 			        memberFollowup: (params) => call('member.followup', params),
@@ -5531,7 +5686,8 @@ var __dshFactory = (require) => {
 			    'view.members.waiting': '{count} 项待裁决',
 			    'view.members.openTeamMode': '以 Team 模式打开 / 回到 Leader',
 			    'view.members.openOrdinaryMode': '以普通模式打开',
-			    'view.members.openOrdinaryMode.hint': '不执行 Team ensure，不保证 team_* 工具',
+			    'view.members.openOrdinaryMode.hint': '不执行 Team ensure；以普通 Session Agent 激活',
+			    'view.members.openOrdinaryMode.error': '以普通模式打开失败：{code}: {message}',
 			    'view.members.openMode.team': 'Team 模式',
 			    'view.members.openMode.ordinary': '普通模式',
 			    'view.members.openMode.error': '以 Team 模式打开失败：{code}: {message}',
@@ -5772,7 +5928,8 @@ var __dshFactory = (require) => {
 			    'view.members.waiting': '{count} pending',
 			    'view.members.openTeamMode': 'Open in Team mode / back to Leader',
 			    'view.members.openOrdinaryMode': 'Open in ordinary mode',
-			    'view.members.openOrdinaryMode.hint': 'No Team ensure is performed; team_* tools are not guaranteed',
+			    'view.members.openOrdinaryMode.hint': 'No Team ensure is performed; activated as an ordinary Session Agent',
+			    'view.members.openOrdinaryMode.error': 'Failed to open in ordinary mode: {code}: {message}',
 			    'view.members.openMode.team': 'Team mode',
 			    'view.members.openMode.ordinary': 'Ordinary mode',
 			    'view.members.openMode.error': 'Failed to open in Team mode: {code}: {message}',
@@ -6547,6 +6704,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V2", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V2 });
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V3", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V3 });
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V4", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V4 });
+			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V5", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V5 });
 			Object.defineProperty(exports, "SUPPORTED_REMOTE_CONTRACT_VERSIONS", { enumerable: true, get: () => __re3.SUPPORTED_REMOTE_CONTRACT_VERSIONS });
 			Object.defineProperty(exports, "isSupportedRemoteContractVersion", { enumerable: true, get: () => __re3.isSupportedRemoteContractVersion });
 			Object.defineProperty(exports, "assertSupportedRemoteContractVersion", { enumerable: true, get: () => __re3.assertSupportedRemoteContractVersion });
@@ -6560,6 +6718,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_V2_ONLY_METHODS", { enumerable: true, get: () => __re4.REMOTE_V2_ONLY_METHODS });
 			Object.defineProperty(exports, "REMOTE_V3_ONLY_METHODS", { enumerable: true, get: () => __re4.REMOTE_V3_ONLY_METHODS });
 			Object.defineProperty(exports, "REMOTE_V4_ONLY_METHODS", { enumerable: true, get: () => __re4.REMOTE_V4_ONLY_METHODS });
+			Object.defineProperty(exports, "REMOTE_V5_ONLY_METHODS", { enumerable: true, get: () => __re4.REMOTE_V5_ONLY_METHODS });
 			Object.defineProperty(exports, "isRemoteMethod", { enumerable: true, get: () => __re4.isRemoteMethod });
 			Object.defineProperty(exports, "isRemoteMethodAvailableInVersion", { enumerable: true, get: () => __re4.isRemoteMethodAvailableInVersion });
 			Object.defineProperty(exports, "remoteCategoryOf", { enumerable: true, get: () => __re4.remoteCategoryOf });
@@ -6586,6 +6745,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS });
 			Object.defineProperty(exports, "REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS", { enumerable: true, get: () => __re7.REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS });
 			Object.defineProperty(exports, "REMOTE_TEAM_RESOLVE_CONTROL_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_RESOLVE_CONTROL_FIELDS });
+			Object.defineProperty(exports, "REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS });
 			Object.defineProperty(exports, "REMOTE_TEAM_GET_PROJECTION_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_GET_PROJECTION_FIELDS });
 			Object.defineProperty(exports, "REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS });
 			Object.defineProperty(exports, "REMOTE_MEMBER_CREATE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_MEMBER_CREATE_FIELDS });
@@ -6612,6 +6772,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "parseRemoteTeamListRootsParams", { enumerable: true, get: () => __re7.parseRemoteTeamListRootsParams });
 			Object.defineProperty(exports, "parseRemoteTeamEnsureRootLiveParams", { enumerable: true, get: () => __re7.parseRemoteTeamEnsureRootLiveParams });
 			Object.defineProperty(exports, "parseRemoteTeamResolveControlParams", { enumerable: true, get: () => __re7.parseRemoteTeamResolveControlParams });
+			Object.defineProperty(exports, "parseRemoteTeamPrepareOrdinaryOpenParams", { enumerable: true, get: () => __re7.parseRemoteTeamPrepareOrdinaryOpenParams });
 			Object.defineProperty(exports, "parseRemoteTeamGetProjectionParams", { enumerable: true, get: () => __re7.parseRemoteTeamGetProjectionParams });
 			Object.defineProperty(exports, "parseRemoteTeamGetLedgerPageParams", { enumerable: true, get: () => __re7.parseRemoteTeamGetLedgerPageParams });
 			Object.defineProperty(exports, "parseRemoteMemberCreateParams", { enumerable: true, get: () => __re7.parseRemoteMemberCreateParams });
@@ -8208,17 +8369,34 @@ var __dshFactory = (require) => {
 			const REMOTE_CONTRACT_VERSION_V4 = 4;
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V4", { enumerable: true, get: () => REMOTE_CONTRACT_VERSION_V4 });
 			/**
-			 * All remote contract versions this build accepts: `[1, 2, 3, 4]`.
+			 * The remote contract v5 (C1, the restart-0.1.7-rc.1 recovery round —
+			 * guide §10/§10.2): the v5-only `team.prepareOrdinaryOpen` command — the
+			 * narrow one-shot ordinary-activation PERMIT of the Team fence (the host
+			 * arms the fence's per-root one-shot activation permit for a Team root the
+			 * caller is allowed to touch; the client consumes it on the following
+			 * plain session open). It is a Team CONTROL-PLANE RPC (the TeamDomain /
+			 * fence state change is the host-side activation-allow fact): it performs
+			 * NO Team ensure, NO Team Agent side effect, and no TeamDomain mutation
+			 * beyond the one-shot permit itself. Every v1/v2/v3/v4 method stays
+			 * available in v5; v1/v2/v3/v4 wire behavior is preserved.
+			 */
+			const REMOTE_CONTRACT_VERSION_V5 = 5;
+			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V5", { enumerable: true, get: () => REMOTE_CONTRACT_VERSION_V5 });
+			/**
+			 * All remote contract versions this build accepts: `[1, 2, 3, 4, 5]`.
 			 * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision;
 			 * v3 by the Team D1-D6 repair v2 D1 task; v4 by the F3/F11/F9/T1.4
-			 * repair round r1 F9 task (a version bump ADDS supported versions,
-			 * never edits v1/v2/v3 semantics).
+			 * repair round r1 F9 task; v5 by the C1 restart-0.1.7-rc.1 recovery
+			 * task (guide §10.2: the v5-only `team.prepareOrdinaryOpen` permit)
+			 * (a version bump ADDS supported versions, never edits v1/v2/v3/v4
+			 * semantics).
 			 */
 			const SUPPORTED_REMOTE_CONTRACT_VERSIONS = [
 			    REMOTE_CONTRACT_VERSION,
 			    REMOTE_CONTRACT_VERSION_V2,
 			    REMOTE_CONTRACT_VERSION_V3,
 			    REMOTE_CONTRACT_VERSION_V4,
+			    REMOTE_CONTRACT_VERSION_V5,
 			];
 			Object.defineProperty(exports, "SUPPORTED_REMOTE_CONTRACT_VERSIONS", { enumerable: true, get: () => SUPPORTED_REMOTE_CONTRACT_VERSIONS });
 			/**
@@ -8308,15 +8486,17 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_CATEGORY_VALUES", { enumerable: true, get: () => REMOTE_CATEGORY_VALUES });
 			/**
 			 * The closed Remote contract method catalog — a VERSIONED UNION
-			 * (TCM vNext §15.3, extended by the Team D1-D6 repair v2 D1 v3 bump and
-			 * the F3/F11/F9/T1.4 repair round r1 F9 v4 bump): the 23 frozen v1
+			 * (TCM vNext §15.3, extended by the Team D1-D6 repair v2 D1 v3 bump,
+			 * the F3/F11/F9/T1.4 repair round r1 F9 v4 bump, and the C1
+			 * restart-0.1.7-rc.1 recovery v5 bump — guide §10.2): the 23 frozen v1
 			 * methods plus the v2-only `team.admitInitialWork` plus the v3-only
 			 * `team.listRoots` / `team.ensureRootLive` plus the v4-only
-			 * `team.resolveControl` (27 methods total). Key = endpoint = method name
-			 * (dotted: `<category>.<action>`). Per-version availability is the closed
+			 * `team.resolveControl` plus the v5-only `team.prepareOrdinaryOpen`
+			 * (28 methods total). Key = endpoint = method name (dotted:
+			 * `<category>.<action>`). Per-version availability is the closed
 			 * {@link REMOTE_V2_ONLY_METHODS} + {@link REMOTE_V3_ONLY_METHODS} +
-			 * {@link REMOTE_V4_ONLY_METHODS} sets below; per-method param schemas are
-			 * version-aware in `params.ts`.
+			 * {@link REMOTE_V4_ONLY_METHODS} + {@link REMOTE_V5_ONLY_METHODS} sets
+			 * below; per-method param schemas are version-aware in `params.ts`.
 			 */
 			const REMOTE_METHOD_CATALOG = {
 			    'catalog.list': { category: REMOTE_CATEGORIES.CATALOG },
@@ -8329,6 +8509,7 @@ var __dshFactory = (require) => {
 			    'team.listRoots': { category: REMOTE_CATEGORIES.TEAM },
 			    'team.ensureRootLive': { category: REMOTE_CATEGORIES.TEAM },
 			    'team.resolveControl': { category: REMOTE_CATEGORIES.TEAM },
+			    'team.prepareOrdinaryOpen': { category: REMOTE_CATEGORIES.TEAM },
 			    'member.create': { category: REMOTE_CATEGORIES.MEMBER },
 			    'member.send': { category: REMOTE_CATEGORIES.MEMBER },
 			    'member.followup': { category: REMOTE_CATEGORIES.MEMBER },
@@ -8412,6 +8593,18 @@ var __dshFactory = (require) => {
 			const REMOTE_V4_ONLY_METHODS = ['team.resolveControl'];
 			Object.defineProperty(exports, "REMOTE_V4_ONLY_METHODS", { enumerable: true, get: () => REMOTE_V4_ONLY_METHODS });
 			/**
+			 * The closed set of catalog methods that exist ONLY in remote contract v5
+			 * (C1, the restart-0.1.7-rc.1 recovery round — guide §10.2): the narrow
+			 * one-shot ordinary-activation PERMIT `team.prepareOrdinaryOpen` (the
+			 * host arms the fence's per-root one-shot activation permit for a Team
+			 * root the caller is allowed to touch; the client consumes it on the
+			 * following plain session open). It is a Team control-plane RPC — NO Team
+			 * ensure, NO Team Agent side effect, no TeamDomain mutation beyond the
+			 * one-shot permit itself. Every v1/v2/v3/v4 method stays available in v5.
+			 */
+			const REMOTE_V5_ONLY_METHODS = ['team.prepareOrdinaryOpen'];
+			Object.defineProperty(exports, "REMOTE_V5_ONLY_METHODS", { enumerable: true, get: () => REMOTE_V5_ONLY_METHODS });
+			/**
 			 * Is `method` a catalog method available in remote contract `version`?
 			 *
 			 * This is the version-aware membership check the version-aware param
@@ -8423,7 +8616,7 @@ var __dshFactory = (require) => {
 			 *
 			 * @param method - the candidate method name (must be in the catalog).
 			 * @param version - the request's contract version (supported:
-			 *   1 | 2 | 3 | 4).
+			 *   1 | 2 | 3 | 4 | 5).
 			 */
 			function isRemoteMethodAvailableInVersion(method, version) {
 			    if (!(method in REMOTE_METHOD_CATALOG))
@@ -8431,15 +8624,21 @@ var __dshFactory = (require) => {
 			    if (version === 1) {
 			        return (!REMOTE_V2_ONLY_METHODS.includes(method) &&
 			            !REMOTE_V3_ONLY_METHODS.includes(method) &&
-			            !REMOTE_V4_ONLY_METHODS.includes(method));
+			            !REMOTE_V4_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V5_ONLY_METHODS.includes(method));
 			    }
 			    if (version === 2) {
-			        return !REMOTE_V3_ONLY_METHODS.includes(method) && !REMOTE_V4_ONLY_METHODS.includes(method);
+			        return (!REMOTE_V3_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V4_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V5_ONLY_METHODS.includes(method));
 			    }
 			    if (version === 3) {
-			        return !REMOTE_V4_ONLY_METHODS.includes(method);
+			        return !REMOTE_V4_ONLY_METHODS.includes(method) && !REMOTE_V5_ONLY_METHODS.includes(method);
 			    }
-			    // version === 4: every v1/v2/v3 method plus the v4-only methods.
+			    if (version === 4) {
+			        return !REMOTE_V5_ONLY_METHODS.includes(method);
+			    }
+			    // version === 5: every v1/v2/v3/v4 method plus the v5-only methods.
 			    return true;
 			}
 			Object.defineProperty(exports, "isRemoteMethodAvailableInVersion", { enumerable: true, get: () => isRemoteMethodAvailableInVersion });
@@ -8653,23 +8852,23 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=response.js.map
 			}, exports: {} };
 		__mods["../../remote/src/contracts/params.js"] = { done: false, fn: function (exports) {
-			const __imp43 = __req("../../remote/src/contracts/catalog.js");
-			const isRemoteMethodAvailableInVersion = __imp43.isRemoteMethodAvailableInVersion;
-			const __imp44 = __req("../../remote/src/contracts/errors.js");
-			const remoteContractError = __imp44.remoteContractError;
-			const __imp45 = __req("../../remote/src/contracts/ids.js");
-			const parseRemoteBlueprintId = __imp45.parseRemoteBlueprintId;
-			const parseRemoteBlueprintRevision = __imp45.parseRemoteBlueprintRevision;
-			const parseRemoteInstanceId = __imp45.parseRemoteInstanceId;
-			const parseRemoteRootSessionId = __imp45.parseRemoteRootSessionId;
-			const parseRemoteSessionId = __imp45.parseRemoteSessionId;
-			const parseRemoteTeamSessionId = __imp45.parseRemoteTeamSessionId;
-			const parseRemoteTemplateId = __imp45.parseRemoteTemplateId;
-			const REMOTE_ID_MAX_LENGTH = __imp45.REMOTE_ID_MAX_LENGTH;
-			const __imp46 = __req("../../remote/src/contracts/remote-safe.js");
-			const assertRemoteSafeJsonValue = __imp46.assertRemoteSafeJsonValue;
-			const __imp47 = __req("../../remote/src/contracts/version.js");
-			const assertSupportedRemoteContractVersion = __imp47.assertSupportedRemoteContractVersion;
+			const __imp48 = __req("../../remote/src/contracts/catalog.js");
+			const isRemoteMethodAvailableInVersion = __imp48.isRemoteMethodAvailableInVersion;
+			const __imp49 = __req("../../remote/src/contracts/errors.js");
+			const remoteContractError = __imp49.remoteContractError;
+			const __imp50 = __req("../../remote/src/contracts/ids.js");
+			const parseRemoteBlueprintId = __imp50.parseRemoteBlueprintId;
+			const parseRemoteBlueprintRevision = __imp50.parseRemoteBlueprintRevision;
+			const parseRemoteInstanceId = __imp50.parseRemoteInstanceId;
+			const parseRemoteRootSessionId = __imp50.parseRemoteRootSessionId;
+			const parseRemoteSessionId = __imp50.parseRemoteSessionId;
+			const parseRemoteTeamSessionId = __imp50.parseRemoteTeamSessionId;
+			const parseRemoteTemplateId = __imp50.parseRemoteTemplateId;
+			const REMOTE_ID_MAX_LENGTH = __imp50.REMOTE_ID_MAX_LENGTH;
+			const __imp51 = __req("../../remote/src/contracts/remote-safe.js");
+			const assertRemoteSafeJsonValue = __imp51.assertRemoteSafeJsonValue;
+			const __imp52 = __req("../../remote/src/contracts/version.js");
+			const assertSupportedRemoteContractVersion = __imp52.assertSupportedRemoteContractVersion;
 			/**
 			 * Per-method closed param schemas of the Remote contract v1.
 			 *
@@ -8691,8 +8890,9 @@ var __dshFactory = (require) => {
 			 * are legal content — but bound by a length cap (design note §3).
 			 *
 			 * **Version awareness (TCM vNext §15.3/§15.6, Team D1-D6 repair v2 D1
-			 * v3 bump, F3/F11/F9/T1.4 repair round r1 F9 v4 bump)**: the module is
-			 * the single version-aware closed schema. Every v1/v2/v3 field list,
+			 * v3 bump, F3/F11/F9/T1.4 repair round r1 F9 v4 bump, C1
+			 * restart-0.1.7-rc.1 recovery v5 bump — guide §10.2)**: the module is
+			 * the single version-aware closed schema. Every v1/v2/v3/v4 field list,
 			 * parser and behavior is unchanged; the v2 bump adds exactly one method
 			 * (`team.admitInitialWork`, v2-only) and one v2 variant of an existing
 			 * method (`team.create`, whose v2 closed set swaps `initialWork` for
@@ -8703,7 +8903,11 @@ var __dshFactory = (require) => {
 			 * method `team.resolveControl` (closed set: `teamSessionId`,
 			 * `requestId`, `decision`, optional `note` — NO caller/role/principal
 			 * fields: the host derives the human principal, the payload is a
-			 * command, never an identity). {@link parseRemoteMethodParams} routes on
+			 * command, never an identity); the v5 bump (guide §10.2) adds exactly
+			 * the one v5-only method `team.prepareOrdinaryOpen` (closed set:
+			 * `teamSessionId` — the narrow one-shot ordinary-activation permit of
+			 * the Team fence; the payload is a command, never an identity).
+			 * {@link parseRemoteMethodParams} routes on
 			 * the request version: a request to a method of a NEWER version is
 			 * typed-rejected (`method-version-unsupported`) AFTER the envelope
 			 * parse, and each request version sees only its own closed field sets
@@ -8815,6 +9019,8 @@ var __dshFactory = (require) => {
 			    'teamSessionId',
 			];
 			Object.defineProperty(exports, "REMOTE_TEAM_RESOLVE_CONTROL_FIELDS", { enumerable: true, get: () => REMOTE_TEAM_RESOLVE_CONTROL_FIELDS });
+			const REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS = ['teamSessionId'];
+			Object.defineProperty(exports, "REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS", { enumerable: true, get: () => REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS });
 			const REMOTE_TEAM_GET_PROJECTION_FIELDS = ['teamSessionId'];
 			Object.defineProperty(exports, "REMOTE_TEAM_GET_PROJECTION_FIELDS", { enumerable: true, get: () => REMOTE_TEAM_GET_PROJECTION_FIELDS });
 			const REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS = [
@@ -9316,6 +9522,14 @@ var __dshFactory = (require) => {
 			    };
 			}
 			Object.defineProperty(exports, "parseRemoteTeamResolveControlParams", { enumerable: true, get: () => parseRemoteTeamResolveControlParams });
+			/** Parse `team.prepareOrdinaryOpen` params (contract v5, v5-only method). */
+			function parseRemoteTeamPrepareOrdinaryOpenParams(method, params) {
+			    assertNoUnknownFields(method, params, REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS);
+			    return {
+			        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+			    };
+			}
+			Object.defineProperty(exports, "parseRemoteTeamPrepareOrdinaryOpenParams", { enumerable: true, get: () => parseRemoteTeamPrepareOrdinaryOpenParams });
 			/** Parse `team.getProjection` params. */
 			function parseRemoteTeamGetProjectionParams(method, params) {
 			    assertNoUnknownFields(method, params, REMOTE_TEAM_GET_PROJECTION_FIELDS);
@@ -9579,7 +9793,7 @@ var __dshFactory = (require) => {
 			 * through, so every request is parsed against the closed schema of its
 			 * own version — no cross-version field leakage).
 			 * @param version - the request envelope's contract version (supported:
-			 *   `1 | 2 | 3`; the envelope parse already guarantees this, the
+			 *   `1 | 2 | 3 | 4 | 5`; the envelope parse already guarantees this, the
 			 *   assertion is defensive for direct callers).
 			 * @param method - a catalog method name (dotted `<category>.<action>`).
 			 * @param params - the request envelope's `params` object.
@@ -9621,6 +9835,9 @@ var __dshFactory = (require) => {
 			        case 'team.resolveControl':
 			            // v4-only (the availability check above guarantees version === 4).
 			            return wrapParsed(method, parseRemoteTeamResolveControlParams(method, params));
+			        case 'team.prepareOrdinaryOpen':
+			            // v5-only (the availability check above guarantees version === 5).
+			            return wrapParsed(method, parseRemoteTeamPrepareOrdinaryOpenParams(method, params));
 			        case 'team.getProjection':
 			            return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params));
 			        case 'team.getLedgerPage':
@@ -9792,22 +10009,28 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=intent.js.map
 			}, exports: {} };
 		__mods["../../remote/src/handlers/team.js"] = { done: false, fn: function (exports) {
-			const __imp23 = __req("../../remote/src/contracts/errors.js");
-			const remoteContractError = __imp23.remoteContractError;
-			const __imp24 = __req("../../remote/src/contracts/types.js");
-			const REMOTE_LEDGER_ENTRY_FIELDS = __imp24.REMOTE_LEDGER_ENTRY_FIELDS;
-			const REMOTE_PROJECTION_FIELDS = __imp24.REMOTE_PROJECTION_FIELDS;
+			const __imp29 = __req("../../remote/src/contracts/errors.js");
+			const remoteContractError = __imp29.remoteContractError;
+			const __imp30 = __req("../../remote/src/contracts/types.js");
+			const REMOTE_LEDGER_ENTRY_FIELDS = __imp30.REMOTE_LEDGER_ENTRY_FIELDS;
+			const REMOTE_PROJECTION_FIELDS = __imp30.REMOTE_PROJECTION_FIELDS;
 			/**
 			 * The `team` category handler (design note §3): TeamSession creation,
-			 * whole-projection observation, ledger pages, and the v4-only human
-			 * control resolution (`team.resolveControl`, F3/F11/F9/T1.4 repair
-			 * round r1 F9). Backed by six ports:
+			 * whole-projection observation, ledger pages, the v4-only human control
+			 * resolution (`team.resolveControl`, F3/F11/F9/T1.4 repair round r1 F9),
+			 * and the v5-only one-shot ordinary-activation permit
+			 * (`team.prepareOrdinaryOpen`, C1 restart-0.1.7-rc.1 recovery — guide
+			 * §10.2). Backed by nine ports:
 			 * {@link RemoteTeamCreatePort} (root binding, P5-T5),
 			 * {@link RemoteTeamCreateV2Port} (the v2 workspace-aware creation
 			 * variant, TCM vNext §15.6), {@link RemoteTeamAdmitInitialWorkPort}
 			 * (the v2-only creation-time initial work command, TCM vNext §15.6),
-			 * {@link RemoteTeamResolveControlPort} (the v4-only human control
-			 * resolution command, F9), {@link RemoteProjectionPort}
+			 * {@link RemoteTeamRootsPort} (the v3-only durable root ownership list,
+			 * D1), {@link RemoteTeamEnsureRootLivePort} (the v3-only Team-mode
+			 * ensure, D2-wired), {@link RemoteTeamResolveControlPort} (the v4-only
+			 * human control resolution command, F9),
+			 * {@link RemoteTeamPrepareOrdinaryOpenPort} (the v5-only one-shot
+			 * ordinary-activation permit, C1), {@link RemoteProjectionPort}
 			 * (ProjectionService, P8-T2), and {@link RemoteLedgerPort} (storage
 			 * ledger behind a slicing adapter, D-5).
 			 *
@@ -10051,10 +10274,33 @@ var __dshFactory = (require) => {
 			    return raw;
 			}
 			/**
+			 * Validate the `team.prepareOrdinaryOpen` success value against the
+			 * closed v5 response shape (D-4 discipline: the top-level REQUIRED
+			 * fields are checked — `{ rootSessionId, permitted: true }` — the
+			 * response may carry MORE fields ("at least", guide §10.2) and any extra
+			 * passes through): the armed one-shot ordinary-activation permit fact.
+			 */
+			function normalizeTeamPrepareOrdinaryOpenValue(raw) {
+			    if (!isPlainRecord(raw)) {
+			        throw portContractError('teamPrepareOrdinaryOpen', `expected an object, got ${String(raw)}`);
+			    }
+			    const rootSessionId = raw['rootSessionId'];
+			    if (typeof rootSessionId !== 'string' || rootSessionId.length === 0) {
+			        throw portContractError('teamPrepareOrdinaryOpen.rootSessionId', 'must be a non-empty string');
+			    }
+			    if (raw['permitted'] !== true) {
+			        throw portContractError('teamPrepareOrdinaryOpen.permitted', `must be true, got ${String(raw['permitted'])}`);
+			    }
+			    // The port contract guarantees a lossless-JSON-safe record; the extra
+			    // fields ("at least" — guide §10.2) pass through (D-4).
+			    return raw;
+			}
+			/**
 			 * The team category handler (`team.create` [v1 + v2],
 			 * `team.admitInitialWork` [v2-only], `team.listRoots` [v3-only],
 			 * `team.ensureRootLive` [v3-only], `team.resolveControl` [v4-only],
-			 * `team.getProjection`, `team.getLedgerPage`).
+			 * `team.prepareOrdinaryOpen` [v5-only], `team.getProjection`,
+			 * `team.getLedgerPage`).
 			 *
 			 * Version-aware (TCM vNext §15.3): the dispatcher passes the request's
 			 * contract version; `team.create` routes to the v1 port (closed v1 field
@@ -10122,6 +10368,25 @@ var __dshFactory = (require) => {
 			                const resolveParams = params;
 			                const decision = ports.teamResolveControl.resolveControl(resolveParams.teamSessionId, resolveParams.requestId, resolveParams.decision, resolveParams.note);
 			                return { data: { decision: normalizeTeamResolveControlValue(decision) } };
+			            }
+			            case 'team.prepareOrdinaryOpen': {
+			                // v5-only (the availability check guarantees version === 5). C1
+			                // restart-0.1.7-rc.1 recovery (guide §10.2): the narrow one-shot
+			                // ordinary-activation PERMIT of the Team fence — a Team
+			                // CONTROL-PLANE RPC (no Team ensure, no Team Agent side effect,
+			                // no TeamDomain mutation beyond the one-shot activation-allow
+			                // fact). The wire params carry ONLY the root id (the host
+			                // authority is the connection gate — no caller claim, no token).
+			                // The production S6 handler (s6-remote, A33/A34) raises the
+			                // typed failures TEAM_REMOTE_FOREIGN_TEAM (a root outside the
+			                // caller's team — assertBoundRoot) and
+			                // TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE (the permit
+			                // port is absent from the host wiring — fail closed, never a
+			                // silent success); both pass through the dispatcher unchanged
+			                // (invariant 4b).
+			                const prepareParams = params;
+			                const permitted = ports.teamPrepareOrdinaryOpen.prepareOrdinaryOpen(prepareParams.teamSessionId);
+			                return { data: normalizeTeamPrepareOrdinaryOpenValue(permitted) };
 			            }
 			            case 'team.getProjection': {
 			                const projectionParams = params;
@@ -10585,7 +10850,7 @@ var __dshFactory = (require) => {
 			 * assumptions.
 			 * @module @dsh-agent-team/remote/handlers/dispatch
 			 */
-			/** Wire the sixteen ports into the nine category handlers. */
+			/** Wire the eighteen ports into the nine category handlers. */
 			function buildCategoryHandlers(deps) {
 			    return {
 			        [REMOTE_CATEGORIES.CATALOG]: createRemoteCatalogHandler(deps.catalog),
@@ -10597,6 +10862,7 @@ var __dshFactory = (require) => {
 			            teamRoots: deps.teamRoots,
 			            teamEnsureRootLive: deps.teamEnsureRootLive,
 			            teamResolveControl: deps.teamResolveControl,
+			            teamPrepareOrdinaryOpen: deps.teamPrepareOrdinaryOpen,
 			            projection: deps.projection,
 			            ledger: deps.ledger,
 			        }),
@@ -10828,6 +11094,16 @@ var __dshFactory = (require) => {
 			    'CONTROL_RESOLVER_NOT_AUTHORIZED',
 			    'CONTROL_REQUEST_STALE',
 			    'CONTROL_EXTERNAL_POLICY_DENIED',
+			    // C1 (restart-0.1.7-rc.1 recovery, remote contract v5 — guide §10.2):
+			    // the v5-only team.prepareOrdinaryOpen wire vocabulary. The S6 port
+			    // emits TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE (the one-shot
+			    // ordinary-open permit port is absent from the host wiring — fail
+			    // closed, never a silent success; the armed-permit contract of guide
+			    // §10.2 is host-side and typed, so the code must reach remote callers
+			    // unmapped). TEAM_REMOTE_FOREIGN_TEAM (above, s6-principal) is the
+			    // other reachable typed failure of the same port (a root outside the
+			    // caller's team — assertBoundRoot).
+			    'TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE',
 			];
 			Object.defineProperty(exports, "REMOTE_BACKING_ERROR_CODES", { enumerable: true, get: () => REMOTE_BACKING_ERROR_CODES });
 			/** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */

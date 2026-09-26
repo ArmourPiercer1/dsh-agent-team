@@ -1,0 +1,25 @@
+{
+  "stamp": "2026-09-25T16-23-54",
+  "passed": 3,
+  "failed": 0,
+  "results": [
+    {
+      "leg": "s0",
+      "name": "preflight: test-use pristine @ 46a7f68b09 (HEAD + empty porcelain)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: task worktree on task/team-restart-017rc1",
+      "ok": true,
+      "detail": "HEAD=4fb79fca77984552ccb6f0ad1badcab69bd97625"
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: the test-use CLI reports 0.1.7-rc.1",
+      "ok": true,
+      "detail": "version=0.1.7-rc.1"
+    }
+  ]
+}

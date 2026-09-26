@@ -20,6 +20,7 @@ import {
   REMOTE_CONTRACT_VERSION_V2,
   REMOTE_CONTRACT_VERSION_V3,
   REMOTE_CONTRACT_VERSION_V4,
+  REMOTE_CONTRACT_VERSION_V5,
 } from '../src/index.js'
 import type {
   RemoteAdmissionPort,
@@ -46,6 +47,7 @@ import type {
   RemoteTeamAdmitInitialWorkPort,
   RemoteTeamRootsPort,
   RemoteTeamEnsureRootLivePort,
+  RemoteTeamPrepareOrdinaryOpenPort,
   RemoteTeamResolveControlPort,
   RemoteOverridePort,
 } from '../src/index.js'
@@ -334,6 +336,21 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     },
   }
 
+  // C1 (restart-0.1.7-rc.1 recovery, contract v5 — guide §10.2): the
+  // v5-only one-shot ordinary-activation permit. The fake arms the permit
+  // (the closed success shape, at least `{ rootSessionId, permitted: true
+  // }`) — a Team control-plane fact, no Team ensure / no Team Agent side
+  // effect.
+  const teamPrepareOrdinaryOpen: RemoteTeamPrepareOrdinaryOpenPort = {
+    prepareOrdinaryOpen(teamSessionId) {
+      calls.push('team.prepareOrdinaryOpen')
+      return {
+        rootSessionId: teamSessionId,
+        permitted: true,
+      }
+    },
+  }
+
   const projection: RemoteProjectionPort = {
     project(teamSessionId) {
       calls.push('team.getProjection')
@@ -480,6 +497,7 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     teamRoots,
     teamEnsureRootLive,
     teamResolveControl,
+    teamPrepareOrdinaryOpen,
     projection,
     ledger,
     admission,
@@ -532,6 +550,10 @@ export function p8t3WireV3(params: Record<string, unknown>): Record<string, unkn
 /** One wire request envelope of contract v4 (F3/F11/F9/T1.4 repair r1 F9). */
 export function p8t3WireV4(params: Record<string, unknown>): Record<string, unknown> {
   return { version: REMOTE_CONTRACT_VERSION_V4, params }
+}
+
+export function p8t3WireV5(params: Record<string, unknown>): Record<string, unknown> {
+  return { version: REMOTE_CONTRACT_VERSION_V5, params }
 }
 
 /** Assert a success result and return it (narrows the union). */

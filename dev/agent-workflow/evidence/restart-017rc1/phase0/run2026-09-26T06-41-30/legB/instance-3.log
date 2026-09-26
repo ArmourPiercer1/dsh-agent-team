@@ -1,0 +1,233 @@
+[diag-hook t=       32ms] ws prototype patched (terminate/close/ping/send)
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T06-41-30/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3492/?token=eTkCrfEJdWDgdQwP8bdXdYIogcD_K6FbXlv84hx1yzo
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 115ms — the connection service appeared after the mount step)
+[diag-hook t=     4512ms] net END(peer FIN) S1(l3492->r44676)
+[diag-hook t=     4512ms] net END(call) S1(l3492->r44676)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at socketOnEnd (node:_http_server:940:12)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=     4513ms] net DESTROY S1(l3492->r44676) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=     4513ms] net CLOSE S1(l?->r44676) hadError=false
+[diag-hook t=    61709ms] ws SEND() len=144 sock=S2(l3492->r47744) head={"type":"item","streamId":"ev-gu3il3cw","value":{"type":"ready","clien
+[diag-hook t=    61724ms] ws SEND() len=70437 sock=S2(l3492->r47744) head={"type":"item","streamId":"fol-omqqh3wg","value":{"type":"snapshot","h
+[diag-hook t=    61732ms] ws SEND() len=1752 sock=S2(l3492->r47744) head={"type":"item","streamId":"ev-gu3il3cw","value":{"type":"emit","event"
+[diag-hook t=    61737ms] ws SEND() len=1753 sock=S2(l3492->r47744) head={"type":"item","streamId":"ev-gu3il3cw","value":{"type":"emit","event"
+[diag-hook t=    61737ms] ws SEND() len=144 sock=S2(l3492->r47744) head={"type":"item","streamId":"ev-gu3il3cw","value":{"type":"emit","event"
+[diag-hook t=    61737ms] ws SEND() len=342 sock=S2(l3492->r47744) head={"type":"item","streamId":"ev-gu3il3cw","value":{"type":"emit","event"
+[diag-hook t=    63709ms] ws PING() sock=S2(l3492->r47744) readyState=1
+[diag-hook t=    64743ms] net END(peer FIN) S3(l3492->r47736)
+[diag-hook t=    64744ms] net END(call) S3(l3492->r47736)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at socketOnEnd (node:_http_server:940:12)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=    64744ms] net DESTROY S3(l3492->r47736) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=    64744ms] net CLOSE S3(l?->r47736) hadError=false
+[diag-hook t=    65277ms] ws SEND() len=1752 sock=S2(l3492->r47744) head={"type":"item","streamId":"ev-gu3il3cw","value":{"type":"emit","event"
+[diag-hook t=    65280ms] ws SEND() len=1752 sock=S2(l3492->r47744) head={"type":"item","streamId":"ev-gu3il3cw","value":{"type":"emit","event"
+[diag-hook t=    65293ms] ws SEND() len=429 sock=S2(l3492->r47744) head={"type":"item","streamId":"fol-omqqh3wg","value":{"type":"event","even
+[diag-hook t=    65294ms] ws SEND() len=148 sock=S2(l3492->r47744) head={"type":"item","streamId":"ev-gu3il3cw","value":{"type":"emit","event"
+[diag-hook t=    65294ms] ws SEND() len=144 sock=S2(l3492->r47744) head={"type":"item","streamId":"fol-omqqh3wg","value":{"type":"event","even
+[diag-hook t=    65294ms] ws SEND() len=206 sock=S2(l3492->r47744) head={"type":"item","streamId":"fol-omqqh3wg","value":{"type":"event","even
+[diag-hook t=    65322ms] net END(peer FIN) S4(l?->r?)
+[diag-hook t=    65322ms] net END(call) S4(l?->r?)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at endWritableNT (node:internal/streams/readable:1790:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+[diag-hook t=    65322ms] net DESTROY S4(l?->r?) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=    65322ms] net CLOSE S4(l?->r?) hadError=false
+[diag-hook t=    65323ms] net END(peer FIN) S5(l?->r?)
+[diag-hook t=    65323ms] net END(call) S5(l?->r?)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at endWritableNT (node:internal/streams/readable:1790:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+[diag-hook t=    65323ms] net DESTROY S5(l?->r?) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at stopCollectors (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/subprocess/subprocess-local/lib/runner-launch-B2zsQ1Dz.js:891:43)
+    at settle (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/subprocess/subprocess-local/lib/runner-launch-B2zsQ1Dz.js:965:4)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/subprocess/subprocess-local/lib/runner-launch-B2zsQ1Dz.js:985:5
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[diag-hook t=    65323ms] net CLOSE S5(l?->r?) hadError=false
+[diag-hook t=    65359ms] ws SEND() len=153 sock=S2(l3492->r47744) head={"type":"item","streamId":"fol-omqqh3wg","value":{"type":"event","even
+[diag-hook t=    65360ms] ws SEND() len=159 sock=S2(l3492->r47744) head={"type":"item","streamId":"ev-gu3il3cw","value":{"type":"emit","event"
+[diag-hook t=    65360ms] ws SEND() len=397 sock=S2(l3492->r47744) head={"type":"item","streamId":"fol-omqqh3wg","value":{"type":"event","even
+[diag-hook t=    65360ms] ws SEND() len=44531 sock=S2(l3492->r47744) head={"type":"item","streamId":"fol-omqqh3wg","value":{"type":"event","even
+[diag-hook t=    65414ms] ws SEND() len=257 sock=S2(l3492->r47744) head={"type":"item","streamId":"fol-omqqh3wg","value":{"type":"event","even
+[diag-hook t=    65420ms] ws SEND() len=1380 sock=S2(l3492->r47744) head={"type":"item","streamId":"fol-omqqh3wg","value":{"type":"event","even
+[diag-hook t=    65420ms] ws SEND() len=151 sock=S2(l3492->r47744) head={"type":"item","streamId":"fol-omqqh3wg","value":{"type":"event","even
+[diag-hook t=    65563ms] ws SEND() len=1293 sock=S2(l3492->r47744) head={"type":"item","streamId":"ev-gu3il3cw","value":{"type":"emit","event"
+[diag-hook t=    65565ms] ws SEND() len=1293 sock=S2(l3492->r47744) head={"type":"item","streamId":"ev-gu3il3cw","value":{"type":"emit","event"
+[diag-hook t=    65573ms] ws SEND() len=1622 sock=S6(l3492->r47760) head={"type":"item","streamId":"fol-mwt97mk2","value":{"type":"snapshot","h
+[diag-hook t=    65574ms] ws close() code=1002 reason="" readyState=1 sock=S6(l3492->r47760)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:75:177)
+    at Receiver.receiverOnError (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:1213:15)
+    at Receiver.emit (node:events:514:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=    65574ms] ws terminate() code=- reason="" readyState=2 sock=S6(l3492->r47760)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:75:177)
+    at WebSocket.<anonymous> (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:272:17)
+    at WebSocket.wrapper (node:events:639:12)
+    at WebSocket.emit (node:events:514:28)
+    at Receiver.receiverOnError (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:1218:15)
+    at Receiver.emit (node:events:514:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+[diag-hook t=    65574ms] net DESTROY S6(l3492->r47760) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at WebSocket.terminate (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:502:20)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:76:19)
+    at WebSocket.<anonymous> (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:272:17)
+    at WebSocket.wrapper (node:events:639:12)
+    at WebSocket.emit (node:events:514:28)
+    at Receiver.receiverOnError (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:1218:15)
+    at Receiver.emit (node:events:514:28)
+[diag-hook t=    65575ms] net END(call) S6(l?->r47760)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at Object.callback (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:335:22)
+    at callback (node:internal/streams/writable:768:21)
+    at afterWrite (node:internal/streams/writable:712:5)
+    at afterWriteTick (node:internal/streams/writable:698:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+[diag-hook t=    65575ms] net CLOSE S6(l?->r47760) hadError=false
+[diag-hook t=    65575ms] ws close() code=1001 reason="peer left" readyState=3 sock=S6(l?->r47760)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:75:177)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:513:14
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+    at dispose (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1181:20)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1244:40
+    at finalizeDisposal (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1224:14)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1242:11
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:218:5
+[diag-hook t=    65575ms] ws close() code=1002 reason="" readyState=1 sock=S2(l3492->r47744)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:75:177)
+    at Receiver.receiverOnError (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:1213:15)
+    at Receiver.emit (node:events:514:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=    65575ms] ws terminate() code=- reason="" readyState=2 sock=S2(l3492->r47744)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:75:177)
+    at WebSocket.<anonymous> (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:272:17)
+    at WebSocket.wrapper (node:events:639:12)
+    at WebSocket.emit (node:events:514:28)
+    at Receiver.receiverOnError (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:1218:15)
+    at Receiver.emit (node:events:514:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+[diag-hook t=    65575ms] net DESTROY S2(l3492->r47744) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at WebSocket.terminate (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:502:20)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:76:19)
+    at WebSocket.<anonymous> (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:272:17)
+    at WebSocket.wrapper (node:events:639:12)
+    at WebSocket.emit (node:events:514:28)
+    at Receiver.receiverOnError (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:1218:15)
+    at Receiver.emit (node:events:514:28)
+[diag-hook t=    65575ms] net END(call) S2(l?->r47744)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at Object.callback (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:335:22)
+    at callback (node:internal/streams/writable:768:21)
+    at afterWrite (node:internal/streams/writable:712:5)
+    at afterWriteTick (node:internal/streams/writable:698:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+[diag-hook t=    65582ms] net DESTROY S7(l3492->r47748) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Server.closeIdleConnections (node:_http_server:708:27)
+    at httpServerPreClose (node:_http_server:628:10)
+    at Server.close (node:_http_server:675:3)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/host/webserver/lib/index.js:308:17
+    at new Promise (<anonymous>)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/host/webserver/lib/index.js:307:25
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+[diag-hook t=    65582ms] net DESTROY S8(l3492->r44670) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Server.closeAllConnections (node:_http_server:692:27)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/host/webserver/lib/index.js:312:16
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+    at dispose (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1181:20)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1244:40
+    at finalizeDisposal (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1224:14)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1242:11
+[diag-hook t=    65584ms] ws terminate() code=- reason="" readyState=2 sock=S2(l?->r47744)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:75:177)
+    at RemoteStreamMuxServer.close (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:226:52)
+    at route.path (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:630:22)
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+    at dispose (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1181:20)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1244:40
+    at finalizeDisposal (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1224:14)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1242:11
+[diag-hook t=    65584ms] ws close() code=1001 reason="peer left" readyState=2 sock=S2(l?->r47744)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:75:177)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:513:14
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+    at dispose (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1181:20)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1244:40
+    at finalizeDisposal (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1224:14)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1242:11
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+[diag-hook t=    65584ms] net END(call) S2(l?->r47744)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at WebSocket.close (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:315:22)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:76:19)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:513:14
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+    at dispose (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1181:20)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1244:40
+    at finalizeDisposal (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1224:14)
+[diag-hook t=    65626ms] net CLOSE S8(l?->r44670) hadError=false
+[diag-hook t=    65626ms] net CLOSE S7(l?->r47748) hadError=false
+[diag-hook t=    65626ms] net CLOSE S2(l?->r47744) hadError=false
+[diag-hook t=    65629ms] net END(peer FIN) S9(l?->r?)
+[diag-hook t=    65630ms] net END(call) S9(l?->r?)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at endWritableNT (node:internal/streams/readable:1790:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+[diag-hook t=    65630ms] net DESTROY S9(l?->r?) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=    65630ms] net END(peer FIN) S10(l?->r?)
+[diag-hook t=    65630ms] net END(call) S10(l?->r?)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at endWritableNT (node:internal/streams/readable:1790:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+[diag-hook t=    65630ms] net DESTROY S10(l?->r?) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=    65630ms] net CLOSE S10(l?->r?) hadError=false
+[diag-hook t=    65630ms] net CLOSE S9(l?->r?) hadError=false
+[diag-hook t=    65633ms] net DESTROY S11(l45218->r3497) hadError=false err=The client is destroyed
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Object.destroy (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/undici@8.10.0/node_modules/undici/lib/dispatcher/client-h1.js:911:16)
+    at /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/undici@8.10.0/node_modules/undici/lib/dispatcher/client.js:457:28
+    at new Promise (<anonymous>)
+    at [destroy] (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/undici@8.10.0/node_modules/undici/lib/dispatcher/client.js:438:12)
+    at Client.destroy (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/undici@8.10.0/node_modules/undici/lib/dispatcher/dispatcher-base.js:146:19)
+    at /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/undici@8.10.0/node_modules/undici/lib/dispatcher/dispatcher-base.js:110:14
+    at new Promise (<anonymous>)
+[diag-hook t=    65633ms] net ERROR S11(l?->r3497) code=UND_ERR_DESTROYED errno=undefined sys=undefined msg=The client is destroyed
+[diag-hook t=    65633ms] net ERROR S11(l?->r3497) source-stack:
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:41:50)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=    65633ms] net CLOSE S11(l?->r3497) hadError=true

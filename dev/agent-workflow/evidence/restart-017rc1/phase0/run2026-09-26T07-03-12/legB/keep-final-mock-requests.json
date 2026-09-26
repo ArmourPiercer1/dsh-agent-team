@@ -1,0 +1,5 @@
+{
+  "reconstructed": true,
+  "note": "host 4 mock instance request log only — the boot-1..3 mock instances died with job bash-105 namespace; their in-memory request logs were never flushed to disk",
+  "requests": []
+}

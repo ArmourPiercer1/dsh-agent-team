@@ -1,0 +1,3 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-26-55/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3491/?token=f1eN97FDblBDeS1DBeKHQKuuK5Mx3hn7DeTHz9Ycn0M
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote

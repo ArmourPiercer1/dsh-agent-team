@@ -235,6 +235,10 @@ export interface AgentsDouble {
   readonly handles: Map<string, LiveAgentHandle>
   /** The world's shared global prompt layer (T12-M2). */
   readonly globalSections: GlobalPromptSection[]
+  /** C1 (guide §8.2): the EXACT-GENERATION identity objects the double
+   *  mints per activation (sessionId -> the latest agent identity; the
+   *  same object the created and matching disposed events carry). */
+  readonly agentIdentities: Map<string, { readonly id: string }>
   create(req: { sessionId: unknown; meta?: Record<string, unknown>; setup?: (ctx: object) => unknown }): Promise<object>
   resume(req: { resumeSessionId: unknown; setup?: (ctx: object) => unknown }): Promise<object>
 }
@@ -277,20 +281,49 @@ export interface AgentsDoubleOptions {
    *  `ctx.agent` value, `scopeKey` replaces the scope-mint key (both
    *  default to the handle's own agent / legacy options). */
   readonly identityOverride?: (agent: object) => { ctxAgent?: object; scopeKey?: object }
+  /** C1 (restart-recovery, guide §13.3): the fake `agent/created` /
+   *  `agent/disposed` event hook — fired (awaited) INSIDE create/resume
+   *  BEFORE the handle is published (a rejection rejects the activation —
+   *  the unpublished-agent rollback shape) and inside handle.dispose()
+   *  (a hook fault never breaks the dispose). Absent = no events. */
+  readonly activationEvents?: (event: {
+    readonly kind: 'created' | 'disposed'
+    readonly agent: { readonly id: string }
+    readonly source: string
+    readonly sessionId: string
+  }) => void | Promise<void>
+  /** C1 (guide §13.3 G5/G6): per-session resume fault script —
+   *  (sessionId, callIndex) => error|undefined; a returned error rejects
+   *  that resume AFTER it is recorded, BEFORE the agent is created
+   *  (the session-layer writer-held rejection — no created event). */
+  readonly resumeFaults?: (sessionId: string, callIndex: number) => unknown
 }
 
 /** The sessionPersistence service double (records materializations). */
 export interface SessionPersistenceDouble {
   readonly materialized: string[]
+  /** C1 (guide §5.1/§13.2): the recorded `exists` calls. */
+  readonly existsCalls: string[]
   ensureMaterialized(session: { id: string }): Promise<void>
+  /** C1 (guide §5.1/§13.2): the glue's durable-existence seam — default:
+   *  the fixture-home analogue of the upstream `stat() !== undefined`
+   *  truth (the pre-C1 physical probe's semantics, moved into the test
+   *  fixture); overridable through the factory's `options.exists` (a
+   *  throwing override models the D4 backend fault). */
+  exists(sessionId: string): Promise<boolean>
 }
 
 /** The opened-TeamDomain double (repository lists + REAL resolvers). */
 export interface DomainDouble {
   readonly repositories: {
-    readonly memberInstances: { list(rootSessionId: string): object[] }
+    readonly memberInstances: {
+      list(rootSessionId: string): Array<Record<string, unknown> & { readonly childSessionId: string }>
+    }
     readonly overrides: { list(rootSessionId: string): object[] }
-    readonly teamSessions: { get(rootSessionId: string): object | undefined; list(rootSessionId: string): object[] }
+    readonly teamSessions: {
+      get(rootSessionId: string): object | undefined
+      list(): Array<Record<string, unknown> & { readonly rootSessionId: string }>
+    }
   }
   readonly consumption: {
     readonly model: {
@@ -517,6 +550,10 @@ export interface LiveWorld {
    *  (the host seam not wired: the first setup fails closed with the typed
    *  member-base-tools-unavailable). */
   readonly agentPresets: AgentPresetsDouble | null
+  /** C1 (restart-recovery, guide §13.3): the fence the world wired
+   *  (undefined = pre-C1 world) — a test asserts its state (records,
+   *  permits, rollbacks) through it. */
+  readonly activationFence: LiveWorldOptions['activationFence']
   readonly records: {
     readonly creates: RecordedCreate[]
     readonly resumes: RecordedResume[]
@@ -594,6 +631,43 @@ export interface LiveWorldOptions {
    *  default strict map resolver over `blueprintSources` + the row-anchor
    *  fallback (exactly like the host resolver). */
   readonly resolveBoundBlueprint?: (teamRootSid: string) => object | null
+  /** C1 (restart-recovery, guide §5.1/§13.2): the sessionPersistence
+   *  double options (the `exists` override — a throwing exists models
+   *  the D4 backend fault that must propagate). Absent = the default
+   *  fixture-home analogue of the upstream stat() truth. */
+  readonly persistence?: { readonly exists?: (sessionId: string) => boolean | Promise<boolean> }
+  /** C1 (guide §4.3/§13.3): the Team session-activation fence passed to
+   *  the glue (the auto-wired fake agent/created -> the AWAITED veto,
+   *  agent/disposed -> the exact-generation barrier). Absent = the
+   *  pre-C1 glue fallback (no guard, no waits — no pre-C1 test world
+   *  breaks wholesale). The SAME object is exposed on the world
+   *  (`LiveWorld.activationFence`). */
+  readonly activationFence?: {
+    runOwned<T>(sessionId: string, op: () => Promise<T>): Promise<T>
+    beforeAgentCreated(input: {
+      agent: { readonly id: string }
+      source: string
+      signal?: unknown
+    }): Promise<void>
+    onAgentDisposed(agent: { readonly id: string }): void
+    awaitRollback(sessionId: string): Promise<void>
+    recoverWriterConflict(sessionId: string, options?: { timeoutMs?: number }): Promise<boolean>
+    permitOrdinaryOnce(sessionId: string): void
+    bindOwnershipResolver(resolver: (sessionId: string) => string | undefined): void
+    close(): void
+  }
+  /** C1 (guide §7.2): the bounded writer-conflict recovery window (ms)
+   *  the glue passes to recoverWriterConflict (tiny for G5/G6
+   *  determinism). Absent = the glue default (10 s). */
+  readonly writerHandoffTimeoutMs?: number
+  /** C1 (guide §13.3): a CUSTOM fake agent/created + agent/disposed hook
+   *  (wins over the fence auto-wire and options.agents.activationEvents). */
+  readonly activationEvents?: (event: {
+    readonly kind: 'created' | 'disposed'
+    readonly agent: { readonly id: string }
+    readonly source: string
+    readonly sessionId: string
+  }) => void | Promise<void>
 }
 
 /** The worktree root (the bridge lives at packages/runtime/test). */
@@ -612,7 +686,9 @@ export declare function loadGlueModule(): Promise<{
 export declare function createAgentsDouble(options?: AgentsDoubleOptions): AgentsDouble
 
 /** Build the sessionPersistence service double. */
-export declare function createSessionPersistenceDouble(): SessionPersistenceDouble
+export declare function createSessionPersistenceDouble(options?: {
+  readonly exists?: (sessionId: string) => boolean | Promise<boolean>
+}): SessionPersistenceDouble
 
 /** Build the opened-TeamDomain double (loads the REAL resolvers). */
 export declare function createDomainDouble(params?: DomainDoubleParams): Promise<DomainDouble>

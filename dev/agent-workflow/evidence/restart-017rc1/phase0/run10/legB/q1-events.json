@@ -1,0 +1,64 @@
+{
+  "q1": {
+    "veto": {
+      "t": "2026-09-26T05:07:02.547Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017-dyn-2026-09-26T05-05-16",
+      "source": "resume",
+      "agentId": "session-rst017-dyn-2026-09-26T05-05-16",
+      "veto": true,
+      "permitted": false
+    },
+    "disposed": {
+      "t": "2026-09-26T05:07:02.548Z",
+      "kind": "agent/disposed",
+      "sessionId": "session-rst017-dyn-2026-09-26T05-05-16",
+      "agentId": "session-rst017-dyn-2026-09-26T05-05-16"
+    },
+    "apiError": {
+      "t": "2026-09-26T05:07:02.550Z",
+      "kind": "api-session/error",
+      "sessionId": "session-rst017-dyn-2026-09-26T05-05-16",
+      "message": "resume failed for session \"session-rst017-dyn-2026-09-26T05-05-16\": Error: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \"session-rst017-dyn-2026-09-26T05-05-16\""
+    },
+    "deadline": 1790399288528
+  },
+  "all": [
+    {
+      "t": "2026-09-26T05:06:01.841Z",
+      "kind": "armed",
+      "armed": true,
+      "source": "autoArm"
+    },
+    {
+      "t": "2026-09-26T05:06:02.122Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017-boot-2026-09-26T05-05-16",
+      "source": "resume",
+      "agentId": "session-rst017-boot-2026-09-26T05-05-16",
+      "veto": false,
+      "permitted": false
+    },
+    {
+      "t": "2026-09-26T05:07:02.547Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017-dyn-2026-09-26T05-05-16",
+      "source": "resume",
+      "agentId": "session-rst017-dyn-2026-09-26T05-05-16",
+      "veto": true,
+      "permitted": false
+    },
+    {
+      "t": "2026-09-26T05:07:02.548Z",
+      "kind": "agent/disposed",
+      "sessionId": "session-rst017-dyn-2026-09-26T05-05-16",
+      "agentId": "session-rst017-dyn-2026-09-26T05-05-16"
+    },
+    {
+      "t": "2026-09-26T05:07:02.550Z",
+      "kind": "api-session/error",
+      "sessionId": "session-rst017-dyn-2026-09-26T05-05-16",
+      "message": "resume failed for session \"session-rst017-dyn-2026-09-26T05-05-16\": Error: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \"session-rst017-dyn-2026-09-26T05-05-16\""
+    }
+  ]
+}

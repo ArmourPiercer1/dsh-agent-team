@@ -1,0 +1,21 @@
+[rst017-c4 2026-09-26T12-42-57] Commit 4 kit — stamp 2026-09-26T12-42-57 worlds=A browserHold=true keepHome=false race=20
+[rst017-c4 2026-09-26T12-42-57] PASS [s0] preflight: test-use HEAD == the 0.1.7-rc.1 pin — HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4
+[rst017-c4 2026-09-26T12-42-57] PASS [s0] preflight: test-use working tree pristine (empty porcelain)
+[rst017-c4 2026-09-26T12-42-57] PASS [s0] preflight: task worktree at the accepted Commit-4 fix tip (f3d5a71b — runOwned await fix) — HEAD=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T12-42-57] PASS [s0] preflight: the test-use CLI reports 0.1.7-rc.1 — version=0.1.7-rc.1
+[rst017-c4 2026-09-26T12-42-57] PASS [s0] preflight: host/mock ports free (3492/3497) — hostFree=true mockFree=true
+[rst017-c4 2026-09-26T12-42-57] ══ WORLD A — home /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-42-57-A ══
+[rst017-c4 2026-09-26T12-42-57] world A materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-42-57-A
+[rst017-c4 2026-09-26T12-42-57] PASS [install] S0 bare-clone tip == f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5 (the accepted Commit-4 fix build with committed dist/composition) — cloned=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T12-42-57] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-c4 2026-09-26T12-42-57] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-c4 2026-09-26T12-42-57] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-c4 2026-09-26T12-42-57] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-c4 2026-09-26T12-42-57] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-c4 2026-09-26T12-42-57] PASS [boot-1] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=create) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-42-57"]
+[rst017-c4 2026-09-26T12-42-57] PASS [A] A1 team.create(dynamic root) accepted over the public remote seam (RPC ok:true — transport 200 alone is not success) — status=200 head={"type":"server-response","rpcId":"c4-createA-gg1phwdb5r","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rst017c4-dyn-202
+[rst017-c4 2026-09-26T12-42-57] PASS [A] A2 dynamic leader live on boot 1 (first model request on the row staticModel) — seq=2 model=rst017c4-model-2026-09-26T12-42-57
+[rst017-c4 2026-09-26T12-42-57] PASS [A] A2b boot-1 session history present (assistant rows ≥ 1 in the session log) — [{"path":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-42-57-A/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-homes-rst017-c4-2026-09-26T12-42-57-A-workspace--/session-rst017c4-dyn-2026-09-26T12-42-57/session.v4.jsonl.zstd","rows":23,"assistant":1,"rowTypes":["session","permission/preset","sandbox/mode","approval/policy","agent/inbox/spliced","turn/start","agent/inbox/spliced","step/start","system/message","user/message","user/message","user/message","user/message","request/header","request/context","session/title","session/title-llm-request","session-log-deepseek/delivery-accepted","session/title","session-log-deepseek/delivery-accepted","assistant/message","step/end","turn/end"]}]
+[rst017-c4 2026-09-26T12-42-57] A: boot 1 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-42-57] PASS [boot-2] boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-42-57"]
+[rst017-c4 2026-09-26T12-42-57] A BROWSER HOLD: boot 2 alive at http://127.0.0.1:3492. Kit PID 3 — perform the browser leg, then: kill -TERM 3

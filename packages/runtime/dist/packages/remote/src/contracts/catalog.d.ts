@@ -48,15 +48,17 @@ export interface RemoteMethodSpec {
 }
 /**
  * The closed Remote contract method catalog — a VERSIONED UNION
- * (TCM vNext §15.3, extended by the Team D1-D6 repair v2 D1 v3 bump and
- * the F3/F11/F9/T1.4 repair round r1 F9 v4 bump): the 23 frozen v1
+ * (TCM vNext §15.3, extended by the Team D1-D6 repair v2 D1 v3 bump,
+ * the F3/F11/F9/T1.4 repair round r1 F9 v4 bump, and the C1
+ * restart-0.1.7-rc.1 recovery v5 bump — guide §10.2): the 23 frozen v1
  * methods plus the v2-only `team.admitInitialWork` plus the v3-only
  * `team.listRoots` / `team.ensureRootLive` plus the v4-only
- * `team.resolveControl` (27 methods total). Key = endpoint = method name
- * (dotted: `<category>.<action>`). Per-version availability is the closed
+ * `team.resolveControl` plus the v5-only `team.prepareOrdinaryOpen`
+ * (28 methods total). Key = endpoint = method name (dotted:
+ * `<category>.<action>`). Per-version availability is the closed
  * {@link REMOTE_V2_ONLY_METHODS} + {@link REMOTE_V3_ONLY_METHODS} +
- * {@link REMOTE_V4_ONLY_METHODS} sets below; per-method param schemas are
- * version-aware in `params.ts`.
+ * {@link REMOTE_V4_ONLY_METHODS} + {@link REMOTE_V5_ONLY_METHODS} sets
+ * below; per-method param schemas are version-aware in `params.ts`.
  */
 export declare const REMOTE_METHOD_CATALOG: Readonly<Record<string, RemoteMethodSpec>>;
 /** Every method name, in deterministic (sorted) order. */
@@ -95,6 +97,17 @@ export declare const REMOTE_V3_ONLY_METHODS: readonly string[];
  */
 export declare const REMOTE_V4_ONLY_METHODS: readonly string[];
 /**
+ * The closed set of catalog methods that exist ONLY in remote contract v5
+ * (C1, the restart-0.1.7-rc.1 recovery round — guide §10.2): the narrow
+ * one-shot ordinary-activation PERMIT `team.prepareOrdinaryOpen` (the
+ * host arms the fence's per-root one-shot activation permit for a Team
+ * root the caller is allowed to touch; the client consumes it on the
+ * following plain session open). It is a Team control-plane RPC — NO Team
+ * ensure, NO Team Agent side effect, no TeamDomain mutation beyond the
+ * one-shot permit itself. Every v1/v2/v3/v4 method stays available in v5.
+ */
+export declare const REMOTE_V5_ONLY_METHODS: readonly string[];
+/**
  * Is `method` a catalog method available in remote contract `version`?
  *
  * This is the version-aware membership check the version-aware param
@@ -106,7 +119,7 @@ export declare const REMOTE_V4_ONLY_METHODS: readonly string[];
  *
  * @param method - the candidate method name (must be in the catalog).
  * @param version - the request's contract version (supported:
- *   1 | 2 | 3 | 4).
+ *   1 | 2 | 3 | 4 | 5).
  */
 export declare function isRemoteMethodAvailableInVersion(method: string, version: number): boolean;
 /**

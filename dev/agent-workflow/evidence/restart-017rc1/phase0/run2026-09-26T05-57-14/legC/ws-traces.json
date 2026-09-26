@@ -1,0 +1,92 @@
+[
+  {
+    "label": "legBC-follow",
+    "closeError": "ws closed by host",
+    "frames": [
+      {
+        "t": 2,
+        "dir": "tx",
+        "op": 1,
+        "len": 83,
+        "head": "{\"type\":\"open\",\"streamId\":\"ev-veun2z1m\",\"endpoint\":\"$events\",\"payload\":{\"args\":{}}}"
+      },
+      {
+        "t": 4,
+        "dir": "rx",
+        "op": 1,
+        "len": 144,
+        "head": "{\"type\":\"item\",\"streamId\":\"ev-veun2z1m\",\"value\":{\"type\":\"ready\",\"clientId\":\"01a8cb99-cca7-4997-863d-c52c1b66995e\",\"host\":{\"home\":\"/home/user\"}}}"
+      },
+      {
+        "t": 4,
+        "dir": "tx",
+        "op": 1,
+        "len": 184,
+        "head": "{\"type\":\"open\",\"streamId\":\"fol-jx79qb11\",\"endpoint\":\"session/follow\",\"payload\":{\"args\":{\"request\":{\"address\":{\"kind\":\"session\",\"sessionId\":\"session-rst017-dyn-2026-09-26T05-57-14\"}}}}}"
+      },
+      {
+        "t": 19,
+        "dir": "rx",
+        "op": 1,
+        "len": 73113,
+        "head": "{\"type\":\"item\",\"streamId\":\"fol-jx79qb11\",\"value\":{\"type\":\"snapshot\",\"header\":{\"version\":4,\"id\":\"session-rst017-dyn-2026-09-26T05-57-14\",\"createdAt\":1790402241615,\"cwd\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T05-57-14/workspace\",\"isSeeded\":false,\"delegationDepth\":0},\"cursor\":22,\"records\":[{\"type\":\"event\",\"event\":{\"type\":\"permission/preset\",\"seq\":0,\"time\":179040224"
+      },
+      {
+        "t": 24,
+        "dir": "rx",
+        "op": 1,
+        "len": 1754,
+        "head": "{\"type\":\"item\",\"streamId\":\"ev-veun2z1m\",\"value\":{\"type\":\"emit\",\"event\":\"api-session/added\",\"args\":[{\"sessionId\":\"session-rst017-dyn-2026-09-26T05-57-14\",\"updatedAt\":1790402241698,\"agentAvailable\":true,\"running\":false,\"blank\":false,\"cwd\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T05-57-14/workspace\",\"projections\":{\"kind\":\"sequenced\",\"asOfSeq\":22,\"values\":{\"title\":\"RS"
+      },
+      {
+        "t": 30021,
+        "dir": "rx",
+        "op": 1,
+        "len": 1755,
+        "head": "{\"type\":\"item\",\"streamId\":\"ev-veun2z1m\",\"value\":{\"type\":\"emit\",\"event\":\"api-session/added\",\"args\":[{\"sessionId\":\"session-rst017-dyn-2026-09-26T05-57-14\",\"updatedAt\":1790402241698,\"agentAvailable\":false,\"running\":false,\"blank\":false,\"cwd\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T05-57-14/workspace\",\"projections\":{\"kind\":\"sequenced\",\"asOfSeq\":22,\"values\":{\"title\":\"R"
+      },
+      {
+        "t": 30021,
+        "dir": "rx",
+        "op": 1,
+        "len": 144,
+        "head": "{\"type\":\"item\",\"streamId\":\"ev-veun2z1m\",\"value\":{\"type\":\"emit\",\"event\":\"api-session/removed\",\"args\":[\"session-rst017-dyn-2026-09-26T05-57-14\"]}}"
+      },
+      {
+        "t": 30021,
+        "dir": "rx",
+        "op": 1,
+        "len": 342,
+        "head": "{\"type\":\"item\",\"streamId\":\"ev-veun2z1m\",\"value\":{\"type\":\"emit\",\"event\":\"api-session/error\",\"args\":[\"session-rst017-dyn-2026-09-26T05-57-14\",\"resume failed for session \\\"session-rst017-dyn-2026-09-26T05-57-14\\\": Error: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \\\"session-rst017-dyn-2026-09-26T05-57-14\\\"\"]}}"
+      },
+      {
+        "t": 30021,
+        "dir": "rx",
+        "op": 9,
+        "len": 0,
+        "head": ""
+      },
+      {
+        "t": 30021,
+        "dir": "tx",
+        "op": 10,
+        "len": 0,
+        "head": ""
+      },
+      {
+        "t": 30021,
+        "dir": "rx",
+        "op": 9,
+        "len": 0,
+        "head": ""
+      },
+      {
+        "t": 30021,
+        "dir": "tx",
+        "op": 10,
+        "len": 0,
+        "head": ""
+      }
+    ]
+  }
+]

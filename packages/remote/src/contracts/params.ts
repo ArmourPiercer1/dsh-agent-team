@@ -19,8 +19,9 @@
  * are legal content — but bound by a length cap (design note §3).
  *
  * **Version awareness (TCM vNext §15.3/§15.6, Team D1-D6 repair v2 D1
- * v3 bump, F3/F11/F9/T1.4 repair round r1 F9 v4 bump)**: the module is
- * the single version-aware closed schema. Every v1/v2/v3 field list,
+ * v3 bump, F3/F11/F9/T1.4 repair round r1 F9 v4 bump, C1
+ * restart-0.1.7-rc.1 recovery v5 bump — guide §10.2)**: the module is
+ * the single version-aware closed schema. Every v1/v2/v3/v4 field list,
  * parser and behavior is unchanged; the v2 bump adds exactly one method
  * (`team.admitInitialWork`, v2-only) and one v2 variant of an existing
  * method (`team.create`, whose v2 closed set swaps `initialWork` for
@@ -31,7 +32,11 @@
  * method `team.resolveControl` (closed set: `teamSessionId`,
  * `requestId`, `decision`, optional `note` — NO caller/role/principal
  * fields: the host derives the human principal, the payload is a
- * command, never an identity). {@link parseRemoteMethodParams} routes on
+ * command, never an identity); the v5 bump (guide §10.2) adds exactly
+ * the one v5-only method `team.prepareOrdinaryOpen` (closed set:
+ * `teamSessionId` — the narrow one-shot ordinary-activation permit of
+ * the Team fence; the payload is a command, never an identity).
+ * {@link parseRemoteMethodParams} routes on
  * the request version: a request to a method of a NEWER version is
  * typed-rejected (`method-version-unsupported`) AFTER the envelope
  * parse, and each request version sees only its own closed field sets
@@ -303,6 +308,26 @@ export interface RemoteTeamResolveControlParams {
   readonly note?: string
 }
 
+/**
+ * `team.prepareOrdinaryOpen` (contract v5, C1 restart-0.1.7-rc.1
+ * recovery — guide §10.2) — the narrow one-shot ordinary-activation
+ * PERMIT of the Team fence: the host arms the fence's per-root one-shot
+ * activation permit for the given Team root (process-local, single-use,
+ * TTL-bounded; the armed permit expires silently if never consumed —
+ * there is NO revoke RPC). This is a Team CONTROL-PLANE RPC — it
+ * performs NO Team ensure, NO Team Agent side effect, and no TeamDomain
+ * mutation beyond the one-shot activation-allow fact. CLOSED field set:
+ * `teamSessionId` ONLY (the host authority is the connection gate — no
+ * caller claim, no token). On success the response `data` is at least
+ * `{ rootSessionId, permitted: true }`. The typed failure vocabulary
+ * (foreign root / no fence armed / port unavailable) passes through
+ * unmapped (invariant 4b).
+ */
+export interface RemoteTeamPrepareOrdinaryOpenParams {
+  /** The TeamSession (root session) id whose ordinary open to permit. */
+  readonly teamSessionId: string
+}
+
 /** `team.getProjection`. */
 export interface RemoteTeamGetProjectionParams {
   readonly teamSessionId: string
@@ -439,6 +464,7 @@ export type RemoteMethodParams =
   | RemoteTeamListRootsParams
   | RemoteTeamEnsureRootLiveParams
   | RemoteTeamResolveControlParams
+  | RemoteTeamPrepareOrdinaryOpenParams
   | RemoteTeamGetProjectionParams
   | RemoteTeamGetLedgerPageParams
   | RemoteMemberCreateParams
@@ -521,6 +547,7 @@ export const REMOTE_TEAM_RESOLVE_CONTROL_FIELDS: readonly string[] = [
   'requestId',
   'teamSessionId',
 ]
+export const REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS: readonly string[] = ['teamSessionId']
 export const REMOTE_TEAM_GET_PROJECTION_FIELDS: readonly string[] = ['teamSessionId']
 export const REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS: readonly string[] = [
   'afterSequence',
@@ -1341,6 +1368,20 @@ export function parseRemoteTeamResolveControlParams(
   }
 }
 
+/** Parse `team.prepareOrdinaryOpen` params (contract v5, v5-only method). */
+export function parseRemoteTeamPrepareOrdinaryOpenParams(
+  method: string,
+  params: RemoteSafeRecord,
+): RemoteTeamPrepareOrdinaryOpenParams {
+  assertNoUnknownFields(method, params, REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS)
+  return {
+    teamSessionId: parseRemoteTeamSessionId(
+      requiredField(method, params, 'teamSessionId'),
+      'teamSessionId',
+    ),
+  }
+}
+
 /** Parse `team.getProjection` params. */
 export function parseRemoteTeamGetProjectionParams(
   method: string,
@@ -1791,7 +1832,7 @@ export function parseRemoteLegacyInspectParams(
  * through, so every request is parsed against the closed schema of its
  * own version — no cross-version field leakage).
  * @param version - the request envelope's contract version (supported:
- *   `1 | 2 | 3`; the envelope parse already guarantees this, the
+ *   `1 | 2 | 3 | 4 | 5`; the envelope parse already guarantees this, the
  *   assertion is defensive for direct callers).
  * @param method - a catalog method name (dotted `<category>.<action>`).
  * @param params - the request envelope's `params` object.
@@ -1841,6 +1882,9 @@ export function parseRemoteMethodParams(
     case 'team.resolveControl':
       // v4-only (the availability check above guarantees version === 4).
       return wrapParsed(method, parseRemoteTeamResolveControlParams(method, params))
+    case 'team.prepareOrdinaryOpen':
+      // v5-only (the availability check above guarantees version === 5).
+      return wrapParsed(method, parseRemoteTeamPrepareOrdinaryOpenParams(method, params))
     case 'team.getProjection':
       return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params))
     case 'team.getLedgerPage':

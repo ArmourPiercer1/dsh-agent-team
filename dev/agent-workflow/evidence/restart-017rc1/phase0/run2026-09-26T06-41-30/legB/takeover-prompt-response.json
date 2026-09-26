@@ -1,0 +1,13 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "rst-takeover-p50ic0ogx",
+    "result": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  }
+}

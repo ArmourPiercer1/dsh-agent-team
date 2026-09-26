@@ -1,0 +1,5 @@
+{
+  "ordId": "session-repro-ord-1790397578767",
+  "createStatus": 200,
+  "createBody": "{\"type\":\"server-response\",\"rpcId\":\"repro-create-1790397578767\",\"result\":{\"ok\":true,\"value\":{\"sessionId\":\"session-repro-ord-1790397578767\",\"agentPreset\":\"standard\"}}}"
+}

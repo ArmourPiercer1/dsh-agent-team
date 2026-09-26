@@ -1,0 +1,25 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "rst-ensureA-gz7nfso7q9",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED",
+        "message": "team.ensureRootLive: the Team-mode ensure of 'session-rst017-dyn-2026-09-26T04-16-18' failed: session \"session-rst017-dyn-2026-09-26T04-16-18\" is already owned by an active write handle",
+        "details": {
+          "method": "team.ensureRootLive",
+          "endpoint": "team.ensureRootLive",
+          "contractVersion": 3,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED",
+            "message": "team.ensureRootLive: the Team-mode ensure of 'session-rst017-dyn-2026-09-26T04-16-18' failed: session \"session-rst017-dyn-2026-09-26T04-16-18\" is already owned by an active write handle"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "events": [
+    {
+      "t": "2026-09-26T05:57:54.124Z",
+      "kind": "armed",
+      "armed": true,
+      "source": "autoArm"
+    },
+    {
+      "t": "2026-09-26T05:57:54.411Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017-boot-2026-09-26T05-57-14",
+      "source": "resume",
+      "agentId": "session-rst017-boot-2026-09-26T05-57-14",
+      "veto": false,
+      "permitted": false
+    }
+  ]
+}

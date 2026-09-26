@@ -1,0 +1,26 @@
+# exit=0
+# stdout
+
+   ╭──────────────────────────────────────────────╮
+   │                                              │
+   │      Update available! 11.7.0 → 12.6.0.      │
+   │     Changelog: https://pnpm.io/v/12.6.0      │
+   │   To update, run: corepack use pnpm@12.6.0   │
+   │                                              │
+   ╰──────────────────────────────────────────────╯
+
+Progress: resolved 0, reused 0, downloaded 1, added 0
+[WARN] Issues with peer dependencies found. Run "pnpm peers check" to list them.
+
+dependencies:
++ dsh-agent-team git+file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T05-25-55/repo.git#task/team-restart-017rc1
+
+Packages: +1
++
+Progress: resolved 1, reused 0, downloaded 1, added 1, done
+Done in 3.6s using pnpm v11.7.0
+
+# stderr
+dsh: initialized profile web at /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T05-25-55/profiles/web
+! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-11.7.0.tgz
+

@@ -857,6 +857,17 @@ export interface TeamAgentBindings {
         readonly kind: 'member';
         readonly instanceId: string;
     } | undefined;
+    /**
+     * C1 (restart-recovery, guide §10.1) — arm the one-shot ordinary
+     * activation permit for one team root: process-local, single-use,
+     * TTL-bounded, consumed at the awaited `agent/created` (NEVER at this
+     * call). The production root's S6 `prepareOrdinaryOpen` handler arms
+     * it, then lets the stock SessionController open the session in
+     * ordinary mode (the button does NOT run the Team ensure). OPTIONAL —
+     * a world without the activation fence leaves it undefined, and the
+     * S6 handler fails closed with the typed port-unavailable code.
+     */
+    readonly allowOrdinaryActivationOnce?: (rootSessionId: string) => void;
     /** Close the glue (dispose every live agent handle; idempotent). */
     close(): Promise<void>;
 }

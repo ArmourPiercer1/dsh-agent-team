@@ -1,0 +1,73 @@
+[rst017-c4 2026-09-26T11-56-46] Commit 4 kit — stamp 2026-09-26T11-56-46 worlds=A browserHold=false keepHome=false race=20
+[rst017-c4 2026-09-26T11-56-46] PASS [s0] preflight: test-use HEAD == the 0.1.7-rc.1 pin — HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4
+[rst017-c4 2026-09-26T11-56-46] PASS [s0] preflight: test-use working tree pristine (empty porcelain)
+[rst017-c4 2026-09-26T11-56-46] PASS [s0] preflight: task worktree at the accepted Commit 3 tip — HEAD=61419de337f2bec6f17abe7b4ca6750ce26cfb92
+[rst017-c4 2026-09-26T11-56-46] PASS [s0] preflight: the test-use CLI reports 0.1.7-rc.1 — version=0.1.7-rc.1
+[rst017-c4 2026-09-26T11-56-46] PASS [s0] preflight: host/mock ports free (3492/3497) — hostFree=true mockFree=true
+[rst017-c4 2026-09-26T11-56-46] ══ WORLD A — home /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A ══
+[rst017-c4 2026-09-26T11-56-46] world A materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A
+[rst017-c4 2026-09-26T11-56-46] PASS [install] S0 bare-clone tip == 61419de337f2bec6f17abe7b4ca6750ce26cfb92 (the accepted Commit 3 with committed dist/composition) — cloned=61419de337f2bec6f17abe7b4ca6750ce26cfb92
+[rst017-c4 2026-09-26T11-56-46] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-c4 2026-09-26T11-56-46] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-c4 2026-09-26T11-56-46] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-c4 2026-09-26T11-56-46] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-c4 2026-09-26T11-56-46] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-c4 2026-09-26T11-56-46] FATAL: boot 1 row setup failed — setupError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session "session-rst017c4-boot-2026-09-26T11-56-46"
+--- log tail ---
+[c4diag 2026-09-26T11:56:51.142Z] hook armed for /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin
+[c4diag 2026-09-26T11:56:51.660Z] LOAD url=file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js format=module
+[c4diag 2026-09-26T11:56:51.661Z] transformed in-memory: file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js
+[c4diag 2026-09-26T11:56:51.722Z] LOAD url=file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/team-session-activation.js format=module
+[c4diag 2026-09-26T11:56:51.723Z] transformed in-memory: file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/team-session-activation.js
+[c4diag-host] apply() entry #1
+[c4diag-host] fence created #1 id=F1
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3492/?token=3mpPwEA4ZlY8j8Nnup2ESqoHoLEbt9OOsVd9baF9o6A
+[c4diag-host] bindOwnershipResolver called (fence #1)
+[c4diag 2026-09-26T11:56:52.587Z] LOAD url=file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs format=module
+[c4diag 2026-09-26T11:56:52.588Z] source type for file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs: object (isBuffer=false) — NOT transformed
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[c4diag-fence] beforeAgentCreated sid=session-rst017c4-boot-2026-09-26T11-56-46 owner=session-rst017c4-boot-2026-09-26T11-56-46 ownedDepth=0 permits=0 closed=false fenceId=F1 fenceMapAddr=M1
+[c4diag-fence] VETO sid=session-rst017c4-boot-2026-09-26T11-56-46
+[dsh-agent-team] bootstrap FAILED: TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session "session-rst017c4-boot-2026-09-26T11-56-46"
+    at Object.beforeAgentCreated (file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/team-session-activation.js:303:68)
+    at ctx.on.global (file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js:439:36)
+    at Object.apply (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:921:20)
+    at Proxy.serial (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:291:25)
+    at async Proxy.announce (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent/lib/index.js:579:4)
+    at async Object.publish (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1711:7)
+    at async file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1850:12
+    at async file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1863:13
+    at async file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:835:12
+    at async Proxy.initializeAgent (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1861:11)
+[rst017-c4 2026-09-26T11-56-46] world A torn down (host SIGTERM'd, mock closed)
+[rst017-c4 2026-09-26T11-56-46] PASS [s0] post-run: the stable :3080 instance answer is UNCHANGED (no cross-world contamination) — before={"port":3080,"reachable":true,"status":401} after={"port":3080,"reachable":true,"status":401}
+[rst017-c4 2026-09-26T11-56-46] summary: 12 passed, 0 failed, fatal=boot 1 row setup failed — setupError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session "session-rst017c4-boot-2026-09-26T11-56-46"
+--- log tail ---
+[c4diag 2026-09-26T11:56:51.142Z] hook armed for /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin
+[c4diag 2026-09-26T11:56:51.660Z] LOAD url=file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js format=module
+[c4diag 2026-09-26T11:56:51.661Z] transformed in-memory: file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js
+[c4diag 2026-09-26T11:56:51.722Z] LOAD url=file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/team-session-activation.js format=module
+[c4diag 2026-09-26T11:56:51.723Z] transformed in-memory: file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/team-session-activation.js
+[c4diag-host] apply() entry #1
+[c4diag-host] fence created #1 id=F1
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3492/?token=3mpPwEA4ZlY8j8Nnup2ESqoHoLEbt9OOsVd9baF9o6A
+[c4diag-host] bindOwnershipResolver called (fence #1)
+[c4diag 2026-09-26T11:56:52.587Z] LOAD url=file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs format=module
+[c4diag 2026-09-26T11:56:52.588Z] source type for file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs: object (isBuffer=false) — NOT transformed
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[c4diag-fence] beforeAgentCreated sid=session-rst017c4-boot-2026-09-26T11-56-46 owner=session-rst017c4-boot-2026-09-26T11-56-46 ownedDepth=0 permits=0 closed=false fenceId=F1 fenceMapAddr=M1
+[c4diag-fence] VETO sid=session-rst017c4-boot-2026-09-26T11-56-46
+[dsh-agent-team] bootstrap FAILED: TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session "session-rst017c4-boot-2026-09-26T11-56-46"
+    at Object.beforeAgentCreated (file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/team-session-activation.js:303:68)
+    at ctx.on.global (file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T11-56-46-A/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js:439:36)
+    at Object.apply (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:921:20)
+    at Proxy.serial (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:291:25)
+    at async Proxy.announce (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent/lib/index.js:579:4)
+    at async Object.publish (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1711:7)
+    at async file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1850:12
+    at async file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1863:13
+    at async file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:835:12
+    at async Proxy.initializeAgent (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1861:11)
+[rst017-c4 2026-09-26T11-56-46] evidence: /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/commit4

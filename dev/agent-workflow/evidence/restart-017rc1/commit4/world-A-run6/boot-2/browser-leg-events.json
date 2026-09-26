@@ -1,0 +1,53 @@
+{
+  "created": [
+    {
+      "t": "2026-09-26T13:24:49.845Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+      "source": "resume",
+      "agentId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+      "veto": false,
+      "permitted": false
+    },
+    {
+      "t": "2026-09-26T13:24:49.873Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+      "source": "resume",
+      "agentId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+      "veto": false,
+      "permitted": false
+    },
+    {
+      "t": "2026-09-26T13:25:09.934Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+      "source": "resume",
+      "agentId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+      "veto": false,
+      "permitted": false
+    }
+  ],
+  "disposed": [
+    {
+      "t": "2026-09-26T13:24:49.847Z",
+      "kind": "agent/disposed",
+      "sessionId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+      "agentId": "session-rst017c4-dyn-2026-09-26T13-21-00"
+    },
+    {
+      "t": "2026-09-26T13:24:49.875Z",
+      "kind": "agent/disposed",
+      "sessionId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+      "agentId": "session-rst017c4-dyn-2026-09-26T13-21-00"
+    }
+  ],
+  "errors": [
+    {
+      "t": "2026-09-26T13:24:49.848Z",
+      "kind": "api-session/error",
+      "sessionId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+      "message": "resume failed for session \"session-rst017c4-dyn-2026-09-26T13-21-00\": TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \"session-rst017c4-dyn-2026-09-26T13-21-00\""
+    }
+  ]
+}

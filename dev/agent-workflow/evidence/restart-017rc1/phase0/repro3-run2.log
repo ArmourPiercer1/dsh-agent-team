@@ -1,0 +1,15 @@
+copying world -> /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-bisect-2026-09-26T04-50-21
+world copied
+W4: host up at +2420ms
+W4: WS CONNECTED at +4940ms
+W4: follow opened (streamId=fol-w4-bisuj4) at +5338ms
+W4: MSG +5363ms: {"type":"item","streamId":"fol-w4-bisuj4","value":{"type":"snapshot","header":{"version":4,"id":"session-rst017-dyn-2026-09-26T04-32-14","createdAt":17903971412…
+W4: RESULT after 8s: closedAt=nullms closeCode=null messages=1
+W4: SOCKET CLOSED at +13338ms (closeCode=null)
+W3: host up at +16844ms
+W3: WS CONNECTED at +19354ms
+W3: follow opened (streamId=fol-w3-f066r5) at +19752ms
+W3: MSG +19770ms: {"type":"item","streamId":"fol-w3-f066r5","value":{"type":"snapshot","header":{"version":4,"id":"session-rst017-dyn-2026-09-26T04-32-14","createdAt":17903971412…
+W3: RESULT after 8s: closedAt=nullms closeCode=null messages=1
+W3: SOCKET CLOSED at +27754ms (closeCode=null)
+summary -> {"w4":{"closedAt":null,"closeCode":null,"messages":1},"w3":{"closedAt":null,"closeCode":null,"messages":1}}

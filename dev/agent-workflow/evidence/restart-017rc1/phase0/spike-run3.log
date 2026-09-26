@@ -1,0 +1,45 @@
+[rst017-spike 2026-09-25T16-23-54] Phase 0 spike — stamp 2026-09-25T16-23-54 (keep=false)
+[rst017-spike 2026-09-25T16-23-54] PASS [s0] preflight: test-use pristine @ 46a7f68b09 (HEAD + empty porcelain)
+[rst017-spike 2026-09-25T16-23-54] PASS [s0] preflight: task worktree on task/team-restart-017rc1 — HEAD=4fb79fca77984552ccb6f0ad1badcab69bd97625
+[rst017-spike 2026-09-25T16-23-54] PASS [s0] preflight: the test-use CLI reports 0.1.7-rc.1 — version=0.1.7-rc.1
+[rst017-spike 2026-09-25T16-23-54] stable pre-probe: 3080=401 3180=401
+[rst017-spike 2026-09-25T16-23-54] reusing installed world: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54 (set RST017_STAMP/RST017_WORLD for a fresh one)
+[rst017-spike 2026-09-25T16-23-54] mock model up @ 3496
+[rst017-spike 2026-09-25T16-23-54] ── Leg A: boot 1 (create) + dynamic team ──
+[rst017-spike 2026-09-25T16-23-54] FATAL: boot 1 failed: no boot marker within 300s
+--- log tail ---
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: store 'schema_meta' operation 'put' was rejected: the TeamDomain is closed
+    at normalizeSeamError (file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/storage/schema/errors.js:148:16)
+    at SchemaMetaRepository.putRaw (file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/storage/repositories/base.js:127:19)
+    at async SchemaMetaRepository.stampStore (file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/storage/repositories/schema-meta.js:66:9)
+    at async createTeamDomain (file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/storage/repositories/team-domain.js:133:13)
+    at async bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js:845:22)
+dsh: startup failed: 1 required plugin did not activate
+Failed plugins (1):
+  modules (required)
+    Package: @deepseek-ai/dsh-client-modules
+    AggregateError: client-modules: 1 client package failed to compose:
+      other failures:
+        - client-modules: package dsh-agent-team resolves from multiple active Loader sources: "dsh-agent-team" from file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54/profiles/web/, "file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/fence-probe.mjs" from file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54/profiles/web/; remove one entry
+        at new ClientModuleRegistry (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:544:34)
+        at Fiber.execute (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)
+        at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34
+        at file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54/profiles/web/#modules
+        at file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54/profiles/web/#include
+    Error: client-modules: package dsh-agent-team resolves from multiple active Loader sources: "dsh-agent-team" from file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54/profiles/web/, "file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/fence-probe.mjs" from file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54/profiles/web/; remove one entry
+        at ClientModuleRegistry.reconcilePackage (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:876:10)
+        at ClientModuleRegistry.processOne (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:852:13)
+        at ClientModuleRegistry.flush (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:898:14)
+        at new ClientModuleRegistry (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:543:8)
+        at Fiber.execute (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)
+        at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34
+        at composeError (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)
+        at Fiber._execute (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1137:10)
+        at Fiber._reload (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1356:16)
+Plugins waiting for services (1):
+  Plugin      Missing services
+  client-hmr  clientModules
+Full diagnostics: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-25T16-23-54/logs/startup-2026-09-25T16-24-52.793Z-ccba07ab-f783-4e23-b369-64931ddccdef.log
+[rst017-spike 2026-09-25T16-23-54] summary: 3 passed, 0 failed
+[rst017-spike 2026-09-25T16-23-54] evidence: /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/phase0

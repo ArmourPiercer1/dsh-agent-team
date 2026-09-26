@@ -95,15 +95,19 @@ export interface TeamMembersProps {
    */
   openTeamMode?: (rootSessionId: string) => Promise<TeamOpenModeOutcome>
   /**
-   * D3 (Team D1-D6 repair v2, D6): the EXPLICIT ordinary-mode fallback
-   * entry ("以普通模式打开", v2 plan §1.1.3) — the pure native session
-   * open (no team-remote call, no ensure-live step). The entry's promise
-   * is "no Team ensure is performed / team_* tools are NOT guaranteed" —
-   * never a tool-removal claim (a live Team agent is adopted as-is).
-   * Present ONLY on the root/leader row. Absent → the leader row stays
-   * the D2 surface (no ordinary entry).
+   * D3 (Team D1-D6 repair v2, D6) — C1 rewire (guide §10.2): the
+   * EXPLICIT ordinary-mode fallback entry ("以普通模式打开", v2 plan
+   * §1.1.3) — the AWAITED two-phase sequence in the mount (the v5
+   * `team.prepareOrdinaryOpen` one-shot permit, then the pure native
+   * session open; ZERO Team ensure / ZERO Team Agent side effects — no
+   * ensure-live step). A settled rejection renders the leader row's
+   * async error note (never a silent failure). The entry's promise is
+   * "no Team ensure is performed / activated as an ordinary Session
+   * Agent" — never a tool-removal claim (a live Team agent is adopted
+   * as-is). Present ONLY on the root/leader row. Absent → the leader
+   * row stays the D2 surface (no ordinary entry).
    */
-  openOrdinaryMode?: (rootSessionId: string) => void
+  openOrdinaryMode?: (rootSessionId: string) => Promise<void>
   /**
    * D2/D3 (D6): the per-root client-local open-mode read — WHICH explicit
    * entry this client used while the session selection is still on the
@@ -311,13 +315,20 @@ interface MemberGroupProps {
   /** D2 (D6): the last typed open-in-Team-mode failure (the group note). */
   readonly teamModeError?: { readonly code: string; readonly message: string } | undefined
   /**
-   * D3 (D6): the explicit ordinary-mode fallback trigger — present ONLY
-   * on the leader group row (the pure native open; no team-remote call,
+   * D3 (D6) — C1 rewire (guide §10.2): the explicit ordinary-mode
+   * fallback trigger — present ONLY on the leader group row (the AWAITED
+   * two-phase sequence in the mount — the v5 prepare permit, then the
+   * pure native open; ZERO Team ensure / ZERO Team Agent side effects;
    * no ensure-live step; the promise is "no Team ensure is performed /
-   * team_* tools are NOT guaranteed", never a tool-removal claim).
-   * Absent → the leader row stays the D2 surface (no ordinary entry).
+   * activated as an ordinary Session Agent", never a tool-removal
+   * claim). Absent → the leader row stays the D2 surface (no ordinary
+   * entry).
    */
-  readonly openOrdinaryMode?: (() => void) | undefined
+  readonly openOrdinaryMode?: (() => Promise<void>) | undefined
+  /** D3 (D6): the in-flight ordinary-mode open mark (disables the entry). */
+  readonly ordinaryPending?: boolean
+  /** D3 (D6): the last settled ordinary-mode open failure (the group note). */
+  readonly ordinaryError?: { readonly code: string; readonly message: string } | undefined
   /**
    * D2/D3 (D6): the current open mode of the root — which explicit entry
    * this client used ('team' / 'ordinary') — or null (no badge).
@@ -331,7 +342,7 @@ function MemberGroup({
   group, current, currentSessionId, onSelectSession, onSelectLeader,
   onCommand, pendingByInstance, errorsByInstance, onCreateInstance,
   createPending, createError, openTeamMode, teamModePending, teamModeError,
-  openOrdinaryMode, openMode, t,
+  openOrdinaryMode, ordinaryPending, ordinaryError, openMode, t,
 }: MemberGroupProps): React.JSX.Element {
   const name = group.name ?? t('member.leader')
   const label = `${name} · ${t('view.members.active', { count: group.activeCount })}`
@@ -403,6 +414,7 @@ function MemberGroup({
                        type="button"
                        className={styles.teamModeOpen}
                        data-team-ordinary-open
+                       disabled={ordinaryPending === true || undefined}
                        title={t('view.members.openOrdinaryMode.hint')}
                        onClick={openOrdinaryMode}
                      >
@@ -432,6 +444,19 @@ function MemberGroup({
                 {t('view.members.openMode.error', {
                   code: teamModeError.code,
                   message: teamModeError.message,
+                })}
+              </div>
+            )
+            : null}
+          {/* D3 (D6) — C1 rewire (guide §10.2): the settled rejection of
+              the ordinary entry (typed code + message, the async error
+              lane — never a silent failure, never swallowed). */}
+          {ordinaryError !== undefined
+            ? (
+              <div className={styles.commandError} data-member-command-error data-team-ordinary-open-error>
+                {t('view.members.openOrdinaryMode.error', {
+                  code: ordinaryError.code,
+                  message: ordinaryError.message,
                 })}
               </div>
             )
@@ -494,6 +519,14 @@ export function TeamMembers({
   // note). Page-run UI state only; the open-mode FACT stays in the mount.
   const [teamModePending, setTeamModePending] = useState(false)
   const [teamModeError, setTeamModeError] = useState<
+    { readonly code: string; readonly message: string } | null
+  >(null)
+  // D3 (D6) — C1 rewire (guide §10.2): the leader row's explicit
+  // ordinary-mode entry — the in-flight mark + the last settled
+  // rejection (ONE verbatim note). Page-run UI state only; the
+  // open-mode FACT stays in the mount.
+  const [ordinaryPending, setOrdinaryPending] = useState(false)
+  const [ordinaryError, setOrdinaryError] = useState<
     { readonly code: string; readonly message: string } | null
   >(null)
   const nextToken = useMemo(() => createRequestTokenGenerator('ui'), [])
@@ -643,6 +676,36 @@ export function TeamMembers({
     })
   }
 
+  /**
+   * D3 (D6) — C1 rewire (guide §10.2) — run the leader row's explicit
+   * ordinary-mode entry through the face (the AWAITED two-phase
+   * sequence: the v5 `team.prepareOrdinaryOpen` permit BEFORE the native
+   * open — the mount owns the ordering and the client-local mode mark).
+   * On a settled rejection the note renders verbatim under the row (the
+   * typed code is the first `': '`-separated token of the mount's
+   * `${code}: ${message}` error; the native-open seam error renders with
+   * the fallback code) — never a silent failure, never swallowed. On
+   * success the native switch (performed by the face) moves the current
+   * session and the mode badge appears on the next render.
+   */
+  const runOpenOrdinaryMode = async (): Promise<void> => {
+    const face = openOrdinaryMode
+    if (face === undefined) return
+    setOrdinaryPending(true)
+    setOrdinaryError(null)
+    try {
+      await face(teamSessionId)
+    } catch (error: unknown) {
+      const rawMessage = error instanceof Error ? error.message : String(error)
+      const separatorIndex = rawMessage.indexOf(': ')
+      const code = separatorIndex > 0 ? rawMessage.slice(0, separatorIndex) : 'ORDINARY_OPEN_FAILED'
+      const message = separatorIndex > 0 ? rawMessage.slice(separatorIndex + 2) : rawMessage
+      setOrdinaryError({ code, message })
+    } finally {
+      setOrdinaryPending(false)
+    }
+  }
+
   const createTemplate = open?.kind === 'create'
     ? snapshot.templates.find(template => template.templateId === open.group.templateId)
     : undefined
@@ -658,7 +721,9 @@ export function TeamMembers({
         openTeamMode={openTeamMode === undefined ? undefined : runOpenTeamMode}
         teamModePending={teamModePending}
         teamModeError={teamModeError === null ? undefined : teamModeError}
-        openOrdinaryMode={openOrdinaryMode === undefined ? undefined : () => { openOrdinaryMode(teamSessionId) }}
+        openOrdinaryMode={openOrdinaryMode === undefined ? undefined : runOpenOrdinaryMode}
+        ordinaryPending={ordinaryPending}
+        ordinaryError={ordinaryError === null ? undefined : ordinaryError}
         openMode={teamOpenMode?.(teamSessionId) ?? null}
         t={t}
       />

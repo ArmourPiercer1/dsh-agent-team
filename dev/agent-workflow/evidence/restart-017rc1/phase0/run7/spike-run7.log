@@ -1,0 +1,57 @@
+[rst017-spike 2026-09-26T04-10-02] Phase 0 spike — stamp 2026-09-26T04-10-02 (keep=false)
+[rst017-spike 2026-09-26T04-10-02] PASS [s0] preflight: test-use pristine @ 46a7f68b09 (HEAD + empty porcelain)
+[rst017-spike 2026-09-26T04-10-02] PASS [s0] preflight: task worktree on task/team-restart-017rc1 — HEAD=4fb79fca77984552ccb6f0ad1badcab69bd97625
+[rst017-spike 2026-09-26T04-10-02] PASS [s0] preflight: the test-use CLI reports 0.1.7-rc.1 — version=0.1.7-rc.1
+[rst017-spike 2026-09-26T04-10-02] stable pre-probe: 3080=401 3180=401
+[rst017-spike 2026-09-26T04-10-02] world materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T04-10-02
+[rst017-spike 2026-09-26T04-10-02] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-spike 2026-09-26T04-10-02] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-spike 2026-09-26T04-10-02] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-spike 2026-09-26T04-10-02] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-spike 2026-09-26T04-10-02] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-spike 2026-09-26T04-10-02] mock model up @ 3497
+[rst017-spike 2026-09-26T04-10-02] ── Leg A: boot 1 (create) + dynamic team ──
+[rst017-spike 2026-09-26T04-10-02] PASS [legA] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, probeReject=false) — http://127.0.0.1:3492 liveSessions=["session-rst017-boot-2026-09-26T04-10-02"]
+[rst017-spike 2026-09-26T04-10-02] PASS [legA] A1 team.create(R1) accepted over the public remote seam — status=200 bodyHead={"type":"server-response","rpcId":"rst-create-updk6qg0h9","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rst017-dyn-2026-
+[rst017-spike 2026-09-26T04-10-02] PASS [legA] A2 dynamic leader live: first model request observed (row staticModel) — seq=2 model=rst017-model-2026-09-26T04-10-02
+[rst017-spike 2026-09-26T04-10-02] PASS [legA] A3 dynamic leader surface carries the team tools (legacy-mode full catalog) — tools=["ask_user_question","bash","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","present","read","read_image","send_message","skill","subagent","subagent_fork","team_archive_member","team_collect","team_create_member","tea
+[rst017-spike 2026-09-26T04-10-02] boot 1 stopped (SIGTERM)
+[rst017-spike 2026-09-26T04-10-02] ── Leg A: boot 2 (resume) — the cold dynamic root ──
+[rst017-spike 2026-09-26T04-10-02] PASS [legA] boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, probeReject=false) — http://127.0.0.1:3492 liveSessions=["session-rst017-boot-2026-09-26T04-10-02"]
+[rst017-spike 2026-09-26T04-10-02] FAIL [legA] A4 browser-equivalent session/follow(R1) yields the snapshot frame (the stream survives) — session/follow stream error: {"code":"gateway/arguments-invalid","message":"typert gateway: session/follow: args fields do not match the descriptor: missing \"request\"; unexpected \"address\"","details":{"endpoint":"session/follow"}}
+[rst017-spike 2026-09-26T04-10-02] FAIL [legA] A5 ordinary promotion observed: agent/created(R1, source=resume) fired unvetoed (the stock path) — []
+[rst017-spike 2026-09-26T04-10-02] FAIL [legA] A6 BASELINE BLOCKER: team.ensureRootLive(R1) FAILS after the ordinary promotion stole the session — status=200 errHead={"type":"server-response","rpcId":"rst-ensureA-u0jx3y3k8i","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017-dyn-2026-09-26T04-10-02","mode":"team","live":true},"provenance":{"origin":"team-remote","method":"team.ensureRootLive","endpoint":"team.ensureRootLive","contractVersion":3
+[rst017-spike 2026-09-26T04-10-02] FAIL [legA] A6b baseline failure lane: typed OUTSIDE_TEAM (already registered) or the writer-held race — outsideTeam=false writerHeld=false
+[rst017-spike 2026-09-26T04-10-02] boot 2 stopped (SIGTERM)
+[rst017-spike 2026-09-26T04-10-02] ── Leg B: boot 3 (resume, fence reject=true) ──
+[rst017-spike 2026-09-26T04-10-02] PASS [legB] boot 3 up (marker + auth + p6t6 ok + boot root live + fence probe ok, probeReject=true) — http://127.0.0.1:3492 liveSessions=["session-rst017-boot-2026-09-26T04-10-02"]
+[rst017-spike 2026-09-26T04-10-02] PASS [legB] B0 boot team root re-adopted on restart and NOT vetoed by the fence — [{"kind":"agent/created","sid":"-26T04-10-02","source":"resume","veto":false}]
+[rst017-spike 2026-09-26T04-10-02] PASS [legB] B1 fence armed (runtime gate)
+[rst017-spike 2026-09-26T04-10-02] FAIL [legB] B2 session/follow(R1) snapshot arrives even though the promotion is about to be vetoed (the stream survives the rejection) — session/follow stream error: {"code":"gateway/arguments-invalid","message":"typert gateway: session/follow: args fields do not match the descriptor: missing \"request\"; unexpected \"address\"","details":{"endpoint":"session/follow"}}
+[rst017-spike 2026-09-26T04-10-02] FAIL [legB] B3 Q1: the fence veto fired on agent/created (source=resume) — null
+[rst017-spike 2026-09-26T04-10-02] FAIL [legB] B4 Q1: agent/disposed arrived for the vetoed session (rollback completed) — null
+[rst017-spike 2026-09-26T04-10-02] FAIL [legB] B5 Q1: api-session/error surfaced (the SessionController promote() error surface, broadcast on the wire) — null
+[rst017-spike 2026-09-26T04-10-02] PASS [legB] B6 fence disarmed (the Team's own activation passes)
+[rst017-spike 2026-09-26T04-10-02] PASS [legB] B7 Q1: team.ensureRootLive(R1) SUCCEEDS after the rollback (the writer was released) — status=200 bodyHead={"type":"server-response","rpcId":"rst-ensureB-lqkrvmjbjn","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017-dyn-2026-09-26T04-10-02","mode":"team","live":true},"provenance":{"origin":"team-remote","method":"team.ensureRootLive","e
+[rst017-spike 2026-09-26T04-10-02] PASS [legB] B8 the Team's own resume fired exactly one non-vetoed agent/created (fence pass for owned activations) — count=1
+[rst017-spike 2026-09-26T04-10-02] PASS [legB] B9 takeover turn live on the mock with the Team tools (full surface retained) — seq=3 teamTools=13/39
+[rst017-spike 2026-09-26T04-10-02] PASS [legB] B10 Q1: exactly one model request since the veto (the Team takeover turn — ZERO from the foreign agent) — requestsSinceVeto=1
+[rst017-spike 2026-09-26T04-10-02] PASS [legB] B11 session log intact and readable (durable rows present) — files=1 rows=1 assistantRows=0
+[rst017-spike 2026-09-26T04-10-02] ── Leg C: ordinary session negative control (fence armed) ──
+[rst017-spike 2026-09-26T04-10-02] PASS [legC] C0 fence re-armed for the ordinary control
+[rst017-spike 2026-09-26T04-10-02] PASS [legC] C1 ordinary session created via the public seam — status=200 bodyHead={"type":"server-response","rpcId":"rst-create-session-b4t4evjw5","result":{"ok":true,"value":{"sessionId":"session-rst017-ord-2026-09-26T04-10-02","ag
+[rst017-spike 2026-09-26T04-10-02] FAIL [legC] C2 ordinary session/follow snapshot arrives (unaffected by the fence) — session/follow stream error: {"code":"gateway/arguments-invalid","message":"typert gateway: session/follow: args fields do not match the descriptor: missing \"request\"; unexpected \"address\"","details":{"endpoint":"session/follow"}}
+[rst017-spike 2026-09-26T04-10-02] FAIL [legC] C3 ordinary promotion passed the ARMED fence (no veto for unmanaged sessions) — []
+[rst017-spike 2026-09-26T04-10-02] boot 3 stopped (SIGTERM)
+[rst017-spike 2026-09-26T04-10-02] summary: 24 passed, 10 failed
+[rst017-spike 2026-09-26T04-10-02]   FAIL [legA] A4 browser-equivalent session/follow(R1) yields the snapshot frame (the stream survives) — session/follow stream error: {"code":"gateway/arguments-invalid","message":"typert gateway: session/follow: args fields do not match the descriptor: missing \"request\"; unexpected \"address\"","details":{"endpoint":"session/follow"}}
+[rst017-spike 2026-09-26T04-10-02]   FAIL [legA] A5 ordinary promotion observed: agent/created(R1, source=resume) fired unvetoed (the stock path) — []
+[rst017-spike 2026-09-26T04-10-02]   FAIL [legA] A6 BASELINE BLOCKER: team.ensureRootLive(R1) FAILS after the ordinary promotion stole the session — status=200 errHead={"type":"server-response","rpcId":"rst-ensureA-u0jx3y3k8i","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017-dyn-2026-09-26T04-10-02","mode":"team","live":true},"provenance":{"origin":"team-remote","method":"team.ensureRootLive","endpoint":"team.ensureRootLive","contractVersion":3
+[rst017-spike 2026-09-26T04-10-02]   FAIL [legA] A6b baseline failure lane: typed OUTSIDE_TEAM (already registered) or the writer-held race — outsideTeam=false writerHeld=false
+[rst017-spike 2026-09-26T04-10-02]   FAIL [legB] B2 session/follow(R1) snapshot arrives even though the promotion is about to be vetoed (the stream survives the rejection) — session/follow stream error: {"code":"gateway/arguments-invalid","message":"typert gateway: session/follow: args fields do not match the descriptor: missing \"request\"; unexpected \"address\"","details":{"endpoint":"session/follow"}}
+[rst017-spike 2026-09-26T04-10-02]   FAIL [legB] B3 Q1: the fence veto fired on agent/created (source=resume) — null
+[rst017-spike 2026-09-26T04-10-02]   FAIL [legB] B4 Q1: agent/disposed arrived for the vetoed session (rollback completed) — null
+[rst017-spike 2026-09-26T04-10-02]   FAIL [legB] B5 Q1: api-session/error surfaced (the SessionController promote() error surface, broadcast on the wire) — null
+[rst017-spike 2026-09-26T04-10-02]   FAIL [legC] C2 ordinary session/follow snapshot arrives (unaffected by the fence) — session/follow stream error: {"code":"gateway/arguments-invalid","message":"typert gateway: session/follow: args fields do not match the descriptor: missing \"request\"; unexpected \"address\"","details":{"endpoint":"session/follow"}}
+[rst017-spike 2026-09-26T04-10-02]   FAIL [legC] C3 ordinary promotion passed the ARMED fence (no veto for unmanaged sessions) — []
+[rst017-spike 2026-09-26T04-10-02] evidence: /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/phase0

@@ -1,0 +1,26 @@
+[
+  {
+    "t": "2026-09-26T12:29:29.268Z",
+    "kind": "agent/created",
+    "sessionId": "session-rst017c4-boot-2026-09-26T12-20-20",
+    "source": "resume",
+    "agentId": "session-rst017c4-boot-2026-09-26T12-20-20",
+    "veto": false,
+    "permitted": false
+  },
+  {
+    "t": "2026-09-26T12:29:29.781Z",
+    "kind": "api-session/error",
+    "sessionId": "session-rst017c4-dyn-2026-09-26T12-20-20",
+    "message": "session \"session-rst017c4-dyn-2026-09-26T12-20-20\" is already owned by an active write handle"
+  },
+  {
+    "t": "2026-09-26T12:29:29.798Z",
+    "kind": "agent/created",
+    "sessionId": "session-rst017c4-dyn-2026-09-26T12-20-20",
+    "source": "resume",
+    "agentId": "session-rst017c4-dyn-2026-09-26T12-20-20",
+    "veto": false,
+    "permitted": false
+  }
+]

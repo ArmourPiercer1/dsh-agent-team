@@ -1,0 +1,16 @@
+mock model up @ 3498
+host up: http://127.0.0.1:3495
+cookie acquired: true
+create session -> 200 {"type":"server-response","rpcId":"repro-create-1790397578767","result":{"ok":true,"value":{"sessionId":"session-repro-ord-1790397578767","agentPreset":"standard"}}}
+--- Variant A: $events + follow ---
+WS CONNECTED at + 1545 ms
+MSG +2346ms: {"type":"item","streamId":"ev-A","value":{"type":"ready","clientId":"632ef2c8-b64c-41c9-bbe2-534afe2adce1","host":{"home":"/home/user"}}}
+MSG +3146ms: {"type":"item","streamId":"fol-A","value":{"type":"snapshot","header":{"version":4,"id":"session-repro-ord-1790397578767","createdAt":1790397578777,"cwd":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T04-32-14/workspace","isSeeded":false,"agentPreset":"standard"},"cursor"…
+Variant A result: closedAt=nullms messages=2
+SOCKET CLOSED by peer at +11143ms
+--- Variant B: follow only ---
+WS CONNECTED at + 11646 ms
+MSG +12447ms: {"type":"item","streamId":"fol-B","value":{"type":"snapshot","header":{"version":4,"id":"session-repro-ord-1790397578767","createdAt":1790397578777,"cwd":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T04-32-14/workspace","isSeeded":false,"agentPreset":"standard"},"cursor"…
+Variant B result: closedAt=nullms messages=1
+SOCKET CLOSED by peer at +20447ms
+raw bytes -> /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/follow-repro/raw-bytes.log

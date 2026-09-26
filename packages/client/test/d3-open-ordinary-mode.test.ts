@@ -1,40 +1,47 @@
 /**
- * d3-open-ordinary-mode.test.ts — D3 (Team D1-D6 repair v2, D6): the
- * client mount's EXPLICIT ordinary-mode fallback entry
- * (`openOrdinaryMode`, v2 plan §1.1.3 / §12.D3) and the `'ordinary'`
- * value of the per-root client-local open-mode state (the D2 map gains
- * the value; reset on session switch as with D2).
+ * d3-open-ordinary-mode.test.ts — D3 (Team D1-D6 repair v2, D6) REWIRED
+ * for the C1 restart-0.1.7-rc.1 recovery (guide §10.2 + §13.5, verdict
+ * gate-5): the client mount's EXPLICIT ordinary-mode fallback entry
+ * (`openOrdinaryMode`) is now the AWAITED two-phase sequence — (a) the
+ * v5 `team.prepareOrdinaryOpen` one-shot permit MUST settle BEFORE (b)
+ * the existing native `openSession` + the `'ordinary'` per-root mark —
+ * and the Team-mode entry (`openTeamMode`) reconciles the session state
+ * after a successful takeover (gate-5, the Q2 finding).
  *
- * Coverage (D3 task card, client-mount half):
- *  - the ordinary entry is the EXISTING `openSession` verbatim (Seam 3,
- *    the pure `ctx.uiWorkspace.openSession` (0.1.5: `ctx.sessions.open`) — A3 Q3): the session is opened exactly
- *    once with the root id and the remote-client spy records ZERO
- *    `team.*` calls (no `team.ensureRootLive`, no other team-remote
- *    method, no `session/create`-with-preset equivalent, no ensure-live
- *    step, no list refresh);
- *  - the per-root open-mode state reads `'ordinary'` after the entry and
- *    the session-switch reset drops the 'ordinary' mark too (per-root,
- *    client-local — no remote field, no push/event/polling);
- *  - SEMANTICS (A3 Q1 caveat 2, pinned): the ordinary entry is a promise
- *    of "no Team ensure is performed / team_* tools are NOT guaranteed" —
- *    NOT a tool-removal operation. The client-observable pin for the
- *    team → ordinary → team switch: the carrier log carries EXACTLY the
- *    two `team.ensureRootLive` calls of the two team entries and NO other
- *    team-remote method — the ordinary steps contribute zero carrier
- *    calls, so no TeamDomain repository write can ride the switch (the
- *    client's only authority over TeamDomain is the remote surface;
- *    `team.ensureRootLive` is the glue's agent-registry ensure-live, not
- *    a TeamDomain repository mutation — the handler side is pinned by
- *    D2). No duplicate agent registration is possible: the ordinary path
- *    performs no `agents.resume` at all — the glue map is host-side, the
- *    observable proxy here is the ABSENT `team.ensureRootLive` carrier
- *    call of every ordinary step (the AgentRegistry collision guard,
- *    A3 Q1 item 3, is the structural host-side guarantee);
- *  - idempotent repeat: the same entry twice opens twice, no error, the
- *    mode stays 'ordinary';
- *  - a FAILED ordinary open (unknown session id — the seam's own throw)
- *    leaves the prior mode mark intact (open first, mark after: a failed
- *    switch is no switch).
+ * Coverage (C1 task card, client-mount half; the §13.5 C1–C5 tests):
+ *  - C1 (two-phase ordering): a settled ordinary open issues EXACTLY ONE
+ *    team.* carrier call — the v5-stamped `team.prepareOrdinaryOpen`
+ *    `{ teamSessionId }` — BEFORE the native open (sequence: prepare →
+ *    open), and the session is opened exactly once with the root id;
+ *  - C2 (typed permit failure): a typed permit rejection (e.g.
+ *    TEAM_REMOTE_FOREIGN_TEAM) throws the `${code}: ${message}` error to
+ *    the UI's async error lane — the session is NOT opened, the mode is
+ *    NOT marked, and a STALE 'ordinary' mark from a prior attempt of the
+ *    same root is cleared (no silent failure, no swallowing);
+ *  - C3 (native-open failure): a failed native open (unknown session id —
+ *    the seam's own throw) leaves NO 'ordinary' mark, and the carrier log
+ *    carries EXACTLY the one permit call — there is NO revoke RPC (the
+ *    armed permit lapses by TTL);
+ *  - C4 (zero-ensure / zero-side-effect semantics): the ONLY team.* call
+ *    of an ordinary entry is the v5 permit — ZERO `team.ensureRootLive`,
+ *    zero Team Agent side effects, NO list refresh (the entry promises
+ *    "no Team ensure is performed / activated as an ordinary Session
+ *    Agent" — it is NOT a tool-removal operation, and it is NOT "zero
+ *    team.* remote calls" — the permit itself is a Team control-plane
+ *    RPC);
+ *  - C5 (the team → ordinary → team switch): each Team entry issues its
+ *    v3 `team.ensureRootLive` (zero `team.prepareOrdinaryOpen` from the
+ *    team entries); the ordinary entry issues its v5 permit; the mode
+ *    badge fact follows the entry used (team → ordinary → team); and a
+ *    settled team entry records exactly ONE `sessions.refresh` (gate-5);
+ *  - gate-5 (the post-takeover reconcile): a successful `openTeamMode`
+ *    records `openSession` + `sessions.refresh` IN ORDER (the composer
+ *    reconciles WITHOUT a reload); a typed ensure failure opens nothing,
+ *    refreshes nothing, and returns the typed `{ ok: false, code,
+ *    message }` to the UI's explicit error lane;
+ *  - the per-root open-mode state still reads `'ordinary'` after the
+ *    entry and the session-switch reset drops the 'ordinary' mark too
+ *    (per-root, client-local — no remote field, no push/event/polling).
  *
  * Shim-constrained spec (run-tests.mjs): the `it()` bodies are
  * synchronous assertions on captured scenario state; the async scenarios
@@ -48,6 +55,8 @@ import { describe, expect, it } from 'vitest'
 import {
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V3,
+  REMOTE_CONTRACT_VERSION_V5,
+  buildRemoteError,
   buildRemoteSuccess,
   type RemoteResponse,
 } from '../../remote/src/index.js'
@@ -69,9 +78,10 @@ const ROOT = 'root-session-d3-client'
 const OTHER = 'plain-session-d3'
 const UNKNOWN = 'no-such-root-d3'
 
-/** One ordered sequence entry (the two-phase ordering evidence, D2 style). */
+/** One ordered sequence entry (the two-phase ordering evidence, D2 style —
+ *  C1: 'prepare' joins 'ensure' / 'open'; gate-5: 'refresh'). */
 interface SequenceEntry {
-  readonly op: 'ensure' | 'open'
+  readonly op: 'prepare' | 'ensure' | 'open' | 'refresh'
   readonly id?: string
 }
 
@@ -80,7 +90,7 @@ interface MountFixture {
   readonly components: TeamMountComponents
   /** Every carrier call, with the FULL envelope payload (version stamping). */
   readonly log: Array<{ readonly channel: string; readonly endpoint: string; readonly payload: unknown }>
-  /** The remote-client spy's `team.*` calls (the zero-team-call assertion; live view over the log). */
+  /** The remote-client spy's `team.*` calls (the zero-ensure assertion; live view over the log). */
   readonly teamCalls: () => Array<{ readonly channel: string; readonly endpoint: string; readonly payload: unknown }>
   readonly enqueue: (
     endpoint: string,
@@ -89,17 +99,17 @@ interface MountFixture {
   readonly registers: Array<{ readonly options: Record<string, unknown>; readonly component: unknown }>
   readonly effects: Array<{ readonly label: string | undefined; readonly dispose: () => void }>
   readonly disposeAll: () => void
-  /** The two-phase ordering evidence (ensure vs open, in call order). */
+  /** The ordering evidence (prepare / ensure vs open vs refresh, in call order). */
   readonly sequence: SequenceEntry[]
   readonly opened: string[]
-  /** The `sessions.refresh` call count (the creation-path re-pull lane). */
+  /** The `sessions.refresh` call count (the gate-5 reconcile lane). */
   readonly refreshCount: () => number
   /** Move the session-list current selection (fires the list listeners). */
   readonly setCurrent: (sessionId: string | undefined) => void
   readonly viewFace: (sessionId: string) => TeamViewInjected
 }
 
-/** Build one seam-double fixture (the five public seams, D3 edition). */
+/** Build one seam-double fixture (the five public seams, C1 edition). */
 function makeMount(): MountFixture {
   const log: MountFixture['log'] = []
   const sequence: SequenceEntry[] = []
@@ -115,14 +125,29 @@ function makeMount(): MountFixture {
 
   // The carrier double: records channel + endpoint + the FULL payload
   // (the version stamping evidence), answers queued responders, then the
-  // default empty success.
+  // default responder: the v5 permit success for `team.prepareOrdinaryOpen`
+  // (the host's one-shot permit fact — echo the requested teamSessionId)
+  // and the empty v1 success for anything else.
   const carrier: TeamRpcCarrier = {
     call: async (channel, endpoint, payload) => {
       log.push({ channel, endpoint, payload })
+      if (endpoint === 'team.prepareOrdinaryOpen') sequence.push({ op: 'prepare' })
       if (endpoint === 'team.ensureRootLive') sequence.push({ op: 'ensure' })
       const queue = queues[endpoint]
       const next = queue !== undefined ? queue.shift() : undefined
       if (next !== undefined) return next()
+      if (endpoint === 'team.prepareOrdinaryOpen') {
+        const envelope = payload as { params?: { teamSessionId?: unknown } }
+        return buildRemoteSuccess(
+          { rootSessionId: envelope.params?.teamSessionId ?? ROOT, permitted: true },
+          {
+            method: endpoint,
+            endpoint,
+            contractVersion: REMOTE_CONTRACT_VERSION_V5,
+            requestToken: null,
+          },
+        )
+      }
       return buildRemoteSuccess({}, {
         method: endpoint,
         endpoint,
@@ -162,6 +187,7 @@ function makeMount(): MountFixture {
     },
     refresh: async (): Promise<void> => {
       refreshCount++
+      sequence.push({ op: 'refresh' })
     },
     list: {
       getSnapshot: (): TeamSessionListSnapshot => ({ byId }),
@@ -338,10 +364,39 @@ function ensureLiveSuccess(): RemoteResponse {
   )
 }
 
+/** One typed v5 permit rejection envelope (C2). */
+function permitRejection(): RemoteResponse {
+  return buildRemoteError(
+    'TEAM_REMOTE_FOREIGN_TEAM',
+    'root is not inside this team session',
+    {
+      method: 'team.prepareOrdinaryOpen',
+      endpoint: 'team.prepareOrdinaryOpen',
+      contractVersion: REMOTE_CONTRACT_VERSION_V5,
+      requestToken: null,
+    },
+  )
+}
+
+/** One typed v3 ensure rejection envelope (gate-5 failure lane). */
+function ensureRejection(): RemoteResponse {
+  return buildRemoteError(
+    'TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE',
+    'ensure port unavailable',
+    {
+      method: 'team.ensureRootLive',
+      endpoint: 'team.ensureRootLive',
+      contractVersion: REMOTE_CONTRACT_VERSION_V3,
+      requestToken: null,
+    },
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Module-level scenarios (the shim's it() bodies are synchronous)
 // ---------------------------------------------------------------------------
 
+// C1 + C4: one settled ordinary open — the awaited two-phase sequence.
 const ordinaryScenario = await (async () => {
   const fixture = makeMount()
   const { face } = await mountedView(fixture)
@@ -349,12 +404,65 @@ const ordinaryScenario = await (async () => {
   if (openOrdinaryMode === undefined) throw new Error('D3 mount test: openOrdinaryMode face missing')
   const teamOpenMode = face.teamOpenMode
   if (teamOpenMode === undefined) throw new Error('D3 mount test: teamOpenMode face missing')
-  openOrdinaryMode(ROOT)
+  await openOrdinaryMode(ROOT)
   const mode = teamOpenMode(ROOT)
   fixture.disposeAll()
   return { fixture, mode }
 })()
 
+// C2: a typed permit rejection — never open, never mark (stale mark
+// cleared too), the typed error rides the async error lane.
+const permitRejectionScenario = await (async () => {
+  const fixture = makeMount()
+  const { face } = await mountedView(fixture)
+  const openOrdinaryMode = face.openOrdinaryMode
+  if (openOrdinaryMode === undefined) throw new Error('D3 mount test: openOrdinaryMode face missing')
+  const teamOpenMode = face.teamOpenMode
+  if (teamOpenMode === undefined) throw new Error('D3 mount test: teamOpenMode face missing')
+  // Arm a stale 'ordinary' mark first (a prior successful attempt).
+  await openOrdinaryMode(ROOT)
+  const modeBefore = teamOpenMode(ROOT)
+  fixture.enqueue('team.prepareOrdinaryOpen', permitRejection)
+  let threw = false
+  let message = ''
+  try {
+    await openOrdinaryMode(ROOT)
+  } catch (error: unknown) {
+    threw = true
+    message = error instanceof Error ? error.message : String(error)
+  }
+  const modeAfter = teamOpenMode(ROOT)
+  fixture.disposeAll()
+  return { fixture, modeBefore, threw, message, modeAfter }
+})()
+
+// C3: a failed native open (unknown session id) — no mark, EXACTLY the one
+// permit call on the wire (there is NO revoke RPC — the permit lapses by
+// TTL).
+const nativeOpenRejectionScenario = await (async () => {
+  const fixture = makeMount()
+  const { face } = await mountedView(fixture)
+  const openOrdinaryMode = face.openOrdinaryMode
+  if (openOrdinaryMode === undefined) throw new Error('D3 mount test: openOrdinaryMode face missing')
+  const teamOpenMode = face.teamOpenMode
+  if (teamOpenMode === undefined) throw new Error('D3 mount test: teamOpenMode face missing')
+  let threw = false
+  let message = ''
+  try {
+    await openOrdinaryMode(UNKNOWN)
+  } catch (error: unknown) {
+    threw = true
+    message = error instanceof Error ? error.message : String(error)
+  }
+  const unknownMark = teamOpenMode(UNKNOWN)
+  const rootMark = teamOpenMode(ROOT)
+  fixture.disposeAll()
+  return { fixture, threw, message, unknownMark, rootMark }
+})()
+
+// C5: the team → ordinary → team switch — each team entry issues its v3
+// ensure (zero permits from the team entries); the ordinary entry issues
+// its v5 permit; gate-5 records one refresh per settled team entry.
 const switchScenario = await (async () => {
   const fixture = makeMount()
   fixture.enqueue('team.ensureRootLive', ensureLiveSuccess)
@@ -368,7 +476,7 @@ const switchScenario = await (async () => {
   if (teamOpenMode === undefined) throw new Error('D3 mount test: teamOpenMode face missing')
   const result1 = await openTeamMode(ROOT)
   const modeAfterTeam1 = teamOpenMode(ROOT)
-  openOrdinaryMode(ROOT)
+  await openOrdinaryMode(ROOT)
   const modeAfterOrdinary = teamOpenMode(ROOT)
   const result2 = await openTeamMode(ROOT)
   const modeAfterTeam2 = teamOpenMode(ROOT)
@@ -376,6 +484,7 @@ const switchScenario = await (async () => {
   return { fixture, result1, result2, modeAfterTeam1, modeAfterOrdinary, modeAfterTeam2 }
 })()
 
+// The idempotent ordinary repeat (C1 ordering twice, C4 zero-ensure twice).
 const idempotentScenario = await (async () => {
   const fixture = makeMount()
   const { face } = await mountedView(fixture)
@@ -383,13 +492,15 @@ const idempotentScenario = await (async () => {
   if (openOrdinaryMode === undefined) throw new Error('D3 mount test: openOrdinaryMode face missing')
   const teamOpenMode = face.teamOpenMode
   if (teamOpenMode === undefined) throw new Error('D3 mount test: teamOpenMode face missing')
-  openOrdinaryMode(ROOT)
-  openOrdinaryMode(ROOT)
+  await openOrdinaryMode(ROOT)
+  await openOrdinaryMode(ROOT)
   const mode = teamOpenMode(ROOT)
   fixture.disposeAll()
   return { fixture, mode }
 })()
 
+// The session-switch reset (the D2 reset effect covers the ordinary mark
+// too).
 const resetScenario = await (async () => {
   const fixture = makeMount()
   const { face } = await mountedView(fixture)
@@ -397,7 +508,7 @@ const resetScenario = await (async () => {
   if (openOrdinaryMode === undefined) throw new Error('D3 mount test: openOrdinaryMode face missing')
   const teamOpenMode = face.teamOpenMode
   if (teamOpenMode === undefined) throw new Error('D3 mount test: teamOpenMode face missing')
-  openOrdinaryMode(ROOT)
+  await openOrdinaryMode(ROOT)
   const modeAfterOpen = teamOpenMode(ROOT)
   fixture.setCurrent(OTHER)
   const modeAfterSwitch = teamOpenMode(ROOT)
@@ -405,46 +516,65 @@ const resetScenario = await (async () => {
   return { modeAfterOpen, modeAfterSwitch }
 })()
 
-const failedSwitchScenario = await (async () => {
+// gate-5: a successful Team-mode takeover records openSession +
+// sessions.refresh IN ORDER (the reconcile — no reload needed).
+const gate5SuccessScenario = await (async () => {
   const fixture = makeMount()
   fixture.enqueue('team.ensureRootLive', ensureLiveSuccess)
   const { face } = await mountedView(fixture)
   const openTeamMode = face.openTeamMode
-  const openOrdinaryMode = face.openOrdinaryMode
-  const teamOpenMode = face.teamOpenMode
   if (openTeamMode === undefined) throw new Error('D3 mount test: openTeamMode face missing')
-  if (openOrdinaryMode === undefined) throw new Error('D3 mount test: openOrdinaryMode face missing')
+  const teamOpenMode = face.teamOpenMode
   if (teamOpenMode === undefined) throw new Error('D3 mount test: teamOpenMode face missing')
-  await openTeamMode(ROOT)
-  let threw = false
-  let message = ''
-  try {
-    openOrdinaryMode(UNKNOWN)
-  } catch (error: unknown) {
-    threw = true
-    message = error instanceof Error ? error.message : String(error)
-  }
-  const modeAfterFailedSwitch = teamOpenMode(ROOT)
+  const result = await openTeamMode(ROOT)
+  const mode = teamOpenMode(ROOT)
   fixture.disposeAll()
-  return { fixture, threw, message, modeAfterFailedSwitch }
+  return { fixture, result, mode }
+})()
+
+// gate-5: a typed ensure failure opens nothing, refreshes nothing, and
+// returns the typed outcome (the UI's explicit error lane).
+const gate5FailureScenario = await (async () => {
+  const fixture = makeMount()
+  fixture.enqueue('team.ensureRootLive', ensureRejection)
+  const { face } = await mountedView(fixture)
+  const openTeamMode = face.openTeamMode
+  if (openTeamMode === undefined) throw new Error('D3 mount test: openTeamMode face missing')
+  const teamOpenMode = face.teamOpenMode
+  if (teamOpenMode === undefined) throw new Error('D3 mount test: teamOpenMode face missing')
+  const result = await openTeamMode(ROOT)
+  const mode = teamOpenMode(ROOT)
+  fixture.disposeAll()
+  return { fixture, result, mode }
 })()
 
 // ---------------------------------------------------------------------------
 // Assertions (synchronous it() bodies over the captured scenario state)
 // ---------------------------------------------------------------------------
 
-describe('D3 (client mount): the ordinary entry is the pure native open (A3 Q3 Seam 3)', () => {
-  it('opens the root session exactly once with the root id (openSession verbatim)', () => {
+describe('C1 (client mount): the ordinary entry is the awaited two-phase sequence (guide §10.2)', () => {
+  it('the ordering is pinned: the v5 permit settles BEFORE the native open (prepare → open)', () => {
+    expect(ordinaryScenario.fixture.sequence).toEqual([
+      { op: 'prepare' },
+      { op: 'open', id: ROOT },
+    ])
+  })
+
+  it('EXACTLY ONE team.* call rides the entry: the v5-stamped team.prepareOrdinaryOpen { teamSessionId } (the permit is a Team control-plane RPC)', () => {
+    const teamCalls = ordinaryScenario.fixture.teamCalls()
+    expect(teamCalls.length).toBe(1)
+    const call = teamCalls[0]
+    if (call === undefined) throw new Error('missing captured team call')
+    expect(call.channel).toBe('/team-remote')
+    expect(call.endpoint).toBe('team.prepareOrdinaryOpen')
+    expect(call.payload).toEqual({
+      version: REMOTE_CONTRACT_VERSION_V5,
+      params: { teamSessionId: ROOT },
+    })
+  })
+
+  it('the root session is opened exactly once with the root id (openSession verbatim)', () => {
     expect(ordinaryScenario.fixture.opened).toEqual([ROOT])
-  })
-
-  it('NO team-remote method is called (the remote client spy has zero team.* calls — no ensure, no create, no mutation)', () => {
-    expect(ordinaryScenario.fixture.teamCalls()).toEqual([])
-    expect(ordinaryScenario.fixture.log).toEqual([])
-  })
-
-  it('no list refresh rides the ordinary open (the creation-path re-pull lane is not used)', () => {
-    expect(ordinaryScenario.fixture.refreshCount()).toBe(0)
   })
 
   it('the per-root open-mode state reads ordinary (the D2 state map gains the value)', () => {
@@ -452,47 +582,148 @@ describe('D3 (client mount): the ordinary entry is the pure native open (A3 Q3 S
   })
 })
 
-describe('D3 (client mount): the team → ordinary → team switch (A3 Q1 caveat 2 semantics)', () => {
+describe('C4 (client mount): zero-ensure / zero-side-effect semantics', () => {
+  it('ZERO team.ensureRootLive calls ride the ordinary entry (the ONLY team.* call is the v5 permit — not "zero team.* calls", but zero Team ensure)', () => {
+    for (const call of ordinaryScenario.fixture.teamCalls()) {
+      expect(call.endpoint).not.toBe('team.ensureRootLive')
+    }
+    expect(ordinaryScenario.fixture.teamCalls().filter(c => c.endpoint === 'team.prepareOrdinaryOpen').length).toBe(1)
+  })
+
+  it('no list refresh rides the ordinary open (no reconcile, no reload — the ordinary path is the native open)', () => {
+    expect(ordinaryScenario.fixture.refreshCount()).toBe(0)
+  })
+
+  it('the ordinary entry never issues a create / mutation / admit endpoint (zero Team Agent side effects)', () => {
+    const endpoints = ordinaryScenario.fixture.teamCalls().map(c => c.endpoint)
+    expect(endpoints.includes('team.create')).toBe(false)
+    expect(endpoints.includes('team.admitInitialWork')).toBe(false)
+    expect(endpoints.includes('team.ensureRootLive')).toBe(false)
+  })
+})
+
+describe('C2 (client mount): a typed permit rejection (the async error lane, never swallowed)', () => {
+  it('the rejection throws the `${code}: ${message}` error verbatim', () => {
+    expect(permitRejectionScenario.threw).toBe(true)
+    expect(permitRejectionScenario.message).toBe('TEAM_REMOTE_FOREIGN_TEAM: root is not inside this team session')
+  })
+
+  it('the session is NOT opened (no second open) and NO mark is set — a STALE ordinary mark from a prior attempt is cleared', () => {
+    expect(permitRejectionScenario.fixture.opened).toEqual([ROOT])
+    expect(permitRejectionScenario.modeBefore).toBe('ordinary')
+    expect(permitRejectionScenario.modeAfter).toBeNull()
+  })
+
+  it('EXACTLY the two permit calls ride the wire (the rejection settles the phase; no open, no revoke, no refresh)', () => {
+    const teamCalls = permitRejectionScenario.fixture.teamCalls()
+    expect(teamCalls.length).toBe(2)
+    for (const call of teamCalls) {
+      expect(call.endpoint).toBe('team.prepareOrdinaryOpen')
+    }
+    expect(permitRejectionScenario.fixture.refreshCount()).toBe(0)
+  })
+})
+
+describe('C3 (client mount): a failed native open (open first, mark after — a failed switch is no switch)', () => {
+  it('the seam throw propagates (the typed message rides the async error lane)', () => {
+    expect(nativeOpenRejectionScenario.threw).toBe(true)
+    expect(nativeOpenRejectionScenario.message).toContain('unknown session')
+  })
+
+  it('NO mark is set for the failed root (and none for the root)', () => {
+    expect(nativeOpenRejectionScenario.unknownMark).toBeNull()
+    expect(nativeOpenRejectionScenario.rootMark).toBeNull()
+  })
+
+  it('the carrier log carries EXACTLY the one permit call — there is NO revoke RPC (the armed permit lapses by TTL)', () => {
+    const teamCalls = nativeOpenRejectionScenario.fixture.teamCalls()
+    expect(teamCalls.length).toBe(1)
+    const call = teamCalls[0]
+    if (call === undefined) throw new Error('missing captured team call')
+    expect(call.endpoint).toBe('team.prepareOrdinaryOpen')
+    expect(call.payload).toEqual({
+      version: REMOTE_CONTRACT_VERSION_V5,
+      params: { teamSessionId: UNKNOWN },
+    })
+  })
+})
+
+describe('C5 (client mount): the team → ordinary → team switch', () => {
   it('the mode badge fact follows the ENTRY used: team → ordinary → team', () => {
     expect(switchScenario.modeAfterTeam1).toBe('team')
     expect(switchScenario.modeAfterOrdinary).toBe('ordinary')
     expect(switchScenario.modeAfterTeam2).toBe('team')
   })
 
-  it('the switch issues EXACTLY the two team.ensureRootLive calls (one per team entry) and NO other team-remote method — the ordinary steps contribute zero carrier calls, so no TeamDomain repository write can ride the switch', () => {
-    expect(switchScenario.fixture.teamCalls().length).toBe(2)
-    for (const call of switchScenario.fixture.teamCalls()) {
-      expect(call.channel).toBe('/team-remote')
-      expect(call.endpoint).toBe('team.ensureRootLive')
-      expect(call.payload).toEqual({
-        version: REMOTE_CONTRACT_VERSION_V3,
-        params: { teamSessionId: ROOT },
-      })
+  it('the team entries issue EXACTLY their two v3 team.ensureRootLive calls (ZERO team.prepareOrdinaryOpen from the team entries) and the ordinary entry issues its one v5 permit', () => {
+    const teamCalls = switchScenario.fixture.teamCalls()
+    expect(teamCalls.length).toBe(3)
+    const first = teamCalls[0]
+    const second = teamCalls[1]
+    const third = teamCalls[2]
+    if (first === undefined || second === undefined || third === undefined) {
+      throw new Error('missing captured team call')
     }
+    expect(first.endpoint).toBe('team.ensureRootLive')
+    expect(first.payload).toEqual({
+      version: REMOTE_CONTRACT_VERSION_V3,
+      params: { teamSessionId: ROOT },
+    })
+    expect(second.endpoint).toBe('team.prepareOrdinaryOpen')
+    expect(second.payload).toEqual({
+      version: REMOTE_CONTRACT_VERSION_V5,
+      params: { teamSessionId: ROOT },
+    })
+    expect(third.endpoint).toBe('team.ensureRootLive')
+    expect(third.payload).toEqual({
+      version: REMOTE_CONTRACT_VERSION_V3,
+      params: { teamSessionId: ROOT },
+    })
   })
 
-  it('the ordering is pinned: ensure → open for each team entry, plain open only for the ordinary step (no agents.resume on the ordinary path — the glue map sees no ordinary resume)', () => {
+  it('the ordering is pinned: ensure → open → refresh for each team entry (gate-5), prepare → open for the ordinary step', () => {
     expect(switchScenario.fixture.sequence).toEqual([
       { op: 'ensure' },
       { op: 'open', id: ROOT },
+      { op: 'refresh' },
+      { op: 'prepare' },
       { op: 'open', id: ROOT },
       { op: 'ensure' },
       { op: 'open', id: ROOT },
+      { op: 'refresh' },
     ])
   })
 
-  it('the root session is opened once per entry (three entries, three opens; the repeated opens are the SAME pure native open — idempotent, no duplicate registration surface)', () => {
+  it('the root session is opened once per entry (three entries, three opens) and each settled team entry returns { ok: true }', () => {
     expect(switchScenario.fixture.opened).toEqual([ROOT, ROOT, ROOT])
     expect(switchScenario.result1).toEqual({ ok: true })
     expect(switchScenario.result2).toEqual({ ok: true })
   })
+
+  it('gate-5: exactly ONE sessions.refresh per settled team entry (two team entries → two refreshes; the ordinary step refreshes nothing)', () => {
+    expect(switchScenario.fixture.refreshCount()).toBe(2)
+  })
 })
 
-describe('D3 (client mount): the idempotent ordinary repeat', () => {
-  it('the same entry twice: two plain opens, no error, the mode stays ordinary, still zero team.* calls', () => {
+describe('C1/C4 (client mount): the idempotent ordinary repeat', () => {
+  it('the same entry twice: two permits + two opens (the prepare → open ordering twice), no error, the mode stays ordinary', () => {
+    expect(idempotentScenario.fixture.sequence).toEqual([
+      { op: 'prepare' },
+      { op: 'open', id: ROOT },
+      { op: 'prepare' },
+      { op: 'open', id: ROOT },
+    ])
     expect(idempotentScenario.fixture.opened).toEqual([ROOT, ROOT])
     expect(idempotentScenario.mode).toBe('ordinary')
-    expect(idempotentScenario.fixture.teamCalls()).toEqual([])
+    const teamCalls = idempotentScenario.fixture.teamCalls()
+    expect(teamCalls.length).toBe(2)
+    for (const call of teamCalls) {
+      expect(call.endpoint).toBe('team.prepareOrdinaryOpen')
+      expect(call.payload).toEqual({
+        version: REMOTE_CONTRACT_VERSION_V5,
+        params: { teamSessionId: ROOT },
+      })
+    }
   })
 })
 
@@ -503,11 +734,34 @@ describe('D3 (client mount): the session-switch reset (the D2 reset effect cover
   })
 })
 
-describe('D3 (client mount): the failed ordinary switch (open first, mark after)', () => {
-  it('an unknown session id: the seam throw propagates, no open happens, and the prior team mark is left intact (a failed switch is no switch)', () => {
-    expect(failedSwitchScenario.threw).toBe(true)
-    expect(failedSwitchScenario.message).toContain('unknown session')
-    expect(failedSwitchScenario.fixture.opened).toEqual([ROOT])
-    expect(failedSwitchScenario.modeAfterFailedSwitch).toBe('team')
+describe('gate-5 (client mount): the post-takeover session-state reconcile', () => {
+  it('a successful Team-mode takeover records openSession + sessions.refresh IN ORDER (the composer reconciles WITHOUT a reload)', () => {
+    expect(gate5SuccessScenario.result).toEqual({ ok: true })
+    expect(gate5SuccessScenario.fixture.sequence).toEqual([
+      { op: 'ensure' },
+      { op: 'open', id: ROOT },
+      { op: 'refresh' },
+    ])
+    expect(gate5SuccessScenario.fixture.opened).toEqual([ROOT])
+    expect(gate5SuccessScenario.fixture.refreshCount()).toBe(1)
+    expect(gate5SuccessScenario.mode).toBe('team')
+  })
+
+  it('a typed ensure failure opens nothing, refreshes nothing, and returns the typed { ok: false, code, message } (no error swallowing)', () => {
+    expect(gate5FailureScenario.result).toEqual({
+      ok: false,
+      code: 'TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE',
+      message: 'ensure port unavailable',
+    })
+    expect(gate5FailureScenario.fixture.opened).toEqual([])
+    expect(gate5FailureScenario.fixture.refreshCount()).toBe(0)
+    expect(gate5FailureScenario.mode).toBeNull()
+    // the ensure rejection still rides the wire exactly once (the typed
+    // outcome is the RPC result, not a swallow)
+    const teamCalls = gate5FailureScenario.fixture.teamCalls()
+    expect(teamCalls.length).toBe(1)
+    const call = teamCalls[0]
+    if (call === undefined) throw new Error('missing captured team call')
+    expect(call.endpoint).toBe('team.ensureRootLive')
   })
 })

@@ -1,0 +1,102 @@
+DSH Local Build
+0.1.7-rc.1-46a7f68
+New Session
+Plugins
+Workspaces
+workspace
+Ungrouped
+c4 title
+4min
+New Team
+Settings
+c4 title
+Chat
+Trajectory
+Team
+Timeline
+
+No delegations yet
+
+Members
+leader · 1 active
+Open in Team mode / back to Leader
+Open in ordinary mode
+Team mode
+Running
+No action yet
+Worker · 0 active
++
+No instances yet
+Governance
+Compatibility
+✓ Compatible
+0 warning(s) · 0 fatal · 0 acknowledged
+Generation 1
+Last probed at 2026-09-26T13:21:07.521Z
+Review
+Recheck
+Acknowledge warning
+
+Rechecking starts a new compatibility generation; old acknowledgements never cover it.
+
+Policy [ default ]
+
+Policy controls the Team's current runtime governance envelope. It does not represent task progress.
+
+Review
+Commit
+Effective config
+leader
+model
+deepseek-official/rst017c4-model-2026-09-26T13-21-00
+capability
+Inherited
+workspace
+/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T13-21-01-A/workspace
+blueprint
+Locked
+autonomy
+—
+autonomy-overlay
+Inherited
+model
+tools
+permissions
+skills
+mcp
+Allow
+Deny
+Show override
+Set override
+Reset override
+Activity & Progress
+No activity progress yet
+Team events
+All
+Team
+Members
+Lifecycle
+Messages
+Controls
+Policy
+Compatibility
+Progress
+All
+leader
+leader
+Worker
+21:21:07
+Work admitted
+{"at":"2026-09-26T13:21:07.527Z","caller":{"humanId":"session-rst017c4-boot-2026-09-26T13-21-00","kind":"human"},"payloadFingerprint":"sha256:31cb7e2c43b189adb1780a141c8246a1f2d7b921f0b95bc61f4d402e2ac1b57e","prompt":"Commit 4 dynamic team created. Acknowledge with the token RST017C4DONE_2026-09-26T13-21-00 and stop.","requestToken":"team-create:initial-work:sha256:31cb7e2c43b189adb1780a141c8246a1f2d7b921f0b95bc61f4d402e2ac1b57e","rootSessionId":"session-rst017c4-dyn-2026-09-26T13-21-00","targetKind":"root"}
+21:21:36
+team-root-work-delivered
+team-root-work-delivered
+Team
+ · 
+1 running
+Session unavailable
+Workspace Write
+deepseek-official/rst017c4-model-2026-09-26T13-21-00
+1 turns 1 steps·40000 tok/s
+2K tok·Cache hit 0%
+0%

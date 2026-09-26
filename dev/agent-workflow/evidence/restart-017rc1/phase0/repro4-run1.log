@@ -1,0 +1,15 @@
+mock up @ 3502
+host up at + 2008 ms: http://127.0.0.1:3497
+cookie acquired: true
+--- V1: follow cold DYN (diag hook active) ---
+V1: WS CONNECTED at +2024ms
+V1: MSG +2339ms: {"type":"item","streamId":"fol-v1-jx1fr2","value":{"type":"snapshot","header":{"version":4,"id":"session-rst017-dyn-2026-09-26T04-32-14","createdAt":1790397141218,"cwd":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/…
+V1: SOCKET CLOSED by peer at +8373ms (closeCode=null)
+summary -> {
+  "v1": {
+    "kind": "snapshot",
+    "closedAt": null,
+    "msgCount": 0
+  }
+}
+raw bytes -> /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/repro4-hook/raw-bytes.log
