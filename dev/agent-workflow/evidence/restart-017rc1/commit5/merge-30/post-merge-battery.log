@@ -1,0 +1,29 @@
+=== typecheck (all, post-merge) ===
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+TYPECHECK_EXIT=0
+=== build (all, post-merge) ===
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+BUILD_EXIT=0
+=== build:composition ===
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/client/composition-shim/package.json
+[check-artifacts-committed] OK: 1196 files; committed install-surface artifacts match the fresh build
+COMPOSITION_EXIT=0
+=== check-artifacts ===
+[check-artifacts-committed] OK: 1196 files; committed install-surface artifacts match the fresh build
+ARTIFACTS_EXIT=0
+=== zero-core ===
+RESULT: PASS verify-zero-core (0 findings)
+=== root full test ===
+ROOTTEST_EXIT=1
+   Start at  22:22:54
+   Duration  14.46s (transform 36.61s, setup 0ms, import 140.52s, tests 4.07s, environment 33ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+=== BATTERY DONE ===

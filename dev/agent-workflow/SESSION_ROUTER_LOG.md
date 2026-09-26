@@ -3911,3 +3911,11 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **红线守纪终态**：CORE PATCH BUDGET = 0；:3080 验收时点复测 401 UNCHANGED（全程只读 probe）；孤儿宿主/world 未动；scratch `rst017-bisect-2026-09-26T04-50-21`（278M）按 TEST_METHODS §7 删除留档（引用 = 5 处保留日志内的路径字符串，无内容依赖）；homes 现存 32 个 rst017* 全部登记在案。
 - **簿记**：graph.yaml `restart_recovery_017rc1_20260926` → COMPLETE-VERIFIED（commits 链补全 2a3df15 + 本提交；red_lines 记本轮 push 授权范围）；docs/STATUS.md 对齐刷新（R123 先例）。
 - **push + PR**（用户本轮明确授权「直到完成测试并提交PR」= 一次性授权，仅本分支 FF）：task/team-restart-017rc1 → origin，开 PR → master（REST，PR #29 先例）。
+
+### 2026-09-26 — restart-recovery：push + PR #31 执行完成（用户本轮一次性授权）；期间 master 前进（PR #30 合入）→ 已合并 origin/master 并全量再验证
+
+- **push**：`task/team-restart-017rc1` → origin（新分支创建 = 构造性 FF，零 force-push）@ 首推 `ede088b`（ls-remote 核验）。
+- **PR #31 开**（REST，PR #29 先例）：head task/team-restart-017rc1 → base master；https://github.com/ArmourPiercer1/dsh-agent-team/pull/31（body = 概要/提交链/核心改动/验证/gate 数字/缺陷记录/follow-ups F-rc1/F-rc2/红线/证据指针）。
+- **master 前进处理**：开 PR 后 mergeable=dirty —— `fix/model-preference-routing`（PR #30，062d245→7c23610 五提交）在本分支 diverge（4fb79fc）后合入 master。处理 = **merge origin/master 入任务分支**（不 rebase、不 force-push；授权范围内 FF）= `3499d31`。冲突 4 文件全解：p4t6 pin = 并集 763（两侧 748 基上不相交增量 +8/+7，扫描器实测 763 验证，双 ledger + merge-union 注释保留）/ runtime dist root.js.map+d.ts.map = 自合并 src 重建 / log = 两轮条目并集 / graph = 双任务块保留（40 blocks 解析过）。agent-bindings.mjs + root.ts 自动合并已逐 hunk 审读（PR #30 model-preference routing 与本分支 C1 fence 接线 = 不相交区域）。
+- **合并后全量再验证**（`commit5/merge-30/post-merge-battery.log` + root-full-suite-post-merge*.log）：typecheck/build/build:composition exit 0；check-artifacts **OK 1196 files**（+16 = PR #30 新源）；zero-core PASS 0 findings；root 全量两轮 = 债务 10 文件基线失败数逐名（3968P/3989，+72 = PR #30 新测试）+ **p6t1-parallel 负载 flake**（两轮 3F/2F）——既有性铁证：PR #30 自有证据 `master-baseline-4fb79fc.log`（干净 master、两分支代码皆无）同测试同一断言点失败 + 其 post-supplement 轮同现；前轮 PR #29 已登记 F7-1 同族 → 非合并回归、非本轮改动（import 图隔离早证），F-rc2 维持。
+- **终态**：origin task/team-restart-017rc1 @ `3499d31`（FF 二次推送）；PR #31 = 待 mergeable 复核（预期 clean）；PR body 已按合并后实数更新（artifacts 1196 + 合并注记）。
