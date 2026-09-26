@@ -22,33 +22,47 @@
  */
 import { copyFileSync, existsSync, mkdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const root = resolve(process.argv[2] ?? process.cwd())
-
-const PLACEMENTS = [
+/**
+ * The dist-mirror placements (repo-root-relative). This list is the SINGLE
+ * home for "which src files tsc never emits but the installed dist must
+ * carry" — check-artifacts-committed.mjs imports it for its parity check
+ * (check D), so a new placement added here is gated automatically.
+ */
+export const PLACEMENTS = [
   {
     src: 'packages/runtime/src/plugin/live/agent-bindings.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs',
   },
 ]
 
-for (const { src, dist } of PLACEMENTS) {
-  const srcPath = join(root, src)
-  const distPath = join(root, dist)
-  if (!existsSync(srcPath)) {
-    console.error(`place-dist-glue: source missing: ${srcPath}`)
-    process.exit(1)
+// Direct-invocation guard: the placement runs only when this file IS the
+// node entry point (`node scripts/place-dist-glue.mjs [root]`); when
+// imported (check-artifacts-committed.mjs) it exports PLACEMENTS only.
+const invokedDirectly = process.argv[1] !== undefined
+  && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+
+if (invokedDirectly) {
+  const root = resolve(process.argv[2] ?? process.cwd())
+  for (const { src, dist } of PLACEMENTS) {
+    const srcPath = join(root, src)
+    const distPath = join(root, dist)
+    if (!existsSync(srcPath)) {
+      console.error(`place-dist-glue: source missing: ${srcPath}`)
+      process.exit(1)
+    }
+    // The dist tree must exist (tsc ran) — but NOT the target directory: tsc
+    // creates directories only for files it emits, and .mjs files are not
+    // emitted, so the target dir is created here.
+    const distRoot = join(root, 'packages/runtime/dist')
+    if (!existsSync(distRoot)) {
+      console.error(`place-dist-glue: dist tree missing (${distRoot}) — run the package build (tsc) first`)
+      process.exit(1)
+    }
+    mkdirSync(dirname(distPath), { recursive: true })
+    copyFileSync(srcPath, distPath)
+    console.log(`place-dist-glue: ${src} -> ${dist} (byte-identical)`)
   }
-  // The dist tree must exist (tsc ran) — but NOT the target directory: tsc
-  // creates directories only for files it emits, and .mjs files are not
-  // emitted, so the target dir is created here.
-  const distRoot = join(root, 'packages/runtime/dist')
-  if (!existsSync(distRoot)) {
-    console.error(`place-dist-glue: dist tree missing (${distRoot}) — run the package build (tsc) first`)
-    process.exit(1)
-  }
-  mkdirSync(dirname(distPath), { recursive: true })
-  copyFileSync(srcPath, distPath)
-  console.log(`place-dist-glue: ${src} -> ${dist} (byte-identical)`)
+  console.log(`place-dist-glue: done (${PLACEMENTS.length} placement(s))`)
 }
-console.log(`place-dist-glue: done (${PLACEMENTS.length} placement(s))`)

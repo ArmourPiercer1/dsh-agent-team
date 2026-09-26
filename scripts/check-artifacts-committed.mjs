@@ -23,6 +23,20 @@
  *                                   clean filters `git add` applies, e.g. autocrlf —
  *                                   differs from the staged blob)
  *
+ *   D) glue placement drift       (tsc never emits .mjs: the non-TS dist mirror
+ *                                   files are byte-copied src by place-dist-glue.mjs.
+ *                                   A committed dist copy that differs from its src
+ *                                   passes A/B/C — the on-disk tree is clean against
+ *                                   the index — while every git-install consumer
+ *                                   silently ships the PRE-placement code. This is
+ *                                   the S5a real-host boot-1 FATAL (the installed
+ *                                   glue predated the S1 exact-claim wrapper while
+ *                                   the installed fence was S1): a source change
+ *                                   that skips `pnpm build:composition` placed the
+ *                                   mirror one build behind. The check imports the
+ *                                   PLACEMENTS list from place-dist-glue.mjs (one
+ *                                   home — a new placement is gated automatically).)
+ *
  * Any hit -> exit 1 with the file list (fail-loud: a source change that affects the
  * install surface must ship its rebuilt artifacts in the SAME commit).
  * Files that .gitignore covers under the two paths (e.g. *.tsbuildinfo) are excluded.
@@ -34,8 +48,9 @@
  * behavioral drift — the mirror-trim minor task subsumes it.
  */
 import { execFileSync } from 'node:child_process';
-import { readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import { PLACEMENTS } from './place-dist-glue.mjs';
 
 const ROOT = process.cwd();
 const PATHS = ['packages/runtime/dist', 'packages/client/composition-shim'];
@@ -106,9 +121,19 @@ const toHash = [...produced].filter((f) => tracked.has(f));
 const worktreeShas = gitBlobShas(toHash);
 const drifted = toHash.filter((f) => worktreeShas.get(f) !== tracked.get(f)).sort();
 
-if (stale.length === 0 && untracked.length === 0 && drifted.length === 0) {
+// D) glue placement drift: each PLACEMENTS src must be byte-identical to its
+// dist mirror (the fresh build copies it — a committed mirror that differs
+// ships pre-placement code to every install consumer, see header).
+const unplaced = PLACEMENTS.filter(({ src, dist }) => {
+  const srcPath = path.join(ROOT, src);
+  const distPath = path.join(ROOT, dist);
+  if (!existsSync(srcPath) || !existsSync(distPath)) return true;
+  return !readFileSync(srcPath).equals(readFileSync(distPath));
+});
+
+if (stale.length === 0 && untracked.length === 0 && drifted.length === 0 && unplaced.length === 0) {
   console.log(
-    `[check-artifacts-committed] OK: ${produced.size} files; committed install-surface artifacts match the fresh build`,
+    `[check-artifacts-committed] OK: ${produced.size} files; committed install-surface artifacts match the fresh build (incl. ${PLACEMENTS.length} glue placement(s))`,
   );
   process.exit(0);
 }
@@ -119,4 +144,5 @@ console.error(
 for (const f of stale) console.error(`  A tracked-but-absent (stale): ${f}`);
 for (const f of untracked) console.error(`  B produced-but-untracked (git add): ${f}`);
 for (const f of drifted) console.error(`  C content-drift (git add): ${f}`);
+for (const { src, dist } of unplaced) console.error(`  D glue placement drift (run pnpm build:composition and commit both): ${dist} != ${src}`);
 process.exit(1);
