@@ -622,13 +622,13 @@ restart_recovery_017rc1_20260926:
   note: "graph.yaml line 594 既有解析坏点 (HEAD 4fb79fc 已坏, 双引号内未转义引号 ×2) 纯语法修复 (零语义改动), 修复后全文件 pyyaml 通过 38 blocks"
 
 restart_recovery_017rc1_supplement_20260926:
-  state: "IN-PROGRESS (2026-09-26 用户指令轮: 按 pr31_supplemental_fix_guide.md 收口 PR #31; P1x3 + P2x2 + contract x1; 顺序 S1→S6 严格)"
+  state: "IN-PROGRESS (2026-09-26 用户指令轮: 按 pr31_supplemental_fix_guide.md 收口 PR #31; P1x3 + P2x2 + contract x1; 顺序 S1→S6 严格; S1 已入库, S2 实现/验证完成待入库)"
   plan: docs/plans/active/pr31_supplemental_fix_guide.md
   branch: task/team-restart-017rc1
   worktree: .worktrees/team-restart-017rc1
   base: "PR #31 head 449e1fc (= 分支 HEAD, = merge 3499d31 后簿记); base master @ 7c23610"
   host_pin: "test-use = 46a7f68b0922371ce7144b668b90e377d8e799f4 (0.1.7-rc.1, 本轮不动)"
-  commits: "S1–S6 待入库 (S1 activation core: ownershipReady + exact generation claim + epoch/tombstone + absolute deadline + per-SID single-flight)"
+  commits: "S1 = 58d30de (activation core); S2 = host.ts fence-surface completeness check (11 methods, TEAM_PLUGIN_GLUE_UNAVAILABLE) + root.ts conditional prepareOrdinaryOpen spread (retires the pre-round FAKE SUCCESS) + team-session-startup-fence.test.ts (H1/H2: startup window — no pass before ownershipReady, exact claim → veto, unmanaged → pass) + d2 R6a/R6b (production-root port availability: no armer → typed TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE; armer → {rootSessionId, permitted:true} exactly once) + G11 (genuine ordinary owner via explicit one-shot permit → live: permit pass mints NO rollback record → Team writer-held unrecoverable, original error propagates, no retry, permit stays consumed → still OUTSIDE_TEAM) + G12 (Team-vs-Team race: single-flight joiner gets the first caller's non-writer-held failure by identity, one resume, matches NO OUTSIDE_TEAM mapping tier → START_FAILED); full runtime suite vs debt baseline: zero new DETERMINISTIC failures (debt set identical: p6t3-mediation 5F / p6t3-restart 2F / d3 D3-4 1F / p8s3b + t12a-b2 + t12a-glue-handoff file-level); p6t1-parallel quota-race flake proven PRE-EXISTING via S1 HEAD x3 full-suite control runs (P1 flake on S1-r3) + S2 x2 (P2, P3) — S2 diff is code-path orthogonal to the provider-level admission path; S3–S6 pending"
   gates: "guide §9 28 项 checklist; §12 四问最终 PR body 必答"
   red_lines: "guide §8 禁止清单 + 前轮红线全数延续 (CORE PATCH BUDGET = 0 / 零 upstream 修改 / test-use pristine / :3080 零触碰 / 孤儿 world 不碰); push 仅本任务分支 FF"
-  evidence: "dev/agent-workflow/evidence/restart-017rc1/supplement-*/ (S1–S6)"
+  evidence: "dev/agent-workflow/evidence/restart-017rc1/supplement-*/ (S1–S6); S2 全套件对照日志 supplement-s2/full-runtime-suite-s2{,-rerun,-S1HEAD,-S1HEAD-r2,-S1HEAD-r3}.log (p6t1 配额竞态 flake 为既有负载敏感 flake 的 S1/S2 对照证据)"

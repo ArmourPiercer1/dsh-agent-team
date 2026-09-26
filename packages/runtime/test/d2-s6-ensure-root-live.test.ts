@@ -52,10 +52,31 @@ import {
   S6_REMOTE_ERROR_CODES,
 } from '../src/plugin/s6-remote.js'
 import type { S6RemoteOptions } from '../src/plugin/s6-remote.js'
-import type { ServerPrincipalDerivation } from '../src/plugin/types.js'
+import type { ServerPrincipalDerivation, TeamPluginConfig } from '../src/plugin/types.js'
+import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamDomain } from '../../storage/repositories/index.js'
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js'
-import { REMOTE_CONTRACT_VERSION_V3 } from '../../remote/src/index.js'
+import {
+  REMOTE_CONTRACT_VERSION_V3,
+  REMOTE_CONTRACT_VERSION_V5,
+} from '../../remote/src/index.js'
 import type { RemoteResponse } from '../../remote/src/index.js'
+import {
+  createBlueprintSnapshotRef,
+  createTeamSessionRecord,
+  parseBlueprintContentHash,
+  parseBlueprintId,
+  parseBlueprintRevision,
+  parseRootSessionId,
+} from '../../contracts/src/index.js'
+import type { BlueprintSnapshotRef } from '../../contracts/src/index.js'
+import { parseBlueprint } from '../../domain/blueprint/src/index.js'
+import {
+  destroyDir,
+  FileStorageSeam,
+  scratchDir,
+} from '../../testkit/fault-injection/file-seam.mjs'
+import { createAgentBindings as createStubBindings } from './p8s5a-stub-glue.mjs'
 
 const ROOT_SID = 'root-session-d2-s6'
 const OWNED_SID = 'root-session-d2-owned'
@@ -349,6 +370,187 @@ const D2 = await (async () => {
 })()
 
 // ---------------------------------------------------------------------------
+// R6 (supplement round guide §4.4) — the PRODUCTION-ROOT wiring level
+// ---------------------------------------------------------------------------
+// R2–R5 above drive the S6 PORT over scripted options. R6 drives the
+// same method through the REAL production root (createTeamProductionRoot
+// — the SAME factory the host entry calls — over the SAME installed
+// registration seam the production host exposes on
+// `root.seams.remoteHandlerRegistration`): the root.ts CONDITIONAL
+// SPREAD is the wiring under test — the S6 `prepareOrdinaryOpen` port is
+// exposed IFF the live bundle exposes `allowOrdinaryActivationOnce`
+// (the fence's `permitOrdinaryOnce` passthrough). The pre-round literal
+// form `prepareOrdinaryOpen: (sid) => live.allowOrdinaryActivationOnce?.(sid)`
+// was a FAKE SUCCESS: a world without the armer armed nothing, yet the
+// call returned `{ permitted: true }`.
+//
+//   R6a — the NO-ARMER root (the live bundle has no
+//         allowOrdinaryActivationOnce): the drive fails closed with the
+//         typed TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE — NEVER
+//         a success envelope (the fake success is gone).
+//   R6b — the SAME root wiring with the armer present (the bundle
+//         exposes it): the port is live, the permit arms exactly once,
+//         the closed success shape resolves (a regression guard against
+//         an over-omitted spread — the spread's true branch is pinned
+//         at the root level too).
+
+const R6 = await (async () => {
+  const R6_NOW = '2026-08-31T00:00:00.000Z'
+  /** The R6 row blueprint (own id; structure mirrors the t12b1 fixture). */
+  const DOC_R6 = [
+    '---',
+    'schemaVersion: 1',
+    'blueprintId: D2-R6-BP',
+    'revision: "1"',
+    'leader:',
+    '  templateId: leader',
+    '  persona: You lead the D2-R6 team.',
+    'members:',
+    '  - templateId: worker',
+    '    displayName: Worker',
+    '    persona: You do the D2-R6 work.',
+    'requirements:',
+    '  - domain: tool',
+    '    name: web',
+    '    optional: true',
+    'teamEnvelope:',
+    '  allow:',
+    '    - assign-task',
+    '    - create-member',
+    '    - send-message',
+    '    - report-progress',
+    '    - archive-member',
+    '    - restore-member',
+    '  deny:',
+    '    - delete-team',
+    'memberEnvelopes:',
+    '  - templateId: worker',
+    '    envelope:',
+    '      allow:',
+    '        - send-message',
+    '        - report-progress',
+    '      deny: []',
+    'policyStates:',
+    '  - id: default',
+    '    description: The D2-R6 default state.',
+    'quotas:',
+    '    team:',
+    '      maxInstances: 12',
+    '      maxConcurrent: 12',
+    '    members:',
+    '      maxInstances: 4',
+    '      maxConcurrent: 4',
+    'metadata: {}',
+    '---',
+  ].join('\n')
+  /** The bound snapshot ref of DOC_R6 (the strong parse supplies the hash). */
+  const parsedR6 = parseBlueprint(DOC_R6)
+  const REF_R6: BlueprintSnapshotRef = createBlueprintSnapshotRef({
+    blueprintId: parseBlueprintId(String(parsedR6.blueprintId)),
+    revision: parseBlueprintRevision(String(parsedR6.revision)),
+    contentHash: parseBlueprintContentHash(String(parsedR6.contentHash)),
+  })
+
+  /**
+   * One R6 root world: a fresh domain seeded with the root's TeamSession
+   * row (the bound-root guard PASSES — the drive reaches the armer
+   * check, not the foreign guard), the stub glue bundle (optionally
+   * extended with the armer), the production root factory, and the
+   * INSTALLED registration seam captured through the ConnectionLike
+   * double (the p8s6-remote-commands pattern — the dispatcher is the
+   * production S6 dispatcher).
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  async function buildWorld(scratch: string, armer?: (rootSessionId: string) => void): Promise<any> {
+    const seam = new FileStorageSeam(scratch)
+    const domain = await createTeamDomain(seam)
+    await domain.repositories.teamSessions.put(
+      createTeamSessionRecord({
+        rootSessionId: parseRootSessionId(ROOT_SID),
+        blueprint: REF_R6,
+        createdAt: R6_NOW,
+        generation: 1,
+      }),
+    )
+    const config: TeamPluginConfig = {
+      bootPhase: 'create',
+      rootSessionId: ROOT_SID,
+      blueprintSource: DOC_R6,
+      generation: 1,
+      defaultWorkspace: 'C:/agent-team/work/d2-r6',
+      seedMembers: [],
+      staticModel: { provider: 'd2-r6', model: 'd2-r6-model-v1' },
+      deniedSelection: null,
+      mcpServer: null,
+      environmentFacts: [],
+      externalPolicyFacts: { hard: {}, capabilityExists: {} },
+    }
+    const teamToolsRef = { current: undefined }
+    const stub = createStubBindings({ config, teamToolsRef, domain })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped stub glue surface, extended only for R6b
+    const live: any = armer === undefined ? stub : { ...stub, allowOrdinaryActivationOnce: armer }
+    const unused = (): never => {
+      throw new Error('R6 guard: legacy inspect is unused in this world')
+    }
+    const root = createTeamProductionRoot({
+      config,
+      domain,
+      storageSeam: seam,
+      live,
+      now: () => R6_NOW,
+      teamToolsRef,
+      controlServiceRef: { current: undefined },
+      legacyInspect: unused as never,
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+    let dispatcher: ((endpoint: string, payload: unknown) => Promise<RemoteResponse>) | null = null
+    root.seams.remoteHandlerRegistration.current()({
+      rpc: {
+        handle: (_channel: string, handler: unknown) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+          dispatcher = handler as (endpoint: string, payload: unknown) => Promise<RemoteResponse>
+          return () => {}
+        },
+      },
+    })
+    if (dispatcher === null) throw new Error('R6 guard: registration never registered a dispatcher')
+    return { root, dispatcher }
+  }
+
+  // R6a — the NO-ARMER production root (the stub bundle exposes no
+  // allowOrdinaryActivationOnce): the conditional spread omits the S6
+  // port; the drive must fail closed typed — never the pre-round fake
+  // `{ permitted: true }`.
+  const scratchA = scratchDir('d2-r6a-no-armer')
+  const worldA = await buildWorld(scratchA)
+  // team.prepareOrdinaryOpen is a v5-only wire method (the frozen catalog
+  // learned it in the Commit-3 contract extension): the wire drive uses
+  // the v5 envelope.
+  const r6aResponse = await worldA.dispatcher('team.prepareOrdinaryOpen', {
+    version: REMOTE_CONTRACT_VERSION_V5,
+    params: { teamSessionId: ROOT_SID },
+  })
+  await worldA.root.close()
+  destroyDir(scratchA)
+
+  // R6b — the SAME root wiring with the armer present (the spread's
+  // true branch): the port is live; the permit arms exactly once.
+  const armerCalls: string[] = []
+  const scratchB = scratchDir('d2-r6b-armer')
+  const worldB = await buildWorld(scratchB, (sid) => {
+    armerCalls.push(sid)
+  })
+  const r6bResponse = await worldB.dispatcher('team.prepareOrdinaryOpen', {
+    version: REMOTE_CONTRACT_VERSION_V5,
+    params: { teamSessionId: ROOT_SID },
+  })
+  await worldB.root.close()
+  destroyDir(scratchB)
+
+  return { r6aResponse, r6bResponse, armerCalls }
+})()
+
+// ---------------------------------------------------------------------------
 // Assertions (synchronous `it` bodies over the captured results)
 // ---------------------------------------------------------------------------
 
@@ -486,5 +688,24 @@ describe('C1 (guide §13.4): the team.prepareOrdinaryOpen port (R2–R5, port-le
   it('R5 the READ-ONLY contract: arming the permit performs no repository access of any kind (the trip-wire was never touched)', () => {
     expect(D2.r5Result).toEqual({ rootSessionId: ROOT_SID, permitted: true })
     expect(D2.r5Touched).toEqual([])
+  })
+})
+
+describe('R6 (supplement round §4.4): the production root wiring (the root.ts conditional spread)', () => {
+  it('R6a the NO-ARMER production root: team.prepareOrdinaryOpen fails closed typed TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE — never the pre-round fake { permitted: true }', () => {
+    // The fake success is structurally impossible: the envelope is an
+    // ERROR result (invariant 7 — the promise resolves, it never
+    // rejects), so no `{ permitted: true }` can exist in it.
+    expect(R6.r6aResponse.ok).toBe(false)
+    const error = errorOf(R6.r6aResponse)
+    expect(error['code']).toBe(S6_REMOTE_ERROR_CODES.TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE)
+    expect(error['code']).toBe('TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE')
+    expect(String(error['message'])).toContain('does not provide the prepareOrdinaryOpen port')
+  })
+
+  it('R6b the armer-present root: the SAME wiring exposes the port (the spread\'s true branch — the permit arms exactly once and the closed shape resolves)', () => {
+    expect(R6.r6bResponse.ok).toBe(true)
+    expect(dataOf(R6.r6bResponse)).toEqual({ rootSessionId: ROOT_SID, permitted: true })
+    expect(R6.armerCalls).toEqual([ROOT_SID])
   })
 })

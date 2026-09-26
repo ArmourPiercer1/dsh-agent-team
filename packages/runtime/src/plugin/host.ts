@@ -750,6 +750,38 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // errors are only logged upstream): the onAgentDisposed barrier must
   // never throw (it cannot — a plain map read + resolve).
   const activationFence = createTeamSessionActivationFence()
+  // Supplement round §2.3-C — PRODUCTION fence-surface completeness: the
+  // production host passes THIS fence to the glue (runOwned / exact
+  // generation claim / rollback epoch / recovery), so a factory that
+  // drifts to an incomplete surface must fail LOUD here (before the
+  // listeners register and before any boot / race), not surface as an
+  // `undefined` at the race. The test/factory worlds may omit the fence
+  // entirely (the glue's documented pre-C1 fallback) — this check is
+  // production-only, and it checks the WHOLE surface the glue consumes:
+  // the pre-round methods PLUS the supplement round's
+  // claimOwnedGeneration / releaseOwnedGeneration / getRollbackEpoch and
+  // the reworked recoverWriterConflict.
+  const FENCE_SURFACE_METHODS: readonly (keyof TeamSessionActivationFence)[] = [
+    'runOwned',
+    'beforeAgentCreated',
+    'claimOwnedGeneration',
+    'releaseOwnedGeneration',
+    'onAgentDisposed',
+    'awaitRollback',
+    'getRollbackEpoch',
+    'recoverWriterConflict',
+    'permitOrdinaryOnce',
+    'bindOwnershipResolver',
+    'close',
+  ]
+  for (const method of FENCE_SURFACE_METHODS) {
+    if (typeof activationFence[method] !== 'function') {
+      throw new TeamPluginError(
+        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_GLUE_UNAVAILABLE,
+        `the production activation fence is missing the required surface method \`${String(method)}\` (incomplete fence factory — the glue requires the full TeamSessionActivationFence surface before any activation)`,
+      )
+    }
+  }
   if (typeof ctx.on === 'function') {
     ctx.on(
       'agent/created',

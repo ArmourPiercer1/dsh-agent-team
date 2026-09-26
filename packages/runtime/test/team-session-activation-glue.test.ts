@@ -38,6 +38,20 @@
  *  - G6 the unrecoverable writer-held: the fence's bounded
  *    confirmation window elapses with no foreign rollback — the ORIGINAL
  *    error propagates, no retry is started (resumes stay at 1).
+ *  - G11 the genuine ordinary owner (supplement guide §2.5 补测 2):
+ *    an explicit one-shot permit (the prepareOrdinaryOpen path) lets
+ *    the ordinary activation pass and go live — the permit pass mints
+ *    NO rollback record, so the Team's subsequent writer-held
+ *    rejection is UNRECOVERABLE (the original error propagates, no
+ *    retry) — a genuine ordinary owner is still OUTSIDE_TEAM, and the
+ *    one-shot permit stays consumed (a second ordinary activation is
+ *    vetoed again).
+ *  - G12 the Team-vs-Team race (supplement guide §2.5 补测 1): two
+ *    concurrent ensureLiveAgent callers for the same SID — the
+ *    single-flight joiner receives the first caller's non-writer-held
+ *    failure by identity (one resume); that rejection matches NONE of
+ *    the s6 mapping's OUTSIDE_TEAM tiers — a Team-vs-Team race can
+ *    NEVER end in OUTSIDE_TEAM (it lands in START_FAILED).
  *
  * @module @dsh-agent-team/runtime/test/team-session-activation-glue
  */
@@ -688,6 +702,135 @@ const G = await (async () => {
     }
   }
 
+  // ── G11: the genuine ordinary owner (supplement guide §2.5 补测 2):
+  //     an explicit one-shot permit (the team.prepareOrdinaryOpen →
+  //     permitOrdinaryOnce path) lets the ORDINARY activation of the
+  //     Team-managed root PASS and go live (it takes the writer). The
+  //     permit pass mints NO rollback record (it is a pass, not a
+  //     veto) — so when the Team's own resume then hits the writer-held
+  //     rejection, the recovery CANNOT confirm a handoff (there is no
+  //     qualifying rollback after the baseline): the ORIGINAL typed
+  //     error propagates, NO retry. This is the error the s6 mapping
+  //     turns into OUTSIDE_TEAM — a genuine ordinary owner (live via
+  //     the explicit permit) is still OUTSIDE_TEAM: the Team ensure
+  //     never steals the writer (red line: no silent adopt).
+  //     Discriminator vs G6: G6 has NO ordinary activation at all;
+  //     G11's ordinary owner is REAL and PERMITTED — the recovery
+  //     still must not recover (a permitted pass is not a handoff).
+  {
+    const root = 'session-team-c1-g11-root'
+    const fault = writerHeldError(root)
+    const fence = createTeamSessionActivationFence()
+    let teamFaultArmed = false
+    const world = await createLiveWorld({
+      rootSessionId: root,
+      activationFence: fence,
+      persistence: { exists: () => true },
+      // the bounded confirmation window is TINY: no rollback record
+      // ever appears (the permit pass mints none) → unrecoverable.
+      writerHandoffTimeoutMs: 50,
+      agents: {
+        // the scripted writer-held fault fires ONLY on the Team's
+        // resume (armed after the ordinary owner is live).
+        resumeFaults: (sid) => (sid === root && teamFaultArmed ? fault : undefined),
+      },
+    })
+    fence.bindOwnershipResolver((sid) => resolveOwningTeamRoot(world.domain, world.rootSessionId, sid))
+    try {
+      // (1) the explicit one-shot permit arms for the root (the
+      // team.prepareOrdinaryOpen host path, port-level R2).
+      fence.permitOrdinaryOnce(root)
+      // (2) the genuine ORDINARY activation PASSES (the permit is
+      // consumed — no veto, no rollback record) and the ordinary
+      // session goes live post-announce (it now holds the writer).
+      await world.agents.resume({ resumeSessionId: root })
+      const ordinaryLive = world.agents.handles.has(root)
+      const epochAfterOrdinaryPass = fence.getRollbackEpoch(root)
+      // (3) the Team ensure of the SAME root: its resume hits the
+      // writer-held rejection (the genuine ordinary owner holds the
+      // writer). No rollback record was ever minted → the bounded
+      // confirmation window elapses → the ORIGINAL error propagates,
+      // NO retry (resumes stay at 2: the ordinary pass + the ONE Team
+      // resume).
+      teamFaultArmed = true
+      const rejection = await captureReject(() => world.binding.ensureLiveAgent(root))
+      // (4) the one-shot permit stays consumed: a SECOND ordinary
+      // activation of the Team-managed root is vetoed again (no claim,
+      // no permit left) — the permit is exactly one use. (The scripted
+      // fault is disarmed first: it models the Team resume's writer
+      // conflict, not the ordinary path.)
+      teamFaultArmed = false
+      const secondOrdinaryErr = await captureReject(() =>
+        world.agents.resume({ resumeSessionId: root }),
+      )
+      state.g11 = {
+        ordinaryLive,
+        epochAfterOrdinaryPass,
+        originalPropagated: rejection === fault,
+        teamHasLive: world.binding.hasLive(root),
+        resumesCount: world.agents.resumes.length,
+        secondOrdinaryVetoed:
+          secondOrdinaryErr instanceof TeamSessionActivationInterceptedError,
+      }
+    } finally {
+      await world.binding.close().catch(() => undefined)
+    }
+  }
+
+  // ── G12: the Team-vs-Team race (supplement guide §2.5 补测 1):
+  //     two CONCURRENT ensureLiveAgent callers for the same cold SID —
+  //     the single-flight map gives them ONE in-flight activation (the
+  //     joiner awaits the SAME promise, G7's failure mirror). The
+  //     first's non-writer-held setup failure propagates to BOTH by
+  //     identity — and that rejection matches NONE of the s6
+  //     mapping's OUTSIDE_TEAM tiers (not the typed writer-held
+  //     markers, not the registry-collision prefix, not the
+  //     compatibility message): a Team-vs-Team race can NEVER end in
+  //     OUTSIDE_TEAM — it lands in START_FAILED (tier e). The
+  //     OUTSIDE_TEAM code stays reserved for a genuine ordinary owner.
+  {
+    const root = 'session-team-c1-g12-root'
+    const fault = new Error(
+      'the team setup exploded mid-resume (a Team-vs-Team race loser sees exactly this)',
+    )
+    const fence = createTeamSessionActivationFence()
+    const world = await createLiveWorld({
+      rootSessionId: root,
+      activationFence: fence,
+      persistence: { exists: () => true },
+      agents: {
+        resumeFaults: (sid, call) => (sid === root && call === 0 ? fault : undefined),
+      },
+    })
+    fence.bindOwnershipResolver((sid) => resolveOwningTeamRoot(world.domain, world.rootSessionId, sid))
+    try {
+      // two concurrent Team callers for the SAME cold SID (the race):
+      // the second joins the first's in-flight single-flight entry.
+      const p1 = world.binding.ensureLiveAgent(root)
+      const p2 = world.binding.ensureLiveAgent(root)
+      const e1 = await captureReject(() => p1)
+      const e2 = await captureReject(() => p2)
+      const message = e1 instanceof Error ? e1.message : String(e1)
+      state.g12 = {
+        // single-flight: the joiner receives the FIRST caller's
+        // failure by identity (one in-flight activation, one failure).
+        sameError: e1 === e2,
+        oneResume: world.agents.resumes.length === 1,
+        // the s6 mapping's OUTSIDE_TEAM tiers must NOT match this
+        // rejection (guide §2.5: the race never ends OUTSIDE_TEAM):
+        notTypedWriterHeld:
+          !(e1 instanceof Error && e1.name === 'SessionAlreadyOwnedError') &&
+          (typeof e1 !== 'object' ||
+            e1 === null ||
+            (e1 as { readonly code?: unknown }).code !== 'session/writer-held'),
+        notRegistryCollision: !/^agent ".+" is already registered/.test(message),
+        notWriterHeldMessage: !message.includes('already owned by an active write handle'),
+      }
+    } finally {
+      await world.binding.close().catch(() => undefined)
+    }
+  }
+
   return state
 })()
 
@@ -810,6 +953,57 @@ describe('C1 (guide §13.3): the live glue under the activation fence', () => {
     expect(g10.resumesCount).toBe(3)
     expect(g10.resumed).toBe(true)
     expect(g10.hasLive).toBe(true)
+  })
+
+  it('G11 the genuine ordinary owner (explicit permit then live) is still OUTSIDE_TEAM: no rollback record, no retry, the ORIGINAL error propagates', () => {
+    const g11 = G.g11 as {
+      ordinaryLive: boolean
+      epochAfterOrdinaryPass: number
+      originalPropagated: boolean
+      teamHasLive: boolean
+      resumesCount: number
+      secondOrdinaryVetoed: boolean
+    }
+    // (a) the explicit permit let the genuine ordinary activation pass
+    // and go live (it now holds the writer).
+    expect(g11.ordinaryLive).toBe(true)
+    // (b) the permit pass minted NO rollback record (a pass is not a
+    // veto) — the epoch stayed at the baseline.
+    expect(g11.epochAfterOrdinaryPass).toBe(0)
+    // (c) the Team ensure's writer-held rejection is UNRECOVERABLE (no
+    // qualifying rollback after the baseline): the ORIGINAL typed error
+    // propagates by identity, and the Team installed NO live handle
+    // (no silent adopt of the ordinary owner).
+    expect(g11.originalPropagated).toBe(true)
+    expect(g11.teamHasLive).toBe(false)
+    // 1 ordinary (permitted) + 1 faulted Team resume + 1 vetoed second
+    // ordinary = 3 recorded resumes; the TEAM resume count is exactly
+    // 1 — NO retry.
+    expect(g11.resumesCount).toBe(3)
+    // (d) the one-shot permit stays consumed: a second ordinary
+    // activation of the Team-managed root is vetoed again.
+    expect(g11.secondOrdinaryVetoed).toBe(true)
+  })
+
+  it('G12 the Team-vs-Team race NEVER ends OUTSIDE_TEAM: the single-flight joiner gets the first caller\'s non-writer-held failure, which matches no OUTSIDE_TEAM tier', () => {
+    const g12 = G.g12 as {
+      sameError: boolean
+      oneResume: boolean
+      notTypedWriterHeld: boolean
+      notRegistryCollision: boolean
+      notWriterHeldMessage: boolean
+    }
+    // single-flight: ONE in-flight activation, ONE resume; the joiner
+    // receives the first caller's failure BY IDENTITY.
+    expect(g12.oneResume).toBe(true)
+    expect(g12.sameError).toBe(true)
+    // the rejection matches NONE of the s6 mapping's OUTSIDE_TEAM
+    // tiers (typed markers / registry-collision prefix / compatibility
+    // message) — so the mapping lands it in START_FAILED, never
+    // OUTSIDE_TEAM.
+    expect(g12.notTypedWriterHeld).toBe(true)
+    expect(g12.notRegistryCollision).toBe(true)
+    expect(g12.notWriterHeldMessage).toBe(true)
   })
 })
 
