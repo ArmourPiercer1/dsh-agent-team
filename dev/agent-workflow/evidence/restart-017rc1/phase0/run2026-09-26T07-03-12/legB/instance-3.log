@@ -1,0 +1,786 @@
+[diag-hook t=       34ms] ws prototype patched (terminate/close/ping/send)
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T07-03-12/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3492/?token=cLaowM4nGBNiYNC99e7yc3tqB1Ny5Uh1nBzRHaSIQhg
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 106ms — the connection service appeared after the mount step)
+[diag-hook t=     4512ms] net END(peer FIN) S1(l3492->r45502)
+[diag-hook t=     4512ms] net END(call) S1(l3492->r45502)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at socketOnEnd (node:_http_server:940:12)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=     4512ms] net DESTROY S1(l3492->r45502) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=     4512ms] net CLOSE S1(l?->r45502) hadError=false
+[diag-hook t=    64702ms] net END(peer FIN) S2(l3492->r46796)
+[diag-hook t=    64710ms] net END(call) S2(l3492->r46796)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at socketOnEnd (node:_http_server:940:12)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=    64710ms] net DESTROY S2(l3492->r46796) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=    64710ms] net CLOSE S2(l?->r46796) hadError=false
+[diag-hook t=   430130ms] ws SEND() len=160 sock=S3(l3492->r57486) head={"type":"item","streamId":"19bbe18d-18d0-4fb0-95c7-5dfba25af1e5","valu
+[diag-hook t=   430132ms] ws SEND() len=169 sock=S3(l3492->r57486) head={"type":"item","streamId":"d5c36afb-f39e-43eb-b577-dc5048570b8f","valu
+[diag-hook t=   430203ms] ws SEND() len=1081 sock=S3(l3492->r57486) head={"type":"item","streamId":"b910e55a-f030-48b7-8a9c-a41932253db7","valu
+[diag-hook t=   431911ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   433911ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   434786ms] ws SEND() len=158 sock=S3(l3492->r57486) head={"type":"item","streamId":"d5c36afb-f39e-43eb-b577-dc5048570b8f","valu
+[diag-hook t=   435744ms] net DESTROY S4(l3492->r58344) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   435744ms] net CLOSE S4(l?->r58344) hadError=false
+[diag-hook t=   435911ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   436204ms] net DESTROY S5(l3492->r57295) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   436204ms] net CLOSE S5(l?->r57295) hadError=false
+[diag-hook t=   436272ms] net DESTROY S6(l3492->r53431) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   436272ms] net CLOSE S6(l?->r53431) hadError=false
+[diag-hook t=   437911ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   439911ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   441000ms] net DESTROY S7(l3492->r62033) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   441000ms] net CLOSE S7(l?->r62033) hadError=false
+[diag-hook t=   441016ms] net DESTROY S8(l3492->r51917) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   441016ms] net DESTROY S9(l3492->r57611) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   441017ms] net CLOSE S9(l?->r57611) hadError=false
+[diag-hook t=   441017ms] net CLOSE S8(l?->r51917) hadError=false
+[diag-hook t=   441912ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   443912ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   445913ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   447912ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   449913ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   451913ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   453913ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   455914ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   457913ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   457997ms] net DESTROY S10(l3492->r64554) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   457997ms] net DESTROY S11(l3492->r58272) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   457997ms] net CLOSE S11(l?->r58272) hadError=false
+[diag-hook t=   457997ms] net CLOSE S10(l?->r64554) hadError=false
+[diag-hook t=   459914ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   461914ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   463914ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   465914ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   467914ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   469914ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   471915ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   473915ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   475915ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   477915ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   479915ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   481915ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   483915ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   485915ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   487916ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   489917ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   491917ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   493917ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   495917ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   497918ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   499918ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   501919ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   503919ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   505919ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   507918ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   509918ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   511918ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   511962ms] ws SEND() len=99 sock=S3(l3492->r57486) head={"type":"item","streamId":"beb46f52-5aa9-4d91-af7c-fa7a2aa75bbe","valu
+[diag-hook t=   511974ms] ws SEND() len=70494 sock=S3(l3492->r57486) head={"type":"item","streamId":"50933040-2815-4cc5-a6fe-1b0d2e2d4d9f","valu
+[diag-hook t=   511986ms] ws SEND() len=1777 sock=S3(l3492->r57486) head={"type":"item","streamId":"d5c36afb-f39e-43eb-b577-dc5048570b8f","valu
+[diag-hook t=   511992ms] ws SEND() len=1778 sock=S3(l3492->r57486) head={"type":"item","streamId":"d5c36afb-f39e-43eb-b577-dc5048570b8f","valu
+[diag-hook t=   511993ms] ws SEND() len=169 sock=S3(l3492->r57486) head={"type":"item","streamId":"d5c36afb-f39e-43eb-b577-dc5048570b8f","valu
+[diag-hook t=   511993ms] ws SEND() len=367 sock=S3(l3492->r57486) head={"type":"item","streamId":"d5c36afb-f39e-43eb-b577-dc5048570b8f","valu
+[diag-hook t=   512017ms] ws SEND() len=1777 sock=S3(l3492->r57486) head={"type":"item","streamId":"d5c36afb-f39e-43eb-b577-dc5048570b8f","valu
+[diag-hook t=   512024ms] ws SEND() len=1778 sock=S3(l3492->r57486) head={"type":"item","streamId":"d5c36afb-f39e-43eb-b577-dc5048570b8f","valu
+[diag-hook t=   512025ms] ws SEND() len=169 sock=S3(l3492->r57486) head={"type":"item","streamId":"d5c36afb-f39e-43eb-b577-dc5048570b8f","valu
+[diag-hook t=   513918ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   515207ms] net END(peer FIN) S12(l3492->r45486)
+[diag-hook t=   515207ms] net END(call) S12(l3492->r45486)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at socketOnEnd (node:_http_server:940:12)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   515207ms] net DESTROY S12(l3492->r45486) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   515207ms] net CLOSE S12(l?->r45486) hadError=false
+[diag-hook t=   515918ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   517918ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   518028ms] net DESTROY S13(l3492->r63048) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   518028ms] net CLOSE S13(l?->r63048) hadError=false
+[diag-hook t=   518035ms] net DESTROY S14(l3492->r52441) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   518036ms] net CLOSE S14(l?->r52441) hadError=false
+[diag-hook t=   518043ms] net DESTROY S15(l3492->r61847) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   518043ms] net CLOSE S15(l?->r61847) hadError=false
+[diag-hook t=   519918ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   521918ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   523918ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   525919ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   527919ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   529919ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   531919ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   533920ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   535919ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   537920ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   539920ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   541921ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   543922ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   545921ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   547921ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   549921ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   551921ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   553921ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   555922ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   557921ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   559921ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   561493ms] ws SEND() len=1777 sock=S3(l3492->r57486) head={"type":"item","streamId":"d5c36afb-f39e-43eb-b577-dc5048570b8f","valu
+[diag-hook t=   561496ms] ws SEND() len=1777 sock=S3(l3492->r57486) head={"type":"item","streamId":"d5c36afb-f39e-43eb-b577-dc5048570b8f","valu
+[diag-hook t=   561922ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   563921ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   565922ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   567496ms] net DESTROY S16(l3492->r55529) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   567496ms] net CLOSE S16(l?->r55529) hadError=false
+[diag-hook t=   567504ms] net DESTROY S17(l3492->r64923) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   567504ms] net CLOSE S17(l?->r64923) hadError=false
+[diag-hook t=   567921ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   569922ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   571921ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   573922ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   575921ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   577922ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   579923ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   581923ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   583924ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   585923ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   587923ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   589923ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   590974ms] net END(peer FIN) S18(l3492->r45838)
+[diag-hook t=   590974ms] net END(call) S18(l3492->r45838)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at socketOnEnd (node:_http_server:940:12)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   590974ms] net DESTROY S18(l3492->r45838) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   590975ms] net CLOSE S18(l?->r45838) hadError=false
+[diag-hook t=   591924ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   593923ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   595923ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   597006ms] net END(peer FIN) S19(l3492->r45846)
+[diag-hook t=   597006ms] net END(call) S19(l3492->r45846)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at socketOnEnd (node:_http_server:940:12)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   597007ms] net DESTROY S19(l3492->r45846) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   597007ms] net CLOSE S19(l?->r45846) hadError=false
+[diag-hook t=   597923ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   599923ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   601923ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   603923ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   605924ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   607924ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   609925ms] ws PING() sock=S3(l3492->r57486) readyState=1
+[diag-hook t=   610711ms] net END(peer FIN) S20(l3492->r49439)
+[diag-hook t=   610712ms] net END(call) S20(l3492->r49439)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at socketOnEnd (node:_http_server:940:12)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   610712ms] net DESTROY S20(l3492->r49439) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   610712ms] net CLOSE S20(l?->r49439) hadError=false
+[diag-hook t=   610712ms] ws close() code=1001 reason={"type":"Buffer","data":[]} readyState=1 sock=S3(l3492->r57486)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:75:177)
+    at Receiver.receiverOnConclude (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:1181:18)
+    at Receiver.emit (node:events:514:28)
+    at Receiver.controlMessage (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/receiver.js:712:14)
+    at Receiver.getData (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/receiver.js:499:12)
+    at Receiver.startLoop (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/receiver.js:189:16)
+    at Receiver._write (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/receiver.js:116:10)
+    at writeOrBuffer (node:internal/streams/writable:574:12)
+[diag-hook t=   610713ms] net END(call) S3(l3492->r57486)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at Object.callback (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:335:22)
+    at callback (node:internal/streams/writable:768:21)
+    at afterWrite (node:internal/streams/writable:712:5)
+    at afterWriteTick (node:internal/streams/writable:698:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+[diag-hook t=   610713ms] net END(peer FIN) S3(l3492->r57486)
+[diag-hook t=   610713ms] net END(call) S3(l3492->r57486)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at Socket.socketOnEnd (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/ws@8.21.0/node_modules/ws/lib/websocket.js:1389:8)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   610713ms] net DESTROY S3(l3492->r57486) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at endReadableNT (node:internal/streams/readable:1780:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   610713ms] net CLOSE S3(l?->r57486) hadError=false
+[diag-hook t=   610714ms] ws close() code=1001 reason="peer left" readyState=3 sock=S3(l?->r57486)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:75:177)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:513:14
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+    at dispose (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1181:20)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1244:40
+    at finalizeDisposal (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1224:14)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1242:11
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:218:5
+[diag-hook t=   610980ms] ws SEND() len=160 sock=S21(l3492->r60657) head={"type":"item","streamId":"30ece1a4-21b5-47c6-9944-822c8a19dcf2","valu
+[diag-hook t=   610984ms] ws SEND() len=169 sock=S21(l3492->r60657) head={"type":"item","streamId":"6fedd5a0-4e4d-4738-a5ae-9af272984cda","valu
+[diag-hook t=   611010ms] ws SEND() len=2506 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   611084ms] ws SEND() len=99 sock=S21(l3492->r60657) head={"type":"item","streamId":"f23f3467-7091-4258-b78e-1cb4c02c2442","valu
+[diag-hook t=   611084ms] ws SEND() len=70494 sock=S21(l3492->r60657) head={"type":"item","streamId":"6ab52323-2bd6-46e5-af0d-0c70a3c8ae41","valu
+[diag-hook t=   611925ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   613925ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   615926ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   616761ms] net DESTROY S22(l3492->r55250) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   616761ms] net CLOSE S22(l?->r55250) hadError=false
+[diag-hook t=   617085ms] net DESTROY S23(l3492->r64180) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   617085ms] net CLOSE S23(l?->r64180) hadError=false
+[diag-hook t=   617087ms] net DESTROY S24(l3492->r53827) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   617087ms] net CLOSE S24(l?->r53827) hadError=false
+[diag-hook t=   617112ms] net DESTROY S25(l3492->r51570) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   617112ms] net CLOSE S25(l?->r51570) hadError=false
+[diag-hook t=   617113ms] net DESTROY S26(l3492->r60930) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   617113ms] net CLOSE S26(l?->r60930) hadError=false
+[diag-hook t=   617117ms] net DESTROY S27(l3492->r60214) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   617117ms] net CLOSE S27(l?->r60214) hadError=false
+[diag-hook t=   617926ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   619927ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   621926ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   623927ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   625927ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   627927ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   629927ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   631927ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   633928ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   635928ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   637927ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   639927ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   641927ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   643928ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   645928ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   647929ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   649928ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   650406ms] net END(peer FIN) S28(l3492->r47516)
+[diag-hook t=   650406ms] net END(call) S28(l3492->r47516)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at socketOnEnd (node:_http_server:940:12)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   650406ms] net DESTROY S28(l3492->r47516) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   650406ms] net CLOSE S28(l?->r47516) hadError=false
+[diag-hook t=   651928ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   653928ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   655929ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   657929ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   659930ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   661930ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   663930ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   665930ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   667931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   669931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   671931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   673931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   675931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   677931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   679931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   681931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   683931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   685932ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   686811ms] net END(peer FIN) S29(l3492->r46880)
+[diag-hook t=   686811ms] net END(call) S29(l3492->r46880)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at socketOnEnd (node:_http_server:940:12)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   686811ms] net DESTROY S29(l3492->r46880) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   686811ms] net CLOSE S29(l?->r46880) hadError=false
+[diag-hook t=   686837ms] net END(peer FIN) S30(l3492->r46890)
+[diag-hook t=   686837ms] net END(call) S30(l3492->r46890)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at socketOnEnd (node:_http_server:940:12)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   686837ms] net DESTROY S30(l3492->r46890) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   686838ms] net CLOSE S30(l?->r46890) hadError=false
+[diag-hook t=   687932ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   689931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   691931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   693931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   695931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   697931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   699932ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   701932ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   703931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   705932ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   707931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   709932ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   711931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   713932ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   715931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   717631ms] net END(peer FIN) S31(l3492->r48452)
+[diag-hook t=   717631ms] net END(call) S31(l3492->r48452)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at socketOnEnd (node:_http_server:940:12)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   717631ms] net DESTROY S31(l3492->r48452) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   717631ms] net CLOSE S31(l?->r48452) hadError=false
+[diag-hook t=   717932ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   719931ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   721933ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   723933ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   725933ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   727933ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   729933ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   731933ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   733933ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   735933ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   736906ms] net DESTROY S32(l3492->r56260) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   736906ms] net DESTROY S33(l3492->r50805) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   736906ms] net CLOSE S33(l?->r50805) hadError=false
+[diag-hook t=   736906ms] net CLOSE S32(l?->r56260) hadError=false
+[diag-hook t=   736921ms] net DESTROY S34(l3492->r54322) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   736921ms] net CLOSE S34(l?->r54322) hadError=false
+[diag-hook t=   737934ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   739934ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   741369ms] ws SEND() len=70494 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   741370ms] ws SEND() len=99 sock=S21(l3492->r60657) head={"type":"item","streamId":"be9b2516-1875-41c3-84ee-7a5fc20a08e5","valu
+[diag-hook t=   741933ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   743933ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   745933ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   747371ms] net DESTROY S35(l3492->r62003) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   747371ms] net CLOSE S35(l?->r62003) hadError=false
+[diag-hook t=   747934ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   749280ms] net END(peer FIN) S36(l3492->r48356)
+[diag-hook t=   749280ms] net END(call) S36(l3492->r48356)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at socketOnEnd (node:_http_server:940:12)
+    at Socket.emit (node:events:526:24)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at endReadableNT (node:internal/streams/readable:1764:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   749280ms] net DESTROY S36(l3492->r48356) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   749280ms] net CLOSE S36(l?->r48356) hadError=false
+[diag-hook t=   749934ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   751935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   753934ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   755935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   757935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   759935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   761936ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   763935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   765935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   767935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   769935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   770181ms] ws SEND() len=508 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770182ms] ws SEND() len=506 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770182ms] ws SEND() len=173 sock=S21(l3492->r60657) head={"type":"item","streamId":"6fedd5a0-4e4d-4738-a5ae-9af272984cda","valu
+[diag-hook t=   770182ms] ws SEND() len=168 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770182ms] ws SEND() len=370 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770182ms] ws SEND() len=230 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770182ms] ws SEND() len=204 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770182ms] ws SEND() len=211 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770209ms] net END(peer FIN) S37(l?->r?)
+[diag-hook t=   770209ms] net END(call) S37(l?->r?)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at endWritableNT (node:internal/streams/readable:1790:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+[diag-hook t=   770209ms] net DESTROY S37(l?->r?) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   770209ms] net CLOSE S37(l?->r?) hadError=false
+[diag-hook t=   770209ms] net END(peer FIN) S38(l?->r?)
+[diag-hook t=   770209ms] net END(call) S38(l?->r?)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at endWritableNT (node:internal/streams/readable:1790:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+[diag-hook t=   770209ms] net DESTROY S38(l?->r?) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at stopCollectors (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/subprocess/subprocess-local/lib/runner-launch-B2zsQ1Dz.js:891:43)
+    at settle (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/subprocess/subprocess-local/lib/runner-launch-B2zsQ1Dz.js:965:4)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/subprocess/subprocess-local/lib/runner-launch-B2zsQ1Dz.js:985:5
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[diag-hook t=   770210ms] net CLOSE S38(l?->r?) hadError=false
+[diag-hook t=   770241ms] ws SEND() len=177 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770242ms] ws SEND() len=287 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770242ms] ws SEND() len=184 sock=S21(l3492->r60657) head={"type":"item","streamId":"6fedd5a0-4e4d-4738-a5ae-9af272984cda","valu
+[diag-hook t=   770242ms] ws SEND() len=476 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770242ms] ws SEND() len=260 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770242ms] ws SEND() len=44555 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770242ms] ws SEND() len=253 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770242ms] ws SEND() len=233 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770242ms] ws SEND() len=420 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770242ms] ws SEND() len=238 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770242ms] ws SEND() len=211 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770272ms] ws SEND() len=281 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770278ms] ws SEND() len=272 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770278ms] ws SEND() len=285 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770278ms] ws SEND() len=260 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770278ms] ws SEND() len=296 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770278ms] ws SEND() len=253 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770278ms] ws SEND() len=296 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770278ms] ws SEND() len=287 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770278ms] ws SEND() len=340 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770278ms] ws SEND() len=287 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   770278ms] ws SEND() len=316 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770278ms] ws SEND() len=414 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770278ms] ws SEND() len=1404 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770278ms] ws SEND() len=274 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   770278ms] ws SEND() len=175 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   771935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   773935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   774279ms] net DESTROY S39(l45536->r3497) hadError=false err=socket idle timeout
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Object.destroy (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/undici@8.10.0/node_modules/undici/lib/core/util.js:374:14)
+    at Timeout.onParserTimeout [as _onTimeout] (/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/undici@8.10.0/node_modules/undici/lib/dispatcher/client-h1.js:852:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   774279ms] net ERROR S39(l?->r3497) code=UND_ERR_INFO errno=undefined sys=undefined msg=socket idle timeout
+[diag-hook t=   774279ms] net ERROR S39(l?->r3497) source-stack:
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:41:50)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   774279ms] net CLOSE S39(l?->r3497) hadError=true
+[diag-hook t=   775935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   776183ms] net DESTROY S40(l3492->r62913) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Socket.socketOnTimeout (node:_http_server:908:10)
+    at Socket.emit (node:events:514:28)
+    at Socket.emit (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:50:19)
+    at Socket._onTimeout (node:net:824:8)
+    at Timeout.onStreamTimeout [as _onTimeout] (node:internal/stream_base_commons:237:10)
+    at listOnTimeout (node:internal/timers:687:11)
+    at process.processTimers (node:internal/timers:618:7)
+[diag-hook t=   776183ms] net CLOSE S40(l?->r62913) hadError=false
+[diag-hook t=   777936ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   779936ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   781935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   783936ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   785935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   787935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   789935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   791936ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   793935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   795935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   797936ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   799935ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   800214ms] net END(peer FIN) S41(l?->r?)
+[diag-hook t=   800214ms] net END(call) S41(l?->r?)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at endWritableNT (node:internal/streams/readable:1790:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+[diag-hook t=   800214ms] net DESTROY S41(l?->r?) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   800214ms] net CLOSE S41(l?->r?) hadError=false
+[diag-hook t=   800214ms] net END(peer FIN) S42(l?->r?)
+[diag-hook t=   800214ms] net END(call) S42(l?->r?)
+    at Socket.end (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:64:38)
+    at endWritableNT (node:internal/streams/readable:1790:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+[diag-hook t=   800214ms] net DESTROY S42(l?->r?) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at finish (node:internal/streams/writable:970:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[diag-hook t=   800215ms] net CLOSE S42(l?->r?) hadError=false
+[diag-hook t=   800218ms] ws SEND() len=196 sock=S21(l3492->r60657) head={"type":"item","streamId":"01864af2-e901-4a48-afdf-6bd8a39b5e44","valu
+[diag-hook t=   800218ms] ws SEND() len=462 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   800218ms] ws SEND() len=174 sock=S21(l3492->r60657) head={"type":"item","streamId":"6fedd5a0-4e4d-4738-a5ae-9af272984cda","valu
+[diag-hook t=   800218ms] ws SEND() len=204 sock=S21(l3492->r60657) head={"type":"item","streamId":"0168445c-de39-4436-b4f8-98ddca96b17c","valu
+[diag-hook t=   801936ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   803936ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   805936ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   807937ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   809936ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   811936ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   813936ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   815936ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   817937ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   819938ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   821939ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   823939ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   825939ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   827939ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   829939ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   831940ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   833940ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   835939ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   837940ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   839939ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   841939ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   843940ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   845940ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   847940ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   849940ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   851940ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   853940ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   855940ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   857940ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   859941ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   861942ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   863942ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   865942ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   867943ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   869942ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   871942ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   873942ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   875942ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   877943ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   879943ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   881944ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   883943ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   885943ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   887943ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   889943ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   891943ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   893944ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   895944ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   897943ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   899943ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   901943ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   903943ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   905944ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   907944ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   909944ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   911945ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   913944ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   915944ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   917945ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   919944ms] ws PING() sock=S21(l3492->r60657) readyState=1
+[diag-hook t=   921944ms] ws PING() sock=S21(l3492->r60657) readyState=1

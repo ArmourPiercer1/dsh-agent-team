@@ -1,0 +1,23 @@
+[
+  {
+    "t": "2026-09-26T14:00:56.570Z",
+    "kind": "agent/created",
+    "sessionId": "session-team-child-55bc337e5808abdac07601a64560b56f",
+    "source": "resume",
+    "agentId": "session-team-child-55bc337e5808abdac07601a64560b56f",
+    "veto": false,
+    "permitted": false
+  },
+  {
+    "t": "2026-09-26T14:00:56.573Z",
+    "kind": "agent/disposed",
+    "sessionId": "session-team-child-55bc337e5808abdac07601a64560b56f",
+    "agentId": "session-team-child-55bc337e5808abdac07601a64560b56f"
+  },
+  {
+    "t": "2026-09-26T14:00:56.574Z",
+    "kind": "api-session/error",
+    "sessionId": "session-team-child-55bc337e5808abdac07601a64560b56f",
+    "message": "resume failed for session \"session-team-child-55bc337e5808abdac07601a64560b56f\": TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \"session-team-child-55bc337e5808abdac07601a64560b56f\""
+  }
+]

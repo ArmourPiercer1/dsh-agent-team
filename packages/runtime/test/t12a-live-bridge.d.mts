@@ -12,6 +12,8 @@
  * @module t12a-live-bridge
  */
 
+import type { TeamSessionActivationFence } from '../src/plugin/team-session-activation.js'
+
 /** One recorded agents.create request (sessionId + the passed meta). */
 export interface RecordedCreate {
   readonly sessionId: string
@@ -198,6 +200,11 @@ export interface AgentCtxDouble {
 /** One settled live-agent handle (the DSH handle seam the glue stores). */
 export interface LiveAgentHandle {
   readonly agent: {
+    /** The session id the Agent object carries (0.1.7 explicit-agent setup
+     *  contract: `setup(agentCtx, agent)` — the announced Agent IS the
+     *  setup's second argument; the fence's exact-generation identity
+     *  reads this `id`). */
+    readonly id: string
     /** alpha.2 (A6): the session header double (the lazy `cwd` read basis
      *  of the permission adapter's resolveTarget closure, FACT 3b). The
      *  `cwd` is MUTABLE on purpose (the bridge is a plain JS double; the
@@ -235,6 +242,14 @@ export interface AgentsDouble {
   readonly handles: Map<string, LiveAgentHandle>
   /** The world's shared global prompt layer (T12-M2). */
   readonly globalSections: GlobalPromptSection[]
+  /** C1 (guide §8.2): the EXACT-GENERATION identity objects the double
+   *  mints per activation (sessionId -> the latest agent identity; the
+   *  same object the created and matching disposed events carry). The
+   *  FULL agent double is stored (the `LiveAgentHandle['agent']` shape —
+   *  the mint happens BEFORE `AgentSetup` runs, so a FATAL setup still
+   *  leaves its ctx reachable here, while `handles` only publishes
+   *  post-announce — the faithful 0.1.7 ordering). */
+  readonly agentIdentities: Map<string, LiveAgentHandle['agent']>
   create(req: { sessionId: unknown; meta?: Record<string, unknown>; setup?: (ctx: object) => unknown }): Promise<object>
   resume(req: { resumeSessionId: unknown; setup?: (ctx: object) => unknown }): Promise<object>
 }
@@ -246,8 +261,14 @@ export interface AgentsDoubleOptions {
   /** work-completion wake-up (G8 teardown-gate regression): a per-resume
    *  SUSPENSION point — awaited after the resume request is recorded,
    *  before the handle is built, so a test can interleave `close()` while
-   *  an `agents.resume()` is in flight (absent = settle immediately). */
-  readonly resumeGate?: (req: object) => Promise<void>
+   *  an `agents.resume()` is in flight (absent = settle immediately).
+   *  The request carries the RAW resume args — `setup` distinguishes a
+   *  Team glue resume (a wrapped AgentSetup is present) from a foreign
+   *  raw resume (S1 G7–G10 gate on it). */
+  readonly resumeGate?: (req: {
+    readonly resumeSessionId: unknown
+    readonly setup?: unknown
+  }) => Promise<void>
   /** The world's global prompt layer (T12-M2; default: the DSH service pair). */
   readonly systemPromptGlobals?: GlobalPromptSection[]
   /** multi-mcp (Task C, plan §6.7): per-server MCP activation failure
@@ -277,20 +298,49 @@ export interface AgentsDoubleOptions {
    *  `ctx.agent` value, `scopeKey` replaces the scope-mint key (both
    *  default to the handle's own agent / legacy options). */
   readonly identityOverride?: (agent: object) => { ctxAgent?: object; scopeKey?: object }
+  /** C1 (restart-recovery, guide §13.3): the fake `agent/created` /
+   *  `agent/disposed` event hook — fired (awaited) INSIDE create/resume
+   *  BEFORE the handle is published (a rejection rejects the activation —
+   *  the unpublished-agent rollback shape) and inside handle.dispose()
+   *  (a hook fault never breaks the dispose). Absent = no events. */
+  readonly activationEvents?: (event: {
+    readonly kind: 'created' | 'disposed'
+    readonly agent: { readonly id: string }
+    readonly source: string
+    readonly sessionId: string
+  }) => void | Promise<void>
+  /** C1 (guide §13.3 G5/G6): per-session resume fault script —
+   *  (sessionId, callIndex) => error|undefined; a returned error rejects
+   *  that resume AFTER it is recorded, BEFORE the agent is created
+   *  (the session-layer writer-held rejection — no created event). */
+  readonly resumeFaults?: (sessionId: string, callIndex: number) => unknown
 }
 
 /** The sessionPersistence service double (records materializations). */
 export interface SessionPersistenceDouble {
   readonly materialized: string[]
+  /** C1 (guide §5.1/§13.2): the recorded `exists` calls. */
+  readonly existsCalls: string[]
   ensureMaterialized(session: { id: string }): Promise<void>
+  /** C1 (guide §5.1/§13.2): the glue's durable-existence seam — default:
+   *  the fixture-home analogue of the upstream `stat() !== undefined`
+   *  truth (the pre-C1 physical probe's semantics, moved into the test
+   *  fixture); overridable through the factory's `options.exists` (a
+   *  throwing override models the D4 backend fault). */
+  exists(sessionId: string): Promise<boolean>
 }
 
 /** The opened-TeamDomain double (repository lists + REAL resolvers). */
 export interface DomainDouble {
   readonly repositories: {
-    readonly memberInstances: { list(rootSessionId: string): object[] }
+    readonly memberInstances: {
+      list(rootSessionId: string): Array<Record<string, unknown> & { readonly childSessionId: string }>
+    }
     readonly overrides: { list(rootSessionId: string): object[] }
-    readonly teamSessions: { get(rootSessionId: string): object | undefined; list(rootSessionId: string): object[] }
+    readonly teamSessions: {
+      get(rootSessionId: string): object | undefined
+      list(): Array<Record<string, unknown> & { readonly rootSessionId: string }>
+    }
   }
   readonly consumption: {
     readonly model: {
@@ -517,6 +567,10 @@ export interface LiveWorld {
    *  (the host seam not wired: the first setup fails closed with the typed
    *  member-base-tools-unavailable). */
   readonly agentPresets: AgentPresetsDouble | null
+  /** C1 (restart-recovery, guide §13.3): the fence the world wired
+   *  (undefined = pre-C1 world) — a test asserts its state (records,
+   *  permits, rollbacks) through it. */
+  readonly activationFence: LiveWorldOptions['activationFence']
   readonly records: {
     readonly creates: RecordedCreate[]
     readonly resumes: RecordedResume[]
@@ -594,6 +648,34 @@ export interface LiveWorldOptions {
    *  default strict map resolver over `blueprintSources` + the row-anchor
    *  fallback (exactly like the host resolver). */
   readonly resolveBoundBlueprint?: (teamRootSid: string) => object | null
+  /** C1 (restart-recovery, guide §5.1/§13.2): the sessionPersistence
+   *  double options (the `exists` override — a throwing exists models
+   *  the D4 backend fault that must propagate). Absent = the default
+   *  fixture-home analogue of the upstream stat() truth. */
+  readonly persistence?: { readonly exists?: (sessionId: string) => boolean | Promise<boolean> }
+  /** C1 (guide §4.3/§13.3): the Team session-activation fence passed to
+   *  the glue (the auto-wired fake agent/created -> the AWAITED veto,
+   *  agent/disposed -> the exact-generation barrier). Absent = the
+   *  pre-C1 glue fallback (no guard, no waits — no pre-C1 test world
+   *  breaks wholesale). The SAME object is exposed on the world
+   *  (`LiveWorld.activationFence`). Typed with the REAL fence interface
+   *  (the supplement round reworked the recovery surface — exact
+   *  generation claims, `getRollbackEpoch`, and
+   *  `recoverWriterConflict({ afterEpoch, deadlineMs })` — so a stale
+   *  structural copy here would reject every real fence). */
+  readonly activationFence?: TeamSessionActivationFence
+  /** C1 (guide §7.2): the bounded writer-conflict recovery window (ms)
+   *  the glue passes to recoverWriterConflict (tiny for G5/G6
+   *  determinism). Absent = the glue default (10 s). */
+  readonly writerHandoffTimeoutMs?: number
+  /** C1 (guide §13.3): a CUSTOM fake agent/created + agent/disposed hook
+   *  (wins over the fence auto-wire and options.agents.activationEvents). */
+  readonly activationEvents?: (event: {
+    readonly kind: 'created' | 'disposed'
+    readonly agent: { readonly id: string }
+    readonly source: string
+    readonly sessionId: string
+  }) => void | Promise<void>
 }
 
 /** The worktree root (the bridge lives at packages/runtime/test). */
@@ -612,7 +694,9 @@ export declare function loadGlueModule(): Promise<{
 export declare function createAgentsDouble(options?: AgentsDoubleOptions): AgentsDouble
 
 /** Build the sessionPersistence service double. */
-export declare function createSessionPersistenceDouble(): SessionPersistenceDouble
+export declare function createSessionPersistenceDouble(options?: {
+  readonly exists?: (sessionId: string) => boolean | Promise<boolean>
+}): SessionPersistenceDouble
 
 /** Build the opened-TeamDomain double (loads the REAL resolvers). */
 export declare function createDomainDouble(params?: DomainDoubleParams): Promise<DomainDouble>

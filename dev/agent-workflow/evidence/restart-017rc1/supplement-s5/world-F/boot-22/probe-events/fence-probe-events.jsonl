@@ -1,0 +1,3 @@
+{"t":"2026-09-26T17:57:00.471Z","kind":"agent/created","sessionId":"session-rst017s5-boot-2026-09-26T17-48-44","source":"resume","agentId":"session-rst017s5-boot-2026-09-26T17-48-44","veto":false,"permitted":false}
+{"t":"2026-09-26T17:57:00.516Z","kind":"agent/created","sessionId":"session-rst017s5-f2-2026-09-26T17-48-44","source":"startup","agentId":"session-rst017s5-f2-2026-09-26T17-48-44","veto":false,"permitted":false}
+{"t":"2026-09-26T17:57:24.471Z","kind":"agent/created","sessionId":"session-team-child-baceb10416b500d8579c28282f28a375","source":"startup","agentId":"session-team-child-baceb10416b500d8579c28282f28a375","veto":false,"permitted":false}

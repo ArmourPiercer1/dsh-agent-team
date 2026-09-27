@@ -1930,6 +1930,29 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     ensureRootLive: async (rootSessionId) => {
       await live.ensureLiveAgent(rootSessionId)
     },
+    // C1 (restart-recovery, guide §10.2) + supplement round §2.4 — the
+    // D3 ordinary-mode one-shot activation permit behind the host-side
+    // team.prepareOrdinaryOpen: the live glue's allowOrdinaryActivationOnce
+    // (the fence's permitOrdinaryOnce passthrough — the ONE process-local
+    // permit fact: no Team ensure, no TeamDomain mutation, no governance,
+    // no tools, no persistence). CONDITIONAL EXPOSURE (supplement P1-6
+    // contract fix — the pre-round literal `live.
+    // allowOrdinaryActivationOnce?.(sid)` was a FAKE SUCCESS: the port
+    // existed, the wire call returned `permitted: true`, and a world
+    // without the armer armed nothing yet reported success). The port is
+    // exposed ONLY when the armer is genuinely present; a world without
+    // the fence omits the port, and the S6 preflight
+    // (requirePrepareOrdinaryOpenPort) then fails closed with the typed
+    // TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE. In the production
+    // host the fence ALWAYS exists (host.ts registers it at the top of
+    // apply()), so the port is always present there.
+    ...(typeof live.allowOrdinaryActivationOnce === 'function'
+      ? {
+          prepareOrdinaryOpen: (rootSessionId: string) => {
+            live.allowOrdinaryActivationOnce!(rootSessionId)
+          },
+        }
+      : {}),
     // F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the
     // durable control-service closure behind the v4-only
     // team.resolveControl: the EXISTING A25 control service (built

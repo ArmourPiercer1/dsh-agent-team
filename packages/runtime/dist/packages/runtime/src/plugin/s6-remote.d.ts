@@ -140,6 +140,13 @@ export declare const S6_REMOTE_ERROR_CODES: {
      *  root) — fail-closed BEFORE any decision; NEVER a silent success
      *  (never a default decision, never a no-op). */
     readonly TEAM_RESOLVE_CONTROL_UNAVAILABLE: "TEAM_REMOTE_TEAM_RESOLVE_CONTROL_UNAVAILABLE";
+    /** C1 (restart-recovery, guide §10.2/§12) — team.prepareOrdinaryOpen:
+     *  the host wiring exposes no ordinary-open permit armer (no
+     *  activation fence) — fail-closed BEFORE arming anything; NEVER a
+     *  silent success (a `permitted: true` response must always have
+     *  armed the one-shot permit). Host-side vocabulary: the wire
+     *  exposure of the method is Commit 3 (the frozen Remote catalog). */
+    readonly TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE: "TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE";
 };
 export type S6RemoteErrorCode = (typeof S6_REMOTE_ERROR_CODES)[keyof typeof S6_REMOTE_ERROR_CODES];
 /**
@@ -334,6 +341,34 @@ export interface S6RemoteTeamEnsureRootLivePort {
      */
     ensureRootLive(teamSessionId: string): Promise<RemoteSafeRecord>;
 }
+/** C1 (restart-recovery, guide §10.2) — the host-side
+ *  `team.prepareOrdinaryOpen` port (the D3 ordinary-mode compatibility):
+ *  TEAM-SCOPED like `team.ensureRootLive` — the bound-root guard runs
+ *  BEFORE anything else (fail-closed FOREIGN_TEAM; an unknown/foreign
+ *  root is NEVER permitted — test R3). The handler arms the fence's
+ *  one-shot ordinary activation permit (process-local, single-use,
+ *  TTL-bounded, consumed at the awaited agent/created — NEVER at this
+ *  call) and returns the closed success shape `{ rootSessionId,
+ *  permitted: true }`. The permit arms NOTHING on the Team side beyond
+ *  the process-local fact: NO Team ensure, NO TeamDomain mutation, NO
+ *  governance, NO tool registration, NO persistence (guide §10.1 — the
+ *  product invariant is "zero Team ensure / zero Team Agent side
+ *  effects", not "zero team.* remote calls").
+ *
+ *  NOTE (Commit 2 scope): the method is HOST-SIDE only — the frozen
+ *  Remote catalog (packages/remote) does not yet know
+ *  `team.prepareOrdinaryOpen`, so a WIRE call fails closed with
+ *  UNKNOWN_METHOD until Commit 3 extends the frozen contract. The
+ *  port-level surface (the option + this port + the handler case) is
+ *  Commit 2's deliverable (guide §12). */
+export interface S6RemoteTeamPrepareOrdinaryOpenPort {
+    /**
+     * Arm the one-shot ordinary activation permit for the named owned root.
+     * @param teamSessionId - the validated TeamSession (root session) id.
+     * @returns the closed success shape `{ rootSessionId, permitted: true }`.
+     */
+    prepareOrdinaryOpen(teamSessionId: string): Promise<RemoteSafeRecord>;
+}
 /** F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the v4-only
  *  `team.resolveControl` port (the production async mirror of the frozen
  *  `RemoteTeamResolveControlPort`). TEAM-SCOPED like `team.admitInitialWork`:
@@ -428,6 +463,11 @@ export interface S6RemotePorts {
      *  `team.ensureRootLive` port (D1: fails closed typed; D2: the live
      *  glue's Team-mode ensure). */
     readonly teamEnsureRootLive: S6RemoteTeamEnsureRootLivePort;
+    /** C1 (restart-recovery, guide §10.2) — the host-side
+     *  `team.prepareOrdinaryOpen` port (the D3 ordinary-mode one-shot
+     *  activation permit; host-side only until Commit 3 extends the
+     *  frozen Remote catalog). */
+    readonly teamPrepareOrdinaryOpen: S6RemoteTeamPrepareOrdinaryOpenPort;
     /** F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the v4-only
      *  `team.resolveControl` port (the human control-resolution command). */
     readonly teamResolveControl: S6RemoteTeamResolveControlPort;
@@ -632,6 +672,21 @@ export interface S6RemoteOptions {
      * unchanged, invariant 4a/4b).
      */
     readonly ensureRootLive?: (rootSessionId: string) => Promise<void>;
+    /**
+     * C1 (restart-recovery, guide §10.2) — the one-shot ordinary activation
+     * permit armer behind the host-side `team.prepareOrdinaryOpen` (the D3
+     * ordinary-mode compatibility): the live glue's
+     * `allowOrdinaryActivationOnce` (the fence's `permitOrdinaryOnce`
+     * passthrough). The arming does NOTHING on the Team side beyond the
+     * process-local permit fact — no resume, no TeamDomain mutation, no
+     * governance, no tool registration, no persistence (guide §10.1).
+     * Absent (test worlds without the activation fence):
+     * `team.prepareOrdinaryOpen` fails closed with the typed
+     * TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE — NEVER a silent
+     * success (a `permitted: true` response must always have armed the
+     * one-shot permit). The production host entry (root.ts) wires it.
+     */
+    readonly prepareOrdinaryOpen?: (rootSessionId: string) => Promise<void> | void;
     /**
      * F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the
      * durable control-service closure behind the v4-only

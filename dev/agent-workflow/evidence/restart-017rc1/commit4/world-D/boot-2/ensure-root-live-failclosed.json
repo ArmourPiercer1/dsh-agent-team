@@ -1,0 +1,25 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "c4-ensureD-8u3wrnhlg8",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM",
+        "message": "team.ensureRootLive: session 'session-rst017c4-dyn-2026-09-26T14-01-01' is already live outside the Team glue (the upstream agent registry refuses a second agent under one session id) — refusing to adopt it silently",
+        "details": {
+          "method": "team.ensureRootLive",
+          "endpoint": "team.ensureRootLive",
+          "contractVersion": 3,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM",
+            "message": "team.ensureRootLive: session 'session-rst017c4-dyn-2026-09-26T14-01-01' is already live outside the Team glue (the upstream agent registry refuses a second agent under one session id) — refusing to adopt it silently"
+          }
+        }
+      }
+    }
+  }
+}

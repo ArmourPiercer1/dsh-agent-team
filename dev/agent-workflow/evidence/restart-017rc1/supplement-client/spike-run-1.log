@@ -1,0 +1,260 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/client
+
+stdout | test/s3-client-generation-spike.test.ts > S3 same-page generation characterization (evidence only, no product workaround) > traces the same-SID reopen, the failed-generation lifetime, and the public seams
+S3-SPIKE-TRACE [
+  {
+    "step": "S1 openSession #1 (ordinary open of the cold Team root)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "mainView": 1
+      }
+    },
+    "generation": "G1",
+    "openState": "loading",
+    "lastAgentError": null,
+    "followOpens": 1
+  },
+  {
+    "step": "S1 probe reference ready (open #1 succeeded)",
+    "retain": {
+      "referenceCount": 2,
+      "retainedBy": {
+        "mainView": 1,
+        "s3SpikeProbe": 1
+      }
+    },
+    "generation": "G1",
+    "openState": "open",
+    "lastAgentError": null,
+    "followOpens": 1
+  },
+  {
+    "step": "S2 api-session/error (fence veto: \"intercepted foreign Agent activation\")",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "mainView": 1
+      }
+    },
+    "generation": "G1",
+    "openState": "open",
+    "lastAgentError": "resume failed … intercepted foreign Agent activation for Team-managed session \"s3-spike-root\"",
+    "followOpens": 1
+  },
+  {
+    "step": "S3 takeover success + ctx.sessions.refresh() (current product step c)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "mainView": 1
+      }
+    },
+    "generation": "G1",
+    "openState": "open",
+    "lastAgentError": "resume failed … intercepted foreign Agent activation for Team-managed session \"s3-spike-root\"",
+    "followOpens": 1
+  },
+  {
+    "step": "S4 openSession #2 (same-SID reopen, Team-mode entry)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "mainView": 1
+      }
+    },
+    "generation": "G1",
+    "openState": "open",
+    "lastAgentError": "resume failed … intercepted foreign Agent activation for Team-managed session \"s3-spike-root\"",
+    "followOpens": 1
+  },
+  {
+    "step": "S5 handleConnected (connection/reset rebuilds baselines)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "mainView": 1
+      }
+    },
+    "generation": "G1",
+    "openState": "open",
+    "lastAgentError": "resume failed … intercepted foreign Agent activation for Team-managed session \"s3-spike-root\"",
+    "followOpens": 1
+  },
+  {
+    "step": "S6 uiWorkspace.archiveSession (public release path; host-archive side effect)",
+    "retain": {
+      "referenceCount": 0,
+      "retainedBy": {}
+    },
+    "generation": null,
+    "openState": null,
+    "lastAgentError": null,
+    "followOpens": 1
+  },
+  {
+    "step": "S6b uiWorkspace.unarchiveSession (second side effect of the public repair)",
+    "retain": {
+      "referenceCount": 0,
+      "retainedBy": {}
+    },
+    "generation": null,
+    "openState": null,
+    "lastAgentError": null,
+    "followOpens": 1
+  },
+  {
+    "step": "S7 openSession #3 (same id after retire — fresh generation)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "mainView": 1
+      }
+    },
+    "generation": "G2",
+    "openState": "loading",
+    "lastAgentError": null,
+    "followOpens": 2
+  },
+  {
+    "step": "S7 fresh generation ready (clean open)",
+    "retain": {
+      "referenceCount": 2,
+      "retainedBy": {
+        "mainView": 1,
+        "s3SpikeProbe": 1
+      }
+    },
+    "generation": "G2",
+    "openState": "open",
+    "lastAgentError": null,
+    "followOpens": 2
+  },
+  {
+    "step": "S8 retain ROOT2 → open FAILED (error state, sticky generation)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "s3SpikeProbe": 1
+      }
+    },
+    "generation": "GF1",
+    "openState": "error",
+    "lastAgentError": null,
+    "followOpens": 1
+  },
+  {
+    "step": "S8 second retain of the failed generation (new open attempt, fails again)",
+    "retain": {
+      "referenceCount": 2,
+      "retainedBy": {
+        "s3SpikeProbe": 2
+      }
+    },
+    "generation": "GF1",
+    "openState": "error",
+    "lastAgentError": null,
+    "followOpens": 2
+  },
+  {
+    "step": "S8 release-to-0 (failed generation retired)",
+    "retain": {
+      "referenceCount": 0,
+      "retainedBy": {}
+    },
+    "generation": null,
+    "openState": null,
+    "lastAgentError": null,
+    "followOpens": 2
+  },
+  {
+    "step": "S8 re-retain ROOT2 (fresh generation, clean open)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "s3SpikeProbe": 1
+      }
+    },
+    "generation": "GF2",
+    "openState": "open",
+    "lastAgentError": null,
+    "followOpens": 3
+  }
+]
+S3-SPIKE-SEAMS {
+  "uiWorkspaceSeams": [
+    "archiveSession",
+    "clearArchivedCurrent",
+    "clearMain",
+    "connectWorkspace",
+    "createDirectory",
+    "forkSession",
+    "initializeDefaultWorkspace",
+    "listDirectory",
+    "notify",
+    "openSession",
+    "openWorkspace",
+    "pickDirectory",
+    "pinSession",
+    "replaceMain",
+    "restoreSelection",
+    "reuseBlank",
+    "reuseOrCreateBlank",
+    "startSession",
+    "unarchiveSession",
+    "unpinSession",
+    "watchNavigation"
+  ],
+  "sessionServiceSeams": [
+    "binding",
+    "create",
+    "drainScopeDrops",
+    "dropScope",
+    "fork",
+    "handleConnected",
+    "handleControlFrame",
+    "handleSessionActivity",
+    "handleSessionAdded",
+    "handleSessionError",
+    "handleSessionRemoved",
+    "handleSessionStatus",
+    "materializeScope",
+    "projectList",
+    "publishRetention",
+    "refresh",
+    "refreshProjections",
+    "retain",
+    "retainAgentScope",
+    "retainInfo",
+    "retainScope",
+    "retentionSnapshot",
+    "retireScope",
+    "scope",
+    "scopeOf",
+    "search",
+    "sessionOf",
+    "startScopeDrop",
+    "subagentAddress",
+    "using"
+  ],
+  "sessionServiceProperties": [
+    "list",
+    "manager",
+    "scopes",
+    "retainObservers",
+    "closed"
+  ],
+  "followCounts": {
+    "s3-spike-root": 2,
+    "s3-spike-root2": 3
+  }
+}
+
+ ✓ test/s3-client-generation-spike.test.ts (1 test) 76ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  00:54:49
+   Duration  1.34s (transform 670ms, setup 11ms, import 1.17s, tests 76ms, environment 0ms)
+

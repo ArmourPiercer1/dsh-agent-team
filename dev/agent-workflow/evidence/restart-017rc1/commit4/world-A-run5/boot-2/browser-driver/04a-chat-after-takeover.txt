@@ -1,0 +1,33 @@
+DSH Local Build
+0.1.7-rc.1-46a7f68
+New Session
+Plugins
+Workspaces
+workspace
+Ungrouped
+c4 title
+29min
+New Team
+Settings
+c4 title
+Chat
+Trajectory
+Team
+[team-root-work requestToken=team-create:initial-work:sha256:846364e19944af465afc997345f4918fa44a6c5a953572de3f3a93c33a059dfb] Commit 4 dynamic team created. Acknowledge with the token RST017C4DONE_2026-09-26T12-42-57 and stop.
+20:43
+Worked
+Took 20s
+
+C4_DONE RST017C4DONE_2026-09-26T12-42-57
+
+Usage 2K tok
+20:43
+Team
+ · 
+1 running
+Message or run a task, / commands, @ files or sessions
+Workspace Write
+deepseek-official/rst017c4-model-2026-09-26T12-42-57
+1 turns 1 steps·40000 tok/s
+2K tok·Cache hit 0%
+0%

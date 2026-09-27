@@ -1,0 +1,33 @@
+[rst017-c4 2026-09-26T13-21-00] Commit 4 kit — stamp 2026-09-26T13-21-00 worlds=A browserHold=true keepHome=false race=20
+[rst017-c4 2026-09-26T13-21-00] PASS [s0] preflight: test-use HEAD == the 0.1.7-rc.1 pin — HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4
+[rst017-c4 2026-09-26T13-21-00] PASS [s0] preflight: test-use working tree pristine (empty porcelain)
+[rst017-c4 2026-09-26T13-21-00] PASS [s0] preflight: task worktree at the accepted Commit-4 fix tip (f3d5a71b — runOwned await fix) — HEAD=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T13-21-00] PASS [s0] preflight: the test-use CLI reports 0.1.7-rc.1 — version=0.1.7-rc.1
+[rst017-c4 2026-09-26T13-21-00] PASS [s0] preflight: host/mock ports free (3492/3497) — hostFree=true mockFree=true
+[rst017-c4 2026-09-26T13-21-00] ══ WORLD A — home /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T13-21-01-A ══
+[rst017-c4 2026-09-26T13-21-00] world A materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T13-21-01-A
+[rst017-c4 2026-09-26T13-21-00] PASS [install] S0 bare-clone tip == f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5 (the accepted Commit-4 fix build with committed dist/composition) — cloned=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T13-21-00] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-c4 2026-09-26T13-21-00] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-c4 2026-09-26T13-21-00] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-c4 2026-09-26T13-21-00] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-c4 2026-09-26T13-21-00] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-c4 2026-09-26T13-21-00] PASS [boot-1] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=create) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T13-21-00"]
+[rst017-c4 2026-09-26T13-21-00] PASS [A] A1 team.create(dynamic root) accepted over the public remote seam (RPC ok:true — transport 200 alone is not success) — status=200 head={"type":"server-response","rpcId":"c4-createA-j5r5p10uau","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rst017c4-dyn-202
+[rst017-c4 2026-09-26T13-21-00] PASS [A] A2 dynamic leader live on boot 1 (first model request on the row staticModel) — seq=2 model=rst017c4-model-2026-09-26T13-21-00
+[rst017-c4 2026-09-26T13-21-00] PASS [A] A2b boot-1 session history present (assistant rows ≥ 1 in the session log) — [{"path":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T13-21-01-A/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-homes-rst017-c4-2026-09-26T13-21-01-A-workspace--/session-rst017c4-dyn-2026-09-26T13-21-00/session.v4.jsonl.zstd","rows":23,"assistant":1,"rowTypes":["session","permission/preset","sandbox/mode","approval/policy","agent/inbox/spliced","turn/start","agent/inbox/spliced","step/start","system/message","user/message","user/message","user/message","user/message","request/header","request/context","session/title","session/title-llm-request","session-log-deepseek/delivery-accepted","session/title","session-log-deepseek/delivery-accepted","assistant/message","step/end","turn/end"]}]
+[rst017-c4 2026-09-26T13-21-00] A: boot 1 stopped (SIGTERM)
+[rst017-c4 2026-09-26T13-21-00] PASS [boot-2] boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T13-21-00"]
+[rst017-c4 2026-09-26T13-21-00] A BROWSER HOLD: boot 2 alive at http://127.0.0.1:3492. Kit PID 11 — hold auto-releases when the gate-5 prompt reaches the mock model (backstop: job_kill).
+[rst017-c4 2026-09-26T13-21-00] A: hold released (gate-5 request observed) — collecting browser-leg evidence
+[rst017-c4 2026-09-26T13-21-00] PASS [A-browser] the UI-triggered ordinary open was vetoed by the production fence (created → exact-generation disposed → api-session/error) — created=3 disposed=2 err=1
+[rst017-c4 2026-09-26T13-21-00] PASS [A-browser] the production veto wording on the user-visible lane (browser leg — the fence throws, it never console-logs runtime vetoes)
+[rst017-c4 2026-09-26T13-21-00] PASS [A-browser] the 以 Team 模式 打开 click took over (glue hasLive(root) == true after the UI takeover) — ["session-rst017c4-boot-2026-09-26T13-21-00","session-rst017c4-dyn-2026-09-26T13-21-00"]
+[rst017-c4 2026-09-26T13-21-00] PASS [A-browser] gate-5 gold standard: the composer was usable after the takeover WITHOUT a page reload (the typed prompt reached the model and got an answer) — seq=4
+[rst017-c4 2026-09-26T13-21-00] FAIL [A-browser] the composer prompt ran on the Team leader surface (13 team_* tools + row staticModel) — model=deepseek-flash
+[rst017-c4 2026-09-26T13-21-00] A: boot 2 stopped (SIGTERM)
+[rst017-c4 2026-09-26T13-21-00] world A torn down (host SIGTERM'd, mock closed)
+[rst017-c4 2026-09-26T13-21-00] PASS [s0] post-run: the stable :3080 instance answer is UNCHANGED (no cross-world contamination) — before={"port":3080,"reachable":true,"status":401} after={"port":3080,"reachable":true,"status":401}
+[rst017-c4 2026-09-26T13-21-00] summary: 21 passed, 1 failed, fatal=none
+[rst017-c4 2026-09-26T13-21-00]   FAIL [A-browser] the composer prompt ran on the Team leader surface (13 team_* tools + row staticModel) — model=deepseek-flash
+[rst017-c4 2026-09-26T13-21-00] evidence: /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/commit4

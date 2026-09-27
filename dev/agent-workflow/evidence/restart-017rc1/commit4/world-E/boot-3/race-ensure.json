@@ -1,0 +1,26 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "c4-ensureE2-4b46w680ep",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "rootSessionId": "session-rst017c4-dyn-2026-09-26T12-20-20",
+          "mode": "team",
+          "live": true
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "team.ensureRootLive",
+          "endpoint": "team.ensureRootLive",
+          "contractVersion": 3,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,216 @@
+[rst017-c4 2026-09-26T12-20-20] Commit 4 kit — stamp 2026-09-26T12-20-20 worlds=A,B,C,D,E browserHold=false keepHome=false race=20
+[rst017-c4 2026-09-26T12-20-20] PASS [s0] preflight: test-use HEAD == the 0.1.7-rc.1 pin — HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4
+[rst017-c4 2026-09-26T12-20-20] PASS [s0] preflight: test-use working tree pristine (empty porcelain)
+[rst017-c4 2026-09-26T12-20-20] PASS [s0] preflight: task worktree at the accepted Commit-4 fix tip (f3d5a71b — runOwned await fix) — HEAD=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T12-20-20] PASS [s0] preflight: the test-use CLI reports 0.1.7-rc.1 — version=0.1.7-rc.1
+[rst017-c4 2026-09-26T12-20-20] PASS [s0] preflight: host/mock ports free (3492/3497) — hostFree=true mockFree=true
+[rst017-c4 2026-09-26T12-20-20] ══ WORLD A — home /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-20-20-A ══
+[rst017-c4 2026-09-26T12-20-20] world A materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-20-20-A
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S0 bare-clone tip == f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5 (the accepted Commit-4 fix build with committed dist/composition) — cloned=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-1] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=create) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A1 team.create(dynamic root) accepted over the public remote seam (RPC ok:true — transport 200 alone is not success) — status=200 head={"type":"server-response","rpcId":"c4-createA-zsgabrb77y","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rst017c4-dyn-202
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A2 dynamic leader live on boot 1 (first model request on the row staticModel) — seq=2 model=rst017c4-model-2026-09-26T12-20-20
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A2b boot-1 session history present (assistant rows ≥ 1 in the session log) — [{"path":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-20-20-A/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-homes-rst017-c4-2026-09-26T12-20-20-A-workspace--/session-rst017c4-dyn-2026-09-26T12-20-20/session.v4.jsonl.zstd","rows":23,"assistant":1,"rowTypes":["session","permission/preset","sandbox/mode","approval/policy","agent/inbox/spliced","turn/start","agent/inbox/spliced","step/start","system/message","user/message","user/message","user/message","user/message","request/header","request/context","session/title","session/title-llm-request","session-log-deepseek/delivery-accepted","session/title","session-log-deepseek/delivery-accepted","assistant/message","step/end","turn/end"]}]
+[rst017-c4 2026-09-26T12-20-20] A: boot 1 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-2] boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A3 browser-style session/follow(dynamic root) yields the snapshot (the browser got in) — ""
+[rst017-c4 2026-09-26T12-20-20] FAIL [A] A4 the production fence veto fired (EXACT production wording in the host log) — created=1 disposed=1 apiErr=1
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A4b exact-generation rollback: a disposed event follows the vetoed creation — created=resume disposed=1
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A4c api-session/error surfaced to the follow socket (the persistent user-visible error lane) — frame=["session-rst017c4-dyn-2026-09-26T12-20-20","resume failed for session \"session-rst017c4-dyn-2026-09-26T12-20-20\": TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent ac probeErr=resume failed for session "session-rst017c4-dyn-2026-09-26T12-20-20": TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session "session-rst0
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A5 the follow stream SURVIVES the rejection (socket still open after the error lane) — closed=false
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A6 team.ensureRootLive(dynamic root) SUCCEEDS (the C1 repair path) — status=200 head={"type":"server-response","rpcId":"c4-ensureA-nh3mm5tevj","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017c4-dyn-2026-09-26T12-20-20","mode":"team","live":true},"provenance":{"origin":"team-remote","method":"team.ensureRootLive","endpoint":"team.ensureRootLive","contractVersion":
+[rst017-c4 2026-09-26T12-20-20] PASS [A] gate-5 wire: the prompt sent DIRECTLY after the takeover (no reload) gets a model answer — reqSeq=3
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7(1) no final session/writer-held in the takeover result — {"type":"server-response","rpcId":"c4-ensureA-nh3mm5tevj","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017c4-dyn-2026-09-26T12-20-20","mode":"team","live":true},"provenance":{"orig
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7(2) same rootSessionId (the takeover resolved the SAME dynamic root) — {"type":"server-response","rpcId":"c4-ensureA-nh3mm5tevj","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017c4-dyn-2026-09-26T12-20-20","mode":"team","live":true},"provenance":{"orig
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7(3) ctx.agents: exactly one live Agent for the root (glue liveAgents carries it, no duplicates) — liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7(4) the Team glue hasLive(root) == true — ["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7(5) the live Agent is the Team-owned handle (exactly one surviving creation; no api-error after the surviving created) — created=2 disposed=1 errAfterLast=0
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7(6) ALL of the frozen 13 team_* tools present on the resumed leader surface — missing=[]
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7(7) the Team root persona/context block present (the dynamic team persona in the system block) — system head: You are an AI agent powered by DeepSeek Harness.
+
+You are the leader of the rst017c4 dynamic team. RST017C4DYN_PERSONA_2026-09-26T12-20-20 Answer concisely and 
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7(8) team_list_members executed successfully on the resumed leader (REAL execution, not just mounted) — {"ok":true,"value":{"status":"executed","action":"list-members","rootSessionId":"session-rst017c4-dyn-2026-09-26T12-20-20","callerRole":"leader","effect":{"kind":"members-listed","members":[{"instanceId":"inst-leader","templateId":"leader","label":"leader"}]},"requestToken":"c4-ktok--20-20-1"}}
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7(9) history intact (session log rows present after restart; assistant rows ≥ boot-1 count) — before=23 after=34
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7(10) the first Team request after resume uses the Team model selection (row staticModel) — model=rst017c4-model-2026-09-26T12-20-20
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7(11) no duplicate model-selection listener side effect (exactly one model request for the gate-5 prompt) — count=1
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7(12) no MCP double mount (zero-MCP row: no server entries, no activationError in the session governance view) — mcp={} dynGov head={"instanceId":"inst-leader","model":{"current":{"provider":"deepseek-official","model":"rst017c4-model-2026-09-26T12-20-20"},"assembled":{"provider":"deepseek-official","model":"rst017c4-model-2026-09
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7(13) sessionPersistence.stat(root) present (wire-level equivalent: the durable session generation file exists and its content is readable — NOT the filename as a product criterion) — ["session.v4.jsonl.zstd"]
+[rst017-c4 2026-09-26T12-20-20] PASS [A] A7q1 no model request came from a vetoed foreign agent (across the veto→takeover window the mock count rose by exactly the one gate-5 request) — count=3 atVeto=2
+[rst017-c4 2026-09-26T12-20-20] A: boot 2 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-20-20] world A torn down (host SIGTERM'd, mock closed)
+[rst017-c4 2026-09-26T12-20-20] ══ WORLD B — home /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-21-27-B ══
+[rst017-c4 2026-09-26T12-20-20] world B materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-21-27-B
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S0 bare-clone tip == f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5 (the accepted Commit-4 fix build with committed dist/composition) — cloned=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-1] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=B phase=create) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [B] B1 team.create accepted (RPC ok:true — the leader works) — status=200 head={"type":"server-response","rpcId":"c4-createB-1xavyifg7b","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rst017c4-dyn-202
+[rst017-c4 2026-09-26T12-20-20] PASS [B] B1b dynamic leader live (first model request on the row staticModel) — seq=2
+[rst017-c4 2026-09-26T12-20-20] waitForMockRequest timeout: B2 member first turn (requests so far: 5 — dumped to diagnostics/)
+[rst017-c4 2026-09-26T12-20-20] FAIL [B] B2 the member is live on boot 1 (delegate → member model request carrying the MEMBER context) — seq=undefined system head=
+[rst017-c4 2026-09-26T12-20-20] PASS [B] B3 the member child session is bound durably (member row with childSessionId read back) — {"instanceId":"inst-leader","templateId":"leader","label":"leader","childSessionId":"undefined","lifecycle":"undefined","activityVersion":1}
+[rst017-c4 2026-09-26T12-20-20] B: boot 1 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-2] boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=B phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] FAIL [B] B4 browser-style session/follow(member child) yields the snapshot (the browser got in) — "session/follow stream error: {\"code\":\"session/not-found\",\"message\":\"session \\\"undefined\\\" not found\",\"details\":{\"sessionId\":\"undefined\"}}"
+[rst017-c4 2026-09-26T12-20-20] FAIL [B] B5 the member child ordinary activation was fenced (created → disposed sequence OR the production veto wording in the host log) — created=0 disposed=0 err=0
+[rst017-c4 2026-09-26T12-20-20] PASS [B] B6 team.ensureRootLive(leader) succeeds (the member stays cold until its own ensure) — status=200 head={"type":"server-response","rpcId":"c4-ensureB-qhj1u6863r","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017c4-dyn-2026-09-26T12-20-20","mode":"team","live":true},"provenance":{"origin":"team-remote","method":"team.ensureRootLive","endpoint":"team.ensureRootLive","contractVersion":
+[rst017-c4 2026-09-26T12-20-20] PASS [B] B7 leader team_send_message executed ok (REAL execution on the resumed leader) — {"ok":true,"value":{"status":"rejected","code":"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED","message":"TeamRuntime: target 'c4-worker--20-20' is a member label — actions are addressed by instanceId only (invariant 19)","details":{"action":"send-message","targetToken":"c4-worker--20-20","kind":"member-l
+[rst017-c4 2026-09-26T12-20-20] waitForMockRequest timeout: B8 member post-restart turn (requests so far: 5 — dumped to diagnostics/)
+[rst017-c4 2026-09-26T12-20-20] FAIL [B] B8 the member cold resume SUCCEEDED (post-restart member model request observed) — seq=undefined
+[rst017-c4 2026-09-26T12-20-20] FAIL [B] B9(1) role = member under the owning root (durable member row of DYN_ROOT, worker template) — {"teamSession":"session-rst017c4-boot-2026-09-26T12-20-20","member":{"instanceId":"inst-leader","templateId":"leader","label":"leader","childSessionId":"undefined","lifecycle":"undefined","activityVersion":1}}
+[rst017-c4 2026-09-26T12-20-20] PASS [B] B9(2) the owning root is correct (the member row is bound to the dynamic root) — child=undefined
+[rst017-c4 2026-09-26T12-20-20] FAIL [B] B9(3) the member Team context is correct (MEMBER persona present, NO leader persona on the resumed surface)
+[rst017-c4 2026-09-26T12-20-20] FAIL [B] B9(4) the member preset/base tools are correct (standard preset surface: read/write/bash present) — []
+[rst017-c4 2026-09-26T12-20-20] FAIL [B] B9(5) the Team tools surface is EXACTLY the worker envelope (send_message + report_progress; no extra team tools) — []
+[rst017-c4 2026-09-26T12-20-20] FAIL [B] B9(6) single writer (exactly one surviving member creation; the member is live in the glue) — live=["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-2026-09-26T12-20-20"] created=0 disposed=0
+[rst017-c4 2026-09-26T12-20-20] PASS [B] B9(7) no OUTSIDE_TEAM / writer-held final error (the ensure + delivery chain resolved clean) — {"ok":true,"value":{"status":"rejected","code":"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED","message":"TeamRuntime: target 'c4-worker--20-20' is a member label — actions are addressed by instanceId only 
+[rst017-c4 2026-09-26T12-20-20] B: boot 2 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-20-20] world B torn down (host SIGTERM'd, mock closed)
+[rst017-c4 2026-09-26T12-20-20] ══ WORLD C — home /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-28-01-C ══
+[rst017-c4 2026-09-26T12-20-20] world C materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-28-01-C
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S0 bare-clone tip == f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5 (the accepted Commit-4 fix build with committed dist/composition) — cloned=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-1] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=C phase=create) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [C] C1 the ordinary (non-Team) session is created over the public session channel — status=200 head={"type":"server-response","rpcId":"rst-create-session-sqhj5vbo7i","result":{"ok":true,"value":{"sessionId":"session-rst017c4-ord-2026-09-26T12-20-20","agentPreset":"standard"}}}
+[rst017-c4 2026-09-26T12-20-20] PASS [C] C2 the ordinary session works before the restart (model answer observed) — seq=1
+[rst017-c4 2026-09-26T12-20-20] C: boot 1 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-2] boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=C phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [C] C4 the browser-style session/follow(ordinary) yields the snapshot (the stream survives) — ""
+[rst017-c4 2026-09-26T12-20-20] PASS [C] C3 the ordinary SessionController promotion SUCCEEDED NORMALLY (agent/created observed; NO fence veto: zero disposed, zero api-error) — created=1 disposed=0 errors=0
+[rst017-c4 2026-09-26T12-20-20] PASS [C] C3b the fence never fired for the ordinary session (no veto wording + that session id in the host log)
+[rst017-c4 2026-09-26T12-20-20] PASS [C] C5 the ordinary session is fully usable AFTER the restart (post-restart prompt → model answer) — seq=3
+[rst017-c4 2026-09-26T12-20-20] PASS [C] C6 the anchor Team is unaffected (Team own-path works alongside the ordinary promotion) — {"ok":true,"value":{"status":"executed","action":"list-members","rootSessionId":"session-rst017c4-boot-2026-09-26T12-20-20","callerRole":"leader","effect":{"kind":"members-listed","members":[{"instanc
+[rst017-c4 2026-09-26T12-20-20] C: boot 2 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-20-20] world C torn down (host SIGTERM'd, mock closed)
+[rst017-c4 2026-09-26T12-20-20] ══ WORLD D — home /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-28-13-D ══
+[rst017-c4 2026-09-26T12-20-20] world D materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-28-13-D
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S0 bare-clone tip == f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5 (the accepted Commit-4 fix build with committed dist/composition) — cloned=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-1] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=D phase=create) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [D] D1 team.create accepted (RPC ok:true — the dynamic root exists and is durable) — status=200 head={"type":"server-response","rpcId":"c4-createD-roxvv24pcc","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rst017c4-dyn-202
+[rst017-c4 2026-09-26T12-20-20] PASS [D] D1b dynamic leader live (first model request on the row staticModel) — seq=2
+[rst017-c4 2026-09-26T12-20-20] D: boot 1 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-2] boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=D phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] FAIL [D] D2 the cold Team root is fenced on restart (boot-time re-adoption vetoed: disposed generation OR the production veto wording) — []
+[rst017-c4 2026-09-26T12-20-20] PASS [D] D3 wire v5 team.prepareOrdinaryOpen grants the one-shot ordinary permit (permitted:true + rootSessionId + contractVersion 5) — status=200 head={"type":"server-response","rpcId":"c4-permit-giefz1yvfj","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017c4-dyn-2026-09-26T12-20-20","permitted":true},"provenance":{"origin":"team-remote","method":"team.prepareOrdinaryOpen","endpoint":"team.prepareOrdinaryOpen","contractVersion":
+[rst017-c4 2026-09-26T12-20-20] PASS [D] D4 the native open (browser-style session/follow) yields the snapshot — ""
+[rst017-c4 2026-09-26T12-20-20] PASS [D] D5 the ordinary activation PASSED the fence via the one-shot permit (exactly one surviving creation after the boot veto) — created=1 disposed=0
+[rst017-c4 2026-09-26T12-20-20] PASS [D] D6 the Team glue hasLive(root) is still FALSE (the ordinary owner is NOT a Team handle) — ["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [D] D7 the ordinary Agent runs a normal prompt (model answer; NO team_* tools on its surface) — tools head=["ask_user_question","bash","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","present","read","read_image","send_message","skill","subagent","subagent_fork","todo_write","update_goal","web_fetch","web_search","workflow"
+[rst017-c4 2026-09-26T12-20-20] PASS [D] D8 the ensureRootLive call count during the ordinary open = 0 (the kit issued none; no ensureRootLive for the root in the host log) — ensureCalls=0
+[rst017-c4 2026-09-26T12-20-20] PASS [D] D9 the subsequent Team-mode ensure TYPED FAILS CLOSED (ok:false with the OUTSIDE_TEAM typed error — no silent adopt) — status=200 head={"type":"server-response","rpcId":"c4-ensureD-vlttqx5wmr","result":{"ok":false,"error":{"code":"TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM","message":"team.ensureRootLive: session 'session-rst017c4-dyn-2026-09-26T12-20-20' is already live outside the Team glue (the upstream agent registry refuses a sec
+[rst017-c4 2026-09-26T12-20-20] PASS [D] D9b the fail-closed error carries the typed OUTSIDE_TEAM code (S6 mapping of the writer-held / registry collision) — {"type":"server-response","rpcId":"c4-ensureD-vlttqx5wmr","result":{"ok":false,"error":{"code":"TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM","message":"team.ensureRootLive: session 'session-rst017c4-dyn-2026-09-26T12-20-20' is already live outside the Team glue (the upstream agent registry refuses a sec
+[rst017-c4 2026-09-26T12-20-20] PASS [D] D9c no silent adopt (no new agent/created after the failed ensure; the glue hasLive still false; the ordinary owner keeps working) — created=1 live=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] D: boot 2 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-3] boot 3 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=D phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] FAIL [D] D10 after the backend restart the ordinary owner is gone and re-fenced (a new disposed generation for the root) — []
+[rst017-c4 2026-09-26T12-20-20] PASS [D] D11 the Team mode can take over AGAIN after the restart (ensureRootLive ok — the ordinary owner is process-local and gone) — status=200 head={"type":"server-response","rpcId":"c4-ensureD2-v3cnfpgqvc","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017c4-dyn-2026-09-26T12-20-20","mode":"team","live":true},"provenance":{"origin":"team-remote","method":"team.ensureRootLive","endpoint":"team.ensureRootLive","contractVersion"
+[rst017-c4 2026-09-26T12-20-20] PASS [D] D11b the glue hasLive(root) == true after the re-takeover — ["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] D: boot 3 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-20-20] world D torn down (host SIGTERM'd, mock closed)
+[rst017-c4 2026-09-26T12-20-20] ══ WORLD E — home /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-29-02-E ══
+[rst017-c4 2026-09-26T12-20-20] world E materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-29-02-E
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S0 bare-clone tip == f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5 (the accepted Commit-4 fix build with committed dist/composition) — cloned=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-c4 2026-09-26T12-20-20] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-1] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=create) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E0 team.create accepted (RPC ok:true — the race root exists and is durable) — status=200 head={"type":"server-response","rpcId":"c4-createE-62pqbi0w5s","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rst017c4-dyn-202
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E0b dynamic leader live (first model request on the row staticModel) — seq=2
+[rst017-c4 2026-09-26T12-20-20] E: boot 1 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-20-20] E: iteration 1/20 — boot 2
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-2] boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter1 converged: final Team live + single surviving writer (delay=1µt, created=1, disposed=0) — {"i":1,"bootNo":2,"delayMicro":1,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-2
+[rst017-c4 2026-09-26T12-20-20] E: iteration 2/20 — boot 3
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-3] boot 3 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter2 converged: final Team live + single surviving writer (delay=2µt, created=1, disposed=0) — {"i":2,"bootNo":3,"delayMicro":2,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-2
+[rst017-c4 2026-09-26T12-20-20] E: iteration 3/20 — boot 4
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-4] boot 4 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter3 converged: final Team live + single surviving writer (delay=0µt, created=1, disposed=0) — {"i":3,"bootNo":4,"delayMicro":0,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-2
+[rst017-c4 2026-09-26T12-20-20] E: iteration 4/20 — boot 5
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-5] boot 5 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter4 converged: final Team live + single surviving writer (delay=3µt, created=1, disposed=0) — {"i":4,"bootNo":5,"delayMicro":3,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-2
+[rst017-c4 2026-09-26T12-20-20] E: iteration 5/20 — boot 6
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-6] boot 6 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter5 converged: final Team live + single surviving writer (delay=2µt, created=1, disposed=0) — {"i":5,"bootNo":6,"delayMicro":2,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-2
+[rst017-c4 2026-09-26T12-20-20] E: iteration 6/20 — boot 7
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-7] boot 7 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter6 converged: final Team live + single surviving writer (delay=3µt, created=1, disposed=0) — {"i":6,"bootNo":7,"delayMicro":3,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-2
+[rst017-c4 2026-09-26T12-20-20] E: iteration 7/20 — boot 8
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-8] boot 8 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter7 converged: final Team live + single surviving writer (delay=2µt, created=1, disposed=0) — {"i":7,"bootNo":8,"delayMicro":2,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-2
+[rst017-c4 2026-09-26T12-20-20] E: iteration 8/20 — boot 9
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-9] boot 9 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter8 converged: final Team live + single surviving writer (delay=0µt, created=1, disposed=0) — {"i":8,"bootNo":9,"delayMicro":0,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-2
+[rst017-c4 2026-09-26T12-20-20] E: iteration 9/20 — boot 10
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-10] boot 10 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter9 converged: final Team live + single surviving writer (delay=3µt, created=1, disposed=0) — {"i":9,"bootNo":10,"delayMicro":3,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-
+[rst017-c4 2026-09-26T12-20-20] E: iteration 10/20 — boot 11
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-11] boot 11 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter10 converged: final Team live + single surviving writer (delay=0µt, created=1, disposed=0) — {"i":10,"bootNo":11,"delayMicro":0,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn
+[rst017-c4 2026-09-26T12-20-20] E: iteration 11/20 — boot 12
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-12] boot 12 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter11 converged: final Team live + single surviving writer (delay=2µt, created=1, disposed=0) — {"i":11,"bootNo":12,"delayMicro":2,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn
+[rst017-c4 2026-09-26T12-20-20] E: iteration 12/20 — boot 13
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-13] boot 13 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter12 converged: final Team live + single surviving writer (delay=1µt, created=1, disposed=0) — {"i":12,"bootNo":13,"delayMicro":1,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn
+[rst017-c4 2026-09-26T12-20-20] E: iteration 13/20 — boot 14
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-14] boot 14 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter13 converged: final Team live + single surviving writer (delay=2µt, created=1, disposed=0) — {"i":13,"bootNo":14,"delayMicro":2,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn
+[rst017-c4 2026-09-26T12-20-20] E: iteration 14/20 — boot 15
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-15] boot 15 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter14 converged: final Team live + single surviving writer (delay=0µt, created=1, disposed=0) — {"i":14,"bootNo":15,"delayMicro":0,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn
+[rst017-c4 2026-09-26T12-20-20] E: iteration 15/20 — boot 16
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-16] boot 16 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter15 converged: final Team live + single surviving writer (delay=2µt, created=1, disposed=0) — {"i":15,"bootNo":16,"delayMicro":2,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn
+[rst017-c4 2026-09-26T12-20-20] E: iteration 16/20 — boot 17
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-17] boot 17 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter16 converged: final Team live + single surviving writer (delay=1µt, created=1, disposed=0) — {"i":16,"bootNo":17,"delayMicro":1,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn
+[rst017-c4 2026-09-26T12-20-20] E: iteration 17/20 — boot 18
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-18] boot 18 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter17 converged: final Team live + single surviving writer (delay=3µt, created=1, disposed=0) — {"i":17,"bootNo":18,"delayMicro":3,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn
+[rst017-c4 2026-09-26T12-20-20] E: iteration 18/20 — boot 19
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-19] boot 19 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter18 converged: final Team live + single surviving writer (delay=2µt, created=1, disposed=0) — {"i":18,"bootNo":19,"delayMicro":2,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn
+[rst017-c4 2026-09-26T12-20-20] E: iteration 19/20 — boot 20
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-20] boot 20 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter19 converged: final Team live + single surviving writer (delay=3µt, created=1, disposed=0) — {"i":19,"bootNo":20,"delayMicro":3,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn
+[rst017-c4 2026-09-26T12-20-20] E: iteration 20/20 — boot 21
+[rst017-c4 2026-09-26T12-20-20] PASS [boot-21] boot 21 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-20-20"]
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-iter20 converged: final Team live + single surviving writer (delay=1µt, created=1, disposed=0) — {"i":20,"bootNo":21,"delayMicro":1,"followOk":true,"ensureStatus":200,"ensureOk":true,"teamLive":true,"created":1,"disposed":0,"singleWriter":true,"live":["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn
+[rst017-c4 2026-09-26T12-20-20] PASS [E] E-final 20× race: 20/20 final Team live / 0 unresolved writer-held / 0 double Agent / 0 leaked handle (every boot after a prior iteration came up clean — a leaked write handle would break the next boot gate) — iterations=20 good=20
+[rst017-c4 2026-09-26T12-20-20] E: race loop finished
+[rst017-c4 2026-09-26T12-20-20] world E torn down (host SIGTERM'd, mock closed)
+[rst017-c4 2026-09-26T12-20-20] PASS [s0] post-run: the stable :3080 instance answer is UNCHANGED (no cross-world contamination) — before={"port":3080,"reachable":true,"status":401} after={"port":3080,"reachable":true,"status":401}
+[rst017-c4 2026-09-26T12-20-20] summary: 139 passed, 12 failed, fatal=none
+[rst017-c4 2026-09-26T12-20-20]   FAIL [A] A4 the production fence veto fired (EXACT production wording in the host log) — created=1 disposed=1 apiErr=1
+[rst017-c4 2026-09-26T12-20-20]   FAIL [B] B2 the member is live on boot 1 (delegate → member model request carrying the MEMBER context) — seq=undefined system head=
+[rst017-c4 2026-09-26T12-20-20]   FAIL [B] B4 browser-style session/follow(member child) yields the snapshot (the browser got in) — "session/follow stream error: {\"code\":\"session/not-found\",\"message\":\"session \\\"undefined\\\" not found\",\"details\":{\"sessionId\":\"undefined\"}}"
+[rst017-c4 2026-09-26T12-20-20]   FAIL [B] B5 the member child ordinary activation was fenced (created → disposed sequence OR the production veto wording in the host log) — created=0 disposed=0 err=0
+[rst017-c4 2026-09-26T12-20-20]   FAIL [B] B8 the member cold resume SUCCEEDED (post-restart member model request observed) — seq=undefined
+[rst017-c4 2026-09-26T12-20-20]   FAIL [B] B9(1) role = member under the owning root (durable member row of DYN_ROOT, worker template) — {"teamSession":"session-rst017c4-boot-2026-09-26T12-20-20","member":{"instanceId":"inst-leader","templateId":"leader","label":"leader","childSessionId":"undefined","lifecycle":"undefined","activityVersion":1}}
+[rst017-c4 2026-09-26T12-20-20]   FAIL [B] B9(3) the member Team context is correct (MEMBER persona present, NO leader persona on the resumed surface) — 
+[rst017-c4 2026-09-26T12-20-20]   FAIL [B] B9(4) the member preset/base tools are correct (standard preset surface: read/write/bash present) — []
+[rst017-c4 2026-09-26T12-20-20]   FAIL [B] B9(5) the Team tools surface is EXACTLY the worker envelope (send_message + report_progress; no extra team tools) — []
+[rst017-c4 2026-09-26T12-20-20]   FAIL [B] B9(6) single writer (exactly one surviving member creation; the member is live in the glue) — live=["session-rst017c4-boot-2026-09-26T12-20-20","session-rst017c4-dyn-2026-09-26T12-20-20"] created=0 disposed=0
+[rst017-c4 2026-09-26T12-20-20]   FAIL [D] D2 the cold Team root is fenced on restart (boot-time re-adoption vetoed: disposed generation OR the production veto wording) — []
+[rst017-c4 2026-09-26T12-20-20]   FAIL [D] D10 after the backend restart the ordinary owner is gone and re-fenced (a new disposed generation for the root) — []
+[rst017-c4 2026-09-26T12-20-20] evidence: /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/commit4

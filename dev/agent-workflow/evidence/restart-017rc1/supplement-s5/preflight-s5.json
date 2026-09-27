@@ -1,0 +1,24 @@
+{
+  "stamp": "2026-09-26T18-09-18",
+  "at": "2026-09-26T18:09:18.483Z",
+  "testUse": {
+    "pin": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+    "head": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+    "porcelain": "clean"
+  },
+  "worktreeHead": "5e16fa774d1793ab00ae3652dac8fca439f0ecbb",
+  "expectedBranchSha": "5e16fa774d1793ab00ae3652dac8fca439f0ecbb",
+  "cliVersion": "0.1.7-rc.1",
+  "artifactCount": 1196,
+  "artifactCheckExit": 0,
+  "ports": {
+    "host": 3492,
+    "mock": 3497,
+    "hostFree": true,
+    "mockFree": true
+  },
+  "stableInstances": {
+    "note": "RED LINE: :3080/:3180/:3491 never touched or probed; kit uses only 3492 (host) + 3497 (mock)"
+  },
+  "pluginPeerGate": "verified per-world at install (dsh plugin add git+file:///<bare>#task/... exit 0, 0.1.7 compat gate on the declared peer) — see install checks S1"
+}

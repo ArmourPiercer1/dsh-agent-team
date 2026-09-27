@@ -1,0 +1,23 @@
+{
+  "q1": {
+    "veto": null,
+    "disposed": null,
+    "apiError": null,
+    "deadline": 1790396290868
+  },
+  "all": [
+    {
+      "t": "2026-09-26T04:17:04.864Z",
+      "kind": "armed",
+      "armed": true
+    },
+    {
+      "t": "2026-09-26T04:17:04.888Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017-dyn-2026-09-26T04-16-18",
+      "source": "resume",
+      "agentId": "session-rst017-dyn-2026-09-26T04-16-18",
+      "veto": false
+    }
+  ]
+}

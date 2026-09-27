@@ -1,0 +1,55 @@
+{
+  "stamp": "2026-09-26T05-10-27",
+  "passed": 8,
+  "failed": 0,
+  "results": [
+    {
+      "leg": "s0",
+      "name": "preflight: test-use pristine @ 46a7f68b09 (HEAD + empty porcelain)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: task worktree on task/team-restart-017rc1",
+      "ok": true,
+      "detail": "HEAD=4fb79fca77984552ccb6f0ad1badcab69bd97625"
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: the test-use CLI reports 0.1.7-rc.1",
+      "ok": true,
+      "detail": "version=0.1.7-rc.1"
+    },
+    {
+      "leg": "install",
+      "name": "S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer)",
+      "ok": true,
+      "detail": "exit=0"
+    },
+    {
+      "leg": "install",
+      "name": "S1 no 0.1.7 incompat / allow-version exemption line",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "install",
+      "name": "S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "install",
+      "name": "S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile)",
+      "ok": true,
+      "detail": "bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+    },
+    {
+      "leg": "install",
+      "name": "S3 installed package dir carries the committed install surface",
+      "ok": true,
+      "detail": "all present"
+    }
+  ]
+}

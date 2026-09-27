@@ -1,0 +1,50 @@
+=== typecheck (all) ===
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+TYPECHECK_EXIT=0
+=== build (all) ===
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+BUILD_EXIT=0
+=== build:composition ===
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/client/composition-shim/package.json
+[check-artifacts-committed] OK: 1180 files; committed install-surface artifacts match the fresh build
+COMPOSITION_EXIT=0
+=== check-artifacts ===
+[check-artifacts-committed] OK: 1180 files; committed install-surface artifacts match the fresh build
+ARTIFACTS_EXIT=0
+=== root full test ===
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/24]⎯
+
+ FAIL  packages/tools/test/p6t6-actions.test.ts > P6-T6 tool set — delegated actions (unit level) > messaging: worker -> leader is delivered direct to the leader bound session
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t2-leader' // Object.is equality
+
+Expected: "session-child-p6t2-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/tools/test/p6t6-actions.test.ts:893:46
+    891|       expect(delivered.deliveryMode).toBe('direct')
+    892|       expect(delivered.deliveredToInstanceId).toBe(LEADER_ID)
+    893|       expect(delivered.deliveredToSessionId).toBe(String(P6T2_SEEDS.le…
+       |                                              ^
+    894|     }
+    895|     const inputs = A.recordedInputs
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/24]⎯
+
+
+ Test Files  11 failed | 310 passed (321)
+      Tests  21 failed | 3896 passed (3917)
+   Start at  22:13:22
+   Duration  11.83s (transform 39.79s, setup 0ms, import 149.32s, tests 4.39s, environment 33ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+ROOTTEST_EXIT=0
+=== BATTERY DONE ===

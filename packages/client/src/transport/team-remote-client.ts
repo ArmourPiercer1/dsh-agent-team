@@ -13,8 +13,9 @@
  * every existing wrapper stamps contract version 1 (frozen v1 wire
  * behavior); ONLY `teamCreateV2` and `teamAdmitInitialWorkV2` stamp
  * contract version 2, the two D1 v3 wrappers stamp contract version 3,
- * and `teamResolveControlV4` (F3/F11/F9/T1.4 repair round r1 F9) stamps
- * contract version 4.
+ * `teamResolveControlV4` (F3/F11/F9/T1.4 repair round r1 F9) stamps
+ * contract version 4, and `teamPrepareOrdinaryOpenV5` (C1
+ * restart-0.1.7-rc.1 recovery, guide §10.2) stamps contract version 5.
  *
  * Failure discipline (frozen `RemotePushTransport` contract, mirrored
  * here for the unary path): every RPC-level outcome arrives as a typed
@@ -40,6 +41,7 @@ import {
   REMOTE_CONTRACT_VERSION_V2,
   REMOTE_CONTRACT_VERSION_V3,
   REMOTE_CONTRACT_VERSION_V4,
+  REMOTE_CONTRACT_VERSION_V5,
   REMOTE_RPC_CHANNEL,
   PushTransportLossError,
   type RemoteContractVersion,
@@ -71,10 +73,10 @@ import type { TeamRpcCarrier, TeamRpcResult } from './host-seams.js'
 
 /**
  * The Team Remote client surface (plan §6.1): the frozen unary endpoint
- * `call` plus typed wrappers for every catalog method (27 — the 23
+ * `call` plus typed wrappers for every catalog method (28 — the 23
  * frozen v1 methods + the v2-only `team.admitInitialWork` + the v3-only
  * `team.listRoots` / `team.ensureRootLive` + the v4-only
- * `team.resolveControl`).
+ * `team.resolveControl` + the v5-only `team.prepareOrdinaryOpen`).
  *
  * **Version routing (TCM vNext §15.3)**: every EXISTING wrapper stamps
  * contract version **1** (the frozen v1 wire behavior — unchanged); the
@@ -83,8 +85,10 @@ import type { TeamRpcCarrier, TeamRpcResult } from './host-seams.js'
  * v3 wrappers — {@link teamListRootsV3} and {@link teamEnsureRootLiveV3}
  * — stamp contract version **3** (Team D1-D6 repair v2, D1); the v4
  * wrapper — {@link teamResolveControlV4} — stamps contract version **4**
- * (F3/F11/F9/T1.4 repair round r1 F9). The generic {@link call} also
- * defaults to version 1.
+ * (F3/F11/F9/T1.4 repair round r1 F9); the v5 wrapper —
+ * {@link teamPrepareOrdinaryOpenV5} — stamps contract version **5** (C1
+ * restart-0.1.7-rc.1 recovery, guide §10.2). The generic {@link call}
+ * also defaults to version 1.
  */
 export interface TeamRemoteClient {
   /**
@@ -177,6 +181,24 @@ export interface TeamRemoteClient {
    * version 4.
    */
   teamResolveControlV4(params: RemoteTeamResolveControlParams): Promise<RemoteResponse>
+  /**
+   * `team.prepareOrdinaryOpen` (contract v5, v5-only method, C1
+   * restart-0.1.7-rc.1 recovery — guide §10.2) — the narrow one-shot
+   * ordinary-activation PERMIT of the Team fence: the host arms the
+   * fence's per-root one-shot activation permit for the given Team root
+   * (process-local, single-use, TTL-bounded; an unconsumed permit expires
+   * silently — there is NO revoke RPC). This is a Team CONTROL-PLANE RPC:
+   * it performs NO Team ensure, NO Team Agent side effect, and no
+   * TeamDomain mutation beyond the one-shot activation-allow fact. The
+   * closed v5 param set is `{ teamSessionId }` ONLY (the host authority
+   * is the connection gate — no caller claim, no token). On success
+   * `data` is at least `{ rootSessionId, permitted: true }`; the typed
+   * failure vocabulary (foreign root / permit port unavailable) arrives
+   * as the typed `RemoteResponse` error. Stamps contract version 5.
+   * @param teamSessionId - the TeamSession (root session) id whose
+   *   ordinary open to permit.
+   */
+  teamPrepareOrdinaryOpenV5(teamSessionId: string): Promise<RemoteResponse>
   /** `member.create` — admit one member instance. */
   memberCreate(params: RemoteMemberCreateParams): Promise<RemoteResponse>
   /** `member.send` — first message to a member instance. */
@@ -283,6 +305,16 @@ export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClien
     // principal — the closed v4 param set carries no caller fields).
     teamResolveControlV4: (params) =>
       callWithVersion('team.resolveControl', params, REMOTE_CONTRACT_VERSION_V4),
+    // C1 restart-0.1.7-rc.1 recovery (guide §10.2) — the v5-only one-shot
+    // ordinary-activation permit (contract version 5; a Team control-plane
+    // RPC — NO Team ensure, NO Team Agent side effect, no revoke RPC: an
+    // unconsumed permit expires by TTL).
+    teamPrepareOrdinaryOpenV5: (teamSessionId) =>
+      callWithVersion(
+        'team.prepareOrdinaryOpen',
+        { teamSessionId },
+        REMOTE_CONTRACT_VERSION_V5,
+      ),
     memberCreate: (params) => call('member.create', params),
     memberSend: (params) => call('member.send', params),
     memberFollowup: (params) => call('member.followup', params),

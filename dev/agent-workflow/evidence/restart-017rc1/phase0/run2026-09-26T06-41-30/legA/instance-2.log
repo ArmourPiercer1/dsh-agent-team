@@ -1,0 +1,57 @@
+[diag-hook t=       30ms] ws prototype patched (terminate/close/ping/send)
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T06-41-30/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3492/?token=9mSnUDUfxi6CZ5n1powDF3i-rdOcfU6l2qzMTGXMPpE
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 113ms — the connection service appeared after the mount step)
+[diag-hook t=     1515ms] ws SEND() len=144 sock=S1(l3492->r44924) head={"type":"item","streamId":"ev-omlo82sk","value":{"type":"ready","clien
+[diag-hook t=     1527ms] ws SEND() len=70344 sock=S1(l3492->r44924) head={"type":"item","streamId":"fol-zvx3eeyr","value":{"type":"snapshot","h
+[diag-hook t=     1536ms] ws SEND() len=142 sock=S1(l3492->r44924) head={"type":"item","streamId":"fol-zvx3eeyr","value":{"type":"event","even
+[diag-hook t=     1537ms] ws SEND() len=1752 sock=S1(l3492->r44924) head={"type":"item","streamId":"ev-omlo82sk","value":{"type":"emit","event"
+[diag-hook t=     1537ms] ws SEND() len=1752 sock=S1(l3492->r44924) head={"type":"item","streamId":"ev-omlo82sk","value":{"type":"emit","event"
+[diag-hook t=     1799ms] net DESTROY S2(l3492->r44898) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Server.closeIdleConnections (node:_http_server:708:27)
+    at httpServerPreClose (node:_http_server:628:10)
+    at Server.close (node:_http_server:675:3)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/host/webserver/lib/index.js:308:17
+    at new Promise (<anonymous>)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/host/webserver/lib/index.js:307:25
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+[diag-hook t=     1799ms] net DESTROY S3(l3492->r44912) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at Server.closeIdleConnections (node:_http_server:708:27)
+    at httpServerPreClose (node:_http_server:628:10)
+    at Server.close (node:_http_server:675:3)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/host/webserver/lib/index.js:308:17
+    at new Promise (<anonymous>)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/host/webserver/lib/index.js:307:25
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+[diag-hook t=     1799ms] net DESTROY S1(l3492->r44924) hadError=false err=none
+    at Socket.destroy (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:57:137)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/host/webserver/lib/index.js:317:12
+    at new Promise (<anonymous>)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/host/webserver/lib/index.js:313:69
+    at Array.map (<anonymous>)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/host/webserver/lib/index.js:313:53
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+    at dispose (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1181:20)
+[diag-hook t=     1802ms] ws terminate() code=- reason="" readyState=1 sock=S1(l?->r44924)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:75:177)
+    at RemoteStreamMuxServer.close (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:226:52)
+    at route.path (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:630:22)
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+    at dispose (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1181:20)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1244:40
+    at finalizeDisposal (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1224:14)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1242:11
+[diag-hook t=     1802ms] ws close() code=1001 reason="peer left" readyState=2 sock=S1(l?->r44924)
+    at WebSocket.patched (file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/diag-hook.mjs:75:177)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/api/gateway/lib/index.js:513:14
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+    at dispose (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1181:20)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1244:40
+    at finalizeDisposal (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1224:14)
+    at file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1242:11
+    at runDisposable (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+[diag-hook t=     1845ms] net CLOSE S1(l?->r44924) hadError=false
+[diag-hook t=     1846ms] net CLOSE S3(l?->r44912) hadError=false
+[diag-hook t=     1846ms] net CLOSE S2(l?->r44898) hadError=false

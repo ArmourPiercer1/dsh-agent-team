@@ -1,0 +1,22 @@
+{
+  "memberInstanceId": "inst-189924e0gt7s",
+  "memberChildSessionIdFromCreate": "session-team-child-55bc337e5808abdac07601a64560b56f",
+  "childSessionId": "session-team-child-55bc337e5808abdac07601a64560b56f",
+  "listMembersRow": {
+    "instanceId": "inst-189924e0gt7s",
+    "templateId": "worker",
+    "label": "c4-worker--00-13",
+    "lifecycle": "RUNNING",
+    "childSessionId": "session-team-child-55bc337e5808abdac07601a64560b56f"
+  },
+  "state1MembersEvidenceOnly": [
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ]
+}

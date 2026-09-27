@@ -1,0 +1,319 @@
+Statistical profiling result from isolate-0x2299a000-5-v8.log, (40341 ticks, 13627 unaccounted, 0 excluded).
+
+ [Shared libraries]:
+   ticks  total  nonlib   name
+   2734    6.8%          [vdso]
+      6    0.0%          /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.35
+
+ [JavaScript]:
+   ticks  total  nonlib   name
+   2551    6.3%    6.8%  JS: *waitForEventFrame file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:820:33
+   1235    3.1%    3.3%  Builtin: StringEqual
+   1138    2.8%    3.0%  Builtin: GetProperty
+    965    2.4%    2.6%  JS: *isTarget file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:822:20
+    728    1.8%    1.9%  Builtin: ArrayPrototypeUnshift
+    724    1.8%    1.9%  Builtin: RunMicrotasks
+    447    1.1%    1.2%  Builtin: ResumeGeneratorTrampoline
+    384    1.0%    1.0%  Builtin: GrowFastSmiOrObjectElements
+    383    0.9%    1.0%  Builtin: ArrayPrototypeShift
+    343    0.9%    0.9%  Builtin: AsyncFunctionAwait
+    293    0.7%    0.8%  Builtin: EnqueueMicrotask
+    278    0.7%    0.7%  Builtin: PromiseResolve
+    264    0.7%    0.7%  Builtin: CEntry_Return1_ArgvOnStack_BuiltinExit
+    235    0.6%    0.6%  Builtin: ResolvePromise
+    232    0.6%    0.6%  Builtin: CallFunction_ReceiverIsNullOrUndefined
+    225    0.6%    0.6%  Builtin: PerformPromiseThen
+    164    0.4%    0.4%  Builtin: Call_ReceiverIsNullOrUndefined
+    106    0.3%    0.3%  Builtin: AdaptorWithBuiltinExitFrame0
+     92    0.2%    0.2%  Builtin: CEntry_Return1_ArgvOnStack_NoBuiltinExit
+     81    0.2%    0.2%  Builtin: FulfillPromise
+     65    0.2%    0.2%  Builtin: AsyncFunctionAwaitResolveClosure
+     49    0.1%    0.1%  Builtin: PromiseFulfillReactionJob
+     49    0.1%    0.1%  Builtin: LoadIC
+     24    0.1%    0.1%  Builtin: ArrayUnshift
+     18    0.0%    0.0%  Builtin: BaselineOutOfLinePrologue
+     16    0.0%    0.0%  Builtin: CallFunction_ReceiverIsAny
+     13    0.0%    0.0%  JS: +processTimers node:internal/timers:603:25
+     11    0.0%    0.0%  Builtin: RecordWriteSaveFP
+     11    0.0%    0.0%  Builtin: KeyedLoadIC
+     11    0.0%    0.0%  Builtin: CallFunction_ReceiverIsNotNullOrUndefined
+      9    0.0%    0.0%  JS: +listOnTimeout node:internal/timers:623:25
+      8    0.0%    0.0%  Builtin: Call_ReceiverIsNotNullOrUndefined
+      6    0.0%    0.0%  Builtin: StrictEqual_Baseline
+      6    0.0%    0.0%  Builtin: KeyedStoreIC
+      6    0.0%    0.0%  Builtin: DateNow
+      5    0.0%    0.0%  JS: +popAsyncContext node:internal/async_hooks:562:25
+      5    0.0%    0.0%  JS: +percolateDown node:internal/priority_queue:38:16
+      5    0.0%    0.0%  JS: +insert node:internal/timers:426:16
+      5    0.0%    0.0%  Builtin: ToBooleanForBaselineJump
+      5    0.0%    0.0%  Builtin: RecordWriteIgnoreFP
+      5    0.0%    0.0%  Builtin: KeyedLoadIC_PolymorphicName
+      4    0.0%    0.0%  JS: +<anonymous> file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:112:15
+      4    0.0%    0.0%  Builtin: StoreIC
+      4    0.0%    0.0%  Builtin: KeyedLoadIC_Megamorphic
+      3    0.0%    0.0%  JS: ~main file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:1157:20
+      3    0.0%    0.0%  Builtin: LoadIC_NoFeedback
+      3    0.0%    0.0%  Builtin: LoadIC_Megamorphic
+      3    0.0%    0.0%  Builtin: InterpreterEntryTrampoline
+      2    0.0%    0.0%  JS: ^_Headers node:internal/deps/undici/undici:11391:18
+      2    0.0%    0.0%  JS: *wasm-function[20]
+      2    0.0%    0.0%  Builtin: StringPrototypeSlice
+      2    0.0%    0.0%  Builtin: KeyedStoreIC_Megamorphic
+      2    0.0%    0.0%  Builtin: JSEntry
+      2    0.0%    0.0%  Builtin: FastNewFunctionContextFunction
+      2    0.0%    0.0%  Builtin: Construct
+      2    0.0%    0.0%  Builtin: Call_ReceiverIsAny
+      2    0.0%    0.0%  Builtin: CallFunctionTemplate_Generic
+      2    0.0%    0.0%  Builtin: CallApiCallbackGeneric
+      1    0.0%    0.0%  RegExp: ^[\^_`a-zA-Z\-0-9!#$%&'*+.|~]+$
+      1    0.0%    0.0%  JS: ~sleep file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:176:15
+      1    0.0%    0.0%  JS: ~request node:http:107:17
+      1    0.0%    0.0%  JS: ~add node:internal/deps/undici/undici:1114:10
+      1    0.0%    0.0%  JS: ~__commonJS node:internal/deps/undici/undici:5:18
+      1    0.0%    0.0%  JS: ~<anonymous> node:internal/main/run_main_module:1:1
+      1    0.0%    0.0%  JS: ^writeGeneric node:internal/stream_base_commons:146:22
+      1    0.0%    0.0%  JS: ^webidl.converters.RequestInfo node:internal/deps/undici/undici:12667:45
+      1    0.0%    0.0%  JS: ^setTimeout node:internal/deps/undici/undici:7296:17
+      1    0.0%    0.0%  JS: ^readMore node:internal/deps/undici/undici:7335:15
+      1    0.0%    0.0%  JS: ^processTimers node:internal/timers:603:25
+      1    0.0%    0.0%  JS: ^next node:internal/streams/readable:1378:16
+      1    0.0%    0.0%  JS: ^listOnTimeout node:internal/timers:623:25
+      1    0.0%    0.0%  JS: ^get weak node:internal/event_target:521:11
+      1    0.0%    0.0%  JS: ^get hostname node:internal/url:1107:15
+      1    0.0%    0.0%  JS: ^fromList node:internal/streams/readable:1629:18
+      1    0.0%    0.0%  JS: ^fetchJson file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:179:25
+      1    0.0%    0.0%  JS: ^checkError node:internal/streams/destroy:33:20
+      1    0.0%    0.0%  JS: ^abortSignal node:internal/abort_controller:492:21
+      1    0.0%    0.0%  JS: ^abort node:internal/deps/undici/undici:12053:21
+      1    0.0%    0.0%  JS: ^URL node:internal/url:855:3
+      1    0.0%    0.0%  JS: ^Socket._writeGeneric node:net:1231:42
+      1    0.0%    0.0%  JS: ^Pool node:internal/deps/undici/undici:9789:23
+      1    0.0%    0.0%  JS: ^<anonymous> node:internal/validators:165:40
+      1    0.0%    0.0%  JS: ^<anonymous> node:internal/streams/end-of-stream:62:18
+      1    0.0%    0.0%  JS: ^<anonymous> node:internal/deps/undici/undici:7203:56
+      1    0.0%    0.0%  JS: ^<anonymous> node:internal/abort_controller:383:17
+      1    0.0%    0.0%  JS: +waitForEventFrame file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:820:33
+      1    0.0%    0.0%  JS: +remove node:internal/linkedlist:16:16
+      1    0.0%    0.0%  JS: +readMore node:internal/deps/undici/undici:7335:15
+      1    0.0%    0.0%  JS: +pushAsyncContext node:internal/async_hooks:548:26
+      1    0.0%    0.0%  JS: +peek node:internal/linkedlist:10:14
+      1    0.0%    0.0%  JS: +isReadableStream node:internal/streams/utils:80:26
+      1    0.0%    0.0%  JS: +get aborted node:internal/abort_controller:255:14
+      1    0.0%    0.0%  JS: +emitReadable node:internal/streams/readable:830:22
+      1    0.0%    0.0%  JS: +busy node:internal/deps/undici/undici:7785:13
+      1    0.0%    0.0%  JS: +Timeout node:internal/timers:218:14
+      1    0.0%    0.0%  JS: *search node:internal/deps/undici/undici:1155:13
+      1    0.0%    0.0%  Builtin: WeakCollectionSet
+      1    0.0%    0.0%  Builtin: WasmToJsWrapperCSA
+      1    0.0%    0.0%  Builtin: ToNumeric_Baseline
+      1    0.0%    0.0%  Builtin: StrictEqual_WithFeedback
+      1    0.0%    0.0%  Builtin: RegExpMatchFast
+      1    0.0%    0.0%  Builtin: PromiseWithResolvers
+      1    0.0%    0.0%  Builtin: LoadGlobalIC_NoFeedback
+      1    0.0%    0.0%  Builtin: LoadGlobalIC
+      1    0.0%    0.0%  Builtin: LessThan_Baseline
+      1    0.0%    0.0%  Builtin: KeyedHasIC_PolymorphicName
+      1    0.0%    0.0%  Builtin: JSToWasmWrapper
+      1    0.0%    0.0%  Builtin: JSConstructStubGeneric
+      1    0.0%    0.0%  Builtin: InterpreterPushArgsThenFastConstructFunction
+      1    0.0%    0.0%  Builtin: FunctionPrototypeHasInstance
+      1    0.0%    0.0%  Builtin: FindOrderedHashSetEntry
+      1    0.0%    0.0%  Builtin: FindOrderedHashMapEntry
+      1    0.0%    0.0%  Builtin: CreateShallowObjectLiteral
+      1    0.0%    0.0%  Builtin: ConstructFunction
+      1    0.0%    0.0%  Builtin: ConstructForwardAllArgs_WithFeedback
+      1    0.0%    0.0%  Builtin: CompileLazy
+      1    0.0%    0.0%  Builtin: Call_ReceiverIsNullOrUndefined_Baseline_Compact
+      1    0.0%    0.0%  Builtin: Call_ReceiverIsNotNullOrUndefined_Baseline_Compact
+      1    0.0%    0.0%  Builtin: CallWithArrayLike
+      1    0.0%    0.0%  Builtin: AsyncFunctionEnter
+      1    0.0%    0.0%  Builtin: ArrayShift
+      1    0.0%    0.0%  Builtin: ArrayPrototypePush
+      1    0.0%    0.0%  Builtin: ArrayIncludesSmi
+      1    0.0%    0.0%  Builtin: AllocateInYoungGeneration
+      1    0.0%    0.0%  Builtin: Add_Baseline
+
+ [C++]:
+   ticks  total  nonlib   name
+  11925   29.6%   31.7%  __syscall_cancel_arch_end
+    340    0.8%    0.9%  __floor_sse41
+     95    0.2%    0.3%  _init
+     35    0.1%    0.1%  fputc@@GLIBC_2.2.5
+     25    0.1%    0.1%  __getpid@@GLIBC_2.2.5
+     22    0.1%    0.1%  __libc_malloc@@GLIBC_2.2.5
+     16    0.0%    0.0%  __printf_buffer
+     14    0.0%    0.0%  _int_malloc
+     12    0.0%    0.0%  unlink_chunk.isra.0
+     12    0.0%    0.0%  syscall@@GLIBC_2.2.5
+     12    0.0%    0.0%  __printf_fp_buffer_1.isra.0
+     11    0.0%    0.0%  __memcpy_avx_unaligned_erms
+     11    0.0%    0.0%  __libc_malloc2
+     10    0.0%    0.0%  __memset_avx2_unaligned_erms
+      9    0.0%    0.0%  __clock_gettime@@GLIBC_PRIVATE
+      8    0.0%    0.0%  __libc_free@@GLIBC_2.2.5
+      7    0.0%    0.0%  pthread_cond_signal@@GLIBC_2.3.2
+      7    0.0%    0.0%  _int_free_chunk
+      6    0.0%    0.0%  __syscall_cancel_arch
+      6    0.0%    0.0%  __pthread_mutex_lock@GLIBC_2.2.5
+      5    0.0%    0.0%  hack_digit
+      4    0.0%    0.0%  std::__detail::_Prime_rehash_policy::_M_next_bkt(unsigned long) const@@GLIBCXX_3.4.18
+      4    0.0%    0.0%  pthread_sigmask@GLIBC_2.2.5
+      4    0.0%    0.0%  operator new(unsigned long)@@GLIBCXX_3.4
+      4    0.0%    0.0%  _int_free_merge_chunk
+      4    0.0%    0.0%  __strlen_avx2
+      4    0.0%    0.0%  __mpn_mul_1
+      3    0.0%    0.0%  operator delete(void*)@@GLIBCXX_3.4
+      3    0.0%    0.0%  __strchrnul_avx2
+      3    0.0%    0.0%  __printf_fp_l_buffer
+      3    0.0%    0.0%  __printf_buffer_write
+      2    0.0%    0.0%  std::ostream::sentry::sentry(std::ostream&)@@GLIBCXX_3.4
+      2    0.0%    0.0%  std::ostream::put(char)@@GLIBCXX_3.4
+      2    0.0%    0.0%  sigemptyset@@GLIBC_2.2.5
+      2    0.0%    0.0%  node::InternalCallbackScope::InternalCallbackScope(node::Environment*, std::variant<v8::Local<v8::Object>, v8::Local<v8::Object>*>, node::async_context const&, int, v8::Local<v8::Value>)
+      2    0.0%    0.0%  malloc_usable_size@@GLIBC_2.2.5
+      2    0.0%    0.0%  exp2@GLIBC_2.2.5
+      2    0.0%    0.0%  _itoa_word
+      2    0.0%    0.0%  __pthread_mutex_unlock@GLIBC_2.2.5
+      2    0.0%    0.0%  __popcountdi2@@GCC_3.4
+      2    0.0%    0.0%  _IO_fwrite@@GLIBC_2.2.5
+      1    0.0%    0.0%  std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_int<long>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, long) const@@GLIBCXX_3.4
+      1    0.0%    0.0%  std::__detail::_Prime_rehash_policy::_M_need_rehash(unsigned long, unsigned long, unsigned long) const@@GLIBCXX_3.4.18
+      1    0.0%    0.0%  std::_Rb_tree_insert_and_rebalance(bool, std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::_Rb_tree_node_base&)@@GLIBCXX_3.4
+      1    0.0%    0.0%  posix_memalign@@GLIBC_2.2.5
+      1    0.0%    0.0%  operator delete(void*, unsigned long)@@CXXABI_1.3.9
+      1    0.0%    0.0%  mkdir@@GLIBC_2.2.5
+      1    0.0%    0.0%  ioctl@@GLIBC_2.2.5
+      1    0.0%    0.0%  epoll_pwait@@GLIBC_2.6
+      1    0.0%    0.0%  bind@@GLIBC_2.2.5
+      1    0.0%    0.0%  _int_free_maybe_trim
+      1    0.0%    0.0%  __read@@GLIBC_2.2.5
+      1    0.0%    0.0%  __munmap@@GLIBC_PRIVATE
+      1    0.0%    0.0%  __mpn_rshift
+      1    0.0%    0.0%  __mpn_extract_double
+      1    0.0%    0.0%  __memcmp_avx2_movbe
+      1    0.0%    0.0%  __lll_lock_wake_private@@GLIBC_PRIVATE
+      1    0.0%    0.0%  __lll_lock_wait_private@@GLIBC_PRIVATE
+      1    0.0%    0.0%  __exp2_finite@GLIBC_2.15
+      1    0.0%    0.0%  _IO_fflush@@GLIBC_2.2.5
+
+ [Summary]:
+   ticks  total  nonlib   name
+  11311   28.0%   30.1%  JavaScript
+  12663   31.4%   33.7%  C++
+   1365    3.4%    3.6%  GC
+   2740    6.8%          Shared libraries
+  13627   33.8%          Unaccounted
+
+ [C++ entry points]:
+   ticks    cpp   total   name
+   4782   89.9%   11.9%  __syscall_cancel_arch_end
+    340    6.4%    0.8%  __floor_sse41
+     93    1.7%    0.2%  _init
+     35    0.7%    0.1%  fputc@@GLIBC_2.2.5
+      8    0.2%    0.0%  __libc_malloc@@GLIBC_2.2.5
+      6    0.1%    0.0%  pthread_cond_signal@@GLIBC_2.3.2
+      6    0.1%    0.0%  __syscall_cancel_arch
+      5    0.1%    0.0%  __pthread_mutex_lock@GLIBC_2.2.5
+      5    0.1%    0.0%  __memcpy_avx_unaligned_erms
+      4    0.1%    0.0%  pthread_sigmask@GLIBC_2.2.5
+      4    0.1%    0.0%  _int_malloc
+      4    0.1%    0.0%  __memset_avx2_unaligned_erms
+      3    0.1%    0.0%  syscall@@GLIBC_2.2.5
+      3    0.1%    0.0%  __clock_gettime@@GLIBC_PRIVATE
+      2    0.0%    0.0%  std::ostream::sentry::sentry(std::ostream&)@@GLIBCXX_3.4
+      2    0.0%    0.0%  std::ostream::put(char)@@GLIBCXX_3.4
+      2    0.0%    0.0%  operator new(unsigned long)@@GLIBCXX_3.4
+      2    0.0%    0.0%  __pthread_mutex_unlock@GLIBC_2.2.5
+      2    0.0%    0.0%  __libc_free@@GLIBC_2.2.5
+      2    0.0%    0.0%  _IO_fwrite@@GLIBC_2.2.5
+      1    0.0%    0.0%  std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_int<long>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, long) const@@GLIBCXX_3.4
+      1    0.0%    0.0%  std::__detail::_Prime_rehash_policy::_M_need_rehash(unsigned long, unsigned long, unsigned long) const@@GLIBCXX_3.4.18
+      1    0.0%    0.0%  std::_Rb_tree_insert_and_rebalance(bool, std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::_Rb_tree_node_base&)@@GLIBCXX_3.4
+      1    0.0%    0.0%  posix_memalign@@GLIBC_2.2.5
+      1    0.0%    0.0%  operator delete(void*)@@GLIBCXX_3.4
+      1    0.0%    0.0%  mkdir@@GLIBC_2.2.5
+      1    0.0%    0.0%  ioctl@@GLIBC_2.2.5
+      1    0.0%    0.0%  bind@@GLIBC_2.2.5
+      1    0.0%    0.0%  __memcmp_avx2_movbe
+      1    0.0%    0.0%  _IO_fflush@@GLIBC_2.2.5
+
+ [Bottom up (heavy) profile]:
+  Note: percentage shows a share of a particular caller in the total
+  amount of its parent calls.
+  Callers occupying less than 1.0% are not shown.
+
+   ticks parent  name
+  13627   33.8%  UNKNOWN
+  11757   86.3%    JS: *waitForEventFrame file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:820:33
+  11757  100.0%      Builtin: AsyncFunctionAwaitResolveClosure
+  11757  100.0%        Builtin: CallApiCallbackOptimizedNoProfiling
+  11757  100.0%          JS: +processTicksAndRejections node:internal/process/task_queues:72:35
+
+  11925   29.6%  __syscall_cancel_arch_end
+   4355   36.5%    JS: ^spawnSync node:internal/child_process:1145:19
+   4355  100.0%      JS: ^spawnSync node:child_process:883:19
+   4355  100.0%        JS: ~bootWorldAndInstall file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:1033:35
+   4355  100.0%          JS: ~main file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:1157:20
+   4355  100.0%            Builtin: AsyncFunctionAwaitResolveClosure
+    399    3.3%    JS: ~spawnSync node:internal/child_process:1145:19
+    292   73.2%      JS: ~spawnSync node:child_process:883:19
+    292  100.0%        JS: ~main file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:1157:20
+    292  100.0%          Script: ~<anonymous> file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:1:1
+    292  100.0%            Builtin: GeneratorPrototypeNext
+    107   26.8%      JS: ^spawnSync node:child_process:883:19
+    107  100.0%        JS: ~bootWorldAndInstall file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:1033:35
+    107  100.0%          JS: ~main file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:1157:20
+    107  100.0%            Builtin: AsyncFunctionAwaitResolveClosure
+
+   2734    6.8%  [vdso]
+   2717   99.4%    JS: *waitForEventFrame file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:820:33
+   2717  100.0%      Builtin: AsyncFunctionAwaitResolveClosure
+   2717  100.0%        Builtin: CallApiCallbackOptimizedNoProfiling
+   2717  100.0%          JS: +processTicksAndRejections node:internal/process/task_queues:72:35
+
+   2551    6.3%  JS: *waitForEventFrame file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:820:33
+   2541   99.6%    Builtin: AsyncFunctionAwaitResolveClosure
+   2541  100.0%      Builtin: CallApiCallbackOptimizedNoProfiling
+   2541  100.0%        JS: +processTicksAndRejections node:internal/process/task_queues:72:35
+
+   1235    3.1%  Builtin: StringEqual
+    715   57.9%    JS: *waitForEventFrame file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:820:33
+    715  100.0%      Builtin: AsyncFunctionAwaitResolveClosure
+    715  100.0%        Builtin: CallApiCallbackOptimizedNoProfiling
+    715  100.0%          JS: +processTicksAndRejections node:internal/process/task_queues:72:35
+    520   42.1%    Builtin: AsyncFunctionAwaitResolveClosure
+    520  100.0%      Builtin: CallApiCallbackOptimizedNoProfiling
+    520  100.0%        JS: +processTicksAndRejections node:internal/process/task_queues:72:35
+
+   1138    2.8%  Builtin: GetProperty
+   1123   98.7%    JS: *waitForEventFrame file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:820:33
+   1123  100.0%      Builtin: AsyncFunctionAwaitResolveClosure
+   1123  100.0%        Builtin: CallApiCallbackOptimizedNoProfiling
+   1123  100.0%          JS: +processTicksAndRejections node:internal/process/task_queues:72:35
+
+    965    2.4%  JS: *isTarget file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:822:20
+    921   95.4%    JS: *waitForEventFrame file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:820:33
+    921  100.0%      Builtin: AsyncFunctionAwaitResolveClosure
+    921  100.0%        Builtin: CallApiCallbackOptimizedNoProfiling
+    921  100.0%          JS: +processTicksAndRejections node:internal/process/task_queues:72:35
+     38    3.9%    Builtin: AsyncFunctionAwaitResolveClosure
+     38  100.0%      Builtin: CallApiCallbackOptimizedNoProfiling
+     38  100.0%        JS: +processTicksAndRejections node:internal/process/task_queues:72:35
+
+    728    1.8%  Builtin: ArrayPrototypeUnshift
+    717   98.5%    JS: *waitForEventFrame file:///home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/spike.mjs:820:33
+    717  100.0%      Builtin: AsyncFunctionAwaitResolveClosure
+    717  100.0%        Builtin: CallApiCallbackOptimizedNoProfiling
+    717  100.0%          JS: +processTicksAndRejections node:internal/process/task_queues:72:35
+      9    1.2%    Builtin: AsyncFunctionAwaitResolveClosure
+      9  100.0%      Builtin: CallApiCallbackOptimizedNoProfiling
+      9  100.0%        JS: +processTicksAndRejections node:internal/process/task_queues:72:35
+
+    724    1.8%  Builtin: RunMicrotasks
+    724  100.0%    Builtin: CallApiCallbackOptimizedNoProfiling
+    724  100.0%      JS: +processTicksAndRejections node:internal/process/task_queues:72:35
+
+    447    1.1%  Builtin: ResumeGeneratorTrampoline
+    447  100.0%    Builtin: CallApiCallbackOptimizedNoProfiling
+    447  100.0%      JS: +processTicksAndRejections node:internal/process/task_queues:72:35
+

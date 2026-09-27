@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "value": {
+    "status": "delivered",
+    "rootSessionId": "session-rst017s5-dyn-2026-09-26T17-59-39",
+    "action": "send-message",
+    "callerRole": "leader",
+    "recipientInstanceId": "inst-0e35be100kwy",
+    "deliveryMode": "direct",
+    "deliveredToInstanceId": "inst-0e35be100kwy",
+    "deliveredToSessionId": "session-team-child-30ef0970accb8865f3663071507e175f",
+    "factSequence": 6,
+    "deliveredSequence": 7,
+    "requestToken": "s5-ktok--59-39-2"
+  }
+}

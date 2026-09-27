@@ -48,12 +48,16 @@ describe('@dsh-agent-team/runtime (P1-T4 skeleton)', () => {
 describe('dsh-agent-team host plugin (P8-S5A production entry)', () => {
   it('has the public Cordis composition plugin shape', () => {
     // Plugin.Object contract: a stable display name plus a callable apply,
-    // and the inject declaration that parks the row until all four host
+    // and the inject declaration that parks the row until all five host
     // services (agents, storageDomain, sessions, and — M2, plan §15.5 —
     // workspaceRegistry, the public workspace service the web profile
     // provides through its workspace row) exist (R122: rc.1 removed
     // sessionPersistence.ensureMaterialized; the materialization seam is the
-    // stock sessions service's flush, present in both eras).
+    // stock sessions service's flush, present in both eras). C1
+    // (restart-recovery guide §5) added `sessionPersistence` to the set:
+    // the glue's durable-existence read moved to the host's stat-based
+    // public seam, so the plugin hard-declares the core session-layer
+    // service (the same one ACP / message-feedback already inject).
     expect(typeof hostPlugin.name).toBe('string')
     expect(hostPlugin.name).toBe('dsh-agent-team')
     expect(typeof hostPlugin.apply).toBe('function')
@@ -62,6 +66,7 @@ describe('dsh-agent-team host plugin (P8-S5A production entry)', () => {
       'agents',
       'storageDomain',
       'sessions',
+      'sessionPersistence',
       'workspaceRegistry',
     ])
   })

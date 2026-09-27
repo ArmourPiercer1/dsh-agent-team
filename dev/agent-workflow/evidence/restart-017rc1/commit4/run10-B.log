@@ -1,0 +1,44 @@
+[rst017-c4 2026-09-26T14-06-01] Commit 4 kit — stamp 2026-09-26T14-06-01 worlds=B browserHold=false keepHome=false race=20
+[rst017-c4 2026-09-26T14-06-01] PASS [s0] preflight: test-use HEAD == the 0.1.7-rc.1 pin — HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4
+[rst017-c4 2026-09-26T14-06-01] PASS [s0] preflight: test-use working tree pristine (empty porcelain)
+[rst017-c4 2026-09-26T14-06-01] PASS [s0] preflight: task worktree at the accepted Commit-4 fix tip (f3d5a71b — runOwned await fix) — HEAD=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T14-06-01] PASS [s0] preflight: the test-use CLI reports 0.1.7-rc.1 — version=0.1.7-rc.1
+[rst017-c4 2026-09-26T14-06-01] PASS [s0] preflight: host/mock ports free (3492/3497) — hostFree=true mockFree=true
+[rst017-c4 2026-09-26T14-06-01] ══ WORLD B — home /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T14-06-01-B ══
+[rst017-c4 2026-09-26T14-06-01] world B materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T14-06-01-B
+[rst017-c4 2026-09-26T14-06-01] PASS [install] S0 bare-clone tip == f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5 (the accepted Commit-4 fix build with committed dist/composition) — cloned=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T14-06-01] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-c4 2026-09-26T14-06-01] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-c4 2026-09-26T14-06-01] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-c4 2026-09-26T14-06-01] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-c4 2026-09-26T14-06-01] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-c4 2026-09-26T14-06-01] PASS [boot-1] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=B phase=create) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T14-06-01"]
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B1 team.create accepted (RPC ok:true — the leader works) — status=200 head={"type":"server-response","rpcId":"c4-createB-p2uvaamyp2","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rst017c4-dyn-202
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B1b dynamic leader live (first model request on the row staticModel) — seq=2
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B2 the member is live on boot 1 (delegate → member model request carrying the MEMBER context) — seq=5 system head=You are an AI agent powered by DeepSeek Harness.
+
+You are a worker of the rst017c4 dynamic team. RST017C4MEM_PERSONA_202
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B3 the member child session is bound durably (member row with childSessionId read back) — {"instanceId":"inst-0a5ed461r5ls","templateId":"worker","label":"c4-worker--06-01","lifecycle":"RUNNING","childSessionId":"session-team-child-320a243418cbb58c6a214915f7c38cd5"}
+[rst017-c4 2026-09-26T14-06-01] B: boot 1 stopped (SIGTERM)
+[rst017-c4 2026-09-26T14-06-01] PASS [boot-2] boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=B phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T14-06-01"]
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B4 browser-style session/follow(member child) yields the snapshot (the browser got in) — ""
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B5 the member child ordinary activation was fenced (created → disposed sequence OR the production veto wording on the user-visible lane) — created=1 disposed=1 err=1
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B6 team.ensureRootLive(leader) succeeds (the member stays cold until its own ensure) — status=200 head={"type":"server-response","rpcId":"c4-ensureB-tzmjafyqeg","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017c4-dyn-2026-09-26T14-06-01","mode":"team","live":true},"provenance":{"origin":"team-remote","method":"team.ensureRootLive","endpoint":"team.ensureRootLive","contractVersion":
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B7 leader team_send_message executed ok (REAL execution on the resumed leader) — {"ok":true,"value":{"status":"delivered","rootSessionId":"session-rst017c4-dyn-2026-09-26T14-06-01","action":"send-message","callerRole":"leader","recipientInstanceId":"inst-0a5ed461r5ls","deliveryMode":"direct","deliveredToInstanceId":"inst-0a5ed461r5ls","deliveredToSessionId":"session-team-child-3
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B8 the member cold resume SUCCEEDED (post-restart member model request observed) — seq=7
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B9(1) role = member under the owning root (durable member row of DYN_ROOT, worker template) — {"teamSessionEvidenceOnly":"session-rst017c4-boot-2026-09-26T14-06-01","member":{"instanceId":"inst-0a5ed461r5ls","templateId":"worker","label":"c4-worker--06-01","lifecycle":"RUNNING","childSessionId":"session-team-child-320a243418cbb58c6a214915f7c38cd5"}}
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B9(2) the owning root is correct (the member row is bound to the dynamic root) — child=session-team-child-320a243418cbb58c6a214915f7c38cd5
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B9(3) the member Team context is correct (MEMBER persona present, NO leader persona on the resumed surface) — You are an AI agent powered by DeepSeek Harness.
+
+You are a worker of the rst017c4 dynamic team. RST017C4MEM_PERSONA_2026-09-26T14-06-01
+
+[team-member-context rootSessionId="session-rst017c4-dyn-2026-
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B9(4) the member preset/base tools are correct (standard preset surface: read/write/bash present) — ["ask_user_question","bash","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","present","read","read_image","send_message","skill","subagent","subagent_fork","team_archive_member","team_collect","team_create_member","team_delegate","team_follow_up","team_inspect_config","team_list_members","team_list_pending_control","
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B9(5) the Team tools surface is correct (the frozen 13-tool team catalog is fully mounted on the member session with no extras; the worker envelope is enforced at the ACTION level, not at mount time — plugin source @ f3d5a71b, kit bug #11 fix) — ["team_archive_member","team_collect","team_create_member","team_delegate","team_follow_up","team_inspect_config","team_list_members","team_list_pending_control","team_list_templates","team_report_progress","team_request_control","team_resolve_control","team_send_message"]
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B9(6) single writer (exactly one surviving member creation; the member is live in the glue) — live=["session-rst017c4-boot-2026-09-26T14-06-01","session-rst017c4-dyn-2026-09-26T14-06-01","session-team-child-320a243418cbb58c6a214915f7c38cd5"] created=2 disposed=1
+[rst017-c4 2026-09-26T14-06-01] PASS [B] B9(7) no OUTSIDE_TEAM / writer-held final error (the ensure + delivery chain resolved clean) — {"ok":true,"value":{"status":"delivered","rootSessionId":"session-rst017c4-dyn-2026-09-26T14-06-01","action":"send-message","callerRole":"leader","recipientInstanceId":"inst-0a5ed461r5ls","deliveryMod
+[rst017-c4 2026-09-26T14-06-01] B: boot 2 stopped (SIGTERM)
+[rst017-c4 2026-09-26T14-06-01] world B torn down (host SIGTERM'd, mock closed)
+[rst017-c4 2026-09-26T14-06-01] PASS [s0] post-run: the stable :3080 instance answer is UNCHANGED (no cross-world contamination) — before={"port":3080,"reachable":true,"status":401} after={"port":3080,"reachable":true,"status":401}
+[rst017-c4 2026-09-26T14-06-01] summary: 30 passed, 0 failed, fatal=none
+[rst017-c4 2026-09-26T14-06-01] evidence: /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/commit4

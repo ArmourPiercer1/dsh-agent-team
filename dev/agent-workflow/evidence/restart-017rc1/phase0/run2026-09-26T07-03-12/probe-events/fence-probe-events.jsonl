@@ -1,0 +1,14 @@
+{"t":"2026-09-26T07:03:52.255Z","kind":"armed","armed":true,"source":"autoArm"}
+{"t":"2026-09-26T07:03:52.527Z","kind":"agent/created","sessionId":"session-rst017-boot-2026-09-26T07-03-12","source":"resume","agentId":"session-rst017-boot-2026-09-26T07-03-12","veto":false,"permitted":false}
+{"t":"2026-09-26T07:12:23.148Z","kind":"agent/created","sessionId":"session-rst017-dyn-2026-09-26T07-03-12","source":"resume","agentId":"session-rst017-dyn-2026-09-26T07-03-12","veto":true,"permitted":false}
+{"t":"2026-09-26T07:12:23.150Z","kind":"agent/disposed","sessionId":"session-rst017-dyn-2026-09-26T07-03-12","agentId":"session-rst017-dyn-2026-09-26T07-03-12"}
+{"t":"2026-09-26T07:12:23.152Z","kind":"api-session/error","sessionId":"session-rst017-dyn-2026-09-26T07-03-12","message":"resume failed for session \"session-rst017-dyn-2026-09-26T07-03-12\": Error: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \"session-rst017-dyn-2026-09-26T07-03-12\""}
+{"t":"2026-09-26T07:12:23.180Z","kind":"agent/created","sessionId":"session-rst017-dyn-2026-09-26T07-03-12","source":"resume","agentId":"session-rst017-dyn-2026-09-26T07-03-12","veto":true,"permitted":false}
+{"t":"2026-09-26T07:12:23.182Z","kind":"agent/disposed","sessionId":"session-rst017-dyn-2026-09-26T07-03-12","agentId":"session-rst017-dyn-2026-09-26T07-03-12"}
+{"t":"2026-09-26T07:12:23.365Z","kind":"permit","sessionId":"session-rst017-dyn-2026-09-26T07-03-12"}
+{"t":"2026-09-26T07:13:12.649Z","kind":"agent/created","sessionId":"session-rst017-dyn-2026-09-26T07-03-12","source":"resume","agentId":"session-rst017-dyn-2026-09-26T07-03-12","veto":false,"permitted":true}
+{"t":"2026-09-26T07:15:17.984Z","kind":"armed","armed":false}
+{"t":"2026-09-26T07:22:20.780Z","kind":"armed","armed":true,"source":"autoArm"}
+{"t":"2026-09-26T07:22:21.075Z","kind":"agent/created","sessionId":"session-rst017-boot-2026-09-26T07-03-12","source":"resume","agentId":"session-rst017-boot-2026-09-26T07-03-12","veto":false,"permitted":false}
+{"t":"2026-09-26T07:22:21.134Z","kind":"permit","sessionId":"session-rst017-dyn-2026-09-26T07-03-12"}
+{"t":"2026-09-26T07:22:21.157Z","kind":"agent/created","sessionId":"session-rst017-dyn-2026-09-26T07-03-12","source":"resume","agentId":"session-rst017-dyn-2026-09-26T07-03-12","veto":false,"permitted":true}

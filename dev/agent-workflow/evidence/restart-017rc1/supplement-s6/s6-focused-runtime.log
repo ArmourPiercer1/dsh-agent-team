@@ -1,0 +1,25 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/runtime
+
+ ✓ test/team-session-activation.test.ts (16 tests) 628ms
+stderr | test/team-session-startup-fence.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ test/d2-s6-ensure-root-live.test.ts (20 tests) 4ms
+ ✓ test/team-session-activation-glue.test.ts (18 tests) 4ms
+stderr | test/team-session-startup-fence.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | test/team-session-startup-fence.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/team-session-startup-fence.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ test/team-session-startup-fence.test.ts (4 tests) 2ms
+
+ Test Files  4 passed (4)
+      Tests  58 passed (58)
+   Start at  02:19:07
+   Duration  1.29s (transform 1.68s, setup 0ms, import 2.91s, tests 637ms, environment 0ms)
+

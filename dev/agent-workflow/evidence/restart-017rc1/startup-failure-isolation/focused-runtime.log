@@ -1,0 +1,41 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/runtime
+
+ ✓ test/team-session-activation.test.ts (16 tests) 627ms
+stderr | test/team-session-startup-fence.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ test/d2-s6-ensure-root-live.test.ts (20 tests) 4ms
+ ✓ test/team-session-activation-glue.test.ts (18 tests) 4ms
+stderr | test/team-session-startup-fence.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | test/team-session-startup-fence.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/team-session-startup-fence.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | test/team-session-startup-fence.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/team-session-startup-fence.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | test/team-session-startup-fence.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/team-session-startup-fence.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: storage seam failure during 'open' on store 'team_domain': injected domain-open failure (startup-failure isolation world)
+    at normalizeSeamError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/storage/schema/errors.ts:177:10)
+    at openHandle (/home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/storage/repositories/team-domain.ts:118:11)
+    at createOrOpenTeamDomainDetailed (/home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/storage/repositories/team-domain.ts:280:18)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/packages/runtime/src/plugin/host.ts:1344:21)
+
+ ✓ test/team-session-startup-fence.test.ts (9 tests) 3ms
+
+ Test Files  4 passed (4)
+      Tests  63 passed (63)
+   Start at  11:16:35
+   Duration  2.48s (transform 1.57s, setup 0ms, import 4.01s, tests 638ms, environment 0ms)
+

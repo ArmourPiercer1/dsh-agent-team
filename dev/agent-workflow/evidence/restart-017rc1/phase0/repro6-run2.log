@@ -1,0 +1,15 @@
+mock up @ 3497
+host up: http://127.0.0.1:3492/?token=g_4Wpzmdy4ImZzBP1uoTOrT7tIvV2PUVV9-3mYWz7CA
+cookie acquired: true
+[repro6 +5ms] WS CONNECTED
+[repro6 +5ms] $events opened, observing for 12 s (heartbeat interval 2 s, terminate after 2 misses)
+[repro6 +7ms] RAW DATA 151B b0=0x81 b1=0x7e op=14
+[repro6 +7ms] FRAME streamId=ev-repro6-rngj type=item {"type":"ready","clientId":"8cb3a7bb-921d-4aff-be0b-e32cdedc8a78","host":{"home":"/home/user"}}
+[repro6 +2005ms] RAW DATA 2B b0=0x89 b1=0x0 op=0
+[repro6 +4005ms] RAW DATA 2B b0=0x89 b1=0x0 op=0
+[repro6 +6005ms] RAW DATA 2B b0=0x89 b1=0x0 op=0
+[repro6 +8006ms] RAW DATA 2B b0=0x89 b1=0x0 op=0
+[repro6 +10006ms] RAW DATA 2B b0=0x89 b1=0x0 op=0
+[repro6 +12005ms] RAW DATA 2B b0=0x89 b1=0x0 op=0
+[repro6 +12011ms] final: closed=false closeError=none traceFrames=0
+client exit=0

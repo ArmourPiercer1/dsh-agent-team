@@ -61,17 +61,33 @@ export declare const REMOTE_CONTRACT_VERSION_V3: 3;
  */
 export declare const REMOTE_CONTRACT_VERSION_V4: 4;
 /**
- * Type of a remote contract version field this build accepts: exactly
- * `1 | 2 | 3 | 4` (TCM vNext §15.3: `RemoteContractVersion = 1 | 2`,
- * extended by the D1 v3 bump and the F9 v4 bump).
+ * The remote contract v5 (C1, the restart-0.1.7-rc.1 recovery round —
+ * guide §10/§10.2): the v5-only `team.prepareOrdinaryOpen` command — the
+ * narrow one-shot ordinary-activation PERMIT of the Team fence (the host
+ * arms the fence's per-root one-shot activation permit for a Team root the
+ * caller is allowed to touch; the client consumes it on the following
+ * plain session open). It is a Team CONTROL-PLANE RPC (the TeamDomain /
+ * fence state change is the host-side activation-allow fact): it performs
+ * NO Team ensure, NO Team Agent side effect, and no TeamDomain mutation
+ * beyond the one-shot permit itself. Every v1/v2/v3/v4 method stays
+ * available in v5; v1/v2/v3/v4 wire behavior is preserved.
  */
-export type RemoteContractVersion = typeof REMOTE_CONTRACT_VERSION | typeof REMOTE_CONTRACT_VERSION_V2 | typeof REMOTE_CONTRACT_VERSION_V3 | typeof REMOTE_CONTRACT_VERSION_V4;
+export declare const REMOTE_CONTRACT_VERSION_V5: 5;
 /**
- * All remote contract versions this build accepts: `[1, 2, 3, 4]`.
+ * Type of a remote contract version field this build accepts: exactly
+ * `1 | 2 | 3 | 4 | 5` (TCM vNext §15.3: `RemoteContractVersion = 1 | 2`,
+ * extended by the D1 v3 bump, the F9 v4 bump, and the C1 restart-recovery
+ * v5 bump).
+ */
+export type RemoteContractVersion = typeof REMOTE_CONTRACT_VERSION | typeof REMOTE_CONTRACT_VERSION_V2 | typeof REMOTE_CONTRACT_VERSION_V3 | typeof REMOTE_CONTRACT_VERSION_V4 | typeof REMOTE_CONTRACT_VERSION_V5;
+/**
+ * All remote contract versions this build accepts: `[1, 2, 3, 4, 5]`.
  * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision;
  * v3 by the Team D1-D6 repair v2 D1 task; v4 by the F3/F11/F9/T1.4
- * repair round r1 F9 task (a version bump ADDS supported versions,
- * never edits v1/v2/v3 semantics).
+ * repair round r1 F9 task; v5 by the C1 restart-0.1.7-rc.1 recovery
+ * task (guide §10.2: the v5-only `team.prepareOrdinaryOpen` permit)
+ * (a version bump ADDS supported versions, never edits v1/v2/v3/v4
+ * semantics).
  */
 export declare const SUPPORTED_REMOTE_CONTRACT_VERSIONS: readonly number[];
 /**

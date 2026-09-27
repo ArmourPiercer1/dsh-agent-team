@@ -96,6 +96,13 @@ import { parseBlueprint } from '../../../domain/blueprint/src/index.js'
 import type { TeamBlueprint } from '../../../domain/blueprint/src/index.js'
 
 import { createTeamProductionRoot } from './root.js'
+import { createTeamSessionActivationFence } from './team-session-activation.js'
+import type {
+  TeamActivationAgent,
+  TeamSessionActivationFence,
+  TeamSessionStartSource,
+} from './team-session-activation.js'
+import { resolveOwningTeamRoot } from './team-session-ownership.js'
 import {
   TEAM_PLUGIN_ERROR_CODES,
   TeamPluginError,
@@ -132,19 +139,47 @@ export interface TeamPluginHostContext {
    * Cordis event registration: the listener is owned by this row's fiber
    * and disposed with the row. Optional in this structural projection —
    * the entry keeps Cordis-type independence (plan §19.2) and minimal
-   * structural doubles omit it; the one consumer (the 0.1.5 `webServer`
-   * property-read seam registered in {@link apply}) guards the absence and
-   * degrades to the built-in Cordis resolution. On every real host the
-   * Cordis context proxy always provides it.
+   * structural doubles omit it; the consumers (the 0.1.5 `webServer`
+   * property-read seam and the 0.1.7-rc.1 Team activation fence — the
+   * AWAITED `agent/created` veto + the `agent/disposed` rollback barrier,
+   * both registered in {@link apply} with `{ global: true }`) guard the
+   * absence. On every real host the Cordis context proxy always provides
+   * it.
+   *
+   * Structural overloads (NOT the upstream `Context` type — the entry
+   * keeps its deliberate structural independence, guide §4.1):
+   *
+   * - `'internal/get'` — the property-read waterfall (the 0.1.5
+   *   `webServer` compatibility seam);
+   * - `'agent/created'` — the awaited serial activation announcement
+   *   (the listener's rejection propagates into the create/resume and
+   *   the upstream AgentLoop rolls the unpublished agent back — the
+   *   fence's veto point, guide §8.1);
+   * - `'agent/disposed'` — the fire-and-forget disposal announcement
+   *   (the fence's exact-generation rollback barrier, guide §8.2).
    */
   on?(
-    name: string,
+    name: 'internal/get',
     listener: (
       readerCtx: TeamPluginHostContext,
       prop: string,
       error: Error,
       next: () => unknown,
     ) => unknown,
+    options?: boolean | Record<string, unknown>,
+  ): void
+  on?(
+    name: 'agent/created',
+    listener: (payload: {
+      readonly agent: unknown
+      readonly source: string
+      readonly signal?: AbortSignal
+    }) => void | Promise<void>,
+    options?: boolean | Record<string, unknown>,
+  ): void
+  on?(
+    name: 'agent/disposed',
+    listener: (payload: { readonly agent: unknown }) => void,
     options?: boolean | Record<string, unknown>,
   ): void
 }
@@ -279,6 +314,27 @@ interface GlueModule {
      * (pre-repair behavior, byte-for-byte).
      */
     readonly resolveBoundBlueprint?: (teamRootSid: string) => unknown
+    /**
+     * C1 (restart-recovery, guide §4.3, optional additive): the Team
+     * session-activation fence (guide §3) the production host registers
+     * at the very top of `apply()` (the AWAITED `agent/created` veto +
+     * the `agent/disposed` rollback barrier — guide §8). The glue wraps
+     * EVERY Team create/resume in `runOwned` (the ownership guard —
+     * guide §6.1), waits declared rollbacks in `ensureLiveAgent`
+     * (`awaitRollback`), and performs its single bounded writer-conflict
+     * recovery wait (`recoverWriterConflict` — guide §7.2). Optional: a
+     * test/factory world may omit it — the glue then falls back to the
+     * direct operations (guide §4.3 — no blanket break of the pre-C1
+     * test doubles). The production host MUST pass it.
+     */
+    readonly activationFence?: TeamSessionActivationFence
+    /**
+     * C1 (restart-recovery, guide §7.2, optional): the bounded window of
+     * the glue's single writer-conflict recovery wait, in ms. The
+     * production host passes none (the glue default, 10 s — a safety
+     * bound, not a sleep); a test world overrides it for determinism.
+     */
+    readonly writerHandoffTimeoutMs?: number
   }): TeamAgentBindings
 }
 
@@ -659,7 +715,7 @@ export const name = 'dsh-agent-team'
  * so any call that races the provider fails with a stable code instead of
  * a TypeError.
  */
-export const inject = ['agents', 'storageDomain', 'sessions', 'workspaceRegistry']
+export const inject = ['agents', 'storageDomain', 'sessions', 'sessionPersistence', 'workspaceRegistry']
 
 /**
  * The plugin entry (Cordis named-export protocol: the loader awaits the
@@ -674,6 +730,79 @@ export const inject = ['agents', 'storageDomain', 'sessions', 'workspaceRegistry
  *   {@link validateTeamPluginConfig}).
  */
 export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promise<void> {
+  // --- C1 (restart-recovery, guide §4.1): the Team activation fence ------
+  // The fence must be established at the VERY FRONT of apply() — before
+  // the bootstrap's first await — and its `agent/created` listener
+  // registered IMMEDIATELY: after the browser connects, an ordinary
+  // Session resume of a Team-owned session can fire while the Team
+  // bootstrap is still running (guide §4.1: "activation listener 不能等
+  // 到 bootstrap() 最后才注册"). Both listeners are registered with
+  // `{ global: true }` (process-wide — the fence must see EVERY activation
+  // of this process's Team-owned sessions, not only this row's fiber),
+  // and they are structural no-ops when the host provides no `on` (the
+  // same absence-guard as the internal/get seam below).
+  //
+  // `agent/created` is the AWAITED serial seam (0.1.7-rc.1): the listener
+  // promise rejection propagates into the create/resume and the upstream
+  // AgentLoop rolls the unpublished agent back into `agent/disposed` —
+  // that veto → rollback → writer-released sequence is the fence's safety
+  // boundary (guide §8). `agent/disposed` is fire-and-forget (listener
+  // errors are only logged upstream): the onAgentDisposed barrier must
+  // never throw (it cannot — a plain map read + resolve).
+  const activationFence = createTeamSessionActivationFence()
+  // Supplement round §2.3-C — PRODUCTION fence-surface completeness: the
+  // production host passes THIS fence to the glue (runOwned / exact
+  // generation claim / rollback epoch / recovery), so a factory that
+  // drifts to an incomplete surface must fail LOUD here (before the
+  // listeners register and before any boot / race), not surface as an
+  // `undefined` at the race. The test/factory worlds may omit the fence
+  // entirely (the glue's documented pre-C1 fallback) — this check is
+  // production-only, and it checks the WHOLE surface the glue consumes:
+  // the pre-round methods PLUS the supplement round's
+  // claimOwnedGeneration / releaseOwnedGeneration / getRollbackEpoch and
+  // the reworked recoverWriterConflict.
+  const FENCE_SURFACE_METHODS: readonly (keyof TeamSessionActivationFence)[] = [
+    'runOwned',
+    'beforeAgentCreated',
+    'claimOwnedGeneration',
+    'releaseOwnedGeneration',
+    'onAgentDisposed',
+    'awaitRollback',
+    'getRollbackEpoch',
+    'recoverWriterConflict',
+    'permitOrdinaryOnce',
+    'bindOwnershipResolver',
+    'close',
+  ]
+  for (const method of FENCE_SURFACE_METHODS) {
+    if (typeof activationFence[method] !== 'function') {
+      throw new TeamPluginError(
+        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_GLUE_UNAVAILABLE,
+        `the production activation fence is missing the required surface method \`${String(method)}\` (incomplete fence factory — the glue requires the full TeamSessionActivationFence surface before any activation)`,
+      )
+    }
+  }
+  if (typeof ctx.on === 'function') {
+    ctx.on(
+      'agent/created',
+      (payload) => {
+        return activationFence.beforeAgentCreated({
+          agent: payload.agent as TeamActivationAgent,
+          source: payload.source as TeamSessionStartSource,
+          ...(payload.signal !== undefined ? { signal: payload.signal } : {}),
+        })
+      },
+      { global: true },
+    )
+    ctx.on(
+      'agent/disposed',
+      (payload) => {
+        activationFence.onAgentDisposed(payload.agent as TeamActivationAgent)
+      },
+      { global: true },
+    )
+  }
+
   // --- 0.1.5 remote-channel compatibility seam (`webServer` reads) -------
   // The host's dsh-client-connection service registers RPC channels —
   // `connection.rpc.handle(channel, mounted)`, the seam this row uses to
@@ -749,6 +878,22 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // `sessions` service's `flush(session)` is the upstream ACP's own
   // replacement (the attached log writer's flush materializes an empty
   // session durably) and is present in both the alpha.1 and rc.1 hosts.
+  //
+  // C1 (restart-recovery, guide §5.1): the wrapper ALSO serves `exists`
+  // — the DURABLE-EXISTENCE seam the glue's cold-resume eligibility reads
+  // (replacing the pre-C1 physical `DSH_HOME` layout probe). Existence is
+  // the upstream `SessionPersistence.stat(id) !== undefined` contract
+  // (no ownership claim, no backend assumption — `undefined` =
+  // nonexistent; the raw service has no `exists`, so the wrapper
+  // synthesizes it). The service is read LAZILY per call (the
+  // sessionPersistence wrapper pattern — immune to row apply-order); a
+  // missing service / missing `stat` fails closed with the stable code
+  // INSTEAD of letting the glue guess on disk (guide §5.1: a fault must
+  // propagate, never be misread as "not durable"). Note: the upstream
+  // `SessionId` branding is a runtime no-op (`brandString` identity), so
+  // the structural seam accepts the raw id — this entry keeps its
+  // deliberate structural independence from the upstream packages (plan
+  // §19.2: zero `@deepseek-ai/*` imports in the host entry).
   const sessionPersistence = {
     ensureMaterialized(session: unknown): Promise<unknown> {
       const svc = ctx.get('sessions') as
@@ -762,6 +907,23 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
         )
       }
       return svc.flush(session)
+    },
+    async exists(sessionId: string): Promise<boolean> {
+      const persistence = ctx.get('sessionPersistence') as
+        | { stat?: (id: unknown) => Promise<unknown | undefined> }
+        | null
+        | undefined
+      if (
+        persistence === undefined ||
+        persistence === null ||
+        typeof persistence.stat !== 'function'
+      ) {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+          'the "sessionPersistence" public service is absent (or lacks stat) — durable session existence is read through its public seam, never through a physical layout probe',
+        )
+      }
+      return (await persistence.stat(sessionId)) !== undefined
     },
   }
 
@@ -1203,6 +1365,18 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     resolvedPhase === rowConfig.bootPhase ? rowConfig : { ...rowConfig, bootPhase: resolvedPhase }
   openDomain = domain
 
+  // C1 (restart-recovery, guide §4.2): bind the fence's durable-ownership
+  // resolver EARLY — right after the domain open (before the live glue
+  // boot, and before any normal Team activation): the classification is
+  // the ONE ownership authority (guide §3.2 — `resolveOwningTeamRoot`,
+  // the same algorithm the glue's `teamRootOfSession` thin wrapper
+  // calls), keyed on the RESOLVED row config (a `create-or-open` row
+  // resolves its boot root to the stamped domain's TeamSession row).
+  activationFence.bindOwnershipResolver(
+    (sessionId) =>
+      resolveOwningTeamRoot(domain, resolvedRowConfig.rootSessionId, sessionId),
+  )
+
   // The glue reads the durable consumption resolvers off the domain
   // (attached here — the production root's mutation node exposes the same
   // pair, keeping ONE pair of resolvers process-wide).
@@ -1308,6 +1482,12 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // constructed + rebuilt — see the ref's rationale). Additive optional
     // dep: never in the hard inject array.
     artifactAuthorityRef,
+    // C1 (restart-recovery, guide §4.3): the Team session-activation fence
+    // — the production host MUST pass it (the glue wraps every Team
+    // create/resume in runOwned and performs the bounded writer-conflict
+    // recovery in ensureLiveAgent). The fence instance is the SAME object
+    // whose listeners were registered at the top of apply() (guide §4.1).
+    activationFence,
   })
 
   // --- the frozen legacy reader (A29): layout-agnostic candidate search, --
@@ -1579,6 +1759,34 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   void ready.catch((error: unknown) => {
     const message = error instanceof Error ? (error.stack ?? error.message) : String(error)
     console.error(`[dsh-agent-team] bootstrap FAILED: ${message}`)
+    // Startup-failure isolation (PR #31 minimal supplement): a bootstrap
+    // rejection may leave the ownership resolver UNBOUND (the domain open
+    // is a bootstrap step — a failure at or before it never binds), while
+    // the row KEEPS RUNNING (a failed boot is terminal — no automatic
+    // retry, no re-boot — but the route stays registered, the catalog
+    // reads stay servable, and the row stops only on its own teardown),
+    // so the row-stop backstop's `close()` never runs. Left as-is, EVERY
+    // later `agent/created` of this process — the fence listeners are
+    // registered `{ global: true }` at the top of `apply()` — would await
+    // the `ownershipReady` barrier forever (classification PENDING that
+    // can never settle): ordinary non-Team sessions of an UNRELATED row
+    // would hang on this DEAD Team row. Close the fence on the bootstrap
+    // rejection instead: every pending ownership-ready / rollback /
+    // writer-conflict waiter settles immediately, and every subsequent
+    // activation passes through (the fence keeps no state past a failed
+    // row — a late activation is the upstream's own concern). The `ready`
+    // rejection, this console error, and the row-stop cleanup semantics
+    // are all UNCHANGED; the row-stop backstop keeps its own `close()`
+    // call as the teardown path — `close()` is idempotent, so the
+    // bootstrap-failure close and the later row-stop close compose
+    // (the second call is a no-op). The normal successful bootstrap path
+    // never enters this handler (no rejection) — the fence stays armed
+    // until the row stop, exactly as before.
+    try {
+      activationFence.close()
+    } catch {
+      // a throwing close is swallowed: the row teardown proceeds
+    }
   })
 
   function requireRoot(): TeamProductionRoot {
@@ -1651,6 +1859,18 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
             remoteRegistration?.dispose()
           } catch {
             // a throwing disposer is swallowed: the row teardown proceeds
+          }
+          // C1 (restart-recovery, guide §3/A8): settle the activation
+          // fence: a new runOwned REJECTS (no Team-owned activation is
+          // accepted past the row stop), every in-flight waiter settles
+          // (rollback barriers resolve, writer-conflict waits resolve
+          // false, no dangling promise). Idempotent — the root's close
+          // disposes the row's agents, and their agent/disposed events
+          // arriving at the already-closed fence are no-ops.
+          try {
+            activationFence.close()
+          } catch {
+            // a throwing close is swallowed: the row teardown proceeds
           }
           // strict-read + core-spill (Phase E): drop the authority's
           // RUNTIME projection (the durable facts remain on the medium —

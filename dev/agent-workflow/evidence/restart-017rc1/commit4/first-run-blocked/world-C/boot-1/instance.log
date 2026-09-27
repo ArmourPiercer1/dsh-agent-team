@@ -1,0 +1,14 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-00-30-C/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3492/?token=iRcFY4F74BkEFA0P4oilykcyqiqo8raqUcIEPbUAQ5A
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] bootstrap FAILED: TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session "session-rst017c4-boot-2026-09-26T12-00-30"
+    at Object.beforeAgentCreated (file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-00-30-C/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/team-session-activation.js:303:19)
+    at ctx.on.global (file:///home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-00-30-C/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js:439:36)
+    at Object.apply (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:921:20)
+    at Proxy.serial (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:291:25)
+    at async Proxy.announce (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent/lib/index.js:579:4)
+    at async Object.publish (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1711:7)
+    at async file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1850:12
+    at async file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1863:13
+    at async file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:835:12
+    at async Proxy.initializeAgent (file:///home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1861:11)

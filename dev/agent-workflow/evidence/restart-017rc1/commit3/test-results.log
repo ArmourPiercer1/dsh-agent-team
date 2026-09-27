@@ -1,0 +1,24 @@
+== Commit 3 (C1 ordinary-mode one-shot permit) verification — 2026-07-26 session
+
+--- remote package: pnpm test (full suite)
+Test Files  13 passed (13)
+Tests  192 passed (192)
+
+--- client package: pnpm test (full suite)
+Test Files  47 passed (47)
+Tests  668 passed (668)   (baseline 656 — +12: C1-C5 + gate-5 + error-lane additions)
+
+--- client d3 target run
+test/d3-open-ordinary-mode.test.ts (22 tests) PASS
+test/d3-ordinary-mode-entry.client.spec.tsx (12 tests) PASS
+
+--- runtime package: pnpm test (full suite) — debt-exact gate
+Test Files  6 failed | 187 passed (193)   (== baseline debt)
+Tests  8 failed | 2140 passed (2148)      (== baseline debt)
+failing files (all pre-existing debt):
+   FAIL  test/d3-member-identity-context.test.ts
+   FAIL  test/p6t3-mediation.test.ts
+   FAIL  test/p6t3-restart.test.ts
+   FAIL  test/p8s3b-result-effects.test.ts [ test/p8s3b-result-effects.test.ts ]
+   FAIL  test/t12a-b2-child-identity.test.ts [ test/t12a-b2-child-identity.test.ts ]
+   FAIL  test/t12a-glue-handoff-ports.test.ts [ test/t12a-glue-handoff-ports.test.ts ]

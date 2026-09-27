@@ -1,0 +1,102 @@
+{
+  "boot": 2,
+  "phase": "resume",
+  "rootSessionId": "session-rst017c4-boot-2026-09-26T12-41-33",
+  "teamSession": {
+    "rootSessionId": "session-rst017c4-boot-2026-09-26T12-41-33",
+    "blueprintId": "team.rst017c4-anchor",
+    "revision": "1",
+    "contentHash": "sha256:0c8b19f9a73e99468b71c89a575ac910f80f2380fbd67eed6c02979fc92661ca",
+    "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-41-33-A/workspace",
+    "createdAt": "2026-09-26T12:41:39.534Z",
+    "generation": 2
+  },
+  "members": [
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": []
+  },
+  "activity": [],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [],
+    "sessions": {
+      "session-rst017c4-boot-2026-09-26T12-41-33": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "rst017c4-model-2026-09-26T12-41-33"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "rst017c4-model-2026-09-26T12-41-33"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      },
+      "session-rst017c4-dyn-2026-09-26T12-41-33": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "rst017c4-model-2026-09-26T12-41-33"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "rst017c4-model-2026-09-26T12-41-33"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "rst017c4-model-2026-09-26T12-41-33"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      }
+    }
+  },
+  "observations": []
+}

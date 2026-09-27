@@ -1,0 +1,59 @@
+[rst017-c4 2026-09-26T12-09-04] Commit 4 kit — stamp 2026-09-26T12-09-04 worlds=A,B,C,D,E browserHold=false keepHome=false race=20
+[rst017-c4 2026-09-26T12-09-04] PASS [s0] preflight: test-use HEAD == the 0.1.7-rc.1 pin — HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4
+[rst017-c4 2026-09-26T12-09-04] PASS [s0] preflight: test-use working tree pristine (empty porcelain)
+[rst017-c4 2026-09-26T12-09-04] PASS [s0] preflight: task worktree at the accepted Commit-4 fix tip (f3d5a71b — runOwned await fix) — HEAD=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T12-09-04] PASS [s0] preflight: the test-use CLI reports 0.1.7-rc.1 — version=0.1.7-rc.1
+[rst017-c4 2026-09-26T12-09-04] PASS [s0] preflight: host/mock ports free (3492/3497) — hostFree=true mockFree=true
+[rst017-c4 2026-09-26T12-09-04] ══ WORLD A — home /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-09-04-A ══
+[rst017-c4 2026-09-26T12-09-04] world A materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-09-04-A
+[rst017-c4 2026-09-26T12-09-04] PASS [install] S0 bare-clone tip == f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5 (the accepted Commit-4 fix build with committed dist/composition) — cloned=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T12-09-04] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-c4 2026-09-26T12-09-04] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-c4 2026-09-26T12-09-04] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-c4 2026-09-26T12-09-04] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-c4 2026-09-26T12-09-04] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-c4 2026-09-26T12-09-04] PASS [boot-1] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=create) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-09-04"]
+[rst017-c4 2026-09-26T12-09-04] PASS [A] A1 team.create(dynamic root) accepted over the public remote seam — status=200 head={"type":"server-response","rpcId":"c4-createA-a1dngu9vzi","result":{"ok":false,"error":{"code":"malformed-params","message":"method 'team.create' has unknown param field 'teamSessionId' (closed fields
+[rst017-c4 2026-09-26T12-09-04] waitForMockRequest timeout: A2 dyn leader first turn (requests so far: 0 — dumped to diagnostics/)
+[rst017-c4 2026-09-26T12-09-04] FAIL [A] A2 dynamic leader live on boot 1 (first model request on the row staticModel) — seq=undefined model=undefined
+[rst017-c4 2026-09-26T12-09-04] FAIL [A] A2b boot-1 session history present (assistant rows ≥ 1 in the session log) — []
+[rst017-c4 2026-09-26T12-09-04] A: boot 1 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-09-04] PASS [boot-2] boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-09-04"]
+[rst017-c4 2026-09-26T12-09-04] FAIL [A] A3 browser-style session/follow(dynamic root) yields the snapshot (the browser got in) — "session/follow stream error: {\"code\":\"session/not-found\",\"message\":\"session \\\"session-rst017c4-dyn-2026-09-26T12-09-04\\\" not found\",\"details\":{\"sessionId\":\"session-rst017c4-dyn-2026-
+[rst017-c4 2026-09-26T12-09-04] FAIL [A] A4 the production fence veto fired (EXACT production wording in the host log) — created=0 disposed=0 apiErr=0
+[rst017-c4 2026-09-26T12-09-04] FAIL [A] A4b exact-generation rollback: a disposed event follows the vetoed creation — created= disposed=0
+[rst017-c4 2026-09-26T12-09-04] FAIL [A] A4c api-session/error surfaced to the follow socket (the persistent user-visible error lane) — frame=null probeErr=
+[rst017-c4 2026-09-26T12-09-04] PASS [A] A5 the follow stream SURVIVES the rejection (socket still open after the error lane) — closed=false
+[rst017-c4 2026-09-26T12-09-04] FAIL [A] A6 team.ensureRootLive(dynamic root) SUCCEEDS (the C1 repair path) — status=200 head={"type":"server-response","rpcId":"c4-ensureA-g0nxnss6tv","result":{"ok":false,"error":{"code":"TEAM_REMOTE_FOREIGN_TEAM","message":"remote method 'team.ensureRootLive' addresses TeamSession 'session-rst017c4-dyn-2026-09-26T12-09-04' which this host does not own (bound root 'session-rst017c4-boot-20
+[rst017-c4 2026-09-26T12-09-04] A: boot 2 stopped (SIGTERM)
+[rst017-c4 2026-09-26T12-09-04] world A torn down (host SIGTERM'd, mock closed)
+[rst017-c4 2026-09-26T12-09-04] ══ WORLD B — home /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-13-03-B ══
+[rst017-c4 2026-09-26T12-09-04] world B materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-c4-2026-09-26T12-13-03-B
+[rst017-c4 2026-09-26T12-09-04] PASS [install] S0 bare-clone tip == f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5 (the accepted Commit-4 fix build with committed dist/composition) — cloned=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5
+[rst017-c4 2026-09-26T12-09-04] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-c4 2026-09-26T12-09-04] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-c4 2026-09-26T12-09-04] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-c4 2026-09-26T12-09-04] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-c4 2026-09-26T12-09-04] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-c4 2026-09-26T12-09-04] PASS [boot-1] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=B phase=create) — http://127.0.0.1:3492 liveSessions=["session-rst017c4-boot-2026-09-26T12-09-04"]
+[rst017-c4 2026-09-26T12-09-04] PASS [B] B1 team.create accepted (the leader works) — status=200
+[rst017-c4 2026-09-26T12-09-04] waitForMockRequest timeout: B1b dyn leader first turn (requests so far: 0 — dumped to diagnostics/)
+[rst017-c4 2026-09-26T12-09-04] FAIL [B] B1b dynamic leader live (first model request on the row staticModel) — seq=undefined
+[rst017-c4 2026-09-26T12-09-04] waitForMockRequest timeout: B2 member first turn (requests so far: 0 — dumped to diagnostics/)
+[rst017-c4 2026-09-26T12-09-04] UNEXPECTED ERROR in world B: Cannot read properties of null (reading 'body')
+[rst017-c4 2026-09-26T12-09-04]     at worldB (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/commit4/kit.mjs:1778:217)
+    at async runWorld (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/commit4/kit.mjs:1542:30)
+    at async main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/commit4/kit.mjs:2138:23)
+[rst017-c4 2026-09-26T12-09-04] FATAL: world B unexpected error: Cannot read properties of null (reading 'body')
+[rst017-c4 2026-09-26T12-09-04] world B torn down (host SIGTERM'd, mock closed)
+[rst017-c4 2026-09-26T12-09-04] PASS [s0] post-run: the stable :3080 instance answer is UNCHANGED (no cross-world contamination) — before={"port":3080,"reachable":true,"status":401} after={"port":3080,"reachable":true,"status":401}
+[rst017-c4 2026-09-26T12-09-04] summary: 24 passed, 8 failed, fatal=world B unexpected error: Cannot read properties of null (reading 'body')
+[rst017-c4 2026-09-26T12-09-04]   FAIL [A] A2 dynamic leader live on boot 1 (first model request on the row staticModel) — seq=undefined model=undefined
+[rst017-c4 2026-09-26T12-09-04]   FAIL [A] A2b boot-1 session history present (assistant rows ≥ 1 in the session log) — []
+[rst017-c4 2026-09-26T12-09-04]   FAIL [A] A3 browser-style session/follow(dynamic root) yields the snapshot (the browser got in) — "session/follow stream error: {\"code\":\"session/not-found\",\"message\":\"session \\\"session-rst017c4-dyn-2026-09-26T12-09-04\\\" not found\",\"details\":{\"sessionId\":\"session-rst017c4-dyn-2026-
+[rst017-c4 2026-09-26T12-09-04]   FAIL [A] A4 the production fence veto fired (EXACT production wording in the host log) — created=0 disposed=0 apiErr=0
+[rst017-c4 2026-09-26T12-09-04]   FAIL [A] A4b exact-generation rollback: a disposed event follows the vetoed creation — created= disposed=0
+[rst017-c4 2026-09-26T12-09-04]   FAIL [A] A4c api-session/error surfaced to the follow socket (the persistent user-visible error lane) — frame=null probeErr=
+[rst017-c4 2026-09-26T12-09-04]   FAIL [A] A6 team.ensureRootLive(dynamic root) SUCCEEDS (the C1 repair path) — status=200 head={"type":"server-response","rpcId":"c4-ensureA-g0nxnss6tv","result":{"ok":false,"error":{"code":"TEAM_REMOTE_FOREIGN_TEAM","message":"remote method 'team.ensureRootLive' addresses TeamSession 'session-rst017c4-dyn-2026-09-26T12-09-04' which this host does not own (bound root 'session-rst017c4-boot-20
+[rst017-c4 2026-09-26T12-09-04]   FAIL [B] B1b dynamic leader live (first model request on the row staticModel) — seq=undefined
+[rst017-c4 2026-09-26T12-09-04] evidence: /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/commit4

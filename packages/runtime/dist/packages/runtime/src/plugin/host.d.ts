@@ -18,12 +18,34 @@ export interface TeamPluginHostContext {
      * Cordis event registration: the listener is owned by this row's fiber
      * and disposed with the row. Optional in this structural projection —
      * the entry keeps Cordis-type independence (plan §19.2) and minimal
-     * structural doubles omit it; the one consumer (the 0.1.5 `webServer`
-     * property-read seam registered in {@link apply}) guards the absence and
-     * degrades to the built-in Cordis resolution. On every real host the
-     * Cordis context proxy always provides it.
+     * structural doubles omit it; the consumers (the 0.1.5 `webServer`
+     * property-read seam and the 0.1.7-rc.1 Team activation fence — the
+     * AWAITED `agent/created` veto + the `agent/disposed` rollback barrier,
+     * both registered in {@link apply} with `{ global: true }`) guard the
+     * absence. On every real host the Cordis context proxy always provides
+     * it.
+     *
+     * Structural overloads (NOT the upstream `Context` type — the entry
+     * keeps its deliberate structural independence, guide §4.1):
+     *
+     * - `'internal/get'` — the property-read waterfall (the 0.1.5
+     *   `webServer` compatibility seam);
+     * - `'agent/created'` — the awaited serial activation announcement
+     *   (the listener's rejection propagates into the create/resume and
+     *   the upstream AgentLoop rolls the unpublished agent back — the
+     *   fence's veto point, guide §8.1);
+     * - `'agent/disposed'` — the fire-and-forget disposal announcement
+     *   (the fence's exact-generation rollback barrier, guide §8.2).
      */
-    on?(name: string, listener: (readerCtx: TeamPluginHostContext, prop: string, error: Error, next: () => unknown) => unknown, options?: boolean | Record<string, unknown>): void;
+    on?(name: 'internal/get', listener: (readerCtx: TeamPluginHostContext, prop: string, error: Error, next: () => unknown) => unknown, options?: boolean | Record<string, unknown>): void;
+    on?(name: 'agent/created', listener: (payload: {
+        readonly agent: unknown;
+        readonly source: string;
+        readonly signal?: AbortSignal;
+    }) => void | Promise<void>, options?: boolean | Record<string, unknown>): void;
+    on?(name: 'agent/disposed', listener: (payload: {
+        readonly agent: unknown;
+    }) => void, options?: boolean | Record<string, unknown>): void;
 }
 /**
  * Validate the row `config` channel loudly (plan §19.2: the row config is

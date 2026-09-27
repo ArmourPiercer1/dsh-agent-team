@@ -1,0 +1,65 @@
+[
+  {
+    "t": "2026-09-26T13:21:37.520Z",
+    "kind": "agent/created",
+    "sessionId": "session-rst017c4-boot-2026-09-26T13-21-00",
+    "source": "resume",
+    "agentId": "session-rst017c4-boot-2026-09-26T13-21-00",
+    "veto": false,
+    "permitted": false
+  },
+  {
+    "t": "2026-09-26T13:24:36.785Z",
+    "kind": "agent/created",
+    "sessionId": "session-0f39e735-718e-455a-a19c-b1b8d3c850de",
+    "source": "startup",
+    "agentId": "session-0f39e735-718e-455a-a19c-b1b8d3c850de",
+    "veto": false,
+    "permitted": false
+  },
+  {
+    "t": "2026-09-26T13:24:49.845Z",
+    "kind": "agent/created",
+    "sessionId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+    "source": "resume",
+    "agentId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+    "veto": false,
+    "permitted": false
+  },
+  {
+    "t": "2026-09-26T13:24:49.847Z",
+    "kind": "agent/disposed",
+    "sessionId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+    "agentId": "session-rst017c4-dyn-2026-09-26T13-21-00"
+  },
+  {
+    "t": "2026-09-26T13:24:49.848Z",
+    "kind": "api-session/error",
+    "sessionId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+    "message": "resume failed for session \"session-rst017c4-dyn-2026-09-26T13-21-00\": TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \"session-rst017c4-dyn-2026-09-26T13-21-00\""
+  },
+  {
+    "t": "2026-09-26T13:24:49.873Z",
+    "kind": "agent/created",
+    "sessionId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+    "source": "resume",
+    "agentId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+    "veto": false,
+    "permitted": false
+  },
+  {
+    "t": "2026-09-26T13:24:49.875Z",
+    "kind": "agent/disposed",
+    "sessionId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+    "agentId": "session-rst017c4-dyn-2026-09-26T13-21-00"
+  },
+  {
+    "t": "2026-09-26T13:25:09.934Z",
+    "kind": "agent/created",
+    "sessionId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+    "source": "resume",
+    "agentId": "session-rst017c4-dyn-2026-09-26T13-21-00",
+    "veto": false,
+    "permitted": false
+  }
+]

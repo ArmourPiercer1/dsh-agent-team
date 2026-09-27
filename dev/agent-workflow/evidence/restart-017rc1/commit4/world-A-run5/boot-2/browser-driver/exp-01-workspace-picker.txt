@@ -1,0 +1,26 @@
+DSH Local Build
+0.1.7-rc.1-46a7f68
+New Session
+Plugins
+Workspaces
+Ungrouped
+New Team
+Settings
+Into the Unknown
+Preview
+Choose workspace
+Standard mode
+Choose a workspace to start
+Select Workspace Directory
+Home
+agent-sandbox
+deepseek-harness
+docker-sandbox-check
+docker-sandbox-src
+dsh-plugins
+sandbox-for-dsh
+wsl-init
+New folder
+Show hidden files
+Cancel
+Open

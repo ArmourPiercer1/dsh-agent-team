@@ -1,0 +1,4 @@
+mock: listening on 127.0.0.1:3497
+mock: 1 [messages] text reply (8 chars): "c4 title"
+mock: 2 [messages] text reply (42 chars): "C4_ORD_ACK RST017C4ORD_2026-09-26T12-20-20"
+mock: 3 [messages] text reply (42 chars): "C4_ORD_ACK RST017C4ORD_2026-09-26T12-20-20"

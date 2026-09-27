@@ -1,0 +1,6 @@
+{
+  "note": "boot 3 held alive for the manual browser Q2 leg. Steps: (1) open the marker URL in a browser (legB/boot-3-marker.txt); (2) open the cold dynamic session (fence vetoes the ordinary promotion → api-session/error lands on the client); (3) observe the error lane (screenshot); (4) click 以 Team 模式 打开 (takeover); (5) observe whether the error persists after the successful takeover (screenshot); (6) kill -TERM the printed kit PID — the kit then writes the final verdict and tears the world down.",
+  "kitPid": 3,
+  "gui": "http://127.0.0.1:3492",
+  "dynamicRoot": "session-rst017-dyn-2026-09-26T07-03-12"
+}

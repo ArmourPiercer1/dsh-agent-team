@@ -1,0 +1,195 @@
+{
+  "stamp": "2026-09-26T14-06-01",
+  "at": "2026-09-26T14:06:40.766Z",
+  "worlds": [
+    "B"
+  ],
+  "browserHold": false,
+  "raceIterations": 20,
+  "passed": 30,
+  "failed": 0,
+  "fatal": null,
+  "results": [
+    {
+      "leg": "s0",
+      "name": "preflight: test-use HEAD == the 0.1.7-rc.1 pin",
+      "ok": true,
+      "detail": "HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4"
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: test-use working tree pristine (empty porcelain)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: task worktree at the accepted Commit-4 fix tip (f3d5a71b — runOwned await fix)",
+      "ok": true,
+      "detail": "HEAD=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5"
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: the test-use CLI reports 0.1.7-rc.1",
+      "ok": true,
+      "detail": "version=0.1.7-rc.1"
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: host/mock ports free (3492/3497)",
+      "ok": true,
+      "detail": "hostFree=true mockFree=true"
+    },
+    {
+      "leg": "install",
+      "name": "S0 bare-clone tip == f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5 (the accepted Commit-4 fix build with committed dist/composition)",
+      "ok": true,
+      "detail": "cloned=f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5"
+    },
+    {
+      "leg": "install",
+      "name": "S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer)",
+      "ok": true,
+      "detail": "exit=0"
+    },
+    {
+      "leg": "install",
+      "name": "S1 no 0.1.7 incompat / allow-version exemption line",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "install",
+      "name": "S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "install",
+      "name": "S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile)",
+      "ok": true,
+      "detail": "bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+    },
+    {
+      "leg": "install",
+      "name": "S3 installed package dir carries the committed install surface",
+      "ok": true,
+      "detail": "all present"
+    },
+    {
+      "leg": "boot-1",
+      "name": "boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=B phase=create)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017c4-boot-2026-09-26T14-06-01\"]"
+    },
+    {
+      "leg": "B",
+      "name": "B1 team.create accepted (RPC ok:true — the leader works)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"c4-createB-p2uvaamyp2\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-rst017c4-dyn-202"
+    },
+    {
+      "leg": "B",
+      "name": "B1b dynamic leader live (first model request on the row staticModel)",
+      "ok": true,
+      "detail": "seq=2"
+    },
+    {
+      "leg": "B",
+      "name": "B2 the member is live on boot 1 (delegate → member model request carrying the MEMBER context)",
+      "ok": true,
+      "detail": "seq=5 system head=You are an AI agent powered by DeepSeek Harness.\n\nYou are a worker of the rst017c4 dynamic team. RST017C4MEM_PERSONA_202"
+    },
+    {
+      "leg": "B",
+      "name": "B3 the member child session is bound durably (member row with childSessionId read back)",
+      "ok": true,
+      "detail": "{\"instanceId\":\"inst-0a5ed461r5ls\",\"templateId\":\"worker\",\"label\":\"c4-worker--06-01\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-team-child-320a243418cbb58c6a214915f7c38cd5\"}"
+    },
+    {
+      "leg": "boot-2",
+      "name": "boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=B phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017c4-boot-2026-09-26T14-06-01\"]"
+    },
+    {
+      "leg": "B",
+      "name": "B4 browser-style session/follow(member child) yields the snapshot (the browser got in)",
+      "ok": true,
+      "detail": "\"\""
+    },
+    {
+      "leg": "B",
+      "name": "B5 the member child ordinary activation was fenced (created → disposed sequence OR the production veto wording on the user-visible lane)",
+      "ok": true,
+      "detail": "created=1 disposed=1 err=1"
+    },
+    {
+      "leg": "B",
+      "name": "B6 team.ensureRootLive(leader) succeeds (the member stays cold until its own ensure)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"c4-ensureB-tzmjafyqeg\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"rootSessionId\":\"session-rst017c4-dyn-2026-09-26T14-06-01\",\"mode\":\"team\",\"live\":true},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"team.ensureRootLive\",\"endpoint\":\"team.ensureRootLive\",\"contractVersion\":"
+    },
+    {
+      "leg": "B",
+      "name": "B7 leader team_send_message executed ok (REAL execution on the resumed leader)",
+      "ok": true,
+      "detail": "{\"ok\":true,\"value\":{\"status\":\"delivered\",\"rootSessionId\":\"session-rst017c4-dyn-2026-09-26T14-06-01\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-0a5ed461r5ls\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-0a5ed461r5ls\",\"deliveredToSessionId\":\"session-team-child-3"
+    },
+    {
+      "leg": "B",
+      "name": "B8 the member cold resume SUCCEEDED (post-restart member model request observed)",
+      "ok": true,
+      "detail": "seq=7"
+    },
+    {
+      "leg": "B",
+      "name": "B9(1) role = member under the owning root (durable member row of DYN_ROOT, worker template)",
+      "ok": true,
+      "detail": "{\"teamSessionEvidenceOnly\":\"session-rst017c4-boot-2026-09-26T14-06-01\",\"member\":{\"instanceId\":\"inst-0a5ed461r5ls\",\"templateId\":\"worker\",\"label\":\"c4-worker--06-01\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-team-child-320a243418cbb58c6a214915f7c38cd5\"}}"
+    },
+    {
+      "leg": "B",
+      "name": "B9(2) the owning root is correct (the member row is bound to the dynamic root)",
+      "ok": true,
+      "detail": "child=session-team-child-320a243418cbb58c6a214915f7c38cd5"
+    },
+    {
+      "leg": "B",
+      "name": "B9(3) the member Team context is correct (MEMBER persona present, NO leader persona on the resumed surface)",
+      "ok": true,
+      "detail": "You are an AI agent powered by DeepSeek Harness.\n\nYou are a worker of the rst017c4 dynamic team. RST017C4MEM_PERSONA_2026-09-26T14-06-01\n\n[team-member-context rootSessionId=\"session-rst017c4-dyn-2026-"
+    },
+    {
+      "leg": "B",
+      "name": "B9(4) the member preset/base tools are correct (standard preset surface: read/write/bash present)",
+      "ok": true,
+      "detail": "[\"ask_user_question\",\"bash\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"present\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"team_archive_member\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\""
+    },
+    {
+      "leg": "B",
+      "name": "B9(5) the Team tools surface is correct (the frozen 13-tool team catalog is fully mounted on the member session with no extras; the worker envelope is enforced at the ACTION level, not at mount time — plugin source @ f3d5a71b, kit bug #11 fix)",
+      "ok": true,
+      "detail": "[\"team_archive_member\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_send_message\"]"
+    },
+    {
+      "leg": "B",
+      "name": "B9(6) single writer (exactly one surviving member creation; the member is live in the glue)",
+      "ok": true,
+      "detail": "live=[\"session-rst017c4-boot-2026-09-26T14-06-01\",\"session-rst017c4-dyn-2026-09-26T14-06-01\",\"session-team-child-320a243418cbb58c6a214915f7c38cd5\"] created=2 disposed=1"
+    },
+    {
+      "leg": "B",
+      "name": "B9(7) no OUTSIDE_TEAM / writer-held final error (the ensure + delivery chain resolved clean)",
+      "ok": true,
+      "detail": "{\"ok\":true,\"value\":{\"status\":\"delivered\",\"rootSessionId\":\"session-rst017c4-dyn-2026-09-26T14-06-01\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-0a5ed461r5ls\",\"deliveryMod"
+    },
+    {
+      "leg": "s0",
+      "name": "post-run: the stable :3080 instance answer is UNCHANGED (no cross-world contamination)",
+      "ok": true,
+      "detail": "before={\"port\":3080,\"reachable\":true,\"status\":401} after={\"port\":3080,\"reachable\":true,\"status\":401}"
+    }
+  ],
+  "lagEvents": []
+}

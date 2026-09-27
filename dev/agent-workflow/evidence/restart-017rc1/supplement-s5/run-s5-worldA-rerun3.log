@@ -1,0 +1,37 @@
+[rst017-c4 2026-09-26T18-09-18] S5 kit — stamp 2026-09-26T18-09-18 worlds=A browserHold=false keepHome=false race=20
+[rst017-c4 2026-09-26T18-09-18] PASS [s0] preflight: test-use HEAD == the 0.1.7-rc.1 pin — HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4
+[rst017-c4 2026-09-26T18-09-18] PASS [s0] preflight: test-use working tree pristine (empty porcelain)
+[rst017-c4 2026-09-26T18-09-18] PASS [s0] preflight: task worktree at the accepted S1+S2+S5a fix tip (5e16fa77 = S1 58d30de + S2 673bb7c + S3 833c699 evidence-only + S5a 5e16fa7 dist-glue placement fix) — HEAD=5e16fa774d1793ab00ae3652dac8fca439f0ecbb
+[rst017-c4 2026-09-26T18-09-18] PASS [s0] preflight: the test-use CLI reports 0.1.7-rc.1 — version=0.1.7-rc.1
+[rst017-c4 2026-09-26T18-09-18] PASS [s0] preflight: committed install-surface artifacts match a fresh build (1196 expected) — count=1196 exit=0
+[rst017-c4 2026-09-26T18-09-18] PASS [s0] preflight: host/mock ports free (3492/3497) — hostFree=true mockFree=true
+[rst017-c4 2026-09-26T18-09-18] ══ WORLD A — home /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-s5-2026-09-26T18-09-18-A ══
+[rst017-c4 2026-09-26T18-09-18] world A materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-s5-2026-09-26T18-09-18-A
+[rst017-c4 2026-09-26T18-09-18] PASS [install] S0 bare-clone tip == 5e16fa774d1793ab00ae3652dac8fca439f0ecbb (the accepted S1+S2+S5a fix build with committed dist/composition) — cloned=5e16fa774d1793ab00ae3652dac8fca439f0ecbb
+[rst017-c4 2026-09-26T18-09-18] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-c4 2026-09-26T18-09-18] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-c4 2026-09-26T18-09-18] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-c4 2026-09-26T18-09-18] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-c4 2026-09-26T18-09-18] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-c4 2026-09-26T18-09-18] PASS [boot-1] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=create) — http://127.0.0.1:3492 liveSessions=["session-rst017s5-boot-2026-09-26T18-09-18"]
+[rst017-c4 2026-09-26T18-09-18] PASS [A] A1 team.create(dynamic root) accepted over the public remote seam (RPC ok:true — transport 200 alone is not success) — status=200 head={"type":"server-response","rpcId":"c4-createA-f5295k6dgh","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rst017s5-dyn-202
+[rst017-c4 2026-09-26T18-09-18] PASS [A] A2 dynamic leader live on boot 1 (first model request on the row staticModel) — seq=2 model=rst017s5-model-2026-09-26T18-09-18
+[rst017-c4 2026-09-26T18-09-18] PASS [A] A2b boot-1 session history present (assistant rows ≥ 1 in the session log) — [{"path":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-s5-2026-09-26T18-09-18-A/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-homes-rst017-s5-2026-09-26T18-09-18-A-workspace--/session-rst017s5-dyn-2026-09-26T18-09-18/session.v4.jsonl.zstd","rows":23,"assistant":1,"rowTypes":["session","permission/preset","sandbox/mode","approval/policy","agent/inbox/spliced","turn/start","agent/inbox/spliced","step/start","system/message","user/message","user/message","user/message","user/message","request/header","request/context","session/title","session/title-llm-request","session-log-deepseek/delivery-accepted","session/title","session-log-deepseek/delivery-accepted","assistant/message","step/end","turn/end"]}]
+[rst017-c4 2026-09-26T18-09-18] A: boot 1 stopped (SIGTERM)
+[rst017-c4 2026-09-26T18-09-18] PASS [boot-2] boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=resume) — http://127.0.0.1:3492 liveSessions=["session-rst017s5-boot-2026-09-26T18-09-18"]
+[rst017-c4 2026-09-26T18-09-18] A §5 HARD BROWSER GATE HOLD: boot 2 alive at http://127.0.0.1:3492. Spawning browser-gate-driver-v2.mjs (strict, no-reload/no-blank/no-switch).
+[rst017-c4 2026-09-26T18-09-18] A: strict driver finished (exit=2, marker=present)
+[rst017-c4 2026-09-26T18-09-18] PASS [A-browser] step 5: the fresh connected page (opened AFTER the restart) opened the cold Team root from the UI — pageLoadCount=1 step5=true
+[rst017-c4 2026-09-26T18-09-18] PASS [A-browser] step 6: the ordinary activation was vetoed by the production fence (created → exact-generation disposed → api-session/error, exact wording) — created=3 disposed=2 err=1 wording=true
+[rst017-c4 2026-09-26T18-09-18] PASS [A-browser] step 7: the page shows "Session unavailable" with the composer disabled — step7=true dom={"bodyTextHead":"DSH Local Build\n0.1.7-rc.1-46a7f68\nNew Session\nPlugins\nWorkspaces\nworkspace\nUngrouped\nc4 title\n2min\nNew Team\nSettings\nc4 title\nChat
+[rst017-c4 2026-09-26T18-09-18] PASS [A-browser] step 8: "Open in Team mode / back to Leader" located (a11y tree) and clicked exactly once — takeoverClicks=1 step8=true
+[rst017-c4 2026-09-26T18-09-18] PASS [A-browser] step 9: NO reload / NO blank-navigation / NO session switch-away-and-back (structural + action-log) — reloads=0 blank=0 switches=0
+[rst017-c4 2026-09-26T18-09-18] FAIL [A-browser] step 10 (GATE STEP — expected to FAIL per S3 NO-GO-C1 / Q2-FINDING): the composer is enabled after the single click WITHOUT any reload/blank/switch — step10=false dom={"bodyTextHead":"DSH Local Build\n0.1.7-rc.1-46a7f68\nNew Session\nPlugins\nWorkspaces\nworkspace\nUngrouped\nc4 title\n2min\nNew Team\nSettings\nc4 title\nChat\nTrajectory\nTeam\nTimeline\n\nNo deleg
+[rst017-c4 2026-09-26T18-09-18] PASS [A-browser] step 15 (host-side activation probe): no second ordinary surviving writer — exactly one surviving generation for the cold root — created=3 disposed=2 surviving=1
+[rst017-c4 2026-09-26T18-09-18] PASS [A-browser] step 15: one final Team generation is live (glue hasLive(root) == true after the UI takeover) — ["session-rst017s5-boot-2026-09-26T18-09-18","session-rst017s5-dyn-2026-09-26T18-09-18"]
+[rst017-c4 2026-09-26T18-09-18] A §5 GATE VERDICT: FAIL (failedStep=10; predicted=10)
+[rst017-c4 2026-09-26T18-09-18] A: boot 2 stopped (SIGTERM)
+[rst017-c4 2026-09-26T18-09-18] world A torn down (host SIGTERM'd, mock closed)
+[rst017-c4 2026-09-26T18-09-18] summary: 24 passed, 1 failed, fatal=none
+[rst017-c4 2026-09-26T18-09-18]   FAIL [A-browser] step 10 (GATE STEP — expected to FAIL per S3 NO-GO-C1 / Q2-FINDING): the composer is enabled after the single click WITHOUT any reload/blank/switch — step10=false dom={"bodyTextHead":"DSH Local Build\n0.1.7-rc.1-46a7f68\nNew Session\nPlugins\nWorkspaces\nworkspace\nUngrouped\nc4 title\n2min\nNew Team\nSettings\nc4 title\nChat\nTrajectory\nTeam\nTimeline\n\nNo deleg
+[rst017-c4 2026-09-26T18-09-18] evidence: /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/supplement-s5

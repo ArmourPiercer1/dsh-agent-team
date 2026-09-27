@@ -1,0 +1,13 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "c4-g5-vgt6vnm902",
+    "result": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  }
+}

@@ -1,0 +1,86 @@
+DSH Local Build
+0.1.7-rc.1-46a7f68
+New Session
+Plugins
+Workspaces
+Ungrouped
+New Team
+Settings
+Into the Unknown
+Preview
+Choose workspace
+Standard mode
+Choose a workspace to start
+Select Workspace Directory
+Home
+dsh-plugins
+dsh-agent-team
+tests
+homes
+characterization
+deepseek-harness-test-use
+dsh-homes
+homes
+kits
+mock
+mock-outside
+mpr-2026-09-25T16-54-33
+mpr-2026-09-25T16-55-24
+mpr-2026-09-25T16-58-54
+mpr-2026-09-25T17-02-08
+mpr-2026-09-25T17-05-29
+mpr-2026-09-25T17-08-45
+mpr-2026-09-25T17-12-55
+mpr-2026-09-25T17-16-32
+mpr-2026-09-25T17-18-51
+mpr-2026-09-25T17-20-12
+mpr-2026-09-25T17-21-11
+mpr-2026-09-25T17-22-08
+mpr-2026-09-26T04-36-32
+rs-017rc1-2026-09-25T14-01-31
+rs-017rc1-2026-09-25T14-07-04
+rst017-bisect-2026-09-26T04-47-07
+rst017-bisect-2026-09-26T04-50-21
+rst017-c4-2026-09-26T11-42-48-A
+rst017-c4-2026-09-26T11-58-14-A
+rst017-c4-2026-09-26T12-09-04-A
+rst017-c4-2026-09-26T12-13-03-B
+rst017-c4-2026-09-26T12-20-20-A
+rst017-c4-2026-09-26T12-21-27-B
+rst017-c4-2026-09-26T12-28-13-D
+rst017-c4-2026-09-26T12-29-02-E
+rst017-c4-2026-09-26T12-41-33-A
+rst017-c4-2026-09-26T12-42-57-A
+rst017-c4-2026-09-26T13-21-01-A
+rst017-spike-2026-09-25T16-26-55
+rst017-spike-2026-09-26T04-05-16
+rst017-spike-2026-09-26T04-10-02
+rst017-spike-2026-09-26T04-16-18
+rst017-spike-2026-09-26T04-32-14
+rst017-spike-2026-09-26T05-05-16
+rst017-spike-2026-09-26T05-10-27
+rst017-spike-2026-09-26T05-14-10
+rst017-spike-2026-09-26T05-20-32
+rst017-spike-2026-09-26T05-25-55
+rst017-spike-2026-09-26T05-31-01
+rst017-spike-2026-09-26T05-44-39
+rst017-spike-2026-09-26T05-57-14
+rst017-spike-2026-09-26T06-16-35
+rst017-spike-2026-09-26T06-41-30
+rst017-spike-2026-09-26T07-03-12
+u8-017rc1-2026-09-24T13-13-03
+u8-017rc1-2026-09-24T13-19-09
+u8-017rc1-2026-09-24T13-33-14
+u8-017rc1-2026-09-24T13-44-59
+u8-017rc1-2026-09-24T13-51-54
+u8-017rc1-2026-09-24T13-59-55
+u8-017rc1-2026-09-24T14-15-33
+u8-017rc1-2026-09-24T14-24-24
+u8-017rc1-2026-09-24T14-32-28
+u8-017rc1-2026-09-24T14-41-50
+u8-017rc1-2026-09-24T14-48-13
+u8-017rc1-probe-2026-09-24T13-13-03
+New folder
+Show hidden files
+Cancel
+Open

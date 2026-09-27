@@ -1,0 +1,15 @@
+{
+  "bothExec": true,
+  "oneOk": true,
+  "singleMemberGen": true,
+  "memberLive": true,
+  "memCreated": 1,
+  "memDisposed": 0,
+  "live": [
+    "session-rst017s5-boot-2026-09-26T17-48-44",
+    "session-rst017s5-f2-2026-09-26T17-48-44",
+    "session-team-child-baceb10416b500d8579c28282f28a375"
+  ],
+  "noOutside": true,
+  "memberPostSeq": 9
+}

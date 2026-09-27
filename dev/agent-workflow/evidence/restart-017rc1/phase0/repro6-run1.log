@@ -1,0 +1,10 @@
+mock up @ 3497
+host up: http://127.0.0.1:3492/?token=F5B9hNRqmRSj0sZulPysrqqnSAZ2fdM-xR8BhGR-FPQ
+cookie acquired: true
+[repro6 +6ms] WS CONNECTED
+[repro6 +6ms] $events opened, observing for 12 s (heartbeat interval 2 s, terminate after 2 misses)
+[repro6 +8ms] RAW DATA 151B control-frames: op14@0,op11@3,op9@6,op10@10,op9@12,op13@15,op12@17,op13@24,op9@25,op10@28,op13@32,op15@37,op13@39,op8@41,op12@45,op12@49,op10@53,op11@54,op9@57,op10@61,op9@67,op12@69,op12@72,op9@73,op14@75,op9@77,op10@80,op9@85,op9@86,op8@87,op9@88,op13@90,op9@91,op13@95,op9@99,op13@100,op9@101,op9@104,op13@105,op9@117,op12@119,op8@121,op15@122,op10@126,op11@127,op8@129,op15@130,op13@131,op10@134,op15@136,op8@137,op15@138,op13@139,op15@141,op13@147,op13@148,op13@149
+[repro6 +8ms] FRAME streamId=ev-repro6-c81f type=item {"type":"ready","clientId":"7079989b-934a-4639-95e9-3ad4f34334c9","host":{"home":"/home/user"}}
+[repro6 +1009ms] next() threw: ws next-frame timeout
+[repro6 +1009ms] final: closed=false closeError=none traceFrames=0
+client exit=0

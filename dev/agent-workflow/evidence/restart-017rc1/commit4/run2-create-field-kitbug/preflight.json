@@ -1,0 +1,29 @@
+{
+  "stamp": "2026-09-26T12-09-04",
+  "at": "2026-09-26T12:09:04.986Z",
+  "testUse": {
+    "pin": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+    "head": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+    "porcelain": "clean"
+  },
+  "worktreeHead": "f3d5a71b7eab6e1ef166a63b86278b97ec5cc6d5",
+  "cliVersion": "0.1.7-rc.1",
+  "ports": {
+    "host": 3492,
+    "mock": 3497,
+    "hostFree": true,
+    "mockFree": true
+  },
+  "stableInstances": {
+    "p3080": {
+      "port": 3080,
+      "reachable": true,
+      "status": 401
+    },
+    "p3180": {
+      "port": 3180,
+      "reachable": false,
+      "status": null
+    }
+  }
+}

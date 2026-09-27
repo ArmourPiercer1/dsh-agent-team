@@ -1,0 +1,13 @@
+[
+  {
+    "path": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T05-25-55/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-homes-rst017-spike-2026-09-26T05-25-55-workspace--/session-rst017-boot-2026-09-26T05-25-55/session.v4.jsonl.zstd",
+    "rows": 4,
+    "assistant": 0,
+    "rowTypes": [
+      "session",
+      "permission/preset",
+      "sandbox/mode",
+      "approval/policy"
+    ]
+  }
+]

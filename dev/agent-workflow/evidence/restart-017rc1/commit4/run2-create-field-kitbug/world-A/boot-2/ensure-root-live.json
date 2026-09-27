@@ -1,0 +1,25 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "c4-ensureA-g0nxnss6tv",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "TEAM_REMOTE_FOREIGN_TEAM",
+        "message": "remote method 'team.ensureRootLive' addresses TeamSession 'session-rst017c4-dyn-2026-09-26T12-09-04' which this host does not own (bound root 'session-rst017c4-boot-2026-09-26T12-09-04')",
+        "details": {
+          "method": "team.ensureRootLive",
+          "endpoint": "team.ensureRootLive",
+          "contractVersion": 3,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_REMOTE_FOREIGN_TEAM",
+            "message": "remote method 'team.ensureRootLive' addresses TeamSession 'session-rst017c4-dyn-2026-09-26T12-09-04' which this host does not own (bound root 'session-rst017c4-boot-2026-09-26T12-09-04')"
+          }
+        }
+      }
+    }
+  }
+}

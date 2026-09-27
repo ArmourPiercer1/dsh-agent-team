@@ -37,15 +37,20 @@ describe('P8-S5A T2 entry loadability (source entry)', () => {
     expect(typeof host.apply).toBe('function')
     expect(typeof host.validateTeamPluginConfig).toBe('function')
     // The hard-service inject set (the Loader keeps the row inactive until
-    // all four exist — the pre-S5A harness row; R122 swapped the
+    // all five exist — the pre-S5A harness row; R122 swapped the
     // materialization seam to the stock `sessions` service, rc.1 having
     // removed sessionPersistence.ensureMaterialized; M2, plan §15.5,
     // added the public `workspaceRegistry` service the web profile
-    // provides through its workspace row).
+    // provides through its workspace row). C1 (restart-recovery guide §5)
+    // added `sessionPersistence`: the glue's durable-existence read moved
+    // to the host's stat-based public seam (the physical layout probe is
+    // deleted), so the plugin hard-declares the core session-layer
+    // service — the same one ACP / message-feedback already inject.
     expect(host.inject).toEqual([
       'agents',
       'storageDomain',
       'sessions',
+      'sessionPersistence',
       'workspaceRegistry',
     ])
   })

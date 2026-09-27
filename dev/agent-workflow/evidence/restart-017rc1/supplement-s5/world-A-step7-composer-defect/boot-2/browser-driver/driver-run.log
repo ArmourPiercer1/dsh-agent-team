@@ -1,0 +1,53 @@
+[driver-v2] step 0: open marker url (fresh page) http://127.0.0.1:3492/?token=WwIgJcqaZCZw_ysxGHuLf-Ya-X2gbcRGe3hWHVoy1lM…
+[driver-v2] 01-landing: text 715 chars → 01-landing.txt/.png
+[driver-v2] onboarding: notice modal present — dismissing (Continue)
+[driver-v2] onboarding: workspace picker present — target /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-s5-2026-09-26T17-48-45-A/workspace
+[driver-v2] onboarding: dialog seg "dsh-plugins" → clicked
+[driver-v2] onboarding: dialog seg "dsh-agent-team" → clicked
+[driver-v2] onboarding: dialog seg "tests" → clicked
+[driver-v2] onboarding: dialog seg "homes" → clicked
+[driver-v2] onboarding: dialog seg "workspace" → absent
+[driver-v2] onboarding: dialog seg "workspace" → absent
+[driver-v2] onboarding: Open → clicked
+[driver-v2] 01d-main-screen: text 261 chars → 01d-main-screen.txt/.png
+[driver-v2] step5: row not visible — expanding the Ungrouped bucket, then re-searching
+[driver-v2] 02-after-open: text 275 chars → 02-after-open.txt/.png
+[driver-v2] step 5: FAIL — the fresh connected page opened the cold Team root from the UI session list :: how=no-match (pre-takeover reloads=0; pageLoadCount=1)
+[driver-v2] driver-v2: wrote driver-done.json (completed=false failedStep=5 pageLoadCount=1)
+[driver-v2] step 0: open marker url (fresh page) http://127.0.0.1:3492/?token=UUob0p2_JYQOLuSGPiKklHM5hH5drDZXgTBFZZuQPi4…
+[driver-v2] 01-landing: text 715 chars → 01-landing.txt/.png
+[driver-v2] onboarding: notice modal present — dismissing (Continue)
+[driver-v2] onboarding: workspace picker present — target /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-s5-2026-09-26T17-59-39-A/workspace
+[driver-v2] onboarding: dialog seg "dsh-plugins" → clicked
+[driver-v2] onboarding: dialog seg "dsh-agent-team" → clicked
+[driver-v2] onboarding: dialog seg "tests" → clicked
+[driver-v2] onboarding: dialog seg "homes" → clicked
+[driver-v2] onboarding: dialog seg "rst017-s5-2026-09-26T17-59-39-A" → clicked
+[driver-v2] onboarding: dialog seg "workspace" → clicked
+[driver-v2] onboarding: Open → clicked
+[driver-v2] 01d-main-screen: text 269 chars → 01d-main-screen.txt/.png
+[driver-v2] step5: row not visible — expanding the Ungrouped bucket, then re-searching
+[driver-v2] 02-after-open: text 283 chars → 02-after-open.txt/.png
+[driver-v2] step 5: FAIL — the fresh connected page opened the cold Team root from the UI session list :: how=no-match (pre-takeover reloads=0; pageLoadCount=1)
+[driver-v2] driver-v2: wrote driver-done.json (completed=false failedStep=5 pageLoadCount=1)
+[driver-v2] step 0: open marker url (fresh page) http://127.0.0.1:3492/?token=FQ1mwTt-FH2R6QblMrdfMlxXNNL2OWSXbSOlqlv6VO8…
+[driver-v2] 01-landing: text 715 chars → 01-landing.txt/.png
+[driver-v2] onboarding: notice modal present — dismissing (Continue)
+[driver-v2] onboarding: workspace picker present — target /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-s5-2026-09-26T18-05-22-A/workspace
+[driver-v2] onboarding: dialog seg "dsh-plugins" → clicked
+[driver-v2] onboarding: dialog seg "dsh-agent-team" → clicked
+[driver-v2] onboarding: dialog seg "tests" → clicked
+[driver-v2] onboarding: dialog seg "homes" → clicked
+[driver-v2] onboarding: dialog seg "rst017-s5-2026-09-26T18-05-22-A" → clicked
+[driver-v2] onboarding: dialog seg "workspace" → clicked
+[driver-v2] onboarding: Open → clicked
+[driver-v2] 01d-main-screen: text 269 chars → 01d-main-screen.txt/.png
+[driver-v2] step5: row not visible — expanding the Ungrouped bucket, then re-searching
+[driver-v2] step5: row rendered (waited) — proceeding
+[driver-v2] page console error: Failed to load resource: the server responded with a status of 404 (Not Found)
+[driver-v2] page console error: Failed to load resource: the server responded with a status of 404 (Not Found)
+[driver-v2] 02-after-open: text 608 chars → 02-after-open.txt/.png
+[driver-v2] step 5: OK — the fresh connected page opened the cold Team root from the UI session list :: how=sessionTitle(prefix)(post-ungrouped) (pre-takeover reloads=0; pageLoadCount=1)
+[driver-v2] 07-session-unavailable: text 608 chars → 07-session-unavailable.txt/.png
+[driver-v2] step 7: FAIL — the page shows "Session unavailable" (会话不可用) with the composer disabled (the vetoed ordinary open's client state) :: {"bodyTextHead":"DSH Local Build\n0.1.7-rc.1-46a7f68\nNew Session\nPlugins\nWorkspaces\nworkspace\nNew Team\nSettings\nsession-rst017s5-dyn-2026-09-26T18-05-22\
+[driver-v2] driver-v2: wrote driver-done.json (completed=false failedStep=7 pageLoadCount=1)

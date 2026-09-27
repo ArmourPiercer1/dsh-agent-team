@@ -3,9 +3,11 @@
  * contract v4 / v4-only-method surface of `@dsh-agent-team/remote`.
  *
  * Must-covers (F9 task card, remote half; adjudications U1–U4):
- *  - persistent contract: the 27-method versioned union (23 v1 + 1
- *    v2-only + 2 v3-only + 1 v4-only), the frozen v1 baseline constant
- *    still 1, the closed v4-only set exactly `['team.resolveControl']`,
+ *  - persistent contract: the 28-method versioned union (23 v1 + 1
+ *    v2-only + 2 v3-only + 1 v4-only + 1 v5-only — the v5 bump is the
+ *    C1 restart-0.1.7-rc.1 recovery, `team.prepareOrdinaryOpen`), the
+ *    frozen v1 baseline constant still 1, the closed v4-only set
+ *    exactly `['team.resolveControl']`,
  *    the closed v4 field set `{teamSessionId, requestId, decision,
  *    note?}` and the closed decision set `['allow','deny']`, the
  *    version-aware availability matrix (v1/v2/v3 reject the v4-only
@@ -68,6 +70,7 @@ import {
   REMOTE_V2_ONLY_METHODS,
   REMOTE_V3_ONLY_METHODS,
   REMOTE_V4_ONLY_METHODS,
+  REMOTE_V5_ONLY_METHODS,
   type RemoteErrorResult,
   type RemoteSafeRecord,
 } from '../src/index.js'
@@ -339,17 +342,18 @@ const RT = await (async () => {
 // ---------------------------------------------------------------------------
 
 describe('F9 (remote contract v4): catalog facts', () => {
-  it('the catalog is the 27-method versioned union; the v4-only set is exactly team.resolveControl', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(27)
+  it('the catalog is the 28-method versioned union; the v4-only set is still exactly team.resolveControl (the C1 v5 bump adds team.prepareOrdinaryOpen)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(28)
     expect(REMOTE_METHOD_NAMES.includes('team.resolveControl')).toBe(true)
     expect([...REMOTE_V4_ONLY_METHODS].sort()).toEqual(['team.resolveControl'])
-    // the v4-only method is disjoint from the v2/v3-only surfaces and
+    // the v4-only method is disjoint from the v2/v3/v5-only surfaces and
     // the frozen v1 methods are all still present (23)
     const v1Count =
       REMOTE_METHOD_NAMES.length -
       REMOTE_V2_ONLY_METHODS.length -
       REMOTE_V3_ONLY_METHODS.length -
-      REMOTE_V4_ONLY_METHODS.length
+      REMOTE_V4_ONLY_METHODS.length -
+      REMOTE_V5_ONLY_METHODS.length
     expect(v1Count).toBe(23)
   })
 

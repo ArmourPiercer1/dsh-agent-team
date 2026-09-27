@@ -1,0 +1,79 @@
+[rst017-spike 2026-09-26T05-20-32] Phase 0 spike — stamp 2026-09-26T05-20-32 (keep=false)
+[rst017-spike 2026-09-26T05-20-32] PASS [s0] preflight: test-use pristine @ 46a7f68b09 (HEAD + empty porcelain)
+[rst017-spike 2026-09-26T05-20-32] PASS [s0] preflight: task worktree on task/team-restart-017rc1 — HEAD=4fb79fca77984552ccb6f0ad1badcab69bd97625
+[rst017-spike 2026-09-26T05-20-32] PASS [s0] preflight: the test-use CLI reports 0.1.7-rc.1 — version=0.1.7-rc.1
+[rst017-spike 2026-09-26T05-20-32] stable pre-probe: 3080=401 3180=401
+[rst017-spike 2026-09-26T05-20-32] world materialized: /home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-spike-2026-09-26T05-20-32
+[rst017-spike 2026-09-26T05-20-32] PASS [install] S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer) — exit=0
+[rst017-spike 2026-09-26T05-20-32] PASS [install] S1 no 0.1.7 incompat / allow-version exemption line
+[rst017-spike 2026-09-26T05-20-32] PASS [install] S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED
+[rst017-spike 2026-09-26T05-20-32] PASS [install] S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile) — bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[rst017-spike 2026-09-26T05-20-32] PASS [install] S3 installed package dir carries the committed install surface — all present
+[rst017-spike 2026-09-26T05-20-32] mock model up @ 3497
+[rst017-spike 2026-09-26T05-20-32] ── Leg A: boot 1 (create) + dynamic team ──
+[rst017-spike 2026-09-26T05-20-32] PASS [legA] boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, probeReject=false) — http://127.0.0.1:3492 liveSessions=["session-rst017-boot-2026-09-26T05-20-32"]
+[rst017-spike 2026-09-26T05-20-32] PASS [legA] A1 team.create(R1) accepted over the public remote seam — status=200 bodyHead={"type":"server-response","rpcId":"rst-create-da0d9p5jf","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-rst017-dyn-2026-0
+[rst017-spike 2026-09-26T05-20-32] PASS [legA] A2 dynamic leader live: first model request observed (row staticModel) — seq=2 model=rst017-model-2026-09-26T05-20-32
+[rst017-spike 2026-09-26T05-20-32] PASS [legA] A3 dynamic leader surface carries the team tools (legacy-mode full catalog) — tools=["ask_user_question","bash","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","present","read","read_image","send_message","skill","subagent","subagent_fork","team_archive_member","team_collect","team_create_member","tea
+[rst017-spike 2026-09-26T05-20-32] boot 1 stopped (SIGTERM)
+[rst017-spike 2026-09-26T05-20-32] ── Leg A: boot 2 (resume) — the cold dynamic root ──
+[rst017-spike 2026-09-26T05-20-32] PASS [legA] boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, probeReject=false) — http://127.0.0.1:3492 liveSessions=["session-rst017-boot-2026-09-26T05-20-32"]
+[rawlog legA-follow +0ms] RAW 148B b0=0x81 b1=0x7e
+[rawlog legA-follow +12ms] RAW 14480B b0=0x81 b1=0x7f
+[rawlog legA-follow +12ms] RAW 24616B b0=0x31 b1=0x2e
+[rawlog legA-follow +12ms] RAW 4344B b0=0x54 b1=0x68 <== CLOSE-FRAME!
+[rawlog legA-follow +13ms] RAW 29590B b0=0x74 b1=0x65
+[rawlog legA-follow +20ms] RAW 146B b0=0x81 b1=0x7e
+[rawlog legA-follow +22ms] RAW 1758B b0=0x81 b1=0x7e
+[rawlog legA-follow +22ms] RAW 1758B b0=0x81 b1=0x7e
+[rawlog legA-follow +1999ms] RAW 2B b0=0x89 b1=0x00
+[rawlog legA-follow +3996ms] RAW 2B b0=0x89 b1=0x00
+[rst017-spike 2026-09-26T05-20-32] FAIL [legA] A4 browser-equivalent session/follow(R1) yields the snapshot frame (the stream survives) — ws closed by host
+[rst017-spike 2026-09-26T05-20-32] FAIL [legA] A4b the mux socket is still open after the follow (no host-side close) — closed=true
+[rst017-spike 2026-09-26T05-20-32] PASS [legA] A5 ordinary promotion observed: agent/created(R1, source=resume) fired unvetoed (the stock path) — [{"kind":"agent/created","sid":"-26T05-20-32","source":"resume","veto":false}]
+[rst017-spike 2026-09-26T05-20-32] PASS [legA] A6 BASELINE BLOCKER: team.ensureRootLive(R1) FAILS after the ordinary promotion stole the session — status=200 errHead={"type":"server-response","rpcId":"rst-ensureA-acjkvs607o","result":{"ok":false,"error":{"code":"TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED","message":"team.ensureRootLive: the Team-mode ensure of 'session-rst017-dyn-2026-09-26T05-20-32' failed: session \"session-rst017-dyn-2026-09-26T05-20-32\" is alr
+[rst017-spike 2026-09-26T05-20-32] PASS [legA] A6b baseline failure lane: typed OUTSIDE_TEAM (already registered) or the writer-held race — outsideTeam=false writerHeld=true
+[rst017-spike 2026-09-26T05-20-32] boot 2 stopped (SIGTERM)
+[rst017-spike 2026-09-26T05-20-32] ── Leg B: boot 3 (resume, fence reject=true) ──
+[rst017-spike 2026-09-26T05-20-32] PASS [legB] boot 3 up (marker + auth + p6t6 ok + boot root live + fence probe ok, probeReject=true) — http://127.0.0.1:3492 liveSessions=["session-rst017-boot-2026-09-26T05-20-32"]
+[rst017-spike 2026-09-26T05-20-32] PASS [legB] B0 boot team root re-adopted on restart and NOT vetoed by the fence — [{"kind":"armed","sid":"","source":"autoArm"},{"kind":"agent/created","sid":"-26T05-20-32","source":"resume","veto":false}]
+[rst017-spike 2026-09-26T05-20-32] PASS [legB] B1 fence auto-armed at row load (before the stock boot re-adoption) — {"ok":true,"reject":true,"armed":true,"teamSessions":["session-rst017-dyn-2026-09-26T05-20-32"],"permits":[],"events":2}
+[rst017-spike 2026-09-26T05-20-32] FAIL [legB] B1a BOOT-VETO: the stock host boot-time re-adopt of R1 was vetoed (source=resume) — the writer steal caught at the origin — null
+[rawlog legBC-follow +0ms] RAW 148B b0=0x81 b1=0x7e
+[rawlog legBC-follow +13ms] RAW 14480B b0=0x81 b1=0x7f
+[rawlog legBC-follow +13ms] RAW 28960B b0=0x31 b1=0x2e
+[rawlog legBC-follow +13ms] RAW 29683B b0=0x74 b1=0x65
+[rawlog legBC-follow +20ms] RAW 1758B b0=0x81 b1=0x7e
+[rawlog legBC-follow +24ms] RAW 1759B b0=0x81 b1=0x7e
+[rawlog legBC-follow +24ms] RAW 148B b0=0x81 b1=0x7e
+[rawlog legBC-follow +24ms] RAW 346B b0=0x81 b1=0x7e
+[rawlog legBC-follow +1999ms] RAW 2B b0=0x89 b1=0x00
+[rawlog legBC-follow +3999ms] RAW 2B b0=0x89 b1=0x00
+[rst017-spike 2026-09-26T05-20-32] FAIL [legB] B2 session/follow(R1) snapshot arrives before the (background) promotion veto — ws closed by host
+[rst017-spike 2026-09-26T05-20-32] FAIL [legB] B2b the follow stream survives the rejection (the follow promote’s api-session/error arrives on the same socket after the snapshot) — null
+[rst017-spike 2026-09-26T05-20-32] FAIL [legB] B2c the mux socket is still open after the rejection (no host-side close) — closed=true
+[rst017-spike 2026-09-26T05-20-32] PASS [legB] B3 Q1: the fence veto fired on agent/created (source=resume) — {"t":"2026-09-26T05:22:15.062Z","kind":"agent/created","sessionId":"session-rst017-dyn-2026-09-26T05-20-32","source":"resume","agentId":"session-rst017-dyn-2026-09-26T05-20-32","veto":true,"permitted":false}
+[rst017-spike 2026-09-26T05-20-32] PASS [legB] B4 Q1: agent/disposed arrived for the vetoed session (rollback completed) — {"t":"2026-09-26T05:22:15.064Z","kind":"agent/disposed","sessionId":"session-rst017-dyn-2026-09-26T05-20-32","agentId":"session-rst017-dyn-2026-09-26T05-20-32"}
+[rst017-spike 2026-09-26T05-20-32] PASS [legB] B5 Q1: api-session/error surfaced (the SessionController promote() error surface, broadcast on the wire) — {"t":"2026-09-26T05:22:15.065Z","kind":"api-session/error","sessionId":"session-rst017-dyn-2026-09-26T05-20-32","message":"resume failed for session \"session-rst017-dyn-2026-09-26T05-20-32\": Error: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \"session-rst017-dyn-2
+[rst017-spike 2026-09-26T05-20-32] PASS [legB] B6 fence stays armed; one-shot permit granted for R1 (the Team's own activation passes via the permit) — {"ok":true,"permits":["session-rst017-dyn-2026-09-26T05-20-32"]}
+[rst017-spike 2026-09-26T05-20-32] PASS [legB] B7 Q1: team.ensureRootLive(R1) SUCCEEDS after the rollback (the writer was released) — status=200 bodyHead={"type":"server-response","rpcId":"rst-ensureB-oci09ueqh6","result":{"ok":true,"value":{"data":{"rootSessionId":"session-rst017-dyn-2026-09-26T05-20-32","mode":"team","live":true},"provenance":{"origin":"team-remote","method":"team.ensureRootLive","e
+[rst017-spike 2026-09-26T05-20-32] PASS [legB] B8 the Team's own resume fired exactly one permitted (non-vetoed) agent/created — the one-shot permit consumed by the owned activation — count=1
+[rst017-spike 2026-09-26T05-20-32] PASS [legB] B9 takeover turn live on the mock with the Team tools (full surface retained) — seq=3 teamTools=13/39
+[rst017-spike 2026-09-26T05-20-32] PASS [legB] B10 Q1: exactly one model request since the veto (the Team takeover turn — ZERO from the foreign agent) — requestsSinceVeto=1
+[rst017-spike 2026-09-26T05-20-32] PASS [legB] B11 session log intact and readable (durable rows present) — files=1 rows=30 assistantRows=1
+[rst017-spike 2026-09-26T05-20-32] ── Leg C: ordinary session negative control (fence armed) ──
+[rst017-spike 2026-09-26T05-20-32] PASS [legC] C0 fence re-armed for the ordinary control
+[rst017-spike 2026-09-26T05-20-32] PASS [legC] C1 ordinary session created via the public seam — status=200 bodyHead={"type":"server-response","rpcId":"rst-create-session-5ptilvch3j","result":{"ok":true,"value":{"sessionId":"session-rst017-ord-2026-09-26T05-20-32","a
+[rst017-spike 2026-09-26T05-20-32] PASS [legC] C3 ordinary promotion passed the ARMED fence (no veto for unmanaged sessions) — [{"kind":"agent/created","sid":"-26T05-20-32","veto":false}]
+[rawlog legC-follow +0ms] RAW 1626B b0=0x81 b1=0x7e
+[rst017-spike 2026-09-26T05-20-32] PASS [legC] C2 ordinary session/follow snapshot arrives (unaffected by the fence) — ok
+[rst017-spike 2026-09-26T05-20-32] PASS [legC] C2b the ordinary follow socket is still open (no host-side close) — closed=false
+[rst017-spike 2026-09-26T05-20-32] boot 3 stopped (SIGTERM)
+[rst017-spike 2026-09-26T05-20-32] summary: 33 passed, 6 failed
+[rst017-spike 2026-09-26T05-20-32]   FAIL [legA] A4 browser-equivalent session/follow(R1) yields the snapshot frame (the stream survives) — ws closed by host
+[rst017-spike 2026-09-26T05-20-32]   FAIL [legA] A4b the mux socket is still open after the follow (no host-side close) — closed=true
+[rst017-spike 2026-09-26T05-20-32]   FAIL [legB] B1a BOOT-VETO: the stock host boot-time re-adopt of R1 was vetoed (source=resume) — the writer steal caught at the origin — null
+[rst017-spike 2026-09-26T05-20-32]   FAIL [legB] B2 session/follow(R1) snapshot arrives before the (background) promotion veto — ws closed by host
+[rst017-spike 2026-09-26T05-20-32]   FAIL [legB] B2b the follow stream survives the rejection (the follow promote’s api-session/error arrives on the same socket after the snapshot) — null
+[rst017-spike 2026-09-26T05-20-32]   FAIL [legB] B2c the mux socket is still open after the rejection (no host-side close) — closed=true
+[rst017-spike 2026-09-26T05-20-32] evidence: /home/user/dsh-plugins/dsh-agent-team/.worktrees/team-restart-017rc1/dev/agent-workflow/evidence/restart-017rc1/phase0

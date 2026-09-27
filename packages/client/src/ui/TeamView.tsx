@@ -253,19 +253,24 @@ export interface TeamViewInjected {
    */
   openTeamMode?: (rootSessionId: string) => Promise<TeamOpenModeOutcome>
   /**
-   * D3 (Team D1-D6 repair v2, D6): the EXPLICIT ordinary-mode fallback
-   * entry ("以普通模式打开", v2 plan §1.1.3) on the SAME rows as the
-   * Team-mode entry: the pure native session open (0.1.7
-   * `uiWorkspace.openSession`; 0.1.5: `ctx.sessions.open`) — NO
-   * team-remote call, NO ensure-live step. The
-   * entry's promise is "no Team ensure is performed / team_* tools are
-   * NOT guaranteed" — it is NOT a tool-removal operation (a root whose
-   * agent is already live with the Team setup is adopted as-is; the mode
-   * badge shows which entry was used, so the UI never claims a removal).
-   * Absent → the D2 surface (no ordinary entry on the picker rows or the
-   * leader row).
+   * D3 (Team D1-D6 repair v2, D6) — C1 rewire (guide §10.2): the
+   * EXPLICIT ordinary-mode fallback entry ("以普通模式打开", v2 plan
+   * §1.1.3) on the SAME rows as the Team-mode entry: the AWAITED
+   * two-phase sequence in the mount — (a) the v5
+   * `team.prepareOrdinaryOpen` one-shot permit (the entry's single Team
+   * control-plane RPC — NO Team ensure, NO Team Agent side effect, no
+   * revoke RPC), then (b) the pure native session open (0.1.7
+   * `uiWorkspace.openSession`; 0.1.5: `ctx.sessions.open`). A typed
+   * permit failure REJECTS the promise (the row's async error lane
+   * renders it; never a silent open / adoption); a failed native open
+   * rejects with the seam's own error. The entry's promise is "no Team
+   * ensure is performed / activated as an ordinary Session Agent" — it
+   * is NOT a tool-removal operation (a root whose agent is already live
+   * with the Team setup is adopted as-is; the mode badge shows which
+   * entry was used, so the UI never claims a removal). Absent → the D2
+   * surface (no ordinary entry on the picker rows or the leader row).
    */
-  openOrdinaryMode?: (rootSessionId: string) => void
+  openOrdinaryMode?: (rootSessionId: string) => Promise<void>
   /**
    * D2/D3 (D6): the per-root client-local open-mode read — WHICH explicit
    * entry this client used while it still sits on the root: `'team'` for
@@ -457,6 +462,49 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
       })
     })
   }
+  // D3 (D6) — C1 rewire (guide §10.2): the SAME async error lane for the
+  // explicit ordinary-mode entry (the AWAITED two-phase sequence — v5
+  // prepare permit, then the native open — lives in the mount; the row
+  // only triggers it and renders the settled rejection). Rejections
+  // arrive as the mount's typed `${code}: ${message}` Error (the code is
+  // a closed SCREAMING_SNAKE constant with no colon, so the first
+  // `': '` split is unambiguous) or the seam's own native-open error.
+  // The error note is NEVER swallowed: every rejection renders the
+  // verbatim typed note.
+  const [rootOpenOrdinaryPending, setRootOpenOrdinaryPending] = useState<Readonly<Record<string, boolean>>>({})
+  const [rootOpenOrdinaryErrors, setRootOpenOrdinaryErrors] = useState<
+    Readonly<Record<string, { readonly code: string; readonly message: string }>>
+  >({})
+  /** Run the row's explicit ordinary-mode entry through the face (the
+   *  two-phase sequence lives in the mount; the row only triggers it and
+   *  renders the settled rejection when it comes back). */
+  const runPickerOpenOrdinaryMode = (rootSessionId: string): void => {
+    const face = openOrdinaryMode
+    if (face === undefined) return
+    setRootOpenOrdinaryPending(prev => ({ ...prev, [rootSessionId]: true }))
+    setRootOpenOrdinaryErrors(prev => {
+      const next = { ...prev }
+      delete next[rootSessionId]
+      return next
+    })
+    void face(rootSessionId).catch((error: unknown) => {
+      const rawMessage = error instanceof Error ? error.message : String(error)
+      const separatorIndex = rawMessage.indexOf(': ')
+      const code = separatorIndex > 0 ? rawMessage.slice(0, separatorIndex) : 'ORDINARY_OPEN_FAILED'
+      const message = separatorIndex > 0 ? rawMessage.slice(separatorIndex + 2) : rawMessage
+      setRootOpenOrdinaryErrors(prev => ({
+        ...prev,
+        [rootSessionId]: { code, message },
+      }))
+    }).finally(() => {
+      setRootOpenOrdinaryPending(prev => {
+        if (prev[rootSessionId] !== true) return prev
+        const next = { ...prev }
+        delete next[rootSessionId]
+        return next
+      })
+    })
+  }
   const ledgerState = useTeamLedgers(map => map[snapshot?.teamSessionId ?? ''])
   const ledger = useMemo(() => ledgerModelFromStoreState(ledgerState), [ledgerState])
   // F9 (remote contract v4) — the human control-resolution command face
@@ -566,6 +614,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
           <ul className={styles.rootsList} data-team-roots-list>
             {teamRoots.rows.map(row => {
               const rowError = rootOpenTeamErrors[row.rootSessionId]
+              const rowOrdinaryError = rootOpenOrdinaryErrors[row.rootSessionId]
               return (
                 <li
                   key={row.rootSessionId}
@@ -612,13 +661,28 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
                          type="button"
                          className={styles.rootRowOpen}
                          data-team-ordinary-open-root={row.rootSessionId}
+                         disabled={rootOpenOrdinaryPending[row.rootSessionId] === true || undefined}
                          title={t('view.members.openOrdinaryMode.hint')}
-                         onClick={() => { openOrdinaryMode(row.rootSessionId) }}
+                         onClick={() => { runPickerOpenOrdinaryMode(row.rootSessionId) }}
                        >
                          {t('view.members.openOrdinaryMode')}
                        </button>
                      )
                      : null}
+                   {/* D3 (D6) — C1 rewire (guide §10.2): the settled
+                     rejection of the ordinary entry (typed code +
+                     message, the async error lane — never a silent
+                     failure, never swallowed). */}
+                   {rowOrdinaryError !== undefined
+                    ? (
+                      <div className={styles.legacyNote} data-team-ordinary-open-error>
+                        {t('view.members.openOrdinaryMode.error', {
+                          code: rowOrdinaryError.code,
+                          message: rowOrdinaryError.message,
+                        })}
+                      </div>
+                    )
+                    : null}
                    {rowError !== undefined
                     ? (
                       <div className={styles.legacyNote} data-team-mode-open-error>

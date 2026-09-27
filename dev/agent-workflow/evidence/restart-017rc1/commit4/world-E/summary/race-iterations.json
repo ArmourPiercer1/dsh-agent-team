@@ -1,0 +1,322 @@
+[
+  {
+    "i": 1,
+    "bootNo": 2,
+    "delayMicro": 1,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 2,
+    "bootNo": 3,
+    "delayMicro": 2,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 3,
+    "bootNo": 4,
+    "delayMicro": 0,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 4,
+    "bootNo": 5,
+    "delayMicro": 3,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 5,
+    "bootNo": 6,
+    "delayMicro": 2,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 6,
+    "bootNo": 7,
+    "delayMicro": 3,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 7,
+    "bootNo": 8,
+    "delayMicro": 2,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 8,
+    "bootNo": 9,
+    "delayMicro": 0,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 9,
+    "bootNo": 10,
+    "delayMicro": 3,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 10,
+    "bootNo": 11,
+    "delayMicro": 0,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 11,
+    "bootNo": 12,
+    "delayMicro": 2,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 12,
+    "bootNo": 13,
+    "delayMicro": 1,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 13,
+    "bootNo": 14,
+    "delayMicro": 2,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 14,
+    "bootNo": 15,
+    "delayMicro": 0,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 15,
+    "bootNo": 16,
+    "delayMicro": 2,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 16,
+    "bootNo": 17,
+    "delayMicro": 1,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 17,
+    "bootNo": 18,
+    "delayMicro": 3,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 18,
+    "bootNo": 19,
+    "delayMicro": 2,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 19,
+    "bootNo": 20,
+    "delayMicro": 3,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  },
+  {
+    "i": 20,
+    "bootNo": 21,
+    "delayMicro": 1,
+    "followOk": true,
+    "ensureStatus": 200,
+    "ensureOk": true,
+    "teamLive": true,
+    "created": 1,
+    "disposed": 0,
+    "singleWriter": true,
+    "live": [
+      "session-rst017c4-boot-2026-09-26T12-20-20",
+      "session-rst017c4-dyn-2026-09-26T12-20-20"
+    ]
+  }
+]

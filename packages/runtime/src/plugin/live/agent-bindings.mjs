@@ -320,8 +320,6 @@
  *                                 touched; idempotent)
  */
 import { createHash } from 'node:crypto'
-import { readdirSync } from 'node:fs'
-import { join } from 'node:path'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { installModelSelection } from '@deepseek-ai/dsh-agent'
 import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
@@ -349,6 +347,14 @@ import {
 // VERBATIM: every configured-server read in this file goes through
 // configuredMcpServers (no second normalization anywhere).
 import { configuredMcpServers } from '../mcp-supply.js'
+// C1 (restart-recovery, guide §3.2): the ONE durable Team-ownership
+// authority — the host-side activation fence and this glue's
+// `teamRootOfSession` thin wrapper share the SAME algorithm (no second
+// traversal of the durable repositories). The relative `.js` specifier
+// resolves to the TypeScript source under the test runners (the .js ->
+// .ts sibling rewrite) and to the compiled mirror in the production
+// dist layout.
+import { resolveOwningTeamRoot } from '../team-session-ownership.js'
 // alpha.2 (plan §10/§11): the A5 tools/pre-execute enforcement adapter —
 // the frozen A2/A3/A4 composition (canonicalize -> static decision ->
 // ask: request/wait/guard over the durable Control plane, fail-closed
@@ -639,7 +645,25 @@ export function createAgentBindings(deps) {
   // D1 (v2): agentPresets is OPTIONAL (the host serves it as a lazy accessor;
   // a test world may omit it) — the member bind paths fail closed with the
   // typed member-base-tools-unavailable when it is absent or unusable.
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef } = deps
+  // C1 (restart-recovery, guide §4.3): activationFence is OPTIONAL — a
+  // test/factory world may omit it, and the glue then falls back to the
+  // DIRECT operations (runOwnedActivation runs the operation bare; the
+  // ensureLiveAgent rollback / writer-conflict waits are skipped — the
+  // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
+  // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, activationFence } = deps
+
+  // C1 (restart-recovery, guide §7.2): the bounded window of the SINGLE
+  // writer-conflict recovery wait (ensureLiveAgent's recoverWriterConflict
+  // call). Production default: 10 s (the ordinary-promotion rollback
+  // settles in milliseconds — the window is a safety bound, not a sleep);
+  // a test world may override it through deps (tiny window for the
+  // G5/G6 determinism). A non-positive / non-number value falls back to
+  // the default.
+  const WRITER_HANDOFF_TIMEOUT_MS =
+    typeof deps.writerHandoffTimeoutMs === 'number' && deps.writerHandoffTimeoutMs > 0
+      ? deps.writerHandoffTimeoutMs
+      : 10_000
   if (agents === undefined) throw new Error('agent-bindings: deps.agents is required')
   if (sessionPersistence === undefined) throw new Error('agent-bindings: deps.sessionPersistence is required')
   if (config === undefined || config === null) throw new Error('agent-bindings: deps.config is required')
@@ -708,6 +732,56 @@ export function createAgentBindings(deps) {
    * row is committed, so no projection row exists to carry the fact.
    */
   const resumingSessions = new Set()
+  // S1 (pr31_supplemental_fix_guide §2.2-A/§2.2-E, INV-2): the per-SID
+  // Team activation SINGLE-FLIGHT coordinators. Two deliberately
+  // SEPARATE maps (the guide's warning: avoid double single-flight that
+  // waits on itself):
+  //  - `activationInFlight` (LOW level, the ONE shared coordinator):
+  //    every Team create/resume of a session — boot root create/resume,
+  //    seed member create, boot member resume, childFactory create /
+  //    durable resume, createRootAgent, ensureLiveAgent's resume —
+  //    funnels through runOwnedActivation, so at most ONE in-flight
+  //    Team create/resume per SID process-wide (INV-2: "ONE in-flight
+  //    Team create/resume, ONE surviving AgentHandle"; concurrent
+  //    callers await the SAME promise, they never each call
+  //    agents.create/resume). Different SIDs stay concurrent (no
+  //    global lock).
+  //  - `ensureLiveAgentInFlight` (HIGH level): the WHOLE ensureLiveAgent
+  //    body (the guide §2.2-B target shape) — the second concurrent
+  //    caller of the same SID never re-enters the pre-resume flow
+  //    (awaitRollback / foreignLive / durable / owning-root /
+  //    rollback-epoch snapshot / resume / recovery / one retry); it
+  //    awaits the first caller's promise.
+  /** @type {Map<string, Promise<object>>} */
+  const activationInFlight = new Map()
+  /** @type {Map<string, Promise<object>>} */
+  const ensureLiveAgentInFlight = new Map()
+
+  /**
+   * S1 (guide §2.2-A, verbatim shape): one in-flight operation per map
+   * key — concurrent callers AWAIT THE SAME PROMISE (the identity check
+   * in `finally` keeps an early-finished entry from deleting a later
+   * caller's map entry — the guide's "同一个 Promise identity" note).
+   * @param {Map<string, Promise<object>>} map
+   * @param {string} sid
+   * @param {() => Promise<object>} operation
+   * @returns {Promise<object>}
+   */
+  async function singleFlightTeamActivation(map, sid, operation) {
+    const existing = map.get(sid)
+    if (existing !== undefined) return existing
+    const promise = (async () => {
+      return await operation()
+    })()
+    map.set(sid, promise)
+    try {
+      return await promise
+    } finally {
+      if (map.get(sid) === promise) {
+        map.delete(sid)
+      }
+    }
+  }
   // T12-M2: the persona surface state — the agent-scoped 'deployment:persona'
   // section disposers per session id, the identities installed before the
   // session's setup captured its agent ctx (queued until the setup flushes
@@ -751,43 +825,31 @@ export function createAgentBindings(deps) {
   }
 
   /**
-   * Whether a session already has FINAL durable artifacts on disk under
-   * <DSH_HOME>/sessions/<project>/<sessionId>/ — the cold-resume eligibility
-   * check (the write-behind publication is long settled by the time a
-   * restarted boot asks). The canonical log file is ANY generation root the
-   * upstream session-persistence-jsonl backend may hold: `session.jsonl`
-   * (released v0) and `session.vN.jsonl` (released vN), each in the zstd
-   * (`...jsonl.zstd`) or raw encoding — 0.1.5-rc.2 resumes publish VERSIONED
-   * generation roots (e.g. `session.v3.jsonl.zstd`), so the v0 bare name is
-   * NOT the only shape; matching any canonical generation is what makes a
-   * resumed-then-restarted session eligible again (real-host probe,
-   * Gate D run mgis-2026-09-20T09-58-57: all three sessions present on
-   * disk as `session.v3.jsonl.zstd`, the v0-only match returned false for
-   * every one of them).
+   * C1 (restart-recovery, guide §5.2): whether a session has a durable
+   * existence — the cold-resume eligibility check, read through the PUBLIC
+   * session-persistence seam (`sessionPersistence.exists`) INSTEAD of the
+   * pre-C1 physical `DSH_HOME` layout probe (which is deleted: it guessed
+   * on disk — env-dependent, backend-layout-dependent, and blind to the
+   * backend's own view). `exists` is the host wrapper's
+   * `stat(id) !== undefined` (guide §5.1 — no ownership claim, no backend
+   * assumption; the upstream backend is the single authority on whether
+   * the session is resumable).
+   *
+   * FAIL-CLOSED discipline (guide §5.2 + test D4): if the seam is ABSENT
+   * (a world without the host's sessionPersistence wrapper) this throws a
+   * TYPED error — it never silently degrades to "not durable", and a
+   * backend FAULT (stat throwing) PROPAGATES unchanged — a fault must
+   * never be misread as a nonexistent session (test D4).
    * @param {string} sessionId
-   * @returns {boolean}
+   * @returns {Promise<boolean>}
    */
-  function sessionIsDurable(sessionId) {
-    const home = process.env.DSH_HOME
-    if (home === undefined) return false
-    const sessionsRoot = join(home, 'sessions')
-    let profiles
-    try {
-      profiles = readdirSync(sessionsRoot, { withFileTypes: true }).filter((e) => e.isDirectory())
-    } catch {
-      return false
+  async function durableSessionExists(sessionId) {
+    if (typeof sessionPersistence?.exists !== 'function') {
+      throw new Error(
+        'agent-bindings: sessionPersistence.exists public seam is unavailable',
+      )
     }
-    for (const pd of profiles) {
-      const dir = join(sessionsRoot, pd.name, sessionId)
-      let entries
-      try {
-        entries = readdirSync(dir, { withFileTypes: true })
-      } catch {
-        continue
-      }
-      if (entries.some((e) => e.isFile() && /^session(\.v\d+)?\.jsonl(\.zstd)?$/.test(e.name))) return true
-    }
-    return false
+    return await sessionPersistence.exists(String(sessionId))
   }
 
   /**
@@ -831,37 +893,151 @@ export function createAgentBindings(deps) {
    * @returns {string|undefined} the owning root session id
    */
   function teamRootOfSession(sessionId) {
+    // C1 (restart-recovery, guide §3.2): a THIN WRAPPER over the ONE
+    // ownership authority (the same pure function the host-side
+    // activation fence consumes — no second traversal of the durable
+    // repositories; the semantics are preserved verbatim:
+    //   1. the boot root owns itself;
+    //   2. a session with its own durable TeamSession row IS a team root
+    //      of this domain and owns itself;
+    //   3. a bound member child is owned by the root whose member list
+    //      carries it (the boot root first, then the other team roots);
+    //   4. unresolved -> undefined (the boot root is NOT a fallback).
+    return resolveOwningTeamRoot(domain, rootSid, sessionId)
+  }
+
+  // ── C1 (restart-recovery, guide §6.1): the ownership-guarded activation wrappers ──
+  // GOAL (guide §6.1/§6.2): no BARE agents.create / agents.resume calls
+  // in the production body — every Team create/resume goes through these
+  // wrappers so the fence's ownership guard (runOwned) + the awaited
+  // agent/created veto (host-side) always see a Team activation as
+  // Team-owned. When the fence dep is ABSENT (test/factory world —
+  // guide §4.3), the wrappers fall back to the direct operation (the
+  // pre-C1 behavior, so no pre-C1 test double breaks wholesale).
+  // The wrappers themselves are the ONLY `agents.create` / `agents.resume`
+  // call sites (a static assertion test pins the bare-call count at zero
+  // everywhere else).
+
+  /**
+   * S1 (supplement guide §2.2-E): the claim wrapper — the Team glue's
+   * EXACT generation claim (supplement INV-3). When the 0.1.7 lifecycle
+   * invokes the setup with the real `setupAgent`, the wrapper claims
+   * THAT object with the fence BEFORE delegating to the real setup:
+   * the 0.1.7 createAgent flow is `createAgent → setupAndPublish →
+   * initializeAgent → runMaintenance → publish → announce` (Commit-4
+   * in-host verified), so the claim is established before the
+   * AWAITED-serial `agent/created` announces the same object — the
+   * fence's exact-match PASS is causal (the announced Agent object IS
+   * the claimed one), not a time-window inference. Setup failure
+   * RELEASES the claim (no leak — the create is rejected, the announce
+   * never comes; supplement §2.2-C guarantees). Fence/claim API absent
+   * (test/factory world without the fence, or a partial fence) → the
+   * wrapper is a transparent passthrough.
+   * @param {string} sessionId
+   * @param {function} setup - the caller's composed agentSetup.
+   * @returns {function} the wrapped AgentSetup.
+   */
+  function teamOwnedSetup(sessionId, setup) {
     const sid = String(sessionId)
-    if (sid === rootSid) return rootSid
-    // (2) the session IS a team root of this row's domain.
-    if (domain.repositories.teamSessions !== undefined) {
-      try {
-        if (domain.repositories.teamSessions.get(sid) !== undefined) return sid
-      } catch {
-        // a malformed root session id is not a team row — ownership stays
-        // unresolved (fail closed)
-      }
-    }
-    const isMemberOf = (teamRoot) => {
-      for (const member of domain.repositories.memberInstances.list(teamRoot)) {
-        if (String(member.childSessionId) === sid) return true
-      }
-      return false
-    }
-    // (3) a bound member child of this row's teams.
-    if (isMemberOf(rootSid)) return rootSid
-    if (domain.repositories.teamSessions !== undefined) {
-      try {
-        for (const row of domain.repositories.teamSessions.list()) {
-          const root = String(row.rootSessionId)
-          if (root === rootSid || root === sid) continue
-          if (isMemberOf(root)) return root
+    return async (agentCtx, setupAgent) => {
+      const fence = activationFence
+      if (fence !== undefined && typeof fence.claimOwnedGeneration === 'function') {
+        // The claim is accepted only while the runOwned guard is held
+        // (the fence's claim-acceptance gate — this wrapper always runs
+        // inside runOwnedActivation's guarded operation).
+        fence.claimOwnedGeneration(sid, setupAgent)
+        try {
+          return await setup(agentCtx, setupAgent)
+        } catch (error) {
+          if (typeof fence.releaseOwnedGeneration === 'function') {
+            fence.releaseOwnedGeneration(sid, setupAgent)
+          }
+          throw error
         }
-      } catch {
-        // an unavailable listing leaves the ownership unresolved
       }
+      return await setup(agentCtx, setupAgent)
     }
-    return undefined
+  }
+
+  /**
+   * C1 (guide §6.1) + S1 (supplement guide §2.2-E): wrap one Team
+   * activation in the fence's ownership guard (ref-counted `runOwned` —
+   * nested activations of the same session compose; the guard is
+   * released in `finally`, so a wrapper fault CLEARS the guard too —
+   * test G3) AND in the LOW-LEVEL per-SID single-flight coordinator —
+   * the ONE shared funnel for every Team create/resume entry (boot
+   * root/seed/boot-member, childFactory create/durable-resume,
+   * createRootAgent, ensureLiveAgent): concurrent activations of the
+   * same SID await the SAME in-flight operation (INV-2), different SIDs
+   * stay concurrent. Fence absent → run the operation direct (the
+   * single-flight still applies — it is a glue property, not a fence
+   * property).
+   * @param {string} sessionId
+   * @param {() => Promise<object>} operation
+   * @returns {Promise<object>} the AgentHandle.
+   */
+  async function runOwnedActivation(sessionId, operation) {
+    const sid = String(sessionId)
+    return await singleFlightTeamActivation(activationInFlight, sid, async () => {
+      if (activationFence !== undefined && typeof activationFence.runOwned === 'function') {
+        return await activationFence.runOwned(sid, operation)
+      }
+      return await operation()
+    })
+  }
+
+  /**
+   * C1 (guide §6.1) + S1 (supplement guide §2.2-C): the guarded Team
+   * RESUME (the one `agents.resume` call site). `setup` is the caller's
+   * composed agentSetup (the shared REAL setup — the durable model
+   * selection, the team tools, the persona, the MCP facet — unchanged by
+   * the fence), wrapped in the exact-generation claim.
+   * @param {{sessionId: string, setup: function}} args
+   * @returns {Promise<object>} the AgentHandle.
+   */
+  async function resumeTeamAgent({ sessionId, setup }) {
+    return await runOwnedActivation(sessionId, () =>
+      agents.resume({
+        resumeSessionId: SessionId(sessionId),
+        setup: teamOwnedSetup(sessionId, setup),
+      }),
+    )
+  }
+
+  /**
+   * C1 (guide §6.1) + S1 (supplement guide §2.2-C): the guarded Team
+   * CREATE (the one `agents.create` call site). `meta` carries the
+   * create-time session header (the effective workspace cwd — never
+   * DSH_HOME); `setup` is wrapped in the exact-generation claim.
+   * @param {{sessionId: string, meta: object, setup: function}} args
+   * @returns {Promise<object>} the AgentHandle.
+   */
+  async function createTeamAgent({ sessionId, meta, setup }) {
+    return await runOwnedActivation(sessionId, () =>
+      agents.create({
+        sessionId: SessionId(sessionId),
+        meta,
+        setup: teamOwnedSetup(sessionId, setup),
+      }),
+    )
+  }
+
+  /**
+   * C1 (guide §7.1): the TYPED writer-held detection — the priority is
+   * (1) `error.name === 'SessionAlreadyOwnedError'` (the 0.1.7 typed
+   * error), (2) `error.code === 'session/writer-held'`, (3) the
+   * compatibility MESSAGE `already owned by an active write handle` —
+   * the message substring is a FALLBACK, never the sole authority
+   * (guide §7.1: "不要把 message substring 作为唯一 authority").
+   * @param {unknown} error
+   * @returns {boolean}
+   */
+  function isSessionWriterHeld(error) {
+    if (error === null || typeof error !== 'object') return false
+    if (error.name === 'SessionAlreadyOwnedError') return true
+    if (error.code === 'session/writer-held') return true
+    if (typeof error.message === 'string' && error.message.includes('already owned by an active write handle')) return true
+    return false
   }
 
   /**
@@ -2281,39 +2457,161 @@ export function createAgentBindings(deps) {
    * The live-agent-or-resume resolver for one session id (a not-live-but-
    * durable session is resumed first; a session that is neither live nor
    * durable has no agent to run on).
+   *
+   * C1 (restart-recovery, guide §7): the restart-safe algorithm —
+   *   1. close gate; existing live handle returned;
+   *   2. a DECLARED foreign rollback of this session (the fence's exact-
+   *      generation barrier) must converge BEFORE the resume;
+   *   3. an upstream registry Agent with no Team handle = explicit
+   *      ordinary-mode or genuine foreign owner — fail closed as
+   *      OUTSIDE_TEAM (the stable message the S6 mapper keys on);
+   *   4. durable existence via the PUBLIC seam (guide §5.2);
+   *   5. the owning Team root (guide §3.2 — fail closed when unowned);
+   *   6. the guarded resume (guide §6.1) with the SINGLE bounded
+   *      writer-conflict recovery (guide §7.2): a writer-held conflict
+   *      retries EXACTLY ONCE, and only after the fence confirms the
+   *      conflicting activation was a Team-managed foreign activation
+   *      it intercepted AND the exact foreign generation is disposed.
+   *      No while-retry, no sleep, no backoff, no lock deletion.
    * @param {string} sessionId
    * @returns {Promise<object>} the AgentHandle.
    */
   async function ensureLiveAgent(sessionId) {
+    const sid = String(sessionId)
     // close lifecycle gate (entry): once close() has announced, no new
     // live handle may be created/resumed (a completion settling during
     // teardown must fail, not resurrect an agent behind the close).
     if (closing) {
-      throw new Error(`agent-bindings: live bindings are closing — no new live handle for session '${sessionId}'`)
+      throw new Error(`agent-bindings: live bindings are closing — no new live handle for session '${sid}'`)
     }
-    const existing = liveAgents.get(sessionId)
+    const existing = liveAgents.get(sid)
     if (existing !== undefined) return existing
-    if (!sessionIsDurable(sessionId)) {
-      throw new Error(`p6t6: session '${sessionId}' is neither live nor durable — no agent to execute a tool on`)
+    // S1 (supplement guide §2.2-B, verbatim target shape): the WHOLE
+    // ensureLiveAgent body is per-SID single-flighted (the HIGH-level
+    // coordinator) — the second concurrent caller of the same SID never
+    // re-enters the pre-resume flow; it awaits the first caller's
+    // promise (INV-2: "其余调用必须 await 同一个 Promise，而不是各自
+    // 进入 ctx.agents.resume()" — test G7). The low-level coordinator
+    // in runOwnedActivation additionally guarantees that this path's
+    // resume cannot run concurrently with ANY other entry's (boot /
+    // childFactory / createRootAgent) create/resume of the same SID.
+    return await singleFlightTeamActivation(
+      ensureLiveAgentInFlight,
+      sid,
+      () => ensureLiveAgentOnce(sid),
+    )
+  }
+
+  /**
+   * The single-flight BODY of ensureLiveAgent (S1, supplement guide
+   * §2.2-B). Runs exactly once per in-flight wave of concurrent
+   * same-SID callers; see the numbered steps in the wrapper's doc.
+   * @param {string} sid
+   * @returns {Promise<object>} the AgentHandle.
+   */
+  async function ensureLiveAgentOnce(sid) {
+    // S1 (guide §2.2-B double-check): the first caller may have already
+    // finished and populated liveAgents while this caller was queued
+    // behind its single-flight promise — return the surviving handle
+    // without re-entering the flow.
+    const existing = liveAgents.get(sid)
+    if (existing !== undefined) return existing
+    // C1 (guide §7): a declared foreign rollback of this session must
+    // converge first (the ordinary-promotion rollback is about to release
+    // the session writer — resuming before it settles would re-hit the
+    // writer conflict we are trying to avoid).
+    if (activationFence !== undefined && typeof activationFence.awaitRollback === 'function') {
+      await activationFence.awaitRollback(sid)
     }
-    resumingSessions.add(sessionId)
-    try {
-      // TCM-D4: the cold resume re-applies the durable truth under the
-      // session's OWNING root (a team root of this row's domain re-
-      // attaches under ITSELF — the same identity the create path
-      // installed; a member child under its root). The boot root is only
-      // the default for sessions that belong to it, never a fallback.
-      const teamRoot = teamRootOfSession(sessionId)
-      const handle = await agents.resume({
-        resumeSessionId: SessionId(sessionId),
+    // C1 (guide §7/§8): if the upstream registry already holds a live
+    // Agent for this session but the Team has no handle, this is an
+    // explicit ordinary-mode owner or a genuine foreign live owner —
+    // fail closed. NEVER adopt or forge a handle for a foreign live
+    // Agent (INV-B): the stable message below is the S6 mapper's key for
+    // the existing OUTSIDE_TEAM diagnostic (guide §11).
+    const foreignLive = typeof agents.get === 'function' ? agents.get(SessionId(sid)) : undefined
+    if (foreignLive !== undefined && !liveAgents.has(sid)) {
+      throw new Error(`agent "${sid}" is already registered outside the Team glue`)
+    }
+    // C1 (guide §5.2): the cold-resume eligibility is the durable
+    // existence through the PUBLIC session-persistence seam (never a
+    // physical layout probe — the probe is deleted with this algorithm).
+    if (!(await durableSessionExists(sid))) {
+      throw new Error(`p6t6: session '${sid}' is neither live nor durable — no agent to execute a tool on`)
+    }
+    // TCM-D4 + C1 (guide §3.2): the cold resume re-applies the durable
+    // truth under the session's OWNING root (a team root of this row's
+    // domain re-attaches under ITSELF — the same identity the create
+    // path installed; a member child under its root). The boot root is
+    // only the default for sessions that belong to it, never a fallback
+    // — an unowned session has no Team agent to resume (fail closed;
+    // the pre-C1 code silently attached it as a member of undefined,
+    // which the setup would have failed on anyway).
+    const teamRoot = teamRootOfSession(sid)
+    if (teamRoot === undefined) {
+      throw new Error(`agent-bindings: session '${sid}' has no owning Team root — no Team agent to resume`)
+    }
+    const resume = () =>
+      resumeTeamAgent({
+        sessionId: sid,
         setup: agentSetup(
-          sessionId,
+          sid,
           undefined,
           undefined,
-          teamRoot !== undefined && teamRoot === sessionId ? 'cold-root' : 'cold-member',
+          teamRoot === sid ? 'cold-root' : 'cold-member',
           teamRoot,
         ),
       })
+    // S1 (supplement guide §2.2-D, INV-5): the rollback EPOCH BASELINE,
+    // snapshotted BEFORE the first resume — the recovery wait then
+    // proves the handoff is FRESH for this attempt (`completedEpoch >
+    // afterEpoch`), and a rollback that COMPLETED between the veto and
+    // this catch still unlocks (the tombstone outlives the record
+    // deletion — the TOCTOU fix, test A13/G10). A stale completed epoch
+    // from BEFORE this attempt can never unlock a new conflict
+    // (test A14). Fence API absent (test/factory world) → baseline 0
+    // (the recovery is skipped below anyway — pre-C1 behavior).
+    const rollbackBaseline =
+      activationFence !== undefined && typeof activationFence.getRollbackEpoch === 'function'
+        ? activationFence.getRollbackEpoch(sid)
+        : 0
+    resumingSessions.add(sid)
+    try {
+      let handle
+      try {
+        handle = await resume()
+      } catch (error) {
+        // C1 (guide §7.1/§7.2): the writer-held recovery — the ONE
+        // permitted retry path. A writer-held conflict (the TYPED
+        // SessionAlreadyOwnedError / session-writer-held code — guide
+        // §7.1's priority, never a message-substring-only match) is
+        // recoverable ONLY when the fence confirms the conflicting
+        // activation was a Team-managed foreign activation it
+        // intercepted AND the exact foreign generation is disposed
+        // (the writer released). Any other outcome — no fence, no
+        // qualifying rollback after the baseline, deadline, a
+        // non-Team writer — propagates the ORIGINAL error: NO retry,
+        // no while-retry, no sleep, no backoff, no lock deletion.
+        if (!isSessionWriterHeld(error)) throw error
+        const recoverable =
+          activationFence !== undefined && typeof activationFence.recoverWriterConflict === 'function'
+            ? await activationFence.recoverWriterConflict(sid, {
+              afterEpoch: rollbackBaseline,
+              // S1 (supplement INV-6): ONE absolute deadline — computed
+              // NOW (the moment the conflict is observed), both of the
+              // fence's stages consume only the remaining budget; the
+              // wait can never stretch to two full windows (test A15).
+              deadlineMs: Date.now() + WRITER_HANDOFF_TIMEOUT_MS,
+            })
+            : false
+        if (recoverable !== true) throw error
+        // the exact foreign generation must complete disposed / rollback
+        // before the single retry (the same barrier as step 2 — a
+        // defensive re-await; a settled barrier returns immediately).
+        await activationFence.awaitRollback(sid)
+        // EXACTLY ONE retry.
+        handle = await resume()
+      }
       // close lifecycle gate (post-resume re-check): close() may have
       // started while the resume was in flight. A late-resumed handle
       // must NEVER join liveAgents — it would outlive the close
@@ -2325,15 +2623,15 @@ export function createAgentBindings(deps) {
           await handle.dispose()
         } catch (error) {
           observations.push(
-            `agent-bindings: resumed agent dispose failed during close for '${sessionId}': ${error instanceof Error ? error.message : String(error)}`,
+            `agent-bindings: resumed agent dispose failed during close for '${sid}': ${error instanceof Error ? error.message : String(error)}`,
           )
         }
-        throw new Error(`agent-bindings: live bindings began closing while resuming agent for session '${sessionId}'`)
+        throw new Error(`agent-bindings: live bindings began closing while resuming agent for session '${sid}'`)
       }
-      liveAgents.set(sessionId, handle)
+      liveAgents.set(sid, handle)
       return handle
     } finally {
-      resumingSessions.delete(sessionId)
+      resumingSessions.delete(sid)
     }
   }
 
@@ -2408,9 +2706,12 @@ export function createAgentBindings(deps) {
           : undefined
       const live = liveAgents.get(childSid)
       if (live !== undefined) return { childSessionId: childSid }
-      if (sessionIsDurable(childSid)) {
-        const handle = await agents.resume({
-          resumeSessionId: SessionId(childSid),
+      // C1 (guide §6.2/§5.2): the durable-child resume goes through the
+      // ownership-guarded wrapper (the fence's runOwned) — never a bare
+      // agents.resume. Durability is the public seam (no physical probe).
+      if (await durableSessionExists(childSid)) {
+        const handle = await resumeTeamAgent({
+          sessionId: childSid,
           // TCM-D4: the child's consumption + persona resolve under the
           // OWNING root (the request's rootSessionId — the boot root only
           // when the field is absent, as before).
@@ -2427,8 +2728,8 @@ export function createAgentBindings(deps) {
         typeof request.workspace === 'string' && request.workspace !== ''
           ? request.workspace
           : config.defaultWorkspace
-      const handle = await agents.create({
-        sessionId: SessionId(childSid),
+      const handle = await createTeamAgent({
+        sessionId: childSid,
         meta: { cwd: memberCwd },
         // TCM-D4: the child's consumption + persona resolve under the
         // OWNING root (the request's rootSessionId — the boot root only
@@ -2478,8 +2779,8 @@ export function createAgentBindings(deps) {
       let rootHandle
       try {
         rootHandle = config.bootPhase === 'create'
-          ? await agents.create({
-            sessionId: SessionId(rootSid),
+          ? await createTeamAgent({
+            sessionId: rootSid,
             // T12-M1: the root agent works in the team's effective default
             // workspace (config.defaultWorkspace) — never DSH_HOME.
             meta: { cwd: config.defaultWorkspace },
@@ -2488,8 +2789,8 @@ export function createAgentBindings(deps) {
             // infers ownership from an absent argument).
             setup: agentSetup(rootSid, undefined, undefined, 'fresh-root', rootSid),
           })
-          : await agents.resume({
-            resumeSessionId: SessionId(rootSid),
+          : await resumeTeamAgent({
+            sessionId: rootSid,
             setup: agentSetup(rootSid, undefined, undefined, 'cold-root', rootSid),
           })
       } finally {
@@ -2502,8 +2803,8 @@ export function createAgentBindings(deps) {
           // The leader instance IS the root session — never a child.
           if (String(seed.instanceId) === LEADER_INSTANCE_ID) continue
           const child = String(seed.childSessionId)
-          const handle = await agents.create({
-            sessionId: SessionId(child),
+          const handle = await createTeamAgent({
+            sessionId: child,
             // T12-M1: seeded members carry no per-member workspace in the
             // boot config — they work in the team's effective default
             // workspace (never DSH_HOME); the child factory path uses the
@@ -2546,8 +2847,8 @@ export function createAgentBindings(deps) {
           resumingSessions.add(child)
           let handle
           try {
-            handle = await agents.resume({
-              resumeSessionId: SessionId(child),
+            handle = await resumeTeamAgent({
+              sessionId: child,
               // PR #23 review fix (P1-A): this loop iterates
               // memberInstances.list(rootSid) — every child here is a
               // member of the boot root BY CONSTRUCTION; assert the owner
@@ -2746,19 +3047,22 @@ export function createAgentBindings(deps) {
     const live = liveAgents.get(sid)
     if (live !== undefined) return // create-or-ensure: the agent already runs
     let handle
-    if (sessionIsDurable(sid)) {
+    // C1 (guide §6.2/§5.2): both branches go through the ownership-guarded
+    // wrappers (never bare agents.create/resume); durability is the public
+    // seam (no physical probe).
+    if (await durableSessionExists(sid)) {
       resumingSessions.add(sid)
       try {
-        handle = await agents.resume({
-          resumeSessionId: SessionId(sid),
+        handle = await resumeTeamAgent({
+          sessionId: sid,
           setup: agentSetup(sid, undefined, undefined, 'cold-root', sid),
         })
       } finally {
         resumingSessions.delete(sid)
       }
     } else {
-      handle = await agents.create({
-        sessionId: SessionId(sid),
+      handle = await createTeamAgent({
+        sessionId: sid,
         meta: { cwd: effectiveRootWorkspace(sid) },
         setup: agentSetup(sid, undefined, undefined, 'fresh-root', sid),
       })
@@ -3594,5 +3898,15 @@ export function createAgentBindings(deps) {
     // delivery failure is a liveness failure only, swallowed by the
     // router's completion observer)
     deliverRootWorkCompletionNotification,
+    // additive (C1 restart-recovery, guide §10.1): the one-shot ordinary
+    // activation permit passthrough — the production root's S6
+    // `prepareOrdinaryOpen` handler arms it (process-local, single-use,
+    // TTL-bounded, consumed at agent/created — NEVER at this call).
+    // Absent when the world has no fence (the handler then fails closed
+    // with the typed port-unavailable code).
+    allowOrdinaryActivationOnce:
+      activationFence !== undefined && typeof activationFence.permitOrdinaryOnce === 'function'
+        ? (rootSessionId) => activationFence.permitOrdinaryOnce(String(rootSessionId))
+        : undefined,
   }
 }

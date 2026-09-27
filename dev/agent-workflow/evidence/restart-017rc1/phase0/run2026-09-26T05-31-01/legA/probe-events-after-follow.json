@@ -1,0 +1,14 @@
+{
+  "baseline": 1,
+  "events": [
+    {
+      "t": "2026-09-26T05:31:39.669Z",
+      "kind": "agent/created",
+      "sessionId": "session-rst017-dyn-2026-09-26T05-31-01",
+      "source": "resume",
+      "agentId": "session-rst017-dyn-2026-09-26T05-31-01",
+      "veto": false,
+      "permitted": false
+    }
+  ]
+}

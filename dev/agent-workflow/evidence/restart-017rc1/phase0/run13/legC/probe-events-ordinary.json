@@ -1,0 +1,11 @@
+[
+  {
+    "t": "2026-09-26T05:22:24.864Z",
+    "kind": "agent/created",
+    "sessionId": "session-rst017-ord-2026-09-26T05-20-32",
+    "source": "startup",
+    "agentId": "session-rst017-ord-2026-09-26T05-20-32",
+    "veto": false,
+    "permitted": false
+  }
+]

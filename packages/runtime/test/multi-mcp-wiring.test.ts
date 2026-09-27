@@ -505,7 +505,12 @@ try {
 } catch (error) {
   w6BootError = error
 }
-const w6Leader = w6.agents.handles.get(W6_ROOT)!.agent.ctx
+// The setup failure (server B down) throws BEFORE the announce, so no
+// handle is published (the faithful 0.1.7 ordering: `handles` only fills
+// post-announce). The exact-generation identity is minted BEFORE setup
+// runs — it is the faithful surface for inspecting the PARTIAL state the
+// failed setup left (fiber A installed, fiber B failed).
+const w6Leader = w6.agents.agentIdentities.get(W6_ROOT)!.ctx
 const w6LeaderState = mcpState(w6.binding, W6_ROOT)
 const w6FiberA = mcpFibers(w6Leader, A)[0]
 const w6FiberB = mcpFibers(w6Leader, B)[0]
@@ -610,7 +615,10 @@ try {
 } catch (error) {
   w7bBootError = error
 }
-const w7bLeader = w7b.agents.handles.get(W7B_ROOT)!.agent.ctx
+// Same faithful-ordering note as W6: the setup failure throws BEFORE the
+// announce, so no handle is published — the exact-generation identity
+// (minted before setup) is the surface for the partial state.
+const w7bLeader = w7b.agents.agentIdentities.get(W7B_ROOT)!.ctx
 const w7bLeaderState = mcpState(w7b.binding, W7B_ROOT)
 const w7bFiberA = mcpFibers(w7bLeader, A)[0]
 

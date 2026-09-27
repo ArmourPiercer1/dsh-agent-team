@@ -1,0 +1,33 @@
+mock up @ 3499
+host up at + 1507 ms: http://127.0.0.1:3496
+cookie acquired: true
+--- V2: follow DYN immediately (race glue boot-resume) ---
+V2: WS CONNECTED at +1525ms
+V2: MSG +1838ms: {"type":"item","streamId":"fol-v2-mm5jq7","value":{"type":"snapshot","header":{"version":4,"id":"session-rst017-dyn-2026-09-26T04-32-14","createdAt":1790397141218,"cwd":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/…
+V2: MSG +1847ms: {"type":"item","streamId":"fol-v2-mm5jq7","value":{"type":"event","event":{"type":"session/end-seed","seq":33,"time":1790397807435,"data":{}}}}
+V2: SOCKET CLOSED by peer at +3876ms (closeCode=null)
+--- V1: follow cold DYN after boot veto settled ---
+V1: WS CONNECTED at +8380ms
+V1: MSG +8688ms: {"type":"item","streamId":"fol-v1-8tdr9e","value":{"type":"snapshot","header":{"version":4,"id":"session-rst017-dyn-2026-09-26T04-32-14","createdAt":1790397141218,"cwd":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/…
+V1: SOCKET CLOSED by peer at +10731ms (closeCode=null)
+--- V3: permit DYN then follow (takeover via the follow path) ---
+permit -> 200
+V3: WS CONNECTED at +11238ms
+V3: MSG +11544ms: {"type":"item","streamId":"fol-v3-5q0noo","value":{"type":"snapshot","header":{"version":4,"id":"session-rst017-dyn-2026-09-26T04-32-14","createdAt":1790397141218,"cwd":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/…
+V3: SOCKET CLOSED by peer at +14586ms (closeCode=null)
+summary -> {
+  "v2": {
+    "kind": "snapshot",
+    "closedAt": null
+  },
+  "v1": {
+    "kind": "snapshot",
+    "closedAt": null
+  },
+  "v3": {
+    "kind": "snapshot",
+    "closedAt": null,
+    "msgCount": 0
+  }
+}
+raw bytes -> /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/follow-repro2/raw-bytes.log

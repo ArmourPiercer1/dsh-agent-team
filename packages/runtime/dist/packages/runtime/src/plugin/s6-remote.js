@@ -140,6 +140,13 @@ export const S6_REMOTE_ERROR_CODES = {
      *  root) — fail-closed BEFORE any decision; NEVER a silent success
      *  (never a default decision, never a no-op). */
     TEAM_RESOLVE_CONTROL_UNAVAILABLE: 'TEAM_REMOTE_TEAM_RESOLVE_CONTROL_UNAVAILABLE',
+    /** C1 (restart-recovery, guide §10.2/§12) — team.prepareOrdinaryOpen:
+     *  the host wiring exposes no ordinary-open permit armer (no
+     *  activation fence) — fail-closed BEFORE arming anything; NEVER a
+     *  silent success (a `permitted: true` response must always have
+     *  armed the one-shot permit). Host-side vocabulary: the wire
+     *  exposure of the method is Commit 3 (the frozen Remote catalog). */
+    TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE: 'TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE',
 };
 /**
  * BP-G (issue #2 blueprint-loading, plan §12.2) — the methods the
@@ -541,25 +548,57 @@ export function createS6RemotePorts(options) {
         return port;
     }
     /**
-     * D2 (A3 Q2) — the typed mapping of the `ensureRootLive` port's
-     * rejections onto the closed TEAM_REMOTE_TEAM_ROOT_LIVE_* vocabulary:
-     * (b) the upstream registry collision (`agent "<id>" is already
-     * registered` — the core/agent `enter()` boundary: a session already
-     * live OUTSIDE the Team glue) → OUTSIDE_TEAM (fail closed, never a
-     * silent adoption); (c) the glue's no-durable-artifact rejection
-     * (`neither live nor durable`) → NO_DURABLE_ARTIFACT; (d) every other
-     * glue failure → START_FAILED (the message preserved for diagnosis).
+     * D2 (A3 Q2) + C1 (restart-recovery, guide §11) — the typed mapping of
+     * the `ensureRootLive` port's rejections onto the closed
+     * TEAM_REMOTE_TEAM_ROOT_LIVE_* vocabulary:
+     *   (a) the 0.1.7 WRITER-HELD markers — TYPED FIRST (never a
+     *       message-substring-only authority, guide §7.1/§11): the
+     *       SessionPersistence `SessionAlreadyOwnedError` (error `name`)
+     *       and the api/session-controller remote code `session/writer-held`
+     *       (error `code`) → OUTSIDE_TEAM (the existing diagnostic — guide
+     *       §11: prefer reusing OUTSIDE_TEAM, never expand the frozen
+     *       contract for diagnosis only);
+     *   (b) the upstream registry collision (`agent "<id>" is already
+     *       registered` — the core/agent `enter()` boundary; the pattern
+     *       also covers the glue's own fail-closed
+     *       `agent "<id>" is already registered outside the Team glue`
+     *       message — both are the same OUTSIDE_TEAM condition) →
+     *       OUTSIDE_TEAM (fail closed, never a silent adoption);
+     *   (c) the compatibility message `already owned by an active write
+     *       handle` (LAST — the fallback tier of guide §7.1) → OUTSIDE_TEAM;
+     *   (d) the glue's no-durable-artifact rejection (`neither live nor
+     *       durable`) → NO_DURABLE_ARTIFACT;
+     *   (e) every other glue failure → START_FAILED (the message preserved
+     *       for diagnosis).
      * A TeamPluginError raised by the closure itself rethrows unchanged
      * (invariant 4a/4b — the caller maps it).
      */
     function mapEnsureRootLiveError(error, teamSessionId) {
         const message = error instanceof Error ? error.message : String(error);
-        if (/^agent ".+" is already registered$/.test(message)) {
+        // (a) the TYPED writer-held markers (name / code) — the 0.1.7
+        // SessionAlreadyOwnedError and its structured remote code.
+        if ((error instanceof Error && error.name === 'SessionAlreadyOwnedError') ||
+            (typeof error === 'object' &&
+                error !== null &&
+                error.code === 'session/writer-held')) {
+            return new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_ROOT_LIVE_OUTSIDE_TEAM, `team.ensureRootLive: the session writer of '${teamSessionId}' is held by an active ordinary write handle (writer-held conflict: ${message}) — the Team-mode ensure refuses a second agent under one session`, { reason: 'team-root-live-outside-team', teamSessionId });
+        }
+        // (b) the upstream registry collision + the glue's own OUTSIDE_TEAM
+        // fail-closed message (both: a session already live outside the Team
+        // glue).
+        if (/^agent ".+" is already registered/.test(message)) {
             return new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_ROOT_LIVE_OUTSIDE_TEAM, `team.ensureRootLive: session '${teamSessionId}' is already live outside the Team glue (the upstream agent registry refuses a second agent under one session id) — refusing to adopt it silently`, { reason: 'team-root-live-outside-team', teamSessionId });
         }
+        // (c) the compatibility message (guide §7.1's LAST tier — a fallback,
+        // never the sole authority).
+        if (message.includes('already owned by an active write handle')) {
+            return new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_ROOT_LIVE_OUTSIDE_TEAM, `team.ensureRootLive: the session writer of '${teamSessionId}' is held by an active ordinary write handle (writer-held conflict: ${message}) — the Team-mode ensure refuses a second agent under one session`, { reason: 'team-root-live-outside-team', teamSessionId });
+        }
+        // (d) the no-durable-artifact rejection.
         if (message.includes('neither live nor durable')) {
             return new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT, `team.ensureRootLive: session '${teamSessionId}' has no durable session artifact and is not live — the Team-mode ensure cannot resume it: ${message}`, { reason: 'team-root-live-no-durable-artifact', teamSessionId });
         }
+        // (e) every other glue failure.
         return new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_ROOT_LIVE_START_FAILED, `team.ensureRootLive: the Team-mode ensure of '${teamSessionId}' failed: ${message}`, { reason: 'team-root-live-start-failed', teamSessionId });
     }
     /**
@@ -584,6 +623,47 @@ export function createS6RemotePorts(options) {
             throw mapEnsureRootLiveError(error, teamSessionId);
         }
         return { rootSessionId: teamSessionId, mode: 'team', live: true };
+    }
+    /**
+     * C1 (restart-recovery, guide §10.2) — the fail-closed
+     * `team.prepareOrdinaryOpen` preflight: the host wiring must expose the
+     * one-shot ordinary permit armer (the live glue's
+     * `allowOrdinaryActivationOnce` — the fence's `permitOrdinaryOnce`
+     * passthrough). Absent → the typed
+     * TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE BEFORE arming anything
+     * (the `startRootAgent` / `listRoots` / `ensureRootLive` discipline
+     * mirrored — NEVER a silent success).
+     */
+    function requirePrepareOrdinaryOpenPort() {
+        const port = options.prepareOrdinaryOpen;
+        if (port === undefined) {
+            throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE, 'team.prepareOrdinaryOpen cannot arm the ordinary permit: the host wiring does not provide the prepareOrdinaryOpen port (no activation fence) — failing closed before any permit', { reason: 'team-ordinary-open-port-unavailable' });
+        }
+        return port;
+    }
+    /**
+     * C1 (restart-recovery, guide §10.2) — the host-side
+     * `team.prepareOrdinaryOpen` port body: the bound-root guard runs FIRST
+     * (fail-closed FOREIGN_TEAM — an unknown/foreign root is NEVER
+     * permitted, test R3), then the one-shot permit is armed (the
+     * process-local, single-use, TTL-bounded fact — NO Team ensure, NO
+     * TeamDomain mutation, NO governance, NO tool registration, NO
+     * persistence, test R4/R5), then the closed success shape
+     * `{ rootSessionId, permitted: true }`. The durable root row is never
+     * touched. Host-side only: the frozen Remote catalog does not know the
+     * method yet (Commit 3 exposes it on the wire).
+     */
+    async function prepareOrdinaryOpen(requestedTeamSessionId) {
+        const teamSessionId = assertBoundRoot('team.prepareOrdinaryOpen', requestedTeamSessionId);
+        try {
+            await requirePrepareOrdinaryOpenPort()(teamSessionId);
+        }
+        catch (error) {
+            if (error instanceof TeamPluginError)
+                throw error;
+            throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE, `team.prepareOrdinaryOpen: the ordinary permit arming for '${teamSessionId}' failed: ${error instanceof Error ? error.message : String(error)}`, { reason: 'team-ordinary-open-port-unavailable', teamSessionId });
+        }
+        return { rootSessionId: teamSessionId, permitted: true };
     }
     /**
      * F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the v4-only
@@ -1083,6 +1163,22 @@ export function createS6RemotePorts(options) {
                 return ensureRootLive(requestedTeamSessionId);
             },
         },
+        // --- C1 (restart-recovery, guide §10.2): team.prepareOrdinaryOpen ---
+        // (host-side only until Commit 3 extends the frozen Remote catalog)
+        teamPrepareOrdinaryOpen: {
+            prepareOrdinaryOpen(requestedTeamSessionId) {
+                // The C1 D3 ordinary-mode handler: the bound-root guard FIRST
+                // (fail-closed FOREIGN_TEAM — an unknown/foreign root is NEVER
+                // permitted), then the one-shot ordinary activation permit is
+                // armed (process-local, single-use, TTL-bounded — NO Team
+                // ensure, NO TeamDomain mutation, NO governance, NO tools, NO
+                // persistence), then the closed success shape { rootSessionId,
+                // permitted: true }. NEVER a silent success (the port-unavailable
+                // preflight fails closed typed); the durable root row is never
+                // touched.
+                return prepareOrdinaryOpen(requestedTeamSessionId);
+            },
+        },
         // --- F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4):
         // --- team.resolveControl (the human control-resolution command) ----
         teamResolveControl: {
@@ -1538,6 +1634,28 @@ function buildS6CategoryHandlers(ports, principal) {
                     const ensureParams = params;
                     return ports
                         .teamEnsureRootLive.ensureRootLive(ensureParams.teamSessionId)
+                        .then((result) => ({ data: result }));
+                }
+                case 'team.prepareOrdinaryOpen': {
+                    // C1 (restart-recovery, guide §10.2) — the D3 ordinary-mode
+                    // one-shot activation permit. HOST-SIDE ONLY: the frozen
+                    // Remote catalog (packages/remote) does not yet know this
+                    // method, so a WIRE call is typed-rejected with
+                    // UNKNOWN_METHOD by the dispatcher BEFORE reaching this case
+                    // (Commit 3 extends the frozen contract and makes the case
+                    // wire-reachable). The port is TEAM-SCOPED like
+                    // `team.ensureRootLive`: the bound-root guard runs in the
+                    // port (fail-closed FOREIGN_TEAM), and the port body fails
+                    // closed with the typed
+                    // TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE when the
+                    // host wiring exposes no permit armer. Typed failures pass
+                    // through the dispatcher unchanged (the closed backing
+                    // vocabulary, invariant 4b). The param shape follows guide
+                    // §10.2 (`{ teamSessionId }`); the frozen wire type arrives
+                    // with Commit 3.
+                    const ordinaryOpenParams = params;
+                    return ports
+                        .teamPrepareOrdinaryOpen.prepareOrdinaryOpen(ordinaryOpenParams.teamSessionId)
                         .then((result) => ({ data: result }));
                 }
                 case 'team.resolveControl': {

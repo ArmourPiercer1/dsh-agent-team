@@ -1,0 +1,1012 @@
+{
+  "note": "Merged check ledger: Worlds B/C/D/E/F from the full run (checks-full-run.json, stamp 17-48-44); World A (A, A-browser, boot-1, boot-2) + shared install/s0 from the fixed-driver World A re-run 3 (stamp 18-09-18). The World A gate reached step 10 (the documented expected failure) after three driver defects were fixed (onboarding path, step-5 lazy-render race, readDomState composer detection).",
+  "fullRunStamp": "2026-09-26T17-48-44",
+  "worldARerunStamp": "2026-09-26T18-09-18",
+  "passed": 166,
+  "failed": 1,
+  "fatal": null,
+  "results": [
+    {
+      "leg": "B",
+      "name": "B1 team.create accepted (RPC ok:true — the leader works)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"c4-createB-krwxkynlsu\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-rst017s5-dyn-202"
+    },
+    {
+      "leg": "B",
+      "name": "B1b dynamic leader live (first model request on the row staticModel)",
+      "ok": true,
+      "detail": "seq=2"
+    },
+    {
+      "leg": "B",
+      "name": "B2 the member is live on boot 1 (delegate → member model request carrying the MEMBER context)",
+      "ok": true,
+      "detail": "seq=5 system head=You are an AI agent powered by DeepSeek Harness.\n\nYou are a worker of the rst017c4 dynamic team. RST017S5MEM_PERSONA_202"
+    },
+    {
+      "leg": "B",
+      "name": "B3 the member child session is bound durably (member row with childSessionId read back)",
+      "ok": true,
+      "detail": "{\"instanceId\":\"inst-17ilg651p4tg\",\"templateId\":\"worker\",\"label\":\"s5-worker--48-44\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-team-child-9bc27db9befca4783a9c2dc91e852cd7\"}"
+    },
+    {
+      "leg": "B",
+      "name": "B4 browser-style session/follow(member child) yields the snapshot (the browser got in)",
+      "ok": true,
+      "detail": "\"\""
+    },
+    {
+      "leg": "B",
+      "name": "B5 the member child ordinary activation was fenced (created → disposed sequence OR the production veto wording on the user-visible lane)",
+      "ok": true,
+      "detail": "created=1 disposed=1 err=1"
+    },
+    {
+      "leg": "B",
+      "name": "B6 team.ensureRootLive(leader) succeeds (the member stays cold until its own ensure)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"c4-ensureB-72r34kwwkf\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"rootSessionId\":\"session-rst017s5-dyn-2026-09-26T17-48-44\",\"mode\":\"team\",\"live\":true},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"team.ensureRootLive\",\"endpoint\":\"team.ensureRootLive\",\"contractVersion\":"
+    },
+    {
+      "leg": "B",
+      "name": "B7 leader team_send_message executed ok (REAL execution on the resumed leader)",
+      "ok": true,
+      "detail": "{\"ok\":true,\"value\":{\"status\":\"delivered\",\"rootSessionId\":\"session-rst017s5-dyn-2026-09-26T17-48-44\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-17ilg651p4tg\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-17ilg651p4tg\",\"deliveredToSessionId\":\"session-team-child-9"
+    },
+    {
+      "leg": "B",
+      "name": "B8 the member cold resume SUCCEEDED (post-restart member model request observed)",
+      "ok": true,
+      "detail": "seq=7"
+    },
+    {
+      "leg": "B",
+      "name": "B9(1) role = member under the owning root (durable member row of DYN_ROOT, worker template)",
+      "ok": true,
+      "detail": "{\"teamSessionEvidenceOnly\":\"session-rst017s5-boot-2026-09-26T17-48-44\",\"member\":{\"instanceId\":\"inst-17ilg651p4tg\",\"templateId\":\"worker\",\"label\":\"s5-worker--48-44\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-team-child-9bc27db9befca4783a9c2dc91e852cd7\"}}"
+    },
+    {
+      "leg": "B",
+      "name": "B9(2) the owning root is correct (the member row is bound to the dynamic root)",
+      "ok": true,
+      "detail": "child=session-team-child-9bc27db9befca4783a9c2dc91e852cd7"
+    },
+    {
+      "leg": "B",
+      "name": "B9(3) the member Team context is correct (MEMBER persona present, NO leader persona on the resumed surface)",
+      "ok": true,
+      "detail": "You are an AI agent powered by DeepSeek Harness.\n\nYou are a worker of the rst017c4 dynamic team. RST017S5MEM_PERSONA_2026-09-26T17-48-44\n\n[team-member-context rootSessionId=\"session-rst017s5-dyn-2026-"
+    },
+    {
+      "leg": "B",
+      "name": "B9(4) the member preset/base tools are correct (standard preset surface: read/write/bash present)",
+      "ok": true,
+      "detail": "[\"ask_user_question\",\"bash\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"present\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"team_archive_member\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\""
+    },
+    {
+      "leg": "B",
+      "name": "B9(5) the Team tools surface is correct (the frozen 13-tool team catalog is fully mounted on the member session with no extras; the worker envelope is enforced at the ACTION level, not at mount time — plugin source @ f3d5a71b, kit bug #11 fix)",
+      "ok": true,
+      "detail": "[\"team_archive_member\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_send_message\"]"
+    },
+    {
+      "leg": "B",
+      "name": "B9(6) single writer (exactly one surviving member creation; the member is live in the glue)",
+      "ok": true,
+      "detail": "live=[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn-2026-09-26T17-48-44\",\"session-team-child-9bc27db9befca4783a9c2dc91e852cd7\"] created=2 disposed=1"
+    },
+    {
+      "leg": "B",
+      "name": "B9(7) no OUTSIDE_TEAM / writer-held final error (the ensure + delivery chain resolved clean)",
+      "ok": true,
+      "detail": "{\"ok\":true,\"value\":{\"status\":\"delivered\",\"rootSessionId\":\"session-rst017s5-dyn-2026-09-26T17-48-44\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-17ilg651p4tg\",\"deliveryMod"
+    },
+    {
+      "leg": "C",
+      "name": "C1 the ordinary (non-Team) session is created over the public session channel",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"rst-create-session-dh59erjfmu\",\"result\":{\"ok\":true,\"value\":{\"sessionId\":\"session-rst017s5-ord-2026-09-26T17-48-44\",\"agentPreset\":\"standard\"}}}"
+    },
+    {
+      "leg": "C",
+      "name": "C2 the ordinary session works before the restart (model answer observed)",
+      "ok": true,
+      "detail": "seq=1"
+    },
+    {
+      "leg": "C",
+      "name": "C4 the browser-style session/follow(ordinary) yields the snapshot (the stream survives)",
+      "ok": true,
+      "detail": "\"\""
+    },
+    {
+      "leg": "C",
+      "name": "C3 the ordinary SessionController promotion SUCCEEDED NORMALLY (agent/created observed; NO fence veto: zero disposed, zero api-error)",
+      "ok": true,
+      "detail": "created=1 disposed=0 errors=0"
+    },
+    {
+      "leg": "C",
+      "name": "C3b the fence never fired for the ordinary session (no veto wording on the user-visible lane OR the host log for that session — negative control)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "C",
+      "name": "C5 the ordinary session is fully usable AFTER the restart (post-restart prompt → model answer)",
+      "ok": true,
+      "detail": "seq=3"
+    },
+    {
+      "leg": "C",
+      "name": "C6 the anchor Team is unaffected (Team own-path works alongside the ordinary promotion)",
+      "ok": true,
+      "detail": "{\"ok\":true,\"value\":{\"status\":\"executed\",\"action\":\"list-members\",\"rootSessionId\":\"session-rst017s5-boot-2026-09-26T17-48-44\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"members-listed\",\"members\":[{\"instanc"
+    },
+    {
+      "leg": "D",
+      "name": "D1 team.create accepted (RPC ok:true — the dynamic root exists and is durable)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"c4-createD-6fdpjyci4g\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-rst017s5-dyn-202"
+    },
+    {
+      "leg": "D",
+      "name": "D1b dynamic leader live (first model request on the row staticModel)",
+      "ok": true,
+      "detail": "seq=1"
+    },
+    {
+      "leg": "D",
+      "name": "D2 the cold Team root is fenced on restart (the ordinary open WITHOUT a permit is vetoed: disposed generation OR the production veto wording on the user-visible lane)",
+      "ok": true,
+      "detail": "created=1 disposed=1 errFrame=yes"
+    },
+    {
+      "leg": "D",
+      "name": "D3 wire v5 team.prepareOrdinaryOpen grants the one-shot ordinary permit (permitted:true + rootSessionId + contractVersion 5)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"c4-permit-1fzjlu45md\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"rootSessionId\":\"session-rst017s5-dyn-2026-09-26T17-48-44\",\"permitted\":true},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"team.prepareOrdinaryOpen\",\"endpoint\":\"team.prepareOrdinaryOpen\",\"contractVersion\":"
+    },
+    {
+      "leg": "D",
+      "name": "D4 the native open (browser-style session/follow) yields the snapshot",
+      "ok": true,
+      "detail": "\"\""
+    },
+    {
+      "leg": "D",
+      "name": "D5 the ordinary activation PASSED the fence via the one-shot permit (exactly one surviving creation after the pre-permit veto)",
+      "ok": true,
+      "detail": "created=2 disposed=1"
+    },
+    {
+      "leg": "D",
+      "name": "D6 the Team glue hasLive(root) is still FALSE (the ordinary owner is NOT a Team handle)",
+      "ok": true,
+      "detail": "[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "D",
+      "name": "D7 the ordinary Agent runs a normal prompt (model answer; NO team_* tools on its surface)",
+      "ok": true,
+      "detail": "tools head=[\"ask_user_question\",\"bash\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"present\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\",\"workflow\""
+    },
+    {
+      "leg": "D",
+      "name": "D8 the ensureRootLive call count during the ordinary open = 0 (the kit issued none; no ensureRootLive for the root in the host log)",
+      "ok": true,
+      "detail": "ensureCalls=0"
+    },
+    {
+      "leg": "D",
+      "name": "D9 the subsequent Team-mode ensure TYPED FAILS CLOSED (ok:false with the OUTSIDE_TEAM typed error — no silent adopt)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"c4-ensureD-p8nzjytcih\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM\",\"message\":\"team.ensureRootLive: session 'session-rst017s5-dyn-2026-09-26T17-48-44' is already live outside the Team glue (the upstream agent registry refuses a sec"
+    },
+    {
+      "leg": "D",
+      "name": "D9b the fail-closed error carries the typed OUTSIDE_TEAM code (S6 mapping of the writer-held / registry collision)",
+      "ok": true,
+      "detail": "{\"type\":\"server-response\",\"rpcId\":\"c4-ensureD-p8nzjytcih\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM\",\"message\":\"team.ensureRootLive: session 'session-rst017s5-dyn-2026-09-26T17-48-44' is already live outside the Team glue (the upstream agent registry refuses a sec"
+    },
+    {
+      "leg": "D",
+      "name": "D9c no silent adopt (no new agent/created after the failed ensure; the glue hasLive still false; the ordinary owner keeps working)",
+      "ok": true,
+      "detail": "created=2 live=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "boot-3",
+      "name": "boot 3 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=D phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "D",
+      "name": "D10 after the backend restart the ordinary owner is gone and re-fenced (the new ordinary open WITHOUT a permit is vetoed: disposed generation OR the production veto wording on the user-visible lane)",
+      "ok": true,
+      "detail": "created=1 disposed=1 errFrame=yes"
+    },
+    {
+      "leg": "D",
+      "name": "D11 the Team mode can take over AGAIN after the restart (ensureRootLive ok — the ordinary owner is process-local and gone)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"c4-ensureD2-zl42xia6ii\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"rootSessionId\":\"session-rst017s5-dyn-2026-09-26T17-48-44\",\"mode\":\"team\",\"live\":true},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"team.ensureRootLive\",\"endpoint\":\"team.ensureRootLive\",\"contractVersion\""
+    },
+    {
+      "leg": "D",
+      "name": "D11b the glue hasLive(root) == true after the re-takeover",
+      "ok": true,
+      "detail": "[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E0 team.create accepted (RPC ok:true — the race root exists and is durable)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"c4-createE-zqdnqv5f47\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-rst017s5-dyn-202"
+    },
+    {
+      "leg": "E",
+      "name": "E0b dynamic leader live (first model request on the row staticModel)",
+      "ok": true,
+      "detail": "seq=2"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter1 converged: final Team live + single surviving writer (delay=1µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":1,\"bootNo\":2,\"delayMicro\":1,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn-2"
+    },
+    {
+      "leg": "boot-3",
+      "name": "boot 3 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter2 converged: final Team live + single surviving writer (delay=0µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":2,\"bootNo\":3,\"delayMicro\":0,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn-2"
+    },
+    {
+      "leg": "boot-4",
+      "name": "boot 4 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter3 converged: final Team live + single surviving writer (delay=1µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":3,\"bootNo\":4,\"delayMicro\":1,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn-2"
+    },
+    {
+      "leg": "boot-5",
+      "name": "boot 5 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter4 converged: final Team live + single surviving writer (delay=1µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":4,\"bootNo\":5,\"delayMicro\":1,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn-2"
+    },
+    {
+      "leg": "boot-6",
+      "name": "boot 6 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter5 converged: final Team live + single surviving writer (delay=1µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":5,\"bootNo\":6,\"delayMicro\":1,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn-2"
+    },
+    {
+      "leg": "boot-7",
+      "name": "boot 7 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter6 converged: final Team live + single surviving writer (delay=3µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":6,\"bootNo\":7,\"delayMicro\":3,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn-2"
+    },
+    {
+      "leg": "boot-8",
+      "name": "boot 8 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter7 converged: final Team live + single surviving writer (delay=1µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":7,\"bootNo\":8,\"delayMicro\":1,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn-2"
+    },
+    {
+      "leg": "boot-9",
+      "name": "boot 9 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter8 converged: final Team live + single surviving writer (delay=0µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":8,\"bootNo\":9,\"delayMicro\":0,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn-2"
+    },
+    {
+      "leg": "boot-10",
+      "name": "boot 10 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter9 converged: final Team live + single surviving writer (delay=0µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":9,\"bootNo\":10,\"delayMicro\":0,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn-"
+    },
+    {
+      "leg": "boot-11",
+      "name": "boot 11 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter10 converged: final Team live + single surviving writer (delay=1µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":10,\"bootNo\":11,\"delayMicro\":1,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn"
+    },
+    {
+      "leg": "boot-12",
+      "name": "boot 12 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter11 converged: final Team live + single surviving writer (delay=3µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":11,\"bootNo\":12,\"delayMicro\":3,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn"
+    },
+    {
+      "leg": "boot-13",
+      "name": "boot 13 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter12 converged: final Team live + single surviving writer (delay=0µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":12,\"bootNo\":13,\"delayMicro\":0,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn"
+    },
+    {
+      "leg": "boot-14",
+      "name": "boot 14 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter13 converged: final Team live + single surviving writer (delay=3µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":13,\"bootNo\":14,\"delayMicro\":3,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn"
+    },
+    {
+      "leg": "boot-15",
+      "name": "boot 15 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter14 converged: final Team live + single surviving writer (delay=2µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":14,\"bootNo\":15,\"delayMicro\":2,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn"
+    },
+    {
+      "leg": "boot-16",
+      "name": "boot 16 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter15 converged: final Team live + single surviving writer (delay=3µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":15,\"bootNo\":16,\"delayMicro\":3,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn"
+    },
+    {
+      "leg": "boot-17",
+      "name": "boot 17 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter16 converged: final Team live + single surviving writer (delay=1µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":16,\"bootNo\":17,\"delayMicro\":1,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn"
+    },
+    {
+      "leg": "boot-18",
+      "name": "boot 18 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter17 converged: final Team live + single surviving writer (delay=3µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":17,\"bootNo\":18,\"delayMicro\":3,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn"
+    },
+    {
+      "leg": "boot-19",
+      "name": "boot 19 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter18 converged: final Team live + single surviving writer (delay=3µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":18,\"bootNo\":19,\"delayMicro\":3,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn"
+    },
+    {
+      "leg": "boot-20",
+      "name": "boot 20 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter19 converged: final Team live + single surviving writer (delay=1µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":19,\"bootNo\":20,\"delayMicro\":1,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn"
+    },
+    {
+      "leg": "boot-21",
+      "name": "boot 21 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=E phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "E",
+      "name": "E-iter20 converged: final Team live + single surviving writer (delay=3µt, created=1, disposed=0)",
+      "ok": true,
+      "detail": "{\"i\":20,\"bootNo\":21,\"delayMicro\":3,\"followOk\":true,\"ensureStatus\":200,\"ensureOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-dyn"
+    },
+    {
+      "leg": "E",
+      "name": "E-final 20× race: 20/20 final Team live / 0 unresolved writer-held / 0 double Agent / 0 leaked handle (every boot after a prior iteration came up clean — a leaked write handle would break the next boot gate)",
+      "ok": true,
+      "detail": "iterations=20 good=20"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-0 team.create(F1 root) accepted (RPC ok:true)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"s5-f1-create-vj4jouopal\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-rst017s5-f1-20"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-0b F1 leader live (first model request on the row staticModel)",
+      "ok": true,
+      "detail": "seq=2"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter1 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":1,\"bootNo\":2,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-3",
+      "name": "boot 3 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter2 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":2,\"bootNo\":3,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-4",
+      "name": "boot 4 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter3 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":3,\"bootNo\":4,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-5",
+      "name": "boot 5 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter4 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":4,\"bootNo\":5,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-6",
+      "name": "boot 6 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter5 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":5,\"bootNo\":6,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-7",
+      "name": "boot 7 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter6 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":6,\"bootNo\":7,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-8",
+      "name": "boot 8 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter7 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":7,\"bootNo\":8,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-9",
+      "name": "boot 9 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter8 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":8,\"bootNo\":9,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-10",
+      "name": "boot 10 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter9 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":9,\"bootNo\":10,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-11",
+      "name": "boot 11 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter10 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":10,\"bootNo\":11,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-12",
+      "name": "boot 12 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter11 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":11,\"bootNo\":12,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-13",
+      "name": "boot 13 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter12 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":12,\"bootNo\":13,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-14",
+      "name": "boot 14 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter13 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":13,\"bootNo\":14,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-15",
+      "name": "boot 15 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter14 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":14,\"bootNo\":15,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-16",
+      "name": "boot 16 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter15 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":15,\"bootNo\":16,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-17",
+      "name": "boot 17 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter16 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":16,\"bootNo\":17,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-18",
+      "name": "boot 18 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter17 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":17,\"bootNo\":18,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-19",
+      "name": "boot 19 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter18 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":18,\"bootNo\":19,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-20",
+      "name": "boot 20 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter19 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":19,\"bootNo\":20,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "boot-21",
+      "name": "boot 21 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-iter20 converged: 2/2 caller success + one Team generation + one writer + zero OUTSIDE_TEAM + zero unresolved writer-held",
+      "ok": true,
+      "detail": "{\"i\":20,\"bootNo\":21,\"ok1\":true,\"ok2\":true,\"bothOk\":true,\"teamLive\":true,\"created\":1,\"disposed\":0,\"singleWriter\":true,\"noOutside\":true,\"live\":[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f1-2026-09-26T17-48-44\"]}"
+    },
+    {
+      "leg": "F1",
+      "name": "F1-final 20×: every iteration 2/2 caller success, one Team generation, one writer, zero OUTSIDE_TEAM, zero unresolved writer-held",
+      "ok": true,
+      "detail": "iterations=20 good=20"
+    },
+    {
+      "leg": "boot-22",
+      "name": "boot 22 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F2",
+      "name": "F2-1 team.create(F2 root) accepted (RPC ok:true)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"s5-f2-create-h6egnrfrhy\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-rst017s5-f2-20"
+    },
+    {
+      "leg": "F2",
+      "name": "F2-1b F2 leader live (first model request)",
+      "ok": true,
+      "detail": "seq=2"
+    },
+    {
+      "leg": "F2",
+      "name": "F2-2 member live on boot 1 (model request carried the MEMBER context)",
+      "ok": true,
+      "detail": "seq=7"
+    },
+    {
+      "leg": "F2",
+      "name": "F2-3 member child session bound durably (childSessionId resolved)",
+      "ok": true,
+      "detail": "{\"instanceId\":\"inst-05j17tm04d6o\",\"templateId\":\"worker\",\"label\":\"s5-worker--48-44\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-team-child-baceb10416b500d8579c28282f28a375\"}"
+    },
+    {
+      "leg": "boot-23",
+      "name": "boot 23 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F2",
+      "name": "F2-4 exactly ONE member generation (single-flight: two concurrent member-targeting team tools → one member resume) AND member live",
+      "ok": true,
+      "detail": "memberCreated=1 memberDisposed=0 live=[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f2-2026-09-26T17-48-44\",\"session-team-child-baceb10416b500d8579c28282f28a375\"]"
+    },
+    {
+      "leg": "F2",
+      "name": "F2-5 no OUTSIDE_TEAM / writer-held (the redundant caller success-joins or typed-fails; exactly one live member agent)",
+      "ok": true,
+      "detail": "{\"ok\":true,\"value\":{\"status\":\"delivered\",\"rootSessionId\":\"session-rst017s5-f2-2026-09-26T17-48-44\",\"action\":\"send-message\",\"callerRole\":\"leader\",\"recipientInstanceId\":\"inst-05j17tm04d6o\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst"
+    },
+    {
+      "leg": "F2",
+      "name": "F2-6 at least one of the two concurrent member-targeting tools executed ok (the redundant one may join or typed-fail)",
+      "ok": true,
+      "detail": "A_ok=true B_ok=true"
+    },
+    {
+      "leg": "boot-24",
+      "name": "boot 24 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F3",
+      "name": "F3-0 team.create(F3 root) accepted (RPC ok:true)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"s5-f3-create-urbvb3p0hh\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-rst017s5-f3-20"
+    },
+    {
+      "leg": "F3",
+      "name": "F3-0b F3 leader live (first model request)",
+      "ok": true,
+      "detail": "seq=2"
+    },
+    {
+      "leg": "boot-25",
+      "name": "boot 25 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=F phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "F3",
+      "name": "F3-1 the ordinary open (session/follow on the cold root) yields the snapshot (the browser got in)",
+      "ok": true,
+      "detail": "\"\""
+    },
+    {
+      "leg": "F3",
+      "name": "F3-2 the BARRIER: the ordinary agent/created fired and its exact-generation rollback (disposed) completed BEFORE the Team ensure",
+      "ok": true,
+      "detail": "created=1 disposed=1 (pre-ensure)"
+    },
+    {
+      "leg": "F3",
+      "name": "F3-2b the vetoed ordinary open surfaced on the api-session/error lane (the production wording)",
+      "ok": true,
+      "detail": "apiErr=1"
+    },
+    {
+      "leg": "F3",
+      "name": "F3-3 the Team ensure SUCCEEDS after the ordinary handoff (the C1 repair path)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"s5-f3-ensure-3v489jhz79\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"rootSessionId\":\"session-rst017s5-f3-2026-09-26T17-48-44\",\"mode\":\"team\",\"live\":true},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"team.ensureRootLive\",\"endpoint\":\"team.ensureRootLive\",\"contractVersion\""
+    },
+    {
+      "leg": "F3",
+      "name": "F3-4 the deterministic handoff record: created>=2 (ordinary + Team) AND disposed>=1 (the vetoed ordinary) AND final surviving===1 (the Team generation)",
+      "ok": true,
+      "detail": "created=2 disposed=1 surviving=1 createdSources=resume,resume"
+    },
+    {
+      "leg": "F3",
+      "name": "F3-5 one final Team generation live (glue hasLive) AND no OUTSIDE_TEAM / writer-held",
+      "ok": true,
+      "detail": "live=[\"session-rst017s5-boot-2026-09-26T17-48-44\",\"session-rst017s5-f3-2026-09-26T17-48-44\"]"
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: test-use HEAD == the 0.1.7-rc.1 pin",
+      "ok": true,
+      "detail": "HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4"
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: test-use working tree pristine (empty porcelain)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: task worktree at the accepted S1+S2+S5a fix tip (5e16fa77 = S1 58d30de + S2 673bb7c + S3 833c699 evidence-only + S5a 5e16fa7 dist-glue placement fix)",
+      "ok": true,
+      "detail": "HEAD=5e16fa774d1793ab00ae3652dac8fca439f0ecbb"
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: the test-use CLI reports 0.1.7-rc.1",
+      "ok": true,
+      "detail": "version=0.1.7-rc.1"
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: committed install-surface artifacts match a fresh build (1196 expected)",
+      "ok": true,
+      "detail": "count=1196 exit=0"
+    },
+    {
+      "leg": "s0",
+      "name": "preflight: host/mock ports free (3492/3497)",
+      "ok": true,
+      "detail": "hostFree=true mockFree=true"
+    },
+    {
+      "leg": "install",
+      "name": "S0 bare-clone tip == 5e16fa774d1793ab00ae3652dac8fca439f0ecbb (the accepted S1+S2+S5a fix build with committed dist/composition)",
+      "ok": true,
+      "detail": "cloned=5e16fa774d1793ab00ae3652dac8fca439f0ecbb"
+    },
+    {
+      "leg": "install",
+      "name": "S1 `dsh plugin add` exits 0 (0.1.7 compat gate passes on the declared peer)",
+      "ok": true,
+      "detail": "exit=0"
+    },
+    {
+      "leg": "install",
+      "name": "S1 no 0.1.7 incompat / allow-version exemption line",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "install",
+      "name": "S1 no ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "leg": "install",
+      "name": "S2 dsh.profile.bundles auto-contains dsh-agent-team (CLI reconcile)",
+      "ok": true,
+      "detail": "bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+    },
+    {
+      "leg": "install",
+      "name": "S3 installed package dir carries the committed install surface",
+      "ok": true,
+      "detail": "all present"
+    },
+    {
+      "leg": "boot-1",
+      "name": "boot 1 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=create)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T18-09-18\"]"
+    },
+    {
+      "leg": "A",
+      "name": "A1 team.create(dynamic root) accepted over the public remote seam (RPC ok:true — transport 200 alone is not success)",
+      "ok": true,
+      "detail": "status=200 head={\"type\":\"server-response\",\"rpcId\":\"c4-createA-f5295k6dgh\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-rst017s5-dyn-202"
+    },
+    {
+      "leg": "A",
+      "name": "A2 dynamic leader live on boot 1 (first model request on the row staticModel)",
+      "ok": true,
+      "detail": "seq=2 model=rst017s5-model-2026-09-26T18-09-18"
+    },
+    {
+      "leg": "A",
+      "name": "A2b boot-1 session history present (assistant rows ≥ 1 in the session log)",
+      "ok": true,
+      "detail": "[{\"path\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/rst017-s5-2026-09-26T18-09-18-A/sessions/--home-user-dsh-plugins-dsh-agent-team-tests-homes-rst017-s5-2026-09-26T18-09-18-A-workspace--/session-rst017s5-dyn-2026-09-26T18-09-18/session.v4.jsonl.zstd\",\"rows\":23,\"assistant\":1,\"rowTypes\":[\"session\",\"permission/preset\",\"sandbox/mode\",\"approval/policy\",\"agent/inbox/spliced\",\"turn/start\",\"agent/inbox/spliced\",\"step/start\",\"system/message\",\"user/message\",\"user/message\",\"user/message\",\"user/message\",\"request/header\",\"request/context\",\"session/title\",\"session/title-llm-request\",\"session-log-deepseek/delivery-accepted\",\"session/title\",\"session-log-deepseek/delivery-accepted\",\"assistant/message\",\"step/end\",\"turn/end\"]}]"
+    },
+    {
+      "leg": "boot-2",
+      "name": "boot 2 up (marker + auth + p6t6 ok + boot root live + fence probe ok, world=A phase=resume)",
+      "ok": true,
+      "detail": "http://127.0.0.1:3492 liveSessions=[\"session-rst017s5-boot-2026-09-26T18-09-18\"]"
+    },
+    {
+      "leg": "A-browser",
+      "name": "step 5: the fresh connected page (opened AFTER the restart) opened the cold Team root from the UI",
+      "ok": true,
+      "detail": "pageLoadCount=1 step5=true"
+    },
+    {
+      "leg": "A-browser",
+      "name": "step 6: the ordinary activation was vetoed by the production fence (created → exact-generation disposed → api-session/error, exact wording)",
+      "ok": true,
+      "detail": "created=3 disposed=2 err=1 wording=true"
+    },
+    {
+      "leg": "A-browser",
+      "name": "step 7: the page shows \"Session unavailable\" with the composer disabled",
+      "ok": true,
+      "detail": "step7=true dom={\"bodyTextHead\":\"DSH Local Build\\n0.1.7-rc.1-46a7f68\\nNew Session\\nPlugins\\nWorkspaces\\nworkspace\\nUngrouped\\nc4 title\\n2min\\nNew Team\\nSettings\\nc4 title\\nChat"
+    },
+    {
+      "leg": "A-browser",
+      "name": "step 8: \"Open in Team mode / back to Leader\" located (a11y tree) and clicked exactly once",
+      "ok": true,
+      "detail": "takeoverClicks=1 step8=true"
+    },
+    {
+      "leg": "A-browser",
+      "name": "step 9: NO reload / NO blank-navigation / NO session switch-away-and-back (structural + action-log)",
+      "ok": true,
+      "detail": "reloads=0 blank=0 switches=0"
+    },
+    {
+      "leg": "A-browser",
+      "name": "step 10 (GATE STEP — expected to FAIL per S3 NO-GO-C1 / Q2-FINDING): the composer is enabled after the single click WITHOUT any reload/blank/switch",
+      "ok": false,
+      "detail": "step10=false dom={\"bodyTextHead\":\"DSH Local Build\\n0.1.7-rc.1-46a7f68\\nNew Session\\nPlugins\\nWorkspaces\\nworkspace\\nUngrouped\\nc4 title\\n2min\\nNew Team\\nSettings\\nc4 title\\nChat\\nTrajectory\\nTeam\\nTimeline\\n\\nNo deleg"
+    },
+    {
+      "leg": "A-browser",
+      "name": "step 15 (host-side activation probe): no second ordinary surviving writer — exactly one surviving generation for the cold root",
+      "ok": true,
+      "detail": "created=3 disposed=2 surviving=1"
+    },
+    {
+      "leg": "A-browser",
+      "name": "step 15: one final Team generation is live (glue hasLive(root) == true after the UI takeover)",
+      "ok": true,
+      "detail": "[\"session-rst017s5-boot-2026-09-26T18-09-18\",\"session-rst017s5-dyn-2026-09-26T18-09-18\"]"
+    }
+  ]
+}

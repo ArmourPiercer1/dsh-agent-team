@@ -1,0 +1,10 @@
+{
+  "note": "World A §5 HARD BROWSER GATE (strict). The kit holds boot 2 and spawned browser-gate-driver-v2.mjs, which runs the strict 15-step flow on a FRESH page (steps 5–10), accessibility-tree-level ops only, NO reload/blank/switch, stopping at the first failed assertion. Expected to FAIL at step 10 (composer not enabled after the single click). The gate-5 prompt below is sent ONLY if step 10 unexpectedly passes (it is not expected to).",
+  "kitPid": 3,
+  "gui": "http://127.0.0.1:3492",
+  "dynamicRoot": "session-rst017s5-dyn-2026-09-26T18-09-18",
+  "doneToken": "RST017S5DONE_2026-09-26T18-09-18",
+  "sessionTitle": "c4 title",
+  "gate5Prompt": "Gate-5 composer check right after the Team takeover. Answer with the token RST017S5GATE5_2026-09-26T18-09-18 and stop.",
+  "strict": true
+}

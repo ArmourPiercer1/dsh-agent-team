@@ -1,0 +1,12 @@
+{
+  "s1": {
+    "kind": "snapshot",
+    "closedAt": null,
+    "msgCount": 2
+  },
+  "s2": {
+    "kind": "snapshot",
+    "closedAt": null,
+    "msgCount": 0
+  }
+}

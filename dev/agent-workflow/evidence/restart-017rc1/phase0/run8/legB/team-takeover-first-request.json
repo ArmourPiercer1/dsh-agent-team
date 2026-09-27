@@ -1,0 +1,32 @@
+{
+  "seq": 3,
+  "model": "rst017-model-2026-09-26T04-16-18",
+  "tools": [
+    "ask_user_question",
+    "bash",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "workflow",
+    "write"
+  ]
+}
