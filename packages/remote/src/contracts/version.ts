@@ -81,10 +81,29 @@ export const REMOTE_CONTRACT_VERSION_V4 = 4 as const
 export const REMOTE_CONTRACT_VERSION_V5 = 5 as const
 
 /**
+ * The remote contract v6 (team-view sync complete, Phase 2 — frozen design
+ * decisions, 2026-09-28): the v6-only `team.getReadState` command — the
+ * authoritative session-ownership read over the TeamDomain durable rows
+ * (a session resolves to `team-root` / `team-member` / `none`; a disposed
+ * member still resolves to the member relation marked disposed; only a
+ * successful read that positively confirms no affiliation may answer
+ * `none`; every storage/integrity failure fails closed with a typed
+ * error) — plus the version-aware `team.getProjection` v6 wire shape: the
+ * projection value additionally carries `durableGeneration` (the durable
+ * TeamSession generation, explicitly named) and `liveToken` (the
+ * deterministic opaque live-invalidation token; durable generation and
+ * live invalidation are SEPARATED — a live change moves only the token,
+ * never the durable generation). Every v1/v2/v3/v4/v5 method stays
+ * available in v6 and every v1–v5 wire shape is preserved for
+ * version-1–5 requests.
+ */
+export const REMOTE_CONTRACT_VERSION_V6 = 6 as const
+
+/**
  * Type of a remote contract version field this build accepts: exactly
- * `1 | 2 | 3 | 4 | 5` (TCM vNext §15.3: `RemoteContractVersion = 1 | 2`,
- * extended by the D1 v3 bump, the F9 v4 bump, and the C1 restart-recovery
- * v5 bump).
+ * `1 | 2 | 3 | 4 | 5 | 6` (TCM vNext §15.3: `RemoteContractVersion = 1 | 2`,
+ * extended by the D1 v3 bump, the F9 v4 bump, the C1 restart-recovery
+ * v5 bump, and the team-view-sync-complete v6 bump).
  */
 export type RemoteContractVersion =
   | typeof REMOTE_CONTRACT_VERSION
@@ -92,15 +111,18 @@ export type RemoteContractVersion =
   | typeof REMOTE_CONTRACT_VERSION_V3
   | typeof REMOTE_CONTRACT_VERSION_V4
   | typeof REMOTE_CONTRACT_VERSION_V5
+  | typeof REMOTE_CONTRACT_VERSION_V6
 
 /**
- * All remote contract versions this build accepts: `[1, 2, 3, 4, 5]`.
+ * All remote contract versions this build accepts: `[1, 2, 3, 4, 5, 6]`.
  * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision;
  * v3 by the Team D1-D6 repair v2 D1 task; v4 by the F3/F11/F9/T1.4
  * repair round r1 F9 task; v5 by the C1 restart-0.1.7-rc.1 recovery
- * task (guide §10.2: the v5-only `team.prepareOrdinaryOpen` permit)
- * (a version bump ADDS supported versions, never edits v1/v2/v3/v4
- * semantics).
+ * task (guide §10.2: the v5-only `team.prepareOrdinaryOpen` permit);
+ * v6 by the team-view-sync-complete task (2026-09-28: the v6-only
+ * `team.getReadState` read + the version-aware v6 projection shape with
+ * `durableGeneration` / `liveToken`) (a version bump ADDS supported
+ * versions, never edits v1/v2/v3/v4/v5 semantics).
  */
 export const SUPPORTED_REMOTE_CONTRACT_VERSIONS: readonly number[] = [
   REMOTE_CONTRACT_VERSION,
@@ -108,6 +130,7 @@ export const SUPPORTED_REMOTE_CONTRACT_VERSIONS: readonly number[] = [
   REMOTE_CONTRACT_VERSION_V3,
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
+  REMOTE_CONTRACT_VERSION_V6,
 ]
 
 /**

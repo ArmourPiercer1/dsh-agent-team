@@ -34,6 +34,13 @@ export {
 } from './pull.js'
 
 export {
+  appliedIdentityFromV6,
+  assessProjectionSyncV6,
+  extractPushFrameV6,
+} from './pull-v6.js'
+export type { AppliedProjectionIdentityV6, RemotePushFrameV6 } from './pull-v6.js'
+
+export {
   createLedgerPageTracker,
   verifyLedgerPageAnchor,
 } from './ledger-page.js'

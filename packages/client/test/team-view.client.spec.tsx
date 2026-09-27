@@ -315,6 +315,7 @@ describe('TeamView', () => {
     return {
       teamSessionId: null,
       appliedGeneration: null,
+      appliedLiveToken: null,
       frame: null,
       lastAssessment: null,
       retryAttempt: 0,
@@ -441,11 +442,14 @@ describe('TeamView', () => {
     expect(recovered.container.querySelector('[data-team-view-status]')?.getAttribute('data-team-view-status')).toBe('ready')
   })
 
-  it('refreshes from BOTH views — the pull targets the resolved team id, the ledger follows the pull, and the double-click is guarded (S1-C2)', async () => {
+  it('refreshes from BOTH views — the pull targets the resolved team id, the ledger NO LONGER follows the manual pull (v6: it rides the applied durable-generation advance), and the double-click is guarded (S1-C2 + team-view-sync-complete decision 4)', async () => {
     // (a) the with-frame view: the pull targets the TEAM id (not the
-    // session id), and the ledger refresh runs AFTER the pull resolves
-    // (a stale frame exists → the ledger read is attempted even on a
-    // failed projection — here the pull succeeds).
+    // session id). team-view-sync-complete (frozen decision 4): the
+    // manual refresh is a FORCED projection round ONLY — the ledger
+    // refresh is owned by the applied durable-generation advance (the
+    // mount's store subscription), so a same-generation manual refresh
+    // (duplicate / live-token-only overlay) is deliberately a ledger
+    // NO-OP. The explicit post-pull ledger call is GONE.
     const pullProjection = vi.fn(() => new Promise<{ status: 'apply'; receivedGeneration: number }>(resolve => {
       setTimeout(() => resolve({ status: 'apply', receivedGeneration: 9 }), 10)
     }))
@@ -467,14 +471,17 @@ describe('TeamView', () => {
     fireEvent.click(buttonA)
     expect(pullProjection).toHaveBeenCalledTimes(1)
     expect(pullProjection).toHaveBeenCalledWith(LEADER)
+    // The round settles; the pending flag clears; the explicit ledger
+    // refresh never runs (v6: it rides the generation advance, which
+    // the mount — not the view — owns).
     await vi.waitFor(() => {
-      expect(refreshTeamLedger).toHaveBeenCalledTimes(1)
+      expect(buttonA.disabled).toBe(false)
     })
+    expect(refreshTeamLedger).not.toHaveBeenCalled()
     viewA.unmount()
     // (b) the zero state: the pull targets the SESSION id (no frame →
     // the candidate root IS the session), and the ledger is NOT
-    // attempted while no frame exists and the pull failed (transport
-    // loss) — it is only attempted after an applying pull.
+    // attempted (v6: the manual path never refreshes the ledger).
     const pullProjectionB = vi.fn(() => Promise.resolve(
       { status: 'transport-loss', receivedGeneration: null } as const,
     ))

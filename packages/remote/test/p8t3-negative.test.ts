@@ -32,7 +32,7 @@ import {
 } from './p8t3-negative-scan.mjs'
 import { makeFakePorts } from './p8t3-helpers.js'
 
-/** The exact 28 P8-T3-owned source files, in the scanner's sorted order. */
+/** The exact 29 P8-T3-owned source files, in the scanner's sorted order. */
 const P8T3_EXPECTED_FILES = [
   'packages/remote/src/contracts/catalog.ts',
   'packages/remote/src/contracts/errors.ts',
@@ -59,16 +59,19 @@ const P8T3_EXPECTED_FILES = [
   'packages/remote/src/push/generation.ts',
   'packages/remote/src/push/index.ts',
   'packages/remote/src/push/ledger-page.ts',
+  'packages/remote/src/push/pull-v6.ts',
   'packages/remote/src/push/pull.ts',
   'packages/remote/src/push/reconnect.ts',
   'packages/remote/src/push/types.ts',
 ]
 
 /**
- * The exact 18 `RemoteHandlerDeps` port keys, sorted (the 12 frozen
+ * The exact 20 `RemoteHandlerDeps` port keys, sorted (the 12 frozen
  * P8-T3 ports + the two TCM vNext §15.6 v2 ports + the two D1
  * Team-D1-D6-repair-v2 v3 ports + the one F9 contract-v4 port + the one
- * C1 restart-0.1.7-rc.1 recovery contract-v5 port).
+ * C1 restart-0.1.7-rc.1 recovery contract-v5 port + the two
+ * team-view-sync-complete contract-v6 ports: the per-session read-state
+ * and the semantic-live-state token).
  */
 const P8T3_EXPECTED_PORT_KEYS = [
   'admission',
@@ -79,6 +82,7 @@ const P8T3_EXPECTED_PORT_KEYS = [
   'ledger',
   'legacy',
   'lifecycle',
+  'liveToken',
   'override',
   'policyState',
   'projection',
@@ -87,14 +91,15 @@ const P8T3_EXPECTED_PORT_KEYS = [
   'teamCreateV2',
   'teamEnsureRootLive',
   'teamPrepareOrdinaryOpen',
+  'teamReadState',
   'teamResolveControl',
   'teamRoots',
 ]
 
 describe('P8-T3 negative scan (Brief §87–96)', () => {
-  it('scans exactly the 28 owned packages/remote/src files', () => {
+  it('scans exactly the 29 owned packages/remote/src files', () => {
     const scan = scanP8T3OwnedFiles()
-    expect(scan.files.length).toBe(28)
+    expect(scan.files.length).toBe(29)
     expect(scan.files).toEqual(P8T3_EXPECTED_FILES)
   })
 
@@ -144,7 +149,7 @@ describe('P8-T3 negative scan (Brief §87–96)', () => {
     expect(r5.length).toBe(2)
   })
 
-  it('pins the handler dependency surface to exactly the 18 ports (12 frozen + 2 v2 + 2 v3 + 1 v4 + 1 v5)', () => {
+  it('pins the handler dependency surface to exactly the 20 ports (12 frozen + 2 v2 + 2 v3 + 1 v4 + 1 v5 + 2 v6)', () => {
     const ports = makeFakePorts()
     const keys = Object.keys(ports)
       .filter((key) => key !== 'calls' && key !== 'admissionRequests')

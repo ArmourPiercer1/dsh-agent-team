@@ -33,6 +33,7 @@ import type { TeamSessionId } from '../../contracts/src/index.js'
 import {
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V3,
+  REMOTE_CONTRACT_VERSION_V6,
   buildRemoteError,
   buildRemoteSuccess,
   type RemoteResponse,
@@ -61,7 +62,15 @@ import type { TeamViewInjected, TeamViewProps } from '../src/ui/TeamView.js'
 
 const METHOD = 'team.getProjection'
 
-/** One frozen `team.getProjection` success envelope (G8 provenance intact). */
+/**
+ * One frozen `team.getProjection` success envelope (G8 provenance
+ * intact). team-view-sync-complete: the production mount pulls with
+ * CONTRACT v6, so the double answers with the v6 freshness PAIR inside
+ * data.projection (`durableGeneration` === the durable generation + a
+ * deterministic `liveToken`) and the v6 provenance contract version.
+ * The live token is stable per (team, generation) — a live-only change
+ * would move it (the mount spec exercises durable advances only).
+ */
 function projectionSuccess(
   teamSessionId: string,
   generation: number,
@@ -79,12 +88,14 @@ function projectionSuccess(
         templates: [],
         members: [],
         ledger: { total: 0 },
+        durableGeneration: generation,
+        liveToken: `lt-v1-fake:${teamSessionId}:g${generation}`,
       },
     },
     {
       method: METHOD,
       endpoint: METHOD,
-      contractVersion: REMOTE_CONTRACT_VERSION,
+      contractVersion: REMOTE_CONTRACT_VERSION_V6,
       requestToken: null,
       projectionGeneration: provenanceGeneration === undefined ? generation : provenanceGeneration,
     },
@@ -872,13 +883,14 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     ])
   })
 
-  it('tracks exactly four fiber effects, in mount order (D2 adds the open-mode reset on session switch)', () => {
-    expect(aScenario.effectsCount).toBe(4)
+  it('tracks exactly five fiber effects, in mount order (D2 adds the open-mode reset on session switch; team-view-sync-complete adds the refresh visibility gate)', () => {
+    expect(aScenario.effectsCount).toBe(5)
     expect(aScenario.effectLabels).toEqual([
       'dsh-agent-team: dictionaries',
       'dsh-agent-team: store teardown',
       'dsh-agent-team: open-mode reset on session switch',
       'dsh-agent-team: generation rebaseline',
+      'dsh-agent-team: refresh visibility',
     ])
   })
 
@@ -1108,7 +1120,9 @@ describe('P9-T9 (P9-S6) client mount — dshHome variants (scenario D)', () => {
       'conversation.input.dock',
       'sidebar.footer.action',
     ])
-    expect(dScenario.d1EffectsCount).toBe(4)
+    // team-view-sync-complete: the fifth fiber effect is the refresh
+    // visibility gate (present in every scenario).
+    expect(dScenario.d1EffectsCount).toBe(5)
   })
 })
 

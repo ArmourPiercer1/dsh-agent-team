@@ -45,6 +45,7 @@ import {
   REMOTE_CONTRACT_VERSION_V3,
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
+  REMOTE_CONTRACT_VERSION_V6,
   REMOTE_CONTRACT_ERROR_CODES,
   REMOTE_METHOD_NAMES,
   REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS,
@@ -54,6 +55,7 @@ import {
   REMOTE_V3_ONLY_METHODS,
   REMOTE_V4_ONLY_METHODS,
   REMOTE_V5_ONLY_METHODS,
+  REMOTE_V6_ONLY_METHODS,
   SUPPORTED_REMOTE_CONTRACT_VERSIONS,
   type RemoteSafeRecord,
 } from '../src/index.js'
@@ -563,17 +565,18 @@ describe('TCM M1: backing error allow-list (the seven team-create v2 codes)', ()
 // ---------------------------------------------------------------------------
 
 describe('TCM M1: catalog facts (versioned union, closed)', () => {
-  it('the frozen v1 baseline constant stays 1, v2 is a distinct stamp, and the D1 v3 + F9 v4 + C1 v5 bumps extend the supported set', () => {
+  it('the frozen v1 baseline constant stays 1, v2 is a distinct stamp, and the D1 v3 + F9 v4 + C1 v5 + team-view-sync v6 bumps extend the supported set', () => {
     expect(REMOTE_CONTRACT_VERSION).toBe(1)
     expect(REMOTE_CONTRACT_VERSION_V2).toBe(2)
     expect(REMOTE_CONTRACT_VERSION_V3).toBe(3)
     expect(REMOTE_CONTRACT_VERSION_V4).toBe(4)
     expect(REMOTE_CONTRACT_VERSION_V5).toBe(5)
-    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5])
+    expect(REMOTE_CONTRACT_VERSION_V6).toBe(6)
+    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6])
   })
 
-  it('the closed catalog is the versioned union: 28 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only)', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(28)
+  it('the closed catalog is the versioned union: 29 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(29)
     expect(REMOTE_V2_ONLY_METHODS).toEqual(['team.admitInitialWork'])
     // the D1 (Team D1-D6 repair v2) v3-only closed set
     expect([...REMOTE_V3_ONLY_METHODS].sort()).toEqual(['team.ensureRootLive', 'team.listRoots'])
@@ -582,6 +585,8 @@ describe('TCM M1: catalog facts (versioned union, closed)', () => {
     // the C1 (restart-0.1.7-rc.1 recovery, guide §10.2) v5-only closed
     // set
     expect([...REMOTE_V5_ONLY_METHODS].sort()).toEqual(['team.prepareOrdinaryOpen'])
+    // the team-view-sync-complete (Phase 2) v6-only closed set
+    expect([...REMOTE_V6_ONLY_METHODS].sort()).toEqual(['team.getReadState'])
   })
 
   it('the closed field sets are frozen per version', () => {

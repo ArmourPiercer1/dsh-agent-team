@@ -328,6 +328,16 @@ export interface RemoteTeamPrepareOrdinaryOpenParams {
   readonly teamSessionId: string
 }
 
+/**
+ * `team.getReadState` (contract v6, v6-only method) — the CLOSED field set
+ * is `sessionId` only (the host's durable TeamDomain rows are the sole
+ * authority; no caller claim, no token, no team hint).
+ */
+export interface RemoteTeamGetReadStateParams {
+  /** The session to resolve (root, member child, or ordinary — opaque). */
+  readonly sessionId: string
+}
+
 /** `team.getProjection`. */
 export interface RemoteTeamGetProjectionParams {
   readonly teamSessionId: string
@@ -548,6 +558,7 @@ export const REMOTE_TEAM_RESOLVE_CONTROL_FIELDS: readonly string[] = [
   'teamSessionId',
 ]
 export const REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS: readonly string[] = ['teamSessionId']
+export const REMOTE_TEAM_GET_READ_STATE_FIELDS: readonly string[] = ['sessionId']
 export const REMOTE_TEAM_GET_PROJECTION_FIELDS: readonly string[] = ['teamSessionId']
 export const REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS: readonly string[] = [
   'afterSequence',
@@ -1382,6 +1393,20 @@ export function parseRemoteTeamPrepareOrdinaryOpenParams(
   }
 }
 
+/** Parse `team.getReadState` params (contract v6, v6-only method). */
+export function parseRemoteTeamGetReadStateParams(
+  method: string,
+  params: RemoteSafeRecord,
+): RemoteTeamGetReadStateParams {
+  assertNoUnknownFields(method, params, REMOTE_TEAM_GET_READ_STATE_FIELDS)
+  return {
+    sessionId: parseRemoteSessionId(
+      requiredField(method, params, 'sessionId'),
+      'sessionId',
+    ),
+  }
+}
+
 /** Parse `team.getProjection` params. */
 export function parseRemoteTeamGetProjectionParams(
   method: string,
@@ -1885,6 +1910,9 @@ export function parseRemoteMethodParams(
     case 'team.prepareOrdinaryOpen':
       // v5-only (the availability check above guarantees version === 5).
       return wrapParsed(method, parseRemoteTeamPrepareOrdinaryOpenParams(method, params))
+    case 'team.getReadState':
+      // v6-only (the availability check above guarantees version === 6).
+      return wrapParsed(method, parseRemoteTeamGetReadStateParams(method, params))
     case 'team.getProjection':
       return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params))
     case 'team.getLedgerPage':

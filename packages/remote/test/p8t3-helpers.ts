@@ -21,6 +21,7 @@ import {
   REMOTE_CONTRACT_VERSION_V3,
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
+  REMOTE_CONTRACT_VERSION_V6,
 } from '../src/index.js'
 import type {
   RemoteAdmissionPort,
@@ -48,6 +49,8 @@ import type {
   RemoteTeamRootsPort,
   RemoteTeamEnsureRootLivePort,
   RemoteTeamPrepareOrdinaryOpenPort,
+  RemoteTeamReadStatePort,
+  RemoteLiveTokenPort,
   RemoteTeamResolveControlPort,
   RemoteOverridePort,
 } from '../src/index.js'
@@ -351,6 +354,44 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     },
   }
 
+  // team-view-sync-complete Phase 2 (contract v6): the v6-only
+  // authoritative per-session read-state. The p8t3 fake world is the
+  // minimal deterministic answer set: the world's team root resolves to
+  // `team-root` (the durable generation of the world projection); every
+  // other session resolves to a confirmed `none` (the fake world has no
+  // member rows and no ordinary bindings).
+  const teamReadState: RemoteTeamReadStatePort = {
+    readState(sessionId) {
+      calls.push('team.getReadState')
+      if (sessionId === P8T3_TEAM_SESSION_ID) {
+        return {
+          relation: 'team-root',
+          teamSessionId: P8T3_TEAM_SESSION_ID,
+          memberInstanceId: null,
+          disposed: false,
+          durableGeneration: P8T3_PROJECTION['generation'] as number,
+        }
+      }
+      return {
+        relation: 'none',
+        teamSessionId: null,
+        memberInstanceId: null,
+        disposed: false,
+        durableGeneration: null,
+      }
+    },
+  }
+
+  // team-view-sync-complete Phase 2 (contract v6): the deterministic
+  // opaque semantic-live-state token (a pure function of the team id —
+  // no clock stamps, no process counters).
+  const liveToken: RemoteLiveTokenPort = {
+    liveToken(teamSessionId) {
+      calls.push('liveToken')
+      return `lt-fake-v1:${teamSessionId}`
+    },
+  }
+
   const projection: RemoteProjectionPort = {
     project(teamSessionId) {
       calls.push('team.getProjection')
@@ -498,6 +539,8 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     teamEnsureRootLive,
     teamResolveControl,
     teamPrepareOrdinaryOpen,
+    teamReadState,
+    liveToken,
     projection,
     ledger,
     admission,
@@ -554,6 +597,11 @@ export function p8t3WireV4(params: Record<string, unknown>): Record<string, unkn
 
 export function p8t3WireV5(params: Record<string, unknown>): Record<string, unknown> {
   return { version: REMOTE_CONTRACT_VERSION_V5, params }
+}
+
+/** One wire request envelope of contract v6 (team-view-sync-complete). */
+export function p8t3WireV6(params: Record<string, unknown>): Record<string, unknown> {
+  return { version: REMOTE_CONTRACT_VERSION_V6, params }
 }
 
 /** Assert a success result and return it (narrows the union). */

@@ -258,6 +258,15 @@ export interface RemoteTeamPrepareOrdinaryOpenParams {
     /** The TeamSession (root session) id whose ordinary open to permit. */
     readonly teamSessionId: string;
 }
+/**
+ * `team.getReadState` (contract v6, v6-only method) — the CLOSED field set
+ * is `sessionId` only (the host's durable TeamDomain rows are the sole
+ * authority; no caller claim, no token, no team hint).
+ */
+export interface RemoteTeamGetReadStateParams {
+    /** The session to resolve (root, member child, or ordinary — opaque). */
+    readonly sessionId: string;
+}
 /** `team.getProjection`. */
 export interface RemoteTeamGetProjectionParams {
     readonly teamSessionId: string;
@@ -404,6 +413,7 @@ export declare const REMOTE_TEAM_LIST_ROOTS_FIELDS: readonly string[];
 export declare const REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS: readonly string[];
 export declare const REMOTE_TEAM_RESOLVE_CONTROL_FIELDS: readonly string[];
 export declare const REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS: readonly string[];
+export declare const REMOTE_TEAM_GET_READ_STATE_FIELDS: readonly string[];
 export declare const REMOTE_TEAM_GET_PROJECTION_FIELDS: readonly string[];
 export declare const REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS: readonly string[];
 export declare const REMOTE_MEMBER_CREATE_FIELDS: readonly string[];
@@ -441,6 +451,8 @@ export declare function parseRemoteTeamEnsureRootLiveParams(method: string, para
 export declare function parseRemoteTeamResolveControlParams(method: string, params: RemoteSafeRecord): RemoteTeamResolveControlParams;
 /** Parse `team.prepareOrdinaryOpen` params (contract v5, v5-only method). */
 export declare function parseRemoteTeamPrepareOrdinaryOpenParams(method: string, params: RemoteSafeRecord): RemoteTeamPrepareOrdinaryOpenParams;
+/** Parse `team.getReadState` params (contract v6, v6-only method). */
+export declare function parseRemoteTeamGetReadStateParams(method: string, params: RemoteSafeRecord): RemoteTeamGetReadStateParams;
 /** Parse `team.getProjection` params. */
 export declare function parseRemoteTeamGetProjectionParams(method: string, params: RemoteSafeRecord): RemoteTeamGetProjectionParams;
 /** Parse `team.getLedgerPage` params (defaults: afterSequence 0, limit 50). */

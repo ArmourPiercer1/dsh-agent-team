@@ -37,6 +37,7 @@ import type {
   RemoteTeamEnsureRootLiveParams,
   RemoteTeamGetLedgerPageParams,
   RemoteTeamGetProjectionParams,
+  RemoteTeamGetReadStateParams,
   RemoteTeamPrepareOrdinaryOpenParams,
   RemoteTeamResolveControlParams,
   RemoteMethodParams,
@@ -45,23 +46,27 @@ import {
   REMOTE_LEDGER_ENTRY_FIELDS,
   REMOTE_PROJECTION_FIELDS,
   type RemoteLedgerEntryValue,
+  type RemoteTeamGetReadStateValue,
 } from '../contracts/types.js'
 import type { RemoteSafeRecord } from '../contracts/remote-safe.js'
 import type {
   RemoteHandlerOutcome,
   RemoteLedgerPort,
+  RemoteLiveTokenPort,
   RemoteProjectionPort,
   RemoteTeamAdmitInitialWorkPort,
   RemoteTeamCreatePort,
   RemoteTeamCreateV2Port,
   RemoteTeamEnsureRootLivePort,
   RemoteTeamPrepareOrdinaryOpenPort,
+  RemoteTeamReadStatePort,
   RemoteTeamResolveControlPort,
   RemoteTeamRootsPort,
 } from './ports.js'
 
 /** The ports the team category needs (v1 trio + the two v2 ports + the
- *  two v3 ports + the F9 v4 port + the C1 restart-recovery v5 port). */
+ *  two v3 ports + the F9 v4 port + the C1 restart-recovery v5 port + the
+ *  two team-view-sync-complete v6 ports). */
 export interface RemoteTeamHandlerPorts {
   readonly teamCreate: RemoteTeamCreatePort
   /** TCM vNext §15.6: the v2 workspace-aware creation variant. */
@@ -79,6 +84,15 @@ export interface RemoteTeamHandlerPorts {
    *  ordinary-activation permit (the Team fence's per-root permit arm;
    *  a control-plane RPC — no Team ensure, no Team Agent side effect). */
   readonly teamPrepareOrdinaryOpen: RemoteTeamPrepareOrdinaryOpenPort
+  /** team-view-sync-complete Phase 2: the v6-only authoritative
+   *  per-session read-state (durable TeamDomain rows are the sole
+   *  authority; fail-closed on every storage/integrity failure). */
+  readonly teamReadState: RemoteTeamReadStatePort
+  /** team-view-sync-complete Phase 2: the v6 deterministic opaque
+   *  semantic-live-state token (sorted per-member
+   *  `{ instanceId, residency }`; no clock stamps, no process
+   *  counters). */
+  readonly liveToken: RemoteLiveTokenPort
   readonly projection: RemoteProjectionPort
   readonly ledger: RemoteLedgerPort
 }
@@ -397,11 +411,134 @@ function normalizeTeamPrepareOrdinaryOpenValue(raw: unknown): RemoteSafeRecord {
 }
 
 /**
+ * The CLOSED v6 `team.getReadState` wire value fields (frozen by
+ * team-view-sync-complete Phase 2): every field is REQUIRED on the wire
+ * (`null` cells are typed, never absent) and no extra field is allowed
+ * (this is a fully closed value, not an "at least" shape).
+ */
+const REMOTE_TEAM_GET_READ_STATE_VALUE_FIELDS: readonly string[] = [
+  'disposed',
+  'durableGeneration',
+  'memberInstanceId',
+  'relation',
+  'teamSessionId',
+]
+const REMOTE_TEAM_GET_READ_STATE_RELATIONS: readonly string[] = [
+  'team-root',
+  'team-member',
+  'none',
+]
+
+/**
+ * Validate the `team.getReadState` port value against the closed v6 wire
+ * shape: the relation is the frozen three-value vocabulary; the
+ * `teamSessionId` / `durableGeneration` cells are `string` / `number` or
+ * `null` (never absent); a `none` answer carries `null` cells; a
+ * `team-member` answer carries its instance id; `disposed` is a boolean
+ * true only for a member whose durable lifecycle is `DISPOSED`.
+ */
+function normalizeTeamGetReadStateValue(raw: unknown): RemoteTeamGetReadStateValue {
+  if (!isPlainRecord(raw)) {
+    throw portContractError('readState', `expected an object, got ${String(raw)}`)
+  }
+  for (const field of REMOTE_TEAM_GET_READ_STATE_VALUE_FIELDS) {
+    if (!(field in raw)) {
+      throw portContractError(`readState.${field}`, 'missing field')
+    }
+  }
+  for (const key of Object.keys(raw)) {
+    if (!REMOTE_TEAM_GET_READ_STATE_VALUE_FIELDS.includes(key)) {
+      throw portContractError(`readState.${key}`, 'unknown field')
+    }
+  }
+  const relation = raw['relation']
+  if (typeof relation !== 'string' || !REMOTE_TEAM_GET_READ_STATE_RELATIONS.includes(relation)) {
+    throw portContractError(
+      'readState.relation',
+      `must be one of ${REMOTE_TEAM_GET_READ_STATE_RELATIONS.join(' | ')}, got ${String(relation)}`,
+    )
+  }
+  const teamSessionId = raw['teamSessionId']
+  if (teamSessionId !== null && (typeof teamSessionId !== 'string' || teamSessionId.length === 0)) {
+    throw portContractError(
+      'readState.teamSessionId',
+      `must be a non-empty string or null, got ${String(teamSessionId)}`,
+    )
+  }
+  const memberInstanceId = raw['memberInstanceId']
+  if (
+    memberInstanceId !== null &&
+    (typeof memberInstanceId !== 'string' || memberInstanceId.length === 0)
+  ) {
+    throw portContractError(
+      'readState.memberInstanceId',
+      `must be a non-empty string or null, got ${String(memberInstanceId)}`,
+    )
+  }
+  if (typeof raw['disposed'] !== 'boolean') {
+    throw portContractError('readState.disposed', `must be a boolean, got ${String(raw['disposed'])}`)
+  }
+  const durableGeneration = raw['durableGeneration']
+  if (
+    durableGeneration !== null &&
+    (typeof durableGeneration !== 'number' ||
+      !Number.isSafeInteger(durableGeneration) ||
+      durableGeneration < 1)
+  ) {
+    throw portContractError(
+      'readState.durableGeneration',
+      `must be a safe integer >= 1 or null, got ${String(durableGeneration)}`,
+    )
+  }
+  // Frozen cross-field invariants (fail closed on any contradiction):
+  if (relation === 'none') {
+    if (teamSessionId !== null || memberInstanceId !== null || durableGeneration !== null) {
+      throw portContractError(
+        'readState.none',
+        'a none answer must carry null teamSessionId / memberInstanceId / durableGeneration',
+      )
+    }
+    if (raw['disposed'] !== false) {
+      throw portContractError('readState.none', 'a none answer is never disposed')
+    }
+  } else if (relation === 'team-member') {
+    if (teamSessionId === null || memberInstanceId === null || durableGeneration === null) {
+      throw portContractError(
+        'readState.team-member',
+        'a team-member answer must carry its teamSessionId, memberInstanceId and durableGeneration',
+      )
+    }
+  } else {
+    // team-root
+    if (teamSessionId === null || durableGeneration === null) {
+      throw portContractError(
+        'readState.team-root',
+        'a team-root answer must carry its teamSessionId and durableGeneration',
+      )
+    }
+    if (memberInstanceId !== null || raw['disposed'] !== false) {
+      throw portContractError(
+        'readState.team-root',
+        'a team-root answer carries no member instance and is never disposed',
+      )
+    }
+  }
+  return {
+    relation: relation as RemoteTeamGetReadStateValue['relation'],
+    teamSessionId,
+    memberInstanceId,
+    disposed: raw['disposed'] as boolean,
+    durableGeneration,
+  }
+}
+
+/**
  * The team category handler (`team.create` [v1 + v2],
  * `team.admitInitialWork` [v2-only], `team.listRoots` [v3-only],
  * `team.ensureRootLive` [v3-only], `team.resolveControl` [v4-only],
- * `team.prepareOrdinaryOpen` [v5-only], `team.getProjection`,
- * `team.getLedgerPage`).
+ * `team.prepareOrdinaryOpen` [v5-only], `team.getReadState` [v6-only],
+ * `team.getProjection` [v1-v5 frozen shape; v6 adds
+ * `durableGeneration` + `liveToken`], `team.getLedgerPage`).
  *
  * Version-aware (TCM vNext §15.3): the dispatcher passes the request's
  * contract version; `team.create` routes to the v1 port (closed v1 field
@@ -518,10 +655,45 @@ export function createRemoteTeamHandler(ports: RemoteTeamHandlerPorts) {
         const projectionParams = params as RemoteTeamGetProjectionParams
         const raw = ports.projection.project(projectionParams.teamSessionId)
         const projection = normalizeProjection(raw)
+        if (version >= 6) {
+          // The v6 projection: the frozen v1-v5 shape PLUS the two
+          // additive freshness fields (team-view-sync-complete Phase 2
+          // frozen decision 4) — `durableGeneration` (always ===
+          // `generation`, named for the client freshness PAIR) and
+          // `liveToken` (the deterministic opaque semantic-live-state
+          // token). Contract versions <= 5 serve the EXACT frozen shape
+          // (byte-identical passthrough — v1-v5 are unchanged).
+          const liveToken = ports.liveToken.liveToken(projectionParams.teamSessionId)
+          if (typeof liveToken !== 'string' || liveToken.length === 0) {
+            throw portContractError('liveToken', 'must be a non-empty string')
+          }
+          return {
+            data: {
+              projection: {
+                ...projection,
+                durableGeneration: projection.generation,
+                liveToken,
+              },
+            },
+            projectionGeneration: projection.generation,
+          }
+        }
         return {
           data: { projection },
           projectionGeneration: projection.generation,
         }
+      }
+      case 'team.getReadState': {
+        // v6-only (the availability check in parseRemoteMethodParams
+        // guarantees version === 6). The durable TeamDomain rows are the
+        // sole authority; a storage/integrity failure throws through and
+        // the dispatcher answers with the typed pass-through error
+        // (invariant 4b) — never a silent `none` (fail closed).
+        const readStateParams = params as RemoteTeamGetReadStateParams
+        const value = normalizeTeamGetReadStateValue(
+          ports.teamReadState.readState(readStateParams.sessionId),
+        )
+        return { data: value }
       }
       case 'team.getLedgerPage': {
         const pageParams = params as RemoteTeamGetLedgerPageParams

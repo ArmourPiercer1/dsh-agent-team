@@ -261,6 +261,8 @@ import type { TeamDomainReadPortDeps } from './projection-source.js'
 import { createDurableMutationStore } from './durable-mutation-store.js'
 import { activePolicyState } from '../../policy-adapter.js'
 import { createLiveResidencyOverlay } from './s6-live-overlay.js'
+import { computeTeamLiveToken } from './live-token.js'
+import { resolveSessionReadState } from './team-read-state.js'
 import { createServerPrincipalDerivation } from './s6-principal.js'
 import { createS6RemoteSurfaces } from './s6-remote.js'
 import type { S6RemoteCompatibilityOperations } from './s6-remote.js'
@@ -1894,9 +1896,16 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       leaderInstanceId: LEADER_INSTANCE_ID,
     }),
   )
-  seams.projectionLiveOverlay.install(
-    createLiveResidencyOverlay({ repositories: repos, live, rootSessionId: rootSid, now }),
-  )
+  // The live-residency overlay is captured (the v6 live-token closure —
+  // team-view-sync-complete — reads the SAME installed instance: the
+  // residency facts and the token's pair source must be one object).
+  const liveOverlay = createLiveResidencyOverlay({
+    repositories: repos,
+    live,
+    rootSessionId: rootSid,
+    now,
+  })
+  seams.projectionLiveOverlay.install(liveOverlay)
 
   // --- A31 + A33 + A34 the remote surfaces (built once, installed once) -----------------------------
   const remoteSurfaces = createS6RemoteSurfaces({
@@ -2032,6 +2041,26 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // errors — closed backing vocabulary, invariant 4b).
     listRoots: () =>
       Promise.resolve(buildTeamRootOwnershipIndex(repos).map((row) => toTeamRootWireRow(row))),
+    // team-view-sync-complete (remote contract v6) — the durable
+    // session-affiliation resolver behind the v6-only team.getReadState:
+    // the pure team-read-state module over the ALREADY-INJECTED
+    // repositories (NO repository writes, NO agent effects). The
+    // durable TeamDomain rows are the SOLE authority: a `none` answer
+    // rests only on a positively confirmed no-affiliation, and every
+    // storage/integrity failure fails closed typed (the resolver's
+    // TEAM_READ_STATE_* codes + the storage layer's typed row errors —
+    // closed backing codes, invariant 4b) — NEVER a silent `none`.
+    readState: (sessionId) => resolveSessionReadState({ repositories: repos }, rootSid, sessionId),
+    // team-view-sync-complete (remote contract v6) — the semantic-live-
+    // state token closure behind the v6 projection's liveToken cell:
+    // the pure live-token module over the team's durable member rows +
+    // the installed live-residency overlay (the deterministic opaque
+    // string over the sorted {instanceId, residency} pairs — NO clock
+    // facts enter the token, frozen decisions 3 + 7). A storage failure
+    // in the member row list propagates typed (invariant 4b): a v6 frame
+    // without its token cell is impossible.
+    liveToken: (teamSessionId) =>
+      computeTeamLiveToken(repos.memberInstances.list(teamSessionId), liveOverlay.snapshot()),
     // TCM vNext §15.5 (M2) — the narrow workspace attach port (the host
     // entry's closure over the hard-injected public workspaceRegistry):
     // the v2 team.create resolves the requested workspace through it

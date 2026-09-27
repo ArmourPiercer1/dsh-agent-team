@@ -28,9 +28,10 @@
  * @module @dsh-agent-team/remote/handlers/team
  */
 import type { RemoteMethodParams } from '../contracts/params.js';
-import type { RemoteHandlerOutcome, RemoteLedgerPort, RemoteProjectionPort, RemoteTeamAdmitInitialWorkPort, RemoteTeamCreatePort, RemoteTeamCreateV2Port, RemoteTeamEnsureRootLivePort, RemoteTeamPrepareOrdinaryOpenPort, RemoteTeamResolveControlPort, RemoteTeamRootsPort } from './ports.js';
+import type { RemoteHandlerOutcome, RemoteLedgerPort, RemoteLiveTokenPort, RemoteProjectionPort, RemoteTeamAdmitInitialWorkPort, RemoteTeamCreatePort, RemoteTeamCreateV2Port, RemoteTeamEnsureRootLivePort, RemoteTeamPrepareOrdinaryOpenPort, RemoteTeamReadStatePort, RemoteTeamResolveControlPort, RemoteTeamRootsPort } from './ports.js';
 /** The ports the team category needs (v1 trio + the two v2 ports + the
- *  two v3 ports + the F9 v4 port + the C1 restart-recovery v5 port). */
+ *  two v3 ports + the F9 v4 port + the C1 restart-recovery v5 port + the
+ *  two team-view-sync-complete v6 ports). */
 export interface RemoteTeamHandlerPorts {
     readonly teamCreate: RemoteTeamCreatePort;
     /** TCM vNext §15.6: the v2 workspace-aware creation variant. */
@@ -48,6 +49,15 @@ export interface RemoteTeamHandlerPorts {
      *  ordinary-activation permit (the Team fence's per-root permit arm;
      *  a control-plane RPC — no Team ensure, no Team Agent side effect). */
     readonly teamPrepareOrdinaryOpen: RemoteTeamPrepareOrdinaryOpenPort;
+    /** team-view-sync-complete Phase 2: the v6-only authoritative
+     *  per-session read-state (durable TeamDomain rows are the sole
+     *  authority; fail-closed on every storage/integrity failure). */
+    readonly teamReadState: RemoteTeamReadStatePort;
+    /** team-view-sync-complete Phase 2: the v6 deterministic opaque
+     *  semantic-live-state token (sorted per-member
+     *  `{ instanceId, residency }`; no clock stamps, no process
+     *  counters). */
+    readonly liveToken: RemoteLiveTokenPort;
     readonly projection: RemoteProjectionPort;
     readonly ledger: RemoteLedgerPort;
 }
@@ -55,8 +65,9 @@ export interface RemoteTeamHandlerPorts {
  * The team category handler (`team.create` [v1 + v2],
  * `team.admitInitialWork` [v2-only], `team.listRoots` [v3-only],
  * `team.ensureRootLive` [v3-only], `team.resolveControl` [v4-only],
- * `team.prepareOrdinaryOpen` [v5-only], `team.getProjection`,
- * `team.getLedgerPage`).
+ * `team.prepareOrdinaryOpen` [v5-only], `team.getReadState` [v6-only],
+ * `team.getProjection` [v1-v5 frozen shape; v6 adds
+ * `durableGeneration` + `liveToken`], `team.getLedgerPage`).
  *
  * Version-aware (TCM vNext §15.3): the dispatcher passes the request's
  * contract version; `team.create` routes to the v1 port (closed v1 field

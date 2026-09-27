@@ -10,6 +10,17 @@
  * out-of-order, foreign, or provenance-mismatched response can never
  * overwrite newer state (gate G2).
  *
+ * Contract v6 (team-view-sync-complete): the `contract: 'v6'` option
+ * assesses every response with the frozen `assessProjectionSyncV6`
+ * against the applied freshness PAIR (`appliedGeneration` +
+ * `appliedLiveToken`) and extracts the v6 frame (`extractPushFrameV6`).
+ * A live-only apply (equal durable generation, changed live token)
+ * records the new token WITHOUT advancing `appliedGeneration` — the
+ * applied-generation advance remains the client's single
+ * ledger-refresh trigger, so a live-only apply never refreshes the
+ * ledger (frozen decision 4). The `contract: 'v1'` default keeps the
+ * frozen generation-only behavior byte-identical.
+ *
  * The store is React-free (data-object layer per the web client
  * stack rules): a bare observable source — stable snapshot between
  * changes, `subscribe`/`getSnapshot` — plus pull/transport actions.
@@ -70,11 +81,14 @@
 
 import {
   assessProjectionSync,
+  assessProjectionSyncV6,
   backoffCapMs,
   extractPushFrame,
+  extractPushFrameV6,
   isApplyAssessment,
   pickBackoffDelayMs,
   type AppliedProjectionIdentity,
+  type AppliedProjectionIdentityV6,
   type ProjectionSyncAssessment,
   type PushBackoffConfig,
   type RemoteErrorResult,
@@ -101,6 +115,14 @@ export interface TeamProjectionState {
   readonly teamSessionId: string | null
   /** The generation of the applied frame (null before first frame). */
   readonly appliedGeneration: number | null
+  /**
+   * The live token of the applied frame (contract v6 stores only;
+   * `null` in v1 stores and before the first v6 frame). Together with
+   * {@link appliedGeneration} this is the v6 freshness PAIR — the
+   * applied durable generation is the client's single ledger-refresh
+   * trigger and stays UNCHANGED by a live-only apply (frozen decision 4).
+   */
+  readonly appliedLiveToken: string | null
   /** The applied whole-projection frame (frozen DTO + provenance). */
   readonly frame: RemotePushFrame | null
   /** The last typed RPC error (the frozen `error` block, intact), if any. */
@@ -126,8 +148,24 @@ export interface TeamProjectionScheduler {
 
 /** Store options (all dependencies injected; no hidden globals). */
 export interface TeamProjectionStoreOptions {
-  /** The frozen projection pull (TeamRemoteClient.getProjection). */
+  /**
+   * The frozen projection pull (TeamRemoteClient.getProjection for the
+   * v1 identity; TeamRemoteClient.getProjectionV6 for the v6 pair).
+   */
   readonly getProjection: (teamSessionId: string) => Promise<RemoteResponse>
+  /**
+   * The wire contract of the injected pull (fixed for the store's
+   * lifetime; the mount creates one store per contract):
+   *  - `'v1'` (default): the generation-only freshness identity
+   *    (frozen v1–v5 behavior, unchanged);
+   *  - `'v6'` (team-view-sync-complete): the (durable generation,
+   *    live token) PAIR identity — a strictly newer durable generation
+   *    applies (ledger refresh via the applied-generation advance); an
+   *    equal durable generation with a changed live token applies the
+   *    live overlay WITHOUT advancing the durable generation (no ledger
+   *    refresh); both equal is a duplicate.
+   */
+  readonly contract?: 'v1' | 'v6'
   /** CLIENT_LOCAL backoff tunables (frozen formula, local numbers). */
   readonly backoff?: PushBackoffConfig
   /** The retry scheduler (default: setTimeout-backed). */
@@ -178,11 +216,17 @@ export function createTeamProjectionStore(
     options.backoff === undefined ? DEFAULT_TEAM_PROJECTION_BACKOFF : options.backoff
   const scheduler: TeamProjectionScheduler =
     options.scheduler === undefined ? createDefaultScheduler() : options.scheduler
+  // (team-view-sync-complete) the wire contract of the injected pull —
+  // fixed for the store's lifetime: v6 pulls carry the freshness PAIR
+  // and assess against it; v1 pulls keep the frozen generation-only
+  // identity (byte-identical behavior).
+  const isV6 = options.contract === 'v6'
 
   let state: TeamProjectionState = {
     status: 'idle',
     teamSessionId: null,
     appliedGeneration: null,
+    appliedLiveToken: null,
     frame: null,
     lastAssessment: null,
     retryAttempt: 0,
@@ -227,6 +271,20 @@ export function createTeamProjectionStore(
     state.frame === null || state.teamSessionId === null
       ? null
       : { teamSessionId: state.teamSessionId, generation: state.appliedGeneration }
+
+  /** The v6 applied identity: the frozen PAIR (null before the first
+   *  v6 frame — the assessor treats that as the first-frame case). */
+  const appliedIdentityV6 = (): AppliedProjectionIdentityV6 | null =>
+    state.frame === null ||
+    state.teamSessionId === null ||
+    state.appliedGeneration === null ||
+    state.appliedLiveToken === null
+      ? null
+      : {
+          teamSessionId: state.teamSessionId,
+          durableGeneration: state.appliedGeneration,
+          liveToken: state.appliedLiveToken,
+        }
 
   /**
    * Schedule the backoff retry (one pending at a time) and publish the
@@ -325,7 +383,9 @@ export function createTeamProjectionStore(
       return assessment
     }
 
-    const assessment = assessProjectionSync(appliedIdentity(), response)
+    const assessment = isV6
+      ? assessProjectionSyncV6(appliedIdentityV6(), response)
+      : assessProjectionSync(appliedIdentity(), response)
     // (PR #34 review follow-up, F1) request-order LIVENESS authority,
     // captured BEFORE the baseline advances: a response whose request
     // an LATER request already superseded (a valid round trip
@@ -357,7 +417,8 @@ export function createTeamProjectionStore(
     }
 
     if (isApplyAssessment(assessment)) {
-      const frame = extractPushFrame(response)
+      const frameV6 = isV6 ? extractPushFrameV6(response) : null
+      const frame = frameV6 ?? extractPushFrame(response)
       if (frame === null) {
         // Unreachable by the frozen contract (apply ⟹ usable frame);
         // treat it as the inconsistent class rather than a write.
@@ -376,6 +437,13 @@ export function createTeamProjectionStore(
         teamSessionId,
         status: 'ready',
         appliedGeneration: assessment.receivedGeneration,
+        // (team-view-sync-complete) the v6 apply records the PAIR. The
+        // live-only case (equal durable generation, changed token)
+        // advances the token while appliedGeneration stays UNCHANGED —
+        // the applied-generation advance is the client's single
+        // ledger-refresh trigger, so a live-only apply never refreshes
+        // the ledger (frozen decision 4).
+        appliedLiveToken: frameV6 !== null ? frameV6.projection.liveToken : state.appliedLiveToken,
         frame,
         lastError: undefined,
         lastAssessment: assessment,
@@ -467,6 +535,7 @@ export function createTeamProjectionStore(
       status: 'idle',
       teamSessionId: null,
       appliedGeneration: null,
+      appliedLiveToken: null,
       frame: null,
       lastAssessment: null,
       retryAttempt: 0,

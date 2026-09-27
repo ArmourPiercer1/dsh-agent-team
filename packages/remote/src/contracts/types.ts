@@ -86,9 +86,61 @@ export interface RemoteProjectionValue {
   readonly ledger: RemoteSafeRecord
 }
 
+/**
+ * The contract-v6 whole-projection value: the nine frozen v1 fields PLUS
+ * the two additive freshness fields (team-view-sync-complete, Phase 2
+ * frozen decisions):
+ *
+ * - `durableGeneration` — the DURABLE whole-projection generation, always
+ *   equal to `generation` (named explicitly so the client freshness
+ *   identity reads as the frozen PAIR `{ durableGeneration, liveToken }`);
+ * - `liveToken` — a deterministic opaque string over the SEMANTIC live
+ *   state (the sorted per-member `{ instanceId, residency }` pairs;
+ *   `lastActivityAt`/`now()`/`generatedAt` are EXCLUDED) — it changes only
+ *   when the semantic live state changes, never on host restart bookkeeping
+ *   alone, and is NEVER folded into the durable generation.
+ *
+ * Contract versions <= 5 keep serving the exact frozen
+ * {@link RemoteProjectionValue} shape (the v6 fields are absent on the
+ * wire; v1-v5 are unchanged).
+ */
+export interface RemoteProjectionValueV6 extends RemoteProjectionValue {
+  /** The durable whole-projection generation (always `=== generation`). */
+  readonly durableGeneration: number
+  /** The deterministic opaque semantic-live-state token (non-empty). */
+  readonly liveToken: string
+}
+
 /** `team.getProjection` value: `{ projection }`. */
 export interface RemoteTeamGetProjectionValue {
   readonly projection: RemoteProjectionValue
+}
+
+/**
+ * `team.getReadState` value (contract v6, v6-only method): the
+ * authoritative per-session read-state answer over the host's durable
+ * TeamDomain rows (the frozen closed wire shape):
+ *
+ * - `relation` — `team-root` (the session IS a TeamSession root),
+ *   `team-member` (the session is a member's bound child session — a
+ *   DISPOSED member still resolves here, marked `disposed`), or `none`
+ *   (only a successful read that positively confirms no affiliation may
+ *   answer `none`; every storage/integrity failure fails CLOSED with a
+ *   typed error instead);
+ * - `teamSessionId` — the owning TeamSession id (null for `none`);
+ * - `memberInstanceId` — the owning member instance (null unless
+ *   `team-member`);
+ * - `disposed` — true only for a `team-member` whose durable lifecycle is
+ *   the terminal `DISPOSED` state;
+ * - `durableGeneration` — the owning TeamSession's durable generation
+ *   (null for `none`).
+ */
+export interface RemoteTeamGetReadStateValue {
+  readonly relation: 'team-root' | 'team-member' | 'none'
+  readonly teamSessionId: string | null
+  readonly memberInstanceId: string | null
+  readonly disposed: boolean
+  readonly durableGeneration: number | null
 }
 
 /**
@@ -264,6 +316,17 @@ export const REMOTE_PROJECTION_FIELDS: readonly string[] = [
   'schemaVersion',
   'teamSessionId',
   'templates',
+]
+
+/**
+ * The top-level fields of the contract-v6 whole-projection value: the nine
+ * frozen v1 fields plus the two additive v6 freshness fields
+ * (`durableGeneration`, `liveToken`).
+ */
+export const REMOTE_PROJECTION_FIELDS_V6: readonly string[] = [
+  ...REMOTE_PROJECTION_FIELDS,
+  'durableGeneration',
+  'liveToken',
 ]
 
 /** The top-level fields of the storage `LedgerEntry` (mirror). */

@@ -70,6 +70,8 @@ import type {
   TeamProjectionState,
   TeamProjectionStore,
 } from '../state/team-projection-store.js'
+import { createTeamRefreshCoordinator } from '../state/team-refresh-coordinator.js'
+import type { TeamRefreshCoordinator } from '../state/team-refresh-coordinator.js'
 import { resolveTeamProjection } from '../state/team-session-resolution.js'
 import type { TeamProjectionMirror } from '../state/team-session-resolution.js'
 import { createTeamRemoteClient } from '../transport/team-remote-client.js'
@@ -540,8 +542,17 @@ export function applyTeamMount(
   const projectionStoreOf = (teamSessionId: string): TeamProjectionStore => {
     const existing = projectionStores.get(teamSessionId)
     if (existing !== undefined) return existing
+    // (team-view-sync-complete, frozen decisions 3 + 4) the projection
+    // pull is the CONTRACT v6 freshness-pair pull: the host answers the
+    // same endpoint with `durableGeneration` (=== the durable
+    // generation) + `liveToken` inside data.projection; the store
+    // assesses against the applied PAIR. A live-only apply (equal
+    // durable generation, changed token) does NOT advance
+    // `appliedGeneration`, so the applied-generation advance below
+    // stays the client's single ledger-refresh trigger.
     const store = createTeamProjectionStore({
-      getProjection: (id) => teamRemote.getProjection(id),
+      getProjection: (id) => teamRemote.getProjectionV6(id),
+      contract: 'v6',
     })
     const dispose = store.subscribe(() => {
       const state = store.getState()
@@ -806,6 +817,25 @@ export function applyTeamMount(
   // dock entry's own session context through the ordinary renderer path.
   const openTeamTab = (): void => {}
 
+  // (11b) team-view-sync-complete (frozen decisions 2 + 5): the
+  // mount-level per-team REFRESH COORDINATOR — the client-owned polling
+  // engine (NO server push): one 3s tick per ATTACHED (Team-view-
+  // visible) team while the host tab is visible; hidden → paused. The
+  // coordinator UNIFIES the refresh trigger sources (manual view
+  // refresh, post-mutation-success refresh, visibility-resume) with the
+  // tick: per-team single-flight + dirty coalescing, forced rounds
+  // always run, and a failed read is a resolved assessment — the
+  // coordinator NEVER re-fires the mutation that preceded a refresh
+  // (mutations are one-shot UI RPCs). The pull it gates is the SAME
+  // generation-safe store pull the cold read uses; the store's
+  // channel-episode pulls (backoff retry, connection-restore
+  // invalidation pull, effect 17) are the separate frozen lane — both
+  // lanes land on the same F1-ordered, generation-assessed pull.
+  const refreshCoordinator: TeamRefreshCoordinator = createTeamRefreshCoordinator({
+    pull: (teamSessionId) => projectionStoreOf(teamSessionId).pull(teamSessionId),
+    tickMs: 3000,
+  })
+
   // (11) The post-success projection pull (the final-state authority).
   // D4-A1 (Team D1-D6 repair v2): every EXISTING Team UI mutation callback
   // goes through this pull after success — the S5-B member commands, the
@@ -819,8 +849,15 @@ export function applyTeamMount(
   // NOT a success — `rpc-error` / `transport-loss` / `foreign` /
   // `inconsistent` all settle as RESOLVED assessments, and the caller
   // must inspect the result (no success-toast over a failed round trip).
+  // (team-view-sync-complete) this pull now RIDES THE REFRESH COORDINATOR
+  // (frozen decision 5): every mutation-success refresh is a `'mutation'`
+  // forced trigger — single-flighted per team, coalesced behind an
+  // in-flight tick/refresh, never re-fired on a failed read. The zero-
+  // state creation panel's post-success pull of the NEW team's id lands
+  // on the coordinator's unattached path (the round runs ungated — the
+  // new team's view is not mounted yet).
   const pullProjection = (teamSessionId: string): Promise<ProjectionSyncAssessment> =>
-    projectionStoreOf(teamSessionId).pull(teamSessionId)
+    refreshCoordinator.trigger(teamSessionId, 'mutation')
 
   // (12) The S5-A New Team creation face (frozen Remote wrappers + the
   // native seam members; the seam-6 preset mapping filters the `broken`
@@ -970,6 +1007,29 @@ export function applyTeamMount(
     'dsh-agent-team: generation rebaseline',
   )
 
+  // (17b) team-view-sync-complete (frozen decision 2): the host-tab
+  // VISIBILITY gate of the refresh coordinator — hidden → the 3s ticks
+  // pause (no round trips); visible → resume + the immediate trigger for
+  // every attached team. The connection-restore IMMEDIATE pull is the
+  // store's own channel-episode lane (effect 17 — unchanged); this
+  // effect owns the tab-visibility pause/resume only. Headless (no
+  // `document` — the node test environments) → no visibility signal,
+  // the coordinator runs unpaused.
+  ctx.effect(
+    () => {
+      const doc = typeof document === 'undefined' ? null : document
+      if (doc === null) return () => {}
+      if (doc.visibilityState !== 'visible') refreshCoordinator.pause()
+      const onVisibilityChange = (): void => {
+        if (doc.visibilityState === 'visible') refreshCoordinator.resume()
+        else refreshCoordinator.pause()
+      }
+      doc.addEventListener('visibilitychange', onVisibilityChange)
+      return () => doc.removeEventListener('visibilitychange', onVisibilityChange)
+    },
+    'dsh-agent-team: refresh visibility',
+  )
+
   // (18) The injected faces (the `hooks` compartment carries the bare
   // observable sources; everything else is plain data + callbacks).
   // (repair 20260927, S1-C1) `projectionStates` joins the compartment:
@@ -985,6 +1045,15 @@ export function applyTeamMount(
     // D4-A1: the zero-state creation panel's post-success refresh (the
     // same generation-safe pull; targets the NEW team's id).
     pullProjection,
+    // team-view-sync-complete (frozen decisions 2 + 5): the per-team
+    // refresh-coordinator attach/detach — the Team view ATTACHES on
+    // mount (arming the 3s visible tick for its team) and DETACHES on
+    // unmount (stopping it). The manual refresh + the post-mutation
+    // refreshes ride the same coordinator through `pullProjection`.
+    refreshCoordinator: {
+      attach: (teamSessionId) => refreshCoordinator.attach(teamSessionId),
+      detach: (teamSessionId) => refreshCoordinator.detach(teamSessionId),
+    },
     refreshTeamLedger: refreshTeamLedgerFor(sessionId),
     openSession,
     // D2 (Team D1-D6 repair v2, D6): the explicit open-in-Team-mode entry

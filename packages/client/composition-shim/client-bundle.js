@@ -467,7 +467,7 @@ var __dshFactory = (require) => {
 			 * @returns the view body.
 			 */
 			function TeamView(props) {
-			    const { sessionId, useProjectionMirror, useTeamLedgers, useProjectionStates, ensureProjection, pullProjection, refreshTeamLedger, openSession, creation, memberCommands, governance, legacyInspect, handoff, roots, control, openTeamMode, openOrdinaryMode, teamOpenMode, useWorkspaces, t, } = props;
+			    const { sessionId, useProjectionMirror, useTeamLedgers, useProjectionStates, ensureProjection, pullProjection, refreshTeamLedger, openSession, creation, memberCommands, governance, legacyInspect, handoff, roots, control, openTeamMode, openOrdinaryMode, teamOpenMode, refreshCoordinator, useWorkspaces, t, } = props;
 			    const [creationOpen, setCreationOpen] = useState(false);
 			    // UI §5.3: the intent draft is page-run UI state only (never authority) —
 			    // held here so the panel can open and close in the zero state without
@@ -562,6 +562,23 @@ var __dshFactory = (require) => {
 			        if (resolution === undefined)
 			            void ensureProjection(sessionId);
 			    }, [sessionId, resolution, ensureProjection]);
+			    // team-view-sync-complete (frozen decisions 2 + 5): the per-team
+			    // refresh-coordinator ATTACH — the team the view is bound to is the
+			    // resolution's authoritative team id, falling back to the session id
+			    // (the guide's fixed key: an unresolved session id is itself the
+			    // TeamSession id the cold pull targets). Mounting the view arms the
+			    // 3s visible tick for that team; unmounting (session switch / tab
+			    // away) stops it. The id is stable across the cold read (candidate
+			    // root id === the frame's team id), so the effect re-runs at most
+			    // once per scope — attach is idempotent either way.
+			    const teamSessionId = resolution?.team.teamSessionId ?? sessionId;
+			    useEffect(() => {
+			        const face = refreshCoordinator;
+			        if (face === undefined)
+			            return;
+			        face.attach(teamSessionId);
+			        return () => face.detach(teamSessionId);
+			    }, [teamSessionId, refreshCoordinator]);
 			    const snapshot = useMemo(() => (resolution === undefined
 			        ? null
 			        : adaptTeamProjection(resolution.team, resolution.perspective)), [resolution]);
@@ -670,19 +687,42 @@ var __dshFactory = (require) => {
 			            return;
 			        void loadRoots();
 			    }, [inZeroState, roots, creationOpen, sessionId, loadRoots]);
+			    // team-view-sync-complete (frozen decision 6): the ZERO-STATE roots
+			    // cadence — while the zero state is VISIBLE, re-read `team.listRoots`
+			    // at the same 3s tick (the initial read above covers t=0). The
+			    // periodic read STOPS once a resolved Team frame exists (`inZeroState`
+			    // flips false — no roots polling behind a resolved view), and the
+			    // manual view refresh re-reads roots unconditionally (runRefresh's
+			    // independent `loadRoots`). The tick no-ops while the host tab is
+			    // hidden (the "visible" gate; headless/node tests have no document and
+			    // read as visible).
+			    useEffect(() => {
+			        if (!inZeroState || roots === undefined || creationOpen)
+			            return;
+			        const id = setInterval(() => {
+			            const doc = typeof document === 'undefined' ? null : document;
+			            if (doc !== null && doc.visibilityState !== 'visible')
+			                return;
+			            void loadRoots();
+			        }, 3000);
+			        return () => clearInterval(id);
+			    }, [inZeroState, roots, creationOpen, sessionId, loadRoots]);
 			    // (repair 20260927, S1-C2) the manual "refresh team view" — the one
 			    // awaitable read-only re-read. Captures THIS invocation's session id,
 			    // the team (root) id, and a request epoch at call time:
 			    //   (a) the roots re-read starts independently (the manual call is NOT
-			    //       subject to the auto-read's zero-state / `creationOpen` guard);
-			    //   (b) the projection pull is AWAITED, then the resolvable root's
-			    //       ledger is refreshed (the cold ledger store is established only
-			    //       after the pull applies a frame — so the ledger refresh runs
-			    //       AFTER the pull; with a stale frame present the ledger read is
-			    //       attempted EVEN IF the projection failed — it is an independent
-			    //       read with its own visible state). A same-generation manual
-			    //       refresh also attempts the ledger refresh (the automatic one
-			    //       fires only on a generation advance).
+			    //       subject to the auto-read's zero-state / `creationOpen` guard —
+			    //       frozen decision 6: the manual refresh ALWAYS re-reads roots);
+			    //   (b) the projection round is a FORCED trigger through the refresh
+			    //       coordinator (frozen decisions 2 + 5: single-flighted per team,
+			    //       coalesced behind an in-flight round, never re-fired on a
+			    //       failed read).
+			    // (team-view-sync-complete, frozen decision 4) the manual refresh NO
+			    // LONGER refreshes the ledger itself: the ledger refresh is owned by
+			    // the applied-DURABLE-GENERATION advance (the mount's store
+			    // subscription) — a same-generation manual refresh (duplicate, or a
+			    // live-token-only overlay apply) is deliberately a NO-OP for the
+			    // ledger. Deliberate behavior change from Phase 1 (noted in the PR).
 			    // A resolved Promise is NOT a success: the round-trip outcome is read
 			    // back through the projection store's published state (the same
 			    // visible state surface the member/governance background reads flow
@@ -694,36 +734,26 @@ var __dshFactory = (require) => {
 			            return; // the double-click guard
 			        const sessionIdAtStart = sessionId;
 			        const resolutionAtStart = resolution;
-			        const teamSessionId = resolutionAtStart?.team.teamSessionId ?? sessionIdAtStart;
-			        const hadFrame = resolutionAtStart !== undefined;
+			        const teamSessionIdAtStart = resolutionAtStart?.team.teamSessionId ?? sessionIdAtStart;
 			        refreshEpoch.current += 1;
 			        const epoch = refreshEpoch.current;
 			        setRefreshPending(true);
 			        void loadRoots();
 			        void (async () => {
-			            let assessment;
 			            try {
-			                assessment = await pullProjection(teamSessionId);
+			                await pullProjection(teamSessionIdAtStart);
 			            }
 			            catch {
 			                // The frozen client carrier never rejects (it resolves as a
-			                // typed assessment); defensive only — treat as a transport loss.
-			                assessment = { status: 'transport-loss', receivedGeneration: null };
+			                // typed assessment); defensive only.
 			            }
 			            if (refreshEpoch.current !== epoch)
 			                return; // newer refresh / unmount
-			            if (hadFrame || assessment.status === 'apply') {
-			                // a stale frame exists (attempt the ledger even on a failed
-			                // projection) or the cold pull applied a frame (the store is
-			                // open now). A no resolvable root is a silent no-op — it is
-			                // never displayed as a "ledger refresh succeeded".
-			                await refreshTeamLedger();
-			            }
 			        })().finally(() => {
 			            if (refreshEpoch.current === epoch)
 			                setRefreshPending(false);
 			        });
-			    }, [refreshPending, sessionId, resolution, loadRoots, pullProjection, refreshTeamLedger]);
+			    }, [refreshPending, sessionId, resolution, loadRoots, pullProjection]);
 			    // D2 (Team D1-D6 repair v2, D6): the in-flight explicit open per picker
 			    // row (root id → pending) and the last typed failure per row (ONE
 			    // verbatim note, the UI §38 greyed-surface discipline). Page-run UI
@@ -1014,13 +1044,15 @@ var __dshFactory = (require) => {
 			const createTeamLedgerStore = __imp50.createTeamLedgerStore;
 			const __imp51 = __req("state/team-projection-store.js");
 			const createTeamProjectionStore = __imp51.createTeamProjectionStore;
-			const __imp52 = __req("state/team-session-resolution.js");
-			const resolveTeamProjection = __imp52.resolveTeamProjection;
-			const __imp53 = __req("transport/team-remote-client.js");
-			const createTeamRemoteClient = __imp53.createTeamRemoteClient;
-			const __imp54 = __req("ui/locales.js");
-			const en = __imp54.en;
-			const zh = __imp54.zh;
+			const __imp52 = __req("state/team-refresh-coordinator.js");
+			const createTeamRefreshCoordinator = __imp52.createTeamRefreshCoordinator;
+			const __imp53 = __req("state/team-session-resolution.js");
+			const resolveTeamProjection = __imp53.resolveTeamProjection;
+			const __imp54 = __req("transport/team-remote-client.js");
+			const createTeamRemoteClient = __imp54.createTeamRemoteClient;
+			const __imp55 = __req("ui/locales.js");
+			const en = __imp55.en;
+			const zh = __imp55.zh;
 			/**
 			 * P9-T9 (P9-S6) — the unique client mount of the dsh-agent-team Cordis
 			 * client plugin.
@@ -1206,8 +1238,17 @@ var __dshFactory = (require) => {
 			        const existing = projectionStores.get(teamSessionId);
 			        if (existing !== undefined)
 			            return existing;
+			        // (team-view-sync-complete, frozen decisions 3 + 4) the projection
+			        // pull is the CONTRACT v6 freshness-pair pull: the host answers the
+			        // same endpoint with `durableGeneration` (=== the durable
+			        // generation) + `liveToken` inside data.projection; the store
+			        // assesses against the applied PAIR. A live-only apply (equal
+			        // durable generation, changed token) does NOT advance
+			        // `appliedGeneration`, so the applied-generation advance below
+			        // stays the client's single ledger-refresh trigger.
 			        const store = createTeamProjectionStore({
-			            getProjection: (id) => teamRemote.getProjection(id),
+			            getProjection: (id) => teamRemote.getProjectionV6(id),
+			            contract: 'v6',
 			        });
 			        const dispose = store.subscribe(() => {
 			            const state = store.getState();
@@ -1466,6 +1507,24 @@ var __dshFactory = (require) => {
 			    // The dock's jump button is its title button; clicking it activates the
 			    // dock entry's own session context through the ordinary renderer path.
 			    const openTeamTab = () => { };
+			    // (11b) team-view-sync-complete (frozen decisions 2 + 5): the
+			    // mount-level per-team REFRESH COORDINATOR — the client-owned polling
+			    // engine (NO server push): one 3s tick per ATTACHED (Team-view-
+			    // visible) team while the host tab is visible; hidden → paused. The
+			    // coordinator UNIFIES the refresh trigger sources (manual view
+			    // refresh, post-mutation-success refresh, visibility-resume) with the
+			    // tick: per-team single-flight + dirty coalescing, forced rounds
+			    // always run, and a failed read is a resolved assessment — the
+			    // coordinator NEVER re-fires the mutation that preceded a refresh
+			    // (mutations are one-shot UI RPCs). The pull it gates is the SAME
+			    // generation-safe store pull the cold read uses; the store's
+			    // channel-episode pulls (backoff retry, connection-restore
+			    // invalidation pull, effect 17) are the separate frozen lane — both
+			    // lanes land on the same F1-ordered, generation-assessed pull.
+			    const refreshCoordinator = createTeamRefreshCoordinator({
+			        pull: (teamSessionId) => projectionStoreOf(teamSessionId).pull(teamSessionId),
+			        tickMs: 3000,
+			    });
 			    // (11) The post-success projection pull (the final-state authority).
 			    // D4-A1 (Team D1-D6 repair v2): every EXISTING Team UI mutation callback
 			    // goes through this pull after success — the S5-B member commands, the
@@ -1479,7 +1538,14 @@ var __dshFactory = (require) => {
 			    // NOT a success — `rpc-error` / `transport-loss` / `foreign` /
 			    // `inconsistent` all settle as RESOLVED assessments, and the caller
 			    // must inspect the result (no success-toast over a failed round trip).
-			    const pullProjection = (teamSessionId) => projectionStoreOf(teamSessionId).pull(teamSessionId);
+			    // (team-view-sync-complete) this pull now RIDES THE REFRESH COORDINATOR
+			    // (frozen decision 5): every mutation-success refresh is a `'mutation'`
+			    // forced trigger — single-flighted per team, coalesced behind an
+			    // in-flight tick/refresh, never re-fired on a failed read. The zero-
+			    // state creation panel's post-success pull of the NEW team's id lands
+			    // on the coordinator's unattached path (the round runs ungated — the
+			    // new team's view is not mounted yet).
+			    const pullProjection = (teamSessionId) => refreshCoordinator.trigger(teamSessionId, 'mutation');
 			    // (12) The S5-A New Team creation face (frozen Remote wrappers + the
 			    // native seam members; the seam-6 preset mapping filters the `broken`
 			    // rows before the UI sees them — 0.1.7: no `trust` field to drop, the
@@ -1616,6 +1682,29 @@ var __dshFactory = (require) => {
 			        });
 			        return unsubscribe;
 			    }, 'dsh-agent-team: generation rebaseline');
+			    // (17b) team-view-sync-complete (frozen decision 2): the host-tab
+			    // VISIBILITY gate of the refresh coordinator — hidden → the 3s ticks
+			    // pause (no round trips); visible → resume + the immediate trigger for
+			    // every attached team. The connection-restore IMMEDIATE pull is the
+			    // store's own channel-episode lane (effect 17 — unchanged); this
+			    // effect owns the tab-visibility pause/resume only. Headless (no
+			    // `document` — the node test environments) → no visibility signal,
+			    // the coordinator runs unpaused.
+			    ctx.effect(() => {
+			        const doc = typeof document === 'undefined' ? null : document;
+			        if (doc === null)
+			            return () => { };
+			        if (doc.visibilityState !== 'visible')
+			            refreshCoordinator.pause();
+			        const onVisibilityChange = () => {
+			            if (doc.visibilityState === 'visible')
+			                refreshCoordinator.resume();
+			            else
+			                refreshCoordinator.pause();
+			        };
+			        doc.addEventListener('visibilitychange', onVisibilityChange);
+			        return () => doc.removeEventListener('visibilitychange', onVisibilityChange);
+			    }, 'dsh-agent-team: refresh visibility');
 			    // (18) The injected faces (the `hooks` compartment carries the bare
 			    // observable sources; everything else is plain data + callbacks).
 			    // (repair 20260927, S1-C1) `projectionStates` joins the compartment:
@@ -1631,6 +1720,15 @@ var __dshFactory = (require) => {
 			        // D4-A1: the zero-state creation panel's post-success refresh (the
 			        // same generation-safe pull; targets the NEW team's id).
 			        pullProjection,
+			        // team-view-sync-complete (frozen decisions 2 + 5): the per-team
+			        // refresh-coordinator attach/detach — the Team view ATTACHES on
+			        // mount (arming the 3s visible tick for its team) and DETACHES on
+			        // unmount (stopping it). The manual refresh + the post-mutation
+			        // refreshes ride the same coordinator through `pullProjection`.
+			        refreshCoordinator: {
+			            attach: (teamSessionId) => refreshCoordinator.attach(teamSessionId),
+			            detach: (teamSessionId) => refreshCoordinator.detach(teamSessionId),
+			        },
 			        refreshTeamLedger: refreshTeamLedgerFor(sessionId),
 			        openSession,
 			        // D2 (Team D1-D6 repair v2, D6): the explicit open-in-Team-mode entry
@@ -5474,12 +5572,14 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=team-ledger-store.js.map
 			}, exports: {} };
 		__mods["state/team-projection-store.js"] = { done: false, fn: function (exports) {
-			const __imp69 = __req("../../remote/src/index.js");
-			const assessProjectionSync = __imp69.assessProjectionSync;
-			const backoffCapMs = __imp69.backoffCapMs;
-			const extractPushFrame = __imp69.extractPushFrame;
-			const isApplyAssessment = __imp69.isApplyAssessment;
-			const pickBackoffDelayMs = __imp69.pickBackoffDelayMs;
+			const __imp80 = __req("../../remote/src/index.js");
+			const assessProjectionSync = __imp80.assessProjectionSync;
+			const assessProjectionSyncV6 = __imp80.assessProjectionSyncV6;
+			const backoffCapMs = __imp80.backoffCapMs;
+			const extractPushFrame = __imp80.extractPushFrame;
+			const extractPushFrameV6 = __imp80.extractPushFrameV6;
+			const isApplyAssessment = __imp80.isApplyAssessment;
+			const pickBackoffDelayMs = __imp80.pickBackoffDelayMs;
 			/**
 			 * P9-T3 (S2-B) — the generation-safe Team projection store.
 			 *
@@ -5491,6 +5591,17 @@ var __dshFactory = (require) => {
 			 * the store before the generation check. A delayed, duplicated,
 			 * out-of-order, foreign, or provenance-mismatched response can never
 			 * overwrite newer state (gate G2).
+			 *
+			 * Contract v6 (team-view-sync-complete): the `contract: 'v6'` option
+			 * assesses every response with the frozen `assessProjectionSyncV6`
+			 * against the applied freshness PAIR (`appliedGeneration` +
+			 * `appliedLiveToken`) and extracts the v6 frame (`extractPushFrameV6`).
+			 * A live-only apply (equal durable generation, changed live token)
+			 * records the new token WITHOUT advancing `appliedGeneration` — the
+			 * applied-generation advance remains the client's single
+			 * ledger-refresh trigger, so a live-only apply never refreshes the
+			 * ledger (frozen decision 4). The `contract: 'v1'` default keeps the
+			 * frozen generation-only behavior byte-identical.
 			 *
 			 * The store is React-free (data-object layer per the web client
 			 * stack rules): a bare observable source — stable snapshot between
@@ -5568,10 +5679,16 @@ var __dshFactory = (require) => {
 			function createTeamProjectionStore(options) {
 			    const backoff = options.backoff === undefined ? DEFAULT_TEAM_PROJECTION_BACKOFF : options.backoff;
 			    const scheduler = options.scheduler === undefined ? createDefaultScheduler() : options.scheduler;
+			    // (team-view-sync-complete) the wire contract of the injected pull —
+			    // fixed for the store's lifetime: v6 pulls carry the freshness PAIR
+			    // and assess against it; v1 pulls keep the frozen generation-only
+			    // identity (byte-identical behavior).
+			    const isV6 = options.contract === 'v6';
 			    let state = {
 			        status: 'idle',
 			        teamSessionId: null,
 			        appliedGeneration: null,
+			        appliedLiveToken: null,
 			        frame: null,
 			        lastAssessment: null,
 			        retryAttempt: 0,
@@ -5614,6 +5731,18 @@ var __dshFactory = (require) => {
 			    const appliedIdentity = () => state.frame === null || state.teamSessionId === null
 			        ? null
 			        : { teamSessionId: state.teamSessionId, generation: state.appliedGeneration };
+			    /** The v6 applied identity: the frozen PAIR (null before the first
+			     *  v6 frame — the assessor treats that as the first-frame case). */
+			    const appliedIdentityV6 = () => state.frame === null ||
+			        state.teamSessionId === null ||
+			        state.appliedGeneration === null ||
+			        state.appliedLiveToken === null
+			        ? null
+			        : {
+			            teamSessionId: state.teamSessionId,
+			            durableGeneration: state.appliedGeneration,
+			            liveToken: state.appliedLiveToken,
+			        };
 			    /**
 			     * Schedule the backoff retry (one pending at a time) and publish the
 			     * `reconnecting` snapshot.
@@ -5711,7 +5840,9 @@ var __dshFactory = (require) => {
 			            scheduleRetry({ ...state, teamSessionId });
 			            return assessment;
 			        }
-			        const assessment = assessProjectionSync(appliedIdentity(), response);
+			        const assessment = isV6
+			            ? assessProjectionSyncV6(appliedIdentityV6(), response)
+			            : assessProjectionSync(appliedIdentity(), response);
 			        // (PR #34 review follow-up, F1) request-order LIVENESS authority,
 			        // captured BEFORE the baseline advances: a response whose request
 			        // an LATER request already superseded (a valid round trip
@@ -5743,7 +5874,8 @@ var __dshFactory = (require) => {
 			            return assessment;
 			        }
 			        if (isApplyAssessment(assessment)) {
-			            const frame = extractPushFrame(response);
+			            const frameV6 = isV6 ? extractPushFrameV6(response) : null;
+			            const frame = frameV6 ?? extractPushFrame(response);
 			            if (frame === null) {
 			                // Unreachable by the frozen contract (apply ⟹ usable frame);
 			                // treat it as the inconsistent class rather than a write.
@@ -5762,6 +5894,13 @@ var __dshFactory = (require) => {
 			                teamSessionId,
 			                status: 'ready',
 			                appliedGeneration: assessment.receivedGeneration,
+			                // (team-view-sync-complete) the v6 apply records the PAIR. The
+			                // live-only case (equal durable generation, changed token)
+			                // advances the token while appliedGeneration stays UNCHANGED —
+			                // the applied-generation advance is the client's single
+			                // ledger-refresh trigger, so a live-only apply never refreshes
+			                // the ledger (frozen decision 4).
+			                appliedLiveToken: frameV6 !== null ? frameV6.projection.liveToken : state.appliedLiveToken,
 			                frame,
 			                lastError: undefined,
 			                lastAssessment: assessment,
@@ -5853,6 +5992,7 @@ var __dshFactory = (require) => {
 			            status: 'idle',
 			            teamSessionId: null,
 			            appliedGeneration: null,
+			            appliedLiveToken: null,
 			            frame: null,
 			            lastAssessment: null,
 			            retryAttempt: 0,
@@ -5899,6 +6039,218 @@ var __dshFactory = (require) => {
 			}
 			//# sourceMappingURL=team-projection-store.js.map
 			}, exports: {} };
+		__mods["state/team-refresh-coordinator.js"] = { done: false, fn: function (exports) {
+			/**
+			 * team-view-sync-complete (frozen decisions 2 + 5) — the mount-level
+			 * per-team refresh coordinator.
+			 *
+			 * Client-owned polling, NO server push: while a team's Team view is
+			 * VISIBLE (attached) and the host tab is visible, one 3s tick per team
+			 * fires a projection round trip. Hidden (detached or tab-hidden) →
+			 * paused: the ticks stop, no round trips.
+			 *
+			 * The coordinator UNIFIES the refresh trigger sources (frozen decision
+			 * 5): the 3s tick, the manual view refresh, the post-mutation-success
+			 * refresh, and the visibility-resume immediate trigger. Per team there
+			 * is ONE in-flight round (`single-flight`) and a dirty flag that
+			 * COALESCES triggers arriving while a round is in flight: the forced
+			 * round runs exactly once after the in-flight round settles. A refresh
+			 * failure is a resolved assessment (the frozen store pull never
+			 * rejects) — the coordinator NEVER re-fires the mutation that preceded
+			 * it (mutations are one-shot UI RPCs; only the read is repeated).
+			 *
+			 * The forced rounds (manual / mutation / resume) always run; only the
+			 * TICK respects the tab-hidden pause (an explicit trigger is an event,
+			 * not polling). The store's channel-episode pulls (the backoff retry,
+			 * the connection-restore invalidation pull) are a SEPARATE frozen lane
+			 * that shares the same generation-safe store pull — the coordinator
+			 * gates only the triggers it owns; the F1 request-order liveness + the
+			 * generation verdict remain the final authority for both lanes.
+			 *
+			 * Pure module: no DOM, no timers of its own (the timer is injected;
+			 * tests use a manual one), no React. Erasable TS only.
+			 * @module @dsh-agent-team/client/state/team-refresh-coordinator
+			 */
+			/**
+			 * Create one refresh coordinator over one gated pull.
+			 * @param options - the injected pull + cadence + timer.
+			 * @returns the coordinator surface.
+			 */
+			function createTeamRefreshCoordinator(options) {
+			    const tickMs = options.tickMs === undefined ? 3000 : options.tickMs;
+			    const timer = options.timer === undefined ? createDefaultTimer() : options.timer;
+			    const entries = new Map();
+			    let paused = false;
+			    const armTick = (teamSessionId) => {
+			        const entry = entries.get(teamSessionId);
+			        if (entry === undefined || entry.timer !== null)
+			            return;
+			        entry.timer = timer.setInterval(() => {
+			            // The tick respects the tab-hidden pause (an explicit trigger is
+			            // an event and is NOT gated — see `trigger`).
+			            if (paused)
+			                return;
+			            void trigger(teamSessionId, 'tick');
+			        }, tickMs);
+			    };
+			    const disarmTick = (entry) => {
+			        if (entry.timer === null)
+			            return;
+			        timer.clearInterval(entry.timer);
+			        entry.timer = null;
+			    };
+			    /**
+			     * Run ONE round for an attached team and, on settle, drain the dirty
+			     * follow-up (which settles the coalesced trigger callers).
+			     */
+			    const startRound = (teamSessionId) => {
+			        const entry = entries.get(teamSessionId);
+			        if (entry === undefined)
+			            return options.pull(teamSessionId);
+			        entry.inFlight = true;
+			        const round = options
+			            .pull(teamSessionId)
+			            .then((assessment) => {
+			            entry.lastAssessment = assessment;
+			            return assessment;
+			        });
+			        void round.then((assessment) => {
+			            entry.inFlight = false;
+			            const waiters = entry.followUpWaiters.splice(0);
+			            if (entry.dirty && entries.get(teamSessionId) === entry) {
+			                // The forced follow-up runs (it is a FORCED round — even while
+			                // the tab is hidden the event-triggered round is owed).
+			                entry.dirty = false;
+			                void startRound(teamSessionId).then((followUp) => {
+			                    for (const waiter of waiters)
+			                        waiter(followUp);
+			                }, (error) => {
+			                    // Defensive: the gated pull never rejects; a rejection
+			                    // settles the waiters with the frozen transport-loss
+			                    // assessment rather than hanging the UI.
+			                    for (const waiter of waiters) {
+			                        waiter({ status: 'transport-loss', receivedGeneration: null });
+			                    }
+			                    void error;
+			                });
+			            }
+			            else {
+			                // Detached (or nothing coalesced): the coalesced callers
+			                // settle with THIS round's assessment — the follow-up is
+			                // dropped, the view is gone.
+			                for (const waiter of waiters)
+			                    waiter(assessment);
+			            }
+			        }, (error) => {
+			            // Defensive (the gated pull never rejects): settle the in-flight
+			            // state + the waiters so nothing hangs.
+			            entry.inFlight = false;
+			            const waiters = entry.followUpWaiters.splice(0);
+			            const fallback = {
+			                status: 'transport-loss',
+			                receivedGeneration: null,
+			            };
+			            for (const waiter of waiters)
+			                waiter(fallback);
+			            void error;
+			        });
+			        return round;
+			    };
+			    const trigger = (teamSessionId, _reason) => {
+			        const entry = entries.get(teamSessionId);
+			        if (entry === undefined) {
+			            // Unattached (the cold create-success path targets the NEW team
+			            // before its view mounts): the forced round runs UNGATED.
+			            return options.pull(teamSessionId);
+			        }
+			        if (!entry.inFlight)
+			            return startRound(teamSessionId);
+			        // Single-flight: coalesce into the dirty follow-up. The caller
+			        // awaits the FOLLOW-UP round (the forced round), not the in-flight
+			        // one.
+			        entry.dirty = true;
+			        return new Promise((resolve) => {
+			            entry.followUpWaiters.push(resolve);
+			        });
+			    };
+			    const attach = (teamSessionId) => {
+			        let entry = entries.get(teamSessionId);
+			        if (entry === undefined) {
+			            entry = {
+			                timer: null,
+			                inFlight: false,
+			                dirty: false,
+			                followUpWaiters: [],
+			                lastAssessment: null,
+			            };
+			            entries.set(teamSessionId, entry);
+			        }
+			        if (!paused)
+			            armTick(teamSessionId);
+			    };
+			    const detach = (teamSessionId) => {
+			        const entry = entries.get(teamSessionId);
+			        if (entry === undefined)
+			            return;
+			        disarmTick(entry);
+			        // The dirty follow-up is dropped (the view is gone): the entry
+			        // leaves the map, so the in-flight round's settle path takes the
+			        // "detached" branch and settles the coalesced callers with THAT
+			        // round's assessment (never a fabricated one).
+			        entry.dirty = false;
+			        entries.delete(teamSessionId);
+			        // Defensive: a waiter list that survives while NOTHING is in flight
+			        // (unreachable — waiters only exist behind an in-flight round)
+			        // settles with the last settled assessment so no caller ever hangs.
+			        if (!entry.inFlight && entry.followUpWaiters.length > 0) {
+			            const waiters = entry.followUpWaiters.splice(0);
+			            const fallback = entry.lastAssessment !== null
+			                ? entry.lastAssessment
+			                : { status: 'duplicate', receivedGeneration: null };
+			            for (const waiter of waiters)
+			                waiter(fallback);
+			        }
+			    };
+			    const pause = () => {
+			        paused = true;
+			    };
+			    const resume = () => {
+			        if (!paused)
+			            return;
+			        paused = false;
+			        for (const [teamSessionId, entry] of [...entries.entries()]) {
+			            if (entry.timer === null)
+			                armTick(teamSessionId);
+			            // Frozen decision 2: visibility resume → IMMEDIATE trigger.
+			            void trigger(teamSessionId, 'resume');
+			        }
+			    };
+			    const attached = () => [...entries.keys()];
+			    const isPaused = () => paused;
+			    return { attach, detach, trigger, pause, resume, attached, isPaused };
+			}
+			Object.defineProperty(exports, "createTeamRefreshCoordinator", { enumerable: true, get: () => createTeamRefreshCoordinator });
+			/** The default timer: setInterval-backed (browser/node). */
+			function createDefaultTimer() {
+			    const timers = new Map();
+			    let nextHandle = 1;
+			    return {
+			        setInterval(callback, delayMs) {
+			            const handle = nextHandle++;
+			            timers.set(handle, setInterval(callback, delayMs));
+			            return handle;
+			        },
+			        clearInterval(handle) {
+			            const timer = timers.get(handle);
+			            if (timer === undefined)
+			                return;
+			            timers.delete(handle);
+			            clearInterval(timer);
+			        },
+			    };
+			}
+			//# sourceMappingURL=team-refresh-coordinator.js.map
+			}, exports: {} };
 		__mods["transport/team-remote-client.js"] = { done: false, fn: function (exports) {
 			const __imp37 = __req("../../remote/src/index.js");
 			const REMOTE_CONTRACT_VERSION = __imp37.REMOTE_CONTRACT_VERSION;
@@ -5906,6 +6258,7 @@ var __dshFactory = (require) => {
 			const REMOTE_CONTRACT_VERSION_V3 = __imp37.REMOTE_CONTRACT_VERSION_V3;
 			const REMOTE_CONTRACT_VERSION_V4 = __imp37.REMOTE_CONTRACT_VERSION_V4;
 			const REMOTE_CONTRACT_VERSION_V5 = __imp37.REMOTE_CONTRACT_VERSION_V5;
+			const REMOTE_CONTRACT_VERSION_V6 = __imp37.REMOTE_CONTRACT_VERSION_V6;
 			const REMOTE_RPC_CHANNEL = __imp37.REMOTE_RPC_CHANNEL;
 			const PushTransportLossError = __imp37.PushTransportLossError;
 			/**
@@ -6006,6 +6359,15 @@ var __dshFactory = (require) => {
 			        // RPC — NO Team ensure, NO Team Agent side effect, no revoke RPC: an
 			        // unconsumed permit expires by TTL).
 			        teamPrepareOrdinaryOpenV5: (teamSessionId) => callWithVersion('team.prepareOrdinaryOpen', { teamSessionId }, REMOTE_CONTRACT_VERSION_V5),
+			        // team-view-sync-complete (remote contract v6) — the v6 freshness-pair
+			        // projection pull (the v6 handler answers the SAME endpoint with the
+			        // `durableGeneration` + `liveToken` cells inside data.projection).
+			        getProjectionV6: (teamSessionId) => callWithVersion('team.getProjection', { teamSessionId }, REMOTE_CONTRACT_VERSION_V6),
+			        // team-view-sync-complete (remote contract v6) — the v6-only
+			        // per-session durable read-state query (fail-closed on the host side:
+			        // a `none` only on positively confirmed no-affiliation; storage /
+			        // integrity failures arrive as the typed error).
+			        getReadStateV6: (sessionId) => callWithVersion('team.getReadState', { sessionId }, REMOTE_CONTRACT_VERSION_V6),
 			        memberCreate: (params) => call('member.create', params),
 			        memberSend: (params) => call('member.send', params),
 			        memberFollowup: (params) => call('member.followup', params),
@@ -7137,6 +7499,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V3", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V3 });
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V4", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V4 });
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V5", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V5 });
+			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V6", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V6 });
 			Object.defineProperty(exports, "SUPPORTED_REMOTE_CONTRACT_VERSIONS", { enumerable: true, get: () => __re3.SUPPORTED_REMOTE_CONTRACT_VERSIONS });
 			Object.defineProperty(exports, "isSupportedRemoteContractVersion", { enumerable: true, get: () => __re3.isSupportedRemoteContractVersion });
 			Object.defineProperty(exports, "assertSupportedRemoteContractVersion", { enumerable: true, get: () => __re3.assertSupportedRemoteContractVersion });
@@ -7151,6 +7514,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_V3_ONLY_METHODS", { enumerable: true, get: () => __re4.REMOTE_V3_ONLY_METHODS });
 			Object.defineProperty(exports, "REMOTE_V4_ONLY_METHODS", { enumerable: true, get: () => __re4.REMOTE_V4_ONLY_METHODS });
 			Object.defineProperty(exports, "REMOTE_V5_ONLY_METHODS", { enumerable: true, get: () => __re4.REMOTE_V5_ONLY_METHODS });
+			Object.defineProperty(exports, "REMOTE_V6_ONLY_METHODS", { enumerable: true, get: () => __re4.REMOTE_V6_ONLY_METHODS });
 			Object.defineProperty(exports, "isRemoteMethod", { enumerable: true, get: () => __re4.isRemoteMethod });
 			Object.defineProperty(exports, "isRemoteMethodAvailableInVersion", { enumerable: true, get: () => __re4.isRemoteMethodAvailableInVersion });
 			Object.defineProperty(exports, "remoteCategoryOf", { enumerable: true, get: () => __re4.remoteCategoryOf });
@@ -7178,6 +7542,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS", { enumerable: true, get: () => __re7.REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS });
 			Object.defineProperty(exports, "REMOTE_TEAM_RESOLVE_CONTROL_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_RESOLVE_CONTROL_FIELDS });
 			Object.defineProperty(exports, "REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS });
+			Object.defineProperty(exports, "REMOTE_TEAM_GET_READ_STATE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_GET_READ_STATE_FIELDS });
 			Object.defineProperty(exports, "REMOTE_TEAM_GET_PROJECTION_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_GET_PROJECTION_FIELDS });
 			Object.defineProperty(exports, "REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS });
 			Object.defineProperty(exports, "REMOTE_MEMBER_CREATE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_MEMBER_CREATE_FIELDS });
@@ -7205,6 +7570,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "parseRemoteTeamEnsureRootLiveParams", { enumerable: true, get: () => __re7.parseRemoteTeamEnsureRootLiveParams });
 			Object.defineProperty(exports, "parseRemoteTeamResolveControlParams", { enumerable: true, get: () => __re7.parseRemoteTeamResolveControlParams });
 			Object.defineProperty(exports, "parseRemoteTeamPrepareOrdinaryOpenParams", { enumerable: true, get: () => __re7.parseRemoteTeamPrepareOrdinaryOpenParams });
+			Object.defineProperty(exports, "parseRemoteTeamGetReadStateParams", { enumerable: true, get: () => __re7.parseRemoteTeamGetReadStateParams });
 			Object.defineProperty(exports, "parseRemoteTeamGetProjectionParams", { enumerable: true, get: () => __re7.parseRemoteTeamGetProjectionParams });
 			Object.defineProperty(exports, "parseRemoteTeamGetLedgerPageParams", { enumerable: true, get: () => __re7.parseRemoteTeamGetLedgerPageParams });
 			Object.defineProperty(exports, "parseRemoteMemberCreateParams", { enumerable: true, get: () => __re7.parseRemoteMemberCreateParams });
@@ -7227,6 +7593,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "parseRemoteMethodParams", { enumerable: true, get: () => __re7.parseRemoteMethodParams });
 			const __re7 = __req("../../remote/src/contracts/params.js");
 			Object.defineProperty(exports, "REMOTE_PROJECTION_FIELDS", { enumerable: true, get: () => __re8.REMOTE_PROJECTION_FIELDS });
+			Object.defineProperty(exports, "REMOTE_PROJECTION_FIELDS_V6", { enumerable: true, get: () => __re8.REMOTE_PROJECTION_FIELDS_V6 });
 			Object.defineProperty(exports, "REMOTE_LEDGER_ENTRY_FIELDS", { enumerable: true, get: () => __re8.REMOTE_LEDGER_ENTRY_FIELDS });
 			const __re8 = __req("../../remote/src/contracts/types.js");
 			Object.defineProperty(exports, "createRemoteCatalogHandler", { enumerable: true, get: () => __re9.createRemoteCatalogHandler });
@@ -7274,11 +7641,15 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "extractPushFrame", { enumerable: true, get: () => __re22.extractPushFrame });
 			Object.defineProperty(exports, "isApplyAssessment", { enumerable: true, get: () => __re22.isApplyAssessment });
 			const __re22 = __req("../../remote/src/push/pull.js");
-			Object.defineProperty(exports, "createLedgerPageTracker", { enumerable: true, get: () => __re23.createLedgerPageTracker });
-			Object.defineProperty(exports, "verifyLedgerPageAnchor", { enumerable: true, get: () => __re23.verifyLedgerPageAnchor });
-			const __re23 = __req("../../remote/src/push/ledger-page.js");
-			Object.defineProperty(exports, "PushTransportLossError", { enumerable: true, get: () => __re24.PushTransportLossError });
-			const __re24 = __req("../../remote/src/push/types.js");
+			Object.defineProperty(exports, "assessProjectionSyncV6", { enumerable: true, get: () => __re23.assessProjectionSyncV6 });
+			Object.defineProperty(exports, "extractPushFrameV6", { enumerable: true, get: () => __re23.extractPushFrameV6 });
+			Object.defineProperty(exports, "appliedIdentityFromV6", { enumerable: true, get: () => __re23.appliedIdentityFromV6 });
+			const __re23 = __req("../../remote/src/push/pull-v6.js");
+			Object.defineProperty(exports, "createLedgerPageTracker", { enumerable: true, get: () => __re24.createLedgerPageTracker });
+			Object.defineProperty(exports, "verifyLedgerPageAnchor", { enumerable: true, get: () => __re24.verifyLedgerPageAnchor });
+			const __re24 = __req("../../remote/src/push/ledger-page.js");
+			Object.defineProperty(exports, "PushTransportLossError", { enumerable: true, get: () => __re25.PushTransportLossError });
+			const __re25 = __req("../../remote/src/push/types.js");
 			//# sourceMappingURL=index.js.map
 			}, exports: {} };
 		__mods["model/team-timeline-model.js"] = { done: false, fn: function (exports) {
@@ -8815,13 +9186,34 @@ var __dshFactory = (require) => {
 			const REMOTE_CONTRACT_VERSION_V5 = 5;
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V5", { enumerable: true, get: () => REMOTE_CONTRACT_VERSION_V5 });
 			/**
-			 * All remote contract versions this build accepts: `[1, 2, 3, 4, 5]`.
+			 * The remote contract v6 (team-view sync complete, Phase 2 — frozen design
+			 * decisions, 2026-09-28): the v6-only `team.getReadState` command — the
+			 * authoritative session-ownership read over the TeamDomain durable rows
+			 * (a session resolves to `team-root` / `team-member` / `none`; a disposed
+			 * member still resolves to the member relation marked disposed; only a
+			 * successful read that positively confirms no affiliation may answer
+			 * `none`; every storage/integrity failure fails closed with a typed
+			 * error) — plus the version-aware `team.getProjection` v6 wire shape: the
+			 * projection value additionally carries `durableGeneration` (the durable
+			 * TeamSession generation, explicitly named) and `liveToken` (the
+			 * deterministic opaque live-invalidation token; durable generation and
+			 * live invalidation are SEPARATED — a live change moves only the token,
+			 * never the durable generation). Every v1/v2/v3/v4/v5 method stays
+			 * available in v6 and every v1–v5 wire shape is preserved for
+			 * version-1–5 requests.
+			 */
+			const REMOTE_CONTRACT_VERSION_V6 = 6;
+			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V6", { enumerable: true, get: () => REMOTE_CONTRACT_VERSION_V6 });
+			/**
+			 * All remote contract versions this build accepts: `[1, 2, 3, 4, 5, 6]`.
 			 * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision;
 			 * v3 by the Team D1-D6 repair v2 D1 task; v4 by the F3/F11/F9/T1.4
 			 * repair round r1 F9 task; v5 by the C1 restart-0.1.7-rc.1 recovery
-			 * task (guide §10.2: the v5-only `team.prepareOrdinaryOpen` permit)
-			 * (a version bump ADDS supported versions, never edits v1/v2/v3/v4
-			 * semantics).
+			 * task (guide §10.2: the v5-only `team.prepareOrdinaryOpen` permit);
+			 * v6 by the team-view-sync-complete task (2026-09-28: the v6-only
+			 * `team.getReadState` read + the version-aware v6 projection shape with
+			 * `durableGeneration` / `liveToken`) (a version bump ADDS supported
+			 * versions, never edits v1/v2/v3/v4/v5 semantics).
 			 */
 			const SUPPORTED_REMOTE_CONTRACT_VERSIONS = [
 			    REMOTE_CONTRACT_VERSION,
@@ -8829,6 +9221,7 @@ var __dshFactory = (require) => {
 			    REMOTE_CONTRACT_VERSION_V3,
 			    REMOTE_CONTRACT_VERSION_V4,
 			    REMOTE_CONTRACT_VERSION_V5,
+			    REMOTE_CONTRACT_VERSION_V6,
 			];
 			Object.defineProperty(exports, "SUPPORTED_REMOTE_CONTRACT_VERSIONS", { enumerable: true, get: () => SUPPORTED_REMOTE_CONTRACT_VERSIONS });
 			/**
@@ -8919,16 +9312,18 @@ var __dshFactory = (require) => {
 			/**
 			 * The closed Remote contract method catalog — a VERSIONED UNION
 			 * (TCM vNext §15.3, extended by the Team D1-D6 repair v2 D1 v3 bump,
-			 * the F3/F11/F9/T1.4 repair round r1 F9 v4 bump, and the C1
-			 * restart-0.1.7-rc.1 recovery v5 bump — guide §10.2): the 23 frozen v1
-			 * methods plus the v2-only `team.admitInitialWork` plus the v3-only
-			 * `team.listRoots` / `team.ensureRootLive` plus the v4-only
-			 * `team.resolveControl` plus the v5-only `team.prepareOrdinaryOpen`
-			 * (28 methods total). Key = endpoint = method name (dotted:
-			 * `<category>.<action>`). Per-version availability is the closed
-			 * {@link REMOTE_V2_ONLY_METHODS} + {@link REMOTE_V3_ONLY_METHODS} +
-			 * {@link REMOTE_V4_ONLY_METHODS} + {@link REMOTE_V5_ONLY_METHODS} sets
-			 * below; per-method param schemas are version-aware in `params.ts`.
+			 * the F3/F11/F9/T1.4 repair round r1 F9 v4 bump, the C1
+			 * restart-0.1.7-rc.1 recovery v5 bump — guide §10.2, and the
+			 * team-view-sync-complete v6 bump): the 23 frozen v1 methods plus the
+			 * v2-only `team.admitInitialWork` plus the v3-only `team.listRoots` /
+			 * `team.ensureRootLive` plus the v4-only `team.resolveControl` plus the
+			 * v5-only `team.prepareOrdinaryOpen` plus the v6-only
+			 * `team.getReadState` (29 methods total). Key = endpoint = method name
+			 * (dotted: `<category>.<action>`). Per-version availability is the
+			 * closed {@link REMOTE_V2_ONLY_METHODS} + {@link REMOTE_V3_ONLY_METHODS}
+			 * + {@link REMOTE_V4_ONLY_METHODS} + {@link REMOTE_V5_ONLY_METHODS} +
+			 * {@link REMOTE_V6_ONLY_METHODS} sets below; per-method param schemas
+			 * are version-aware in `params.ts`.
 			 */
 			const REMOTE_METHOD_CATALOG = {
 			    'catalog.list': { category: REMOTE_CATEGORIES.CATALOG },
@@ -8942,6 +9337,7 @@ var __dshFactory = (require) => {
 			    'team.ensureRootLive': { category: REMOTE_CATEGORIES.TEAM },
 			    'team.resolveControl': { category: REMOTE_CATEGORIES.TEAM },
 			    'team.prepareOrdinaryOpen': { category: REMOTE_CATEGORIES.TEAM },
+			    'team.getReadState': { category: REMOTE_CATEGORIES.TEAM },
 			    'member.create': { category: REMOTE_CATEGORIES.MEMBER },
 			    'member.send': { category: REMOTE_CATEGORIES.MEMBER },
 			    'member.followup': { category: REMOTE_CATEGORIES.MEMBER },
@@ -9037,6 +9433,20 @@ var __dshFactory = (require) => {
 			const REMOTE_V5_ONLY_METHODS = ['team.prepareOrdinaryOpen'];
 			Object.defineProperty(exports, "REMOTE_V5_ONLY_METHODS", { enumerable: true, get: () => REMOTE_V5_ONLY_METHODS });
 			/**
+			 * The closed set of catalog methods that exist ONLY in remote contract v6
+			 * (team-view-sync-complete, Phase 2 — frozen design decisions,
+			 * 2026-09-28): the authoritative per-session read-state query
+			 * `team.getReadState` — the TeamDomain durable rows resolve a session to
+			 * `team-root` / `team-member` / `none` (a disposed member still resolves
+			 * to the member relation, marked disposed; only a successful read that
+			 * positively confirms no affiliation may answer `none`; every
+			 * storage/integrity failure fails closed with a typed error — never a
+			 * silent `none`). READ-ONLY: no repository writes, no agent effects, no
+			 * generation advance. Every v1/v2/v3/v4/v5 method stays available in v6.
+			 */
+			const REMOTE_V6_ONLY_METHODS = ['team.getReadState'];
+			Object.defineProperty(exports, "REMOTE_V6_ONLY_METHODS", { enumerable: true, get: () => REMOTE_V6_ONLY_METHODS });
+			/**
 			 * Is `method` a catalog method available in remote contract `version`?
 			 *
 			 * This is the version-aware membership check the version-aware param
@@ -9048,7 +9458,7 @@ var __dshFactory = (require) => {
 			 *
 			 * @param method - the candidate method name (must be in the catalog).
 			 * @param version - the request's contract version (supported:
-			 *   1 | 2 | 3 | 4 | 5).
+			 *   1 | 2 | 3 | 4 | 5 | 6).
 			 */
 			function isRemoteMethodAvailableInVersion(method, version) {
 			    if (!(method in REMOTE_METHOD_CATALOG))
@@ -9057,20 +9467,27 @@ var __dshFactory = (require) => {
 			        return (!REMOTE_V2_ONLY_METHODS.includes(method) &&
 			            !REMOTE_V3_ONLY_METHODS.includes(method) &&
 			            !REMOTE_V4_ONLY_METHODS.includes(method) &&
-			            !REMOTE_V5_ONLY_METHODS.includes(method));
+			            !REMOTE_V5_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V6_ONLY_METHODS.includes(method));
 			    }
 			    if (version === 2) {
 			        return (!REMOTE_V3_ONLY_METHODS.includes(method) &&
 			            !REMOTE_V4_ONLY_METHODS.includes(method) &&
-			            !REMOTE_V5_ONLY_METHODS.includes(method));
+			            !REMOTE_V5_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V6_ONLY_METHODS.includes(method));
 			    }
 			    if (version === 3) {
-			        return !REMOTE_V4_ONLY_METHODS.includes(method) && !REMOTE_V5_ONLY_METHODS.includes(method);
+			        return (!REMOTE_V4_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V5_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V6_ONLY_METHODS.includes(method));
 			    }
 			    if (version === 4) {
-			        return !REMOTE_V5_ONLY_METHODS.includes(method);
+			        return !REMOTE_V5_ONLY_METHODS.includes(method) && !REMOTE_V6_ONLY_METHODS.includes(method);
 			    }
-			    // version === 5: every v1/v2/v3/v4 method plus the v5-only methods.
+			    if (version === 5) {
+			        return !REMOTE_V6_ONLY_METHODS.includes(method);
+			    }
+			    // version === 6: every v1/v2/v3/v4/v5 method plus the v6-only methods.
 			    return true;
 			}
 			Object.defineProperty(exports, "isRemoteMethodAvailableInVersion", { enumerable: true, get: () => isRemoteMethodAvailableInVersion });
@@ -9453,6 +9870,8 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_TEAM_RESOLVE_CONTROL_FIELDS", { enumerable: true, get: () => REMOTE_TEAM_RESOLVE_CONTROL_FIELDS });
 			const REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS = ['teamSessionId'];
 			Object.defineProperty(exports, "REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS", { enumerable: true, get: () => REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS });
+			const REMOTE_TEAM_GET_READ_STATE_FIELDS = ['sessionId'];
+			Object.defineProperty(exports, "REMOTE_TEAM_GET_READ_STATE_FIELDS", { enumerable: true, get: () => REMOTE_TEAM_GET_READ_STATE_FIELDS });
 			const REMOTE_TEAM_GET_PROJECTION_FIELDS = ['teamSessionId'];
 			Object.defineProperty(exports, "REMOTE_TEAM_GET_PROJECTION_FIELDS", { enumerable: true, get: () => REMOTE_TEAM_GET_PROJECTION_FIELDS });
 			const REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS = [
@@ -9962,6 +10381,14 @@ var __dshFactory = (require) => {
 			    };
 			}
 			Object.defineProperty(exports, "parseRemoteTeamPrepareOrdinaryOpenParams", { enumerable: true, get: () => parseRemoteTeamPrepareOrdinaryOpenParams });
+			/** Parse `team.getReadState` params (contract v6, v6-only method). */
+			function parseRemoteTeamGetReadStateParams(method, params) {
+			    assertNoUnknownFields(method, params, REMOTE_TEAM_GET_READ_STATE_FIELDS);
+			    return {
+			        sessionId: parseRemoteSessionId(requiredField(method, params, 'sessionId'), 'sessionId'),
+			    };
+			}
+			Object.defineProperty(exports, "parseRemoteTeamGetReadStateParams", { enumerable: true, get: () => parseRemoteTeamGetReadStateParams });
 			/** Parse `team.getProjection` params. */
 			function parseRemoteTeamGetProjectionParams(method, params) {
 			    assertNoUnknownFields(method, params, REMOTE_TEAM_GET_PROJECTION_FIELDS);
@@ -10270,6 +10697,9 @@ var __dshFactory = (require) => {
 			        case 'team.prepareOrdinaryOpen':
 			            // v5-only (the availability check above guarantees version === 5).
 			            return wrapParsed(method, parseRemoteTeamPrepareOrdinaryOpenParams(method, params));
+			        case 'team.getReadState':
+			            // v6-only (the availability check above guarantees version === 6).
+			            return wrapParsed(method, parseRemoteTeamGetReadStateParams(method, params));
 			        case 'team.getProjection':
 			            return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params));
 			        case 'team.getLedgerPage':
@@ -10360,6 +10790,17 @@ var __dshFactory = (require) => {
 			    'templates',
 			];
 			Object.defineProperty(exports, "REMOTE_PROJECTION_FIELDS", { enumerable: true, get: () => REMOTE_PROJECTION_FIELDS });
+			/**
+			 * The top-level fields of the contract-v6 whole-projection value: the nine
+			 * frozen v1 fields plus the two additive v6 freshness fields
+			 * (`durableGeneration`, `liveToken`).
+			 */
+			const REMOTE_PROJECTION_FIELDS_V6 = [
+			    ...REMOTE_PROJECTION_FIELDS,
+			    'durableGeneration',
+			    'liveToken',
+			];
+			Object.defineProperty(exports, "REMOTE_PROJECTION_FIELDS_V6", { enumerable: true, get: () => REMOTE_PROJECTION_FIELDS_V6 });
 			/** The top-level fields of the storage `LedgerEntry` (mirror). */
 			const REMOTE_LEDGER_ENTRY_FIELDS = [
 			    'createdAt',
@@ -10728,11 +11169,106 @@ var __dshFactory = (require) => {
 			    return raw;
 			}
 			/**
+			 * The CLOSED v6 `team.getReadState` wire value fields (frozen by
+			 * team-view-sync-complete Phase 2): every field is REQUIRED on the wire
+			 * (`null` cells are typed, never absent) and no extra field is allowed
+			 * (this is a fully closed value, not an "at least" shape).
+			 */
+			const REMOTE_TEAM_GET_READ_STATE_VALUE_FIELDS = [
+			    'disposed',
+			    'durableGeneration',
+			    'memberInstanceId',
+			    'relation',
+			    'teamSessionId',
+			];
+			const REMOTE_TEAM_GET_READ_STATE_RELATIONS = [
+			    'team-root',
+			    'team-member',
+			    'none',
+			];
+			/**
+			 * Validate the `team.getReadState` port value against the closed v6 wire
+			 * shape: the relation is the frozen three-value vocabulary; the
+			 * `teamSessionId` / `durableGeneration` cells are `string` / `number` or
+			 * `null` (never absent); a `none` answer carries `null` cells; a
+			 * `team-member` answer carries its instance id; `disposed` is a boolean
+			 * true only for a member whose durable lifecycle is `DISPOSED`.
+			 */
+			function normalizeTeamGetReadStateValue(raw) {
+			    if (!isPlainRecord(raw)) {
+			        throw portContractError('readState', `expected an object, got ${String(raw)}`);
+			    }
+			    for (const field of REMOTE_TEAM_GET_READ_STATE_VALUE_FIELDS) {
+			        if (!(field in raw)) {
+			            throw portContractError(`readState.${field}`, 'missing field');
+			        }
+			    }
+			    for (const key of Object.keys(raw)) {
+			        if (!REMOTE_TEAM_GET_READ_STATE_VALUE_FIELDS.includes(key)) {
+			            throw portContractError(`readState.${key}`, 'unknown field');
+			        }
+			    }
+			    const relation = raw['relation'];
+			    if (typeof relation !== 'string' || !REMOTE_TEAM_GET_READ_STATE_RELATIONS.includes(relation)) {
+			        throw portContractError('readState.relation', `must be one of ${REMOTE_TEAM_GET_READ_STATE_RELATIONS.join(' | ')}, got ${String(relation)}`);
+			    }
+			    const teamSessionId = raw['teamSessionId'];
+			    if (teamSessionId !== null && (typeof teamSessionId !== 'string' || teamSessionId.length === 0)) {
+			        throw portContractError('readState.teamSessionId', `must be a non-empty string or null, got ${String(teamSessionId)}`);
+			    }
+			    const memberInstanceId = raw['memberInstanceId'];
+			    if (memberInstanceId !== null &&
+			        (typeof memberInstanceId !== 'string' || memberInstanceId.length === 0)) {
+			        throw portContractError('readState.memberInstanceId', `must be a non-empty string or null, got ${String(memberInstanceId)}`);
+			    }
+			    if (typeof raw['disposed'] !== 'boolean') {
+			        throw portContractError('readState.disposed', `must be a boolean, got ${String(raw['disposed'])}`);
+			    }
+			    const durableGeneration = raw['durableGeneration'];
+			    if (durableGeneration !== null &&
+			        (typeof durableGeneration !== 'number' ||
+			            !Number.isSafeInteger(durableGeneration) ||
+			            durableGeneration < 1)) {
+			        throw portContractError('readState.durableGeneration', `must be a safe integer >= 1 or null, got ${String(durableGeneration)}`);
+			    }
+			    // Frozen cross-field invariants (fail closed on any contradiction):
+			    if (relation === 'none') {
+			        if (teamSessionId !== null || memberInstanceId !== null || durableGeneration !== null) {
+			            throw portContractError('readState.none', 'a none answer must carry null teamSessionId / memberInstanceId / durableGeneration');
+			        }
+			        if (raw['disposed'] !== false) {
+			            throw portContractError('readState.none', 'a none answer is never disposed');
+			        }
+			    }
+			    else if (relation === 'team-member') {
+			        if (teamSessionId === null || memberInstanceId === null || durableGeneration === null) {
+			            throw portContractError('readState.team-member', 'a team-member answer must carry its teamSessionId, memberInstanceId and durableGeneration');
+			        }
+			    }
+			    else {
+			        // team-root
+			        if (teamSessionId === null || durableGeneration === null) {
+			            throw portContractError('readState.team-root', 'a team-root answer must carry its teamSessionId and durableGeneration');
+			        }
+			        if (memberInstanceId !== null || raw['disposed'] !== false) {
+			            throw portContractError('readState.team-root', 'a team-root answer carries no member instance and is never disposed');
+			        }
+			    }
+			    return {
+			        relation: relation,
+			        teamSessionId,
+			        memberInstanceId,
+			        disposed: raw['disposed'],
+			        durableGeneration,
+			    };
+			}
+			/**
 			 * The team category handler (`team.create` [v1 + v2],
 			 * `team.admitInitialWork` [v2-only], `team.listRoots` [v3-only],
 			 * `team.ensureRootLive` [v3-only], `team.resolveControl` [v4-only],
-			 * `team.prepareOrdinaryOpen` [v5-only], `team.getProjection`,
-			 * `team.getLedgerPage`).
+			 * `team.prepareOrdinaryOpen` [v5-only], `team.getReadState` [v6-only],
+			 * `team.getProjection` [v1-v5 frozen shape; v6 adds
+			 * `durableGeneration` + `liveToken`], `team.getLedgerPage`).
 			 *
 			 * Version-aware (TCM vNext §15.3): the dispatcher passes the request's
 			 * contract version; `team.create` routes to the v1 port (closed v1 field
@@ -10824,10 +11360,43 @@ var __dshFactory = (require) => {
 			                const projectionParams = params;
 			                const raw = ports.projection.project(projectionParams.teamSessionId);
 			                const projection = normalizeProjection(raw);
+			                if (version >= 6) {
+			                    // The v6 projection: the frozen v1-v5 shape PLUS the two
+			                    // additive freshness fields (team-view-sync-complete Phase 2
+			                    // frozen decision 4) — `durableGeneration` (always ===
+			                    // `generation`, named for the client freshness PAIR) and
+			                    // `liveToken` (the deterministic opaque semantic-live-state
+			                    // token). Contract versions <= 5 serve the EXACT frozen shape
+			                    // (byte-identical passthrough — v1-v5 are unchanged).
+			                    const liveToken = ports.liveToken.liveToken(projectionParams.teamSessionId);
+			                    if (typeof liveToken !== 'string' || liveToken.length === 0) {
+			                        throw portContractError('liveToken', 'must be a non-empty string');
+			                    }
+			                    return {
+			                        data: {
+			                            projection: {
+			                                ...projection,
+			                                durableGeneration: projection.generation,
+			                                liveToken,
+			                            },
+			                        },
+			                        projectionGeneration: projection.generation,
+			                    };
+			                }
 			                return {
 			                    data: { projection },
 			                    projectionGeneration: projection.generation,
 			                };
+			            }
+			            case 'team.getReadState': {
+			                // v6-only (the availability check in parseRemoteMethodParams
+			                // guarantees version === 6). The durable TeamDomain rows are the
+			                // sole authority; a storage/integrity failure throws through and
+			                // the dispatcher answers with the typed pass-through error
+			                // (invariant 4b) — never a silent `none` (fail closed).
+			                const readStateParams = params;
+			                const value = normalizeTeamGetReadStateValue(ports.teamReadState.readState(readStateParams.sessionId));
+			                return { data: value };
 			            }
 			            case 'team.getLedgerPage': {
 			                const pageParams = params;
@@ -11282,7 +11851,7 @@ var __dshFactory = (require) => {
 			 * assumptions.
 			 * @module @dsh-agent-team/remote/handlers/dispatch
 			 */
-			/** Wire the eighteen ports into the nine category handlers. */
+			/** Wire the twenty ports into the nine category handlers. */
 			function buildCategoryHandlers(deps) {
 			    return {
 			        [REMOTE_CATEGORIES.CATALOG]: createRemoteCatalogHandler(deps.catalog),
@@ -11295,6 +11864,8 @@ var __dshFactory = (require) => {
 			            teamEnsureRootLive: deps.teamEnsureRootLive,
 			            teamResolveControl: deps.teamResolveControl,
 			            teamPrepareOrdinaryOpen: deps.teamPrepareOrdinaryOpen,
+			            teamReadState: deps.teamReadState,
+			            liveToken: deps.liveToken,
 			            projection: deps.projection,
 			            ledger: deps.ledger,
 			        }),
@@ -11536,6 +12107,27 @@ var __dshFactory = (require) => {
 			    // other reachable typed failure of the same port (a root outside the
 			    // caller's team — assertBoundRoot).
 			    'TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE',
+			    // team-view-sync-complete (remote contract v6): the v6 surface wire
+			    // vocabulary. The S6 ports emit TEAM_REMOTE_TEAM_READ_STATE_PORT_
+			    // UNAVAILABLE (the read-state closure is absent from the host wiring —
+			    // fail closed; the closure's own storage/integrity failures ride the
+			    // storage-layer RECORD_INVALID / SEAM_FAILURE / NOT_OPEN codes above)
+			    // and TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE (the live-token
+			    // closure is absent — fail closed: a v6 projection frame must ALWAYS
+			    // carry its liveToken cell, and a host that cannot compute one must
+			    // not serve a v6 frame without it).
+			    'TEAM_REMOTE_TEAM_READ_STATE_PORT_UNAVAILABLE',
+			    'TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE',
+			    // team-view-sync-complete (remote contract v6) — the v6 read-state
+			    // resolver's integrity failures (runtime/team-read-state, fail closed):
+			    // a claimed team-root/team-member affiliation whose team_sessions row
+			    // is missing (TEAM_READ_STATE_TEAM_ROW_ABSENT) and a claimed
+			    // team-member affiliation whose member_instances row is missing
+			    // (TEAM_READ_STATE_MEMBER_ROW_ABSENT). A corrupted (undecodable) row is
+			    // NOT re-coded here: the storage layer's RECORD_INVALID vocabulary
+			    // already covers it and passes through unchanged.
+			    'TEAM_READ_STATE_TEAM_ROW_ABSENT',
+			    'TEAM_READ_STATE_MEMBER_ROW_ABSENT',
 			];
 			Object.defineProperty(exports, "REMOTE_BACKING_ERROR_CODES", { enumerable: true, get: () => REMOTE_BACKING_ERROR_CODES });
 			/** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */
@@ -12026,6 +12618,195 @@ var __dshFactory = (require) => {
 			}
 			Object.defineProperty(exports, "isApplyAssessment", { enumerable: true, get: () => isApplyAssessment });
 			//# sourceMappingURL=pull.js.map
+			}, exports: {} };
+		__mods["../../remote/src/push/pull-v6.js"] = { done: false, fn: function (exports) {
+			const __imp38 = __req("../../remote/src/push/generation.js");
+			const isStrictlyNewerGeneration = __imp38.isStrictlyNewerGeneration;
+			const PUSH_MIN_GENERATION = __imp38.PUSH_MIN_GENERATION;
+			/**
+			 * team-view-sync-complete Phase 2 — the v6 pair-identity pull surface
+			 * (pure).
+			 *
+			 * Contract v6 carries the client freshness identity as the frozen PAIR
+			 * `{ durableGeneration, liveToken }` (frozen design decision 4):
+			 *
+			 * - `durableGeneration` — the durable whole-projection generation (===
+			 *   the wire `generation`; the v6 value names it explicitly). It stays
+			 *   DURABLE-ONLY: live state never advances it.
+			 * - `liveToken` — a deterministic opaque token over the semantic live
+			 *   state (sorted per-member `{ instanceId, residency }`; no clock
+			 *   stamps, no process counters). It changes ONLY when the semantic live
+			 *   state changes.
+			 *
+			 * The frozen pair verdict (against the applied identity):
+			 *
+			 * | applied vs received                              | status    |
+			 * | ------------------------------------------------ | --------- |
+			 * | applied = null (first frame)                     | `apply`   |
+			 * | different `teamSessionId`                        | `foreign` |
+			 * | durableGeneration strictly NEWER                 | `apply`   |
+			 * | durableGeneration EQUAL, liveToken DIFFERENT     | `apply`   |
+			 * | durableGeneration EQUAL, liveToken EQUAL         | `duplicate` |
+			 * | durableGeneration strictly OLDER                 | `stale`   |
+			 *
+			 * The two `apply` cases are deliberately the SAME status: the applied
+			 * `generation` (durable) is the client's single ledger-refresh trigger —
+			 * a live-only advance applies the frame WITHOUT advancing the durable
+			 * generation, so the mount's generation-advance subscription naturally
+			 * does NOT refresh the ledger (frozen decision 4: "live-only → apply the
+			 * overlay, NO ledger refresh"). `durableGeneration`/`liveToken` are
+			 * NEVER mutated by the assessment — the assessment only decides.
+			 *
+			 * Pure module: no I/O, no node: builtins, no runtime environment
+			 * assumptions. Erasable TS only.
+			 * @module @dsh-agent-team/remote/push/pull-v6
+			 */
+			/**
+			 * Read the v6 frame out of a success response, or `null` when the frame
+			 * is not usable: not a success, no structurally valid v6 projection
+			 * (non-positive-integer `durableGeneration`, empty/absent `liveToken`,
+			 * or a `durableGeneration` that DISAGREES with the base `generation`
+			 * cell), or the provenance generation disagrees with the data
+			 * generation (both map to the `inconsistent` assessment — no
+			 * v6 frame may apply while internally inconsistent).
+			 * @param response - a frozen `RemoteResponse` of a v6 projection pull.
+			 * @returns the v6 frame identity + the full v6 frame, when usable.
+			 */
+			function readV6FrameShape(response) {
+			    if (!response.ok) {
+			        return null;
+			    }
+			    const data = response.value.data;
+			    if (typeof data !== 'object' || data === null) {
+			        return null;
+			    }
+			    const record = data;
+			    const projection = record['projection'];
+			    if (typeof projection !== 'object' || projection === null) {
+			        return null;
+			    }
+			    const projRecord = projection;
+			    const teamSessionId = projRecord['teamSessionId'];
+			    const generation = projRecord['generation'];
+			    const durableGeneration = projRecord['durableGeneration'];
+			    const liveToken = projRecord['liveToken'];
+			    if (typeof teamSessionId !== 'string' ||
+			        typeof generation !== 'number' ||
+			        !Number.isInteger(generation) ||
+			        generation < PUSH_MIN_GENERATION ||
+			        typeof durableGeneration !== 'number' ||
+			        !Number.isInteger(durableGeneration) ||
+			        durableGeneration < PUSH_MIN_GENERATION ||
+			        typeof liveToken !== 'string' ||
+			        liveToken.length === 0) {
+			        return null;
+			    }
+			    // v6 internal consistency: the named durable cell must agree with the
+			    // base generation cell (the v6 value is the frozen PAIR — the two
+			    // cells describe the SAME durable generation).
+			    if (durableGeneration !== generation) {
+			        return null;
+			    }
+			    // G8 provenance cross-check (same authority as the v1-v5 pull): the
+			    // data generation and the provenance generation must agree.
+			    if (response.value.provenance.projectionGeneration !== generation) {
+			        return null;
+			    }
+			    const identity = { teamSessionId, durableGeneration, liveToken };
+			    const frame = {
+			        projection: projection,
+			        provenance: response.value.provenance,
+			    };
+			    return { identity, frame };
+			}
+			/**
+			 * Assess one pulled v6 projection response against the applied v6
+			 * identity (pure: no state mutation — the caller applies the
+			 * assessment).
+			 *
+			 * The frozen pair verdict (module doc table): first frame or a durable
+			 * advance or a live-token-only change → `apply`; both cells equal →
+			 * `duplicate`; an older durable generation → `stale`; a different team →
+			 * `foreign`; a typed RPC error or an internally inconsistent frame →
+			 * `rpc-error` / `inconsistent` (no state change).
+			 *
+			 * NOTE: the live-only `apply` deliberately returns the SAME status as
+			 * the durable `apply` — the applied durable generation is the client's
+			 * single ledger-refresh trigger, and it is unchanged by a live-only
+			 * apply (frozen decision 4).
+			 *
+			 * @param applied - the applied v6 identity, or `null` before the first
+			 *   v6 frame.
+			 * @param response - the frozen `RemoteResponse` of the v6 pull.
+			 * @returns the closed deterministic assessment.
+			 */
+			function assessProjectionSyncV6(applied, response) {
+			    if (!response.ok) {
+			        return {
+			            status: 'rpc-error',
+			            code: response.error.code,
+			            receivedGeneration: null,
+			        };
+			    }
+			    const shape = readV6FrameShape(response);
+			    if (shape === null) {
+			        return { status: 'inconsistent', receivedGeneration: null };
+			    }
+			    const { identity } = shape;
+			    if (applied === null) {
+			        // First frame: establishes the applied pair.
+			        return { status: 'apply', receivedGeneration: identity.durableGeneration };
+			    }
+			    if (applied.teamSessionId !== identity.teamSessionId) {
+			        return { status: 'foreign', receivedGeneration: identity.durableGeneration };
+			    }
+			    if (isStrictlyNewerGeneration(identity.durableGeneration, applied.durableGeneration)) {
+			        // Durable advanced: apply (the client refreshes its ledger on the
+			        // generation advance — the mount's subscription, unchanged).
+			        return { status: 'apply', receivedGeneration: identity.durableGeneration };
+			    }
+			    if (identity.durableGeneration < applied.durableGeneration) {
+			        // Older durable generation: stale — never overwrite.
+			        return { status: 'stale', receivedGeneration: identity.durableGeneration };
+			    }
+			    // durableGeneration EQUAL (both directions covered above):
+			    if (identity.liveToken !== applied.liveToken) {
+			        // Live-only change: apply the overlay WITHOUT advancing the durable
+			        // generation (no ledger refresh — frozen decision 4).
+			        return { status: 'apply', receivedGeneration: identity.durableGeneration };
+			    }
+			    return { status: 'duplicate', receivedGeneration: identity.durableGeneration };
+			}
+			Object.defineProperty(exports, "assessProjectionSyncV6", { enumerable: true, get: () => assessProjectionSyncV6 });
+			/**
+			 * Extract the v6 frame from a response when — and only when — the frame
+			 * is usable (success, structurally valid v6 frame, provenance-
+			 * consistent). The client calls this AFTER `assessProjectionSyncV6`
+			 * returned `apply`, so a frame can never reach the applied state
+			 * without the pair check.
+			 * @param response - the frozen `RemoteResponse` of the v6 pull.
+			 * @returns the v6 frame, or `null` when the frame is not usable.
+			 */
+			function extractPushFrameV6(response) {
+			    return readV6FrameShape(response)?.frame ?? null;
+			}
+			Object.defineProperty(exports, "extractPushFrameV6", { enumerable: true, get: () => extractPushFrameV6 });
+			/**
+			 * The v6 applied-identity builder: the closed record of one applied v6
+			 * frame (pure).
+			 * @param projection - the applied v6 projection value.
+			 * @returns the applied v6 identity (the frozen PAIR anchored to the
+			 *   team).
+			 */
+			function appliedIdentityFromV6(projection) {
+			    return {
+			        teamSessionId: projection.teamSessionId,
+			        durableGeneration: projection.durableGeneration,
+			        liveToken: projection.liveToken,
+			    };
+			}
+			Object.defineProperty(exports, "appliedIdentityFromV6", { enumerable: true, get: () => appliedIdentityFromV6 });
+			//# sourceMappingURL=pull-v6.js.map
 			}, exports: {} };
 		__mods["../../remote/src/push/ledger-page.js"] = { done: false, fn: function (exports) {
 			/**

@@ -51,6 +51,7 @@ import {
   REMOTE_CONTRACT_VERSION_V3,
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
+  REMOTE_CONTRACT_VERSION_V6,
   REMOTE_CONTRACT_ERROR_CODES,
   REMOTE_METHOD_NAMES,
   REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS,
@@ -59,6 +60,7 @@ import {
   REMOTE_V3_ONLY_METHODS,
   REMOTE_V4_ONLY_METHODS,
   REMOTE_V5_ONLY_METHODS,
+  REMOTE_V6_ONLY_METHODS,
   SUPPORTED_REMOTE_CONTRACT_VERSIONS,
   type RemoteErrorResult,
   type RemoteSafeRecord,
@@ -244,8 +246,8 @@ const RT = await (async () => {
 // ---------------------------------------------------------------------------
 
 describe('D1 (remote contract v3): catalog facts', () => {
-  it('the catalog is the 28-method versioned union (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only)', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(28)
+  it('the catalog is the 29-method versioned union (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(29)
     expect(REMOTE_METHOD_NAMES.includes('team.listRoots')).toBe(true)
     expect(REMOTE_METHOD_NAMES.includes('team.ensureRootLive')).toBe(true)
     // F9: the v4-only method is in the union; the frozen v1 methods are
@@ -254,23 +256,28 @@ describe('D1 (remote contract v3): catalog facts', () => {
     // C1 (restart-0.1.7-rc.1 recovery): the v5-only method is in the
     // union
     expect(REMOTE_METHOD_NAMES.includes('team.prepareOrdinaryOpen')).toBe(true)
-    expect(REMOTE_METHOD_NAMES.length - REMOTE_V2_ONLY_METHODS.length - REMOTE_V3_ONLY_METHODS.length - REMOTE_V4_ONLY_METHODS.length - REMOTE_V5_ONLY_METHODS.length).toBe(23)
+    // team-view-sync-complete (Phase 2): the v6-only method is in the
+    // union
+    expect(REMOTE_METHOD_NAMES.includes('team.getReadState')).toBe(true)
+    expect(REMOTE_METHOD_NAMES.length - REMOTE_V2_ONLY_METHODS.length - REMOTE_V3_ONLY_METHODS.length - REMOTE_V4_ONLY_METHODS.length - REMOTE_V5_ONLY_METHODS.length - REMOTE_V6_ONLY_METHODS.length).toBe(23)
   })
 
-  it('the v1 baseline constant is still 1 and the supported set is [1, 2, 3, 4, 5] (the C1 v5 bump)', () => {
+  it('the v1 baseline constant is still 1 and the supported set is [1, 2, 3, 4, 5, 6] (the team-view-sync-complete v6 bump)', () => {
     expect(REMOTE_CONTRACT_VERSION).toBe(1)
     expect(REMOTE_CONTRACT_VERSION_V2).toBe(2)
     expect(REMOTE_CONTRACT_VERSION_V3).toBe(3)
     expect(REMOTE_CONTRACT_VERSION_V4).toBe(4)
     expect(REMOTE_CONTRACT_VERSION_V5).toBe(5)
-    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5])
+    expect(REMOTE_CONTRACT_VERSION_V6).toBe(6)
+    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6])
   })
 
-  it('the closed v3-only set is exactly the two D1 methods; the closed v4-only set is exactly team.resolveControl; the closed v5-only set is exactly team.prepareOrdinaryOpen', () => {
+  it('the closed v3-only set is exactly the two D1 methods; the closed v4-only set is exactly team.resolveControl; the closed v5-only set is exactly team.prepareOrdinaryOpen; the closed v6-only set is exactly team.getReadState', () => {
     expect([...REMOTE_V3_ONLY_METHODS].sort()).toEqual(['team.ensureRootLive', 'team.listRoots'])
     expect([...REMOTE_V2_ONLY_METHODS].sort()).toEqual(['team.admitInitialWork'])
     expect([...REMOTE_V4_ONLY_METHODS].sort()).toEqual(['team.resolveControl'])
     expect([...REMOTE_V5_ONLY_METHODS].sort()).toEqual(['team.prepareOrdinaryOpen'])
+    expect([...REMOTE_V6_ONLY_METHODS].sort()).toEqual(['team.getReadState'])
   })
 
   it('the availability matrix: v3-only methods are v3-only; v1/v2 methods stay available in v3; the v4-only method is v4-only; the v5-only method is v5-only', () => {

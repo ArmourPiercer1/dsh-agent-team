@@ -226,6 +226,17 @@ export interface TeamViewInjected {
    * caller inspects the result, never toasts a success over a failure).
    */
   pullProjection: (teamSessionId: string) => Promise<ProjectionSyncAssessment>
+  /**
+   * team-view-sync-complete (frozen decisions 2 + 5): the per-team
+   * refresh-coordinator attach face. The view ATTACHES its team on
+   * mount (arming the 3s visible tick) and DETACHES on unmount (stopping
+   * it) — hidden → paused, no round trips. Absent → no polling (the
+   * Phase 1 surface: manual refresh + the store reconnect episode only).
+   */
+  refreshCoordinator?: {
+    attach: (teamSessionId: string) => void
+    detach: (teamSessionId: string) => void
+  }
   /** Re-request the team ledger's catch-up episode after a typed failure. */
   refreshTeamLedger: () => Promise<void>
   /** Switch the current session to the named member session (D9 navigation). */
@@ -323,6 +334,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     creation, memberCommands, governance, legacyInspect, handoff, roots,
     control,
     openTeamMode, openOrdinaryMode, teamOpenMode,
+    refreshCoordinator,
     useWorkspaces, t,
   } = props
   const [creationOpen, setCreationOpen] = useState(false)
@@ -425,6 +437,22 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     // team UI needs the view": fill a mirror gap once, then let frames win.
     if (resolution === undefined) void ensureProjection(sessionId)
   }, [sessionId, resolution, ensureProjection])
+  // team-view-sync-complete (frozen decisions 2 + 5): the per-team
+  // refresh-coordinator ATTACH — the team the view is bound to is the
+  // resolution's authoritative team id, falling back to the session id
+  // (the guide's fixed key: an unresolved session id is itself the
+  // TeamSession id the cold pull targets). Mounting the view arms the
+  // 3s visible tick for that team; unmounting (session switch / tab
+  // away) stops it. The id is stable across the cold read (candidate
+  // root id === the frame's team id), so the effect re-runs at most
+  // once per scope — attach is idempotent either way.
+  const teamSessionId = resolution?.team.teamSessionId ?? sessionId
+  useEffect(() => {
+    const face = refreshCoordinator
+    if (face === undefined) return
+    face.attach(teamSessionId)
+    return () => face.detach(teamSessionId)
+  }, [teamSessionId, refreshCoordinator])
   const snapshot = useMemo(
     () => (resolution === undefined
       ? null
@@ -538,19 +566,40 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     if (!inZeroState || roots === undefined || creationOpen) return
     void loadRoots()
   }, [inZeroState, roots, creationOpen, sessionId, loadRoots])
+  // team-view-sync-complete (frozen decision 6): the ZERO-STATE roots
+  // cadence — while the zero state is VISIBLE, re-read `team.listRoots`
+  // at the same 3s tick (the initial read above covers t=0). The
+  // periodic read STOPS once a resolved Team frame exists (`inZeroState`
+  // flips false — no roots polling behind a resolved view), and the
+  // manual view refresh re-reads roots unconditionally (runRefresh's
+  // independent `loadRoots`). The tick no-ops while the host tab is
+  // hidden (the "visible" gate; headless/node tests have no document and
+  // read as visible).
+  useEffect(() => {
+    if (!inZeroState || roots === undefined || creationOpen) return
+    const id = setInterval(() => {
+      const doc = typeof document === 'undefined' ? null : document
+      if (doc !== null && doc.visibilityState !== 'visible') return
+      void loadRoots()
+    }, 3000)
+    return () => clearInterval(id)
+  }, [inZeroState, roots, creationOpen, sessionId, loadRoots])
   // (repair 20260927, S1-C2) the manual "refresh team view" — the one
   // awaitable read-only re-read. Captures THIS invocation's session id,
   // the team (root) id, and a request epoch at call time:
   //   (a) the roots re-read starts independently (the manual call is NOT
-  //       subject to the auto-read's zero-state / `creationOpen` guard);
-  //   (b) the projection pull is AWAITED, then the resolvable root's
-  //       ledger is refreshed (the cold ledger store is established only
-  //       after the pull applies a frame — so the ledger refresh runs
-  //       AFTER the pull; with a stale frame present the ledger read is
-  //       attempted EVEN IF the projection failed — it is an independent
-  //       read with its own visible state). A same-generation manual
-  //       refresh also attempts the ledger refresh (the automatic one
-  //       fires only on a generation advance).
+  //       subject to the auto-read's zero-state / `creationOpen` guard —
+  //       frozen decision 6: the manual refresh ALWAYS re-reads roots);
+  //   (b) the projection round is a FORCED trigger through the refresh
+  //       coordinator (frozen decisions 2 + 5: single-flighted per team,
+  //       coalesced behind an in-flight round, never re-fired on a
+  //       failed read).
+  // (team-view-sync-complete, frozen decision 4) the manual refresh NO
+  // LONGER refreshes the ledger itself: the ledger refresh is owned by
+  // the applied-DURABLE-GENERATION advance (the mount's store
+  // subscription) — a same-generation manual refresh (duplicate, or a
+  // live-token-only overlay apply) is deliberately a NO-OP for the
+  // ledger. Deliberate behavior change from Phase 1 (noted in the PR).
   // A resolved Promise is NOT a success: the round-trip outcome is read
   // back through the projection store's published state (the same
   // visible state surface the member/governance background reads flow
@@ -561,33 +610,23 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     if (refreshPending) return // the double-click guard
     const sessionIdAtStart = sessionId
     const resolutionAtStart = resolution
-    const teamSessionId = resolutionAtStart?.team.teamSessionId ?? sessionIdAtStart
-    const hadFrame = resolutionAtStart !== undefined
+    const teamSessionIdAtStart = resolutionAtStart?.team.teamSessionId ?? sessionIdAtStart
     refreshEpoch.current += 1
     const epoch = refreshEpoch.current
     setRefreshPending(true)
     void loadRoots()
     void (async () => {
-      let assessment: ProjectionSyncAssessment
       try {
-        assessment = await pullProjection(teamSessionId)
+        await pullProjection(teamSessionIdAtStart)
       } catch {
         // The frozen client carrier never rejects (it resolves as a
-        // typed assessment); defensive only — treat as a transport loss.
-        assessment = { status: 'transport-loss', receivedGeneration: null }
+        // typed assessment); defensive only.
       }
       if (refreshEpoch.current !== epoch) return // newer refresh / unmount
-      if (hadFrame || assessment.status === 'apply') {
-        // a stale frame exists (attempt the ledger even on a failed
-        // projection) or the cold pull applied a frame (the store is
-        // open now). A no resolvable root is a silent no-op — it is
-        // never displayed as a "ledger refresh succeeded".
-        await refreshTeamLedger()
-      }
     })().finally(() => {
       if (refreshEpoch.current === epoch) setRefreshPending(false)
     })
-  }, [refreshPending, sessionId, resolution, loadRoots, pullProjection, refreshTeamLedger])
+  }, [refreshPending, sessionId, resolution, loadRoots, pullProjection])
   // D2 (Team D1-D6 repair v2, D6): the in-flight explicit open per picker
   // row (root id → pending) and the last typed failure per row (ONE
   // verbatim note, the UI §38 greyed-surface discipline). Page-run UI

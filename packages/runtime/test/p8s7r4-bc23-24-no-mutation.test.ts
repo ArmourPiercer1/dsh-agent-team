@@ -17,11 +17,12 @@
  *    the durable world on this path.
  * 3. THE CLOSED CATALOG (the code-level proof that no backend method
  *    can drive an AGENT-side decision): the Remote contract catalog is
- *    CLOSED at 9 categories / 28 methods (the versioned union — 23
+ *    CLOSED at 9 categories / 29 methods (the versioned union — 23
  *    frozen v1 methods + the v2-only `team.admitInitialWork`, TCM vNext
  *    §15.3 + the two D1 (Team D1-D6 repair v2) v3-only methods
  *    `team.listRoots` / `team.ensureRootLive` + the F9 (F3/F11/F9/T1.4
- *    repair round r1) v4-only method `team.resolveControl` + the C1
+ *    repair round r1) v4-only method `team.resolveControl` + the team-
+ *    view-sync-complete v6-only method `team.getReadState` + the C1
  *    (restart-0.1.7-rc.1 recovery, guide §10.2) v5-only method
  *    `team.prepareOrdinaryOpen`, the
  *    HUMAN control surface whose decider principal the HOST derives —
@@ -60,6 +61,7 @@ import {
   REMOTE_METHODS_BY_CATEGORY,
   REMOTE_V2_ONLY_METHODS,
   REMOTE_V4_ONLY_METHODS,
+  REMOTE_V6_ONLY_METHODS,
 } from '../../remote/src/contracts/catalog.js'
 
 const SRC = P7T5_FIXTURE.sourceSessionId
@@ -250,14 +252,14 @@ describe('p8s7r4 W6 (BC-23/BC-24) — the failure decisions are client-side with
     }
   })
 
-  it('S4: the closed catalog carries no AGENT-side decision method — the handoff category is exactly prepare + create (versioned union 9/28: 23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only)', () => {
+  it('S4: the closed catalog carries no AGENT-side decision method — the handoff category is exactly prepare + create (versioned union 9/29: 23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only)', () => {
     // The handoff category: EXACTLY the two v1 methods (read-only prepare
     // + the create entry that starts the operation). No decision method.
     expect(REMOTE_METHODS_BY_CATEGORY[REMOTE_CATEGORIES.HANDOFF]).toEqual([
       'handoff.create',
       'handoff.prepare',
     ])
-    // The catalog stays CLOSED: 9 categories / 28 methods — the 23 frozen
+    // The catalog stays CLOSED: 9 categories / 29 methods — the 23 frozen
     // v1 methods + the v2-only `team.admitInitialWork` (TCM vNext §15.3)
     // + the two D1 (Team D1-D6 repair v2) v3-only methods
     // `team.listRoots` / `team.ensureRootLive` + the F9 (F3/F11/F9/T1.4
@@ -265,12 +267,15 @@ describe('p8s7r4 W6 (BC-23/BC-24) — the failure decisions are client-side with
     // control decision surface; the host derives the decider principal)
     // + the C1 (restart-0.1.7-rc.1 recovery, guide §10.2) v5-only method
     // `team.prepareOrdinaryOpen` (the one-shot ordinary-activation
-    // permit — a Team control-plane RPC, not a handoff decision). The
-    // catalog is a versioned union; the v2-only closed set is exactly
-    // the one method that has no v1 counterpart.
-    expect(REMOTE_METHOD_NAMES.length).toBe(28)
+    // permit — a Team control-plane RPC, not a handoff decision) + the
+    // team-view-sync-complete v6-only method `team.getReadState` (the
+    // per-session durable read-state query — a READ, not a decision).
+    // The catalog is a versioned union; the v2-only closed set is
+    // exactly the one method that has no v1 counterpart.
+    expect(REMOTE_METHOD_NAMES.length).toBe(29)
     expect(REMOTE_V2_ONLY_METHODS).toEqual(['team.admitInitialWork'])
     expect(REMOTE_V4_ONLY_METHODS).toEqual(['team.resolveControl'])
+    expect(REMOTE_V6_ONLY_METHODS).toEqual(['team.getReadState'])
     expect(Object.keys(REMOTE_METHODS_BY_CATEGORY).sort()).toEqual([
       'catalog',
       'compatibility',
