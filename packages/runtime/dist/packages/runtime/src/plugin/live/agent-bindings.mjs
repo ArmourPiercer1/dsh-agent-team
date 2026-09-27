@@ -3293,13 +3293,19 @@ export function createAgentBindings(deps) {
     if (closing) {
       throw new Error('agent-bindings: live bindings began closing before the work-completion wake — dropped (best-effort)')
     }
-    // Plugin-attributed user-visible input (the upstream MessageSource
-    // plugin kind — distinct from the `kind: 'user'` human-input
-    // attribution the delegate work path uses: this turn is a runtime
-    // event, not a human message).
+    // Plugin-attributed user-visible input carrying this plugin's OWN
+    // producer kind (Session Format v4 / DSH 0.1.7 retires the shared
+    // `kind: 'plugin'` wrapper — v4 admission rejects it with
+    // 'format v4 message requires a producer-owned source kind').
+    // `plugin:dsh-agent-team` is the exact kind the official v3→v4
+    // migration maps the historical wrapper rows to, so legacy Session
+    // history and newly-created wakes share one producer identity.
+    // Distinct from the `kind: 'user'` human-input attribution the
+    // delegate work path uses: this turn is a runtime event, not a
+    // human message.
     const message = createUserMessage({
       content: [{ type: 'text', text }],
-      source: { kind: 'plugin', plugin: 'dsh-agent-team' },
+      source: { kind: 'plugin:dsh-agent-team' },
     })
     // DSH v0.1.5-rc.2 Agent semantics (plan §17): idle Leader →
     // `followup` (a NEW turn — the idle Leader is woken); busy Leader →

@@ -11,10 +11,12 @@
  *       semantics still wake an idle Leader rather than leaving the
  *       notification stranded in the inbox), followup/inject 0, no
  *       whenIdle await;
- *   G3. message source — the delivered input carries the upstream
- *       plugin attribution (`source.kind === 'plugin'`,
- *       `source.plugin === 'dsh-agent-team'`) and the rendered text
- *       verbatim (a runtime event, not a human message); the
+ *   G3. message source — the delivered input carries this plugin's
+ *       producer-owned Session Format v4 source kind
+ *       (`source.kind === 'plugin:dsh-agent-team'`, no retired
+ *       `plugin` wrapper field — v4 admission rejects the wrapper)
+ *       and the rendered text verbatim (a runtime event, not a human
+ *       message); the
  *       `[team-work-settled requestToken=...]` leading line is the wake
  *       provenance envelope (the frozen Alpha contract alongside
  *       `[team-control requestId=...]` for approvals and `[team-relay...]`
@@ -311,7 +313,7 @@ describe('deliverRootWorkCompletionNotification (work-completion wake-up) — th
     expect(S.g2AddedSteers[0]!.sessionId).toBe(ROOT)
   })
 
-  it('G3: the delivered input carries the plugin attribution and the text verbatim', () => {
+  it('G3: the delivered input carries the producer-owned v4 source kind and the text verbatim', () => {
     // the G1 followup is the first recorded input on the root
     const delivered = S.g1AddedFollowups[0]!.message as unknown as {
       role: string
@@ -319,8 +321,10 @@ describe('deliverRootWorkCompletionNotification (work-completion wake-up) — th
       source: { kind: string; plugin?: string }
     }
     expect(delivered.role).toBe('user')
-    expect(delivered.source.kind).toBe('plugin')
-    expect(delivered.source.plugin).toBe('dsh-agent-team')
+    expect(delivered.source.kind).toBe('plugin:dsh-agent-team')
+    // the retired v3 wrapper field must be absent — v4 admission
+    // rejects any message source whose kind is the shared 'plugin'
+    expect('plugin' in delivered.source).toBe(false)
     expect(delivered.content).toHaveLength(1)
     expect(delivered.content[0]!.text).toBe(NOTIFICATION_TEXT)
   })

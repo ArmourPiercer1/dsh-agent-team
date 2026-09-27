@@ -1,0 +1,5 @@
+A RED:        old source rejected -> format v4 message requires a producer-owned source kind
+B GREEN:      new source admitted, round trip intact -> {"kind":"plugin:dsh-agent-team"}
+C CONTINUITY: v3 wrapper migrates to -> {"kind":"plugin:dsh-agent-team"}
+
+admission-proof: A+B+C all hold — the fix is admitted by native v4 and identity-continuous with migrated history
