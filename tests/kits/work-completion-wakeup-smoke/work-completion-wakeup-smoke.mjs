@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 /**
  * work-completion-wakeup-smoke.mjs — async work-completion (wake-up)
- * real-host smoke on a pristine DSH 0.1.5-rc.2 checkout. Plan:
+ * real-host smoke on a pristine DSH 0.1.7-rc.1 checkout. Plan:
  * docs/plans/active/dsh-agent-team-work-completion-wakeup-implementation-plan.md
  * §25 (L1–L4).
  *
  * WHAT IT PROVES (the wake-up acceptance arc on a real host):
  *
  *   L1 — single async completion wakes an idle Leader: the Leader's
- *        scripted turn admits ONE `team_delegate(async: true)` (create
- *        form) and returns — the Leader turn ends, the Leader is IDLE.
+ *        scripted turn admits ONE `team_delegate` with NO async argument
+ *        (create form — the 2026-09-27 ruling's DEFAULT-ASYNC live pin)
+ *        and returns — the Leader turn ends, the Leader is IDLE.
  *        When the member's work unit reaches its durable terminal
  *        settlement, the runtime's completion observer fires the
  *        best-effort wake-up: the Leader AUTOMATICALLY gets a NEW model
@@ -35,18 +36,22 @@
  *        → the Leader is STILL woken (terminal authority = the durable
  *        settlement fact, never the promise outcome) → `team_collect`
  *        reports the failed/unavailable result.
- *   L4 — sync regression: a plain `team_delegate` (no async) still
- *        BLOCKS the Leader turn to the terminal result (the member
+ *   L4 — sync regression: an EXPLICIT `team_delegate(async: false)`
+ *        still BLOCKS the Leader turn to the terminal result (the member
  *        result is IN the tool result), and NO separate completion
  *        notification turn appears for the token (the tool result is
  *        the completion channel — the sync path is byte-identical).
+ *        (2026-09-27 user ruling: the no-argument default flipped to
+ *        async, so the sync path is now an explicit opt-in; this leg
+ *        pins the opt-in, L1 pins the new default.)
  *
  * TOPOLOGY (four created teams on one production row — one per scenario,
  * the C1 kit's isolation pattern; each team = one blueprint, one root):
- *   - Team L1: the core wake arc (async → idle → followup wake → collect).
+ *   - Team L1: the core wake arc (DEFAULT-async — no async argument →
+ *     idle → followup wake → collect; the 2026-09-27 ruling live pin).
  *   - Team L2: two staggered async units (followup + steer/followup).
  *   - Team L3: the fail-closed wake (controlled member model error).
- *   - Team L4: the sync no-notify regression.
+ *   - Team L4: the sync no-notify regression (EXPLICIT async: false).
  *
  * DESIGN NOTES:
  *   - The mock model is a decision oracle (the a2x/rc2/C1 pattern).
@@ -68,15 +73,21 @@
  *     facts per token, incl. the L3 fail-closed `workOutcome`) + the
  *     mock request corpus (every model request with the wake-up text,
  *     the collect tool results, and the Leader model-call count).
- *   - WORLD: host = the pristine test-use checkout (DSH 0.1.5-rc.2 @
- *     fb2c4b9e69) launched as `node <testuse>/apps/cli/lib/bin.js web`
- *     with cwd = a scratch session workspace; env: DSH_HOME=<world home
- *     under tests/homes/>, DSH_CLIENT_COMMIT_HASH=fb2c4b9e69,
+ *   - WORLD: host = the pristine test-use checkout (DSH 0.1.7-rc.1 @
+ *     46a7f68b09, the 2026-09-24 host upgrade round baseline) launched
+ *     as `node <testuse>/apps/cli/lib/bin.js web` with cwd = a scratch
+ *     session workspace; env: DSH_HOME=<world home under tests/homes/>,
+ *     DSH_CLIENT_COMMIT_HASH=46a7f68b09,
  *     DEEPSEEK_BASE_URL=<in-process mock model>. Plugin rows mounted
  *     ONLY through the public profile-patch seam (production row = the
  *     WORKTREE's dist — this is the work-completion-wakeup branch
- *     build; p6t6 observability row). The preset is the same
- *     minimal-style smoke preset as the C1/rc2 kits.
+ *     build; p6t6 observability row). The preset is the HOST-SHIPPED
+ *     `standard` (0.1.7: the user-preset seam is gone — see the
+ *     SMOKE_PRESET_ID note; the U8 vertical kit's pattern). The mock's
+ *     request parsing is DUAL-WIRE (0.1.7 tool results ride in
+ *     `role: 'user'` messages as `tool_result` blocks — the 0.1.5
+ *     `role: 'tool'` shape is still accepted; see the 0.1.7 WIRE NOTE
+ *     at textOfMessage).
  *   - ZERO-TOUCH: the live instances :3080 and :3180 are probed
  *     read-only (status recorded pre/post) and never written to. Do
  *     NOT run this kit in parallel with a full `vitest` run (shared
@@ -136,7 +147,7 @@ const EVIDENCE_DIR_ARG = argValue('evidence-dir', null)
 
 // ── frozen facts ────────────────────────────────────────────────────────────
 
-const HOST_BASELINE_SHA = 'fb2c4b9e698e30edb738bca4cf0618587db7d203' // DSH 0.1.5-rc.2 release point
+const HOST_BASELINE_SHA = '46a7f68b0922371ce7144b668b90e377d8e799f4' // DSH 0.1.7-rc.1 release point (2026-09-24 host upgrade round; canonical pin = tests/paths.mjs)
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
 const DIST_RUNTIME = join(WORKTREE, 'packages', 'runtime', 'dist', 'packages', 'runtime')
 const PRODUCTION_ROW_PATH = join(DIST_RUNTIME, 'src', 'plugin', 'host.js')
@@ -148,9 +159,21 @@ const GLUE_URL = pathToFileURL(GLUE_PATH).href
 const SEAM_URL = pathToFileURL(SEAM_PATH).href
 const P6T6_ROW_NAME = pathToFileURL(P6T6_PLUGIN_PATH).href
 
-const SMOKE_PRESET_ID = 'wcn-smoke'
+// 0.1.7 note: the agent-preset registry no longer registers user-preset
+// directories (HOME/.agent-presets) — preset declaration authority is the
+// profile/plugin composition. This kit therefore mounts the HOST-SHIPPED
+// `standard` preset (the U8 vertical kit's proven pattern on 0.1.7); the
+// 0.1.5 custom smoke preset (persona + tool-fs + persistent shell, no
+// delegation group) is retired with the user-preset seam. The kit's legs
+// only use the team_* tools (blueprint-granted) and plain-text member
+// work, so the standard surface is behavior-neutral for them.
+const SMOKE_PRESET_ID = 'standard'
 const MANAGED_TOOL_NAMES = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh']
-const SAFE_UNMANAGED_TOOL_NAMES = ['todo_write']
+// 0.1.7 note: `subagent` appears on the ROOT surface (L0 discovery) but is
+// NOT a known global tool of the team agent context (per-agent own-layer
+// install — un-deniable in builtinToolDeny; tools.restrict() fails closed
+// on unknown names). Keep it in the no-deny set like todo_write.
+const SAFE_UNMANAGED_TOOL_NAMES = ['todo_write', 'subagent']
 // The team tool catalog this smoke's surface check expects on the boot
 // root (the closed twelve of the vNext tool layer).
 const TEAM_TOOL_CATALOG = [
@@ -166,6 +189,7 @@ const TEAM_TOOL_CATALOG = [
   'team_request_control',
   'team_resolve_control',
   'team_list_pending_control',
+  'team_archive_member', // 13th closed tool (PR #25, 2026-09-21)
 ]
 // The Leader teamTools allow list (the closed subset this smoke drives):
 // delegate (create + continue forms) + collect (the recovery path the
@@ -590,46 +614,6 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
   ].join('\n')
 }
 
-function writeSmokePreset(home) {
-  const dir = join(home, '.agent-presets', SMOKE_PRESET_ID)
-  mkdirSync(dir, { recursive: true })
-  const text = [
-    `# ${SMOKE_PRESET_ID} — work-completion wake-up real-host smoke preset (run ${RUN_STAMP}).`,
-    '# Reused from the C1/rc2 kits (public user-preset seam): persona +',
-    '# dsh-tool-fs + the minimal-style persistent shell group (bash',
-    '# stack). NO delegation group: the 0.1.5 spawn `subagent` row is a',
-    '# deferred per-agent own-layer install — un-restrictable and',
-    '# KNOWN_SENSITIVE under the Coverage Gate (followup-backlog 2/5/6).',
-    '- id: persona',
-    "  name: '@deepseek-ai/dsh-persona'",
-    '  config:',
-    '    suffix: Your working directory is {{cwd}}.',
-    '    prefix: >-',
-    '      You are a coding agent powered by the {{model}} model.',
-    '- id: tool-fs',
-    "  name: '@deepseek-ai/dsh-tool-fs'",
-    '- id: persistent-shell',
-    '  name: cordis:group',
-    '  group: true',
-    '  isolate:',
-    '    terminals: true',
-    '  config:',
-    '    - id: pty',
-    "      name: '@deepseek-ai/dsh-terminal'",
-    '    - id: terminal-bash',
-    "      name: '@deepseek-ai/dsh-terminal-bash'",
-    '      config:',
-    '        timeoutMs: 300000',
-    '    - id: persistent-bash',
-    "      name: '@deepseek-ai/dsh-tool-bash-persistent'",
-    '      config:',
-    '        timeoutMs: 300000',
-    '        description: Run commands in a bash shell. State is persistent across calls.',
-    '',
-  ].join('\n')
-  writeFileSync(join(dir, 'agent.cordis.yml'), text)
-}
-
 function writePatchFile(home) {
   mkdirSync(join(home, 'profiles', 'web'), { recursive: true })
   const lines = [
@@ -658,7 +642,7 @@ function spawnHost({ port, home, logPath, mockPort }) {
         env: {
           ...process.env,
           DSH_HOME: home,
-          DSH_CLIENT_COMMIT_HASH: 'fb2c4b9e69',
+          DSH_CLIENT_COMMIT_HASH: '46a7f68b09',
           DEEPSEEK_BASE_URL: `http://127.0.0.1:${mockPort}`,
           DEEPSEEK_API_KEY: 'wcn-smoke-mock-key',
         },
@@ -692,7 +676,6 @@ function stopHost(h) {
 
 async function bootHost({ port, home, mockPort, instanceLog }) {
   writePatchFile(home)
-  writeSmokePreset(home)
   mkdirSync(BLUEPRINT_DIR, { recursive: true })
   writeFileSync(join(BLUEPRINT_DIR, 'wcn-anchor.yaml'), BP_ANCHOR_YAML)
   writeFileSync(join(home, 'p6t6-directive.json'), JSON.stringify({
@@ -765,11 +748,42 @@ function messagesOf(req) {
   return bodyOf(req)?.messages ?? []
 }
 
+/**
+ * 0.1.7 WIRE NOTE (host upgrade round, adaptation 5): the DeepSeek
+ * Messages wire carries tool results as `role: 'user'` messages whose
+ * content is an ARRAY of blocks — `{ type: 'tool_result', tool_use_id,
+ * content: [{ type: 'text', text }] }` (0.1.5 sent standalone
+ * `role: 'tool'` messages with string content). Every parsing helper in
+ * this kit is therefore DUAL-WIRE: it accepts both shapes.
+ */
+/** The text of one wire message (string content OR text blocks). */
+function textOfMessage(m) {
+  if (m == null) return ''
+  if (typeof m.content === 'string') return m.content
+  if (Array.isArray(m.content)) {
+    return m.content
+      .filter((b) => b?.type === 'text' && typeof b.text === 'string')
+      .map((b) => b.text)
+      .join('\n')
+  }
+  return ''
+}
+
+/** The text of one 0.1.7 `tool_result` block (string or text blocks). */
+function toolResultBlockText(block) {
+  const c = block?.content
+  if (typeof c === 'string') return c
+  if (Array.isArray(c)) {
+    return c.filter((x) => x?.type === 'text').map((x) => x.text ?? '').join('')
+  }
+  return ''
+}
+
 /** ALL user messages joined (forensic scans). */
 function userTextOf(req) {
   return messagesOf(req)
     .filter((m) => m.role === 'user')
-    .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '')))
+    .map((m) => textOfMessage(m))
     .join('\n')
 }
 
@@ -786,8 +800,7 @@ function lastTriggerIndex(req) {
   for (let i = messages.length - 1; i >= 0; i -= 1) {
     const m = messages[i]
     if (m.role !== 'user') continue
-    const t = typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '')
-    if (TRIGGER_RE.test(t)) return i
+    if (TRIGGER_RE.test(textOfMessage(m))) return i
   }
   // Fallback: the raw last user message.
   for (let i = messages.length - 1; i >= 0; i -= 1) {
@@ -801,19 +814,26 @@ function lastUserTextOf(req) {
   const messages = messagesOf(req)
   const i = lastTriggerIndex(req)
   if (i === -1) return ''
-  const last = messages[i]
-  return typeof last.content === 'string' ? last.content : JSON.stringify(last.content ?? '')
+  return textOfMessage(messages[i])
 }
 
 /**
- * The tool messages AFTER the chain trigger (chain progress). The
- * cumulative count misroutes multi-chain sessions (an earlier chain's
- * tool results stay in the history).
+ * The tool results AFTER the chain trigger (chain progress), DUAL-WIRE:
+ * 0.1.5 `role: 'tool'` messages OR 0.1.7 `tool_result` blocks inside
+ * `role: 'user'` messages. The cumulative count misroutes multi-chain
+ * sessions (an earlier chain's tool results stay in the history).
  */
 function toolMsgsOf(req) {
   const messages = messagesOf(req)
   const i = lastTriggerIndex(req)
-  return messages.slice(i + 1).filter((m) => m.role === 'tool')
+  const out = []
+  for (const m of messages.slice(i + 1)) {
+    if (m.role === 'tool') out.push(m)
+    else if (m.role === 'user' && Array.isArray(m.content)) {
+      for (const b of m.content) if (b?.type === 'tool_result') out.push(b)
+    }
+  }
+  return out
 }
 
 /** The requestToken from a wake-up notification text (`requestToken: <tok>` line). */
@@ -831,7 +851,7 @@ function extractNotifToken(text) {
 function hasNotifUserMessage(req, token) {
   if (req === null || req.body === null) return false
   return messagesOf(req).some(
-    (m) => m.role === 'user' && typeof m.content === 'string' && m.content.startsWith(NOTIF_PREFIX) && m.content.includes(token),
+    (m) => m.role === 'user' && textOfMessage(m).startsWith(NOTIF_PREFIX) && textOfMessage(m).includes(token),
   )
 }
 
@@ -839,9 +859,9 @@ function hasNotifUserMessage(req, token) {
 function notifUserTextOf(req, token) {
   if (req === null || req.body === null) return ''
   const m = messagesOf(req).find(
-    (x) => x.role === 'user' && typeof x.content === 'string' && x.content.startsWith(NOTIF_PREFIX) && x.content.includes(token),
+    (x) => x.role === 'user' && textOfMessage(x).startsWith(NOTIF_PREFIX) && textOfMessage(x).includes(token),
   )
-  return m === undefined ? '' : m.content
+  return m === undefined ? '' : textOfMessage(m)
 }
 
 /**
@@ -857,9 +877,11 @@ function notifUserTextOf(req, token) {
  *   3. member work chains (L1/L2A/L2B/L4: plain result text; L2B
  *      STAGGERED by a delay; L3: a controlled model error → the fail-
  *      closed settlement).
- *   4. leader initial-work chains (L1: one async delegate; L2: two;
- *   L3: one (the failing worker); L4: one SYNC — the tool call blocks
- *      to the terminal result in-band).
+ *   4. leader initial-work chains (L1: one DEFAULT-async delegate —
+ *      no async argument, the 2026-09-27 ruling's new default; L2:
+ *      two explicit async; L3: one explicit async (the failing worker);
+ *      L4: one EXPLICIT sync (async: false) — the tool call blocks to
+ *      the terminal result in-band).
  */
 function makeDecide() {
   // Wake-chain state: the tokens for which a team_collect call has been
@@ -869,7 +891,7 @@ function makeDecide() {
   const collecting = new Set()
   return function decide({ req }) {
     const firstMsg = messagesOf(req)[0]
-    if (typeof firstMsg?.content === 'string' && firstMsg.content.startsWith('Create a concise title')) {
+    if (textOfMessage(firstMsg).startsWith('Create a concise title')) {
       return { kind: 'text', content: 'wcn smoke session' }
     }
     const lastUser = lastUserTextOf(req)
@@ -886,8 +908,8 @@ function makeDecide() {
     if (lastUser.startsWith(NOTIF_PREFIX)) {
       const tokens = [...new Set(
         messagesOf(req)
-          .filter((m) => m.role === 'user' && typeof m.content === 'string' && m.content.startsWith(NOTIF_PREFIX))
-          .map((m) => extractNotifToken(m.content))
+          .filter((m) => m.role === 'user' && textOfMessage(m).startsWith(NOTIF_PREFIX))
+          .map((m) => extractNotifToken(textOfMessage(m)))
           .filter((t) => t !== null),
       )]
       const roots = tokens.map((t) => TOKEN_TO_ROOT[t])
@@ -933,19 +955,22 @@ function makeDecide() {
     }
 
     // (4) leader initial-work chains (one per team, create-form
-    // delegates; L1/L2/L3 async, L4 sync).
+    // delegates; L1 DEFAULT-async = NO async argument (the 2026-09-27
+    // ruling's new default — the live pin), L2/L3 explicit async,
+    // L4 explicit sync (async: false — the sync path is now opt-in)).
     if (lastUser.includes(MK_DISC)) return { kind: 'text', content: 'W_DISC_DONE' }
     if (lastUser.includes(MK_L1)) {
       switch (tools) {
         case 0:
+          // L1: NO async argument — the DEFAULT is now async; the call
+          // returns the durable admission receipt (workStatus admitted).
           return toolCall('team_delegate', {
             rootSessionId: CREATE_ROOT_L1,
             requestToken: TOK_L1,
             delegationTemplateId: 'worker',
             label: 'w-l1',
             prompt: `${MK_L1MEM} do the L1 probe work and answer with the result body`,
-            taskSummary: 'L1 probe work (async)',
-            async: true,
+            taskSummary: 'L1 probe work (default-async, no async argument)',
           })
         case 1:
           return { kind: 'text', content: 'W_L1_DONE' }
@@ -1002,14 +1027,17 @@ function makeDecide() {
     if (lastUser.includes(MK_L4)) {
       switch (tools) {
         case 0:
-          // L4: NO async — the call blocks to the terminal result.
+          // L4: EXPLICIT async: false (the 2026-09-27 ruling made the
+          // sync path opt-in; no argument = async default) — the call
+          // blocks to the terminal result.
           return toolCall('team_delegate', {
             rootSessionId: CREATE_ROOT_L4,
             requestToken: TOK_L4,
             delegationTemplateId: 'worker',
             label: 'w-l4',
             prompt: `${MK_L4MEM} do the L4 work (sync)`,
-            taskSummary: 'L4 work (sync)',
+            taskSummary: 'L4 work (explicit sync)',
+            async: false,
           })
         case 1:
           return { kind: 'text', content: 'W_L4_DONE' }
@@ -1035,10 +1063,16 @@ async function waitForMock(mock, pred, timeoutMs, label) {
   }
 }
 
-/** The LAST tool result of a request (the most recent tool output). */
+/** The LAST tool result of a request (the most recent tool output), DUAL-WIRE. */
 function lastToolResult(req) {
-  const msgs = messagesOf(req).filter((m) => m.role === 'tool')
-  return String(msgs[msgs.length - 1]?.content ?? '')
+  const results = []
+  for (const m of messagesOf(req)) {
+    if (m.role === 'tool') results.push(String(m.content ?? ''))
+    else if (m.role === 'user' && Array.isArray(m.content)) {
+      for (const b of m.content) if (b?.type === 'tool_result') results.push(toolResultBlockText(b))
+    }
+  }
+  return results[results.length - 1] ?? ''
 }
 
 /**
@@ -1054,13 +1088,21 @@ function findWakeCollectResult(mock, token, pred) {
     if (r.body === null) continue
     const msgs = messagesOf(r)
     const onWakeChain = msgs.some(
-      (m) => m.role === 'user' && typeof m.content === 'string' && m.content.startsWith(NOTIF_PREFIX) && m.content.includes(token),
+      (m) => m.role === 'user' && textOfMessage(m).startsWith(NOTIF_PREFIX) && textOfMessage(m).includes(token),
     )
     if (!onWakeChain) continue
-    const toolMsgs = msgs.filter((m) => m.role === 'tool')
-    for (const t of toolMsgs) {
-      const content = String(t.content ?? '')
-      if (pred(content)) return { seq: r.seq, content }
+    // DUAL-WIRE tool-result scan (0.1.5 role:'tool' | 0.1.7 tool_result blocks).
+    for (const m of msgs) {
+      if (m.role === 'tool') {
+        const content = String(m.content ?? '')
+        if (pred(content)) return { seq: r.seq, content }
+      } else if (m.role === 'user' && Array.isArray(m.content)) {
+        for (const b of m.content) {
+          if (b?.type !== 'tool_result') continue
+          const content = toolResultBlockText(b)
+          if (pred(content)) return { seq: r.seq, content }
+        }
+      }
     }
   }
   return null
@@ -1158,7 +1200,6 @@ async function main() {
   rmSync(HOME, { recursive: true, force: true })
   rmSync(BLUEPRINT_DIR, { recursive: true, force: true })
   mkdirSync(WORKSPACE, { recursive: true })
-  writeSmokePreset(HOME)
   log('world materialized (scratch workspace)')
 
   // Mock model.
@@ -1194,7 +1235,7 @@ async function main() {
       writeEvidence('l0-surface.json', { surface, discRequest: { seq: discReq.seq, tools: surface } })
       log(`discovery surface (${surface.length} tools): ${surface.join(', ')}`)
       const missingTeam = TEAM_TOOL_CATALOG.filter((n) => !surface.includes(n))
-      check('L0', 'discovery captured the surface; read + bash present; the 12-tool catalog is present on the boot root',
+      check('L0', 'discovery captured the surface; read + bash present; the 13-tool catalog is present on the boot root',
         surface.includes('read') && surface.includes('bash') && missingTeam.length === 0,
         `surface=${surface.length} missingTeam=[${missingTeam.join(',')}]`)
       if (discReq.reply === undefined || discReq.reply.kind !== 'text' || discReq.reply.content !== 'W_DISC_DONE') {
@@ -1435,7 +1476,7 @@ async function main() {
     const createL4 = await remoteCall(booted.origin, booted.cookie, 'team.create', {
       rootSessionId: CREATE_ROOT_L4,
       blueprintId: BP_L4_ID,
-      initialWork: { prompt: `${MK_L4} delegate the L4 work SYNCHRONOUSLY on a fresh worker — the tool result carries the answer` },
+      initialWork: { prompt: `${MK_L4} delegate the L4 work SYNCHRONOUSLY (async: false) on a fresh worker — the tool result carries the answer` },
     }, 'wcnl4')
     // The sync delegate BLOCKS the Leader turn to the terminal result:
     // the W_L4_DONE request carries the delegate's tool result (the

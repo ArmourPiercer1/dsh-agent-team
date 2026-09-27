@@ -795,12 +795,17 @@ function makeDecide() {
         case 4: {
           const id = extractInstanceId(toolMsgsOf(req)[3]?.content)
           if (id === null) return { kind: 'text', content: `RC2_B_EXTRACT_FAIL :: ${String(toolMsgsOf(req)[3]?.content).slice(0, 300)}` }
+          // EXPLICIT async: false — the 2026-09-27 ruling flipped the
+          // no-argument default to async; this kit exercises blueprint
+          // binding/persona, so it pins the sync path explicitly to keep
+          // its proven behavior byte-identical.
           return toolCall('team_delegate', {
             rootSessionId: CREATE_ROOT_B,
             requestToken: `rc2-b-delegate-${RUN_STAMP}`,
             delegationInstanceId: id,
             label: 'worker-b-1',
             prompt: MK_BMEM,
+            async: false,
           })
         }
         case 5: return { kind: 'text', content: 'RC2_SMOKE_B_DONE' }
@@ -819,12 +824,15 @@ function makeDecide() {
         case 1: {
           const id = extractInstanceId(toolMsgsOf(req)[0]?.content)
           if (id === null) return { kind: 'text', content: `RC2_C_EXTRACT_FAIL :: ${String(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
+          // EXPLICIT async: false (2026-09-27 ruling: sync is now opt-in)
+          // — keeps this persona-isolation kit's behavior byte-identical.
           return toolCall('team_delegate', {
             rootSessionId: CREATE_ROOT_C,
             requestToken: `rc2-c-delegate-${RUN_STAMP}`,
             delegationInstanceId: id,
             label: 'worker-b-1',
             prompt: MK_CMEM,
+            async: false,
           })
         }
         case 2: return { kind: 'text', content: 'RC2_SMOKE_C_DONE' }

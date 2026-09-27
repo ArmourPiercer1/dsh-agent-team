@@ -36,7 +36,10 @@
  *        delivery attempt for the request in the mock corpus).
  *   S6 — Leader busy / synchronous delegation CHARACTERIZATION (not a
  *        requirement to create concurrent Leader turns): the Leader
- *        delegates SYNCHRONOUSLY; the member asks while the Leader turn is
+ *        delegates SYNCHRONOUSLY (EXPLICIT `async: false` — the 2026-09-27
+ *        ruling flipped the no-argument default to async, so this leg now
+ *        opts into the sync path explicitly); the member asks while the
+ *        Leader turn is
  *        blocked in the delegate; the kit records that the root
  *        notification is QUEUED (not immediately processable — its model
  *        request only appears after the Leader turn ends), that the
@@ -45,8 +48,9 @@
  *        delivery is in flight — no control-lock deadlock; the notifier
  *        runs after the lock release), and that the queued notification is
  *        processed after the turn, where the pending list reflects the
- *        recorded decision. Guidance recorded: `async: true` for
- *        approval-capable work.
+ *        recorded decision. Guidance recorded: approval-capable work
+ *        stays on the DEFAULT async path (2026-09-27 ruling); only an
+ *        explicit `async: false` reproduces this busy-Leader queueing.
  *   XCROSS — cross-ROOT rejection (PR #20 closure, RH2/RH3): while Team
  *        Z's ask is pending, the X LEADER (a different team's leader on
  *        the SAME production domain) addresses Z's ledger:
@@ -63,7 +67,8 @@
  *   - Team Z: async delegation; the notification turn is REFUSED by the
  *     mock model (S4+S5). Recovery is driven by an explicit Leader input
  *     (`/api/session/prompt` on the created root).
- *   - Team Y: SYNCHRONOUS delegation; the Leader turn blocks in the
+ *   - Team Y: SYNCHRONOUS delegation (explicit async: false — the
+ *     2026-09-27 ruling's sync opt-in); the Leader turn blocks in the
  *     delegate while the member asks (S6). The kit breaks the cycle
  *     through the human resolver channel (the member's ask is
  *     `leader-approval` — resolvable by Leader OR human; the Leader is
@@ -1017,15 +1022,18 @@ function makeDecide() {
         case 1: {
           const id = extractInstanceId(toolMsgsOf(req)[0]?.content)
           if (id === null) return { kind: 'text', content: `C1_Y_EXTRACT_FAIL :: ${String(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
-          // SYNC delegation (no async arg) — the S6 blocked Leader turn:
-          // this call does not return to the model until the member's
-          // work unit settles, which requires a control decision.
+          // SYNC delegation (EXPLICIT async: false — the 2026-09-27
+          // ruling made the sync path opt-in; no arg = async default) —
+          // the S6 blocked Leader turn: this call does not return to the
+          // model until the member's work unit settles, which requires a
+          // control decision.
           return toolCall('team_delegate', {
             rootSessionId: CREATE_ROOT_Y,
             requestToken: `c1-y-delegate-${RUN_STAMP}`,
             delegationInstanceId: id,
             label: 'w-y',
             prompt: MK_YMEM,
+            async: false,
           })
         }
         case 2: return { kind: 'text', content: 'C1_Y_DONE' }
