@@ -89,6 +89,15 @@ export type ActionCaller =
  *   state is read back through the `work-status` action / `team_collect`
  *   tool (CCR-3).
  *
+ * 2026-09-27 user ruling (model surface only): the model-facing tools
+ * `team_delegate` / `team_follow_up` are now ASYNCHRONOUS BY DEFAULT
+ * (absent `async` argument → `execution: 'async'`; only an explicit
+ * `async: false` sends `execution: 'sync'`). The FACADE field semantics
+ * are UNCHANGED — an ABSENT `execution` still resolves to `sync`
+ * (CCR-1) for direct `performAction` callers — but the tool layer always
+ * sets the field explicitly, so the facade default is no longer reachable
+ * through the model surface.
+ *
  * Accepted ONLY on the work actions (`delegate` / `follow-up`); rejected
  * on every other action (REQUEST_MALFORMED — CCR-2's closed scope).
  */

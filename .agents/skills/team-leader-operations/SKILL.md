@@ -50,9 +50,10 @@ approvals. Everything below is the production behavior of the closed thirteen
 
 Optional args worth knowing:
 
-- `team_delegate` / `team_follow_up`: `async` (boolean), `attachedContext`
-  (max 32768), `taskSummary` (max 512); create form also `groupId`,
-  `workspace`.
+- `team_delegate` / `team_follow_up`: `async` (boolean, **default true
+  when omitted** — the work runs async unless you explicitly opt out with
+  `async: false`), `attachedContext` (max 32768), `taskSummary` (max 512);
+  create form also `groupId`, `workspace`.
 - `team_create_member`: `groupId`, `workspace`.
 - `team_send_message`: `subject` (max 256).
 - `team_report_progress`: `progress` is a closed enum
@@ -91,18 +92,20 @@ Optional args worth knowing:
    - `prompt` is **REQUIRED and self-contained**: the member receives no
      inherited context from you or from sibling transcripts. Put everything
      the member needs in `prompt` (+ `attachedContext` for bulky material).
-3. Default is **synchronous**: the call returns when the work unit has
-   settled and the member result is in the response.
-4. For long work, pass `async: true`: the call returns as soon as the durable
-   admission is committed (the response effect carries `workStatus:
-   "admitted"`, `settled: false`, and NO result) and the work runs detached —
-   your turn ending does not cancel it.
-5. Read the terminal state back with `team_collect` using the same request
-   token(s): each token reports either `running` (still in flight — or the
-   chain crashed before settlement; a same-token re-delegate RESUMES the unit
-   instead of admitting a second one) or the terminal result
+3. Default is **asynchronous**: with no `async` argument the call returns
+   as soon as the durable admission is committed (the response effect
+   carries `workStatus: "admitted"`, `settled: false`, and NO result) and
+   the work runs detached — your turn ending does not cancel it.
+4. For the terminal state, read it back with `team_collect` using the same
+   request token: each token reports either `running` (still in flight — or
+   the chain crashed before settlement; a same-token re-delegate RESUMES the
+   unit instead of admitting a second one) or the terminal result
    (`succeeded` / `failed` / `unavailable`, served verbatim from the durable
    settlement fact — it survives a restart).
+5. Pass `async: false` for **synchronous** behavior (opt-in): the call
+   returns when the work unit has settled and the member result is in the
+   response. Use it only for work you know will not wait on a leader
+   approval (see §5.1).
 6. Continue the same instance with `team_follow_up` (persistent delegation:
    the same bound child session is kept, so the member retains its context).
    Use `team_delegate` with `delegationInstanceId` for new work on an
@@ -153,27 +156,29 @@ Optional args worth knowing:
   with the same token returns the existing request (and does NOT re-notify
   you — one durable request, at most one notification).
 
-### 5.1 Approvals and delegation: prefer `async: true` for approval-gated work
+### 5.1 Approvals and delegation: keep approval-gated work on the async default
 
-A **synchronous** `team_delegate` / `team_follow_up` blocks your turn on the
-member's work unit. If that member then hits an approval gate
-(`leader-approval`), the liveness notification for the request is queued
-until your current turn can progress — and your current turn is the one
-waiting on that member. That topology is a known scheduling limitation of
-this release (documented, not a deadlock of the request path: the request
-stays durable and the human resolver channel stays open, but you cannot
-decide it yourself from inside the blocked turn).
+A **synchronous** `team_delegate` / `team_follow_up` (explicit
+`async: false`) blocks your turn on the member's work unit. If that member
+then hits an approval gate (`leader-approval`), the liveness notification
+for the request is queued until your current turn can progress — and your
+current turn is the one waiting on that member. That topology is a known
+scheduling limitation of this release (documented, not a deadlock of the
+request path: the request stays durable and the human resolver channel
+stays open, but you cannot decide it yourself from inside the blocked turn).
 
-For work likely to hit member approval gates, use:
+The delegation default is now ASYNCHRONOUS (2026-09-27 ruling), so the
+safe path is the plain default:
 
-1. `team_delegate(..., async: true)` / `team_follow_up(..., async: true)` —
+1. `team_delegate(...)` / `team_follow_up(...)` — no `async` argument —
    the admission returns immediately;
 2. handle the approval when it surfaces: the Leader notification (or a
    `team_list_pending_control` read), inspect the `requestId` + summary,
    then `team_resolve_control`;
 3. `team_collect` for the terminal member result.
 
-Synchronous delegation stays fine for work you know will not ask.
+Explicit `async: false` (synchronous) delegation stays fine for work you
+know will not ask.
 
 ## 6. Reading results
 
@@ -211,10 +216,10 @@ unexpected errors surface as tool errors.
   authorizes the exact scope exactly once.
 - Resolving a `user-approval` request as the Leader — the human is the only
   resolver for that kind.
-- Using a synchronous delegation for approval-gated member work — the
+- Passing explicit `async: false` for approval-gated member work — the
   request's liveness notification is queued behind your blocked turn;
-  delegate `async: true` and resolve via the notification /
-  `team_list_pending_control` (see §5.1).
+  stay on the async default (no `async` argument) and resolve via the
+  notification / `team_list_pending_control` (see §5.1).
 - Treating the Leader notification as a recovery mechanism — it is
   best-effort liveness for NEW requests; the durable request + the pending
   list are the recovery path (notifications are not replayed after a

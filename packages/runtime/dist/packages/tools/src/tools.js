@@ -36,15 +36,21 @@
  * |                       | guarded on the target, SD-GUARD; leader     |
  * |                       | only — the lifecycle-management surface)    |
  *
- * Async work execution (issue #1 / CCR-2): `team_delegate` and
- * `team_follow_up` accept an optional `async: true` argument — the call
- * returns once the Phase A durable admission is committed (the response
- * effect carries `workStatus: 'admitted'`, `settled: false`, NO result)
- * and the work unit runs detached in the Team runtime (its caller signal
- * no longer cancels it — CCR-4). The terminal state is read back through
- * `team_collect` (the durable member result survives a restart — CCR-5).
- * Omitted / `false` is the default: the synchronous alpha.2 behavior,
- * unchanged (CCR-1).
+ * Async work execution (issue #1 / CCR-2; 2026-09-27 user ruling):
+ * `team_delegate` and `team_follow_up` accept an optional `async` argument
+ * and are ASYNCHRONOUS BY DEFAULT — with an ABSENT (or `true`) argument
+ * the call returns once the Phase A durable admission is committed (the
+ * response effect carries `workStatus: 'admitted'`, `settled: false`, NO
+ * result) and the work unit runs detached in the Team runtime (its caller
+ * signal no longer cancels it — CCR-4). The terminal state is read back
+ * through `team_collect` (the durable member result survives a restart —
+ * CCR-5). Only an EXPLICIT `async: false` engages the synchronous alpha.2
+ * behavior (the call blocks through the full work chain and the effect
+ * carries the `memberResult`). The 2026-09-27 user ruling supersedes the
+ * CCR-1 default (absent = sync) on the MODEL-FACING surface; the facade's
+ * closed `execution` field keeps its own semantics (absent = sync), which
+ * the tool layer no longer relies on: it now ALWAYS sends an explicit
+ * `execution` value (the model surface is the only production caller).
  *
  * The guarded work operations consult the last-mile guard IMMEDIATELY
  * before execution (see guard.ts, SD-GUARD); a blocked verdict returns the
@@ -107,7 +113,7 @@ const REQUEST_TOKEN_ARG = {
 };
 const ASYNC_ARG = {
     type: 'boolean',
-    description: 'Optional (default false): run the work unit ASYNCHRONOUSLY — the call returns as soon as the durable admission is committed (the response effect carries workStatus "admitted", settled false, and NO member result); the terminal result is then read back with team_collect. Omit or false for the default synchronous behavior (the call blocks until the work unit settles and the response carries the member result).',
+    description: 'Optional (default true when omitted): the DEFAULT is ASYNCHRONOUS — with no argument the call returns as soon as the durable admission is committed (the response effect carries workStatus "admitted", settled false, and NO member result); the terminal result is then read back with team_collect. Pass async: false for the synchronous behavior (the call blocks until the work unit settles and the response carries the member result — reserve it for work you know will not wait on a leader approval, which the Leader cannot resolve from inside a blocked turn).',
 };
 const REQUEST_TOKENS_ARG = {
     type: 'array',
@@ -474,7 +480,7 @@ function createMemberSpec() {
 function delegateSpec() {
     return {
         name: 'team_delegate',
-        description: 'Delegate work: either create a NEW member from a template and admit the work on it, or admit new work on an EXISTING member instance. Provide exactly one of delegationTemplateId / delegationInstanceId. Synchronous by default: the call returns when the work unit has settled (the member result is in the response). Pass async: true to admit the work durably and return immediately (the response carries the admission receipt — workStatus "admitted", settled false, no result); read the terminal result back with team_collect (the same request token).',
+        description: 'Delegate work: either create a NEW member from a template and admit the work on it, or admit new work on an EXISTING member instance. Provide exactly one of delegationTemplateId / delegationInstanceId. Asynchronous by default: with no async argument the work is admitted durably and the call returns immediately (the response carries the admission receipt — workStatus "admitted", settled false, no result); read the terminal result back with team_collect (the same request token). Pass async: false for the synchronous behavior (the call returns when the work unit has settled and the member result is in the response).',
         properties: {
             rootSessionId: ROOT_SESSION_ID_ARG,
             requestToken: REQUEST_TOKEN_ARG,
@@ -531,7 +537,10 @@ function delegateSpec() {
             const attachedContext = optionalStringField(args, 'attachedContext', ATTACHED_CONTEXT_MAX_LENGTH);
             if (attachedContext !== undefined)
                 payload.attachedContext = attachedContext;
-            const asyncExecution = args['async'] === true;
+            // 2026-09-27 user ruling (supersedes CCR-1 on the model surface):
+            // an ABSENT `async` argument is the ASYNCHRONOUS default; only an
+            // EXPLICIT `async: false` engages the synchronous alpha.2 path.
+            const execution = args['async'] === false ? 'sync' : 'async';
             const request = {
                 rootSessionId: ctx.rootSessionId,
                 action: ACTION_NAMES.DELEGATE,
@@ -540,10 +549,10 @@ function delegateSpec() {
                 payload,
                 ...(templateId !== undefined ? { delegationTemplateId: templateId } : {}),
                 ...(instanceId !== undefined ? { delegationInstanceId: instanceId } : {}),
-                // issue #1 / CCR-2: the closed execution-mode field (absent = the
-                // default sync — CCR-1; never set to 'sync' explicitly from the
-                // tool layer).
-                ...(asyncExecution ? { execution: 'async' } : {}),
+                // issue #1 / CCR-2: the closed execution-mode field — always set
+                // explicitly by the tool layer (absent = the facade's own default
+                // sync, CCR-1, no longer reachable through the model surface).
+                execution,
             };
             const execute = async () => toExecutedResult(await performRuntimeAction(ctx, request));
             // The continue form admits work on an EXISTING instance: it is guarded
@@ -559,7 +568,7 @@ function delegateSpec() {
 function followUpSpec() {
     return {
         name: 'team_follow_up',
-        description: 'Admit a follow-up work unit on an EXISTING member instance (persistent delegation: the same bound child session is kept). Synchronous by default: the call returns when the work unit has settled (the member result is in the response). Pass async: true to admit the work durably and return immediately (the response carries the admission receipt — workStatus "admitted", settled false, no result); read the terminal result back with team_collect (the same request token).',
+        description: 'Admit a follow-up work unit on an EXISTING member instance (persistent delegation: the same bound child session is kept). Asynchronous by default: with no async argument the work is admitted durably and the call returns immediately (the response carries the admission receipt — workStatus "admitted", settled false, no result); read the terminal result back with team_collect (the same request token). Pass async: false for the synchronous behavior (the call returns when the work unit has settled and the member result is in the response).',
         properties: {
             rootSessionId: ROOT_SESSION_ID_ARG,
             requestToken: REQUEST_TOKEN_ARG,
@@ -589,7 +598,10 @@ function followUpSpec() {
             const attachedContext = optionalStringField(args, 'attachedContext', ATTACHED_CONTEXT_MAX_LENGTH);
             if (attachedContext !== undefined)
                 payload.attachedContext = attachedContext;
-            const asyncExecution = args['async'] === true;
+            // 2026-09-27 user ruling (supersedes CCR-1 on the model surface):
+            // an ABSENT `async` argument is the ASYNCHRONOUS default; only an
+            // EXPLICIT `async: false` engages the synchronous alpha.2 path.
+            const execution = args['async'] === false ? 'sync' : 'async';
             return executeGuarded(ctx, targetInstanceId, ACTION_NAMES.FOLLOW_UP, async () => toExecutedResult(await performRuntimeAction(ctx, {
                 rootSessionId: ctx.rootSessionId,
                 action: ACTION_NAMES.FOLLOW_UP,
@@ -597,9 +609,11 @@ function followUpSpec() {
                 targetInstanceId,
                 requestToken: ctx.requestToken,
                 payload,
-                // issue #1 / CCR-2: the closed execution-mode field (absent =
-                // the default sync — CCR-1).
-                ...(asyncExecution ? { execution: 'async' } : {}),
+                // issue #1 / CCR-2: the closed execution-mode field — always
+                // set explicitly by the tool layer (absent = the facade's own
+                // default sync, CCR-1, no longer reachable through the model
+                // surface).
+                execution,
             })));
         },
     };

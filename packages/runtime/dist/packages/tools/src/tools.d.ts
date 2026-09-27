@@ -36,15 +36,21 @@
  * |                       | guarded on the target, SD-GUARD; leader     |
  * |                       | only — the lifecycle-management surface)    |
  *
- * Async work execution (issue #1 / CCR-2): `team_delegate` and
- * `team_follow_up` accept an optional `async: true` argument — the call
- * returns once the Phase A durable admission is committed (the response
- * effect carries `workStatus: 'admitted'`, `settled: false`, NO result)
- * and the work unit runs detached in the Team runtime (its caller signal
- * no longer cancels it — CCR-4). The terminal state is read back through
- * `team_collect` (the durable member result survives a restart — CCR-5).
- * Omitted / `false` is the default: the synchronous alpha.2 behavior,
- * unchanged (CCR-1).
+ * Async work execution (issue #1 / CCR-2; 2026-09-27 user ruling):
+ * `team_delegate` and `team_follow_up` accept an optional `async` argument
+ * and are ASYNCHRONOUS BY DEFAULT — with an ABSENT (or `true`) argument
+ * the call returns once the Phase A durable admission is committed (the
+ * response effect carries `workStatus: 'admitted'`, `settled: false`, NO
+ * result) and the work unit runs detached in the Team runtime (its caller
+ * signal no longer cancels it — CCR-4). The terminal state is read back
+ * through `team_collect` (the durable member result survives a restart —
+ * CCR-5). Only an EXPLICIT `async: false` engages the synchronous alpha.2
+ * behavior (the call blocks through the full work chain and the effect
+ * carries the `memberResult`). The 2026-09-27 user ruling supersedes the
+ * CCR-1 default (absent = sync) on the MODEL-FACING surface; the facade's
+ * closed `execution` field keeps its own semantics (absent = sync), which
+ * the tool layer no longer relies on: it now ALWAYS sends an explicit
+ * `execution` value (the model surface is the only production caller).
  *
  * The guarded work operations consult the last-mile guard IMMEDIATELY
  * before execution (see guard.ts, SD-GUARD); a blocked verdict returns the

@@ -9,12 +9,13 @@
  * isolation, the retry protocol, the crash/restart resume) lives in
  * `packages/runtime/test/issue1-async-delegation.test.ts`; this file pins
  * what the MODEL can do through the tools: the async receipt projection on
- * the continue form and the create form, the terminal read-back, the sync
- * default surface (no `async` argument = the settled effect with the member
- * result — CCR-1), the explicit `async: false` non-async pin, the
- * read-only-ness of the collect (zero durable writes, zero deliveries),
- * the duplicate/unknown token handling, and the tool-layer argument
- * contract (TEAM_TOOL_BAD_ARGUMENTS).
+ * the continue form and the create form, the terminal read-back, the
+ * ASYNC default surface (no `async` argument = the admission receipt +
+ * collect read-back — 2026-09-27 user ruling, supersedes CCR-1 on the
+ * model surface), the explicit `async: false` synchronous pin (the alpha.2
+ * behavior on opt-in), the read-only-ness of the collect (zero durable
+ * writes, zero deliveries), the duplicate/unknown token handling, and the
+ * tool-layer argument contract (TEAM_TOOL_BAD_ARGUMENTS).
  *
  * World: the full P6-T2 durable world with the P8-S3 work chain wired
  * (fake lifecycle commit port + a GATED delivery port + the real work-
@@ -128,6 +129,9 @@ interface TState {
   t1DeliveredSignal: unknown
   t1InFlightAfterReceipt: number
   t2Receipt: TeamToolsResult | undefined
+  t2Collect: TeamToolsResult | undefined
+  t2DeliveredSignal: unknown
+  t2InFlightAfterReceipt: number
   t3Receipt: TeamToolsResult | undefined
   t3Collect: TeamToolsResult | undefined
   t4Collect: TeamToolsResult | undefined
@@ -148,6 +152,9 @@ const T: TState = {
   t1DeliveredSignal: 'UNSET',
   t1InFlightAfterReceipt: -1,
   t2Receipt: undefined,
+  t2Collect: undefined,
+  t2DeliveredSignal: 'UNSET',
+  t2InFlightAfterReceipt: -1,
   t3Receipt: undefined,
   t3Collect: undefined,
   t4Collect: undefined,
@@ -243,15 +250,25 @@ const T: TState = {
       requestTokens: ['t1-fu'],
     }))
 
-    // --- T2: the default (no async argument) stays sync (CCR-1) -------------
-    const t2Promise = run('team_follow_up', base({
+    // --- T2: the default (no async argument) is now ASYNC (2026-09-27 user
+    //     ruling, supersedes CCR-1 on the model surface) ---------------------
+    T.t2Receipt = await run('team_follow_up', base({
       requestToken: 't2-fu',
       targetInstanceId: WORKER1,
-      prompt: 't2: the sync follow-up prompt',
+      prompt: 't2: the default-async follow-up prompt',
     }))
+    // The receipt returned while the delivery was still in flight — the
+    // DEFAULT (no async argument) no longer blocks on the member's turn.
+    T.t2InFlightAfterReceipt = runtime.inFlightDetachedWork.size
     await waitFor(() => gated.started.length === 2)
+    const t2Start = gated.started[1]
+    T.t2DeliveredSignal = t2Start === undefined ? 'MISSING' : t2Start.signal
     gated.release('t2-fu', { requestToken: 't2-fu', status: 'succeeded', body: 'T2-BODY' })
-    T.t2Receipt = await t2Promise
+    await waitFor(() => runtime.inFlightDetachedWork.size === 0)
+    T.t2Collect = await run('team_collect', base({
+      requestToken: 't2-collect',
+      requestTokens: ['t2-fu'],
+    }))
 
     // --- T3: the async create-form delegate (the last free slot) ------------
     T.t3Receipt = await run('team_delegate', base({
@@ -380,18 +397,34 @@ describe('issue #1 GREEN T1: the async follow-up receipt + the team_collect read
   })
 })
 
-describe('issue #1 GREEN T2: the sync default is unchanged (CCR-1)', () => {
-  it('T2-sync-default: no async argument = the settled effect with the member result', () => {
+describe('issue #1 GREEN T2: the async default (2026-09-27 user ruling, supersedes CCR-1)', () => {
+  it('T2-default-receipt: no async argument = the durable admission (workStatus admitted, settled false, no result)', () => {
     const r = T.t2Receipt
     if (r === undefined) throw new Error('T2: receipt missing')
     if (r.status !== 'executed') throw new Error(`T2: expected executed, got '${r.status}'`)
+    expect(r.action).toBe('follow-up')
+    expect(r.requestToken).toBe('t2-fu')
     const effect = r.effect
     if (effect.kind !== 'work-admitted') throw new Error(`T2: effect ${effect.kind}`)
-    expect(effect.settled).toBe(true)
-    expect(effect.replayed).toBe(false)
-    expect(typeof effect.settledSequence).toBe('number')
-    expect(effect.memberResult).toEqual({ requestToken: 't2-fu', status: 'succeeded', body: 'T2-BODY' })
-    expect(effect.workStatus === undefined).toBe(true)
+    expect(effect.workStatus).toBe('admitted')
+    expect(effect.settled).toBe(false)
+    expect(effect.memberResult === undefined).toBe(true)
+    expect(effect.instanceId).toBe(WORKER1)
+  })
+
+  it('T2-default-detached: the default receipt returned while the delivery was in flight, without a caller signal', () => {
+    expect(T.t2InFlightAfterReceipt).toBe(1)
+    expect(T.t2DeliveredSignal).toBe(undefined)
+  })
+
+  it('T2-collect: the terminal result of the default-async unit is read back under the same token', () => {
+    const c = T.t2Collect
+    if (c === undefined) throw new Error('T2: collect missing')
+    const entry = entryFor(asWorkStatus(c), 't2-fu')
+    expect(entry.status).toBe('succeeded')
+    expect(entry.instanceId).toBe(WORKER1)
+    expect(typeof entry.settledSequence).toBe('number')
+    expect(entry.memberResult).toEqual({ requestToken: 't2-fu', status: 'succeeded', body: 'T2-BODY' })
   })
 })
 
