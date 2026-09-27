@@ -48,7 +48,7 @@ producer 自声明 kind 命名事件（与 `[team-work-settled requestToken=…]
 2. **#17** `tools.restrict()` 对未知 global 工具 fail-closed（0.1.7 根面 39 工具含 `subagent` = per-agent own-layer 安装；team_* = session-scoped 不可 deny）→ kit 13 工具 catalog + deny 21→19。
 3. **#18** LLM wire：tool 结果以 `role:'user'` 消息内 `{type:'tool_result'}` block 承载（0.1.5 = 独立 `role:'tool'` 消息 + 字符串 content；源验证 0.1.5 vs 0.1.7 `serialize.ts`）→ mock 双 wire 解析。
 4. **#19** session log V4 生产者自有 source-kind admission（空 kind 或 `'plugin'` 拒绝；其他非空 kind 接受）。
-5. **#20** wake glue `kind:'plugin'` 被拒（#19 的插件侧实例 = **本轮唯一插件代码修复**）。
+5. **#20** wake glue `kind:'plugin'` 被拒（#19 的插件侧实例）。**该修复由独立 PR #33 落地并已 merge 至 master**（`plugin:dsh-agent-team` = 官方 v3→v4 migration producerKind 对历史 wrapper 的精确映射 + MessageSourceMap d.ts 增强 + admission-proof A/B/C）；本 PR 曾有的同缺陷修复（`team-work-settled`）经用户裁决于 **rebase #2 剔除** — 本 PR 对 wake 路径零代码变更（详见下方 Rebase #2 节）。
 
 ## 门禁（wake 修复后全复测）
 
@@ -76,6 +76,8 @@ producer 自声明 kind 命名事件（与 `[team-work-settled requestToken=…]
 **kit 6 轮迭代史全留档**（证据 `dev/agent-workflow/evidence/async-default-contract/smoke/`）：run1 旧 pin FATAL（test-use 0.1.5 期 pin）→ run2 user-preset 消失 FATAL（bootstrap `Unknown agent preset`）→ run3 restrict fail-closed FATAL（未知 global `subagent` + `team_archive_member` 缺 catalog）→ run4 双 wire 无限 delegate 循环（mock 0.1.5 期解析）+ v4 source FATAL（双根因分离）→ run5 部分通过（L0/L1a/L1f/L2a PASS；L1b/L1e FAIL = wake 根因锁定）→ **run6 全过**（glue 修复后，base `4fb79fca`）。
 
 **rebase 后复验（run7，rebase 至 `1fb5f351` 后的 tip）**：**VERDICT PASS 23/23** @ world `tests/homes/wcn-smoke-2026-09-27T05-07-52`（全 23 leg 通过；#31 activation 重构后的 glue 邻域 live 复验闭合）。**两基座实宿主双证 = run6 + run7 均 23/23。**
+
+**rebase #2 后复验（run8/run9，rebase 至 `e4d915cd`（PR #33 merge）后的 final tip）**：wakeup kit **run8 22/23**（仅 L2d 双-async-staggered 第二 collect 为 null；L1 单 wake / L3 fail-closed wake / L4 sync 回归全过 = PR #33 的 wake kind `plugin:dsh-agent-team` 唤醒路径工作正常）→ 隔离复跑 **run9 VERDICT PASS 23/23**（run8 L2d 定性为非确定性 flake，同 p6t1-parallel 类 E 规程）。**#33 wake kind 实宿主端到端验证闭合；kit run1–run9 九轮迭代史全留档。**
 
 ## 验证步骤（复现）
 
@@ -105,6 +107,15 @@ node tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs \
 - **门禁全重测**（rebase 后 tip）：typecheck 8 包全绿 / build 9/9 + composition / **check:artifacts OK 1196 零漂移**（2 个 rebase 期取 theirs 的 .map 重建后 autosquash 归位 commit 1）/ 根套件 **9F|19F|3995P(4014) = 新基线债务子集逐文件逐测试相同**（零新增失败）/ lint **61=61 IDENTICAL（0 new, 0 gone）** / p4t6 10/10。
 - **实宿主重验**：wakeup kit 在 rebase 后树上重跑 = **run7**（#31 activation 重构触碰 glue 邻域，live 复验必须）—— 结果见下方实宿主验证节。
 - 推送 = `--force-with-lease`（task 分支自有历史更新，同一次一次性推送授权范围；PR #26/#27/#28 同构先例）。
+
+## Rebase #2：采用 PR #33 wake 修复方案（origin/master 前进至 `e4d915cd`，2026-09-27）
+
+消费者迁移轮推送后，origin/master 前进 `1fb5f351` → `e4d915cd` = **PR #33 fix/v4-work-completion-source merge**（用户独立轮次已裁决 merge）。PR #33 与本分支 commit `17d14e2c` **同一缺陷、不同方案**（文件面重叠 3：`agent-bindings.mjs` src+dist + G3 测试）：
+
+- **PR #33 方案（采用）**：`source: { kind: 'plugin:dsh-agent-team' }` = 官方 v3→v4 migration `producerKind` 对历史 wrapper 的精确映射（历史 Session 与新消息同一 producer identity）+ 新 `message-sources.d.ts` MessageSourceMap module augmentation（上游扩展模式，纯类型面）+ G3 测试改指（RED→GREEN 突变检查）+ p4t6 pin 765→766 + admission-proof A/B/C 对 pristine 0.1.7-rc.1 构建产物。
+- **本分支原方案（剔除）**：`kind: 'team-work-settled'`（事件同名）— run6/run7 23/23 实宿主验证过，但与 #33 的迁移一致性/上游扩展模式相比为次优选择。
+
+**用户裁决（2026-09-27）**：「针对你与 PR #33 重叠的 v3→v4 迁移相关部分，应该采用 PR #33 的方案。你处理好 async 相关问题，并适配新基线即可」→ rebase **drop `17d14e2c`**（wake 路径全部采用 master/#33 版本，本 PR 对 wake 零代码变更）+ 簿记 union（log 双条目 / graph 双任务块 + current_phase / STATUS 双行）+ **全部门禁新基线（e4d915cd）重测**：typecheck 8 包全绿 / build 9/9 + composition / check:artifacts OK 1196 零漂移 / 根套件 9F|19F|3995P(4014) 失败集与基线逐字节相同（同归一化 md5；首跑 21F = +2 p6t1-parallel 类 E 负载 flake，复跑复归 19F）/ lint 61=61（821 文件 56E+5W）IDENTICAL vs origin/master e4d915cd / p4t6 10/10（pin 766 = #33 新值）+ **实宿主复验**：wakeup kit run8 22/23 → **run9 23/23**（#33 kind 端到端）+ model-pref kit 全量 EXIT 0 + run.mjs 17/17 PASS（failures: []；:3080 pre==post 401；test-use pristine 自证）。推送 = `--force-with-lease`（task 分支自有历史更新，同一一次性推送授权范围）。
 
 ## 消费者迁移（2026-09-27 跟进指令：有界 contract-consumer 修复）
 
@@ -139,13 +150,14 @@ node tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs \
 
 ### 4. 门禁（迁移后复测，全部通过）
 
-- typecheck 8 包全绿 / build 9/9 + build:composition / **check:artifacts OK 1196 零漂移**（本轮仅注释 + 非构建 .mjs 变更）/ 根套件 **9F|19F|3995P(4014) = 新基线债务子集逐字节相同（零新增失败）**（失败集 md5 比对）/ lint **61=61 IDENTICAL（0 new, 0 gone）** vs origin/master `1fb5f351`（临时 worktree 基准，run.mjs errata 后复测）。
+- typecheck 8 包全绿 / build 9/9 + build:composition / **check:artifacts OK 1196 零漂移**（本轮仅注释 + 非构建 .mjs 变更）/ 根套件 **9F|19F|3995P(4014) = 新基线债务子集逐字节相同（零新增失败）**（失败集 md5 比对）/ lint **61=61 IDENTICAL（0 new, 0 gone）** vs origin/master `1fb5f351`（临时 worktree 基准，run.mjs errata 后复测）。**rebase #2 后新基线（`e4d915cd`）全重测**：typecheck 8 包全绿 / build 9/9 + composition / check:artifacts OK 1196 零漂移 / 根套件 9F|19F|3995P(4014) 失败集与基线逐字节相同（同归一化 md5 `16b5af13…`；首跑 21F = +2 p6t1-parallel 类 E 负载 flake，复跑复归 19F 债务子集）/ lint 61=61（821 文件 56E+5W）IDENTICAL vs origin/master `e4d915cd`（0 new / 0 gone）/ p4t6 10/10（pin 766 = #33 新值）。
 
 ### 5. 实宿主验证（迁移后）
 
 - **model-preference kit 全量（R1–R8 + H1/H2）：EXIT 0 全绿** @ :3181（含 R5 cold-resume 前/后 settled 腿 — 关键迁移验证）；RUN_DIR 证据归档至 `dev/agent-workflow/evidence/async-default-contract/consumer-migration/model-pref-kit-mpr-2026-09-27T07-55-32/`。
 - **run.mjs 全场景：17/17 PASS**（E1–E7 + W1/W2/W3/W5/W7 + M1–M5；postflight test-use pristine + :3080 pre==post 401；世界自清）。
 - **g5-member-e2e：本环境受阻**（固定端口 3180 被沙箱外稳定实例族持有 — 返回 401 且 /proc 不可见，按红线不可触碰）；S5 语义由等价 live 证据覆盖：wakeup kit L4（显式 async:false 同步 in-band，run6/run7 23/23）+ run.mjs E3/W1–W7/M1–M5 同步腿（17/17，本轮）+ model-pref R2（workSettled+memberResult 返回断言，本轮）。g5 重跑 = 环境受限 follow-up（需 3180 空闲）。
+- **rebase #2 后 final tip 复验**：wakeup kit **run9 VERDICT PASS 23/23**（run8 22/23 仅 L2d flake — 隔离复跑定性；#33 wake kind 端到端）+ model-pref kit 全量 **EXIT 0**（RUN_DIR 归档 `consumer-migration/model-pref-kit-mpr-2026-09-27T08-35-52/`）+ run.mjs **17/17 PASS**（failures: []；:3080 pre==post 401；test-use pristine @ `46a7f68b09` 前后自证）。
 
 ## FOLLOW-UPS（非阻塞，已登记）
 

@@ -1,0 +1,7 @@
+lint diff verdict (rebase #2, 2026-09-27)
+baseline: origin/master e4d915cd (temp worktree .tmp-lint/base, node_modules symlinked, removed after run)
+worktree:  task/async-default-contract tip 47796082
+method:    pnpm lint (root, eslint .) --format json, per-file errorCount/warningCount normalized by /packages/-relative path
+worktree:  821 files | 56 errors | 5 warnings
+baseline:  821 files | 56 errors | 5 warnings
+verdict:   IDENTICAL — 0 new findings, 0 gone findings (per-file counts equal on all 821 files)

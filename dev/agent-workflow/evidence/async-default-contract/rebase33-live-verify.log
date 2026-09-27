@@ -1,0 +1,6 @@
+=== [1/3] wakeup kit run8 (rebase-33 tip, PR #33 wake kind) ===
+wakeup EXIT=2
+=== [2/3] model-pref kit (consumer-migration re-verify) ===
+model-pref EXIT=0
+=== [3/3] run.mjs harness (17 scenarios) ===
+run.mjs EXIT=1

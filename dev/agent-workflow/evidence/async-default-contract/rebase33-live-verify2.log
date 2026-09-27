@@ -1,0 +1,8 @@
+=== run.mjs (post-rebase33, report-dir) ===
+run.mjs EXIT=1
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-09-27T08:36:14.649Z postflight: junction farm removed (packages/node_modules)
+2026-09-27T08:36:14.675Z P8-S3 harness FAIL 鈥?summary: /home/user/dsh-plugins/dsh-agent-team/.worktrees/async-default-contract/dev/agent-workflow/evidence/async-default-contract/harness-run-post-rebase33/summary.json
+=== wakeup kit run9 (L2d classification) ===
+wakeup9 EXIT=0
+[2026-09-27T08:36:24.541Z] VERDICT PASS — 23/23 criteria passed
