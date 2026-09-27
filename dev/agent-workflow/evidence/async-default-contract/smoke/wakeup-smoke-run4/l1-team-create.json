@@ -1,0 +1,22 @@
+{
+  "type": "server-response",
+  "rpcId": "wcnl1-472bu2ni46",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED",
+      "message": "TeamRuntime: Root initial work delivery to team 'session-wcn-smoke-l1-2026-09-27T04-23-14' failed: format v4 message requires a producer-owned source kind (the durable admission is retained; retry with the SAME requestToken)",
+      "details": {
+        "method": "team.create",
+        "endpoint": "team.create",
+        "contractVersion": 1,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED",
+          "message": "TeamRuntime: Root initial work delivery to team 'session-wcn-smoke-l1-2026-09-27T04-23-14' failed: format v4 message requires a producer-owned source kind (the durable admission is retained; retry with the SAME requestToken)"
+        }
+      }
+    }
+  }
+}
