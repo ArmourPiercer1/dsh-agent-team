@@ -187,8 +187,89 @@ TeamView 只消费**应用后的帧**（projection mirror），store 的失败/�
   import `clsx` 但**未声明**该依赖（lockfile 全仓 0 处 clsx），smoke 的
   最小宿主环境无 clsx 提供者。CORE PATCH BUDGET=0 下不在本轮扩 scope，
   记录为环境 blocker（详见 PR 描述）；
-- 真机浏览器验证（§5.2 五个场景，隔离测试宿主 + 空闲端口）——证据随 PR
-  提交（脱敏截图）。
+- 真机浏览器验证（§5.2 五个场景）——**已完成**，详见 §5.2 记录；证据截图
+  （9 张，脱敏：无 cookie / launch token / 认证查询串）随 PR 提交于
+  `dev/agent-workflow/evidence/team-projection-recovery/browser/`。
+
+### 5.2 真实宿主浏览器验收记录（隔离合成世界）
+
+**环境**：DSH 0.1.7-rc.1 测试运行时（pin `46a7f68b09`），隔离合成世界
+`tests/homes/tpr-2026-09-27T15-29-13`（mpr 四队 fixture 副本 + 启动前注入的
+grant fixture 行，序列 45，`artifact-read-granted`）。宿主 origin
+`http://127.0.0.1:3182`（3181 被占用自动取 3182），mock model 3497（3496 为
+环境预占的 root-owned socket，不可用——记录为环境 blocker）。插件经
+`git+file:////<repo>.git#fix/team-projection-recovery-20260927` 装入
+`profiles/web/`（bundle dist 随分支提交）。受测会话（合成 sessionId）：
+T1 = `session-mpr-t1-mpr-2026-09-27T08-35-52`（grant root，row config
+rootSessionId），TB = `session-mpr-tb-…`，TA = `session-mpr-ta-…`，
+boot = `session-mpr-boot-…`，plain = `session-7a298d24-…`。所有 post-open
+变更仅经宿主公开 mutation 入口（`POST /team-remote/…`）；受控失败按
+stop→corrupt（未知 factType 行，宿主进程死后写入）→restart 布置。
+
+1. **grant root 冷打开（S1）**：T1 团队 tab 完整渲染——团队身份、时间线
+   5 成员、成员组（leader 1 活跃 + expert/control/worker）、治理（兼容性
+   ✓、代数 1、最后探测 08:35:54.848Z）、生效配置、团队事件全 factType
+   过滤集。列表（`team.listRoots` v3，4 roots）与详细投影
+   （`team.getProjection` ok）均读取成功。投影计数：`ledger.total=31`，
+   `byCategory {team:8,member:4,lifecycle:6,message:0,control:1,policy:0,
+   compatibility:0,progress:12}`（sum=31 ✓；grant 行计入 control，按既有
+   规则对 Events 隐藏）；`pendingControlCount=0`。
+   → `s1-t1-grant-cold-open.png`
+2. **加成员 + 专用刷新（S2）**：`member.create`（worker 模板，label
+   `w-tpr-verify`，公开入口）→ `ok:true`，outcome `member-activated`
+   `inst-0hqr7m81xoqf`（ledger seq 46）。点击"刷新团队视图"：普通会话侧
+   的已持久化团队列表 T1 计数 4→5 名成员（不含 leader）；T1 视图出现
+   w-tpr-verify 时间线行、worker 组"已创建"行（发送任务/发送跟进/归档/
+   处置）、团队事件尾行 `23:42:50 成员创建 w-tpr-verify`。刷新为真实重读
+   （getProjection+getLedgerPage），**未触发 compatibility.reprobe**
+   （代数/最后探测时间不变）。
+   → `s4a-t1-after-member-create.png`、`s4b-t1-new-member-created-state.png`
+3. **受控失败（S3）**：
+   - **无帧**：冷客户端（新会话、空 store）在损坏域上打开 T1 →
+     "团队信息加载失败 — internal-error: internal error in remote handler"
+     + 刷新按钮；**未**出现肯定的"未加入团队"，已持久化团队列表仍渲染
+     （root 记录完好，T1 5 名成员）。→ `s6a-cold-load-failed.png`
+   - **有旧帧**：先读成功的同一 tab（store 持有效帧），宿主 stop→corrupt
+     （`tpr-smoke-corrupt-fact` 行 seq 47，宿主进程死后写入）→restart 后
+     点刷新 → 顶部红条 **"更新失败，当前显示上次成功的数据 — internal-
+     error: internal error in remote handler"**，时间线/成员组/治理内容
+     全部保留。→ `s6b-stale-frame-banner.png`
+4. **恢复重试（S4）**：同一 tab，宿主 stop→heal（删除 seq 47 行、counter
+   回 46，宿主进程死后操作）→restart 后点刷新 → 错误消失，团队视图完整
+   恢复（时间线/成员组/治理）。→ `s4c-retry-after-recovery.png`
+5. **非 boot root 兼容性 scope（S5）**：`compatibility.reprobe`
+   （`ROOT_COLD_RESUME`）作用于 **boot**（非 row config bound root T1）
+   → boot 行 代数 1→2（15:44:44.389Z）；T1 在 UI"重新检查"
+   → T1 行 代数 1→2（15:47:45.922Z）；复读全部四队：T1=2、boot=2、
+   **tb=1（08:35:55.943Z 不变）、ta=1（08:35:55.696Z 不变）**——两条独立
+   探测各自只推进被寻址团队自己的兼容性行。兼容性 get 同时以
+   `team.getProjection.root.compatibility` 复核（per-team 环境指纹
+   不同：T1 `fp-v1:496d…` vs boot `fp-v1:ae11…`，蓝图绑定正确）。
+   `compatibility.ack` 本轮无法实机触发：fixture 无未确认警告
+   （warningCount=0，UI"确认警告"恒 disabled），其 scope 隔离由
+   `team-compatibility-scope` 定向测试覆盖（A/B 隔离 + 团队锁）。
+   → `s5-t1-recheck-generation-2.png`
+
+**环境注记（非产品行为）**：
+- 3496 端口被环境预占的 root-owned socket 占用（本 uid 不可见/不可杀），
+  mock 改用 3497；
+- 会话沙箱按调用隔离 PID 命名空间：kit 之前调用里 detach 的宿主/ mock
+  对后续调用不可见，`--stop` 的 `pidAlive` 检查静默跳过 → 曾出现
+  "stop 无效 + 重启 EADDRINUSE + boot 标记匹配到旧日志行"的假重启。
+  kit 已修：`waitForBoot` 只匹配 spawn 之后新追加的日志字节，且每次
+  boot 前 truncate 实例日志（`team-projection-recovery-smoke.mjs`）；
+  后续轮次改用单长生命周期后台作业托管宿主（flag-file teardown）；
+- kit 首次 member.create 因自身 YAML 序列化缺陷（空对象写成裸 `key:`
+  → 行配置 `externalPolicyFacts.hard` 解析为 null → 激活 fail-closed
+  `external.hard: must be a record keyed by capability name`）失败；
+  已修（空对象输出 `{}`，与 u8 参考 profile 一致）；该失败完全
+  fail-closed，未留下部分实例行（复核 T1 members 仅 5 个种子成员）；
+- boot root（411 字节空会话文件）其列表项 `projections: undefined`，
+  UI 会话树不显示该会话行——S2 的第二队冷打开改用 tb 完成，boot 的
+  可读性经远程调用验证（listRoots + getProjection + reprobe）；
+- 浏览器自动重连：宿主重启后 WS 自动恢复，会话树/团队列表可用；
+  团队帧的再拉取由专用刷新按钮驱动（阶段 1 承诺范围，自动失效属阶段 2）。
+
 
 ## 6. 显式不做（阶段 2）
 
