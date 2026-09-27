@@ -367,15 +367,36 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
   )
   // (repair 20260927, S1-C2) the manual "refresh team view" state —
   // `refreshPending` doubles as the double-click guard; `refreshEpoch`
-  // discards late responses after a newer refresh (or unmount /
-  // session switch — the captured ids are re-checked against the live
-  // closure). The round-trip OUTCOME itself has no local copy: the
+  // discards late responses after a newer refresh — and (PR #34 review
+  // follow-up, F2) the lifetime effect below advances it on session
+  // switch / unmount, so an in-flight refresh of a LEFT scope is dead
+  // on settlement before its ledger continuation and pending-flag
+  // settle run. The round-trip OUTCOME itself has no local copy: the
   // projection store's published state (the same visible state surface
   // the member/governance reads flow through) carries it — a resolved
   // Promise is NOT a success, and the state's status/assessment is the
   // verdict (no success toast over a failed pull).
   const [refreshPending, setRefreshPending] = useState(false)
   const refreshEpoch = useRef(0)
+  // (PR #34 review follow-up, F2) the manual refresh lifetime is bound
+  // to the session scope: entering a new session — and the unmount /
+  // sessionId-change cleanup — advances `refreshEpoch`, invalidating
+  // every refresh started in the previous scope (its continuation then
+  // sees a mismatched epoch and returns before the ledger refresh and
+  // before the pending flag settles). The effect body clears the
+  // pending flag (the new scope starts fresh); the cleanup only
+  // advances the REF — no setState in cleanup. StrictMode's simulated
+  // unmount/remount only adds extra monotonic bumps (the epoch only
+  // requires monotonicity). `loadRoots` is deliberately NOT bound
+  // here: it is the global persisted-roots read with its own
+  // `rootsEpoch` / unmount guard.
+  useEffect(() => {
+    refreshEpoch.current += 1
+    setRefreshPending(false)
+    return () => {
+      refreshEpoch.current += 1
+    }
+  }, [sessionId])
   // (repair 20260927, S1-C1) the WITH-frame status derivations — computed
   // UNCONDITIONALLY (hooks order) though only the with-frame render uses
   // them: the content is ALWAYS kept; a refresh in flight (the manual

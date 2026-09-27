@@ -44,6 +44,21 @@
  * assumed by the store logic (the default scheduler may use
  * `setTimeout`; tests inject a manual scheduler).
  *
+ * Request-order liveness authority (PR #34 review follow-up, F1): the
+ * request sequence ALSO decides which completed response owns the UI
+ * liveness/error state — a response of a request that a LATER request
+ * already superseded (a valid round trip completed after it started)
+ * is resolved but NOT published: an old typed error must not downgrade
+ * a newer success, an old duplicate/stale must not clear a newer
+ * error, and an old foreign/inconsistent must not downgrade a newer
+ * success. `noteRoundTrip` still records every completed round trip
+ * (loss-episode absorption, baseline monotonicity, pending-retry
+ * cancellation) — only the liveness write is suppressed. Frame
+ * authority is deliberately separate and stays with the frozen
+ * generation verdict: a late response carrying a genuinely NEWER
+ * authoritative generation still `apply`s normally (the request order
+ * never suppresses the frame verdict).
+ *
  * Failure discipline: a typed RPC error is stored as `lastError` (the
  * frozen `RemoteErrorResult`, never exception-ified); only a
  * transport-level rejection (`PushTransportLossError` class) drives
@@ -311,11 +326,23 @@ export function createTeamProjectionStore(
     }
 
     const assessment = assessProjectionSync(appliedIdentity(), response)
+    // (PR #34 review follow-up, F1) request-order LIVENESS authority,
+    // captured BEFORE the baseline advances: a response whose request
+    // an LATER request already superseded (a valid round trip
+    // completed after it started) no longer owns the UI status /
+    // lastError / lastAssessment. Frame authority is deliberately
+    // separate and stays with the generation verdict below (a late
+    // response of a genuinely newer generation still applies).
+    const supersededByNewerRoundTrip = lastCompletedSeq > seq
     noteRoundTrip(seq)
     // A scope change while in flight: the request is DEAD — no publish.
     if (epoch !== epochAtStart) return assessment
 
     if (response.ok === false) {
+      // (F1) an OLDER request's typed error must not downgrade a
+      // NEWER completed round trip — it resolves (never rejects) but
+      // is not published as the latest state.
+      if (supersededByNewerRoundTrip) return assessment
       // Typed RPC error: stored intact, never exception-ified.
       publish({
         ...state,
@@ -357,6 +384,13 @@ export function createTeamProjectionStore(
       })
       return assessment
     }
+
+    // (F1) Superseded non-apply verdicts no longer touch the newest
+    // liveness state: an old duplicate/stale must not clear a newer
+    // request's error, and an old foreign/inconsistent must not
+    // downgrade a newer success. (The applied frame was never touched
+    // by any verdict except `apply` — G2 hard invariant.)
+    if (supersededByNewerRoundTrip) return assessment
 
     // Non-apply verdicts: the applied frame is never touched (G2 hard
     // invariant). duplicate / stale are normal ordering events — an

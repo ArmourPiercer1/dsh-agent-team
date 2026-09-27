@@ -498,6 +498,107 @@ describe('TeamView', () => {
     })
   })
 
+  // ------------------------------------------------------------------
+  // PR #34 review follow-up (F2): the manual refresh lifetime is bound
+  // to the current session scope — a session switch or unmount
+  // invalidates the in-flight refresh BEFORE the ledger continuation
+  // runs and before the pending flag settles.
+  // ------------------------------------------------------------------
+
+  it('session switch invalidates the in-flight manual refresh: no old ledger continuation, the new session\'s button is not left pending (F2-T1)', async () => {
+    // Two teams, two sessions, two frames: the view can re-render as
+    // session B while A's refresh pull is still in flight.
+    const MATE_FRAME = frame(
+      MEMBER,
+      [wireMember('lead-b', null)],
+      TEMPLATES,
+    )
+    const BOTH_MIRROR = mirrorOf([LEADER, TEAM_FRAME], [MEMBER, MATE_FRAME])
+
+    // A's pull is deferred behind a gate; A's ledger refresh is slow so
+    // the continuation would be observable if it ran.
+    let resolvePull!: (r: { status: 'apply'; receivedGeneration: number }) => void
+    const pullGate = new Promise<{ status: 'apply'; receivedGeneration: number }>(resolve => {
+      resolvePull = resolve
+    })
+    const pullProjection = vi.fn(() => pullGate)
+    const refreshLedgerA = vi.fn(() => new Promise<void>(resolve => {
+      setTimeout(resolve, 20)
+    }))
+    const refreshLedgerB = vi.fn(() => Promise.resolve())
+
+    const propsA = {
+      ...viewProps(BOTH_MIRROR, LEADER, {}, {
+        [LEADER]: stateOf({ status: 'ready', teamSessionId: LEADER, appliedGeneration: 8 }),
+      }),
+      pullProjection,
+      refreshTeamLedger: refreshLedgerA,
+    }
+    const view = render(<TeamView {...propsA} />)
+    const buttonA = view.container.querySelector<HTMLButtonElement>('[data-team-refresh]')
+    if (buttonA === null) throw new Error('the with-frame refresh button did not render')
+    fireEvent.click(buttonA)
+    expect(pullProjection).toHaveBeenCalledTimes(1)
+    expect(pullProjection).toHaveBeenCalledWith(LEADER)
+    expect(buttonA.disabled).toBe(true) // pending while the pull is in flight
+
+    // The session switches to B (same view instance, new sessionId).
+    const propsB = {
+      ...viewProps(BOTH_MIRROR, MEMBER, {}, {
+        [MEMBER]: stateOf({ status: 'ready', teamSessionId: MEMBER, appliedGeneration: 3 }),
+      }),
+      pullProjection,
+      refreshTeamLedger: refreshLedgerB,
+    }
+    view.rerender(<TeamView {...propsB} />)
+
+    // The old continuation settles NOW — it must be dead: A's ledger
+    // refresh is never called, and neither is B's (B never started a
+    // refresh; A's settle must not bleed into B's scope).
+    resolvePull({ status: 'apply', receivedGeneration: 9 })
+    await new Promise(resolve => setTimeout(resolve, 30))
+    expect(refreshLedgerA).not.toHaveBeenCalled()
+    expect(refreshLedgerB).not.toHaveBeenCalled()
+    // B's refresh button is not left pending by A's stale settle.
+    const buttonB = view.container.querySelector<HTMLButtonElement>('[data-team-refresh]')
+    expect(buttonB).not.toBeNull()
+    expect(buttonB?.disabled).toBe(false)
+    view.unmount()
+  })
+
+  it('unmount invalidates the in-flight manual refresh: no ledger continuation, no unhandled rejection (F2-T2)', async () => {
+    let resolvePull!: (r: { status: 'apply'; receivedGeneration: number }) => void
+    const pullGate = new Promise<{ status: 'apply'; receivedGeneration: number }>(resolve => {
+      resolvePull = resolve
+    })
+    const pullProjection = vi.fn(() => pullGate)
+    const refreshTeamLedger = vi.fn(() => new Promise<void>(resolve => {
+      setTimeout(resolve, 20)
+    }))
+    const props = {
+      ...viewProps(TEAM_PROJECTION_MIRROR, LEADER, {}, {
+        [LEADER]: stateOf({ status: 'ready', teamSessionId: LEADER, appliedGeneration: 8 }),
+      }),
+      pullProjection,
+      refreshTeamLedger,
+    }
+    const unhandled: unknown[] = []
+    const onRejection = (reason: unknown) => { unhandled.push(reason) }
+    process.on('unhandledrejection', onRejection)
+    const view = render(<TeamView {...props} />)
+    const button = view.container.querySelector<HTMLButtonElement>('[data-team-refresh]')
+    if (button === null) throw new Error('the with-frame refresh button did not render')
+    fireEvent.click(button)
+    expect(pullProjection).toHaveBeenCalledTimes(1)
+    view.unmount()
+    // The deferred pull settles AFTER the unmount.
+    resolvePull({ status: 'apply', receivedGeneration: 9 })
+    await new Promise(resolve => setTimeout(resolve, 30))
+    expect(refreshTeamLedger).not.toHaveBeenCalled()
+    expect(unhandled).toEqual([])
+    process.off('unhandledrejection', onRejection)
+  })
+
   it('keeps the plain zero state without the creation face (S5-A: entry hidden, T6 view unchanged)', () => {
     const view = render(<TeamView {...viewProps({}, OUTSIDER)} />)
     expect(view.container.querySelector('[data-team-zero]')).toBeTruthy()

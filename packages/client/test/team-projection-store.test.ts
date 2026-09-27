@@ -25,6 +25,16 @@
  * timer resurrection); an earlier request failing LATE after a later
  * request succeeded is ignored (no overwrite, no extra retry).
  *
+ * PR #34 review follow-up (F1) — request-order liveness authority:
+ * a response of a request that a LATER request already superseded is
+ * resolved but NOT published — an old typed error does not downgrade
+ * a newer success, an old foreign / inconsistent does not downgrade a
+ * newer success, an old duplicate / stale does not clear a newer
+ * typed error; while a late response of an earlier request carrying a
+ * genuinely NEWER authoritative generation still applies normally
+ * (the generation verdict, not the request order, owns frame
+ * authority).
+ *
  * Shim-constrained spec (run-tests.mjs): the `it()` bodies are
  * synchronous assertions on captured scenario state; the async scenarios
  * run at module level (top-level await, the P8-T3 round-trip pattern).
@@ -686,6 +696,245 @@ const staleLossAfterNewerSuccessScenario = await (async () => {
 })()
 
 // ---------------------------------------------------------------------------
+// PR #34 review follow-up (F1): request-order LIVENESS authority. A
+// response from a request that started EARLIER settles after a LATER
+// request already completed its round trip — it no longer owns the UI
+// liveness/error state (status / lastError / lastAssessment). Frame
+// authority stays with the generation verdict: a late response carrying
+// a genuinely NEWER authoritative generation still applies normally.
+// ---------------------------------------------------------------------------
+
+/** F1-T1: an earlier request settles LATE with a typed error after a later success. */
+const staleTypedErrorAfterNewerSuccessScenario = await (async () => {
+  interface Gates {
+    resolveA?: (r: RemoteResponse) => void
+    resolveB?: (r: RemoteResponse) => void
+  }
+  const gates: Gates = {}
+  const gateA = new Promise<RemoteResponse>((resolve) => {
+    gates.resolveA = resolve
+  })
+  const gateB = new Promise<RemoteResponse>((resolve) => {
+    gates.resolveB = resolve
+  })
+  const order: Array<Promise<RemoteResponse>> = [gateA, gateB]
+  const store = createTeamProjectionStore({
+    scheduler: makeManualScheduler(),
+    getProjection: (_id) => {
+      const gate = order.shift()
+      if (gate === undefined) {
+        return Promise.reject(new PushTransportLossError('gate exhausted'))
+      }
+      return gate
+    },
+  })
+  const pendingA = store.pull('t1')
+  const pendingB = store.pull('t1')
+  await flush()
+  // B (gen2, started later) succeeds first.
+  gates.resolveB?.(projectionSuccess('t1', 2))
+  await pendingB
+  await flush()
+  const afterB = store.getState()
+  // A (started earlier) settles late with a typed RPC error.
+  gates.resolveA?.(projectionError('team-remote-internal-error', 'internal error in remote handler'))
+  const assessmentA = await pendingA
+  await flush()
+  const afterA = store.getState()
+  return { afterB, afterA, assessmentA }
+})()
+
+/** F1-T2: an earlier request settles LATE with a foreign team frame after a later success. */
+const staleForeignAfterNewerSuccessScenario = await (async () => {
+  interface Gates {
+    resolveA?: (r: RemoteResponse) => void
+    resolveB?: (r: RemoteResponse) => void
+  }
+  const gates: Gates = {}
+  const gateA = new Promise<RemoteResponse>((resolve) => {
+    gates.resolveA = resolve
+  })
+  const gateB = new Promise<RemoteResponse>((resolve) => {
+    gates.resolveB = resolve
+  })
+  const order: Array<Promise<RemoteResponse>> = [gateA, gateB]
+  const store = createTeamProjectionStore({
+    scheduler: makeManualScheduler(),
+    getProjection: (_id) => {
+      const gate = order.shift()
+      if (gate === undefined) {
+        return Promise.reject(new PushTransportLossError('gate exhausted'))
+      }
+      return gate
+    },
+  })
+  const pendingA = store.pull('t1')
+  const pendingB = store.pull('t1')
+  await flush()
+  // B (gen2, started later) succeeds first.
+  gates.resolveB?.(projectionSuccess('t1', 2))
+  await pendingB
+  await flush()
+  const afterB = store.getState()
+  // A (started earlier) settles late with a frame of ANOTHER team.
+  gates.resolveA?.(projectionSuccess('t2', 2))
+  const assessmentA = await pendingA
+  await flush()
+  const afterA = store.getState()
+  return { afterB, afterA, assessmentA }
+})()
+
+/** F1-T2: an earlier request settles LATE with a provenance-mismatched frame after a later success. */
+const staleInconsistentAfterNewerSuccessScenario = await (async () => {
+  interface Gates {
+    resolveA?: (r: RemoteResponse) => void
+    resolveB?: (r: RemoteResponse) => void
+  }
+  const gates: Gates = {}
+  const gateA = new Promise<RemoteResponse>((resolve) => {
+    gates.resolveA = resolve
+  })
+  const gateB = new Promise<RemoteResponse>((resolve) => {
+    gates.resolveB = resolve
+  })
+  const order: Array<Promise<RemoteResponse>> = [gateA, gateB]
+  const store = createTeamProjectionStore({
+    scheduler: makeManualScheduler(),
+    getProjection: (_id) => {
+      const gate = order.shift()
+      if (gate === undefined) {
+        return Promise.reject(new PushTransportLossError('gate exhausted'))
+      }
+      return gate
+    },
+  })
+  const pendingA = store.pull('t1')
+  const pendingB = store.pull('t1')
+  await flush()
+  // B (gen2, started later) succeeds first.
+  gates.resolveB?.(projectionSuccess('t1', 2))
+  await pendingB
+  await flush()
+  const afterB = store.getState()
+  // A (started earlier) settles late with a provenance generation
+  // mismatch (frame gen 2, provenance gen 99 → inconsistent).
+  gates.resolveA?.(projectionSuccess('t1', 2, 99))
+  const assessmentA = await pendingA
+  await flush()
+  const afterA = store.getState()
+  return { afterB, afterA, assessmentA }
+})()
+
+/**
+ * F1-T3/T4 (parameterized): an earlier request settles LATE with a
+ * non-apply frame (duplicate / stale) after a later request's typed
+ * error — the newer error must not be cleared by the older response.
+ */
+async function lateNonApplyAfterNewerErrorScenario(kind: 'duplicate' | 'stale') {
+  interface Gates {
+    resolveA?: (r: RemoteResponse) => void
+    resolveB?: (r: RemoteResponse) => void
+  }
+  const gates: Gates = {}
+  const gateA = new Promise<RemoteResponse>((resolve) => {
+    gates.resolveA = resolve
+  })
+  const gateB = new Promise<RemoteResponse>((resolve) => {
+    gates.resolveB = resolve
+  })
+  // Seed (gen2 applied) → A (late non-apply) → B (typed error, first).
+  const order: Array<Promise<RemoteResponse>> = [
+    Promise.resolve(projectionSuccess('t1', 2)),
+    gateA,
+    gateB,
+  ]
+  const store = createTeamProjectionStore({
+    scheduler: makeManualScheduler(),
+    getProjection: (_id) => {
+      const gate = order.shift()
+      if (gate === undefined) {
+        return Promise.reject(new PushTransportLossError('gate exhausted'))
+      }
+      return gate
+    },
+  })
+  await store.pull('t1')
+  await flush()
+  const afterSeed = store.getState()
+  const pendingA = store.pull('t1')
+  const pendingB = store.pull('t1')
+  await flush()
+  // B (started later) fails first with a typed RPC error.
+  gates.resolveB?.(projectionError('team-remote-internal-error', 'internal error in remote handler'))
+  await pendingB
+  await flush()
+  const afterB = store.getState()
+  // A (started earlier) settles late: same generation (duplicate) or an
+  // older generation (stale) — a non-apply verdict either way.
+  gates.resolveA?.(kind === 'duplicate'
+    ? projectionSuccess('t1', 2)
+    : projectionSuccess('t1', 1))
+  const assessmentA = await pendingA
+  await flush()
+  const afterA = store.getState()
+  return { afterSeed, afterB, afterA, assessmentA }
+}
+
+const lateDuplicateAfterNewerErrorScenario = await lateNonApplyAfterNewerErrorScenario('duplicate')
+const lateStaleAfterNewerErrorScenario = await lateNonApplyAfterNewerErrorScenario('stale')
+
+/**
+ * F1-T5: a LATE response of an EARLIER request carrying a genuinely
+ * NEWER authoritative generation still applies normally — the request
+ * sequence must not suppress the generation verdict.
+ */
+const lateApplyAfterNewerErrorScenario = await (async () => {
+  interface Gates {
+    resolveA?: (r: RemoteResponse) => void
+    resolveB?: (r: RemoteResponse) => void
+  }
+  const gates: Gates = {}
+  const gateA = new Promise<RemoteResponse>((resolve) => {
+    gates.resolveA = resolve
+  })
+  const gateB = new Promise<RemoteResponse>((resolve) => {
+    gates.resolveB = resolve
+  })
+  const order: Array<Promise<RemoteResponse>> = [
+    Promise.resolve(projectionSuccess('t1', 10)),
+    gateA,
+    gateB,
+  ]
+  const store = createTeamProjectionStore({
+    scheduler: makeManualScheduler(),
+    getProjection: (_id) => {
+      const gate = order.shift()
+      if (gate === undefined) {
+        return Promise.reject(new PushTransportLossError('gate exhausted'))
+      }
+      return gate
+    },
+  })
+  await store.pull('t1')
+  await flush()
+  const pendingA = store.pull('t1')
+  const pendingB = store.pull('t1')
+  await flush()
+  // B (started later) fails first with a typed RPC error.
+  gates.resolveB?.(projectionError('team-remote-internal-error', 'internal error in remote handler'))
+  await pendingB
+  await flush()
+  const afterB = store.getState()
+  // A (started earlier) settles late with gen11 — strictly newer than
+  // the applied gen10: the generation verdict must win.
+  gates.resolveA?.(projectionSuccess('t1', 11))
+  const assessmentA = await pendingA
+  await flush()
+  const afterA = store.getState()
+  return { afterB, afterA, assessmentA }
+})()
+
+// ---------------------------------------------------------------------------
 // Synchronous assertions on the captured scenarios
 // ---------------------------------------------------------------------------
 
@@ -784,11 +1033,14 @@ describe('createTeamProjectionStore — reconnect policy (Seam 5 / G2)', () => {
     expect(afterB.status).toBe('ready')
     expect(afterB.appliedGeneration).toBe(7)
     expect(afterB.frame?.projection.generation).toBe(7)
-    // A (gen6) settled late → stale, no overwrite.
+    // A (gen6) settled late → stale, no frame overwrite — and (PR #34
+    // review follow-up, F1) A's round trip was SUPERSEDED (B's
+    // completed after A started), so A no longer owns the latest
+    // assessment either: the newer round trip's assessment stays.
     expect(afterA.status).toBe('ready')
     expect(afterA.appliedGeneration).toBe(7)
     expect(afterA.frame?.projection.generation).toBe(7)
-    expect(afterA.lastAssessment).toEqual({ status: 'stale', receivedGeneration: 6 })
+    expect(afterA.lastAssessment).toEqual({ status: 'apply', receivedGeneration: 7 })
   })
 
   it('transport loss: reconnecting with the frozen backoff (500 ms, then 1000 ms)', () => {
@@ -992,6 +1244,87 @@ describe('createTeamProjectionStore — loss staleness by round-trip evidence (r
     expect(afterALoss.nextRetryDelayMs).toBe(null)
     // And it must not have scheduled a retry.
     expect(pendingAfterALoss).toBe(0)
+  })
+})
+
+describe('createTeamProjectionStore — request-order liveness authority (PR #34 review follow-up, F1)', () => {
+  it('an earlier request settles LATE with a typed error after a later success: the newer success is not downgraded (F1-T1)', () => {
+    const { afterB, afterA, assessmentA } = staleTypedErrorAfterNewerSuccessScenario
+    expect(afterB.status).toBe('ready')
+    expect(afterB.appliedGeneration).toBe(2)
+    // A's pull still RESOLVES with its own typed-error assessment ...
+    expect(assessmentA.status).toBe('rpc-error')
+    // ... but it is no longer the newest round trip: it must not be
+    // published over the newer success.
+    expect(afterA.status).toBe('ready')
+    expect(afterA.appliedGeneration).toBe(2)
+    expect(afterA.frame?.projection.generation).toBe(2)
+    expect(afterA.lastError).toBeUndefined()
+  })
+
+  it('an earlier request settles LATE with a foreign frame after a later success: the newer success is not downgraded (F1-T2)', () => {
+    const { afterB, afterA, assessmentA } = staleForeignAfterNewerSuccessScenario
+    expect(afterB.status).toBe('ready')
+    expect(afterB.appliedGeneration).toBe(2)
+    expect(assessmentA.status).toBe('foreign')
+    expect(afterA.status).toBe('ready')
+    expect(afterA.appliedGeneration).toBe(2)
+    expect(afterA.frame?.projection.generation).toBe(2)
+    expect(afterA.lastError).toBeUndefined()
+  })
+
+  it('an earlier request settles LATE with a provenance-mismatched frame after a later success: the newer success is not downgraded (F1-T2)', () => {
+    const { afterB, afterA, assessmentA } = staleInconsistentAfterNewerSuccessScenario
+    expect(afterB.status).toBe('ready')
+    expect(afterB.appliedGeneration).toBe(2)
+    expect(assessmentA.status).toBe('inconsistent')
+    expect(afterA.status).toBe('ready')
+    expect(afterA.appliedGeneration).toBe(2)
+    expect(afterA.frame?.projection.generation).toBe(2)
+    expect(afterA.lastError).toBeUndefined()
+  })
+
+  it('an earlier request settles LATE with a duplicate after a later typed error: the newer error is not cleared (F1-T3)', () => {
+    const { afterSeed, afterB, afterA, assessmentA } = lateDuplicateAfterNewerErrorScenario
+    expect(afterSeed.status).toBe('ready')
+    expect(afterSeed.appliedGeneration).toBe(2)
+    // B (started later) fails first: the error state is the newest fact.
+    expect(afterB.status).toBe('error')
+    expect(afterB.lastError?.code).toBe('team-remote-internal-error')
+    expect(assessmentA.status).toBe('duplicate')
+    // A's (older) duplicate must not clear B's error.
+    expect(afterA.status).toBe('error')
+    expect(afterA.lastError?.code).toBe('team-remote-internal-error')
+    // The applied frame is untouched either way (G2).
+    expect(afterA.appliedGeneration).toBe(2)
+    expect(afterA.frame?.projection.generation).toBe(2)
+  })
+
+  it('an earlier request settles LATE with a stale frame after a later typed error: the newer error is not cleared (F1-T4)', () => {
+    const { afterSeed, afterB, afterA, assessmentA } = lateStaleAfterNewerErrorScenario
+    expect(afterSeed.status).toBe('ready')
+    expect(afterSeed.appliedGeneration).toBe(2)
+    expect(afterB.status).toBe('error')
+    expect(afterB.lastError?.code).toBe('team-remote-internal-error')
+    expect(assessmentA.status).toBe('stale')
+    expect(afterA.status).toBe('error')
+    expect(afterA.lastError?.code).toBe('team-remote-internal-error')
+    expect(afterA.appliedGeneration).toBe(2)
+    expect(afterA.frame?.projection.generation).toBe(2)
+  })
+
+  it('a late response of an earlier request carrying a genuinely newer generation still applies: the generation verdict wins (F1-T5)', () => {
+    const { afterB, afterA, assessmentA } = lateApplyAfterNewerErrorScenario
+    // B (started later) failed first — the error state is real ...
+    expect(afterB.status).toBe('error')
+    expect(afterB.appliedGeneration).toBe(10)
+    // ... but A's late frame (gen11 > applied gen10) is authoritative:
+    // the request sequence must not suppress the generation verdict.
+    expect(assessmentA.status).toBe('apply')
+    expect(afterA.status).toBe('ready')
+    expect(afterA.appliedGeneration).toBe(11)
+    expect(afterA.frame?.projection.generation).toBe(11)
+    expect(afterA.lastError).toBeUndefined()
   })
 })
 

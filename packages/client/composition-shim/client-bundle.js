@@ -499,15 +499,36 @@ var __dshFactory = (require) => {
 			    const projectionState = useMemo(() => projectionStates[resolution?.team.teamSessionId ?? sessionId] ?? null, [projectionStates, resolution, sessionId]);
 			    // (repair 20260927, S1-C2) the manual "refresh team view" state —
 			    // `refreshPending` doubles as the double-click guard; `refreshEpoch`
-			    // discards late responses after a newer refresh (or unmount /
-			    // session switch — the captured ids are re-checked against the live
-			    // closure). The round-trip OUTCOME itself has no local copy: the
+			    // discards late responses after a newer refresh — and (PR #34 review
+			    // follow-up, F2) the lifetime effect below advances it on session
+			    // switch / unmount, so an in-flight refresh of a LEFT scope is dead
+			    // on settlement before its ledger continuation and pending-flag
+			    // settle run. The round-trip OUTCOME itself has no local copy: the
 			    // projection store's published state (the same visible state surface
 			    // the member/governance reads flow through) carries it — a resolved
 			    // Promise is NOT a success, and the state's status/assessment is the
 			    // verdict (no success toast over a failed pull).
 			    const [refreshPending, setRefreshPending] = useState(false);
 			    const refreshEpoch = useRef(0);
+			    // (PR #34 review follow-up, F2) the manual refresh lifetime is bound
+			    // to the session scope: entering a new session — and the unmount /
+			    // sessionId-change cleanup — advances `refreshEpoch`, invalidating
+			    // every refresh started in the previous scope (its continuation then
+			    // sees a mismatched epoch and returns before the ledger refresh and
+			    // before the pending flag settles). The effect body clears the
+			    // pending flag (the new scope starts fresh); the cleanup only
+			    // advances the REF — no setState in cleanup. StrictMode's simulated
+			    // unmount/remount only adds extra monotonic bumps (the epoch only
+			    // requires monotonicity). `loadRoots` is deliberately NOT bound
+			    // here: it is the global persisted-roots read with its own
+			    // `rootsEpoch` / unmount guard.
+			    useEffect(() => {
+			        refreshEpoch.current += 1;
+			        setRefreshPending(false);
+			        return () => {
+			            refreshEpoch.current += 1;
+			        };
+			    }, [sessionId]);
 			    // (repair 20260927, S1-C1) the WITH-frame status derivations — computed
 			    // UNCONDITIONALLY (hooks order) though only the with-frame render uses
 			    // them: the content is ALWAYS kept; a refresh in flight (the manual
@@ -5453,12 +5474,12 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=team-ledger-store.js.map
 			}, exports: {} };
 		__mods["state/team-projection-store.js"] = { done: false, fn: function (exports) {
-			const __imp54 = __req("../../remote/src/index.js");
-			const assessProjectionSync = __imp54.assessProjectionSync;
-			const backoffCapMs = __imp54.backoffCapMs;
-			const extractPushFrame = __imp54.extractPushFrame;
-			const isApplyAssessment = __imp54.isApplyAssessment;
-			const pickBackoffDelayMs = __imp54.pickBackoffDelayMs;
+			const __imp69 = __req("../../remote/src/index.js");
+			const assessProjectionSync = __imp69.assessProjectionSync;
+			const backoffCapMs = __imp69.backoffCapMs;
+			const extractPushFrame = __imp69.extractPushFrame;
+			const isApplyAssessment = __imp69.isApplyAssessment;
+			const pickBackoffDelayMs = __imp69.pickBackoffDelayMs;
 			/**
 			 * P9-T3 (S2-B) — the generation-safe Team projection store.
 			 *
@@ -5504,6 +5525,21 @@ var __dshFactory = (require) => {
 			 * next fresh `team.getProjection` response. No native timer is
 			 * assumed by the store logic (the default scheduler may use
 			 * `setTimeout`; tests inject a manual scheduler).
+			 *
+			 * Request-order liveness authority (PR #34 review follow-up, F1): the
+			 * request sequence ALSO decides which completed response owns the UI
+			 * liveness/error state — a response of a request that a LATER request
+			 * already superseded (a valid round trip completed after it started)
+			 * is resolved but NOT published: an old typed error must not downgrade
+			 * a newer success, an old duplicate/stale must not clear a newer
+			 * error, and an old foreign/inconsistent must not downgrade a newer
+			 * success. `noteRoundTrip` still records every completed round trip
+			 * (loss-episode absorption, baseline monotonicity, pending-retry
+			 * cancellation) — only the liveness write is suppressed. Frame
+			 * authority is deliberately separate and stays with the frozen
+			 * generation verdict: a late response carrying a genuinely NEWER
+			 * authoritative generation still `apply`s normally (the request order
+			 * never suppresses the frame verdict).
 			 *
 			 * Failure discipline: a typed RPC error is stored as `lastError` (the
 			 * frozen `RemoteErrorResult`, never exception-ified); only a
@@ -5676,11 +5712,24 @@ var __dshFactory = (require) => {
 			            return assessment;
 			        }
 			        const assessment = assessProjectionSync(appliedIdentity(), response);
+			        // (PR #34 review follow-up, F1) request-order LIVENESS authority,
+			        // captured BEFORE the baseline advances: a response whose request
+			        // an LATER request already superseded (a valid round trip
+			        // completed after it started) no longer owns the UI status /
+			        // lastError / lastAssessment. Frame authority is deliberately
+			        // separate and stays with the generation verdict below (a late
+			        // response of a genuinely newer generation still applies).
+			        const supersededByNewerRoundTrip = lastCompletedSeq > seq;
 			        noteRoundTrip(seq);
 			        // A scope change while in flight: the request is DEAD — no publish.
 			        if (epoch !== epochAtStart)
 			            return assessment;
 			        if (response.ok === false) {
+			            // (F1) an OLDER request's typed error must not downgrade a
+			            // NEWER completed round trip — it resolves (never rejects) but
+			            // is not published as the latest state.
+			            if (supersededByNewerRoundTrip)
+			                return assessment;
 			            // Typed RPC error: stored intact, never exception-ified.
 			            publish({
 			                ...state,
@@ -5721,6 +5770,13 @@ var __dshFactory = (require) => {
 			            });
 			            return assessment;
 			        }
+			        // (F1) Superseded non-apply verdicts no longer touch the newest
+			        // liveness state: an old duplicate/stale must not clear a newer
+			        // request's error, and an old foreign/inconsistent must not
+			        // downgrade a newer success. (The applied frame was never touched
+			        // by any verdict except `apply` — G2 hard invariant.)
+			        if (supersededByNewerRoundTrip)
+			            return assessment;
 			        // Non-apply verdicts: the applied frame is never touched (G2 hard
 			        // invariant). duplicate / stale are normal ordering events — an
 			        // existing frame stays `ready`; foreign / inconsistent are source
