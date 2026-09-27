@@ -5,7 +5,7 @@ var __dshFactory = (require) => {
 		/* S8 composition adapter (D-T9-11 territory): the P9 client product ships a plain tsc ESM dist; this single-file facade inlines its module graph, externalizes the baseline module-table specifiers, and maps .module.css to identity class maps with real CSS <style> injection. */
 		var __extCache = {};
 		function __extReq(spec) { var m = __extCache[spec]; if (m === undefined) { m = __extCache[spec] = require(spec); } return m; }
-		var __cssTable = {"ui/NewTeamEntry.module.css":{"classes":{"rail":"rail","wide":"wide","label":"label","backdrop":"backdrop","dialog":"dialog"},"text":"/* Rail (collapsed 56px) entry: icon-only row; the tooltip is owned by the\n   wrapping Tooltip (delay 500ms, the native New Session row pattern). */\n.rail {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  padding: 6px 0;\n  border: none;\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  cursor: pointer;\n}\n\n.rail:hover {\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.rail:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n/* Wide (expanded) entry: icon + text label row — the expanded button carries\n   its own label, so the tooltip is disabled in this state. */\n.wide {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  padding: 6px 8px;\n  border: none;\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-align: left;\n  cursor: pointer;\n}\n\n.wide:hover {\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.wide:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n/* The expanded-state text label (rail state renders icon-only). */\n.label {\n  white-space: nowrap;\n}\n\n/* The creation overlay: the sidebar column clips overflow, so the Team-owned\n   panel mounts as a fixed full-viewport backdrop with a centered dialog\n   (the same reason the ui-cordis footer panel is position: fixed). */\n.backdrop {\n  position: fixed;\n  inset: 0;\n  z-index: 1000;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 24px;\n  background: var(--dsw-alias-bg-mask-1);\n}\n\n.dialog {\n  width: 100%;\n  max-width: 560px;\n  max-height: calc(100vh - 48px);\n  overflow-y: auto;\n}\n"},"ui/TeamDock.module.css":{"classes":{"root":"root","row":"row","jump":"jump","title":"title","sep":"sep","readout":"readout","chevron":"chevron","expanded":"expanded","members":"members","tasks":"tasks","member":"member","task":"task","dotSlot":"dotSlot","name":"name","subject":"subject","taskStatus":"taskStatus","empty":"empty"},"text":"/* Team dock in the composer context stack (the D12 thin readout): one\n   collapsed 13px row in the shared dock column (same card alignment as the\n   todo/queue strips above it), the expanded body a compact member status and\n   task list. The --dsh-composer-* width axis inherits from the conversation\n   root, whose subtree hosts the dock slot. */\n\n.root {\n  box-sizing: border-box;\n  flex: none;\n  overflow: hidden;\n  margin: 0 auto;\n  width: calc(\n    100% -\n    var(--dsh-composer-side-clearance) -\n    var(--dsh-composer-side-clearance) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset)\n  );\n  max-width: calc(\n    var(--dsh-composer-card-max-width) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset)\n  );\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 12px;\n  background: var(--dsw-specific-tip);\n  /* Elevated surface: the same tip rung as the sibling dock cards, and the\n     expanded lists scroll inside this card, so the thumb takes the l2\n     elevation tokens (they inherit down to the lists). */\n  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);\n  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);\n}\n\n.row {\n  display: flex;\n  align-items: center;\n  gap: 2px;\n  padding: 0 4px 0 12px;\n}\n\n.jump {\n  display: flex;\n  flex: 1 1 auto;\n  align-items: center;\n  min-width: 0;\n  padding: 4px;\n  border: none;\n  border-radius: 8px;\n  background: transparent;\n  text-align: left;\n  cursor: pointer;\n}\n\n.title {\n  flex: none;\n  font: var(--dsw-font-xs-13);\n  font-weight: 500;\n  color: var(--dsw-alias-label-primary);\n}\n\n/* The D12 separators (title→first segment, segment→segment) share one\n   en-space joiner, so the readout line carries its own spacing and the\n   flex gap stays zero. */\n.sep {\n  flex: none;\n  font: var(--dsw-font-xs-13);\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.readout {\n  min-width: 0;\n  overflow: hidden;\n  font: var(--dsw-font-xs-13);\n  color: var(--dsw-alias-label-tertiary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.jump:hover .sep,\n.jump:focus-visible .sep,\n.jump:hover .readout,\n.jump:focus-visible .readout {\n  color: var(--dsw-alias-label-secondary);\n}\n\n.jump:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.chevron {\n  display: grid;\n  flex: none;\n  place-items: center;\n  padding: 6px;\n  border: none;\n  border-radius: 8px;\n  background: transparent;\n  color: var(--dsw-alias-label-tertiary);\n  cursor: pointer;\n}\n\n.chevron:hover {\n  color: var(--dsw-alias-label-secondary);\n}\n\n.chevron:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.expanded {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  padding: 2px 12px 8px;\n}\n\n.members,\n.tasks {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  max-height: 132px;\n  overflow-y: auto;\n}\n\n.member,\n.task {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n  font: var(--dsw-font-xs-13);\n  color: var(--dsw-alias-label-secondary);\n}\n\n.dotSlot {\n  display: grid;\n  flex: none;\n  place-items: center;\n  width: 14px;\n  height: 14px;\n}\n\n.name,\n.subject {\n  min-width: 0;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.taskStatus {\n  flex: none;\n  font: var(--dsw-font-xxxs-11);\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.empty {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n}\n"},"ui/TeamSettingsSection.module.css":{"classes":{"container":"container","title":"title","emptyState":"emptyState","emptyTitle":"emptyTitle","emptyDescription":"emptyDescription","steps":"steps"},"text":".container {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 16px;\n}\n\n.title {\n  font-size: 16px;\n  font-weight: 600;\n  color: var(--dsw-alias-label-primary);\n  margin: 0;\n}\n\n.emptyState {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  padding: 12px;\n  border-radius: 8px;\n  background: var(--dsw-alias-bg-module-platform);\n}\n\n.emptyTitle {\n  font-weight: 500;\n  color: var(--dsw-alias-label-secondary);\n  margin: 0;\n}\n\n.emptyDescription {\n  color: var(--dsw-alias-label-tertiary);\n  margin: 0;\n}\n\n.steps {\n  margin: 0;\n  padding-left: 24px;\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.steps li {\n  color: var(--dsw-alias-label-secondary);\n}\n\n.steps code {\n  font-family: var(--ds-font-family-code);\n  font-size: 13px;\n  background: var(--dsw-alias-bg-overlay);\n  padding: 2px 6px;\n  border-radius: 4px;\n}\n"},"ui/TeamView.module.css":{"classes":{"body":"body","zero":"zero","zeroInner":"zeroInner","zeroText":"zeroText","zeroStart":"zeroStart","section":"section","sectionTitle":"sectionTitle","legacyBanner":"legacyBanner","legacySummary":"legacySummary","legacySummaryTitle":"legacySummaryTitle","legacyNote":"legacyNote","roots":"roots","rootsTitle":"rootsTitle","rootsList":"rootsList","rootRow":"rootRow","rootId":"rootId","rootRowOpen":"rootRowOpen"},"text":"/* The zero-state container shares the tab's content column (the same host\n   width axis as .body below) so its centered content sits in the same\n   column the populated sections do. The border-box + calc(W + 48px)\n   geometry (48px = the horizontal padding) guarantees the content stays\n   exactly W wide on wide hosts and never exceeds the container on narrow\n   ones — see the .body note. */\n.zero {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 100%;\n  padding: 24px;\n  color: var(--dsw-alias-label-tertiary);\n  box-sizing: border-box;\n  width: 100%;\n  max-width: calc(var(--dsh-chat-content-width, 100%) + 48px);\n  margin: 0 auto;\n}\n\n.zeroInner {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 12px;\n  width: 100%;\n  max-width: 720px;\n}\n\n.zeroText {\n  margin: 0;\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.zeroStart {\n  padding: 6px 14px;\n  border: 1px solid var(--dsw-alias-state-business-primary);\n  border-radius: 6px;\n  background: var(--dsw-alias-state-business-primary);\n  color: var(--dsw-alias-bg-layer-1);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.zeroStart:hover {\n  opacity: 0.88;\n}\n\n.zeroStart:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n/* The tab's single content column: pinned to the host conversation width\n   axis (--dsh-chat-content-width, declared on the conversation root and\n   user-draggable through the width handles; the fallback keeps the legacy\n   full-width behavior on hosts without the axis). Every section — its\n   title AND its cards, including the governance section — lives inside\n   this one box, so the titles track the cards on a width drag and the\n   governance column resizes exactly like the other four.\n\n   Geometry (2026-09-21 supplemental review): the column is border-box with\n   a cap of W + 48px (48px = the horizontal padding), NOT content-box\n   width:100% capped at W — under the default content-box sizing the\n   padded column would overflow its narrow container by 48px. The border-box\n   cap guarantees: wide host → content exactly W (the host's own content\n   width); narrow container → border-box clamps to the container and the\n   content shrinks to (container − 48px) — it can never exceed the\n   container's client width. */\n.body {\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n  min-height: 100%;\n  padding: 16px 24px;\n  box-sizing: border-box;\n  width: 100%;\n  max-width: calc(var(--dsh-chat-content-width, 100%) + 48px);\n  margin: 0 auto;\n}\n\n.section {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  min-width: 0;\n}\n\n.sectionTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n/* P9-T8 (S5-D): the legacy zero state (UI §34 read-only banner + summary). */\n\n.legacyBanner {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-state-warn-primary);\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n}\n\n.legacyBanner p {\n  margin: 0;\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.4;\n}\n\n.legacySummary {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.legacySummaryTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.legacySummary p {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.legacySummary ul {\n  margin: 0;\n  padding-left: 16px;\n  list-style: none;\n}\n\n.legacySummary li {\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.legacyNote {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n/* D1 (Team D1-D6 repair v2, remote contract v3): the persisted\n   root-identity rows of the zero state (read-only in D1 — D2/D3 add the\n   open action). */\n\n.roots {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  width: 100%;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.rootsTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.rootsList {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n}\n\n.rootRow {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: baseline;\n  gap: 4px 12px;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.rootRow span {\n  word-break: break-all;\n}\n\n.rootId {\n  color: var(--dsw-alias-label-primary);\n}\n\n/* D2 (D6) — the dedicated open-in-Team-mode entry on a persisted-roots\n   row (the explicit \"以 Team 模式打开 / 回到 Leader\" button). */\n.rootRowOpen {\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-state-business-primary);\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-state-business-primary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.rootRowOpen:hover {\n  opacity: 0.88;\n}\n\n.rootRowOpen:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n.rootRowOpen:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n"},"ui/TeamCreationPanel.module.css":{"classes":{"panel":"panel","title":"title","field":"field","fieldLabel":"fieldLabel","select":"select","textarea":"textarea","hint":"hint","detail":"detail","detailName":"detailName","detailSource":"detailSource","detailDescription":"detailDescription","detailTemplates":"detailTemplates","compat":"compat","compatTitle":"compatTitle","compatNote":"compatNote","compatReady":"compatReady","compatUnknown":"compatUnknown","warningList":"warningList","warningRow":"warningRow","warningOwner":"warningOwner","warningSubjects":"warningSubjects","warningDetail":"warningDetail","ack":"ack","fatal":"fatal","fatalTitle":"fatalTitle","fatalRow":"fatalRow","fatalPreset":"fatalPreset","error":"error","rootKept":"rootKept","catalogActions":"catalogActions","actions":"actions","primary":"primary","secondary":"secondary","handoff":"handoff","handoffTitle":"handoffTitle","handoffNote":"handoffNote","handoffReady":"handoffReady","handoffPreview":"handoffPreview","handoffError":"handoffError","handoffFailed":"handoffFailed","handoffTriad":"handoffTriad"},"text":".panel {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 14px 16px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 8px;\n  background: var(--dsw-alias-bg-layer-1);\n}\n\n.title {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-s-14);\n  font-weight: 600;\n}\n\n.field {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  min-width: 0;\n}\n\n.fieldLabel {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.select,\n.textarea {\n  width: 100%;\n  padding: 5px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n.textarea {\n  min-height: 54px;\n  resize: vertical;\n}\n\n.select:focus-visible,\n.textarea:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.select:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.hint {\n  margin: -6px 0 0;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n}\n\n.detail {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: baseline;\n  gap: 6px;\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.detailName {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.detailSource {\n  padding: 1px 6px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.detailDescription {\n  flex-basis: 100%;\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.detailTemplates {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.compat {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.compatTitle {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.compatNote,\n.compatReady,\n.compatUnknown {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.compatReady {\n  color: var(--dsw-alias-state-success-primary);\n}\n\n.compatUnknown {\n  color: var(--dsw-alias-state-error-primary);\n}\n\n.warningList {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n\n.warningRow {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  padding: 6px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n}\n\n.warningOwner {\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.warningSubjects,\n.warningDetail {\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n}\n\n.ack {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.ack input {\n  margin: 0;\n}\n\n.fatal {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-error-secondary);\n}\n\n.fatalTitle,\n.fatalRow {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.fatalRow {\n  font: var(--dsw-font-xxxs-11);\n  color: var(--dsw-alias-label-secondary);\n}\n\n.fatalPreset {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.5;\n}\n\n.error {\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-error-secondary);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.rootKept {\n  margin: 4px 0 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n/* BP9 (issue #2 blueprint-loading, plan §13) — the manual catalog\n   refresh button row (below the blueprint picker, once the first load\n   has settled). */\n.catalogActions {\n  display: flex;\n  margin: 6px 0 8px;\n}\n\n.actions {\n  display: flex;\n  gap: 8px;\n}\n\n.primary,\n.secondary {\n  padding: 6px 14px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.primary {\n  background: var(--dsw-alias-state-business-primary);\n  border-color: var(--dsw-alias-state-business-primary);\n  color: var(--dsw-alias-bg-layer-1);\n}\n\n.primary:hover:not(:disabled),\n.secondary:hover:not(:disabled) {\n  opacity: 0.88;\n}\n\n.primary:focus-visible,\n.secondary:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n.primary:disabled,\n.secondary:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n/* P9-T8 (S5-D): the §32 handoff block (the optional face + source surface). */\n\n.handoff {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.handoffTitle {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.handoff > span:not(.handoffTitle) {\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.handoff > label {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n.handoff > label:has(input:disabled) {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.handoffNote {\n  margin: 0;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.handoffReady {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n}\n\n.handoffReady > span {\n  color: var(--dsw-alias-state-success-primary);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n}\n\n.handoffPreview {\n  width: 100%;\n  padding: 6px 8px;\n  border-left: 2px solid var(--dsw-alias-border-l2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.handoffPreview > p {\n  margin: 0 0 3px;\n  color: var(--dsw-alias-label-primary);\n  font-weight: 600;\n}\n\n.handoffPreview ul {\n  margin: 0;\n  padding-left: 16px;\n  list-style: disc;\n}\n\n.handoffPreview li {\n  margin: 1px 0;\n  word-break: break-word;\n}\n\n.handoffError,\n.handoffFailed > p {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.handoffFailed {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 8px 10px;\n  border: 1px solid var(--dsw-alias-state-error-secondary);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-1);\n}\n\n.handoffTriad {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n"},"ui/TeamTimeline.module.css":{"classes":{"root":"root","empty":"empty","plot":"plot","corner":"corner","axis":"axis","tick":"tick","gutter":"gutter","gutterRow":"gutterRow","swatch":"swatch","laneName":"laneName","track":"track","domain":"domain","lane":"lane","bar":"bar"},"text":".root {\n  --team-lane-height: 28px;\n  display: flex;\n  flex-direction: column;\n  border-bottom: 1px solid var(--dsw-alias-border-l2);\n  user-select: none;\n}\n\n.root :global([role='tooltip']) {\n  font: var(--dsw-font-xxxs-11);\n}\n\n.empty {\n  margin: 0;\n  padding: 12px 16px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n}\n\n.plot {\n  display: grid;\n  grid-template-columns: 160px minmax(0, 1fr);\n  grid-template-rows: 20px auto;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.corner {\n  border-right: 1px solid var(--dsw-alias-border-l1);\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.axis {\n  position: relative;\n  overflow: hidden;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.tick {\n  position: absolute;\n  top: 3px;\n  left: var(--team-tick-left);\n  padding-left: 4px;\n  border-left: 1px solid var(--dsw-alias-border-l2);\n  height: 100%;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n  white-space: nowrap;\n}\n\n.gutter {\n  border-right: 1px solid var(--dsw-alias-border-l1);\n}\n\n.gutterRow {\n  display: flex;\n  gap: 6px;\n  align-items: center;\n  height: var(--team-lane-height);\n  padding: 0 8px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.gutterRow:last-child {\n  border-bottom: 0;\n}\n\n.swatch {\n  flex: none;\n  width: 8px;\n  height: 8px;\n  border-radius: 2px;\n  background: var(--team-lane-color, var(--dsw-alias-label-tertiary));\n}\n\n.laneName {\n  overflow: hidden;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.gutterRow[data-current='true'] .laneName {\n  color: var(--dsw-alias-label-primary);\n  font-weight: 600;\n}\n\n.track {\n  position: relative;\n  overflow: hidden;\n  height: calc(var(--team-lane-count, 1) * var(--team-lane-height));\n  cursor: grab;\n  touch-action: none;\n}\n\n.track[data-panning='true'] {\n  cursor: grabbing;\n}\n\n.track:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.domain {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: var(--team-domain-left);\n  width: var(--team-domain-width);\n}\n\n.lane {\n  position: relative;\n  height: var(--team-lane-height);\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.lane:last-child {\n  border-bottom: 0;\n}\n\n.lane[data-current='true'] {\n  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 7%, transparent);\n}\n\n.bar {\n  position: absolute;\n  top: 50%;\n  left: var(--team-bar-left);\n  width: max(2px, var(--team-bar-width));\n  height: 14px;\n  min-width: 2px;\n  transform: translateY(-50%);\n  border-radius: 2px;\n  background: var(--team-lane-color, var(--dsw-alias-label-tertiary));\n  opacity: 0.85;\n  cursor: pointer;\n}\n\n.bar:hover {\n  opacity: 1;\n}\n\n.bar[data-running='true'] {\n  animation: team-bar-pulse 1.2s ease-in-out infinite;\n}\n\n@keyframes team-bar-pulse {\n  0%,\n  100% {\n    opacity: 1;\n  }\n\n  50% {\n    opacity: 0.55;\n  }\n}\n\n@media (prefers-reduced-motion: reduce) {\n  .bar[data-running='true'] {\n    animation: none;\n  }\n}\n\n/* The lane-color ramp (slot index → existing state token; the tint tier\n   lightens a hue toward the layer background for members beyond the four\n   base colors). */\n[data-lane-color='0'] {\n  --team-lane-color: var(--dsw-alias-state-business-primary);\n}\n\n[data-lane-color='1'] {\n  --team-lane-color: var(--dsw-alias-state-success-primary);\n}\n\n[data-lane-color='2'] {\n  --team-lane-color: var(--dsw-alias-state-warn-primary);\n}\n\n[data-lane-color='3'] {\n  --team-lane-color: var(--dsw-alias-state-error-primary);\n}\n\n[data-lane-color='4'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-business-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n\n[data-lane-color='5'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-success-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n\n[data-lane-color='6'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-warn-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n\n[data-lane-color='7'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-error-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n"},"ui/TeamMembers.module.css":{"classes":{"root":"root","group":"group","groupRow":"groupRow","groupName":"groupName","instances":"instances","actions":"actions","instanceRow":"instanceRow","instanceNav":"instanceNav","actionButton":"actionButton","commandError":"commandError","dotSlot":"dotSlot","instanceStatus":"instanceStatus","instanceAction":"instanceAction","waitingBadge":"waitingBadge","noInstances":"noInstances","createButton":"createButton","teamModeRow":"teamModeRow","teamModeOpen":"teamModeOpen","teamModeBadge":"teamModeBadge"},"text":".root {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  min-width: 0;\n}\n\n.group {\n  overflow: hidden;\n  min-width: 0;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.group[data-current='true'] {\n  border-color: var(--dsw-alias-state-business-primary);\n}\n\n/* border-box: the leader header is a <button> (already border-box via the\n   #28 form-control rule) but the worker header is a DIV — content-box made\n   `width:100% + 20px padding` overflow the card by 20px and the group's\n   overflow:hidden clipped the right-aligned `+` create button by 10px.\n   2026-09-22 supplemental live-browser measurement. */\n.groupRow {\n  display: flex;\n  align-items: center;\n  box-sizing: border-box;\n  width: 100%;\n  padding: 6px 10px;\n  border: 0;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n  text-align: left;\n}\n\n.groupRow[data-leader='true'] {\n  cursor: pointer;\n}\n\n.groupRow[data-leader='true']:hover {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.groupRow[data-leader='true']:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.groupName {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.group[data-current='true'] .groupName {\n  color: var(--dsw-alias-state-business-primary);\n}\n\n.instances {\n  display: flex;\n  flex-direction: column;\n}\n\n/* border-box (2026-09-22 supplemental, live-browser measurement): the row\n   is `width: 100%` + 28px horizontal padding on a DIV — as content-box it\n   overflowed the group card by 28px and the group's overflow:hidden\n   clipped the right-aligned action cluster's trailing button by 18px at\n   every width where the cluster stays on line 1 (and the right-aligned\n   content of any row). The <button> groupRow variant was already saved by\n   the #28 form-control border-box rule; the DIV rows need it explicitly.\n   With border-box the row box == the card content box, so the #28\n   .actions shrink+wrap contract (never exceed the row) lands the buttons\n   INSIDE the card at all widths. */\n.instanceRow {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 4px 8px;\n  box-sizing: border-box;\n  width: 100%;\n  padding: 6px 10px 6px 18px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n}\n\n.instanceRow:last-child {\n  border-bottom: 0;\n}\n\n.instanceRow[data-current='true'] {\n  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 7%, transparent);\n  color: var(--dsw-alias-label-primary);\n}\n\n.instanceNav {\n  display: flex;\n  flex: 1 1 auto;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n  padding: 0;\n  border: 0;\n  background: transparent;\n  color: inherit;\n  font: inherit;\n  text-align: left;\n  cursor: pointer;\n}\n\n.instanceNav:hover {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.instanceNav:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 2px;\n}\n\n.instanceNav:disabled {\n  cursor: default;\n  opacity: 0.55;\n}\n\n/* flex-wrap: when the row is narrower than the full button cluster,\n   the buttons wrap onto a second line INSIDE the card instead of\n   overflowing the group's right edge (where the group's overflow:hidden\n   clipped them, leaving the trailing buttons cut off). 2026-09-21\n   supplemental review: `flex: none` (non-shrinkable, fixed basis) kept\n   the cluster wider than its row even with wrap enabled — it must be\n   shrinkable: flex 0 1 auto + min-width 0 + max-width 100% so the cluster\n   can never exceed the row, wrapping its buttons instead of clipping\n   them; justify-content flex-end keeps the original right alignment. */\n.actions {\n  display: flex;\n  flex: 0 1 auto;\n  min-width: 0;\n  max-width: 100%;\n  justify-content: flex-end;\n  flex-wrap: wrap;\n  gap: 4px;\n}\n\n.actionButton {\n  padding: 2px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.actionButton:hover:not(:disabled) {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.actionButton:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.actionButton:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.commandError {\n  width: 100%;\n  padding: 4px 8px;\n  border-radius: 4px;\n  background: color-mix(in srgb, var(--dsw-alias-state-error-secondary) 18%, transparent);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n  word-break: break-word;\n}\n\n.dotSlot {\n  display: inline-flex;\n  flex: none;\n  align-items: center;\n}\n\n.instanceStatus {\n  flex: none;\n}\n\n.instanceAction {\n  overflow: hidden;\n  color: var(--dsw-alias-label-caption);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.waitingBadge {\n  flex: none;\n  margin-left: auto;\n  padding: 0 6px;\n  border-radius: 4px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.noInstances {\n  display: block;\n  padding: 6px 10px 6px 18px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.createButton {\n  flex: none;\n  margin-left: auto;\n  padding: 0 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 4px;\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  line-height: 18px;\n  cursor: pointer;\n}\n\n.createButton:hover {\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-primary);\n}\n\n.createButton:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n/* D2 (D6) — the dedicated open-in-Team-mode entry on the root/leader row\n   (the explicit \"以 Team 模式打开 / 回到 Leader\" button) + the current\n   open-mode badge. */\n.teamModeRow {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  padding: 4px 10px 6px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n}\n\n.teamModeOpen {\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-state-business-primary);\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-state-business-primary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.teamModeOpen:hover:not(:disabled) {\n  opacity: 0.88;\n}\n\n.teamModeOpen:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.teamModeOpen:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.teamModeBadge {\n  padding: 1px 8px;\n  border-radius: 999px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  white-space: nowrap;\n}\n"},"ui/TeamActivity.module.css":{"classes":{"root":"root","empty":"empty","taskRow":"taskRow","dotSlot":"dotSlot","taskMain":"taskMain","taskLine":"taskLine","taskSubject":"taskSubject","taskStatus":"taskStatus","taskAssignee":"taskAssignee","taskSummary":"taskSummary"},"text":".root {\n  display: flex;\n  flex-direction: column;\n  min-width: 0;\n  overflow: hidden;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.empty {\n  display: block;\n  padding: 6px 10px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n}\n\n.taskRow {\n  display: flex;\n  gap: 8px;\n  padding: 6px 10px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  min-width: 0;\n}\n\n.taskRow:last-child {\n  border-bottom: 0;\n}\n\n.dotSlot {\n  display: inline-flex;\n  flex: none;\n  align-items: flex-start;\n  padding-top: 3px;\n}\n\n.taskMain {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 0;\n}\n\n.taskLine {\n  display: flex;\n  align-items: baseline;\n  gap: 8px;\n  min-width: 0;\n}\n\n.taskSubject {\n  overflow: hidden;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.taskStatus {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.taskAssignee {\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.taskSummary {\n  overflow: hidden;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n"},"ui/TeamLedger.module.css":{"classes":{"root":"root","empty":"empty","top":"top","loadEarlier":"loadEarlier","loadFailed":"loadFailed","truncated":"truncated","rows":"rows","row":"row","dotSlot":"dotSlot","time":"time","marker":"marker","actor":"actor","summary":"summary","state":"state","stateReason":"stateReason","filter":"filter","resolveBar":"resolveBar","resolveBtn":"resolveBtn","resolveBusy":"resolveBusy","resolveError":"resolveError","externalPolicyLine":"externalPolicyLine","controlDetail":"controlDetail","controlField":"controlField","readOnlyNote":"readOnlyNote"},"text":".root {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  min-width: 0;\n}\n\n.empty {\n  display: block;\n  padding: 12px 16px;\n  border: 1px dashed var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n  text-align: center;\n}\n\n.top {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-height: 22px;\n}\n\n.loadEarlier {\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.loadEarlier:hover {\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-primary);\n}\n\n.loadEarlier:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.loadFailed {\n  padding: 2px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.truncated {\n  padding: 2px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.rows {\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n  min-width: 0;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.row {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  padding: 6px 10px;\n  border: 0;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-align: left;\n  cursor: pointer;\n  min-width: 0;\n}\n\n.row:last-child {\n  border-bottom: 0;\n}\n\n.row:hover {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.row:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.row:disabled {\n  cursor: default;\n  opacity: 0.55;\n}\n\n.dotSlot {\n  display: inline-flex;\n  flex: none;\n  align-items: center;\n}\n\n.time {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n  font-variant-numeric: tabular-nums;\n}\n\n.marker {\n  flex: none;\n  padding: 0 6px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.actor {\n  flex: none;\n  max-width: 220px;\n  overflow: hidden;\n  color: var(--dsw-alias-label-primary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.summary {\n  overflow: hidden;\n  min-width: 0;\n  flex: 1 1 auto;\n  color: var(--dsw-alias-label-secondary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.state {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  flex: none;\n  max-width: 40%;\n  padding: 0 6px;\n  border-radius: 4px;\n  font: var(--dsw-font-xxxs-11);\n}\n\n.state[data-pending='true'] {\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n}\n\n.state:not([data-pending='true']) {\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n}\n\n.stateReason {\n  overflow: hidden;\n  max-width: 100%;\n  color: var(--dsw-alias-label-caption);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* P9-T6 addition (UI §27.4): the client-local category / instance filter\n   selects, styled in the same control language as `.loadEarlier`. */\n.filter {\n  padding: 2px 6px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  max-width: 180px;\n  cursor: pointer;\n}\n\n.filter:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n/* F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4): the human\n   control-resolution command bar rendered under a PENDING control-request\n   row (the row itself is a <button> — the bar is its sibling, never\n   nested): the Allow / Deny commands, the in-flight busy note, and the\n   typed error note (the frozen control vocabulary code + message).\n   Absent `onResolveControl` face → the bar never renders (legacy surface\n   unchanged). */\n.resolveBar {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n  padding: 4px 10px 6px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.resolveBtn {\n  flex: none;\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.resolveBtn:hover:not(:disabled) {\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  border-color: var(--dsw-alias-state-business-primary);\n}\n\n.resolveBtn:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.resolveBtn:disabled {\n  cursor: default;\n  opacity: 0.55;\n}\n\n.resolveBusy {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.resolveError {\n  overflow: hidden;\n  min-width: 0;\n  max-width: 100%;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* F9U (gate-review supplement 2, UI §26.4): the external hard policy\n   blocked an allowed team decision — the badge switches from the plain\n   decision label to the frozen two-line \"Team decision / Execution\"\n   display (stacked, right-aligned in the row's badge slot). Never the\n   plain \"denied\" label. */\n.state[data-external-policy='true'] {\n  flex-direction: column;\n  align-items: flex-end;\n  gap: 2px;\n  padding: 2px 6px;\n}\n\n.externalPolicyLine {\n  display: block;\n  max-width: 100%;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* F9U (gate-review supplement 1, UI §26.2): the control-request detail\n   panel field rows (requester / kind / requested operation / tool /\n   reason / creation time / current status / requested authority) — a\n   wrapping definition list in the caption label language. */\n.controlDetail {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 2px 12px;\n  flex: 1 1 auto;\n  margin: 0;\n  min-width: 0;\n}\n\n.controlField {\n  display: flex;\n  align-items: baseline;\n  gap: 6px;\n  min-width: 0;\n}\n\n.controlField dt {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.controlField dd {\n  overflow: hidden;\n  min-width: 0;\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* F9U (gate-review supplement 4): the served-version-gated read-only\n   note (the served host is pre-v4 — the detail panel stays, the\n   commands do not). */\n.readOnlyNote {\n  flex: none;\n  padding: 2px 8px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n"},"ui/TeamGovernance.module.css":{"classes":{"section":"section","card":"card","cardHead":"cardHead","cardTitle":"cardTitle","badge":"badge","badgeUnknown":"badgeUnknown","counts":"counts","meta":"meta","freshRead":"freshRead","freshReadTitle":"freshReadTitle","actions":"actions","primary":"primary","secondary":"secondary","help":"help","note":"note","noteError":"noteError","cells":"cells","cell":"cell","cellName":"cellName","cellLocked":"cellLocked","cellCurrent":"cellCurrent","cellEditor":"cellEditor","select":"select","input":"input","preview":"preview","memberBlock":"memberBlock","memberName":"memberName","lanes":"lanes","lane":"lane","laneName":"laneName","laneValue":"laneValue","laneState":"laneState","laneFlag":"laneFlag","hardPolicy":"hardPolicy","override":"override","overrideEditor":"overrideEditor"},"text":".section {\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n  min-width: 0;\n}\n\n.card {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  min-width: 0;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.cardHead {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n}\n\n.cardTitle {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-s-14);\n  font-weight: 600;\n}\n\n.badge {\n  padding: 1px 8px;\n  border-radius: 999px;\n  background: var(--dsw-alias-state-success-primary);\n  color: var(--dsw-alias-bg-layer-1);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n  white-space: nowrap;\n}\n\n.badge[data-governance-compat-mark='warning'] {\n  background: var(--dsw-alias-state-warn-primary);\n}\n\n.badge[data-governance-compat-mark='fatal'] {\n  background: var(--dsw-alias-state-error-primary);\n}\n\n.badgeUnknown {\n  padding: 1px 8px;\n  border-radius: 999px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n  white-space: nowrap;\n}\n\n.counts {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n}\n\n.meta {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.freshRead {\n  padding: 6px 8px;\n  border-left: 2px solid var(--dsw-alias-border-l2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.freshReadTitle {\n  margin: 0 0 2px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n}\n\n.actions {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n.primary,\n.secondary {\n  padding: 3px 10px;\n  border-radius: 4px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.primary {\n  border-color: var(--dsw-alias-state-business-primary);\n  background: var(--dsw-alias-state-business-primary);\n  color: var(--dsw-alias-bg-layer-1);\n}\n\n.primary:disabled,\n.secondary:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.help {\n  margin: 0;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.note {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.noteError {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.cells {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n\n.cell {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n  padding: 6px 8px;\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.cellName {\n  min-width: 90px;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.cellLocked {\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 400;\n}\n\n.cellCurrent {\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.cellEditor {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n  margin-left: auto;\n}\n\n.select,\n.input {\n  padding: 2px 6px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-1);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.preview {\n  margin: 0;\n  padding: 4px 8px;\n  border-radius: 4px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.memberBlock {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 8px 10px;\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.memberName {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.lanes {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n}\n\n.lane {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.laneName {\n  min-width: 110px;\n  color: var(--dsw-alias-label-primary);\n  font-weight: 600;\n}\n\n.laneValue {\n  min-width: 120px;\n  word-break: break-all;\n}\n\n.laneState {\n  font-weight: 600;\n}\n\n.laneFlag {\n  padding: 0 6px;\n  border-radius: 999px;\n  background: var(--dsw-alias-bg-layer-1);\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.hardPolicy {\n  padding: 1px 6px;\n  border-radius: 3px;\n  background: var(--dsw-alias-state-error-secondary);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.override {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.overrideEditor {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 6px;\n}\n"},"ui/TeamMemberDialogs.module.css":{"classes":{"dialog":"dialog","warning":"warning","notice":"notice","field":"field","fieldLabel":"fieldLabel","templateName":"templateName","button":"button"},"text":"/* The dialog CONTENT wrapper: the card chrome (mask, radius, fill,\n   elevation), the header (title + close), and the footer (the action\n   row) come from the shared Modal primitive — this box only stacks the\n   fields inside the modal's content column. */\n.dialog {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  min-width: 0;\n}\n\n.warning {\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.notice {\n  padding: 6px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n}\n\n.field {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  min-width: 0;\n}\n\n.fieldLabel {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n/* 2026-09-21 supplemental review: border-box so `width: 100%` + padding +\n   border stay inside the modal body's content box — under the default\n   content-box sizing every control overflowed the dialog's right edge by\n   padding+border (18px here). */\n.field input,\n.field select {\n  box-sizing: border-box;\n  width: 100%;\n  padding: 5px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n.field input:focus-visible,\n.field select:focus-visible,\n.field textarea:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.field textarea {\n  box-sizing: border-box;\n  width: 100%;\n  padding: 5px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  resize: vertical;\n}\n\n.templateName {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n/* The action row renders in the Modal's card footer (its own flex-end\n   row + gap) — only the button skin stays local. */\n.button {\n  padding: 5px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.button:hover:not(:disabled) {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.button:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.button:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n"}};
+		var __cssTable = {"ui/NewTeamEntry.module.css":{"classes":{"rail":"rail","wide":"wide","label":"label","backdrop":"backdrop","dialog":"dialog"},"text":"/* Rail (collapsed 56px) entry: icon-only row; the tooltip is owned by the\n   wrapping Tooltip (delay 500ms, the native New Session row pattern). */\n.rail {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  padding: 6px 0;\n  border: none;\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  cursor: pointer;\n}\n\n.rail:hover {\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.rail:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n/* Wide (expanded) entry: icon + text label row — the expanded button carries\n   its own label, so the tooltip is disabled in this state. */\n.wide {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  padding: 6px 8px;\n  border: none;\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-align: left;\n  cursor: pointer;\n}\n\n.wide:hover {\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.wide:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n/* The expanded-state text label (rail state renders icon-only). */\n.label {\n  white-space: nowrap;\n}\n\n/* The creation overlay: the sidebar column clips overflow, so the Team-owned\n   panel mounts as a fixed full-viewport backdrop with a centered dialog\n   (the same reason the ui-cordis footer panel is position: fixed). */\n.backdrop {\n  position: fixed;\n  inset: 0;\n  z-index: 1000;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 24px;\n  background: var(--dsw-alias-bg-mask-1);\n}\n\n.dialog {\n  width: 100%;\n  max-width: 560px;\n  max-height: calc(100vh - 48px);\n  overflow-y: auto;\n}\n"},"ui/TeamDock.module.css":{"classes":{"root":"root","row":"row","jump":"jump","title":"title","sep":"sep","readout":"readout","chevron":"chevron","expanded":"expanded","members":"members","tasks":"tasks","member":"member","task":"task","dotSlot":"dotSlot","name":"name","subject":"subject","taskStatus":"taskStatus","empty":"empty"},"text":"/* Team dock in the composer context stack (the D12 thin readout): one\n   collapsed 13px row in the shared dock column (same card alignment as the\n   todo/queue strips above it), the expanded body a compact member status and\n   task list. The --dsh-composer-* width axis inherits from the conversation\n   root, whose subtree hosts the dock slot. */\n\n.root {\n  box-sizing: border-box;\n  flex: none;\n  overflow: hidden;\n  margin: 0 auto;\n  width: calc(\n    100% -\n    var(--dsh-composer-side-clearance) -\n    var(--dsh-composer-side-clearance) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset)\n  );\n  max-width: calc(\n    var(--dsh-composer-card-max-width) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset)\n  );\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 12px;\n  background: var(--dsw-specific-tip);\n  /* Elevated surface: the same tip rung as the sibling dock cards, and the\n     expanded lists scroll inside this card, so the thumb takes the l2\n     elevation tokens (they inherit down to the lists). */\n  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);\n  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);\n}\n\n.row {\n  display: flex;\n  align-items: center;\n  gap: 2px;\n  padding: 0 4px 0 12px;\n}\n\n.jump {\n  display: flex;\n  flex: 1 1 auto;\n  align-items: center;\n  min-width: 0;\n  padding: 4px;\n  border: none;\n  border-radius: 8px;\n  background: transparent;\n  text-align: left;\n  cursor: pointer;\n}\n\n.title {\n  flex: none;\n  font: var(--dsw-font-xs-13);\n  font-weight: 500;\n  color: var(--dsw-alias-label-primary);\n}\n\n/* The D12 separators (title→first segment, segment→segment) share one\n   en-space joiner, so the readout line carries its own spacing and the\n   flex gap stays zero. */\n.sep {\n  flex: none;\n  font: var(--dsw-font-xs-13);\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.readout {\n  min-width: 0;\n  overflow: hidden;\n  font: var(--dsw-font-xs-13);\n  color: var(--dsw-alias-label-tertiary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.jump:hover .sep,\n.jump:focus-visible .sep,\n.jump:hover .readout,\n.jump:focus-visible .readout {\n  color: var(--dsw-alias-label-secondary);\n}\n\n.jump:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.chevron {\n  display: grid;\n  flex: none;\n  place-items: center;\n  padding: 6px;\n  border: none;\n  border-radius: 8px;\n  background: transparent;\n  color: var(--dsw-alias-label-tertiary);\n  cursor: pointer;\n}\n\n.chevron:hover {\n  color: var(--dsw-alias-label-secondary);\n}\n\n.chevron:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.expanded {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  padding: 2px 12px 8px;\n}\n\n.members,\n.tasks {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  max-height: 132px;\n  overflow-y: auto;\n}\n\n.member,\n.task {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n  font: var(--dsw-font-xs-13);\n  color: var(--dsw-alias-label-secondary);\n}\n\n.dotSlot {\n  display: grid;\n  flex: none;\n  place-items: center;\n  width: 14px;\n  height: 14px;\n}\n\n.name,\n.subject {\n  min-width: 0;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.taskStatus {\n  flex: none;\n  font: var(--dsw-font-xxxs-11);\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.empty {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n}\n"},"ui/TeamSettingsSection.module.css":{"classes":{"container":"container","title":"title","emptyState":"emptyState","emptyTitle":"emptyTitle","emptyDescription":"emptyDescription","steps":"steps"},"text":".container {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 16px;\n}\n\n.title {\n  font-size: 16px;\n  font-weight: 600;\n  color: var(--dsw-alias-label-primary);\n  margin: 0;\n}\n\n.emptyState {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  padding: 12px;\n  border-radius: 8px;\n  background: var(--dsw-alias-bg-module-platform);\n}\n\n.emptyTitle {\n  font-weight: 500;\n  color: var(--dsw-alias-label-secondary);\n  margin: 0;\n}\n\n.emptyDescription {\n  color: var(--dsw-alias-label-tertiary);\n  margin: 0;\n}\n\n.steps {\n  margin: 0;\n  padding-left: 24px;\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.steps li {\n  color: var(--dsw-alias-label-secondary);\n}\n\n.steps code {\n  font-family: var(--ds-font-family-code);\n  font-size: 13px;\n  background: var(--dsw-alias-bg-overlay);\n  padding: 2px 6px;\n  border-radius: 4px;\n}\n"},"ui/TeamView.module.css":{"classes":{"body":"body","zero":"zero","zeroInner":"zeroInner","zeroText":"zeroText","zeroStart":"zeroStart","section":"section","sectionTitle":"sectionTitle","legacyBanner":"legacyBanner","legacySummary":"legacySummary","legacySummaryTitle":"legacySummaryTitle","legacyNote":"legacyNote","roots":"roots","rootsTitle":"rootsTitle","rootsList":"rootsList","rootRow":"rootRow","rootId":"rootId","rootRowOpen":"rootRowOpen","viewStatus":"viewStatus"},"text":"/* The zero-state container shares the tab's content column (the same host\n   width axis as .body below) so its centered content sits in the same\n   column the populated sections do. The border-box + calc(W + 48px)\n   geometry (48px = the horizontal padding) guarantees the content stays\n   exactly W wide on wide hosts and never exceeds the container on narrow\n   ones — see the .body note. */\n.zero {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 100%;\n  padding: 24px;\n  color: var(--dsw-alias-label-tertiary);\n  box-sizing: border-box;\n  width: 100%;\n  max-width: calc(var(--dsh-chat-content-width, 100%) + 48px);\n  margin: 0 auto;\n}\n\n.zeroInner {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 12px;\n  width: 100%;\n  max-width: 720px;\n}\n\n.zeroText {\n  margin: 0;\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.zeroStart {\n  padding: 6px 14px;\n  border: 1px solid var(--dsw-alias-state-business-primary);\n  border-radius: 6px;\n  background: var(--dsw-alias-state-business-primary);\n  color: var(--dsw-alias-bg-layer-1);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.zeroStart:hover {\n  opacity: 0.88;\n}\n\n.zeroStart:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n/* The tab's single content column: pinned to the host conversation width\n   axis (--dsh-chat-content-width, declared on the conversation root and\n   user-draggable through the width handles; the fallback keeps the legacy\n   full-width behavior on hosts without the axis). Every section — its\n   title AND its cards, including the governance section — lives inside\n   this one box, so the titles track the cards on a width drag and the\n   governance column resizes exactly like the other four.\n\n   Geometry (2026-09-21 supplemental review): the column is border-box with\n   a cap of W + 48px (48px = the horizontal padding), NOT content-box\n   width:100% capped at W — under the default content-box sizing the\n   padded column would overflow its narrow container by 48px. The border-box\n   cap guarantees: wide host → content exactly W (the host's own content\n   width); narrow container → border-box clamps to the container and the\n   content shrinks to (container − 48px) — it can never exceed the\n   container's client width. */\n.body {\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n  min-height: 100%;\n  padding: 16px 24px;\n  box-sizing: border-box;\n  width: 100%;\n  max-width: calc(var(--dsh-chat-content-width, 100%) + 48px);\n  margin: 0 auto;\n}\n\n.section {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  min-width: 0;\n}\n\n.sectionTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n/* P9-T8 (S5-D): the legacy zero state (UI §34 read-only banner + summary). */\n\n.legacyBanner {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-state-warn-primary);\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n}\n\n.legacyBanner p {\n  margin: 0;\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.4;\n}\n\n.legacySummary {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.legacySummaryTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.legacySummary p {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.legacySummary ul {\n  margin: 0;\n  padding-left: 16px;\n  list-style: none;\n}\n\n.legacySummary li {\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.legacyNote {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n/* D1 (Team D1-D6 repair v2, remote contract v3): the persisted\n   root-identity rows of the zero state (read-only in D1 — D2/D3 add the\n   open action). */\n\n.roots {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  width: 100%;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.rootsTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.rootsList {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n}\n\n.rootRow {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: baseline;\n  gap: 4px 12px;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.rootRow span {\n  word-break: break-all;\n}\n\n.rootId {\n  color: var(--dsw-alias-label-primary);\n}\n\n/* D2 (D6) — the dedicated open-in-Team-mode entry on a persisted-roots\n   row (the explicit \"以 Team 模式打开 / 回到 Leader\" button). */\n.rootRowOpen {\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-state-business-primary);\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-state-business-primary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.rootRowOpen:hover {\n  opacity: 0.88;\n}\n\n.rootRowOpen:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n.rootRowOpen:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n/* repair 20260927 (S1-C1/S1-C2) — the with-frame view-status header: the\n   light pending mark (refresh / reconnect in flight) and the \"update\n   failed — showing the last successfully loaded data\" note (the content\n   below is ALWAYS kept). Empty (no children) when the view is healthy. */\n.viewStatus {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  min-width: 0;\n}\n"},"ui/TeamCreationPanel.module.css":{"classes":{"panel":"panel","title":"title","field":"field","fieldLabel":"fieldLabel","select":"select","textarea":"textarea","hint":"hint","detail":"detail","detailName":"detailName","detailSource":"detailSource","detailDescription":"detailDescription","detailTemplates":"detailTemplates","compat":"compat","compatTitle":"compatTitle","compatNote":"compatNote","compatReady":"compatReady","compatUnknown":"compatUnknown","warningList":"warningList","warningRow":"warningRow","warningOwner":"warningOwner","warningSubjects":"warningSubjects","warningDetail":"warningDetail","ack":"ack","fatal":"fatal","fatalTitle":"fatalTitle","fatalRow":"fatalRow","fatalPreset":"fatalPreset","error":"error","rootKept":"rootKept","catalogActions":"catalogActions","actions":"actions","primary":"primary","secondary":"secondary","handoff":"handoff","handoffTitle":"handoffTitle","handoffNote":"handoffNote","handoffReady":"handoffReady","handoffPreview":"handoffPreview","handoffError":"handoffError","handoffFailed":"handoffFailed","handoffTriad":"handoffTriad"},"text":".panel {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 14px 16px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 8px;\n  background: var(--dsw-alias-bg-layer-1);\n}\n\n.title {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-s-14);\n  font-weight: 600;\n}\n\n.field {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  min-width: 0;\n}\n\n.fieldLabel {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.select,\n.textarea {\n  width: 100%;\n  padding: 5px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n.textarea {\n  min-height: 54px;\n  resize: vertical;\n}\n\n.select:focus-visible,\n.textarea:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.select:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.hint {\n  margin: -6px 0 0;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n}\n\n.detail {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: baseline;\n  gap: 6px;\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.detailName {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.detailSource {\n  padding: 1px 6px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.detailDescription {\n  flex-basis: 100%;\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.detailTemplates {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.compat {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.compatTitle {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.compatNote,\n.compatReady,\n.compatUnknown {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.compatReady {\n  color: var(--dsw-alias-state-success-primary);\n}\n\n.compatUnknown {\n  color: var(--dsw-alias-state-error-primary);\n}\n\n.warningList {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n\n.warningRow {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  padding: 6px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n}\n\n.warningOwner {\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.warningSubjects,\n.warningDetail {\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n}\n\n.ack {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.ack input {\n  margin: 0;\n}\n\n.fatal {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-error-secondary);\n}\n\n.fatalTitle,\n.fatalRow {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.fatalRow {\n  font: var(--dsw-font-xxxs-11);\n  color: var(--dsw-alias-label-secondary);\n}\n\n.fatalPreset {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.5;\n}\n\n.error {\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-error-secondary);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.rootKept {\n  margin: 4px 0 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n/* BP9 (issue #2 blueprint-loading, plan §13) — the manual catalog\n   refresh button row (below the blueprint picker, once the first load\n   has settled). */\n.catalogActions {\n  display: flex;\n  margin: 6px 0 8px;\n}\n\n.actions {\n  display: flex;\n  gap: 8px;\n}\n\n.primary,\n.secondary {\n  padding: 6px 14px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.primary {\n  background: var(--dsw-alias-state-business-primary);\n  border-color: var(--dsw-alias-state-business-primary);\n  color: var(--dsw-alias-bg-layer-1);\n}\n\n.primary:hover:not(:disabled),\n.secondary:hover:not(:disabled) {\n  opacity: 0.88;\n}\n\n.primary:focus-visible,\n.secondary:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n.primary:disabled,\n.secondary:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n/* P9-T8 (S5-D): the §32 handoff block (the optional face + source surface). */\n\n.handoff {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.handoffTitle {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.handoff > span:not(.handoffTitle) {\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.handoff > label {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n.handoff > label:has(input:disabled) {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.handoffNote {\n  margin: 0;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.handoffReady {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n}\n\n.handoffReady > span {\n  color: var(--dsw-alias-state-success-primary);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n}\n\n.handoffPreview {\n  width: 100%;\n  padding: 6px 8px;\n  border-left: 2px solid var(--dsw-alias-border-l2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.handoffPreview > p {\n  margin: 0 0 3px;\n  color: var(--dsw-alias-label-primary);\n  font-weight: 600;\n}\n\n.handoffPreview ul {\n  margin: 0;\n  padding-left: 16px;\n  list-style: disc;\n}\n\n.handoffPreview li {\n  margin: 1px 0;\n  word-break: break-word;\n}\n\n.handoffError,\n.handoffFailed > p {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.handoffFailed {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 8px 10px;\n  border: 1px solid var(--dsw-alias-state-error-secondary);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-1);\n}\n\n.handoffTriad {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n"},"ui/TeamTimeline.module.css":{"classes":{"root":"root","empty":"empty","plot":"plot","corner":"corner","axis":"axis","tick":"tick","gutter":"gutter","gutterRow":"gutterRow","swatch":"swatch","laneName":"laneName","track":"track","domain":"domain","lane":"lane","bar":"bar"},"text":".root {\n  --team-lane-height: 28px;\n  display: flex;\n  flex-direction: column;\n  border-bottom: 1px solid var(--dsw-alias-border-l2);\n  user-select: none;\n}\n\n.root :global([role='tooltip']) {\n  font: var(--dsw-font-xxxs-11);\n}\n\n.empty {\n  margin: 0;\n  padding: 12px 16px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n}\n\n.plot {\n  display: grid;\n  grid-template-columns: 160px minmax(0, 1fr);\n  grid-template-rows: 20px auto;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.corner {\n  border-right: 1px solid var(--dsw-alias-border-l1);\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.axis {\n  position: relative;\n  overflow: hidden;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.tick {\n  position: absolute;\n  top: 3px;\n  left: var(--team-tick-left);\n  padding-left: 4px;\n  border-left: 1px solid var(--dsw-alias-border-l2);\n  height: 100%;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n  white-space: nowrap;\n}\n\n.gutter {\n  border-right: 1px solid var(--dsw-alias-border-l1);\n}\n\n.gutterRow {\n  display: flex;\n  gap: 6px;\n  align-items: center;\n  height: var(--team-lane-height);\n  padding: 0 8px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.gutterRow:last-child {\n  border-bottom: 0;\n}\n\n.swatch {\n  flex: none;\n  width: 8px;\n  height: 8px;\n  border-radius: 2px;\n  background: var(--team-lane-color, var(--dsw-alias-label-tertiary));\n}\n\n.laneName {\n  overflow: hidden;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.gutterRow[data-current='true'] .laneName {\n  color: var(--dsw-alias-label-primary);\n  font-weight: 600;\n}\n\n.track {\n  position: relative;\n  overflow: hidden;\n  height: calc(var(--team-lane-count, 1) * var(--team-lane-height));\n  cursor: grab;\n  touch-action: none;\n}\n\n.track[data-panning='true'] {\n  cursor: grabbing;\n}\n\n.track:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.domain {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: var(--team-domain-left);\n  width: var(--team-domain-width);\n}\n\n.lane {\n  position: relative;\n  height: var(--team-lane-height);\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.lane:last-child {\n  border-bottom: 0;\n}\n\n.lane[data-current='true'] {\n  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 7%, transparent);\n}\n\n.bar {\n  position: absolute;\n  top: 50%;\n  left: var(--team-bar-left);\n  width: max(2px, var(--team-bar-width));\n  height: 14px;\n  min-width: 2px;\n  transform: translateY(-50%);\n  border-radius: 2px;\n  background: var(--team-lane-color, var(--dsw-alias-label-tertiary));\n  opacity: 0.85;\n  cursor: pointer;\n}\n\n.bar:hover {\n  opacity: 1;\n}\n\n.bar[data-running='true'] {\n  animation: team-bar-pulse 1.2s ease-in-out infinite;\n}\n\n@keyframes team-bar-pulse {\n  0%,\n  100% {\n    opacity: 1;\n  }\n\n  50% {\n    opacity: 0.55;\n  }\n}\n\n@media (prefers-reduced-motion: reduce) {\n  .bar[data-running='true'] {\n    animation: none;\n  }\n}\n\n/* The lane-color ramp (slot index → existing state token; the tint tier\n   lightens a hue toward the layer background for members beyond the four\n   base colors). */\n[data-lane-color='0'] {\n  --team-lane-color: var(--dsw-alias-state-business-primary);\n}\n\n[data-lane-color='1'] {\n  --team-lane-color: var(--dsw-alias-state-success-primary);\n}\n\n[data-lane-color='2'] {\n  --team-lane-color: var(--dsw-alias-state-warn-primary);\n}\n\n[data-lane-color='3'] {\n  --team-lane-color: var(--dsw-alias-state-error-primary);\n}\n\n[data-lane-color='4'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-business-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n\n[data-lane-color='5'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-success-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n\n[data-lane-color='6'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-warn-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n\n[data-lane-color='7'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-error-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n"},"ui/TeamMembers.module.css":{"classes":{"root":"root","group":"group","groupRow":"groupRow","groupName":"groupName","instances":"instances","actions":"actions","instanceRow":"instanceRow","instanceNav":"instanceNav","actionButton":"actionButton","commandError":"commandError","dotSlot":"dotSlot","instanceStatus":"instanceStatus","instanceAction":"instanceAction","waitingBadge":"waitingBadge","noInstances":"noInstances","createButton":"createButton","teamModeRow":"teamModeRow","teamModeOpen":"teamModeOpen","teamModeBadge":"teamModeBadge"},"text":".root {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  min-width: 0;\n}\n\n.group {\n  overflow: hidden;\n  min-width: 0;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.group[data-current='true'] {\n  border-color: var(--dsw-alias-state-business-primary);\n}\n\n/* border-box: the leader header is a <button> (already border-box via the\n   #28 form-control rule) but the worker header is a DIV — content-box made\n   `width:100% + 20px padding` overflow the card by 20px and the group's\n   overflow:hidden clipped the right-aligned `+` create button by 10px.\n   2026-09-22 supplemental live-browser measurement. */\n.groupRow {\n  display: flex;\n  align-items: center;\n  box-sizing: border-box;\n  width: 100%;\n  padding: 6px 10px;\n  border: 0;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n  text-align: left;\n}\n\n.groupRow[data-leader='true'] {\n  cursor: pointer;\n}\n\n.groupRow[data-leader='true']:hover {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.groupRow[data-leader='true']:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.groupName {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.group[data-current='true'] .groupName {\n  color: var(--dsw-alias-state-business-primary);\n}\n\n.instances {\n  display: flex;\n  flex-direction: column;\n}\n\n/* border-box (2026-09-22 supplemental, live-browser measurement): the row\n   is `width: 100%` + 28px horizontal padding on a DIV — as content-box it\n   overflowed the group card by 28px and the group's overflow:hidden\n   clipped the right-aligned action cluster's trailing button by 18px at\n   every width where the cluster stays on line 1 (and the right-aligned\n   content of any row). The <button> groupRow variant was already saved by\n   the #28 form-control border-box rule; the DIV rows need it explicitly.\n   With border-box the row box == the card content box, so the #28\n   .actions shrink+wrap contract (never exceed the row) lands the buttons\n   INSIDE the card at all widths. */\n.instanceRow {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 4px 8px;\n  box-sizing: border-box;\n  width: 100%;\n  padding: 6px 10px 6px 18px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n}\n\n.instanceRow:last-child {\n  border-bottom: 0;\n}\n\n.instanceRow[data-current='true'] {\n  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 7%, transparent);\n  color: var(--dsw-alias-label-primary);\n}\n\n.instanceNav {\n  display: flex;\n  flex: 1 1 auto;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n  padding: 0;\n  border: 0;\n  background: transparent;\n  color: inherit;\n  font: inherit;\n  text-align: left;\n  cursor: pointer;\n}\n\n.instanceNav:hover {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.instanceNav:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 2px;\n}\n\n.instanceNav:disabled {\n  cursor: default;\n  opacity: 0.55;\n}\n\n/* flex-wrap: when the row is narrower than the full button cluster,\n   the buttons wrap onto a second line INSIDE the card instead of\n   overflowing the group's right edge (where the group's overflow:hidden\n   clipped them, leaving the trailing buttons cut off). 2026-09-21\n   supplemental review: `flex: none` (non-shrinkable, fixed basis) kept\n   the cluster wider than its row even with wrap enabled — it must be\n   shrinkable: flex 0 1 auto + min-width 0 + max-width 100% so the cluster\n   can never exceed the row, wrapping its buttons instead of clipping\n   them; justify-content flex-end keeps the original right alignment. */\n.actions {\n  display: flex;\n  flex: 0 1 auto;\n  min-width: 0;\n  max-width: 100%;\n  justify-content: flex-end;\n  flex-wrap: wrap;\n  gap: 4px;\n}\n\n.actionButton {\n  padding: 2px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.actionButton:hover:not(:disabled) {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.actionButton:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.actionButton:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.commandError {\n  width: 100%;\n  padding: 4px 8px;\n  border-radius: 4px;\n  background: color-mix(in srgb, var(--dsw-alias-state-error-secondary) 18%, transparent);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n  word-break: break-word;\n}\n\n.dotSlot {\n  display: inline-flex;\n  flex: none;\n  align-items: center;\n}\n\n.instanceStatus {\n  flex: none;\n}\n\n.instanceAction {\n  overflow: hidden;\n  color: var(--dsw-alias-label-caption);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.waitingBadge {\n  flex: none;\n  margin-left: auto;\n  padding: 0 6px;\n  border-radius: 4px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.noInstances {\n  display: block;\n  padding: 6px 10px 6px 18px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.createButton {\n  flex: none;\n  margin-left: auto;\n  padding: 0 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 4px;\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  line-height: 18px;\n  cursor: pointer;\n}\n\n.createButton:hover {\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-primary);\n}\n\n.createButton:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n/* D2 (D6) — the dedicated open-in-Team-mode entry on the root/leader row\n   (the explicit \"以 Team 模式打开 / 回到 Leader\" button) + the current\n   open-mode badge. */\n.teamModeRow {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  padding: 4px 10px 6px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n}\n\n.teamModeOpen {\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-state-business-primary);\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-state-business-primary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.teamModeOpen:hover:not(:disabled) {\n  opacity: 0.88;\n}\n\n.teamModeOpen:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.teamModeOpen:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.teamModeBadge {\n  padding: 1px 8px;\n  border-radius: 999px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  white-space: nowrap;\n}\n"},"ui/TeamActivity.module.css":{"classes":{"root":"root","empty":"empty","taskRow":"taskRow","dotSlot":"dotSlot","taskMain":"taskMain","taskLine":"taskLine","taskSubject":"taskSubject","taskStatus":"taskStatus","taskAssignee":"taskAssignee","taskSummary":"taskSummary"},"text":".root {\n  display: flex;\n  flex-direction: column;\n  min-width: 0;\n  overflow: hidden;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.empty {\n  display: block;\n  padding: 6px 10px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n}\n\n.taskRow {\n  display: flex;\n  gap: 8px;\n  padding: 6px 10px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  min-width: 0;\n}\n\n.taskRow:last-child {\n  border-bottom: 0;\n}\n\n.dotSlot {\n  display: inline-flex;\n  flex: none;\n  align-items: flex-start;\n  padding-top: 3px;\n}\n\n.taskMain {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 0;\n}\n\n.taskLine {\n  display: flex;\n  align-items: baseline;\n  gap: 8px;\n  min-width: 0;\n}\n\n.taskSubject {\n  overflow: hidden;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.taskStatus {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.taskAssignee {\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.taskSummary {\n  overflow: hidden;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n"},"ui/TeamLedger.module.css":{"classes":{"root":"root","empty":"empty","top":"top","loadEarlier":"loadEarlier","loadFailed":"loadFailed","truncated":"truncated","rows":"rows","row":"row","dotSlot":"dotSlot","time":"time","marker":"marker","actor":"actor","summary":"summary","state":"state","stateReason":"stateReason","filter":"filter","resolveBar":"resolveBar","resolveBtn":"resolveBtn","resolveBusy":"resolveBusy","resolveError":"resolveError","externalPolicyLine":"externalPolicyLine","controlDetail":"controlDetail","controlField":"controlField","readOnlyNote":"readOnlyNote"},"text":".root {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  min-width: 0;\n}\n\n.empty {\n  display: block;\n  padding: 12px 16px;\n  border: 1px dashed var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n  text-align: center;\n}\n\n.top {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-height: 22px;\n}\n\n.loadEarlier {\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.loadEarlier:hover {\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-primary);\n}\n\n.loadEarlier:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.loadFailed {\n  padding: 2px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.truncated {\n  padding: 2px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.rows {\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n  min-width: 0;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.row {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  padding: 6px 10px;\n  border: 0;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-align: left;\n  cursor: pointer;\n  min-width: 0;\n}\n\n.row:last-child {\n  border-bottom: 0;\n}\n\n.row:hover {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.row:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.row:disabled {\n  cursor: default;\n  opacity: 0.55;\n}\n\n.dotSlot {\n  display: inline-flex;\n  flex: none;\n  align-items: center;\n}\n\n.time {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n  font-variant-numeric: tabular-nums;\n}\n\n.marker {\n  flex: none;\n  padding: 0 6px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.actor {\n  flex: none;\n  max-width: 220px;\n  overflow: hidden;\n  color: var(--dsw-alias-label-primary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.summary {\n  overflow: hidden;\n  min-width: 0;\n  flex: 1 1 auto;\n  color: var(--dsw-alias-label-secondary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.state {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  flex: none;\n  max-width: 40%;\n  padding: 0 6px;\n  border-radius: 4px;\n  font: var(--dsw-font-xxxs-11);\n}\n\n.state[data-pending='true'] {\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n}\n\n.state:not([data-pending='true']) {\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n}\n\n.stateReason {\n  overflow: hidden;\n  max-width: 100%;\n  color: var(--dsw-alias-label-caption);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* P9-T6 addition (UI §27.4): the client-local category / instance filter\n   selects, styled in the same control language as `.loadEarlier`. */\n.filter {\n  padding: 2px 6px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  max-width: 180px;\n  cursor: pointer;\n}\n\n.filter:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n/* F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4): the human\n   control-resolution command bar rendered under a PENDING control-request\n   row (the row itself is a <button> — the bar is its sibling, never\n   nested): the Allow / Deny commands, the in-flight busy note, and the\n   typed error note (the frozen control vocabulary code + message).\n   Absent `onResolveControl` face → the bar never renders (legacy surface\n   unchanged). */\n.resolveBar {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n  padding: 4px 10px 6px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.resolveBtn {\n  flex: none;\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.resolveBtn:hover:not(:disabled) {\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  border-color: var(--dsw-alias-state-business-primary);\n}\n\n.resolveBtn:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.resolveBtn:disabled {\n  cursor: default;\n  opacity: 0.55;\n}\n\n.resolveBusy {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.resolveError {\n  overflow: hidden;\n  min-width: 0;\n  max-width: 100%;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* F9U (gate-review supplement 2, UI §26.4): the external hard policy\n   blocked an allowed team decision — the badge switches from the plain\n   decision label to the frozen two-line \"Team decision / Execution\"\n   display (stacked, right-aligned in the row's badge slot). Never the\n   plain \"denied\" label. */\n.state[data-external-policy='true'] {\n  flex-direction: column;\n  align-items: flex-end;\n  gap: 2px;\n  padding: 2px 6px;\n}\n\n.externalPolicyLine {\n  display: block;\n  max-width: 100%;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* F9U (gate-review supplement 1, UI §26.2): the control-request detail\n   panel field rows (requester / kind / requested operation / tool /\n   reason / creation time / current status / requested authority) — a\n   wrapping definition list in the caption label language. */\n.controlDetail {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 2px 12px;\n  flex: 1 1 auto;\n  margin: 0;\n  min-width: 0;\n}\n\n.controlField {\n  display: flex;\n  align-items: baseline;\n  gap: 6px;\n  min-width: 0;\n}\n\n.controlField dt {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.controlField dd {\n  overflow: hidden;\n  min-width: 0;\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* F9U (gate-review supplement 4): the served-version-gated read-only\n   note (the served host is pre-v4 — the detail panel stays, the\n   commands do not). */\n.readOnlyNote {\n  flex: none;\n  padding: 2px 8px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n"},"ui/TeamGovernance.module.css":{"classes":{"section":"section","card":"card","cardHead":"cardHead","cardTitle":"cardTitle","badge":"badge","badgeUnknown":"badgeUnknown","counts":"counts","meta":"meta","freshRead":"freshRead","freshReadTitle":"freshReadTitle","actions":"actions","primary":"primary","secondary":"secondary","help":"help","note":"note","noteError":"noteError","cells":"cells","cell":"cell","cellName":"cellName","cellLocked":"cellLocked","cellCurrent":"cellCurrent","cellEditor":"cellEditor","select":"select","input":"input","preview":"preview","memberBlock":"memberBlock","memberName":"memberName","lanes":"lanes","lane":"lane","laneName":"laneName","laneValue":"laneValue","laneState":"laneState","laneFlag":"laneFlag","hardPolicy":"hardPolicy","override":"override","overrideEditor":"overrideEditor"},"text":".section {\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n  min-width: 0;\n}\n\n.card {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  min-width: 0;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.cardHead {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n}\n\n.cardTitle {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-s-14);\n  font-weight: 600;\n}\n\n.badge {\n  padding: 1px 8px;\n  border-radius: 999px;\n  background: var(--dsw-alias-state-success-primary);\n  color: var(--dsw-alias-bg-layer-1);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n  white-space: nowrap;\n}\n\n.badge[data-governance-compat-mark='warning'] {\n  background: var(--dsw-alias-state-warn-primary);\n}\n\n.badge[data-governance-compat-mark='fatal'] {\n  background: var(--dsw-alias-state-error-primary);\n}\n\n.badgeUnknown {\n  padding: 1px 8px;\n  border-radius: 999px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n  white-space: nowrap;\n}\n\n.counts {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n}\n\n.meta {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.freshRead {\n  padding: 6px 8px;\n  border-left: 2px solid var(--dsw-alias-border-l2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.freshReadTitle {\n  margin: 0 0 2px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n}\n\n.actions {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n.primary,\n.secondary {\n  padding: 3px 10px;\n  border-radius: 4px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.primary {\n  border-color: var(--dsw-alias-state-business-primary);\n  background: var(--dsw-alias-state-business-primary);\n  color: var(--dsw-alias-bg-layer-1);\n}\n\n.primary:disabled,\n.secondary:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.help {\n  margin: 0;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.note {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.noteError {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.cells {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n\n.cell {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n  padding: 6px 8px;\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.cellName {\n  min-width: 90px;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.cellLocked {\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 400;\n}\n\n.cellCurrent {\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.cellEditor {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n  margin-left: auto;\n}\n\n.select,\n.input {\n  padding: 2px 6px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-1);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.preview {\n  margin: 0;\n  padding: 4px 8px;\n  border-radius: 4px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.memberBlock {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 8px 10px;\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.memberName {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.lanes {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n}\n\n.lane {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.laneName {\n  min-width: 110px;\n  color: var(--dsw-alias-label-primary);\n  font-weight: 600;\n}\n\n.laneValue {\n  min-width: 120px;\n  word-break: break-all;\n}\n\n.laneState {\n  font-weight: 600;\n}\n\n.laneFlag {\n  padding: 0 6px;\n  border-radius: 999px;\n  background: var(--dsw-alias-bg-layer-1);\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.hardPolicy {\n  padding: 1px 6px;\n  border-radius: 3px;\n  background: var(--dsw-alias-state-error-secondary);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.override {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.overrideEditor {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 6px;\n}\n"},"ui/TeamMemberDialogs.module.css":{"classes":{"dialog":"dialog","warning":"warning","notice":"notice","field":"field","fieldLabel":"fieldLabel","templateName":"templateName","button":"button"},"text":"/* The dialog CONTENT wrapper: the card chrome (mask, radius, fill,\n   elevation), the header (title + close), and the footer (the action\n   row) come from the shared Modal primitive — this box only stacks the\n   fields inside the modal's content column. */\n.dialog {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  min-width: 0;\n}\n\n.warning {\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.notice {\n  padding: 6px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n}\n\n.field {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  min-width: 0;\n}\n\n.fieldLabel {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n/* 2026-09-21 supplemental review: border-box so `width: 100%` + padding +\n   border stay inside the modal body's content box — under the default\n   content-box sizing every control overflowed the dialog's right edge by\n   padding+border (18px here). */\n.field input,\n.field select {\n  box-sizing: border-box;\n  width: 100%;\n  padding: 5px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n.field input:focus-visible,\n.field select:focus-visible,\n.field textarea:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.field textarea {\n  box-sizing: border-box;\n  width: 100%;\n  padding: 5px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  resize: vertical;\n}\n\n.templateName {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n/* The action row renders in the Modal's card footer (its own flex-end\n   row + gap) — only the button skin stays local. */\n.button {\n  padding: 5px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.button:hover:not(:disabled) {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.button:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.button:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n"}};
 		var __cssDone = {};
 		function __css(key) {
 			if (!__cssDone[key]) {
@@ -363,6 +363,7 @@ var __dshFactory = (require) => {
 			const _jsx = __imp0.jsx;
 			const _jsxs = __imp0.jsxs;
 			const __imp14 = __extReq("react");
+			const useCallback = __imp14.useCallback;
 			const useEffect = __imp14.useEffect;
 			const useMemo = __imp14.useMemo;
 			const useRef = __imp14.useRef;
@@ -466,7 +467,7 @@ var __dshFactory = (require) => {
 			 * @returns the view body.
 			 */
 			function TeamView(props) {
-			    const { sessionId, useProjectionMirror, useTeamLedgers, ensureProjection, pullProjection, refreshTeamLedger, openSession, creation, memberCommands, governance, legacyInspect, handoff, roots, control, openTeamMode, openOrdinaryMode, teamOpenMode, useWorkspaces, t, } = props;
+			    const { sessionId, useProjectionMirror, useTeamLedgers, useProjectionStates, ensureProjection, pullProjection, refreshTeamLedger, openSession, creation, memberCommands, governance, legacyInspect, handoff, roots, control, openTeamMode, openOrdinaryMode, teamOpenMode, useWorkspaces, t, } = props;
 			    const [creationOpen, setCreationOpen] = useState(false);
 			    // UI §5.3: the intent draft is page-run UI state only (never authority) —
 			    // held here so the panel can open and close in the zero state without
@@ -487,6 +488,74 @@ var __dshFactory = (require) => {
 			        sourceWorkspaceId: workspaceViews?.find(item => item.sessionIds.includes(sessionId))?.workspaceId ?? null,
 			    }), [sessionId, workspaceViews]);
 			    const resolution = useProjectionMirror(mirror => resolveTeamProjection(mirror, sessionId), sameTeamProjectionResolution);
+			    // (repair 20260927, S1-C1) the current team's FULL projection store
+			    // state (not just the applied frame): selected through
+			    // `resolution?.team.teamSessionId ?? sessionId` (the guide's fixed key —
+			    // the team id the cold pull targets IS the candidate root id for an
+			    // unresolved session). `null` before the team's first store publish —
+			    // the view treats that as the first-read loading state (NEVER a
+			    // definitive "no team": the cold open is still in flight).
+			    const projectionStates = useProjectionStates(s => s);
+			    const projectionState = useMemo(() => projectionStates[resolution?.team.teamSessionId ?? sessionId] ?? null, [projectionStates, resolution, sessionId]);
+			    // (repair 20260927, S1-C2) the manual "refresh team view" state —
+			    // `refreshPending` doubles as the double-click guard; `refreshEpoch`
+			    // discards late responses after a newer refresh — and (PR #34 review
+			    // follow-up, F2) the lifetime effect below advances it on session
+			    // switch / unmount, so an in-flight refresh of a LEFT scope is dead
+			    // on settlement before its ledger continuation and pending-flag
+			    // settle run. The round-trip OUTCOME itself has no local copy: the
+			    // projection store's published state (the same visible state surface
+			    // the member/governance reads flow through) carries it — a resolved
+			    // Promise is NOT a success, and the state's status/assessment is the
+			    // verdict (no success toast over a failed pull).
+			    const [refreshPending, setRefreshPending] = useState(false);
+			    const refreshEpoch = useRef(0);
+			    // (PR #34 review follow-up, F2) the manual refresh lifetime is bound
+			    // to the session scope: entering a new session — and the unmount /
+			    // sessionId-change cleanup — advances `refreshEpoch`, invalidating
+			    // every refresh started in the previous scope (its continuation then
+			    // sees a mismatched epoch and returns before the ledger refresh and
+			    // before the pending flag settles). The effect body clears the
+			    // pending flag (the new scope starts fresh); the cleanup only
+			    // advances the REF — no setState in cleanup. StrictMode's simulated
+			    // unmount/remount only adds extra monotonic bumps (the epoch only
+			    // requires monotonicity). `loadRoots` is deliberately NOT bound
+			    // here: it is the global persisted-roots read with its own
+			    // `rootsEpoch` / unmount guard.
+			    useEffect(() => {
+			        refreshEpoch.current += 1;
+			        setRefreshPending(false);
+			        return () => {
+			            refreshEpoch.current += 1;
+			        };
+			    }, [sessionId]);
+			    // (repair 20260927, S1-C1) the WITH-frame status derivations — computed
+			    // UNCONDITIONALLY (hooks order) though only the with-frame render uses
+			    // them: the content is ALWAYS kept; a refresh in flight (the manual
+			    // pull or the store's reconnect episode) shows a light pending mark,
+			    // and a FAILED latest round trip shows "更新失败，当前显示上次成功的数
+			    // 据" with the code/message — judged by the store's CURRENT
+			    // status/assessment (never by the presence of a `lastError` property
+			    // alone), and a successful recovery (including a same-generation
+			    // duplicate) clears it (the store drops the stale lastError on
+			    // recovery).
+			    const withFrameStatus = projectionState?.status ?? 'ready';
+			    const withFrameRefreshing = refreshPending
+			        || withFrameStatus === 'reconnecting'
+			        || withFrameStatus === 'loading';
+			    const withFrameError = useMemo(() => {
+			        if (projectionState === null || projectionState.status !== 'error')
+			            return null;
+			        const err = projectionState.lastError;
+			        if (err !== undefined)
+			            return { code: err.code, message: err.message };
+			        const a = projectionState.lastAssessment;
+			        if (a === null)
+			            return { code: 'unknown', message: '' };
+			        if (a.status === 'transport-loss')
+			            return { code: 'transport-loss', message: '' };
+			        return { code: a.status, message: `generation ${a.receivedGeneration}` };
+			    }, [projectionState]);
 			    useEffect(() => {
 			        // The tab mounts per session and one-at-a-time, so "mounted" IS "the
 			        // team UI needs the view": fill a mirror gap once, then let frames win.
@@ -528,46 +597,133 @@ var __dshFactory = (require) => {
 			        });
 			        return () => { live = false; };
 			    }, [inZeroState, legacyInspect, creationOpen, sessionId]);
-			    // D1 (Team D1-D6 repair v2, remote contract v3): the one-shot persisted
-			    // roots read for the ZERO state — the same read-not-command discipline
-			    // as the legacy inspection above (gated to the zero state, skipped while
-			    // the creation panel is open, one verbatim note on a typed failure).
-			    // The rows render WITHOUT open actions in D1 (D2/D3 add the open action
-			    // over this same face); the list is read-only here.
-			    const [teamRoots, setTeamRoots] = useState(null);
+			    // D1 (Team D1-D6 repair v2, remote contract v3): the persisted roots
+			    // read for the ZERO state — the same read-not-command discipline as the
+			    // legacy inspection above (the auto-read is gated to the zero state and
+			    // skipped while the creation panel is open; one verbatim note on a
+			    // typed failure). The rows render WITHOUT open actions in D1 (D2/D3 add
+			    // the open action over this same face); the list is read-only here.
+			    // (repair 20260927, S1-C2) the request logic is EXTRACTED into the
+			    // awaitable `loadRoots` helper: the manual view refresh calls it
+			    // directly (NOT subject to the auto-read's `creationOpen` guard), and
+			    // the state KEEPS the last successful rows while a re-read is pending
+			    // or failed (the old list is never cleared just to show an error).
+			    // `rootsEpoch` discards late responses after a newer read; the
+			    // unmount flag (set by the cleanup effect below) discards the rest.
+			    const [teamRoots, setTeamRoots] = useState({ rows: null, pending: false, error: null });
+			    const rootsEpoch = useRef(0);
+			    // The unmount flag is a REF (not state): the mount effect resets it on
+			    // (re)mount — a React 18 StrictMode simulated unmount/re-mount keeps
+			    // component state, so a state flag would stay `true` across the
+			    // simulated remount and discard every later response.
+			    const rootsUnmounted = useRef(false);
 			    useEffect(() => {
-			        if (!inZeroState || roots === undefined || creationOpen)
-			            return;
-			        let live = true;
-			        setTeamRoots({ status: 'pending' });
-			        void roots.listRoots().then(response => {
-			            if (!live)
+			        rootsUnmounted.current = false;
+			        return () => { rootsUnmounted.current = true; };
+			    }, []);
+			    const loadRoots = useCallback(() => {
+			        const face = roots;
+			        if (face === undefined)
+			            return Promise.resolve();
+			        rootsEpoch.current += 1;
+			        const epoch = rootsEpoch.current;
+			        setTeamRoots(prev => ({ ...prev, pending: true, error: null }));
+			        return face.listRoots().then(response => {
+			            if (rootsUnmounted.current || rootsEpoch.current !== epoch)
 			                return;
 			            if (!response.ok) {
-			                setTeamRoots({ status: 'error', code: response.error.code, message: response.error.message });
+			                setTeamRoots(prev => ({
+			                    ...prev,
+			                    pending: false,
+			                    error: { code: response.error.code, message: response.error.message },
+			                }));
 			                return;
 			            }
 			            const rows = parseTeamRootsList(response.value.data);
 			            if (rows === null) {
-			                setTeamRoots({
-			                    status: 'error',
-			                    code: 'malformed-response',
-			                    message: 'the team.listRoots response did not carry the closed roots list',
-			                });
+			                setTeamRoots(prev => ({
+			                    ...prev,
+			                    pending: false,
+			                    error: {
+			                        code: 'malformed-response',
+			                        message: 'the team.listRoots response did not carry the closed roots list',
+			                    },
+			                }));
 			                return;
 			            }
-			            setTeamRoots({ status: 'ok', rows });
+			            setTeamRoots({ rows, pending: false, error: null });
 			        }).catch(error => {
-			            if (!live)
+			            if (rootsUnmounted.current || rootsEpoch.current !== epoch)
 			                return;
-			            setTeamRoots({
-			                status: 'error',
-			                code: 'native-error',
-			                message: error instanceof Error ? error.message : String(error),
-			            });
+			            setTeamRoots(prev => ({
+			                ...prev,
+			                pending: false,
+			                error: {
+			                    code: 'native-error',
+			                    message: error instanceof Error ? error.message : String(error),
+			                },
+			            }));
 			        });
-			        return () => { live = false; };
-			    }, [inZeroState, roots, creationOpen, sessionId]);
+			    }, [roots]);
+			    useEffect(() => {
+			        if (!inZeroState || roots === undefined || creationOpen)
+			            return;
+			        void loadRoots();
+			    }, [inZeroState, roots, creationOpen, sessionId, loadRoots]);
+			    // (repair 20260927, S1-C2) the manual "refresh team view" — the one
+			    // awaitable read-only re-read. Captures THIS invocation's session id,
+			    // the team (root) id, and a request epoch at call time:
+			    //   (a) the roots re-read starts independently (the manual call is NOT
+			    //       subject to the auto-read's zero-state / `creationOpen` guard);
+			    //   (b) the projection pull is AWAITED, then the resolvable root's
+			    //       ledger is refreshed (the cold ledger store is established only
+			    //       after the pull applies a frame — so the ledger refresh runs
+			    //       AFTER the pull; with a stale frame present the ledger read is
+			    //       attempted EVEN IF the projection failed — it is an independent
+			    //       read with its own visible state). A same-generation manual
+			    //       refresh also attempts the ledger refresh (the automatic one
+			    //       fires only on a generation advance).
+			    // A resolved Promise is NOT a success: the round-trip outcome is read
+			    // back through the projection store's published state (the same
+			    // visible state surface the member/governance background reads flow
+			    // through) — `rpc-error` / `transport-loss` / `foreign` /
+			    // `inconsistent` all settle as resolved assessments. Nothing here
+			    // re-fires a mutation on a failed read.
+			    const runRefresh = useCallback(() => {
+			        if (refreshPending)
+			            return; // the double-click guard
+			        const sessionIdAtStart = sessionId;
+			        const resolutionAtStart = resolution;
+			        const teamSessionId = resolutionAtStart?.team.teamSessionId ?? sessionIdAtStart;
+			        const hadFrame = resolutionAtStart !== undefined;
+			        refreshEpoch.current += 1;
+			        const epoch = refreshEpoch.current;
+			        setRefreshPending(true);
+			        void loadRoots();
+			        void (async () => {
+			            let assessment;
+			            try {
+			                assessment = await pullProjection(teamSessionId);
+			            }
+			            catch {
+			                // The frozen client carrier never rejects (it resolves as a
+			                // typed assessment); defensive only — treat as a transport loss.
+			                assessment = { status: 'transport-loss', receivedGeneration: null };
+			            }
+			            if (refreshEpoch.current !== epoch)
+			                return; // newer refresh / unmount
+			            if (hadFrame || assessment.status === 'apply') {
+			                // a stale frame exists (attempt the ledger even on a failed
+			                // projection) or the cold pull applied a frame (the store is
+			                // open now). A no resolvable root is a silent no-op — it is
+			                // never displayed as a "ledger refresh succeeded".
+			                await refreshTeamLedger();
+			            }
+			        })().finally(() => {
+			            if (refreshEpoch.current === epoch)
+			                setRefreshPending(false);
+			        });
+			    }, [refreshPending, sessionId, resolution, loadRoots, pullProjection, refreshTeamLedger]);
 			    // D2 (Team D1-D6 repair v2, D6): the in-flight explicit open per picker
 			    // row (root id → pending) and the last typed failure per row (ONE
 			    // verbatim note, the UI §38 greyed-surface discipline). Page-run UI
@@ -739,10 +895,13 @@ var __dshFactory = (require) => {
 			    // (absent without the `openTeamMode` face — the D1 surface unchanged),
 			    // with a per-row pending mark + ONE verbatim typed error note. An empty
 			    // list renders nothing (the host has no persisted teams yet).
-			    const rootsNote = teamRoots !== null && teamRoots.status === 'error'
-			        ? t('view.roots.note', { message: `${teamRoots.code}: ${teamRoots.message}` })
+			    // (repair 20260927, S1-C2) the note renders the CURRENT read error
+			    // while the last successful rows stay in `rootsList` (the old list is
+			    // never cleared to show an error — the state carries both).
+			    const rootsNote = teamRoots.error !== null
+			        ? t('view.roots.note', { message: `${teamRoots.error.code}: ${teamRoots.error.message}` })
 			        : null;
-			    const rootsList = teamRoots !== null && teamRoots.status === 'ok' && teamRoots.rows.length > 0
+			    const rootsList = teamRoots.rows !== null && teamRoots.rows.length > 0
 			        ? (_jsxs("div", { className: styles.roots, "data-team-roots": true, children: [_jsx("h3", { className: styles.rootsTitle, children: t('view.roots.title') }), _jsx("ul", { className: styles.rootsList, "data-team-roots-list": true, children: teamRoots.rows.map(row => {
 			                        const rowError = rootOpenTeamErrors[row.rootSessionId];
 			                        const rowOrdinaryError = rootOpenOrdinaryErrors[row.rootSessionId];
@@ -764,8 +923,46 @@ var __dshFactory = (require) => {
 			                    }) })] }))
 			        : null;
 			    if (resolution === undefined || snapshot === null) {
+			        // (repair 20260927, S1-C1) the zero-state projection status line —
+			        // judged by the store's CURRENT status/assessment (never by the
+			        // presence of a `lastError` property alone):
+			        //   · no state yet / idle / loading / ready → 加载中 (NEVER a
+			        //     definitive "未加入团队": the cold open is still in flight —
+			        //     only the phase-2 authoritative resolver may say "no team");
+			        //   · reconnecting (no frame) → 尚未成功加载 (transport loss, the
+			        //     store's retry episode is running);
+			        //   · error → 团队信息加载失败 + code/message (typed RPC error,
+			        //     transport loss, foreign/inconsistent — the FOREIGN_TEAM case
+			        //     keeps the NEUTRAL wording: the underlying get fault / cold
+			        //     member addressing can also land here, and phase 1 keeps the
+			        //     ordinary-session creation entry).
+			        const foreign = projectionState !== null
+			            && (projectionState.lastError?.code === 'TEAM_REMOTE_FOREIGN_TEAM'
+			                || projectionState.lastAssessment?.status === 'foreign');
+			        let zeroStatusLine;
+			        if (projectionState === null
+			            || projectionState.status === 'idle'
+			            || projectionState.status === 'loading'
+			            || projectionState.status === 'ready') {
+			            zeroStatusLine = t('view.projection.loading');
+			        }
+			        else if (projectionState.status === 'reconnecting') {
+			            zeroStatusLine = t('view.projection.notLoaded');
+			        }
+			        else if (foreign) {
+			            zeroStatusLine = t('view.projection.foreign');
+			        }
+			        else {
+			            const code = projectionState.lastError?.code
+			                ?? projectionState.lastAssessment?.status
+			                ?? 'unknown';
+			            const message = projectionState.lastError?.message ?? '';
+			            zeroStatusLine = `${t('view.projection.failed')} — ${code}${message !== '' ? `: ${message}` : ''}`;
+			        }
+			        const zeroStatus = projectionState?.status ?? 'unknown';
+			        const refreshButton = (_jsx("button", { type: "button", className: styles.zeroStart, "data-team-refresh": true, disabled: refreshPending, onClick: runRefresh, children: t('view.refresh') }));
 			        if (creation === undefined) {
-			            return (_jsx("div", { className: styles.zero, "data-team-zero": true, children: _jsxs("div", { className: styles.zeroInner, children: [_jsx("p", { className: styles.zeroText, children: t('view.zero') }), rootsNote !== null && (_jsx("p", { className: styles.legacyNote, "data-roots-note": true, children: rootsNote })), rootsList] }) }));
+			            return (_jsx("div", { className: styles.zero, "data-team-zero": true, children: _jsxs("div", { className: styles.zeroInner, children: [_jsx("p", { className: styles.zeroText, "data-team-projection-status": zeroStatus, children: zeroStatusLine }), refreshButton, rootsNote !== null && (_jsx("p", { className: styles.legacyNote, "data-roots-note": true, children: rootsNote })), rootsList] }) }));
 			        }
 			        // P9-T8 (S5-D, UI §34.1): a decoded `legacy-team` inspection REPLACES
 			        // the ordinary zero state with the persistent read-only banner — NO
@@ -792,14 +989,18 @@ var __dshFactory = (require) => {
 			                    message: `unrecognized status: ${JSON.stringify(legacy.inspection.raw)}`,
 			                })
 			                : null;
-			        return (_jsx("div", { className: styles.zero, "data-team-zero": true, children: _jsxs("div", { className: styles.zeroInner, children: [_jsx("p", { className: styles.zeroText, children: t('view.zero') }), legacyNote !== null && (_jsx("p", { className: styles.legacyNote, "data-legacy-note": true, children: legacyNote })), rootsNote !== null && (_jsx("p", { className: styles.legacyNote, "data-roots-note": true, children: rootsNote })), rootsList, creationOpen
+			        return (_jsx("div", { className: styles.zero, "data-team-zero": true, children: _jsxs("div", { className: styles.zeroInner, children: [_jsx("p", { className: styles.zeroText, "data-team-projection-status": zeroStatus, children: zeroStatusLine }), refreshButton, legacyNote !== null && (_jsx("p", { className: styles.legacyNote, "data-legacy-note": true, children: legacyNote })), rootsNote !== null && (_jsx("p", { className: styles.legacyNote, "data-roots-note": true, children: rootsNote })), rootsList, creationOpen
 			                        ? _jsx(TeamCreationPanel, { listCatalog: creation.listCatalog, getCatalog: creation.getCatalog, probeCompatibility: creation.probeCompatibility, teamCreateV2: creation.teamCreateV2, teamAdmitInitialWorkV2: creation.teamAdmitInitialWorkV2, openCreatedSession: creation.openCreatedSession, onCreated: () => setCreationOpen(false), pullProjection: pullProjection, listAgentPresets: creation.listAgentPresets, workspaces: workspaceOptions, handoffSource: handoffSource, handoffFace: handoff, draft: intentDraft, onDraftChange: setIntentDraft, onCancel: () => setCreationOpen(false), t: t })
 			                        : (_jsx("button", { type: "button", className: styles.zeroStart, "data-intent-start-here": true, onClick: () => setCreationOpen(true), children: t('intent.startHere') }))] }) }));
 			    }
 			    const currentInstanceId = resolution.perspective.kind === 'member-child'
 			        ? resolution.perspective.memberInstanceId
 			        : undefined;
-			    return (_jsxs("div", { className: styles.body, "data-team-view": true, children: [_jsxs("section", { className: styles.section, "data-team-section": "timeline", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.timeline.title') }), _jsx(TeamTimeline, { snapshot: snapshot, ledger: ledger, currentInstanceId: currentInstanceId, onSelectSession: openSession, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "members", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.members.title') }), _jsx(TeamMembers, { snapshot: snapshot, ledger: ledger, currentSessionId: sessionId, onSelectSession: openSession, memberCommands: memberCommands, openTeamMode: openTeamMode, openOrdinaryMode: openOrdinaryMode, teamOpenMode: teamOpenMode, workspaces: workspaceOptions, t: t })] }), governance !== undefined && (_jsxs("section", { className: styles.section, "data-team-section": "governance", children: [_jsx("h3", { className: styles.sectionTitle, children: t('governance.title') }), _jsx(TeamGovernance, { snapshot: snapshot, governance: governance, t: t })] })), _jsxs("section", { className: styles.section, "data-team-section": "activity", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.activity.title') }), _jsx(TeamActivity, { activity: snapshot.activity, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "ledger", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.ledger.title') }), _jsx(TeamLedger, { snapshot: snapshot, ledger: ledger, ledgerState: ledgerState, onRetry: refreshTeamLedger, onSelectSession: openSession, onResolveControl: onResolveControl, controlSurfaceMode: controlSurfaceMode, t: t })] })] }));
+			    return (_jsxs("div", { className: styles.body, "data-team-view": true, children: [_jsxs("div", { className: styles.viewStatus, "data-team-view-status": withFrameStatus, "data-refresh-pending": withFrameRefreshing || undefined, children: [withFrameError !== null
+			                        ? (_jsxs("span", { className: styles.legacyNote, "data-team-view-error": true, children: [t('view.refresh.failed'), ` — ${withFrameError.code}`, withFrameError.message !== '' ? `: ${withFrameError.message}` : ''] }))
+			                        : withFrameRefreshing
+			                            ? _jsx("span", { "data-team-view-refreshing": true, children: t('view.refreshing') })
+			                            : null, _jsx("button", { type: "button", className: styles.zeroStart, "data-team-refresh": true, disabled: refreshPending, onClick: runRefresh, children: t('view.refresh') })] }), _jsxs("section", { className: styles.section, "data-team-section": "timeline", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.timeline.title') }), _jsx(TeamTimeline, { snapshot: snapshot, ledger: ledger, currentInstanceId: currentInstanceId, onSelectSession: openSession, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "members", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.members.title') }), _jsx(TeamMembers, { snapshot: snapshot, ledger: ledger, currentSessionId: sessionId, onSelectSession: openSession, memberCommands: memberCommands, openTeamMode: openTeamMode, openOrdinaryMode: openOrdinaryMode, teamOpenMode: teamOpenMode, workspaces: workspaceOptions, t: t })] }), governance !== undefined && (_jsxs("section", { className: styles.section, "data-team-section": "governance", children: [_jsx("h3", { className: styles.sectionTitle, children: t('governance.title') }), _jsx(TeamGovernance, { snapshot: snapshot, governance: governance, t: t })] })), _jsxs("section", { className: styles.section, "data-team-section": "activity", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.activity.title') }), _jsx(TeamActivity, { activity: snapshot.activity, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "ledger", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.ledger.title') }), _jsx(TeamLedger, { snapshot: snapshot, ledger: ledger, ledgerState: ledgerState, onRetry: refreshTeamLedger, onSelectSession: openSession, onResolveControl: onResolveControl, controlSurfaceMode: controlSurfaceMode, t: t })] })] }));
 			}
 			Object.defineProperty(exports, "TeamView", { enumerable: true, get: () => TeamView });
 			//# sourceMappingURL=TeamView.js.map
@@ -955,10 +1156,18 @@ var __dshFactory = (require) => {
 			        ledgerRefreshGeneration.clear();
 			        openModeByRoot.clear();
 			    }, 'dsh-agent-team: store teardown');
-			    // (4) The two published observables (the inject `hooks` compartment):
-			    // the team-keyed projection mirror and the per-team ledger states.
+			    // (4) The published observables (the inject `hooks` compartment):
+			    // the team-keyed projection mirror, the per-team ledger states, and —
+			    // (repair 20260927, S1-C1) — the per-team FULL projection store states
+			    // (not just applied frames): the first-read loading, the no-frame
+			    // transport loss / typed error, and the no-frame foreign/inconsistent
+			    // verdicts must reach the view (the old frame-only mirror made the
+			    // states the view needs most — before the first frame — invisible).
+			    // Keyed by team session id; the view selects the current team through
+			    // `resolution?.team.teamSessionId ?? sessionId`.
 			    const mirrorStore = createSnapshotStore({});
 			    const ledgerStatesStore = createSnapshotStore({});
+			    const projectionStatesStore = createSnapshotStore({});
 			    // (5) The lazy per-team ledger store (published onto the ledger-states
 			    // observable; the page pull rides the frozen Remote client).
 			    const ledgerStoreOf = (teamSessionId) => {
@@ -1001,7 +1210,21 @@ var __dshFactory = (require) => {
 			            getProjection: (id) => teamRemote.getProjection(id),
 			        });
 			        const dispose = store.subscribe(() => {
-			            const frame = store.getState().frame;
+			            const state = store.getState();
+			            // (repair 20260927, S1-C1) KEY ORDER: publish the COMPLETE store
+			            // state FIRST — including the `frame === null` states (the
+			            // first-read loading, the no-frame transport loss / typed error,
+			            // the no-frame foreign/inconsistent verdict) — then handle the
+			            // frame/mirror/ledger. The old early `frame === null` return made
+			            // the very failures the view needs most (before the first frame)
+			            // invisible. The store's snapshot reference is stable between
+			            // changes, so a per-team identity check keeps the published map
+			            // identity-stable (client AGENTS reactive rule 5).
+			            const currentState = projectionStatesStore.getSnapshot();
+			            if (currentState[teamSessionId] !== state) {
+			                projectionStatesStore.set({ ...currentState, [teamSessionId]: state });
+			            }
+			            const frame = state.frame;
 			            if (frame === null)
 			                return;
 			            const dto = projectionFromWire(frame.projection);
@@ -1251,6 +1474,11 @@ var __dshFactory = (require) => {
 			    // the NEW team's id (invariant 9: the minted Root id IS the team id).
 			    // Agent/tool-originated mutations are OUT of this pull's coverage (they
 			    // bypass every React callback) — that is the D4-A2 design item.
+			    // (repair 20260927, S1-C2) the return type is TIGHTENED from
+			    // `Promise<unknown>` to the frozen assessment: a resolved Promise is
+			    // NOT a success — `rpc-error` / `transport-loss` / `foreign` /
+			    // `inconsistent` all settle as RESOLVED assessments, and the caller
+			    // must inspect the result (no success-toast over a failed round trip).
 			    const pullProjection = (teamSessionId) => projectionStoreOf(teamSessionId).pull(teamSessionId);
 			    // (12) The S5-A New Team creation face (frozen Remote wrappers + the
 			    // native seam members; the seam-6 preset mapping filters the `broken`
@@ -1388,10 +1616,17 @@ var __dshFactory = (require) => {
 			        });
 			        return unsubscribe;
 			    }, 'dsh-agent-team: generation rebaseline');
-			    // (18) The injected faces (the `hooks` compartment carries the two bare
+			    // (18) The injected faces (the `hooks` compartment carries the bare
 			    // observable sources; everything else is plain data + callbacks).
+			    // (repair 20260927, S1-C1) `projectionStates` joins the compartment:
+			    // the generic renderer binding maps the standard source name onto the
+			    // component's `useProjectionStates` hook prop (no renderer change).
 			    const viewInject = (sessionId) => ({
-			        hooks: { projectionMirror: mirrorStore, teamLedgers: ledgerStatesStore },
+			        hooks: {
+			            projectionMirror: mirrorStore,
+			            teamLedgers: ledgerStatesStore,
+			            projectionStates: projectionStatesStore,
+			        },
 			        ensureProjection,
 			        // D4-A1: the zero-state creation panel's post-success refresh (the
 			        // same generation-safe pull; targets the NEW team's id).
@@ -2863,8 +3098,9 @@ var __dshFactory = (require) => {
 			 * vocabulary. PROVENANCE (the client may not import the host package —
 			 * `packages/runtime` is host-side authority):
 			 * `packages/runtime/src/plugin/projection-source.ts` `FACT_TYPE_CATEGORY`
-			 * (the 13-fact vNext vocabulary — 12 + the TCM-M3 `team-root-work-delivered`
-			 * terminal record; the host fails closed
+			 * (the 14-fact vNext vocabulary — 12 + the TCM-M3 `team-root-work-delivered`
+			 * terminal record + the strict-read `artifact-read-granted` durable
+			 * authorization grant; the host fails closed
 			 * `LEDGER_CATEGORY_UNKNOWN` on any unmapped fact type, so an unknown
 			 * `category` here can only ever be display-side, never authority-side).
 			 * A row whose fact type is absent from this map carries NO `category`
@@ -2884,6 +3120,11 @@ var __dshFactory = (require) => {
 			    'control-request-recorded': 'control',
 			    'control-decision-recorded': 'control',
 			    'control-allow-consumed': 'control',
+			    // Strict-read durable authorization grant: a control-and-persistence
+			    // fact, NOT a control request/decision (it never enters the pairing
+			    // switch below, never increments a pending count, and is hidden from
+			    // the Events surface by team-ledger-model's INTERNAL_FACT_TYPES).
+			    'artifact-read-granted': 'control',
 			    'activity-progress-recorded': 'progress',
 			    'activity-interval-opened': 'progress',
 			    'activity-interval-closed': 'progress',
@@ -4381,6 +4622,7 @@ var __dshFactory = (require) => {
 			const _jsxs = __imp0.jsxs;
 			const __imp33 = __extReq("react");
 			const useMemo = __imp33.useMemo;
+			const useRef = __imp33.useRef;
 			const useState = __imp33.useState;
 			const __imp34 = __req("../../remote/src/index.js");
 			const REMOTE_CAPABILITY_VALUES = __imp34.REMOTE_CAPABILITY_VALUES;
@@ -4440,6 +4682,30 @@ var __dshFactory = (require) => {
 			function throwableMessage(error) {
 			    return error instanceof Error ? error.message : String(error);
 			}
+			/**
+			 * (repair 20260927, S1-C2) the split-result code/message of a FAILED
+			 * post-command pull round trip: `apply` / `duplicate` / `stale` are all
+			 * valid round trips (the view is current — `stale` received an OLDER
+			 * generation, so the applied frame is still the newest); `rpc-error` /
+			 * `transport-loss` / `foreign` / `inconsistent` are the failures.
+			 */
+			function pullFailureOf(assessment) {
+			    if (assessment.status === 'apply' || assessment.status === 'duplicate' || assessment.status === 'stale')
+			        return null;
+			    if (assessment.status === 'rpc-error') {
+			        return { code: assessment.code ?? 'rpc-error', message: 'the projection pull returned a typed error' };
+			    }
+			    if (assessment.status === 'transport-loss') {
+			        return { code: 'transport-loss', message: 'the projection pull lost the channel (the store will retry)' };
+			    }
+			    if (assessment.status === 'foreign') {
+			        return { code: 'foreign', message: 'the projection pull received a frame from another team' };
+			    }
+			    return {
+			        code: 'inconsistent',
+			        message: `the projection pull received an internally inconsistent frame (generation ${assessment.receivedGeneration ?? 'unknown'})`,
+			    };
+			}
 			/** Parse a comma-separated allow-items field (trimmed, empties dropped). */
 			function parseItemsField(raw) {
 			    return raw
@@ -4462,6 +4728,18 @@ var __dshFactory = (require) => {
 			    // -- the G5 command channel state ----------------------------------------
 			    const [pending, setPending] = useState({});
 			    const [errors, setErrors] = useState({});
+			    // (repair 20260927, S1-C2) the SPLIT result of a SUCCESSFUL command
+			    // whose post-command pull round trip FAILED: the mutation is done, the
+			    // view update is not. Keyed by the command slot, cleared with the
+			    // slot's error on the next dispatch — the pull is NEVER re-fired (a
+			    // re-fire is a new, user-initiated command).
+			    const [pullErrors, setPullErrors] = useState({});
+			    // (repair 20260927, S1-C2) the per-key dispatch sequence: the pending
+			    // mark clears when the COMMAND settles (before the post-command pull
+			    // does), so the user can fire the SAME command again while an earlier
+			    // pull is still in flight — a late stale pull must NEVER record its
+			    // failure on the NEWER invocation's key.
+			    const pullSeqRef = useRef({});
 			    const nextToken = useMemo(() => createRequestTokenGenerator('governance'), []);
 			    // -- the read state (reads never pull the projection) ---------------------
 			    const [compatRead, setCompatRead] = useState(undefined);
@@ -4491,11 +4769,33 @@ var __dshFactory = (require) => {
 			            delete next[key];
 			            return next;
 			        });
+			        setPullErrors(prev => {
+			            if (prev[key] === undefined)
+			                return prev;
+			            const next = { ...prev };
+			            delete next[key];
+			            return next;
+			        });
+			        pullSeqRef.current[key] = (pullSeqRef.current[key] ?? 0) + 1;
+			        const pullSeq = pullSeqRef.current[key];
 			        void request()
 			            .then(parseMemberCommandOutcome)
 			            .then(outcome => {
 			            if (outcome.ok) {
-			                void governance.pullProjection(teamSessionId);
+			                // (repair 20260927, S1-C2) the post-success pull is AWAITED
+			                // and ASSESSED (the old `void pull` had no feedback lane): a
+			                // resolved Promise is NOT a success — a failed round trip
+			                // records the split result on this command's key ("the
+			                // command completed, but the team view update failed"). The
+			                // mutation is NEVER re-fired on a failed read. The seq guard
+			                // drops a late stale pull when a NEWER dispatch owns the key.
+			                void governance.pullProjection(teamSessionId).then(assessment => {
+			                    if (pullSeqRef.current[key] !== pullSeq)
+			                        return;
+			                    const failure = pullFailureOf(assessment);
+			                    if (failure !== null)
+			                        setPullErrors(prev => ({ ...prev, [key]: failure }));
+			                });
 			            }
 			            else {
 			                setErrors(prev => ({ ...prev, [key]: outcome }));
@@ -4726,6 +5026,9 @@ var __dshFactory = (require) => {
 			                                    stale: compatRead.state.staleAcknowledgement,
 			                                }) })] })), compatRead !== undefined && !compatRead.ok && (_jsx("p", { className: styles.noteError, "data-governance-compat-read-error": true, children: t('governance.error', { message: compatRead.message }) })), recheckError !== undefined && (_jsx("p", { className: styles.noteError, "data-governance-recheck-error": true, children: t('governance.error', {
 			                            message: `${recheckError.code}: ${recheckError.message}${recheckError.requestToken !== null ? ` [${recheckError.requestToken}]` : ''}`,
+			                        }) })), pullErrors['compat-recheck'] !== undefined && (_jsx("p", { className: styles.noteError, "data-governance-pull-error": "compat-recheck", children: t('governance.pullError', {
+			                            code: pullErrors['compat-recheck'].code,
+			                            message: pullErrors['compat-recheck'].message,
 			                        }) })), _jsxs("div", { className: styles.actions, children: [_jsx("button", { type: "button", className: styles.secondary, "data-governance-compat-review": true, disabled: compatReading, onClick: runCompatRead, children: compatReading ? t('governance.reading') : t('governance.compatibility.review') }), _jsx("button", { type: "button", className: styles.secondary, "data-governance-recheck": true, disabled: recheckPending, onClick: runRecheck, children: recheckPending ? t('governance.pending') : t('governance.compatibility.recheck') }), _jsx("button", { type: "button", className: styles.secondary, "data-governance-ack": true, disabled: true, title: t('governance.compatibility.ackDisabled'), children: t('governance.compatibility.ack') })] }), _jsx("p", { className: styles.help, children: t('governance.compatibility.recheckHelp') })] }), _jsxs("div", { className: styles.card, "data-governance-policy": true, children: [_jsx("span", { className: styles.cardTitle, "data-governance-policy-label": true, children: t('governance.policy.header', { state: policyLabel }) }), _jsx("p", { className: styles.help, children: t('governance.policy.help') }), policyError !== undefined && (_jsx("p", { className: styles.noteError, "data-governance-policy-error": true, children: t('governance.error', {
 			                            message: `${policyError.code}: ${policyError.message}${policyError.requestToken !== null ? ` [${policyError.requestToken}]` : ''}`,
 			                        }) })), _jsxs("div", { className: styles.actions, children: [_jsx("button", { type: "button", className: styles.secondary, "data-governance-policy-review": true, disabled: policyReading, onClick: runPolicyRead, children: policyReading ? t('governance.reading') : t('governance.policy.review') }), _jsx("button", { type: "button", className: styles.primary, "data-governance-policy-commit": true, disabled: policyPending || commitPreview.length === 0, onClick: runPolicyCommit, children: policyPending ? t('governance.pending') : t('governance.policy.commit') })] }), policyRead !== undefined && policyRead.ok && (_jsx("div", { className: styles.cells, "data-governance-policy-cells": true, children: policyRead.view.cells.map(cell => (_jsxs("div", { className: styles.cell, "data-governance-policy-cell": cell.capability, children: [_jsxs("span", { className: styles.cellName, children: [cell.capability, cell.locked && _jsxs("span", { className: styles.cellLocked, children: [" ", t('governance.policy.cell.locked')] })] }), _jsx("span", { className: styles.cellCurrent, children: cell.entry === null
@@ -5171,15 +5474,12 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=team-ledger-store.js.map
 			}, exports: {} };
 		__mods["state/team-projection-store.js"] = { done: false, fn: function (exports) {
-			const __imp43 = __req("../../remote/src/index.js");
-			const assessProjectionSync = __imp43.assessProjectionSync;
-			const backoffCapMs = __imp43.backoffCapMs;
-			const extractPushFrame = __imp43.extractPushFrame;
-			const isApplyAssessment = __imp43.isApplyAssessment;
-			const isStateChange = __imp43.isStateChange;
-			const pickBackoffDelayMs = __imp43.pickBackoffDelayMs;
-			const stateOnConnect = __imp43.stateOnConnect;
-			const stateOnLoss = __imp43.stateOnLoss;
+			const __imp69 = __req("../../remote/src/index.js");
+			const assessProjectionSync = __imp69.assessProjectionSync;
+			const backoffCapMs = __imp69.backoffCapMs;
+			const extractPushFrame = __imp69.extractPushFrame;
+			const isApplyAssessment = __imp69.isApplyAssessment;
+			const pickBackoffDelayMs = __imp69.pickBackoffDelayMs;
 			/**
 			 * P9-T3 (S2-B) — the generation-safe Team projection store.
 			 *
@@ -5203,17 +5503,43 @@ var __dshFactory = (require) => {
 			 * `reconnecting` and schedules ONE retry through the frozen backoff
 			 * helpers (`backoffCapMs` + `pickBackoffDelayMs`, deterministic lower
 			 * bound by default); `markConnectionRestored` fires the invalidation
-			 * pull. The internal channel state (`connected` / `reconnecting`, the
-			 * frozen `ReconnectState`) deduplicates loss reports (frozen
-			 * `stateOnLoss` / `stateOnConnect` / `isStateChange`): a loss report
-			 * after a successful round trip is stale and ignored, a loss report
-			 * while a retry is already pending does not double-schedule, and every
-			 * successful round trip cancels the pending retry. The backoff
-			 * tunables and the scheduler are CLIENT_LOCAL transport policy — never
-			 * authority: authority always comes from the next fresh
-			 * `team.getProjection` response. No native timer is assumed by the
-			 * store logic (the default scheduler may use `setTimeout`; tests
-			 * inject a manual scheduler).
+			 * pull.
+			 *
+			 * Loss-staleness (repair 20260927, S1-C3): a FAILED REQUEST's
+			 * transport loss is stale ONLY when a request that started LATER
+			 * already completed a valid round trip (the request-sequence
+			 * comparison — `lastCompletedSeq > seq`). The old heuristic (an
+			 * internal `connected` channel flag that `markConnectionRestored` set
+			 * WITHOUT round-trip evidence) dismissed the very loss that fired
+			 * after the restored-connection pull failed, killing the episode with
+			 * no retry scheduled and the surface stuck. The channel event is
+			 * transport notice, never round-trip evidence: the staleness baseline
+			 * advances only when a pull actually completes. A reset / scope
+			 * switch bumps the epoch: an in-flight pull of the old scope is DEAD
+			 * on settlement (no publish, no schedule, no timer resurrection).
+			 * A loss report while a retry is already pending (or a retry pull is
+			 * already in flight) does not double-schedule, and every completed
+			 * round trip that passes the newest open loss cancels the pending
+			 * retry. The backoff tunables and the scheduler are CLIENT_LOCAL
+			 * transport policy — never authority: authority always comes from the
+			 * next fresh `team.getProjection` response. No native timer is
+			 * assumed by the store logic (the default scheduler may use
+			 * `setTimeout`; tests inject a manual scheduler).
+			 *
+			 * Request-order liveness authority (PR #34 review follow-up, F1): the
+			 * request sequence ALSO decides which completed response owns the UI
+			 * liveness/error state — a response of a request that a LATER request
+			 * already superseded (a valid round trip completed after it started)
+			 * is resolved but NOT published: an old typed error must not downgrade
+			 * a newer success, an old duplicate/stale must not clear a newer
+			 * error, and an old foreign/inconsistent must not downgrade a newer
+			 * success. `noteRoundTrip` still records every completed round trip
+			 * (loss-episode absorption, baseline monotonicity, pending-retry
+			 * cancellation) — only the liveness write is suppressed. Frame
+			 * authority is deliberately separate and stays with the frozen
+			 * generation verdict: a late response carrying a genuinely NEWER
+			 * authoritative generation still `apply`s normally (the request order
+			 * never suppresses the frame verdict).
 			 *
 			 * Failure discipline: a typed RPC error is stored as `lastError` (the
 			 * frozen `RemoteErrorResult`, never exception-ified); only a
@@ -5253,7 +5579,27 @@ var __dshFactory = (require) => {
 			    };
 			    const listeners = new Set();
 			    let pendingRetry = null;
-			    let channel = null;
+			    // (repair 20260927, S1-C3) request-sequence + epoch staleness — the
+			    // frozen round-trip evidence replaces the old channel flag:
+			    //   requestSeq        — monotonic; each pull start increments it.
+			    //   lastCompletedSeq  — the highest seq that completed a VALID round
+			    //                       trip (any response, ok or typed error).
+			    //   openLossSeq       — the highest seq of an UN-ABSORBED transport
+			    //                       loss (0 = no open episode).
+			    //   epoch             — bumped on reset / scope switch: an in-flight
+			    //                       pull of an older epoch is DEAD on settlement
+			    //                       (no publish, no schedule, no resurrection).
+			    //   retryPullInFlight / nextPullIsRetry — the scheduled retry is
+			    //                       itself one in-flight pull: it may reschedule
+			    //                       the next attempt on its own failure, and a
+			    //                       loss report while it runs must not
+			    //                       double-schedule.
+			    let requestSeq = 0;
+			    let lastCompletedSeq = 0;
+			    let openLossSeq = 0;
+			    let epoch = 0;
+			    let retryPullInFlight = false;
+			    let nextPullIsRetry = false;
 			    const publish = (next) => {
 			        state = next;
 			        for (const listener of [...listeners])
@@ -5281,12 +5627,17 @@ var __dshFactory = (require) => {
 			        const session = base.teamSessionId;
 			        pendingRetry = scheduler.schedule(delayMs, () => {
 			            pendingRetry = null;
-			            if (session !== null)
-			                void pull(session);
+			            if (session === null)
+			                return;
+			            // The scheduled retry is itself ONE in-flight pull: mark it so
+			            // (a) its own failure can reschedule the next attempt, and (b)
+			            // loss reports while it runs do not double-schedule.
+			            nextPullIsRetry = true;
+			            retryPullInFlight = true;
+			            void pull(session).then(() => {
+			                retryPullInFlight = false;
+			            });
 			        });
-			        const nextChannel = stateOnLoss(channel);
-			        if (isStateChange(channel, nextChannel))
-			            channel = nextChannel;
 			        publish({
 			            ...base,
 			            status: 'reconnecting',
@@ -5295,14 +5646,23 @@ var __dshFactory = (require) => {
 			            nextRetryDelayMs: delayMs,
 			        });
 			    };
-			    /** A completed round trip: channel restored, pending retry useless. */
-			    const noteRoundTrip = () => {
-			        cancelPendingRetry();
-			        const nextChannel = stateOnConnect();
-			        if (isStateChange(channel, nextChannel))
-			            channel = nextChannel;
+			    /**
+			     * A completed round trip (any response): the staleness baseline
+			     * advances; when it passes the newest open loss the loss episode is
+			     * absorbed (the pending retry is useless — cancelled).
+			     */
+			    const noteRoundTrip = (seq) => {
+			        lastCompletedSeq = Math.max(lastCompletedSeq, seq);
+			        if (lastCompletedSeq > openLossSeq) {
+			            openLossSeq = 0;
+			            cancelPendingRetry();
+			        }
 			    };
 			    const pull = async (teamSessionId) => {
+			        const seq = ++requestSeq;
+			        const epochAtStart = epoch;
+			        const isRetryAttempt = nextPullIsRetry;
+			        nextPullIsRetry = false;
 			        cancelPendingRetry();
 			        // First data for this session: the surface shows loading. A
 			        // background refresh keeps its current status until the outcome.
@@ -5324,13 +5684,26 @@ var __dshFactory = (require) => {
 			                status: 'transport-loss',
 			                receivedGeneration: null,
 			            };
-			            if (channel === 'connected') {
-			                // A later round trip succeeded: this loss report is stale.
+			            // (repair 20260927, S1-C3) a scope change (reset / team switch)
+			            // while this pull was in flight: the request is DEAD — no
+			            // publish, no schedule, no timer resurrection.
+			            if (epoch !== epochAtStart)
 			                return assessment;
-			            }
+			            // STALE: a request that started LATER already completed a valid
+			            // round trip — the world moved past this loss; ignore it (no
+			            // publish, no schedule).
+			            if (lastCompletedSeq > seq)
+			                return assessment;
+			            // FRESH: this loss opens (or continues) the episode.
+			            openLossSeq = Math.max(openLossSeq, seq);
 			            if (pendingRetry !== null) {
 			                // A loss was already recorded while this pull was in flight:
 			                // the pending retry stands — no double schedule, no churn.
+			                return assessment;
+			            }
+			            if (retryPullInFlight && !isRetryAttempt) {
+			                // A scheduled retry pull (from another request) is in flight:
+			                // it reports its own outcome — no second schedule.
 			                return assessment;
 			            }
 			            // First loss record, or the pending retry itself failed again:
@@ -5339,8 +5712,24 @@ var __dshFactory = (require) => {
 			            return assessment;
 			        }
 			        const assessment = assessProjectionSync(appliedIdentity(), response);
-			        noteRoundTrip();
+			        // (PR #34 review follow-up, F1) request-order LIVENESS authority,
+			        // captured BEFORE the baseline advances: a response whose request
+			        // an LATER request already superseded (a valid round trip
+			        // completed after it started) no longer owns the UI status /
+			        // lastError / lastAssessment. Frame authority is deliberately
+			        // separate and stays with the generation verdict below (a late
+			        // response of a genuinely newer generation still applies).
+			        const supersededByNewerRoundTrip = lastCompletedSeq > seq;
+			        noteRoundTrip(seq);
+			        // A scope change while in flight: the request is DEAD — no publish.
+			        if (epoch !== epochAtStart)
+			            return assessment;
 			        if (response.ok === false) {
+			            // (F1) an OLDER request's typed error must not downgrade a
+			            // NEWER completed round trip — it resolves (never rejects) but
+			            // is not published as the latest state.
+			            if (supersededByNewerRoundTrip)
+			                return assessment;
 			            // Typed RPC error: stored intact, never exception-ified.
 			            publish({
 			                ...state,
@@ -5381,6 +5770,13 @@ var __dshFactory = (require) => {
 			            });
 			            return assessment;
 			        }
+			        // (F1) Superseded non-apply verdicts no longer touch the newest
+			        // liveness state: an old duplicate/stale must not clear a newer
+			        // request's error, and an old foreign/inconsistent must not
+			        // downgrade a newer success. (The applied frame was never touched
+			        // by any verdict except `apply` — G2 hard invariant.)
+			        if (supersededByNewerRoundTrip)
+			            return assessment;
 			        // Non-apply verdicts: the applied frame is never touched (G2 hard
 			        // invariant). duplicate / stale are normal ordering events — an
 			        // existing frame stays `ready`; foreign / inconsistent are source
@@ -5391,6 +5787,11 @@ var __dshFactory = (require) => {
 			                ...state,
 			                teamSessionId,
 			                status: state.frame !== null ? 'ready' : 'error',
+			                // (repair 20260927, S1-C3) a successful recovery — including a
+			                // same-generation (duplicate) normal response — ENDS the error
+			                // state: an old typed error from a prior failed pull must not
+			                // keep being presented.
+			                lastError: state.frame !== null ? undefined : state.lastError,
 			                lastAssessment: assessment,
 			                retryAttempt: 0,
 			                nextRetryDelayMs: null,
@@ -5411,17 +5812,29 @@ var __dshFactory = (require) => {
 			    const markConnectionLost = () => {
 			        if (state.teamSessionId === null)
 			            return;
-			        if (channel === 'reconnecting')
+			        // The episode already has a retry (pending, or the retry pull
+			        // itself in flight): do not double-schedule (frozen once-per-
+			        // episode discipline).
+			        if (pendingRetry !== null || retryPullInFlight)
 			            return;
+			        // A channel loss is a channel-level report, not a request loss:
+			        // its staleness position is "now" (the newest pull started), so
+			        // only a round trip from a LATER request absorbs it.
+			        openLossSeq = Math.max(openLossSeq, requestSeq);
 			        scheduleRetry({ ...state });
 			    };
 			    const markConnectionRestored = () => {
 			        if (state.teamSessionId === null)
 			            return;
+			        // (repair 20260927, S1-C3) the channel event is transport NOTICE,
+			        // never round-trip evidence: cancel the pending retry and fire the
+			        // invalidation pull, but do NOT advance the staleness baseline —
+			        // that happens only when the pull actually completes
+			        // (noteRoundTrip). The old code declared "connected" here, so the
+			        // very loss this event fired, failing in flight, was dismissed as
+			        // stale — the episode died with no retry left and the surface
+			        // stayed stuck.
 			        cancelPendingRetry();
-			        const nextChannel = stateOnConnect();
-			        if (isStateChange(channel, nextChannel))
-			            channel = nextChannel;
 			        // Frozen P2-T6 / P8 semantics: a restored connection restarts the
 			        // backoff episode (the attempt counter resets on connect — the P8
 			        // test client's `markConnected`).
@@ -5429,8 +5842,13 @@ var __dshFactory = (require) => {
 			        void pull(state.teamSessionId);
 			    };
 			    const reset = () => {
+			        // (repair 20260927, S1-C3) a scope change: bump the epoch so every
+			        // in-flight pull of the old scope is dead on settlement (no
+			        // publish, no schedule, no timer resurrection).
+			        epoch += 1;
 			        cancelPendingRetry();
-			        channel = null;
+			        retryPullInFlight = false;
+			        nextPullIsRetry = false;
 			        publish({
 			            status: 'idle',
 			            teamSessionId: null,
@@ -5665,7 +6083,13 @@ var __dshFactory = (require) => {
 			    'field.mcp': 'MCP 服务器',
 			    'field.context': '上下文策略',
 			    'view.team': '团队',
-			    'view.zero': '当前会话未加入任何团队',
+			    'view.projection.loading': '正在加载团队信息…',
+			    'view.projection.notLoaded': '团队信息尚未成功加载，正在重试',
+			    'view.projection.foreign': '当前会话未能关联到团队（可能是普通会话）',
+			    'view.projection.failed': '团队信息加载失败',
+			    'view.refresh': '刷新团队视图',
+			    'view.refreshing': '正在更新…',
+			    'view.refresh.failed': '更新失败，当前显示上次成功的数据',
 			    'view.roots.title': '已持久化的团队',
 			    'view.roots.note': '读取持久化团队失败：{message}',
 			    'view.roots.members': '{count} 名成员',
@@ -5870,6 +6294,7 @@ var __dshFactory = (require) => {
 			    'governance.reading': '正在读取…',
 			    'governance.pending': '处理中…',
 			    'governance.error': '错误：{message}',
+			    'governance.pullError': '命令已完成，但团队视图更新失败：{code}：{message}',
 			    'handoff.title': '上下文交接',
 			    'handoff.source': '源会话："{id}"',
 			    'handoff.generate': '生成一次性摘要',
@@ -5907,7 +6332,13 @@ var __dshFactory = (require) => {
 			    'field.mcp': 'MCP Servers',
 			    'field.context': 'Context Policy',
 			    'view.team': 'Team',
-			    'view.zero': 'This session is not part of a team',
+			    'view.projection.loading': 'Loading team info…',
+			    'view.projection.notLoaded': 'Team info has not loaded yet — retrying',
+			    'view.projection.foreign': 'This session could not be linked to a team (it may be an ordinary session)',
+			    'view.projection.failed': 'Failed to load team info',
+			    'view.refresh': 'Refresh team view',
+			    'view.refreshing': 'Refreshing…',
+			    'view.refresh.failed': 'Update failed — showing the last successfully loaded data',
 			    'view.roots.title': 'Persisted teams',
 			    'view.roots.note': 'Failed to read the persisted teams: {message}',
 			    'view.roots.members': '{count} member(s)',
@@ -6112,6 +6543,7 @@ var __dshFactory = (require) => {
 			    'governance.reading': 'Reading…',
 			    'governance.pending': 'Pending…',
 			    'governance.error': 'Error: {message}',
+			    'governance.pullError': 'The command completed, but the team view update failed: {code}: {message}',
 			    'handoff.title': 'Context handoff',
 			    'handoff.source': 'Source: "{id}"',
 			    'handoff.generate': 'Generate a one-shot summary',
@@ -14104,7 +14536,7 @@ var __dshFactory = (require) => {
 			    lifecycle: 'lifecycle',
 			    /** Message routing entries. */
 			    message: 'message',
-			    /** Control request / decision entries. */
+			    /** Control requests, decisions, consumption, and durable authorization grants. */
 			    control: 'control',
 			    /** Policy state and override entries (UI "Policy / Overrides" filter). */
 			    policy: 'policy',

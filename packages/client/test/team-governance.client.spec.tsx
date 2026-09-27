@@ -164,7 +164,7 @@ function makeFace(overrides: Partial<TeamGovernanceFace> = {}): TeamGovernanceFa
     overrideGet: vi.fn(() => Promise.resolve(okResponse(null, 'override.get'))),
     overrideSet: vi.fn(() => Promise.resolve(okResponse(null, 'override.set'))),
     overrideReset: vi.fn(() => Promise.resolve(okResponse(null, 'override.reset'))),
-    pullProjection: vi.fn(() => Promise.resolve(null)),
+    pullProjection: vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const)),
     ...overrides,
   }
 }
@@ -658,6 +658,106 @@ describe('TeamGovernance', () => {
     )} />)
     expect(view.container.querySelector('[data-governance-member]')).toBeNull()
     expect(screen.getByText('No effective config data for this member yet')).toBeTruthy()
+  })
+
+  // ------------------------------------------------------------------
+  // repair 20260927 (S1-C2): the post-command pull is AWAITED and
+  // ASSESSED — a resolved Promise is NOT a success. A failed round trip
+  // after a SUCCESSFUL mutation renders the split result on the
+  // command's own lane ("the command completed, but the team view
+  // update failed") and the mutation is NEVER re-fired.
+  // ------------------------------------------------------------------
+  it('a SUCCESSFUL recheck whose pull fails shows the split result on its own lane and never re-fires the mutation (S1-C2)', async () => {
+    const face = makeFace({
+      pullProjection: vi.fn(() => Promise.resolve(
+        { status: 'transport-loss', receivedGeneration: null } as const,
+      )),
+    })
+    const view = render(<TeamGovernance {...makeProps(defaultTeam(), face)} />)
+    fireEvent.click(button(view.container, '[data-governance-recheck]'))
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-governance-pull-error="compat-recheck"]')).toBeTruthy()
+    })
+    const lane = view.container.querySelector('[data-governance-pull-error="compat-recheck"]')
+    // The split wording: the command IS done, the view update is not.
+    expect(lane?.textContent).toBe(
+      'The command completed, but the team view update failed: transport-loss: the projection pull lost the channel (the store will retry)',
+    )
+    // The mutation SUCCEEDED: no command-error lane, and the mutation was
+    // fired EXACTLY ONCE (the failed read never re-fires it).
+    expect(view.container.querySelector('[data-governance-recheck-error]')).toBeNull()
+    expect(face.compatibilityReprobe).toHaveBeenCalledTimes(1)
+    expect(face.pullProjection).toHaveBeenCalledTimes(1)
+    expect(face.pullProjection).toHaveBeenCalledWith(LEADER)
+    // The pull is never retried by the dispatch (a re-pull is a new,
+    // user-initiated command — e.g. another Recheck or the view refresh).
+    await new Promise(resolve => setTimeout(resolve, 10))
+    expect(face.compatibilityReprobe).toHaveBeenCalledTimes(1)
+    expect(face.pullProjection).toHaveBeenCalledTimes(1)
+  })
+
+  it('a SUCCESSFUL recheck whose pull returns a typed rpc-error shows the split result with the typed code (S1-C2)', async () => {
+    const face = makeFace({
+      pullProjection: vi.fn(() => Promise.resolve(
+        { status: 'rpc-error', receivedGeneration: null, code: 'TEAM_REMOTE_INTERNAL_ERROR' } as const,
+      )),
+    })
+    const view = render(<TeamGovernance {...makeProps(defaultTeam(), face)} />)
+    fireEvent.click(button(view.container, '[data-governance-recheck]'))
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-governance-pull-error="compat-recheck"]')).toBeTruthy()
+    })
+    expect(view.container.querySelector('[data-governance-pull-error="compat-recheck"]')?.textContent)
+      .toBe('The command completed, but the team view update failed: TEAM_REMOTE_INTERNAL_ERROR: the projection pull returned a typed error')
+    expect(view.container.querySelector('[data-governance-recheck-error]')).toBeNull()
+    expect(face.compatibilityReprobe).toHaveBeenCalledTimes(1)
+  })
+
+  it('a SUCCESSFUL command whose pull is a VALID round trip (apply / duplicate / stale) shows NO pull-error lane (S1-C2)', async () => {
+    for (const status of ['apply', 'duplicate', 'stale'] as const) {
+      const face = makeFace({
+        pullProjection: vi.fn(() => Promise.resolve(
+          { status, receivedGeneration: 9 } as const,
+        )),
+      })
+      const view = render(<TeamGovernance {...makeProps(defaultTeam(), face)} />)
+      fireEvent.click(button(view.container, '[data-governance-recheck]'))
+      await vi.waitFor(() => {
+        expect(face.pullProjection).toHaveBeenCalledTimes(1)
+      })
+      await act(async () => {})
+      expect(view.container.querySelector('[data-governance-pull-error]')).toBeNull()
+      expect(view.container.querySelector('[data-governance-recheck-error]')).toBeNull()
+      view.unmount()
+    }
+  })
+
+  it('the pull-error lane is cleared by the NEXT dispatch on the same command key (the note is per-invocation, not sticky) (S1-C2)', async () => {
+    let pullFails = true
+    const face = makeFace({
+      pullProjection: vi.fn(() => Promise.resolve(
+        pullFails
+          ? { status: 'inconsistent', receivedGeneration: 9 } as const
+          : { status: 'apply', receivedGeneration: 10 } as const,
+      )),
+    })
+    const view = render(<TeamGovernance {...makeProps(defaultTeam(), face)} />)
+    // First recheck: the pull fails → the lane appears.
+    fireEvent.click(button(view.container, '[data-governance-recheck]'))
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-governance-pull-error="compat-recheck"]')).toBeTruthy()
+    })
+    // Second recheck: the pull succeeds → the lane clears.
+    pullFails = false
+    await vi.waitFor(() => {
+      expect(button(view.container, '[data-governance-recheck]').disabled).toBe(false)
+    })
+    fireEvent.click(button(view.container, '[data-governance-recheck]'))
+    await vi.waitFor(() => {
+      expect(face.pullProjection).toHaveBeenCalledTimes(2)
+      expect(view.container.querySelector('[data-governance-pull-error]')).toBeNull()
+    })
+    expect(face.compatibilityReprobe).toHaveBeenCalledTimes(2)
   })
 
   it('pairs the zh and en dictionaries for the governance surface', () => {

@@ -223,7 +223,11 @@ function buildG1Dispatcher(
     overrideStore: {} as never,
     overrideRecords: () => [],
     rootBinding,
-    compatibility: {} as never,
+    // S1-H2 (repair 20260927): per-root prober FACTORY (unused in this
+    // test — the compatibility.* methods are not driven here).
+    compatibilityFor: (() => {
+      throw new Error('unused in this test')
+    }) as never,
     handoff: {} as never,
     legacyInspect: unused as never,
     legacyHome: undefined,

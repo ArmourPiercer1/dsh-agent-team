@@ -21,17 +21,43 @@
  * `reconnecting` and schedules ONE retry through the frozen backoff
  * helpers (`backoffCapMs` + `pickBackoffDelayMs`, deterministic lower
  * bound by default); `markConnectionRestored` fires the invalidation
- * pull. The internal channel state (`connected` / `reconnecting`, the
- * frozen `ReconnectState`) deduplicates loss reports (frozen
- * `stateOnLoss` / `stateOnConnect` / `isStateChange`): a loss report
- * after a successful round trip is stale and ignored, a loss report
- * while a retry is already pending does not double-schedule, and every
- * successful round trip cancels the pending retry. The backoff
- * tunables and the scheduler are CLIENT_LOCAL transport policy — never
- * authority: authority always comes from the next fresh
- * `team.getProjection` response. No native timer is assumed by the
- * store logic (the default scheduler may use `setTimeout`; tests
- * inject a manual scheduler).
+ * pull.
+ *
+ * Loss-staleness (repair 20260927, S1-C3): a FAILED REQUEST's
+ * transport loss is stale ONLY when a request that started LATER
+ * already completed a valid round trip (the request-sequence
+ * comparison — `lastCompletedSeq > seq`). The old heuristic (an
+ * internal `connected` channel flag that `markConnectionRestored` set
+ * WITHOUT round-trip evidence) dismissed the very loss that fired
+ * after the restored-connection pull failed, killing the episode with
+ * no retry scheduled and the surface stuck. The channel event is
+ * transport notice, never round-trip evidence: the staleness baseline
+ * advances only when a pull actually completes. A reset / scope
+ * switch bumps the epoch: an in-flight pull of the old scope is DEAD
+ * on settlement (no publish, no schedule, no timer resurrection).
+ * A loss report while a retry is already pending (or a retry pull is
+ * already in flight) does not double-schedule, and every completed
+ * round trip that passes the newest open loss cancels the pending
+ * retry. The backoff tunables and the scheduler are CLIENT_LOCAL
+ * transport policy — never authority: authority always comes from the
+ * next fresh `team.getProjection` response. No native timer is
+ * assumed by the store logic (the default scheduler may use
+ * `setTimeout`; tests inject a manual scheduler).
+ *
+ * Request-order liveness authority (PR #34 review follow-up, F1): the
+ * request sequence ALSO decides which completed response owns the UI
+ * liveness/error state — a response of a request that a LATER request
+ * already superseded (a valid round trip completed after it started)
+ * is resolved but NOT published: an old typed error must not downgrade
+ * a newer success, an old duplicate/stale must not clear a newer
+ * error, and an old foreign/inconsistent must not downgrade a newer
+ * success. `noteRoundTrip` still records every completed round trip
+ * (loss-episode absorption, baseline monotonicity, pending-retry
+ * cancellation) — only the liveness write is suppressed. Frame
+ * authority is deliberately separate and stays with the frozen
+ * generation verdict: a late response carrying a genuinely NEWER
+ * authoritative generation still `apply`s normally (the request order
+ * never suppresses the frame verdict).
  *
  * Failure discipline: a typed RPC error is stored as `lastError` (the
  * frozen `RemoteErrorResult`, never exception-ified); only a
@@ -47,17 +73,13 @@ import {
   backoffCapMs,
   extractPushFrame,
   isApplyAssessment,
-  isStateChange,
   pickBackoffDelayMs,
-  stateOnConnect,
-  stateOnLoss,
   type AppliedProjectionIdentity,
   type ProjectionSyncAssessment,
   type PushBackoffConfig,
   type RemoteErrorResult,
   type RemotePushFrame,
   type RemoteResponse,
-  type ReconnectState,
 } from '../../../remote/src/index.js'
 
 /** The UI-facing liveness of the projection store (plan §6.2 state). */
@@ -168,7 +190,27 @@ export function createTeamProjectionStore(
   }
   const listeners = new Set<() => void>()
   let pendingRetry: number | null = null
-  let channel: ReconnectState | null = null
+  // (repair 20260927, S1-C3) request-sequence + epoch staleness — the
+  // frozen round-trip evidence replaces the old channel flag:
+  //   requestSeq        — monotonic; each pull start increments it.
+  //   lastCompletedSeq  — the highest seq that completed a VALID round
+  //                       trip (any response, ok or typed error).
+  //   openLossSeq       — the highest seq of an UN-ABSORBED transport
+  //                       loss (0 = no open episode).
+  //   epoch             — bumped on reset / scope switch: an in-flight
+  //                       pull of an older epoch is DEAD on settlement
+  //                       (no publish, no schedule, no resurrection).
+  //   retryPullInFlight / nextPullIsRetry — the scheduled retry is
+  //                       itself one in-flight pull: it may reschedule
+  //                       the next attempt on its own failure, and a
+  //                       loss report while it runs must not
+  //                       double-schedule.
+  let requestSeq = 0
+  let lastCompletedSeq = 0
+  let openLossSeq = 0
+  let epoch = 0
+  let retryPullInFlight = false
+  let nextPullIsRetry = false
 
   const publish = (next: TeamProjectionState): void => {
     state = next
@@ -199,10 +241,16 @@ export function createTeamProjectionStore(
     const session = base.teamSessionId
     pendingRetry = scheduler.schedule(delayMs, () => {
       pendingRetry = null
-      if (session !== null) void pull(session)
+      if (session === null) return
+      // The scheduled retry is itself ONE in-flight pull: mark it so
+      // (a) its own failure can reschedule the next attempt, and (b)
+      // loss reports while it runs do not double-schedule.
+      nextPullIsRetry = true
+      retryPullInFlight = true
+      void pull(session).then(() => {
+        retryPullInFlight = false
+      })
     })
-    const nextChannel = stateOnLoss(channel)
-    if (isStateChange(channel, nextChannel)) channel = nextChannel
     publish({
       ...base,
       status: 'reconnecting',
@@ -212,14 +260,24 @@ export function createTeamProjectionStore(
     })
   }
 
-  /** A completed round trip: channel restored, pending retry useless. */
-  const noteRoundTrip = (): void => {
-    cancelPendingRetry()
-    const nextChannel = stateOnConnect()
-    if (isStateChange(channel, nextChannel)) channel = nextChannel
+  /**
+   * A completed round trip (any response): the staleness baseline
+   * advances; when it passes the newest open loss the loss episode is
+   * absorbed (the pending retry is useless — cancelled).
+   */
+  const noteRoundTrip = (seq: number): void => {
+    lastCompletedSeq = Math.max(lastCompletedSeq, seq)
+    if (lastCompletedSeq > openLossSeq) {
+      openLossSeq = 0
+      cancelPendingRetry()
+    }
   }
 
   const pull = async (teamSessionId: string): Promise<ProjectionSyncAssessment> => {
+    const seq = ++requestSeq
+    const epochAtStart = epoch
+    const isRetryAttempt = nextPullIsRetry
+    nextPullIsRetry = false
     cancelPendingRetry()
     // First data for this session: the surface shows loading. A
     // background refresh keeps its current status until the outcome.
@@ -241,13 +299,24 @@ export function createTeamProjectionStore(
         status: 'transport-loss',
         receivedGeneration: null,
       }
-      if (channel === 'connected') {
-        // A later round trip succeeded: this loss report is stale.
-        return assessment
-      }
+      // (repair 20260927, S1-C3) a scope change (reset / team switch)
+      // while this pull was in flight: the request is DEAD — no
+      // publish, no schedule, no timer resurrection.
+      if (epoch !== epochAtStart) return assessment
+      // STALE: a request that started LATER already completed a valid
+      // round trip — the world moved past this loss; ignore it (no
+      // publish, no schedule).
+      if (lastCompletedSeq > seq) return assessment
+      // FRESH: this loss opens (or continues) the episode.
+      openLossSeq = Math.max(openLossSeq, seq)
       if (pendingRetry !== null) {
         // A loss was already recorded while this pull was in flight:
         // the pending retry stands — no double schedule, no churn.
+        return assessment
+      }
+      if (retryPullInFlight && !isRetryAttempt) {
+        // A scheduled retry pull (from another request) is in flight:
+        // it reports its own outcome — no second schedule.
         return assessment
       }
       // First loss record, or the pending retry itself failed again:
@@ -257,9 +326,23 @@ export function createTeamProjectionStore(
     }
 
     const assessment = assessProjectionSync(appliedIdentity(), response)
-    noteRoundTrip()
+    // (PR #34 review follow-up, F1) request-order LIVENESS authority,
+    // captured BEFORE the baseline advances: a response whose request
+    // an LATER request already superseded (a valid round trip
+    // completed after it started) no longer owns the UI status /
+    // lastError / lastAssessment. Frame authority is deliberately
+    // separate and stays with the generation verdict below (a late
+    // response of a genuinely newer generation still applies).
+    const supersededByNewerRoundTrip = lastCompletedSeq > seq
+    noteRoundTrip(seq)
+    // A scope change while in flight: the request is DEAD — no publish.
+    if (epoch !== epochAtStart) return assessment
 
     if (response.ok === false) {
+      // (F1) an OLDER request's typed error must not downgrade a
+      // NEWER completed round trip — it resolves (never rejects) but
+      // is not published as the latest state.
+      if (supersededByNewerRoundTrip) return assessment
       // Typed RPC error: stored intact, never exception-ified.
       publish({
         ...state,
@@ -302,6 +385,13 @@ export function createTeamProjectionStore(
       return assessment
     }
 
+    // (F1) Superseded non-apply verdicts no longer touch the newest
+    // liveness state: an old duplicate/stale must not clear a newer
+    // request's error, and an old foreign/inconsistent must not
+    // downgrade a newer success. (The applied frame was never touched
+    // by any verdict except `apply` — G2 hard invariant.)
+    if (supersededByNewerRoundTrip) return assessment
+
     // Non-apply verdicts: the applied frame is never touched (G2 hard
     // invariant). duplicate / stale are normal ordering events — an
     // existing frame stays `ready`; foreign / inconsistent are source
@@ -312,6 +402,11 @@ export function createTeamProjectionStore(
         ...state,
         teamSessionId,
         status: state.frame !== null ? 'ready' : 'error',
+        // (repair 20260927, S1-C3) a successful recovery — including a
+        // same-generation (duplicate) normal response — ENDS the error
+        // state: an old typed error from a prior failed pull must not
+        // keep being presented.
+        lastError: state.frame !== null ? undefined : state.lastError,
         lastAssessment: assessment,
         retryAttempt: 0,
         nextRetryDelayMs: null,
@@ -331,15 +426,28 @@ export function createTeamProjectionStore(
 
   const markConnectionLost = (): void => {
     if (state.teamSessionId === null) return
-    if (channel === 'reconnecting') return
+    // The episode already has a retry (pending, or the retry pull
+    // itself in flight): do not double-schedule (frozen once-per-
+    // episode discipline).
+    if (pendingRetry !== null || retryPullInFlight) return
+    // A channel loss is a channel-level report, not a request loss:
+    // its staleness position is "now" (the newest pull started), so
+    // only a round trip from a LATER request absorbs it.
+    openLossSeq = Math.max(openLossSeq, requestSeq)
     scheduleRetry({ ...state })
   }
 
   const markConnectionRestored = (): void => {
     if (state.teamSessionId === null) return
+    // (repair 20260927, S1-C3) the channel event is transport NOTICE,
+    // never round-trip evidence: cancel the pending retry and fire the
+    // invalidation pull, but do NOT advance the staleness baseline —
+    // that happens only when the pull actually completes
+    // (noteRoundTrip). The old code declared "connected" here, so the
+    // very loss this event fired, failing in flight, was dismissed as
+    // stale — the episode died with no retry left and the surface
+    // stayed stuck.
     cancelPendingRetry()
-    const nextChannel = stateOnConnect()
-    if (isStateChange(channel, nextChannel)) channel = nextChannel
     // Frozen P2-T6 / P8 semantics: a restored connection restarts the
     // backoff episode (the attempt counter resets on connect — the P8
     // test client's `markConnected`).
@@ -348,8 +456,13 @@ export function createTeamProjectionStore(
   }
 
   const reset = (): void => {
+    // (repair 20260927, S1-C3) a scope change: bump the epoch so every
+    // in-flight pull of the old scope is dead on settlement (no
+    // publish, no schedule, no timer resurrection).
+    epoch += 1
     cancelPendingRetry()
-    channel = null
+    retryPullInFlight = false
+    nextPullIsRetry = false
     publish({
       status: 'idle',
       teamSessionId: null,

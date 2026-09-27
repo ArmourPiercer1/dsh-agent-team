@@ -168,7 +168,7 @@ export const LEDGER_CATEGORIES = {
     lifecycle: 'lifecycle',
     /** Message routing entries. */
     message: 'message',
-    /** Control request / decision entries. */
+    /** Control requests, decisions, consumption, and durable authorization grants. */
     control: 'control',
     /** Policy state and override entries (UI "Policy / Overrides" filter). */
     policy: 'policy',

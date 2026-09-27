@@ -24,6 +24,7 @@ import { act } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import type {
+  ProjectionSyncAssessment,
   RemoteCatalogGetParams, RemoteIntentProbeParams, RemoteResponse, RemoteSafeJsonValue,
   RemoteTeamAdmitInitialWorkParams, RemoteTeamCreateParamsV2,
 } from '../../remote/src/index.js'
@@ -105,7 +106,7 @@ interface EntryFace {
   teamAdmitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
   openCreatedSession: (sessionId: string) => Promise<void>
   /** D4-A1: the post-mutation projection refresh (the overlay panel's success lane). */
-  pullProjection: (teamSessionId: string) => Promise<unknown>
+  pullProjection: (teamSessionId: string) => Promise<ProjectionSyncAssessment>
   listAgentPresets: () => Promise<readonly TeamPresetRow[]>
   currentSessionId: () => string | null
 }
@@ -119,7 +120,7 @@ function makeFace(overrides: Partial<EntryFace> = {}): EntryFace {
     teamAdmitInitialWorkV2: vi.fn(() => Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))),
     openCreatedSession: vi.fn(() => Promise.resolve()),
     // D4-A1: the post-mutation pull (the overlay create-success lane).
-    pullProjection: vi.fn(() => Promise.resolve()),
+    pullProjection: vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const)),
     listAgentPresets: vi.fn(() => Promise.resolve([
       { id: 'team', name: 'Team', isDefault: false },
     ] satisfies readonly TeamPresetRow[])),

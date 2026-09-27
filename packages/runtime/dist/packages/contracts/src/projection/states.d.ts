@@ -136,7 +136,7 @@ export declare const LEDGER_CATEGORIES: {
     readonly lifecycle: "lifecycle";
     /** Message routing entries. */
     readonly message: "message";
-    /** Control request / decision entries. */
+    /** Control requests, decisions, consumption, and durable authorization grants. */
     readonly control: "control";
     /** Policy state and override entries (UI "Policy / Overrides" filter). */
     readonly policy: "policy";

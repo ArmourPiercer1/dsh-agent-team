@@ -44,6 +44,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type {
+  ProjectionSyncAssessment,
   RemoteCatalogGetParams,
   RemoteHandoffCreateParams,
   RemoteHandoffPrepareParams,
@@ -199,7 +200,7 @@ export interface TeamCreationPanelProps {
    * the success lane. Absent → the T7/T8 behavior (the new session's
    * TeamView cold-pull is the only refresh).
    */
-  readonly pullProjection?: (teamSessionId: string) => Promise<unknown>
+  readonly pullProjection?: (teamSessionId: string) => Promise<ProjectionSyncAssessment>
   /** The runtime preset rows (the S0 seam-6 mapping; broken rows filtered). */
   readonly listAgentPresets: () => Promise<readonly TeamPresetRow[]>
   /**

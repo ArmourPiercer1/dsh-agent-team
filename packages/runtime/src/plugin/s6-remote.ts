@@ -167,6 +167,20 @@ import {
   compatibilityRequirementsOf,
 } from '../../compatibility/index.js'
 import type { CompatibilityProber } from '../../compatibility/index.js'
+
+/**
+ * The remote-facing subset of the per-TeamSession compatibility prober.
+ * The compatibility.* remote methods operate on the ADDRESS-RESOLVED
+ * TeamSession (never the boot root's prober), so the production root
+ * supplies a per-root factory: one lazily-created prober per addressed
+ * root, serialized on that root's shared coordination chain. The FULL
+ * `CompatibilityProber` (incl. the new-work gate) stays host-internal —
+ * the remote surface never admits work.
+ */
+export type S6RemoteCompatibilityOperations = Pick<
+  CompatibilityProber,
+  'current' | 'probe' | 'acknowledge'
+>
 import {
   evaluateCompatibility,
   parseEnvironmentFacts,
@@ -801,8 +815,20 @@ export interface S6RemoteOptions {
   readonly overrideRecords: (rootSessionId: string) => readonly RemoteSafeRecord[]
   /** The root binding (fresh + cold). */
   readonly rootBinding: S6RootBindingPort
-  /** The compatibility prober (the ONLY compatibility authority). */
-  readonly compatibility: CompatibilityProber
+  /**
+   * The per-TeamSession compatibility prober factory (the ONLY
+   * compatibility authority, addressed per root). The remote
+   * compatibility.* methods resolve the addressed TeamSession FIRST
+   * (assertBoundRoot) and then read/probe/acknowledge through the
+   * prober that OWNS that root's generation line — never the boot
+   * root's prober. The production root supplies a lazily-created,
+   * per-root prober bound to the root's OWN bound blueprint snapshot
+   * (boundBlueprintFor), serialized on that root's shared
+   * coordination chain (withTeamLock). The FULL prober (incl. the
+   * new-work gate) stays host-internal — the remote surface never
+   * admits work (it consumes only current / probe / acknowledge).
+   */
+  readonly compatibilityFor: (teamSessionId: string) => S6RemoteCompatibilityOperations
   /** The handoff service (the ONLY handoff authority). */
   readonly handoff: HandoffService
   /**
@@ -2497,15 +2523,23 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
       },
     },
 
-    // --- 10/12 compatibility: the prober (durable state; no local recompute) --------
+    // --- 10/12 compatibility: the per-root prober (durable state; no local recompute) ---
+    // S1-H2 (repair 20260927): every compatibility.* method resolves the
+    // ADDRESSED TeamSession first (assertBoundRoot) and then reads/probes/
+    // acknowledges through the prober that OWNS that root's generation
+    // line — the factory-supplied per-root prober (bound to the root's own
+    // bound blueprint snapshot, serialized on that root's shared
+    // coordination chain). The boot root's prober is NEVER consulted for a
+    // foreign-but-owned root (the cross-team state leak the repair closes);
+    // a state-absent error names the ADDRESSED root, not the boot root.
     compatibility: {
       async current(teamSessionId: string): Promise<RemoteSafeRecord> {
-        assertBoundRoot('compatibility.get', teamSessionId)
-        const state = await options.compatibility.current()
+        const addressed = assertBoundRoot('compatibility.get', teamSessionId)
+        const state = await options.compatibilityFor(addressed).current()
         if (state === undefined) {
           throw new TeamPluginError(
             S6_REMOTE_ERROR_CODES.COMPATIBILITY_STATE_ABSENT,
-            `no durable compatibility state exists for TeamSession '${rootSessionId}'`,
+            `no durable compatibility state exists for TeamSession '${addressed}'`,
             { reason: 'state-absent' },
           )
         }
@@ -2517,8 +2551,8 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         caller: ActionCaller,
         note?: string,
       ): Promise<RemoteSafeRecord> {
-        assertBoundRoot('compatibility.ack', teamSessionId)
-        const verdict = await options.compatibility.acknowledge({
+        const addressed = assertBoundRoot('compatibility.ack', teamSessionId)
+        const verdict = await options.compatibilityFor(addressed).acknowledge({
           requirementId,
           acknowledgedBy: caller.kind === 'human' ? caller.humanId : caller.instanceId,
           ...(note !== undefined ? { note } : {}),
@@ -2526,7 +2560,7 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         return verdict as unknown as RemoteSafeRecord
       },
       async probe(teamSessionId: string, trigger: string): Promise<RemoteSafeRecord> {
-        assertBoundRoot('compatibility.reprobe', teamSessionId)
+        const addressed = assertBoundRoot('compatibility.reprobe', teamSessionId)
         if (!(PROBE_TRIGGER_VALUES as readonly string[]).includes(trigger)) {
           throw new TeamPluginError(
             S6_REMOTE_ERROR_CODES.COMPATIBILITY_STATE_MALFORMED,
@@ -2534,7 +2568,7 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
             { reason: 'unknown-trigger', trigger },
           )
         }
-        const outcome = await options.compatibility.probe(trigger as (typeof PROBE_TRIGGER_VALUES)[number])
+        const outcome = await options.compatibilityFor(addressed).probe(trigger as (typeof PROBE_TRIGGER_VALUES)[number])
         return outcome as unknown as RemoteSafeRecord
       },
     },

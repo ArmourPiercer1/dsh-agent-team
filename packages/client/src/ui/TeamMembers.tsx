@@ -36,6 +36,7 @@ import { useMemo, useState } from 'react'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import { StateDot, type StateDotState } from '@deepseek-ai/dsh-client-ui-primitives'
 import type {
+  ProjectionSyncAssessment,
   RemoteMemberCreateParams,
   RemoteMemberFollowupParams,
   RemoteMemberLifecycleParams,
@@ -140,8 +141,12 @@ export interface TeamMembersCommandFace {
   memberRestore: (params: RemoteMemberLifecycleParams) => Promise<RemoteResponse>
   /** `member.dispose`. */
   memberDispose: (params: RemoteMemberLifecycleParams) => Promise<RemoteResponse>
-  /** The post-success projection pull (the final-state authority). */
-  pullProjection: (teamSessionId: string) => Promise<unknown>
+  /** The post-success projection pull (the final-state authority).
+   * (repair 20260927, S1-C2) the tightened assessment: the member-command
+   * background read reports its failure through the SAME visible state
+   * surface — the projection store state the TeamView header renders
+   * (the pull itself publishes it; no per-row note lane). */
+  pullProjection: (teamSessionId: string) => Promise<ProjectionSyncAssessment>
 }
 
 /** The preserved typed error of one command (G5: verbatim wire values). */
