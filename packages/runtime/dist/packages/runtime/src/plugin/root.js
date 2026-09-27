@@ -91,7 +91,7 @@ import { TeamModelOverlaySlot, TeamModelSelectionAdapter, resolveDurableModelSel
 import { CAPABILITY_FACETS, createCapabilityOverlaySlot, resolveDurableMcpFacet, } from '../../agent-setup/capability/index.js';
 import { createActivationProvider } from '../../activation/index.js';
 import { ACTION_NAMES, enforceCompatibilityGate } from '../../admission/index.js';
-import { commitDurableFact, createAdmitRootInitialWork, createTeamRuntime, } from '../../action-router/index.js';
+import { commitDurableFact, createAdmitRootInitialWork, createTeamRuntime, withTeamLock, } from '../../action-router/index.js';
 import { createTeamOperationCoordinator } from '../../coordination/index.js';
 import { createLifecycleService } from '../../lifecycle/index.js';
 import { PROBE_TRIGGERS, createCompatibilityAuthority, createCompatibilityProber, } from '../../compatibility/index.js';
@@ -591,6 +591,48 @@ export function createTeamProductionRoot(params) {
     // invariant 26). The provider's private map remains for direct-
     // construction test worlds (e.g. the frozen p6t1 parallel suite).
     const coordination = createTeamOperationCoordinator();
+    // --- S1-H2 (repair 20260927) — the per-root compatibility prober factory -------------------
+    // The remote compatibility.* methods must address the TeamSession they
+    // were sent to, NOT silently serve the BOOT root's prober (the
+    // cross-team state leak: team B's compatibility.get returned team A's
+    // durable state). Each host-owned root gets a lazily-created prober
+    // bound to ITS OWN durable generation line and ITS OWN bound blueprint
+    // snapshot (boundBlueprintFor — never the boot row's static blueprint
+    // when a per-root resolver is installed). The factory is consumed ONLY
+    // by the remote surface (s6-remote): the boot `prober` above keeps its
+    // original host-internal uses (the admission gate, the activation
+    // boot-time state, the initial-work gate) UNCHANGED.
+    //
+    // Concurrency: the factory's current/probe/acknowledge are serialized
+    // on the addressed root's SHARED coordination chain (withTeamLock) —
+    // the same chain every other team-mutating remote path holds. The
+    // remote compatibility.* handlers call the factory AFTER their
+    // assertBoundRoot and WITHOUT already holding that chain, so no
+    // re-entrant acquisition occurs (the chain is non-reentrant: a second
+    // acquisition from inside a held section deadlocks — the admission
+    // call chain that already holds the team lock therefore keeps the RAW
+    // boot prober / raw prober methods, never this wrapper).
+    const compatibilityByRoot = new Map();
+    const compatibilityFor = (teamSessionId) => {
+        const key = String(teamSessionId);
+        const cached = compatibilityByRoot.get(key);
+        if (cached !== undefined)
+            return cached;
+        const raw = createCompatibilityProber({
+            repositories: repos,
+            rootSessionId: key,
+            blueprint: boundBlueprintFor(key),
+            environmentFacts,
+            now,
+        });
+        const scoped = {
+            current: () => withTeamLock(coordination.chains, key, () => raw.current()),
+            probe: (trigger) => withTeamLock(coordination.chains, key, () => raw.probe(trigger)),
+            acknowledge: (input) => withTeamLock(coordination.chains, key, () => raw.acknowledge(input)),
+        };
+        compatibilityByRoot.set(key, scoped);
+        return scoped;
+    };
     // --- TCM vNext §15.8 (G1) — the Root initial-work closure ----------------------------------
     // The ONE Root initial-work authority for this production root: the plan
     // §15.8 closure — `withTeamLock` on the root's SHARED coordination
@@ -1358,7 +1400,12 @@ export function createTeamProductionRoot(params) {
         overrideStore: defaultOverrideStore,
         overrideRecords: (teamSessionId) => repos.overrides.list(teamSessionId),
         rootBinding,
-        compatibility: prober,
+        // S1-H2 (repair 20260927): the remote compatibility.* methods are
+        // addressed per root — the factory returns (lazily, once per root)
+        // the prober owning that root's generation line + blueprint, locked
+        // on that root's shared coordination chain. The BOOT prober (the
+        // `prober` const above) keeps its host-internal uses only.
+        compatibilityFor,
         handoff,
         // A28 (P8-S7-R4): the handoff prepare producer — the EXACTLY-ONE
         // canonical surface freeze through the DSH public sessionQuery

@@ -15,7 +15,18 @@ export type TeamKey =
   | 'field.mcp'
   | 'field.context'
   | 'view.team'
-  | 'view.zero'
+  // repair 20260927 (S1-C1): the projection-store-driven view states —
+  // the zero state no longer asserts a definitive "no team" (the old
+  // `view.zero` key was removed: only the phase-2 authoritative
+  // resolver may say "no association"; phase 1 keeps the creation
+  // entry with neutral wording).
+  | 'view.projection.loading'
+  | 'view.projection.notLoaded'
+  | 'view.projection.foreign'
+  | 'view.projection.failed'
+  | 'view.refresh'
+  | 'view.refreshing'
+  | 'view.refresh.failed'
   | 'view.roots.title'
   | 'view.roots.note'
   | 'view.roots.members'
@@ -224,6 +235,10 @@ export type TeamKey =
   | 'governance.reading'
   | 'governance.pending'
   | 'governance.error'
+  // repair 20260927 (S1-C2): the split result of a SUCCESSFUL command
+  // whose post-command pull round trip failed — expressed SEPARATELY
+  // from the command result (never re-fired on a failed read).
+  | 'governance.pullError'
   | 'handoff.title'
   | 'handoff.source'
   | 'handoff.generate'
@@ -260,7 +275,13 @@ export const zh: Record<TeamKey, string> = {
   'field.mcp': 'MCP 服务器',
   'field.context': '上下文策略',
   'view.team': '团队',
-  'view.zero': '当前会话未加入任何团队',
+  'view.projection.loading': '正在加载团队信息…',
+  'view.projection.notLoaded': '团队信息尚未成功加载，正在重试',
+  'view.projection.foreign': '当前会话未能关联到团队（可能是普通会话）',
+  'view.projection.failed': '团队信息加载失败',
+  'view.refresh': '刷新团队视图',
+  'view.refreshing': '正在更新…',
+  'view.refresh.failed': '更新失败，当前显示上次成功的数据',
   'view.roots.title': '已持久化的团队',
   'view.roots.note': '读取持久化团队失败：{message}',
   'view.roots.members': '{count} 名成员',
@@ -465,6 +486,7 @@ export const zh: Record<TeamKey, string> = {
   'governance.reading': '正在读取…',
   'governance.pending': '处理中…',
   'governance.error': '错误：{message}',
+  'governance.pullError': '命令已完成，但团队视图更新失败：{code}：{message}',
   'handoff.title': '上下文交接',
   'handoff.source': '源会话："{id}"',
   'handoff.generate': '生成一次性摘要',
@@ -502,7 +524,13 @@ export const en: Record<TeamKey, string> = {
   'field.mcp': 'MCP Servers',
   'field.context': 'Context Policy',
   'view.team': 'Team',
-  'view.zero': 'This session is not part of a team',
+  'view.projection.loading': 'Loading team info…',
+  'view.projection.notLoaded': 'Team info has not loaded yet — retrying',
+  'view.projection.foreign': 'This session could not be linked to a team (it may be an ordinary session)',
+  'view.projection.failed': 'Failed to load team info',
+  'view.refresh': 'Refresh team view',
+  'view.refreshing': 'Refreshing…',
+  'view.refresh.failed': 'Update failed — showing the last successfully loaded data',
   'view.roots.title': 'Persisted teams',
   'view.roots.note': 'Failed to read the persisted teams: {message}',
   'view.roots.members': '{count} member(s)',
@@ -707,6 +735,7 @@ export const en: Record<TeamKey, string> = {
   'governance.reading': 'Reading…',
   'governance.pending': 'Pending…',
   'governance.error': 'Error: {message}',
+  'governance.pullError': 'The command completed, but the team view update failed: {code}: {message}',
   'handoff.title': 'Context handoff',
   'handoff.source': 'Source: "{id}"',
   'handoff.generate': 'Generate a one-shot summary',

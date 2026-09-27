@@ -60,6 +60,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import type { TeamProjectionMirror } from '../src/state/team-session-resolution.js'
 import type { TeamLedgerState } from '../src/state/team-ledger-store.js'
+import type { TeamProjectionState } from '../src/state/team-projection-store.js'
 import type { RemoteLedgerEntryValue } from '../../remote/src/index.js'
 import type { TeamProjectionDto } from '../../contracts/src/index.js'
 import type {
@@ -230,6 +231,7 @@ function viewProps(
   projectionMirror: TeamProjectionMirror = {},
   sessionId: string = LEADER,
   teamLedgers: Readonly<Record<string, TeamLedgerState>> = {},
+  projectionStates: Readonly<Record<string, TeamProjectionState>> = {},
 ): TeamViewProps {
   return {
     // PropsRuntime<'conversation.view'> carries the framework branded
@@ -254,10 +256,11 @@ function viewProps(
     // The injected face (projection-only after the T6 collapse).
     useProjectionMirror: selector => selector(projectionMirror),
     useTeamLedgers: selector => selector(teamLedgers),
+    useProjectionStates: selector => selector(projectionStates),
     ensureProjection: vi.fn(() => Promise.resolve()),
     // D4-A1: the post-mutation pull (the zero-state creation panel's
     // success-lane refresh; unused by the projection-only fixtures here).
-    pullProjection: vi.fn(() => Promise.resolve()),
+    pullProjection: vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const)),
     refreshTeamLedger: vi.fn(() => Promise.resolve()),
     openSession: vi.fn(),
     t: makeTranslate(zh),
@@ -280,13 +283,219 @@ function viewProps(
 }
 
 describe('TeamView', () => {
-  it('renders the one-line zero state for a non-team session and cold-pulls the projection once', () => {
+  it('renders the loading zero state for a non-team session and cold-pulls the projection once (repair 20260927, S1-C1: the cold open NEVER asserts a definitive "no team")', () => {
     const props = viewProps({}, OUTSIDER)
     const view = render(<TeamView {...props} />)
     expect(view.container.querySelector('[data-team-zero]')).toBeTruthy()
-    expect(screen.getByText('当前会话未加入任何团队')).toBeTruthy()
+    // The first read is in flight: the neutral loading line, NOT the
+    // old definitive "当前会话未加入任何团队" (only the phase-2
+    // authoritative resolver may say "no association").
+    const statusLine = view.container.querySelector<HTMLElement>('[data-team-zero] [data-team-projection-status]')
+    expect(statusLine).toBeTruthy()
+    expect(statusLine?.getAttribute('data-team-projection-status')).toBe('unknown')
+    expect(statusLine?.textContent).toBe('正在加载团队信息…')
+    expect(screen.queryByText('当前会话未加入任何团队')).toBeNull()
+    // The manual refresh entry is present in the zero state.
+    expect(view.container.querySelector('[data-team-refresh]')).toBeTruthy()
     expect(props.ensureProjection).toHaveBeenCalledTimes(1)
     expect(props.ensureProjection).toHaveBeenCalledWith(OUTSIDER)
+  })
+
+  // ------------------------------------------------------------------
+  // repair 20260927 (S1-C1 / S1-C2): the projection-store-driven view
+  // states — the zero-state failure / foreign lines, the with-frame
+  // "update failed — showing the last good data" banner, the manual
+  // refresh in BOTH views (pull → ledger), the double-click guard, and
+  // the recovery that clears a failed state.
+  // ------------------------------------------------------------------
+  /** One full store-state fixture (the closed shape, verbatim). */
+  function stateOf(
+    overrides: Partial<TeamProjectionState> & { readonly status: TeamProjectionState['status'] },
+  ): TeamProjectionState {
+    return {
+      teamSessionId: null,
+      appliedGeneration: null,
+      frame: null,
+      lastAssessment: null,
+      retryAttempt: 0,
+      nextRetryDelayMs: null,
+      ...overrides,
+    }
+  }
+  /** One frozen remote error block (the full closed shape). */
+  function err(code: string, message: string) {
+    return {
+      code,
+      message,
+      details: {
+        method: 'team.getProjection', endpoint: 'team.getProjection',
+        contractVersion: 1, requestToken: null,
+      },
+    }
+  }
+
+  it('renders the no-frame RPC error as "加载失败" + code/message + retry — NEVER "未加入团队" (S1-C1)', () => {
+    const props = viewProps({}, OUTSIDER, {}, {
+      [OUTSIDER]: stateOf({
+        status: 'error',
+        teamSessionId: OUTSIDER,
+        lastError: err('TEAM_REMOTE_INTERNAL_ERROR', 'boom'),
+        lastAssessment: { status: 'rpc-error', receivedGeneration: null },
+      }),
+    })
+    const view = render(<TeamView {...props} />)
+    expect(view.container.querySelector('[data-team-zero]')).toBeTruthy()
+    const line = view.container.querySelector<HTMLElement>('[data-team-projection-status]')
+    expect(line?.getAttribute('data-team-projection-status')).toBe('error')
+    expect(line?.textContent).toContain('团队信息加载失败')
+    expect(line?.textContent).toContain('TEAM_REMOTE_INTERNAL_ERROR')
+    expect(line?.textContent).toContain('boom')
+    // The failed cold open must NOT assert a definitive "no team".
+    expect(screen.queryByText('当前会话未加入任何团队')).toBeNull()
+    // The retry entry is present and enabled.
+    const refresh = view.container.querySelector<HTMLButtonElement>('[data-team-refresh]')
+    expect(refresh).toBeTruthy()
+    expect(refresh?.disabled).toBe(false)
+  })
+
+  it('renders the no-frame transport loss (reconnecting) as "尚未成功加载" (S1-C1)', () => {
+    const view = render(<TeamView {...viewProps({}, OUTSIDER, {}, {
+      [OUTSIDER]: stateOf({
+        status: 'reconnecting',
+        teamSessionId: OUTSIDER,
+        lastAssessment: { status: 'transport-loss', receivedGeneration: null },
+        retryAttempt: 1,
+        nextRetryDelayMs: 500,
+      }),
+    })} />)
+    const line = view.container.querySelector<HTMLElement>('[data-team-projection-status]')
+    expect(line?.getAttribute('data-team-projection-status')).toBe('reconnecting')
+    expect(line?.textContent).toBe('团队信息尚未成功加载，正在重试')
+    expect(screen.queryByText('当前会话未加入任何团队')).toBeNull()
+  })
+
+  it('renders the no-frame FOREIGN_TEAM state with NEUTRAL wording and keeps the creation entry (S1-C1)', () => {
+    const view = render(<TeamView {...{
+      ...viewProps({}, OUTSIDER, {}, {
+        [OUTSIDER]: stateOf({
+          status: 'error',
+          teamSessionId: OUTSIDER,
+          lastError: err('TEAM_REMOTE_FOREIGN_TEAM', 'not a root'),
+          lastAssessment: { status: 'foreign', receivedGeneration: 3 },
+        }),
+      }),
+      creation: makeCreationFace(),
+    }} />)
+    const line = view.container.querySelector<HTMLElement>('[data-team-projection-status]')
+    expect(line?.textContent).toBe('当前会话未能关联到团队（可能是普通会话）')
+    // Neutral (not the failed-load line), and the creation entry stays.
+    expect(line?.textContent).not.toContain('团队信息加载失败')
+    expect(screen.queryByText('当前会话未加入任何团队')).toBeNull()
+    expect(view.container.querySelector('[data-intent-start-here]')).toBeTruthy()
+  })
+
+  it('keeps the content and shows "更新失败，当前显示上次成功的数据" when a with-frame refresh fails (S1-C1)', () => {
+    const view = render(<TeamView {...viewProps(TEAM_PROJECTION_MIRROR, LEADER, {}, {
+      [LEADER]: stateOf({
+        status: 'error',
+        teamSessionId: LEADER,
+        appliedGeneration: 7,
+        lastError: err('TEAM_REMOTE_INTERNAL_ERROR', 'boom'),
+        lastAssessment: { status: 'rpc-error', receivedGeneration: 8 },
+      }),
+    })} />)
+    // The with-frame view renders (content kept).
+    expect(view.container.querySelector('[data-team-view]')).toBeTruthy()
+    expect(view.container.querySelector('[data-team-section="members"]')).toBeTruthy()
+    // The failed-refresh banner, judged by the CURRENT status (not by a
+    // bare lastError presence).
+    const banner = view.container.querySelector<HTMLElement>('[data-team-view-error]')
+    expect(banner?.textContent).toContain('更新失败，当前显示上次成功的数据')
+    expect(banner?.textContent).toContain('TEAM_REMOTE_INTERNAL_ERROR')
+    expect(view.container.querySelector('[data-team-view-status]')?.getAttribute('data-team-view-status')).toBe('error')
+    // The refresh entry is present in the with-frame view too.
+    expect(view.container.querySelector('[data-team-refresh]')).toBeTruthy()
+  })
+
+  it('clears the failed-refresh banner when the store state recovers (same generation included) (S1-C1)', () => {
+    const errorState = stateOf({
+      status: 'error',
+      teamSessionId: LEADER,
+      appliedGeneration: 7,
+      lastError: err('TEAM_REMOTE_INTERNAL_ERROR', 'boom'),
+      lastAssessment: { status: 'rpc-error', receivedGeneration: 8 },
+    })
+    const view = render(<TeamView {...viewProps(TEAM_PROJECTION_MIRROR, LEADER, {}, { [LEADER]: errorState })} />)
+    expect(view.container.querySelector('[data-team-view-error]')).toBeTruthy()
+    // Recovery: a successful duplicate (same generation) publishes a
+    // ready state WITHOUT the stale error.
+    const readyState = stateOf({
+      status: 'ready',
+      teamSessionId: LEADER,
+      appliedGeneration: 8,
+      lastAssessment: { status: 'duplicate', receivedGeneration: 8 },
+    })
+    view.unmount()
+    const recovered = render(<TeamView {...viewProps(TEAM_PROJECTION_MIRROR, LEADER, {}, { [LEADER]: readyState })} />)
+    expect(recovered.container.querySelector('[data-team-view-error]')).toBeNull()
+    expect(recovered.container.querySelector('[data-team-view-status]')?.getAttribute('data-team-view-status')).toBe('ready')
+  })
+
+  it('refreshes from BOTH views — the pull targets the resolved team id, the ledger follows the pull, and the double-click is guarded (S1-C2)', async () => {
+    // (a) the with-frame view: the pull targets the TEAM id (not the
+    // session id), and the ledger refresh runs AFTER the pull resolves
+    // (a stale frame exists → the ledger read is attempted even on a
+    // failed projection — here the pull succeeds).
+    const pullProjection = vi.fn(() => new Promise<{ status: 'apply'; receivedGeneration: number }>(resolve => {
+      setTimeout(() => resolve({ status: 'apply', receivedGeneration: 9 }), 10)
+    }))
+    const refreshTeamLedger = vi.fn(() => new Promise<void>(resolve => {
+      setTimeout(resolve, 20)
+    }))
+    const propsA = {
+      ...viewProps(TEAM_PROJECTION_MIRROR, LEADER, {}, {
+        [LEADER]: stateOf({ status: 'ready', teamSessionId: LEADER, appliedGeneration: 8 }),
+      }),
+      pullProjection,
+      refreshTeamLedger,
+    }
+    const viewA = render(<TeamView {...propsA} />)
+    const buttonA = viewA.container.querySelector<HTMLButtonElement>('[data-team-refresh]')
+    if (buttonA === null) throw new Error('the with-frame refresh button did not render')
+    fireEvent.click(buttonA)
+    // The double-click while pending is guarded (no second pull).
+    fireEvent.click(buttonA)
+    expect(pullProjection).toHaveBeenCalledTimes(1)
+    expect(pullProjection).toHaveBeenCalledWith(LEADER)
+    await vi.waitFor(() => {
+      expect(refreshTeamLedger).toHaveBeenCalledTimes(1)
+    })
+    viewA.unmount()
+    // (b) the zero state: the pull targets the SESSION id (no frame →
+    // the candidate root IS the session), and the ledger is NOT
+    // attempted while no frame exists and the pull failed (transport
+    // loss) — it is only attempted after an applying pull.
+    const pullProjectionB = vi.fn(() => Promise.resolve(
+      { status: 'transport-loss', receivedGeneration: null } as const,
+    ))
+    const refreshTeamLedgerB = vi.fn(() => Promise.resolve())
+    const propsB = {
+      ...viewProps({}, OUTSIDER, {}, {
+        [OUTSIDER]: stateOf({ status: 'error', teamSessionId: OUTSIDER }),
+      }),
+      pullProjection: pullProjectionB,
+      refreshTeamLedger: refreshTeamLedgerB,
+    }
+    const viewB = render(<TeamView {...propsB} />)
+    const buttonB = viewB.container.querySelector<HTMLButtonElement>('[data-team-refresh]')
+    if (buttonB === null) throw new Error('the zero-state refresh button did not render')
+    fireEvent.click(buttonB)
+    expect(pullProjectionB).toHaveBeenCalledTimes(1)
+    expect(pullProjectionB).toHaveBeenCalledWith(OUTSIDER)
+    await vi.waitFor(() => {
+      expect(refreshTeamLedgerB).not.toHaveBeenCalled()
+      expect(buttonB.disabled).toBe(false)
+    })
   })
 
   it('keeps the plain zero state without the creation face (S5-A: entry hidden, T6 view unchanged)', () => {

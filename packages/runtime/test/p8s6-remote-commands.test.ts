@@ -53,6 +53,12 @@ import {
   scratchDir,
 } from '../../testkit/fault-injection/file-seam.mjs'
 import * as hostEntry from '../src/plugin/host.js'
+import {
+  ARTIFACT_READ_GRANTED_FACT_TYPE,
+  buildArtifactReadGrantedPayload,
+  targetKeyDigest,
+  versionDigest,
+} from '../artifact-read/index.js'
 import { stubGlueUrl } from './p8s5a-artifacts.mjs'
 
 // --- the C4 fixture world -----------------------------------------------------------
@@ -365,6 +371,47 @@ const c4 = await (async () => {
     const afterFollowupMembers = memberCount()
     const afterFollowupLedger = ledgerCount()
 
+    // --- H3 (repair 20260927): a LEGAL durable grant makes team.getProjection
+    //     SUCCEED through the real registered dispatcher (the incident:
+    //     `artifact-read-granted` entries were absent from the closed
+    //     fact-type vocabulary, so the production read port failed closed
+    //     with LEDGER_CATEGORY_UNKNOWN and every team.getProjection for
+    //     the affected teams returned internal-error). The write goes
+    //     through the durable repository (allocate + put — a legal
+    //     writer-side path), and the read goes through the captured
+    //     production dispatcher (the real read port + fold — not a mock
+    //     success DTO).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+    const beforeH3Ledger = ledgerCount() as number
+    const h3GenerationBefore = Number((repos.teamSessions.get(ROOT_SID) as Record<string, unknown>).generation)
+    const h3Seq = await repos.ledger.allocateSequence()
+    await repos.ledger.put({
+      schemaVersion: 2,
+      sequence: h3Seq,
+      rootSessionId: ROOT_SID,
+      factType: ARTIFACT_READ_GRANTED_FACT_TYPE,
+      payload: buildArtifactReadGrantedPayload({
+        instanceId: SEED_WORKER_ID,
+        locator: '/spill/h3/target-c4.txt',
+        targetKeyDigest: targetKeyDigest('h3-c4-key'),
+        versionDigest: versionDigest('h3-c4-version'),
+        source: {
+          kind: 'spill-store',
+          spillSource: {
+            kind: 'tool',
+            toolName: 'bash',
+            callId: 'call-h3-c4',
+            label: 'spill bash c4',
+          },
+        },
+      }),
+      operationId: 'op-h3grant',
+      createdAt: '2026-09-27T00:00:00.000Z',
+    })
+    const h3LedgerCount = ledgerCount()
+    const h3Generation = (repos.teamSessions.get(ROOT_SID) as Record<string, unknown>).generation
+    const h3Projection = await call('team.getProjection', { teamSessionId: ROOT_SID })
+
     registrationResult.dispose()
 
     return {
@@ -396,6 +443,12 @@ const c4 = await (async () => {
       malformedFollowup,
       afterFollowupMembers,
       afterFollowupLedger,
+      beforeH3Ledger,
+      h3Seq,
+      h3LedgerCount,
+      h3GenerationBefore,
+      h3Generation,
+      h3Projection,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
       durableOverride: (repos.overrides.list(ROOT_SID) as Array<Record<string, any>>).find(
         (record) => record.recordId === 'ovr-model-team-g0',
@@ -498,6 +551,42 @@ it('C4.5 a malformed member.followup is rejected by the facade validator with ze
   // R2-1: same zero-write proof — the count is still exactly the settled
   // C4.3 baseline (the malformed followup added nothing).
   expect(c4.afterFollowupLedger).toBe(c4.policyFactSettledLedger)
+})
+
+it('H3 a legal durable grant makes team.getProjection succeed through the real dispatcher (repair 20260927)', () => {
+  // The durable write landed (one new entry: the policy fact at seq 1 +
+  // the grant at seq 2) and the S1-A stamp advanced with it.
+  expect(c4.beforeH3Ledger).toBe(1)
+  expect(c4.h3Seq).toBe(2)
+  expect(c4.h3LedgerCount).toBe(2)
+
+  // The incident counterfactual: before the repair, THIS exact read
+  // failed closed — the grant's fact type was missing from the closed
+  // fact-type vocabulary, the read port threw LEDGER_CATEGORY_UNKNOWN,
+  // and the dispatcher answered internal-error for the whole team.
+  expect(c4.h3Projection.ok).toBe(true)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  const projection = (c4.h3Projection.value.data as Record<string, any>).projection
+  // The ledger summary carries the grant under the EXISTING control
+  // category (no ninth category), keeps the total == sum invariant, and
+  // does NOT increment the pending count (a grant is not a request).
+  expect(projection.ledger.totalEntries).toBe(2)
+  expect(projection.ledger.byCategory.control).toBe(1)
+  expect(projection.ledger.byCategory.policy).toBe(1)
+  expect(projection.ledger.latestSequence).toBe(2)
+  expect(projection.ledger.pendingControlCount).toBe(0)
+  const sum = Object.values(projection.ledger.byCategory as Record<string, number>).reduce(
+    (acc: number, value: number) => acc + value,
+    0,
+  )
+  expect(sum).toBe(projection.ledger.totalEntries)
+  // The stamp the read reports is the durable TeamSession generation
+  // AFTER the grant's put: the S1-A hook advances it by exactly one for
+  // the NEW entry (the earlier C4.1/C4.3 writes already moved the stamp —
+  // the relative delta is the invariant, not an absolute number).
+  expect(c4.h3Generation).toBe(c4.h3GenerationBefore + 1)
+  expect(projection.generation).toBe(c4.h3Generation)
 })
 
 // --- teardown --------------------------------------------------------------------------

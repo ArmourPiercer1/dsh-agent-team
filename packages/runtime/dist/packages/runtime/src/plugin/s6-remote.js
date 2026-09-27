@@ -1458,19 +1458,27 @@ export function createS6RemotePorts(options) {
                 };
             },
         },
-        // --- 10/12 compatibility: the prober (durable state; no local recompute) --------
+        // --- 10/12 compatibility: the per-root prober (durable state; no local recompute) ---
+        // S1-H2 (repair 20260927): every compatibility.* method resolves the
+        // ADDRESSED TeamSession first (assertBoundRoot) and then reads/probes/
+        // acknowledges through the prober that OWNS that root's generation
+        // line — the factory-supplied per-root prober (bound to the root's own
+        // bound blueprint snapshot, serialized on that root's shared
+        // coordination chain). The boot root's prober is NEVER consulted for a
+        // foreign-but-owned root (the cross-team state leak the repair closes);
+        // a state-absent error names the ADDRESSED root, not the boot root.
         compatibility: {
             async current(teamSessionId) {
-                assertBoundRoot('compatibility.get', teamSessionId);
-                const state = await options.compatibility.current();
+                const addressed = assertBoundRoot('compatibility.get', teamSessionId);
+                const state = await options.compatibilityFor(addressed).current();
                 if (state === undefined) {
-                    throw new TeamPluginError(S6_REMOTE_ERROR_CODES.COMPATIBILITY_STATE_ABSENT, `no durable compatibility state exists for TeamSession '${rootSessionId}'`, { reason: 'state-absent' });
+                    throw new TeamPluginError(S6_REMOTE_ERROR_CODES.COMPATIBILITY_STATE_ABSENT, `no durable compatibility state exists for TeamSession '${addressed}'`, { reason: 'state-absent' });
                 }
                 return compatibilityCurrentOf(state);
             },
             async acknowledge(teamSessionId, requirementId, caller, note) {
-                assertBoundRoot('compatibility.ack', teamSessionId);
-                const verdict = await options.compatibility.acknowledge({
+                const addressed = assertBoundRoot('compatibility.ack', teamSessionId);
+                const verdict = await options.compatibilityFor(addressed).acknowledge({
                     requirementId,
                     acknowledgedBy: caller.kind === 'human' ? caller.humanId : caller.instanceId,
                     ...(note !== undefined ? { note } : {}),
@@ -1478,11 +1486,11 @@ export function createS6RemotePorts(options) {
                 return verdict;
             },
             async probe(teamSessionId, trigger) {
-                assertBoundRoot('compatibility.reprobe', teamSessionId);
+                const addressed = assertBoundRoot('compatibility.reprobe', teamSessionId);
                 if (!PROBE_TRIGGER_VALUES.includes(trigger)) {
                     throw new TeamPluginError(S6_REMOTE_ERROR_CODES.COMPATIBILITY_STATE_MALFORMED, `compatibility.reprobe names trigger '${trigger}' outside the closed vocabulary`, { reason: 'unknown-trigger', trigger });
                 }
-                const outcome = await options.compatibility.probe(trigger);
+                const outcome = await options.compatibilityFor(addressed).probe(trigger);
                 return outcome;
             },
         },

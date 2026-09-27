@@ -66,6 +66,7 @@
  */
 import { ADMISSION_STATES, EFFECTIVE_CONFIG_SOURCES, EFFECTIVE_CONFIG_STATES, MEMBER_LIFECYCLE_STATES, isAdmissionState, } from '../../../contracts/src/index.js';
 import { DEFAULT_CONTEXT_POLICY } from '../../../domain/member/src/index.js';
+import { ARTIFACT_READ_GRANTED_FACT_TYPE } from '../../artifact-read/fact.js';
 /**
  * The closed error-code vocabulary of the production read port (see the
  * module docs for the fail-closed conditions each code names).
@@ -112,6 +113,13 @@ export const TEAM_DOMAIN_READ_PORT_ERROR_CODES = {
 //   'control-request-recorded'      runtime/control service                  → control
 //   'control-decision-recorded'     runtime/control service                  → control
 //   'control-allow-consumed'        runtime/control service                  → control
+//   'artifact-read-granted'         runtime/artifact-read (the strict-read
+//                                   durable-entry builder; a DURABLE
+//                                   AUTHORIZATION GRANT — control-and-
+//                                   persistence fact, NOT a
+//                                   ControlRequest/ControlDecision: it never
+//                                   increments the pending count and is
+//                                   hidden from the Events surface)        → control
 //   'activity-progress-recorded'    runtime/activity ledger                  → progress
 //   'activity-interval-opened'      runtime/activity ledger                  → progress
 //   'activity-interval-closed'      runtime/activity ledger                  → progress
@@ -146,6 +154,8 @@ const FACT_TYPE_CATEGORY = new Map([
     [FACT_CONTROL_REQUEST_RECORDED, 'control'],
     [FACT_CONTROL_DECISION_RECORDED, 'control'],
     [FACT_CONTROL_ALLOW_CONSUMED, 'control'],
+    // Durable authorization grant; not a ControlRequest/ControlDecision.
+    [ARTIFACT_READ_GRANTED_FACT_TYPE, 'control'],
     [FACT_ACTIVITY_PROGRESS_RECORDED, 'progress'],
     [FACT_ACTIVITY_INTERVAL_OPENED, 'progress'],
     [FACT_ACTIVITY_INTERVAL_CLOSED, 'progress'],
@@ -612,7 +622,8 @@ export function createTeamDomainReadPort(domain, deps) {
     //   `instanceId`             member-lifecycle-changed (from/to transition
     //                            facts), the three activity facts (the
     //                            instanceId-first telemetry payloads),
-    //                            provision-member-instance
+    //                            provision-member-instance, artifact-read-
+    //                            granted (the grant's owning member instance)
     //   `targetInstanceId`       team-work-admitted, team-coordination-
     //                            recorded (the action's target member),
     //                            control-request / control-decision /

@@ -226,3 +226,15 @@
   opacity: 0.5;
   cursor: default;
 }
+
+/* repair 20260927 (S1-C1/S1-C2) — the with-frame view-status header: the
+   light pending mark (refresh / reconnect in flight) and the "update
+   failed — showing the last successfully loaded data" note (the content
+   below is ALWAYS kept). Empty (no children) when the view is healthy. */
+.viewStatus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}

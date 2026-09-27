@@ -53,6 +53,16 @@ import type { LifecycleService } from '../../lifecycle/index.js';
 import type { MessagingCoordinator, SendTeamMessageOutcome, SendTeamMessageRequest } from '../../messaging/index.js';
 import type { AdmittedGovernanceOverride, AdmitGovernanceOverrideArgs, MutationActor, OverrideStorePort, PolicyStateTransitionRecord, PolicyStateView } from '../../mutation/index.js';
 import type { CompatibilityProber } from '../../compatibility/index.js';
+/**
+ * The remote-facing subset of the per-TeamSession compatibility prober.
+ * The compatibility.* remote methods operate on the ADDRESS-RESOLVED
+ * TeamSession (never the boot root's prober), so the production root
+ * supplies a per-root factory: one lazily-created prober per addressed
+ * root, serialized on that root's shared coordination chain. The FULL
+ * `CompatibilityProber` (incl. the new-work gate) stays host-internal —
+ * the remote surface never admits work.
+ */
+export type S6RemoteCompatibilityOperations = Pick<CompatibilityProber, 'current' | 'probe' | 'acknowledge'>;
 import type { EnvironmentFact } from '../../../domain/compatibility/src/index.js';
 import type { BlueprintCatalog, TeamBlueprint } from '../../../domain/blueprint/src/index.js';
 import type { ColdRootBindingInput, FreshRootBindingInput, RootBindingResult } from '../../root-binding/index.js';
@@ -617,8 +627,20 @@ export interface S6RemoteOptions {
     readonly overrideRecords: (rootSessionId: string) => readonly RemoteSafeRecord[];
     /** The root binding (fresh + cold). */
     readonly rootBinding: S6RootBindingPort;
-    /** The compatibility prober (the ONLY compatibility authority). */
-    readonly compatibility: CompatibilityProber;
+    /**
+     * The per-TeamSession compatibility prober factory (the ONLY
+     * compatibility authority, addressed per root). The remote
+     * compatibility.* methods resolve the addressed TeamSession FIRST
+     * (assertBoundRoot) and then read/probe/acknowledge through the
+     * prober that OWNS that root's generation line — never the boot
+     * root's prober. The production root supplies a lazily-created,
+     * per-root prober bound to the root's OWN bound blueprint snapshot
+     * (boundBlueprintFor), serialized on that root's shared
+     * coordination chain (withTeamLock). The FULL prober (incl. the
+     * new-work gate) stays host-internal — the remote surface never
+     * admits work (it consumes only current / probe / acknowledge).
+     */
+    readonly compatibilityFor: (teamSessionId: string) => S6RemoteCompatibilityOperations;
     /** The handoff service (the ONLY handoff authority). */
     readonly handoff: HandoffService;
     /**

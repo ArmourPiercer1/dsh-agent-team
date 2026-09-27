@@ -11,13 +11,14 @@
  * the UI §12.1 fixed order — Timeline → Members → Activity → Events —
  * from ONE input.
  */
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: the conversation.view slot declaration (declared by
 // ui-conversation's session body) must be in the program for this props type.
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
 import type {
+  ProjectionSyncAssessment,
   RemoteCatalogGetParams,
   RemoteIntentProbeParams,
   RemoteResponse,
@@ -26,6 +27,7 @@ import type {
   RemoteTeamResolveControlParams,
 } from '../../../remote/src/index.js'
 import type { TeamProjectionMirror } from '../state/team-session-resolution.js'
+import type { TeamProjectionState } from '../state/team-projection-store.js'
 import {
   resolveTeamProjection, sameTeamProjectionResolution,
 } from '../state/team-session-resolution.js'
@@ -202,6 +204,14 @@ export interface TeamViewInjected {
     projectionMirror: ObservableSnapshot<TeamProjectionMirror>
     /** The per-team durable-ledger store states (keyed by the TeamSession id). */
     teamLedgers: ObservableSnapshot<Readonly<Record<string, TeamLedgerState>>>
+    /**
+     * (repair 20260927, S1-C1) the per-team FULL projection store states
+     * (not just applied frames): the first-read loading, the no-frame
+     * transport loss / typed error, and the no-frame foreign/inconsistent
+     * verdicts. Keyed by team session id; the view selects the current
+     * team through `resolution?.team.teamSessionId ?? sessionId`.
+     */
+    projectionStates: ObservableSnapshot<Readonly<Record<string, TeamProjectionState>>>
   }
   /** Cold-read the named session's team projection when the mirror lacks it (single-flight). */
   ensureProjection: (sessionId: string) => Promise<void>
@@ -210,8 +220,12 @@ export interface TeamViewInjected {
    * the existing generation-safe pull. The zero-state creation panel calls
    * it exactly once per terminal create/handoff success, targeting the
    * NEW team's id, so a UI-initiated team creation updates without F5.
+   * (repair 20260927, S1-C2) the return type is the frozen assessment —
+   * a resolved Promise is NOT a success (`rpc-error` / `transport-loss` /
+   * `foreign` / `inconsistent` all settle as resolved assessments; the
+   * caller inspects the result, never toasts a success over a failure).
    */
-  pullProjection: (teamSessionId: string) => Promise<unknown>
+  pullProjection: (teamSessionId: string) => Promise<ProjectionSyncAssessment>
   /** Re-request the team ledger's catch-up episode after a typed failure. */
   refreshTeamLedger: () => Promise<void>
   /** Switch the current session to the named member session (D9 navigation). */
@@ -304,7 +318,7 @@ export type TeamViewProps =
  */
 export function TeamView(props: TeamViewProps): React.JSX.Element {
   const {
-    sessionId, useProjectionMirror, useTeamLedgers,
+    sessionId, useProjectionMirror, useTeamLedgers, useProjectionStates,
     ensureProjection, pullProjection, refreshTeamLedger, openSession,
     creation, memberCommands, governance, legacyInspect, handoff, roots,
     control,
@@ -339,6 +353,52 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     mirror => resolveTeamProjection(mirror, sessionId),
     sameTeamProjectionResolution,
   )
+  // (repair 20260927, S1-C1) the current team's FULL projection store
+  // state (not just the applied frame): selected through
+  // `resolution?.team.teamSessionId ?? sessionId` (the guide's fixed key —
+  // the team id the cold pull targets IS the candidate root id for an
+  // unresolved session). `null` before the team's first store publish —
+  // the view treats that as the first-read loading state (NEVER a
+  // definitive "no team": the cold open is still in flight).
+  const projectionStates = useProjectionStates(s => s)
+  const projectionState = useMemo(
+    () => projectionStates[resolution?.team.teamSessionId ?? sessionId] ?? null,
+    [projectionStates, resolution, sessionId],
+  )
+  // (repair 20260927, S1-C2) the manual "refresh team view" state —
+  // `refreshPending` doubles as the double-click guard; `refreshEpoch`
+  // discards late responses after a newer refresh (or unmount /
+  // session switch — the captured ids are re-checked against the live
+  // closure). The round-trip OUTCOME itself has no local copy: the
+  // projection store's published state (the same visible state surface
+  // the member/governance reads flow through) carries it — a resolved
+  // Promise is NOT a success, and the state's status/assessment is the
+  // verdict (no success toast over a failed pull).
+  const [refreshPending, setRefreshPending] = useState(false)
+  const refreshEpoch = useRef(0)
+  // (repair 20260927, S1-C1) the WITH-frame status derivations — computed
+  // UNCONDITIONALLY (hooks order) though only the with-frame render uses
+  // them: the content is ALWAYS kept; a refresh in flight (the manual
+  // pull or the store's reconnect episode) shows a light pending mark,
+  // and a FAILED latest round trip shows "更新失败，当前显示上次成功的数
+  // 据" with the code/message — judged by the store's CURRENT
+  // status/assessment (never by the presence of a `lastError` property
+  // alone), and a successful recovery (including a same-generation
+  // duplicate) clears it (the store drops the stale lastError on
+  // recovery).
+  const withFrameStatus = projectionState?.status ?? 'ready'
+  const withFrameRefreshing = refreshPending
+    || withFrameStatus === 'reconnecting'
+    || withFrameStatus === 'loading'
+  const withFrameError = useMemo(() => {
+    if (projectionState === null || projectionState.status !== 'error') return null
+    const err = projectionState.lastError
+    if (err !== undefined) return { code: err.code, message: err.message }
+    const a = projectionState.lastAssessment
+    if (a === null) return { code: 'unknown', message: '' }
+    if (a.status === 'transport-loss') return { code: 'transport-loss', message: '' }
+    return { code: a.status, message: `generation ${a.receivedGeneration}` }
+  }, [projectionState])
   useEffect(() => {
     // The tab mounts per session and one-at-a-time, so "mounted" IS "the
     // team UI needs the view": fill a mirror gap once, then let frames win.
@@ -384,48 +444,129 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     })
     return () => { live = false }
   }, [inZeroState, legacyInspect, creationOpen, sessionId])
-  // D1 (Team D1-D6 repair v2, remote contract v3): the one-shot persisted
-  // roots read for the ZERO state — the same read-not-command discipline
-  // as the legacy inspection above (gated to the zero state, skipped while
-  // the creation panel is open, one verbatim note on a typed failure).
-  // The rows render WITHOUT open actions in D1 (D2/D3 add the open action
-  // over this same face); the list is read-only here.
-  const [teamRoots, setTeamRoots] = useState<
-    | { readonly status: 'pending' }
-    | { readonly status: 'ok'; readonly rows: readonly TeamRootRowWire[] }
-    | { readonly status: 'error'; readonly code: string; readonly message: string }
-    | null
-  >(null)
+  // D1 (Team D1-D6 repair v2, remote contract v3): the persisted roots
+  // read for the ZERO state — the same read-not-command discipline as the
+  // legacy inspection above (the auto-read is gated to the zero state and
+  // skipped while the creation panel is open; one verbatim note on a
+  // typed failure). The rows render WITHOUT open actions in D1 (D2/D3 add
+  // the open action over this same face); the list is read-only here.
+  // (repair 20260927, S1-C2) the request logic is EXTRACTED into the
+  // awaitable `loadRoots` helper: the manual view refresh calls it
+  // directly (NOT subject to the auto-read's `creationOpen` guard), and
+  // the state KEEPS the last successful rows while a re-read is pending
+  // or failed (the old list is never cleared just to show an error).
+  // `rootsEpoch` discards late responses after a newer read; the
+  // unmount flag (set by the cleanup effect below) discards the rest.
+  const [teamRoots, setTeamRoots] = useState<{
+    readonly rows: readonly TeamRootRowWire[] | null
+    readonly pending: boolean
+    readonly error: { readonly code: string; readonly message: string } | null
+  }>({ rows: null, pending: false, error: null })
+  const rootsEpoch = useRef(0)
+  // The unmount flag is a REF (not state): the mount effect resets it on
+  // (re)mount — a React 18 StrictMode simulated unmount/re-mount keeps
+  // component state, so a state flag would stay `true` across the
+  // simulated remount and discard every later response.
+  const rootsUnmounted = useRef(false)
   useEffect(() => {
-    if (!inZeroState || roots === undefined || creationOpen) return
-    let live = true
-    setTeamRoots({ status: 'pending' })
-    void roots.listRoots().then(response => {
-      if (!live) return
+    rootsUnmounted.current = false
+    return () => { rootsUnmounted.current = true }
+  }, [])
+  const loadRoots = useCallback((): Promise<void> => {
+    const face = roots
+    if (face === undefined) return Promise.resolve()
+    rootsEpoch.current += 1
+    const epoch = rootsEpoch.current
+    setTeamRoots(prev => ({ ...prev, pending: true, error: null }))
+    return face.listRoots().then(response => {
+      if (rootsUnmounted.current || rootsEpoch.current !== epoch) return
       if (!response.ok) {
-        setTeamRoots({ status: 'error', code: response.error.code, message: response.error.message })
+        setTeamRoots(prev => ({
+          ...prev,
+          pending: false,
+          error: { code: response.error.code, message: response.error.message },
+        }))
         return
       }
       const rows = parseTeamRootsList(response.value.data)
       if (rows === null) {
-        setTeamRoots({
-          status: 'error',
-          code: 'malformed-response',
-          message: 'the team.listRoots response did not carry the closed roots list',
-        })
+        setTeamRoots(prev => ({
+          ...prev,
+          pending: false,
+          error: {
+            code: 'malformed-response',
+            message: 'the team.listRoots response did not carry the closed roots list',
+          },
+        }))
         return
       }
-      setTeamRoots({ status: 'ok', rows })
+      setTeamRoots({ rows, pending: false, error: null })
     }).catch(error => {
-      if (!live) return
-      setTeamRoots({
-        status: 'error',
-        code: 'native-error',
-        message: error instanceof Error ? error.message : String(error),
-      })
+      if (rootsUnmounted.current || rootsEpoch.current !== epoch) return
+      setTeamRoots(prev => ({
+        ...prev,
+        pending: false,
+        error: {
+          code: 'native-error',
+          message: error instanceof Error ? error.message : String(error),
+        },
+      }))
     })
-    return () => { live = false }
-  }, [inZeroState, roots, creationOpen, sessionId])
+  }, [roots])
+  useEffect(() => {
+    if (!inZeroState || roots === undefined || creationOpen) return
+    void loadRoots()
+  }, [inZeroState, roots, creationOpen, sessionId, loadRoots])
+  // (repair 20260927, S1-C2) the manual "refresh team view" — the one
+  // awaitable read-only re-read. Captures THIS invocation's session id,
+  // the team (root) id, and a request epoch at call time:
+  //   (a) the roots re-read starts independently (the manual call is NOT
+  //       subject to the auto-read's zero-state / `creationOpen` guard);
+  //   (b) the projection pull is AWAITED, then the resolvable root's
+  //       ledger is refreshed (the cold ledger store is established only
+  //       after the pull applies a frame — so the ledger refresh runs
+  //       AFTER the pull; with a stale frame present the ledger read is
+  //       attempted EVEN IF the projection failed — it is an independent
+  //       read with its own visible state). A same-generation manual
+  //       refresh also attempts the ledger refresh (the automatic one
+  //       fires only on a generation advance).
+  // A resolved Promise is NOT a success: the round-trip outcome is read
+  // back through the projection store's published state (the same
+  // visible state surface the member/governance background reads flow
+  // through) — `rpc-error` / `transport-loss` / `foreign` /
+  // `inconsistent` all settle as resolved assessments. Nothing here
+  // re-fires a mutation on a failed read.
+  const runRefresh = useCallback((): void => {
+    if (refreshPending) return // the double-click guard
+    const sessionIdAtStart = sessionId
+    const resolutionAtStart = resolution
+    const teamSessionId = resolutionAtStart?.team.teamSessionId ?? sessionIdAtStart
+    const hadFrame = resolutionAtStart !== undefined
+    refreshEpoch.current += 1
+    const epoch = refreshEpoch.current
+    setRefreshPending(true)
+    void loadRoots()
+    void (async () => {
+      let assessment: ProjectionSyncAssessment
+      try {
+        assessment = await pullProjection(teamSessionId)
+      } catch {
+        // The frozen client carrier never rejects (it resolves as a
+        // typed assessment); defensive only — treat as a transport loss.
+        assessment = { status: 'transport-loss', receivedGeneration: null }
+      }
+      if (refreshEpoch.current !== epoch) return // newer refresh / unmount
+      if (hadFrame || assessment.status === 'apply') {
+        // a stale frame exists (attempt the ledger even on a failed
+        // projection) or the cold pull applied a frame (the store is
+        // open now). A no resolvable root is a silent no-op — it is
+        // never displayed as a "ledger refresh succeeded".
+        await refreshTeamLedger()
+      }
+    })().finally(() => {
+      if (refreshEpoch.current === epoch) setRefreshPending(false)
+    })
+  }, [refreshPending, sessionId, resolution, loadRoots, pullProjection, refreshTeamLedger])
   // D2 (Team D1-D6 repair v2, D6): the in-flight explicit open per picker
   // row (root id → pending) and the last typed failure per row (ONE
   // verbatim note, the UI §38 greyed-surface discipline). Page-run UI
@@ -602,12 +743,15 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
   // (absent without the `openTeamMode` face — the D1 surface unchanged),
   // with a per-row pending mark + ONE verbatim typed error note. An empty
   // list renders nothing (the host has no persisted teams yet).
+  // (repair 20260927, S1-C2) the note renders the CURRENT read error
+  // while the last successful rows stay in `rootsList` (the old list is
+  // never cleared to show an error — the state carries both).
   const rootsNote =
-    teamRoots !== null && teamRoots.status === 'error'
-      ? t('view.roots.note', { message: `${teamRoots.code}: ${teamRoots.message}` })
+    teamRoots.error !== null
+      ? t('view.roots.note', { message: `${teamRoots.error.code}: ${teamRoots.error.message}` })
       : null
   const rootsList =
-    teamRoots !== null && teamRoots.status === 'ok' && teamRoots.rows.length > 0
+    teamRoots.rows !== null && teamRoots.rows.length > 0
       ? (
         <div className={styles.roots} data-team-roots>
           <h3 className={styles.rootsTitle}>{t('view.roots.title')}</h3>
@@ -701,11 +845,62 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
       )
       : null
   if (resolution === undefined || snapshot === null) {
+    // (repair 20260927, S1-C1) the zero-state projection status line —
+    // judged by the store's CURRENT status/assessment (never by the
+    // presence of a `lastError` property alone):
+    //   · no state yet / idle / loading / ready → 加载中 (NEVER a
+    //     definitive "未加入团队": the cold open is still in flight —
+    //     only the phase-2 authoritative resolver may say "no team");
+    //   · reconnecting (no frame) → 尚未成功加载 (transport loss, the
+    //     store's retry episode is running);
+    //   · error → 团队信息加载失败 + code/message (typed RPC error,
+    //     transport loss, foreign/inconsistent — the FOREIGN_TEAM case
+    //     keeps the NEUTRAL wording: the underlying get fault / cold
+    //     member addressing can also land here, and phase 1 keeps the
+    //     ordinary-session creation entry).
+    const foreign =
+      projectionState !== null
+      && (projectionState.lastError?.code === 'TEAM_REMOTE_FOREIGN_TEAM'
+        || projectionState.lastAssessment?.status === 'foreign')
+    let zeroStatusLine: string
+    if (
+      projectionState === null
+      || projectionState.status === 'idle'
+      || projectionState.status === 'loading'
+      || projectionState.status === 'ready'
+    ) {
+      zeroStatusLine = t('view.projection.loading')
+    } else if (projectionState.status === 'reconnecting') {
+      zeroStatusLine = t('view.projection.notLoaded')
+    } else if (foreign) {
+      zeroStatusLine = t('view.projection.foreign')
+    } else {
+      const code = projectionState.lastError?.code
+        ?? projectionState.lastAssessment?.status
+        ?? 'unknown'
+      const message = projectionState.lastError?.message ?? ''
+      zeroStatusLine = `${t('view.projection.failed')} — ${code}${message !== '' ? `: ${message}` : ''}`
+    }
+    const zeroStatus = projectionState?.status ?? 'unknown'
+    const refreshButton = (
+      <button
+        type="button"
+        className={styles.zeroStart}
+        data-team-refresh
+        disabled={refreshPending}
+        onClick={runRefresh}
+      >
+        {t('view.refresh')}
+      </button>
+    )
     if (creation === undefined) {
       return (
         <div className={styles.zero} data-team-zero>
           <div className={styles.zeroInner}>
-            <p className={styles.zeroText}>{t('view.zero')}</p>
+            <p className={styles.zeroText} data-team-projection-status={zeroStatus}>
+              {zeroStatusLine}
+            </p>
+            {refreshButton}
             {rootsNote !== null && (
               <p className={styles.legacyNote} data-roots-note>{rootsNote}</p>
             )}
@@ -779,7 +974,10 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     return (
       <div className={styles.zero} data-team-zero>
         <div className={styles.zeroInner}>
-          <p className={styles.zeroText}>{t('view.zero')}</p>
+          <p className={styles.zeroText} data-team-projection-status={zeroStatus}>
+            {zeroStatusLine}
+          </p>
+          {refreshButton}
           {legacyNote !== null && (
             <p className={styles.legacyNote} data-legacy-note>{legacyNote}</p>
           )}
@@ -825,6 +1023,32 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     : undefined
   return (
     <div className={styles.body} data-team-view>
+      <div
+        className={styles.viewStatus}
+        data-team-view-status={withFrameStatus}
+        data-refresh-pending={withFrameRefreshing || undefined}
+      >
+        {withFrameError !== null
+          ? (
+            <span className={styles.legacyNote} data-team-view-error>
+              {t('view.refresh.failed')}
+              {` — ${withFrameError.code}`}
+              {withFrameError.message !== '' ? `: ${withFrameError.message}` : ''}
+            </span>
+          )
+          : withFrameRefreshing
+            ? <span data-team-view-refreshing>{t('view.refreshing')}</span>
+            : null}
+        <button
+          type="button"
+          className={styles.zeroStart}
+          data-team-refresh
+          disabled={refreshPending}
+          onClick={runRefresh}
+        >
+          {t('view.refresh')}
+        </button>
+      </div>
       <section className={styles.section} data-team-section="timeline">
         <h3 className={styles.sectionTitle}>{t('view.timeline.title')}</h3>
         <TeamTimeline

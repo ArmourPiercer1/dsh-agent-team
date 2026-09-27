@@ -179,8 +179,9 @@ function viewProps(
     usePanelInfo: (sel) => sel({ activePanelId: null }),
     useProjectionMirror: selector => selector(projectionMirror),
     useTeamLedgers: selector => selector(teamLedgers),
+    useProjectionStates: selector => selector({}),
     ensureProjection: vi.fn(() => Promise.resolve()),
-    pullProjection: vi.fn(() => Promise.resolve()),
+    pullProjection: vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const)),
     refreshTeamLedger: vi.fn(() => Promise.resolve()),
     openSession: vi.fn(),
     t: makeTranslate(zh),
@@ -316,5 +317,100 @@ describe('TeamView zero state: the D1 persisted-roots share (remote contract v3)
     await vi.waitFor(() => {
       expect(roots.listRoots).toHaveBeenCalledTimes(2)
     })
+  })
+
+  // ------------------------------------------------------------------
+  // repair 20260927 (S1-C2): the roots re-read is EXTRACTED into an
+  // awaitable helper the manual view refresh calls directly — the
+  // last successful rows survive a failed/pending re-read, the manual
+  // read is NOT subject to the auto-read's `creationOpen` guard, and a
+  // late stale response never overwrites a newer one.
+  // ------------------------------------------------------------------
+  it('a failed manual refresh KEEPS the last successful rows (the old list is never cleared to show an error)', async () => {
+    let failNext = false
+    const roots = makeRootsFace(() => Promise.resolve(
+      failNext
+        ? errV3('TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE', 'the re-read failed', 'team.listRoots')
+        : okV3({ roots: [ROW_A, ROW_B] }, 'team.listRoots'),
+    ))
+    const view = render(<TeamView {...{ ...viewProps(), roots }} />)
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-team-roots-list]')).not.toBeNull()
+    })
+    expect(roots.listRoots).toHaveBeenCalledTimes(1)
+    // the manual refresh: the re-read fails.
+    failNext = true
+    const refresh = view.container.querySelector<HTMLButtonElement>('[data-team-refresh]')
+    if (refresh === null) throw new Error('the zero-state refresh button did not render')
+    fireEvent.click(refresh)
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-roots-note]')).not.toBeNull()
+    })
+    expect(view.container.querySelector('[data-roots-note]')?.textContent)
+      .toContain('TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE')
+    // the OLD rows are still rendered alongside the note.
+    const list = view.container.querySelector('[data-team-roots-list]')
+    expect(list).not.toBeNull()
+    expect(list?.querySelectorAll('[data-team-root-row]').length).toBe(2)
+  })
+
+  it('the manual refresh reads roots even while the creation panel is open (the auto-read guard does not apply to the manual call)', async () => {
+    const roots = makeRootsFace(() => Promise.resolve(okV3({ roots: [ROW_A] }, 'team.listRoots')))
+    const creation = makeCreationFace()
+    const view = render(<TeamView {...{ ...viewProps(), creation, roots }} />)
+    await vi.waitFor(() => {
+      expect(roots.listRoots).toHaveBeenCalledTimes(1)
+    })
+    const start = view.container.querySelector<HTMLButtonElement>('[data-intent-start-here]')
+    if (start === null) throw new Error('the Start Team from Here entry did not render')
+    fireEvent.click(start)
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-team-creation-panel]')).not.toBeNull()
+    })
+    expect(roots.listRoots).toHaveBeenCalledTimes(1)
+    // the manual refresh WHILE the panel is open fires the roots read.
+    const refresh = view.container.querySelector<HTMLButtonElement>('[data-team-refresh]')
+    if (refresh === null) throw new Error('the refresh button did not render beside the panel')
+    fireEvent.click(refresh)
+    await vi.waitFor(() => {
+      expect(roots.listRoots).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  it('a late stale roots response never overwrites a newer read (epoch guard)', async () => {
+    // Read #1 (the mount auto-read) is SLOW; read #2 (fired by the
+    // panel close cycle) is FAST and must win even though read #1
+    // resolves later.
+    let resolveSlow: (value: RemoteResponse) => void = () => {}
+    const slow = new Promise<RemoteResponse>(resolve => { resolveSlow = resolve })
+    let slowFirst = true
+    const roots = makeRootsFace(() => {
+      if (slowFirst) { slowFirst = false; return slow }
+      return Promise.resolve(okV3({ roots: [ROW_A, ROW_B] }, 'team.listRoots'))
+    })
+    const creation = makeCreationFace()
+    const view = render(<TeamView {...{ ...viewProps(), creation, roots }} />)
+    // read #1 is in flight (slow).
+    await vi.waitFor(() => {
+      expect(roots.listRoots).toHaveBeenCalledTimes(1)
+    })
+    // open + close the panel: read #2 fires and lands FIRST.
+    const start = view.container.querySelector<HTMLButtonElement>('[data-intent-start-here]')
+    if (start === null) throw new Error('the entry did not render')
+    fireEvent.click(start)
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-team-creation-panel]')).not.toBeNull()
+    })
+    const cancel = view.container.querySelector<HTMLButtonElement>('[data-intent-cancel]')
+    if (cancel === null) throw new Error('the cancel button did not render')
+    fireEvent.click(cancel)
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-team-roots-list]')).not.toBeNull()
+    })
+    expect(view.container.querySelector('[data-team-roots-list]')?.querySelectorAll('[data-team-root-row]').length).toBe(2)
+    // NOW the stale read #1 lands — it must NOT overwrite the newer list.
+    resolveSlow(okV3({ roots: [ROW_A] }, 'team.listRoots'))
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(view.container.querySelector('[data-team-roots-list]')?.querySelectorAll('[data-team-root-row]').length).toBe(2)
   })
 })

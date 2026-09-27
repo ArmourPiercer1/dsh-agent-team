@@ -30,7 +30,7 @@
  * counts only — the ack control is rendered DISABLED with the explicit
  * reason (UI §38: no grey button without a reason).
  */
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import {
   REMOTE_CAPABILITY_VALUES,
@@ -45,6 +45,7 @@ import {
   type RemotePolicyStateGetParams,
   type RemotePolicyStateSetParams,
   type RemoteResponse,
+  type ProjectionSyncAssessment,
 } from '../../../remote/src/index.js'
 import type { TeamUiMemberInstance, TeamUiSnapshot } from '../model/team-ui-snapshot.js'
 import {
@@ -96,8 +97,10 @@ export interface TeamGovernanceFace {
   overrideSet: (params: RemoteOverrideSetParams) => Promise<RemoteResponse>
   /** `override.reset` (command: remove the override). */
   overrideReset: (params: RemoteOverrideResetParams) => Promise<RemoteResponse>
-  /** The post-success projection pull (the final-state authority). */
-  pullProjection: (teamSessionId: string) => Promise<unknown>
+  /** The post-success projection pull (the final-state authority).
+   * (repair 20260927, S1-C2) the tightened assessment — the pull's
+   * round-trip outcome is a FIRST-CLASS result the dispatch inspects. */
+  pullProjection: (teamSessionId: string) => Promise<ProjectionSyncAssessment>
 }
 
 /** The preserved typed error of one command (G5: verbatim wire values). */
@@ -119,6 +122,30 @@ export interface TeamGovernanceProps {
 /** A thrown error (channel loss / malformed read) rendered to a string. */
 function throwableMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
+}
+
+/**
+ * (repair 20260927, S1-C2) the split-result code/message of a FAILED
+ * post-command pull round trip: `apply` / `duplicate` / `stale` are all
+ * valid round trips (the view is current — `stale` received an OLDER
+ * generation, so the applied frame is still the newest); `rpc-error` /
+ * `transport-loss` / `foreign` / `inconsistent` are the failures.
+ */
+function pullFailureOf(assessment: ProjectionSyncAssessment): { readonly code: string; readonly message: string } | null {
+  if (assessment.status === 'apply' || assessment.status === 'duplicate' || assessment.status === 'stale') return null
+  if (assessment.status === 'rpc-error') {
+    return { code: assessment.code ?? 'rpc-error', message: 'the projection pull returned a typed error' }
+  }
+  if (assessment.status === 'transport-loss') {
+    return { code: 'transport-loss', message: 'the projection pull lost the channel (the store will retry)' }
+  }
+  if (assessment.status === 'foreign') {
+    return { code: 'foreign', message: 'the projection pull received a frame from another team' }
+  }
+  return {
+    code: 'inconsistent',
+    message: `the projection pull received an internally inconsistent frame (generation ${assessment.receivedGeneration ?? 'unknown'})`,
+  }
 }
 
 /** One settled `compatibility.get` read (fresh-read detail, not authority). */
@@ -176,6 +203,20 @@ export function TeamGovernance({
   // -- the G5 command channel state ----------------------------------------
   const [pending, setPending] = useState<Readonly<Record<string, GovernanceCommandKind>>>({})
   const [errors, setErrors] = useState<Readonly<Record<string, GovernanceCommandError>>>({})
+  // (repair 20260927, S1-C2) the SPLIT result of a SUCCESSFUL command
+  // whose post-command pull round trip FAILED: the mutation is done, the
+  // view update is not. Keyed by the command slot, cleared with the
+  // slot's error on the next dispatch — the pull is NEVER re-fired (a
+  // re-fire is a new, user-initiated command).
+  const [pullErrors, setPullErrors] = useState<
+    Readonly<Record<string, { readonly code: string; readonly message: string }>>
+  >({})
+  // (repair 20260927, S1-C2) the per-key dispatch sequence: the pending
+  // mark clears when the COMMAND settles (before the post-command pull
+  // does), so the user can fire the SAME command again while an earlier
+  // pull is still in flight — a late stale pull must NEVER record its
+  // failure on the NEWER invocation's key.
+  const pullSeqRef = useRef<Record<string, number>>({})
   const nextToken = useMemo(() => createRequestTokenGenerator('governance'), [])
 
   // -- the read state (reads never pull the projection) ---------------------
@@ -212,11 +253,30 @@ export function TeamGovernance({
       delete next[key]
       return next
     })
+    setPullErrors(prev => {
+      if (prev[key] === undefined) return prev
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
+    pullSeqRef.current[key] = (pullSeqRef.current[key] ?? 0) + 1
+    const pullSeq = pullSeqRef.current[key]
     void request()
       .then(parseMemberCommandOutcome)
       .then(outcome => {
         if (outcome.ok) {
-          void governance.pullProjection(teamSessionId)
+          // (repair 20260927, S1-C2) the post-success pull is AWAITED
+          // and ASSESSED (the old `void pull` had no feedback lane): a
+          // resolved Promise is NOT a success — a failed round trip
+          // records the split result on this command's key ("the
+          // command completed, but the team view update failed"). The
+          // mutation is NEVER re-fired on a failed read. The seq guard
+          // drops a late stale pull when a NEWER dispatch owns the key.
+          void governance.pullProjection(teamSessionId).then(assessment => {
+            if (pullSeqRef.current[key] !== pullSeq) return
+            const failure = pullFailureOf(assessment)
+            if (failure !== null) setPullErrors(prev => ({ ...prev, [key]: failure }))
+          })
         } else {
           setErrors(prev => ({ ...prev, [key]: outcome }))
         }
@@ -514,6 +574,14 @@ export function TeamGovernance({
           <p className={styles.noteError} data-governance-recheck-error>
             {t('governance.error', {
               message: `${recheckError.code}: ${recheckError.message}${recheckError.requestToken !== null ? ` [${recheckError.requestToken}]` : ''}`,
+            })}
+          </p>
+        )}
+        {pullErrors['compat-recheck'] !== undefined && (
+          <p className={styles.noteError} data-governance-pull-error="compat-recheck">
+            {t('governance.pullError', {
+              code: pullErrors['compat-recheck'].code,
+              message: pullErrors['compat-recheck'].message,
             })}
           </p>
         )}

@@ -31,6 +31,7 @@ import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import type {
+  ProjectionSyncAssessment,
   RemoteResponse,
   RemoteSafeJsonValue,
 } from '../../remote/src/index.js'
@@ -116,7 +117,7 @@ interface PanelHarnessProps {
   /** The creation-path session open (default: resolves immediately). */
   openCreatedSession?: (sessionId: string) => Promise<void>
   /** The D4-A1 pull spy (absent → the prop is NOT passed, back-compat path). */
-  pullProjection?: (teamSessionId: string) => Promise<unknown>
+  pullProjection?: (teamSessionId: string) => Promise<ProjectionSyncAssessment>
   /** The terminal-success spy. */
   onCreatedSpy?: () => void
   /** The handoff source + face (absent → the panel is the T7 surface). */
@@ -271,7 +272,7 @@ function makeMemberFace(overrides: Partial<TeamMembersCommandFace> = {}): TeamMe
     memberArchive: vi.fn(() => Promise.resolve(okResponse(null, 'member.archive'))),
     memberRestore: vi.fn(() => Promise.resolve(okResponse(null, 'member.restore'))),
     memberDispose: vi.fn(() => Promise.resolve(okResponse(null, 'member.dispose'))),
-    pullProjection: vi.fn(() => Promise.resolve(null)),
+    pullProjection: vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const)),
     ...overrides,
   }
 }
@@ -308,7 +309,7 @@ function makeGovernanceFace(overrides: Partial<TeamGovernanceFace> = {}): TeamGo
     overrideGet: vi.fn(() => Promise.resolve(okResponse(null, 'override.get'))),
     overrideSet: vi.fn(() => Promise.resolve(okResponse(null, 'override.set'))),
     overrideReset: vi.fn(() => Promise.resolve(okResponse(null, 'override.reset'))),
-    pullProjection: vi.fn(() => Promise.resolve(null)),
+    pullProjection: vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const)),
     ...overrides,
   }
 }
@@ -327,7 +328,7 @@ afterEach(cleanup)
 
 describe('D4-A1 — standard create flow (UI-initiated mutation)', () => {
   it('terminal success (with initial work) pulls the NEW team projection exactly once', async () => {
-    const pullProjection = vi.fn(async (_teamSessionId: string) => undefined)
+    const pullProjection = vi.fn(async (_teamSessionId: string) => ({ status: 'duplicate', receivedGeneration: 1 } as const))
     const onCreatedSpy = vi.fn()
     const opened: string[] = []
     const view = render(<PanelHarness
@@ -354,7 +355,7 @@ describe('D4-A1 — standard create flow (UI-initiated mutation)', () => {
   })
 
   it('terminal success (create-only, no initial work) pulls exactly once', async () => {
-    const pullProjection = vi.fn(() => Promise.resolve(null))
+    const pullProjection = vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const))
     const onCreatedSpy = vi.fn()
     const view = render(<PanelHarness
       createResponse={okResponse(null, 'team.create')}
@@ -373,7 +374,7 @@ describe('D4-A1 — standard create flow (UI-initiated mutation)', () => {
   })
 
   it('a typed create-stage failure does NOT pull', async () => {
-    const pullProjection = vi.fn(() => Promise.resolve(null))
+    const pullProjection = vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const))
     const onCreatedSpy = vi.fn()
     const view = render(<PanelHarness
       createResponse={errorResponse('TEAM_CREATE_REJECTED', 'blueprint gone', 'team.create', null)}
@@ -392,7 +393,7 @@ describe('D4-A1 — standard create flow (UI-initiated mutation)', () => {
   })
 
   it('a typed work-stage (admit) failure does NOT pull (the Root stays open, the lane retries)', async () => {
-    const pullProjection = vi.fn(() => Promise.resolve(null))
+    const pullProjection = vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const))
     const onCreatedSpy = vi.fn()
     const view = render(<PanelHarness
       createResponse={okResponse(null, 'team.create')}
@@ -434,7 +435,7 @@ describe('D4-A1 — standard create flow (UI-initiated mutation)', () => {
 
 describe('D4-A1 — handoff.create (UI-initiated mutation)', () => {
   it('a stored `completed` state pulls the NEW team projection exactly once', async () => {
-    const pullProjection = vi.fn(() => Promise.resolve(null))
+    const pullProjection = vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const))
     const opened: string[] = []
     const view = render(<PanelHarness
       createResponse={okResponse(null, 'team.create')}
@@ -462,7 +463,7 @@ describe('D4-A1 — handoff.create (UI-initiated mutation)', () => {
   })
 
   it('a stored `completed-without-handoff` state pulls exactly once', async () => {
-    const pullProjection = vi.fn(() => Promise.resolve(null))
+    const pullProjection = vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const))
     const view = render(<PanelHarness
       createResponse={okResponse(null, 'team.create')}
       admitResponse={okResponse(null, 'team.admitInitialWork')}
@@ -486,7 +487,7 @@ describe('D4-A1 — handoff.create (UI-initiated mutation)', () => {
   })
 
   it('a typed handoff.create response failure does NOT pull', async () => {
-    const pullProjection = vi.fn(() => Promise.resolve(null))
+    const pullProjection = vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const))
     const view = render(<PanelHarness
       createResponse={okResponse(null, 'team.create')}
       admitResponse={okResponse(null, 'team.admitInitialWork')}
@@ -505,7 +506,7 @@ describe('D4-A1 — handoff.create (UI-initiated mutation)', () => {
   })
 
   it('a stored `creation-failed` state does NOT pull', async () => {
-    const pullProjection = vi.fn(() => Promise.resolve(null))
+    const pullProjection = vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const))
     const view = render(<PanelHarness
       createResponse={okResponse(null, 'team.create')}
       admitResponse={okResponse(null, 'team.admitInitialWork')}
@@ -529,7 +530,7 @@ describe('D4-A1 — handoff.create (UI-initiated mutation)', () => {
   })
 
   it('a stored `awaiting-decision` state does NOT pull (no team exists yet)', async () => {
-    const pullProjection = vi.fn(() => Promise.resolve(null))
+    const pullProjection = vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const))
     const view = render(<PanelHarness
       createResponse={okResponse(null, 'team.create')}
       admitResponse={okResponse(null, 'team.admitInitialWork')}

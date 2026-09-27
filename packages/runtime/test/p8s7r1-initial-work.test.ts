@@ -71,7 +71,6 @@ import type { TeamRuntime } from '../admission/index.js'
 import { createTeamOperationCoordinator } from '../coordination/index.js'
 import { createWorkActivityWriter } from '../activity/index.js'
 import type { AdmittedGovernanceOverride } from '../mutation/index.js'
-import type { CompatibilityProber } from '../compatibility/index.js'
 import type { HandoffService } from '../handoff/index.js'
 import type { LifecycleService } from '../lifecycle/index.js'
 import type { LegacyInspectFn } from '../src/plugin/legacy-surface.js'
@@ -190,7 +189,12 @@ function buildOptions(
     overrideStore: {} as never,
     overrideRecords: () => [],
     rootBinding,
-    compatibility: {} as unknown as CompatibilityProber,
+    // S1-H2 (repair 20260927): the remote surface takes the per-root
+    // prober FACTORY (compatibility.* addresses the sent team, never the
+    // boot root) — unused in this test.
+    compatibilityFor: (() => {
+      throw new Error('unused in this test')
+    }) as unknown as () => import('../src/plugin/s6-remote.js').S6RemoteCompatibilityOperations,
     handoff: {} as unknown as HandoffService,
     legacyInspect: unused as unknown as LegacyInspectFn,
     legacyHome: undefined,

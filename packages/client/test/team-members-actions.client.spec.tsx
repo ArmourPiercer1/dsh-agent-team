@@ -142,7 +142,7 @@ function makeFace(overrides: Partial<TeamMembersCommandFace> = {}): TeamMembersC
     memberArchive: vi.fn(() => Promise.resolve(okResponse(null, 'member.archive'))),
     memberRestore: vi.fn(() => Promise.resolve(okResponse(null, 'member.restore'))),
     memberDispose: vi.fn(() => Promise.resolve(okResponse(null, 'member.dispose'))),
-    pullProjection: vi.fn(() => Promise.resolve(null)),
+    pullProjection: vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const)),
     ...overrides,
   }
 }

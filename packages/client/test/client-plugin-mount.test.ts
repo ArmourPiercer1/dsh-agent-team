@@ -764,6 +764,96 @@ const eScenario = await (async () => {
 })()
 
 // ---------------------------------------------------------------------------
+// Scenario F: repair 20260927 (S1-C1/S1-C2) — the projection STORE states
+// published into the view hooks: the no-frame error state is PUBLISHED
+// (the view's failure surface is data, not a guess), the hook source is
+// bound (snapshot + notifications), the pull's assessment is NOT lost
+// (a resolved Promise carries the closed round-trip verdict), and a cold
+// success opens the ledger store so the ledger refresh is a REAL re-read
+// (before the first frame the refresh is a silent no-op).
+// ---------------------------------------------------------------------------
+
+const fScenario = await (async () => {
+  const f = makeMount()
+  applyTeamMount(f.ctx, { components: f.components })
+  const face = viewFaceOf(f, 'plain-1')
+  const hook = face.hooks.projectionStates
+  if (typeof hook?.getSnapshot !== 'function' || typeof hook?.subscribe !== 'function') {
+    throw new Error('mount test: the view hooks.projectionStates source is missing')
+  }
+  const initialStates = hook.getSnapshot()
+  const initialEmpty = Object.keys(initialStates).length === 0
+
+  // (a) the hook notifies on a publish (a listener subscribed BEFORE the
+  // failing cold pull sees the published error state).
+  let notifications = 0
+  const unsubscribe = hook.subscribe(() => { notifications += 1 })
+
+  // (b) the no-frame typed failure: the pull RESOLVES (never rejects) with
+  // the closed assessment, and the STORE state is published into the hook.
+  f.enqueue(METHOD, () => projectionError('TEAM_REMOTE_INTERNAL_ERROR', 'internal boom'))
+  let assessment: { readonly status: string; readonly code?: string; readonly receivedGeneration: number | null } | null = null
+  let pullRejected = false
+  try {
+    assessment = await face.pullProjection('plain-1')
+  } catch {
+    pullRejected = true
+  }
+  const stateAfterError = hook.getSnapshot()['plain-1' as TeamSessionId]
+  unsubscribe()
+  const errorStatePublished =
+    stateAfterError !== undefined
+    && stateAfterError.status === 'error'
+    && stateAfterError.frame === null
+    && stateAfterError.lastError?.code === 'TEAM_REMOTE_INTERNAL_ERROR'
+    && stateAfterError.lastError?.message === 'internal boom'
+    && stateAfterError.lastAssessment?.status === 'rpc-error'
+
+  // (c) the assessment is NOT lost: the resolved value IS the closed
+  // round-trip verdict (status + the typed code), not void/unknown.
+  const assessmentIntact =
+    assessment !== null
+    && assessment.status === 'rpc-error'
+    && assessment.code === 'TEAM_REMOTE_INTERNAL_ERROR'
+    && assessment.receivedGeneration === null
+
+  // (d) the ledger refresh before any frame is a SILENT no-op (no team
+  // resolvable, no store open — and it is never displayed as a success).
+  const pageCalls = (): number => f.log.filter(
+    (c) => c.endpoint === 'team.getLedgerPage',
+  ).length
+  await face.refreshTeamLedger()
+  await face.refreshTeamLedger()
+  const pageCallsBeforeFrame = pageCalls()
+
+  // (e) the COLD SUCCESS opens the ledger store (the bridge subscribes
+  // during the publish) — the first page call is the catch-up, and the
+  // EXPLICIT refresh after the pull is a REAL re-read (one more page
+  // call). The frame's root IS the pulled session id, so the face
+  // injected for THAT session resolves the team.
+  const faceT = viewFaceOf(f, 'tf1')
+  f.enqueue(METHOD, () => projectionSuccess('tf1', 1))
+  const coldAssessment = await faceT.pullProjection('tf1')
+  const pageCallsAfterColdSuccess = pageCalls()
+  await faceT.refreshTeamLedger()
+  const pageCallsAfterRefresh = pageCalls()
+  const coldAssessmentApplied = coldAssessment.status === 'apply'
+
+  f.disposeAll()
+  return {
+    initialEmpty,
+    notifications,
+    pullRejected,
+    errorStatePublished,
+    assessmentIntact,
+    pageCallsBeforeFrame,
+    pageCallsAfterColdSuccess,
+    pageCallsAfterRefresh,
+    coldAssessmentApplied,
+  }
+})()
+
+// ---------------------------------------------------------------------------
 // Assertions (synchronous; the scenarios above are captured)
 // ---------------------------------------------------------------------------
 
@@ -1045,6 +1135,47 @@ describe('D4-A1 client mount — post-mutation pull wiring (scenario E)', () => 
 
   it('a typed pull failure settles in the store and never rejects', () => {
     expect(eScenario.pullRejected).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// repair 20260927 (S1-C1/S1-C2) — the projection store states in the view
+// hooks: the no-frame error state is PUBLISHED (the view's failure surface
+// is data), the hook source is bound (snapshot + notifications), the pull
+// assessment is NOT lost (a resolved Promise carries the closed verdict),
+// and a cold success opens the ledger store so the explicit refresh is a
+// REAL re-read (a silent no-op before the first frame).
+// ---------------------------------------------------------------------------
+
+describe('repair 20260927 client mount — the projection states in the view hooks (scenario F)', () => {
+  it('the hooks.projectionStates source starts EMPTY (no team pulled yet)', () => {
+    expect(fScenario.initialEmpty).toBe(true)
+  })
+
+  it('the hook source is BOUND: a listener subscribed before the publish is notified', () => {
+    expect(fScenario.notifications).toBeGreaterThan(0)
+  })
+
+  it('a no-frame typed failure PUBLISHES the error state (frame null, the verbatim lastError, the rpc-error assessment)', () => {
+    expect(fScenario.pullRejected).toBe(false)
+    expect(fScenario.errorStatePublished).toBe(true)
+  })
+
+  it('the pull ASSESSMENT is not lost: the resolved Promise carries the closed verdict (status + typed code)', () => {
+    expect(fScenario.assessmentIntact).toBe(true)
+  })
+
+  it('the ledger refresh before the first frame is a SILENT no-op (no page call, never a success)', () => {
+    expect(fScenario.pageCallsBeforeFrame).toBe(0)
+  })
+
+  it('the cold success APPLIES the frame (the assessment says apply) and opens the ledger store (the catch-up page call fires)', () => {
+    expect(fScenario.coldAssessmentApplied).toBe(true)
+    expect(fScenario.pageCallsAfterColdSuccess).toBeGreaterThan(0)
+  })
+
+  it('the EXPLICIT refresh after the cold pull is a REAL re-read (one more page call)', () => {
+    expect(fScenario.pageCallsAfterRefresh).toBe(fScenario.pageCallsAfterColdSuccess + 1)
   })
 })
 

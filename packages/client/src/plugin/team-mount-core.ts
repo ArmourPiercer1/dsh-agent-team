@@ -55,7 +55,10 @@ import type { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type { SlotCore, SlotMap } from '@deepseek-ai/dsh-client-ui-slots'
 import type { TeamSessionId } from '../../../contracts/src/index.js'
-import type { RemoteResponse } from '../../../remote/src/index.js'
+import type {
+  ProjectionSyncAssessment,
+  RemoteResponse,
+} from '../../../remote/src/index.js'
 import { projectionFromWire } from '../model/projection-adapter.js'
 import { createTeamLedgerStore } from '../state/team-ledger-store.js'
 import type {
@@ -63,7 +66,10 @@ import type {
   TeamLedgerStore,
 } from '../state/team-ledger-store.js'
 import { createTeamProjectionStore } from '../state/team-projection-store.js'
-import type { TeamProjectionStore } from '../state/team-projection-store.js'
+import type {
+  TeamProjectionState,
+  TeamProjectionStore,
+} from '../state/team-projection-store.js'
 import { resolveTeamProjection } from '../state/team-session-resolution.js'
 import type { TeamProjectionMirror } from '../state/team-session-resolution.js'
 import { createTeamRemoteClient } from '../transport/team-remote-client.js'
@@ -481,11 +487,20 @@ export function applyTeamMount(
     'dsh-agent-team: store teardown',
   )
 
-  // (4) The two published observables (the inject `hooks` compartment):
-  // the team-keyed projection mirror and the per-team ledger states.
+  // (4) The published observables (the inject `hooks` compartment):
+  // the team-keyed projection mirror, the per-team ledger states, and —
+  // (repair 20260927, S1-C1) — the per-team FULL projection store states
+  // (not just applied frames): the first-read loading, the no-frame
+  // transport loss / typed error, and the no-frame foreign/inconsistent
+  // verdicts must reach the view (the old frame-only mirror made the
+  // states the view needs most — before the first frame — invisible).
+  // Keyed by team session id; the view selects the current team through
+  // `resolution?.team.teamSessionId ?? sessionId`.
   const mirrorStore = createSnapshotStore<TeamProjectionMirror>({})
   const ledgerStatesStore =
     createSnapshotStore<Readonly<Record<string, TeamLedgerState>>>({})
+  const projectionStatesStore =
+    createSnapshotStore<Readonly<Record<string, TeamProjectionState>>>({})
 
   // (5) The lazy per-team ledger store (published onto the ledger-states
   // observable; the page pull rides the frozen Remote client).
@@ -529,7 +544,21 @@ export function applyTeamMount(
       getProjection: (id) => teamRemote.getProjection(id),
     })
     const dispose = store.subscribe(() => {
-      const frame = store.getState().frame
+      const state = store.getState()
+      // (repair 20260927, S1-C1) KEY ORDER: publish the COMPLETE store
+      // state FIRST — including the `frame === null` states (the
+      // first-read loading, the no-frame transport loss / typed error,
+      // the no-frame foreign/inconsistent verdict) — then handle the
+      // frame/mirror/ledger. The old early `frame === null` return made
+      // the very failures the view needs most (before the first frame)
+      // invisible. The store's snapshot reference is stable between
+      // changes, so a per-team identity check keeps the published map
+      // identity-stable (client AGENTS reactive rule 5).
+      const currentState = projectionStatesStore.getSnapshot()
+      if (currentState[teamSessionId] !== state) {
+        projectionStatesStore.set({ ...currentState, [teamSessionId]: state })
+      }
+      const frame = state.frame
       if (frame === null) return
       const dto = projectionFromWire(frame.projection)
       const current = mirrorStore.getSnapshot()
@@ -785,7 +814,12 @@ export function applyTeamMount(
   // the NEW team's id (invariant 9: the minted Root id IS the team id).
   // Agent/tool-originated mutations are OUT of this pull's coverage (they
   // bypass every React callback) — that is the D4-A2 design item.
-  const pullProjection = (teamSessionId: string): Promise<unknown> =>
+  // (repair 20260927, S1-C2) the return type is TIGHTENED from
+  // `Promise<unknown>` to the frozen assessment: a resolved Promise is
+  // NOT a success — `rpc-error` / `transport-loss` / `foreign` /
+  // `inconsistent` all settle as RESOLVED assessments, and the caller
+  // must inspect the result (no success-toast over a failed round trip).
+  const pullProjection = (teamSessionId: string): Promise<ProjectionSyncAssessment> =>
     projectionStoreOf(teamSessionId).pull(teamSessionId)
 
   // (12) The S5-A New Team creation face (frozen Remote wrappers + the
@@ -936,10 +970,17 @@ export function applyTeamMount(
     'dsh-agent-team: generation rebaseline',
   )
 
-  // (18) The injected faces (the `hooks` compartment carries the two bare
+  // (18) The injected faces (the `hooks` compartment carries the bare
   // observable sources; everything else is plain data + callbacks).
+  // (repair 20260927, S1-C1) `projectionStates` joins the compartment:
+  // the generic renderer binding maps the standard source name onto the
+  // component's `useProjectionStates` hook prop (no renderer change).
   const viewInject = (sessionId: string): TeamViewInjected => ({
-    hooks: { projectionMirror: mirrorStore, teamLedgers: ledgerStatesStore },
+    hooks: {
+      projectionMirror: mirrorStore,
+      teamLedgers: ledgerStatesStore,
+      projectionStates: projectionStatesStore,
+    },
     ensureProjection,
     // D4-A1: the zero-state creation panel's post-success refresh (the
     // same generation-safe pull; targets the NEW team's id).

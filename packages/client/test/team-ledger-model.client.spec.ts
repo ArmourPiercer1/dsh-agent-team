@@ -488,4 +488,73 @@ describe('deriveTeamLedgerSection — internal authority facts (PR #26 P2)', () 
     expect(model.total).toBe(5)
     expect(model.remainingCount).toBe(3) // 10 − 7 loaded, NOT 10 − 5 rendered
   })
+
+  it('a grant CARRYING the control category (the adapter output) is hidden under the `all` AND the `control` Events filters', () => {
+    // Repair 20260927 (S1-C2): the ledger adapter now classifies a legal
+    // `artifact-read-granted` fact as the `control` category. The Events
+    // skip must still hold for BOTH filters: `all` (internal facts never
+    // render) and `control` (the grant is a control-and-persistence fact,
+    // not a control REQUEST — it must not surface in the control filter
+    // as if it were a pending/decided request).
+    const grant = uiEntry(
+      2,
+      'artifact-read-granted',
+      T + 1000,
+      grantPayload,
+      'control',
+    )
+    const realRequest = uiEntry(
+      3,
+      'control-request-recorded',
+      T + 2000,
+      { requestId: 'r1', targetInstanceId: 'mate', actionName: 'bash' },
+      'control',
+    )
+    const entries = [
+      uiEntry(1, 'team-message-delivered', T, { recipientInstanceId: 'mate', subject: 'm' }, 'message'),
+      grant,
+      realRequest,
+    ]
+    // (a) `all`: the grant never renders; message + request do.
+    const all = derive({ ledger: ledger(entries) })
+    expect(all.rows.map(row => row.sequence)).toEqual([1, 3])
+    for (const row of all.rows) {
+      expect(row.factType).not.toBe('artifact-read-granted')
+    }
+    // (b) `control`: ONLY the real request renders — the control-category
+    // grant is still hidden (it is not a control request).
+    const control = derive({ ledger: ledger(entries), filter: { category: 'control', instanceId: null } })
+    expect(control.rows.map(row => row.sequence)).toEqual([3])
+    expect(control.rows[0]?.factType).toBe('control-request-recorded')
+    expect(control.rows[0]?.requestId).toBe('r1')
+  })
+
+  it('the hide does not touch the raw entry count or the pagination completeness (a control-category grant included)', () => {
+    // Repair 20260927 (S1-C2): with grants classified `control` in the
+    // raw model, the Events-side hide must not rebase the count-domain
+    // remainder or the depth axis: the raw loaded count still includes
+    // the grants, and the window/hasMore axis counts only the rendered
+    // (filtered) rows.
+    const grant = uiEntry(2, 'artifact-read-granted', T + 1000, grantPayload, 'control')
+    const entries = [
+      uiEntry(1, 'team-message-delivered', T, { recipientInstanceId: 'mate', subject: 'a' }, 'message'),
+      grant,
+      uiEntry(3, 'team-message-delivered', T + 2000, { recipientInstanceId: 'mate', subject: 'b' }, 'message'),
+      uiEntry(4, 'team-message-delivered', T + 3000, { recipientInstanceId: 'mate', subject: 'c' }, 'message'),
+    ]
+    // Raw count: 4 loaded entries — the hide changes nothing there.
+    expect(ledger(entries).entries).toHaveLength(4)
+    // Remainder: total 10 − 4 LOADED (not 10 − 3 rendered) = 6.
+    const model = derive({ ledger: ledger(entries), total: 10 })
+    expect(model.rows).toHaveLength(3)
+    expect(model.total).toBe(3)
+    expect(model.remainingCount).toBe(6)
+    // The depth axis clamps on the RENDERED (filtered) total: the two
+    // most recent rendered rows (the hidden grant never occupies a
+    // window slot).
+    const shallow = derive({ ledger: ledger(entries), total: 10, loadedCount: 2 })
+    expect(shallow.rows.map(row => row.sequence)).toEqual([3, 4])
+    expect(shallow.hasMore).toBe(true)
+    expect(shallow.total).toBe(3)
+  })
 })

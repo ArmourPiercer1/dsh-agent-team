@@ -564,3 +564,264 @@ describe('p8s7r2 disposed history attribution (R2-6)', () => {
     expect(sum(dh2.byCategory as Record<string, number>)).toBe(dh2.factCount)
   })
 })
+
+// --- H1 (repair 20260927): the artifact-read-granted durable authorization grant ---
+//
+// Before the repair, a LEGAL `artifact-read-granted` ledger entry (written
+// by the strict-read core-spill feature) made the whole projection fail
+// closed with `LEDGER_CATEGORY_UNKNOWN` — the durable authorization fact
+// was missing from the closed fact-type vocabulary, and the invariant
+// `totalEntries == sum(byCategory)` made a silent misclassification
+// impossible. The repair classifies the grant into the EXISTING `control`
+// category (control-and-persistence facts): no ninth category, no wire
+// change, no change to the frozen eight categories, and NO change to
+// `pendingControlCount` (a grant is not a ControlRequest /
+// ControlDecision — it never increments the pending count).
+
+import {
+  ARTIFACT_READ_GRANTED_FACT_TYPE,
+  buildArtifactReadGrantedPayload,
+  targetKeyDigest,
+  versionDigest,
+} from '../artifact-read/index.js'
+
+/** One structurally valid grant entry (the writer-side closed payload). */
+const H1_GRANT_SEQUENCE = 100
+const H1_GRANT_INSTANCE = 'inst-h1-granted'
+const h1GrantEntry = entry(H1_GRANT_SEQUENCE, ROOT_SID, ARTIFACT_READ_GRANTED_FACT_TYPE,
+  buildArtifactReadGrantedPayload({
+    instanceId: H1_GRANT_INSTANCE,
+    locator: '/spill/h1/target-0001.txt',
+    targetKeyDigest: targetKeyDigest('h1-target-key'),
+    versionDigest: versionDigest('h1-version'),
+    source: {
+      kind: 'spill-store',
+      spillSource: {
+        kind: 'tool',
+        toolName: 'bash',
+        callId: 'call-h1-0001',
+        label: 'spill bash #1',
+      },
+    },
+  }),
+)
+const h1LifecycleEntry = entry(H1_GRANT_SEQUENCE + 1, ROOT_SID, 'member-lifecycle-changed', {
+  instanceId: H1_GRANT_INSTANCE,
+  from: 'CREATED',
+  to: 'RUNNING',
+  action: 'start',
+  caller: LEADER_ID,
+  at: '2026-08-02T01:00:00.000Z',
+  requestToken: 'tok-h1-start',
+})
+
+/** A grant addressed to the DISPOSED member dh1 (the attribution check). */
+const h1Dh1GrantEntry = entry(H1_GRANT_SEQUENCE + 2, ROOT_SID, ARTIFACT_READ_GRANTED_FACT_TYPE,
+  buildArtifactReadGrantedPayload({
+    instanceId: DH1_ID,
+    locator: '/spill/h1/target-dh1.txt',
+    targetKeyDigest: targetKeyDigest('h1-dh1-key'),
+    versionDigest: versionDigest('h1-dh1-version'),
+    source: {
+      kind: 'spill-store',
+      spillSource: {
+        kind: 'tool',
+        toolName: 'bash',
+        callId: 'call-h1-dh1',
+        label: 'spill bash dh1',
+      },
+    },
+  }),
+)
+
+const h1Projection: TeamProjectionDto = projectTeam(
+  readSource([leaderRow, workerRow], [h1GrantEntry, h1LifecycleEntry]),
+  null,
+  FIXED_NOW,
+  2,
+)
+const h1Dh1Projection: TeamProjectionDto = projectTeam(
+  readSource([leaderRow, dh1Row], [h1Dh1GrantEntry]),
+  null,
+  FIXED_NOW,
+  2,
+)
+
+describe('H1 the artifact-read-granted fact classifies into control (repair 20260927)', () => {
+  it('H1 the grant + a lifecycle fact project: totalEntries 2, control 1, lifecycle 1, pending 0', () => {
+    const ledger = h1Projection.ledger
+    expect(ledger.totalEntries).toBe(2)
+    expect(ledger.byCategory.control).toBe(1)
+    expect(ledger.byCategory.lifecycle).toBe(1)
+    // The grant is NOT a control request: the pending count stays 0.
+    expect(ledger.pendingControlCount).toBe(0)
+    // The frozen invariant holds: totalEntries == sum(byCategory).
+    const sum = Object.values(ledger.byCategory as Record<string, number>).reduce(
+      (acc, value) => acc + value,
+      0,
+    )
+    expect(sum).toBe(ledger.totalEntries)
+    expect(ledger.latestSequence).toBe(H1_GRANT_SEQUENCE + 1)
+  })
+
+  it('H1 a grant attributed to a DISPOSED member enters its history digest under control', () => {
+    const bundle = h1Dh1Projection.disposedHistory
+    if (bundle === undefined) throw new Error('disposedHistory absent')
+    const dh1 = bundle.find((row) => row.instanceId === DH1_ID)
+    if (dh1 === undefined) throw new Error('dh1 bundle missing')
+    expect(dh1.factCount).toBe(1)
+    expect(dh1.byCategory.control).toBe(1)
+    expect(dh1.firstSequence).toBe(H1_GRANT_SEQUENCE + 2)
+    expect(dh1.lastSequence).toBe(H1_GRANT_SEQUENCE + 2)
+  })
+
+  it('H1 the derived fixture (12-fact root + a legal grant at seq 14 for dh1) projects: total 13, control 2, latestSequence 14, pending 1', () => {
+    const derived = projectTeam(
+      readSource([leaderRow, workerRow, dh1Row, dh2Row], [...ROOT_ENTRIES, h2GrantRootEntry]),
+      null,
+      FIXED_NOW,
+      2,
+    )
+    const ledger = derived.ledger
+    expect(ledger.totalEntries).toBe(13)
+    expect(ledger.byCategory.control).toBe(2)
+    expect(ledger.latestSequence).toBe(14)
+    // The pending count still counts the ONE undecided request (seq 10) —
+    // the grant (seq 14) does not increment it.
+    expect(ledger.pendingControlCount).toBe(1)
+    const sum = Object.values(ledger.byCategory as Record<string, number>).reduce(
+      (acc, value) => acc + value,
+      0,
+    )
+    expect(sum).toBe(ledger.totalEntries)
+  })
+})
+
+// --- H2 (repair 20260927): grant scope, fail-closed, and no new binding need ---
+//
+// The repair only ADDS a mapping to the closed fact-type vocabulary. The
+// regression pins the three behaviors the repair must not disturb:
+//
+//   H2.1 — a grant of ANOTHER root that names the SAME instanceId (a
+//          shared-domain deployment carries other teams' entries in the
+//          same ledger store) must not pollute this team's projection —
+//          neither the root ledger summary nor the disposed-history digest
+//          of the same-named member (the root filter is the guard);
+//   H2.2 — a TRULY UNKNOWN durable fact type still fails closed with
+//          `LEDGER_CATEGORY_UNKNOWN` (the repair added no `unknown ->
+//          control` fallback and no silent skip);
+//   H2.3 — a LEGAL existing state that carries NO binding rows (the read
+//          port reads exactly teamSessions / memberInstances /
+//          compatibility / ledger and never a binding repository) still
+//          projects after the repair — the fix added no binding
+//          requirement that old legal teams would trip over.
+
+/** A legal grant of the fixture root addressed to dh1 (sequence 14). */
+const h2GrantRootEntry = entry(14, ROOT_SID, ARTIFACT_READ_GRANTED_FACT_TYPE,
+  buildArtifactReadGrantedPayload({
+    instanceId: DH1_ID,
+    locator: '/spill/h2/target-dh1.txt',
+    targetKeyDigest: targetKeyDigest('h2-dh1-key'),
+    versionDigest: versionDigest('h2-dh1-version'),
+    source: {
+      kind: 'spill-store',
+      spillSource: {
+        kind: 'tool',
+        toolName: 'bash',
+        callId: 'call-h2-dh1',
+        label: 'spill bash dh1',
+      },
+    },
+  }),
+)
+
+/** The OTHER root's grant naming the SAME instanceId (sequence 15): the
+ *  cross-team contamination probe (same-named instance, different root). */
+const h2GrantOtherRootEntry = entry(15, OTHER_ROOT_SID, ARTIFACT_READ_GRANTED_FACT_TYPE,
+  buildArtifactReadGrantedPayload({
+    instanceId: DH1_ID,
+    locator: '/spill/h2/other-root-dh1.txt',
+    targetKeyDigest: targetKeyDigest('h2-other-dh1-key'),
+    versionDigest: versionDigest('h2-other-dh1-version'),
+    source: {
+      kind: 'spill-store',
+      spillSource: {
+        kind: 'tool',
+        toolName: 'bash',
+        callId: 'call-h2-other-dh1',
+        label: 'spill bash other-root dh1',
+      },
+    },
+  }),
+)
+
+// The world below carries NO binding repository at all in its fake domain
+// (readSource provides exactly the four read-port repositories) — H2.3's
+// "legal existing state without a binding" is this exact shape.
+const h2Projection: TeamProjectionDto = projectTeam(
+  readSource(
+    [leaderRow, workerRow, dh1Row, dh2Row],
+    [
+      ...ROOT_ENTRIES,
+      h2GrantRootEntry,
+      h2GrantOtherRootEntry,
+    ],
+  ),
+  null,
+  FIXED_NOW,
+  2,
+)
+
+describe('H2 the grant scope and the unchanged fail-closed surface (repair 20260927)', () => {
+  it('H2.1 an other-root grant naming the same instanceId does not pollute the summary', () => {
+    const ledger = h2Projection.ledger
+    // The seq-15 other-root entry is excluded by the root filter: the
+    // summary sees exactly the 13 root entries (12 fixture + the seq-14
+    // root grant), and the span never stretches past 14.
+    expect(ledger.totalEntries).toBe(13)
+    expect(ledger.latestSequence).toBe(14)
+    expect(ledger.byCategory.control).toBe(2)
+    expect(ledger.pendingControlCount).toBe(1)
+  })
+
+  it('H2.1 the other-root grant does not pollute the same-named member\'s digest', () => {
+    const bundle = h2Projection.disposedHistory
+    if (bundle === undefined) throw new Error('disposedHistory absent')
+    const dh1 = bundle.find((row) => row.instanceId === DH1_ID)
+    if (dh1 === undefined) throw new Error('dh1 bundle missing')
+    // 9 fixture facts + the root grant (seq 14) = 10 — the other-root
+    // grant (seq 15, same instanceId) is NOT attributed.
+    expect(dh1.factCount).toBe(10)
+    expect(dh1.byCategory.control).toBe(2)
+    expect(dh1.firstSequence).toBe(2)
+    expect(dh1.lastSequence).toBe(14)
+    // The anchor timeline is untouched by the cross-root entry.
+    expect(dh1.disposedAt).toBe(T_DISPOSED_DH1)
+  })
+
+  it('H2.2 a truly unknown fact type still fails closed with LEDGER_CATEGORY_UNKNOWN', () => {
+    const unknownEntry = entry(20, ROOT_SID, 'totally-unknown-fact', {
+      instanceId: DH1_ID,
+    })
+    let captured: unknown
+    try {
+      readSource([leaderRow, dh1Row], [unknownEntry])
+    } catch (err) {
+      captured = err
+    }
+    expect(captured).toBeInstanceOf(Error)
+    const message = String((captured as Error).message)
+    expect(message).toContain('TEAM_PROJECTION_SOURCE_LEDGER_CATEGORY_UNKNOWN')
+    expect(message).toContain('totally-unknown-fact')
+  })
+
+  it('H2.3 a legal state without any binding rows still projects after the repair', () => {
+    // The h2Projection world above carries the NEW legal grant fact and
+    // its domain has no binding surface at all (the read port reads
+    // exactly the four repositories; it never requires binding rows).
+    expect(h2Projection.teamSessionId).toBe(ROOT_SID)
+    expect(h2Projection.members).toBeDefined()
+    expect(h2Projection.members.length).toBe(4)
+    expect(h2Projection.ledger.totalEntries).toBe(13)
+  })
+})

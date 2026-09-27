@@ -30,6 +30,7 @@ import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-cli
 // team-mount-core.ts (ui-sidebar is not linked into this package).
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {
+  ProjectionSyncAssessment,
   RemoteCatalogGetParams,
   RemoteIntentProbeParams,
   RemoteResponse,
@@ -82,7 +83,7 @@ export interface NewTeamEntryInjected {
    * it exactly once per terminal create/handoff success, targeting the
    * NEW team's id, so a UI-initiated team creation updates without F5.
    */
-  readonly pullProjection: (teamSessionId: string) => Promise<unknown>
+  readonly pullProjection: (teamSessionId: string) => Promise<ProjectionSyncAssessment>
   /** The runtime preset rows (the S0 seam-6 mapping; broken rows filtered). */
   readonly listAgentPresets: () => Promise<readonly TeamPresetRow[]>
   /** The currently selected native session id (the 0.1.7 main-view read, `retainedBy.mainView`; null = none). */

@@ -4,7 +4,7 @@
  *
  * Coverage (G3 gates + the §7 frozen rules): entries keep their frozen
  * wire values with the category attached only from the client-local
- * 12-fact mirror (unknown fact type → `category` OMITTED, never guessed;
+ * 14-fact mirror (unknown fact type → `category` OMITTED, never guessed;
  * broken identity leaves — non-integer sequence / non-string factType —
  * skip the row); the control chains pair request→decision by the frozen
  * `requestId` (pending flips to false, the decision block carries the
@@ -342,6 +342,76 @@ describe('adaptTeamLedger — control chains', () => {
 // ---------------------------------------------------------------------------
 // Messages — recipient pair, no invented sender, send-message only
 // ---------------------------------------------------------------------------
+
+describe('adaptTeamLedger — strict-read grant facts (repair 20260927, S1-C1)', () => {
+  /**
+   * One legal `artifact-read-granted` durable authorization fact (the
+   * strict-read grant family: schemaVersion 2 payload, instanceId,
+   * locator, the two digests, the encoded source).
+   */
+  const grant = (seq: number, instanceId: string, callId: string) =>
+    entry(seq, 'artifact-read-granted', {
+      schemaVersion: 2,
+      instanceId,
+      locator: { kind: 'file', path: '/out/report.md' },
+      targetKeyDigest: 't-digest-0123456789abcdef',
+      versionDigest: 'v-digest-0123456789abcdef',
+      source: { kind: 'spill-store', spillSource: { kind: 'tool', toolName: 'bash', callId } },
+    })
+
+  it('a grant is classified `control` and its raw payload is preserved', () => {
+    const model = adaptTeamLedger([grant(1, 'i1', 'call-1')], true)
+    expect(model.entries.length).toBe(1)
+    const row = must(model.entries[0], 'entry 0')
+    expect(row.sequence).toBe(1)
+    expect(row.factType).toBe('artifact-read-granted')
+    expect(row.category).toBe('control')
+    // The raw wire payload passes through untouched (never re-shaped).
+    expect(row.payload).toEqual({
+      schemaVersion: 2,
+      instanceId: 'i1',
+      locator: { kind: 'file', path: '/out/report.md' },
+      targetKeyDigest: 't-digest-0123456789abcdef',
+      versionDigest: 'v-digest-0123456789abcdef',
+      source: { kind: 'spill-store', spillSource: { kind: 'tool', toolName: 'bash', callId: 'call-1' } },
+    })
+  })
+
+  it('a grant creates NO control chain and adds NO pending count', () => {
+    const model = adaptTeamLedger(
+      [grant(1, 'i1', 'call-1'), grant(2, 'i2', 'call-2')],
+      true,
+    )
+    expect(model.controls.length).toBe(0)
+    expect(model.pendingControlByInstance).toEqual({})
+  })
+
+  it('mixed with one real pending request: ONLY that request is counted', () => {
+    const request = entry(3, 'control-request-recorded', {
+      requestId: 'r1',
+      targetInstanceId: 'i3',
+      actionName: 'tool.execute',
+      correlation: 'c-r1',
+      kind: 'tool',
+      toolName: 'run',
+      summary: 'run it',
+    })
+    const model = adaptTeamLedger(
+      [grant(1, 'i1', 'call-1'), grant(2, 'i2', 'call-2'), request],
+      true,
+    )
+    // The request chains (pending); the grants do not.
+    expect(model.controls.length).toBe(1)
+    const chain = must(model.controls[0], 'control chain 0')
+    expect(chain.requestId).toBe('r1')
+    expect(chain.pending).toBe(true)
+    // The pending badge counts ONLY the unpaired request's target
+    // instance — the granted instances are not pending.
+    expect(model.pendingControlByInstance).toEqual({ i3: 1 })
+    expect(model.pendingControlByInstance['i1']).toBe(undefined)
+    expect(model.pendingControlByInstance['i2']).toBe(undefined)
+  })
+})
 
 describe('adaptTeamLedger — messages', () => {
   it('a delivered message carries the recipient pair and NO from (the fact names no sender)', () => {
