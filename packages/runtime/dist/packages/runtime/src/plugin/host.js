@@ -1326,6 +1326,35 @@ export async function apply(ctx, config) {
     void ready.catch((error) => {
         const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
         console.error(`[dsh-agent-team] bootstrap FAILED: ${message}`);
+        // Startup-failure isolation (PR #31 minimal supplement): a bootstrap
+        // rejection may leave the ownership resolver UNBOUND (the domain open
+        // is a bootstrap step — a failure at or before it never binds), while
+        // the row KEEPS RUNNING (a failed boot is terminal — no automatic
+        // retry, no re-boot — but the route stays registered, the catalog
+        // reads stay servable, and the row stops only on its own teardown),
+        // so the row-stop backstop's `close()` never runs. Left as-is, EVERY
+        // later `agent/created` of this process — the fence listeners are
+        // registered `{ global: true }` at the top of `apply()` — would await
+        // the `ownershipReady` barrier forever (classification PENDING that
+        // can never settle): ordinary non-Team sessions of an UNRELATED row
+        // would hang on this DEAD Team row. Close the fence on the bootstrap
+        // rejection instead: every pending ownership-ready / rollback /
+        // writer-conflict waiter settles immediately, and every subsequent
+        // activation passes through (the fence keeps no state past a failed
+        // row — a late activation is the upstream's own concern). The `ready`
+        // rejection, this console error, and the row-stop cleanup semantics
+        // are all UNCHANGED; the row-stop backstop keeps its own `close()`
+        // call as the teardown path — `close()` is idempotent, so the
+        // bootstrap-failure close and the later row-stop close compose
+        // (the second call is a no-op). The normal successful bootstrap path
+        // never enters this handler (no rejection) — the fence stays armed
+        // until the row stop, exactly as before.
+        try {
+            activationFence.close();
+        }
+        catch {
+            // a throwing close is swallowed: the row teardown proceeds
+        }
     });
     function requireRoot() {
         if (root === undefined) {

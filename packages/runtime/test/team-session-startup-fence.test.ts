@@ -19,6 +19,29 @@
  *        resolver bind it classifies unmanaged → PASS (the ordinary
  *        open proceeds upstream-equivalently).
  *
+ * S1–S5 (PR #31 minimal supplement — startup-failure isolation): the
+ * bootstrap rejects BEFORE the resolver binds (the domain open itself
+ * fails): without isolation, every later ordinary `agent/created` (the
+ * fence listeners are registered `{ global: true }` at the top of
+ * `apply()`) would await the `ownershipReady` barrier forever on a row
+ * that keeps running (a failed boot is terminal, but the row stops only
+ * on its own teardown). The host now closes its fence on the bootstrap
+ * rejection:
+ *   S1 — the fence listener is registered (apply top) and the resolver
+ *        is unbound when the bootstrap fails before the domain open
+ *        settles;
+ *   S2 — an ordinary `agent/created` suspended in the window SETTLES
+ *        (pass-through) after the bootstrap failure — no permanent hang
+ *        on `ownershipReady`;
+ *   S3 — a NEW ordinary activation after the failure passes through
+ *        immediately (the failed row no longer blocks ordinary
+ *        non-Team sessions);
+ *   S4 — the normal successful bootstrap path is unchanged (the
+ *        successful world still vetoes the foreign Team activation and
+ *        passes the ordinary one — the fence stays armed, not closed);
+ *   S5 — the row-stop backstop's `close()` after the bootstrap-failure
+ *        close is exception-free (idempotent double close).
+ *
  * World shape (the production restart cycle over ONE medium, the
  * p8s7r4 / t12b1 / rmr-create-or-open pattern over a REAL file storage
  * seam):
@@ -161,6 +184,41 @@ function makeGatedSeam(real: FileStorageSeam): {
   }
 }
 
+/**
+ * A StorageDomainSeam whose `open` awaits a gate that REJECTS on release
+ * (the "domain open 失败" handle — the startup-failure-isolation world):
+ * the bootstrap's `await createOrOpenTeamDomainDetailed(seam)` settles
+ * with the injected error BEFORE the `bindOwnershipResolver` right after
+ * the open — the exact failure in which the fence's `ownershipReady`
+ * barrier would never settle without the startup-failure isolation.
+ */
+function makeFailingSeam(real: FileStorageSeam): {
+  seam: FileStorageSeam
+  release: () => void
+  openArmed: () => boolean
+} {
+  let settleGate: (fail: boolean) => void = () => {}
+  const gate = new Promise<void>((resolve, reject) => {
+    settleGate = (fail) =>
+      fail
+        ? reject(new Error('injected domain-open failure (startup-failure isolation world)'))
+        : resolve()
+  })
+  let openSeen = false
+  const failing = {
+    open: (spec: Parameters<FileStorageSeam['open']>[0]) => {
+      openSeen = true
+      return gate.then(() => real.open(spec))
+    },
+    closeAll: () => real.closeAll(),
+  }
+  return {
+    seam: failing as unknown as FileStorageSeam,
+    release: () => settleGate(true),
+    openArmed: () => openSeen,
+  }
+}
+
 // --- the test Cordis context (listener capture) ----------------------------------
 
 /** The host's `agent/created` listener body (the awaited fence veto —
@@ -173,13 +231,17 @@ type CreatedListener = (payload: {
 
 /** One plain-object Cordis context that CAPTURES the event listeners
  *  and the provided services (the teamRoot facade is provided by
- *  `apply` under the `teamRoot` key — the t12b1 pattern). */
+ *  `apply` under the `teamRoot` key — the t12b1 pattern). The effect
+ *  DISPOSERS are captured too: the host registers the row-stop backstop
+ *  as an effect, and the S-world drives a real row stop through them
+ *  (the double close after the bootstrap-failure close, S5). */
 function makeListenerWorld(seam: FileStorageSeam): {
   ctx: TeamPluginHostContext
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   provided: Record<string, any>
   createdListeners: CreatedListener[]
   disposedListeners: ((payload: { readonly agent: unknown }) => void)[]
+  effectDisposers: (() => void)[]
 } {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
@@ -190,13 +252,14 @@ function makeListenerWorld(seam: FileStorageSeam): {
   }
   const createdListeners: CreatedListener[] = []
   const disposedListeners: ((payload: { readonly agent: unknown }) => void)[] = []
+  const effectDisposers: (() => void)[] = []
   const raw = {
     get: (name: string) => provided[name],
     provide: (name: string, value: unknown) => {
       provided[name] = value
     },
     effect: (factory: () => () => void) => {
-      void factory()
+      effectDisposers.push(factory())
     },
     on: (name: string, listener: unknown) => {
       if (name === 'agent/created') createdListeners.push(listener as CreatedListener)
@@ -210,6 +273,7 @@ function makeListenerWorld(seam: FileStorageSeam): {
     provided,
     createdListeners,
     disposedListeners,
+    effectDisposers,
   }
 }
 
@@ -367,5 +431,143 @@ describe('startup fence (supplement guide §4.3, INV-4)', () => {
 
   it('H2 bind: after the resolver binds, the ordinary session classifies unmanaged and PASSES', () => {
     expect(H2_OUTCOME).toBe('pass')
+  })
+})
+
+// --- phase 3: the RESTART whose domain open FAILS (startup-failure
+// isolation — the bootstrap rejects before the resolver bind) ------------
+// The world shape mirrors phase 2 exactly (the same production restart
+// cycle over a seeded medium); the gated `open` REJECTS on release, so
+// the bootstrap's rejection arrives BEFORE the `bindOwnershipResolver`
+// right after the open — the resolver never binds, while the row keeps
+// running (the test context never stops the row). Without the
+// startup-failure isolation, every later ordinary `agent/created` (the
+// fence listeners are process-wide) would await `ownershipReady`
+// forever.
+const SCRATCH_FAIL = scratchDir('startup-fence-fail')
+{
+  const seeded = makeListenerWorld(new FileStorageSeam(SCRATCH_FAIL))
+  await hostEntry.apply(seeded.ctx, rowConfig({}))
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  const rootSeed: any = await seeded.provided.teamRoot.ready
+  await rootSeed.close()
+}
+const { seam: failingSeam, release: failRelease, openArmed: failOpenArmed } = makeFailingSeam(
+  new FileStorageSeam(SCRATCH_FAIL),
+)
+const world3 = makeListenerWorld(failingSeam)
+const apply3 = hostEntry.apply(world3.ctx, rowConfig({ bootPhase: 'create-or-open' }))
+
+// S1 setup: the fence is armed at the TOP of `apply` (the listener is
+// registered in the synchronous prefix) while the resolver is UNBOUND
+// (the domain open is suspended at the gate — the test synchronization
+// handle with a hard deadline, not a production retry).
+const s1ListenerRegistered = world3.createdListeners.length === 1
+await waitUntil(() => failOpenArmed(), 5000, 10)
+
+// S2 setup: an ORDINARY `agent/created` arrives in the window (the
+// browser-style activation driven THROUGH the registered listener — the
+// production path; the listener is AWAITED).
+const FAIL_ORDINARY_AGENT = { id: 'session-startupfence-fail-ordinary' }
+const s2Promise = world3.createdListeners[0]!({ agent: FAIL_ORDINARY_AGENT, source: 'startup' })
+const s2SuspendedBefore = await settles(s2Promise, 150)
+
+// Release: the domain open REJECTS → the bootstrap rejects BEFORE the
+// resolver bind → `ready` settles rejected (the rejection, the console
+// error, and the row-stop cleanup semantics are all unchanged by the
+// supplement — only the fence close is added).
+failRelease()
+const READY3_REJECTION: { rejected: boolean; message: string } = await (async () => {
+  try {
+    await world3.provided.teamRoot.ready
+    return { rejected: false, message: '' }
+  } catch (error) {
+    return { rejected: true, message: error instanceof Error ? error.message : String(error) }
+  }
+})()
+
+// S2 observation: the suspended ordinary waiter SETTLED after the
+// bootstrap failure (the fence closed on the rejection → the waiter
+// wakes and passes through) — no permanent hang on `ownershipReady`.
+// (Guards on `s2SettledAfter` keep a regression a finite 'unsettled'
+// failure instead of a module-load hang.)
+const s2SettledAfter = await settles(s2Promise, 500)
+const S2_OUTCOME: 'pass' | 'other' | 'unsettled' = s2SettledAfter
+  ? await (async () => {
+      try {
+        await s2Promise
+        return 'pass' as const
+      } catch {
+        return 'other' as const
+      }
+    })()
+  : 'unsettled'
+
+// S3: a NEW ordinary activation AFTER the failure — it must pass
+// through immediately (the failed row no longer blocks ordinary
+// non-Team sessions of this process).
+const FAIL_ORDINARY_AGENT_2 = { id: 'session-startupfence-fail-ordinary-2' }
+const s3Promise = world3.createdListeners[0]!({ agent: FAIL_ORDINARY_AGENT_2, source: 'startup' })
+const s3Settled = await settles(s3Promise, 500)
+const S3_OUTCOME: 'pass' | 'other' | 'unsettled' = s3Settled
+  ? await (async () => {
+      try {
+        await s3Promise
+        return 'pass' as const
+      } catch {
+        return 'other' as const
+      }
+    })()
+  : 'unsettled'
+
+// S5: the row stop now runs its backstop (the captured effect disposers
+// — the production row-stop semantics; they close the fence AGAIN after
+// the bootstrap-failure close, then dispose the registration and close
+// the root/domain when the bootstrap had settled). The double close must
+// be exception-free: the disposer call itself must not throw, and the
+// backstop's async body (given a few turns to run) is fully
+// try/catch-guarded in production — a throw there would be an unhandled
+// rejection, which the node test process reports as a suite failure
+// (the test shim's ambient `process` type exposes no `.on`, so the
+// crash-on-unhandled-rejection default is the verification backstop).
+let s5DisposerThrew = false
+try {
+  for (const dispose of world3.effectDisposers) dispose()
+} catch {
+  s5DisposerThrew = true
+}
+await new Promise<void>((resolve) => {
+  setTimeout(resolve, 50)
+})
+
+destroyDir(SCRATCH_FAIL)
+
+// --- the S assertions ----------------------------------------------------------------
+
+describe('startup-failure isolation (PR #31 supplement: the bootstrap rejection closes the fence)', () => {
+  it('S1: the fence listener is registered (apply top) and the resolver is unbound when the bootstrap fails before the domain open settles', () => {
+    expect(s1ListenerRegistered).toBe(true)
+    expect(READY3_REJECTION.rejected).toBe(true)
+    expect(READY3_REJECTION.message).toContain('injected domain-open failure')
+  })
+
+  it('S2: the ordinary agent/created waiter suspended in the window SETTLES (pass-through) after the bootstrap failure — no permanent hang on ownershipReady', () => {
+    expect(s2SuspendedBefore).toBe(false)
+    expect(s2SettledAfter).toBe(true)
+    expect(S2_OUTCOME).toBe('pass')
+  })
+
+  it('S3: a NEW ordinary activation after the failure passes through immediately (the failed Team row no longer blocks ordinary sessions)', () => {
+    expect(s3Settled).toBe(true)
+    expect(S3_OUTCOME).toBe('pass')
+  })
+
+  it('S4: the normal successful bootstrap path is unchanged — the successful world still VETOES the foreign Team activation and PASSES the ordinary one (the fence stays armed, not closed by this supplement)', () => {
+    expect(H1_RESULT.outcome).toBe('veto')
+    expect(H2_OUTCOME).toBe('pass')
+  })
+
+  it('S5: the row-stop backstop close after the bootstrap-failure close is exception-free (idempotent double close)', () => {
+    expect(s5DisposerThrew).toBe(false)
   })
 })
