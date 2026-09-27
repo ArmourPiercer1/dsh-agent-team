@@ -106,7 +106,49 @@ node tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs \
 - **实宿主重验**：wakeup kit 在 rebase 后树上重跑 = **run7**（#31 activation 重构触碰 glue 邻域，live 复验必须）—— 结果见下方实宿主验证节。
 - 推送 = `--force-with-lease`（task 分支自有历史更新，同一次一次性推送授权范围；PR #26/#27/#28 同构先例）。
 
+## 消费者迁移（2026-09-27 跟进指令：有界 contract-consumer 修复）
+
+**产品契约零变更**：`async` 省略 → async；`async: true` → async；`async: false` → sync；tool 层恒发显式 `execution`；facade 默认 sync（CCR-1 直接调用方不变）；TeamDomain schema / Remote-UI 契约 / work 执行状态机 / 完成唤醒设计 / `team-work-settled` source kind 全部未动。本轮只修复**省略 `async` 却断言立即结算**的 ACTIVE 消费者 → 显式 `async: false`（无 compat shim、无 test-only "猜 sync" 逻辑、无默认翻转）。
+
+### 1. 已修（Type 1：工具返回即断言结算 / 重启边界确定性）
+
+- **`tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs` ×8**（+ 头部 ASYNC CONTRACT 注记）：R2 `team_delegate`（**缺陷闭合腿**：返回即断言 `workSettled===true && memberResult.status==='succeeded'`；且 R2 若 async，其 `team-work-settled` 唤醒请求会落入 R3 create-window 的无解释请求断言窗 → 确定性 R3 失败）/ R3 `team_follow_up`（断言 `settled===true`）/ R4 `team_follow_up`（断言 `settled===true`）/ R5-pre `team_follow_up`（无 settled 断言，但 restart 前世界必须在 cold-resume 边界前完全结算）/ R7 + R8-a + R8-b `team_delegate`（同 pre-restart 边界确定性）/ R5-post `team_follow_up`（cold-resume 后，断言 `settled===true`）。
+- **`packages/tools/harness/run.mjs` ×10**（+ 头部注记，列明保留默认-async 的两组）：E3-fu1/E3-fu2（结算链不变量 `seq1<settle1<seq2<settle2` 读自工具结果）/ E4×2（**kill 边界确定性**：E world boot1→boot2 是进程 kill，异步 work unit 或唤醒 turn 不得跨边界）/ W1（`settled`+`settledSequence`+SETTLED av2+token 持久日志）/ W5（`settled`+closed activity 区间）/ W7（`settled`+av6+cold-resume 同会话日志）/ W3-C/W3-D（`workSettled===true`×2+SETTLED av3）/ W2（`settled`+av12+跨重启日志）/ `workerFollowUp` helper（M1/M2/M3/M5：断言 post-turn 事实——assembled model cell + token 持久日志，紧接 turn 后）。
+- **`packages/tools/harness/g5-member-e2e.mjs` S5 ×1**：mock Leader 的 `team_delegate` 加 `async: false` — S5 断言 Leader 面向的 ACTION RESULT 携带冻结 `memberResult`（即"delegate 工具调用阻塞到成员 work turn 结算"）；默认 async 下无参调用返回 admission receipt → 确定性 S5 失败。
+- **措辞澄清（零行为变化）**：`issue1-serial-blocking.test.ts` / `send-message-liveness.test.ts` 头部 — 区分 facade 默认（execution ABSENT）sync 路径（CCR-1，本轮裁决不改）与 model-surface 默认 async（tool 层恒发显式 execution 补偿）。
+
+### 2. 审阅后保留默认 async（Type 2/3 + 已显式 pin）
+
+- **c1-leader-approval-smoke**：X/Z 链 `async: true`（有意 async workflow：receipt→唤醒→collect）；Y 链 `async: false`（本 PR 已 pin，注释在位）。
+- **rc2-real-host-smoke**：两 delegate 均 `async: false`（本 PR 已 pin）。
+- **work-completion-wakeup-smoke**：5 个 toolCall 全部是**契约 pin 本身**（L1 无参默认-async live pin / L2 双 `async: true` / L3 `async: true` / L4 `async: false` 同步对照）——该 kit 就是验证本契约的。
+- **t12-vertical V4**：Type 2（启动 + 独立 480s 日志轮询等待，无返回即结算断言）。
+- **run.mjs E2 寻址探针**：在寻址期即被拒（execution-mode 决策之前，async/sync 不可观察）+ **E5b guard 腿 fu1/fu2/fu3**：admission 期语义断言（executed / blocked-allow-consumed / executed，无 settled 断言；末段场景；其后无边界）。
+- **facade 层测试与直接调用方**（`root-initial-work.ts` / `leader-notification.ts` / `agent-bindings.mjs` / `issue1-serial-blocking` CCR-1 pin）：facade 端口，语义未变。
+
+### 3. 顺带修复（P8-S5A 陈旧装配 test-infra errata — 与本契约无关，但 run.mjs 在当前 0.1.7 树上可跑的前提）
+
+- **:3080 稳定实例 pre/post 探测**：硬编码 200 → TEST_METHODS §2.4 仓库约定（可达 + pre==post 状态一致；当前稳定部署对未认证探针返回 401 = 正确行为；g5/各 kit 早已用此约定）。
+- **glueUrl**：source-tree glue → dist mirror glue 放置（source glue 的跨包相对导入只在 dist mirror 内可解析；与 g5 + 生产 dist host 同一 URL；P8-S5A 写法前于 dist mirror 几何）。
+- **TEAM_DEFAULT_WORKSPACE**：P8-S5A Windows 字面量 `C:/agent-team/work/p6t6` → 每跑一次在 `tests/homes/` 下的 POSIX 目录（0.1.7 session-header cwd 绝对路径校验在 POSIX 宿主拒绝 Windows 字面量）。
+- **EXPECTED_TOOL_COUNT**：10 → 13（闭集自 P8-S5A 后增长 +send_message/+archive_member/+collect；与 wakeup kit L0 pin 同数）。
+- **readChildSessionLog**：`session.jsonl.zstd` → `session.v4.jsonl.zstd`（0.1.7 session-format-v4 持久日志名）。
+- **M4/M5 mcp facet 状态**：扁平 `w.mcp` → per-server `w.mcp.servers[name]`（P8-S5A 后的产品投影形状演化；行为不变）。
+- **E7 EXPECTED_SCAN_FILES**：5 → 7 工具层文件（scanner 自身动态递归发现为准；bypass 扫描本身零违规）。
+- **childSidFor 镜像**：P8-S5A 字面前缀 → 当前 glue 的 `session-team-child-<sha256(rootSessionId\0instanceId)[:32]>`（对实跑证据逐字节验证 MATCH；seed 成员的旧字面量 = row config 显式值，C1 restart-resume 依赖，保留）。
+
+### 4. 门禁（迁移后复测，全部通过）
+
+- typecheck 8 包全绿 / build 9/9 + build:composition / **check:artifacts OK 1196 零漂移**（本轮仅注释 + 非构建 .mjs 变更）/ 根套件 **9F|19F|3995P(4014) = 新基线债务子集逐字节相同（零新增失败）**（失败集 md5 比对）/ lint **61=61 IDENTICAL（0 new, 0 gone）** vs origin/master `1fb5f351`（临时 worktree 基准，run.mjs errata 后复测）。
+
+### 5. 实宿主验证（迁移后）
+
+- **model-preference kit 全量（R1–R8 + H1/H2）：EXIT 0 全绿** @ :3181（含 R5 cold-resume 前/后 settled 腿 — 关键迁移验证）；RUN_DIR 证据归档至 `dev/agent-workflow/evidence/async-default-contract/consumer-migration/model-pref-kit-mpr-2026-09-27T07-55-32/`。
+- **run.mjs 全场景：17/17 PASS**（E1–E7 + W1/W2/W3/W5/W7 + M1–M5；postflight test-use pristine + :3080 pre==post 401；世界自清）。
+- **g5-member-e2e：本环境受阻**（固定端口 3180 被沙箱外稳定实例族持有 — 返回 401 且 /proc 不可见，按红线不可触碰）；S5 语义由等价 live 证据覆盖：wakeup kit L4（显式 async:false 同步 in-band，run6/run7 23/23）+ run.mjs E3/W1–W7/M1–M5 同步腿（17/17，本轮）+ model-pref R2（workSettled+memberResult 返回断言，本轮）。g5 重跑 = 环境受限 follow-up（需 3180 空闲）。
+
 ## FOLLOW-UPS（非阻塞，已登记）
 
 1. c1/rc2 kits 0.1.7 重适配（pin + preset + deny + 双 wire 解析，同 wakeup kit 模式）；
-2. p6t1-parallel 类 E 并发竞态（F7-1 既有，不修，per-root re-probe 序列化建议）。
+2. p6t1-parallel 类 E 并发竞态（F7-1 既有，不修，per-root re-probe 序列化建议）；
+3. g5-member-e2e 实宿主重跑（环境受限：固定端口 3180 被稳定实例族占用；S5 语义已由 wakeup kit L4 + run.mjs 17/17 + model-pref R2 等价覆盖）。
