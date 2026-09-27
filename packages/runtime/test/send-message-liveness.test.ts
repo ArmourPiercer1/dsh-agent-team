@@ -18,9 +18,11 @@
  *     (the durable intent + durable confirmation semantics are unchanged;
  *      acceptance failure stays fail-closed)
  *
- *   team_delegate / team_follow_up (sync):
- *     success boundary = work completion (UNCHANGED — a different port,
- *     `workDelivery.deliver`, which still awaits whenIdle + materializes)
+ *   team_delegate / team_follow_up (sync path — explicit `async: false`;
+ *   the 2026-09-27 ruling made the model-surface default async):
+ *     success boundary = work completion (UNCHANGED on the sync path — a
+ *     different port, `workDelivery.deliver`, which still awaits whenIdle +
+ *     materializes; the async path's boundary = durable admission)
  *
  * Coverage (contract rows SML-T1…SML-T4, per the guide §11):
  * - T1 (the live glue; red pre-fix = the send hangs on the recipient's

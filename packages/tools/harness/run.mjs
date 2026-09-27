@@ -83,6 +83,17 @@
   *   Hygiene asserted before/after: test-use tree pristine, stable :3080
   *   reachable/200, DSH_HOME(E) freshness, the lockfile handshake, port
   *   release for every boot, and row mount on every boot.
+ *
+ *   ASYNC CONTRACT (2026-09-27 ruling — consumer migration): every
+ *   settlement-oriented team_delegate / team_follow_up call in this
+ *   harness passes EXPLICIT `async: false` (W1, W2, W3×2, W5, W7, E3×2,
+ *   E4, and the workerFollowUp helper used by M1/M2/M3/M5). Two call
+ *   groups are deliberately left on the default (async): the E2
+ *   addressing probes (rejected at addressing, before the execution-mode
+ *   decision — the mode is unobservable there) and the E5b guard legs
+ *   (their assertions are admission-stage: executed / blocked
+ *   allow-consumed / executed; no settled assertion, final phase, no
+ *   boundary after).
  */
 
 import {
@@ -95,6 +106,7 @@ import {
   symlinkSync,
   writeFileSync,
 } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { zstdDecompressSync } from 'node:zlib'
@@ -131,7 +143,7 @@ const LEADER_INSTANCE_ID = 'inst-leader'
 /** The seeded worker / scout instance ids (the TEAM_SEED_* row config mirrors these). */
 const SEED_WORKER_ID = 'inst-p6t6seedw1'
 const SEED_SCOUT_ID = 'inst-p6t6seeds1'
-/** The seeded worker's child session id (mirrors the glue's verbatim childSidFor derivation: 'session-child-p6t6-' + instanceId.slice(5)). */
+/** The seeded worker's child session id (an explicit row-config seedMembers literal — honored verbatim so the C1 restart-resume legs (W2/W7/M3) read the SAME durable session; fresh instances instead derive 'session-team-child-<sha256>' in the glue). */
 const SEED_WORKER_CHILD = 'session-child-p6t6seedw1'
 /** E5: the control-request correlation token (the guarded follow-up). */
 const E5_CTRL_TOKEN = 'p6t6-e5-ctrl1'
@@ -179,8 +191,11 @@ const M_RECORD_MCP_DENY = 'p8s4b-ovr-mcp-deny'
 const M_MODEL_B = { provider: 'p6t6-static', model: 'p6t6-model-v2' }
 /** The static baseline model selection (model A; the TEAM_STATIC_MODEL row config mirrors it). */
 const M_MODEL_A = { provider: 'p6t6-static', model: 'p6t6-model-v1' }
-/** The ten registered team tool names (asserted on health). */
-const EXPECTED_TOOL_COUNT = 10
+/** The registered team tool count (asserted on health). The closed
+ *  model-facing set has grown since P8-S5A (10): + team_send_message,
+ *  + team_archive_member, + team_collect — the current closed set is
+ *  THIRTEEN (the same count the wakeup kit's L0 discovery leg pins). */
+const EXPECTED_TOOL_COUNT = 13
 
 // ── P8-S5A: the production dsh-agent-team row config ──────────────────────
 // The values below moved VERBATIM from the pre-refactor harness plugin.mjs
@@ -272,8 +287,12 @@ const TEAM_DENIED_SELECTION = { provider: 'p8s4b-denied', model: 'p8s4b-denied' 
 /** The live mini-MCP server name (the mcp facet's item vocabulary). */
 const TEAM_MCP_SERVER_NAME = 'p8s4bmini'
 
-/** The durable team session's default workspace. */
-const TEAM_DEFAULT_WORKSPACE = 'C:/agent-team/work/p6t6'
+/** The durable team session's default workspace (assigned in main()
+ *  before the first boot: a POSIX absolute path under the repo's
+ *  tests/homes — the P8-S5A Windows literal 'C:/agent-team/work/p6t6'
+ *  fails the 0.1.7 session-header cwd absolute-path validation on a
+ *  POSIX host). */
+let TEAM_DEFAULT_WORKSPACE
 
 /**
  * The production dsh-agent-team row name: the BUILT packages/runtime host.
@@ -295,8 +314,9 @@ const PRODUCTION_ROW_NAME = pathToFileURL(join(WORKTREE_ROOT, 'packages', 'runti
  * glueUrl, seamUrl (the row-owned file URLs of the plain-JS glue bundle and
  * the real storage-domain seam — the row config is the entry's only input
  * channel, plan §19.2). NO
- * childSessionIdPrefix — the glue's childSidFor is the verbatim literal
- * 'session-child-p6t6-' + instanceId.slice(5), not row config.
+ * childSessionIdPrefix — seeds carry their childSessionId as explicit
+ * seedMembers literals (row config); fresh instances derive their child
+ * session in the glue (sha256 scheme), never via row config.
  * @param {number} boot - the boot number (1/3 create, 2/4 resume).
  * @param {number|null} miniPort - the live mini-MCP port (or null: the glue
  * mini-MCP mount then throws the no-port error when the policy allows it).
@@ -318,17 +338,31 @@ function teamRowConfig(boot, miniPort) {
       { domain: 'skill', subject: 'base', available: true, generation: 1 },
     ],
     externalPolicyFacts: { hard: {}, capabilityExists: {} },
-    // Row-owned plain-JS module URLs (tsc never emits .mjs; the built
-    // production entry loads both by URL, keeping the dist tree pure).
-    glueUrl: pathToFileURL(join(WORKTREE_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs')).href,
+    // Row-owned plain-JS module URLs. The glue points at the DIST placement
+    // (build:composition byte-copies the .mjs glue into the dist mirror —
+    // the "1 glue placement(s)" check:artifacts verifies; the same URL the
+    // production dist host and the g5 harness use): the glue's cross-package
+    // relative imports (domain/blueprint, domain/policy, tools/src, …) only
+    // resolve inside the dist mirror, never against the .ts source tree. The
+    // P8-S5A source-tree glueUrl predates the dist mirror geometry and could
+    // no longer load (Cannot find module …/domain/blueprint/src/index.js).
+    // The seam stays on its source file (the host process resolves its
+    // bare specifiers).
+    glueUrl: pathToFileURL(join(WORKTREE_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs')).href,
     seamUrl: pathToFileURL(join(WORKTREE_ROOT, 'packages', 'runtime', 'root-binding', 'harness', 'seam.mjs')).href,
   }
 }
 /** The exact tool-layer source files the committed scanner must cover. */
+/** The committed tool-layer source files the bypass scan must cover
+ *  (the P8-S5A five-file list has grown with the tool layer: + builtin-deny,
+ *  + tool-selector — the same dynamic recursive discovery the scanner
+ *  itself performs over packages/tools/src/). */
 const EXPECTED_SCAN_FILES = [
+  'packages/tools/src/builtin-deny.ts',
   'packages/tools/src/guard.ts',
   'packages/tools/src/index.ts',
   'packages/tools/src/tokens.ts',
+  'packages/tools/src/tool-selector.ts',
   'packages/tools/src/tools.ts',
   'packages/tools/src/types.ts',
 ]
@@ -638,6 +672,11 @@ async function main() {
   const HOST_TREE = join(REPO_ROOT, TEST_USE_REL)
   const DSH_HOME = join(REPO_ROOT, TEST_HOME_ROOT_REL, args.dshHome)
   const DSH_HOME_E = join(REPO_ROOT, TEST_HOME_ROOT_REL, args.dshHomeE)
+  // The member session-header cwd must be a real absolute path on this
+  // (POSIX) host; the P8-S5A Windows literal is no longer valid. Use a
+  // per-run directory under the repo's tests/homes (gitignored); created
+  // fresh in preflight alongside the DSH_HOMEs.
+  TEAM_DEFAULT_WORKSPACE = join(REPO_ROOT, TEST_HOME_ROOT_REL, args.dshHome + '-workspace')
   const LOCK_PATH = resolve(REPO_ROOT, args.lockFile)
   const portA = args.port
   const portB = args.port + 1
@@ -722,8 +761,14 @@ async function main() {
 
     summary.stable3080.before = await probeStableInstance()
     log(`preflight: stable :3080 ${JSON.stringify(summary.stable3080.before)}`)
-    if (!(summary.stable3080.before.reachable === true && summary.stable3080.before.status === 200)) {
-      throw new Error(`stable :3080 instance is not reachable/200 before the run 鈥?refusing to proceed (brief 搂6c)`)
+    // TEST_METHODS.md §2.4 convention (the repo standard, as in g5 / the
+    // smoke kits): the stable instance is probed READ-ONLY and its status
+    // must be reproducible post-run (pre==post). The P8-S5A-era hard-coded
+    // 200 is stale — the current stable deployment answers unauthenticated
+    // root probes with 401 (auth enforced), which is the correct behavior;
+    // reachability + pre==post identity is the zero-touch proof.
+    if (!(summary.stable3080.before.reachable === true && typeof summary.stable3080.before.status === 'number')) {
+      throw new Error(`stable :3080 instance is not reachable before the run — refusing to proceed (TEST_METHODS §2.4)`)
     }
 
     if ((await portInUse(portA)) || (await portInUse(portB))) {
@@ -746,6 +791,9 @@ async function main() {
       mkdirSync(home, { recursive: true })
       log(`preflight: fresh DSH_HOME created at ${home}`)
     }
+    rmSync(TEAM_DEFAULT_WORKSPACE, { recursive: true, force: true })
+    mkdirSync(TEAM_DEFAULT_WORKSPACE, { recursive: true })
+    log(`preflight: fresh default workspace created at ${TEAM_DEFAULT_WORKSPACE}`)
 
     const lockMarker = { runStamp, pid: process.pid, startedAt: new Date().toISOString(), port: portA, dshHome: DSH_HOME, dshHomeE: DSH_HOME_E }
     try {
@@ -1019,8 +1067,15 @@ async function main() {
 
     // 鈹€鈹€ scenario implementations (driver-side; every action via /__p6t6/tool)
 
-    /** Mirror of the row's child-session derivation (plugin.mjs childSidFor). */
-    const childSidFor = (instanceId) => `session-child-p6t6-${String(instanceId).slice(5)}`
+    /** Mirror of the CURRENT glue's child-session derivation
+     *  (agent-bindings.mjs childSessionIdFor: 'session-team-child-' + the
+     *  first 32 hex of sha256(`${rootSessionId}\u0000${instanceId}`)). The
+     *  P8-S5A literal-prefix derivation ('session-child-p6t6-' +
+     *  instanceId.slice(5)) no longer matches fresh-instance child
+     *  sessions; only the row-config SEEDS still carry old-style literals
+     *  (explicit config values, honored verbatim for C1 restart-resume). */
+    const childSidFor = (rootSessionId, instanceId) =>
+      `session-team-child-${createHash('sha256').update(`${String(rootSessionId)}\u0000${String(instanceId)}`, 'utf8').digest('hex').slice(0, 32)}`
 
     /**
      * Decompress a multi-frame zstd stream (the durable session log format).
@@ -1064,7 +1119,10 @@ async function main() {
       const sessionsRoot = join(DSH_HOME, 'sessions')
       if (!existsSync(sessionsRoot)) return null
       for (const profileDir of readdirSync(sessionsRoot)) {
-        const file = join(sessionsRoot, profileDir, sessionId, 'session.jsonl.zstd')
+        // 0.1.7 (session-format-v4) durable log name — the P8-S5A-era
+        // 'session.jsonl.zstd' no longer exists on the pinned 0.1.7-rc.1
+        // test-use baseline (46a7f68b09).
+        const file = join(sessionsRoot, profileDir, sessionId, 'session.v4.jsonl.zstd')
         if (existsSync(file)) {
           try {
             return decompressZstdStream(readFileSync(file)).toString('utf8')
@@ -1093,7 +1151,7 @@ async function main() {
         totalViolations: scan.totalViolations,
         violations: scan.violations,
       }
-      c.check('scan covers exactly the five committed tool-layer source files', JSON.stringify(scan.files) === JSON.stringify(EXPECTED_SCAN_FILES), JSON.stringify(scan.files))
+      c.check('scan covers exactly the committed tool-layer source files (current set: seven)', JSON.stringify(scan.files) === JSON.stringify(EXPECTED_SCAN_FILES), JSON.stringify(scan.files))
       c.check('zero bypass violations (no direct durable-domain writes, no agent creation, no legacy vocabulary)', scan.totalViolations === 0, JSON.stringify((scan.violations) ?? null).slice(0, 600))
       return recordScenario(c)
     }
@@ -1186,10 +1244,14 @@ async function main() {
       const w = S.e1.w
       const wChild = S.e1.wChild
       c.check('E1 produced a persistent worker with a bound child session', typeof w === 'string' && typeof wChild === 'string', `w=${w} wChild=${wChild}`)
-      const fu1 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e3-1', targetInstanceId: w, taskSummary: 'p6t6 e3 first unit', prompt: 'p6t6 e3 first unit' }, ROOT_SESSION_ID)
+      // EXPLICIT async: false (2026-09-27 default-async ruling): the E3
+      // settlement-chain invariant (seq1 < settle1 < seq2 < settle2) reads
+      // the settled sequences OFF the tool result, so both units must settle
+      // before the next admit.
+      const fu1 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e3-1', targetInstanceId: w, taskSummary: 'p6t6 e3 first unit', prompt: 'p6t6 e3 first unit', async: false }, ROOT_SESSION_ID)
       c.check('first follow-up executed on the existing instance', fu1.body?.ok === true && fu1.body?.value?.status === 'executed' && fu1.body?.value?.effect?.kind === 'work-admitted' && fu1.body?.value?.effect?.instanceId === w, JSON.stringify((fu1.body?.value) ?? null).slice(0, 500))
       const seq1 = fu1.body?.value?.effect?.sequence
-      const fu2 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e3-2', targetInstanceId: w, taskSummary: 'p6t6 e3 second unit', prompt: 'p6t6 e3 second unit' }, ROOT_SESSION_ID)
+      const fu2 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e3-2', targetInstanceId: w, taskSummary: 'p6t6 e3 second unit', prompt: 'p6t6 e3 second unit', async: false }, ROOT_SESSION_ID)
       c.check('second follow-up executed on the SAME instance', fu2.body?.ok === true && fu2.body?.value?.status === 'executed' && fu2.body?.value?.effect?.kind === 'work-admitted' && fu2.body?.value?.effect?.instanceId === w, JSON.stringify((fu2.body?.value) ?? null).slice(0, 500))
       const seq2 = fu2.body?.value?.effect?.sequence
       // P8-S3 settlement chain (R5, plan §16.6): each work unit now writes
@@ -1222,6 +1284,11 @@ async function main() {
           delegationTemplateId: 'scout',
           taskSummary: `p6t6 e4 delegation ${i}`,
           prompt: `p6t6 e4 delegation ${i}`,
+          // EXPLICIT async: false (2026-09-27 default-async ruling): the E
+          // world's boot1→boot2 boundary is a PROCESS KILL — the delegated
+          // work units must be settled before it (no work unit crossing the
+          // kill); E4 tests instance minting, not execution mode.
+          async: false,
         }, ROOT_SESSION_ID)
         created.push({ token: `p6t6-e4-${i}`, value: r.body?.value })
       }
@@ -1443,6 +1510,11 @@ async function main() {
         delegationTemplateId: 'worker',
         label: 'p8s3-w1-worker',
         prompt: W1_PROMPT,
+        // EXPLICIT async: false (2026-09-27 default-async ruling): W1's
+        // criterion is a REAL work settlement read off the tool result
+        // (settled + settledSequence + SETTLED row + token in the durable
+        // log) — the sync path is the explicit opt-in now.
+        async: false,
       }, ROOT_SESSION_ID)
       const v = del.body?.value
       const eff = v?.effect
@@ -1483,6 +1555,7 @@ async function main() {
         requestToken: W5_TOKEN,
         targetInstanceId: SEED_WORKER_ID,
         prompt: W5_PROMPT,
+        async: false, // EXPLICIT sync (2026-09-27 ruling): asserts settled + the closed activity interval off the tool result.
       }, ROOT_SESSION_ID)
       const v = fu.body?.value
       c.check('follow-up executed with the work-admitted effect', fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === SEED_WORKER_ID, JSON.stringify((v) ?? null).slice(0, 500))
@@ -1514,6 +1587,7 @@ async function main() {
         requestToken: W7_TOKEN,
         targetInstanceId: S.w1.instanceId,
         prompt: W7_PROMPT,
+        async: false, // EXPLICIT sync (2026-09-27 ruling): asserts settled + cold-resume same-session log off the tool result.
       }, ROOT_SESSION_ID)
       const v = fu.body?.value
       c.check('cold-resume follow-up executed with the work-admitted effect', fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === S.w1.instanceId, JSON.stringify((v) ?? null).slice(0, 500))
@@ -1530,12 +1604,16 @@ async function main() {
     /** W3 (boot 1): two fresh_per_delegation delegates -> two new sessions. */
     const runW3 = async ({ port }) => {
       const c = makeScenarioCtx('W3', undefined, 1)
+      // EXPLICIT async: false (2026-09-27 default-async ruling): W3's
+      // criterion is workSettled === true on BOTH tool results (plus the
+      // SETTLED av3 rows + tokens in the durable logs).
       const delC = await callTool(c, port, 'team_delegate', {
         rootSessionId: ROOT_SESSION_ID,
         requestToken: W3_C_TOKEN,
         delegationTemplateId: 'scout',
         label: 'p8s3-w3-scout-c',
         prompt: W3_C_PROMPT,
+        async: false,
       }, ROOT_SESSION_ID)
       const delD = await callTool(c, port, 'team_delegate', {
         rootSessionId: ROOT_SESSION_ID,
@@ -1543,6 +1621,7 @@ async function main() {
         delegationTemplateId: 'scout',
         label: 'p8s3-w3-scout-d',
         prompt: W3_D_PROMPT,
+        async: false,
       }, ROOT_SESSION_ID)
       const vc = delC.body?.value
       const vd = delD.body?.value
@@ -1550,7 +1629,7 @@ async function main() {
       const idC = vc?.effect?.instanceId
       const idD = vd?.effect?.instanceId
       c.check('two DISTINCT member instances (fresh_per_delegation)', typeof idC === 'string' && typeof idD === 'string' && idC !== idD, JSON.stringify({ c: idC, d: idD }))
-      c.check('two DISTINCT child sessions, each derived from its instance', vc?.effect?.childSessionId === childSidFor(idC) && vd?.effect?.childSessionId === childSidFor(idD) && vc?.effect?.childSessionId !== vd?.effect?.childSessionId, JSON.stringify({ c: vc?.effect?.childSessionId, d: vd?.effect?.childSessionId }))
+      c.check('two DISTINCT child sessions, each derived from its instance (glue sha256 scheme)', vc?.effect?.childSessionId === childSidFor(ROOT_SESSION_ID, idC) && vd?.effect?.childSessionId === childSidFor(ROOT_SESSION_ID, idD) && vc?.effect?.childSessionId !== vd?.effect?.childSessionId, JSON.stringify({ c: vc?.effect?.childSessionId, d: vd?.effect?.childSessionId }))
       const st1 = (await getState(c, port)).body
       const rowC = findMember(st1, idC)
       const rowD = findMember(st1, idD)
@@ -1577,6 +1656,7 @@ async function main() {
         requestToken: W2_TOKEN,
         targetInstanceId: S.w1.instanceId,
         prompt: W2_PROMPT,
+        async: false, // EXPLICIT sync (2026-09-27 ruling): asserts settled + the cross-restart token log off the tool result.
       }, ROOT_SESSION_ID)
       const v = fu.body?.value
       c.check('persistent follow-up executed with the work-admitted effect', fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === S.w1.instanceId, JSON.stringify((v) ?? null).slice(0, 500))
@@ -1603,13 +1683,20 @@ async function main() {
       (r.status === 500 && typeof r.body?.error === 'string' && r.body.error.includes('unknown tool')) ||
       (r.status === 200 && r.body?.ok === false)
 
-    /** One real follow-up turn into the seeded worker, issued by the root. */
+    /**
+     * One real follow-up turn into the seeded worker, issued by the root.
+     * EXPLICIT async: false (2026-09-27 default-async ruling): every M
+     * scenario asserts POST-TURN facts (the assembled model cell, the token
+     * in the durable member log) immediately after this call returns, so the
+     * turn must have completed — the sync path is the explicit opt-in.
+     */
     const workerFollowUp = async (c, port, token, prompt) => {
       const fu = await callTool(c, port, 'team_follow_up', {
         rootSessionId: ROOT_SESSION_ID,
         requestToken: token,
         targetInstanceId: SEED_WORKER_ID,
         prompt,
+        async: false,
       }, ROOT_SESSION_ID)
       const v = fu.body?.value
       const ok = fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === SEED_WORKER_ID
@@ -1676,6 +1763,12 @@ async function main() {
      * mini-MCP (one tool: ping -> pong); a durable deny unmounts it again,
      * with team provenance (layer/origin/recordId) on the denied cell.
      */
+    /** The mcp facet cell for the harness mini-MCP server. The facet state
+     *  is keyed PER SERVER (w.mcp.servers[name]) since the multi-server mcp
+     *  evolution post-dating P8-S5A; the harness drives exactly one server
+     *  (M4_MCP_SERVER), so the cell is that one entry. */
+    const mcpCell = (w) => w?.mcp?.servers?.[M4_MCP_SERVER] ?? null
+
     const runM4 = async ({ port }) => {
       const c = makeScenarioCtx('M4', undefined, 1)
       c.check('M2 ran first (the cumulative humanOverride slot)', S.m.m2 === true, JSON.stringify(S.m))
@@ -1693,14 +1786,14 @@ async function main() {
       c.check('operator mcp-allow admitted (generation 2, model grant preserved in the re-issue)', muAllow.status === 200 && muAllow.body?.ok === true && mvAllow?.recordId === M_RECORD_MCP_ALLOW && mvAllow?.generation === 2 && mvAllow?.values?.model !== undefined, JSON.stringify((muAllow.body ?? muAllow.status) ?? null).slice(0, 500))
       const stPending = (await getState(c, port)).body
       const wPending = stPending?.governance?.sessions?.[SEED_WORKER_CHILD]
-      const mcpPendingIds = Array.isArray(wPending?.mcp?.pendingNextBoundary) ? wPending.mcp.pendingNextBoundary.map((p) => p.recordId) : []
+      const mcpPendingIds = Array.isArray(mcpCell(wPending)?.pendingNextBoundary) ? mcpCell(wPending).pendingNextBoundary.map((p) => p.recordId) : []
       c.check('BEFORE the next operation: pendingNextBoundary lists the mcp-allow record', mcpPendingIds.includes(M_RECORD_MCP_ALLOW) === true, JSON.stringify(mcpPendingIds))
       // (c) the next real operation: the tool is present and round-trips
       const ping1 = await callTool(c, port, M4_PING_TOOL, { msg: M4_PING_MSG_ALLOW }, SEED_WORKER_CHILD)
       c.check('after the boundary the mcp tool EXECUTES: pong round-trip against the real mini-MCP', ping1.status === 200 && ping1.body?.ok === true && JSON.stringify(ping1.body?.value ?? null).includes('pong:') === true, JSON.stringify({ status: ping1.status, body: ping1.body === null ? null : JSON.stringify((ping1.body) ?? null).slice(0, 300) }))
       const stAllow = (await getState(c, port)).body
       const wAllow = stAllow?.governance?.sessions?.[SEED_WORKER_CHILD]
-      c.check('state: the mcp facet is MOUNTED, sourced from the granting record', wAllow?.mcp?.mounted === true && wAllow?.mcp?.allowed === true && wAllow?.mcp?.source?.recordId === M_RECORD_MCP_ALLOW, JSON.stringify(wAllow?.mcp ?? null).slice(0, 500))
+      c.check('state: the mcp facet is MOUNTED, sourced from the granting record', mcpCell(wAllow)?.mounted === true && mcpCell(wAllow)?.allowed === true && mcpCell(wAllow)?.source?.recordId === M_RECORD_MCP_ALLOW, JSON.stringify(mcpCell(wAllow)).slice(0, 500))
       // (d) durable deny (tighten); generation 3, model grant still preserved
       const muDeny = await mutateGovernance(c, port, {
         as: ROOT_SESSION_ID,
@@ -1715,7 +1808,7 @@ async function main() {
       c.check('after the deny boundary the mcp tool is ABSENT again (never silently allowed)', toolUnavailable(ping2), JSON.stringify({ status: ping2.status, body: ping2.body === null ? null : JSON.stringify((ping2.body) ?? null).slice(0, 300) }))
       const st = (await getState(c, port)).body
       const w = st?.governance?.sessions?.[SEED_WORKER_CHILD]
-      c.check('state: the mcp facet is UNMOUNTED and the cell is team-denied by the deny record', w?.mcp?.mounted === false && w?.mcp?.allowed === false && w?.mcp?.deniedBy?.by === 'team' && w?.mcp?.deniedBy?.recordId === M_RECORD_MCP_DENY && w?.mcp?.source?.recordId === M_RECORD_MCP_DENY, JSON.stringify(w?.mcp ?? null).slice(0, 500))
+      c.check('state: the mcp facet is UNMOUNTED and the cell is team-denied by the deny record', mcpCell(w)?.mounted === false && mcpCell(w)?.allowed === false && mcpCell(w)?.deniedBy?.by === 'team' && mcpCell(w)?.deniedBy?.recordId === M_RECORD_MCP_DENY && mcpCell(w)?.source?.recordId === M_RECORD_MCP_DENY, JSON.stringify(mcpCell(w)).slice(0, 500))
       c.evidence = {
         pingBaseline: { status: ping0.status, body: ping0.body === null ? null : JSON.stringify((ping0.body) ?? null).slice(0, 300) },
         pingAllow: { status: ping1.status, body: ping1.body === null ? null : JSON.stringify((ping1.body) ?? null).slice(0, 300) },
@@ -1765,7 +1858,7 @@ async function main() {
       c.check('AFTER restart the mcp tool is STILL ABSENT (the durable deny remains effective)', toolUnavailable(ping), JSON.stringify({ status: ping.status, body: ping.body === null ? null : JSON.stringify((ping.body) ?? null).slice(0, 300) }))
       const st = (await getState(c, port)).body
       const w = st?.governance?.sessions?.[SEED_WORKER_CHILD]
-      c.check('state: mcp facet unmounted, team-denied by the deny record', w?.mcp?.mounted === false && w?.mcp?.allowed === false && w?.mcp?.deniedBy?.by === 'team' && w?.mcp?.deniedBy?.recordId === M_RECORD_MCP_DENY && w?.mcp?.source?.recordId === M_RECORD_MCP_DENY, JSON.stringify(w?.mcp ?? null).slice(0, 500))
+      c.check('state: mcp facet unmounted, team-denied by the deny record', mcpCell(w)?.mounted === false && mcpCell(w)?.allowed === false && mcpCell(w)?.deniedBy?.by === 'team' && mcpCell(w)?.deniedBy?.recordId === M_RECORD_MCP_DENY && mcpCell(w)?.source?.recordId === M_RECORD_MCP_DENY, JSON.stringify(mcpCell(w)).slice(0, 500))
       const recIds = Array.isArray(st?.governance?.overrides) ? st.governance.overrides.map((r) => r.recordId).sort() : []
       c.check('the THREE durable override records survived the restart', JSON.stringify(recIds) === JSON.stringify([M_RECORD_MODEL, M_RECORD_MCP_ALLOW, M_RECORD_MCP_DENY].sort()), JSON.stringify(recIds))
       c.evidence = { ping: { status: ping.status, body: ping.body === null ? null : JSON.stringify((ping.body) ?? null).slice(0, 300) }, workerModelAfter: w0?.model ?? null, workerMcpAfter: w?.mcp ?? null, overrideRecordIds: recIds }
@@ -2012,8 +2105,10 @@ async function main() {
     if (!(summary.pristine.after.statusEmpty && summary.pristine.after.diffEmpty)) {
       noteFailure('test-use tree not pristine after run')
     }
-    if (!(summary.stable3080.after.reachable === true && summary.stable3080.after.status === 200)) {
-      noteFailure(`stable :3080 instance not reachable/200 after run: ${JSON.stringify(summary.stable3080.after)}`)
+    // TEST_METHODS.md §2.4: the post status must equal the pre status
+    // (zero-touch: the run neither bound nor drove :3080).
+    if (!(summary.stable3080.after.reachable === true && summary.stable3080.after.status === summary.stable3080.before.status)) {
+      noteFailure(`stable :3080 instance probe not reproducible after run (pre!=post): before=${JSON.stringify(summary.stable3080.before)} after=${JSON.stringify(summary.stable3080.after)}`)
     }
     for (const sc of args.selected) {
       const e = summary.scenarios[sc]
