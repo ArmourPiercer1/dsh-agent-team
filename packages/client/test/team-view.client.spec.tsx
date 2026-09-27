@@ -582,21 +582,29 @@ describe('TeamView', () => {
       pullProjection,
       refreshTeamLedger,
     }
+    // Node's process event is 'unhandledRejection' (capital R); the
+    // listener is try/finally-guarded so a failing assertion cannot
+    // leak it into the rest of the run. (The stronger assertion is
+    // still the direct one below: the old continuation never reaches
+    // the ledger refresh at all.)
     const unhandled: unknown[] = []
     const onRejection = (reason: unknown) => { unhandled.push(reason) }
-    process.on('unhandledrejection', onRejection)
-    const view = render(<TeamView {...props} />)
-    const button = view.container.querySelector<HTMLButtonElement>('[data-team-refresh]')
-    if (button === null) throw new Error('the with-frame refresh button did not render')
-    fireEvent.click(button)
-    expect(pullProjection).toHaveBeenCalledTimes(1)
-    view.unmount()
-    // The deferred pull settles AFTER the unmount.
-    resolvePull({ status: 'apply', receivedGeneration: 9 })
-    await new Promise(resolve => setTimeout(resolve, 30))
-    expect(refreshTeamLedger).not.toHaveBeenCalled()
-    expect(unhandled).toEqual([])
-    process.off('unhandledrejection', onRejection)
+    process.on('unhandledRejection', onRejection)
+    try {
+      const view = render(<TeamView {...props} />)
+      const button = view.container.querySelector<HTMLButtonElement>('[data-team-refresh]')
+      if (button === null) throw new Error('the with-frame refresh button did not render')
+      fireEvent.click(button)
+      expect(pullProjection).toHaveBeenCalledTimes(1)
+      view.unmount()
+      // The deferred pull settles AFTER the unmount.
+      resolvePull({ status: 'apply', receivedGeneration: 9 })
+      await new Promise(resolve => setTimeout(resolve, 30))
+      expect(refreshTeamLedger).not.toHaveBeenCalled()
+      expect(unhandled).toEqual([])
+    } finally {
+      process.off('unhandledRejection', onRejection)
+    }
   })
 
   it('keeps the plain zero state without the creation face (S5-A: entry hidden, T6 view unchanged)', () => {
