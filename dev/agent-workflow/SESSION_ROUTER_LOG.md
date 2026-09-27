@@ -4017,3 +4017,13 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **PR body 定稿**（`supplement-s6/pr-body-draft.md`，= PATCH /pulls/31 内容）：提交链表 S1–S6 填实（S5a 行 + S5 行 + S6 行）/ §12 四问（Q1 F1 20× 数字、Q3 F3 数字、**Q4 = 诚实 NO-GO + NO-GO 文档指针 + A′/B+ 选项 + 裁决请求 + 裁决前 reload 恢复**）/ 验证节 = S6 电池全数（1196 / zero-core 0 / focused / root 三标记 / install 腿指针）/ 缺陷记录 #3 = S5a stale dist glue（md5 取证 + 三层漏检 + 实宿主复核）/ 红线节 / 证据指针（+ ROOT-CAUSE-s5a + 终判文件）。
 - **红线守纪**：本提交零产品行为改动（p4t6 pin + vitest.config = 测试基础设施勘误，零 denylist 词汇 / 安装面不变 1196）；CORE PATCH BUDGET = 0；test-use pristine 双证；:3080/:3180/:3491 零触碰；全程 workspace-write。
 - **下一步（唯一剩余）**：GitHub 代理 TLS 复测（09-26/27 两次均 handshake failed）→ 恢复后 REST PATCH /pulls/31（token `gh auth token`）+ push 仅 `task/team-restart-017rc1` FF（零 force-push，master 零触碰）→ 验证 PR clean/mergeable 状态 + 最终报告（S1–S3 + S5a 定因 + S5 结果 + §12 回答 + **显式 A′/B+ 裁决请求**）。
+
+---
+
+## 2026-09-27 推送完成（用户修复网络后一次性执行）
+
+- 用户修复网络服务后复测：代理 + 直连 github.com 均恢复（`git ls-remote` exit 0，远端分支 @ `449e1fc`）。
+- **push**：`git push origin task/team-restart-017rc1` = **`449e1fc..c8320cc` FF**（`merge-base --is-ancestor` 先验；零 force-push；master 零触碰；仅本分支）。
+- **PR #31**：REST `PATCH /pulls/31`（token = `gh auth token`，body = `supplement-s6/pr-body-draft.md` 定稿全文，草稿头注释已剥离）→ 200 OK：state=open / **head = `c8320cc`** / mergeable=True / **mergeable_state=clean**（git 层面可合并；产品层面按 guide §5 仍待 lead-reviewer A′/B+ 裁决 — same-page UX closure 不构成 merge-ready，裁决前恢复 = full page reload，均已如实写入 PR body §12 Q4）。
+- graph.yaml S6 行补 PUSHED 记录。本簿记提交推送后分支 tip 前移（FF，仅本分支）。
+- **补充修复轮至此全部执行完毕**：S1/S2/S3/S5a/S5/S6 全提交 + push + PR body 更新；唯一未决 = lead-reviewer 对 A′ vs B+ 的架构裁决（PR body §12 Q4 已显式请求）。
