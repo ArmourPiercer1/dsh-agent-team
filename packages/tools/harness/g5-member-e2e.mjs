@@ -888,6 +888,14 @@ function makeDecide() {
                 label: 'G5A work unit',
                 prompt: `${MW} Complete the delegated work unit and report the result in one line.`,
                 delegationInstanceId: memberState.instanceId,
+                // EXPLICIT async: false (2026-09-27 ruling: sync is the
+                // explicit opt-in, no-argument = async default). S5's
+                // criterion is that the Leader-facing ACTION RESULT carries
+                // the frozen memberResult — i.e. the call blocks until the
+                // member work settles. Under the default-async contract the
+                // no-argument call would return the admission receipt and
+                // S5 would deterministically fail.
+                async: false,
               }),
             }],
           }

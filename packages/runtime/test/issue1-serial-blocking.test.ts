@@ -15,7 +15,10 @@
  * This file is the RED evidence of the old design problem (captured on
  * the unmodified tree — see dev/agent-workflow/evidence/issue1-async-
  * delegation/red/). After the fix it is a CHARACTERIZATION/regression
- * pin: the default sync path must keep exactly this behavior (CCR-1).
+ * pin: the facade default (execution ABSENT) sync path must keep exactly
+ * this behavior (CCR-1 — unchanged by the 2026-09-27 model-surface
+ * default-async ruling, which the model-facing tools layer compensates by
+ * always sending an explicit execution).
  *
  * House pattern of the runtime package: async world construction and
  * action execution at the TOP LEVEL (one bare block, destroyed in its

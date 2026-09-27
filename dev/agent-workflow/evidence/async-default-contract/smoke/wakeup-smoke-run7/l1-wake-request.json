@@ -1,0 +1,5 @@
+{
+  "seq": 8,
+  "receivedAt": "2026-09-27T05:07:55.990Z",
+  "text": "[team-work-settled requestToken=wcn-l1-delegate-2026-09-27T05-07-52]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-0vxiwv91kibc\ntaskSummary: L1 probe work (default-async, no async argument)\nrequestToken: wcn-l1-delegate-2026-09-27T05-07-52\n\nUse team_collect with this requestToken to read the durable result."
+}

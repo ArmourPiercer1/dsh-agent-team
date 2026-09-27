@@ -1,0 +1,5 @@
+[2026-09-27T04:07:31.225Z] work-completion wake-up real-host smoke — stamp 2026-09-27T04-07-31
+[2026-09-27T04:07:31.225Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/async-default-contract
+[2026-09-27T04:07:31.225Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ fb2c4b9e69
+[2026-09-27T04:07:31.225Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/async-default-contract/dev/agent-workflow/evidence/async-default-contract/smoke/wakeup-smoke-run1
+[2026-09-27T04:07:31.228Z] FATAL test-use checkout is not at fb2c4b9e698e30edb738bca4cf0618587db7d203 (got 46a7f68b0922371ce7144b668b90e377d8e799f4)

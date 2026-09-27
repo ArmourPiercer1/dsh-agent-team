@@ -65,6 +65,17 @@
  *        driven).
  *   H2 — run ports released (host + mock) at teardown.
  *
+ * ASYNC CONTRACT (2026-09-27 ruling — consumer migration): every
+ * team_delegate / team_follow_up leg in this kit passes EXPLICIT
+ * `async: false`. The kit tests model routing (request body.model at
+ * request boundaries), not work execution mode: R2/R3/R4/R5-post assert
+ * the SETTLED chain on the tool result, and the pre-restart world
+ * (R5-pre/R7/R8) must be fully settled before the cold-resume boundary
+ * (no work unit or leader wake turn crossing the stop). Under the
+ * default-async contract a no-argument call would return the admission
+ * receipt instead — which is exactly the deterministic contradiction the
+ * migration removes.
+ *
  * WORLD / RUNNER:
  *   - host = pristine test-use DSH 0.1.7-rc.1 (tests/deepseek-harness-test-use,
  *     MAIN checkout — gitignored, not in the worktree) launched via
@@ -1060,6 +1071,12 @@ async function run() {
       delegationTemplateId: 'worker',
       label: 'w-deleg',
       prompt: `${MK_W_DELEG} Worker task: acknowledge your role and finish.`,
+      // EXPLICIT async: false — this leg asserts the SETTLED create+work
+      // chain ON the tool result (workSettled + memberResult). The
+      // 2026-09-27 ruling flipped the no-argument default to async, so a
+      // settlement-oriented leg must opt into sync explicitly (the kit
+      // tests model routing, not execution mode).
+      async: false,
     }, ROOT_T1, 'r2-deleg')
     const effect = value?.effect
     wDeleg = effect?.instanceId ?? null
@@ -1122,6 +1139,7 @@ async function run() {
       requestToken: `tok-r3-follow-${Math.random().toString(36).slice(2, 10)}`,
       targetInstanceId: wCreate,
       prompt: `${MK_W_CREATE} Follow-up worker task: acknowledge and finish.`,
+      async: false, // EXPLICIT sync — asserts settled on the tool result (2026-09-27 default-async ruling).
     }, ROOT_T1, 'r3-followup')
     const followEffect = follow.value?.effect
     check('R3', 'team_follow_up(w-create) resolves settled (the work unit ran on the follow-up)',
@@ -1246,6 +1264,7 @@ async function run() {
       requestToken: `tok-r4-follow-${Math.random().toString(36).slice(2, 10)}`,
       targetInstanceId: wDeleg,
       prompt: `${MK_W_OVR} Post-override worker task: acknowledge and finish.`,
+      async: false, // EXPLICIT sync — asserts settled on the tool result (2026-09-27 default-async ruling).
     }, ROOT_T1, 'r4-followup')
     const followEffect = follow.value?.effect
     check('R4', 'team_follow_up(w-deleg) after the override resolves settled (the NEXT request boundary)',
@@ -1290,6 +1309,7 @@ async function run() {
       requestToken: `tok-r5-follow-pre-${Math.random().toString(36).slice(2, 10)}`,
       targetInstanceId: expertId,
       prompt: `${MK_EXPERT_PRE} Expert task (pre-restart): acknowledge and finish.`,
+      async: false, // EXPLICIT sync — the pre-restart world must be fully settled before the cold-resume boundary (no work unit or wake turn crossing the stop).
     }, ROOT_T1, 'r5-expert-follow-pre')
     const preReq = await waitForRequest(MOCK, (r) => anyText(bodyOf(r)).includes(MK_EXPERT_PRE) && !isTitleSideCall(r), 180_000, 'the R5 expert pre-restart LLM request (marker ' + MK_EXPERT_PRE + ')')
     writeEvidence('r5', 'expert-pre-request.json', preReq === null ? null : { seq: preReq.seq, model: modelOf(preReq), reply: preReq.reply?.content ?? null })
@@ -1312,6 +1332,7 @@ async function run() {
       delegationTemplateId: 'control',
       label: 'w-control',
       prompt: `${MK_CONTROL} Control task: acknowledge and finish.`,
+      async: false, // EXPLICIT sync — pre-restart world must be deterministically settled (the cold-resume boundary follows).
     }, ROOT_T1, 'r7-control-deleg')
     const controlReq = await waitForRequest(MOCK, (r) => anyText(bodyOf(r)).includes(MK_CONTROL) && !isTitleSideCall(r), 180_000, 'the R7 control first LLM request (marker ' + MK_CONTROL + ')')
     writeEvidence('r7', 'control-first-request.json', controlReq === null ? null : { seq: controlReq.seq, model: modelOf(controlReq), reply: controlReq.reply?.content ?? null })
@@ -1339,6 +1360,7 @@ async function run() {
       delegationTemplateId: 'worker',
       label: 'w-a',
       prompt: `${MK_A_WORKER} Team A worker task: acknowledge and finish.`,
+      async: false, // EXPLICIT sync — pre-restart world must be deterministically settled (the cold-resume boundary follows).
     }, ROOT_TA, 'r8-a-deleg')
     const workerA = await waitForRequest(MOCK, (r) => anyText(bodyOf(r)).includes(MK_A_WORKER) && !isTitleSideCall(r), 180_000, 'the R8 Team A worker LLM request (marker ' + MK_A_WORKER + ')')
     writeEvidence('r8', 'ta-worker-first-request.json', workerA === null ? null : { seq: workerA.seq, model: modelOf(workerA) })
@@ -1361,6 +1383,7 @@ async function run() {
       delegationTemplateId: 'worker',
       label: 'w-b',
       prompt: `${MK_B_WORKER} Team B worker task: acknowledge and finish.`,
+      async: false, // EXPLICIT sync — pre-restart world must be deterministically settled (the cold-resume boundary follows).
     }, ROOT_TB, 'r8-b-deleg')
     const workerB = await waitForRequest(MOCK, (r) => anyText(bodyOf(r)).includes(MK_B_WORKER) && !isTitleSideCall(r), 180_000, 'the R8 Team B worker LLM request (marker ' + MK_B_WORKER + ')')
     writeEvidence('r8', 'tb-worker-first-request.json', workerB === null ? null : { seq: workerB.seq, model: modelOf(workerB) })
@@ -1386,6 +1409,7 @@ async function run() {
       requestToken: `tok-r5-follow-post-${Math.random().toString(36).slice(2, 10)}`,
       targetInstanceId: expertId,
       prompt: `${MK_EXPERT_POST} Expert task (post-restart, cold resume): acknowledge and finish.`,
+      async: false, // EXPLICIT sync — asserts settled on the tool result (the cold-resume re-derivation leg; 2026-09-27 default-async ruling).
     }, ROOT_T1, 'r5-expert-follow-post')
     const followEffect = follow.value?.effect
     check('R5', 'post-restart team_follow_up(expert) resolves settled (the cold resume re-derived the member from the bound Blueprint)',

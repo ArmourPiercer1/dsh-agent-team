@@ -1,0 +1,4 @@
+{
+  "seq": 25,
+  "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-wcn-smoke-l3-2026-09-27T08-33-42\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"wcn-l3-delegate-2026-09-27T08-33-42\",\"status\":\"failed\",\"instanceId\":\"inst-16yyn891gz4c\",\"admittedSequence\":21,\"settledSequence\":24,\"memberResult\":{\"error\":{\"code\":\"INVALID_REQUEST\",\"message\":\"wcn smoke L3: controlled member model failure\"},\"requestToken\":\"wcn-l3-delegate-2026-09-27T08-33-42\",\"status\":\"failed\"}}]},\"requestToken\":\"wcn-wake-wcn-l3-delegate-2026-09-27T08-33-42\"}"
+}

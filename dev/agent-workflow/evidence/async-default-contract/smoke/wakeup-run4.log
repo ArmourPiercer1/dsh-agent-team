@@ -1,0 +1,23 @@
+[2026-09-27T04:23:14.846Z] work-completion wake-up real-host smoke — stamp 2026-09-27T04-23-14
+[2026-09-27T04:23:14.846Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/async-default-contract
+[2026-09-27T04:23:14.846Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-09-27T04:23:14.846Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/async-default-contract/dev/agent-workflow/evidence/async-default-contract/smoke/wakeup-smoke-run4
+[2026-09-27T04:23:14.874Z] ports: host=3491 mock=3496
+[2026-09-27T04:23:14.928Z] stable pre-probe: 3080=401 3180=401
+[2026-09-27T04:23:14.928Z] world materialized (scratch workspace)
+[2026-09-27T04:23:14.935Z] mock model listening on 3496
+[2026-09-27T04:23:17.197Z] host booted at http://127.0.0.1:3491; row ready — toolCount=13
+[2026-09-27T04:23:17.197Z] ── L0: discovery ──
+[2026-09-27T04:23:17.617Z] discovery surface (39 tools): ask_user_question, bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, present, read, read_image, send_message, skill, subagent, subagent_fork, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, todo_write, update_goal, web_fetch, web_search, workflow, write
+[2026-09-27T04:23:17.617Z] PASS L0: discovery captured the surface; read + bash present; the 13-tool catalog is present on the boot root — surface=39 missingTeam=[]
+[2026-09-27T04:23:17.633Z] saved blueprints L1–L4 written + identity-inspected OK (deny list = 19 names)
+[2026-09-27T04:23:17.633Z] ── L1: single async completion wakes the idle Leader ──
+[2026-09-27T04:28:17.751Z] mock wait timed out: L1 leader chain final (requests=9)
+[2026-09-27T04:28:17.751Z] FAIL L1a: L1: the Leader admitted the async delegate and its turn ENDED (Leader now idle; no user input after) — l1Done=null requests=9
+[2026-09-27T04:31:17.999Z] mock wait timed out: L1 wake-up model request (requests=9)
+[2026-09-27T04:31:17.999Z] FAIL L1b: L1: the idle Leader was AUTOMATICALLY woken (a new model request with the token-leading notification; no user input) — requests=9
+[2026-09-27T04:31:17.999Z] FAIL L1e: L1: team.create (L1) succeeded on the fresh root — status=200 body={"type":"server-response","rpcId":"wcnl1-472bu2ni46","result":{"ok":false,"error":{"code":"TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED","message":"TeamRuntime: Root initial work delivery to team 'session-wcn-smoke-l1-2026-09-27T04-23-14' failed: format v4 message requires a producer-owned source kind (the
+[2026-09-27T04:31:18.000Z] PASS L1f: L1: the durable settlement fact exists (member-lifecycle-changed to=SETTLED, the terminal authority the observer re-read) — settlement={"sequence":6,"requestToken":"wcn-l1-delegate-2026-09-27T04-23-14","instanceId":"inst-1i2kat51dcbf","workOutcome":"settled","memberResult":{"body":"WCMK_RESULT_L1_BODY","requestToken":"wcn-l1-delegate-2026-09-27T04-23-14","status":"succeeded"}}
+[2026-09-27T04:31:18.000Z] ── L2: two async members (staggered) ──
+[2026-09-27T04:36:18.178Z] mock wait timed out: L2 leader chain final (requests=16)
+[2026-09-27T04:36:18.178Z] FAIL L2a: L2: the Leader admitted TWO async delegates in one turn and its turn ended — l2Done=null
