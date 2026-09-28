@@ -1,0 +1,72 @@
+{
+  "runStamp": "tvs-spill-2026-09-28T09-35-17",
+  "verdict": "PASS",
+  "world": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/tvs-spill-2026-09-28T09-35-17",
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-team-view-sync-complete-20260927",
+  "worktreeHead": "f2819eec4ef7431958ab3a7dc8fca97f591a7219",
+  "worktreePorcelain": "",
+  "hostPort": 3182,
+  "mockPort": 3497,
+  "t1": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+  "t2": "session-tvs-spill-2026-09-28T09-35-17",
+  "blueprintId": "team.tvs-spill",
+  "spillLeader": {
+    "instance": "inst-leader"
+  },
+  "generation": {
+    "t2AtCreateReturn": 5,
+    "t2AfterGrant": 5
+  },
+  "grant": {
+    "seq": 46,
+    "locator": "/tmp/dsh-subprocess-cQMD3A/dsh-subprocess-62-1-d148152904e3-stdout.log",
+    "source": {
+      "callId": "call-tvs-spill-1",
+      "kind": "shell-foreground",
+      "stream": "stdout",
+      "toolName": "bash"
+    }
+  },
+  "criteria": [
+    {
+      "id": "C0",
+      "pass": true,
+      "detail": "testuse HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4 porcelain='' wt=fix/team-view-sync-complete-20260927@f2819eec wtPorcelain='' dist=true hostPort=3182 mockPort=3497 stable={\"http://127.0.0.1:3080/\":401,\"http://127.0.0.1:3180/\":401}"
+    },
+    {
+      "id": "C1",
+      "pass": true,
+      "detail": "rs0={relation:team-member,gen:32,lt:lt-v1-7770fae9dbb4092b6a…} rp0={gen:32,durable:32,lt:lt-v1-7770fae9dbb4092b6a…} ledger=30 entries grants=0 stamp=32 = 2 + 30 (S1-A invariant) T2pre={relation:none,cells-null+liveToken-null:true}"
+    },
+    {
+      "id": "C2",
+      "pass": true,
+      "detail": "settle=5ms gCreate=5 mockReqs=3 markerReqs=2 toolCall=true toolResult=true T2-listed=true roots=5"
+    },
+    {
+      "id": "C3",
+      "pass": true,
+      "detail": "readState post = {relation:team-root, team:session-tvs-spill-2026-09-28T09-35-17, disposed:false, gen:5 (create-return 5), lt:lt-v1-92163c7dcd398e11e5…} stamp 5 = 2 + 3 entries, grants=1, grantSeq=46 (first/last seq 45/47)"
+    },
+    {
+      "id": "C4",
+      "pass": true,
+      "detail": "projection post = {gen:5, durable:5, lt:lt-v1-92163c7dcd398e11e5…, lt===readState-lt:true, provCv:6, provGen:5}"
+    },
+    {
+      "id": "C5",
+      "pass": true,
+      "detail": "grant=seq=46 inst=inst-leader locator=/tmp/dsh-subprocess-cQMD3A/dsh-subprocess-62-1-d148152904e3-stdout.log size=300000 source=shell-foreground/bash digests=sha256:76868/… entries=3"
+    },
+    {
+      "id": "C6",
+      "pass": true,
+      "detail": "projection JSON (1783 chars) contains locator=false targetDigest=false versionDigest=false factType=false"
+    },
+    {
+      "id": "C7",
+      "pass": true,
+      "detail": "stable pre==post=true testuse porcelain='' HEAD=46a7f68b portsFree host=true mock=true"
+    }
+  ]
+}

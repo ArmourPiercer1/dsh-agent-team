@@ -1,0 +1,32 @@
+{
+  "note": "hand-written: the smoke host job (bash-4593) was job_killed (SIGTERM) after the final cadence polls and the negative-case wire probe; the kit did not write its own teardown.json this run (it did in round 3), so the post-state below was verified manually (socket probes + stable 401 probes) before the evidence commit.",
+  "preStable": {
+    "http://127.0.0.1:3080/": 401,
+    "http://127.0.0.1:3180/": 401
+  },
+  "preStableSource": "smoke-host.json stablePre (kit preflight) + the round-4 gate pre-checks; re-probed post-kill below",
+  "postStable": {
+    "http://127.0.0.1:3080/": 401,
+    "http://127.0.0.1:3180/": 401
+  },
+  "postStableSource": "probed twice at 2 s intervals after the job_kill — both 401 (the stable dev instances were never touched)",
+  "stablePreEqualsPost": true,
+  "hostPort3182": "released (socket connect refused, both post probes; no 'dsh web' process remained)",
+  "mockPort3497": "released (socket connect refused, both post probes)",
+  "foreignListeners": {
+    "3181": "LISTEN, pre-existing before this run (a foreign 401 listener in the shared host PID view — the kit's isPortFree probe skipped it, which is exactly why the host took 3182); not bound by this run",
+    "3496": "LISTEN, pre-existing before this run (a foreign 405 listener — the mock fell back to 3497 for the same reason); not bound by this run"
+  },
+  "testUseCheckout": {
+    "porcelain": "0 lines (clean)",
+    "head": "46a7f68b0922371ce7144b668b90e377d8e799f4 (0.1.7-rc.1 release point, untouched — CORE PATCH BUDGET = 0 held)"
+  },
+  "worktreeAtSmokeTime": {
+    "head": "f2819eec4ef7431958ab3a7dc8fca97f591a7219 (the pre-closeout body-snapshot commit; the closeout TEST-ONLY commits c186d92f/f2819eec changed no executable client/runtime code)",
+    "porcelain": "'' (empty — the smoke's commit-binding hard gate asserted it at preflight)",
+    "singleTestedCommit": "f2819eec4ef7431958ab3a7dc8fca97f591a7219 — the spill E2E run-18 (sibling dir wp8-spill-e2e-tvs-spill-2026-09-28T09-35-17) AND this browser smoke round-4 BOTH ran on this exact clean commit, fixing the reviewer's 'worktreeHead != final tested commit' finding (round 3's two-HEAD evidence E2E@763a0b3d / smoke@3d05d3a2 is superseded)"
+  },
+  "world": "tests/homes/tvs-smoke-2026-09-28T09-36-36 retained (disposable smoke world per the home protocol); the seeded mpr-2026-09-27T08-35-52 world copy plus one fresh ordinary session ('smoke host: no work expected')",
+  "tokenScrub": "launch token scrubbed from instance.log (instance.log.scrubbed retained as the canonical copy; instance.log overwritten with the scrubbed content); smoke-host.json tokenUrl was already 'SCRUBBED' by the kit; network-capture.json swept clean (zero occurrences of the token literal — the capture started after the token-URL navigation and team-remote auth is cookie-based); final sweep with the live-token literal returned zero files before the evidence commit",
+  "verifiedAt": "2026-09-28T09:52Z"
+}

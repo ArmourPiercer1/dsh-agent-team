@@ -1,0 +1,46 @@
+E6 two-team leader isolation — FINAL closeout run (round 4), world tvs-smoke-2026-09-28T09-36-36, host 127.0.0.1:3182 @ worktree f2819eec
+command: node dev/agent-workflow/evidence/team-view-sync-complete/e6-two-team-leader-isolation.mjs http://127.0.0.1:3182 <token> session-mpr-t1-mpr-2026-09-27T08-35-52 session-mpr-ta-mpr-2026-09-27T08-35-52 resident cold
+script self-authenticates (GET /?token=… → 303 + set-cookie → cookie jar); the token itself is NOT recorded here (host launch token, scrubbed everywhere else)
+
+== FIRST INVOCATION (the E6-A activation of T1 root; TA never touched) ==
+PASS E6-A: projection.liveToken == readState.liveToken (same live state, two surfaces) — projection=lt-v1-022b65980dac52… readState=lt-v1-022b65980dac52…
+PASS E6-A: the pair (durableGeneration, liveToken) is identical on both surfaces — projection gen=32 readState gen=32 relation=team-root
+PASS E6-B: projection leader residency = cold — leader.liveActivity={"residency":"cold"}
+PASS E6-B: projection.liveToken == readState.liveToken (same live state, two surfaces) — projection=lt-v1-623ddd76de80c0… readState=lt-v1-623ddd76de80c0…
+PASS E6-B: the pair (durableGeneration, liveToken) is identical on both surfaces — projection gen=9 readState gen=9 relation=team-root
+PASS E6: token(A) != token(B) (the semantic live states differ — a consequence, not the point) — A=lt-v1-022b65980dac52… B=lt-v1-623ddd76de80c0…
+PASS E6: both read-states name their own team (per-team ownership, no cross-talk) — A=team-root B=team-root (per-team teamSessionId asserted below)
+PASS E6-A: read-state teamSessionId == the queried team (no cross-team bleed) — readState.teamSessionId=session-mpr-t1-mpr-2026-09-27T08-35-52
+PASS E6-B: read-state teamSessionId == the queried team (no cross-team bleed) — readState.teamSessionId=session-mpr-ta-mpr-2026-09-27T08-35-52
+E6 VERDICT PASS
+{
+ "A": {
+  "leaderResidency": "resident",
+  "leaderLastActivityAt": "2026-09-28T09:41:13.223Z",
+  "projectionToken": "lt-v1-022b65980dac5274f82e43f3e56f23d8076eb26061fadb0029c12da71b60ea2f",
+  "projectionGeneration": 32,
+  "readStateRelation": "team-root",
+  "readStateToken": "lt-v1-022b65980dac5274f82e43f3e56f23d8076eb26061fadb0029c12da71b60ea2f",
+  "readStateGeneration": 32
+ },
+ "B": {
+  "leaderResidency": "cold",
+  "leaderLastActivityAt": null,
+  "projectionToken": "lt-v1-623ddd76de80c0f95c776f7b37a704faf56a502ed6d71293f20fd4c14595c608",
+  "projectionGeneration": 9,
+  "readStateRelation": "team-root",
+  "readStateToken": "lt-v1-623ddd76de80c0f95c776f7b37a704faf56a502ed6d71293f20fd4c14595c608",
+  "readStateGeneration": 9
+ }
+}
+
+== SECOND INVOCATION (token-migration NEGATIVE case: ensureRootLive(T1) again, leader already resident) ==
+E6 VERDICT PASS (identical assertions)
+  A: leaderResidency=resident, projectionToken=readStateToken=lt-v1-022b65980dac5274f82e43f3e56f23d8076eb26061fadb0029c12da71b60ea2f (UNCHANGED vs first invocation)
+  B: leaderResidency=cold, projectionToken=readStateToken=lt-v1-623ddd76de80c0f95c776f7b37a704faf56a502ed6d71293f20fd4c14595c608 (untouched)
+consequence: the open T1 team view's stream polled for 2+ cadences afterwards and issued ZERO additional team.getProjection — the unchanged token produces no spurious pull (browser capture dfa59223e7651, projection total stayed exactly 4).
+
+Notes:
+- token(A) and token(B) are BYTE-IDENTICAL to the round-2 and round-3 runs — the token derivation is deterministic over the same seeded state (expected; a fresh world copy reproduces the same live-state fingerprints).
+- A.gen=32 = 2 (base) + 30 (seeded T1 events), matching round 2/3; B.gen=9 matches round 2/3.
+- The two teams' leaders share the literal member instanceId 'inst-leader' — the exact collision covered by the new regression in packages/runtime/test/s6t-live-token.test.ts (closeout guide §4).
