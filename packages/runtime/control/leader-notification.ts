@@ -22,7 +22,24 @@
  *   vocabulary), everything else is the closed record fields.
  */
 
-import type { ControlRequestNotificationPort, ControlRequestRecord } from './types.js'
+import type {
+  ControlRequestNotificationPort,
+  ControlRequestRecord,
+  ControlSubject,
+} from './types.js'
+
+/** Render one canonical subject (pre-alpha3 PR-D, D.2) as a display
+ *  segment: the closed kind plus the kind-selected id. */
+function subjectOfDisplay(subject: ControlSubject): string {
+  switch (subject.kind) {
+    case 'instance':
+      return `instance ${subject.instanceId}`
+    case 'template':
+      return `template ${subject.templateId}`
+    case 'team':
+      return `team ${subject.rootSessionId}`
+  }
+}
 
 /** The delivery seam shape (the glue's `deliverRootControlNotification`). */
 export interface LeaderControlNotifierDeliver {
@@ -71,7 +88,13 @@ export function renderLeaderApprovalNotification(request: ControlRequestRecord):
     '',
     `requestId: ${request.requestId}`,
     `requester: ${requester}`,
-    `target: ${request.targetInstanceId}`,
+    // The canonical subject (pre-alpha3 PR-D, D.2) plus the legacy
+    // instance projection when present (byte-identical for instance
+    // records; template/team subjects have no targetInstanceId).
+    `subject: ${subjectOfDisplay(request.subject)}`,
+    ...(request.targetInstanceId !== undefined
+      ? [`target: ${request.targetInstanceId}`]
+      : []),
   ]
   const tool = bounded(request.toolName)
   if (tool !== undefined) lines.push(`tool: ${tool}`)

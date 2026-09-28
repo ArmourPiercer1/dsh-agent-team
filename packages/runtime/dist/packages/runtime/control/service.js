@@ -30,28 +30,60 @@
  * - `control-decision-recorded` — one ControlDecision row per request
  *   (at most one; the first decision is authoritative);
  * - `control-allow-consumed`    — the exactly-once consumption of an
- *   allow by the last-mile guard.
+ *   allow by the last-mile guard;
+ * - `control-request-abandoned` — the ADDITIVE close fact of the inline
+ *   coupling (pre-alpha3 PR-D, D.4): durably closes an inline request on
+ *   abort (payload: requestId, rootSessionId, abandonedAt, reason?). The
+ *   append-only ledger has no delete primitive — the request row is
+ *   never physically removed; the abandon fact is the TERMINAL mark
+ *   (like `stale-denied`): the request can never become an allow, and
+ *   the last-mile guard blocks over it even with a durable allow
+ *   recorded before the abandon.
  *
  * Scope model (types.ts): an allow authorizes EXACTLY
- * `(rootSessionId, targetInstanceId, actionName, toolName?,
- * capabilityDomain?, correlation, operationFingerprint?)` and is
- * CONSUMED EXACTLY ONCE. The operation fingerprint is OPTIONAL (legacy
- * rows never carry it); when present it binds the approval to the exact
- * resource + payload impact identity and participates in the scope
- * identity and the request idempotency key — it is NOT a correlation
- * substitute (a new correlation under the same fingerprint is a new
- * request; the same correlation under a different fingerprint is a
- * different request and must never reuse the other's request/approval).
+ * `(rootSessionId, subject, actionName, toolName?, capabilityDomain?,
+ * correlation, operationFingerprint?)` and — in the GUARDED coupling —
+ * is CONSUMED EXACTLY ONCE. The CANONICAL subject (pre-alpha3 PR-D,
+ * D.2) is the closed three-kind `instance | template | team`: the scope
+ * key's second element is the SUBJECT id (instance → instanceId,
+ * template → templateId, team → rootSessionId). `targetInstanceId` is
+ * KEPT (additive) as the legacy read-compatibility projection of an
+ * INSTANCE subject: a durable row / scope carrying `targetInstanceId`
+ * but NO explicit `subject` parses to
+ * `{ kind: 'instance', instanceId: targetInstanceId }`, so a legacy
+ * instance row recomputes the EXACT same scope key it always had
+ * (byte-identical semantics, no migration). The operation fingerprint is
+ * OPTIONAL (legacy rows never carry it); when present it binds the
+ * approval to the exact resource + payload impact identity and
+ * participates in the scope identity and the request idempotency key —
+ * it is NOT a correlation substitute (a new correlation under the same
+ * fingerprint is a new request; the same correlation under a different
+ * fingerprint is a different request and must never reuse the other's
+ * request/approval).
  *
- * Request idempotency: the scope key `(root, targetInstanceId, actionName,
+ * Request idempotency: the scope key `(root, subjectId, actionName,
  * toolName|absent, correlation, operationFingerprint|absent)` identifies
  * the logical request; a retried request returns the EXISTING row
  * (regardless of requester); a NEW attempt after an allow was consumed
  * (or after a deny) must carry a NEW correlation and creates a NEW
  * request (no reuse).
  *
+ * The two execution couplings (pre-alpha3 PR-D, D.3/D.4): `guarded`
+ * (ABSENT on the row = legacy, the existing flow: request → wait →
+ * decision → guard → consume → execute — UNCHANGED) and `inline`
+ * (request → wait → decision; on `allow` the current frozen invocation
+ * continues — NO `control-allow-consumed` fact is written, the allow is
+ * not consumed by a guard; on `deny` zero effect; on `abort`
+ * `abandonControlRequest` durably records the abandon fact — the
+ * request state is DERIVED: `pending | decided | abandoned`, the
+ * abandon fact wins as the terminal mark).
+ *
  * Stale semantics (fail closed; the append-only ledger has no "mark"
- * primitive, so the decision row IS the mark):
+ * primitive, so the decision row IS the mark). These apply to INSTANCE
+ * subjects ONLY (pre-alpha3 PR-D, D.2: the instance stale validator
+ * branches on the subject kind — a template or team subject has no
+ * instance lifecycle, so it can NEVER be killed by the instance stale
+ * check):
  * - request time: a DISPOSED target → CONTROL_TARGET_STALE (zero rows; a
  *   missing target is the facade's INSTANCE_NOT_FOUND); an ARCHIVED
  *   target is tolerated (it can be restored);
@@ -133,14 +165,14 @@
  *
  * @module @dsh-agent-team/runtime/control/service
  */
-import { LEADER_INSTANCE_ID, parseInstanceId, parseRootSessionId, } from '../../contracts/src/index.js';
+import { LEADER_INSTANCE_ID, isRemoteSafeJsonValue, parseInstanceId, parseRootSessionId, parseTemplateId, } from '../../contracts/src/index.js';
 import { CAPABILITY_NAME_VALUES, } from '../../domain/policy/src/index.js';
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError, ACTION_NAMES, actionSpecOf, callerEnvelope, enforceEnvelope, resolveCaller, resolveTeamAndTarget, } from '../admission/index.js';
 import { withTeamLock } from '../action-router/index.js';
 import { TEAM_DOMAIN_ERROR_CODES, isTeamDomainError, } from '../../storage/schema/index.js';
 import { deterministicToken } from '../../storage/provisioning/index.js';
 import { CONTROL_ERROR_CODES, ControlError, } from './errors.js';
-import { CONTROL_DECISION_REASON_VALUES, CONTROL_DECISION_VALUES, CONTROL_DECISION_VALUE_VALUES, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KINDS, CONTROL_REQUEST_KIND_VALUES, CONTROL_RESOLVER_ROLES, } from './types.js';
+import { CONTROL_DECISION_REASON_VALUES, CONTROL_DECISION_VALUES, CONTROL_DECISION_VALUE_VALUES, CONTROL_EXECUTION_COUPLING_VALUES, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KINDS, CONTROL_REQUEST_KIND_VALUES, CONTROL_RESOLVER_ROLES, CONTROL_SUBJECT_KINDS, } from './types.js';
 // --- closed fact vocabulary (kebab; p4t6-scanner safe by construction) -------------
 /** The durable ControlRequest fact family. */
 const FACT_REQUEST = 'control-request-recorded';
@@ -148,6 +180,9 @@ const FACT_REQUEST = 'control-request-recorded';
 const FACT_DECISION = 'control-decision-recorded';
 /** The durable allow-consumption fact family (the exactly-once evidence). */
 const FACT_CONSUMPTION = 'control-allow-consumed';
+/** The durable abandon fact family (pre-alpha3 PR-D, D.4 — the additive
+ *  close of an inline-coupling request on abort; the terminal mark). */
+const FACT_ABANDONMENT = 'control-request-abandoned';
 /** The reused closed specs of the facade action registry (module
  *  invariant: the closed registry always carries both). */
 function closedActionSpecOf(name) {
@@ -202,7 +237,73 @@ function parseCallerRef(value) {
     }
     return undefined;
 }
+/** Parse a durable canonical subject (pre-alpha3 PR-D, D.2; malformed
+ *  rows are treated as ABSENT — fail closed). Exactly ONE id field is
+ *  admitted, selected by the closed kind: a subject carrying a second
+ *  id field is an AMBIGUOUS identity (malformed input, never a guess). */
+function parseSubject(value) {
+    if (!isPlainObject(value))
+        return undefined;
+    const instanceId = value['instanceId'];
+    const templateId = value['templateId'];
+    const rootSessionId = value['rootSessionId'];
+    if (value['kind'] === CONTROL_SUBJECT_KINDS.INSTANCE) {
+        return typeof instanceId === 'string' &&
+            instanceId.length > 0 &&
+            templateId === undefined &&
+            rootSessionId === undefined
+            ? { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId }
+            : undefined;
+    }
+    if (value['kind'] === CONTROL_SUBJECT_KINDS.TEMPLATE) {
+        return typeof templateId === 'string' &&
+            templateId.length > 0 &&
+            instanceId === undefined &&
+            rootSessionId === undefined
+            ? { kind: CONTROL_SUBJECT_KINDS.TEMPLATE, templateId }
+            : undefined;
+    }
+    if (value['kind'] === CONTROL_SUBJECT_KINDS.TEAM) {
+        return typeof rootSessionId === 'string' &&
+            rootSessionId.length > 0 &&
+            instanceId === undefined &&
+            templateId === undefined
+            ? { kind: CONTROL_SUBJECT_KINDS.TEAM, rootSessionId }
+            : undefined;
+    }
+    return undefined;
+}
+/** The subject id that participates in the scope key (pre-alpha3 PR-D,
+ *  D.2): instance → instanceId, template → templateId, team →
+ *  rootSessionId. For a LEGACY instance row the subject is derived from
+ *  `targetInstanceId`, so the id — and therefore the key — is
+ *  byte-identical to the pre-PR-D key. */
+function subjectIdOf(subject) {
+    switch (subject.kind) {
+        case CONTROL_SUBJECT_KINDS.INSTANCE:
+            return subject.instanceId;
+        case CONTROL_SUBJECT_KINDS.TEMPLATE:
+            return subject.templateId;
+        case CONTROL_SUBJECT_KINDS.TEAM:
+            return subject.rootSessionId;
+    }
+}
+/** Do two canonical subjects name the SAME identity (closed kind AND
+ *  kind-selected id)? */
+function subjectsMatch(a, b) {
+    return a.kind === b.kind && subjectIdOf(a) === subjectIdOf(b);
+}
 /** Parse a durable operation scope. */
+/** Parse a durable operation scope.
+ *
+ *  Subject rule (pre-alpha3 PR-D, D.2): an EXPLICIT durable `subject` is
+ *  canonical (validated; when `targetInstanceId` is ALSO present the two
+ *  must agree — instance kind + equal id); a scope carrying
+ *  `targetInstanceId` but NO explicit `subject` parses to the instance
+ *  subject `{ kind: 'instance', instanceId: targetInstanceId }` (the
+ *  LEGACY identity — byte-identical semantics; the returned scope keeps
+ *  `targetInstanceId` verbatim, so the durable projection is unchanged).
+ */
 function parseScope(value) {
     if (!isPlainObject(value))
         return undefined;
@@ -212,12 +313,30 @@ function parseScope(value) {
     const correlation = value['correlation'];
     if (typeof rootSessionId !== 'string' || rootSessionId.length === 0)
         return undefined;
-    if (typeof targetInstanceId !== 'string' || targetInstanceId.length === 0)
-        return undefined;
     if (typeof actionName !== 'string' || actionName.length === 0)
         return undefined;
     if (typeof correlation !== 'string' || correlation.length === 0)
         return undefined;
+    // The subject: explicit, or derived from targetInstanceId (legacy).
+    let subject;
+    if (value['subject'] !== undefined) {
+        subject = parseSubject(value['subject']);
+        if (subject === undefined)
+            return undefined;
+        if (targetInstanceId !== undefined &&
+            (subject.kind !== CONTROL_SUBJECT_KINDS.INSTANCE || subject.instanceId !== targetInstanceId)) {
+            // An explicit subject that disagrees with the legacy projection is
+            // an ambiguous identity — fail closed (ABSENT), never a guess.
+            return undefined;
+        }
+    }
+    else {
+        if (typeof targetInstanceId !== 'string' || targetInstanceId.length === 0) {
+            // No subject AND no targetInstanceId: no identity element at all.
+            return undefined;
+        }
+        subject = { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: targetInstanceId };
+    }
     const toolName = value['toolName'];
     if (toolName !== undefined && typeof toolName !== 'string')
         return undefined;
@@ -233,7 +352,10 @@ function parseScope(value) {
     }
     return {
         rootSessionId,
-        targetInstanceId,
+        subject,
+        ...(typeof targetInstanceId === 'string' && targetInstanceId.length > 0
+            ? { targetInstanceId }
+            : {}),
         actionName,
         correlation,
         ...(toolName !== undefined ? { toolName } : {}),
@@ -243,7 +365,16 @@ function parseScope(value) {
         ...(operationFingerprint !== undefined ? { operationFingerprint } : {}),
     };
 }
-/** Parse a request payload (malformed rows are treated as ABSENT). */
+/** Parse a request payload (malformed rows are treated as ABSENT).
+ *
+ *  Subject rule (pre-alpha3 PR-D, D.2): an EXPLICIT durable `subject` is
+ *  canonical; a LEGACY row (targetInstanceId only, no explicit subject)
+ *  parses to the instance subject (byte-identical semantics — the old
+ *  targetInstanceId-only identity is preserved). The review-payload
+ *  fields (D.3) are ADDITIVE: ABSENT on legacy rows (legacy semantics),
+ *  and a PRESENT-but-wrong-type value is malformed (ABSENT — fail
+ *  closed).
+ */
 function parseRequestPayload(value) {
     if (!isPlainObject(value))
         return undefined;
@@ -257,14 +388,32 @@ function parseRequestPayload(value) {
         return undefined;
     if (typeof kind !== 'string' || !CONTROL_REQUEST_KIND_VALUES.includes(kind))
         return undefined;
-    if (typeof targetInstanceId !== 'string' || targetInstanceId.length === 0)
-        return undefined;
     if (typeof actionName !== 'string' || actionName.length === 0)
         return undefined;
     if (typeof correlation !== 'string' || correlation.length === 0)
         return undefined;
     if (requester === undefined)
         return undefined;
+    // The subject: explicit, or derived from targetInstanceId (legacy).
+    let subject;
+    if (value['subject'] !== undefined) {
+        subject = parseSubject(value['subject']);
+        if (subject === undefined)
+            return undefined;
+        if (targetInstanceId !== undefined &&
+            (subject.kind !== CONTROL_SUBJECT_KINDS.INSTANCE || subject.instanceId !== targetInstanceId)) {
+            // An explicit subject that disagrees with the legacy projection is
+            // an ambiguous identity — fail closed (ABSENT), never a guess.
+            return undefined;
+        }
+    }
+    else {
+        if (typeof targetInstanceId !== 'string' || targetInstanceId.length === 0) {
+            // No subject AND no targetInstanceId: no identity element at all.
+            return undefined;
+        }
+        subject = { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: targetInstanceId };
+    }
     const toolName = value['toolName'];
     if (toolName !== undefined && typeof toolName !== 'string')
         return undefined;
@@ -281,11 +430,33 @@ function parseRequestPayload(value) {
         (typeof operationFingerprint !== 'string' || operationFingerprint.length === 0)) {
         return undefined;
     }
+    // The additive review-payload fields (pre-alpha3 PR-D, D.3): ABSENT =
+    // legacy semantics; present-but-wrong-type = malformed (fail closed).
+    const reviewPayload = value['reviewPayload'];
+    if (reviewPayload !== undefined && !isRemoteSafeJsonValue(reviewPayload))
+        return undefined;
+    const reviewPayloadDigest = value['reviewPayloadDigest'];
+    if (reviewPayloadDigest !== undefined &&
+        (typeof reviewPayloadDigest !== 'string' || reviewPayloadDigest.length === 0)) {
+        return undefined;
+    }
+    if (reviewPayloadDigest !== undefined && reviewPayload === undefined) {
+        // A digest of a payload the row does not carry is ambiguous input.
+        return undefined;
+    }
+    const executionCoupling = value['executionCoupling'];
+    if (executionCoupling !== undefined &&
+        !CONTROL_EXECUTION_COUPLING_VALUES.includes(executionCoupling)) {
+        return undefined;
+    }
     return {
         requestId,
         kind: kind,
         requester,
-        targetInstanceId,
+        subject,
+        ...(typeof targetInstanceId === 'string' && targetInstanceId.length > 0
+            ? { targetInstanceId }
+            : {}),
         actionName,
         correlation,
         ...(toolName !== undefined ? { toolName } : {}),
@@ -294,6 +465,36 @@ function parseRequestPayload(value) {
             : {}),
         ...(operationFingerprint !== undefined ? { operationFingerprint } : {}),
         ...(summary !== undefined ? { summary } : {}),
+        ...(reviewPayload !== undefined
+            ? { reviewPayload: reviewPayload }
+            : {}),
+        ...(reviewPayloadDigest !== undefined ? { reviewPayloadDigest } : {}),
+        ...(executionCoupling !== undefined
+            ? { executionCoupling: executionCoupling }
+            : {}),
+    };
+}
+/** Parse an abandon payload (malformed rows are treated as ABSENT). */
+function parseAbandonmentPayload(value) {
+    if (!isPlainObject(value))
+        return undefined;
+    const requestId = value['requestId'];
+    const rootSessionId = value['rootSessionId'];
+    const abandonedAt = value['abandonedAt'];
+    if (typeof requestId !== 'string' || requestId.length === 0)
+        return undefined;
+    if (typeof rootSessionId !== 'string' || rootSessionId.length === 0)
+        return undefined;
+    if (typeof abandonedAt !== 'string' || abandonedAt.length === 0)
+        return undefined;
+    const reason = value['reason'];
+    if (reason !== undefined && typeof reason !== 'string')
+        return undefined;
+    return {
+        requestId,
+        rootSessionId,
+        abandonedAt,
+        ...(reason !== undefined ? { reason } : {}),
     };
 }
 /** Parse a decision payload (malformed rows are treated as ABSENT). */
@@ -369,20 +570,25 @@ function isActionCaller(caller) {
 }
 /** The stable logical-request key (the request idempotency identity AND
  *  the scope's durable identity; NUL-separated per the provisioning
- *  identity convention). The optional operation fingerprint, WHEN
- *  PRESENT, participates in the key (alpha.2 exact-scope extension): two
- *  requests identical except for the fingerprint are DIFFERENT logical
- *  requests (different keys, different requestIds, no idempotency
- *  collision — a payload/resource mismatch must never reuse another
- *  operation's request or approval). When ABSENT the key carries an
- *  empty fingerprint segment, which is distinct from any present
- *  fingerprint; legacy rows (fingerprint absent) recompute the SAME key
- *  they always had for their own retries, so old durable rows stay
- *  idempotent under the extended key. */
-function scopeKey(rootSessionId, targetInstanceId, actionName, toolName, correlation, operationFingerprint) {
+ *  identity convention). The second element is the CANONICAL SUBJECT id
+ *  (pre-alpha3 PR-D, D.2: `subjectIdOf` — instance → instanceId,
+ *  template → templateId, team → rootSessionId). For a LEGACY instance
+ *  row the subject is derived from `targetInstanceId`, so the subject id
+ *  IS the old `targetInstanceId` and the key is BYTE-IDENTICAL to the
+ *  pre-PR-D key (old durable rows keep working unchanged). The optional
+ *  operation fingerprint, WHEN PRESENT, participates in the key (alpha.2
+ *  exact-scope extension): two requests identical except for the
+ *  fingerprint are DIFFERENT logical requests (different keys, different
+ *  requestIds, no idempotency collision — a payload/resource mismatch
+ *  must never reuse another operation's request or approval). When
+ *  ABSENT the key carries an empty fingerprint segment, which is
+ *  distinct from any present fingerprint; legacy rows (fingerprint
+ *  absent) recompute the SAME key they always had for their own
+ *  retries, so old durable rows stay idempotent under the extended key. */
+function scopeKey(rootSessionId, subjectId, actionName, toolName, correlation, operationFingerprint) {
     return [
         rootSessionId,
-        targetInstanceId,
+        subjectId,
         actionName,
         toolName ?? '',
         correlation,
@@ -395,10 +601,32 @@ function requestIdOf(key) {
     return `ctrl-${deterministicToken(key, 24)}`;
 }
 /** Does the durable scope snapshot match the guarded scope EXACTLY? */
+/** Resolve the CANONICAL subject of a scope (pre-alpha3 PR-D, D.2): an
+ *  explicit `subject` wins; ABSENT falls back to the legacy
+ *  `targetInstanceId`-only path (the instance subject — byte-identical
+ *  identity for legacy callers). Returns `undefined` when the scope
+ *  carries neither a subject nor a usable targetInstanceId (the caller
+ *  must fail closed). */
+function resolveSubject(scope) {
+    if (scope.subject !== undefined)
+        return scope.subject;
+    if (typeof scope.targetInstanceId === 'string' && scope.targetInstanceId.length > 0) {
+        return { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: scope.targetInstanceId };
+    }
+    return undefined;
+}
 function scopeSnapshotMatches(recorded, guarded) {
     if (recorded.rootSessionId !== guarded.rootSessionId)
         return false;
-    if (recorded.targetInstanceId !== guarded.targetInstanceId)
+    // The canonical SUBJECT identity (pre-alpha3 PR-D, D.2): closed kind
+    // AND kind-selected id. A legacy instance row's subject is derived from
+    // its targetInstanceId, so a legacy guarded scope resolves to the SAME
+    // instance subject — byte-identical matching for old scopes.
+    const recordedSubject = resolveSubject(recorded);
+    const guardedSubject = resolveSubject(guarded);
+    if (recordedSubject === undefined || guardedSubject === undefined)
+        return false;
+    if (!subjectsMatch(recordedSubject, guardedSubject))
         return false;
     if (recorded.actionName !== guarded.actionName)
         return false;
@@ -513,6 +741,7 @@ export function createControlService(options) {
         const requests = [];
         const decisions = [];
         const consumptions = [];
+        const abandonments = [];
         for (const entry of repositories.ledger.list()) {
             if (String(entry.rootSessionId) !== root)
                 continue;
@@ -531,17 +760,26 @@ export function createControlService(options) {
                 if (payload !== undefined)
                     consumptions.push({ entry, payload });
             }
+            else if (entry.factType === FACT_ABANDONMENT) {
+                const payload = parseAbandonmentPayload(entry.payload);
+                if (payload !== undefined)
+                    abandonments.push({ entry, payload });
+            }
         }
         const bySequence = (a, b) => a.entry.sequence - b.entry.sequence;
         requests.sort(bySequence);
         decisions.sort(bySequence);
         consumptions.sort(bySequence);
-        return { requests, decisions, consumptions };
+        abandonments.sort(bySequence);
+        return { requests, decisions, consumptions, abandonments };
     }
     function scopeOf(entry, payload) {
         return {
             rootSessionId: String(entry.rootSessionId),
-            targetInstanceId: payload.targetInstanceId,
+            subject: payload.subject,
+            ...(payload.targetInstanceId !== undefined
+                ? { targetInstanceId: payload.targetInstanceId }
+                : {}),
             actionName: payload.actionName,
             correlation: payload.correlation,
             ...(payload.toolName !== undefined ? { toolName: payload.toolName } : {}),
@@ -554,16 +792,24 @@ export function createControlService(options) {
         };
     }
     function toRequestRecord(entry, payload, state) {
+        // The DERIVED request state (pre-alpha3 PR-D, D.4): the abandon fact
+        // is the TERMINAL mark (like `stale-denied`) — it wins over a
+        // concurrent decision, which in turn wins over pending.
+        const abandoned = state.abandonments.some((a) => a.payload.requestId === payload.requestId);
         const decided = state.decisions.some((d) => d.payload.requestId === payload.requestId);
+        const status = abandoned ? 'abandoned' : decided ? 'decided' : 'pending';
         return {
             requestId: payload.requestId,
             rootSessionId: String(entry.rootSessionId),
             kind: payload.kind,
             requester: payload.requester,
-            targetInstanceId: payload.targetInstanceId,
+            subject: payload.subject,
+            ...(payload.targetInstanceId !== undefined
+                ? { targetInstanceId: payload.targetInstanceId }
+                : {}),
             actionName: payload.actionName,
             correlation: payload.correlation,
-            status: decided ? 'decided' : 'pending',
+            status,
             createdAt: entry.createdAt,
             requestSequence: entry.sequence,
             ...(payload.toolName !== undefined ? { toolName: payload.toolName } : {}),
@@ -574,6 +820,24 @@ export function createControlService(options) {
                 ? { operationFingerprint: payload.operationFingerprint }
                 : {}),
             ...(payload.summary !== undefined ? { summary: payload.summary } : {}),
+            ...(payload.reviewPayload !== undefined
+                ? { reviewPayload: payload.reviewPayload }
+                : {}),
+            ...(payload.reviewPayloadDigest !== undefined
+                ? { reviewPayloadDigest: payload.reviewPayloadDigest }
+                : {}),
+            ...(payload.executionCoupling !== undefined
+                ? { executionCoupling: payload.executionCoupling }
+                : {}),
+        };
+    }
+    function toAbandonmentRecord(entry, payload) {
+        return {
+            requestId: payload.requestId,
+            rootSessionId: payload.rootSessionId,
+            abandonedAt: payload.abandonedAt,
+            abandonmentSequence: entry.sequence,
+            ...(payload.reason !== undefined ? { reason: payload.reason } : {}),
         };
     }
     function toDecisionRecord(entry, payload) {
@@ -613,13 +877,23 @@ export function createControlService(options) {
     /** Record one durable decision row (BEFORE any effect; the row IS the
      *  durable decision). */
     async function commitDecision(args) {
+        const decisionScopeSubject = resolveSubject(args.scope);
+        if (decisionScopeSubject === undefined) {
+            // The decision scope snapshot must carry the canonical subject
+            // (pre-alpha3 PR-D, D.2) — a scope with no identity element is
+            // malformed input (fail closed; the commit never happens).
+            throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'ControlService: the decision scope snapshot carries no subject (field: scope.subject)', { stage: 'decision', field: 'scope.subject' });
+        }
         const payload = {
             requestId: args.requestId,
             decision: args.value,
             decider: args.decider,
             scope: {
                 rootSessionId: args.scope.rootSessionId,
-                targetInstanceId: args.scope.targetInstanceId,
+                subject: decisionScopeSubject,
+                ...(args.scope.targetInstanceId !== undefined
+                    ? { targetInstanceId: args.scope.targetInstanceId }
+                    : {}),
                 actionName: args.scope.actionName,
                 correlation: args.scope.correlation,
                 ...(args.scope.toolName !== undefined ? { toolName: args.scope.toolName } : {}),
@@ -684,27 +958,96 @@ export function createControlService(options) {
         if (args.summary !== undefined && typeof args.summary !== 'string') {
             throw malformed('request', 'summary', 'summary must be a string when present');
         }
+        // Subject normalization (pre-alpha3 PR-D, D.2): the canonical identity
+        // is the closed three-kind subject. An EXPLICIT subject must be well
+        // formed; a present targetInstanceId must be ABSENT or agree with an
+        // explicit instance subject; with NO explicit subject the
+        // targetInstanceId (required, non-empty) IS the legacy instance
+        // identity (byte-identical normalization for old callers).
+        let subject;
+        if (args.subject !== undefined) {
+            const parsedSubject = parseSubject(args.subject);
+            if (parsedSubject === undefined) {
+                throw malformed('request', 'subject', `subject must be {kind:'instance',instanceId} | {kind:'template',templateId} | {kind:'team',rootSessionId} (got ${JSON.stringify(args.subject)})`);
+            }
+            subject = parsedSubject;
+            if (args.targetInstanceId !== undefined &&
+                (parsedSubject.kind !== CONTROL_SUBJECT_KINDS.INSTANCE ||
+                    parsedSubject.instanceId !== args.targetInstanceId)) {
+                throw malformed('request', 'targetInstanceId', 'a present targetInstanceId must agree with an explicit instance subject (the legacy projection of the subject)');
+            }
+        }
+        else {
+            if (typeof args.targetInstanceId !== 'string' || args.targetInstanceId.length === 0) {
+                throw malformed('request', 'targetInstanceId', 'targetInstanceId (or an explicit subject) is required: the legacy instance addressing is mandatory when no subject is given');
+            }
+            subject = { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: args.targetInstanceId };
+        }
+        // Review-payload checks (pre-alpha3 PR-D, D.3): ABSENT = legacy
+        // semantics; a present value must be valid lossless JSON; the digest
+        // requires a present payload; the coupling is a closed set.
+        if (args.reviewPayload !== undefined && !isRemoteSafeJsonValue(args.reviewPayload)) {
+            throw malformed('request', 'reviewPayload', 'reviewPayload must be lossless JSON (a RemoteSafeJsonValue) when present');
+        }
+        if (args.reviewPayloadDigest !== undefined &&
+            (typeof args.reviewPayloadDigest !== 'string' || args.reviewPayloadDigest.length === 0)) {
+            throw malformed('request', 'reviewPayloadDigest', 'reviewPayloadDigest must be a non-empty string when present');
+        }
+        if (args.reviewPayloadDigest !== undefined && args.reviewPayload === undefined) {
+            throw malformed('request', 'reviewPayloadDigest', 'reviewPayloadDigest requires a present reviewPayload (a digest of a payload the request does not carry is ambiguous input)');
+        }
+        if (args.executionCoupling !== undefined &&
+            !CONTROL_EXECUTION_COUPLING_VALUES.includes(args.executionCoupling)) {
+            throw malformed('request', 'executionCoupling', `executionCoupling outside the closed set (guarded|inline): ${JSON.stringify(args.executionCoupling)}`);
+        }
         // Reused authority steps (the facade's typed codes surface as-is):
-        // (1) caller identity/role; (2) team + target resolution; (3)
-        // request-time staleness; (4) envelope.
+        // (1) caller identity/role; (2) team + target resolution (INSTANCE
+        // subjects ONLY — a template/team subject resolves the team without a
+        // target and is NEVER killed by the instance stale validator); (3)
+        // request-time staleness (instance subjects only); (4) envelope.
         const caller = resolveCaller(repositories, root, args.caller);
         const resolved = resolveTeamAndTarget(repositories, options.blueprintCatalog, {
             rootSessionId: root,
             action: ACTION_NAMES.REQUEST_CONTROL,
             caller: args.caller,
-            targetInstanceId: args.targetInstanceId,
+            ...(subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE
+                ? { targetInstanceId: subject.instanceId }
+                : {}),
             requestToken: args.correlation,
         }, REQUEST_CONTROL_SPEC);
-        const target = resolved.target;
-        const targetLifecycle = target !== undefined ? String(target.lifecycle) : undefined;
-        if (targetLifecycle === TERMINAL_LIFECYCLE) {
-            throw new ControlError(CONTROL_ERROR_CODES.CONTROL_TARGET_STALE, `ControlService: target instance is ${targetLifecycle} (terminal) — a control request can never become valid (no row written)`, { rootSessionId: root, targetInstanceId: args.targetInstanceId, lifecycle: targetLifecycle });
+        // Subject-specific existence validation (pre-alpha3 PR-D, D.2): the
+        // instance staleness check below applies to instance subjects ONLY.
+        if (subject.kind === CONTROL_SUBJECT_KINDS.TEAM) {
+            if (subject.rootSessionId !== root) {
+                throw malformed('request', 'subject', 'a team subject must name THIS team (subject.rootSessionId !== rootSessionId)');
+            }
+        }
+        else if (subject.kind === CONTROL_SUBJECT_KINDS.TEMPLATE) {
+            const blueprint = resolved.bound.blueprint;
+            const knownTemplates = [
+                blueprint.leader.templateId,
+                ...blueprint.members.map((m) => m.templateId),
+            ];
+            if (!knownTemplates.some((t) => t === subject.templateId)) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, `ControlService: template subject not in the bound team blueprint (no row written)`, { stage: 'request', field: 'subject', templateId: subject.templateId });
+            }
+        }
+        if (subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE) {
+            const target = resolved.target;
+            const targetLifecycle = target !== undefined ? String(target.lifecycle) : undefined;
+            if (targetLifecycle === TERMINAL_LIFECYCLE) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_TARGET_STALE, `ControlService: target instance is ${targetLifecycle} (terminal) — a control request can never become valid (no row written)`, {
+                    rootSessionId: root,
+                    targetInstanceId: subject.instanceId,
+                    lifecycle: targetLifecycle,
+                });
+            }
         }
         enforceEnvelope(REQUEST_CONTROL_SPEC, callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)));
         const outcome = await withTeamLock(teamLocks, root, async () => {
             const state = loadControlState(root);
-            const key = scopeKey(root, args.targetInstanceId, args.actionName, args.toolName, args.correlation, args.operationFingerprint);
-            const existing = state.requests.find((r) => scopeKey(String(r.entry.rootSessionId), r.payload.targetInstanceId, r.payload.actionName, r.payload.toolName, r.payload.correlation, r.payload.operationFingerprint) === key);
+            const key = scopeKey(root, subjectIdOf(subject), args.actionName, args.toolName, args.correlation, args.operationFingerprint);
+            const existing = state.requests.find((r) => scopeKey(String(r.entry.rootSessionId), subjectIdOf(r.payload.subject), r.payload.actionName, r.payload.toolName, r.payload.correlation, r.payload.operationFingerprint) === key);
             if (existing !== undefined) {
                 // Idempotent: the same logical request returns its EXISTING row
                 // (regardless of requester; a decided row says `decided` — a new
@@ -719,7 +1062,10 @@ export function createControlService(options) {
                 requestId,
                 kind: args.kind,
                 requester,
-                targetInstanceId: args.targetInstanceId,
+                subject,
+                ...(subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE
+                    ? { targetInstanceId: subject.instanceId }
+                    : {}),
                 actionName: args.actionName,
                 correlation: args.correlation,
                 ...(args.toolName !== undefined ? { toolName: args.toolName } : {}),
@@ -730,6 +1076,13 @@ export function createControlService(options) {
                     ? { operationFingerprint: args.operationFingerprint }
                     : {}),
                 ...(args.summary !== undefined ? { summary: args.summary } : {}),
+                ...(args.reviewPayload !== undefined ? { reviewPayload: args.reviewPayload } : {}),
+                ...(args.reviewPayloadDigest !== undefined
+                    ? { reviewPayloadDigest: args.reviewPayloadDigest }
+                    : {}),
+                ...(args.executionCoupling !== undefined
+                    ? { executionCoupling: args.executionCoupling }
+                    : {}),
             };
             const sequence = await putEntry({
                 schemaVersion: 2,
@@ -745,7 +1098,10 @@ export function createControlService(options) {
                     rootSessionId: root,
                     kind: args.kind,
                     requester,
-                    targetInstanceId: args.targetInstanceId,
+                    subject,
+                    ...(subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE
+                        ? { targetInstanceId: subject.instanceId }
+                        : {}),
                     actionName: args.actionName,
                     correlation: args.correlation,
                     status: 'pending',
@@ -759,6 +1115,13 @@ export function createControlService(options) {
                         ? { operationFingerprint: args.operationFingerprint }
                         : {}),
                     ...(args.summary !== undefined ? { summary: args.summary } : {}),
+                    ...(args.reviewPayload !== undefined ? { reviewPayload: args.reviewPayload } : {}),
+                    ...(args.reviewPayloadDigest !== undefined
+                        ? { reviewPayloadDigest: args.reviewPayloadDigest }
+                        : {}),
+                    ...(args.executionCoupling !== undefined
+                        ? { executionCoupling: args.executionCoupling }
+                        : {}),
                 },
                 created: true,
             };
@@ -839,6 +1202,13 @@ export function createControlService(options) {
             if (request === undefined) {
                 throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_NOT_FOUND, `ControlService: no durable control request '${args.requestId}' in team '${root}' (a decision without a request)`, { rootSessionId: root, requestId: args.requestId });
             }
+            // Abandonment (pre-alpha3 PR-D, D.4): the durable abandon fact is
+            // the TERMINAL mark (like `stale-denied`) — checked BEFORE the
+            // decided check, with ZERO durable side effects (no decision row
+            // is written): an abandoned request can never become an allow.
+            if (state.abandonments.some((a) => a.payload.requestId === args.requestId)) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED, `ControlService: request '${args.requestId}' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)`, { rootSessionId: root, requestId: args.requestId });
+            }
             if (state.decisions.some((d) => d.payload.requestId === args.requestId)) {
                 throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_DECIDED, `ControlService: request '${args.requestId}' already carries a durable decision (the first decision is authoritative)`, { rootSessionId: root, requestId: args.requestId });
             }
@@ -858,9 +1228,19 @@ export function createControlService(options) {
             // Envelope (the resolve-control op; a human is not envelope-bound).
             enforceEnvelope(RESOLVE_CONTROL_SPEC, callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)));
             // Resolve-time staleness (durable stale-denied FIRST, then throw).
-            const target = repositories.memberInstances.get(root, request.payload.targetInstanceId);
-            const targetLifecycle = target !== undefined ? String(target.lifecycle) : undefined;
-            if (target === undefined || targetLifecycle === TERMINAL_LIFECYCLE) {
+            // INSTANCE subjects ONLY (pre-alpha3 PR-D, D.2): the instance
+            // stale validator branches on the subject kind — a template or
+            // team subject has no instance lifecycle, so it is NEVER killed
+            // by this check (the key negative of the generalization).
+            const isInstanceSubject = request.payload.subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE;
+            let target;
+            let targetLifecycle;
+            if (isInstanceSubject) {
+                target = repositories.memberInstances.get(root, request.payload.subject.instanceId);
+                targetLifecycle = target !== undefined ? String(target.lifecycle) : undefined;
+            }
+            if (isInstanceSubject &&
+                (target === undefined || targetLifecycle === TERMINAL_LIFECYCLE)) {
                 const scope = scopeOf(request.entry, request.payload);
                 await commitDecision({
                     requestId: request.payload.requestId,
@@ -872,7 +1252,7 @@ export function createControlService(options) {
                 throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_STALE, `ControlService: request '${request.payload.requestId}' is stale — the target instance is ${target === undefined ? 'missing' : targetLifecycle} (recorded as stale-denied; it can never become an allow)`, {
                     rootSessionId: root,
                     requestId: request.payload.requestId,
-                    targetInstanceId: request.payload.targetInstanceId,
+                    targetInstanceId: request.payload.subject.instanceId,
                     lifecycle: targetLifecycle ?? 'missing',
                 });
             }
@@ -913,6 +1293,97 @@ export function createControlService(options) {
             });
         });
     }
+    // --- abandonControlRequest (pre-alpha3 PR-D, D.4 — the inline abort path) -------------
+    /**
+     * Durably ABANDON one control request (the additive close fact
+     * `control-request-abandoned` — the terminal mark; the append-only
+     * ledger has no delete primitive, so the request row is never
+     * physically removed).
+     *
+     * Authority steps (reused facade codes surface as-is): (1) caller
+     * identity/role; (2) team resolution (the abandon is addressed to the
+     * REQUEST — no target token); (3) closed close-authority (requester
+     * ref, Leader, or human — a member may abandon only ITS OWN request);
+     * (4) the closed `resolve-control` envelope (abandon is a
+     * control-request mutation — the same op the decision uses). The
+     * durable abandon fact is written BEFORE any return (commit-before-
+     * ack); the request is NEVER physically removed.
+     */
+    async function abandonControlRequest(args) {
+        const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'abandon');
+        if (!isActionCaller(args.caller)) {
+            throw malformed('abandon', 'caller', 'caller must be {kind:human,humanId} or {kind:instance,instanceId}');
+        }
+        if (typeof args.requestId !== 'string' || args.requestId.length === 0) {
+            throw malformed('abandon', 'requestId', 'requestId must be a non-empty string');
+        }
+        if (args.reason !== undefined && typeof args.reason !== 'string') {
+            throw malformed('abandon', 'reason', 'reason must be a string when present');
+        }
+        // Reused authority steps: (1) caller; (2) team + blueprint
+        // resolution (the abandon is addressed to the REQUEST — no target
+        // token; it reuses the resolve-control op spec + envelope).
+        const caller = resolveCaller(repositories, root, args.caller);
+        const resolved = resolveTeamAndTarget(repositories, options.blueprintCatalog, {
+            rootSessionId: root,
+            action: ACTION_NAMES.RESOLVE_CONTROL,
+            caller: args.caller,
+            requestToken: args.requestId,
+        }, RESOLVE_CONTROL_SPEC);
+        return withTeamLock(teamLocks, root, async () => {
+            const state = loadControlState(root);
+            const request = state.requests.find((r) => r.payload.requestId === args.requestId);
+            if (request === undefined) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_NOT_FOUND, `ControlService: no durable control request '${args.requestId}' in team '${root}' (an abandon without a request)`, { rootSessionId: root, requestId: args.requestId });
+            }
+            // The terminal mark is written exactly once: an already-abandoned
+            // request is rejected (zero durable side effects).
+            if (state.abandonments.some((a) => a.payload.requestId === args.requestId)) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED, `ControlService: request '${args.requestId}' is already durably abandoned (the terminal mark is written exactly once)`, { rootSessionId: root, requestId: args.requestId });
+            }
+            // Closed close-authority: the requesting principal (its own
+            // request), the Leader, or the human. A member may abandon only
+            // ITS OWN request — the requester ref's instance identity. (A
+            // DECIDED request may still be abandoned: that is the
+            // allow-invalidating path — the abandon closes the durable allow.)
+            const requester = request.payload.requester;
+            if (caller.role === 'member' &&
+                !(requester.kind === 'instance' &&
+                    requester.instanceId === String(caller.callerMember?.instanceId ?? ''))) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, `ControlService: a member may abandon only its own request (requester ${requester.kind === 'instance' ? requester.instanceId : 'not-an-instance'} !== caller)`, {
+                    rootSessionId: root,
+                    requestId: args.requestId,
+                    role: caller.role,
+                    requester,
+                });
+            }
+            // Envelope (the resolve-control op; a human is not envelope-bound).
+            enforceEnvelope(RESOLVE_CONTROL_SPEC, callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)));
+            // The durable abandon fact FIRST (commit-before-ack; the append-
+            // only ledger has no delete primitive — the row IS the close).
+            const payload = {
+                requestId: request.payload.requestId,
+                rootSessionId: root,
+                abandonedAt: options.now(),
+                ...(args.reason !== undefined ? { reason: args.reason } : {}),
+            };
+            const sequence = await putEntry({
+                schemaVersion: 2,
+                sequence: await allocateSequence(),
+                rootSessionId: root,
+                factType: FACT_ABANDONMENT,
+                payload,
+                createdAt: options.now(),
+            });
+            return {
+                requestId: request.payload.requestId,
+                rootSessionId: root,
+                abandonedAt: payload['abandonedAt'],
+                abandonmentSequence: sequence,
+                ...(args.reason !== undefined ? { reason: args.reason } : {}),
+            };
+        });
+    }
     // --- listControlState ----------------------------------------------------------------
     async function listControlState(rootSessionId) {
         const root = parseRoot(rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'list');
@@ -925,6 +1396,7 @@ export function createControlService(options) {
                 requests: state.requests.map((r) => toRequestRecord(r.entry, r.payload, state)),
                 decisions: state.decisions.map((d) => toDecisionRecord(d.entry, d.payload)),
                 consumptions: state.consumptions.map((c) => toConsumptionRecord(c.entry, c.payload)),
+                abandonments: state.abandonments.map((a) => toAbandonmentRecord(a.entry, a.payload)),
             };
         });
     }
@@ -1009,12 +1481,47 @@ export function createControlService(options) {
     // --- guardOperation (the tool-pipeline last-mile seam) -------------------------------
     async function guardOperation(scope) {
         const root = parseRoot(scope.rootSessionId, CONTROL_ERROR_CODES.CONTROL_GUARD_MALFORMED, 'guard');
-        let target;
-        try {
-            target = String(parseInstanceId(scope.targetInstanceId));
+        // Subject normalization (pre-alpha3 PR-D, D.2): the canonical
+        // identity is the closed three-kind subject. An EXPLICIT subject
+        // must be well formed and must agree with a present targetInstanceId;
+        // with NO explicit subject the targetInstanceId (required, non-empty)
+        // IS the legacy instance identity (byte-identical guard semantics
+        // for old callers). The instance stale validators (member liveness
+        // + the parseInstanceId shape check) apply to instance subjects ONLY.
+        const subjectWasExplicit = scope.subject !== undefined;
+        let subject;
+        if (scope.subject !== undefined) {
+            const parsedSubject = parseSubject(scope.subject);
+            if (parsedSubject === undefined) {
+                throw guardMalformed('subject', `subject must be {kind:'instance',instanceId} | {kind:'template',templateId} | {kind:'team',rootSessionId} (got ${JSON.stringify(scope.subject)})`);
+            }
+            subject = parsedSubject;
+            if (scope.targetInstanceId !== undefined &&
+                (parsedSubject.kind !== CONTROL_SUBJECT_KINDS.INSTANCE ||
+                    parsedSubject.instanceId !== scope.targetInstanceId)) {
+                throw guardMalformed('targetInstanceId', 'a present targetInstanceId must agree with an explicit instance subject (the legacy projection of the subject)');
+            }
         }
-        catch {
-            throw guardMalformed('targetInstanceId', `targetInstanceId is not a valid instance id: ${JSON.stringify(scope.targetInstanceId)}`);
+        else {
+            if (typeof scope.targetInstanceId !== 'string' || scope.targetInstanceId.length === 0) {
+                throw guardMalformed('targetInstanceId', 'targetInstanceId (or an explicit subject) is required: the legacy instance addressing is mandatory when no subject is given');
+            }
+            subject = { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: scope.targetInstanceId };
+        }
+        // The instance canonical target (the valid instance id); ABSENT for
+        // template/team subjects (no instance lifecycle — the stale validator
+        // is skipped for them).
+        let instanceTarget;
+        if (subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE) {
+            try {
+                instanceTarget = String(parseInstanceId(subject.instanceId));
+            }
+            catch {
+                // Point the error at the field the caller actually supplied: the
+                // legacy targetInstanceId path (subject derived) or the explicit
+                // subject.
+                throw guardMalformed(subjectWasExplicit ? 'subject' : 'targetInstanceId', `${subjectWasExplicit ? 'subject.instanceId' : 'targetInstanceId'} is not a valid instance id: ${JSON.stringify(subject.instanceId)}`);
+            }
         }
         if (typeof scope.actionName !== 'string' || scope.actionName.length === 0) {
             throw guardMalformed('actionName', 'actionName must be a non-empty string');
@@ -1044,20 +1551,24 @@ export function createControlService(options) {
             // (b) an ORDINARY member must be durably live and work-accepting
             // (an allow only authorizes execution on a live target —
             // missing/ARCHIVED/DISPOSED all block). The member-row lifecycle
-            // check applies to members only (A6: folding the Leader into the
-            // compound check made `String(member.lifecycle)` read 'undefined'
-            // for the v2 leader row — a permanent target-stale).
-            if (target !== LEADER_INSTANCE_ID) {
-                const member = repositories.memberInstances.get(root, target);
+            // check applies to instance subjects ONLY (pre-alpha3 PR-D, D.2):
+            // a template/team subject has no instance lifecycle, so this check
+            // is skipped for them (templates are blueprint identity, not live
+            // state). The member-row lifecycle check applies to members only
+            // (A6: folding the Leader into the compound check made
+            // `String(member.lifecycle)` read 'undefined' for the v2 leader
+            // row — a permanent target-stale).
+            if (instanceTarget !== undefined && instanceTarget !== LEADER_INSTANCE_ID) {
+                const member = repositories.memberInstances.get(root, instanceTarget);
                 if (member === undefined ||
                     !GUARD_LIVE_LIFECYCLES.includes(String(member.lifecycle))) {
                     return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.TARGET_STALE };
                 }
             }
             const state = loadControlState(root);
-            const key = scopeKey(root, target, scope.actionName, scope.toolName, scope.correlation, scope.operationFingerprint);
+            const key = scopeKey(root, subjectIdOf(subject), scope.actionName, scope.toolName, scope.correlation, scope.operationFingerprint);
             const matching = state.requests.filter((r) => {
-                const rowKey = scopeKey(String(r.entry.rootSessionId), r.payload.targetInstanceId, r.payload.actionName, r.payload.toolName, r.payload.correlation, r.payload.operationFingerprint);
+                const rowKey = scopeKey(String(r.entry.rootSessionId), subjectIdOf(r.payload.subject), r.payload.actionName, r.payload.toolName, r.payload.correlation, r.payload.operationFingerprint);
                 return rowKey === key;
             });
             if (matching.length === 0) {
@@ -1069,6 +1580,22 @@ export function createControlService(options) {
                 reason: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST,
             };
             for (const request of matching) {
+                // Abandonment (pre-alpha3 PR-D, D.4): the durable abandon fact
+                // is the TERMINAL mark (like `stale-denied`) — an immediate
+                // block verdict even over a durable `allow` recorded BEFORE the
+                // abandon (the old allow/decision cannot execute the operation
+                // — zero effect; the inline allow was never consumed by a guard
+                // and the abandon closes it).
+                const abandon = state.abandonments.find((a) => a.payload.requestId === request.payload.requestId);
+                if (abandon !== undefined) {
+                    const decision = state.decisions.find((d) => d.payload.requestId === request.payload.requestId);
+                    return {
+                        allowed: false,
+                        reason: CONTROL_GUARD_BLOCK_REASONS.REQUEST_ABANDONED,
+                        requestId: request.payload.requestId,
+                        ...(decision !== undefined ? { decisionSequence: decision.entry.sequence } : {}),
+                    };
+                }
                 const decision = state.decisions.find((d) => d.payload.requestId === request.payload.requestId);
                 if (decision === undefined) {
                     fallback = {
@@ -1264,6 +1791,7 @@ export function createControlService(options) {
     return {
         requestControl,
         resolveControl,
+        abandonControlRequest,
         listControlState,
         guardOperation,
         checkExternalOperation,

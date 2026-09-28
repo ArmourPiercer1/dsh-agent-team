@@ -63,6 +63,40 @@
  * BLOCKED; a new attempt at the operation must create a NEW control
  * request with a NEW correlation (no reuse).
  *
+ * Pre-Alpha.3 PR-D (plan §D — Control Plane Generalization): the
+ * instance-only approval service generalizes to the unified durable
+ * decision plane (the Recovery inline Human Review substrate):
+ *
+ * - the CANONICAL subject (`ControlSubject` — D.2): the scope's second
+ *   identity element is the SUBJECT, closed three-kind
+ *   `instance | template | team`. `targetInstanceId` is KEPT (additive,
+ *   not removed) as the legacy read-compatibility projection of an
+ *   INSTANCE subject; a durable row / scope carrying `targetInstanceId`
+ *   but NO explicit `subject` parses to
+ *   `subject = { kind: 'instance', instanceId: targetInstanceId }`
+ *   (byte-identical semantics — old durable rows keep working
+ *   unchanged, no migration). The scope key derives from the SUBJECT id
+ *   (instance → instanceId, template → templateId, team → rootSessionId);
+ *   for a legacy instance row the subject id IS `targetInstanceId`, so
+ *   the key is byte-identical to the pre-PR-D key;
+ * - the REVIEW PAYLOAD (D.3): the additive optional request fields
+ *   `reviewPayload?` (the lossless-JSON value the Remote/UI must display
+ *   losslessly — the Recovery reviewed invocation), `reviewPayload-
+ *   Digest?` (its stable digest string) and `executionCoupling?` (closed
+ *   `guarded | inline`). ABSENT = legacy semantics (byte-identical for
+ *   old rows);
+ * - the TWO COUPLINGS (D.4): `guarded` (the existing flow: request →
+ *   wait → decision → guard → consume → execute — unchanged) and the NEW
+ *   `inline` (request → wait → decision; on `allow` the current frozen
+ *   invocation continues — NO `control-allow-consumed` fact is written,
+ *   the allow is not consumed by a guard; on `deny` zero effect; on
+ *   `abort` the NEW additive close fact `control-request-abandoned` is
+ *   durably recorded — the append-only ledger has no delete primitive —
+ *   and the request state becomes DERIVED: `pending | decided |
+ *   abandoned`, with the abandon fact the TERMINAL mark (like
+ *   `stale-denied`): an abandoned request can never become an allow, and
+ *   the last-mile guard sees the abandon and blocks.
+ *
  * Synchronous wait bridge (alpha.2 §9.4): `ControlService.
  * awaitControlDecision` is the minimal liveness bridge over the SAME
  * durable rows — it polls the durable control state (the authority is
@@ -148,6 +182,68 @@ export const CONTROL_DECISION_REASONS = {
 };
 /** Every durable-decision reason value, for membership checks. */
 export const CONTROL_DECISION_REASON_VALUES = Object.values(CONTROL_DECISION_REASONS);
+// --- canonical subject (pre-alpha3 PR-D, D.2) --------------------------------------------
+/**
+ * The closed CANONICAL subject kinds of a control operation scope
+ * (pre-alpha3 PR-D, D.2): the scope's second identity element generalizes
+ * from "the target instance" to a subject the operation is about:
+ *
+ * - `instance` — the operation is addressed to one member instance
+ *   (the pre-PR-D identity; a legacy row's `targetInstanceId` IS this
+ *   subject id — byte-identical semantics);
+ * - `template` — the operation is about one blueprint TEMPLATE (e.g. a
+ *   Recovery reviewed invocation of a template's work): templates carry
+ *   no lifecycle, so the instance stale validators NEVER apply to a
+ *   template subject (the stale check branches on the subject kind);
+ * - `team` — the operation is about the TEAM as a whole (the subject id
+ *   is the team's own root session id).
+ */
+export const CONTROL_SUBJECT_KINDS = {
+    /** The operation is addressed to one member instance. */
+    INSTANCE: 'instance',
+    /** The operation is about one blueprint template. */
+    TEMPLATE: 'template',
+    /** The operation is about the team as a whole (the root session). */
+    TEAM: 'team',
+};
+/** Every canonical subject kind value, for membership checks. */
+export const CONTROL_SUBJECT_KIND_VALUES = Object.values(CONTROL_SUBJECT_KINDS);
+/** Type guard: is `value` a {@link ControlSubjectKind}? */
+export function isControlSubjectKind(value) {
+    return typeof value === 'string' && CONTROL_SUBJECT_KIND_VALUES.includes(value);
+}
+// --- execution coupling (pre-alpha3 PR-D, D.3/D.4) -----------------------------------------
+/**
+ * The closed EXECUTION COUPLINGS of a control request (pre-alpha3 PR-D,
+ * D.3/D.4): how the requested decision is coupled to the operation's
+ * execution.
+ *
+ * - `guarded` — the EXISTING flow (request → wait → decision → guard →
+ *   consume → execute): the allow is consumed EXACTLY ONCE by the
+ *   last-mile guard's check-and-reserve (`control-allow-consumed`);
+ * - `inline` — the NEW flow (request → wait → decision; on `allow` the
+ *   current frozen invocation CONTINUES — no consumption fact is written,
+ *   the allow is not consumed by a guard; on `deny` zero effect; on
+ *   `abort` the additive close fact `control-request-abandoned` durably
+ *   closes the request with zero effect — the abandon fact is the
+ *   terminal mark, like `stale-denied`).
+ *
+ * ABSENT on the request = LEGACY semantics (byte-identical for old rows):
+ * the legacy instance-only flow is the guarded flow.
+ */
+export const CONTROL_EXECUTION_COUPLINGS = {
+    /** The existing guarded flow (guard consumes the allow exactly once). */
+    GUARDED: 'guarded',
+    /** The inline flow (the frozen invocation continues on allow; abort
+     *  durably abandons the request — no consumption fact is ever written). */
+    INLINE: 'inline',
+};
+/** Every execution coupling value, for membership checks. */
+export const CONTROL_EXECUTION_COUPLING_VALUES = Object.values(CONTROL_EXECUTION_COUPLINGS);
+/** Type guard: is `value` a {@link ControlExecutionCoupling}? */
+export function isControlExecutionCoupling(value) {
+    return (typeof value === 'string' && CONTROL_EXECUTION_COUPLING_VALUES.includes(value));
+}
 // --- guard verdicts -------------------------------------------------------------------
 /**
  * The closed guard block reasons (the last-mile guard NEVER throws for a
@@ -163,6 +259,14 @@ export const CONTROL_GUARD_BLOCK_REASONS = {
     DECISION_DENY: 'decision-deny',
     /** The durable decision is `stale-denied` (the request is closed). */
     REQUEST_STALE: 'request-stale',
+    /** The request is durably ABANDONED (the additive close fact
+     *  `control-request-abandoned` exists — pre-alpha3 PR-D, D.4). The
+     *  abandon fact is the TERMINAL mark (like `stale-denied`): even a
+     *  durable `allow` recorded BEFORE the abandon cannot execute — the
+     *  guard sees the abandon and blocks (zero effect; the inline allow
+     *  was never consumed by a guard, so there is no consumption to
+     *  honor). */
+    REQUEST_ABANDONED: 'request-abandoned',
     /** The durable allow exists but was already consumed (exactly-once). */
     ALLOW_CONSUMED: 'allow-consumed',
     /** A durable decision exists for the correlation but a scope field

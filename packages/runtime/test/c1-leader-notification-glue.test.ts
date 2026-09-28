@@ -39,6 +39,7 @@ const RECORD: ControlRequestRecord = {
   rootSessionId: ROOT,
   kind: 'leader-approval',
   requester: { kind: 'instance', instanceId: 'inst-c1worker', role: 'member' },
+  subject: { kind: 'instance', instanceId: 'inst-c1worker' },
   targetInstanceId: 'inst-c1worker',
   actionName: 'tool-execute',
   toolName: 'bash',
