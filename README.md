@@ -53,7 +53,11 @@ gitignored) — this section is a pointer summary, not the authority:
 
 ## Release status
 
-- **Current RC baseline:** `0.1.0-rc.1`. This release freezes the manually tested and Playwright-validated Team vNext product as the baseline for future work.
+- **Current RC baseline:** `0.1.0-rc.1` (`origin/stable` @ `b0e5aeb4`, unchanged). This release freezes the manually tested and Playwright-validated Team vNext product as the baseline for future work.
+- **Current master (alpha):** `0.1.1-alpha.2` (all 9 packages) at master @ `e22c659a`
+  (PR #35 team-view-sync-complete merged, 2026-09-28); host pin
+  `@deepseek-ai/dsh@0.1.7-rc.1` (root `peerDependencies`). `0.1.1-alpha.1`
+  (frozen 2026-09-11) is superseded. No open PRs (2026-09-28).
 - **Pre-1.0 branch policy:** `master` carries ongoing alpha development; `stable` tracks only release-candidate baselines and RC-qualified fixes. Do not merge unqualified alpha work from `master` directly into `stable`.
 - **Product foundation:** the full vNext product (P0–P9 + T12 vertical +
   upstream-0.1.2-rc.1 compat + fresh-machine install chain, 1284 files / +85,679)
@@ -81,14 +85,23 @@ gitignored) — this section is a pointer summary, not the authority:
   declares no lifecycle scripts (plugin-prebuilt-artifacts, R131; `docs/INSTALL.md`
    §2). Commits ≤ `e832d73` still need the one-time `allowBuilds` key (INSTALL.md
    §6 troubleshooting); clone + mount remains the offline / manual path (§3).
-- Test baseline: upstream 0.1.2-rc.1 @ `76fda72979` (in-place update 2026-09-04;
-  in-repo compat adaptation only, CORE PATCH BUDGET = 0 held — R122, five gates green).
-- Push: origin updated 2026-09-05 (R126, user-authorized) — **master @ `4233816`**
-  (full product + closure) and `int/P9-master-product-closure` @ `4233816`
-  (fast-forward/new, zero force-push, verified via ls-remote); the R124 refs
-  (master @ `a733e9f` lineage + 5 task/int branches) unchanged.
-- Next: P10 hardening + G8-S/P8-S8 ruling awaiting user direction (no further
-  push without explicit authorization).
+- Test baseline: upstream 0.1.7-rc.1 @ `46a7f68b09` (test-use runtime checkout,
+  from the 2026-09-24 host upgrade round; canonical pin = `tests/paths.mjs`).
+  The characterization fixture/CI pin remains 0.1.5-rc.2 @ `fb2c4b9e` — an
+  intentional deferral per the upgrade plan U3 (see `docs/TEST_METHODS.md`
+  §1/§4.2). History: 0.1.2-rc.1 @ `76fda72979` (2026-09-04, R122) →
+  0.1.5-rc.2 @ `fb2c4b9e` (2026-09-17, rc2-repair) → 0.1.7-rc.1 (2026-09-24).
+- Push: origin/master updated through 2026-09-28 under per-round one-shot user
+  push authorizations — PRs #16–#35 all merged (latest: PR #35
+  team-view-sync-complete, merged @ `e22c659a`). **origin/master @ `e22c659a`**;
+  **origin/stable @ `b0e5aeb4`** (0.1.0-rc.1 freeze, unchanged). Zero force-push
+  on gated history; each push verified via ls-remote.
+- Next: no open PRs, no in-flight task round (2026-09-28). Awaiting user
+  direction: **G8-S (P9 proper line)** ruling (graph `blocked`, pending
+  prototype outcome) and the registered follow-up backlog (per-PR `followups` in
+  `graph.yaml`: c1/rc2 kit 0.1.7 re-adaptation, g5 real-host re-run,
+  p6t1-parallel load flake, F-rc1 composer reconcile, P10 items). No further
+  push without explicit authorization.
 - Details, pending items and evidence pointers: **`docs/STATUS.md`**.
 
 ## Commands
@@ -113,13 +126,13 @@ pipeline deterministic across restricted and normal environments.
 
 ## Plugin entries (production form)
 
-- Host half: `packages/runtime/src/plugin/host.ts` (built → `packages/runtime/dist/plugin/host.js`)
+- Host half: `packages/runtime/src/plugin/host.ts` (built → `packages/runtime/dist/packages/runtime/src/plugin/host.js`)
   — the production root binding (P8-S5 A01–A34 topology, P8-S6 completion): provides
   `teamRoot`, registers the `/team-remote` handler set (frozen Remote v1 catalog,
   facade-only command routing), the projection live overlay and server-side principal
   derivation (claims never trusted), and the Team operation fencing (P8-S5B shared
   per-team coordinator).
-- Client half: `packages/client/src/plugin/client.ts` (built → `packages/client/dist/plugin/client.js`)
+- Client half: `packages/client/src/plugin/client.ts` (built → `packages/client/dist/packages/client/src/plugin/client.js`)
   — the Team UI (P9, legacy reuse): registers `conversation.view` (Team tab),
   `conversation.input.dock`, `settings.section`, and the global New Team entry at
   `sidebar.footer.action`.

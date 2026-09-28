@@ -13,20 +13,20 @@
 
 ## 文档权威序
 
-upstream 公开契约 → `docs/plans/paused/` 四份 20260829 冻结文档（Architecture / UI / Development Plan / Task Decomposition，只读、语义唯一权威；2026-09-02 由 `docs/plans/active/` 移入 `docs/plans/paused/`，冻结基线地位不变）→ `docs/plans/active/` 当期执行计划（T12 Production Vertical Closure（已关闭，VERDICT GO @ c455c43）/ P9 UI Legacy-Reuse 实施计划（当前阶段，P9_VERDICT GO @ 0738b45，2026-09-04）；local、gitignored）→ `docs/ROUTER_RULES.md`（执行协议）→ `docs/TEST_METHODS.md`（测试约束）→ `docs/migration/`（legacy inventory/reuse map，参考）→ legacy 代码（仅证据）→ 实现便利。冲突时按此序裁决，科学/设计理由需显式记录。
+upstream 公开契约 → `docs/plans/paused/` 四份 20260829 冻结文档（Architecture / UI / Development Plan / Task Decomposition，只读、语义唯一权威；2026-09-02 由 `docs/plans/active/` 移入 `docs/plans/paused/`，冻结基线地位不变）→ `docs/plans/active/` 当期执行计划（T12（已关闭，VERDICT GO @ c455c43）/ P9 UI Legacy-Reuse 实施计划（P9_VERDICT GO @ 0738b45，2026-09-04）/ PR 系列执行指南（PR #26–#35，#35 已 merge 2026-09-28 @ e22c659a）；当前阶段 = post-PR #35 merge（无 active 执行计划，G8-S P9 proper line 待用户裁决）；local、gitignored）→ `docs/ROUTER_RULES.md`（执行协议）→ `docs/TEST_METHODS.md`（测试约束）→ `docs/migration/`（legacy inventory/reuse map，参考）→ legacy 代码（仅证据）→ 实现便利。冲突时按此序裁决，科学/设计理由需显式记录。
 
 ## 目录约定
 
 | 路径 | 性质 |
 | --- | --- |
-| `docs/plans/active/` | 当期执行计划（local、gitignored；T12 = 已关闭，P9 UI = 当前阶段；用户/主 Agent 产物，禁 worker 改动） |
+| `docs/plans/active/` | 当期执行计划（local、gitignored；T12 = 已关闭 / P9 UI = GO @ 0738b45 / PR 系列执行指南（PR #26–#35，#35 已 merge 2026-09-28 @ e22c659a）；当前阶段 = post-PR #35 merge（无 active 执行计划，G8-S P9 proper line 待用户裁决）；用户/主 Agent 产物，禁 worker 改动） |
 | `docs/plans/paused/` | 20260829 冻结四份 + G8 审计报告 + P8-S 收束计划（local、gitignored；只读冻结基线，四份冻结文档仍为语义唯一权威） |
 | `docs/ROUTER_RULES.md` / `docs/TEST_METHODS.md` | 执行协议 / 测试约束（用户裁决可改，改动需记录） |
 | `docs/STATUS.md` | 当前状态总览（living 快照，非权威源；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`） |
 | `docs/contracts/` | contracts v1 冻结确认记录（P3-T6） |
 | `docs/migration/` | legacy 行为清单、reuse map |
 | `dev/agent-workflow/` | 编排状态 `graph.yaml`、只追加日志 `SESSION_ROUTER_LOG.md`、证据 `evidence/<task>/` |
-| `references/deepseek-harness/` | 冻结 legacy fork 参考（只读；冻结点 = 分支 `feat/team-vnext-integration-20260829` tip 与 tag `legacy-agent-team-pre-vnext`，均锁 `a3ab319927...`（2026-09-05 复核未移动；2026-09-12 本环境再复核未移动；2026-09-17 rc2-repair 轮再复核未移动；2026-09-24 推送 stable-2 轮 ls-remote 再复核未移动）；工作树 HEAD 现于 `stable-1-0.1.5-rc.2 @ fb2c4b9e69`（0.1.5-rc.2 官方发布点，2026-09-17 由用户切至本轮 rc.2 契约参考基线；此前本环境为 `master @ c291e7961a`（0.1.5 sync 迁移状态）；原 Windows 机为 `cd5ef814...` 基线对比检出）；**2026-09-24 用户指令**：新建分支 `stable-2-0.1.7-rc.1` @ `46a7f68b09`（upstream `deepseek-ai/deepseek-harness` 的 `dsh-v0.1.7-rc.1` 官方发布点，PR #5073；未 checkout，工作树 HEAD 不变）并连同 23 个官方 `dsh-v*` release tag 推送 origin（一次性授权，零 force-push；evidence `dev/agent-workflow/evidence/stable2-0.1.7-rc.1-sync/`）；禁止任何 vNext 开发；冻结锚点**不得移动**） |
+| `references/deepseek-harness/` | 冻结 legacy fork 参考（只读；冻结点 = 分支 `feat/team-vnext-integration-20260829` tip 与 tag `legacy-agent-team-pre-vnext`，均锁 `a3ab319927...`（2026-09-05 复核未移动；2026-09-12 本环境再复核未移动；2026-09-17 rc2-repair 轮再复核未移动；2026-09-24 推送 stable-2 轮 ls-remote 再复核未移动；2026-09-28 文档系统对齐轮本地 tag peel + 远端 ls-remote 再复核未移动）；工作树 HEAD 现于 `stable-1-0.1.5-rc.2 @ fb2c4b9e69`（0.1.5-rc.2 官方发布点，2026-09-17 由用户切至本轮 rc.2 契约参考基线；此前本环境为 `master @ c291e7961a`（0.1.5 sync 迁移状态）；原 Windows 机为 `cd5ef814...` 基线对比检出）；**2026-09-24 用户指令**：新建分支 `stable-2-0.1.7-rc.1` @ `46a7f68b09`（upstream `deepseek-ai/deepseek-harness` 的 `dsh-v0.1.7-rc.1` 官方发布点，PR #5073；未 checkout，工作树 HEAD 不变）并连同 23 个官方 `dsh-v*` release tag 推送 origin（一次性授权，零 force-push；evidence `dev/agent-workflow/evidence/stable2-0.1.7-rc.1-sync/`）；禁止任何 vNext 开发；冻结锚点**不得移动**） |
 | `tests/` | 测试基础设施（2026-09-12 标准化，test-infra-standardization）：`characterization/`（P2 harness）、`mock/`（mock model 部署 + 证据）、`kits/`（可复用 kit 归位，tracked）、`paths.mjs`（**测试路径与基线 pin 唯一来源**）、`deepseek-harness-test-use/`（pristine upstream 测试运行时 checkout，**gitignored**，自身 git 仓，detached @ `46a7f68b0922371ce7144b668b90e377d8e799f4` = 0.1.7-rc.1 官方发布点（2026-09-24 起，宿主升级轮；此前 fb2c4b9e69 = 0.1.5-rc.2（2026-09-17 起）；0.1.2 不再支持）；唯一允许的运行时源码；基线代差注记与 home 协议见 TEST_METHODS.md §4.2/§7）、`homes/`（一切 DSH_HOME 世界，**gitignored**）；旧 `references/.dsh-test*` 世界不迁移 |
 | `.worktrees/` | 任务 worktree（gitignored；一个任务一个） |
 | 根 `packages/` | vNext 9-package 结构（contracts/domain/storage/runtime/tools/remote/client/legacy/testkit，TaskDoc §11 冻结；P0 骨架 → P1–P9 完整实现，P9 GO 2026-09-04）；**禁止**复制 legacy `packages/team` 源码进来 |

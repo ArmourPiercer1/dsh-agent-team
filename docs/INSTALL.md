@@ -7,7 +7,7 @@
 
 | 项 | 要求 |
 | --- | --- |
-| DSH（deepseek-harness） | **0.1.2-rc.1**（已测基线；0.1.3-alpha.1 的插件契约已逐字节核验一致 —— `plugin.ts`/`profile.ts` 加载链同形） |
+| DSH（deepseek-harness） | **0.1.2-rc.1**（`0.1.0-rc.1` stable 线已测基线；0.1.3-alpha.1 的插件契约已逐字节核验一致 —— `plugin.ts`/`profile.ts` 加载链同形）。**`master` 线（当前 `0.1.1-alpha.2`）要求 0.1.7-rc.1**（根 `peerDependencies` = `@deepseek-ai/dsh@0.1.7-rc.1`，2026-09-24 宿主升级轮；见 STATUS.md 2026-09-24/2026-09-25 行） |
 | Node | `^22.19.0 \|\| >=24.0.0`（repo `engines`） |
 | pnpm | `11.7.0`（repo `packageManager` pin） |
 | 模型 | 目标机器可用的真实 provider/model + DSH 凭据（真实功能测试必需；测试世界的假模型配置不可用于真测） |
@@ -28,7 +28,8 @@ machine-agnostic：host 行 `name: "dsh-agent-team/host"` 子路径包、client 
 pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#0.1.0-rc.1
 ```
 
-如需跟踪最新 RC 修复，也可使用 `#stable`；不带 ref 时会安装 `master` 的 alpha 开发线。
+如需跟踪最新 RC 修复，也可使用 `#stable`；不带 ref 时会安装 `master` 的 alpha 开发线
+（**注意：master 线要求 DSH 0.1.7-rc.1 宿主，见 §1 前提**）。
 
 ### 为什么不需要 allowBuilds（本 commit 起）
 
@@ -71,9 +72,11 @@ bundle 行配置（last-write-wins，**不是字段级 merge**）——要覆盖
 git clone <repo-url> dsh-agent-team
 cd dsh-agent-team
 git checkout 0.1.0-rc.1  # 或 git checkout stable 跟踪最新 RC
-pnpm install              # row-owned 运行时依赖已声明（packages/runtime：5 × @deepseek-ai/*@0.1.2-rc.1
-                          # + zod 4.4.3，均已在 npm registry 发布、access:public）——新机器由 pnpm
-                          # 直接安装，无需手工 link / junction（R125(1b)）
+pnpm install              # row-owned 运行时依赖已声明（RC 基线：packages/runtime 5 ×
+                          # @deepseek-ai/*@0.1.2-rc.1 + zod 4.4.3；master 线 0.1.1-alpha.2：
+                          # 7 × @deepseek-ai/*@0.1.7-rc.1 + yaml + zod 4.4.3 —— 均已在 npm
+                          # registry 发布、access:public）——新机器由 pnpm 直接安装，无需手工
+                          # link / junction（R125(1b)）
 pnpm build              # 9 个包 tsc → packages/*/dist（legacy 包输出到 packages/runtime/dist，见 §2 产物表注）
 pnpm build:composition  # ① 放置 runtime glue ② 生成 packages/client/composition-shim/ ③ 安装面产物新鲜度闸
 ```
