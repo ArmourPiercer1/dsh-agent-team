@@ -64,7 +64,10 @@ class MemTransitions implements GovernanceTransitionCache {
 }
 
 class MemCommit implements GovernanceTransitionCommit {
-  async commit(_transition: PolicyStateTransitionRecord): Promise<void> {}
+  async commit(
+    _rootSessionId: string,
+    _transition: PolicyStateTransitionRecord,
+  ): Promise<void> {}
 }
 
 const noopPolicy: PolicyReader = {

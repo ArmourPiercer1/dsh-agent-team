@@ -117,7 +117,13 @@ class MemTransitions implements GovernanceTransitionCache {
 /** The durable commit port (records; never faults in this suite). */
 class MemCommit implements GovernanceTransitionCommit {
   readonly committed: PolicyStateTransitionRecord[] = []
-  async commit(transition: PolicyStateTransitionRecord): Promise<void> {
+  /** The addressed root each commit was stamped with (the port threads it). */
+  readonly committedRoots: string[] = []
+  async commit(
+    rootSessionId: string,
+    transition: PolicyStateTransitionRecord,
+  ): Promise<void> {
+    this.committedRoots.push(rootSessionId)
     this.committed.push(transition)
   }
 }

@@ -54,7 +54,7 @@ import { S6_PRINCIPAL_ERROR_CODES, SERVER_PRINCIPAL_TRANSPORTS, createServerPrin
 import { computeLiveTokenFromProjectedMembers, } from './live-token.js';
 import { resolveCaller, TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError, } from '../../admission/index.js';
 import { canonicalJsonStringify } from '../../../contracts/src/index.js';
-import { activePolicyState } from '../../mutation/index.js';
+import { committedPolicyState } from '../../effective-policy/index.js';
 import { PROBE_TRIGGER_VALUES, compatibilityRequirementsOf, } from '../../compatibility/index.js';
 import { evaluateCompatibility, parseEnvironmentFacts, } from '../../../domain/compatibility/src/index.js';
 import { sha256Hex } from '../../../domain/blueprint/src/index.js';
@@ -338,17 +338,17 @@ function ledgerEntryWire(record) {
     };
 }
 /**
- * The durable PolicyState read (the mutation store's transition rows).
+ * The durable PolicyState read (the ledger's transition rows).
  *
- * The remote read evaluates at the far-future step: it reports the state of
- * the LATEST durable transition (or the default state when the store is
- * empty). The production step clock is pinned to 0 (the step model advances
- * with the work chain, not with explicit transitions), so evaluating at
- * step 0 would hide every explicit transition from the remote read
- * permanently — the client must read back the state it set.
+ * pre-alpha3 PR-B (plan §B.2): the remote read reports the COMMITTED
+ * state — the last durable transition in COMMIT order (or the default
+ * state when the ledger is empty). The production step clock is retired
+ * as a decision source (the legacy step fields keep parse/display only):
+ * the pinned (requested 0 / effective 1) stamp is a record field, and the
+ * client reads back the state it committed.
  */
-function policyStateReadOf(transitions, atStep) {
-    return activePolicyState(transitions, atStep);
+function policyStateReadOf(transitions) {
+    return committedPolicyState(transitions).state;
 }
 /** The compatibility verdict of one durable state record (defensive read). */
 function compatibilityCurrentOf(state) {
@@ -1511,7 +1511,7 @@ export function createS6RemotePorts(options) {
         policyState: {
             async read(teamSessionId) {
                 const root = assertBoundRoot('policyState.get', teamSessionId);
-                const view = policyStateReadOf(options.mutationTransitions(root), Number.MAX_SAFE_INTEGER);
+                const view = policyStateReadOf(options.mutationTransitions(root));
                 // R2-1 (BQ-10): the surface reports the CURRENT state plus the
                 // AVAILABLE AUTHORIZED TRANSITIONS — the bound blueprint's closed
                 // state set (default + the declared states, declaration order)

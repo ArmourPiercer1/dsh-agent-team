@@ -347,6 +347,11 @@ import {
 // VERBATIM: every configured-server read in this file goes through
 // configuredMcpServers (no second normalization anywhere).
 import { configuredMcpServers } from '../mcp-supply.js'
+// pre-alpha3 PR-B (plan §B.2): the durable PolicyState read seam — the
+// COMMIT-ORDER ledger rows the canonical consumption read consumes (the
+// committed PolicyState participates in the live boundary resolution;
+// the legacy step fields keep parse/display only).
+import { listDurablePolicyStateTransitions } from '../durable-mutation-store.js'
 // C1 (restart-recovery, guide §3.2): the ONE durable Team-ownership
 // authority — the host-side activation fence and this glue's
 // `teamRootOfSession` thin wrapper share the SAME algorithm (no second
@@ -651,7 +656,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, activationFence } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, activationFence, policyReaderRef } = deps
 
   // C1 (restart-recovery, guide §7.2): the bounded window of the SINGLE
   // writer-conflict recovery wait (ensureLiveAgent's recoverWriterConflict
@@ -1179,13 +1184,31 @@ export function createAgentBindings(deps) {
       ...(initialTemplateModel !== undefined ? { model: initialTemplateModel } : {}),
       ...(initialTemplateMcp !== undefined ? { mcp: initialTemplateMcp } : {}),
     }
+    // pre-alpha3 PR-B (plan §B.2): THE canonical consumption read — the
+    // production PolicyReader (the lazy ref: the production host fills it
+    // after the root is built — the bound-snapshot static authority) +
+    // the durable PolicyState transitions (COMMIT order — the committed
+    // state participates in the live boundary resolution; the legacy
+    // step fields keep parse/display only). An ABSENT / unfilled ref is
+    // the pre-PR-B LEGACY input (the config external facts + the
+    // template-derived static grants + the implicit `default` state) —
+    // the test worlds keep their bit-for-bit behavior.
+    const canonicalPolicy = policyReaderRef?.current ?? undefined
+    const canonical = canonicalPolicy !== undefined
+    const policyStateTransitions = canonical
+      ? listDurablePolicyStateTransitions(domain.repositories, teamRoot)
+      : []
     const modelArgs = {
       rootSessionId: teamRoot,
       instanceId,
       overrides,
-      external,
       baseline: { ...config.staticModel },
-      ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
+      ...(canonical
+        ? { policy: canonicalPolicy, transitions: policyStateTransitions }
+        : {
+            external,
+            ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
+          }),
     }
     if (applied.length > 0) {
       modelArgs.appliedRecordIds = applied
@@ -1202,10 +1225,14 @@ export function createAgentBindings(deps) {
         rootSessionId: teamRoot,
         instanceId,
         overrides,
-        external,
         serverName: server.name,
         ...(applied.length > 0 ? { appliedRecordIds: applied } : {}),
-        ...(initialTemplateMcp !== undefined ? { initialTemplateMcp } : {}),
+        ...(canonical
+          ? { policy: canonicalPolicy, transitions: policyStateTransitions }
+          : {
+              external,
+              ...(initialTemplateMcp !== undefined ? { initialTemplateMcp } : {}),
+            }),
       }).view
     }
     // PR #23 review fix (P1-A): the OWNING root the resolution ran under is

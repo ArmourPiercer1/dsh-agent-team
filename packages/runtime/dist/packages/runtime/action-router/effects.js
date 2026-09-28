@@ -180,41 +180,62 @@ async function runEffect(ctx) {
             const target = ctx.target;
             if (target === undefined)
                 internalInvariant('inspect-config requires a resolved target');
-            const external = await ctx.externalPolicyFacts();
-            // PR #23 review fix (plan §3): inspect-config resolves the SAME
-            // effective policy the live consumption and the activation step 8
-            // resolve — including the bound template's INITIAL static mcp grant
-            // (the shared `initialMcpGrantOf(staticCapabilitiesOf(...))`
-            // derivation; an absent / non-allow / legacy template contributes
-            // nothing, never a synthesized override). Without this layer the
-            // inspection reported the template's allow as an unspecified
-            // fail-closed mcp cell while the agent actually ran with the grant
-            // (the P1 inconsistency: state showed allowed=false /
-            // source=unspecified while the MCP was mounted).
-            const boundTemplate = boundTemplateOf(ctx.blueprint, target);
-            const initialMcpGrant = initialMcpGrantOf(staticCapabilitiesOf(ctx.blueprint, boundTemplate));
-            // model-preference routing fix: the inspection ALSO carries the bound
-            // template's INITIAL static MODEL grant — the SAME
-            // `initialTemplateModelGrantOf` derivation the live consumption and
-            // the activation step 8 use — so team_inspect_config reports the
-            // SAME effective model cell the agent actually runs with (a
-            // declared `modelPreference` resolves at the template layer, not
-            // the unspecified -> staticModel baseline). The generic
-            // `templateValues` (model + mcp) feeds the ONE resolver.
-            const initialModelGrant = initialTemplateModelGrantOf(boundTemplate, ctx.staticModel);
-            const templateValues = {
-                ...(initialModelGrant !== undefined ? { model: initialModelGrant } : {}),
-                ...(initialMcpGrant !== undefined ? { mcp: initialMcpGrant } : {}),
-            };
             let policy;
             try {
-                policy = resolveActivationPolicy({
-                    rootSessionId: ctx.rootSessionId,
-                    instanceId: target.instanceId,
-                    overrides: ctx.repositories.overrides.list(ctx.rootSessionId),
-                    external,
-                    ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
-                });
+                if (ctx.policy !== undefined) {
+                    // pre-alpha3 PR-B (plan §B.2): the canonical inspect read — the
+                    // SAME single assembly as the live request boundary: the
+                    // production PolicyReader (bound snapshot) + the durable
+                    // PolicyState transitions + the durable governance records.
+                    policy = resolveActivationPolicy({
+                        rootSessionId: ctx.rootSessionId,
+                        instanceId: target.instanceId,
+                        overrides: ctx.repositories.overrides.list(ctx.rootSessionId),
+                        policy: ctx.policy,
+                        transitions: ctx.policyStateTransitions?.(ctx.rootSessionId) ?? [],
+                    });
+                }
+                else {
+                    // LEGACY (pre-PR-B, the test worlds): the probed external facts
+                    // + the template-derived static grants (below) + the implicit
+                    // `default` PolicyState.
+                    const external = await ctx.externalPolicyFacts();
+                    // PR #23 review fix (plan §3): inspect-config resolves the SAME
+                    // effective policy the live consumption and the activation
+                    // step 8 resolve — including the bound template's INITIAL
+                    // static mcp grant (the shared
+                    // `initialMcpGrantOf(staticCapabilitiesOf(...))`
+                    // derivation; an absent / non-allow / legacy template
+                    // contributes nothing, never a synthesized override). Without
+                    // this layer the inspection reported the template's allow as
+                    // an unspecified fail-closed mcp cell while the agent actually
+                    // ran with the grant (the P1 inconsistency: state showed
+                    // allowed=false / source=unspecified while the MCP was
+                    // mounted).
+                    const boundTemplate = boundTemplateOf(ctx.blueprint, target);
+                    const initialMcpGrant = initialMcpGrantOf(staticCapabilitiesOf(ctx.blueprint, boundTemplate));
+                    // model-preference routing fix: the inspection ALSO carries
+                    // the bound template's INITIAL static MODEL grant — the SAME
+                    // `initialTemplateModelGrantOf` derivation the live
+                    // consumption and the activation step 8 use — so
+                    // team_inspect_config reports the SAME effective model cell
+                    // the agent actually runs with (a declared `modelPreference`
+                    // resolves at the template layer, not the unspecified ->
+                    // staticModel baseline). The generic `templateValues` (model +
+                    // mcp) feeds the ONE resolver.
+                    const initialModelGrant = initialTemplateModelGrantOf(boundTemplate, ctx.staticModel);
+                    const templateValues = {
+                        ...(initialModelGrant !== undefined ? { model: initialModelGrant } : {}),
+                        ...(initialMcpGrant !== undefined ? { mcp: initialMcpGrant } : {}),
+                    };
+                    policy = resolveActivationPolicy({
+                        rootSessionId: ctx.rootSessionId,
+                        instanceId: target.instanceId,
+                        overrides: ctx.repositories.overrides.list(ctx.rootSessionId),
+                        external,
+                        ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
+                    });
+                }
             }
             catch (error) {
                 if (isActivationError(error))

@@ -73,7 +73,10 @@ class MemTransitions implements GovernanceTransitionCache {
 }
 
 class MemCommit implements GovernanceTransitionCommit {
-  async commit(_transition: PolicyStateTransitionRecord): Promise<void> {}
+  async commit(
+    _rootSessionId: string,
+    _transition: PolicyStateTransitionRecord,
+  ): Promise<void> {}
 }
 
 // The declared envelope: model allows m-a/m-b/m-x for the registered

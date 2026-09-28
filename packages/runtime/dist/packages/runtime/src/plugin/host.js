@@ -1040,6 +1040,15 @@ export async function apply(ctx, config) {
             }
             return blueprintAuthority.resolveSnapshot(ref);
         };
+        // pre-alpha3 PR-B (plan §B.2): the production PolicyReader reference
+        // (the controlServiceRef pattern). The GLUE is built BEFORE the
+        // production root (the root's `live` surface is a glue dependency), so
+        // the ref is created here and filled with `builtRoot.policyReader`
+        // right after `createTeamProductionRoot` returns (BELOW). The glue
+        // reads it lazily in `resolveConsumptionViews` — by the time any agent
+        // boundary resolves, the ref is filled; a world without the ref (test
+        // compositions) keeps the pre-PR-B legacy input.
+        const policyReaderRef = { current: null };
         const live = glue.createAgentBindings({
             agents,
             sessionPersistence,
@@ -1074,6 +1083,10 @@ export async function apply(ctx, config) {
             // recovery in ensureLiveAgent). The fence instance is the SAME object
             // whose listeners were registered at the top of apply() (guide §4.1).
             activationFence,
+            // pre-alpha3 PR-B (plan §B.2): the production PolicyReader reference
+            // (filled with builtRoot.policyReader right after root construction
+            // — the glue reads it lazily per boundary; see the ref's rationale).
+            policyReaderRef,
         });
         // --- the frozen legacy reader (A29): layout-agnostic candidate search, --
         // --- production layout FIRST; the root never imports the legacy sources
@@ -1139,6 +1152,12 @@ export async function apply(ctx, config) {
             remoteReadiness: () => teamRuntimeReadiness,
         });
         root = builtRoot;
+        // pre-alpha3 PR-B (plan §B.2): the production PolicyReader reference is
+        // filled NOW (the glue's lazy read sees it from the next boundary on —
+        // the boot window before this line is unreachable for Team agent
+        // boundaries: the remote surface is not servable until the boot is
+        // armed, and the boot preload below runs after this point).
+        policyReaderRef.current = builtRoot.policyReader;
         // --- strict-read + core-spill (Phase E, implementation guide §4/§13)
         // --- one artifact-read authority per production root, built over the
         // --- OPEN domain's durable repositories (session identity + the

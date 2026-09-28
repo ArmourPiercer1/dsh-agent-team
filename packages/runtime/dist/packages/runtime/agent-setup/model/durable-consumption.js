@@ -41,7 +41,7 @@
  *
  * @module @dsh-agent-team/runtime/agent-setup/model/durable-consumption
  */
-import { resolveActivationPolicy } from '../../activation/index.js';
+import { legacyPolicyReaderOf, readEffectivePolicy, } from '../../effective-policy/index.js';
 import { cellProvenance, } from '../../mutation/cell-provenance.js';
 import { parseModelItem } from './route.js';
 // `parseModelItem` now lives in ./route.js (the single route-grammar
@@ -92,6 +92,15 @@ export function modelConsumptionView(policy, baseline, options = {}) {
  * request's model selection reflects it (and a host restart re-derives
  * the same result from the same durable truth).
  *
+ * pre-alpha3 PR-B (plan §B.2): the resolution runs the ONE canonical read
+ * (`readEffectivePolicy`) — the canonical inputs are `policy` (the static
+ * policy authority) + `transitions` (the durable committed PolicyState);
+ * the pre-PR-B legacy args (`external` + `templateValues`) remain
+ * supported and adapt to the SAME canonical read. The per-boundary view is
+ * the frozen `modelConsumptionView` over the canonical policy with the
+ * MEMBER-SCOPED durable refs (team scope + this instance — another
+ * member's instance records never enter this member's pending set).
+ *
  * @param args - the boundary inputs.
  * @returns the frozen policy + the model consumption view.
  * @throws {@link import('../../activation/index.js').ActivationError}
@@ -99,26 +108,26 @@ export function modelConsumptionView(policy, baseline, options = {}) {
  *   malformed (fail closed).
  */
 export function resolveDurableModelSelection(args) {
-    const { rootSessionId, instanceId, overrides, external, baseline, appliedRecordIds, templateValues } = args;
-    const policy = resolveActivationPolicy({
-        rootSessionId,
-        instanceId,
-        overrides,
-        external,
-        ...(templateValues !== undefined ? { templateValues } : {}),
-    });
-    const refs = overrides.map((record) => ({
-        recordId: record.recordId,
-        kind: record.kind,
-        scope: record.scope,
-        generation: record.generation,
-        updatedAt: record.updatedAt,
-        values: record.values,
-    }));
-    const view = modelConsumptionView(policy, baseline, {
-        overrides: refs,
+    const { rootSessionId, instanceId, overrides, baseline, appliedRecordIds } = args;
+    const read = readEffectivePolicy(args.policy !== undefined
+        ? {
+            rootSessionId,
+            instanceId,
+            policy: args.policy,
+            transitions: args.transitions ?? [],
+            overrides,
+        }
+        : {
+            rootSessionId,
+            instanceId,
+            policy: legacyPolicyReaderOf(args.external, args.templateValues),
+            transitions: [],
+            overrides,
+        });
+    const view = modelConsumptionView(read.policy, baseline, {
+        overrides: read.refs,
         ...(appliedRecordIds !== undefined ? { appliedRecordIds } : {}),
     });
-    return { policy, view };
+    return { policy: read.policy, view };
 }
 //# sourceMappingURL=durable-consumption.js.map

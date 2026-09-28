@@ -726,7 +726,7 @@ describe('R2-3 (P8-S7-R2): BQ-11 the model state view', () => {
 
   // --- World B — the pending policy-state model (H09/F09) ---------------------------------
 
-  it('R23.4 H09/F09: the human policy-state model change is PENDING-NEXT-BOUNDARY (value p8s7r2ms-b/model-b1, source policy-state, state pending-next-boundary, effectiveFrom 1) on BOTH rows while current stays the baseline at the pinned step 0', () => {
+  it('R23.4 H09/F09: the human policy-state model change COMMITS to current (value p8s7r2ms-b/model-b1, source policy-state, state overridden) on BOTH rows and is conservatively reported pending-next-boundary (NO effectiveFrom — the legacy step display is retired, pre-alpha3 PR-B: the committed transition IS the current state, no more "waiting at the next boundary")', () => {
     expect(r23.bSetCode).toBe(null)
     // Before the set: baseline, no pending.
     expect(r23.bLeaderMs0['current']).toEqual({
@@ -735,23 +735,23 @@ describe('R2-3 (P8-S7-R2): BQ-11 the model state view', () => {
       state: 'inherited',
     })
     expect('pendingNextBoundary' in r23.bLeaderMs0).toBe(false)
-    // After the set: current still baseline (NOW horizon at step 0), pending filled.
+    // After the set: the committed transition IS the current state (the step
+    // clock is retired); the conservative pendingNextBoundary reports the
+    // same value as not-yet-applied by this process (no effectiveFrom).
     expect(r23.bLeaderMs1['current']).toEqual({
-      value: BASELINE_MODEL_VALUE,
-      source: 'capability',
-      state: 'inherited',
+      value: 'p8s7r2ms-b/model-b1',
+      source: 'policy-state',
+      state: 'overridden',
     })
     expect(r23.bLeaderMs1['pendingNextBoundary']).toEqual({
       value: 'p8s7r2ms-b/model-b1',
       source: 'policy-state',
       state: 'pending-next-boundary',
-      effectiveFrom: 1,
     })
     expect(r23.bWorkerMs1['pendingNextBoundary']).toEqual({
       value: 'p8s7r2ms-b/model-b1',
       source: 'policy-state',
       state: 'pending-next-boundary',
-      effectiveFrom: 1,
     })
     expect(r23.bLeaderMs1['availability']).toBe('available')
     expect(r23.bWorkerMs1['availability']).toBe('available')
@@ -792,40 +792,40 @@ describe('R2-3 (P8-S7-R2): BQ-11 the model state view', () => {
 
   // --- World D — the capability-missing pending (H10) --------------------------------------
 
-  it('R23.7 H10: the capability-missing model at the next boundary surfaces as unavailable from the winning team layer (value null, source policy-state, state unavailable, unavailable true, effectiveFrom 1) while the current boundary stays available', () => {
+  it('R23.7 H10: the capability-missing model COMMITS to current as unavailable from the winning team layer (value null, source policy-state, state unavailable, unavailable true; NO effectiveFrom — the legacy step display is retired) and the availability is unavailable (the committed horizon carries the external capability fact, pre-alpha3 PR-B)', () => {
     expect(r23.dSetCode).toBe(null)
     expect(r23.dWorkerMs1['current']).toEqual({
-      value: BASELINE_MODEL_VALUE,
-      source: 'capability',
-      state: 'inherited',
+      value: null,
+      source: 'policy-state',
+      state: 'unavailable',
+      unavailable: true,
     })
     expect(r23.dWorkerMs1['pendingNextBoundary']).toEqual({
       value: null,
       source: 'policy-state',
       state: 'unavailable',
       unavailable: true,
-      effectiveFrom: 1,
     })
-    expect(r23.dWorkerMs1['availability']).toBe('available')
+    expect(r23.dWorkerMs1['availability']).toBe('unavailable')
   })
 
   // --- World E — the external hard-deny pending (H10) ----------------------------------------
 
-  it('R23.8 H10: the external hard deny at the next boundary surfaces as denied from the external-hard-policy (value null, source external-hard-policy, state denied, deniedBy external:hard-deny, effectiveFrom 1) while the current boundary stays available', () => {
+  it('R23.8 H10: the external hard deny COMMITS to current as denied from the external-hard-policy (value null, source external-hard-policy, state denied, deniedBy external:hard-deny; NO effectiveFrom — the legacy step display is retired) and the availability is unavailable (the committed horizon carries the external hard fact, pre-alpha3 PR-B)', () => {
     expect(r23.eSetCode).toBe(null)
     expect(r23.eWorkerMs1['current']).toEqual({
-      value: BASELINE_MODEL_VALUE,
-      source: 'capability',
-      state: 'inherited',
+      value: null,
+      source: 'external-hard-policy',
+      state: 'denied',
+      deniedBy: 'external:hard-deny',
     })
     expect(r23.eWorkerMs1['pendingNextBoundary']).toEqual({
       value: null,
       source: 'external-hard-policy',
       state: 'denied',
       deniedBy: 'external:hard-deny',
-      effectiveFrom: 1,
     })
-    expect(r23.eWorkerMs1['availability']).toBe('available')
+    expect(r23.eWorkerMs1['availability']).toBe('unavailable')
   })
 
   // --- World F — the human model override (H12) -----------------------------------------------

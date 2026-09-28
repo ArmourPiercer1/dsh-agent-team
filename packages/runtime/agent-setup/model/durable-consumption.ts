@@ -49,13 +49,19 @@ import type {
   TemplatePolicy,
 } from '../../../domain/policy/src/index.js'
 import type { GovernanceOverrideRecord } from '../../../storage/schema/index.js'
-import { resolveActivationPolicy } from '../../activation/index.js'
+import {
+  legacyPolicyReaderOf,
+  readEffectivePolicy,
+} from '../../effective-policy/index.js'
+import type {
+  PolicyReader,
+  PolicyStateTransitionRecord,
+} from '../../mutation/index.js'
 import {
   cellProvenance,
   type CellDeniedBy,
   type CellProvenanceOptions,
   type CellSource,
-  type DurableOverrideRef,
   type PendingBoundaryRecord,
 } from '../../mutation/cell-provenance.js'
 import { parseModelItem } from './route.js'
@@ -140,22 +146,38 @@ export interface DurableModelSelectionArgs {
   readonly instanceId: string
   /** Every durable governance override of the TeamSession (backend truth). */
   readonly overrides: readonly GovernanceOverrideRecord[]
-  /** The external hard facts (host ceiling / capability presence). */
-  readonly external: ExternalPolicyFacts
   /** The world provider default (the `unspecified` fallback). */
   readonly baseline: ModelSelection
   /** The record ids this session has already applied at its last boundary. */
   readonly appliedRecordIds?: readonly string[]
   /**
-   * The bound template's static policy values (the model-preference
-   * routing fix, generic like `resolveActivationPolicy`'s input): the
-   * `model` cell carries the template's `modelPreference` as its
-   * `template/static` value (derivation: `initialTemplateModelGrantOf`),
-   * so a declared preference resolves at the TEMPLATE layer instead of
-   * falling to the `unspecified` -> baseline consumer rule. The
-   * record-backed layers and the external hard facts keep their
-   * precedence over it. Absent = no template static values (the
-   * pre-fix behavior: baseline for `unspecified` cells).
+   * THE CANONICAL INPUT (pre-alpha3 PR-B) — the static policy authority
+   * (the production PolicyReader: blueprint envelope + per-member template
+   * policy + external hard facts, from the bound snapshot). When present,
+   * it WINS over the legacy `external` / `templateValues` pair and the
+   * durable `transitions` (the committed PolicyState) participate.
+   */
+  readonly policy?: PolicyReader
+  /**
+   * THE CANONICAL INPUT (pre-alpha3 PR-B) — the durable PolicyState
+   * transitions (commit order; the last entry is the committed state).
+   * Absent = the implicit `default` state.
+   */
+  readonly transitions?: readonly PolicyStateTransitionRecord[]
+  /**
+   * LEGACY ARGS (pre-PR-B call shape; used when `policy` is absent) — the
+   * external hard facts (host ceiling / capability presence).
+   */
+  readonly external?: ExternalPolicyFacts
+  /**
+   * LEGACY ARGS (pre-PR-B call shape; used when `policy` is absent) — the
+   * bound template's static policy values (the model-preference routing
+   * fix, generic like `resolveActivationPolicy`'s input): the `model` cell
+   * carries the template's `modelPreference` as its `template/static`
+   * value (derivation: `initialTemplateModelGrantOf`), so a declared
+   * preference resolves at the TEMPLATE layer instead of falling to the
+   * `unspecified` -> baseline consumer rule. Absent = no template static
+   * values.
    */
   readonly templateValues?: TemplatePolicy['values']
 }
@@ -175,6 +197,15 @@ export interface DurableModelSelection {
  * request's model selection reflects it (and a host restart re-derives
  * the same result from the same durable truth).
  *
+ * pre-alpha3 PR-B (plan §B.2): the resolution runs the ONE canonical read
+ * (`readEffectivePolicy`) — the canonical inputs are `policy` (the static
+ * policy authority) + `transitions` (the durable committed PolicyState);
+ * the pre-PR-B legacy args (`external` + `templateValues`) remain
+ * supported and adapt to the SAME canonical read. The per-boundary view is
+ * the frozen `modelConsumptionView` over the canonical policy with the
+ * MEMBER-SCOPED durable refs (team scope + this instance — another
+ * member's instance records never enter this member's pending set).
+ *
  * @param args - the boundary inputs.
  * @returns the frozen policy + the model consumption view.
  * @throws {@link import('../../activation/index.js').ActivationError}
@@ -182,25 +213,27 @@ export interface DurableModelSelection {
  *   malformed (fail closed).
  */
 export function resolveDurableModelSelection(args: DurableModelSelectionArgs): DurableModelSelection {
-  const { rootSessionId, instanceId, overrides, external, baseline, appliedRecordIds, templateValues } = args
-  const policy = resolveActivationPolicy({
-    rootSessionId,
-    instanceId,
-    overrides,
-    external,
-    ...(templateValues !== undefined ? { templateValues } : {}),
-  })
-  const refs: DurableOverrideRef[] = overrides.map((record) => ({
-    recordId: record.recordId,
-    kind: record.kind,
-    scope: record.scope,
-    generation: record.generation,
-    updatedAt: record.updatedAt,
-    values: record.values,
-  }))
-  const view = modelConsumptionView(policy, baseline, {
-    overrides: refs,
+  const { rootSessionId, instanceId, overrides, baseline, appliedRecordIds } = args
+  const read = readEffectivePolicy(
+    args.policy !== undefined
+      ? {
+          rootSessionId,
+          instanceId,
+          policy: args.policy,
+          transitions: args.transitions ?? [],
+          overrides,
+        }
+      : {
+          rootSessionId,
+          instanceId,
+          policy: legacyPolicyReaderOf(args.external, args.templateValues),
+          transitions: [],
+          overrides,
+        },
+  )
+  const view = modelConsumptionView(read.policy, baseline, {
+    overrides: read.refs,
     ...(appliedRecordIds !== undefined ? { appliedRecordIds } : {}),
   })
-  return { policy, view }
+  return { policy: read.policy, view }
 }

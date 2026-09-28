@@ -516,36 +516,59 @@ export function createActivationProvider(ports) {
             const counts = countTeamQuota(view, rootSessionId, createTemplateId);
             checkQuota(blueprint.quotas, counts, createTemplateId);
             // step 8: policy (frozen at creation, invariant 29)
-            const external = await ports.externalPolicyFacts();
-            // PR #23 review fix (plan §4): the creation-frozen policy carries the
-            // bound template's INITIAL static mcp grant — the SAME shared
-            // derivation as the MCP live consumption and team_inspect_config
-            // (the step-3 `template` is the resolved member template of the
-            // bound snapshot). A deny / legacy / non-allow template contributes
-            // nothing (fail-closed or dynamic governance; never a synthetic
-            // durable record).
             //
-            // model-preference routing fix: the SAME creation-frozen policy also
-            // carries the bound template's INITIAL static MODEL grant — the
-            // template's `modelPreference` as its `template`-layer value (the
-            // SAME `initialTemplateModelGrantOf` derivation the live consumption
-            // and the read-side use; a qualified route keeps its provider, a
-            // model-only shorthand inherits the injected `staticModel`
-            // provider). The generic `templateValues` (model + mcp) feeds the
-            // ONE resolver; an empty object never fakes template authority.
-            const initialModelGrant = initialTemplateModelGrantOf(template, ports.staticModel);
-            const initialMcpGrant = initialMcpGrantOf(staticCapabilitiesOf(blueprint, template));
-            const templateValues = {
-                ...(initialModelGrant !== undefined ? { model: initialModelGrant } : {}),
-                ...(initialMcpGrant !== undefined ? { mcp: initialMcpGrant } : {}),
-            };
-            const policy = resolveActivationPolicy({
-                rootSessionId,
-                instanceId: identity.instanceId,
-                overrides: repositories.overrides.list(rootSessionId),
-                external,
-                ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
-            });
+            // pre-alpha3 PR-B (plan §B.2): the canonical step-8 input is the
+            // static policy authority (the production PolicyReader — the bound
+            // snapshot's envelope + per-member template policy + external hard
+            // facts) + the durable PolicyState transitions (the committed state
+            // participates — the step-8 frozen policy of a NEW member is the
+            // team's committed policy, same source as the live boundary). When
+            // the port is absent (the test worlds), the pre-PR-B LEGACY input is
+            // used: the probed external facts + the template-derived static
+            // grants (below) + the implicit `default` state.
+            let policy;
+            if (ports.policy !== undefined) {
+                policy = resolveActivationPolicy({
+                    rootSessionId,
+                    instanceId: identity.instanceId,
+                    overrides: repositories.overrides.list(rootSessionId),
+                    policy: ports.policy,
+                    transitions: ports.policyStateTransitions?.(rootSessionId) ?? [],
+                });
+            }
+            else {
+                const external = await ports.externalPolicyFacts();
+                // PR #23 review fix (plan §4): the creation-frozen policy carries
+                // the bound template's INITIAL static mcp grant — the SAME shared
+                // derivation as the MCP live consumption and team_inspect_config
+                // (the step-3 `template` is the resolved member template of the
+                // bound snapshot). A deny / legacy / non-allow template contributes
+                // nothing (fail-closed or dynamic governance; never a synthetic
+                // durable record).
+                //
+                // model-preference routing fix: the SAME creation-frozen policy
+                // also carries the bound template's INITIAL static MODEL grant —
+                // the template's `modelPreference` as its `template`-layer value
+                // (the SAME `initialTemplateModelGrantOf` derivation the live
+                // consumption and the read-side use; a qualified route keeps its
+                // provider, a model-only shorthand inherits the injected
+                // `staticModel` provider). The generic `templateValues` (model +
+                // mcp) feeds the ONE resolver; an empty object never fakes
+                // template authority.
+                const initialModelGrant = initialTemplateModelGrantOf(template, ports.staticModel);
+                const initialMcpGrant = initialMcpGrantOf(staticCapabilitiesOf(blueprint, template));
+                const templateValues = {
+                    ...(initialModelGrant !== undefined ? { model: initialModelGrant } : {}),
+                    ...(initialMcpGrant !== undefined ? { mcp: initialMcpGrant } : {}),
+                };
+                policy = resolveActivationPolicy({
+                    rootSessionId,
+                    instanceId: identity.instanceId,
+                    overrides: repositories.overrides.list(rootSessionId),
+                    external,
+                    ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
+                });
+            }
             // step 9: overlay bounds (the operation-level intersection)
             computeOverlayBounds(blueprint, createTemplateId);
             // step 10: workspace + context fields

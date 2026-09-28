@@ -12818,7 +12818,10 @@ var __dshFactory = (require) => {
 			    'LIFECYCLE_NOT_QUIESCENT',
 			    'LIFECYCLE_LIVE_EFFECT_FAILED',
 			    'LIFECYCLE_DURABLE_STATE_FAILED',
-			    // runtime/mutation — the mutation service codes
+			    // runtime/mutation — the mutation service codes (pre-alpha3 PR-A: the
+			    // governance mutation authority reuses this vocabulary — the envelope
+			    // rejection codes (frozen-domain strings) and the service-level
+			    // POLICY_STATE_UNKNOWN join the closed wire vocabulary)
 			    'MALFORMED_MUTATION_INPUT',
 			    'EXTERNAL_HARD_REJECTED',
 			    'UNAUTHORIZED_TRANSITION',
@@ -12827,6 +12830,9 @@ var __dshFactory = (require) => {
 			    'OVERRIDE_IDENTITY_CONFLICT',
 			    'OVERRIDE_GENERATION_CONFLICT',
 			    'UNAUTHORIZED_MUTATION',
+			    'MEMBER_SELF_ESCALATION',
+			    'LEADER_OUT_OF_ENVELOPE',
+			    'POLICY_STATE_UNKNOWN',
 			    // runtime/handoff — HANDOFF_* (the handoff service)
 			    'HANDOFF_REQUEST_MALFORMED',
 			    'HANDOFF_SOURCE_SURFACE_UNAVAILABLE',

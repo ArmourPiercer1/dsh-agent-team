@@ -114,8 +114,8 @@ import { createFailClosedOverlayProxy, createProjectionLiveOverlaySeam, createRe
 import { createTeamDomainReadPort } from './projection-source.js';
 import { createEffectiveConfigView } from './effective-config-view.js';
 import { createModelStateView } from './model-state-view.js';
-import { createDurableMutationStore, writePolicyStateTransitionRow } from './durable-mutation-store.js';
-import { activePolicyState } from '../../policy-adapter.js';
+import { createDurableMutationStore, listDurablePolicyStateTransitions, writePolicyStateTransitionRow, } from './durable-mutation-store.js';
+import { committedPolicyState } from '../../effective-policy/index.js';
 import { createLiveResidencyOverlay } from './s6-live-overlay.js';
 import { computeTeamLiveToken } from './live-token.js';
 import { resolveSessionReadState } from './team-read-state.js';
@@ -560,6 +560,77 @@ export function createTeamProductionRoot(params) {
         createFresh: (spec) => createFreshMember(memberResidencyPorts, spec),
         rehydrateCold: (input) => rehydrateColdMember(memberResidencyPorts, input),
     };
+    // pre-alpha3 PR-B (plan §B.2): the production PolicyReader — the bound-
+    // snapshot static authority (the bound blueprint's envelope / the
+    // durable member template policy / the external hard facts). Constructed
+    // HERE (before the activation provider, the router, the projection read
+    // ports and the remote surface) so EVERY canonical-read consumer — the
+    // activation step 8, the router's inspect-config, the R2-2/R2-3
+    // projection views, the governance write-time checks, and the live
+    // request boundary (through the glue) — consumes the SAME reader
+    // instance (one static layer, one source).
+    const policyReader = {
+        // model-preference routing fix (guide §4.7.2): the blueprint envelope
+        // reads the OWNING root's bound snapshot through the shared per-root
+        // resolver (the pre-fix closure read the bootstrap row anchor for
+        // every root — a dynamic Team root's own envelope was never read).
+        readBlueprintEnvelope: (teamSessionId) => {
+            const bound = boundBlueprintFor(teamSessionId);
+            const values = capabilityValuesOf(bound.capabilityPolicy);
+            return values === undefined ? {} : { values };
+        },
+        // alpha.1 (plan §10.3): the bound blueprint snapshot + the DURABLE
+        // member-instance templateId -> the template's static TemplatePolicy
+        // (the production `readTemplatePolicy` is no longer the unconditional
+        // empty placeholder — DoD #3). A LEGACY template (no `capabilities`
+        // field) keeps the original honest-empty reader for the CAPABILITY
+        // cells (never a synthesized empty TemplatePolicy — the resolver's
+        // fail-closed must stay untouched, plan §10.3), and an identity the
+        // domain cannot resolve to a row also reads empty (honest: no template
+        // authority there).
+        // model-preference routing fix (guide §4.7.3): capabilities absence
+        // != template policy completely absent — a legacy template (no
+        // `capabilities`) that declares `modelPreference` still carries a
+        // legal static template MODEL (the shared
+        // `initialTemplateModelGrantOf` derivation, the SAME one the live
+        // consumption / step-8 / inspect-config use). The per-root bound
+        // snapshot is read through `boundBlueprintFor` (no bootstrap-anchor
+        // closure).
+        readTemplatePolicy: (teamSessionId, member) => {
+            const bound = boundBlueprintFor(teamSessionId);
+            const template = staticTemplateOf(bound, teamSessionId, member.instanceId, repos.memberInstances);
+            if (template === undefined)
+                return {};
+            const capValues = selectiveToTemplatePolicyValues(staticCapabilitiesOf(bound, template));
+            const modelValue = initialTemplateModelGrantOf(template, {
+                provider: config.staticModel.provider,
+                model: config.staticModel.model,
+            });
+            // pre-alpha3 PR-B (the canonical read plane became the PRODUCTION
+            // static layer): the domain mapper emits an explicit empty allow
+            // (`allow(items: [])` — the documented "deny everything" value,
+            // P1 hardening §6) verbatim, but the frozen P3-T4 resolver rejects
+            // an empty-allow entry as malformed ("use kind:'deny' for no
+            // items"). The production reader normalizes the empty-allow cells
+            // to `deny` so the SAME deny-everything semantic reaches the
+            // resolver in its closed vocabulary (the mapper's contract and the
+            // t1-capability-schema E1-E3 assertions are untouched).
+            const normalizedValues = capValues === undefined
+                ? undefined
+                : Object.fromEntries(Object.entries(capValues).map(([name, entry]) => [
+                    name,
+                    entry !== undefined && entry.kind === 'allow' && entry.items.length === 0
+                        ? { kind: 'deny' }
+                        : entry,
+                ]));
+            const values = {
+                ...(normalizedValues ?? {}),
+                ...(modelValue !== undefined ? { model: modelValue } : {}),
+            };
+            return Object.keys(values).length === 0 ? {} : { values };
+        },
+        readExternalFacts: () => config.externalPolicyFacts,
+    };
     // --- A16 the activation provider (the ONLY creation path) --------------------------------
     const provider = createActivationProvider({
         teamDomain: domain,
@@ -570,6 +641,11 @@ export function createTeamProductionRoot(params) {
             provider: config.staticModel.provider,
             model: config.staticModel.model,
         },
+        // pre-alpha3 PR-B (plan §B.2): the canonical step-8 input — the
+        // production PolicyReader + the durable PolicyState transitions
+        // (the committed state participates in the creation-frozen policy).
+        policy: policyReader,
+        policyStateTransitions: (rootSessionId) => listDurablePolicyStateTransitions(repos, rootSessionId),
         childSessionFactory: live.childFactory,
         sessionDurability: live.sessionDurability,
         surface: live.surface,
@@ -770,6 +846,12 @@ export function createTeamProductionRoot(params) {
             provider: config.staticModel.provider,
             model: config.staticModel.model,
         },
+        // pre-alpha3 PR-B (plan §B.2): the canonical inspect-config input —
+        // the SAME production PolicyReader + the durable PolicyState
+        // transitions (the committed state participates — the inspection
+        // reports what the next request will actually run).
+        policy: policyReader,
+        policyStateTransitions: (rootSessionId) => listDurablePolicyStateTransitions(repos, rootSessionId),
         now,
         lifecycleCommit,
         lifecyclePorts,
@@ -1165,51 +1247,10 @@ export function createTeamProductionRoot(params) {
         inspect: legacyInspect,
     };
     // --- A22 + A23 the mutation service + the governance override admission -------------------------
-    const policyReader = {
-        // model-preference routing fix (guide §4.7.2): the blueprint envelope
-        // reads the OWNING root's bound snapshot through the shared per-root
-        // resolver (the pre-fix closure read the bootstrap row anchor for
-        // every root — a dynamic Team root's own envelope was never read).
-        readBlueprintEnvelope: (teamSessionId) => {
-            const bound = boundBlueprintFor(teamSessionId);
-            const values = capabilityValuesOf(bound.capabilityPolicy);
-            return values === undefined ? {} : { values };
-        },
-        // alpha.1 (plan §10.3): the bound blueprint snapshot + the DURABLE
-        // member-instance templateId -> the template's static TemplatePolicy
-        // (the production `readTemplatePolicy` is no longer the unconditional
-        // empty placeholder — DoD #3). A LEGACY template (no `capabilities`
-        // field) keeps the original honest-empty reader for the CAPABILITY
-        // cells (never a synthesized empty TemplatePolicy — the resolver's
-        // fail-closed must stay untouched, plan §10.3), and an identity the
-        // domain cannot resolve to a row also reads empty (honest: no template
-        // authority there).
-        // model-preference routing fix (guide §4.7.3): capabilities absence
-        // != template policy completely absent — a legacy template (no
-        // `capabilities`) that declares `modelPreference` still carries a
-        // legal static template MODEL (the shared
-        // `initialTemplateModelGrantOf` derivation, the SAME one the live
-        // consumption / step-8 / inspect-config use). The per-root bound
-        // snapshot is read through `boundBlueprintFor` (no bootstrap-anchor
-        // closure).
-        readTemplatePolicy: (teamSessionId, member) => {
-            const bound = boundBlueprintFor(teamSessionId);
-            const template = staticTemplateOf(bound, teamSessionId, member.instanceId, repos.memberInstances);
-            if (template === undefined)
-                return {};
-            const capValues = selectiveToTemplatePolicyValues(staticCapabilitiesOf(bound, template));
-            const modelValue = initialTemplateModelGrantOf(template, {
-                provider: config.staticModel.provider,
-                model: config.staticModel.model,
-            });
-            const values = {
-                ...(capValues ?? {}),
-                ...(modelValue !== undefined ? { model: modelValue } : {}),
-            };
-            return Object.keys(values).length === 0 ? {} : { values };
-        },
-        readExternalFacts: () => config.externalPolicyFacts,
-    };
+    // The production PolicyReader (the bound-snapshot static authority) is
+    // constructed ABOVE the activation provider (the A16 section) so the
+    // provider / router / projection / glue all consume the SAME reader
+    // instance (pre-alpha3 PR-B: the canonical read plane's static layer).
     const defaultOverrideStore = {
         list: (rootSessionId) => Promise.resolve(repos.overrides.list(rootSessionId)),
         put: (record) => repos.overrides.put(record),
@@ -1251,12 +1292,26 @@ export function createTeamProductionRoot(params) {
             chain: coordination,
             // The durable `overrides` repository (the team_domain store).
             overrides: defaultOverrideStore,
-            // The in-memory read cache (the transitions lane view; the commit
-            // writes the durable row first, then appends here).
-            transitions: mutationStore,
-            // The durable transition commit (commit-before-ack).
+            // pre-alpha3 PR-B (plan §B.2): the transition read seam — the READ
+            // is the durable ledger rows in commit order (the production
+            // decision read no longer consumes the process-local cache); the
+            // APPEND mirrors into the durable-mutation-store's process-local
+            // lane (commit-before-ack is unchanged: the durable row is written
+            // first, the mirror second).
+            transitions: {
+                listTransitions: (rootSessionId) => listDurablePolicyStateTransitions(repos, rootSessionId),
+                appendTransition: (rootSessionId, transition) => mutationStore.appendTransition(rootSessionId, transition),
+            },
+            // The durable transition commit (commit-before-ack). The row is
+            // stamped with the ADDRESSED root the governance service targets
+            // (the port threads it through) — NOT this production root's own
+            // `rootSid`: the durable read (listDurablePolicyStateTransitions) is
+            // root-keyed to the addressed TeamSession, so stamping the row root
+            // would make the committed state invisible to the addressed team and
+            // leak it to this root (the C3 host-smoke finding — the override
+            // lane already stamps its addressed root, service.ts:266/283).
             transitionCommit: {
-                commit: (transition) => writePolicyStateTransitionRow(repos.ledger, rootSid, transition, now),
+                commit: (rootSessionId, transition) => writePolicyStateTransitionRow(repos.ledger, rootSessionId, transition, now),
             },
             // The static policy facts (the bound blueprint envelope / template
             // policy / the external hard facts — the same reader the resolution
@@ -1321,16 +1376,22 @@ export function createTeamProductionRoot(params) {
                 ...resolved.members.map((member) => templateOf('member', member, resolved.quotas?.members?.maxInstances)),
             ];
         },
-        policyState: (rootSessionId) => activePolicyState(mutationStore.listTransitions(rootSessionId), Number.MAX_SAFE_INTEGER).stateId,
+        // pre-alpha3 PR-B (plan §B.2): the committed PolicyState of the root —
+        // the LAST durable transition in commit order (the production step
+        // clock is retired as a decision source; the legacy step fields keep
+        // parse/display only).
+        policyState: (rootSessionId) => committedPolicyState(listDurablePolicyStateTransitions(repos, rootSessionId)).state.stateId,
         // R2-2 (P8-S7-R2): the BQ-08 resolved effective-config view (F01-F08,
-        // G01, G02, G05, G06, G09, H04, H12, L11). The resolver runs the
-        // two-stage policy resolution over the SAME durable transition rows the
-        // mutation service writes (the R2-1 cache), the merged mutation-store +
-        // governance-override records, and the bound policy reader, at the
-        // maximum step horizon: the process-local applied-record state is not
-        // durable, so boundary-pending changes are reported conservatively as
-        // pending (appliedRecordIds empty). A resolver failure degrades the
-        // lane to the closed default, never the row (fail closed).
+        // G01, G02, G05, G06, G09, H04, H12, L11). pre-alpha3 PR-B: the ONE
+        // canonical read (`readEffectivePolicy` inside the view) over the
+        // durable PolicyState transition rows (the ledger — the same rows the
+        // governance authority commits), the durable governance `overrides`,
+        // and the bound policy reader: the committed state + the slot winners
+        // + the static layers — the SAME read the live request boundary runs.
+        // The process-local applied-record state is not durable, so
+        // record-backed winning values are reported conservatively as pending
+        // (appliedRecordIds empty). A resolver failure degrades the lane to
+        // the closed default, never the row (fail closed).
         effectiveConfig: (rootSessionId, member) => {
             try {
                 return createEffectiveConfigView({
@@ -1343,8 +1404,7 @@ export function createTeamProductionRoot(params) {
                         provider: config.staticModel.provider,
                         model: config.staticModel.model,
                     },
-                    transitions: mutationStore.listTransitions(rootSessionId),
-                    records: mutationStore.listRecords(rootSessionId),
+                    transitions: listDurablePolicyStateTransitions(repos, rootSessionId),
                     overrides: repos.overrides.list(rootSessionId),
                     policyReader,
                 });
@@ -1354,29 +1414,25 @@ export function createTeamProductionRoot(params) {
             }
         },
         // R2-3 (P8-S7-R2): the BQ-11 per-member model state view (D09/H06/H09/
-        // H10/H12). Dual-horizon resolution over the SAME durable transition
-        // rows, the merged mutation-store + governance-override records, and
-        // the bound policy reader: the NOW horizon (the production step clock
-        // is pinned to 0 — a transition requested at step 0 takes effect from
-        // step 1, so at the current step the admitted team model is always the
-        // pre-transition state) resolves `current` + `provenance` +
-        // `availability`; the MAX horizon resolves the next-boundary winner,
-        // and a pending transition (or a winner backed by an admitted-but-
-        // unapplied record) fills `pendingNextBoundary`. A resolver failure
-        // drops the `modelState` key (DURATIONAL-optional — absent, never
-        // undefined), never the row.
+        // H10/H12). pre-alpha3 PR-B: the committed/applied horizon (the
+        // production step clock is retired as a decision source): the SAME
+        // canonical read as the live request boundary — `current` is the
+        // COMMITTED model (the durable last transition in commit order + the
+        // governance slot winners + the static layers), and
+        // `pendingNextBoundary` is present when a durable fact may not yet be
+        // applied by this process (a committed transition or a record-backed
+        // winner). A resolver failure drops the `modelState` key
+        // (DURATIONAL-optional — absent, never undefined), never the row.
         modelState: (rootSessionId, instanceId) => {
             try {
                 return createModelStateView({
                     teamSessionId: rootSessionId,
                     instanceId,
-                    currentStep: 0,
                     staticModel: {
                         provider: config.staticModel.provider,
                         model: config.staticModel.model,
                     },
-                    transitions: mutationStore.listTransitions(rootSessionId),
-                    records: mutationStore.listRecords(rootSessionId),
+                    transitions: listDurablePolicyStateTransitions(repos, rootSessionId),
                     overrides: repos.overrides.list(rootSessionId),
                     policyReader,
                 });
@@ -1454,7 +1510,12 @@ export function createTeamProductionRoot(params) {
         // routes override.set / override.reset / policyState.set through it
         // (serialized on the shared chain, committed before the ack).
         governance: mutation.governance,
-        mutationTransitions: (teamSessionId) => mutationStore.listTransitions(teamSessionId),
+        // pre-alpha3 PR-B (plan §B.2): the remote PolicyState read surface
+        // reads the DURABLE transition rows (the ledger) directly — the
+        // commit-order read the committed-state derivation consumes (the
+        // process-local cache is no longer the read source of any production
+        // decision).
+        mutationTransitions: (teamSessionId) => listDurablePolicyStateTransitions(repos, teamSessionId),
         overrideRecords: (teamSessionId) => repos.overrides.list(teamSessionId),
         rootBinding,
         // S1-H2 (repair 20260927): the remote compatibility.* methods are
@@ -1824,6 +1885,7 @@ export function createTeamProductionRoot(params) {
         storageSeam,
         catalog,
         blueprint,
+        policyReader,
         leaderIdentity,
         intent,
         compatibility,
