@@ -1361,8 +1361,21 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // restart-effective-policy.test.ts). Carries zero denylist
     // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
     // Scanner unchanged. Single-writer pin bump on the task branch.
-    expect(scanResult.filesScanned).toBe(799)
-    expect(scanResult.files.length).toBe(799)
+    // pre-alpha3 PR-C (feat/pre-alpha3-prc-runtime-env, this commit):
+    // +13 on top of the 799 pin = 812 — the thirteen new scannable files
+    // of the runtime-environment unification: (a-g) the runtime readiness
+    // module (packages/runtime/readiness/types.ts + errors.ts +
+    // provider.ts + registry.ts + telemetry.ts + index.ts + status.ts) +
+    // (h) the runtime substrate resolver (packages/runtime/agent-setup/
+    // preset/substrate-resolver.ts) + (i-m) their five specs (packages/
+    // runtime/test/ capability-readiness-provider.test.ts /
+    // capability-runtime-status.test.ts / capability-telemetry.test.ts /
+    // persona-observed-kind.test.ts / runtime-substrate-resolver.test.ts).
+    // Carries zero denylist vocabulary; the frozen quarantine hit set is
+    // unchanged at fifteen. Scanner unchanged. Single-writer pin bump on
+    // the task branch.
+    expect(scanResult.filesScanned).toBe(812)
+    expect(scanResult.files.length).toBe(812)
 
   })
 

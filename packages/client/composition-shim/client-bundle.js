@@ -3486,9 +3486,10 @@ var __dshFactory = (require) => {
 			 * vocabulary. PROVENANCE (the client may not import the host package —
 			 * `packages/runtime` is host-side authority):
 			 * `packages/runtime/src/plugin/projection-source.ts` `FACT_TYPE_CATEGORY`
-			 * (the 14-fact vNext vocabulary — 12 + the TCM-M3 `team-root-work-delivered`
+			 * (the 15-fact vNext vocabulary — 12 + the TCM-M3 `team-root-work-delivered`
 			 * terminal record + the strict-read `artifact-read-granted` durable
-			 * authorization grant; the host fails closed
+			 * authorization grant + the pre-alpha3 PR-C `capability-runtime-event`
+			 * compatibility telemetry; the host fails closed
 			 * `LEDGER_CATEGORY_UNKNOWN` on any unmapped fact type, so an unknown
 			 * `category` here can only ever be display-side, never authority-side).
 			 * A row whose fact type is absent from this map carries NO `category`
@@ -3517,6 +3518,12 @@ var __dshFactory = (require) => {
 			    'activity-interval-opened': 'progress',
 			    'activity-interval-closed': 'progress',
 			    'policy-state-transitioned': 'policy',
+			    // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry (the
+			    // compatibility category's first production writer). A compatibility
+			    // CATEGORY — no new category. Hidden from the Events surface by
+			    // team-ledger-model's INTERNAL_FACT_TYPES (it is an operational telemetry
+			    // fact, not a user-facing event).
+			    'capability-runtime-event': 'compatibility',
 			};
 			/** Fail-safe string leaf read (`undefined` for any non-string / absent). */
 			function str(payload, key) {
@@ -8858,6 +8865,11 @@ var __dshFactory = (require) => {
 			 */
 			const INTERNAL_FACT_TYPES = new Set([
 			    'artifact-read-granted',
+			    // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry — an
+			    // operational compatibility-category fact, not user activity. Skipped by
+			    // the Events section (otherwise it would land in the `unknown` family and
+			    // the generic row would JSON.stringify the whole telemetry payload).
+			    'capability-runtime-event',
 			]);
 			/** Fail-safe string leaf read (the ledger-adapter discipline). */
 			function str(payload, key) {

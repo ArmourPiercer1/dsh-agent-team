@@ -66,6 +66,10 @@ import { createLiveBlueprintCatalog } from './blueprint-live-catalog.js';
 import { createBlueprintSourceIndex } from './blueprint-source-index.js';
 import { registerTeamSkills } from './team-skills.js';
 import { mcpSupplyValidationIssue } from './mcp-supply.js';
+// pre-alpha3 PR-C §C.7: the durable capability-runtime telemetry writer (the
+// `capability-runtime-event` ledger fact — the compatibility category's
+// first production writer).
+import { assertCapabilityRuntimeEventKind, createCapabilityRuntimeEvent, writeCapabilityRuntimeEvent, } from '../../readiness/index.js';
 import { TEAM_ARTIFACT_AUTHORITY_SERVICE } from './artifact-grant-bridge.js';
 import { parseBlueprint } from '../../../domain/blueprint/src/index.js';
 import { createTeamProductionRoot } from './root.js';
@@ -1087,6 +1091,27 @@ export async function apply(ctx, config) {
             // (filled with builtRoot.policyReader right after root construction
             // — the glue reads it lazily per boundary; see the ref's rationale).
             policyReaderRef,
+            // pre-alpha3 PR-C §C.6/§C.7: the durable capability-runtime telemetry
+            // hook — the glue emits the MCP mount transitions (mount-failed /
+            // mount-restored) and the host durably records each as a
+            // `capability-runtime-event` ledger fact (the compatibility category's
+            // first production writer; the durableGeneration advances through
+            // `ledger.put`). The kind is validated fail-closed (an unknown kind is a
+            // glue bug); the write PROPAGATES a storage failure (the glue observes
+            // it, never fails the member's MCP reconciliation).
+            capabilityTelemetry: async (rootSessionId, event) => {
+                const capabilityEvent = createCapabilityRuntimeEvent({
+                    event: assertCapabilityRuntimeEventKind(event.kind, 'capabilityTelemetry.kind'),
+                    capabilityType: event.capabilityType,
+                    capabilityName: event.capabilityName,
+                    verdict: event.verdict,
+                    source: event.source,
+                    observedAt: event.observedAt,
+                    reason: event.reason,
+                    attempt: event.attempt,
+                });
+                await writeCapabilityRuntimeEvent(domain.repositories.ledger, rootSessionId, capabilityEvent, () => new Date().toISOString());
+            },
         });
         // --- the frozen legacy reader (A29): layout-agnostic candidate search, --
         // --- production layout FIRST; the root never imports the legacy sources

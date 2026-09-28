@@ -90,6 +90,11 @@ const FACT_ROW_KIND: Readonly<Record<string, TeamLedgerRowKind>> = {
  */
 const INTERNAL_FACT_TYPES: ReadonlySet<string> = new Set([
   'artifact-read-granted',
+  // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry — an
+  // operational compatibility-category fact, not user activity. Skipped by
+  // the Events section (otherwise it would land in the `unknown` family and
+  // the generic row would JSON.stringify the whole telemetry payload).
+  'capability-runtime-event',
 ])
 
 /** One rendered Events-section row (one loaded ledger fact). */

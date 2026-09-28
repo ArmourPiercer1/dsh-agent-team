@@ -29,7 +29,11 @@ import type { PolicyEntry } from '../../../domain/policy/src/index.js';
  * Filter configured MCP server names against the policy entry.
  *
  * - `allow(items)` → returns configured servers whose name appears in
- *   `items`;
+ *   `items`, OR every configured server when `items` contains the
+ *   `MCP_FACET_WILDCARD` (`*`) (allow-all — the SAME wildcard the durable
+ *   mcp facet view honors, closing the template-vs-facet asymmetry where a
+ *   `mcp: allow ['*']` template would have silently excluded every server
+ *   while the facet view allowed them);
  * - `deny` → returns `[]` (no servers allowed).
  *
  * @param configuredServers - the servers the host has configured (available

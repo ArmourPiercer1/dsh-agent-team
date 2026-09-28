@@ -58,9 +58,10 @@ import type {
  * vocabulary. PROVENANCE (the client may not import the host package —
  * `packages/runtime` is host-side authority):
  * `packages/runtime/src/plugin/projection-source.ts` `FACT_TYPE_CATEGORY`
- * (the 14-fact vNext vocabulary — 12 + the TCM-M3 `team-root-work-delivered`
+ * (the 15-fact vNext vocabulary — 12 + the TCM-M3 `team-root-work-delivered`
  * terminal record + the strict-read `artifact-read-granted` durable
- * authorization grant; the host fails closed
+ * authorization grant + the pre-alpha3 PR-C `capability-runtime-event`
+ * compatibility telemetry; the host fails closed
  * `LEDGER_CATEGORY_UNKNOWN` on any unmapped fact type, so an unknown
  * `category` here can only ever be display-side, never authority-side).
  * A row whose fact type is absent from this map carries NO `category`
@@ -89,6 +90,12 @@ const FACT_TYPE_CATEGORY: Readonly<Record<string, LedgerCategoryValue>> = {
   'activity-interval-opened': 'progress',
   'activity-interval-closed': 'progress',
   'policy-state-transitioned': 'policy',
+  // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry (the
+  // compatibility category's first production writer). A compatibility
+  // CATEGORY — no new category. Hidden from the Events surface by
+  // team-ledger-model's INTERNAL_FACT_TYPES (it is an operational telemetry
+  // fact, not a user-facing event).
+  'capability-runtime-event': 'compatibility',
 }
 
 /** The frozen category literals (the contracts `LedgerCategory` closed set). */

@@ -89,6 +89,14 @@ import { createLiveBlueprintCatalog } from './blueprint-live-catalog.js'
 import { createBlueprintSourceIndex } from './blueprint-source-index.js'
 import { registerTeamSkills } from './team-skills.js'
 import { mcpSupplyValidationIssue } from './mcp-supply.js'
+// pre-alpha3 PR-C §C.7: the durable capability-runtime telemetry writer (the
+// `capability-runtime-event` ledger fact — the compatibility category's
+// first production writer).
+import {
+  assertCapabilityRuntimeEventKind,
+  createCapabilityRuntimeEvent,
+  writeCapabilityRuntimeEvent,
+} from '../../readiness/index.js'
 import { TEAM_ARTIFACT_AUTHORITY_SERVICE } from './artifact-grant-bridge.js'
 import type { TeamArtifactAuthorityBridge } from './artifact-grant-bridge.js'
 
@@ -350,6 +358,30 @@ interface GlueModule {
      * grants + the implicit `default` state — bit-for-bit unchanged).
      */
     readonly policyReaderRef?: { current: unknown }
+    /**
+     * pre-alpha3 PR-C §C.6/§C.7 (optional additive): the durable
+     * capability-runtime telemetry hook. The glue emits one capability
+     * readiness transition per MCP mount (mount-failed / mount-restored);
+     * the production host records each as a `capability-runtime-event`
+     * ledger fact (the compatibility category's first production writer).
+     * Absent (test worlds without the durable telemetry) → the glue's emit
+     * is a no-op. Best-effort on the glue side: the host's write failure
+     * PROPAGATES to the glue's caller, which observes it (never fails the
+     * member's MCP reconciliation).
+     */
+    readonly capabilityTelemetry?: (
+      rootSessionId: string,
+      event: {
+        kind: string
+        capabilityType: string
+        capabilityName: string
+        verdict: 'unknown' | 'reachable' | 'unreachable'
+        source: string
+        observedAt: string
+        attempt?: number
+        reason?: string
+      },
+    ) => Promise<void>
   }): TeamAgentBindings
 }
 
@@ -1517,6 +1549,44 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // (filled with builtRoot.policyReader right after root construction
     // — the glue reads it lazily per boundary; see the ref's rationale).
     policyReaderRef,
+    // pre-alpha3 PR-C §C.6/§C.7: the durable capability-runtime telemetry
+    // hook — the glue emits the MCP mount transitions (mount-failed /
+    // mount-restored) and the host durably records each as a
+    // `capability-runtime-event` ledger fact (the compatibility category's
+    // first production writer; the durableGeneration advances through
+    // `ledger.put`). The kind is validated fail-closed (an unknown kind is a
+    // glue bug); the write PROPAGATES a storage failure (the glue observes
+    // it, never fails the member's MCP reconciliation).
+    capabilityTelemetry: async (
+      rootSessionId: string,
+      event: {
+        kind: string
+        capabilityType: string
+        capabilityName: string
+        verdict: 'unknown' | 'reachable' | 'unreachable'
+        source: string
+        observedAt: string
+        attempt?: number
+        reason?: string
+      },
+    ): Promise<void> => {
+      const capabilityEvent = createCapabilityRuntimeEvent({
+        event: assertCapabilityRuntimeEventKind(event.kind, 'capabilityTelemetry.kind'),
+        capabilityType: event.capabilityType,
+        capabilityName: event.capabilityName,
+        verdict: event.verdict,
+        source: event.source,
+        observedAt: event.observedAt,
+        reason: event.reason,
+        attempt: event.attempt,
+      })
+      await writeCapabilityRuntimeEvent(
+        domain.repositories.ledger,
+        rootSessionId,
+        capabilityEvent,
+        () => new Date().toISOString(),
+      )
+    },
   })
 
   // --- the frozen legacy reader (A29): layout-agnostic candidate search, --

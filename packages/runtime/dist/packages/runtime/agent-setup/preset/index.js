@@ -8,5 +8,6 @@
  *
  * @module @dsh-agent-team/runtime/agent-setup/preset
  */
-export { PRESET_PERSONA_KINDS } from './types.js';
+export { OBSERVED_PERSONA_KINDS, OBSERVED_PERSONA_KIND_VALUES, PRESET_PERSONA_KINDS, assertObservedPersonaKind, } from './types.js';
+export { PERSONA_OBSERVATION_SOURCES, resolveRuntimeSubstrate, } from './substrate-resolver.js';
 //# sourceMappingURL=index.js.map
