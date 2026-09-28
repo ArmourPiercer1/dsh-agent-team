@@ -216,11 +216,6 @@ function stopHost(h) {
 }
 
 async function main() {
-  mkdirSync(EVIDENCE_DIR, { recursive: true })
-  log(`kit: served-bundle browser smoke host`)
-  log(`worktree=${WORKTREE} testuse=${TESTUSE}`)
-  log(`world=${WORLD} (seed from ${SRC_WORLD})`)
-
   // ── preflight ─────────────────────────────────────────────────────────────
   const head = gitIn(TESTUSE, ['rev-parse', 'HEAD'])
   const porcelain = gitIn(TESTUSE, ['status', '--porcelain'])
@@ -230,7 +225,11 @@ async function main() {
   // BOUND to the exact tested commit — worktree HEAD + the worktree
   // porcelain as a HARD gate (a dirty working tree cannot prove an
   // immutable commit passed this smoke) + the served client bundle's
-  // size + sha256 (which bytes the browser actually loaded).
+  // size + sha256 (which bytes the browser actually loaded). The check
+  // runs BEFORE this run creates any artifact (EVIDENCE_DIR is created
+  // below the gate): the gate is the strict empty-porcelain form, no
+  // self-exclusion needed — an external console redirect must live
+  // OUTSIDE the worktree for the same reason.
   const wtHead = gitIn(WORKTREE, ['rev-parse', 'HEAD'])
   const wtPorcelain = gitIn(WORKTREE, ['status', '--porcelain'])
   if (wtHead.status !== 0) dieFatal(`worktree HEAD failed: ${wtHead.out.slice(0, 80)}`)
@@ -238,6 +237,11 @@ async function main() {
   const BUNDLE_PATH = join(WORKTREE, 'packages', 'client', 'composition-shim', 'client-bundle.js')
   const bundleBytes = readFileSync(BUNDLE_PATH)
   const bundleHash = createHash('sha256').update(bundleBytes).digest('hex')
+
+  mkdirSync(EVIDENCE_DIR, { recursive: true })
+  log(`kit: served-bundle browser smoke host`)
+  log(`worktree=${WORKTREE} testuse=${TESTUSE}`)
+  log(`world=${WORLD} (seed from ${SRC_WORLD})`)
   log(`commit binding: worktree HEAD=${wtHead.out} porcelain='' bundle=${bundleBytes.length}B sha256=${bundleHash.slice(0, 16)}…`)
   const stablePre = {}
   for (const u of STABLE_PROBES) stablePre[u] = await probe(u)
