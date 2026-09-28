@@ -23,4 +23,6 @@
 
 - RC 稳定基线：`0.1.0-rc.1`
 - `stable`：指向最新已裁决 RC
-- `master`：从 RC 基线继续推进下一 alpha；当前计划目标为 `0.1.1-alpha.1`
+- `master`：从 RC 基线继续推进下一 alpha；当前版本 **`0.1.1-alpha.2`**
+  （`0.1.1-alpha.1` 已冻结 2026-09-11，被取代；master @ `e22c659a` = PR #35 merge，
+  2026-09-28；宿主 pin `@deepseek-ai/dsh@0.1.7-rc.1`）；下一版本目标待用户发布裁决

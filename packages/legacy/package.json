@@ -2,7 +2,7 @@
   "name": "@dsh-agent-team/legacy",
   "version": "0.1.1-alpha.2",
   "private": true,
-  "description": "Reference-only empty slot: vNext never depends on legacy code (see README.md and docs/migration).",
+  "description": "Frozen legacy session inspection: read-only session-reader (built into the runtime dist mirror; host loads it unconditionally). vNext never depends on legacy team logic (see README.md and docs/migration).",
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.build.json"
