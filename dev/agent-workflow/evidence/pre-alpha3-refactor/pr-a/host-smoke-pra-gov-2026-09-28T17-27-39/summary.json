@@ -1,0 +1,74 @@
+{
+  "runStamp": "pra-gov-2026-09-28T17-27-39",
+  "failure": "G7: G7 reset ack wrong (ok=false removed=undefined err={\"code\":\"malformed-params\",\"message\":\"method 'override.reset' requires param field 'capability'\",\"details\":{\"method\":\"override.reset\",\"endpoint\":\"override.reset\",\"contractVersion\":1,\"requestToken\":nul)",
+  "criteria": [
+    {
+      "id": "G0",
+      "label": "preflight (test-use baseline + dist + world + ports + stable probes)",
+      "pass": true,
+      "detail": "testuse HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4 porcelain='' dist=true seed=true hostPort=3182 mockPort=3497 stable={\"http://127.0.0.1:3080/\":401,\"http://127.0.0.1:3180/\":401}"
+    },
+    {
+      "id": "G1",
+      "label": "host boot #1 (production row at this worktree dist, route ready)",
+      "pass": true,
+      "detail": "boot #1 on :3182 (route ready 269ms)"
+    },
+    {
+      "id": "G2",
+      "label": "human model override acks the committed record (origin human)",
+      "pass": true,
+      "detail": "ack record ovr-model-team-g0 gen=1 origin=undefined values.model={\"kind\":\"allow\",\"items\":[\"pra-gov/model-a\"]}"
+    },
+    {
+      "id": "G3",
+      "label": "human mcp override: multi-cap winner, generation 2, both cells",
+      "pass": true,
+      "detail": "ack record ovr-mcp-team-g1 gen=2 cells=[model, mcp] (both sets present)"
+    },
+    {
+      "id": "G4",
+      "label": "restart: identical winner + generation continues from the durable value",
+      "pass": true,
+      "detail": "restart winner identical (ovr-mcp-team-g1 gen=2); next set gen=3 continues the durable slot"
+    },
+    {
+      "id": "G5",
+      "label": "concurrent two-tab set: both ack, three-cell winner, generation +2",
+      "pass": true,
+      "detail": "both acks ok (gens 4/5); final winner ovr-skills-team-g4 gen=5 cells=[mcp, model, skills] (no lost update)"
+    },
+    {
+      "id": "G6",
+      "label": "stale generation: the prior winner stays durable; the slot advances",
+      "pass": true,
+      "detail": "set acked gen=6 (the gen-3..gen-5 writers' expectations are stale against the slot); prior records remain durable (verified by the G7 disk scan) — ack ovr-model-team-g5"
+    },
+    {
+      "id": "G7",
+      "label": "reset: tombstone re-issue; every prior record row intact on disk",
+      "pass": false,
+      "detail": "G7 reset ack wrong (ok=false removed=undefined err={\"code\":\"malformed-params\",\"message\":\"method 'override.reset' requires param field 'capability'\",\"details\":{\"method\":\"override.reset\",\"endpoint\":\"override.reset\",\"contractVersion\":1,\"requestToken\":nul)"
+    },
+    {
+      "id": "G8",
+      "label": "current-master wire no-regression (policyState.get + team.getReadState)",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "id": "G9",
+      "label": "cleanup (stable re-probe + ephemeral world removed)",
+      "pass": false,
+      "detail": ""
+    }
+  ],
+  "world": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/pra-gov-2026-09-28T17-27-39",
+  "hostPort": 3182,
+  "mockPort": 3497,
+  "stablePre": {
+    "http://127.0.0.1:3080/": 401,
+    "http://127.0.0.1:3180/": 401
+  },
+  "stablePost": null
+}

@@ -19,9 +19,10 @@
  *   Number.MAX_SAFE_INTEGER` — the production step clock is pinned to 0,
  *   so the resolved horizon sees every admitted future-boundary change);
  * - the durable governance `overrides` (the production write path —
- *   `override.set` / `admitGovernanceOverride` writes ONLY the storage
- *   `overrides` repository; the mutation-store records lane has no
- *   production caller) are merged in through `selectPolicyOverrides`
+ *   pre-alpha3 PR-A: the governance mutation authority's
+ *   `setOverride`/`resetOverride` writes ONLY the storage `overrides`
+ *   repository; the mutation-store records lane has no production
+ *   caller) are merged in through `selectPolicyOverrides`
  *   (the P8-S4B deterministic slot selection, reused verbatim): a
  *   mutation-store slot wins when present (the test world), the
  *   governance slot fills whatever the store did not produce (the

@@ -160,15 +160,14 @@ import type {
   SendTeamMessageRequest,
 } from '../../messaging/index.js'
 import type {
-  AdmittedGovernanceOverride,
-  AdmitGovernanceOverrideArgs,
   MutationActor,
   MutationAuthority,
-  OverrideStorePort,
+  OverrideRecordView,
   PolicyEntry,
   PolicyStateTransitionRecord,
   PolicyStateView,
 } from '../../mutation/index.js'
+import type { GovernanceMutationService } from '../../governance/index.js'
 import {
   PROBE_TRIGGER_VALUES,
   compatibilityRequirementsOf,
@@ -857,23 +856,18 @@ export interface S6RemoteOptions {
   readonly runtime: TeamRuntime
   /** The lifecycle service (the ONLY lifecycle authority). */
   readonly lifecycle: LifecycleService
-  /** The mutation service (the ONLY PolicyState authority). */
-  readonly mutationService: {
-    switchPolicyState(request: {
-      teamSessionId: TeamSessionId
-      target: PolicyStateView
-      actor: MutationActor
-    }): PolicyStateTransitionRecord
-  }
+  /**
+   * pre-alpha3 PR-A (ADR-03) — the SINGLE governance mutation authority
+   * (durable `overrides` + the PolicyState transitions): override.set /
+   * override.reset / policyState.set route through it — serialized on
+   * the shared per-team chain, the write-time envelope + external hard
+   * checks applied, the durable write committed BEFORE the ack. The
+   * forked remote-side paths (direct slot scan + admission glue + direct
+   * reset delete) are gone.
+   */
+  readonly governance: GovernanceMutationService
   /** The mutation store's transition rows (the durable PolicyState read). */
   readonly mutationTransitions: (teamSessionId: string) => readonly PolicyStateTransitionRecord[]
-  /** The governance-override admission (the ONLY override authority). */
-  readonly admitGovernanceOverride: (
-    args: AdmitGovernanceOverrideArgs,
-    store?: OverrideStorePort,
-  ) => Promise<AdmittedGovernanceOverride>
-  /** The durable override store (list/delete of the addressed record). */
-  readonly overrideStore: OverrideStorePort
   /** The override record identity source (the durable `overrides` rows). */
   readonly overrideRecords: (rootSessionId: string) => readonly RemoteSafeRecord[]
   /** The root binding (fresh + cold). */
@@ -2546,10 +2540,33 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         const root = assertBoundRoot('override.get', teamSessionId)
         const records = options.overrideRecords(root)
         const effectiveScope = scope ?? 'team'
-        const matches = records.filter((record) => {
+        const inSlot = (record: RemoteSafeRecord): boolean => {
           if (record['scope'] !== effectiveScope) return false
           if (effectiveScope === 'instance' && record['instanceId'] !== targetInstanceId) return false
           if (effectiveScope === 'team' && record['instanceId'] !== undefined) return false
+          return true
+        }
+        // The slot winner (any capability). A RESET re-issues the slot as a
+        // higher-generation TOMBSTONE (empty `values`) — the durable
+        // audit-preserving reset (PR-A / ADR-03). When the slot winner IS
+        // the tombstone, the slot is revoked: report null — the pre-PR-A
+        // wire behavior (the old reset deleted the record, so a read after
+        // a reset found nothing). The effective-policy path
+        // (`selectPolicyOverrides`) already treats the tombstone's empty
+        // values as contributing nothing.
+        let slotWinner: RemoteSafeRecord | null = null
+        for (const record of records) {
+          if (!inSlot(record)) continue
+          const generation = record['generation']
+          if (!isSafeInt(generation)) continue
+          if (slotWinner === null || generation > (slotWinner['generation'] as number)) slotWinner = record
+        }
+        if (slotWinner !== null) {
+          const values = slotWinner['values']
+          if (isPlainRecord(values) && Object.keys(values).length === 0) return null
+        }
+        const matches = records.filter((record) => {
+          if (!inSlot(record)) return false
           const values = record['values']
           return isPlainRecord(values) && capability in values
         })
@@ -2574,36 +2591,27 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
             { reason: 'missing-target' },
           )
         }
-        const kind = authority.kind === 'operator' ? 'human-override' : 'autonomy-overlay'
-        const records = options.overrideRecords(root)
-        const slotMatches = records.filter(
-          (record) =>
-            record['kind'] === kind &&
-            record['scope'] === scope &&
-            (scope === 'instance' ? record['instanceId'] === instanceId : record['instanceId'] === undefined),
-        )
-        let winnerGeneration = 0
-        for (const record of slotMatches) {
-          const generation = record['generation']
-          if (isSafeInt(generation) && generation > winnerGeneration) winnerGeneration = generation
-        }
-        // The server-side deterministic clean record id (the remote
-        // contract carries NO client-supplied record id; the id is bound
-        // to the addressed slot + the current slot generation, so a
-        // concurrent same-slot set collides instead of clobbering).
-        const recordId = `ovr-${request.capability}-${scope === 'instance' ? instanceId : 'team'}-g${winnerGeneration}`
-        const admitted = await options.admitGovernanceOverride(
-          {
-            authority,
-            rootSessionId: root,
-            recordId,
-            scope,
-            ...(instanceId !== undefined ? { instanceId } : {}),
-            cells: { [request.capability]: request.value as unknown as PolicyEntry },
-            now,
-          },
-          options.overrideStore,
-        )
+        // pre-alpha3 PR-A (ADR-03): the SINGLE governance mutation
+        // authority — slot closure by authority + the write-time
+        // envelope + external-hard checks + the chain serialization +
+        // the durable commit BEFORE the ack. The record id is minted
+        // server-side by the service (the remote contract carries NO
+        // client-supplied record id).
+        const result = await options.governance.setOverride({
+          authority,
+          rootSessionId: root,
+          scope,
+          ...(instanceId !== undefined ? { instanceId } : {}),
+          cells: { [request.capability]: request.value as unknown as PolicyEntry },
+        })
+        // Both branches report the slot state as an override record: a
+        // changed set is the freshly committed record; a no-change set is
+        // the current slot winner (the desired state already holds — the
+        // winner is always present on that branch: a non-empty cell set
+        // can never be a no-op against an empty slot).
+        const admitted = result.changed
+          ? result.record
+          : (result.current as OverrideRecordView)
         const record: Record<string, unknown> = {
           recordId: admitted.recordId,
           kind: admitted.kind,
@@ -2615,6 +2623,7 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         }
         if (admitted.instanceId !== undefined) record['instanceId'] = admitted.instanceId
         if (admitted.origin !== undefined) record['origin'] = admitted.origin
+        if (!result.changed) record['noChange'] = true
         return record as RemoteSafeRecord
       },
       async reset(
@@ -2625,29 +2634,20 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         const authority = authorityOf(caller, leaderInstanceId)
         const scope = request.scope ?? 'team'
         const instanceId = scope === 'instance' ? request.targetInstanceId : undefined
-        const kind = authority.kind === 'operator' ? 'human-override' : 'autonomy-overlay'
-        const records = options.overrideRecords(root)
-        const slotMatches = records.filter(
-          (record) =>
-            record['kind'] === kind &&
-            record['scope'] === scope &&
-            (scope === 'instance' ? record['instanceId'] === instanceId : record['instanceId'] === undefined),
-        )
-        let winner: RemoteSafeRecord | null = null
-        for (const record of slotMatches) {
-          const generation = record['generation']
-          if (!isSafeInt(generation)) continue
-          if (winner === null || generation > (winner['generation'] as number)) winner = record
-        }
-        if (winner === null) return { removed: false }
-        const removed = await repositories.overrides.delete({
-          kind: winner['kind'] as 'human-override' | 'autonomy-overlay',
-          recordId: winner['recordId'] as string,
-          scope: winner['scope'] as 'team' | 'instance',
+        // pre-alpha3 PR-A (ADR-03): the reset flows through the SINGLE
+        // governance mutation authority — the slot is closed by the
+        // authority (a member can only reset its OWN instance slot — the
+        // team-scope reset hole the forked direct-delete path opened is
+        // closed), the generation guard applies, and the reset is a
+        // higher-generation TOMBSTONE re-issue (never a storage delete —
+        // audit-preserving), committed durably BEFORE the ack.
+        const result = await options.governance.resetOverride({
+          authority,
           rootSessionId: root,
-          ...(scope === 'instance' ? { instanceId } : {}),
+          scope,
+          ...(instanceId !== undefined ? { instanceId } : {}),
         })
-        return { removed }
+        return { removed: result.removed }
       },
     },
 
@@ -2698,11 +2698,24 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
             { reason: 'unknown-state', stateId: String(stateId) },
           )
         }
-        const transition = options.mutationService.switchPolicyState({
-          teamSessionId: root as TeamSessionId,
-          target: target as unknown as PolicyStateView,
+        // pre-alpha3 PR-A (ADR-03): the switch flows through the SINGLE
+        // governance mutation authority — the closed-set check above
+        // keeps the wire code (TEAM_REMOTE_POLICY_STATE_UNKNOWN), the
+        // service re-checks it (defense in depth for the other callers),
+        // a self-transition is a typed no-op, and the durable ledger row
+        // is committed BEFORE the ack (the R2-1 fire-and-schedule window
+        // is closed).
+        const result = await options.governance.switchPolicyState({
           actor: actorOf(caller, root, leaderInstanceId),
+          rootSessionId: root,
+          target: target as unknown as PolicyStateView,
         })
+        if (!result.changed) {
+          // Self-transition: the target state is already active (no new
+          // row). The additive noChange key is honest on the open record.
+          return { stateId: result.state.stateId, noChange: true }
+        }
+        const transition = result.transition
         return {
           entryId: transition.entryId,
           origin: transition.origin,

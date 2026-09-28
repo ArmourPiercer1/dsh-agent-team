@@ -26,23 +26,16 @@
  * |                          | the `overrides` repository + the    |
  * |                          | MemberInstance records)             |
  *
- * ## Write path (appendTransition)
+ * ## Write path (PR-A: the governance authority owns the commit)
  *
- * Synchronous append to the inner (process-local) store FIRST — the caller
- * observes the transition immediately, exactly as with the S5A wiring —
- * then a SCHEDULED durable write:
- *
- *   1. `ledger.allocateSequence()` (atomic on the domain write chain;
- *      serialized, monotonically increasing — the allocation order is the
- *      admission order of the transitions);
- *   2. `ledger.put(...)` of one `policy-state-transitioned` fact row whose
- *      payload mirrors the {@link PolicyStateTransitionRecord} verbatim
- *      (entryId, origin, state, requestedAtStep, effectiveFromStep).
- *
- * The ledger's `put` is idempotent on identical bytes, so a replayed
- * write never appends twice. A failed durable write (e.g. the domain
- * already closed) is recorded and surfaced by {@link DurableMutationStore.flush} —
- * never swallowed, never retried silently.
+ * pre-alpha3 PR-A moved the durable COMMIT out of this wrapper into the
+ * governance mutation authority (packages/runtime/governance): it writes
+ * the durable ledger row FIRST ({@link writePolicyStateTransitionRow},
+ * awaited — commit-before-ack) and only then appends to the inner store
+ * through {@link MutationStore.appendTransition} (now a pure
+ * synchronous cache append, exactly the S5A read-side wiring). The
+ * wrapper itself NEVER schedules a write; its durable role is the boot
+ * preload of the durable rows into the cache.
  *
  * ## Read path (listTransitions)
  *
@@ -63,20 +56,19 @@
  * the first projection / remote read of a resumed root already sees the
  * durable state.
  *
- * ## Crash semantics (documented limitation)
+ * ## Crash semantics (PR-A: commit-before-ack)
  *
- * The accepted crash window is exactly one transition: the ledger fact is
- * durable, the process dies before the next mutation. On resume the
- * preload restores it — the durable fact is the source of truth, the
- * in-memory cache is a view. A transition whose durable write has not
- * completed at crash time is lost (its ledger fact was never written);
- * the in-memory-only cache dies with the process. This is the same
- * at-most-one-lag discipline the S1-A stamp hook documents for the ledger
- * in general — roll-forward, never rollback.
+ * The R2-1 at-most-one-lag window is CLOSED: the durable ledger row is
+ * written before the ack returns, so every acked transition is durable.
+ * The only residual window is a crash between the durable commit and the
+ * in-memory append — the cache is a view, the durable fact is the source
+ * of truth, and the boot preload restores it (roll-forward, never
+ * rollback — the same discipline the S1-A stamp hook documents for the
+ * ledger in general).
  *
  * @module @dsh-agent-team/runtime/plugin/durable-mutation-store
  */
-import type { MutationStore } from '../../mutation/types.js';
+import type { MutationStore, PolicyStateTransitionRecord } from '../../mutation/types.js';
 import type { TeamDomainRepositories } from '../../../storage/repositories/index.js';
 /**
  * The ledger fact family this lane owns (open factType vocabulary,
@@ -101,11 +93,6 @@ export interface DurableMutationStore {
      * time, once). No-op on an empty ledger; idempotent by `entryId`.
      */
     preload(): Promise<void>;
-    /**
-     * Await every scheduled durable write; throw an aggregated error when
-     * any of them failed (close time). Deterministic across repeated calls.
-     */
-    flush(): Promise<void>;
 }
 /**
  * Create the durable-lane wrapper around the production (inner) mutation
@@ -123,4 +110,27 @@ export interface DurableMutationStore {
  * @param now - the production ISO-8601 clock (ledger `createdAt` stamp).
  */
 export declare function createDurableMutationStore(inner: MutationStore, repositories: TeamDomainRepositories, rootSessionId: string, now: () => string): DurableMutationStore;
+/**
+ * Durably write ONE admitted PolicyState transition (one `ledger` fact
+ * row) — the COMMIT side of the commit-before-ack contract (pre-alpha3
+ * PR-A): the governance mutation authority AWAITs this write before it
+ * returns the ack, so a durable transition fact exists before any caller
+ * observes the switch.
+ *
+ * The ledger's `allocateSequence` is atomic on the domain write chain
+ * (serialized, monotonically increasing — the allocation order is the
+ * admission order of the transitions); the ledger `put` is idempotent on
+ * identical bytes, so a replayed write never appends twice. A failure
+ * (e.g. the domain already closed) PROPAGATES to the caller — the ack
+ * fails with the durable write (no silent ack, no retry).
+ *
+ * @param ledger - the OPENED TeamDomain `ledger` repository.
+ * @param rootSessionId - the root the row is stamped with.
+ * @param transition - the admitted transition (payload mirrored verbatim).
+ * @param now - the production ISO-8601 clock (`createdAt` stamp).
+ */
+export declare function writePolicyStateTransitionRow(ledger: {
+    allocateSequence(): Promise<number>;
+    put(entry: Record<string, unknown>): Promise<unknown>;
+}, rootSessionId: string, transition: PolicyStateTransitionRecord, now: () => string): Promise<void>;
 //# sourceMappingURL=durable-mutation-store.d.ts.map

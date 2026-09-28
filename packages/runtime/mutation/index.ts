@@ -15,9 +15,11 @@
  * {@link ./service.js} and {@link ./types.js}.
  *
  * P8-S4B additions: the §18.3 backend-truth cell provenance derivation
- * ({@link ./cell-provenance.js}) and the governance override admission
- * authority — the backend writer the frozen policy layer re-reads at every
- * future Agent request boundary ({@link ./override-admission.js}).
+ * ({@link ./cell-provenance.js}) and the durable governance override
+ * persistence primitive ({@link ./override-admission.js}) — demoted by
+ * pre-alpha3 PR-A from the production admission authority to the narrow
+ * full-slot re-issue + `put` kernel (the production authority is now
+ * {@link @dsh-agent-team/runtime/governance}).
  *
  * @module @dsh-agent-team/runtime/mutation
  */
@@ -77,6 +79,11 @@ export {
   MutationService,
   mapFrozenError,
   activePolicyState,
+  // pre-alpha3 PR-A — the exported pure kernels the production governance
+  // authority (packages/runtime/governance) reuses:
+  normalizePolicyEntry,
+  normalizeStateView,
+  checkExternalHardFacts,
 } from './service.js'
 export type { MutationServiceDeps } from './service.js'
 
@@ -103,17 +110,20 @@ export type {
   PendingBoundaryRecord,
 } from './cell-provenance.js'
 
-// P8-S4B — the governance override admission authority (§20.3/§20.4):
-// validates the acting authority, re-issues the full slot value set (the
-// frozen one-record-per-slot ruling), and persists through an injected
-// store port.
+// P8-S4B (demoted by pre-alpha3 PR-A, ADR-03) — the NARROW persistence
+// primitive of the durable governance overrides: the full slot re-issue
+// (the frozen one-record-per-slot ruling) + the optimistic generation
+// guard + the durable `put`. The production write authority is the
+// governance mutation service (packages/runtime/governance); this
+// primitive is the persistence kernel it composes (and the direct test
+// seam).
 export {
-  admitGovernanceOverride,
+  persistGovernanceOverride,
   selectSlotWinner,
 } from './override-admission.js'
 export type {
   AdmittedGovernanceOverride,
-  AdmitGovernanceOverrideArgs,
+  PersistGovernanceOverrideArgs,
   GovernanceOverrideKindView,
   GovernanceOverrideScopeView,
   MutationAuthority,

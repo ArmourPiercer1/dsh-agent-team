@@ -1,0 +1,142 @@
+[
+  {
+    "method": "team.getReadState",
+    "params": {
+      "sessionId": "session-team-child-796562d4284593654607730948ad2b04"
+    },
+    "ms": 8,
+    "httpStatus": 405,
+    "ok": false,
+    "error": {
+      "http": 405
+    }
+  },
+  {
+    "method": "team.getReadState",
+    "params": {
+      "sessionId": "session-team-child-796562d4284593654607730948ad2b04"
+    },
+    "ms": 10,
+    "httpStatus": 200,
+    "ok": true,
+    "data": {
+      "data": {
+        "relation": "team-member",
+        "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+        "memberInstanceId": "inst-17legoh0ti27",
+        "disposed": false,
+        "durableGeneration": 32,
+        "liveToken": "lt-v1-7770fae9dbb4092b6a748fe92563b54c1c1c89e0dcb16fadab6c82254b975331"
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.getReadState",
+        "endpoint": "team.getReadState",
+        "contractVersion": 6,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  },
+  {
+    "method": "override.set",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "capability": "model",
+      "value": {
+        "kind": "allow",
+        "items": [
+          "pra-gov/model-a"
+        ]
+      },
+      "scope": "team",
+      "actor": {
+        "kind": "human"
+      }
+    },
+    "ms": 17,
+    "httpStatus": 200,
+    "ok": true,
+    "data": {
+      "data": {
+        "recordId": "ovr-model-team-g0",
+        "kind": "human-override",
+        "scope": "team",
+        "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+        "values": {
+          "model": {
+            "kind": "allow",
+            "items": [
+              "pra-gov/model-a"
+            ]
+          }
+        },
+        "generation": 1,
+        "updatedAt": "2026-09-28T17:27:01.142Z"
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "override.set",
+        "endpoint": "override.set",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  },
+  {
+    "method": "override.set",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "capability": "mcp",
+      "value": {
+        "kind": "allow",
+        "items": [
+          "pra-gov/mcp-x"
+        ]
+      },
+      "scope": "team",
+      "actor": {
+        "kind": "human"
+      }
+    },
+    "ms": 7,
+    "httpStatus": 200,
+    "ok": true,
+    "data": {
+      "data": {
+        "recordId": "ovr-mcp-team-g1",
+        "kind": "human-override",
+        "scope": "team",
+        "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+        "values": {
+          "model": {
+            "items": [
+              "pra-gov/model-a"
+            ],
+            "kind": "allow"
+          },
+          "mcp": {
+            "kind": "allow",
+            "items": [
+              "pra-gov/mcp-x"
+            ]
+          }
+        },
+        "generation": 2,
+        "updatedAt": "2026-09-28T17:27:01.159Z"
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "override.set",
+        "endpoint": "override.set",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+]

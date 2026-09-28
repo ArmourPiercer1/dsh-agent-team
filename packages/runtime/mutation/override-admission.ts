@@ -1,43 +1,55 @@
 /**
- * P8-S4B — governance override admission: the backend authority that
- * WRITES the durable governance overrides the frozen policy layer re-reads
- * at every future Agent request boundary.
+ * P8-S4B (demoted by pre-alpha3 PR-A, ADR-03) — the NARROW persistence
+ * primitive of the durable governance overrides: full-slot re-issue +
+ * the optimistic generation guard + the durable `put`, with the storage
+ * layer as the final SHAPE arbiter.
  *
- * Plan §18.1/§18.2 (mutation -> actual Agent closure): a Team durable
- * mutation is not projection state — the next real request must observe
- * it. This module is the sole Runtime/Team authority for creating
- * `GovernanceOverride` records (plan §20.3/§20.4: "Remote handlers must
- * call Runtime/Team service authority"; "Remote direct repository
- * mutation" is forbidden). It validates the acting authority, re-issues
- * the full slot value set (the frozen v1 one-record-per-slot ruling),
- * and persists through an injected store port; the storage layer remains
- * the final SHAPE arbiter (closed record, cross-field rules).
+ * PR-A demotion: this module is NO LONGER a production authority. The
+ * production write paths (remote `override.set` / `override.reset`, the
+ * dev-harness row) go through the GOVERNANCE MUTATION AUTHORITY
+ * (packages/runtime/governance) — the single service that closes the
+ * slot by authority, runs the write-time envelope + external-hard
+ * checks, serializes on the shared per-team chain, and commits before
+ * the ack. This primitive keeps only what a persistence layer owns:
  *
- * Authority -> record mapping (§20.3/§20.4, Architecture §19.4/§19.5):
+ * - the identity + scope shape rules,
+ * - the closed capability vocabulary + `PolicyEntry` shapes,
+ * - the slot load (winner selection, frozen `selectPolicyOverrides`
+ *   rule) + the identity-conflict + optimistic-generation guards,
+ * - the full slot value re-issue (v1 one-record-per-slot) + the durable
+ *   `put` (storage re-parses; identical bytes idempotent, different
+ *   bytes at the same identity -> `RECORD_DUPLICATE`).
  *
- * - `leader`  -> `autonomy-overlay` with `origin: 'leader'`, team or
- *   instance scope;
- * - `member`  -> `autonomy-overlay` with `origin: 'member'`, INSTANCE
- *   scope targeting the member's OWN instance only (v1);
- * - `operator`-> `human-override` (never `origin`; the authenticated /
- *   host-known client principal channel), team or instance scope.
+ * What is NOT here (moved to the governance service / slot kernel): the
+ * authority -> record mapping and scope closure (the member team-scope
+ * / foreign-instance rules), the write-time envelope, the write-time
+ * external hard facts, the chain serialization, and the reset path (the
+ * service issues the tombstone through the same `put`).
+ *
+ * Authority vocabulary (kept for the service's port typing):
+ *
+ * - `leader`  -> `autonomy-overlay` with `origin: 'leader'`;
+ * - `member`  -> `autonomy-overlay` with `origin: 'member'`;
+ * - `operator`-> `human-override` (never `origin`); the authenticated /
+ *   host-known client principal channel.
  *
  * Slot ruling (frozen `selectPolicyOverrides`, P8-S3): exactly ONE record
  * wins per policy slot — team-scope `autonomy-overlay` (templateOverlay),
  * instance-scope `autonomy-overlay` (instanceOverlay), `human-override`
  * (instance beats team at read time) — winner = highest `generation`,
- * ties -> lexicographically smallest `recordId`; multi-overlay composition
- * is owned by later governance work. Consequence: a cumulative mutation
- * must RE-ISSUE the full slot value set. Admission merges the current
- * slot winner's `values` with the requested cell changes and persists a
- * NEW record (new `recordId`, `generation = winner + 1`). The store key
- * carries no generation, so the same `recordId` can never be re-put:
- * every mutation needs a fresh identity.
+ * ties -> lexicographically smallest `recordId`. Consequence: a
+ * cumulative mutation must RE-ISSUE the full slot value set. This
+ * primitive merges the current slot winner's `values` with the requested
+ * cell changes and persists a NEW record (new `recordId`,
+ * `generation = winner + 1`). The store key carries no generation, so
+ * the same `recordId` can never be re-put: every mutation needs a fresh
+ * identity.
  *
  * Cell semantics are NOT decided here: `values` are lossless JSON per
  * the storage contract; the frozen resolver fails closed on any value it
- * cannot interpret (P8-S3 stage-2 semantics). Admission validates only
- * the closed capability vocabulary and the `PolicyEntry` value shape.
+ * cannot interpret (P8-S3 stage-2 semantics). This primitive validates
+ * only the closed capability vocabulary and the `PolicyEntry` value
+ * shape.
  *
  * @module @dsh-agent-team/runtime/mutation/override-admission
  */
@@ -120,10 +132,12 @@ export interface SlotIdentity {
   readonly instanceId?: string
 }
 
-/** AdmitGovernanceOverrideArgs — one requested durable override mutation. */
-export interface AdmitGovernanceOverrideArgs {
-  /** The acting authority (validated before anything else). */
-  readonly authority: MutationAuthority
+/** PersistGovernanceOverrideArgs — one requested durable override re-issue. */
+export interface PersistGovernanceOverrideArgs {
+  /** The record kind (closed by the CALLING authority upstream). */
+  readonly kind: GovernanceOverrideKindView
+  /** The traceability origin (required exactly for autonomy-overlay). */
+  readonly origin?: OverlayOriginView
   /** The owning TeamSession (clean id). */
   readonly rootSessionId: string
   /** The NEW record identity (clean id, <= 128 chars, no whitespace). */
@@ -264,35 +278,38 @@ function storageErrorCode(error: unknown): string | undefined {
 }
 
 /**
- * Admit one durable governance override mutation.
+ * Persist one durable governance override re-issue (the narrow
+ * persistence primitive — see the module doc for what moved to the
+ * governance authority in PR-A).
  *
- * Order: authority -> scope/identity shape -> closed cell vocabulary +
- * PolicyEntry shapes -> load durable state -> identity conflict ->
- * optimistic generation -> full slot re-issue (merge winner + cells) ->
- * persist through the store port.
+ * Order: kind/origin consistency -> identity/scope shape -> closed cell
+ * vocabulary + PolicyEntry shapes -> load durable state -> identity
+ * conflict -> optimistic generation -> full slot re-issue (merge winner
+ * + cells) -> persist through the store port.
  *
- * @param args - the mutation request (see {@link AdmitGovernanceOverrideArgs}).
+ * @param args - the re-issue request (the kind/origin are closed by the
+ *   calling authority upstream — this primitive does not know who acts).
  * @param store - the persistence port (team_domain overrides store).
- * @returns the admitted record view (full slot values, new generation).
- * @throws {@link MutationError} `UNAUTHORIZED_MUTATION` (authority/scope
- *   mismatch), `MALFORMED_MUTATION_INPUT` (bad id/scope/cell shapes),
- *   `OVERRIDE_IDENTITY_CONFLICT` (identity already occupied, including
- *   the storage `RECORD_DUPLICATE` race), `OVERRIDE_GENERATION_CONFLICT`
- *   (stale expectedGeneration).
+ * @returns the persisted record view (full slot values, new generation).
+ * @throws {@link MutationError} `MALFORMED_MUTATION_INPUT` (bad
+ *   id/scope/cell shapes), `OVERRIDE_IDENTITY_CONFLICT` (identity
+ *   already occupied, including the storage `RECORD_DUPLICATE` race),
+ *   `OVERRIDE_GENERATION_CONFLICT` (stale expectedGeneration).
  */
-export async function admitGovernanceOverride(
-  args: AdmitGovernanceOverrideArgs,
+export async function persistGovernanceOverride(
+  args: PersistGovernanceOverrideArgs,
   store: OverrideStorePort,
 ): Promise<AdmittedGovernanceOverride> {
-  // 1. Authority -> record kind + traceability origin (§20.3/§20.4).
-  let kind: GovernanceOverrideKindView
-  let origin: OverlayOriginView | undefined
-  if (args.authority.kind === 'operator') {
-    kind = 'human-override'
-    origin = undefined
-  } else {
-    kind = 'autonomy-overlay'
-    origin = args.authority.kind
+  // 1. Kind / origin consistency (the storage cross-field rules, typed
+  //    here — the calling authority closed them; the storage layer
+  //    re-checks on put).
+  const kind: GovernanceOverrideKindView = args.kind
+  const origin: OverlayOriginView | undefined = args.origin
+  if (kind === 'autonomy-overlay' && (origin !== 'leader' && origin !== 'member')) {
+    throw malformed('origin', "an autonomy-overlay requires an origin ('leader' | 'member')")
+  }
+  if (kind === 'human-override' && origin !== undefined) {
+    throw malformed('origin', 'a human-override must not carry an origin')
   }
 
   // 2. Identity + scope shape.
@@ -309,25 +326,7 @@ export async function admitGovernanceOverride(
     throw malformed('instanceId', "team scope must not carry instanceId")
   }
 
-  // 3. Authority scope rules (member: own instance only; no team scope).
-  if (args.authority.kind === 'member') {
-    if (scope === 'team') {
-      throw new MutationError(
-        MUTATION_ERROR_CODES.UNAUTHORIZED_MUTATION,
-        'member authority may only issue instance-scoped autonomy overlays',
-        { actor: 'member', scope },
-      )
-    }
-    if (instanceId !== args.authority.instanceId) {
-      throw new MutationError(
-        MUTATION_ERROR_CODES.UNAUTHORIZED_MUTATION,
-        'member authority may only target its own instance',
-        { actor: 'member', instanceId, requestedInstance: instanceId },
-      )
-    }
-  }
-
-  // 4. Closed capability vocabulary + PolicyEntry shapes.
+  // 3. Closed capability vocabulary + PolicyEntry shapes.
   if (!isPlainRecord(args.cells) || Object.keys(args.cells).length === 0) {
     throw malformed('cells', 'cells must be a non-empty record of capability entries')
   }
@@ -341,7 +340,7 @@ export async function admitGovernanceOverride(
     cells[capability as CapabilityName] = assertPolicyEntry(capability, entry)
   }
 
-  // 5. Load the durable truth, check identity conflict, find the slot winner.
+  // 4. Load the durable truth, check identity conflict, find the slot winner.
   const existing = await store.list(rootSessionId)
   const slot: SlotIdentity = { kind, scope, rootSessionId, ...(instanceId !== undefined ? { instanceId } : {}) }
   const conflict = existing.find((record) => inSlot(record, slot) && record.recordId === recordId)
@@ -354,7 +353,7 @@ export async function admitGovernanceOverride(
   }
   const winner = selectSlotWinner(existing, slot)
 
-  // 6. Optimistic generation guard (stale readers must not clobber).
+  // 5. Optimistic generation guard (stale readers must not clobber).
   const actualGeneration = winner === null ? 0 : winner.generation
   if (args.expectedGeneration !== undefined && args.expectedGeneration !== actualGeneration) {
     throw new MutationError(
@@ -364,12 +363,12 @@ export async function admitGovernanceOverride(
     )
   }
 
-  // 7. Re-issue the FULL slot value set (v1 one-record-per-slot ruling).
+  // 6. Re-issue the FULL slot value set (v1 one-record-per-slot ruling).
   const winnerValues: Record<string, PolicyEntry> =
     winner === null ? {} : (winner.values as Record<string, PolicyEntry>)
   const values: Record<string, PolicyEntry> = { ...winnerValues, ...cells }
 
-  // 8. Build the storage record (the storage layer re-validates the shape).
+  // 7. Build the storage record (the storage layer re-validates the shape).
   const updatedAt = args.now()
   const record: Record<string, unknown> = {
     schemaVersion: TEAM_DOMAIN_SCHEMA_VERSION,
@@ -384,7 +383,7 @@ export async function admitGovernanceOverride(
   if (instanceId !== undefined) record['instanceId'] = instanceId
   if (origin !== undefined) record['origin'] = origin
 
-  // 9. Persist (storage is the final shape arbiter + idempotency gate).
+  // 8. Persist (storage is the final shape arbiter + idempotency gate).
   try {
     await store.put(record)
   } catch (error) {

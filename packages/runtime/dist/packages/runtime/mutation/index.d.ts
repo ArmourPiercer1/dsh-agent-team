@@ -15,9 +15,11 @@
  * {@link ./service.js} and {@link ./types.js}.
  *
  * P8-S4B additions: the §18.3 backend-truth cell provenance derivation
- * ({@link ./cell-provenance.js}) and the governance override admission
- * authority — the backend writer the frozen policy layer re-reads at every
- * future Agent request boundary ({@link ./override-admission.js}).
+ * ({@link ./cell-provenance.js}) and the durable governance override
+ * persistence primitive ({@link ./override-admission.js}) — demoted by
+ * pre-alpha3 PR-A from the production admission authority to the narrow
+ * full-slot re-issue + `put` kernel (the production authority is now
+ * {@link @dsh-agent-team/runtime/governance}).
  *
  * @module @dsh-agent-team/runtime/mutation
  */
@@ -26,11 +28,11 @@ export type { MutationErrorCode } from './errors.js';
 export { MUTATION_ACTOR_KINDS, MUTATION_RECORD_KINDS, CREATION_FIELDS, } from './types.js';
 export type { MutationActor, MutationActorKind, MutationRequest, CreationFieldName, CreationFieldMutationRequest, PolicyStateTransitionRequest, MutationRecordKind, StoredMutationRecord, PolicyStateTransitionRecord, CreationFieldRecord, MutationLedgerEntry, SuppressionRecord, EffectiveConfiguration, EffectiveConfigCapture, StepClock, MutationStore, PolicyReader, BlueprintEnvelopeLike, TemplatePolicyLike, ExternalFactsLike, EffectivePolicyLike, HumanOverrideLike, } from './types.js';
 export type { CapabilityName, InstanceId, MemberIdentity, PolicyEntry, PolicyStateView, SuppressedOverlayRecord, TeamSessionId, TeamValueOrigin, } from '../../domain/policy/src/index.js';
-export { MutationService, mapFrozenError, activePolicyState, } from './service.js';
+export { MutationService, mapFrozenError, activePolicyState, normalizePolicyEntry, normalizeStateView, checkExternalHardFacts, } from './service.js';
 export type { MutationServiceDeps } from './service.js';
 export { memberEnvelopeItems, teamEnvelopeItems, checkAgainstEnvelope, } from './envelope.js';
 export { cellProvenance, recordAdmitsCapability, } from './cell-provenance.js';
 export type { CellDeniedBy, CellProvenance, CellProvenanceOptions, CellSource, DurableOverrideRef, PendingBoundaryRecord, } from './cell-provenance.js';
-export { admitGovernanceOverride, selectSlotWinner, } from './override-admission.js';
-export type { AdmittedGovernanceOverride, AdmitGovernanceOverrideArgs, GovernanceOverrideKindView, GovernanceOverrideScopeView, MutationAuthority, OverlayOriginView, OverrideRecordView, OverrideStorePort, SlotIdentity, } from './override-admission.js';
+export { persistGovernanceOverride, selectSlotWinner, } from './override-admission.js';
+export type { AdmittedGovernanceOverride, PersistGovernanceOverrideArgs, GovernanceOverrideKindView, GovernanceOverrideScopeView, MutationAuthority, OverlayOriginView, OverrideRecordView, OverrideStorePort, SlotIdentity, } from './override-admission.js';
 //# sourceMappingURL=index.d.ts.map

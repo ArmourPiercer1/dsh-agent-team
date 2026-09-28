@@ -324,8 +324,9 @@ interface T11State {
   runtimePresent: boolean
   lifecycleServicePresent: boolean
   commitTransitionType: string
-  mutationServicePresent: boolean
-  admitGovernanceOverrideType: string
+  mutationStorePresent: boolean
+  governancePresent: boolean
+  governanceSetOverrideType: string
   resolveDurableModelSelectionType: string
   resolveDurableMcpFacetType: string
   messagingPresent: boolean
@@ -389,9 +390,13 @@ const t11 = await (async (): Promise<T11State> => {
       lifecycleServicePresent:
         root.lifecycle.service !== null && root.lifecycle.service !== undefined,
       commitTransitionType: typeof root.lifecycle.commit.commitTransition,
-      mutationServicePresent:
-        root.mutation.service !== null && root.mutation.service !== undefined,
-      admitGovernanceOverrideType: typeof root.mutation.admitGovernanceOverride,
+      // pre-alpha3 PR-A (ADR-03): the mutation surface is the durable
+      // transition read cache + the SINGLE governance mutation authority
+      // (the old MutationService instance + admitGovernanceOverride glue
+      // are demoted).
+      mutationStorePresent: root.mutation.store !== null && root.mutation.store !== undefined,
+      governancePresent: root.mutation.governance !== null && root.mutation.governance !== undefined,
+      governanceSetOverrideType: typeof root.mutation.governance.setOverride,
       resolveDurableModelSelectionType: typeof root.mutation.resolveDurableModelSelection,
       resolveDurableMcpFacetType: typeof root.mutation.resolveDurableMcpFacet,
       messagingPresent: root.messaging !== null && root.messaging !== undefined,
@@ -839,8 +844,9 @@ describe('P8-S5A T1 production assembly (source entry, real storage, stub glue)'
     // A20/A21 — lifecycle service + commit port; A22/A23 — mutation.
     expect(t11.lifecycleServicePresent).toBe(true)
     expect(t11.commitTransitionType).toBe('function')
-    expect(t11.mutationServicePresent).toBe(true)
-    expect(t11.admitGovernanceOverrideType).toBe('function')
+    expect(t11.mutationStorePresent).toBe(true)
+    expect(t11.governancePresent).toBe(true)
+    expect(t11.governanceSetOverrideType).toBe('function')
     expect(t11.resolveDurableModelSelectionType).toBe('function')
     expect(t11.resolveDurableMcpFacetType).toBe('function')
 

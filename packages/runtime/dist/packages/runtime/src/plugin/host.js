@@ -1387,6 +1387,12 @@ export async function apply(ctx, config) {
         get messaging() {
             return requireRoot().messaging;
         },
+        // pre-alpha3 PR-A: the mutation surface (the durable transition read
+        // cache + the SINGLE governance mutation authority) — the dev-harness
+        // governance route reads the authority through this facade field.
+        get mutation() {
+            return requireRoot().mutation;
+        },
         get config() {
             return requireRoot().config;
         },
