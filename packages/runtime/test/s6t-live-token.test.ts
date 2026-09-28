@@ -178,3 +178,57 @@ describe('team-view-sync-complete — the deterministic live token (frozen decis
     expect(liveTokenFromPairs(pairB)).not.toBe(liveTokenFromPairs(pairA))
   })
 })
+
+// ---------------------------------------------------------------------------
+// The two-team leader collision regression (closeout guide §4) — the
+// live-state identity space is (teamSessionId, instanceId): a team's
+// token is derived ONLY from that team's own projected member rows.
+// Two teams whose leaders happen to share the same instance id (both
+// `inst-leader` resident) must not collapse into one shared identity
+// (a host-wide `Map<instanceId, state>` would blur them); conversely
+// the per-team derivation stays pure (identical member sets →
+// identical tokens — no cross-team contamination either way).
+// ---------------------------------------------------------------------------
+
+describe('team-view-sync-complete — the two-team leader collision regression (closeout guide §4)', () => {
+  it('two teams sharing the leader instance id keep SEPARATE tokens (the identity space is (teamSessionId, instanceId), not a host-wide instance map)', () => {
+    // Team A: the leader (`inst-leader`, resident) + its own cold
+    // worker.
+    const teamARows: Row[] = [
+      { instanceId: 'inst-leader' },
+      { instanceId: 'inst-worker-a' },
+    ]
+    const teamASnap = snapshotOf({
+      'inst-leader': 'resident',
+      'inst-worker-a': 'cold',
+    })
+    // Team B: the SAME leader instance id, resident — but its own
+    // (different) member set.
+    const teamBRows: Row[] = [{ instanceId: 'inst-leader' }]
+    const teamBSnap = snapshotOf({ 'inst-leader': 'resident' })
+    const tokenA = computeTeamLiveToken(teamARows, teamASnap)
+    const tokenB = computeTeamLiveToken(teamBRows, teamBSnap)
+    expect(tokenA).not.toBe(tokenB)
+    // And the guard adds no noise: each team's token stays stable
+    // across re-runs within its own member set.
+    expect(computeTeamLiveToken(teamARows, teamASnap)).toBe(tokenA)
+    expect(computeTeamLiveToken(teamBRows, teamBSnap)).toBe(tokenB)
+  })
+
+  it('two teams with IDENTICAL member sets get IDENTICAL tokens (the per-team derivation is pure — deterministic, no contamination)', () => {
+    const rows: Row[] = [
+      { instanceId: 'inst-leader' },
+      { instanceId: 'inst-worker' },
+    ]
+    const snap = snapshotOf({ 'inst-leader': 'resident', 'inst-worker': 'cold' })
+    expect(computeTeamLiveToken(rows, snap)).toBe(
+      computeTeamLiveToken(rows, snapshotOf({ 'inst-leader': 'resident', 'inst-worker': 'cold' })),
+    )
+    // ... while a sibling team with the SAME leader id but a
+    // different member set is a different token (the previous test,
+    // stated from the sibling side).
+    expect(computeTeamLiveToken([{ instanceId: 'inst-leader' }], snapshotOf({ 'inst-leader': 'resident' }))).not.toBe(
+      computeTeamLiveToken(rows, snap),
+    )
+  })
+})

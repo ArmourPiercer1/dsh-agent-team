@@ -661,6 +661,47 @@ ce3Gate.releaseAt(0, okRoot('root-ce3', 10, 'lt-v1-ce3-late'))
 const ce3ResultA = await ce3RoundA
 const ce3Attached = ce3Coord.attached()
 
+// COLD-E4: trigger → attach → tick all live in the SAME SessionEntry
+// (closeout guide §3 / §10): the cold round's probe is PARKED (still
+// in flight) when the view attaches; the attach reuses the transient
+// entry (it starts NO second probe and arms ONE tick); the 3s TICK
+// firing while the cold round is still in flight dirty-coalesces (no
+// concurrent probe); when the cold probe settles, it PUBLISHES its
+// authority and pulls — the entry that started it is STILL the
+// current entry (the same-SessionEntry proof: a delete-and-recreate
+// attach would have orphaned the cold round, whose late settlement
+// would be silent, the COLD-E2 semantics). The coalesced tick caller
+// receives the FOLLOW-UP round's result. Final: two probes, one
+// pull, one timer armed.
+const ce4Gate = gatedProbe()
+const ce4Pull = scriptedPullProjection({ 'root-ce4': [APPLY] })
+const ce4Timer = manualTimer()
+const ce4ReadStateLog: Array<TeamReadStateOutcome['status']> = []
+const ce4Coord = createTeamRefreshCoordinator({
+  readState: ce4Gate.readState,
+  pullProjection: ce4Pull.pullProjection,
+  getAppliedIdentity: () => null,
+  onReadState: (_sessionId, outcome) => {
+    ce4ReadStateLog.push(outcome.status)
+  },
+  timer: ce4Timer,
+})
+const ce4Cold = ce4Coord.trigger('s', 'manual') // unattached → transient entry, probe 0 parked
+const ce4ProbesAfterTrigger = ce4Gate.calls
+ce4Coord.attach('s') // REUSES the transient entry (guide §2.2 — no delete + recreate)
+const ce4ProbesAfterAttach = ce4Gate.calls
+const ce4AttachedAfterAttach = ce4Coord.attached()
+const ce4TickArmedAfterAttach = ce4Timer.armed()
+const ce4Tick = ce4Coord.trigger('s', 'tick') // the tick fires while the cold round is in flight → dirty-coalesced
+const ce4ProbesAfterTick = ce4Gate.calls
+ce4Gate.releaseAt(0, okRoot('root-ce4', 10, 'lt-v1-ce4-a'))
+const ce4ColdResult = await ce4Cold
+const ce4FollowUpStarted = ce4Gate.calls // the dirty follow-up (the coalesced tick) started exactly once
+ce4Gate.releaseAt(1, okNone())
+const ce4TickResult = await ce4Tick
+const ce4ProbesFinal = ce4Gate.calls
+const ce4ArmedFinal = ce4Timer.armed().length
+
 // ---------------------------------------------------------------------------
 // Assertions
 // ---------------------------------------------------------------------------
@@ -915,5 +956,48 @@ describe('team-view-sync-complete — the cold-bootstrap session scope (PR #35 t
     expect(ce3ReadStateLog).toEqual([])
     expect(ce3Pull.calls).toEqual([])
     expect(ce3Attached).toEqual([])
+  })
+
+  it('COLD-E4: trigger → attach → tick stay in the SAME SessionEntry (closeout guide §3/§10) — the attach starts no second refresh lane, the in-flight tick coalesces, and the cold round still PUBLISHES on settle (reuse, not replace)', async () => {
+    // The cold trigger created the transient entry and parked its
+    // probe (one call — nothing else started a probe).
+    expect(ce4ProbesAfterTrigger).toBe(1)
+    // The attach saw the transient entry and flipped it: it started NO
+    // second probe (no second refresh lane — the guide §2.2 forbidden
+    // delete + recreate is excluded behaviorally) and armed exactly
+    // one tick on that same entry.
+    expect(ce4ProbesAfterAttach).toBe(1)
+    expect(ce4AttachedAfterAttach).toEqual(['s'])
+    expect(ce4TickArmedAfterAttach.length).toBe(1)
+    // The tick firing while the cold round is still in flight
+    // dirty-coalesced: no concurrent probe (single-flight maintained
+    // over the same entry).
+    expect(ce4ProbesAfterTick).toBe(1)
+    // The cold round settled in the CURRENT scope: it PUBLISHED its
+    // read-state authority (the same-SessionEntry proof — a replaced
+    // entry would have made this settlement silent, the COLD-E2
+    // semantics) and made its conditional pull.
+    expect(ce4ColdResult.readState.status).toBe('ok')
+    if (ce4ColdResult.readState.status !== 'ok') throw new Error('COLD-E4 guard')
+    expect(ce4ColdResult.readState.relation.kind).toBe('team-root')
+    expect(ce4ColdResult.projectionAssessment).toEqual(APPLY)
+    // Exactly one dirty follow-up started after the settle (the
+    // coalesced tick's owed forced round) — no second lane.
+    expect(ce4FollowUpStarted).toBe(2)
+    // The coalesced tick caller received the FOLLOW-UP round's result
+    // (the follow-up's probe = none → the authoritative no-team round,
+    // no second pull).
+    expect(ce4TickResult.readState.status).toBe('ok')
+    if (ce4TickResult.readState.status !== 'ok') throw new Error('COLD-E4 guard')
+    expect(ce4TickResult.readState.relation.kind).toBe('none')
+    expect(ce4TickResult.projectionAssessment).toBeNull()
+    // Final: the cold round + exactly ONE follow-up = two probes;
+    // one pull (the cold round's); one timer armed; the recorder saw
+    // both publications (the cold round's team authority + the
+    // follow-up's none) in order.
+    expect(ce4ProbesFinal).toBe(2)
+    expect(ce4Pull.calls).toEqual(['root-ce4'])
+    expect(ce4ArmedFinal).toBe(1)
+    expect(ce4ReadStateLog).toEqual(['ok', 'ok'])
   })
 })
