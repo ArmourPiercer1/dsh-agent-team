@@ -607,6 +607,45 @@ var __dshFactory = (require) => {
 			    const snapshot = useMemo(() => (resolution === undefined
 			        ? null
 			        : adaptTeamProjection(resolution.team, resolution.perspective)), [resolution]);
+			    // (PR #35 second follow-up P1-A) the AUTHORITATIVE view mode — the
+			    // settled read-state outcome is the single driver of which face
+			    // renders (guide §4.2 state machine):
+			    //   · `ok/none` → the DEFINITIVE ordinary zero state. The authority
+			    //     WINS over any stale mirror frame (a none probe never degrades
+			    //     into a team body; the stale mirror is ignored).
+			    //   · `ok/team-root|team-member` → the team face: the last applied
+			    //     frame, or the team-loading line while the first frame is in
+			    //     flight (the probe already confirmed the ownership).
+			    //   · `remote-error / malformed / transport-loss` (no frame) → the
+			    //     ownership-error line for the exact failure kind (NEVER a
+			    //     permanent "loading": a failed probe carries no ownership
+			    //     conclusion, but it is a CONCLUDED failure — the UI says so);
+			    //     (with a frame) → the LAST GOOD team face + the stale banner
+			    //     (the failed refresh neither drops the frame nor degrades the
+			    //     session to `none`).
+			    //   · `null` (no settled probe yet) → the projection-store-driven
+			    //     face: while the store has no concrete state the ownership read
+			    //     is announced as in flight; a concrete store state (error /
+			    //     reconnecting / foreign — the S1-C1 cold-open surface) keeps its
+			    //     own line (it is strictly more specific than "reading…").
+			    const viewMode = useMemo(() => {
+			        if (authoritativeNone)
+			            return { kind: 'ordinary' };
+			        if (readState !== null && readState.status !== 'ok') {
+			            const detail = readState;
+			            if (snapshot === null)
+			                return { kind: 'ownership-error', detail };
+			            return { kind: 'team-ready', stale: true };
+			        }
+			        if (snapshot === null) {
+			            if (readState === null)
+			                return { kind: 'store-driven' };
+			            // ok + a team relation (the none case is handled above): the
+			            // ownership is confirmed, the first frame is still in flight.
+			            return { kind: 'team-loading' };
+			        }
+			        return { kind: 'team-ready', stale: false };
+			    }, [authoritativeNone, readState, snapshot]);
 			    // P9-T8 (S5-D): the one-shot legacy inspection for the ZERO state (plan
 			    // §10.6, UI §34). It is a read, not a command flow — no projection pull;
 			    // it only decides WHICH zero state renders. Gated to the zero state and
@@ -621,7 +660,13 @@ var __dshFactory = (require) => {
 			    // stands (a failed probe keeps the last-known surface — fail closed,
 			    // and a cold open with no settled probe yet reads as "still loading",
 			    // never as a definitive no-team).
-			    const inZeroState = authoritativeNone || resolution === undefined || snapshot === null;
+			    // (PR #35 second follow-up P1-A) the zero-state gate is the view mode,
+			    // NOT the raw frame absence: the team face renders exactly when the
+			    // mode is `team-ready` (a last applied frame — with or without a
+			    // stale-refresh banner); every other mode renders the zero face, and
+			    // the zero face's CONCLUSION comes from the mode (the authoritative
+			    // none / the ownership lines / the store-driven cold-open lines).
+			    const inZeroState = viewMode.kind !== 'team-ready';
 			    useEffect(() => {
 			        if (!inZeroState || legacyInspect === undefined || creationOpen)
 			            return;
@@ -1029,44 +1074,87 @@ var __dshFactory = (require) => {
 			                                    : null] }, row.rootSessionId));
 			                    }) })] }))
 			        : null;
-			    if (resolution === undefined || snapshot === null) {
-			        // (repair 20260927, S1-C1) the zero-state projection status line —
-			        // judged by the store's CURRENT status/assessment (never by the
-			        // presence of a `lastError` property alone):
-			        //   · no state yet / idle / loading / ready → 加载中 (NEVER a
-			        //     definitive "未加入团队": the cold open is still in flight —
-			        //     only the phase-2 authoritative resolver may say "no team");
-			        //   · reconnecting (no frame) → 尚未成功加载 (transport loss, the
-			        //     store's retry episode is running);
-			        //   · error → 团队信息加载失败 + code/message (typed RPC error,
-			        //     transport loss, foreign/inconsistent — the FOREIGN_TEAM case
-			        //     keeps the NEUTRAL wording: the underlying get fault / cold
-			        //     member addressing can also land here, and phase 1 keeps the
-			        //     ordinary-session creation entry).
-			        const foreign = projectionState !== null
-			            && (projectionState.lastError?.code === 'TEAM_REMOTE_FOREIGN_TEAM'
-			                || projectionState.lastAssessment?.status === 'foreign');
+			    if (viewMode.kind !== 'team-ready') {
+			        // (PR #35 second follow-up P1-A) the zero-face status line is the
+			        // VIEW MODE (the settled read-state outcome is the authority; guide
+			        // §4.2):
+			        //   · ordinary (ok/none) → the DEFINITIVE no-team line (the
+			        //     authority wins over any stale mirror — this is the ONLY mode
+			        //     that may say "未加入团队");
+			        //   · ownership-error → the exact failed-probe line
+			        //     (remote-error: code + message; malformed: the reason;
+			        //     transport-loss: the reconnect line) — NEVER a permanent
+			        //     loading;
+			        //   · team-loading (ok/team, frame in flight) → the team-loading
+			        //     line (the ownership is already confirmed);
+			        //   · store-driven (no settled probe yet) → the S1-C1
+			        //     projection-store lines: while the store has no concrete state
+			        //     the ownership read is announced as in flight; a concrete
+			        //     store state (reconnecting / error / foreign — the
+			        //     cold-open surface) keeps its own line:
+			        //       · no state yet / idle / loading / ready → 读取归属中;
+			        //       · reconnecting (no frame) → 尚未成功加载 (transport loss,
+			        //         the store's retry episode is running);
+			        //       · error → 团队信息加载失败 + code/message (typed RPC
+			        //         error, transport loss, foreign/inconsistent — the
+			        //         FOREIGN_TEAM case keeps the NEUTRAL wording).
 			        let zeroStatusLine;
-			        if (projectionState === null
-			            || projectionState.status === 'idle'
-			            || projectionState.status === 'loading'
-			            || projectionState.status === 'ready') {
-			            zeroStatusLine = t('view.projection.loading');
+			        let zeroStatus;
+			        if (viewMode.kind === 'ordinary') {
+			            zeroStatusLine = t('view.ownership.none');
+			            zeroStatus = 'none';
 			        }
-			        else if (projectionState.status === 'reconnecting') {
-			            zeroStatusLine = t('view.projection.notLoaded');
+			        else if (viewMode.kind === 'ownership-error') {
+			            zeroStatus = 'ownership-error';
+			            if (viewMode.detail.status === 'remote-error') {
+			                zeroStatusLine = t('view.ownership.error', {
+			                    code: viewMode.detail.code,
+			                    message: viewMode.detail.message,
+			                });
+			            }
+			            else if (viewMode.detail.status === 'malformed') {
+			                zeroStatusLine = t('view.ownership.malformed', {
+			                    reason: viewMode.detail.reason,
+			                });
+			            }
+			            else {
+			                zeroStatusLine = t('view.ownership.transport');
+			            }
 			        }
-			        else if (foreign) {
-			            zeroStatusLine = t('view.projection.foreign');
+			        else if (viewMode.kind === 'team-loading') {
+			            zeroStatusLine = t('view.ownership.teamLoading');
+			            zeroStatus = 'team-loading';
 			        }
 			        else {
-			            const code = projectionState.lastError?.code
-			                ?? projectionState.lastAssessment?.status
-			                ?? 'unknown';
-			            const message = projectionState.lastError?.message ?? '';
-			            zeroStatusLine = `${t('view.projection.failed')} — ${code}${message !== '' ? `: ${message}` : ''}`;
+			            // store-driven (the probe is still in flight; the store state is
+			            // the only concrete evidence).
+			            const foreign = projectionState !== null
+			                && (projectionState.lastError?.code === 'TEAM_REMOTE_FOREIGN_TEAM'
+			                    || projectionState.lastAssessment?.status === 'foreign');
+			            if (projectionState === null
+			                || projectionState.status === 'idle'
+			                || projectionState.status === 'loading'
+			                || projectionState.status === 'ready') {
+			                zeroStatusLine = t('view.ownership.loading');
+			                zeroStatus = 'ownership-loading';
+			            }
+			            else if (projectionState.status === 'reconnecting') {
+			                zeroStatusLine = t('view.projection.notLoaded');
+			                zeroStatus = projectionState.status;
+			            }
+			            else if (foreign) {
+			                zeroStatusLine = t('view.projection.foreign');
+			                zeroStatus = projectionState.status;
+			            }
+			            else {
+			                const code = projectionState.lastError?.code
+			                    ?? projectionState.lastAssessment?.status
+			                    ?? 'unknown';
+			                const message = projectionState.lastError?.message ?? '';
+			                zeroStatusLine = `${t('view.projection.failed')} — ${code}${message !== '' ? `: ${message}` : ''}`;
+			                zeroStatus = projectionState.status;
+			            }
 			        }
-			        const zeroStatus = projectionState?.status ?? 'unknown';
 			        const refreshButton = (_jsx("button", { type: "button", className: styles.zeroStart, "data-team-refresh": true, disabled: refreshPending, onClick: runRefresh, children: t('view.refresh') }));
 			        if (creation === undefined) {
 			            return (_jsx("div", { className: styles.zero, "data-team-zero": true, children: _jsxs("div", { className: styles.zeroInner, children: [_jsx("p", { className: styles.zeroText, "data-team-projection-status": zeroStatus, children: zeroStatusLine }), refreshButton, rootsNote !== null && (_jsx("p", { className: styles.legacyNote, "data-roots-note": true, children: rootsNote })), rootsList] }) }));
@@ -1100,10 +1188,19 @@ var __dshFactory = (require) => {
 			                        ? _jsx(TeamCreationPanel, { listCatalog: creation.listCatalog, getCatalog: creation.getCatalog, probeCompatibility: creation.probeCompatibility, teamCreateV2: creation.teamCreateV2, teamAdmitInitialWorkV2: creation.teamAdmitInitialWorkV2, openCreatedSession: creation.openCreatedSession, onCreated: () => setCreationOpen(false), pullProjection: pullProjection, listAgentPresets: creation.listAgentPresets, workspaces: workspaceOptions, handoffSource: handoffSource, handoffFace: handoff, draft: intentDraft, onDraftChange: setIntentDraft, onCancel: () => setCreationOpen(false), t: t })
 			                        : (_jsx("button", { type: "button", className: styles.zeroStart, "data-intent-start-here": true, onClick: () => setCreationOpen(true), children: t('intent.startHere') }))] }) }));
 			    }
+			    // `team-ready` is derived from `snapshot !== null` (which is derived
+			    // from a resolved mirror), so this re-check is a guaranteed no-op — it
+			    // only restores the narrowing TS cannot see through the memo.
+			    if (resolution === undefined || snapshot === null) {
+			        // Unreachable: `team-ready` is derived from a non-null snapshot (the
+			        // frame is resolved). The throw only restores the narrowing TS
+			        // cannot see through the viewMode memo.
+			        throw new Error('team-ready view mode without a resolved frame');
+			    }
 			    const currentInstanceId = resolution.perspective.kind === 'member-child'
 			        ? resolution.perspective.memberInstanceId
 			        : undefined;
-			    return (_jsxs("div", { className: styles.body, "data-team-view": true, children: [_jsxs("div", { className: styles.viewStatus, "data-team-view-status": withFrameStatus, "data-refresh-pending": withFrameRefreshing || undefined, children: [withFrameError !== null
+			    return (_jsxs("div", { className: styles.body, "data-team-view": true, children: [_jsxs("div", { className: styles.viewStatus, "data-team-view-status": withFrameStatus, "data-refresh-pending": withFrameRefreshing || undefined, children: [viewMode.kind === 'team-ready' && viewMode.stale ? (_jsx("span", { className: styles.legacyNote, "data-team-ownership-stale": true, children: t('view.ownership.stale') })) : null, withFrameError !== null
 			                        ? (_jsxs("span", { className: styles.legacyNote, "data-team-view-error": true, children: [t('view.refresh.failed'), ` — ${withFrameError.code}`, withFrameError.message !== '' ? `: ${withFrameError.message}` : ''] }))
 			                        : withFrameRefreshing
 			                            ? _jsx("span", { "data-team-view-refreshing": true, children: t('view.refreshing') })
@@ -6337,6 +6434,20 @@ var __dshFactory = (require) => {
 			 * same generation-safe store pull — the F1 request-order liveness + the
 			 * generation verdict remain the final authority for both lanes.
 			 *
+			 * SCOPE EPOCH (PR #35 second follow-up P1-B): a detach does not cancel
+			 * an in-flight round — it SUPERSEDES its scope. Every attach creates a
+			 * fresh entry with a monotonically increasing epoch; a round captures
+			 * the entry it started in and re-checks the map before every external
+			 * side effect (the read-state publication, the conditional projection
+			 * pull, the lastResult / dirty follow-up wiring). A round settling
+			 * late from an orphaned scope (detach → reattach, or a permanent
+			 * detach) therefore publishes NO read-state authority (the new
+			 * incarnation's probe is the sole authority), makes NO conditional
+			 * projection request, and cannot touch the new entry's timer / state.
+			 * The unattached cold-bootstrap round (the cold create-success path)
+			 * is exempt (its guard stays true — it is the session's cold
+			 * bootstrap and its result must still land).
+			 *
 			 * Pure module: no DOM, no timers of its own (the timer is injected;
 			 * tests use a manual one), no React. Erasable TS only.
 			 * @module @dsh-agent-team/client/state/team-refresh-coordinator
@@ -6345,9 +6456,29 @@ var __dshFactory = (require) => {
 			 * Run ONE refresh round for one session (the frozen §1.2 flow): probe
 			 * → (conditional) pull. NEVER rejects (every dependency resolves with
 			 * a closed outcome / assessment).
+			 *
+			 * PR #35 second follow-up P1-B — the scope guard: `isCurrent` answers
+			 * whether the scope (attach incarnation) this round started in still
+			 * owns the session. Checked BEFORE every external side effect — a
+			 * round whose scope was superseded (detach → reattach, or a detach
+			 * that stays) by the time it settles publishes NO read-state
+			 * authority and makes NO conditional projection pull: the late result
+			 * is returned to its own caller only (it is the caller's round
+			 * result — the session's view state belongs to the CURRENT scope).
+			 * An UNATTACHED round (the cold create-success bootstrap) passes a
+			 * guard that always answers true: it is the session's cold bootstrap
+			 * and its result must still land (guide §5.2 — the unattached forced
+			 * round is not killed by the epoch).
 			 */
-			async function runRound(options, sessionId) {
+			async function runRound(options, sessionId, isCurrent) {
 			    const outcome = await options.readState(sessionId);
+			    // P1-B: the read-state settlement is an EXTERNAL side effect (the
+			    // per-session read-state store the TeamView renders from) — a
+			    // superseded scope never publishes its late outcome (it would
+			    // overwrite the new scope's fresh authority).
+			    if (!isCurrent()) {
+			        return { readState: outcome, projectionAssessment: null };
+			    }
 			    if (outcome.status !== 'ok') {
 			        // Fail closed: remote-error / malformed / transport-loss — no
 			        // ownership conclusion (a malformed success is NEVER degraded to
@@ -6375,6 +6506,14 @@ var __dshFactory = (require) => {
 			        // → every 3s → getReadState → compare → pull ONLY when needed).
 			        return { readState: outcome, projectionAssessment: null };
 			    }
+			    // P1-B: the conditional projection pull is an EXTERNAL side effect
+			    // (a store request) — re-check the scope after the probe settled:
+			    // a scope that was superseded while the probe was in flight makes NO
+			    // conditional pull (it would request a projection the new scope's
+			    // own rounds already govern).
+			    if (!isCurrent()) {
+			        return { readState: outcome, projectionAssessment: null };
+			    }
 			    const projectionAssessment = await options.pullProjection(relation.teamSessionId);
 			    return { readState: outcome, projectionAssessment };
 			}
@@ -6390,6 +6529,11 @@ var __dshFactory = (require) => {
 			    const timer = options.timer === undefined ? createDefaultTimer() : options.timer;
 			    const entries = new Map();
 			    let paused = false;
+			    // P1-B: the monotonic scope-epoch counter (per coordinator). Every
+			    // attach that creates a fresh entry advances it; a round started in
+			    // an orphaned scope (after detach → reattach) is superseded the
+			    // moment the new entry owns the session id.
+			    let nextEpoch = 1;
 			    const armTick = (sessionId) => {
 			        const entry = entries.get(sessionId);
 			        if (entry === undefined || entry.timer !== null)
@@ -6415,10 +6559,21 @@ var __dshFactory = (require) => {
 			    const startRound = (sessionId) => {
 			        const entry = entries.get(sessionId);
 			        if (entry === undefined)
-			            return runRound(options, sessionId);
+			            return runRound(options, sessionId, () => true);
+			        // P1-B: capture the scope this round starts in; the round's guard
+			        // checks the map for THIS entry (a detach → reattach orients the
+			        // session id to a fresh entry with a newer epoch).
+			        const entryAtStart = entry;
+			        const isCurrent = () => entries.get(sessionId) === entryAtStart;
 			        entry.inFlight = true;
-			        const round = runRound(options, sessionId).then((result) => {
-			            entry.lastResult = result;
+			        const round = runRound(options, sessionId, isCurrent).then((result) => {
+			            // P1-B: lastResult wiring is scope-guarded too — a superseded
+			            // scope's late result never lands in the CURRENT entry's state
+			            // (the orphaned entry's own field is harmless: nothing reads it
+			            // after the entry leaves the map).
+			            if (entries.get(sessionId) === entryAtStart) {
+			                entry.lastResult = result;
+			            }
 			            return result;
 			        });
 			        void round.then((result) => {
@@ -6470,8 +6625,11 @@ var __dshFactory = (require) => {
 			        const entry = entries.get(sessionId);
 			        if (entry === undefined) {
 			            // Unattached (the cold create-success path targets the NEW root
-			            // before its view mounts): the forced round runs UNGATED.
-			            return runRound(options, sessionId);
+			            // before its view mounts): the forced round runs UNGATED — the
+			            // scope guard stays true for the whole round (P1-B: the
+			            // unattached cold bootstrap is NOT killed by the epoch; its
+			            // result must still land).
+			            return runRound(options, sessionId, () => true);
 			        }
 			        if (!entry.inFlight)
 			            return startRound(sessionId);
@@ -6486,7 +6644,11 @@ var __dshFactory = (require) => {
 			    const attach = (sessionId) => {
 			        let entry = entries.get(sessionId);
 			        if (entry === undefined) {
+			            // P1-B: a fresh attach is a fresh SCOPE — a new entry with the
+			            // next epoch (the previous incarnation's in-flight rounds are
+			            // superseded: their guard now sees a different entry in the map).
 			            entry = {
+			                epoch: nextEpoch++,
 			                timer: null,
 			                inFlight: false,
 			                dirty: false,
@@ -6988,6 +7150,15 @@ var __dshFactory = (require) => {
 			    'view.projection.notLoaded': '团队信息尚未成功加载，正在重试',
 			    'view.projection.foreign': '当前会话未能关联到团队（可能是普通会话）',
 			    'view.projection.failed': '团队信息加载失败',
+			    // PR #35 second follow-up (P1-A): the authoritative ownership read-state
+			    // lines (see the key list above).
+			    'view.ownership.loading': '正在读取团队归属…',
+			    'view.ownership.none': '已确认当前会话未加入团队',
+			    'view.ownership.teamLoading': '正在加载团队状态…',
+			    'view.ownership.error': '团队归属读取失败 — {code}: {message}',
+			    'view.ownership.malformed': '团队归属响应异常 — {reason}',
+			    'view.ownership.transport': '无法读取团队归属，等待连接恢复',
+			    'view.ownership.stale': '团队归属刷新失败，当前显示上次成功的数据',
 			    'view.refresh': '刷新团队视图',
 			    'view.refreshing': '正在更新…',
 			    'view.refresh.failed': '更新失败，当前显示上次成功的数据',
@@ -7237,6 +7408,15 @@ var __dshFactory = (require) => {
 			    'view.projection.notLoaded': 'Team info has not loaded yet — retrying',
 			    'view.projection.foreign': 'This session could not be linked to a team (it may be an ordinary session)',
 			    'view.projection.failed': 'Failed to load team info',
+			    // PR #35 second follow-up (P1-A): the authoritative ownership read-state
+			    // lines (English).
+			    'view.ownership.loading': 'Reading team ownership…',
+			    'view.ownership.none': 'Confirmed: this session is not part of a team',
+			    'view.ownership.teamLoading': 'Loading team state…',
+			    'view.ownership.error': 'Team ownership read failed — {code}: {message}',
+			    'view.ownership.malformed': 'Malformed team ownership response — {reason}',
+			    'view.ownership.transport': 'Cannot read team ownership; waiting for the connection to restore',
+			    'view.ownership.stale': 'Team ownership refresh failed; showing the last successfully loaded data',
 			    'view.refresh': 'Refresh team view',
 			    'view.refreshing': 'Refreshing…',
 			    'view.refresh.failed': 'Update failed — showing the last successfully loaded data',
@@ -11948,8 +12128,6 @@ var __dshFactory = (require) => {
 			            }
 			            case 'team.getProjection': {
 			                const projectionParams = params;
-			                const raw = ports.projection.project(projectionParams.teamSessionId);
-			                const projection = normalizeProjection(raw);
 			                if (version >= 6) {
 			                    // The v6 projection: the frozen v1-v5 shape PLUS the two
 			                    // additive freshness fields (team-view-sync-complete Phase 2
@@ -11958,9 +12136,21 @@ var __dshFactory = (require) => {
 			                    // `liveToken` (the deterministic opaque semantic-live-state
 			                    // token). Contract versions <= 5 serve the EXACT frozen shape
 			                    // (byte-identical passthrough — v1-v5 are unchanged).
-			                    const liveToken = ports.liveToken.liveToken(projectionParams.teamSessionId);
+			                    //
+			                    // PR #35 second follow-up P0-2 (same-snapshot): the v6 read
+			                    // goes through the ATOMIC `projectV6` port — the projection
+			                    // plus a token computed FROM THE SAME PROJECTION RESULT (the
+			                    // adapter materializes the live overlay once and derives the
+			                    // token from the already-materialized
+			                    // `members[].liveActivity` cells). The frame and the token can
+			                    // never come from two different live snapshots, and the
+			                    // lightweight `liveToken` port is NOT consulted on the v6
+			                    // projection path (it serves the getReadState probe).
+			                    const v6 = ports.projection.projectV6(projectionParams.teamSessionId);
+			                    const projection = normalizeProjection(v6.projection);
+			                    const liveToken = v6.liveToken;
 			                    if (typeof liveToken !== 'string' || liveToken.length === 0) {
-			                        throw portContractError('liveToken', 'must be a non-empty string');
+			                        throw portContractError('projectV6.liveToken', 'must be a non-empty string');
 			                    }
 			                    return {
 			                        data: {
@@ -11973,6 +12163,8 @@ var __dshFactory = (require) => {
 			                        projectionGeneration: projection.generation,
 			                    };
 			                }
+			                const raw = ports.projection.project(projectionParams.teamSessionId);
+			                const projection = normalizeProjection(raw);
 			                return {
 			                    data: { projection },
 			                    projectionGeneration: projection.generation,

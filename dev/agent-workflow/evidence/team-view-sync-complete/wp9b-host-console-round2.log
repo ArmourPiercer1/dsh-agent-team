@@ -1,0 +1,19 @@
+[smoke-host 2026-09-28T07:39:41.142Z] kit: served-bundle browser smoke host
+[smoke-host 2026-09-28T07:39:41.143Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-team-view-sync-complete-20260927 testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+[smoke-host 2026-09-28T07:39:41.143Z] world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-09-28T07-39-41 (seed from /home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-27T08-35-52)
+[smoke-host 2026-09-28T07:39:41.205Z] stable pre={"http://127.0.0.1:3080/":401,"http://127.0.0.1:3180/":401} hostPort=3182 mockPort=3497
+[smoke-host 2026-09-28T07:39:41.205Z] seeding world /home/user/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-09-28T07-39-41 from /home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-27T08-35-52
+[smoke-host 2026-09-28T07:39:41.210Z] removed stale session.lock: session-mpr-boot-mpr-2026-09-27T08-35-52/session.lock
+[smoke-host 2026-09-28T07:39:41.210Z] removed stale session.lock: session-mpr-t1-mpr-2026-09-27T08-35-52/session.lock
+[smoke-host 2026-09-28T07:39:41.210Z] removed stale session.lock: session-mpr-ta-mpr-2026-09-27T08-35-52/session.lock
+[smoke-host 2026-09-28T07:39:41.210Z] removed stale session.lock: session-mpr-tb-mpr-2026-09-27T08-35-52/session.lock
+[smoke-host 2026-09-28T07:39:41.210Z] removed stale session.lock: session-team-child-51b51b3058eb7abaf76a2b2abd18d986/session.lock
+[smoke-host 2026-09-28T07:39:41.210Z] removed stale session.lock: session-team-child-710e2ae5ac973a36d984915cf9d2e1f0/session.lock
+[smoke-host 2026-09-28T07:39:41.210Z] removed stale session.lock: session-team-child-796562d4284593654607730948ad2b04/session.lock
+[smoke-host 2026-09-28T07:39:41.210Z] removed stale session.lock: session-team-child-8fc242bd770422735c491c1452e84bcd/session.lock
+[smoke-host 2026-09-28T07:39:41.210Z] removed stale session.lock: session-team-child-b1a1382d1979313801d6c666604a46bd/session.lock
+[smoke-host 2026-09-28T07:39:41.210Z] removed stale session.lock: session-team-child-d07982a448e691494993207d279943b0/session.lock
+[smoke-host 2026-09-28T07:39:41.210Z] world seeded (row patch retargeted to this worktree; stale locks cleared)
+[smoke-host 2026-09-28T07:39:41.216Z] mock model on 127.0.0.1:3497
+[smoke-host 2026-09-28T07:39:42.726Z] route ready (7ms after boot marker; status=401)
+[smoke-host 2026-09-28T07:39:42.726Z] READY http://127.0.0.1:3182/?token=SCRUBBED

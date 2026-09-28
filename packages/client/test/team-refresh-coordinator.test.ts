@@ -459,6 +459,129 @@ const s8Coord = createTeamRefreshCoordinator({
 const s8Result = await s8Coord.trigger('s8', 'connection-restored')
 
 // ---------------------------------------------------------------------------
+// E — the SCOPE EPOCH (PR #35 second follow-up P1-B): detach → reattach
+// supersedes the old scope's in-flight round
+// ---------------------------------------------------------------------------
+
+/** One probe gate: the probe promises are parked until released. */
+interface ProbeGate {
+  calls: number
+  readState: (sessionId: string) => Promise<TeamReadStateOutcome>
+  /** Settle the parked probe of the Nth call (0-based call order). */
+  releaseAt: (callIndex: number, outcome: TeamReadStateOutcome) => void
+}
+function gatedProbe(): ProbeGate {
+  // Each call parks a promise; `releaseAt(callIndex, outcome)` settles
+  // the probe of the Nth CALL (call order — the late-settle scenarios
+  // release the NEW round (the later call) first).
+  let calls = 0
+  const parked: Array<(outcome: TeamReadStateOutcome) => void> = []
+  const readState = (sessionId: string): Promise<TeamReadStateOutcome> => {
+    void sessionId
+    const callIndex = calls
+    calls += 1
+    return new Promise<TeamReadStateOutcome>((resolve) => {
+      parked[callIndex] = resolve
+    })
+  }
+  const releaseAt = (callIndex: number, outcome: TeamReadStateOutcome): void => {
+    const settle = parked[callIndex]
+    if (settle === undefined) throw new Error(`E guard: no parked probe for call ${callIndex}`)
+    parked[callIndex] = ((x) => {
+      throw new Error('E guard: probe settled twice')
+    }) as (outcome: TeamReadStateOutcome) => void
+    settle(outcome)
+  }
+  return {
+    get calls() {
+      return calls
+    },
+    readState,
+    releaseAt,
+  }
+}
+
+// E1: A(old) readState blocked → detach S → reattach S → B(new) starts
+// and settles FIRST → A settles LATE: the old scope publishes no
+// authority, makes no conditional pull, and the new entry's timer is
+// intact.
+const e1Gate = gatedProbe()
+const e1Pull = scriptedPullProjection({ 'root-e1': [APPLY, APPLY] })
+const e1Timer = manualTimer()
+const e1ReadStateLog: Array<TeamReadStateOutcome['status']> = []
+const e1Coord = createTeamRefreshCoordinator({
+  readState: e1Gate.readState,
+  pullProjection: e1Pull.pullProjection,
+  getAppliedIdentity: () => null,
+  onReadState: (_sessionId, outcome) => {
+    e1ReadStateLog.push(outcome.status)
+  },
+  timer: e1Timer,
+})
+e1Coord.attach('e1')
+const e1RoundA = e1Coord.trigger('e1', 'manual') // round A: probe parked
+const e1DetachThenReattach = (() => {
+  e1Coord.detach('e1') // orphan round A's scope
+  e1Coord.attach('e1') // fresh entry (new epoch + new tick)
+})()
+void e1DetachThenReattach
+const e1RoundB = e1Coord.trigger('e1', 'manual') // round B: probe parked
+const e1TimerAfterB = e1Timer.armed()
+// B settles first (the NEW scope is current): the probe is the team
+// relation → the conditional pull is allowed. (Call order: 0 = A old,
+// 1 = B new.)
+e1Gate.releaseAt(1, okRoot('root-e1', 10, 'lt-v1-e1-b'))
+const e1ResultB = await e1RoundB
+// A settles LATE (the OLD scope is superseded): no authority, no pull.
+e1Gate.releaseAt(0, okRoot('root-e1', 99, 'lt-v1-e1-a-late'))
+const e1ResultA = await e1RoundA
+const e1TimerAfterA = e1Timer.armed()
+const e1PullCalls = e1Pull.calls
+
+// E2: a PERMANENT detach with the probe in flight: the late settlement
+// publishes NO read-state authority and makes NO projection pull.
+const e2Gate = gatedProbe()
+const e2Pull = scriptedPullProjection()
+const e2ReadStateLog: Array<TeamReadStateOutcome['status']> = []
+const e2Coord = createTeamRefreshCoordinator({
+  readState: e2Gate.readState,
+  pullProjection: e2Pull.pullProjection,
+  getAppliedIdentity: () => null,
+  onReadState: (_sessionId, outcome) => {
+    e2ReadStateLog.push(outcome.status)
+  },
+  timer: manualTimer(),
+})
+e2Coord.attach('e2')
+const e2Round = e2Coord.trigger('e2', 'manual') // probe parked
+e2Coord.detach('e2') // permanent detach — no reattach
+e2Gate.releaseAt(0, okRoot('root-e2', 10, 'lt-v1-e2-late'))
+const e2Result = await e2Round
+const e2PullCalls = e2Pull.calls
+
+// E3: the UNATTACHED cold-bootstrap round is NOT killed by the epoch
+// (guide §5.2): its late result still lands (onReadState fires, the
+// conditional pull may happen) — and a later attach starts a fresh
+// scope without resurrecting the cold round's authority twice.
+const e3Gate = gatedProbe()
+const e3Pull = scriptedPullProjection({ 'root-e3': [APPLY] })
+const e3ReadStateLog: Array<TeamReadStateOutcome['status']> = []
+const e3Coord = createTeamRefreshCoordinator({
+  readState: e3Gate.readState,
+  pullProjection: e3Pull.pullProjection,
+  getAppliedIdentity: () => null,
+  onReadState: (_sessionId, outcome) => {
+    e3ReadStateLog.push(outcome.status)
+  },
+  timer: manualTimer(),
+})
+const e3Cold = e3Coord.trigger('e3', 'mutation') // unattached cold round, parked
+e3Coord.attach('e3') // the view mounts while the cold round is in flight
+e3Gate.releaseAt(0, okRoot('root-e3', 5, 'lt-v1-e3-cold'))
+const e3ColdResult = await e3Cold
+const e3Attached = e3Coord.attached()
+
+// ---------------------------------------------------------------------------
 // Assertions
 // ---------------------------------------------------------------------------
 
@@ -573,11 +696,15 @@ describe('team-view-sync-complete — the per-session refresh coordinator (clien
     expect(s5ResumeAgain).toBe(4) // the second resume is a no-op
   })
 
-  it('S6: a detach settles the pending coalesced caller with the last settled result (nothing hangs)', () => {
-    expect(s6FirstResult.projectionAssessment).toEqual(APPLY)
-    // The follow-up was dropped (the view is gone): the coalesced
-    // caller settles with the last settled result.
-    expect(s6CoalescedResult.projectionAssessment).toEqual(APPLY)
+  it('S6: a detach during an in-flight round supersedes its scope (P1-B) — nothing hangs: both callers settle with the superseded round result (no conditional pull, no authority publication)', () => {
+    // The detach happened while the probe was in flight: the round's
+    // scope was superseded before it settled, so it published no
+    // read-state authority and made NO conditional pull.
+    expect(s6FirstResult.projectionAssessment).toBeNull()
+    // The coalesced caller settles with the same superseded result
+    // (nothing hangs).
+    expect(s6CoalescedResult.projectionAssessment).toBeNull()
+    expect(s6CoalescedResult.readState).toEqual(s6FirstResult.readState)
     expect(s6.calls.length).toBe(1) // the in-flight round ran; the follow-up did not
   })
 
@@ -594,5 +721,60 @@ describe('team-view-sync-complete — the per-session refresh coordinator (clien
     expect(s8Result.readState.status).toBe('ok')
     expect(s8Result.projectionAssessment).toEqual(APPLY)
     expect(s8Pull.calls).toEqual(['root-1'])
+  })
+})
+
+describe('team-view-sync-complete — the refresh coordinator scope epoch (PR #35 second follow-up P1-B)', () => {
+  it('E1: detach then reattach supersedes the old scope — the late old round publishes NO authority, makes NO conditional pull; the new scope records its own probe and the new entry timer stays intact', async () => {
+    // Round B (the NEW scope) settled first: its probe landed in the
+    // read-state recorder and its team relation triggered the
+    // conditional pull.
+    expect(e1ResultB.readState.status).toBe('ok')
+    if (e1ResultB.readState.status !== 'ok') throw new Error('E1 guard')
+    expect(e1ResultB.readState.relation.kind).toBe('team-root')
+    expect(e1ResultB.projectionAssessment).toEqual(APPLY)
+    // Round A (the OLD scope) settled late: its result is returned to
+    // its own caller only — the read-state recorder saw NO second
+    // publication (the late outcome must not overwrite B's authority).
+    expect(e1ResultA.readState.status).toBe('ok')
+    if (e1ResultA.readState.status !== 'ok') throw new Error('E1 guard')
+    // The late old scope made NO conditional projection pull (only B's
+    // pull exists).
+    expect(e1PullCalls).toEqual(['root-e1'])
+    // The read-state recorder saw exactly B's outcome (one publication,
+    // the new scope's).
+    expect(e1ReadStateLog).toEqual(['ok'])
+    // The new entry's timer is intact (the late old settlement neither
+    // disarmed nor re-armed it; exactly one tick is armed).
+    expect(e1TimerAfterB.length).toBe(1)
+    expect(e1TimerAfterA).toEqual(e1TimerAfterB)
+    // Both probes ran (A + B) — the coordinator did not swallow A's
+    // probe, it only refused to publish its late result.
+    expect(e1Gate.calls).toBe(2)
+  })
+
+  it('E2: a permanent detach with the probe in flight — the late settlement publishes NO read-state authority and makes NO projection pull', async () => {
+    // The round result still reaches its own caller (nothing hangs).
+    expect(e2Result.readState.status).toBe('ok')
+    if (e2Result.readState.status !== 'ok') throw new Error('E2 guard')
+    expect(e2Result.readState.relation.kind).toBe('team-root')
+    // But the superseded scope made no side effects at all.
+    expect(e2ReadStateLog).toEqual([])
+    expect(e2PullCalls).toEqual([])
+    expect(e2Result.projectionAssessment).toBeNull()
+  })
+
+  it('E3: the unattached cold-bootstrap round is NOT killed by the epoch — its late result still lands (authority published + conditional pull allowed)', async () => {
+    // The cold round (started unattached) settled after the attach:
+    // its probe outcome was still published (the cold bootstrap's
+    // result is allowed to land — guide §5.2).
+    expect(e3ColdResult.readState.status).toBe('ok')
+    if (e3ColdResult.readState.status !== 'ok') throw new Error('E3 guard')
+    expect(e3ColdResult.readState.relation.kind).toBe('team-root')
+    expect(e3ColdResult.projectionAssessment).toEqual(APPLY)
+    expect(e3ReadStateLog).toEqual(['ok'])
+    expect(e3Pull.calls).toEqual(['root-e3'])
+    // The attach is intact (the session is still attached).
+    expect(e3Attached).toEqual(['e3'])
   })
 })

@@ -32,14 +32,19 @@
  *  - `team.getProjection` (v6) — the SAME durable projection PLUS the
  *    two additive freshness cells INSIDE data.projection:
  *    `durableGeneration` === the durable generation + the `liveToken`
- *    from the injected port; provenance contractVersion 6 +
- *    projectionGeneration === the generation;
+ *    computed FROM THE SAME PROJECTION'S already-materialized member
+ *    rows (PR #35 second follow-up P0-2 — the same-snapshot guarantee:
+ *    the frame and the token can never come from two different live
+ *    snapshots; the lightweight `liveToken` port is NOT consulted on
+ *    the v6 projection path — a counting overlay proves exactly ONE
+ *    snapshot read per v6 getProjection);
  *  - `team.getProjection` (v5) — the FROZEN byte-identical shape: the
  *    nine v1 fields only, NO v6 cells (the additive contract never
  *    rewrites the old wire);
- *  - the live-token port FAILS CLOSED: absent → typed
- *    `TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE` (a v6 frame must
- *    always carry its token cell); an untyped port throw → re-wrapped
+ *  - the live-token port (the LIGHTWEIGHT read-state probe path only,
+ *    P0-2) FAILS CLOSED: absent on a team relation → typed
+ *    `TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE` (never a team
+ *    relation with a null token); an untyped port throw → re-wrapped
  *    to the same code.
  *
  * Test pattern of this repo (the plain-node shim's `it` is
@@ -71,6 +76,11 @@ import {
 } from '../../remote/src/index.js'
 import type { RemoteResponse } from '../../remote/src/index.js'
 import type { SessionReadStateDurableValue } from '../src/plugin/team-read-state.js'
+import {
+  computeLiveTokenFromProjectedMembers,
+  computeTeamLiveToken,
+  type ProjectedLiveMember,
+} from '../src/plugin/live-token.js'
 
 const ROOT_SID = 'root-session-s6t-v6'
 
@@ -116,7 +126,38 @@ function tripWireRepositories(): { repos: TeamDomainRepositories; touched: strin
   return { repos, touched }
 }
 
-/** The durable projection row the fake projection service serves (the nine frozen v1 fields). */
+/**
+ * The fake STABLE live state of the world (the leader is resident, the
+ * worker is cold) expressed as the projection's already-materialized
+ * `members[].liveActivity` cells — the same-snapshot token input (PR #35
+ * second follow-up P0-2). The deterministic token is derived from these
+ * cells by BOTH independent pure paths and must agree:
+ *
+ * - `computeLiveTokenFromProjectedMembers` (the v6 projection path —
+ *   the token comes FROM the projection's own member rows);
+ * - `computeTeamLiveToken` over the durable member rows + the
+ *   equivalent overlay snapshot (the lightweight read-state probe
+ *   path — the production `liveToken` closure).
+ */
+const FAKE_PROJECTION_MEMBERS: readonly ProjectedLiveMember[] = [
+  { instanceId: 'inst-leader', liveActivity: { residency: 'resident' } },
+  { instanceId: 'inst-a', liveActivity: { residency: 'cold' } },
+]
+const STABLE_PROJECTION_TOKEN = computeLiveTokenFromProjectedMembers(FAKE_PROJECTION_MEMBERS)
+const STABLE_SNAPSHOT_TOKEN = computeTeamLiveToken(
+  [{ instanceId: 'inst-leader' }, { instanceId: 'inst-a' }],
+  {
+    get: (id) =>
+      id === 'inst-leader'
+        ? { residency: 'resident' }
+        : id === 'inst-a'
+          ? { residency: 'cold' }
+          : undefined,
+  },
+)
+
+/** The durable projection row the fake projection service serves (the nine frozen v1 fields;
+ *  the member rows carry the FAKE STABLE live state's already-materialized cells). */
 const PROJECTION_ROW = {
   schemaVersion: 1,
   teamSessionId: ROOT_SID,
@@ -125,7 +166,10 @@ const PROJECTION_ROW = {
   generatedAt: '2026-09-27T00:00:00.000Z',
   root: { rootSessionId: ROOT_SID },
   templates: [],
-  members: [],
+  members: FAKE_PROJECTION_MEMBERS.map((member) => ({
+    instanceId: member.instanceId,
+    liveActivity: member.liveActivity === null ? null : { ...member.liveActivity },
+  })),
   ledger: { total: 0 },
 }
 
@@ -155,9 +199,11 @@ const READ_STATE_ROOT: SessionReadStateDurableValue = {
   durableGeneration: 11,
 }
 
-/** The deterministic fake live token (the shape the production closure
- *  produces — a non-empty `lt-v1-*` string). */
-const fakeLiveToken = (teamSessionId: string): string => `lt-v1-fake-${teamSessionId}-g11`
+/** The deterministic fake live token served by the LIGHTWEIGHT
+ *  read-state probe path (the production `liveToken` closure shape — a
+ *  non-empty `lt-v1-*` string): the SAME stable live state's token as
+ *  the projection's members (stable-state consistency — §3.3). */
+const fakeLiveToken = (_teamSessionId: string): string => STABLE_SNAPSHOT_TOKEN
 
 /** Build the production ports over the trip-wired options object. */
 function makePorts(options: {
@@ -319,12 +365,15 @@ const S6T = await (async () => {
     params: { sessionId: 'ordinary-1' },
   })
 
-  // (g) getProjection v6: the freshness PAIR inside data.projection.
+  // (g) getProjection v6: the freshness PAIR inside data.projection —
+  // the token computed FROM THE SAME PROJECTION (P0-2). The live-token
+  // port is a TRIP WIRE: the v6 projection path must never consult it
+  // (a second live read is the exact bug P0-2 removes).
   let liveTokenCalls: string[] = []
   const { ports: projPorts, touched: projTouched } = makePorts({
     liveToken: (teamSessionId) => {
       liveTokenCalls.push(teamSessionId)
-      return `lt-v1-fake-${teamSessionId}-g11`
+      throw new Error('S6T-V6 guard: the v6 projection path must not call the liveToken port (P0-2 same-snapshot)')
     },
   })
   const dispatchProj = createS6RemoteDispatcher(projPorts, noPrincipal)
@@ -339,7 +388,9 @@ const S6T = await (async () => {
     params: { teamSessionId: ROOT_SID },
   })
 
-  // (i) The ABSENT live-token wiring: a v6 frame cannot be served.
+  // (i) The v6 projection is served WITHOUT the live-token wiring (the
+  // port is the read-state probe's authority only — the projection's
+  // token is computed from its own snapshot's members, P0-2).
   const absentLiveToken = makePorts({})
   const dispatchAbsentLiveToken = createS6RemoteDispatcher(absentLiveToken.ports, noPrincipal)
   const projectionV6LiveTokenAbsent = await dispatchAbsentLiveToken('team.getProjection', {
@@ -347,17 +398,54 @@ const S6T = await (async () => {
     params: { teamSessionId: ROOT_SID },
   })
 
-  // (j) The UNTYPED live-token throw: re-wrapped to the same code.
-  const liveTokenUntyped = makePorts({
-    liveToken: () => {
-      throw new Error('boom: overlay unavailable')
-    },
-  })
-  const dispatchLiveTokenUntyped = createS6RemoteDispatcher(liveTokenUntyped.ports, noPrincipal)
-  const projectionV6LiveTokenUntyped = await dispatchLiveTokenUntyped('team.getProjection', {
+  // (j) §3.2 the SAME-SNAPSHOT decisiveness (a fake overlay whose FIRST
+  // snapshot reports the leader RESIDENT and whose SECOND would report
+  // COLD): one v6 getProjection reads the snapshot EXACTLY ONCE — the
+  // frame's leader is resident and the served token is the
+  // first-snapshot's token (a second read for the token would have
+  // served the cold state's token instead — the old two-snapshot bug).
+  let snapshotCalls = 0
+  const residentState: Record<string, { residency: string }> = {
+    'inst-leader': { residency: 'resident' },
+    'inst-a': { residency: 'cold' },
+  }
+  const coldState: Record<string, { residency: string }> = {
+    'inst-leader': { residency: 'cold' },
+    'inst-a': { residency: 'cold' },
+  }
+  const countingSnapshot = (): Record<string, { residency: string }> => {
+    snapshotCalls += 1
+    return snapshotCalls === 1 ? residentState : coldState
+  }
+  const countingProject = (teamSessionId: string): unknown => {
+    // The fake projection service: materialize the member live cells
+    // from ONE Team-scoped snapshot read (the fold's contract).
+    const snap = countingSnapshot()
+    return {
+      ...PROJECTION_ROW,
+      teamSessionId,
+      members: (Object.keys(snap) as (keyof typeof snap)[]).map((id) => ({
+        instanceId: id,
+        liveActivity: { ...snap[id] },
+      })),
+    }
+  }
+  const { ports: countingPorts } = makePorts({ projection: { project: countingProject } })
+  const dispatchCounting = createS6RemoteDispatcher(countingPorts, noPrincipal)
+  const projectionSameSnapshot = await dispatchCounting('team.getProjection', {
     version: REMOTE_CONTRACT_VERSION_V6,
     params: { teamSessionId: ROOT_SID },
   })
+  const sameSnapshotCalls = snapshotCalls
+  // The independent expected tokens (pure, no shared state):
+  const firstSnapshotToken = computeTeamLiveToken(
+    [{ instanceId: 'inst-leader' }, { instanceId: 'inst-a' }],
+    { get: (id) => residentState[id] },
+  )
+  const secondSnapshotToken = computeTeamLiveToken(
+    [{ instanceId: 'inst-leader' }, { instanceId: 'inst-a' }],
+    { get: (id) => coldState[id] },
+  )
 
   return {
     readStateCalls,
@@ -381,7 +469,10 @@ const S6T = await (async () => {
     projectionV6,
     projectionV5,
     projectionV6LiveTokenAbsent,
-    projectionV6LiveTokenUntyped,
+    snapshotCalls: sameSnapshotCalls,
+    projectionSameSnapshot,
+    firstSnapshotToken,
+    secondSnapshotToken,
   }
 })()
 
@@ -431,14 +522,18 @@ describe('team-view-sync-complete — S6 production dispatcher: team.getReadStat
     expect(data['liveToken']).toBe(fakeLiveToken(ROOT_SID))
   })
 
-  it('CONSISTENCY (PR #35 follow-up): getReadState and getProjection answer the SAME durableGeneration + liveToken pair from the same wiring', () => {
+  it('CONSISTENCY (PR #35 follow-up + P0-2): in the stable state, getReadState and getProjection answer the SAME durableGeneration + liveToken pair — the lightweight probe token (durable rows + snapshot) and the projection token (the projection members) agree on one live state', () => {
+    // The two INDEPENDENT pure derivations of the token agree on the
+    // same stable live state (the format is unchanged: lt-v1-*).
+    expect(STABLE_PROJECTION_TOKEN).toBe(STABLE_SNAPSHOT_TOKEN)
+    expect(STABLE_PROJECTION_TOKEN.startsWith('lt-v1-')).toBe(true)
     const readData = dataOf(S6T.readStateRoot)
     const projData = dataOf(S6T.projectionConsistency)
     const projection = projData['projection'] as Record<string, unknown>
     expect(readData['durableGeneration']).toBe(projection['durableGeneration'])
     expect(readData['durableGeneration']).toBe(11)
     expect(readData['liveToken']).toBe(projection['liveToken'])
-    expect(readData['liveToken']).toBe(fakeLiveToken(ROOT_SID))
+    expect(readData['liveToken']).toBe(STABLE_PROJECTION_TOKEN)
   })
 
   it('a team relation with an ABSENT live-token wiring → typed TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE (never a team relation with a null token)', () => {
@@ -496,17 +591,24 @@ describe('team-view-sync-complete — S6 production dispatcher: team.getReadStat
 // team.getProjection (the v6 freshness pair + the frozen v5 shape)
 // ---------------------------------------------------------------------------
 
-describe('team-view-sync-complete — S6 production dispatcher: team.getProjection v6 pair (frozen decisions 3 + 4)', () => {
-  it('the v6 frame carries the PAIR inside data.projection: durableGeneration === generation + the liveToken from the port', () => {
+describe('team-view-sync-complete — S6 production dispatcher: team.getProjection v6 pair (frozen decisions 3 + 4, P0-2 same-snapshot)', () => {
+  it('the v6 frame carries the PAIR inside data.projection: durableGeneration === generation + the liveToken computed FROM THE SAME PROJECTION (no liveToken port call)', () => {
     const data = dataOf(S6T.projectionV6)
     const projection = data['projection'] as Record<string, unknown>
     expect(projection['generation']).toBe(11)
     expect(projection['durableGeneration']).toBe(11)
-    expect(projection['liveToken']).toBe(`lt-v1-fake-${ROOT_SID}-g11`)
+    // P0-2: the token is a pure function of the served frame's own
+    // members[].liveActivity cells (recomputing from the received frame
+    // reproduces the served token — the client same-snapshot check).
+    const members = projection['members'] as Array<{ instanceId: string; liveActivity: { residency: string } | null }>
+    expect(computeLiveTokenFromProjectedMembers(members)).toBe(projection['liveToken'])
+    expect(projection['liveToken']).toBe(STABLE_PROJECTION_TOKEN)
+    // The lightweight liveToken port was NEVER consulted on the v6
+    // projection path (the trip-wire port would have thrown).
+    expect(S6T.liveTokenCalls).toEqual([])
     // The nine frozen v1 fields are UNCHANGED.
     expect(projection['schemaVersion']).toBe(1)
     expect(projection['teamSessionId']).toBe(ROOT_SID)
-    expect(S6T.liveTokenCalls).toEqual([ROOT_SID])
     expect(S6T.projTouched).toEqual([])
   })
 
@@ -525,13 +627,28 @@ describe('team-view-sync-complete — S6 production dispatcher: team.getProjecti
     expect(provenanceOf(S6T.projectionV5)['contractVersion']).toBe(REMOTE_CONTRACT_VERSION_V5)
   })
 
-  it('ABSENT live-token wiring → typed TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE (a v6 frame without its token cell is impossible)', () => {
-    const error = errorOf(S6T.projectionV6LiveTokenAbsent)
-    expect(error['code']).toBe(S6_REMOTE_ERROR_CODES.TEAM_LIVE_TOKEN_PORT_UNAVAILABLE)
+  it('the v6 projection is served WITHOUT the live-token wiring (the port is the read-state probe authority only — the projection token comes from its own snapshot)', () => {
+    const data = dataOf(S6T.projectionV6LiveTokenAbsent)
+    const projection = data['projection'] as Record<string, unknown>
+    expect(projection['generation']).toBe(11)
+    expect(projection['durableGeneration']).toBe(11)
+    expect(projection['liveToken']).toBe(STABLE_PROJECTION_TOKEN)
   })
 
-  it('an UNTYPED live-token throw is re-wrapped to the same code', () => {
-    const error = errorOf(S6T.projectionV6LiveTokenUntyped)
-    expect(error['code']).toBe(S6_REMOTE_ERROR_CODES.TEAM_LIVE_TOKEN_PORT_UNAVAILABLE)
+  it('§3.2 SAME-SNAPSHOT: one v6 getProjection reads the overlay EXACTLY ONCE — the frame is the first (resident) snapshot and the served token is the first-snapshot token (never the second/cold one)', () => {
+    expect(S6T.snapshotCalls).toBe(1)
+    const data = dataOf(S6T.projectionSameSnapshot)
+    const projection = data['projection'] as Record<string, unknown>
+    const members = projection['members'] as Array<{ instanceId: string; liveActivity: { residency: string } | null }>
+    const leader = members.find((member) => member.instanceId === 'inst-leader')
+    expect(leader?.liveActivity).toEqual({ residency: 'resident' })
+    // The served token is the FIRST snapshot's token; a second snapshot
+    // read for the token would have served the cold state's token
+    // (the old two-snapshot bug) — and the two tokens differ.
+    expect(S6T.firstSnapshotToken).not.toBe(S6T.secondSnapshotToken)
+    expect(projection['liveToken']).toBe(S6T.firstSnapshotToken)
+    expect(projection['liveToken']).not.toBe(S6T.secondSnapshotToken)
+    // The client-side recomputation reproduces the served token.
+    expect(computeLiveTokenFromProjectedMembers(members)).toBe(projection['liveToken'])
   })
 })

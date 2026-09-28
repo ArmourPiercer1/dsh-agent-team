@@ -143,6 +143,20 @@ export function createP8T4FakeServer(options: P8T4FakeServerOptions = {}): P8T4F
         },
       }
     },
+    // PR #35 second follow-up P0-2 — the v6 ATOMIC read over the same
+    // mutable projection truth: one projection result + one token derived
+    // from it (same-snapshot by construction). The fake world has no
+    // live overlay, so the deterministic semantic token is a fixed
+    // `lt-v1-*` string (no clock facts — frozen decision 3).
+    projectV6(teamSessionId: string): {
+      projection: RemoteSafeRecord
+      liveToken: string
+    } {
+      return {
+        projection: this.project(teamSessionId),
+        liveToken: 'lt-v1-p8t4fakeworldtoken00000000000000000000000000000000000000000000000',
+      }
+    },
   }
   const mutableLedgerPort = {
     listEntries(teamSessionId: string): readonly RemoteSafeRecord[] {

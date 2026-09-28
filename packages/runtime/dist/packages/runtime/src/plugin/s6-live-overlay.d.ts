@@ -10,13 +10,19 @@
  *
  * Derivation (documented per the §20.1 fixed field semantics):
  *
- * - the snapshot iterates the DURABLE member rows of the host's OWNED roots
- *   (P9-S8: the bound root + any TeamSession root the host durably owns —
- *   teams created after boot through `team.create` / `handoff.create`),
- *   via `memberInstances.list(root)` per owned root, NEVER scanning child
- *   Session logs and NEVER touching the (ephemeral) SessionController Team
- *   mirror — the residency fact is the live glue's own `hasLive` state
- *   (the agent handle's residency), not a reconstructed session-log fact;
+ * - the snapshot is TEAM-SCOPED (PR #35 second follow-up P0-1): it iterates
+ *   the DURABLE member rows of EXACTLY ONE TeamSession —
+ *   `memberInstances.list(teamSessionId)` — and never merges across teams.
+ *   Instance ids are WITHIN-team identities (every team's leader is
+ *   `inst-leader`; the cross-team identity is `(teamSessionId, instanceId)`),
+ *   so a host-wide merged map is UNSOUND (two teams' `inst-leader` rows
+ *   collide). Any team the host durably owns (P9-S8: the boot root + teams
+ *   created after boot through `team.create` / `handoff.create`) is
+ *   servable — the caller requests the team it serves;
+ *   the snapshot NEVER scans child Session logs and NEVER touches the
+ *   (ephemeral) SessionController Team mirror — the residency fact is the
+ *   live glue's own `hasLive` state (the agent handle's residency), not a
+ *   reconstructed session-log fact;
  * - a row with a durable `childSessionId` (every boot-world row, including
  *   the leader — its child session IS the root session) is `resident` when
  *   `live.hasLive(childSessionId)`, else `cold`; a `DISPOSED` row is
@@ -47,16 +53,18 @@ export interface LiveResidencyOverlayOptions {
     readonly repositories: TeamDomainRepositories;
     /** The live-agent glue bundle (the residency flag source). */
     readonly live: TeamAgentBindings;
-    /** The bound root session id (the boot root; the snapshot additionally
-     *  covers every TeamSession root the host durably owns — P9-S8). */
-    readonly rootSessionId: string;
     /** The deterministic clock (ISO-8601) stamping resident rows. */
     readonly now: () => string;
 }
 /**
- * Build the production {@link LiveResidencyOverlayPort} over the host's
- * owned roots (the bound root + every durably owned TeamSession — P9-S8).
- * @param options - the repositories + the live glue + the root + the clock.
+ * Build the production {@link LiveResidencyOverlayPort} — the TEAM-SCOPED
+ * live-residency snapshot (PR #35 second follow-up P0-1). Every
+ * `snapshot(teamSessionId)` reads the durable member rows of exactly that
+ * team and its live children; teams are never merged, because instance ids
+ * are within-team identities (every team's leader is `inst-leader`) and the
+ * cross-team identity is `(teamSessionId, instanceId)`. Any TeamSession the
+ * host durably owns (the boot root + P9-S8 post-boot teams) is servable.
+ * @param options - the repositories + the live glue + the clock.
  * @returns the read-only overlay port.
  */
 export declare function createLiveResidencyOverlay(options: LiveResidencyOverlayOptions): LiveResidencyOverlayPort;

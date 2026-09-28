@@ -101,11 +101,31 @@ export interface RemoteTeamCreatePort {
 /** The whole-projection read port. */
 export interface RemoteProjectionPort {
   /**
-   * Project one TeamSession to its whole read-only view.
+   * Project one TeamSession to its whole read-only view (the v1–v5 path
+   * — the frozen shape, served for contract versions <= 5).
    * @returns the exact P8-T1 `TeamProjectionDto` (nine top-level fields,
    *   lossless JSON).
    */
   project(teamSessionId: string): RemoteSafeRecord
+  /**
+   * The v6 ATOMIC projection read (team-view-sync-complete, PR #35 second
+   * follow-up P0-2 — the same-snapshot guarantee): the whole projection
+   * PLUS its `liveToken` computed FROM THE SAME PROJECTION RESULT. The
+   * adapter materializes the live overlay ONCE (the Team-scoped
+   * `snapshot(teamSessionId)`), folds it into the member rows, and derives
+   * the token from those already-materialized `members[].liveActivity`
+   * cells — the frame's live state and the token can NEVER come from two
+   * different live snapshots, and no second live read happens on the v6
+   * path (the lightweight `liveToken` port remains for the v6
+   * `team.getReadState` probe, which must NOT build a full projection).
+   * @returns the projection (the same lossless-JSON `TeamProjectionDto`
+   *   shape as `project`) plus its same-snapshot `liveToken` (a
+   *   non-empty opaque `lt-v1-*` string).
+   */
+  projectV6(teamSessionId: string): {
+    projection: RemoteSafeRecord
+    liveToken: string
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -559,6 +579,12 @@ export interface RemoteTeamReadStatePort {
  * fresh on every call (the overlay snapshot is the single source); an
  * all-cold state after a restart is a genuine semantic state and produces
  * a well-defined token of its own.
+ *
+ * Scope (PR #35 second follow-up P0-2): this port serves the LIGHTWEIGHT
+ * v6 `team.getReadState` probe ONLY — the probe must NOT build a full
+ * projection. The v6 `team.getProjection` does not consult it: its token
+ * comes from the ATOMIC `RemoteProjectionPort.projectV6` read (the token
+ * is computed from the same projection result — same snapshot).
  */
 export interface RemoteLiveTokenPort {
   /**

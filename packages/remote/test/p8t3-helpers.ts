@@ -403,6 +403,20 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
       calls.push('team.getProjection')
       return { ...P8T3_PROJECTION, teamSessionId }
     },
+    // PR #35 second follow-up P0-2 — the v6 ATOMIC read: the same
+    // deterministic world projection plus the SAME fixed token the fake
+    // read-state world answers (same-snapshot by construction — one
+    // projection result, one token; the fake world has no live overlay,
+    // so a fixed `lt-v1-*` string stands in for the deterministic
+    // semantic token).
+    projectV6(teamSessionId) {
+      calls.push('team.getProjection.v6')
+      return {
+        projection: { ...P8T3_PROJECTION, teamSessionId },
+        liveToken:
+          'lt-v1-p8t3fakeworldtoken000000000000000000000000000000000000000000000000',
+      }
+    },
   }
 
   const ledger: RemoteLedgerPort = {

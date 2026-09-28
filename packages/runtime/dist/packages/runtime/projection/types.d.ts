@@ -207,10 +207,19 @@ export interface TeamDomainReadPort {
  */
 export interface LiveResidencyOverlayPort {
     /**
-     * Read the current live overlay for the team's members.
+     * Read the current live overlay of ONE TeamSession's members (the
+     * Team-scoped snapshot — PR #35 second follow-up P0-1). Instance ids
+     * are WITHIN-team identities (every team's leader is `inst-leader`), so
+     * the overlay can never be a host-wide merged map: the same instance id
+     * is a different live fact in different teams, and the cross-team
+     * identity is `(teamSessionId, instanceId)`. Each projection / read
+     * pass reads exactly the team it serves, and the v6 live token of a
+     * team is computed from that team's own snapshot only.
+     * @param teamSessionId - the TeamSession id (root DSH session id) whose
+     *   members' live state is read.
      * @returns a map from member instance id to its live activity; an empty
      *   map (or a member's absence) means "no live facts for that member".
      */
-    snapshot(): ReadonlyMap<InstanceId, MemberLiveActivityDto>;
+    snapshot(teamSessionId: TeamSessionId): ReadonlyMap<InstanceId, MemberLiveActivityDto>;
 }
 //# sourceMappingURL=types.d.ts.map

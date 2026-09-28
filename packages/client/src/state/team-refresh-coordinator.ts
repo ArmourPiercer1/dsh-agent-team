@@ -44,6 +44,20 @@
  * same generation-safe store pull — the F1 request-order liveness + the
  * generation verdict remain the final authority for both lanes.
  *
+ * SCOPE EPOCH (PR #35 second follow-up P1-B): a detach does not cancel
+ * an in-flight round — it SUPERSEDES its scope. Every attach creates a
+ * fresh entry with a monotonically increasing epoch; a round captures
+ * the entry it started in and re-checks the map before every external
+ * side effect (the read-state publication, the conditional projection
+ * pull, the lastResult / dirty follow-up wiring). A round settling
+ * late from an orphaned scope (detach → reattach, or a permanent
+ * detach) therefore publishes NO read-state authority (the new
+ * incarnation's probe is the sole authority), makes NO conditional
+ * projection request, and cannot touch the new entry's timer / state.
+ * The unattached cold-bootstrap round (the cold create-success path)
+ * is exempt (its guard stays true — it is the session's cold
+ * bootstrap and its result must still land).
+ *
  * Pure module: no DOM, no timers of its own (the timer is injected;
  * tests use a manual one), no React. Erasable TS only.
  * @module @dsh-agent-team/client/state/team-refresh-coordinator
@@ -137,7 +151,11 @@ export interface TeamRefreshCoordinator {
    */
   attach(sessionId: string): void
   /**
-   * Disarm the tick for one session (idempotent). Called by the Team
+   * Disarm the tick for one session and CLOSE its scope (P1-B): the
+   * entry leaves the map, so every in-flight round started in this
+   * incarnation is superseded — its late settlement publishes no
+   * read-state authority and makes no conditional projection pull (a
+   * reattach starts a fresh epoch). Idempotent. Called by the Team
    * view on unmount / session change. Pending coalesced forced rounds
    * are dropped and their callers settle with the last settled round
    * (the session's view is gone; the store state stays).
@@ -170,6 +188,18 @@ export interface TeamRefreshCoordinator {
 
 /** The per-session entry (private). */
 interface SessionEntry {
+  /**
+   * The scope EPOCH (PR #35 second follow-up P1-B): every attach
+   * creates a fresh entry with a monotonically increasing epoch. A
+   * round captures the entry it started from and re-checks
+   * `entries.get(sessionId) === entryAtStart` before every external
+   * side effect (the read-state publication, the conditional
+   * projection pull, the lastResult / dirty follow-up wiring): after a
+   * detach → reattach the OLD scope is orphaned — a late-settling old
+   * round publishes NO authority and makes NO conditional projection
+   * request (the new entry owns the session's state + timer).
+   */
+  readonly epoch: number
   /** The armed tick handle (null when disarmed). */
   timer: number | null
   /** Whether one coordinator-owned round is in flight. */
@@ -189,12 +219,33 @@ interface SessionEntry {
  * Run ONE refresh round for one session (the frozen §1.2 flow): probe
  * → (conditional) pull. NEVER rejects (every dependency resolves with
  * a closed outcome / assessment).
+ *
+ * PR #35 second follow-up P1-B — the scope guard: `isCurrent` answers
+ * whether the scope (attach incarnation) this round started in still
+ * owns the session. Checked BEFORE every external side effect — a
+ * round whose scope was superseded (detach → reattach, or a detach
+ * that stays) by the time it settles publishes NO read-state
+ * authority and makes NO conditional projection pull: the late result
+ * is returned to its own caller only (it is the caller's round
+ * result — the session's view state belongs to the CURRENT scope).
+ * An UNATTACHED round (the cold create-success bootstrap) passes a
+ * guard that always answers true: it is the session's cold bootstrap
+ * and its result must still land (guide §5.2 — the unattached forced
+ * round is not killed by the epoch).
  */
 async function runRound(
   options: TeamRefreshCoordinatorOptions,
   sessionId: string,
+  isCurrent: () => boolean,
 ): Promise<TeamRefreshRoundResult> {
   const outcome = await options.readState(sessionId)
+  // P1-B: the read-state settlement is an EXTERNAL side effect (the
+  // per-session read-state store the TeamView renders from) — a
+  // superseded scope never publishes its late outcome (it would
+  // overwrite the new scope's fresh authority).
+  if (!isCurrent()) {
+    return { readState: outcome, projectionAssessment: null }
+  }
   if (outcome.status !== 'ok') {
     // Fail closed: remote-error / malformed / transport-loss — no
     // ownership conclusion (a malformed success is NEVER degraded to
@@ -223,6 +274,14 @@ async function runRound(
     // → every 3s → getReadState → compare → pull ONLY when needed).
     return { readState: outcome, projectionAssessment: null }
   }
+  // P1-B: the conditional projection pull is an EXTERNAL side effect
+  // (a store request) — re-check the scope after the probe settled:
+  // a scope that was superseded while the probe was in flight makes NO
+  // conditional pull (it would request a projection the new scope's
+  // own rounds already govern).
+  if (!isCurrent()) {
+    return { readState: outcome, projectionAssessment: null }
+  }
   const projectionAssessment = await options.pullProjection(relation.teamSessionId)
   return { readState: outcome, projectionAssessment }
 }
@@ -243,6 +302,11 @@ export function createTeamRefreshCoordinator(
 
   const entries = new Map<string, SessionEntry>()
   let paused = false
+  // P1-B: the monotonic scope-epoch counter (per coordinator). Every
+  // attach that creates a fresh entry advances it; a round started in
+  // an orphaned scope (after detach → reattach) is superseded the
+  // moment the new entry owns the session id.
+  let nextEpoch = 1
 
   const armTick = (sessionId: string): void => {
     const entry = entries.get(sessionId)
@@ -267,10 +331,21 @@ export function createTeamRefreshCoordinator(
    */
   const startRound = (sessionId: string): Promise<TeamRefreshRoundResult> => {
     const entry = entries.get(sessionId)
-    if (entry === undefined) return runRound(options, sessionId)
+    if (entry === undefined) return runRound(options, sessionId, () => true)
+    // P1-B: capture the scope this round starts in; the round's guard
+    // checks the map for THIS entry (a detach → reattach orients the
+    // session id to a fresh entry with a newer epoch).
+    const entryAtStart = entry
+    const isCurrent = (): boolean => entries.get(sessionId) === entryAtStart
     entry.inFlight = true
-    const round = runRound(options, sessionId).then((result) => {
-      entry.lastResult = result
+    const round = runRound(options, sessionId, isCurrent).then((result) => {
+      // P1-B: lastResult wiring is scope-guarded too — a superseded
+      // scope's late result never lands in the CURRENT entry's state
+      // (the orphaned entry's own field is harmless: nothing reads it
+      // after the entry leaves the map).
+      if (entries.get(sessionId) === entryAtStart) {
+        entry.lastResult = result
+      }
       return result
     })
     void round.then(
@@ -327,8 +402,11 @@ export function createTeamRefreshCoordinator(
     const entry = entries.get(sessionId)
     if (entry === undefined) {
       // Unattached (the cold create-success path targets the NEW root
-      // before its view mounts): the forced round runs UNGATED.
-      return runRound(options, sessionId)
+      // before its view mounts): the forced round runs UNGATED — the
+      // scope guard stays true for the whole round (P1-B: the
+      // unattached cold bootstrap is NOT killed by the epoch; its
+      // result must still land).
+      return runRound(options, sessionId, () => true)
     }
     if (!entry.inFlight) return startRound(sessionId)
     // Single-flight: coalesce into the dirty follow-up. The caller
@@ -343,7 +421,11 @@ export function createTeamRefreshCoordinator(
   const attach = (sessionId: string): void => {
     let entry = entries.get(sessionId)
     if (entry === undefined) {
+      // P1-B: a fresh attach is a fresh SCOPE — a new entry with the
+      // next epoch (the previous incarnation's in-flight rounds are
+      // superseded: their guard now sees a different entry in the map).
       entry = {
+        epoch: nextEpoch++,
         timer: null,
         inFlight: false,
         dirty: false,

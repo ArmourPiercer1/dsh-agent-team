@@ -146,13 +146,12 @@ function snapshotWith(resident: readonly string[], resuming: readonly string[]) 
   const { live, calls } = makeLive(resident, resuming)
   let listCalls = 0
   const repos = {
-    // P9-S8 — the overlay also reads the owned-root registry (single-root
-    // fixture: no TeamSession rows beyond the bound root's own).
-    teamSessions: {
-      list: () => [],
-    },
+    // Team-scoped overlay (PR #35 second follow-up P0-1): the overlay
+    // reads EXACTLY the requested team's member rows — no
+    // `teamSessions.list()` walk, no merge across owned roots (instance
+    // ids are within-team identities).
     memberInstances: {
-      list: (_root: string) => {
+      list: (_teamSessionId: string) => {
         listCalls += 1
         return ROWS
       },
@@ -161,10 +160,9 @@ function snapshotWith(resident: readonly string[], resuming: readonly string[]) 
   const port = createLiveResidencyOverlay({
     repositories: repos as never,
     live,
-    rootSessionId: ROOT_SID,
     now: () => FIXED_NOW,
   })
-  const snap = port.snapshot()
+  const snap = port.snapshot(ROOT_SID as never)
   return { snap, calls, listCalls }
 }
 

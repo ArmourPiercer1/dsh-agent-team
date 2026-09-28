@@ -492,7 +492,7 @@ const t12 = await (async (): Promise<T12State> => {
     // Install-once: a second install on any production seam throws (the
     // root installed every seam during construction).
     const secondInstallCode = readTeamPluginCode(() =>
-      seams.projectionLiveOverlay.install({ snapshot: () => new Map() }),
+      seams.projectionLiveOverlay.install({ snapshot: (_teamSessionId: string) => new Map() }),
     )
     // A null implementation is rejected (typed seam, non-null impl) —
     // checked on a fresh seam (the production ones are already installed).
@@ -504,15 +504,18 @@ const t12 = await (async (): Promise<T12State> => {
     // The fail-closed overlay proxy: throws pre-install, delegates
     // post-install (the A30 wiring the projection service consumes).
     const proxy = createFailClosedOverlayProxy(freshSeam)
-    const proxyPreInstallCode = readTeamPluginCode(() => proxy.snapshot())
+    const proxyPreInstallCode = readTeamPluginCode(() =>
+      proxy.snapshot('session-p8s5aroot' as never),
+    )
     // The overlay payload is an arbitrary passthrough fixture (the seam
     // validates nothing but non-null objectness); the cast sits at the
     // type boundary because the seam's generic is the production port.
     const liveOverlay = {
-      snapshot: () => new Map([['inst-p8s5aseedw1', { state: 'working' }]]),
+      snapshot: (_teamSessionId: string) =>
+        new Map([['inst-p8s5aseedw1', { state: 'working' }]]),
     } as unknown as LiveResidencyOverlayPort
     freshSeam.install(liveOverlay)
-    const proxyPostInstallEntry = proxy.snapshot().get(
+    const proxyPostInstallEntry = proxy.snapshot('session-p8s5aroot' as never).get(
       'inst-p8s5aseedw1' as unknown as InstanceId,
     )
 

@@ -61,6 +61,7 @@ import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import type { TeamProjectionMirror } from '../src/state/team-session-resolution.js'
 import type { TeamLedgerState } from '../src/state/team-ledger-store.js'
 import type { TeamProjectionState } from '../src/state/team-projection-store.js'
+import type { TeamReadStateOutcome } from '../src/state/team-read-state.js'
 import type { RemoteLedgerEntryValue } from '../../remote/src/index.js'
 import type { TeamProjectionDto } from '../../contracts/src/index.js'
 import type {
@@ -232,6 +233,7 @@ function viewProps(
   sessionId: string = LEADER,
   teamLedgers: Readonly<Record<string, TeamLedgerState>> = {},
   projectionStates: Readonly<Record<string, TeamProjectionState>> = {},
+  sessionReadStates: Readonly<Record<string, TeamReadStateOutcome>> = {},
 ): TeamViewProps {
   return {
     // PropsRuntime<'conversation.view'> carries the framework branded
@@ -257,7 +259,7 @@ function viewProps(
     useProjectionMirror: selector => selector(projectionMirror),
     useTeamLedgers: selector => selector(teamLedgers),
     useProjectionStates: selector => selector(projectionStates),
-    useSessionReadStates: selector => selector({}),
+    useSessionReadStates: selector => selector(sessionReadStates),
     ensureProjection: vi.fn(() => Promise.resolve()),
     // D4-A1: the post-mutation pull (the zero-state creation panel's
     // success-lane refresh; unused by the projection-only fixtures here).
@@ -284,17 +286,18 @@ function viewProps(
 }
 
 describe('TeamView', () => {
-  it('renders the loading zero state for a non-team session and cold-pulls the projection once (repair 20260927, S1-C1: the cold open NEVER asserts a definitive "no team")', () => {
+  it('renders the ownership-loading zero state for a non-team session with no settled probe and cold-pulls the projection once (PR #35 second follow-up P1-A: the no-probe-yet face announces the ownership read; it still NEVER asserts a definitive "no team")', () => {
     const props = viewProps({}, OUTSIDER)
     const view = render(<TeamView {...props} />)
     expect(view.container.querySelector('[data-team-zero]')).toBeTruthy()
-    // The first read is in flight: the neutral loading line, NOT the
-    // old definitive "当前会话未加入任何团队" (only the phase-2
-    // authoritative resolver may say "no association").
+    // No settled probe + no concrete store state: the ownership read is
+    // in flight (guide §4.2 null row) — NOT the old "正在加载团队信息…"
+    // (which an ordinary session would show FOREVER: the read-state
+    // probe is the authority, and it made no projection request).
     const statusLine = view.container.querySelector<HTMLElement>('[data-team-zero] [data-team-projection-status]')
     expect(statusLine).toBeTruthy()
-    expect(statusLine?.getAttribute('data-team-projection-status')).toBe('unknown')
-    expect(statusLine?.textContent).toBe('正在加载团队信息…')
+    expect(statusLine?.getAttribute('data-team-projection-status')).toBe('ownership-loading')
+    expect(statusLine?.textContent).toBe('正在读取团队归属…')
     expect(screen.queryByText('当前会话未加入任何团队')).toBeNull()
     // The manual refresh entry is present in the zero state.
     expect(view.container.querySelector('[data-team-refresh]')).toBeTruthy()
@@ -919,6 +922,96 @@ describe('TeamView', () => {
     fireEvent.change(initialWork, { target: { value: 'ab' } })
     expect(prepare).toHaveBeenCalledTimes(1)
     expect(initialWork.value).toBe('ab')
+  })
+})
+
+/**
+ * PR #35 second follow-up (P1-A) — the AUTHORITATIVE read-state view
+ * mode (guide §4.2 state machine + §4.4 UI-T1..T6): the settled
+ * `team.getReadState` outcome (not the projection store) decides which
+ * face renders. A settled `ok/none` is DEFINITIVE and WINS over any
+ * stale mirror frame; a failed probe renders its exact line (never a
+ * permanent loading); a failed probe over a LAST GOOD frame keeps the
+ * team body + the stale banner.
+ */
+describe('TeamView — the authoritative read-state view mode (PR #35 second follow-up P1-A)', () => {
+  const okNoneOutcome: TeamReadStateOutcome = {
+    status: 'ok',
+    relation: {
+      kind: 'none', teamSessionId: null, memberInstanceId: null,
+      disposed: false, durableGeneration: null, liveToken: null,
+    },
+  }
+  const remoteErrorOutcome: TeamReadStateOutcome = {
+    status: 'remote-error', code: 'TEAM_REMOTE_INTERNAL_ERROR', message: 'boom',
+  }
+  const malformedOutcome: TeamReadStateOutcome = {
+    status: 'malformed', reason: 'relation must be one of team-root | team-member | none (got x)',
+  }
+  const transportLossOutcome: TeamReadStateOutcome = {
+    status: 'transport-loss', message: 'seam channel lost',
+  }
+
+  it('UI-T1: readState = ok/none, empty mirror → the DEFINITIVE ordinary zero state (NEVER "正在加载团队信息…")', () => {
+    const view = render(<TeamView {...viewProps({}, OUTSIDER, {}, {}, { [OUTSIDER]: okNoneOutcome })} />)
+    const zero = view.container.querySelector<HTMLElement>('[data-team-zero]')
+    expect(zero).toBeTruthy()
+    const line = zero?.querySelector<HTMLElement>('[data-team-projection-status]')
+    expect(line?.getAttribute('data-team-projection-status')).toBe('none')
+    expect(line?.textContent).toBe('已确认当前会话未加入团队')
+    expect(line?.textContent).not.toContain('正在加载团队信息…')
+    expect(view.container.querySelector('[data-team-view]')).toBeNull()
+  })
+
+  it('UI-T2: readState = remote-error, empty mirror → the code/message line (NOT ordinary/no-team, NOT a permanent loading)', () => {
+    const view = render(<TeamView {...viewProps({}, OUTSIDER, {}, {}, { [OUTSIDER]: remoteErrorOutcome })} />)
+    const line = view.container.querySelector<HTMLElement>('[data-team-projection-status]')
+    expect(line?.getAttribute('data-team-projection-status')).toBe('ownership-error')
+    expect(line?.textContent).toBe('团队归属读取失败 — TEAM_REMOTE_INTERNAL_ERROR: boom')
+    expect(line?.textContent).not.toContain('未加入团队')
+    expect(line?.textContent).not.toContain('正在加载团队信息…')
+    expect(view.container.querySelector('[data-team-view]')).toBeNull()
+    // The retry entry is present (the failure is a concluded read
+    // failure, not a dead end).
+    expect(view.container.querySelector('[data-team-refresh]')).toBeTruthy()
+  })
+
+  it('UI-T3: readState = malformed, empty mirror → the malformed reason line', () => {
+    const view = render(<TeamView {...viewProps({}, OUTSIDER, {}, {}, { [OUTSIDER]: malformedOutcome })} />)
+    const line = view.container.querySelector<HTMLElement>('[data-team-projection-status]')
+    expect(line?.getAttribute('data-team-projection-status')).toBe('ownership-error')
+    expect(line?.textContent).toContain('团队归属响应异常')
+    expect(line?.textContent).toContain('relation must be one of team-root | team-member | none (got x)')
+    expect(view.container.querySelector('[data-team-view]')).toBeNull()
+  })
+
+  it('UI-T4: readState = transport-loss, empty mirror → the reconnect/read-failure line', () => {
+    const view = render(<TeamView {...viewProps({}, OUTSIDER, {}, {}, { [OUTSIDER]: transportLossOutcome })} />)
+    const line = view.container.querySelector<HTMLElement>('[data-team-projection-status]')
+    expect(line?.getAttribute('data-team-projection-status')).toBe('ownership-error')
+    expect(line?.textContent).toBe('无法读取团队归属，等待连接恢复')
+    expect(view.container.querySelector('[data-team-view]')).toBeNull()
+  })
+
+  it('UI-T5: stale mirror has Team A, readState = ok/none → the ordinary zero state WINS (the stale Team A body never renders)', () => {
+    const view = render(<TeamView {...viewProps(TEAM_PROJECTION_MIRROR, LEADER, {}, {}, { [LEADER]: okNoneOutcome })} />)
+    const zero = view.container.querySelector<HTMLElement>('[data-team-zero]')
+    expect(zero).toBeTruthy()
+    const line = zero?.querySelector<HTMLElement>('[data-team-projection-status]')
+    expect(line?.getAttribute('data-team-projection-status')).toBe('none')
+    expect(line?.textContent).toBe('已确认当前会话未加入团队')
+    // The authoritative none beats the stale mirror: no team body.
+    expect(view.container.querySelector('[data-team-view]')).toBeNull()
+  })
+
+  it('UI-T6: stale mirror has Team A, readState = error → the Team A body is KEPT + the ownership stale/error banner', () => {
+    const view = render(<TeamView {...viewProps(TEAM_PROJECTION_MIRROR, LEADER, {}, {}, { [LEADER]: remoteErrorOutcome })} />)
+    // The last good team face stays (never dropped, never degraded to none).
+    expect(view.container.querySelector('[data-team-view]')).toBeTruthy()
+    expect(view.container.querySelector('[data-team-zero]')).toBeNull()
+    const banner = view.container.querySelector<HTMLElement>('[data-team-ownership-stale]')
+    expect(banner).toBeTruthy()
+    expect(banner?.textContent).toBe('团队归属刷新失败，当前显示上次成功的数据')
   })
 })
 

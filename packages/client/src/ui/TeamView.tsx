@@ -517,6 +517,50 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
       : adaptTeamProjection(resolution.team, resolution.perspective)),
     [resolution],
   )
+  // (PR #35 second follow-up P1-A) the AUTHORITATIVE view mode — the
+  // settled read-state outcome is the single driver of which face
+  // renders (guide §4.2 state machine):
+  //   · `ok/none` → the DEFINITIVE ordinary zero state. The authority
+  //     WINS over any stale mirror frame (a none probe never degrades
+  //     into a team body; the stale mirror is ignored).
+  //   · `ok/team-root|team-member` → the team face: the last applied
+  //     frame, or the team-loading line while the first frame is in
+  //     flight (the probe already confirmed the ownership).
+  //   · `remote-error / malformed / transport-loss` (no frame) → the
+  //     ownership-error line for the exact failure kind (NEVER a
+  //     permanent "loading": a failed probe carries no ownership
+  //     conclusion, but it is a CONCLUDED failure — the UI says so);
+  //     (with a frame) → the LAST GOOD team face + the stale banner
+  //     (the failed refresh neither drops the frame nor degrades the
+  //     session to `none`).
+  //   · `null` (no settled probe yet) → the projection-store-driven
+  //     face: while the store has no concrete state the ownership read
+  //     is announced as in flight; a concrete store state (error /
+  //     reconnecting / foreign — the S1-C1 cold-open surface) keeps its
+  //     own line (it is strictly more specific than "reading…").
+  const viewMode = useMemo(
+    ():
+      | { readonly kind: 'ordinary' }
+      | { readonly kind: 'ownership-error'; readonly detail: Exclude<TeamReadStateOutcome, { readonly status: 'ok' }> }
+      | { readonly kind: 'team-loading' }
+      | { readonly kind: 'store-driven' }
+      | { readonly kind: 'team-ready'; readonly stale: boolean } => {
+      if (authoritativeNone) return { kind: 'ordinary' }
+      if (readState !== null && readState.status !== 'ok') {
+        const detail = readState
+        if (snapshot === null) return { kind: 'ownership-error', detail }
+        return { kind: 'team-ready', stale: true }
+      }
+      if (snapshot === null) {
+        if (readState === null) return { kind: 'store-driven' }
+        // ok + a team relation (the none case is handled above): the
+        // ownership is confirmed, the first frame is still in flight.
+        return { kind: 'team-loading' }
+      }
+      return { kind: 'team-ready', stale: false }
+    },
+    [authoritativeNone, readState, snapshot],
+  )
   // P9-T8 (S5-D): the one-shot legacy inspection for the ZERO state (plan
   // §10.6, UI §34). It is a read, not a command flow — no projection pull;
   // it only decides WHICH zero state renders. Gated to the zero state and
@@ -536,7 +580,13 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
   // stands (a failed probe keeps the last-known surface — fail closed,
   // and a cold open with no settled probe yet reads as "still loading",
   // never as a definitive no-team).
-  const inZeroState = authoritativeNone || resolution === undefined || snapshot === null
+  // (PR #35 second follow-up P1-A) the zero-state gate is the view mode,
+  // NOT the raw frame absence: the team face renders exactly when the
+  // mode is `team-ready` (a last applied frame — with or without a
+  // stale-refresh banner); every other mode renders the zero face, and
+  // the zero face's CONCLUSION comes from the mode (the authoritative
+  // none / the ownership lines / the store-driven cold-open lines).
+  const inZeroState = viewMode.kind !== 'team-ready'
   useEffect(() => {
     if (!inZeroState || legacyInspect === undefined || creationOpen) return
     let live = true
@@ -1011,44 +1061,82 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
         </div>
       )
       : null
-  if (resolution === undefined || snapshot === null) {
-    // (repair 20260927, S1-C1) the zero-state projection status line —
-    // judged by the store's CURRENT status/assessment (never by the
-    // presence of a `lastError` property alone):
-    //   · no state yet / idle / loading / ready → 加载中 (NEVER a
-    //     definitive "未加入团队": the cold open is still in flight —
-    //     only the phase-2 authoritative resolver may say "no team");
-    //   · reconnecting (no frame) → 尚未成功加载 (transport loss, the
-    //     store's retry episode is running);
-    //   · error → 团队信息加载失败 + code/message (typed RPC error,
-    //     transport loss, foreign/inconsistent — the FOREIGN_TEAM case
-    //     keeps the NEUTRAL wording: the underlying get fault / cold
-    //     member addressing can also land here, and phase 1 keeps the
-    //     ordinary-session creation entry).
-    const foreign =
-      projectionState !== null
-      && (projectionState.lastError?.code === 'TEAM_REMOTE_FOREIGN_TEAM'
-        || projectionState.lastAssessment?.status === 'foreign')
+  if (viewMode.kind !== 'team-ready') {
+    // (PR #35 second follow-up P1-A) the zero-face status line is the
+    // VIEW MODE (the settled read-state outcome is the authority; guide
+    // §4.2):
+    //   · ordinary (ok/none) → the DEFINITIVE no-team line (the
+    //     authority wins over any stale mirror — this is the ONLY mode
+    //     that may say "未加入团队");
+    //   · ownership-error → the exact failed-probe line
+    //     (remote-error: code + message; malformed: the reason;
+    //     transport-loss: the reconnect line) — NEVER a permanent
+    //     loading;
+    //   · team-loading (ok/team, frame in flight) → the team-loading
+    //     line (the ownership is already confirmed);
+    //   · store-driven (no settled probe yet) → the S1-C1
+    //     projection-store lines: while the store has no concrete state
+    //     the ownership read is announced as in flight; a concrete
+    //     store state (reconnecting / error / foreign — the
+    //     cold-open surface) keeps its own line:
+    //       · no state yet / idle / loading / ready → 读取归属中;
+    //       · reconnecting (no frame) → 尚未成功加载 (transport loss,
+    //         the store's retry episode is running);
+    //       · error → 团队信息加载失败 + code/message (typed RPC
+    //         error, transport loss, foreign/inconsistent — the
+    //         FOREIGN_TEAM case keeps the NEUTRAL wording).
     let zeroStatusLine: string
-    if (
-      projectionState === null
-      || projectionState.status === 'idle'
-      || projectionState.status === 'loading'
-      || projectionState.status === 'ready'
-    ) {
-      zeroStatusLine = t('view.projection.loading')
-    } else if (projectionState.status === 'reconnecting') {
-      zeroStatusLine = t('view.projection.notLoaded')
-    } else if (foreign) {
-      zeroStatusLine = t('view.projection.foreign')
+    let zeroStatus: string
+    if (viewMode.kind === 'ordinary') {
+      zeroStatusLine = t('view.ownership.none')
+      zeroStatus = 'none'
+    } else if (viewMode.kind === 'ownership-error') {
+      zeroStatus = 'ownership-error'
+      if (viewMode.detail.status === 'remote-error') {
+        zeroStatusLine = t('view.ownership.error', {
+          code: viewMode.detail.code,
+          message: viewMode.detail.message,
+        })
+      } else if (viewMode.detail.status === 'malformed') {
+        zeroStatusLine = t('view.ownership.malformed', {
+          reason: viewMode.detail.reason,
+        })
+      } else {
+        zeroStatusLine = t('view.ownership.transport')
+      }
+    } else if (viewMode.kind === 'team-loading') {
+      zeroStatusLine = t('view.ownership.teamLoading')
+      zeroStatus = 'team-loading'
     } else {
-      const code = projectionState.lastError?.code
-        ?? projectionState.lastAssessment?.status
-        ?? 'unknown'
-      const message = projectionState.lastError?.message ?? ''
-      zeroStatusLine = `${t('view.projection.failed')} — ${code}${message !== '' ? `: ${message}` : ''}`
+      // store-driven (the probe is still in flight; the store state is
+      // the only concrete evidence).
+      const foreign =
+        projectionState !== null
+        && (projectionState.lastError?.code === 'TEAM_REMOTE_FOREIGN_TEAM'
+          || projectionState.lastAssessment?.status === 'foreign')
+      if (
+        projectionState === null
+        || projectionState.status === 'idle'
+        || projectionState.status === 'loading'
+        || projectionState.status === 'ready'
+      ) {
+        zeroStatusLine = t('view.ownership.loading')
+        zeroStatus = 'ownership-loading'
+      } else if (projectionState.status === 'reconnecting') {
+        zeroStatusLine = t('view.projection.notLoaded')
+        zeroStatus = projectionState.status
+      } else if (foreign) {
+        zeroStatusLine = t('view.projection.foreign')
+        zeroStatus = projectionState.status
+      } else {
+        const code = projectionState.lastError?.code
+          ?? projectionState.lastAssessment?.status
+          ?? 'unknown'
+        const message = projectionState.lastError?.message ?? ''
+        zeroStatusLine = `${t('view.projection.failed')} — ${code}${message !== '' ? `: ${message}` : ''}`
+        zeroStatus = projectionState.status
+      }
     }
-    const zeroStatus = projectionState?.status ?? 'unknown'
     const refreshButton = (
       <button
         type="button"
@@ -1185,6 +1273,15 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
       </div>
     )
   }
+  // `team-ready` is derived from `snapshot !== null` (which is derived
+  // from a resolved mirror), so this re-check is a guaranteed no-op — it
+  // only restores the narrowing TS cannot see through the memo.
+  if (resolution === undefined || snapshot === null) {
+    // Unreachable: `team-ready` is derived from a non-null snapshot (the
+    // frame is resolved). The throw only restores the narrowing TS
+    // cannot see through the viewMode memo.
+    throw new Error('team-ready view mode without a resolved frame')
+  }
   const currentInstanceId = resolution.perspective.kind === 'member-child'
     ? resolution.perspective.memberInstanceId
     : undefined
@@ -1195,6 +1292,15 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
         data-team-view-status={withFrameStatus}
         data-refresh-pending={withFrameRefreshing || undefined}
       >
+        {viewMode.kind === 'team-ready' && viewMode.stale ? (
+          // (PR #35 second follow-up P1-A) the read-state refresh FAILED
+          // over a last good frame: the frame is KEPT (never degraded to
+          // none, never dropped) + the explicit stale banner (guide §4.2
+          // "已有旧 frame").
+          <span className={styles.legacyNote} data-team-ownership-stale>
+            {t('view.ownership.stale')}
+          </span>
+        ) : null}
         {withFrameError !== null
           ? (
             <span className={styles.legacyNote} data-team-view-error>

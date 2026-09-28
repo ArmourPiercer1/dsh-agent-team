@@ -51,6 +51,7 @@ import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js';
 import { createLedgerPageTracker } from '../../../remote/src/push/ledger-page.js';
 import { TeamPluginError } from './types.js';
 import { S6_PRINCIPAL_ERROR_CODES, SERVER_PRINCIPAL_TRANSPORTS, createServerPrincipalContext, isServerPrincipalContext, } from './s6-principal.js';
+import { computeLiveTokenFromProjectedMembers, } from './live-token.js';
 import { resolveCaller, TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError, } from '../../admission/index.js';
 import { canonicalJsonStringify } from '../../../contracts/src/index.js';
 import { activePolicyState } from '../../mutation/index.js';
@@ -155,9 +156,12 @@ export const S6_REMOTE_ERROR_CODES = {
     TEAM_READ_STATE_PORT_UNAVAILABLE: 'TEAM_REMOTE_TEAM_READ_STATE_PORT_UNAVAILABLE',
     /** team-view-sync-complete (remote contract v6) — the v6 projection
      *  freshness pair: the host wiring exposes no live-token closure (the
-     *  semantic-live-state token cannot be computed) — fail-closed: a v6
-     *  projection frame must ALWAYS carry its `liveToken` cell, so a host
-     *  that cannot compute one must not serve a v6 frame at all. */
+     *  semantic-live-state token cannot be computed) — fail-closed. PR #35
+     *  second follow-up P0-2: the v6 PROJECTION no longer calls this port
+     *  (its token is computed from the same snapshot's projection members),
+     *  so the port serves the LIGHTWEIGHT `team.getReadState` probe only —
+     *  a team relation whose token cannot be computed fails the read
+     *  typed, never with a null token. */
     TEAM_LIVE_TOKEN_PORT_UNAVAILABLE: 'TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE',
 };
 /**
@@ -1241,17 +1245,21 @@ export function createS6RemotePorts(options) {
         // --- team-view-sync-complete (remote contract v6): the live token ----
         liveToken: {
             async token(teamSessionId) {
-                // The v6 live-token handler: the host's closure over the durable
-                // member rows + the live overlay snapshot (the deterministic
-                // opaque string — frozen decisions 3 + 7). Absent port → the
-                // typed TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE preflight:
-                // a v6 projection frame must ALWAYS carry its liveToken cell, so
-                // a host that cannot compute one fails the whole v6 frame typed
-                // (never a frame with a guessed/empty token). Typed storage
-                // failures from the closure propagate UNMAPPED (invariant 4b).
+                // The v6 live-token handler (PR #35 second follow-up P0-2: the
+                // LIGHTWEIGHT path — the v6 PROJECTION computes its token from
+                // the same snapshot's projection members and no longer calls
+                // this port): the host's closure over the durable member rows +
+                // the TEAM-SCOPED live overlay snapshot (the deterministic
+                // opaque string — frozen decisions 3 + 7), serving the v6
+                // `team.getReadState` probe. Absent port → the typed
+                // TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE preflight: a team
+                // relation's read-state must ALWAYS carry its liveToken cell, so
+                // a host that cannot compute one fails the read typed (never a
+                // team relation with a null token). Typed storage failures from
+                // the closure propagate UNMAPPED (invariant 4b).
                 const port = options.liveToken;
                 if (port === undefined) {
-                    throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_LIVE_TOKEN_PORT_UNAVAILABLE, "team.getProjection (v6) cannot compute the live token: the host wiring does not provide the liveToken port — failing closed (a v6 frame must always carry its liveToken cell)", { reason: 'team-live-token-unavailable' });
+                    throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_LIVE_TOKEN_PORT_UNAVAILABLE, "team.getReadState cannot compute the live token: the host wiring does not provide the liveToken port — failing closed (a team relation's read-state must always carry its liveToken cell)", { reason: 'team-live-token-unavailable' });
                 }
                 try {
                     return await port(teamSessionId);
@@ -1263,7 +1271,7 @@ export function createS6RemotePorts(options) {
                     if (typeof code === 'string' && REMOTE_BACKING_ERROR_CODE_SET.has(code)) {
                         throw error;
                     }
-                    throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_LIVE_TOKEN_PORT_UNAVAILABLE, `team.getProjection (v6) failed while computing the live token: ${error instanceof Error ? error.message : String(error)}`, { reason: 'team-live-token-unavailable' });
+                    throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_LIVE_TOKEN_PORT_UNAVAILABLE, `team.getReadState failed while computing the live token: ${error instanceof Error ? error.message : String(error)}`, { reason: 'team-live-token-unavailable' });
                 }
             },
         },
@@ -1768,13 +1776,22 @@ function buildS6CategoryHandlers(ports, principal) {
                         // `liveToken` (the deterministic semantic-live-state
                         // token — frozen decisions 3 + 4) INSIDE data.projection.
                         // v1–v5 stay byte-identical (the frozen shape — no v6
-                        // fields). A missing live-token port rejects the v6 frame
-                        // typed (TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE — a
-                        // v6 frame without its token cell is impossible).
+                        // fields).
+                        //
+                        // PR #35 second follow-up P0-2 (same-snapshot): the token is
+                        // computed FROM THIS projection's already-materialized
+                        // member rows (the Team-scoped overlay snapshot the fold
+                        // read exactly once) via the pure
+                        // `computeLiveTokenFromProjectedMembers` helper — the frame
+                        // and the token can NEVER come from two different live
+                        // snapshots, and no second live read happens on the v6 path.
+                        // The token is a pure function of the served frame's own
+                        // `members[].liveActivity` cells (recomputing it from a
+                        // received frame reproduces the served token — the client
+                        // same-snapshot check).
                         if (envelope.version >= 6) {
-                            return ports.liveToken
-                                .token(projectionParams.teamSessionId)
-                                .then((liveTokenValue) => ({
+                            const liveTokenValue = computeLiveTokenFromProjectedMembers(projection['members']);
+                            return {
                                 data: {
                                     projection: {
                                         ...projection,
@@ -1783,7 +1800,7 @@ function buildS6CategoryHandlers(ports, principal) {
                                     },
                                 },
                                 projectionGeneration: generation,
-                            }));
+                            };
                         }
                         return {
                             data: { projection },

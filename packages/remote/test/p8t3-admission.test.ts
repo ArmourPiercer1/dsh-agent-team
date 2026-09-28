@@ -131,6 +131,9 @@ const RT = await (async () => {
       project() {
         throw 'a bare string failure'
       },
+      projectV6() {
+        throw 'a bare string failure'
+      },
     },
   })
   const bareStringProjection = await bareStringDispatcher.dispatch(

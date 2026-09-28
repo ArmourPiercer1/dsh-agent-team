@@ -1899,10 +1899,12 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // The live-residency overlay is captured (the v6 live-token closure —
   // team-view-sync-complete — reads the SAME installed instance: the
   // residency facts and the token's pair source must be one object).
+  // Team-scoped (PR #35 second follow-up P0-1): `snapshot(teamSessionId)`
+  // reads exactly one team's durable member rows + live children — no
+  // host-wide merge (instance ids are within-team identities).
   const liveOverlay = createLiveResidencyOverlay({
     repositories: repos,
     live,
-    rootSessionId: rootSid,
     now,
   })
   seams.projectionLiveOverlay.install(liveOverlay)
@@ -2060,7 +2062,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // in the member row list propagates typed (invariant 4b): a v6 frame
     // without its token cell is impossible.
     liveToken: (teamSessionId) =>
-      computeTeamLiveToken(repos.memberInstances.list(teamSessionId), liveOverlay.snapshot()),
+      computeTeamLiveToken(repos.memberInstances.list(teamSessionId), liveOverlay.snapshot(teamSessionId as TeamSessionId)),
     // TCM vNext §15.5 (M2) — the narrow workspace attach port (the host
     // entry's closure over the hard-injected public workspaceRegistry):
     // the v2 team.create resolves the requested workspace through it

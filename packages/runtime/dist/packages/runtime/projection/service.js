@@ -7,13 +7,16 @@
  * ```text
  * teamSessionId
  *   → domain.readProjectionSource(teamSessionId)   (durable TeamDomain, §21.2)
- *   → overlay?.snapshot()                          (optional live overlay, UI §24)
+ *   → overlay?.snapshot(teamSessionId)             (optional live overlay, UI §24;
+ *                                                  Team-scoped — PR #35 2nd follow-up P0-1)
  *   → projectTeam(source, overlaySnapshot, clock()) (the pure fold, fold.ts)
  *   → TeamProjectionDto
  * ```
  *
  * The service is the ONLY place that reads: it materializes the live overlay
- * snapshot ONCE per projection (a fresh read of the current live state) and
+ * snapshot ONCE per projection (a fresh read of the CURRENT live state of
+ * THIS team — the Team-scoped `snapshot(teamSessionId)`; the overlay never
+ * merges across teams because instance ids are within-team identities) and
  * stamps the produced-at time from the injected clock. The fold itself is
  * pure (no I/O, no clock, no global). The generation is the durable one —
  * the live overlay never affects it, so the projection's generation makes
@@ -49,9 +52,12 @@ export function createProjectionService(domain, overlay, options = {}) {
     return {
         project(teamSessionId) {
             const source = domain.readProjectionSource(teamSessionId);
-            // A fresh live overlay snapshot per projection (the current live state);
-            // `null` for a cold service. The fold treats `null` as "no live facts".
-            const overlaySnapshot = overlay === null ? null : overlay.snapshot();
+            // A fresh live overlay snapshot per projection (the current live state
+            // of THIS team — Team-scoped: instance ids are within-team identities,
+            // so the overlay reads exactly the requested team and never merges
+            // across teams, PR #35 second follow-up P0-1); `null` for a cold
+            // service. The fold treats `null` as "no live facts".
+            const overlaySnapshot = overlay === null ? null : overlay.snapshot(teamSessionId);
             return projectTeam(source, overlaySnapshot, clock(), schemaVersion);
         },
     };

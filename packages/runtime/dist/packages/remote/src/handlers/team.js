@@ -522,8 +522,6 @@ export function createRemoteTeamHandler(ports) {
             }
             case 'team.getProjection': {
                 const projectionParams = params;
-                const raw = ports.projection.project(projectionParams.teamSessionId);
-                const projection = normalizeProjection(raw);
                 if (version >= 6) {
                     // The v6 projection: the frozen v1-v5 shape PLUS the two
                     // additive freshness fields (team-view-sync-complete Phase 2
@@ -532,9 +530,21 @@ export function createRemoteTeamHandler(ports) {
                     // `liveToken` (the deterministic opaque semantic-live-state
                     // token). Contract versions <= 5 serve the EXACT frozen shape
                     // (byte-identical passthrough — v1-v5 are unchanged).
-                    const liveToken = ports.liveToken.liveToken(projectionParams.teamSessionId);
+                    //
+                    // PR #35 second follow-up P0-2 (same-snapshot): the v6 read
+                    // goes through the ATOMIC `projectV6` port — the projection
+                    // plus a token computed FROM THE SAME PROJECTION RESULT (the
+                    // adapter materializes the live overlay once and derives the
+                    // token from the already-materialized
+                    // `members[].liveActivity` cells). The frame and the token can
+                    // never come from two different live snapshots, and the
+                    // lightweight `liveToken` port is NOT consulted on the v6
+                    // projection path (it serves the getReadState probe).
+                    const v6 = ports.projection.projectV6(projectionParams.teamSessionId);
+                    const projection = normalizeProjection(v6.projection);
+                    const liveToken = v6.liveToken;
                     if (typeof liveToken !== 'string' || liveToken.length === 0) {
-                        throw portContractError('liveToken', 'must be a non-empty string');
+                        throw portContractError('projectV6.liveToken', 'must be a non-empty string');
                     }
                     return {
                         data: {
@@ -547,6 +557,8 @@ export function createRemoteTeamHandler(ports) {
                         projectionGeneration: projection.generation,
                     };
                 }
+                const raw = ports.projection.project(projectionParams.teamSessionId);
+                const projection = normalizeProjection(raw);
                 return {
                     data: { projection },
                     projectionGeneration: projection.generation,

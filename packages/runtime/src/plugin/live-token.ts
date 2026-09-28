@@ -119,8 +119,15 @@ export function liveTokenFromPairs(pairs: ReadonlyArray<TeamLiveStatePair>): str
  * Compute the live token of one team from its durable member rows + the
  * live overlay snapshot (the composition of the two pure steps above).
  *
+ * THIS IS THE LIGHTWEIGHT (READ-STATE) PATH: the caller has only the
+ * durable member rows + the Team-scoped overlay snapshot — not a full
+ * projection. The production `team.getReadState` uses this (the v6
+ * projection does NOT — see {@link computeLiveTokenFromProjectedMembers}).
+ *
  * @param memberRows - the team's durable member rows (instance ids only).
- * @param snapshot - the live overlay snapshot.
+ * @param snapshot - the team's live overlay snapshot (Team-scoped — the
+ *  overlay port is `snapshot(teamSessionId)` since PR #35 second
+ *  follow-up P0-1).
  * @returns the team's opaque live token (`lt-v1-<sha256 hex>`).
  */
 export function computeTeamLiveToken(
@@ -128,4 +135,69 @@ export function computeTeamLiveToken(
   snapshot: LiveTokenSnapshot,
 ): string {
   return liveTokenFromPairs(teamLiveStatePairs(memberRows, snapshot))
+}
+
+/**
+ * One projected member row as the token input (PR #35 second follow-up
+ * P0-2 — the same-snapshot token path): the projected `instanceId` plus
+ * the row's ALREADY-MATERIALIZED `liveActivity` (the nullable live overlay
+ * cell of the projection member: `null` when the member has no live facts
+ * — a DISPOSED row, whose exclusion from the overlay snapshot IS the live
+ * state the token must reflect).
+ *
+ * A structural projection of the projection member DTO — the real
+ * `MemberProjectionDto` (and the lossless-JSON wire record of it)
+ * satisfies it; only `instanceId` + `liveActivity.residency` are read
+ * (NO `lastActivityAt`, NO `generatedAt`, NO clock facts — frozen
+ * decision 3).
+ */
+export interface ProjectedLiveMember {
+  /** The member's stable instance id (within-team identity). */
+  readonly instanceId: string
+  /** The projected live overlay cell: `null` when the member has no live
+   *  facts (a DISPOSED row — the token marker is {@link
+   *  LIVE_TOKEN_RESIDENCY_ABSENT}). */
+  readonly liveActivity: { readonly residency: string } | null
+}
+
+/**
+ * Compute the live token of one team FROM ITS OWN PROJECTION (PR #35
+ * second follow-up P0-2 — the same-snapshot guarantee): the sorted
+ * `[instanceId, residency]` pairs come from the projection's
+ * ALREADY-MATERIALIZED member rows, so the token and the frame's
+ * `members[].liveActivity` can never come from two different live
+ * snapshots.
+ *
+ * The mapping preserves the existing semantic token meaning exactly: a
+ * projected `liveActivity !== null` contributes its `residency`; a
+ * projected `liveActivity === null` (the fold maps the overlay's absence
+ * of a DISPOSED row to `null`) contributes {@link
+ * LIVE_TOKEN_RESIDENCY_ABSENT} — the same `absent` marker the
+ * durable-rows + snapshot path derives for the same team in the same live
+ * state. A v6 `team.getProjection` response therefore carries a token
+ * that is a pure function of its own `data.projection` content:
+ * re-computing the token from any received frame reproduces the served
+ * token (the client-side same-snapshot check).
+ *
+ * @param members - the projection's member rows (every durable member
+ *  including DISPOSED — the projection source/fold retains them; only
+ *  `instanceId` + `liveActivity` are read).
+ * @returns the team's opaque live token (`lt-v1-<sha256 hex>` — the
+ *  format is UNCHANGED from {@link computeTeamLiveToken}).
+ */
+export function computeLiveTokenFromProjectedMembers(
+  members: ReadonlyArray<ProjectedLiveMember>,
+): string {
+  const sorted = [...members].sort((a, b) =>
+    a.instanceId < b.instanceId ? -1 : a.instanceId > b.instanceId ? 1 : 0,
+  )
+  return liveTokenFromPairs(
+    sorted.map((member) => ({
+      instanceId: member.instanceId,
+      residency:
+        member.liveActivity !== null
+          ? member.liveActivity.residency
+          : LIVE_TOKEN_RESIDENCY_ABSENT,
+    })),
+  )
 }
