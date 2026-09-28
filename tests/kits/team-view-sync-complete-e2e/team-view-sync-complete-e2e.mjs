@@ -642,6 +642,11 @@ async function main() {
   const porcelain = gitIn(TESTUSE, ['status', '--porcelain'])
   const wtBranch = gitIn(WORKTREE, ['rev-parse', '--abbrev-ref', 'HEAD'])
   const wtHead = gitIn(WORKTREE, ['rev-parse', 'HEAD'])
+  // PR #35 third follow-up P1 (guide §14): the E2E must be bound to a
+  // CLEAN final commit, not to a branch + dirty working tree — the
+  // worktree porcelain is a HARD gate (an uncommitted working tree
+  // cannot prove an immutable commit passed this E2E).
+  const wtPorcelain = gitIn(WORKTREE, ['status', '--porcelain'])
   const distOk = existsSync(PRODUCTION_ROW_PATH) && existsSync(GLUE_PATH) && existsSync(SEAM_PATH) && existsSync(P6T6_ROW_PATH)
   const stablePre = {}
   for (const u of STABLE_PROBES) stablePre[u] = await probe(u)
@@ -658,10 +663,11 @@ async function main() {
     && porcelain.status === 0 && porcelain.out === ''
     && wtBranch.status === 0 && wtBranch.out === 'fix/team-view-sync-complete-20260927'
     && wtHead.status === 0
+    && wtPorcelain.status === 0 && wtPorcelain.out === ''
     && distOk && srcOk && hostPort !== null && mockPort !== null
-  mark('C0', c0, `testuse HEAD=${head.out} porcelain='${porcelain.out.slice(0, 80)}' wt=${wtBranch.out}@${wtHead.out.slice(0, 8)} dist=${distOk} hostPort=${hostPort} mockPort=${mockPort} stable=${JSON.stringify(stablePre)}`)
+  mark('C0', c0, `testuse HEAD=${head.out} porcelain='${porcelain.out.slice(0, 80)}' wt=${wtBranch.out}@${wtHead.out.slice(0, 8)} wtPorcelain='${wtPorcelain.out.slice(0, 80)}' dist=${distOk} hostPort=${hostPort} mockPort=${mockPort} stable=${JSON.stringify(stablePre)}`)
   if (!c0) dieFatal('preflight failed')
-  writeEvidence('preflight.json', { head: head.out, wtBranch: wtBranch.out, wtHead: wtHead.out, hostPort, mockPort, stablePre })
+  writeEvidence('preflight.json', { head: head.out, wtBranch: wtBranch.out, wtHead: wtHead.out, worktreePorcelain: wtPorcelain.out, hostPort, mockPort, stablePre })
 
   // ── seed the world ─────────────────────────────────────────────────────────
   log(`seeding world ${WORLD} from ${SRC_WORLD}`)
@@ -1031,6 +1037,7 @@ async function main() {
     world: WORLD,
     worktree: WORKTREE,
     worktreeHead: wtHead.out,
+    worktreePorcelain: wtPorcelain.out,
     hostPort,
     mockPort,
     t1: T1,

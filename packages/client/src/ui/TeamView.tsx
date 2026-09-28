@@ -492,11 +492,6 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     if (a.status === 'transport-loss') return { code: 'transport-loss', message: '' }
     return { code: a.status, message: `generation ${a.receivedGeneration}` }
   }, [projectionState])
-  useEffect(() => {
-    // The tab mounts per session and one-at-a-time, so "mounted" IS "the
-    // team UI needs the view": fill a mirror gap once, then let frames win.
-    if (resolution === undefined) void ensureProjection(sessionId)
-  }, [sessionId, resolution, ensureProjection])
   // team-view-sync-complete (frozen decisions 2 + 5; PR #35 follow-up,
   // P0-1): the per-SESSION refresh-coordinator ATTACH — the round is
   // the read-state probe for the SESSION (P0-1: the probe input is the
@@ -505,12 +500,23 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
   // the cold read. Mounting the view arms the 3s visible tick (every
   // tick = the frozen §1.2 round); unmounting (session switch / tab
   // away) stops it. attach is idempotent either way.
+  // (PR #35 third follow-up P1, guide §12) this effect now runs
+  // BEFORE the cold ensureProjection effect: the view attaches FIRST,
+  // so the cold open's trigger runs in the ATTACHED entry's lane (no
+  // transient path on the UI route). The coordinator stays safe for
+  // the reversed order too (trigger → attach reuses the transient
+  // entry) — the reorder only shrinks the transient path.
   useEffect(() => {
     const face = refreshCoordinator
     if (face === undefined) return
     face.attach(sessionId)
     return () => face.detach(sessionId)
   }, [sessionId, refreshCoordinator])
+  useEffect(() => {
+    // The tab mounts per session and one-at-a-time, so "mounted" IS "the
+    // team UI needs the view": fill a mirror gap once, then let frames win.
+    if (resolution === undefined) void ensureProjection(sessionId)
+  }, [sessionId, resolution, ensureProjection])
   const snapshot = useMemo(
     () => (resolution === undefined
       ? null

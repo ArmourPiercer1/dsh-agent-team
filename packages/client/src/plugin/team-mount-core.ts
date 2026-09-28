@@ -638,11 +638,12 @@ export function applyTeamMount(
   // only when the probe says the frame is missing or stale (an
   // ordinary session's cold read ends with the authoritative `none`
   // probe and makes NO projection request). The coordinator's
-  // single-flight governs the ATTACHED session (tick / forced rounds);
-  // the cold read keeps the mount-level D-T9-5 single-flight of its own
-  // (concurrent cold reads of an UNATTACHED session — the view mount
-  // fires the read before the attach effect arms the entry — dedupe to
-  // ONE round).
+  // single-flight governs EVERY session lane (PR #35 third follow-up
+  // P1: the first unattached trigger creates a TRANSIENT coordinator
+  // entry — one scope per session, attached or not); the mount-level
+  // D-T9-5 map below stays as the concurrent-cold-read dedupe for the
+  // ensureProjection CALLERS (two ensureProjection calls for the same
+  // session before the first round settles share one trigger).
   const inflightRounds = new Map<string, Promise<void>>()
   const ensureProjection = (sessionId: string): Promise<void> => {
     const existing = inflightRounds.get(sessionId)
@@ -918,8 +919,10 @@ export function applyTeamMount(
   // forced trigger — single-flighted per team, coalesced behind an
   // in-flight tick/refresh, never re-fired on a failed read. The zero-
   // state creation panel's post-success pull of the NEW team's id lands
-  // on the coordinator's unattached path (the round runs ungated — the
-  // new team's view is not mounted yet).
+  // on the coordinator's COLD path (PR #35 third follow-up P1: the
+  // first unattached trigger creates a transient session entry — a real
+  // scope, dropped after the round settles since the new team's view is
+  // not mounted yet; a later view attach reuses it if it still exists).
   // (PR #35 follow-up) the trigger now runs the READ-STATE ROUND (probe
   // → conditional pull) and returns a round result; the mutation face
   // still speaks the frozen assessment, so the no-pull outcomes are

@@ -44,19 +44,32 @@
  * same generation-safe store pull — the F1 request-order liveness + the
  * generation verdict remain the final authority for both lanes.
  *
- * SCOPE EPOCH (PR #35 second follow-up P1-B): a detach does not cancel
- * an in-flight round — it SUPERSEDES its scope. Every attach creates a
- * fresh entry with a monotonically increasing epoch; a round captures
- * the entry it started in and re-checks the map before every external
- * side effect (the read-state publication, the conditional projection
- * pull, the lastResult / dirty follow-up wiring). A round settling
- * late from an orphaned scope (detach → reattach, or a permanent
- * detach) therefore publishes NO read-state authority (the new
- * incarnation's probe is the sole authority), makes NO conditional
- * projection request, and cannot touch the new entry's timer / state.
- * The unattached cold-bootstrap round (the cold create-success path)
- * is exempt (its guard stays true — it is the session's cold
- * bootstrap and its result must still land).
+ * SCOPE EPOCH (PR #35 second follow-up P1-B, third follow-up P1): a
+ * detach does not cancel an in-flight round — it SUPERSEDES its
+ * scope. Every scope (an attach incarnation) owns a monotonically
+ * increasing epoch; a round captures the entry it started in and
+ * re-checks the map before every external side effect (the read-state
+ * publication, the conditional projection pull, the lastResult /
+ * dirty follow-up wiring). A round settling late from an orphaned
+ * scope (detach → reattach, or a permanent detach) therefore
+ * publishes NO read-state authority (the new incarnation's probe is
+ * the sole authority), makes NO conditional projection request, and
+ * cannot touch the new entry's timer / state.
+ *
+ * ONE SESSION SCOPE (PR #35 third follow-up P1 — guide §3–§9): the
+ * COLD-BOOTSTRAP round (the first trigger for a session before its
+ * view attaches — the cold create-success path, the TeamView cold
+ * open) is NOT a naked round outside the map: the first unattached
+ * trigger creates a TRANSIENT session entry (a real scope with the
+ * epoch + the map-identity guard), and a later `attach` REUSES that
+ * entry (it does not start a new epoch), so the cold round and every
+ * subsequent tick / manual / mutation / resume / connection-restored
+ * round share ONE single-flight lane for the session. A late old cold
+ * round is superseded exactly like any late attached round: after a
+ * detach the cold scope is closed and its late settlement publishes
+ * no authority and makes no conditional pull. If the session is never
+ * attached, the transient entry is dropped after its last round
+ * settles (no entry leak).
  *
  * Pure module: no DOM, no timers of its own (the timer is injected;
  * tests use a manual one), no React. Erasable TS only.
@@ -147,7 +160,11 @@ export interface TeamRefreshCoordinatorOptions {
 export interface TeamRefreshCoordinator {
   /**
    * Arm the 3s visible tick for one session (idempotent). Called by
-   * the Team view on mount / session change.
+   * the Team view on mount / session change. If a first unattached
+   * trigger already created a TRANSIENT entry for this session (the
+   * cold bootstrap), attach REUSES it (flipping it to attached and
+   * arming the tick on the same entry — one scope, one single-flight
+   * lane); otherwise it creates a fresh attached entry.
    */
   attach(sessionId: string): void
   /**
@@ -165,9 +182,12 @@ export interface TeamRefreshCoordinator {
    * One FORCED round (manual / mutation / resume / connection-restored):
    * always runs — if a round is already in flight for the session, the
    * trigger is coalesced into the dirty follow-up that runs after the
-   * in-flight round settles. For an UNATTACHED session the round runs
-   * ungated (the cold create-success path targets a team whose view is
-   * not mounted yet; its probe answers the fresh root's read-state).
+   * in-flight round settles. For a session with NO entry yet (the cold
+   * create-success path targets a team whose view is not mounted yet)
+   * the trigger creates a TRANSIENT session entry — a real scope with
+   * the epoch + the map-identity guard — and the round runs in it (a
+   * later attach reuses the entry; if the session is never attached the
+   * entry is dropped after its last round settles).
    * @returns the result of the round that satisfies this trigger
    *   (the follow-up's result when coalesced).
    */
@@ -189,9 +209,10 @@ export interface TeamRefreshCoordinator {
 /** The per-session entry (private). */
 interface SessionEntry {
   /**
-   * The scope EPOCH (PR #35 second follow-up P1-B): every attach
-   * creates a fresh entry with a monotonically increasing epoch. A
-   * round captures the entry it started from and re-checks
+   * The scope EPOCH (PR #35 second follow-up P1-B): every FRESH scope
+   * (a create on an empty slot — an attach with no entry, or the first
+   * unattached trigger) advances the epoch. A round captures the entry
+   * it started from and re-checks
    * `entries.get(sessionId) === entryAtStart` before every external
    * side effect (the read-state publication, the conditional
    * projection pull, the lastResult / dirty follow-up wiring): after a
@@ -200,6 +221,15 @@ interface SessionEntry {
    * request (the new entry owns the session's state + timer).
    */
   readonly epoch: number
+  /**
+   * Whether the session's view is ATTACHED to this entry (PR #35
+   * third follow-up P1). `false` marks the TRANSIENT entry created by
+   * a first unattached trigger (the cold bootstrap): it has no tick
+   * and is dropped after its last round settles unless a later
+   * `attach` reuses it (which flips this to `true` — one lane, no new
+   * epoch).
+   */
+  attached: boolean
   /** The armed tick handle (null when disarmed). */
   timer: number | null
   /** Whether one coordinator-owned round is in flight. */
@@ -220,18 +250,20 @@ interface SessionEntry {
  * → (conditional) pull. NEVER rejects (every dependency resolves with
  * a closed outcome / assessment).
  *
- * PR #35 second follow-up P1-B — the scope guard: `isCurrent` answers
- * whether the scope (attach incarnation) this round started in still
- * owns the session. Checked BEFORE every external side effect — a
- * round whose scope was superseded (detach → reattach, or a detach
- * that stays) by the time it settles publishes NO read-state
- * authority and makes NO conditional projection pull: the late result
- * is returned to its own caller only (it is the caller's round
- * result — the session's view state belongs to the CURRENT scope).
- * An UNATTACHED round (the cold create-success bootstrap) passes a
- * guard that always answers true: it is the session's cold bootstrap
- * and its result must still land (guide §5.2 — the unattached forced
- * round is not killed by the epoch).
+ * PR #35 second follow-up P1-B + third follow-up P1 — the scope
+ * guard: `isCurrent` answers whether the scope this round started in
+ * still owns the session. Every round (ATTACHED or the cold
+ * bootstrap's transient-scope round) is checked against the map
+ * before every external side effect — a round whose scope was
+ * superseded (detach → reattach, or a detach that stays — including
+ * a cold scope closed by a detach before its round settled) by the
+ * time it settles publishes NO read-state authority and makes NO
+ * conditional projection pull: the late result is returned to its own
+ * caller only (it is the caller's round result — the session's view
+ * state belongs to the CURRENT scope). There is no always-true guard
+ * anymore: the cold bootstrap belongs to the same session lane as
+ * every later round (guide §8 — the dual guard is kept, only the
+ * exemption is gone).
  */
 async function runRound(
   options: TeamRefreshCoordinatorOptions,
@@ -326,37 +358,84 @@ export function createTeamRefreshCoordinator(
   }
 
   /**
-   * Run ONE round for an attached session and, on settle, drain the
-   * dirty follow-up (which settles the coalesced trigger callers).
+   * Create one per-session entry (a fresh SCOPE — the next epoch) in
+   * the map. Only an ATTACHED entry arms the tick (a transient cold
+   * entry has no view to poll).
    */
-  const startRound = (sessionId: string): Promise<TeamRefreshRoundResult> => {
-    const entry = entries.get(sessionId)
-    if (entry === undefined) return runRound(options, sessionId, () => true)
-    // P1-B: capture the scope this round starts in; the round's guard
-    // checks the map for THIS entry (a detach → reattach orients the
-    // session id to a fresh entry with a newer epoch).
-    const entryAtStart = entry
+  const createEntry = (sessionId: string, attached: boolean): SessionEntry => {
+    const entry: SessionEntry = {
+      epoch: nextEpoch++,
+      attached,
+      timer: null,
+      inFlight: false,
+      dirty: false,
+      followUpWaiters: [],
+      lastResult: null,
+    }
+    entries.set(sessionId, entry)
+    if (attached && !paused) armTick(sessionId)
+    return entry
+  }
+
+  /**
+   * Drop a TRANSIENT entry (created by an unattached cold trigger and
+   * never attached) once it is fully idle — no in-flight round, no
+   * coalesced work, no pending waiters — so an unattached
+   * mutation/create path cannot leak entries. The map-identity check
+   * guards against deleting a NEWER scope that took the slot.
+   */
+  const maybeDropTransientEntry = (
+    sessionId: string,
+    entry: SessionEntry,
+  ): void => {
+    if (
+      entries.get(sessionId) === entry &&
+      entry.attached === false &&
+      entry.inFlight === false &&
+      entry.dirty === false &&
+      entry.followUpWaiters.length === 0
+    ) {
+      entries.delete(sessionId)
+    }
+  }
+
+  /**
+   * Run ONE round for one session scope and, on settle, drain the
+   * dirty follow-up (which settles the coalesced trigger callers).
+   * The caller passes the entry the round starts in (the scope
+   * guard's reference — PR #35 third follow-up P1: there is no naked
+   * round outside an entry).
+   */
+  const startRound = (
+    sessionId: string,
+    entryAtStart: SessionEntry,
+  ): Promise<TeamRefreshRoundResult> => {
+    // P1-B: the round's guard checks the map for THIS entry (a detach
+    // → reattach orients the session id to a fresh entry with a newer
+    // epoch; a detach that stays removes it).
     const isCurrent = (): boolean => entries.get(sessionId) === entryAtStart
-    entry.inFlight = true
+    entryAtStart.inFlight = true
     const round = runRound(options, sessionId, isCurrent).then((result) => {
       // P1-B: lastResult wiring is scope-guarded too — a superseded
       // scope's late result never lands in the CURRENT entry's state
       // (the orphaned entry's own field is harmless: nothing reads it
       // after the entry leaves the map).
       if (entries.get(sessionId) === entryAtStart) {
-        entry.lastResult = result
+        entryAtStart.lastResult = result
       }
       return result
     })
     void round.then(
       (result) => {
-        entry.inFlight = false
-        const waiters = entry.followUpWaiters.splice(0)
-        if (entry.dirty && entries.get(sessionId) === entry) {
+        entryAtStart.inFlight = false
+        const waiters = entryAtStart.followUpWaiters.splice(0)
+        if (entryAtStart.dirty && entries.get(sessionId) === entryAtStart) {
           // The forced follow-up runs (it is a FORCED round — even
           // while the tab is hidden the event-triggered round is owed).
-          entry.dirty = false
-          void startRound(sessionId).then(
+          // The entry stays in the map until the follow-up settles (the
+          // follow-up's own settle does the transient drop).
+          entryAtStart.dirty = false
+          void startRound(sessionId, entryAtStart).then(
             (followUp) => {
               for (const waiter of waiters) waiter(followUp)
             },
@@ -377,18 +456,22 @@ export function createTeamRefreshCoordinator(
           // settle with THIS round's result — the follow-up is
           // dropped, the view is gone.
           for (const waiter of waiters) waiter(result)
+          // Third follow-up P1 (guide §6): a never-attached transient
+          // entry that is now fully idle leaves the map (no leak).
+          maybeDropTransientEntry(sessionId, entryAtStart)
         }
       },
       (error) => {
         // Defensive (runRound never rejects): settle the in-flight
         // state + the waiters so nothing hangs.
-        entry.inFlight = false
-        const waiters = entry.followUpWaiters.splice(0)
+        entryAtStart.inFlight = false
+        const waiters = entryAtStart.followUpWaiters.splice(0)
         const fallback: TeamRefreshRoundResult = {
           readState: { status: 'transport-loss', message: 'coordinator round rejected' },
           projectionAssessment: null,
         }
         for (const waiter of waiters) waiter(fallback)
+        maybeDropTransientEntry(sessionId, entryAtStart)
         void error
       },
     )
@@ -399,16 +482,18 @@ export function createTeamRefreshCoordinator(
     sessionId: string,
     _reason: TeamRefreshTrigger,
   ): Promise<TeamRefreshRoundResult> => {
-    const entry = entries.get(sessionId)
+    let entry = entries.get(sessionId)
     if (entry === undefined) {
-      // Unattached (the cold create-success path targets the NEW root
-      // before its view mounts): the forced round runs UNGATED — the
-      // scope guard stays true for the whole round (P1-B: the
-      // unattached cold bootstrap is NOT killed by the epoch; its
-      // result must still land).
-      return runRound(options, sessionId, () => true)
+      // Third follow-up P1 (guide §4): the first unattached trigger
+      // (the cold create-success path targets the NEW root before its
+      // view mounts) no longer runs a naked round — it creates a
+      // TRANSIENT session entry (a real scope: the epoch + the
+      // map-identity guard). A later attach REUSES the entry (one
+      // single-flight lane); a detach CLOSES it (the late round is
+      // superseded like any other).
+      entry = createEntry(sessionId, false)
     }
-    if (!entry.inFlight) return startRound(sessionId)
+    if (!entry.inFlight) return startRound(sessionId, entry)
     // Single-flight: coalesce into the dirty follow-up. The caller
     // awaits the FOLLOW-UP round (the forced round), not the in-flight
     // one.
@@ -419,21 +504,20 @@ export function createTeamRefreshCoordinator(
   }
 
   const attach = (sessionId: string): void => {
-    let entry = entries.get(sessionId)
-    if (entry === undefined) {
+    const existing = entries.get(sessionId)
+    if (existing === undefined) {
       // P1-B: a fresh attach is a fresh SCOPE — a new entry with the
       // next epoch (the previous incarnation's in-flight rounds are
       // superseded: their guard now sees a different entry in the map).
-      entry = {
-        epoch: nextEpoch++,
-        timer: null,
-        inFlight: false,
-        dirty: false,
-        followUpWaiters: [],
-        lastResult: null,
-      }
-      entries.set(sessionId, entry)
+      createEntry(sessionId, true)
+      return
     }
+    // Third follow-up P1 (guide §5): a cold trigger before this attach
+    // created a TRANSIENT entry for the same session — REUSE it (the
+    // cold round and the tick / forced rounds share ONE lane; starting
+    // a new epoch here would orphan the cold round's scope for no
+    // reason).
+    existing.attached = true
     if (!paused) armTick(sessionId)
   }
 
@@ -471,13 +555,22 @@ export function createTeamRefreshCoordinator(
     if (!paused) return
     paused = false
     for (const [sessionId, entry] of [...entries.entries()]) {
+      // Third follow-up P1: a transient (never-attached) entry has no
+      // view to resume — its lane is cold-only. Only ATTACHED sessions
+      // get the re-arm + the immediate resume trigger.
+      if (entry.attached === false) continue
       if (entry.timer === null) armTick(sessionId)
       // Frozen decision 2: visibility resume → IMMEDIATE trigger.
       void trigger(sessionId, 'resume')
     }
   }
 
-  const attached = (): readonly string[] => [...entries.keys()]
+  /** The currently ATTACHED session ids (a stable copy; transient
+   *  cold entries are NOT attached). */
+  const attached = (): readonly string[] =>
+    [...entries.entries()]
+      .filter(([, entry]) => entry.attached)
+      .map(([sessionId]) => sessionId)
 
   const isPaused = (): boolean => paused
 

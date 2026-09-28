@@ -15,9 +15,16 @@
  * per session: a trigger arriving while a round is in flight coalesces
  * into the dirty follow-up that runs exactly once after the in-flight
  * round settles, and the coalesced caller receives the FOLLOW-UP
- * round's result (never the in-flight one); an unattached session's
- * forced round runs ungated (the cold create-success path); `resume`
- * fires the immediate trigger for every attached session, re-arms the
+ * round's result (never the in-flight one); an UNATTACHED session's
+ * forced round runs in a TRANSIENT session entry (PR #35 third
+ * follow-up P1 — the cold create-success path: a real scope with the
+ * epoch + the map-identity guard, no naked round; a later attach
+ * reuses the entry so the cold round shares ONE single-flight lane
+ * with the attached rounds; a never-attached entry is dropped after
+ * its last round settles); the scope-epoch section (E + COLD-E)
+ * covers detach → reattach invalidation of BOTH attached and cold
+ * scopes; `resume` fires the immediate trigger for every attached
+ * session, re-arms the
  * ticks (including sessions attached while paused), and is a no-op
  * when already running; a detach settles pending coalesced callers
  * with the last settled result (nothing hangs); a failed probe is a
@@ -357,7 +364,10 @@ const s3ProbeCallsBeforeSettle = s3.calls.length
 const [s3First, s3C1, s3C2] = await Promise.all([s3InFlight, s3Coalesced1, s3Coalesced2])
 const s3ProbeCallsAfter = s3.calls.length
 
-// S4: the unattached forced round runs ungated.
+// S4: the unattached forced round runs in a TRANSIENT entry (PR #35
+// third follow-up P1 — a real scope, no naked round): the round runs,
+// the entry leaves no attach side effect, and it is dropped after the
+// round settles (no entry leak — the session is not attached).
 const s4 = scriptedProbe({ fresh: [okRoot('root-fresh', 5, 'lt-v1-f')] })
 const s4Pull = scriptedPullProjection({ 'root-fresh': [APPLY] })
 const s4Coord = createTeamRefreshCoordinator({
@@ -559,27 +569,97 @@ e2Gate.releaseAt(0, okRoot('root-e2', 10, 'lt-v1-e2-late'))
 const e2Result = await e2Round
 const e2PullCalls = e2Pull.calls
 
-// E3: the UNATTACHED cold-bootstrap round is NOT killed by the epoch
-// (guide §5.2): its late result still lands (onReadState fires, the
-// conditional pull may happen) — and a later attach starts a fresh
-// scope without resurrecting the cold round's authority twice.
-const e3Gate = gatedProbe()
-const e3Pull = scriptedPullProjection({ 'root-e3': [APPLY] })
-const e3ReadStateLog: Array<TeamReadStateOutcome['status']> = []
-const e3Coord = createTeamRefreshCoordinator({
-  readState: e3Gate.readState,
-  pullProjection: e3Pull.pullProjection,
+// ---------------------------------------------------------------------------
+// COLD-E — the COLD-BOOTSTRAP session scope (PR #35 third follow-up P1,
+// guide §11): the first unattached trigger creates a TRANSIENT entry;
+// attach reuses it (one single-flight lane); a detach closes the cold
+// scope exactly like an attached one (the late cold round is
+// superseded — the old "ungated naked round that always lands"
+// semantics (round-2 E3) is deleted)
+// ---------------------------------------------------------------------------
+
+// COLD-E1: attach reuses the cold transient entry (guide §11).
+// trigger(S) while unattached (the round's probe is PARKED so it is
+// still in flight) → attach(S) reuses the transient entry (arms the
+// tick on the SAME entry) → trigger(S, manual) must NOT start a second
+// probe (single-flight: dirty-coalesced). After the first settle:
+// exactly ONE follow-up. Final: two probes, one timer armed, no
+// overlapping rounds.
+const ce1 = scriptedProbe({ s: [okRoot('root-ce1', 10, 'lt-v1-ce1-a'), okNone()] })
+const ce1Pull = scriptedPullProjection({ 'root-ce1': [APPLY] })
+const ce1Timer = manualTimer()
+const ce1Coord = createTeamRefreshCoordinator({
+  readState: ce1.readState,
+  pullProjection: ce1Pull.pullProjection,
+  getAppliedIdentity: () => null,
+  timer: ce1Timer,
+})
+const ce1Cold = ce1Coord.trigger('s', 'manual') // unattached → transient entry, probe 1 (resolved immediately, round in flight)
+ce1Coord.attach('s') // the view mounts while round 1 is in flight — REUSES the transient entry
+const ce1ProbeCallsWhileInFlight = ce1.calls.length
+const ce1Coalesced = ce1Coord.trigger('s', 'manual') // must coalesce, NOT start probe 2
+const ce1AttachedAfterAttach = ce1Coord.attached()
+const ce1ArmedAfterAttach = ce1Timer.armed().length
+const [ce1ColdResult, ce1CoalescedResult] = await Promise.all([ce1Cold, ce1Coalesced])
+const ce1ProbeCallsFinal = ce1.calls.length
+const ce1ArmedFinal = ce1Timer.armed().length
+
+// COLD-E2: detach → reattach invalidates the OLD cold scope (guide §11).
+// Cold A starts in the transient entry E1 (probe parked) → attach
+// reuses E1 → detach deletes E1 → reattach creates E2 → round B (in
+// E2) settles healthy → A settles LATE: A publishes no authority,
+// makes no conditional pull; the recorder saw B only; E2's timer is
+// intact.
+const ce2Gate = gatedProbe()
+const ce2Pull = scriptedPullProjection({ 'root-ce2': [APPLY] }) // B's pull only
+const ce2Timer = manualTimer()
+const ce2ReadStateLog: Array<TeamReadStateOutcome['status']> = []
+const ce2Coord = createTeamRefreshCoordinator({
+  readState: ce2Gate.readState,
+  pullProjection: ce2Pull.pullProjection,
   getAppliedIdentity: () => null,
   onReadState: (_sessionId, outcome) => {
-    e3ReadStateLog.push(outcome.status)
+    ce2ReadStateLog.push(outcome.status)
+  },
+  timer: ce2Timer,
+})
+const ce2RoundA = ce2Coord.trigger('s', 'mutation') // cold: transient E1, probe 0 parked
+ce2Coord.attach('s') // reuses E1 (tick handle 1 armed)
+ce2Coord.detach('s') // E1 deleted (tick disarmed)
+ce2Coord.attach('s') // fresh E2 (tick handle 2 armed)
+const ce2RoundB = ce2Coord.trigger('s', 'manual') // round B in E2, probe 1 parked
+const ce2TimerAfterB = ce2Timer.armed()
+// B settles first (the NEW scope is current): the team relation
+// triggers the conditional pull. (Call order: 0 = A cold, 1 = B new.)
+ce2Gate.releaseAt(1, okRoot('root-ce2', 10, 'lt-v1-ce2-b'))
+const ce2ResultB = await ce2RoundB
+// A settles LATE (its transient scope was closed by the detach): no
+// authority, no conditional pull.
+ce2Gate.releaseAt(0, okRoot('root-ce2', 9, 'lt-v1-ce2-a-late'))
+const ce2ResultA = await ce2RoundA
+const ce2TimerAfterA = ce2Timer.armed()
+
+// COLD-E3: a PERMANENT detach after the cold trigger (attach happened
+// in between): the late cold settlement publishes nothing, pulls
+// nothing, and the session is no longer attached.
+const ce3Gate = gatedProbe()
+const ce3Pull = scriptedPullProjection()
+const ce3ReadStateLog: Array<TeamReadStateOutcome['status']> = []
+const ce3Coord = createTeamRefreshCoordinator({
+  readState: ce3Gate.readState,
+  pullProjection: ce3Pull.pullProjection,
+  getAppliedIdentity: () => null,
+  onReadState: (_sessionId, outcome) => {
+    ce3ReadStateLog.push(outcome.status)
   },
   timer: manualTimer(),
 })
-const e3Cold = e3Coord.trigger('e3', 'mutation') // unattached cold round, parked
-e3Coord.attach('e3') // the view mounts while the cold round is in flight
-e3Gate.releaseAt(0, okRoot('root-e3', 5, 'lt-v1-e3-cold'))
-const e3ColdResult = await e3Cold
-const e3Attached = e3Coord.attached()
+const ce3RoundA = ce3Coord.trigger('s', 'mutation') // cold: transient entry, probe parked
+ce3Coord.attach('s') // reuses the transient entry
+ce3Coord.detach('s') // permanent detach — the cold scope is closed
+ce3Gate.releaseAt(0, okRoot('root-ce3', 10, 'lt-v1-ce3-late'))
+const ce3ResultA = await ce3RoundA
+const ce3Attached = ce3Coord.attached()
 
 // ---------------------------------------------------------------------------
 // Assertions
@@ -677,10 +757,10 @@ describe('team-view-sync-complete — the per-session refresh coordinator (clien
     expect(s3C2.projectionAssessment).toEqual(APPLY10)
   })
 
-  it('S4: an unattached session forced round runs ungated (the cold create-success path)', () => {
+  it('S4: an unattached cold trigger runs in a transient entry (real scope, no naked round) — the round runs fully, with NO attach side effect', () => {
     expect(s4Result.projectionAssessment).toEqual(APPLY)
     expect(s4Pull.calls).toEqual(['root-fresh'])
-    expect(s4Attached).toEqual([]) // no attach side effect
+    expect(s4Attached).toEqual([]) // no attach side effect (the transient entry is not attached)
   })
 
   it('S5: pause stops the ticks; forced triggers still run; resume fires the immediate trigger per session, re-arms the ticks (incl. a session attached while paused), and is a no-op when running', () => {
@@ -764,17 +844,76 @@ describe('team-view-sync-complete — the refresh coordinator scope epoch (PR #3
     expect(e2Result.projectionAssessment).toBeNull()
   })
 
-  it('E3: the unattached cold-bootstrap round is NOT killed by the epoch — its late result still lands (authority published + conditional pull allowed)', async () => {
-    // The cold round (started unattached) settled after the attach:
-    // its probe outcome was still published (the cold bootstrap's
-    // result is allowed to land — guide §5.2).
-    expect(e3ColdResult.readState.status).toBe('ok')
-    if (e3ColdResult.readState.status !== 'ok') throw new Error('E3 guard')
-    expect(e3ColdResult.readState.relation.kind).toBe('team-root')
-    expect(e3ColdResult.projectionAssessment).toEqual(APPLY)
-    expect(e3ReadStateLog).toEqual(['ok'])
-    expect(e3Pull.calls).toEqual(['root-e3'])
-    // The attach is intact (the session is still attached).
-    expect(e3Attached).toEqual(['e3'])
+})
+
+describe('team-view-sync-complete — the cold-bootstrap session scope (PR #35 third follow-up P1, guide §11)', () => {
+  it('COLD-E1: attach REUSES the cold transient entry — the second trigger is dirty-coalesced (no second probe), the follow-up runs exactly once, one timer armed, no overlapping rounds', async () => {
+    // While round 1 (the cold round) was in flight, the second trigger
+    // started NO second probe — single-flight over the SAME entry
+    // (the attach reused the transient entry, it did not start a new
+    // scope the cold round could not see).
+    expect(ce1ProbeCallsWhileInFlight).toBe(1)
+    // The attach saw the session as attached (the transient entry
+    // flipped, not replaced) and armed exactly one tick.
+    expect(ce1AttachedAfterAttach).toEqual(['s'])
+    expect(ce1ArmedAfterAttach).toBe(1)
+    // Round 1 (team relation, no applied identity) pulled; its caller
+    // got round 1's result.
+    expect(ce1ColdResult.readState.status).toBe('ok')
+    if (ce1ColdResult.readState.status !== 'ok') throw new Error('COLD-E1 guard')
+    expect(ce1ColdResult.readState.relation.kind).toBe('team-root')
+    expect(ce1ColdResult.projectionAssessment).toEqual(APPLY)
+    // The coalesced trigger got the FOLLOW-UP round's result (the
+    // follow-up's probe = the default none → the authoritative
+    // no-team round, no second pull).
+    expect(ce1CoalescedResult.readState.status).toBe('ok')
+    if (ce1CoalescedResult.readState.status !== 'ok') throw new Error('COLD-E1 guard')
+    expect(ce1CoalescedResult.readState.relation.kind).toBe('none')
+    expect(ce1CoalescedResult.projectionAssessment).toBeNull()
+    // Final: round 1 + exactly ONE follow-up = two probes; one timer
+    // armed; no overlapping rounds.
+    expect(ce1ProbeCallsFinal).toBe(2)
+    expect(ce1.calls).toEqual(['s', 's'])
+    expect(ce1ArmedFinal).toBe(1)
+    expect(ce1Pull.calls).toEqual(['root-ce1'])
+  })
+
+  it('COLD-E2: detach → reattach invalidates the OLD cold scope — the late cold round publishes NO authority, makes NO conditional pull; the new scope records its own probe and its timer stays intact', async () => {
+    // Round B (the NEW scope E2) settled first: its probe landed in
+    // the read-state recorder and its team relation triggered the
+    // conditional pull.
+    expect(ce2ResultB.readState.status).toBe('ok')
+    if (ce2ResultB.readState.status !== 'ok') throw new Error('COLD-E2 guard')
+    expect(ce2ResultB.readState.relation.kind).toBe('team-root')
+    expect(ce2ResultB.projectionAssessment).toEqual(APPLY)
+    // Round A (the COLD scope E1, closed by the detach) settled late:
+    // its result is returned to its own caller only — no authority
+    // publication, no conditional projection pull.
+    expect(ce2ResultA.readState.status).toBe('ok')
+    if (ce2ResultA.readState.status !== 'ok') throw new Error('COLD-E2 guard')
+    expect(ce2ResultA.readState.relation.kind).toBe('team-root')
+    expect(ce2ResultA.projectionAssessment).toBeNull()
+    // The recorder saw exactly B's outcome (one publication).
+    expect(ce2ReadStateLog).toEqual(['ok'])
+    // Only B's pull exists (the late cold scope pulled nothing).
+    expect(ce2Pull.calls).toEqual(['root-ce2'])
+    // Both probes ran (A + B) — the coordinator refused to publish A's
+    // late result, it did not swallow the probe.
+    expect(ce2Gate.calls).toBe(2)
+    // E2's timer is intact (the late cold settlement neither disarmed
+    // nor re-armed it; exactly one tick armed, the same handle).
+    expect(ce2TimerAfterB.length).toBe(1)
+    expect(ce2TimerAfterA).toEqual(ce2TimerAfterB)
+  })
+
+  it('COLD-E3: a permanent detach after the cold trigger — the late cold settlement publishes nothing, pulls nothing, and the session is no longer attached', async () => {
+    // The cold round's result still reaches its own caller (nothing
+    // hangs) — but the closed cold scope made no side effects at all.
+    expect(ce3ResultA.readState.status).toBe('ok')
+    if (ce3ResultA.readState.status !== 'ok') throw new Error('COLD-E3 guard')
+    expect(ce3ResultA.projectionAssessment).toBeNull()
+    expect(ce3ReadStateLog).toEqual([])
+    expect(ce3Pull.calls).toEqual([])
+    expect(ce3Attached).toEqual([])
   })
 })

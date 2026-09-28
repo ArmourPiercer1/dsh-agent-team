@@ -44,6 +44,7 @@ import {
   readdirSync, rmSync, statSync, writeFileSync,
 } from 'node:fs'
 import net from 'node:net'
+import { createHash } from 'node:crypto'
 import { dirname, join, resolve } from 'node:path'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
 
@@ -225,6 +226,19 @@ async function main() {
   const porcelain = gitIn(TESTUSE, ['status', '--porcelain'])
   if (head.status !== 0 || head.out !== HOST_BASELINE_SHA) dieFatal(`test-use HEAD mismatch: ${head.out} (want ${HOST_BASELINE_SHA})`)
   if (porcelain.status !== 0 || porcelain.out !== '') dieFatal(`test-use porcelain not empty: ${porcelain.out.slice(0, 80)}`)
+  // PR #35 third follow-up P1 (guide §15): the browser evidence is
+  // BOUND to the exact tested commit — worktree HEAD + the worktree
+  // porcelain as a HARD gate (a dirty working tree cannot prove an
+  // immutable commit passed this smoke) + the served client bundle's
+  // size + sha256 (which bytes the browser actually loaded).
+  const wtHead = gitIn(WORKTREE, ['rev-parse', 'HEAD'])
+  const wtPorcelain = gitIn(WORKTREE, ['status', '--porcelain'])
+  if (wtHead.status !== 0) dieFatal(`worktree HEAD failed: ${wtHead.out.slice(0, 80)}`)
+  if (wtPorcelain.status !== 0 || wtPorcelain.out !== '') dieFatal(`worktree porcelain not empty (the smoke must run on a clean commit): ${wtPorcelain.out.slice(0, 120)}`)
+  const BUNDLE_PATH = join(WORKTREE, 'packages', 'client', 'composition-shim', 'client-bundle.js')
+  const bundleBytes = readFileSync(BUNDLE_PATH)
+  const bundleHash = createHash('sha256').update(bundleBytes).digest('hex')
+  log(`commit binding: worktree HEAD=${wtHead.out} porcelain='' bundle=${bundleBytes.length}B sha256=${bundleHash.slice(0, 16)}…`)
   const stablePre = {}
   for (const u of STABLE_PROBES) stablePre[u] = await probe(u)
   let hostPort = null
@@ -319,6 +333,9 @@ async function main() {
     mockPort,
     world: WORLD,
     worktree: WORKTREE,
+    worktreeHead: wtHead.out,
+    worktreePorcelain: wtPorcelain.out,
+    clientBundle: { path: 'packages/client/composition-shim/client-bundle.js', sizeBytes: bundleBytes.length, sha256: bundleHash },
     t1: T1,
     t1MemberSession: T1_MEMBER_SESSION,
     t1MemberInstance: T1_MEMBER_INSTANCE,
