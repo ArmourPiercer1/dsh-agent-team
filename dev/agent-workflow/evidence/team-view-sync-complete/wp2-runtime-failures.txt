@@ -1,0 +1,36 @@
+     × D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block 7ms
+     × deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped) 0ms
+     × deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract) 0ms
+     × deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next) 0ms
+    1619|   it('deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (…
+ FAIL  test/a2c1-pwsh-permission.test.ts [ test/a2c1-pwsh-permission.test.ts ]
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > any is unchanged: file-class any allow (static allow + external recheck + next) and shell-class any deny
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > the exact lane is unchanged; a different-tool rule is NEVER canonicalized (H4: rules that cannot match are never resolved)
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted)
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny)
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped)
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract)
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next)
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G16 — cold resume (dispose + fresh install; no stale canonical-rule cache) > the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside
+ FAIL  test/d3-member-identity-context.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
+ FAIL  test/h5-bash-effects.test.ts [ test/h5-bash-effects.test.ts ]
+ FAIL  test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+ FAIL  test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+ FAIL  test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota)
+ FAIL  test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > exactly two activations succeed
+ FAIL  test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > the final durable state holds EXACTLY two members and two COMMITTED operations
+ FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+ FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+ FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+ FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+ FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+ FAIL  test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+ FAIL  test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+ FAIL  test/p8s3b-result-effects.test.ts [ test/p8s3b-result-effects.test.ts ]
+ FAIL  test/p8s7r4-bc23-24-no-mutation.test.ts > p8s7r4 W6 (BC-23/BC-24) — the failure decisions are client-side with no backend mutation > S4: the closed catalog carries no AGENT-side decision method — the handoff category is exactly prepare + create (versioned union 9/28: 23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only)
+ FAIL  test/t12a-b2-child-identity.test.ts [ test/t12a-b2-child-identity.test.ts ]
+ FAIL  test/t12a-glue-handoff-ports.test.ts [ test/t12a-glue-handoff-ports.test.ts ]
+ FAIL  test/t12m4-remote-mount.test.ts > T12-M4 the production Remote mount (host.ts wiring) > rejects an unsupported contract version with the frozen boundary code
+ FAIL  test/team-session-startup-fence.test.ts [ test/team-session-startup-fence.test.ts ]

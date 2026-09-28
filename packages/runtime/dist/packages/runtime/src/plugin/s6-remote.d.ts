@@ -45,6 +45,7 @@ import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js'
 import type { TeamRootWireRow } from '../team-ownership-index.js';
 import type { RemoteHandlerRegistration, RemoteQueryCommandCompletion, ServerPrincipalDerivation, WorkspaceAttachPort } from './types.js';
 import type { ServerPrincipalContext } from './s6-principal.js';
+import type { SessionReadStateDurableValue } from './team-read-state.js';
 import type { TeamDomainRepositories } from '../../../storage/repositories/index.js';
 import type { ActionCaller, TeamRuntime, TeamRuntimeActionOutcome } from '../../admission/index.js';
 import type { AdmitRootInitialWork } from '../../action-router/index.js';
@@ -157,6 +158,21 @@ export declare const S6_REMOTE_ERROR_CODES: {
      *  armed the one-shot permit). Host-side vocabulary: the wire
      *  exposure of the method is Commit 3 (the frozen Remote catalog). */
     readonly TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE: "TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE";
+    /** team-view-sync-complete (remote contract v6) — team.getReadState:
+     *  the host wiring exposes no read-state closure (the durable
+     *  session-affiliation resolver is not reachable from this root) —
+     *  fail-closed BEFORE any read; NEVER a silent `none` (a `none` answer
+     *  must always rest on a positively confirmed no-affiliation). */
+    readonly TEAM_READ_STATE_PORT_UNAVAILABLE: "TEAM_REMOTE_TEAM_READ_STATE_PORT_UNAVAILABLE";
+    /** team-view-sync-complete (remote contract v6) — the v6 projection
+     *  freshness pair: the host wiring exposes no live-token closure (the
+     *  semantic-live-state token cannot be computed) — fail-closed. PR #35
+     *  second follow-up P0-2: the v6 PROJECTION no longer calls this port
+     *  (its token is computed from the same snapshot's projection members),
+     *  so the port serves the LIGHTWEIGHT `team.getReadState` probe only —
+     *  a team relation whose token cannot be computed fails the read
+     *  typed, never with a null token. */
+    readonly TEAM_LIVE_TOKEN_PORT_UNAVAILABLE: "TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE";
 };
 export type S6RemoteErrorCode = (typeof S6_REMOTE_ERROR_CODES)[keyof typeof S6_REMOTE_ERROR_CODES];
 /**
@@ -495,10 +511,49 @@ export interface S6RemotePorts {
      *  fix; t12v-finding-360s-first-turn.md). The bound-root guard lives in
      *  the port (fail-closed FOREIGN_TEAM on a foreign teamSessionId). */
     readonly messaging: S6RemoteMessagingPort;
+    /** team-view-sync-complete (remote contract v6) — the v6-only
+     *  `team.getReadState` port: resolves ONE DSH session's durable Team
+     *  affiliation + the owning TeamSession's durable generation from the
+     *  host's own TeamDomain (fail-closed: a storage/integrity failure
+     *  throws typed and never degrades to a `none` answer). NO bound-root
+     *  guard — the query addresses a SESSION, not a team (the session may
+      *  be ordinary). The port answers the DURABLE-ONLY value (no
+     *  `liveToken` cell — PR #35 follow-up: the dispatcher merges
+     *  the SAME live-token closure the v6 projection derives from
+     *  its snapshot onto the team relations and `null` onto a `none`
+     *  answer; a team relation whose token cannot be computed fails
+     *  the read typed, never with a null token). */
+    readonly teamReadState: S6RemoteReadStatePort;
+    /** team-view-sync-complete (remote contract v6) — the semantic-live-
+     *  state token port serving the LIGHTWEIGHT `team.getReadState` probe
+     *  (PR #35 second follow-up P0-2: the v6 PROJECTION no longer calls
+     *  this port — its token is computed from the same snapshot's
+     *  projection members, so the probe stays projection-free). A
+     *  deterministic opaque string over the sorted
+     *  `{instanceId, residency}` pairs — no clock facts, frozen decisions
+     *  3 + 7. */
+    readonly liveToken: S6RemoteLiveTokenPort;
 }
 /** The P6-T3 messaging coordinator port (T12-V16). */
 export interface S6RemoteMessagingPort {
     sendTeamMessage(request: SendTeamMessageRequest): Promise<SendTeamMessageOutcome>;
+}
+/** The v6 read-state port (team-view-sync-complete). */
+export interface S6RemoteReadStatePort {
+    /** Resolve one session's durable read-state (the closed value; `null`
+     *  cells typed). Throws typed on any storage/integrity failure
+     *  (fail-closed pass-through, invariant 4b). */
+    readState(sessionId: string): Promise<SessionReadStateDurableValue>;
+}
+/** The v6 live-token port (team-view-sync-complete). */
+export interface S6RemoteLiveTokenPort {
+    /** Compute one team's deterministic live token (a non-empty opaque
+     *  string) for the LIGHTWEIGHT `team.getReadState` probe (the v6
+     *  projection computes its own token from the same snapshot's
+     *  projection members — PR #35 second follow-up P0-2). Throws typed
+     *  on any storage failure (fail-closed: a team relation's read-state
+     *  without its token cell is impossible). */
+    token(teamSessionId: string): Promise<string>;
 }
 /** The root-binding surface the `team.create` port drives. */
 export interface S6RootBindingPort {
@@ -745,6 +800,46 @@ export interface S6RemoteOptions {
      * unchanged through the dispatcher (invariant 4b).
      */
     readonly listRoots?: () => Promise<readonly TeamRootWireRow[]>;
+    /**
+     * team-view-sync-complete (remote contract v6) — the durable
+     * session-affiliation resolver behind the v6-only `team.getReadState`:
+     * the host entry's closure over the already-injected TeamDomain
+     * repositories (the pure `team-read-state.ts` module — NO repository
+     * writes, NO agent effects). The TeamDomain durable rows are the SOLE
+     * authority: a `none` answer rests only on a positively confirmed
+     * no-affiliation, and EVERY storage/integrity failure fails closed
+     * typed (the closure's TEAM_READ_STATE_* + the storage layer's
+     * RECORD_INVALID / SEAM_FAILURE vocabulary — closed backing codes,
+     * invariant 4b) — never a silent `none`. Absent (test worlds without
+     * the TeamDomain wiring): `team.getReadState` fails closed with the
+     * typed TEAM_REMOTE_TEAM_READ_STATE_PORT_UNAVAILABLE. The production
+     * host entry (root.ts) wires it. The closure answers the DURABLE-ONLY
+     * value (no `liveToken` cell — PR #35 follow-up: the dispatcher merges
+     * the SAME live-token closure the v6 projection uses onto the team
+     * relations and `null` onto a `none` answer; a team relation whose
+     * token cannot be computed fails the read typed, never with a null
+     * token).
+     */
+    readonly readState?: (sessionId: string) => SessionReadStateDurableValue | Promise<SessionReadStateDurableValue>;
+    /**
+     * team-view-sync-complete (remote contract v6) — the semantic-live-
+     * state token closure serving the LIGHTWEIGHT `team.getReadState`
+     * probe (PR #35 second follow-up P0-2: the v6 PROJECTION no longer
+     * calls this closure — it computes the token from the SAME snapshot's
+     * projection members via `computeLiveTokenFromProjectedMembers`, so
+     * the frame and the token are one-snapshot-consistent by
+     * construction). The host entry's closure over the already-injected
+     * TeamDomain member rows + the TEAM-SCOPED installed live-residency
+     * overlay (the pure `live-token.ts` module — the deterministic opaque
+     * string over the sorted `{instanceId, residency}` pairs; NO clock
+     * facts enter the token, frozen decisions 3 + 7). Absent (test worlds
+     * without the overlay wiring): a v6 `team.getReadState` team relation
+     * fails closed with the typed
+     * TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE (a team relation must
+     * ALWAYS carry its token cell — never a null token). The production
+     * host entry (root.ts) wires it.
+     */
+    readonly liveToken?: (teamSessionId: string) => string | Promise<string>;
     /** The deterministic clock (ISO-8601). */
     readonly now: () => string;
     /**

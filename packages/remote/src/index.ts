@@ -70,6 +70,7 @@ export {
   REMOTE_CONTRACT_VERSION_V3,
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
+  REMOTE_CONTRACT_VERSION_V6,
   SUPPORTED_REMOTE_CONTRACT_VERSIONS,
   isSupportedRemoteContractVersion,
   assertSupportedRemoteContractVersion,
@@ -90,6 +91,7 @@ export {
   REMOTE_V3_ONLY_METHODS,
   REMOTE_V4_ONLY_METHODS,
   REMOTE_V5_ONLY_METHODS,
+  REMOTE_V6_ONLY_METHODS,
   isRemoteMethod,
   isRemoteMethodAvailableInVersion,
   remoteCategoryOf,
@@ -142,6 +144,7 @@ export {
   REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS,
   REMOTE_TEAM_RESOLVE_CONTROL_FIELDS,
   REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS,
+  REMOTE_TEAM_GET_READ_STATE_FIELDS,
   REMOTE_TEAM_GET_PROJECTION_FIELDS,
   REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS,
   REMOTE_MEMBER_CREATE_FIELDS,
@@ -169,6 +172,7 @@ export {
   parseRemoteTeamEnsureRootLiveParams,
   parseRemoteTeamResolveControlParams,
   parseRemoteTeamPrepareOrdinaryOpenParams,
+  parseRemoteTeamGetReadStateParams,
   parseRemoteTeamGetProjectionParams,
   parseRemoteTeamGetLedgerPageParams,
   parseRemoteMemberCreateParams,
@@ -214,6 +218,7 @@ export type {
   RemoteTeamResolveControlDecision,
   RemoteTeamResolveControlParams,
   RemoteTeamPrepareOrdinaryOpenParams,
+  RemoteTeamGetReadStateParams,
   RemoteTeamGetProjectionParams,
   RemoteTeamGetLedgerPageParams,
   RemoteMemberCreateParams,
@@ -237,6 +242,7 @@ export type {
 
 export {
   REMOTE_PROJECTION_FIELDS,
+  REMOTE_PROJECTION_FIELDS_V6,
   REMOTE_LEDGER_ENTRY_FIELDS,
 } from './contracts/types.js'
 
@@ -247,7 +253,12 @@ export type {
   RemoteTeamCreatePath,
   RemoteTeamCreateValue,
   RemoteProjectionValue,
+  RemoteProjectionValueV6,
   RemoteTeamGetProjectionValue,
+  RemoteTeamGetReadStateNoneValue,
+  RemoteTeamGetReadStateTeamMemberValue,
+  RemoteTeamGetReadStateTeamRootValue,
+  RemoteTeamGetReadStateValue,
   RemoteLedgerEntryValue,
   RemoteLedgerPageValue,
   RemoteAdmissionOutcomeValue,
@@ -291,6 +302,8 @@ export type {
   RemoteTeamEnsureRootLivePort,
   RemoteTeamResolveControlPort,
   RemoteTeamPrepareOrdinaryOpenPort,
+  RemoteTeamReadStatePort,
+  RemoteLiveTokenPort,
   RemoteHandlerDeps,
   RemoteHandlerOutcome,
   RemoteHandler,
@@ -387,6 +400,16 @@ export {
   extractPushFrame,
   isApplyAssessment,
 } from './push/pull.js'
+
+export {
+  assessProjectionSyncV6,
+  extractPushFrameV6,
+  appliedIdentityFromV6,
+} from './push/pull-v6.js'
+export type {
+  AppliedProjectionIdentityV6,
+  RemotePushFrameV6,
+} from './push/pull-v6.js'
 
 export {
   createLedgerPageTracker,

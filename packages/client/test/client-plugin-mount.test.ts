@@ -15,17 +15,31 @@
  * Covered: the four slot registrations (specs, orders, labels, component
  * identity), the locale dictionary effect, the fiber effects, the view /
  * dock inject faces (hooks sources, the S5-A/B/C/D faces, the dshHome-bound
- * legacyInspect), the single-flight cold read (D-T9-5) with the frozen
- * `team.getProjection` endpoint shape, the first-frame ledger auto-open,
- * the ordinary-session typed failure (zero state), the preset mapping
- * (broken filtered — D-T9-9; 0.1.7: the upstream roster row dropped the
- * trust lane, so the mapping has no trust to drop), the native sessions seam
- * members (D-T9-10), the generation rebaseline (D-T9-7: loss schedules the
- * CLIENT_LOCAL backoff retry, restore cancels it and fires exactly one
- * pull), teardown (no carrier call after dispose), and the D-T9-1
- * dshHome-absent/blank variants (the legacyInspect face omitted).
+ * legacyInspect), the READ-STATE-DRIVEN cold read (PR #35 follow-up,
+ * P0-1/P0-2: the `team.getReadState` probe answers ownership for the
+ * SESSION — team-root / team-member / none — and the frozen
+ * `team.getProjection` pull targets the OWNING root only when the frame
+ * is missing or stale; an authoritative `none` probe ends the round with
+ * NO projection request; the mount-level D-T9-5 single-flight dedupes
+ * concurrent cold reads of an unattached session), the first-frame ledger
+ * auto-open, the authoritative-none zero state (the ordinary session),
+ * the preset mapping (broken filtered — D-T9-9; 0.1.7: the upstream
+ * roster row dropped the trust lane, so the mapping has no trust to
+ * drop), the native sessions seam members (D-T9-10), the generation
+ * rebaseline (D-T9-7 + P1-5: loss schedules the CLIENT_LOCAL backoff
+ * retry — the store's own lane — restore clears the loss episode
+ * WITHOUT a store pull via `noteConnectionRestored`, and the
+ * invalidation pull is the coordinator's `connection-restored` forced
+ * round for the ATTACHED session: exactly one probe + one pull),
+ * teardown (no carrier call after dispose), the read-state hook source
+ * (hooks.sessionReadStates — the last probe outcome per session), the
+ * D4-A1 post-mutation pull wiring (the view / sidebar entry inject face
+ * carries pullProjection; the coordinator's mutation lane), and the
+ * D-T9-1 dshHome-absent/blank variants (the legacyInspect face omitted).
  * Explicitly NOT exercised here: the reconnection-state internals (the
- * T4 store unit test) and transport loss (the T3 remote-client test).
+ * T4 store unit test), transport loss (the T3 remote-client test), and
+ * the coordinator's round internals (the dedicated coordinator unit
+ * test — this file drives the coordinator through the MOUNT's wiring).
  */
 import { describe, expect, it } from 'vitest'
 
@@ -33,6 +47,7 @@ import type { TeamSessionId } from '../../contracts/src/index.js'
 import {
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V3,
+  REMOTE_CONTRACT_VERSION_V6,
   buildRemoteError,
   buildRemoteSuccess,
   type RemoteResponse,
@@ -61,7 +76,15 @@ import type { TeamViewInjected, TeamViewProps } from '../src/ui/TeamView.js'
 
 const METHOD = 'team.getProjection'
 
-/** One frozen `team.getProjection` success envelope (G8 provenance intact). */
+/**
+ * One frozen `team.getProjection` success envelope (G8 provenance
+ * intact). team-view-sync-complete: the production mount pulls with
+ * CONTRACT v6, so the double answers with the v6 freshness PAIR inside
+ * data.projection (`durableGeneration` === the durable generation + a
+ * deterministic `liveToken`) and the v6 provenance contract version.
+ * The live token is stable per (team, generation) — a live-only change
+ * would move it (the mount spec exercises durable advances only).
+ */
 function projectionSuccess(
   teamSessionId: string,
   generation: number,
@@ -79,12 +102,14 @@ function projectionSuccess(
         templates: [],
         members: [],
         ledger: { total: 0 },
+        durableGeneration: generation,
+        liveToken: `lt-v1-fake:${teamSessionId}:g${generation}`,
       },
     },
     {
       method: METHOD,
       endpoint: METHOD,
-      contractVersion: REMOTE_CONTRACT_VERSION,
+      contractVersion: REMOTE_CONTRACT_VERSION_V6,
       requestToken: null,
       projectionGeneration: provenanceGeneration === undefined ? generation : provenanceGeneration,
     },
@@ -115,6 +140,66 @@ function ledgerPageError(): RemoteResponse {
  * backoff macro-tasks never fire inside a microtask drain). */
 async function flush(turns = 16): Promise<void> {
   for (let i = 0; i < turns; i++) await Promise.resolve()
+}
+
+// ---------------------------------------------------------------------------
+// The v6 read-state fixtures (PR #35 follow-up — the lightweight probe)
+// ---------------------------------------------------------------------------
+
+const READ_STATE_METHOD = 'team.getReadState'
+
+/**
+ * One frozen v6 `team.getReadState` TEAM-ROOT success envelope: the
+ * session IS the root, carrying the freshness PAIR the coordinator
+ * compares. The token convention matches `projectionSuccess`
+ * (`lt-v1-fake:<team>:g<generation>`) so a probe pair pinned to a
+ * pulled generation reads as UNCHANGED (the round no-ops — no second
+ * pull), while an advanced pin reads as CHANGED (the round pulls).
+ */
+function readStateRootSuccess(
+  sessionId: string,
+  durableGeneration: number,
+  liveToken: string = `lt-v1-fake:${sessionId}:g${durableGeneration}`,
+): RemoteResponse {
+  return buildRemoteSuccess(
+    {
+      relation: 'team-root',
+      teamSessionId: sessionId,
+      memberInstanceId: null,
+      disposed: false,
+      durableGeneration,
+      liveToken,
+    },
+    {
+      method: READ_STATE_METHOD,
+      endpoint: READ_STATE_METHOD,
+      contractVersion: REMOTE_CONTRACT_VERSION_V6,
+      requestToken: null,
+      projectionGeneration: null,
+    },
+  )
+}
+
+/** One frozen v6 `team.getReadState` NONE success envelope (the
+ *  positively confirmed no-team answer — every cell null). */
+function readStateNoneSuccess(): RemoteResponse {
+  return buildRemoteSuccess(
+    {
+      relation: 'none',
+      teamSessionId: null,
+      memberInstanceId: null,
+      disposed: false,
+      durableGeneration: null,
+      liveToken: null,
+    },
+    {
+      method: READ_STATE_METHOD,
+      endpoint: READ_STATE_METHOD,
+      contractVersion: REMOTE_CONTRACT_VERSION_V6,
+      requestToken: null,
+      projectionGeneration: null,
+    },
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -149,6 +234,20 @@ interface MountFixture {
   /** Drive the connection generation seam (the plan §6.3 invalidation). */
   readonly generation: {
     readonly set: (snapshot: { readonly id: number } | undefined) => void
+  }
+  /**
+   * The `team.getReadState` default authority (PR #35 follow-up): pin
+   * one session's TEAM-ROOT freshness pair (the probe answers the pinned
+   * pair unless an explicit responder is queued), or flip a session to
+   * the authoritative no-team answer.
+   */
+  readonly readState: {
+    readonly pinTeam: (
+      sessionId: string,
+      durableGeneration: number,
+      liveToken?: string,
+    ) => void
+    readonly setNone: (sessionId: string) => void
   }
   readonly sessions: {
     readonly created: Array<{ workspaceId?: string } | null>
@@ -198,6 +297,42 @@ function makeMount(
     else existing.push(responder)
   }
 
+  // The `team.getReadState` DEFAULT authority (PR #35 follow-up — the
+  // lightweight probe the refresh coordinator runs first): per-session
+  // default answers the carrier uses when no explicit responder is
+  // queued for the endpoint. `pinTeamReadState(session, generation,
+  // token?)` pins the TEAM-ROOT freshness pair for a session (the
+  // default when nothing is pinned = the pair (1,
+  // `lt-v1-fake:<session>:g1`) — matching `projectionSuccess`'s token
+  // convention, so a probe pinned to a pulled generation reads as
+  // UNCHANGED: the round no-ops without a second pull; advancing the
+  // pin reads as CHANGED: the round pulls). `setReadStateNone(session)`
+  // flips a session to the authoritative no-team answer (the ordinary
+  // session — the round ends with NO projection request).
+  const readStatePins = new Map<string, number>()
+  const readStateTokens = new Map<string, string>()
+  const readStateNones = new Set<string>()
+  const pinTeamReadState = (
+    sessionId: string,
+    durableGeneration: number,
+    liveToken?: string,
+  ): void => {
+    readStatePins.set(sessionId, durableGeneration)
+    if (liveToken !== undefined) readStateTokens.set(sessionId, liveToken)
+  }
+  const setReadStateNone = (sessionId: string): void => {
+    readStateNones.add(sessionId)
+  }
+  const readStateDefault = (params: Record<string, unknown>): RemoteResponse => {
+    const sessionId =
+      typeof params['sessionId'] === 'string' ? (params['sessionId'] as string) : ''
+    if (readStateNones.has(sessionId)) return readStateNoneSuccess()
+    const generation = readStatePins.get(sessionId) ?? 1
+    const token =
+      readStateTokens.get(sessionId) ?? `lt-v1-fake:${sessionId}:g${generation}`
+    return readStateRootSuccess(sessionId, generation, token)
+  }
+
   // The carrier double: returns the RemoteResponse verbatim (the carrier
   // result IS the frozen dispatcher result — the T4 "no re-wrap" rule) and
   // records every call.
@@ -213,6 +348,7 @@ function makeMount(
       let response: RemoteResponse
       if (next !== undefined) response = await next()
       else if (endpoint === 'team.getLedgerPage') response = ledgerPageError()
+      else if (endpoint === 'team.getReadState') response = readStateDefault(params)
       else
         response = buildRemoteSuccess({}, {
           method: endpoint,
@@ -459,6 +595,7 @@ function makeMount(
     effects,
     disposeAll,
     generation: { set: generation.set },
+    readState: { pinTeam: pinTeamReadState, setNone: setReadStateNone },
     sessions: {
       created,
       announceHostSession,
@@ -519,29 +656,55 @@ const aScenario = await (async () => {
   // The S5-A catalog list (the frozen endpoint, empty params).
   await creation.listCatalog()
 
-  // The cold read: the frozen projection endpoint for the session id.
+  // (PR #35 follow-up, frozen §1.2) the cold read is the coordinator's
+  // FORCED round: the lightweight `team.getReadState` probe for the
+  // session FIRST (the default authority answers team-root with the g1
+  // pair — no applied frame yet, so the round pulls), then the frozen
+  // projection endpoint for the owning root.
   a.enqueue('team.getProjection', () => projectionSuccess('t1', 1))
   await viewFace.ensureProjection('t1')
   await flush()
   const mirrorAfterT1 = viewFace.hooks.projectionMirror.getSnapshot()
   const ledgerStatesAfterT1 = viewFace.hooks.teamLedgers.getSnapshot()
   const ledgerLogAfterT1 = a.log.filter((c) => c.endpoint === 'team.getLedgerPage').length
+  const t1ProbeCall = a.log.find(
+    (c) => c.endpoint === 'team.getReadState' && c.params.sessionId === 't1',
+  )
+  const t1ProbeIndex = a.log.findIndex(
+    (c) => c.endpoint === 'team.getReadState' && c.params.sessionId === 't1',
+  )
+  const t1PullIndex = a.log.findIndex(
+    (c) => c.endpoint === 'team.getProjection' && c.params.teamSessionId === 't1',
+  )
 
-  // Concurrent cold reads single-flight on the resolved team id (the
-  // responder hangs on purpose: the episode never settles in the test).
+  // Concurrent cold reads single-flight on the session (the responder
+  // hangs on purpose: the episode never settles in the test). The second
+  // trigger COALESCES behind the in-flight round (no second probe, no
+  // second pull — the frozen single-flight).
   a.enqueue('team.getProjection', () => new Promise<RemoteResponse>(() => {}))
   const pendingA = viewFace.ensureProjection('t2')
   const pendingB = viewFace.ensureProjection('t2')
+  void pendingA
+  void pendingB
+  await flush()
   const t2Calls = a.log.filter(
     (c) => c.endpoint === 'team.getProjection' && c.params.teamSessionId === 't2',
   ).length
+  const t2ProbeCalls = a.log.filter(
+    (c) => c.endpoint === 'team.getReadState' && c.params.sessionId === 't2',
+  ).length
 
-  // An ordinary session: the typed failure resolves the cold read and
-  // leaves the mirror untouched.
-  a.enqueue('team.getProjection', () => projectionError('team-not-found', 'no such team'))
+  // An ordinary session (frozen §1.2 / E2): the probe answers the
+  // AUTHORITATIVE `none` — the round ends with NO projection request and
+  // the mirror stays untouched (a no-team session never pays the full
+  // pull).
+  a.readState.setNone('ordinary-1')
   await viewFace.ensureProjection('ordinary-1')
   await flush()
   const mirrorAfterOrdinary = viewFace.hooks.projectionMirror.getSnapshot()
+  const ordinaryProbeCall = a.log.find(
+    (c) => c.endpoint === 'team.getReadState' && c.params.sessionId === 'ordinary-1',
+  )
   const ordinaryAttempt = a.log.some(
     (c) => c.endpoint === 'team.getProjection' && c.params.teamSessionId === 'ordinary-1',
   )
@@ -616,13 +779,16 @@ const aScenario = await (async () => {
     t1Call: a.log.find(
       (c) => c.endpoint === 'team.getProjection' && c.params.teamSessionId === 't1',
     ),
+    t1ProbeCall,
+    probePrecedesPull: t1ProbeIndex !== -1 && t1PullIndex !== -1 && t1ProbeIndex < t1PullIndex,
     mirrorBeforeColdRead,
     mirrorAfterT1,
     ledgerStatesAfterT1,
     ledgerLogAfterT1,
-    singleFlightSame: pendingA === pendingB,
     t2Calls,
+    t2ProbeCalls,
     mirrorAfterOrdinary,
+    ordinaryProbeCall,
     ordinaryAttempt,
     legacyCall: a.log.find((c) => c.endpoint === 'legacy.inspect'),
     presetsOut,
@@ -644,16 +810,34 @@ const aScenario = await (async () => {
 const bScenario = await (async () => {
   const a = aScenario.fixture
   const viewFace = aScenario.viewFace
-  // The restore pull's response (the newer generation).
+  // (PR #35 follow-up, P1-5) the invalidation pull is the COORDINATOR's
+  // connection-restored round: the view attach arms the session scope,
+  // and the host-side PAIR advanced while the channel was down (the
+  // read-state pin moves to g2 — the probe detects the change and the
+  // round pulls). The store's own backoff lane stays separate:
+  // noteConnectionRestored clears the loss episode (the pending retry is
+  // cancelled) and fires NO store-owned pull.
+  const coordFace = viewFace.refreshCoordinator
+  if (coordFace === undefined) {
+    throw new Error('mount test: refreshCoordinator face missing')
+  }
+  a.readState.pinTeam('t1', 2)
+  // The restore round's response (the newer generation).
   a.enqueue('team.getProjection', () => projectionSuccess('t1', 2))
+  coordFace.attach('t1')
   // Loss: the bound projection store schedules the CLIENT_LOCAL backoff
-  // retry (a 1s macro-task). Restore: the retry is cancelled and exactly
-  // one pull fires (the frozen §6.3 guarantee — no live push).
+  // retry (a 1s macro-task — it never fires inside the microtask drain).
   a.generation.set(undefined)
+  // Restore: exactly ONE pull fires — the coordinator's round (the
+  // frozen §6.3 guarantee — no live push; the store's retry is dead).
   a.generation.set({ id: 2 })
   await flush()
+  coordFace.detach('t1') // disarm the 3s tick (the test never waits on it)
   const t1Calls = a.log.filter(
     (c) => c.endpoint === 'team.getProjection' && c.params.teamSessionId === 't1',
+  ).length
+  const t1ProbeCalls = a.log.filter(
+    (c) => c.endpoint === 'team.getReadState' && c.params.sessionId === 't1',
   ).length
   const mirrorT1 = viewFace.hooks.projectionMirror.getSnapshot()['t1' as TeamSessionId]
   // Ledger liveness: the applied frame advancing the generation (gen 1 ->
@@ -662,7 +846,7 @@ const bScenario = await (async () => {
   const ledgerLogAfterGenAdvance = a.log.filter(
     (c) => c.endpoint === 'team.getLedgerPage',
   ).length
-  return { t1Calls, mirrorT1, ledgerLogAfterGenAdvance }
+  return { t1Calls, t1ProbeCalls, mirrorT1, ledgerLogAfterGenAdvance }
 })()
 
 // ---------------------------------------------------------------------------
@@ -711,16 +895,19 @@ const eScenario = await (async () => {
   if (entryReg === undefined) throw new Error('mount test: sidebar.footer.action registration missing')
   const entryInject = (entryReg.options.inject as () => Record<string, unknown>)()
 
-  // The view face's D4-A1 pull: a direct store pull for the named team
-  // (one carrier round trip, the frozen endpoint shape).
+  // (PR #35 follow-up) the view face's D4-A1 pull RIDES THE COORDINATOR:
+  // the 'mutation' forced round probes the session first (the default
+  // authority answers team-root g1 — no applied frame yet, so the round
+  // pulls), then round-trips the frozen endpoint for the named team.
   e.enqueue('team.getProjection', () => projectionSuccess('t9', 1))
   await viewFace.pullProjection('t9')
   const t9CallsAfterPull = e.log.filter(
     (c) => c.endpoint === 'team.getProjection' && c.params.teamSessionId === 't9',
   ).length
 
-  // Single-flight regression (D-T9-5 unchanged by D4-A1): concurrent cold
-  // reads on the SAME new team coalesce into ONE carrier call.
+  // Single-flight regression (D-T9-5 unchanged by D4-A1 / the follow-up):
+  // concurrent cold reads on the SAME new session dedupe (the mount-level
+  // single-flight) into ONE probe + ONE pull — no second round at all.
   e.enqueue('team.getProjection', () => projectionSuccess('t9b', 1))
   const pendingA = viewFace.ensureProjection('t9b')
   const pendingB = viewFace.ensureProjection('t9b')
@@ -728,9 +915,15 @@ const eScenario = await (async () => {
   const t9bCalls = e.log.filter(
     (c) => c.endpoint === 'team.getProjection' && c.params.teamSessionId === 't9b',
   ).length
+  const t9bProbeCalls = e.log.filter(
+    (c) => c.endpoint === 'team.getReadState' && c.params.sessionId === 't9b',
+  ).length
 
   // The entry face carries the same pull and round-trips it for the named
-  // team (the overlay create-success path targets the NEW team's id).
+  // team (the overlay create-success path targets the NEW team's id). The
+  // host-side pair advanced while the overlay ran (the pin moves to g2) —
+  // the probe detects the change, so the entry pull is a REAL pull.
+  e.readState.pinTeam('t9', 2)
   e.enqueue('team.getProjection', () => projectionSuccess('t9', 2))
   const entryPull = entryInject.pullProjection
   await (entryPull as (id: string) => Promise<unknown>)('t9')
@@ -757,7 +950,7 @@ const eScenario = await (async () => {
     viewHasPull: typeof viewFace.pullProjection === 'function',
     entryHasPull: typeof entryPull === 'function',
     t9CallsAfterPull,
-    singleFlightT9b: pendingA === pendingB && t9bCalls === 1,
+    singleFlightT9b: t9bCalls === 1 && t9bProbeCalls === 1,
     t9CallsAfterEntryPull,
     pullRejected,
   }
@@ -872,13 +1065,14 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     ])
   })
 
-  it('tracks exactly four fiber effects, in mount order (D2 adds the open-mode reset on session switch)', () => {
-    expect(aScenario.effectsCount).toBe(4)
+  it('tracks exactly five fiber effects, in mount order (D2 adds the open-mode reset on session switch; team-view-sync-complete adds the refresh visibility gate)', () => {
+    expect(aScenario.effectsCount).toBe(5)
     expect(aScenario.effectLabels).toEqual([
       'dsh-agent-team: dictionaries',
       'dsh-agent-team: store teardown',
       'dsh-agent-team: open-mode reset on session switch',
       'dsh-agent-team: generation rebaseline',
+      'dsh-agent-team: refresh visibility',
     ])
   })
 
@@ -993,7 +1187,14 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     expect(aScenario.catalogCall).toEqual({ endpoint: 'catalog.list', params: {} })
   })
 
-  it('the cold read pulls the frozen projection endpoint for the session', () => {
+  it('the cold read probes the read-state FIRST and pulls the frozen projection endpoint for the owning root (frozen §1.2)', () => {
+    // The lightweight probe answered (the session IS the root — the
+    // default authority), and it preceded the full pull.
+    expect(aScenario.t1ProbeCall).toEqual({
+      endpoint: 'team.getReadState',
+      params: { sessionId: 't1' },
+    })
+    expect(aScenario.probePrecedesPull).toBe(true)
     expect(aScenario.t1Call).toEqual({
       endpoint: 'team.getProjection',
       params: { teamSessionId: 't1' },
@@ -1016,15 +1217,24 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     expect(ledgerState?.error !== undefined).toBe(true)
   })
 
-  it('concurrent cold reads single-flight on the resolved team id', () => {
-    expect(aScenario.singleFlightSame).toBe(true)
+  it('concurrent cold reads single-flight on the session (the mount-level D-T9-5 dedupe — NO second round at all)', () => {
+    // The second cold read returned the first round's promise (the
+    // in-flight pull hangs on purpose): exactly ONE probe + ONE pull
+    // exist — no second round was started.
+    expect(aScenario.t2ProbeCalls).toBe(1)
     expect(aScenario.t2Calls).toBe(1)
   })
 
-  it('an ordinary session cold read resolves typed failure with the mirror untouched', () => {
-    expect(aScenario.ordinaryAttempt).toBe(true)
+  it('an ordinary session cold read is the authoritative NONE probe — NO projection request (frozen §1.2 / E2)', () => {
+    // The probe answered the positively confirmed no-team (the round
+    // ends there — the ordinary session never pays the full pull).
+    expect(aScenario.ordinaryProbeCall).toEqual({
+      endpoint: 'team.getReadState',
+      params: { sessionId: 'ordinary-1' },
+    })
+    expect(aScenario.ordinaryAttempt).toBe(false)
     expect('ordinary-1' in aScenario.mirrorAfterOrdinary).toBe(false)
-    // Snapshot identity stability: the failed pull republished nothing.
+    // Snapshot identity stability: the no-team round republished nothing.
     expect(aScenario.mirrorAfterOrdinary).toBe(aScenario.mirrorAfterT1)
   })
 
@@ -1068,9 +1278,18 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
 })
 
 describe('P9-T9 (P9-S6) client mount — generation rebaseline (scenario B)', () => {
-  it('loss then restore fires exactly one rebaseline pull (the retry is cancelled)', () => {
-    // Scenario A made one t1 cold read; the restore adds exactly one pull.
+  it('loss then restore fires exactly one rebaseline PULL through the coordinator lane (the store retry is cancelled, no store-owned pull — P1-5)', () => {
+    // Scenario A made one t1 cold read; the restore round (the
+    // connection-restored forced trigger for the attached session —
+    // its probe saw the CHANGED pair pinned to g2 while the channel was
+    // down) adds exactly one pull. The store's own backoff lane
+    // contributed nothing (noteConnectionRestored clears the episode
+    // without a pull — the 1s retry never fires in the microtask drain
+    // either way).
     expect(bScenario.t1Calls).toBe(2)
+    // The restore round's probe: the cold read's probe + the restore
+    // round's probe = 2 t1 probes in the whole world so far.
+    expect(bScenario.t1ProbeCalls).toBe(2)
   })
 
   it('the restore pull applies the newer generation to the mirror', () => {
@@ -1108,7 +1327,9 @@ describe('P9-T9 (P9-S6) client mount — dshHome variants (scenario D)', () => {
       'conversation.input.dock',
       'sidebar.footer.action',
     ])
-    expect(dScenario.d1EffectsCount).toBe(4)
+    // team-view-sync-complete: the fifth fiber effect is the refresh
+    // visibility gate (present in every scenario).
+    expect(dScenario.d1EffectsCount).toBe(5)
   })
 })
 

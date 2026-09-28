@@ -139,6 +139,7 @@ export const REMOTE_TEAM_RESOLVE_CONTROL_FIELDS = [
     'teamSessionId',
 ];
 export const REMOTE_TEAM_PREPARE_ORDINARY_OPEN_FIELDS = ['teamSessionId'];
+export const REMOTE_TEAM_GET_READ_STATE_FIELDS = ['sessionId'];
 export const REMOTE_TEAM_GET_PROJECTION_FIELDS = ['teamSessionId'];
 export const REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS = [
     'afterSequence',
@@ -621,6 +622,13 @@ export function parseRemoteTeamPrepareOrdinaryOpenParams(method, params) {
         teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
     };
 }
+/** Parse `team.getReadState` params (contract v6, v6-only method). */
+export function parseRemoteTeamGetReadStateParams(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_TEAM_GET_READ_STATE_FIELDS);
+    return {
+        sessionId: parseRemoteSessionId(requiredField(method, params, 'sessionId'), 'sessionId'),
+    };
+}
 /** Parse `team.getProjection` params. */
 export function parseRemoteTeamGetProjectionParams(method, params) {
     assertNoUnknownFields(method, params, REMOTE_TEAM_GET_PROJECTION_FIELDS);
@@ -910,6 +918,9 @@ export function parseRemoteMethodParams(version, method, params) {
         case 'team.prepareOrdinaryOpen':
             // v5-only (the availability check above guarantees version === 5).
             return wrapParsed(method, parseRemoteTeamPrepareOrdinaryOpenParams(method, params));
+        case 'team.getReadState':
+            // v6-only (the availability check above guarantees version === 6).
+            return wrapParsed(method, parseRemoteTeamGetReadStateParams(method, params));
         case 'team.getProjection':
             return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params));
         case 'team.getLedgerPage':

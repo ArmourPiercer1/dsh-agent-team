@@ -45,6 +45,7 @@ import {
   LEDGER_SUMMARY_FIELDS,
   parseRootSessionId,
 } from '../../contracts/src/index.js'
+import type { TeamSessionId } from '../../contracts/src/index.js'
 import {
   destroyDir,
   FileStorageSeam,
@@ -270,8 +271,10 @@ const c2world = await (async () => {
 
     // The A30 overlay installed at construction: a direct snapshot read
     // reports all three members cold (the stub world's live set is empty).
+    // Team-scoped (PR #35 second follow-up P0-1): the snapshot reads
+    // exactly this team's durable member rows.
     const seamOverlay = root.seams.projectionLiveOverlay.current()
-    const overlaySnapshot = seamOverlay.snapshot()
+    const overlaySnapshot = seamOverlay.snapshot(ROOT_SID as TeamSessionId)
 
     return {
       world,
@@ -440,11 +443,10 @@ function makeOverlay(live: LiveFlag): ReadonlyMap<string, Record<string, any>> {
   const port = createLiveResidencyOverlay({
     repositories: c2world.repos,
     live: { isResuming: () => false, ...live } as never,
-    rootSessionId: ROOT_SID,
     now: () => FIXED_NOW,
   })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-  return port.snapshot() as ReadonlyMap<string, Record<string, any>>
+  return port.snapshot(ROOT_SID as TeamSessionId) as ReadonlyMap<string, Record<string, any>>
 }
 
 const c2overlay = await (async () => {
@@ -477,10 +479,11 @@ const c2overlay = await (async () => {
   }
   const realRows = c2world.repos.memberInstances.list(ROOT_SID)
   const fakeRepos = {
+    // Team-scoped overlay (PR #35 second follow-up P0-1): the overlay
+    // reads EXACTLY the requested team's member rows — no
+    // `teamSessions.list()` walk, no merge across owned roots (instance
+    // ids are within-team identities).
     memberInstances: { list: () => [...realRows, disposedRow, v2Row] },
-    // P9-S8 F1-lite: the overlay iterates every root the host durably owns;
-    // this unit's world is single-root (the bound ROOT_SID), so no extras.
-    teamSessions: { list: () => [] },
   }
   const port = createLiveResidencyOverlay({
     repositories: fakeRepos as never,
@@ -488,11 +491,10 @@ const c2overlay = await (async () => {
       hasLive: (sid: string) => sid === ROOT_SID || sid === 'session-child-p8s6v2',
       isResuming: () => false, // premise update (S7-R2 R2-5)
     } as never,
-    rootSessionId: ROOT_SID,
     now: () => FIXED_NOW,
   })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-  return { leaderLive, workerLive, extra: port.snapshot() as ReadonlyMap<string, Record<string, any>> }
+  return { leaderLive, workerLive, extra: port.snapshot(ROOT_SID as TeamSessionId) as ReadonlyMap<string, Record<string, any>> }
 })()
 
 it('C2.2a the leader resolves its child to the root session (hasLive(root) -> resident)', () => {

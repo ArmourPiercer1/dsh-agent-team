@@ -42,6 +42,7 @@ import {
   REMOTE_CONTRACT_VERSION_V3,
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
+  REMOTE_CONTRACT_VERSION_V6,
   REMOTE_RPC_CHANNEL,
   PushTransportLossError,
   type RemoteContractVersion,
@@ -73,10 +74,13 @@ import type { TeamRpcCarrier, TeamRpcResult } from './host-seams.js'
 
 /**
  * The Team Remote client surface (plan §6.1): the frozen unary endpoint
- * `call` plus typed wrappers for every catalog method (28 — the 23
+ * `call` plus typed wrappers for every catalog method (29 — the 23
  * frozen v1 methods + the v2-only `team.admitInitialWork` + the v3-only
  * `team.listRoots` / `team.ensureRootLive` + the v4-only
- * `team.resolveControl` + the v5-only `team.prepareOrdinaryOpen`).
+ * `team.resolveControl` + the v5-only `team.prepareOrdinaryOpen` + the
+ * v6-only `team.getReadState`; the v6 projection wrapper
+ * {@link getProjectionV6} re-addresses the v1 `team.getProjection`
+ * endpoint with the v6 freshness pair).
  *
  * **Version routing (TCM vNext §15.3)**: every EXISTING wrapper stamps
  * contract version **1** (the frozen v1 wire behavior — unchanged); the
@@ -87,7 +91,10 @@ import type { TeamRpcCarrier, TeamRpcResult } from './host-seams.js'
  * wrapper — {@link teamResolveControlV4} — stamps contract version **4**
  * (F3/F11/F9/T1.4 repair round r1 F9); the v5 wrapper —
  * {@link teamPrepareOrdinaryOpenV5} — stamps contract version **5** (C1
- * restart-0.1.7-rc.1 recovery, guide §10.2). The generic {@link call}
+ * restart-0.1.7-rc.1 recovery, guide §10.2); the v6 wrappers —
+ * {@link getProjectionV6} and {@link getReadStateV6} — stamp contract
+ * version **6** (team-view-sync-complete: the projection freshness pair
+ * + the per-session durable read-state query). The generic {@link call}
  * also defaults to version 1.
  */
 export interface TeamRemoteClient {
@@ -199,6 +206,35 @@ export interface TeamRemoteClient {
    *   ordinary open to permit.
    */
   teamPrepareOrdinaryOpenV5(teamSessionId: string): Promise<RemoteResponse>
+  /**
+   * `team.getProjection` (contract v6, team-view-sync-complete) — the
+   * whole-projection pull WITH the v6 freshness pair: on success
+   * `data.projection` carries the frozen projection shape PLUS
+   * `durableGeneration` (=== the durable `generation`) and
+   * `liveToken` (the host's deterministic semantic-live-state token —
+   * frozen decisions 3 + 4). The client freshness identity is the PAIR
+   * (durable generation, live token): a strictly newer durable
+   * generation advances the durable view (ledger refresh); an equal
+   * durable generation with a changed live token refreshes the live
+   * overlay only (no ledger refresh); both equal is a duplicate.
+   * Stamps contract version 6 (the v1 wrapper {@link getProjection}
+   * keeps stamping version 1 — v1–v5 wire behavior is unchanged).
+   */
+  getProjectionV6(teamSessionId: string): Promise<RemoteResponse>
+  /**
+   * `team.getReadState` (contract v6, v6-only method,
+   * team-view-sync-complete) — the per-session durable read-state
+   * query: resolves ONE DSH session's authoritative Team affiliation
+   * (`team-root` / `team-member` / `none`) + the owning TeamSession's
+   * durable generation. The closed v6 param set is `{ sessionId }`
+   * ONLY. On success `data` is the CLOSED value (every field present,
+   * `null` cells typed): a `none` answer rests only on a positively
+   * confirmed no-affiliation; EVERY storage/integrity failure arrives
+   * as the typed `RemoteResponse` error (fail closed — never a silent
+   * `none`). Stamps contract version 6.
+   * @param sessionId - the DSH session id to classify.
+   */
+  getReadStateV6(sessionId: string): Promise<RemoteResponse>
   /** `member.create` — admit one member instance. */
   memberCreate(params: RemoteMemberCreateParams): Promise<RemoteResponse>
   /** `member.send` — first message to a member instance. */
@@ -315,6 +351,17 @@ export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClien
         { teamSessionId },
         REMOTE_CONTRACT_VERSION_V5,
       ),
+    // team-view-sync-complete (remote contract v6) — the v6 freshness-pair
+    // projection pull (the v6 handler answers the SAME endpoint with the
+    // `durableGeneration` + `liveToken` cells inside data.projection).
+    getProjectionV6: (teamSessionId) =>
+      callWithVersion('team.getProjection', { teamSessionId }, REMOTE_CONTRACT_VERSION_V6),
+    // team-view-sync-complete (remote contract v6) — the v6-only
+    // per-session durable read-state query (fail-closed on the host side:
+    // a `none` only on positively confirmed no-affiliation; storage /
+    // integrity failures arrive as the typed error).
+    getReadStateV6: (sessionId) =>
+      callWithVersion('team.getReadState', { sessionId }, REMOTE_CONTRACT_VERSION_V6),
     memberCreate: (params) => call('member.create', params),
     memberSend: (params) => call('member.send', params),
     memberFollowup: (params) => call('member.followup', params),

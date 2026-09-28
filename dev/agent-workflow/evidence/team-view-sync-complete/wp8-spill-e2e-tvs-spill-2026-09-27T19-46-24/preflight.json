@@ -1,0 +1,11 @@
+{
+  "head": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "wtBranch": "fix/team-view-sync-complete-20260927",
+  "wtHead": "581f85e3b18fb335c1f942a4915a2ee1f1f8b147",
+  "hostPort": 3182,
+  "mockPort": 3497,
+  "stablePre": {
+    "http://127.0.0.1:3080/": 401,
+    "http://127.0.0.1:3180/": 401
+  }
+}

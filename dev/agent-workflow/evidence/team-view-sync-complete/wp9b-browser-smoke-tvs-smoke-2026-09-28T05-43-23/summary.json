@@ -1,0 +1,7 @@
+{
+  "run": "wp9b served-bundle browser smoke — attempt 2 (NEGATIVE, parser semantics)",
+  "stamp": "2026-09-28T05-43-23",
+  "result": "Client row was appended to the seeded world profile as a TOP-LEVEL '- id: dsh-agent-team-client' mapping. The profile-patch parser treats a top-level mapping as a PatchOptions entry targeting an absent row id and silently drops it (per-entry Loader warning; the mapping form is ignored — 0.1.7 upgrade evidence). Boot table stayed at 62 upstream-only entries; host plugin inventory showed include:dsh-agent-team + include:p6t6-team-tools active, no client row; no bundle delivered, no 团队 tab.",
+  "fix": "Row moved into a '- insert:' list entry (attempt 3 = PASS). Kit's rewriteWorldProfile() now appends the row in insert form with a comment pinning this parser trap.",
+  "artifacts": "instance.log (token scrubbed), boot-index.html (62-entry boot table), pinv.json (host inventory), cookies.txt (scrubbed), smoke-host.json"
+}

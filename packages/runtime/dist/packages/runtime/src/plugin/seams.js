@@ -137,13 +137,14 @@ export function createRemoteQueryCommandCompletionSeam() {
  * The projection overlay port the production root hands to
  * `createProjectionService`: a DELEGATING proxy over the A30 seam.
  *
- * - Before install: `snapshot()` throws the stable
+ * - Before install: `snapshot(teamSessionId)` throws the stable
  *   {@link S6_SEAM_NOT_INSTALLED_CODES.PROJECTION_LIVE_OVERLAY_NOT_INSTALLED}
  *   — `project()` fails closed (the proxy throws synchronously inside
  *   `project`, so every projection attempt is rejected, never partial);
- * - After install: `snapshot()` delegates to the installed S6 overlay
- *   (activate-on-install: the SAME proxy serves live projections with no
- *   service re-wiring).
+ * - After install: `snapshot(teamSessionId)` delegates to the installed S6
+ *   overlay (activate-on-install: the SAME proxy serves live projections
+ *   with no service re-wiring) — the Team-scoped argument is passed
+ *   through verbatim (PR #35 second follow-up P0-1).
  *
  * @param seam - the A30 install seam (the production root's
  *   `seams.projectionLiveOverlay`).
@@ -151,8 +152,8 @@ export function createRemoteQueryCommandCompletionSeam() {
  */
 export function createFailClosedOverlayProxy(seam) {
     return {
-        snapshot() {
-            return seam.current().snapshot();
+        snapshot(teamSessionId) {
+            return seam.current().snapshot(teamSessionId);
         },
     };
 }

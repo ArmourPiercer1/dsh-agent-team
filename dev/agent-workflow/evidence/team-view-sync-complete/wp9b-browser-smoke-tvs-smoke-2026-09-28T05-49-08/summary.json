@@ -1,0 +1,43 @@
+{
+  "run": "wp9b served-bundle browser smoke — attempt 3 (POSITIVE)",
+  "stamp": "2026-09-28T05-49-08",
+  "host": "node apps/cli/lib/bin.js web --port 3182 --no-open (worktree packages, DSH_HOME = tests/homes/tvs-smoke-2026-09-28T05-49-08 seeded from the mpr world)",
+  "clientRowDiscovery": "The mpr world profile carries only the HOST row. The browser gets the team client half only via a second CLIENT row (S8 pattern: composition-shim inert node half + package.json dsh.client.platform=web + exports['./client'] = client-bundle.js). Attempts 1 and 2 failed for exactly this reason (see their summary.json). The row MUST be appended in the profile patch's '- insert:' list — a top-level '- id:' mapping is parsed as a PatchOptions entry targeting an absent row id and silently dropped (per-entry Loader warning; boot table stays at 62 upstream entries).",
+  "bootTable": "63 entries incl. @dsh-agent-team/client rev d93d34e0c94f (served index.html combo preload includes @dsh-agent-team/client/client.js)",
+  "bundle": "packages/client/composition-shim/client-bundle.js rebuilt from current source this session (1089104 B; follow-up markers present: connection-restored=6, recordSessionReadState=2, OWNERSHIP_CONFLICT=1, liveToken=64, noteConnectionRestored=5)",
+  "browser": "Chromium via bsk session aaor, tab 757204578; network capture run d8ee25b166282 (smoke-net2) spanned the reload + all scenarios",
+  "scenarios": {
+    "E3_root_cold_poll": {
+      "verdict": "PASS",
+      "evidence": "Reload with T1 as first session: n1..n50 = getReadState stream at exactly ~3000ms cadence (deltas 2995-3008ms); exactly ONE team.getProjection for the whole window: n37 v6 params {teamSessionId: session-mpr-t1-mpr-2026-09-27T08-35-52} (194 B request, 7085 B response) + one team.getLedgerPage (n42, 16138 B). Read-state response (n1, 530 B): {relation:'team-root', teamSessionId:T1, memberInstanceId:null, disposed:false, durableGeneration:32, liveToken:'lt-v1-7770fae9...'}. No further projection despite 6+ additional ticks — the lightweight-authority invariant holds in the served bundle."
+    },
+    "E1_member_cold_open": {
+      "verdict": "PASS",
+      "evidence": "Contaminated variant: with T1 root already open, opened the member child session-team-child-796562d4284593654607730948ad2b04 (w-deleg, inst-17legoh0ti27) from the sidebar; its coordinator attached a second read-state stream (547 B responses, distinct phase) while the root stream (530 B) continued; member TeamView rendered. Member read-state (n93): {relation:'team-member', teamSessionId:T1, memberInstanceId:'inst-17legoh0ti27', disposed:false, durableGeneration:32, liveToken:'lt-v1-7770fae9...'} — same liveToken as the root (one live epoch per team). PURE variant: reload with the member as the first session (no prior root visit): exactly one getReadState(member) (547 B, team-member), then exactly one team.getProjection for the ROOT id (n143, v6, 7085 B), then one team.getLedgerPage (n148, 16138 B), then clean 3s read-state-only polling. Ownership resolved through read-state, projection pulled once against the resolved root.",
+      "screenshots": ["e1b-member-page.png"]
+    },
+    "E2_ordinary_zero_state": {
+      "verdict": "PASS",
+      "evidence": "All pre-existing mpr sessions turned out to be team-bound (team_domain.json team_sessions = boot, t1, ta, tb — four roots; the six child sessions are members), so a fresh blank session was created in the disposable smoke world via the UI (new-session composer -> workspace deepseek-harness-test-use -> send 'ping'; mock answered deterministically 'smoke host: no work expected'; session-b14ec2a9-5245-439d-a850-c838d46bac7f, banner '标准模式'). 团队 tab renders the ZERO-STATE face: '正在加载团队信息…' resolves to a persisted-team directory (boot/t1/ta/tb with blueprint@revision + member counts) + '从此处开始团队' CTA; no timeline/成员组/治理/生效配置. Network: read-state stream 423 B responses {relation:'none', teamSessionId:null, memberInstanceId:null, disposed:false, durableGeneration:null, liveToken:null} at 3s cadence, each paired with team.listRoots (1364 B); ZERO team.getProjection for the ordinary session id — no periodic projection of any kind.",
+      "screenshots": ["scratch-session-created.png", "e2-ordinary-zero-state.png"]
+    },
+    "E4_unit_only": {
+      "verdict": "N/A (unit-level)",
+      "evidence": "Connection-restore lane (noteConnectionRestored: clear episode only, no pull; baselines untouched) and mount single-flight (ensureProjection D-T9-5) are covered by client unit tests (team-projection-store.spec, client-plugin-mount.spec scenarios A/B/E, team-view spec coordinator face) and by E2E run-15 (VERDICT PASS). Not separately drivable from the browser without killing the host mid-scenario, which would destroy the other evidence; noted honestly."
+    },
+    "E5_manual_refresh": {
+      "verdict": "PASS",
+      "evidence": "On the T1 团队 tab, clicked 刷新团队视图: exactly one team.getLedgerPage (n324, v1 params {teamSessionId:T1, afterSequence:0, limit:50}, 16138 B) + one fresh getReadState probe + one listRoots, all within 16ms of the click; afterwards the stream returned to pure 3s read-state polling (no projection spam, no second ledger page). This is the P1-4 BEHAVIOR CHANGE vs Phase 2 'manual no-op ledger': manual refresh now performs an explicit ledger re-read. Automatic refresh remains appliedGeneration-advance-only (live-only apply never refreshes the ledger).",
+      "screenshots": ["e5-manual-refresh-t1.png"]
+    }
+  },
+  "bonus": {
+    "ta_second_root": "session-mpr-ta is itself a team root (its own team: leader role-a + worker w-a). Its cold round: read-state 529 B {relation:'team-root', teamSessionId:ta, durableGeneration:9, liveToken:'lt-v1-623ddd76...'} — a DIFFERENT liveToken than T1's lt-v1-7770fae9... — two independent live epochs for two teams in one world, exactly the v6 authority model; cold round = 1 read-state + 1 getProjection (3216 B) + 1 getLedgerPage (4116 B), then 3s read-state-only polling.",
+    "mount_lru": "The T1 mount was evicted while the scratch session was open (its tick phase …66x stopped; a fresh cold probe n315 at a new phase …376 on reopen), consistent with the D-T9-5 mount pool; the projection frame itself was served from the mirror store without a re-pull."
+  },
+  "negatives": {
+    "attempt1_05-31-39": "No client row in the world profile -> boot table 62 entries, zero /team-remote traffic, no 团队 tab, dynamic inventory []. Negative by construction.",
+    "attempt2_05-43-23": "Client row appended as a top-level '- id:' mapping -> silently dropped by the profile-patch parser (PatchOptions target for an absent row id; per-entry Loader warning). Boot table still 62 upstream-only entries; host inventory showed include:dsh-agent-team + include:p6t6-team-tools active but no client row. Negative by parser semantics (upstream packages/boot/app-boot parsePatchList/anchorInsertedPluginNames visit only patch.insert lists)."
+  },
+  "VERDICT": "PASS — served bundle implements the frozen read-state-driven cadence (visible session -> every 3s team.getReadState v6 -> authoritative ownership -> durableGeneration+liveToken comparison -> team.getProjection v6(root) only when needed), across root / member / zero-state / manual-refresh faces in a real Chromium against a real dsh web host."
+}

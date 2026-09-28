@@ -1,0 +1,62 @@
+{
+  "run": "wp9b served-bundle browser smoke — PR #35 FINAL closeout (round 4: E1 / E2≡E7 / E5 / E6 + token-migration positive AND negative cases + the single-tested-commit evidence binding that fixes the reviewer's 'worktreeHead != final tested commit' finding)",
+  "stamp": "2026-09-28T09:36–09:49Z (host world tvs-smoke-2026-09-28T09-36-36, ports 3182 host / 3497 mock)",
+  "testedCodeHead": "f2819eec4ef7431958ab3a7dc8fca97f591a7219 (the pre-closeout body-snapshot commit; the closeout diff is TEST-ONLY — COLD-E4 in packages/client/test/team-refresh-coordinator.test.ts and the two-team leader-collision regression in packages/runtime/test/s6t-live-token.test.ts — so the served client bundle is byte-identical to rounds 2–3)",
+  "evidenceCommit": "recorded in the PR #35 body and graph.yaml (the single evidence+bookkeeping commit that lands this directory AND the restored spill run-18 directory together)",
+  "commitBinding": {
+    "note": "FINAL closeout fix (closeout guide §5–§7): round 3's evidence was bound to TWO different worktree heads (spill E2E run-17 @ 763a0b3d, browser smoke @ 3d05d3a2) — the reviewer flagged 'worktreeHead != final tested commit'. This round both final runs executed on the SAME clean commit.",
+    "spillE2E": "run-18 (sibling dir wp8-spill-e2e-tvs-spill-2026-09-28T09-35-17; stashed under gitignored tests/homes/.run18-stash/ DURING this smoke to keep the worktree porcelain empty, restored before the evidence commit) ran on worktree HEAD f2819eec with git status --porcelain == '' — the C0 hard gate asserted it; summary.json there records {worktreeHead: f2819eec…, worktreePorcelain: ''}. VERDICT PASS C0–C7.",
+    "browserSmoke": "this run ran on worktree HEAD f2819eec with porcelain '' (smoke-host.json hard-gated at preflight, before any run artifact existed). SINGLE TESTED COMMIT ACHIEVED: f2819eec for both the spill E2E and the browser smoke.",
+    "bundle": "packages/client/composition-shim/client-bundle.js = 1105475 B sha256 e690ad903e0bff765316aafacc23c28b895eef4c782c5b8da06fa136b7f30a4d — byte-identical to rounds 2 and 3 (the closeout diff is test-only); smoke-host.json clientBundle records exactly these bytes, which the browser loaded"
+  },
+  "host": "node apps/cli/lib/bin.js web --port 3182 --no-open (worktree packages at f2819eec, DSH_HOME = seeded mpr world copy tvs-smoke-2026-09-28T09-36-36; kit-managed spill kit auto-wrote instance.log + instance.log.scrubbed; mock model on 3497 answering 'smoke host: no work expected'); 3181/3496 were foreign pre-existing listeners, so the kit took 3182/3497",
+  "browser": "Chromium via bsk session msfv, tab 757204596; 内测声明 dialog dismissed first (继续); network capture run dfa59223e7651 (smoke-r4) started BEFORE the first team page load and stopped after the negative-case wire probe; network-capture.json is the FULL stopped export (303 requests, nothing dropped); team-remote totals below are computed from that export",
+  "E1_cold_member_open": {
+    "verdict": "PASS",
+    "how": "UI-driven: (a) the seeded T1 member session session-team-child-d07982a4… auto-restored as the initial page load (T1 root COLD at page load) → its 团队 tab; (b) member session session-team-child-710e2ae5… (Team TA root, leader COLD — never activated in this run) opened from the sidebar ([team-work requestToken=tok-r8-a-deleg-s…] item) → its 团队 tab; (c) for sidebar ID-mapping the TB root session was also opened once",
+    "wire": "each cold-opened team surface pulled EXACTLY ONCE: T1 member open → readState → getProjection seq 234 @ 09:40:00.159 (7085 B, T1 root) → getLedgerPage seq 257 (16138 B); TB root open → getProjection seq 2212 @ 09:43:07.610 (3216 B) → getLedgerPage seq 2215 (4116 B); TA member open → getProjection seq 2227 @ 09:43:29.787 (3216 B, TA root) → getLedgerPage seq 2230 (4116 B)",
+    "dom": "full team frame rendered on each (时间线/成员组/治理 with compatibility + policy + event sections); the sidebar session-search box does not substring-match requestToken-bearing titles (same documented quirk as round 3) — items were identified by opening candidates and reading the session-id banner instead"
+  },
+  "E2_E7_ordinary_session": {
+    "verdict": "PASS",
+    "how": "UI-driven: fresh ordinary session (新建会话 → directory picker 主目录→dsh-plugins→dsh-agent-team→tests→deepseek-harness-test-use→打开 → 'ping' → mock answered 'smoke host: no work expected'; mock.log records the two model calls of that one user turn, same as round 3); its 团队 tab opened",
+    "dom": "the Team tab renders the AUTHORITATIVE no-team zero state: paragraph '已确认当前会话未加入团队' (view.ownership.none) + the '已持久化的团队' store list (all four persisted teams: boot/t1/ta/tb with blueprint id, workspace, member count, updatedAt) + '刷新团队视图'; NO loading line, NO team frame",
+    "wire": "ordinary-session read-state stream at the 3s cadence, every response the closed none cell, plus listRoots for the persisted-roots list; ZERO team.getProjection attributable to the ordinary session (the projection total for the whole capture stayed exactly 4 — see regression_invariants)"
+  },
+  "E5_manual_refresh": {
+    "verdict": "PASS",
+    "how": "UI-driven: back on a team surface — the T1 ROOT session view (session-mpr-t1-…, re-opened after having been detached when switching to the ordinary session). The re-open re-rendered the full frame from the applied identity with NO projection re-pull (remount evidence). Then clicked '刷新团队视图'.",
+    "wire": "forced readState re-probe + EXACTLY ONE getLedgerPage (seq 2382 @ 09:48:12.607, 16138 B — byte-size-identical to the first T1 ledger pull, deterministic world) + listRoots; NO projection re-pull — the applied frame's liveToken still equals the live token (E6's activation happened before the open, so the cold/migration pulls already carried the current token)"
+  },
+  "E6_two_team_leader_isolation": {
+    "verdict": "PASS",
+    "how": "wire-level over the LIVE host (script e6-two-team-leader-isolation.mjs, run on the fresh world): Team A = session-mpr-t1-…, Team B = session-mpr-ta-… (both leaders inst-leader of their own team — the collision the regression test covers)",
+    "evidence": "E6-0 team.ensureRootLive(A) (v3 public seam) = the only activation; B never touched. A: leader {residency:'resident', lastActivityAt:2026-09-28T09:41:13.223Z}; B: {residency:'cold'}. Per team: projection.liveToken == readState.liveToken AND (durableGeneration, liveToken) identical on both surfaces (A gen 32 / B gen 9). token(A)=lt-v1-022b65980dac52… != token(B)=lt-v1-623ddd76de80c0… (a consequence of different semantic live states, NOT the claim). Both read-states name their own teamSessionId — zero cross-talk. The tokens are IDENTICAL to the round-2 and round-3 runs — token derivation is deterministic over the same seeded state.",
+    "resultFile": "e6-two-team-leader-isolation-result-closeout.txt (sibling dir)"
+  },
+  "tokenMigration": {
+    "positiveCase": "observed live THIS run: the E6 activation flipped T1's live state cold→resident (token lt-v1-623ddd76…→era token to lt-v1-022b6598…); the OPEN T1 team view (member d07982a4, mounted since page load) re-pulled EXACTLY ONCE on its next 3s poll — getProjection seq 498 @ 09:41:12.163 (7133 B) — then stayed stable on read-state polls only. The round-2 seq-599 pattern, re-confirmed on the closeout tip.",
+    "negativeCase_live": "AFTER all browser observation, team.ensureRootLive(T1) was re-invoked wire-side (v3, the e6 script's second invocation). T1's leader was already resident → the live state is unchanged → the liveToken is UNCHANGED (lt-v1-022b6598… before == after; TA stayed lt-v1-623ddd76…) → the open T1 team view's stream shows ZERO additional getProjection (only 3s readState polls) — the stream correctly does NOT re-pull when the token is unchanged (no spurious pull)"
+  },
+  "regression_invariants_observed": {
+    "readState_cadence": "the active scope polled team.getReadState at the 3s cadence throughout the ~9-minute capture (165 readState calls; mount probes add short bursts around session switches, all at 200) with no drift and no 5xx",
+    "projection_pulls_total": "exactly 4 in the whole capture: seq 234 (T1 root cold open), seq 498 (T1 root token-migration re-pull after E6), seq 2212 (TB root cold open), seq 2227 (TA root cold open) — one per cold-opened team surface plus the single legitimate migration pull; 0 for the ordinary session, 0 on the T1-root remount, 0 on the E5 refresh, 0 after the ensureRootLive re-activation",
+    "ledgerPage_pulls_total": "exactly 4: seq 257 (T1 frame load, 16138 B), seq 2215 (TB frame load, 4116 B), seq 2230 (TA frame load, 4116 B), seq 2382 (E5 manual refresh on T1, 16138 B)",
+    "listRoots_total": "60 (zero-state persisted-roots list + mount/refresh fetches of the team list) — read-only, no side effects",
+    "v6_wire_shape": "all team traffic is the v6 envelope {type:'client-request', rpcId, method, payload:{version:6, params}} (team.getReadState v6 {sessionId}, team.getProjection v6 {teamSessionId}) plus team.listRoots; no v1–v5 traffic; no 5xx anywhere; the only 8 errors are cosmetic 404 /open-in-app/icon/vscode requests (upstream host chrome, unrelated to this PR)",
+    "capture_totals": "303 requests captured (nothing dropped), 233 team-remote of them; window 2026-09-28T09:39:59Z → 09:49:02Z"
+  },
+  "E9_E10_deterministic_units": {
+    "E9": "packages/runtime/test/s6t-remote-v6.test.ts §3.2 (j): one v6 getProjection with a two-snapshot fake materializes the snapshot EXACTLY ONCE (snapshotCalls === 1) and both served surfaces read the SAME snapshot — PASS in the runtime suite (2224P|18F, the 18F pre-existing and unrelated)",
+    "E10": "the COLD-E deterministic coordinator gates (packages/client/test/team-refresh-coordinator.test.ts, 24 tests incl. the NEW COLD-E4 — trigger→attach→tick in the same entry proves readState call count stays coalesced and no second in-flight round starts; the same-SessionEntry proof: the cold round PUBLISHES its apply, which a replaced entry would stay silent about per COLD-E2 semantics) — PASS in the client suite (778 tests, 0 fail)",
+    "leaderCollision": "the NEW two-team leader-collision regression (packages/runtime/test/s6t-live-token.test.ts, describe 'two-team leader collision regression (closeout guide §4)'): two teams sharing the literal member instanceId 'inst-leader' get DIFFERENT live tokens (identity space is (teamSessionId, instanceId), not a global Map<instanceId, state>), while identical member sets yield identical tokens (determinism) — PASS (12 tests in the file)"
+  },
+  "artifacts": [
+    "network-capture.json (full stopped export, 303 requests)",
+    "smoke-host.json (commit binding: worktreeHead=f2819eec, porcelain '', clientBundle 1105475 B e690ad90…, stablePre probes)",
+    "instance.log + instance.log.scrubbed — launch token scrubbed from both; kit auto-spilled",
+    "mock.log (2 model calls for the one 'ping' turn — same as round 3)",
+    "teardown.json (hand-written; kit wrote no teardown.json this run; post-state probes verified)",
+    "e6-two-team-leader-isolation.mjs + e6-two-team-leader-isolation-result-closeout.txt (sibling dir)"
+  ]
+}

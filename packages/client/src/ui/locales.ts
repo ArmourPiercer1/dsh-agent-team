@@ -24,6 +24,20 @@ export type TeamKey =
   | 'view.projection.notLoaded'
   | 'view.projection.foreign'
   | 'view.projection.failed'
+  // PR #35 second follow-up (P1-A): the AUTHORITATIVE ownership read-state
+  // lines — the read-state outcome (not the projection store) decides the
+  // zero-state conclusion: a settled `ok/none` is DEFINITIVE (it wins over
+  // any stale mirror frame); a failed probe (remote-error / malformed /
+  // transport-loss) renders its own line (never a permanent loading); the
+  // no-probe-yet case says the ownership read is in flight; a failed probe
+  // over a LAST GOOD frame renders the stale banner on the team face.
+  | 'view.ownership.loading'
+  | 'view.ownership.none'
+  | 'view.ownership.teamLoading'
+  | 'view.ownership.error'
+  | 'view.ownership.malformed'
+  | 'view.ownership.transport'
+  | 'view.ownership.stale'
   | 'view.refresh'
   | 'view.refreshing'
   | 'view.refresh.failed'
@@ -279,6 +293,15 @@ export const zh: Record<TeamKey, string> = {
   'view.projection.notLoaded': '团队信息尚未成功加载，正在重试',
   'view.projection.foreign': '当前会话未能关联到团队（可能是普通会话）',
   'view.projection.failed': '团队信息加载失败',
+  // PR #35 second follow-up (P1-A): the authoritative ownership read-state
+  // lines (see the key list above).
+  'view.ownership.loading': '正在读取团队归属…',
+  'view.ownership.none': '已确认当前会话未加入团队',
+  'view.ownership.teamLoading': '正在加载团队状态…',
+  'view.ownership.error': '团队归属读取失败 — {code}: {message}',
+  'view.ownership.malformed': '团队归属响应异常 — {reason}',
+  'view.ownership.transport': '无法读取团队归属，等待连接恢复',
+  'view.ownership.stale': '团队归属刷新失败，当前显示上次成功的数据',
   'view.refresh': '刷新团队视图',
   'view.refreshing': '正在更新…',
   'view.refresh.failed': '更新失败，当前显示上次成功的数据',
@@ -528,6 +551,15 @@ export const en: Record<TeamKey, string> = {
   'view.projection.notLoaded': 'Team info has not loaded yet — retrying',
   'view.projection.foreign': 'This session could not be linked to a team (it may be an ordinary session)',
   'view.projection.failed': 'Failed to load team info',
+  // PR #35 second follow-up (P1-A): the authoritative ownership read-state
+  // lines (English).
+  'view.ownership.loading': 'Reading team ownership…',
+  'view.ownership.none': 'Confirmed: this session is not part of a team',
+  'view.ownership.teamLoading': 'Loading team state…',
+  'view.ownership.error': 'Team ownership read failed — {code}: {message}',
+  'view.ownership.malformed': 'Malformed team ownership response — {reason}',
+  'view.ownership.transport': 'Cannot read team ownership; waiting for the connection to restore',
+  'view.ownership.stale': 'Team ownership refresh failed; showing the last successfully loaded data',
   'view.refresh': 'Refresh team view',
   'view.refreshing': 'Refreshing…',
   'view.refresh.failed': 'Update failed — showing the last successfully loaded data',

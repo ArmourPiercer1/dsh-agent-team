@@ -1,0 +1,6 @@
+{
+  "run": "wp9b served-bundle browser smoke — attempt 1 (NEGATIVE, by construction)",
+  "stamp": "2026-09-28T05-31-39",
+  "result": "No 团队 tab, zero /team-remote traffic, dynamic client inventory []. Root cause: the mpr world profile carries only the HOST row (packages/runtime/dist/.../host.js); the team client half is never delivered. Fix path: append the S8-pattern client row (composition-shim: inert node index.js + package.json dsh.client.platform=web + exports['./client']=client-bundle.js) to the seeded world profile.",
+  "artifacts": "instance.log (token scrubbed), boot-index.html (62-entry boot table, no @dsh-agent-team/client), smoke-host.json"
+}

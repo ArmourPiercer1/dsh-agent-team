@@ -1,0 +1,4 @@
+mock: listening on 127.0.0.1:3497
+mock: 1 [messages] text reply (39 chars): "tvs-title-tvs-spill-2026-09-28T08-50-05"
+mock: 2 [messages] tool-call reply: bash
+mock: 3 [messages] text reply (75 chars): "done tvs-spill-2026-09-28T08-50-05: the command printed roughly 300KB of x."

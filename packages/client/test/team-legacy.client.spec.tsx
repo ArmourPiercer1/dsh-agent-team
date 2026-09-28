@@ -189,6 +189,7 @@ function viewProps(
     useProjectionMirror: selector => selector(projectionMirror),
     useTeamLedgers: selector => selector(teamLedgers),
     useProjectionStates: selector => selector({}),
+    useSessionReadStates: selector => selector({}),
     ensureProjection: vi.fn(() => Promise.resolve()),
     // D4-A1: the post-mutation pull (unused by the legacy fixtures here).
     pullProjection: vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const)),
@@ -275,8 +276,10 @@ describe('TeamView legacy zero state', () => {
     expect(view.container.querySelector('[data-legacy-zero]')).toBeNull()
     expect(view.container.querySelector('[data-legacy-note]')).toBeNull()
     expect(view.container.querySelector('[data-legacy-banner]')).toBeNull()
-    // repair 20260927 (S1-C1): the cold open shows the LOADING line, never a definitive 'no team' (en dictionary here).
-    expect(screen.getByText('Loading team info…')).toBeTruthy()
+    // PR #35 second follow-up (P1-A): the no-settled-probe cold open shows
+    // the OWNERSHIP-LOADING line (the read-state probe is the authority;
+    // en dictionary here), never a definitive 'no team'.
+    expect(screen.getByText('Reading team ownership…')).toBeTruthy()
     expect(view.container.querySelector('[data-intent-start-here]')?.textContent).toBe('Start Team from Here')
     expect(props.ensureProjection).toHaveBeenCalledTimes(1)
   })
@@ -323,8 +326,10 @@ describe('TeamView legacy zero state', () => {
     expect(view.container.querySelector('[data-legacy-zero]')).toBeNull()
     expect(view.container.querySelector('[data-legacy-note]')).toBeNull()
     expect(view.container.querySelector('[data-legacy-banner]')).toBeNull()
-    // repair 20260927 (S1-C1): the cold open shows the LOADING line, never a definitive 'no team' (en dictionary here).
-    expect(screen.getByText('Loading team info…')).toBeTruthy()
+    // PR #35 second follow-up (P1-A): the no-settled-probe cold open shows
+    // the OWNERSHIP-LOADING line (the read-state probe is the authority;
+    // en dictionary here), never a definitive 'no team'.
+    expect(screen.getByText('Reading team ownership…')).toBeTruthy()
     expect(view.container.querySelector('[data-intent-start-here]')?.textContent).toBe('Start Team from Here')
     expect(props.ensureProjection).toHaveBeenCalledTimes(1)
     expect(props.ensureProjection).toHaveBeenCalledWith(OUTSIDER)

@@ -49,16 +49,18 @@ export interface RemoteMethodSpec {
 /**
  * The closed Remote contract method catalog — a VERSIONED UNION
  * (TCM vNext §15.3, extended by the Team D1-D6 repair v2 D1 v3 bump,
- * the F3/F11/F9/T1.4 repair round r1 F9 v4 bump, and the C1
- * restart-0.1.7-rc.1 recovery v5 bump — guide §10.2): the 23 frozen v1
- * methods plus the v2-only `team.admitInitialWork` plus the v3-only
- * `team.listRoots` / `team.ensureRootLive` plus the v4-only
- * `team.resolveControl` plus the v5-only `team.prepareOrdinaryOpen`
- * (28 methods total). Key = endpoint = method name (dotted:
- * `<category>.<action>`). Per-version availability is the closed
- * {@link REMOTE_V2_ONLY_METHODS} + {@link REMOTE_V3_ONLY_METHODS} +
- * {@link REMOTE_V4_ONLY_METHODS} + {@link REMOTE_V5_ONLY_METHODS} sets
- * below; per-method param schemas are version-aware in `params.ts`.
+ * the F3/F11/F9/T1.4 repair round r1 F9 v4 bump, the C1
+ * restart-0.1.7-rc.1 recovery v5 bump — guide §10.2, and the
+ * team-view-sync-complete v6 bump): the 23 frozen v1 methods plus the
+ * v2-only `team.admitInitialWork` plus the v3-only `team.listRoots` /
+ * `team.ensureRootLive` plus the v4-only `team.resolveControl` plus the
+ * v5-only `team.prepareOrdinaryOpen` plus the v6-only
+ * `team.getReadState` (29 methods total). Key = endpoint = method name
+ * (dotted: `<category>.<action>`). Per-version availability is the
+ * closed {@link REMOTE_V2_ONLY_METHODS} + {@link REMOTE_V3_ONLY_METHODS}
+ * + {@link REMOTE_V4_ONLY_METHODS} + {@link REMOTE_V5_ONLY_METHODS} +
+ * {@link REMOTE_V6_ONLY_METHODS} sets below; per-method param schemas
+ * are version-aware in `params.ts`.
  */
 export declare const REMOTE_METHOD_CATALOG: Readonly<Record<string, RemoteMethodSpec>>;
 /** Every method name, in deterministic (sorted) order. */
@@ -108,6 +110,19 @@ export declare const REMOTE_V4_ONLY_METHODS: readonly string[];
  */
 export declare const REMOTE_V5_ONLY_METHODS: readonly string[];
 /**
+ * The closed set of catalog methods that exist ONLY in remote contract v6
+ * (team-view-sync-complete, Phase 2 — frozen design decisions,
+ * 2026-09-28): the authoritative per-session read-state query
+ * `team.getReadState` — the TeamDomain durable rows resolve a session to
+ * `team-root` / `team-member` / `none` (a disposed member still resolves
+ * to the member relation, marked disposed; only a successful read that
+ * positively confirms no affiliation may answer `none`; every
+ * storage/integrity failure fails closed with a typed error — never a
+ * silent `none`). READ-ONLY: no repository writes, no agent effects, no
+ * generation advance. Every v1/v2/v3/v4/v5 method stays available in v6.
+ */
+export declare const REMOTE_V6_ONLY_METHODS: readonly string[];
+/**
  * Is `method` a catalog method available in remote contract `version`?
  *
  * This is the version-aware membership check the version-aware param
@@ -119,7 +134,7 @@ export declare const REMOTE_V5_ONLY_METHODS: readonly string[];
  *
  * @param method - the candidate method name (must be in the catalog).
  * @param version - the request's contract version (supported:
- *   1 | 2 | 3 | 4 | 5).
+ *   1 | 2 | 3 | 4 | 5 | 6).
  */
 export declare function isRemoteMethodAvailableInVersion(method: string, version: number): boolean;
 /**

@@ -1,0 +1,11 @@
+{
+  "stablePost": {
+    "http://127.0.0.1:3080/": 401,
+    "http://127.0.0.1:3180/": 401
+  },
+  "porcelainPost": "",
+  "headPost": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "portFreeHost": true,
+  "portFreeMock": true,
+  "world": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/tvs-spill-2026-09-28T09-35-17"
+}

@@ -537,6 +537,96 @@ const restoredPullLossScenario = await (async () => {
 })()
 
 /**
+ * (PR #35 follow-up, P1-5) `noteConnectionRestored` — the SPLIT restore
+ * notice: the loss episode is cleared (the pending retry cancelled, the
+ * attempt counter reset, the `reconnecting` status closed — an applied
+ * frame is `ready` again) but NO store-owned pull fires (the invalidation
+ * pull is the coordinator's connection-restored round). The staleness
+ * baseline is untouched: the IN-FLIGHT pull's late loss still opens a
+ * FRESH episode (one new retry — the S1-C3 invariant holds under the
+ * split), and that fresh episode recovers through the backoff lane.
+ */
+const notedRestoreScenario = await (async () => {
+  // The in-flight pull's settle is GATED (a loss) so it truly outlives
+  // the channel-state moves (loss report → split restore notice).
+  interface Gate {
+    readonly promise: Promise<RemoteResponse>
+    readonly settle: (r: RemoteResponse) => void
+    readonly fail: (e: Error) => void
+  }
+  const makeGate = (): Gate => {
+    let settle!: (r: RemoteResponse) => void
+    let fail!: (e: Error) => void
+    const promise = new Promise<RemoteResponse>((resolve, reject) => {
+      settle = resolve
+      fail = reject
+    })
+    return { promise, settle, fail }
+  }
+  const gate = makeGate()
+  const calls: string[] = []
+  const script: Array<Promise<RemoteResponse>> = [
+    Promise.resolve(projectionSuccess('t1', 1)), // the seed frame
+    gate.promise, // the in-flight pull (settles LATE — see below)
+    Promise.reject(
+      new PushTransportLossError('remote push transport: seam channel lost'),
+    ), // the fresh episode's retry #1 fails
+    Promise.resolve(projectionSuccess('t1', 2)), // the fresh episode's retry #2 succeeds
+  ]
+  const getProjection = (_id: string): Promise<RemoteResponse> => {
+    calls.push(_id)
+    const next = script.shift()
+    if (next === undefined) {
+      return Promise.reject(new PushTransportLossError('script exhausted'))
+    }
+    return next
+  }
+  const scheduler = makeManualScheduler()
+  const store = createTeamProjectionStore({ getProjection, scheduler })
+  await store.pull('t1')
+  await flush()
+  const pendingPull = store.pull('t1')
+  await flush()
+  store.markConnectionLost()
+  const lostState = store.getState()
+  const lostPending = scheduler.pending()
+  const callsBeforeNote = calls.length
+  store.noteConnectionRestored()
+  const notedState = store.getState()
+  const notedPending = scheduler.pending()
+  const callsAfterNote = calls.length
+  // The in-flight pull settles LATE with a real loss: a FRESH episode
+  // (the notice did not advance the staleness baseline).
+  gate.fail(new PushTransportLossError('remote push transport: seam channel lost'))
+  await pendingPull
+  await flush()
+  const afterLateLoss = store.getState()
+  const afterLateLossPending = scheduler.pending()
+  // The fresh episode recovers through its own backoff lane.
+  scheduler.advance(500)
+  await flush()
+  const afterFirstRetry = store.getState()
+  scheduler.advance(1000)
+  await flush()
+  const afterRecovery = store.getState()
+  const afterRecoveryPending = scheduler.pending()
+  return {
+    lostState,
+    lostPending,
+    notedState,
+    notedPending,
+    callsBeforeNote,
+    callsAfterNote,
+    afterLateLoss,
+    afterLateLossPending,
+    afterFirstRetry,
+    afterRecovery,
+    afterRecoveryPending,
+    calls,
+  }
+})()
+
+/**
  * (repair 20260927, S1-C3) typed error → later success: the error state
  * is stored intact, and the successful recovery (a NEW generation)
  * ENDS it — `lastError` must not keep being presented.
@@ -1098,6 +1188,53 @@ describe('createTeamProjectionStore — reconnect policy (Seam 5 / G2)', () => {
     expect(after.status).toBe('ready')
     expect(after.appliedGeneration).toBe(1)
     expect(calls).toEqual(['t1', 't1'])
+  })
+
+  it('noteConnectionRestored (PR #35 follow-up, P1-5): clears the loss episode WITHOUT a pull; the in-flight pull late-loss opens a FRESH episode; the fresh episode recovers', () => {
+    const {
+      lostState,
+      lostPending,
+      notedState,
+      notedPending,
+      callsBeforeNote,
+      callsAfterNote,
+      afterLateLoss,
+      afterLateLossPending,
+      afterFirstRetry,
+      afterRecovery,
+      afterRecoveryPending,
+      calls,
+    } = notedRestoreScenario
+    // The loss episode is open (reconnecting + one scheduled retry).
+    expect(lostState.status).toBe('reconnecting')
+    expect(lostState.retryAttempt).toBe(1)
+    expect(lostPending).toBe(1)
+    // The SPLIT notice: the pending retry is cancelled, the episode
+    // counter restarts, the `reconnecting` status closes (the applied
+    // frame is `ready` again — durable content stays valid across the
+    // channel gap) — and NO pull fired (the invalidation pull is the
+    // coordinator's round, not the store's lane).
+    expect(notedState.status).toBe('ready')
+    expect(notedState.retryAttempt).toBe(0)
+    expect(notedState.nextRetryDelayMs).toBe(null)
+    expect(notedState.appliedGeneration).toBe(1)
+    expect(notedPending).toBe(0)
+    expect(callsAfterNote).toBe(callsBeforeNote)
+    // The in-flight pull settles LATE with a real loss: a FRESH episode
+    // (one new retry — the notice did not advance the staleness
+    // baseline; the S1-C3 invariant holds under the split).
+    expect(afterLateLoss.status).toBe('reconnecting')
+    expect(afterLateLoss.retryAttempt).toBe(1)
+    expect(afterLateLossPending).toBe(1)
+    // The fresh episode's first retry fails (500 ms) → attempt 2.
+    expect(afterFirstRetry.status).toBe('reconnecting')
+    expect(afterFirstRetry.retryAttempt).toBe(2)
+    // The second retry (1000 ms) succeeds → ready with the fresh frame.
+    expect(afterRecovery.status).toBe('ready')
+    expect(afterRecovery.appliedGeneration).toBe(2)
+    expect(afterRecovery.retryAttempt).toBe(0)
+    expect(afterRecoveryPending).toBe(0)
+    expect(calls).toEqual(['t1', 't1', 't1', 't1'])
   })
 
   it('a loss report after a later success is stale and ignored', () => {

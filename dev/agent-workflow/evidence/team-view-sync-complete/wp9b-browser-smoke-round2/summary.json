@@ -1,0 +1,34 @@
+{
+  "run": "wp9b served-bundle browser smoke — PR #35 SECOND follow-up (round 2, E6–E9)",
+  "stamp": "2026-09-28T07:39-07:50Z (host tvs-smoke-2026-09-28T07-39-41 family, port 3182)",
+  "host": "node apps/cli/lib/bin.js web --port 3182 --no-open (worktree packages incl. the round-2 P0-A/P0-B/P1-A/P1-B changes, DSH_HOME = seeded mpr world copy; the served client bundle is the 1101071 B build of THIS round — P1-A view modes + P1-B coordinator epoch included)",
+  "seeding": "world seeded from tests/homes/mpr-2026-09-27T08-35-52 (four team roots: boot / t1 / ta / tb — all four persisted teams visible in the ordinary-session Team tab list); second CLIENT row appended per the S8 pattern; mock model on 3497 (answer: 'smoke host: no work expected')",
+  "browser": "Chromium via bsk session fqfe, tab 757204584; network capture run d0ff6feb5e850 (smoke-r2), exported to smoke-net-r2.json (948 KB; session ids redacted by the capture tool)",
+  "E6_two_team_leader_isolation": {
+    "verdict": "PASS",
+    "how": "wire-level over the LIVE host (script e6-two-team-leader-isolation.mjs, result e6-two-team-leader-isolation-result.txt): Team A = session-mpr-t1-…, Team B = session-mpr-ta-… (both leaders are inst-leader in their own teams)",
+    "evidence": "E6-0 team.ensureRootLive(A) (v3 public seam) = {rootSessionId:T1, mode:team, live:true} — the ONLY activation; Team B is never touched. Then per team: getProjection v6 + getReadState v6. A: leader liveActivity = {residency:'resident', lastActivityAt:2026-09-28T07:48:10.898Z}; B: {residency:'cold'}. projection.liveToken == readState.liveToken AND (durableGeneration, liveToken) identical on both surfaces for EACH team (A gen 32 / B gen 9). token(A)=lt-v1-022b6598… != token(B)=lt-v1-623ddd76… (a consequence of the different semantic live states, NOT the claim). Both read-states name their own teamSessionId — zero cross-talk. The pre-activation probe (same script, first run) showed BOTH teams cold with the SEEDED tokens (A lt-v1-7770fae9… / B lt-v1-623ddd76…) — the A token then MOVED to lt-v1-022b6598… exactly when the A leader became resident, while B's token stayed put: the Team-scoped overlay tracks per-team residency (guide §8 E6: '不是仅断言 token 不等')."
+  },
+  "E7_ordinary_session_ui": {
+    "verdict": "PASS",
+    "how": "UI-driven: fresh ordinary session created in the served bundle (composer → workspace tests/deepseek-harness-test-use → 'ping' → mock answered 'smoke host: no work expected'); its 团队 tab opened",
+    "dom": "the Team tab renders the AUTHORITATIVE no-team zero state: paragraph text '已确认当前会话未加入团队' (view.ownership.none — the P1-A P0 line) + the '已持久化的团队' store list (the four persisted teams) + '刷新团队视图'; NO '正在加载团队信息…' anywhere (the pre-round-2 ambiguous cold-open line is gone); screenshot e7-ordinary-authoritative-none.png",
+    "wire": "ordinary-session read-state stream: 17 calls at exactly the 3s cadence (deltas 2990–3008 ms after the tab switch; the 13.2 s first gap is create→tab-switch), EVERY response the closed none cell {relation:'none', teamSessionId:null, memberInstanceId:null, disposed:false, durableGeneration:null, liveToken:null} (423 B). ZERO team.getProjection for the ordinary session — the only two v6 pulls in the whole capture are BOTH for T1 (seq 253 cold load / seq 599 token-change pull). Component-level attribute proof (data-team-projection-status='none' + data-team-zero + the absence assertions) is in packages/client/test/team-view.client.spec.tsx UI-T1."
+  },
+  "E8_ownership_failure_surface": {
+    "verdict": "PASS (component-level, per the guide: '可在测试宿主/故障注入完成，不一定需要真实生产世界；至少要在 browser / component 级证明')",
+    "how": "packages/client/test/team-view.client.spec.tsx UI-T2/T3/T4 (all PASS in the client suite 775/775): remote-error outcome (code TEAM_REMOTE_INTERNAL_ERROR 'boom') → status 'ownership-error' + '团队归属读取失败 — TEAM_REMOTE_INTERNAL_ERROR: boom' + refresh button, no no-team text; malformed outcome → '团队归属响应异常 — {reason}'; transport-loss → '无法读取团队归属，等待连接恢复'; stale-guard (mirror frame present + remote-error) → last-good Team view KEPT + banner '团队归属刷新失败，当前显示上次成功的数据' (data-team-ownership-stale). The typed code path TEAM_READ_STATE_OWNERSHIP_CONFLICT is covered by the client team-read-state outcome-matrix spec (the closed 6-cell read-state contract).",
+    "browser_note": "no live-host fault injection performed: the component proof above is the guide's minimum bar and the fault is unreachable on this host without modifying served plugin code (not allowed by CORE PATCH BUDGET = 0)."
+  },
+  "E9_same_snapshot_deterministic": {
+    "verdict": "PASS (deterministic unit, per the guide: '优先确定性单测，不要求浏览器竞态')",
+    "how": "packages/runtime/test/s6t-remote-v6.test.ts §3.2 (j) (PASS in the runtime suite): one v6 getProjection with a two-snapshot fake — snapshot #1 (resident leader) vs #2 (cold) — asserts the snapshot is materialized EXACTLY ONCE (snapshotCalls === 1) and the served members[].liveActivity + projection.liveToken come from the SAME materialized snapshot (token equality with computeLiveTokenFromProjectedMembers over the served members). Reinforced live by E6 above (same-snapshot token equality on the real host, both surfaces)."
+  },
+  "regression_invariants_observed": {
+    "readState_cadence": "T1 root stream 40 calls, deltas 2996–3004 ms (the lightweight read-state authority at 3s cadence survives the round-2 coordinator changes)",
+    "live_only_token_change_pulls_once": "exactly ONE token transition in the root stream (seq 593: lt-v1-7770fae9… → lt-v1-022b6598…) at the E6 ensureRootLive moment → exactly ONE getProjection (seq 599) → stable afterwards; no projection spam, no ledger page re-pull (the single getLedgerPage of the capture is the T1 cold read)",
+    "v6_wire_shape": "getReadState v6 responses unchanged (530 B team-root / 423 B none); getProjection v6 7085→7133 B (the +48 B is the new live-epoch token) — no v1–v5 traffic in this smoke at all"
+  },
+  "screenshots": ["e7-ordinary-authoritative-none.png"],
+  "artifacts": ["smoke-net-r2.json", "e6-two-team-leader-isolation-result.txt (sibling dir)", "e6-two-team-leader-isolation.mjs (sibling dir)"]
+}

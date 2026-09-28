@@ -32,6 +32,16 @@ export const REMOTE_PROJECTION_FIELDS = [
     'teamSessionId',
     'templates',
 ];
+/**
+ * The top-level fields of the contract-v6 whole-projection value: the nine
+ * frozen v1 fields plus the two additive v6 freshness fields
+ * (`durableGeneration`, `liveToken`).
+ */
+export const REMOTE_PROJECTION_FIELDS_V6 = [
+    ...REMOTE_PROJECTION_FIELDS,
+    'durableGeneration',
+    'liveToken',
+];
 /** The top-level fields of the storage `LedgerEntry` (mirror). */
 export const REMOTE_LEDGER_ENTRY_FIELDS = [
     'createdAt',

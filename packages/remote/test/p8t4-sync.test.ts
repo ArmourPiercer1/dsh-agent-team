@@ -384,6 +384,18 @@ const RT = await (async () => {
           }
           return syncDto(1, teamSessionId)
         },
+        // PR #35 second follow-up P0-2 — the v6 ATOMIC read over the same
+        // fail-mode projection truth (same-snapshot by construction).
+        projectV6(teamSessionId: string): {
+          projection: RemoteSafeRecord
+          liveToken: string
+        } {
+          return {
+            projection: this.project(teamSessionId),
+            liveToken:
+              'lt-v1-p8t4fakeworldtoken00000000000000000000000000000000000000000000000',
+          }
+        },
       },
     },
   })

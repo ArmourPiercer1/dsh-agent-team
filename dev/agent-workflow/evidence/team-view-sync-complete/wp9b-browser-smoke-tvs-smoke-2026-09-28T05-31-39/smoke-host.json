@@ -1,0 +1,16 @@
+{
+  "runStamp": "tvs-smoke-2026-09-28T05-31-39",
+  "origin": "http://127.0.0.1:3182",
+  "tokenUrl": "http://127.0.0.1:3182/?token=SCRUBBED",
+  "hostPort": 3182,
+  "mockPort": 3497,
+  "world": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-09-28T05-31-39",
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-team-view-sync-complete-20260927",
+  "t1": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+  "t1MemberSession": "session-team-child-796562d4284593654607730948ad2b04",
+  "t1MemberInstance": "inst-17legoh0ti27",
+  "stablePre": {
+    "http://127.0.0.1:3080/": 401,
+    "http://127.0.0.1:3180/": 401
+  }
+}

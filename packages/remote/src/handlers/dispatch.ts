@@ -82,7 +82,7 @@ type CategoryHandler = (
   version: number,
 ) => RemoteHandlerOutcome
 
-/** Wire the eighteen ports into the nine category handlers. */
+/** Wire the twenty ports into the nine category handlers. */
 function buildCategoryHandlers(deps: RemoteHandlerDeps): Readonly<Record<RemoteCategory, CategoryHandler>> {
   return {
     [REMOTE_CATEGORIES.CATALOG]: createRemoteCatalogHandler(deps.catalog),
@@ -95,6 +95,8 @@ function buildCategoryHandlers(deps: RemoteHandlerDeps): Readonly<Record<RemoteC
       teamEnsureRootLive: deps.teamEnsureRootLive,
       teamResolveControl: deps.teamResolveControl,
       teamPrepareOrdinaryOpen: deps.teamPrepareOrdinaryOpen,
+      teamReadState: deps.teamReadState,
+      liveToken: deps.liveToken,
       projection: deps.projection,
       ledger: deps.ledger,
     }),
@@ -337,6 +339,31 @@ export const REMOTE_BACKING_ERROR_CODES = [
   // other reachable typed failure of the same port (a root outside the
   // caller's team — assertBoundRoot).
   'TEAM_REMOTE_TEAM_ORDINARY_OPEN_PORT_UNAVAILABLE',
+  // team-view-sync-complete (remote contract v6): the v6 surface wire
+  // vocabulary. The S6 ports emit TEAM_REMOTE_TEAM_READ_STATE_PORT_
+  // UNAVAILABLE (the read-state closure is absent from the host wiring —
+  // fail closed; the closure's own storage/integrity failures ride the
+  // storage-layer RECORD_INVALID / SEAM_FAILURE / NOT_OPEN codes above)
+  // and TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE (the live-token
+  // closure is absent — fail closed: a v6 projection frame must ALWAYS
+  // carry its liveToken cell, and a host that cannot compute one must
+  // not serve a v6 frame without it).
+  'TEAM_REMOTE_TEAM_READ_STATE_PORT_UNAVAILABLE',
+  'TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE',
+  // team-view-sync-complete (remote contract v6) — the v6 read-state
+  // resolver's integrity failures (runtime/team-read-state, fail closed):
+  // a claimed team-root/team-member affiliation whose team_sessions row
+  // is missing (TEAM_READ_STATE_TEAM_ROW_ABSENT) and a claimed
+  // team-member affiliation whose member_instances row is missing
+  // (TEAM_READ_STATE_MEMBER_ROW_ABSENT). A corrupted (undecodable) row is
+  // NOT re-coded here: the storage layer's RECORD_INVALID vocabulary
+  // already covers it and passes through unchanged.
+  'TEAM_READ_STATE_TEAM_ROW_ABSENT',
+  'TEAM_READ_STATE_MEMBER_ROW_ABSENT',
+   // PR #35 follow-up (P2) — the no-binding ownership scan found MORE
+   // than one durable member row claiming the same child session
+   // (ambiguous ownership: failing closed, never a first-wins).
+   'TEAM_READ_STATE_OWNERSHIP_CONFLICT',
 ] as const
 
 /** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */

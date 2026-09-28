@@ -1,0 +1,16 @@
+{
+  "note": "hand-written: the host job was job_killed mid-smoke (E6/E7 complete); the kit's SIGTERM handler may not have run, so the post-state below was verified manually.",
+  "preStable": { "http://127.0.0.1:3080/": 401, "http://127.0.0.1:3180/": 401 },
+  "postStable": { "http://127.0.0.1:3080/": 401, "http://127.0.0.1:3180/": 401 },
+  "stablePreEqualsPost": true,
+  "hostPort3182": "released (ss shows no listener; the browser session fqfe was closed with the host)",
+  "mockPort3497": "released",
+  "foreignListeners": {
+    "3181": "LISTEN, pre-existing before this run (in a different PID namespace — the kit's isPortFree probe skipped it, which is exactly why the host took 3182); not bound by this run",
+    "3496": "LISTEN, pre-existing before this run (the mock fell back to 3497 for the same reason); not bound by this run"
+  },
+  "testUseCheckout": { "porcelain": "0 lines (clean)", "head": "46a7f68b09 (0.1.7-rc.1 release point, untouched)" },
+  "world": "tests/homes/tvs-smoke-2026-09-28T07-39-41 retained (disposable smoke world per the home protocol)",
+  "tokenScrub": "launch token scrubbed from smoke-host.json, instance.log, mock.log and wp9b-host-console-round2.log (token=SCRUBBED); no live token remains in retained evidence",
+  "verifiedAt": "2026-09-28T07:53Z"
+}

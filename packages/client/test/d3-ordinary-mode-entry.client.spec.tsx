@@ -152,6 +152,7 @@ function viewProps(
     useProjectionMirror: selector => selector(projectionMirror),
     useTeamLedgers: selector => selector(teamLedgers),
     useProjectionStates: selector => selector({}),
+    useSessionReadStates: selector => selector({}),
     ensureProjection: vi.fn(() => Promise.resolve()),
     pullProjection: vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const)),
     refreshTeamLedger: vi.fn(() => Promise.resolve()),

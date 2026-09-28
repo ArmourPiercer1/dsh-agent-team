@@ -1,0 +1,1657 @@
+[
+  {
+    "label": "rs0",
+    "method": "team.getReadState",
+    "params": {
+      "sessionId": "session-team-child-796562d4284593654607730948ad2b04"
+    },
+    "version": 6,
+    "status": 200,
+    "transportError": null,
+    "result": {
+      "type": "server-response",
+      "rpcId": "tvs-xubx7ikk1l",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "relation": "team-member",
+            "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+            "memberInstanceId": "inst-17legoh0ti27",
+            "disposed": false,
+            "durableGeneration": 32
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.getReadState",
+            "endpoint": "team.getReadState",
+            "contractVersion": 6,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "rp0",
+    "method": "team.getProjection",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52"
+    },
+    "version": 6,
+    "status": 200,
+    "transportError": null,
+    "result": {
+      "type": "server-response",
+      "rpcId": "tvs-waii1garoq",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "projection": {
+              "schemaVersion": 2,
+              "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+              "blueprint": {
+                "blueprintId": "team.mpr-main",
+                "revision": "1",
+                "contentHash": "sha256:0586296ed45a2fa73afdd2e2bec3c411188388a06a598d037adb1f555065f0af"
+              },
+              "generation": 32,
+              "generatedAt": "2026-09-27T19:46:25.961Z",
+              "root": {
+                "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "createdAt": "2026-09-27T08:35:54.819Z",
+                "policyState": "default",
+                "admission": "OPEN",
+                "compatibility": {
+                  "status": "OPEN",
+                  "probeGeneration": 1,
+                  "requirementFingerprint": "none",
+                  "environmentFingerprint": "fp-v1:496d1037b98199e1",
+                  "warningCount": 0,
+                  "fatalCount": 0,
+                  "acknowledgedWarningCount": 0,
+                  "lastProbedAt": "2026-09-27T08:35:54.848Z"
+                },
+                "creationBudgetConsumed": 0,
+                "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+              },
+              "templates": [
+                {
+                  "kind": "leader",
+                  "templateId": "leader",
+                  "displayName": "leader",
+                  "contextPolicy": "persistent"
+                },
+                {
+                  "kind": "member",
+                  "templateId": "worker",
+                  "displayName": "worker",
+                  "contextPolicy": "persistent",
+                  "instanceQuota": 8
+                },
+                {
+                  "kind": "member",
+                  "templateId": "expert",
+                  "displayName": "expert",
+                  "contextPolicy": "persistent",
+                  "instanceQuota": 8
+                },
+                {
+                  "kind": "member",
+                  "templateId": "control",
+                  "displayName": "control",
+                  "contextPolicy": "persistent",
+                  "instanceQuota": 8
+                }
+              ],
+              "members": [
+                {
+                  "instanceId": "inst-04eix3v0rhrj",
+                  "templateId": "expert",
+                  "label": "expert-pre",
+                  "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                  "createdAt": "2026-09-27T08:35:55.411Z",
+                  "lifecycle": "SETTLED",
+                  "contextPolicy": "persistent",
+                  "effectiveConfig": {
+                    "model": {
+                      "value": "deepseek-official/role-expert",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "workspace": {
+                      "value": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                      "source": "instance-creation",
+                      "state": "locked",
+                      "locked": true
+                    },
+                    "permissions": {},
+                    "autonomy": {
+                      "value": null,
+                      "source": "autonomy-overlay",
+                      "state": "inherited"
+                    }
+                  },
+                  "liveActivity": {
+                    "residency": "cold"
+                  },
+                  "childSessionId": "session-team-child-8fc242bd770422735c491c1452e84bcd",
+                  "modelState": {
+                    "current": {
+                      "value": "deepseek-official/role-expert",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "provenance": {
+                      "layer": "template",
+                      "origin": "static",
+                      "recordId": null,
+                      "explanation": "model: effective allow[deepseek-official/role-expert]; team template(origin=static) allow[deepseek-official/role-expert]; external exists=yes, hard=unspecified"
+                    },
+                    "availability": "available"
+                  }
+                },
+                {
+                  "instanceId": "inst-0f6c37a0hpcj",
+                  "templateId": "control",
+                  "label": "w-control",
+                  "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                  "createdAt": "2026-09-27T08:35:55.555Z",
+                  "lifecycle": "SETTLED",
+                  "contextPolicy": "persistent",
+                  "effectiveConfig": {
+                    "model": {
+                      "value": "deepseek-official/global-default",
+                      "source": "capability",
+                      "state": "inherited"
+                    },
+                    "workspace": {
+                      "value": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                      "source": "instance-creation",
+                      "state": "locked",
+                      "locked": true
+                    },
+                    "permissions": {},
+                    "autonomy": {
+                      "value": null,
+                      "source": "autonomy-overlay",
+                      "state": "inherited"
+                    }
+                  },
+                  "liveActivity": {
+                    "residency": "cold"
+                  },
+                  "childSessionId": "session-team-child-b1a1382d1979313801d6c666604a46bd",
+                  "modelState": {
+                    "current": {
+                      "value": "deepseek-official/global-default",
+                      "source": "capability",
+                      "state": "inherited"
+                    },
+                    "provenance": {
+                      "layer": "unspecified",
+                      "origin": "static",
+                      "recordId": null,
+                      "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                    },
+                    "availability": "available"
+                  }
+                },
+                {
+                  "instanceId": "inst-17legoh0ti27",
+                  "templateId": "worker",
+                  "label": "w-deleg",
+                  "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                  "createdAt": "2026-09-27T08:35:55.010Z",
+                  "lifecycle": "SETTLED",
+                  "contextPolicy": "persistent",
+                  "effectiveConfig": {
+                    "model": {
+                      "value": "deepseek-official/override-worker",
+                      "source": "explicit-human-override",
+                      "state": "pending-next-boundary"
+                    },
+                    "workspace": {
+                      "value": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                      "source": "instance-creation",
+                      "state": "locked",
+                      "locked": true
+                    },
+                    "permissions": {},
+                    "autonomy": {
+                      "value": "model: allow deepseek-official/override-worker",
+                      "source": "explicit-human-override",
+                      "state": "pending-next-boundary"
+                    }
+                  },
+                  "liveActivity": {
+                    "residency": "cold"
+                  },
+                  "childSessionId": "session-team-child-796562d4284593654607730948ad2b04",
+                  "modelState": {
+                    "current": {
+                      "value": "deepseek-official/override-worker",
+                      "source": "explicit-human-override",
+                      "state": "pending-next-boundary"
+                    },
+                    "provenance": {
+                      "layer": "humanOverride",
+                      "origin": "human",
+                      "recordId": "ovr-model-inst-17legoh0ti27-g0",
+                      "explanation": "model: effective allow[deepseek-official/override-worker]; team humanOverride(origin=human, ovr-model-inst-17legoh0ti27-g0) allow[deepseek-official/override-worker]; external exists=yes, hard=unspecified"
+                    },
+                    "availability": "available",
+                    "pendingNextBoundary": {
+                      "value": "deepseek-official/override-worker",
+                      "source": "explicit-human-override",
+                      "state": "pending-next-boundary"
+                    }
+                  }
+                },
+                {
+                  "instanceId": "inst-1p8kqfl09bhr",
+                  "templateId": "worker",
+                  "label": "w-create",
+                  "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                  "createdAt": "2026-09-27T08:35:55.157Z",
+                  "lifecycle": "SETTLED",
+                  "contextPolicy": "persistent",
+                  "effectiveConfig": {
+                    "model": {
+                      "value": "deepseek-official/role-worker",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "workspace": {
+                      "value": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                      "source": "instance-creation",
+                      "state": "locked",
+                      "locked": true
+                    },
+                    "permissions": {},
+                    "autonomy": {
+                      "value": null,
+                      "source": "autonomy-overlay",
+                      "state": "inherited"
+                    }
+                  },
+                  "liveActivity": {
+                    "residency": "cold"
+                  },
+                  "childSessionId": "session-team-child-d07982a448e691494993207d279943b0",
+                  "modelState": {
+                    "current": {
+                      "value": "deepseek-official/role-worker",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "provenance": {
+                      "layer": "template",
+                      "origin": "static",
+                      "recordId": null,
+                      "explanation": "model: effective allow[deepseek-official/role-worker]; team template(origin=static) allow[deepseek-official/role-worker]; external exists=yes, hard=unspecified"
+                    },
+                    "availability": "available"
+                  }
+                },
+                {
+                  "instanceId": "inst-leader",
+                  "templateId": "leader",
+                  "label": "leader",
+                  "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                  "createdAt": "2026-09-27T08:35:54.826Z",
+                  "lifecycle": "RUNNING",
+                  "contextPolicy": "persistent",
+                  "effectiveConfig": {
+                    "model": {
+                      "value": null,
+                      "source": "blueprint",
+                      "state": "unavailable"
+                    },
+                    "workspace": {
+                      "value": null,
+                      "source": "blueprint",
+                      "state": "unavailable"
+                    },
+                    "permissions": {},
+                    "autonomy": {
+                      "value": null,
+                      "source": "blueprint",
+                      "state": "unavailable"
+                    }
+                  },
+                  "liveActivity": {
+                    "residency": "cold"
+                  }
+                }
+              ],
+              "ledger": {
+                "latestSequence": 44,
+                "totalEntries": 30,
+                "byCategory": {
+                  "team": 8,
+                  "member": 4,
+                  "lifecycle": 6,
+                  "message": 0,
+                  "control": 0,
+                  "policy": 0,
+                  "compatibility": 0,
+                  "progress": 12
+                },
+                "pendingControlCount": 0
+              },
+              "durableGeneration": 32,
+              "liveToken": "lt-v1-7770fae9dbb4092b6a748fe92563b54c1c1c89e0dcb16fadab6c82254b975331"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.getProjection",
+            "endpoint": "team.getProjection",
+            "contractVersion": 6,
+            "requestToken": null,
+            "projectionGeneration": 32,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "lp0",
+    "method": "team.getLedgerPage",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "limit": 100
+    },
+    "version": 6,
+    "status": 200,
+    "transportError": null,
+    "result": {
+      "type": "server-response",
+      "rpcId": "tvs-po64evqwfa",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "entries": [
+              {
+                "schemaVersion": 2,
+                "sequence": 1,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "team-work-admitted",
+                "payload": {
+                  "at": "2026-09-27T08:35:54.853Z",
+                  "caller": {
+                    "humanId": "session-mpr-boot-mpr-2026-09-27T08-35-52",
+                    "kind": "human"
+                  },
+                  "payloadFingerprint": "sha256:518f8973e49f7df565467ad836600a87dca6906dc2fd075c0015e993561d4e9a",
+                  "prompt": "mpr_r1_leader_mpr-2026-09-27T08-35-52 You are the leader. Your first task: acknowledge your role.",
+                  "requestToken": "team-create:initial-work:sha256:518f8973e49f7df565467ad836600a87dca6906dc2fd075c0015e993561d4e9a",
+                  "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                  "targetKind": "root"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:54.858Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 2,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "team-root-work-delivered",
+                "payload": {
+                  "at": "2026-09-27T08:35:54.967Z",
+                  "payloadFingerprint": "sha256:518f8973e49f7df565467ad836600a87dca6906dc2fd075c0015e993561d4e9a",
+                  "requestToken": "team-create:initial-work:sha256:518f8973e49f7df565467ad836600a87dca6906dc2fd075c0015e993561d4e9a",
+                  "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                  "targetKind": "root",
+                  "workOutcome": "delivered"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:54.970Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 3,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "provision-member-instance",
+                "payload": {
+                  "instanceId": "inst-17legoh0ti27",
+                  "label": "w-deleg",
+                  "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                  "templateId": "worker",
+                  "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+                },
+                "operationId": "op-0s18u250cah0a80sijx8r0np",
+                "createdAt": "2026-09-27T08:35:55.018Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 4,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "team-work-admitted",
+                "payload": {
+                  "action": "delegate",
+                  "at": "2026-09-27T08:35:55.027Z",
+                  "caller": {
+                    "instanceId": "inst-leader",
+                    "kind": "instance",
+                    "role": "leader"
+                  },
+                  "childSessionId": "session-team-child-796562d4284593654607730948ad2b04",
+                  "fromLifecycle": "CREATED",
+                  "lifecycleCommitted": true,
+                  "prompt": "mpr_r2_w_deleg_mpr-2026-09-27T08-35-52 Worker task: acknowledge your role and finish.",
+                  "requestToken": "tok-r2-deleg-9dk0lvsb",
+                  "targetInstanceId": "inst-17legoh0ti27"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.029Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 5,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "activity-interval-opened",
+                "payload": {
+                  "correlation": "tok-r2-deleg-9dk0lvsb",
+                  "instanceId": "inst-17legoh0ti27",
+                  "note": "work-unit full (token tok-r2-deleg-9dk0lvsb)",
+                  "op": "interval-open",
+                  "progress": "in-progress",
+                  "reportedByInstanceId": "team-runtime",
+                  "requestToken": "tok-r2-deleg-9dk0lvsb",
+                  "sequence": 1,
+                  "subject": "work-unit"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.034Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 6,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "activity-interval-closed",
+                "payload": {
+                  "correlation": "tok-r2-deleg-9dk0lvsb",
+                  "instanceId": "inst-17legoh0ti27",
+                  "op": "interval-close",
+                  "progress": "completed",
+                  "reportedByInstanceId": "team-runtime",
+                  "requestToken": "tok-r2-deleg-9dk0lvsb",
+                  "sequence": 2,
+                  "subject": "work-unit"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.111Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 7,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "member-lifecycle-changed",
+                "payload": {
+                  "action": "delegate",
+                  "at": "2026-09-27T08:35:55.120Z",
+                  "caller": {
+                    "instanceId": "inst-leader",
+                    "kind": "instance",
+                    "role": "leader"
+                  },
+                  "from": "RUNNING",
+                  "instanceId": "inst-17legoh0ti27",
+                  "memberResult": {
+                    "body": "ack:role-worker:deleg:mpr-2026-09-27T08-35-52",
+                    "requestToken": "tok-r2-deleg-9dk0lvsb",
+                    "status": "succeeded"
+                  },
+                  "requestToken": "tok-r2-deleg-9dk0lvsb",
+                  "to": "SETTLED",
+                  "workOutcome": "settled"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.122Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 8,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "provision-member-instance",
+                "payload": {
+                  "instanceId": "inst-1p8kqfl09bhr",
+                  "label": "w-create",
+                  "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                  "templateId": "worker",
+                  "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+                },
+                "operationId": "op-1m4jeum0wv75t30pxgx2g1vc",
+                "createdAt": "2026-09-27T08:35:55.165Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 9,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "team-work-admitted",
+                "payload": {
+                  "action": "follow-up",
+                  "at": "2026-09-27T08:35:55.181Z",
+                  "caller": {
+                    "instanceId": "inst-leader",
+                    "kind": "instance",
+                    "role": "leader"
+                  },
+                  "childSessionId": "session-team-child-d07982a448e691494993207d279943b0",
+                  "fromLifecycle": "CREATED",
+                  "lifecycleCommitted": true,
+                  "prompt": "mpr_r3_w_create_mpr-2026-09-27T08-35-52 Follow-up worker task: acknowledge and finish.",
+                  "requestToken": "tok-r3-follow-k1wj5978",
+                  "targetInstanceId": "inst-1p8kqfl09bhr"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.183Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 10,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "activity-interval-opened",
+                "payload": {
+                  "correlation": "tok-r3-follow-k1wj5978",
+                  "instanceId": "inst-1p8kqfl09bhr",
+                  "note": "work-unit full (token tok-r3-follow-k1wj5978)",
+                  "op": "interval-open",
+                  "progress": "in-progress",
+                  "reportedByInstanceId": "team-runtime",
+                  "requestToken": "tok-r3-follow-k1wj5978",
+                  "sequence": 1,
+                  "subject": "work-unit"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.188Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 11,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "activity-interval-closed",
+                "payload": {
+                  "correlation": "tok-r3-follow-k1wj5978",
+                  "instanceId": "inst-1p8kqfl09bhr",
+                  "op": "interval-close",
+                  "progress": "completed",
+                  "reportedByInstanceId": "team-runtime",
+                  "requestToken": "tok-r3-follow-k1wj5978",
+                  "sequence": 2,
+                  "subject": "work-unit"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.260Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 12,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "member-lifecycle-changed",
+                "payload": {
+                  "action": "follow-up",
+                  "at": "2026-09-27T08:35:55.268Z",
+                  "caller": {
+                    "instanceId": "inst-leader",
+                    "kind": "instance",
+                    "role": "leader"
+                  },
+                  "from": "RUNNING",
+                  "instanceId": "inst-1p8kqfl09bhr",
+                  "memberResult": {
+                    "body": "ack:role-worker:create:mpr-2026-09-27T08-35-52",
+                    "requestToken": "tok-r3-follow-k1wj5978",
+                    "status": "succeeded"
+                  },
+                  "requestToken": "tok-r3-follow-k1wj5978",
+                  "to": "SETTLED",
+                  "workOutcome": "settled"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.270Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 13,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "team-work-admitted",
+                "payload": {
+                  "action": "follow-up",
+                  "at": "2026-09-27T08:35:55.315Z",
+                  "caller": {
+                    "instanceId": "inst-leader",
+                    "kind": "instance",
+                    "role": "leader"
+                  },
+                  "childSessionId": "session-team-child-796562d4284593654607730948ad2b04",
+                  "fromLifecycle": "SETTLED",
+                  "lifecycleCommitted": true,
+                  "prompt": "mpr_r4_w_ovr_mpr-2026-09-27T08-35-52 Post-override worker task: acknowledge and finish.",
+                  "requestToken": "tok-r4-follow-dqr6xk38",
+                  "targetInstanceId": "inst-17legoh0ti27"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.317Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 14,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "activity-interval-opened",
+                "payload": {
+                  "correlation": "tok-r4-follow-dqr6xk38",
+                  "instanceId": "inst-17legoh0ti27",
+                  "note": "work-unit full (token tok-r4-follow-dqr6xk38)",
+                  "op": "interval-open",
+                  "progress": "in-progress",
+                  "reportedByInstanceId": "team-runtime",
+                  "requestToken": "tok-r4-follow-dqr6xk38",
+                  "sequence": 3,
+                  "subject": "work-unit"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.323Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 15,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "activity-interval-closed",
+                "payload": {
+                  "correlation": "tok-r4-follow-dqr6xk38",
+                  "instanceId": "inst-17legoh0ti27",
+                  "op": "interval-close",
+                  "progress": "completed",
+                  "reportedByInstanceId": "team-runtime",
+                  "requestToken": "tok-r4-follow-dqr6xk38",
+                  "sequence": 4,
+                  "subject": "work-unit"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.371Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 16,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "member-lifecycle-changed",
+                "payload": {
+                  "action": "follow-up",
+                  "at": "2026-09-27T08:35:55.381Z",
+                  "caller": {
+                    "instanceId": "inst-leader",
+                    "kind": "instance",
+                    "role": "leader"
+                  },
+                  "from": "RUNNING",
+                  "instanceId": "inst-17legoh0ti27",
+                  "memberResult": {
+                    "body": "ack:role-worker:override:mpr-2026-09-27T08-35-52",
+                    "requestToken": "tok-r4-follow-dqr6xk38",
+                    "status": "succeeded"
+                  },
+                  "requestToken": "tok-r4-follow-dqr6xk38",
+                  "to": "SETTLED",
+                  "workOutcome": "settled"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.383Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 17,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "provision-member-instance",
+                "payload": {
+                  "instanceId": "inst-04eix3v0rhrj",
+                  "label": "expert-pre",
+                  "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                  "templateId": "expert",
+                  "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+                },
+                "operationId": "op-1fk5azn1yxbly61scmn610pn",
+                "createdAt": "2026-09-27T08:35:55.419Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 18,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "team-work-admitted",
+                "payload": {
+                  "action": "follow-up",
+                  "at": "2026-09-27T08:35:55.436Z",
+                  "caller": {
+                    "instanceId": "inst-leader",
+                    "kind": "instance",
+                    "role": "leader"
+                  },
+                  "childSessionId": "session-team-child-8fc242bd770422735c491c1452e84bcd",
+                  "fromLifecycle": "CREATED",
+                  "lifecycleCommitted": true,
+                  "prompt": "mpr_r5_expert_pre_mpr-2026-09-27T08-35-52 Expert task (pre-restart): acknowledge and finish.",
+                  "requestToken": "tok-r5-follow-pre-trgxm7pd",
+                  "targetInstanceId": "inst-04eix3v0rhrj"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.439Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 19,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "activity-interval-opened",
+                "payload": {
+                  "correlation": "tok-r5-follow-pre-trgxm7pd",
+                  "instanceId": "inst-04eix3v0rhrj",
+                  "note": "work-unit full (token tok-r5-follow-pre-trgxm7pd)",
+                  "op": "interval-open",
+                  "progress": "in-progress",
+                  "reportedByInstanceId": "team-runtime",
+                  "requestToken": "tok-r5-follow-pre-trgxm7pd",
+                  "sequence": 1,
+                  "subject": "work-unit"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.443Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 20,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "activity-interval-closed",
+                "payload": {
+                  "correlation": "tok-r5-follow-pre-trgxm7pd",
+                  "instanceId": "inst-04eix3v0rhrj",
+                  "op": "interval-close",
+                  "progress": "completed",
+                  "reportedByInstanceId": "team-runtime",
+                  "requestToken": "tok-r5-follow-pre-trgxm7pd",
+                  "sequence": 2,
+                  "subject": "work-unit"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.514Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 21,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "member-lifecycle-changed",
+                "payload": {
+                  "action": "follow-up",
+                  "at": "2026-09-27T08:35:55.522Z",
+                  "caller": {
+                    "instanceId": "inst-leader",
+                    "kind": "instance",
+                    "role": "leader"
+                  },
+                  "from": "RUNNING",
+                  "instanceId": "inst-04eix3v0rhrj",
+                  "memberResult": {
+                    "body": "ack:role-expert:pre:mpr-2026-09-27T08-35-52",
+                    "requestToken": "tok-r5-follow-pre-trgxm7pd",
+                    "status": "succeeded"
+                  },
+                  "requestToken": "tok-r5-follow-pre-trgxm7pd",
+                  "to": "SETTLED",
+                  "workOutcome": "settled"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.525Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 22,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "provision-member-instance",
+                "payload": {
+                  "instanceId": "inst-0f6c37a0hpcj",
+                  "label": "w-control",
+                  "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                  "templateId": "control",
+                  "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+                },
+                "operationId": "op-01o6wd70wbito604bvvhl0yx",
+                "createdAt": "2026-09-27T08:35:55.562Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 23,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "team-work-admitted",
+                "payload": {
+                  "action": "delegate",
+                  "at": "2026-09-27T08:35:55.571Z",
+                  "caller": {
+                    "instanceId": "inst-leader",
+                    "kind": "instance",
+                    "role": "leader"
+                  },
+                  "childSessionId": "session-team-child-b1a1382d1979313801d6c666604a46bd",
+                  "fromLifecycle": "CREATED",
+                  "lifecycleCommitted": true,
+                  "prompt": "mpr_r7_control_mpr-2026-09-27T08-35-52 Control task: acknowledge and finish.",
+                  "requestToken": "tok-r7-control-qkvx4ai5",
+                  "targetInstanceId": "inst-0f6c37a0hpcj"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.573Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 24,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "activity-interval-opened",
+                "payload": {
+                  "correlation": "tok-r7-control-qkvx4ai5",
+                  "instanceId": "inst-0f6c37a0hpcj",
+                  "note": "work-unit full (token tok-r7-control-qkvx4ai5)",
+                  "op": "interval-open",
+                  "progress": "in-progress",
+                  "reportedByInstanceId": "team-runtime",
+                  "requestToken": "tok-r7-control-qkvx4ai5",
+                  "sequence": 1,
+                  "subject": "work-unit"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.578Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 25,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "activity-interval-closed",
+                "payload": {
+                  "correlation": "tok-r7-control-qkvx4ai5",
+                  "instanceId": "inst-0f6c37a0hpcj",
+                  "op": "interval-close",
+                  "progress": "completed",
+                  "reportedByInstanceId": "team-runtime",
+                  "requestToken": "tok-r7-control-qkvx4ai5",
+                  "sequence": 2,
+                  "subject": "work-unit"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.646Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 26,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "member-lifecycle-changed",
+                "payload": {
+                  "action": "delegate",
+                  "at": "2026-09-27T08:35:55.655Z",
+                  "caller": {
+                    "instanceId": "inst-leader",
+                    "kind": "instance",
+                    "role": "leader"
+                  },
+                  "from": "RUNNING",
+                  "instanceId": "inst-0f6c37a0hpcj",
+                  "memberResult": {
+                    "body": "ack:global-default:mpr-2026-09-27T08-35-52",
+                    "requestToken": "tok-r7-control-qkvx4ai5",
+                    "status": "succeeded"
+                  },
+                  "requestToken": "tok-r7-control-qkvx4ai5",
+                  "to": "SETTLED",
+                  "workOutcome": "settled"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:55.657Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 41,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "team-work-admitted",
+                "payload": {
+                  "action": "follow-up",
+                  "at": "2026-09-27T08:35:57.558Z",
+                  "caller": {
+                    "instanceId": "inst-leader",
+                    "kind": "instance",
+                    "role": "leader"
+                  },
+                  "childSessionId": "session-team-child-8fc242bd770422735c491c1452e84bcd",
+                  "fromLifecycle": "SETTLED",
+                  "lifecycleCommitted": true,
+                  "prompt": "mpr_r5_expert_post_mpr-2026-09-27T08-35-52 Expert task (post-restart, cold resume): acknowledge and finish.",
+                  "requestToken": "tok-r5-follow-post-cdseyjj2",
+                  "targetInstanceId": "inst-04eix3v0rhrj"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:57.561Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 42,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "activity-interval-opened",
+                "payload": {
+                  "correlation": "tok-r5-follow-post-cdseyjj2",
+                  "instanceId": "inst-04eix3v0rhrj",
+                  "note": "work-unit full (token tok-r5-follow-post-cdseyjj2)",
+                  "op": "interval-open",
+                  "progress": "in-progress",
+                  "reportedByInstanceId": "team-runtime",
+                  "requestToken": "tok-r5-follow-post-cdseyjj2",
+                  "sequence": 3,
+                  "subject": "work-unit"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:57.566Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 43,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "activity-interval-closed",
+                "payload": {
+                  "correlation": "tok-r5-follow-post-cdseyjj2",
+                  "instanceId": "inst-04eix3v0rhrj",
+                  "op": "interval-close",
+                  "progress": "completed",
+                  "reportedByInstanceId": "team-runtime",
+                  "requestToken": "tok-r5-follow-post-cdseyjj2",
+                  "sequence": 4,
+                  "subject": "work-unit"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:57.687Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 44,
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "factType": "member-lifecycle-changed",
+                "payload": {
+                  "action": "follow-up",
+                  "at": "2026-09-27T08:35:57.697Z",
+                  "caller": {
+                    "instanceId": "inst-leader",
+                    "kind": "instance",
+                    "role": "leader"
+                  },
+                  "from": "RUNNING",
+                  "instanceId": "inst-04eix3v0rhrj",
+                  "memberResult": {
+                    "body": "ack:role-expert:post:mpr-2026-09-27T08-35-52",
+                    "requestToken": "tok-r5-follow-post-cdseyjj2",
+                    "status": "succeeded"
+                  },
+                  "requestToken": "tok-r5-follow-post-cdseyjj2",
+                  "to": "SETTLED",
+                  "workOutcome": "settled"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T08:35:57.699Z"
+              }
+            ],
+            "nextAfterSequence": null,
+            "total": 30
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.getLedgerPage",
+            "endpoint": "team.getLedgerPage",
+            "contractVersion": 6,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "rsT2pre",
+    "method": "team.getReadState",
+    "params": {
+      "sessionId": "session-tvs-spill-2026-09-27T19-46-24"
+    },
+    "version": 6,
+    "status": 200,
+    "transportError": null,
+    "result": {
+      "type": "server-response",
+      "rpcId": "tvs-0ts9lsyegn",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "relation": "none",
+            "teamSessionId": null,
+            "memberInstanceId": null,
+            "disposed": false,
+            "durableGeneration": null
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.getReadState",
+            "endpoint": "team.getReadState",
+            "contractVersion": 6,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "lr0",
+    "method": "team.listRoots",
+    "params": {},
+    "version": 3,
+    "status": 200,
+    "transportError": null,
+    "result": {
+      "type": "server-response",
+      "rpcId": "tvs-qwaddtb2ce",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "roots": [
+              {
+                "rootSessionId": "session-mpr-boot-mpr-2026-09-27T08-35-52",
+                "blueprintId": "team.mpr-anchor",
+                "revision": "1",
+                "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                "createdAt": "2026-09-27T08:35:54.718Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "blueprintId": "team.mpr-main",
+                "revision": "1",
+                "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                "createdAt": "2026-09-27T08:35:54.819Z",
+                "generation": 32,
+                "memberCount": 4
+              },
+              {
+                "rootSessionId": "session-mpr-ta-mpr-2026-09-27T08-35-52",
+                "blueprintId": "team.mpr-a",
+                "revision": "1",
+                "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                "createdAt": "2026-09-27T08:35:55.672Z",
+                "generation": 9,
+                "memberCount": 1
+              },
+              {
+                "rootSessionId": "session-mpr-tb-mpr-2026-09-27T08-35-52",
+                "blueprintId": "team.mpr-b",
+                "revision": "1",
+                "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                "createdAt": "2026-09-27T08:35:55.918Z",
+                "generation": 9,
+                "memberCount": 1
+              }
+            ]
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.listRoots",
+            "endpoint": "team.listRoots",
+            "contractVersion": 3,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "create",
+    "method": "team.create",
+    "params": {
+      "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+      "blueprintId": "team.tvs-spill",
+      "initialWork": {
+        "prompt": "tvs_spill_tvs-spill-2026-09-27T19-46-24 — run exactly one bash command for me: head -c 300000 /dev/zero | tr '\\0' 'x' — then tell me the approximate output size."
+      }
+    },
+    "version": 1,
+    "status": 200,
+    "transportError": null,
+    "result": {
+      "type": "server-response",
+      "rpcId": "tvs-gws60yrpxa",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "path": "fresh-root",
+            "durable": {
+              "teamSession": {
+                "schemaVersion": 1,
+                "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                "blueprint": {
+                  "blueprintId": "team.tvs-spill",
+                  "revision": "1",
+                  "contentHash": "sha256:0e1e305f698df2741662e323f0d078f92b15b5693c167c7955ffd48cf8cc61a5"
+                },
+                "createdAt": "2026-09-27T19:46:25.990Z",
+                "generation": 1,
+                "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/tvs-spill-2026-09-27T19-46-24"
+              },
+              "binding": {
+                "schemaVersion": 1,
+                "kind": "team-root",
+                "sessionId": "session-tvs-spill-2026-09-27T19-46-24"
+              },
+              "wrote": true,
+              "leaderRow": {
+                "schemaVersion": 2,
+                "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                "instanceId": "inst-leader",
+                "templateId": "leader",
+                "label": "leader",
+                "createdAt": "2026-09-27T19:46:26.000Z",
+                "activityVersion": 1
+              }
+            },
+            "bind": {
+              "requested": "fresh-root",
+              "bound": true,
+              "installed": true,
+              "identity": {
+                "kind": "root",
+                "sessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24"
+              },
+              "admitted": true,
+              "admissionCode": "ADMISSION_OPEN",
+              "emittedEvents": [
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "persona"
+                },
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "model"
+                },
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "capability"
+                },
+                {
+                  "name": "agent-setup/admission-decided",
+                  "detail": "ADMISSION_OPEN"
+                }
+              ]
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.create",
+            "endpoint": "team.create",
+            "contractVersion": 1,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "rsC",
+    "method": "team.getReadState",
+    "params": {
+      "sessionId": "session-tvs-spill-2026-09-27T19-46-24"
+    },
+    "version": 6,
+    "status": 200,
+    "transportError": null,
+    "result": {
+      "type": "server-response",
+      "rpcId": "tvs-ebj6anh8ql",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "relation": "team-root",
+            "teamSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+            "memberInstanceId": null,
+            "disposed": false,
+            "durableGeneration": 5
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.getReadState",
+            "endpoint": "team.getReadState",
+            "contractVersion": 6,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "lpSettle",
+    "method": "team.getLedgerPage",
+    "params": {
+      "teamSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+      "limit": 100
+    },
+    "version": 6,
+    "status": 200,
+    "transportError": null,
+    "result": {
+      "type": "server-response",
+      "rpcId": "tvs-ly5jhp4mre",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "entries": [
+              {
+                "schemaVersion": 2,
+                "sequence": 45,
+                "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                "factType": "team-work-admitted",
+                "payload": {
+                  "at": "2026-09-27T19:46:26.033Z",
+                  "caller": {
+                    "humanId": "session-mpr-boot-mpr-2026-09-27T08-35-52",
+                    "kind": "human"
+                  },
+                  "payloadFingerprint": "sha256:ce3720dd64e13a3f95506ffda721ccc219efd854122810523dee3f1fa5e75502",
+                  "prompt": "tvs_spill_tvs-spill-2026-09-27T19-46-24 — run exactly one bash command for me: head -c 300000 /dev/zero | tr '\\0' 'x' — then tell me the approximate output size.",
+                  "requestToken": "team-create:initial-work:sha256:ce3720dd64e13a3f95506ffda721ccc219efd854122810523dee3f1fa5e75502",
+                  "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                  "targetKind": "root"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T19:46:26.036Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 46,
+                "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                "factType": "artifact-read-granted",
+                "payload": {
+                  "instanceId": "inst-leader",
+                  "locator": "/tmp/dsh-subprocess-PoVZui/dsh-subprocess-49-1-076703227f47-stdout.log",
+                  "schemaVersion": 1,
+                  "source": {
+                    "callId": "call-tvs-spill-1",
+                    "kind": "shell-foreground",
+                    "stream": "stdout",
+                    "toolName": "bash"
+                  },
+                  "targetKeyDigest": "sha256:2d338d7a58168913604feead05d2ccebf208c8d557d257cb432750f78b72bb96",
+                  "versionDigest": "sha256:4e988108a0fff81cc1870beec5674ce3c8a34726c03db9df94387e4372ac4e36"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T19:46:46.502Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 47,
+                "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                "factType": "team-root-work-delivered",
+                "payload": {
+                  "at": "2026-09-27T19:46:49.889Z",
+                  "payloadFingerprint": "sha256:ce3720dd64e13a3f95506ffda721ccc219efd854122810523dee3f1fa5e75502",
+                  "requestToken": "team-create:initial-work:sha256:ce3720dd64e13a3f95506ffda721ccc219efd854122810523dee3f1fa5e75502",
+                  "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                  "targetKind": "root",
+                  "workOutcome": "delivered"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T19:46:49.893Z"
+              }
+            ],
+            "nextAfterSequence": null,
+            "total": 3
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.getLedgerPage",
+            "endpoint": "team.getLedgerPage",
+            "contractVersion": 6,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "lr1",
+    "method": "team.listRoots",
+    "params": {},
+    "version": 3,
+    "status": 200,
+    "transportError": null,
+    "result": {
+      "type": "server-response",
+      "rpcId": "tvs-dmqquoxbxa",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "roots": [
+              {
+                "rootSessionId": "session-mpr-boot-mpr-2026-09-27T08-35-52",
+                "blueprintId": "team.mpr-anchor",
+                "revision": "1",
+                "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                "createdAt": "2026-09-27T08:35:54.718Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+                "blueprintId": "team.mpr-main",
+                "revision": "1",
+                "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                "createdAt": "2026-09-27T08:35:54.819Z",
+                "generation": 32,
+                "memberCount": 4
+              },
+              {
+                "rootSessionId": "session-mpr-ta-mpr-2026-09-27T08-35-52",
+                "blueprintId": "team.mpr-a",
+                "revision": "1",
+                "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                "createdAt": "2026-09-27T08:35:55.672Z",
+                "generation": 9,
+                "memberCount": 1
+              },
+              {
+                "rootSessionId": "session-mpr-tb-mpr-2026-09-27T08-35-52",
+                "blueprintId": "team.mpr-b",
+                "revision": "1",
+                "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                "createdAt": "2026-09-27T08:35:55.918Z",
+                "generation": 9,
+                "memberCount": 1
+              },
+              {
+                "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                "blueprintId": "team.tvs-spill",
+                "revision": "1",
+                "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/tvs-spill-2026-09-27T19-46-24",
+                "createdAt": "2026-09-27T19:46:25.990Z",
+                "generation": 5,
+                "memberCount": 0
+              }
+            ]
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.listRoots",
+            "endpoint": "team.listRoots",
+            "contractVersion": 3,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "rs1",
+    "method": "team.getReadState",
+    "params": {
+      "sessionId": "session-tvs-spill-2026-09-27T19-46-24"
+    },
+    "version": 6,
+    "status": 200,
+    "transportError": null,
+    "result": {
+      "type": "server-response",
+      "rpcId": "tvs-e5weursh6p",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "relation": "team-root",
+            "teamSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+            "memberInstanceId": null,
+            "disposed": false,
+            "durableGeneration": 5
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.getReadState",
+            "endpoint": "team.getReadState",
+            "contractVersion": 6,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "lp1",
+    "method": "team.getLedgerPage",
+    "params": {
+      "teamSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+      "limit": 100
+    },
+    "version": 6,
+    "status": 200,
+    "transportError": null,
+    "result": {
+      "type": "server-response",
+      "rpcId": "tvs-20g1pc9lse",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "entries": [
+              {
+                "schemaVersion": 2,
+                "sequence": 45,
+                "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                "factType": "team-work-admitted",
+                "payload": {
+                  "at": "2026-09-27T19:46:26.033Z",
+                  "caller": {
+                    "humanId": "session-mpr-boot-mpr-2026-09-27T08-35-52",
+                    "kind": "human"
+                  },
+                  "payloadFingerprint": "sha256:ce3720dd64e13a3f95506ffda721ccc219efd854122810523dee3f1fa5e75502",
+                  "prompt": "tvs_spill_tvs-spill-2026-09-27T19-46-24 — run exactly one bash command for me: head -c 300000 /dev/zero | tr '\\0' 'x' — then tell me the approximate output size.",
+                  "requestToken": "team-create:initial-work:sha256:ce3720dd64e13a3f95506ffda721ccc219efd854122810523dee3f1fa5e75502",
+                  "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                  "targetKind": "root"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T19:46:26.036Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 46,
+                "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                "factType": "artifact-read-granted",
+                "payload": {
+                  "instanceId": "inst-leader",
+                  "locator": "/tmp/dsh-subprocess-PoVZui/dsh-subprocess-49-1-076703227f47-stdout.log",
+                  "schemaVersion": 1,
+                  "source": {
+                    "callId": "call-tvs-spill-1",
+                    "kind": "shell-foreground",
+                    "stream": "stdout",
+                    "toolName": "bash"
+                  },
+                  "targetKeyDigest": "sha256:2d338d7a58168913604feead05d2ccebf208c8d557d257cb432750f78b72bb96",
+                  "versionDigest": "sha256:4e988108a0fff81cc1870beec5674ce3c8a34726c03db9df94387e4372ac4e36"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T19:46:46.502Z"
+              },
+              {
+                "schemaVersion": 2,
+                "sequence": 47,
+                "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                "factType": "team-root-work-delivered",
+                "payload": {
+                  "at": "2026-09-27T19:46:49.889Z",
+                  "payloadFingerprint": "sha256:ce3720dd64e13a3f95506ffda721ccc219efd854122810523dee3f1fa5e75502",
+                  "requestToken": "team-create:initial-work:sha256:ce3720dd64e13a3f95506ffda721ccc219efd854122810523dee3f1fa5e75502",
+                  "rootSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                  "targetKind": "root",
+                  "workOutcome": "delivered"
+                },
+                "operationId": null,
+                "createdAt": "2026-09-27T19:46:49.893Z"
+              }
+            ],
+            "nextAfterSequence": null,
+            "total": 3
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.getLedgerPage",
+            "endpoint": "team.getLedgerPage",
+            "contractVersion": 6,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "rp1",
+    "method": "team.getProjection",
+    "params": {
+      "teamSessionId": "session-tvs-spill-2026-09-27T19-46-24"
+    },
+    "version": 6,
+    "status": 200,
+    "transportError": null,
+    "result": {
+      "type": "server-response",
+      "rpcId": "tvs-m5h12yp162",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "projection": {
+              "schemaVersion": 2,
+              "teamSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+              "blueprint": {
+                "blueprintId": "team.tvs-spill",
+                "revision": "1",
+                "contentHash": "sha256:0e1e305f698df2741662e323f0d078f92b15b5693c167c7955ffd48cf8cc61a5"
+              },
+              "generation": 5,
+              "generatedAt": "2026-09-27T19:46:49.925Z",
+              "root": {
+                "teamSessionId": "session-tvs-spill-2026-09-27T19-46-24",
+                "createdAt": "2026-09-27T19:46:25.990Z",
+                "policyState": "default",
+                "admission": "OPEN",
+                "compatibility": {
+                  "status": "OPEN",
+                  "probeGeneration": 1,
+                  "requirementFingerprint": "none",
+                  "environmentFingerprint": "fp-v1:ae11d8f689bbb7b0",
+                  "warningCount": 0,
+                  "fatalCount": 0,
+                  "acknowledgedWarningCount": 0,
+                  "lastProbedAt": "2026-09-27T19:46:26.026Z"
+                },
+                "creationBudgetConsumed": 0,
+                "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/tvs-spill-2026-09-27T19-46-24"
+              },
+              "templates": [
+                {
+                  "kind": "leader",
+                  "templateId": "leader",
+                  "displayName": "leader",
+                  "contextPolicy": "persistent"
+                }
+              ],
+              "members": [
+                {
+                  "instanceId": "inst-leader",
+                  "templateId": "leader",
+                  "label": "leader",
+                  "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/tvs-spill-2026-09-27T19-46-24",
+                  "createdAt": "2026-09-27T19:46:26.000Z",
+                  "lifecycle": "RUNNING",
+                  "contextPolicy": "persistent",
+                  "effectiveConfig": {
+                    "model": {
+                      "value": null,
+                      "source": "blueprint",
+                      "state": "unavailable"
+                    },
+                    "workspace": {
+                      "value": null,
+                      "source": "blueprint",
+                      "state": "unavailable"
+                    },
+                    "permissions": {},
+                    "autonomy": {
+                      "value": null,
+                      "source": "blueprint",
+                      "state": "unavailable"
+                    }
+                  },
+                  "liveActivity": {
+                    "residency": "resident",
+                    "lastActivityAt": "2026-09-27T19:46:49.925Z"
+                  }
+                }
+              ],
+              "ledger": {
+                "latestSequence": 47,
+                "totalEntries": 3,
+                "byCategory": {
+                  "team": 2,
+                  "member": 0,
+                  "lifecycle": 0,
+                  "message": 0,
+                  "control": 1,
+                  "policy": 0,
+                  "compatibility": 0,
+                  "progress": 0
+                },
+                "pendingControlCount": 0
+              },
+              "durableGeneration": 5,
+              "liveToken": "lt-v1-92163c7dcd398e11e575d499baa944facf5c772dfd19bc87a34d8cf5e57b6852"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.getProjection",
+            "endpoint": "team.getProjection",
+            "contractVersion": 6,
+            "requestToken": null,
+            "projectionGeneration": 5,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  }
+]

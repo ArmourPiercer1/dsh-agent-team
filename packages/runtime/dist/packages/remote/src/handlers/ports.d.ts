@@ -21,6 +21,7 @@
  */
 import type { RemoteAdmissionAction, RemoteCaller, RemoteCapability, RemoteLosslessRecord, RemoteMethodParams, RemoteMutationActor, RemoteMutationScope, RemotePolicyEntry, RemotePolicyStateViewValue, RemoteProbeTrigger } from '../contracts/params.js';
 import type { RemoteSafeRecord } from '../contracts/remote-safe.js';
+import type { RemoteTeamGetReadStateValue } from '../contracts/types.js';
 /** The blueprint catalog read port (pre-creation discovery). */
 export interface RemoteCatalogPort {
     /**
@@ -60,11 +61,31 @@ export interface RemoteTeamCreatePort {
 /** The whole-projection read port. */
 export interface RemoteProjectionPort {
     /**
-     * Project one TeamSession to its whole read-only view.
+     * Project one TeamSession to its whole read-only view (the v1–v5 path
+     * — the frozen shape, served for contract versions <= 5).
      * @returns the exact P8-T1 `TeamProjectionDto` (nine top-level fields,
      *   lossless JSON).
      */
     project(teamSessionId: string): RemoteSafeRecord;
+    /**
+     * The v6 ATOMIC projection read (team-view-sync-complete, PR #35 second
+     * follow-up P0-2 — the same-snapshot guarantee): the whole projection
+     * PLUS its `liveToken` computed FROM THE SAME PROJECTION RESULT. The
+     * adapter materializes the live overlay ONCE (the Team-scoped
+     * `snapshot(teamSessionId)`), folds it into the member rows, and derives
+     * the token from those already-materialized `members[].liveActivity`
+     * cells — the frame's live state and the token can NEVER come from two
+     * different live snapshots, and no second live read happens on the v6
+     * path (the lightweight `liveToken` port remains for the v6
+     * `team.getReadState` probe, which must NOT build a full projection).
+     * @returns the projection (the same lossless-JSON `TeamProjectionDto`
+     *   shape as `project`) plus its same-snapshot `liveToken` (a
+     *   non-empty opaque `lt-v1-*` string).
+     */
+    projectV6(teamSessionId: string): {
+        projection: RemoteSafeRecord;
+        liveToken: string;
+    };
 }
 /** The durable Team ledger read port (remote-level pagination, D-5). */
 export interface RemoteLedgerPort {
@@ -356,10 +377,70 @@ export interface RemoteTeamPrepareOrdinaryOpenPort {
     prepareOrdinaryOpen(teamSessionId: string): RemoteSafeRecord;
 }
 /**
- * The complete dependency surface of the handler layer: exactly 18 ports
+ * The v6-only `team.getReadState` port: the authoritative per-session
+ * read-state query over the host's durable TeamDomain rows. The durable
+ * rows are the SOLE authority:
+ *
+ * - a `team-root` / `team-member` answer requires a positively readable
+ *   durable row (the `session_bindings` row, corroborated by the
+ *   `team_sessions` / `member_instances` rows; a disposed member still
+ *   resolves to the member relation, marked `disposed`);
+ * - only a successful read that positively confirms no affiliation may
+ *   answer `none` (an explicit `ordinary` binding or the confirmed
+ *   absence of every durable affiliation);
+ * - EVERY storage/integrity failure (corrupt row, non-canonical bytes,
+ *   seam failure, missing corroborating row) FAILS CLOSED by throwing —
+ *   a storage error is never translated into a `none` answer.
+ *
+ * READ-ONLY: no repository writes, no agent effects, no generation
+ * advance.
+ */
+export interface RemoteTeamReadStatePort {
+    /**
+     * Resolve the session to its Team affiliation (or a confirmed none).
+     * @param sessionId - the validated session id (any kind).
+     * @returns the closed read-state value (see
+     *   `RemoteTeamGetReadStateValue`).
+     * @throws the storage layer's typed error on any storage/integrity
+     *   failure (fail closed).
+     */
+    readState(sessionId: string): RemoteTeamGetReadStateValue;
+}
+/**
+ * The v6 `liveToken` port: the deterministic opaque token over ONE team's
+ * SEMANTIC live state — the sorted per-member `{ instanceId, residency }`
+ * pairs of the team's non-disposed durable member rows (residency
+ * `resident` / `resuming` / `cold`). The token is a pure function of that
+ * semantic state: it EXCLUDES `lastActivityAt` / `now()` / `generatedAt`
+ * and every per-process counter (nothing that resets on host restart),
+ * and it is NEVER folded into the durable generation. It is recomputed
+ * fresh on every call (the overlay snapshot is the single source); an
+ * all-cold state after a restart is a genuine semantic state and produces
+ * a well-defined token of its own.
+ *
+ * Scope (PR #35 second follow-up P0-2): this port serves the LIGHTWEIGHT
+ * v6 `team.getReadState` probe ONLY — the probe must NOT build a full
+ * projection. The v6 `team.getProjection` does not consult it: its token
+ * comes from the ATOMIC `RemoteProjectionPort.projectV6` read (the token
+ * is computed from the same projection result — same snapshot).
+ */
+export interface RemoteLiveTokenPort {
+    /**
+     * Compute the deterministic live token for one team.
+     * @param teamSessionId - the validated TeamSession (root session) id.
+     * @returns the deterministic opaque token (a non-empty string).
+     * @throws the storage layer's typed error if the team's durable rows
+     *   cannot be read (fail closed — no fallback token).
+     */
+    liveToken(teamSessionId: string): string;
+}
+/**
+ * The complete dependency surface of the handler layer: exactly 20 ports
  * (the 12 frozen P8-T3 ports + the two TCM vNext §15.6 v2 ports + the
  * two Team D1-D6 repair v2 v3 ports + the F9 v4 port + the C1
- * restart-0.1.7-rc.1 recovery v5 port), none of which is a mirror of the
+ * restart-0.1.7-rc.1 recovery v5 port + the two team-view-sync-complete
+ * v6 ports: the authoritative per-session read-state port and the
+ * semantic-live-state token port), none of which is a mirror of the
  * upstream session controller, a session log artifact, or an upstream
  * private API (G8).
  */
@@ -373,6 +454,8 @@ export interface RemoteHandlerDeps {
     readonly teamEnsureRootLive: RemoteTeamEnsureRootLivePort;
     readonly teamResolveControl: RemoteTeamResolveControlPort;
     readonly teamPrepareOrdinaryOpen: RemoteTeamPrepareOrdinaryOpenPort;
+    readonly teamReadState: RemoteTeamReadStatePort;
+    readonly liveToken: RemoteLiveTokenPort;
     readonly projection: RemoteProjectionPort;
     readonly ledger: RemoteLedgerPort;
     readonly admission: RemoteAdmissionPort;
