@@ -1,0 +1,20 @@
+{
+  "note": "hand-written: the smoke host job (bash-4471) was job_killed after the final cadence polls; the post-state below was verified manually (socket probes + stable 401 probes) before the evidence commit.",
+  "preStable": { "http://127.0.0.1:3080/": 401, "http://127.0.0.1:3180/": 401 },
+  "postStable": { "http://127.0.0.1:3080/": 401, "http://127.0.0.1:3180/": 401 },
+  "stablePreEqualsPost": true,
+  "hostPort3182": "released (socket connect refused after job_kill; the browser session vtyl was stopped before the teardown probes)",
+  "mockPort3497": "released (socket connect refused)",
+  "foreignListeners": {
+    "3181": "LISTEN, pre-existing before this run (different PID namespace — the kit's isPortFree probe skipped it, which is exactly why the host took 3182); not bound by this run",
+    "3496": "LISTEN, pre-existing before this run (the mock fell back to 3497 for the same reason); not bound by this run"
+  },
+  "testUseCheckout": { "porcelain": "0 lines (clean)", "head": "46a7f68b09 (0.1.7-rc.1 release point, untouched)" },
+  "worktreeAtSmokeTime": {
+    "head": "3d05d3a27233ea10ae8f49667165e8dd92b97f0c (the third-follow-up kit gate fix — the smoke's commit-binding hard gate asserts worktreePorcelain == '' at preflight)",
+    "codeCommit": "763a0b3d5c0f91b8c805c5906d78389deff9829b (the third-follow-up CODE commit; the spill E2E run-17 ran on it with an empty porcelain, see sibling dir wp8-spill-e2e-tvs-spill-2026-09-28T08-50-05)"
+  },
+  "world": "tests/homes/tvs-smoke-2026-09-28T08-54-21 retained (disposable smoke world per the home protocol)",
+  "tokenScrub": "launch token scrubbed from instance.log (instance.log.scrubbed retained as the canonical copy; instance.log overwritten with the scrubbed content); the temporary .token.tmp staging file was deleted before the evidence commit; sweep with the live-token literal returned zero files",
+  "verifiedAt": "2026-09-28T09:15Z"
+}
