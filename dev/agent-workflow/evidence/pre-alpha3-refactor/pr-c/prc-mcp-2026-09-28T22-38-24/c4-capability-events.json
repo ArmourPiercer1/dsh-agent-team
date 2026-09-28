@@ -1,0 +1,29 @@
+[
+  {
+    "sequence": 1,
+    "createdAt": "2026-09-28T22:38:26.906Z",
+    "payload": {
+      "attempt": 1,
+      "capabilityName": "mcp_router",
+      "capabilityType": "mcpServer",
+      "event": "mount-failed",
+      "observedAt": "2026-09-28T22:38:26.901Z",
+      "reason": "mcp-client(mcp_router): initial connection or tool synchronization failed",
+      "source": "mcp-fiber",
+      "verdict": "unreachable"
+    }
+  },
+  {
+    "sequence": 2,
+    "createdAt": "2026-09-28T22:38:59.483Z",
+    "payload": {
+      "attempt": 2,
+      "capabilityName": "mcp_router",
+      "capabilityType": "mcpServer",
+      "event": "mount-restored",
+      "observedAt": "2026-09-28T22:38:59.470Z",
+      "source": "mcp-fiber",
+      "verdict": "reachable"
+    }
+  }
+]
