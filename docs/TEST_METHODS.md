@@ -13,7 +13,7 @@
 | DSH_HOME | `<repo>/tests/homes/<world>`（一世界一目录；**位于会话工作区内**——见 §5 沙箱约束；与稳定实例的默认 `~/.dsh` 完全隔离；`tests/homes/` 已被 `.gitignore` 覆盖；协议见 §7） |
 | 端口 | `3180` 族（3180-3186 / 3491-3500；稳定实例占 3080；测试实例**禁止**使用 3080） |
 
-> 落位方法（本环境实测 2026-09-12）：`git clone --local references/deepseek-harness tests/deepseek-harness-test-use && git -C tests/deepseek-harness-test-use checkout --detach a66e470204`（冻结 legacy 参考仓含完整 upstream 历史，无需网络；等价地可从 upstream 远端 clone）。落位后必须复核 `git status --porcelain` 为空。
+> 落位方法（**历史**，本环境实测 2026-09-12，0.1.2 时代）：`git clone --local references/deepseek-harness tests/deepseek-harness-test-use && git -C tests/deepseek-harness-test-use checkout --detach a66e470204`（冻结 legacy 参考仓含完整 upstream 历史，无需网络；等价地可从 upstream 远端 clone）。**当前流程（2026-09-24 宿主升级轮起）**：checkout 已在位（detached @ 基线）；升级/重建基线时 `git -C tests/deepseek-harness-test-use fetch origin && git -C tests/deepseek-harness-test-use checkout --detach <TEST_USE_BASELINE_SHA>`（canonical 常量唯一来源 = `tests/paths.mjs`，当前 `46a7f68b0922371ce7144b668b90e377d8e799f4`）。落位后必须复核 `git status --porcelain` 为空。
 
 ## 2. 启动 / 停止 / 验证
 
@@ -26,12 +26,18 @@ pnpm install --ignore-scripts   # node ^22.19 || >=24；packageManager pnpm@11.7
 # 构建（必须；web 运行时从 lib/ 加载，且需 client 产物）：
 DSH_CLIENT_COMMIT_HASH=46a7f68b09 \
 ESBUILD_WORKER_THREADS=1 \
-node scripts/build.ts           # 直接 node 跑 TS orchestrator（v24 原生 type-stripping），绕开 tsx
+pnpm run build                  # 必须经 pnpm run 调用：0.1.7 scripts/build.ts 经
+                                # pnpmInvocation() 解析包管理器入口（读 npm_execpath，
+                                # 缺失直接 throw），再 spawnSync 子构建。普通终端直接
+                                # `node scripts/build.ts` 会失败（2026-09-28 实测
+                                # exit 1: "pnpm invocation: npm_execpath is unavailable;
+                                # invoke the script through pnpm run."；`pnpm run build`
+                                # 同条件实测 exit 0，263 client artifacts）
 # 启动（DSH_HOME 必须显式设置；用构建产物入口，绕开 tsx 的同步 esbuild spawn）：
 DSH_HOME=<repo>/tests/homes/<world> node apps/cli/lib/bin.js web --port 3180 --no-open
 ```
 
-> **为什么不是 `pnpm dsh web`**：`pnpm dsh` 经 `node --import tsx/esm` 启动，tsx 走 esbuild 同步 API（强制子进程 spawn），在受限沙箱下必然 EPERM。构建产物入口 `apps/cli/lib/bin.js` 是纯 Node ESM，运行期插件均从 `lib/` 加载。上述 env 组合在任何环境下都成立（确定性 pin + 无 spawn 依赖），受限与不受限环境通用。
+> **为什么启动不用 `pnpm dsh web`**：`pnpm dsh` 经 `node --import tsx/esm` 启动，tsx 走 esbuild 同步 API（强制子进程 spawn），在受限沙箱下必然 EPERM。构建产物入口 `apps/cli/lib/bin.js` 是纯 Node ESM，运行期插件均从 `lib/` 加载。`DSH_CLIENT_COMMIT_HASH` 是确定性 pin（构建编排器据此跳过 git spawn 查版本）。**勘误（2026-09-28 审查轮）**：旧版此处称构建链"无 spawn 依赖"——对 0.1.7 不成立：`scripts/build.ts` 经 `pnpmInvocation()` + `spawnSync` 驱动子构建（stdio inherit，实测受限沙箱内可行），故构建必须经 `pnpm run` 调用（见上方命令）；受限/不受限环境通用的保证仅对**启动**路径（`node apps/cli/lib/bin.js`）与上述 env 组合成立。
 
 - **验证**（2026-08-29 实测语义，0.1.2-alpha.1；2026-09-04 于 0.1.2-rc.1 复测成立，R122）：
   1. 启动行 `dsh web: http://127.0.0.1:3180/?token=...` 出现 = host boot 完成（plugin tree loaded）。
@@ -73,7 +79,7 @@ DSH_HOME=<repo>/tests/homes/<world> node apps/cli/lib/bin.js web --port 3180 --n
 - 2026-09-04（R122 留痕）：基线随 upstream in-place 更新移至 0.1.2-rc.1；host-service-registry 语义缝隙（`sessionPersistence.ensureMaterialized` → `sessions.flush`）为上游 rc.1 自有替换，非 CORE_SEAM_BLOCKER。
 - 2026-09-12（本次）：测试基础设施标准化——布局迁入 `tests/`（§1）、基线对齐 `a66e470204`（§1 + 文首留痕）、home 协议（§7）、kit 归位（§4.1）、pin 代差登记（§4.2）。端口策略与稳定实例红线不变。
 - 2026-09-17（rc2-repair 轮，用户裁决"本轮基线 0.1.5-rc.2，后续不再为 0.1.2 提供支持"）：测试运行时基线 `a66e470204`（0.1.2-rc.1）→ **`fb2c4b9e698e30edb738bca4cf0618587db7d203`**（0.1.5-rc.2 官方发布点，与 `docs/plans/active/dsh-agent-team-rc2-repair-plan.md` §0.1 宿主提交逐字一致）。test-use 检出已迁移（`git checkout --detach`，对象本地已有、无网络；porcelain 迁移前后均为空）；`pnpm install --ignore-scripts` + `DSH_CLIENT_COMMIT_HASH=fb2c4b9e69 node scripts/build.ts` 重建成功；3181 新 home（`tests/homes/.dsh-test-rc2b`）启动冒烟：boot 行出现 + 无 token 401 + token 303 鉴权放行；`tests/paths.mjs` pin 与 AGENTS.md 基线行同步更新。`references/deepseek-harness` 工作树同期已由用户切至 `stable-1-0.1.5-rc.2` @ 同提交（冻结 legacy 锚点 `a3ab319927` 未移动，本环境复核）。§4.2 的 characterization pin（`cd5ef814`）为独立来源，当轮不动（该裁决后于 2026-09-17 收束工作中被用户指令推翻，pin 已迁 `fb2c4b9e69`，见 §4.2）。端口策略与稳定实例红线不变。
-- 2026-09-24（宿主升级轮，用户裁决执行 `docs/plans/active/dsh-agent-team-0.1.7-rc.1-upgrade-plan.md`）：测试运行时基线 `fb2c4b9e698e30edb738bca4cf0618587db7d203`（0.1.5-rc.2）→ **`46a7f68b0922371ce7144b668b90e377d8e799f4`**（0.1.7-rc.1 官方发布点 = tag `dsh-v0.1.7-rc.1`）。test-use 检出迁移（`git fetch --tags origin` + `git checkout --detach`；对象本地已有——references 仓 2026-09-24 stable-2 轮已引入 0.1.7 系列对象，无网络依赖）；`pnpm install --ignore-scripts` + `DSH_CLIENT_COMMIT_HASH=46a7f68b09 node scripts/build.ts` 重建；`tests/paths.mjs` pin 与 AGENTS.md 基线行同步更新。0.1.7 与 0.1.5 的 breaking surface（agent preset 声明模型 / `agent/created` 串行异步 / session log V4 / client multi-instance / MCP SDK v2 / spill token budget / plugin version compat check）按升级计划 U2–U6 逐项适配；本轮范围不含 session-resume/restart（POST-UPGRADE FOLLOW-UP）。端口策略与稳定实例红线不变。
+- 2026-09-24（宿主升级轮，用户裁决执行 `docs/plans/active/dsh-agent-team-0.1.7-rc.1-upgrade-plan.md`）：测试运行时基线 `fb2c4b9e698e30edb738bca4cf0618587db7d203`（0.1.5-rc.2）→ **`46a7f68b0922371ce7144b668b90e377d8e799f4`**（0.1.7-rc.1 官方发布点 = tag `dsh-v0.1.7-rc.1`）。test-use 检出迁移（`git fetch --tags origin` + `git checkout --detach`；对象本地已有——references 仓 2026-09-24 stable-2 轮已引入 0.1.7 系列对象，无网络依赖）；`pnpm install --ignore-scripts` + `DSH_CLIENT_COMMIT_HASH=46a7f68b09 node scripts/build.ts` 重建（勘误 2026-09-28：0.1.7 的 build.ts 须经 `pnpm run` 调用，见 §2；本历史段落命令表述按当时记录保留）；`tests/paths.mjs` pin 与 AGENTS.md 基线行同步更新。0.1.7 与 0.1.5 的 breaking surface（agent preset 声明模型 / `agent/created` 串行异步 / session log V4 / client multi-instance / MCP SDK v2 / spill token budget / plugin version compat check）按升级计划 U2–U6 逐项适配；本轮范围不含 session-resume/restart（POST-UPGRADE FOLLOW-UP）。端口策略与稳定实例红线不变。
 
 ## 7. DSH_HOME 命名与清理协议（`tests/homes/`，2026-09-12 新增）
 

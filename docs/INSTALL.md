@@ -127,7 +127,11 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
     - id: "dsh-agent-team"
       name: "file:///<REPO>/packages/runtime/dist/packages/runtime/src/plugin/host.js"
       config:
-        bootPhase: "create"
+        bootPhase: "create-or-open"   # 生产重启安全入口：新 home 初始化 / 已有 home 打开
+                                      # （仓库根 cordis.patch.yml 与 0.1.0-rc.1 shipped
+                                      # bundle 同款）。勿用 "create" = 严格全新世界
+                                      # （已有 stamp → TEAM_DOMAIN_EXISTS，同一 home 二次
+                                      # 启动 bootstrap 失败）；"resume" = 严格加载已有
         rootSessionId: "team-root"
         blueprintSource: |
           ---
@@ -414,7 +418,7 @@ config schema 与 upstream `LocalSpillStore` 一致：`root` 字符串、
 | 快速安装 host 行加载失败（`upstream-resolver.mjs` not found） | 装入的 commit 处于 bundle-form 初期 `files` 安装面不全的窗口（pnpm 对 git 依赖按 `files` 字段裁剪物化，该文件曾被遗漏）：用新 commit 重装；临时处置 = 从源码树把 `packages/runtime/src/plugin/upstream-resolver.mjs` 拷入依赖目录同相对路径后重启 |
 | seam 推导失败（`no default seam module was found`） | 安装目录结构残缺（入口推导的两个布局候选都不存在）：重装，或改 §3 手动形态写显式 `seamUrl` |
 | host 行配置校验失败 | `TEAM_PLUGIN_CONFIG_INVALID`：`config:` 缺 `generation` / `deniedSelection`（必填、fail-closed，见 §3 模板），或 MCP 字段组合非法 —— `mcpServers` 必须是 `{ name: 非空 string, port: number|null }` 数组且 name 不重名；`mcpServers` 缺省时 legacy `mcpServer` 必须存在（`null` 或 `{ name, port }`）；两者同时出现时 `mcpServer` 必须为 `null`（否则 ambiguous 拒）。`mcpServers: []`（或 `mcpServer: null`）= 无 MCP，合法（语义细节见 §3.3） |
-| host 行加载失败 | 核 file:// 路径（正斜杠、文件存在：`pnpm build` 已跑）；`bootPhase`/`rootSessionId` 与既有世界冲突；glue 加载报 @deepseek-ai/* 解析错 → `pnpm install` 闭包不全（registry 可达性 / lockfile），重跑 `pnpm install` |
+| host 行加载失败 | 核 file:// 路径（正斜杠、文件存在：`pnpm build` 已跑）；`bootPhase`/`rootSessionId` 与既有世界冲突（典型：既有 home 上用 `create` → `TEAM_DOMAIN_EXISTS`；生产用 `create-or-open`）；glue 加载报 @deepseek-ai/* 解析错 → `pnpm install` 闭包不全（registry 可达性 / lockfile），重跑 `pnpm install`；报 `TEAM_PLUGIN_GLUE_UNAVAILABLE` 且含 legacy reader 候选失败 → 安装面产物不全（`pnpm build` 未跑或 dist 镜像被清理），重跑 `pnpm setup` |
 | client 行加载失败 | `pnpm build:composition` 是否已跑（`composition-shim/` 存在）；改试 §3 的相对路径形态 |
 | 页面 404 | 目标 DSH 缺 web shell 产物（源码安装 DSH 需在该机 `pnpm build:web` 一次；发布版 DSH 不应出现） |
 | 成员轮次不动 | 模型凭据/`staticModel` 配置（§4）；查看 DSH host 日志 |

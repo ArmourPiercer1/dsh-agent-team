@@ -26,7 +26,7 @@ must not be created without a separate architecture decision.
 | `packages/tools` | Model-callable team tools (roster, progress, messaging) redesigned against the contracts; state flows through TeamDomain, never SessionEvent writes. |
 | `packages/remote` | Team remote: durable, replayable projection feeds for external consumers and the Web UI. |
 | `packages/client` | Browser half: dsh-agent-team Cordis client plugin and Team UI, on the public client surface only. |
-| `packages/legacy` | Reference-only empty slot; vNext never depends on legacy code (see `docs/migration`). |
+| `packages/legacy` | Frozen legacy session inspection: the read-only `session-reader` (legacy Team session files → inspection facts), built separately into the runtime dist mirror (`tsconfig.build.json`, noCheck) and loaded unconditionally by the host at plugin apply (fail-closed `TEAM_PLUGIN_GLUE_UNAVAILABLE`). No other legacy code lives here; vNext never depends on legacy team logic (see `docs/migration`). |
 | `packages/testkit` | Test infrastructure: fault-injection / restart fixtures, golden fixtures, shared assertions — never imported by production packages. |
 
 ## vNext object model (summary)
@@ -57,7 +57,9 @@ gitignored) — this section is a pointer summary, not the authority:
 - **Current master (alpha):** `0.1.1-alpha.2` (all 9 packages) at master @ `e22c659a`
   (PR #35 team-view-sync-complete merged, 2026-09-28); host pin
   `@deepseek-ai/dsh@0.1.7-rc.1` (root `peerDependencies`). `0.1.1-alpha.1`
-  (frozen 2026-09-11) is superseded. No open PRs (2026-09-28).
+  (frozen 2026-09-11) is superseded. Open PR as of 2026-09-28: **PR #22**
+  (fix/persona-requirement-kind @ `d30397b8`, persona requirement kind-matching
+  fix, awaiting review/merge ruling).
 - **Pre-1.0 branch policy:** `master` carries ongoing alpha development; `stable` tracks only release-candidate baselines and RC-qualified fixes. Do not merge unqualified alpha work from `master` directly into `stable`.
 - **Product foundation:** the full vNext product (P0–P9 + T12 vertical +
   upstream-0.1.2-rc.1 compat + fresh-machine install chain, 1284 files / +85,679)
@@ -92,16 +94,21 @@ gitignored) — this section is a pointer summary, not the authority:
   §1/§4.2). History: 0.1.2-rc.1 @ `76fda72979` (2026-09-04, R122) →
   0.1.5-rc.2 @ `fb2c4b9e` (2026-09-17, rc2-repair) → 0.1.7-rc.1 (2026-09-24).
 - Push: origin/master updated through 2026-09-28 under per-round one-shot user
-  push authorizations — PRs #16–#35 all merged (latest: PR #35
-  team-view-sync-complete, merged @ `e22c659a`). **origin/master @ `e22c659a`**;
+  push authorizations — PRs #16–#21 and #23–#35 merged (latest: PR #35
+  team-view-sync-complete, merged @ `e22c659a`); **PR #22
+  (fix/persona-requirement-kind @ `d30397b8`) still open**. **origin/master @
+  `e22c659a`**;
   **origin/stable @ `b0e5aeb4`** (0.1.0-rc.1 freeze, unchanged). Zero force-push
   on gated history; each push verified via ls-remote.
-- Next: no open PRs, no in-flight task round (2026-09-28). Awaiting user
-  direction: **G8-S (P9 proper line)** ruling (graph `blocked`, pending
-  prototype outcome) and the registered follow-up backlog (per-PR `followups` in
-  `graph.yaml`: c1/rc2 kit 0.1.7 re-adaptation, g5 real-host re-run,
-  p6t1-parallel load flake, F-rc1 composer reconcile, P10 items). No further
-  push without explicit authorization.
+- Next: no in-flight task round (2026-09-28); open PR = **PR #22**
+  (fix/persona-requirement-kind — match persona requirements by persona kind,
+  not preset id; head `d30397b8`, base master, mergeable/clean) awaiting
+  review/merge ruling. Awaiting user direction: **PR #22**, **G8-S (P9 proper
+  line)** ruling (graph `blocked`, pending prototype outcome) and the
+  registered follow-up backlog (per-PR `followups` in `graph.yaml`: c1/rc2 kit
+  0.1.7 re-adaptation, g5 real-host re-run, p6t1-parallel load flake, F-rc1
+  composer reconcile, P10 items). No further push without explicit
+  authorization.
 - Details, pending items and evidence pointers: **`docs/STATUS.md`**.
 
 ## Commands
