@@ -1797,13 +1797,31 @@ function buildS6CategoryHandlers(ports, principal) {
                     // are the sole authority (fail-closed — the port's typed
                     // failures pass through, invariant 4b; never a silent
                     // `none`). The closed wire value is `data` verbatim (the
-                    // pure handler's normalizeTeamGetReadStateValue equivalent —
-                    // the port's value is the resolver's closed output, typed
-                    // RemoteTeamGetReadStateValue).
+                    // pure handler's normalizeTeamGetReadStateValue equivalent
+                    // — the port's value is the resolver's closed DURABLE output,
+                    // typed SessionReadStateDurableValue; the dispatcher adds the
+                    // liveToken cell below (PR #35 follow-up) before the value
+                    // reaches the closed wire shape).
                     const readStateParams = params;
-                    return ports.teamReadState.readState(readStateParams.sessionId).then((value) => ({
-                        data: value,
-                    }));
+                    return ports.teamReadState.readState(readStateParams.sessionId).then((value) => {
+                        // PR #35 follow-up (frozen: the read-state is the
+                        // LIGHTWEIGHT probe): the wire value = the DURABLE
+                        // resolver answer plus the `liveToken` cell — the SAME
+                        // live-token closure the v6 projection uses (consistency:
+                        // at the same moment, getReadState and getProjection
+                        // answer the same durableGeneration + liveToken pair). A
+                        // `none` answer carries `null` (there is no owning
+                        // TeamSession whose live state to token); a team relation
+                        // whose token cannot be computed fails the read typed
+                        // (TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE — NEVER a
+                        // team relation with a null token).
+                        if (value.relation === 'none') {
+                            return { data: { ...value, liveToken: null } };
+                        }
+                        return ports.liveToken
+                            .token(value.teamSessionId)
+                            .then((liveToken) => ({ data: { ...value, liveToken } }));
+                    });
                 }
                 case 'team.getLedgerPage': {
                     const pageParams = params;

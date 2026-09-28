@@ -66,12 +66,14 @@
  *        glue/seam presence, :3080/:3180 probe (never bound), ports free.
  *   C1 — baseline (pre-spill): the SEED team T1 is intact —
  *        team.getReadState(T1 member) v6 = team-member + disposed:false
- *        + durableGeneration = G0 (32); team.getProjection(T1) v6
- *        readable with the pair (G0, LT0); team.getLedgerPage(T1) =
- *        L0 entries, NO artifact-read-granted; AND the not-yet-created
- *        T2 root answers team.getReadState v6 = 'none' with null cells
- *        (frozen decision 1: 'none' only on positively confirmed
- *        no-affiliation).
+ *        + durableGeneration = G0 (32) + liveToken 'lt-v1-*' (PR #35
+ *        follow-up, P0-2: the closed value carries the token);
+ *        team.getProjection(T1) v6 readable with the pair (G0, LT0);
+ *        team.getLedgerPage(T1) = L0 entries, NO artifact-read-granted;
+ *        AND the not-yet-created T2 root answers team.getReadState v6 =
+ *        'none' with null cells INCLUDING liveToken null (frozen
+ *        decision 1: 'none' only on positively confirmed no-affiliation;
+ *        P0-2: none → null, never a token).
  *   C2 — the real spill: team.create v1 {rootSessionId: T2,
  *        blueprintId, initialWork: {prompt}} returns ok (fresh-root);
  *        the mock records the marker work turn with the `bash`
@@ -83,18 +85,23 @@
  *   C3 — read-state detects the generation: fresh
  *        team.getReadState(T2) v6 = team-root + disposed:false +
  *        memberInstanceId:null + durableGeneration G1 that AGREES with
- *        the T2 ledger stamp INCLUDING the grant: S1-A hook A (every NEW
- *        durable entry advances the owning root's stamp +1; row bootstrap
- *        = 1; the create path advances once at creation) gives
- *        G1 = 2 + entryCount(T2). The Root initial-work vertical
+ *        the T2 ledger stamp INCLUDING the grant + a non-empty
+ *        'lt-v1-*' liveToken (P0-2: the host can compute the token
+ *        through the public seam — a host that could not would fail
+ *        typed, never serve a tokenless team relation) : S1-A hook A
+ *        (every NEW durable entry advances the owning root's stamp +1;
+ *        row bootstrap = 1; the create path advances once at creation)
+ *        gives G1 = 2 + entryCount(T2). The Root initial-work vertical
  *        (TCM §15.7/§15.8) is synchronous — team.create v1 returns AFTER
  *        the terminal delivered fact, so the mid-turn grant is already
  *        inside G1 (a grant that did not advance the stamp would read
  *        4 ≠ 5). C1 pins the invariant on the T1 baseline (32 = 2 + 30).
  *   C4 — projection readable: team.getProjection(T2) v6 = ok frame, the
  *        nine frozen v1 cells + durableGeneration === G1 + liveToken
- *        present; provenance (at value.provenance) contractVersion 6 +
- *        projectionGeneration G1.
+ *        present AND IDENTICAL to the read-state liveToken (P0-2: ONE
+ *        authority for the freshness pair — the host computes the token
+ *        once; both endpoints expose the same value); provenance (at
+ *        value.provenance) contractVersion 6 + projectionGeneration G1.
  *   C5 — the RAW LEDGER keeps the grant: team.getLedgerPage(T2) carries
  *        an artifact-read-granted entry with instanceId 'inst-leader'
  *        + locator (the spill file exists on disk, size > 64KB) +
@@ -784,23 +791,28 @@ async function main() {
     const l0 = (lp0v?.entries ?? []).length
     const grant0 = (lp0v?.entries ?? []).filter((e) => e.factType === 'artifact-read-granted')
     const lt0 = rp0v?.liveToken ?? null
+    // (PR #35 follow-up, P0-2) the CLOSED value carries liveToken:
+    // none → null; team → non-empty 'lt-v1-*'.
+    const rs0lt = rs0v?.liveToken ?? null
     const t2PreNone = rsT2preV?.relation === 'none'
       && rsT2preV?.teamSessionId === null
       && rsT2preV?.memberInstanceId === null
       && rsT2preV?.durableGeneration === null
       && rsT2preV?.disposed === false
+      && rsT2preV?.liveToken === null
     const c1 =
       rs0v?.relation === 'team-member'
       && rs0v?.teamSessionId === T1
       && rs0v?.memberInstanceId === T1_MEMBER_INSTANCE
       && rs0v?.disposed === false
       && rs0v?.durableGeneration === g0
+      && typeof rs0lt === 'string' && rs0lt.startsWith('lt-v1-')
       && rp0v !== null && rp0v.durableGeneration === g0 && typeof lt0 === 'string' && lt0.startsWith('lt-v1-')
       && rp0v.generation === g0
       && grant0.length === 0
       && t2PreNone
       && g0 === 2 + l0
-    mark('C1', c1, `rs0={relation:${rs0v?.relation},gen:${rs0v?.durableGeneration}} rp0={gen:${rp0v?.generation},durable:${rp0v?.durableGeneration},lt:${String(lt0).slice(0, 24)}…} ledger=${l0} entries grants=${grant0.length} stamp=${g0} = 2 + ${l0} (S1-A invariant) T2pre={relation:${rsT2preV?.relation},cells-null:${t2PreNone}}`)
+    mark('C1', c1, `rs0={relation:${rs0v?.relation},gen:${rs0v?.durableGeneration},lt:${String(rs0lt).slice(0, 24)}…} rp0={gen:${rp0v?.generation},durable:${rp0v?.durableGeneration},lt:${String(lt0).slice(0, 24)}…} ledger=${l0} entries grants=${grant0.length} stamp=${g0} = 2 + ${l0} (S1-A invariant) T2pre={relation:${rsT2preV?.relation},cells-null+liveToken-null:${t2PreNone}}`)
     if (!c1) dieFatal('baseline (C1) not as expected — aborting before the spill prompt', 2)
 
     // ── C2 — the real spill (team.create v1 + initialWork on T2) ────────────
@@ -901,6 +913,9 @@ async function main() {
     recordApi('rs1', { method: 'team.getReadState', params: { sessionId: T2 }, version: 6, result: rs1 })
     const rs1v = rs1.body?.result?.ok === true ? rs1.body.result.value?.data : null
     g1 = typeof rs1v?.durableGeneration === 'number' ? rs1v.durableGeneration : null
+    // (PR #35 follow-up, P0-2) the team-root read-state carries the
+    // non-empty liveToken (C4 asserts its identity with the projection).
+    const lt1rs = rs1v?.liveToken ?? null
     // The T2 ledger state the stamp must agree with (fetched here, reused by C5).
     const lp1 = await remoteCall(origin, cookie, 'team.getLedgerPage', { teamSessionId: T2, limit: 100 }, 6)
     recordApi('lp1', { method: 'team.getLedgerPage', params: { teamSessionId: T2, limit: 100 }, version: 6, result: lp1 })
@@ -914,9 +929,10 @@ async function main() {
       && rs1v?.memberInstanceId === null
       && rs1v?.disposed === false
       && g1 !== null
+      && typeof lt1rs === 'string' && lt1rs.startsWith('lt-v1-')
       && grants.length >= 1
       && g1 === 2 + entries.length
-    mark('C3', c3, `readState post = {relation:${rs1v?.relation}, team:${rs1v?.teamSessionId}, disposed:${rs1v?.disposed}, gen:${g1} (create-return ${gCreate})} stamp ${g1} = 2 + ${entries.length} entries, grants=${grants.length}, grantSeq=${grant?.sequence} (first/last seq ${entries[0]?.sequence}/${entries[entries.length - 1]?.sequence})`)
+    mark('C3', c3, `readState post = {relation:${rs1v?.relation}, team:${rs1v?.teamSessionId}, disposed:${rs1v?.disposed}, gen:${g1} (create-return ${gCreate}), lt:${String(lt1rs).slice(0, 24)}…} stamp ${g1} = 2 + ${entries.length} entries, grants=${grants.length}, grantSeq=${grant?.sequence} (first/last seq ${entries[0]?.sequence}/${entries[entries.length - 1]?.sequence})`)
 
     // ── C4 — projection readable with the pair ──────────────────────────────
     const rp1 = await remoteCall(origin, cookie, 'team.getProjection', { teamSessionId: T2 }, 6)
@@ -927,14 +943,18 @@ async function main() {
     const lt1 = rp1p?.liveToken ?? null
     // The v6 provenance rides value.provenance (NOT under value.data).
     const prov1 = rp1v?.provenance ?? {}
+    // (PR #35 follow-up, P0-2) the projection's liveToken IS the
+    // read-state's liveToken — ONE authority for the freshness pair
+    // (the host computes the token once; both endpoints expose it).
     const c4 = rp1ok && rp1p !== null
       && rp1p.generation === g1
       && rp1p.durableGeneration === g1
       && typeof lt1 === 'string' && lt1.startsWith('lt-v1-')
+      && lt1 === lt1rs
       && prov1.contractVersion === 6
       && prov1.projectionGeneration === g1
       && 'members' in rp1p && 'generation' in rp1p && 'schemaVersion' in rp1p
-    mark('C4', c4, `projection post = {gen:${rp1p?.generation}, durable:${rp1p?.durableGeneration}, lt:${String(lt1).slice(0, 24)}…, provCv:${prov1.contractVersion}, provGen:${prov1.projectionGeneration}}`)
+    mark('C4', c4, `projection post = {gen:${rp1p?.generation}, durable:${rp1p?.durableGeneration}, lt:${String(lt1).slice(0, 24)}…, lt===readState-lt:${lt1 === lt1rs}, provCv:${prov1.contractVersion}, provGen:${prov1.projectionGeneration}}`)
 
     // ── C5 — the raw ledger keeps the grant (the lp1 page fetched in C3) ───
     const locator = grant?.payload?.locator

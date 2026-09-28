@@ -1,0 +1,1 @@
+{"type":"server-response","rpcId":"smoke-inspect-1","result":{"ok":false,"error":{"code":"gateway/arguments-invalid","message":"typert gateway: dynamicCordisRunner/syncInspectManifest: args fields do not match the descriptor: missing \"providers\"","details":{"endpoint":"dynamicCordisRunner/syncInspectManifest"}}}}

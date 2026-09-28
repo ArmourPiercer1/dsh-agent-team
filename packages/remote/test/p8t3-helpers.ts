@@ -364,12 +364,17 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     readState(sessionId) {
       calls.push('team.getReadState')
       if (sessionId === P8T3_TEAM_SESSION_ID) {
+        // PR #35 follow-up: the read-state value carries the liveToken
+        // cell (the fake world's deterministic token — the p8t3 surface
+        // has no live overlay, so a fixed `lt-v1-*` string stands in).
         return {
           relation: 'team-root',
           teamSessionId: P8T3_TEAM_SESSION_ID,
           memberInstanceId: null,
           disposed: false,
           durableGeneration: P8T3_PROJECTION['generation'] as number,
+          liveToken:
+            'lt-v1-p8t3fakeworldtoken000000000000000000000000000000000000000000000000',
         }
       }
       return {
@@ -378,6 +383,7 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
         memberInstanceId: null,
         disposed: false,
         durableGeneration: null,
+        liveToken: null,
       }
     },
   }

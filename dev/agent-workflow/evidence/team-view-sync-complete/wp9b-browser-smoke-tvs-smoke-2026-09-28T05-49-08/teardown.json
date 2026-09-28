@@ -1,0 +1,30 @@
+{
+  "note": "The kit's SIGTERM teardown handler did not run: the job-kill delivered SIGTERM to the job wrapper (bash) and the group was reaped before the kit process executed its handler (console log ends at the READY line; no 'stop (SIGTERM)' line). All post-state checks below were therefore performed MANUALLY after the kill, with the same probes the kit would have written.",
+  "stablePost": {
+    "http://127.0.0.1:3080/": 401,
+    "http://127.0.0.1:3180/": 401
+  },
+  "stableUnchanged": true,
+  "porcelainPost": "",
+  "headPost": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "portFreeHost": true,
+  "portFreeMock": true,
+  "portCheckDetail": "3182 connection refused; 3497 connection refused",
+  "strayProcesses": "none (ps aux | grep apps/cli/lib/bin|mock-model|browser-smoke-host empty)",
+  "tokenScrub": {
+    "method": "sed replace of each run's literal token with [SCRUBBED-TOKEN]",
+    "filesScrubbed": [
+      "wp9b-host-console.log (READY line)",
+      "wp9b-browser-smoke-tvs-smoke-2026-09-28T05-31-39/instance.log",
+      "wp9b-browser-smoke-tvs-smoke-2026-09-28T05-43-23/instance.log",
+      "wp9b-browser-smoke-tvs-smoke-2026-09-28T05-49-08/instance.log",
+      "wp9b-browser-smoke-tvs-smoke-2026-09-28T05-49-08/cookies.txt",
+      "wp9b-browser-smoke-tvs-smoke-2026-09-28T05-43-23/cookies.txt",
+      "wp9b-browser-smoke-tvs-smoke-2026-09-28T05-31-39/cookies.txt"
+    ],
+    "verify": "grep -rho 'token=[A-Za-z0-9]{20,}' over all three smoke evidence dirs + console log: no matches",
+    "smokeHostJson": "smoke-host.json was written by the kit with scrub(tokenUrl) from the start (tokenUrl never plaintext in the retained file)"
+  },
+  "worldCleanup": "all three tvs-smoke-* DSH_HOME worlds (05-31-39, 05-43-23, 05-49-08) removed after this run — disposable seeded homes, no information retained outside this evidence dir",
+  "tVerdict": "CLEAN"
+}

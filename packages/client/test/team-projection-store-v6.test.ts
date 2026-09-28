@@ -15,7 +15,11 @@
  * before the first v6 frame, recorded on apply, cleared on reset, and
  * `null` in the v1 default mode where the frozen generation-only
  * behavior stays byte-identical — a v1 store applies a response that
- * carries NO v6 cells).
+ * carries NO v6 cells); the v6 stale-APPLY guard (PR #35 follow-up
+ * P0-3): a LATE response of a SUPERSEDED request with no durable
+ * advance is dropped (T1: no token rollback, T2: no error clearing /
+ * frame touch) while a late response of a NEWER durable generation
+ * still applies (T3).
  *
  * No real timers: the retry scheduler is manual (due-time driven),
  * matching the frozen v1 store spec's harness.
@@ -309,6 +313,95 @@ const s10Verdict = await s10Store.pull(TEAM)
 const s10State = s10Store.getState()
 
 // ---------------------------------------------------------------------------
+// T1-T3 (PR #35 follow-up, P0-3): the v6 stale-APPLY guard — a response
+// whose request a LATER request already superseded must not roll back the
+// applied freshness PAIR when it carries no durable advance; a late
+// response of a genuinely NEWER durable generation still applies.
+// ---------------------------------------------------------------------------
+
+/** A pull that hands back DEFERRED responses (the in-flight overlap the
+ *  scripted queue cannot express: R1 starts, R2 starts, R2 settles, R1
+ *  settles LATE). */
+function deferredResponses() {
+  const pending: Array<(response: RemoteResponse) => void> = []
+  return {
+    getProjection: (teamSessionId: string) => {
+      void teamSessionId
+      return new Promise<RemoteResponse>((resolve) => {
+        pending.push(resolve)
+      })
+    },
+    settle(index: number, response: RemoteResponse): void {
+      const resolve = pending[index]
+      if (resolve === undefined) throw new Error(`deferred response ${index} unknown`)
+      resolve(response)
+    },
+  }
+}
+
+// T1: seed gen10 A; R1 -> gen10 B (live-only), R2 -> gen10 C (live-only);
+// R2 settles FIRST, R1 settles LATE -> the applied pair stays gen10 C
+// (the late same-generation live-only frame must NOT roll back the newer
+// token).
+const t1 = deferredResponses()
+const t1Store = createTeamProjectionStore({
+  getProjection: t1.getProjection,
+  contract: 'v6',
+  scheduler: manualScheduler(),
+})
+const t1p0 = t1Store.pull(TEAM)
+t1.settle(0, v6Success(TEAM, 10, 'lt-v1-a'))
+await t1p0
+const t1p1 = t1Store.pull(TEAM) // R1 (gen10 B) in flight
+const t1p2 = t1Store.pull(TEAM) // R2 (gen10 C) starts later
+t1.settle(2, v6Success(TEAM, 10, 'lt-v1-c'))
+await t1p2
+t1.settle(1, v6Success(TEAM, 10, 'lt-v1-b')) // R1 settles LATE
+const t1Verdict = await t1p1
+const t1State = t1Store.getState()
+
+// T2: seed gen10 A; R1 -> gen10 B (live-only), R2 -> TYPED ERROR settling
+// FIRST; R1 settles LATE -> the error stays published AND the frame stays
+// gen10 A (the late same-generation live-only frame must not touch the
+// applied pair or clear the newer error).
+const t2 = deferredResponses()
+const t2Store = createTeamProjectionStore({
+  getProjection: t2.getProjection,
+  contract: 'v6',
+  scheduler: manualScheduler(),
+})
+const t2p0 = t2Store.pull(TEAM)
+t2.settle(0, v6Success(TEAM, 10, 'lt-v1-a'))
+await t2p0
+const t2p1 = t2Store.pull(TEAM) // R1 (gen10 B) in flight
+const t2p2 = t2Store.pull(TEAM) // R2 (typed error) starts later
+t2.settle(2, v6Error('team-internal', 'boom')) // R2 error settles FIRST
+await t2p2
+t2.settle(1, v6Success(TEAM, 10, 'lt-v1-b')) // R1 settles LATE
+const t2Verdict = await t2p1
+const t2State = t2Store.getState()
+
+// T3: seed gen10 A; R1 -> gen11 (a durable ADVANCE), R2 -> TYPED ERROR
+// settling FIRST; R1 settles LATE -> the newer durable generation STILL
+// APPLIES (durable authority outranks request order).
+const t3 = deferredResponses()
+const t3Store = createTeamProjectionStore({
+  getProjection: t3.getProjection,
+  contract: 'v6',
+  scheduler: manualScheduler(),
+})
+const t3p0 = t3Store.pull(TEAM)
+t3.settle(0, v6Success(TEAM, 10, 'lt-v1-a'))
+await t3p0
+const t3p1 = t3Store.pull(TEAM) // R1 (gen11) in flight
+const t3p2 = t3Store.pull(TEAM) // R2 (typed error) starts later
+t3.settle(2, v6Error('team-internal', 'boom')) // R2 error settles FIRST
+await t3p2
+t3.settle(1, v6Success(TEAM, 11, 'lt-v1-z')) // R1 (gen11) settles LATE
+const t3Verdict = await t3p1
+const t3State = t3Store.getState()
+
+// ---------------------------------------------------------------------------
 // Assertions
 // ---------------------------------------------------------------------------
 
@@ -397,5 +490,36 @@ describe('team-view-sync-complete — the projection store in contract v6 mode (
     expect(s10State.appliedGeneration).toBe(3)
     expect(s10State.appliedLiveToken).toBeNull()
     expect(s10State.status).toBe('ready')
+  })
+
+  it('T1: a LATE same-generation live-only frame of a SUPERSEDED request must not roll back the newer token (the guard drops the no-advance apply)', () => {
+    // R2 (gen10 C) settled first; R1 (gen10 B) settled late: its apply
+    // verdict is dropped — the applied pair stays gen10 C.
+    expect(t1Verdict.status).toBe('apply') // the verdict itself stands...
+    expect(t1State.appliedGeneration).toBe(10) // ...but the store did NOT apply it
+    expect(t1State.appliedLiveToken).toBe('lt-v1-c')
+    expect(t1State.status).toBe('ready')
+    if (t1State.frame === null) throw new Error('T1: the applied frame is missing')
+    const projection = t1State.frame.projection as unknown as Record<string, unknown>
+    expect(projection['liveToken']).toBe('lt-v1-c')
+  })
+
+  it('T2: a LATE same-generation frame of a SUPERSEDED request must not clear the newer error or touch the applied frame', () => {
+    expect(t2Verdict.status).toBe('apply') // the verdict stands...
+    expect(t2State.status).toBe('error') // ...the error stays published
+    expect(t2State.lastError?.code).toBe('team-internal')
+    expect(t2State.appliedGeneration).toBe(10)
+    expect(t2State.appliedLiveToken).toBe('lt-v1-a') // the frame stays gen10 A
+    if (t2State.frame === null) throw new Error('T2: the applied frame is missing')
+    const projection = t2State.frame.projection as unknown as Record<string, unknown>
+    expect(projection['liveToken']).toBe('lt-v1-a')
+  })
+
+  it('T3: a LATE frame of a genuinely NEWER durable generation STILL APPLIES (durable authority outranks request order)', () => {
+    expect(t3Verdict.status).toBe('apply')
+    expect(t3State.status).toBe('ready')
+    expect(t3State.appliedGeneration).toBe(11)
+    expect(t3State.appliedLiveToken).toBe('lt-v1-z')
+    expect(t3State.lastError).toBeUndefined()
   })
 })

@@ -111,15 +111,64 @@ export interface RemoteTeamGetProjectionValue {
  * - `disposed` — true only for a `team-member` whose durable lifecycle is
  *   the terminal `DISPOSED` state;
  * - `durableGeneration` — the owning TeamSession's durable generation
- *   (null for `none`).
+ *   (null for `none`);
+ * - `liveToken` — the owning TeamSession's deterministic
+ *   semantic-live-state token (the SAME token source as the v6
+ *   projection's `liveToken` cell; PR #35 follow-up: the read-state
+ *   is the lightweight probe and must detect live-only changes
+ *   WITHOUT a full projection pull). `null` only for `none`; a team
+ *   relation carries a non-empty `lt-v1-*` string or the host fails
+ *   the read typed (never a team relation with a null token).
  */
-export interface RemoteTeamGetReadStateValue {
-    readonly relation: 'team-root' | 'team-member' | 'none';
-    readonly teamSessionId: string | null;
-    readonly memberInstanceId: string | null;
-    readonly disposed: boolean;
-    readonly durableGeneration: number | null;
+/** The team-root read-state answer (the session IS a TeamSession root).
+ *  Fully closed: every cell present, null cells typed (the wire JSON is
+ *  the same flat object for every relation; the DISCRIMINATED union
+ *  shape is a type-level refinement — PR #35 follow-up — that lets the
+ *  producers/consumers narrow on `relation` without casts). */
+export interface RemoteTeamGetReadStateTeamRootValue {
+    readonly relation: 'team-root';
+    readonly teamSessionId: string;
+    readonly memberInstanceId: null;
+    readonly disposed: false;
+    readonly durableGeneration: number;
+    /** The owning TeamSession's deterministic semantic-live-state token —
+     *  the SAME token source as the v6 projection's `liveToken` cell
+     *  (PR #35 follow-up: the read-state is the LIGHTWEIGHT probe, so it
+     *  must carry the token or the client could not detect a live-only
+     *  change without a full projection pull). Non-empty `lt-v1-*`; a
+     *  host that cannot compute the token fails the read typed. */
+    readonly liveToken: string;
 }
+/** The team-member read-state answer (the session is a member's bound
+ *  child session; a DISPOSED member still resolves here, marked
+ *  `disposed`). */
+export interface RemoteTeamGetReadStateTeamMemberValue {
+    readonly relation: 'team-member';
+    readonly teamSessionId: string;
+    readonly memberInstanceId: string;
+    readonly disposed: boolean;
+    readonly durableGeneration: number;
+    /** Same contract as the team-root token (non-empty `lt-v1-*`). */
+    readonly liveToken: string;
+}
+/** The confirmed-`none` read-state answer: a successful read that
+ *  positively confirmed no team affiliation (every failure fails CLOSED
+ *  with a typed error instead — never a `none`). */
+export interface RemoteTeamGetReadStateNoneValue {
+    readonly relation: 'none';
+    readonly teamSessionId: null;
+    readonly memberInstanceId: null;
+    readonly disposed: false;
+    readonly durableGeneration: null;
+    /** Always null: there is no owning TeamSession whose live state to
+     *  token. */
+    readonly liveToken: null;
+}
+/** The CLOSED v6 `team.getReadState` wire value (the discriminated
+ *  union of the three relation answers; the JSON is the flat closed
+ *  object in every case — the field set is enforced by the handler's
+ *  closed-shape validation, not by the type). */
+export type RemoteTeamGetReadStateValue = RemoteTeamGetReadStateTeamRootValue | RemoteTeamGetReadStateTeamMemberValue | RemoteTeamGetReadStateNoneValue;
 /**
  * One durable ledger fact row (the storage `LedgerEntry` mirror, closed
  * wire shape: `operationId` is `string | null`, never absent).

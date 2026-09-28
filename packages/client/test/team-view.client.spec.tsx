@@ -257,6 +257,7 @@ function viewProps(
     useProjectionMirror: selector => selector(projectionMirror),
     useTeamLedgers: selector => selector(teamLedgers),
     useProjectionStates: selector => selector(projectionStates),
+    useSessionReadStates: selector => selector({}),
     ensureProjection: vi.fn(() => Promise.resolve()),
     // D4-A1: the post-mutation pull (the zero-state creation panel's
     // success-lane refresh; unused by the projection-only fixtures here).
@@ -442,14 +443,15 @@ describe('TeamView', () => {
     expect(recovered.container.querySelector('[data-team-view-status]')?.getAttribute('data-team-view-status')).toBe('ready')
   })
 
-  it('refreshes from BOTH views — the pull targets the resolved team id, the ledger NO LONGER follows the manual pull (v6: it rides the applied durable-generation advance), and the double-click is guarded (S1-C2 + team-view-sync-complete decision 4)', async () => {
-    // (a) the with-frame view: the pull targets the TEAM id (not the
-    // session id). team-view-sync-complete (frozen decision 4): the
-    // manual refresh is a FORCED projection round ONLY — the ledger
-    // refresh is owned by the applied durable-generation advance (the
-    // mount's store subscription), so a same-generation manual refresh
-    // (duplicate / live-token-only overlay) is deliberately a ledger
-    // NO-OP. The explicit post-pull ledger call is GONE.
+  it('refreshes from BOTH views — the pull targets the resolved team id, the manual refresh FORCES ONE explicit ledger retry when the team is confirmed (P1-4), and the double-click is guarded (S1-C2 + team-view-sync-complete decision 4 + PR #35 follow-up)', async () => {
+    // (a) the with-frame view (no coordinator face — the Phase 1
+    // fallback path): the pull targets the TEAM id (not the session
+    // id). PR #35 follow-up (P1-4): the manual refresh FORCES ONE
+    // explicit ledger retry — the user's "refresh" re-reads the durable
+    // ledger even when the generation did not advance (a failed earlier
+    // ledger read gets its retry here). The AUTOMATIC ledger refresh
+    // stays owned by the applied durable-generation advance (frozen
+    // decision 4 — the mount's store subscription, not this call).
     const pullProjection = vi.fn(() => new Promise<{ status: 'apply'; receivedGeneration: number }>(resolve => {
       setTimeout(() => resolve({ status: 'apply', receivedGeneration: 9 }), 10)
     }))
@@ -471,17 +473,19 @@ describe('TeamView', () => {
     fireEvent.click(buttonA)
     expect(pullProjection).toHaveBeenCalledTimes(1)
     expect(pullProjection).toHaveBeenCalledWith(LEADER)
-    // The round settles; the pending flag clears; the explicit ledger
-    // refresh never runs (v6: it rides the generation advance, which
-    // the mount — not the view — owns).
+    // The round settles; the pending flag clears; the EXPLICIT ledger
+    // retry runs exactly once (P1-4 — the team is confirmed by the
+    // frame at call time).
     await vi.waitFor(() => {
       expect(buttonA.disabled).toBe(false)
     })
-    expect(refreshTeamLedger).not.toHaveBeenCalled()
+    await vi.waitFor(() => {
+      expect(refreshTeamLedger).toHaveBeenCalledTimes(1)
+    })
     viewA.unmount()
     // (b) the zero state: the pull targets the SESSION id (no frame →
     // the candidate root IS the session), and the ledger is NOT
-    // attempted (v6: the manual path never refreshes the ledger).
+    // attempted (no team confirmed — there is no ledger to re-read).
     const pullProjectionB = vi.fn(() => Promise.resolve(
       { status: 'transport-loss', receivedGeneration: null } as const,
     ))
@@ -503,6 +507,84 @@ describe('TeamView', () => {
       expect(refreshTeamLedgerB).not.toHaveBeenCalled()
       expect(buttonB.disabled).toBe(false)
     })
+  })
+
+  it('manual refresh through the COORDINATOR face: the probe confirms the team → the explicit ledger retry fires; the authoritative NONE probe → no ledger (PR #35 follow-up, P1-4)', async () => {
+    // (a) the probe answers a team relation: the manual round triggers
+    // the FORCED coordinator round for the SESSION (not the root id)
+    // and the explicit ledger retry runs once.
+    const roundTeam = {
+      readState: {
+        status: 'ok' as const,
+        relation: {
+          kind: 'team-root' as const,
+          teamSessionId: LEADER,
+          memberInstanceId: null,
+          disposed: false as const,
+          durableGeneration: 8,
+          liveToken: 'lt-v1-fake:leader:g8',
+        },
+      },
+      projectionAssessment: { status: 'duplicate', receivedGeneration: 8 } as const,
+    }
+    const triggerA = vi.fn(() => Promise.resolve(roundTeam))
+    const refreshLedgerA = vi.fn(() => Promise.resolve())
+    const propsA = {
+      ...viewProps(TEAM_PROJECTION_MIRROR, LEADER, {}, {
+        [LEADER]: stateOf({ status: 'ready', teamSessionId: LEADER, appliedGeneration: 8 }),
+      }),
+      refreshCoordinator: { attach: vi.fn(), detach: vi.fn(), trigger: triggerA },
+      refreshTeamLedger: refreshLedgerA,
+    }
+    const viewA = render(<TeamView {...propsA} />)
+    const buttonA = viewA.container.querySelector<HTMLButtonElement>('[data-team-refresh]')
+    if (buttonA === null) throw new Error('the with-frame refresh button did not render')
+    fireEvent.click(buttonA)
+    await vi.waitFor(() => {
+      expect(buttonA.disabled).toBe(false)
+    })
+    // The forced round targets the SESSION id with the 'manual' reason
+    // (P0-1: the probe input is the current sessionId).
+    expect(triggerA).toHaveBeenCalledTimes(1)
+    expect(triggerA).toHaveBeenCalledWith(LEADER, 'manual')
+    expect(refreshLedgerA).toHaveBeenCalledTimes(1)
+    viewA.unmount()
+    // (b) the probe answers the authoritative NONE (an ordinary
+    // session): the round still runs, but the explicit ledger retry
+    // NEVER fires (there is no ledger — and a failed probe would be
+    // the same: no ownership conclusion, no ledger re-read).
+    const roundNone = {
+      readState: {
+        status: 'ok' as const,
+        relation: {
+          kind: 'none' as const,
+          teamSessionId: null,
+          memberInstanceId: null,
+          disposed: false as const,
+          durableGeneration: null,
+          liveToken: null,
+        },
+      },
+      projectionAssessment: null,
+    }
+    const triggerB = vi.fn(() => Promise.resolve(roundNone))
+    const refreshLedgerB = vi.fn(() => Promise.resolve())
+    const propsB = {
+      ...viewProps({}, OUTSIDER, {}, {}),
+      refreshCoordinator: { attach: vi.fn(), detach: vi.fn(), trigger: triggerB },
+      refreshTeamLedger: refreshLedgerB,
+    }
+    const viewB = render(<TeamView {...propsB} />)
+    const buttonB = viewB.container.querySelector<HTMLButtonElement>('[data-team-refresh]')
+    if (buttonB === null) throw new Error('the zero-state refresh button did not render')
+    fireEvent.click(buttonB)
+    await vi.waitFor(() => {
+      expect(buttonB.disabled).toBe(false)
+    })
+    expect(triggerB).toHaveBeenCalledTimes(1)
+    expect(triggerB).toHaveBeenCalledWith(OUTSIDER, 'manual')
+    expect(refreshLedgerB).not.toHaveBeenCalled()
+    viewB.unmount()
   })
 
   // ------------------------------------------------------------------

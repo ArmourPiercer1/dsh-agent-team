@@ -63,7 +63,25 @@ export declare const TEAM_READ_STATE_ERROR_CODES: {
     /** A claimed team-member affiliation whose `member_instances` row is
      *  missing (the disposed/lifecycle carrier is absent). */
     readonly MEMBER_ROW_ABSENT: "TEAM_READ_STATE_MEMBER_ROW_ABSENT";
+    /** (PR #35 follow-up P2) the no-binding ownership scan found MORE
+     *  THAN ONE durable member row claiming the same child session
+     *  (two roots, or two rows under one root): the ownership is
+     *  genuinely ambiguous — failing closed instead of the silent
+     *  first-wins (the client must not attach the wrong team). */
+    readonly OWNERSHIP_CONFLICT: "TEAM_READ_STATE_OWNERSHIP_CONFLICT";
 };
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+/** The resolver's DURABLE-ONLY answer (PR #35 follow-up): the closed
+ *  read-state value WITHOUT its `liveToken` cell — the resolver is PURE
+ *  over the durable TeamDomain rows and has no live-overlay seam, so the
+ *  token is NOT computed here: the S6 production dispatcher (s6-remote)
+ *  merges the SAME live-token closure the v6 projection uses onto the
+ *  team relations (`lt-v1-*`), and `null` onto a `none` answer, before
+ *  the value reaches the wire (the frozen closed wire shape stays the
+ *  full {@link RemoteTeamGetReadStateValue}). DISTRIBUTIVE omit — the
+ *  relation discriminant stays intact so the dispatcher's
+ *  none/team narrowing is preserved. */
+export type SessionReadStateDurableValue = DistributiveOmit<RemoteTeamGetReadStateValue, 'liveToken'>;
 /** The minimal structural projection of the opened TeamDomain the
  *  resolver reads (the real `TeamDomain.repositories` satisfies it; the
  *  test worlds pass the equivalent doubles). */
@@ -98,11 +116,13 @@ export interface TeamReadStateDomain {
  * @param bootRootSessionId - this row's boot root session id.
  * @param sessionId - the session id to classify (already wire-validated
  *   by the closed params parser).
- * @returns the CLOSED read-state value (every field present; `null`
- *   cells typed).
+ * @returns the CLOSED read-state value WITHOUT its `liveToken` cell
+ *   (every durable field present; `null` cells typed — the S6
+ *   dispatcher merges the token, PR #35 follow-up).
  * @throws the storage layer's typed row errors (RECORD_INVALID / …) and
  *   the resolver's TEAM_READ_STATE_* integrity codes — ALWAYS on a
  *   failure (fail closed; the dispatcher passes the code through).
  */
-export declare function resolveSessionReadState(domain: TeamReadStateDomain, bootRootSessionId: string, sessionId: string): RemoteTeamGetReadStateValue;
+export declare function resolveSessionReadState(domain: TeamReadStateDomain, bootRootSessionId: string, sessionId: string): SessionReadStateDurableValue;
+export {};
 //# sourceMappingURL=team-read-state.d.ts.map

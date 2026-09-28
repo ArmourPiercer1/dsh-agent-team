@@ -32,7 +32,12 @@
  * `reconnecting` and schedules ONE retry through the frozen backoff
  * helpers (`backoffCapMs` + `pickBackoffDelayMs`, deterministic lower
  * bound by default); `markConnectionRestored` fires the invalidation
- * pull.
+ * pull. (PR #35 follow-up, P1-5) the notice WITHOUT the pull —
+ * `noteConnectionRestored` — is the split the read-state-driven
+ * coordinator needs: the loss episode (pending retry, attempt counter,
+ * the `reconnecting` status) is cleared, but the invalidation pull
+ * belongs to the coordinator's connection-restored round; the store's
+ * own backoff lane stays intact and independent.
  *
  * Loss-staleness (repair 20260927, S1-C3): a FAILED REQUEST's
  * transport loss is stale ONLY when a request that started LATER
@@ -54,6 +59,18 @@
  * next fresh `team.getProjection` response. No native timer is
  * assumed by the store logic (the default scheduler may use
  * `setTimeout`; tests inject a manual scheduler).
+ *
+ * v6 stale-apply guard (PR #35 follow-up, P0-3): the F1 request-order
+ * authority previously governed only the NON-apply verdicts (the
+ * applied frame was deliberately untouched by request order — G2 hard
+ * invariant). The v6 freshness PAIR extended the exposure: an OLD
+ * same-generation response (typically a live-only frame carrying an
+ * older `liveToken`) settling LATE than a newer round trip would
+ * still `apply` and ROLL BACK the newer token / frame. The guard
+ * closes that case: an apply verdict of a superseded request is
+ * dropped when it carries no durable advance (`durableGeneration <=
+ * appliedGeneration`); a late response with a genuinely NEWER durable
+ * generation still applies (durable authority outranks request order).
  *
  * Request-order liveness authority (PR #34 review follow-up, F1): the
  * request sequence ALSO decides which completed response owns the UI
@@ -189,6 +206,19 @@ export interface TeamProjectionStore {
   markConnectionLost(): void
   /** Note channel restoration (cancels the retry, fires the pull). */
   markConnectionRestored(): void
+  /**
+   * Note channel restoration WITHOUT the store-owned pull (PR #35
+   * follow-up, P1-5: the store API split). The loss episode is cleared
+   * (pending retry cancelled, attempt counter reset, the
+   * `reconnecting` status closed — an applied frame is `ready` again,
+   * a missing frame is `loading`) but NO invalidation pull fires: the
+   * invalidation pull is the refresh coordinator's CONNECTION-RESTORED
+   * round (the read-state-driven lane). The staleness baseline
+   * (S1-C3 round-trip evidence) is untouched — a completed round trip
+   * still absorbs an unabsorbed loss, and a NEW loss after the notice
+   * still opens a new backoff episode.
+   */
+  noteConnectionRestored(): void
   /** Drop all state (view switch / team change); cancels pending retry. */
   reset(): void
 }
@@ -432,6 +462,26 @@ export function createTeamProjectionStore(
         })
         return { status: 'inconsistent', receivedGeneration: null }
       }
+      // (PR #35 follow-up, P0-3) the v6 stale-APPLY guard: a response
+      // whose request a LATER request already superseded (the F1
+      // round-trip evidence) must not roll back the applied freshness
+      // PAIR when it carries NO durable advance — an old same-
+      // generation response (e.g. a live-only frame with an older
+      // liveToken) that settles late would otherwise overwrite the
+      // newer liveToken / frame of the round trip that already
+      // completed. The guard drops ONLY the no-advance case: a late
+      // response carrying a genuinely NEWER durable generation still
+      // applies (the frozen generation-verdict authority stands —
+      // request order never suppresses a newer durable frame).
+      if (
+        isV6 &&
+        supersededByNewerRoundTrip &&
+        frameV6 !== null &&
+        state.appliedGeneration !== null &&
+        frameV6.projection.durableGeneration <= state.appliedGeneration
+      ) {
+        return assessment
+      }
       publish({
         ...state,
         teamSessionId,
@@ -523,6 +573,36 @@ export function createTeamProjectionStore(
     void pull(state.teamSessionId)
   }
 
+  const noteConnectionRestored = (): void => {
+    if (state.teamSessionId === null) return
+    // (PR #35 follow-up, P1-5) the split: clear the loss episode ONLY —
+    // the invalidation pull belongs to the coordinator's
+    // connection-restored round, not to the store's channel-notice
+    // lane. The staleness baseline (lastCompletedSeq / openLossSeq) is
+    // deliberately NOT touched (S1-C3: the channel notice is never
+    // round-trip evidence; a NEW loss after the notice still opens a
+    // fresh episode, and a completed round trip still absorbs an
+    // unabsorbed one).
+    cancelPendingRetry()
+    // Frozen P2-T6 / P8 semantics: a restored connection restarts the
+    // backoff episode (the attempt counter resets on connect).
+    const cleared: TeamProjectionState = {
+      ...state,
+      retryAttempt: 0,
+      nextRetryDelayMs: null,
+    }
+    if (state.status === 'reconnecting') {
+      // The episode is closed by the notice: an applied frame is
+      // `ready` again (durable content stays valid across the channel
+      // gap); a missing frame is `loading` (the coordinator's round
+      // pulls — the applied identity is missing, so its pair verdict is
+      // "changed" by definition — and the settlement clears the status).
+      publish({ ...cleared, status: state.frame !== null ? 'ready' : 'loading' })
+    } else {
+      publish(cleared)
+    }
+  }
+
   const reset = (): void => {
     // (repair 20260927, S1-C3) a scope change: bump the epoch so every
     // in-flight pull of the old scope is dead on settlement (no
@@ -554,6 +634,7 @@ export function createTeamProjectionStore(
     pull,
     markConnectionLost,
     markConnectionRestored,
+    noteConnectionRestored,
     reset,
   }
 }

@@ -39,12 +39,13 @@
  * arrives exclusively through the injected ports).
  * @module @dsh-agent-team/runtime/plugin/s6-remote
  */
-import { type RemoteLedgerEntryValue, type RemoteTeamGetReadStateValue } from '../../../remote/src/contracts/types.js';
+import { type RemoteLedgerEntryValue } from '../../../remote/src/contracts/types.js';
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js';
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js';
 import type { TeamRootWireRow } from '../team-ownership-index.js';
 import type { RemoteHandlerRegistration, RemoteQueryCommandCompletion, ServerPrincipalDerivation, WorkspaceAttachPort } from './types.js';
 import type { ServerPrincipalContext } from './s6-principal.js';
+import type { SessionReadStateDurableValue } from './team-read-state.js';
 import type { TeamDomainRepositories } from '../../../storage/repositories/index.js';
 import type { ActionCaller, TeamRuntime, TeamRuntimeActionOutcome } from '../../admission/index.js';
 import type { AdmitRootInitialWork } from '../../action-router/index.js';
@@ -513,7 +514,12 @@ export interface S6RemotePorts {
      *  host's own TeamDomain (fail-closed: a storage/integrity failure
      *  throws typed and never degrades to a `none` answer). NO bound-root
      *  guard — the query addresses a SESSION, not a team (the session may
-     *  be ordinary). */
+      *  be ordinary). The port answers the DURABLE-ONLY value (no
+      *  `liveToken` cell — PR #35 follow-up: the dispatcher merges
+      *  the SAME live-token closure the v6 projection uses onto
+      *  the team relations and `null` onto a `none` answer; a team
+      *  relation whose token cannot be computed fails the read
+      *  typed, never with a null token). */
     readonly teamReadState: S6RemoteReadStatePort;
     /** team-view-sync-complete (remote contract v6) — the semantic-live-
      *  state token port behind the v6 projection's `liveToken` cell (a
@@ -531,7 +537,7 @@ export interface S6RemoteReadStatePort {
     /** Resolve one session's durable read-state (the closed value; `null`
      *  cells typed). Throws typed on any storage/integrity failure
      *  (fail-closed pass-through, invariant 4b). */
-    readState(sessionId: string): Promise<RemoteTeamGetReadStateValue>;
+    readState(sessionId: string): Promise<SessionReadStateDurableValue>;
 }
 /** The v6 live-token port (team-view-sync-complete). */
 export interface S6RemoteLiveTokenPort {
@@ -798,9 +804,14 @@ export interface S6RemoteOptions {
      * invariant 4b) — never a silent `none`. Absent (test worlds without
      * the TeamDomain wiring): `team.getReadState` fails closed with the
      * typed TEAM_REMOTE_TEAM_READ_STATE_PORT_UNAVAILABLE. The production
-     * host entry (root.ts) wires it.
+     * host entry (root.ts) wires it. The closure answers the DURABLE-ONLY
+     * value (no `liveToken` cell — PR #35 follow-up: the dispatcher merges
+     * the SAME live-token closure the v6 projection uses onto the team
+     * relations and `null` onto a `none` answer; a team relation whose
+     * token cannot be computed fails the read typed, never with a null
+     * token).
      */
-    readonly readState?: (sessionId: string) => RemoteTeamGetReadStateValue | Promise<RemoteTeamGetReadStateValue>;
+    readonly readState?: (sessionId: string) => SessionReadStateDurableValue | Promise<SessionReadStateDurableValue>;
     /**
      * team-view-sync-complete (remote contract v6) — the semantic-live-
      * state token closure behind the v6 projection's `liveToken` cell:

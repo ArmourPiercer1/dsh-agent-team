@@ -326,6 +326,10 @@ export const REMOTE_BACKING_ERROR_CODES = [
     // already covers it and passes through unchanged.
     'TEAM_READ_STATE_TEAM_ROW_ABSENT',
     'TEAM_READ_STATE_MEMBER_ROW_ABSENT',
+    // PR #35 follow-up (P2) — the no-binding ownership scan found MORE
+    // than one durable member row claiming the same child session
+    // (ambiguous ownership: failing closed, never a first-wins).
+    'TEAM_READ_STATE_OWNERSHIP_CONFLICT',
 ];
 /** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */
 export const REMOTE_BACKING_ERROR_CODE_SET = new Set(REMOTE_BACKING_ERROR_CODES);

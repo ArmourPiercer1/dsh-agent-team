@@ -28,6 +28,11 @@ import type {
 } from '../../../remote/src/index.js'
 import type { TeamProjectionMirror } from '../state/team-session-resolution.js'
 import type { TeamProjectionState } from '../state/team-projection-store.js'
+import type { TeamReadStateOutcome } from '../state/team-read-state.js'
+import type {
+  TeamRefreshRoundResult,
+  TeamRefreshTrigger,
+} from '../state/team-refresh-coordinator.js'
 import {
   resolveTeamProjection, sameTeamProjectionResolution,
 } from '../state/team-session-resolution.js'
@@ -212,6 +217,17 @@ export interface TeamViewInjected {
      * team through `resolution?.team.teamSessionId ?? sessionId`.
      */
     projectionStates: ObservableSnapshot<Readonly<Record<string, TeamProjectionState>>>
+    /**
+     * (PR #35 follow-up, frozen §1.2) the per-session `team.getReadState`
+     * outcomes — the AUTHORITATIVE ownership surface: the refresh
+     * coordinator records every probe here (every round, before the
+     * optional pull). The view takes its zero-state conclusion from an
+     * `ok`/`none` outcome (a positively confirmed no-team session — the
+     * probe that answered it made NO projection request); a FAILED probe
+     * (remote-error / malformed / transport-loss) carries no ownership
+     * conclusion — the view keeps its frame-based fallback (fail closed).
+     */
+    sessionReadStates: ObservableSnapshot<Readonly<Record<string, TeamReadStateOutcome>>>
   }
   /** Cold-read the named session's team projection when the mirror lacks it (single-flight). */
   ensureProjection: (sessionId: string) => Promise<void>
@@ -227,15 +243,32 @@ export interface TeamViewInjected {
    */
   pullProjection: (teamSessionId: string) => Promise<ProjectionSyncAssessment>
   /**
-   * team-view-sync-complete (frozen decisions 2 + 5): the per-team
-   * refresh-coordinator attach face. The view ATTACHES its team on
-   * mount (arming the 3s visible tick) and DETACHES on unmount (stopping
-   * it) — hidden → paused, no round trips. Absent → no polling (the
-   * Phase 1 surface: manual refresh + the store reconnect episode only).
+   * team-view-sync-complete (frozen decisions 2 + 5; PR #35 follow-up):
+   * the per-SESSION refresh-coordinator face. The view ATTACHES its
+   * session on mount (arming the 3s visible tick — every tick is the
+   * read-state ROUND: the lightweight `team.getReadState` probe, and a
+   * full `team.getProjection` pull only when the applied identity
+   * changed) and DETACHES on unmount (stopping it) — hidden → paused, no
+   * round trips. Absent → no polling (the Phase 1 surface: manual
+   * refresh + the store reconnect episode only).
    */
   refreshCoordinator?: {
-    attach: (teamSessionId: string) => void
-    detach: (teamSessionId: string) => void
+    attach: (sessionId: string) => void
+    detach: (sessionId: string) => void
+    /**
+     * (PR #35 follow-up, P1-4) the manual view refresh — one FORCED
+     * coordinator round for the session (probe → conditional pull),
+     * always runs (single-flighted behind any in-flight round). Returns
+     * the round result (the probe outcome + the optional projection
+     * assessment); the view uses the probe's team confirmation to fire
+     * the explicit ledger refresh (a manual refresh forces a ledger
+     * retry, restoring the Phase 1 behavior — the store's
+     * applied-generation-advance trigger stays the ONLY automatic one).
+     */
+    trigger: (
+      sessionId: string,
+      reason: TeamRefreshTrigger,
+    ) => Promise<TeamRefreshRoundResult>
   }
   /** Re-request the team ledger's catch-up episode after a typed failure. */
   refreshTeamLedger: () => Promise<void>
@@ -330,6 +363,7 @@ export type TeamViewProps =
 export function TeamView(props: TeamViewProps): React.JSX.Element {
   const {
     sessionId, useProjectionMirror, useTeamLedgers, useProjectionStates,
+    useSessionReadStates,
     ensureProjection, pullProjection, refreshTeamLedger, openSession,
     creation, memberCommands, governance, legacyInspect, handoff, roots,
     control,
@@ -373,9 +407,35 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
   // the view treats that as the first-read loading state (NEVER a
   // definitive "no team": the cold open is still in flight).
   const projectionStates = useProjectionStates(s => s)
+  // (PR #35 follow-up, frozen §1.2) the current session's READ-STATE
+  // outcome — the authoritative ownership surface (the refresh
+  // coordinator records every probe here). `null` before the first
+  // settled probe: NO ownership conclusion yet (the frame-based
+  // resolution below stays the fallback — a cold open is still in
+  // flight, and a failed probe NEVER degrades to a `none` conclusion).
+  const readStates = useSessionReadStates(s => s)
+  const readState = readStates[sessionId] ?? null
+  const ownership = readState !== null && readState.status === 'ok' ? readState.relation : null
+  // The AUTHORITATIVE no-team verdict: a positively confirmed `none`
+  // probe (the round that answered it made NO projection request).
+  const authoritativeNone = ownership !== null && ownership.kind === 'none'
   const projectionState = useMemo(
-    () => projectionStates[resolution?.team.teamSessionId ?? sessionId] ?? null,
-    [projectionStates, resolution, sessionId],
+    () => {
+      // (PR #35 follow-up) the store key: an ok team relation names the
+      // OWNING ROOT directly (a cold member's root resolves through the
+      // probe — no frame required); an `ok`/`none` has no store at all;
+      // no settled probe falls back to the frame-based candidate
+      // (resolution's team id, else the session id — the guide's fixed
+      // key while the cold read is in flight).
+      const key = ownership === null
+        ? resolution?.team.teamSessionId ?? sessionId
+        : ownership.kind === 'none'
+          ? null
+          : ownership.teamSessionId
+      if (key === null) return null
+      return projectionStates[key] ?? null
+    },
+    [projectionStates, resolution, sessionId, ownership],
   )
   // (repair 20260927, S1-C2) the manual "refresh team view" state —
   // `refreshPending` doubles as the double-click guard; `refreshEpoch`
@@ -437,22 +497,20 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     // team UI needs the view": fill a mirror gap once, then let frames win.
     if (resolution === undefined) void ensureProjection(sessionId)
   }, [sessionId, resolution, ensureProjection])
-  // team-view-sync-complete (frozen decisions 2 + 5): the per-team
-  // refresh-coordinator ATTACH — the team the view is bound to is the
-  // resolution's authoritative team id, falling back to the session id
-  // (the guide's fixed key: an unresolved session id is itself the
-  // TeamSession id the cold pull targets). Mounting the view arms the
-  // 3s visible tick for that team; unmounting (session switch / tab
-  // away) stops it. The id is stable across the cold read (candidate
-  // root id === the frame's team id), so the effect re-runs at most
-  // once per scope — attach is idempotent either way.
-  const teamSessionId = resolution?.team.teamSessionId ?? sessionId
+  // team-view-sync-complete (frozen decisions 2 + 5; PR #35 follow-up,
+  // P0-1): the per-SESSION refresh-coordinator ATTACH — the round is
+  // the read-state probe for the SESSION (P0-1: the probe input is the
+  // current sessionId, never a root id guess), so the tick scope IS the
+  // session id: stable for the whole view lifetime, no re-attach across
+  // the cold read. Mounting the view arms the 3s visible tick (every
+  // tick = the frozen §1.2 round); unmounting (session switch / tab
+  // away) stops it. attach is idempotent either way.
   useEffect(() => {
     const face = refreshCoordinator
     if (face === undefined) return
-    face.attach(teamSessionId)
-    return () => face.detach(teamSessionId)
-  }, [teamSessionId, refreshCoordinator])
+    face.attach(sessionId)
+    return () => face.detach(sessionId)
+  }, [sessionId, refreshCoordinator])
   const snapshot = useMemo(
     () => (resolution === undefined
       ? null
@@ -471,7 +529,14 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     | { readonly status: 'error'; readonly code: string; readonly message: string }
     | null
   >(null)
-  const inZeroState = resolution === undefined || snapshot === null
+  // (PR #35 follow-up, frozen §1.2) the zero-state test: the
+  // AUTHORITATIVE `none` probe wins (a positively confirmed no-team
+  // session — the round that answered it made no projection request, so
+  // there is no frame to wait for); otherwise the frame-based test
+  // stands (a failed probe keeps the last-known surface — fail closed,
+  // and a cold open with no settled probe yet reads as "still loading",
+  // never as a definitive no-team).
+  const inZeroState = authoritativeNone || resolution === undefined || snapshot === null
   useEffect(() => {
     if (!inZeroState || legacyInspect === undefined || creationOpen) return
     let live = true
@@ -584,49 +649,91 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     }, 3000)
     return () => clearInterval(id)
   }, [inZeroState, roots, creationOpen, sessionId, loadRoots])
-  // (repair 20260927, S1-C2) the manual "refresh team view" — the one
-  // awaitable read-only re-read. Captures THIS invocation's session id,
-  // the team (root) id, and a request epoch at call time:
+  // (repair 20260927, S1-C2; PR #35 follow-up, P1-4) the manual "refresh
+  // team view" — the one awaitable read-only re-read. Captures THIS
+  // invocation's session id and a request epoch at call time:
   //   (a) the roots re-read starts independently (the manual call is NOT
   //       subject to the auto-read's zero-state / `creationOpen` guard —
   //       frozen decision 6: the manual refresh ALWAYS re-reads roots);
-  //   (b) the projection round is a FORCED trigger through the refresh
-  //       coordinator (frozen decisions 2 + 5: single-flighted per team,
-  //       coalesced behind an in-flight round, never re-fired on a
-  //       failed read).
-  // (team-view-sync-complete, frozen decision 4) the manual refresh NO
-  // LONGER refreshes the ledger itself: the ledger refresh is owned by
-  // the applied-DURABLE-GENERATION advance (the mount's store
-  // subscription) — a same-generation manual refresh (duplicate, or a
-  // live-token-only overlay apply) is deliberately a NO-OP for the
-  // ledger. Deliberate behavior change from Phase 1 (noted in the PR).
-  // A resolved Promise is NOT a success: the round-trip outcome is read
-  // back through the projection store's published state (the same
-  // visible state surface the member/governance background reads flow
-  // through) — `rpc-error` / `transport-loss` / `foreign` /
-  // `inconsistent` all settle as resolved assessments. Nothing here
-  // re-fires a mutation on a failed read.
+  //   (b) the round is a FORCED trigger for the SESSION through the
+  //       refresh coordinator (the read-state-driven §1.2 round:
+  //       single-flighted per session, coalesced behind an in-flight
+  //       round, never re-fired on a failed read).
+  // (PR #35 follow-up, P1-4) the manual refresh FORCES ONE EXPLICIT
+  // ledger refresh attempt when the round CONFIRMS a team (the probe
+  // answered a team relation): restoring the Phase 1 "explicit refresh
+  // re-reads the durable ledger" behavior — a failed earlier ledger read
+  // gets a retry on the user's explicit action even when the generation
+  // did not advance. The AUTOMATIC ledger refresh stays owned by the
+  // applied-durable-generation advance (frozen decision 4 — a
+  // live-token-only overlay apply still does NOT refresh the ledger);
+  // this explicit attempt is the user-driven exception the follow-up
+  // guide reinstates (documented in the PR). A resolved Promise is NOT a
+  // success: the round-trip outcome is read back through the projection
+  // store's published state (the same visible state surface the
+  // member/governance background reads flow through) — `rpc-error` /
+  // `transport-loss` / `foreign` / `inconsistent` all settle as resolved
+  // assessments. Nothing here re-fires a mutation on a failed read.
   const runRefresh = useCallback((): void => {
     if (refreshPending) return // the double-click guard
     const sessionIdAtStart = sessionId
     const resolutionAtStart = resolution
-    const teamSessionIdAtStart = resolutionAtStart?.team.teamSessionId ?? sessionIdAtStart
+    const faceAtStart = refreshCoordinator
     refreshEpoch.current += 1
     const epoch = refreshEpoch.current
     setRefreshPending(true)
     void loadRoots()
     void (async () => {
-      try {
-        await pullProjection(teamSessionIdAtStart)
-      } catch {
-        // The frozen client carrier never rejects (it resolves as a
-        // typed assessment); defensive only.
+      // P1-4: does the refresh CONFIRM a team? (the explicit ledger
+      // retry below runs only then.)
+      let teamConfirmed: boolean
+      if (faceAtStart === undefined) {
+        // Phase 1 fallback (no coordinator face — the degraded
+        // injection): the direct generation-safe pull for the resolved
+        // team id (the old manual-refresh path); the team is confirmed
+        // from the frame (the mirror resolution at call time).
+        try {
+          await pullProjection(resolutionAtStart?.team.teamSessionId ?? sessionIdAtStart)
+        } catch {
+          // The frozen client carrier never rejects (it resolves as a
+          // typed assessment); defensive only.
+        }
+        teamConfirmed = resolutionAtStart !== undefined
+      } else {
+        // The read-state-driven forced round (probe → conditional
+        // pull): the team is confirmed when the probe answered a team
+        // relation (an authoritative `none` / a failed probe never
+        // re-reads the ledger — there is no ledger, or no ownership
+        // conclusion).
+        let round: TeamRefreshRoundResult | null = null
+        try {
+          round = await faceAtStart.trigger(sessionIdAtStart, 'manual')
+        } catch {
+          // The round never rejects (every outcome is resolved);
+          // defensive only.
+        }
+        teamConfirmed =
+          round !== null &&
+          round.readState.status === 'ok' &&
+          round.readState.relation.kind !== 'none'
       }
       if (refreshEpoch.current !== epoch) return // newer refresh / unmount
+      // P1-4: the explicit ledger retry — the user's "refresh" re-reads
+      // the durable ledger even when the generation did not advance (a
+      // failed earlier ledger read gets its retry here); the AUTOMATIC
+      // refresh stays owned by the applied durable-generation advance.
+      if (teamConfirmed) {
+        try {
+          await refreshTeamLedger()
+        } catch {
+          // The ledger store's refresh resolves with the typed failure
+          // in state.error; defensive only.
+        }
+      }
     })().finally(() => {
       if (refreshEpoch.current === epoch) setRefreshPending(false)
     })
-  }, [refreshPending, sessionId, resolution, loadRoots, pullProjection])
+  }, [refreshPending, sessionId, resolution, refreshCoordinator, loadRoots, pullProjection, refreshTeamLedger])
   // D2 (Team D1-D6 repair v2, D6): the in-flight explicit open per picker
   // row (root id → pending) and the last typed failure per row (ONE
   // verbatim note, the UI §38 greyed-surface discipline). Page-run UI

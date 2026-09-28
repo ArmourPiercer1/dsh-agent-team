@@ -467,7 +467,7 @@ var __dshFactory = (require) => {
 			 * @returns the view body.
 			 */
 			function TeamView(props) {
-			    const { sessionId, useProjectionMirror, useTeamLedgers, useProjectionStates, ensureProjection, pullProjection, refreshTeamLedger, openSession, creation, memberCommands, governance, legacyInspect, handoff, roots, control, openTeamMode, openOrdinaryMode, teamOpenMode, refreshCoordinator, useWorkspaces, t, } = props;
+			    const { sessionId, useProjectionMirror, useTeamLedgers, useProjectionStates, useSessionReadStates, ensureProjection, pullProjection, refreshTeamLedger, openSession, creation, memberCommands, governance, legacyInspect, handoff, roots, control, openTeamMode, openOrdinaryMode, teamOpenMode, refreshCoordinator, useWorkspaces, t, } = props;
 			    const [creationOpen, setCreationOpen] = useState(false);
 			    // UI §5.3: the intent draft is page-run UI state only (never authority) —
 			    // held here so the panel can open and close in the zero state without
@@ -496,7 +496,34 @@ var __dshFactory = (require) => {
 			    // the view treats that as the first-read loading state (NEVER a
 			    // definitive "no team": the cold open is still in flight).
 			    const projectionStates = useProjectionStates(s => s);
-			    const projectionState = useMemo(() => projectionStates[resolution?.team.teamSessionId ?? sessionId] ?? null, [projectionStates, resolution, sessionId]);
+			    // (PR #35 follow-up, frozen §1.2) the current session's READ-STATE
+			    // outcome — the authoritative ownership surface (the refresh
+			    // coordinator records every probe here). `null` before the first
+			    // settled probe: NO ownership conclusion yet (the frame-based
+			    // resolution below stays the fallback — a cold open is still in
+			    // flight, and a failed probe NEVER degrades to a `none` conclusion).
+			    const readStates = useSessionReadStates(s => s);
+			    const readState = readStates[sessionId] ?? null;
+			    const ownership = readState !== null && readState.status === 'ok' ? readState.relation : null;
+			    // The AUTHORITATIVE no-team verdict: a positively confirmed `none`
+			    // probe (the round that answered it made NO projection request).
+			    const authoritativeNone = ownership !== null && ownership.kind === 'none';
+			    const projectionState = useMemo(() => {
+			        // (PR #35 follow-up) the store key: an ok team relation names the
+			        // OWNING ROOT directly (a cold member's root resolves through the
+			        // probe — no frame required); an `ok`/`none` has no store at all;
+			        // no settled probe falls back to the frame-based candidate
+			        // (resolution's team id, else the session id — the guide's fixed
+			        // key while the cold read is in flight).
+			        const key = ownership === null
+			            ? resolution?.team.teamSessionId ?? sessionId
+			            : ownership.kind === 'none'
+			                ? null
+			                : ownership.teamSessionId;
+			        if (key === null)
+			            return null;
+			        return projectionStates[key] ?? null;
+			    }, [projectionStates, resolution, sessionId, ownership]);
 			    // (repair 20260927, S1-C2) the manual "refresh team view" state —
 			    // `refreshPending` doubles as the double-click guard; `refreshEpoch`
 			    // discards late responses after a newer refresh — and (PR #34 review
@@ -562,23 +589,21 @@ var __dshFactory = (require) => {
 			        if (resolution === undefined)
 			            void ensureProjection(sessionId);
 			    }, [sessionId, resolution, ensureProjection]);
-			    // team-view-sync-complete (frozen decisions 2 + 5): the per-team
-			    // refresh-coordinator ATTACH — the team the view is bound to is the
-			    // resolution's authoritative team id, falling back to the session id
-			    // (the guide's fixed key: an unresolved session id is itself the
-			    // TeamSession id the cold pull targets). Mounting the view arms the
-			    // 3s visible tick for that team; unmounting (session switch / tab
-			    // away) stops it. The id is stable across the cold read (candidate
-			    // root id === the frame's team id), so the effect re-runs at most
-			    // once per scope — attach is idempotent either way.
-			    const teamSessionId = resolution?.team.teamSessionId ?? sessionId;
+			    // team-view-sync-complete (frozen decisions 2 + 5; PR #35 follow-up,
+			    // P0-1): the per-SESSION refresh-coordinator ATTACH — the round is
+			    // the read-state probe for the SESSION (P0-1: the probe input is the
+			    // current sessionId, never a root id guess), so the tick scope IS the
+			    // session id: stable for the whole view lifetime, no re-attach across
+			    // the cold read. Mounting the view arms the 3s visible tick (every
+			    // tick = the frozen §1.2 round); unmounting (session switch / tab
+			    // away) stops it. attach is idempotent either way.
 			    useEffect(() => {
 			        const face = refreshCoordinator;
 			        if (face === undefined)
 			            return;
-			        face.attach(teamSessionId);
-			        return () => face.detach(teamSessionId);
-			    }, [teamSessionId, refreshCoordinator]);
+			        face.attach(sessionId);
+			        return () => face.detach(sessionId);
+			    }, [sessionId, refreshCoordinator]);
 			    const snapshot = useMemo(() => (resolution === undefined
 			        ? null
 			        : adaptTeamProjection(resolution.team, resolution.perspective)), [resolution]);
@@ -589,7 +614,14 @@ var __dshFactory = (require) => {
 			    // there). A typed failure keeps the ordinary zero state + ONE verbatim
 			    // note; `legacy-team` REPLACES the zero state with the read-only banner.
 			    const [legacy, setLegacy] = useState(null);
-			    const inZeroState = resolution === undefined || snapshot === null;
+			    // (PR #35 follow-up, frozen §1.2) the zero-state test: the
+			    // AUTHORITATIVE `none` probe wins (a positively confirmed no-team
+			    // session — the round that answered it made no projection request, so
+			    // there is no frame to wait for); otherwise the frame-based test
+			    // stands (a failed probe keeps the last-known surface — fail closed,
+			    // and a cold open with no settled probe yet reads as "still loading",
+			    // never as a definitive no-team).
+			    const inZeroState = authoritativeNone || resolution === undefined || snapshot === null;
 			    useEffect(() => {
 			        if (!inZeroState || legacyInspect === undefined || creationOpen)
 			            return;
@@ -707,53 +739,98 @@ var __dshFactory = (require) => {
 			        }, 3000);
 			        return () => clearInterval(id);
 			    }, [inZeroState, roots, creationOpen, sessionId, loadRoots]);
-			    // (repair 20260927, S1-C2) the manual "refresh team view" — the one
-			    // awaitable read-only re-read. Captures THIS invocation's session id,
-			    // the team (root) id, and a request epoch at call time:
+			    // (repair 20260927, S1-C2; PR #35 follow-up, P1-4) the manual "refresh
+			    // team view" — the one awaitable read-only re-read. Captures THIS
+			    // invocation's session id and a request epoch at call time:
 			    //   (a) the roots re-read starts independently (the manual call is NOT
 			    //       subject to the auto-read's zero-state / `creationOpen` guard —
 			    //       frozen decision 6: the manual refresh ALWAYS re-reads roots);
-			    //   (b) the projection round is a FORCED trigger through the refresh
-			    //       coordinator (frozen decisions 2 + 5: single-flighted per team,
-			    //       coalesced behind an in-flight round, never re-fired on a
-			    //       failed read).
-			    // (team-view-sync-complete, frozen decision 4) the manual refresh NO
-			    // LONGER refreshes the ledger itself: the ledger refresh is owned by
-			    // the applied-DURABLE-GENERATION advance (the mount's store
-			    // subscription) — a same-generation manual refresh (duplicate, or a
-			    // live-token-only overlay apply) is deliberately a NO-OP for the
-			    // ledger. Deliberate behavior change from Phase 1 (noted in the PR).
-			    // A resolved Promise is NOT a success: the round-trip outcome is read
-			    // back through the projection store's published state (the same
-			    // visible state surface the member/governance background reads flow
-			    // through) — `rpc-error` / `transport-loss` / `foreign` /
-			    // `inconsistent` all settle as resolved assessments. Nothing here
-			    // re-fires a mutation on a failed read.
+			    //   (b) the round is a FORCED trigger for the SESSION through the
+			    //       refresh coordinator (the read-state-driven §1.2 round:
+			    //       single-flighted per session, coalesced behind an in-flight
+			    //       round, never re-fired on a failed read).
+			    // (PR #35 follow-up, P1-4) the manual refresh FORCES ONE EXPLICIT
+			    // ledger refresh attempt when the round CONFIRMS a team (the probe
+			    // answered a team relation): restoring the Phase 1 "explicit refresh
+			    // re-reads the durable ledger" behavior — a failed earlier ledger read
+			    // gets a retry on the user's explicit action even when the generation
+			    // did not advance. The AUTOMATIC ledger refresh stays owned by the
+			    // applied-durable-generation advance (frozen decision 4 — a
+			    // live-token-only overlay apply still does NOT refresh the ledger);
+			    // this explicit attempt is the user-driven exception the follow-up
+			    // guide reinstates (documented in the PR). A resolved Promise is NOT a
+			    // success: the round-trip outcome is read back through the projection
+			    // store's published state (the same visible state surface the
+			    // member/governance background reads flow through) — `rpc-error` /
+			    // `transport-loss` / `foreign` / `inconsistent` all settle as resolved
+			    // assessments. Nothing here re-fires a mutation on a failed read.
 			    const runRefresh = useCallback(() => {
 			        if (refreshPending)
 			            return; // the double-click guard
 			        const sessionIdAtStart = sessionId;
 			        const resolutionAtStart = resolution;
-			        const teamSessionIdAtStart = resolutionAtStart?.team.teamSessionId ?? sessionIdAtStart;
+			        const faceAtStart = refreshCoordinator;
 			        refreshEpoch.current += 1;
 			        const epoch = refreshEpoch.current;
 			        setRefreshPending(true);
 			        void loadRoots();
 			        void (async () => {
-			            try {
-			                await pullProjection(teamSessionIdAtStart);
+			            // P1-4: does the refresh CONFIRM a team? (the explicit ledger
+			            // retry below runs only then.)
+			            let teamConfirmed;
+			            if (faceAtStart === undefined) {
+			                // Phase 1 fallback (no coordinator face — the degraded
+			                // injection): the direct generation-safe pull for the resolved
+			                // team id (the old manual-refresh path); the team is confirmed
+			                // from the frame (the mirror resolution at call time).
+			                try {
+			                    await pullProjection(resolutionAtStart?.team.teamSessionId ?? sessionIdAtStart);
+			                }
+			                catch {
+			                    // The frozen client carrier never rejects (it resolves as a
+			                    // typed assessment); defensive only.
+			                }
+			                teamConfirmed = resolutionAtStart !== undefined;
 			            }
-			            catch {
-			                // The frozen client carrier never rejects (it resolves as a
-			                // typed assessment); defensive only.
+			            else {
+			                // The read-state-driven forced round (probe → conditional
+			                // pull): the team is confirmed when the probe answered a team
+			                // relation (an authoritative `none` / a failed probe never
+			                // re-reads the ledger — there is no ledger, or no ownership
+			                // conclusion).
+			                let round = null;
+			                try {
+			                    round = await faceAtStart.trigger(sessionIdAtStart, 'manual');
+			                }
+			                catch {
+			                    // The round never rejects (every outcome is resolved);
+			                    // defensive only.
+			                }
+			                teamConfirmed =
+			                    round !== null &&
+			                        round.readState.status === 'ok' &&
+			                        round.readState.relation.kind !== 'none';
 			            }
 			            if (refreshEpoch.current !== epoch)
 			                return; // newer refresh / unmount
+			            // P1-4: the explicit ledger retry — the user's "refresh" re-reads
+			            // the durable ledger even when the generation did not advance (a
+			            // failed earlier ledger read gets its retry here); the AUTOMATIC
+			            // refresh stays owned by the applied durable-generation advance.
+			            if (teamConfirmed) {
+			                try {
+			                    await refreshTeamLedger();
+			                }
+			                catch {
+			                    // The ledger store's refresh resolves with the typed failure
+			                    // in state.error; defensive only.
+			                }
+			            }
 			        })().finally(() => {
 			            if (refreshEpoch.current === epoch)
 			                setRefreshPending(false);
 			        });
-			    }, [refreshPending, sessionId, resolution, loadRoots, pullProjection]);
+			    }, [refreshPending, sessionId, resolution, refreshCoordinator, loadRoots, pullProjection, refreshTeamLedger]);
 			    // D2 (Team D1-D6 repair v2, D6): the in-flight explicit open per picker
 			    // row (root id → pending) and the last typed failure per row (ONE
 			    // verbatim note, the UI §38 greyed-surface discipline). Page-run UI
@@ -1046,13 +1123,15 @@ var __dshFactory = (require) => {
 			const createTeamProjectionStore = __imp51.createTeamProjectionStore;
 			const __imp52 = __req("state/team-refresh-coordinator.js");
 			const createTeamRefreshCoordinator = __imp52.createTeamRefreshCoordinator;
-			const __imp53 = __req("state/team-session-resolution.js");
-			const resolveTeamProjection = __imp53.resolveTeamProjection;
-			const __imp54 = __req("transport/team-remote-client.js");
-			const createTeamRemoteClient = __imp54.createTeamRemoteClient;
-			const __imp55 = __req("ui/locales.js");
-			const en = __imp55.en;
-			const zh = __imp55.zh;
+			const __imp53 = __req("state/team-read-state.js");
+			const resolveTeamReadState = __imp53.resolveTeamReadState;
+			const __imp54 = __req("state/team-session-resolution.js");
+			const resolveTeamProjection = __imp54.resolveTeamProjection;
+			const __imp55 = __req("transport/team-remote-client.js");
+			const createTeamRemoteClient = __imp55.createTeamRemoteClient;
+			const __imp56 = __req("ui/locales.js");
+			const en = __imp56.en;
+			const zh = __imp56.zh;
 			/**
 			 * P9-T9 (P9-S6) — the unique client mount of the dsh-agent-team Cordis
 			 * client plugin.
@@ -1200,6 +1279,21 @@ var __dshFactory = (require) => {
 			    const mirrorStore = createSnapshotStore({});
 			    const ledgerStatesStore = createSnapshotStore({});
 			    const projectionStatesStore = createSnapshotStore({});
+			    // (PR #35 follow-up, frozen §1.2) the per-session READ-STATE store: the
+			    // latest `team.getReadState` outcome per session (the authoritative
+			    // ownership + the freshness pair). The refresh coordinator records
+			    // every probe result here (every round, before the optional pull);
+			    // the Team view subscribes through the hooks compartment
+			    // (`sessionReadStates` → `useSessionReadStates`) and takes its
+			    // zero-state / ownership conclusions from it — a probe that FAILED
+			    // (remote-error / malformed / transport-loss) never degrades to a
+			    // `none` conclusion here either (the closed outcome rides through
+			    // intact).
+			    const sessionReadStatesStore = createSnapshotStore({});
+			    const recordSessionReadState = (sessionId, outcome) => {
+			        const current = sessionReadStatesStore.getSnapshot();
+			        sessionReadStatesStore.set({ ...current, [sessionId]: outcome });
+			    };
 			    // (5) The lazy per-team ledger store (published onto the ledger-states
 			    // observable; the page pull rides the frozen Remote client).
 			    const ledgerStoreOf = (teamSessionId) => {
@@ -1304,22 +1398,34 @@ var __dshFactory = (require) => {
 			        projectionStores.set(teamSessionId, store);
 			        return store;
 			    };
-			    // (7) The single-flight cold read (plan §6.1: the mirror wins; the
-			    // invariant-9 candidate-root probe — an unresolved session id is itself
-			    // the TeamSession id to pull).
-			    const inflightPulls = new Map();
+			    // (7) The cold read (plan §6.1; PR #35 follow-up — READ-STATE DRIVEN):
+			    // the cold read is now the coordinator's FORCED round for the SESSION
+			    // (probe → conditional pull): the `team.getReadState` probe answers
+			    // ownership for the session — a cold member's root is resolved through
+			    // the probe (the invariant-9 "the session id is itself the TeamSession
+			    // id to pull" guess is gone), and the full projection pull happens
+			    // only when the probe says the frame is missing or stale (an
+			    // ordinary session's cold read ends with the authoritative `none`
+			    // probe and makes NO projection request). The coordinator's
+			    // single-flight governs the ATTACHED session (tick / forced rounds);
+			    // the cold read keeps the mount-level D-T9-5 single-flight of its own
+			    // (concurrent cold reads of an UNATTACHED session — the view mount
+			    // fires the read before the attach effect arms the entry — dedupe to
+			    // ONE round).
+			    const inflightRounds = new Map();
 			    const ensureProjection = (sessionId) => {
-			        const resolution = resolveTeamProjection(mirrorStore.getSnapshot(), sessionId);
-			        const teamSessionId = resolution?.team.teamSessionId ?? sessionId;
-			        const existing = inflightPulls.get(teamSessionId);
+			        const existing = inflightRounds.get(sessionId);
 			        if (existing !== undefined)
 			            return existing;
-			        const pull = projectionStoreOf(teamSessionId)
-			            .pull(teamSessionId)
+			        const round = refreshCoordinator
+			            .trigger(sessionId, 'manual')
 			            .then(() => undefined);
-			        inflightPulls.set(teamSessionId, pull);
-			        void pull.finally(() => inflightPulls.delete(teamSessionId));
-			        return pull;
+			        inflightRounds.set(sessionId, round);
+			        void round.finally(() => {
+			            if (inflightRounds.get(sessionId) === round)
+			                inflightRounds.delete(sessionId);
+			        });
+			        return round;
 			    };
 			    // (8) The per-session ledger refresh (no-op when the session resolves to
 			    // no team or the team's ledger store was never opened).
@@ -1507,22 +1613,51 @@ var __dshFactory = (require) => {
 			    // The dock's jump button is its title button; clicking it activates the
 			    // dock entry's own session context through the ordinary renderer path.
 			    const openTeamTab = () => { };
-			    // (11b) team-view-sync-complete (frozen decisions 2 + 5): the
-			    // mount-level per-team REFRESH COORDINATOR — the client-owned polling
-			    // engine (NO server push): one 3s tick per ATTACHED (Team-view-
-			    // visible) team while the host tab is visible; hidden → paused. The
-			    // coordinator UNIFIES the refresh trigger sources (manual view
-			    // refresh, post-mutation-success refresh, visibility-resume) with the
-			    // tick: per-team single-flight + dirty coalescing, forced rounds
-			    // always run, and a failed read is a resolved assessment — the
-			    // coordinator NEVER re-fires the mutation that preceded a refresh
-			    // (mutations are one-shot UI RPCs). The pull it gates is the SAME
-			    // generation-safe store pull the cold read uses; the store's
-			    // channel-episode pulls (backoff retry, connection-restore
-			    // invalidation pull, effect 17) are the separate frozen lane — both
-			    // lanes land on the same F1-ordered, generation-assessed pull.
+			    // (11b) team-view-sync-complete (frozen decisions 2 + 5; PR #35
+			    // follow-up — the READ-STATE-DRIVEN round, frozen §1.2): the
+			    // mount-level per-SESSION REFRESH COORDINATOR — the client-owned
+			    // polling engine (NO server push): one 3s tick per ATTACHED
+			    // (Team-view-visible) SESSION while the host tab is visible; hidden →
+			    // paused. A round = the LIGHTWEIGHT v6 `team.getReadState` probe for
+			    // the session (the authoritative ownership + the freshness PAIR) → a
+			    // full `team.getProjection` pull ONLY when the probe says the applied
+			    // identity actually changed (a no-team / unchanged-pair round makes
+			    // NO projection request — the frozen target cadence). The coordinator
+			    // UNIFIES the refresh trigger sources (manual view refresh,
+			    // post-mutation-success refresh, visibility-resume, CONNECTION-
+			    // RESTORED) with the tick: per-session single-flight + dirty
+			    // coalescing, forced rounds always run, and a failed read is a
+			    // resolved outcome — the coordinator NEVER re-fires the mutation that
+			    // preceded a refresh (mutations are one-shot UI RPCs). The pull it
+			    // gates is the SAME generation-safe store pull the cold read uses;
+			    // the store's channel-episode pulls (backoff retry) are the separate
+			    // frozen lane — both lanes land on the same F1-ordered,
+			    // generation-assessed pull. The probe outcomes are recorded into the
+			    // per-session read-state store (the authoritative ownership surface
+			    // the Team view subscribes through the hooks compartment).
 			    const refreshCoordinator = createTeamRefreshCoordinator({
-			        pull: (teamSessionId) => projectionStoreOf(teamSessionId).pull(teamSessionId),
+			        readState: (sessionId) => resolveTeamReadState(teamRemote, sessionId),
+			        pullProjection: (teamSessionId) => projectionStoreOf(teamSessionId).pull(teamSessionId),
+			        getAppliedIdentity: (teamSessionId) => {
+			            const store = projectionStores.get(teamSessionId);
+			            if (store === undefined)
+			                return null;
+			            const state = store.getState();
+			            // A missing applied PAIR cell (the pre-first-frame state, or a
+			            // v6 frame whose token cell was never filled) is "no applied
+			            // identity": the round re-pulls.
+			            if (state.frame === null ||
+			                state.appliedGeneration === null ||
+			                state.appliedLiveToken === null) {
+			                return null;
+			            }
+			            return {
+			                teamSessionId,
+			                durableGeneration: state.appliedGeneration,
+			                liveToken: state.appliedLiveToken,
+			            };
+			        },
+			        onReadState: (sessionId, outcome) => recordSessionReadState(sessionId, outcome),
 			        tickMs: 3000,
 			    });
 			    // (11) The post-success projection pull (the final-state authority).
@@ -1545,7 +1680,32 @@ var __dshFactory = (require) => {
 			    // state creation panel's post-success pull of the NEW team's id lands
 			    // on the coordinator's unattached path (the round runs ungated — the
 			    // new team's view is not mounted yet).
-			    const pullProjection = (teamSessionId) => refreshCoordinator.trigger(teamSessionId, 'mutation');
+			    // (PR #35 follow-up) the trigger now runs the READ-STATE ROUND (probe
+			    // → conditional pull) and returns a round result; the mutation face
+			    // still speaks the frozen assessment, so the no-pull outcomes are
+			    // mapped: a round that pulled settles with that assessment (unchanged
+			    // above); a failed-closed probe maps to the corresponding assessment
+			    // (`remote-error` → the typed `rpc-error` pass-through; the other
+			    // failures → `transport-loss`); a no-pull round over a healthy probe
+			    // (no-team or unchanged pair — e.g. the mutation raced a tick that
+			    // already applied the new generation) settles as `duplicate` (a
+			    // resolved no-op — still NOT a success: the caller inspects the
+			    // result, the read-state store carries the probe's typed outcome).
+			    const pullProjection = (teamSessionId) => refreshCoordinator.trigger(teamSessionId, 'mutation').then((round) => {
+			        if (round.projectionAssessment !== null)
+			            return round.projectionAssessment;
+			        if (round.readState.status === 'remote-error') {
+			            return {
+			                status: 'rpc-error',
+			                code: round.readState.code,
+			                receivedGeneration: null,
+			            };
+			        }
+			        if (round.readState.status === 'ok') {
+			            return { status: 'duplicate', receivedGeneration: null };
+			        }
+			        return { status: 'transport-loss', receivedGeneration: null };
+			    });
 			    // (12) The S5-A New Team creation face (frozen Remote wrappers + the
 			    // native seam members; the seam-6 preset mapping filters the `broken`
 			    // rows before the UI sees them — 0.1.7: no `trust` field to drop, the
@@ -1663,21 +1823,36 @@ var __dshFactory = (require) => {
 			    // guarantee is generation invalidation + the team.getProjection pull
 			    // only — no live push). `undefined` -> markConnectionLost on every bound
 			    // PROJECTION store (schedules the CLIENT_LOCAL backoff retry); defined ->
-			    // markConnectionRestored (cancels the pending retry, fires the pull).
-			    // Both are no-ops on an unbound store, so no initial-snapshot read is
-			    // taken (the maps are empty at apply time; stores self-bind on their
-			    // first pull). Ledger stores are deliberately NOT rebaselined: the
-			    // frozen guarantee covers the projection pull only — a ledger page
-			    // failure surfaces in `state.error` and is re-requested through
-			    // `refreshTeamLedger`.
+			    // (PR #35 follow-up, P1-5) noteConnectionRestored on every bound PROJECTION
+			    // store (the loss episode is CLEARED — pending retry cancelled, attempt
+			    // counter reset, the `reconnecting` status closed — but NO store-owned
+			    // pull) plus the refresh coordinator's CONNECTION-RESTORED forced round
+			    // for every ATTACHED session (the channel notice enters the coordinator
+			    // lane — the read-state-driven invalidation pull). Both are no-ops on an
+			    // unbound store, so no initial-snapshot read is taken (the maps are empty
+			    // at apply time; stores self-bind on their first pull). Ledger stores are
+			    // deliberately NOT rebaselined: the frozen guarantee covers the projection
+			    // pull only — a ledger page failure surfaces in `state.error` and is
+			    // re-requested through `refreshTeamLedger`.
 			    ctx.effect(() => {
 			        const unsubscribe = ctx.connection.generation.subscribe(() => {
 			            const snapshot = ctx.connection.generation.getSnapshot();
-			            for (const store of projectionStores.values()) {
-			                if (snapshot === undefined)
+			            if (snapshot === undefined) {
+			                // A channel loss: the store's own backoff lane owns the retry.
+			                for (const store of projectionStores.values()) {
 			                    store.markConnectionLost();
-			                else
-			                    store.markConnectionRestored();
+			                }
+			            }
+			            else {
+			                // A channel restoration (P1-5): the store clears the loss
+			                // episode ONLY — the invalidation pull is the coordinator's
+			                // connection-restored round (the read-state-driven lane).
+			                for (const store of projectionStores.values()) {
+			                    store.noteConnectionRestored();
+			                }
+			                for (const sessionId of refreshCoordinator.attached()) {
+			                    void refreshCoordinator.trigger(sessionId, 'connection-restored');
+			                }
 			            }
 			        });
 			        return unsubscribe;
@@ -1685,11 +1860,12 @@ var __dshFactory = (require) => {
 			    // (17b) team-view-sync-complete (frozen decision 2): the host-tab
 			    // VISIBILITY gate of the refresh coordinator — hidden → the 3s ticks
 			    // pause (no round trips); visible → resume + the immediate trigger for
-			    // every attached team. The connection-restore IMMEDIATE pull is the
-			    // store's own channel-episode lane (effect 17 — unchanged); this
-			    // effect owns the tab-visibility pause/resume only. Headless (no
-			    // `document` — the node test environments) → no visibility signal,
-			    // the coordinator runs unpaused.
+			    // every attached session. The connection-restore IMMEDIATE round is
+			    // the coordinator's own lane (effect 17 — PR #35 follow-up: the
+			    // connection-restored forced trigger); this effect owns the
+			    // tab-visibility pause/resume only. Headless (no `document` — the
+			    // node test environments) → no visibility signal, the coordinator
+			    // runs unpaused.
 			    ctx.effect(() => {
 			        const doc = typeof document === 'undefined' ? null : document;
 			        if (doc === null)
@@ -1710,24 +1886,32 @@ var __dshFactory = (require) => {
 			    // (repair 20260927, S1-C1) `projectionStates` joins the compartment:
 			    // the generic renderer binding maps the standard source name onto the
 			    // component's `useProjectionStates` hook prop (no renderer change).
+			    // (PR #35 follow-up, frozen §1.2) `sessionReadStates` joins the
+			    // compartment the same way (→ the `useSessionReadStates` hook prop):
+			    // the per-session `team.getReadState` outcomes — the authoritative
+			    // ownership surface the view takes its zero-state conclusions from.
 			    const viewInject = (sessionId) => ({
 			        hooks: {
 			            projectionMirror: mirrorStore,
 			            teamLedgers: ledgerStatesStore,
 			            projectionStates: projectionStatesStore,
+			            sessionReadStates: sessionReadStatesStore,
 			        },
 			        ensureProjection,
 			        // D4-A1: the zero-state creation panel's post-success refresh (the
 			        // same generation-safe pull; targets the NEW team's id).
 			        pullProjection,
-			        // team-view-sync-complete (frozen decisions 2 + 5): the per-team
-			        // refresh-coordinator attach/detach — the Team view ATTACHES on
-			        // mount (arming the 3s visible tick for its team) and DETACHES on
-			        // unmount (stopping it). The manual refresh + the post-mutation
-			        // refreshes ride the same coordinator through `pullProjection`.
+			        // team-view-sync-complete (frozen decisions 2 + 5; PR #35 follow-up):
+			        // the per-SESSION refresh-coordinator face — the Team view ATTACHES
+			        // on mount (arming the 3s visible tick for its session) and DETACHES
+			        // on unmount (stopping it). The manual refresh + the post-mutation
+			        // refreshes ride the same coordinator (the manual refresh through
+			        // the `trigger` face; the mutation refreshes through the mounted
+			        // `pullProjection` wrapper).
 			        refreshCoordinator: {
-			            attach: (teamSessionId) => refreshCoordinator.attach(teamSessionId),
-			            detach: (teamSessionId) => refreshCoordinator.detach(teamSessionId),
+			            attach: (sessionId) => refreshCoordinator.attach(sessionId),
+			            detach: (sessionId) => refreshCoordinator.detach(sessionId),
+			            trigger: (sessionId, reason) => refreshCoordinator.trigger(sessionId, reason),
 			        },
 			        refreshTeamLedger: refreshTeamLedgerFor(sessionId),
 			        openSession,
@@ -5572,14 +5756,14 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=team-ledger-store.js.map
 			}, exports: {} };
 		__mods["state/team-projection-store.js"] = { done: false, fn: function (exports) {
-			const __imp80 = __req("../../remote/src/index.js");
-			const assessProjectionSync = __imp80.assessProjectionSync;
-			const assessProjectionSyncV6 = __imp80.assessProjectionSyncV6;
-			const backoffCapMs = __imp80.backoffCapMs;
-			const extractPushFrame = __imp80.extractPushFrame;
-			const extractPushFrameV6 = __imp80.extractPushFrameV6;
-			const isApplyAssessment = __imp80.isApplyAssessment;
-			const pickBackoffDelayMs = __imp80.pickBackoffDelayMs;
+			const __imp97 = __req("../../remote/src/index.js");
+			const assessProjectionSync = __imp97.assessProjectionSync;
+			const assessProjectionSyncV6 = __imp97.assessProjectionSyncV6;
+			const backoffCapMs = __imp97.backoffCapMs;
+			const extractPushFrame = __imp97.extractPushFrame;
+			const extractPushFrameV6 = __imp97.extractPushFrameV6;
+			const isApplyAssessment = __imp97.isApplyAssessment;
+			const pickBackoffDelayMs = __imp97.pickBackoffDelayMs;
 			/**
 			 * P9-T3 (S2-B) — the generation-safe Team projection store.
 			 *
@@ -5614,7 +5798,12 @@ var __dshFactory = (require) => {
 			 * `reconnecting` and schedules ONE retry through the frozen backoff
 			 * helpers (`backoffCapMs` + `pickBackoffDelayMs`, deterministic lower
 			 * bound by default); `markConnectionRestored` fires the invalidation
-			 * pull.
+			 * pull. (PR #35 follow-up, P1-5) the notice WITHOUT the pull —
+			 * `noteConnectionRestored` — is the split the read-state-driven
+			 * coordinator needs: the loss episode (pending retry, attempt counter,
+			 * the `reconnecting` status) is cleared, but the invalidation pull
+			 * belongs to the coordinator's connection-restored round; the store's
+			 * own backoff lane stays intact and independent.
 			 *
 			 * Loss-staleness (repair 20260927, S1-C3): a FAILED REQUEST's
 			 * transport loss is stale ONLY when a request that started LATER
@@ -5636,6 +5825,18 @@ var __dshFactory = (require) => {
 			 * next fresh `team.getProjection` response. No native timer is
 			 * assumed by the store logic (the default scheduler may use
 			 * `setTimeout`; tests inject a manual scheduler).
+			 *
+			 * v6 stale-apply guard (PR #35 follow-up, P0-3): the F1 request-order
+			 * authority previously governed only the NON-apply verdicts (the
+			 * applied frame was deliberately untouched by request order — G2 hard
+			 * invariant). The v6 freshness PAIR extended the exposure: an OLD
+			 * same-generation response (typically a live-only frame carrying an
+			 * older `liveToken`) settling LATE than a newer round trip would
+			 * still `apply` and ROLL BACK the newer token / frame. The guard
+			 * closes that case: an apply verdict of a superseded request is
+			 * dropped when it carries no durable advance (`durableGeneration <=
+			 * appliedGeneration`); a late response with a genuinely NEWER durable
+			 * generation still applies (durable authority outranks request order).
 			 *
 			 * Request-order liveness authority (PR #34 review follow-up, F1): the
 			 * request sequence ALSO decides which completed response owns the UI
@@ -5889,6 +6090,24 @@ var __dshFactory = (require) => {
 			                });
 			                return { status: 'inconsistent', receivedGeneration: null };
 			            }
+			            // (PR #35 follow-up, P0-3) the v6 stale-APPLY guard: a response
+			            // whose request a LATER request already superseded (the F1
+			            // round-trip evidence) must not roll back the applied freshness
+			            // PAIR when it carries NO durable advance — an old same-
+			            // generation response (e.g. a live-only frame with an older
+			            // liveToken) that settles late would otherwise overwrite the
+			            // newer liveToken / frame of the round trip that already
+			            // completed. The guard drops ONLY the no-advance case: a late
+			            // response carrying a genuinely NEWER durable generation still
+			            // applies (the frozen generation-verdict authority stands —
+			            // request order never suppresses a newer durable frame).
+			            if (isV6 &&
+			                supersededByNewerRoundTrip &&
+			                frameV6 !== null &&
+			                state.appliedGeneration !== null &&
+			                frameV6.projection.durableGeneration <= state.appliedGeneration) {
+			                return assessment;
+			            }
 			            publish({
 			                ...state,
 			                teamSessionId,
@@ -5980,6 +6199,37 @@ var __dshFactory = (require) => {
 			        publish({ ...state, retryAttempt: 0, nextRetryDelayMs: null });
 			        void pull(state.teamSessionId);
 			    };
+			    const noteConnectionRestored = () => {
+			        if (state.teamSessionId === null)
+			            return;
+			        // (PR #35 follow-up, P1-5) the split: clear the loss episode ONLY —
+			        // the invalidation pull belongs to the coordinator's
+			        // connection-restored round, not to the store's channel-notice
+			        // lane. The staleness baseline (lastCompletedSeq / openLossSeq) is
+			        // deliberately NOT touched (S1-C3: the channel notice is never
+			        // round-trip evidence; a NEW loss after the notice still opens a
+			        // fresh episode, and a completed round trip still absorbs an
+			        // unabsorbed one).
+			        cancelPendingRetry();
+			        // Frozen P2-T6 / P8 semantics: a restored connection restarts the
+			        // backoff episode (the attempt counter resets on connect).
+			        const cleared = {
+			            ...state,
+			            retryAttempt: 0,
+			            nextRetryDelayMs: null,
+			        };
+			        if (state.status === 'reconnecting') {
+			            // The episode is closed by the notice: an applied frame is
+			            // `ready` again (durable content stays valid across the channel
+			            // gap); a missing frame is `loading` (the coordinator's round
+			            // pulls — the applied identity is missing, so its pair verdict is
+			            // "changed" by definition — and the settlement clears the status).
+			            publish({ ...cleared, status: state.frame !== null ? 'ready' : 'loading' });
+			        }
+			        else {
+			            publish(cleared);
+			        }
+			    };
 			    const reset = () => {
 			        // (repair 20260927, S1-C3) a scope change: bump the epoch so every
 			        // in-flight pull of the old scope is dead on settlement (no
@@ -6010,6 +6260,7 @@ var __dshFactory = (require) => {
 			        pull,
 			        markConnectionLost,
 			        markConnectionRestored,
+			        noteConnectionRestored,
 			        reset,
 			    };
 			}
@@ -6041,30 +6292,49 @@ var __dshFactory = (require) => {
 			}, exports: {} };
 		__mods["state/team-refresh-coordinator.js"] = { done: false, fn: function (exports) {
 			/**
-			 * team-view-sync-complete (frozen decisions 2 + 5) — the mount-level
-			 * per-team refresh coordinator.
+			 * team-view-sync-complete (frozen decisions 2 + 5; PR #35 follow-up) —
+			 * the mount-level per-SESSION refresh coordinator.
 			 *
-			 * Client-owned polling, NO server push: while a team's Team view is
-			 * VISIBLE (attached) and the host tab is visible, one 3s tick per team
-			 * fires a projection round trip. Hidden (detached or tab-hidden) →
-			 * paused: the ticks stop, no round trips.
+			 * Client-owned polling, NO server push: while a session's Team view is
+			 * VISIBLE (attached) and the host tab is visible, one 3s tick per
+			 * session fires a refresh ROUND. Hidden (detached or tab-hidden) →
+			 * paused: the ticks stop, no rounds.
+			 *
+			 * The ROUND (PR #35 follow-up — the read-state-driven flow, frozen
+			 * §1.2): the session is probed with the LIGHTWEIGHT v6
+			 * `team.getReadState` (the authoritative ownership + the freshness
+			 * PAIR), and a full `team.getProjection` pull happens ONLY when the
+			 * probe says the pair (or the applied identity) actually changed:
+			 *
+			 * - probe `none` (positively confirmed) → the round ends with the
+			 *   authoritative no-team result; NO projection request is made;
+			 * - probe `team-root` / `team-member` → the owning root is
+			 *   `teamSessionId`; the applied identity of that root's projection
+			 *   store is compared (team id + durableGeneration + liveToken);
+			 *   unchanged → the round ends as a no-op (NO projection request);
+			 *   changed (or no applied frame yet) → the full projection pull;
+			 * - probe `remote-error` / `malformed` / `transport-loss` → fail
+			 *   closed: no ownership conclusion, no projection pull (a malformed
+			 *   success is NEVER degraded to `none`; a lost probe never drops a
+			 *   team).
 			 *
 			 * The coordinator UNIFIES the refresh trigger sources (frozen decision
-			 * 5): the 3s tick, the manual view refresh, the post-mutation-success
-			 * refresh, and the visibility-resume immediate trigger. Per team there
-			 * is ONE in-flight round (`single-flight`) and a dirty flag that
-			 * COALESCES triggers arriving while a round is in flight: the forced
-			 * round runs exactly once after the in-flight round settles. A refresh
-			 * failure is a resolved assessment (the frozen store pull never
-			 * rejects) — the coordinator NEVER re-fires the mutation that preceded
+			 * 5 — extended): the 3s tick, the manual view refresh, the
+			 * post-mutation-success refresh, the visibility-resume immediate
+			 * trigger, and the CONNECTION-RESTORED immediate trigger (the channel
+			 * notice enters the coordinator lane — the store's own backoff retry
+			 * lane stays separate). Per session there is ONE in-flight round
+			 * (`single-flight`) and a dirty flag that COALESCES triggers arriving
+			 * while a round is in flight: the forced round runs exactly once after
+			 * the in-flight round settles. A failed probe / pull is a resolved
+			 * outcome — the coordinator NEVER re-fires the mutation that preceded
 			 * it (mutations are one-shot UI RPCs; only the read is repeated).
 			 *
-			 * The forced rounds (manual / mutation / resume) always run; only the
-			 * TICK respects the tab-hidden pause (an explicit trigger is an event,
-			 * not polling). The store's channel-episode pulls (the backoff retry,
-			 * the connection-restore invalidation pull) are a SEPARATE frozen lane
-			 * that shares the same generation-safe store pull — the coordinator
-			 * gates only the triggers it owns; the F1 request-order liveness + the
+			 * The forced rounds (manual / mutation / resume / connection-restored)
+			 * always run; only the TICK respects the tab-hidden pause (an explicit
+			 * trigger is an event, not polling). The store's channel-episode pulls
+			 * (the backoff retry) remain a SEPARATE frozen lane that shares the
+			 * same generation-safe store pull — the F1 request-order liveness + the
 			 * generation verdict remain the final authority for both lanes.
 			 *
 			 * Pure module: no DOM, no timers of its own (the timer is injected;
@@ -6072,8 +6342,47 @@ var __dshFactory = (require) => {
 			 * @module @dsh-agent-team/client/state/team-refresh-coordinator
 			 */
 			/**
-			 * Create one refresh coordinator over one gated pull.
-			 * @param options - the injected pull + cadence + timer.
+			 * Run ONE refresh round for one session (the frozen §1.2 flow): probe
+			 * → (conditional) pull. NEVER rejects (every dependency resolves with
+			 * a closed outcome / assessment).
+			 */
+			async function runRound(options, sessionId) {
+			    const outcome = await options.readState(sessionId);
+			    if (outcome.status !== 'ok') {
+			        // Fail closed: remote-error / malformed / transport-loss — no
+			        // ownership conclusion (a malformed success is NEVER degraded to
+			        // `none`), no projection pull. The recorder still sees the outcome
+			        // (the mount surfaces / logs it per its own policy).
+			        options.onReadState?.(sessionId, outcome);
+			        return { readState: outcome, projectionAssessment: null };
+			    }
+			    options.onReadState?.(sessionId, outcome);
+			    const relation = outcome.relation;
+			    if (relation.kind === 'none') {
+			        // The authoritative no-team result (frozen §1.2): NO projection
+			        // request is made for an ordinary session.
+			        return { readState: outcome, projectionAssessment: null };
+			    }
+			    // Team relation: the owning root + the freshness PAIR.
+			    const applied = options.getAppliedIdentity(relation.teamSessionId);
+			    const changed = applied === null ||
+			        applied.teamSessionId !== relation.teamSessionId ||
+			        applied.durableGeneration !== relation.durableGeneration ||
+			        applied.liveToken !== relation.liveToken;
+			    if (!changed) {
+			        // Unchanged pair + identity: the round ends as a no-op — the
+			        // lightweight probe was enough (the frozen target: visible session
+			        // → every 3s → getReadState → compare → pull ONLY when needed).
+			        return { readState: outcome, projectionAssessment: null };
+			    }
+			    const projectionAssessment = await options.pullProjection(relation.teamSessionId);
+			    return { readState: outcome, projectionAssessment };
+			}
+			/**
+			 * Create one refresh coordinator over the read-state probe + the
+			 * gated projection pull.
+			 * @param options - the injected probe / pull / identity / cadence /
+			 *   timer.
 			 * @returns the coordinator surface.
 			 */
 			function createTeamRefreshCoordinator(options) {
@@ -6081,8 +6390,8 @@ var __dshFactory = (require) => {
 			    const timer = options.timer === undefined ? createDefaultTimer() : options.timer;
 			    const entries = new Map();
 			    let paused = false;
-			    const armTick = (teamSessionId) => {
-			        const entry = entries.get(teamSessionId);
+			    const armTick = (sessionId) => {
+			        const entry = entries.get(sessionId);
 			        if (entry === undefined || entry.timer !== null)
 			            return;
 			        entry.timer = timer.setInterval(() => {
@@ -6090,7 +6399,7 @@ var __dshFactory = (require) => {
 			            // an event and is NOT gated — see `trigger`).
 			            if (paused)
 			                return;
-			            void trigger(teamSessionId, 'tick');
+			            void trigger(sessionId, 'tick');
 			        }, tickMs);
 			    };
 			    const disarmTick = (entry) => {
@@ -6100,55 +6409,56 @@ var __dshFactory = (require) => {
 			        entry.timer = null;
 			    };
 			    /**
-			     * Run ONE round for an attached team and, on settle, drain the dirty
-			     * follow-up (which settles the coalesced trigger callers).
+			     * Run ONE round for an attached session and, on settle, drain the
+			     * dirty follow-up (which settles the coalesced trigger callers).
 			     */
-			    const startRound = (teamSessionId) => {
-			        const entry = entries.get(teamSessionId);
+			    const startRound = (sessionId) => {
+			        const entry = entries.get(sessionId);
 			        if (entry === undefined)
-			            return options.pull(teamSessionId);
+			            return runRound(options, sessionId);
 			        entry.inFlight = true;
-			        const round = options
-			            .pull(teamSessionId)
-			            .then((assessment) => {
-			            entry.lastAssessment = assessment;
-			            return assessment;
+			        const round = runRound(options, sessionId).then((result) => {
+			            entry.lastResult = result;
+			            return result;
 			        });
-			        void round.then((assessment) => {
+			        void round.then((result) => {
 			            entry.inFlight = false;
 			            const waiters = entry.followUpWaiters.splice(0);
-			            if (entry.dirty && entries.get(teamSessionId) === entry) {
-			                // The forced follow-up runs (it is a FORCED round — even while
-			                // the tab is hidden the event-triggered round is owed).
+			            if (entry.dirty && entries.get(sessionId) === entry) {
+			                // The forced follow-up runs (it is a FORCED round — even
+			                // while the tab is hidden the event-triggered round is owed).
 			                entry.dirty = false;
-			                void startRound(teamSessionId).then((followUp) => {
+			                void startRound(sessionId).then((followUp) => {
 			                    for (const waiter of waiters)
 			                        waiter(followUp);
 			                }, (error) => {
-			                    // Defensive: the gated pull never rejects; a rejection
-			                    // settles the waiters with the frozen transport-loss
-			                    // assessment rather than hanging the UI.
-			                    for (const waiter of waiters) {
-			                        waiter({ status: 'transport-loss', receivedGeneration: null });
-			                    }
+			                    // Defensive: runRound never rejects; a rejection settles
+			                    // the waiters with a transport-loss round rather than
+			                    // hanging the UI.
+			                    const fallback = {
+			                        readState: { status: 'transport-loss', message: 'coordinator round rejected' },
+			                        projectionAssessment: null,
+			                    };
+			                    for (const waiter of waiters)
+			                        waiter(fallback);
 			                    void error;
 			                });
 			            }
 			            else {
 			                // Detached (or nothing coalesced): the coalesced callers
-			                // settle with THIS round's assessment — the follow-up is
+			                // settle with THIS round's result — the follow-up is
 			                // dropped, the view is gone.
 			                for (const waiter of waiters)
-			                    waiter(assessment);
+			                    waiter(result);
 			            }
 			        }, (error) => {
-			            // Defensive (the gated pull never rejects): settle the in-flight
+			            // Defensive (runRound never rejects): settle the in-flight
 			            // state + the waiters so nothing hangs.
 			            entry.inFlight = false;
 			            const waiters = entry.followUpWaiters.splice(0);
 			            const fallback = {
-			                status: 'transport-loss',
-			                receivedGeneration: null,
+			                readState: { status: 'transport-loss', message: 'coordinator round rejected' },
+			                projectionAssessment: null,
 			            };
 			            for (const waiter of waiters)
 			                waiter(fallback);
@@ -6156,15 +6466,15 @@ var __dshFactory = (require) => {
 			        });
 			        return round;
 			    };
-			    const trigger = (teamSessionId, _reason) => {
-			        const entry = entries.get(teamSessionId);
+			    const trigger = (sessionId, _reason) => {
+			        const entry = entries.get(sessionId);
 			        if (entry === undefined) {
-			            // Unattached (the cold create-success path targets the NEW team
+			            // Unattached (the cold create-success path targets the NEW root
 			            // before its view mounts): the forced round runs UNGATED.
-			            return options.pull(teamSessionId);
+			            return runRound(options, sessionId);
 			        }
 			        if (!entry.inFlight)
-			            return startRound(teamSessionId);
+			            return startRound(sessionId);
 			        // Single-flight: coalesce into the dirty follow-up. The caller
 			        // awaits the FOLLOW-UP round (the forced round), not the in-flight
 			        // one.
@@ -6173,40 +6483,43 @@ var __dshFactory = (require) => {
 			            entry.followUpWaiters.push(resolve);
 			        });
 			    };
-			    const attach = (teamSessionId) => {
-			        let entry = entries.get(teamSessionId);
+			    const attach = (sessionId) => {
+			        let entry = entries.get(sessionId);
 			        if (entry === undefined) {
 			            entry = {
 			                timer: null,
 			                inFlight: false,
 			                dirty: false,
 			                followUpWaiters: [],
-			                lastAssessment: null,
+			                lastResult: null,
 			            };
-			            entries.set(teamSessionId, entry);
+			            entries.set(sessionId, entry);
 			        }
 			        if (!paused)
-			            armTick(teamSessionId);
+			            armTick(sessionId);
 			    };
-			    const detach = (teamSessionId) => {
-			        const entry = entries.get(teamSessionId);
+			    const detach = (sessionId) => {
+			        const entry = entries.get(sessionId);
 			        if (entry === undefined)
 			            return;
 			        disarmTick(entry);
 			        // The dirty follow-up is dropped (the view is gone): the entry
 			        // leaves the map, so the in-flight round's settle path takes the
 			        // "detached" branch and settles the coalesced callers with THAT
-			        // round's assessment (never a fabricated one).
+			        // round's result (never a fabricated one).
 			        entry.dirty = false;
-			        entries.delete(teamSessionId);
+			        entries.delete(sessionId);
 			        // Defensive: a waiter list that survives while NOTHING is in flight
 			        // (unreachable — waiters only exist behind an in-flight round)
-			        // settles with the last settled assessment so no caller ever hangs.
+			        // settles with the last settled result so no caller ever hangs.
 			        if (!entry.inFlight && entry.followUpWaiters.length > 0) {
 			            const waiters = entry.followUpWaiters.splice(0);
-			            const fallback = entry.lastAssessment !== null
-			                ? entry.lastAssessment
-			                : { status: 'duplicate', receivedGeneration: null };
+			            const fallback = entry.lastResult !== null
+			                ? entry.lastResult
+			                : {
+			                    readState: { status: 'transport-loss', message: 'no settled round' },
+			                    projectionAssessment: null,
+			                };
 			            for (const waiter of waiters)
 			                waiter(fallback);
 			        }
@@ -6218,11 +6531,11 @@ var __dshFactory = (require) => {
 			        if (!paused)
 			            return;
 			        paused = false;
-			        for (const [teamSessionId, entry] of [...entries.entries()]) {
+			        for (const [sessionId, entry] of [...entries.entries()]) {
 			            if (entry.timer === null)
-			                armTick(teamSessionId);
+			                armTick(sessionId);
 			            // Frozen decision 2: visibility resume → IMMEDIATE trigger.
-			            void trigger(teamSessionId, 'resume');
+			            void trigger(sessionId, 'resume');
 			        }
 			    };
 			    const attached = () => [...entries.keys()];
@@ -6250,6 +6563,232 @@ var __dshFactory = (require) => {
 			    };
 			}
 			//# sourceMappingURL=team-refresh-coordinator.js.map
+			}, exports: {} };
+		__mods["state/team-read-state.js"] = { done: false, fn: function (exports) {
+			const __imp38 = __req("../../remote/src/index.js");
+			const PushTransportLossError = __imp38.PushTransportLossError;
+			/**
+			 * team-view-sync-complete (PR #35 follow-up, frozen §1.2/§1.3) — the
+			 * client-local model of the v6 `team.getReadState` answer: the
+			 * authoritative per-session TEAM OWNERSHIP + the freshness PAIR
+			 * (`durableGeneration` + `liveToken`) the refresh coordinator compares
+			 * before deciding whether a full `team.getProjection` pull is needed.
+			 *
+			 * The read-state is the LIGHTWEIGHT probe (frozen target flow): the
+			 * visible session is probed on the ~3s cadence with `team.getReadState`
+			 * (this module), and a full projection pull happens ONLY when the pair
+			 * (or the ownership identity) actually changed — not on every tick.
+			 *
+			 * STRICT parsing (fail closed, never a silent degrade):
+			 *
+			 * - a `success` envelope whose value matches the closed wire shape
+			 *   exactly → the discriminated {@link TeamReadRelation};
+			 * - a `success` envelope whose value is MALFORMED (a missing /
+			 *   wrong-typed cell, a contradictory relation, a team relation with a
+			 *   null or non-`lt-v1-*` token) → `{ status: 'malformed' }` — typed,
+			 *   logged, and NEVER degraded to `none` (a degraded none would tell
+			 *   the coordinator "no team" and the view would drop an existing
+			 *   team);
+			 * - an `error` envelope (a typed host failure — storage/integrity,
+			 *   the port-unavailable codes, …) → `{ status: 'remote-error' }` with
+			 *   the error block stored INTACT (never exception-ified, never
+			 *   re-interpreted);
+			 * - a transport-level REJECTION (`PushTransportLossError` — the only
+			 *   kind the seam carrier rejects with) → `{ status: 'transport-loss' }`.
+			 *
+			 * The wire shape mirrors the host's closed `RemoteTeamGetReadStateValue`
+			 * (the handler enforces it host-side; the client re-validates because
+			 * an old / mismatched host or a transport tamper must not produce a
+			 * phantom `none`). The client-local discriminant is `kind` (the wire
+			 * cell is `relation` — the mapping happens here and only here).
+			 *
+			 * Pure module: no React, no I/O. Erasable TS only.
+			 * @module @dsh-agent-team/client/state/team-read-state
+			 */
+			// ---------------------------------------------------------------------------
+			// Strict parsing (pure)
+			// ---------------------------------------------------------------------------
+			const RELATIONS = ['team-root', 'team-member', 'none'];
+			const LIVE_TOKEN_PREFIX = 'lt-v1-';
+			function isPlainRecord(value) {
+			    return typeof value === 'object' && value !== null && !Array.isArray(value);
+			}
+			function isNonEmptyString(value) {
+			    return typeof value === 'string' && value.length > 0;
+			}
+			function isDurableGeneration(value) {
+			    return typeof value === 'number' && Number.isSafeInteger(value) && value >= 1;
+			}
+			function isLiveToken(value) {
+			    return (typeof value === 'string' &&
+			        value.length >= LIVE_TOKEN_PREFIX.length &&
+			        value.startsWith(LIVE_TOKEN_PREFIX));
+			}
+			/**
+			 * Parse ONE v6 `team.getReadState` response into the closed outcome
+			 * (pure — the async wrapper {@link resolveTeamReadState} owns the
+			 * transport edge).
+			 *
+			 * @param response - the typed `RemoteResponse` (frozen envelope, the
+			 *   success value or the error block intact).
+			 * @returns the closed outcome — `ok` only on the exact closed wire
+			 *   shape; `malformed` (NEVER a degraded `none`) on a broken success
+			 *   value; `remote-error` intact on a typed host failure; the transport
+			 *   loss is produced by the async wrapper (a rejection, not a response).
+			 */
+			function parseTeamReadStateResponse(response) {
+			    if (!response.ok) {
+			        return {
+			            status: 'remote-error',
+			            code: response.error.code,
+			            message: response.error.message,
+			        };
+			    }
+			    // The read-state value rides `data` DIRECTLY (no `projection`
+			    // wrapper — unlike the projection method, whose value is
+			    // `{ projection }`).
+			    const value = response.value.data;
+			    if (!isPlainRecord(value)) {
+			        return { status: 'malformed', reason: `data is not an object (got ${String(value)})` };
+			    }
+			    const relation = value['relation'];
+			    if (typeof relation !== 'string' || !RELATIONS.includes(relation)) {
+			        return {
+			            status: 'malformed',
+			            reason: `relation must be one of ${RELATIONS.join(' | ')} (got ${String(relation)})`,
+			        };
+			    }
+			    if (relation === 'none') {
+			        // The positively confirmed no-team answer: EVERY cell null / the
+			        // frozen constant. Any deviation is malformed (a `none` with a
+			        // token would be a contradiction).
+			        if (value['teamSessionId'] !== null ||
+			            value['memberInstanceId'] !== null ||
+			            value['disposed'] !== false ||
+			            value['durableGeneration'] !== null ||
+			            value['liveToken'] !== null) {
+			            return {
+			                status: 'malformed',
+			                reason: 'a none answer must carry null teamSessionId / memberInstanceId / durableGeneration / liveToken and disposed false',
+			            };
+			        }
+			        return {
+			            status: 'ok',
+			            relation: {
+			                kind: 'none',
+			                teamSessionId: null,
+			                memberInstanceId: null,
+			                disposed: false,
+			                durableGeneration: null,
+			                liveToken: null,
+			            },
+			        };
+			    }
+			    const teamSessionId = value['teamSessionId'];
+			    if (!isNonEmptyString(teamSessionId)) {
+			        return {
+			            status: 'malformed',
+			            reason: `a team answer must carry a non-empty teamSessionId (got ${String(teamSessionId)})`,
+			        };
+			    }
+			    const durableGeneration = value['durableGeneration'];
+			    if (!isDurableGeneration(durableGeneration)) {
+			        return {
+			            status: 'malformed',
+			            reason: `a team answer must carry its safe-integer durableGeneration >= 1 (got ${String(durableGeneration)})`,
+			        };
+			    }
+			    // PR #35 follow-up (frozen): a team relation ALWAYS carries its
+			    // liveToken — the probe must detect a live-only change without a full
+			    // projection pull; a null / non-`lt-v1-*` token is malformed (NEVER
+			    // a degraded `none`, and the coordinator never accepts a team
+			    // relation without its token).
+			    const liveToken = value['liveToken'];
+			    if (!isLiveToken(liveToken)) {
+			        return {
+			            status: 'malformed',
+			            reason: `a team answer must carry its non-empty lt-v1-* liveToken (got ${String(liveToken)})`,
+			        };
+			    }
+			    if (relation === 'team-root') {
+			        if (value['memberInstanceId'] !== null || value['disposed'] !== false) {
+			            return {
+			                status: 'malformed',
+			                reason: 'a team-root answer carries no member instance and is never disposed',
+			            };
+			        }
+			        return {
+			            status: 'ok',
+			            relation: {
+			                kind: 'team-root',
+			                teamSessionId,
+			                memberInstanceId: null,
+			                disposed: false,
+			                durableGeneration,
+			                liveToken,
+			            },
+			        };
+			    }
+			    // team-member
+			    const memberInstanceId = value['memberInstanceId'];
+			    if (!isNonEmptyString(memberInstanceId)) {
+			        return {
+			            status: 'malformed',
+			            reason: `a team-member answer must carry a non-empty memberInstanceId (got ${String(memberInstanceId)})`,
+			        };
+			    }
+			    if (typeof value['disposed'] !== 'boolean') {
+			        return {
+			            status: 'malformed',
+			            reason: `a team-member answer must carry a boolean disposed (got ${String(value['disposed'])})`,
+			        };
+			    }
+			    return {
+			        status: 'ok',
+			        relation: {
+			            kind: 'team-member',
+			            teamSessionId,
+			            memberInstanceId,
+			            disposed: value['disposed'],
+			            durableGeneration,
+			            liveToken,
+			        },
+			    };
+			}
+			Object.defineProperty(exports, "parseTeamReadStateResponse", { enumerable: true, get: () => parseTeamReadStateResponse });
+			/**
+			 * Resolve ONE session's authoritative read-state over the v6 wire
+			 * (the frozen §1.2 probe step): `team.getReadState` → the closed
+			 * outcome. Rejects NEVER — every outcome (including the transport
+			 * loss, which is the seam's only rejection kind) arrives as the
+			 * closed {@link TeamReadStateOutcome}.
+			 *
+			 * @param teamRemote - the v6 client (or a double).
+			 * @param sessionId - the session id to classify (the CURRENT session —
+			 *   NOT a team root id: the read-state answers per-session ownership).
+			 */
+			async function resolveTeamReadState(teamRemote, sessionId) {
+			    let response;
+			    try {
+			        response = await teamRemote.getReadStateV6(sessionId);
+			    }
+			    catch (error) {
+			        // The frozen seam contract: PushTransportLossError is the ONLY
+			        // rejection kind. Anything else is an internal client bug — keep
+			        // it classified as a loss (the coordinator treats it as
+			        // "probe unavailable", never as "no team").
+			        if (error instanceof PushTransportLossError) {
+			            return { status: 'transport-loss', message: error.message };
+			        }
+			        return {
+			            status: 'transport-loss',
+			            message: error instanceof Error ? error.message : String(error),
+			        };
+			    }
+			    return parseTeamReadStateResponse(response);
+			}
+			Object.defineProperty(exports, "resolveTeamReadState", { enumerable: true, get: () => resolveTeamReadState });
+			//# sourceMappingURL=team-read-state.js.map
 			}, exports: {} };
 		__mods["transport/team-remote-client.js"] = { done: false, fn: function (exports) {
 			const __imp37 = __req("../../remote/src/index.js");
@@ -11177,6 +11716,7 @@ var __dshFactory = (require) => {
 			const REMOTE_TEAM_GET_READ_STATE_VALUE_FIELDS = [
 			    'disposed',
 			    'durableGeneration',
+			    'liveToken',
 			    'memberInstanceId',
 			    'relation',
 			    'teamSessionId',
@@ -11190,9 +11730,12 @@ var __dshFactory = (require) => {
 			 * Validate the `team.getReadState` port value against the closed v6 wire
 			 * shape: the relation is the frozen three-value vocabulary; the
 			 * `teamSessionId` / `durableGeneration` cells are `string` / `number` or
-			 * `null` (never absent); a `none` answer carries `null` cells; a
-			 * `team-member` answer carries its instance id; `disposed` is a boolean
-			 * true only for a member whose durable lifecycle is `DISPOSED`.
+			 * `null` (never absent); a `none` answer carries `null` cells (including
+			 * `liveToken`); a `team-member` answer carries its instance id;
+			 * `disposed` is a boolean true only for a member whose durable lifecycle
+			 * is `DISPOSED`; the `liveToken` cell is a non-empty `lt-v1-*` string for
+			 * a team relation (PR #35 follow-up — the lightweight probe must carry
+			 * the token) and `null` for `none`.
 			 */
 			function normalizeTeamGetReadStateValue(raw) {
 			    if (!isPlainRecord(raw)) {
@@ -11231,10 +11774,26 @@ var __dshFactory = (require) => {
 			            durableGeneration < 1)) {
 			        throw portContractError('readState.durableGeneration', `must be a safe integer >= 1 or null, got ${String(durableGeneration)}`);
 			    }
+			    // PR #35 follow-up (frozen decision: the read-state is the LIGHTWEIGHT
+			    // probe): the liveToken cell mirrors the v6 projection's token — a
+			    // team relation must carry the non-empty `lt-v1-*` token (a host that
+			    // cannot compute it fails the read typed); a `none` answer carries
+			    // null (there is no owning TeamSession whose live state to token).
+			    const liveToken = raw['liveToken'];
+			    const liveTokenIsNull = liveToken === null;
+			    if (!liveTokenIsNull &&
+			        (typeof liveToken !== 'string' ||
+			            liveToken.length < 'lt-v1-'.length ||
+			            !liveToken.startsWith('lt-v1-'))) {
+			        throw portContractError('readState.liveToken', `must be a non-empty lt-v1-* string or null, got ${String(liveToken)}`);
+			    }
 			    // Frozen cross-field invariants (fail closed on any contradiction):
 			    if (relation === 'none') {
-			        if (teamSessionId !== null || memberInstanceId !== null || durableGeneration !== null) {
-			            throw portContractError('readState.none', 'a none answer must carry null teamSessionId / memberInstanceId / durableGeneration');
+			        if (teamSessionId !== null ||
+			            memberInstanceId !== null ||
+			            durableGeneration !== null ||
+			            liveToken !== null) {
+			            throw portContractError('readState.none', 'a none answer must carry null teamSessionId / memberInstanceId / durableGeneration / liveToken');
 			        }
 			        if (raw['disposed'] !== false) {
 			            throw portContractError('readState.none', 'a none answer is never disposed');
@@ -11243,6 +11802,9 @@ var __dshFactory = (require) => {
 			    else if (relation === 'team-member') {
 			        if (teamSessionId === null || memberInstanceId === null || durableGeneration === null) {
 			            throw portContractError('readState.team-member', 'a team-member answer must carry its teamSessionId, memberInstanceId and durableGeneration');
+			        }
+			        if (liveTokenIsNull) {
+			            throw portContractError('readState.team-member', 'a team-member answer must carry its liveToken (a team relation with a null token is impossible)');
 			        }
 			    }
 			    else {
@@ -11253,13 +11815,41 @@ var __dshFactory = (require) => {
 			        if (memberInstanceId !== null || raw['disposed'] !== false) {
 			            throw portContractError('readState.team-root', 'a team-root answer carries no member instance and is never disposed');
 			        }
+			        if (liveTokenIsNull) {
+			            throw portContractError('readState.team-root', 'a team-root answer must carry its liveToken (a team relation with a null token is impossible)');
+			        }
+			    }
+			    // Every cell + cross-field invariant was verified above (fail closed)
+			    // — the construction below is a verified-cell narrowing to the
+			    // discriminated union member (no data re-read, no casts of unchecked
+			    // values).
+			    if (relation === 'none') {
+			        return {
+			            relation: 'none',
+			            teamSessionId: null,
+			            memberInstanceId: null,
+			            disposed: false,
+			            durableGeneration: null,
+			            liveToken: null,
+			        };
+			    }
+			    if (relation === 'team-member') {
+			        return {
+			            relation: 'team-member',
+			            teamSessionId: teamSessionId,
+			            memberInstanceId: memberInstanceId,
+			            disposed: raw['disposed'],
+			            durableGeneration: durableGeneration,
+			            liveToken: liveToken,
+			        };
 			    }
 			    return {
-			        relation: relation,
-			        teamSessionId,
-			        memberInstanceId,
-			        disposed: raw['disposed'],
-			        durableGeneration,
+			        relation: 'team-root',
+			        teamSessionId: teamSessionId,
+			        memberInstanceId: null,
+			        disposed: false,
+			        durableGeneration: durableGeneration,
+			        liveToken: liveToken,
 			    };
 			}
 			/**
@@ -12128,6 +12718,10 @@ var __dshFactory = (require) => {
 			    // already covers it and passes through unchanged.
 			    'TEAM_READ_STATE_TEAM_ROW_ABSENT',
 			    'TEAM_READ_STATE_MEMBER_ROW_ABSENT',
+			    // PR #35 follow-up (P2) — the no-binding ownership scan found MORE
+			    // than one durable member row claiming the same child session
+			    // (ambiguous ownership: failing closed, never a first-wins).
+			    'TEAM_READ_STATE_OWNERSHIP_CONFLICT',
 			];
 			Object.defineProperty(exports, "REMOTE_BACKING_ERROR_CODES", { enumerable: true, get: () => REMOTE_BACKING_ERROR_CODES });
 			/** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */

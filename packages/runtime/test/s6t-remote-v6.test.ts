@@ -70,7 +70,7 @@ import {
   REMOTE_CONTRACT_VERSION_V6,
 } from '../../remote/src/index.js'
 import type { RemoteResponse } from '../../remote/src/index.js'
-import type { RemoteTeamGetReadStateValue } from '../../remote/src/contracts/types.js'
+import type { SessionReadStateDurableValue } from '../src/plugin/team-read-state.js'
 
 const ROOT_SID = 'root-session-s6t-v6'
 
@@ -129,25 +129,39 @@ const PROJECTION_ROW = {
   ledger: { total: 0 },
 }
 
-/** The frozen read-state values the fake port serves. */
-const READ_STATE_NONE: RemoteTeamGetReadStateValue = {
+/** The frozen DURABLE read-state values the fake port serves (PR #35
+ *  follow-up: the port answers WITHOUT the liveToken cell — the
+ *  dispatcher merges it from the SAME live-token closure the v6
+ *  projection uses). */
+const READ_STATE_NONE: SessionReadStateDurableValue = {
   relation: 'none',
   teamSessionId: null,
   memberInstanceId: null,
   disposed: false,
   durableGeneration: null,
 }
-const READ_STATE_DISPOSED_MEMBER: RemoteTeamGetReadStateValue = {
+const READ_STATE_DISPOSED_MEMBER: SessionReadStateDurableValue = {
   relation: 'team-member',
   teamSessionId: ROOT_SID,
   memberInstanceId: 'inst-2',
   disposed: true,
   durableGeneration: 11,
 }
+const READ_STATE_ROOT: SessionReadStateDurableValue = {
+  relation: 'team-root',
+  teamSessionId: ROOT_SID,
+  memberInstanceId: null,
+  disposed: false,
+  durableGeneration: 11,
+}
+
+/** The deterministic fake live token (the shape the production closure
+ *  produces — a non-empty `lt-v1-*` string). */
+const fakeLiveToken = (teamSessionId: string): string => `lt-v1-fake-${teamSessionId}-g11`
 
 /** Build the production ports over the trip-wired options object. */
 function makePorts(options: {
-  readonly readState?: (sessionId: string) => RemoteTeamGetReadStateValue | Promise<RemoteTeamGetReadStateValue>
+  readonly readState?: (sessionId: string) => SessionReadStateDurableValue | Promise<SessionReadStateDurableValue>
   readonly liveToken?: (teamSessionId: string) => string | Promise<string>
   readonly projection?: { project: (teamSessionId: string) => unknown }
 }): { ports: ReturnType<typeof createS6RemotePorts>; touched: string[] } {
@@ -174,21 +188,75 @@ const S6T = await (async () => {
 
   // (a) getReadState over the FULL host wiring (the readState port).
   let readStateCalls: string[] = []
-  const readStatePort: (sessionId: string) => RemoteTeamGetReadStateValue = (sessionId) => {
+  const readStatePort: (sessionId: string) => SessionReadStateDurableValue = (sessionId) => {
     readStateCalls.push(sessionId)
     if (sessionId === 'ordinary-1') return READ_STATE_NONE
+    if (sessionId === ROOT_SID) return READ_STATE_ROOT
     return READ_STATE_DISPOSED_MEMBER
   }
-  const { ports, touched } = makePorts({ readState: readStatePort })
+  let readStateTokenCalls: string[] = []
+  const { ports, touched } = makePorts({
+    readState: readStatePort,
+    liveToken: (teamSessionId) => {
+      readStateTokenCalls.push(teamSessionId)
+      return fakeLiveToken(teamSessionId)
+    },
+  })
   const dispatch = createS6RemoteDispatcher(ports, noPrincipal)
 
   const readStateNone = await dispatch('team.getReadState', {
     version: REMOTE_CONTRACT_VERSION_V6,
     params: { sessionId: 'ordinary-1' },
   })
+  // Snapshot IMMEDIATELY after the none answer: the live-token closure
+  // must not have been called yet (a `none` answer never computes a
+  // token) — the later team answers add their calls afterwards.
+  const tokenCallsAfterNone = [...readStateTokenCalls]
   const readStateMember = await dispatch('team.getReadState', {
     version: REMOTE_CONTRACT_VERSION_V6,
     params: { sessionId: 'child-2' },
+  })
+  const readStateRoot = await dispatch('team.getReadState', {
+    version: REMOTE_CONTRACT_VERSION_V6,
+    params: { sessionId: ROOT_SID },
+  })
+
+  // (a2) CONSISTENCY (PR #35 follow-up): at the same moment, the SAME
+  // host wiring answers getReadState and getProjection with the same
+  // durableGeneration + liveToken pair (the read-state is the lightweight
+  // probe of the same authority the projection serves).
+  const projectionConsistency = await dispatch('team.getProjection', {
+    version: REMOTE_CONTRACT_VERSION_V6,
+    params: { teamSessionId: ROOT_SID },
+  })
+
+  // (i2) A team relation whose live-token wiring is ABSENT: fail closed
+  // typed (NEVER a team relation with a null token).
+  const absentReadStateToken = makePorts({ readState: readStatePort })
+  const dispatchAbsentReadStateToken = createS6RemoteDispatcher(
+    absentReadStateToken.ports,
+    noPrincipal,
+  )
+  const readStateTokenAbsent = await dispatchAbsentReadStateToken('team.getReadState', {
+    version: REMOTE_CONTRACT_VERSION_V6,
+    params: { sessionId: 'child-2' },
+  })
+
+  // (j2) The UNTYPED live-token throw on a team relation: re-wrapped to
+  // the same port-unavailable code (fail closed).
+  const readStateTokenUntyped = makePorts({
+    readState: readStatePort,
+    liveToken: () => {
+      throw new Error('boom: overlay unavailable')
+    },
+  })
+  const dispatchReadStateTokenUntyped = createS6RemoteDispatcher(
+    readStateTokenUntyped.ports,
+    noPrincipal,
+  )
+  const readStateTokenUntypedResponse = await dispatchReadStateTokenUntyped('team.getReadState', {
+    version: REMOTE_CONTRACT_VERSION_V6,
+    params: { sessionId: ROOT_SID },
   })
 
   // (b) Version routing: v1 / v5 requests to the v6-only method.
@@ -293,9 +361,15 @@ const S6T = await (async () => {
 
   return {
     readStateCalls,
+    readStateTokenCalls,
+    tokenCallsAfterNone,
     touched,
     readStateNone,
     readStateMember,
+    readStateRoot,
+    projectionConsistency,
+    readStateTokenAbsent,
+    readStateTokenUntypedResponse,
     readStateV1,
     readStateV5,
     readStatePortAbsent,
@@ -323,6 +397,12 @@ describe('team-view-sync-complete — S6 production dispatcher: team.getReadStat
     expect(data['memberInstanceId']).toBeNull()
     expect(data['disposed']).toBe(false)
     expect(data['durableGeneration']).toBeNull()
+    // PR #35 follow-up: the none answer carries a NULL token (there is no
+    // owning TeamSession) and the live-token closure is NEVER called for
+    // it (snapshot taken immediately after the none answer, before any
+    // team answer could add a call).
+    expect(data['liveToken']).toBeNull()
+    expect(S6T.tokenCallsAfterNone).toEqual([])
     expect(S6T.readStateCalls).toContain('ordinary-1')
     expect(S6T.touched).toEqual([]) // no repository access — the port is the only backing
   })
@@ -334,7 +414,42 @@ describe('team-view-sync-complete — S6 production dispatcher: team.getReadStat
     expect(data['memberInstanceId']).toBe('inst-2')
     expect(data['disposed']).toBe(true)
     expect(data['durableGeneration']).toBe(11)
+    // PR #35 follow-up: the team relation carries the liveToken merged
+    // by the dispatcher from the SAME live-token closure the v6
+    // projection uses (never null for a team relation).
+    expect(data['liveToken']).toBe(fakeLiveToken(ROOT_SID))
     expect(S6T.readStateCalls).toContain('child-2')
+  })
+
+  it('serves the team-root value + the merged liveToken (the lightweight probe of the root)', () => {
+    const data = dataOf(S6T.readStateRoot)
+    expect(data['relation']).toBe('team-root')
+    expect(data['teamSessionId']).toBe(ROOT_SID)
+    expect(data['memberInstanceId']).toBeNull()
+    expect(data['disposed']).toBe(false)
+    expect(data['durableGeneration']).toBe(11)
+    expect(data['liveToken']).toBe(fakeLiveToken(ROOT_SID))
+  })
+
+  it('CONSISTENCY (PR #35 follow-up): getReadState and getProjection answer the SAME durableGeneration + liveToken pair from the same wiring', () => {
+    const readData = dataOf(S6T.readStateRoot)
+    const projData = dataOf(S6T.projectionConsistency)
+    const projection = projData['projection'] as Record<string, unknown>
+    expect(readData['durableGeneration']).toBe(projection['durableGeneration'])
+    expect(readData['durableGeneration']).toBe(11)
+    expect(readData['liveToken']).toBe(projection['liveToken'])
+    expect(readData['liveToken']).toBe(fakeLiveToken(ROOT_SID))
+  })
+
+  it('a team relation with an ABSENT live-token wiring → typed TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE (never a team relation with a null token)', () => {
+    const error = errorOf(S6T.readStateTokenAbsent)
+    expect(error['code']).toBe(S6_REMOTE_ERROR_CODES.TEAM_LIVE_TOKEN_PORT_UNAVAILABLE)
+  })
+
+  it('an UNTYPED live-token throw on a team relation is re-wrapped to the same code (fail closed)', () => {
+    const error = errorOf(S6T.readStateTokenUntypedResponse)
+    expect(error['code']).toBe(S6_REMOTE_ERROR_CODES.TEAM_LIVE_TOKEN_PORT_UNAVAILABLE)
+    expect(String(error['message'])).toContain('boom: overlay unavailable')
   })
 
   it('echoes contractVersion 6 in the provenance (the v6 wire)', () => {

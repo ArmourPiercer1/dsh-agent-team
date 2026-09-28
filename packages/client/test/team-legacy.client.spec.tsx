@@ -189,6 +189,7 @@ function viewProps(
     useProjectionMirror: selector => selector(projectionMirror),
     useTeamLedgers: selector => selector(teamLedgers),
     useProjectionStates: selector => selector({}),
+    useSessionReadStates: selector => selector({}),
     ensureProjection: vi.fn(() => Promise.resolve()),
     // D4-A1: the post-mutation pull (unused by the legacy fixtures here).
     pullProjection: vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const)),

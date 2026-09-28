@@ -62,8 +62,15 @@ export const TEAM_READ_STATE_ERROR_CODES = {
     /** A claimed team-member affiliation whose `member_instances` row is
      *  missing (the disposed/lifecycle carrier is absent). */
     MEMBER_ROW_ABSENT: 'TEAM_READ_STATE_MEMBER_ROW_ABSENT',
+    /** (PR #35 follow-up P2) the no-binding ownership scan found MORE
+     *  THAN ONE durable member row claiming the same child session
+     *  (two roots, or two rows under one root): the ownership is
+     *  genuinely ambiguous — failing closed instead of the silent
+     *  first-wins (the client must not attach the wrong team). */
+    OWNERSHIP_CONFLICT: 'TEAM_READ_STATE_OWNERSHIP_CONFLICT',
 };
-/** The confirmed-`none` value (every cell present, null cells typed). */
+/** The confirmed-`none` value (every durable cell present, null cells
+ *  typed — the liveToken cell belongs to the dispatcher's merge). */
 function confirmedNone() {
     return {
         relation: 'none',
@@ -95,8 +102,9 @@ function requireTeamRow(repositories, rootSessionId) {
  * @param bootRootSessionId - this row's boot root session id.
  * @param sessionId - the session id to classify (already wire-validated
  *   by the closed params parser).
- * @returns the CLOSED read-state value (every field present; `null`
- *   cells typed).
+ * @returns the CLOSED read-state value WITHOUT its `liveToken` cell
+ *   (every durable field present; `null` cells typed — the S6
+ *   dispatcher merges the token, PR #35 follow-up).
  * @throws the storage layer's typed row errors (RECORD_INVALID / …) and
  *   the resolver's TEAM_READ_STATE_* integrity codes — ALWAYS on a
  *   failure (fail closed; the dispatcher passes the code through).
@@ -185,38 +193,44 @@ export function resolveSessionReadState(domain, bootRootSessionId, sessionId) {
     // traversal order the ownership resolver uses). A storage failure in
     // ANY list/get THROWS and propagates (fail closed — an UNFINISHED scan
     // is never a `none`).
-    const findMember = (root) => {
+    //
+    // (PR #35 follow-up P2) the scan COLLECTS every durable claim instead
+    // of stopping at the first matching member row: when MORE THAN ONE
+    // member row claims the same child session — under two different
+    // roots, or two rows under the same root — the ownership is genuinely
+    // ambiguous and the answer fails CLOSED with the typed
+    // TEAM_READ_STATE_OWNERSHIP_CONFLICT (a silent first-wins would let
+    // the client attach the WRONG team). The boot root is scanned once
+    // even when its row also appears in the listed rows (dedupe).
+    const claims = [];
+    const scannedRoots = new Set();
+    const scanRoot = (root) => {
+        if (scannedRoots.has(root))
+            return;
+        scannedRoots.add(root);
         for (const member of repositories.memberInstances.list(root)) {
             if (member.childSessionId === sid)
-                return member;
+                claims.push({ root, member });
         }
-        return undefined;
     };
-    const bootMember = findMember(bootRootSessionId);
-    if (bootMember !== undefined) {
-        const team = requireTeamRow(repositories, bootRootSessionId);
+    scanRoot(bootRootSessionId);
+    for (const row of repositories.teamSessions.list()) {
+        scanRoot(row.rootSessionId);
+    }
+    if (claims.length > 1) {
+        const rootIds = [...new Set(claims.map((claim) => claim.root))];
+        throw new TeamPluginError(TEAM_READ_STATE_ERROR_CODES.OWNERSHIP_CONFLICT, `team.getReadState: ${claims.length} durable member rows claim child session '${sid}' across ${rootIds.length} team root(s) (${rootIds.join(', ')}) — ambiguous ownership, failing closed (never a first-wins)`, { reason: 'ownership-conflict', sessionId: sid, roots: rootIds });
+    }
+    const single = claims.length === 1 ? claims[0] : undefined;
+    if (single !== undefined) {
+        const team = requireTeamRow(repositories, single.root);
         return {
             relation: 'team-member',
-            teamSessionId: bootRootSessionId,
-            memberInstanceId: bootMember.instanceId,
-            disposed: bootMember.lifecycle === 'DISPOSED',
+            teamSessionId: single.root,
+            memberInstanceId: single.member.instanceId,
+            disposed: single.member.lifecycle === 'DISPOSED',
             durableGeneration: team.generation,
         };
-    }
-    for (const row of repositories.teamSessions.list()) {
-        const root = row.rootSessionId;
-        if (root === bootRootSessionId)
-            continue;
-        const member = findMember(root);
-        if (member !== undefined) {
-            return {
-                relation: 'team-member',
-                teamSessionId: root,
-                memberInstanceId: member.instanceId,
-                disposed: member.lifecycle === 'DISPOSED',
-                durableGeneration: row.generation,
-            };
-        }
     }
     // --- (3) the scan COMPLETED without error and found no claim --------
     // A positively confirmed no-affiliation: `none`.

@@ -328,6 +328,70 @@ describe('team-view-sync-complete — the durable read-state resolver (frozen de
     expect(value.durableGeneration).toBe(6)
   })
 
+  // ------------------------------------------------------------------
+  // (2b) PR #35 follow-up P2: the no-binding ownership scan FAILS CLOSED
+  //      on multiple durable claims (never a silent first-wins)
+  // ------------------------------------------------------------------
+
+  it('TWO team roots claiming the SAME child session fail closed (TEAM_READ_STATE_OWNERSHIP_CONFLICT — never a first-wins)', () => {
+    const world = makeWorld({
+      bindings: new Map(),
+      teams: new Map([
+        [BOOT, { rootSessionId: BOOT, generation: 1 }],
+        ['root-a', { rootSessionId: 'root-a', generation: 2 }],
+        ['root-b', { rootSessionId: 'root-b', generation: 3 }],
+      ]),
+      members: new Map([
+        ['root-a', [{ rootSessionId: 'root-a', instanceId: 'inst-a', childSessionId: 'child-x', lifecycle: 'RUNNING' }]],
+        ['root-b', [{ rootSessionId: 'root-b', instanceId: 'inst-b', childSessionId: 'child-x', lifecycle: 'RUNNING' }]],
+      ]),
+      faults: {},
+    })
+    throwsCode(
+      () => resolveSessionReadState(world, BOOT, 'child-x'),
+      TEAM_READ_STATE_ERROR_CODES.OWNERSHIP_CONFLICT,
+    )
+  })
+
+  it('TWO member rows UNDER ONE root claiming the SAME child session fail closed (the dedupe is per root, not per claim)', () => {
+    const world = makeWorld({
+      bindings: new Map(),
+      teams: new Map([
+        [BOOT, { rootSessionId: BOOT, generation: 1 }],
+        ['root-a', { rootSessionId: 'root-a', generation: 2 }],
+      ]),
+      members: new Map([
+        ['root-a', [
+          { rootSessionId: 'root-a', instanceId: 'inst-a1', childSessionId: 'child-x', lifecycle: 'RUNNING' },
+          { rootSessionId: 'root-a', instanceId: 'inst-a2', childSessionId: 'child-x', lifecycle: 'DISPOSED' },
+        ]],
+      ]),
+      faults: {},
+    })
+    throwsCode(
+      () => resolveSessionReadState(world, BOOT, 'child-x'),
+      TEAM_READ_STATE_ERROR_CODES.OWNERSHIP_CONFLICT,
+    )
+  })
+
+  it('the boot root scanned ONCE: a single claim under the boot root that ALSO appears in the listed rows is NOT a conflict (dedupe boot vs listed root)', () => {
+    const world = makeWorld({
+      bindings: new Map(),
+      // BOOT appears in the listing (as it does in production — the boot
+      // root has its own team_sessions row): the scan must count it once.
+      teams: new Map([[BOOT, { rootSessionId: BOOT, generation: 4 }]]),
+      members: new Map([
+        [BOOT, [{ rootSessionId: BOOT, instanceId: 'inst-9', childSessionId: 'child-9', lifecycle: 'RUNNING' }]],
+      ]),
+      faults: {},
+    })
+    const value = resolveSessionReadState(world, BOOT, 'child-9')
+    expect(value.relation).toBe('team-member')
+    expect(value.teamSessionId).toBe(BOOT)
+    expect(value.memberInstanceId).toBe('inst-9')
+    expect(value.durableGeneration).toBe(4)
+  })
+
   it('a v2 LEADER row under the member listing never matches the scan (no childSessionId) and does not break the clean-scan none', () => {
     const world = makeWorld({
       bindings: new Map(),

@@ -419,6 +419,7 @@ function normalizeTeamPrepareOrdinaryOpenValue(raw: unknown): RemoteSafeRecord {
 const REMOTE_TEAM_GET_READ_STATE_VALUE_FIELDS: readonly string[] = [
   'disposed',
   'durableGeneration',
+  'liveToken',
   'memberInstanceId',
   'relation',
   'teamSessionId',
@@ -433,9 +434,12 @@ const REMOTE_TEAM_GET_READ_STATE_RELATIONS: readonly string[] = [
  * Validate the `team.getReadState` port value against the closed v6 wire
  * shape: the relation is the frozen three-value vocabulary; the
  * `teamSessionId` / `durableGeneration` cells are `string` / `number` or
- * `null` (never absent); a `none` answer carries `null` cells; a
- * `team-member` answer carries its instance id; `disposed` is a boolean
- * true only for a member whose durable lifecycle is `DISPOSED`.
+ * `null` (never absent); a `none` answer carries `null` cells (including
+ * `liveToken`); a `team-member` answer carries its instance id;
+ * `disposed` is a boolean true only for a member whose durable lifecycle
+ * is `DISPOSED`; the `liveToken` cell is a non-empty `lt-v1-*` string for
+ * a team relation (PR #35 follow-up — the lightweight probe must carry
+ * the token) and `null` for `none`.
  */
 function normalizeTeamGetReadStateValue(raw: unknown): RemoteTeamGetReadStateValue {
   if (!isPlainRecord(raw)) {
@@ -490,12 +494,35 @@ function normalizeTeamGetReadStateValue(raw: unknown): RemoteTeamGetReadStateVal
       `must be a safe integer >= 1 or null, got ${String(durableGeneration)}`,
     )
   }
+  // PR #35 follow-up (frozen decision: the read-state is the LIGHTWEIGHT
+  // probe): the liveToken cell mirrors the v6 projection's token — a
+  // team relation must carry the non-empty `lt-v1-*` token (a host that
+  // cannot compute it fails the read typed); a `none` answer carries
+  // null (there is no owning TeamSession whose live state to token).
+  const liveToken = raw['liveToken']
+  const liveTokenIsNull = liveToken === null
+  if (
+    !liveTokenIsNull &&
+    (typeof liveToken !== 'string' ||
+      liveToken.length < 'lt-v1-'.length ||
+      !liveToken.startsWith('lt-v1-'))
+  ) {
+    throw portContractError(
+      'readState.liveToken',
+      `must be a non-empty lt-v1-* string or null, got ${String(liveToken)}`,
+    )
+  }
   // Frozen cross-field invariants (fail closed on any contradiction):
   if (relation === 'none') {
-    if (teamSessionId !== null || memberInstanceId !== null || durableGeneration !== null) {
+    if (
+      teamSessionId !== null ||
+      memberInstanceId !== null ||
+      durableGeneration !== null ||
+      liveToken !== null
+    ) {
       throw portContractError(
         'readState.none',
-        'a none answer must carry null teamSessionId / memberInstanceId / durableGeneration',
+        'a none answer must carry null teamSessionId / memberInstanceId / durableGeneration / liveToken',
       )
     }
     if (raw['disposed'] !== false) {
@@ -506,6 +533,12 @@ function normalizeTeamGetReadStateValue(raw: unknown): RemoteTeamGetReadStateVal
       throw portContractError(
         'readState.team-member',
         'a team-member answer must carry its teamSessionId, memberInstanceId and durableGeneration',
+      )
+    }
+    if (liveTokenIsNull) {
+      throw portContractError(
+        'readState.team-member',
+        'a team-member answer must carry its liveToken (a team relation with a null token is impossible)',
       )
     }
   } else {
@@ -522,13 +555,44 @@ function normalizeTeamGetReadStateValue(raw: unknown): RemoteTeamGetReadStateVal
         'a team-root answer carries no member instance and is never disposed',
       )
     }
+    if (liveTokenIsNull) {
+      throw portContractError(
+        'readState.team-root',
+        'a team-root answer must carry its liveToken (a team relation with a null token is impossible)',
+      )
+    }
+  }
+  // Every cell + cross-field invariant was verified above (fail closed)
+  // — the construction below is a verified-cell narrowing to the
+  // discriminated union member (no data re-read, no casts of unchecked
+  // values).
+  if (relation === 'none') {
+    return {
+      relation: 'none',
+      teamSessionId: null,
+      memberInstanceId: null,
+      disposed: false,
+      durableGeneration: null,
+      liveToken: null,
+    }
+  }
+  if (relation === 'team-member') {
+    return {
+      relation: 'team-member',
+      teamSessionId: teamSessionId as string,
+      memberInstanceId: memberInstanceId as string,
+      disposed: raw['disposed'] as boolean,
+      durableGeneration: durableGeneration as number,
+      liveToken: liveToken as string,
+    }
   }
   return {
-    relation: relation as RemoteTeamGetReadStateValue['relation'],
-    teamSessionId,
-    memberInstanceId,
-    disposed: raw['disposed'] as boolean,
-    durableGeneration,
+    relation: 'team-root',
+    teamSessionId: teamSessionId as string,
+    memberInstanceId: null,
+    disposed: false,
+    durableGeneration: durableGeneration as number,
+    liveToken: liveToken as string,
   }
 }
 

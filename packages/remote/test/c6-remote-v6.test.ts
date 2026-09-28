@@ -92,12 +92,20 @@ function backingError(code: string): Error {
 }
 
 /** A legal closed v6 read-state value (team-root). */
+/** The deterministic fake live token (a non-empty `lt-v1-*` string —
+ *  the same shape the production token closure produces). */
+const FAKE_LIVE_TOKEN =
+  'lt-v1-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+const FAKE_LIVE_TOKEN_2 =
+  'lt-v1-fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210'
+
 const ROOT_READ_STATE: RemoteTeamGetReadStateValue = {
   relation: 'team-root',
   teamSessionId: P8T3_TEAM_SESSION_ID,
   memberInstanceId: null,
   disposed: false,
   durableGeneration: 7,
+  liveToken: FAKE_LIVE_TOKEN,
 }
 
 /** A legal closed v6 read-state value (team-member, disposed). */
@@ -107,6 +115,7 @@ const MEMBER_READ_STATE: RemoteTeamGetReadStateValue = {
   memberInstanceId: 'inst-1',
   disposed: true,
   durableGeneration: 7,
+  liveToken: FAKE_LIVE_TOKEN_2,
 }
 
 /** A legal closed v6 read-state value (none). */
@@ -116,6 +125,7 @@ const NONE_READ_STATE: RemoteTeamGetReadStateValue = {
   memberInstanceId: null,
   disposed: false,
   durableGeneration: null,
+  liveToken: null,
 }
 
 /** The malformed port-value battery (label + the raw value) — the closed
@@ -134,6 +144,15 @@ const BAD_READ_STATE_VALUES: ReadonlyArray<{ readonly label: string; readonly va
   { label: 'a non-boolean disposed', value: { ...ROOT_READ_STATE, disposed: 'no' } },
   { label: 'a zero durableGeneration', value: { ...ROOT_READ_STATE, durableGeneration: 0 } },
   { label: 'a non-string teamSessionId', value: { ...ROOT_READ_STATE, teamSessionId: 42 } },
+  // PR #35 follow-up: the liveToken cell (a team relation CANNOT carry a
+  // null/empty token — the host fails the read typed; `none` CANNOT carry
+  // a token).
+  { label: 'missing liveToken', value: { relation: 'team-root', teamSessionId: P8T3_TEAM_SESSION_ID, memberInstanceId: null, disposed: false, durableGeneration: 7 } },
+  { label: 'team-root with a null liveToken', value: { ...ROOT_READ_STATE, liveToken: null } },
+  { label: 'team-root with an empty liveToken', value: { ...ROOT_READ_STATE, liveToken: '' } },
+  { label: 'team-root with a non-lt-v1 liveToken', value: { ...ROOT_READ_STATE, liveToken: 'gen-7' } },
+  { label: 'team-member with a null liveToken', value: { ...MEMBER_READ_STATE, liveToken: null } },
+  { label: 'none with a non-null liveToken', value: { ...NONE_READ_STATE, liveToken: FAKE_LIVE_TOKEN } },
 ]
 
 // ---------------------------------------------------------------------------
@@ -145,13 +164,32 @@ const RT = await (async () => {
   const base = makeDispatcher()
 
   // (a) getReadState: the world root → team-root (the closed value).
-  const rootReadState = await base.dispatch(
+  // PR #35 follow-up: the C6 test drives the read-state port with its OWN
+  // deterministic fixture (the p8t3 default world keeps its own fake
+  // token for the p8t3 suites; `base` still serves the (f)/(g) projection
+  // scenarios over the default world).
+  const rootReadStateDispatcher = makeDispatcher({
+    teamReadState: {
+      readState() {
+        return ROOT_READ_STATE
+      },
+    },
+  })
+  const rootReadState = await rootReadStateDispatcher.dispatch(
     'team.getReadState',
     p8t3WireV6({ sessionId: P8T3_TEAM_SESSION_ID }),
   )
 
-  // (b) getReadState: a session with no affiliation → confirmed none.
-  const noneReadState = await base.dispatch(
+  // (b) getReadState: a session with no affiliation → confirmed none
+  // (the `none` answer carries `liveToken: null`).
+  const noneReadStateDispatcher = makeDispatcher({
+    teamReadState: {
+      readState() {
+        return NONE_READ_STATE
+      },
+    },
+  })
+  const noneReadState = await noneReadStateDispatcher.dispatch(
     'team.getReadState',
     p8t3WireV6({ sessionId: 'ordinary-session-1' }),
   )
