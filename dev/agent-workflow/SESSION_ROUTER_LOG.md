@@ -4219,3 +4219,14 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **修正 4（legacy 包职责，非阻塞建议顺手补齐）**：README 九包表 + `packages/legacy/README.md` + `packages/legacy/package.json` description 由"空槽 / 无 scripts / 无可构建代码"更正为实际：**冻结 legacy session 只读 inspect reader**（`session-reader` 经 `tsconfig.build.json`（noCheck）单独编译入 **runtime dist 镜像** `packages/runtime/dist/packages/legacy/session-reader/`，随安装面产物分发；host apply 时 `loadLegacyInspect()` **无条件加载**（dist 镜像优先候选，全候选失败 → fail-closed `TEAM_PLUGIN_GLUE_UNAVAILABLE`，无静默回退）。"外部冻结 fork 仅为参考、vNext 不依赖 legacy team 逻辑"表述保持不变。
 - **红线守纪**：仍仅文档/簿记层 + 1 处 package.json description 字符串（dist 镜像无 package.json 副本，安装面产物零影响，check-artifacts 面不变）；零产品代码 / 零测试代码改动；test-use pristine @ `46a7f68b09` 前后自证（构建实测后 porcelain 空）；冻结锚点未动；:3080 零触碰；零 force-push（FF 追加提交，同一分支 `task/docs-alignment-20260928`）。
 - **状态**：PR #36 Request changes 4 项全部落地，同分支 FF 追加提交 + PR body PATCH；待审查复核 / 用户 merge 裁决。PR #22 维持 OPEN（本轮不代行 merge 裁决，仅恢复其"未合并"事实）。
+
+### 2026-09-28 — PR #36 二次复审修正轮（re-review：上轮 4 项全部关闭；本轮 1 P2 + 2 P3 + 1 措辞，纯文档补丁）
+
+- **复审结论**（reviewer，2026-09-28）：上轮 3 必修 + 1 非阻塞建议**全部实质修好**；Standards 轴仍 0 硬性违规；head FF `b094b48b` → `1934f198`（ahead 1 / behind 0，无 rebase/force-push）；append-only 日志处理被确认正确。剩余 = 1 个 P2（操作路径级文档漂移）+ 2 个 P3 簿记 + 1 措辞。
+- **本轮修正（docs-only，1 commit）**：
+  1. **[P2] STATUS §6 红线速查**："测试只走 3180 族 + `references/.dsh-test*` home" → "测试只走 3180 族 + `tests/homes/<world>`（旧 `references/.dsh-test*` 仅为历史世界，不用于新工作，见 TEST_METHODS §7）"。这是当前 quick-reference 红线（非历史区），指向 2026-09-12 已废弃的 home 布局会误导新 agent 的实际测试操作。其余 `references/.dsh-test*` 出现处经逐一核验均为历史/证据路径（TEST_METHODS §1 留痕 / §4.2 裁决历史 / §7 "旧布局不迁移"注记、AGENTS 目录约定"不迁移"注记、INSTALL 历史证据路径 `references/.dsh-test-s8-2026-09-04T12-26-59/`），保持不变。
+  2. **[P3] STATUS header**："已记录至 PR #35 merge 记录 + 文档系统对齐轮" → "已记录至 PR #36 审查意见修正轮，2026-09-28"（簿记落后一轮）。
+  3. **[P3] PR body 变更面计数**："变更面（8 文件…）"混淆了 review-fix commit 面（8 文件）与 PR 全量面（10 文件，3 commits）→ 更正为"PR 全量 10 文件；其中审查修正 commit 修改 8 文件"。
+  4. **措辞**：STATUS 最新行"勘误 + 4 项文档层修正" → "4 项文档层修正（其中 2 项为勘误）"（(1)–(4) 前两项本身即勘误，避免数量歧义）。
+- **红线守纪**：仅 STATUS 3 处 + 本日志条目 + PR body PATCH；零代码 / 零测试改动；零 force-push（FF 追加，同一分支）；:3080 零触碰；test-use / 冻结锚点未动。
+- **状态**：PR #36 二次复审意见全部落地；待复审确认 / 用户 merge 裁决。
