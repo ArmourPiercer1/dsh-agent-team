@@ -14,8 +14,13 @@
  * behavior); ONLY `teamCreateV2` and `teamAdmitInitialWorkV2` stamp
  * contract version 2, the two D1 v3 wrappers stamp contract version 3,
  * `teamResolveControlV4` (F3/F11/F9/T1.4 repair round r1 F9) stamps
- * contract version 4, and `teamPrepareOrdinaryOpenV5` (C1
- * restart-0.1.7-rc.1 recovery, guide §10.2) stamps contract version 5.
+ * contract version 4, `teamPrepareOrdinaryOpenV5` (C1
+ * restart-0.1.7-rc.1 recovery, guide §10.2) stamps contract version 5,
+ * the v6 wrappers stamp contract version 6, and — pre-alpha3 W1 fix-A
+ * (F10) — `overrideSet` / `overrideReset` stamp contract version 7
+ * (the version-aware override mutation closed sets gain the optional
+ * `expectedGeneration` slot-guard; ABSENT = the byte-for-byte v1
+ * behavior, PRESENT = the Governance optimistic guard).
  *
  * Failure discipline (frozen `RemotePushTransport` contract, mirrored
  * here for the unary path): every RPC-level outcome arrives as a typed
@@ -43,6 +48,7 @@ import {
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
   REMOTE_CONTRACT_VERSION_V6,
+  REMOTE_CONTRACT_VERSION_V7,
   REMOTE_RPC_CHANNEL,
   PushTransportLossError,
   type RemoteContractVersion,
@@ -59,8 +65,8 @@ import {
   type RemoteMemberLifecycleParams,
   type RemoteMemberSendParams,
   type RemoteOverrideGetParams,
-  type RemoteOverrideResetParams,
-  type RemoteOverrideSetParams,
+  type RemoteOverrideResetParamsV7,
+  type RemoteOverrideSetParamsV7,
   type RemotePolicyStateGetParams,
   type RemotePolicyStateSetParams,
   type RemoteResponse,
@@ -249,10 +255,26 @@ export interface TeamRemoteClient {
   memberDispose(params: RemoteMemberLifecycleParams): Promise<RemoteResponse>
   /** `override.get` — read one capability override. */
   overrideGet(params: RemoteOverrideGetParams): Promise<RemoteResponse>
-  /** `override.set` — set one capability override (typed effect). */
-  overrideSet(params: RemoteOverrideSetParams): Promise<RemoteResponse>
-  /** `override.reset` — clear one capability override (typed effect). */
-  overrideReset(params: RemoteOverrideResetParams): Promise<RemoteResponse>
+  /**
+   * `override.set` — set one capability override (typed effect).
+   * STAMPS CONTRACT VERSION 7 (pre-alpha3 W1 fix-A, F10): the v7 closed
+   * set carries the optional `expectedGeneration` slot-guard — ABSENT
+   * is legacy-compatible (no conflict check, the byte-for-byte v1
+   * behavior); PRESENT is the optimistic guard (the Governance service
+   * answers the typed `OVERRIDE_GENERATION_CONFLICT` with zero write on
+   * a stale slot winner).
+   */
+  overrideSet(params: RemoteOverrideSetParamsV7): Promise<RemoteResponse>
+  /**
+   * `override.reset` — clear one capability override (typed effect).
+   * STAMPS CONTRACT VERSION 7 (pre-alpha3 W1 fix-A, F10): the v7 closed
+   * set carries the optional `expectedGeneration` slot-guard — ABSENT
+   * is legacy-compatible (no conflict check, the byte-for-byte v1
+   * behavior); PRESENT is the optimistic guard (the Governance service
+   * answers the typed `OVERRIDE_GENERATION_CONFLICT` with zero write on
+   * a stale slot winner).
+   */
+  overrideReset(params: RemoteOverrideResetParamsV7): Promise<RemoteResponse>
   /** `policyState.get` — read the team policy state. */
   policyStateGet(params: RemotePolicyStateGetParams): Promise<RemoteResponse>
   /** `policyState.set` — set the team policy state (typed effect). */
@@ -369,8 +391,12 @@ export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClien
     memberRestore: (params) => call('member.restore', params),
     memberDispose: (params) => call('member.dispose', params),
     overrideGet: (params) => call('override.get', params),
-    overrideSet: (params) => call('override.set', params),
-    overrideReset: (params) => call('override.reset', params),
+    // pre-alpha3 W1 fix-A (F10) — contract v7: the version-aware
+    // override mutation closed sets (the optional `expectedGeneration`
+    // slot-guard; ABSENT = the byte-for-byte v1 wire behavior).
+    overrideSet: (params) => callWithVersion('override.set', params, REMOTE_CONTRACT_VERSION_V7),
+    overrideReset: (params) =>
+      callWithVersion('override.reset', params, REMOTE_CONTRACT_VERSION_V7),
     policyStateGet: (params) => call('policyState.get', params),
     policyStateSet: (params) => call('policyState.set', params),
     compatibilityGet: (params) => call('compatibility.get', params),

@@ -69,8 +69,8 @@ import type {
   RemoteMemberSendParams,
   RemoteMethodParams,
   RemoteOverrideGetParams,
-  RemoteOverrideResetParams,
-  RemoteOverrideSetParams,
+  RemoteOverrideResetParamsV7,
+  RemoteOverrideSetParamsV7,
   RemotePolicyStateGetParams,
   RemotePolicyStateSetParams,
   RemoteTeamAdmitInitialWorkParams,
@@ -349,6 +349,18 @@ export interface S6RemoteOverrideSetRequest {
   readonly actorClaim: unknown
   readonly scope?: 'team' | 'instance'
   readonly targetInstanceId?: string
+  /**
+   * pre-alpha3 W1 fix-A (F10) — the client-supplied slot-generation
+   * guard (remote contract v7, optional): ABSENT is legacy-compatible
+   * (no conflict check); PRESENT is the optimistic guard — the
+   * Governance service compares it against the current slot winner
+   * INSIDE the shared chain and answers the typed
+   * `OVERRIDE_GENERATION_CONFLICT` with zero write on mismatch (the
+   * stale-UI / stale-tab overwrite the shared Team chain alone does not
+   * catch). A plain (server-parsed) value — NEVER a client claim of
+   * authority.
+   */
+  readonly expectedGeneration?: number
 }
 
 /** The `override.reset` request (the structural mirror of the frozen shape). */
@@ -359,6 +371,16 @@ export interface S6RemoteOverrideResetRequest {
   readonly actorClaim: unknown
   readonly scope?: 'team' | 'instance'
   readonly targetInstanceId?: string
+  /**
+   * pre-alpha3 W1 fix-A (F10) — the client-supplied slot-generation
+   * guard (remote contract v7, optional): ABSENT is legacy-compatible
+   * (no conflict check); PRESENT is the optimistic guard — the
+   * Governance service compares it against the current slot winner
+   * INSIDE the shared chain and answers the typed
+   * `OVERRIDE_GENERATION_CONFLICT` with zero write on mismatch. A
+   * plain (server-parsed) value — NEVER a client claim of authority.
+   */
+  readonly expectedGeneration?: number
 }
 
 /** The `policyState.set` request (the structural mirror of the frozen shape). */
@@ -2597,11 +2619,22 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // the durable commit BEFORE the ack. The record id is minted
         // server-side by the service (the remote contract carries NO
         // client-supplied record id).
+        // pre-alpha3 W1 fix-A (F10): the optional client-supplied
+        // expectedGeneration (remote contract v7) is forwarded VERBATIM
+        // into the service's optimistic guard (ABSENT = legacy, no
+        // conflict check — the conditional spread keeps the field
+        // structurally absent, so the service sees exactly the
+        // pre-v7 call shape; PRESENT = the stale-UI overwrite the shared
+        // Team chain alone does not catch → typed
+        // OVERRIDE_GENERATION_CONFLICT, zero write).
         const result = await options.governance.setOverride({
           authority,
           rootSessionId: root,
           scope,
           ...(instanceId !== undefined ? { instanceId } : {}),
+          ...(request.expectedGeneration !== undefined
+            ? { expectedGeneration: request.expectedGeneration }
+            : {}),
           cells: { [request.capability]: request.value as unknown as PolicyEntry },
         })
         // Both branches report the slot state as an override record: a
@@ -2641,11 +2674,20 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // closed), the generation guard applies, and the reset is a
         // higher-generation TOMBSTONE re-issue (never a storage delete —
         // audit-preserving), committed durably BEFORE the ack.
+        // pre-alpha3 W1 fix-A (F10): the optional client-supplied
+        // expectedGeneration (remote contract v7) is forwarded VERBATIM
+        // into the service's optimistic guard (ABSENT = legacy, no
+        // conflict check; PRESENT = typed
+        // OVERRIDE_GENERATION_CONFLICT with zero write on a stale
+        // winner — the same stale-UI overwrite class as override.set).
         const result = await options.governance.resetOverride({
           authority,
           rootSessionId: root,
           scope,
           ...(instanceId !== undefined ? { instanceId } : {}),
+          ...(request.expectedGeneration !== undefined
+            ? { expectedGeneration: request.expectedGeneration }
+            : {}),
         })
         return { removed: result.removed }
       },
@@ -2671,9 +2713,20 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // S7R2-result.md). The A31 rejection semantics are untouched: an
         // out-of-closed-set target still fails POLICY_STATE_UNKNOWN and a
         // member actor still fails UNAUTHORIZED_TRANSITION (switchState).
+        // pre-alpha3 W1 fix-A (F11): the closed set is the ADDRESSED
+        // team's bound Blueprint — the durable TeamSession's bound
+        // snapshot resolved through the catalog (the SAME per-root
+        // authority the Governance service's closed-set check resolves
+        // against), NEVER the host boot Blueprint: on a multi-team host
+        // the boot team's policyStates are not the addressed team's
+        // (the Remote precheck world must equal the Governance world).
+        // A missing row / a content hash the catalog cannot reproduce
+        // fails closed typed (the resolveTargetBlueprint vocabulary) —
+        // never a boot-Blueprint fallback.
+        const bound = resolveTargetBlueprint(root)
         const closedStates = new Set<string>([
           DEFAULT_POLICY_STATE_ID,
-          ...blueprint.policyStates.map((state) => state.id),
+          ...bound.policyStates.map((state) => state.id),
         ])
         const availableTransitions = [...closedStates].filter(
           (stateId) => stateId !== view.stateId,
@@ -2690,21 +2743,34 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         const root = assertBoundRoot('policyState.set', request.teamSessionId)
         const target = request.target
         const stateId = target['stateId']
-        const closed = new Set<string>([DEFAULT_POLICY_STATE_ID, ...blueprint.policyStates.map((state) => state.id)])
-        if (typeof stateId !== 'string' || !closed.has(stateId)) {
+        // pre-alpha3 W1 fix-A (F11): the Remote performs SHAPE validation
+        // ONLY here — the frozen param parser already closed the record
+        // shape (`stateId` string + the `cells` record), and this port
+        // re-asserts the string against direct port callers. The SEMANTIC
+        // closed-set check is the Governance service's authority,
+        // resolved per root against the ADDRESSED team's bound Blueprint
+        // (the durable TeamSession's bound snapshot — the S6 service
+        // deps' per-root policyStates), NEVER the host boot Blueprint:
+        // on a multi-team host a boot-Blueprint precheck world would
+        // DISAGREE with the Governance world (an addressed-legal state
+        // absent from the boot team's policyStates rejected at the wire,
+        // a boot-legal state outside the addressed team accepted at the
+        // wire). An unknown state now surfaces as the service's typed
+        // POLICY_STATE_UNKNOWN (a closed backing code — dispatcher
+        // invariant 4b pass-through).
+        if (typeof stateId !== 'string') {
           throw new TeamPluginError(
             S6_REMOTE_ERROR_CODES.POLICY_STATE_UNKNOWN,
-            `policyState.set names state '${String(stateId)}' which is outside the bound blueprint's closed set (${[...closed].join(', ')})`,
-            { reason: 'unknown-state', stateId: String(stateId) },
+            `policyState.set target carries a non-string stateId (${String(stateId)})`,
+            { reason: 'malformed-state', stateId: String(stateId) },
           )
         }
         // pre-alpha3 PR-A (ADR-03): the switch flows through the SINGLE
-        // governance mutation authority — the closed-set check above
-        // keeps the wire code (TEAM_REMOTE_POLICY_STATE_UNKNOWN), the
-        // service re-checks it (defense in depth for the other callers),
-        // a self-transition is a typed no-op, and the durable ledger row
-        // is committed BEFORE the ack (the R2-1 fire-and-schedule window
-        // is closed).
+        // governance mutation authority — the service's closed-set check
+        // (per the ADDRESSED root's bound Blueprint, F11) keeps the typed
+        // wire code, a self-transition is a typed no-op, and the durable
+        // ledger row is committed BEFORE the ack (the R2-1 fire-and-
+        // schedule window is closed).
         const result = await options.governance.switchPolicyState({
           actor: actorOf(caller, root, leaderInstanceId),
           rootSessionId: root,
@@ -3226,7 +3292,12 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
               .then((override) => ({ data: { override } }))
           }
           case 'override.set': {
-            const setParams = params as RemoteOverrideSetParams
+            // pre-alpha3 W1 fix-A (F10): the V7 param type — the closed
+            // set parsed for this request's declared version (v1–v6
+            // carry no expectedGeneration; v7 carries the optional
+            // slot-guard, forwarded VERBATIM below; ABSENT stays
+            // structurally absent = legacy, no conflict check).
+            const setParams = params as RemoteOverrideSetParamsV7
             const request: S6RemoteOverrideSetRequest = {
               teamSessionId: setParams.teamSessionId,
               capability: setParams.capability,
@@ -3236,13 +3307,18 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
               ...(setParams.targetInstanceId !== undefined
                 ? { targetInstanceId: setParams.targetInstanceId }
                 : {}),
+              ...(setParams.expectedGeneration !== undefined
+                ? { expectedGeneration: setParams.expectedGeneration }
+                : {}),
             }
             return Promise.resolve(
               principal({ method, request: envelope }),
             ).then((caller) => ports.override.set(request, caller)).then((result) => ({ data: result }))
           }
           case 'override.reset': {
-            const resetParams = params as RemoteOverrideResetParams
+            // pre-alpha3 W1 fix-A (F10): the V7 param type — see
+            // override.set above (ABSENT = legacy, no conflict check).
+            const resetParams = params as RemoteOverrideResetParamsV7
             const request: S6RemoteOverrideResetRequest = {
               teamSessionId: resetParams.teamSessionId,
               capability: resetParams.capability,
@@ -3250,6 +3326,9 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
               ...(resetParams.scope !== undefined ? { scope: resetParams.scope } : {}),
               ...(resetParams.targetInstanceId !== undefined
                 ? { targetInstanceId: resetParams.targetInstanceId }
+                : {}),
+              ...(resetParams.expectedGeneration !== undefined
+                ? { expectedGeneration: resetParams.expectedGeneration }
                 : {}),
             }
             return Promise.resolve(
