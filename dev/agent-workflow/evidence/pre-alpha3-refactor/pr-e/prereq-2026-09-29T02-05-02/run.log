@@ -1,0 +1,63 @@
+[2026-09-29T02:05:02.720Z] === pre-alpha3 PR-E E.12 real-host gate (14 scenarios) prereq-2026-09-29T02-05-02 ===
+[2026-09-29T02:05:02.720Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery
+[2026-09-29T02:05:02.720Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-09-29T02:05:02.720Z] world=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T02-05-02
+[2026-09-29T02:05:02.720Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-09-29T02-05-02
+[2026-09-29T02:05:02.737Z] stable pre-probes: 3080=401 3180=401
+[2026-09-29T02:05:02.762Z] [H1] PASS — test-use pristine BEFORE :: head=46a7f68b0922
+[2026-09-29T02:05:02.765Z] ports: host=3182 mock=3497 mcpLeaderreq=3491 mcpWeb=3493
+[2026-09-29T02:05:02.765Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T02-05-02 blueprints=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T02-05-02/blueprints
+[2026-09-29T02:05:02.771Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-09-29T02:05:02.773Z] mini MCP mcp_leaderreq up on 127.0.0.1:3491
+[2026-09-29T02:05:02.783Z] mini MCP mcp_web up on 127.0.0.1:3493
+[2026-09-29T02:05:02.784Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-29T02:05:03.789Z] throwaway boot OK: http://127.0.0.1:3182/?token=REDACTED
+[2026-09-29T02:05:03.860Z] web profile ensured (throwaway boot if first use)
+[2026-09-29T02:05:03.861Z] B1-CREATE: patch (bootPhase=create, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[]) + directive (boot=1) written
+[2026-09-29T02:05:05.163Z] B1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:05:05.166Z] B1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:05:05.246Z] B1-CREATE: row ready — toolCount=13
+[2026-09-29T02:05:05.299Z] remote team.create v1 [t13-create] -> 200 ok=true
+[2026-09-29T02:05:05.300Z] T13 (v1 frozen) created: durable={"teamSession":{"schemaVersion":1,"rootSessionId":"session-prereq-v1-prereq-2026-09-29T02-05-02","blueprint":{"blueprintId":"team.mpr-anchor","revision":"1","contentHash":"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37"},"createdAt":"2026-09-29T02:05:05.264Z","generation":1,
+[2026-09-29T02:05:05.310Z] remote intent.probe v1 [s1-probe] -> 200 ok=true
+[2026-09-29T02:05:05.310Z] [S1] PASS — all-ready cell: intent.probe(T) — team scope OPEN (both team requirements PASS) :: status=OPEN reqs=["team.mcp.repo=PASS","team.mcp.leaderreq=PASS"]
+[2026-09-29T02:05:05.353Z] remote team.create v1 [t-create] -> 200 ok=true
+[2026-09-29T02:05:05.353Z] T created: durable={"teamSession":{"schemaVersion":1,"rootSessionId":"session-prereq-main-prereq-2026-09-29T02-05-02","blueprint":{"blueprintId":"team.prereq-main","revision":"1","contentHash":"sha256:a26179cd2c42f0bfe83ba6df672a19d58ef8acdb7514e5cb54b0df366ad65ace"},"createdAt":"2026-09-29T02:05:05.322Z","generation"
+[2026-09-29T02:05:05.388Z] remote team.create v1 [t2-create] -> 200 ok=true
+[2026-09-29T02:05:05.388Z] T2 created
+[2026-09-29T02:05:05.562Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T02-05-02 -> 200 ok=true
+[2026-09-29T02:05:05.995Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:05:05.995Z] [S1] PASS — all-ready admission: delegate T->worker EXECUTED (no control request, worker DONE) :: toolOk=true targetInstanceId=? doneWitness=true pendingControlRequests=0
+[2026-09-29T02:05:06.155Z] p6t6 tool team_delegate as=session-prereq-iso-prereq-2026-09-29T02-05-02 -> 200 ok=true
+[2026-09-29T02:05:06.600Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:05:06.600Z] [S14] PASS — baseline: T2 delegate EXECUTED in the fresh world (per-root state initialized disjoint) :: toolOk=true doneWitness=true
+[2026-09-29T02:05:06.665Z] B1-CREATE: stopped (killed=true portFree=true)
+[2026-09-29T02:05:06.665Z] [S13] PASS — frozen v1 under PR-E code: registry contentHash == pre-PR-E constant + source byte-exact :: hash=sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37 expected=sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37
+[2026-09-29T02:05:06.665Z] [S13] PASS — frozen v1 under PR-E code: team_sessions blueprint hash == pre-PR-E constant :: sessionHash=sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37
+[2026-09-29T02:05:06.666Z] B2-RESUME: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=false"], mcp=[]) + directive (boot=2) written
+[2026-09-29T02:05:07.924Z] B2-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:05:07.926Z] B2-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:05:07.997Z] B2-RESUME: row ready — toolCount=13
+[2026-09-29T02:05:08.008Z] remote team.listRoots v3 [list-roots] -> 200 ok=true
+[2026-09-29T02:05:08.020Z] remote team.getProjection v6 [t13-proj] -> 200 ok=true
+[2026-09-29T02:05:08.021Z] [S13] PASS — cold resume (B2): T13 listed + projection works under the PR-E code :: roots=4 hasT13=true projErr=none
+[2026-09-29T02:05:08.027Z] remote compatibility.get v1 [compat-get] -> 200 ok=true
+[2026-09-29T02:05:08.189Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T02-05-02 -> 200 ok=true
+[2026-09-29T02:05:08.632Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:05:08.632Z] [S2] PASS — auto-degraded: optional (complete:false) mcp down -> delegate EXECUTED, no control request (S1 degraded cell) :: toolOk=true doneWitness=true pendingControlRequests=0
+[2026-09-29T02:05:08.707Z] B2-RESUME: stopped (killed=true portFree=true)
+[2026-09-29T02:05:08.708Z] world: seeded optional-requirement-accepted seq=15 root=session-prereq-main-prereq-2026-09-29T02-05-02 payload={"requirementId":"lead.mcp.signal","generation":1,"consentedAt":1790647508708,"consentedBy":"kit-e12"}
+[2026-09-29T02:05:08.708Z] B2B-RESUME: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=false"], mcp=[]) + directive (boot=3) written
+[2026-09-29T02:05:10.018Z] B2B-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:05:10.020Z] B2B-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:05:10.097Z] FATAL: B2B-RESUME: row setup failed — setupError: row '15' of store 'ledger' is not in canonical byte form; log tail:
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: row '15' of store 'ledger' is not in canonical byte form
+    at teamDomainError (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/storage/schema/errors.js:84:12)
+    at LedgerRepository.readRecordFromRaw (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/storage/repositories/base.js:105:19)
+    at LedgerRepository.list (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/storage/repositories/ledger.js:174:31)
+    at Object.listGranted (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/runtime/src/plugin/host.js:1272:51)
+    at TeamArtifactAuthority.rebuildFromLedger (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/runtime/artifact-read/authority.js:243:49)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/runtime/src/plugin/host.js:1280:33)
+dsh web: http://127.0.0.1:3182/?token=REDACTED
+

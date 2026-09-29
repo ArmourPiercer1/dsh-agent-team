@@ -1,0 +1,19 @@
+{
+  "toolOutcome": {
+    "status": "rejected",
+    "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+    "message": "TeamRuntime: the targeted template is disabled — its work cannot start (availability, not a policy denial; re-enable the template or fix + recheck its requirements)",
+    "details": {
+      "rootSessionId": "session-prereq-main-prereq-2026-09-29T02-38-49",
+      "status": "BLOCKED_FATAL",
+      "gateReason": "templateDisabled",
+      "blockedScopes": [
+        "template:worker"
+      ],
+      "blockingRequirementIds": [],
+      "unavailableSubjects": [],
+      "source": "requirement-gate",
+      "recoveryDispatchAvailable": false
+    }
+  }
+}

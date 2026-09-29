@@ -1,0 +1,56 @@
+{
+  "recoveryRecord": {
+    "actionName": "delegate",
+    "correlation": "recovery:rt-b5-prereq-2026-09-29T02-27-05:1",
+    "executionCoupling": "inline",
+    "kind": "user-approval",
+    "requestId": "ctrl-1sxpdr80g2bbch0rkhhw21mf",
+    "requester": {
+      "instanceId": "inst-leader",
+      "kind": "instance",
+      "role": "leader"
+    },
+    "reviewPayload": {
+      "action": "delegate",
+      "blockedScopes": [
+        "team"
+      ],
+      "caller": {
+        "instanceId": "inst-leader",
+        "kind": "instance"
+      },
+      "downedCapabilitySubjects": [
+        "mcp_repo"
+      ],
+      "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+      "reducedAuthority": {
+        "externalHardCeiling": "absolute (never bypassed)",
+        "otherwise": "unchanged (the original permissions apply)",
+        "policy": "reduced original authority (plan §E.9)",
+        "unavailableSubjects": [
+          "mcp_repo"
+        ]
+      },
+      "requestedOperation": "one recovery attempt of 'delegate' on template 'helper'",
+      "rootSessionId": "session-prereq-main-prereq-2026-09-29T02-27-05",
+      "schema": "dsh-agent-team/recovery-dispatch/v1",
+      "templateId": "helper"
+    },
+    "reviewPayloadDigest": "sha256:50991ec13d19509f85636fb096c156f0dcb820f7f6c62e288b123a23528c85c0",
+    "subject": {
+      "kind": "template",
+      "templateId": "helper"
+    },
+    "summary": "recovery dispatch: one reviewed attempt of 'delegate' on the blocked scope(s) [team] on the reduced original authority"
+  },
+  "teamIncident": null,
+  "decisions": [
+    {
+      "requestId": "ctrl-1sxpdr80g2bbch0rkhhw21mf",
+      "class": "recovery",
+      "decision": "deny",
+      "resolveStatus": 200,
+      "resolveError": null
+    }
+  ]
+}
