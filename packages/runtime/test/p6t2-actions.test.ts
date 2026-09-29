@@ -1058,27 +1058,30 @@ describe('P6-T2 D1: reads, coordination facts, and follow-up work admission', ()
 })
 
 describe('P6-T2 D2: the compatibility gate (single authority) blocks NEW WORK (invariant 50)', () => {
-  it('delegate is blocked after the inline re-probe (source durable-state), probe writes only', () => {
+  it('delegate is blocked after the inline re-probe (source requirement-gate), probe writes only', () => {
     // P8-S4A: with no durable row, the authority re-probes inline (DevPlan
     // §20.1 trigger 5) — the BLOCKED_FATAL verdict is now durable, so the
-    // rejection cites the durable state (reprobed: true) and the probe's 2
-    // writes (compatibility row + generation stamp) precede it (was 0 under
-    // the read-only live-evaluation preflight).
+    // rejection cites the single authority and the probe's 2 writes
+    // (compatibility row + generation stamp) precede it (was 0 under the
+    // read-only live-evaluation preflight). PR-E E.6 cutover: the single
+    // authority is now the requirement gate, so `source` reads
+    // `requirement-gate` (was `durable-state` under the pre-cutover gate) and
+    // the gate evaluates fresh (no `reprobed` detail — the freshness re-probe
+    // is implicit in the fresh evaluation).
     expect(d2.delegate.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
-    expect(d2.delegate.details?.['source']).toBe('durable-state')
+    expect(d2.delegate.details?.['source']).toBe('requirement-gate')
     expect(d2.delegate.details?.['status']).toBe('BLOCKED_FATAL')
-    expect(d2.delegate.details?.['reprobed']).toBe(true)
     expect(d2.delegate.newWrites).toBe(2)
   })
 
   it('follow-up is blocked by the FRESH durable state, zero writes', () => {
     // The delegate's re-probe left a FRESH durable BLOCKED_FATAL row (same
     // fingerprint as the current facts) — the follow-up consults the same
-    // single authority and is blocked WITHOUT re-probing (reprobed: false).
+    // single authority and is blocked. PR-E E.6 cutover: `source` reads
+    // `requirement-gate` and the gate evaluates fresh (no `reprobed` detail).
     expect(d2.followUp.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
-    expect(d2.followUp.details?.['source']).toBe('durable-state')
+    expect(d2.followUp.details?.['source']).toBe('requirement-gate')
     expect(d2.followUp.details?.['status']).toBe('BLOCKED_FATAL')
-    expect(d2.followUp.details?.['reprobed']).toBe(false)
     expect(d2.followUp.newWrites).toBe(0)
   })
 

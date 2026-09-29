@@ -33,7 +33,12 @@
  *   mismatch/environment pair satisfies it — DEGRADED_ACKNOWLEDGED);
  * - T4  persona mismatch UNCHANGED (the selected preset still drives the
  *   persona fact; the §7.4 complete:true preset-conflict FATAL is
- *   untouched; no selection ⇒ empty persona world ⇒ fail-closed);
+ *   untouched; no selection ⇒ empty persona world ⇒ fail-closed).
+ *   pre-alpha3 PR-E (plan §E.3) — the persona KIND convention re-keying:
+ *   a divergent selection (`other` kind) and the bare world (no persona
+ *   fact) now report the honest PERSONA_INCOMPATIBLE — the frozen §13.5
+ *   CONFLICT code belongs to the complete-world lane ONLY (the world
+ *   provides a `complete` persona fact).
  * - T5  fact-source precedence / NO client spoofing (the caller's
  *   capability claims are discarded in BOTH directions: claiming an
  *   unavailable host capability does not pass; denying an available one
@@ -455,7 +460,11 @@ describe('T14-H: intent.probe merges the host row facts with the caller persona 
     const row = rowOf(result, 'req-persona-standard')
     expect(row.outcome).toBe('FATAL')
     expect(row.complete).toBe(true)
-    expect(row.reasonCode).toBe(COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT)
+    // pre-alpha3 PR-E (plan §E.3) — the persona KIND convention re-keying:
+    // the divergent world provides kind `other` (NOT a `complete` persona
+    // section), so the honest code is PERSONA_INCOMPATIBLE — never a false
+    // §13.5 CONFLICT (that code belongs to the complete-world lane only).
+    expect(row.reasonCode).toBe(COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE)
     expect(row.unavailableSubjects).toEqual(['standard'])
     // The capability lane is still host-driven and passes.
     expect(rowOf(result, 'req-mcp-dtest-mini').outcome).toBe('PASS')
@@ -466,7 +475,10 @@ describe('T14-H: intent.probe merges the host row facts with the caller persona 
     expect(result.status).toBe(COMPATIBILITY_STATUS.BLOCKED_FATAL)
     const row = rowOf(result, 'req-persona-standard')
     expect(row.outcome).toBe('FATAL')
-    expect(row.reasonCode).toBe(COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT)
+    // pre-alpha3 PR-E (plan §E.3): the BARE world (no persona fact at all)
+    // reports the honest PERSONA_INCOMPATIBLE — the required kind is simply
+    // absent, not a conflict with a complete section.
+    expect(row.reasonCode).toBe(COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE)
     expect(row.unavailableSubjects).toEqual(['standard'])
   })
 

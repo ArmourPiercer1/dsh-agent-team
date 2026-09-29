@@ -25,7 +25,10 @@ export const FULLY_COMPATIBLE_FACTS: readonly EnvironmentFact[] = [
   { domain: 'skill', subject: 'code-review', available: true, generation: 1 },
   { domain: 'mcpServer', subject: 'abtem', available: true, generation: 2 },
   { domain: 'modelRoute', subject: 'qwen3.8-27b', available: true, generation: 5 },
-  { domain: 'persona', subject: 'team-preset-cordis', available: true, generation: 2 },
+  // pre-alpha3 PR-E (plan §E.3): persona kind convention — the subject is
+  // the OBSERVED kind; a standard world observes `standard` (matches the
+  // required kind → available).
+  { domain: 'persona', subject: 'standard', available: true, generation: 2 },
   { domain: 'teamStructure', subject: 'durable-persistence', available: true, generation: 4 },
   { domain: 'teamStructure', subject: 'agent-lifecycle-seam', available: true, generation: 4 },
   { domain: 'teamStructure', subject: 'leader-member-surface', available: true, generation: 4 },
@@ -64,10 +67,18 @@ export const STRUCTURE_MISSING_FACTS: readonly EnvironmentFact[] = [
   ),
 ]
 
-/** The persona probe reports incompatible (structural FATAL, non-complete). */
+/**
+ * The persona probe reports incompatible (structural FATAL, non-complete).
+ *
+ * pre-alpha3 PR-E (plan §E.3): the required kind `standard` is observed as
+ * UNAVAILABLE (the kind is present in the world but not composable) — a
+ * different world shape from the BARE world (no persona fact at all),
+ * which the complete:true engine lane also classifies as
+ * PERSONA_INCOMPATIBLE.
+ */
 export const PERSONA_INCOMPATIBLE_FACTS: readonly EnvironmentFact[] = [
   ...FULLY_COMPATIBLE_FACTS.map((fact) =>
-    fact.domain === 'persona' && fact.subject === 'team-preset-cordis'
+    fact.domain === 'persona' && fact.subject === 'standard'
       ? { ...fact, available: false }
       : fact,
   ),
@@ -75,11 +86,22 @@ export const PERSONA_INCOMPATIBLE_FACTS: readonly EnvironmentFact[] = [
 
 /**
  * The complete:true persona preset conflict environment (Architecture
- * §13.5): the preset's effective persona is complete, so Team identity
- * cannot be composed.
+ * §13.5): the actually-mounted preset's effective persona is a COMPLETE
+ * section, so Team identity cannot be composed.
+ *
+ * pre-alpha3 PR-E (plan §E.3): the persona KIND convention — the world
+ * fact's subject is the OBSERVED kind `complete` (the engine keys the
+ * frozen CONFLICT code on this typed subject, never on the requirement's
+ * required-kind subject, which is `standard`).
  */
 export const COMPLETE_PERSONA_CONFLICT_FACTS: readonly EnvironmentFact[] = [
-  { domain: 'persona', subject: 'cordis-preset', available: false, generation: 1, detail: 'effective persona section is complete:true' },
+  {
+    domain: 'persona',
+    subject: 'complete',
+    available: false,
+    generation: 1,
+    detail: 'the mounted preset observes a complete persona section',
+  },
 ]
 
 /** The skill probe is absent entirely (no fact row — never probed). */

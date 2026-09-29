@@ -300,11 +300,16 @@ export const NEG_SCHEMA_VERSION_UNSUPPORTED: NegativeFixture = {
 }
 
 export const NEG_SCHEMA_VERSION_MISMATCH: NegativeFixture = {
-  name: 'schemaVersion 2 is an integer but unsupported',
+  // Pre-§E.2 this pinned `schemaVersion: 2` (then unsupported). §E.2 makes
+  // v2 SUPPORTED, so the "integer but unsupported" negative moves to v3 —
+  // the intent (a well-formed integer outside the supported set fails
+  // loudly with SCHEMA_VERSION_MISMATCH) is preserved, and the supported
+  // set stays exactly [1, 2].
+  name: 'schemaVersion 3 is an integer but unsupported',
   code: 'SCHEMA_VERSION_MISMATCH',
   source: [
     '---',
-    'schemaVersion: 2',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',

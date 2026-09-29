@@ -1374,8 +1374,40 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // Carries zero denylist vocabulary; the frozen quarantine hit set is
     // unchanged at fifteen. Scanner unchanged. Single-writer pin bump on
     // the task branch.
-    expect(scanResult.filesScanned).toBe(819)
-    expect(scanResult.files.length).toBe(819)
+    // pre-alpha3 PR-E (feat/pre-alpha3-pre-e-requirement-recovery, this
+    // commit): +22 on top of the 819 pin = 841 — the twenty-two new
+    // scannable files of the requirement / recovery model: (a) the two
+    // domain Blueprint-v2 requirement specs (packages/domain/test/
+    // t2-blueprint-v2-requirements.test.ts / t2-blueprint-v2-hash.test.ts)
+    // + (b-j) the runtime requirements module (packages/runtime/requirements/
+    // types.ts + errors.ts + evaluator.ts + action-impact.ts +
+    // startup-preflight.ts + consent.ts + template-availability.ts +
+    // recovery.ts + facts.ts + index.ts) + (k-t) their ten runtime specs
+    // (packages/runtime/test/ startup-preflight-all-templates /
+    // team-required-recovery / template-required-recovery /
+    // optional-runtime-degradation / recovery-member-reduced-authority /
+    // recovery-exit-next-boundary / degradation-consent /
+    // template-disable-enable / requirement-facts /
+    // requirement-action-impact). Carries zero denylist vocabulary; the
+    // frozen quarantine hit set is unchanged at fifteen. Scanner unchanged.
+    // pre-alpha3 PR-E LIVE cutover (this commit, on top of the 841 pin):
+    // +13 = 854 — the thirteen new scannable files of the live wiring:
+    // (a-c) the three live source modules (packages/runtime/requirements/
+    // observed-persona.ts / scope-requirements.ts +
+    // packages/runtime/admission/requirement-gate.ts) + (d) the domain
+    // v1-frozen resume spec (packages/domain/test/
+    // blueprint-v1-frozen-resume.test.ts) + (e-m) their seven runtime specs
+    // (packages/runtime/test/ persona-requirement-v2 /
+    // persona-runtime-substrate-equality / recovery-dispatch-deny-zero-effect
+    // / recovery-dispatch-abort-zero-effect / recovery-leader-dispatch-review
+    // / requirement-applicability / startup-required-team-fatal) + (n) the
+    // recovery-dispatch spy helper (recovery-dispatch-helpers.ts) + (o) the
+    // ten authority-negatives spec (requirement-authority-negatives.test.ts).
+    // Carries zero denylist vocabulary; the frozen quarantine hit set is
+    // unchanged at fifteen. Scanner unchanged. Single-writer pin bump on
+    // the task branch.
+    expect(scanResult.filesScanned).toBe(854)
+    expect(scanResult.files.length).toBe(854)
 
   })
 

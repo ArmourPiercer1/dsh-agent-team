@@ -78,8 +78,14 @@ interface CellExpectation {
  * structural types, then ordinary capability mismatch):
  *
  * - available            => PASS / SATISFIED / OPEN
- * - !available & complete => FATAL / (persona ? TEAM_PERSONA_COMPLETE_PRESET_CONFLICT
- *                                       : COMPLETE_REQUIREMENT_NOT_MET) / BLOCKED_FATAL
+ * - !available & complete => FATAL / (persona ? PERSONA_INCOMPATIBLE  [pre-alpha3 PR-E §E.3:
+ *                                       : COMPLETE_REQUIREMENT_NOT_MET)   the cube's generic
+ *                                                                      'subj-x' world provides
+ *                                                                      NO `complete` kind — the
+ *                                                                      CONFLICT lane needs the
+ *                                                                      world-provided complete
+ *                                                                      persona fact, covered by
+ *                                                                      the fixture tests above]
  * - !available & teamStructure => FATAL / STRUCTURAL_CAPABILITY_MISSING / BLOCKED_FATAL
  * - !available & persona    => FATAL / PERSONA_INCOMPATIBLE / BLOCKED_FATAL
  * - !available & ordinary   => WARNING / CAPABILITY_UNAVAILABLE / BLOCKED_WARNING
@@ -97,7 +103,12 @@ function expectedCell(type: RequirementType, complete: boolean, available: boole
       outcome: 'FATAL',
       reasonCode:
         type === 'persona'
-          ? COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT
+          // pre-alpha3 PR-E (plan §E.3): the cube uses the GENERIC subject
+          // 'subj-x', which is NOT the world-provided `complete` kind — so
+          // the complete persona cell takes the honest PERSONA_INCOMPATIBLE
+          // lane. The CONFLICT lane (world provides the `complete` kind) is
+          // the fixture-based test above (COMPLETE_PERSONA_CONFLICT_FACTS).
+          ? COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE
           : COMPATIBILITY_REASON_CODES.COMPLETE_REQUIREMENT_NOT_MET,
       status: COMPATIBILITY_STATUS.BLOCKED_FATAL,
     }
@@ -136,9 +147,12 @@ describe('P3-T6 G3-5 complete:true compatibility fatal (cross-module)', () => {
     expect(persona.complete).toBe(true)
     expect(persona.reasonCode).toBe(COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT)
     expect(persona.reasonCode).toBe(TeamContractErrorCode.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT)
-    expect(persona.unavailableSubjects).toEqual(['cordis-preset'])
+    // pre-alpha3 PR-E (plan §E.3) — the persona KIND convention: the
+    // required-kind subject is `standard`; the world provides the
+    // `complete` kind, which keys the frozen CONFLICT code.
+    expect(persona.unavailableSubjects).toEqual(['standard'])
     expect(persona.detail).toBe(
-      'complete:true persona requirement unmet: cordis-preset (structural FATAL, not downgradeable)',
+      'complete:true persona requirement unmet: required kind(s) standard not composable — the world provides a complete persona section (structural FATAL, not downgradeable)',
     )
     expect(result.counts.fatal).toBe(1)
     expect(result.counts.pass).toBe(0)
@@ -194,7 +208,8 @@ describe('P3-T6 G3-5 complete:true compatibility fatal (cross-module)', () => {
   it('a satisfied complete:true requirement is PASS/SATISFIED and admits (OPEN)', () => {
     const result = evaluateCompatibility({
       requirements: [COMPLETE_PERSONA_REQUIREMENT],
-      environmentFacts: [{ domain: 'persona', subject: 'cordis-preset', available: true, generation: 2 }],
+      // pre-alpha3 PR-E (plan §E.3): the world observes the required kind.
+      environmentFacts: [{ domain: 'persona', subject: 'standard', available: true, generation: 2 }],
     })
     expect(result.status).toBe(COMPATIBILITY_STATUS.OPEN)
     const persona = result.requirements.find((entry) => entry.requirementId === 'req-persona-complete')

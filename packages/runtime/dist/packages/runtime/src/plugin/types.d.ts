@@ -214,10 +214,17 @@ export interface TeamPluginConfig {
     /**
      * T12-M2 (optional additive): the AgentPreset substrate facts the persona
      * resolver evaluates — the effective-persona three-state of the preset
-     * composing the team agents. Absent = the S5A A11 decision for the
-     * dsh-agent-team preset ({ presetId: 'dsh-agent-team',
-     * personaKind: 'standard' }); a `complete` substrate is a structural
-     * FATAL inside the resolver (no downgrade, no Continue Anyway).
+     * composing the team agents. The SCRIPTED test-world port: a production
+     * host never sets it.
+     *
+     * pre-alpha3 PR-E (plan §E.3): ABSENT = the TYPED production path — the
+     * RuntimeSubstrateResolver (PR-C) with the shipped-state persona
+     * observation (`shippedStatePersonaObserver`: the deployment default's
+     * composable `standard` persona; the live production persona probe is a
+     * documented follow-up seam, known_debt "live persona probe"; the
+     * resolver plan's `personaObservation` carries source `none` + the
+     * reason). A `complete` substrate is a structural FATAL inside the
+     * resolver (no downgrade, no Continue Anyway).
      */
     readonly presetSubstrate?: {
         readonly presetId: string;

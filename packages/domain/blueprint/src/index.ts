@@ -3,8 +3,10 @@
  * derived content hashing, snapshot refs, and the read-only catalog.
  *
  * Everything here is pure domain code: no I/O, no `node:` builtins, no
- * DSH imports — only contracts v1 (via relative sources) and the standard
- * `yaml` parser.
+ * DSH imports — only contracts v1 (via relative sources), the standard
+ * `yaml` parser, and the sibling domain compatibility requirement-type
+ * vocabulary (plan §E.2 reuses the frozen §27.1 six-set for v2 requirement
+ * `type`, so the closed set never forks).
  *
  * @module @dsh-agent-team/domain/blueprint
  */
@@ -19,7 +21,10 @@ export {
   BLUEPRINT_QUOTA_SPEC_FIELDS,
   BLUEPRINT_REQUIREMENT_FIELDS,
   BLUEPRINT_TEMPLATE_FIELDS,
+  BLUEPRINT_TEMPLATE_FIELDS_V2,
   BLUEPRINT_TOP_LEVEL_FIELDS,
+  BLUEPRINT_TOP_LEVEL_FIELDS_V2,
+  BLUEPRINT_V2_REQUIREMENT_FIELDS,
   CAPABILITY_POLICY_DECISIONS,
   CONTEXT_POLICY_MAX_LENGTH,
   DESCRIPTION_MAX_LENGTH,
@@ -49,6 +54,7 @@ export {
 
 export type {
   BlueprintMetadata,
+  BlueprintRequirement,
   BlueprintTemplate,
   CapabilityPolicy,
   CapabilityRequirement,

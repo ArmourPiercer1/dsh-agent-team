@@ -68,6 +68,31 @@ export interface Requirement extends RequirementInput {
  */
 export declare function assertRequirementType(value: unknown, path: string): RequirementType;
 /**
+ * The closed set of persona kinds a Team requirement may REQUIRE (plan
+ * §E.3). This increment: exactly `standard` (a composable persona).
+ * `absent` / `complete` as REQUIRED kinds are outside the closed set until an
+ * ADR gives them product semantics (they remain valid OBSERVED kinds — the
+ * runtime `ObservedPersonaKind` vocabulary).
+ *
+ * This is the SINGLE source of truth for the required-persona-kind
+ * vocabulary, placed in the domain layer so BOTH the blueprint v2 validator
+ * (which restricts persona-type requirement subjects to this set — the
+ * additive v2 rule) and the runtime requirement module (which names the
+ * required kind as the persona requirement's subject) consume the same
+ * frozen set. The SUBJECT convention for persona requirements is the persona
+ * KIND (not the preset id): the requirement's subjects name the required
+ * kind(s); the world facts report the observed kind.
+ */
+export declare const REQUIRED_PERSONA_KINDS: {
+    readonly standard: "standard";
+};
+/** A closed persona kind a Team requirement may demand (this increment: `standard`). */
+export type RequiredPersonaKind = (typeof REQUIRED_PERSONA_KINDS)[keyof typeof REQUIRED_PERSONA_KINDS];
+/** Every `RequiredPersonaKind` value, for closed-set membership tests. */
+export declare const REQUIRED_PERSONA_KIND_VALUES: readonly string[];
+/** Guard: is `value` a closed required persona kind? */
+export declare function isRequiredPersonaKind(value: unknown): value is RequiredPersonaKind;
+/**
  * Parse and validate one requirement from an untrusted value.
  * @param value - the raw requirement.
  * @param path - pointer used in the error details (defaults to `$`).

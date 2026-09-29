@@ -642,6 +642,10 @@ async function runDelegate(ctx) {
             : {}),
         requestToken: request.requestToken,
         callerId: LEADER_INSTANCE_ID,
+        // pre-alpha3 PR-E (plan §E.9): the reviewed recovery marker (the
+        // provider admits a blocked scope when the marker covers it — the
+        // reduced original authority).
+        ...(request.recovery !== undefined ? { recovery: request.recovery } : {}),
     };
     const result = await callProvider(ctx, activationRequest);
     if (result.kind === 'activated') {
@@ -734,6 +738,10 @@ async function runCreateMember(ctx) {
             : {}),
         requestToken: request.requestToken,
         callerId: isHuman ? ctx.caller.humanId : LEADER_INSTANCE_ID,
+        // pre-alpha3 PR-E (plan §E.9): the reviewed recovery marker (the
+        // provider admits a blocked scope when the marker covers it — the
+        // reduced original authority).
+        ...(request.recovery !== undefined ? { recovery: request.recovery } : {}),
     };
     const result = await callProvider(ctx, activationRequest);
     if (result.kind !== 'activated') {

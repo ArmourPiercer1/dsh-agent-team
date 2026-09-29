@@ -23,6 +23,7 @@
     "mutation",
     "operation-permission",
     "projection",
+    "requirements",
     "root-binding",
     "work-completion-notification",
     "policy-adapter.ts"

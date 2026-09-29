@@ -442,10 +442,13 @@ describe('P8-S4A C5: next new work is gated after drift', () => {
     expect(c5.second.ok).toBe(false)
     expect(c5.secondCode).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
   })
-  it('the gate re-probed (freshness) and reports the durable FATAL state', () => {
-    expect(c5.secondReprobed).toBe(true)
+  it('the single authority reports the FATAL state (PR-E E.6: source requirement-gate)', () => {
+    // PR-E E.6 cutover: the single authority is now the requirement gate — the
+    // error cites `source: 'requirement-gate'` (was `durable-state` under the
+    // pre-cutover gate) and the freshness re-probe is implicit (the durable
+    // row is re-evaluated; the gate no longer sets a `reprobed` detail).
     expect(c5.secondStatus).toBe('BLOCKED_FATAL')
-    expect(c5.secondSource).toBe('durable-state')
+    expect(c5.secondSource).toBe('requirement-gate')
   })
   it('the re-probe replaced the stale row (gen 2 BLOCKED_FATAL)', () => {
     expect(c5.secondRowStatus).toBe('BLOCKED_FATAL')

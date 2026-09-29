@@ -57,7 +57,21 @@ import type {
   ContextPolicy,
   DelegationTarget,
 } from '../../domain/member/src/index.js'
-import type { CompatibilityStatus } from '../../domain/compatibility/src/index.js'
+import type {
+  CompatibilityResult,
+  CompatibilityStatus,
+  EnvironmentFact,
+} from '../../domain/compatibility/src/index.js'
+import {
+  evaluateCompatibility,
+} from '../../domain/compatibility/src/index.js'
+import {
+  classifyScope,
+} from '../requirements/evaluator.js'
+import {
+  projectVerdicts,
+  scopeRequirementInputsOf,
+} from '../requirements/scope-requirements.js'
 import {
   createProvisioningCoordinator,
 } from '../../storage/provisioning/index.js'
@@ -399,6 +413,16 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
       ...(workspace !== undefined ? { workspace } : {}),
       ...(compatibilityStatus !== undefined ? { compatibilityStatus } : {}),
       ...(policyStateId !== undefined ? { policyStateId } : {}),
+      // pre-alpha3 PR-E (plan §E.9): the reviewed recovery marker (the
+      // durable provenance that this member was started for recovery).
+      ...(request.recovery !== undefined
+        ? {
+            recovery: {
+              scopeKeys: [...request.recovery.scopeKeys],
+              unavailableSubjects: [...request.recovery.unavailableSubjects],
+            },
+          }
+        : {}),
       admission,
       projection,
       createdAt: member.createdAt,
@@ -620,13 +644,24 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
       // the full provisioning order below.
     }
 
-    // step 6: compatibility (the new-work admission gate, invariant 50).
-    // P8-S4A: the SINGLE compatibility authority — the exact chain (fresh
-    // facts -> fingerprint -> freshness -> durable state -> ACK validity ->
-    // exactly ONE result). A missing/stale durable generation is re-probed
-    // INLINE (DevPlan §20.1 trigger 5), which is what makes step 6 async.
-    // `request.acknowledgements` travel as transient admission input for
-    // THIS attempt only (never persisted; durable acks are written by the
+    // step 6: requirements (the new-work admission gate, invariant 50).
+    // pre-alpha3 PR-E (plan §E.4/§E.9): the SINGLE compatibility authority
+    // chain is unchanged (fresh facts -> fingerprint -> freshness -> durable
+    // state -> ACK validity -> exactly ONE evaluation), but the DECISION
+    // semantics are the requirement/recovery model:
+    //   - a REQUIRED (FATAL) requirement down = a BLOCKED scope — admission
+    //     is BLOCKED, UNLESS `request.recovery` covers the blocked scope
+    //     (the human-reviewed recovery dispatch, plan §E.9 — a member under
+    //     a blocked scope may be STARTED for recovery on the reduced
+    //     original authority; the downed capability is simply unavailable);
+    //   - an OPTIONAL (WARNING) requirement down = a DEGRADED scope —
+    //     admission PROCEEDS (auto-degraded; the old
+    //     COMPATIBILITY_BLOCKED_WARNING throw is gone — the PR-E product
+    //     semantics switch; the durable consent records the human's
+    //     acknowledgement but is not a precondition).
+    // A chain failure still fails closed (invariant 50). `request.
+    // acknowledgements` travel as transient admission input for THIS
+    // attempt only (never persisted; durable acks are written by the
     // authority's `acknowledge`).
     const authority = createCompatibilityAuthority({
       repositories,
@@ -635,12 +670,12 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
       environmentFacts: ports.environmentFacts,
       ...(ports.now !== undefined ? { now: ports.now } : {}),
     })
-    const admission = await authority.admit({
+    const admission = await authority.evaluate({
       ...(request.acknowledgements !== undefined
         ? { acknowledgements: request.acknowledgements }
         : {}),
     })
-    if (admission.decision === 'reprobe') {
+    if (!admission.chainOk) {
       // fail-closed: the chain itself failed (invariant 50). A
       // facts-unavailable fault re-throws the ORIGINAL error unwrapped (the
       // legacy step-6 fault contract: a broken facts port is a runtime
@@ -661,26 +696,79 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
         },
       )
     }
-    if (admission.decision === 'block') {
+    const teamVerdict = classifyScope({ level: 'team' }, projectVerdicts(admission.result as CompatibilityResult))
+    // The v2 target-template scope (FRESH evaluation — template-scope
+    // readiness has no durable generation and resets on restart; the
+    // engine result reuses the authority chain's fresh facts read, the
+    // same logical moment).
+    const scopeInputs = scopeRequirementInputsOf(blueprint)
+    const targetTemplateInputs =
+      blueprint.schemaVersion === 2 ? scopeInputs.templates[createTemplateId] : undefined
+    const templateScopeKey = `template:${createTemplateId}`
+    const templateVerdict =
+      targetTemplateInputs !== undefined
+        ? classifyScope(
+            { level: 'template', templateId: createTemplateId },
+            projectVerdicts(
+              evaluateCompatibility({
+                requirements: targetTemplateInputs,
+                environmentFacts: admission.facts as readonly EnvironmentFact[],
+              }),
+            ),
+          )
+        : undefined
+    // The recovery carve-out (plan §E.9): the reviewed marker covers the
+    // blocked scope. A marker without an actually-blocked scope is a no-op
+    // (the normal semantics apply — a forged/stale marker cannot widen
+    // anything).
+    const recoveryCovers = (key: string): boolean =>
+      request.recovery !== undefined && request.recovery.scopeKeys.includes(key)
+    if (teamVerdict.state === 'blocked' && !recoveryCovers('team')) {
       throw new ActivationError(
-        admission.status === 'BLOCKED_FATAL'
-          ? ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_FATAL
-          : ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_WARNING,
-        `activation: compatibility is ${admission.status} — admission is blocked (invariant 50)`,
+        ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_FATAL,
+        'activation: the team scope is blocked (a required requirement is down) — admission is blocked (invariant 50)',
         {
           rootSessionId,
+          status: 'BLOCKED_FATAL',
+          gateReason: 'requiredScopeDown',
+          blockedScopes: ['team'],
           fingerprint: admission.fingerprint,
           generation: admission.generation,
           reprobed: admission.reprobed,
-          requirements: admission.blockingRequirements.map((requirement) => ({
+          requirements: teamVerdict.fatal.map((requirement) => ({
             requirementId: requirement.requirementId,
-            outcome: requirement.outcome,
-            reasonCode: requirement.reasonCode,
+            outcome: 'FATAL',
+            reasonCode: 'SCOPE_BLOCKED',
+          })),
+          unavailableSubjects: [
+            ...new Set(teamVerdict.fatal.flatMap((requirement) => requirement.unavailableSubjects)),
+          ],
+        },
+      )
+    }
+    if (templateVerdict !== undefined && templateVerdict.state === 'blocked' && !recoveryCovers(templateScopeKey)) {
+      throw new ActivationError(
+        ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_FATAL,
+        `activation: the target template scope is blocked (a required requirement is down) — admission is blocked (invariant 50)`,
+        {
+          rootSessionId,
+          status: 'BLOCKED_FATAL',
+          gateReason: 'requiredScopeDown',
+          blockedScopes: [templateScopeKey],
+          requirements: templateVerdict.fatal.map((requirement) => ({
+            requirementId: requirement.requirementId,
+            outcome: 'FATAL',
+            reasonCode: 'SCOPE_BLOCKED',
           })),
         },
       )
     }
-    const compatibilityStatus: CompatibilityStatus = admission.status
+    // DEGRADED scopes (warnings) proceed (the PR-E auto-degraded semantics;
+    // the durable compatibility status is recorded on the result as the
+    // factual engine state). `chainOk` implies the fields are present (the
+    // cast mirrors the gate's narrowing; the fail-closed paths returned
+    // `chainOk: false` above).
+    const compatibilityStatus: CompatibilityStatus = admission.status as CompatibilityStatus
 
     // steps 7-15 under the team lock (all durable writes for this team are
     // serialized; the views below are fresh under the lock).

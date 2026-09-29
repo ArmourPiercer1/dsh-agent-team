@@ -166,6 +166,13 @@ import type {
   TeamBlueprintPersonaSource,
 } from '../../agent-setup/persona/index.js'
 import {
+  resolveRuntimeSubstrate,
+} from '../../agent-setup/preset/index.js'
+import {
+  SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID,
+  shippedStatePersonaObserver,
+} from '../../requirements/index.js'
+import {
   TeamModelOverlaySlot,
   TeamModelSelectionAdapter,
   resolveDurableModelSelection,
@@ -807,11 +814,53 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   }
 
   // --- A11 + A12 + A13 the three overlay slots ------------------------------------------
-  // The preset seam reports the production plugin's own substrate facts
-  // (the S5A boot world has no standing DSH preset persona; 'standard' is
-  // the composable non-complete case the persona engine composes with).
+  // pre-alpha3 PR-E (plan §E.3): the preset seam is the TYPED substrate
+  // authority — NEVER a silent hardcode. Two sources, in order:
+  //
+  //   1. `config.presetSubstrate` — the SCRIPTED test-world port (the T12-M2
+  //      worlds script the observed persona three-state; a production host
+  //      never sets it — its absence is the production path below).
+  //   2. the RuntimeSubstrateResolver (PR-C, plan §C.2) with the
+  //      SHIPPED-STATE persona observation — the TYPED, NAMED
+  //      `shippedStatePersonaObserver` port (the live production persona
+  //      probe — reading the actually-mounted preset's effective persona
+  //      composition through the DSH public seam — is a documented
+  //      FOLLOW-UP seam, known_debt "live persona probe"; parent ruling
+  //      session-d7d89f77: the observation of this increment is the
+  //      deployment default's composable persona, and the resolver plan's
+  //      `personaObservation` carries the provenance: source `none` + the
+  //      known_debt reason string, verbatim).
+  //
+  // An `unresolved` observation is HONESTLY TYPED (the three-state seam
+  // surface cannot express it — the boot fails closed instead of
+  // guessing; the shipped-state observer never produces it, but a future
+  // live probe can, and the seam must not swallow the failure).
+  const runtimeSubstratePlan =
+    config.presetSubstrate === undefined
+      ? resolveRuntimeSubstrate({
+          rootPresetId: config.rootPresetId,
+          memberPresetId: config.memberPresetId,
+          deploymentDefaultPresetId: SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID,
+          observePersonaKind: shippedStatePersonaObserver,
+        })
+      : undefined
   const presetSeam: AgentPresetSeam = {
-    getSubstrate: () => ({ presetId: 'dsh-agent-team', personaKind: 'standard' }),
+    getSubstrate: () => {
+      if (config.presetSubstrate !== undefined) {
+        return {
+          presetId: config.presetSubstrate.presetId,
+          personaKind: config.presetSubstrate.personaKind,
+        }
+      }
+      const plan = runtimeSubstratePlan as NonNullable<typeof runtimeSubstratePlan>
+      if (plan.personaKind === 'unresolved') {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CONFIG_INVALID,
+          `the mounted root preset '${plan.rootPresetId}' has an UNRESOLVED persona observation (source: ${plan.personaObservation.source}) — the preset seam cannot express the failure (fail closed); ${plan.personaObservation.reason ?? 'no observation reason recorded'}`,
+        )
+      }
+      return { presetId: plan.rootPresetId, personaKind: plan.personaKind }
+    },
   }
   // A2 (RC2 repair, plan §5.2): the persona source — the BOUND blueprint
   // snapshot is the persona authority for every bound Team. With the
@@ -1316,6 +1365,12 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     workDelivery: live.workDelivery,
     workActivity,
     ...(workCompletionNotifier !== undefined ? { workCompletionNotification: workCompletionNotifier } : {}),
+    // pre-alpha3 PR-E (plan §E.9): the Control service LAZY REF (the SAME
+    // ref object the glue's setup callback reads — the service is created
+    // below and its `current` is filled then; the router's recovery
+    // dispatch reads `current` at dispatch time: ABSENT = no recovery
+    // coupling, the typed block stands).
+    controlServiceRef,
   })
 
   // --- A25 the control service --------------------------------------------------------------

@@ -63,6 +63,22 @@ export function compatibilityRequirementsOf(blueprint) {
             complete: requirement.optional !== true,
         });
     }
+    // pre-alpha3 PR-E (plan §E.2): the v2 structured TEAM-level requirements
+    // ride the SAME durable compatibility chain (fingerprint + acks +
+    // generation). v1 documents carry no `teamRequirements` — the v1 world is
+    // byte-identical to the pre-PR-E bridge. The structured requirements are
+    // already in the engine's vocabulary (explicit requirementId / type /
+    // subjects / complete) — a passthrough, no mapping fork.
+    if (blueprint.schemaVersion === 2 && blueprint.teamRequirements !== undefined) {
+        for (const requirement of blueprint.teamRequirements) {
+            inputs.push({
+                requirementId: requirement.requirementId,
+                type: requirement.type,
+                subjects: [...requirement.subjects],
+                complete: requirement.complete,
+            });
+        }
+    }
     return inputs;
 }
 //# sourceMappingURL=blueprint.js.map

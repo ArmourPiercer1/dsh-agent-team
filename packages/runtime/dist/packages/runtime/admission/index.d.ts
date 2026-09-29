@@ -46,4 +46,6 @@ export { checkCallerRoleAuthority, resolveCaller, resolveInstanceToken, resolveT
 export type { ResolvedCaller, ResolvedTeamTarget } from './resolve.js';
 export { ALL_MUTATION_OPS, callerEnvelope, ENVELOPE_EXEC_OPS, enforceEnvelope, leaderExecEnvelopeOps, overlayEnvelopeOf, } from './envelope.js';
 export { enforceCompatibilityGate, enforceWorkAcceptingState, isNewWorkAdmission, mapActivationError, } from './gate.js';
+export { actionImpactOf, enforceRequirementGate, evaluateAllScopes, readRequirementFacts, } from './requirement-gate.js';
+export type { OpenIncident, RequirementGateOptions, RequirementGateOutcome, } from './requirement-gate.js';
 //# sourceMappingURL=index.d.ts.map

@@ -37,13 +37,17 @@
  *    preset's own upstream assembly semantics are preserved by
  *    construction (the closed seams expose no mutation).
  *
- * Decision table (the P5-T2 must-test groups):
+ * Decision table (the P5-T2 must-test groups; pre-alpha3 PR-E §E.3 adds
+ * the honest bare-world FATAL lane — the persona KIND convention, the
+ * requirement subject is the required KIND `standard`, the world fact
+ * subject the OBSERVED kind):
  *
- * | effective persona | engine outcome | adapter effect                                   |
- * | ----------------- | -------------- | ------------------------------------------------ |
- * | absent            | (not probed)   | no scoped identity, no error — bind proceeds     |
- * | standard (false)  | PASS           | scoped identity installed on the prompt surface  |
- * | complete (true)   | FATAL          | TeamPersonaOverlayError — FATAL before work      |
+ * | observed persona kind | engine outcome / code                    | adapter effect                                   |
+ * | --------------------- | ---------------------------------------- | ------------------------------------------------ |
+ * | absent                | (not probed)                             | no scoped identity, no error — bind proceeds     |
+ * | standard              | PASS                                     | scoped identity installed on the prompt surface  |
+ * | complete              | FATAL / TEAM_PERSONA_COMPLETE_PRESET_... | TeamPersonaOverlayError — FATAL before work      |
+ * | (no persona fact)     | FATAL / PERSONA_INCOMPATIBLE             | TeamPersonaOverlayError — honest bare-world FATAL|
  *
  * The adapter holds NO bind state (pure over its injected seams per call),
  * so repeated installs converge to the same scoped identity (idempotent in
@@ -59,6 +63,7 @@ import { COMPATIBILITY_REASON_CODES, evaluateCompatibility } from '../../../doma
 import type { CompatibilityResult, EnvironmentFact, RequirementInput } from '../../../domain/compatibility/src/index.js'
 import type { OverlaySlot, TeamAgentStepContext } from '../binder/index.js'
 import type { AgentPresetSubstrateFacts } from '../preset/index.js'
+import { REQUIRED_PERSONA_KINDS } from '../../requirements/observed-persona.js'
 import { TeamPersonaOverlayError } from './errors.js'
 import type {
   CompatibilityEvaluator,
@@ -80,33 +85,48 @@ export const PERSONA_PROBE_GENERATION = 1
  * domain, §13.5): structural (`complete: true`) — if the preset's
  * effective persona cannot compose the Team identity, the outcome is a
  * mandatory FATAL with no downgrade and no Continue Anyway.
+ *
+ * pre-alpha3 PR-E (plan §E.3) — the persona KIND convention: the
+ * requirement's subject is the REQUIRED persona KIND (the team constant —
+ * ONLY `standard` this increment; the closed `RequiredPersonaKind` set),
+ * NOT the preset id. The world fact's subject is the OBSERVED kind; the
+ * engine probes kind-against-kind (a bare world reports the honest
+ * PERSONA_INCOMPATIBLE, a complete world the §13.5 CONFLICT — the engine
+ * re-keying). No substrate argument: the required kind is a Team constant
+ * (the requirement does not vary with the mounted preset).
  */
-export function personaRequirement(substrate: AgentPresetSubstrateFacts): RequirementInput {
+export function personaRequirement(): RequirementInput {
   return {
     requirementId: PERSONA_REQUIREMENT_ID,
     type: 'persona',
-    subjects: [substrate.presetId],
+    subjects: [REQUIRED_PERSONA_KINDS.standard],
     complete: true,
   }
 }
 
 /**
- * The public environment fact for the persona probe: the preset's
- * effective persona is COMPOSABLE (standard) or COMPLETE (the §13.5
- * conflict — the complete section restores itself as the sole system
- * prompt after the assemble waterfall, so the scoped shadow cannot hold).
+ * The public environment fact for the persona probe: the OBSERVED persona
+ * KIND of the actually-mounted preset (the world fact — subject = kind).
+ *
+ * pre-alpha3 PR-E (plan §E.3) — the persona KIND convention: the subject
+ * is the observed KIND (not the preset id). `standard` (the composable
+ * case) is available; `complete` (the §13.5 conflict — the complete
+ * section restores itself as the sole system prompt after the assemble
+ * waterfall, so the scoped shadow cannot hold) is not; the engine keys
+ * the CONFLICT vs INCOMPATIBLE code on whether the world PROVIDES a
+ * `complete` fact.
  */
 export function personaEnvironmentFacts(substrate: AgentPresetSubstrateFacts): readonly EnvironmentFact[] {
   return [
     {
       domain: 'persona',
-      subject: substrate.presetId,
+      subject: substrate.personaKind,
       available: substrate.personaKind === 'standard',
       generation: PERSONA_PROBE_GENERATION,
       detail:
         substrate.personaKind === 'complete'
-          ? 'effective persona section is complete:true'
-          : 'effective persona section is composable (non-complete)',
+          ? 'the mounted preset observes a complete persona section (structural conflict with the required standard kind)'
+          : 'the mounted preset observes the composable standard persona kind',
     },
   ]
 }
@@ -172,7 +192,7 @@ export class TeamPersonaPresetAdapter {
    */
   evaluatePersonaCompatibility(substrate: AgentPresetSubstrateFacts): CompatibilityResult {
     return this.evaluate({
-      requirements: [personaRequirement(substrate)],
+      requirements: [personaRequirement()],
       environmentFacts: [...personaEnvironmentFacts(substrate)],
     })
   }
@@ -231,10 +251,16 @@ export class TeamPersonaPresetAdapter {
       )
     }
     if (entry.outcome !== 'PASS') {
-      // Engine contract: a non-PASS outcome of a `complete: true` persona
-      // requirement is the frozen conflict FATAL (complete dominates the
-      // type-specific codes, P3-T5 engine).
-      if (entry.reasonCode !== COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT) {
+      // Engine contract (pre-alpha3 PR-E, plan §E.3): a non-PASS outcome
+      // of the `complete: true` persona requirement is a FATAL carrying
+      // ONE of the two honest codes — the frozen §13.5 CONFLICT (the world
+      // PROVIDES a `complete` persona fact) or PERSONA_INCOMPATIBLE (the
+      // world provides no composable persona — the bare-world lane).
+      // complete dominates the type-specific codes (P3-T5 engine).
+      if (
+        entry.reasonCode !== COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT &&
+        entry.reasonCode !== COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE
+      ) {
         throw new TypeError(
           `unexpected compatibility outcome '${entry.outcome}' / reason '${entry.reasonCode}' for '${PERSONA_REQUIREMENT_ID}' (engine contract violation)`,
         )
