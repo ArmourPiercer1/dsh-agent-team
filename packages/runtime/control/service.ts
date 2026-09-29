@@ -186,6 +186,7 @@ import type {
   PolicyEntry,
 } from '../../domain/policy/src/index.js'
 import {
+  CALLER_ROLES,
   TEAM_RUNTIME_ERROR_CODES,
   TeamRuntimeError,
   ACTION_NAMES,
@@ -818,6 +819,58 @@ function hardCellAllows(entry: PolicyEntry | undefined, toolName: string | undef
   if (entry.kind === 'deny') return false
   if (toolName === undefined) return false
   return entry.items.includes(toolName)
+}
+
+/**
+ * The CONTROL INTERNAL close authority (pre-alpha3 review F3): may
+ * `caller` durably ABANDON (close) the request whose durable requester
+ * is `requester`?
+ *
+ * Abandon is deliberately NOT bound to any mutation-envelope op. The
+ * PR-D defect: it reused the `resolve-control` op spec + envelope check,
+ * so a caller that may REQUEST a review (e.g. the Recovery Leader whose
+ * reduced team envelope carries `request-control` but not
+ * `resolve-control`) could never ABANDON its own waiting review — the
+ * only exit was "wait for the human to close". Abandon is a narrow,
+ * closed authority over the caller's RESOLVED role:
+ *
+ * - `human`  → yes (the team owner closes any of the team's requests —
+ *   invariant 34: the human exceeds the team autonomy boundary);
+ * - `leader` → yes (the Leader of the current Team closes any of the
+ *   team's requests — including the review IT REQUESTED in the inline
+ *   recovery-dispatch coupling, whose whole point is that the requester
+ *   gets its own abort back);
+ * - `member` → only the request it requested itself (the requester ref
+ *   is its own instance id — a member may never close a sibling's
+ *   request);
+ * - a SYSTEM CONTINUATION caller (a future detached-continuation kind
+ *   that resumes a request's own abort) would close ONLY the request it
+ *   owns. The current closed `ActionCaller` union (`human | instance`)
+ *   carries no system kind, so that branch is unreachable today; the
+ *   rule is frozen here as the extension point — a new caller kind must
+ *   be admitted by THIS predicate (requester === the continuation's own
+ *   request) before any continuation may call `abandonControlRequest`.
+ *
+ * This authority exposes NO new Team tool permission and NO new
+ * mutation op: it is enforced INSIDE the control service over the
+ * already-resolved (live) caller. A stale caller is rejected earlier by
+ * the reused `resolveCaller` step (a DISPOSED/ARCHIVED principal cannot
+ * close anything).
+ *
+ * @param requester - the durable requester ref of the addressed request.
+ * @param caller - the resolved (live) caller.
+ * @returns whether the caller may durably abandon the request.
+ */
+function mayAbandon(requester: ControlCallerRef, caller: ResolvedCaller): boolean {
+  if (caller.role === CALLER_ROLES.HUMAN) return true
+  if (caller.role === CALLER_ROLES.LEADER) return true
+  if (caller.role === CALLER_ROLES.MEMBER) {
+    return (
+      requester.kind === 'instance' &&
+      requester.instanceId === String(caller.callerMember?.instanceId ?? '')
+    )
+  }
+  return false
 }
 
 // --- the service ------------------------------------------------------------------------
@@ -1665,14 +1718,32 @@ export function createControlService(options: ControlServiceOptions): ControlSer
    * ledger has no delete primitive, so the request row is never
    * physically removed).
    *
-   * Authority steps (reused facade codes surface as-is): (1) caller
-   * identity/role; (2) team resolution (the abandon is addressed to the
-   * REQUEST — no target token); (3) closed close-authority (requester
-   * ref, Leader, or human — a member may abandon only ITS OWN request);
-   * (4) the closed `resolve-control` envelope (abandon is a
-   * control-request mutation — the same op the decision uses). The
-   * durable abandon fact is written BEFORE any return (commit-before-
-   * ack); the request is NEVER physically removed.
+   * Authority steps: (1) caller identity/role (the reused facade
+   * `resolveCaller` — a stale caller can never close); (2) team
+   * existence (typed TEAM_SESSION_NOT_FOUND — the close addresses the
+   * team's durable request rows); (3) the CONTROL INTERNAL close
+   * authority {@link mayAbandon} (pre-alpha3 review F3: human → any
+   * request, Leader → any of the current Team's requests, member →
+   * its OWN request only).
+   *
+   * The close authority is INDEPENDENT of the `resolve-control`
+   * mutation envelope (review F3 — the PR-D defect): abandon no longer
+   * reuses `RESOLVE_CONTROL_SPEC` or performs any envelope check, and
+   * the bound blueprint is never consulted. A caller that may REQUEST
+   * a review (e.g. the Recovery Leader of a reduced team envelope that
+   * carries `request-control` but not `resolve-control`) can always
+   * ABANDON its own waiting review; closing does not need the op the
+   * decision needs. No new Team tool permission or mutation op is
+   * exposed — the rule is enforced inside this service over the
+   * already-resolved caller.
+   *
+   * The durable abandon fact is written BEFORE any return
+   * (commit-before-ack); the request is NEVER physically removed. A
+   * durable-store failure of that write surfaces as the facade's
+   * closed effect-phase code TEAM_RUNTIME_DURABLE_WRITE_FAILED — the
+   * close is NEVER claimed as abandoned unless the fact is durable
+   * (the frozen contract the recovery dispatch consuming this call
+   * relies on, review F2).
    */
   async function abandonControlRequest(args: {
     readonly rootSessionId: string
@@ -1691,21 +1762,19 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       throw malformed('abandon', 'reason', 'reason must be a string when present')
     }
 
-    // Reused authority steps: (1) caller; (2) team + blueprint
-    // resolution (the abandon is addressed to the REQUEST — no target
-    // token; it reuses the resolve-control op spec + envelope).
+    // Authority steps: (1) caller identity/role (a stale caller can
+    // never close); (2) team existence. The abandon is addressed to the
+    // REQUEST (no target token) and needs NO bound blueprint and NO
+    // mutation envelope — the close authority is the control-internal
+    // mayAbandon rule (pre-alpha3 review F3).
     const caller = resolveCaller(repositories, root, args.caller)
-    const resolved = resolveTeamAndTarget(
-      repositories,
-      options.blueprintCatalog,
-      {
-        rootSessionId: root,
-        action: ACTION_NAMES.RESOLVE_CONTROL,
-        caller: args.caller,
-        requestToken: args.requestId,
-      },
-      RESOLVE_CONTROL_SPEC,
-    )
+    if (repositories.teamSessions.get(root) === undefined) {
+      throw new TeamRuntimeError(
+        TEAM_RUNTIME_ERROR_CODES.TEAM_SESSION_NOT_FOUND,
+        `ControlService: no TeamSession record for root session '${root}'`,
+        { rootSessionId: root },
+      )
+    }
 
     return withTeamLock(teamLocks, root, async () => {
       const state = loadControlState(root)
@@ -1726,22 +1795,17 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           { rootSessionId: root, requestId: args.requestId },
         )
       }
-      // Closed close-authority: the requesting principal (its own
-      // request), the Leader, or the human. A member may abandon only
-      // ITS OWN request — the requester ref's instance identity. (A
-      // DECIDED request may still be abandoned: that is the
-      // allow-invalidating path — the abandon closes the durable allow.)
+      // The CONTROL INTERNAL close authority (pre-alpha3 review F3 —
+      // mayAbandon, independent of the resolve-control envelope):
+      // human → any request; Leader → any of the current Team's
+      // requests; member → its OWN request only. (A DECIDED request may
+      // still be abandoned: that is the allow-invalidating path — the
+      // abandon closes the durable allow.)
       const requester = request.payload.requester
-      if (
-        caller.role === 'member' &&
-        !(
-          requester.kind === 'instance' &&
-          requester.instanceId === String(caller.callerMember?.instanceId ?? '')
-        )
-      ) {
+      if (!mayAbandon(requester, caller)) {
         throw new ControlError(
           CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
-          `ControlService: a member may abandon only its own request (requester ${requester.kind === 'instance' ? requester.instanceId : 'not-an-instance'} !== caller)`,
+          `ControlService: the caller may not abandon request '${args.requestId}' (the control-internal close authority: human → any, leader → any of the current Team's, member → its own only)`,
           {
             rootSessionId: root,
             requestId: args.requestId,
@@ -1750,11 +1814,6 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           },
         )
       }
-      // Envelope (the resolve-control op; a human is not envelope-bound).
-      enforceEnvelope(
-        RESOLVE_CONTROL_SPEC,
-        callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)),
-      )
       // The durable abandon fact FIRST (commit-before-ack; the append-
       // only ledger has no delete primitive — the row IS the close).
       const payload: Record<string, unknown> = {
