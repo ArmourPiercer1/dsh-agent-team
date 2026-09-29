@@ -217,6 +217,7 @@ import {
   CONTROL_DECISION_REASON_VALUES,
   CONTROL_DECISION_VALUES,
   CONTROL_DECISION_VALUE_VALUES,
+  CONTROL_EXECUTION_COUPLINGS,
   CONTROL_EXECUTION_COUPLING_VALUES,
   CONTROL_GUARD_BLOCK_REASONS,
   CONTROL_REQUEST_KINDS,
@@ -437,11 +438,8 @@ function parseSubject(value: unknown): ControlSubject | undefined {
   return undefined
 }
 
-/** The subject id that participates in the scope key (pre-alpha3 PR-D,
- *  D.2): instance → instanceId, template → templateId, team →
- *  rootSessionId. For a LEGACY instance row the subject is derived from
- *  `targetInstanceId`, so the id — and therefore the key — is
- *  byte-identical to the pre-PR-D key. */
+/** The kind-selected subject id (pre-alpha3 PR-D, D.2): instance →
+ *  instanceId, template → templateId, team → rootSessionId. */
 function subjectIdOf(subject: ControlSubject): string {
   switch (subject.kind) {
     case CONTROL_SUBJECT_KINDS.INSTANCE:
@@ -451,6 +449,29 @@ function subjectIdOf(subject: ControlSubject): string {
     case CONTROL_SUBJECT_KINDS.TEAM:
       return subject.rootSessionId
   }
+}
+
+/** The KIND-PREFIXED subject identity that participates in the scope key
+ *  (pre-alpha3 PR-D review B1 / D.2): `${kind}:${subjectIdOf(subject)}`.
+ *
+ *  The prefix makes the three subject kinds DISJOINT in the key. Without
+ *  it, a template id and an instance id that happen to be EQUAL STRINGS
+ *  (both the `inst-abc` shape is a legal instance id AND a legal template
+ *  slug) would alias: with otherwise identical scope fields, a template
+ *  request would recompute the SAME key as an instance request and return
+ *  the existing instance row instead of creating its own. Prefixing the
+ *  kind means the second key element is `instance:<id>` vs
+ *  `template:<id>` vs `team:<id>` — never equal across kinds.
+ *
+ *  Backward compatibility is preserved BEHAVIORALLY: BOTH the new-request
+ *  key and the existing-row lookup recompute through this SAME function,
+ *  so a legacy instance row (subject derived from `targetInstanceId`,
+ *  kind `instance`) still matches an instance request — old durable rows
+ *  stay idempotent. The literal key now carries the `instance:` prefix
+ *  (it is no longer byte-identical to the pre-PR-D string), but no
+ *  observable idempotency or guard-matching behavior changes. */
+function subjectIdentityOf(subject: ControlSubject): string {
+  return `${subject.kind}:${subjectIdOf(subject)}`
 }
 
 /** Do two canonical subjects name the SAME identity (closed kind AND
@@ -727,12 +748,20 @@ function isActionCaller(caller: unknown): caller is ActionCaller {
 
 /** The stable logical-request key (the request idempotency identity AND
  *  the scope's durable identity; NUL-separated per the provisioning
- *  identity convention). The second element is the CANONICAL SUBJECT id
- *  (pre-alpha3 PR-D, D.2: `subjectIdOf` — instance → instanceId,
- *  template → templateId, team → rootSessionId). For a LEGACY instance
- *  row the subject is derived from `targetInstanceId`, so the subject id
- *  IS the old `targetInstanceId` and the key is BYTE-IDENTICAL to the
- *  pre-PR-D key (old durable rows keep working unchanged). The optional
+ *  identity convention). The second element is the KIND-PREFIXED SUBJECT
+ *  IDENTITY (pre-alpha3 PR-D, D.2 + review B1: `subjectIdentityOf` —
+ *  `instance:<instanceId>` / `template:<templateId>` /
+ *  `team:<rootSessionId>`). The kind prefix makes the three subject kinds
+ *  DISJOINT in the key — an instance id, a template id and a root session
+ *  id that happen to be equal strings can no longer alias across kinds
+ *  (a valid template slug and a valid instance id can both be `inst-abc`).
+ *  For a LEGACY instance row the subject is derived from `targetInstanceId`
+ *  (kind `instance`), so the second element is `instance:<targetInstanceId>`;
+ *  BOTH the new request and the existing-row lookup recompute through the
+ *  SAME `subjectIdentityOf`, so old durable rows stay idempotent —
+ *  behavioral backward compatibility is preserved even though the literal
+ *  key now carries the kind prefix (no longer byte-identical to the
+ *  pre-PR-D string). The optional
  *  operation fingerprint, WHEN PRESENT, participates in the key (alpha.2
  *  exact-scope extension): two requests identical except for the
  *  fingerprint are DIFFERENT logical requests (different keys, different
@@ -744,7 +773,7 @@ function isActionCaller(caller: unknown): caller is ActionCaller {
  *  retries, so old durable rows stay idempotent under the extended key. */
 function scopeKey(
   rootSessionId: string,
-  subjectId: string,
+  subjectIdentity: string,
   actionName: string,
   toolName: string | undefined,
   correlation: string,
@@ -752,7 +781,7 @@ function scopeKey(
 ): string {
   return [
     rootSessionId,
-    subjectId,
+    subjectIdentity,
     actionName,
     toolName ?? '',
     correlation,
@@ -1399,7 +1428,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       const state = loadControlState(root)
       const key = scopeKey(
         root,
-        subjectIdOf(subject),
+        subjectIdentityOf(subject),
         args.actionName,
         args.toolName,
         args.correlation,
@@ -1409,7 +1438,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         (r) =>
           scopeKey(
             String(r.entry.rootSessionId),
-            subjectIdOf(r.payload.subject),
+            subjectIdentityOf(r.payload.subject),
             r.payload.actionName,
             r.payload.toolName,
             r.payload.correlation,
@@ -2061,11 +2090,21 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         }
       }
       const state = loadControlState(root)
-      const key = scopeKey(root, subjectIdOf(subject), scope.actionName, scope.toolName, scope.correlation, scope.operationFingerprint)
+      const key = scopeKey(root, subjectIdentityOf(subject), scope.actionName, scope.toolName, scope.correlation, scope.operationFingerprint)
       const matching = state.requests.filter((r) => {
+        // NOTE (B2 lane disjointness): an INLINE request IS matched here so
+        // its TERMINAL marks are reported correctly (abandon →
+        // REQUEST_ABANDONED, stale → REQUEST_STALE, deny → DECISION_DENY,
+        // pending → REQUEST_PENDING). But an inline ALLOW is NOT a one-shot
+        // guard token — the CONSUMPTION/authorization path is skipped for it
+        // below (see the `decision === 'allow'` branch): the inline allow
+        // authorizes the frozen invocation's OWN continuation, which writes
+        // NO `control-allow-consumed` fact. Excluding it here entirely would
+        // wrongly turn an abandoned inline request into NO_REQUEST instead of
+        // REQUEST_ABANDONED.
         const rowKey = scopeKey(
           String(r.entry.rootSessionId),
-          subjectIdOf(r.payload.subject),
+          subjectIdentityOf(r.payload.subject),
           r.payload.actionName,
           r.payload.toolName,
           r.payload.correlation,
@@ -2133,6 +2172,20 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           }
         }
         // decision === 'allow'
+        // Lane disjointness (pre-alpha3 PR-D review B2 / D.4 coupling
+        // boundary): an INLINE allow is NOT a one-shot guard token. It
+        // authorizes the frozen invocation's OWN continuation, which
+        // continues on the decision and writes NO `control-allow-consumed`
+        // fact. The GUARDED execution path (this guard) must therefore NOT
+        // consume or be authorized by it — otherwise a second, unrelated
+        // guarded execution would be authorized after the inline invocation
+        // already applied the decision. The request is still MATCHED (above)
+        // so its terminal marks (abandon / stale / deny / pending) are
+        // reported; but an inline ALLOW simply leaves the NO_REQUEST fallback
+        // (zero authorization, zero consumption).
+        if (request.payload.executionCoupling === CONTROL_EXECUTION_COUPLINGS.INLINE) {
+          continue
+        }
         const consumed = state.consumptions.some(
           (c) => c.payload.requestId === request.payload.requestId,
         )

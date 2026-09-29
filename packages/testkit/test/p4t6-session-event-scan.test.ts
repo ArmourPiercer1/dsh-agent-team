@@ -1386,8 +1386,21 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // failure, never a claimed abandon). Carries zero denylist
     // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
     // Scanner unchanged. Single-writer pin bump on the task branch.
-    expect(scanResult.filesScanned).toBe(822)
-    expect(scanResult.files.length).toBe(822)
+    // pre-alpha3 PR #41 review-fix round 2 (feat/pre-alpha3-prd-control-
+    // generalization, this commit): +2 on top of the 822 pin = 824 — the
+    // two new scannable control review test files: (a) packages/runtime/
+    // test/control-subject-cross-kind-alias.test.ts (the B1 cross-kind
+    // request-key aliasing regression — an instance request and a template
+    // request with the SAME id create DISTINCT request rows; the scope key
+    // is the kind-prefixed subject identity) + (b) packages/runtime/test/
+    // control-guard-coupling.test.ts (the B2/D.4 lane-disjointness
+    // regression — a guarded guard attempt against an inline-allowed scope
+    // is BLOCKED with zero consumption, and an inline execution never
+    // consumes a guarded allow). Carries zero denylist vocabulary; the
+    // frozen quarantine hit set is unchanged at fifteen. Scanner unchanged.
+    // Single-writer pin bump on the task branch.
+    expect(scanResult.filesScanned).toBe(824)
+    expect(scanResult.files.length).toBe(824)
 
   })
 
