@@ -609,8 +609,21 @@ export interface S6RemoteOptions {
      * T1.4-B (U5/T1-B strict, CF2 entry 2) — the authoritative host
      * row-config environment facts: the SAME injected source the
      * post-creation admission gate consumes (the production root passes
-     * its fresh-read fact thunk over `config.environmentFacts — the very
+     * its fresh-read fact source over `config.environmentFacts — the very
      * source the prober / authority / runtime wiring reads).
+     *
+     * PF-1 fix (2026-09-30, adjudicated product defect) — the source is
+     * PER-BLUEPRINT: `intent.probe` calls it with the RESOLVED requested
+     * blueprint, and the host resolves the live provider against THAT
+     * blueprint's team requirements (the same seam the per-root
+     * compatibility prober and the admission gates consume). Pre-fix this
+     * was a boot-blueprint-scoped thunk: on a multi-blueprint host (boot
+     * blueprint ≠ requested blueprint) the feed was mis-scoped and a
+     * configured + healthy live server probed as a spurious FATAL,
+     * breaking the frozen INV-9.4 two-worlds identity. A legacy
+     * no-argument thunk remains assignable (it ignores the blueprint —
+     * byte-identical on a single-blueprint host / factory world).
+     *
      * `intent.probe` merges these with the caller's wire facts under the
      * strict U5 rule ({@link mergeProbeEnvironmentFacts}): the caller
      * contributes ONLY the `persona` domain (the selected preset — user
@@ -624,7 +637,7 @@ export interface S6RemoteOptions {
      * facts remain fail-closed — the observation is completed, the
      * verdict is never weakened).
      */
-    readonly environmentFacts?: () => Promise<readonly EnvironmentFact[]>;
+    readonly environmentFacts?: (blueprint: TeamBlueprint) => Promise<readonly EnvironmentFact[]>;
     /**
      * TCM vNext §15.5 (M2) — the narrow workspace attach port (the host
      * entry's closure over the hard-injected public `workspaceRegistry`

@@ -1,0 +1,144 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery
+
+ ❯ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts (13 tests | 6 failed) 12ms
+     × intent.probe(B1) is OPEN with both required MCPs PASS (NOT the pre-fix spurious FATAL) 5ms
+     ✓ intent.probe(B0) is UNCHANGED (zero requirements — OPEN, empty counts) 0ms
+     × the creation preflight of B1 in the SAME world is PROCEED (two-worlds identity, green lane) 1ms
+     ✓ witness: the pre-fix boot-scoped wiring still mis-probes B1 as FATAL in the same world (the world discriminates) 0ms
+     × one required server down: the probe is BLOCKED_FATAL naming exactly that server 1ms
+     ✓ the creation preflight of B1 in the SAME world is FATAL with the same requirement 0ms
+     × the TYPED outcomes are equal requirement-for-requirement (not just "both fatal") 2ms
+     × healthy world: the B1-bound root probes OPEN (NOT BLOCKED_FATAL) 0ms
+     × down world: the B1-bound root matches its OWN gate (BLOCKED_FATAL, one fatal) 0ms
+     ✓ witness: the pre-fix factory wiring (boot-scoped feed) mis-probes the healthy B1-bound root as FATAL 0ms
+     ✓ all-ready world: the per-blueprint seam verdict deep-equals the legacy boot-thunk verdict 0ms
+     ✓ down world: the same identity holds on the drifted environment 0ms
+     ✓ the per-root probe outcomes are typed ProbeOutcomes over the closed trigger set 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/requirement-probe-blueprint-scoping.test.ts > PF-1 P1 — the requested blueprint probes against its OWN feed (all-ready world) > intent.probe(B1) is OPEN with both required MCPs PASS (NOT the pre-fix spurious FATAL)
+AssertionError: expected 'BLOCKED_FATAL' to be 'OPEN' // Object.is equality
+
+Expected: "OPEN"
+Received: "BLOCKED_FATAL"
+
+ ❯ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts:446:26
+    444|   it('intent.probe(B1) is OPEN with both required MCPs PASS (NOT the p…
+    445|     const probe = PF1.a1
+    446|     expect(probe.status).toBe(COMPATIBILITY_STATUS.OPEN)
+       |                          ^
+    447|     expect(probe.counts.pass).toBe(2)
+    448|     expect(probe.counts.warning).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  packages/runtime/test/requirement-probe-blueprint-scoping.test.ts > PF-1 P1 — the requested blueprint probes against its OWN feed (all-ready world) > the creation preflight of B1 in the SAME world is PROCEED (two-worlds identity, green lane)
+AssertionError: expected 'BLOCKED_FATAL' to be 'OPEN' // Object.is equality
+
+Expected: "OPEN"
+Received: "BLOCKED_FATAL"
+
+ ❯ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts:477:27
+    475|     expect(preflight.fixOrDisableRequirementIds.length).toBe(0)
+    476|     // the identity: the probe OPEN ⇔ the gate proceed (the same world…
+    477|     expect(PF1.a1.status).toBe(COMPATIBILITY_STATUS.OPEN)
+       |                           ^
+    478|   })
+    479|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  packages/runtime/test/requirement-probe-blueprint-scoping.test.ts > PF-1 P2 — probe verdict == creation-preflight verdict (the down world) > one required server down: the probe is BLOCKED_FATAL naming exactly that server
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts:501:32
+    499|     const probe = PF1.b1
+    500|     expect(probe.status).toBe(COMPATIBILITY_STATUS.BLOCKED_FATAL)
+    501|     expect(probe.counts.fatal).toBe(1)
+       |                                ^
+    502|     expect(probe.counts.pass).toBe(1)
+    503|     const repo = probe.requirements.find((row) => row.requirementId ==…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  packages/runtime/test/requirement-probe-blueprint-scoping.test.ts > PF-1 P2 — probe verdict == creation-preflight verdict (the down world) > the TYPED outcomes are equal requirement-for-requirement (not just "both fatal")
+AssertionError: expected [ { …(4) } ] to deeply equal [ { …(4) }, { …(4) } ]
+
+- Expected
++ Received
+
+@@ -5,14 +5,6 @@
+      "requirementId": "req-mcp-mcp_repo",
+      "unavailableSubjects": [
+        "mcp_repo",
+      ],
+    },
+-   {
+-     "complete": true,
+-     "outcome": "fatal",
+-     "requirementId": "req-mcp-mcp_leaderreq",
+-     "unavailableSubjects": [
+-       "mcp_leaderreq",
+-     ],
+-   },
+  ]
+
+ ❯ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts:534:119
+    532|     const fatalRows = rows.filter((row) => row.outcome === 'fatal')
+    533|     const warningRows = rows.filter((row) => row.outcome === 'warning')
+    534|     expect([...team.fatal].map((verdict) => ({ ...verdict, unavailable…
+       |                                                                                                                       ^
+    535|       fatalRows.map((row) => ({ ...row, unavailableSubjects: [...row.u…
+    536|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  packages/runtime/test/requirement-probe-blueprint-scoping.test.ts > PF-1 P3 — the per-root prober is scoped to the created root's bound blueprint > healthy world: the B1-bound root probes OPEN (NOT BLOCKED_FATAL)
+AssertionError: expected 'BLOCKED_FATAL' to be 'OPEN' // Object.is equality
+
+Expected: "OPEN"
+Received: "BLOCKED_FATAL"
+
+ ❯ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts:547:28
+    545|   it('healthy world: the B1-bound root probes OPEN (NOT BLOCKED_FATAL)…
+    546|     const outcome = PF1.p3HealthyOutcome
+    547|     expect(outcome.status).toBe(COMPATIBILITY_STATUS.OPEN)
+       |                            ^
+    548|     expect(outcome.fatal).toBe(0)
+    549|     expect(outcome.pass).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  packages/runtime/test/requirement-probe-blueprint-scoping.test.ts > PF-1 P3 — the per-root prober is scoped to the created root's bound blueprint > down world: the B1-bound root matches its OWN gate (BLOCKED_FATAL, one fatal)
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts:556:27
+    554|     const preflight = PF1.b2
+    555|     expect(outcome.status).toBe(COMPATIBILITY_STATUS.BLOCKED_FATAL)
+    556|     expect(outcome.fatal).toBe(1)
+       |                           ^
+    557|     expect(outcome.pass).toBe(1)
+    558|     // Matches its own gate: the same typed verdict as the creation
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 7 passed (13)
+   Start at  04:34:39
+   Duration  795ms (transform 520ms, setup 0ms, import 693ms, tests 12ms, environment 0ms)
+

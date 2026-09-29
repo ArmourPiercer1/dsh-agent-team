@@ -651,10 +651,21 @@ export function createAdmitRootInitialWork(input) {
                 repositories: input.repositories,
                 blueprint: args.blueprint,
                 rootSessionId: args.rootSessionId,
-                environmentFacts: () => input.environmentFacts(),
-                ...(input.templateEnvironmentFacts !== undefined
-                    ? { templateEnvironmentFacts: input.templateEnvironmentFacts }
-                    : {}),
+                // PF-1 fix (2026-09-30) — per-target BLUEPRINT scoping (the
+                // same seam the router gate / remote probe / per-root prober
+                // consume): the Phase A gate resolves the live feed against the
+                // TARGET root's bound blueprint's team requirements (INV-9.4
+                // two-worlds identity); absent → the legacy single feed stands.
+                environmentFacts: () => input.environmentFactsForBlueprint !== undefined
+                    ? input.environmentFactsForBlueprint(args.blueprint)
+                    : input.environmentFacts(),
+                ...(input.templateEnvironmentFactsForBlueprint !== undefined
+                    ? {
+                        templateEnvironmentFacts: (templateId) => input.templateEnvironmentFactsForBlueprint(args.blueprint, templateId),
+                    }
+                    : input.templateEnvironmentFacts !== undefined
+                        ? { templateEnvironmentFacts: input.templateEnvironmentFacts }
+                        : {}),
                 now: input.now,
             }, normalWorkImpact(leaderTemplateScopeRefs(args.blueprint)));
             return admitRootInitialWorkLocked(deps);

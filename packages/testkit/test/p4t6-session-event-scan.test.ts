@@ -1431,8 +1431,18 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (authoritative; not hand-computed). Carries zero denylist
     // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
     // Scanner unchanged. Single-writer pin bump on the fold branch.
-    expect(scanResult.filesScanned).toBe(883)
-    expect(scanResult.files.length).toBe(883)
+    // pre-alpha3 PR #42 pass 3 (feat/pre-alpha3-pre-e-requirement-recovery,
+    // this commit): +1 on top of the 883 fold pin = 884 — the one new
+    // scannable suite packages/runtime/test/
+    // requirement-probe-blueprint-scoping.test.ts (the PF-1 fix suite:
+    // per-blueprint facts scoping of the remote intent.probe / per-root
+    // prober / admission gates — multi-blueprint probe vs gate, typed
+    // identity, live-server verdicts, the single-blueprint byte-identity
+    // pins). Carries zero denylist vocabulary; the frozen quarantine hit
+    // set is unchanged at fifteen. Scanner unchanged. Single-writer pin
+    // bump on the fold branch.
+    expect(scanResult.filesScanned).toBe(884)
+    expect(scanResult.files.length).toBe(884)
 
   })
 

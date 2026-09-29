@@ -897,7 +897,15 @@ export function createS6RemotePorts(options) {
             async probe(blueprintId, blueprintRevision, environmentFacts) {
                 const resolved = resolveBlueprint(blueprintId, blueprintRevision);
                 const callerFacts = parseEnvironmentFacts(environmentFacts);
-                const hostFacts = (await options.environmentFacts?.()) ?? [];
+                // PF-1 fix (2026-09-30) — resolve the host feed against the
+                // REQUESTED blueprint's team scope (the SAME world the
+                // post-creation admission gate consumes — the frozen INV-9.4
+                // two-worlds identity). Pre-fix this read the boot-scoped thunk,
+                // which on a multi-blueprint host mis-scoped the feed against the
+                // requested blueprint (a configured + healthy live server probed
+                // as a spurious FATAL). A legacy no-argument thunk ignores the
+                // argument (byte-identical on a single-blueprint host).
+                const hostFacts = (await options.environmentFacts?.(resolved)) ?? [];
                 const result = evaluateCompatibility({
                     requirements: compatibilityRequirementsOf(resolved),
                     environmentFacts: mergeProbeEnvironmentFacts(hostFacts, callerFacts),

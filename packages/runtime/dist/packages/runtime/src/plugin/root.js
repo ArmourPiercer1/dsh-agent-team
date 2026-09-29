@@ -407,6 +407,54 @@ export function createTeamProductionRoot(params) {
             })
                 .then((resolution) => resolution.environmentFacts);
         };
+    // pre-alpha3 W3-A (review fix F1, guide §2.3) + PF-1 fix (2026-09-30,
+    // adjudicated product defect) — the SINGLE dynamic per-blueprint live
+    // facts source. The W3-A thunks above resolve the live provider against
+    // the BOOT blueprint's requirements — correct for the boot root's OWN
+    // consumption (the prober / authority / activation below), but the same
+    // boot-scoped feed was ALSO shared with every consumer that evaluates an
+    // ARBITRARY blueprint's requirements: the remote surface's `intent.probe`
+    // (the requested blueprint), the per-root compatibility prober (each
+    // created root's bound blueprint), and the new-work / initial-work
+    // admission gates (each request's bound blueprint). On a multi-blueprint
+    // host (boot blueprint ≠ the probed/bound blueprint) the feed was
+    // mis-scoped — the engine's "missing = unprobed" fail-closed then turned
+    // a CONFIGURED + HEALTHY live server into a spurious FATAL, breaking the
+    // frozen INV-9.4 two-worlds identity (s6-remote.ts: the probe is a
+    // FAITHFUL PREDICTOR of the post-creation admission gate — the SAME
+    // world). These sources resolve the provider against the passed
+    // blueprint's own scope, so every such consumer evaluates its blueprint
+    // against its own feed (one seam — no per-consumer patches).
+    //
+    // Factory worlds (no authority): the legacy static row feed stands
+    // byte-identically (the static facts are not blueprint-scoped — the
+    // blueprint argument is ignored, exactly as pre-W2-A); the per-template
+    // feed is ABSENT (the legacy single-array gate), matching the thunks
+    // above.
+    const environmentFactsForBlueprint = (target) => requirementFacts === undefined
+        ? Promise.resolve(config.environmentFacts.map((fact) => ({
+            domain: fact.domain,
+            subject: fact.subject,
+            available: fact.available,
+            generation: fact.generation,
+        })))
+        : requirementFacts.provider
+            .resolveFacts({
+            requirements: scopeRequirementInputsOf(target).team,
+            scope: { kind: 'team' },
+        })
+            .then((resolution) => resolution.environmentFacts);
+    const templateEnvironmentFactsForBlueprint = requirementFacts === undefined
+        ? undefined
+        : (target, templateId) => {
+            const requirements = scopeRequirementInputsOf(target).templates[templateId] ?? [];
+            return requirementFacts.provider
+                .resolveFacts({
+                requirements,
+                scope: { kind: 'template', templateId },
+            })
+                .then((resolution) => resolution.environmentFacts);
+        };
     const externalPolicyFacts = async () => config.externalPolicyFacts;
     // --- A14 + A15 compatibility prober / authority / work gate --------------------------
     const prober = createCompatibilityProber({
@@ -949,7 +997,13 @@ export function createTeamProductionRoot(params) {
             repositories: repos,
             rootSessionId: key,
             blueprint: boundBlueprintFor(key),
-            environmentFacts,
+            // PF-1 fix (2026-09-30) — per-root BLUEPRINT-scoped live feed (item 2
+            // of the adjudicated design): this prober addresses the addressed
+            // root's OWN bound blueprint, so its fresh-facts read must resolve
+            // against THAT blueprint's team scope — never the boot-scoped thunk
+            // (which on a multi-blueprint host evaluates this root's requirements
+            // against the boot blueprint's feed → spurious FATAL).
+            environmentFacts: () => environmentFactsForBlueprint(boundBlueprintFor(key)),
             now,
         });
         const scoped = {
@@ -989,6 +1043,14 @@ export function createTeamProductionRoot(params) {
             // scope feed (absent in factory worlds — the legacy single-array
             // gate).
             ...(templateEnvironmentFacts !== undefined ? { templateEnvironmentFacts } : {}),
+            // PF-1 fix (2026-09-30) — per-target BLUEPRINT scoping (the same
+            // seam as the router gate / remote probe / per-root prober): the
+            // Phase A gate resolves the live feed against the TARGET root's
+            // bound blueprint (INV-9.4 two-worlds identity).
+            ...(requirementFacts !== undefined ? { environmentFactsForBlueprint } : {}),
+            ...(templateEnvironmentFactsForBlueprint !== undefined
+                ? { templateEnvironmentFactsForBlueprint }
+                : {}),
             now,
             deliverRootWork: rootWorkDelivery,
         });
@@ -1092,6 +1154,15 @@ export function createTeamProductionRoot(params) {
         // pre-alpha3 W3-A (review fix F1, guide §2.3): the per-template scope
         // feed (absent in factory worlds — the legacy single-array gate).
         ...(templateEnvironmentFacts !== undefined ? { templateEnvironmentFacts } : {}),
+        // PF-1 fix (2026-09-30) — per-request BLUEPRINT scoping (the same seam
+        // as the router gate / remote probe / per-root prober): the new-work
+        // admission gate resolves the live feed against the REQUEST's bound
+        // blueprint's team requirements (the frozen INV-9.4 two-worlds
+        // identity — probe == gate == the same world).
+        ...(requirementFacts !== undefined ? { environmentFactsForBlueprint } : {}),
+        ...(templateEnvironmentFactsForBlueprint !== undefined
+            ? { templateEnvironmentFactsForBlueprint }
+            : {}),
         externalPolicyFacts,
         staticModel: {
             provider: config.staticModel.provider,
@@ -1759,14 +1830,24 @@ export function createTeamProductionRoot(params) {
             : {}),
         // T1.4-B — the row-config environment facts: the SAME injected source
         // the post-creation admission gate consumes (the prober / authority /
-        // activation / runtime wiring above all read this very thunk over
-        // `config.environmentFacts`). The intent.probe port merges it with
-        // the caller's persona fact, so the pre-creation probe and the gate
+        // activation / runtime wiring above all read over `config.environmentFacts`
+        // through the live provider). The intent.probe port merges it with the
+        // caller's persona fact, so the pre-creation probe and the gate
         // evaluate the same world (INV-9.4 — the T1.4 two-worlds mismatch
         // closed: the UI probe no longer sees client persona facts only, and
         // a required MCP present in the row facts now passes the pre-create
         // probe exactly as it passes the gate).
-        environmentFacts,
+        // PF-1 fix (2026-09-30) — the surface consumes the PER-BLUEPRINT live
+        // facts source (item 1 of the adjudicated design): `intent.probe`
+        // resolves the feed against the REQUESTED blueprint's team
+        // requirements, so on a multi-blueprint host the probe evaluates the
+        // SAME world the post-creation admission gate consumes (pre-fix this
+        // was the boot-scoped thunk — a zero-requirement boot anchor left the
+        // feed empty and a configured + healthy live server probed as a
+        // spurious FATAL).
+        ...(requirementFacts !== undefined
+            ? { environmentFacts: environmentFactsForBlueprint }
+            : { environmentFacts }),
         repositories: repos,
         catalog,
         blueprint,

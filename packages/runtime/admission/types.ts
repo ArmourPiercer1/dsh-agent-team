@@ -646,6 +646,31 @@ export interface TeamRuntimeOptions {
   readonly templateEnvironmentFacts?: (
     templateId: string,
   ) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>
+  /**
+   * PF-1 fix (2026-09-30, adjudicated product defect) — the per-BLUEPRINT
+   * live environment-facts source (the SAME seam the remote surface's
+   * `intent.probe` and the per-root compatibility prober consume): when
+   * PRESENT the requirement gate resolves the live feed against the team
+   * requirements of the REQUEST's bound blueprint — multi-blueprint hosts
+   * (boot blueprint ≠ bound blueprint) keep the frozen INV-9.4 two-worlds
+   * identity (the probe, the gate and the compatibility aggregate evaluate
+   * the SAME world; a configured + healthy live server never probes
+   * unreachable). When ABSENT the legacy single `environmentFacts` feed
+   * stands (factory / single-blueprint worlds — byte-identical verdicts).
+   */
+  readonly environmentFactsForBlueprint?: (
+    blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint,
+  ) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>
+  /**
+   * PF-1 fix (2026-09-30) — the per-BLUEPRINT per-template feed (the twin
+   * of `templateEnvironmentFacts` scoped to the request's bound blueprint;
+   * ABSENT in factory worlds — the legacy single-array gate stands,
+   * byte-identical).
+   */
+  readonly templateEnvironmentFactsForBlueprint?: (
+    blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint,
+    templateId: string,
+  ) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>
   /** The external hard facts (effective-config read, stage 2). */
   readonly externalPolicyFacts: () => Promise<
     import('../../domain/policy/src/index.js').ExternalPolicyFacts
