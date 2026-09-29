@@ -1,0 +1,200 @@
+{
+  "boot": 1,
+  "phase": "create",
+  "rootSessionId": "session-prcmcp-boot-prc-mcp-2026-09-28T22-38-24",
+  "teamSession": {
+    "rootSessionId": "session-prcmcp-boot-prc-mcp-2026-09-28T22-38-24",
+    "blueprintId": "team.prc-anchor",
+    "revision": "1",
+    "contentHash": "sha256:8790637ae96dad6cbc7e3631655eb930853a60deba75ca23887505276b51d44c",
+    "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "createdAt": "2026-09-28T22:38:26.729Z",
+    "generation": 2
+  },
+  "members": [
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": []
+  },
+  "activity": [],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [],
+    "sessions": {
+      "session-prcmcp-boot-prc-mcp-2026-09-28T22-38-24": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "prc-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "prc-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {
+            "mcp_signal": {
+              "mounted": false,
+              "allowed": false,
+              "source": {
+                "layer": "unspecified",
+                "origin": "static",
+                "recordId": null
+              },
+              "materialization": "pending",
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "unspecifiedFailClosed"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+            },
+            "mcp_designer": {
+              "mounted": false,
+              "allowed": false,
+              "source": {
+                "layer": "unspecified",
+                "origin": "static",
+                "recordId": null
+              },
+              "materialization": "pending",
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "unspecifiedFailClosed"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+            },
+            "mcp_router": {
+              "mounted": false,
+              "allowed": false,
+              "source": {
+                "layer": "unspecified",
+                "origin": "static",
+                "recordId": null
+              },
+              "materialization": "pending",
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "unspecifiedFailClosed"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+            }
+          }
+        }
+      },
+      "session-prcmcp-t1-prc-mcp-2026-09-28T22-38-24": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "prc-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "prc-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "prc-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {
+            "mcp_signal": {
+              "mounted": true,
+              "allowed": true,
+              "source": {
+                "layer": "template",
+                "origin": "static",
+                "recordId": null
+              },
+              "materialization": "mounted",
+              "mcpAttempts": 1,
+              "unavailable": false,
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective allow[mcp_signal,mcp_designer,mcp_router]; team template(origin=static) allow[mcp_signal,mcp_designer,mcp_router]; external exists=yes, hard=unspecified"
+            },
+            "mcp_designer": {
+              "mounted": true,
+              "allowed": true,
+              "source": {
+                "layer": "template",
+                "origin": "static",
+                "recordId": null
+              },
+              "materialization": "mounted",
+              "mcpAttempts": 1,
+              "unavailable": false,
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective allow[mcp_signal,mcp_designer,mcp_router]; team template(origin=static) allow[mcp_signal,mcp_designer,mcp_router]; external exists=yes, hard=unspecified"
+            },
+            "mcp_router": {
+              "mounted": true,
+              "allowed": true,
+              "source": {
+                "layer": "template",
+                "origin": "static",
+                "recordId": null
+              },
+              "materialization": "mounted",
+              "mcpAttempts": 2,
+              "unavailable": false,
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective allow[mcp_signal,mcp_designer,mcp_router]; team template(origin=static) allow[mcp_signal,mcp_designer,mcp_router]; external exists=yes, hard=unspecified"
+            }
+          }
+        }
+      }
+    }
+  },
+  "observations": [
+    "p6t6: mcp activation failed [server mcp_router]: mcp-client(mcp_router): initial connection or tool synchronization failed",
+    "p6t6: mcp mount restored [server mcp_router] (attempt 2)"
+  ]
+}

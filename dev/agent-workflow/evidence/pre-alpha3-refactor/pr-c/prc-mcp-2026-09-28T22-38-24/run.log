@@ -1,0 +1,82 @@
+[2026-09-28T22:38:24.282Z] === pre-alpha3 PR-C C.10 real-host mini-MCP isolation gate prc-mcp-2026-09-28T22-38-24 ===
+[2026-09-28T22:38:24.282Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prc-runtime-env
+[2026-09-28T22:38:24.282Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-09-28T22:38:24.282Z] world=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prc-runtime-env/tests/homes/prc-mcp-2026-09-28T22-38-24
+[2026-09-28T22:38:24.282Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prc-runtime-env/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-c/prc-mcp-2026-09-28T22-38-24
+[2026-09-28T22:38:24.297Z] stable pre-probes: 3080=401 3180=401
+[2026-09-28T22:38:24.326Z] ports: host=3182 mock=3497 mcpA=3491 mcpB=3492 mcpC=3493
+[2026-09-28T22:38:24.327Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prc-runtime-env/tests/homes/prc-mcp-2026-09-28T22-38-24 blueprints=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prc-runtime-env/tests/homes/prc-mcp-2026-09-28T22-38-24/blueprints (t1=[A,B,C] tw=[worker] anchor=legacy)
+[2026-09-28T22:38:24.332Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-09-28T22:38:24.353Z] mini MCP A up on 127.0.0.1:3491 (mcp_signal); B up on 127.0.0.1:3492 (mcp_designer); C DOWN (will start for C2)
+[2026-09-28T22:38:24.353Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-28T22:38:25.357Z] throwaway boot OK: http://127.0.0.1:3182/?token=<SCRUBBED>
+[2026-09-28T22:38:25.438Z] web profile ensured (throwaway boot if first use)
+[2026-09-28T22:38:25.439Z] HOST1-CREATE: patch (bootPhase=create) + directive (boot=1) written
+[2026-09-28T22:38:26.728Z] HOST1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-28T22:38:26.731Z] HOST1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-28T22:38:26.811Z] HOST1-CREATE: row ready — toolCount=13 liveSessions=["session-prcmcp-boot-prc-mcp-2026-09-28T22-38-24"]
+[2026-09-28T22:38:26.815Z] HOST1: state ready (teamSession=team.prc-anchor)
+[2026-09-28T22:38:26.922Z] Team-1 created (path=fresh-root): the setup ran the initial MCP mount (C is DOWN)
+[2026-09-28T22:38:27.439Z] C1 PASS — C DOWN at the mount attempt: C materialization slot = `failed` with a reason + attempt count (the per-server failure isolates into its own slot) :: C={"mounted":false,"materialization":"failed","attempts":1,"reason":"mcp-client(mcp_router): initial connection or tool synchronization failed","allowed":true,"source":{"layer":"template","origin":"static","recordId":null}}
+[2026-09-28T22:38:27.439Z] C1 PASS — A stays MOUNTED (the healthy fiber is NOT rolled back by C failure) :: A={"mounted":true,"materialization":"mounted","attempts":1,"reason":null,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null}}
+[2026-09-28T22:38:27.439Z] C1 PASS — B stays MOUNTED (the healthy fiber is NOT rolled back by C failure) :: B={"mounted":true,"materialization":"mounted","attempts":1,"reason":null,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null}}
+[2026-09-28T22:38:27.440Z] C1 PASS — the healthy surface is live: A's ping EXECUTED (pong observed) AND the model schema carries A+B ping tools but NOT C's (C isolated from the surface) :: schema=["mcp__mcp_designer__ping","mcp__mcp_signal__ping"] pongSeen=true
+[2026-09-28T22:38:27.440Z] C1: PASS (4/4 checks)
+[2026-09-28T22:38:27.452Z] C2: starting mini-MCP C on 127.0.0.1:3493 and waiting 32000ms (the real C.6 30s retry cooldown; recheckMcpServers is not wire-exposed)
+[2026-09-28T22:38:59.455Z] C2: cooldown elapsed — triggering the C.6 request boundary (executeTool seam, like the C3 re-attach)
+[2026-09-28T22:38:59.489Z] C2: boundary trigger (team_list_members) status=200 (unknown-tool by design; the reconcile re-probe is the effect under test)
+[2026-09-28T22:38:59.494Z] C2 PASS — C auto-MOUNTS at the next boundary after the cooldown (the per-server retry): materialization = `mounted`, attempt = 2 (the retry), mounted = true :: C={"mounted":true,"materialization":"mounted","attempts":2,"reason":null,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null}}
+[2026-09-28T22:38:59.494Z] C2 PASS — A/B REMAIN mounted (the recovery did not disturb the healthy fibers) :: A={"mounted":true,"materialization":"mounted","attempts":1,"reason":null,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null}} B={"mounted":true,"materialization":"mounted","attempts":1,"reason":null,"allowed":true,"source":{"layer":"template","origin":"static","recordId":n
+[2026-09-28T22:38:59.540Z] ORACLE MK_REC: hasCTool=true seenPongC=false rounds=0
+[2026-09-28T22:38:59.563Z] ORACLE MK_REC: hasCTool=true seenPongC=true rounds=1
+[2026-09-28T22:39:00.008Z] C2 PASS — C is now EXECUTABLE: C's ping ran (pong observed) and C's tool is on the model schema (A+B+C all present) :: schema=["mcp__mcp_designer__ping","mcp__mcp_router__ping","mcp__mcp_signal__ping"] pongSeen=true
+[2026-09-28T22:39:00.008Z] C2: PASS (3/3 checks)
+[2026-09-28T22:39:00.013Z] C4 PASS — the capability-runtime-event facts were DURABLY written for C: a `mount-failed` AND a `mount-restored` fact exist in the ledger (read back over team.getLedgerPage) :: failed=1 restored=1 total=2
+[2026-09-28T22:39:00.013Z] C4 PASS — ORDER: the mount-failed fact precedes the mount-restored fact (sequence ordering) :: failed.seq=1 restored.seq=2
+[2026-09-28T22:39:00.013Z] C4 PASS — ATTEMPT counters: mount-failed attempt = 1, mount-restored attempt = 2 (the retry) :: failed.attempt=1 restored.attempt=2
+[2026-09-28T22:39:00.013Z] C4 PASS — VERDICTS: mount-failed verdict = unreachable, mount-restored verdict = reachable (the 3-state readiness verdicts) :: failed.verdict=unreachable restored.verdict=reachable
+[2026-09-28T22:39:00.013Z] C4 PASS — SOURCE + TYPE: both facts are source=mcp-fiber, capabilityType=mcpServer (the MCP fiber seam) :: failed.source=mcp-fiber restored.source=mcp-fiber
+[2026-09-28T22:39:00.013Z] C4 PASS — TIMESTAMPS monotonically non-decreasing: mount-failed observedAt <= mount-restored observedAt (and createdAt ordering agrees) :: failed.observedAt=2026-09-28T22:38:26.901Z restored.observedAt=2026-09-28T22:38:59.470Z
+[2026-09-28T22:39:00.013Z] C4 PASS — the mount-failed fact carries a non-empty reason (the failure diagnostic is durable) :: reason=mcp-client(mcp_router): initial connection or tool synchronization failed
+[2026-09-28T22:39:00.013Z] C4: PASS (7/7 checks)
+[2026-09-28T22:39:00.016Z] C5 PASS — team.getProjection (v6) returns a numeric durableGeneration + a liveToken (the v6 freshness pair is present on both bracket reads) :: genBefore=2 genAfter=3 liveToken=lt-v1-92163c7dcd398e11e5...
+[2026-09-28T22:39:00.016Z] C5 PASS — durableGeneration ADVANCED after the telemetry ledger.put: genAfterRestored > genBeforeRestored (the mount-restored write advanced the durable watermark) :: genAfter=3 > genBefore=2
+[2026-09-28T22:39:00.016Z] C5 PASS — the per-root durable ledger grew across the bracket (new durable ROOT_T1 writes, incl. the mount-restored telemetry fact): countAfter > countBefore :: countAfter=2 > countBefore=1
+[2026-09-28T22:39:00.016Z] C5: PASS (3/3 checks)
+[2026-09-28T22:39:00.017Z] C6 PASS — the row config leaves rootPresetId / memberPresetId / presetSubstrate ABSENT (the resolver receives rootPresetId = undefined = the deployment default — the glue never invents an id) :: hasRoot=false hasMember=false hasSubstrate=false
+[2026-09-28T22:39:00.017Z] C6 PASS — the SHIPPED state is standard == standard: plan.rootPresetId (deployment default) == observed substrate personaKind == actual mount :: deploymentDefault=standard substrate.personaKind=standard
+[2026-09-28T22:39:00.017Z] C6 PASS — the T1 leader RAN (the fail-closed preset guard passed -> its preset substrate was mounted): the boundary + recovery turns completed :: the T1 leader executed the C1/C2 boundary turns (an agent never runs without its preset mounted — the fail-closed guard in agentSetup)
+[2026-09-28T22:39:00.017Z] C6: PASS (3/3 checks)
+[2026-09-28T22:39:00.067Z] Team-W (Alpha.2 workflow team, full team tools) created
+[2026-09-28T22:39:00.118Z] C7: worker inst-0220xzo0kuhv activated
+[2026-09-28T22:39:00.225Z] C7: worker task work-admitted
+[2026-09-28T22:39:00.225Z] C7: worker turn completed (the mock witness confirms the delegated work ran)
+[2026-09-28T22:39:00.233Z] C7 PASS — the old Alpha.2 workflow works end-to-end: member.create activated a worker (member-activated) :: workerId=inst-0220xzo0kuhv
+[2026-09-28T22:39:00.233Z] C7 PASS — the delegate step worked: member.followup was work-admitted (the task ran on the mock witness) :: worker turn completed (marker=PRC_WORK_prc-mcp-2026-09-28T22-38-24)
+[2026-09-28T22:39:00.233Z] C7 PASS — the collect step worked: team.getProjection (v6) reflects the created worker in the team members (no regression from the C.6 MCP rewrite) :: members=2 workerRow={"instanceId":"inst-0220xzo0kuhv","templateId":"worker","label":"c7-worker","workspace":"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use","createdAt":"2026-09-28T22:39:00.101Z","
+[2026-09-28T22:39:00.233Z] C7: PASS (3/3 checks)
+[2026-09-28T22:39:00.233Z] C3: stopping HOST1 and booting HOST2 (resume, same DSH_HOME)
+[2026-09-28T22:39:00.308Z] HOST1-CREATE: stopped (killed=true portFree=true)
+[2026-09-28T22:39:00.309Z] HOST2-RESUME: patch (bootPhase=resume) + directive (boot=2) written
+[2026-09-28T22:39:01.611Z] HOST2-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-28T22:39:01.613Z] HOST2-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-28T22:39:01.690Z] HOST2-RESUME: row ready — toolCount=13 liveSessions=["session-prcmcp-boot-prc-mcp-2026-09-28T22-38-24"]
+[2026-09-28T22:39:01.693Z] HOST2: state ready after restart (phase=resume, teamSession=team.prc-anchor)
+[2026-09-28T22:39:01.696Z] C3: live sessions BEFORE the re-attach triggers: ["session-prcmcp-boot-prc-mcp-2026-09-28T22-38-24"]
+[2026-09-28T22:39:01.774Z] C3: T1 re-attach trigger (team_list_members) status=200 (the tool degrades to unknown-tool by design; the boundary re-attach is the effect under test)
+[2026-09-28T22:39:01.777Z] C3 PASS — the created root was NOT live right after the resume boot (cold) — boot re-attaches only the boot root :: preTriggerLive=["session-prcmcp-boot-prc-mcp-2026-09-28T22-38-24"]
+[2026-09-28T22:39:01.778Z] C3 PASS — the created root is LIVE after the re-attach (the first reconcile ran on it) :: rtLive=["session-prcmcp-boot-prc-mcp-2026-09-28T22-38-24","session-prcmcp-t1-prc-mcp-2026-09-28T22-38-24"]
+[2026-09-28T22:39:01.778Z] C3 PASS — materialization is NOT a fabricated `failed` after the restart: C is `mounted` (the probe re-ran and re-mounted C), NOT a carried-over `failed` :: C={"mounted":true,"materialization":"mounted","attempts":1,"reason":null,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null}}
+[2026-09-28T22:39:01.778Z] C3 PASS — the probe RE-RAN with a FRESH attempt count: C attempt = 1 (the ephemeral slot did NOT persist the pre-restart attempt=2 / a failed state across the restart — unknown != unreachable, no fabrication) :: C.attempts=1 (pre-restart was 2; a fabricated carry-over would show >= 2 or a failed slot)
+[2026-09-28T22:39:01.778Z] C3 PASS — A/B re-mounted on the restart too (the whole configured set re-materializes on the first reconcile) :: A={"mounted":true,"materialization":"mounted","attempts":1,"reason":null,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null}} B={"mounted":true,"materialization":"mounted","attempts":1,"reason":null,"allowed":true,"source":{"layer":"template","origin":"static","recordId":n
+[2026-09-28T22:39:01.778Z] C3: PASS (5/5 checks)
+[2026-09-28T22:39:01.778Z] sweep: stopping still-live host HOST2-RESUME
+[2026-09-28T22:39:01.849Z] HOST2-RESUME: stopped (killed=true portFree=true)
+[2026-09-28T22:39:01.880Z] H1 PASS — test-use porcelain EMPTY + HEAD baseline AFTER the run (ZERO-TOUCH: the pristine upstream is unchanged) :: statusEmpty=true diffEmpty=true head=46a7f68b0922371ce7144b668b90e377d8e799f4
+[2026-09-28T22:39:01.880Z] H1 PASS — :3080/:3180 stable instances ZERO-TOUCH (read-only probes pre == post — never bound/booted here) :: before={"http://127.0.0.1:3080/":{"url":"http://127.0.0.1:3080/","status":401},"http://127.0.0.1:3180/":{"url":"http://127.0.0.1:3180/","status":401}} after={"http://127.0.0.1:3080/":{"url":"http://127.0.0.1:3080/","status":401},"http://127.0.0.1:3180/":{"url":"http://127.0.0.1:3180/","status":401}}
+[2026-09-28T22:39:01.880Z] H1: PASS (2/2 checks)
+[2026-09-28T22:39:01.883Z] H2 PASS — all run ports released after teardown (host + mcpA/B/C + mock) :: [{"label":"host","port":3182,"free":true},{"label":"mcpA","port":3491,"free":true},{"label":"mcpB","port":3492,"free":true},{"label":"mcpC","port":3493,"free":true},{"label":"mock","port":3497,"free":true}]
+[2026-09-28T22:39:01.883Z] H2: PASS (1/1 checks)
+[2026-09-28T22:39:01.883Z] VERDICT: core=PASS hygiene=PASS all=PASS
+[2026-09-28T22:39:01.883Z] HOST2-RESUME: stopped (killed=false portFree=true)
+[2026-09-28T22:39:01.889Z] evidence written: /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prc-runtime-env/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-c/prc-mcp-2026-09-28T22-38-24 (token scrub pass: 4 file(s) scrubbed)

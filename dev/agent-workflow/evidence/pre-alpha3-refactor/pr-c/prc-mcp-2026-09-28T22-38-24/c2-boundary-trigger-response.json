@@ -1,0 +1,10 @@
+{
+  "ok": false,
+  "error": {
+    "message": "unknown tool \"team_list_members\"",
+    "info": {
+      "name": "ToolNotFoundError",
+      "code": "UNKNOWN_TOOL"
+    }
+  }
+}
