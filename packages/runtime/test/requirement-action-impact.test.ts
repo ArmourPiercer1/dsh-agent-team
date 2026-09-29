@@ -29,11 +29,17 @@ describe('E.7 the action → impact map is complete and closed', () => {
 
   it('every value is a closed impact class (recoveryWork/control are NOT a default)', () => {
     const values = new Set(Object.values(ACTION_REQUIREMENT_IMPACT))
-    // The static map only ever assigns the four DEFAULT classes; recoveryWork
+    // The static map only ever assigns the DEFAULT classes; recoveryWork
     // and control are caller-context (built explicitly at the recovery /
     // control call sites), never a static default.
     for (const v of values) {
-      expect(['diagnostic', 'normalWork', 'coordination', 'lifecycle']).toContain(v)
+      expect([
+        'diagnostic',
+        'normalWork',
+        'coordination',
+        'lifecycle',
+        'crossAgentTrigger',
+      ]).toContain(v)
     }
     expect(values.has('recoveryWork')).toBe(false)
     expect(values.has('control')).toBe(false)
@@ -62,14 +68,21 @@ describe('E.7 the impact is NOT a copy of the coarse ActionCategory', () => {
   })
 
   it('coordination actions are `coordination` (always allowed)', () => {
+    // pre-alpha3 W3-D (review fix F9, guide §8): send-message is NO LONGER
+    // pure coordination — it is the cross-agent execution trigger (it wakes
+    // the recipient). Only report-progress / request-control /
+    // resolve-control remain pure coordination.
     for (const name of [
-      ACTION_NAMES.SEND_MESSAGE,
       ACTION_NAMES.REPORT_PROGRESS,
       ACTION_NAMES.REQUEST_CONTROL,
       ACTION_NAMES.RESOLVE_CONTROL,
     ]) {
       expect(ACTION_REQUIREMENT_IMPACT[name]).toBe('coordination')
     }
+  })
+
+  it('send-message is the cross-agent execution trigger (W3-D F9, by effect not name)', () => {
+    expect(ACTION_REQUIREMENT_IMPACT[ACTION_NAMES.SEND_MESSAGE]).toBe('crossAgentTrigger')
   })
 
   it('lifecycle actions are `lifecycle` (always allowed)', () => {

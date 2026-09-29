@@ -81,6 +81,21 @@ export interface RequirementGateOptions {
      *   authority's inline re-probe re-reads the same port, the same logical
      *   moment). */
     readonly environmentFacts: () => Promise<readonly EnvironmentFact[]>;
+    /**
+     * pre-alpha3 W3-A (review fix F1, guide §2.3) — the per-TEMPLATE scope
+     * facts port (the live provider's template-boundary feed: supply + fresh
+     * readiness + materialization, guide §2.3). Present in the production
+     * host entry world (the `requirementFacts` authority); ABSENT in factory
+     * worlds, which keep the legacy single-array evaluation (byte-identical
+     * pre-W3-A behavior).
+     *
+     * Per-scope feeds are mandatory — the team scope's and a template
+     * scope's (domain, subject) pairs may COLLIDE (the same mcp server in a
+     * team-level and a template-level requirement), and the engine keys its
+     * probes by (domain, subject): unioning the feeds into one array would
+     * conflate the scopes.
+     */
+    readonly templateEnvironmentFacts?: (templateId: string) => Promise<readonly EnvironmentFact[]>;
     /** The deterministic ISO-8601 clock (defaults to the authority clock). */
     readonly now?: () => string;
     /** The epoch-ms clock for the requirement fact payloads (defaults to
@@ -115,10 +130,18 @@ export declare function readRequirementFacts(repositories: TeamDomainRepositorie
  * template scope with a fresh engine evaluation (no durable generation —
  * template-scope readiness resets on restart).
  *
+ * pre-alpha3 W3-A (review fix F1, guide §2.3): when the `templateEnvironmentFacts`
+ * port is present (the production live source), each template scope is
+ * evaluated against ITS OWN fresh feed (supply + readiness + materialization
+ * at the template boundary) instead of the team scope's array — see
+ * {@link RequirementGateOptions.templateEnvironmentFacts} for why the feeds
+ * must not be unioned. Absent (factory worlds) → every scope evaluates
+ * against the same fresh team-scope facts read (the legacy behavior).
+ *
  * @throws {@link TeamRuntimeError} COMPATIBILITY_BLOCKED (fail-closed) when
  *   the facts port fails or the authority chain cannot produce a verdict.
  */
-export declare function evaluateAllScopes(repositories: TeamDomainRepositories, blueprint: TeamBlueprint, rootSessionId: string, environmentFacts: () => Promise<readonly EnvironmentFact[]>, now?: () => string): Promise<{
+export declare function evaluateAllScopes(repositories: TeamDomainRepositories, blueprint: TeamBlueprint, rootSessionId: string, environmentFacts: () => Promise<readonly EnvironmentFact[]>, now?: () => string, templateEnvironmentFacts?: (templateId: string) => Promise<readonly EnvironmentFact[]>): Promise<{
     /** The raw per-scope requirement verdicts (keyed by scope key) — the
      *   `EvaluationInput.scopeVerdicts` shape. */
     readonly scopeVerdicts: Readonly<Record<string, readonly RequirementVerdict[]>>;

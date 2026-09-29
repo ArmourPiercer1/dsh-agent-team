@@ -73,6 +73,7 @@ import {
   TeamSessionActivationInterceptedError,
 } from '../src/plugin/team-session-activation.js'
 import { stubGlueUrl } from './p8s5a-artifacts.mjs'
+import { agentPresetsStandardDouble } from './agent-presets-double.mjs'
 
 // --- the fixture identities -----------------------------------------------------
 
@@ -249,6 +250,9 @@ function makeListenerWorld(seam: FileStorageSeam): {
     sessionPersistence: { ensure: async () => {} },
     workspaceRegistry: { list: () => [], resolveByPath: async () => undefined },
     teamStorageSeam: seam,
+    // pre-alpha3 W3-A (F1): the agentPresets service double (W2-A fail-closed
+    // contract — service-absent worlds without a row preset id no longer bind).
+    agentPresets: agentPresetsStandardDouble(),
   }
   const createdListeners: CreatedListener[] = []
   const disposedListeners: ((payload: { readonly agent: unknown }) => void)[] = []

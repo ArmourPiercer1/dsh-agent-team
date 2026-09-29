@@ -217,14 +217,23 @@ export interface TeamPluginConfig {
      * composing the team agents. The SCRIPTED test-world port: a production
      * host never sets it.
      *
-     * pre-alpha3 PR-E (plan §E.3): ABSENT = the TYPED production path — the
-     * RuntimeSubstrateResolver (PR-C) with the shipped-state persona
-     * observation (`shippedStatePersonaObserver`: the deployment default's
-     * composable `standard` persona; the live production persona probe is a
-     * documented follow-up seam, known_debt "live persona probe"; the
-     * resolver plan's `personaObservation` carries source `none` + the
-     * reason). A `complete` substrate is a structural FATAL inside the
-     * resolver (no downgrade, no Continue Anyway).
+     * pre-alpha3 W3-A (review fix F1, guide §2.3): ABSENT = the TYPED,
+     * OBSERVING path (never a guess):
+     *
+     * - the PRODUCTION host entry world (the `requirementFacts` authority
+     *   present) — the live RuntimeSubstratePlan from the host's
+     *   `resolveSubstratePlan` (pre-alpha3 W2-A: the row preset ids + the
+     *   production persona observer over the DSH public `agentPresets`
+     *   seam; a settled plan is memoized, an unresolved one re-probes; the
+     *   bind-time slot reads the ROOT entry, an `unresolved` root
+     *   observation fails the bind closed);
+     * - a FACTORY world (no host authority) — the legacy shipped-state
+     *   observation (`shippedStatePersonaObserver`: the deployment default's
+     *   composable `standard` persona, source `none` — a pure
+     *   deployment-knowledge observation for worlds with no live seam).
+     *
+     * A `complete` substrate is a structural FATAL inside the resolver (no
+     * downgrade, no Continue Anyway).
      */
     readonly presetSubstrate?: {
         readonly presetId: string;
@@ -742,6 +751,46 @@ export interface TeamProductionRoot {
      * additive-optional pattern, cf. `workspaceAttach`).
      */
     readonly requirementFacts?: RequirementFactsAuthority;
+    /**
+     * pre-alpha3 W3-B (review fix F7, guide §6) — the PRODUCTION
+     * requirement-fact writers: the durable human decisions of the creation
+     * preflight (the DegradationConsent grant + the template
+     * disable/enable), commit-before-ack over the frozen `compatibility`
+     * ledger category. ROOT-LEVEL services only — the frozen remote
+     * contract v1–v6 gains NO method (the UI flow consumes the typed
+     * preflight result and re-drives the creation). Present only in the
+     * production host entry world (the `requirementFacts` authority —
+     * factory worlds carry none, the surface stays absent).
+     */
+    readonly requirementAuthority?: {
+        /** Durably grant ONE degradation consent: validated against a FRESH
+         *   evaluation (required-target / satisfied-target / undeclared-
+         *   target = typed refusal, zero writes), then the
+         *   `optional-requirement-accepted` fact is written BEFORE the ack.
+         *   The blueprint identity names the bound snapshot the consent is
+         *   given against (an explicit revision — no "latest"). */
+        readonly grantDegradationConsent: (input: {
+            readonly rootSessionId: string;
+            readonly blueprintId: string;
+            readonly revision: string;
+            readonly requirementId: string;
+            readonly generation: number;
+            readonly consentedBy: string;
+        }) => Promise<import('../../requirements/index.js').OptionalRequirementAccepted>;
+        /** Durably set ONE template's availability (the `fixOrDisable`
+         *   resolution): validated against the bound blueprint's template
+         *   set (unknown template = typed refusal, zero writes), then the
+         *   `template-availability-set` fact is written BEFORE the ack. A
+         *   repeated set appends a new row (latest-wins read; re-runs
+         *   converge). */
+        readonly setTemplateAvailability: (input: {
+            readonly rootSessionId: string;
+            readonly blueprintId: string;
+            readonly revision: string;
+            readonly templateId: string;
+            readonly available: boolean;
+        }) => Promise<import('../../requirements/index.js').TemplateAvailabilitySet>;
+    };
 }
 /** The compatibility prober instance (the P3-T5 engine driver, P8-S4A). */
 export type CompatibilityProberLike = ReturnType<typeof import('../../compatibility/index.js').createCompatibilityProber>;

@@ -67,6 +67,7 @@ import { actionImpactClassOf } from './actions.js'
 import {
   controlImpact,
   coordinationImpact,
+  crossAgentTriggerImpact,
   diagnosticImpact,
   lifecycleImpact,
   normalWorkImpact,
@@ -139,6 +140,21 @@ export interface RequirementGateOptions {
    *   authority's inline re-probe re-reads the same port, the same logical
    *   moment). */
   readonly environmentFacts: () => Promise<readonly EnvironmentFact[]>
+  /**
+   * pre-alpha3 W3-A (review fix F1, guide §2.3) — the per-TEMPLATE scope
+   * facts port (the live provider's template-boundary feed: supply + fresh
+   * readiness + materialization, guide §2.3). Present in the production
+   * host entry world (the `requirementFacts` authority); ABSENT in factory
+   * worlds, which keep the legacy single-array evaluation (byte-identical
+   * pre-W3-A behavior).
+   *
+   * Per-scope feeds are mandatory — the team scope's and a template
+   * scope's (domain, subject) pairs may COLLIDE (the same mcp server in a
+   * team-level and a template-level requirement), and the engine keys its
+   * probes by (domain, subject): unioning the feeds into one array would
+   * conflate the scopes.
+   */
+  readonly templateEnvironmentFacts?: (templateId: string) => Promise<readonly EnvironmentFact[]>
   /** The deterministic ISO-8601 clock (defaults to the authority clock). */
   readonly now?: () => string
   /** The epoch-ms clock for the requirement fact payloads (defaults to
@@ -280,6 +296,14 @@ export function readRequirementFacts(
  * template scope with a fresh engine evaluation (no durable generation —
  * template-scope readiness resets on restart).
  *
+ * pre-alpha3 W3-A (review fix F1, guide §2.3): when the `templateEnvironmentFacts`
+ * port is present (the production live source), each template scope is
+ * evaluated against ITS OWN fresh feed (supply + readiness + materialization
+ * at the template boundary) instead of the team scope's array — see
+ * {@link RequirementGateOptions.templateEnvironmentFacts} for why the feeds
+ * must not be unioned. Absent (factory worlds) → every scope evaluates
+ * against the same fresh team-scope facts read (the legacy behavior).
+ *
  * @throws {@link TeamRuntimeError} COMPATIBILITY_BLOCKED (fail-closed) when
  *   the facts port fails or the authority chain cannot produce a verdict.
  */
@@ -289,6 +313,7 @@ export async function evaluateAllScopes(
   rootSessionId: string,
   environmentFacts: () => Promise<readonly EnvironmentFact[]>,
   now?: () => string,
+  templateEnvironmentFacts?: (templateId: string) => Promise<readonly EnvironmentFact[]>,
 ): Promise<{
   /** The raw per-scope requirement verdicts (keyed by scope key) — the
    *   `EvaluationInput.scopeVerdicts` shape. */
@@ -346,13 +371,38 @@ export async function evaluateAllScopes(
 
   // 3. Template scopes: FRESH engine evaluations (v2 only — v1 documents
   //    carry no per-template requirements; no durable state, readiness
-  //    resets on restart).
+  //    resets on restart). pre-alpha3 W3-A (review fix F1, guide §2.3):
+  //    with the per-template feed port present, each template scope reads
+  //    ITS OWN live feed (the template boundary: supply + fresh readiness +
+  //    materialization) — a read failure is a chain failure (fail-closed,
+  //    the same contract as the team-scope facts read); without it (factory
+  //    worlds) the same team-scope facts array is used (legacy).
   if (blueprint.schemaVersion === 2) {
     for (const [templateId, requirementInputs] of Object.entries(inputs.templates)) {
+      let templateFacts: readonly EnvironmentFact[]
+      if (templateEnvironmentFacts === undefined) {
+        templateFacts = facts
+      } else {
+        try {
+          templateFacts = await templateEnvironmentFacts(templateId)
+        } catch (error) {
+          throw new TeamRuntimeError(
+            TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+            `TeamRuntime: the template-environment-facts port failed for template '${templateId}' — new work admission fails closed (invariant 50)`,
+            {
+              rootSessionId,
+              source: 'requirement-gate',
+              reason: 'facts-unavailable',
+              templateId,
+              cause: error instanceof Error ? error.message : undefined,
+            },
+          )
+        }
+      }
       // The engine re-validates (parses) its inputs itself.
       const templateResult = evaluateCompatibility({
         requirements: requirementInputs,
-        environmentFacts: facts,
+        environmentFacts: templateFacts,
       })
       rawScopeVerdicts[scopeKey({ level: 'template', templateId })] = projectVerdicts(templateResult)
     }
@@ -392,6 +442,7 @@ export async function enforceRequirementGate(
     rootSessionId,
     options.environmentFacts,
     options.now,
+    options.templateEnvironmentFacts,
   )
 
   const { consents, availability, openIncidents } = readRequirementFacts(repositories, rootSessionId)
@@ -534,6 +585,14 @@ export function actionImpactOf(
       return lifecycleImpact(scopeRefs)
     case ACTION_IMPACT_CLASSES.control:
       return controlImpact(scopeRefs)
+    case ACTION_IMPACT_CLASSES.crossAgentTrigger:
+      // pre-alpha3 W3-D (review fix F9, guide §8): the cross-agent execution
+      // trigger (send-message) gates on the SAME scopes the action was
+      // admitted with (Team + the recipient's template when named); the
+      // `gateAction` blocks it if ANY is down. A recovery re-run of the
+      // trigger (the `recovery` marker) is handled above (recoveryWorkImpact)
+      // and escalates the wake to synchronous Human Review at the router.
+      return crossAgentTriggerImpact(scopeRefs)
     case ACTION_IMPACT_CLASSES.recoveryWork:
       // Not reachable from a static map (the recovery class is a caller
       // choice); treat as normal work (the safe direction).

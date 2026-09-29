@@ -155,7 +155,22 @@ import type { TeamBlueprint } from '../../domain/blueprint/src/index.js';
 import type { EnvironmentFact } from '../../domain/compatibility/src/index.js';
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js';
 import type { ResolvedCaller } from '../admission/resolve.js';
+import type { RequirementScope } from '../requirements/types.js';
 import type { TeamOperationChainMap } from '../coordination/index.js';
+/**
+ * pre-alpha3 W3-C (review fix F8, guide §7.2) — the scope refs of the
+ * Leader's real request boundary (the Root initial work): the Team scope
+ * ALWAYS + the Leader template scope when the leader template declares v2
+ * structured requirements. The Leader's normal model request depends on
+ * the leader template's requirements (the leader IS the resident member of
+ * its own template) — not just the team scope. A v1 document (no
+ * per-template requirements) and a v2 leader template that declares no
+ * requirements keep the Team scope only (byte-identical pre-W3-C).
+ *
+ * Member template scopes are NEVER referenced here: an unrelated member
+ * requirement down must not block the Leader (guide §7.3 case 4).
+ */
+export declare function leaderTemplateScopeRefs(blueprint: TeamBlueprint): readonly RequirementScope[];
 /** The payload discriminator of a Root initial-work fact (the scanner's filter). */
 export declare const ROOT_TARGET_KIND = "root";
 /** The EXISTING admission fact type (the Root entries carry `targetKind: 'root'`). */
@@ -367,6 +382,14 @@ export interface RootInitialWorkClosureInput {
     readonly repositories: TeamDomainRepositories;
     /** The environment-facts port (the compatibility gate's fresh-facts read). */
     readonly environmentFacts: () => Promise<readonly EnvironmentFact[]>;
+    /**
+     * pre-alpha3 W3-A (review fix F1, guide §2.3) — the per-TEMPLATE scope
+     * facts port (the live provider's template-boundary feed). Present in the
+     * production host entry world; ABSENT in factory worlds (the gate
+     * evaluates every scope against the single `environmentFacts` array —
+     * the legacy behavior, byte-identical).
+     */
+    readonly templateEnvironmentFacts?: (templateId: string) => Promise<readonly EnvironmentFact[]>;
     /** The deterministic clock (ISO-8601). */
     readonly now: () => string;
     /** The live Root input delivery port (the glue's `deliverRootWork`). */

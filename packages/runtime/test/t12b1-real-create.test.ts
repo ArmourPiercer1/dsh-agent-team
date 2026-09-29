@@ -37,6 +37,7 @@ import {
 import * as hostEntry from '../src/plugin/host.js'
 import type { TeamPluginHostContext } from '../src/plugin/host.js'
 import { stubGlueUrl } from './p8s5a-artifacts.mjs'
+import { agentPresetsStandardDouble } from './agent-presets-double.mjs'
 import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js'
 
 // --- the fixture identities -----------------------------------------------------
@@ -139,6 +140,9 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
     // world does not exercise the attach port).
     workspaceRegistry: { list: () => [], resolveByPath: async () => undefined },
     teamStorageSeam: seam,
+    // pre-alpha3 W3-A (F1): the agentPresets service double (W2-A fail-closed
+    // contract — service-absent worlds without a row preset id no longer bind).
+    agentPresets: agentPresetsStandardDouble(),
   }
   return {
     ctx: {

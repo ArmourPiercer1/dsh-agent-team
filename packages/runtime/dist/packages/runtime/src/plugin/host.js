@@ -80,6 +80,15 @@ import { MEMBER_LIVENESS, OBSERVATION_SOURCES, PROBE_VERDICTS, assertCapabilityR
 // live environment source for the RequirementAuthority).
 import { createProductionPersonaObserver, resolveRuntimeSubstrate, } from '../../agent-setup/preset/index.js';
 import { createRuntimeRequirementFactsProvider } from '../../requirement-facts/index.js';
+// pre-alpha3 W3-A (review fix F1) regression fix: the SHIPPED-STATE persona
+// observation + the deployment-default preset id — the service-absent
+// fallback for the live production substrate (see the `personaObserver`
+// wrapper + `resolveSubstratePlan` below). A test-world host entry that
+// does not provide the DSH `agentPresets` public service falls back to the
+// base pre-W3-A shipped-state substrate; real production (service present)
+// keeps the W2-A F14 live probe + its fail-closed typed `unresolved`
+// contract.
+import { SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID, shippedStatePersonaObserver, } from '../../requirements/observed-persona.js';
 import { TEAM_ARTIFACT_AUTHORITY_SERVICE } from './artifact-grant-bridge.js';
 import { parseBlueprint } from '../../../domain/blueprint/src/index.js';
 import { createTeamProductionRoot } from './root.js';
@@ -670,7 +679,27 @@ export async function apply(ctx, config) {
             throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING, `the "agentPresets" readDocument returned a malformed document for preset '${presetId}' — the declared composition cannot be read (fail closed: a typed unresolved observation, never a shipped-state guess)`);
         },
     };
-    const personaObserver = createProductionPersonaObserver(personaSeamMirror);
+    const livePersonaObserver = createProductionPersonaObserver(personaSeamMirror);
+    // pre-alpha3 W3-A (review fix F1) regression fix — the service-absent
+    // fallback for the live production persona observer. The W2-A F14 live
+    // probe is only meaningful when the DSH `agentPresets` public service is
+    // present (real production); a test-world host entry that does not provide
+    // the service (or a row without a root preset id) would otherwise observe
+    // a typed `unresolved` and fail the bind closed. Such a service-absent
+    // world falls back to the SHIPPED-STATE persona observation (the base
+    // pre-W3-A substrate — the deployment default's composable `standard`
+    // persona, a pure deployment-knowledge observation with no probe to
+    // await). Real production (service present) keeps the live probe and its
+    // fail-closed typed `unresolved` contract, byte-for-byte.
+    const personaObserver = {
+        observe: (presetId) => {
+            const svc = ctx.get('agentPresets');
+            if (svc === undefined || svc === null) {
+                return Promise.resolve(shippedStatePersonaObserver(presetId));
+            }
+            return livePersonaObserver.observe(presetId);
+        },
+    };
     // alpha.2 (A6 live fix V1-1): the per-agent `fs` seam accessor (served to
     // the glue under its `fsBackend` deps key): resolved per call via the
     // row's STRICT `ctx.get('fs')` (the global service store — the host
@@ -1034,9 +1063,18 @@ export async function apply(ctx, config) {
             if (settledSubstratePlan !== undefined)
                 return settledSubstratePlan;
             const svc = ctx.get('agentPresets');
+            // pre-alpha3 W3-A (review fix F1) regression fix — the service-absent
+            // fallback for the deployment default preset id. The W2-A F14 contract
+            // is: read the default LAZILY from the live service's `defaultId` getter
+            // (real production). A service-absent world (a test-world host entry that
+            // does not provide the DSH `agentPresets` public service) falls back to
+            // the SHIPPED-STATE deployment default (the base pre-W3-A substrate)
+            // instead of failing closed with "no root preset authority" — the same
+            // fallback the base `resolveRuntimeSubstrate` call used. Real production
+            // (service present, a `defaultId`) keeps the live value, byte-for-byte.
             const deploymentDefaultPresetId = svc !== undefined && svc !== null && typeof svc.defaultId === 'string' && svc.defaultId !== ''
                 ? svc.defaultId
-                : undefined;
+                : SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID;
             const plan = await resolveRuntimeSubstrate({
                 rootPresetId: resolvedRowConfig.rootPresetId,
                 memberPresetId: resolvedRowConfig.memberPresetId,
@@ -1641,6 +1679,17 @@ export async function apply(ctx, config) {
         },
         get config() {
             return requireRoot().config;
+        },
+        // pre-alpha3 W3-B (review fix F7, guide §6): the production
+        // requirement-fact writers (the durable consent grant + the template
+        // disable/enable) — the human resolution channel of the creation
+        // preflight. The root is assigned BEFORE the boot, so the getter
+        // stays live even when the boot create's preflight REFUSES the bind
+        // (a boot failure is terminal — the human resolves through THIS
+        // channel and re-drives the row's boot; the writer's facts are
+        // durable + restart-proof).
+        get requirementAuthority() {
+            return requireRoot().requirementAuthority;
         },
         get remote() {
             return remoteMountState;

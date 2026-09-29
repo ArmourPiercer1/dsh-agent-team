@@ -56,6 +56,7 @@ import {
   validateActionRequest,
   workExecutionModeOf,
 } from '../admission/index.js'
+import { ACTION_IMPACT_CLASSES } from '../requirements/index.js'
 import type {
   RuntimeActionEffect,
   TeamRuntime,
@@ -161,6 +162,29 @@ function newWorkTargetTemplateId(
         String(request.delegationInstanceId),
       )
       return member !== undefined ? String(member.templateId) : undefined
+    }
+    return undefined
+  }
+  // pre-alpha3 W3-D (review fix F9, guide §8): send-message is a cross-agent
+  // execution trigger — its work targets the RECIPIENT's template (the wake
+  // delivers input to that member). The gate then blocks the trigger if the
+  // recipient's template scope (or the team scope) is down.
+  if (request.action === 'send-message') {
+    const recipientInstanceId = request.payload?.['recipientInstanceId']
+    if (recipientInstanceId !== undefined) {
+      // The lookup is a BEST-EFFORT template reference for the gate: an
+      // unresolvable / malformed recipient token must NOT pre-empt the
+      // effect's addressing rejection (resolveInstanceToken raises
+      // ACTION_ADDRESSING_REJECTED) with a domain parse error.
+      try {
+        const recipient = repositories.memberInstances.get(
+          resolved.rootSessionId,
+          String(recipientInstanceId),
+        )
+        return recipient !== undefined ? String(recipient.templateId) : undefined
+      } catch {
+        return undefined
+      }
     }
     return undefined
   }
@@ -370,10 +394,26 @@ export function createTeamRuntime(
             requestId: record.requestId,
             reason: String(waitError.code),
           })
-        } catch {
-          // Best-effort bookkeeping: a concurrent abandon/close is not a
-          // new fault class — the zero-effect typed outcome below stands
-          // on the wait failure itself.
+        } catch (abandonError) {
+          // pre-alpha3 W3-E (review fix F2, guide §3): NO best-effort
+          // swallow. A REAL durable-commit failure of the abandon (the
+          // `allocateSequence()` fail / ledger `put()` fail / domain-closed /
+          // duplicate-identity) must propagate the typed close/storage
+          // failure — the abandon did NOT land, so we must NOT claim
+          // `abandoned` (the request is still PENDING and later resolvable).
+          // The ONE tolerated outcome is a CONCURRENT abandon (the request
+          // was already abandoned — `CONTROL_REQUEST_ABANDONED`): the
+          // terminal mark is already durable, so the zero-effect typed
+          // outcome below stands (keep the claim).
+          if (
+            isControlError(abandonError) &&
+            abandonError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED
+          ) {
+            // Concurrent abandon: the terminal mark is already durable — keep
+            // the claim (the zero-effect typed outcome below stands).
+          } else {
+            throw abandonError
+          }
         }
         throw new TeamRuntimeError(
           TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
@@ -491,7 +531,20 @@ export function createTeamRuntime(
       ...(resolved.target !== undefined ? { target: resolved.target } : {}),
     }
     let staged: RuntimeActionEffect | WorkChainStage
-    if (isNewWorkAdmission(spec)) {
+    // pre-alpha3 W3-D (review fix F9, guide §8): the REQUIREMENT GATE is
+    // consulted not only for the new-work admissions (follow-up / delegate /
+    // create-member) but ALSO for the CROSS-AGENT EXECUTION TRIGGER
+    // (send-message — classified by effect, the wake delivers work a downed
+    // scope cannot serve). The trigger is gated on the SAME scopes the action
+    // was admitted with (Team + the recipient's template); the `gateAction`
+    // blocks it if ANY evaluated scope is down. A recovery re-run of the
+    // trigger (the `recovery` marker → `recoveryWork` impact) is allowed and
+    // escalates the wake to synchronous Human Review via the same
+    // `dispatchRecoveryIfOffered` inline coupling below.
+    if (
+      isNewWorkAdmission(spec) ||
+      impact.impact === ACTION_IMPACT_CLASSES.crossAgentTrigger
+    ) {
       try {
         staged = await withTeamLock(teamLocks, rootSessionId, async () => {
           // The gate re-reads the environment-facts port itself (a fresh
@@ -503,6 +556,9 @@ export function createTeamRuntime(
               blueprint,
               rootSessionId,
               environmentFacts: () => options.environmentFacts(),
+              ...(options.templateEnvironmentFacts !== undefined
+                ? { templateEnvironmentFacts: options.templateEnvironmentFacts }
+                : {}),
               ...(options.now !== undefined ? { now: options.now } : {}),
             },
             impact,

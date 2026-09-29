@@ -39,4 +39,14 @@ export declare function diagnosticImpact(scopeRefs?: readonly RequirementScope[]
 export declare function lifecycleImpact(scopeRefs?: readonly RequirementScope[]): ActionImpact;
 /** A pure coordination impact (list, follow-up message, progress). Always allowed. */
 export declare function coordinationImpact(scopeRefs?: readonly RequirementScope[]): ActionImpact;
+/**
+ * pre-alpha3 W3-D (review fix F9, guide §8) — a cross-agent execution
+ * trigger impact. The action delivers input to another agent (the recipient
+ * is woken / handed work). The gate consults EVERY scope the triggering
+ * action was evaluated against and blocks if ANY is down — the trigger
+ * would deliver work a downed scope cannot serve. The scopeRefs are the
+ * SAME refs the action was admitted with (the gate's evaluated scopes), NOT
+ * a new reference set.
+ */
+export declare function crossAgentTriggerImpact(scopeRefs?: readonly RequirementScope[]): ActionImpact;
 //# sourceMappingURL=action-impact.d.ts.map
