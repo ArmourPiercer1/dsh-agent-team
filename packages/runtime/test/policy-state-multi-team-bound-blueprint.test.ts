@@ -1,14 +1,23 @@
 /**
  * pre-alpha3 W1 fix-A (F11, review fix guide §10) — the Remote
  * `policyState.get` / `policyState.set` closed set is the ADDRESSED
- * team's BOUND Blueprint (the durable TeamSession's bound snapshot
- * resolved through the catalog), NEVER the host boot Blueprint:
+ * team's BOUND Blueprint — the production three-case resolver contract
+ * (src/plugin/bound-blueprint.ts): a BOUND ref resolves through the
+ * catalog authority and is NEVER the host boot Blueprint (an
+ * unresolvable ref or a content hash the catalog cannot reproduce
+ * fails typed — the anchor is not consulted); a no-ref pre-repair
+ * legacy row resolves to the row anchor BY DEFINITION (the documented
+ * legacy binding — legacy rows predate per-team binding), not by
+ * fallback:
  *
  *  World: one host, boot root A (bound BP-A with policyStates A1/A2) and
  *  an owned root B (bound BP-B with policyStates B1/B2). The surface is
  *  the real s6-remote dispatcher over the REAL governance mutation
- *  service (per-root bound closed set — the same per-root authority the
- *  production root wires, root.ts `policyStates` dep). The host boot
+ *  service (per-root bound closed set — a mirror of the production
+ *  three-case resolver contract the root.ts `policyStates` dep resolves
+ *  against; the REAL production wiring — extracted factory + real
+ *  authority + real rows — is driven by the
+ *  policy-state-bound-blueprint-production-wiring suite). The host boot
  *  Blueprint (options.blueprint = BP-A) is deliberately present so the
  *  old boot-Blueprint precheck world would DISAGREE with the pinned
  *  behavior: the old Remote precheck would have REJECTED B2 on B (A2
@@ -146,10 +155,18 @@ for (const row of [
 }
 
 /**
- * The per-root BOUND Blueprint resolver (the SAME per-root authority the
- * production service dep resolves against: the durable TeamSession's
- * bound snapshot through the catalog, fail-closed on a missing row or a
- * content hash the catalog cannot reproduce — NEVER a boot fallback).
+ * The per-root BOUND Blueprint resolver — a MIRROR of the production
+ * three-case contract (src/plugin/bound-blueprint.ts, the resolver the
+ * root.ts `policyStates` dep resolves against): missing row → throw
+ * (fail closed); a no-ref pre-repair legacy row → the row anchor BY
+ * DEFINITION (the documented legacy binding); a bound ref → the
+ * catalog's resolution, fail-closed typed — and the anchor is NEVER
+ * consulted for a bound ref. This world exercises the BOUND-REF case
+ * only (both rows carry a ref), so the mirror implements the missing-
+ * row throw + the bound-ref hash check; the no-ref legacy case and the
+ * REAL factory + real authority wiring are driven by the
+ * policy-state-bound-blueprint-production-wiring suite (the extracted
+ * production resolver, not a hand-written mirror).
  */
 function boundFor(rootSessionId: string): TeamBlueprint {
   const row = sessionRows.get(rootSessionId)

@@ -839,9 +839,16 @@ export function createS6RemotePorts(options) {
     /**
      * TCM vNext §15.8 (G1) — the gate blueprint of the TARGET team (the v2
      * `team.admitInitialWork` is team-scoped: the created team already
-     * exists): the durable TeamSession's bound snapshot ref resolved
-     * through the catalog. A content hash the catalog cannot reproduce is
-     * the existing typed blueprint mismatch (fail-closed before the gate).
+     * exists): the durable TeamSession's bound snapshot ref resolved under
+     * the same three-case bound-Blueprint contract as the production
+     * resolver (bound-blueprint.ts): a missing row fails closed typed; a
+     * no-ref pre-repair legacy row resolves to the row anchor BY
+     * DEFINITION (the documented legacy binding — legacy rows predate
+     * per-team binding, so the anchor IS their bound blueprint, not a
+     * fallback to a different one); a bound ref resolves through the
+     * catalog, and a content hash the catalog cannot reproduce is the
+     * existing typed blueprint mismatch (fail-closed before the gate —
+     * the anchor is NEVER consulted for a bound ref).
      */
     function resolveTargetBlueprint(rootSessionId) {
         const row = repositories.teamSessions.get(rootSessionId);
@@ -850,6 +857,12 @@ export function createS6RemotePorts(options) {
             throw new TeamPluginError(TEAM_RUNTIME_ERROR_CODES.TEAM_SESSION_NOT_FOUND, `no durable TeamSession for root "${rootSessionId}" — team.admitInitialWork addresses an existing team`, { reason: 'team-session-not-found' });
         }
         const snapshot = row.blueprint;
+        if (snapshot === undefined) {
+            // No-ref pre-repair legacy row: its bound blueprint is the row
+            // anchor BY DEFINITION (case 2 of the three-case contract — the
+            // documented legacy binding, not a boot fallback).
+            return blueprint;
+        }
         const resolved = resolveBlueprint(String(snapshot.blueprintId), Number(snapshot.revision));
         if (String(resolved.contentHash) !== String(snapshot.contentHash)) {
             throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_CREATE_BLUEPRINT_MISMATCH, `the durable TeamSession of root "${rootSessionId}" carries blueprint '${String(snapshot.blueprintId)}' (revision '${String(snapshot.revision)}') with a content hash the catalog cannot reproduce`, { reason: 'blueprint-hash-mismatch' });
@@ -1546,14 +1559,17 @@ export function createS6RemotePorts(options) {
                 // member actor still fails UNAUTHORIZED_TRANSITION (switchState).
                 // pre-alpha3 W1 fix-A (F11): the closed set is the ADDRESSED
                 // team's bound Blueprint — the durable TeamSession's bound
-                // snapshot resolved through the catalog (the SAME per-root
-                // authority the Governance service's closed-set check resolves
-                // against), NEVER the host boot Blueprint: on a multi-team host
-                // the boot team's policyStates are not the addressed team's
-                // (the Remote precheck world must equal the Governance world).
-                // A missing row / a content hash the catalog cannot reproduce
-                // fails closed typed (the resolveTargetBlueprint vocabulary) —
-                // never a boot-Blueprint fallback.
+                // snapshot resolved under the production three-case contract
+                // (bound-blueprint.ts, the SAME per-root authority the
+                // Governance service's closed-set check resolves against): a
+                // BOUND ref NEVER consults the host boot Blueprint (on a
+                // multi-team host the boot team's policyStates are not the
+                // addressed team's — the Remote precheck world must equal the
+                // Governance world); an unresolvable ref / a content hash the
+                // catalog cannot reproduce fails closed typed (the
+                // resolveTargetBlueprint vocabulary); a no-ref pre-repair
+                // legacy row IS the row anchor by definition (the documented
+                // legacy binding, not a fallback to a different blueprint).
                 const bound = resolveTargetBlueprint(root);
                 const closedStates = new Set([
                     DEFAULT_POLICY_STATE_ID,
@@ -1576,14 +1592,19 @@ export function createS6RemotePorts(options) {
                 // closed-set check is the Governance service's authority,
                 // resolved per root against the ADDRESSED team's bound Blueprint
                 // (the durable TeamSession's bound snapshot — the S6 service
-                // deps' per-root policyStates), NEVER the host boot Blueprint:
-                // on a multi-team host a boot-Blueprint precheck world would
-                // DISAGREE with the Governance world (an addressed-legal state
-                // absent from the boot team's policyStates rejected at the wire,
-                // a boot-legal state outside the addressed team accepted at the
-                // wire). An unknown state now surfaces as the service's typed
-                // POLICY_STATE_UNKNOWN (a closed backing code — dispatcher
-                // invariant 4b pass-through).
+                // deps' per-root policyStates) under the production three-case
+                // contract (bound-blueprint.ts): a BOUND ref NEVER consults the
+                // host boot Blueprint — on a multi-team host a boot-Blueprint
+                // precheck world would DISAGREE with the Governance world (an
+                // addressed-legal state absent from the boot team's policyStates
+                // rejected at the wire, a boot-legal state outside the addressed
+                // team accepted at the wire); a no-ref pre-repair legacy row IS
+                // the row anchor by definition (the documented legacy binding,
+                // not a fallback to a different blueprint). An unknown state now
+                // surfaces as the service's typed POLICY_STATE_UNKNOWN (a closed
+                // backing code — dispatcher invariant 4b pass-through); a bound
+                // ref the authority cannot reproduce surfaces as the service's
+                // typed POLICY_STATE_SNAPSHOT_MISMATCH (same pass-through).
                 if (typeof stateId !== 'string') {
                     throw new TeamPluginError(S6_REMOTE_ERROR_CODES.POLICY_STATE_UNKNOWN, `policyState.set target carries a non-string stateId (${String(stateId)})`, { reason: 'malformed-state', stateId: String(stateId) });
                 }

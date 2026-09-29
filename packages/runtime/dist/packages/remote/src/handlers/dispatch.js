@@ -162,7 +162,11 @@ export const REMOTE_BACKING_ERROR_CODES = [
     // runtime/mutation — the mutation service codes (pre-alpha3 PR-A: the
     // governance mutation authority reuses this vocabulary — the envelope
     // rejection codes (frozen-domain strings) and the service-level
-    // POLICY_STATE_UNKNOWN join the closed wire vocabulary)
+    // POLICY_STATE_UNKNOWN join the closed wire vocabulary; pre-alpha3 W1a
+    // review round 2: the service-level POLICY_STATE_SNAPSHOT_MISMATCH
+    // (the bound-Blueprint content-hash mismatch, mapped from the raw
+    // authority TEAM_BLUEPRINT_SNAPSHOT_MISMATCH at the governance service
+    // boundary — the raw code is deliberately NOT a wire code) joins it)
     'MALFORMED_MUTATION_INPUT',
     'EXTERNAL_HARD_REJECTED',
     'UNAUTHORIZED_TRANSITION',
@@ -174,6 +178,7 @@ export const REMOTE_BACKING_ERROR_CODES = [
     'MEMBER_SELF_ESCALATION',
     'LEADER_OUT_OF_ENVELOPE',
     'POLICY_STATE_UNKNOWN',
+    'POLICY_STATE_SNAPSHOT_MISMATCH',
     // runtime/handoff — HANDOFF_* (the handoff service)
     'HANDOFF_REQUEST_MALFORMED',
     'HANDOFF_SOURCE_SURFACE_UNAVAILABLE',
