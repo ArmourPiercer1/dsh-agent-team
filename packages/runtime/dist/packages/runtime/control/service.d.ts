@@ -30,28 +30,60 @@
  * - `control-decision-recorded` — one ControlDecision row per request
  *   (at most one; the first decision is authoritative);
  * - `control-allow-consumed`    — the exactly-once consumption of an
- *   allow by the last-mile guard.
+ *   allow by the last-mile guard;
+ * - `control-request-abandoned` — the ADDITIVE close fact of the inline
+ *   coupling (pre-alpha3 PR-D, D.4): durably closes an inline request on
+ *   abort (payload: requestId, rootSessionId, abandonedAt, reason?). The
+ *   append-only ledger has no delete primitive — the request row is
+ *   never physically removed; the abandon fact is the TERMINAL mark
+ *   (like `stale-denied`): the request can never become an allow, and
+ *   the last-mile guard blocks over it even with a durable allow
+ *   recorded before the abandon.
  *
  * Scope model (types.ts): an allow authorizes EXACTLY
- * `(rootSessionId, targetInstanceId, actionName, toolName?,
- * capabilityDomain?, correlation, operationFingerprint?)` and is
- * CONSUMED EXACTLY ONCE. The operation fingerprint is OPTIONAL (legacy
- * rows never carry it); when present it binds the approval to the exact
- * resource + payload impact identity and participates in the scope
- * identity and the request idempotency key — it is NOT a correlation
- * substitute (a new correlation under the same fingerprint is a new
- * request; the same correlation under a different fingerprint is a
- * different request and must never reuse the other's request/approval).
+ * `(rootSessionId, subject, actionName, toolName?, capabilityDomain?,
+ * correlation, operationFingerprint?)` and — in the GUARDED coupling —
+ * is CONSUMED EXACTLY ONCE. The CANONICAL subject (pre-alpha3 PR-D,
+ * D.2) is the closed three-kind `instance | template | team`: the scope
+ * key's second element is the SUBJECT id (instance → instanceId,
+ * template → templateId, team → rootSessionId). `targetInstanceId` is
+ * KEPT (additive) as the legacy read-compatibility projection of an
+ * INSTANCE subject: a durable row / scope carrying `targetInstanceId`
+ * but NO explicit `subject` parses to
+ * `{ kind: 'instance', instanceId: targetInstanceId }`, so a legacy
+ * instance row recomputes the EXACT same scope key it always had
+ * (byte-identical semantics, no migration). The operation fingerprint is
+ * OPTIONAL (legacy rows never carry it); when present it binds the
+ * approval to the exact resource + payload impact identity and
+ * participates in the scope identity and the request idempotency key —
+ * it is NOT a correlation substitute (a new correlation under the same
+ * fingerprint is a new request; the same correlation under a different
+ * fingerprint is a different request and must never reuse the other's
+ * request/approval).
  *
- * Request idempotency: the scope key `(root, targetInstanceId, actionName,
+ * Request idempotency: the scope key `(root, subjectId, actionName,
  * toolName|absent, correlation, operationFingerprint|absent)` identifies
  * the logical request; a retried request returns the EXISTING row
  * (regardless of requester); a NEW attempt after an allow was consumed
  * (or after a deny) must carry a NEW correlation and creates a NEW
  * request (no reuse).
  *
+ * The two execution couplings (pre-alpha3 PR-D, D.3/D.4): `guarded`
+ * (ABSENT on the row = legacy, the existing flow: request → wait →
+ * decision → guard → consume → execute — UNCHANGED) and `inline`
+ * (request → wait → decision; on `allow` the current frozen invocation
+ * continues — NO `control-allow-consumed` fact is written, the allow is
+ * not consumed by a guard; on `deny` zero effect; on `abort`
+ * `abandonControlRequest` durably records the abandon fact — the
+ * request state is DERIVED: `pending | decided | abandoned`, the
+ * abandon fact wins as the terminal mark).
+ *
  * Stale semantics (fail closed; the append-only ledger has no "mark"
- * primitive, so the decision row IS the mark):
+ * primitive, so the decision row IS the mark). These apply to INSTANCE
+ * subjects ONLY (pre-alpha3 PR-D, D.2: the instance stale validator
+ * branches on the subject kind — a template or team subject has no
+ * instance lifecycle, so it can NEVER be killed by the instance stale
+ * check):
  * - request time: a DISPOSED target → CONTROL_TARGET_STALE (zero rows; a
  *   missing target is the facade's INSTANCE_NOT_FOUND); an ARCHIVED
  *   target is tolerated (it can be restored);

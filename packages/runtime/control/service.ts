@@ -30,28 +30,60 @@
  * - `control-decision-recorded` — one ControlDecision row per request
  *   (at most one; the first decision is authoritative);
  * - `control-allow-consumed`    — the exactly-once consumption of an
- *   allow by the last-mile guard.
+ *   allow by the last-mile guard;
+ * - `control-request-abandoned` — the ADDITIVE close fact of the inline
+ *   coupling (pre-alpha3 PR-D, D.4): durably closes an inline request on
+ *   abort (payload: requestId, rootSessionId, abandonedAt, reason?). The
+ *   append-only ledger has no delete primitive — the request row is
+ *   never physically removed; the abandon fact is the TERMINAL mark
+ *   (like `stale-denied`): the request can never become an allow, and
+ *   the last-mile guard blocks over it even with a durable allow
+ *   recorded before the abandon.
  *
  * Scope model (types.ts): an allow authorizes EXACTLY
- * `(rootSessionId, targetInstanceId, actionName, toolName?,
- * capabilityDomain?, correlation, operationFingerprint?)` and is
- * CONSUMED EXACTLY ONCE. The operation fingerprint is OPTIONAL (legacy
- * rows never carry it); when present it binds the approval to the exact
- * resource + payload impact identity and participates in the scope
- * identity and the request idempotency key — it is NOT a correlation
- * substitute (a new correlation under the same fingerprint is a new
- * request; the same correlation under a different fingerprint is a
- * different request and must never reuse the other's request/approval).
+ * `(rootSessionId, subject, actionName, toolName?, capabilityDomain?,
+ * correlation, operationFingerprint?)` and — in the GUARDED coupling —
+ * is CONSUMED EXACTLY ONCE. The CANONICAL subject (pre-alpha3 PR-D,
+ * D.2) is the closed three-kind `instance | template | team`: the scope
+ * key's second element is the SUBJECT id (instance → instanceId,
+ * template → templateId, team → rootSessionId). `targetInstanceId` is
+ * KEPT (additive) as the legacy read-compatibility projection of an
+ * INSTANCE subject: a durable row / scope carrying `targetInstanceId`
+ * but NO explicit `subject` parses to
+ * `{ kind: 'instance', instanceId: targetInstanceId }`, so a legacy
+ * instance row recomputes the EXACT same scope key it always had
+ * (byte-identical semantics, no migration). The operation fingerprint is
+ * OPTIONAL (legacy rows never carry it); when present it binds the
+ * approval to the exact resource + payload impact identity and
+ * participates in the scope identity and the request idempotency key —
+ * it is NOT a correlation substitute (a new correlation under the same
+ * fingerprint is a new request; the same correlation under a different
+ * fingerprint is a different request and must never reuse the other's
+ * request/approval).
  *
- * Request idempotency: the scope key `(root, targetInstanceId, actionName,
+ * Request idempotency: the scope key `(root, subjectId, actionName,
  * toolName|absent, correlation, operationFingerprint|absent)` identifies
  * the logical request; a retried request returns the EXISTING row
  * (regardless of requester); a NEW attempt after an allow was consumed
  * (or after a deny) must carry a NEW correlation and creates a NEW
  * request (no reuse).
  *
+ * The two execution couplings (pre-alpha3 PR-D, D.3/D.4): `guarded`
+ * (ABSENT on the row = legacy, the existing flow: request → wait →
+ * decision → guard → consume → execute — UNCHANGED) and `inline`
+ * (request → wait → decision; on `allow` the current frozen invocation
+ * continues — NO `control-allow-consumed` fact is written, the allow is
+ * not consumed by a guard; on `deny` zero effect; on `abort`
+ * `abandonControlRequest` durably records the abandon fact — the
+ * request state is DERIVED: `pending | decided | abandoned`, the
+ * abandon fact wins as the terminal mark).
+ *
  * Stale semantics (fail closed; the append-only ledger has no "mark"
- * primitive, so the decision row IS the mark):
+ * primitive, so the decision row IS the mark). These apply to INSTANCE
+ * subjects ONLY (pre-alpha3 PR-D, D.2: the instance stale validator
+ * branches on the subject kind — a template or team subject has no
+ * instance lifecycle, so it can NEVER be killed by the instance stale
+ * check):
  * - request time: a DISPOSED target → CONTROL_TARGET_STALE (zero rows; a
  *   missing target is the facade's INSTANCE_NOT_FOUND); an ARCHIVED
  *   target is tolerated (it can be restored);
@@ -136,8 +168,14 @@
 
 import {
   LEADER_INSTANCE_ID,
+  isRemoteSafeJsonValue,
   parseInstanceId,
   parseRootSessionId,
+  parseTemplateId,
+} from '../../contracts/src/index.js'
+import type {
+  MemberInstanceRecordDto,
+  RemoteSafeJsonValue,
 } from '../../contracts/src/index.js'
 import {
   CAPABILITY_NAME_VALUES,
@@ -148,6 +186,7 @@ import type {
   PolicyEntry,
 } from '../../domain/policy/src/index.js'
 import {
+  CALLER_ROLES,
   TEAM_RUNTIME_ERROR_CODES,
   TeamRuntimeError,
   ACTION_NAMES,
@@ -178,24 +217,30 @@ import {
   CONTROL_DECISION_REASON_VALUES,
   CONTROL_DECISION_VALUES,
   CONTROL_DECISION_VALUE_VALUES,
+  CONTROL_EXECUTION_COUPLINGS,
+  CONTROL_EXECUTION_COUPLING_VALUES,
   CONTROL_GUARD_BLOCK_REASONS,
   CONTROL_REQUEST_KINDS,
   CONTROL_REQUEST_KIND_VALUES,
   CONTROL_RESOLVER_ROLES,
+  CONTROL_SUBJECT_KINDS,
 } from './types.js'
 import type {
+  ControlAbandonmentRecord,
   ControlCallerRef,
   ControlConsumptionRecord,
   ControlDecisionRecord,
   ControlDecisionReason,
   ControlDecisionValue,
   ControlExternalVerdict,
+  ControlExecutionCoupling,
   ControlGuardVerdict,
   ControlOperationScope,
   ControlRequestKind,
   ControlRequestRecord,
   ControlService,
   ControlServiceOptions,
+  ControlSubject,
   ControlWaitSignal,
 } from './types.js'
 
@@ -207,6 +252,9 @@ const FACT_REQUEST = 'control-request-recorded'
 const FACT_DECISION = 'control-decision-recorded'
 /** The durable allow-consumption fact family (the exactly-once evidence). */
 const FACT_CONSUMPTION = 'control-allow-consumed'
+/** The durable abandon fact family (pre-alpha3 PR-D, D.4 — the additive
+ *  close of an inline-coupling request on abort; the terminal mark). */
+const FACT_ABANDONMENT = 'control-request-abandoned'
 
 /** The reused closed specs of the facade action registry (module
  *  invariant: the closed registry always carries both). */
@@ -234,6 +282,12 @@ const TERMINAL_LIFECYCLE = 'DISPOSED'
  *  so the low end minimizes decision latency at negligible cost). */
 const DEFAULT_WAIT_POLL_INTERVAL_MS = 250
 
+/** The closed abandonment reason the wait-bridge's inline-abort cascade
+ *  records when an INLINE-coupling request's frozen invocation aborts
+ *  (pre-alpha3 PR-D, D.4 — the inline lifecycle's `abort` node:
+ *  `abort → durable abandon/close → zero effect`). */
+const WAIT_ABORT_ABANDON_REASON = 'wait-aborted'
+
 /** The minimal platform-timer surface the wait bridge schedules on
  *  (alpha.2 §9.4). The codebase builds against `lib: ES2022` WITHOUT
  *  ambient DOM/Node globals (tsconfig.base.json), so the platform timer
@@ -251,7 +305,15 @@ interface RequestPayload {
   readonly requestId: string
   readonly kind: ControlRequestKind
   readonly requester: ControlCallerRef
-  readonly targetInstanceId: string
+  /** The CANONICAL subject (pre-alpha3 PR-D, D.2): the parser ALWAYS
+   *  produces one — an explicit durable `subject` is used as-is; a
+   *  legacy row (targetInstanceId only, no explicit subject) parses to
+   *  the instance subject (byte-identical semantics). */
+  readonly subject: ControlSubject
+  /** The legacy read-compatibility projection of an INSTANCE subject
+   *  (present for instance rows — explicit or legacy; ABSENT for
+   *  template/team subjects). */
+  readonly targetInstanceId?: string
   readonly actionName: string
   readonly toolName?: string
   readonly capabilityDomain?: CapabilityName
@@ -260,6 +322,15 @@ interface RequestPayload {
    *  (alpha.2 exact-scope extension; legacy rows never carry it). */
   readonly operationFingerprint?: string
   readonly summary?: string
+  /** The lossless-JSON review payload (pre-alpha3 PR-D, D.3; legacy
+   *  rows never carry it — ABSENT = legacy semantics). */
+  readonly reviewPayload?: RemoteSafeJsonValue
+  /** The stable digest of the review payload (D.3; requires the
+   *  payload to be present). */
+  readonly reviewPayloadDigest?: string
+  /** The execution coupling (D.3/D.4; legacy rows never carry it —
+   *  ABSENT = the legacy guarded flow). */
+  readonly executionCoupling?: ControlExecutionCoupling
 }
 
 /** The `control-decision-recorded` payload. */
@@ -281,11 +352,41 @@ interface ConsumptionPayload {
   readonly consumedAt: string
 }
 
+/** The `control-request-abandoned` payload (pre-alpha3 PR-D, D.4 — the
+ *  additive close fact; the append-only ledger has no delete primitive). */
+interface AbandonmentPayload {
+  readonly requestId: string
+  readonly rootSessionId: string
+  readonly abandonedAt: string
+  readonly reason?: string
+}
+
 /** One ledger entry plus its (validated) payload. */
 interface StoredFact<Payload> {
   readonly entry: LedgerEntry
   readonly payload: Payload
 }
+
+/** The settle outcome of the wait-bridge's coupling-aware inline-abort
+ *  cascade (pre-alpha3 PR-D, D.4):
+ *  - `none`               — the STORED coupling is not exactly `inline`
+ *                            (guarded / ABSENT legacy, or no durable
+ *                            request row): the caller settles EXACTLY as
+ *                            today (zero side effects);
+ *  - `decided`            — a durable decision won the race between the
+ *                            last poll and the signal: resolve the wait
+ *                            with it (the first decision is
+ *                            authoritative; no second terminal mark);
+ *  - `abandoned`          — this cascade durably wrote the terminal mark
+ *                            (reason `wait-aborted`): reject typed;
+ *  - `already-abandoned`  — a concurrent abandon landed first
+ *                            (exactly-once — no second fact): reject
+ *                            typed. */
+type InlineAbortCascadeOutcome =
+  | { readonly kind: 'none' }
+  | { readonly kind: 'decided'; readonly decision: ControlDecisionRecord }
+  | { readonly kind: 'abandoned'; readonly abandonmentSequence: number }
+  | { readonly kind: 'already-abandoned' }
 
 /**
  * The fresh durable state of one team's control plane (point-in-time
@@ -295,6 +396,7 @@ interface ControlState {
   readonly requests: readonly StoredFact<RequestPayload>[]
   readonly decisions: readonly StoredFact<DecisionPayload>[]
   readonly consumptions: readonly StoredFact<ConsumptionPayload>[]
+  readonly abandonments: readonly StoredFact<AbandonmentPayload>[]
 }
 
 // --- pure helpers ---------------------------------------------------------------------
@@ -327,7 +429,95 @@ function parseCallerRef(value: unknown): ControlCallerRef | undefined {
   return undefined
 }
 
+/** Parse a durable canonical subject (pre-alpha3 PR-D, D.2; malformed
+ *  rows are treated as ABSENT — fail closed). Exactly ONE id field is
+ *  admitted, selected by the closed kind: a subject carrying a second
+ *  id field is an AMBIGUOUS identity (malformed input, never a guess). */
+function parseSubject(value: unknown): ControlSubject | undefined {
+  if (!isPlainObject(value)) return undefined
+  const instanceId = value['instanceId']
+  const templateId = value['templateId']
+  const rootSessionId = value['rootSessionId']
+  if (value['kind'] === CONTROL_SUBJECT_KINDS.INSTANCE) {
+    return typeof instanceId === 'string' &&
+      instanceId.length > 0 &&
+      templateId === undefined &&
+      rootSessionId === undefined
+      ? { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId }
+      : undefined
+  }
+  if (value['kind'] === CONTROL_SUBJECT_KINDS.TEMPLATE) {
+    return typeof templateId === 'string' &&
+      templateId.length > 0 &&
+      instanceId === undefined &&
+      rootSessionId === undefined
+      ? { kind: CONTROL_SUBJECT_KINDS.TEMPLATE, templateId }
+      : undefined
+  }
+  if (value['kind'] === CONTROL_SUBJECT_KINDS.TEAM) {
+    return typeof rootSessionId === 'string' &&
+      rootSessionId.length > 0 &&
+      instanceId === undefined &&
+      templateId === undefined
+      ? { kind: CONTROL_SUBJECT_KINDS.TEAM, rootSessionId }
+      : undefined
+  }
+  return undefined
+}
+
+/** The kind-selected subject id (pre-alpha3 PR-D, D.2): instance →
+ *  instanceId, template → templateId, team → rootSessionId. */
+function subjectIdOf(subject: ControlSubject): string {
+  switch (subject.kind) {
+    case CONTROL_SUBJECT_KINDS.INSTANCE:
+      return subject.instanceId
+    case CONTROL_SUBJECT_KINDS.TEMPLATE:
+      return subject.templateId
+    case CONTROL_SUBJECT_KINDS.TEAM:
+      return subject.rootSessionId
+  }
+}
+
+/** The KIND-PREFIXED subject identity that participates in the scope key
+ *  (pre-alpha3 PR-D review B1 / D.2): `${kind}:${subjectIdOf(subject)}`.
+ *
+ *  The prefix makes the three subject kinds DISJOINT in the key. Without
+ *  it, a template id and an instance id that happen to be EQUAL STRINGS
+ *  (both the `inst-abc` shape is a legal instance id AND a legal template
+ *  slug) would alias: with otherwise identical scope fields, a template
+ *  request would recompute the SAME key as an instance request and return
+ *  the existing instance row instead of creating its own. Prefixing the
+ *  kind means the second key element is `instance:<id>` vs
+ *  `template:<id>` vs `team:<id>` — never equal across kinds.
+ *
+ *  Backward compatibility is preserved BEHAVIORALLY: BOTH the new-request
+ *  key and the existing-row lookup recompute through this SAME function,
+ *  so a legacy instance row (subject derived from `targetInstanceId`,
+ *  kind `instance`) still matches an instance request — old durable rows
+ *  stay idempotent. The literal key now carries the `instance:` prefix
+ *  (it is no longer byte-identical to the pre-PR-D string), but no
+ *  observable idempotency or guard-matching behavior changes. */
+function subjectIdentityOf(subject: ControlSubject): string {
+  return `${subject.kind}:${subjectIdOf(subject)}`
+}
+
+/** Do two canonical subjects name the SAME identity (closed kind AND
+ *  kind-selected id)? */
+function subjectsMatch(a: ControlSubject, b: ControlSubject): boolean {
+  return a.kind === b.kind && subjectIdOf(a) === subjectIdOf(b)
+}
+
 /** Parse a durable operation scope. */
+/** Parse a durable operation scope.
+ *
+ *  Subject rule (pre-alpha3 PR-D, D.2): an EXPLICIT durable `subject` is
+ *  canonical (validated; when `targetInstanceId` is ALSO present the two
+ *  must agree — instance kind + equal id); a scope carrying
+ *  `targetInstanceId` but NO explicit `subject` parses to the instance
+ *  subject `{ kind: 'instance', instanceId: targetInstanceId }` (the
+ *  LEGACY identity — byte-identical semantics; the returned scope keeps
+ *  `targetInstanceId` verbatim, so the durable projection is unchanged).
+ */
 function parseScope(value: unknown): ControlOperationScope | undefined {
   if (!isPlainObject(value)) return undefined
   const rootSessionId = value['rootSessionId']
@@ -335,9 +525,28 @@ function parseScope(value: unknown): ControlOperationScope | undefined {
   const actionName = value['actionName']
   const correlation = value['correlation']
   if (typeof rootSessionId !== 'string' || rootSessionId.length === 0) return undefined
-  if (typeof targetInstanceId !== 'string' || targetInstanceId.length === 0) return undefined
   if (typeof actionName !== 'string' || actionName.length === 0) return undefined
   if (typeof correlation !== 'string' || correlation.length === 0) return undefined
+  // The subject: explicit, or derived from targetInstanceId (legacy).
+  let subject: ControlSubject | undefined
+  if (value['subject'] !== undefined) {
+    subject = parseSubject(value['subject'])
+    if (subject === undefined) return undefined
+    if (
+      targetInstanceId !== undefined &&
+      (subject.kind !== CONTROL_SUBJECT_KINDS.INSTANCE || subject.instanceId !== targetInstanceId)
+    ) {
+      // An explicit subject that disagrees with the legacy projection is
+      // an ambiguous identity — fail closed (ABSENT), never a guess.
+      return undefined
+    }
+  } else {
+    if (typeof targetInstanceId !== 'string' || targetInstanceId.length === 0) {
+      // No subject AND no targetInstanceId: no identity element at all.
+      return undefined
+    }
+    subject = { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: targetInstanceId }
+  }
   const toolName = value['toolName']
   if (toolName !== undefined && typeof toolName !== 'string') return undefined
   const capabilityDomain = value['capabilityDomain']
@@ -356,7 +565,10 @@ function parseScope(value: unknown): ControlOperationScope | undefined {
   }
   return {
     rootSessionId,
-    targetInstanceId,
+    subject,
+    ...(typeof targetInstanceId === 'string' && targetInstanceId.length > 0
+      ? { targetInstanceId }
+      : {}),
     actionName,
     correlation,
     ...(toolName !== undefined ? { toolName } : {}),
@@ -367,7 +579,16 @@ function parseScope(value: unknown): ControlOperationScope | undefined {
   }
 }
 
-/** Parse a request payload (malformed rows are treated as ABSENT). */
+/** Parse a request payload (malformed rows are treated as ABSENT).
+ *
+ *  Subject rule (pre-alpha3 PR-D, D.2): an EXPLICIT durable `subject` is
+ *  canonical; a LEGACY row (targetInstanceId only, no explicit subject)
+ *  parses to the instance subject (byte-identical semantics — the old
+ *  targetInstanceId-only identity is preserved). The review-payload
+ *  fields (D.3) are ADDITIVE: ABSENT on legacy rows (legacy semantics),
+ *  and a PRESENT-but-wrong-type value is malformed (ABSENT — fail
+ *  closed).
+ */
 function parseRequestPayload(value: unknown): RequestPayload | undefined {
   if (!isPlainObject(value)) return undefined
   const requestId = value['requestId']
@@ -378,10 +599,29 @@ function parseRequestPayload(value: unknown): RequestPayload | undefined {
   const requester = parseCallerRef(value['requester'])
   if (typeof requestId !== 'string' || requestId.length === 0) return undefined
   if (typeof kind !== 'string' || !CONTROL_REQUEST_KIND_VALUES.includes(kind)) return undefined
-  if (typeof targetInstanceId !== 'string' || targetInstanceId.length === 0) return undefined
   if (typeof actionName !== 'string' || actionName.length === 0) return undefined
   if (typeof correlation !== 'string' || correlation.length === 0) return undefined
   if (requester === undefined) return undefined
+  // The subject: explicit, or derived from targetInstanceId (legacy).
+  let subject: ControlSubject | undefined
+  if (value['subject'] !== undefined) {
+    subject = parseSubject(value['subject'])
+    if (subject === undefined) return undefined
+    if (
+      targetInstanceId !== undefined &&
+      (subject.kind !== CONTROL_SUBJECT_KINDS.INSTANCE || subject.instanceId !== targetInstanceId)
+    ) {
+      // An explicit subject that disagrees with the legacy projection is
+      // an ambiguous identity — fail closed (ABSENT), never a guess.
+      return undefined
+    }
+  } else {
+    if (typeof targetInstanceId !== 'string' || targetInstanceId.length === 0) {
+      // No subject AND no targetInstanceId: no identity element at all.
+      return undefined
+    }
+    subject = { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: targetInstanceId }
+  }
   const toolName = value['toolName']
   if (toolName !== undefined && typeof toolName !== 'string') return undefined
   const capabilityDomain = value['capabilityDomain']
@@ -400,11 +640,36 @@ function parseRequestPayload(value: unknown): RequestPayload | undefined {
   ) {
     return undefined
   }
+  // The additive review-payload fields (pre-alpha3 PR-D, D.3): ABSENT =
+  // legacy semantics; present-but-wrong-type = malformed (fail closed).
+  const reviewPayload = value['reviewPayload']
+  if (reviewPayload !== undefined && !isRemoteSafeJsonValue(reviewPayload)) return undefined
+  const reviewPayloadDigest = value['reviewPayloadDigest']
+  if (
+    reviewPayloadDigest !== undefined &&
+    (typeof reviewPayloadDigest !== 'string' || reviewPayloadDigest.length === 0)
+  ) {
+    return undefined
+  }
+  if (reviewPayloadDigest !== undefined && reviewPayload === undefined) {
+    // A digest of a payload the row does not carry is ambiguous input.
+    return undefined
+  }
+  const executionCoupling = value['executionCoupling']
+  if (
+    executionCoupling !== undefined &&
+    !CONTROL_EXECUTION_COUPLING_VALUES.includes(executionCoupling as string)
+  ) {
+    return undefined
+  }
   return {
     requestId,
     kind: kind as ControlRequestKind,
     requester,
-    targetInstanceId,
+    subject,
+    ...(typeof targetInstanceId === 'string' && targetInstanceId.length > 0
+      ? { targetInstanceId }
+      : {}),
     actionName,
     correlation,
     ...(toolName !== undefined ? { toolName } : {}),
@@ -413,6 +678,32 @@ function parseRequestPayload(value: unknown): RequestPayload | undefined {
       : {}),
     ...(operationFingerprint !== undefined ? { operationFingerprint } : {}),
     ...(summary !== undefined ? { summary } : {}),
+    ...(reviewPayload !== undefined
+      ? { reviewPayload: reviewPayload as RemoteSafeJsonValue }
+      : {}),
+    ...(reviewPayloadDigest !== undefined ? { reviewPayloadDigest } : {}),
+    ...(executionCoupling !== undefined
+      ? { executionCoupling: executionCoupling as ControlExecutionCoupling }
+      : {}),
+  }
+}
+
+/** Parse an abandon payload (malformed rows are treated as ABSENT). */
+function parseAbandonmentPayload(value: unknown): AbandonmentPayload | undefined {
+  if (!isPlainObject(value)) return undefined
+  const requestId = value['requestId']
+  const rootSessionId = value['rootSessionId']
+  const abandonedAt = value['abandonedAt']
+  if (typeof requestId !== 'string' || requestId.length === 0) return undefined
+  if (typeof rootSessionId !== 'string' || rootSessionId.length === 0) return undefined
+  if (typeof abandonedAt !== 'string' || abandonedAt.length === 0) return undefined
+  const reason = value['reason']
+  if (reason !== undefined && typeof reason !== 'string') return undefined
+  return {
+    requestId,
+    rootSessionId,
+    abandonedAt,
+    ...(reason !== undefined ? { reason } : {}),
   }
 }
 
@@ -484,19 +775,32 @@ function isActionCaller(caller: unknown): caller is ActionCaller {
 
 /** The stable logical-request key (the request idempotency identity AND
  *  the scope's durable identity; NUL-separated per the provisioning
- *  identity convention). The optional operation fingerprint, WHEN
- *  PRESENT, participates in the key (alpha.2 exact-scope extension): two
- *  requests identical except for the fingerprint are DIFFERENT logical
- *  requests (different keys, different requestIds, no idempotency
- *  collision — a payload/resource mismatch must never reuse another
- *  operation's request or approval). When ABSENT the key carries an
- *  empty fingerprint segment, which is distinct from any present
- *  fingerprint; legacy rows (fingerprint absent) recompute the SAME key
- *  they always had for their own retries, so old durable rows stay
- *  idempotent under the extended key. */
+ *  identity convention). The second element is the KIND-PREFIXED SUBJECT
+ *  IDENTITY (pre-alpha3 PR-D, D.2 + review B1: `subjectIdentityOf` —
+ *  `instance:<instanceId>` / `template:<templateId>` /
+ *  `team:<rootSessionId>`). The kind prefix makes the three subject kinds
+ *  DISJOINT in the key — an instance id, a template id and a root session
+ *  id that happen to be equal strings can no longer alias across kinds
+ *  (a valid template slug and a valid instance id can both be `inst-abc`).
+ *  For a LEGACY instance row the subject is derived from `targetInstanceId`
+ *  (kind `instance`), so the second element is `instance:<targetInstanceId>`;
+ *  BOTH the new request and the existing-row lookup recompute through the
+ *  SAME `subjectIdentityOf`, so old durable rows stay idempotent —
+ *  behavioral backward compatibility is preserved even though the literal
+ *  key now carries the kind prefix (no longer byte-identical to the
+ *  pre-PR-D string). The optional
+ *  operation fingerprint, WHEN PRESENT, participates in the key (alpha.2
+ *  exact-scope extension): two requests identical except for the
+ *  fingerprint are DIFFERENT logical requests (different keys, different
+ *  requestIds, no idempotency collision — a payload/resource mismatch
+ *  must never reuse another operation's request or approval). When
+ *  ABSENT the key carries an empty fingerprint segment, which is
+ *  distinct from any present fingerprint; legacy rows (fingerprint
+ *  absent) recompute the SAME key they always had for their own
+ *  retries, so old durable rows stay idempotent under the extended key. */
 function scopeKey(
   rootSessionId: string,
-  targetInstanceId: string,
+  subjectIdentity: string,
   actionName: string,
   toolName: string | undefined,
   correlation: string,
@@ -504,7 +808,7 @@ function scopeKey(
 ): string {
   return [
     rootSessionId,
-    targetInstanceId,
+    subjectIdentity,
     actionName,
     toolName ?? '',
     correlation,
@@ -519,12 +823,33 @@ function requestIdOf(key: string): string {
 }
 
 /** Does the durable scope snapshot match the guarded scope EXACTLY? */
+/** Resolve the CANONICAL subject of a scope (pre-alpha3 PR-D, D.2): an
+ *  explicit `subject` wins; ABSENT falls back to the legacy
+ *  `targetInstanceId`-only path (the instance subject — byte-identical
+ *  identity for legacy callers). Returns `undefined` when the scope
+ *  carries neither a subject nor a usable targetInstanceId (the caller
+ *  must fail closed). */
+function resolveSubject(scope: ControlOperationScope): ControlSubject | undefined {
+  if (scope.subject !== undefined) return scope.subject
+  if (typeof scope.targetInstanceId === 'string' && scope.targetInstanceId.length > 0) {
+    return { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: scope.targetInstanceId }
+  }
+  return undefined
+}
+
 function scopeSnapshotMatches(
   recorded: ControlOperationScope,
   guarded: ControlOperationScope,
 ): boolean {
   if (recorded.rootSessionId !== guarded.rootSessionId) return false
-  if (recorded.targetInstanceId !== guarded.targetInstanceId) return false
+  // The canonical SUBJECT identity (pre-alpha3 PR-D, D.2): closed kind
+  // AND kind-selected id. A legacy instance row's subject is derived from
+  // its targetInstanceId, so a legacy guarded scope resolves to the SAME
+  // instance subject — byte-identical matching for old scopes.
+  const recordedSubject = resolveSubject(recorded)
+  const guardedSubject = resolveSubject(guarded)
+  if (recordedSubject === undefined || guardedSubject === undefined) return false
+  if (!subjectsMatch(recordedSubject, guardedSubject)) return false
   if (recorded.actionName !== guarded.actionName) return false
   if (recorded.correlation !== guarded.correlation) return false
   if ((recorded.toolName ?? '') !== (guarded.toolName ?? '')) return false
@@ -552,6 +877,58 @@ function hardCellAllows(entry: PolicyEntry | undefined, toolName: string | undef
   return entry.items.includes(toolName)
 }
 
+/**
+ * The CONTROL INTERNAL close authority (pre-alpha3 review F3): may
+ * `caller` durably ABANDON (close) the request whose durable requester
+ * is `requester`?
+ *
+ * Abandon is deliberately NOT bound to any mutation-envelope op. The
+ * PR-D defect: it reused the `resolve-control` op spec + envelope check,
+ * so a caller that may REQUEST a review (e.g. the Recovery Leader whose
+ * reduced team envelope carries `request-control` but not
+ * `resolve-control`) could never ABANDON its own waiting review — the
+ * only exit was "wait for the human to close". Abandon is a narrow,
+ * closed authority over the caller's RESOLVED role:
+ *
+ * - `human`  → yes (the team owner closes any of the team's requests —
+ *   invariant 34: the human exceeds the team autonomy boundary);
+ * - `leader` → yes (the Leader of the current Team closes any of the
+ *   team's requests — including the review IT REQUESTED in the inline
+ *   recovery-dispatch coupling, whose whole point is that the requester
+ *   gets its own abort back);
+ * - `member` → only the request it requested itself (the requester ref
+ *   is its own instance id — a member may never close a sibling's
+ *   request);
+ * - a SYSTEM CONTINUATION caller (a future detached-continuation kind
+ *   that resumes a request's own abort) would close ONLY the request it
+ *   owns. The current closed `ActionCaller` union (`human | instance`)
+ *   carries no system kind, so that branch is unreachable today; the
+ *   rule is frozen here as the extension point — a new caller kind must
+ *   be admitted by THIS predicate (requester === the continuation's own
+ *   request) before any continuation may call `abandonControlRequest`.
+ *
+ * This authority exposes NO new Team tool permission and NO new
+ * mutation op: it is enforced INSIDE the control service over the
+ * already-resolved (live) caller. A stale caller is rejected earlier by
+ * the reused `resolveCaller` step (a DISPOSED/ARCHIVED principal cannot
+ * close anything).
+ *
+ * @param requester - the durable requester ref of the addressed request.
+ * @param caller - the resolved (live) caller.
+ * @returns whether the caller may durably abandon the request.
+ */
+function mayAbandon(requester: ControlCallerRef, caller: ResolvedCaller): boolean {
+  if (caller.role === CALLER_ROLES.HUMAN) return true
+  if (caller.role === CALLER_ROLES.LEADER) return true
+  if (caller.role === CALLER_ROLES.MEMBER) {
+    return (
+      requester.kind === 'instance' &&
+      requester.instanceId === String(caller.callerMember?.instanceId ?? '')
+    )
+  }
+  return false
+}
+
 // --- the service ------------------------------------------------------------------------
 
 /**
@@ -571,7 +948,11 @@ export function createControlService(options: ControlServiceOptions): ControlSer
 
   // --- small closed-code helpers -----------------------------------------------------
 
-  function malformed(stage: 'request' | 'resolve' | 'list' | 'wait', field: string, message: string): ControlError {
+  function malformed(
+    stage: 'request' | 'resolve' | 'abandon' | 'list' | 'wait',
+    field: string,
+    message: string,
+  ): ControlError {
     return new ControlError(
       CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
       `ControlService: ${message} (field: '${field}')`,
@@ -665,6 +1046,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     const requests: StoredFact<RequestPayload>[] = []
     const decisions: StoredFact<DecisionPayload>[] = []
     const consumptions: StoredFact<ConsumptionPayload>[] = []
+    const abandonments: StoredFact<AbandonmentPayload>[] = []
     for (const entry of repositories.ledger.list()) {
       if (String(entry.rootSessionId) !== root) continue
       if (entry.factType === FACT_REQUEST) {
@@ -676,6 +1058,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       } else if (entry.factType === FACT_CONSUMPTION) {
         const payload = parseConsumptionPayload(entry.payload)
         if (payload !== undefined) consumptions.push({ entry, payload })
+      } else if (entry.factType === FACT_ABANDONMENT) {
+        const payload = parseAbandonmentPayload(entry.payload)
+        if (payload !== undefined) abandonments.push({ entry, payload })
       }
     }
     const bySequence = (a: { entry: LedgerEntry }, b: { entry: LedgerEntry }): number =>
@@ -683,13 +1068,17 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     requests.sort(bySequence)
     decisions.sort(bySequence)
     consumptions.sort(bySequence)
-    return { requests, decisions, consumptions }
+    abandonments.sort(bySequence)
+    return { requests, decisions, consumptions, abandonments }
   }
 
   function scopeOf(entry: LedgerEntry, payload: RequestPayload): ControlOperationScope {
     return {
       rootSessionId: String(entry.rootSessionId),
-      targetInstanceId: payload.targetInstanceId,
+      subject: payload.subject,
+      ...(payload.targetInstanceId !== undefined
+        ? { targetInstanceId: payload.targetInstanceId }
+        : {}),
       actionName: payload.actionName,
       correlation: payload.correlation,
       ...(payload.toolName !== undefined ? { toolName: payload.toolName } : {}),
@@ -707,16 +1096,26 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     payload: RequestPayload,
     state: ControlState,
   ): ControlRequestRecord {
+    // The DERIVED request state (pre-alpha3 PR-D, D.4): the abandon fact
+    // is the TERMINAL mark (like `stale-denied`) — it wins over a
+    // concurrent decision, which in turn wins over pending.
+    const abandoned = state.abandonments.some(
+      (a) => a.payload.requestId === payload.requestId,
+    )
     const decided = state.decisions.some((d) => d.payload.requestId === payload.requestId)
+    const status = abandoned ? 'abandoned' : decided ? 'decided' : 'pending'
     return {
       requestId: payload.requestId,
       rootSessionId: String(entry.rootSessionId),
       kind: payload.kind,
       requester: payload.requester,
-      targetInstanceId: payload.targetInstanceId,
+      subject: payload.subject,
+      ...(payload.targetInstanceId !== undefined
+        ? { targetInstanceId: payload.targetInstanceId }
+        : {}),
       actionName: payload.actionName,
       correlation: payload.correlation,
-      status: decided ? 'decided' : 'pending',
+      status,
       createdAt: entry.createdAt,
       requestSequence: entry.sequence,
       ...(payload.toolName !== undefined ? { toolName: payload.toolName } : {}),
@@ -727,6 +1126,28 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         ? { operationFingerprint: payload.operationFingerprint }
         : {}),
       ...(payload.summary !== undefined ? { summary: payload.summary } : {}),
+      ...(payload.reviewPayload !== undefined
+        ? { reviewPayload: payload.reviewPayload }
+        : {}),
+      ...(payload.reviewPayloadDigest !== undefined
+        ? { reviewPayloadDigest: payload.reviewPayloadDigest }
+        : {}),
+      ...(payload.executionCoupling !== undefined
+        ? { executionCoupling: payload.executionCoupling }
+        : {}),
+    }
+  }
+
+  function toAbandonmentRecord(
+    entry: LedgerEntry,
+    payload: AbandonmentPayload,
+  ): ControlAbandonmentRecord {
+    return {
+      requestId: payload.requestId,
+      rootSessionId: payload.rootSessionId,
+      abandonedAt: payload.abandonedAt,
+      abandonmentSequence: entry.sequence,
+      ...(payload.reason !== undefined ? { reason: payload.reason } : {}),
     }
   }
 
@@ -781,13 +1202,27 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly reason?: ControlDecisionReason
     readonly note?: string
   }): Promise<ControlDecisionRecord> {
+    const decisionScopeSubject = resolveSubject(args.scope)
+    if (decisionScopeSubject === undefined) {
+      // The decision scope snapshot must carry the canonical subject
+      // (pre-alpha3 PR-D, D.2) — a scope with no identity element is
+      // malformed input (fail closed; the commit never happens).
+      throw new ControlError(
+        CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+        'ControlService: the decision scope snapshot carries no subject (field: scope.subject)',
+        { stage: 'decision', field: 'scope.subject' },
+      )
+    }
     const payload: Record<string, unknown> = {
       requestId: args.requestId,
       decision: args.value,
       decider: args.decider,
       scope: {
         rootSessionId: args.scope.rootSessionId,
-        targetInstanceId: args.scope.targetInstanceId,
+        subject: decisionScopeSubject,
+        ...(args.scope.targetInstanceId !== undefined
+          ? { targetInstanceId: args.scope.targetInstanceId }
+          : {}),
         actionName: args.scope.actionName,
         correlation: args.scope.correlation,
         ...(args.scope.toolName !== undefined ? { toolName: args.scope.toolName } : {}),
@@ -830,13 +1265,17 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly rootSessionId: string
     readonly caller: ActionCaller
     readonly kind: ControlRequestKind
-    readonly targetInstanceId: string
+    readonly subject?: ControlSubject
+    readonly targetInstanceId?: string
     readonly actionName: string
     readonly toolName?: string
     readonly capabilityDomain?: CapabilityName
     readonly correlation: string
     readonly operationFingerprint?: string
     readonly summary?: string
+    readonly reviewPayload?: RemoteSafeJsonValue
+    readonly reviewPayloadDigest?: string
+    readonly executionCoupling?: ControlExecutionCoupling
   }): Promise<ControlRequestRecord> {
     const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'request')
     if (!isActionCaller(args.caller)) {
@@ -869,10 +1308,87 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     if (args.summary !== undefined && typeof args.summary !== 'string') {
       throw malformed('request', 'summary', 'summary must be a string when present')
     }
+    // Subject normalization (pre-alpha3 PR-D, D.2): the canonical identity
+    // is the closed three-kind subject. An EXPLICIT subject must be well
+    // formed; a present targetInstanceId must be ABSENT or agree with an
+    // explicit instance subject; with NO explicit subject the
+    // targetInstanceId (required, non-empty) IS the legacy instance
+    // identity (byte-identical normalization for old callers).
+    let subject: ControlSubject
+    if (args.subject !== undefined) {
+      const parsedSubject = parseSubject(args.subject)
+      if (parsedSubject === undefined) {
+        throw malformed(
+          'request',
+          'subject',
+          `subject must be {kind:'instance',instanceId} | {kind:'template',templateId} | {kind:'team',rootSessionId} (got ${JSON.stringify(args.subject)})`,
+        )
+      }
+      subject = parsedSubject
+      if (
+        args.targetInstanceId !== undefined &&
+        (parsedSubject.kind !== CONTROL_SUBJECT_KINDS.INSTANCE ||
+          parsedSubject.instanceId !== args.targetInstanceId)
+      ) {
+        throw malformed(
+          'request',
+          'targetInstanceId',
+          'a present targetInstanceId must agree with an explicit instance subject (the legacy projection of the subject)',
+        )
+      }
+    } else {
+      if (typeof args.targetInstanceId !== 'string' || args.targetInstanceId.length === 0) {
+        throw malformed(
+          'request',
+          'targetInstanceId',
+          'targetInstanceId (or an explicit subject) is required: the legacy instance addressing is mandatory when no subject is given',
+        )
+      }
+      subject = { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: args.targetInstanceId }
+    }
+    // Review-payload checks (pre-alpha3 PR-D, D.3): ABSENT = legacy
+    // semantics; a present value must be valid lossless JSON; the digest
+    // requires a present payload; the coupling is a closed set.
+    if (args.reviewPayload !== undefined && !isRemoteSafeJsonValue(args.reviewPayload)) {
+      throw malformed(
+        'request',
+        'reviewPayload',
+        'reviewPayload must be lossless JSON (a RemoteSafeJsonValue) when present',
+      )
+    }
+    if (
+      args.reviewPayloadDigest !== undefined &&
+      (typeof args.reviewPayloadDigest !== 'string' || args.reviewPayloadDigest.length === 0)
+    ) {
+      throw malformed(
+        'request',
+        'reviewPayloadDigest',
+        'reviewPayloadDigest must be a non-empty string when present',
+      )
+    }
+    if (args.reviewPayloadDigest !== undefined && args.reviewPayload === undefined) {
+      throw malformed(
+        'request',
+        'reviewPayloadDigest',
+        'reviewPayloadDigest requires a present reviewPayload (a digest of a payload the request does not carry is ambiguous input)',
+      )
+    }
+    if (
+      args.executionCoupling !== undefined &&
+      !CONTROL_EXECUTION_COUPLING_VALUES.includes(args.executionCoupling)
+    ) {
+      throw malformed(
+        'request',
+        'executionCoupling',
+        `executionCoupling outside the closed set (guarded|inline): ${JSON.stringify(args.executionCoupling)}`,
+      )
+    }
 
     // Reused authority steps (the facade's typed codes surface as-is):
-    // (1) caller identity/role; (2) team + target resolution; (3)
-    // request-time staleness; (4) envelope.
+    // (1) caller identity/role; (2) team + target resolution (INSTANCE
+    // subjects ONLY — a template/team subject resolves the team without a
+    // target and is NEVER killed by the instance stale validator); (3)
+    // request-time staleness (instance subjects only); (4) envelope.
     const caller = resolveCaller(repositories, root, args.caller)
     const resolved = resolveTeamAndTarget(
       repositories,
@@ -881,19 +1397,51 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         rootSessionId: root,
         action: ACTION_NAMES.REQUEST_CONTROL,
         caller: args.caller,
-        targetInstanceId: args.targetInstanceId,
+        ...(subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE
+          ? { targetInstanceId: subject.instanceId }
+          : {}),
         requestToken: args.correlation,
       },
       REQUEST_CONTROL_SPEC,
     )
-    const target = resolved.target
-    const targetLifecycle = target !== undefined ? String(target.lifecycle) : undefined
-    if (targetLifecycle === TERMINAL_LIFECYCLE) {
-      throw new ControlError(
-        CONTROL_ERROR_CODES.CONTROL_TARGET_STALE,
-        `ControlService: target instance is ${targetLifecycle} (terminal) — a control request can never become valid (no row written)`,
-        { rootSessionId: root, targetInstanceId: args.targetInstanceId, lifecycle: targetLifecycle },
-      )
+    // Subject-specific existence validation (pre-alpha3 PR-D, D.2): the
+    // instance staleness check below applies to instance subjects ONLY.
+    if (subject.kind === CONTROL_SUBJECT_KINDS.TEAM) {
+      if (subject.rootSessionId !== root) {
+        throw malformed(
+          'request',
+          'subject',
+          'a team subject must name THIS team (subject.rootSessionId !== rootSessionId)',
+        )
+      }
+    } else if (subject.kind === CONTROL_SUBJECT_KINDS.TEMPLATE) {
+      const blueprint = resolved.bound.blueprint
+      const knownTemplates = [
+        blueprint.leader.templateId,
+        ...blueprint.members.map((m) => m.templateId),
+      ]
+      if (!knownTemplates.some((t) => t === subject.templateId)) {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+          `ControlService: template subject not in the bound team blueprint (no row written)`,
+          { stage: 'request', field: 'subject', templateId: subject.templateId },
+        )
+      }
+    }
+    if (subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE) {
+      const target = resolved.target
+      const targetLifecycle = target !== undefined ? String(target.lifecycle) : undefined
+      if (targetLifecycle === TERMINAL_LIFECYCLE) {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_TARGET_STALE,
+          `ControlService: target instance is ${targetLifecycle} (terminal) — a control request can never become valid (no row written)`,
+          {
+            rootSessionId: root,
+            targetInstanceId: subject.instanceId,
+            lifecycle: targetLifecycle,
+          },
+        )
+      }
     }
     enforceEnvelope(
       REQUEST_CONTROL_SPEC,
@@ -907,7 +1455,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       const state = loadControlState(root)
       const key = scopeKey(
         root,
-        args.targetInstanceId,
+        subjectIdentityOf(subject),
         args.actionName,
         args.toolName,
         args.correlation,
@@ -917,7 +1465,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         (r) =>
           scopeKey(
             String(r.entry.rootSessionId),
-            r.payload.targetInstanceId,
+            subjectIdentityOf(r.payload.subject),
             r.payload.actionName,
             r.payload.toolName,
             r.payload.correlation,
@@ -938,7 +1486,10 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         requestId,
         kind: args.kind,
         requester,
-        targetInstanceId: args.targetInstanceId,
+        subject,
+        ...(subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE
+          ? { targetInstanceId: subject.instanceId }
+          : {}),
         actionName: args.actionName,
         correlation: args.correlation,
         ...(args.toolName !== undefined ? { toolName: args.toolName } : {}),
@@ -949,6 +1500,13 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           ? { operationFingerprint: args.operationFingerprint }
           : {}),
         ...(args.summary !== undefined ? { summary: args.summary } : {}),
+        ...(args.reviewPayload !== undefined ? { reviewPayload: args.reviewPayload } : {}),
+        ...(args.reviewPayloadDigest !== undefined
+          ? { reviewPayloadDigest: args.reviewPayloadDigest }
+          : {}),
+        ...(args.executionCoupling !== undefined
+          ? { executionCoupling: args.executionCoupling }
+          : {}),
       }
       const sequence = await putEntry({
         schemaVersion: 2,
@@ -964,7 +1522,10 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           rootSessionId: root,
           kind: args.kind,
           requester,
-          targetInstanceId: args.targetInstanceId,
+          subject,
+          ...(subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE
+            ? { targetInstanceId: subject.instanceId }
+            : {}),
           actionName: args.actionName,
           correlation: args.correlation,
           status: 'pending',
@@ -978,6 +1539,13 @@ export function createControlService(options: ControlServiceOptions): ControlSer
             ? { operationFingerprint: args.operationFingerprint }
             : {}),
           ...(args.summary !== undefined ? { summary: args.summary } : {}),
+          ...(args.reviewPayload !== undefined ? { reviewPayload: args.reviewPayload } : {}),
+          ...(args.reviewPayloadDigest !== undefined
+            ? { reviewPayloadDigest: args.reviewPayloadDigest }
+            : {}),
+          ...(args.executionCoupling !== undefined
+            ? { executionCoupling: args.executionCoupling }
+            : {}),
         },
         created: true,
       }
@@ -1077,6 +1645,17 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           { rootSessionId: root, requestId: args.requestId },
         )
       }
+      // Abandonment (pre-alpha3 PR-D, D.4): the durable abandon fact is
+      // the TERMINAL mark (like `stale-denied`) — checked BEFORE the
+      // decided check, with ZERO durable side effects (no decision row
+      // is written): an abandoned request can never become an allow.
+      if (state.abandonments.some((a) => a.payload.requestId === args.requestId)) {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+          `ControlService: request '${args.requestId}' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)`,
+          { rootSessionId: root, requestId: args.requestId },
+        )
+      }
       if (state.decisions.some((d) => d.payload.requestId === args.requestId)) {
         throw new ControlError(
           CONTROL_ERROR_CODES.CONTROL_REQUEST_DECIDED,
@@ -1107,10 +1686,22 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)),
       )
       // Resolve-time staleness (durable stale-denied FIRST, then throw).
-      const target = repositories.memberInstances.get(root, request.payload.targetInstanceId)
-      const targetLifecycle =
-        target !== undefined ? String(target.lifecycle) : undefined
-      if (target === undefined || targetLifecycle === TERMINAL_LIFECYCLE) {
+      // INSTANCE subjects ONLY (pre-alpha3 PR-D, D.2): the instance
+      // stale validator branches on the subject kind — a template or
+      // team subject has no instance lifecycle, so it is NEVER killed
+      // by this check (the key negative of the generalization).
+      const isInstanceSubject =
+        request.payload.subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE
+      let target: MemberInstanceRecordDto | undefined
+      let targetLifecycle: string | undefined
+      if (isInstanceSubject) {
+        target = repositories.memberInstances.get(root, request.payload.subject.instanceId)
+        targetLifecycle = target !== undefined ? String(target.lifecycle) : undefined
+      }
+      if (
+        isInstanceSubject &&
+        (target === undefined || targetLifecycle === TERMINAL_LIFECYCLE)
+      ) {
         const scope = scopeOf(request.entry, request.payload)
         await commitDecision({
           requestId: request.payload.requestId,
@@ -1125,7 +1716,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           {
             rootSessionId: root,
             requestId: request.payload.requestId,
-            targetInstanceId: request.payload.targetInstanceId,
+            targetInstanceId: request.payload.subject.instanceId,
             lifecycle: targetLifecycle ?? 'missing',
           },
         )
@@ -1175,12 +1766,194 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     })
   }
 
+  /**
+   * The SHARED durable terminal-mark write (pre-alpha3 PR-D, D.4): the
+   * one routine that commits the `control-request-abandoned` fact.
+   * `abandonControlRequest` (after its authority steps) and the
+   * wait-bridge's inline-abort cascade (the inline lifecycle's
+   * `abort → durable abandon/close → zero effect` node) both commit
+   * through THIS routine — so exactly-once (an already-abandoned
+   * request is rejected typed, zero durable side effects), the
+   * terminal-mark payload shape ({requestId, rootSessionId, abandonedAt,
+   * reason?}), and the storage-fault contract (a durable-store failure
+   * surfaces as the facade's closed TEAM_RUNTIME_DURABLE_WRITE_FAILED —
+   * the close is never claimed as abandoned unless the fact is durable)
+   * are inherited by code reuse, not re-implementation.
+   *
+   * Precondition: the caller holds the per-team lock (withTeamLock);
+   * the re-read below is the lock's fresh-state verification (invariant
+   * 45: the durable rows are the authority).
+   */
+  async function commitAbandonmentFact(
+    root: string,
+    requestId: string,
+    reason?: string,
+  ): Promise<{ readonly abandonmentSequence: number; readonly abandonedAt: string }> {
+    const state = loadControlState(root)
+    const request = state.requests.find((r) => r.payload.requestId === requestId)
+    if (request === undefined) {
+      throw new ControlError(
+        CONTROL_ERROR_CODES.CONTROL_REQUEST_NOT_FOUND,
+        `ControlService: no durable control request '${requestId}' in team '${root}' (an abandon without a request)`,
+        { rootSessionId: root, requestId },
+      )
+    }
+    // The terminal mark is written exactly once: an already-abandoned
+    // request is rejected (zero durable side effects — no second fact).
+    if (state.abandonments.some((a) => a.payload.requestId === requestId)) {
+      throw new ControlError(
+        CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+        `ControlService: request '${requestId}' is already durably abandoned (the terminal mark is written exactly once)`,
+        { rootSessionId: root, requestId },
+      )
+    }
+    // The append-only ledger has no delete primitive — the row IS the
+    // close (commit-before-ack).
+    const payload: Record<string, unknown> = {
+      requestId,
+      rootSessionId: root,
+      abandonedAt: options.now(),
+      ...(reason !== undefined ? { reason } : {}),
+    }
+    const sequence = await putEntry({
+      schemaVersion: 2,
+      sequence: await allocateSequence(),
+      rootSessionId: root,
+      factType: FACT_ABANDONMENT,
+      payload,
+      createdAt: options.now(),
+    })
+    return { abandonmentSequence: sequence, abandonedAt: payload['abandonedAt'] as string }
+  }
+
+  // --- abandonControlRequest (pre-alpha3 PR-D, D.4 — the inline abort path) -------------
+
+  /**
+   * Durably ABANDON one control request (the additive close fact
+   * `control-request-abandoned` — the terminal mark; the append-only
+   * ledger has no delete primitive, so the request row is never
+   * physically removed).
+   *
+   * Authority steps: (1) caller identity/role (the reused facade
+   * `resolveCaller` — a stale caller can never close); (2) team
+   * existence (typed TEAM_SESSION_NOT_FOUND — the close addresses the
+   * team's durable request rows); (3) the CONTROL INTERNAL close
+   * authority {@link mayAbandon} (pre-alpha3 review F3: human → any
+   * request, Leader → any of the current Team's requests, member →
+   * its OWN request only).
+   *
+   * The close authority is INDEPENDENT of the `resolve-control`
+   * mutation envelope (review F3 — the PR-D defect): abandon no longer
+   * reuses `RESOLVE_CONTROL_SPEC` or performs any envelope check, and
+   * the bound blueprint is never consulted. A caller that may REQUEST
+   * a review (e.g. the Recovery Leader of a reduced team envelope that
+   * carries `request-control` but not `resolve-control`) can always
+   * ABANDON its own waiting review; closing does not need the op the
+   * decision needs. No new Team tool permission or mutation op is
+   * exposed — the rule is enforced inside this service over the
+   * already-resolved caller.
+   *
+   * The durable abandon fact is written BEFORE any return
+   * (commit-before-ack); the request is NEVER physically removed. A
+   * durable-store failure of that write surfaces as the facade's
+   * closed effect-phase code TEAM_RUNTIME_DURABLE_WRITE_FAILED — the
+   * close is NEVER claimed as abandoned unless the fact is durable
+   * (the frozen contract the recovery dispatch consuming this call
+   * relies on, review F2).
+   */
+  async function abandonControlRequest(args: {
+    readonly rootSessionId: string
+    readonly caller: ActionCaller
+    readonly requestId: string
+    readonly reason?: string
+  }): Promise<ControlAbandonmentRecord> {
+    const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'abandon')
+    if (!isActionCaller(args.caller)) {
+      throw malformed('abandon', 'caller', 'caller must be {kind:human,humanId} or {kind:instance,instanceId}')
+    }
+    if (typeof args.requestId !== 'string' || args.requestId.length === 0) {
+      throw malformed('abandon', 'requestId', 'requestId must be a non-empty string')
+    }
+    if (args.reason !== undefined && typeof args.reason !== 'string') {
+      throw malformed('abandon', 'reason', 'reason must be a string when present')
+    }
+
+    // Authority steps: (1) caller identity/role (a stale caller can
+    // never close); (2) team existence. The abandon is addressed to the
+    // REQUEST (no target token) and needs NO bound blueprint and NO
+    // mutation envelope — the close authority is the control-internal
+    // mayAbandon rule (pre-alpha3 review F3).
+    const caller = resolveCaller(repositories, root, args.caller)
+    if (repositories.teamSessions.get(root) === undefined) {
+      throw new TeamRuntimeError(
+        TEAM_RUNTIME_ERROR_CODES.TEAM_SESSION_NOT_FOUND,
+        `ControlService: no TeamSession record for root session '${root}'`,
+        { rootSessionId: root },
+      )
+    }
+
+    return withTeamLock(teamLocks, root, async () => {
+      const state = loadControlState(root)
+      const request = state.requests.find((r) => r.payload.requestId === args.requestId)
+      if (request === undefined) {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_NOT_FOUND,
+          `ControlService: no durable control request '${args.requestId}' in team '${root}' (an abandon without a request)`,
+          { rootSessionId: root, requestId: args.requestId },
+        )
+      }
+      // The terminal mark is written exactly once: an already-abandoned
+      // request is rejected (zero durable side effects).
+      if (state.abandonments.some((a) => a.payload.requestId === args.requestId)) {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+          `ControlService: request '${args.requestId}' is already durably abandoned (the terminal mark is written exactly once)`,
+          { rootSessionId: root, requestId: args.requestId },
+        )
+      }
+      // The CONTROL INTERNAL close authority (pre-alpha3 review F3 —
+      // mayAbandon, independent of the resolve-control envelope):
+      // human → any request; Leader → any of the current Team's
+      // requests; member → its OWN request only. (A DECIDED request may
+      // still be abandoned: that is the allow-invalidating path — the
+      // abandon closes the durable allow.)
+      const requester = request.payload.requester
+      if (!mayAbandon(requester, caller)) {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+          `ControlService: the caller may not abandon request '${args.requestId}' (the control-internal close authority: human → any, leader → any of the current Team's, member → its own only)`,
+          {
+            rootSessionId: root,
+            requestId: args.requestId,
+            role: caller.role,
+            requester,
+          },
+        )
+      }
+      // The durable abandon fact FIRST (commit-before-ack; the append-
+      // only ledger has no delete primitive — the row IS the close) —
+      // through the SHARED terminal-mark write path: the wait-bridge
+      // inline-abort cascade commits through the same routine, so the
+      // exactly-once re-verification and the storage-fault contract are
+      // inherited by code reuse (not re-implementation).
+      const mark = await commitAbandonmentFact(root, args.requestId, args.reason)
+      return {
+        requestId: request.payload.requestId,
+        rootSessionId: root,
+        abandonedAt: mark.abandonedAt,
+        abandonmentSequence: mark.abandonmentSequence,
+        ...(args.reason !== undefined ? { reason: args.reason } : {}),
+      }
+    })
+  }
+
   // --- listControlState ----------------------------------------------------------------
 
   async function listControlState(rootSessionId: string): Promise<{
     readonly requests: readonly ControlRequestRecord[]
     readonly decisions: readonly ControlDecisionRecord[]
     readonly consumptions: readonly ControlConsumptionRecord[]
+    readonly abandonments: readonly ControlAbandonmentRecord[]
   }> {
     const root = parseRoot(rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'list')
     return withTeamLock(teamLocks, root, async () => {
@@ -1196,6 +1969,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         requests: state.requests.map((r) => toRequestRecord(r.entry, r.payload, state)),
         decisions: state.decisions.map((d) => toDecisionRecord(d.entry, d.payload)),
         consumptions: state.consumptions.map((c) => toConsumptionRecord(c.entry, c.payload)),
+        abandonments: state.abandonments.map((a) => toAbandonmentRecord(a.entry, a.payload)),
       }
     })
   }
@@ -1292,11 +2066,59 @@ export function createControlService(options: ControlServiceOptions): ControlSer
 
   async function guardOperation(scope: ControlOperationScope): Promise<ControlGuardVerdict> {
     const root = parseRoot(scope.rootSessionId, CONTROL_ERROR_CODES.CONTROL_GUARD_MALFORMED, 'guard')
-    let target: string
-    try {
-      target = String(parseInstanceId(scope.targetInstanceId))
-    } catch {
-      throw guardMalformed('targetInstanceId', `targetInstanceId is not a valid instance id: ${JSON.stringify(scope.targetInstanceId)}`)
+    // Subject normalization (pre-alpha3 PR-D, D.2): the canonical
+    // identity is the closed three-kind subject. An EXPLICIT subject
+    // must be well formed and must agree with a present targetInstanceId;
+    // with NO explicit subject the targetInstanceId (required, non-empty)
+    // IS the legacy instance identity (byte-identical guard semantics
+    // for old callers). The instance stale validators (member liveness
+    // + the parseInstanceId shape check) apply to instance subjects ONLY.
+    const subjectWasExplicit = scope.subject !== undefined
+    let subject: ControlSubject
+    if (scope.subject !== undefined) {
+      const parsedSubject = parseSubject(scope.subject)
+      if (parsedSubject === undefined) {
+        throw guardMalformed(
+          'subject',
+          `subject must be {kind:'instance',instanceId} | {kind:'template',templateId} | {kind:'team',rootSessionId} (got ${JSON.stringify(scope.subject)})`,
+        )
+      }
+      subject = parsedSubject
+      if (
+        scope.targetInstanceId !== undefined &&
+        (parsedSubject.kind !== CONTROL_SUBJECT_KINDS.INSTANCE ||
+          parsedSubject.instanceId !== scope.targetInstanceId)
+      ) {
+        throw guardMalformed(
+          'targetInstanceId',
+          'a present targetInstanceId must agree with an explicit instance subject (the legacy projection of the subject)',
+        )
+      }
+    } else {
+      if (typeof scope.targetInstanceId !== 'string' || scope.targetInstanceId.length === 0) {
+        throw guardMalformed(
+          'targetInstanceId',
+          'targetInstanceId (or an explicit subject) is required: the legacy instance addressing is mandatory when no subject is given',
+        )
+      }
+      subject = { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: scope.targetInstanceId }
+    }
+    // The instance canonical target (the valid instance id); ABSENT for
+    // template/team subjects (no instance lifecycle — the stale validator
+    // is skipped for them).
+    let instanceTarget: string | undefined
+    if (subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE) {
+      try {
+        instanceTarget = String(parseInstanceId(subject.instanceId))
+      } catch {
+        // Point the error at the field the caller actually supplied: the
+        // legacy targetInstanceId path (subject derived) or the explicit
+        // subject.
+        throw guardMalformed(
+          subjectWasExplicit ? 'subject' : 'targetInstanceId',
+          `${subjectWasExplicit ? 'subject.instanceId' : 'targetInstanceId'} is not a valid instance id: ${JSON.stringify(subject.instanceId)}`,
+        )
+      }
     }
     if (typeof scope.actionName !== 'string' || scope.actionName.length === 0) {
       throw guardMalformed('actionName', 'actionName must be a non-empty string')
@@ -1329,11 +2151,15 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       // (b) an ORDINARY member must be durably live and work-accepting
       // (an allow only authorizes execution on a live target —
       // missing/ARCHIVED/DISPOSED all block). The member-row lifecycle
-      // check applies to members only (A6: folding the Leader into the
-      // compound check made `String(member.lifecycle)` read 'undefined'
-      // for the v2 leader row — a permanent target-stale).
-      if (target !== LEADER_INSTANCE_ID) {
-        const member = repositories.memberInstances.get(root, target)
+      // check applies to instance subjects ONLY (pre-alpha3 PR-D, D.2):
+      // a template/team subject has no instance lifecycle, so this check
+      // is skipped for them (templates are blueprint identity, not live
+      // state). The member-row lifecycle check applies to members only
+      // (A6: folding the Leader into the compound check made
+      // `String(member.lifecycle)` read 'undefined' for the v2 leader
+      // row — a permanent target-stale).
+      if (instanceTarget !== undefined && instanceTarget !== LEADER_INSTANCE_ID) {
+        const member = repositories.memberInstances.get(root, instanceTarget)
         if (
           member === undefined ||
           !GUARD_LIVE_LIFECYCLES.includes(String(member.lifecycle))
@@ -1342,11 +2168,21 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         }
       }
       const state = loadControlState(root)
-      const key = scopeKey(root, target, scope.actionName, scope.toolName, scope.correlation, scope.operationFingerprint)
+      const key = scopeKey(root, subjectIdentityOf(subject), scope.actionName, scope.toolName, scope.correlation, scope.operationFingerprint)
       const matching = state.requests.filter((r) => {
+        // NOTE (B2 lane disjointness): an INLINE request IS matched here so
+        // its TERMINAL marks are reported correctly (abandon →
+        // REQUEST_ABANDONED, stale → REQUEST_STALE, deny → DECISION_DENY,
+        // pending → REQUEST_PENDING). But an inline ALLOW is NOT a one-shot
+        // guard token — the CONSUMPTION/authorization path is skipped for it
+        // below (see the `decision === 'allow'` branch): the inline allow
+        // authorizes the frozen invocation's OWN continuation, which writes
+        // NO `control-allow-consumed` fact. Excluding it here entirely would
+        // wrongly turn an abandoned inline request into NO_REQUEST instead of
+        // REQUEST_ABANDONED.
         const rowKey = scopeKey(
           String(r.entry.rootSessionId),
-          r.payload.targetInstanceId,
+          subjectIdentityOf(r.payload.subject),
           r.payload.actionName,
           r.payload.toolName,
           r.payload.correlation,
@@ -1366,6 +2202,26 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         reason: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST,
       }
       for (const request of matching) {
+        // Abandonment (pre-alpha3 PR-D, D.4): the durable abandon fact
+        // is the TERMINAL mark (like `stale-denied`) — an immediate
+        // block verdict even over a durable `allow` recorded BEFORE the
+        // abandon (the old allow/decision cannot execute the operation
+        // — zero effect; the inline allow was never consumed by a guard
+        // and the abandon closes it).
+        const abandon = state.abandonments.find(
+          (a) => a.payload.requestId === request.payload.requestId,
+        )
+        if (abandon !== undefined) {
+          const decision = state.decisions.find(
+            (d) => d.payload.requestId === request.payload.requestId,
+          )
+          return {
+            allowed: false,
+            reason: CONTROL_GUARD_BLOCK_REASONS.REQUEST_ABANDONED,
+            requestId: request.payload.requestId,
+            ...(decision !== undefined ? { decisionSequence: decision.entry.sequence } : {}),
+          }
+        }
         const decision = state.decisions.find(
           (d) => d.payload.requestId === request.payload.requestId,
         )
@@ -1394,6 +2250,20 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           }
         }
         // decision === 'allow'
+        // Lane disjointness (pre-alpha3 PR-D review B2 / D.4 coupling
+        // boundary): an INLINE allow is NOT a one-shot guard token. It
+        // authorizes the frozen invocation's OWN continuation, which
+        // continues on the decision and writes NO `control-allow-consumed`
+        // fact. The GUARDED execution path (this guard) must therefore NOT
+        // consume or be authorized by it — otherwise a second, unrelated
+        // guarded execution would be authorized after the inline invocation
+        // already applied the decision. The request is still MATCHED (above)
+        // so its terminal marks (abandon / stale / deny / pending) are
+        // reported; but an inline ALLOW simply leaves the NO_REQUEST fallback
+        // (zero authorization, zero consumption).
+        if (request.payload.executionCoupling === CONTROL_EXECUTION_COUPLINGS.INLINE) {
+          continue
+        }
         const consumed = state.consumptions.some(
           (c) => c.payload.requestId === request.payload.requestId,
         )
@@ -1480,6 +2350,72 @@ export function createControlService(options: ControlServiceOptions): ControlSer
   // --- awaitControlDecision (the alpha.2 synchronous wait bridge) ----------------------
 
   /**
+   * The COUPLING-AWARE inline-abort cascade (pre-alpha3 PR-D, D.4 — the
+   * inline lifecycle's `abort` node: `abort → durable abandon/close →
+   * zero effect`): when the wait bridge's signal aborts, an INLINE-
+   * coupled request is tied to its frozen invocation — the invocation is
+   * dead, and a PENDING row would be a zombie no resolver can ever
+   * service (a retry is a NEW request), so the bridge durably closes the
+   * request FIRST, before it settles the waiter.
+   *
+   * Coupling gating (plan §D.4): the cascade fires ONLY when the STORED
+   * request row's executionCoupling is exactly `inline`. A `guarded`
+   * request and an ABSENT (legacy) row keep today's zero-side-effect
+   * abort EXACTLY (the request stays PENDING — the guarded lifecycle's
+   * wait abort is a pure cancellation, pinned by a4a W2 / a5a
+   * S10–S14; guarded keeps its `request → wait → decision → guard →
+   * consume → execute` line, so its abort leaves the recovery paths in
+   * place).
+   *
+   * Idempotency / race safety: the cascade re-reads the fresh durable
+   * state under the per-team lock. If the request is ALREADY terminal —
+   * a durable decision won the race between the last poll and the
+   * signal, or a concurrent abandon landed first — the terminal mark is
+   * NOT written a second time (exactly-once, inherited from the shared
+   * {@link commitAbandonmentFact} routine): a durable decision RESOLVES
+   * the wait with itself (the first decision is authoritative — today's
+   * poll fast path); an already-abandoned request settles rejected typed
+   * (it can never become a decision). Only a PENDING inline request
+   * receives the additive close fact (reason `wait-aborted`).
+   *
+   * A durable-store failure of the close write PROPAGATES typed (the
+   * facade's TEAM_RUNTIME_DURABLE_WRITE_FAILED through the shared write
+   * path) — the bridge rejects with the storage fault and NEVER claims
+   * a half-abandoned state (the review F2 contract the explicit abandon
+   * API carries, mirrored through the same routine).
+   */
+  async function inlineAbortCascade(root: string, requestId: string): Promise<InlineAbortCascadeOutcome> {
+    return withTeamLock(teamLocks, root, async () => {
+      const state = loadControlState(root)
+      const request = state.requests.find((r) => r.payload.requestId === requestId)
+      // No durable request row, or a row whose STORED coupling is not
+      // exactly `inline` (guarded / ABSENT legacy): nothing to close —
+      // the caller settles exactly as today (zero side effects).
+      if (request === undefined) return { kind: 'none' }
+      if (request.payload.executionCoupling !== CONTROL_EXECUTION_COUPLINGS.INLINE) {
+        return { kind: 'none' }
+      }
+      // A durable decision won the race: the first decision is
+      // authoritative — no second terminal mark over it; the wait
+      // RESOLVES with the decision (today's poll fast path).
+      const decision = state.decisions.find((d) => d.payload.requestId === requestId)
+      if (decision !== undefined) {
+        return { kind: 'decided', decision: toDecisionRecord(decision.entry, decision.payload) }
+      }
+      // Already terminal via the abandon mark (a concurrent explicit
+      // abandon landed first): exactly-once — no second fact.
+      if (state.abandonments.some((a) => a.payload.requestId === requestId)) {
+        return { kind: 'already-abandoned' }
+      }
+      // PENDING inline: durably close it FIRST (the shared terminal-mark
+      // write — exactly-once + storage-fault contract by code reuse),
+      // then the caller settles the waiter rejected typed.
+      const mark = await commitAbandonmentFact(root, requestId, WAIT_ABORT_ABANDON_REASON)
+      return { kind: 'abandoned', abandonmentSequence: mark.abandonmentSequence }
+    })
+  }
+
+  /**
    * The SYNCHRONOUS WAIT BRIDGE (alpha.2 §9.4): resolves when a durable
    * ControlDecision for the requestId appears. Authority is ALWAYS the
    * durable control rows — the waiter only solves liveness (it adds no
@@ -1493,6 +2429,15 @@ export function createControlService(options: ControlServiceOptions): ControlSer
    * to typed CONTROL_WAIT_CLOSED). Timers and listeners are cleared on
    * settle (no leak after the promise settles). No durable waiter
    * scheduler, no cross-process continuation.
+   *
+   * The COUPLING-AWARE abort cascade (pre-alpha3 PR-D, D.4): on a
+   * signal abort (pre-aborted or mid-wait), a request whose STORED
+   * executionCoupling is exactly `inline` is durably ABANDONED FIRST
+   * (the inline lifecycle: `abort → durable abandon/close → zero
+   * effect` — the shared terminal-mark write with reason
+   * `wait-aborted`) and the waiter is then rejected typed; a `guarded`
+   * or ABSENT (legacy) request keeps today's zero-side-effect abort
+   * exactly (the request stays PENDING — a4a W2 / a5a S10–S14).
    */
   async function awaitControlDecision(input: {
     readonly rootSessionId: string
@@ -1508,9 +2453,24 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     if (signal !== undefined && typeof signal.aborted !== 'boolean') {
       throw malformed('wait', 'signal', 'signal must be an AbortSignal when present')
     }
-    // Already aborted: reject immediately (zero side effects — the
-    // durable rows are untouched and a later resolve is unaffected).
+    // Already aborted: settle immediately. The COUPLING-AWARE cascade
+    // (pre-alpha3 PR-D, D.4): an INLINE request's frozen invocation is
+    // dead the moment the signal is — the bridge durably abandons the
+    // PENDING request FIRST (the shared terminal-mark write, reason
+    // `wait-aborted`) and then rejects typed. A guarded / ABSENT
+    // (legacy) request — and an inline request that is ALREADY terminal
+    // (a racing durable decision, or a concurrent abandon) — keeps
+    // today's zero-side-effect reject exactly (the durable rows are
+    // untouched and a later resolve is unaffected).
     if (signal !== undefined && signal.aborted) {
+      const cascade = await inlineAbortCascade(root, requestId)
+      if (cascade.kind === 'abandoned' || cascade.kind === 'already-abandoned') {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED,
+          `ControlService: awaitControlDecision for request '${requestId}' was aborted before the wait began (the INLINE request is durably ABANDONED — the additive close fact 'control-request-abandoned' is the terminal mark; the frozen invocation is dead and a retry is a NEW request)`,
+          { rootSessionId: root, requestId },
+        )
+      }
       throw new ControlError(
         CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED,
         `ControlService: awaitControlDecision for request '${requestId}' was aborted before the wait began`,
@@ -1537,15 +2497,48 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         outcome()
       }
       const onAbort = (): void => {
-        settle(() =>
+        settle(async () => {
+          // The COUPLING-AWARE cascade (pre-alpha3 PR-D, D.4) — runs
+          // inside the settle (the waiter is already committed to
+          // settling; the cascade only chooses HOW): inline PENDING →
+          // durably abandon first (reason `wait-aborted`), then reject
+          // typed; a racing durable decision → resolve with it (the
+          // first decision is authoritative); a concurrent abandon or a
+          // guarded / ABSENT (legacy) request → today's exact settle.
+          // A typed durable fault of the close write PROPAGATES as the
+          // rejection (the review F2 storage-fault contract through the
+          // shared write path — never a half-abandoned claim). The
+          // async outcome must never reject the promise it was handed
+          // (settle does not await it) — every path below settles.
+          let cascade: InlineAbortCascadeOutcome
+          try {
+            cascade = await inlineAbortCascade(root, requestId)
+          } catch (error) {
+            reject(error)
+            return
+          }
+          if (cascade.kind === 'decided') {
+            resolve(cascade.decision)
+            return
+          }
+          if (cascade.kind === 'abandoned' || cascade.kind === 'already-abandoned') {
+            reject(
+              new ControlError(
+                CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED,
+                `ControlService: awaitControlDecision for request '${requestId}' was aborted before a durable decision appeared (the INLINE request is durably ABANDONED — the additive close fact 'control-request-abandoned' is the terminal mark; the frozen invocation is dead and a retry is a NEW request)`,
+                { rootSessionId: root, requestId },
+              ),
+            )
+            return
+          }
           reject(
             new ControlError(
               CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED,
               `ControlService: awaitControlDecision for request '${requestId}' was aborted before a durable decision appeared (zero side effects — the request stays durable and undecided)`,
               { rootSessionId: root, requestId },
             ),
-          ),
-        )
+          )
+        })
       }
       if (signal !== undefined) {
         signal.addEventListener('abort', onAbort, { once: true })
@@ -1593,6 +2586,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
   return {
     requestControl,
     resolveControl,
+    abandonControlRequest,
     listControlState,
     guardOperation,
     checkExternalOperation,

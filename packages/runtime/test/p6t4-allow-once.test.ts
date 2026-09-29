@@ -254,8 +254,12 @@ describe('p6t4 allow-once (MUST-TEST: an allow is applied exactly once)', () => 
     expect(decision.decision).toBe(CONTROL_DECISION_VALUES.ALLOW)
     expect(decision.requestSequence).toBe(request.requestSequence)
     expect(decision.decisionSequence).toBeGreaterThan(decision.requestSequence)
+    // The decision scope snapshot carries the canonical subject
+    // (pre-alpha3 PR-D, D.2): a legacy targetInstanceId-only request
+    // normalizes to the instance subject (byte-identical identity).
     expect(decision.scope).toEqual({
       rootSessionId: P6T4_ROOT,
+      subject: { kind: 'instance', instanceId: WORKER_ID },
       targetInstanceId: WORKER_ID,
       actionName: 'write-file',
       toolName: 'fs.write',
