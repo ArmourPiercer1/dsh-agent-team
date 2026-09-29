@@ -8,30 +8,29 @@
  * module closes that gap for the production composition: it resolves the
  * four lanes (model / workspace / permissions / autonomy) from the EXISTING
  * layer data — the bound blueprint envelope, the durable PolicyState
- * transitions, the mutation-store records, the durable governance
- * `overrides`, and the static external facts — through the FROZEN P3-T4
- * resolver (reused verbatim, never re-implemented) plus this plane's
+ * transitions, the durable governance `overrides`, and the static external
+ * facts — through the ONE canonical effective-policy read (pre-alpha3
+ * PR-B; the frozen P3-T4 resolver is reused verbatim inside it, never
+ * re-implemented) plus this plane's
  * provenance derivations:
  *
- * - the policy input is assembled by `assembleEffectivePolicyInput`
- *   (the P7-T2 adapter, reused verbatim) over the member's durable
- *   transitions + records at the maximum step horizon (`atStep =
- *   Number.MAX_SAFE_INTEGER` — the production step clock is pinned to 0,
- *   so the resolved horizon sees every admitted future-boundary change);
- * - the durable governance `overrides` (the production write path —
- *   pre-alpha3 PR-A: the governance mutation authority's
- *   `setOverride`/`resetOverride` writes ONLY the storage `overrides`
- *   repository; the mutation-store records lane has no production
- *   caller) are merged in through `selectPolicyOverrides`
- *   (the P8-S4B deterministic slot selection, reused verbatim): a
- *   mutation-store slot wins when present (the test world), the
- *   governance slot fills whatever the store did not produce (the
- *   production world);
+ * - the policy is the ONE canonical read (`readEffectivePolicy`,
+ *   pre-alpha3 PR-B, plan §B.2): the committed PolicyState (the last
+ *   durable transition in COMMIT order — the production step clock is
+ *   retired as a decision source), the durable governance `overrides`
+ *   slot winners (the production write path — pre-alpha3 PR-A: the
+ *   governance mutation authority's `setOverride`/`resetOverride` writes
+ *   ONLY the storage `overrides` repository; the process-local
+ *   mutation-store records lane has no production writer and is retired
+ *   from this assembly), and the static layers (the bound snapshot
+ *   through the production `PolicyReader`) — the SAME read the live
+ *   request boundary and the R2-3 model-state view run;
  * - each capability cell's §18.3 provenance comes from `cellProvenance`
  *   (P8-S4B) with `appliedRecordIds = []` — the boundary-application
  *   record set is PROCESS-LOCAL, so the durable projection reports
- *   record-backed winning values conservatively as PENDING (documented
- *   two-horizon ruling: NOW = 0, NEXT = the maximum step);
+ *   record-backed winning values conservatively as PENDING (the
+ *   committed/applied ruling: the projection cannot observe the
+ *   process-local applied set);
  * - the model lane additionally consumes `modelConsumptionView` (P5-T3),
  *   which applies the documented consumer rule: an `unspecified` cell
  *   keeps the world baseline (the harness-injected static model).
@@ -41,7 +40,9 @@
  * provenance keys `suppressed?`, `unavailable?`, `deniedBy?`,
  * `effectiveFrom?`, `locked?` — every optional key is ABSENT when the
  * fact does not hold (never an own `undefined` key; the contracts v2
- * parse enforces the closed set).
+ * parse enforces the closed set). This producer never sets `effectiveFrom`
+ * (the legacy step display is retired with the production step clock —
+ * the key stays part of the closed DTO shape for other producers).
  *
  * State precedence (highest first, per lane):
  *   unavailable > denied > pending-next-boundary > overridden > inherited
@@ -72,7 +73,7 @@
  */
 import type { EffectiveConfigDtoV2, EffectiveConfigSource, MemberLifecycleState } from '../../../contracts/src/index.js';
 import type { TeamLayerOrUnspecified } from '../../../domain/policy/src/index.js';
-import type { CellDeniedBy, PolicyReader, PolicyStateTransitionRecord, StoredMutationRecord } from '../../mutation/index.js';
+import type { CellDeniedBy, PolicyReader, PolicyStateTransitionRecord } from '../../mutation/index.js';
 import type { ModelSelection } from '../../agent-setup/model/index.js';
 import type { GovernanceOverrideRecord } from '../../../storage/schema/index.js';
 /** The arguments of {@link createEffectiveConfigView}. */
@@ -89,10 +90,11 @@ export interface EffectiveConfigViewArgs {
     readonly teamDefaultWorkspace?: string;
     /** The world baseline model selection (the harness-injected static model). */
     readonly staticModel: ModelSelection;
-    /** The member's durable PolicyState transitions (admission order). */
+    /**
+     * The member's durable PolicyState transitions (COMMIT order — the
+     * ledger sequence order; the LAST entry is the committed state).
+     */
     readonly transitions: readonly PolicyStateTransitionRecord[];
-    /** The member's durable mutation records (admission order). */
-    readonly records: readonly StoredMutationRecord[];
     /** Every durable governance override record of the TeamSession. */
     readonly overrides: readonly GovernanceOverrideRecord[];
     /** The static policy reader (blueprint envelope / template / external). */
@@ -130,15 +132,4 @@ export declare function deniedByString(deniedBy: CellDeniedBy): string;
  * Exported for the R2-3 model-state view (same derivation, one source).
  */
 export declare function externalHardDecides(note: string): boolean;
-/**
- * The v2 `effectiveFrom` of a pending value: the record's durable
- * `effectiveFromStep` when the winning source is backed by a record of the
- * MUTATION lane (safe integer ≥ 1) — otherwise the key is ABSENT (the
- * governance records carry no step; their pending changes are boundary-
- * based without a step, documented per producer).
- */
-/**
- * Exported for the R2-3 model-state view (same derivation, one source).
- */
-export declare function effectiveFromOf(recordId: string | null, records: readonly StoredMutationRecord[]): number | undefined;
 //# sourceMappingURL=effective-config-view.d.ts.map

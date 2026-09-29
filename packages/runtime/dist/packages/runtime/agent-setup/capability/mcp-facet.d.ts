@@ -26,6 +26,7 @@
  */
 import type { EffectivePolicy, ExternalPolicyFacts, PolicyEntry, SuppressedOverlayRecord } from '../../../domain/policy/src/index.js';
 import type { GovernanceOverrideRecord } from '../../../storage/schema/index.js';
+import type { PolicyReader, PolicyStateTransitionRecord } from '../../mutation/index.js';
 import { type CellDeniedBy, type CellProvenanceOptions, type CellSource, type PendingBoundaryRecord } from '../../mutation/cell-provenance.js';
 /** The allow-list wildcard naming every MCP server. */
 export declare const MCP_FACET_WILDCARD = "*";
@@ -70,14 +71,32 @@ export interface DurableMcpFacetArgs {
     readonly instanceId: string;
     /** Every durable governance override of the TeamSession (backend truth). */
     readonly overrides: readonly GovernanceOverrideRecord[];
-    /** The external hard facts (host ceiling / capability presence). */
-    readonly external: ExternalPolicyFacts;
     /** The MCP server name to test. */
     readonly serverName: string;
     /** The record ids this session has already applied at its last boundary. */
     readonly appliedRecordIds?: readonly string[];
     /**
-     * The bound Blueprint template's INITIAL STATIC grant for the `mcp` cell
+     * THE CANONICAL INPUT (pre-alpha3 PR-B) — the static policy authority
+     * (the production PolicyReader: blueprint envelope + per-member template
+     * policy + external hard facts, from the bound snapshot). When present,
+     * it WINS over the legacy `external` / `initialTemplateMcp` pair and the
+     * durable `transitions` (the committed PolicyState) participate.
+     */
+    readonly policy?: PolicyReader;
+    /**
+     * THE CANONICAL INPUT (pre-alpha3 PR-B) — the durable PolicyState
+     * transitions (commit order; the last entry is the committed state).
+     * Absent = the implicit `default` state.
+     */
+    readonly transitions?: readonly PolicyStateTransitionRecord[];
+    /**
+     * LEGACY ARGS (pre-PR-B call shape; used when `policy` is absent) — the
+     * external hard facts (host ceiling / capability presence).
+     */
+    readonly external?: ExternalPolicyFacts;
+    /**
+     * LEGACY ARGS (pre-PR-B call shape; used when `policy` is absent) — the
+     * bound Blueprint template's INITIAL STATIC grant for the `mcp` cell
      * (plan MCP_BLUEPRINT_INITIAL_GRANT §4.1): the template's
      * `capabilities.mcp` entry when `kind === 'allow'` — the role's initial
      * governance grant, available from team creation (fresh root, fresh
@@ -104,6 +123,15 @@ export interface DurableMcpFacet {
  * boundary. This is the durable-mutation -> actual-Agent-behavior edge
  * for the capability facet: a durable allow/deny takes effect on the next
  * actual operation and survives a host restart.
+ *
+ * pre-alpha3 PR-B (plan §B.2): the resolution runs the ONE canonical read
+ * (`readEffectivePolicy`) — the canonical inputs are `policy` (the static
+ * policy authority) + `transitions` (the durable committed PolicyState);
+ * the pre-PR-B legacy args (`external` + `initialTemplateMcp`) remain
+ * supported and adapt to the SAME canonical read. The per-boundary view is
+ * the frozen `mcpFacetView` over the canonical policy with the
+ * MEMBER-SCOPED durable refs (team scope + this instance — another
+ * member's instance records never enter this member's pending set).
  *
  * @param args - the boundary inputs.
  * @returns the frozen policy + the MCP facet view.

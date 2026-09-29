@@ -48,10 +48,11 @@
  *   seeded roots bound to two DISTINCT blueprints): the read-side template
  *   policy resolves the OWNING root's bound snapshot per root (F4) — never
  *   the bootstrap anchor closure, no cross-leak between roots.
- *   Direct resolver (R22.16) — the `effectiveFrom` MATERIALIZATION under
- *   deliberately overlapping mutation-record / governance-ref ids
- *   (production-disjoint residual), and the in-envelope lock SUPPRESSION
- *   (production-unreachable residual — the production envelope is empty).
+ *   Direct resolver (R22.16) — the in-envelope instance autonomy-overlay
+ *   PENDING on permissions + autonomy (NO `effectiveFrom` — the legacy step
+ *   display is retired with the production step clock, pre-alpha3 PR-B),
+ *   and the in-envelope lock SUPPRESSION (production-unreachable residual —
+ *   the production envelope is empty).
  *
  * PRODUCTION-UNREACHABLE STATES (documented residuals, not test gaps):
  * - `suppressed` requires an overlay ALLOW with items inside the Team
@@ -61,13 +62,12 @@
  *   so any overlay allow with items fails closed at stage 1 before the
  *   lock gate. R22.16b covers the state with a synthetic in-envelope policy
  *   reader over the direct resolver.
- * - `effectiveFrom` requires the winning overlay's recordId to appear in
- *   the mutation-store records lane. The production write path (remote
- *   `override.set` / `admitGovernanceOverride`) writes ONLY the governance
- *   `overrides` repository (server-minted `ovr-*` ids), while the records
- *   lane carries mutation-service records (`mutation-*` / `ledger-*` ids) —
- *   the id spaces are disjoint in production. R22.16a materializes the
- *   field under deliberately overlapping ids.
+ * - `effectiveFrom` was the legacy step display (the winning overlay's
+ *   recordId matched against the mutation-store records lane's
+ *   `effectiveFromStep`). pre-alpha3 PR-B RETIRES it with the production
+ *   step clock: the records lane has no production writer and the frozen
+ *   v2 key stays part of the closed DTO shape but the production view
+ *   never sets it (R22.16a asserts its ABSENCE).
  *
  * Runner note: the plain-node shim forbids async `it()` bodies — every
  * world drives the production entry at MODULE TOP LEVEL (the p8s5a / p8s6 /
@@ -98,7 +98,6 @@ import { stubGlueUrl } from './p8s5a-artifacts.mjs'
 import type {
   PolicyReader,
   PolicyStateTransitionRecord,
-  StoredMutationRecord,
 } from '../mutation/types.js'
 import type { GovernanceOverrideRecord } from '../../storage/schema/index.js'
 
@@ -838,21 +837,12 @@ const r22: R22State = await (async (): Promise<R22State> => {
     }),
     readExternalFacts: () => ({ hard: {}, capabilityExists: {} }),
   }
-  const recordsX: StoredMutationRecord[] = [
-    {
-      recordId: 'mut-tools-r22x',
-      kind: 'instanceOverlay',
-      scope: 'instance',
-      member: { rootSessionId: ROOT_X, instanceId: X_INSTANCE },
-      origin: 'member',
-      values: { tools: { kind: 'allow', items: ['direct-tool'] } },
-      requestedAtStep: 5,
-      effectiveFromStep: 6,
-    },
-  ]
-  // R22.16a — the governance ref carries the SAME recordId as the winning
-  // mutation record (deliberately overlapping id spaces; in production the
-  // spaces are disjoint, which is the documented residual).
+  // R22.16a — the in-envelope instance autonomy-overlay (the production
+  // reader surfaces the synthetic §19.4 envelope so the in-envelope
+  // overlay states become reachable). pre-alpha3 PR-B: the overlay is fed
+  // through the durable governance `overrides` (the production write
+  // path) — the legacy mutation-store records lane (and its
+  // `effectiveFrom` step display) is retired from the production view.
   const overrides16a: GovernanceOverrideRecord[] = [
     {
       schemaVersion: 1,
@@ -879,7 +869,6 @@ const r22: R22State = await (async (): Promise<R22State> => {
       teamDefaultWorkspace: WORKSPACE_X,
       staticModel: { ...BASELINE_MODEL },
       transitions: [],
-      records: recordsX,
       overrides: overrides16a,
       policyReader: policyReaderX,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
@@ -911,8 +900,7 @@ const r22: R22State = await (async (): Promise<R22State> => {
       teamDefaultWorkspace: WORKSPACE_X,
       staticModel: { ...BASELINE_MODEL },
       transitions: transitions16b,
-      records: recordsX,
-      overrides: [],
+      overrides: overrides16a,
       policyReader: policyReaderX,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     }) as unknown as Record<string, any>
@@ -1259,7 +1247,7 @@ describe('p8s7r2-effective-config: the R2-2 resolved effective-config view (BQ-0
 
   // --- Direct resolver — the production-unreachable derivations --------------------------------
 
-  it('R22.16a H12 (direct resolver): an overlapping mutation-record / governance-ref id materializes effectiveFrom (production-disjoint residual)', () => {
+  it('R22.16a H12 (direct resolver): the in-envelope instance autonomy-overlay surfaces pending-next-boundary on permissions + autonomy with NO effectiveFrom (the legacy step display is retired with the production step clock)', () => {
     expect(r22.x16aThrew).toBe(null)
     check(r22.x16aEc !== null, 'the R22.16a view was not captured')
     const view = r22.x16aEc
@@ -1268,14 +1256,12 @@ describe('p8s7r2-effective-config: the R2-2 resolved effective-config view (BQ-0
         value: 'direct-tool',
         source: 'autonomy-overlay',
         state: 'pending-next-boundary',
-        effectiveFrom: 6,
       },
     })
     expect(view['autonomy']).toEqual({
       value: 'tools: allow direct-tool',
       source: 'autonomy-overlay',
       state: 'pending-next-boundary',
-      effectiveFrom: 6,
     })
     expect(view['model']).toEqual({
       value: BASELINE_MODEL_VALUE,

@@ -29,7 +29,7 @@ import type { ActionCaller, LifecycleCommitPort, TeamRuntime } from '../../admis
 import type { ActivationProvider } from '../../activation/index.js';
 import type { LifecycleService } from '../../lifecycle/index.js';
 import type { OverlaySlot, TeamAgentBinder } from '../../agent-setup/binder/index.js';
-import type { MutationStore } from '../../mutation/index.js';
+import type { MutationStore, PolicyReader } from '../../mutation/index.js';
 import type { GovernanceMutationService } from '../../governance/index.js';
 import type { DurableModelSelection, DurableModelSelectionArgs, resolveDurableModelSelection } from '../../agent-setup/model/index.js';
 import type { DurableMcpFacet, DurableMcpFacetArgs, resolveDurableMcpFacet } from '../../agent-setup/capability/index.js';
@@ -561,6 +561,16 @@ export interface TeamProductionRoot {
     readonly catalog: BlueprintCatalog;
     /** The bound Team Blueprint (parsed from `config.blueprintSource`). */
     readonly blueprint: TeamBlueprint;
+    /**
+     * pre-alpha3 PR-B (plan §B.2) — the production PolicyReader (the bound-
+     * snapshot static authority: the blueprint envelope / the durable
+     * member template policy / the external hard facts). The SAME instance
+     * the activation step 8, the router inspect-config, the projection
+     * views, and the governance write-time checks consume; exposed so the
+     * host can hand it to the live request boundary (the agent-bindings
+     * glue) through its lazy ref.
+     */
+    readonly policyReader: PolicyReader;
     /** A07 — the leader actor identity (contracts, invariant 14). */
     readonly leaderIdentity: MemberIdentity;
     /** A04 — the TeamIntent/preflight catalog (the remote method catalog). */

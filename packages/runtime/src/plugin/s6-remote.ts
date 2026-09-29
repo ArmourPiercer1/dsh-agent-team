@@ -153,7 +153,7 @@ import type {
 import type { InstanceId, TeamSessionId } from '../../../contracts/src/index.js'
 import { canonicalJsonStringify } from '../../../contracts/src/index.js'
 import type { LifecycleService } from '../../lifecycle/index.js'
-import { activePolicyState } from '../../mutation/index.js'
+import { committedPolicyState } from '../../effective-policy/index.js'
 import type {
   MessagingCoordinator,
   SendTeamMessageOutcome,
@@ -1237,20 +1237,19 @@ function ledgerEntryWire(record: Record<string, unknown>): RemoteLedgerEntryValu
 }
 
 /**
- * The durable PolicyState read (the mutation store's transition rows).
+ * The durable PolicyState read (the ledger's transition rows).
  *
- * The remote read evaluates at the far-future step: it reports the state of
- * the LATEST durable transition (or the default state when the store is
- * empty). The production step clock is pinned to 0 (the step model advances
- * with the work chain, not with explicit transitions), so evaluating at
- * step 0 would hide every explicit transition from the remote read
- * permanently — the client must read back the state it set.
+ * pre-alpha3 PR-B (plan §B.2): the remote read reports the COMMITTED
+ * state — the last durable transition in COMMIT order (or the default
+ * state when the ledger is empty). The production step clock is retired
+ * as a decision source (the legacy step fields keep parse/display only):
+ * the pinned (requested 0 / effective 1) stamp is a record field, and the
+ * client reads back the state it committed.
  */
 function policyStateReadOf(
   transitions: readonly PolicyStateTransitionRecord[],
-  atStep: number,
 ): PolicyStateView {
-  return activePolicyState(transitions, atStep)
+  return committedPolicyState(transitions).state
 }
 
 /** The compatibility verdict of one durable state record (defensive read). */
@@ -2655,10 +2654,7 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
     policyState: {
       async read(teamSessionId: string): Promise<RemoteSafeRecord> {
         const root = assertBoundRoot('policyState.get', teamSessionId)
-        const view = policyStateReadOf(
-          options.mutationTransitions(root),
-          Number.MAX_SAFE_INTEGER,
-        )
+        const view = policyStateReadOf(options.mutationTransitions(root))
         // R2-1 (BQ-10): the surface reports the CURRENT state plus the
         // AVAILABLE AUTHORIZED TRANSITIONS — the bound blueprint's closed
         // state set (default + the declared states, declaration order)

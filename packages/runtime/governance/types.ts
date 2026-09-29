@@ -60,15 +60,18 @@ export interface GovernanceChainPort {
 }
 
 /**
- * The transition read cache the service appends admitted transitions to
- * (the production wiring passes the root's in-memory mutation store; the
- * transitions lane is the durable ledger's synchronous view — boot preload
- * and live commits are the only writers of that lane in production).
+ * The transition read/write seam the service consumes (pre-alpha3 PR-B,
+ * plan §B.2): the READ is the durable ledger rows in COMMIT order (the
+ * production wiring reads the ledger directly — the process-local cache is
+ * no longer the read source of any production decision; the test worlds
+ * pass their in-memory store), and the APPEND mirrors an admitted
+ * transition into the process-local view (sync; the durable row was
+ * already written by the commit port — commit-before-ack).
  */
 export interface GovernanceTransitionCache {
-  /** Append one admitted transition to the in-memory read cache (sync). */
+  /** Mirror one admitted transition into the process-local view (sync). */
   appendTransition(teamSessionId: string, transition: PolicyStateTransitionRecord): void
-  /** The admitted transitions of one team, in admission order. */
+  /** The admitted transitions of one team, in COMMIT order. */
   listTransitions(teamSessionId: string): readonly PolicyStateTransitionRecord[]
 }
 
@@ -81,10 +84,19 @@ export interface GovernanceTransitionCache {
 export interface GovernanceTransitionCommit {
   /**
    * Durably write one admitted transition (one `ledger` fact row).
+   * @param rootSessionId - the ADDRESSED TeamSession the switch targeted;
+   *   the durable row is stamped with THIS root (the durable read is
+   *   root-keyed — stamping the row's own boot root instead would make the
+   *   committed state invisible to the addressed team and leak it to a
+   *   foreign root; the overrides lane stamps `args.rootSessionId` the same
+   *   way, service.ts:266/283).
    * @param transition - the admitted transition record (the payload is
    *   mirrored verbatim into the durable row).
    */
-  commit(transition: PolicyStateTransitionRecord): Promise<void>
+  commit(
+    rootSessionId: string,
+    transition: PolicyStateTransitionRecord,
+  ): Promise<void>
 }
 
 /**
@@ -102,7 +114,8 @@ export interface GovernanceMutationServiceDeps {
   readonly chain: GovernanceChainPort
   /** The durable `overrides` store (the team_domain repository). */
   readonly overrides: OverrideStorePort
-  /** The transition read cache (in-memory; preloaded at boot). */
+  /** The transition read seam (production: the durable ledger rows in
+   *  commit order; the service's no-change check reads through it). */
   readonly transitions: GovernanceTransitionCache
   /** The durable transition commit (commit-before-ack). */
   readonly transitionCommit: GovernanceTransitionCommit
@@ -123,12 +136,6 @@ export interface GovernanceMutationServiceDeps {
   readonly policyStates: (rootSessionId: string) => readonly string[]
   /** The write clock (injected; ISO-8601 strings). */
   readonly now: () => string
-  /**
-   * The read horizon step for the active-state selection (the production
-   * clock is pinned to 0, so the resolved horizon sees every admitted
-   * transition; the maximum safe integer is the documented default).
-   */
-  readonly atStep?: number
 }
 
 // ---------------------------------------------------------------------------

@@ -335,6 +335,21 @@ interface GlueModule {
      * bound, not a sleep); a test world overrides it for determinism.
      */
     readonly writerHandoffTimeoutMs?: number
+    /**
+     * pre-alpha3 PR-B (plan §B.2, optional additive): the production
+     * PolicyReader reference (the controlServiceRef pattern — the entry
+     * creates the plain `{ current: null }` object, passes it to the
+     * glue, and fills `.current` with `builtRoot.policyReader` right
+     * after the root is constructed). The glue reads it LAZILY in
+     * `resolveConsumptionViews`: present/filled = the canonical live
+     * boundary read (the production PolicyReader + the durable
+     * PolicyState transitions — the SAME read the activation step 8,
+     * inspect-config, and the projection views run); absent/unfilled
+     * (test worlds, and the boot window before the root fills it) = the
+     * pre-PR-B legacy input (config external facts + template static
+     * grants + the implicit `default` state — bit-for-bit unchanged).
+     */
+    readonly policyReaderRef?: { current: unknown }
   }): TeamAgentBindings
 }
 
@@ -1454,6 +1469,16 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     return blueprintAuthority.resolveSnapshot(ref)
   }
 
+  // pre-alpha3 PR-B (plan §B.2): the production PolicyReader reference
+  // (the controlServiceRef pattern). The GLUE is built BEFORE the
+  // production root (the root's `live` surface is a glue dependency), so
+  // the ref is created here and filled with `builtRoot.policyReader`
+  // right after `createTeamProductionRoot` returns (BELOW). The glue
+  // reads it lazily in `resolveConsumptionViews` — by the time any agent
+  // boundary resolves, the ref is filled; a world without the ref (test
+  // compositions) keeps the pre-PR-B legacy input.
+  const policyReaderRef: { current: unknown } = { current: null }
+
   const live: TeamAgentBindings = glue.createAgentBindings({
     agents,
     sessionPersistence,
@@ -1488,6 +1513,10 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // recovery in ensureLiveAgent). The fence instance is the SAME object
     // whose listeners were registered at the top of apply() (guide §4.1).
     activationFence,
+    // pre-alpha3 PR-B (plan §B.2): the production PolicyReader reference
+    // (filled with builtRoot.policyReader right after root construction
+    // — the glue reads it lazily per boundary; see the ref's rationale).
+    policyReaderRef,
   })
 
   // --- the frozen legacy reader (A29): layout-agnostic candidate search, --
@@ -1556,6 +1585,12 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     remoteReadiness: () => teamRuntimeReadiness,
   })
   root = builtRoot
+  // pre-alpha3 PR-B (plan §B.2): the production PolicyReader reference is
+  // filled NOW (the glue's lazy read sees it from the next boundary on —
+  // the boot window before this line is unreachable for Team agent
+  // boundaries: the remote surface is not servable until the boot is
+  // armed, and the boot preload below runs after this point).
+  policyReaderRef.current = builtRoot.policyReader
 
   // --- strict-read + core-spill (Phase E, implementation guide §4/§13)
   // --- one artifact-read authority per production root, built over the

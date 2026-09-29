@@ -60,6 +60,10 @@ import type {
 import type {
   ModelSelection,
 } from '../agent-setup/model/index.js'
+import type {
+  PolicyReader,
+  PolicyStateTransitionRecord,
+} from '../mutation/index.js'
 
 // --- sources -------------------------------------------------------------------
 
@@ -229,6 +233,21 @@ export interface ActivationPorts {
   readonly projectionPublisher?: (event: ActivationProjectionEvent) => void
   /** Optional clock (ISO-8601); absent = system clock. */
   readonly now?: () => string
+  /**
+   * THE CANONICAL INPUT (pre-alpha3 PR-B, plan §B.2) — the static policy
+   * authority (the production PolicyReader: the bound snapshot's blueprint
+   * envelope + per-member template policy + external hard facts). Absent
+   * = the pre-PR-B legacy step-8 input (`externalPolicyFacts` + the
+   * template-derived static grants).
+   */
+  readonly policy?: PolicyReader
+  /**
+   * THE CANONICAL INPUT (pre-alpha3 PR-B, plan §B.2) — the durable
+   * PolicyState transitions of the addressed root (COMMIT order; the last
+   * entry is the committed state). Absent = the implicit `default` state
+   * (the pre-PR-B behavior).
+   */
+  readonly policyStateTransitions?: (rootSessionId: string) => readonly PolicyStateTransitionRecord[]
 }
 
 // --- projection ------------------------------------------------------------------

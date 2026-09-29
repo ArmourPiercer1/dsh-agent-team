@@ -614,6 +614,17 @@ export interface TeamRuntimeOptions {
      *  preference still contributes no model grant with or without a
      *  baseline (no-preference behavior unchanged). */
     readonly staticModel: import('../agent-setup/model/index.js').ModelSelection;
+    /** THE CANONICAL INPUT (pre-alpha3 PR-B, plan §B.2) — the static policy
+     *  authority (the production PolicyReader: the bound snapshot's
+     *  blueprint envelope + per-member template policy + external hard
+     *  facts). Absent = the pre-PR-B legacy inspect input
+     *  (`externalPolicyFacts` + the template-derived static grants). */
+    readonly policy?: import('../mutation/index.js').PolicyReader;
+    /** THE CANONICAL INPUT (pre-alpha3 PR-B, plan §B.2) — the durable
+     *  PolicyState transitions of the addressed root (COMMIT order; the
+     *  last entry is the committed state). Absent = the implicit
+     *  `default` state (the pre-PR-B behavior). */
+    readonly policyStateTransitions?: (rootSessionId: string) => readonly import('../mutation/index.js').PolicyStateTransitionRecord[];
     /** The deterministic clock (ISO-8601) for durable fact timestamps. */
     readonly now: () => string;
     /** The lifecycle transition commit port (the P7-T3 lifecycle module).

@@ -43,6 +43,7 @@ import { teamSessionInput } from '../../storage/test/p4-helpers.js'
 import { FileStorageSeam, destroyDir, scratchDir } from '../../testkit/fault-injection/file-seam.mjs'
 import {
   createDurableMutationStore,
+  listDurablePolicyStateTransitions,
   writePolicyStateTransitionRow,
 } from '../src/plugin/durable-mutation-store.js'
 import { createTeamOperationCoordinator } from '../coordination/index.js'
@@ -211,7 +212,7 @@ const p2Domain1 = await createTeamDomain(p2Seam1)
 await p2Domain1.repositories.teamSessions.put(teamSessionInput(ROOT as Parameters<typeof teamSessionInput>[0]))
 const p2Durable1 = createDurableMutationStore(memMutationStore(), p2Domain1.repositories, ROOT, now)
 const p2Commit1: GovernanceTransitionCommit = {
-  commit: (transition) => writePolicyStateTransitionRow(p2Domain1.repositories.ledger, ROOT, transition, now),
+  commit: (rootSessionId, transition) => writePolicyStateTransitionRow(p2Domain1.repositories.ledger, rootSessionId, transition, now),
 }
 const p2Service1 = createGovernanceMutationService({
   chain: createTeamOperationCoordinator(),
@@ -242,7 +243,7 @@ const p2Domain2 = await openTeamDomain(p2Seam2)
 const p2Durable2 = createDurableMutationStore(memMutationStore(), p2Domain2.repositories, ROOT, now)
 await p2Durable2.preload()
 const p2Commit2: GovernanceTransitionCommit = {
-  commit: (transition) => writePolicyStateTransitionRow(p2Domain2.repositories.ledger, ROOT, transition, now),
+  commit: (rootSessionId, transition) => writePolicyStateTransitionRow(p2Domain2.repositories.ledger, rootSessionId, transition, now),
 }
 const p2Service2 = createGovernanceMutationService({
   chain: createTeamOperationCoordinator(),
@@ -338,6 +339,55 @@ p5GateResolve()
 const p5result = await p5pending
 
 // ---------------------------------------------------------------------------
+// P6 (pre-alpha3 PR-B, C3 regression): a policyState.set ADDRESSED to a
+// root other than the durable store's own row root writes a ledger row
+// stamped with the ADDRESSED root (the commit port threads the addressed
+// root, root.ts:1826 — the pre-fix wiring hard-coded the row root, so the
+// row landed under the store's own root and the addressed team's durable
+// read saw nothing). The durable read is root-keyed, so the row must be
+// visible under the addressed root and ABSENT under the store's own root.
+// ---------------------------------------------------------------------------
+const P6_ADDRESSED = 'session-gov-p6-addressed'
+const p6Dir = scratchDir('gov-restart-p6')
+destroyDir(p6Dir) // self-cleaning: a crashed prior run may leave a domain behind
+const p6Seam = new FileStorageSeam(p6Dir)
+const p6Domain = await createTeamDomain(p6Seam)
+// Both team rows must exist (the durable ledger put advances the stamped
+// root's TeamSession generation; facts belong to an existing team).
+await p6Domain.repositories.teamSessions.put(teamSessionInput(ROOT as Parameters<typeof teamSessionInput>[0]))
+await p6Domain.repositories.teamSessions.put(teamSessionInput(P6_ADDRESSED as Parameters<typeof teamSessionInput>[0]))
+const p6Durable = createDurableMutationStore(memMutationStore(), p6Domain.repositories, ROOT, now)
+// The commit port mirrors the PRODUCTION wiring exactly (root.ts:1826):
+// it threads the ADDRESSED root the governance service targets into the
+// durable writer. The pre-fix port hard-coded the store's own row root.
+const p6Commit: GovernanceTransitionCommit = {
+  commit: (rootSessionId, transition) =>
+    writePolicyStateTransitionRow(p6Domain.repositories.ledger, rootSessionId, transition, now),
+}
+const p6Service = createGovernanceMutationService({
+  chain: createTeamOperationCoordinator(),
+  overrides: { list: () => Promise.resolve([] as readonly OverrideRecordView[]), put: async () => undefined },
+  transitions: p6Durable.store,
+  transitionCommit: p6Commit,
+  policy: noopPolicy,
+  registeredMembers: () => Promise.resolve([]),
+  policyStates: () => ['default', 'strict'],
+  now,
+})
+const p6switch = await p6Service.switchPolicyState({
+  actor,
+  rootSessionId: P6_ADDRESSED,
+  target: {
+    stateId: 'strict',
+    cells: { model: { value: { kind: 'allow', items: ['prov/model-p6'] } } },
+  },
+})
+const p6rowsUnderAddressed = listDurablePolicyStateTransitions(p6Domain.repositories, P6_ADDRESSED)
+const p6rowsUnderStoreRoot = listDurablePolicyStateTransitions(p6Domain.repositories, ROOT)
+const p6ledgerRows = p6Domain.repositories.ledger.list()
+destroyDir(p6Dir)
+
+// ---------------------------------------------------------------------------
 // Assertions
 // ---------------------------------------------------------------------------
 
@@ -421,5 +471,32 @@ describe('PR-A governance restart — commit-before-ack ordering', () => {
     expect(p5CommitDone).toBe(true)
     expect(p5Acked).toBe(true)
     expect(p5Transitions.listTransitions(ROOT)).toHaveLength(1)
+  })
+})
+
+describe('PR-B C3 regression — the transition row is stamped with the ADDRESSED root', () => {
+  it('the row is visible under the addressed root and absent under the store row root', () => {
+    expect(p6switch.changed).toBe(true)
+    if (!p6switch.changed) throw new Error('the addressed-root switch was not admitted')
+
+    // EXACTLY one durable row exists, and it is stamped with the ADDRESSED
+    // root (the store's own row root ROOT must NOT own the row).
+    expect(p6ledgerRows).toHaveLength(1)
+    const p6row = p6ledgerRows[0]
+    if (p6row === undefined) throw new Error('no durable transition row')
+    expect(p6row.rootSessionId).toBe(P6_ADDRESSED)
+
+    // The root-keyed durable read (the read plane's committed-state source)
+    // finds the transition UNDER THE ADDRESSED ROOT, with the full state
+    // incl. the model cell intact.
+    expect(p6rowsUnderAddressed).toHaveLength(1)
+    const p6restored = p6rowsUnderAddressed[0]
+    if (p6restored === undefined) throw new Error('no transition under the addressed root')
+    expect(p6restored.state.stateId).toBe('strict')
+    expect(p6restored.state.cells?.model?.value).toEqual({ kind: 'allow', items: ['prov/model-p6'] })
+
+    // NO leak: the store's own row root sees nothing (the pre-fix bug made
+    // this the ONLY root that saw the row, while the addressed team saw none).
+    expect(p6rowsUnderStoreRoot).toHaveLength(0)
   })
 })

@@ -57,6 +57,7 @@ import type { ActivationProvider } from '../activation/index.js';
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js';
 import type { ActionSpec } from '../admission/actions.js';
 import type { ResolvedCaller } from '../admission/resolve.js';
+import type { PolicyReader, PolicyStateTransitionRecord } from '../mutation/index.js';
 import type { LifecycleCommitPort, RuntimeActionEffect, TeamRuntimeActionRequest, WorkActivityPort, WorkDeliveryPort } from '../admission/types.js';
 import type { LifecyclePorts } from '../lifecycle/types.js';
 /** Everything one effect execution needs (all read-phase outputs). */
@@ -72,6 +73,16 @@ export interface EffectContext {
      *  routing fix). An ABSENT preference still contributes no inspect-time
      *  model grant (no-preference behavior unchanged). */
     readonly staticModel: ModelSelection;
+    /** THE CANONICAL INPUT (pre-alpha3 PR-B, plan §B.2) — the static policy
+     *  authority (the production PolicyReader). Absent = the pre-PR-B
+     *  legacy inspect input (`externalPolicyFacts` + the template-derived
+     *  static grants). */
+    readonly policy?: PolicyReader;
+    /** THE CANONICAL INPUT (pre-alpha3 PR-B, plan §B.2) — the durable
+     *  PolicyState transitions of the addressed root (COMMIT order; the
+     *  last entry is the committed state). Absent = the implicit
+     *  `default` state. */
+    readonly policyStateTransitions?: (rootSessionId: string) => readonly PolicyStateTransitionRecord[];
     readonly now: () => string;
     readonly spec: ActionSpec;
     readonly request: TeamRuntimeActionRequest;

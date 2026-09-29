@@ -1,0 +1,1 @@
+{"version":3,"file":"legacy.d.ts","sourceRoot":"","sources":["../../../../effective-policy/legacy.ts"],"names":[],"mappings":"AAAA;;;;;;;;GAQG;AAEH,OAAO,KAAK,EACV,mBAAmB,EACnB,cAAc,EACf,MAAM,kCAAkC,CAAA;AACzC,OAAO,KAAK,EAAE,YAAY,EAAE,MAAM,sBAAsB,CAAA;AAExD;;;;GAIG;AACH,wBAAgB,oBAAoB,CAClC,QAAQ,EAAE,mBAAmB,GAAG,SAAS,EACzC,cAAc,EAAE,cAAc,CAAC,QAAQ,CAAC,GAAG,SAAS,GACnD,YAAY,CAMd"}

@@ -24,7 +24,7 @@
  *
  * @module @dsh-agent-team/runtime/agent-setup/capability/mcp-facet
  */
-import { resolveActivationPolicy } from '../../activation/index.js';
+import { legacyPolicyReaderOf, readEffectivePolicy, } from '../../effective-policy/index.js';
 import { cellProvenance, } from '../../mutation/cell-provenance.js';
 /** The allow-list wildcard naming every MCP server. */
 export const MCP_FACET_WILDCARD = '*';
@@ -61,6 +61,15 @@ export function mcpFacetView(policy, serverName, options = {}) {
  * for the capability facet: a durable allow/deny takes effect on the next
  * actual operation and survives a host restart.
  *
+ * pre-alpha3 PR-B (plan §B.2): the resolution runs the ONE canonical read
+ * (`readEffectivePolicy`) — the canonical inputs are `policy` (the static
+ * policy authority) + `transitions` (the durable committed PolicyState);
+ * the pre-PR-B legacy args (`external` + `initialTemplateMcp`) remain
+ * supported and adapt to the SAME canonical read. The per-boundary view is
+ * the frozen `mcpFacetView` over the canonical policy with the
+ * MEMBER-SCOPED durable refs (team scope + this instance — another
+ * member's instance records never enter this member's pending set).
+ *
  * @param args - the boundary inputs.
  * @returns the frozen policy + the MCP facet view.
  * @throws {@link import('../../activation/index.js').ActivationError}
@@ -68,26 +77,26 @@ export function mcpFacetView(policy, serverName, options = {}) {
  *   malformed (fail closed).
  */
 export function resolveDurableMcpFacet(args) {
-    const { rootSessionId, instanceId, overrides, external, serverName, appliedRecordIds, initialTemplateMcp } = args;
-    const policy = resolveActivationPolicy({
-        rootSessionId,
-        instanceId,
-        overrides,
-        external,
-        ...(initialTemplateMcp !== undefined ? { templateValues: { mcp: initialTemplateMcp } } : {}),
-    });
-    const refs = overrides.map((record) => ({
-        recordId: record.recordId,
-        kind: record.kind,
-        scope: record.scope,
-        generation: record.generation,
-        updatedAt: record.updatedAt,
-        values: record.values,
-    }));
-    const view = mcpFacetView(policy, serverName, {
-        overrides: refs,
+    const { rootSessionId, instanceId, overrides, serverName, appliedRecordIds } = args;
+    const read = readEffectivePolicy(args.policy !== undefined
+        ? {
+            rootSessionId,
+            instanceId,
+            policy: args.policy,
+            transitions: args.transitions ?? [],
+            overrides,
+        }
+        : {
+            rootSessionId,
+            instanceId,
+            policy: legacyPolicyReaderOf(args.external, args.initialTemplateMcp !== undefined ? { mcp: args.initialTemplateMcp } : undefined),
+            transitions: [],
+            overrides,
+        });
+    const view = mcpFacetView(read.policy, serverName, {
+        overrides: read.refs,
         ...(appliedRecordIds !== undefined ? { appliedRecordIds } : {}),
     });
-    return { policy, view };
+    return { policy: read.policy, view };
 }
 //# sourceMappingURL=mcp-facet.js.map
