@@ -1,0 +1,98 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prd-control-generalization/packages/runtime
+
+ ❯ test/.red-run-scratch.test.ts (10 tests | 5 failed) 10ms
+     × S1: INLINE + mid-wait abort → the SAME request is durably ABANDONED — typed wait-abort with the adjusted ABANDONED message 5ms
+     × S1: the durable close — one abandon fact (reason wait-aborted), the request row NOT removed, zero decision facts, status derived abandoned 1ms
+     × S2: INLINE + pre-aborted signal → the same cascade (the pre-abort branch) — typed wait-abort with the adjusted ABANDONED message 1ms
+     × S3: exactly-once after the cascade — the explicit abandon and the late allow are both rejected (the mark is already durable) 0ms
+     ✓ S3: zero effect — the guard blocks with request-abandoned (zero execution, zero consumption); one abandon fact, zero decision facts 0ms
+     ✓ S4: GUARDED + mid-wait abort → TODAY exactly — PENDING, zero abandon facts, the LEGACY message, a later resolve still works 0ms
+     ✓ S5: LEGACY (coupling ABSENT) + mid-wait abort → TODAY exactly — PENDING, zero abandon facts, the LEGACY message, a later resolve still works 0ms
+     ✓ S6: the race — a durable decision wins before the signal → the wait RESOLVES with it (the first decision is authoritative), NO abandon fact 0ms
+     × S7: the storage-fault contract through the SAME write path — the faulted cascade rejects typed DURABLE_WRITE_FAILED (never a half-abandoned claim) 1ms
+     ✓ S7: zero side effects of the faulted cascade — no abandon fact, the request is still PENDING, a later resolve still works 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/.red-run-scratch.test.ts > RED-RUN SCRATCH: pre-alpha3 PR-D D.4 — cascade suite without the cascade (reverse verification) > S1: INLINE + mid-wait abort → the SAME request is durably ABANDONED — typed wait-abort with the adjusted ABANDONED message
+AssertionError: expected 'ControlService: awaitControlDecision …' to be 'ControlService: awaitControlDecision …' // Object.is equality
+
+Expected: "ControlService: awaitControlDecision for request 'ctrl-0ydac3t0nxizhq1y25xkn0o7' was aborted before a durable decision appeared (the INLINE request is durably ABANDONED — the additive close fact 'control-request-abandoned' is the terminal mark; the frozen invocation is dead and a retry is a NEW request)"
+Received: "ControlService: awaitControlDecision for request 'ctrl-0ydac3t0nxizhq1y25xkn0o7' was aborted before a durable decision appeared (zero side effects — the request stays durable and undecided)"
+
+ ❯ test/.red-run-scratch.test.ts:578:28
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  test/.red-run-scratch.test.ts > RED-RUN SCRATCH: pre-alpha3 PR-D D.4 — cascade suite without the cascade (reverse verification) > S1: the durable close — one abandon fact (reason wait-aborted), the request row NOT removed, zero decision facts, status derived abandoned
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ test/.red-run-scratch.test.ts:584:29
+    582|
+    583|   it('S1: the durable close — one abandon fact (reason wait-aborted), …
+    584|     expect(s1.abandonFacts).toBe(1)
+       |                             ^
+    585|     expect(s1.abandonReason).toBe('wait-aborted')
+    586|     // The request row is never physically removed (append-only ledger…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  test/.red-run-scratch.test.ts > RED-RUN SCRATCH: pre-alpha3 PR-D D.4 — cascade suite without the cascade (reverse verification) > S2: INLINE + pre-aborted signal → the same cascade (the pre-abort branch) — typed wait-abort with the adjusted ABANDONED message
+AssertionError: expected 'ControlService: awaitControlDecision …' to be 'ControlService: awaitControlDecision …' // Object.is equality
+
+Expected: "ControlService: awaitControlDecision for request 'ctrl-18wydyq0dduxmt12f5rzw1ju' was aborted before the wait began (the INLINE request is durably ABANDONED — the additive close fact 'control-request-abandoned' is the terminal mark; the frozen invocation is dead and a retry is a NEW request)"
+Received: "ControlService: awaitControlDecision for request 'ctrl-18wydyq0dduxmt12f5rzw1ju' was aborted before the wait began"
+
+ ❯ test/.red-run-scratch.test.ts:594:28
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  test/.red-run-scratch.test.ts > RED-RUN SCRATCH: pre-alpha3 PR-D D.4 — cascade suite without the cascade (reverse verification) > S3: exactly-once after the cascade — the explicit abandon and the late allow are both rejected (the mark is already durable)
+AssertionError: expected 'CALL_SUCCEEDED' to be 'CONTROL_REQUEST_ABANDONED' // Object.is equality
+
+Expected: "CONTROL_REQUEST_ABANDONED"
+Received: "CALL_SUCCEEDED"
+
+ ❯ test/.red-run-scratch.test.ts:603:36
+    601|
+    602|   it('S3: exactly-once after the cascade — the explicit abandon and th…
+    603|     expect(s3.explicitAbandonCode).toBe(CONTROL_ERROR_CODES.CONTROL_RE…
+       |                                    ^
+    604|     expect(s3.lateAllowCode).toBe(CONTROL_ERROR_CODES.CONTROL_REQUEST_…
+    605|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  test/.red-run-scratch.test.ts > RED-RUN SCRATCH: pre-alpha3 PR-D D.4 — cascade suite without the cascade (reverse verification) > S7: the storage-fault contract through the SAME write path — the faulted cascade rejects typed DURABLE_WRITE_FAILED (never a half-abandoned claim)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/.red-run-scratch.test.ts:654:37
+    652|   it('S7: the storage-fault contract through the SAME write path — the…
+    653|     expect(s7.rejected).toBe(true)
+    654|     expect(s7.isDurableWriteFailed).toBe(true)
+       |                                     ^
+    655|   })
+    656|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 5 passed (10)
+   Start at  02:08:47
+   Duration  824ms (transform 454ms, setup 0ms, import 726ms, tests 10ms, environment 0ms)

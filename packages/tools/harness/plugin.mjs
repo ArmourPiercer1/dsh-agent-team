@@ -568,6 +568,24 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
               correlation: r.correlation,
               status: r.status,
               createdAt: r.createdAt,
+              // pre-alpha3 PR-D: the closed subject (instance|template|
+              // team), the execution coupling (guarded|inline) and the
+              // request's ledger sequence — all DERIVED from the durable
+              // row (listControlState), never row-local state. Legacy
+              // rows carry NO subject/coupling (the additive fields are
+              // ABSENT there — the pre-PR-D shape is unchanged).
+              ...(r.subject !== undefined ? { subject: r.subject } : {}),
+              ...(r.executionCoupling !== undefined ? { executionCoupling: r.executionCoupling } : {}),
+              ...(r.requestSequence !== undefined ? { requestSequence: r.requestSequence } : {}),
+              // pre-alpha3 PR-D D.6 gate: the ask-lane routing markers ride
+              // the request summary (the bounded command preview), and the
+              // fingerprint is the guard-scope identity — both are DERIVED
+              // from the durable row like the fields above (additive;
+              // ABSENT on legacy rows that carry neither).
+              ...(r.operationFingerprint !== undefined
+                ? { operationFingerprint: r.operationFingerprint }
+                : {}),
+              ...(r.summary !== undefined ? { summary: r.summary } : {}),
             })),
             decisions: controlState.decisions.map((d) => ({
               requestId: d.requestId,
@@ -581,6 +599,17 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
               requestId: c.requestId,
               decisionSequence: c.decisionSequence,
               consumedAt: c.consumedAt,
+            })),
+            // pre-alpha3 PR-D (D.4): the additive `control-request-
+            // abandoned` close facts — the TERMINAL marks (a request can
+            // never become an allow once abandoned). Derived from the
+            // durable ledger on every read (fresh, no cache).
+            abandonments: controlState.abandonments.map((a) => ({
+              requestId: a.requestId,
+              rootSessionId: a.rootSessionId,
+              abandonedAt: a.abandonedAt,
+              abandonmentSequence: a.abandonmentSequence,
+              ...(a.reason !== undefined ? { reason: a.reason } : {}),
             })),
           },
           activity: activityRows.map((row) => ({
@@ -720,6 +749,200 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
       }
     },
   }, 'p6t6 governance mutation route'))
+
+  // pre-alpha3 PR-D §D.6 (real-host control gate): the TEST-ONLY
+  // control-plane driver route — a thin HTTP wrapper over the SINGLE
+  // production control-service authority (teamRoot.control, the
+  // host-constructed service): the durable request recording
+  // (commit-before-ack), the exactly-once abandon close, the guard's
+  // check-and-reserve, and the SYNCHRONOUS WAIT BRIDGE (alpha.2 §9.4)
+  // all live in the SERVICE. This row adds NO control logic: it forwards
+  // the closed input, maps the typed CONTROL_* codes onto HTTP status,
+  // and reports the service result verbatim.
+  // (PR-E's recovery-review flow is the future PRODUCT creator of the
+  // template-subject inline request; until that wire exists in this
+  // branch, the only creator of subject/coupling-bearing requests
+  // reachable from a real host is this test-only route — documented in
+  // the D.6 gate evidence, not hidden.) The `guard` action is a
+  // READ-ONLY probe for the gate: it is only ever issued against scopes
+  // that resolve to a BLOCK verdict, and a blocked guardOperation writes
+  // no ledger fact (only the ALLOW verdict writes the one-shot
+  // consumption). The `wait` action wires the PRODUCTION
+  // `awaitControlDecision` to the CLIENT CONNECTION: an AbortController
+  // whose `abort()` is driven by the request's `close` event (the HTTP
+  // client went away — a real disconnect, not a simulated flag). The
+  // bridge's coupling-aware abort cascade (the inline lifecycle's
+  // `abort → durable abandon/close → zero effect` node) runs ENTIRELY in
+  // the service; this row only translates "the socket closed" into the
+  // bridge's signal and reports the typed settle (which is undeliverable
+  // to a disconnected client by design — the durable effect is the
+  // point).
+  ctx.effect(() => webServer.register({
+    kind: 'exact',
+    path: '/__p6t6/control/mutate',
+    handler: async (req, res) => {
+      if (!teamRootGuard(res, teamRoot)) return
+      if (req.method !== 'POST') {
+        sendJson(res, 405, { error: 'POST only' })
+        return
+      }
+      let body
+      try {
+        body = JSON.parse((await readBody(req)) || '{}')
+      } catch (error) {
+        sendJson(res, 400, { error: `bad JSON body: ${String(error?.message ?? error)}` })
+        return
+      }
+      const action = typeof body?.action === 'string' ? body.action : null
+      if (action !== 'request' && action !== 'abandon' && action !== 'guard' && action !== 'wait') {
+        sendJson(res, 400, { error: 'body.action must be "request" | "abandon" | "guard" | "wait"' })
+        return
+      }
+      try {
+        await readyGate
+        if (setupError !== null) {
+          sendJson(res, 503, { error: 'row setup failed', setupError })
+          return
+        }
+        // The driver principal defaults to the host-known human of the
+        // addressed root (the SAME principal the remote v4 resolveControl
+        // derives server-side for its T12-B4 trusted-caller seam). A
+        // member caller can be presented verbatim ({kind:'instance',
+        // instanceId}) for the mayAbandon own-request lane.
+        //
+        // D.6 gate seam: request/abandon/guard target the directive-owned
+        // root (the legacy boot team) BY DEFAULT; the gate passes
+        // `rootSessionId` explicitly to address the PR-D control team,
+        // whose durable rows it reads over the remote ledger page (the
+        // product read plane). Without the override, gate-authored
+        // requests would land under the boot root and be invisible to
+        // every ROOT_P assertion (run-11).
+        const targetRoot = typeof body?.rootSessionId === 'string' && body.rootSessionId.length > 0
+          ? body.rootSessionId
+          : rootSid
+        const caller =
+          body?.caller !== undefined && body.caller !== null && typeof body.caller === 'object'
+            ? body.caller
+            : { kind: 'human', humanId: targetRoot }
+        let outcome
+        try {
+          if (action === 'request') {
+            const args = {
+              rootSessionId: targetRoot,
+              caller,
+              kind: body.kind,
+              actionName: body.actionName,
+              correlation: body.correlation,
+            }
+            for (const key of [
+              'subject',
+              'targetInstanceId',
+              'toolName',
+              'capabilityDomain',
+              'operationFingerprint',
+              'summary',
+              'reviewPayload',
+              'reviewPayloadDigest',
+              'executionCoupling',
+            ]) {
+              if (body[key] !== undefined) args[key] = body[key]
+            }
+            outcome = await teamRoot.control.requestControl(args)
+          } else if (action === 'abandon') {
+            outcome = await teamRoot.control.abandonControlRequest({
+              rootSessionId: targetRoot,
+              caller,
+              requestId: body.requestId,
+              ...(body.reason !== undefined ? { reason: body.reason } : {}),
+            })
+          } else if (action === 'wait') {
+            // The PRODUCTION wait bridge (alpha.2 §9.4): this row only
+            // translates "the HTTP client went away" (a REAL disconnect)
+            // into the bridge's AbortSignal; every control decision (the
+            // coupling-aware abort cascade included) runs in the service.
+            // A decision that lands while the client is still connected
+            // resolves the HTTP request normally; a settle after the
+            // disconnect is undeliverable by design (the durable effect
+            // is the point — the ledger, not the response, is the
+            // receipt).
+            //
+            // Disconnect detection (pre-alpha3 PR-D round-3, empirically
+            // pinned on the 0.1.7 host): the production webserver hands
+            // routes a PROTOTYPE-CHAINED CLONE of the IncomingMessage
+            // (the gzip middleware's `Object.create(req)`), and on that
+            // host neither the clone NOR the raw message emits
+            // 'close'/'aborted' when the client destroys the connection
+            // (instrumented diagnosis: the raw object's probe listener
+            // never fired, while the real socket's 'close' did). The
+            // socket is the one object the clone cannot shadow —
+            // `res.socket === req.socket`, a real net.Socket shared
+            // through the prototype chain — so its 'close' is the
+            // authoritative "the client is gone" signal. The
+            // req-level 'close' listener is kept as the plain-node
+            // path (a direct IncomingMessage emits it on abort) and
+            // both registrations drive the same idempotent abort()
+            // (the service's signal listener is `{ once: true }`), so
+            // a double fire is a no-op.
+            const waitAc = new AbortController()
+            const onClientClose = () => {
+              waitAc.abort()
+            }
+            const clientSocket = req.socket
+            req.on('close', onClientClose)
+            if (clientSocket !== undefined) {
+              clientSocket.on('close', onClientClose)
+            }
+            try {
+              outcome = await teamRoot.control.awaitControlDecision({
+                rootSessionId: targetRoot,
+                requestId: body.requestId,
+                signal: waitAc.signal,
+              })
+            } finally {
+              req.off('close', onClientClose)
+              if (clientSocket !== undefined) {
+                clientSocket.off('close', onClientClose)
+              }
+            }
+          } else {
+            const scope = { rootSessionId: targetRoot }
+            for (const key of [
+              'subject',
+              'targetInstanceId',
+              'actionName',
+              'toolName',
+              'capabilityDomain',
+              'correlation',
+              'operationFingerprint',
+            ]) {
+              if (body[key] !== undefined) scope[key] = body[key]
+            }
+            outcome = await teamRoot.control.guardOperation(scope)
+          }
+        } catch (error) {
+          // The typed CONTROL_* codes pass through UNCHANGED (the same
+          // closed vocabulary the remote v4 boundary maps — invariant
+          // 4b): the gate asserts on `code`, not on the HTTP status.
+          const code = typeof error?.code === 'string' ? error.code : 'INTERNAL_CONTROL_ERROR'
+          const status = code === 'CONTROL_REQUEST_MALFORMED'
+            ? 400
+            : code.startsWith('CONTROL_')
+              ? 409
+              : 500
+          sendJson(res, status, {
+            ok: false,
+            code,
+            message: String(error?.message ?? error),
+            ...(error?.info !== undefined ? { info: error.info } : {}),
+          })
+          return
+        }
+        sendJson(res, 200, { ok: true, action, value: outcome })
+      } catch (error) {
+        sendJson(res, 500, { error: String(error?.message ?? error) })
+      }
+    },
+  }, 'p6t6 control mutation route'))
 
   ctx.effect(() => webServer.register({
     kind: 'exact',
