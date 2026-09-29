@@ -37,13 +37,17 @@
  *    preset's own upstream assembly semantics are preserved by
  *    construction (the closed seams expose no mutation).
  *
- * Decision table (the P5-T2 must-test groups):
+ * Decision table (the P5-T2 must-test groups; pre-alpha3 PR-E §E.3 adds
+ * the honest bare-world FATAL lane — the persona KIND convention, the
+ * requirement subject is the required KIND `standard`, the world fact
+ * subject the OBSERVED kind):
  *
- * | effective persona | engine outcome | adapter effect                                   |
- * | ----------------- | -------------- | ------------------------------------------------ |
- * | absent            | (not probed)   | no scoped identity, no error — bind proceeds     |
- * | standard (false)  | PASS           | scoped identity installed on the prompt surface  |
- * | complete (true)   | FATAL          | TeamPersonaOverlayError — FATAL before work      |
+ * | observed persona kind | engine outcome / code                    | adapter effect                                   |
+ * | --------------------- | ---------------------------------------- | ------------------------------------------------ |
+ * | absent                | (not probed)                             | no scoped identity, no error — bind proceeds     |
+ * | standard              | PASS                                     | scoped identity installed on the prompt surface  |
+ * | complete              | FATAL / TEAM_PERSONA_COMPLETE_PRESET_... | TeamPersonaOverlayError — FATAL before work      |
+ * | (no persona fact)     | FATAL / PERSONA_INCOMPATIBLE             | TeamPersonaOverlayError — honest bare-world FATAL|
  *
  * The adapter holds NO bind state (pure over its injected seams per call),
  * so repeated installs converge to the same scoped identity (idempotent in
@@ -69,13 +73,28 @@ export declare const PERSONA_PROBE_GENERATION = 1;
  * domain, §13.5): structural (`complete: true`) — if the preset's
  * effective persona cannot compose the Team identity, the outcome is a
  * mandatory FATAL with no downgrade and no Continue Anyway.
+ *
+ * pre-alpha3 PR-E (plan §E.3) — the persona KIND convention: the
+ * requirement's subject is the REQUIRED persona KIND (the team constant —
+ * ONLY `standard` this increment; the closed `RequiredPersonaKind` set),
+ * NOT the preset id. The world fact's subject is the OBSERVED kind; the
+ * engine probes kind-against-kind (a bare world reports the honest
+ * PERSONA_INCOMPATIBLE, a complete world the §13.5 CONFLICT — the engine
+ * re-keying). No substrate argument: the required kind is a Team constant
+ * (the requirement does not vary with the mounted preset).
  */
-export declare function personaRequirement(substrate: AgentPresetSubstrateFacts): RequirementInput;
+export declare function personaRequirement(): RequirementInput;
 /**
- * The public environment fact for the persona probe: the preset's
- * effective persona is COMPOSABLE (standard) or COMPLETE (the §13.5
- * conflict — the complete section restores itself as the sole system
- * prompt after the assemble waterfall, so the scoped shadow cannot hold).
+ * The public environment fact for the persona probe: the OBSERVED persona
+ * KIND of the actually-mounted preset (the world fact — subject = kind).
+ *
+ * pre-alpha3 PR-E (plan §E.3) — the persona KIND convention: the subject
+ * is the observed KIND (not the preset id). `standard` (the composable
+ * case) is available; `complete` (the §13.5 conflict — the complete
+ * section restores itself as the sole system prompt after the assemble
+ * waterfall, so the scoped shadow cannot hold) is not; the engine keys
+ * the CONFLICT vs INCOMPATIBLE code on whether the world PROVIDES a
+ * `complete` fact.
  */
 export declare function personaEnvironmentFacts(substrate: AgentPresetSubstrateFacts): readonly EnvironmentFact[];
 /**

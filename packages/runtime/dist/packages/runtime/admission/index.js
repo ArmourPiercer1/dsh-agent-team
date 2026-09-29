@@ -42,4 +42,7 @@ export { ACTION_NAMES, ACTION_NAME_VALUES, ACTION_CATEGORIES, RUNTIME_OPS, PROGR
 export { checkCallerRoleAuthority, resolveCaller, resolveInstanceToken, resolveTeamAndTarget, } from './resolve.js';
 export { ALL_MUTATION_OPS, callerEnvelope, ENVELOPE_EXEC_OPS, enforceEnvelope, leaderExecEnvelopeOps, overlayEnvelopeOf, } from './envelope.js';
 export { enforceCompatibilityGate, enforceWorkAcceptingState, isNewWorkAdmission, mapActivationError, } from './gate.js';
+// pre-alpha3 PR-E (plan §E.4/§E.7/§E.8/§E.10): the requirement/recovery gate
+// (the LIVE new-work admission gate that supersedes `enforceCompatibilityGate`).
+export { actionImpactOf, enforceRequirementGate, evaluateAllScopes, readRequirementFacts, } from './requirement-gate.js';
 //# sourceMappingURL=index.js.map

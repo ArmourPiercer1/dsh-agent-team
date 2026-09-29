@@ -43,8 +43,16 @@ export const BLUEPRINT_DOCUMENT_SCHEMA_VERSION = 1;
 /**
  * All blueprint document schema versions this build parses. A document
  * `schemaVersion` outside this set fails loudly.
+ *
+ * `1` = the frozen v1 document (the flat top-level `requirements` list in
+ * the {@link BLUEPRINT_REQUIREMENT_FIELDS} shape only). `2` = plan §E.2:
+ * the structured requirement levels (Team / Leader / MemberTemplate) in the
+ * compatibility requirement vocabulary (the {@link BLUEPRINT_V2_REQUIREMENT_FIELDS}
+ * shape). A v1 document parses by the OLD closed schema UNCHANGED — the v2
+ * rules are applied ONLY to `schemaVersion: 2` documents (the v1 validator is
+ * frozen and must not be tightened into v2 rules).
  */
-export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [1];
+export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [1, 2];
 /**
  * The exact closed field set of a blueprint document (top level).
  * Order is presentation only; validation never depends on it.
@@ -89,6 +97,38 @@ export const BLUEPRINT_CAPABILITIES_FIELDS = [
 ];
 /** The exact closed field set of a capability requirement. */
 export const BLUEPRINT_REQUIREMENT_FIELDS = ['domain', 'name', 'optional'];
+/**
+ * The exact closed field set of a schema-v2 structured requirement (plan
+ * §E.2) — the richer compatibility-vocabulary declaration used at all three
+ * levels (Team / Leader / MemberTemplate). It carries an explicit
+ * `requirementId`, the closed §27.1 `type`, the probeable `subjects`, and
+ * the structural `complete` ruling (defaults to `false` when omitted).
+ */
+export const BLUEPRINT_V2_REQUIREMENT_FIELDS = [
+    'requirementId',
+    'type',
+    'subjects',
+    'complete',
+];
+/**
+ * The exact closed TOP-LEVEL field set of a schema-v2 document (plan §E.2):
+ * the frozen v1 top-level set (unchanged — v1 documents parse against
+ * {@link BLUEPRINT_TOP_LEVEL_FIELDS}) plus the v2 TEAM-level structured
+ * requirement field `teamRequirements`. The v1 `requirements` field is kept
+ * in the set (it stays a legal, frozen team-level mechanism in v2 documents,
+ * typically empty).
+ */
+export const BLUEPRINT_TOP_LEVEL_FIELDS_V2 = [
+    ...BLUEPRINT_TOP_LEVEL_FIELDS,
+    'teamRequirements',
+];
+/**
+ * The exact closed TEMPLATE field set of a schema-v2 document (plan
+ * §E.2/§E.3): the frozen v1 template set (unchanged — v1 templates parse
+ * against {@link BLUEPRINT_TEMPLATE_FIELDS}) plus the per-template
+ * structured requirement field `requirements`.
+ */
+export const BLUEPRINT_TEMPLATE_FIELDS_V2 = [...BLUEPRINT_TEMPLATE_FIELDS, 'requirements'];
 /** The exact closed field set of a mutation envelope. */
 export const BLUEPRINT_ENVELOPE_FIELDS = ['allow', 'deny'];
 /** The exact closed field set of a member envelope entry. */

@@ -43,7 +43,11 @@
  *      (settlement — re-acquired WITHOUT the request signal) run outside
  *      it. See `work-execution.ts` for the topology.
  */
-import { checkCallerRoleAuthority, callerEnvelope, enforceCompatibilityGate, enforceEnvelope, isNewWorkAdmission, resolveCaller, resolveTeamAndTarget, validateActionRequest, workExecutionModeOf, } from '../admission/index.js';
+import { actionImpactOf, checkCallerRoleAuthority, callerEnvelope, enforceEnvelope, enforceRequirementGate, isNewWorkAdmission, resolveCaller, resolveTeamAndTarget, validateActionRequest, workExecutionModeOf, } from '../admission/index.js';
+import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError, isTeamRuntimeError, } from '../admission/errors.js';
+import { CONTROL_ERROR_CODES, CONTROL_EXECUTION_COUPLINGS, CONTROL_REQUEST_KINDS, isControlError, } from '../control/index.js';
+import { sha256Hex } from '../../domain/blueprint/src/index.js';
+import { canonicalJsonStringify } from '../../contracts/src/index.js';
 import { executeEffect, executeEffectLocked, isWorkChainStage, withTeamLock, asAbortLike } from './effects.js';
 import { scanWorkStatus } from './work-execution.js';
 /**
@@ -84,6 +88,85 @@ async function notifyAsyncWorkCompletionIfTerminal(args) {
     });
 }
 /**
+ * pre-alpha3 PR-E (plan §E.9) — the target template id of one NEW WORK
+ * request (for the requirement impact's scopeRefs): the follow-up's
+ * addressed member template, the delegate's named template (or the
+ * addressed member's template in the instance-first form), the
+ * create-member's named template; `undefined` when the action names no
+ * template (the Team scope only).
+ */
+function newWorkTargetTemplateId(request, spec, resolved, repositories) {
+    if (request.action === 'follow-up') {
+        return resolved.target !== undefined ? String(resolved.target.templateId) : undefined;
+    }
+    if (request.action === 'delegate') {
+        if (request.delegationTemplateId !== undefined) {
+            return String(request.delegationTemplateId);
+        }
+        if (request.delegationInstanceId !== undefined) {
+            const member = repositories.memberInstances.get(resolved.rootSessionId, String(request.delegationInstanceId));
+            return member !== undefined ? String(member.templateId) : undefined;
+        }
+        return undefined;
+    }
+    // create-member: the named template.
+    return request.delegationTemplateId !== undefined ? String(request.delegationTemplateId) : undefined;
+}
+/**
+ * pre-alpha3 PR-E (plan §E.9) — the CANONICAL Control subject of one
+ * recovery dispatch: the concrete work unit the human reviews — the
+ * instance for follow-up, the named template for delegate/create-member,
+ * the team when no narrower scope is named. (A template/team subject must
+ * NOT carry `targetInstanceId` — the control facade rejects the
+ * combination fail-closed.)
+ */
+function recoveryDispatchSubject(request, targetTemplateId, rootSessionId) {
+    if (request.action === 'follow-up' && request.targetInstanceId !== undefined) {
+        return { kind: 'instance', instanceId: String(request.targetInstanceId) };
+    }
+    if (targetTemplateId !== undefined) {
+        return { kind: 'template', templateId: targetTemplateId };
+    }
+    return { kind: 'team', rootSessionId };
+}
+/**
+ * pre-alpha3 PR-E (plan §E.9) — the COMPLETE normalized review payload of
+ * one recovery dispatch (lossless JSON): every fact a human reviewer needs
+ * to decide — the exact operation, the blocked scopes with their fatal
+ * requirements and the downed capability subjects, and the reduced-
+ * authority preview (the reduced ORIGINAL authority: the downed subjects
+ * unavailable, everything else unchanged, the external hard ceiling
+ * absolute). The digest of this payload is the review identity the UI
+ * shows (the "exact reviewed payload" — scenario: the UI must display
+ * what was actually approved).
+ */
+function buildRecoveryDispatchPayload(args) {
+    return {
+        schema: 'dsh-agent-team/recovery-dispatch/v1',
+        rootSessionId: args.rootSessionId,
+        action: args.request.action,
+        caller: args.request.caller,
+        ...(args.request.targetInstanceId !== undefined
+            ? { targetInstanceId: args.request.targetInstanceId }
+            : {}),
+        ...(args.targetTemplateId !== undefined ? { templateId: args.targetTemplateId } : {}),
+        requestedOperation: `one recovery attempt of '${args.request.action}'${args.request.targetInstanceId !== undefined
+            ? ` on member '${args.request.targetInstanceId}'`
+            : args.targetTemplateId !== undefined
+                ? ` on template '${args.targetTemplateId}'`
+                : ''}`,
+        blockedScopes: [...args.blockedScopes],
+        downedCapabilitySubjects: [...args.unavailableSubjects],
+        reducedAuthority: {
+            policy: 'reduced original authority (plan §E.9)',
+            unavailableSubjects: [...args.unavailableSubjects],
+            otherwise: 'unchanged (the original permissions apply)',
+            externalHardCeiling: 'absolute (never bypassed)',
+        },
+        effect: 'allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)',
+    };
+}
+/**
  * Create the TeamRuntime over the injected ports.
  *
  * @param options - the TeamDomain (durable authority), the P6-T1
@@ -111,6 +194,140 @@ export function createTeamRuntime(options) {
     // (one entry per in-flight Phase B/C of an `execution: 'async'` work
     // admission; removed on settlement or fail-closed throw).
     const inFlightDetachedWork = new Set();
+    // pre-alpha3 PR-E (plan §E.9): the per-runtime recovery-dispatch
+    // sequence — the control `correlation` must be NEW per attempt (a retry
+    // after a deny creates a NEW control request; the control service docs).
+    let recoveryDispatchSequence = 0;
+    /**
+     * pre-alpha3 PR-E (plan §E.9) — the recovery dispatch: when the
+     * requirement gate blocked a NEW WORK attempt with
+     * `details.recoveryDispatchAvailable: true` and a Control service is
+     * wired, offer the human-reviewed recovery Control request (the inline
+     * coupling) OUTSIDE the team lock. Returns the fresh admission outcome
+     * on a durable `allow` (the caller RETURNS it — the staged-effect
+     * machinery of the blocked attempt is skipped: the fresh performAction
+     * ran the whole chain itself); throws the typed zero-effect block on
+     * `deny` / abort (`details.controlDecision` = `deny` / `abandoned` — the
+     * operation remains blocked, no durable effect); returns `undefined` for
+     * a non-offer error (a different code, no `recoveryDispatchAvailable`,
+     * no Control service wired — the caller re-throws the ORIGINAL error
+     * unchanged: the original typed contract stands).
+     */
+    async function dispatchRecoveryIfOffered(error, args) {
+        if (!isTeamRuntimeError(error) ||
+            error.code !== TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED) {
+            return undefined;
+        }
+        const details = (error.details ?? {});
+        if (details['recoveryDispatchAvailable'] !== true)
+            return undefined;
+        const blockedScopes = Array.isArray(details['blockedScopes'])
+            ? details['blockedScopes'].map((value) => String(value))
+            : [];
+        const unavailableSubjects = Array.isArray(details['unavailableSubjects'])
+            ? details['unavailableSubjects'].map((value) => String(value))
+            : [];
+        const controlService = options.controlServiceRef?.current;
+        if (controlService === undefined) {
+            // No Control coupling wired (the pre-control wiring / test worlds
+            // without a control service): the original typed block stands
+            // (fail closed — recovery dispatch is an OFFER, never a bypass).
+            return undefined;
+        }
+        const { request } = args;
+        const payload = buildRecoveryDispatchPayload({
+            request,
+            rootSessionId: args.rootSessionId,
+            targetTemplateId: args.targetTemplateId,
+            blockedScopes,
+            unavailableSubjects,
+        });
+        recoveryDispatchSequence += 1;
+        const record = await controlService.requestControl({
+            rootSessionId: args.rootSessionId,
+            caller: request.caller,
+            kind: CONTROL_REQUEST_KINDS.USER_APPROVAL,
+            subject: recoveryDispatchSubject(request, args.targetTemplateId, args.rootSessionId),
+            ...(request.targetInstanceId !== undefined
+                ? { targetInstanceId: String(request.targetInstanceId) }
+                : {}),
+            actionName: request.action,
+            correlation: `recovery:${request.requestToken}:${recoveryDispatchSequence.toString(36)}`,
+            summary: `recovery dispatch: one reviewed attempt of '${request.action}' on the blocked ` +
+                `scope(s) [${blockedScopes.join(', ')}] on the reduced original authority`,
+            reviewPayload: payload,
+            reviewPayloadDigest: `sha256:${sha256Hex(canonicalJsonStringify(payload))}`,
+            executionCoupling: CONTROL_EXECUTION_COUPLINGS.INLINE,
+        });
+        let decision;
+        try {
+            decision = await controlService.awaitControlDecision({
+                rootSessionId: args.rootSessionId,
+                requestId: record.requestId,
+                ...(request.signal !== undefined
+                    ? { signal: request.signal }
+                    : {}),
+            });
+        }
+        catch (waitError) {
+            if (isControlError(waitError) &&
+                (waitError.code === CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED ||
+                    waitError.code === CONTROL_ERROR_CODES.CONTROL_WAIT_CLOSED)) {
+                // Abort: the requester ABANDONS the request — the durable
+                // `control-request-abandoned` terminal mark is written BEFORE
+                // return (the zero durable effect is guaranteed by the terminal
+                // mark: the request can never become an allow afterwards).
+                try {
+                    await controlService.abandonControlRequest({
+                        rootSessionId: args.rootSessionId,
+                        caller: request.caller,
+                        requestId: record.requestId,
+                        reason: String(waitError.code),
+                    });
+                }
+                catch {
+                    // Best-effort bookkeeping: a concurrent abandon/close is not a
+                    // new fault class — the zero-effect typed outcome below stands
+                    // on the wait failure itself.
+                }
+                throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, 'TeamRuntime: the recovery dispatch was abandoned (the wait aborted) — zero durable effect (the operation remains blocked)', {
+                    rootSessionId: args.rootSessionId,
+                    status: 'BLOCKED_FATAL',
+                    gateReason: 'requiredScopeDown',
+                    blockedScopes: [...blockedScopes],
+                    source: 'requirement-gate',
+                    controlDecision: 'abandoned',
+                    controlRequestId: record.requestId,
+                });
+            }
+            throw waitError;
+        }
+        if (decision.decision !== 'allow') {
+            // Deny: ZERO durable effect (the durable deny decision is the
+            // record; the operation remains blocked).
+            throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, 'TeamRuntime: the recovery dispatch was denied by the reviewer — zero durable effect (the operation remains blocked)', {
+                rootSessionId: args.rootSessionId,
+                status: 'BLOCKED_FATAL',
+                gateReason: 'requiredScopeDown',
+                blockedScopes: [...blockedScopes],
+                source: 'requirement-gate',
+                controlDecision: 'deny',
+                controlRequestId: record.requestId,
+            });
+        }
+        // Allow: the FRESH admission with the reviewed recovery marker (the
+        // full chain re-runs — the gate now classifies the action as
+        // recoveryWork and allows it on the blocked scopes, writing the
+        // incident-opened fact; the provider admits the activation on the
+        // reduced original authority).
+        return performAction({
+            ...request,
+            recovery: {
+                scopeKeys: [...blockedScopes],
+                unavailableSubjects: [...unavailableSubjects],
+            },
+        });
+    }
     async function performAction(request) {
         // Step 1 — validate the request shape (closed action vocabulary).
         const spec = validateActionRequest(request);
@@ -126,16 +343,35 @@ export function createTeamRuntime(options) {
         const envelope = callerEnvelope(blueprint, caller, overrides);
         enforceEnvelope(spec, envelope);
         // Step 5/6/7 — the effect phase. For NEW WORK admissions the
-        // compatibility gate and Phase A of the work effect (the admission:
-        // fresh read, dedup scan, CAS + admission fact, activity-interval
-        // open) run in ONE team-chain acquisition (P8-S5B, CR-8/R5, preserved
-        // by INV-9.1): the gate may re-probe inline (a durable compatibility
-        // write), so a racing new-work admission for the same team cannot
-        // interleave its own re-probe into this consultation's
+        // REQUIREMENT GATE (pre-alpha3 PR-E: the successor of the P6-T2
+        // compatibility gate — the `requirements/` module is authoritative)
+        // and Phase A of the work effect (the admission: fresh read, dedup
+        // scan, CAS + admission fact, activity-interval open) run in ONE
+        // team-chain acquisition (P8-S5B, CR-8/R5, preserved by INV-9.1): the
+        // gate may re-probe inline (a durable compatibility write) AND write
+        // the incident fact lines, so a racing new-work admission for the same
+        // team cannot interleave its own re-probe into this consultation's
         // read→probe→re-read→admit window. Non-new-work actions keep the
         // documented order: steps 1–4 outside the lock, the effect alone
         // inside it. (Quota inside the provider for creation; durable writes
         // under the per-team lock.)
+        //
+        // The gate consults on the action's REQUIREMENT IMPACT (the closed
+        // impact class + the scopes the work depends on — plan §E.7, never the
+        // coarse category): a BLOCKED scope (a required requirement down)
+        // blocks normal work; the typed block carries
+        // `details.recoveryDispatchAvailable` when the human-reviewed RECOVERY
+        // DISPATCH (plan §E.9) is offered. The recovery CONTROL round-trip
+        // (the inline coupling — the human wait) runs OUTSIDE the team lock:
+        // a human wait must never hold the team chain. Allow → a FRESH
+        // `performAction` with the reviewed recovery marker (the impact flips
+        // to `recoveryWork`; the gate then allows on the blocked scopes and
+        // writes the incident-opened fact; the provider admits the activation
+        // on the reduced original authority). Deny / abort → the typed
+        // zero-effect block (the operation remains blocked; no durable effect
+        // of the attempted work).
+        const targetTemplateId = newWorkTargetTemplateId(request, spec, resolved, repositories);
+        const impact = actionImpactOf(request.action, targetTemplateId, request.recovery !== undefined);
         const ctx = {
             repositories,
             activationProvider: options.activationProvider,
@@ -156,13 +392,44 @@ export function createTeamRuntime(options) {
             policyStateTransitions: options.policyStateTransitions,
             ...(resolved.target !== undefined ? { target: resolved.target } : {}),
         };
-        const staged = isNewWorkAdmission(spec)
-            ? await withTeamLock(teamLocks, rootSessionId, async () => {
-                const environmentFacts = await options.environmentFacts();
-                await enforceCompatibilityGate(repositories, blueprint, rootSessionId, environmentFacts, options.now);
-                return executeEffectLocked(ctx);
-            }, asAbortLike(request.signal))
-            : await executeEffect(teamLocks, ctx);
+        let staged;
+        if (isNewWorkAdmission(spec)) {
+            try {
+                staged = await withTeamLock(teamLocks, rootSessionId, async () => {
+                    // The gate re-reads the environment-facts port itself (a fresh
+                    // read under the lock — the same logical moment as before; the
+                    // authority's inline re-probe re-reads the same port).
+                    await enforceRequirementGate({
+                        repositories,
+                        blueprint,
+                        rootSessionId,
+                        environmentFacts: () => options.environmentFacts(),
+                        ...(options.now !== undefined ? { now: options.now } : {}),
+                    }, impact);
+                    return executeEffectLocked(ctx);
+                }, asAbortLike(request.signal));
+            }
+            catch (error) {
+                // OUTSIDE the lock: the recovery dispatch (the human-reviewed
+                // Control inline coupling). A non-offer error returns `undefined`
+                // (the ORIGINAL typed error is re-thrown unchanged); a durable
+                // `allow` returns the fresh admission outcome (the full chain
+                // re-ran — the staged-effect machinery of the blocked attempt is
+                // skipped); `deny` / abort throw the typed zero-effect block.
+                const recovered = await dispatchRecoveryIfOffered(error, {
+                    request,
+                    rootSessionId,
+                    targetTemplateId,
+                });
+                if (recovered !== undefined) {
+                    return recovered;
+                }
+                throw error;
+            }
+        }
+        else {
+            staged = await executeEffect(teamLocks, ctx);
+        }
         // INV-9.1 (repair-r1 F3-A): a full-wiring work admission returns the
         // STAGED chain — Phase A completed inside the acquisition above and
         // the chain is now RELEASED. `complete` runs Phase B (delivery: NO

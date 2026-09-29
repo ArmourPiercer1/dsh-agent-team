@@ -68,7 +68,7 @@ import type {
 import {
   intentCreateGate,
   intentEnvironmentFacts,
-  isPersonaPresetFatal,
+  personaFatalLane,
   mintRootSessionId,
   parseBlueprintDetail,
   parseCatalogList,
@@ -1104,9 +1104,20 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
                 {t('intent.compatibility.owner')} {row.requirementId} — {row.detail}
               </p>
             ))}
-            {isPersonaPresetFatal(compat) && (
-              <p className={styles.fatalPreset}>{t('intent.fatal.preset')}</p>
-            )}
+            {(() => {
+              // pre-alpha3 PR-E (plan §E.3) — the persona KIND convention:
+              // both persona-preset FATAL lanes offer the preset remedy,
+              // with lane-honest copy (the bare-world lane must not claim a
+              // complete persona).
+              const lane = personaFatalLane(compat)
+              return lane === null
+                ? null
+                : (
+                  <p className={styles.fatalPreset}>
+                    {t(lane === 'conflict' ? 'intent.fatal.preset' : 'intent.fatal.presetIncompatible')}
+                  </p>
+                )
+            })()}
           </div>
         )}
       </div>

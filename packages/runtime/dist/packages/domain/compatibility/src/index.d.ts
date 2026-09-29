@@ -17,6 +17,8 @@
  */
 export { REQUIREMENT_TYPES, REQUIREMENT_TYPE_VALUES, assertRequirementType, parseRequirement, parseRequirements, } from './requirement.js';
 export type { Requirement, RequirementInput, RequirementType } from './requirement.js';
+export { REQUIRED_PERSONA_KINDS, REQUIRED_PERSONA_KIND_VALUES, isRequiredPersonaKind, } from './requirement.js';
+export type { RequiredPersonaKind } from './requirement.js';
 export { parseEnvironmentFact, parseEnvironmentFacts, computeProbeRecords, computeEnvironmentFingerprint, } from './environment-facts.js';
 export type { EnvironmentFact, ProbeRecord } from './environment-facts.js';
 export { FINGERPRINT_ALGORITHM_VERSION, NO_PROBE_GENERATION, computeFingerprint, } from './fingerprint.js';

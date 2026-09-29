@@ -2311,18 +2311,36 @@ var __dshFactory = (require) => {
 			}
 			Object.defineProperty(exports, "intentCreateGate", { enumerable: true, get: () => intentCreateGate });
 			/**
-			 * Whether the FATAL verdict is the §7.4 complete-persona preset conflict
-			 * (the panel then offers "change runtime preset" as the remedy and keeps
+			 * The persona-preset FATAL lane of the verdict, or `null` when the FATAL
+			 * (if any) is not a persona-preset verdict.
+			 * @param compat - the parsed probe result, if one has landed.
+			 * @returns `conflict` / `incompatible` when a FATAL row carries one of the
+			 *   two honest persona codes; `null` otherwise.
+			 */
+			function personaFatalLane(compat) {
+			    if (compat === undefined || !compat.ok)
+			        return null;
+			    if (compat.status !== 'BLOCKED_FATAL')
+			        return null;
+			    const conflict = compat.fatals.some(row => row.reasonCode === 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT');
+			    if (conflict)
+			        return 'conflict';
+			    const incompatible = compat.fatals.some(row => row.reasonCode === 'PERSONA_INCOMPATIBLE');
+			    return incompatible ? 'incompatible' : null;
+			}
+			Object.defineProperty(exports, "personaFatalLane", { enumerable: true, get: () => personaFatalLane });
+			/**
+			 * Whether the FATAL verdict is a persona-preset FATAL — EITHER the §7.4
+			 * complete-persona preset conflict OR the honest bare-world
+			 * PERSONA_INCOMPATIBLE lane (pre-alpha3 PR-E, plan §E.3: the panel then
+			 * offers "change runtime preset" as the remedy in both lanes and keeps
 			 * Create disabled with no Continue-anyway path).
 			 * @param compat - the parsed probe result, if one has landed.
-			 * @returns true when a FATAL row carries the frozen conflict reason code.
+			 * @returns true when a FATAL row carries one of the two honest persona
+			 *   reason codes.
 			 */
 			function isPersonaPresetFatal(compat) {
-			    if (compat === undefined || !compat.ok)
-			        return false;
-			    if (compat.status !== 'BLOCKED_FATAL')
-			        return false;
-			    return compat.fatals.some(row => row.reasonCode === 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT');
+			    return personaFatalLane(compat) !== null;
 			}
 			Object.defineProperty(exports, "isPersonaPresetFatal", { enumerable: true, get: () => isPersonaPresetFatal });
 			/**
@@ -2353,8 +2371,35 @@ var __dshFactory = (require) => {
 			};
 			Object.defineProperty(exports, "emptyTeamIntentDraft", { enumerable: true, get: () => emptyTeamIntentDraft });
 			/**
+			 * The STATIC roster of shipped-state persona kinds per preset id
+			 * (pre-alpha3 PR-E, plan §E.3 — the persona KIND convention).
+			 *
+			 * The client's pre-creation probe must express the selected preset as an
+			 * OBSERVED KIND (not a preset id). In the shipped state the live persona
+			 * probe is a documented follow-up (known_debt "live persona probe"), so
+			 * the client approximates the observation with this static roster of the
+			 * known preset ids:
+			 *
+			 * - `standard`, `ptc`, `cordis` → the composable `standard` kind
+			 * - `minimal` (the web-bundle complete preset) → the `complete` kind
+			 *
+			 * Any preset id OUTSIDE this roster is PASSED THROUGH as its own subject
+			 * (the documented fail-loud lane): the engine then classifies the required
+			 * kind as unmet (the id matches neither the required kind nor the
+			 * `complete` kind) — an unknown preset fails closed as a FATAL
+			 * PERSONA_INCOMPATIBLE, never a silent false-OPEN.
+			 */
+			const PRESET_PERSONA_KIND_ROSTER = {
+			    standard: 'standard',
+			    ptc: 'standard',
+			    cordis: 'standard',
+			    minimal: 'complete',
+			};
+			/**
 			 * Build the probe environment facts for one draft: the single persona fact
-			 * for the selected preset when a seam row attests it, else no facts.
+			 * for the selected preset (subject = the OBSERVED KIND via the static
+			 * roster, pass-through for unknown ids) when a seam row attests it, else
+			 * no facts.
 			 * @param draft - the draft (only its `presetId` is read).
 			 * @param presets - the seam rows (broken rows already filtered).
 			 * @returns the facts array (possibly empty) for `RemoteIntentProbeParams`.
@@ -2365,7 +2410,13 @@ var __dshFactory = (require) => {
 			    const row = presets.find(candidate => candidate.id === draft.presetId);
 			    if (row === undefined)
 			        return [];
-			    return [{ domain: 'persona', subject: row.id, available: true, generation: 0 }];
+			    const observedKind = PRESET_PERSONA_KIND_ROSTER[row.id] ?? row.id;
+			    return [{
+			            domain: 'persona',
+			            subject: observedKind,
+			            available: observedKind === 'standard',
+			            generation: 0,
+			        }];
 			}
 			Object.defineProperty(exports, "intentEnvironmentFacts", { enumerable: true, get: () => intentEnvironmentFacts });
 			/**
@@ -2463,7 +2514,7 @@ var __dshFactory = (require) => {
 			const __imp45 = __req("model/team-intent-model.js");
 			const intentCreateGate = __imp45.intentCreateGate;
 			const intentEnvironmentFacts = __imp45.intentEnvironmentFacts;
-			const isPersonaPresetFatal = __imp45.isPersonaPresetFatal;
+			const personaFatalLane = __imp45.personaFatalLane;
 			const mintRootSessionId = __imp45.mintRootSessionId;
 			const parseBlueprintDetail = __imp45.parseBlueprintDetail;
 			const parseCatalogList = __imp45.parseCatalogList;
@@ -3072,7 +3123,16 @@ var __dshFactory = (require) => {
 			                                    message: `${handoffFailure.code}: ${handoffFailure.message}`,
 			                                }) }), _jsxs("div", { className: styles.handoffTriad, children: [handoffActions.includes('retry') && (_jsx("button", { type: "button", className: styles.secondary, "data-intent-handoff-retry": true, disabled: handoffCreateBusy, onClick: runHandoffRetry, children: t('handoff.retry') })), handoffActions.includes('continue-without-handoff') && (_jsx("button", { type: "button", className: styles.secondary, "data-intent-handoff-continue": true, disabled: handoffCreateBusy, onClick: continueWithoutHandoff, children: t('handoff.continue') })), handoffActions.includes('cancel') && (_jsx("button", { type: "button", className: styles.secondary, "data-intent-handoff-cancel": true, disabled: handoffCreateBusy, onClick: cancelHandoff, children: t('handoff.cancel') }))] })] })), handoffCanceled && (_jsx("p", { className: styles.handoffNote, "data-intent-handoff-canceled": true, children: t('handoff.canceled') }))] })), _jsxs("label", { className: styles.field, children: [_jsx("span", { className: styles.fieldLabel, children: t('intent.preset') }), _jsxs("select", { className: styles.select, "data-intent-preset": true, value: draft.presetId ?? '', disabled: !presetsReady || presets.length === 0, onChange: event => setPreset(event.target.value), children: [!presetsReady && _jsx("option", { value: "", children: t('intent.blueprint.loading') }), presetsReady && presets.length === 0 && _jsx("option", { value: "", children: t('intent.blueprint.empty') }), presets.map(row => (_jsx("option", { value: row.id, children: row.name !== undefined ? row.name : row.id }, row.id)))] })] }), _jsx("p", { className: styles.hint, children: t('intent.preset.hint') }), _jsxs("label", { className: styles.field, children: [_jsx("span", { className: styles.fieldLabel, children: t('intent.initialWork') }), _jsx("textarea", { className: styles.textarea, "data-intent-initial-work": true, value: draft.initialWork, placeholder: t('intent.initialWork.placeholder'), onChange: event => setInitialWork(event.target.value) })] }), _jsxs("div", { className: styles.compat, "data-intent-compatibility": true, "data-intent-status": status, role: "status", children: [_jsx("span", { className: styles.compatTitle, children: t('intent.compatibility') }), status === 'checking' && (_jsx("p", { className: styles.compatNote, children: t('intent.compatibility.checking') })), status === 'OPEN' && (_jsx("p", { className: styles.compatReady, children: t('intent.compatibility.ready') })), status === 'DEGRADED_ACKNOWLEDGED' && (_jsx("p", { className: styles.compatNote, children: t('intent.compatibility.degraded') })), status === 'unknown' && (_jsx("p", { className: styles.compatUnknown, children: t('intent.compatibility.unknown', {
 			                            message: compat !== undefined && !compat.ok ? compat.message : '',
-			                        }) })), compat !== undefined && compat.ok && compat.status === 'BLOCKED_WARNING' && (_jsx("ul", { className: styles.warningList, children: compat.warnings.map(row => (_jsxs("li", { className: styles.warningRow, "data-intent-warning": true, children: [_jsxs("span", { className: styles.warningOwner, children: [t('intent.compatibility.owner'), " ", row.requirementId] }), row.unavailableSubjects.length > 0 && (_jsxs("span", { className: styles.warningSubjects, children: [t('intent.compatibility.subjects'), ": ", row.unavailableSubjects.join(', ')] })), _jsx("span", { className: styles.warningDetail, children: row.detail })] }, row.requirementId))) })), compat !== undefined && compat.ok && compat.status === 'BLOCKED_WARNING' && (_jsxs("label", { className: styles.ack, "data-intent-ack": true, children: [_jsx("input", { type: "checkbox", checked: draft.ack, onChange: event => setAck(event.target.checked) }), t('intent.ack')] })), status === 'BLOCKED_FATAL' && (_jsxs("div", { className: styles.fatal, "data-intent-fatal": true, children: [_jsx("p", { className: styles.fatalTitle, children: t('intent.compatibility.fatal') }), compat !== undefined && compat.ok && compat.fatals.map(row => (_jsxs("p", { className: styles.fatalRow, children: [t('intent.compatibility.owner'), " ", row.requirementId, " \u2014 ", row.detail] }, row.requirementId))), isPersonaPresetFatal(compat) && (_jsx("p", { className: styles.fatalPreset, children: t('intent.fatal.preset') }))] }))] }), createError !== null && (_jsxs("div", { className: styles.error, "data-intent-error": true, "data-intent-create-error": true, "data-intent-create-error-stage": createError.stage, children: [createError.stage === 'work'
+			                        }) })), compat !== undefined && compat.ok && compat.status === 'BLOCKED_WARNING' && (_jsx("ul", { className: styles.warningList, children: compat.warnings.map(row => (_jsxs("li", { className: styles.warningRow, "data-intent-warning": true, children: [_jsxs("span", { className: styles.warningOwner, children: [t('intent.compatibility.owner'), " ", row.requirementId] }), row.unavailableSubjects.length > 0 && (_jsxs("span", { className: styles.warningSubjects, children: [t('intent.compatibility.subjects'), ": ", row.unavailableSubjects.join(', ')] })), _jsx("span", { className: styles.warningDetail, children: row.detail })] }, row.requirementId))) })), compat !== undefined && compat.ok && compat.status === 'BLOCKED_WARNING' && (_jsxs("label", { className: styles.ack, "data-intent-ack": true, children: [_jsx("input", { type: "checkbox", checked: draft.ack, onChange: event => setAck(event.target.checked) }), t('intent.ack')] })), status === 'BLOCKED_FATAL' && (_jsxs("div", { className: styles.fatal, "data-intent-fatal": true, children: [_jsx("p", { className: styles.fatalTitle, children: t('intent.compatibility.fatal') }), compat !== undefined && compat.ok && compat.fatals.map(row => (_jsxs("p", { className: styles.fatalRow, children: [t('intent.compatibility.owner'), " ", row.requirementId, " \u2014 ", row.detail] }, row.requirementId))), (() => {
+			                                // pre-alpha3 PR-E (plan §E.3) — the persona KIND convention:
+			                                // both persona-preset FATAL lanes offer the preset remedy,
+			                                // with lane-honest copy (the bare-world lane must not claim a
+			                                // complete persona).
+			                                const lane = personaFatalLane(compat);
+			                                return lane === null
+			                                    ? null
+			                                    : (_jsx("p", { className: styles.fatalPreset, children: t(lane === 'conflict' ? 'intent.fatal.preset' : 'intent.fatal.presetIncompatible') }));
+			                            })()] }))] }), createError !== null && (_jsxs("div", { className: styles.error, "data-intent-error": true, "data-intent-create-error": true, "data-intent-create-error-stage": createError.stage, children: [createError.stage === 'work'
 			                        ? t('intent.workError', { message: `${createError.code}: ${createError.message}` })
 			                        : t('intent.error', { message: `${createError.code}: ${createError.message}` }), createError.stage === 'work'
 			                        ? _jsx("p", { className: styles.rootKept, children: t('intent.workKept') })
@@ -3486,11 +3546,13 @@ var __dshFactory = (require) => {
 			 * vocabulary. PROVENANCE (the client may not import the host package —
 			 * `packages/runtime` is host-side authority):
 			 * `packages/runtime/src/plugin/projection-source.ts` `FACT_TYPE_CATEGORY`
-			 * (the 15-fact vNext vocabulary — 12 + the TCM-M3 `team-root-work-delivered`
+			 * (the 19-fact vNext vocabulary — 12 + the TCM-M3 `team-root-work-delivered`
 			 * terminal record + the strict-read `artifact-read-granted` durable
 			 * authorization grant + the pre-alpha3 PR-C `capability-runtime-event`
-			 * compatibility telemetry; the host fails closed
-			 * `LEDGER_CATEGORY_UNKNOWN` on any unmapped fact type, so an unknown
+			 * compatibility telemetry + the four pre-alpha3 PR-E requirement / recovery
+			 * facts (`optional-requirement-accepted`, `template-availability-set`,
+			 * `recovery-incident-opened`, `recovery-incident-closed`); the host fails
+			 * closed `LEDGER_CATEGORY_UNKNOWN` on any unmapped fact type, so an unknown
 			 * `category` here can only ever be display-side, never authority-side).
 			 * A row whose fact type is absent from this map carries NO `category`
 			 * (omitted, never guessed).
@@ -3524,6 +3586,17 @@ var __dshFactory = (require) => {
 			    // team-ledger-model's INTERNAL_FACT_TYPES (it is an operational telemetry
 			    // fact, not a user-facing event).
 			    'capability-runtime-event': 'compatibility',
+			    // pre-alpha3 PR-E §E.5: the requirement / recovery durable facts (consent,
+			    // template availability, recovery-incident open/close) — the frozen
+			    // `compatibility` category's next writers (no new category). Mirrors the
+			    // host's projection-source FACT_TYPE_CATEGORY. Hidden from the Events
+			    // surface by team-ledger-model's INTERNAL_FACT_TYPES (a dedicated UI row
+			    // kind for these is separate work; until then they stay authority/audit
+			    // state, not user activity).
+			    'optional-requirement-accepted': 'compatibility',
+			    'template-availability-set': 'compatibility',
+			    'recovery-incident-opened': 'compatibility',
+			    'recovery-incident-closed': 'compatibility',
 			};
 			/** Fail-safe string leaf read (`undefined` for any non-string / absent). */
 			function str(payload, key) {
@@ -7358,6 +7431,7 @@ var __dshFactory = (require) => {
 			    'intent.workError': '初始任务发送失败：{message}',
 			    'intent.workKept': '团队已创建且 Root 已打开；初始任务未投递，可重试（重试复用同一任务令牌，Root 保持打开）。',
 			    'intent.fatal.preset': '该运行时预设拥有完整的系统人格，无法承载此团队蓝图的 Leader/Member 身份（不改变 DSH 核心语义）。',
+			    'intent.fatal.presetIncompatible': '该运行时预设未提供团队所需的可组合标准人格 — 请选择具备标准人格（或不附加人格）的运行时预设以继续。',
 			    'member.action.sendWork': '发送任务…',
 			    'member.action.followup': '发送跟进',
 			    'member.action.resume': '恢复…',
@@ -7616,6 +7690,7 @@ var __dshFactory = (require) => {
 			    'intent.workError': 'Initial work failed: {message}',
 			    'intent.workKept': 'The team is created and the Root is open; the initial work was not delivered — retry it (the retry reuses the same work token and the Root stays open).',
 			    'intent.fatal.preset': "This runtime preset owns a complete system persona and cannot host this Team Blueprint's Leader/Member identity without changing DSH core semantics.",
+			    'intent.fatal.presetIncompatible': 'This runtime preset does not provide the composable standard persona the team requires — select a runtime preset with the standard persona (or none) to proceed.',
 			    'member.action.sendWork': 'Send work…',
 			    'member.action.followup': 'Send follow-up',
 			    'member.action.resume': 'Resume…',
@@ -8870,6 +8945,17 @@ var __dshFactory = (require) => {
 			    // the Events section (otherwise it would land in the `unknown` family and
 			    // the generic row would JSON.stringify the whole telemetry payload).
 			    'capability-runtime-event',
+			    // pre-alpha3 PR-E §E.5: the requirement / recovery durable facts —
+			    // compatibility-category authority/audit state (the DegradationConsent,
+			    // the template disable/enable, and the recovery-incident open/close
+			    // records). A dedicated UI row kind for these is separate work; until
+			    // then they stay in the loaded ledger model and are skipped by the Events
+			    // section (otherwise each would land in the `unknown` family and the
+			    // generic row would JSON.stringify the whole payload).
+			    'optional-requirement-accepted',
+			    'template-availability-set',
+			    'recovery-incident-opened',
+			    'recovery-incident-closed',
 			]);
 			/** Fail-safe string leaf read (the ledger-adapter discipline). */
 			function str(payload, key) {

@@ -156,6 +156,23 @@ export interface MemberActivationRequest {
    *  compatibility engine (Architecture §27.3; a valid ack degrades a
    *  BLOCKED_WARNING to DEGRADED_ACKNOWLEDGED). */
   readonly acknowledgements?: readonly WarningAcknowledgement[]
+  /**
+   * pre-alpha3 PR-E (plan §E.9) — the reviewed RECOVERY marker: present
+   * when this activation is the human-reviewed recovery dispatch of a
+   * blocked scope (the router's Control inline coupling returned `allow`).
+   * Step 6 then admits a REQUIRED-down scope (team or the target template)
+   * when the marker covers it — the member STARTS for recovery on the
+   * REDUCED original authority (the downed capability subjects are
+   * unavailable — the MCP simply cannot mount while its server is down —
+   * everything else runs on the original permissions; the external hard
+   * ceiling stays absolute). A marker without an actually-blocked scope is
+   * a no-op. The marker is echoed on the activation result (durable
+   * provenance: this member was started for recovery).
+   */
+  readonly recovery?: {
+    readonly scopeKeys: readonly string[]
+    readonly unavailableSubjects: readonly string[]
+  }
 }
 
 // --- ports ---------------------------------------------------------------------
@@ -346,6 +363,17 @@ export type ActivationResult =
       /** The projection outcome (best-effort). */
       readonly projection: ActivationProjectionState
       readonly createdAt: string
+      /**
+       * pre-alpha3 PR-E (plan §E.9) — the reviewed RECOVERY marker when this
+       * activation was the human-reviewed recovery dispatch of a blocked
+       * scope (durable provenance: this member was STARTED for recovery on
+       * the reduced original authority; the downed capability subjects are
+       * `unavailableSubjects`). Absent on every non-recovery activation.
+       */
+      readonly recovery?: {
+        readonly scopeKeys: readonly string[]
+        readonly unavailableSubjects: readonly string[]
+      }
     }
   | {
       readonly kind: 'continued'

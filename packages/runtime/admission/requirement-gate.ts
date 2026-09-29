@@ -1,0 +1,547 @@
+/**
+ * pre-alpha3 PR-E (plan §E.4/§E.7/§E.8/§E.10) — the LIVE requirement gate:
+ * the NEW WORK admission gate of the requirement/recovery model that
+ * REPLACES the P6-T2 compatibility gate at the router's step 5 (the old
+ * `enforceCompatibilityGate` is superseded — the `requirements/` module is
+ * authoritative, not dormant).
+ *
+ * What changed versus the old gate (the product-semantics switch):
+ *
+ * - The gate evaluates EVERY scope the bound blueprint declares (the Team
+ *   scope through the SAME single compatibility authority chain — fresh
+ *   facts → fingerprint → freshness re-probe → durable state → ack
+ *   validity — and each v2 template scope with a FRESH engine evaluation:
+ *   template-scope readiness has no durable generation of its own and
+ *   resets on restart, exactly like the derived recovery state);
+ * - FATAL (a required requirement down) = a BLOCKED scope. Normal work
+ *   that depends on it is BLOCKED — but recovery work (the
+ *   human-reviewed dispatch, plan §E.9) is ALLOWED on the reduced original
+ *   authority (the gate returns `recoveryAllowed` + the recovery scopes;
+ *   the router performs the Control coupling);
+ * - WARNING (an optional requirement down) = a DEGRADED scope. Normal
+ *   work CONTINUES (auto-degraded — the old gate's
+ *   `COMPATIBILITY_BLOCKED_WARNING` throw is gone; the durable consent
+ *   records the human's acknowledgement but is not a gate precondition);
+ * - a chain failure (facts-unavailable / reprobe-failed / no-state /
+ *   state-mismatch) still fails CLOSED — invariant 50 is unchanged: a
+ *   compatibility failure is never an admission;
+ * - the closed error code stays `COMPATIBILITY_BLOCKED` (the frozen router
+ *   vocabulary; the FATAL path's observable contract is preserved —
+ *   `details.status: 'BLOCKED_FATAL'` + the blocking requirement ids),
+ *   only the DECISION semantics moved (warning → auto-degraded) and the
+ *   typed details gained the recovery-model fields.
+ *
+ * Durable requirement facts (the frozen `compatibility` ledger category):
+ *
+ * - `recovery-incident-opened` — written when the gate ALLOWS recovery work
+ *   for a blocked scope that has no OPEN incident (open = an opened fact
+ *   without a subsequent closed fact for the same scope);
+ * - `recovery-incident-closed` — written when a scope with an OPEN
+ *   incident is no longer blocked on the fresh evaluation (the plan §E.10
+ *   exit record — the exit itself is the derived state flipping; NO
+ *   durable recovery flag is ever written);
+ * - `optional-requirement-accepted` / `template-availability-set` — READ
+ *   here (they are written by the creation preflight, plan §E.6, and the
+ *   compatibility-ack channel; both survive restart — authority negative
+ *   #10).
+ *
+ * I/O only through the injected TeamDomain repositories + the
+ * environment-facts port; no `node:` builtins, no upstream imports.
+ * @module @dsh-agent-team/runtime/admission/requirement-gate
+ */
+
+import type {
+  CompatibilityResult,
+  EnvironmentFact,
+} from '../../domain/compatibility/src/index.js'
+import { evaluateCompatibility } from '../../domain/compatibility/src/index.js'
+import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
+import type { TeamDomainRepositories } from '../../storage/repositories/index.js'
+import {
+  classifyScope,
+  deriveRecovery,
+  evaluateScopes,
+  gateAction,
+} from '../requirements/evaluator.js'
+import { actionImpactClassOf } from './actions.js'
+import {
+  controlImpact,
+  coordinationImpact,
+  diagnosticImpact,
+  lifecycleImpact,
+  normalWorkImpact,
+  recoveryWorkImpact,
+} from '../requirements/action-impact.js'
+
+import {
+  OPTIONAL_REQUIREMENT_ACCEPTED_FACT_TYPE,
+  RECOVERY_INCIDENT_CLOSED_FACT_TYPE,
+  RECOVERY_INCIDENT_OPENED_FACT_TYPE,
+  TEMPLATE_AVAILABILITY_SET_FACT_TYPE,
+  parseOptionalRequirementAccepted,
+  parseRecoveryIncidentClosed,
+  parseRecoveryIncidentOpened,
+  parseTemplateAvailabilitySet,
+  recoveryIncidentClosedPayload,
+  recoveryIncidentOpenedPayload,
+  writeRequirementFact,
+} from '../requirements/facts.js'
+import {
+  projectVerdicts,
+  scopeRequirementInputsOf,
+} from '../requirements/scope-requirements.js'
+import {
+  ACTION_IMPACT_CLASSES,
+  SCOPE_STATES,
+  scopeKey,
+  teamScope,
+  templateScope,
+} from '../requirements/types.js'
+import type {
+  ActionImpact,
+  DegradationConsent,
+  GateDecision,
+  RecoveryState,
+  RequirementScope,
+  RequirementVerdict,
+  ScopeVerdict,
+  TemplateAvailability,
+} from '../requirements/types.js'
+import { createCompatibilityAuthority } from '../compatibility/index.js'
+import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from './errors.js'
+
+/** The outcome of one requirement-gate passage (allowed only — blocks throw). */
+export interface RequirementGateOutcome {
+  /** The closed gate reason (`allowed` / `recoveryAllowed` / `alwaysAllowed`). */
+  readonly reason: GateDecision['reason']
+  /** Present when the action is allowed AS RECOVERY WORK: the blocked
+   *   scopes the recovery work repairs (the caller runs it on the REDUCED
+   *   original authority, plan §E.9). */
+  readonly recoveryScopes?: readonly RequirementScope[]
+  /** The fresh per-scope verdicts (deterministic; for the caller's typed
+   *   response / telemetry). */
+  readonly scopeVerdicts: readonly ScopeVerdict[]
+  /** The DERIVED recovery state of the fresh evaluation (never stored as a
+   *   flag — recomputed on every passage). */
+  readonly recovery: RecoveryState
+}
+
+/** The dependencies of one requirement-gate consultation (all injected). */
+export interface RequirementGateOptions {
+  /** The TeamDomain repositories (durable compat state + the requirement
+   *   facts in the frozen `compatibility` ledger category). */
+  readonly repositories: TeamDomainRepositories
+  /** The bound blueprint (immutable durable snapshot). */
+  readonly blueprint: TeamBlueprint
+  /** The root session id (the team). */
+  readonly rootSessionId: string
+  /** The environment-facts port (a FRESH read on every consultation — the
+   *   authority's inline re-probe re-reads the same port, the same logical
+   *   moment). */
+  readonly environmentFacts: () => Promise<readonly EnvironmentFact[]>
+  /** The deterministic ISO-8601 clock (defaults to the authority clock). */
+  readonly now?: () => string
+  /** The epoch-ms clock for the requirement fact payloads (defaults to
+   *   `Date.now` — facts are provenance, never a token input). */
+  readonly nowMs?: () => number
+}
+
+/** One open recovery incident (derived from the durable fact history). */
+export interface OpenIncident {
+  readonly scopeKey: string
+  readonly requirementIds: readonly string[]
+  readonly openedAt: number
+}
+
+/**
+ * Read the durable requirement facts of one team from the ledger (the
+ * frozen `compatibility` category): the degradation consents, the template
+ * availability set (latest wins per template), and the OPEN recovery
+ * incidents (an opened fact without a subsequent closed fact for the same
+ * scope — the append-only ledger has no delete primitive).
+ *
+ * A malformed durable row is a state anomaly — the read fails CLOSED (the
+ * consumer must not admit on an unverifiable fact line).
+ */
+export function readRequirementFacts(
+  repositories: TeamDomainRepositories,
+  rootSessionId: string,
+): {
+  readonly consents: readonly DegradationConsent[]
+  readonly availability: readonly TemplateAvailability[]
+  readonly openIncidents: readonly OpenIncident[]
+} {
+  const entries = repositories.ledger.list()
+  const rows: Array<{ sequence: number; factType: string; payload: unknown }> = []
+  for (const entry of entries) {
+    if (entry.rootSessionId !== rootSessionId) continue
+    const record = entry as unknown as { factType?: unknown; payload?: unknown; sequence?: unknown }
+    const factType = record.factType
+    if (
+      factType !== OPTIONAL_REQUIREMENT_ACCEPTED_FACT_TYPE &&
+      factType !== TEMPLATE_AVAILABILITY_SET_FACT_TYPE &&
+      factType !== RECOVERY_INCIDENT_OPENED_FACT_TYPE &&
+      factType !== RECOVERY_INCIDENT_CLOSED_FACT_TYPE
+    ) {
+      continue
+    }
+    rows.push({
+      sequence: typeof record.sequence === 'number' ? record.sequence : Number.MAX_SAFE_INTEGER,
+      factType: String(factType),
+      payload: record.payload,
+    })
+  }
+  rows.sort((a, b) => a.sequence - b.sequence)
+
+  const consents: DegradationConsent[] = []
+  const availabilityByTemplate = new Map<string, TemplateAvailability>()
+  const incidentLog: Array<{
+    scopeKey: string
+    requirementIds: readonly string[]
+    at: number
+    opened: boolean
+  }> = []
+
+  for (const row of rows) {
+    try {
+      if (row.factType === OPTIONAL_REQUIREMENT_ACCEPTED_FACT_TYPE) {
+        const payload = parseOptionalRequirementAccepted(row.payload, `ledger/${row.sequence}`)
+        consents.push({
+          requirementId: payload.requirementId,
+          generation: payload.generation,
+          consentedAt: payload.consentedAt,
+          consentedBy: payload.consentedBy,
+        })
+      } else if (row.factType === TEMPLATE_AVAILABILITY_SET_FACT_TYPE) {
+        const payload = parseTemplateAvailabilitySet(row.payload, `ledger/${row.sequence}`)
+        // Latest wins per template (the append-only history is a log; the
+        // CURRENT availability is the last set for the template).
+        availabilityByTemplate.set(payload.templateId, {
+          templateId: payload.templateId,
+          available: payload.available,
+        })
+      } else if (row.factType === RECOVERY_INCIDENT_OPENED_FACT_TYPE) {
+        const payload = parseRecoveryIncidentOpened(row.payload, `ledger/${row.sequence}`)
+        incidentLog.push({
+          scopeKey: payload.scope,
+          requirementIds: payload.requirementIds,
+          at: payload.openedAt,
+          opened: true,
+        })
+      } else {
+        const payload = parseRecoveryIncidentClosed(row.payload, `ledger/${row.sequence}`)
+        incidentLog.push({
+          scopeKey: payload.scope,
+          requirementIds: payload.requirementIds,
+          at: payload.closedAt,
+          opened: false,
+        })
+      }
+    } catch (error) {
+      throw new TeamRuntimeError(
+        TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+        `TeamRuntime: a durable requirement fact is malformed (sequence ${row.sequence}) — admission fails closed (invariant 50)`,
+        {
+          rootSessionId,
+          source: 'requirement-gate',
+          reason: 'durable-fact-malformed',
+          sequence: row.sequence,
+          cause: error instanceof Error ? error.message : undefined,
+        },
+      )
+    }
+  }
+
+  // OPEN incidents: walk the per-scope log in sequence order; a scope is
+  // open iff the LAST incident entry for it is an `opened` entry.
+  const openByScope = new Map<string, OpenIncident>()
+  for (const entry of incidentLog) {
+    if (entry.opened) {
+      openByScope.set(entry.scopeKey, {
+        scopeKey: entry.scopeKey,
+        requirementIds: entry.requirementIds,
+        openedAt: entry.at,
+      })
+    } else {
+      openByScope.delete(entry.scopeKey)
+    }
+  }
+  return {
+    consents,
+    availability: [...availabilityByTemplate.values()],
+    openIncidents: [...openByScope.values()],
+  }
+}
+
+/**
+ * Evaluate EVERY scope of the bound blueprint against ONE fresh environment
+ * facts read (plan §E.4): the Team scope through the single compatibility
+ * authority chain (durable, fresh, re-probed as needed) and each v2
+ * template scope with a fresh engine evaluation (no durable generation —
+ * template-scope readiness resets on restart).
+ *
+ * @throws {@link TeamRuntimeError} COMPATIBILITY_BLOCKED (fail-closed) when
+ *   the facts port fails or the authority chain cannot produce a verdict.
+ */
+export async function evaluateAllScopes(
+  repositories: TeamDomainRepositories,
+  blueprint: TeamBlueprint,
+  rootSessionId: string,
+  environmentFacts: () => Promise<readonly EnvironmentFact[]>,
+  now?: () => string,
+): Promise<{
+  /** The raw per-scope requirement verdicts (keyed by scope key) — the
+   *   `EvaluationInput.scopeVerdicts` shape. */
+  readonly scopeVerdicts: Readonly<Record<string, readonly RequirementVerdict[]>>
+  /** The classified scope verdicts (ready / degraded / blocked). */
+  readonly scopeStates: readonly ScopeVerdict[]
+  readonly teamResult: CompatibilityResult
+  readonly facts: readonly EnvironmentFact[]
+}> {
+  const inputs = scopeRequirementInputsOf(blueprint)
+
+  // 1. Fresh facts read (a failure is a chain failure — never an admission).
+  let facts: readonly EnvironmentFact[]
+  try {
+    facts = await environmentFacts()
+  } catch (error) {
+    throw new TeamRuntimeError(
+      TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+      'TeamRuntime: the environment-facts port failed — new work admission fails closed (invariant 50)',
+      {
+        rootSessionId,
+        source: 'requirement-gate',
+        reason: 'facts-unavailable',
+        cause: error instanceof Error ? error.message : undefined,
+      },
+    )
+  }
+
+  // 2. Team scope: the SINGLE compatibility authority chain (the P8-S4A
+  //    exact chain; the v2 structured teamRequirements ride the same
+  //    durable generation through the extended bridge).
+  const authority = createCompatibilityAuthority({
+    repositories,
+    rootSessionId,
+    blueprint,
+    environmentFacts,
+    ...(now !== undefined ? { now } : {}),
+  })
+  const evaluation = await authority.evaluate()
+  if (!evaluation.chainOk) {
+    throw new TeamRuntimeError(
+      TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+      `TeamRuntime: compatibility could not be established (${evaluation.reprobeReason}) — new work admission fails closed (invariant 50)`,
+      {
+        rootSessionId,
+        source: 'compatibility-authority',
+        reason: evaluation.reprobeReason,
+      },
+    )
+  }
+  const teamResult = evaluation.result as CompatibilityResult
+  const rawScopeVerdicts: Record<string, readonly RequirementVerdict[]> = {
+    team: projectVerdicts(teamResult),
+  }
+
+  // 3. Template scopes: FRESH engine evaluations (v2 only — v1 documents
+  //    carry no per-template requirements; no durable state, readiness
+  //    resets on restart).
+  if (blueprint.schemaVersion === 2) {
+    for (const [templateId, requirementInputs] of Object.entries(inputs.templates)) {
+      // The engine re-validates (parses) its inputs itself.
+      const templateResult = evaluateCompatibility({
+        requirements: requirementInputs,
+        environmentFacts: facts,
+      })
+      rawScopeVerdicts[scopeKey({ level: 'template', templateId })] = projectVerdicts(templateResult)
+    }
+  }
+
+  const scopeStates = evaluateScopes({ scopeVerdicts: rawScopeVerdicts })
+
+  return { scopeVerdicts: rawScopeVerdicts, scopeStates, teamResult, facts }
+}
+
+/**
+ * Step 4a (PR-E) — the requirement gate for NEW WORK (invariant 50).
+ *
+ * Consumes the full scope evaluation (every declared scope, one fresh facts
+ * read) + the durable requirement facts, gates the action on its
+ * requirement IMPACT (never the coarse category alone), performs the
+ * incident bookkeeping (open on the first allowed recovery passage; close
+ * on the blocked→ready transition — the §E.10 exit record), and throws
+ * `COMPATIBILITY_BLOCKED` (fail-closed) when the action is blocked.
+ *
+ * @param options - the injected repositories / blueprint / facts port.
+ * @param impact - the action's requirement-impact metadata (the closed
+ *   impact class + the scopes the action's work depends on).
+ * @returns the allowed outcome (the recovery scopes when allowed AS
+ *   recovery work).
+ * @throws {@link TeamRuntimeError} COMPATIBILITY_BLOCKED (blocked /
+ *   fail-closed).
+ */
+export async function enforceRequirementGate(
+  options: RequirementGateOptions,
+  impact: ActionImpact,
+): Promise<RequirementGateOutcome> {
+  const { repositories, blueprint, rootSessionId } = options
+  const { scopeVerdicts, scopeStates } = await evaluateAllScopes(
+    repositories,
+    blueprint,
+    rootSessionId,
+    options.environmentFacts,
+    options.now,
+  )
+
+  const { consents, availability, openIncidents } = readRequirementFacts(repositories, rootSessionId)
+
+  const decision = gateAction(impact, {
+    scopeVerdicts,
+    consents,
+    availability,
+  })
+  const recovery = deriveRecovery(scopeStates)
+
+  if (!decision.allowed) {
+    throw new TeamRuntimeError(
+      TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+      decision.reason === 'templateDisabled'
+        ? 'TeamRuntime: the targeted template is disabled — its work cannot start (availability, not a policy denial; re-enable the template or fix + recheck its requirements)'
+        : `TeamRuntime: a required scope is down (${(decision.blockedScopes ?? [])
+            .map((scope) => scopeKey(scope))
+            .join(', ')}) — new work admission is blocked (invariant 50)`,
+      {
+        rootSessionId,
+        status: 'BLOCKED_FATAL',
+        gateReason: decision.reason,
+        blockedScopes: (decision.blockedScopes ?? []).map((scope) => scopeKey(scope)),
+        blockingRequirementIds: (decision.blockedScopes ?? []).flatMap((scope) => {
+          const verdict = scopeStates.find((v) => scopeKey(v.scope) === scopeKey(scope))
+          return (verdict?.fatal ?? []).map((requirement) => requirement.requirementId)
+        }),
+        // The downed capability subjects across the blocked scopes' fatal
+        // verdicts (the reduced authority excludes exactly these — plan
+        // §E.9; the router carries them into the recovery marker).
+        unavailableSubjects: [
+          ...new Set(
+            (decision.blockedScopes ?? []).flatMap((scope) => {
+              const verdict = scopeStates.find((v) => scopeKey(v.scope) === scopeKey(scope))
+              return (verdict?.fatal ?? []).flatMap((requirement) => requirement.unavailableSubjects)
+            }),
+          ),
+        ],
+        source: 'requirement-gate',
+        // Recovery dispatch availability (plan §E.9): the caller (the
+        // router) may offer the human-reviewed recovery Control coupling
+        // for the blocked scopes — ONLY when a required scope is down.
+        recoveryDispatchAvailable:
+          decision.reason === 'requiredScopeDown' && recovery.open,
+      },
+    )
+  }
+
+  // Allowed — the incident bookkeeping (the caller runs this under the
+  // team lock, so the fact line is serialized with every other durable
+  // team write).
+  const nowMs = options.nowMs ?? Date.now
+  const isoNow = options.now ?? (() => new Date(nowMs()).toISOString())
+  if (decision.reason === 'recoveryAllowed') {
+    for (const scope of decision.recoveryScopes ?? []) {
+      const key = scopeKey(scope)
+      if (openIncidents.some((incident) => incident.scopeKey === key)) continue
+      const verdict = scopeStates.find((v) => scopeKey(v.scope) === key)
+      await writeRequirementFact(
+        repositories.ledger,
+        rootSessionId,
+        RECOVERY_INCIDENT_OPENED_FACT_TYPE,
+        recoveryIncidentOpenedPayload({
+          scope: key,
+          requirementIds: (verdict?.fatal ?? []).map((requirement) => requirement.requirementId),
+          openedAt: nowMs(),
+        }),
+        isoNow,
+      )
+    }
+  }
+  // Exit record (plan §E.10): an open incident whose scope is no longer
+  // blocked on the fresh evaluation is CLOSED (the exit is the derived
+  // state flipping; the record is the durable history, never a flag).
+  for (const incident of openIncidents) {
+    const verdict = scopeStates.find((v) => scopeKey(v.scope) === incident.scopeKey)
+    if (verdict === undefined) continue
+    if (verdict.state === SCOPE_STATES.blocked) continue
+    await writeRequirementFact(
+      repositories.ledger,
+      rootSessionId,
+      RECOVERY_INCIDENT_CLOSED_FACT_TYPE,
+      recoveryIncidentClosedPayload({
+        scope: incident.scopeKey,
+        requirementIds: incident.requirementIds,
+        closedAt: nowMs(),
+      }),
+      isoNow,
+    )
+  }
+
+  return {
+    reason: decision.reason,
+    ...(decision.recoveryScopes !== undefined ? { recoveryScopes: decision.recoveryScopes } : {}),
+    scopeVerdicts: scopeStates,
+    recovery,
+  }
+}
+
+/**
+ * Build the requirement IMPACT of one named action for the gate (plan §E.7):
+ * the closed impact class of the action (the static `ACTION_REQUIREMENT_IMPACT`
+ * map) + the scopes the action's work depends on (the Team scope always,
+ * plus the targeted template scope when the action names one). The
+ * `recoveryWork` / `control` classes are never static: a recovery operation
+ * is the caller-context choice (the human-reviewed dispatch — `recovery`
+ * true) and a control operation is the Control surface itself.
+ *
+ * @param actionName - the closed action name.
+ * @param targetTemplateId - the template the action's work targets (the
+ *   follow-up/delegate/create-member addressing), or `undefined` when the
+ *   action names no template (the Team scope only).
+ * @param recovery - whether this attempt is the reviewed recovery dispatch
+ *   (the normal-work actions become `recoveryWork` for the blocked scopes).
+ * @returns the frozen {@link ActionImpact}.
+ */
+export function actionImpactOf(
+  actionName: string,
+  targetTemplateId: string | undefined,
+  recovery: boolean,
+): ActionImpact {
+  const scopeRefs =
+    targetTemplateId !== undefined && targetTemplateId.length > 0
+      ? [teamScope(), templateScope(targetTemplateId)]
+      : [teamScope()]
+  if (recovery) {
+    // A reviewed recovery attempt of a normal-work action (plan §E.9).
+    return recoveryWorkImpact(scopeRefs)
+  }
+  const cls = actionImpactClassOf(actionName)
+  switch (cls) {
+    case ACTION_IMPACT_CLASSES.normalWork:
+      return normalWorkImpact(scopeRefs)
+    case ACTION_IMPACT_CLASSES.diagnostic:
+      return diagnosticImpact(scopeRefs)
+    case ACTION_IMPACT_CLASSES.coordination:
+      return coordinationImpact(scopeRefs)
+    case ACTION_IMPACT_CLASSES.lifecycle:
+      return lifecycleImpact(scopeRefs)
+    case ACTION_IMPACT_CLASSES.control:
+      return controlImpact(scopeRefs)
+    case ACTION_IMPACT_CLASSES.recoveryWork:
+      // Not reachable from a static map (the recovery class is a caller
+      // choice); treat as normal work (the safe direction).
+      return normalWorkImpact(scopeRefs)
+    default:
+      // Unknown name: the conservative default — gate it as normal work on
+      // the Team scope (never an un-gated pass-through for a new-work
+      // admission; invariant 50).
+      return normalWorkImpact(scopeRefs)
+  }
+}

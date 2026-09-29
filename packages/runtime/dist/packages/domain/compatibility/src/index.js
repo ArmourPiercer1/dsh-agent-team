@@ -17,6 +17,8 @@
  */
 // --- typed requirements (closed §27.1 vocabulary) ---------------------------
 export { REQUIREMENT_TYPES, REQUIREMENT_TYPE_VALUES, assertRequirementType, parseRequirement, parseRequirements, } from './requirement.js';
+// --- persona requirement kinds (pre-alpha3 PR-E, plan §E.3) ------------------
+export { REQUIRED_PERSONA_KINDS, REQUIRED_PERSONA_KIND_VALUES, isRequiredPersonaKind, } from './requirement.js';
 // --- environment facts + fingerprints ----------------------------------------
 export { parseEnvironmentFact, parseEnvironmentFacts, computeProbeRecords, computeEnvironmentFingerprint, } from './environment-facts.js';
 // --- fingerprint --------------------------------------------------------------

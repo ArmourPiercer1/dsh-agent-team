@@ -154,7 +154,9 @@
 import { canonicalJsonStringify } from '../../contracts/src/index.js';
 import { sha256Hex } from '../../domain/blueprint/src/index.js';
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from '../admission/errors.js';
-import { enforceCompatibilityGate } from '../admission/gate.js';
+import { enforceRequirementGate } from '../admission/requirement-gate.js';
+import { normalWorkImpact } from '../requirements/action-impact.js';
+import { teamScope } from '../requirements/types.js';
 import { commitDurableFact, withTeamLock } from './effects.js';
 /** The payload discriminator of a Root initial-work fact (the scanner's filter). */
 export const ROOT_TARGET_KIND = 'root';
@@ -553,10 +555,12 @@ export async function executeRootInitialWorkLocked(deps) {
  *
  *   Phase A, in ONE withTeamLock acquisition of the shared
  *   coordination.chains:
- *     enforceCompatibilityGate (the existing single compatibility
- *     authority, INSIDE the lock: the gate may re-probe inline and a
- *     racing new-work admission for the same team must not interleave —
- *     the CR-8 analog, gate + Phase A in ONE acquisition) ->
+ *     enforceRequirementGate (the pre-alpha3 PR-E REQUIREMENT GATE — the
+ *     successor of the P6-T2 compatibility gate, INSIDE the lock: the gate
+ *     may re-probe inline and a racing new-work admission for the same
+ *     team must not interleave — the CR-8 analog, gate + Phase A in ONE
+ *     acquisition; a BLOCKED scope blocks the work, a DEGRADED scope
+ *     auto-degrades and the work continues) ->
  *     admitRootInitialWorkLocked (scan + decision + the fresh admission
  *     fact; a replay / a typed rejection completes in the same
  *     acquisition).
@@ -586,13 +590,29 @@ export function createAdmitRootInitialWork(input) {
             deliverRootWork: input.deliverRootWork,
             teamLocks: input.teamLocks,
         };
-        // Phase A — the compatibility gate + the admission decision in ONE
+        // Phase A — the requirement gate (PR-E) + the admission decision in ONE
         // acquisition of the shared chain (the CR-8 analog). A replay or a
         // typed rejection completes inside this acquisition (zero further
         // writes); an `owed` unit releases the chain and owes Phase B/C.
         const admitted = await withTeamLock(input.teamLocks, args.rootSessionId, async () => {
-            const environmentFacts = await input.environmentFacts();
-            await enforceCompatibilityGate(input.repositories, args.blueprint, args.rootSessionId, environmentFacts, input.now);
+            // pre-alpha3 PR-E (plan §E.6): the REQUIREMENT GATE replaces the old
+            // P6-T2 compatibility gate (the `requirements/` module is
+            // authoritative): a BLOCKED scope (a required requirement down)
+            // blocks the initial work (COMPATIBILITY_BLOCKED, fail-closed —
+            // invariant 50); a DEGRADED scope (an optional requirement down)
+            // AUTO-DEGRADES — the initial work CONTINUES (the old gate's
+            // COMPATIBILITY_BLOCKED_WARNING throw is gone). The impact is
+            // normal work on the Team scope (the Root initial work is the
+            // team's own new work — NOT a cross-agent member action, so the
+            // human-reviewed recovery dispatch is not offered on this path:
+            // the typed block stands, the fail-closed direction).
+            await enforceRequirementGate({
+                repositories: input.repositories,
+                blueprint: args.blueprint,
+                rootSessionId: args.rootSessionId,
+                environmentFacts: () => input.environmentFacts(),
+                now: input.now,
+            }, normalWorkImpact([teamScope()]));
             return admitRootInitialWorkLocked(deps);
         });
         if (admitted.kind === 'replay')

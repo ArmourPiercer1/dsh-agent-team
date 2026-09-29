@@ -59,6 +59,7 @@ import {
   parseRequirements,
 } from '../../domain/compatibility/src/index.js'
 import type {
+  CompatibilityResult,
   CompatibilityStatus,
   EnvironmentFact,
   Requirement,
@@ -187,6 +188,38 @@ export interface CompatibilityAuthorityAdmitOptions {
   readonly acknowledgements?: readonly WarningAcknowledgement[]
 }
 
+/**
+ * The `evaluate` result: the SAME single-chain consultation as
+ * {@link CompatibilityAuthority.admit} but WITHOUT the admit/block mapping —
+ * it returns the RAW engine {@link CompatibilityResult} (the fresh
+ * re-derivation of step 4/5) alongside the durable-state metadata the
+ * recovery-model authority (plan §E.4) needs to project per-scope
+ * verdicts. When the chain itself fails (facts-unavailable / reprobe-failed
+ * / no-state / state-mismatch) the result carries the closed reprobe reason
+ * and NO engine result — the consumer MUST fail closed, exactly as
+ * `admit` maps the same condition to a `reprobe` decision.
+ */
+export interface CompatibilityEvaluation {
+  /** Whether the chain produced a verdict (`true`) or failed (`false`). */
+  readonly chainOk: boolean
+  /** The reprobe failure reason when `chainOk` is `false` (closed vocabulary). */
+  readonly reprobeReason?: ReprobeReason
+  /** The live environment fingerprint when it was computed. */
+  readonly fingerprint?: string
+  /** The original downstream fault (facts-unavailable / reprobe-failed). */
+  readonly cause?: Error
+  /** The logical admission state of the fresh durable state (only when `chainOk`). */
+  readonly status?: CompatibilityStatus
+  /** The compatibility generation the evaluation was made under (only when `chainOk`). */
+  readonly generation?: number
+  /** Whether THIS attempt re-probed to ensure freshness (only when `chainOk`). */
+  readonly reprobed?: boolean
+  /** The RAW engine result of the step 4/5 re-derivation (only when `chainOk`). */
+  readonly result?: CompatibilityResult
+  /** The fresh environment facts the chain read (only when `chainOk`). */
+  readonly facts?: readonly EnvironmentFact[]
+}
+
 /** The single compatibility admission authority for one TeamSession. */
 export interface CompatibilityAuthority {
   /** The root session id the authority owns. */
@@ -196,6 +229,14 @@ export interface CompatibilityAuthority {
    * state → ACK validity → one result). See the module docs.
    */
   admit(options?: CompatibilityAuthorityAdmitOptions): Promise<CompatibilityAdmissionDecision>
+  /**
+   * The SAME single chain as {@link admit} without the admit/block mapping —
+   * it returns the RAW engine result + the durable-state metadata (plan
+   * §E.4: the recovery-model authority projects per-scope verdicts from it).
+   * A chain failure is reported (not mapped to a decision) with the closed
+   * reprobe reason; the consumer MUST fail closed.
+   */
+  evaluate(options?: CompatibilityAuthorityAdmitOptions): Promise<CompatibilityEvaluation>
   /** Run one explicit re-probe under a frozen trigger (durable replace). */
   reprobe(trigger: ProbeTrigger): Promise<ProbeOutcome>
   /** Read the current durable compatibility state (or `undefined`). */
@@ -235,9 +276,9 @@ export function createCompatibilityAuthority(
     ...(options.onProbe !== undefined ? { onProbe: options.onProbe } : {}),
   })
 
-  async function admit(
+  async function evaluate(
     admitOptions?: CompatibilityAuthorityAdmitOptions,
-  ): Promise<CompatibilityAdmissionDecision> {
+  ): Promise<CompatibilityEvaluation> {
     // 1. READ current environment facts (fresh; a failure is a chain
     //    failure — never an admission).
     let facts: readonly EnvironmentFact[]
@@ -245,7 +286,7 @@ export function createCompatibilityAuthority(
       facts = await options.environmentFacts()
     } catch (error) {
       return {
-        decision: 'reprobe',
+        chainOk: false,
         reprobeReason: REPROBE_REASONS.FACTS_UNAVAILABLE,
         cause: error instanceof Error ? error : undefined,
       }
@@ -263,7 +304,7 @@ export function createCompatibilityAuthority(
         reprobed = true
       } catch (error) {
         return {
-          decision: 'reprobe',
+          chainOk: false,
           reprobeReason: REPROBE_REASONS.REPROBE_FAILED,
           fingerprint: liveFingerprint,
           cause: error instanceof Error ? error : undefined,
@@ -272,7 +313,7 @@ export function createCompatibilityAuthority(
       state = options.repositories.compatibility.get(rootSessionId)
       if (state === undefined) {
         return {
-          decision: 'reprobe',
+          chainOk: false,
           reprobeReason: REPROBE_REASONS.NO_STATE_AFTER_REPROBE,
           fingerprint: liveFingerprint,
         }
@@ -296,18 +337,47 @@ export function createCompatibilityAuthority(
     // closed on a re-probe verdict, never admit on the mismatch.
     if (requestAcks.length === 0 && result.status !== state.status) {
       return {
-        decision: 'reprobe',
+        chainOk: false,
         reprobeReason: REPROBE_REASONS.STATE_MISMATCH,
         fingerprint: liveFingerprint,
       }
     }
-    // 6. EXACTLY ONE result per attempt.
-    if (result.status === 'OPEN' || result.status === 'DEGRADED_ACKNOWLEDGED') {
+    // 6. The RAW evaluation (the admit/block mapping is the CONSUMER's job
+    //    — `admit` maps it byte-identically to the pre-PR-E decision).
+    return {
+      chainOk: true,
+      fingerprint: state.fingerprint,
+      status: result.status,
+      generation: state.generation,
+      reprobed,
+      result,
+      facts,
+    }
+  }
+
+  async function admit(
+    admitOptions?: CompatibilityAuthorityAdmitOptions,
+  ): Promise<CompatibilityAdmissionDecision> {
+    const evaluation = await evaluate(admitOptions)
+    if (!evaluation.chainOk) {
+      return {
+        decision: 'reprobe',
+        reprobeReason: evaluation.reprobeReason as ReprobeReason,
+        ...(evaluation.fingerprint !== undefined ? { fingerprint: evaluation.fingerprint } : {}),
+        ...(evaluation.cause !== undefined ? { cause: evaluation.cause } : {}),
+      }
+    }
+    const status = evaluation.status as CompatibilityStatus
+    const fingerprint = evaluation.fingerprint as string
+    const generation = evaluation.generation as number
+    const reprobed = evaluation.reprobed as boolean
+    const result = evaluation.result as CompatibilityResult
+    if (status === 'OPEN' || status === 'DEGRADED_ACKNOWLEDGED') {
       return {
         decision: 'admit',
-        status: result.status,
-        fingerprint: state.fingerprint,
-        generation: state.generation,
+        status,
+        fingerprint,
+        generation,
         reprobed,
       }
     }
@@ -319,9 +389,9 @@ export function createCompatibilityAuthority(
     )
     return {
       decision: 'block',
-      status: result.status,
-      fingerprint: state.fingerprint,
-      generation: state.generation,
+      status,
+      fingerprint,
+      generation,
       reprobed,
       blockingRequirements: blocking.map((requirement) => ({
         requirementId: requirement.requirementId,
@@ -339,6 +409,7 @@ export function createCompatibilityAuthority(
   return {
     rootSessionId,
     admit,
+    evaluate,
     reprobe: (trigger) => prober.probe(trigger),
     current: () => prober.current(),
     acknowledge: (input) => prober.acknowledge(input),

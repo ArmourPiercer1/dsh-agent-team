@@ -380,10 +380,12 @@ export type AdmitRootInitialWork = (args: RootInitialWorkArgs) => Promise<RootIn
  *
  *   Phase A, in ONE withTeamLock acquisition of the shared
  *   coordination.chains:
- *     enforceCompatibilityGate (the existing single compatibility
- *     authority, INSIDE the lock: the gate may re-probe inline and a
- *     racing new-work admission for the same team must not interleave —
- *     the CR-8 analog, gate + Phase A in ONE acquisition) ->
+ *     enforceRequirementGate (the pre-alpha3 PR-E REQUIREMENT GATE — the
+ *     successor of the P6-T2 compatibility gate, INSIDE the lock: the gate
+ *     may re-probe inline and a racing new-work admission for the same
+ *     team must not interleave — the CR-8 analog, gate + Phase A in ONE
+ *     acquisition; a BLOCKED scope blocks the work, a DEGRADED scope
+ *     auto-degrades and the work continues) ->
  *     admitRootInitialWorkLocked (scan + decision + the fresh admission
  *     fact; a replay / a typed rejection completes in the same
  *     acquisition).
