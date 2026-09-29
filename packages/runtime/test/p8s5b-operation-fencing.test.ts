@@ -82,8 +82,8 @@ import type {
 import { createTeamOperationCoordinator } from '../coordination/index.js'
 import {
   MUTATION_ERROR_CODES,
-  admitGovernanceOverride,
   isMutationError,
+  persistGovernanceOverride,
   selectSlotWinner,
 } from '../mutation/index.js'
 import type {
@@ -709,9 +709,9 @@ let r6a: {
 }
 {
   const store = new OverrideMemStore()
-  const seed = await admitGovernanceOverride(
+  const seed = await persistGovernanceOverride(
     {
-      authority: { kind: 'leader' },
+      kind: 'autonomy-overlay', origin: 'leader',
       rootSessionId: P6T2_ROOT,
       recordId: 'ovr-p8s5b-base',
       scope: 'team',
@@ -726,9 +726,9 @@ let r6a: {
   const chain = createTeamOperationCoordinator()
   const second = await admitOutcome(() =>
     chain.run(P6T2_ROOT, () =>
-      admitGovernanceOverride(
+      persistGovernanceOverride(
         {
-          authority: { kind: 'leader' },
+          kind: 'autonomy-overlay', origin: 'leader',
           rootSessionId: P6T2_ROOT,
           recordId: 'ovr-p8s5b-2',
           scope: 'team',
@@ -742,9 +742,9 @@ let r6a: {
   )
   const third = await admitOutcome(() =>
     chain.run(P6T2_ROOT, () =>
-      admitGovernanceOverride(
+      persistGovernanceOverride(
         {
-          authority: { kind: 'leader' },
+          kind: 'autonomy-overlay', origin: 'leader',
           rootSessionId: P6T2_ROOT,
           recordId: 'ovr-p8s5b-3',
           scope: 'team',
@@ -773,9 +773,9 @@ let r6b: {
 }
 {
   const store = new OverrideMemStore()
-  await admitGovernanceOverride(
+  await persistGovernanceOverride(
     {
-      authority: { kind: 'leader' },
+      kind: 'autonomy-overlay', origin: 'leader',
       rootSessionId: P6T2_ROOT,
       recordId: 'ovr-p8s5b-base',
       scope: 'team',
@@ -789,9 +789,9 @@ let r6b: {
   // optimistic guard against the SAME winner — the lost update.
   const [second, third] = await Promise.all([
     admitOutcome(() =>
-      admitGovernanceOverride(
+      persistGovernanceOverride(
         {
-          authority: { kind: 'leader' },
+          kind: 'autonomy-overlay', origin: 'leader',
           rootSessionId: P6T2_ROOT,
           recordId: 'ovr-p8s5b-2',
           scope: 'team',
@@ -803,9 +803,9 @@ let r6b: {
       ),
     ),
     admitOutcome(() =>
-      admitGovernanceOverride(
+      persistGovernanceOverride(
         {
-          authority: { kind: 'leader' },
+          kind: 'autonomy-overlay', origin: 'leader',
           rootSessionId: P6T2_ROOT,
           recordId: 'ovr-p8s5b-3',
           scope: 'team',
@@ -1072,7 +1072,7 @@ describe('P8-S5B R5b: drift || new work WITH the shared coordinator (the window 
   })
 })
 
-describe('P8-S5B R6a: governance override admits SERIALIZED through the shared chain', () => {
+describe('P8-S5B R6a: the persistence primitive SERIALIZED through the shared chain (PR-A: the service owns this chain)', () => {
   it('the first concurrent admit wins; the second is a deterministic generation conflict', () => {
     expect(r6a.second.ok).toBe(true)
     if (r6a.second.value !== undefined) {
@@ -1093,7 +1093,7 @@ describe('P8-S5B R6a: governance override admits SERIALIZED through the shared c
   })
 })
 
-describe('P8-S5B R6b: the SAME admits UNserialized (the lost-update evidence)', () => {
+describe('P8-S5B R6b: the SAME primitive admits UNserialized (the lost-update evidence the service chain closes)', () => {
   it('both admits pass the stale guard and BOTH are "admitted" at generation 2', () => {
     expect(r6b.second.ok).toBe(true)
     expect(r6b.third.ok).toBe(true)

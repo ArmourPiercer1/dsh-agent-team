@@ -1,0 +1,71 @@
+[
+  {
+    "method": "team.getReadState",
+    "params": {
+      "sessionId": "session-team-child-796562d4284593654607730948ad2b04"
+    },
+    "ms": 9,
+    "httpStatus": 405,
+    "ok": false,
+    "error": {
+      "http": 405
+    }
+  },
+  {
+    "method": "team.getReadState",
+    "params": {
+      "sessionId": "session-team-child-796562d4284593654607730948ad2b04"
+    },
+    "ms": 9,
+    "httpStatus": 200,
+    "ok": true,
+    "data": {
+      "data": {
+        "relation": "team-member",
+        "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+        "memberInstanceId": "inst-17legoh0ti27",
+        "disposed": false,
+        "durableGeneration": 32,
+        "liveToken": "lt-v1-7770fae9dbb4092b6a748fe92563b54c1c1c89e0dcb16fadab6c82254b975331"
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.getReadState",
+        "endpoint": "team.getReadState",
+        "contractVersion": 6,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  },
+  {
+    "method": "override.set",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "capability": "model",
+      "value": {
+        "kind": "allow",
+        "items": [
+          "pra-gov/model-a"
+        ]
+      },
+      "scope": "team"
+    },
+    "ms": 5,
+    "httpStatus": 200,
+    "ok": false,
+    "error": {
+      "code": "malformed-params",
+      "message": "method 'override.set' requires param field 'actor'",
+      "details": {
+        "method": "override.set",
+        "endpoint": "override.set",
+        "contractVersion": 1,
+        "requestToken": null,
+        "field": "actor",
+        "reason": "missing-required"
+      }
+    }
+  }
+]

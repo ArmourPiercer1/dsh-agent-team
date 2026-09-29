@@ -28,11 +28,14 @@
  *                             backend-truth projection (governance
  *                             overrides + per-live-session consumption
  *                             views + observations)
- *       POST /__p6t6/governance/mutate — {as, recordId, scope,
+ *       POST /__p6t6/governance/mutate — {as, scope,
  *                             instanceId?, cells, expectedGeneration?}
- *                             -> the owned governance-override ADMISSION
- *                             authority (the backend truth the live
- *                             agents re-consume at every request boundary)
+ *                             -> the SINGLE production governance
+ *                             mutation authority (teamRoot.mutation.
+ *                             governance.setOverride — the backend truth
+ *                             the live agents re-consume at every request
+ *                             boundary; the record id is minted
+ *                             server-side, never client-supplied)
  *       POST /__p6t6/residency/drop — {sessionId} -> dispose the live
  *                             agent handle bound to `sessionId`
  *   - the TEST-ONLY hostile-seam route (alpha.2 hardening closure,
@@ -122,8 +125,6 @@ let directive
 let readyGate
 /** @type {string|null} setup failure (visible through /__p6t6/health). */
 let setupError = null
-/** @type {Promise<unknown>} the governance-mutation route's serialize chain. */
-let governanceQueue = Promise.resolve()
 /** @type {object} the pure admission authority (the built dist mutation module). */
 let mutationAdmission
 /**
@@ -586,15 +587,19 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
     },
   }, 'p6t6 state route'))
 
-  // P8-S4B: the owned governance-override ADMISSION route — the backend
-  // authority writer (§20.3/§20.4: the remote handler calls the runtime
-  // admission module, never the repository directly). The PURE authority is
-  // the built dist mutation module imported in apply(); the {list, put}
-  // store port rides on teamRoot.domain.repositories. Authority is derived
-  // SERVER-SIDE (the bundle's governanceAuthority) from the principal the
-  // driver presents as `as`: the root session is the host-known operator
-  // (human overrides); a bound member child is a member (own-instance
-  // autonomy overlays only).
+  // pre-alpha3 PR-A (ADR-03): the owned governance-mutation route — a
+  // thin HTTP wrapper over the SINGLE production governance mutation
+  // authority (teamRoot.mutation.governance, the host-constructed
+  // service): slot closure by authority, the write-time envelope +
+  // external hard checks, the shared-chain serialization, the
+  // deterministic SERVER-SIDE record-id mint, and the durable
+  // commit-before-ack all live in the service. The built dist mutation
+  // module is still imported in apply() — for the closed error-surface
+  // guard (isMutationError) only; it no longer performs the write.
+  // Authority is derived SERVER-SIDE (the bundle's governanceAuthority)
+  // from the principal the driver presents as `as`: the root session is
+  // the host-known operator (human overrides); a bound member child is a
+  // member (own-instance autonomy overlays only).
   ctx.effect(() => webServer.register({
     kind: 'exact',
     path: '/__p6t6/governance/mutate',
@@ -618,24 +623,22 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
           return
         }
         const as = typeof body?.as === 'string' ? body.as : null
-        const recordId = typeof body?.recordId === 'string' ? body.recordId : null
         const scope = body?.scope === 'team' || body?.scope === 'instance' ? body.scope : null
         const cells = body?.cells
-        if (as === null || recordId === null || scope === null || typeof cells !== 'object' || cells === null || Array.isArray(cells)) {
-          sendJson(res, 400, { error: 'body.as, body.recordId, body.scope (team|instance) and body.cells (object) are required' })
+        if (as === null || scope === null || typeof cells !== 'object' || cells === null || Array.isArray(cells)) {
+          sendJson(res, 400, { error: 'body.as, body.scope (team|instance) and body.cells (object) are required' })
+          return
+        }
+        const authority = teamRoot.live.governanceAuthority(as)
+        if (authority === undefined) {
+          sendJson(res, 403, { error: `no authorized team principal for session '${as}' (not the root and no bound member)` })
           return
         }
         const args = {
-          authority: teamRoot.live.governanceAuthority(as),
+          authority,
           rootSessionId: rootSid,
-          recordId,
           scope,
           cells,
-          now,
-        }
-        if (args.authority === undefined) {
-          sendJson(res, 403, { error: `no authorized team principal for session '${as}' (not the root and no bound member)` })
-          return
         }
         if (scope === 'instance') {
           const instanceId = typeof body?.instanceId === 'string' ? body.instanceId : null
@@ -646,24 +649,13 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
           args.instanceId = instanceId
         }
         if (typeof body?.expectedGeneration === 'number') args.expectedGeneration = body.expectedGeneration
-        // The row-level serialize chain: the admit list-then-put critical
-        // section never interleaves with a racing mutation (the optimistic
-        // generation guard on top still surfaces concurrent slot writers).
-        // The chain itself never rejects: each request awaits its own
-        // continuation, so one failure cannot poison the queued next one.
-        const admittedRun = governanceQueue.then(() =>
-          mutationAdmission.admitGovernanceOverride(args, {
-            list: async (root) => teamRoot.domain.repositories.overrides.list(String(root)),
-            put: (record) => teamRoot.domain.repositories.overrides.put(record),
-          }),
-        )
-        governanceQueue = admittedRun.then(
-          () => undefined,
-          () => undefined,
-        )
-        let admitted
+        // The serialization is the service's shared per-team chain (the
+        // P8-S5B coordinator) — the old row-local queue is gone; the
+        // deterministic record id is minted SERVER-SIDE by the service
+        // (the client no longer supplies one).
+        let result
         try {
-          admitted = await admittedRun
+          result = await teamRoot.mutation.governance.setOverride(args)
         } catch (error) {
           if (mutationAdmission.isMutationError(error)) {
             const status = error.code === 'MALFORMED_MUTATION_INPUT'
@@ -677,19 +669,26 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
           sendJson(res, 500, { error: String(error?.message ?? error) })
           return
         }
+        // Both branches report the slot state: a changed set is the
+        // freshly committed record; a no-change set (the desired state
+        // already holds) is the current slot winner.
+        const record = result.changed ? result.record : result.current
         sendJson(res, 200, {
           ok: true,
-          value: {
-            recordId: admitted.recordId,
-            kind: admitted.kind,
-            scope: admitted.scope,
-            ...(admitted.instanceId !== undefined ? { instanceId: admitted.instanceId } : {}),
-            ...(admitted.origin !== undefined ? { origin: admitted.origin } : {}),
-            values: admitted.values,
-            generation: admitted.generation,
-            updatedAt: admitted.updatedAt,
-            supersededRecordId: admitted.supersededRecordId,
-          },
+          noChange: !result.changed,
+          value: record === undefined
+            ? null
+            : {
+                recordId: record.recordId,
+                kind: record.kind,
+                scope: record.scope,
+                ...(record.instanceId !== undefined ? { instanceId: record.instanceId } : {}),
+                ...(record.origin !== undefined ? { origin: record.origin } : {}),
+                values: record.values,
+                generation: record.generation,
+                updatedAt: record.updatedAt,
+                ...(record.supersededRecordId !== undefined ? { supersededRecordId: record.supersededRecordId } : {}),
+              },
         })
       } catch (error) {
         sendJson(res, 500, { error: String(error?.message ?? error) })

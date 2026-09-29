@@ -63,6 +63,7 @@ import { describe, expect, it } from 'vitest'
 
 import { createS6RemoteDispatcher, createS6RemotePorts } from '../src/plugin/s6-remote.js'
 import type { S6RemoteOptions, S6RootBindingPort } from '../src/plugin/s6-remote.js'
+import type { GovernanceMutationService } from '../governance/index.js'
 import { createServerPrincipalDerivation } from '../src/plugin/s6-principal.js'
 import { TEAM_PLUGIN_ERROR_CODES, TeamPluginError } from '../src/plugin/types.js'
 import type { WorkspaceAttachPort } from '../src/plugin/types.js'
@@ -217,10 +218,8 @@ function buildG1Dispatcher(
     projection: { project: unused } as never,
     runtime: createP6T2Runtime(world),
     lifecycle: { switchState: unused } as never,
-    mutationService: { switchPolicyState: unused },
+    governance: {} as unknown as GovernanceMutationService,
     mutationTransitions: () => [],
-    admitGovernanceOverride: (): Promise<never> => Promise.reject(new Error('unused in this test')),
-    overrideStore: {} as never,
     overrideRecords: () => [],
     rootBinding,
     // S1-H2 (repair 20260927): per-root prober FACTORY (unused in this

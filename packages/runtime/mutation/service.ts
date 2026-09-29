@@ -63,6 +63,7 @@ import {
 import type {
   CapabilityName,
   EffectivePolicy,
+  ExternalPolicyFacts,
   InstanceId,
   MemberIdentity,
   PolicyEntry,
@@ -537,51 +538,12 @@ export class MutationService {
     capability: CapabilityName,
     value: PolicyEntry,
   ): void {
-    if (value.kind === 'deny') return // tightening never escapes the hard facts
-    const external = this.deps.policy.readExternalFacts(teamSessionId)
-    if (
-      typeof external !== 'object' ||
-      external === null ||
-      typeof external.hard !== 'object' ||
-      external.hard === null ||
-      typeof external.capabilityExists !== 'object' ||
-      external.capabilityExists === null
-    ) {
-      throw new MutationError(
-        MUTATION_ERROR_CODES.MALFORMED_MUTATION_INPUT,
-        `malformed external hard facts from the policy reader for TeamSession '${teamSessionId}'`,
-        { stage: 'external', source: 'reader' },
-      )
-    }
-    if (external.capabilityExists[capability] === false) {
-      throw new MutationError(
-        MUTATION_ERROR_CODES.EXTERNAL_HARD_REJECTED,
-        `capability '${capability}' does not exist in the substrate; no origin may grant it (invariant 35)`,
-        { capability, hardReason: 'capabilityMissing' },
-      )
-    }
-    const hardEntry = external.hard[capability]
-    if (hardEntry === undefined) return
-    const hard = normalizePolicyEntry(hardEntry, `external.hard.${capability}`)
-    if (hard.kind === 'deny') {
-      throw new MutationError(
-        MUTATION_ERROR_CODES.EXTERNAL_HARD_REJECTED,
-        `capability '${capability}' is hard-denied by the external policy; no origin may grant it (§19.2/§25.4)`,
-        { capability, hardReason: 'hardDeny' },
-      )
-    }
-    const allowed = new Set(hard.items)
-    const missing: string[] = []
-    for (const item of value.items) {
-      if (!allowed.has(item)) missing.push(item)
-    }
-    if (missing.length > 0) {
-      throw new MutationError(
-        MUTATION_ERROR_CODES.EXTERNAL_HARD_REJECTED,
-        `capability '${capability}' allow items exceed the external hard allow-list`,
-        { capability, hardReason: 'outsideHardAllowList', items: missing },
-      )
-    }
+    checkExternalHardFacts(
+      teamSessionId,
+      capability,
+      value,
+      this.deps.policy.readExternalFacts(teamSessionId),
+    )
   }
 
   /**
@@ -724,13 +686,85 @@ function assertCreationFieldValue(raw: unknown, field: string): string {
 }
 
 /**
+ * The external hard facts check of ONE policy cell value — the pure
+ * kernel of {@link MutationService.checkExternalHard} (invariant 35,
+ * §19.2/§19.5: an escalation beyond the external hard facts is rejected
+ * for EVERY origin, human override included). `deny` values pass (a
+ * tightening never escapes the hard facts).
+ *
+ * Exported kernel (pre-alpha3 PR-A): the production governance authority
+ * (packages/runtime/governance) reuses it for its write-time checks, so
+ * the intake service and the durable write path speak ONE vocabulary.
+ *
+ * @param teamSessionId - the team being checked (error context).
+ * @param capability - the cell capability.
+ * @param value - the normalized cell value.
+ * @param external - the external hard facts (read by the caller).
+ * @throws {@link MutationError} `EXTERNAL_HARD_REJECTED` (beyond the hard
+ *   facts) or `MALFORMED_MUTATION_INPUT` (malformed facts from the reader).
+ */
+export function checkExternalHardFacts(
+  teamSessionId: TeamSessionId,
+  capability: CapabilityName,
+  value: PolicyEntry,
+  external: ExternalPolicyFacts,
+): void {
+  if (value.kind === 'deny') return // tightening never escapes the hard facts
+  if (
+    typeof external !== 'object' ||
+    external === null ||
+    typeof external.hard !== 'object' ||
+    external.hard === null ||
+    typeof external.capabilityExists !== 'object' ||
+    external.capabilityExists === null
+  ) {
+    throw new MutationError(
+      MUTATION_ERROR_CODES.MALFORMED_MUTATION_INPUT,
+      `malformed external hard facts from the policy reader for TeamSession '${teamSessionId}'`,
+      { stage: 'external', source: 'reader' },
+    )
+  }
+  if (external.capabilityExists[capability] === false) {
+    throw new MutationError(
+      MUTATION_ERROR_CODES.EXTERNAL_HARD_REJECTED,
+      `capability '${capability}' does not exist in the substrate; no origin may grant it (invariant 35)`,
+      { capability, hardReason: 'capabilityMissing' },
+    )
+  }
+  const hardEntry = external.hard[capability]
+  if (hardEntry === undefined) return
+  const hard = normalizePolicyEntry(hardEntry, `external.hard.${capability}`)
+  if (hard.kind === 'deny') {
+    throw new MutationError(
+      MUTATION_ERROR_CODES.EXTERNAL_HARD_REJECTED,
+      `capability '${capability}' is hard-denied by the external policy; no origin may grant it (§19.2/§25.4)`,
+      { capability, hardReason: 'hardDeny' },
+    )
+  }
+  const allowed = new Set(hard.items)
+  const missing: string[] = []
+  for (const item of value.items) {
+    if (!allowed.has(item)) missing.push(item)
+  }
+  if (missing.length > 0) {
+    throw new MutationError(
+      MUTATION_ERROR_CODES.EXTERNAL_HARD_REJECTED,
+      `capability '${capability}' allow items exceed the external hard allow-list`,
+      { capability, hardReason: 'outsideHardAllowList', items: missing },
+    )
+  }
+}
+
+/**
  * Validate + normalize one policy entry — the EXACT structural rules of
  * the frozen domain validator (a `deny` entry carries no extra fields; an
  * `allow` entry carries only kind+items, a non-empty array of unique
  * non-empty strings), normalized to a fresh deep-freezable copy under
- * this module's error code.
+ * this module's error code. Exported kernel: the production governance
+ * authority (packages/runtime/governance, pre-alpha3 PR-A) reuses it for
+ * its write-time cell validation (one closed error surface).
  */
-function normalizePolicyEntry(raw: unknown, field: string): PolicyEntry {
+export function normalizePolicyEntry(raw: unknown, field: string): PolicyEntry {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     throw new MutationError(
       MUTATION_ERROR_CODES.MALFORMED_MUTATION_INPUT,
@@ -798,9 +832,11 @@ function normalizePolicyEntry(raw: unknown, field: string): PolicyEntry {
  * Validate + normalize one PolicyState target — the EXACT structural
  * rules of the frozen domain validator (id-like `stateId`; closed
  * capability keys; a cell may only carry `locked` (boolean) and `value`
- * (policy entry)), normalized to a fresh deep-freezable copy.
+ * (policy entry)), normalized to a fresh deep-freezable copy. Exported
+ * kernel: the production governance authority (packages/runtime/governance,
+ * pre-alpha3 PR-A) reuses it for its PolicyState target validation.
  */
-function normalizeStateView(raw: unknown, field: string): PolicyStateView {
+export function normalizeStateView(raw: unknown, field: string): PolicyStateView {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     throw new MutationError(
       MUTATION_ERROR_CODES.MALFORMED_MUTATION_INPUT,

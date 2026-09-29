@@ -578,17 +578,20 @@ const r22: R22State = await (async (): Promise<R22State> => {
   )
   const callB = attachRemoteCaller(rootB)
 
-  // Step 1: the leader governance deny overlay (the production admission
-  // authority writes the durable `overrides` repository).
-  const bAdmit = await rootB.mutation.admitGovernanceOverride({
+  // Step 1: the leader governance deny overlay — pre-alpha3 PR-A: the
+  // SINGLE governance mutation authority writes the durable `overrides`
+  // repository; the record id is minted SERVER-SIDE (the client no
+  // longer supplies one — the deterministic mint for this slot is
+  // ovr-tools-team-g0).
+  const bAdmitResult = await rootB.mutation.governance.setOverride({
     authority: { kind: 'leader' },
     rootSessionId: ROOT_B,
-    recordId: 'ovr-tools-leader-r22b',
     scope: 'team',
     cells: { tools: { kind: 'deny' } },
-    now: () => new Date(0).toISOString(),
   })
-  check(bAdmit.recordId === 'ovr-tools-leader-r22b', 'admitted record id mismatch')
+  if (!bAdmitResult.changed) throw new Error('R2-2 world B: the leader deny overlay was a no-op')
+  const bAdmit = bAdmitResult.record
+  check(bAdmit.recordId === 'ovr-tools-team-g0', 'admitted record id mismatch (the service mints server-side)')
   const projB1 = rootB.projection.project(parseRootSessionId(ROOT_B))
   const bEc1 = ecOf(projB1, WORKER_B)
 
@@ -1049,9 +1052,10 @@ describe('p8s7r2-effective-config: the R2-2 resolved effective-config view (BQ-0
 
   it('R22.7 H03: the durable locked policy-state cell is surfaced (remote + projection) and tightens nothing over a deny floor (production suppression residual)', () => {
     expect(r22.bSetCode).toBe(null)
-    // The production mutation service mints ledger entry ids with its
-    // default id source (no custom newRecordId is bound at the root).
-    expect(r22.bSetEntryId.startsWith('p7t2-ledger-')).toBe(true)
+    // pre-alpha3 PR-A: the governance mutation authority mints the
+    // deterministic entry id (state + lane length) — the first switch
+    // of world B is ps-strict-0.
+    expect(r22.bSetEntryId).toBe(`ps-${STRICT_STATE_ID}-0`)
     expect(r22.bSetOrigin).toBe('human')
     // The production step clock is pinned to 0: the future-boundary ruling.
     expect(r22.bSetRequestedAtStep).toBe(0)

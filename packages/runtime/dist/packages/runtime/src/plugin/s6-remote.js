@@ -1391,12 +1391,40 @@ export function createS6RemotePorts(options) {
                 const root = assertBoundRoot('override.get', teamSessionId);
                 const records = options.overrideRecords(root);
                 const effectiveScope = scope ?? 'team';
-                const matches = records.filter((record) => {
+                const inSlot = (record) => {
                     if (record['scope'] !== effectiveScope)
                         return false;
                     if (effectiveScope === 'instance' && record['instanceId'] !== targetInstanceId)
                         return false;
                     if (effectiveScope === 'team' && record['instanceId'] !== undefined)
+                        return false;
+                    return true;
+                };
+                // The slot winner (any capability). A RESET re-issues the slot as a
+                // higher-generation TOMBSTONE (empty `values`) — the durable
+                // audit-preserving reset (PR-A / ADR-03). When the slot winner IS
+                // the tombstone, the slot is revoked: report null — the pre-PR-A
+                // wire behavior (the old reset deleted the record, so a read after
+                // a reset found nothing). The effective-policy path
+                // (`selectPolicyOverrides`) already treats the tombstone's empty
+                // values as contributing nothing.
+                let slotWinner = null;
+                for (const record of records) {
+                    if (!inSlot(record))
+                        continue;
+                    const generation = record['generation'];
+                    if (!isSafeInt(generation))
+                        continue;
+                    if (slotWinner === null || generation > slotWinner['generation'])
+                        slotWinner = record;
+                }
+                if (slotWinner !== null) {
+                    const values = slotWinner['values'];
+                    if (isPlainRecord(values) && Object.keys(values).length === 0)
+                        return null;
+                }
+                const matches = records.filter((record) => {
+                    if (!inSlot(record))
                         return false;
                     const values = record['values'];
                     return isPlainRecord(values) && capability in values;
@@ -1420,31 +1448,27 @@ export function createS6RemotePorts(options) {
                 if (scope === 'instance' && (instanceId === undefined || instanceId.length === 0)) {
                     throw new TeamPluginError(S6_REMOTE_ERROR_CODES.OVERRIDE_TARGET_REQUIRED, 'override.set with instance scope requires a targetInstanceId', { reason: 'missing-target' });
                 }
-                const kind = authority.kind === 'operator' ? 'human-override' : 'autonomy-overlay';
-                const records = options.overrideRecords(root);
-                const slotMatches = records.filter((record) => record['kind'] === kind &&
-                    record['scope'] === scope &&
-                    (scope === 'instance' ? record['instanceId'] === instanceId : record['instanceId'] === undefined));
-                let winnerGeneration = 0;
-                for (const record of slotMatches) {
-                    const generation = record['generation'];
-                    if (isSafeInt(generation) && generation > winnerGeneration)
-                        winnerGeneration = generation;
-                }
-                // The server-side deterministic clean record id (the remote
-                // contract carries NO client-supplied record id; the id is bound
-                // to the addressed slot + the current slot generation, so a
-                // concurrent same-slot set collides instead of clobbering).
-                const recordId = `ovr-${request.capability}-${scope === 'instance' ? instanceId : 'team'}-g${winnerGeneration}`;
-                const admitted = await options.admitGovernanceOverride({
+                // pre-alpha3 PR-A (ADR-03): the SINGLE governance mutation
+                // authority — slot closure by authority + the write-time
+                // envelope + external-hard checks + the chain serialization +
+                // the durable commit BEFORE the ack. The record id is minted
+                // server-side by the service (the remote contract carries NO
+                // client-supplied record id).
+                const result = await options.governance.setOverride({
                     authority,
                     rootSessionId: root,
-                    recordId,
                     scope,
                     ...(instanceId !== undefined ? { instanceId } : {}),
                     cells: { [request.capability]: request.value },
-                    now,
-                }, options.overrideStore);
+                });
+                // Both branches report the slot state as an override record: a
+                // changed set is the freshly committed record; a no-change set is
+                // the current slot winner (the desired state already holds — the
+                // winner is always present on that branch: a non-empty cell set
+                // can never be a no-op against an empty slot).
+                const admitted = result.changed
+                    ? result.record
+                    : result.current;
                 const record = {
                     recordId: admitted.recordId,
                     kind: admitted.kind,
@@ -1458,6 +1482,8 @@ export function createS6RemotePorts(options) {
                     record['instanceId'] = admitted.instanceId;
                 if (admitted.origin !== undefined)
                     record['origin'] = admitted.origin;
+                if (!result.changed)
+                    record['noChange'] = true;
                 return record;
             },
             async reset(request, caller) {
@@ -1465,29 +1491,20 @@ export function createS6RemotePorts(options) {
                 const authority = authorityOf(caller, leaderInstanceId);
                 const scope = request.scope ?? 'team';
                 const instanceId = scope === 'instance' ? request.targetInstanceId : undefined;
-                const kind = authority.kind === 'operator' ? 'human-override' : 'autonomy-overlay';
-                const records = options.overrideRecords(root);
-                const slotMatches = records.filter((record) => record['kind'] === kind &&
-                    record['scope'] === scope &&
-                    (scope === 'instance' ? record['instanceId'] === instanceId : record['instanceId'] === undefined));
-                let winner = null;
-                for (const record of slotMatches) {
-                    const generation = record['generation'];
-                    if (!isSafeInt(generation))
-                        continue;
-                    if (winner === null || generation > winner['generation'])
-                        winner = record;
-                }
-                if (winner === null)
-                    return { removed: false };
-                const removed = await repositories.overrides.delete({
-                    kind: winner['kind'],
-                    recordId: winner['recordId'],
-                    scope: winner['scope'],
+                // pre-alpha3 PR-A (ADR-03): the reset flows through the SINGLE
+                // governance mutation authority — the slot is closed by the
+                // authority (a member can only reset its OWN instance slot — the
+                // team-scope reset hole the forked direct-delete path opened is
+                // closed), the generation guard applies, and the reset is a
+                // higher-generation TOMBSTONE re-issue (never a storage delete —
+                // audit-preserving), committed durably BEFORE the ack.
+                const result = await options.governance.resetOverride({
+                    authority,
                     rootSessionId: root,
-                    ...(scope === 'instance' ? { instanceId } : {}),
+                    scope,
+                    ...(instanceId !== undefined ? { instanceId } : {}),
                 });
-                return { removed };
+                return { removed: result.removed };
             },
         },
         // --- 9/12 policyState: the mutation service (invariant 40: explicit only) -------
@@ -1525,11 +1542,24 @@ export function createS6RemotePorts(options) {
                 if (typeof stateId !== 'string' || !closed.has(stateId)) {
                     throw new TeamPluginError(S6_REMOTE_ERROR_CODES.POLICY_STATE_UNKNOWN, `policyState.set names state '${String(stateId)}' which is outside the bound blueprint's closed set (${[...closed].join(', ')})`, { reason: 'unknown-state', stateId: String(stateId) });
                 }
-                const transition = options.mutationService.switchPolicyState({
-                    teamSessionId: root,
-                    target: target,
+                // pre-alpha3 PR-A (ADR-03): the switch flows through the SINGLE
+                // governance mutation authority — the closed-set check above
+                // keeps the wire code (TEAM_REMOTE_POLICY_STATE_UNKNOWN), the
+                // service re-checks it (defense in depth for the other callers),
+                // a self-transition is a typed no-op, and the durable ledger row
+                // is committed BEFORE the ack (the R2-1 fire-and-schedule window
+                // is closed).
+                const result = await options.governance.switchPolicyState({
                     actor: actorOf(caller, root, leaderInstanceId),
+                    rootSessionId: root,
+                    target: target,
                 });
+                if (!result.changed) {
+                    // Self-transition: the target state is already active (no new
+                    // row). The additive noChange key is honest on the open record.
+                    return { stateId: result.state.stateId, noChange: true };
+                }
+                const transition = result.transition;
                 return {
                     entryId: transition.entryId,
                     origin: transition.origin,

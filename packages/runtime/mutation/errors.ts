@@ -30,6 +30,10 @@
  * - `UNKNOWN_INSTANCE` — the addressed MemberInstance was never registered
  *   with the module (no creation fields on record).
  *
+  * - `POLICY_STATE_UNKNOWN` — pre-alpha3 PR-A: a PolicyState transition
+  *   target outside the bound blueprint’s closed state set (the service-
+  *   level typed rejection; the remote plane keeps its own
+  *   `TEAM_REMOTE_POLICY_STATE_UNKNOWN` wire code).
  * @module @dsh-agent-team/runtime/mutation/errors
  */
 
@@ -96,6 +100,14 @@ export const MUTATION_ERROR_CODES = {
    * override; the operator channel issues human overrides only).
    */
   UNAUTHORIZED_MUTATION: 'UNAUTHORIZED_MUTATION',
+  /**
+   * pre-alpha3 PR-A: a PolicyState transition target outside the bound
+   * blueprint's CLOSED state set (the `default` id plus the declared
+   * states). The remote plane keeps its own `TEAM_REMOTE_POLICY_STATE_UNKNOWN`
+   * wire code (the s6 fast-fail pre-check); this is the SERVICE-level
+   * typed rejection for every other caller of the governance authority.
+   */
+  POLICY_STATE_UNKNOWN: 'POLICY_STATE_UNKNOWN',
 } as const
 
 /** One of the closed mutation error codes. */
@@ -114,6 +126,7 @@ export const MUTATION_ERROR_CODE_VALUES: readonly string[] = [
   MUTATION_ERROR_CODES.OVERRIDE_IDENTITY_CONFLICT,
   MUTATION_ERROR_CODES.OVERRIDE_GENERATION_CONFLICT,
   MUTATION_ERROR_CODES.UNAUTHORIZED_MUTATION,
+  MUTATION_ERROR_CODES.POLICY_STATE_UNKNOWN,
 ]
 
 /**

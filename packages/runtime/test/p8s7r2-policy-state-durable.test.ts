@@ -279,19 +279,6 @@ function attachRemoteCaller(root: Record<string, any>): (
   return (endpoint, params) => dispatcher(endpoint, { version: 1, params })
 }
 
-/** The stable `code` of a thrown typed error (null when nothing threw). */
-function captureCode(fn: () => unknown): string | null {
-  try {
-    fn()
-    return null
-  } catch (err) {
-    if (err !== null && typeof err === 'object' && 'code' in err) {
-      const code = (err as { code?: unknown }).code
-      return typeof code === 'string' ? code : `untyped:${String(err)}`
-    }
-    return `untyped:${String(err)}`
-  }
-}
 
 /** Read one remote response's error code (null when ok). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
@@ -396,11 +383,18 @@ const r21: R21State = await (async (): Promise<R21State> => {
   const projBefore = createRoot.projection.project(parseRootSessionId(ROOT_SID))
   const remoteBefore = await callA('policyState.get', { teamSessionId: ROOT_SID })
 
-  const transition = createRoot.mutation.service.switchPolicyState({
-    teamSessionId: ROOT_SID,
-    target: { stateId: STRICT_STATE_ID },
+  // pre-alpha3 PR-A (ADR-03): the switch flows through the SINGLE
+  // governance mutation authority — ASYNC (commit-before-ack: the durable
+  // ledger row lands before this await resolves).
+  const switchResult = await createRoot.mutation.governance.switchPolicyState({
     actor: { kind: 'human' },
+    rootSessionId: ROOT_SID,
+    target: { stateId: STRICT_STATE_ID },
   })
+  if (!switchResult.changed) {
+    throw new Error('the explicit switch was a no-op (the default state should not have been active)')
+  }
+  const transition = switchResult.transition
 
   const projAfter = createRoot.projection.project(parseRootSessionId(ROOT_SID))
   const remoteAfter = await callA('policyState.get', { teamSessionId: ROOT_SID })
@@ -419,7 +413,7 @@ const r21: R21State = await (async (): Promise<R21State> => {
 
   let createCloseThrew: string | null = null
   try {
-    await createRoot.close() // the R2-1 flush: the durable write completes here
+    await createRoot.close() // pre-alpha3 PR-A: commit-before-ack — nothing is pending at close
   } catch (err) {
     createCloseThrew = String(err)
   }
@@ -455,14 +449,23 @@ const r21: R21State = await (async (): Promise<R21State> => {
     Number.MAX_SAFE_INTEGER,
   ).stateId
 
-  // A31 still enforced after the R2-1 wiring (service-level, sync throw).
-  const resumeMemberActorCodeRaw = captureCode(() =>
-    resumeRoot.mutation.service.switchPolicyState({
-      teamSessionId: ROOT_SID,
-      target: { stateId: 'default' },
+  // A31 still enforced after the R2-1 wiring (service-level, the async
+  // rejection carries the typed code — pre-alpha3 PR-A).
+  let resumeMemberActorCodeRaw: string | null = null
+  try {
+    await resumeRoot.mutation.governance.switchPolicyState({
       actor: { kind: 'member', member: { rootSessionId: ROOT_SID, instanceId: SEED_WORKER_ID } },
-    }),
-  )
+      rootSessionId: ROOT_SID,
+      target: { stateId: 'default' },
+    })
+  } catch (err) {
+    if (err !== null && typeof err === 'object' && 'code' in err) {
+      const code = (err as { code?: unknown }).code
+      resumeMemberActorCodeRaw = typeof code === 'string' ? code : `untyped:${String(err)}`
+    } else {
+      resumeMemberActorCodeRaw = `untyped:${String(err)}`
+    }
+  }
   if (resumeMemberActorCodeRaw === null) {
     throw new Error('the member-actor switch did not throw a typed code')
   }

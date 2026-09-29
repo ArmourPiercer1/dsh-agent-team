@@ -1,12 +1,20 @@
 /**
- * P8-S4B M6 — unit tests for the governance override ADMISSION authority
- * (DevPlan P8-S §18.2/§20.3: the backend authority that writes the durable
- * governance overrides the frozen policy layer re-reads at every future
- * Agent request boundary).
+ * P8-S4B M6 (demoted by pre-alpha3 PR-A, ADR-03) — unit tests for the
+ * NARROW governance-override PERSISTENCE primitive
+ * (`persistGovernanceOverride`, DevPlan P8-S §18.2/§20.3: the backend
+ * writer of the durable governance overrides the frozen policy layer
+ * re-reads at every future Agent request boundary).
  *
- *  - A1 authority -> record kind/origin: leader/member -> autonomy-overlay
- *     with origin; operator -> human-override without origin;
- *  - A2 authority scope rules: member = own instance only, no team scope;
+ * pre-alpha3 PR-A: the production write authority is now the governance
+ * mutation service (packages/runtime/governance — the authority/scope
+ * closure, the write-time envelope + external-hard checks, the chain
+ * serialization, the deterministic record-id mint, and the commit-
+ * before-ack all live there). This file pins what the demoted primitive
+ * still owns:
+ *
+ *  - A1 kind/origin consistency (an autonomy-overlay requires its
+ *     traceability origin; a human-override carries none — the storage
+ *     cross-field rules, typed at the boundary);
  *  - A3 structural validation: closed capability vocabulary, PolicyEntry
  *     shapes, clean ids, scope/instanceId cross-rules;
  *  - A4 the frozen one-record-per-slot ruling: cumulative mutations
@@ -17,6 +25,10 @@
  *  - A7 selectSlotWinner mirrors the frozen winner rule (generation, then
  *     lexicographic recordId) and the slot boundaries.
  *
+ * The authority->kind mapping and the authority scope rules (member = own
+ * instance only) are the SERVICE's (slotOf) — pinned by
+ * governance-mutation-authority.test.ts.
+ *
  * The runner executes these files under plain Node: all async work runs in
  * the top-level block, the `it` bodies assert synchronously.
  *
@@ -26,8 +38,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   MUTATION_ERROR_CODES,
-  admitGovernanceOverride,
   isMutationError,
+  persistGovernanceOverride,
   selectSlotWinner,
   type OverrideRecordView,
   type OverrideStorePort,
@@ -100,9 +112,10 @@ const modelAllow = { model: { kind: 'allow', items: ['p6t6-static/p6t6-model-v2'
 const mcpAllow = { mcp: { kind: 'allow', items: ['p8s4bmini'] } }
 const mcpDeny = { mcp: { kind: 'deny' } }
 
-const a1: Awaited<ReturnType<typeof admitGovernanceOverride>> = await admitGovernanceOverride(
+const a1: Awaited<ReturnType<typeof persistGovernanceOverride>> = await persistGovernanceOverride(
   {
-    authority: { kind: 'leader' },
+    kind: 'autonomy-overlay',
+    origin: 'leader',
     rootSessionId: ROOT,
     recordId: 'p8s4b-ovr-model',
     scope: 'team',
@@ -114,22 +127,23 @@ const a1: Awaited<ReturnType<typeof admitGovernanceOverride>> = await admitGover
 
 // A fresh store for the cumulative sequence (the live driver's sequence).
 const store = new MemoryStore()
-await admitGovernanceOverride(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-model', scope: 'team', cells: modelAllow, now: NOW },
+await persistGovernanceOverride(
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-model', scope: 'team', cells: modelAllow, now: NOW },
   store,
 )
-const c2 = await admitGovernanceOverride(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-mcp-allow', scope: 'team', cells: mcpAllow, now: NOW },
+const c2 = await persistGovernanceOverride(
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-mcp-allow', scope: 'team', cells: mcpAllow, now: NOW },
   store,
 )
-const c3 = await admitGovernanceOverride(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-mcp-deny', scope: 'team', cells: mcpDeny, now: NOW },
+const c3 = await persistGovernanceOverride(
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-mcp-deny', scope: 'team', cells: mcpDeny, now: NOW },
   store,
 )
 
-const selfOverlay = await admitGovernanceOverride(
+const selfOverlay = await persistGovernanceOverride(
   {
-    authority: { kind: 'member', instanceId: 'inst-p8s4bself' },
+    kind: 'autonomy-overlay',
+    origin: 'member',
     rootSessionId: ROOT,
     recordId: 'p8s4b-ovr-self',
     scope: 'instance',
@@ -140,9 +154,9 @@ const selfOverlay = await admitGovernanceOverride(
   store,
 )
 
-const humanOverride = await admitGovernanceOverride(
+const humanOverride = await persistGovernanceOverride(
   {
-    authority: { kind: 'operator' },
+    kind: 'human-override',
     rootSessionId: ROOT,
     recordId: 'p8s4b-ovr-human',
     scope: 'team',
@@ -152,78 +166,71 @@ const humanOverride = await admitGovernanceOverride(
   store,
 )
 
-async function capture(args: Parameters<typeof admitGovernanceOverride>[0], target: OverrideStorePort): Promise<unknown> {
+async function capture(args: Parameters<typeof persistGovernanceOverride>[0], target: OverrideStorePort): Promise<unknown> {
   try {
-    return await admitGovernanceOverride(args, target)
+    return await persistGovernanceOverride(args, target)
   } catch (error) {
     return error
   }
 }
 
-const memberTeam = await capture(
-  { authority: { kind: 'member', instanceId: 'inst-p8s4bself' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-mt', scope: 'team', cells: modelAllow, now: NOW },
+const overlayMissingOrigin = await capture(
+  { kind: 'autonomy-overlay', rootSessionId: ROOT, recordId: 'p8s4b-ovr-mo', scope: 'team', cells: modelAllow, now: NOW },
   store,
 )
-const memberOther = await capture(
-  {
-    authority: { kind: 'member', instanceId: 'inst-p8s4bself' },
-    rootSessionId: ROOT,
-    recordId: 'p8s4b-ovr-mo',
-    scope: 'instance',
-    instanceId: 'inst-p8s4bother',
-    cells: modelAllow,
-    now: NOW,
-  },
+const humanWithOrigin = await capture(
+  { kind: 'human-override', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-ho', scope: 'team', cells: modelAllow, now: NOW },
   store,
 )
 const unknownCapability = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-uc', scope: 'team', cells: { gpu: { kind: 'deny' } }, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-uc', scope: 'team', cells: { gpu: { kind: 'deny' } }, now: NOW },
   store,
 )
 const emptyCells = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-ec', scope: 'team', cells: {}, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-ec', scope: 'team', cells: {}, now: NOW },
   store,
 )
 const badEntryKind = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-bek', scope: 'team', cells: { model: { kind: 'forbid' } }, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-bek', scope: 'team', cells: { model: { kind: 'forbid' } }, now: NOW },
   store,
 )
 const emptyItems = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-ei', scope: 'team', cells: { model: { kind: 'allow', items: [] } }, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-ei', scope: 'team', cells: { model: { kind: 'allow', items: [] } }, now: NOW },
   store,
 )
 const nonStringItem = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-nsi', scope: 'team', cells: { model: { kind: 'allow', items: [42] } }, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-nsi', scope: 'team', cells: { model: { kind: 'allow', items: [42] } }, now: NOW },
   store,
 )
 const denyExtraFields = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-def', scope: 'team', cells: { model: { kind: 'deny', items: [] } }, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-def', scope: 'team', cells: { model: { kind: 'deny', items: [] } }, now: NOW },
   store,
 )
 const whitespaceRecordId = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b ovr', scope: 'team', cells: modelAllow, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b ovr', scope: 'team', cells: modelAllow, now: NOW },
   store,
 )
 const longRecordId = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'x'.repeat(129), scope: 'team', cells: modelAllow, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'x'.repeat(129), scope: 'team', cells: modelAllow, now: NOW },
   store,
 )
 const teamScopeWithInstance = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-tw', scope: 'team', instanceId: 'inst-p8s4bself', cells: modelAllow, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-tw', scope: 'team', instanceId: 'inst-p8s4bself', cells: modelAllow, now: NOW },
   store,
 )
 const instanceScopeWithoutId = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-iw', scope: 'instance', cells: modelAllow, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-iw', scope: 'instance', cells: modelAllow, now: NOW },
   store,
 )
 const identityConflict = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-model', scope: 'team', cells: mcpDeny, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-model', scope: 'team', cells: mcpDeny, now: NOW },
   store,
 )
 // Same recordId in a DIFFERENT slot (instance scope) is a fresh identity.
 const sameRecordIdOtherScope = await capture(
   {
-    authority: { kind: 'member', instanceId: 'inst-p8s4bself' },
+    kind: 'autonomy-overlay',
+    origin: 'member',
     rootSessionId: ROOT,
     recordId: 'p8s4b-ovr-model',
     scope: 'instance',
@@ -234,15 +241,15 @@ const sameRecordIdOtherScope = await capture(
   store,
 )
 const staleGeneration = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-stale', scope: 'team', cells: mcpAllow, expectedGeneration: 99, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-stale', scope: 'team', cells: mcpAllow, expectedGeneration: 99, now: NOW },
   store,
 )
 const staleGenerationZero = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-stale0', scope: 'team', cells: mcpAllow, expectedGeneration: 0, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-stale0', scope: 'team', cells: mcpAllow, expectedGeneration: 0, now: NOW },
   store,
 )
 const correctGeneration = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-gen4', scope: 'team', cells: { model: { kind: 'deny' } }, expectedGeneration: 3, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-gen4', scope: 'team', cells: { model: { kind: 'deny' } }, expectedGeneration: 3, now: NOW },
   store,
 )
 const raceStore = new MemoryStore()
@@ -258,7 +265,7 @@ raceStore.seedConflict({
   origin: 'leader',
 })
 const duplicateRace = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-race', scope: 'team', cells: modelAllow, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-race', scope: 'team', cells: modelAllow, now: NOW },
   raceStore,
 )
 const passThroughStore: OverrideStorePort = {
@@ -268,7 +275,7 @@ const passThroughStore: OverrideStorePort = {
   },
 }
 const passThrough = await capture(
-  { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-pt', scope: 'team', cells: modelAllow, now: NOW },
+  { kind: 'autonomy-overlay', origin: 'leader', rootSessionId: ROOT, recordId: 'p8s4b-ovr-pt', scope: 'team', cells: modelAllow, now: NOW },
   passThroughStore,
 )
 
@@ -306,8 +313,8 @@ function codeOf(value: unknown): string | undefined {
   return isMutationError(value) ? value.code : undefined
 }
 
-describe('P8-S4B M6 override admission', () => {
-  it('A1 leader writes autonomy-overlay with origin leader', () => {
+describe('P8-S4B M6 override persistence primitive (PR-A demoted)', () => {
+  it('A1 an autonomy-overlay with origin leader persists its kind/origin', () => {
     expect(a1.kind).toBe('autonomy-overlay')
     expect(a1.origin).toBe('leader')
     expect(a1.scope).toBe('team')
@@ -318,23 +325,23 @@ describe('P8-S4B M6 override admission', () => {
     expect(a1.values).toEqual({ model: { kind: 'allow', items: ['p6t6-static/p6t6-model-v2'] } })
   })
 
-  it('A1 member writes autonomy-overlay with origin member', () => {
+  it('A1 an autonomy-overlay with origin member persists its kind/origin', () => {
     expect(selfOverlay.kind).toBe('autonomy-overlay')
     expect(selfOverlay.origin).toBe('member')
     expect(selfOverlay.instanceId).toBe('inst-p8s4bself')
   })
 
-  it('A1 operator writes human-override without origin', () => {
+  it('A1 a human-override persists without an origin', () => {
     expect(humanOverride.kind).toBe('human-override')
     expect(humanOverride.origin).toBe(undefined)
   })
 
-  it('A2 member team scope is an unauthorized mutation', () => {
-    expect(codeOf(memberTeam)).toBe(MUTATION_ERROR_CODES.UNAUTHORIZED_MUTATION)
+  it('A1 an autonomy-overlay without an origin is a malformed input', () => {
+    expect(codeOf(overlayMissingOrigin)).toBe(MUTATION_ERROR_CODES.MALFORMED_MUTATION_INPUT)
   })
 
-  it('A2 member targeting another instance is an unauthorized mutation', () => {
-    expect(codeOf(memberOther)).toBe(MUTATION_ERROR_CODES.UNAUTHORIZED_MUTATION)
+  it('A1 a human-override carrying an origin is a malformed input', () => {
+    expect(codeOf(humanWithOrigin)).toBe(MUTATION_ERROR_CODES.MALFORMED_MUTATION_INPUT)
   })
 
   it('A3 unknown capability is a closed-vocabulary rejection', () => {

@@ -29,7 +29,8 @@ import type { ActionCaller, LifecycleCommitPort, TeamRuntime } from '../../admis
 import type { ActivationProvider } from '../../activation/index.js';
 import type { LifecycleService } from '../../lifecycle/index.js';
 import type { OverlaySlot, TeamAgentBinder } from '../../agent-setup/binder/index.js';
-import type { AdmittedGovernanceOverride, AdmitGovernanceOverrideArgs, MutationService, OverrideStorePort } from '../../mutation/index.js';
+import type { MutationStore } from '../../mutation/index.js';
+import type { GovernanceMutationService } from '../../governance/index.js';
 import type { DurableModelSelection, DurableModelSelectionArgs, resolveDurableModelSelection } from '../../agent-setup/model/index.js';
 import type { DurableMcpFacet, DurableMcpFacetArgs, resolveDurableMcpFacet } from '../../agent-setup/capability/index.js';
 import type { ActivityLedger } from '../../activity/index.js';
@@ -605,12 +606,23 @@ export interface TeamProductionRoot {
         readonly service: LifecycleService;
         readonly commit: LifecycleCommitPort;
     };
-    /** A22 + A23 — the mutation service + the governance override admission
-     *  authority + the durable consumption resolvers (the live-Agent
-     *  boundary bridge). */
+    /** A22 + A23 — the governance mutation authority (pre-alpha3 PR-A,
+     *  ADR-03: the SINGLE production write authority for the durable
+     *  governance `overrides` + the PolicyState transitions) + the
+     *  durable-backed transition read cache + the durable consumption
+     *  resolvers (the live-Agent boundary bridge). The old forked
+     *  surfaces (the production `MutationService` instance + the remote-
+     *  side `admitGovernanceOverride` glue) are demoted — see the
+     *  governance module doc. */
     readonly mutation: {
-        readonly service: MutationService;
-        readonly admitGovernanceOverride: (args: AdmitGovernanceOverrideArgs, store?: OverrideStorePort) => Promise<AdmittedGovernanceOverride>;
+        /** The durable-backed transition read cache (boot preload + the
+         *  live commits; the projection read-port, the remote policyState
+         *  surface, and the C1 three-way-agreement verification read the
+         *  transitions lane through this single authoritative cache). */
+        readonly store: MutationStore;
+        /** The production governance mutation authority (override.set /
+         *  override.reset / policyState.set flow through it only). */
+        readonly governance: GovernanceMutationService;
         readonly resolveDurableModelSelection: typeof resolveDurableModelSelection;
         readonly resolveDurableMcpFacet: typeof resolveDurableMcpFacet;
     };

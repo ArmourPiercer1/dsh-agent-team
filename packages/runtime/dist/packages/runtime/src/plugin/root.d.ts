@@ -31,8 +31,8 @@
  * | A19  | work settlement                         | `live.workDelivery` (settleAdmittedWork owner)|
  * | A20  | lifecycle service                       | `createLifecycleService`                      |
  * | A21  | lifecycle commit port                   | `memberInstances.commitTransition`            |
- * | A22  | mutation service                        | `new MutationService`                         |
- * | A23  | governance override admission           | `admitGovernanceOverride` (+ durable resolvers) |
+ * | A22  | mutation plane (read cache)               | durable-backed transition store               |
+ * | A23  | governance mutation authority (PR-A)      | `createGovernanceMutationService`             |
  * | A24  | messaging coordinator                   | `createMessagingCoordinator`                  |
  * | A25  | control service                         | `createControlService`                        |
  * | A26  | activity ledger                         | `createActivityLedger` (+ work-activity writer) |
@@ -68,11 +68,16 @@
  *   fresh-root binding path (the same binding the `team.create` entry
  *   uses) with the handoff attached as the new team's source provenance
  *   (the `handoffSourceSessionId` TeamSession record field, BQ-16).
- * - **The A22 mutation service carries an ephemeral store**: the durable
- *   backend for mutation records is not part of the frozen S5A seam set;
- *   the frozen world's mutation consumption flows through
- *   `admitGovernanceOverride` (durable `overrides` repository) and the
- *   durable consumption resolvers.
+ * - **The A22/A23 mutation plane (pre-alpha3 PR-A, ADR-03)**: the
+ *   SINGLE production write authority is the governance mutation
+ *   service (`createGovernanceMutationService`) — the durable
+ *   `overrides` repository + the PolicyState transition ledger rows,
+ *   serialized on the shared per-team chain, committed BEFORE the ack.
+ *   The transition read cache is durable-backed (boot preload); the
+ *   old production `MutationService` instance + the remote-side
+ *   `admitGovernanceOverride` glue are demoted (the persistence
+ *   primitive + the pure P7-T2 kernel — neither is a production
+ *   authority).
  *
  * Pure assembly module: no `node:` builtins, no DSH imports (the DSH side
  * arrives exclusively through the injected live-agent glue bundle).

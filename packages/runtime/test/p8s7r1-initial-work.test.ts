@@ -70,7 +70,7 @@ import { createAdmitRootInitialWork, createTeamRuntime } from '../action-router/
 import type { TeamRuntime } from '../admission/index.js'
 import { createTeamOperationCoordinator } from '../coordination/index.js'
 import { createWorkActivityWriter } from '../activity/index.js'
-import type { AdmittedGovernanceOverride } from '../mutation/index.js'
+import type { GovernanceMutationService } from '../governance/index.js'
 import type { HandoffService } from '../handoff/index.js'
 import type { LifecycleService } from '../lifecycle/index.js'
 import type { LegacyInspectFn } from '../src/plugin/legacy-surface.js'
@@ -182,11 +182,8 @@ function buildOptions(
     projection: { project: unused } as unknown as ProjectionService,
     runtime,
     lifecycle: { switchState: unused } as unknown as LifecycleService,
-    mutationService: { switchPolicyState: unused },
+    governance: {} as unknown as GovernanceMutationService,
     mutationTransitions: () => [],
-    admitGovernanceOverride:
-      (): Promise<AdmittedGovernanceOverride> => Promise.reject(new Error('unused in this test')),
-    overrideStore: {} as never,
     overrideRecords: () => [],
     rootBinding,
     // S1-H2 (repair 20260927): the remote surface takes the per-root

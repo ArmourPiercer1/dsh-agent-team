@@ -1,0 +1,74 @@
+{
+  "runStamp": "pra-gov-2026-09-28T17-25-34",
+  "failure": "G2: G2: wire call failed (http=200 error={\"code\":\"malformed-params\",\"message\":\"method 'override.set' requires param field 'actor'\",\"details\":{\"method\":\"override.set\",\"endpoint\":\"override.set\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"actor\",\"reason\":\"missing-required\"}})",
+  "criteria": [
+    {
+      "id": "G0",
+      "label": "preflight (test-use baseline + dist + world + ports + stable probes)",
+      "pass": true,
+      "detail": "testuse HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4 porcelain='' dist=true seed=true hostPort=3182 mockPort=3497 stable={\"http://127.0.0.1:3080/\":401,\"http://127.0.0.1:3180/\":401}"
+    },
+    {
+      "id": "G1",
+      "label": "host boot #1 (production row at this worktree dist, route ready)",
+      "pass": true,
+      "detail": "boot #1 on :3182 (route ready 269ms)"
+    },
+    {
+      "id": "G2",
+      "label": "human model override acks the committed record (origin human)",
+      "pass": false,
+      "detail": "G2: wire call failed (http=200 error={\"code\":\"malformed-params\",\"message\":\"method 'override.set' requires param field 'actor'\",\"details\":{\"method\":\"override.set\",\"endpoint\":\"override.set\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"actor\",\"reason\":\"missing-required\"}})"
+    },
+    {
+      "id": "G3",
+      "label": "human mcp override: multi-cap winner, generation 2, both cells",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "id": "G4",
+      "label": "restart: identical winner + generation continues from the durable value",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "id": "G5",
+      "label": "concurrent two-tab set: both ack, three-cell winner, generation +2",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "id": "G6",
+      "label": "stale generation: the prior winner stays durable; the slot advances",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "id": "G7",
+      "label": "reset: tombstone re-issue; every prior record row intact on disk",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "id": "G8",
+      "label": "current-master wire no-regression (policyState.get + team.getReadState)",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "id": "G9",
+      "label": "cleanup (stable re-probe + ephemeral world removed)",
+      "pass": false,
+      "detail": ""
+    }
+  ],
+  "world": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/pra-gov-2026-09-28T17-25-34",
+  "hostPort": 3182,
+  "mockPort": 3497,
+  "stablePre": {
+    "http://127.0.0.1:3080/": 401,
+    "http://127.0.0.1:3180/": 401
+  },
+  "stablePost": null
+}

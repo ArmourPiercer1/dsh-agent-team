@@ -1,0 +1,13 @@
+{
+  "head": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "porcelain": "",
+  "distOk": true,
+  "srcOk": true,
+  "hostPort": 3182,
+  "mockPort": 3497,
+  "stablePre": {
+    "http://127.0.0.1:3080/": 401,
+    "http://127.0.0.1:3180/": 401
+  },
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pra-governance"
+}

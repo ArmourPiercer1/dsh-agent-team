@@ -31,8 +31,8 @@
  * | A19  | work settlement                         | `live.workDelivery` (settleAdmittedWork owner)|
  * | A20  | lifecycle service                       | `createLifecycleService`                      |
  * | A21  | lifecycle commit port                   | `memberInstances.commitTransition`            |
- * | A22  | mutation service                        | `new MutationService`                         |
- * | A23  | governance override admission           | `admitGovernanceOverride` (+ durable resolvers) |
+ * | A22  | mutation plane (read cache)               | durable-backed transition store               |
+ * | A23  | governance mutation authority (PR-A)      | `createGovernanceMutationService`             |
  * | A24  | messaging coordinator                   | `createMessagingCoordinator`                  |
  * | A25  | control service                         | `createControlService`                        |
  * | A26  | activity ledger                         | `createActivityLedger` (+ work-activity writer) |
@@ -68,11 +68,16 @@
  *   fresh-root binding path (the same binding the `team.create` entry
  *   uses) with the handoff attached as the new team's source provenance
  *   (the `handoffSourceSessionId` TeamSession record field, BQ-16).
- * - **The A22 mutation service carries an ephemeral store**: the durable
- *   backend for mutation records is not part of the frozen S5A seam set;
- *   the frozen world's mutation consumption flows through
- *   `admitGovernanceOverride` (durable `overrides` repository) and the
- *   durable consumption resolvers.
+ * - **The A22/A23 mutation plane (pre-alpha3 PR-A, ADR-03)**: the
+ *   SINGLE production write authority is the governance mutation
+ *   service (`createGovernanceMutationService`) — the durable
+ *   `overrides` repository + the PolicyState transition ledger rows,
+ *   serialized on the shared per-team chain, committed BEFORE the ack.
+ *   The transition read cache is durable-backed (boot preload); the
+ *   old production `MutationService` instance + the remote-side
+ *   `admitGovernanceOverride` glue are demoted (the persistence
+ *   primitive + the pure P7-T2 kernel — neither is a production
+ *   authority).
  *
  * Pure assembly module: no `node:` builtins, no DSH imports (the DSH side
  * arrives exclusively through the injected live-agent glue bundle).
@@ -94,6 +99,7 @@ import { DEFAULT_CONTEXT_POLICY, isContextPolicy } from '../../../domain/member/
 import type { EnvironmentFact } from '../../../domain/compatibility/src/index.js'
 import {
   CAPABILITY_NAME_VALUES,
+  DEFAULT_POLICY_STATE_ID,
   selectiveToTemplatePolicyValues,
   staticCapabilitiesOf,
 } from '../../../domain/policy/src/index.js'
@@ -105,6 +111,7 @@ import type {
 import {
   canonicalJsonStringify,
   createBlueprintSnapshotRef,
+  createMemberIdentity,
   LEADER_INSTANCE_ID,
   leaderMemberIdentityOf,
   parseBlueprintContentHash,
@@ -226,16 +233,8 @@ import { createProjectionService } from '../../projection/index.js'
 import type { ProjectionService } from '../../projection/index.js'
 import { createTeamTools } from '../../../tools/src/index.js'
 import type { TeamToolSet } from '../../../tools/src/index.js'
-import {
-  MutationService,
-  admitGovernanceOverride,
-} from '../../mutation/index.js'
-import type {
-  AdmittedGovernanceOverride,
-  AdmitGovernanceOverrideArgs,
-  OverrideRecordView,
-  OverrideStorePort,
-} from '../../mutation/index.js'
+import { createGovernanceMutationService } from '../../governance/index.js'
+import type { OverrideRecordView, OverrideStorePort } from '../../mutation/index.js'
 import type {
   CreationFieldRecord,
   MutationLedgerEntry,
@@ -258,7 +257,7 @@ import { createTeamDomainReadPort } from './projection-source.js'
 import { createEffectiveConfigView } from './effective-config-view.js'
 import { createModelStateView } from './model-state-view.js'
 import type { TeamDomainReadPortDeps } from './projection-source.js'
-import { createDurableMutationStore } from './durable-mutation-store.js'
+import { createDurableMutationStore, writePolicyStateTransitionRow } from './durable-mutation-store.js'
 import { activePolicyState } from '../../policy-adapter.js'
 import { createLiveResidencyOverlay } from './s6-live-overlay.js'
 import { computeTeamLiveToken } from './live-token.js'
@@ -1711,15 +1710,17 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     put: (record) => repos.overrides.put(record),
   }
   // Named so the A31 remote PolicyState port can read the durable
-  // transition rows (policyState.get) from the same store the service
-  // writes (policyState.set flows through the service only).
-  // R2-1 (P8-S7-R2): the transitions lane of that store is DURABLE — the
-  // `ledger` fact rows of the OPENED TeamDomain (the existing storage
-  // authority the mutation plane already uses for its durable homes);
-  // every other lane keeps the S5A documented ephemeral wiring. The
-  // production `boot()` preloads the durable rows into the in-memory
-  // cache before the live flow; the production `close()` flushes the
-  // scheduled durable writes (module: ./durable-mutation-store.js).
+  // transition rows (policyState.get) from the same store the authority
+  // writes (policyState.set flows through the governance authority only).
+  // R2-1 + pre-alpha3 PR-A: the transitions lane of that store is
+  // DURABLE — the `ledger` fact rows of the OPENED TeamDomain (the
+  // existing storage authority the mutation plane already uses for its
+  // durable homes); every other lane keeps the S5A documented ephemeral
+  // wiring. The COMMIT is owned by the governance mutation authority
+  // (commit-before-ack — it writes the durable row before the ack and
+  // only then appends to this cache); the production `boot()` preloads
+  // the durable rows into the cache before the live flow (module:
+  // ./durable-mutation-store.js).
   const durableMutation = createDurableMutationStore(
     createEphemeralMutationStore(),
     repos,
@@ -1735,17 +1736,55 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // cache (the process-local lanes keep their documented ephemeral
     // semantics — see ./durable-mutation-store.js).
     store: mutationStore,
-    service: new MutationService({
-      // The S5A boot world has no step-driven mutation pipeline; the
-      // StepClock reports the fixed step 0 (documented in S5A-result.md).
-      clock: { currentStep: () => 0 },
-      store: mutationStore,
+    // pre-alpha3 PR-A (ADR-03): the SINGLE production governance mutation
+    // authority — the one write path for the durable `overrides` + the
+    // PolicyState transitions, serialized on the shared per-team chain,
+    // committed durably BEFORE the ack. The old forked surfaces (the
+    // remote-side admission glue + direct reset delete + the production
+    // MutationService instance) are demoted: `persistGovernanceOverride`
+    // is a persistence primitive, `MutationService` stays a pure kernel
+    // of the P7-T2 test worlds — neither is a production authority.
+    governance: createGovernanceMutationService({
+      // The shared per-team operation chain (P8-S5B coordinator — the
+      // ONE per-team serialization seam the production root already uses
+      // for every team-mutating operation).
+      chain: coordination,
+      // The durable `overrides` repository (the team_domain store).
+      overrides: defaultOverrideStore,
+      // The in-memory read cache (the transitions lane view; the commit
+      // writes the durable row first, then appends here).
+      transitions: mutationStore,
+      // The durable transition commit (commit-before-ack).
+      transitionCommit: {
+        commit: (transition) =>
+          writePolicyStateTransitionRow(repos.ledger, rootSid, transition, now),
+      },
+      // The static policy facts (the bound blueprint envelope / template
+      // policy / the external hard facts — the same reader the resolution
+      // side reads).
       policy: policyReader,
+      // The registered member roster (the leader envelope intersection
+      // reads the durable member-instances rows). The LEADER row is
+      // excluded: the frozen P7-T2 envelope semantics intersect over the
+      // registered MEMBERS ("no member registered -> skip"), and the
+      // leader is a distinct instance, never a member (excluding it keeps
+      // a leader-only team on the documented skip path).
+      registeredMembers: (root) =>
+        Promise.resolve(
+          repos.memberInstances
+            .list(root)
+            .filter((row) => row.instanceId !== LEADER_INSTANCE_ID)
+            .map((row) => createMemberIdentity(row.rootSessionId, row.instanceId)),
+        ),
+      // The bound blueprint's closed PolicyState set (default + the
+      // declared states, declaration order) — read per addressed root
+      // through the per-root bound-snapshot resolver.
+      policyStates: (root) => [
+        DEFAULT_POLICY_STATE_ID,
+        ...boundBlueprintFor(root).policyStates.map((state) => state.id),
+      ],
+      now,
     }),
-    admitGovernanceOverride: (
-      args: AdmitGovernanceOverrideArgs,
-      store?: OverrideStorePort,
-    ): Promise<AdmittedGovernanceOverride> => admitGovernanceOverride(args, store ?? defaultOverrideStore),
     resolveDurableModelSelection,
     resolveDurableMcpFacet,
   }
@@ -1933,13 +1972,13 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     projection,
     runtime,
     lifecycle: lifecycleService,
-    mutationService: {
-      switchPolicyState: (request) => mutation.service.switchPolicyState(request),
-    },
+    // pre-alpha3 PR-A (ADR-03): the SINGLE governance mutation authority
+    // (durable overrides + PolicyState transitions) — the remote surface
+    // routes override.set / override.reset / policyState.set through it
+    // (serialized on the shared chain, committed before the ack).
+    governance: mutation.governance,
     mutationTransitions: (teamSessionId) =>
       mutationStore.listTransitions(teamSessionId as TeamSessionId),
-    admitGovernanceOverride: (args, store) => mutation.admitGovernanceOverride(args, store),
-    overrideStore: defaultOverrideStore,
     overrideRecords: (teamSessionId) =>
       repos.overrides.list(teamSessionId) as unknown as readonly RemoteSafeRecord[],
     rootBinding,
@@ -2313,10 +2352,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const close = async (): Promise<void> => {
     if (closeStarted) return
     closeStarted = true
-    // R2-1: flush the scheduled durable PolicyState writes BEFORE the
-    // live / domain close (a write to an already-closed domain would
-    // fail; the flush surfaces any recorded failure to the caller).
-    await durableMutation.flush()
+    // pre-alpha3 PR-A: there are no scheduled durable writes to flush —
+    // the governance mutation authority commits every durable fact row
+    // BEFORE its ack (commit-before-ack), so nothing is pending here.
     await live.close()
     await domain.close()
   }

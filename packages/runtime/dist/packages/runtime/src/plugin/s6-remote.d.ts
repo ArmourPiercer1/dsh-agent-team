@@ -49,10 +49,10 @@ import type { SessionReadStateDurableValue } from './team-read-state.js';
 import type { TeamDomainRepositories } from '../../../storage/repositories/index.js';
 import type { ActionCaller, TeamRuntime, TeamRuntimeActionOutcome } from '../../admission/index.js';
 import type { AdmitRootInitialWork } from '../../action-router/index.js';
-import type { TeamSessionId } from '../../../contracts/src/index.js';
 import type { LifecycleService } from '../../lifecycle/index.js';
 import type { MessagingCoordinator, SendTeamMessageOutcome, SendTeamMessageRequest } from '../../messaging/index.js';
-import type { AdmittedGovernanceOverride, AdmitGovernanceOverrideArgs, MutationActor, OverrideStorePort, PolicyStateTransitionRecord, PolicyStateView } from '../../mutation/index.js';
+import type { PolicyStateTransitionRecord } from '../../mutation/index.js';
+import type { GovernanceMutationService } from '../../governance/index.js';
 import type { CompatibilityProber } from '../../compatibility/index.js';
 /**
  * The remote-facing subset of the per-TeamSession compatibility prober.
@@ -664,20 +664,18 @@ export interface S6RemoteOptions {
     readonly runtime: TeamRuntime;
     /** The lifecycle service (the ONLY lifecycle authority). */
     readonly lifecycle: LifecycleService;
-    /** The mutation service (the ONLY PolicyState authority). */
-    readonly mutationService: {
-        switchPolicyState(request: {
-            teamSessionId: TeamSessionId;
-            target: PolicyStateView;
-            actor: MutationActor;
-        }): PolicyStateTransitionRecord;
-    };
+    /**
+     * pre-alpha3 PR-A (ADR-03) — the SINGLE governance mutation authority
+     * (durable `overrides` + the PolicyState transitions): override.set /
+     * override.reset / policyState.set route through it — serialized on
+     * the shared per-team chain, the write-time envelope + external hard
+     * checks applied, the durable write committed BEFORE the ack. The
+     * forked remote-side paths (direct slot scan + admission glue + direct
+     * reset delete) are gone.
+     */
+    readonly governance: GovernanceMutationService;
     /** The mutation store's transition rows (the durable PolicyState read). */
     readonly mutationTransitions: (teamSessionId: string) => readonly PolicyStateTransitionRecord[];
-    /** The governance-override admission (the ONLY override authority). */
-    readonly admitGovernanceOverride: (args: AdmitGovernanceOverrideArgs, store?: OverrideStorePort) => Promise<AdmittedGovernanceOverride>;
-    /** The durable override store (list/delete of the addressed record). */
-    readonly overrideStore: OverrideStorePort;
     /** The override record identity source (the durable `overrides` rows). */
     readonly overrideRecords: (rootSessionId: string) => readonly RemoteSafeRecord[];
     /** The root binding (fresh + cold). */
