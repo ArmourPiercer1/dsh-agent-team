@@ -16,6 +16,43 @@
  * 120s `AbortSignal.timeout` inside `executeTool` is the ABORT public seam
  * (B3C leg — the kit's fetch timeout must exceed it).
  *
+ * W2-A LIVE-PROBE CONTRACT (the 2026-09-30 parent adjudication — the kit's
+ * pre-W2-A mechanism was stale; the product contract is FROZEN and
+ * plan-conformant):
+ *   - SUPPLY AXIS: every MCP server the scenarios exercise is CONFIGURED on
+ *     the row in EVERY boot (`mcpServers` — static, identical per boot:
+ *     `mcp_repo`/3492, `mcp_leaderreq`/3491, `mcp_web`/3493). An
+ *     UNCONFIGURED server is a deterministic `unreachable` (source
+ *     'supply') — that is how the S2 optional-missing lives: `mcp_signal`
+ *     is NEVER configured (no live server ever exists for it).
+ *   - READINESS AXIS: the live probe is the IN-PROCESS MCP FIBER state of
+ *     the row host (agent-bindings reconcile → mcpFibers / materialization
+ *     slots): a mounted fiber on ANY live session = `reachable`; a failed
+ *     mount slot on ANY live session = `unreachable`; nothing = `unknown`
+ *     (fail-soft — the static bootstrap seed in `environmentFacts` fills
+ *     ONLY `unknown` verdicts and is NEVER flipped per phase).
+ *   - DOWN STATE = STOPPING THE RUNNING mini-MCP process (a LIVE state
+ *     change, the C.10 real-host pattern — this kit's in-process
+ *     `startMiniMcp`/`stopMiniMcp`); RESTORE = RESTARTING it. The boot
+ *     phase that boots with a server stopped gets the failed mount slot at
+ *     the first attach of the LEADER session (the p6t6 call's
+ *     ensureLiveAgent runs the reconcile BEFORE the gate's fresh facts
+ *     read), so the admission probe answers `unreachable` on time.
+ *   - WORLD DESIGN: the main team's LEADER template mounts EVERY
+ *     row-configured server (its `capabilities.mcp.allow` =
+ *     [repo, leaderreq, signal, web]): the team-scoped servers (repo /
+ *     leaderreq) have no other live mount surface, and the worker-scoped
+ *     web must be proable at admission time — BEFORE the worker instance
+ *     is attached (the gate reads fresh live facts before the effect
+ *     runs; a cold worker member is `not-applicable`, never a fabricated
+ *     failure). `mcp_signal` is allowed but never configured (excluded
+ *     from the reconcile target by the configured∩allow filter — the
+ *     structural guard never fires).
+ *   - RESTART: the in-memory mount state is EPHEMERAL (plan §C.5/§E.11
+ *     negative #10) — after every host restart NO live fiber survives
+ *     (readiness `unknown` at boot, re-probed live at the next boundary);
+ *     the durable facts (consent / disable / incidents) survive.
+ *
  * THE 14 SCENARIOS (plan §E.12 lines 974–987, authoritative):
  *  S1  startup all-template matrix   — fresh per-scope gate evaluation at
  *       every admission: team scope up (B1) / team scope DOWN (B5) /
@@ -23,9 +60,15 @@
  *       persona PASS (B9) / persona FATAL (B9b). Unit-level backing for
  *       the all-template preflight: startup-preflight-all-templates (the
  *       live surface is the gate's fresh evaluation — startupPreflight has
- *       no live call site; scoped limitation, see report).
+ *       no live call site; scoped limitation, see report). Live mechanism
+ *       (W2-A): all-ready (B1) = the three mini-MCPs RUNNING + configured
+ *       (the kit asserts both sides before the cell); each DOWN cell = the
+ *       relevant mini-MCP STOPPED before that boot (B2 optional / B3 web /
+ *       B5 repo).
  *  S2  optional requirement consent  — B2: optional (complete:false) mcp
- *       down -> work proceeds AUTO-DEGRADED (no block, no dispatch);
+ *       MISSING — `mcp_signal` is never configured (the W2-A supply axis:
+ *       deterministic `unreachable`, no live server ever) -> work proceeds
+ *       AUTO-DEGRADED (no block, no dispatch);
  *       B2b: the seeded `optional-requirement-accepted` fact is durable +
  *       readable with the exact payload, and the gate still ignores it
  *       (consents are records, never a gate precondition — §E.8).
@@ -42,7 +85,8 @@
  *       the caller's own template scope is never referenced by any action
  *       — member creation resolves only from blueprint.members, so a
  *       leader template scope cannot gate live actions; scoped
- *       limitation). B7: team scope blocked -> Recovery.
+ *       limitation). B7: the leaderreq mini-MCP STOPPED (live down) -> team
+ *       scope blocked -> Recovery.
  *  S6  Human-reviewed recovery       — B3A + B7: the exact reviewed
  *       dispatch payload, the kit as the human resolver, ALLOW -> the
  *       recovery attempt proceeds on the reduced ORIGINAL authority
@@ -53,12 +97,16 @@
  *       into allow; authority negative #2) -> a control request opens,
  *       the kit approves, bash executes.
  *  S8  Service restored, next        — B4: the SAME worker instance
- *       boundary with mcp_web back -> the template scope flips
+ *       boundary with mcp_web RESTORED (the kit RESTARTS the stopped
+ *       mini-MCP on 3493 — the live restore; the fresh boot's live
+ *       reconcile — readiness had reset to unknown at restart — mounts the
+ *       fiber) -> the template scope flips
  *       blocked->ready, the open incident is CLOSED (durable
  *       `recovery-incident-closed`), the follow-up runs NORMAL (no
  *       recovery correlation, no dispatch) and mcp_web materializes
  *       (E.10: no durable recovery flag — recovery stays derived).
- *       B8: the same exit for the TEAM scope (leaderreq restored).
+ *       B8: the same exit for the TEAM scope (leaderreq restored the same
+ *       way).
  *  S9  Exact reviewed payload (UI)   — B3A: the `control-request-recorded`
  *       ledger entry carries the EXACT `buildRecoveryDispatchPayload`
  *       shape: schema v1, requestedOperation, blockedScopes,
@@ -78,7 +126,11 @@
  *       the FRESH evaluation (worker still templateDisabled; helper
  *       delegate NORMAL); the team-scope compatibility row is recomputed
  *       per boot (readiness resets — template scopes have no durable
- *       generation).
+ *       generation). W2-A live addition (plan §E.11 negative #10):
+ *       readiness is EPHEMERAL — at the fresh B8 boot NO mounted slot
+ *       survives the restart (asserted pre-attach); the next boundary
+ *       re-probes live (the leaderreq slot becomes MOUNTED — asserted
+ *       post-b8h).
  *  S12 the PR #22 `ptc` persona      — B9: presetSubstrate ptc/standard +
  *       persona fact standard available -> the persona requirement PASSES
  *       (the correct open — ptc observes the standard kind). B9b: ptc
@@ -174,14 +226,19 @@ const PRODUCTION_ROW_NAME = pathToFileURL(PRODUCTION_ROW_PATH).href
 // booted/bound here.
 const HOST_PORT_CANDIDATES = [3182, 3183, 3184, 3185, 3186, 3181] // NEVER 3080 / 3180
 const MOCK_PORT_CANDIDATES = [3497, 3496]
-const PORT_LEADERREQ = 3491 // mini-MCP: mcp_leaderreq (the leader's required MCP — live only in B8)
-const PORT_WEB = 3493 // mini-MCP: mcp_web (the worker's required MCP — live only in B4)
+const PORT_REPO = 3492 // mini-MCP: mcp_repo (the team-level required MCP — S4 outage)
+const PORT_LEADERREQ = 3491 // mini-MCP: mcp_leaderreq (the leader's required MCP, team-scope — S5)
+const PORT_WEB = 3493 // mini-MCP: mcp_web (the worker's required MCP — S3/S7/S8)
+// All three are CONFIGURED on the row in EVERY boot (static `mcpServers` —
+// the W2-A supply axis); the per-phase live state is the RUNNING/STOPPED
+// process (see the W2-A LIVE-PROBE CONTRACT header). `mcp_signal` (S2) is
+// never configured: its optional-missing lives on the supply axis.
 const STABLE_URLS = ['http://127.0.0.1:3080/', 'http://127.0.0.1:3180/']
 
 const S_REPO = 'mcp_repo' // team-level required (S4 outage)
 const S_LEADERREQ = 'mcp_leaderreq' // the leader's required MCP, team-scope model (S5)
 const S_WEB = 'mcp_web' // worker template required (S3/S7/S8)
-const S_SIGNAL = 'mcp_signal' // leader OPTIONAL (S2) — fact-only, never a live server
+const S_SIGNAL = 'mcp_signal' // leader OPTIONAL (S2) — NEVER configured on the row: the optional-missing is live via the supply axis (deterministic unreachable; no live server ever)
 
 /** The EXACT unmanaged tool set on the 0.1.7-rc.1 host's model-facing
  *  surface for a permissions-declaring worker (probe witness:
@@ -302,10 +359,10 @@ const CRITERIA = [
   { id: 'S8', name: 'service restored -> next boundary NORMAL: incident CLOSED durable, follow-up without recovery correlation, mcp materialized (E.10; no durable recovery flag)' },
   { id: 'S9', name: 'exact reviewed payload: recovery-dispatch/v1 shape + reducedAuthority + effect + kind user-approval + inline + recovery:<token>:<seq> + canonical sha256 digest recomputed' },
   { id: 'S10', name: 'deny / close / abort zero effect: DENY typed block (no new member/incident); abort -> control-request-abandoned + typed abandoned block; later allow rejected (terminal)' },
-  { id: 'S11', name: 'restarts persist, readiness resets: consent + disable facts survive all restarts and drive the fresh evaluation; the compatibility row is recomputed per boot' },
+  { id: 'S11', name: 'restarts persist, readiness resets: consent + disable facts survive all restarts and drive the fresh evaluation; the compatibility row is recomputed per boot; LIVE readiness is ephemeral — no mounted slot survives a restart, re-probed at the next boundary' },
   { id: 'S12', name: 'PR #22 ptc persona regression: standard observed -> PASS (correct open); absent observed -> FATAL PERSONA_INCOMPATIBLE + admitInitialWork blocked (no false open)' },
   { id: 'S13', name: 'old v1 frozen blueprint cold resume: byte-exact pre-PR-E source -> SAME pre-PR-E contentHash under the PR-E code; cold resume re-attaches with the hash unchanged' },
-  { id: 'S14', name: 'dual-Team isolation: T2 proceeds while T is in a recovery incident; per-root durable state (no cross-team incident/control facts)' },
+  { id: 'S14', name: 'dual-Team isolation: T2 proceeds while T is in a recovery incident; the LIVE probe is host-wide (one row, all live sessions) — the isolation proven here is the DURABLE per-root state (incidents / control facts / compatibility rows never cross roots)' },
   { id: 'H1', name: 'test-use pristine BEFORE + AFTER (porcelain empty, HEAD baseline); :3080/:3180 zero-touch (pre == post); the worker bash is a no-op echo' },
   { id: 'H2', name: 'all run ports released after teardown (worldCleaned=true on PASS only)' },
 ]
@@ -917,6 +974,17 @@ async function startMiniMcp(port, label) {
   return { port, server }
 }
 
+/** Stop a running mini-MCP (the W2-A DOWN state — a LIVE state change, the
+ *  C.10 real-host pattern: the row config stays CONFIGURED; the next mount
+ *  attempt against the dead port fails into the isolated per-server slot).
+ *  `server.close` waits for open connections to drain (the C.10 kit proves
+ *  this is safe to re-listen on the same port afterwards). */
+async function stopMiniMcp(mini, label) {
+  if (mini === null) return
+  await new Promise((r) => mini.server.close(r))
+  log(`mini MCP ${label ?? mini.port} STOPPED on 127.0.0.1:${mini.port} (the live down state)`)
+}
+
 // ── the saved team blueprints ───────────────────────────────────────────────
 
 const LEADER_TEAM_TOOLS = [
@@ -959,11 +1027,23 @@ function mainTeamBlueprintYaml() {
     '    skills:',
     '      kind: allow',
     '      items: []',
+    // W2-A live-probe world design: the LEADER (the team's always-live
+    // session) mounts EVERY row-configured MCP server. The team-scoped
+    // servers (repo/leaderreq) have no other live mount surface, and the
+    // worker-scoped web must be proable at admission time — BEFORE the
+    // worker instance is attached (the gate reads fresh live facts before
+    // the effect runs; a cold worker is `not-applicable`, never a
+    // fabricated failure). A STOPPED server therefore fails the leader's
+    // mount (isolated per-server slot) → the probe answers `unreachable`
+    // → the DOWN cell. `mcp_signal` is allowed but never configured
+    // (excluded from the reconcile target by the configured∩allow filter).
     '    mcp:',
     '      kind: allow',
     '      items:',
+    `        - ${S_REPO}`,
     `        - ${S_LEADERREQ}`,
     `        - ${S_SIGNAL}`,
+    `        - ${S_WEB}`,
     'members:',
     '  - templateId: worker',
     `    persona: ${JSON.stringify('You are a worker of the PR-E smoke team. Do exactly what the work unit says, then finish.')}`,
@@ -1276,9 +1356,22 @@ const BP_ANCHOR_YAML = [
 
 // ── the production row config + profile-patch emitter ───────────────────────
 
+/** The STATIC row `mcpServers` config — identical in EVERY boot (W2-A: the
+ *  supply axis is a row-level CONFIGURATION, not a per-boot knob; "recovery
+ *  is reconfiguration" — a down cell is the STOPPED process, never a
+ *  removed/absent config entry). `mcp_signal` is deliberately ABSENT — the
+ *  S2 optional-missing lives on the supply axis (deterministic
+ *  `unreachable`, source 'supply'; no probe, no live server ever). */
+const ROW_MCP_SERVERS = [
+  { name: S_REPO, port: PORT_REPO },
+  { name: S_LEADERREQ, port: PORT_LEADERREQ },
+  { name: S_WEB, port: PORT_WEB },
+]
+
 /** One boot's row config: the per-boot world truth (environmentFacts = the
- *  row-level facts the gate + the probe read; mcpServers = the live MCP
- *  fibers the host mounts; presetSubstrate = the scripted persona seam). */
+ *  STATIC bootstrap seed — under W2-A it fills only `unknown` live verdicts
+ *  and is never flipped per phase; mcpServers = the configured supply axis;
+ *  presetSubstrate = the scripted persona seam). */
 function teamRowConfig({ bootPhase, facts, mcpServers, presetSubstrate }) {
   return {
     rootSessionId: ROOT,
@@ -1601,7 +1694,7 @@ async function pickPort(candidates) {
 let HOST_PORT = null
 let MOCK_PORT = null
 let MOCK = null
-const MINI = { leaderreq: null, web: null }
+const MINI = { repo: null, leaderreq: null, web: null }
 
 async function main() {
   mkdirSync(RUN_DIR, { recursive: true })
@@ -1637,10 +1730,10 @@ async function main() {
   if (HOST_PORT === null) dieFatal(`no free host port in ${HOST_PORT_CANDIDATES.join(',')}`)
   MOCK_PORT = await pickPort(MOCK_PORT_CANDIDATES)
   if (MOCK_PORT === null) dieFatal(`no free mock port in ${MOCK_PORT_CANDIDATES.join(',')}`)
-  for (const [label, p] of [['leaderreq', PORT_LEADERREQ], ['web', PORT_WEB]]) {
+  for (const [label, p] of [['repo', PORT_REPO], ['leaderreq', PORT_LEADERREQ], ['web', PORT_WEB]]) {
     if (await portInUse(p)) dieFatal(`port ${label}=${p} is already in use — refusing to start`)
   }
-  log(`ports: host=${HOST_PORT} mock=${MOCK_PORT} mcpLeaderreq=${PORT_LEADERREQ} mcpWeb=${PORT_WEB}`)
+  log(`ports: host=${HOST_PORT} mock=${MOCK_PORT} mcpRepo=${PORT_REPO} mcpLeaderreq=${PORT_LEADERREQ} mcpWeb=${PORT_WEB} (mcp_signal: never configured — the S2 supply axis)`)
 
   assertFreshHome(HOME, 'smoke world')
   mkdirSync(BLUEPRINT_DIR, { recursive: true })
@@ -1651,8 +1744,11 @@ async function main() {
   writeFileSync(join(BLUEPRINT_DIR, 'mpr-anchor.yaml'), V1_ANCHOR_SOURCE)
   log(`world materialized: home=${HOME} blueprints=${BLUEPRINT_DIR}`)
 
-  // Services: mock model + both mini-MCPs up front (the per-boot row config
-  // decides which fibers the host mounts).
+  // Services: mock model + the THREE mini-MCPs up front (the C.10 in-process
+  // pattern). All three are CONFIGURED on the row in every boot (static
+  // `mcpServers`); the per-phase DOWN states are `stopMiniMcp` calls before
+  // the relevant boots (B3 web; B5/B6 repo; B7 leaderreq) and the RESTORES
+  // are re-`startMiniMcp` (B4 web; B7 repo; B8 leaderreq).
   const mockLogPath = join(RUN_DIR, 'mock.log')
   MOCK = await startMockModel({
     port: MOCK_PORT,
@@ -1663,9 +1759,13 @@ async function main() {
   process.env.DEEPSEEK_BASE_URL = `http://127.0.0.1:${MOCK_PORT}`
   process.env.DEEPSEEK_API_KEY = 'prereq-smoke-mock-key'
   log(`mock DeepSeek endpoint up at 127.0.0.1:${MOCK.port}`)
+  MINI.repo = await startMiniMcp(PORT_REPO, S_REPO)
   MINI.leaderreq = await startMiniMcp(PORT_LEADERREQ, S_LEADERREQ)
   MINI.web = await startMiniMcp(PORT_WEB, S_WEB)
 
+  // The STATIC bootstrap seed (W2-A: it fills only `unknown` live verdicts —
+  // it is NEVER flipped per phase; every phase's live state is the
+  // RUNNING/STOPPED mini-MCP + the static configured row).
   const factsAll = (persona = null) => envFacts({ repo: true, leaderreq: true, web: true, signal: true, persona })
 
   try {
@@ -1677,14 +1777,39 @@ async function main() {
     })
     log('web profile ensured (throwaway boot if first use)')
 
-    // ══ B1 (create): all up — S1 all-ready, S13 create, S14 baseline ══════
+    // ══ B1 (create): all up (LIVE) — S1 all-ready, S13 create, S14 baseline
+    // All three mini-MCPs RUNNING + all CONFIGURED on the row (static
+    // config) — the all-ready cell under the W2-A live-probe contract.
     let B = await bootHost({
       label: 'B1-CREATE', port: HOST_PORT, boot: 1, phase: 'create',
-      facts: factsAll(), mcpServers: [],
-      comment: 'B1 create: all mcp facts true; no live MCP fibers',
+      facts: factsAll(), mcpServers: ROW_MCP_SERVERS,
+      comment: 'B1 create: all three mini-MCPs RUNNING + configured (the all-ready cell; static config in every boot)',
     })
     EVID.hostLogs.push({ bootNum: 1, phase: 'create', port: HOST_PORT, logPath: B.logPath })
     await p6t6StateReady(HOST_PORT, { rootSessionId: ROOT, phase: 'create' })
+
+    // S1 (W2-A live preconditions) — the all-ready cell requires BOTH sides
+    // of the live probe: the row CARRIES the servers (the configured supply
+    // axis — the composed profile dump carries the row config) AND each
+    // mini-MCP ANSWERS live on its port (a JSON-RPC `initialize` from the
+    // kit itself, over the same streamable-http transport the host's fiber
+    // uses).
+    {
+      const dumpCarries = [S_REPO, S_LEADERREQ, S_WEB].every((n) => B.dumpText.includes(n))
+      const liveUp = {}
+      for (const [name, port] of [[S_REPO, PORT_REPO], [S_LEADERREQ, PORT_LEADERREQ], [S_WEB, PORT_WEB]]) {
+        const r = await fetchJson(`http://127.0.0.1:${port}/mcp`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'kit-e12', version: '0' } } }),
+        }, 10_000)
+        liveUp[name] = r.status === 200 && r.body !== null && typeof r.body === 'object' && r.body.result !== undefined
+      }
+      check('S1', 'live preconditions: row config CARRIES all three mcpServers (supply axis) + every mini-MCP ANSWERS initialize on its port',
+        dumpCarries && Object.values(liveUp).every(Boolean),
+        `dumpCarries=${dumpCarries} live=${JSON.stringify(liveUp)}`)
+      saveScenario('s1-live-preconditions', { dumpCarries, liveUp })
+    }
 
     // S13 — create the FROZEN v1 team (byte-exact pre-PR-E source).
     {
@@ -1702,6 +1827,7 @@ async function main() {
         blueprintId: BP_MAIN_ID,
         environmentFacts: [],
       }, 's1-probe', 1)
+      saveScenario('s1-probe', { probe: probe.body })
       const pErr = resultError(probe.body)
       const pData = resultData(probe.body)
       const compat = pData?.compatibility ?? null
@@ -1759,11 +1885,15 @@ async function main() {
       saveScenario('s13-world-after-b1', EVID.world.afterB1)
     }
 
-    // ══ B2 (resume): signal down (optional) — S2a auto-degraded ═══════════
+    // ══ B2 (resume): signal missing (optional) — S2a auto-degraded ═══════
+    // W2-A optional-missing mechanism: `mcp_signal` is NEVER configured on
+    // the row — the supply axis answers a deterministic `unreachable`
+    // (source 'supply', no probe, no live server ever) for the OPTIONAL
+    // (complete:false) requirement -> the admission proceeds AUTO-DEGRADED.
     B = await bootHost({
       label: 'B2-RESUME', port: HOST_PORT, boot: 2, phase: 'resume',
-      facts: envFacts({ repo: true, leaderreq: true, web: true, signal: false, persona: null }), mcpServers: [],
-      comment: 'B2 resume: mcp_signal false (leader OPTIONAL down)',
+      facts: factsAll(), mcpServers: ROW_MCP_SERVERS,
+      comment: 'B2 resume: mcp_signal UNCONFIGURED (the optional-missing is LIVE — supply axis); the other three servers running',
     })
     EVID.hostLogs.push({ bootNum: 2, phase: 'resume', port: HOST_PORT, logPath: B.logPath })
     await p6t6StateReady(HOST_PORT, { rootSessionId: ROOT, phase: 'resume' })
@@ -1790,7 +1920,7 @@ async function main() {
       // proceeds AUTO-DEGRADED (no block, no dispatch).
       const { tool, pendingSeen } = await leaderAttempt(B, 'b2', { recovery: 'abandon', approval: 'never' })
       const b2Done = await waitForTurnDone(MOCK, MKW('b2'), DONE_W('b2'), 90_000)
-      check('S2', 'auto-degraded: optional (complete:false) mcp down -> delegate EXECUTED, no control request (S1 degraded cell)',
+      check('S2', 'auto-degraded: optional (complete:false) mcp MISSING (unconfigured — the supply axis, live) -> delegate EXECUTED, no control request (S1 degraded cell)',
         tool.body?.ok === true && b2Done !== null && pendingSeen.length === 0,
         `toolOk=${tool.body?.ok === true} doneWitness=${b2Done !== null} pendingControlRequests=${pendingSeen.length}`)
     }
@@ -1807,8 +1937,8 @@ async function main() {
     // ══ B2b (resume): consent readable, gate still ignores it ═════════════
     B = await bootHost({
       label: 'B2B-RESUME', port: HOST_PORT, boot: 3, phase: 'resume',
-      facts: envFacts({ repo: true, leaderreq: true, web: true, signal: false, persona: null }), mcpServers: [],
-      comment: 'B2b resume: signal false + seeded consent fact',
+      facts: factsAll(), mcpServers: ROW_MCP_SERVERS,
+      comment: 'B2b resume: signal still UNCONFIGURED + seeded consent fact (static seed + static config)',
     })
     EVID.hostLogs.push({ bootNum: 3, phase: 'resume', port: HOST_PORT, logPath: B.logPath })
     await p6t6StateReady(HOST_PORT, { rootSessionId: ROOT, phase: 'resume' })
@@ -1831,11 +1961,18 @@ async function main() {
     }
     await stopHost(B)
 
-    // ══ B3 (resume): web down — S1 down-cell + S7 + S9 + S6 + S10 + S14 ═══
+    // ══ B3 (resume): web down (LIVE) — S1 down-cell + S7 + S9 + S6 + S10 + S14
+    // W2-A down mechanism: the web mini-MCP is STOPPED (a live state change
+    // — the row config stays configured). At this boot the T leader attaches
+    // first (the p6t6 call's ensureLiveAgent runs the reconcile BEFORE the
+    // gate's fresh facts read) and its web mount FAILS (isolated per-server
+    // slot) → the admission probe answers `unreachable` for web before the
+    // worker instance is attached → the template:worker scope is FATAL.
+    await stopMiniMcp(MINI.web, S_WEB)
     B = await bootHost({
       label: 'B3-RESUME', port: HOST_PORT, boot: 4, phase: 'resume',
-      facts: envFacts({ repo: true, leaderreq: true, web: false, signal: true, persona: null }), mcpServers: [],
-      comment: 'B3 resume: mcp_web false (worker required DOWN)',
+      facts: factsAll(), mcpServers: ROW_MCP_SERVERS,
+      comment: 'B3 resume: web mini-MCP STOPPED (worker required DOWN — live outage); config unchanged',
     })
     EVID.hostLogs.push({ bootNum: 4, phase: 'resume', port: HOST_PORT, logPath: B.logPath })
     await p6t6StateReady(HOST_PORT, { rootSessionId: ROOT, phase: 'resume' })
@@ -1920,13 +2057,20 @@ async function main() {
         && Array.isArray(webIncident?.payload?.requirementIds)
         && webIncident.payload.requirementIds.includes('worker.mcp.web'),
         `incident=${JSON.stringify(webIncident?.payload ?? null)}`)
-      check('S7', 'W1 materialization: mcp_web ABSENT from the worker mcp view (the row carries no web fiber in B3 — reduced original authority)',
-        ok, `W1=${W1} (the row config mcpServers=[] in B3 — the absence is structural)`)
+      // W2-A: the reduced original authority is LIVE — web stays configured
+      // but its server is stopped: the continued worker's (W1's) reconcile
+      // FAILED the web mount (the isolated per-server slot) → no web fiber,
+      // no web tool on the degraded surface. The leader's failed web slot
+      // (the down cell's probe source) is asserted by the S1/S9 checks.
+      const b3WebSlots = findMcpSlots((await p6t6State(HOST_PORT)).body, S_WEB)
+      const b3WebFailed = b3WebSlots.some((s) => s.materialization === 'failed')
+      check('S7', 'W1 materialization: mcp_web FAILED on the live surface in B3 (configured + server stopped — no web fiber; reduced original authority)',
+        ok && b3WebFailed, `W1=${W1} webSlots=${JSON.stringify(b3WebSlots)}`)
 
       // S14 under outage — T2 proceeds while T is blocked.
       const { tool: toolT2b3 } = await leaderAttempt(B, 't2b3', { recovery: 'abandon', approval: 'never' })
       const t2b3Done = await waitForTurnDone(MOCK, MKW('t2b3'), DONE_W('t2b3'), 90_000)
-      check('S14', 'under outage: T2 delegate EXECUTED while T is in a blocked-scope incident (shared world facts, per-root gate)',
+      check('S14', 'under outage: T2 delegate EXECUTED while T is in a blocked-scope incident (shared LIVE host state — the probe is host-wide; the durable gate state is per-root)',
         toolT2b3.body?.ok === true && t2b3Done !== null,
         `toolOk=${toolT2b3.body?.ok === true} doneWitness=${t2b3Done !== null}`)
 
@@ -2035,11 +2179,19 @@ async function main() {
     }
     await stopHost(B)
 
-    // ══ B4 (resume): web RESTORED + live fiber — S8 (E.10 exit) ═══════════
+    // ══ B4 (resume): web RESTORED (LIVE) — S8 (E.10 exit) ═════════════════
+    // W2-A restore mechanism: the web mini-MCP is RESTARTED on 3493 (the
+    // live restore — the C.10 relaunch pattern, same port). The fresh boot
+    // runs a FRESH live reconcile at the first boundary (the in-memory
+    // failed state does NOT survive the restart — readiness resets to
+    // unknown and is re-probed live): the fiber mounts, the probe flips
+    // unreachable→reachable, and the incident closes at that boundary. No
+    // durable recovery flag is ever written.
+    MINI.web = await startMiniMcp(PORT_WEB, S_WEB)
     B = await bootHost({
       label: 'B4-RESUME', port: HOST_PORT, boot: 5, phase: 'resume',
-      facts: factsAll(), mcpServers: [{ name: S_WEB, port: PORT_WEB }],
-      comment: 'B4 resume: all facts true; mcp_web LIVE fiber (3493)',
+      facts: factsAll(), mcpServers: ROW_MCP_SERVERS,
+      comment: 'B4 resume: web mini-MCP RESTARTED (service restored — live); all configured',
     })
     EVID.hostLogs.push({ bootNum: 5, phase: 'resume', port: HOST_PORT, logPath: B.logPath })
     await p6t6StateReady(HOST_PORT, { rootSessionId: ROOT, phase: 'resume' })
@@ -2089,11 +2241,17 @@ async function main() {
       saveScenario('s10-no-flag-after-b4', EVID.world.afterB4)
     }
 
-    // ══ B5 (resume): repo DOWN (team scope) — S4a + S1 team-down cell ═════
+    // ══ B5 (resume): repo DOWN (team scope, LIVE) — S4a + S1 team-down cell
+    // The repo mini-MCP is STOPPED before the boot: the T leader attaches
+    // first (the p6t6 call's ensureLiveAgent) and its reconcile FAILS the
+    // repo mount → the fresh gate probe answers `unreachable` for the
+    // team-scoped requirement team.mcp.repo (required) → blockedScopes
+    // ['team'].
+    await stopMiniMcp(MINI.repo, S_REPO)
     B = await bootHost({
       label: 'B5-RESUME', port: HOST_PORT, boot: 6, phase: 'resume',
-      facts: envFacts({ repo: false, leaderreq: true, web: true, signal: true, persona: null }), mcpServers: [],
-      comment: 'B5 resume: mcp_repo false (TEAM scope DOWN)',
+      facts: factsAll(), mcpServers: ROW_MCP_SERVERS,
+      comment: 'B5 resume: repo mini-MCP STOPPED (TEAM scope DOWN — live outage); config unchanged',
     })
     EVID.hostLogs.push({ bootNum: 6, phase: 'resume', port: HOST_PORT, logPath: B.logPath })
     await p6t6StateReady(HOST_PORT, { rootSessionId: ROOT, phase: 'resume' })
@@ -2150,11 +2308,11 @@ async function main() {
     // S3 — seed the template disable (worker unavailable) — host STOPPED.
     seedFact(T, 'template-availability-set', { templateId: 'worker', available: false, at: Date.now() })
 
-    // ══ B6 (resume): repo still DOWN + worker DISABLED — S3 + S4b ═════════
+    // ══ B6 (resume): repo STILL DOWN (live, from B5) + worker DISABLED — S3 + S4b
     B = await bootHost({
       label: 'B6-RESUME', port: HOST_PORT, boot: 7, phase: 'resume',
-      facts: envFacts({ repo: false, leaderreq: true, web: true, signal: true, persona: null }), mcpServers: [],
-      comment: 'B6 resume: repo false + seeded worker disable (availability false)',
+      facts: factsAll(), mcpServers: ROW_MCP_SERVERS,
+      comment: 'B6 resume: repo mini-MCP still STOPPED (B5) + seeded worker disable (availability false)',
     })
     EVID.hostLogs.push({ bootNum: 7, phase: 'resume', port: HOST_PORT, logPath: B.logPath })
     await p6t6StateReady(HOST_PORT, { rootSessionId: ROOT, phase: 'resume' })
@@ -2186,11 +2344,17 @@ async function main() {
     }
     await stopHost(B)
 
-    // ══ B7 (resume): leaderreq DOWN (the S5 cell) — S5 + S6 ═══════════════
+    // ══ B7 (resume): leaderreq DOWN (the S5 cell, LIVE) — S5 + S6 ═════════
+    // The repo service is RESTORED (the kit restarts it) and the leaderreq
+    // mini-MCP is STOPPED: the T leader's reconcile fails leaderreq → the
+    // team-scoped requirement team.mcp.leaderreq (required) is FATAL →
+    // team scope blocked → the S5 Recovery cell.
+    MINI.repo = await startMiniMcp(PORT_REPO, S_REPO)
+    await stopMiniMcp(MINI.leaderreq, S_LEADERREQ)
     B = await bootHost({
       label: 'B7-RESUME', port: HOST_PORT, boot: 8, phase: 'resume',
-      facts: envFacts({ repo: true, leaderreq: false, web: true, signal: true, persona: null }), mcpServers: [],
-      comment: 'B7 resume: mcp_leaderreq false (the leader REQUIRED MCP — team scope DOWN)',
+      facts: factsAll(), mcpServers: ROW_MCP_SERVERS,
+      comment: 'B7 resume: repo RESTARTED + leaderreq mini-MCP STOPPED (the leader REQUIRED MCP — team scope DOWN, live)',
     })
     EVID.hostLogs.push({ bootNum: 8, phase: 'resume', port: HOST_PORT, logPath: B.logPath })
     await p6t6StateReady(HOST_PORT, { rootSessionId: ROOT, phase: 'resume' })
@@ -2216,14 +2380,34 @@ async function main() {
     }
     await stopHost(B)
 
-    // ══ B8 (resume): everything RESTORED + leaderreq live — S8b + S11 ═════
+    // ══ B8 (resume): everything RESTORED (LIVE) — S8b + S11 ═══════════════
+    // The leaderreq mini-MCP is RESTARTED on 3491: every server is running
+    // again. The fresh boot's live reconcile at the first boundary mounts
+    // all fibers (the S8b team-scope exit) — and the S11 readiness-reset
+    // evidence is taken at boot, BEFORE any attach (no live fiber survives
+    // the restart).
+    MINI.leaderreq = await startMiniMcp(PORT_LEADERREQ, S_LEADERREQ)
     B = await bootHost({
       label: 'B8-RESUME', port: HOST_PORT, boot: 9, phase: 'resume',
-      facts: factsAll(), mcpServers: [{ name: S_LEADERREQ, port: PORT_LEADERREQ }],
-      comment: 'B8 resume: all facts true; mcp_leaderreq LIVE fiber (3491)',
+      facts: factsAll(), mcpServers: ROW_MCP_SERVERS,
+      comment: 'B8 resume: leaderreq mini-MCP RESTARTED — all services restored (live); all configured',
     })
     EVID.hostLogs.push({ bootNum: 9, phase: 'resume', port: HOST_PORT, logPath: B.logPath })
     await p6t6StateReady(HOST_PORT, { rootSessionId: ROOT, phase: 'resume' })
+    {
+      // S11 (W2-A live addition, plan §E.11 negative #10: "restart 后
+      // consent/disable 保留，readiness 重置 unknown") — readiness is
+      // EPHEMERAL: at the fresh boot NO live fiber survives (the in-memory
+      // mount state dies with the process) — the pre-restart materialization
+      // is NOT carried; readiness is `unknown` until the next boundary
+      // re-probes live (the slots re-mount when the servers are up — the
+      // post-b8h check below asserts the re-probe).
+      const preB8hSlots = findMcpSlots((await p6t6State(HOST_PORT)).body, S_LEADERREQ)
+      check('S11', 'readiness reset at restart: NO mounted mcp slot survives the boot (live state ephemeral — unknown until the next boundary re-probes)',
+        preB8hSlots.every((s) => s.mounted !== true),
+        `preB8h leaderreq slots=${JSON.stringify(preB8hSlots)}`)
+      saveScenario('s11-readiness-reset-b8', { preB8hSlots })
+    }
     {
       // S8b — the team-scope exit: the helper delegate runs NORMAL.
       const before = await ledgerEntries(B, T)
@@ -2278,10 +2462,9 @@ async function main() {
     // ══ B9 (resume): persona STANDARD observed — S12a (the correct open) ══
     B = await bootHost({
       label: 'B9-RESUME', port: HOST_PORT, boot: 10, phase: 'resume',
-      facts: factsAll(true),
-      mcpServers: [],
+      facts: factsAll(true), mcpServers: ROW_MCP_SERVERS,
       presetSubstrate: { presetId: 'ptc', personaKind: 'standard' },
-      comment: 'B9 resume: persona standard available; presetSubstrate ptc/standard (the composable ptc case)',
+      comment: 'B9 resume: persona standard available; presetSubstrate ptc/standard; all MCP servers running (static config — the persona cell is MCP-free)',
     })
     EVID.hostLogs.push({ bootNum: 10, phase: 'resume', port: HOST_PORT, logPath: B.logPath })
     await p6t6StateReady(HOST_PORT, { rootSessionId: ROOT, phase: 'resume' })
@@ -2319,10 +2502,9 @@ async function main() {
     // ══ B9b (resume): persona ABSENT (dynamic disabled) — S12b ════════════
     B = await bootHost({
       label: 'B9B-RESUME', port: HOST_PORT, boot: 11, phase: 'resume',
-      facts: factsAll(false),
-      mcpServers: [],
+      facts: factsAll(false), mcpServers: ROW_MCP_SERVERS,
       presetSubstrate: { presetId: 'ptc', personaKind: 'absent' },
-      comment: 'B9b resume: persona standard UNAVAILABLE (absent — the ptc dynamic disabled); presetSubstrate ptc/absent',
+      comment: 'B9b resume: persona standard UNAVAILABLE (absent — the ptc dynamic disabled); presetSubstrate ptc/absent; MCP config unchanged (static)',
     })
     EVID.hostLogs.push({ bootNum: 11, phase: 'resume', port: HOST_PORT, logPath: B.logPath })
     await p6t6StateReady(HOST_PORT, { rootSessionId: ROOT, phase: 'resume' })
@@ -2392,9 +2574,10 @@ async function main() {
     writeFileSync(join(RUN_DIR, 'stable-pre.json'), JSON.stringify(EVID.stableBefore, null, 2))
     writeFileSync(join(RUN_DIR, 'stable-post.json'), JSON.stringify(EVID.stableAfter, null, 2))
 
-    // H2 — run ports released.
+    // H2 — run ports released (host + mock + ALL THREE mini-MCP ports,
+    // including the new repo port 3492 — the W2-A rework adds a server).
     const portsHeld = []
-    for (const p of [HOST_PORT, MOCK_PORT, PORT_LEADERREQ, PORT_WEB]) {
+    for (const p of [HOST_PORT, MOCK_PORT, PORT_REPO, PORT_LEADERREQ, PORT_WEB]) {
       if (await portInUse(p)) portsHeld.push(p)
     }
     let worldCleaned = false
