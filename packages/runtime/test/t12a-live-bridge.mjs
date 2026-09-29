@@ -64,7 +64,7 @@ import { fileURLToPath } from 'node:url'
 // per-Team resolver strong-parses the world's blueprint sources (the
 // domain facade — the runner's .js -> .ts sibling hook applies).
 import { parseBlueprint } from '../../domain/blueprint/src/index.js'
-import { TEST_USE_REL } from '../../tests/paths.mjs'
+import { TEST_USE_REL, findTestRepoRoot } from '../../../tests/paths.mjs'
 // A2C-2 (alpha.2, plan §7): the public scope-mint seam — makeHandle mints
 // each handle's agent scope exactly as the real Agent's constructor does
 // (the Permission Coverage Gate's fail-closed surface read requires the
@@ -73,10 +73,27 @@ import { TEST_USE_REL } from '../../tests/paths.mjs'
 import { createScope } from '@deepseek-ai/dsh-scope'
 
 const TEST_DIR = dirname(fileURLToPath(import.meta.url))
-/** The worktree root (test -> runtime -> packages -> root). */
+/** The checkout root of the tree the tests run in (test -> runtime ->
+ *  packages -> root): the worktree root when run from a task worktree,
+ *  the main checkout root otherwise. */
 export const WORKTREE_ROOT = resolve(TEST_DIR, '..', '..', '..')
-/** The repository root (the worktree lives under <repo>/.worktrees/). */
-const REPO_ROOT = resolve(WORKTREE_ROOT, '..', '..')
+/**
+ * The repository root carrying the test-use checkout: walk up from this
+ * file to the nearest ancestor with `tests/deepseek-harness-test-use`
+ * (the canonical marker per tests/paths.mjs). Works from BOTH the main
+ * checkout and a task worktree (a worktree without its own test-use
+ * checkout resolves to the main repo root — the previous `../../..` +
+ * `../..` arithmetic only worked from worktrees, and the previous
+ * `../../tests/paths.mjs` import resolved to a non-existent
+ * `packages/tests/` from every layout, which is why every bridge-based
+ * suite failed at import outside the ad-hoc shim environments).
+ */
+const REPO_ROOT = findTestRepoRoot(TEST_DIR)
+if (REPO_ROOT === null) {
+  throw new Error(
+    't12a-live-bridge: no ancestor of the test tree carries the tests/deepseek-harness-test-use marker (docs/TEST_METHODS.md §1)',
+  )
+}
 /** The pristine upstream DSH test-use checkout (docs/TEST_METHODS.md). */
 const DSH_TEST_USE = resolve(REPO_ROOT, TEST_USE_REL)
 
