@@ -791,13 +791,17 @@ export interface ControlService {
    * BEFORE the abandon (the old allow/decision cannot execute the
    * operation — zero effect).
    *
-   * Close authority (closed rule): the requesting principal, the Leader,
-   * or the human may abandon — a member may abandon only ITS OWN request
-   * (the requester ref's instanceId). The caller must be live (the
-   * facade's `resolveCaller`), the team must exist (the reused
-   * `resolveTeamAndTarget`) and the caller must hold the closed
-   * `resolve-control` envelope op (abandon is a control-request
-   * mutation). Abandoning an already-abandoned request is rejected with
+   * Close authority (closed rule — the CONTROL INTERNAL close authority,
+   * pre-alpha3 review F3): the human may abandon any request, the
+   * Leader any of the current Team's requests, and a member ONLY ITS
+   * OWN request (the requester ref's instanceId). The caller must be
+   * live (the facade's `resolveCaller`) and the team must exist. The
+   * close authority is INDEPENDENT of the `resolve-control` mutation
+   * envelope (abandon does NOT reuse the resolve-control op spec or
+   * perform any envelope check — a caller that may request a review
+   * can always abandon its own waiting review; no new Team tool
+   * permission or mutation op is exposed). Abandoning an
+   * already-abandoned request is rejected with
    * CONTROL_REQUEST_ABANDONED (the terminal mark is written exactly
    * once). Abandoning a DECIDED request is allowed: that is the
    * allow-invalidating path (the abandon closes the durable allow).

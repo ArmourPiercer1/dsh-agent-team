@@ -448,10 +448,16 @@ export function workExecutionModeOf(request: TeamRuntimeActionRequest): WorkExec
  *   that the integration layer builds with `recoveryWorkImpact` on the
  *   reduced original authority — the static map is the DEFAULT, normal
  *   classification.)
- * - **coordination** — the team-coordination actions (`send-message`,
- *   `report-progress`, `request-control`, `resolve-control`): always allowed
- *   (coordination is never blocked by a capability outage — it is how recovery
- *   is REVIEWED).
+ * - **crossAgentTrigger** — pre-alpha3 W3-D (review fix F9, guide §8):
+ *   `send-message` is classified by EFFECT, not tool name: it delivers input
+ *   to another agent (it wakes / hands the recipient work), so the gate
+ *   consults every scope the trigger was evaluated against and blocks if
+ *   ANY is down (the trigger would deliver work a downed scope cannot serve).
+ *   `report-progress` / `request-control` / `resolve-control` remain pure
+ *   coordination (no cross-agent wake — they are how recovery is REVIEWED).
+ * - **coordination** — the pure-coordination actions (`report-progress`,
+ *   `request-control`, `resolve-control`): always allowed (coordination is
+ *   never blocked by a capability outage — it is how recovery is REVIEWED).
  * - **lifecycle** — the member-lifecycle actions (`archive-member`,
  *   `restore-member`, `dispose-member`): always allowed.
  *
@@ -469,7 +475,12 @@ export const ACTION_REQUIREMENT_IMPACT: Readonly<Record<ActionName, ActionImpact
   [ACTION_NAMES.FOLLOW_UP]: ACTION_IMPACT_CLASSES.normalWork,
   [ACTION_NAMES.DELEGATE]: ACTION_IMPACT_CLASSES.normalWork,
   [ACTION_NAMES.CREATE_MEMBER]: ACTION_IMPACT_CLASSES.normalWork,
-  [ACTION_NAMES.SEND_MESSAGE]: ACTION_IMPACT_CLASSES.coordination,
+  // pre-alpha3 W3-D (review fix F9, guide §8): send-message is a CROSS-AGENT
+  // EXECUTION TRIGGER (it wakes the recipient — the gate consults every
+  // evaluated scope and blocks if any is down). The other coordination
+  // actions (report-progress / request-control / resolve-control) do NOT
+  // wake a recipient and stay pure coordination.
+  [ACTION_NAMES.SEND_MESSAGE]: ACTION_IMPACT_CLASSES.crossAgentTrigger,
   [ACTION_NAMES.REPORT_PROGRESS]: ACTION_IMPACT_CLASSES.coordination,
   [ACTION_NAMES.REQUEST_CONTROL]: ACTION_IMPACT_CLASSES.coordination,
   [ACTION_NAMES.RESOLVE_CONTROL]: ACTION_IMPACT_CLASSES.coordination,

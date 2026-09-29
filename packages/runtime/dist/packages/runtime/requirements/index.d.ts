@@ -32,6 +32,8 @@ export { classifyScope, deriveRecovery, evaluateScopes, gateAction, parseScopeKe
 export type { EvaluationInput } from './evaluator.js';
 export { controlImpact, coordinationImpact, diagnosticImpact, impactFor, lifecycleImpact, normalWorkImpact, recoveryWorkImpact, } from './action-impact.js';
 export { fixOrDisableTargets, startupPreflight } from './startup-preflight.js';
+export { blockedScopeKeysOf, evaluateCreationScopes, grantDegradationConsent, runCreationPreflight, setTemplateAvailabilityFact, } from './creation-preflight.js';
+export type { ConsentGrantOptions, CreationPreflightOptions, CreationScopeEvaluation, CreationScopeEvaluationOptions, RequirementFactLedger, TemplateAvailabilitySetOptions, } from './creation-preflight.js';
 export { isConsented, relevantConsents, validateConsent } from './consent.js';
 export { isTemplateAvailable, setTemplateAvailability, validateTemplateAvailability, } from './template-availability.js';
 export { externalHardAllowed, POLICY_DECISIONS, recoveryExitReady, recoveryPolicyDecision, RECOVERY_DECISIONS, } from './recovery.js';

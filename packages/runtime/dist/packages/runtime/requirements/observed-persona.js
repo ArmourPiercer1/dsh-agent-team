@@ -2,18 +2,22 @@
  * pre-alpha3 PR-E (plan §E.3) — the persona requirement vocabulary for the
  * cutover: the `RequiredPersonaKind` CLOSED set (what a Team MAY REQUIRE of
  * its runtime substrate's persona) and the shipped-state observation
- * adapter that stands in for the LIVE production probe.
+ * adapter (the FACTORY-WORLD persona observation).
  *
- * Ruling (parent, session-d7d89f77, this increment): the live
- * `observePersonaKind` production probe — reading the LIVE DSH composition
- * of the actually-mounted preset — is a FOLLOW-UP, not part of this PR
- * (it is a potential CORE_SEAM_BLOCKER and the same item as graph.yaml
- * `pr_c` known_debt "live persona probe"). For THIS increment the
- * observation is the SHIPPED-STATE kind: the deployment default preset is
- * `standard` (the web bundle's default preset carries a composable persona
- * row), and the shipped row deploys with that default. The adapter below is
- * therefore a TYPED, NAMED value — never a silent inline hardcode — and
- * carries the known_debt marker documenting the follow-up seam.
+ * pre-alpha3 W3-A (review fix F1, guide §2.3) — the production cutover:
+ * the LIVE `observePersonaKind` production probe is NOW IN TREE (pre-alpha3
+ * W2-A, review fix F14 — the production host's persona observer reads the
+ * actually-mounted preset's effective composition through the DSH public
+ * `agentPresets` seam, fail-closed typed `unresolved`, never a kind
+ * guess). The PRODUCTION persona path is that live observer (the host's
+ * `resolveSubstratePlan` + `observePersonaKind` — see the
+ * `RequirementFactsAuthority` surface in `src/plugin/types.ts`); the
+ * shipped-state adapter below is NO LONGER the production path. It remains
+ * the TYPED, NAMED observation of FACTORY worlds (no host entry, no live
+ * seam): the deployment default preset is `standard` (the web bundle's
+ * default preset carries a composable persona row), and the factory row
+ * deploys with that default — expressed through the adapter, never a
+ * silent inline hardcode.
  *
  * `RequiredPersonaKind` is a NEW closed set, SEPARATE from PR-C's
  * `ObservedPersonaKind` (absent | standard | complete | unresolved):
@@ -58,42 +62,36 @@ import { isRequiredPersonaKind, REQUIRED_PERSONA_KINDS, REQUIRED_PERSONA_KIND_VA
 export { isRequiredPersonaKind, REQUIRED_PERSONA_KINDS, REQUIRED_PERSONA_KIND_VALUES };
 /**
  * The deployment default preset id of the SHIPPED state (the web bundle's
- * default preset — the deployment default the shipped row mounts when no
+ * default preset — the deployment default the factory row mounts when no
  * explicit preset id is configured).
  *
- * @known_debt The LIVE production persona probe (observing the
- * actually-mounted preset's effective persona composition through the DSH
- * public seam) is a documented FOLLOW-UP seam (parent ruling,
- * session-d7d89f77; same item as graph.yaml `pr_c` known_debt "live
- * persona probe" / a potential CORE_SEAM_BLOCKER). Until it lands, the
- * observation of the shipped state is the deployment default kind below —
- * expressed through the TYPED, NAMED {@link shippedStatePersonaObserver}
- * (never a silent inline hardcode), and the resolver's
- * `personaObservation.source` reports `none` (no composition read was
- * performed) with this reason.
+ * pre-alpha3 W3-A (review fix F1, guide §2.3): the live production persona
+ * probe is in tree (pre-alpha3 W2-A — the production host's observer over
+ * the DSH public `agentPresets` seam); this constant + the
+ * {@link shippedStatePersonaObserver} adapter below serve the FACTORY
+ * world's shipped-state observation only (never the production path).
  */
 export const SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID = 'standard';
 /**
- * The SHIPPED-STATE persona observation adapter: the TYPED, NAMED value
- * wired to the `RuntimeSubstrateResolver`'s `observePersonaKind` port for
- * this increment (plan §E.3, parent ruling).
+ * The SHIPPED-STATE persona observation adapter: the TYPED, NAMED
+ * deployment-knowledge observation of FACTORY worlds (no host entry, no
+ * live seam — plan §E.3). NOT the production path: the production host
+ * observes the actually-mounted preset through the DSH public
+ * `agentPresets` seam (pre-alpha3 W2-A, review fix F14 — the
+ * `RequirementFactsAuthority`'s `observePersonaKind` /
+ * `resolveSubstratePlan`), never through this adapter.
  *
  * It returns the observed kind of the SHIPPED state for ANY preset id:
  * `standard` (the deployment default's composable persona) with provenance
  * `source: 'none'` (no live composition read was performed — the provenance
  * vocabulary is closed and `none` is the honest value for an observation
  * taken from deployment knowledge rather than a composition source) and a
- * deterministic reason string carrying the known_debt marker.
+ * deterministic reason string.
  *
  * @param presetId - the preset id being observed (echoed into the reason
  *   string for deterministic diagnostics; the shipped state observes
  *   `standard` for every id — see {@link SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID}).
  * @returns the frozen observation.
- *
- * @known_debt FOLLOW-UP (not this PR): the live production probe replacing
- * this shipped-state observation (observing the actually-mounted preset's
- * effective persona through the DSH public seam). The resolver plan's
- * `personaObservation` carries this reason verbatim for diagnostics.
  */
 export function shippedStatePersonaObserver(presetId) {
     if (presetId === null || presetId === undefined || typeof presetId !== 'string' || presetId === '') {

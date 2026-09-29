@@ -34,6 +34,8 @@ export { classifyScope, deriveRecovery, evaluateScopes, gateAction, parseScopeKe
 export { controlImpact, coordinationImpact, diagnosticImpact, impactFor, lifecycleImpact, normalWorkImpact, recoveryWorkImpact, } from './action-impact.js';
 // startup preflight (§E.6)
 export { fixOrDisableTargets, startupPreflight } from './startup-preflight.js';
+// creation preflight + production writers (W3-B, review fix F6/F7)
+export { blockedScopeKeysOf, evaluateCreationScopes, grantDegradationConsent, runCreationPreflight, setTemplateAvailabilityFact, } from './creation-preflight.js';
 // consent (§E.6/§E.11)
 export { isConsented, relevantConsents, validateConsent } from './consent.js';
 // template availability (§E.6/§E.11)

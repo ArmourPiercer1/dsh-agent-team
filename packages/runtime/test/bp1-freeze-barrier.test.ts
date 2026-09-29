@@ -46,6 +46,7 @@ import * as hostEntry from '../src/plugin/host.js'
 import type { TeamPluginHostContext } from '../src/plugin/host.js'
 import { parseBlueprint, toBlueprintSnapshotRef } from '../../domain/blueprint/src/index.js'
 import { stubGlueUrl } from './p8s5a-artifacts.mjs'
+import { agentPresetsStandardDouble } from './agent-presets-double.mjs'
 
 // --- the fixture identities -------------------------------------------------------
 
@@ -144,6 +145,9 @@ function makeWorld(extra: Record<string, any>): TestWorld {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
     workspaceRegistry: { list: () => [], resolveByPath: async () => undefined },
+    // pre-alpha3 W3-A (F1): the agentPresets service double (W2-A fail-closed
+    // contract — service-absent worlds without a row preset id no longer bind).
+    agentPresets: agentPresetsStandardDouble(),
     ...extra,
   }
   const effectDisposers: Array<() => void> = []

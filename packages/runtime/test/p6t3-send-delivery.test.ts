@@ -551,9 +551,14 @@ describe('P6-T3 send/delivery (MUST-TEST: leader→member, member→leader, nega
     // Nothing on any other session; the write cost is exactly two durable
     // facts — 4 seam writes plus the one-time ledger counter bootstrap on
     // this fresh world's first allocation plus the two G8-S1 generation-stamp
-    // advances (one per new fact) (= 7); the ledger stays gap-free.
+    // advances (one per new fact) (= 7), plus the requirement gate's fresh
+    // team-scope compatibility evaluation (the send-message is now gated as
+    // the `crossAgentTrigger` impact — pre-alpha3 W3-D review fix F9: the
+    // gate consults on this first send and writes the team-scope
+    // compatibility row + generation stamp = +2) (= 9); the ledger stays
+    // gap-free (subsequent sends find the FRESH state and add zero writes).
     expect(sd.leaderToWorker.inputCount).toBe(1)
-    expect(sd.leaderToWorker.newWrites).toBe(7)
+    expect(sd.leaderToWorker.newWrites).toBe(9)
     expect(sd.leaderToWorker.gaps).toEqual([])
   })
 

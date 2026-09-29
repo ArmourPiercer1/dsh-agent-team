@@ -198,6 +198,25 @@ export function gateAction(impact: ActionImpact, input: EvaluationInput): GateDe
       }
       return { allowed: true, reason: GATE_REASONS.allowed }
 
+    case ACTION_IMPACT_CLASSES.crossAgentTrigger:
+      // pre-alpha3 W3-D (review fix F9, guide §8): the cross-agent execution
+      // trigger blocks if ANY evaluated scope is down (the trigger would
+      // deliver work a downed scope cannot serve) — the blocked scopes are
+      // ALL of them (the recipient's scope, the team scope, ...). A
+      // downed/disabled template is NOT the trigger's concern (the recipient
+      // is an instance, not a template); only the blocked (required-down)
+      // scopes gate the trigger. In a recovery context the router re-runs
+      // the trigger as recovery work (the existing `recovery` marker) and
+      // escalates the wake to synchronous Human Review.
+      if (blockedRefs.length > 0) {
+        return {
+          allowed: false,
+          reason: GATE_REASONS.requiredScopeDown,
+          blockedScopes: blockedRefs.map((v) => v!.scope),
+        }
+      }
+      return { allowed: true, reason: GATE_REASONS.allowed }
+
     default:
       // Exhaustiveness guard (the closed impact class set).
       throw new RequirementError(

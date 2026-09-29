@@ -635,6 +635,17 @@ export interface TeamRuntimeOptions {
   readonly environmentFacts: () => Promise<
     readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]
   >
+  /**
+   * pre-alpha3 W3-A (review fix F1, guide §2.3) — the per-TEMPLATE scope
+   * facts port (the live provider's template-boundary feed: supply + fresh
+   * readiness + materialization). Present in the production host entry
+   * world; ABSENT in factory/test worlds, where the gate evaluates every
+   * scope against the single `environmentFacts` array (the legacy
+   * behavior, byte-identical).
+   */
+  readonly templateEnvironmentFacts?: (
+    templateId: string,
+  ) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>
   /** The external hard facts (effective-config read, stage 2). */
   readonly externalPolicyFacts: () => Promise<
     import('../../domain/policy/src/index.js').ExternalPolicyFacts

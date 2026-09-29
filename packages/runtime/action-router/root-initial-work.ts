@@ -162,9 +162,35 @@ import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from '../admission/errors.
 import { enforceRequirementGate } from '../admission/requirement-gate.js'
 import type { ResolvedCaller } from '../admission/resolve.js'
 import { normalWorkImpact } from '../requirements/action-impact.js'
-import { teamScope } from '../requirements/types.js'
+import { teamScope, templateScope } from '../requirements/types.js'
+import type { RequirementScope } from '../requirements/types.js'
 import type { TeamOperationChainMap } from '../coordination/index.js'
 import { commitDurableFact, withTeamLock } from './effects.js'
+
+/**
+ * pre-alpha3 W3-C (review fix F8, guide §7.2) — the scope refs of the
+ * Leader's real request boundary (the Root initial work): the Team scope
+ * ALWAYS + the Leader template scope when the leader template declares v2
+ * structured requirements. The Leader's normal model request depends on
+ * the leader template's requirements (the leader IS the resident member of
+ * its own template) — not just the team scope. A v1 document (no
+ * per-template requirements) and a v2 leader template that declares no
+ * requirements keep the Team scope only (byte-identical pre-W3-C).
+ *
+ * Member template scopes are NEVER referenced here: an unrelated member
+ * requirement down must not block the Leader (guide §7.3 case 4).
+ */
+export function leaderTemplateScopeRefs(blueprint: TeamBlueprint): readonly RequirementScope[] {
+  const leaderRequirements = blueprint.leader.requirements
+  if (
+    blueprint.schemaVersion === 2 &&
+    leaderRequirements !== undefined &&
+    leaderRequirements.length > 0
+  ) {
+    return [teamScope(), templateScope(blueprint.leader.templateId)]
+  }
+  return [teamScope()]
+}
 
 /** The payload discriminator of a Root initial-work fact (the scanner's filter). */
 export const ROOT_TARGET_KIND = 'root'
@@ -789,6 +815,16 @@ export interface RootInitialWorkClosureInput {
   readonly repositories: TeamDomainRepositories
   /** The environment-facts port (the compatibility gate's fresh-facts read). */
   readonly environmentFacts: () => Promise<readonly EnvironmentFact[]>
+  /**
+   * pre-alpha3 W3-A (review fix F1, guide §2.3) — the per-TEMPLATE scope
+   * facts port (the live provider's template-boundary feed). Present in the
+   * production host entry world; ABSENT in factory worlds (the gate
+   * evaluates every scope against the single `environmentFacts` array —
+   * the legacy behavior, byte-identical).
+   */
+  readonly templateEnvironmentFacts?: (
+    templateId: string,
+  ) => Promise<readonly EnvironmentFact[]>
   /** The deterministic clock (ISO-8601). */
   readonly now: () => string
   /** The live Root input delivery port (the glue's `deliverRootWork`). */
@@ -855,20 +891,42 @@ export function createAdmitRootInitialWork(
         // blocks the initial work (COMPATIBILITY_BLOCKED, fail-closed —
         // invariant 50); a DEGRADED scope (an optional requirement down)
         // AUTO-DEGRADES — the initial work CONTINUES (the old gate's
-        // COMPATIBILITY_BLOCKED_WARNING throw is gone). The impact is
-        // normal work on the Team scope (the Root initial work is the
-        // team's own new work — NOT a cross-agent member action, so the
-        // human-reviewed recovery dispatch is not offered on this path:
-        // the typed block stands, the fail-closed direction).
+        // COMPATIBILITY_BLOCKED_WARNING throw is gone).
+        //
+        // pre-alpha3 W3-C (review fix F8, guide §7.2/§7.3): the Leader's
+        // REAL request boundary is gated on the Team scope + the Leader
+        // template scope (when the leader template has v2 requirements) —
+        // the impact is normal work on the LEADER BOUNDARY refs. The
+        // decisions (guide §7.3):
+        //   case 1 — a Leader REQUIRED requirement down (the leader
+        //     template scope BLOCKED) → the Leader's normal turn is BLOCKED
+        //     (COMPATIBILITY_BLOCKED) and the typed block carries
+        //     `recoveryDispatchAvailable` — the "Recovery turn available"
+        //     (the server-derived recovery mode: NO wire change, the mode
+        //     is never a client field);
+        //   case 2 — a Leader OPTIONAL requirement down (the scope
+        //     DEGRADED) → the normal turn CONTINUES (auto-degraded);
+        //   case 4 — an UNRELATED member template requirement down → that
+        //     scope is NOT in the refs (never referenced) — it does not
+        //     block the Leader;
+        //   case 5 — a Team-level REQUIRED requirement down (the team
+        //     scope BLOCKED) → the Leader's normal turn is BLOCKED.
+        // The Root initial work is the team's own new work (NOT a
+        // cross-agent member action); the typed block stands and the
+        // recovery dispatch availability is the gate's server-derived
+        // signal (the fail-closed direction is preserved).
         await enforceRequirementGate(
           {
             repositories: input.repositories,
             blueprint: args.blueprint,
             rootSessionId: args.rootSessionId,
             environmentFacts: () => input.environmentFacts(),
+            ...(input.templateEnvironmentFacts !== undefined
+              ? { templateEnvironmentFacts: input.templateEnvironmentFacts }
+              : {}),
             now: input.now,
           },
-          normalWorkImpact([teamScope()]),
+          normalWorkImpact(leaderTemplateScopeRefs(args.blueprint)),
         )
         return admitRootInitialWorkLocked(deps)
       },

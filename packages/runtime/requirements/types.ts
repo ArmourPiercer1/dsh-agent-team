@@ -245,6 +245,17 @@ export const ACTION_IMPACT_CLASSES = {
   diagnostic: 'diagnostic',
   lifecycle: 'lifecycle',
   coordination: 'coordination',
+  /**
+   * pre-alpha3 W3-D (review fix F9, guide §8): a CROSS-AGENT EXECUTION
+   * TRIGGER — an action whose effect is to deliver input to another agent
+   * (wake it / hand it work). Classified by EFFECT, not tool name:
+   * `team_send_message` triggers the recipient's execution, so the gate
+   * consults every scope the TRIGGERING action was evaluated against and
+   * blocks if ANY is down (the trigger would deliver work a downed scope
+   * cannot serve). In a recovery context a trigger that wakes a recipient
+   * escalates to synchronous Human Review (guide §8, recovery case).
+   */
+  crossAgentTrigger: 'crossAgentTrigger',
 } as const
 
 /** A closed action-impact class. */

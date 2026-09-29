@@ -108,6 +108,22 @@
   *                        legacy row-global anchor resolution (the
   *                        factory-world fallback; the production host
   *                        always passes one).
+  *   resolvePersonaSubstrate (OPTIONAL) - pre-alpha3 W2-A (review fix F4,
+  *                        guide §5 B): the PRODUCTION persona-substrate
+  *                        resolver — (rootSessionId) => Promise<{ presetId,
+  *                        personaKind: 'standard' | 'complete' | 'absent' |
+  *                        'unresolved', source?, reason? }>. The production
+  *                        host builds it over the RuntimeSubstrateResolver
+  *                        + the DSH public agentPresets seam, so the persona
+  *                        slot reads the REAL observed effective composition
+  *                        (never the shipped-state 'standard' guess). The
+  *                        shared agent setup AWAITs it on the production
+  *                        path (before any install — an `unresolved`
+  *                        substrate throws there, fail closed; the slot is
+  *                        cached per owning root ONLY on success, so a
+  *                        failed bind re-probes). ABSENT (factory / test
+  *                        worlds) -> the legacy seam (config.presetSubstrate
+  *                        ?? the S5A A11 standard default), byte-for-byte.
   *   now                - parity field (the row's clock); unused by the ported
  *                        glue paths, which derive time from the services
  *   subagents (OPTIONAL) - the DSH subagents service (SubagentRuntime):
@@ -656,7 +672,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, activationFence, policyReaderRef } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, activationFence, policyReaderRef, resolvePersonaSubstrate } = deps
 
   // C1 (restart-recovery, guide §7.2): the bounded window of the SINGLE
   // writer-conflict recovery wait (ensureLiveAgent's recoverWriterConflict
@@ -675,6 +691,17 @@ export function createAgentBindings(deps) {
   if (domain === undefined || domain === null) throw new Error('agent-bindings: deps.domain is required (the opened TeamDomain)')
   if (teamToolsRef === undefined || teamToolsRef === null || typeof teamToolsRef !== 'object') {
     throw new Error('agent-bindings: deps.teamToolsRef is required (a { current } object the production host fills after root assembly)')
+  }
+  // pre-alpha3 W2-A (review fix F4, guide §5 B): the production persona-
+  // substrate resolver (OPTIONAL). The production host injects it so the
+  // persona slot reads the REAL observed effective composition (the
+  // RuntimeSubstrateResolver + the DSH public agentPresets seam) instead of
+  // the shipped-state guess (config.presetSubstrate ?? the S5A 'standard'
+  // default). Absent (factory / test worlds) = the legacy path, byte-for-
+  // byte. When present it MUST be a function (rootSessionId ->
+  // Promise<{ presetId, personaKind, source?, reason? }>).
+  if (resolvePersonaSubstrate !== undefined && typeof resolvePersonaSubstrate !== 'function') {
+    throw new Error('agent-bindings: deps.resolvePersonaSubstrate must be a function (rootSessionId -> Promise<{ presetId, personaKind, source?, reason? }>) when present')
   }
   // The durable-consumption resolvers ride on the opened domain.
   const consumption = domain.consumption
@@ -1922,7 +1949,12 @@ export function createAgentBindings(deps) {
       // section), after the tools and before the mcp mount: before ANY work
       // can run on this session. The reused resolver evaluates the preset
       // substrate first (complete -> FATAL, thrown before any install).
-      installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath, teamRootSid)
+      // pre-alpha3 W2-A (review fix F4, guide §5 B): the production path
+      // RESOLVES the real observed substrate first (the await) — an
+      // `unresolved` substrate throws BEFORE any install (fail closed), and
+      // the await keeps the install strictly before any work (the slot's
+      // apply + the pending flush below both run after it).
+      await installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath, teamRootSid)
       // A pre-setup personaSurface.installScopedPersona for this session
       // (the pending window) flushes here too — still before any work.
       const pendingIdentity = personaPending.get(sessionId)
@@ -2368,15 +2400,13 @@ export function createAgentBindings(deps) {
    * — the templateId is REQUIRED, absent -> the resolver's loud TypeError),
    * and installs it through the prompt surface below.
    */
-  function getPersonaSlot() {
-    if (personaSlot !== undefined) return personaSlot
-    const substrate = personaSubstrate()
-    personaSlot = createPersonaOverlaySlot({
-      presetSeam: {
-        // The seam is keyed by the root session id ONLY (Architecture §13.1 —
-        // members inherit the root substrate); one substrate for the team.
-        getSubstrate: () => ({ presetId: substrate.presetId, personaKind: substrate.personaKind }),
-      },
+  // Build ONE persona overlay slot over the given preset seam. The
+  // personaSource / promptSurface are SHARED by every slot of this row
+  // (BP-F / TCM-D4 / D3 semantics are identical on the legacy and the
+  // production path — only the seam's substrate fact differs).
+  function buildPersonaSlot(presetSeam) {
+    return createPersonaOverlaySlot({
+      presetSeam,
       personaSource: {
         // BP-F (issue #2 blueprint-loading, plan §11.2): the persona source
         // resolves the OWNING team root's bound blueprint per call (the
@@ -2453,7 +2483,69 @@ export function createAgentBindings(deps) {
         },
       },
     })
+  }
+
+  function getPersonaSlot() {
+    if (personaSlot !== undefined) return personaSlot
+    const substrate = personaSubstrate()
+    // The LEGACY (factory / test-world) path: config.presetSubstrate ?? the
+    // S5A A11 standard substrate — zero behavior change. The seam is keyed
+    // by the root session id ONLY (Architecture §13.1 — members inherit the
+    // root substrate); one substrate for the team.
+    personaSlot = buildPersonaSlot({
+      getSubstrate: () => ({ presetId: substrate.presetId, personaKind: substrate.personaKind }),
+    })
     return personaSlot
+  }
+
+  // pre-alpha3 W2-A (review fix F4, guide §5 B): the PRODUCTION persona
+  // substrate — the REAL observed effective composition, resolved per
+  // OWNING root on first bind and cached ONLY on success:
+  //   - `unresolved` -> a typed throw (the bind fails closed — the setup
+  //     rejection rolls the unpublished agent back; the slot is NOT
+  //     cached, so a later bind RE-PROBES — never a shipped-state 'standard'
+  //     guess, guide §5 B "不能继续 shipped-state guess");
+  //   - a settled observation (standard / complete / absent) -> the slot is
+  //     built over that substrate and cached for the root (complete still
+  //     hits the adapter's §13.5 FATAL at apply — the conflict is caught
+  //     before any work, as before).
+  // The in-flight map dedupes concurrent first binds of the same root (the
+  // setup callback is async; two agents of one root may race the first
+  // observation).
+  const productionPersonaSlots = new Map()
+  const productionPersonaInflight = new Map()
+  async function getProductionPersonaSlot(rootSessionId) {
+    const key = String(rootSessionId)
+    const cached = productionPersonaSlots.get(key)
+    if (cached !== undefined) return cached
+    const pending = productionPersonaInflight.get(key)
+    if (pending !== undefined) return pending
+    const build = (async () => {
+      const substrate = await resolvePersonaSubstrate(key)
+      if (substrate === undefined || substrate === null || typeof substrate !== 'object') {
+        throw new Error(`agent-bindings: persona substrate for root '${key}': the resolver returned no substrate record (fail closed)`)
+      }
+      if (typeof substrate.presetId !== 'string' || substrate.presetId === '') {
+        throw new Error(`agent-bindings: persona substrate for root '${key}': the resolver returned no presetId (fail closed)`)
+      }
+      if (substrate.personaKind === 'unresolved') {
+        throw new Error(`agent-bindings: persona substrate for root '${key}' is UNRESOLVED (${substrate.reason !== undefined && substrate.reason !== '' ? String(substrate.reason) : 'the effective composition could not be observed'}) — the bind fails closed (a later bind re-probes; never a shipped-state guess)`)
+      }
+      const slot = buildPersonaSlot({
+        // The seam is keyed by the root session id ONLY (Architecture
+        // §13.1 — members inherit the root substrate); one observed
+        // substrate for the team.
+        getSubstrate: () => ({ presetId: substrate.presetId, personaKind: substrate.personaKind }),
+      })
+      productionPersonaSlots.set(key, slot)
+      return slot
+    })()
+    productionPersonaInflight.set(key, build)
+    try {
+      return await build
+    } finally {
+      productionPersonaInflight.delete(key)
+    }
   }
 
   /**
@@ -2522,7 +2614,7 @@ export function createAgentBindings(deps) {
    *    neither a row nor a hint fails closed with a loud error (no silent
    *    persona-less member).
    */
-  function installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath, teamRootSid) {
+  async function installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath, teamRootSid) {
     // A2 (RC2 repair, plan §5.3): the row-config skip is FACTORY-WORLD ONLY
     // (no resolver injected — there the empty anchor means no persona
     // authority at all). With the resolver injected (the production host
@@ -2531,13 +2623,23 @@ export function createAgentBindings(deps) {
     // through the resolver's typed throw — NEVER a silent skip, never a
     // row-anchor fallback.
     if (resolveBoundBlueprint === undefined && String(config.blueprintSource ?? '') === '') return
-    const slot = getPersonaSlot()
     // T12-GLUE: the session may be the root of its OWN team in this row's
     // domain (the handoff target) — it then embodies that team's leader
     // instance, exactly as the boot root does.
     const teamRoot = teamRootSid !== undefined
       ? String(teamRootSid)
       : (sessionId === rootSid ? rootSid : undefined)
+    // pre-alpha3 W2-A (review fix F4, guide §5 B): the PRODUCTION host
+    // injects resolvePersonaSubstrate — the persona substrate is the REAL
+    // observed effective composition of the OWNING root (resolved once per
+    // root, fail closed on `unresolved` — the setup rejection rolls the
+    // unpublished agent back, and a later bind re-probes). A factory /
+    // test world (dep absent) keeps the LEGACY seam (config.presetSubstrate
+    // ?? the S5A 'standard' default) — zero behavior change.
+    const slot =
+      resolvePersonaSubstrate !== undefined && teamRoot !== undefined
+        ? await getProductionPersonaSlot(teamRoot)
+        : getPersonaSlot()
     let target
     let record
     if (teamRoot !== undefined && teamRoot === sessionId) {
