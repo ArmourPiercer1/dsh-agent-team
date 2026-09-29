@@ -1,0 +1,9 @@
+?? .f15-run2-console.log
+?? .tmp-f15-kit-design.mjs
+?? .tmp-f15-probe.mjs
+?? .tmp-f15-probe2.mjs
+?? .tmp-f15-probe3.mjs
+?? .tmp-f15-validate-blueprints.mjs
+?? .tmp-f15-validate-patch.mjs
+?? dev/agent-workflow/evidence/f15-mcp-live-loss/f15-2026-09-29-11-09-36/
+?? tests/kits/f15-mcp-live-loss-smoke/

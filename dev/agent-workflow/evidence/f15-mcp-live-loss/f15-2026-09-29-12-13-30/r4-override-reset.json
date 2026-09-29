@@ -1,0 +1,21 @@
+{
+  "type": "server-response",
+  "rpcId": "r4-reset-l6hstsdvfb",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "removed": true
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "override.reset",
+        "endpoint": "override.reset",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

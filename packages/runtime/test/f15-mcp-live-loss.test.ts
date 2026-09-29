@@ -424,7 +424,7 @@ describe('F15 §9 — the MCP live-loss unit matrix (plan §9.3/§9.4/§9.5/§11
     // (a) SAME boundary: the 30 s retry cooldown (slot.lastAttemptAt = now
     //     from the retirement) blocks the remount — the failure is not
     //     "washed away" by an immediate fresh mount (plan §5.3).
-    await mainBinding.prepareAgentForRequest(MAIN_ROOT)
+    await mainBinding.prepareAgentForRequest(MAIN_ROOT, MAIN_ROOT)
     expect(st.mcpFibers!.has(MAIN_SERVER), 'the same boundary must NOT remount (cooldown)').toBe(false)
     let slot = st.mcpMaterialization!.get(MAIN_SERVER)!
     expect(slot.status).toBe('failed')
@@ -434,7 +434,7 @@ describe('F15 §9 — the MCP live-loss unit matrix (plan §9.3/§9.4/§9.5/§11
     //     slot; the real wall-clock elapse is the kit's R3 leg): the next
     //     boundary's reconcile remounts.
     slot.lastAttemptAt = Date.now() - 31_000
-    await mainBinding.prepareAgentForRequest(MAIN_ROOT)
+    await mainBinding.prepareAgentForRequest(MAIN_ROOT, MAIN_ROOT)
     const fresh = st.mcpFibers!.get(MAIN_SERVER)
     expect(fresh, 'the fresh remount must re-mount the fiber').toBeDefined()
     expect(fresh, 'the remount is a NEW client instance (the exhausted fiber was disposed)').not.toBe(mainFiberAtMount)
@@ -507,7 +507,7 @@ describe('F15 §9 — the MCP live-loss unit matrix (plan §9.3/§9.4/§9.5/§11
     // THE DURABLE DENY (the mutable override array the domain double re-reads
     // on every boundary — the B4 tighten pattern).
     denyWorld.overrides.push(teamMcpDeny(D_ROOT, 'f15-deny-1'))
-    await binding.prepareAgentForRequest(D_ROOT)
+    await binding.prepareAgentForRequest(D_ROOT, D_ROOT)
     // policy-driven unmount (the deny-first reconcile path):
     expect(fiber.disposed, 'the deny disposes the fiber').toBe(true)
     expect(fiber.disposeCount).toBe(1)
@@ -567,8 +567,8 @@ describe('F15 §9 — the MCP live-loss unit matrix (plan §9.3/§9.4/§9.5/§11
     expect(st.mcpMaterialization!.get(M_B)!.status).toBe('mounted')
     // telemetry: exactly one loss event, for A only.
     expect(multiWorld.events).toHaveLength(1)
-    expect(multiWorld.events[0].capabilityName).toBe(M_A)
-    expect(multiWorld.events[0].kind).toBe('capability-lost')
+    expect(multiWorld.events[0]!.capabilityName).toBe(M_A)
+    expect(multiWorld.events[0]!.kind).toBe('capability-lost')
   })
 })
 

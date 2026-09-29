@@ -1,0 +1,26 @@
+[2026-09-29T11:09:36.973Z] === F15 MCP live-loss zero-core real-host smoke f15-2026-09-29-11-09-36 (ruling: Option A) ===
+[2026-09-29T11:09:36.973Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/f15-mcp-live-loss
+[2026-09-29T11:09:36.981Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-09-29T11:09:36.981Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/f15-mcp-live-loss/dev/agent-workflow/evidence/f15-mcp-live-loss/f15-2026-09-29-11-09-36 keep=false
+[2026-09-29T11:09:37.505Z] stable pre-probes: 3080=401 3180=401
+[2026-09-29T11:09:37.556Z] worktree pre-status: clean=false (untracked scratch expected — the kit + probes are committed later)
+[2026-09-29T11:09:37.559Z] ports: host1=3182 host2=3183 mcp=3491 mock=3497
+[2026-09-29T11:09:37.559Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/tests/homes/f15-2026-09-29-11-09-36 blueprints=/home/user/dsh-plugins/dsh-agent-team/tests/homes/f15-2026-09-29-11-09-36/blueprints
+[2026-09-29T11:09:37.559Z] PASS [PREF] preflight (dist files present; test-use pristine @ 46a7f68b09; stable instances probed; kit ports free; home fresh) — see stable-pre.json / testuse-pre.json / worktree-git-pre.json
+[2026-09-29T11:09:37.565Z] mock: mock: listening on 127.0.0.1:3497
+[2026-09-29T11:09:37.565Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-09-29T11:09:37.576Z] mini MCP up on 127.0.0.1:3491 (mcp-f15)
+[2026-09-29T11:09:37.576Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-29T11:09:38.831Z] throwaway boot OK: http://127.0.0.1:3182/?token=<SCRUBBED>
+[2026-09-29T11:09:38.887Z] web profile ensured (throwaway boot if first use)
+[2026-09-29T11:09:38.888Z] HOST1-CREATE: patch (bootPhase=create) + directive (boot=1) written
+[2026-09-29T11:09:40.147Z] HOST1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T11:09:40.149Z] HOST1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T11:09:41.251Z] HOST1-CREATE: row ready — toolCount=13
+[2026-09-29T11:09:41.255Z] HOST1: state ready (anchor teamSession=f15.anchor)
+[2026-09-29T11:09:41.276Z] FAIL [C0] catalog.get resolves the v2 blueprint; intent.probe: req-f15-mcp (complete:true mcpServer) outcome=PASS with status=OPEN — the row environmentFacts seed feeds the pre-create unknown live verdict — catalog=true status=BLOCKED_FATAL req={"requirementId":"req-f15-mcp","type":"mcpServer","complete":true,"outcome":"FATAL","reasonCode":"COMPLETE_REQUIREMENT_NOT_MET","detail":"complete:true requirement unmet: mcp-f15 (st
+[2026-09-29T11:09:41.357Z] FAIL [C1] team.create (v1 envelope + initialWork) succeeds on the fresh root (path=fresh-root; the create preflight + admitInitialWork pass) — status=200 data={"type":"server-response","rpcId":"t1-1y292lml1z","result":{"ok":false,"error":{"code":"TEAM_RUNTIME_COMPATIBILITY_BLOCKED","message":"TeamRuntime: a required scope is down (team) — new work admission is 
+[2026-09-29T11:09:41.358Z] sweep: stopping still-live host HOST1-CREATE
+[2026-09-29T11:09:41.419Z] HOST1-CREATE: stopped (killed=true portFree=true)
+[2026-09-29T11:09:42.224Z] PASS [H1] teardown: all kit ports torn down (3182/3183/3491/3497 free); the stable instances (:3080/:3180) unchanged; the test-use checkout pristine @ baseline (post); tokens scrubbed from the evidence dir — ports={"host1":{"port":3182,"free":true},"host2":{"port":3183,"free":true},"mcp":{"port":3491,"free":true},"mock":{"port":3497,"free":true}} stableUnchanged=true testuseClean=true scrubbedFiles=3
+[2026-09-29T11:09:42.224Z] legs aborted — teardown complete; the fatal summary is owned by the catch handler

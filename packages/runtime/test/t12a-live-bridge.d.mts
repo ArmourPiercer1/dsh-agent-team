@@ -676,6 +676,32 @@ export interface LiveWorldOptions {
     readonly source: string
     readonly sessionId: string
   }) => void | Promise<void>
+  /** F15 (plan §11): the durable capability-runtime telemetry hook — the
+   *  glue's `capabilityTelemetry` dep (a NO-OP when absent: a test world
+   *  without durable telemetry omits it and every emit is silently
+   *  dropped). A test supplies a recording double to assert the event
+   *  stream (exactly one `capability-lost` on a confirmed loss, exactly
+   *  one `mount-restored` on the fresh remount, and NO runtime-loss
+   *  events from plugin-initiated removals). The event is the glue's
+   *  MCP mount-transition record (emitMcpCapabilityEvent). */
+  readonly capabilityTelemetry?: (
+    rootSessionId: string,
+    event: F15CapabilityTelemetryEvent,
+  ) => void | Promise<void>
+}
+
+/** The glue's capability-runtime telemetry event (agent-bindings.mjs
+ *  emitMcpCapabilityEvent — the durable capability-runtime-event record
+ *  the production wiring persists; `reason` is present on failed slots). */
+export interface F15CapabilityTelemetryEvent {
+  readonly kind: string
+  readonly capabilityType: string
+  readonly capabilityName: string
+  readonly verdict: string
+  readonly source: string
+  readonly observedAt: string
+  readonly attempt: number
+  readonly reason?: string
 }
 
 /** The worktree root (the bridge lives at packages/runtime/test). */

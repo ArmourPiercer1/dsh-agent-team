@@ -1,0 +1,30 @@
+{
+  "note": "F15 run-4 (kit start 2026-09-29T11:47:56Z) was INTERRUPTED at the R3' B1 boundary — journey evidence, not a product failure. Full console: .f15-run4-console.log (worktree scratch, deleted before commit 3).",
+  "result": {
+    "PREF": "PASS",
+    "C0": "PASS",
+    "C1": "PASS",
+    "C2": "PASS",
+    "R1": "PASS",
+    "R2": "PASS (ghostError field mislabeled — stale first-history tool_result; fixed in run-5 kit)",
+    "R4": "FAIL (kit-side: the row harness governance/mutate endpoint always writes the ROW's anchor-team slot, never the T1 team slot — the deny never reached the T1 fiber; fixed in run-5 kit via team-remote override.set scoped teamSessionId=ROOT_T1 + override.reset before boot-2)",
+    "R5": "PASS",
+    "R3": "NOT COMPLETED (hang, see below)"
+  },
+  "r3b1_hang": {
+    "boundary_started": "2026-09-29T11:48:11.26Z (immediately after R5)",
+    "mount_failed_telemetry": "2026-09-29T11:48:11.295Z (ledger entry 16 — the corrected R3' failOnStartupError single-attempt path fired exactly once, verdict unreachable, reason 'mcp-client(mcp-f15): initial connection or tool synchronization failed')",
+    "recovery_control_request_opened": "2026-09-29T11:48:11.330Z (ledger entry 17 — correlation recovery:rt-f15-r3a-f15-2026-09-29-11-47-56:1, requestId ctrl-0oystxb0dei6hu13ocntx0zf, kind user-approval, actionName delegate)",
+    "control_decision_recorded": "NONE — the kit's pre-harden poll loop never resolved the request (one-shot seen-set + silent 429-to-empty ledger reads; see t1-ledger-forensic-snapshot.json)",
+    "delegate_tool_timeout": "2026-09-29T11:50:11.26Z (the 120s p6t6Tool timeout; the recovery dispatch's awaitControlDecision was still waiting)",
+    "process_livelock": "the timed-out delegate threw inside gatedDelegateCall WITHOUT setting the poll-loop stop flag (pre-harden) — the orphaned poll loop held the process open; the H1 teardown ran partially (hosts stopped, ports freed, mock/mini closed, stable pre/post + git pre/post recorded) but summary.json was never written and the home was not deleted",
+    "resolution": "kit hardened (run-5): strict ledger reads (non-200/non-ok THROW), poll liveness logging, failed-resolve RETRY (resolvedOk gate, CONTROL_REQUEST_DECIDED treated as done), try/finally stop-flag so the poll loop can never orphan the process"
+  },
+  "product_findings_from_this_run": [
+    "R3' B1 mount-time failure works on the real host: single attempt, slot failed/attempts=1, exactly one mount-failed telemetry, gate BLOCKED, recovery control request opened (ledger entries 16-17)",
+    "the recovery dispatch (packages/runtime/action-router/router.ts) is the real mechanism behind the B1/B2 blocks: it opens a user-approval control request (correlation recovery:<requestToken>:<seq>) and the delegate (async:false) waits inline for the decision — the kit must resolve it (deny) through team.resolveControl, which the host stamps as the human principal",
+    "user-approval kind control requests may ONLY be resolved by the human (CONTROL_RESOLVER_ROLES; the leader cannot stand in for the user) — the kit's remote resolve is host-derived human, so it is authorized",
+    "the SDK streamable-http connect against a refused port rejects in ~9ms (empirical probe) — the mount failure is fast; the 120s delegate budget is dominated by the control-request round-trip, not the mount"
+  ],
+  "cleanup": "home f15-2026-09-29-11-47-56 (+ .lock) deleted after the forensic snapshot extraction; all kit ports freed; stable instances (:3080/:3180 family) probed unchanged (stable-pre.json / stable-post.json)"
+}
