@@ -33,12 +33,17 @@
  *     request-control op IS in its envelope), the SAME Leader's resolve
  *     is rejected ENVELOPE_OUT_OF_BOUNDS (the op is really absent — the
  *     PR-D gap), the aborted inline wait is durably ABANDONED by the
- *     Leader itself (the independent close authority), the late human
- *     allow is rejected CONTROL_REQUEST_ABANDONED with ZERO durable
- *     effect (no decision fact, no consumption fact), the durable
- *     abandon fact is present exactly once (the terminal mark), the
- *     derived request status is `abandoned`, and a SECOND abandon is
- *     rejected.
+ *     wait bridge itself (the coupling-aware cascade — the control-
+ *     INTERNAL close authority, no resolve-control op, no bound
+ *     blueprint), so the Leader's explicit follow-up abandon is the
+ *     exactly-once REJECTION (the terminal mark is already durable —
+ *     the #42 "wait aborted → abandonControlRequest" sequence lands on
+ *     the second attempt), the late human allow is rejected
+ *     CONTROL_REQUEST_ABANDONED with ZERO durable effect (no decision
+ *     fact, no consumption fact), the durable abandon fact is present
+ *     exactly once (the terminal mark, reason `wait-aborted`), the
+ *     derived request status is `abandoned`, and a SECOND explicit
+ *     abandon is rejected.
  * S2: a member self-abandons its OWN pending request (no
  *     resolve-control in the envelope) — success; the liveness
  *     notification of the request was delivered (the request path's
@@ -190,10 +195,11 @@ function createNoeService(
 let s1: {
   readonly resolveRejectedCode: string
   readonly waitAbortedCode: string
-  readonly abandonment: ControlAbandonmentRecord
+  readonly explicitAbandonCode: string
   readonly lateAllowCode: string
   readonly secondAbandonCode: string
   readonly abandonFacts: number
+  readonly cascadeAbandonReason: string | undefined
   readonly decisionFacts: number
   readonly consumptionFacts: number
   readonly requestStatus: string
@@ -240,14 +246,24 @@ let s1: {
       () => waitP,
       CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED,
     )
-    // (4) THE FIX: the Leader ABANDONS its own waiting review — the
-    // independent close authority (no resolve-control op required).
-    const abandonment = await service.abandonControlRequest({
-      rootSessionId: P6T4_ROOT,
-      caller: leaderCaller(),
-      requestId: request.requestId,
-      reason: 'leader aborted its own recovery review',
-    })
+    // (4) THE CASCADE (pre-alpha3 PR-D, D.4): the aborted INLINE wait
+    // has already durably ABANDONED the request — the control-INTERNAL
+    // close authority, no resolve-control op, no bound blueprint (the
+    // Leader's own wait-abort closed its own waiting review; the PR-D
+    // defect, closed). The Leader's explicit follow-up abandon is
+    // therefore the exactly-once REJECTION (the terminal mark is
+    // already durable — the #42 "wait aborted → abandonControlRequest"
+    // sequence lands on the second attempt).
+    const explicitAbandon = await expectControlRejection(
+      () =>
+        service.abandonControlRequest({
+          rootSessionId: P6T4_ROOT,
+          caller: leaderCaller(),
+          requestId: request.requestId,
+          reason: 'leader aborted its own recovery review',
+        }),
+      CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+    )
     // (5) The late allow is rejected by the terminal mark.
     const late = await expectControlRejection(
       () =>
@@ -259,7 +275,8 @@ let s1: {
         }),
       CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
     )
-    // (6) The terminal mark is written exactly once.
+    // (6) The terminal mark is written exactly once (the second
+    // explicit abandon is rejected too).
     const second = await expectControlRejection(
       () =>
         service.abandonControlRequest({
@@ -269,20 +286,25 @@ let s1: {
         }),
       CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
     )
-    // (7) Durable state: one abandon fact, zero decision/consumption
-    // facts, derived status abandoned.
+    // (7) Durable state: one abandon fact (the cascade's, reason
+    // `wait-aborted`), zero decision/consumption facts, derived status
+    // abandoned.
     const state = await service.listControlState(P6T4_ROOT)
+    const stateAbandonments = state.abandonments.filter(
+      (a) => a.requestId === request.requestId,
+    )
     s1 = {
       resolveRejectedCode: resolveRejected.code,
       waitAbortedCode: waitAborted.code,
-      abandonment,
+      explicitAbandonCode: explicitAbandon.code,
       lateAllowCode: late.code,
       secondAbandonCode: second.code,
       abandonFacts: controlFacts(world, 'control-request-abandoned').length,
+      cascadeAbandonReason: stateAbandonments[0]?.reason,
       decisionFacts: controlFacts(world, 'control-decision-recorded').length,
       consumptionFacts: controlFacts(world, 'control-allow-consumed').length,
       requestStatus: state.requests.find((r) => r.requestId === request.requestId)?.status ?? '',
-      stateAbandonments: state.abandonments.length,
+      stateAbandonments: stateAbandonments.length,
     }
   } finally {
     await destroyP6T1World(world)
@@ -503,16 +525,23 @@ let s5: {
 // ---------------------------------------------------------------------------
 
 describe('F3: abandon is the control-internal close authority (no resolve-control envelope)', () => {
-  it('S1: the Leader WITHOUT resolve-control — request ok, resolve rejected ENVELOPE_OUT_OF_BOUNDS, self-abandon succeeds', () => {
+  it('S1: the Leader WITHOUT resolve-control — request ok, resolve rejected ENVELOPE_OUT_OF_BOUNDS, the aborted inline wait durably ABANDONED itself (the control-internal close)', () => {
     // The resolve-control op is really absent from the Leader's envelope:
     // the SAME caller that may request is refused the decision ...
     expect(s1.resolveRejectedCode).toBe(TEAM_RUNTIME_ERROR_CODES.ENVELOPE_OUT_OF_BOUNDS)
     // ... the aborted inline wait is typed CONTROL_WAIT_ABORTED ...
     expect(s1.waitAbortedCode).toBe(CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED)
-    // ... and the Leader closes its own waiting review — the independent
-    // close authority (no resolve-control op, no bound blueprint).
-    expect(s1.abandonment.requestId).toBeDefined()
-    expect(s1.abandonment.reason).toBe('leader aborted its own recovery review')
+    // ... and the wait bridge's cascade closed the Leader's own waiting
+    // review — the control-INTERNAL close authority (no resolve-control
+    // op, no bound blueprint; the explicit follow-up abandon is the
+    // exactly-once rejection over the cascade's terminal mark).
+    expect(s1.explicitAbandonCode).toBe(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED)
+  })
+
+  it('S1: the cascade terminal mark — exactly once, reason wait-aborted', () => {
+    expect(s1.cascadeAbandonReason).toBe('wait-aborted')
+    expect(s1.abandonFacts).toBe(1)
+    expect(s1.stateAbandonments).toBe(1)
   })
 
   it('S1: after the abandon the late allow is CONTROL_REQUEST_ABANDONED with ZERO durable effect; the mark is exactly once', () => {

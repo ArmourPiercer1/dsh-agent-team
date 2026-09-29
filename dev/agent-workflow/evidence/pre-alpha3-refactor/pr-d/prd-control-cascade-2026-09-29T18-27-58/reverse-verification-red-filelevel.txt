@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prd-control-generalization/packages/runtime
+
+ ❯ test/control-inline-wait-abort.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/control-inline-wait-abort.test.ts [ test/control-inline-wait-abort.test.ts ]
+Error: expectControlRejection('CONTROL_REQUEST_ABANDONED'): the call succeeded: {"requestId":"ctrl-1jgmftn02u6vrw1cyttut19a","rootSessionId":"session-root-p6t1","abandonedAt":"2026-09-01T09:00:00Z","abandonmentSequence":2,"reason":"explicit follow-up after the cascade"}
+ ❯ test/p6t4-helpers.ts:587:13
+    585|   return fn().then(
+    586|     (value) => {
+    587|       throw new Error(
+       |             ^
+    588|         `expectControlRejection('${code}'): the call succeeded: ${JSON…
+    589|       )
+ ❯ test/control-inline-wait-abort.test.ts:288:29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  02:08:19
+   Duration  719ms (transform 462ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

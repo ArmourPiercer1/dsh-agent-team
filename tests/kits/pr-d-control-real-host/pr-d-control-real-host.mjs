@@ -220,6 +220,13 @@ const SUM_C4A = `prd-c4a-${NONCE}`
 const SUM_C3 = `prd-c3-${NONCE}`
 const CORR_C3 = `prd-c3-corr-${NONCE}`
 const FP_C3 = `prd-c3-fp-${NONCE}`
+// C4 leg A (the SAME-request cascade: template-subject inline request,
+// waited over the p6t6 real-HTTP wait route, abandoned by the true
+// client disconnect — the D.6 criterion's star leg; the `2` suffix keeps
+// the marker distinct from the ask-lane legacy probe's SUM_C4A).
+const SUM_C4A2 = `prd-c4a2-${NONCE}`
+const CORR_C4A2 = `prd-c4a2-corr-${NONCE}`
+const FP_C4A2 = `prd-c4a2-fp-${NONCE}`
 // C4 leg B (the allow-voiding abandon request; guarded lane, instance subject).
 const SUM_C4B = `prd-c4b-${NONCE}`
 const CORR_C4B = `prd-c4b-corr-${NONCE}`
@@ -294,7 +301,7 @@ const CRITERIA = [
   { id: 'C1', name: 'existing leader/member permission ask path does not regress (member ask -> leader tool allow -> execution; durable recorded/decided/consumed)' },
   { id: 'C2', name: 'remote v4 allow/deny does not regress (both decisions over team.resolveControl v4; terminal states; denied scope guard-blocked)' },
   { id: 'C3', name: 'template-target inline request create/display/resolve + D.4 lane disjointness (no consumption; guarded attempt = no-request; template subject survives the stale validator)' },
-  { id: 'C4', name: 'abort/disconnect -> durable abandoned, zero effect (disconnect leaves legacy request pending; abandon terminal mark; guard = request-abandoned over the pre-abandon allow; typed pass-through; exactly-once)' },
+  { id: 'C4', name: 'abort/disconnect -> durable abandoned, zero effect (SAME-request coupling-aware cascade: the true client abort of the real HTTP wait durably abandons the waited inline request — one abandon fact, reason wait-aborted; guard = request-abandoned; typed pass-through; the LEGACY ask-lane disconnect stays PENDING (untouched contract); the allow-voiding abandon keeps exactly-once)' },
   { id: 'C5', name: 'restart (same DSH_HOME) reads abandoned/history (remote ledger page + listControlState: abandonments + derived statuses + full history intact)' },
   { id: 'H1', name: 'test-use porcelain EMPTY + HEAD baseline; :3080/:3180 zero-touch (read-only probes pre == post)' },
   { id: 'H2', name: 'run ports released after teardown (host + mock)' },
@@ -323,7 +330,7 @@ const WIRE_NOTES = {
   C1: 'member ask-lane (real pre-execute adapter, legacy coupling: targetInstanceId, NO subject/coupling input) + leader model-facing tools (team_list_pending_control / team_resolve_control). Durable facts cross-checked via remote team.getLedgerPage (the product wire) and the read-only team_domain.json scan.',
   C2: 'both decisions driven over the REMOTE v4 team.resolveControl endpoint (host-derived human principal). The leader notification turns are deliberately model-neutral (text only) so the remote wire is the sole decision surface.',
   C3: 'CREATED via the p6t6 test-only thin route wrapping the production control-service authority (documented gap: no product wire creates template-subject inline requests in this branch — PR-E recovery-review is the future creator). DISPLAYED via remote team.getLedgerPage + the p6t6 listControlState read-back. RESOLVED over the REMOTE v4 wire. The lane-disjointness guard probe is the production guardOperation through the thin route (a blocked probe writes no ledger fact).',
-  C4: 'leg A = a TRUE client disconnect (the kit aborts the in-flight synchronous-delegation HTTP prompt while the ask-lane wait is parked — the legacy contract: abort never fabricates an abandon; the durable request stands PENDING for the recovery paths; the observed abort-cascade outcome is recorded as evidence). leg B = the allow-voiding abandon: the invalidation request is CREATED via the p6t6 test-only thin route wrapping the production control-service authority (documented gap: no product wire in this branch creates subject-bearing requests or abandons — PR-E is the future creator), gets its pre-abandon durable ALLOW over the REMOTE v4 wire, is ABANDONED through the production abandonControlRequest authority (thin route — no remote abandon endpoint exists in this branch), the guard probe = production guardOperation (a blocked probe writes nothing), the typed CONTROL_REQUEST_ABANDONED pass-through observed over the REMOTE v4 boundary (invariant 4b), exactly-once via the typed repeat rejection + the durable ledger count.',
+  C4: 'leg A (the D.6 criterion) = the SAME-request cascade over a REAL HTTP wait: the template-subject inline request is CREATED via the p6t6 test-only thin route (documented gap: no product wire in this branch creates subject-bearing requests — PR-E is the future creator), the kit then opens the p6t6 `wait` action — the PRODUCTION awaitControlDecision wired to the client connection (req close -> AbortController) — parks on the PENDING request, and ABORTS that HTTP connection (a TRUE client disconnect, not a simulated flag). The coupling-aware cascade runs ENTIRELY in the service: it durably writes the one control-request-abandoned fact (reason wait-aborted) BEFORE settling the (now undeliverable) waiter; the kit verifies the SAME request is durably ABANDONED, zero decision/consumption, the guard blocks request-abandoned, and the late allow is rejected typed over the REMOTE v4 boundary. leg A2 = the LEGACY ask-lane disconnect (real synchronous-delegation prompt aborted mid-turn): the coupling-ABSENT request stays PENDING (the untouched contract — pinned at unit level by a4a W2 / a5a S10-S14, evidenced here on the real host). leg B = the allow-voiding abandon: the invalidation request is CREATED via the p6t6 thin route, gets its pre-abandon durable ALLOW over the REMOTE v4 wire, is ABANDONED through the production abandonControlRequest authority (thin route — no remote abandon endpoint exists in this branch), the guard probe = production guardOperation (a blocked probe writes nothing), the typed CONTROL_REQUEST_ABANDONED pass-through observed over the REMOTE v4 boundary (invariant 4b), exactly-once via the typed repeat rejection + the durable ledger count.',
   C5: 'all reads over remote endpoints: team.getLedgerPage (v1) for the full durable history; the p6t6 state route wraps teamRoot.control.listControlState (derived statuses + abandonments). No host-local file reads on this criterion.',
 }
 
@@ -615,6 +622,31 @@ async function p6t6Control(port, body, timeoutMs = 60_000) {
   return res
 }
 
+/** The ABORTABLE variant of the p6t6 driver (C4 leg A: the `wait` action
+ *  parks on the production awaitControlDecision until a decision lands OR
+ *  the CLIENT CONNECTION closes — `abort()` destroys the socket, a TRUE
+ *  client disconnect that the server observes as the request's `close`
+ *  event and turns into the bridge's signal). */
+function p6t6ControlAbortable(port, body) {
+  const ctrl = new AbortController()
+  const promise = fetch(`http://127.0.0.1:${port}/__p6t6/control/mutate`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: ctrl.signal,
+  }).then(async (res) => {
+    const t = await res.text()
+    let b = null
+    try { b = t === '' ? null : JSON.parse(t) } catch { b = { nonJsonBody: t.slice(0, 800) } }
+    return { status: res.status, body: b }
+  }).catch((error) => ({ aborted: true, error: String(error?.message ?? error).slice(0, 200) }))
+  noteTranscript({ method: '__p6t6/control/mutate', action: body?.action, params: scrubTokens(JSON.stringify(body)), abortable: true })
+  return {
+    promise,
+    abort: () => ctrl.abort(),
+  }
+}
+
 /** Poll the REMOTE ledger page (the product read plane) until a
  *  control-request-recorded fact whose payload satisfies `pred` appears
  *  (the ask-lane requests are created by the host mid-turn). `pred` routes
@@ -631,6 +663,25 @@ async function waitForControlRequest(host, pred, timeoutMs, label) {
     if (hit !== undefined) return hit.payload
     if (Date.now() >= deadline) {
       log(`control-request wait timed out: ${label}`)
+      return null
+    }
+    await new Promise((r) => setTimeout(r, 500))
+  }
+}
+
+/** Poll the REMOTE ledger page until a `control-request-abandoned` fact
+ *  for `requestId` appears (the C4 cascade writes it from the server side
+ *  after the client disconnect — bounded, so the gate stays deterministic).
+ *  Returns the full remoteControlFacts snapshot, or null on timeout. */
+async function waitForControlAbandoned(host, requestId, timeoutMs, label) {
+  const deadline = Date.now() + timeoutMs
+  for (;;) {
+    const facts = await remoteControlFacts(host)
+    if (facts.byType['control-request-abandoned'].some((f) => f.payload.requestId === requestId)) {
+      return facts
+    }
+    if (Date.now() >= deadline) {
+      log(`control-abandoned wait timed out: ${label}`)
       return null
     }
     await new Promise((r) => setTimeout(r, 500))
@@ -1461,7 +1512,7 @@ async function main() {
   let stableAfter = {}
   let testUsePost = null
   let W1 = null // the worker instance id (learned from C1's request row)
-  let rC1 = null, rC2A = null, rC2B = null, rC3 = null, rC4A = null, rC4B = null
+  let rC1 = null, rC2A = null, rC2B = null, rC3 = null, rC4A = null, rC4AL = null, rC4B = null
 
   try {
     // ── boot (create phase) ─────────────────────────────────────────────────
@@ -1735,15 +1786,120 @@ async function main() {
 
     // ── C4: disconnect -> durable abandoned, zero effect ───────────────────
     {
-      // LEG A — the TRUE client disconnect (the real ask-lane request):
-      // the kit sends the leader's sync-delegation prompt and ABORTS the
-      // HTTP request while the member's ask-lane wait is parked. Legacy
-      // contract: abort never fabricates an abandon — the durable request
-      // stands PENDING for the recovery paths.
+      // LEG A — the D.6 criterion (the round-2 fix): the SAME-request
+      // coupling-aware cascade over a REAL HTTP wait. The template-
+      // subject inline request is created via the p6t6 thin route (the
+      // documented gap: no product wire creates subject-bearing
+      // requests in this branch), the kit then parks on the PRODUCTION
+      // awaitControlDecision over the p6t6 `wait` action (the route
+      // wires the bridge's AbortController to the client connection),
+      // and ABORTS that HTTP connection — a TRUE client disconnect, not
+      // a simulated flag. The cascade runs ENTIRELY in the service: it
+      // durably abandons the SAME request FIRST, then settles the
+      // (now undeliverable) waiter.
+      const reqC4A = await p6t6Control(HOST_PORT, {
+        action: 'request',
+        rootSessionId: ROOT_P,
+        kind: 'user-approval',
+        subject: { kind: 'template', templateId: 'worker' },
+        actionName: 'parameter-permission',
+        toolName: 'bash',
+        correlation: CORR_C4A2,
+        operationFingerprint: FP_C4A2,
+        summary: SUM_C4A2,
+        executionCoupling: 'inline',
+      })
+      const errC4A = resultError(reqC4A.body)
+      check('C4', 'leg A: the template-subject INLINE request is created over the p6t6 thin route (pending, coupling inline, template subject)',
+        reqC4A.status === 200 && reqC4A.body?.ok === true
+        && reqC4A.body?.value?.status === 'pending'
+        && reqC4A.body?.value?.executionCoupling === 'inline'
+        && reqC4A.body?.value?.subject?.kind === 'template',
+        `status=${reqC4A.status} err=${JSON.stringify(errC4A)} record=${jstr(reqC4A.body?.value, 300)}`)
+      if (reqC4A.status !== 200 || reqC4A.body?.ok !== true) await dieFatal(`C4: inline cascade request creation failed: ${JSON.stringify(reqC4A.body).slice(0, 400)}`)
+      rC4A = reqC4A.body.value
+
+      // The REAL HTTP wait: the p6t6 `wait` action parks on the
+      // production awaitControlDecision; no response is sent until the
+      // wait settles or the client connection closes. The request is
+      // PENDING (no decision can land), so the park is guaranteed —
+      // then the kit ABORTS the connection (the true disconnect).
+      const c4w = p6t6ControlAbortable(HOST_PORT, {
+        action: 'wait',
+        rootSessionId: ROOT_P,
+        requestId: rC4A.requestId,
+      })
+      log(`C4: parking the real HTTP wait on ${rC4A.requestId} (p6t6 wait route — the production awaitControlDecision wired to the client connection)`)
+      await new Promise((r) => setTimeout(r, 2_500))
+      log(`C4: aborting the wait's HTTP connection (TRUE client disconnect)`)
+      c4w.abort()
+      const waitOutcome = await c4w.promise
+      log(`C4: disconnect landed (outcome=${JSON.stringify(waitOutcome).slice(0, 200)})`)
+
+      // Poll the REMOTE ledger page until the cascade's durable abandon
+      // fact lands (the server observes the close event, writes the
+      // fact, and settles the undeliverable waiter — a fast in-process
+      // ledger op; the bounded poll keeps the gate deterministic).
+      const remoteA = await waitForControlAbandoned(host, rC4A.requestId, 30_000, 'C4a cascade abandon fact (post-disconnect)')
+      const ledgerA = readControlLedger()
+      const c4aAbandons = ledgerA.abandonments.filter((f) => f.payload.requestId === rC4A.requestId)
+      check('C4', 'the disconnect durably ABANDONED the SAME inline request (the coupling-aware cascade — exactly ONE control-request-abandoned fact, reason wait-aborted)',
+        remoteA !== null
+        && derivedStatus(remoteA, rC4A.requestId) === 'abandoned'
+        && c4aAbandons.length === 1
+        && c4aAbandons[0]?.payload?.reason === 'wait-aborted',
+        `status=${remoteA === null ? 'wait-timeout' : derivedStatus(remoteA, rC4A.requestId)} abandonFacts=${c4aAbandons.length} reason=${c4aAbandons[0]?.payload?.reason}`)
+      check('C4', 'zero execution side effects after the cascade (no decision fact, no consumption fact for the abandoned request)',
+        ledgerA.decisions.filter((f) => f.payload.requestId === rC4A.requestId).length === 0
+        && ledgerA.consumptions.filter((f) => f.payload.requestId === rC4A.requestId).length === 0,
+        `decisions=${ledgerA.decisions.filter((f) => f.payload.requestId === rC4A.requestId).length} consumptions=${ledgerA.consumptions.filter((f) => f.payload.requestId === rC4A.requestId).length}`)
+      // The guard over the cascaded scope: blocked with reason
+      // `request-abandoned` (zero effect — the blocked probe writes
+      // nothing).
+      const guardC4A = await p6t6Control(HOST_PORT, {
+        action: 'guard',
+        rootSessionId: ROOT_P,
+        subject: { kind: 'template', templateId: 'worker' },
+        actionName: 'parameter-permission',
+        toolName: 'bash',
+        correlation: CORR_C4A2,
+        operationFingerprint: FP_C4A2,
+      })
+      check('C4', 'guarded-lane attempt on the cascaded-abandoned scope is blocked with reason `request-abandoned` (zero effect, zero consumption)',
+        guardC4A.status === 200 && guardC4A.body?.ok === true
+        && guardC4A.body?.value?.allowed === false
+        && guardC4A.body?.value?.reason === 'request-abandoned',
+        `guard=${JSON.stringify(guardC4A.body).slice(0, 300)}`)
+      // The late allow over the REMOTE v4 boundary: the typed
+      // CONTROL_REQUEST_ABANDONED pass-through (invariant 4b) with ZERO
+      // durable side effects.
+      const lateAllowC4A = await remoteCallReady(host, 'team.resolveControl', {
+        teamSessionId: ROOT_P,
+        requestId: rC4A.requestId,
+        decision: 'allow',
+        note: 'prd-c4a2 late allow after the disconnect cascade',
+      }, `res-c4a2-late`, 4)
+      const lateErrC4A = resultError(lateAllowC4A.body)
+      const ledgerA2 = readControlLedger()
+      check('C4', 'the typed CONTROL_REQUEST_ABANDONED passes through the REMOTE v4 boundary UNCHANGED for the late allow on the cascaded request (invariant 4b — no decision fact is written)',
+        lateErrC4A?.code === 'CONTROL_REQUEST_ABANDONED'
+        && resultData(lateAllowC4A.body) === null
+        && ledgerA2.decisions.filter((f) => f.payload.requestId === rC4A.requestId).length === 0,
+        `errCode=${lateErrC4A?.code} decisions=${ledgerA2.decisions.filter((f) => f.payload.requestId === rC4A.requestId).length}`)
+
+      // LEG A2 — the LEGACY ask-lane disconnect (the untouched
+      // contract, evidenced on the real host): the kit sends the
+      // leader's sync-delegation prompt and ABORTS the HTTP request
+      // while the member's ask-lane wait is parked. The ask-lane
+      // request is coupling-ABSENT (the production ask lane is
+      // legacy-shaped), so the cascade does not fire: abort never
+      // fabricates an abandon — the durable request stands PENDING for
+      // the recovery paths (a4a W2 / a5a S10–S14, pinned at the unit
+      // level).
       const c4p = apiPromptAbortable(host.origin, host.cookie, ROOT_P, `${MK_C4L} Delegate the C4 task to w1 SYNCHRONOUSLY.`, 'c4-delegate')
-      rC4A = await waitForControlRequest(host, (r) => String(r.summary ?? '').includes(SUM_C4A), 120_000, 'C4a ask-lane request (pre-disconnect)')
-      if (rC4A === null) await dieFatal('C4: no durable ask request for the sync-delegated bash within 120s')
-      log(`C4: ask request ${rC4A.requestId} parked — aborting the client connection (TRUE disconnect)`)
+      rC4AL = await waitForControlRequest(host, (r) => String(r.summary ?? '').includes(SUM_C4A), 120_000, 'C4a ask-lane request (pre-disconnect)')
+      if (rC4AL === null) await dieFatal('C4: no durable ask request for the sync-delegated bash within 120s')
+      log(`C4: ask request ${rC4AL.requestId} parked — aborting the client connection (TRUE disconnect)`)
       c4p.abort()
       let abortOutcome
       try {
@@ -1766,15 +1922,15 @@ async function main() {
       }
       log(`C4: disconnect observation ${JSON.stringify(disconnectObservation)}`)
 
-      const remoteA = await remoteControlFacts(host)
-      const ledgerA = readControlLedger()
-      check('C4', 'the disconnect left the LEGACY request durably PENDING (abort never fabricates an abandon — no decision, no abandon mark; the request stands for the recovery paths)',
-        derivedStatus(remoteA, rC4A.requestId) === 'pending'
-        && ledgerA.decisions.filter((f) => f.payload.requestId === rC4A.requestId).length === 0
-        && ledgerA.abandonments.filter((f) => f.payload.requestId === rC4A.requestId).length === 0,
-        `status=${derivedStatus(remoteA, rC4A.requestId)} observation=${JSON.stringify(disconnectObservation)}`)
-      check('C4', 'zero execution side effects after the disconnect (no consumption, the side-effect file was never written)',
-        ledgerA.consumptions.filter((f) => f.payload.requestId === rC4A.requestId).length === 0
+      const remoteA3 = await remoteControlFacts(host)
+      const ledgerA3 = readControlLedger()
+      check('C4', 'leg A2: the disconnect left the LEGACY ask-lane request durably PENDING (the untouched contract — abort never fabricates an abandon; no decision, no abandon mark; the request stands for the recovery paths)',
+        derivedStatus(remoteA3, rC4AL.requestId) === 'pending'
+        && ledgerA3.decisions.filter((f) => f.payload.requestId === rC4AL.requestId).length === 0
+        && ledgerA3.abandonments.filter((f) => f.payload.requestId === rC4AL.requestId).length === 0,
+        `status=${derivedStatus(remoteA3, rC4AL.requestId)} observation=${JSON.stringify(disconnectObservation)}`)
+      check('C4', 'leg A2: zero execution side effects after the disconnect (no consumption, the side-effect file was never written)',
+        ledgerA3.consumptions.filter((f) => f.payload.requestId === rC4AL.requestId).length === 0
         && !existsSync(FILE_C4A),
         `c4aFile=${existsSync(FILE_C4A)}`)
 
@@ -1916,11 +2072,11 @@ async function main() {
       // route is root-ANCHOR-scoped and cannot see the ROOT_P team.)
       const remote = await remoteControlFacts(host2)
 
-      check('C5', 'after the restart, the REMOTE ledger page carries the FULL control history: 6 recorded / 5 decided / 2 consumed / 1 abandoned (every durable fact intact)',
-        remote.byType['control-request-recorded'].length === 6
+      check('C5', 'after the restart, the REMOTE ledger page carries the FULL control history: 7 recorded / 5 decided / 2 consumed / 2 abandoned (every durable fact intact)',
+        remote.byType['control-request-recorded'].length === 7
         && remote.byType['control-decision-recorded'].length === 5
         && remote.byType['control-allow-consumed'].length === 2
-        && remote.byType['control-request-abandoned'].length === 1,
+        && remote.byType['control-request-abandoned'].length === 2,
         `recorded=${remote.byType['control-request-recorded'].length} decided=${remote.byType['control-decision-recorded'].length} consumed=${remote.byType['control-allow-consumed'].length} abandoned=${remote.byType['control-request-abandoned'].length} total=${remote.totalEntries}`)
 
       const s5 = {
@@ -1929,16 +2085,20 @@ async function main() {
         c2b: derivedStatus(remote, rC2B?.requestId),
         c3: derivedStatus(remote, rC3?.requestId),
         c4a: derivedStatus(remote, rC4A?.requestId),
+        c4al: derivedStatus(remote, rC4AL?.requestId),
         c4b: derivedStatus(remote, rC4B?.requestId),
       }
-      check('C5', 'the DERIVED request statuses after restart (from the full durable history over the REMOTE endpoints): C1/C2a/C2b/C3 `decided`, C4a `pending` (the disconnect never decided it — the pending history is intact), C4b `abandoned` (the terminal mark wins over its pre-abandon decision)',
-        s5.c1 === 'decided' && s5.c2a === 'decided' && s5.c2b === 'decided' && s5.c3 === 'decided' && s5.c4a === 'pending' && s5.c4b === 'abandoned',
+      check('C5', 'the DERIVED request statuses after restart (from the full durable history over the REMOTE endpoints): C1/C2a/C2b/C3 `decided`, C4a `abandoned` (the SAME-request cascade durably closed it — the abandon history is intact), C4a-legacy `pending` (the ask-lane disconnect never decided it — the pending history is intact), C4b `abandoned` (the terminal mark wins over its pre-abandon decision)',
+        s5.c1 === 'decided' && s5.c2a === 'decided' && s5.c2b === 'decided' && s5.c3 === 'decided' && s5.c4a === 'abandoned' && s5.c4al === 'pending' && s5.c4b === 'abandoned',
         `statuses=${JSON.stringify(s5)}`)
-      const c5ab = remote.byType['control-request-abandoned'].find((f) => f.payload.requestId === rC4B?.requestId)
-      check('C5', 'the REMOTE endpoint history returns the abandonment after restart: the C4b control-request-abandoned fact {requestId, rootSessionId, abandonedAt} is durable and readable (exactly one)',
-        c5ab !== undefined && c5ab.payload.rootSessionId === ROOT_P && typeof c5ab.payload.abandonedAt === 'string'
-        && remote.byType['control-request-abandoned'].length === 1,
-        `abandonments=${JSON.stringify(remote.byType['control-request-abandoned']).slice(0, 300)}`)
+      const c5abA = remote.byType['control-request-abandoned'].find((f) => f.payload.requestId === rC4A?.requestId)
+      const c5abB = remote.byType['control-request-abandoned'].find((f) => f.payload.requestId === rC4B?.requestId)
+      check('C5', 'the REMOTE endpoint history returns BOTH abandonments after restart: the C4a cascade fact {requestId, rootSessionId, abandonedAt, reason: wait-aborted} and the C4b explicit fact {requestId, rootSessionId, abandonedAt} are durable and readable (exactly two, one per request)',
+        c5abA !== undefined && c5abA.payload.rootSessionId === ROOT_P && typeof c5abA.payload.abandonedAt === 'string'
+        && c5abA.payload.reason === 'wait-aborted'
+        && c5abB !== undefined && c5abB.payload.rootSessionId === ROOT_P && typeof c5abB.payload.abandonedAt === 'string'
+        && remote.byType['control-request-abandoned'].length === 2,
+        `abandonments=${JSON.stringify(remote.byType['control-request-abandoned']).slice(0, 400)}`)
       const late5 = await remoteCallReady(host2, 'team.resolveControl', {
         teamSessionId: ROOT_P,
         requestId: rC4B.requestId,
@@ -2039,7 +2199,7 @@ async function main() {
       ports: { hostPort: HOST_PORT, mockPort: MOCK_PORT },
       stable: { before: stableBefore, after: stableAfter },
       criteria: criteria.map((c) => ({ ...c, wireNote: WIRE_NOTES[c.id] })),
-      wireGap: 'No product wire in this branch creates template-subject inline requests or abandons requests (the remote catalog has only team.resolveControl v4 for control). C3/C4 creation/abandon/guard ride the p6t6 test-only thin route wrapping the SINGLE production control-service authority; every DECISION and the typed CONTROL_REQUEST_ABANDONED pass-through ride the REMOTE v4 product wire. The C4 disconnect leg is a TRUE in-flight HTTP abort; the abort-cascade outcome is recorded as evidence.',
+      wireGap: 'No product wire in this branch creates template-subject inline requests or abandons requests (the remote catalog has only team.resolveControl v4 for control). C3/C4 creation/abandon/guard/wait ride the p6t6 test-only thin route wrapping the SINGLE production control-service authority; every DECISION and the typed CONTROL_REQUEST_ABANDONED pass-through ride the REMOTE v4 product wire. The C4 leg A disconnect is a TRUE in-flight HTTP abort of the REAL wait route (the production awaitControlDecision wired to the client connection), and the SAME-request cascade outcome (the durable abandon fact, reason wait-aborted) is asserted over the durable read plane; leg A2 evidences that the LEGACY ask-lane disconnect still leaves its request PENDING (the untouched contract).',
       instanceLogs: EVID.hostLogs.map((h) => ({ bootNum: h.bootNum, phase: h.phase, port: h.port })),
       fatal: null,
       exitCode,

@@ -754,10 +754,11 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
   // control-plane driver route — a thin HTTP wrapper over the SINGLE
   // production control-service authority (teamRoot.control, the
   // host-constructed service): the durable request recording
-  // (commit-before-ack), the exactly-once abandon close, and the guard's
-  // check-and-reserve all live in the SERVICE. This row adds NO control
-  // logic: it forwards the closed input, maps the typed CONTROL_* codes
-  // onto HTTP status, and reports the service result verbatim.
+  // (commit-before-ack), the exactly-once abandon close, the guard's
+  // check-and-reserve, and the SYNCHRONOUS WAIT BRIDGE (alpha.2 §9.4)
+  // all live in the SERVICE. This row adds NO control logic: it forwards
+  // the closed input, maps the typed CONTROL_* codes onto HTTP status,
+  // and reports the service result verbatim.
   // (PR-E's recovery-review flow is the future PRODUCT creator of the
   // template-subject inline request; until that wire exists in this
   // branch, the only creator of subject/coupling-bearing requests
@@ -766,7 +767,16 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
   // READ-ONLY probe for the gate: it is only ever issued against scopes
   // that resolve to a BLOCK verdict, and a blocked guardOperation writes
   // no ledger fact (only the ALLOW verdict writes the one-shot
-  // consumption).
+  // consumption). The `wait` action wires the PRODUCTION
+  // `awaitControlDecision` to the CLIENT CONNECTION: an AbortController
+  // whose `abort()` is driven by the request's `close` event (the HTTP
+  // client went away — a real disconnect, not a simulated flag). The
+  // bridge's coupling-aware abort cascade (the inline lifecycle's
+  // `abort → durable abandon/close → zero effect` node) runs ENTIRELY in
+  // the service; this row only translates "the socket closed" into the
+  // bridge's signal and reports the typed settle (which is undeliverable
+  // to a disconnected client by design — the durable effect is the
+  // point).
   ctx.effect(() => webServer.register({
     kind: 'exact',
     path: '/__p6t6/control/mutate',
@@ -784,8 +794,8 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
         return
       }
       const action = typeof body?.action === 'string' ? body.action : null
-      if (action !== 'request' && action !== 'abandon' && action !== 'guard') {
-        sendJson(res, 400, { error: 'body.action must be "request" | "abandon" | "guard"' })
+      if (action !== 'request' && action !== 'abandon' && action !== 'guard' && action !== 'wait') {
+        sendJson(res, 400, { error: 'body.action must be "request" | "abandon" | "guard" | "wait"' })
         return
       }
       try {
@@ -845,6 +855,55 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
               requestId: body.requestId,
               ...(body.reason !== undefined ? { reason: body.reason } : {}),
             })
+          } else if (action === 'wait') {
+            // The PRODUCTION wait bridge (alpha.2 §9.4): this row only
+            // translates "the HTTP client went away" (a REAL disconnect)
+            // into the bridge's AbortSignal; every control decision (the
+            // coupling-aware abort cascade included) runs in the service.
+            // A decision that lands while the client is still connected
+            // resolves the HTTP request normally; a settle after the
+            // disconnect is undeliverable by design (the durable effect
+            // is the point — the ledger, not the response, is the
+            // receipt).
+            //
+            // Disconnect detection (pre-alpha3 PR-D round-3, empirically
+            // pinned on the 0.1.7 host): the production webserver hands
+            // routes a PROTOTYPE-CHAINED CLONE of the IncomingMessage
+            // (the gzip middleware's `Object.create(req)`), and on that
+            // host neither the clone NOR the raw message emits
+            // 'close'/'aborted' when the client destroys the connection
+            // (instrumented diagnosis: the raw object's probe listener
+            // never fired, while the real socket's 'close' did). The
+            // socket is the one object the clone cannot shadow —
+            // `res.socket === req.socket`, a real net.Socket shared
+            // through the prototype chain — so its 'close' is the
+            // authoritative "the client is gone" signal. The
+            // req-level 'close' listener is kept as the plain-node
+            // path (a direct IncomingMessage emits it on abort) and
+            // both registrations drive the same idempotent abort()
+            // (the service's signal listener is `{ once: true }`), so
+            // a double fire is a no-op.
+            const waitAc = new AbortController()
+            const onClientClose = () => {
+              waitAc.abort()
+            }
+            const clientSocket = req.socket
+            req.on('close', onClientClose)
+            if (clientSocket !== undefined) {
+              clientSocket.on('close', onClientClose)
+            }
+            try {
+              outcome = await teamRoot.control.awaitControlDecision({
+                rootSessionId: targetRoot,
+                requestId: body.requestId,
+                signal: waitAc.signal,
+              })
+            } finally {
+              req.off('close', onClientClose)
+              if (clientSocket !== undefined) {
+                clientSocket.off('close', onClientClose)
+              }
+            }
           } else {
             const scope = { rootSessionId: targetRoot }
             for (const key of [
