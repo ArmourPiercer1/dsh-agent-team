@@ -1,0 +1,19 @@
+{
+  "W1": "inst-091ikim1nzhi",
+  "toolOk": true,
+  "slot": {
+    "sessionId": "session-team-child-ae670500411c54bb6228f7e2e779d5fa",
+    "mounted": true,
+    "materialization": "mounted",
+    "attempts": 1,
+    "reason": null
+  },
+  "closed": {
+    "closedAt": 1790649664411,
+    "requirementIds": [
+      "worker.mcp.web"
+    ],
+    "scope": "template:worker"
+  },
+  "pendingSeen": []
+}

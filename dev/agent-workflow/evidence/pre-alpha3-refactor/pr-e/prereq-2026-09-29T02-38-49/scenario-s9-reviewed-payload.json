@@ -1,0 +1,56 @@
+{
+  "recorded": {
+    "schemaVersion": 2,
+    "sequence": 20,
+    "rootSessionId": "session-prereq-main-prereq-2026-09-29T02-38-49",
+    "factType": "control-request-recorded",
+    "payload": {
+      "actionName": "delegate",
+      "correlation": "recovery:rt-b3a-prereq-2026-09-29T02-38-49:1",
+      "executionCoupling": "inline",
+      "kind": "user-approval",
+      "requestId": "ctrl-1j1dnz713htqfo15geqcp060",
+      "requester": {
+        "instanceId": "inst-leader",
+        "kind": "instance",
+        "role": "leader"
+      },
+      "reviewPayload": {
+        "action": "delegate",
+        "blockedScopes": [
+          "template:worker"
+        ],
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance"
+        },
+        "downedCapabilitySubjects": [
+          "mcp_web"
+        ],
+        "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+        "reducedAuthority": {
+          "externalHardCeiling": "absolute (never bypassed)",
+          "otherwise": "unchanged (the original permissions apply)",
+          "policy": "reduced original authority (plan §E.9)",
+          "unavailableSubjects": [
+            "mcp_web"
+          ]
+        },
+        "requestedOperation": "one recovery attempt of 'delegate' on template 'worker'",
+        "rootSessionId": "session-prereq-main-prereq-2026-09-29T02-38-49",
+        "schema": "dsh-agent-team/recovery-dispatch/v1",
+        "templateId": "worker"
+      },
+      "reviewPayloadDigest": "sha256:becdd97c2fd90668197dca2dd007992447f66e5b9e4a160ad53d4296ff370891",
+      "subject": {
+        "kind": "template",
+        "templateId": "worker"
+      },
+      "summary": "recovery dispatch: one reviewed attempt of 'delegate' on the blocked scope(s) [template:worker] on the reduced original authority"
+    },
+    "operationId": null,
+    "createdAt": "2026-09-29T02:38:58.821Z"
+  },
+  "digestOk": true,
+  "shapeOk": true
+}

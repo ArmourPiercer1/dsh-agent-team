@@ -1,0 +1,13 @@
+{
+  "W1": null,
+  "toolOk": false,
+  "slot": {
+    "sessionId": "session-prereq-boot-prereq-2026-09-29T02-06-05",
+    "mounted": false,
+    "materialization": "pending",
+    "attempts": null,
+    "reason": null
+  },
+  "closed": null,
+  "pendingSeen": []
+}

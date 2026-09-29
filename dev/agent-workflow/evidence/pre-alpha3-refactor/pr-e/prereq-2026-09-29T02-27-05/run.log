@@ -1,0 +1,401 @@
+[2026-09-29T02:27:05.488Z] === pre-alpha3 PR-E E.12 real-host gate (14 scenarios) prereq-2026-09-29T02-27-05 ===
+[2026-09-29T02:27:05.488Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery
+[2026-09-29T02:27:05.489Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-09-29T02:27:05.489Z] world=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T02-27-05
+[2026-09-29T02:27:05.489Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-09-29T02-27-05
+[2026-09-29T02:27:05.504Z] stable pre-probes: 3080=401 3180=401
+[2026-09-29T02:27:05.529Z] [H1] PASS — test-use pristine BEFORE :: head=46a7f68b0922
+[2026-09-29T02:27:05.532Z] ports: host=3182 mock=3497 mcpLeaderreq=3491 mcpWeb=3493
+[2026-09-29T02:27:05.532Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T02-27-05 blueprints=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T02-27-05/blueprints
+[2026-09-29T02:27:05.538Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-09-29T02:27:05.540Z] mini MCP mcp_leaderreq up on 127.0.0.1:3491
+[2026-09-29T02:27:05.552Z] mini MCP mcp_web up on 127.0.0.1:3493
+[2026-09-29T02:27:05.552Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-29T02:27:06.555Z] throwaway boot OK: http://127.0.0.1:3182/?token=REDACTED
+[2026-09-29T02:27:06.649Z] web profile ensured (throwaway boot if first use)
+[2026-09-29T02:27:06.650Z] B1-CREATE: patch (bootPhase=create, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[]) + directive (boot=1) written
+[2026-09-29T02:27:07.934Z] B1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:27:07.937Z] B1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:27:08.018Z] B1-CREATE: row ready — toolCount=13
+[2026-09-29T02:27:08.067Z] remote team.create v1 [t13-create] -> 200 ok=true
+[2026-09-29T02:27:08.067Z] T13 (v1 frozen) created: durable={"teamSession":{"schemaVersion":1,"rootSessionId":"session-prereq-v1-prereq-2026-09-29T02-27-05","blueprint":{"blueprintId":"team.mpr-anchor","revision":"1","contentHash":"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37"},"createdAt":"2026-09-29T02:27:08.037Z","generation":1,
+[2026-09-29T02:27:08.077Z] remote intent.probe v1 [s1-probe] -> 200 ok=true
+[2026-09-29T02:27:08.077Z] [S1] PASS — all-ready cell: intent.probe(T) — team scope OPEN (both team requirements PASS) :: status=OPEN reqs=["team.mcp.repo=PASS","team.mcp.leaderreq=PASS"]
+[2026-09-29T02:27:08.124Z] remote team.create v1 [t-create] -> 200 ok=true
+[2026-09-29T02:27:08.125Z] T created: durable={"teamSession":{"schemaVersion":1,"rootSessionId":"session-prereq-main-prereq-2026-09-29T02-27-05","blueprint":{"blueprintId":"team.prereq-main","revision":"1","contentHash":"sha256:e001cd7af2ce12da4d7f7461134f8cc99f25c6629d169e5855cd4d54c2c128cb"},"createdAt":"2026-09-29T02:27:08.090Z","generation"
+[2026-09-29T02:27:08.162Z] remote team.create v1 [t2-create] -> 200 ok=true
+[2026-09-29T02:27:08.162Z] T2 created
+[2026-09-29T02:27:08.345Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:27:08.768Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:08.768Z] [S1] PASS — all-ready admission: delegate T->worker EXECUTED (no control request, worker DONE) :: toolOk=true targetInstanceId=? doneWitness=true pendingControlRequests=0
+[2026-09-29T02:27:08.923Z] p6t6 tool team_delegate as=session-prereq-iso-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:27:09.372Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:09.373Z] [S14] PASS — baseline: T2 delegate EXECUTED in the fresh world (per-root state initialized disjoint) :: toolOk=true doneWitness=true
+[2026-09-29T02:27:09.449Z] B1-CREATE: stopped (killed=true portFree=true)
+[2026-09-29T02:27:09.449Z] [S13] PASS — frozen v1 under PR-E code: registry contentHash == pre-PR-E constant + source byte-exact :: hash=sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37 expected=sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37
+[2026-09-29T02:27:09.449Z] [S13] PASS — frozen v1 under PR-E code: team_sessions blueprint hash == pre-PR-E constant :: sessionHash=sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37
+[2026-09-29T02:27:09.450Z] B2-RESUME: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=false"], mcp=[]) + directive (boot=2) written
+[2026-09-29T02:27:10.715Z] B2-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:27:10.720Z] B2-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:27:10.799Z] B2-RESUME: row ready — toolCount=13
+[2026-09-29T02:27:10.809Z] remote team.listRoots v3 [list-roots] -> 200 ok=true
+[2026-09-29T02:27:10.823Z] remote team.getProjection v6 [t13-proj] -> 200 ok=true
+[2026-09-29T02:27:10.823Z] [S13] PASS — cold resume (B2): T13 listed + projection works under the PR-E code :: roots=4 hasT13=true projErr=none
+[2026-09-29T02:27:10.829Z] remote compatibility.get v1 [compat-get] -> 200 ok=true
+[2026-09-29T02:27:10.988Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:27:11.435Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:11.435Z] [S2] PASS — auto-degraded: optional (complete:false) mcp down -> delegate EXECUTED, no control request (S1 degraded cell) :: toolOk=true doneWitness=true pendingControlRequests=0
+[2026-09-29T02:27:11.498Z] B2-RESUME: stopped (killed=true portFree=true)
+[2026-09-29T02:27:11.499Z] world: seeded optional-requirement-accepted seq=15 root=session-prereq-main-prereq-2026-09-29T02-27-05 payload={"requirementId":"lead.mcp.signal","generation":1,"consentedAt":1790648831498,"consentedBy":"kit-e12"}
+[2026-09-29T02:27:11.500Z] B2B-RESUME: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=false"], mcp=[]) + directive (boot=3) written
+[2026-09-29T02:27:12.762Z] B2B-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:27:12.764Z] B2B-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:27:12.847Z] B2B-RESUME: row ready — toolCount=13
+[2026-09-29T02:27:12.859Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:12.859Z] [S2] PASS — durable consent fact readable with EXACT payload (requirementId/generation/consentedAt/consentedBy) :: consent={"consentedAt":1790648831498,"consentedBy":"kit-e12","generation":1,"requirementId":"lead.mcp.signal"}
+[2026-09-29T02:27:13.030Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:27:13.464Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:13.464Z] [S2] PASS — consent is a record, not a precondition: delegate still EXECUTED (gate ignores consents) :: toolOk=true pendingControlRequests=0
+[2026-09-29T02:27:13.534Z] B2B-RESUME: stopped (killed=true portFree=true)
+[2026-09-29T02:27:13.535Z] B3-RESUME: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=false","mcp_signal=true"], mcp=[]) + directive (boot=4) written
+[2026-09-29T02:27:15.045Z] B3-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:27:15.048Z] B3-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:27:15.125Z] B3-RESUME: row ready — toolCount=13
+[2026-09-29T02:27:15.136Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:15.740Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:15.756Z] remote team.resolveControl v4 [resolve-b3a-ctrl-1oq] -> 200 ok=true
+[2026-09-29T02:27:16.049Z] ORACLE worker b3a round 0: read
+[2026-09-29T02:27:16.086Z] ORACLE worker b3a round 1: bash
+[2026-09-29T02:27:16.361Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:16.376Z] remote team.resolveControl v4 [resolve-b3a-ctrl-0o1] -> 200 ok=true
+[2026-09-29T02:27:16.689Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:27:16.980Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:16.984Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:16.985Z] [S9] FAIL — exact reviewed payload: recovery-dispatch/v1 shape + reducedAuthority + effect + kind + inline + correlation :: shape={"schema":"dsh-agent-team/recovery-dispatch/v1","op":"one recovery attempt of 'delegate' on template 'worker'","blocked":["template:worker"],"downed":["mcp_web"],"subject":{"kind":"template","templateId":"worker"},"kind":"user-approval","coupling":"inline","correlation":"recovery:rt-b3a-prereq-2026-09-29T02-27-05:1"}
+[2026-09-29T02:27:16.985Z] [S9] PASS — exact reviewed payload: reviewPayloadDigest == sha256(canonicalJson(reviewPayload)) recomputed :: digest=sha256:2314dd6f736c16ed09c66aeb04f1b61e90267abda0375bf62a108fc82b513909
+[2026-09-29T02:27:16.986Z] [S7] PASS — degraded member controlled bash: read + bash tool calls witnessed in the worker turn :: readWitness=true bashWitness=true doneWitness=true
+[2026-09-29T02:27:16.986Z] [S7] PASS — recovery keeps bash ASK (negative #2): a non-recovery approval request opened + the kit allowed it + work completed :: askDecision={"requestId":"ctrl-0o1owhr0ufgjp41l8od0l1bi","class":"ask","decision":"allow","resolveStatus":200,"resolveError":null}
+[2026-09-29T02:27:16.986Z] [S6] FAIL — human-reviewed recovery ALLOW: the recovery decision resolved + the work EXECUTED on the reduced original authority (W1 created) :: recoveryDecision={"requestId":"ctrl-1oq5ulv175y4es1oji4p5002","class":"recovery","decision":"allow","resolveStatus":200,"resolveError":null} toolOk=true W1=null
+[2026-09-29T02:27:16.986Z] [S1] PASS — worker-down cell: delegate blocked on template:worker (complete:true) -> recovery-incident-opened {scope, requirementIds [worker.mcp.web]} :: incident={"openedAt":1790648835940,"requirementIds":["worker.mcp.web"],"scope":"template:worker"}
+[2026-09-29T02:27:16.986Z] [S7] PASS — W1 materialization: mcp_web ABSENT from the worker mcp view (the row carries no web fiber in B3 — reduced original authority) :: W1=null (the row config mcpServers=[] in B3 — the absence is structural)
+[2026-09-29T02:27:17.128Z] p6t6 tool team_delegate as=session-prereq-iso-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:27:17.591Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:17.591Z] [S14] PASS — under outage: T2 delegate EXECUTED while T is in a blocked-scope incident (shared world facts, per-root gate) :: toolOk=true doneWitness=true
+[2026-09-29T02:27:17.594Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:18.199Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:18.215Z] remote team.resolveControl v4 [resolve-b3b-ctrl-0ai] -> 200 ok=true
+[2026-09-29T02:27:18.375Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:27:18.819Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:18.823Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:18.823Z] [S10] PASS — DENY -> typed zero-effect block (the tool error cites the abandoned-NO — denied control decision) :: toolOk=true rejectedHead=TeamRuntime: the recovery dispatch was denied by the reviewer — zero durable effect (the operation remains blocked)
+[2026-09-29T02:27:18.823Z] [S10] PASS — DENY durable: control-decision-recorded {deny} + NO new member instance + NO new incident :: decision={"decider":{"humanId":"session-prereq-main-prereq-2026-09-29T02-27-05","kind":"human"},"decision":"deny","note":"kit e12 b3b (deny)","requestId":"ctrl-0aitdjt0ncbe421fip0gf10z","requestSequence":34,"s members 0->0 incidents 1->1
+[2026-09-29T02:27:18.823Z] B3C: firing the abort leg — the kit will NOT resolve the recovery request (120s host-side AbortSignal)
+[2026-09-29T02:27:19.428Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:20.033Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:20.638Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:21.242Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:21.846Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:22.451Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:23.056Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:23.662Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:24.267Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:24.873Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:25.478Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:26.083Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:26.688Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:27.294Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:27.899Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:28.504Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:29.110Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:29.716Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:30.321Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:30.926Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:31.530Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:32.135Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:32.739Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:33.344Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:33.948Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:34.553Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:35.158Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:35.769Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:36.374Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:36.978Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:37.584Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:38.189Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:38.794Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:39.399Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:40.004Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:40.609Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:41.214Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:41.819Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:42.423Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:43.028Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:43.633Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:44.239Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:44.844Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:45.449Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:46.054Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:46.659Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:47.264Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:47.869Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:48.474Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:49.080Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:49.686Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:50.291Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:50.895Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:51.501Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:52.107Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:52.712Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:53.317Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:53.922Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:54.526Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:55.131Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:55.735Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:56.340Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:56.945Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:57.550Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:58.155Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:58.760Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:59.365Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:27:59.969Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:00.575Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:01.179Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:01.784Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:02.388Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:02.993Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:03.598Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:04.204Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:04.809Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:05.415Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:06.020Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:06.626Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:07.231Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:07.837Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:08.442Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:09.047Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:09.652Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:10.256Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:10.861Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:11.466Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:12.071Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:12.676Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:13.281Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:13.886Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:14.491Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:15.097Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:15.702Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:16.307Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:16.911Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:17.516Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:18.121Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:18.726Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:19.331Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:19.936Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:20.541Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:21.146Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:21.750Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:22.355Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:22.960Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:23.566Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:24.170Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:24.775Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:25.380Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:25.985Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:26.590Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:27.195Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:27.801Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:28.406Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:29.010Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:29.615Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:30.219Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:30.824Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:31.428Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:32.034Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:32.639Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:33.244Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:33.849Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:34.453Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:35.059Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:35.663Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:36.268Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:36.873Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:37.479Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:38.084Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:38.689Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:39.293Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:39.898Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:40.503Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:41.108Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:41.712Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:42.317Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:42.922Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:43.527Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:44.132Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:44.737Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:45.342Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:45.947Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:46.552Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:47.157Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:47.762Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:48.367Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:48.971Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:49.577Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:50.182Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:50.787Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:51.392Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:51.997Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:52.602Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:53.208Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:53.813Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:54.419Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:55.024Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:55.629Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:56.233Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:56.839Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:57.443Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:58.046Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:58.651Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:59.256Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:28:59.861Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:00.466Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:01.070Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:01.675Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:02.279Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:02.884Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:03.488Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:04.093Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:04.697Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:05.304Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:05.912Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:06.518Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:07.122Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:07.726Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:08.331Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:08.936Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:09.541Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:10.146Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:10.751Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:11.355Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:11.960Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:12.565Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:13.171Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:13.775Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:14.380Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:14.985Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:15.589Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:16.193Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:16.797Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:17.402Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:18.007Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:18.612Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:18.844Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T02-27-05 -> 200 ok=false err=tool call aborted
+[2026-09-29T02:29:19.217Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:19.220Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:19.220Z] [S10] FAIL — abort -> typed zero-effect block after the 120s seam (controlDecision abandoned; elapsed within 110-170s) :: elapsedMs=120394 rejectedHead=
+[2026-09-29T02:29:19.220Z] [S10] PASS — abort durable: control-request-abandoned fact recorded for the b3c request :: abandoned={"abandonedAt":"2026-09-29T02:29:18.834Z","reason":"CONTROL_WAIT_ABORTED","requestId":"ctrl-0ud85ov1yfao7w1tayfbx18a","rootSessionId":"session-prereq-main-prereq-2026-09-29T02-27-05"}
+[2026-09-29T02:29:19.228Z] remote team.resolveControl v4 [b3c-late-allow] -> 200 ok=false code=internal-error
+[2026-09-29T02:29:19.228Z] [S10] PASS — later ALLOW on the abandoned request is REJECTED (terminal) :: lateErr=internal-error :: internal error in remote handler
+[2026-09-29T02:29:19.232Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:19.235Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:19.235Z] [S14] PASS — per-root durable isolation: T carries the template:worker incident; T2 ledger has ZERO incident/control facts :: T incidents=1 T2 incidents=0 T2 control=0
+[2026-09-29T02:29:19.327Z] B3-RESUME: stopped (killed=true portFree=true)
+[2026-09-29T02:29:19.327Z] B4-RESUME: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[{"name":"mcp_web","port":3493}]) + directive (boot=5) written
+[2026-09-29T02:29:20.597Z] B4-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:29:20.599Z] B4-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:29:20.674Z] B4-RESUME: row ready — toolCount=13
+[2026-09-29T02:29:20.689Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:29:20.720Z] p6t6 tool team_follow_up as=session-prereq-main-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:29:21.295Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:21.452Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:21.452Z] [S8] FAIL — restored -> next boundary NORMAL: follow-up on W1 EXECUTED with NO recovery correlation / NO dispatch (E.10) :: toolOk=false pendingControlRequests=0
+[2026-09-29T02:31:21.452Z] [S8] FAIL — E.10 exit record: recovery-incident-closed {scope template:worker, requirementIds [worker.mcp.web]} + NO new incident :: closed=null newIncidents=0
+[2026-09-29T02:31:21.452Z] [S8] FAIL — materialization succeeds: mcp_web MOUNTED on the next boundary + the wire witness pong :: slot={"sessionId":"session-prereq-boot-prereq-2026-09-29T02-27-05","mounted":false,"materialization":"pending","attempts":null,"reason":null} pongWitness=false
+[2026-09-29T02:31:21.517Z] B4-RESUME: stopped (killed=true portFree=true)
+[2026-09-29T02:31:21.517Z] [S8] PASS — no durable recovery flag: the team_sessions row + ledger carry NO stored recovery state (only the incident facts) :: sessionRowKeys=["blueprint","createdAt","defaultWorkspace","generation","rootSessionId","schemaVersion"] storedFlag=false
+[2026-09-29T02:31:21.518Z] B5-RESUME: patch (bootPhase=resume, facts=["mcp_repo=false","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[]) + directive (boot=6) written
+[2026-09-29T02:31:22.786Z] B5-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:31:22.816Z] B5-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:31:22.895Z] B5-RESUME: row ready — toolCount=13
+[2026-09-29T02:31:22.909Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:22.934Z] remote team.admitInitialWork v2 [s4-admit-b5] -> 200 ok=false code=TEAM_RUNTIME_COMPATIBILITY_BLOCKED
+[2026-09-29T02:31:22.934Z] [S4] PASS — admitInitialWork (team down) -> COMPATIBILITY_BLOCKED {status BLOCKED_FATAL, gateReason requiredScopeDown, blockedScopes [team], source requirement-gate} :: code=TEAM_RUNTIME_COMPATIBILITY_BLOCKED details={"rootSessionId":"session-prereq-main-prereq-2026-09-29T02-27-05","status":"BLOCKED_FATAL","gateReason":"requiredScopeDown","blockedScopes":["team"],"blockingRequirementIds":["team.mcp.repo"],"unavailableSubjects":["mcp_repo"],"source":"requirement-gate","recoveryDispatchAvailable":true}
+[2026-09-29T02:31:22.939Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:22.939Z] [S4] PASS — admitInitialWork offers NO recovery dispatch (the typed block stands on that path) :: newControlRequests=0
+[2026-09-29T02:31:23.545Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:23.561Z] remote team.resolveControl v4 [resolve-b5-ctrl-1sx] -> 200 ok=true
+[2026-09-29T02:31:23.739Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:31:24.166Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:24.170Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:24.170Z] [S1] PASS — team-down cell: delegate T->helper blocked on the TEAM scope (requiredScopeDown [team]) — the S5 surface :: blockedScopes=["team"] downed=["mcp_repo"]
+[2026-09-29T02:31:24.170Z] [S10] PASS — team-scope DENY: zero-effect block with full gate details (blockedScopes [team], source requirement-gate, controlDecision deny) :: denyDecision=ctrl-1sxpdr80g2bbch0rkhhw21mf
+[2026-09-29T02:31:24.170Z] [S5] PASS — leader required MCP down (team-scope model): the incident scope is TEAM with requirementIds [team.mcp.leaderreq-family] — the leaderreq outage blocks the team scope :: teamIncident=null (B5 outage subject = mcp_repo; the leaderreq cell is exercised in B7)
+[2026-09-29T02:31:24.229Z] B5-RESUME: stopped (killed=true portFree=true)
+[2026-09-29T02:31:24.229Z] world: seeded template-availability-set seq=40 root=session-prereq-main-prereq-2026-09-29T02-27-05 payload={"templateId":"worker","available":false,"at":1790649084229}
+[2026-09-29T02:31:24.230Z] B6-RESUME: patch (bootPhase=resume, facts=["mcp_repo=false","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[]) + directive (boot=7) written
+[2026-09-29T02:31:25.741Z] B6-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:31:25.743Z] B6-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:31:25.819Z] B6-RESUME: row ready — toolCount=13
+[2026-09-29T02:31:25.867Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:31:26.434Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:26.435Z] [S3] PASS — template disable -> gateReason templateDisabled (availability, not policy — negative #9) :: rejectedHead=TeamRuntime: the targeted template is disabled — its work cannot start (availability, not a policy denial; re-enable the template or fix + recheck its requirements)
+[2026-09-29T02:31:26.444Z] remote team.admitInitialWork v2 [s4-admit-b6] -> 200 ok=false code=TEAM_RUNTIME_COMPATIBILITY_BLOCKED
+[2026-09-29T02:31:26.444Z] [S4] PASS — disable cannot bypass: admitInitialWork STILL blocked requiredScopeDown [team] (the team scope is independent of template availability) :: details={"rootSessionId":"session-prereq-main-prereq-2026-09-29T02-27-05","status":"BLOCKED_FATAL","gateReason":"requiredScopeDown","blockedScopes":["team"],"blockingRequirementIds":["team.mcp.repo"],"unavailableSubjects":["mcp_repo"],"source":"requirement-gate","recoveryDispatchAvailable":true}
+[2026-09-29T02:31:26.504Z] B6-RESUME: stopped (killed=true portFree=true)
+[2026-09-29T02:31:26.505Z] B7-RESUME: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=false","mcp_web=true","mcp_signal=true"], mcp=[]) + directive (boot=8) written
+[2026-09-29T02:31:27.791Z] B7-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:31:27.799Z] B7-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:31:27.874Z] B7-RESUME: row ready — toolCount=13
+[2026-09-29T02:31:28.490Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:28.508Z] remote team.resolveControl v4 [resolve-b7-ctrl-14r] -> 200 ok=true
+[2026-09-29T02:31:28.914Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:31:29.114Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:29.119Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:29.119Z] [S5] PASS — leader required MCP down: team scope BLOCKED (blockedScopes [team], downedCapabilitySubjects [mcp_leaderreq]) -> Recovery :: blocked=["team"] downed=["mcp_leaderreq"]
+[2026-09-29T02:31:29.120Z] [S6] FAIL — human-reviewed recovery (S5 cell): ALLOW -> the recovery attempt EXECUTED (W3 helper created) on the reduced original authority; incident-opened scope team [team.mcp.leaderreq] :: toolOk=true W3=null doneWitness=true incident={"openedAt":1790649088700,"requirementIds":["team.mcp.leaderreq"],"scope":"team"}
+[2026-09-29T02:31:29.120Z] [S5] PASS — E.9 reduced authority: the review payload reducedAuthority.unavailableSubjects == [mcp_leaderreq] (the other permissions run as the original) :: reducedAuthority={"externalHardCeiling":"absolute (never bypassed)","otherwise":"unchanged (the original permissions apply)","policy":"reduced original authority (plan §E.9)","unavailableSubjects":["mcp_leaderreq"]}
+[2026-09-29T02:31:29.193Z] B7-RESUME: stopped (killed=true portFree=true)
+[2026-09-29T02:31:29.194Z] B8-RESUME: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[{"name":"mcp_leaderreq","port":3491}]) + directive (boot=9) written
+[2026-09-29T02:31:30.457Z] B8-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:31:30.465Z] B8-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:31:30.542Z] B8-RESUME: row ready — toolCount=13
+[2026-09-29T02:31:30.556Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:30.795Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:31:31.162Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:31.172Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:31.172Z] [S8] PASS — team-scope exit: delegate T->helper NORMAL (no recovery correlation, no dispatch) — E.10 for the team scope :: toolOk=true pendingControlRequests=0
+[2026-09-29T02:31:31.172Z] [S8] PASS — team incident CLOSED (recovery-incident-closed scope team) + mcp_leaderreq MOUNTED on the leader boundary :: closed={"closedAt":1790649090638,"requirementIds":["team.mcp.leaderreq"],"scope":"team"} slot={"sessionId":"session-prereq-main-prereq-2026-09-29T02-27-05","mounted":true,"materialization":"mounted","attempts":1,"reason":null}
+[2026-09-29T02:31:31.181Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:31:31.777Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:31.777Z] [S11] PASS — restart persists: the seeded worker disable still blocks after 7 restarts (templateDisabled on the fresh evaluation) :: rejectedHead=TeamRuntime: the targeted template is disabled — its work cannot start (availability, not a policy denial; re-enable the template or fix + recheck its requirements)
+[2026-09-29T02:31:31.778Z] [S11] PASS — restart persists: BOTH seeded facts (consent + disable) are readable in the T ledger after all restarts :: consents=1 disable={"at":1790649084229,"available":false,"templateId":"worker"}
+[2026-09-29T02:31:31.781Z] remote compatibility.get v1 [compat-get] -> 200 ok=true
+[2026-09-29T02:31:31.781Z] [S11] PASS — readiness resets: the team-scope compatibility aggregate was RECOMPUTED across boots (fresh recordedAt; status matches the B8 world) :: b8=OPEN b2=OPEN recordedAt b2=2026-09-29T02:27:08.169Z -> b8=2026-09-29T02:31:30.626Z
+[2026-09-29T02:31:31.854Z] B8-RESUME: stopped (killed=true portFree=true)
+[2026-09-29T02:31:31.854Z] B9-RESUME: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true","standard=true"], mcp=[]) + directive (boot=10) written
+[2026-09-29T02:31:33.131Z] B9-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:31:33.149Z] B9-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:31:33.226Z] B9-RESUME: row ready — toolCount=13
+[2026-09-29T02:31:33.249Z] remote intent.probe v1 [s12a-probe] -> 200 ok=true
+[2026-09-29T02:31:33.249Z] [S12] PASS — ptc standard observed (correct open): probe(T9) persona requirement PASS (standard composes) :: persona={"requirementId":"team.persona.standard","type":"persona","complete":true,"outcome":"PASS","reasonCode":"SATISFIED","detail":"all 1 required subject(s) available","unavailableSubjects":[],"mismatchFingerprint":null,"acknowledgement":null} status=OPEN
+[2026-09-29T02:31:33.301Z] remote team.create v1 [t9-create] -> 200 ok=true
+[2026-09-29T02:31:33.527Z] p6t6 tool team_delegate as=session-prereq-persona-prereq-2026-09-29T02-27-05 -> 200 ok=true
+[2026-09-29T02:31:33.907Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-29T02:31:33.907Z] [S12] PASS — ptc standard observed: T9 created + delegate EXECUTED (the required standard is met — the honest open) :: toolOk=true doneWitness=true
+[2026-09-29T02:31:33.977Z] B9-RESUME: stopped (killed=true portFree=true)
+[2026-09-29T02:31:33.977Z] B9B-RESUME: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true","standard=false"], mcp=[]) + directive (boot=11) written
+[2026-09-29T02:31:35.256Z] B9B-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T02:31:35.273Z] B9B-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T02:31:35.349Z] B9B-RESUME: row ready — toolCount=13
+[2026-09-29T02:31:35.382Z] remote team.admitInitialWork v2 [s12b-admit] -> 200 ok=false code=TEAM_RUNTIME_COMPATIBILITY_BLOCKED
+[2026-09-29T02:31:35.382Z] [S12] PASS — ptc absent (dynamic disabled): admitInitialWork(T9) blocked — the required standard is NOT met by the absent observation (NO false open) :: details={"rootSessionId":"session-prereq-persona-prereq-2026-09-29T02-27-05","status":"BLOCKED_FATAL","gateReason":"requiredScopeDown","blockedScopes":["team"],"blockingRequirementIds":["team.persona.standard"],"unavailableSubjects":["standard"],"source":"requirement-gate","recoveryDispatchAvailable":true}
+[2026-09-29T02:31:35.391Z] remote intent.probe v1 [s12b-probe] -> 200 ok=true
+[2026-09-29T02:31:35.391Z] [S12] PASS — ptc absent: fresh evaluation FATAL — persona requirement outcome FATAL, reasonCode PERSONA_INCOMPATIBLE (the BARE lane — no `complete` fact present; the PR #22 typing) :: status=BLOCKED_FATAL persona={"requirementId":"team.persona.standard","type":"persona","complete":true,"outcome":"FATAL","reasonCode":"PERSONA_INCOMPATIBLE","detail":"complete:true persona requirement unmet: required kind(s) standard not observed — the world provides no persona section that composes (structural FATAL, not downg
+[2026-09-29T02:31:35.397Z] remote compatibility.get v1 [compat-get] -> 200 ok=true
+[2026-09-29T02:31:35.397Z] [S12] PASS — ptc absent: the durable team-scope aggregate of T9 is BLOCKED_FATAL (counts.fatal >= 1) :: status=BLOCKED_FATAL counts={"pass":0,"warning":0,"fatal":1,"unackedWarning":0,"staleAcknowledgement":0}
+[2026-09-29T02:31:35.456Z] B9B-RESUME: stopped (killed=true portFree=true)
+[2026-09-29T02:31:35.481Z] [H1] PASS — test-use pristine AFTER (porcelain empty + HEAD baseline; the worker bash was a no-op echo) :: post statusEmpty=true diffEmpty=true head=46a7f68b0922
+[2026-09-29T02:31:35.486Z] [H1] PASS — :3080/:3180 ZERO-TOUCH (read-only probes pre == post) :: before=401,401 after=401,401
+[2026-09-29T02:31:35.487Z] [H2] PASS — run ports released after teardown (worldCleaned=true on PASS only) :: portsHeld=[] worldCleaned=false
+[2026-09-29T02:31:35.537Z] evidence scrubbed: 13 file(s) rewritten (sk- token redactions)
+[2026-09-29T02:31:35.551Z] VERDICT: FAIL — 4 criterion(ia) failed: S6, S8, S9, S10
+[2026-09-29T02:31:35.551Z] world RETAINED at /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T02-27-05 (non-zero exit protocol)

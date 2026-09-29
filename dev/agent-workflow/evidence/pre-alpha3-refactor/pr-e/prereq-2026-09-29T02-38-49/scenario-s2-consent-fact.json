@@ -1,0 +1,18 @@
+{
+  "consents": [
+    {
+      "schemaVersion": 2,
+      "sequence": 15,
+      "rootSessionId": "session-prereq-main-prereq-2026-09-29T02-38-49",
+      "factType": "optional-requirement-accepted",
+      "payload": {
+        "consentedAt": 1790649535347,
+        "consentedBy": "kit-e12",
+        "generation": 1,
+        "requirementId": "lead.mcp.signal"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-29T02:38:55.347Z"
+    }
+  ]
+}

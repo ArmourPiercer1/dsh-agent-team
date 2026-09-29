@@ -1,0 +1,13 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3182/?token=REDACTED
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: store 'session_bindings' operation 'get' was rejected: the TeamDomain is closed
+    at normalizeSeamError (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/storage/schema/errors.js:148:16)
+    at SessionBindingsRepository.readRow (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/storage/repositories/base.js:76:19)
+    at SessionBindingsRepository.putRecord (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/storage/repositories/base.js:136:31)
+    at SessionBindingsRepository.put (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/storage/repositories/session-bindings.js:56:20)
+    at Object.putSessionBinding (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/runtime/root-binding/write-port.js:33:49)
+    at bindFreshTeamRoot (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/runtime/root-binding/fresh-root.js:137:41)
+    at async createAndStartTeam (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/runtime/src/plugin/root.js:1134:24)
+    at async Object.boot (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/runtime/src/plugin/root.js:1839:17)
+    at async bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/runtime/src/plugin/host.js:1352:13)

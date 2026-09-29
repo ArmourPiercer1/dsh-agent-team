@@ -1,0 +1,226 @@
+{
+  "kit": "pr-e-requirement-recovery-smoke.mjs",
+  "runStamp": "prereq-2026-09-29T02-05-02",
+  "verdict": "PASS",
+  "summary": "B2B-RESUME: row setup failed — setupError: row '15' of store 'ledger' is not in canonical byte form; log tail:\n[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\n[dsh-agent-team] bootstrap FAILED: TeamDomainError: row '15' of store 'ledger' is not in canonical byte form\n    at teamDomainError (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/storage/schema/errors.js:84:12)\n    at LedgerRepository.readRecordFromRaw (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/storage/repositories/base.js:105:19)\n    at LedgerRepository.list (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/storage/repositories/ledger.js:174:31)\n    at Object.listGranted (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/runtime/src/plugin/host.js:1272:51)\n    at TeamArtifactAuthority.rebuildFromLedger (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/runtime/artifact-read/authority.js:243:49)\n    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/runtime/src/plugin/host.js:1280:33)\ndsh web: http://127.0.0.1:3182/?token=REDACTED\n",
+  "world": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T02-05-02",
+  "testUse": {
+    "pre": {
+      "head": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    }
+  },
+  "scenarios": {
+    "s13-create": {
+      "data": {
+        "path": "fresh-root",
+        "durable": {
+          "teamSession": {
+            "schemaVersion": 1,
+            "rootSessionId": "session-prereq-v1-prereq-2026-09-29T02-05-02",
+            "blueprint": {
+              "blueprintId": "team.mpr-anchor",
+              "revision": "1",
+              "contentHash": "sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37"
+            },
+            "createdAt": "2026-09-29T02:05:05.264Z",
+            "generation": 1,
+            "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+          },
+          "binding": {
+            "schemaVersion": 1,
+            "kind": "team-root",
+            "sessionId": "session-prereq-v1-prereq-2026-09-29T02-05-02"
+          },
+          "wrote": true,
+          "leaderRow": {
+            "schemaVersion": 2,
+            "rootSessionId": "session-prereq-v1-prereq-2026-09-29T02-05-02",
+            "instanceId": "inst-leader",
+            "templateId": "leader",
+            "label": "leader",
+            "createdAt": "2026-09-29T02:05:05.274Z",
+            "activityVersion": 1
+          }
+        },
+        "bind": {
+          "requested": "fresh-root",
+          "bound": true,
+          "installed": true,
+          "identity": {
+            "kind": "root",
+            "sessionId": "session-prereq-v1-prereq-2026-09-29T02-05-02",
+            "rootSessionId": "session-prereq-v1-prereq-2026-09-29T02-05-02"
+          },
+          "admitted": true,
+          "admissionCode": "ADMISSION_OPEN",
+          "emittedEvents": [
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "persona"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "model"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "capability"
+            },
+            {
+              "name": "agent-setup/admission-decided",
+              "detail": "ADMISSION_OPEN"
+            }
+          ]
+        }
+      }
+    },
+    "s13-world-after-b1": {
+      "registry": {
+        "team.prereq-anchor@1": "{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:52d184ff6f2f006ac3e594daa3b6389addbc86d69acb7a5f85b0a909336be509\",\"frozenAt\":\"2026-09-29T02:05:05.157Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.prereq-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the PR-E smoke boot team. prereq-2026-09-29T02-05-02 is the run nonce.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}",
+        "team.mpr-anchor@1": "{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"frozenAt\":\"2026-09-29T02:05:05.262Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.mpr-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the boot anchor leader of the model-preference-routing smoke row.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}",
+        "team.prereq-main@1": "{\"blueprintId\":\"team.prereq-main\",\"contentHash\":\"sha256:a26179cd2c42f0bfe83ba6df672a19d58ef8acdb7514e5cb54b0df366ad65ace\",\"frozenAt\":\"2026-09-29T02:05:05.319Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 2\\nblueprintId: team.prereq-main\\nrevision: \\\"1\\\"\\nteamRequirements:\\n  - requirementId: team.mcp.repo\\n    type: mcpServer\\n    subjects: [mcp_repo]\\n    complete: true\\n  - requirementId: team.mcp.leaderreq\\n    type: mcpServer\\n    subjects: [mcp_leaderreq]\\n    complete: true\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the PR-E requirement/recovery smoke team. Nonce prereq-2026-09-29T02-05-02. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker.\\\"\\n  requirements:\\n    - requirementId: lead.mcp.signal\\n      type: mcpServer\\n      subjects: [mcp_signal]\\n      complete: false\\n  capabilities:\\n    teamTools:\\n      kind: allow\\n      items:\\n        - team_delegate\\n        - team_follow_up\\n        - team_create_member\\n        - team_collect\\n        - team_send_message\\n        - team_report_progress\\n        - team_request_control\\n        - team_resolve_control\\n        - team_list_pending_control\\n        - team_list_members\\n        - team_list_templates\\n        - team_inspect_config\\n        - team_archive_member\\n    builtinToolDeny: []\\n    skills:\\n      kind: allow\\n      items: []\\n    mcp:\\n      kind: allow\\n      items:\\n        - mcp_leaderreq\\n        - mcp_signal\\nmembers:\\n  - templateId: worker\\n    persona: \\\"You are a worker of the PR-E smoke team. Do exactly what the work unit says, then finish.\\\"\\n    requirements:\\n      - requirementId: worker.mcp.web\\n        type: mcpServer\\n        subjects: [mcp_web]\\n        complete: true\\n    capabilities:\\n      teamTools:\\n        kind: deny\\n      builtinToolDeny:\\n        - ask_user_question\\n        - create_goal\\n        - exit_plan_mode\\n        - get_goal\\n        - glob\\n        - grep\\n        - interrupt_agent\\n        - job_kill\\n        - job_list\\n        - job_output\\n        - list_agents\\n        - present\\n        - send_message\\n        - skill\\n        - subagent_fork\\n        - update_goal\\n        - web_fetch\\n        - web_search\\n        - workflow\\n      skills:\\n        kind: allow\\n        items: []\\n      mcp:\\n        kind: allow\\n        items:\\n          - mcp_web\\n      permissions:\\n        default: deny\\n        allow:\\n          - tool: read\\n            resource:\\n              kind: any\\n        ask:\\n          - tool: bash\\n            resource:\\n              kind: any\\n        deny: []\\n  - templateId: helper\\n    persona: \\\"You are a helper of the PR-E smoke team. Do exactly what the work unit says, then finish.\\\"\\n    capabilities:\\n      teamTools:\\n        kind: deny\\n      builtinToolDeny: []\\n      skills:\\n        kind: allow\\n        items: []\\n      mcp:\\n        kind: allow\\n        items: []\\nrequirements: []\\nteamEnvelope:\\n  allow:\\n    - assign-task\\n    - create-member\\n    - send-message\\n    - report-progress\\n  deny:\\n    - delete-team\\nmemberEnvelopes: []\\npolicyStates:\\n  - id: default\\n    description: \\\"PR-E main team default state.\\\"\\nquotas:\\n  team:\\n    maxInstances: 12\\n    maxConcurrent: 12\\n  members:\\n    maxInstances: 8\\n    maxConcurrent: 4\\nmetadata: {}\\n---\\n\"}",
+        "team.prereq-iso@1": "{\"blueprintId\":\"team.prereq-iso\",\"contentHash\":\"sha256:eca3696276c03f903aa25b7a35c23d14756f6c104a2f7a132069c04a7a40f2be\",\"frozenAt\":\"2026-09-29T02:05:05.360Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 2\\nblueprintId: team.prereq-iso\\nrevision: \\\"1\\\"\\nteamRequirements:\\n  - requirementId: team.mcp.repo\\n    type: mcpServer\\n    subjects: [mcp_repo]\\n    complete: true\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the PR-E isolation team. Nonce prereq-2026-09-29T02-05-02. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker.\\\"\\n  capabilities:\\n    teamTools:\\n      kind: allow\\n      items:\\n        - team_delegate\\n        - team_follow_up\\n        - team_list_members\\n    builtinToolDeny: []\\n    skills:\\n      kind: allow\\n      items: []\\n    mcp:\\n      kind: allow\\n      items: []\\nmembers:\\n  - templateId: worker\\n    persona: \\\"You are a worker of the PR-E isolation team. Do exactly what the work unit says, then finish.\\\"\\n    capabilities:\\n      teamTools:\\n        kind: deny\\n      builtinToolDeny: []\\n      skills:\\n        kind: allow\\n        items: []\\n      mcp:\\n        kind: allow\\n        items: []\\nrequirements: []\\nteamEnvelope:\\n  allow:\\n    - assign-task\\n    - create-member\\n    - send-message\\n    - report-progress\\n  deny:\\n    - delete-team\\nmemberEnvelopes: []\\npolicyStates:\\n  - id: default\\n    description: \\\"PR-E isolation team default state.\\\"\\nquotas:\\n  team:\\n    maxInstances: 6\\n    maxConcurrent: 6\\n  members:\\n    maxInstances: 4\\n    maxConcurrent: 2\\nmetadata: {}\\n---\\n\"}"
+      },
+      "teamSessions": {
+        "session-prereq-boot-prereq-2026-09-29T02-05-02": "{\"blueprint\":{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:52d184ff6f2f006ac3e594daa3b6389addbc86d69acb7a5f85b0a909336be509\",\"revision\":\"1\"},\"createdAt\":\"2026-09-29T02:05:05.166Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":2,\"rootSessionId\":\"session-prereq-boot-prereq-2026-09-29T02-05-02\",\"schemaVersion\":1}",
+        "session-prereq-v1-prereq-2026-09-29T02-05-02": "{\"blueprint\":{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"revision\":\"1\"},\"createdAt\":\"2026-09-29T02:05:05.264Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":1,\"rootSessionId\":\"session-prereq-v1-prereq-2026-09-29T02-05-02\",\"schemaVersion\":1}",
+        "session-prereq-main-prereq-2026-09-29T02-05-02": "{\"blueprint\":{\"blueprintId\":\"team.prereq-main\",\"contentHash\":\"sha256:a26179cd2c42f0bfe83ba6df672a19d58ef8acdb7514e5cb54b0df366ad65ace\",\"revision\":\"1\"},\"createdAt\":\"2026-09-29T02:05:05.322Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":7,\"rootSessionId\":\"session-prereq-main-prereq-2026-09-29T02-05-02\",\"schemaVersion\":1}",
+        "session-prereq-iso-prereq-2026-09-29T02-05-02": "{\"blueprint\":{\"blueprintId\":\"team.prereq-iso\",\"contentHash\":\"sha256:eca3696276c03f903aa25b7a35c23d14756f6c104a2f7a132069c04a7a40f2be\",\"revision\":\"1\"},\"createdAt\":\"2026-09-29T02:05:05.363Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":7,\"rootSessionId\":\"session-prereq-iso-prereq-2026-09-29T02-05-02\",\"schemaVersion\":1}"
+      }
+    },
+    "s1-compat-b2": {
+      "status": "OPEN",
+      "environmentFingerprint": "fp-v1:69e3c2ef91c429c9",
+      "generation": 1,
+      "recordedAt": "2026-09-29T02:05:05.396Z",
+      "counts": {
+        "pass": 2,
+        "warning": 0,
+        "fatal": 0,
+        "unackedWarning": 0,
+        "staleAcknowledgement": 0
+      }
+    }
+  },
+  "worldDumps": {
+    "afterB1": {
+      "registry": {
+        "team.prereq-anchor@1": "{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:52d184ff6f2f006ac3e594daa3b6389addbc86d69acb7a5f85b0a909336be509\",\"frozenAt\":\"2026-09-29T02:05:05.157Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.prereq-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the PR-E smoke boot team. prereq-2026-09-29T02-05-02 is the run nonce.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}",
+        "team.mpr-anchor@1": "{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"frozenAt\":\"2026-09-29T02:05:05.262Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.mpr-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the boot anchor leader of the model-preference-routing smoke row.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}",
+        "team.prereq-main@1": "{\"blueprintId\":\"team.prereq-main\",\"contentHash\":\"sha256:a26179cd2c42f0bfe83ba6df672a19d58ef8acdb7514e5cb54b0df366ad65ace\",\"frozenAt\":\"2026-09-29T02:05:05.319Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 2\\nblueprintId: team.prereq-main\\nrevision: \\\"1\\\"\\nteamRequirements:\\n  - requirementId: team.mcp.repo\\n    type: mcpServer\\n    subjects: [mcp_repo]\\n    complete: true\\n  - requirementId: team.mcp.leaderreq\\n    type: mcpServer\\n    subjects: [mcp_leaderreq]\\n    complete: true\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the PR-E requirement/recovery smoke team. Nonce prereq-2026-09-29T02-05-02. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker.\\\"\\n  requirements:\\n    - requirementId: lead.mcp.signal\\n      type: mcpServer\\n      subjects: [mcp_signal]\\n      complete: false\\n  capabilities:\\n    teamTools:\\n      kind: allow\\n      items:\\n        - team_delegate\\n        - team_follow_up\\n        - team_create_member\\n        - team_collect\\n        - team_send_message\\n        - team_report_progress\\n        - team_request_control\\n        - team_resolve_control\\n        - team_list_pending_control\\n        - team_list_members\\n        - team_list_templates\\n        - team_inspect_config\\n        - team_archive_member\\n    builtinToolDeny: []\\n    skills:\\n      kind: allow\\n      items: []\\n    mcp:\\n      kind: allow\\n      items:\\n        - mcp_leaderreq\\n        - mcp_signal\\nmembers:\\n  - templateId: worker\\n    persona: \\\"You are a worker of the PR-E smoke team. Do exactly what the work unit says, then finish.\\\"\\n    requirements:\\n      - requirementId: worker.mcp.web\\n        type: mcpServer\\n        subjects: [mcp_web]\\n        complete: true\\n    capabilities:\\n      teamTools:\\n        kind: deny\\n      builtinToolDeny:\\n        - ask_user_question\\n        - create_goal\\n        - exit_plan_mode\\n        - get_goal\\n        - glob\\n        - grep\\n        - interrupt_agent\\n        - job_kill\\n        - job_list\\n        - job_output\\n        - list_agents\\n        - present\\n        - send_message\\n        - skill\\n        - subagent_fork\\n        - update_goal\\n        - web_fetch\\n        - web_search\\n        - workflow\\n      skills:\\n        kind: allow\\n        items: []\\n      mcp:\\n        kind: allow\\n        items:\\n          - mcp_web\\n      permissions:\\n        default: deny\\n        allow:\\n          - tool: read\\n            resource:\\n              kind: any\\n        ask:\\n          - tool: bash\\n            resource:\\n              kind: any\\n        deny: []\\n  - templateId: helper\\n    persona: \\\"You are a helper of the PR-E smoke team. Do exactly what the work unit says, then finish.\\\"\\n    capabilities:\\n      teamTools:\\n        kind: deny\\n      builtinToolDeny: []\\n      skills:\\n        kind: allow\\n        items: []\\n      mcp:\\n        kind: allow\\n        items: []\\nrequirements: []\\nteamEnvelope:\\n  allow:\\n    - assign-task\\n    - create-member\\n    - send-message\\n    - report-progress\\n  deny:\\n    - delete-team\\nmemberEnvelopes: []\\npolicyStates:\\n  - id: default\\n    description: \\\"PR-E main team default state.\\\"\\nquotas:\\n  team:\\n    maxInstances: 12\\n    maxConcurrent: 12\\n  members:\\n    maxInstances: 8\\n    maxConcurrent: 4\\nmetadata: {}\\n---\\n\"}",
+        "team.prereq-iso@1": "{\"blueprintId\":\"team.prereq-iso\",\"contentHash\":\"sha256:eca3696276c03f903aa25b7a35c23d14756f6c104a2f7a132069c04a7a40f2be\",\"frozenAt\":\"2026-09-29T02:05:05.360Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 2\\nblueprintId: team.prereq-iso\\nrevision: \\\"1\\\"\\nteamRequirements:\\n  - requirementId: team.mcp.repo\\n    type: mcpServer\\n    subjects: [mcp_repo]\\n    complete: true\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the PR-E isolation team. Nonce prereq-2026-09-29T02-05-02. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker.\\\"\\n  capabilities:\\n    teamTools:\\n      kind: allow\\n      items:\\n        - team_delegate\\n        - team_follow_up\\n        - team_list_members\\n    builtinToolDeny: []\\n    skills:\\n      kind: allow\\n      items: []\\n    mcp:\\n      kind: allow\\n      items: []\\nmembers:\\n  - templateId: worker\\n    persona: \\\"You are a worker of the PR-E isolation team. Do exactly what the work unit says, then finish.\\\"\\n    capabilities:\\n      teamTools:\\n        kind: deny\\n      builtinToolDeny: []\\n      skills:\\n        kind: allow\\n        items: []\\n      mcp:\\n        kind: allow\\n        items: []\\nrequirements: []\\nteamEnvelope:\\n  allow:\\n    - assign-task\\n    - create-member\\n    - send-message\\n    - report-progress\\n  deny:\\n    - delete-team\\nmemberEnvelopes: []\\npolicyStates:\\n  - id: default\\n    description: \\\"PR-E isolation team default state.\\\"\\nquotas:\\n  team:\\n    maxInstances: 6\\n    maxConcurrent: 6\\n  members:\\n    maxInstances: 4\\n    maxConcurrent: 2\\nmetadata: {}\\n---\\n\"}"
+      },
+      "teamSessions": {
+        "session-prereq-boot-prereq-2026-09-29T02-05-02": "{\"blueprint\":{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:52d184ff6f2f006ac3e594daa3b6389addbc86d69acb7a5f85b0a909336be509\",\"revision\":\"1\"},\"createdAt\":\"2026-09-29T02:05:05.166Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":2,\"rootSessionId\":\"session-prereq-boot-prereq-2026-09-29T02-05-02\",\"schemaVersion\":1}",
+        "session-prereq-v1-prereq-2026-09-29T02-05-02": "{\"blueprint\":{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"revision\":\"1\"},\"createdAt\":\"2026-09-29T02:05:05.264Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":1,\"rootSessionId\":\"session-prereq-v1-prereq-2026-09-29T02-05-02\",\"schemaVersion\":1}",
+        "session-prereq-main-prereq-2026-09-29T02-05-02": "{\"blueprint\":{\"blueprintId\":\"team.prereq-main\",\"contentHash\":\"sha256:a26179cd2c42f0bfe83ba6df672a19d58ef8acdb7514e5cb54b0df366ad65ace\",\"revision\":\"1\"},\"createdAt\":\"2026-09-29T02:05:05.322Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":7,\"rootSessionId\":\"session-prereq-main-prereq-2026-09-29T02-05-02\",\"schemaVersion\":1}",
+        "session-prereq-iso-prereq-2026-09-29T02-05-02": "{\"blueprint\":{\"blueprintId\":\"team.prereq-iso\",\"contentHash\":\"sha256:eca3696276c03f903aa25b7a35c23d14756f6c104a2f7a132069c04a7a40f2be\",\"revision\":\"1\"},\"createdAt\":\"2026-09-29T02:05:05.363Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":7,\"rootSessionId\":\"session-prereq-iso-prereq-2026-09-29T02-05-02\",\"schemaVersion\":1}"
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "S1",
+      "name": "startup all-template matrix: fresh per-scope evaluation at every admission (team up B1 / team down B5 / worker down B3 / optional degraded B2 / persona pass B9 / persona fatal B9b)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S2",
+      "name": "optional requirement consent: auto-degraded proceed (B2) + durable optional-requirement-accepted fact readable, gate still ignores it (B2b)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S3",
+      "name": "required template disable: delegate -> gateReason templateDisabled (availability, never policy — negative #9)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S4",
+      "name": "Team-level required outage: admitInitialWork COMPATIBILITY_BLOCKED citing source requirement-gate; disable cannot bypass (B5/B6)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S5",
+      "name": "Leader required MCP down (team-scope model): team scope blocked -> Recovery",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S6",
+      "name": "Human-reviewed recovery dispatch: the kit as human resolver, ALLOW -> recovery attempt proceeds on the reduced original authority",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S7",
+      "name": "degraded Member controlled bash repair: read executes (original allow), bash opens an ASK request (recovery does not turn ask into allow — negative #2), executes after approval",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S8",
+      "name": "service restored -> next boundary NORMAL: incident CLOSED durable, follow-up without recovery correlation, mcp materialized (E.10; no durable recovery flag)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S9",
+      "name": "exact reviewed payload: recovery-dispatch/v1 shape + reducedAuthority + effect + kind user-approval + inline + recovery:<token>:<seq> + canonical sha256 digest recomputed",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S10",
+      "name": "deny / close / abort zero effect: DENY typed block (no new member/incident); abort -> control-request-abandoned + typed abandoned block; later allow rejected (terminal)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S11",
+      "name": "restarts persist, readiness resets: consent + disable facts survive all restarts and drive the fresh evaluation; the compatibility row is recomputed per boot",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S12",
+      "name": "PR #22 ptc persona regression: standard observed -> PASS (correct open); absent observed -> FATAL PERSONA_INCOMPATIBLE + admitInitialWork blocked (no false open)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S13",
+      "name": "old v1 frozen blueprint cold resume: byte-exact pre-PR-E source -> SAME pre-PR-E contentHash under the PR-E code; cold resume re-attaches with the hash unchanged",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S14",
+      "name": "dual-Team isolation: T2 proceeds while T is in a recovery incident; per-root durable state (no cross-team incident/control facts)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "H1",
+      "name": "test-use pristine BEFORE + AFTER (porcelain empty, HEAD baseline); :3080/:3180 zero-touch (pre == post); the worker bash is a no-op echo",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "H2",
+      "name": "all run ports released after teardown (worldCleaned=true on PASS only)",
+      "pass": true,
+      "note": ""
+    }
+  ],
+  "at": "2026-09-29T02:05:10.098Z"
+}

@@ -1,0 +1,68 @@
+{
+  "W1": null,
+  "toolOk": true,
+  "decisions": [
+    {
+      "requestId": "ctrl-1oq5ulv175y4es1oji4p5002",
+      "class": "recovery",
+      "decision": "allow",
+      "resolveStatus": 200,
+      "resolveError": null
+    },
+    {
+      "requestId": "ctrl-0o1owhr0ufgjp41l8od0l1bi",
+      "class": "ask",
+      "decision": "allow",
+      "resolveStatus": 200,
+      "resolveError": null
+    }
+  ],
+  "pendingSeen": [
+    {
+      "requestId": "ctrl-1oq5ulv175y4es1oji4p5002",
+      "kind": "user-approval",
+      "correlation": "recovery:rt-b3a-prereq-2026-09-29T02-27-05:1",
+      "toolName": null,
+      "actionName": "delegate",
+      "reviewPayload": {
+        "action": "delegate",
+        "blockedScopes": [
+          "template:worker"
+        ],
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance"
+        },
+        "downedCapabilitySubjects": [
+          "mcp_web"
+        ],
+        "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+        "reducedAuthority": {
+          "externalHardCeiling": "absolute (never bypassed)",
+          "otherwise": "unchanged (the original permissions apply)",
+          "policy": "reduced original authority (plan §E.9)",
+          "unavailableSubjects": [
+            "mcp_web"
+          ]
+        },
+        "requestedOperation": "one recovery attempt of 'delegate' on template 'worker'",
+        "rootSessionId": "session-prereq-main-prereq-2026-09-29T02-27-05",
+        "schema": "dsh-agent-team/recovery-dispatch/v1",
+        "templateId": "worker"
+      },
+      "reviewPayloadDigest": "sha256:2314dd6f736c16ed09c66aeb04f1b61e90267abda0375bf62a108fc82b513909",
+      "executionCoupling": "inline"
+    },
+    {
+      "requestId": "ctrl-0o1owhr0ufgjp41l8od0l1bi",
+      "kind": "leader-approval",
+      "correlation": "call-prereq-c54c5cf6",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "reviewPayload": null,
+      "reviewPayloadDigest": null,
+      "executionCoupling": null
+    }
+  ],
+  "baselineLedgerEntries": 14
+}
