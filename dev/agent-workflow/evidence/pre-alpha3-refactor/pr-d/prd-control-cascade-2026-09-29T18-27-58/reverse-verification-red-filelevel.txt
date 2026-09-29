@@ -23,4 +23,3 @@ Error: expectControlRejection('CONTROL_REQUEST_ABANDONED'): the call succeeded: 
       Tests  no tests
    Start at  02:08:19
    Duration  719ms (transform 462ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
-
