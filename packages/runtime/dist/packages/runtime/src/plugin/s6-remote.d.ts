@@ -204,6 +204,18 @@ export interface S6RemoteOverrideSetRequest {
     readonly actorClaim: unknown;
     readonly scope?: 'team' | 'instance';
     readonly targetInstanceId?: string;
+    /**
+     * pre-alpha3 W1 fix-A (F10) — the client-supplied slot-generation
+     * guard (remote contract v7, optional): ABSENT is legacy-compatible
+     * (no conflict check); PRESENT is the optimistic guard — the
+     * Governance service compares it against the current slot winner
+     * INSIDE the shared chain and answers the typed
+     * `OVERRIDE_GENERATION_CONFLICT` with zero write on mismatch (the
+     * stale-UI / stale-tab overwrite the shared Team chain alone does not
+     * catch). A plain (server-parsed) value — NEVER a client claim of
+     * authority.
+     */
+    readonly expectedGeneration?: number;
 }
 /** The `override.reset` request (the structural mirror of the frozen shape). */
 export interface S6RemoteOverrideResetRequest {
@@ -213,6 +225,16 @@ export interface S6RemoteOverrideResetRequest {
     readonly actorClaim: unknown;
     readonly scope?: 'team' | 'instance';
     readonly targetInstanceId?: string;
+    /**
+     * pre-alpha3 W1 fix-A (F10) — the client-supplied slot-generation
+     * guard (remote contract v7, optional): ABSENT is legacy-compatible
+     * (no conflict check); PRESENT is the optimistic guard — the
+     * Governance service compares it against the current slot winner
+     * INSIDE the shared chain and answers the typed
+     * `OVERRIDE_GENERATION_CONFLICT` with zero write on mismatch. A
+     * plain (server-parsed) value — NEVER a client claim of authority.
+     */
+    readonly expectedGeneration?: number;
 }
 /** The `policyState.set` request (the structural mirror of the frozen shape). */
 export interface S6RemotePolicyStateSwitchRequest {

@@ -56,8 +56,8 @@ import {
   type RemoteLosslessRecord,
   type RemoteMutationScope,
   type RemoteOverrideGetParams,
-  type RemoteOverrideResetParams,
-  type RemoteOverrideSetParams,
+  type RemoteOverrideResetParamsV7,
+  type RemoteOverrideSetParamsV7,
   type RemotePolicyEntry,
   type RemotePolicyStateGetParams,
   type RemotePolicyStateSetParams,
@@ -284,6 +284,15 @@ export function overrideGetParams(
 /**
  * Build the `override.set` params (the §19 override editor: it edits
  * ONLY the Explicit Human Override layer — never the Blueprint).
+ *
+ * pre-alpha3 W1 fix-A (F10): the optional `expectedGeneration` is the
+ * slot-generation guard of the production Governance mutation
+ * authority — the client passes the generation of the most recently
+ * READ slot winner (the `override.get` record's `generation`; an empty
+ * / absent slot is generation 0 — see {@link parseOverrideValue}).
+ * ABSENT is legacy-compatible (no conflict check, the byte-for-byte v1
+ * wire behavior); PRESENT is the optimistic guard (the typed
+ * `OVERRIDE_GENERATION_CONFLICT`, zero write, on a stale winner).
  */
 export function overrideSetParams(
   teamSessionId: string,
@@ -291,7 +300,8 @@ export function overrideSetParams(
   value: RemotePolicyEntry,
   scope?: RemoteMutationScope,
   targetInstanceId?: string,
-): RemoteOverrideSetParams {
+  expectedGeneration?: number,
+): RemoteOverrideSetParamsV7 {
   return {
     teamSessionId,
     capability,
@@ -301,16 +311,27 @@ export function overrideSetParams(
     ...(scope !== undefined && targetInstanceId !== undefined
       ? { targetInstanceId }
       : {}),
+    ...(expectedGeneration !== undefined ? { expectedGeneration } : {}),
   }
 }
 
-/** Build the `override.reset` params (removes the override; the value is recomputed from the lower layers). */
+/**
+ * Build the `override.reset` params (removes the override; the value is
+ * recomputed from the lower layers).
+ *
+ * pre-alpha3 W1 fix-A (F10): the optional `expectedGeneration` slot-guard
+ * (see {@link overrideSetParams} — the most recently read slot winner's
+ * generation; an empty / absent slot is generation 0). ABSENT = legacy
+ * (no conflict check); PRESENT = the optimistic guard (typed
+ * `OVERRIDE_GENERATION_CONFLICT`, zero write, on a stale winner).
+ */
 export function overrideResetParams(
   teamSessionId: string,
   capability: RemoteCapability,
   scope?: RemoteMutationScope,
   targetInstanceId?: string,
-): RemoteOverrideResetParams {
+  expectedGeneration?: number,
+): RemoteOverrideResetParamsV7 {
   return {
     teamSessionId,
     capability,
@@ -319,6 +340,7 @@ export function overrideResetParams(
     ...(scope !== undefined && targetInstanceId !== undefined
       ? { targetInstanceId }
       : {}),
+    ...(expectedGeneration !== undefined ? { expectedGeneration } : {}),
   }
 }
 

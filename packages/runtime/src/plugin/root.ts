@@ -738,9 +738,14 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // needs the owning root's bound snapshot (the persona source, the
   // policyReader's blueprint envelope, the policyReader's template policy
   // — and the live glue's own resolver). Production path (a resolver is
-  // injected): NEVER a silent fallback to the row anchor — the resolver is
-  // the authority (it fails closed on an unavailable / inconsistent
-  // snapshot, and the binder wraps that as BINDER_OVERLAY_FAILED).
+  // injected): the resolver is the authority under the exact three-case
+  // contract of bound-blueprint.ts — a row WITH a bound ref NEVER
+  // consults the row anchor (it fails closed typed on an unavailable /
+  // inconsistent snapshot, and the binder wraps that as
+  // BINDER_OVERLAY_FAILED); a no-ref pre-repair legacy row resolves to
+  // the row anchor BY DEFINITION (the documented legacy binding — legacy
+  // rows predate per-team binding, so the anchor IS their bound
+  // blueprint; that is not a fallback to a different blueprint).
   // Factory/test world (no resolver): the bootstrap `blueprint` stands in
   // for every root (the single-blueprint factory contract).
   const boundBlueprintByRoot = new Map<string, TeamBlueprint>()
@@ -1778,7 +1783,13 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         ),
       // The bound blueprint's closed PolicyState set (default + the
       // declared states, declaration order) — read per addressed root
-      // through the per-root bound-snapshot resolver.
+      // through the per-root bound-snapshot resolver (the production
+      // three-case contract of bound-blueprint.ts: a row WITH a bound
+      // ref NEVER consults the row anchor — an unresolvable / hash-
+      // inconsistent ref fails typed inside this dep; a no-ref
+      // pre-repair legacy row IS the row anchor by definition — the
+      // documented legacy binding, not a fallback to a different
+      // blueprint).
       policyStates: (root) => [
         DEFAULT_POLICY_STATE_ID,
         ...boundBlueprintFor(root).policyStates.map((state) => state.id),

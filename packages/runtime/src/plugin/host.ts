@@ -85,15 +85,13 @@ import type { StorageDomainSeam } from '../../../storage/schema/index.js'
 import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js'
 import type { LegacyInspectFn } from './legacy-surface.js'
 import { createBlueprintAuthority } from './blueprint-authority.js'
+import { createBoundBlueprintResolver } from './bound-blueprint.js'
 import { createLiveBlueprintCatalog } from './blueprint-live-catalog.js'
 import { createBlueprintSourceIndex } from './blueprint-source-index.js'
 import { registerTeamSkills } from './team-skills.js'
 import { mcpSupplyValidationIssue } from './mcp-supply.js'
 import { TEAM_ARTIFACT_AUTHORITY_SERVICE } from './artifact-grant-bridge.js'
 import type { TeamArtifactAuthorityBridge } from './artifact-grant-bridge.js'
-
-import { parseBlueprint } from '../../../domain/blueprint/src/index.js'
-import type { TeamBlueprint } from '../../../domain/blueprint/src/index.js'
 
 import { createTeamProductionRoot } from './root.js'
 import { createTeamSessionActivationFence } from './team-session-activation.js'
@@ -1434,25 +1432,24 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   })
   const liveBlueprintCatalog = createLiveBlueprintCatalog(blueprintAuthority)
   // --- BP-F (issue #2 blueprint-loading, plan §11.1): the narrow per-Team
-  // --- resolver the live glue consumes — the durable TeamSession row's
-  // --- bound snapshot ref -> the live authority's resolveSnapshot (the
-  // --- hash equality is verified; a frozen revision replays the registry
-  // --- row's stored source text, a mutable snapshot re-parses the current
-  // --- source). Rows without a snapshot ref (pre-repair legacy rows) fall
-  // --- back to the row anchor; a MISSING row is a programming error the
-  // --- glue must never reach (fail closed: the setup rejection rolls the
-  // --- unpublished agent back).
-  const resolveBoundBlueprint = (teamRootSid: string): TeamBlueprint => {
-    const row = domain.repositories.teamSessions.get(teamRootSid)
-    if (row === undefined) {
-      throw new Error(`resolveBoundBlueprint(${String(teamRootSid)}): the domain carries no durable TeamSession row for this root — the glue must never set up an agent for a root without a row`)
-    }
-    const ref = row.blueprint
-    if (ref === undefined) {
-      return parseBlueprint(resolvedRowConfig.blueprintSource)
-    }
-    return blueprintAuthority.resolveSnapshot(ref)
-  }
+  // --- resolver the live glue consumes — the SAME three-case production
+  // --- contract the Governance closed-set dep resolves against (see the
+  // --- module contract in bound-blueprint.ts): missing row → throw (fail
+  // --- closed, a programming error the glue must never reach — the setup
+  // --- rejection rolls the unpublished agent back); a no-ref pre-repair
+  // --- legacy row → the row anchor BY DEFINITION (the documented legacy
+  // --- binding — legacy rows predate per-team binding, so the anchor IS
+  // --- their bound blueprint, not a fallback); a bound ref → the live
+  // --- authority's resolveSnapshot (the hash equality is verified; a
+  // --- frozen revision replays the registry row's stored source text, a
+  // --- mutable snapshot re-parses the current source) — and the anchor is
+  // --- NEVER consulted for a bound ref (the B1 boot-fallback hole is
+  // --- closed by this single production resolver).
+  const resolveBoundBlueprint = createBoundBlueprintResolver({
+    teamSessions: domain.repositories.teamSessions,
+    resolveSnapshot: (ref) => blueprintAuthority.resolveSnapshot(ref),
+    anchorBlueprintSource: resolvedRowConfig.blueprintSource,
+  })
 
   const live: TeamAgentBindings = glue.createAgentBindings({
     agents,
@@ -1463,9 +1460,11 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     controlServiceRef,
     now: () => new Date().toISOString(),
     // BP-F (issue #2 blueprint-loading, plan §11.1): the per-Team bound-
-    // blueprint resolver (the row's bound snapshot through the live
-    // authority — the glue's dynamic Team authority, never the
-    // row-global anchor).
+    // blueprint resolver (the glue's dynamic Team authority — the three-
+    // case contract in bound-blueprint.ts: a bound ref resolves through
+    // the live authority and NEVER the row anchor; a no-ref pre-repair
+    // legacy row resolves to the row anchor BY DEFINITION — the documented
+    // legacy binding, not a fallback).
     resolveBoundBlueprint,
     subagents: ctx.get('subagents'),
     // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence

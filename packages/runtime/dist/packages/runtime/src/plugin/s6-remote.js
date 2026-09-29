@@ -839,9 +839,16 @@ export function createS6RemotePorts(options) {
     /**
      * TCM vNext §15.8 (G1) — the gate blueprint of the TARGET team (the v2
      * `team.admitInitialWork` is team-scoped: the created team already
-     * exists): the durable TeamSession's bound snapshot ref resolved
-     * through the catalog. A content hash the catalog cannot reproduce is
-     * the existing typed blueprint mismatch (fail-closed before the gate).
+     * exists): the durable TeamSession's bound snapshot ref resolved under
+     * the same three-case bound-Blueprint contract as the production
+     * resolver (bound-blueprint.ts): a missing row fails closed typed; a
+     * no-ref pre-repair legacy row resolves to the row anchor BY
+     * DEFINITION (the documented legacy binding — legacy rows predate
+     * per-team binding, so the anchor IS their bound blueprint, not a
+     * fallback to a different one); a bound ref resolves through the
+     * catalog, and a content hash the catalog cannot reproduce is the
+     * existing typed blueprint mismatch (fail-closed before the gate —
+     * the anchor is NEVER consulted for a bound ref).
      */
     function resolveTargetBlueprint(rootSessionId) {
         const row = repositories.teamSessions.get(rootSessionId);
@@ -850,6 +857,12 @@ export function createS6RemotePorts(options) {
             throw new TeamPluginError(TEAM_RUNTIME_ERROR_CODES.TEAM_SESSION_NOT_FOUND, `no durable TeamSession for root "${rootSessionId}" — team.admitInitialWork addresses an existing team`, { reason: 'team-session-not-found' });
         }
         const snapshot = row.blueprint;
+        if (snapshot === undefined) {
+            // No-ref pre-repair legacy row: its bound blueprint is the row
+            // anchor BY DEFINITION (case 2 of the three-case contract — the
+            // documented legacy binding, not a boot fallback).
+            return blueprint;
+        }
         const resolved = resolveBlueprint(String(snapshot.blueprintId), Number(snapshot.revision));
         if (String(resolved.contentHash) !== String(snapshot.contentHash)) {
             throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_CREATE_BLUEPRINT_MISMATCH, `the durable TeamSession of root "${rootSessionId}" carries blueprint '${String(snapshot.blueprintId)}' (revision '${String(snapshot.revision)}') with a content hash the catalog cannot reproduce`, { reason: 'blueprint-hash-mismatch' });
@@ -1454,11 +1467,22 @@ export function createS6RemotePorts(options) {
                 // the durable commit BEFORE the ack. The record id is minted
                 // server-side by the service (the remote contract carries NO
                 // client-supplied record id).
+                // pre-alpha3 W1 fix-A (F10): the optional client-supplied
+                // expectedGeneration (remote contract v7) is forwarded VERBATIM
+                // into the service's optimistic guard (ABSENT = legacy, no
+                // conflict check — the conditional spread keeps the field
+                // structurally absent, so the service sees exactly the
+                // pre-v7 call shape; PRESENT = the stale-UI overwrite the shared
+                // Team chain alone does not catch → typed
+                // OVERRIDE_GENERATION_CONFLICT, zero write).
                 const result = await options.governance.setOverride({
                     authority,
                     rootSessionId: root,
                     scope,
                     ...(instanceId !== undefined ? { instanceId } : {}),
+                    ...(request.expectedGeneration !== undefined
+                        ? { expectedGeneration: request.expectedGeneration }
+                        : {}),
                     cells: { [request.capability]: request.value },
                 });
                 // Both branches report the slot state as an override record: a
@@ -1498,11 +1522,20 @@ export function createS6RemotePorts(options) {
                 // closed), the generation guard applies, and the reset is a
                 // higher-generation TOMBSTONE re-issue (never a storage delete —
                 // audit-preserving), committed durably BEFORE the ack.
+                // pre-alpha3 W1 fix-A (F10): the optional client-supplied
+                // expectedGeneration (remote contract v7) is forwarded VERBATIM
+                // into the service's optimistic guard (ABSENT = legacy, no
+                // conflict check; PRESENT = typed
+                // OVERRIDE_GENERATION_CONFLICT with zero write on a stale
+                // winner — the same stale-UI overwrite class as override.set).
                 const result = await options.governance.resetOverride({
                     authority,
                     rootSessionId: root,
                     scope,
                     ...(instanceId !== undefined ? { instanceId } : {}),
+                    ...(request.expectedGeneration !== undefined
+                        ? { expectedGeneration: request.expectedGeneration }
+                        : {}),
                 });
                 return { removed: result.removed };
             },
@@ -1524,9 +1557,23 @@ export function createS6RemotePorts(options) {
                 // S7R2-result.md). The A31 rejection semantics are untouched: an
                 // out-of-closed-set target still fails POLICY_STATE_UNKNOWN and a
                 // member actor still fails UNAUTHORIZED_TRANSITION (switchState).
+                // pre-alpha3 W1 fix-A (F11): the closed set is the ADDRESSED
+                // team's bound Blueprint — the durable TeamSession's bound
+                // snapshot resolved under the production three-case contract
+                // (bound-blueprint.ts, the SAME per-root authority the
+                // Governance service's closed-set check resolves against): a
+                // BOUND ref NEVER consults the host boot Blueprint (on a
+                // multi-team host the boot team's policyStates are not the
+                // addressed team's — the Remote precheck world must equal the
+                // Governance world); an unresolvable ref / a content hash the
+                // catalog cannot reproduce fails closed typed (the
+                // resolveTargetBlueprint vocabulary); a no-ref pre-repair
+                // legacy row IS the row anchor by definition (the documented
+                // legacy binding, not a fallback to a different blueprint).
+                const bound = resolveTargetBlueprint(root);
                 const closedStates = new Set([
                     DEFAULT_POLICY_STATE_ID,
-                    ...blueprint.policyStates.map((state) => state.id),
+                    ...bound.policyStates.map((state) => state.id),
                 ]);
                 const availableTransitions = [...closedStates].filter((stateId) => stateId !== view.stateId);
                 return {
@@ -1538,17 +1585,35 @@ export function createS6RemotePorts(options) {
                 const root = assertBoundRoot('policyState.set', request.teamSessionId);
                 const target = request.target;
                 const stateId = target['stateId'];
-                const closed = new Set([DEFAULT_POLICY_STATE_ID, ...blueprint.policyStates.map((state) => state.id)]);
-                if (typeof stateId !== 'string' || !closed.has(stateId)) {
-                    throw new TeamPluginError(S6_REMOTE_ERROR_CODES.POLICY_STATE_UNKNOWN, `policyState.set names state '${String(stateId)}' which is outside the bound blueprint's closed set (${[...closed].join(', ')})`, { reason: 'unknown-state', stateId: String(stateId) });
+                // pre-alpha3 W1 fix-A (F11): the Remote performs SHAPE validation
+                // ONLY here — the frozen param parser already closed the record
+                // shape (`stateId` string + the `cells` record), and this port
+                // re-asserts the string against direct port callers. The SEMANTIC
+                // closed-set check is the Governance service's authority,
+                // resolved per root against the ADDRESSED team's bound Blueprint
+                // (the durable TeamSession's bound snapshot — the S6 service
+                // deps' per-root policyStates) under the production three-case
+                // contract (bound-blueprint.ts): a BOUND ref NEVER consults the
+                // host boot Blueprint — on a multi-team host a boot-Blueprint
+                // precheck world would DISAGREE with the Governance world (an
+                // addressed-legal state absent from the boot team's policyStates
+                // rejected at the wire, a boot-legal state outside the addressed
+                // team accepted at the wire); a no-ref pre-repair legacy row IS
+                // the row anchor by definition (the documented legacy binding,
+                // not a fallback to a different blueprint). An unknown state now
+                // surfaces as the service's typed POLICY_STATE_UNKNOWN (a closed
+                // backing code — dispatcher invariant 4b pass-through); a bound
+                // ref the authority cannot reproduce surfaces as the service's
+                // typed POLICY_STATE_SNAPSHOT_MISMATCH (same pass-through).
+                if (typeof stateId !== 'string') {
+                    throw new TeamPluginError(S6_REMOTE_ERROR_CODES.POLICY_STATE_UNKNOWN, `policyState.set target carries a non-string stateId (${String(stateId)})`, { reason: 'malformed-state', stateId: String(stateId) });
                 }
                 // pre-alpha3 PR-A (ADR-03): the switch flows through the SINGLE
-                // governance mutation authority — the closed-set check above
-                // keeps the wire code (TEAM_REMOTE_POLICY_STATE_UNKNOWN), the
-                // service re-checks it (defense in depth for the other callers),
-                // a self-transition is a typed no-op, and the durable ledger row
-                // is committed BEFORE the ack (the R2-1 fire-and-schedule window
-                // is closed).
+                // governance mutation authority — the service's closed-set check
+                // (per the ADDRESSED root's bound Blueprint, F11) keeps the typed
+                // wire code, a self-transition is a typed no-op, and the durable
+                // ledger row is committed BEFORE the ack (the R2-1 fire-and-
+                // schedule window is closed).
                 const result = await options.governance.switchPolicyState({
                     actor: actorOf(caller, root, leaderInstanceId),
                     rootSessionId: root,
@@ -1984,6 +2049,11 @@ function buildS6CategoryHandlers(ports, principal) {
                         .then((override) => ({ data: { override } }));
                 }
                 case 'override.set': {
+                    // pre-alpha3 W1 fix-A (F10): the V7 param type — the closed
+                    // set parsed for this request's declared version (v1–v6
+                    // carry no expectedGeneration; v7 carries the optional
+                    // slot-guard, forwarded VERBATIM below; ABSENT stays
+                    // structurally absent = legacy, no conflict check).
                     const setParams = params;
                     const request = {
                         teamSessionId: setParams.teamSessionId,
@@ -1994,10 +2064,15 @@ function buildS6CategoryHandlers(ports, principal) {
                         ...(setParams.targetInstanceId !== undefined
                             ? { targetInstanceId: setParams.targetInstanceId }
                             : {}),
+                        ...(setParams.expectedGeneration !== undefined
+                            ? { expectedGeneration: setParams.expectedGeneration }
+                            : {}),
                     };
                     return Promise.resolve(principal({ method, request: envelope })).then((caller) => ports.override.set(request, caller)).then((result) => ({ data: result }));
                 }
                 case 'override.reset': {
+                    // pre-alpha3 W1 fix-A (F10): the V7 param type — see
+                    // override.set above (ABSENT = legacy, no conflict check).
                     const resetParams = params;
                     const request = {
                         teamSessionId: resetParams.teamSessionId,
@@ -2006,6 +2081,9 @@ function buildS6CategoryHandlers(ports, principal) {
                         ...(resetParams.scope !== undefined ? { scope: resetParams.scope } : {}),
                         ...(resetParams.targetInstanceId !== undefined
                             ? { targetInstanceId: resetParams.targetInstanceId }
+                            : {}),
+                        ...(resetParams.expectedGeneration !== undefined
+                            ? { expectedGeneration: resetParams.expectedGeneration }
                             : {}),
                     };
                     return Promise.resolve(principal({ method, request: envelope })).then((caller) => ports.override.reset(request, caller)).then((result) => ({ data: { removed: result.removed } }));

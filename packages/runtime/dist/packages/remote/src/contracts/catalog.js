@@ -180,7 +180,9 @@ export const REMOTE_V6_ONLY_METHODS = ['team.getReadState'];
  *
  * @param method - the candidate method name (must be in the catalog).
  * @param version - the request's contract version (supported:
- *   1 | 2 | 3 | 4 | 5 | 6).
+ *   1 | 2 | 3 | 4 | 5 | 6 | 7 — the v7 bump adds NO method; its
+ *   version-aware surface is the `override.set` / `override.reset`
+ *   closed field sets in `params.ts`).
  */
 export function isRemoteMethodAvailableInVersion(method, version) {
     if (!(method in REMOTE_METHOD_CATALOG))
@@ -209,7 +211,10 @@ export function isRemoteMethodAvailableInVersion(method, version) {
     if (version === 5) {
         return !REMOTE_V6_ONLY_METHODS.includes(method);
     }
-    // version === 6: every v1/v2/v3/v4/v5 method plus the v6-only methods.
+    // version === 6 / 7: every v1/v2/v3/v4/v5 method plus the v6-only
+    // methods (the v7 bump adds NO method — its version-aware surface is
+    // the `override.set` / `override.reset` closed field sets in
+    // `params.ts`).
     return true;
 }
 /**

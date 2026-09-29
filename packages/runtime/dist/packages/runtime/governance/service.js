@@ -89,6 +89,54 @@ function mapStoreError(error) {
     }
     throw error;
 }
+/**
+ * The closed-`policyStates` dep, mapped onto the closed mutation surface
+ * (pre-alpha3 W1a, review round 2 — the DOCUMENTED service-level mapping
+ * boundary for the bound-Blueprint resolution failures of the
+ * three-case production resolver contract, bound-blueprint.ts):
+ *
+ * - the raw authority `TEAM_BLUEPRINT_SNAPSHOT_MISMATCH` (the bound
+ *   snapshot ref's content hash the authority cannot reproduce) → the
+ *   closed wire code `POLICY_STATE_SNAPSHOT_MISMATCH` with
+ *   `reason: 'snapshot-mismatch'`. The raw code is NOT in the remote's
+ *   closed backing-code set, so an unmapped pass-through would degrade
+ *   to an untyped `internal-error` on the wire (the M1 gap this closes).
+ *   The authority's machine details (blueprintId / revision /
+ *   expectedContentHash / foundContentHash) are copied from its `detail`
+ *   (TeamPluginError's singular detail key, which the dispatcher's
+ *   invariant-4b pass-through does NOT surface) into this error's
+ *   `details` — the key the wire folds under `details.cause.details`;
+ * - every other error is re-thrown UNCHANGED: the authority's closed
+ *   `MALFORMED_DTO` `blueprint-not-found` (an unresolvable ref identity)
+ *   is already a closed wire code the dispatcher passes through as-is
+ *   (invariant 4b, carrying its own typed details), and any other throw
+ *   is a programming error that must stay loud.
+ *
+ * The mapping runs BEFORE the closed-set check and BEFORE any commit —
+ * a bound team whose Blueprint cannot be reproduced fails closed with a
+ * ZERO write; the row anchor is never consulted for a bound ref.
+ */
+function boundClosedStates(deps, rootSessionId) {
+    try {
+        return deps.policyStates(rootSessionId);
+    }
+    catch (error) {
+        if (error instanceof Error && error.code === 'TEAM_BLUEPRINT_SNAPSHOT_MISMATCH') {
+            const detail = error.detail;
+            const sourceDetails = {};
+            for (const key of ['blueprintId', 'revision', 'expectedContentHash', 'foundContentHash']) {
+                if (detail !== undefined && key in detail)
+                    sourceDetails[key] = detail[key];
+            }
+            throw new MutationError(MUTATION_ERROR_CODES.POLICY_STATE_SNAPSHOT_MISMATCH, `policyState set on '${rootSessionId}' failed: the bound Blueprint cannot be reproduced by the Blueprint authority — ${error.message}`, {
+                reason: 'snapshot-mismatch',
+                rootSessionId,
+                ...sourceDetails,
+            });
+        }
+        throw error;
+    }
+}
 /** Whether one stored record sits in the addressed slot. */
 function inSlot(record, slot) {
     if (record.kind !== slot.kind || record.scope !== slot.scope || record.rootSessionId !== slot.rootSessionId) {
@@ -293,7 +341,11 @@ export function createGovernanceMutationService(deps) {
         }
         const target = normalizeStateView(args.target, 'target');
         return deps.chain.run(args.rootSessionId, async () => {
-            const closed = deps.policyStates(args.rootSessionId);
+            // The bound Blueprint's closed set — resolved through the
+            // production three-case resolver contract (bound-blueprint.ts) and
+            // mapped onto the closed mutation surface before the closed-set
+            // check and before any commit (see boundClosedStates).
+            const closed = boundClosedStates(deps, args.rootSessionId);
             if (!closed.includes(target.stateId)) {
                 throw new MutationError(MUTATION_ERROR_CODES.POLICY_STATE_UNKNOWN, `policyState target '${target.stateId}' is outside the bound blueprint's closed set (${closed.join(', ')})`, { reason: 'unknown-state', stateId: target.stateId, closedStates: [...closed] });
             }

@@ -30,7 +30,11 @@
  *            no impact preview key is invented (the backend provides no
  *            preview surface — adjudication documented in S7R2-result.md);
  *   - R2.5 — the A31 rejection semantics are unchanged: an out-of-closed-set
- *            target still fails `TEAM_REMOTE_POLICY_STATE_UNKNOWN` and a
+ *            target still fails the closed-set code (pre-alpha3 W1 fix-A F11:
+ *            the Remote semantic precheck is gone — shape validation only —
+ *            so the service's typed `POLICY_STATE_UNKNOWN` now surfaces on
+ *            the wire via invariant 4b, where the remote plane's old
+ *            `TEAM_REMOTE_POLICY_STATE_UNKNOWN` precheck code used to) and a
  *            member actor still fails `UNAUTHORIZED_TRANSITION` (invariant
  *            40), both before AND after the R2-1 wiring;
  *   - R2.6 — the projection's ledger summary counts the new fact under the
@@ -608,7 +612,14 @@ describe('R2-1 the production PolicyState lane is durable (BQ-10, C07/H01/H02/H0
 
   it('R2.5 the A31 rejection semantics are unchanged (unknown state / member actor)', () => {
     expect(r21.unknownSetOk).toBe(false)
-    expect(r21.unknownSetCode).toBe('TEAM_REMOTE_POLICY_STATE_UNKNOWN')
+    // pre-alpha3 W1 fix-A (F11): the Remote's semantic closed-set precheck
+    // is GONE (shape validation only) — the closed set is the Governance
+    // service's authority (the addressed team's bound Blueprint). The
+    // service's typed POLICY_STATE_UNKNOWN (a closed backing code) now
+    // surfaces on the wire through the dispatcher's invariant 4b
+    // pass-through, replacing the remote plane's old
+    // TEAM_REMOTE_POLICY_STATE_UNKNOWN precheck code for this case.
+    expect(r21.unknownSetCode).toBe('POLICY_STATE_UNKNOWN')
     expect(r21.memberSetOk).toBe(false)
     expect(r21.memberSetCode).toBe('UNAUTHORIZED_TRANSITION')
     // And the service-level enforcement survives the R2-1 wiring on the

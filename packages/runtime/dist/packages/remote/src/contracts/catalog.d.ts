@@ -134,7 +134,9 @@ export declare const REMOTE_V6_ONLY_METHODS: readonly string[];
  *
  * @param method - the candidate method name (must be in the catalog).
  * @param version - the request's contract version (supported:
- *   1 | 2 | 3 | 4 | 5 | 6).
+ *   1 | 2 | 3 | 4 | 5 | 6 | 7 — the v7 bump adds NO method; its
+ *   version-aware surface is the `override.set` / `override.reset`
+ *   closed field sets in `params.ts`).
  */
 export declare function isRemoteMethodAvailableInVersion(method: string, version: number): boolean;
 /**

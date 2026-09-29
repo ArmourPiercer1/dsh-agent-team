@@ -35,7 +35,18 @@
  * command, never an identity); the v5 bump (guide §10.2) adds exactly
  * the one v5-only method `team.prepareOrdinaryOpen` (closed set:
  * `teamSessionId` — the narrow one-shot ordinary-activation permit of
- * the Team fence; the payload is a command, never an identity).
+ * the Team fence; the payload is a command, never an identity); the v6
+ * bump (team-view-sync-complete) adds exactly the one v6-only method
+ * `team.getReadState` (closed set: `sessionId`) plus the version-aware
+ * v6 `team.getProjection` wire shape; the v7 bump (pre-alpha3 W1 fix-A,
+ * F10) adds NO method: the version-aware `override.set` / `override.reset`
+ * closed field sets gain the optional `expectedGeneration` — the
+ * client-supplied slot-generation guard of the production Governance
+ * mutation authority (PR-A / ADR-03). ABSENT = legacy-compatible (no
+ * conflict check — the v1–v6 wire behavior, byte-for-byte); PRESENT =
+ * the optimistic guard (a non-negative safe integer; on mismatch the
+ * service answers the typed `OVERRIDE_GENERATION_CONFLICT` with zero
+ * write).
  * {@link parseRemoteMethodParams} routes on
  * the request version: a request to a method of a NEWER version is
  * typed-rejected (`method-version-unsupported`) AFTER the envelope
@@ -191,6 +202,36 @@ export const REMOTE_OVERRIDE_SET_FIELDS = [
 export const REMOTE_OVERRIDE_RESET_FIELDS = [
     'actor',
     'capability',
+    'scope',
+    'targetInstanceId',
+    'teamSessionId',
+];
+/**
+ * `override.set` (contract v7 — pre-alpha3 W1 fix-A, F10) — the CLOSED
+ * v7 field set: the frozen v1 set plus the optional `expectedGeneration`
+ * (the slot-generation guard; a non-negative safe integer). `expectedGeneration`
+ * on a v1–v6 request is an unknown field (typed `malformed-params` /
+ * `unknown-field` — the v1–v6 wire behavior is preserved byte-for-byte).
+ */
+export const REMOTE_OVERRIDE_SET_FIELDS_V7 = [
+    'actor',
+    'capability',
+    'expectedGeneration',
+    'scope',
+    'targetInstanceId',
+    'teamSessionId',
+    'value',
+];
+/**
+ * `override.reset` (contract v7 — pre-alpha3 W1 fix-A, F10) — the CLOSED
+ * v7 field set: the frozen v1 set plus the optional `expectedGeneration`
+ * (the slot-generation guard; a non-negative safe integer). See
+ * {@link REMOTE_OVERRIDE_SET_FIELDS_V7}.
+ */
+export const REMOTE_OVERRIDE_RESET_FIELDS_V7 = [
+    'actor',
+    'capability',
+    'expectedGeneration',
     'scope',
     'targetInstanceId',
     'teamSessionId',
@@ -788,6 +829,76 @@ export function parseRemoteOverrideResetParams(method, params) {
         ...(targetInstanceId === undefined ? {} : { targetInstanceId }),
     };
 }
+/**
+ * The optional `expectedGeneration` field (contract v7 — F10): a
+ * non-negative safe integer. ABSENT is legacy-compatible (no conflict
+ * check); PRESENT is the optimistic slot-guard of the production
+ * Governance mutation authority (the service compares it against the
+ * current slot winner INSIDE the shared chain and answers the typed
+ * `OVERRIDE_GENERATION_CONFLICT` with zero write on mismatch).
+ */
+function parseExpectedGeneration(method, params) {
+    const raw = optionalField(method, params, 'expectedGeneration');
+    if (raw === undefined)
+        return undefined;
+    if (typeof raw !== 'number' || !Number.isSafeInteger(raw) || raw < 0) {
+        throw paramMalformed(method, 'expectedGeneration', 'invalid-value', `${method}: expectedGeneration must be a non-negative safe integer, got ${JSON.stringify(raw)}`);
+    }
+    return raw;
+}
+/** Parse `override.set` params (contract v7 — the v1 set + the optional
+ *  `expectedGeneration` slot-guard; v1–v6 requests keep the frozen v1
+ *  closed set, `expectedGeneration` among them is an unknown field). */
+export function parseRemoteOverrideSetParamsV7(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_OVERRIDE_SET_FIELDS_V7);
+    const rawScope = optionalField(method, params, 'scope');
+    const rawTarget = optionalField(method, params, 'targetInstanceId');
+    const scope = rawScope === undefined
+        ? undefined
+        : parseRemoteEnum(rawScope, method, 'scope', REMOTE_MUTATION_SCOPES);
+    const targetInstanceId = rawTarget === undefined
+        ? undefined
+        : parseRemoteInstanceId(rawTarget, 'targetInstanceId');
+    const actor = parseRemoteMutationActor(requiredField(method, params, 'actor'), method, 'actor');
+    assertOverrideTargetConsistency(method, scope, targetInstanceId);
+    assertActorScopeConsistency(method, actor, scope, targetInstanceId);
+    const expectedGeneration = parseExpectedGeneration(method, params);
+    return {
+        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+        capability: parseRemoteEnum(requiredField(method, params, 'capability'), method, 'capability', REMOTE_CAPABILITY_VALUES),
+        value: parseRemotePolicyEntry(requiredField(method, params, 'value'), method, 'value'),
+        actor,
+        ...(scope === undefined ? {} : { scope }),
+        ...(targetInstanceId === undefined ? {} : { targetInstanceId }),
+        ...(expectedGeneration === undefined ? {} : { expectedGeneration }),
+    };
+}
+/** Parse `override.reset` params (contract v7 — the v1 set + the optional
+ *  `expectedGeneration` slot-guard; v1–v6 requests keep the frozen v1
+ *  closed set, `expectedGeneration` among them is an unknown field). */
+export function parseRemoteOverrideResetParamsV7(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_OVERRIDE_RESET_FIELDS_V7);
+    const rawScope = optionalField(method, params, 'scope');
+    const rawTarget = optionalField(method, params, 'targetInstanceId');
+    const scope = rawScope === undefined
+        ? undefined
+        : parseRemoteEnum(rawScope, method, 'scope', REMOTE_MUTATION_SCOPES);
+    const targetInstanceId = rawTarget === undefined
+        ? undefined
+        : parseRemoteInstanceId(rawTarget, 'targetInstanceId');
+    const actor = parseRemoteMutationActor(requiredField(method, params, 'actor'), method, 'actor');
+    assertOverrideTargetConsistency(method, scope, targetInstanceId);
+    assertActorScopeConsistency(method, actor, scope, targetInstanceId);
+    const expectedGeneration = parseExpectedGeneration(method, params);
+    return {
+        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+        capability: parseRemoteEnum(requiredField(method, params, 'capability'), method, 'capability', REMOTE_CAPABILITY_VALUES),
+        actor,
+        ...(scope === undefined ? {} : { scope }),
+        ...(targetInstanceId === undefined ? {} : { targetInstanceId }),
+        ...(expectedGeneration === undefined ? {} : { expectedGeneration }),
+    };
+}
 /** Parse `policyState.get` params. */
 export function parseRemotePolicyStateGetParams(method, params) {
     assertNoUnknownFields(method, params, REMOTE_POLICY_STATE_GET_FIELDS);
@@ -939,10 +1050,24 @@ export function parseRemoteMethodParams(version, method, params) {
             return wrapParsed(method, parseRemoteMemberDisposeParams(method, params));
         case 'override.get':
             return wrapParsed(method, parseRemoteOverrideGetParams(method, params));
-        case 'override.set':
+        case 'override.set': {
+            // Version-aware closed schemas (pre-alpha3 W1 fix-A, F10): v1–v6
+            // keep the frozen field set (NO `expectedGeneration`); v7 adds the
+            // optional slot-guard field.
+            if (version === 7) {
+                return wrapParsed(method, parseRemoteOverrideSetParamsV7(method, params));
+            }
             return wrapParsed(method, parseRemoteOverrideSetParams(method, params));
-        case 'override.reset':
+        }
+        case 'override.reset': {
+            // Version-aware closed schemas (pre-alpha3 W1 fix-A, F10): v1–v6
+            // keep the frozen field set (NO `expectedGeneration`); v7 adds the
+            // optional slot-guard field.
+            if (version === 7) {
+                return wrapParsed(method, parseRemoteOverrideResetParamsV7(method, params));
+            }
             return wrapParsed(method, parseRemoteOverrideResetParams(method, params));
+        }
         case 'policyState.get':
             return wrapParsed(method, parseRemotePolicyStateGetParams(method, params));
         case 'policyState.set':

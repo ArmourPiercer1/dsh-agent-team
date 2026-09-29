@@ -5302,6 +5302,28 @@ var __dshFactory = (require) => {
 			            });
 			        });
 			    };
+			    /**
+			     * pre-alpha3 W1 fix-A (F10) — the optimistic guard for the override
+			     * mutations below: the generation of the slot winner this tab most
+			     * recently READ (the settled `override.get` wire record's
+			     * `generation`). An unsettled / failed read, or a read that found NO
+			     * slot winner (an empty slot or a reset tombstone — the read reports
+			     * `null`), has NO readable generation: the field stays ABSENT
+			     * (legacy-compatible, no conflict check) — never a locally invented
+			     * one.
+			     */
+			    const readSlotGeneration = (instanceId, capability) => {
+			        const read = overrideReads[`${instanceId}:${capability}`];
+			        if (read === undefined || read.ok !== true)
+			            return undefined;
+			        const wire = read.wire.override;
+			        if (wire === null)
+			            return undefined;
+			        const generation = wire['generation'];
+			        return typeof generation === 'number' && Number.isSafeInteger(generation)
+			            ? generation
+			            : undefined;
+			    };
 			    // -- the commands (the G5 dispatch) ---------------------------------------
 			    /** The human Recheck (UI §10.4): a new probe generation; the closed
 			     * frozen trigger is `CAPABILITY_GENERATION_CHANGE`. */
@@ -5340,13 +5362,48 @@ var __dshFactory = (require) => {
 			        const value = draft.kind === 'deny'
 			            ? { kind: 'deny' }
 			            : { kind: 'allow', items };
+			        // pre-alpha3 W1 fix-A (F10): the optimistic guard — the most
+			        // recently read slot generation (ABSENT = legacy, no conflict check).
+			        const expectedGeneration = readSlotGeneration(instanceId, draft.capability);
+			        const readKey = `${instanceId}:${draft.capability}`;
 			        const token = nextToken();
-			        dispatch('override-set', `override-set:${instanceId}`, token, () => governance.overrideSet(overrideSetParams(teamSessionId, draft.capability, value, 'instance', instanceId)));
+			        dispatch('override-set', `override-set:${instanceId}`, token, () => governance.overrideSet(overrideSetParams(teamSessionId, draft.capability, value, 'instance', instanceId, expectedGeneration)).then(response => {
+			            // The ack carries the freshly committed record — refresh the
+			            // settled read so the NEXT mutation in this tab guards against
+			            // the NEW slot generation (a stale cache would false-conflict
+			            // on the user's own second edit).
+			            if (response.ok) {
+			                setOverrideReads(prev => ({
+			                    ...prev,
+			                    [readKey]: { ok: true, wire: { override: response.value.data } },
+			                }));
+			            }
+			            return response;
+			        }));
 			    };
 			    /** The per-member override reset (the value is recomputed from the lower layers). */
 			    const runOverrideReset = (instanceId, capability) => {
+			        // pre-alpha3 W1 fix-A (F10): the optimistic guard — the most
+			        // recently read slot generation (ABSENT = legacy, no conflict check).
+			        const expectedGeneration = readSlotGeneration(instanceId, capability);
+			        const readKey = `${instanceId}:${capability}`;
 			        const token = nextToken();
-			        dispatch('override-reset', `override-reset:${instanceId}`, token, () => governance.overrideReset(overrideResetParams(teamSessionId, capability, 'instance', instanceId)));
+			        dispatch('override-reset', `override-reset:${instanceId}`, token, () => governance.overrideReset(overrideResetParams(teamSessionId, capability, 'instance', instanceId, expectedGeneration)).then(response => {
+			            // The reset ack carries NO slot generation (the tombstone's is
+			            // server-minted) — on a REMOVED reset drop the settled read so
+			            // the next read is fresh; a mutation without a read stays
+			            // legacy (no check) until the user reads again. A no-op reset
+			            // (`removed: false`) left the slot winner untouched — the read
+			            // stays valid.
+			            if (response.ok && response.value.data['removed'] === true) {
+			                setOverrideReads(prev => {
+			                    const next = { ...prev };
+			                    delete next[readKey];
+			                    return next;
+			                });
+			            }
+			            return response;
+			        }));
 			    };
 			    // -- the derived display values -------------------------------------------
 			    const compat = snapshot.compatibility;
@@ -7028,15 +7085,16 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=team-read-state.js.map
 			}, exports: {} };
 		__mods["transport/team-remote-client.js"] = { done: false, fn: function (exports) {
-			const __imp37 = __req("../../remote/src/index.js");
-			const REMOTE_CONTRACT_VERSION = __imp37.REMOTE_CONTRACT_VERSION;
-			const REMOTE_CONTRACT_VERSION_V2 = __imp37.REMOTE_CONTRACT_VERSION_V2;
-			const REMOTE_CONTRACT_VERSION_V3 = __imp37.REMOTE_CONTRACT_VERSION_V3;
-			const REMOTE_CONTRACT_VERSION_V4 = __imp37.REMOTE_CONTRACT_VERSION_V4;
-			const REMOTE_CONTRACT_VERSION_V5 = __imp37.REMOTE_CONTRACT_VERSION_V5;
-			const REMOTE_CONTRACT_VERSION_V6 = __imp37.REMOTE_CONTRACT_VERSION_V6;
-			const REMOTE_RPC_CHANNEL = __imp37.REMOTE_RPC_CHANNEL;
-			const PushTransportLossError = __imp37.PushTransportLossError;
+			const __imp42 = __req("../../remote/src/index.js");
+			const REMOTE_CONTRACT_VERSION = __imp42.REMOTE_CONTRACT_VERSION;
+			const REMOTE_CONTRACT_VERSION_V2 = __imp42.REMOTE_CONTRACT_VERSION_V2;
+			const REMOTE_CONTRACT_VERSION_V3 = __imp42.REMOTE_CONTRACT_VERSION_V3;
+			const REMOTE_CONTRACT_VERSION_V4 = __imp42.REMOTE_CONTRACT_VERSION_V4;
+			const REMOTE_CONTRACT_VERSION_V5 = __imp42.REMOTE_CONTRACT_VERSION_V5;
+			const REMOTE_CONTRACT_VERSION_V6 = __imp42.REMOTE_CONTRACT_VERSION_V6;
+			const REMOTE_CONTRACT_VERSION_V7 = __imp42.REMOTE_CONTRACT_VERSION_V7;
+			const REMOTE_RPC_CHANNEL = __imp42.REMOTE_RPC_CHANNEL;
+			const PushTransportLossError = __imp42.PushTransportLossError;
 			/**
 			 * P9-T3 (S2-A) — the Team Remote client over the frozen public seam.
 			 *
@@ -7053,8 +7111,13 @@ var __dshFactory = (require) => {
 			 * behavior); ONLY `teamCreateV2` and `teamAdmitInitialWorkV2` stamp
 			 * contract version 2, the two D1 v3 wrappers stamp contract version 3,
 			 * `teamResolveControlV4` (F3/F11/F9/T1.4 repair round r1 F9) stamps
-			 * contract version 4, and `teamPrepareOrdinaryOpenV5` (C1
-			 * restart-0.1.7-rc.1 recovery, guide §10.2) stamps contract version 5.
+			 * contract version 4, `teamPrepareOrdinaryOpenV5` (C1
+			 * restart-0.1.7-rc.1 recovery, guide §10.2) stamps contract version 5,
+			 * the v6 wrappers stamp contract version 6, and — pre-alpha3 W1 fix-A
+			 * (F10) — `overrideSet` / `overrideReset` stamp contract version 7
+			 * (the version-aware override mutation closed sets gain the optional
+			 * `expectedGeneration` slot-guard; ABSENT = the byte-for-byte v1
+			 * behavior, PRESENT = the Governance optimistic guard).
 			 *
 			 * Failure discipline (frozen `RemotePushTransport` contract, mirrored
 			 * here for the unary path): every RPC-level outcome arrives as a typed
@@ -7151,8 +7214,11 @@ var __dshFactory = (require) => {
 			        memberRestore: (params) => call('member.restore', params),
 			        memberDispose: (params) => call('member.dispose', params),
 			        overrideGet: (params) => call('override.get', params),
-			        overrideSet: (params) => call('override.set', params),
-			        overrideReset: (params) => call('override.reset', params),
+			        // pre-alpha3 W1 fix-A (F10) — contract v7: the version-aware
+			        // override mutation closed sets (the optional `expectedGeneration`
+			        // slot-guard; ABSENT = the byte-for-byte v1 wire behavior).
+			        overrideSet: (params) => callWithVersion('override.set', params, REMOTE_CONTRACT_VERSION_V7),
+			        overrideReset: (params) => callWithVersion('override.reset', params, REMOTE_CONTRACT_VERSION_V7),
 			        policyStateGet: (params) => call('policyState.get', params),
 			        policyStateSet: (params) => call('policyState.set', params),
 			        compatibilityGet: (params) => call('compatibility.get', params),
@@ -8294,6 +8360,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V4", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V4 });
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V5", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V5 });
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V6", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V6 });
+			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V7", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V7 });
 			Object.defineProperty(exports, "SUPPORTED_REMOTE_CONTRACT_VERSIONS", { enumerable: true, get: () => __re3.SUPPORTED_REMOTE_CONTRACT_VERSIONS });
 			Object.defineProperty(exports, "isSupportedRemoteContractVersion", { enumerable: true, get: () => __re3.isSupportedRemoteContractVersion });
 			Object.defineProperty(exports, "assertSupportedRemoteContractVersion", { enumerable: true, get: () => __re3.assertSupportedRemoteContractVersion });
@@ -8345,7 +8412,9 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_MEMBER_LIFECYCLE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_MEMBER_LIFECYCLE_FIELDS });
 			Object.defineProperty(exports, "REMOTE_OVERRIDE_GET_FIELDS", { enumerable: true, get: () => __re7.REMOTE_OVERRIDE_GET_FIELDS });
 			Object.defineProperty(exports, "REMOTE_OVERRIDE_SET_FIELDS", { enumerable: true, get: () => __re7.REMOTE_OVERRIDE_SET_FIELDS });
+			Object.defineProperty(exports, "REMOTE_OVERRIDE_SET_FIELDS_V7", { enumerable: true, get: () => __re7.REMOTE_OVERRIDE_SET_FIELDS_V7 });
 			Object.defineProperty(exports, "REMOTE_OVERRIDE_RESET_FIELDS", { enumerable: true, get: () => __re7.REMOTE_OVERRIDE_RESET_FIELDS });
+			Object.defineProperty(exports, "REMOTE_OVERRIDE_RESET_FIELDS_V7", { enumerable: true, get: () => __re7.REMOTE_OVERRIDE_RESET_FIELDS_V7 });
 			Object.defineProperty(exports, "REMOTE_POLICY_STATE_GET_FIELDS", { enumerable: true, get: () => __re7.REMOTE_POLICY_STATE_GET_FIELDS });
 			Object.defineProperty(exports, "REMOTE_POLICY_STATE_SET_FIELDS", { enumerable: true, get: () => __re7.REMOTE_POLICY_STATE_SET_FIELDS });
 			Object.defineProperty(exports, "REMOTE_COMPATIBILITY_GET_FIELDS", { enumerable: true, get: () => __re7.REMOTE_COMPATIBILITY_GET_FIELDS });
@@ -8375,7 +8444,9 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "parseRemoteMemberDisposeParams", { enumerable: true, get: () => __re7.parseRemoteMemberDisposeParams });
 			Object.defineProperty(exports, "parseRemoteOverrideGetParams", { enumerable: true, get: () => __re7.parseRemoteOverrideGetParams });
 			Object.defineProperty(exports, "parseRemoteOverrideSetParams", { enumerable: true, get: () => __re7.parseRemoteOverrideSetParams });
+			Object.defineProperty(exports, "parseRemoteOverrideSetParamsV7", { enumerable: true, get: () => __re7.parseRemoteOverrideSetParamsV7 });
 			Object.defineProperty(exports, "parseRemoteOverrideResetParams", { enumerable: true, get: () => __re7.parseRemoteOverrideResetParams });
+			Object.defineProperty(exports, "parseRemoteOverrideResetParamsV7", { enumerable: true, get: () => __re7.parseRemoteOverrideResetParamsV7 });
 			Object.defineProperty(exports, "parseRemotePolicyStateGetParams", { enumerable: true, get: () => __re7.parseRemotePolicyStateGetParams });
 			Object.defineProperty(exports, "parseRemotePolicyStateSetParams", { enumerable: true, get: () => __re7.parseRemotePolicyStateSetParams });
 			Object.defineProperty(exports, "parseRemoteCompatibilityGetParams", { enumerable: true, get: () => __re7.parseRemoteCompatibilityGetParams });
@@ -9301,8 +9372,17 @@ var __dshFactory = (require) => {
 			/**
 			 * Build the `override.set` params (the §19 override editor: it edits
 			 * ONLY the Explicit Human Override layer — never the Blueprint).
+			 *
+			 * pre-alpha3 W1 fix-A (F10): the optional `expectedGeneration` is the
+			 * slot-generation guard of the production Governance mutation
+			 * authority — the client passes the generation of the most recently
+			 * READ slot winner (the `override.get` record's `generation`; an empty
+			 * / absent slot is generation 0 — see {@link parseOverrideValue}).
+			 * ABSENT is legacy-compatible (no conflict check, the byte-for-byte v1
+			 * wire behavior); PRESENT is the optimistic guard (the typed
+			 * `OVERRIDE_GENERATION_CONFLICT`, zero write, on a stale winner).
 			 */
-			function overrideSetParams(teamSessionId, capability, value, scope, targetInstanceId) {
+			function overrideSetParams(teamSessionId, capability, value, scope, targetInstanceId, expectedGeneration) {
 			    return {
 			        teamSessionId,
 			        capability,
@@ -9312,11 +9392,21 @@ var __dshFactory = (require) => {
 			        ...(scope !== undefined && targetInstanceId !== undefined
 			            ? { targetInstanceId }
 			            : {}),
+			        ...(expectedGeneration !== undefined ? { expectedGeneration } : {}),
 			    };
 			}
 			Object.defineProperty(exports, "overrideSetParams", { enumerable: true, get: () => overrideSetParams });
-			/** Build the `override.reset` params (removes the override; the value is recomputed from the lower layers). */
-			function overrideResetParams(teamSessionId, capability, scope, targetInstanceId) {
+			/**
+			 * Build the `override.reset` params (removes the override; the value is
+			 * recomputed from the lower layers).
+			 *
+			 * pre-alpha3 W1 fix-A (F10): the optional `expectedGeneration` slot-guard
+			 * (see {@link overrideSetParams} — the most recently read slot winner's
+			 * generation; an empty / absent slot is generation 0). ABSENT = legacy
+			 * (no conflict check); PRESENT = the optimistic guard (typed
+			 * `OVERRIDE_GENERATION_CONFLICT`, zero write, on a stale winner).
+			 */
+			function overrideResetParams(teamSessionId, capability, scope, targetInstanceId, expectedGeneration) {
 			    return {
 			        teamSessionId,
 			        capability,
@@ -9325,6 +9415,7 @@ var __dshFactory = (require) => {
 			        ...(scope !== undefined && targetInstanceId !== undefined
 			            ? { targetInstanceId }
 			            : {}),
+			        ...(expectedGeneration !== undefined ? { expectedGeneration } : {}),
 			    };
 			}
 			Object.defineProperty(exports, "overrideResetParams", { enumerable: true, get: () => overrideResetParams });
@@ -9999,15 +10090,36 @@ var __dshFactory = (require) => {
 			const REMOTE_CONTRACT_VERSION_V6 = 6;
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V6", { enumerable: true, get: () => REMOTE_CONTRACT_VERSION_V6 });
 			/**
-			 * All remote contract versions this build accepts: `[1, 2, 3, 4, 5, 6]`.
+			 * The remote contract v7 (pre-alpha3 W1 fix-A, F10 — the Governance
+			 * optimistic-guard ingress): the version-aware `override.set` /
+			 * `override.reset` closed field sets gain the optional
+			 * `expectedGeneration` — the client-supplied slot-generation guard of the
+			 * production Governance mutation authority (PR-A / ADR-03: the service
+			 * compares it against the current slot winner inside the shared chain and
+			 * answers the typed `OVERRIDE_GENERATION_CONFLICT` with zero write on
+			 * mismatch). ABSENT is legacy-compatible (no conflict check — the
+			 * byte-for-byte v1–v6 wire behavior); PRESENT is the optimistic guard
+			 * (a non-negative safe integer). NO new method: every v1/v2/v3/v4/v5/v6
+			 * method stays available in v7 and every v1–v6 wire shape is preserved
+			 * for version-1–6 requests (a version bump ADDS supported versions,
+			 * never edits v1/v2/v3/v4/v5/v6 semantics).
+			 */
+			const REMOTE_CONTRACT_VERSION_V7 = 7;
+			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V7", { enumerable: true, get: () => REMOTE_CONTRACT_VERSION_V7 });
+			/**
+			 * All remote contract versions this build accepts:
+			 * `[1, 2, 3, 4, 5, 6, 7]`.
 			 * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision;
 			 * v3 by the Team D1-D6 repair v2 D1 task; v4 by the F3/F11/F9/T1.4
 			 * repair round r1 F9 task; v5 by the C1 restart-0.1.7-rc.1 recovery
 			 * task (guide §10.2: the v5-only `team.prepareOrdinaryOpen` permit);
 			 * v6 by the team-view-sync-complete task (2026-09-28: the v6-only
 			 * `team.getReadState` read + the version-aware v6 projection shape with
-			 * `durableGeneration` / `liveToken`) (a version bump ADDS supported
-			 * versions, never edits v1/v2/v3/v4/v5 semantics).
+			 * `durableGeneration` / `liveToken`); v7 by the pre-alpha3 W1 fix-A task
+			 * (F10: the version-aware `override.set` / `override.reset` closed sets
+			 * gain the optional `expectedGeneration` slot-guard field — additive,
+			 * NO new method) (a version bump ADDS supported versions, never edits
+			 * v1/v2/v3/v4/v5/v6 semantics).
 			 */
 			const SUPPORTED_REMOTE_CONTRACT_VERSIONS = [
 			    REMOTE_CONTRACT_VERSION,
@@ -10016,6 +10128,7 @@ var __dshFactory = (require) => {
 			    REMOTE_CONTRACT_VERSION_V4,
 			    REMOTE_CONTRACT_VERSION_V5,
 			    REMOTE_CONTRACT_VERSION_V6,
+			    REMOTE_CONTRACT_VERSION_V7,
 			];
 			Object.defineProperty(exports, "SUPPORTED_REMOTE_CONTRACT_VERSIONS", { enumerable: true, get: () => SUPPORTED_REMOTE_CONTRACT_VERSIONS });
 			/**
@@ -10252,7 +10365,9 @@ var __dshFactory = (require) => {
 			 *
 			 * @param method - the candidate method name (must be in the catalog).
 			 * @param version - the request's contract version (supported:
-			 *   1 | 2 | 3 | 4 | 5 | 6).
+			 *   1 | 2 | 3 | 4 | 5 | 6 | 7 — the v7 bump adds NO method; its
+			 *   version-aware surface is the `override.set` / `override.reset`
+			 *   closed field sets in `params.ts`).
 			 */
 			function isRemoteMethodAvailableInVersion(method, version) {
 			    if (!(method in REMOTE_METHOD_CATALOG))
@@ -10281,7 +10396,10 @@ var __dshFactory = (require) => {
 			    if (version === 5) {
 			        return !REMOTE_V6_ONLY_METHODS.includes(method);
 			    }
-			    // version === 6: every v1/v2/v3/v4/v5 method plus the v6-only methods.
+			    // version === 6 / 7: every v1/v2/v3/v4/v5 method plus the v6-only
+			    // methods (the v7 bump adds NO method — its version-aware surface is
+			    // the `override.set` / `override.reset` closed field sets in
+			    // `params.ts`).
 			    return true;
 			}
 			Object.defineProperty(exports, "isRemoteMethodAvailableInVersion", { enumerable: true, get: () => isRemoteMethodAvailableInVersion });
@@ -10495,23 +10613,23 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=response.js.map
 			}, exports: {} };
 		__mods["../../remote/src/contracts/params.js"] = { done: false, fn: function (exports) {
-			const __imp48 = __req("../../remote/src/contracts/catalog.js");
-			const isRemoteMethodAvailableInVersion = __imp48.isRemoteMethodAvailableInVersion;
-			const __imp49 = __req("../../remote/src/contracts/errors.js");
-			const remoteContractError = __imp49.remoteContractError;
-			const __imp50 = __req("../../remote/src/contracts/ids.js");
-			const parseRemoteBlueprintId = __imp50.parseRemoteBlueprintId;
-			const parseRemoteBlueprintRevision = __imp50.parseRemoteBlueprintRevision;
-			const parseRemoteInstanceId = __imp50.parseRemoteInstanceId;
-			const parseRemoteRootSessionId = __imp50.parseRemoteRootSessionId;
-			const parseRemoteSessionId = __imp50.parseRemoteSessionId;
-			const parseRemoteTeamSessionId = __imp50.parseRemoteTeamSessionId;
-			const parseRemoteTemplateId = __imp50.parseRemoteTemplateId;
-			const REMOTE_ID_MAX_LENGTH = __imp50.REMOTE_ID_MAX_LENGTH;
-			const __imp51 = __req("../../remote/src/contracts/remote-safe.js");
-			const assertRemoteSafeJsonValue = __imp51.assertRemoteSafeJsonValue;
-			const __imp52 = __req("../../remote/src/contracts/version.js");
-			const assertSupportedRemoteContractVersion = __imp52.assertSupportedRemoteContractVersion;
+			const __imp59 = __req("../../remote/src/contracts/catalog.js");
+			const isRemoteMethodAvailableInVersion = __imp59.isRemoteMethodAvailableInVersion;
+			const __imp60 = __req("../../remote/src/contracts/errors.js");
+			const remoteContractError = __imp60.remoteContractError;
+			const __imp61 = __req("../../remote/src/contracts/ids.js");
+			const parseRemoteBlueprintId = __imp61.parseRemoteBlueprintId;
+			const parseRemoteBlueprintRevision = __imp61.parseRemoteBlueprintRevision;
+			const parseRemoteInstanceId = __imp61.parseRemoteInstanceId;
+			const parseRemoteRootSessionId = __imp61.parseRemoteRootSessionId;
+			const parseRemoteSessionId = __imp61.parseRemoteSessionId;
+			const parseRemoteTeamSessionId = __imp61.parseRemoteTeamSessionId;
+			const parseRemoteTemplateId = __imp61.parseRemoteTemplateId;
+			const REMOTE_ID_MAX_LENGTH = __imp61.REMOTE_ID_MAX_LENGTH;
+			const __imp62 = __req("../../remote/src/contracts/remote-safe.js");
+			const assertRemoteSafeJsonValue = __imp62.assertRemoteSafeJsonValue;
+			const __imp63 = __req("../../remote/src/contracts/version.js");
+			const assertSupportedRemoteContractVersion = __imp63.assertSupportedRemoteContractVersion;
 			/**
 			 * Per-method closed param schemas of the Remote contract v1.
 			 *
@@ -10549,7 +10667,18 @@ var __dshFactory = (require) => {
 			 * command, never an identity); the v5 bump (guide §10.2) adds exactly
 			 * the one v5-only method `team.prepareOrdinaryOpen` (closed set:
 			 * `teamSessionId` — the narrow one-shot ordinary-activation permit of
-			 * the Team fence; the payload is a command, never an identity).
+			 * the Team fence; the payload is a command, never an identity); the v6
+			 * bump (team-view-sync-complete) adds exactly the one v6-only method
+			 * `team.getReadState` (closed set: `sessionId`) plus the version-aware
+			 * v6 `team.getProjection` wire shape; the v7 bump (pre-alpha3 W1 fix-A,
+			 * F10) adds NO method: the version-aware `override.set` / `override.reset`
+			 * closed field sets gain the optional `expectedGeneration` — the
+			 * client-supplied slot-generation guard of the production Governance
+			 * mutation authority (PR-A / ADR-03). ABSENT = legacy-compatible (no
+			 * conflict check — the v1–v6 wire behavior, byte-for-byte); PRESENT =
+			 * the optimistic guard (a non-negative safe integer; on mismatch the
+			 * service answers the typed `OVERRIDE_GENERATION_CONFLICT` with zero
+			 * write).
 			 * {@link parseRemoteMethodParams} routes on
 			 * the request version: a request to a method of a NEWER version is
 			 * typed-rejected (`method-version-unsupported`) AFTER the envelope
@@ -10730,6 +10859,38 @@ var __dshFactory = (require) => {
 			    'teamSessionId',
 			];
 			Object.defineProperty(exports, "REMOTE_OVERRIDE_RESET_FIELDS", { enumerable: true, get: () => REMOTE_OVERRIDE_RESET_FIELDS });
+			/**
+			 * `override.set` (contract v7 — pre-alpha3 W1 fix-A, F10) — the CLOSED
+			 * v7 field set: the frozen v1 set plus the optional `expectedGeneration`
+			 * (the slot-generation guard; a non-negative safe integer). `expectedGeneration`
+			 * on a v1–v6 request is an unknown field (typed `malformed-params` /
+			 * `unknown-field` — the v1–v6 wire behavior is preserved byte-for-byte).
+			 */
+			const REMOTE_OVERRIDE_SET_FIELDS_V7 = [
+			    'actor',
+			    'capability',
+			    'expectedGeneration',
+			    'scope',
+			    'targetInstanceId',
+			    'teamSessionId',
+			    'value',
+			];
+			Object.defineProperty(exports, "REMOTE_OVERRIDE_SET_FIELDS_V7", { enumerable: true, get: () => REMOTE_OVERRIDE_SET_FIELDS_V7 });
+			/**
+			 * `override.reset` (contract v7 — pre-alpha3 W1 fix-A, F10) — the CLOSED
+			 * v7 field set: the frozen v1 set plus the optional `expectedGeneration`
+			 * (the slot-generation guard; a non-negative safe integer). See
+			 * {@link REMOTE_OVERRIDE_SET_FIELDS_V7}.
+			 */
+			const REMOTE_OVERRIDE_RESET_FIELDS_V7 = [
+			    'actor',
+			    'capability',
+			    'expectedGeneration',
+			    'scope',
+			    'targetInstanceId',
+			    'teamSessionId',
+			];
+			Object.defineProperty(exports, "REMOTE_OVERRIDE_RESET_FIELDS_V7", { enumerable: true, get: () => REMOTE_OVERRIDE_RESET_FIELDS_V7 });
 			const REMOTE_POLICY_STATE_GET_FIELDS = ['teamSessionId'];
 			Object.defineProperty(exports, "REMOTE_POLICY_STATE_GET_FIELDS", { enumerable: true, get: () => REMOTE_POLICY_STATE_GET_FIELDS });
 			const REMOTE_POLICY_STATE_SET_FIELDS = [
@@ -11353,6 +11514,78 @@ var __dshFactory = (require) => {
 			    };
 			}
 			Object.defineProperty(exports, "parseRemoteOverrideResetParams", { enumerable: true, get: () => parseRemoteOverrideResetParams });
+			/**
+			 * The optional `expectedGeneration` field (contract v7 — F10): a
+			 * non-negative safe integer. ABSENT is legacy-compatible (no conflict
+			 * check); PRESENT is the optimistic slot-guard of the production
+			 * Governance mutation authority (the service compares it against the
+			 * current slot winner INSIDE the shared chain and answers the typed
+			 * `OVERRIDE_GENERATION_CONFLICT` with zero write on mismatch).
+			 */
+			function parseExpectedGeneration(method, params) {
+			    const raw = optionalField(method, params, 'expectedGeneration');
+			    if (raw === undefined)
+			        return undefined;
+			    if (typeof raw !== 'number' || !Number.isSafeInteger(raw) || raw < 0) {
+			        throw paramMalformed(method, 'expectedGeneration', 'invalid-value', `${method}: expectedGeneration must be a non-negative safe integer, got ${JSON.stringify(raw)}`);
+			    }
+			    return raw;
+			}
+			/** Parse `override.set` params (contract v7 — the v1 set + the optional
+			 *  `expectedGeneration` slot-guard; v1–v6 requests keep the frozen v1
+			 *  closed set, `expectedGeneration` among them is an unknown field). */
+			function parseRemoteOverrideSetParamsV7(method, params) {
+			    assertNoUnknownFields(method, params, REMOTE_OVERRIDE_SET_FIELDS_V7);
+			    const rawScope = optionalField(method, params, 'scope');
+			    const rawTarget = optionalField(method, params, 'targetInstanceId');
+			    const scope = rawScope === undefined
+			        ? undefined
+			        : parseRemoteEnum(rawScope, method, 'scope', REMOTE_MUTATION_SCOPES);
+			    const targetInstanceId = rawTarget === undefined
+			        ? undefined
+			        : parseRemoteInstanceId(rawTarget, 'targetInstanceId');
+			    const actor = parseRemoteMutationActor(requiredField(method, params, 'actor'), method, 'actor');
+			    assertOverrideTargetConsistency(method, scope, targetInstanceId);
+			    assertActorScopeConsistency(method, actor, scope, targetInstanceId);
+			    const expectedGeneration = parseExpectedGeneration(method, params);
+			    return {
+			        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+			        capability: parseRemoteEnum(requiredField(method, params, 'capability'), method, 'capability', REMOTE_CAPABILITY_VALUES),
+			        value: parseRemotePolicyEntry(requiredField(method, params, 'value'), method, 'value'),
+			        actor,
+			        ...(scope === undefined ? {} : { scope }),
+			        ...(targetInstanceId === undefined ? {} : { targetInstanceId }),
+			        ...(expectedGeneration === undefined ? {} : { expectedGeneration }),
+			    };
+			}
+			Object.defineProperty(exports, "parseRemoteOverrideSetParamsV7", { enumerable: true, get: () => parseRemoteOverrideSetParamsV7 });
+			/** Parse `override.reset` params (contract v7 — the v1 set + the optional
+			 *  `expectedGeneration` slot-guard; v1–v6 requests keep the frozen v1
+			 *  closed set, `expectedGeneration` among them is an unknown field). */
+			function parseRemoteOverrideResetParamsV7(method, params) {
+			    assertNoUnknownFields(method, params, REMOTE_OVERRIDE_RESET_FIELDS_V7);
+			    const rawScope = optionalField(method, params, 'scope');
+			    const rawTarget = optionalField(method, params, 'targetInstanceId');
+			    const scope = rawScope === undefined
+			        ? undefined
+			        : parseRemoteEnum(rawScope, method, 'scope', REMOTE_MUTATION_SCOPES);
+			    const targetInstanceId = rawTarget === undefined
+			        ? undefined
+			        : parseRemoteInstanceId(rawTarget, 'targetInstanceId');
+			    const actor = parseRemoteMutationActor(requiredField(method, params, 'actor'), method, 'actor');
+			    assertOverrideTargetConsistency(method, scope, targetInstanceId);
+			    assertActorScopeConsistency(method, actor, scope, targetInstanceId);
+			    const expectedGeneration = parseExpectedGeneration(method, params);
+			    return {
+			        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+			        capability: parseRemoteEnum(requiredField(method, params, 'capability'), method, 'capability', REMOTE_CAPABILITY_VALUES),
+			        actor,
+			        ...(scope === undefined ? {} : { scope }),
+			        ...(targetInstanceId === undefined ? {} : { targetInstanceId }),
+			        ...(expectedGeneration === undefined ? {} : { expectedGeneration }),
+			    };
+			}
+			Object.defineProperty(exports, "parseRemoteOverrideResetParamsV7", { enumerable: true, get: () => parseRemoteOverrideResetParamsV7 });
 			/** Parse `policyState.get` params. */
 			function parseRemotePolicyStateGetParams(method, params) {
 			    assertNoUnknownFields(method, params, REMOTE_POLICY_STATE_GET_FIELDS);
@@ -11512,10 +11745,24 @@ var __dshFactory = (require) => {
 			            return wrapParsed(method, parseRemoteMemberDisposeParams(method, params));
 			        case 'override.get':
 			            return wrapParsed(method, parseRemoteOverrideGetParams(method, params));
-			        case 'override.set':
+			        case 'override.set': {
+			            // Version-aware closed schemas (pre-alpha3 W1 fix-A, F10): v1–v6
+			            // keep the frozen field set (NO `expectedGeneration`); v7 adds the
+			            // optional slot-guard field.
+			            if (version === 7) {
+			                return wrapParsed(method, parseRemoteOverrideSetParamsV7(method, params));
+			            }
 			            return wrapParsed(method, parseRemoteOverrideSetParams(method, params));
-			        case 'override.reset':
+			        }
+			        case 'override.reset': {
+			            // Version-aware closed schemas (pre-alpha3 W1 fix-A, F10): v1–v6
+			            // keep the frozen field set (NO `expectedGeneration`); v7 adds the
+			            // optional slot-guard field.
+			            if (version === 7) {
+			                return wrapParsed(method, parseRemoteOverrideResetParamsV7(method, params));
+			            }
 			            return wrapParsed(method, parseRemoteOverrideResetParams(method, params));
+			        }
 			        case 'policyState.get':
 			            return wrapParsed(method, parseRemotePolicyStateGetParams(method, params));
 			        case 'policyState.set':
@@ -12818,7 +13065,14 @@ var __dshFactory = (require) => {
 			    'LIFECYCLE_NOT_QUIESCENT',
 			    'LIFECYCLE_LIVE_EFFECT_FAILED',
 			    'LIFECYCLE_DURABLE_STATE_FAILED',
-			    // runtime/mutation — the mutation service codes
+			    // runtime/mutation — the mutation service codes (pre-alpha3 PR-A: the
+			    // governance mutation authority reuses this vocabulary — the envelope
+			    // rejection codes (frozen-domain strings) and the service-level
+			    // POLICY_STATE_UNKNOWN join the closed wire vocabulary; pre-alpha3 W1a
+			    // review round 2: the service-level POLICY_STATE_SNAPSHOT_MISMATCH
+			    // (the bound-Blueprint content-hash mismatch, mapped from the raw
+			    // authority TEAM_BLUEPRINT_SNAPSHOT_MISMATCH at the governance service
+			    // boundary — the raw code is deliberately NOT a wire code) joins it)
 			    'MALFORMED_MUTATION_INPUT',
 			    'EXTERNAL_HARD_REJECTED',
 			    'UNAUTHORIZED_TRANSITION',
@@ -12827,6 +13081,10 @@ var __dshFactory = (require) => {
 			    'OVERRIDE_IDENTITY_CONFLICT',
 			    'OVERRIDE_GENERATION_CONFLICT',
 			    'UNAUTHORIZED_MUTATION',
+			    'MEMBER_SELF_ESCALATION',
+			    'LEADER_OUT_OF_ENVELOPE',
+			    'POLICY_STATE_UNKNOWN',
+			    'POLICY_STATE_SNAPSHOT_MISMATCH',
 			    // runtime/handoff — HANDOFF_* (the handoff service)
 			    'HANDOFF_REQUEST_MALFORMED',
 			    'HANDOFF_SOURCE_SURFACE_UNAVAILABLE',

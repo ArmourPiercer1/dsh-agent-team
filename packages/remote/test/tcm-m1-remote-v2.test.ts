@@ -46,6 +46,7 @@ import {
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
   REMOTE_CONTRACT_VERSION_V6,
+  REMOTE_CONTRACT_VERSION_V7,
   REMOTE_CONTRACT_ERROR_CODES,
   REMOTE_METHOD_NAMES,
   REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS,
@@ -565,14 +566,15 @@ describe('TCM M1: backing error allow-list (the seven team-create v2 codes)', ()
 // ---------------------------------------------------------------------------
 
 describe('TCM M1: catalog facts (versioned union, closed)', () => {
-  it('the frozen v1 baseline constant stays 1, v2 is a distinct stamp, and the D1 v3 + F9 v4 + C1 v5 + team-view-sync v6 bumps extend the supported set', () => {
+  it('the frozen v1 baseline constant stays 1, v2 is a distinct stamp, and the D1 v3 + F9 v4 + C1 v5 + team-view-sync v6 + pre-alpha3 W1 fix-A v7 bumps extend the supported set (v7 adds NO method)', () => {
     expect(REMOTE_CONTRACT_VERSION).toBe(1)
     expect(REMOTE_CONTRACT_VERSION_V2).toBe(2)
     expect(REMOTE_CONTRACT_VERSION_V3).toBe(3)
     expect(REMOTE_CONTRACT_VERSION_V4).toBe(4)
     expect(REMOTE_CONTRACT_VERSION_V5).toBe(5)
     expect(REMOTE_CONTRACT_VERSION_V6).toBe(6)
-    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6])
+    expect(REMOTE_CONTRACT_VERSION_V7).toBe(7)
+    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7])
   })
 
   it('the closed catalog is the versioned union: 29 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only)', () => {

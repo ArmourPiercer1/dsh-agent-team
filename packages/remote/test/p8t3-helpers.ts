@@ -22,6 +22,7 @@ import {
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
   REMOTE_CONTRACT_VERSION_V6,
+  REMOTE_CONTRACT_VERSION_V7,
 } from '../src/index.js'
 import type {
   RemoteAdmissionPort,
@@ -622,6 +623,12 @@ export function p8t3WireV5(params: Record<string, unknown>): Record<string, unkn
 /** One wire request envelope of contract v6 (team-view-sync-complete). */
 export function p8t3WireV6(params: Record<string, unknown>): Record<string, unknown> {
   return { version: REMOTE_CONTRACT_VERSION_V6, params }
+}
+
+/** One wire request envelope of contract v7 (pre-alpha3 W1 fix-A, F10:
+ *  the version-aware override.set / override.reset closed sets). */
+export function p8t3WireV7(params: Record<string, unknown>): Record<string, unknown> {
+  return { version: REMOTE_CONTRACT_VERSION_V7, params }
 }
 
 /** Assert a success result and return it (narrows the union). */
