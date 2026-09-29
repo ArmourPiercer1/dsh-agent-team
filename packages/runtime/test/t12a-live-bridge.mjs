@@ -1049,12 +1049,35 @@ export function createSubagentsDouble(options = {}) {
  * the deployment default the service resolves itself); a configurable
  * rejection (the real service rejects on an unknown preset id).
  *
+ * pre-alpha3 W2-A (review fix F14, guide §5 B): the double also models the
+ * OBSERVATION surface the production persona path consumes (the verified
+ * 0.1.7-rc.1 public service shape — `defaultId` getter +
+ * `compositionInventory()` + `readDocument(presetId)`). The default world:
+ * the deployment default preset (`default`) declares the standard persona
+ * row (enabled) and its document carries NO `complete` flag — the
+ * production observer therefore observes `standard`, exactly the
+ * legacy-shipped-state behavior the pre-W2-A worlds already asserted
+ * (the difference: it is now OBSERVED, not guessed — guide §5 B).
+ *
  * @param {object} [options]
+ * @param {string} [options.defaultId] the deployment default preset id
+ *   (default: `'default'`)
  * @param {'reject'} [options.mountBehavior] reject the mount call
  * @param {string} [options.mountErrorMessage]
  */
 export function createAgentPresetsDouble(options = {}) {
   const mounts = []
+  const defaultId = options.defaultId ?? 'default'
+  // The deployment default preset's effective declared composition (the
+  // js-yaml entryListSchema dump shape — the registry readDocument body):
+  // the standard DSH persona plugin, enabled, no `complete` flag.
+  const defaultDocumentContent = [
+    '- id: agent-persona',
+    "  name: '@deepseek-ai/dsh-persona'",
+    '  config:',
+    '    prefix: You are a coding agent powered by the {{model}} model.',
+    "    suffix: 'Your working directory is {{cwd}}.'",
+  ].join('\n')
   return {
     mounts,
     mount(agentCtx, presetId) {
@@ -1062,7 +1085,41 @@ export function createAgentPresetsDouble(options = {}) {
       if (options.mountBehavior === 'reject') {
         return Promise.reject(new Error(options.mountErrorMessage ?? 'agent presets mount failed'))
       }
-      return Promise.resolve({ presetId: presetId ?? 'default' })
+      return Promise.resolve({ presetId: presetId ?? defaultId })
+    },
+    // F14 observation surface (the real service: a sync getter).
+    get defaultId() {
+      return defaultId
+    },
+    // F14 observation surface: the live presence/enablement inventory.
+    // The default world's deployment default preset carries the enabled
+    // persona row (everything else in the world's composition is
+    // persona-irrelevant and omitted — the observer only ever reads the
+    // persona row).
+    async compositionInventory() {
+      return [
+        {
+          id: defaultId,
+          isDefault: true,
+          rows: [
+            {
+              entryId: 'agent-persona',
+              moduleName: '@deepseek-ai/dsh-persona',
+              enabled: true,
+            },
+          ],
+        },
+      ]
+    },
+    // F14 observation surface: the effective declared composition document
+    // (the real service returns `{ agentPreset, content }`; unknown preset
+    // ids reject — the production observer maps that to a typed
+    // `unresolved`, never a guess).
+    async readDocument(presetId) {
+      if (presetId !== defaultId) {
+        return Promise.reject(new Error(`agentPresets.readDocument: unknown preset '${presetId}'`))
+      }
+      return { agentPreset: defaultId, content: defaultDocumentContent }
     },
   }
 }

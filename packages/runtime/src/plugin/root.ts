@@ -274,6 +274,7 @@ import { buildTeamRootOwnershipIndex, toTeamRootWireRow } from '../team-ownershi
 import type { DurableTemplateRow } from '../../projection/index.js'
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js'
 import type {
+  RequirementFactsAuthority,
   TeamAgentBindings,
   TeamPluginConfig,
   TeamProductionRoot,
@@ -692,6 +693,17 @@ export interface TeamProductionRootParams {
    * "templateId missing").
    */
   readonly resolveBoundBlueprint?: (teamRootSid: string) => TeamBlueprint
+  /**
+   * pre-alpha3 W2-A (review fix F1, guide §2.3) — the runtime
+   * requirement-facts authority (the #40 live environment source for the
+   * RequirementAuthority: the live provider + the 3-state readiness probe
+   * + the production substrate plan + the persona observer). OPTIONAL at
+   * the factory level: absent → the root surface carries no
+   * `requirementFacts` (factory worlds). The production host entry ALWAYS
+   * passes one (it assembles the authority over the live glue + the DSH
+   * public `agentPresets` seam).
+   */
+  readonly requirementFacts?: RequirementFactsAuthority
 }
 
 /**
@@ -720,6 +732,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     blueprintCatalog,
     blueprintAuthority,
     resolveBoundBlueprint,
+    requirementFacts,
   } = params
   const repos: TeamDomainRepositories = domain.repositories
   const rootSid: string = config.rootSessionId
@@ -2469,5 +2482,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     tools,
     boot,
     close,
+    // pre-alpha3 W2-A (review fix F1, guide §2.3): the runtime
+    // requirement-facts authority (the #40 live environment source) —
+    // present only in the production host entry world (the additive-
+    // optional param; factory worlds carry none, the surface stays absent).
+    requirementFacts,
   }
 }

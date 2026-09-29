@@ -30,4 +30,18 @@ export type {
   PersonaObservationSource,
   ResolveRuntimeSubstrateArgs,
   RuntimeSubstratePlan,
+  RuntimeSubstratePlanEntry,
 } from './substrate-resolver.js'
+export {
+  COMPOSITION_JS_TAG,
+  PERSONA_PLUGIN_MODULE_NAME,
+  parsePersonaKindFromCompositionDocument,
+} from './persona-composition.js'
+export type { CompositionPersonaDerivation } from './persona-composition.js'
+export { createProductionPersonaObserver } from './production-observer.js'
+export type {
+  AgentPresetPersonaSeam,
+  PresetCompositionMirror,
+  PresetCompositionRowMirror,
+  ProductionPersonaObserver,
+} from './production-observer.js'
