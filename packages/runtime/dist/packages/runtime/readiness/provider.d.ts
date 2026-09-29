@@ -33,15 +33,29 @@ import { type CapabilityObservation, type CapabilityType, type ProbeVerdict } fr
  * unreadable, conditional disable not evaluatable) SHOULD reject — the
  * provider maps the rejection to `unknown` (fail-soft, re-probable).
  */
+/**
+ * A probe verdict carrying an optional plugin-owned diagnostic reason
+ * (F15, plan §6: the MCP production probe port carries its plugin-owned
+ * evidence codes — e.g. `MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN` — into the
+ * observation provenance). The domain stays 3-state: only `verdict`
+ * participates in the vocabulary; `reason` is provenance (never a
+ * fingerprint input), exactly like the rejection-derived reason.
+ */
+export interface ProbeVerdictDetail {
+    readonly verdict: ProbeVerdict;
+    readonly reason?: string;
+}
 export interface CapabilityProbePort {
     /** The observation source this port produces (provenance). */
     readonly source: string;
     /**
      * Observe one named capability. Resolves to `reachable` (live) or
-     * `unreachable` (observed down). MAY reject (a typed probe failure — the
-     * provider resolves the rejection to `unknown` with the message as reason).
+     * `unreachable` (observed down) — either as a bare verdict or as a
+     * {@link ProbeVerdictDetail} carrying the plugin-owned reason. MAY
+     * reject (a typed probe failure — the provider resolves the rejection
+     * to `unknown` with the message as reason).
      */
-    probe(name: string): ProbeVerdict | Promise<ProbeVerdict>;
+    probe(name: string): ProbeVerdict | ProbeVerdictDetail | Promise<ProbeVerdict | ProbeVerdictDetail>;
 }
 /** The injected ports of the readiness provider. */
 export interface ReadinessProviderPorts {

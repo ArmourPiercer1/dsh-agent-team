@@ -1805,16 +1805,34 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // live sessions ONLY (guide §2.3: after a restart the readiness recovers to --
   // `unknown` and re-probes — the durable `capability-runtime-event` telemetry --
   // is NEVER read back as current readiness; the telemetry is the ledger,     --
-  // the probe is the truth). A live fiber for the server on ANY live session  --
-  // is `reachable`; an observed mount failure on a live session is            --
-  // `unreachable`; nothing live is `unknown` (fresh boot / no materialization --
-  // yet — the fail-soft re-probable state, plan §C.10 gate 3).                --
+  // the probe is the truth).                                                    --
+  //                                                                            --
+  // F15 (plan §5/§6/§7): fiber presence alone is NO LONGER `reachable` — the   --
+  // upstream 0.1.7-rc.1 supervisor WITHDRAWS the server's tools when the       --
+  // reconnect budget exhausts while the handle stays live ("disposal is the   --
+  // only way back"). Each live session holding the fiber is therefore          --
+  // classified by the glue's OPERATIONAL WITNESS — the boundary pull-probe     --
+  // over the PUBLIC tool surface (`mcp__<serverName>__*`, plan §7 V1 authority; --
+  // `tools/change` is never a classifier): a confirmed loss (fiber present +   --
+  // previously tool-bearing + surface withdrawn + still policy-targeted)       --
+  // retires the session's exhausted fiber (witness side effect, exactly once,  --
+  // idempotent) and reports `unreachable` + `confirmedLoss`. Aggregation: a    --
+  // healthy live fiber on ANY other session wins (`reachable` — the server is  --
+  // up; the losing session's fiber is retired and remounts after the 30 s     --
+  // cooldown); a confirmed loss on ALL live fibers is `unreachable` (with the  --
+  // plugin-owned evidence code `MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN` as the      --
+  // observation provenance); an observed mount failure (a `failed`             --
+  // materialization slot) stays `unreachable`; nothing live is `unknown`       --
+  // (fresh boot / no materialization yet — the fail-soft re-probable state,    --
+  // plan §C.10 gate 3).                                                        --
   const capabilityReadiness: CapabilityReadinessProvider = createCapabilityReadinessProvider({
     probes: {
       mcpServer: {
         source: OBSERVATION_SOURCES.mcpFiber,
-        probe: (name: string) => {
+        probe: async (name: string) => {
           let mountFailed = false
+          let anyReachable = false
+          let confirmedLoss = false
           for (const sessionId of live.listLiveSessions()) {
             const state = live.getConsumptionState(sessionId) as
               | {
@@ -1827,13 +1845,39 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
               | undefined
             if (state === undefined || state === null) continue
             if (state.mcpFibers !== undefined && state.mcpFibers.has(name)) {
-              return PROBE_VERDICTS.reachable
+              const witness =
+                typeof live.observeMcpOperationalWitness === 'function'
+                  ? await live.observeMcpOperationalWitness(sessionId, name)
+                  : undefined
+              if (witness !== undefined) {
+                if (witness.verdict === 'reachable') {
+                  anyReachable = true
+                } else if (witness.verdict === 'unreachable') {
+                  confirmedLoss = true
+                }
+                // `unknown`: unobservable (a zero-tool server / an unreadable
+                // surface / a plugin-initiated removal in flight) — keep
+                // scanning the other sessions; a fiber's mere presence never
+                // fabricates an `unreachable`.
+              } else {
+                // A pre-F15 glue (no witness seam — the test worlds): keep
+                // the legacy fiber-presence classification.
+                return PROBE_VERDICTS.reachable
+              }
+              continue
             }
             const slot = state.mcpMaterialization?.get(name)
             if (slot !== undefined && slot.status === 'failed') {
               mountFailed = true
             }
           }
+          if (confirmedLoss && !anyReachable) {
+            return {
+              verdict: PROBE_VERDICTS.unreachable,
+              reason: 'MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN',
+            }
+          }
+          if (anyReachable) return PROBE_VERDICTS.reachable
           return mountFailed ? PROBE_VERDICTS.unreachable : PROBE_VERDICTS.unknown
         },
       },

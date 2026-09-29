@@ -47,7 +47,18 @@ export function createCapabilityReadinessProvider(ports) {
             }
             else {
                 try {
-                    verdict = await port.probe(name);
+                    const result = await port.probe(name);
+                    if (typeof result === 'string') {
+                        verdict = result;
+                    }
+                    else {
+                        // F15 (plan §6): the port carried a plugin-owned reason
+                        // (provenance — the observation's `reason` field, never a
+                        // fingerprint input; the domain stays 3-state).
+                        verdict = result.verdict;
+                        if (result.reason !== undefined)
+                            reason = result.reason;
+                    }
                 }
                 catch (error) {
                     // The probe ran but rejected: a typed probe failure → unknown

@@ -14,7 +14,7 @@
  */
 export { capabilityKey, createCapabilityObservation, OBSERVATION_SOURCES, parseCapabilityObservation, PROBE_VERDICTS, PROBE_VERDICT_VALUES, assertProbeVerdict, type CapabilityIdentity, type CapabilityObservation, type CapabilityType, type ObservationSource, type ProbeVerdict, } from './types.js';
 export { READINESS_ERROR_CODES, READINESS_ERROR_CODE_VALUES, type ReadinessErrorCode, } from './errors.js';
-export { createCapabilityReadinessProvider, type CapabilityProbePort, type CapabilityReadinessProvider, type ReadinessProviderPorts, } from './provider.js';
+export { createCapabilityReadinessProvider, type CapabilityProbePort, type CapabilityReadinessProvider, type ProbeVerdictDetail, type ReadinessProviderPorts, } from './provider.js';
 export { createCapabilityObservationRegistry, type CapabilityObservationRegistry, } from './registry.js';
 export { CAPABILITY_RUNTIME_EVENT_FACT_TYPE, CAPABILITY_RUNTIME_EVENT_KIND_VALUES, CAPABILITY_RUNTIME_EVENT_PAYLOAD_FIELDS, CAPABILITY_RUNTIME_EVENTS, assertCapabilityRuntimeEventKind, createCapabilityRuntimeEvent, writeCapabilityRuntimeEvent, type CapabilityRuntimeEvent, type CapabilityRuntimeEventKind, } from './telemetry.js';
 export { MATERIALIZATION_STATES, MATERIALIZATION_STATE_VALUES, MEMBER_LIVENESS, POLICY_AXIS, SUPPLY_AXIS, deriveMaterializationStatus, type MaterializationSlot, type MaterializationStatus, type MemberLiveness, type PolicyAxis, type RuntimeCapabilityStatus, type SupplyAxis, } from './status.js';

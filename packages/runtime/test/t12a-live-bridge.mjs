@@ -471,6 +471,29 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
           this.withdrawnToolCount += activationDisposers.length
           for (const dispose of activationDisposers.splice(0)) dispose()
         },
+        // F15 (plan §9.4 re-sync transient): models the upstream
+        // `syncTools()` generation swap at the public-seam level — "dispose
+        // previous registrations → register new generation" (plan §7). The
+        // swap runs SYNCHRONOUSLY (as the upstream registry sync does within
+        // one connection turn): a boundary pull-probe taken after the swap
+        // observes the NEW generation's (non-empty) surface — a successful
+        // re-sync must NEVER be classified as a loss (the pin: no telemetry,
+        // no fiber retirement, the witness stays `reachable`). The previous
+        // registrations are unwound through the SAME disposers as the
+        // withdrawal, so the final surface is exactly the new names. The
+        // handle is NOT disposed (`disposed`/`disposeCount` unchanged) — a
+        // generation swap keeps the same live connection. ADDITIVE and
+        // inert for every pre-F15 world (no existing test calls it).
+        swapTools(newNames) {
+          for (const dispose of activationDisposers.splice(0)) dispose()
+          for (const name of newNames) {
+            const dispose = ctxSelf.tools.register({
+              name,
+              description: `mcp tool of server ${serverName}`,
+            })
+            activationDisposers.push(dispose)
+          }
+        },
         // `await fiber` (the glue's MCP-activation await) must settle exactly
         // once. The settled value is a NON-thenable (`undefined`): resolving
         // the adoption promise with `fiber` itself would re-enter this `then`
@@ -1377,6 +1400,16 @@ export async function createLiveWorld(options = {}) {
     controlServiceRef,
     now,
     ...(options.subagents !== undefined ? { subagents: options.subagents } : {}),
+    // F15 (plan §11): the durable capability-runtime telemetry hook —
+    // the glue's `capabilityTelemetry` dep (a NO-OP when absent: a test
+    // world without durable telemetry omits it and every emit is
+    // silently dropped). A test supplies a recording double to assert
+    // the event stream (exactly one `capability-lost` on a confirmed
+    // loss, exactly one `mount-restored` on the fresh remount, and NO
+    // runtime-loss events from plugin-initiated removals).
+    ...(options.capabilityTelemetry !== undefined
+      ? { capabilityTelemetry: options.capabilityTelemetry }
+      : {}),
     ...(agentPresetsDouble !== null && agentPresetsDouble !== undefined
       ? { agentPresets: agentPresetsDouble }
       : {}),

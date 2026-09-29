@@ -38,6 +38,7 @@ export {
   createCapabilityReadinessProvider,
   type CapabilityProbePort,
   type CapabilityReadinessProvider,
+  type ProbeVerdictDetail,
   type ReadinessProviderPorts,
 } from './provider.js'
 
