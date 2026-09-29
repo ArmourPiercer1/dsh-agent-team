@@ -1,0 +1,584 @@
+{
+  "kit": "pr-c-mcp-isolation-smoke",
+  "stamp": "prc-mcp-2026-09-28T22-38-24",
+  "world": "tests/homes/prc-mcp-2026-09-28T22-38-24",
+  "worldPath": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prc-runtime-env/tests/homes/prc-mcp-2026-09-28T22-38-24",
+  "worldCleaned": true,
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prc-runtime-env",
+  "hostTree": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+  "hostBaselineSha": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "clientCommitHash": "46a7f68b09",
+  "testUse": {
+    "tree": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "clean": true,
+    "head": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+    "detail": "statusEmpty=true diffEmpty=true head=46a7f68b0922371ce7144b668b90e377d8e799f4"
+  },
+  "ports": {
+    "hostPort": 3182,
+    "mockPort": 3497,
+    "mcpA": 3491,
+    "mcpB": 3492,
+    "mcpC": 3493
+  },
+  "stable": {
+    "before": {
+      "http://127.0.0.1:3080/": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "http://127.0.0.1:3180/": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    },
+    "after": {
+      "http://127.0.0.1:3080/": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "http://127.0.0.1:3180/": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    }
+  },
+  "criteria": [
+    {
+      "id": "C1",
+      "name": "C down at a mount attempt -> A/B stay MOUNTED, C slot = failed (reason + attempt); no healthy-fiber rollback (C.6 headline)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "C DOWN at the mount attempt: C materialization slot = `failed` with a reason + attempt count (the per-server failure isolates into its own slot)",
+          "ok": true,
+          "detail": "C={\"mounted\":false,\"materialization\":\"failed\",\"attempts\":1,\"reason\":\"mcp-client(mcp_router): initial connection or tool synchronization failed\",\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}}"
+        },
+        {
+          "name": "A stays MOUNTED (the healthy fiber is NOT rolled back by C failure)",
+          "ok": true,
+          "detail": "A={\"mounted\":true,\"materialization\":\"mounted\",\"attempts\":1,\"reason\":null,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}}"
+        },
+        {
+          "name": "B stays MOUNTED (the healthy fiber is NOT rolled back by C failure)",
+          "ok": true,
+          "detail": "B={\"mounted\":true,\"materialization\":\"mounted\",\"attempts\":1,\"reason\":null,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}}"
+        },
+        {
+          "name": "the healthy surface is live: A's ping EXECUTED (pong observed) AND the model schema carries A+B ping tools but NOT C's (C isolated from the surface)",
+          "ok": true,
+          "detail": "schema=[\"mcp__mcp_designer__ping\",\"mcp__mcp_signal__ping\"] pongSeen=true"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "C2",
+      "name": "C recovers -> next boundary auto-mounts (retry after the real 30s cooldown) + mount-restored",
+      "status": "run",
+      "checks": [
+        {
+          "name": "C auto-MOUNTS at the next boundary after the cooldown (the per-server retry): materialization = `mounted`, attempt = 2 (the retry), mounted = true",
+          "ok": true,
+          "detail": "C={\"mounted\":true,\"materialization\":\"mounted\",\"attempts\":2,\"reason\":null,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}}"
+        },
+        {
+          "name": "A/B REMAIN mounted (the recovery did not disturb the healthy fibers)",
+          "ok": true,
+          "detail": "A={\"mounted\":true,\"materialization\":\"mounted\",\"attempts\":1,\"reason\":null,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}} B={\"mounted\":true,\"materialization\":\"mounted\",\"attempts\":1,\"reason\":null,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}}"
+        },
+        {
+          "name": "C is now EXECUTABLE: C's ping ran (pong observed) and C's tool is on the model schema (A+B+C all present)",
+          "ok": true,
+          "detail": "schema=[\"mcp__mcp_designer__ping\",\"mcp__mcp_router__ping\",\"mcp__mcp_signal__ping\"] pongSeen=true"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "C3",
+      "name": "restart (same DSH_HOME) -> no fabricated failed; cold root not live pre-reattach; probe re-runs at first reconcile, C re-mounted with a FRESH attempt",
+      "status": "run",
+      "checks": [
+        {
+          "name": "the created root was NOT live right after the resume boot (cold) — boot re-attaches only the boot root",
+          "ok": true,
+          "detail": "preTriggerLive=[\"session-prcmcp-boot-prc-mcp-2026-09-28T22-38-24\"]"
+        },
+        {
+          "name": "the created root is LIVE after the re-attach (the first reconcile ran on it)",
+          "ok": true,
+          "detail": "rtLive=[\"session-prcmcp-boot-prc-mcp-2026-09-28T22-38-24\",\"session-prcmcp-t1-prc-mcp-2026-09-28T22-38-24\"]"
+        },
+        {
+          "name": "materialization is NOT a fabricated `failed` after the restart: C is `mounted` (the probe re-ran and re-mounted C), NOT a carried-over `failed`",
+          "ok": true,
+          "detail": "C={\"mounted\":true,\"materialization\":\"mounted\",\"attempts\":1,\"reason\":null,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}}"
+        },
+        {
+          "name": "the probe RE-RAN with a FRESH attempt count: C attempt = 1 (the ephemeral slot did NOT persist the pre-restart attempt=2 / a failed state across the restart — unknown != unreachable, no fabrication)",
+          "ok": true,
+          "detail": "C.attempts=1 (pre-restart was 2; a fabricated carry-over would show >= 2 or a failed slot)"
+        },
+        {
+          "name": "A/B re-mounted on the restart too (the whole configured set re-materializes on the first reconcile)",
+          "ok": true,
+          "detail": "A={\"mounted\":true,\"materialization\":\"mounted\",\"attempts\":1,\"reason\":null,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}} B={\"mounted\":true,\"materialization\":\"mounted\",\"attempts\":1,\"reason\":null,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}}"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "C4",
+      "name": "durable telemetry: capability-runtime-event facts in correct ORDER (mount-failed -> mount-restored), monotonic timestamps, correct attempt (1,2)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "the capability-runtime-event facts were DURABLY written for C: a `mount-failed` AND a `mount-restored` fact exist in the ledger (read back over team.getLedgerPage)",
+          "ok": true,
+          "detail": "failed=1 restored=1 total=2"
+        },
+        {
+          "name": "ORDER: the mount-failed fact precedes the mount-restored fact (sequence ordering)",
+          "ok": true,
+          "detail": "failed.seq=1 restored.seq=2"
+        },
+        {
+          "name": "ATTEMPT counters: mount-failed attempt = 1, mount-restored attempt = 2 (the retry)",
+          "ok": true,
+          "detail": "failed.attempt=1 restored.attempt=2"
+        },
+        {
+          "name": "VERDICTS: mount-failed verdict = unreachable, mount-restored verdict = reachable (the 3-state readiness verdicts)",
+          "ok": true,
+          "detail": "failed.verdict=unreachable restored.verdict=reachable"
+        },
+        {
+          "name": "SOURCE + TYPE: both facts are source=mcp-fiber, capabilityType=mcpServer (the MCP fiber seam)",
+          "ok": true,
+          "detail": "failed.source=mcp-fiber restored.source=mcp-fiber"
+        },
+        {
+          "name": "TIMESTAMPS monotonically non-decreasing: mount-failed observedAt <= mount-restored observedAt (and createdAt ordering agrees)",
+          "ok": true,
+          "detail": "failed.observedAt=2026-09-28T22:38:26.901Z restored.observedAt=2026-09-28T22:38:59.470Z"
+        },
+        {
+          "name": "the mount-failed fact carries a non-empty reason (the failure diagnostic is durable)",
+          "ok": true,
+          "detail": "reason=mcp-client(mcp_router): initial connection or tool synchronization failed"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "C5",
+      "name": "durableGeneration advances after the telemetry ledger.put (getProjection v6, strictly increasing before/after mount-restored)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "team.getProjection (v6) returns a numeric durableGeneration + a liveToken (the v6 freshness pair is present on both bracket reads)",
+          "ok": true,
+          "detail": "genBefore=2 genAfter=3 liveToken=lt-v1-92163c7dcd398e11e5..."
+        },
+        {
+          "name": "durableGeneration ADVANCED after the telemetry ledger.put: genAfterRestored > genBeforeRestored (the mount-restored write advanced the durable watermark)",
+          "ok": true,
+          "detail": "genAfter=3 > genBefore=2"
+        },
+        {
+          "name": "the per-root durable ledger grew across the bracket (new durable ROOT_T1 writes, incl. the mount-restored telemetry fact): countAfter > countBefore",
+          "ok": true,
+          "detail": "countAfter=2 > countBefore=1"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "C6",
+      "name": "persona/substrate: resolver plan.rootPresetId == actual mount; shipped state standard == standard (row config leaves the preset ids ABSENT)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "the row config leaves rootPresetId / memberPresetId / presetSubstrate ABSENT (the resolver receives rootPresetId = undefined = the deployment default — the glue never invents an id)",
+          "ok": true,
+          "detail": "hasRoot=false hasMember=false hasSubstrate=false"
+        },
+        {
+          "name": "the SHIPPED state is standard == standard: plan.rootPresetId (deployment default) == observed substrate personaKind == actual mount",
+          "ok": true,
+          "detail": "deploymentDefault=standard substrate.personaKind=standard"
+        },
+        {
+          "name": "the T1 leader RAN (the fail-closed preset guard passed -> its preset substrate was mounted): the boundary + recovery turns completed",
+          "ok": true,
+          "detail": "the T1 leader executed the C1/C2 boundary turns (an agent never runs without its preset mounted — the fail-closed guard in agentSetup)"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "C7",
+      "name": "no regression: the old Alpha.2 workflow (member create / delegate / collect) works end-to-end",
+      "status": "run",
+      "checks": [
+        {
+          "name": "the old Alpha.2 workflow works end-to-end: member.create activated a worker (member-activated)",
+          "ok": true,
+          "detail": "workerId=inst-0220xzo0kuhv"
+        },
+        {
+          "name": "the delegate step worked: member.followup was work-admitted (the task ran on the mock witness)",
+          "ok": true,
+          "detail": "worker turn completed (marker=PRC_WORK_prc-mcp-2026-09-28T22-38-24)"
+        },
+        {
+          "name": "the collect step worked: team.getProjection (v6) reflects the created worker in the team members (no regression from the C.6 MCP rewrite)",
+          "ok": true,
+          "detail": "members=2 workerRow={\"instanceId\":\"inst-0220xzo0kuhv\",\"templateId\":\"worker\",\"label\":\"c7-worker\",\"workspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"createdAt\":\"2026-09-28T22:39:00.101Z\",\""
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "H1",
+      "name": "test-use porcelain EMPTY + HEAD baseline; :3080/:3180 zero-touch (read-only probes pre == post)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "test-use porcelain EMPTY + HEAD baseline AFTER the run (ZERO-TOUCH: the pristine upstream is unchanged)",
+          "ok": true,
+          "detail": "statusEmpty=true diffEmpty=true head=46a7f68b0922371ce7144b668b90e377d8e799f4"
+        },
+        {
+          "name": ":3080/:3180 stable instances ZERO-TOUCH (read-only probes pre == post — never bound/booted here)",
+          "ok": true,
+          "detail": "before={\"http://127.0.0.1:3080/\":{\"url\":\"http://127.0.0.1:3080/\",\"status\":401},\"http://127.0.0.1:3180/\":{\"url\":\"http://127.0.0.1:3180/\",\"status\":401}} after={\"http://127.0.0.1:3080/\":{\"url\":\"http://127.0.0.1:3080/\",\"status\":401},\"http://127.0.0.1:3180/\":{\"url\":\"http://127.0.0.1:3180/\",\"status\":401}}"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "H2",
+      "name": "run ports released after teardown (host + 3491 3492 3493 + mock)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "all run ports released after teardown (host + mcpA/B/C + mock)",
+          "ok": true,
+          "detail": "[{\"label\":\"host\",\"port\":3182,\"free\":true},{\"label\":\"mcpA\",\"port\":3491,\"free\":true},{\"label\":\"mcpB\",\"port\":3492,\"free\":true},{\"label\":\"mcpC\",\"port\":3493,\"free\":true},{\"label\":\"mock\",\"port\":3497,\"free\":true}]"
+        }
+      ],
+      "pass": true
+    }
+  ],
+  "legs": {
+    "C1": {
+      "a": {
+        "mounted": true,
+        "materialization": "mounted",
+        "attempts": 1,
+        "reason": null,
+        "allowed": true,
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        }
+      },
+      "b": {
+        "mounted": true,
+        "materialization": "mounted",
+        "attempts": 1,
+        "reason": null,
+        "allowed": true,
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        }
+      },
+      "c": {
+        "mounted": false,
+        "materialization": "failed",
+        "attempts": 1,
+        "reason": "mcp-client(mcp_router): initial connection or tool synchronization failed",
+        "allowed": true,
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        }
+      },
+      "schema": [
+        "mcp__mcp_designer__ping",
+        "mcp__mcp_signal__ping"
+      ],
+      "pongSeen": true
+    },
+    "genBeforeRestored": {
+      "durableGeneration": 2,
+      "liveToken": "lt-v1-92163c7dcd398e11e575d499baa944facf5c772dfd19bc87a34d8cf5e57b6852"
+    },
+    "ledgerCountBefore": 1,
+    "genAfterRestored": {
+      "durableGeneration": 3,
+      "liveToken": "lt-v1-92163c7dcd398e11e575d499baa944facf5c772dfd19bc87a34d8cf5e57b6852"
+    },
+    "C2": {
+      "a": {
+        "mounted": true,
+        "materialization": "mounted",
+        "attempts": 1,
+        "reason": null,
+        "allowed": true,
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        }
+      },
+      "b": {
+        "mounted": true,
+        "materialization": "mounted",
+        "attempts": 1,
+        "reason": null,
+        "allowed": true,
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        }
+      },
+      "c": {
+        "mounted": true,
+        "materialization": "mounted",
+        "attempts": 2,
+        "reason": null,
+        "allowed": true,
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        }
+      },
+      "schema": [
+        "mcp__mcp_designer__ping",
+        "mcp__mcp_router__ping",
+        "mcp__mcp_signal__ping"
+      ],
+      "pongSeen": true
+    },
+    "C4": {
+      "totalCapabilityEvents": 2,
+      "cEvents": [
+        {
+          "sequence": 1,
+          "createdAt": "2026-09-28T22:38:26.906Z",
+          "payload": {
+            "attempt": 1,
+            "capabilityName": "mcp_router",
+            "capabilityType": "mcpServer",
+            "event": "mount-failed",
+            "observedAt": "2026-09-28T22:38:26.901Z",
+            "reason": "mcp-client(mcp_router): initial connection or tool synchronization failed",
+            "source": "mcp-fiber",
+            "verdict": "unreachable"
+          }
+        },
+        {
+          "sequence": 2,
+          "createdAt": "2026-09-28T22:38:59.483Z",
+          "payload": {
+            "attempt": 2,
+            "capabilityName": "mcp_router",
+            "capabilityType": "mcpServer",
+            "event": "mount-restored",
+            "observedAt": "2026-09-28T22:38:59.470Z",
+            "source": "mcp-fiber",
+            "verdict": "reachable"
+          }
+        }
+      ],
+      "firstFailed": {
+        "sequence": 1,
+        "createdAt": "2026-09-28T22:38:26.906Z",
+        "payload": {
+          "attempt": 1,
+          "capabilityName": "mcp_router",
+          "capabilityType": "mcpServer",
+          "event": "mount-failed",
+          "observedAt": "2026-09-28T22:38:26.901Z",
+          "reason": "mcp-client(mcp_router): initial connection or tool synchronization failed",
+          "source": "mcp-fiber",
+          "verdict": "unreachable"
+        }
+      },
+      "firstRestored": {
+        "sequence": 2,
+        "createdAt": "2026-09-28T22:38:59.483Z",
+        "payload": {
+          "attempt": 2,
+          "capabilityName": "mcp_router",
+          "capabilityType": "mcpServer",
+          "event": "mount-restored",
+          "observedAt": "2026-09-28T22:38:59.470Z",
+          "source": "mcp-fiber",
+          "verdict": "reachable"
+        }
+      }
+    },
+    "C5": {
+      "genBeforeRestored": {
+        "durableGeneration": 2,
+        "liveToken": "lt-v1-92163c7dcd398e11e575d499baa944facf5c772dfd19bc87a34d8cf5e57b6852"
+      },
+      "genAfterRestored": {
+        "durableGeneration": 3,
+        "liveToken": "lt-v1-92163c7dcd398e11e575d499baa944facf5c772dfd19bc87a34d8cf5e57b6852"
+      },
+      "ledgerCountBefore": 1,
+      "ledgerCountAfter": 2,
+      "mountFailedSeq": 1,
+      "mountRestoredSeq": 2
+    },
+    "C6": {
+      "rowConfigHasRootPresetId": false,
+      "rowConfigHasMemberPresetId": false,
+      "rowConfigHasPresetSubstrate": false,
+      "shippedSubstrate": {
+        "presetId": "dsh-agent-team",
+        "personaKind": "standard"
+      },
+      "deploymentDefault": "standard",
+      "note": "The production observePersonaKind probe is a DOCUMENTED FOLLOW-UP (not implemented here, per the gate ruling). Only the shipped-state equality is verified: the row config leaves rootPresetId/memberPresetId/presetSubstrate ABSENT -> plan.rootPresetId = the deployment default (standard); the observed substrate default is personaKind standard; the actual mount is the deployment default (standard)."
+    },
+    "C7": {
+      "workerId": "inst-0220xzo0kuhv",
+      "memberCount": 2,
+      "workerRow": {
+        "instanceId": "inst-0220xzo0kuhv",
+        "templateId": "worker",
+        "label": "c7-worker",
+        "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+        "createdAt": "2026-09-28T22:39:00.101Z",
+        "lifecycle": "SETTLED",
+        "contextPolicy": "persistent",
+        "effectiveConfig": {
+          "model": {
+            "value": "deepseek-official/prc-smoke-model",
+            "source": "capability",
+            "state": "inherited"
+          },
+          "workspace": {
+            "value": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+            "source": "instance-creation",
+            "state": "locked",
+            "locked": true
+          },
+          "permissions": {},
+          "autonomy": {
+            "value": null,
+            "source": "autonomy-overlay",
+            "state": "inherited"
+          }
+        },
+        "liveActivity": {
+          "residency": "resident",
+          "lastActivityAt": "2026-09-28T22:39:00.231Z"
+        },
+        "childSessionId": "session-team-child-64998ec935518fce6471bd71f90e9b96",
+        "modelState": {
+          "current": {
+            "value": "deepseek-official/prc-smoke-model",
+            "source": "capability",
+            "state": "inherited"
+          },
+          "provenance": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null,
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "availability": "available"
+        }
+      },
+      "projectionTopLevelKeys": [
+        "schemaVersion",
+        "teamSessionId",
+        "blueprint",
+        "generation",
+        "generatedAt",
+        "root",
+        "templates",
+        "members",
+        "ledger",
+        "durableGeneration",
+        "liveToken"
+      ]
+    },
+    "C3": {
+      "preTriggerLive": [
+        "session-prcmcp-boot-prc-mcp-2026-09-28T22-38-24"
+      ],
+      "rtLive": [
+        "session-prcmcp-boot-prc-mcp-2026-09-28T22-38-24",
+        "session-prcmcp-t1-prc-mcp-2026-09-28T22-38-24"
+      ],
+      "a": {
+        "mounted": true,
+        "materialization": "mounted",
+        "attempts": 1,
+        "reason": null,
+        "allowed": true,
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        }
+      },
+      "b": {
+        "mounted": true,
+        "materialization": "mounted",
+        "attempts": 1,
+        "reason": null,
+        "allowed": true,
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        }
+      },
+      "c": {
+        "mounted": true,
+        "materialization": "mounted",
+        "attempts": 1,
+        "reason": null,
+        "allowed": true,
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        }
+      }
+    }
+  },
+  "hostLogs": [
+    {
+      "bootNum": 1,
+      "phase": "create",
+      "port": 3182,
+      "src": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prc-runtime-env/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-c/prc-mcp-2026-09-28T22-38-24/instances/HOST1-CREATE/instance-port3182.log",
+      "dest": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prc-runtime-env/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-c/prc-mcp-2026-09-28T22-38-24/host1-create-port3182.log"
+    },
+    {
+      "bootNum": 2,
+      "phase": "resume",
+      "port": 3182,
+      "src": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prc-runtime-env/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-c/prc-mcp-2026-09-28T22-38-24/instances/HOST2-RESUME/instance-port3182.log",
+      "dest": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prc-runtime-env/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-c/prc-mcp-2026-09-28T22-38-24/host2-resume-port3182.log"
+    }
+  ],
+  "fatal": null,
+  "exitCode": 0
+}

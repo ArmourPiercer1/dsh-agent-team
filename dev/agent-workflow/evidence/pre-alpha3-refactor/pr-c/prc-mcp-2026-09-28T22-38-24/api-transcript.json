@@ -1,0 +1,62 @@
+[
+  {
+    "at": "2026-09-28T22:38:26.811Z",
+    "boot": 1,
+    "phase": "create",
+    "port": 3182
+  },
+  {
+    "at": "2026-09-28T22:38:26.922Z",
+    "method": "team.create",
+    "rootSessionId": "session-prcmcp-t1-prc-mcp-2026-09-28T22-38-24",
+    "blueprintId": "team.prc-t1",
+    "status": 200
+  },
+  {
+    "at": "2026-09-28T22:38:26.934Z",
+    "method": "session/prompt",
+    "sessionId": "session-prcmcp-t1-prc-mcp-2026-09-28T22-38-24",
+    "marker": "PRC_T1_prc-mcp-2026-09-28T22-38-24",
+    "status": 200
+  },
+  {
+    "at": "2026-09-28T22:38:59.507Z",
+    "method": "session/prompt",
+    "sessionId": "session-prcmcp-t1-prc-mcp-2026-09-28T22-38-24",
+    "marker": "PRC_REC_prc-mcp-2026-09-28T22-38-24",
+    "status": 200
+  },
+  {
+    "at": "2026-09-28T22:39:00.067Z",
+    "method": "team.create",
+    "rootSessionId": "session-prcmcp-tw-prc-mcp-2026-09-28T22-38-24",
+    "blueprintId": "team.prc-tw",
+    "status": 200
+  },
+  {
+    "at": "2026-09-28T22:39:00.118Z",
+    "method": "member.create",
+    "teamSessionId": "session-prcmcp-tw-prc-mcp-2026-09-28T22-38-24",
+    "status": 200
+  },
+  {
+    "at": "2026-09-28T22:39:00.225Z",
+    "method": "member.followup",
+    "teamSessionId": "session-prcmcp-tw-prc-mcp-2026-09-28T22-38-24",
+    "targetInstanceId": "inst-0220xzo0kuhv",
+    "status": 200
+  },
+  {
+    "at": "2026-09-28T22:39:00.233Z",
+    "method": "team.getProjection",
+    "teamSessionId": "session-prcmcp-tw-prc-mcp-2026-09-28T22-38-24",
+    "version": 6,
+    "status": 200
+  },
+  {
+    "at": "2026-09-28T22:39:01.690Z",
+    "boot": 2,
+    "phase": "resume",
+    "port": 3182
+  }
+]

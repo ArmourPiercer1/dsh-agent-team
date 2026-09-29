@@ -1267,6 +1267,51 @@ export function createAgentBindings(deps) {
     }
   }
 
+  // ── pre-alpha3 PR-C §C.6: the MCP per-server materialization ───────────
+  //
+  // The retry cooldown window: a `failed` materialization slot is not
+  // re-attempted until this long after its last attempt (plan §C.6 boundary
+  // retry + cooldown — no hot retry loop on a down server).
+  const MCP_RETRY_COOLDOWN_MS = 30_000
+  // The optional telemetry hook (the production wiring fills it; a test
+  // world without the durable telemetry omits it → emit is a no-op).
+  const capabilityTelemetry =
+    typeof deps.capabilityTelemetry === 'function' ? deps.capabilityTelemetry : undefined
+
+  /**
+   * Emit one capability-runtime telemetry event for an MCP mount transition
+   * (plan §C.6/§C.7). BEST-EFFORT: a telemetry write failure is observed,
+   * never propagated (it must NOT fail the member's MCP reconciliation). A
+   * no-op when the production wiring passed no `capabilityTelemetry` hook
+   * (a test world without the durable telemetry).
+   * @param {object} state - the session's consumption state (carries the
+   *   owning team root the event is stamped with).
+   * @param {string} kind - the closed event kind (e.g. `mount-failed`,
+   *   `mount-restored`).
+   * @param {string} serverName - the MCP server (the capability name).
+   * @param {string} verdict - the 3-state readiness verdict.
+   * @param {number} attempt - the attempt count for this server.
+   * @param {string|undefined} reason - the failure diagnostic (failed slots).
+   */
+  async function emitMcpCapabilityEvent(state, kind, serverName, verdict, attempt, reason) {
+    if (typeof capabilityTelemetry !== 'function') return
+    const event = {
+      kind,
+      capabilityType: 'mcpServer',
+      capabilityName: serverName,
+      verdict,
+      source: 'mcp-fiber',
+      observedAt: new Date().toISOString(),
+      attempt,
+    }
+    if (reason !== undefined) event.reason = reason
+    try {
+      await capabilityTelemetry(state.teamRootSessionId, event)
+    } catch (error) {
+      observations.push(`p6t6: capability telemetry write failed [server ${serverName}]: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+
   /**
    * Mount (or dispose) the live mini-MCP servers on one agent per the
    * per-server durable mcp facet views (multi-mcp C5/C6; contract I4).
@@ -1275,16 +1320,25 @@ export function createAgentBindings(deps) {
    *
    * Deny-first ordering (plan §2.5): every mounted server OUTSIDE the
    * target set is disposed BEFORE any new mount, so a failed new mount can
-   * never leave a denied server exposed. Newly-mounted fibers commit to the
-   * live set only when EVERY target server activated; any failure this
-   * round (an activation rejection OR a policy-allowed server with no
-   * configured port) rolls back this round's NEW fibers — the denied
-   * disposals above are NOT restored (they are the durable decision, not a
-   * side effect) — and the error propagates (fail-closed: the setup /
-   * request boundary fails, the request never runs on a partial MCP
-   * surface; a failed server is simply absent, never half-mounted).
+   * never leave a denied server exposed.
+   *
+   * PER-SERVER MOUNT TRANSACTION (pre-alpha3 PR-C §C.6): the all-or-nothing
+   * activation is REPLACED. Each target server is mounted independently: a
+   * SUCCESS commits its fiber to the live set immediately (it never waits
+   * for the others); a FAILURE lands in that server's per-server
+   * materialization slot (`state.mcpMaterialization`) as `failed` (with the
+   * attempt count + a retry cooldown) WITHOUT rolling back the healthy
+   * fibers — one failed server must NOT strand the mounted ones (the C.10
+   * gate: C down → A/B stay mounted). The denied disposals above are NOT
+   * restored (they are the durable decision, not a side effect). A failed
+   * server is isolated (a `failed` slot, retried at the next boundary after
+   * the cooldown) — never half-mounted, never a setup/boundary failure: the
+   * request runs on the healthy surface, and each transition is visible
+   * through the per-server slot, the unified runtime status, and the durable
+   * capability-runtime telemetry (a `mount-failed` / `mount-restored` event).
    * @param {object} state - the session's consumption state (holds the
-   *   per-server fibers / activation errors / last-applied views) AND —
+   *   per-server fibers / activation errors / last-applied views /
+   *   materialization slots) AND —
    *   PR #23 review fix (Finding 1, plan §6) — `mcpMountCtx`: the
    *   Agent-keyed scope context every serverName is registered under
    *   (the agent's own ctx when it already carries the agent's scope tag,
@@ -1328,17 +1382,33 @@ export function createAgentBindings(deps) {
     //     deterministic activation order; C2: the name is the identity).
     const mounts = configured.filter((s) => targetServerNames.includes(s.name) && !state.mcpFibers.has(s.name))
     if (mounts.length === 0) return
-    // (4-5) mount each — the port check FIRST (a policy-allowed server
-    //       without a port fails closed with the server NAMED — plan §6.8
-    //       case 2; a server NOT in the target is never port-checked, so
-    //       an unselected port-null server cannot fail the setup — case 1)
-    //       — successful fibers collect in a TEMPORARY set: nothing commits
-    //       to state until every target server activated.
-    const fresh = []
-    let active = null // the server whose step is in flight (rollback target)
-    try {
-      for (const server of mounts) {
-        active = server
+    // (4-5) PER-SERVER MOUNT TRANSACTION (plan §C.6): each target server is
+    //       mounted independently. A success commits its fiber to the live
+    //       set immediately (it never waits for the others); a failure lands
+    //       in that server's materialization slot as `failed` WITHOUT
+    //       rolling back the healthy fibers. The port check runs FIRST (a
+    //       policy-allowed server without a port fails closed WITH the
+    //       server named — plan §6.8 case 2 — but isolates: the other
+    //       servers still mount); a server NOT in the target is never
+    //       port-checked (an unselected port-null server cannot block the
+    //       setup — case 1).
+    const now = Date.now()
+    for (const server of mounts) {
+      const slot = state.mcpMaterialization.get(server.name)
+      // Cooldown: a server in the retry cooldown window (a recent failed
+      // attempt) is SKIPPED this round — it stays `failed` (a pending
+      // retry) and is re-probed at the next boundary after the cooldown
+      // elapses (plan §C.6 boundary retry + cooldown; no hot retry loop).
+      if (
+        slot !== undefined &&
+        slot.status === 'failed' &&
+        now - slot.lastAttemptAt < MCP_RETRY_COOLDOWN_MS
+      ) {
+        continue
+      }
+      let mounted = false
+      let reason
+      try {
         if (server.port === null) {
           throw new Error(`p6t6: the durable policy allows mcp server '${server.name}' but no mini-MCP port is configured (config.mcpServers port for '${server.name}')`)
         }
@@ -1354,27 +1424,36 @@ export function createAgentBindings(deps) {
           failOnStartupError: true,
         })
         await fiber
-        fresh.push({ name: server.name, fiber })
+        state.mcpFibers.set(server.name, fiber)
+        mounted = true
+      } catch (error) {
+        reason = error instanceof Error ? error.message : String(error)
       }
-    } catch (error) {
-      // (6) ROLLBACK this round's NEW fibers only (the step-2 denied
-      //     disposals stand); record the failed server's error, observe
-      //     with the server named (I8), and fail the setup / boundary.
-      //     (`active` is always set when we reach this catch: every throw
-      //     happens inside the loop after `active = server`.)
-      for (const { fiber } of fresh) {
-        try { fiber.dispose() } catch { /* the fiber is already dead */ }
+      // (6) PER-SERVER IMMEDIATE COMMIT: the success joins the live set NOW
+      //     (no rollback of the healthy fibers); the failure records its
+      //     slot (attempts + lastAttemptAt + reason) + the legacy error map
+      //     (the harness state route reads it) + a telemetry event. A
+      //     `failed` → `mounted` transition is a RESTORE (the C.10 gate: C
+      //     recovers → next boundary auto-mount).
+      const attempts = (slot !== undefined && typeof slot.attempts === 'number' ? slot.attempts : 0) + 1
+      const wasFailed = slot !== undefined && slot.status === 'failed'
+      state.mcpMaterialization.set(
+        server.name,
+        mounted
+          ? { status: 'mounted', attempts, lastAttemptAt: now }
+          : { status: 'failed', attempts, lastAttemptAt: now, reason },
+      )
+      if (mounted) {
+        state.mcpActivationErrors.delete(server.name)
+        if (wasFailed) {
+          observations.push(`p6t6: mcp mount restored [server ${server.name}] (attempt ${attempts})`)
+          await emitMcpCapabilityEvent(state, 'mount-restored', server.name, 'reachable', attempts, undefined)
+        }
+      } else {
+        state.mcpActivationErrors.set(server.name, reason)
+        observations.push(`p6t6: mcp activation failed [server ${server.name}]: ${reason}`)
+        await emitMcpCapabilityEvent(state, 'mount-failed', server.name, 'unreachable', attempts, reason)
       }
-      const message = error instanceof Error ? error.message : String(error)
-      state.mcpActivationErrors.set(active.name, message)
-      observations.push(`p6t6: mcp activation failed [server ${active.name}]: ${message}`)
-      throw error
-    }
-    // (7) COMMIT: every target server activated — the new fibers join the
-    //     live set and any stale error slot of a re-mounted server clears.
-    for (const { name, fiber } of fresh) {
-      state.mcpFibers.set(name, fiber)
-      state.mcpActivationErrors.delete(name)
     }
   }
 
@@ -1669,6 +1748,13 @@ export function createAgentBindings(deps) {
         mcpViews,
         mcpFibers: new Map(),
         mcpActivationErrors: new Map(),
+        // pre-alpha3 PR-C §C.6: the per-server MCP materialization slots —
+        // { status: 'mounted'|'failed', attempts, lastAttemptAt, reason? }.
+        // EPHEMERAL (rebuilt from the first post-restart reconcile; never a
+        // persisted fabricated failure) — the durable authority is the
+        // capability-runtime telemetry. A `mounted` slot = a live fiber; a
+        // `failed` slot = an isolated failure (retried after the cooldown).
+        mcpMaterialization: new Map(),
         appliedRecordIds: new Set(),
         // PR #23 review fix (Finding 1, plan §6): the Agent-keyed MCP
         // scope bridge. `mcpMountCtx` is the context every mini-MCP
@@ -3865,6 +3951,9 @@ export function createAgentBindings(deps) {
       }
       state.mcpFibers.clear()
       state.mcpActivationErrors.clear()
+      // pre-alpha3 PR-C §C.6: the ephemeral materialization slots drop with
+      // the state (a row-stop never persists a fabricated failure).
+      state.mcpMaterialization.clear()
       // Finding 1 bridge (plan §6): the per-agent MCP scope fiber (a child
       // of the agent's ctx — the agent disposal already unwinds it, this
       // is the deterministic belt for a state outliving its agent).
@@ -3888,6 +3977,20 @@ export function createAgentBindings(deps) {
     executeTool,
     getConsumptionState: (sessionId) => consumptionState.get(String(sessionId)),
     resolveConsumptionViews,
+    // pre-alpha3 PR-C §C.6: the manual recheck seam — clears a session's
+    // FAILED MCP materialization slots so the next boundary re-attempts those
+    // servers (ignoring the retry cooldown). Non-authority: it only schedules
+    // re-probes; the durable decision is the mcp facet. Mounted servers are
+    // unaffected (they live in `mcpFibers`, not the materialization map).
+    recheckMcpServers: (sessionId) => {
+      const state = consumptionState.get(String(sessionId))
+      if (state === undefined) return false
+      for (const name of [...state.mcpMaterialization.keys()]) {
+        const slot = state.mcpMaterialization.get(name)
+        if (slot !== undefined && slot.status === 'failed') state.mcpMaterialization.delete(name)
+      }
+      return true
+    },
     observations,
     governanceAuthority,
     dropResidency,

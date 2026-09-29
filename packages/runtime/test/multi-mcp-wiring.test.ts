@@ -242,6 +242,13 @@ interface McpStateShape {
   readonly mcpViews?: Record<string, { allowed: boolean; deniedBy?: { by: string; reason: string } }>
   readonly mcpFibers?: Map<string, unknown>
   readonly mcpActivationErrors?: Map<string, string>
+  // pre-alpha3 PR-C §C.6: the per-server materialization slots (the
+  // independent-convergence surface — a `failed` slot is isolated, never a
+  // rollback of the healthy fibers).
+  readonly mcpMaterialization?: Map<
+    string,
+    { status: 'mounted' | 'failed'; attempts: number; lastAttemptAt: number; reason?: string }
+  >
   readonly a2c2PreMcpSurface?: readonly string[]
 }
 function mcpState(binding: object, sessionId: string): McpStateShape | undefined {
@@ -913,58 +920,74 @@ describe('multi-MCP 6.6 — durable instance-override isolation at the next boun
   })
 })
 
-describe('multi-MCP 6.7a — activation failure at setup (A ok, B throws) rolls back the round', () => {
-  it('the boot fails (the setup is fail closed)', () => {
-    expect(w6BootError).not.toBe(undefined)
-    expect(String((w6BootError as Error)?.message ?? w6BootError)).toContain('beta down')
+describe('multi-MCP 6.7a — pre-alpha3 §C.6 per-server isolation (A ok, B fails at setup) does NOT roll back A', () => {
+  it('the boot SUCCEEDS (a server failure isolates that server; the setup is no longer fail-closed on a partial round)', () => {
+    expect(w6BootError).toBe(undefined)
   })
-  it('A round fiber was created and is ROLLED BACK (disposed) — no partial newly-mounted set', () => {
-    expect(w6FiberA?.disposed).toBe(true)
-    expect(stateFiberKeys(w6LeaderState)).toEqual([])
+  it('A round fiber is MOUNTED and stays live (no rollback of the healthy fiber)', () => {
+    expect(w6FiberA?.disposed).toBe(false)
+    expect(stateFiberKeys(w6LeaderState)).toEqual([A])
   })
-  it('B left nothing in the live state (no partial fiber committed)', () => {
-    expect(w6FiberB !== undefined).toBe(true) // the fiber object exists (plugin() ran)
+  it('B left no live fiber (isolated) but its materialization slot records the failure', () => {
     expect(stateFiberKeys(w6LeaderState)).not.toContain(B)
+    const slotB = w6LeaderState?.mcpMaterialization?.get(B)
+    expect(slotB?.status).toBe('failed')
+    expect(slotB?.attempts).toBe(1)
+    expect(slotB?.reason).toContain('beta down')
   })
   it('the activation error is recorded on the failing server (contract I4 step 6)', () => {
     expect(w6LeaderState?.mcpActivationErrors?.get(B)).toBe('beta down (injected startup failure)')
   })
+  it('A materialization slot records the mounted state (the per-server slot is populated on success)', () => {
+    const slotA = w6LeaderState?.mcpMaterialization?.get(A)
+    expect(slotA?.status).toBe('mounted')
+    expect(slotA?.attempts).toBe(1)
+  })
 })
 
-describe('multi-MCP 6.7b — the safe ordering (old {A}, new target {B}, B fails at the boundary)', () => {
+describe('multi-MCP 6.7b — pre-alpha3 §C.6 safe ordering (old {A}, new target {B}, B fails at the boundary)', () => {
   it('boot mounted exactly {A} (the durable allow [A] at gen 1)', () => {
     expect(w6bLiveBefore).toEqual([A])
   })
-  it('the next boundary fails (the request does not proceed)', () => {
-    expect(w6bBoundaryError).not.toBe(undefined)
-    expect(String((w6bBoundaryError as Error)?.message ?? w6bBoundaryError)).toContain('beta down')
+  it('the next boundary PROCEEDS (a server failure isolates that server; the request is no longer blocked)', () => {
+    expect(w6bBoundaryError).toBe(undefined)
   })
   it('A was already removed (deny FIRST — the new policy denies A before B is mounted)', () => {
     expect(w6bFiberA?.disposed).toBe(true)
   })
-  it('B left no partial fiber and the live state is empty', () => {
+  it('B left no live fiber and the live state is empty (A deny-disposed, B isolated)', () => {
     expect(stateFiberKeys(w6bLeaderStateAfter)).toEqual([])
+  })
+  it('B materialization slot records the boundary failure (isolated, retried after the cooldown)', () => {
+    const slotB = w6bLeaderStateAfter?.mcpMaterialization?.get(B)
+    expect(slotB?.status).toBe('failed')
+    expect(slotB?.attempts).toBe(1)
+    expect(slotB?.reason).toContain('beta down')
   })
   it('the activation error is recorded on the failing server', () => {
     expect(w6bLeaderStateAfter?.mcpActivationErrors?.get(B)).toBe('beta down (boundary)')
   })
 })
 
-describe('multi-MCP 6.8 — port=null exact behavior', () => {
+describe('multi-MCP 6.8 — pre-alpha3 §C.6 port=null isolates the named server', () => {
   it('case 1: only A selected → setup SUCCEEDS, A mounts, B (port=null) is not selected and blocks nothing', () => {
     expect(w7aBootError).toBe(undefined)
     expect(w7aLive).toEqual([A])
     expect(mcpFibers(w7aLeader, B).length).toBe(0)
   })
-  it('case 2: B selected → the boot fails closed and the error NAMES B', () => {
-    expect(w7bBootError).not.toBe(undefined)
-    expect(String((w7bBootError as Error)?.message ?? w7bBootError)).toContain(B)
+  it('case 2: B selected → the boot SUCCEEDS and B is ISOLATED (no longer fails closed the round)', () => {
+    expect(w7bBootError).toBe(undefined)
   })
-  it('case 2: no partial newly-mounted set (A was rolled back with the failed round)', () => {
-    expect(stateFiberKeys(w7bLeaderState)).toEqual([])
+  it('case 2: A mounts (the healthy server is not rolled back by B\'s port-null failure)', () => {
+    expect(stateFiberKeys(w7bLeaderState)).toEqual([A])
+    expect(w7bFiberA?.disposed).toBe(false)
   })
-  it('case 2: A fiber was created but ROLLED BACK (the port-null round fails closed, nothing committed)', () => {
-    expect(w7bFiberA?.disposed).toBe(true)
+  it('case 2: B materialization slot records the port-null failure and the error NAMES B', () => {
+    expect(stateFiberKeys(w7bLeaderState)).not.toContain(B)
+    const slotB = w7bLeaderState?.mcpMaterialization?.get(B)
+    expect(slotB?.status).toBe('failed')
+    expect(slotB?.reason).toContain(B)
+    expect(w7bLeaderState?.mcpActivationErrors?.get(B)).toContain(B)
   })
 })
 

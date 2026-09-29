@@ -499,14 +499,39 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
                   typeof state.mcpActivationErrors.get === 'function'
                     ? state.mcpActivationErrors
                     : undefined
+                // pre-alpha3 PR-C §C.6: the per-server materialization slots
+                // (the unified runtime status's `materialization` axis —
+                // not-applicable|pending|mounted|failed). A server with no
+                // slot (never attempted this round) is `pending`.
+                const materializationMap =
+                  state !== undefined &&
+                  state.mcpMaterialization !== undefined &&
+                  typeof state.mcpMaterialization.get === 'function'
+                    ? state.mcpMaterialization
+                    : undefined
                 const out = {}
                 for (const name of Object.keys(viewMap)) {
                   const view = viewMap[name]
                   const activationError = errorMap === undefined ? undefined : errorMap.get(name)
+                  const slot = materializationMap === undefined ? undefined : materializationMap.get(name)
                   out[name] = {
                     mounted: fiberMap === undefined ? false : fiberMap.has(name),
                     allowed: view.allowed,
                     source: view.source,
+                    materialization:
+                      slot === undefined
+                        ? view.pendingNextBoundary
+                          ? 'pending'
+                          : fiberMap !== undefined && fiberMap.has(name)
+                            ? 'mounted'
+                            : 'not-applicable'
+                        : slot.status === 'mounted'
+                          ? 'mounted'
+                          : slot.status === 'failed'
+                            ? 'failed'
+                            : 'pending',
+                    ...(slot !== undefined && slot.attempts !== undefined ? { mcpAttempts: slot.attempts } : {}),
+                    ...(slot !== undefined && slot.reason !== undefined ? { mcpFailureReason: slot.reason } : {}),
                     ...(view.unavailable !== undefined ? { unavailable: view.unavailable } : {}),
                     ...(view.deniedBy !== undefined ? { deniedBy: view.deniedBy } : {}),
                     pendingNextBoundary: view.pendingNextBoundary,
