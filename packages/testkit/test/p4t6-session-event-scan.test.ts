@@ -1374,8 +1374,23 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // Carries zero denylist vocabulary; the frozen quarantine hit set is
     // unchanged at fifteen. Scanner unchanged. Single-writer pin bump on
     // the task branch.
-    expect(scanResult.filesScanned).toBe(812)
-    expect(scanResult.files.length).toBe(812)
+    // pre-alpha3 W2-A (fix/pre-alpha3-w2a-runtime-env, this commit):
+    // +9 on top of the 812 pin = 821 — the nine new scannable files of
+    // the W2-A fix: (a-c) the runtime requirement-facts module
+    // (packages/runtime/requirement-facts/types.ts + provider.ts +
+    // index.ts) + (d) the production persona observer (packages/runtime/
+    // agent-setup/preset/production-observer.ts) + (e) the persona
+    // composition parser (packages/runtime/agent-setup/preset/
+    // persona-composition.ts) + (f-i) the four new specs (packages/
+    // runtime/test/ runtime-requirement-facts-provider.test.ts /
+    // mcp-live-readiness-to-requirement-fact.test.ts /
+    // live-persona-observer.test.ts /
+    // runtime-substrate-root-member-persona.test.ts). Carries zero
+    // denylist vocabulary; the frozen quarantine hit set is unchanged at
+    // fifteen. Scanner unchanged. Single-writer pin bump on the task
+    // branch.
+    expect(scanResult.filesScanned).toBe(821)
+    expect(scanResult.files.length).toBe(821)
 
   })
 
