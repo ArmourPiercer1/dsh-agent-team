@@ -1,0 +1,8 @@
+mock: listening on 127.0.0.1:3497
+mock: 1 [messages] tool-call reply: mcp__mcp_signal__ping
+mock: 2 [messages] tool-call reply: mcp__mcp_signal__ping
+mock: 3 [messages] text reply (11 chars): "PRC_T1_DONE"
+mock: 4 [messages] tool-call reply: mcp__mcp_router__ping
+mock: 5 [messages] text reply (12 chars): "PRC_REC_DONE"
+mock: 6 [messages] text reply (13 chars): "PRC_WORK_DONE"
+mock: 7 [messages] text reply (13 chars): "PRC_WORK_DONE"

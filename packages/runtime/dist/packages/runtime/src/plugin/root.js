@@ -312,7 +312,7 @@ function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances)
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params) {
-    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, } = params;
+    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, } = params;
     const repos = domain.repositories;
     const rootSid = config.rootSessionId;
     // --- A02 handle / write ports ------------------------------------------------------
@@ -1911,6 +1911,11 @@ export function createTeamProductionRoot(params) {
         tools,
         boot,
         close,
+        // pre-alpha3 W2-A (review fix F1, guide §2.3): the runtime
+        // requirement-facts authority (the #40 live environment source) —
+        // present only in the production host entry world (the additive-
+        // optional param; factory worlds carry none, the surface stays absent).
+        requirementFacts,
     };
 }
 //# sourceMappingURL=root.js.map

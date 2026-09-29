@@ -542,6 +542,38 @@ export type RemoteQueryCommandCompletion = (input: {
     readonly request: RemoteRequest;
 }) => Promise<unknown>;
 /**
+ * pre-alpha3 W2-A (review fix F1, guide §2.3) — the runtime
+ * requirement-facts authority surface (the #40 live environment source for
+ * the RequirementAuthority).
+ *
+ * The production host entry assembles ONE authority per row (the live
+ * provider + the 3-state readiness probe + the production substrate plan +
+ * the persona observer) and exposes it on the production root. The #42
+ * consumer switching (W3-A) reads it from the root: the gate's BLOCK/OPEN
+ * decision consumes the 3-state `observations` of `resolveFacts`, and the
+ * 2-state `environmentFacts` feed keeps the compatibility engine's
+ * fingerprint/ack machinery. Factory worlds (the root assembled directly,
+ * no host entry) carry no authority — the surface stays absent.
+ */
+export interface RequirementFactsAuthority {
+    /** The live requirement-facts provider (the ONE live environment source). */
+    readonly provider: import('../../requirement-facts/index.js').RuntimeRequirementFactsProvider;
+    /** The 3-state capability readiness probe (fresh probe per call, fail-soft). */
+    readonly readiness: import('../../readiness/index.js').CapabilityReadinessProvider;
+    /**
+     * The live runtime substrate plan (the production resolver: the row
+     * preset ids + the production persona observer — resolved fresh per call;
+     * a settled plan is memoized by the host, an unresolved one re-probes).
+     */
+    readonly resolveSubstratePlan: () => Promise<import('../../agent-setup/preset/index.js').RuntimeSubstratePlan>;
+    /**
+     * The production persona observer (the DSH public `agentPresets` seam —
+     * the effective-composition read, fail-closed typed `unresolved`, never
+     * a `standard` guess).
+     */
+    readonly observePersonaKind: (presetId: string) => Promise<import('../../agent-setup/preset/index.js').PersonaKindObservation>;
+}
+/**
  * The complete assembled production root (plan §19.1, A01–A29 + the four
  * S6 seams A30/A31/A32/A34 + the live-agent glue bundle + the tools).
  *
@@ -694,6 +726,15 @@ export interface TeamProductionRoot {
     boot(): Promise<void>;
     /** Close the root (the glue bundle + the TeamDomain). Idempotent. */
     close(): Promise<void>;
+    /**
+     * pre-alpha3 W2-A (review fix F1, guide §2.3) — the runtime
+     * requirement-facts authority (the #40 live environment source: the live
+     * provider + the 3-state readiness probe + the production substrate plan
+     * + the persona observer). PRESENT in the production host entry world;
+     * ABSENT when the root is assembled directly (factory worlds — the
+     * additive-optional pattern, cf. `workspaceAttach`).
+     */
+    readonly requirementFacts?: RequirementFactsAuthority;
 }
 /** The compatibility prober instance (the P3-T5 engine driver, P8-S4A). */
 export type CompatibilityProberLike = ReturnType<typeof import('../../compatibility/index.js').createCompatibilityProber>;
