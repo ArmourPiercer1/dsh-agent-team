@@ -1386,8 +1386,21 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // failure, never a claimed abandon). Carries zero denylist
     // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
     // Scanner unchanged. Single-writer pin bump on the task branch.
-    expect(scanResult.filesScanned).toBe(822)
-    expect(scanResult.files.length).toBe(822)
+    // pre-alpha3 W3-D (fix/pre-alpha3-w3d-requirement-recovery, this
+    // commit): +58 on top of the 822 pin = 880 — the fifty-eight new
+    // scannable files accumulated since the 822 pin (C's fix): (i) the
+    // nine W2-A files merged into the fixed #41 base (packages/runtime/
+    // requirement-facts/ types.ts + provider.ts + index.ts;
+    // packages/runtime/agent-setup/preset/production-observer.ts +
+    // persona-composition.ts; the four W2-A specs) + (ii) the thirty-five
+    // original PR-E files (Blueprint v2 + RequirementAuthority +
+    // Requirement/Recovery atomic cutover + E.12) + (iii) the fourteen
+    // W3-D fix files (crossAgentTrigger impact class + creation-preflight
+    // + host-entry + the new W3-A/B/C/D/E specs). Carries zero denylist
+    // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
+    // Scanner unchanged. Single-writer pin bump on the task branch.
+    expect(scanResult.filesScanned).toBe(880)
+    expect(scanResult.files.length).toBe(880)
 
   })
 
