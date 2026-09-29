@@ -13093,6 +13093,15 @@ var __dshFactory = (require) => {
 			    // than one durable member row claiming the same child session
 			    // (ambiguous ownership: failing closed, never a first-wins).
 			    'TEAM_READ_STATE_OWNERSHIP_CONFLICT',
+			    // pre-alpha3 PR-D (D.4) — the additive close fact
+			    // `control-request-abandoned` terminal mark. The control service emits a
+			    // typed CONTROL_REQUEST_ABANDONED when a decision/resolve/late-allow lands
+			    // on an already-abandoned request; the remote boundary must pass that typed
+			    // code through UNMAPPED (the durable zero-effect semantics are intact either
+			    // way, but a remote caller must not see it downgrade to internal-error —
+			    // surfaced by the pre-alpha3 PR-E E.12 real-host gate, scenario S10
+			    // late-allow-after-abandon).
+			    'CONTROL_REQUEST_ABANDONED',
 			];
 			Object.defineProperty(exports, "REMOTE_BACKING_ERROR_CODES", { enumerable: true, get: () => REMOTE_BACKING_ERROR_CODES });
 			/** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */
