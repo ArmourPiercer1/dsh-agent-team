@@ -47,7 +47,21 @@
  * - the row `config.environmentFacts` is a BOOTSTRAP/STATIC SEED only
  *   (the `seedFacts` port): it feeds the engine only for subjects whose
  *   live verdict is `unknown` (no live observation yet), and it NEVER
- *   overrides a live verdict (reachable/unreachable).
+ *   overrides a live verdict (reachable/unreachable);
+ * - D-3 narrowing (2026-09-30, parent adjudication — option 1): the
+ *   `probeable` structural fact on each observation (the host's
+ *   probe-port registry read at observation time via the readiness port's
+ *   `hasProbe` query; absent = probeable) scopes the D-3 PENDING
+ *   reclassification (see `./pending.js`) to PROBEABLE required types
+ *   whose observation has not settled (the transient materialization
+ *   window). A required `unknown` of a NON-probeable type — no live probe
+ *   port registered (the documented known gap; the current production
+ *   host registers only `mcpServer`, so `skill`/`tool`/`modelRoute`/
+ *   `teamStructure` — and the substrate-plan-observed `persona` — are
+ *   non-probeable) — is structurally unobservable live and keeps the
+ *   legacy seed-satisfied 2-state (the pre-W2-A behavior preserved
+ *   DELIBERATELY; NOT the W2-A "seed never truth" rule, which applies to
+ *   probeable domains where the live verdict settles).
  *
  * The 3-state readiness (`unknown | reachable | unreachable`) is the
  * readiness module's vocabulary (plan §C.4) — `unknown` is a distinct

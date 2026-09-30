@@ -12,7 +12,7 @@
  * follow.
  * @module @dsh-agent-team/runtime/readiness
  */
-export { capabilityKey, createCapabilityObservation, OBSERVATION_SOURCES, parseCapabilityObservation, PROBE_VERDICTS, PROBE_VERDICT_VALUES, assertProbeVerdict, } from './types.js';
+export { capabilityKey, createCapabilityObservation, OBSERVATION_SOURCES, OBSERVATION_STATES, OBSERVATION_STATE_VALUES, parseCapabilityObservation, PROBE_VERDICTS, PROBE_VERDICT_VALUES, assertObservationState, assertProbeVerdict, } from './types.js';
 export { READINESS_ERROR_CODES, READINESS_ERROR_CODE_VALUES, } from './errors.js';
 export { createCapabilityReadinessProvider, } from './provider.js';
 export { createCapabilityObservationRegistry, } from './registry.js';

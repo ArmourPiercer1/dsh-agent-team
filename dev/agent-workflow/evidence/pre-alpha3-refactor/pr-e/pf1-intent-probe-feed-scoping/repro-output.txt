@@ -1,0 +1,25 @@
+probe calls: [["mcpServer","mcp_repo"],["mcpServer","mcp_leaderreq"]]
+=== observations ===
+{"requirementId":"team.mcp.repo","type":"mcpServer","subject":"mcp_repo","supply":"configured","readiness":"unknown","readinessSource":"mcpFiber","readinessObservedAt":"2026-09-29T20:00:00Z"}
+{"requirementId":"team.mcp.leaderreq","type":"mcpServer","subject":"mcp_leaderreq","supply":"configured","readiness":"unknown","readinessSource":"mcpFiber","readinessObservedAt":"2026-09-29T20:00:00Z"}
+=== feed (environmentFacts) ===
+[
+ {
+  "domain": "mcpServer",
+  "subject": "mcp_leaderreq",
+  "available": true,
+  "generation": 1,
+  "detail": "bootstrap seed (config.environmentFacts) — not runtime truth"
+ },
+ {
+  "domain": "mcpServer",
+  "subject": "mcp_repo",
+  "available": true,
+  "generation": 1,
+  "detail": "bootstrap seed (config.environmentFacts) — not runtime truth"
+ }
+]
+=== engine result ===
+status: OPEN
+team.mcp.repo -> PASS SATISFIED
+team.mcp.leaderreq -> PASS SATISFIED

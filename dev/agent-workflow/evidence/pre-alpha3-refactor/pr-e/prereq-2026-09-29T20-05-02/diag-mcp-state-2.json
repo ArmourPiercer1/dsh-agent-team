@@ -1,0 +1,168 @@
+{
+  "at": "post-T13-create, pre-s1-probe",
+  "observations": [],
+  "sessions": {
+    "session-prereq-boot-prereq-2026-09-29T20-05-02": {
+      "instanceId": "inst-leader",
+      "model": {
+        "current": {
+          "provider": "deepseek-official",
+          "model": "prereq-smoke-model"
+        },
+        "selection": {
+          "provider": "deepseek-official",
+          "model": "prereq-smoke-model"
+        },
+        "source": {
+          "layer": "unspecified",
+          "origin": "static",
+          "recordId": null
+        },
+        "suppressed": [],
+        "unavailable": false,
+        "deniedBy": {
+          "by": "team",
+          "reason": "unspecifiedFailClosed"
+        },
+        "pendingNextBoundary": [],
+        "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+      },
+      "mcp": {
+        "servers": {
+          "mcp_repo": {
+            "mounted": false,
+            "allowed": false,
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "materialization": "pending",
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp_leaderreq": {
+            "mounted": false,
+            "allowed": false,
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "materialization": "pending",
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp_web": {
+            "mounted": false,
+            "allowed": false,
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "materialization": "pending",
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          }
+        }
+      }
+    },
+    "session-prereq-v1-prereq-2026-09-29T20-05-02": {
+      "instanceId": "inst-leader",
+      "model": {
+        "current": {
+          "provider": "deepseek-official",
+          "model": "prereq-smoke-model"
+        },
+        "selection": {
+          "provider": "deepseek-official",
+          "model": "prereq-smoke-model"
+        },
+        "source": {
+          "layer": "unspecified",
+          "origin": "static",
+          "recordId": null
+        },
+        "suppressed": [],
+        "unavailable": false,
+        "deniedBy": {
+          "by": "team",
+          "reason": "unspecifiedFailClosed"
+        },
+        "pendingNextBoundary": [],
+        "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+      },
+      "mcp": {
+        "servers": {
+          "mcp_repo": {
+            "mounted": false,
+            "allowed": false,
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "materialization": "pending",
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp_leaderreq": {
+            "mounted": false,
+            "allowed": false,
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "materialization": "pending",
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp_web": {
+            "mounted": false,
+            "allowed": false,
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "materialization": "pending",
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          }
+        }
+      }
+    }
+  }
+}

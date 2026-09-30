@@ -1,0 +1,32 @@
+{
+  "consents": [
+    {
+      "schemaVersion": 2,
+      "sequence": 1,
+      "rootSessionId": "session-prereq-main-prereq-2026-09-29T23-47-50",
+      "factType": "optional-requirement-accepted",
+      "payload": {
+        "consentedAt": 1790725673981,
+        "consentedBy": "kit-e12",
+        "generation": 1,
+        "requirementId": "lead.mcp.signal"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-29T23:47:53.981Z"
+    },
+    {
+      "schemaVersion": 2,
+      "sequence": 17,
+      "rootSessionId": "session-prereq-main-prereq-2026-09-29T23-47-50",
+      "factType": "optional-requirement-accepted",
+      "payload": {
+        "consentedAt": 1790725679159,
+        "consentedBy": "kit-e12",
+        "generation": 1,
+        "requirementId": "lead.mcp.signal"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-29T23:47:59.159Z"
+    }
+  ]
+}

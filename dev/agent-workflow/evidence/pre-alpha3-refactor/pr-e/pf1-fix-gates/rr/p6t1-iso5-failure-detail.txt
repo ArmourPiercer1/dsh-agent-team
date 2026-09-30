@@ -1,0 +1,60 @@
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:154:31
+    152| describe('P6-T1 P1: N=2 same-template parallel activations both succee…
+    153|   it('two activated results with distinct instance ids and child Sessi…
+    154|     expect(p1?.errors.length).toBe(0)
+       |                               ^
+    155|     expect(p1?.results.length).toBe(2)
+    156|     if (p1 === undefined) throw new Error('P1: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:167:30
+    165|
+    166|   it('two COMMITTED operations, two members, two distinct child Sessio…
+    167|     expect(p1?.committedOps).toBe(2)
+       |                              ^
+    168|     expect(p1?.memberCount).toBe(2)
+    169|     expect(p1?.distinctChildren).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:193:31
+    191| describe('P6-T1 P2: N=5 same-template parallel activations all succeed…
+    192|   it('five activated results, five COMMITTED operations, five members,…
+    193|     expect(p2?.errors.length).toBe(0)
+       |                               ^
+    194|     expect(p2?.results.length).toBe(5)
+    195|     if (p2 === undefined) throw new Error('P2: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 6 passed (9)
+   Start at  06:56:29
+   Duration  630ms (transform 372ms, setup 0ms, import 521ms, tests 8ms, environment 0ms)

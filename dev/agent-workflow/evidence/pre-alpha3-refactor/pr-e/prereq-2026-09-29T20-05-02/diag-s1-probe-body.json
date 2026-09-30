@@ -1,0 +1,61 @@
+{
+  "type": "server-response",
+  "rpcId": "s1-probe-65e62ed4",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "compatibility": {
+          "schemaVersion": 1,
+          "environmentFingerprint": "fp-v1:4b8c215f701ded19",
+          "status": "BLOCKED_FATAL",
+          "requirements": [
+            {
+              "requirementId": "team.mcp.repo",
+              "type": "mcpServer",
+              "complete": true,
+              "outcome": "FATAL",
+              "reasonCode": "COMPLETE_REQUIREMENT_NOT_MET",
+              "detail": "complete:true requirement unmet: mcp_repo (structural FATAL, not downgradeable)",
+              "unavailableSubjects": [
+                "mcp_repo"
+              ],
+              "mismatchFingerprint": "fp-v1:216705abfc5080fd",
+              "acknowledgement": null
+            },
+            {
+              "requirementId": "team.mcp.leaderreq",
+              "type": "mcpServer",
+              "complete": true,
+              "outcome": "FATAL",
+              "reasonCode": "COMPLETE_REQUIREMENT_NOT_MET",
+              "detail": "complete:true requirement unmet: mcp_leaderreq (structural FATAL, not downgradeable)",
+              "unavailableSubjects": [
+                "mcp_leaderreq"
+              ],
+              "mismatchFingerprint": "fp-v1:dab298abad4efddd",
+              "acknowledgement": null
+            }
+          ],
+          "counts": {
+            "pass": 0,
+            "warning": 0,
+            "fatal": 2,
+            "unackedWarning": 0,
+            "staleAcknowledgement": 0
+          },
+          "unappliedAcknowledgements": []
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "intent.probe",
+        "endpoint": "intent.probe",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

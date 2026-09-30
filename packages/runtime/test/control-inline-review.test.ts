@@ -54,6 +54,8 @@ let s1: {
   readonly decisionValue: string
   readonly requestStatus: string
   readonly consumedFacts: number
+  readonly guardAllowed: boolean
+  readonly guardReason: string | undefined
 }
 {
   const world = await createP6T4World('ctl-inline-1', ['leader', 'worker'])
@@ -75,6 +77,20 @@ let s1: {
       requestId: request.requestId,
       decision: 'allow',
     })
+    // B3 (pre-alpha3 PR-D review): the old test stopped here and only observed
+    // that the RESOLUTION itself wrote no consumption fact — it never
+    // exercised the guard, so it could not catch the B2 defect (a guarded
+    // execution consuming an inline allow). The inline allow is NOT a
+    // one-shot guard token (D.4): a GUARDED execution attempted against this
+    // same scope must be BLOCKED — the guard is blind to the inline request
+    // (a different lane) and consumes nothing.
+    const guardVerdict = await service.guardOperation({
+      rootSessionId: P6T4_ROOT,
+      targetInstanceId: WORKER_ID,
+      actionName: 'write-file',
+      toolName: 'fs.write',
+      correlation: 'corr-inline-1',
+    })
     const state = await service.listControlState(P6T4_ROOT)
     const record = state.requests.find((r) => r.requestId === request.requestId)
     s1 = {
@@ -82,6 +98,8 @@ let s1: {
       decisionValue: decision.decision,
       requestStatus: record?.status ?? 'missing',
       consumedFacts: controlFacts(world, 'control-allow-consumed').length,
+      guardAllowed: guardVerdict.allowed,
+      guardReason: guardVerdict.allowed === false ? guardVerdict.reason : undefined,
     }
   } finally {
     await destroyP6T1World(world)
@@ -210,10 +228,16 @@ let s4: {
 }
 
 describe('pre-alpha3 PR-D D.3/D.4 — the inline execution coupling', () => {
-  it('S1 (KEY NEGATIVE): an inline allow is durable and decided but writes NO control-allow-consumed fact', () => {
+  it('S1 (KEY NEGATIVE): an inline allow is durable and decided, writes NO control-allow-consumed fact, and a GUARDED guard attempt against it is BLOCKED (zero authorization, zero consumption)', () => {
     expect(s1.request.executionCoupling).toBe(CONTROL_EXECUTION_COUPLINGS.INLINE)
     expect(s1.decisionValue).toBe('allow')
     expect(s1.requestStatus).toBe('decided')
+    // B3: the guard is actually attempted against the inline decision — it
+    // must NOT authorize (lane disjointness: the guard is blind to the
+    // inline request; a different lane has no request for that scope) and
+    // must NOT consume (the inline allow is not a one-shot guard token).
+    expect(s1.guardAllowed).toBe(false)
+    expect(s1.guardReason).toBe('no-request')
     expect(s1.consumedFacts).toBe(0)
   })
 

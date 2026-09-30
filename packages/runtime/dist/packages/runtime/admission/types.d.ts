@@ -632,6 +632,45 @@ export interface TeamRuntimeOptions {
      * behavior, byte-identical).
      */
     readonly templateEnvironmentFacts?: (templateId: string) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>;
+    /**
+     * PF-1 fix (2026-09-30, adjudicated product defect) — the per-BLUEPRINT
+     * live environment-facts source (the SAME seam the remote surface's
+     * `intent.probe` and the per-root compatibility prober consume): when
+     * PRESENT the requirement gate resolves the live feed against the team
+     * requirements of the REQUEST's bound blueprint — multi-blueprint hosts
+     * (boot blueprint ≠ bound blueprint) keep the frozen INV-9.4 two-worlds
+     * identity (the probe, the gate and the compatibility aggregate evaluate
+     * the SAME world; a configured + healthy live server never probes
+     * unreachable). When ABSENT the legacy single `environmentFacts` feed
+     * stands (factory / single-blueprint worlds — byte-identical verdicts).
+     */
+    readonly environmentFactsForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>;
+    /**
+     * PF-1 fix (2026-09-30) — the per-BLUEPRINT per-template feed (the twin
+     * of `templateEnvironmentFacts` scoped to the request's bound blueprint;
+     * ABSENT in factory worlds — the legacy single-array gate stands,
+     * byte-identical).
+     */
+    readonly templateEnvironmentFactsForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint, templateId: string) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>;
+    /**
+     * D-3 fix (2026-09-30, adjudicated product semantics — fail-closed
+     * PENDING) — the per-BLUEPRINT FULL-RESOLUTION live read (the atomic
+     * 3-state observations + 2-state feed pair of `resolveFacts`). When
+     * PRESENT the requirement gate consumes THIS source: the feed half
+     * drives the compatibility engine, the observations (the 3-state truth)
+     * drive the PENDING rule (a REQUIRED capability whose live observation
+     * is UNKNOWN is a typed PENDING block — never a seed-filled PASS; the
+     * static seed remains bootstrap/display only, guide §2.5). When ABSENT
+     * the facts-only ports stand (byte-identical; the PENDING rule is off —
+     * no live probe ⇒ no pending materialization).
+     */
+    readonly environmentFactsReadForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
+    /**
+     * D-3 fix (2026-09-30) — the per-BLUEPRINT per-template FULL-RESOLUTION
+     * live read (the twin of `templateEnvironmentFactsForBlueprint`; same
+     * presence/absence semantics).
+     */
+    readonly templateEnvironmentFactsReadForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint, templateId: string) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
     /** The external hard facts (effective-config read, stage 2). */
     readonly externalPolicyFacts: () => Promise<import('../../domain/policy/src/index.js').ExternalPolicyFacts>;
     /** The deployment default model (the `staticModel`) — REQUIRED (PR #30

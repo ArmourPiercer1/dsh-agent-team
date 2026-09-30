@@ -172,7 +172,7 @@ import { withTeamLock } from '../action-router/index.js';
 import { TEAM_DOMAIN_ERROR_CODES, isTeamDomainError, } from '../../storage/schema/index.js';
 import { deterministicToken } from '../../storage/provisioning/index.js';
 import { CONTROL_ERROR_CODES, ControlError, } from './errors.js';
-import { CONTROL_DECISION_REASON_VALUES, CONTROL_DECISION_VALUES, CONTROL_DECISION_VALUE_VALUES, CONTROL_EXECUTION_COUPLING_VALUES, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KINDS, CONTROL_REQUEST_KIND_VALUES, CONTROL_RESOLVER_ROLES, CONTROL_SUBJECT_KINDS, } from './types.js';
+import { CONTROL_DECISION_REASON_VALUES, CONTROL_DECISION_VALUES, CONTROL_DECISION_VALUE_VALUES, CONTROL_EXECUTION_COUPLINGS, CONTROL_EXECUTION_COUPLING_VALUES, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KINDS, CONTROL_REQUEST_KIND_VALUES, CONTROL_RESOLVER_ROLES, CONTROL_SUBJECT_KINDS, } from './types.js';
 // --- closed fact vocabulary (kebab; p4t6-scanner safe by construction) -------------
 /** The durable ControlRequest fact family. */
 const FACT_REQUEST = 'control-request-recorded';
@@ -205,6 +205,11 @@ const TERMINAL_LIFECYCLE = 'DISPOSED';
  *  liveness-only and the durable read is a cheap in-process ledger scan,
  *  so the low end minimizes decision latency at negligible cost). */
 const DEFAULT_WAIT_POLL_INTERVAL_MS = 250;
+/** The closed abandonment reason the wait-bridge's inline-abort cascade
+ *  records when an INLINE-coupling request's frozen invocation aborts
+ *  (pre-alpha3 PR-D, D.4 — the inline lifecycle's `abort` node:
+ *  `abort → durable abandon/close → zero effect`). */
+const WAIT_ABORT_ABANDON_REASON = 'wait-aborted';
 /** The minimal platform-timer surface the wait bridge schedules on
  *  (alpha.2 §9.4). The codebase builds against `lib: ES2022` WITHOUT
  *  ambient DOM/Node globals (tsconfig.base.json), so the platform timer
@@ -273,11 +278,8 @@ function parseSubject(value) {
     }
     return undefined;
 }
-/** The subject id that participates in the scope key (pre-alpha3 PR-D,
- *  D.2): instance → instanceId, template → templateId, team →
- *  rootSessionId. For a LEGACY instance row the subject is derived from
- *  `targetInstanceId`, so the id — and therefore the key — is
- *  byte-identical to the pre-PR-D key. */
+/** The kind-selected subject id (pre-alpha3 PR-D, D.2): instance →
+ *  instanceId, template → templateId, team → rootSessionId. */
 function subjectIdOf(subject) {
     switch (subject.kind) {
         case CONTROL_SUBJECT_KINDS.INSTANCE:
@@ -287,6 +289,28 @@ function subjectIdOf(subject) {
         case CONTROL_SUBJECT_KINDS.TEAM:
             return subject.rootSessionId;
     }
+}
+/** The KIND-PREFIXED subject identity that participates in the scope key
+ *  (pre-alpha3 PR-D review B1 / D.2): `${kind}:${subjectIdOf(subject)}`.
+ *
+ *  The prefix makes the three subject kinds DISJOINT in the key. Without
+ *  it, a template id and an instance id that happen to be EQUAL STRINGS
+ *  (both the `inst-abc` shape is a legal instance id AND a legal template
+ *  slug) would alias: with otherwise identical scope fields, a template
+ *  request would recompute the SAME key as an instance request and return
+ *  the existing instance row instead of creating its own. Prefixing the
+ *  kind means the second key element is `instance:<id>` vs
+ *  `template:<id>` vs `team:<id>` — never equal across kinds.
+ *
+ *  Backward compatibility is preserved BEHAVIORALLY: BOTH the new-request
+ *  key and the existing-row lookup recompute through this SAME function,
+ *  so a legacy instance row (subject derived from `targetInstanceId`,
+ *  kind `instance`) still matches an instance request — old durable rows
+ *  stay idempotent. The literal key now carries the `instance:` prefix
+ *  (it is no longer byte-identical to the pre-PR-D string), but no
+ *  observable idempotency or guard-matching behavior changes. */
+function subjectIdentityOf(subject) {
+    return `${subject.kind}:${subjectIdOf(subject)}`;
 }
 /** Do two canonical subjects name the SAME identity (closed kind AND
  *  kind-selected id)? */
@@ -570,12 +594,20 @@ function isActionCaller(caller) {
 }
 /** The stable logical-request key (the request idempotency identity AND
  *  the scope's durable identity; NUL-separated per the provisioning
- *  identity convention). The second element is the CANONICAL SUBJECT id
- *  (pre-alpha3 PR-D, D.2: `subjectIdOf` — instance → instanceId,
- *  template → templateId, team → rootSessionId). For a LEGACY instance
- *  row the subject is derived from `targetInstanceId`, so the subject id
- *  IS the old `targetInstanceId` and the key is BYTE-IDENTICAL to the
- *  pre-PR-D key (old durable rows keep working unchanged). The optional
+ *  identity convention). The second element is the KIND-PREFIXED SUBJECT
+ *  IDENTITY (pre-alpha3 PR-D, D.2 + review B1: `subjectIdentityOf` —
+ *  `instance:<instanceId>` / `template:<templateId>` /
+ *  `team:<rootSessionId>`). The kind prefix makes the three subject kinds
+ *  DISJOINT in the key — an instance id, a template id and a root session
+ *  id that happen to be equal strings can no longer alias across kinds
+ *  (a valid template slug and a valid instance id can both be `inst-abc`).
+ *  For a LEGACY instance row the subject is derived from `targetInstanceId`
+ *  (kind `instance`), so the second element is `instance:<targetInstanceId>`;
+ *  BOTH the new request and the existing-row lookup recompute through the
+ *  SAME `subjectIdentityOf`, so old durable rows stay idempotent —
+ *  behavioral backward compatibility is preserved even though the literal
+ *  key now carries the kind prefix (no longer byte-identical to the
+ *  pre-PR-D string). The optional
  *  operation fingerprint, WHEN PRESENT, participates in the key (alpha.2
  *  exact-scope extension): two requests identical except for the
  *  fingerprint are DIFFERENT logical requests (different keys, different
@@ -585,10 +617,10 @@ function isActionCaller(caller) {
  *  distinct from any present fingerprint; legacy rows (fingerprint
  *  absent) recompute the SAME key they always had for their own
  *  retries, so old durable rows stay idempotent under the extended key. */
-function scopeKey(rootSessionId, subjectId, actionName, toolName, correlation, operationFingerprint) {
+function scopeKey(rootSessionId, subjectIdentity, actionName, toolName, correlation, operationFingerprint) {
     return [
         rootSessionId,
-        subjectId,
+        subjectIdentity,
         actionName,
         toolName ?? '',
         correlation,
@@ -1097,8 +1129,8 @@ export function createControlService(options) {
         enforceEnvelope(REQUEST_CONTROL_SPEC, callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)));
         const outcome = await withTeamLock(teamLocks, root, async () => {
             const state = loadControlState(root);
-            const key = scopeKey(root, subjectIdOf(subject), args.actionName, args.toolName, args.correlation, args.operationFingerprint);
-            const existing = state.requests.find((r) => scopeKey(String(r.entry.rootSessionId), subjectIdOf(r.payload.subject), r.payload.actionName, r.payload.toolName, r.payload.correlation, r.payload.operationFingerprint) === key);
+            const key = scopeKey(root, subjectIdentityOf(subject), args.actionName, args.toolName, args.correlation, args.operationFingerprint);
+            const existing = state.requests.find((r) => scopeKey(String(r.entry.rootSessionId), subjectIdentityOf(r.payload.subject), r.payload.actionName, r.payload.toolName, r.payload.correlation, r.payload.operationFingerprint) === key);
             if (existing !== undefined) {
                 // Idempotent: the same logical request returns its EXISTING row
                 // (regardless of requester; a decided row says `decided` — a new
@@ -1344,6 +1376,53 @@ export function createControlService(options) {
             });
         });
     }
+    /**
+     * The SHARED durable terminal-mark write (pre-alpha3 PR-D, D.4): the
+     * one routine that commits the `control-request-abandoned` fact.
+     * `abandonControlRequest` (after its authority steps) and the
+     * wait-bridge's inline-abort cascade (the inline lifecycle's
+     * `abort → durable abandon/close → zero effect` node) both commit
+     * through THIS routine — so exactly-once (an already-abandoned
+     * request is rejected typed, zero durable side effects), the
+     * terminal-mark payload shape ({requestId, rootSessionId, abandonedAt,
+     * reason?}), and the storage-fault contract (a durable-store failure
+     * surfaces as the facade's closed TEAM_RUNTIME_DURABLE_WRITE_FAILED —
+     * the close is never claimed as abandoned unless the fact is durable)
+     * are inherited by code reuse, not re-implementation.
+     *
+     * Precondition: the caller holds the per-team lock (withTeamLock);
+     * the re-read below is the lock's fresh-state verification (invariant
+     * 45: the durable rows are the authority).
+     */
+    async function commitAbandonmentFact(root, requestId, reason) {
+        const state = loadControlState(root);
+        const request = state.requests.find((r) => r.payload.requestId === requestId);
+        if (request === undefined) {
+            throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_NOT_FOUND, `ControlService: no durable control request '${requestId}' in team '${root}' (an abandon without a request)`, { rootSessionId: root, requestId });
+        }
+        // The terminal mark is written exactly once: an already-abandoned
+        // request is rejected (zero durable side effects — no second fact).
+        if (state.abandonments.some((a) => a.payload.requestId === requestId)) {
+            throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED, `ControlService: request '${requestId}' is already durably abandoned (the terminal mark is written exactly once)`, { rootSessionId: root, requestId });
+        }
+        // The append-only ledger has no delete primitive — the row IS the
+        // close (commit-before-ack).
+        const payload = {
+            requestId,
+            rootSessionId: root,
+            abandonedAt: options.now(),
+            ...(reason !== undefined ? { reason } : {}),
+        };
+        const sequence = await putEntry({
+            schemaVersion: 2,
+            sequence: await allocateSequence(),
+            rootSessionId: root,
+            factType: FACT_ABANDONMENT,
+            payload,
+            createdAt: options.now(),
+        });
+        return { abandonmentSequence: sequence, abandonedAt: payload['abandonedAt'] };
+    }
     // --- abandonControlRequest (pre-alpha3 PR-D, D.4 — the inline abort path) -------------
     /**
      * Durably ABANDON one control request (the additive close fact
@@ -1425,26 +1504,17 @@ export function createControlService(options) {
                 });
             }
             // The durable abandon fact FIRST (commit-before-ack; the append-
-            // only ledger has no delete primitive — the row IS the close).
-            const payload = {
-                requestId: request.payload.requestId,
-                rootSessionId: root,
-                abandonedAt: options.now(),
-                ...(args.reason !== undefined ? { reason: args.reason } : {}),
-            };
-            const sequence = await putEntry({
-                schemaVersion: 2,
-                sequence: await allocateSequence(),
-                rootSessionId: root,
-                factType: FACT_ABANDONMENT,
-                payload,
-                createdAt: options.now(),
-            });
+            // only ledger has no delete primitive — the row IS the close) —
+            // through the SHARED terminal-mark write path: the wait-bridge
+            // inline-abort cascade commits through the same routine, so the
+            // exactly-once re-verification and the storage-fault contract are
+            // inherited by code reuse (not re-implementation).
+            const mark = await commitAbandonmentFact(root, args.requestId, args.reason);
             return {
                 requestId: request.payload.requestId,
                 rootSessionId: root,
-                abandonedAt: payload['abandonedAt'],
-                abandonmentSequence: sequence,
+                abandonedAt: mark.abandonedAt,
+                abandonmentSequence: mark.abandonmentSequence,
                 ...(args.reason !== undefined ? { reason: args.reason } : {}),
             };
         });
@@ -1631,9 +1701,19 @@ export function createControlService(options) {
                 }
             }
             const state = loadControlState(root);
-            const key = scopeKey(root, subjectIdOf(subject), scope.actionName, scope.toolName, scope.correlation, scope.operationFingerprint);
+            const key = scopeKey(root, subjectIdentityOf(subject), scope.actionName, scope.toolName, scope.correlation, scope.operationFingerprint);
             const matching = state.requests.filter((r) => {
-                const rowKey = scopeKey(String(r.entry.rootSessionId), subjectIdOf(r.payload.subject), r.payload.actionName, r.payload.toolName, r.payload.correlation, r.payload.operationFingerprint);
+                // NOTE (B2 lane disjointness): an INLINE request IS matched here so
+                // its TERMINAL marks are reported correctly (abandon →
+                // REQUEST_ABANDONED, stale → REQUEST_STALE, deny → DECISION_DENY,
+                // pending → REQUEST_PENDING). But an inline ALLOW is NOT a one-shot
+                // guard token — the CONSUMPTION/authorization path is skipped for it
+                // below (see the `decision === 'allow'` branch): the inline allow
+                // authorizes the frozen invocation's OWN continuation, which writes
+                // NO `control-allow-consumed` fact. Excluding it here entirely would
+                // wrongly turn an abandoned inline request into NO_REQUEST instead of
+                // REQUEST_ABANDONED.
+                const rowKey = scopeKey(String(r.entry.rootSessionId), subjectIdentityOf(r.payload.subject), r.payload.actionName, r.payload.toolName, r.payload.correlation, r.payload.operationFingerprint);
                 return rowKey === key;
             });
             if (matching.length === 0) {
@@ -1687,6 +1767,20 @@ export function createControlService(options) {
                     };
                 }
                 // decision === 'allow'
+                // Lane disjointness (pre-alpha3 PR-D review B2 / D.4 coupling
+                // boundary): an INLINE allow is NOT a one-shot guard token. It
+                // authorizes the frozen invocation's OWN continuation, which
+                // continues on the decision and writes NO `control-allow-consumed`
+                // fact. The GUARDED execution path (this guard) must therefore NOT
+                // consume or be authorized by it — otherwise a second, unrelated
+                // guarded execution would be authorized after the inline invocation
+                // already applied the decision. The request is still MATCHED (above)
+                // so its terminal marks (abandon / stale / deny / pending) are
+                // reported; but an inline ALLOW simply leaves the NO_REQUEST fallback
+                // (zero authorization, zero consumption).
+                if (request.payload.executionCoupling === CONTROL_EXECUTION_COUPLINGS.INLINE) {
+                    continue;
+                }
                 const consumed = state.consumptions.some((c) => c.payload.requestId === request.payload.requestId);
                 if (consumed) {
                     fallback = {
@@ -1765,6 +1859,72 @@ export function createControlService(options) {
     }
     // --- awaitControlDecision (the alpha.2 synchronous wait bridge) ----------------------
     /**
+     * The COUPLING-AWARE inline-abort cascade (pre-alpha3 PR-D, D.4 — the
+     * inline lifecycle's `abort` node: `abort → durable abandon/close →
+     * zero effect`): when the wait bridge's signal aborts, an INLINE-
+     * coupled request is tied to its frozen invocation — the invocation is
+     * dead, and a PENDING row would be a zombie no resolver can ever
+     * service (a retry is a NEW request), so the bridge durably closes the
+     * request FIRST, before it settles the waiter.
+     *
+     * Coupling gating (plan §D.4): the cascade fires ONLY when the STORED
+     * request row's executionCoupling is exactly `inline`. A `guarded`
+     * request and an ABSENT (legacy) row keep today's zero-side-effect
+     * abort EXACTLY (the request stays PENDING — the guarded lifecycle's
+     * wait abort is a pure cancellation, pinned by a4a W2 / a5a
+     * S10–S14; guarded keeps its `request → wait → decision → guard →
+     * consume → execute` line, so its abort leaves the recovery paths in
+     * place).
+     *
+     * Idempotency / race safety: the cascade re-reads the fresh durable
+     * state under the per-team lock. If the request is ALREADY terminal —
+     * a durable decision won the race between the last poll and the
+     * signal, or a concurrent abandon landed first — the terminal mark is
+     * NOT written a second time (exactly-once, inherited from the shared
+     * {@link commitAbandonmentFact} routine): a durable decision RESOLVES
+     * the wait with itself (the first decision is authoritative — today's
+     * poll fast path); an already-abandoned request settles rejected typed
+     * (it can never become a decision). Only a PENDING inline request
+     * receives the additive close fact (reason `wait-aborted`).
+     *
+     * A durable-store failure of the close write PROPAGATES typed (the
+     * facade's TEAM_RUNTIME_DURABLE_WRITE_FAILED through the shared write
+     * path) — the bridge rejects with the storage fault and NEVER claims
+     * a half-abandoned state (the review F2 contract the explicit abandon
+     * API carries, mirrored through the same routine).
+     */
+    async function inlineAbortCascade(root, requestId) {
+        return withTeamLock(teamLocks, root, async () => {
+            const state = loadControlState(root);
+            const request = state.requests.find((r) => r.payload.requestId === requestId);
+            // No durable request row, or a row whose STORED coupling is not
+            // exactly `inline` (guarded / ABSENT legacy): nothing to close —
+            // the caller settles exactly as today (zero side effects).
+            if (request === undefined)
+                return { kind: 'none' };
+            if (request.payload.executionCoupling !== CONTROL_EXECUTION_COUPLINGS.INLINE) {
+                return { kind: 'none' };
+            }
+            // A durable decision won the race: the first decision is
+            // authoritative — no second terminal mark over it; the wait
+            // RESOLVES with the decision (today's poll fast path).
+            const decision = state.decisions.find((d) => d.payload.requestId === requestId);
+            if (decision !== undefined) {
+                return { kind: 'decided', decision: toDecisionRecord(decision.entry, decision.payload) };
+            }
+            // Already terminal via the abandon mark (a concurrent explicit
+            // abandon landed first): exactly-once — no second fact.
+            if (state.abandonments.some((a) => a.payload.requestId === requestId)) {
+                return { kind: 'already-abandoned' };
+            }
+            // PENDING inline: durably close it FIRST (the shared terminal-mark
+            // write — exactly-once + storage-fault contract by code reuse),
+            // then the caller settles the waiter rejected typed.
+            const mark = await commitAbandonmentFact(root, requestId, WAIT_ABORT_ABANDON_REASON);
+            return { kind: 'abandoned', abandonmentSequence: mark.abandonmentSequence };
+        });
+    }
+    /**
      * The SYNCHRONOUS WAIT BRIDGE (alpha.2 §9.4): resolves when a durable
      * ControlDecision for the requestId appears. Authority is ALWAYS the
      * durable control rows — the waiter only solves liveness (it adds no
@@ -1778,6 +1938,15 @@ export function createControlService(options) {
      * to typed CONTROL_WAIT_CLOSED). Timers and listeners are cleared on
      * settle (no leak after the promise settles). No durable waiter
      * scheduler, no cross-process continuation.
+     *
+     * The COUPLING-AWARE abort cascade (pre-alpha3 PR-D, D.4): on a
+     * signal abort (pre-aborted or mid-wait), a request whose STORED
+     * executionCoupling is exactly `inline` is durably ABANDONED FIRST
+     * (the inline lifecycle: `abort → durable abandon/close → zero
+     * effect` — the shared terminal-mark write with reason
+     * `wait-aborted`) and the waiter is then rejected typed; a `guarded`
+     * or ABSENT (legacy) request keeps today's zero-side-effect abort
+     * exactly (the request stays PENDING — a4a W2 / a5a S10–S14).
      */
     async function awaitControlDecision(input) {
         const root = parseRoot(input.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'wait');
@@ -1789,9 +1958,20 @@ export function createControlService(options) {
         if (signal !== undefined && typeof signal.aborted !== 'boolean') {
             throw malformed('wait', 'signal', 'signal must be an AbortSignal when present');
         }
-        // Already aborted: reject immediately (zero side effects — the
-        // durable rows are untouched and a later resolve is unaffected).
+        // Already aborted: settle immediately. The COUPLING-AWARE cascade
+        // (pre-alpha3 PR-D, D.4): an INLINE request's frozen invocation is
+        // dead the moment the signal is — the bridge durably abandons the
+        // PENDING request FIRST (the shared terminal-mark write, reason
+        // `wait-aborted`) and then rejects typed. A guarded / ABSENT
+        // (legacy) request — and an inline request that is ALREADY terminal
+        // (a racing durable decision, or a concurrent abandon) — keeps
+        // today's zero-side-effect reject exactly (the durable rows are
+        // untouched and a later resolve is unaffected).
         if (signal !== undefined && signal.aborted) {
+            const cascade = await inlineAbortCascade(root, requestId);
+            if (cascade.kind === 'abandoned' || cascade.kind === 'already-abandoned') {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED, `ControlService: awaitControlDecision for request '${requestId}' was aborted before the wait began (the INLINE request is durably ABANDONED — the additive close fact 'control-request-abandoned' is the terminal mark; the frozen invocation is dead and a retry is a NEW request)`, { rootSessionId: root, requestId });
+            }
             throw new ControlError(CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED, `ControlService: awaitControlDecision for request '${requestId}' was aborted before the wait began`, { rootSessionId: root, requestId });
         }
         const rawPoll = options.waitPollIntervalMs;
@@ -1815,7 +1995,37 @@ export function createControlService(options) {
                 outcome();
             };
             const onAbort = () => {
-                settle(() => reject(new ControlError(CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED, `ControlService: awaitControlDecision for request '${requestId}' was aborted before a durable decision appeared (zero side effects — the request stays durable and undecided)`, { rootSessionId: root, requestId })));
+                settle(async () => {
+                    // The COUPLING-AWARE cascade (pre-alpha3 PR-D, D.4) — runs
+                    // inside the settle (the waiter is already committed to
+                    // settling; the cascade only chooses HOW): inline PENDING →
+                    // durably abandon first (reason `wait-aborted`), then reject
+                    // typed; a racing durable decision → resolve with it (the
+                    // first decision is authoritative); a concurrent abandon or a
+                    // guarded / ABSENT (legacy) request → today's exact settle.
+                    // A typed durable fault of the close write PROPAGATES as the
+                    // rejection (the review F2 storage-fault contract through the
+                    // shared write path — never a half-abandoned claim). The
+                    // async outcome must never reject the promise it was handed
+                    // (settle does not await it) — every path below settles.
+                    let cascade;
+                    try {
+                        cascade = await inlineAbortCascade(root, requestId);
+                    }
+                    catch (error) {
+                        reject(error);
+                        return;
+                    }
+                    if (cascade.kind === 'decided') {
+                        resolve(cascade.decision);
+                        return;
+                    }
+                    if (cascade.kind === 'abandoned' || cascade.kind === 'already-abandoned') {
+                        reject(new ControlError(CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED, `ControlService: awaitControlDecision for request '${requestId}' was aborted before a durable decision appeared (the INLINE request is durably ABANDONED — the additive close fact 'control-request-abandoned' is the terminal mark; the frozen invocation is dead and a retry is a NEW request)`, { rootSessionId: root, requestId }));
+                        return;
+                    }
+                    reject(new ControlError(CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED, `ControlService: awaitControlDecision for request '${requestId}' was aborted before a durable decision appeared (zero side effects — the request stays durable and undecided)`, { rootSessionId: root, requestId }));
+                });
             };
             if (signal !== undefined) {
                 signal.addEventListener('abort', onAbort, { once: true });

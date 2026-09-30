@@ -1,0 +1,322 @@
+{
+  "kit": "pr-d-control-real-host",
+  "stamp": "prd-control-2026-09-29T19-26-21",
+  "world": "tests/homes/prd-control-2026-09-29T19-26-21",
+  "worldPath": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prd-control-2026-09-29T19-26-21",
+  "worldCleaned": true,
+  "worktree": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery",
+  "hostTree": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+  "hostBaselineSha": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "clientCommitHash": "46a7f68b09",
+  "testUse": {
+    "tree": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "clean": true,
+    "head": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+    "detail": "statusEmpty=true diffEmpty=true head=46a7f68b0922371ce7144b668b90e377d8e799f4"
+  },
+  "ports": {
+    "hostPort": 3182,
+    "mockPort": 3497
+  },
+  "stable": {
+    "before": {
+      "http://127.0.0.1:3080/": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "http://127.0.0.1:3180/": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    },
+    "after": {
+      "http://127.0.0.1:3080/": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "http://127.0.0.1:3180/": {
+        "url": "http://127.0.0.1:3180/",
+        "status": 401
+      }
+    }
+  },
+  "criteria": [
+    {
+      "id": "C1",
+      "name": "existing leader/member permission ask path does not regress (member ask -> leader tool allow -> execution; durable recorded/decided/consumed)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "the member bash ask created a durable leader-approval request with the LEGACY shape (instance subject derived from targetInstanceId; NO executionCoupling field) over the REMOTE ledger page",
+          "ok": true,
+          "detail": "req={\"actionName\":\"parameter-permission\",\"correlation\":\"call-prd-8rs28y8f\",\"kind\":\"leader-approval\",\"operationFingerprint\":\"sha256:2076352f0a57b12fbddfc87eff02ac583f3f0be73add808a7496300dcd0a31ba\",\"requestId\":\"ctrl-17x8ekz0471tmq120mkzh08b\",\"requester\":{\"instanceId\":\"inst-16anter1nqhy\",\"kind\":\"instance\",\"role\":\"member\"},\"subject\":{\"instanceId\":\"inst-16anter1nqhy\",\"kind\":\"instance\"},\"summary\":\"bash [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use] [timeout=30000ms] echo prd-c1-prd-control-2026-09-29T19-26-21 > /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/tmp/...\",\"targetInstanceId\":\"inst-16anter1nqhy\",\"toolName\":\"bash\"}"
+        },
+        {
+          "name": "the leader resolved allow through the model-facing approval tools (terminal state `decided` — derived from the durable decision fact)",
+          "ok": true,
+          "detail": "status=decided"
+        },
+        {
+          "name": "durable facts over the REMOTE ledger page: control-request-recorded / control-decision-recorded (allow, decider = the LEADER principal — the model-tool path, not a human) / control-allow-consumed each present exactly once for this request",
+          "ok": true,
+          "detail": "recorded=1 decisions=1 consumptions=1 decider={\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"}"
+        },
+        {
+          "name": "the read-only team_domain.json cross-check agrees (the durable ledger is the single source)",
+          "ok": true,
+          "detail": "recorded=1 decisions=1 consumptions=1"
+        },
+        {
+          "name": "the execution PROCEEDED: the side-effect file exists with the marker (the one-shot allow was consumed by the guard)",
+          "ok": true,
+          "detail": "file=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/tmp/.prd-gate/prd-control-2026-09-29T19-26-21/prd-c1-prd-control-2026-09-29T19-26-21.txt exists=true"
+        }
+      ],
+      "pass": true,
+      "wireNote": "member ask-lane (real pre-execute adapter, legacy coupling: targetInstanceId, NO subject/coupling input) + leader model-facing tools (team_list_pending_control / team_resolve_control). Durable facts cross-checked via remote team.getLedgerPage (the product wire) and the read-only team_domain.json scan."
+    },
+    {
+      "id": "C2",
+      "name": "remote v4 allow/deny does not regress (both decisions over team.resolveControl v4; terminal states; denied scope guard-blocked)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "remote v4 team.resolveControl ALLOW: the closed v4 success envelope (requestId + decision=allow + host-derived HUMAN decider + scope)",
+          "ok": true,
+          "detail": "status=200 err=null data={\"decision\":{\"requestId\":\"ctrl-0jp2wxz19t175m1y5c8c51vd\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\"},\"scope\":{\"rootSessionId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-16anter1nqhy\"},\"targetInstanceId\":\"inst-16anter1nqhy\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-"
+        },
+        {
+          "name": "remote v4 team.resolveControl DENY: the closed v4 success envelope (decision=deny + human decider)",
+          "ok": true,
+          "detail": "status=200 err=null data={\"decision\":{\"requestId\":\"ctrl-0j3o31n0ra60o20oky3j518u\",\"decision\":\"deny\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\"},\"scope\":{\"rootSessionId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-16anter1nqhy\"},\"targetInstanceId\":\"inst-16anter1nqhy\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-p"
+        },
+        {
+          "name": "terminal states: both requests `decided` after the remote resolutions (derived from the durable decision facts)",
+          "ok": true,
+          "detail": "c2a=decided c2b=decided"
+        },
+        {
+          "name": "the ALLOWED scope EXECUTED (one-shot allow consumed; side-effect file present) and the DENIED scope was BLOCKED (no consumption; side-effect file absent)",
+          "ok": true,
+          "detail": "c2aFile=true c2bFile=false"
+        },
+        {
+          "name": "guard behavior after the deny: a guarded-lane attempt on the denied scope is blocked with reason `decision-deny` (zero effect — still no side-effect file, no consumption)",
+          "ok": true,
+          "detail": "guard={\"ok\":true,\"action\":\"guard\",\"value\":{\"allowed\":false,\"reason\":\"decision-deny\",\"requestId\":\"ctrl-0j3o31n0ra60o20oky3j518u\",\"decisionSequence\":15}}"
+        }
+      ],
+      "pass": true,
+      "wireNote": "both decisions driven over the REMOTE v4 team.resolveControl endpoint (host-derived human principal). The leader notification turns are deliberately model-neutral (text only) so the remote wire is the sole decision surface."
+    },
+    {
+      "id": "C3",
+      "name": "template-target inline request create/display/resolve + D.4 lane disjointness (no consumption; guarded attempt = no-request; template subject survives the stale validator)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "the TEMPLATE-subject inline request is created (the instance stale validator does NOT kill it — creation succeeds; subject recorded as kind=template, NO targetInstanceId)",
+          "ok": true,
+          "detail": "status=200 err={\"code\":\"NO_RESULT\",\"message\":\"[object Object]\"} record={\"requestId\":\"ctrl-1u7j9q40vxi4fv0akkjyu0ss\",\"rootSessionId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\",\"kind\":\"user-approval\",\"requester\":{\"kind\":\"human\",\"humanId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\"},\"subject\":{\"kind\":\"template\",\"templateId\":\"worker\"},\"actionName\":\"parameter-permission\",\"correlation\":\"prd-c3-corr-prd-control-2026-09-29T19-26-21\",\"status\":\"pending\",\"creat"
+        },
+        {
+          "name": "display over the REMOTE ledger page: the durable control-request-recorded row carries subject={kind:template,templateId:worker} + executionCoupling=inline",
+          "ok": true,
+          "detail": "fact={\"sequence\":18,\"payload\":{\"actionName\":\"parameter-permission\",\"correlation\":\"prd-c3-corr-prd-control-2026-09-29T19-26-21\",\"executionCoupling\":\"inline\",\"kind\":\"user-approval\",\"operationFingerprint\":\"prd-c3-fp-prd-control-2026-09-29T19-26-21\",\"requestId\":\"ctrl-1u7j9q40vxi4fv0akkjyu0ss\",\"requester\":{\"h"
+        },
+        {
+          "name": "display state over the durable facts: the request is `pending` before its resolution (derived status — no decision/abandonment fact yet)",
+          "ok": true,
+          "detail": "status=pending"
+        },
+        {
+          "name": "remote v4 team.resolveControl ALLOW on the template-subject inline request (the resolve-time instance stale validator skips the template subject — resolution succeeds; scope carries the subject)",
+          "ok": true,
+          "detail": "status=200 err=null scope={\"rootSessionId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\",\"subject\":{\"kind\":\"template\",\"templateId\":\"worker\"},\"actionName\":\"parameter-permission\",\"correlation\":\"prd-c3-corr-prd-control-2026-09-29T19-26-21\",\"toolName\":\"bash\",\"operationFingerprint\":\"prd-c3-fp-prd-control-2026-09-29T19-26-21"
+        },
+        {
+          "name": "D.4 lane disjointness: the inline allow produced NO control-allow-consumed fact (the inline allow authorizes the frozen invocation only, never the guard lane)",
+          "ok": true,
+          "detail": "consumptionsForC3=0"
+        },
+        {
+          "name": "D.4 lane disjointness: the guarded-lane attempt against the inline-allowed scope is blocked with reason `no-request` (the template subject survives the guard stale validator — the verdict is no-request, NOT target-stale)",
+          "ok": true,
+          "detail": "guard={\"ok\":true,\"action\":\"guard\",\"value\":{\"allowed\":false,\"reason\":\"no-request\"}}"
+        },
+        {
+          "name": "terminal state: the inline request is `decided` (derived from the durable decision fact — the decision is durable)",
+          "ok": true,
+          "detail": "status=decided"
+        }
+      ],
+      "pass": true,
+      "wireNote": "CREATED via the p6t6 test-only thin route wrapping the production control-service authority (documented gap: no product wire creates template-subject inline requests in this branch — PR-E recovery-review is the future creator). DISPLAYED via remote team.getLedgerPage + the p6t6 listControlState read-back. RESOLVED over the REMOTE v4 wire. The lane-disjointness guard probe is the production guardOperation through the thin route (a blocked probe writes no ledger fact)."
+    },
+    {
+      "id": "C4",
+      "name": "abort/disconnect -> durable abandoned, zero effect (SAME-request coupling-aware cascade: the true client abort of the real HTTP wait durably abandons the waited inline request — one abandon fact, reason wait-aborted; guard = request-abandoned; typed pass-through; the LEGACY ask-lane disconnect stays PENDING (untouched contract); the allow-voiding abandon keeps exactly-once)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "leg A: the template-subject INLINE request is created over the p6t6 thin route (pending, coupling inline, template subject)",
+          "ok": true,
+          "detail": "status=200 err={\"code\":\"NO_RESULT\",\"message\":\"[object Object]\"} record={\"requestId\":\"ctrl-18tuzr814nhdij0nadlfi1eo\",\"rootSessionId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\",\"kind\":\"user-approval\",\"requester\":{\"kind\":\"human\",\"humanId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\"},\"subject\":{\"kind\":\"template\",\"templateId\":\"worker\"},\"actionName\":\"paramet"
+        },
+        {
+          "name": "the disconnect durably ABANDONED the SAME inline request (the coupling-aware cascade — exactly ONE control-request-abandoned fact, reason wait-aborted)",
+          "ok": true,
+          "detail": "status=abandoned abandonFacts=1 reason=wait-aborted"
+        },
+        {
+          "name": "zero execution side effects after the cascade (no decision fact, no consumption fact for the abandoned request)",
+          "ok": true,
+          "detail": "decisions=0 consumptions=0"
+        },
+        {
+          "name": "guarded-lane attempt on the cascaded-abandoned scope is blocked with reason `request-abandoned` (zero effect, zero consumption)",
+          "ok": true,
+          "detail": "guard={\"ok\":true,\"action\":\"guard\",\"value\":{\"allowed\":false,\"reason\":\"request-abandoned\",\"requestId\":\"ctrl-18tuzr814nhdij0nadlfi1eo\"}}"
+        },
+        {
+          "name": "the typed CONTROL_REQUEST_ABANDONED passes through the REMOTE v4 boundary UNCHANGED for the late allow on the cascaded request (invariant 4b — no decision fact is written)",
+          "ok": true,
+          "detail": "errCode=CONTROL_REQUEST_ABANDONED decisions=0"
+        },
+        {
+          "name": "leg A2: the disconnect left the LEGACY ask-lane request durably PENDING (the untouched contract — abort never fabricates an abandon; no decision, no abandon mark; the request stands for the recovery paths)",
+          "ok": true,
+          "detail": "status=pending observation={\"abortOutcome\":{\"status\":200,\"body\":{\"type\":\"server-response\",\"rpcId\":\"c4-delegate-7gqqyigzx4\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}},\"workerWaitAborted\":false,\"leaderTurnSettled\":false,\"note\":\"the legacy ask-lane flow never abandons on abort (CONTROL_WAIT_ABORTED -> deny; the durable request stands as pending for the recovery paths)\"}"
+        },
+        {
+          "name": "leg A2: zero execution side effects after the disconnect (no consumption, the side-effect file was never written)",
+          "ok": true,
+          "detail": "c4aFile=false"
+        },
+        {
+          "name": "the invalidation request is created (instance subject, GUARDED lane — the lane the abandon must void; no executionCoupling field = legacy coupling)",
+          "ok": true,
+          "detail": "status=200 err={\"code\":\"NO_RESULT\",\"message\":\"[object Object]\"} record={\"requestId\":\"ctrl-0fij89q0k4iwrr07x7m7s19z\",\"rootSessionId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\",\"kind\":\"user-approval\",\"requester\":{\"kind\":\"human\",\"humanId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-16anter1nqhy\"},\"targetIns"
+        },
+        {
+          "name": "the pre-abandon durable ALLOW lands over the REMOTE v4 wire (the allow is committed durably before the abandon; human decider)",
+          "ok": true,
+          "detail": "status=200 err=null"
+        },
+        {
+          "name": "the ABANDON writes the durable terminal mark {requestId, rootSessionId, abandonedAt, reason} (the control-request-abandoned close fact)",
+          "ok": true,
+          "detail": "status=200 value={\"requestId\":\"ctrl-0fij89q0k4iwrr07x7m7s19z\",\"rootSessionId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\",\"abandonedAt\":\"2026-09-29T19:27:24.262Z\",\"abandonmentSequence\":27,\"reason\":\"prd-c4 aborted-work-unit\"}"
+        },
+        {
+          "name": "exactly ONE durable control-request-abandoned fact for the request (exactly-once terminal mark)",
+          "ok": true,
+          "detail": "abandonFacts=1"
+        },
+        {
+          "name": "guarded-lane attempt on the abandoned scope is blocked with reason `request-abandoned` EVEN OVER the pre-abandon durable allow (allow-voiding; zero consumption, zero execution)",
+          "ok": true,
+          "detail": "guard={\"ok\":true,\"action\":\"guard\",\"value\":{\"allowed\":false,\"reason\":\"request-abandoned\",\"requestId\":\"ctrl-0fij89q0k4iwrr07x7m7s19z\",\"decisionSequence\":26}}"
+        },
+        {
+          "name": "the typed CONTROL_REQUEST_ABANDONED passes through the REMOTE v4 boundary UNCHANGED for the late allow (invariant 4b) — zero durable side effects (no second decision fact)",
+          "ok": true,
+          "detail": "errCode=CONTROL_REQUEST_ABANDONED errMessage=ControlService: request 'ctrl-0fij89q0k4iwrr07x7m7s19z' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects) decisions=1"
+        },
+        {
+          "name": "the REPEAT abandon is rejected typed (CONTROL_REQUEST_ABANDONED) with NO duplicate durable fact (exactly-once)",
+          "ok": true,
+          "detail": "status=409 code=CONTROL_REQUEST_ABANDONED abandonFacts=1"
+        },
+        {
+          "name": "the durable read plane shows status `abandoned` (the terminal mark wins over the pre-abandon decision) + the control-request-abandoned fact {requestId, rootSessionId, abandonedAt}",
+          "ok": true,
+          "detail": "status=abandoned abandon={\"abandonedAt\":\"2026-09-29T19:27:24.262Z\",\"reason\":\"prd-c4 aborted-work-unit\",\"requestId\":\"ctrl-0fij89q0k4iwrr07x7m7s19z\",\"rootSessionId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\"}"
+        }
+      ],
+      "pass": true,
+      "wireNote": "leg A (the D.6 criterion) = the SAME-request cascade over a REAL HTTP wait: the template-subject inline request is CREATED via the p6t6 test-only thin route (documented gap: no product wire in this branch creates subject-bearing requests — PR-E is the future creator), the kit then opens the p6t6 `wait` action — the PRODUCTION awaitControlDecision wired to the client connection (req close -> AbortController) — parks on the PENDING request, and ABORTS that HTTP connection (a TRUE client disconnect, not a simulated flag). The coupling-aware cascade runs ENTIRELY in the service: it durably writes the one control-request-abandoned fact (reason wait-aborted) BEFORE settling the (now undeliverable) waiter; the kit verifies the SAME request is durably ABANDONED, zero decision/consumption, the guard blocks request-abandoned, and the late allow is rejected typed over the REMOTE v4 boundary. leg A2 = the LEGACY ask-lane disconnect (real synchronous-delegation prompt aborted mid-turn): the coupling-ABSENT request stays PENDING (the untouched contract — pinned at unit level by a4a W2 / a5a S10-S14, evidenced here on the real host). leg B = the allow-voiding abandon: the invalidation request is CREATED via the p6t6 thin route, gets its pre-abandon durable ALLOW over the REMOTE v4 wire, is ABANDONED through the production abandonControlRequest authority (thin route — no remote abandon endpoint exists in this branch), the guard probe = production guardOperation (a blocked probe writes nothing), the typed CONTROL_REQUEST_ABANDONED pass-through observed over the REMOTE v4 boundary (invariant 4b), exactly-once via the typed repeat rejection + the durable ledger count."
+    },
+    {
+      "id": "C5",
+      "name": "restart (same DSH_HOME) reads abandoned/history (remote ledger page + listControlState: abandonments + derived statuses + full history intact)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "after the restart, the REMOTE ledger page carries the FULL control history: 7 recorded / 5 decided / 2 consumed / 2 abandoned (every durable fact intact)",
+          "ok": true,
+          "detail": "recorded=7 decided=5 consumed=2 abandoned=2 total=27"
+        },
+        {
+          "name": "the DERIVED request statuses after restart (from the full durable history over the REMOTE endpoints): C1/C2a/C2b/C3 `decided`, C4a `abandoned` (the SAME-request cascade durably closed it — the abandon history is intact), C4a-legacy `pending` (the ask-lane disconnect never decided it — the pending history is intact), C4b `abandoned` (the terminal mark wins over its pre-abandon decision)",
+          "ok": true,
+          "detail": "statuses={\"c1\":\"decided\",\"c2a\":\"decided\",\"c2b\":\"decided\",\"c3\":\"decided\",\"c4a\":\"abandoned\",\"c4al\":\"pending\",\"c4b\":\"abandoned\"}"
+        },
+        {
+          "name": "the REMOTE endpoint history returns BOTH abandonments after restart: the C4a cascade fact {requestId, rootSessionId, abandonedAt, reason: wait-aborted} and the C4b explicit fact {requestId, rootSessionId, abandonedAt} are durable and readable (exactly two, one per request)",
+          "ok": true,
+          "detail": "abandonments=[{\"sequence\":21,\"payload\":{\"abandonedAt\":\"2026-09-29T19:26:27.917Z\",\"reason\":\"wait-aborted\",\"requestId\":\"ctrl-18tuzr814nhdij0nadlfi1eo\",\"rootSessionId\":\"session-prdctrl-p-prd-control-2026-09-29T19-26-21\"}},{\"sequence\":27,\"payload\":{\"abandonedAt\":\"2026-09-29T19:27:24.262Z\",\"reason\":\"prd-c4 aborted-work-unit\",\"requestId\":\"ctrl-0fij89q0k4iwrr07x7m7s19z\",\"rootSessionId\":\"session-prdctrl-p-prd-control-"
+        },
+        {
+          "name": "the abandoned request CANNOT be re-decided after the restart (a late allow over the REMOTE v4 wire is still rejected typed — the terminal mark is durable across the host restart)",
+          "ok": true,
+          "detail": "errCode=CONTROL_REQUEST_ABANDONED errMessage=ControlService: request 'ctrl-0fij89q0k4iwrr07x7m7s19z' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)"
+        }
+      ],
+      "pass": true,
+      "wireNote": "all reads over remote endpoints: team.getLedgerPage (v1) for the full durable history; the p6t6 state route wraps teamRoot.control.listControlState (derived statuses + abandonments). No host-local file reads on this criterion."
+    },
+    {
+      "id": "H1",
+      "name": "test-use porcelain EMPTY + HEAD baseline; :3080/:3180 zero-touch (read-only probes pre == post)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "test-use repo: HEAD == baseline + porcelain empty BEFORE the run",
+          "ok": true,
+          "detail": "pre: head=46a7f68b0922371ce7144b668b90e377d8e799f4 statusEmpty=true diffEmpty=true"
+        },
+        {
+          "name": "test-use repo: HEAD == baseline + porcelain empty AFTER the run (the kit touched the host source tree not at all)",
+          "ok": true,
+          "detail": "post: head=46a7f68b0922371ce7144b668b90e377d8e799f4 statusEmpty=true diffEmpty=true"
+        },
+        {
+          "name": "the stable instances :3080/:3180 are zero-touch: read-only GET probes pre == post (the kit sent no write/control to them)",
+          "ok": true,
+          "detail": "before={\"http://127.0.0.1:3080/\":{\"url\":\"http://127.0.0.1:3080/\",\"status\":401},\"http://127.0.0.1:3180/\":{\"url\":\"http://127.0.0.1:3180/\",\"status\":401}} after={\"http://127.0.0.1:3080/\":{\"url\":\"http://127.0.0.1:3080/\",\"status\":401},\"http://127.0.0.1:3180/\":{\"url\":\"http://127.0.0.1:3180/\",\"status\":401}}"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "H2",
+      "name": "run ports released after teardown (host + mock)",
+      "status": "run",
+      "checks": [
+        {
+          "name": "every allocated port is released after teardown (host + mock)",
+          "ok": true,
+          "detail": "hostPort=3182 free=true mockPort=3497 free=true"
+        }
+      ],
+      "pass": true
+    }
+  ],
+  "wireGap": "No product wire in this branch creates template-subject inline requests or abandons requests (the remote catalog has only team.resolveControl v4 for control). C3/C4 creation/abandon/guard/wait ride the p6t6 test-only thin route wrapping the SINGLE production control-service authority; every DECISION and the typed CONTROL_REQUEST_ABANDONED pass-through ride the REMOTE v4 product wire. The C4 leg A disconnect is a TRUE in-flight HTTP abort of the REAL wait route (the production awaitControlDecision wired to the client connection), and the SAME-request cascade outcome (the durable abandon fact, reason wait-aborted) is asserted over the durable read plane; leg A2 evidences that the LEGACY ask-lane disconnect still leaves its request PENDING (the untouched contract).",
+  "instanceLogs": [
+    {
+      "bootNum": 1,
+      "phase": "create",
+      "port": 3182
+    },
+    {
+      "bootNum": 2,
+      "phase": "resume",
+      "port": 3182
+    }
+  ],
+  "fatal": null,
+  "exitCode": 0,
+  "pass": true
+}

@@ -55,9 +55,15 @@ import { actionImpactClassOf } from './actions.js';
 import { controlImpact, coordinationImpact, crossAgentTriggerImpact, diagnosticImpact, lifecycleImpact, normalWorkImpact, recoveryWorkImpact, } from '../requirements/action-impact.js';
 import { OPTIONAL_REQUIREMENT_ACCEPTED_FACT_TYPE, RECOVERY_INCIDENT_CLOSED_FACT_TYPE, RECOVERY_INCIDENT_OPENED_FACT_TYPE, TEMPLATE_AVAILABILITY_SET_FACT_TYPE, parseOptionalRequirementAccepted, parseRecoveryIncidentClosed, parseRecoveryIncidentOpened, parseTemplateAvailabilitySet, recoveryIncidentClosedPayload, recoveryIncidentOpenedPayload, writeRequirementFact, } from '../requirements/facts.js';
 import { projectVerdicts, scopeRequirementInputsOf, } from '../requirements/scope-requirements.js';
-import { ACTION_IMPACT_CLASSES, SCOPE_STATES, scopeKey, teamScope, templateScope, } from '../requirements/types.js';
+import { classifyScopeReadiness, } from '../requirement-facts/index.js';
+import { ACTION_IMPACT_CLASSES, PENDING_BLOCK, SCOPE_STATES, scopeKey, teamScope, templateScope, } from '../requirements/types.js';
 import { createCompatibilityAuthority } from '../compatibility/index.js';
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from './errors.js';
+// D-3 (2026-09-30) — the closed typed-code family of the PENDING outcome
+// (the full documented-judgment JSDoc lives at the definition in
+// `../requirements/types.js` — the closed-vocabulary home, shared with
+// the creation preflight and the production root).
+export { PENDING_BLOCK };
 /**
  * Read the durable requirement facts of one team from the ledger (the
  * frozen `compatibility` category): the degradation consents, the template
@@ -257,6 +263,62 @@ export async function evaluateAllScopes(repositories, blueprint, rootSessionId, 
     return { scopeVerdicts: rawScopeVerdicts, scopeStates, teamResult, facts };
 }
 /**
+ * D-3 (2026-09-30) — the live 3-state readiness analysis across the
+ * action's impact scopes (pure over the captured full-resolution reads).
+ *
+ * For each scope in `impact.scopeRefs` (the Team scope when the action's
+ * work depends on it; a template scope only when the action names it —
+ * applicability gates BEFORE readiness: an impact never references a scope
+ * the work does not depend on, E.11 negative #1), it delegates to the
+ * shared {@link classifyScopeReadiness} (the COLD-member `not-applicable`
+ * mcpServer exemption lives there, guide §2.5.4) and aggregates:
+ *
+ * - `downRequired` — a required requirement observed `unreachable` (a
+ *   confirmed down; takes precedence over pending);
+ * - `pendingRequired` — a required requirement observed `unknown` and
+ *   IN-FLIGHT (a pending materialization slot exists on a live session —
+ *   the B5 transient window; the PF-2 tri-state, 2026-09-30 option A: a
+ *   NEVER-OBSERVED unknown is seed-satisfied — the seed's truth decides)
+ *   that is NOT also down.
+ *
+ * The 2-state engine verdict is deliberately NOT consulted: the seed can
+ * satisfy an unknown required fact (a false PASS), and a no-seed unknown
+ * reads as a missing FATAL — both are reclassified from the 3-state truth
+ * (the feed contract: an unknown observation never yields a live verdict).
+ * Returns empty sets when no read was captured (legacy / factory worlds —
+ * the PENDING rule is off).
+ */
+function analyzeLiveReadiness(blueprint, impact, teamRead, templateReads) {
+    const inputs = scopeRequirementInputsOf(blueprint);
+    const pendingRequired = [];
+    const downRequired = [];
+    for (const scope of impact.scopeRefs) {
+        let scopeInputs;
+        let observations;
+        if (scope.level === 'team') {
+            scopeInputs = inputs.team;
+            observations = teamRead?.observations;
+        }
+        else {
+            const templateId = scope.templateId;
+            if (templateId === undefined)
+                continue;
+            scopeInputs = inputs.templates[templateId] ?? [];
+            observations = templateReads.get(templateId)?.observations;
+        }
+        if (observations === undefined || observations.length === 0)
+            continue;
+        const classification = classifyScopeReadiness({
+            scopeKey: scopeKey(scope),
+            inputs: scopeInputs,
+            observations,
+        });
+        pendingRequired.push(...classification.pending);
+        downRequired.push(...classification.down);
+    }
+    return { pendingRequired, downRequired };
+}
+/**
  * Step 4a (PR-E) — the requirement gate for NEW WORK (invariant 50).
  *
  * Consumes the full scope evaluation (every declared scope, one fresh facts
@@ -276,7 +338,30 @@ export async function evaluateAllScopes(repositories, blueprint, rootSessionId, 
  */
 export async function enforceRequirementGate(options, impact) {
     const { repositories, blueprint, rootSessionId } = options;
-    const { scopeVerdicts, scopeStates } = await evaluateAllScopes(repositories, blueprint, rootSessionId, options.environmentFacts, options.now, options.templateEnvironmentFacts);
+    // D-3 (2026-09-30) — the ATOMIC facts + observations pair: when the
+    // full-resolution read port is present, the team-scope facts thunk is a
+    // CAPTURING wrapper over it — the authority's inline re-probe re-reads
+    // through the SAME thunk, so `teamRead` always holds the observations
+    // of the last call, i.e. the observations of the facts the verdict was
+    // computed from (no cross-call staleness between the verdict and the
+    // PENDING rule). Template scopes capture per template. Absent → the
+    // legacy facts-only ports stand byte-identically (no PENDING rule).
+    let teamRead;
+    const teamFacts = options.environmentFactsRead !== undefined
+        ? async () => {
+            teamRead = await options.environmentFactsRead();
+            return teamRead.environmentFacts;
+        }
+        : options.environmentFacts;
+    const templateReads = new Map();
+    const templateFacts = options.templateEnvironmentFactsRead !== undefined
+        ? async (templateId) => {
+            const resolution = await options.templateEnvironmentFactsRead(templateId);
+            templateReads.set(templateId, resolution);
+            return resolution.environmentFacts;
+        }
+        : options.templateEnvironmentFacts;
+    const { scopeVerdicts, scopeStates } = await evaluateAllScopes(repositories, blueprint, rootSessionId, teamFacts, options.now, templateFacts);
     const { consents, availability, openIncidents } = readRequirementFacts(repositories, rootSessionId);
     const decision = gateAction(impact, {
         scopeVerdicts,
@@ -284,6 +369,76 @@ export async function enforceRequirementGate(options, impact) {
         availability,
     });
     const recovery = deriveRecovery(scopeStates);
+    // D-3 (2026-09-30, adjudicated product semantics — fail-closed PENDING;
+    // the product fix for the seed-filled false OPEN) — the LIVE 3-state
+    // readiness rule. It reads the observations DIRECTLY (never the
+    // seed-satisfied 2-state engine verdict, which the bootstrap seed can
+    // satisfy: static available:true + live unknown → the engine PASS is
+    // NOT the runtime truth, guide §2.5), scoped to the action's impact
+    // (a COLD / not-applicable member template is never in the refs — its
+    // requirements never PENDING-block; E.11 negative #1 "cold member
+    // required MCP + mounted false ≠ blocked" stays green: applicability
+    // gates before readiness).
+    //
+    // Precedence (documented judgment on the closed typed-code family —
+    // see {@link PENDING_BLOCK}):
+    //   1. a required capability observed DOWN (live unreachable) → the
+    //      existing FATAL-down block stands (the actionable one — the
+    //      recovery dispatch is offered; a pending observation alongside a
+    //      confirmed down is subsumed);
+    //   2. otherwise, a required capability live-UNKNOWN and IN-FLIGHT (a
+    //      pending materialization slot exists on a live session — the B5
+    //      transient window) → the typed PENDING block:
+    //        a. the decision would ALLOW (the engine PASS is a seed-filled
+    //           false OPEN — the exact D-3 defect) → block PENDING;
+    //        b. the decision is blocked as `requiredScopeDown` (a no-seed
+    //           unknown the engine reported as a missing FATAL) →
+    //           RECLASSIFY to PENDING (it is not a confirmed down — it is
+    //           recheckable; the block stands, the category is honest);
+    //        c. the decision is blocked for a deterministic non-readiness
+    //           reason (`templateDisabled`) → that block stands (it is
+    //           more deterministic than the live-readiness state);
+    //   3. otherwise → the existing decision proceeds.
+    //
+    // PF-2 tri-state (2026-09-30 — parent adjudication option A): an UNKNOWN
+    // that is NEVER-OBSERVED (no fiber / pending slot / failed slot on ANY
+    // live session — the first-create bootstrap window) is NOT in the
+    // pending partition — the seed-satisfied 2-state decides there (seed
+    // truth, C.2/E.6; not a blanket OPEN). The gate reads the ONE shared
+    // classifier predicate — the probe, the preflight and the activation
+    // step classify identically (probe == gate, INV-9.4).
+    //
+    // The PENDING block is a VERDICT, not a write (zero durable effect — no
+    // incident bookkeeping runs); it is RECHECKABLE by construction: PENDING
+    // now means IN-FLIGHT ONLY (the PF-2 product-message correction — the
+    // never-observed state that only the blocked action could settle no
+    // longer PENDINGs), so it clears on the next boundary (any later
+    // passage re-evaluates on a fresh read) or via the manual
+    // `compatibility.reprobe` seam — a stuck slot is honest, not a
+    // deadlock. Absent read ports (legacy / factory worlds) → no
+    // observations → the rule is off (byte-identical).
+    const liveReadiness = analyzeLiveReadiness(blueprint, impact, teamRead, templateReads);
+    const hasLiveDown = liveReadiness.downRequired.length > 0;
+    const hasLivePending = liveReadiness.pendingRequired.length > 0;
+    const noSeedFatalReclassify = !decision.allowed && decision.reason === 'requiredScopeDown';
+    if (!hasLiveDown && hasLivePending && (decision.allowed || noSeedFatalReclassify)) {
+        throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, 'TeamRuntime: a required capability is not yet observed (materialization pending) — new work admission is blocked with the typed PENDING outcome (fail-closed; recheck at the next boundary or via the compatibility reprobe)', {
+            rootSessionId,
+            status: PENDING_BLOCK.status,
+            gateReason: PENDING_BLOCK.gateReason,
+            blockedScopes: [...new Set(liveReadiness.pendingRequired.map((entry) => entry.scopeKey))],
+            pendingRequirements: liveReadiness.pendingRequired.map((entry) => ({
+                requirementId: entry.requirementId,
+                subject: entry.subject,
+            })),
+            recheck: PENDING_BLOCK.recheck,
+            source: 'requirement-gate',
+            // No recovery dispatch for a pending scope: the reduced authority
+            // computation needs a KNOWN-DOWN set (plan §E.9) — a pending
+            // observation offers nothing to reduce against (fail-closed).
+            recoveryDispatchAvailable: false,
+        });
+    }
     if (!decision.allowed) {
         throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, decision.reason === 'templateDisabled'
             ? 'TeamRuntime: the targeted template is disabled — its work cannot start (availability, not a policy denial; re-enable the template or fix + recheck its requirements)'

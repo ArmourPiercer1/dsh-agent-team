@@ -28,7 +28,9 @@
  * (`source` — which seam produced it; `observedAt` — ISO-8601; `reason` —
  * optional structured diagnostic). The `reason`/`observedAt`/`source` are
  * provenance only — they NEVER enter any fingerprint input (the same
- * discipline the domain applies to `EnvironmentFact.detail`).
+ * discipline the domain applies to `EnvironmentFact.detail`). An unsettled
+ * (`unknown`) verdict may carry the optional `observationState` (the PF-2
+ * tri-state — in-flight vs never-observed; see {@link OBSERVATION_STATES}).
  *
  * Pure module: no I/O, no live Agent, no `node:` builtins. Probes run
  * through the injected ports of {@link ./provider.js}; the observation is
@@ -65,6 +67,62 @@ export function assertProbeVerdict(value, path) {
     }
     return value;
 }
+// --- the observation state of an UNSETTLED verdict (PF-2 tri-state) -----------
+/**
+ * The closed 2-state OBSERVATION STATE of an unsettled (`unknown`) readiness
+ * verdict — the PF-2 tri-state split (2026-09-30, parent adjudication,
+ * option A — the first-create bootstrap exemption). `unknown` alone cannot
+ * distinguish the two structurally different pre-observation worlds:
+ *
+ * - `in-flight` — a PENDING materialization slot EXISTS on a live session
+ *   (a raw materialization slot without a settled fiber, or unapplied
+ *   durable records / a template grant that drive a mount at the next
+ *   boundary — the B5 transient window). The observation is IN PROGRESS:
+ *   the typed PENDING block stands (genuinely recheckable — plan §C.3
+ *   fail-closed scope, C.5 "pending is a real materialization state");
+ * - `never-observed` — NO fiber / NO pending slot / NO failed slot on ANY
+ *   live session (the capability is STRUCTURALLY not-yet-applicable — the
+ *   canonical v1→v2 first-create shape: a team-scope server that only
+ *   materializes at the leader boundary of an EXISTING team). No observation
+ *   can settle it short of the create itself (a liveness deadlock if
+ *   PENDING); the bootstrap seed is the only pre-observation source (C.2 —
+ *   the seed as static bootstrap source) and its truth decides: the
+ *   legacy seed-satisfied 2-state stands for this state ONLY (E.6
+ *   preflight; the exemption is the seed's, never a blanket OPEN).
+ *
+ * The state rides on the observation (provenance of the unsettled verdict —
+ * like `reason`/`observedAt`, never a fingerprint input) and is consumed by
+ * the ONE shared classifier predicate in the requirement-facts layer
+ * (`classifyScopeReadiness` / `dropSeedFilledPendingFacts`), so every
+ * decision consumer (the probe, the creation preflight, the gate, the
+ * activation step) inherits identical behavior: probe == gate (INV-9.4).
+ *
+ * A SETTLED verdict (`reachable`/`unreachable`) carries NO observation
+ * state (malformed if present); an `unknown` WITHOUT the field defaults to
+ * IN-FLIGHT (the conservative D-3 default — the exemption is never
+ * inferred, only observed).
+ */
+export const OBSERVATION_STATES = {
+    /** A pending materialization slot exists on a live session (in progress). */
+    inFlight: 'in-flight',
+    /** No fiber / pending slot / failed slot on any live session (not yet applicable). */
+    neverObserved: 'never-observed',
+};
+/** Every observation-state value, for closed-set membership tests. */
+export const OBSERVATION_STATE_VALUES = Object.values(OBSERVATION_STATES);
+/**
+ * Assert that `value` is a closed observation state.
+ * @param value - the raw state.
+ * @param path - pointer used in the error details.
+ * @returns the typed state.
+ * @throws `MALFORMED_DTO` for any value outside the 2-state vocabulary.
+ */
+export function assertObservationState(value, path) {
+    if (typeof value !== 'string' || !OBSERVATION_STATE_VALUES.includes(value)) {
+        throw teamContractError('MALFORMED_DTO', `unknown observation state at ${path}`, { path, problem: 'unknown observation state', value: typeof value === 'string' ? value : typeof value });
+    }
+    return value;
+}
 // --- the observation source (provenance, plan §C.4) ---------------------------
 /**
  * The known observation *sources* — which seam produced a readiness
@@ -94,6 +152,7 @@ const CAPABILITY_OBSERVATION_FIELDS = [
     'observedAt',
     'reason',
     'generation',
+    'observationState',
 ];
 /** A non-empty string guard (house style). */
 function readNonEmptyString(record, field, path) {
@@ -113,7 +172,9 @@ function readNonEmptyString(record, field, path) {
  * @param path - pointer used in the error details (defaults to `$`).
  * @returns the frozen observation.
  * @throws `MALFORMED_DTO` for unknown fields, an unknown verdict, a non-§27.1
- *   capability type, or a malformed identity/source/observedAt/generation.
+ *   capability type, or a malformed identity/source/observedAt/generation,
+ *   or an `observationState` outside the closed 2-state set (or with a
+ *   settled verdict).
  */
 export function parseCapabilityObservation(value, path = '$') {
     if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -151,6 +212,13 @@ export function parseCapabilityObservation(value, path = '$') {
             problem: 'generation must be a non-negative integer',
         });
     }
+    let observationState;
+    if (record['observationState'] !== undefined) {
+        if (verdict !== PROBE_VERDICTS.unknown) {
+            throw teamContractError('MALFORMED_DTO', `observationState is only defined for the unknown verdict at ${path}.observationState`, { path: `${path}.observationState`, problem: 'observationState with a settled verdict' });
+        }
+        observationState = assertObservationState(record['observationState'], `${path}.observationState`);
+    }
     const observation = {
         capabilityType: capabilityType,
         capabilityName,
@@ -159,6 +227,7 @@ export function parseCapabilityObservation(value, path = '$') {
         observedAt,
         ...(reason !== undefined ? { reason } : {}),
         ...(generation !== undefined ? { generation } : {}),
+        ...(observationState !== undefined ? { observationState } : {}),
     };
     return deepFreeze(observation);
 }
@@ -197,6 +266,7 @@ export function createCapabilityObservation(args) {
         observedAt: args.observedAt,
         reason: args.reason,
         generation: args.generation,
+        observationState: args.observationState,
     });
 }
 /** The collision-proof (capabilityType, capabilityName) registry key. */

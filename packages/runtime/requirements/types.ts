@@ -339,7 +339,8 @@ export function isGateReason(value: unknown): value is GateReason {
 // startup preflight (§E.6)
 // ---------------------------------------------------------------------------
 
-/** The closed startup-preflight outcomes (plan §E.6). */
+/** The closed startup-preflight outcomes (plan §E.6; D-3 extends with
+ *  `pending`, 2026-09-30 adjudicated). */
 export const PREFLIGHT_OUTCOMES = {
   /** Every requirement is satisfied (or a template is disabled) — proceed. */
   proceed: 'proceed',
@@ -349,6 +350,19 @@ export const PREFLIGHT_OUTCOMES = {
   fixOrDisable: 'fixOrDisable',
   /** A TEAM-LEVEL required requirement is unmet — FATAL; it CANNOT be bypassed by disabling a template. */
   fatal: 'fatal',
+  /**
+   * D-3 (2026-09-30, adjudicated product semantics — fail-closed PENDING):
+   * a REQUIRED applicable requirement whose LIVE observation is UNKNOWN
+   * (materialization slot pending / not yet probed) — the creation is
+   * blocked with the typed PENDING outcome (NEVER a seed-filled PASS).
+   * Precedence (documented judgment): down-based outcomes (`fatal` /
+   * `fixOrDisable` — a confirmed unreachable wins) > `pending` >
+   * `consentRequired` > `proceed`. RECHECKABLE by construction: the block
+   * is a verdict, not a write; it clears on the next boundary (the
+   * re-driven creation re-evaluates on a fresh read) or via the manual
+   * `compatibility.reprobe` seam.
+   */
+  pending: 'pending',
 } as const
 
 /** A closed startup-preflight outcome. */
@@ -372,4 +386,48 @@ export interface PreflightResult {
   readonly fixOrDisableRequirementIds: readonly string[]
   /** The TEAM-level required-unmet requirementIds (when outcome is fatal). */
   readonly fatalRequirementIds: readonly string[]
+  /**
+   * D-3 (2026-09-30) — the REQUIRED live-UNKNOWN (pending) requirementIds
+   * (when outcome is `pending`). ABSENT in pre-D-3 results (the legacy
+   * classifier never produces `pending`).
+   */
+  readonly pendingRequirementIds?: readonly string[]
 }
+
+/**
+ * D-3 (2026-09-30, adjudicated product semantics — fail-closed PENDING) —
+ * the closed typed-code family of the PENDING outcome (documented
+ * judgment on the adjudicated contract "reuse the existing closed
+ * typed-code family"):
+ *
+ * - the WIRE error code stays `COMPATIBILITY_BLOCKED` (the frozen router
+ *   vocabulary — the dispatcher's closed backing set passes it through
+ *   unchanged, invariant 4b);
+ * - the engine's §28 logical admission states (OPEN / BLOCKED_WARNING /
+ *   BLOCKED_FATAL / DEGRADED_ACKNOWLEDGED) are UNTOUCHED — PENDING is a
+ *   DECISION-level category, not an engine verdict (Architecture §28.2:
+ *   gate enforcement belongs to the runtime);
+ * - the evaluator's {@link GATE_REASONS} set is UNTOUCHED — `gateAction`
+ *   never returns PENDING; the rule is a decision-level overlay applied
+ *   AFTER the 2-state decision (it voids an otherwise-allowed passage,
+ *   and reclassifies a no-seed unknown FATAL);
+ * - the new category therefore rides the typed details: `status` +
+ *   `gateReason` below (+ the `recheck` hint — the block is RECHECKABLE
+ *   by construction: it is a verdict, not a write; it clears on the next
+ *   boundary or via the manual `compatibility.reprobe` seam — a stuck
+ *   slot is honest, not a deadlock).
+ *
+ * Plan citations: §C.3 "否则 unresolved fail closed；禁止 false OPEN" +
+ * E.3 "no false OPEN" + E.11 negative #10 "readiness 重置 unknown"
+ * (unknown is first-class) + C.5 (pending is a real materialization
+ * state). The static seed remains bootstrap/display only — never a
+ * verdict (guide §2.5).
+ */
+export const PENDING_BLOCK = {
+  /** The typed details `status` (mirrors the FATAL path's `BLOCKED_FATAL`). */
+  status: 'BLOCKED_PENDING',
+  /** The typed details `gateReason`. */
+  gateReason: 'requiredScopePending',
+  /** The typed details `recheck` hint (recheckable by construction). */
+  recheck: 'next-boundary-or-compatibility.reprobe',
+} as const

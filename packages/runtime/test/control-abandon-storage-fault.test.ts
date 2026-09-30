@@ -327,11 +327,19 @@ describe('F2 (#41 side): a failed abandon durable write is a typed failure — n
     expect(error.code).toBe(TEAM_DOMAIN_ERROR_CODES.NOT_OPEN)
   })
 
-  it('the closed CONTROL_* vocabulary is untouched by the fault mapping (the typed failures are facade/storage codes, not control rejections)', () => {
+  it('the closed CONTROL_* vocabulary is untouched by the fault mapping (the OBSERVED fault codes are the storage facade\'s DURABLE_WRITE_FAILED, not control rejections)', () => {
     expect(isTeamRuntimeError(s1.error as unknown)).toBe(true)
     expect(isTeamRuntimeError(s2.error as unknown)).toBe(true)
-    expect(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED).not.toBe(
-      TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED,
-    )
+    // Observed behavior (NOT a constant-vs-constant comparison): the fault
+    // mapped to the storage facade's code, which is a member of NEITHER the
+    // closed CONTROL_* rejection vocabulary ...
+    const controlVocab: string[] = Object.values(CONTROL_ERROR_CODES)
+    const s1Code = (s1.error as TeamRuntimeError).code
+    const s2Code = (s2.error as TeamRuntimeError).code
+    expect(controlVocab.includes(s1Code)).toBe(false)
+    expect(controlVocab.includes(s2Code)).toBe(false)
+    // ... but IS the closed runtime/storage fault code.
+    expect(s1Code).toBe(TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED)
+    expect(s2Code).toBe(TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED)
   })
 })

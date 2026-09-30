@@ -1,0 +1,10 @@
+{
+  "registry": {
+    "team.prereq-anchor@1": "{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:48ab92a77b58454bfc92842ea5ddae2be8f3473fe99f68c4880b27fd73dbd16f\",\"frozenAt\":\"2026-09-30T00:05:03.125Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.prereq-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the PR-E smoke boot team. prereq-2026-09-30T00-05-00 is the run nonce.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}",
+    "team.mpr-anchor@1": "{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"frozenAt\":\"2026-09-30T00:05:03.239Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.mpr-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the boot anchor leader of the model-preference-routing smoke row.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}"
+  },
+  "teamSessions": {
+    "session-prereq-boot-prereq-2026-09-30T00-05-00": "{\"blueprint\":{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:48ab92a77b58454bfc92842ea5ddae2be8f3473fe99f68c4880b27fd73dbd16f\",\"revision\":\"1\"},\"createdAt\":\"2026-09-30T00:05:03.132Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":2,\"rootSessionId\":\"session-prereq-boot-prereq-2026-09-30T00-05-00\",\"schemaVersion\":1}",
+    "session-prereq-v1-prereq-2026-09-30T00-05-00": "{\"blueprint\":{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"revision\":\"1\"},\"createdAt\":\"2026-09-30T00:05:03.243Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":1,\"rootSessionId\":\"session-prereq-v1-prereq-2026-09-30T00-05-00\",\"schemaVersion\":1}"
+  }
+}

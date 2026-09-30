@@ -30,13 +30,14 @@
  * Pure contracts module: no I/O, no `node:` builtins, no live references.
  * @module @dsh-agent-team/runtime/activation/types
  */
-import type { BlueprintCatalog } from '../../domain/blueprint/src/index.js';
+import type { BlueprintCatalog, TeamBlueprint } from '../../domain/blueprint/src/index.js';
 import type { EnvironmentFact, CompatibilityStatus, WarningAcknowledgement } from '../../domain/compatibility/src/index.js';
 import type { ExternalPolicyFacts } from '../../domain/policy/src/index.js';
 import type { MemberInstanceRecordDto } from '../../contracts/src/index.js';
 import type { TeamDomain } from '../../storage/repositories/index.js';
 import type { AdmissionGuard, OverlaySlot, OverlaySlotName, TeamAgentSetupSurface } from '../agent-setup/binder/index.js';
 import type { SessionDurabilityPort } from '../member-residency/index.js';
+import type { RequirementFactsResolution } from '../requirement-facts/index.js';
 import type { ModelSelection } from '../agent-setup/model/index.js';
 import type { PolicyReader, PolicyStateTransitionRecord } from '../mutation/index.js';
 /**
@@ -183,6 +184,59 @@ export interface ActivationPorts {
     readonly blueprintCatalog: BlueprintCatalog;
     /** The environment-facts probe (step 6: compatibility). */
     readonly environmentFacts: () => Promise<readonly EnvironmentFact[]>;
+    /**
+     * D-1 (2026-09-30, adjudicated product defect — the PF-1 family, extended
+     * to the activation provider): the per-TARGET-blueprint live facts source
+     * for step 6's TEAM scope. The provider already resolves the TARGET
+     * root's bound blueprint (step 2); before D-1 the step-6 authority was
+     * handed the BOOT-scoped thunk (the production root's own row-scoped
+     * feed), so on a multi-blueprint host the target's required requirements
+     * were evaluated against a feed scoped to a DIFFERENT blueprint —
+     * missing facts, spurious FATAL, corrupted durable aggregates. When
+     * present, step 6 evaluates the target's team requirements against
+     * `environmentFactsForBlueprint(blueprint)` (the SAME seam the router
+     * gate / admit gate / remote probe / per-root prober consume — one seam,
+     * no per-consumer patches). ABSENT → the legacy no-argument thunk stands
+     * byte-identically (factory worlds + single-blueprint hosts; the
+     * backward-compatible option, deviations (b)/(c)).
+     */
+    readonly environmentFactsForBlueprint?: (blueprint: TeamBlueprint) => Promise<readonly EnvironmentFact[]>;
+    /**
+     * D-1 (2026-09-30) — the per-TARGET-blueprint live facts source for
+     * step 6's v2 TARGET-TEMPLATE scope (the per-template boundary feed:
+     * supply + fresh readiness + materialization). The pre-D-1 template
+     * evaluation reused the authority chain's team-scope facts read —
+     * mis-scoped on a multi-blueprint host for the same reason as the team
+     * scope. ABSENT → the legacy behavior (the authority's facts) stands
+     * byte-identically.
+     */
+    readonly templateEnvironmentFactsForBlueprint?: (blueprint: TeamBlueprint, templateId: string) => Promise<readonly EnvironmentFact[]>;
+    /**
+     * D-3 (2026-09-30, adjudicated product semantics — fail-closed PENDING,
+     * plan §C.3 "否则 unresolved fail closed；禁止 false OPEN" + E.3 "no
+     * false OPEN" + E.11 negative #10 "readiness 重置 unknown"): the
+     * per-TARGET-blueprint FULL resolution (the 2-state facts AND the 3-state
+     * observations as the ATOMIC pair of ONE `resolveFacts` call) for step
+     * 6's TEAM scope. A REQUIRED applicable requirement whose live
+     * observation is `unknown` (materialization slot pending / not yet
+     * probed) blocks the admission with the TYPED PENDING outcome — never a
+     * seed-filled PASS (the static seed remains bootstrap/display only,
+     * guide §2.5). When present, the step-6 authority consumes THIS source
+     * (facts = the resolution's feed; observations = the same call's 3-state
+     * truth — the pair is atomic: the authority's inline re-probe re-reads
+     * through the same thunk, so the observations always accompany the
+     * facts the verdict was computed from). ABSENT → no PENDING rule (the
+     * legacy facts-only sources stand byte-identically — factory worlds have
+     * no live probe, hence no pending materialization).
+     */
+    readonly environmentFactsReadForBlueprint?: (blueprint: TeamBlueprint) => Promise<RequirementFactsResolution>;
+    /**
+     * D-3 (2026-09-30) — the per-TARGET-blueprint FULL resolution for step
+     * 6's v2 TARGET-TEMPLATE scope (the atomic facts + observations pair of
+     * the template-boundary feed). Same ABSENT semantics as
+     * {@link ActivationPorts.environmentFactsReadForBlueprint}.
+     */
+    readonly templateEnvironmentFactsReadForBlueprint?: (blueprint: TeamBlueprint, templateId: string) => Promise<RequirementFactsResolution>;
     /** The external hard policy + capability-existence facts (step 8: policy
      *  resolver stage 2, Architecture §19.2/§19.6). */
     readonly externalPolicyFacts: () => Promise<ExternalPolicyFacts>;

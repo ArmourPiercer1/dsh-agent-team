@@ -1,0 +1,49 @@
+{
+  "error": {
+    "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+    "message": "TeamRuntime: the creation preflight of \"session-prereq-main-prereq-2026-09-29T23-18-42\" is 'pending' — the durable Team bind is refused (zero durable effect; a required capability is not yet observed (materialization pending) — re-drive the creation at the next boundary (or run the compatibility reprobe); the block is recheckable, not a deadlock)",
+    "details": {
+      "method": "team.create",
+      "endpoint": "team.create",
+      "contractVersion": 1,
+      "requestToken": null,
+      "reason": "domain-error",
+      "cause": {
+        "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+        "message": "TeamRuntime: the creation preflight of \"session-prereq-main-prereq-2026-09-29T23-18-42\" is 'pending' — the durable Team bind is refused (zero durable effect; a required capability is not yet observed (materialization pending) — re-drive the creation at the next boundary (or run the compatibility reprobe); the block is recheckable, not a deadlock)",
+        "details": {
+          "rootSessionId": "session-prereq-main-prereq-2026-09-29T23-18-42",
+          "source": "creation-preflight",
+          "outcome": "pending",
+          "blockedScopes": [],
+          "consentRequiredRequirementIds": [],
+          "fixOrDisableRequirementIds": [],
+          "fatalRequirementIds": [],
+          "status": "BLOCKED_PENDING",
+          "gateReason": "requiredScopePending",
+          "recheck": "next-boundary-or-compatibility.reprobe",
+          "pendingRequirementIds": [
+            "team.mcp.repo",
+            "team.mcp.leaderreq"
+          ]
+        }
+      }
+    }
+  },
+  "details": {
+    "rootSessionId": "session-prereq-main-prereq-2026-09-29T23-18-42",
+    "source": "creation-preflight",
+    "outcome": "pending",
+    "blockedScopes": [],
+    "consentRequiredRequirementIds": [],
+    "fixOrDisableRequirementIds": [],
+    "fatalRequirementIds": [],
+    "status": "BLOCKED_PENDING",
+    "gateReason": "requiredScopePending",
+    "recheck": "next-boundary-or-compatibility.reprobe",
+    "pendingRequirementIds": [
+      "team.mcp.repo",
+      "team.mcp.leaderreq"
+    ]
+  }
+}

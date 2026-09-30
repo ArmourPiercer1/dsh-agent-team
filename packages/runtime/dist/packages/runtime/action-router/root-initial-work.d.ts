@@ -390,6 +390,40 @@ export interface RootInitialWorkClosureInput {
      * the legacy behavior, byte-identical).
      */
     readonly templateEnvironmentFacts?: (templateId: string) => Promise<readonly EnvironmentFact[]>;
+    /**
+     * PF-1 fix (2026-09-30, adjudicated product defect) — the per-BLUEPRINT
+     * live environment-facts source (the SAME seam the remote surface's
+     * `intent.probe`, the per-root compatibility prober and the new-work
+     * admission gate consume): when PRESENT the Phase A gate resolves the
+     * live feed against the TARGET root's bound blueprint's team
+     * requirements (the frozen INV-9.4 two-worlds identity on
+     * multi-blueprint hosts); when ABSENT the legacy single
+     * `environmentFacts` feed stands (byte-identical).
+     */
+    readonly environmentFactsForBlueprint?: (blueprint: TeamBlueprint) => Promise<readonly EnvironmentFact[]>;
+    /**
+     * PF-1 fix (2026-09-30) — the per-BLUEPRINT per-template feed (the twin
+     * of `templateEnvironmentFacts` scoped to the target root's bound
+     * blueprint; ABSENT in factory worlds — legacy behavior, byte-identical).
+     */
+    readonly templateEnvironmentFactsForBlueprint?: (blueprint: TeamBlueprint, templateId: string) => Promise<readonly EnvironmentFact[]>;
+    /**
+     * D-3 fix (2026-09-30, adjudicated product semantics — fail-closed
+     * PENDING) — the per-BLUEPRINT FULL-RESOLUTION live read (the atomic
+     * 3-state observations + 2-state feed pair of `resolveFacts`). Present →
+     * the Phase A gate consumes THIS source (the facts-only ports are not
+     * consulted) and the PENDING rule is live (a REQUIRED capability whose
+     * live observation is UNKNOWN is a typed PENDING block — never a
+     * seed-filled PASS). Absent → legacy byte-identical (the PENDING rule
+     * is off).
+     */
+    readonly environmentFactsReadForBlueprint?: (blueprint: TeamBlueprint) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
+    /**
+     * D-3 fix (2026-09-30) — the per-BLUEPRINT per-template FULL-RESOLUTION
+     * live read (the twin of `templateEnvironmentFactsForBlueprint`; same
+     * presence/absence semantics).
+     */
+    readonly templateEnvironmentFactsReadForBlueprint?: (blueprint: TeamBlueprint, templateId: string) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
     /** The deterministic clock (ISO-8601). */
     readonly now: () => string;
     /** The live Root input delivery port (the glue's `deliverRootWork`). */

@@ -1,0 +1,19 @@
+{
+ "type": "server-response",
+ "rpcId": "m4-probe-persona-bare-4",
+ "result": {
+  "ok": false,
+  "error": {
+   "code": "malformed-params",
+   "message": "method 'intent.probe' requires param field 'environmentFacts'",
+   "details": {
+    "method": "intent.probe",
+    "endpoint": "intent.probe",
+    "contractVersion": 1,
+    "requestToken": null,
+    "field": "environmentFacts",
+    "reason": "missing-required"
+   }
+  }
+ }
+}

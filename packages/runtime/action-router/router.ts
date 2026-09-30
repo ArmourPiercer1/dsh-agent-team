@@ -550,14 +550,54 @@ export function createTeamRuntime(
           // The gate re-reads the environment-facts port itself (a fresh
           // read under the lock — the same logical moment as before; the
           // authority's inline re-probe re-reads the same port).
+          // PF-1 fix (2026-09-30) — per-request BLUEPRINT scoping (the same
+          // seam the remote surface's `intent.probe` and the per-root
+          // compatibility prober consume): when the production root installs
+          // the per-blueprint source, the gate resolves the live feed
+          // against THIS request's bound blueprint's team requirements —
+          // a created root's required scopes are evaluated on their own
+          // facts (the frozen INV-9.4 two-worlds identity on
+          // multi-blueprint hosts). Absent → the legacy single feed stands
+          // (factory / single-blueprint worlds, byte-identical).
           await enforceRequirementGate(
             {
               repositories,
               blueprint,
               rootSessionId,
-              environmentFacts: () => options.environmentFacts(),
-              ...(options.templateEnvironmentFacts !== undefined
-                ? { templateEnvironmentFacts: options.templateEnvironmentFacts }
+              environmentFacts: () =>
+                options.environmentFactsForBlueprint !== undefined
+                  ? options.environmentFactsForBlueprint(blueprint)
+                  : options.environmentFacts(),
+              ...(options.templateEnvironmentFactsForBlueprint !== undefined
+                ? {
+                    templateEnvironmentFacts: (templateId: string) =>
+                      options.templateEnvironmentFactsForBlueprint!(
+                        blueprint,
+                        templateId,
+                      ),
+                  }
+                : options.templateEnvironmentFacts !== undefined
+                  ? { templateEnvironmentFacts: options.templateEnvironmentFacts }
+                  : {}),
+              // D-3 (2026-09-30) — the full-resolution read ports (the
+              // atomic observations + feed pair): present → the gate
+              // consumes THIS source (the facts-only ports above are then
+              // not consulted) and the PENDING rule is live; absent →
+              // legacy byte-identical (the PENDING rule is off).
+              ...(options.environmentFactsReadForBlueprint !== undefined
+                ? {
+                    environmentFactsRead: () =>
+                      options.environmentFactsReadForBlueprint!(blueprint),
+                  }
+                : {}),
+              ...(options.templateEnvironmentFactsReadForBlueprint !== undefined
+                ? {
+                    templateEnvironmentFactsRead: (templateId: string) =>
+                      options.templateEnvironmentFactsReadForBlueprint!(
+                        blueprint,
+                        templateId,
+                      ),
+                  }
                 : {}),
               ...(options.now !== undefined ? { now: options.now } : {}),
             },

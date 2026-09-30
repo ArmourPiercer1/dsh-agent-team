@@ -17,14 +17,18 @@ export {
   capabilityKey,
   createCapabilityObservation,
   OBSERVATION_SOURCES,
+  OBSERVATION_STATES,
+  OBSERVATION_STATE_VALUES,
   parseCapabilityObservation,
   PROBE_VERDICTS,
   PROBE_VERDICT_VALUES,
+  assertObservationState,
   assertProbeVerdict,
   type CapabilityIdentity,
   type CapabilityObservation,
   type CapabilityType,
   type ObservationSource,
+  type ObservationState,
   type ProbeVerdict,
 } from './types.js'
 
@@ -36,6 +40,7 @@ export {
 
 export {
   createCapabilityReadinessProvider,
+  type CapabilityProbeOutcome,
   type CapabilityProbePort,
   type CapabilityReadinessProvider,
   type ProbeVerdictDetail,

@@ -97,6 +97,7 @@ import { configuredMcpServers, mcpSupplyValidationIssue } from './mcp-supply.js'
 import {
   MEMBER_LIVENESS,
   OBSERVATION_SOURCES,
+  OBSERVATION_STATES,
   PROBE_VERDICTS,
   assertCapabilityRuntimeEventKind,
   createCapabilityReadinessProvider,
@@ -1816,15 +1817,49 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // `tools/change` is never a classifier): a confirmed loss (fiber present +   --
   // previously tool-bearing + surface withdrawn + still policy-targeted)       --
   // retires the session's exhausted fiber (witness side effect, exactly once,  --
-  // idempotent) and reports `unreachable` + `confirmedLoss`. Aggregation: a    --
-  // healthy live fiber on ANY other session wins (`reachable` — the server is  --
-  // up; the losing session's fiber is retired and remounts after the 30 s     --
-  // cooldown); a confirmed loss on ALL live fibers is `unreachable` (with the  --
-  // plugin-owned evidence code `MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN` as the      --
-  // observation provenance); an observed mount failure (a `failed`             --
-  // materialization slot) stays `unreachable`; nothing live is `unknown`       --
-  // (fresh boot / no materialization yet — the fail-soft re-probable state,    --
-  // plan §C.10 gate 3).                                                        --
+  // idempotent — the slot is stamped `failed`, so the NEXT probe reads the     --
+  // mount failure) and reports `unreachable` + `confirmedLoss`. A witness      --
+  // `unknown` (a zero-tool server — L3; an unreadable surface; a               --
+  // plugin-initiated removal — an R4 policy deny) contributes NOTHING: a       --
+  // fiber's mere presence never fabricates an `unreachable`, and an            --
+  // unobservable capability is not a pending materialization (the settled      --
+  // slot/view state is what decides in-flight; for a removal that is the      --
+  // seed's truth — the observed F15 R4 shape). A pre-F15 glue without the      --
+  // witness seam (the test worlds) keeps the legacy fiber-presence             --
+  // classification.                                                            --
+  //                                                                            --
+  // PF-2 tri-state (2026-09-30, parent adjudication option A): the UNSETTLED  --
+  // `unknown` carries its OBSERVATION STATE — the structural split of the     --
+  // pre-observation world this probe reads:                                    --
+  //   in-flight      a pending materialization state EXISTS on a live session  --
+  //                  (a raw slot without a settled fiber whose view still      --
+  //                  admits the server — settlement in progress, the B5        --
+  //                  window; unapplied durable mcp records; or a template      --
+  //                  grant that admits the server);                            --
+  //   never-observed NO fiber / NO pending slot / NO failed slot on ANY live  --
+  //                  session — the capability is STRUCTURALLY not-yet-        --
+  //                  applicable (the canonical v1→v2 first-create shape: a    --
+  //                  team-scope server materializes only at the leader        --
+  //                  boundary of an EXISTING team — a zero-requirement v1     --
+  //                  anchor mounts nothing) — OR the only materialization      --
+  //                  state observed is a TERMINAL deny (a settled slot         --
+  //                  without its fiber that the view no longer admits — an    --
+  //                  intentional removal: a deny is not a failure, no remount  --
+  //                  is pending — the seed's truth decides; F15 R4).          --
+  // The state rides on the observation; the ONE shared classifier predicate   --
+  // in the requirement-facts layer (pending.ts `isPendingWindow`) is the      --
+  // single consumer — the probe, the creation preflight, the gate and the     --
+  // activation step all inherit identical behavior: probe == gate (INV-9.4).  --
+  // A session whose views cannot be resolved counts AS in-flight (fail-closed --
+  // — the exemption is never inferred from doubt).                             --
+  // Aggregation (both lines): a healthy live fiber on ANY session wins        --
+  // (`reachable` — the server is up; a losing session's fiber is retired and  --
+  // remounts after the 30 s cooldown); a confirmed loss on ALL live fibers is --
+  // `unreachable` (the plugin-owned evidence code                            --
+  // `MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN` as the observation provenance); an    --
+  // observed mount failure (a `failed` materialization slot) stays            --
+  // `unreachable`; nothing else settles — the unsettled verdict carries its   --
+  // observation state above.                                                   --
   const capabilityReadiness: CapabilityReadinessProvider = createCapabilityReadinessProvider({
     probes: {
       mcpServer: {
@@ -1833,6 +1868,7 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
           let mountFailed = false
           let anyReachable = false
           let confirmedLoss = false
+          let inFlight = false
           for (const sessionId of live.listLiveSessions()) {
             const state = live.getConsumptionState(sessionId) as
               | {
@@ -1849,26 +1885,86 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
                 typeof live.observeMcpOperationalWitness === 'function'
                   ? await live.observeMcpOperationalWitness(sessionId, name)
                   : undefined
-              if (witness !== undefined) {
-                if (witness.verdict === 'reachable') {
-                  anyReachable = true
-                } else if (witness.verdict === 'unreachable') {
-                  confirmedLoss = true
-                }
-                // `unknown`: unobservable (a zero-tool server / an unreadable
-                // surface / a plugin-initiated removal in flight) — keep
-                // scanning the other sessions; a fiber's mere presence never
-                // fabricates an `unreachable`.
-              } else {
+              if (witness === undefined) {
                 // A pre-F15 glue (no witness seam — the test worlds): keep
-                // the legacy fiber-presence classification.
-                return PROBE_VERDICTS.reachable
+                // the legacy fiber-presence classification (settled).
+                return { verdict: PROBE_VERDICTS.reachable }
               }
+              if (witness.verdict === 'reachable') {
+                anyReachable = true
+              } else if (witness.verdict === 'unreachable') {
+                // A confirmed loss: the witness retires this session's
+                // exhausted fiber as a side effect in the SAME owned step
+                // (exactly once, idempotent — the slot is stamped `failed`,
+                // so the next probe reads the mount failure).
+                confirmedLoss = true
+              }
+              // `unknown`: the capability is UNOBSERVED on this session —
+              // a zero-tool server (L3), an unreadable surface, or a
+              // plugin-initiated removal (an R4 policy deny). A fiber's
+              // mere presence never fabricates an `unreachable` (F15
+              // §5.1-C rule 4), and an unobservable capability is not a
+              // pending materialization — it contributes nothing (the
+              // settled slot/view state is what decides in-flight; for a
+              // removal that is the seed's truth).
               continue
             }
             const slot = state.mcpMaterialization?.get(name)
             if (slot !== undefined && slot.status === 'failed') {
+              // An observed mount failure (a `failed` materialization slot)
+              // settles `unreachable` — both lines agree.
               mountFailed = true
+              continue
+            }
+            // No fiber, and no failed slot: the session's freshly re-resolved
+            // consumption view decides the PENDING-MATERIALIZATION signal —
+            // identically for (a) a raw slot without a settled fiber (a
+            // settlement in progress — the B5 window) and (b) the no-slot
+            // case (unapplied durable mcp records, or a template grant that
+            // admits the server — the reconcile mounts it at the next
+            // boundary; the SAME state the /__p6t6/state `pending`
+            // projection shows): IN-FLIGHT.
+            // A SETTLED slot without its fiber is in-flight ONLY while a
+            // future materialization is actually pending (the view still
+            // admits the server, or a record is queued for the next
+            // boundary). Once the view no longer admits the server
+            // (allowed:false / the view absent — an INTENTIONAL REMOVAL,
+            // F15 R4: the deny disposes the fiber, the slot stays `mounted`
+            // — a deny is not a failure — and no remount is pending) there
+            // is NO pending materialization state: the session contributes
+            // nothing and the seed's truth decides (the observed F15 R4
+            // shape: 'unknown probe → row-seed feeds available'). A session
+            // whose view does NOT admit the server for any other reason also
+            // contributes nothing (structurally not-applicable for it — the
+            // cold-member / non-allowing-template guard, E.11 negative #1 /
+            // guide §2.5.4).
+            try {
+              const views = live.resolveConsumptionViews(sessionId) as
+                | {
+                    readonly mcpViews?: Record<
+                      string,
+                      { readonly allowed?: boolean; readonly pendingNextBoundary?: unknown }
+                    >
+                  }
+                | undefined
+              const serverView =
+                views !== undefined && views !== null ? views.mcpViews?.[name] : undefined
+              const pendingRecords =
+                serverView !== undefined && serverView !== null
+                  ? serverView.pendingNextBoundary
+                  : undefined
+              if (
+                (serverView !== undefined && serverView !== null && serverView.allowed === true) ||
+                (Array.isArray(pendingRecords) && pendingRecords.length > 0)
+              ) {
+                inFlight = true
+              }
+            } catch {
+              // A view that cannot be resolved (a data fault, not a normal
+              // state — the P1-B locate/bound-blueprint failure is loud):
+              // the in-flight signal stands (fail-closed — the exemption is
+              // never inferred from doubt).
+              inFlight = true
             }
           }
           if (confirmedLoss && !anyReachable) {
@@ -1877,8 +1973,14 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
               reason: 'MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN',
             }
           }
-          if (anyReachable) return PROBE_VERDICTS.reachable
-          return mountFailed ? PROBE_VERDICTS.unreachable : PROBE_VERDICTS.unknown
+          if (anyReachable) return { verdict: PROBE_VERDICTS.reachable }
+          if (mountFailed) return { verdict: PROBE_VERDICTS.unreachable }
+          // The unsettled verdict carries its observation state (the PF-2
+          // tri-state — explicit for both states: the state is OBSERVED
+          // here, the classifier predicate consumes it, never infers it).
+          return inFlight
+            ? { verdict: PROBE_VERDICTS.unknown, observationState: OBSERVATION_STATES.inFlight }
+            : { verdict: PROBE_VERDICTS.unknown, observationState: OBSERVATION_STATES.neverObserved }
         },
       },
     },
