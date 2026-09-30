@@ -1,0 +1,168 @@
+CMD: pnpm vitest run packages/runtime/test/p6t1-parallel.test.ts (isolated rerun x24, series closure on merged master; per-run blocks below)
+WORKTREE: main checkout (/home/user/dsh-plugins/dsh-agent-team, branch master)
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289 (all 24 reruns)
+UTC START: 2026-09-30T07:31:01Z (rerun 1; per-run UTC START inline for rerun 1+ [15-24 块仅 START — 同 HEAD 同秒级窗口])
+---
+=== isolated p6t1 rerun 1/5 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:31:01Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+exit=0
+=== isolated p6t1 rerun 2/5 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:31:02Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+exit=0
+=== isolated p6t1 rerun 3/5 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:31:03Z
+---
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+exit=1
+=== isolated p6t1 rerun 4/5 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:31:04Z
+---
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+exit=1
+=== isolated p6t1 rerun 5/5 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:31:05Z
+---
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+exit=1
+=== isolated p6t1 rerun 6/8 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:31:33Z
+---
+     × five activated results, five COMMITTED operations, five members, five child Sessions 3ms
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+=== isolated p6t1 rerun 7/8 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:31:34Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+=== isolated p6t1 rerun 8/8 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:31:35Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+=== isolated p6t1 rerun 9/14 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:32:03Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+=== isolated p6t1 rerun 10/14 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:32:04Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+=== isolated p6t1 rerun 11/14 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:32:05Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+=== isolated p6t1 rerun 12/14 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:32:06Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+=== isolated p6t1 rerun 13/14 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:32:07Z
+---
+     × two activated results with distinct instance ids and child Sessions 4ms
+     × two COMMITTED operations, two members, two distinct child Sessions 1ms
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+ Test Files  1 failed (1)
+      Tests  2 failed | 7 passed (9)
+=== isolated p6t1 rerun 14/14 (series closure, merged master) ===
+HEAD: 533dfcbb849116db86dac2f901e2de9d7df79289
+UTC START: 2026-09-30T07:32:08Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+=== isolated p6t1 rerun 15/24 (series closure, merged master) ===
+UTC START: 2026-09-30T07:32:27Z
+---
+     × two activated results with distinct instance ids and child Sessions 4ms
+     × two COMMITTED operations, two members, two distinct child Sessions 1ms
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+ Test Files  1 failed (1)
+      Tests  2 failed | 7 passed (9)
+=== isolated p6t1 rerun 16/24 (series closure, merged master) ===
+UTC START: 2026-09-30T07:32:29Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+=== isolated p6t1 rerun 17/24 (series closure, merged master) ===
+UTC START: 2026-09-30T07:32:30Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+=== isolated p6t1 rerun 18/24 (series closure, merged master) ===
+UTC START: 2026-09-30T07:32:31Z
+---
+     × two activated results with distinct instance ids and child Sessions 4ms
+     × two COMMITTED operations, two members, two distinct child Sessions 1ms
+     × exactly two activations succeed 0ms
+     × exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     × the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > exactly two activations succeed
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota)
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > the final durable state holds EXACTLY two members and two COMMITTED operations
+ Test Files  1 failed (1)
+      Tests  5 failed | 4 passed (9)
+=== isolated p6t1 rerun 19/24 (series closure, merged master) ===
+UTC START: 2026-09-30T07:32:32Z
+---
+     × two activated results with distinct instance ids and child Sessions 4ms
+     × two COMMITTED operations, two members, two distinct child Sessions 1ms
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+ Test Files  1 failed (1)
+      Tests  2 failed | 7 passed (9)
+=== isolated p6t1 rerun 20/24 (series closure, merged master) ===
+UTC START: 2026-09-30T07:32:33Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+=== isolated p6t1 rerun 21/24 (series closure, merged master) ===
+UTC START: 2026-09-30T07:32:34Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+=== isolated p6t1 rerun 22/24 (series closure, merged master) ===
+UTC START: 2026-09-30T07:32:35Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+=== isolated p6t1 rerun 23/24 (series closure, merged master) ===
+UTC START: 2026-09-30T07:32:36Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+=== isolated p6t1 rerun 24/24 (series closure, merged master) ===
+UTC START: 2026-09-30T07:32:37Z
+---
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
