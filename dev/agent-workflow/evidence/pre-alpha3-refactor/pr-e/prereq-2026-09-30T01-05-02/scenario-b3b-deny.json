@@ -1,0 +1,35 @@
+{
+  "toolOutcome": {
+    "status": "rejected",
+    "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+    "message": "TeamRuntime: the recovery dispatch was denied by the reviewer — zero durable effect (the operation remains blocked)",
+    "details": {
+      "rootSessionId": "session-prereq-main-prereq-2026-09-30T01-05-02",
+      "status": "BLOCKED_FATAL",
+      "gateReason": "requiredScopeDown",
+      "blockedScopes": [
+        "template:worker"
+      ],
+      "source": "requirement-gate",
+      "controlDecision": "deny",
+      "controlRequestId": "ctrl-1pi5ybt0skoz8c0ug5gzz1po"
+    }
+  },
+  "decisions": [
+    {
+      "requestId": "ctrl-1pi5ybt0skoz8c0ug5gzz1po",
+      "class": "recovery",
+      "decision": "deny",
+      "resolveStatus": 200,
+      "resolveError": null
+    }
+  ],
+  "before": {
+    "members": 0,
+    "incidents": 1
+  },
+  "after": {
+    "members": 0,
+    "incidents": 1
+  }
+}

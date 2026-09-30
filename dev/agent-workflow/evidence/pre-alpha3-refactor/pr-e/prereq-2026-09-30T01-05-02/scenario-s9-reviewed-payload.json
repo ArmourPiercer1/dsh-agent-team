@@ -1,0 +1,56 @@
+{
+  "recorded": {
+    "schemaVersion": 2,
+    "sequence": 23,
+    "rootSessionId": "session-prereq-main-prereq-2026-09-30T01-05-02",
+    "factType": "control-request-recorded",
+    "payload": {
+      "actionName": "delegate",
+      "correlation": "recovery:rt-b3a-prereq-2026-09-30T01-05-02:1",
+      "executionCoupling": "inline",
+      "kind": "user-approval",
+      "requestId": "ctrl-12yfsav0kr511e1hkmeb90vz",
+      "requester": {
+        "instanceId": "inst-leader",
+        "kind": "instance",
+        "role": "leader"
+      },
+      "reviewPayload": {
+        "action": "delegate",
+        "blockedScopes": [
+          "template:worker"
+        ],
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance"
+        },
+        "downedCapabilitySubjects": [
+          "mcp_web"
+        ],
+        "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+        "reducedAuthority": {
+          "externalHardCeiling": "absolute (never bypassed)",
+          "otherwise": "unchanged (the original permissions apply)",
+          "policy": "reduced original authority (plan §E.9)",
+          "unavailableSubjects": [
+            "mcp_web"
+          ]
+        },
+        "requestedOperation": "one recovery attempt of 'delegate' on template 'worker'",
+        "rootSessionId": "session-prereq-main-prereq-2026-09-30T01-05-02",
+        "schema": "dsh-agent-team/recovery-dispatch/v1",
+        "templateId": "worker"
+      },
+      "reviewPayloadDigest": "sha256:e8ea92a36871b676480cf1ef19bc13424122154f2046d66ea835cb675f8f000a",
+      "subject": {
+        "kind": "template",
+        "templateId": "worker"
+      },
+      "summary": "recovery dispatch: one reviewed attempt of 'delegate' on the blocked scope(s) [template:worker] on the reduced original authority"
+    },
+    "operationId": null,
+    "createdAt": "2026-09-30T01:05:15.691Z"
+  },
+  "digestOk": true,
+  "shapeOk": true
+}

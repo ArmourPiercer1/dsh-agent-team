@@ -1,0 +1,21 @@
+{
+  "admitError": {
+    "code": "NO_RESULT",
+    "message": "null"
+  },
+  "details": null,
+  "newRequests": 0,
+  "slotsAtAdmit": [
+    {
+      "sessionId": "session-prereq-boot-prereq-2026-09-30T01-05-02",
+      "mounted": false,
+      "materialization": "pending",
+      "attempts": null,
+      "reason": null
+    }
+  ],
+  "liveSessionsAtAdmit": [
+    "session-prereq-boot-prereq-2026-09-30T01-05-02"
+  ],
+  "mcpOverrideRecords": 0
+}

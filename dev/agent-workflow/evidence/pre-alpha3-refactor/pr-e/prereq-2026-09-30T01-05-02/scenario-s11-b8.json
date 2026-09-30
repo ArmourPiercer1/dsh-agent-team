@@ -1,0 +1,50 @@
+{
+  "consentFacts": [
+    {
+      "consentedAt": 1790730306539,
+      "consentedBy": "kit-e12",
+      "generation": 1,
+      "requirementId": "lead.mcp.signal"
+    },
+    {
+      "consentedAt": 1790730311920,
+      "consentedBy": "kit-e12",
+      "generation": 1,
+      "requirementId": "lead.mcp.signal"
+    }
+  ],
+  "disableFacts": [
+    {
+      "at": 1790730520296,
+      "available": false,
+      "templateId": "worker"
+    }
+  ],
+  "compatB8": {
+    "status": "OPEN",
+    "environmentFingerprint": "fp-v1:69e3c2ef91c429c9",
+    "generation": 4,
+    "recordedAt": "2026-09-30T01:08:47.036Z",
+    "counts": {
+      "pass": 2,
+      "warning": 0,
+      "fatal": 0,
+      "unackedWarning": 0,
+      "staleAcknowledgement": 0
+    }
+  },
+  "closedTeam": {
+    "closedAt": 1790730527051,
+    "requirementIds": [
+      "team.mcp.leaderreq"
+    ],
+    "scope": "team"
+  },
+  "slot": {
+    "sessionId": "session-prereq-main-prereq-2026-09-30T01-05-02",
+    "mounted": true,
+    "materialization": "mounted",
+    "attempts": 1,
+    "reason": null
+  }
+}
