@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "noChange": false,
+  "value": {
+    "recordId": "ovr-mcp-team-g0",
+    "kind": "human-override",
+    "scope": "team",
+    "values": {
+      "mcp": {
+        "kind": "deny"
+      }
+    },
+    "generation": 1,
+    "updatedAt": "2026-09-29T11:48:08.467Z",
+    "supersededRecordId": null
+  }
+}

@@ -74,6 +74,15 @@ export interface CapabilityProbeOutcome {
    * default — the exemption is never inferred).
    */
   readonly observationState?: ObservationState
+  /**
+   * An optional plugin-owned diagnostic reason (F15, plan §6: the MCP
+   * production probe port carries its plugin-owned evidence codes — e.g.
+   * `MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN` — into the observation provenance).
+   * The domain stays 3-state: only `verdict` participates in the
+   * vocabulary; `reason` is provenance (never a fingerprint input), exactly
+   * like the rejection-derived reason.
+   */
+  readonly reason?: string
 }
 
 /**
@@ -85,15 +94,32 @@ export interface CapabilityProbeOutcome {
  * evaluatable) SHOULD reject — the provider maps the rejection to `unknown`
  * (fail-soft, re-probable).
  */
+/**
+ * A probe verdict carrying an optional plugin-owned diagnostic reason
+ * (F15, plan §6: the MCP production probe port carries its plugin-owned
+ * evidence codes — e.g. `MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN` — into the
+ * observation provenance). The domain stays 3-state: only `verdict`
+ * participates in the vocabulary; `reason` is provenance (never a
+ * fingerprint input), exactly like the rejection-derived reason.
+ *
+ * FOLDED (2026-09-30): alias of the merged {@link CapabilityProbeOutcome}
+ * (the port may also carry the observation state of an unsettled verdict
+ * — the PF-2 tri-state); kept under the F15 name for source compatibility
+ * with F15-side consumers.
+ */
+export type ProbeVerdictDetail = CapabilityProbeOutcome
+
 export interface CapabilityProbePort {
   /** The observation source this port produces (provenance). */
   readonly source: string
   /**
    * Observe one named capability. Resolves to `reachable` (live) or
-   * `unreachable` (observed down) — as a bare verdict or a structured
-   * outcome carrying the observation state of an `unknown`. MAY reject (a
-   * typed probe failure — the provider resolves the rejection to `unknown`
-   * with the message as reason).
+   * `unreachable` (observed down) — either as a bare verdict or as a
+   * structured {@link CapabilityProbeOutcome} (alias {@link
+   * ProbeVerdictDetail}) carrying the plugin-owned reason and/or the
+   * observation state of an `unknown`. MAY reject (a typed probe failure —
+   * the provider resolves the rejection to `unknown` with the message as
+   * reason).
    */
   probe(name: string): ProbeVerdict | CapabilityProbeOutcome | Promise<ProbeVerdict | CapabilityProbeOutcome>
 }
@@ -165,7 +191,12 @@ export function createCapabilityReadinessProvider(ports: ReadinessProviderPorts)
           if (typeof result === 'string') {
             verdict = assertProbeVerdict(result, 'probe result')
           } else {
+            // FOLDED (2026-09-30): the port carried a structured outcome —
+            // the plugin-owned reason (F15, plan §6: provenance, never a
+            // fingerprint input; the domain stays 3-state) and/or the
+            // observation state of an unsettled verdict (PF-2 tri-state).
             verdict = assertProbeVerdict(result.verdict, 'probe result.verdict')
+            if (result.reason !== undefined) reason = result.reason
             if (result.observationState !== undefined) {
               if (verdict !== PROBE_VERDICTS.unknown) {
                 throw teamContractError(

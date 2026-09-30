@@ -1,0 +1,100 @@
+[2026-09-29T12:11:31.811Z] === F15 MCP live-loss zero-core real-host smoke f15-2026-09-29-12-11-31 (ruling: Option A) ===
+[2026-09-29T12:11:31.812Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/f15-mcp-live-loss
+[2026-09-29T12:11:31.812Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-09-29T12:11:31.812Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/f15-mcp-live-loss/dev/agent-workflow/evidence/f15-mcp-live-loss/f15-2026-09-29-12-11-31 keep=false
+[2026-09-29T12:11:32.358Z] stable pre-probes: 3080=401 3180=401
+[2026-09-29T12:11:32.413Z] worktree pre-status: clean=false (untracked scratch expected — the kit + probes are committed later)
+[2026-09-29T12:11:32.416Z] ports: host1=3182 host2=3183 mcp=3491 mock=3497
+[2026-09-29T12:11:32.416Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/tests/homes/f15-2026-09-29-12-11-31 blueprints=/home/user/dsh-plugins/dsh-agent-team/tests/homes/f15-2026-09-29-12-11-31/blueprints
+[2026-09-29T12:11:32.417Z] PASS [PREF] preflight (dist files present; test-use pristine @ 46a7f68b09; stable instances probed; kit ports free; home fresh) — see stable-pre.json / testuse-pre.json / worktree-git-pre.json
+[2026-09-29T12:11:32.422Z] mock: mock: listening on 127.0.0.1:3497
+[2026-09-29T12:11:32.422Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-09-29T12:11:32.433Z] mini MCP up on 127.0.0.1:3491 (mcp-f15)
+[2026-09-29T12:11:32.433Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-29T12:11:33.687Z] throwaway boot OK: http://127.0.0.1:3182/?token=<SCRUBBED>
+[2026-09-29T12:11:33.745Z] web profile ensured (throwaway boot if first use)
+[2026-09-29T12:11:33.746Z] HOST1-CREATE: patch (bootPhase=create) + directive (boot=1) written
+[2026-09-29T12:11:35.022Z] HOST1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T12:11:35.025Z] HOST1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T12:11:36.136Z] HOST1-CREATE: row ready — toolCount=13
+[2026-09-29T12:11:36.140Z] HOST1: state ready (anchor teamSession=f15.anchor)
+[2026-09-29T12:11:36.158Z] PASS [C0] catalog.get resolves the v2 blueprint; intent.probe: req-f15-mcp (complete:true mcpServer) outcome=PASS with status=OPEN — the row environmentFacts seed feeds the pre-create unknown live verdict — catalog=true status=OPEN req={"requirementId":"req-f15-mcp","type":"mcpServer","complete":true,"outcome":"PASS","reasonCode":"SATISFIED","detail":"all 1 required subject(s) available","unavailableSubjects":[],"mismatchFi
+[2026-09-29T12:11:36.359Z] mock: mock: 1 [messages] text reply (17 chars): "f15 smoke session"
+[2026-09-29T12:11:36.361Z] mock: mock: 2 [messages] tool-call reply: mcp__mcp-f15__ping
+[2026-09-29T12:11:36.394Z] mock: mock: 3 [messages] text reply (11 chars): "F15_T1_DONE"
+[2026-09-29T12:11:36.449Z] PASS [C1] team.create (v1 envelope + initialWork) succeeds on the fresh root (path=fresh-root; the create preflight + admitInitialWork pass) — status=200 data={"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-f15-t1-f15-2026-09-29-12-11-31","blueprint":{"blueprintId":"f15.leader","revision":"1","contentHash":"sha256:a6862
+[2026-09-29T12:11:36.482Z] PASS [C2] baseline: the initial work turn called mcp__mcp-f15__ping (pong:alpha); slot mounted attempts=1; the model-facing surface carries the tool (V1 authority); ZERO capability-runtime-event facts — results=["pong:alpha"] schema=["mcp__mcp-f15__ping"] slot={"mounted":true,"materialization":"mounted","attempts":1,"reason":null,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null}} capEvents=0
+[2026-09-29T12:11:36.482Z] R1: mini-MCP KILLED (transient blip begins)
+[2026-09-29T12:11:36.495Z] mock: mock: 4 [messages] tool-call reply: mcp__mcp-f15__ping
+[2026-09-29T12:11:36.515Z] mock: mock: 5 [messages] text reply (11 chars): "F15_T1_DONE"
+[2026-09-29T12:11:37.784Z] R1: mini-MCP RESTORED (planned outage 1300 ms; real wall-clock 1301 ms)
+[2026-09-29T12:11:37.811Z] mock: mock: 6 [messages] tool-call reply: mcp__mcp-f15__ping
+[2026-09-29T12:11:37.848Z] mock: mock: 7 [messages] text reply (11 chars): "F15_R1_DONE"
+[2026-09-29T12:11:38.437Z] mock: mock: 8 [messages] text reply (44 chars): "WORKER_DONE F15_WKR1_f15-2026-09-29-12-11-31"
+[2026-09-29T12:11:38.438Z] mock: mock: 9 [messages] text reply (17 chars): "f15 smoke session"
+[2026-09-29T12:11:39.302Z] gatedDelegateCall r1: poll #1 entries=7 pending=0
+[2026-09-29T12:11:39.303Z] PASS [R1] transient blip: zero mcp-client log lines in the outage window (supervisor silent — the streamable-http signature); post-restore tool call succeeds (pong:beta) through the SAME fiber; surface visible throughout; fiber NOT recycled (attempts=1); zero capability-lost; no retirement observation; the boundary delegate ADMITTED — windowLines=0 mcpClientInWindow=[] results=["pong:alpha","Error: fetch failed","pong:beta"] slot={"mounted":true,"materialization":"mounted","attempts":1,"reason":null,"allowed":true,"source":{"layer":"template","origin"
+[2026-09-29T12:11:39.310Z] R2: mini-MCP KILLED (permanent loss)
+[2026-09-29T12:11:43.841Z] mock: mock: 10 [messages] text reply (12 chars): "F15_R2S_DONE"
+[2026-09-29T12:11:44.383Z] mock: mock: 11 [messages] text reply (44 chars): "WORKER_DONE F15_WKR2_f15-2026-09-29-12-11-31"
+[2026-09-29T12:11:45.328Z] gatedDelegateCall r2: poll #1 entries=11 pending=0
+[2026-09-29T12:11:45.355Z] mock: mock: 12 [messages] tool-call reply: mcp__mcp-f15__ping
+[2026-09-29T12:11:45.389Z] mock: mock: 13 [messages] text reply (12 chars): "F15_R2P_DONE"
+[2026-09-29T12:11:45.842Z] PASS [R2] PERMANENT LOSS FINDING (verbatim): supervisor silent (zero mcp-client lines after the kill); the ghost tool is retained on the public surface; the boundary is ADMITTED (readiness reachable — stale positive); the ghost call fails model-visibly (no pong; the exact error + wall-clock latency recorded); slot still mounted attempts=1; zero capability-lost; no retirement — ghostSurface=true admitted=true ghostError="Error: fetch failed" latencyMs=511 slot={"mounted":true,"materialization":"mounted","attempts":1,"reason":null,"allowed":true,"source":{"layer":"template","origin":"static","re
+[2026-09-29T12:11:45.842Z] R2 FINDING recorded: ghostSurface=true admitted=true ghostError="Error: fetch failed"
+[2026-09-29T12:11:45.908Z] mock: mock: 14 [messages] text reply (44 chars): "WORKER_DONE F15_WKR4_f15-2026-09-29-12-11-31"
+[2026-09-29T12:11:46.865Z] gatedDelegateCall r4: poll #1 entries=15 pending=0
+[2026-09-29T12:11:46.897Z] mock: mock: 15 [messages] text reply (11 chars): "F15_R4_DONE"
+[2026-09-29T12:11:47.398Z] PASS [R4] policy deny is not loss: the override.set is admitted (human-override record, team scope on the T1 root); the boundary disposes the fiber and the surface is WITHDRAWN (no mcp tool on the model-facing schema); the delegate is STILL ADMITTED (unknown probe → row seed feeds available); ZERO new capability facts since R2 (no capability-lost, no mount-*); no MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN anywhere; no retirement observation; slot mounted=false allowed=false (materialization stays mounted — a deny is not a failure); the override is then RESET (world hygiene for the boot-2 R3' leg) — mutate={"recordId":"ovr-mcp-team-g0","kind":"human-override","scope":"team","rootSessionId":"session-f15-t1-f15-2026-09-29-12-11-31","values":{"mcp":{"kind":"deny"}},"generation":1,"updatedAt":"2026-09-29T12 admitted=tru
+[2026-09-29T12:11:47.478Z] HOST1-CREATE: stopped (killed=true portFree=true)
+[2026-09-29T12:11:47.479Z] HOST2-RESUME: patch (bootPhase=resume) + directive (boot=2) written
+[2026-09-29T12:11:48.990Z] HOST2-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T12:11:48.992Z] HOST2-RESUME: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-29T12:11:49.072Z] HOST2-RESUME: row ready — toolCount=13
+[2026-09-29T12:11:49.078Z] HOST2: state ready after restart (phase=resume, anchor teamSession=f15.anchor)
+[2026-09-29T12:11:49.086Z] PASS [R5] restart (before the first boundary): no fabricated mcp slot (the witness + slots are ephemeral — never persisted; no `failed` fabrication), zero new capability facts since the R4 watermark, no retirement observation in the fresh boot — servers=null slot=null capEvents=0 obs=[]
+[2026-09-29T12:11:50.091Z] gatedDelegateCall r3-b1: poll #1 entries=17 pending=1
+[2026-09-29T12:11:50.091Z] gatedDelegateCall r3-b1: pending control request ctrl-1r93wxh1f29ufg0r8knir0pa (correlation=recovery:rt-f15-r3a-f15-2026-09-29-12-11-31:1 kind=user-approval)
+[2026-09-29T12:11:50.102Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:11:51.107Z] gatedDelegateCall r3-b1: poll #2 entries=17 pending=1
+[2026-09-29T12:11:51.110Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:11:52.115Z] gatedDelegateCall r3-b1: poll #3 entries=17 pending=1
+[2026-09-29T12:11:52.117Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:11:53.123Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:11:54.130Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:11:55.137Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:11:56.143Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:11:57.150Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:11:58.156Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:11:59.163Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:00.169Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:01.175Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:02.182Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:03.188Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:04.195Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:05.201Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:06.208Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:07.222Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:08.229Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:09.234Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:10.240Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:11.247Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:12.255Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:13.261Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:14.267Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:15.274Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:16.280Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:17.286Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:18.292Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:19.298Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:20.303Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:21.308Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:22.315Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:23.322Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:24.328Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:25.334Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:26.339Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:27.346Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:28.360Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:29.366Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported
+[2026-09-29T12:12:30.372Z] gatedDelegateCall r3-b1: resolve ctrl-1r93wxh1f29ufg0r8knir0pa decision=deny -> HTTP 200 error=method-version-unsupported

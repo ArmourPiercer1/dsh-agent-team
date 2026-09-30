@@ -1300,6 +1300,42 @@ export function createAgentBindings(deps) {
   // re-attempted until this long after its last attempt (plan §C.6 boundary
   // retry + cooldown — no hot retry loop on a down server).
   const MCP_RETRY_COOLDOWN_MS = 30_000
+  //
+  // F15 (MCP live-loss zero-core, plan §5.1-A): the explicit SHORT
+  // reconnect policy every production MCP mount carries (the upstream
+  // `ReconnectConfig` — the public seam pinned by
+  // tests/deepseek-harness-test-use/packages/mcp/mcp-client/lib/types/
+  // connection.d.ts: `initialDelayMs` doubles per consecutive failed
+  // attempt up to `maxDelayMs`; `maxAttempts` consecutive failed attempts
+  // per outage exhausts the budget, and "Exhaustion unregisters the
+  // server's tools and stops; disposal (including HMR) is the only way
+  // back from that state"). Delays 500 → 1000 → 2000: a PURE BACKOFF
+  // budget of 500 + 1000 + 2000 = 3.5 seconds (the 0.1.7 defaults
+  // 500/30000/10 ≈ 151.5 s are deliberately NOT used — a permanently
+  // lost server must not hold a stale-positive readiness for two and a
+  // half minutes).
+  //
+  // THIS IS A TRANSIENT-FAILURE GRACE POLICY, NOT THE PLUGIN REMOUNT
+  // COOLDOWN: the 30 s `MCP_RETRY_COOLDOWN_MS` above is a different
+  // semantic layer (the plugin's own failed-slot retry gate) — the two
+  // must never be conflated (plan §5.1-A). The 3.5 s budget is also NOT
+  // a wall-clock detection upper bound (plan §8: the confirmed-loss
+  // observation latency is measured empirically and recorded, never
+  // promoted to a cross-transport contract).
+  const MCP_UPSTREAM_RECONNECT_INITIAL_MS = 500
+  const MCP_UPSTREAM_RECONNECT_MAX_MS = 2_000
+  const MCP_UPSTREAM_RECONNECT_ATTEMPTS = 3
+  const MCP_UPSTREAM_RECONNECT_POLICY = Object.freeze({
+    enabled: true,
+    initialDelayMs: MCP_UPSTREAM_RECONNECT_INITIAL_MS,
+    maxDelayMs: MCP_UPSTREAM_RECONNECT_MAX_MS,
+    maxAttempts: MCP_UPSTREAM_RECONNECT_ATTEMPTS,
+  })
+  // F15 (plan §6): the plugin-owned observation reason codes (the probe
+  // port carries them as provenance; they are NOT disguised upstream
+  // error codes).
+  const MCP_REASON_PUBLIC_TOOL_SURFACE_WITHDRAWN = 'MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN'
+  const MCP_REASON_LIVE_WITNESS_UNAVAILABLE = 'MCP_LIVE_WITNESS_UNAVAILABLE'
   // The optional telemetry hook (the production wiring fills it; a test
   // world without the durable telemetry omits it → emit is a no-op).
   const capabilityTelemetry =
@@ -1319,15 +1355,18 @@ export function createAgentBindings(deps) {
    * @param {string} verdict - the 3-state readiness verdict.
    * @param {number} attempt - the attempt count for this server.
    * @param {string|undefined} reason - the failure diagnostic (failed slots).
+   * @param {string} [source] - the observation source provenance
+   *   (default `mcp-fiber` — every pre-F15 call site; the F15
+   *   confirmed-loss path passes `mcp-public-tool-surface`, plan §11).
    */
-  async function emitMcpCapabilityEvent(state, kind, serverName, verdict, attempt, reason) {
+  async function emitMcpCapabilityEvent(state, kind, serverName, verdict, attempt, reason, source) {
     if (typeof capabilityTelemetry !== 'function') return
     const event = {
       kind,
       capabilityType: 'mcpServer',
       capabilityName: serverName,
       verdict,
-      source: 'mcp-fiber',
+      source: source === undefined ? 'mcp-fiber' : source,
       observedAt: new Date().toISOString(),
       attempt,
     }
@@ -1336,6 +1375,195 @@ export function createAgentBindings(deps) {
       await capabilityTelemetry(state.teamRootSessionId, event)
     } catch (error) {
       observations.push(`p6t6: capability telemetry write failed [server ${serverName}]: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+
+  // ── F15 (MCP live-loss zero-core, plan §5.1-B/C/§5.3): the public ────────
+  // ── tool-surface witness + the idempotent exhausted-fiber retirement ────
+  //
+  // The upstream connection supervisor (0.1.7-rc.1, connection.d.ts)
+  // WITHDRAWS the server's tools when the reconnect budget exhausts —
+  // the fiber/handle stays live ("disposal … is the only way back").
+  // The plugin therefore observes the CAPABILITY through its PUBLIC
+  // TOOL SURFACE (`mcp__<serverName>__*` on the agent scope, read via
+  // the public `ctx.tools.schemas(scope)` seam — the same seam the
+  // A2C-2 permission coverage gate reads): fiber presence alone is NOT
+  // reachability. No private map is read, no mcp-client internal is
+  // touched, no monkey-patch (CORE PATCH BUDGET = 0).
+
+  /**
+   * Read the server's public tool names off the MCP mount ctx (the
+   * agent-scoped surface — the model-visible `mcp__<serverName>__*`
+   * set). Returns `null` when the surface CANNOT be read (the mount ctx
+   * is absent or has no `tools.schemas` seam) — the caller fails soft
+   * (`unknown`, never a fabricated `unreachable`).
+   * @param {object} state - the session's consumption state (carries
+   *   `mcpMountCtx`, the Agent-keyed scope context every serverName is
+   *   registered under).
+   * @param {string} serverName - the MCP server (the capability name).
+   * @returns {string[]|null} the server-qualified public tool names
+   *   (empty array = a readable-but-empty surface), or `null`
+   *   (unreadable).
+   */
+  function readMcpServerToolSurface(state, serverName) {
+    const ctx = state.mcpMountCtx
+    if (ctx === undefined || ctx === null || typeof ctx.tools?.schemas !== 'function') return null
+    // The mount ctx is ALWAYS scope-tagged (the agent's own tag — the
+    // common case — or the Finding-1 bridge scope minted keyed by the
+    // runtime Agent), so `scopeOf` names the registration layer; the
+    // `ctx.root` fallback mirrors the upstream registry key
+    // (`scopeOf(ctx) ?? ctx.root`).
+    const scope = scopeOf(ctx) ?? ctx.root
+    let schemas
+    try {
+      schemas = ctx.tools.schemas(scope)
+    } catch {
+      return null
+    }
+    if (!Array.isArray(schemas)) return null
+    const prefix = `mcp__${serverName}__`
+    return schemas
+      .map((t) => (t !== null && typeof t === 'object' && typeof t.name === 'string' ? t.name : undefined))
+      .filter((n) => n !== undefined && n.startsWith(prefix))
+  }
+
+  /**
+   * Record one surface observation in the session's EPHEMERAL tool
+   * witness (plan §5.1-B: `everToolBearing` + `lastObservedNames`).
+   * A zero-tool observation NEVER clears `everToolBearing` (a server
+   * that once bore tools does not become a zero-tool server by
+   * fluke — only a fresh mount re-seeds the record). `null` (an
+   * unreadable surface) leaves the record untouched.
+   * @param {object} state - the session's consumption state.
+   * @param {string} serverName - the MCP server.
+   * @param {string[]|null} names - the observed server-qualified names
+   *   (`null` = unreadable surface — the record is left alone).
+   */
+  function recordMcpToolWitness(state, serverName, names) {
+    if (names === null) return
+    const record = state.mcpToolWitness.get(serverName) ?? { everToolBearing: false, lastObservedNames: [] }
+    record.lastObservedNames = [...names]
+    if (names.length > 0) record.everToolBearing = true
+    state.mcpToolWitness.set(serverName, record)
+  }
+
+  /**
+   * F15 (plan §5.3) — the IDEMPOTENT exhausted-fiber retirement. After
+   * a confirmed loss the upstream supervisor has stopped reconnecting;
+   * unless the plugin retires the exhausted fiber, the server is a
+   * PERMANENT DEAD SLOT (upstream never retries + the plugin's
+   * `!mcpFibers.has(name)` mount guard never re-mounts). Retirement:
+   * the materialization slot is written `failed` with
+   * `lastAttemptAt = now` (the existing 30 s retry cooldown then blocks
+   * a same-boundary remount — the failure is NOT "washed away" by an
+   * immediate fresh mount, plan §5.3), the fiber is disposed + deleted,
+   * the witness record is cleared (a fresh remount re-seeds it), and
+   * EXACTLY ONE `capability-lost` telemetry is written
+   * (`mcp-public-tool-surface` provenance, plan §11).
+   *
+   * IDEMPOTENCE (plan L6 / §5.3): a repeat call finds no fiber and is
+   * a total no-op — NO double dispose, NO second `capability-lost`, NO
+   * attempt advance, NO slot rewrite.
+   * @param {object} state - the session's consumption state.
+   * @param {string} serverName - the MCP server.
+   * @param {string} reason - the plugin-owned reason code (provenance).
+   * @returns {Promise<{retired: boolean}>} whether THIS call performed
+   *   the retirement (a repeat call reports `retired: false`).
+   */
+  async function retireExhaustedMcpFiber(state, serverName, reason) {
+    const fiber = state.mcpFibers.get(serverName)
+    if (fiber === undefined) {
+      // Already retired (or never mounted) — the idempotent no-op.
+      return { retired: false }
+    }
+    const slot = state.mcpMaterialization.get(serverName)
+    const attempts = slot !== undefined && typeof slot.attempts === 'number' ? slot.attempts : 0
+    state.mcpMaterialization.set(
+      serverName,
+      { status: 'failed', attempts, lastAttemptAt: Date.now(), reason },
+    )
+    state.mcpFibers.delete(serverName)
+    state.mcpActivationErrors.delete(serverName)
+    state.mcpToolWitness.delete(serverName)
+    try {
+      fiber.dispose()
+    } catch (error) {
+      observations.push(`p6t6: mcp fiber retire dispose failed [server ${serverName}]: ${error instanceof Error ? error.message : String(error)}`)
+    }
+    observations.push(`p6t6: mcp fiber retired [server ${serverName}] (confirmed loss: ${reason})`)
+    await emitMcpCapabilityEvent(state, 'capability-lost', serverName, 'unreachable', attempts, reason, 'mcp-public-tool-surface')
+    return { retired: true }
+  }
+
+  /**
+   * F15 (plan §5.1-C) — the confirmed-loss detector: observe one
+   * server's CAPABILITY through its public tool surface on one live
+   * session. This is a capability operational witness, NOT transport
+   * socket state (plan §3.1). Classification (plan §5.1-C rules):
+   *
+   *   1. no live fiber here → defer `unknown` (the probe port folds the
+   *      materialization slot — a `failed` slot stays unreachable
+   *      through the legacy path);
+   *   2. fiber + readable non-empty surface → `reachable` (a fresh
+   *      generation re-synced — §9.4: a successful tool-generation
+   *      swap is NOT a loss);
+   *   3. fiber + empty surface + `everToolBearing` + NOT a
+   *      plugin-initiated removal + still policy-targeted →
+   *      CONFIRMED LOSS: retire the exhausted fiber (exactly once) and
+   *      report `unreachable` + `confirmedLoss`;
+   *   4. fiber + `everToolBearing === false` (a zero-tool server —
+   *      L3) → `unknown` (observation unavailable — a zero-tool mount
+   *      is NEVER a fabricated `unreachable`).
+   *
+   * A probe that CANNOT observe (the surface unreadable) fails soft to
+   * `unknown` (plan §C.10 gate 3) — never a throw, never a fabricated
+   * `unreachable`.
+   * @param {object} state - the session's consumption state.
+   * @param {string} serverName - the MCP server (the capability name).
+   * @returns {Promise<{verdict: string, reason?: string, confirmedLoss?: boolean}>}
+   */
+  async function observeMcpOperationalWitness(state, serverName) {
+    const fiber = state.mcpFibers.get(serverName)
+    if (fiber === undefined) {
+      return { verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE }
+    }
+    const names = readMcpServerToolSurface(state, serverName)
+    if (names === null) {
+      return { verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE }
+    }
+    recordMcpToolWitness(state, serverName, names)
+    if (names.length > 0) {
+      return { verdict: 'reachable' }
+    }
+    const record = state.mcpToolWitness.get(serverName)
+    if (record === undefined || !record.everToolBearing) {
+      // L3: a zero-tool server (or an unreadable first observation) —
+      // NOT a loss; the live-loss observation degrades to unknown.
+      return { verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE }
+    }
+    // Intentional-removal suppression (plan §5.2 / §3.4): a
+    // plugin-initiated disposal (policy deny, residency drop, row
+    // teardown/close) is NOT a runtime loss — no telemetry, no
+    // retirement.
+    if (state.mcpIntentionalRemoval.has(serverName)) {
+      return { verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE }
+    }
+    if (state.mcpViews !== undefined && state.mcpViews[serverName]?.allowed !== true) {
+      // The server is no longer in the current policy target set.
+      return { verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE }
+    }
+    if (closing === true) {
+      // Row teardown in flight — the disposal below is the row stop.
+      return { verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE }
+    }
+    // CONFIRMED LOSS — the retirement runs in the SAME owned step (the
+    // probe), so the requirement gate of the same boundary sees the
+    // failed slot and BLOCKS (plan §5.3 ordering).
+    await retireExhaustedMcpFiber(state, serverName, MCP_REASON_PUBLIC_TOOL_SURFACE_WITHDRAWN)
+    return {
+      verdict: 'unreachable',
+      reason: MCP_REASON_PUBLIC_TOOL_SURFACE_WITHDRAWN,
+      confirmedLoss: true,
     }
   }
 
@@ -1397,13 +1625,24 @@ export function createAgentBindings(deps) {
     for (const name of [...state.mcpFibers.keys()]) {
       if (targetServerNames.includes(name)) continue
       const fiber = state.mcpFibers.get(name)
-      state.mcpFibers.delete(name)
-      state.mcpActivationErrors.delete(name)
+      // F15 (plan §5.2): this is a PLUGIN-INITIATED removal (the policy
+      // deny — the durable decision unmounting the server): the exact
+      // suppression sequence (add intentional-removal → dispose →
+      // delete fiber → clean witness → remove intentional-removal).
+      // A runtime-loss telemetry (capability-lost /
+      // MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN) must NEVER come from this
+      // path — the witness honors the flag if a probe ever observes
+      // the disposal window.
+      state.mcpIntentionalRemoval.add(name)
       try {
         fiber.dispose()
       } catch (error) {
         observations.push(`p6t6: mcp fiber dispose failed [server ${name}]: ${error instanceof Error ? error.message : String(error)}`)
       }
+      state.mcpFibers.delete(name)
+      state.mcpActivationErrors.delete(name)
+      state.mcpToolWitness.delete(name)
+      state.mcpIntentionalRemoval.delete(name)
     }
     // (3) mounts = target − already mounted, in CONFIGURED order (the
     //     deterministic activation order; C2: the name is the identity).
@@ -1449,6 +1688,11 @@ export function createAgentBindings(deps) {
           headers: {},
           toolCallTimeoutMs: 15_000,
           failOnStartupError: true,
+          // F15 (plan §5.1-A): the explicit SHORT reconnect policy
+          // (never the 0.1.7 defaults) — the 3.5 s pure-backoff grace
+          // after which the upstream supervisor withdraws the server's
+          // tools (the confirmed-loss signal this task classifies).
+          reconnect: MCP_UPSTREAM_RECONNECT_POLICY,
         })
         await fiber
         state.mcpFibers.set(server.name, fiber)
@@ -1472,6 +1716,14 @@ export function createAgentBindings(deps) {
       )
       if (mounted) {
         state.mcpActivationErrors.delete(server.name)
+        // F15 (plan §5.1-B): seed the EPHEMERAL tool witness from the
+        // LIVE public surface right after the successful activation —
+        // a tool-bearing mount marks `everToolBearing`; a zero-tool
+        // mount seeds the record with `everToolBearing: false` (the
+        // L3 baseline: never a fabricated `unreachable`). A fresh
+        // remount after a confirmed loss re-seeds the record (the
+        // retirement cleared it).
+        recordMcpToolWitness(state, server.name, readMcpServerToolSurface(state, server.name))
         if (wasFailed) {
           observations.push(`p6t6: mcp mount restored [server ${server.name}] (attempt ${attempts})`)
           await emitMcpCapabilityEvent(state, 'mount-restored', server.name, 'reachable', attempts, undefined)
@@ -1782,6 +2034,18 @@ export function createAgentBindings(deps) {
         // capability-runtime telemetry. A `mounted` slot = a live fiber; a
         // `failed` slot = an isolated failure (retried after the cooldown).
         mcpMaterialization: new Map(),
+        // F15 (plan §5.1-B / §12): the EPHEMERAL per-server public
+        // tool-surface witness — { everToolBearing, lastObservedNames }.
+        // NEVER persisted (the durable record is the capability-runtime
+        // telemetry); a zero-tool server stays `everToolBearing: false`
+        // (its live-loss observation degrades to unknown, never a
+        // fabricated unreachable).
+        mcpToolWitness: new Map(),
+        // F15 (plan §5.2 / §12): the EPHEMERAL set of server names in a
+        // PLUGIN-INITIATED removal (policy deny / residency drop / row
+        // teardown) — the confirmed-loss detector must not emit runtime
+        // loss telemetry for these disposals.
+        mcpIntentionalRemoval: new Set(),
         appliedRecordIds: new Set(),
         // PR #23 review fix (Finding 1, plan §6): the Agent-keyed MCP
         // scope bridge. `mcpMountCtx` is the context every mini-MCP
@@ -3935,6 +4199,16 @@ export function createAgentBindings(deps) {
     const sid = String(sessionId)
     const handle = liveAgents.get(sid)
     if (handle === undefined) return { dropped: false } // the handle may be absent: no-op by contract
+    // F15 (plan §5.2): a residency drop is a PLUGIN-INITIATED removal —
+    // mark every mounted fiber of the session intentional BEFORE the
+    // disposal (the agent-scope unwind disposes each MCP fiber inside
+    // `handle.dispose()`; the fiber RECORDS survive in the consumption
+    // state until the next setup, so a probe racing the drop must not
+    // classify the withdrawal as a runtime loss — no telemetry).
+    const dropState = consumptionState.get(sid)
+    if (dropState !== undefined && dropState !== null) {
+      for (const name of dropState.mcpFibers.keys()) dropState.mcpIntentionalRemoval.add(name)
+    }
     liveAgents.delete(sid)
     try {
       await handle.dispose()
@@ -4048,6 +4322,11 @@ export function createAgentBindings(deps) {
       // multi-mcp (contract I4): every session may hold several mini-MCP
       // fibers (one per mounted server) — dispose ALL of them, in every
       // session's state, before the maps are cleared with the state.
+      // F15 (plan §5.2): row teardown is a PLUGIN-INITIATED removal —
+      // mark every mounted fiber intentional BEFORE the disposals (a
+      // probe racing the close window must not emit runtime loss
+      // telemetry for the row stop).
+      for (const name of state.mcpFibers.keys()) state.mcpIntentionalRemoval.add(name)
       for (const fiber of [...state.mcpFibers.values()]) {
         try { fiber.dispose() } catch { /* the scope unwind covers it */ }
       }
@@ -4097,6 +4376,24 @@ export function createAgentBindings(deps) {
     governanceAuthority,
     dropResidency,
     close,
+    // F15 (MCP live-loss, plan §5/§6/§7): the public operational
+    // witness — the production readiness probe port's authority (the
+    // boundary pull-probe over the public tool surface; `tools/change`
+    // is never a classifier). Per session: reads the server's live
+    // public tool surface, updates the ephemeral witness, and
+    // classifies — a confirmed loss (fiber present + previously
+    // tool-bearing + surface withdrawn + still policy-targeted)
+    // retires the exhausted fiber exactly once (idempotent) and
+    // reports `unreachable` + `confirmedLoss`; plugin-initiated
+    // removals and zero-tool servers degrade to `unknown` (no
+    // telemetry, no retirement). Unknown for an absent session.
+    observeMcpOperationalWitness: (sessionId, serverName) => {
+      const state = consumptionState.get(String(sessionId))
+      if (state === undefined || state === null) {
+        return Promise.resolve({ verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE })
+      }
+      return observeMcpOperationalWitness(state, String(serverName))
+    },
     // the provider-facing ports (verbatim port)
     childFactory,
     sessionDurability,

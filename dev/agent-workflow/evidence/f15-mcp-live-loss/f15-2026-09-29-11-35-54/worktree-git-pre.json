@@ -1,0 +1,9 @@
+{
+  "head": "49a5cc38080c2dc05a5dc8e33bcc6e4e5112e264",
+  "headSource": "git",
+  "status": "?? .f15-run2-console.log\n?? .f15-run3-console.log\n?? .tmp-f15-diag-console.log\n?? .tmp-f15-diag.mjs\n?? .tmp-f15-fingerprint.mjs\n?? .tmp-f15-kit-design.mjs\n?? .tmp-f15-probe.mjs\n?? .tmp-f15-probe2.mjs\n?? .tmp-f15-probe3.mjs\n?? .tmp-f15-validate-blueprints.mjs\n?? .tmp-f15-validate-patch.mjs\n?? dev/agent-workflow/evidence/f15-mcp-live-loss/f15-2026-09-29-11-09-36/\n?? dev/agent-workflow/evidence/f15-mcp-live-loss/f15-2026-09-29-11-35-54/\n?? tests/kits/f15-mcp-live-loss-smoke/\n",
+  "statusEmpty": false,
+  "diff": "",
+  "diffEmpty": true,
+  "errors": []
+}

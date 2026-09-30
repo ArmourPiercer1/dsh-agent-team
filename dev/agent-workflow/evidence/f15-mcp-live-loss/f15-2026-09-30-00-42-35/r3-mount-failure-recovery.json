@@ -1,0 +1,245 @@
+{
+  "b1": {
+    "fireAt": "2026-09-30T00:43:50.550Z",
+    "lines": [],
+    "attemptFailedLine": null,
+    "retryLine": null,
+    "giveUpLine": null,
+    "slot": {
+      "mounted": false,
+      "materialization": "failed",
+      "attempts": 1,
+      "reason": "mcp-client(mcp-f15): initial connection or tool synchronization failed",
+      "allowed": true,
+      "source": {
+        "layer": "template",
+        "origin": "static",
+        "recordId": null
+      }
+    },
+    "mountFailedEvents": [
+      {
+        "sequence": 12,
+        "createdAt": "2026-09-30T00:43:50.597Z",
+        "payload": {
+          "attempt": 1,
+          "capabilityName": "mcp-f15",
+          "capabilityType": "mcpServer",
+          "event": "mount-failed",
+          "observedAt": "2026-09-30T00:43:50.592Z",
+          "reason": "mcp-client(mcp-f15): initial connection or tool synchronization failed",
+          "source": "mcp-fiber",
+          "verdict": "unreachable"
+        }
+      }
+    ],
+    "block": {
+      "status": "rejected",
+      "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+      "message": "TeamRuntime: the recovery dispatch was denied by the reviewer — zero durable effect (the operation remains blocked)",
+      "details": {
+        "rootSessionId": "session-f15-t1-f15-2026-09-30-00-42-35",
+        "status": "BLOCKED_FATAL",
+        "gateReason": "requiredScopeDown",
+        "blockedScopes": [
+          "team"
+        ],
+        "source": "requirement-gate",
+        "controlDecision": "deny",
+        "controlRequestId": "ctrl-0ymgw5x1fpm1xa1nemher1op"
+      }
+    },
+    "controlRequests": [
+      {
+        "requestId": "ctrl-0ymgw5x1fpm1xa1nemher1op",
+        "kind": "user-approval",
+        "correlation": "recovery:rt-f15-r3a-f15-2026-09-30-00-42-35:1",
+        "toolName": null,
+        "actionName": "delegate",
+        "createdAt": null,
+        "payload": {
+          "actionName": "delegate",
+          "correlation": "recovery:rt-f15-r3a-f15-2026-09-30-00-42-35:1",
+          "executionCoupling": "inline",
+          "kind": "user-approval",
+          "requestId": "ctrl-0ymgw5x1fpm1xa1nemher1op",
+          "requester": {
+            "instanceId": "inst-leader",
+            "kind": "instance",
+            "role": "leader"
+          },
+          "reviewPayload": {
+            "action": "delegate",
+            "blockedScopes": [
+              "team"
+            ],
+            "caller": {
+              "instanceId": "inst-leader",
+              "kind": "instance"
+            },
+            "downedCapabilitySubjects": [
+              "mcp-f15"
+            ],
+            "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+            "reducedAuthority": {
+              "externalHardCeiling": "absolute (never bypassed)",
+              "otherwise": "unchanged (the original permissions apply)",
+              "policy": "reduced original authority (plan §E.9)",
+              "unavailableSubjects": [
+                "mcp-f15"
+              ]
+            },
+            "requestedOperation": "one recovery attempt of 'delegate' on template 'worker'",
+            "rootSessionId": "session-f15-t1-f15-2026-09-30-00-42-35",
+            "schema": "dsh-agent-team/recovery-dispatch/v1",
+            "templateId": "worker"
+          },
+          "reviewPayloadDigest": "sha256:65bef599626a3f73adb23a4dade65492dc625dbce586cea3ad84e2d75f789703",
+          "subject": {
+            "kind": "template",
+            "templateId": "worker"
+          },
+          "summary": "recovery dispatch: one reviewed attempt of 'delegate' on the blocked scope(s) [team] on the reduced original authority"
+        }
+      }
+    ],
+    "decisions": [
+      {
+        "requestId": "ctrl-0ymgw5x1fpm1xa1nemher1op",
+        "decision": "deny",
+        "resolveStatus": 200,
+        "resolveError": null
+      }
+    ]
+  },
+  "restoreAt": "2026-09-30T00:43:52.591Z",
+  "b2": {
+    "fireAt": "2026-09-30T00:43:52.593Z",
+    "slot": {
+      "mounted": false,
+      "materialization": "failed",
+      "attempts": 1,
+      "reason": "mcp-client(mcp-f15): initial connection or tool synchronization failed",
+      "allowed": true,
+      "source": {
+        "layer": "template",
+        "origin": "static",
+        "recordId": null
+      }
+    },
+    "newMountFailed": 0,
+    "block": {
+      "status": "rejected",
+      "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+      "message": "TeamRuntime: the recovery dispatch was denied by the reviewer — zero durable effect (the operation remains blocked)",
+      "details": {
+        "rootSessionId": "session-f15-t1-f15-2026-09-30-00-42-35",
+        "status": "BLOCKED_FATAL",
+        "gateReason": "requiredScopeDown",
+        "blockedScopes": [
+          "team"
+        ],
+        "source": "requirement-gate",
+        "controlDecision": "deny",
+        "controlRequestId": "ctrl-1szgw1h1earc9q1b5tgaj17l"
+      }
+    },
+    "controlRequests": [
+      {
+        "requestId": "ctrl-1szgw1h1earc9q1b5tgaj17l",
+        "kind": "user-approval",
+        "correlation": "recovery:rt-f15-r3b-f15-2026-09-30-00-42-35:2",
+        "toolName": null,
+        "actionName": "delegate",
+        "createdAt": null,
+        "payload": {
+          "actionName": "delegate",
+          "correlation": "recovery:rt-f15-r3b-f15-2026-09-30-00-42-35:2",
+          "executionCoupling": "inline",
+          "kind": "user-approval",
+          "requestId": "ctrl-1szgw1h1earc9q1b5tgaj17l",
+          "requester": {
+            "instanceId": "inst-leader",
+            "kind": "instance",
+            "role": "leader"
+          },
+          "reviewPayload": {
+            "action": "delegate",
+            "blockedScopes": [
+              "team"
+            ],
+            "caller": {
+              "instanceId": "inst-leader",
+              "kind": "instance"
+            },
+            "downedCapabilitySubjects": [
+              "mcp-f15"
+            ],
+            "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+            "reducedAuthority": {
+              "externalHardCeiling": "absolute (never bypassed)",
+              "otherwise": "unchanged (the original permissions apply)",
+              "policy": "reduced original authority (plan §E.9)",
+              "unavailableSubjects": [
+                "mcp-f15"
+              ]
+            },
+            "requestedOperation": "one recovery attempt of 'delegate' on template 'worker'",
+            "rootSessionId": "session-f15-t1-f15-2026-09-30-00-42-35",
+            "schema": "dsh-agent-team/recovery-dispatch/v1",
+            "templateId": "worker"
+          },
+          "reviewPayloadDigest": "sha256:65bef599626a3f73adb23a4dade65492dc625dbce586cea3ad84e2d75f789703",
+          "subject": {
+            "kind": "template",
+            "templateId": "worker"
+          },
+          "summary": "recovery dispatch: one reviewed attempt of 'delegate' on the blocked scope(s) [team] on the reduced original authority"
+        }
+      }
+    ]
+  },
+  "b3": {
+    "fireAt": "2026-09-30T00:44:22.052Z",
+    "cooldownWallClockMs": 31502,
+    "fires": [
+      {
+        "fireAt": "2026-09-30T00:44:22.052Z",
+        "admitted": true,
+        "block": null
+      }
+    ],
+    "slot": {
+      "mounted": true,
+      "materialization": "mounted",
+      "attempts": 2,
+      "reason": null,
+      "allowed": true,
+      "source": {
+        "layer": "template",
+        "origin": "static",
+        "recordId": null
+      }
+    },
+    "mountRestoredEvents": [
+      {
+        "sequence": 17,
+        "createdAt": "2026-09-30T00:44:22.088Z",
+        "payload": {
+          "attempt": 2,
+          "capabilityName": "mcp-f15",
+          "capabilityType": "mcpServer",
+          "event": "mount-restored",
+          "observedAt": "2026-09-30T00:44:22.084Z",
+          "source": "mcp-fiber",
+          "verdict": "reachable"
+        }
+      }
+    ],
+    "restoreObservations": [
+      "p6t6: mcp mount restored [server mcp-f15] (attempt 2)"
+    ],
+    "admitted": true,
+    "pongDelta": true
+  }
+}

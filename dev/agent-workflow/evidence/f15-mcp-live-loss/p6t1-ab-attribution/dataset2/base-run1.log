@@ -1,0 +1,17 @@
+# p6t1-parallel A/B — DATASET 2, run 1 (TREE: BASE = pre-e worktree)
+# WORKTREE: /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery
+# HEAD: 06b094ab35092697a4a393084cea9cc536ba378b
+# CMD: pnpm exec vitest run packages/runtime/test/p6t1-parallel.test.ts
+# START: 2026-09-30T01:41:50Z
+────────────────────────────────────────────────────────────
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery
+
+ ✓ packages/runtime/test/p6t1-parallel.test.ts (9 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  09:41:50
+   Duration  644ms (transform 392ms, setup 0ms, import 556ms, tests 5ms, environment 0ms)
+
+# EXIT: 0

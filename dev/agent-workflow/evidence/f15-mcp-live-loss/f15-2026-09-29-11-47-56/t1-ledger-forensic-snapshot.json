@@ -1,0 +1,374 @@
+{
+  "note": "F15 run-4 (2026-09-29T11:47:56Z) T1 team ledger snapshot — forensic extraction taken 2026-09-29T11:59Z from the surviving home before kit teardown completed. Documents the R3-B1 hang: entry 16 (mount-failed, the corrected failOnStartupError single-attempt path, wall-clock 11:48:11.295Z) and entry 17 (recovery control request opened 11:48:11.330Z) with NO control-decision-recorded — the kit poll loop (pre-harden) never resolved it; the delegate hit its 120s tool timeout at 11:50:11Z. See run4-interruption-note.json.",
+  "extractedAt": "2026-09-29T12:08:15.817Z",
+  "home": "tests/homes/f15-2026-09-29-11-47-56 (main-repo, gitignored; deleted after extraction)",
+  "sequenceCounter": 17,
+  "entries": [
+    {
+      "createdAt": "2026-09-29T11:47:59.668Z",
+      "factType": "team-work-admitted",
+      "payload": {
+        "at": "2026-09-29T11:47:59.664Z",
+        "caller": {
+          "humanId": "session-f15-boot-f15-2026-09-29-11-47-56",
+          "kind": "human"
+        },
+        "payloadFingerprint": "sha256:3c059d70e4429062b1ef3e650b5c7bc3ad63a96eabd3ca9f9a4a932b49ae9271",
+        "prompt": "F15_T1_f15-2026-09-29-11-47-56 Your first task: ping the mcp server now — call the mcp__mcp-f15__ping tool with msg \"alpha\" and report the result. Answer with the text F15_T1_DONE when done.",
+        "requestToken": "team-create:initial-work:sha256:3c059d70e4429062b1ef3e650b5c7bc3ad63a96eabd3ca9f9a4a932b49ae9271",
+        "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+        "targetKind": "root"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 1
+    },
+    {
+      "createdAt": "2026-09-29T11:47:59.857Z",
+      "factType": "team-root-work-delivered",
+      "payload": {
+        "at": "2026-09-29T11:47:59.854Z",
+        "payloadFingerprint": "sha256:3c059d70e4429062b1ef3e650b5c7bc3ad63a96eabd3ca9f9a4a932b49ae9271",
+        "requestToken": "team-create:initial-work:sha256:3c059d70e4429062b1ef3e650b5c7bc3ad63a96eabd3ca9f9a4a932b49ae9271",
+        "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+        "targetKind": "root",
+        "workOutcome": "delivered"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 2
+    },
+    {
+      "createdAt": "2026-09-29T11:48:01.748Z",
+      "factType": "provision-member-instance",
+      "operationId": "op-1pb4hp71bluu7e1p99rv10sd",
+      "payload": {
+        "instanceId": "inst-0gl57ny0ioox",
+        "label": "w-r1",
+        "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+        "templateId": "worker",
+        "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 3
+    },
+    {
+      "createdAt": "2026-09-29T11:48:01.763Z",
+      "factType": "team-work-admitted",
+      "payload": {
+        "action": "delegate",
+        "at": "2026-09-29T11:48:01.758Z",
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "childSessionId": "session-team-child-60bb81d6b4f4b974d63c00bb1dd467e6",
+        "fromLifecycle": "CREATED",
+        "lifecycleCommitted": true,
+        "prompt": "F15_WKR1_f15-2026-09-29-11-47-56 work unit r1 (nonce f15-2026-09-29-11-47-56)",
+        "requestToken": "rt-f15-r1-f15-2026-09-29-11-47-56",
+        "targetInstanceId": "inst-0gl57ny0ioox"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 4
+    },
+    {
+      "createdAt": "2026-09-29T11:48:01.767Z",
+      "factType": "activity-interval-opened",
+      "payload": {
+        "correlation": "rt-f15-r1-f15-2026-09-29-11-47-56",
+        "instanceId": "inst-0gl57ny0ioox",
+        "note": "work-unit full (token rt-f15-r1-f15-2026-09-29-11-47-56)",
+        "op": "interval-open",
+        "progress": "in-progress",
+        "reportedByInstanceId": "team-runtime",
+        "requestToken": "rt-f15-r1-f15-2026-09-29-11-47-56",
+        "sequence": 1,
+        "subject": "work-unit"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 5
+    },
+    {
+      "createdAt": "2026-09-29T11:48:01.839Z",
+      "factType": "activity-interval-closed",
+      "payload": {
+        "correlation": "rt-f15-r1-f15-2026-09-29-11-47-56",
+        "instanceId": "inst-0gl57ny0ioox",
+        "op": "interval-close",
+        "progress": "completed",
+        "reportedByInstanceId": "team-runtime",
+        "requestToken": "rt-f15-r1-f15-2026-09-29-11-47-56",
+        "sequence": 2,
+        "subject": "work-unit"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 6
+    },
+    {
+      "createdAt": "2026-09-29T11:48:01.863Z",
+      "factType": "member-lifecycle-changed",
+      "payload": {
+        "action": "delegate",
+        "at": "2026-09-29T11:48:01.861Z",
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "from": "RUNNING",
+        "instanceId": "inst-0gl57ny0ioox",
+        "memberResult": {
+          "body": "WORKER_DONE F15_WKR1_f15-2026-09-29-11-47-56",
+          "requestToken": "rt-f15-r1-f15-2026-09-29-11-47-56",
+          "status": "succeeded"
+        },
+        "requestToken": "rt-f15-r1-f15-2026-09-29-11-47-56",
+        "to": "SETTLED",
+        "workOutcome": "settled"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 7
+    },
+    {
+      "createdAt": "2026-09-29T11:48:07.353Z",
+      "factType": "team-work-admitted",
+      "payload": {
+        "action": "delegate",
+        "at": "2026-09-29T11:48:07.350Z",
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "childSessionId": "session-team-child-60bb81d6b4f4b974d63c00bb1dd467e6",
+        "fromLifecycle": "SETTLED",
+        "lifecycleCommitted": true,
+        "prompt": "F15_WKR2_f15-2026-09-29-11-47-56 work unit r2 (nonce f15-2026-09-29-11-47-56)",
+        "requestToken": "rt-f15-r2-f15-2026-09-29-11-47-56",
+        "targetInstanceId": "inst-0gl57ny0ioox"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 8
+    },
+    {
+      "createdAt": "2026-09-29T11:48:07.358Z",
+      "factType": "activity-interval-opened",
+      "payload": {
+        "correlation": "rt-f15-r2-f15-2026-09-29-11-47-56",
+        "instanceId": "inst-0gl57ny0ioox",
+        "note": "work-unit full (token rt-f15-r2-f15-2026-09-29-11-47-56)",
+        "op": "interval-open",
+        "progress": "in-progress",
+        "reportedByInstanceId": "team-runtime",
+        "requestToken": "rt-f15-r2-f15-2026-09-29-11-47-56",
+        "sequence": 3,
+        "subject": "work-unit"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 9
+    },
+    {
+      "createdAt": "2026-09-29T11:48:07.415Z",
+      "factType": "activity-interval-closed",
+      "payload": {
+        "correlation": "rt-f15-r2-f15-2026-09-29-11-47-56",
+        "instanceId": "inst-0gl57ny0ioox",
+        "op": "interval-close",
+        "progress": "completed",
+        "reportedByInstanceId": "team-runtime",
+        "requestToken": "rt-f15-r2-f15-2026-09-29-11-47-56",
+        "sequence": 4,
+        "subject": "work-unit"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 10
+    },
+    {
+      "createdAt": "2026-09-29T11:48:07.427Z",
+      "factType": "member-lifecycle-changed",
+      "payload": {
+        "action": "delegate",
+        "at": "2026-09-29T11:48:07.425Z",
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "from": "RUNNING",
+        "instanceId": "inst-0gl57ny0ioox",
+        "memberResult": {
+          "body": "WORKER_DONE F15_WKR2_f15-2026-09-29-11-47-56",
+          "requestToken": "rt-f15-r2-f15-2026-09-29-11-47-56",
+          "status": "succeeded"
+        },
+        "requestToken": "rt-f15-r2-f15-2026-09-29-11-47-56",
+        "to": "SETTLED",
+        "workOutcome": "settled"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 11
+    },
+    {
+      "createdAt": "2026-09-29T11:48:08.485Z",
+      "factType": "team-work-admitted",
+      "payload": {
+        "action": "delegate",
+        "at": "2026-09-29T11:48:08.482Z",
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "childSessionId": "session-team-child-60bb81d6b4f4b974d63c00bb1dd467e6",
+        "fromLifecycle": "SETTLED",
+        "lifecycleCommitted": true,
+        "prompt": "F15_WKR4_f15-2026-09-29-11-47-56 work unit r4 (nonce f15-2026-09-29-11-47-56)",
+        "requestToken": "rt-f15-r4-f15-2026-09-29-11-47-56",
+        "targetInstanceId": "inst-0gl57ny0ioox"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 12
+    },
+    {
+      "createdAt": "2026-09-29T11:48:08.489Z",
+      "factType": "activity-interval-opened",
+      "payload": {
+        "correlation": "rt-f15-r4-f15-2026-09-29-11-47-56",
+        "instanceId": "inst-0gl57ny0ioox",
+        "note": "work-unit full (token rt-f15-r4-f15-2026-09-29-11-47-56)",
+        "op": "interval-open",
+        "progress": "in-progress",
+        "reportedByInstanceId": "team-runtime",
+        "requestToken": "rt-f15-r4-f15-2026-09-29-11-47-56",
+        "sequence": 5,
+        "subject": "work-unit"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 13
+    },
+    {
+      "createdAt": "2026-09-29T11:48:08.543Z",
+      "factType": "activity-interval-closed",
+      "payload": {
+        "correlation": "rt-f15-r4-f15-2026-09-29-11-47-56",
+        "instanceId": "inst-0gl57ny0ioox",
+        "op": "interval-close",
+        "progress": "completed",
+        "reportedByInstanceId": "team-runtime",
+        "requestToken": "rt-f15-r4-f15-2026-09-29-11-47-56",
+        "sequence": 6,
+        "subject": "work-unit"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 14
+    },
+    {
+      "createdAt": "2026-09-29T11:48:08.555Z",
+      "factType": "member-lifecycle-changed",
+      "payload": {
+        "action": "delegate",
+        "at": "2026-09-29T11:48:08.553Z",
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "from": "RUNNING",
+        "instanceId": "inst-0gl57ny0ioox",
+        "memberResult": {
+          "body": "WORKER_DONE F15_WKR4_f15-2026-09-29-11-47-56",
+          "requestToken": "rt-f15-r4-f15-2026-09-29-11-47-56",
+          "status": "succeeded"
+        },
+        "requestToken": "rt-f15-r4-f15-2026-09-29-11-47-56",
+        "to": "SETTLED",
+        "workOutcome": "settled"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 15
+    },
+    {
+      "createdAt": "2026-09-29T11:48:11.298Z",
+      "factType": "capability-runtime-event",
+      "payload": {
+        "attempt": 1,
+        "capabilityName": "mcp-f15",
+        "capabilityType": "mcpServer",
+        "event": "mount-failed",
+        "observedAt": "2026-09-29T11:48:11.295Z",
+        "reason": "mcp-client(mcp-f15): initial connection or tool synchronization failed",
+        "source": "mcp-fiber",
+        "verdict": "unreachable"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 16
+    },
+    {
+      "createdAt": "2026-09-29T11:48:11.330Z",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "delegate",
+        "correlation": "recovery:rt-f15-r3a-f15-2026-09-29-11-47-56:1",
+        "executionCoupling": "inline",
+        "kind": "user-approval",
+        "requestId": "ctrl-0oystxb0dei6hu13ocntx0zf",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "reviewPayload": {
+          "action": "delegate",
+          "blockedScopes": [
+            "team"
+          ],
+          "caller": {
+            "instanceId": "inst-leader",
+            "kind": "instance"
+          },
+          "downedCapabilitySubjects": [
+            "mcp-f15"
+          ],
+          "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+          "reducedAuthority": {
+            "externalHardCeiling": "absolute (never bypassed)",
+            "otherwise": "unchanged (the original permissions apply)",
+            "policy": "reduced original authority (plan §E.9)",
+            "unavailableSubjects": [
+              "mcp-f15"
+            ]
+          },
+          "requestedOperation": "one recovery attempt of 'delegate' on template 'worker'",
+          "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+          "schema": "dsh-agent-team/recovery-dispatch/v1",
+          "templateId": "worker"
+        },
+        "reviewPayloadDigest": "sha256:dd77d0e340d6db895caaa7f150f0553d3fd690de77951e63899dd86267534a96",
+        "subject": {
+          "kind": "template",
+          "templateId": "worker"
+        },
+        "summary": "recovery dispatch: one reviewed attempt of 'delegate' on the blocked scope(s) [team] on the reduced original authority"
+      },
+      "rootSessionId": "session-f15-t1-f15-2026-09-29-11-47-56",
+      "schemaVersion": 2,
+      "sequence": 17
+    }
+  ]
+}

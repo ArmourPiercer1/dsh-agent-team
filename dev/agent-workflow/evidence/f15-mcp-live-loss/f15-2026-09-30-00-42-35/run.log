@@ -1,0 +1,75 @@
+[2026-09-30T00:42:35.207Z] === F15 MCP live-loss zero-core real-host smoke f15-2026-09-30-00-42-35 (ruling: Option A) ===
+[2026-09-30T00:42:35.207Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/f15-mcp-live-loss
+[2026-09-30T00:42:35.208Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-09-30T00:42:35.208Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/f15-mcp-live-loss/dev/agent-workflow/evidence/f15-mcp-live-loss/f15-2026-09-30-00-42-35 keep=true
+[2026-09-30T00:42:35.224Z] stable pre-probes: 3080=401 3180=401
+[2026-09-30T00:42:35.274Z] worktree pre-status: clean=false (untracked scratch expected — the kit + probes are committed later)
+[2026-09-30T00:42:35.276Z] ports: host1=3182 host2=3183 mcp=3491 mock=3497
+[2026-09-30T00:42:35.277Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/tests/homes/f15-2026-09-30-00-42-35 blueprints=/home/user/dsh-plugins/dsh-agent-team/tests/homes/f15-2026-09-30-00-42-35/blueprints
+[2026-09-30T00:42:35.277Z] PASS [PREF] preflight (dist files present; test-use pristine @ 46a7f68b09; stable instances probed; kit ports free; home fresh) — see stable-pre.json / testuse-pre.json / worktree-git-pre.json
+[2026-09-30T00:42:35.283Z] mock: mock: listening on 127.0.0.1:3497
+[2026-09-30T00:42:35.283Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-09-30T00:42:35.285Z] mini MCP up on 127.0.0.1:3491 (mcp-f15)
+[2026-09-30T00:42:35.286Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-30T00:42:36.288Z] throwaway boot OK: http://127.0.0.1:3182/?token=<SCRUBBED>
+[2026-09-30T00:42:36.364Z] web profile ensured (throwaway boot if first use)
+[2026-09-30T00:42:36.365Z] HOST1-CREATE: patch (bootPhase=create) + directive (boot=1) written
+[2026-09-30T00:42:37.679Z] HOST1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-30T00:42:37.682Z] HOST1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-30T00:42:37.766Z] HOST1-CREATE: row ready — toolCount=13
+[2026-09-30T00:42:37.770Z] HOST1: state ready (anchor teamSession=f15.anchor)
+[2026-09-30T00:42:37.787Z] PASS [C0] catalog.get resolves the v2 blueprint; intent.probe: req-f15-mcp (complete:true mcpServer) outcome=PASS with status=OPEN — the row environmentFacts seed feeds the pre-create unknown live verdict — catalog=true status=OPEN req={"requirementId":"req-f15-mcp","type":"mcpServer","complete":true,"outcome":"PASS","reasonCode":"SATISFIED","detail":"all 1 required subject(s) available","unavailableSubjects":[],"mismatchFi
+[2026-09-30T00:42:37.964Z] mock: mock: 1 [messages] text reply (17 chars): "f15 smoke session"
+[2026-09-30T00:42:37.966Z] mock: mock: 2 [messages] tool-call reply: mcp__mcp-f15__ping
+[2026-09-30T00:42:37.996Z] mock: mock: 3 [messages] text reply (11 chars): "F15_T1_DONE"
+[2026-09-30T00:42:38.048Z] PASS [C1] team.create (v1 envelope + initialWork) succeeds on the fresh root (path=fresh-root; the create preflight + admitInitialWork pass) — status=200 data={"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-f15-t1-f15-2026-09-30-00-42-35","blueprint":{"blueprintId":"f15.leader","revision":"1","contentHash":"sha256:b0d5a
+[2026-09-30T00:42:38.073Z] PASS [C2] baseline: the initial work turn called mcp__mcp-f15__ping (pong:alpha); slot mounted attempts=1; the model-facing surface carries the tool (V1 authority); ZERO capability-runtime-event facts — results=["pong:alpha"] schema=["mcp__mcp-f15__ping"] slot={"mounted":true,"materialization":"mounted","attempts":1,"reason":null,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null}} capEvents=0
+[2026-09-30T00:42:38.074Z] R1: mini-MCP KILLED (transient blip begins)
+[2026-09-30T00:42:38.109Z] mock: mock: 4 [messages] tool-call reply: mcp__mcp-f15__ping
+[2026-09-30T00:42:38.129Z] mock: mock: 5 [messages] text reply (11 chars): "F15_T1_DONE"
+[2026-09-30T00:42:39.376Z] R1: mini-MCP RESTORED (planned outage 1300 ms; real wall-clock 1301 ms)
+[2026-09-30T00:42:39.403Z] mock: mock: 6 [messages] tool-call reply: mcp__mcp-f15__ping
+[2026-09-30T00:42:39.436Z] mock: mock: 7 [messages] text reply (11 chars): "F15_R1_DONE"
+[2026-09-30T00:42:40.014Z] mock: mock: 8 [messages] text reply (44 chars): "WORKER_DONE F15_WKR1_f15-2026-09-30-00-42-35"
+[2026-09-30T00:42:40.015Z] mock: mock: 9 [messages] text reply (17 chars): "f15 smoke session"
+[2026-09-30T00:42:40.894Z] gatedDelegateCall r1: poll #1 entries=7 pending=0
+[2026-09-30T00:42:40.894Z] PASS [R1] transient blip: zero mcp-client log lines in the outage window (supervisor silent — the streamable-http signature); post-restore tool call succeeds (pong:beta) through the SAME fiber; surface visible throughout; fiber NOT recycled (attempts=1); zero capability-lost; no retirement observation; the boundary delegate ADMITTED — windowLines=0 mcpClientInWindow=[] results=["pong:alpha","Error: fetch failed","pong:beta"] slot={"mounted":true,"materialization":"mounted","attempts":1,"reason":null,"allowed":true,"source":{"layer":"template","origin"
+[2026-09-30T00:42:40.902Z] R2: mini-MCP KILLED (permanent loss)
+[2026-09-30T00:42:45.433Z] mock: mock: 10 [messages] text reply (12 chars): "F15_R2S_DONE"
+[2026-09-30T00:42:45.977Z] mock: mock: 11 [messages] text reply (44 chars): "WORKER_DONE F15_WKR2_f15-2026-09-30-00-42-35"
+[2026-09-30T00:42:46.922Z] gatedDelegateCall r2: poll #1 entries=11 pending=0
+[2026-09-30T00:42:46.961Z] mock: mock: 12 [messages] tool-call reply: mcp__mcp-f15__ping
+[2026-09-30T00:42:46.981Z] mock: mock: 13 [messages] text reply (12 chars): "F15_R2P_DONE"
+[2026-09-30T00:42:47.435Z] PASS [R2] PERMANENT LOSS FINDING (verbatim): supervisor silent (zero mcp-client lines after the kill); the ghost tool is retained on the public surface; the boundary is ADMITTED (readiness reachable — stale positive); the ghost call fails model-visibly (no pong; the exact error + wall-clock latency recorded); slot still mounted attempts=1; zero capability-lost; no retirement — ghostSurface=true admitted=true ghostError="Error: fetch failed" latencyMs=510 slot={"mounted":true,"materialization":"mounted","attempts":1,"reason":null,"allowed":true,"source":{"layer":"template","origin":"static","re
+[2026-09-30T00:42:47.436Z] R2 FINDING recorded: ghostSurface=true admitted=true ghostError="Error: fetch failed"
+[2026-09-30T00:42:48.462Z] gatedDelegateCall r4: poll #1 entries=11 pending=0
+[2026-09-30T00:43:48.577Z] mock: mock: 14 [messages] text reply (11 chars): "F15_R4_DONE"
+[2026-09-30T00:43:49.070Z] FAIL [R4] policy deny is not loss: the override.set is admitted (human-override record, team scope on the T1 root); the boundary disposes the fiber and the surface is WITHDRAWN (no mcp tool on the model-facing schema); the delegate is STILL ADMITTED (unknown probe → row seed feeds available); ZERO new capability facts since R2 (no capability-lost, no mount-*); no MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN anywhere; no retirement observation; slot mounted=false allowed=false (materialization stays mounted — a deny is not a failure); the override is then RESET (world hygiene for the boot-2 R3' leg) — mutate={"recordId":"ovr-mcp-team-g0","kind":"human-override","scope":"team","rootSessionId":"session-f15-t1-f15-2026-09-30-00-42-35","values":{"mcp":{"kind":"deny"}},"generation":1,"updatedAt":"2026-09-30T00 admitted=fal
+[2026-09-30T00:43:49.146Z] HOST1-CREATE: stopped (killed=true portFree=true)
+[2026-09-30T00:43:49.147Z] HOST2-RESUME: patch (bootPhase=resume) + directive (boot=2) written
+[2026-09-30T00:43:50.449Z] HOST2-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-30T00:43:50.451Z] HOST2-RESUME: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-30T00:43:50.536Z] HOST2-RESUME: row ready — toolCount=13
+[2026-09-30T00:43:50.542Z] HOST2: state ready after restart (phase=resume, anchor teamSession=f15.anchor)
+[2026-09-30T00:43:50.550Z] PASS [R5] restart (before the first boundary): no fabricated mcp slot (the witness + slots are ephemeral — never persisted; no `failed` fabrication), zero new capability facts since the R4 watermark, no retirement observation in the fresh boot — servers=null slot=null capEvents=0 obs=[]
+[2026-09-30T00:43:51.555Z] gatedDelegateCall r3-b1: poll #1 entries=13 pending=1
+[2026-09-30T00:43:51.555Z] gatedDelegateCall r3-b1: pending control request ctrl-0ymgw5x1fpm1xa1nemher1op (correlation=recovery:rt-f15-r3a-f15-2026-09-30-00-42-35:1 kind=user-approval)
+[2026-09-30T00:43:51.577Z] gatedDelegateCall r3-b1: resolve ctrl-0ymgw5x1fpm1xa1nemher1op decision=deny -> HTTP 200 error=null
+[2026-09-30T00:43:52.583Z] gatedDelegateCall r3-b1: poll #2 entries=14 pending=0
+[2026-09-30T00:43:52.590Z] PASS [R3] B1 (mount-time failure, failOnStartupError production path): SINGLE mount attempt — slot failed with attempts=1 (attempts 2-4 never ran; no "giving up" line on any observable channel: the plugin rollback disposes the supervisor); exactly ONE mount-failed telemetry; the gate BLOCKS (TEAM_RUNTIME_COMPATIBILITY_BLOCKED / requiredScopeDown / source requirement-gate / blockedScopes ["team"]); the recovery control request is opened (correlation recovery:*) and resolved deny. NOTE: the supervisor WARN lines (attempt failed / retrying) are ctx.logger-only with no real-host sink (finding F15-LOGSINK-1) — recorded in evidence, not in the pass criteria — logWindow=0 lines attemptFailed=null retry=null slot={"mounted":false,"materialization":"failed","attempts":1,"reason":"mcp-client(mcp-f15): initial connection or tool synchronization failed","allowed":true,"source":{"la
+[2026-09-30T00:43:52.593Z] R3': mini-MCP RESTORED at 2026-09-30T00:43:52.591Z
+[2026-09-30T00:43:53.598Z] gatedDelegateCall r3-b2: poll #1 entries=15 pending=1
+[2026-09-30T00:43:53.598Z] gatedDelegateCall r3-b2: pending control request ctrl-1szgw1h1earc9q1b5tgaj17l (correlation=recovery:rt-f15-r3b-f15-2026-09-30-00-42-35:2 kind=user-approval)
+[2026-09-30T00:43:53.612Z] gatedDelegateCall r3-b2: resolve ctrl-1szgw1h1earc9q1b5tgaj17l decision=deny -> HTTP 200 error=null
+[2026-09-30T00:43:54.617Z] gatedDelegateCall r3-b2: poll #2 entries=16 pending=0
+[2026-09-30T00:43:54.623Z] PASS [R3] B2 (cooldown, server restored but inside the 30 s window): the failed slot is SKIPPED — NO new mount attempt (no new mount-failed telemetry; attempts still 1 — no hot retry loop); the gate is STILL BLOCKED (the recovery request is opened and resolved deny) — newMountFailed=0 slot={"mounted":false,"materialization":"failed","attempts":1,"reason":"mcp-client(mcp-f15): initial connection or tool synchronization failed","allowed":true,"source":{"layer":"template","origin":"stati
+[2026-09-30T00:43:54.623Z] R3': waiting 27 s for the 30 s plugin cooldown to elapse (real wall-clock)
+[2026-09-30T00:44:22.225Z] mock: mock: 15 [messages] text reply (44 chars): "WORKER_DONE F15_WKR3_f15-2026-09-30-00-42-35"
+[2026-09-30T00:44:23.057Z] gatedDelegateCall r3-b3-1: poll #1 entries=21 pending=0
+[2026-09-30T00:44:23.125Z] mock: mock: 16 [messages] tool-call reply: mcp__mcp-f15__ping
+[2026-09-30T00:44:23.146Z] mock: mock: 17 [messages] text reply (12 chars): "F15_R3F_DONE"
+[2026-09-30T00:44:23.577Z] PASS [R3] B3 (after the cooldown): the fresh remount succeeds (attempts=2); mount-restored telemetry EXACTLY ONCE (+ the mount restored observation); the gate is OPEN — the delegate is ADMITTED and the worker settles; the final leader ping turn proves pong:delta end-to-end — slot={"mounted":true,"materialization":"mounted","attempts":2,"reason":null,"allowed":true,"source":{"layer":"template","origin":"static","recordId":null}} mountRestored=1 obs=["p6t6: mcp mount restored [server mcp-f15]
+[2026-09-30T00:44:23.639Z] HOST2-RESUME: stopped (killed=true portFree=true)
+[2026-09-30T00:44:23.700Z] PASS [H1] teardown: all kit ports torn down (3182/3183/3491/3497 free); the stable instances (:3080/:3180) unchanged; the test-use checkout pristine @ baseline (post); tokens scrubbed from the evidence dir — ports={"host1":{"port":3182,"free":true},"host2":{"port":3183,"free":true},"mcp":{"port":3491,"free":true},"mock":{"port":3497,"free":true}} stableUnchanged=true testuseClean=true scrubbedFiles=4
+[2026-09-30T00:44:23.702Z] summary -> /home/user/dsh-plugins/dsh-agent-team/.worktrees/f15-mcp-live-loss/dev/agent-workflow/evidence/f15-mcp-live-loss/f15-2026-09-30-00-42-35/summary.json (second scrub pass changed 0 file(s))
+[2026-09-30T00:44:23.702Z] VERDICT FAIL — passed [PREF, C0, C1, C2, R1, R2, R5, R3, H1] failed [R4] (scrubbedFiles=4)

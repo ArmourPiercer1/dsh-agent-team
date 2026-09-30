@@ -1091,6 +1091,33 @@ export interface TeamAgentBindings {
    * S6 handler fails closed with the typed port-unavailable code.
    */
   readonly allowOrdinaryActivationOnce?: (rootSessionId: string) => void
+  /**
+   * F15 (MCP live-loss zero-core, plan §5/§6/§7) — the public
+   * OPERATIONAL WITNESS: classify one MCP server's capability on ONE
+   * live session through its PUBLIC tool surface (the boundary
+   * pull-probe authority — `tools/change` is never a classifier; no
+   * transport liveness is faked). A confirmed loss (fiber present +
+   * previously tool-bearing + the server-qualified surface now absent
+   * + the server still policy-targeted) retires that session's
+   * exhausted fiber EXACTLY ONCE (the retirement is idempotent — no
+   * double dispose / double telemetry / attempt advance) and reports
+   * `unreachable` + `confirmedLoss` with the plugin-owned reason code
+   * `MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN`. Plugin-initiated removals
+   * (policy deny / residency drop / row teardown) and zero-tool
+   * servers degrade to `unknown` (no telemetry, no retirement — never
+   * a fabricated `unreachable`). Absent session → `unknown`.
+   * OPTIONAL — a pre-F15 glue leaves it undefined and the production
+   * readiness probe port keeps the legacy fiber-presence
+   * classification.
+   */
+  readonly observeMcpOperationalWitness?: (
+    sessionId: string,
+    serverName: string,
+  ) => Promise<{
+    readonly verdict: 'unknown' | 'reachable' | 'unreachable'
+    readonly reason?: string
+    readonly confirmedLoss?: boolean
+  }>
   /** Close the glue (dispose every live agent handle; idempotent). */
   close(): Promise<void>
 }

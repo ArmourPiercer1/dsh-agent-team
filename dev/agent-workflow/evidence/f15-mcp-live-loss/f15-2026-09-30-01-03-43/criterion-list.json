@@ -1,0 +1,132 @@
+[
+  {
+    "id": "PREF",
+    "name": "preflight (dist present, test-use pristine @ baseline, stable probes, ports, fresh home)",
+    "checks": [
+      {
+        "name": "preflight (dist files present; test-use pristine @ 46a7f68b09; stable instances probed; kit ports free; home fresh)",
+        "ok": true,
+        "detail": "see stable-pre.json / testuse-pre.json / worktree-git-pre.json"
+      }
+    ],
+    "done": true
+  },
+  {
+    "id": "C0",
+    "name": "blueprint preflight: catalog.get resolves v2 + intent.probe PASS (row seed feeds the unknown verdict)",
+    "checks": [
+      {
+        "name": "catalog.get resolves the v2 blueprint; intent.probe: req-f15-mcp (complete:true mcpServer) outcome=PASS with status=OPEN — the row environmentFacts seed feeds the pre-create unknown live verdict",
+        "ok": true,
+        "detail": "catalog=true status=OPEN req={\"requirementId\":\"req-f15-mcp\",\"type\":\"mcpServer\",\"complete\":true,\"outcome\":\"PASS\",\"reasonCode\":\"SATISFIED\",\"detail\":\"all 1 required subject(s) available\",\"unavailableSubjects\":[],\"mismatchFingerprint"
+      }
+    ],
+    "done": true
+  },
+  {
+    "id": "C1",
+    "name": "team.create (v1 envelope + initialWork) → fresh-root",
+    "checks": [
+      {
+        "name": "team.create (v1 envelope + initialWork) succeeds on the fresh root (path=fresh-root; the create preflight + admitInitialWork pass)",
+        "ok": true,
+        "detail": "status=200 data={\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-f15-t1-f15-2026-09-30-01-03-43\",\"blueprint\":{\"blueprintId\":\"f15.leader\",\"revision\":\"1\",\"contentHash\":\"sha256:962a9414c09a9f4b46ec6e62c493fddee8cb6dc1541f289e54d60755ad61042f\"},\"createdAt\":\"2026-09-30T01:03:47.5"
+      }
+    ],
+    "done": true
+  },
+  {
+    "id": "C2",
+    "name": "baseline: initial work calls MCP (pong:alpha), slot mounted attempts=1, surface visible, zero capability facts",
+    "checks": [
+      {
+        "name": "baseline: the initial work turn called mcp__mcp-f15__ping (pong:alpha); slot mounted attempts=1; the model-facing surface carries the tool (V1 authority); ZERO capability-runtime-event facts",
+        "ok": true,
+        "detail": "results=[\"pong:alpha\"] schema=[\"mcp__mcp-f15__ping\"] slot={\"mounted\":true,\"materialization\":\"mounted\",\"attempts\":1,\"reason\":null,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}} capEvents=0"
+      }
+    ],
+    "done": true
+  },
+  {
+    "id": "R1",
+    "name": "transient blip: transparent recovery — no false loss, zero capability-lost, fiber not recycled, boundary admitted",
+    "checks": [
+      {
+        "name": "transient blip: zero mcp-client log lines in the outage window (supervisor silent — the streamable-http signature); post-restore tool call succeeds (pong:beta) through the SAME fiber; surface visible throughout; fiber NOT recycled (attempts=1); zero capability-lost; no retirement observation; the boundary delegate ADMITTED",
+        "ok": true,
+        "detail": "windowLines=0 mcpClientInWindow=[] results=[\"pong:alpha\",\"Error: fetch failed\",\"pong:beta\"] slot={\"mounted\":true,\"materialization\":\"mounted\",\"attempts\":1,\"reason\":null,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}} lost=0 retireObs=0 admitted=true workerDone=true"
+      }
+    ],
+    "done": true
+  },
+  {
+    "id": "R2",
+    "name": "PERMANENT LOSS FINDING: supervisor silent, ghost surface retained, readiness reachable, boundary admitted, ghost call fails model-visibly (verbatim + exact timings)",
+    "checks": [
+      {
+        "name": "PERMANENT LOSS FINDING (verbatim): supervisor silent (zero mcp-client lines after the kill); the ghost tool is retained on the public surface; the boundary is ADMITTED (readiness reachable — stale positive); the ghost call fails model-visibly (no pong; the exact error + wall-clock latency recorded); slot still mounted attempts=1; zero capability-lost; no retirement",
+        "ok": true,
+        "detail": "ghostSurface=true admitted=true ghostError=\"Error: fetch failed\" latencyMs=514 slot={\"mounted\":true,\"materialization\":\"mounted\",\"attempts\":1,\"reason\":null,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}} lost=0"
+      }
+    ],
+    "done": true
+  },
+  {
+    "id": "R4",
+    "name": "policy deny is not loss: surface withdrawn by the plugin, zero runtime-loss telemetry, delegate still admitted",
+    "checks": [
+      {
+        "name": "policy deny is not loss: the override.set is admitted (human-override record, team scope on the T1 root); the boundary disposes the fiber and the surface is WITHDRAWN (no mcp tool on the model-facing schema); the delegate is STILL ADMITTED (unknown probe → row seed feeds available); ZERO new capability facts since R2 (no capability-lost, no mount-*); no MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN anywhere; no retirement observation; slot mounted=false allowed=false (materialization stays mounted — a deny is not a failure); the override is then RESET (world hygiene for the boot-2 R3' leg)",
+        "ok": true,
+        "detail": "mutate={\"recordId\":\"ovr-mcp-team-g0\",\"kind\":\"human-override\",\"scope\":\"team\",\"rootSessionId\":\"session-f15-t1-f15-2026-09-30-01-03-43\",\"values\":{\"mcp\":{\"kind\":\"deny\"}},\"generation\":1,\"updatedAt\":\"2026-09-30T01 admitted=true surfaceWithdrawn=true newCapSinceR2=0 slot={\"mounted\":false,\"materialization\":\"mounted\",\"attempts\":1,\"reason\":null,\"allowed\":false,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"ovr-mcp-team-g0\"}} reset=true"
+      }
+    ],
+    "done": true
+  },
+  {
+    "id": "R5",
+    "name": "restart: no fabricated slot, zero new capability facts, no retirement — witness ephemeral",
+    "checks": [
+      {
+        "name": "restart (before the first boundary): no fabricated mcp slot (the witness + slots are ephemeral — never persisted; no `failed` fabrication), zero new capability facts since the R4 watermark, no retirement observation in the fresh boot",
+        "ok": true,
+        "detail": "servers=null slot=null capEvents=0 obs=[]"
+      }
+    ],
+    "done": true
+  },
+  {
+    "id": "R3",
+    "name": "mount-time failure → 30 s plugin cooldown (no hot retry) → fresh remount attempts=2 → mount-restored exactly once → gate OPEN (R3' corrected path)",
+    "checks": [
+      {
+        "name": "B1 (mount-time failure, failOnStartupError production path): SINGLE mount attempt — slot failed with attempts=1 (attempts 2-4 never ran; no \"giving up\" line on any observable channel: the plugin rollback disposes the supervisor); exactly ONE mount-failed telemetry; the gate BLOCKS (TEAM_RUNTIME_COMPATIBILITY_BLOCKED / requiredScopeDown / source requirement-gate / blockedScopes [\"team\"]); the recovery control request is opened (correlation recovery:*) and resolved deny. NOTE: the supervisor WARN lines (attempt failed / retrying) are ctx.logger-only with no real-host sink (finding F15-LOGSINK-1) — recorded in evidence, not in the pass criteria",
+        "ok": true,
+        "detail": "logWindow=0 lines attemptFailed=null retry=null slot={\"mounted\":false,\"materialization\":\"failed\",\"attempts\":1,\"reason\":\"mcp-client(mcp-f15): initial connection or tool synchronization failed\",\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}} mountFailed=1 blockCode=TEAM_RUNTIME_COMPATIBILITY_BLOCKED details={\"rootSessionId\":\"session-f15-t1-f15-2026-09-30-01-03-43\",\"status\":\"BLOCKED_FATAL\",\"gateReason\":\"requiredScopeDown\",\"blockedScopes\":[\"team\"],\"source\":\"requirement-gate\",\"controlDecision\":\"deny\",\"controlRequestId\":\"ctrl-1kygty110tbdm2108nuh304d\"} ctrlReq=1 decis"
+      },
+      {
+        "name": "B2 (cooldown, server restored but inside the 30 s window): the failed slot is SKIPPED — NO new mount attempt (no new mount-failed telemetry; attempts still 1 — no hot retry loop); the gate is STILL BLOCKED (the recovery request is opened and resolved deny)",
+        "ok": true,
+        "detail": "newMountFailed=0 slot={\"mounted\":false,\"materialization\":\"failed\",\"attempts\":1,\"reason\":\"mcp-client(mcp-f15): initial connection or tool synchronization failed\",\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}} block=TEAM_RUNTIME_COMPATIBILITY_BLOCKED ctrlReq=1"
+      },
+      {
+        "name": "B3 (after the cooldown): the fresh remount succeeds (attempts=2); mount-restored telemetry EXACTLY ONCE (+ the mount restored observation); the gate is OPEN — the delegate is ADMITTED and the worker settles; the final leader ping turn proves pong:delta end-to-end",
+        "ok": true,
+        "detail": "slot={\"mounted\":true,\"materialization\":\"mounted\",\"attempts\":2,\"reason\":null,\"allowed\":true,\"source\":{\"layer\":\"template\",\"origin\":\"static\",\"recordId\":null}} mountRestored=1 obs=[\"p6t6: mcp mount restored [server mcp-f15] (attempt 2)\"] admitted=true pong=true"
+      }
+    ],
+    "done": true
+  },
+  {
+    "id": "H1",
+    "name": "teardown: all kit ports down, stable instances unchanged, test-use pristine, tokens scrubbed",
+    "checks": [
+      {
+        "name": "teardown: all kit ports torn down (3182/3183/3491/3497 free); the stable instances (:3080/:3180) unchanged; the test-use checkout pristine @ baseline (post); tokens scrubbed from the evidence dir",
+        "ok": true,
+        "detail": "ports={\"host1\":{\"port\":3182,\"free\":true},\"host2\":{\"port\":3183,\"free\":true},\"mcp\":{\"port\":3491,\"free\":true},\"mock\":{\"port\":3497,\"free\":true}} stableUnchanged=true testuseClean=true scrubbedFiles=4"
+      }
+    ],
+    "done": true
+  }
+]

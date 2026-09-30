@@ -1,0 +1,53 @@
+{
+  "killAt": "2026-09-30T00:38:47.868Z",
+  "restoreAt": "2026-09-30T00:38:49.170Z",
+  "plannedOutageMs": 1300,
+  "realOutageMs": 1302,
+  "windowLines": [],
+  "mcpClientLinesInWindow": [],
+  "postRestore": {
+    "pong": true,
+    "schema": [
+      "mcp__mcp-f15__ping"
+    ]
+  },
+  "slotAfter": {
+    "mounted": true,
+    "materialization": "mounted",
+    "attempts": 1,
+    "reason": null,
+    "allowed": true,
+    "source": {
+      "layer": "template",
+      "origin": "static",
+      "recordId": null
+    }
+  },
+  "boundary": {
+    "admitted": true,
+    "value": {
+      "status": "executed",
+      "action": "delegate",
+      "rootSessionId": "session-f15-t1-f15-2026-09-30-00-38-44",
+      "callerRole": "leader",
+      "effect": {
+        "kind": "member-activated",
+        "instanceId": "inst-14qremu1ydtq",
+        "templateId": "worker",
+        "childSessionId": "session-team-child-7c5b8e02b12e99de51773788aeb378bc",
+        "operationId": "op-0s41kvn0sklzja1uhozsh00v",
+        "replayed": false,
+        "ledgerSequence": 3,
+        "admissionCode": "ADMISSION_OPEN",
+        "workSequence": 4,
+        "workSettled": true,
+        "memberResult": {
+          "requestToken": "rt-f15-r1-f15-2026-09-30-00-38-44",
+          "status": "succeeded",
+          "body": "WORKER_DONE F15_WKR1_f15-2026-09-30-00-38-44"
+        }
+      },
+      "requestToken": "rt-f15-r1-f15-2026-09-30-00-38-44"
+    }
+  }
+}

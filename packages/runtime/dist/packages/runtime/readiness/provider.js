@@ -70,7 +70,13 @@ export function createCapabilityReadinessProvider(ports) {
                         verdict = assertProbeVerdict(result, 'probe result');
                     }
                     else {
+                        // FOLDED (2026-09-30): the port carried a structured outcome —
+                        // the plugin-owned reason (F15, plan §6: provenance, never a
+                        // fingerprint input; the domain stays 3-state) and/or the
+                        // observation state of an unsettled verdict (PF-2 tri-state).
                         verdict = assertProbeVerdict(result.verdict, 'probe result.verdict');
+                        if (result.reason !== undefined)
+                            reason = result.reason;
                         if (result.observationState !== undefined) {
                             if (verdict !== PROBE_VERDICTS.unknown) {
                                 throw teamContractError('MALFORMED_DTO', 'observationState is only defined for the unknown verdict at probe result.observationState', { path: 'probe result.observationState', problem: 'observationState with a settled verdict' });

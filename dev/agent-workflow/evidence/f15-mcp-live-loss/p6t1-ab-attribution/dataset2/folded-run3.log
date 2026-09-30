@@ -1,0 +1,17 @@
+# p6t1-parallel A/B — DATASET 2, run 3 (TREE: FOLDED = f15 worktree)
+# WORKTREE: /home/user/dsh-plugins/dsh-agent-team/.worktrees/f15-mcp-live-loss
+# HEAD: c0f57caaad6ad54888cf940e148a7bbcf720bd46
+# CMD: pnpm exec vitest run packages/runtime/test/p6t1-parallel.test.ts
+# START: 2026-09-30T01:40:52Z
+────────────────────────────────────────────────────────────
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/f15-mcp-live-loss
+
+ ✓ packages/runtime/test/p6t1-parallel.test.ts (9 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  09:40:52
+   Duration  621ms (transform 370ms, setup 0ms, import 534ms, tests 4ms, environment 0ms)
+
+# EXIT: 0

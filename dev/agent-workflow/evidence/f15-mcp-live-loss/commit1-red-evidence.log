@@ -1,0 +1,32 @@
+# F15 commit 1 — RED evidence (characterization)
+branch: feat/pre-alpha3-f15-mcp-live-loss @ base e696823e
+date: 2026-09-29T09:39:14Z
+
+## run: npx vitest run packages/runtime/test/f15-mcp-live-loss-characterization.test.ts
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/f15-mcp-live-loss
+
+ ❯ packages/runtime/test/f15-mcp-live-loss-characterization.test.ts (2 tests | 1 failed) 5ms
+     ✓ EVIDENCE: mounted fiber + live tool surface, then the upstream post-budget-exhaustion withdrawal keeps the FIBER while withdrawing the SURFACE — and the legacy fiber-presence probe still says reachable (the stale positive) 1ms
+     × RED: the post-upgrade public witness seam (plan §5/§6/§7) must classify the withdrawn capability `unreachable` with a confirmed-loss mark — the seam does not exist on this (pre-closure) glue, so this assertion fails by design at commit 1 and goes green with the commit-2 product closure 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/f15-mcp-live-loss-characterization.test.ts > F15 characterization — the MCP live-loss gap (plan §0/§1) > RED: the post-upgrade public witness seam (plan §5/§6/§7) must classify the withdrawn capability `unreachable` with a confirmed-loss mark — the seam does not exist on this (pre-closure) glue, so this assertion fails by design at commit 1 and goes green with the commit-2 product closure
+AssertionError: F15 post-upgrade witness seam observeMcpOperationalWitness(sessionId, serverName) is ABSENT on the live bundle — the confirmed-loss classification (plan §5) has not landed (RED at commit 1): expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ packages/runtime/test/f15-mcp-live-loss-characterization.test.ts:265:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  17:39:14
+   Duration  961ms (transform 616ms, setup 0ms, import 874ms, tests 5ms, environment 0ms)
