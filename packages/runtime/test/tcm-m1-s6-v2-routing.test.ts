@@ -21,7 +21,7 @@
  *  - a v2 `team.create` WITH `workspace` → parsed under the v2 schema
  *    (no `malformed-params`) and served through the v2 workspace-aware
  *    team-create port (the `workspace` fourth argument rides to the port
- *    verbatim — the G1-wired `teamCreateV2`); the v1 `team.create`
+ *    verbatim — the G1-wired `teamCreateWorkspace`); the v1 `team.create`
  *    request keeps byte-compatible behavior (the `initialWork` fourth
  *    argument is delivered to the v1 port verbatim — the v1 repair runs
  *    the Root strategy behind that same call);
@@ -100,7 +100,7 @@ const M1 = await (async () => {
   const v2CreateCalls: Array<[string, string, number | undefined, string | undefined]> = []
   const admitCalls: Array<[string, string, string, string | undefined]> = []
   const ports = {
-    teamCreate: {
+    teamCreateEmbeddedWork: {
       create(
         rootSessionId: string,
         blueprintId: string,
@@ -115,7 +115,7 @@ const M1 = await (async () => {
         })
       },
     },
-    teamCreateV2: {
+    teamCreateWorkspace: {
       create(
         rootSessionId: string,
         blueprintId: string,

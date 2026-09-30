@@ -1,0 +1,96 @@
+{
+  "probe": {
+    "schemaVersion": 1,
+    "environmentFingerprint": "fp-v1:69e3c2ef91c429c9",
+    "status": "OPEN",
+    "requirements": [
+      {
+        "requirementId": "team.mcp.repo",
+        "type": "mcpServer",
+        "complete": true,
+        "outcome": "PASS",
+        "reasonCode": "SATISFIED",
+        "detail": "all 1 required subject(s) available",
+        "unavailableSubjects": [],
+        "mismatchFingerprint": null,
+        "acknowledgement": null
+      },
+      {
+        "requirementId": "team.mcp.leaderreq",
+        "type": "mcpServer",
+        "complete": true,
+        "outcome": "PASS",
+        "reasonCode": "SATISFIED",
+        "detail": "all 1 required subject(s) available",
+        "unavailableSubjects": [],
+        "mismatchFingerprint": null,
+        "acknowledgement": null
+      }
+    ],
+    "counts": {
+      "pass": 2,
+      "warning": 0,
+      "fatal": 0,
+      "unackedWarning": 0,
+      "staleAcknowledgement": 0
+    },
+    "unappliedAcknowledgements": []
+  },
+  "toolOutcome": {
+    "status": "executed",
+    "action": "delegate",
+    "rootSessionId": "session-prf-main-prf-2026-09-30T05-58-47",
+    "callerRole": "leader",
+    "effect": {
+      "kind": "work-admitted",
+      "instanceId": "inst-0zyqxzu1fhz0",
+      "fromLifecycle": "SETTLED",
+      "lifecycleCommitted": true,
+      "sequence": 6,
+      "replayed": false,
+      "settled": true,
+      "settledSequence": 9,
+      "memberResult": {
+        "requestToken": "rt-g4b-prf-2026-09-30T05-58-47",
+        "status": "succeeded",
+        "body": "PRREQ_DONE_W_g4b"
+      }
+    },
+    "requestToken": "rt-g4b-prf-2026-09-30T05-58-47"
+  },
+  "rejectCode": null,
+  "decisions": [],
+  "pendingSeen": [],
+  "before": {
+    "members": 0,
+    "incidents": 0
+  },
+  "after": {
+    "members": 0,
+    "incidents": 0
+  },
+  "zeroEffect": false,
+  "webSlots": [
+    {
+      "sessionId": "session-prf-boot-prf-2026-09-30T05-58-47",
+      "mounted": false,
+      "materialization": "pending",
+      "attempts": null,
+      "reason": null
+    },
+    {
+      "sessionId": "session-prf-main-prf-2026-09-30T05-58-47",
+      "mounted": false,
+      "materialization": "pending",
+      "attempts": null,
+      "reason": null
+    },
+    {
+      "sessionId": "session-team-child-a88b05e3e64e6891b5cda72d45c3528f",
+      "mounted": false,
+      "materialization": "pending",
+      "attempts": null,
+      "reason": null
+    }
+  ]
+}

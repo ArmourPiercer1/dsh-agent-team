@@ -23,9 +23,12 @@
  *   provenance for Team denials and the frozen external-stage reason for
  *   external denials (absent when the cell is allowed);
  * - `pendingNextBoundary` — the durable records that admit a value for
- *   this cell but were NOT part of the session's last applied boundary
- *   (the mutation is admitted durably and takes effect from the NEXT
- *   request boundary only — the in-flight request keeps its resolution).
+ *   this cell (the ADMIT-kind contract of {@link recordAdmitsCapability}:
+ *   an ALLOW-kind entry naming at least one value — a deny-kind entry is
+ *   a settled withdrawal, never a pending grant) but were NOT part of the
+ *   session's last applied boundary (the mutation is admitted durably and
+ *   takes effect from the NEXT request boundary only — the in-flight
+ *   request keeps its resolution).
  *
  * Pure module: no I/O, no live Agent, no `node:` builtin, no ambient state.
  * @module @dsh-agent-team/runtime/mutation/cell-provenance
@@ -143,22 +146,41 @@ export interface CellProvenanceOptions {
 }
 
 /**
- * Whether one durable record admits a value for the capability (its
- * `values` payload names the capability key).
+ * Whether one durable record admits a value for the capability — the
+ * ADMIT-kind contract (pre-alpha3 PR-F F.4, the A' follow-up of the F15
+ * Option A adjudication, 2026-09-30): a record admits a value for the
+ * cell ONLY when its entry for the capability is an ALLOW-kind
+ * `PolicyEntry` naming at least one value — for the `mcp` capability the
+ * `items` name MCP server names or the `'*'` wildcard (the item
+ * vocabulary is domain-specific and opaque here; the per-server reading
+ * is the probe/view ladder's job, the kind reading is shared). Key
+ * PRESENCE of the capability key is NOT admission (the pre-fix reading,
+ * corrected here): a `deny`-kind entry is a settled withdrawal, not a
+ * pending grant — F15 R4: "a policy deny is not a loss"; an unapplied
+ * DENY is consumed at its own request boundary and is never a pending
+ * materialization (the SAME contract the probe-side pending filter in
+ * `src/plugin/host.ts` applies — the read surface and the probe now
+ * share one admission reading).
  * @param record - the durable record.
  * @param capability - the capability cell name.
- * @returns `true` when the record could affect the cell.
+ * @returns `true` when the record admits a value for the cell (an
+ *   ALLOW-kind entry with at least one named item).
  */
 export function recordAdmitsCapability(
   record: Pick<DurableOverrideRef, 'values'>,
   capability: CapabilityName,
 ): boolean {
   const values = record.values
-  return (
-    typeof values === 'object' &&
-    values !== null &&
-    Object.prototype.hasOwnProperty.call(values, capability)
-  )
+  if (typeof values !== 'object' || values === null) return false
+  const entry = (values as Record<string, unknown>)[capability]
+  if (entry === null || typeof entry !== 'object') return false
+  // ADMIT-kind contract: only an ALLOW-kind entry admits a value. A
+  // deny-kind entry (a settled withdrawal) and any malformed shape
+  // admit nothing (fail-closed — a record that cannot be read as an
+  // allow entry is never inferred to be one).
+  if ((entry as { readonly kind?: unknown }).kind !== 'allow') return false
+  const items = (entry as { readonly items?: unknown }).items
+  return Array.isArray(items) && items.length > 0
 }
 
 /**

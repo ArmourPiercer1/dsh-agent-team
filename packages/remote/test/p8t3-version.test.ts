@@ -2,18 +2,22 @@
  * p8t3-version.test.ts — P8-T3 mandatory test 4: VERSION MISMATCH +
  * unknown endpoint + malformed envelope (brief §91; design note §6
  * invariants 1/2/3) — UPDATED for the TCM vNext §15.3 versioned contract
- * (supported set = {1, 2, 3, 4, 5, 6} since the D1 v3 bump, the F9 v4
- * bump, the C1 v5 bump, and the team-view-sync-complete v6 bump):
+ * (supported set = {1, 2, 3, 4, 5, 6, 7} since the D1 v3 bump, the F9 v4
+ * bump, the C1 v5 bump, the team-view-sync-complete v6 bump, and the
+ * pre-alpha3 W1 fix-A v7 bump (F10 — the version-aware override.set /
+ * override.reset closed sets; v7 adds NO method)):
  *
- *  - a SUPPORTED version (1, 2, 3, 4, 5, or 6) routes the request: a
+ *  - a SUPPORTED version (1, 2, 3, 4, 5, 6, or 7) routes the request: a
  *    v2 request to a v1-legal method succeeds with provenance echoing
  *    version 2, a v5 request succeeds with provenance echoing version
- *    5, and a v6 request succeeds with provenance echoing version 6;
+ *    5, a v6 request succeeds with provenance echoing version 6, and a
+ *    v7 request succeeds with provenance echoing version 7;
  *  - an unsupported contract version → typed
  *    `contract-version-unsupported` (a positive integer OUTSIDE the
- *    supported set, e.g. 7 — the pin moved from 4 to 5 after the F9
- *    bump, from 5 to 6 after the C1 v5 bump, and from 6 to 7 after the
- *    team-view-sync-complete v6 bump) — never a handler throw;
+ *    supported set, e.g. 8 — the pin moved from 4 to 5 after the F9
+ *    bump, from 5 to 6 after the C1 v5 bump, from 6 to 7 after the
+ *    team-view-sync-complete v6 bump, and from 7 to 8 after the
+ *    pre-alpha3 W1 fix-A v7 bump) — never a handler throw;
  *  - a non-integer / missing version → typed `malformed-request`;
  *  - a v1 request to the v2-only `team.admitInitialWork` method → typed
  *    `method-version-unsupported` (checked in the version-aware param
@@ -36,14 +40,16 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { expectError, makeDispatcher, p8t3Wire, p8t3WireV2, p8t3WireV4, p8t3WireV5, p8t3WireV6, P8T3_TEAM_SESSION_ID } from './p8t3-helpers.js'
+import { expectError, makeDispatcher, p8t3Wire, p8t3WireV2, p8t3WireV4, p8t3WireV5, p8t3WireV6, p8t3WireV7, P8T3_TEAM_SESSION_ID } from './p8t3-helpers.js'
 import {
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V2,
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
   REMOTE_CONTRACT_VERSION_V6,
+  REMOTE_CONTRACT_VERSION_V7,
   REMOTE_CONTRACT_ERROR_CODES,
+  SUPPORTED_REMOTE_CONTRACT_VERSIONS,
 } from '../src/index.js'
 
 // Module level (top-level await): drive the real dispatcher over the fake
@@ -78,15 +84,20 @@ const RT = await (async () => {
   // provenance echoing the request version (team-view-sync-complete v6
   // bump).
   const version6 = await dispatch('catalog.list', p8t3WireV6({}))
-  // A future version outside the closed supported set {1, 2, 3, 4, 5, 6}
-  // (TCM vNext §15.3: the unsupported-version negative was pinned at 4
+  // 7 is now SUPPORTED (pre-alpha3 W1 fix-A F10: the version-aware
+  // override.set / override.reset closed sets) — a v7 request to a
+  // v1-legal method succeeds with provenance echoing the request version.
+  const version7 = await dispatch('catalog.list', p8t3WireV7({}))
+  // A future version outside the closed supported set {1, 2, 3, 4, 5, 6,
+  // 7} (TCM vNext §15.3: the unsupported-version negative was pinned at 4
   // since the D1 Team-D1-D6-repair-v2 v3 bump admitted contract version
   // 3; the F9 repair bump admitted contract version 4, so the pin moved
   // to 5; the C1 restart-0.1.7-rc.1 recovery bump admitted contract
   // version 5, so the pin moved to 6; the team-view-sync-complete bump
-  // admitted contract version 6, so the pin moves to 7).
-  const version7 = await dispatch('team.getProjection', {
-    version: 7,
+  // admitted contract version 6, so the pin moved to 7; the pre-alpha3
+  // W1 fix-A bump admitted contract version 7, so the pin moves to 8).
+  const version8 = await dispatch('team.getProjection', {
+    version: 8,
     params: { teamSessionId: P8T3_TEAM_SESSION_ID },
   })
   const version15 = await dispatch('catalog.list', { version: 1.5, params: {} })
@@ -124,6 +135,7 @@ const RT = await (async () => {
     version99,
     version6,
     version7,
+    version8,
     version15,
     versionString,
     versionMissing,
@@ -193,8 +205,21 @@ describe('P8-T3 version mismatch + envelope negatives (versioned contract, TCM v
     expect(success.value.provenance.endpoint).toBe('catalog.list')
   })
 
-  it('an unsupported contract version (7) → contract-version-unsupported, no throw', () => {
-    const error = expectError(RT.version7)
+  it('a supported v7 request to a v1-legal method → success, provenance echoes version 7 (pre-alpha3 W1 fix-A F10 bump)', () => {
+    const success = RT.version7
+    expect(success.ok).toBe(true)
+    if (!success.ok) throw new Error('expected a success result')
+    expect(success.value.provenance.contractVersion).toBe(REMOTE_CONTRACT_VERSION_V7)
+    expect(success.value.provenance.method).toBe('catalog.list')
+    expect(success.value.provenance.endpoint).toBe('catalog.list')
+    // The closed supported set admits exactly v1–v7 (the merge gate
+    // "Remote v1–v6 保持" holds: v7 ADDS a version-aware closed-set,
+    // it never edits the v1–v6 surface).
+    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS]).toEqual([1, 2, 3, 4, 5, 6, 7])
+  })
+
+  it('an unsupported contract version (8) → contract-version-unsupported, no throw', () => {
+    const error = expectError(RT.version8)
     expect(error.error.code).toBe(REMOTE_CONTRACT_ERROR_CODES.CONTRACT_VERSION_UNSUPPORTED)
     expect(error.error.code).toBe('contract-version-unsupported')
     const details = error.error.details as unknown as Record<string, unknown>

@@ -152,8 +152,8 @@ function PanelHarness(props: PanelHarnessProps) {
       listCatalog={vi.fn(() => Promise.resolve(okResponse(CATALOG_DATA, 'catalog.list')))}
       getCatalog={vi.fn(() => Promise.resolve(okResponse(DETAIL_DATA, 'catalog.get')))}
       probeCompatibility={vi.fn(() => Promise.resolve(okResponse(OPEN_DATA, 'intent.probe')))}
-      teamCreateV2={vi.fn(() => Promise.resolve(props.createResponse))}
-      teamAdmitInitialWorkV2={vi.fn(() => Promise.resolve(props.admitResponse))}
+      teamCreate={vi.fn(() => Promise.resolve(props.createResponse))}
+      teamAdmitInitialWork={vi.fn(() => Promise.resolve(props.admitResponse))}
       openCreatedSession={props.openCreatedSession ?? (async () => undefined)}
       onCreated={props.onCreatedSpy}
       listAgentPresets={vi.fn(() => Promise.resolve([]))}

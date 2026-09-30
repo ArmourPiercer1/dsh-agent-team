@@ -1,0 +1,22 @@
+[
+  {
+    "port": 3182,
+    "free": true
+  },
+  {
+    "port": 3497,
+    "free": true
+  },
+  {
+    "port": 3492,
+    "free": true
+  },
+  {
+    "port": 3491,
+    "free": true
+  },
+  {
+    "port": 3493,
+    "free": true
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "set": {
+    "transition": {
+      "entryId": "ps-paused-0",
+      "origin": "human",
+      "state": {
+        "stateId": "paused"
+      },
+      "requestedAtStep": 0,
+      "effectiveFromStep": 1
+    }
+  },
+  "getAfter": {
+    "stateId": "paused",
+    "availableTransitions": [
+      "default"
+    ]
+  }
+}

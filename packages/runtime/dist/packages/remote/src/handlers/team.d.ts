@@ -5,18 +5,25 @@
  * and the v5-only one-shot ordinary-activation permit
  * (`team.prepareOrdinaryOpen`, C1 restart-0.1.7-rc.1 recovery — guide
  * §10.2). Backed by nine ports:
- * {@link RemoteTeamCreatePort} (root binding, P5-T5),
- * {@link RemoteTeamCreateV2Port} (the v2 workspace-aware creation
+ * {@link RemoteTeamCreateEmbeddedWorkPort} (root binding, P5-T5),
+ * {@link RemoteTeamCreateWorkspacePort} (the workspace-aware creation
  * variant, TCM vNext §15.6), {@link RemoteTeamAdmitInitialWorkPort}
- * (the v2-only creation-time initial work command, TCM vNext §15.6),
- * {@link RemoteTeamRootsPort} (the v3-only durable root ownership list,
- * D1), {@link RemoteTeamEnsureRootLivePort} (the v3-only Team-mode
- * ensure, D2-wired), {@link RemoteTeamResolveControlPort} (the v4-only
- * human control resolution command, F9),
- * {@link RemoteTeamPrepareOrdinaryOpenPort} (the v5-only one-shot
+ * (the creation-time initial work command, TCM vNext §15.6),
+ * {@link RemoteTeamRootsPort} (the durable root ownership list, D1),
+ * {@link RemoteTeamEnsureRootLivePort} (the Team-mode ensure, D2-wired),
+ * {@link RemoteTeamResolveControlPort} (the human control resolution
+ * command, F9),
+ * {@link RemoteTeamPrepareOrdinaryOpenPort} (the one-shot
  * ordinary-activation permit, C1), {@link RemoteProjectionPort}
  * (ProjectionService, P8-T2), and {@link RemoteLedgerPort} (storage
  * ledger behind a slicing adapter, D-5).
+ *
+ * Semantic routing (pre-alpha3 PR-F, plan §F.3): the dispatcher passes
+ * the request's contract version through (the transport adapter's
+ * concern), but this handler routes on the SEMANTIC decisions from the
+ * contracts semantic adapter — the `team.create` flavor
+ * ({@link teamCreateFlavorOf}) and the `team.getProjection` shape
+ * ({@link projectionShapeOf}) — and never on a literal version number.
  *
  * The projection is validated at the TOP LEVEL only (D-4): the nine frozen
  * `TeamProjectionDto` fields must be present with the right structural
@@ -28,14 +35,16 @@
  * @module @dsh-agent-team/remote/handlers/team
  */
 import type { RemoteMethodParams } from '../contracts/params.js';
-import type { RemoteHandlerOutcome, RemoteLedgerPort, RemoteLiveTokenPort, RemoteProjectionPort, RemoteTeamAdmitInitialWorkPort, RemoteTeamCreatePort, RemoteTeamCreateV2Port, RemoteTeamEnsureRootLivePort, RemoteTeamPrepareOrdinaryOpenPort, RemoteTeamReadStatePort, RemoteTeamResolveControlPort, RemoteTeamRootsPort } from './ports.js';
-/** The ports the team category needs (v1 trio + the two v2 ports + the
- *  two v3 ports + the F9 v4 port + the C1 restart-recovery v5 port + the
- *  two team-view-sync-complete v6 ports). */
+import type { RemoteHandlerOutcome, RemoteLedgerPort, RemoteLiveTokenPort, RemoteProjectionPort, RemoteTeamAdmitInitialWorkPort, RemoteTeamCreateEmbeddedWorkPort, RemoteTeamCreateWorkspacePort, RemoteTeamEnsureRootLivePort, RemoteTeamPrepareOrdinaryOpenPort, RemoteTeamReadStatePort, RemoteTeamResolveControlPort, RemoteTeamRootsPort } from './ports.js';
+/** The ports the team category needs (the create-flavor ports + the
+ *  initial-work admission + the root list / ensure ports + the control
+ *  resolution port + the ordinary-activation permit port + the
+ *  team-view-sync-complete read-state + live-token ports). */
 export interface RemoteTeamHandlerPorts {
-    readonly teamCreate: RemoteTeamCreatePort;
-    /** TCM vNext §15.6: the v2 workspace-aware creation variant. */
-    readonly teamCreateV2: RemoteTeamCreateV2Port;
+    readonly teamCreateEmbeddedWork: RemoteTeamCreateEmbeddedWorkPort;
+    /** TCM vNext §15.6: the workspace-aware creation variant (the current
+     *  product create). */
+    readonly teamCreateWorkspace: RemoteTeamCreateWorkspacePort;
     /** TCM vNext §15.6: the v2-only creation-time initial work command. */
     readonly teamAdmitInitialWork: RemoteTeamAdmitInitialWorkPort;
     /** Team D1-D6 repair v2 D1: the v3-only durable root ownership list. */
@@ -62,18 +71,21 @@ export interface RemoteTeamHandlerPorts {
     readonly ledger: RemoteLedgerPort;
 }
 /**
- * The team category handler (`team.create` [v1 + v2],
+ * The team category handler (`team.create` [the two create flavors],
  * `team.admitInitialWork` [v2-only], `team.listRoots` [v3-only],
  * `team.ensureRootLive` [v3-only], `team.resolveControl` [v4-only],
  * `team.prepareOrdinaryOpen` [v5-only], `team.getReadState` [v6-only],
- * `team.getProjection` [v1-v5 frozen shape; v6 adds
- * `durableGeneration` + `liveToken`], `team.getLedgerPage`).
+ * `team.getProjection` [the `base` shape for v1-v5; the `live` shape for
+ * v6 adds `durableGeneration` + `liveToken`], `team.getLedgerPage`).
  *
- * Version-aware (TCM vNext §15.3): the dispatcher passes the request's
- * contract version; `team.create` routes to the v1 port (closed v1 field
- * set, `initialWork` allowed) or the v2 port (closed v2 field set,
- * `workspace` allowed, CREATE-ONLY) — the version-specific parsed param
- * object is already the matching typed shape.
+ * Semantic routing (pre-alpha3 PR-F, plan §F.3): the dispatcher passes
+ * the request's contract version (the transport adapter's concern); this
+ * handler translates it to the SEMANTIC create flavor / projection shape
+ * through the contracts semantic adapter and branches on those — no
+ * literal version comparison in the handler body. The version-specific
+ * parsed param object is already the matching typed shape (the shared
+ * version-aware param parser validated the closed field set per wire
+ * version before dispatch).
  */
 export declare function createRemoteTeamHandler(ports: RemoteTeamHandlerPorts): (method: string, params: RemoteMethodParams, version: number) => RemoteHandlerOutcome;
 //# sourceMappingURL=team.d.ts.map

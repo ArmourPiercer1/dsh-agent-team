@@ -531,8 +531,11 @@ function inspectConfigSpec(): ToolSpec {
     name: 'team_inspect_config',
     description:
       'Inspect the effective policy configuration of ONE member instance. ' +
-      '`effective` = the legacy GENERIC capability policy view (the per-capability values after overlay and external facts; its `permissions` cell is a legacy generic cell and NOT the alpha.2 operation-permission authority). ' +
-      '`operationPermissions` = the ACTUAL static parameter-aware operation-permission policy enforced by alpha.2 for this instance (the bound template capabilities.permissions: default plus allow/ask/deny rules as stored, plus the managedTools and resourceKinds vocabulary; `mode: "absent"` when the template declares no permissions).',
+      '`effective` = the per-capability effective policy view over model / tools / skills / mcp (the values after overlay and external facts). The generic `permissions` cell is NOT surfaced (pre-alpha3 PR-F, plan §F.4): it is a legacy five-domain cell, and the alpha.2 operation-permission authority is the independent `operationPermissions` field below. ' +
+      '`operationPermissions` = the ACTUAL static parameter-aware operation-permission policy enforced by alpha.2 for this instance (the bound template capabilities.permissions: default plus allow/ask/deny rules as stored, plus the managedTools and resourceKinds vocabulary; `mode: "absent"` when the template declares no permissions). ' +
+      '`policyState` = the committed PolicyState (the SAME durable read the live boundary and the host projection use: the last committed transition in commit order, or the implicit blueprint default; carries the stateId, source, per-capability cells, and the committing transition origin when durable). ' +
+      '`requirement` = the DURABLE requirement facts (the same records the runtime RequirementAuthority consumes: the compatibility verdict + the latest optional-requirement consents + the latest template-availability facts). ' +
+      '`recovery` = the DERIVED recovery state (the currently open recovery incidents, the last closed incident per scope, and the `active` flag — derived from the durable PR-E incident facts; no durable "recovery" flag exists).',
     properties: {
       rootSessionId: ROOT_SESSION_ID_ARG,
       requestToken: REQUEST_TOKEN_ARG,

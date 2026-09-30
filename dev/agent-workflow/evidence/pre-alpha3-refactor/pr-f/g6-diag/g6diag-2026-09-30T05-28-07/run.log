@@ -1,0 +1,18 @@
+[2026-09-30T05:28:07.298Z] === G6 one-off diagnostic (PR-F closure, increment 2) ===
+[2026-09-30T05:28:07.299Z] runStamp=g6diag-2026-09-30T05-28-07 worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure
+[2026-09-30T05:28:07.300Z] host baseline sha=46a7f68b0922371ce7144b668b90e377d8e799f4 (paths.mjs pin)
+[2026-09-30T05:28:07.340Z] test-use preflight: head=46a7f68b0922371ce7144b668b90e377d8e799f4 porcelainEmpty=true
+[2026-09-30T05:28:07.368Z] stable pre-probes: 3080=401 3180=401
+[2026-09-30T05:28:07.376Z] ports: host=3182 mock=3497 mcpRepo=3492 mcpLeaderreq=3491 mcpWeb=3493
+[2026-09-30T05:28:07.377Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/tests/homes/g6diag-2026-09-30T05-28-07 blueprints=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/tests/homes/g6diag-2026-09-30T05-28-07/blueprints TMPDIR pinned (unset) -> /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/tests/homes/g6diag-2026-09-30T05-28-07/tmp
+[2026-09-30T05:28:07.385Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-09-30T05:28:07.397Z] mini MCP mcp_repo up on 127.0.0.1:3492
+[2026-09-30T05:28:07.409Z] mini MCP mcp_leaderreq up on 127.0.0.1:3491
+[2026-09-30T05:28:07.420Z] mini MCP mcp_web up on 127.0.0.1:3493
+[2026-09-30T05:28:07.421Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-30T05:28:09.933Z] throwaway boot OK: http://127.0.0.1:3182/?token=O90pkPtnBXNYVYYL3P5MmtYcoCJI97ahb-BAmG-nhIY
+[2026-09-30T05:28:10.050Z] web profile ensured (throwaway boot if first use)
+[2026-09-30T05:28:10.052Z] B1-CREATE: patch written (bootPhase=create, facts=all-true, mcp=[{"name":"mcp_repo","port":3492},{"name":"mcp_leaderreq","port":3491},{"name":"mcp_web","port":3493}]) + directive
+[2026-09-30T05:28:13.159Z] B1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-30T05:28:13.166Z] B1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-30T05:28:13.321Z] FATAL: B1-CREATE: row setup failed — setupError: Cannot find module '/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/packages/runtime/dist/packages/runtime/root-binding/harness/seam.mjs' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/packages/runtime/dist/packages/runtime/src/plugin/host.js

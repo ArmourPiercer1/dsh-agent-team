@@ -64,13 +64,13 @@ export interface NewTeamEntryInjected {
    * aware CREATE-ONLY creation (binds the TeamSession to the resolved
    * workspace on the named root; stamps contract version 2).
    */
-  readonly teamCreateV2: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
+  readonly teamCreate: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
   /**
    * `team.admitInitialWork` (contract v2, v2-only method, TCM M4 / plan
    * §15.6) — the deferred creation-time initial work (stamps contract
    * version 2).
    */
-  readonly teamAdmitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
+  readonly teamAdmitInitialWork: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
   /**
    * The creation-path session open (D-3): opens the host-created root
    * session, re-pulling the host list once when the stream increment
@@ -108,7 +108,7 @@ export type NewTeamEntryProps =
 export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
   const {
     wide,
-    listCatalog, getCatalog, probeCompatibility, teamCreateV2, teamAdmitInitialWorkV2,
+    listCatalog, getCatalog, probeCompatibility, teamCreate, teamAdmitInitialWork,
     openCreatedSession, pullProjection, listAgentPresets, currentSessionId,
     useWorkspaces, t,
   } = props
@@ -179,8 +179,8 @@ export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
               listCatalog={listCatalog}
               getCatalog={getCatalog}
               probeCompatibility={probeCompatibility}
-              teamCreateV2={teamCreateV2}
-              teamAdmitInitialWorkV2={teamAdmitInitialWorkV2}
+              teamCreate={teamCreate}
+              teamAdmitInitialWork={teamAdmitInitialWork}
               openCreatedSession={openCreatedSession}
               onCreated={closeOverlay}
               pullProjection={pullProjection}

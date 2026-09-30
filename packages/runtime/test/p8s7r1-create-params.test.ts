@@ -21,7 +21,7 @@
  *   reply): the frozen remote contract is unchanged.
  *
  * The 4-arg fake declares its fourth parameter OPTIONAL so it still
- * satisfies the frozen `RemoteTeamCreatePort` interface — the same arity
+ * satisfies the frozen `RemoteTeamCreateEmbeddedWorkPort` interface — the same arity
  * rule the production handler relies on (`TeamCreatePortWithInitialWork`
  * is satisfied by a plain typed assignment, no cast).
  *
@@ -45,8 +45,8 @@ import type {
   RemoteProjectionPort,
   RemoteSafeRecord,
   RemoteTeamAdmitInitialWorkPort,
-  RemoteTeamCreatePort,
-  RemoteTeamCreateV2Port,
+  RemoteTeamCreateEmbeddedWorkPort,
+  RemoteTeamCreateWorkspacePort,
   RemoteTeamEnsureRootLivePort,
   RemoteTeamPrepareOrdinaryOpenPort,
   RemoteTeamReadStatePort,
@@ -161,15 +161,15 @@ function replyShape(): RemoteSafeRecord {
 /**
  * One recording `team.create` port (the 4-arg form declares its fourth
  * parameter optional, so it STILL satisfies the frozen
- * `RemoteTeamCreatePort`). Records the EXACT argument tuple it was called
+ * `RemoteTeamCreateEmbeddedWorkPort`). Records the EXACT argument tuple it was called
  * with (a frozen 3-arg function, by JS semantics, never sees the fourth).
  */
 function recordingCreatePort(arity: 3 | 4): {
-  readonly port: RemoteTeamCreatePort
+  readonly port: RemoteTeamCreateEmbeddedWorkPort
   readonly calls: unknown[][]
 } {
   const calls: unknown[][] = []
-  const port: RemoteTeamCreatePort =
+  const port: RemoteTeamCreateEmbeddedWorkPort =
     arity === 3
       ? {
           create(rootSessionId: string, blueprintId: string, blueprintRevision: number | undefined) {
@@ -192,13 +192,13 @@ function recordingCreatePort(arity: 3 | 4): {
 }
 
 /** The team handler over one recording create port (the other ports unused). */
-function handlerWith(create: RemoteTeamCreatePort) {
+function handlerWith(create: RemoteTeamCreateEmbeddedWorkPort) {
   function unused(): never {
     throw new Error('this test only routes v1 team.create')
   }
   return createRemoteTeamHandler({
-    teamCreate: create,
-    teamCreateV2: { create: unused } as unknown as RemoteTeamCreateV2Port,
+    teamCreateEmbeddedWork: create,
+    teamCreateWorkspace: { create: unused } as unknown as RemoteTeamCreateWorkspacePort,
     teamAdmitInitialWork: { admit: unused } as unknown as RemoteTeamAdmitInitialWorkPort,
     teamRoots: { listRoots: unused } as unknown as RemoteTeamRootsPort,
     teamEnsureRootLive: { ensureRootLive: unused } as unknown as RemoteTeamEnsureRootLivePort,

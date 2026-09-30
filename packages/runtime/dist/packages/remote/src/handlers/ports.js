@@ -2,14 +2,22 @@
  * The backing ports of the Remote handler layer (deviation D-2).
  *
  * The handler layer depends on NO runtime types: its entire dependency
- * surface is these 18 structural ports (12 frozen P8-T3 ports + the two
- * TCM vNext §15.6 v2 ports + the two Team D1-D6 repair v2 v3 ports + the
- * F3/F11/F9/T1.4 repair round r1 F9 v4 port + the C1
- * restart-0.1.7-rc.1 recovery v5 port),
+ * surface is these 20 structural ports (12 frozen P8-T3 ports + the two
+ * TCM vNext §15.6 create-flavor ports + the two Team D1-D6 repair v2 v3
+ * ports + the F3/F11/F9/T1.4 repair round r1 F9 v4 port + the C1
+ * restart-0.1.7-rc.1 recovery v5 port + the two team-view-sync-complete
+ * v6 ports),
  * each of which the host wiring implements over the runtime APIs
  * (design note §3 table, "Backing API" column). Every port method returns
  * a lossless-JSON-safe record (or `null` where the wire shape allows it):
  * the remote layer never sees a live DSH object.
+ *
+ * Semantic naming (pre-alpha3 PR-F, plan §F.3): the ports are named for
+ * the SEMANTIC decision they serve (the create flavors, the projection
+ * shapes), never for a wire contract version — the version -> semantic
+ * translation lives in the contracts semantic adapter
+ * (`../contracts/semantic.js`), and the category handlers branch on the
+ * semantic values only.
  *
  * The port methods are synchronous: the vNext runtime services and storage
  * repositories are in-process and synchronous; the seam itself is

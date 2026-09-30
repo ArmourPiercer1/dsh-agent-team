@@ -113,16 +113,31 @@ Optional args worth knowing:
 
 ## 4. Inspecting configuration
 
-`team_inspect_config` returns two distinct faces for one instance:
+`team_inspect_config` is a PURE READ (zero side effects) and returns the
+SAME-SOURCE view the runtime authority uses — no re-probe, nothing invented:
 
-- `effective` — the legacy GENERIC capability policy view (per-capability
-  values after overlay and external facts). Its `permissions` cell is a
-  legacy generic cell and is **NOT** the operation-permission authority.
+- `effective` — the generic capability policy view for the closed set
+  `model` / `tools` / `skills` / `mcp` (per-capability values after
+  governance overrides + external facts). The generic `permissions` cell is
+  NOT surfaced (it is not an authority) — the operation-permission
+  authority is the independent field below.
 - `operationPermissions` — the ACTUAL static parameter-aware
   operation-permission policy enforced for this instance (the bound template's
   `capabilities.permissions`: default plus allow/ask/deny rules as stored,
   plus the `managedTools` and `resourceKinds` vocabulary). `mode: "absent"`
   when the template declares no permissions.
+- `policyState` — the COMMITTED policy state: `source` is
+  `"blueprint-default"` (the implicit `default` state, no durable
+  transition ever committed) or `"durable-transition"` (the last durable
+  transition: `stateId` + `cells` + the `entryId`/`origin` of the row).
+- `requirement` — the durable requirement facts: the compatibility verdict
+  (status/fingerprint/generation/outcomes/acknowledgements, verbatim; absent
+  if never probed), the latest optional-requirement consent per
+  requirement, and the latest template-availability fact per template.
+- `recovery` — DERIVED from the durable incident facts (no live probe):
+  `openIncidents` (scopes whose latest incident fact is `opened`),
+  `lastClosed` (the durable exit records), and `active` (true iff any
+  incident is open). A `closed` fact is history, not live state.
 
 ## 5. Approvals, guard, and blocked results
 

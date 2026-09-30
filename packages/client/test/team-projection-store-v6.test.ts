@@ -34,6 +34,10 @@ import {
   createTeamProjectionStore,
   type TeamProjectionScheduler,
 } from '../src/state/team-projection-store.js'
+import {
+  freshnessPairProjectionBindings,
+  generationOnlyProjectionBindings,
+} from '../src/transport/team-remote-client.js'
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -162,7 +166,7 @@ function scriptedPull(responses: RemoteResponse[]) {
 const s1 = scriptedPull([v6Success(TEAM, 7, 'lt-v1-a')])
 const s1Store = createTeamProjectionStore({
   getProjection: s1.getProjection,
-  contract: 'v6',
+  ...freshnessPairProjectionBindings,
   scheduler: manualScheduler(),
 })
 const s1Verdict = await s1Store.pull(TEAM)
@@ -176,7 +180,7 @@ const s2 = scriptedPull([
 ])
 const s2Store = createTeamProjectionStore({
   getProjection: s2.getProjection,
-  contract: 'v6',
+  ...freshnessPairProjectionBindings,
   scheduler: manualScheduler(),
 })
 await s2Store.pull(TEAM)
@@ -191,7 +195,7 @@ const s3 = scriptedPull([
 ])
 const s3Store = createTeamProjectionStore({
   getProjection: s3.getProjection,
-  contract: 'v6',
+  ...freshnessPairProjectionBindings,
   scheduler: manualScheduler(),
 })
 await s3Store.pull(TEAM)
@@ -205,7 +209,7 @@ const s4 = scriptedPull([
 ])
 const s4Store = createTeamProjectionStore({
   getProjection: s4.getProjection,
-  contract: 'v6',
+  ...freshnessPairProjectionBindings,
   scheduler: manualScheduler(),
 })
 await s4Store.pull(TEAM)
@@ -220,7 +224,7 @@ const s5 = scriptedPull([
 ])
 const s5Store = createTeamProjectionStore({
   getProjection: s5.getProjection,
-  contract: 'v6',
+  ...freshnessPairProjectionBindings,
   scheduler: manualScheduler(),
 })
 await s5Store.pull(TEAM)
@@ -234,7 +238,7 @@ const s6 = scriptedPull([
 ])
 const s6Store = createTeamProjectionStore({
   getProjection: s6.getProjection,
-  contract: 'v6',
+  ...freshnessPairProjectionBindings,
   scheduler: manualScheduler(),
 })
 await s6Store.pull(TEAM)
@@ -248,7 +252,7 @@ const s7 = scriptedPull([
 ])
 const s7Store = createTeamProjectionStore({
   getProjection: s7.getProjection,
-  contract: 'v6',
+  ...freshnessPairProjectionBindings,
   scheduler: manualScheduler(),
 })
 await s7Store.pull(TEAM)
@@ -263,7 +267,7 @@ const s8 = scriptedPull([
 ])
 const s8Store = createTeamProjectionStore({
   getProjection: s8.getProjection,
-  contract: 'v6',
+  ...freshnessPairProjectionBindings,
   scheduler: manualScheduler(),
 })
 await s8Store.pull(TEAM)
@@ -275,8 +279,9 @@ const s8State = s8Store.getState()
 s8Store.reset()
 const s9State = s8Store.getState()
 
-// S10: the V1 default store stays byte-identical: a response WITHOUT
-// the v6 cells still applies (the generation-only identity), and
+// S10: the GENERATION-ONLY store stays byte-identical (the frozen
+// generation-only bindings, explicit injection): a response WITHOUT
+// the pair cells still applies (the generation-only identity), and
 // `appliedLiveToken` stays null.
 function v1Success(teamSessionId: string, generation: number): RemoteResponse {
   return buildRemoteSuccess(
@@ -307,6 +312,7 @@ const s10 = {
 }
 const s10Store = createTeamProjectionStore({
   getProjection: s10.getProjection,
+  ...generationOnlyProjectionBindings,
   scheduler: manualScheduler(),
 })
 const s10Verdict = await s10Store.pull(TEAM)
@@ -346,7 +352,7 @@ function deferredResponses() {
 const t1 = deferredResponses()
 const t1Store = createTeamProjectionStore({
   getProjection: t1.getProjection,
-  contract: 'v6',
+  ...freshnessPairProjectionBindings,
   scheduler: manualScheduler(),
 })
 const t1p0 = t1Store.pull(TEAM)
@@ -367,7 +373,7 @@ const t1State = t1Store.getState()
 const t2 = deferredResponses()
 const t2Store = createTeamProjectionStore({
   getProjection: t2.getProjection,
-  contract: 'v6',
+  ...freshnessPairProjectionBindings,
   scheduler: manualScheduler(),
 })
 const t2p0 = t2Store.pull(TEAM)
@@ -387,7 +393,7 @@ const t2State = t2Store.getState()
 const t3 = deferredResponses()
 const t3Store = createTeamProjectionStore({
   getProjection: t3.getProjection,
-  contract: 'v6',
+  ...freshnessPairProjectionBindings,
   scheduler: manualScheduler(),
 })
 const t3p0 = t3Store.pull(TEAM)

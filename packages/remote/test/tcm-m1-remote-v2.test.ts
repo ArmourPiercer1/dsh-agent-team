@@ -11,7 +11,7 @@
  *    cross-version field leakage in either direction);
  *  - v2 `team.create`: the closed v2 set (rootSessionId, blueprintId,
  *    blueprintRevision?, workspace?) is legal, `workspace` is forwarded
- *    to the `teamCreateV2` port, `initialWork` is unknown-field, v2
+ *    to the `teamCreateWorkspace` port, `initialWork` is unknown-field, v2
  *    responses reuse the v1 shape `{ path, durable, bind }`;
  *  - v2-only `team.admitInitialWork`: legal params forward verbatim to
  *    the port (token echo in provenance), malformed negatives (empty
@@ -46,6 +46,7 @@ import {
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
   REMOTE_CONTRACT_VERSION_V6,
+  REMOTE_CONTRACT_VERSION_V7,
   REMOTE_CONTRACT_ERROR_CODES,
   REMOTE_METHOD_NAMES,
   REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS,
@@ -119,7 +120,7 @@ const RT = await (async () => {
   const v1Calls: (string | number | undefined | Record<string, unknown>)[][] = []
   const v1RecordingDispatcher = createRemoteDispatcher(
     makeFakePorts({
-      teamCreate: {
+      teamCreateEmbeddedWork: {
         create(
           rootSessionId: string,
           blueprintId: string,
@@ -284,7 +285,7 @@ const RT = await (async () => {
   // Out-of-vocabulary backing error: a Node-style filesystem failure.
   const outOfVocabulary = createRemoteDispatcher(
     makeFakePorts({
-      teamCreateV2: {
+      teamCreateWorkspace: {
         create(): RemoteSafeRecord {
           const error = new Error("ENOENT: no such file or directory, open 'C:\\secret\\workspace'")
           ;(error as Error & { code: string }).code = 'ENOENT'
@@ -377,7 +378,7 @@ describe('TCM M1: v1 wire behavior is preserved (byte-compatible)', () => {
 // ---------------------------------------------------------------------------
 
 describe('TCM M1: v2 team.create (the workspace-aware variant)', () => {
-  it('v2 create → success, served by the teamCreateV2 port (never the v1 port)', () => {
+  it('v2 create → success, served by the teamCreateWorkspace port (never the v1 port)', () => {
     expectSuccess(RT.v2CreateMinimal)
     // The v2 port label is present; the v1 port label is ABSENT (the v1
     // create port was never invoked by any v2 request).
@@ -565,14 +566,15 @@ describe('TCM M1: backing error allow-list (the seven team-create v2 codes)', ()
 // ---------------------------------------------------------------------------
 
 describe('TCM M1: catalog facts (versioned union, closed)', () => {
-  it('the frozen v1 baseline constant stays 1, v2 is a distinct stamp, and the D1 v3 + F9 v4 + C1 v5 + team-view-sync v6 bumps extend the supported set', () => {
+  it('the frozen v1 baseline constant stays 1, v2 is a distinct stamp, and the D1 v3 + F9 v4 + C1 v5 + team-view-sync v6 + pre-alpha3 W1 fix-A v7 bumps extend the supported set (v7 adds NO method)', () => {
     expect(REMOTE_CONTRACT_VERSION).toBe(1)
     expect(REMOTE_CONTRACT_VERSION_V2).toBe(2)
     expect(REMOTE_CONTRACT_VERSION_V3).toBe(3)
     expect(REMOTE_CONTRACT_VERSION_V4).toBe(4)
     expect(REMOTE_CONTRACT_VERSION_V5).toBe(5)
     expect(REMOTE_CONTRACT_VERSION_V6).toBe(6)
-    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6])
+    expect(REMOTE_CONTRACT_VERSION_V7).toBe(7)
+    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7])
   })
 
   it('the closed catalog is the versioned union: 29 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only)', () => {

@@ -22,7 +22,10 @@
  * - durable writes go ONLY through the injected TeamDomain repositories
  *   (invariant 41).
  */
+import { CAPABILITY_NAMES, CAPABILITY_NAME_VALUES, } from '../../domain/policy/src/index.js';
 import { PERMISSION_RESOURCE_KINDS, PERMISSION_TOOL_NAMES, } from '../../domain/blueprint/src/index.js';
+import { committedPolicyState } from '../effective-policy/index.js';
+import { OPTIONAL_REQUIREMENT_ACCEPTED_FACT_TYPE, parseOptionalRequirementAccepted, parseRecoveryIncidentClosed, parseRecoveryIncidentOpened, parseTemplateAvailabilitySet, RECOVERY_INCIDENT_CLOSED_FACT_TYPE, RECOVERY_INCIDENT_OPENED_FACT_TYPE, TEMPLATE_AVAILABILITY_SET_FACT_TYPE, } from '../requirements/index.js';
 // --- caller roles ----------------------------------------------------------------
 /** The closed caller roles the facade resolves from the TeamDomain. */
 export const CALLER_ROLES = {
@@ -110,6 +113,132 @@ export function memberSummary(member) {
         label: member.label,
         ...(member.lifecycle !== undefined ? { lifecycle: member.lifecycle } : {}),
         ...(member.childSessionId !== undefined ? { childSessionId: member.childSessionId } : {}),
+    };
+}
+// --- pre-alpha3 PR-F (plan §F.4): the config-inspected same-source fact views ----
+/**
+ * The closed capability set of the `config-inspected` `effective` view
+ * (pre-alpha3 PR-F, plan §F.4): the five closed capability domains MINUS
+ * the generic `permissions` cell — the FAKE legacy cell that was the
+ * five-domain "dynamic" authority. The ACTUAL alpha.2 operation-permission
+ * authority is the independent `operationPermissions` field
+ * ({@link OperationPermissionView}), so the generic cell is no longer
+ * surfaced at all (neither displayed nor conflated).
+ */
+export const CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES = CAPABILITY_NAME_VALUES.filter((name) => name !== CAPABILITY_NAMES.PERMISSIONS);
+/**
+ * Build the `policyState` view from the durable transition rows — the
+ * SAME `committedPolicyState` fold the production root uses for the
+ * projection's `policyState` cell (one read, one authority; no re-probe).
+ *
+ * @param transitions - the durable PolicyState transitions of the
+ *   inspected root (COMMIT order; empty = never transitioned).
+ */
+export function configInspectedPolicyStateView(transitions) {
+    const { state, transition } = committedPolicyState(transitions);
+    return {
+        stateId: state.stateId,
+        source: transition === null ? 'blueprint-default' : 'durable-transition',
+        cells: { ...(state.cells ?? {}) },
+        ...(transition === null
+            ? {}
+            : { transition: { entryId: transition.entryId, origin: transition.origin } }),
+    };
+}
+/**
+ * Build the `requirement` view from the durable compatibility record and
+ * the PR-E requirement facts (ledger rows, SEQUENCE order — the latest
+ * fact per key wins; the fail-closed parsers reject a corrupted row).
+ *
+ * @param compatibility - the durable compatibility state of the root
+ *   (`undefined` = never probed).
+ * @param ledgerEntries - the root's durable ledger entries (sequence
+ *   order; the PR-E fact types are the only ones consumed).
+ */
+export function configInspectedRequirementView(compatibility, ledgerEntries) {
+    const latestConsentByRequirement = new Map();
+    const latestAvailabilityByTemplate = new Map();
+    for (const entry of ledgerEntries) {
+        if (entry.factType === OPTIONAL_REQUIREMENT_ACCEPTED_FACT_TYPE) {
+            const fact = parseOptionalRequirementAccepted(entry.payload, `ledger[${entry.sequence}].payload`);
+            latestConsentByRequirement.set(fact.requirementId, fact);
+        }
+        else if (entry.factType === TEMPLATE_AVAILABILITY_SET_FACT_TYPE) {
+            const fact = parseTemplateAvailabilitySet(entry.payload, `ledger[${entry.sequence}].payload`);
+            latestAvailabilityByTemplate.set(fact.templateId, fact);
+        }
+    }
+    const consents = [...latestConsentByRequirement.values()]
+        .sort((a, b) => a.requirementId.localeCompare(b.requirementId))
+        .map((fact) => ({
+        requirementId: fact.requirementId,
+        consentedBy: fact.consentedBy,
+        consentedAt: fact.consentedAt,
+    }));
+    const templateAvailability = [...latestAvailabilityByTemplate.values()]
+        .sort((a, b) => a.templateId.localeCompare(b.templateId))
+        .map((fact) => ({ templateId: fact.templateId, available: fact.available, at: fact.at }));
+    return {
+        ...(compatibility === undefined
+            ? {}
+            : {
+                compatibility: {
+                    status: compatibility.status,
+                    fingerprint: compatibility.fingerprint,
+                    generation: compatibility.generation,
+                    outcomes: { ...compatibility.outcomes },
+                    acknowledgements: [...compatibility.acknowledgements],
+                    computedAt: compatibility.computedAt,
+                },
+            }),
+        consents,
+        templateAvailability,
+    };
+}
+/**
+ * Build the `recovery` view from the durable PR-E incident facts (ledger
+ * rows, SEQUENCE order — the latest incident fact per scope decides; the
+ * fail-closed parsers reject a corrupted row).
+ *
+ * @param ledgerEntries - the root's durable ledger entries (sequence
+ *   order; the two incident fact types are the only ones consumed).
+ */
+export function configInspectedRecoveryView(ledgerEntries) {
+    const latestByScope = new Map();
+    for (const entry of ledgerEntries) {
+        if (entry.factType === RECOVERY_INCIDENT_OPENED_FACT_TYPE) {
+            const fact = parseRecoveryIncidentOpened(entry.payload, `ledger[${entry.sequence}].payload`);
+            latestByScope.set(fact.scope, { kind: 'opened', fact });
+        }
+        else if (entry.factType === RECOVERY_INCIDENT_CLOSED_FACT_TYPE) {
+            const fact = parseRecoveryIncidentClosed(entry.payload, `ledger[${entry.sequence}].payload`);
+            latestByScope.set(fact.scope, { kind: 'closed', fact });
+        }
+    }
+    const openIncidents = [];
+    const lastClosed = [];
+    for (const incident of latestByScope.values()) {
+        if (incident.kind === 'opened') {
+            openIncidents.push({
+                scope: incident.fact.scope,
+                requirementIds: [...incident.fact.requirementIds],
+                openedAt: incident.fact.openedAt,
+            });
+        }
+        else {
+            lastClosed.push({
+                scope: incident.fact.scope,
+                requirementIds: [...incident.fact.requirementIds],
+                closedAt: incident.fact.closedAt,
+            });
+        }
+    }
+    openIncidents.sort((a, b) => a.scope.localeCompare(b.scope));
+    lastClosed.sort((a, b) => a.scope.localeCompare(b.scope));
+    return {
+        openIncidents,
+        lastClosed,
+        active: openIncidents.length > 0,
     };
 }
 // --- A2C-3 (plan §10): the real operation-permission view ------------------------

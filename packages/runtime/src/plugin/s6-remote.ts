@@ -69,8 +69,8 @@ import type {
   RemoteMemberSendParams,
   RemoteMethodParams,
   RemoteOverrideGetParams,
-  RemoteOverrideResetParams,
-  RemoteOverrideSetParams,
+  RemoteOverrideResetParamsV7,
+  RemoteOverrideSetParamsV7,
   RemotePolicyStateGetParams,
   RemotePolicyStateSetParams,
   RemoteTeamAdmitInitialWorkParams,
@@ -102,6 +102,13 @@ import {
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V2,
 } from '../../../remote/src/contracts/version.js'
+import {
+  PROJECTION_SHAPES,
+  TEAM_CREATE_FLAVORS,
+  projectionShapeOf,
+  teamCreateFlavorOf,
+  withLiveProjectionFreshness,
+} from '../../../remote/src/contracts/semantic.js'
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js'
 import { REMOTE_BACKING_ERROR_CODE_SET } from '../../../remote/src/handlers/dispatch.js'
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js'
@@ -351,6 +358,18 @@ export interface S6RemoteOverrideSetRequest {
   readonly actorClaim: unknown
   readonly scope?: 'team' | 'instance'
   readonly targetInstanceId?: string
+  /**
+   * pre-alpha3 W1 fix-A (F10) — the client-supplied slot-generation
+   * guard (remote contract v7, optional): ABSENT is legacy-compatible
+   * (no conflict check); PRESENT is the optimistic guard — the
+   * Governance service compares it against the current slot winner
+   * INSIDE the shared chain and answers the typed
+   * `OVERRIDE_GENERATION_CONFLICT` with zero write on mismatch (the
+   * stale-UI / stale-tab overwrite the shared Team chain alone does not
+   * catch). A plain (server-parsed) value — NEVER a client claim of
+   * authority.
+   */
+  readonly expectedGeneration?: number
 }
 
 /** The `override.reset` request (the structural mirror of the frozen shape). */
@@ -361,6 +380,16 @@ export interface S6RemoteOverrideResetRequest {
   readonly actorClaim: unknown
   readonly scope?: 'team' | 'instance'
   readonly targetInstanceId?: string
+  /**
+   * pre-alpha3 W1 fix-A (F10) — the client-supplied slot-generation
+   * guard (remote contract v7, optional): ABSENT is legacy-compatible
+   * (no conflict check); PRESENT is the optimistic guard — the
+   * Governance service compares it against the current slot winner
+   * INSIDE the shared chain and answers the typed
+   * `OVERRIDE_GENERATION_CONFLICT` with zero write on mismatch. A
+   * plain (server-parsed) value — NEVER a client claim of authority.
+   */
+  readonly expectedGeneration?: number
 }
 
 /** The `policyState.set` request (the structural mirror of the frozen shape). */
@@ -413,7 +442,7 @@ export interface S6RemoteIntentPort {
   ): Promise<RemoteSafeRecord>
 }
 /** Port 3/12 — TeamSession creation via the root binding (`team.create` v1). */
-export interface S6RemoteTeamCreatePort {
+export interface S6RemoteTeamCreateEmbeddedWorkPort {
   /**
    * Bind a fresh root or rehydrate a cold root for the requested
    * blueprint. `initialWork` (BC-03 / R1-A) is optional: when present it
@@ -437,13 +466,13 @@ export interface S6RemoteTeamCreatePort {
   ): Promise<RemoteSafeRecord>
 }
 /** TCM vNext §15.6 — the v2 workspace-aware `team.create` port (the
- *  production async mirror of the frozen `RemoteTeamCreateV2Port`).
+ *  production async mirror of the frozen `RemoteTeamCreateWorkspacePort`).
  *  CREATE-ONLY: it never carries initial work (that travels the v2-only
  *  `team.admitInitialWork` command, {@link S6RemoteTeamAdmitInitialWorkPort},
  *  after the root is open). Typed failures raised here (the closed
  *  `TEAM_CREATE_WORKSPACE_*` codes) pass through the dispatcher unchanged
  *  (the closed backing vocabulary, invariant 4b). */
-export interface S6RemoteTeamCreateV2Port {
+export interface S6RemoteTeamCreateWorkspacePort {
   /**
    * Bind a fresh root (or rehydrate a cold root) for the requested
    * blueprint. When `workspace` is present it is resolved through the
@@ -654,14 +683,14 @@ export interface S6RemoteLegacyPort {
 }
 
 /** The sixteen production ports (the frozen twelve + the T12-V16 messaging
- *  coordinator port + the two TCM vNext §15.6 team-create v2 ports + the
+ *  coordinator port + the two TCM vNext §15.6 create-flavor ports + the
  *  D1 remote-contract-v3 `team.listRoots` port). */
 export interface S6RemotePorts {
   readonly catalog: S6RemoteCatalogPort
   readonly intent: S6RemoteIntentPort
-  readonly teamCreate: S6RemoteTeamCreatePort
+  readonly teamCreateEmbeddedWork: S6RemoteTeamCreateEmbeddedWorkPort
   /** TCM vNext §15.6 (G1) — the v2 workspace-aware `team.create` port. */
-  readonly teamCreateV2: S6RemoteTeamCreateV2Port
+  readonly teamCreateWorkspace: S6RemoteTeamCreateWorkspacePort
   /** TCM vNext §15.6 (G1) — the v2-only `team.admitInitialWork` port. */
   readonly teamAdmitInitialWork: S6RemoteTeamAdmitInitialWorkPort
   /** D1 (Team D1-D6 repair v2, remote contract v3) — the v3-only
@@ -1933,9 +1962,16 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
   /**
    * TCM vNext §15.8 (G1) — the gate blueprint of the TARGET team (the v2
    * `team.admitInitialWork` is team-scoped: the created team already
-   * exists): the durable TeamSession's bound snapshot ref resolved
-   * through the catalog. A content hash the catalog cannot reproduce is
-   * the existing typed blueprint mismatch (fail-closed before the gate).
+   * exists): the durable TeamSession's bound snapshot ref resolved under
+   * the same three-case bound-Blueprint contract as the production
+   * resolver (bound-blueprint.ts): a missing row fails closed typed; a
+   * no-ref pre-repair legacy row resolves to the row anchor BY
+   * DEFINITION (the documented legacy binding — legacy rows predate
+   * per-team binding, so the anchor IS their bound blueprint, not a
+   * fallback to a different one); a bound ref resolves through the
+   * catalog, and a content hash the catalog cannot reproduce is the
+   * existing typed blueprint mismatch (fail-closed before the gate —
+   * the anchor is NEVER consulted for a bound ref).
    */
   function resolveTargetBlueprint(rootSessionId: string): TeamBlueprint {
     const row = repositories.teamSessions.get(rootSessionId)
@@ -1948,6 +1984,12 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
       )
     }
     const snapshot = row.blueprint
+    if (snapshot === undefined) {
+      // No-ref pre-repair legacy row: its bound blueprint is the row
+      // anchor BY DEFINITION (case 2 of the three-case contract — the
+      // documented legacy binding, not a boot fallback).
+      return blueprint
+    }
     const resolved = resolveBlueprint(String(snapshot.blueprintId), Number(snapshot.revision))
     if (String(resolved.contentHash) !== String(snapshot.contentHash)) {
       throw new TeamPluginError(
@@ -2049,8 +2091,8 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
       },
     },
 
-    // --- 3/12 teamCreate: the root binding (fresh or cold), v1 -----------------------
-    teamCreate: {
+    // --- 3/12 teamCreateEmbeddedWork: the root binding (fresh or cold), v1 -----------------------
+    teamCreateEmbeddedWork: {
       async create(
         requestedRootSessionId: string,
         blueprintId: string,
@@ -2192,7 +2234,7 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
     },
 
     // --- TCM vNext §15.6 (G1): the v2 workspace-aware team.create ---------------------
-    teamCreateV2: {
+    teamCreateWorkspace: {
       async create(
         requestedRootSessionId: string,
         blueprintId: string,
@@ -2677,11 +2719,22 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // the durable commit BEFORE the ack. The record id is minted
         // server-side by the service (the remote contract carries NO
         // client-supplied record id).
+        // pre-alpha3 W1 fix-A (F10): the optional client-supplied
+        // expectedGeneration (remote contract v7) is forwarded VERBATIM
+        // into the service's optimistic guard (ABSENT = legacy, no
+        // conflict check — the conditional spread keeps the field
+        // structurally absent, so the service sees exactly the
+        // pre-v7 call shape; PRESENT = the stale-UI overwrite the shared
+        // Team chain alone does not catch → typed
+        // OVERRIDE_GENERATION_CONFLICT, zero write).
         const result = await options.governance.setOverride({
           authority,
           rootSessionId: root,
           scope,
           ...(instanceId !== undefined ? { instanceId } : {}),
+          ...(request.expectedGeneration !== undefined
+            ? { expectedGeneration: request.expectedGeneration }
+            : {}),
           cells: { [request.capability]: request.value as unknown as PolicyEntry },
         })
         // Both branches report the slot state as an override record: a
@@ -2721,11 +2774,20 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // closed), the generation guard applies, and the reset is a
         // higher-generation TOMBSTONE re-issue (never a storage delete —
         // audit-preserving), committed durably BEFORE the ack.
+        // pre-alpha3 W1 fix-A (F10): the optional client-supplied
+        // expectedGeneration (remote contract v7) is forwarded VERBATIM
+        // into the service's optimistic guard (ABSENT = legacy, no
+        // conflict check; PRESENT = typed
+        // OVERRIDE_GENERATION_CONFLICT with zero write on a stale
+        // winner — the same stale-UI overwrite class as override.set).
         const result = await options.governance.resetOverride({
           authority,
           rootSessionId: root,
           scope,
           ...(instanceId !== undefined ? { instanceId } : {}),
+          ...(request.expectedGeneration !== undefined
+            ? { expectedGeneration: request.expectedGeneration }
+            : {}),
         })
         return { removed: result.removed }
       },
@@ -2748,9 +2810,23 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // S7R2-result.md). The A31 rejection semantics are untouched: an
         // out-of-closed-set target still fails POLICY_STATE_UNKNOWN and a
         // member actor still fails UNAUTHORIZED_TRANSITION (switchState).
+        // pre-alpha3 W1 fix-A (F11): the closed set is the ADDRESSED
+        // team's bound Blueprint — the durable TeamSession's bound
+        // snapshot resolved under the production three-case contract
+        // (bound-blueprint.ts, the SAME per-root authority the
+        // Governance service's closed-set check resolves against): a
+        // BOUND ref NEVER consults the host boot Blueprint (on a
+        // multi-team host the boot team's policyStates are not the
+        // addressed team's — the Remote precheck world must equal the
+        // Governance world); an unresolvable ref / a content hash the
+        // catalog cannot reproduce fails closed typed (the
+        // resolveTargetBlueprint vocabulary); a no-ref pre-repair
+        // legacy row IS the row anchor by definition (the documented
+        // legacy binding, not a fallback to a different blueprint).
+        const bound = resolveTargetBlueprint(root)
         const closedStates = new Set<string>([
           DEFAULT_POLICY_STATE_ID,
-          ...blueprint.policyStates.map((state) => state.id),
+          ...bound.policyStates.map((state) => state.id),
         ])
         const availableTransitions = [...closedStates].filter(
           (stateId) => stateId !== view.stateId,
@@ -2767,21 +2843,39 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         const root = assertBoundRoot('policyState.set', request.teamSessionId)
         const target = request.target
         const stateId = target['stateId']
-        const closed = new Set<string>([DEFAULT_POLICY_STATE_ID, ...blueprint.policyStates.map((state) => state.id)])
-        if (typeof stateId !== 'string' || !closed.has(stateId)) {
+        // pre-alpha3 W1 fix-A (F11): the Remote performs SHAPE validation
+        // ONLY here — the frozen param parser already closed the record
+        // shape (`stateId` string + the `cells` record), and this port
+        // re-asserts the string against direct port callers. The SEMANTIC
+        // closed-set check is the Governance service's authority,
+        // resolved per root against the ADDRESSED team's bound Blueprint
+        // (the durable TeamSession's bound snapshot — the S6 service
+        // deps' per-root policyStates) under the production three-case
+        // contract (bound-blueprint.ts): a BOUND ref NEVER consults the
+        // host boot Blueprint — on a multi-team host a boot-Blueprint
+        // precheck world would DISAGREE with the Governance world (an
+        // addressed-legal state absent from the boot team's policyStates
+        // rejected at the wire, a boot-legal state outside the addressed
+        // team accepted at the wire); a no-ref pre-repair legacy row IS
+        // the row anchor by definition (the documented legacy binding,
+        // not a fallback to a different blueprint). An unknown state now
+        // surfaces as the service's typed POLICY_STATE_UNKNOWN (a closed
+        // backing code — dispatcher invariant 4b pass-through); a bound
+        // ref the authority cannot reproduce surfaces as the service's
+        // typed POLICY_STATE_SNAPSHOT_MISMATCH (same pass-through).
+        if (typeof stateId !== 'string') {
           throw new TeamPluginError(
             S6_REMOTE_ERROR_CODES.POLICY_STATE_UNKNOWN,
-            `policyState.set names state '${String(stateId)}' which is outside the bound blueprint's closed set (${[...closed].join(', ')})`,
-            { reason: 'unknown-state', stateId: String(stateId) },
+            `policyState.set target carries a non-string stateId (${String(stateId)})`,
+            { reason: 'malformed-state', stateId: String(stateId) },
           )
         }
         // pre-alpha3 PR-A (ADR-03): the switch flows through the SINGLE
-        // governance mutation authority — the closed-set check above
-        // keeps the wire code (TEAM_REMOTE_POLICY_STATE_UNKNOWN), the
-        // service re-checks it (defense in depth for the other callers),
-        // a self-transition is a typed no-op, and the durable ledger row
-        // is committed BEFORE the ack (the R2-1 fire-and-schedule window
-        // is closed).
+        // governance mutation authority — the service's closed-set check
+        // (per the ADDRESSED root's bound Blueprint, F11) keeps the typed
+        // wire code, a self-transition is a typed no-op, and the durable
+        // ledger row is committed BEFORE the ack (the R2-1 fire-and-
+        // schedule window is closed).
         const result = await options.governance.switchPolicyState({
           actor: actorOf(caller, root, leaderInstanceId),
           rootSessionId: root,
@@ -2976,24 +3070,28 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
       ((method: string, params: RemoteMethodParams, envelope: RemoteRequest): Promise<RemoteHandlerOutcome> => {
         switch (method) {
           case 'team.create': {
-            // TCM vNext §15.3/§15.6 (G1) — the shared parser already
-            // validated the closed field set per version: v1 (the optional
-            // `initialWork`) vs v2 (the optional `workspace`, NO initial
-            // work). Route by the envelope version.
-            if (envelope.version === 2) {
-              const v2CreateParams = params as RemoteTeamCreateParamsV2
+            // pre-alpha3 PR-F (plan §F.3) — the shared parser already
+            // validated the closed field set per wire version; the
+            // ENVELOPE version is translated to the SEMANTIC create flavor
+            // by the contracts semantic adapter (the only version branch
+            // in the wire surface), and this handler routes on the flavor:
+            // embedded-work (the optional `initialWork`) vs workspace
+            // (the optional `workspace`, NO initial work).
+            const flavor = teamCreateFlavorOf(envelope.version)
+            if (flavor === TEAM_CREATE_FLAVORS.workspace) {
+              const workspaceCreateParams = params as RemoteTeamCreateParamsV2
               return ports
-                .teamCreateV2.create(
-                  v2CreateParams.rootSessionId,
-                  v2CreateParams.blueprintId,
-                  v2CreateParams.blueprintRevision,
-                  v2CreateParams.workspace,
+                .teamCreateWorkspace.create(
+                  workspaceCreateParams.rootSessionId,
+                  workspaceCreateParams.blueprintId,
+                  workspaceCreateParams.blueprintRevision,
+                  workspaceCreateParams.workspace,
                 )
                 .then((created) => ({ data: { path: created['path'], durable: created['durable'], bind: created['bind'] } }))
             }
             const createParams = params as RemoteTeamCreateParams
             return ports
-              .teamCreate.create(
+              .teamCreateEmbeddedWork.create(
                 createParams.rootSessionId,
                 createParams.blueprintId,
                 createParams.blueprintRevision,
@@ -3104,13 +3202,18 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
             return ports.projection.project(projectionParams.teamSessionId).then((raw) => {
               const projection = normalizeS6Projection(raw)
               const generation = projection['generation']
-              // team-view-sync-complete (remote contract v6): the v6
-              // freshness pair — the SAME durable projection plus the
+              // pre-alpha3 PR-F (plan §F.3) — the ENVELOPE version is
+              // translated to the SEMANTIC projection shape by the
+              // contracts semantic adapter (the only version branch in the
+              // wire surface); this handler branches on the shape. The
+              // `live` shape = the SAME durable projection plus the
               // `durableGeneration` (=== the durable generation) and the
-              // `liveToken` (the deterministic semantic-live-state
-              // token — frozen decisions 3 + 4) INSIDE data.projection.
-              // v1–v5 stay byte-identical (the frozen shape — no v6
-              // fields).
+              // `liveToken` (the deterministic semantic-live-state token —
+              // frozen decisions 3 + 4) INSIDE data.projection, applied
+              // through the SHARED wire application
+              // `withLiveProjectionFreshness` (one definition, both
+              // dispatchers). Every other wire version stays byte-identical
+              // (the frozen `base` shape — no live fields).
               //
               // PR #35 second follow-up P0-2 (same-snapshot): the token is
               // computed FROM THIS projection's already-materialized
@@ -3118,22 +3221,18 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
               // read exactly once) via the pure
               // `computeLiveTokenFromProjectedMembers` helper — the frame
               // and the token can NEVER come from two different live
-              // snapshots, and no second live read happens on the v6 path.
-              // The token is a pure function of the served frame's own
-              // `members[].liveActivity` cells (recomputing it from a
+              // snapshots, and no second live read happens on the `live`
+              // path. The token is a pure function of the served frame's
+              // own `members[].liveActivity` cells (recomputing it from a
               // received frame reproduces the served token — the client
               // same-snapshot check).
-              if (envelope.version >= 6) {
+              if (projectionShapeOf(envelope.version) === PROJECTION_SHAPES.live) {
                 const liveTokenValue = computeLiveTokenFromProjectedMembers(
                   projection['members'] as unknown as readonly ProjectedLiveMember[],
                 )
                 return {
                   data: {
-                    projection: {
-                      ...projection,
-                      durableGeneration: generation,
-                      liveToken: liveTokenValue,
-                    },
+                    projection: withLiveProjectionFreshness(projection, liveTokenValue),
                   },
                   projectionGeneration: generation,
                 }
@@ -3303,7 +3402,12 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
               .then((override) => ({ data: { override } }))
           }
           case 'override.set': {
-            const setParams = params as RemoteOverrideSetParams
+            // pre-alpha3 W1 fix-A (F10): the V7 param type — the closed
+            // set parsed for this request's declared version (v1–v6
+            // carry no expectedGeneration; v7 carries the optional
+            // slot-guard, forwarded VERBATIM below; ABSENT stays
+            // structurally absent = legacy, no conflict check).
+            const setParams = params as RemoteOverrideSetParamsV7
             const request: S6RemoteOverrideSetRequest = {
               teamSessionId: setParams.teamSessionId,
               capability: setParams.capability,
@@ -3313,13 +3417,18 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
               ...(setParams.targetInstanceId !== undefined
                 ? { targetInstanceId: setParams.targetInstanceId }
                 : {}),
+              ...(setParams.expectedGeneration !== undefined
+                ? { expectedGeneration: setParams.expectedGeneration }
+                : {}),
             }
             return Promise.resolve(
               principal({ method, request: envelope }),
             ).then((caller) => ports.override.set(request, caller)).then((result) => ({ data: result }))
           }
           case 'override.reset': {
-            const resetParams = params as RemoteOverrideResetParams
+            // pre-alpha3 W1 fix-A (F10): the V7 param type — see
+            // override.set above (ABSENT = legacy, no conflict check).
+            const resetParams = params as RemoteOverrideResetParamsV7
             const request: S6RemoteOverrideResetRequest = {
               teamSessionId: resetParams.teamSessionId,
               capability: resetParams.capability,
@@ -3327,6 +3436,9 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
               ...(resetParams.scope !== undefined ? { scope: resetParams.scope } : {}),
               ...(resetParams.targetInstanceId !== undefined
                 ? { targetInstanceId: resetParams.targetInstanceId }
+                : {}),
+              ...(resetParams.expectedGeneration !== undefined
+                ? { expectedGeneration: resetParams.expectedGeneration }
                 : {}),
             }
             return Promise.resolve(

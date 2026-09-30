@@ -22,6 +22,7 @@ import {
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
   REMOTE_CONTRACT_VERSION_V6,
+  REMOTE_CONTRACT_VERSION_V7,
 } from '../src/index.js'
 import type {
   RemoteAdmissionPort,
@@ -43,8 +44,8 @@ import type {
   RemoteSafeJsonValue,
   RemoteSafeRecord,
   RemoteSuccessResult,
-  RemoteTeamCreatePort,
-  RemoteTeamCreateV2Port,
+  RemoteTeamCreateEmbeddedWorkPort,
+  RemoteTeamCreateWorkspacePort,
   RemoteTeamAdmitInitialWorkPort,
   RemoteTeamRootsPort,
   RemoteTeamEnsureRootLivePort,
@@ -261,7 +262,7 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     },
   }
 
-  const teamCreate: RemoteTeamCreatePort = {
+  const teamCreateEmbeddedWork: RemoteTeamCreateEmbeddedWorkPort = {
     create(rootSessionId, blueprintId, blueprintRevision) {
       calls.push('team.create')
       return {
@@ -276,7 +277,7 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     },
   }
 
-  const teamCreateV2: RemoteTeamCreateV2Port = {
+  const teamCreateWorkspace: RemoteTeamCreateWorkspacePort = {
     create(rootSessionId, blueprintId, blueprintRevision, workspace) {
       calls.push('team.create.v2')
       return {
@@ -409,7 +410,7 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     // projection result, one token; the fake world has no live overlay,
     // so a fixed `lt-v1-*` string stands in for the deterministic
     // semantic token).
-    projectV6(teamSessionId) {
+    projectLive(teamSessionId) {
       calls.push('team.getProjection.v6')
       return {
         projection: { ...P8T3_PROJECTION, teamSessionId },
@@ -552,8 +553,8 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
   const ports: P8T3FakePorts = {
     catalog,
     intent,
-    teamCreate,
-    teamCreateV2,
+    teamCreateEmbeddedWork,
+    teamCreateWorkspace,
     teamAdmitInitialWork,
     teamRoots,
     teamEnsureRootLive,
@@ -622,6 +623,12 @@ export function p8t3WireV5(params: Record<string, unknown>): Record<string, unkn
 /** One wire request envelope of contract v6 (team-view-sync-complete). */
 export function p8t3WireV6(params: Record<string, unknown>): Record<string, unknown> {
   return { version: REMOTE_CONTRACT_VERSION_V6, params }
+}
+
+/** One wire request envelope of contract v7 (pre-alpha3 W1 fix-A, F10:
+ *  the version-aware override.set / override.reset closed sets). */
+export function p8t3WireV7(params: Record<string, unknown>): Record<string, unknown> {
+  return { version: REMOTE_CONTRACT_VERSION_V7, params }
 }
 
 /** Assert a success result and return it (narrows the union). */

@@ -33,7 +33,16 @@
   * - `POLICY_STATE_UNKNOWN` — pre-alpha3 PR-A: a PolicyState transition
   *   target outside the bound blueprint’s closed state set (the service-
   *   level typed rejection; the remote plane keeps its own
-  *   `TEAM_REMOTE_POLICY_STATE_UNKNOWN` wire code).
+  *   `TEAM_REMOTE_POLICY_STATE_UNKNOWN` wire code);
+  * - `POLICY_STATE_SNAPSHOT_MISMATCH` — pre-alpha3 W1a (review round 2):
+  *   the addressed team's bound Blueprint cannot be resolved (its bound
+  *   snapshot ref's content hash the Blueprint authority cannot
+  *   reproduce — the raw authority `TEAM_BLUEPRINT_SNAPSHOT_MISMATCH`
+  *   mapped at the governance service boundary, which is the ONLY
+  *   service-level mapping: the raw code is not a closed wire code and
+  *   would degrade to an untyped `internal-error` on the wire; an
+  *   UNRESOLVABLE ref identity keeps the authority's closed
+  *   `MALFORMED_DTO` `blueprint-not-found` typed failure as-is).
  * @module @dsh-agent-team/runtime/mutation/errors
  */
 import { POLICY_ERROR_CODES } from '../../domain/policy/src/index.js';
@@ -106,6 +115,20 @@ export const MUTATION_ERROR_CODES = {
      * typed rejection for every other caller of the governance authority.
      */
     POLICY_STATE_UNKNOWN: 'POLICY_STATE_UNKNOWN',
+    /**
+     * pre-alpha3 W1a (review round 2): the bound Blueprint of the addressed
+     * team cannot be RESOLVED — its durable TeamSession's bound snapshot
+     * ref is present but the Blueprint authority cannot reproduce its
+     * content hash (the raw authority `TEAM_BLUEPRINT_SNAPSHOT_MISMATCH`,
+     * mapped here at the service boundary so the wire carries a closed
+     * typed code with `reason: 'snapshot-mismatch'`). Distinct from
+     * `POLICY_STATE_UNKNOWN` (a well-formed ref whose target state is
+     * outside the resolved closed set) and from an UNRESOLVABLE ref
+     * identity (which keeps the authority's `MALFORMED_DTO`
+     * `blueprint-not-found` typed failure — it is already a closed wire
+     * code). The switch fails BEFORE any commit (zero write).
+     */
+    POLICY_STATE_SNAPSHOT_MISMATCH: 'POLICY_STATE_SNAPSHOT_MISMATCH',
 };
 /** Every code value, in declaration order (deterministic). */
 export const MUTATION_ERROR_CODE_VALUES = [
@@ -121,6 +144,7 @@ export const MUTATION_ERROR_CODE_VALUES = [
     MUTATION_ERROR_CODES.OVERRIDE_GENERATION_CONFLICT,
     MUTATION_ERROR_CODES.UNAUTHORIZED_MUTATION,
     MUTATION_ERROR_CODES.POLICY_STATE_UNKNOWN,
+    MUTATION_ERROR_CODES.POLICY_STATE_SNAPSHOT_MISMATCH,
 ];
 /**
  * The typed error thrown by the mutation service for every mutation-plane
@@ -140,7 +164,13 @@ export class MutationError extends Error {
      * unknown instance), `field` + `state` (the creation-field rule
      * violated), `actor` (the unauthorized transition source), `recordId`
      * (the conflicting / admitted override identity), `expectedGeneration` /
-     * `actualGeneration` (the optimistic generation mismatch).
+     * `actualGeneration` (the optimistic generation mismatch), `reason`
+     * (`unknown-state` for POLICY_STATE_UNKNOWN; `snapshot-mismatch` for
+     * POLICY_STATE_SNAPSHOT_MISMATCH), `stateId` + `closedStates` (the
+     * out-of-closed-set target + the resolved closed set),
+     * `blueprintId` / `revision` (the bound ref that failed),
+     * `expectedContentHash` / `foundContentHash` (the hash the bound ref
+     * carries vs the hash the authority reproduces).
      */
     details;
     constructor(code, message, details) {

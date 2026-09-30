@@ -1,5 +1,5 @@
 /**
- * F9 (F3/F11/F9/T1.4 repair round r1) — the `teamResolveControlV4`
+ * F9 (F3/F11/F9/T1.4 repair round r1) — the `resolveControl`
  * client wrapper: the ONLY wrapper that stamps contract version **4**
  * (U1: the single F9 v4 bump; the v1 constant stays 1 and every v1-v3
  * wrapper keeps the frozen wire behavior).
@@ -90,7 +90,7 @@ const allowScenario = await (async () => {
   const { carrier, calls } = makeCarrier(() => success)
   const client = createTeamRemoteClient(carrier)
   const result = await capture(() =>
-    client.teamResolveControlV4({
+    client.resolveControl({
       teamSessionId: 't1',
       requestId: 'ctrl-f9-0001',
       decision: 'allow',
@@ -113,7 +113,7 @@ const denyScenario = await (async () => {
   )
   const { carrier, calls } = makeCarrier(() => success)
   const client = createTeamRemoteClient(carrier)
-  await client.teamResolveControlV4({
+  await client.resolveControl({
     teamSessionId: 't1',
     requestId: 'ctrl-f9-0002',
     decision: 'deny',
@@ -137,7 +137,7 @@ const typedErrorScenario = await (async () => {
   const { carrier, calls } = makeCarrier(() => envelope)
   const client = createTeamRemoteClient(carrier)
   const result = await capture(() =>
-    client.teamResolveControlV4({
+    client.resolveControl({
       teamSessionId: 't1',
       requestId: 'ctrl-f9-0001',
       decision: 'deny',
@@ -155,7 +155,7 @@ const carrierRejectScenario = await (async () => {
   }
   const client = createTeamRemoteClient(carrier)
   const result = await capture(() =>
-    client.teamResolveControlV4({
+    client.resolveControl({
       teamSessionId: 't1',
       requestId: 'ctrl-f9-0001',
       decision: 'allow',
@@ -168,7 +168,7 @@ const carrierRejectScenario = await (async () => {
 // Synchronous assertions on the captured scenarios
 // ---------------------------------------------------------------------------
 
-describe('F9 — teamResolveControlV4 (the v4-only human control surface)', () => {
+describe('F9 — resolveControl (the v4-only human control surface)', () => {
   it('stamps contract version 4 on team.resolveControl over the frozen channel (allow + note verbatim)', () => {
     expect(allowScenario.calls.length).toBe(1)
     expect(allowScenario.calls[0]?.channel).toBe(REMOTE_RPC_CHANNEL)

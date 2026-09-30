@@ -1,0 +1,14 @@
+{
+  "toolOutcome": {
+    "status": "rejected",
+    "code": "TEAM_RUNTIME_DURABLE_WRITE_FAILED",
+    "message": "activation: child-session creation failed for member 'inst-0ppv3vc1y6rp': PermissionCoverageUnmanagedError: permission coverage gate failed for instance 'inst-0ppv3vc1y6rp': 19 unmanaged tool(s) on the final model-facing surface: ask_user_question (unknown-unmanaged), create_goal (unknown-unmanaged), exit_plan_mode (unknown-unmanaged), get_goal (unknown-unmanaged), glob (known-sensitive-unmanaged), grep (known-sensitive-unmanaged), interrupt_agent (known-sensitive-unmanaged), job_kill (known-sensitive-unmanaged), job_list (known-sensitive-unmanaged), job_output (known-sensitive-unmanaged), list_agents (known-sensitive-unmanaged), present (unknown-unmanaged), send_message (known-sensitive-unmanaged), skill (unknown-unmanaged), subagent_fork (known-sensitive-unmanaged), update_goal (unknown-unmanaged), web_fetch (known-sensitive-unmanaged), web_search (known-sensitive-unmanaged), workflow (known-sensitive-unmanaged) (code: alpha2-permission-coverage-unmanaged-tools)",
+    "details": {
+      "source": "activation-provider",
+      "providerCode": "ACTIVATION_CHILD_SESSION_CREATION_FAILED",
+      "rootSessionId": "session-prf-subagent-prf-2026-09-30T05-58-47",
+      "instanceId": "inst-0ppv3vc1y6rp"
+    }
+  },
+  "subInstances": 0
+}

@@ -1,0 +1,9 @@
+{
+  "head": "1bf9f6c9c4d3f14a25e07ce7006b7fa4988ac3ed",
+  "headSource": "git",
+  "status": "M  packages/client/composition-shim/client-bundle.js\nM  packages/client/src/plugin/team-mount-core.ts\nM  packages/client/src/state/team-projection-store.ts\nM  packages/client/src/transport/team-remote-client.ts\nM  packages/client/test/team-command-flow.test.ts\nM  packages/client/test/team-projection-store-v6.test.ts\nM  packages/client/test/team-projection-store.test.ts\n?? dev/agent-workflow/evidence/f15-mcp-live-loss/f15-2026-09-30-07-05-00/\n",
+  "statusEmpty": false,
+  "diff": "",
+  "diffEmpty": true,
+  "errors": []
+}

@@ -102,8 +102,8 @@ interface EntryFace {
   listCatalog: () => Promise<RemoteResponse>
   getCatalog: (params: RemoteCatalogGetParams) => Promise<RemoteResponse>
   probeCompatibility: (params: RemoteIntentProbeParams) => Promise<RemoteResponse>
-  teamCreateV2: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
-  teamAdmitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
+  teamCreate: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
+  teamAdmitInitialWork: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
   openCreatedSession: (sessionId: string) => Promise<void>
   /** D4-A1: the post-mutation projection refresh (the overlay panel's success lane). */
   pullProjection: (teamSessionId: string) => Promise<ProjectionSyncAssessment>
@@ -116,8 +116,8 @@ function makeFace(overrides: Partial<EntryFace> = {}): EntryFace {
     listCatalog: vi.fn(() => Promise.resolve(okResponse(CATALOG_DATA, 'catalog.list'))),
     getCatalog: vi.fn(() => Promise.resolve(okResponse(DETAIL_DATA, 'catalog.get'))),
     probeCompatibility: vi.fn(() => Promise.resolve(okResponse(OPEN_DATA, 'intent.probe'))),
-    teamCreateV2: vi.fn(() => Promise.resolve(okResponse({ path: 'ts-1', durable: true, bind: {} }, 'team.create'))),
-    teamAdmitInitialWorkV2: vi.fn(() => Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))),
+    teamCreate: vi.fn(() => Promise.resolve(okResponse({ path: 'ts-1', durable: true, bind: {} }, 'team.create'))),
+    teamAdmitInitialWork: vi.fn(() => Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))),
     openCreatedSession: vi.fn(() => Promise.resolve()),
     // D4-A1: the post-mutation pull (the overlay create-success lane).
     pullProjection: vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const)),
@@ -174,8 +174,8 @@ function entryProps(
     listCatalog: face.listCatalog,
     getCatalog: face.getCatalog,
     probeCompatibility: face.probeCompatibility,
-    teamCreateV2: face.teamCreateV2,
-    teamAdmitInitialWorkV2: face.teamAdmitInitialWorkV2,
+    teamCreate: face.teamCreate,
+    teamAdmitInitialWork: face.teamAdmitInitialWork,
     openCreatedSession: face.openCreatedSession,
     pullProjection: face.pullProjection,
     listAgentPresets: face.listAgentPresets,
@@ -281,11 +281,11 @@ describe('NewTeamEntry (sidebar.footer.action)', () => {
   })
 
   it('a successful create-only (no initial work) closes the overlay once the creation-path open lands on the minted root (UI §4.3 order; TCM M4 two-stage v2)', async () => {
-    const teamCreateV2Mock = vi.fn(
+    const teamCreateMock = vi.fn(
       (_params: RemoteTeamCreateParamsV2): Promise<RemoteResponse> =>
         Promise.resolve(okResponse({ path: 'ts-1', durable: true, bind: {} }, 'team.create')),
     )
-    const face = makeFace({ teamCreateV2: teamCreateV2Mock })
+    const face = makeFace({ teamCreate: teamCreateMock })
     const view = render(<NewTeamEntry {...entryProps(true, face)} />)
     fireEvent.click(entryButton(view.container))
     await vi.waitFor(() => {
@@ -307,21 +307,21 @@ describe('NewTeamEntry (sidebar.footer.action)', () => {
     // on that id (the host mints the session + starts the leader), then
     // the creation-path open of the SAME id — and the overlay closes as
     // soon as that open resolves (no initial work: create + open only).
-    expect(face.teamCreateV2).toHaveBeenCalledTimes(1)
-    const createParams = teamCreateV2Mock.mock.calls[0]![0]!
+    expect(face.teamCreate).toHaveBeenCalledTimes(1)
+    const createParams = teamCreateMock.mock.calls[0]![0]!
     expect(typeof createParams.rootSessionId).toBe('string')
     expect(createParams.rootSessionId.startsWith('session-')).toBe(true)
     expect('initialWork' in createParams).toBe(false)
     expect(face.openCreatedSession).toHaveBeenCalledWith(createParams.rootSessionId)
     // No work was pending: the admit never ran.
-    expect(face.teamAdmitInitialWorkV2).toHaveBeenCalledTimes(0)
+    expect(face.teamAdmitInitialWork).toHaveBeenCalledTimes(0)
     expect(view.container.querySelector('[data-new-team-overlay]')).toBeNull()
   })
 
   it('a successful two-stage create (with initial work) keeps the overlay open until the DEFERRED admit settles (plan §7 minimum UI constraint)', async () => {
     const admitted = deferred<RemoteResponse>()
     const face = makeFace({
-      teamAdmitInitialWorkV2: vi.fn(
+      teamAdmitInitialWork: vi.fn(
         (_params: RemoteTeamAdmitInitialWorkParams): Promise<RemoteResponse> => admitted.promise,
       ),
     })
@@ -346,7 +346,7 @@ describe('NewTeamEntry (sidebar.footer.action)', () => {
     await vi.waitFor(() => {
       expect(face.openCreatedSession).toHaveBeenCalledTimes(1)
     })
-    expect(face.teamCreateV2).toHaveBeenCalledTimes(1)
+    expect(face.teamCreate).toHaveBeenCalledTimes(1)
     // …but the overlay stays MOUNTED on the opened Root while the deferred
     // admit is still in flight (no close-on-open anymore).
     expect(view.container.querySelector('[data-new-team-overlay]')).not.toBeNull()
@@ -370,7 +370,7 @@ describe('NewTeamEntry (sidebar.footer.action)', () => {
           : admitted.promise
       },
     )
-    const face = makeFace({ teamAdmitInitialWorkV2: admitMock })
+    const face = makeFace({ teamAdmitInitialWork: admitMock })
     const view = render(<NewTeamEntry {...entryProps(true, face)} />)
     fireEvent.click(entryButton(view.container))
     await vi.waitFor(() => {
@@ -403,9 +403,9 @@ describe('NewTeamEntry (sidebar.footer.action)', () => {
     // no re-open).
     fireEvent.click(view.container.querySelector('[data-intent-retry]')!)
     await vi.waitFor(() => {
-      expect(face.teamAdmitInitialWorkV2).toHaveBeenCalledTimes(2)
+      expect(face.teamAdmitInitialWork).toHaveBeenCalledTimes(2)
     })
-    expect(face.teamCreateV2).toHaveBeenCalledTimes(1)
+    expect(face.teamCreate).toHaveBeenCalledTimes(1)
     expect(face.openCreatedSession).toHaveBeenCalledTimes(1)
     expect(admitMock.mock.calls[1]![0]).toEqual(admitMock.mock.calls[0]![0])
     await act(async () => {

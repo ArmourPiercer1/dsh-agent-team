@@ -1,0 +1,49 @@
+# p6t1-parallel A/B — DATASET 3B, run 05 (TREE: base)
+# WORKTREE: /home/user/dsh-plugins/dsh-agent-team/.worktrees/p6t1-ab-ds3b-base
+# HEAD: 0a0a19a603db7ef5c560a05895835462372f5910
+# CMD: pnpm exec vitest run packages/runtime/test/p6t1-parallel.test.ts
+# START: 2026-09-30T06:02:24Z
+# NOTE: scratch worktree RECREATED @ 0a0a19a6 per the parent ruling (dataset-3b; branch (iii) combined path); node_modules = cp -a from the PR-F worktree (pnpm-lock.yaml + package.json byte-identical across 0a0a19a6/3b7039e8, disclosed); ASYMMETRIC by design: base-only x10 testing the base occurrence rate of the unexonerated P2 signature (the folded rate is already recorded ~3/~30)
+────────────────────────────────────────────────────────────
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/p6t1-ab-ds3b-base
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (9 tests | 1 failed) 7ms
+     ✓ two activated results with distinct instance ids and child Sessions 1ms
+     ✓ two COMMITTED operations, two members, two distinct child Sessions 0ms
+     × five activated results, five COMMITTED operations, five members, five child Sessions 3ms
+     ✓ exactly two activations succeed 0ms
+     ✓ exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     ✓ the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 0ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions
+AssertionError: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:193:31
+    191| describe('P6-T1 P2: N=5 same-template parallel activations all succeed…
+    192|   it('five activated results, five COMMITTED operations, five members,…
+    193|     expect(p2?.errors.length).toBe(0)
+       |                               ^
+    194|     expect(p2?.results.length).toBe(5)
+    195|     if (p2 === undefined) throw new Error('P2: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  14:02:24
+   Duration  616ms (transform 362ms, setup 0ms, import 526ms, tests 7ms, environment 0ms)
+
+# EXIT: 1

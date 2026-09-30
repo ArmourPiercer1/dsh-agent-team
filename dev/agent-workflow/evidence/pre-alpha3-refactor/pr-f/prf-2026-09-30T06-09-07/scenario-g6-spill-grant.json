@@ -1,0 +1,17 @@
+{
+  "create": "ok",
+  "settleMs": 3,
+  "grant": {
+    "instanceId": "inst-leader",
+    "locator": "/tmp/dsh-subprocess-hJ5bdU/dsh-subprocess-231-1-d563d8469b54-stdout.log",
+    "schemaVersion": 1,
+    "source": {
+      "callId": "call-prf-7cf33c48",
+      "kind": "shell-foreground",
+      "stream": "stdout",
+      "toolName": "bash"
+    },
+    "targetKeyDigest": "sha256:416441ebc2809d8f5923c3e18d0dbbc177343f400e7830aff4829adfe863748e",
+    "versionDigest": "sha256:819b2149abe26f4c856fca41b18ae8d8a503a2238e2fd2b43325ed76a89053cf"
+  }
+}

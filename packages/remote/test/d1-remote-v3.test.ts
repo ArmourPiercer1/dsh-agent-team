@@ -52,6 +52,7 @@ import {
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
   REMOTE_CONTRACT_VERSION_V6,
+  REMOTE_CONTRACT_VERSION_V7,
   REMOTE_CONTRACT_ERROR_CODES,
   REMOTE_METHOD_NAMES,
   REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS,
@@ -262,14 +263,15 @@ describe('D1 (remote contract v3): catalog facts', () => {
     expect(REMOTE_METHOD_NAMES.length - REMOTE_V2_ONLY_METHODS.length - REMOTE_V3_ONLY_METHODS.length - REMOTE_V4_ONLY_METHODS.length - REMOTE_V5_ONLY_METHODS.length - REMOTE_V6_ONLY_METHODS.length).toBe(23)
   })
 
-  it('the v1 baseline constant is still 1 and the supported set is [1, 2, 3, 4, 5, 6] (the team-view-sync-complete v6 bump)', () => {
+  it('the v1 baseline constant is still 1 and the supported set is [1, 2, 3, 4, 5, 6, 7] (the team-view-sync-complete v6 bump + the pre-alpha3 W1 fix-A v7 bump, which adds NO method)', () => {
     expect(REMOTE_CONTRACT_VERSION).toBe(1)
     expect(REMOTE_CONTRACT_VERSION_V2).toBe(2)
     expect(REMOTE_CONTRACT_VERSION_V3).toBe(3)
     expect(REMOTE_CONTRACT_VERSION_V4).toBe(4)
     expect(REMOTE_CONTRACT_VERSION_V5).toBe(5)
     expect(REMOTE_CONTRACT_VERSION_V6).toBe(6)
-    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6])
+    expect(REMOTE_CONTRACT_VERSION_V7).toBe(7)
+    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7])
   })
 
   it('the closed v3-only set is exactly the two D1 methods; the closed v4-only set is exactly team.resolveControl; the closed v5-only set is exactly team.prepareOrdinaryOpen; the closed v6-only set is exactly team.getReadState', () => {

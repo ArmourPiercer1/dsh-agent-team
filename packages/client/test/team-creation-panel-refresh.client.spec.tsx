@@ -80,8 +80,8 @@ interface PanelFace {
   listCatalog: () => Promise<RemoteResponse>
   getCatalog: (params: RemoteCatalogGetParams) => Promise<RemoteResponse>
   probeCompatibility: (params: RemoteIntentProbeParams) => Promise<RemoteResponse>
-  teamCreateV2: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
-  teamAdmitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
+  teamCreate: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
+  teamAdmitInitialWork: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
   listAgentPresets: () => Promise<readonly TeamPresetRow[]>
 }
 
@@ -90,8 +90,8 @@ function makeFace(listCatalog: PanelFace['listCatalog']): PanelFace {
     listCatalog,
     getCatalog: vi.fn(() => Promise.resolve(okResponse(DETAIL_DATA, 'catalog.get'))),
     probeCompatibility: vi.fn(() => Promise.resolve(okResponse(OPEN_DATA, 'intent.probe'))),
-    teamCreateV2: vi.fn(() => Promise.resolve(okResponse({ path: 'root-1', durable: true, bind: {} }, 'team.create'))),
-    teamAdmitInitialWorkV2: vi.fn(() => Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))),
+    teamCreate: vi.fn(() => Promise.resolve(okResponse({ path: 'root-1', durable: true, bind: {} }, 'team.create'))),
+    teamAdmitInitialWork: vi.fn(() => Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))),
     listAgentPresets: vi.fn(() => Promise.resolve(PRESETS)),
   }
 }
@@ -108,8 +108,8 @@ function PanelHarness(props: {
       listCatalog={props.face.listCatalog}
       getCatalog={props.face.getCatalog}
       probeCompatibility={props.face.probeCompatibility}
-      teamCreateV2={props.face.teamCreateV2}
-      teamAdmitInitialWorkV2={props.face.teamAdmitInitialWorkV2}
+      teamCreate={props.face.teamCreate}
+      teamAdmitInitialWork={props.face.teamAdmitInitialWork}
       listAgentPresets={props.face.listAgentPresets}
       openCreatedSession={async () => undefined}
       workspaces={props.workspaces ?? []}

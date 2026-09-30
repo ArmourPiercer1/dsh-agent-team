@@ -1,0 +1,38 @@
+[
+  {
+    "schemaVersion": 2,
+    "sequence": 1,
+    "rootSessionId": "session-g6diag-spill-g6diag-2026-09-30T05-28-54",
+    "factType": "team-work-admitted",
+    "payload": {
+      "at": "2026-09-30T05:28:57.907Z",
+      "caller": {
+        "humanId": "session-g6diag-boot-g6diag-2026-09-30T05-28-54",
+        "kind": "human"
+      },
+      "payloadFingerprint": "sha256:32770bd5cd3fc83325d10de1377b35c7ac58b46d9529b5fbae95f64a04549275",
+      "prompt": "G6DIAG_SPILL_g6diag-2026-09-30T05-28-54 — run exactly one bash command for me: head -c 300000 /dev/zero | tr '\\0' 'x' — then tell me the approximate output size.",
+      "requestToken": "team-create:initial-work:sha256:32770bd5cd3fc83325d10de1377b35c7ac58b46d9529b5fbae95f64a04549275",
+      "rootSessionId": "session-g6diag-spill-g6diag-2026-09-30T05-28-54",
+      "targetKind": "root"
+    },
+    "operationId": null,
+    "createdAt": "2026-09-30T05:28:57.912Z"
+  },
+  {
+    "schemaVersion": 2,
+    "sequence": 2,
+    "rootSessionId": "session-g6diag-spill-g6diag-2026-09-30T05-28-54",
+    "factType": "team-root-work-delivered",
+    "payload": {
+      "at": "2026-09-30T05:28:58.076Z",
+      "payloadFingerprint": "sha256:32770bd5cd3fc83325d10de1377b35c7ac58b46d9529b5fbae95f64a04549275",
+      "requestToken": "team-create:initial-work:sha256:32770bd5cd3fc83325d10de1377b35c7ac58b46d9529b5fbae95f64a04549275",
+      "rootSessionId": "session-g6diag-spill-g6diag-2026-09-30T05-28-54",
+      "targetKind": "root",
+      "workOutcome": "delivered"
+    },
+    "operationId": null,
+    "createdAt": "2026-09-30T05:28:58.080Z"
+  }
+]

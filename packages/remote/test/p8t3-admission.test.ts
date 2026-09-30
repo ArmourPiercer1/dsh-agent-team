@@ -131,7 +131,7 @@ const RT = await (async () => {
       project() {
         throw 'a bare string failure'
       },
-      projectV6() {
+      projectLive() {
         throw 'a bare string failure'
       },
     },

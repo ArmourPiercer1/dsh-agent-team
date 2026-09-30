@@ -205,6 +205,18 @@ export interface S6RemoteOverrideSetRequest {
     readonly actorClaim: unknown;
     readonly scope?: 'team' | 'instance';
     readonly targetInstanceId?: string;
+    /**
+     * pre-alpha3 W1 fix-A (F10) — the client-supplied slot-generation
+     * guard (remote contract v7, optional): ABSENT is legacy-compatible
+     * (no conflict check); PRESENT is the optimistic guard — the
+     * Governance service compares it against the current slot winner
+     * INSIDE the shared chain and answers the typed
+     * `OVERRIDE_GENERATION_CONFLICT` with zero write on mismatch (the
+     * stale-UI / stale-tab overwrite the shared Team chain alone does not
+     * catch). A plain (server-parsed) value — NEVER a client claim of
+     * authority.
+     */
+    readonly expectedGeneration?: number;
 }
 /** The `override.reset` request (the structural mirror of the frozen shape). */
 export interface S6RemoteOverrideResetRequest {
@@ -214,6 +226,16 @@ export interface S6RemoteOverrideResetRequest {
     readonly actorClaim: unknown;
     readonly scope?: 'team' | 'instance';
     readonly targetInstanceId?: string;
+    /**
+     * pre-alpha3 W1 fix-A (F10) — the client-supplied slot-generation
+     * guard (remote contract v7, optional): ABSENT is legacy-compatible
+     * (no conflict check); PRESENT is the optimistic guard — the
+     * Governance service compares it against the current slot winner
+     * INSIDE the shared chain and answers the typed
+     * `OVERRIDE_GENERATION_CONFLICT` with zero write on mismatch. A
+     * plain (server-parsed) value — NEVER a client claim of authority.
+     */
+    readonly expectedGeneration?: number;
 }
 /** The `policyState.set` request (the structural mirror of the frozen shape). */
 export interface S6RemotePolicyStateSwitchRequest {
@@ -260,7 +282,7 @@ export interface S6RemoteIntentPort {
     probe(blueprintId: string, blueprintRevision: number | undefined, environmentFacts: readonly RemoteSafeRecord[]): Promise<RemoteSafeRecord>;
 }
 /** Port 3/12 — TeamSession creation via the root binding (`team.create` v1). */
-export interface S6RemoteTeamCreatePort {
+export interface S6RemoteTeamCreateEmbeddedWorkPort {
     /**
      * Bind a fresh root or rehydrate a cold root for the requested
      * blueprint. `initialWork` (BC-03 / R1-A) is optional: when present it
@@ -279,13 +301,13 @@ export interface S6RemoteTeamCreatePort {
     create(rootSessionId: string, blueprintId: string, blueprintRevision?: number, initialWork?: RemoteSafeRecord): Promise<RemoteSafeRecord>;
 }
 /** TCM vNext §15.6 — the v2 workspace-aware `team.create` port (the
- *  production async mirror of the frozen `RemoteTeamCreateV2Port`).
+ *  production async mirror of the frozen `RemoteTeamCreateWorkspacePort`).
  *  CREATE-ONLY: it never carries initial work (that travels the v2-only
  *  `team.admitInitialWork` command, {@link S6RemoteTeamAdmitInitialWorkPort},
  *  after the root is open). Typed failures raised here (the closed
  *  `TEAM_CREATE_WORKSPACE_*` codes) pass through the dispatcher unchanged
  *  (the closed backing vocabulary, invariant 4b). */
-export interface S6RemoteTeamCreateV2Port {
+export interface S6RemoteTeamCreateWorkspacePort {
     /**
      * Bind a fresh root (or rehydrate a cold root) for the requested
      * blueprint. When `workspace` is present it is resolved through the
@@ -473,14 +495,14 @@ export interface S6RemoteLegacyPort {
     inspect(dshHome: string, workspaceCwd?: string, projectDir?: string): Promise<RemoteSafeRecord>;
 }
 /** The sixteen production ports (the frozen twelve + the T12-V16 messaging
- *  coordinator port + the two TCM vNext §15.6 team-create v2 ports + the
+ *  coordinator port + the two TCM vNext §15.6 create-flavor ports + the
  *  D1 remote-contract-v3 `team.listRoots` port). */
 export interface S6RemotePorts {
     readonly catalog: S6RemoteCatalogPort;
     readonly intent: S6RemoteIntentPort;
-    readonly teamCreate: S6RemoteTeamCreatePort;
+    readonly teamCreateEmbeddedWork: S6RemoteTeamCreateEmbeddedWorkPort;
     /** TCM vNext §15.6 (G1) — the v2 workspace-aware `team.create` port. */
-    readonly teamCreateV2: S6RemoteTeamCreateV2Port;
+    readonly teamCreateWorkspace: S6RemoteTeamCreateWorkspacePort;
     /** TCM vNext §15.6 (G1) — the v2-only `team.admitInitialWork` port. */
     readonly teamAdmitInitialWork: S6RemoteTeamAdmitInitialWorkPort;
     /** D1 (Team D1-D6 repair v2, remote contract v3) — the v3-only

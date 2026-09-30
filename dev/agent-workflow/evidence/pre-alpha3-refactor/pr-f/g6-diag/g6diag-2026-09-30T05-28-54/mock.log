@@ -1,0 +1,4 @@
+mock: listening on 127.0.0.1:3497
+mock: 1 [messages] tool-call reply: bash
+mock: 2 [messages] text reply (44 chars): "G6DIAG_DONE_SPILL_g6diag-2026-09-30T05-28-54"
+mock: 3 [messages] text reply (44 chars): "G6DIAG_DONE_SPILL_g6diag-2026-09-30T05-28-54"

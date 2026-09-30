@@ -71,6 +71,7 @@ export {
   REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_VERSION_V5,
   REMOTE_CONTRACT_VERSION_V6,
+  REMOTE_CONTRACT_VERSION_V7,
   SUPPORTED_REMOTE_CONTRACT_VERSIONS,
   isSupportedRemoteContractVersion,
   assertSupportedRemoteContractVersion,
@@ -80,6 +81,23 @@ export {
 export type {
   RemoteContractVersion,
 } from './contracts/version.js'
+
+export {
+  TEAM_CREATE_FLAVORS,
+  TEAM_CREATE_FLAVOR_VALUES,
+  isTeamCreateFlavor,
+  teamCreateFlavorOf,
+  PROJECTION_SHAPES,
+  PROJECTION_SHAPE_VALUES,
+  isProjectionShape,
+  projectionShapeOf,
+  withLiveProjectionFreshness,
+} from './contracts/semantic.js'
+
+export type {
+  TeamCreateFlavor,
+  ProjectionShape,
+} from './contracts/semantic.js'
 
 export {
   REMOTE_CATEGORIES,
@@ -153,7 +171,9 @@ export {
   REMOTE_MEMBER_LIFECYCLE_FIELDS,
   REMOTE_OVERRIDE_GET_FIELDS,
   REMOTE_OVERRIDE_SET_FIELDS,
+  REMOTE_OVERRIDE_SET_FIELDS_V7,
   REMOTE_OVERRIDE_RESET_FIELDS,
+  REMOTE_OVERRIDE_RESET_FIELDS_V7,
   REMOTE_POLICY_STATE_GET_FIELDS,
   REMOTE_POLICY_STATE_SET_FIELDS,
   REMOTE_COMPATIBILITY_GET_FIELDS,
@@ -183,7 +203,9 @@ export {
   parseRemoteMemberDisposeParams,
   parseRemoteOverrideGetParams,
   parseRemoteOverrideSetParams,
+  parseRemoteOverrideSetParamsV7,
   parseRemoteOverrideResetParams,
+  parseRemoteOverrideResetParamsV7,
   parseRemotePolicyStateGetParams,
   parseRemotePolicyStateSetParams,
   parseRemoteCompatibilityGetParams,
@@ -227,7 +249,9 @@ export type {
   RemoteMemberLifecycleParams,
   RemoteOverrideGetParams,
   RemoteOverrideSetParams,
+  RemoteOverrideSetParamsV7,
   RemoteOverrideResetParams,
+  RemoteOverrideResetParamsV7,
   RemotePolicyStateGetParams,
   RemotePolicyStateSetParams,
   RemoteCompatibilityGetParams,
@@ -282,8 +306,8 @@ export type {
 export type {
   RemoteCatalogPort,
   RemoteIntentPort,
-  RemoteTeamCreatePort,
-  RemoteTeamCreateV2Port,
+  RemoteTeamCreateEmbeddedWorkPort,
+  RemoteTeamCreateWorkspacePort,
   RemoteTeamAdmitInitialWorkPort,
   RemoteProjectionPort,
   RemoteLedgerPort,

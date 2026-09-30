@@ -1,0 +1,18 @@
+# p6t1-parallel A/B — DATASET 3B, run 04 (TREE: base)
+# WORKTREE: /home/user/dsh-plugins/dsh-agent-team/.worktrees/p6t1-ab-ds3b-base
+# HEAD: 0a0a19a603db7ef5c560a05895835462372f5910
+# CMD: pnpm exec vitest run packages/runtime/test/p6t1-parallel.test.ts
+# START: 2026-09-30T06:02:23Z
+# NOTE: scratch worktree RECREATED @ 0a0a19a6 per the parent ruling (dataset-3b; branch (iii) combined path); node_modules = cp -a from the PR-F worktree (pnpm-lock.yaml + package.json byte-identical across 0a0a19a6/3b7039e8, disclosed); ASYMMETRIC by design: base-only x10 testing the base occurrence rate of the unexonerated P2 signature (the folded rate is already recorded ~3/~30)
+────────────────────────────────────────────────────────────
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/p6t1-ab-ds3b-base
+
+ ✓ packages/runtime/test/p6t1-parallel.test.ts (9 tests) 6ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  14:02:23
+   Duration  627ms (transform 375ms, setup 0ms, import 540ms, tests 6ms, environment 0ms)
+
+# EXIT: 0
