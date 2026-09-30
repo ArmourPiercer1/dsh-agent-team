@@ -72,7 +72,10 @@ import type {
   ArtifactLedgerPort,
 } from '../../artifact-read/index.js'
 import type { ControlService } from '../../control/index.js'
-import { resolveDurableMcpFacet } from '../../agent-setup/capability/index.js'
+import {
+  MCP_FACET_WILDCARD,
+  resolveDurableMcpFacet,
+} from '../../agent-setup/capability/index.js'
 import { resolveDurableModelSelection } from '../../agent-setup/model/index.js'
 import {
   createOrOpenTeamDomainDetailed,
@@ -1926,8 +1929,9 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
             // projection shows): IN-FLIGHT.
             // A SETTLED slot without its fiber is in-flight ONLY while a
             // future materialization is actually pending (the view still
-            // admits the server, or a record is queued for the next
-            // boundary). Once the view no longer admits the server
+            // admits the server, or an ADMIT-kind record is queued for the
+            // next boundary — an unapplied deny is a settled withdrawal,
+            // see the pending-filter below). Once the view no longer admits the server
             // (allowed:false / the view absent — an INTENTIONAL REMOVAL,
             // F15 R4: the deny disposes the fiber, the slot stays `mounted`
             // — a deny is not a failure — and no remount is pending) there
@@ -1953,9 +1957,61 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
                 serverView !== undefined && serverView !== null
                   ? serverView.pendingNextBoundary
                   : undefined
+              // THE PENDING-MATERIALIZATION SIGNAL (Option A gate-fix,
+              // parent adjudication 2026-09-30 — FOLDED-STOP R4): count
+              // ADMIT-kind records ONLY. An unapplied durable ALLOW that
+              // names this server (or the wildcard) is a materialization IN
+              // PROGRESS — the E.12 B5 window (governance admitted the
+              // mount; the reconcile runs at the next boundary): in-flight.
+              // An unapplied DENY is NOT one: it is a removal already
+              // durably applied at the boundary (a settled withdrawal —
+              // F15 R4: "a deny is not a failure"; the seed's truth
+              // decides, the observed F15 R4 shape 'unknown probe → row-
+              // seed feeds available'). Liveness ((A)'s adjudication, cited
+              // verbatim as the ruling's own consumer-audit clause):
+              // "PENDING means IN-FLIGHT ONLY (… must never be a state
+              // that only the blocked action itself can settle) … the seed
+              // 2-state is the only liveness-correct behavior" — an
+              // unapplied DENY in another cell of the same team settles
+              // ONLY if the blocked action itself is admitted (that cell's
+              // own request boundary runs), so it is precisely the excluded
+              // shape. OBSERVED, never inferred: the live state of this
+              // session (no fiber, no failed slot, view allowed:false)
+              // contributes nothing; the durable deny is not a live
+              // observation. FOLLOW-UP CANDIDATE (PR-F F.4, recorded, NOT
+              // implemented here): `recordAdmitsCapability`
+              // (packages/runtime/mutation/cell-provenance.ts) still admits
+              // any record whose `values` merely NAMES the capability key —
+              // key-presence ≠ "admits a value" per the documented
+              // contract — so this probe-side filter is the local reading
+              // of that contract.
+              const pendingAdmits =
+                Array.isArray(pendingRecords) &&
+                pendingRecords.some((record) => {
+                  const values =
+                    record !== null && typeof record === 'object'
+                      ? (record as { readonly values?: unknown }).values
+                      : undefined
+                  const mcp =
+                    values !== null && typeof values === 'object'
+                      ? (values as Record<string, unknown>)['mcp']
+                      : undefined
+                  if (
+                    mcp === null ||
+                    typeof mcp !== 'object' ||
+                    (mcp as { readonly kind?: unknown }).kind !== 'allow'
+                  ) {
+                    return false
+                  }
+                  const items = (mcp as { readonly items?: unknown }).items
+                  return (
+                    Array.isArray(items) &&
+                    (items.includes(name) || items.includes(MCP_FACET_WILDCARD))
+                  )
+                })
               if (
                 (serverView !== undefined && serverView !== null && serverView.allowed === true) ||
-                (Array.isArray(pendingRecords) && pendingRecords.length > 0)
+                pendingAdmits
               ) {
                 inFlight = true
               }
