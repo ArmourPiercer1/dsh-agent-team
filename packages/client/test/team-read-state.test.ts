@@ -145,7 +145,7 @@ describe('team-view-sync-complete — the client read-state parser (strict, fail
 describe('team-view-sync-complete — resolveTeamReadState (the transport edge, never rejects)', () => {
   it('the seam transport loss (PushTransportLossError) → transport-loss with its message', async () => {
     const client: TeamReadStateClient = {
-      getReadStateV6: () => Promise.reject(new PushTransportLossError('seam channel lost')),
+      getReadState: () => Promise.reject(new PushTransportLossError('seam channel lost')),
     }
     const outcome = await resolveTeamReadState(client, 'ordinary-1')
     expect(outcome.status).toBe('transport-loss')
@@ -155,7 +155,7 @@ describe('team-view-sync-complete — resolveTeamReadState (the transport edge, 
 
   it('an UNEXPECTED rejection kind is still classified as transport-loss (never a degraded none)', async () => {
     const client: TeamReadStateClient = {
-      getReadStateV6: () => Promise.reject(new Error('boom: internal bug')),
+      getReadState: () => Promise.reject(new Error('boom: internal bug')),
     }
     const outcome = await resolveTeamReadState(client, 'ordinary-1')
     expect(outcome.status).toBe('transport-loss')
@@ -166,7 +166,7 @@ describe('team-view-sync-complete — resolveTeamReadState (the transport edge, 
   it('the ok path resolves the relation through the seam', async () => {
     const calls: string[] = []
     const client: TeamReadStateClient = {
-      getReadStateV6: (sessionId) => {
+      getReadState: (sessionId) => {
         calls.push(sessionId)
         return Promise.resolve(success(NONE_VALUE))
       },

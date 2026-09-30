@@ -65,6 +65,7 @@ import type { CompatibilityProber } from '../../compatibility/index.js';
  */
 export type S6RemoteCompatibilityOperations = Pick<CompatibilityProber, 'current' | 'probe' | 'acknowledge'>;
 import type { EnvironmentFact } from '../../../domain/compatibility/src/index.js';
+import type { RequirementFactsResolution } from '../../requirement-facts/index.js';
 import type { BlueprintCatalog, TeamBlueprint } from '../../../domain/blueprint/src/index.js';
 import type { ColdRootBindingInput, FreshRootBindingInput, RootBindingResult } from '../../root-binding/index.js';
 import type { HandoffService } from '../../handoff/index.js';
@@ -281,7 +282,7 @@ export interface S6RemoteIntentPort {
     probe(blueprintId: string, blueprintRevision: number | undefined, environmentFacts: readonly RemoteSafeRecord[]): Promise<RemoteSafeRecord>;
 }
 /** Port 3/12 — TeamSession creation via the root binding (`team.create` v1). */
-export interface S6RemoteTeamCreatePort {
+export interface S6RemoteTeamCreateEmbeddedWorkPort {
     /**
      * Bind a fresh root or rehydrate a cold root for the requested
      * blueprint. `initialWork` (BC-03 / R1-A) is optional: when present it
@@ -300,13 +301,13 @@ export interface S6RemoteTeamCreatePort {
     create(rootSessionId: string, blueprintId: string, blueprintRevision?: number, initialWork?: RemoteSafeRecord): Promise<RemoteSafeRecord>;
 }
 /** TCM vNext §15.6 — the v2 workspace-aware `team.create` port (the
- *  production async mirror of the frozen `RemoteTeamCreateV2Port`).
+ *  production async mirror of the frozen `RemoteTeamCreateWorkspacePort`).
  *  CREATE-ONLY: it never carries initial work (that travels the v2-only
  *  `team.admitInitialWork` command, {@link S6RemoteTeamAdmitInitialWorkPort},
  *  after the root is open). Typed failures raised here (the closed
  *  `TEAM_CREATE_WORKSPACE_*` codes) pass through the dispatcher unchanged
  *  (the closed backing vocabulary, invariant 4b). */
-export interface S6RemoteTeamCreateV2Port {
+export interface S6RemoteTeamCreateWorkspacePort {
     /**
      * Bind a fresh root (or rehydrate a cold root) for the requested
      * blueprint. When `workspace` is present it is resolved through the
@@ -494,14 +495,14 @@ export interface S6RemoteLegacyPort {
     inspect(dshHome: string, workspaceCwd?: string, projectDir?: string): Promise<RemoteSafeRecord>;
 }
 /** The sixteen production ports (the frozen twelve + the T12-V16 messaging
- *  coordinator port + the two TCM vNext §15.6 team-create v2 ports + the
+ *  coordinator port + the two TCM vNext §15.6 create-flavor ports + the
  *  D1 remote-contract-v3 `team.listRoots` port). */
 export interface S6RemotePorts {
     readonly catalog: S6RemoteCatalogPort;
     readonly intent: S6RemoteIntentPort;
-    readonly teamCreate: S6RemoteTeamCreatePort;
+    readonly teamCreateEmbeddedWork: S6RemoteTeamCreateEmbeddedWorkPort;
     /** TCM vNext §15.6 (G1) — the v2 workspace-aware `team.create` port. */
-    readonly teamCreateV2: S6RemoteTeamCreateV2Port;
+    readonly teamCreateWorkspace: S6RemoteTeamCreateWorkspacePort;
     /** TCM vNext §15.6 (G1) — the v2-only `team.admitInitialWork` port. */
     readonly teamAdmitInitialWork: S6RemoteTeamAdmitInitialWorkPort;
     /** D1 (Team D1-D6 repair v2, remote contract v3) — the v3-only
@@ -631,8 +632,21 @@ export interface S6RemoteOptions {
      * T1.4-B (U5/T1-B strict, CF2 entry 2) — the authoritative host
      * row-config environment facts: the SAME injected source the
      * post-creation admission gate consumes (the production root passes
-     * its fresh-read fact thunk over `config.environmentFacts — the very
+     * its fresh-read fact source over `config.environmentFacts — the very
      * source the prober / authority / runtime wiring reads).
+     *
+     * PF-1 fix (2026-09-30, adjudicated product defect) — the source is
+     * PER-BLUEPRINT: `intent.probe` calls it with the RESOLVED requested
+     * blueprint, and the host resolves the live provider against THAT
+     * blueprint's team requirements (the same seam the per-root
+     * compatibility prober and the admission gates consume). Pre-fix this
+     * was a boot-blueprint-scoped thunk: on a multi-blueprint host (boot
+     * blueprint ≠ requested blueprint) the feed was mis-scoped and a
+     * configured + healthy live server probed as a spurious FATAL,
+     * breaking the frozen INV-9.4 two-worlds identity. A legacy
+     * no-argument thunk remains assignable (it ignores the blueprint —
+     * byte-identical on a single-blueprint host / factory world).
+     *
      * `intent.probe` merges these with the caller's wire facts under the
      * strict U5 rule ({@link mergeProbeEnvironmentFacts}): the caller
      * contributes ONLY the `persona` domain (the selected preset — user
@@ -646,7 +660,38 @@ export interface S6RemoteOptions {
      * facts remain fail-closed — the observation is completed, the
      * verdict is never weakened).
      */
-    readonly environmentFacts?: () => Promise<readonly EnvironmentFact[]>;
+    readonly environmentFacts?: (blueprint: TeamBlueprint) => Promise<readonly EnvironmentFact[]>;
+    /**
+     * D-3 (2026-09-30, adjudicated product semantics — fail-closed
+     * PENDING) — the PER-BLUEPRINT FULL-RESOLUTION live read: the atomic
+     * pair of the 3-state observations and the 2-state feed of ONE
+     * `resolveFacts` call (the same seam the admission gates consume).
+     *
+     * When PRESENT, `intent.probe` reads the host facts from THIS port and
+     * drops the SEED-FILLED facts of every REQUIRED requirement whose live
+     * observation is `unknown` AND IN-FLIGHT ({@link dropSeedFilledPendingFacts}
+     * — the ONE shared classifier predicate, the PF-2 tri-state, 2026-09-30
+     * option A): the engine then reports a missing required fact (FATAL),
+     * so the probe BLOCKS with BLOCKED_FATAL — the faithful, STRICTER
+     * prediction of the post-creation gate's typed PENDING block (the
+     * probe's wire verdict is the engine's 2-state vocabulary; INV-9.4
+     * "complete the observation, not weaken the verdict" — strict is the
+     * documented safe direction; plan §C.3 禁止 false OPEN + E.3). A
+     * NEVER-OBSERVED required unknown (no fiber / pending slot / failed
+     * slot on ANY live session — the first-create bootstrap window) is NOT
+     * dropped: the probe consumes the seed truth exactly as the gate does
+     * (seed available `true` → OPEN, `false`/absent → FATAL — the PF-2
+     * first-create bootstrap exemption; probe == gate, INV-9.4 RESTORED AND
+     * MAINTAINED — the probe no longer diverges from the gate in the
+     * never-observed world that was the pre-fix mcp-domain FATAL/OPEN
+     * split). The `persona` domain is NEVER touched (U5 caller-only persona
+     * merge FROZEN — T1.4-B).
+     *
+     * When ABSENT (legacy wiring / factory worlds): the facts-only
+     * `environmentFacts` port stands, byte-identical (the PENDING rule is
+     * off — no live 3-state observations ⇒ no pending materialization).
+     */
+    readonly environmentFactsRead?: (blueprint: TeamBlueprint) => Promise<RequirementFactsResolution>;
     /**
      * TCM vNext §15.5 (M2) — the narrow workspace attach port (the host
      * entry's closure over the hard-injected public `workspaceRegistry`

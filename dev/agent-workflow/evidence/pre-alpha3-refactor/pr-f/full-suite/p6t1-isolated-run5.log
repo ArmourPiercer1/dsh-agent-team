@@ -1,0 +1,62 @@
+=== p6t1-parallel ISOLATED run 5/5 @ 2026-09-30T05:28:59Z (vitest run --filter file) ===
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (9 tests | 2 failed) 8ms
+     × two activated results with distinct instance ids and child Sessions 5ms
+     × two COMMITTED operations, two members, two distinct child Sessions 1ms
+     ✓ five activated results, five COMMITTED operations, five members, five child Sessions 1ms
+     ✓ exactly two activations succeed 0ms
+     ✓ exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     ✓ the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 0ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:154:31
+    152| describe('P6-T1 P1: N=2 same-template parallel activations both succee…
+    153|   it('two activated results with distinct instance ids and child Sessi…
+    154|     expect(p1?.errors.length).toBe(0)
+       |                               ^
+    155|     expect(p1?.results.length).toBe(2)
+    156|     if (p1 === undefined) throw new Error('P1: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:167:30
+    165|
+    166|   it('two COMMITTED operations, two members, two distinct child Sessio…
+    167|     expect(p1?.committedOps).toBe(2)
+       |                              ^
+    168|     expect(p1?.memberCount).toBe(2)
+    169|     expect(p1?.distinctChildren).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 7 passed (9)
+   Start at  13:28:59
+   Duration  627ms (transform 372ms, setup 0ms, import 536ms, tests 8ms, environment 0ms)
+
+EXIT=1

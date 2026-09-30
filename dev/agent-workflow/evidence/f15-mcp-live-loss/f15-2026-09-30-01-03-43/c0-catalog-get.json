@@ -1,0 +1,54 @@
+{
+  "type": "server-response",
+  "rpcId": "catget-009pk4ouct",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "blueprint": {
+          "schemaVersion": 2,
+          "blueprintId": "f15.leader",
+          "revision": "1",
+          "contentHash": "sha256:962a9414c09a9f4b46ec6e62c493fddee8cb6dc1541f289e54d60755ad61042f",
+          "leader": {
+            "templateId": "leader",
+            "persona": "You are the leader of the F15 live-loss team. f15-2026-09-30-01-03-43 is the run nonce. When a marker turn asks you to ping, call the mcp__mcp-f15__ping tool EXACTLY once with the given msg, then answer with the turn's done marker text verbatim. When a marker turn asks you to say hi, answer with the done marker text verbatim and call NO tools."
+          },
+          "members": [
+            {
+              "templateId": "worker",
+              "persona": "You are a worker of the F15 live-loss team. Do exactly what the work unit says, then finish."
+            }
+          ],
+          "requirements": [],
+          "policyStates": [
+            {
+              "id": "default",
+              "fields": [],
+              "description": "F15 live-loss team default state."
+            }
+          ],
+          "quotas": {
+            "team": {
+              "maxInstances": 4,
+              "maxConcurrent": 4
+            },
+            "members": {
+              "maxInstances": 2,
+              "maxConcurrent": 2
+            }
+          }
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "catalog.get",
+        "endpoint": "catalog.get",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

@@ -32,8 +32,10 @@ export const REMOTE_CONTRACT_VERSION = 1;
  * The remote contract v2 (TCM vNext §15.6, the Team-create minimal fix):
  * the workspace-aware `team.create` variant plus the v2-only
  * `team.admitInitialWork` command. Only the two v2 client wrappers
- * (`teamCreateV2` / `teamAdmitInitialWorkV2`) stamp this version; every
- * other wrapper keeps stamping {@link REMOTE_CONTRACT_VERSION}.
+ * (`teamCreate` / `teamAdmitInitialWork` — the pre-alpha3 PR-F
+ * de-versioned names; the v1 legacy create is `teamCreateEmbeddedWork`)
+ * stamp this version; every other wrapper keeps stamping
+ * {@link REMOTE_CONTRACT_VERSION}.
  */
 export const REMOTE_CONTRACT_VERSION_V2 = 2;
 /**

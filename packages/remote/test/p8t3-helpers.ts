@@ -44,8 +44,8 @@ import type {
   RemoteSafeJsonValue,
   RemoteSafeRecord,
   RemoteSuccessResult,
-  RemoteTeamCreatePort,
-  RemoteTeamCreateV2Port,
+  RemoteTeamCreateEmbeddedWorkPort,
+  RemoteTeamCreateWorkspacePort,
   RemoteTeamAdmitInitialWorkPort,
   RemoteTeamRootsPort,
   RemoteTeamEnsureRootLivePort,
@@ -262,7 +262,7 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     },
   }
 
-  const teamCreate: RemoteTeamCreatePort = {
+  const teamCreateEmbeddedWork: RemoteTeamCreateEmbeddedWorkPort = {
     create(rootSessionId, blueprintId, blueprintRevision) {
       calls.push('team.create')
       return {
@@ -277,7 +277,7 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     },
   }
 
-  const teamCreateV2: RemoteTeamCreateV2Port = {
+  const teamCreateWorkspace: RemoteTeamCreateWorkspacePort = {
     create(rootSessionId, blueprintId, blueprintRevision, workspace) {
       calls.push('team.create.v2')
       return {
@@ -410,7 +410,7 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     // projection result, one token; the fake world has no live overlay,
     // so a fixed `lt-v1-*` string stands in for the deterministic
     // semantic token).
-    projectV6(teamSessionId) {
+    projectLive(teamSessionId) {
       calls.push('team.getProjection.v6')
       return {
         projection: { ...P8T3_PROJECTION, teamSessionId },
@@ -553,8 +553,8 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
   const ports: P8T3FakePorts = {
     catalog,
     intent,
-    teamCreate,
-    teamCreateV2,
+    teamCreateEmbeddedWork,
+    teamCreateWorkspace,
     teamAdmitInitialWork,
     teamRoots,
     teamEnsureRootLive,

@@ -20,12 +20,16 @@
  * service over four injected ports (no I/O, no DSH imports, no ambient
  * state — the established wave-1 runtime pattern):
  *
- * - {@link StepClock} — the step-boundary clock: the mutation plane reads
- *   `currentStep()`; every admitted mutation takes effect at the NEXT step
- *   boundary (`effectiveFromStep = requestedAtStep + 1`), and already
- *   captured (in-flight) work keeps its step's resolution unchanged
- *   (Architecture §21.3–§21.5: the in-flight request is never re-pointed
- *   at a concurrent override; the change affects FUTURE operations);
+ * - the STEP-BOUNDARY clock ({@link ./internal/mutation-service.js
+ *   `StepClock`, test-world kernel since pre-alpha3 PR-F): the mutation
+ *   plane reads `currentStep()`; every admitted mutation takes effect at
+ *   the NEXT step boundary (`effectiveFromStep = requestedAtStep + 1`),
+ *   and already captured (in-flight) work keeps its step's resolution
+ *   unchanged (Architecture §21.3–§21.5: the in-flight request is never
+ *   re-pointed at a concurrent override; the change affects FUTURE
+ *   operations). The PRODUCTION step clock was retired as a decision
+ *   source by PR-B (pinned 0/1) — the port now drives the test-world
+ *   kernel only;
  * - {@link MutationStore} — the durable config store of the TeamSession's
  *   mutation records (PolicyState transitions, autonomy overlay records,
  *   human override records, per-instance creation fields, the append-only
@@ -41,8 +45,10 @@
  * - it never re-implements policy resolution. Stage 1 (Team-domain
  *   precedence) and stage 2 (external intersection) are computed by the
  *   FROZEN P3-T4 resolver (`resolveEffectivePolicy`,
- *   `packages/domain/policy`); {@link ../policy-adapter.js} assembles its
- *   input from the store + reader;
+ *   `packages/domain/policy`); the test-world assembly
+ *   ({@link ./internal/policy-adapter.js}) maps the store + reader onto
+ *   its input (the ONE production assembly is the canonical read,
+ *   {@link @dsh-agent-team/runtime/effective-policy});
  * - it never invents a parallel origin/provenance taxonomy: every origin,
  *   layer, record, and suppression type reuses the frozen domain
  *   vocabulary (`TeamValueOrigin`, `OverlayOrigin`, `TeamLayer`,
@@ -302,15 +308,6 @@ export interface EffectiveConfigCapture {
     readonly contributions: readonly MutationLedgerEntry[];
     /** Settle the step's in-flight work (idempotent). */
     release(): void;
-}
-/**
- * The STEP-BOUNDARY clock. The mutation plane never advances it (steps are
- * driven by the harness / admission pipeline — a later integration
- * concern); it only reads it. `0` = before the first step.
- */
-export interface StepClock {
-    /** The step currently in progress (0 before the first step). */
-    currentStep(): number;
 }
 /**
  * The Durable CONFIG STORE port: the TeamSession's mutation records,

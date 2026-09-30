@@ -1,0 +1,11 @@
+{
+  "preB8hSlots": [
+    {
+      "sessionId": "session-prereq-boot-prereq-2026-09-30T00-05-00",
+      "mounted": false,
+      "materialization": "pending",
+      "attempts": null,
+      "reason": null
+    }
+  ]
+}

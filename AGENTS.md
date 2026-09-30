@@ -13,13 +13,13 @@
 
 ## 文档权威序
 
-upstream 公开契约 → `docs/plans/paused/` 四份 20260829 冻结文档（Architecture / UI / Development Plan / Task Decomposition，只读、语义唯一权威；2026-09-02 由 `docs/plans/active/` 移入 `docs/plans/paused/`，冻结基线地位不变）→ `docs/plans/active/` 当期执行计划（T12（已关闭，VERDICT GO @ c455c43）/ P9 UI Legacy-Reuse 实施计划（P9_VERDICT GO @ 0738b45，2026-09-04）/ PR 系列执行指南（PR #26–#35，#35 已 merge 2026-09-28 @ e22c659a）；当前阶段 = post-PR #35 merge（无 active 执行计划，G8-S P9 proper line 待用户裁决）；local、gitignored）→ `docs/ROUTER_RULES.md`（执行协议）→ `docs/TEST_METHODS.md`（测试约束）→ `docs/migration/`（legacy inventory/reuse map，参考）→ legacy 代码（仅证据）→ 实现便利。冲突时按此序裁决，科学/设计理由需显式记录。
+upstream 公开契约 → `docs/plans/paused/` 四份 20260829 冻结文档（Architecture / UI / Development Plan / Task Decomposition，只读、语义唯一权威；2026-09-02 由 `docs/plans/active/` 移入 `docs/plans/paused/`，冻结基线地位不变）→ `docs/plans/active/` 当期执行计划（T12（已关闭，VERDICT GO @ c455c43）/ P9 UI Legacy-Reuse 实施计划（P9_VERDICT GO @ 0738b45，2026-09-04）/ PR 系列执行指南（PR #26–#35，#35 已 merge 2026-09-28 @ e22c659a）/ dsh-agent-team-pre-alpha3-refactor-plan.md（pre-alpha3 收口计划 F.1–F.6，当期）；当前阶段 = pre-alpha3 PR 系列收口（PR #44 已 merge @ `0a0a19a6`；PR-F increment-2 收口中 — branch `feat/pre-alpha3-prf-closure` local、PR DO-NOT-MERGE 待 parent/用户裁决；G8-S P9 proper line 仍待用户裁决）；local、gitignored）→ `docs/ROUTER_RULES.md`（执行协议）→ `docs/TEST_METHODS.md`（测试约束）→ `docs/migration/`（legacy inventory/reuse map，参考）→ legacy 代码（仅证据）→ 实现便利。冲突时按此序裁决，科学/设计理由需显式记录。
 
 ## 目录约定
 
 | 路径 | 性质 |
 | --- | --- |
-| `docs/plans/active/` | 当期执行计划（local、gitignored；T12 = 已关闭 / P9 UI = GO @ 0738b45 / PR 系列执行指南（PR #26–#35，#35 已 merge 2026-09-28 @ e22c659a）；当前阶段 = post-PR #35 merge（无 active 执行计划，G8-S P9 proper line 待用户裁决）；用户/主 Agent 产物，禁 worker 改动） |
+| `docs/plans/active/` | 当期执行计划（local、gitignored；T12 = 已关闭 / P9 UI = GO @ 0738b45 / PR 系列执行指南（PR #26–#35，#35 已 merge 2026-09-28 @ e22c659a）/ **dsh-agent-team-pre-alpha3-refactor-plan.md（pre-alpha3 收口计划 F.1–F.6，当期）**；当前阶段 = pre-alpha3 PR 系列收口（PR #44 已 merge @ `0a0a19a6`；PR-F increment-2 收口中 — branch `feat/pre-alpha3-prf-closure` local、PR DO-NOT-MERGE 待 parent/用户裁决；G8-S P9 proper line 仍待用户裁决）；用户/主 Agent 产物，禁 worker 改动） |
 | `docs/plans/paused/` | 20260829 冻结四份 + G8 审计报告 + P8-S 收束计划（local、gitignored；只读冻结基线，四份冻结文档仍为语义唯一权威） |
 | `docs/ROUTER_RULES.md` / `docs/TEST_METHODS.md` | 执行协议 / 测试约束（用户裁决可改，改动需记录） |
 | `docs/STATUS.md` | 当前状态总览（living 快照，非权威源；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`） |

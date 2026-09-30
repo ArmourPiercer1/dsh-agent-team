@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery
+
+ ✓ packages/runtime/test/p6t1-parallel.test.ts (9 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  09:29:13
+   Duration  645ms (transform 396ms, setup 0ms, import 558ms, tests 4ms, environment 0ms)

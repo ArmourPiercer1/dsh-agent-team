@@ -1,0 +1,221 @@
+{
+  "boot": 1,
+  "phase": "create",
+  "rootSessionId": "session-g6diag-boot-g6diag-2026-09-30T05-28-54",
+  "teamSession": {
+    "rootSessionId": "session-g6diag-boot-g6diag-2026-09-30T05-28-54",
+    "blueprintId": "team.g6diag-anchor",
+    "revision": "1",
+    "contentHash": "sha256:6cb88070dcff353c2b8b410e4e3da8888d0724512133f444e0f51b1f50be089f",
+    "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "createdAt": "2026-09-30T05:28:57.706Z",
+    "generation": 2
+  },
+  "members": [
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": [],
+    "abandonments": []
+  },
+  "activity": [],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [],
+    "sessions": {
+      "session-g6diag-boot-g6diag-2026-09-30T05-28-54": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "g6diag-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "g6diag-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {
+            "mcp_repo": {
+              "mounted": false,
+              "allowed": false,
+              "source": {
+                "layer": "unspecified",
+                "origin": "static",
+                "recordId": null
+              },
+              "materialization": "pending",
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "unspecifiedFailClosed"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+            },
+            "mcp_leaderreq": {
+              "mounted": false,
+              "allowed": false,
+              "source": {
+                "layer": "unspecified",
+                "origin": "static",
+                "recordId": null
+              },
+              "materialization": "pending",
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "unspecifiedFailClosed"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+            },
+            "mcp_web": {
+              "mounted": false,
+              "allowed": false,
+              "source": {
+                "layer": "unspecified",
+                "origin": "static",
+                "recordId": null
+              },
+              "materialization": "pending",
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "unspecifiedFailClosed"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+            }
+          }
+        }
+      },
+      "session-g6diag-spill-g6diag-2026-09-30T05-28-54": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "g6diag-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "g6diag-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "g6diag-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {
+            "mcp_repo": {
+              "mounted": false,
+              "allowed": false,
+              "source": {
+                "layer": "template",
+                "origin": "static",
+                "recordId": null
+              },
+              "materialization": "pending",
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "teamDeny",
+                "layer": "template",
+                "origin": "static",
+                "recordId": null
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team template(origin=static) deny; external exists=yes, hard=unspecified"
+            },
+            "mcp_leaderreq": {
+              "mounted": false,
+              "allowed": false,
+              "source": {
+                "layer": "template",
+                "origin": "static",
+                "recordId": null
+              },
+              "materialization": "pending",
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "teamDeny",
+                "layer": "template",
+                "origin": "static",
+                "recordId": null
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team template(origin=static) deny; external exists=yes, hard=unspecified"
+            },
+            "mcp_web": {
+              "mounted": false,
+              "allowed": false,
+              "source": {
+                "layer": "template",
+                "origin": "static",
+                "recordId": null
+              },
+              "materialization": "pending",
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "teamDeny",
+                "layer": "template",
+                "origin": "static",
+                "recordId": null
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team template(origin=static) deny; external exists=yes, hard=unspecified"
+            }
+          }
+        }
+      }
+    }
+  },
+  "observations": [
+    "alpha2-perm: coverage PASS safe-unmanaged tool 'todo_write' on session-g6diag-spill-g6diag-2026-09-30T05-28-54 (source-reviewed closed registry)",
+    "alpha2-artifact-grant: shell-result-observer installed",
+    "alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-g6diag-d146aeb6\",\"tool\":\"bash\",\"resourceKind\":\"tool\",\"resourceDisplay\":\"bash\",\"fingerprint\":\"sha256:fdf510eb39595dc7fa85c6a58ff0cbd1f0481fe50431bcb5a5e0dded83ae3ce7\"}",
+    "alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-g6diag-d146aeb6\",\"decision\":\"allow\",\"provenance\":{\"source\":\"rule\",\"effect\":\"allow\",\"lane\":\"allow\",\"ruleIndex\":0}}"
+  ]
+}

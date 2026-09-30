@@ -28,7 +28,8 @@
  * - request-time staleness (a request whose target can never act again):
  *   CONTROL_TARGET_STALE;
  * - decision lookup/state: CONTROL_REQUEST_NOT_FOUND,
- *   CONTROL_REQUEST_DECIDED, CONTROL_RESOLVER_NOT_AUTHORIZED;
+ *   CONTROL_REQUEST_DECIDED, CONTROL_REQUEST_ABANDONED,
+ *   CONTROL_RESOLVER_NOT_AUTHORIZED;
  * - resolve-time staleness (the target became terminal after the request
  *   was durable): CONTROL_REQUEST_STALE;
  * - external hard policy: CONTROL_EXTERNAL_POLICY_DENIED;
@@ -58,6 +59,16 @@ export declare const CONTROL_ERROR_CODES: {
     /** The durable control request already carries a decision (double
      *  resolution; fail closed — the first decision is authoritative). */
     readonly CONTROL_REQUEST_DECIDED: "CONTROL_REQUEST_DECIDED";
+    /**
+     * The durable control request is already ABANDONED (the additive close
+     * fact `control-request-abandoned` exists — pre-alpha3 PR-D, D.4). The
+     * abandon fact is the TERMINAL mark (like the `stale-denied`
+     * decision): the request can never become an allow, so a decision
+     * attempt is rejected with ZERO durable side effects (the decision row
+     * is NOT written); raising this code also rejects a SECOND abandon of
+     * the same request (the terminal mark is written exactly once).
+     */
+    readonly CONTROL_REQUEST_ABANDONED: "CONTROL_REQUEST_ABANDONED";
     /**
      * The caller's role is outside the request kind's closed resolver role
      * set (e.g. a member resolving its own request — no self-approval,

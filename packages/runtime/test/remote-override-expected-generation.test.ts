@@ -202,7 +202,11 @@ class MemTransitions implements GovernanceTransitionCache {
 }
 
 class MemCommit implements GovernanceTransitionCommit {
-  async commit(_transition: PolicyStateTransitionRecord): Promise<void> {}
+  // pre-alpha3 re-land (w1a → pre-e base): the pre-e lineage widened the
+  // commit port to the per-root (rootSessionId, transition) pair (the
+  // durable row is stamped with the addressed root); the w1a test fake
+  // adapted to the wider signature.
+  async commit(_rootSessionId: string, _transition: PolicyStateTransitionRecord): Promise<void> {}
 }
 
 const noopPolicy: PolicyReader = {

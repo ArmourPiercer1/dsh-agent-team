@@ -108,6 +108,22 @@
   *                        legacy row-global anchor resolution (the
   *                        factory-world fallback; the production host
   *                        always passes one).
+  *   resolvePersonaSubstrate (OPTIONAL) - pre-alpha3 W2-A (review fix F4,
+  *                        guide §5 B): the PRODUCTION persona-substrate
+  *                        resolver — (rootSessionId) => Promise<{ presetId,
+  *                        personaKind: 'standard' | 'complete' | 'absent' |
+  *                        'unresolved', source?, reason? }>. The production
+  *                        host builds it over the RuntimeSubstrateResolver
+  *                        + the DSH public agentPresets seam, so the persona
+  *                        slot reads the REAL observed effective composition
+  *                        (never the shipped-state 'standard' guess). The
+  *                        shared agent setup AWAITs it on the production
+  *                        path (before any install — an `unresolved`
+  *                        substrate throws there, fail closed; the slot is
+  *                        cached per owning root ONLY on success, so a
+  *                        failed bind re-probes). ABSENT (factory / test
+  *                        worlds) -> the legacy seam (config.presetSubstrate
+  *                        ?? the S5A A11 standard default), byte-for-byte.
   *   now                - parity field (the row's clock); unused by the ported
  *                        glue paths, which derive time from the services
  *   subagents (OPTIONAL) - the DSH subagents service (SubagentRuntime):
@@ -347,6 +363,11 @@ import {
 // VERBATIM: every configured-server read in this file goes through
 // configuredMcpServers (no second normalization anywhere).
 import { configuredMcpServers } from '../mcp-supply.js'
+// pre-alpha3 PR-B (plan §B.2): the durable PolicyState read seam — the
+// COMMIT-ORDER ledger rows the canonical consumption read consumes (the
+// committed PolicyState participates in the live boundary resolution;
+// the legacy step fields keep parse/display only).
+import { listDurablePolicyStateTransitions } from '../durable-mutation-store.js'
 // C1 (restart-recovery, guide §3.2): the ONE durable Team-ownership
 // authority — the host-side activation fence and this glue's
 // `teamRootOfSession` thin wrapper share the SAME algorithm (no second
@@ -651,7 +672,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, activationFence } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, activationFence, policyReaderRef, resolvePersonaSubstrate } = deps
 
   // C1 (restart-recovery, guide §7.2): the bounded window of the SINGLE
   // writer-conflict recovery wait (ensureLiveAgent's recoverWriterConflict
@@ -670,6 +691,17 @@ export function createAgentBindings(deps) {
   if (domain === undefined || domain === null) throw new Error('agent-bindings: deps.domain is required (the opened TeamDomain)')
   if (teamToolsRef === undefined || teamToolsRef === null || typeof teamToolsRef !== 'object') {
     throw new Error('agent-bindings: deps.teamToolsRef is required (a { current } object the production host fills after root assembly)')
+  }
+  // pre-alpha3 W2-A (review fix F4, guide §5 B): the production persona-
+  // substrate resolver (OPTIONAL). The production host injects it so the
+  // persona slot reads the REAL observed effective composition (the
+  // RuntimeSubstrateResolver + the DSH public agentPresets seam) instead of
+  // the shipped-state guess (config.presetSubstrate ?? the S5A 'standard'
+  // default). Absent (factory / test worlds) = the legacy path, byte-for-
+  // byte. When present it MUST be a function (rootSessionId ->
+  // Promise<{ presetId, personaKind, source?, reason? }>).
+  if (resolvePersonaSubstrate !== undefined && typeof resolvePersonaSubstrate !== 'function') {
+    throw new Error('agent-bindings: deps.resolvePersonaSubstrate must be a function (rootSessionId -> Promise<{ presetId, personaKind, source?, reason? }>) when present')
   }
   // The durable-consumption resolvers ride on the opened domain.
   const consumption = domain.consumption
@@ -1179,13 +1211,31 @@ export function createAgentBindings(deps) {
       ...(initialTemplateModel !== undefined ? { model: initialTemplateModel } : {}),
       ...(initialTemplateMcp !== undefined ? { mcp: initialTemplateMcp } : {}),
     }
+    // pre-alpha3 PR-B (plan §B.2): THE canonical consumption read — the
+    // production PolicyReader (the lazy ref: the production host fills it
+    // after the root is built — the bound-snapshot static authority) +
+    // the durable PolicyState transitions (COMMIT order — the committed
+    // state participates in the live boundary resolution; the legacy
+    // step fields keep parse/display only). An ABSENT / unfilled ref is
+    // the pre-PR-B LEGACY input (the config external facts + the
+    // template-derived static grants + the implicit `default` state) —
+    // the test worlds keep their bit-for-bit behavior.
+    const canonicalPolicy = policyReaderRef?.current ?? undefined
+    const canonical = canonicalPolicy !== undefined
+    const policyStateTransitions = canonical
+      ? listDurablePolicyStateTransitions(domain.repositories, teamRoot)
+      : []
     const modelArgs = {
       rootSessionId: teamRoot,
       instanceId,
       overrides,
-      external,
       baseline: { ...config.staticModel },
-      ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
+      ...(canonical
+        ? { policy: canonicalPolicy, transitions: policyStateTransitions }
+        : {
+            external,
+            ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
+          }),
     }
     if (applied.length > 0) {
       modelArgs.appliedRecordIds = applied
@@ -1202,10 +1252,14 @@ export function createAgentBindings(deps) {
         rootSessionId: teamRoot,
         instanceId,
         overrides,
-        external,
         serverName: server.name,
         ...(applied.length > 0 ? { appliedRecordIds: applied } : {}),
-        ...(initialTemplateMcp !== undefined ? { initialTemplateMcp } : {}),
+        ...(canonical
+          ? { policy: canonicalPolicy, transitions: policyStateTransitions }
+          : {
+              external,
+              ...(initialTemplateMcp !== undefined ? { initialTemplateMcp } : {}),
+            }),
       }).view
     }
     // PR #23 review fix (P1-A): the OWNING root the resolution ran under is
@@ -1240,6 +1294,279 @@ export function createAgentBindings(deps) {
     }
   }
 
+  // ── pre-alpha3 PR-C §C.6: the MCP per-server materialization ───────────
+  //
+  // The retry cooldown window: a `failed` materialization slot is not
+  // re-attempted until this long after its last attempt (plan §C.6 boundary
+  // retry + cooldown — no hot retry loop on a down server).
+  const MCP_RETRY_COOLDOWN_MS = 30_000
+  //
+  // F15 (MCP live-loss zero-core, plan §5.1-A): the explicit SHORT
+  // reconnect policy every production MCP mount carries (the upstream
+  // `ReconnectConfig` — the public seam pinned by
+  // tests/deepseek-harness-test-use/packages/mcp/mcp-client/lib/types/
+  // connection.d.ts: `initialDelayMs` doubles per consecutive failed
+  // attempt up to `maxDelayMs`; `maxAttempts` consecutive failed attempts
+  // per outage exhausts the budget, and "Exhaustion unregisters the
+  // server's tools and stops; disposal (including HMR) is the only way
+  // back from that state"). Delays 500 → 1000 → 2000: a PURE BACKOFF
+  // budget of 500 + 1000 + 2000 = 3.5 seconds (the 0.1.7 defaults
+  // 500/30000/10 ≈ 151.5 s are deliberately NOT used — a permanently
+  // lost server must not hold a stale-positive readiness for two and a
+  // half minutes).
+  //
+  // THIS IS A TRANSIENT-FAILURE GRACE POLICY, NOT THE PLUGIN REMOUNT
+  // COOLDOWN: the 30 s `MCP_RETRY_COOLDOWN_MS` above is a different
+  // semantic layer (the plugin's own failed-slot retry gate) — the two
+  // must never be conflated (plan §5.1-A). The 3.5 s budget is also NOT
+  // a wall-clock detection upper bound (plan §8: the confirmed-loss
+  // observation latency is measured empirically and recorded, never
+  // promoted to a cross-transport contract).
+  const MCP_UPSTREAM_RECONNECT_INITIAL_MS = 500
+  const MCP_UPSTREAM_RECONNECT_MAX_MS = 2_000
+  const MCP_UPSTREAM_RECONNECT_ATTEMPTS = 3
+  const MCP_UPSTREAM_RECONNECT_POLICY = Object.freeze({
+    enabled: true,
+    initialDelayMs: MCP_UPSTREAM_RECONNECT_INITIAL_MS,
+    maxDelayMs: MCP_UPSTREAM_RECONNECT_MAX_MS,
+    maxAttempts: MCP_UPSTREAM_RECONNECT_ATTEMPTS,
+  })
+  // F15 (plan §6): the plugin-owned observation reason codes (the probe
+  // port carries them as provenance; they are NOT disguised upstream
+  // error codes).
+  const MCP_REASON_PUBLIC_TOOL_SURFACE_WITHDRAWN = 'MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN'
+  const MCP_REASON_LIVE_WITNESS_UNAVAILABLE = 'MCP_LIVE_WITNESS_UNAVAILABLE'
+  // The optional telemetry hook (the production wiring fills it; a test
+  // world without the durable telemetry omits it → emit is a no-op).
+  const capabilityTelemetry =
+    typeof deps.capabilityTelemetry === 'function' ? deps.capabilityTelemetry : undefined
+
+  /**
+   * Emit one capability-runtime telemetry event for an MCP mount transition
+   * (plan §C.6/§C.7). BEST-EFFORT: a telemetry write failure is observed,
+   * never propagated (it must NOT fail the member's MCP reconciliation). A
+   * no-op when the production wiring passed no `capabilityTelemetry` hook
+   * (a test world without the durable telemetry).
+   * @param {object} state - the session's consumption state (carries the
+   *   owning team root the event is stamped with).
+   * @param {string} kind - the closed event kind (e.g. `mount-failed`,
+   *   `mount-restored`).
+   * @param {string} serverName - the MCP server (the capability name).
+   * @param {string} verdict - the 3-state readiness verdict.
+   * @param {number} attempt - the attempt count for this server.
+   * @param {string|undefined} reason - the failure diagnostic (failed slots).
+   * @param {string} [source] - the observation source provenance
+   *   (default `mcp-fiber` — every pre-F15 call site; the F15
+   *   confirmed-loss path passes `mcp-public-tool-surface`, plan §11).
+   */
+  async function emitMcpCapabilityEvent(state, kind, serverName, verdict, attempt, reason, source) {
+    if (typeof capabilityTelemetry !== 'function') return
+    const event = {
+      kind,
+      capabilityType: 'mcpServer',
+      capabilityName: serverName,
+      verdict,
+      source: source === undefined ? 'mcp-fiber' : source,
+      observedAt: new Date().toISOString(),
+      attempt,
+    }
+    if (reason !== undefined) event.reason = reason
+    try {
+      await capabilityTelemetry(state.teamRootSessionId, event)
+    } catch (error) {
+      observations.push(`p6t6: capability telemetry write failed [server ${serverName}]: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+
+  // ── F15 (MCP live-loss zero-core, plan §5.1-B/C/§5.3): the public ────────
+  // ── tool-surface witness + the idempotent exhausted-fiber retirement ────
+  //
+  // The upstream connection supervisor (0.1.7-rc.1, connection.d.ts)
+  // WITHDRAWS the server's tools when the reconnect budget exhausts —
+  // the fiber/handle stays live ("disposal … is the only way back").
+  // The plugin therefore observes the CAPABILITY through its PUBLIC
+  // TOOL SURFACE (`mcp__<serverName>__*` on the agent scope, read via
+  // the public `ctx.tools.schemas(scope)` seam — the same seam the
+  // A2C-2 permission coverage gate reads): fiber presence alone is NOT
+  // reachability. No private map is read, no mcp-client internal is
+  // touched, no monkey-patch (CORE PATCH BUDGET = 0).
+
+  /**
+   * Read the server's public tool names off the MCP mount ctx (the
+   * agent-scoped surface — the model-visible `mcp__<serverName>__*`
+   * set). Returns `null` when the surface CANNOT be read (the mount ctx
+   * is absent or has no `tools.schemas` seam) — the caller fails soft
+   * (`unknown`, never a fabricated `unreachable`).
+   * @param {object} state - the session's consumption state (carries
+   *   `mcpMountCtx`, the Agent-keyed scope context every serverName is
+   *   registered under).
+   * @param {string} serverName - the MCP server (the capability name).
+   * @returns {string[]|null} the server-qualified public tool names
+   *   (empty array = a readable-but-empty surface), or `null`
+   *   (unreadable).
+   */
+  function readMcpServerToolSurface(state, serverName) {
+    const ctx = state.mcpMountCtx
+    if (ctx === undefined || ctx === null || typeof ctx.tools?.schemas !== 'function') return null
+    // The mount ctx is ALWAYS scope-tagged (the agent's own tag — the
+    // common case — or the Finding-1 bridge scope minted keyed by the
+    // runtime Agent), so `scopeOf` names the registration layer; the
+    // `ctx.root` fallback mirrors the upstream registry key
+    // (`scopeOf(ctx) ?? ctx.root`).
+    const scope = scopeOf(ctx) ?? ctx.root
+    let schemas
+    try {
+      schemas = ctx.tools.schemas(scope)
+    } catch {
+      return null
+    }
+    if (!Array.isArray(schemas)) return null
+    const prefix = `mcp__${serverName}__`
+    return schemas
+      .map((t) => (t !== null && typeof t === 'object' && typeof t.name === 'string' ? t.name : undefined))
+      .filter((n) => n !== undefined && n.startsWith(prefix))
+  }
+
+  /**
+   * Record one surface observation in the session's EPHEMERAL tool
+   * witness (plan §5.1-B: `everToolBearing` + `lastObservedNames`).
+   * A zero-tool observation NEVER clears `everToolBearing` (a server
+   * that once bore tools does not become a zero-tool server by
+   * fluke — only a fresh mount re-seeds the record). `null` (an
+   * unreadable surface) leaves the record untouched.
+   * @param {object} state - the session's consumption state.
+   * @param {string} serverName - the MCP server.
+   * @param {string[]|null} names - the observed server-qualified names
+   *   (`null` = unreadable surface — the record is left alone).
+   */
+  function recordMcpToolWitness(state, serverName, names) {
+    if (names === null) return
+    const record = state.mcpToolWitness.get(serverName) ?? { everToolBearing: false, lastObservedNames: [] }
+    record.lastObservedNames = [...names]
+    if (names.length > 0) record.everToolBearing = true
+    state.mcpToolWitness.set(serverName, record)
+  }
+
+  /**
+   * F15 (plan §5.3) — the IDEMPOTENT exhausted-fiber retirement. After
+   * a confirmed loss the upstream supervisor has stopped reconnecting;
+   * unless the plugin retires the exhausted fiber, the server is a
+   * PERMANENT DEAD SLOT (upstream never retries + the plugin's
+   * `!mcpFibers.has(name)` mount guard never re-mounts). Retirement:
+   * the materialization slot is written `failed` with
+   * `lastAttemptAt = now` (the existing 30 s retry cooldown then blocks
+   * a same-boundary remount — the failure is NOT "washed away" by an
+   * immediate fresh mount, plan §5.3), the fiber is disposed + deleted,
+   * the witness record is cleared (a fresh remount re-seeds it), and
+   * EXACTLY ONE `capability-lost` telemetry is written
+   * (`mcp-public-tool-surface` provenance, plan §11).
+   *
+   * IDEMPOTENCE (plan L6 / §5.3): a repeat call finds no fiber and is
+   * a total no-op — NO double dispose, NO second `capability-lost`, NO
+   * attempt advance, NO slot rewrite.
+   * @param {object} state - the session's consumption state.
+   * @param {string} serverName - the MCP server.
+   * @param {string} reason - the plugin-owned reason code (provenance).
+   * @returns {Promise<{retired: boolean}>} whether THIS call performed
+   *   the retirement (a repeat call reports `retired: false`).
+   */
+  async function retireExhaustedMcpFiber(state, serverName, reason) {
+    const fiber = state.mcpFibers.get(serverName)
+    if (fiber === undefined) {
+      // Already retired (or never mounted) — the idempotent no-op.
+      return { retired: false }
+    }
+    const slot = state.mcpMaterialization.get(serverName)
+    const attempts = slot !== undefined && typeof slot.attempts === 'number' ? slot.attempts : 0
+    state.mcpMaterialization.set(
+      serverName,
+      { status: 'failed', attempts, lastAttemptAt: Date.now(), reason },
+    )
+    state.mcpFibers.delete(serverName)
+    state.mcpActivationErrors.delete(serverName)
+    state.mcpToolWitness.delete(serverName)
+    try {
+      fiber.dispose()
+    } catch (error) {
+      observations.push(`p6t6: mcp fiber retire dispose failed [server ${serverName}]: ${error instanceof Error ? error.message : String(error)}`)
+    }
+    observations.push(`p6t6: mcp fiber retired [server ${serverName}] (confirmed loss: ${reason})`)
+    await emitMcpCapabilityEvent(state, 'capability-lost', serverName, 'unreachable', attempts, reason, 'mcp-public-tool-surface')
+    return { retired: true }
+  }
+
+  /**
+   * F15 (plan §5.1-C) — the confirmed-loss detector: observe one
+   * server's CAPABILITY through its public tool surface on one live
+   * session. This is a capability operational witness, NOT transport
+   * socket state (plan §3.1). Classification (plan §5.1-C rules):
+   *
+   *   1. no live fiber here → defer `unknown` (the probe port folds the
+   *      materialization slot — a `failed` slot stays unreachable
+   *      through the legacy path);
+   *   2. fiber + readable non-empty surface → `reachable` (a fresh
+   *      generation re-synced — §9.4: a successful tool-generation
+   *      swap is NOT a loss);
+   *   3. fiber + empty surface + `everToolBearing` + NOT a
+   *      plugin-initiated removal + still policy-targeted →
+   *      CONFIRMED LOSS: retire the exhausted fiber (exactly once) and
+   *      report `unreachable` + `confirmedLoss`;
+   *   4. fiber + `everToolBearing === false` (a zero-tool server —
+   *      L3) → `unknown` (observation unavailable — a zero-tool mount
+   *      is NEVER a fabricated `unreachable`).
+   *
+   * A probe that CANNOT observe (the surface unreadable) fails soft to
+   * `unknown` (plan §C.10 gate 3) — never a throw, never a fabricated
+   * `unreachable`.
+   * @param {object} state - the session's consumption state.
+   * @param {string} serverName - the MCP server (the capability name).
+   * @returns {Promise<{verdict: string, reason?: string, confirmedLoss?: boolean}>}
+   */
+  async function observeMcpOperationalWitness(state, serverName) {
+    const fiber = state.mcpFibers.get(serverName)
+    if (fiber === undefined) {
+      return { verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE }
+    }
+    const names = readMcpServerToolSurface(state, serverName)
+    if (names === null) {
+      return { verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE }
+    }
+    recordMcpToolWitness(state, serverName, names)
+    if (names.length > 0) {
+      return { verdict: 'reachable' }
+    }
+    const record = state.mcpToolWitness.get(serverName)
+    if (record === undefined || !record.everToolBearing) {
+      // L3: a zero-tool server (or an unreadable first observation) —
+      // NOT a loss; the live-loss observation degrades to unknown.
+      return { verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE }
+    }
+    // Intentional-removal suppression (plan §5.2 / §3.4): a
+    // plugin-initiated disposal (policy deny, residency drop, row
+    // teardown/close) is NOT a runtime loss — no telemetry, no
+    // retirement.
+    if (state.mcpIntentionalRemoval.has(serverName)) {
+      return { verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE }
+    }
+    if (state.mcpViews !== undefined && state.mcpViews[serverName]?.allowed !== true) {
+      // The server is no longer in the current policy target set.
+      return { verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE }
+    }
+    if (closing === true) {
+      // Row teardown in flight — the disposal below is the row stop.
+      return { verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE }
+    }
+    // CONFIRMED LOSS — the retirement runs in the SAME owned step (the
+    // probe), so the requirement gate of the same boundary sees the
+    // failed slot and BLOCKS (plan §5.3 ordering).
+    await retireExhaustedMcpFiber(state, serverName, MCP_REASON_PUBLIC_TOOL_SURFACE_WITHDRAWN)
+    return {
+      verdict: 'unreachable',
+      reason: MCP_REASON_PUBLIC_TOOL_SURFACE_WITHDRAWN,
+      confirmedLoss: true,
+    }
+  }
+
   /**
    * Mount (or dispose) the live mini-MCP servers on one agent per the
    * per-server durable mcp facet views (multi-mcp C5/C6; contract I4).
@@ -1248,16 +1575,25 @@ export function createAgentBindings(deps) {
    *
    * Deny-first ordering (plan §2.5): every mounted server OUTSIDE the
    * target set is disposed BEFORE any new mount, so a failed new mount can
-   * never leave a denied server exposed. Newly-mounted fibers commit to the
-   * live set only when EVERY target server activated; any failure this
-   * round (an activation rejection OR a policy-allowed server with no
-   * configured port) rolls back this round's NEW fibers — the denied
-   * disposals above are NOT restored (they are the durable decision, not a
-   * side effect) — and the error propagates (fail-closed: the setup /
-   * request boundary fails, the request never runs on a partial MCP
-   * surface; a failed server is simply absent, never half-mounted).
+   * never leave a denied server exposed.
+   *
+   * PER-SERVER MOUNT TRANSACTION (pre-alpha3 PR-C §C.6): the all-or-nothing
+   * activation is REPLACED. Each target server is mounted independently: a
+   * SUCCESS commits its fiber to the live set immediately (it never waits
+   * for the others); a FAILURE lands in that server's per-server
+   * materialization slot (`state.mcpMaterialization`) as `failed` (with the
+   * attempt count + a retry cooldown) WITHOUT rolling back the healthy
+   * fibers — one failed server must NOT strand the mounted ones (the C.10
+   * gate: C down → A/B stay mounted). The denied disposals above are NOT
+   * restored (they are the durable decision, not a side effect). A failed
+   * server is isolated (a `failed` slot, retried at the next boundary after
+   * the cooldown) — never half-mounted, never a setup/boundary failure: the
+   * request runs on the healthy surface, and each transition is visible
+   * through the per-server slot, the unified runtime status, and the durable
+   * capability-runtime telemetry (a `mount-failed` / `mount-restored` event).
    * @param {object} state - the session's consumption state (holds the
-   *   per-server fibers / activation errors / last-applied views) AND —
+   *   per-server fibers / activation errors / last-applied views /
+   *   materialization slots) AND —
    *   PR #23 review fix (Finding 1, plan §6) — `mcpMountCtx`: the
    *   Agent-keyed scope context every serverName is registered under
    *   (the agent's own ctx when it already carries the agent's scope tag,
@@ -1289,29 +1625,56 @@ export function createAgentBindings(deps) {
     for (const name of [...state.mcpFibers.keys()]) {
       if (targetServerNames.includes(name)) continue
       const fiber = state.mcpFibers.get(name)
-      state.mcpFibers.delete(name)
-      state.mcpActivationErrors.delete(name)
+      // F15 (plan §5.2): this is a PLUGIN-INITIATED removal (the policy
+      // deny — the durable decision unmounting the server): the exact
+      // suppression sequence (add intentional-removal → dispose →
+      // delete fiber → clean witness → remove intentional-removal).
+      // A runtime-loss telemetry (capability-lost /
+      // MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN) must NEVER come from this
+      // path — the witness honors the flag if a probe ever observes
+      // the disposal window.
+      state.mcpIntentionalRemoval.add(name)
       try {
         fiber.dispose()
       } catch (error) {
         observations.push(`p6t6: mcp fiber dispose failed [server ${name}]: ${error instanceof Error ? error.message : String(error)}`)
       }
+      state.mcpFibers.delete(name)
+      state.mcpActivationErrors.delete(name)
+      state.mcpToolWitness.delete(name)
+      state.mcpIntentionalRemoval.delete(name)
     }
     // (3) mounts = target − already mounted, in CONFIGURED order (the
     //     deterministic activation order; C2: the name is the identity).
     const mounts = configured.filter((s) => targetServerNames.includes(s.name) && !state.mcpFibers.has(s.name))
     if (mounts.length === 0) return
-    // (4-5) mount each — the port check FIRST (a policy-allowed server
-    //       without a port fails closed with the server NAMED — plan §6.8
-    //       case 2; a server NOT in the target is never port-checked, so
-    //       an unselected port-null server cannot fail the setup — case 1)
-    //       — successful fibers collect in a TEMPORARY set: nothing commits
-    //       to state until every target server activated.
-    const fresh = []
-    let active = null // the server whose step is in flight (rollback target)
-    try {
-      for (const server of mounts) {
-        active = server
+    // (4-5) PER-SERVER MOUNT TRANSACTION (plan §C.6): each target server is
+    //       mounted independently. A success commits its fiber to the live
+    //       set immediately (it never waits for the others); a failure lands
+    //       in that server's materialization slot as `failed` WITHOUT
+    //       rolling back the healthy fibers. The port check runs FIRST (a
+    //       policy-allowed server without a port fails closed WITH the
+    //       server named — plan §6.8 case 2 — but isolates: the other
+    //       servers still mount); a server NOT in the target is never
+    //       port-checked (an unselected port-null server cannot block the
+    //       setup — case 1).
+    const now = Date.now()
+    for (const server of mounts) {
+      const slot = state.mcpMaterialization.get(server.name)
+      // Cooldown: a server in the retry cooldown window (a recent failed
+      // attempt) is SKIPPED this round — it stays `failed` (a pending
+      // retry) and is re-probed at the next boundary after the cooldown
+      // elapses (plan §C.6 boundary retry + cooldown; no hot retry loop).
+      if (
+        slot !== undefined &&
+        slot.status === 'failed' &&
+        now - slot.lastAttemptAt < MCP_RETRY_COOLDOWN_MS
+      ) {
+        continue
+      }
+      let mounted = false
+      let reason
+      try {
         if (server.port === null) {
           throw new Error(`p6t6: the durable policy allows mcp server '${server.name}' but no mini-MCP port is configured (config.mcpServers port for '${server.name}')`)
         }
@@ -1325,29 +1688,51 @@ export function createAgentBindings(deps) {
           headers: {},
           toolCallTimeoutMs: 15_000,
           failOnStartupError: true,
+          // F15 (plan §5.1-A): the explicit SHORT reconnect policy
+          // (never the 0.1.7 defaults) — the 3.5 s pure-backoff grace
+          // after which the upstream supervisor withdraws the server's
+          // tools (the confirmed-loss signal this task classifies).
+          reconnect: MCP_UPSTREAM_RECONNECT_POLICY,
         })
         await fiber
-        fresh.push({ name: server.name, fiber })
+        state.mcpFibers.set(server.name, fiber)
+        mounted = true
+      } catch (error) {
+        reason = error instanceof Error ? error.message : String(error)
       }
-    } catch (error) {
-      // (6) ROLLBACK this round's NEW fibers only (the step-2 denied
-      //     disposals stand); record the failed server's error, observe
-      //     with the server named (I8), and fail the setup / boundary.
-      //     (`active` is always set when we reach this catch: every throw
-      //     happens inside the loop after `active = server`.)
-      for (const { fiber } of fresh) {
-        try { fiber.dispose() } catch { /* the fiber is already dead */ }
+      // (6) PER-SERVER IMMEDIATE COMMIT: the success joins the live set NOW
+      //     (no rollback of the healthy fibers); the failure records its
+      //     slot (attempts + lastAttemptAt + reason) + the legacy error map
+      //     (the harness state route reads it) + a telemetry event. A
+      //     `failed` → `mounted` transition is a RESTORE (the C.10 gate: C
+      //     recovers → next boundary auto-mount).
+      const attempts = (slot !== undefined && typeof slot.attempts === 'number' ? slot.attempts : 0) + 1
+      const wasFailed = slot !== undefined && slot.status === 'failed'
+      state.mcpMaterialization.set(
+        server.name,
+        mounted
+          ? { status: 'mounted', attempts, lastAttemptAt: now }
+          : { status: 'failed', attempts, lastAttemptAt: now, reason },
+      )
+      if (mounted) {
+        state.mcpActivationErrors.delete(server.name)
+        // F15 (plan §5.1-B): seed the EPHEMERAL tool witness from the
+        // LIVE public surface right after the successful activation —
+        // a tool-bearing mount marks `everToolBearing`; a zero-tool
+        // mount seeds the record with `everToolBearing: false` (the
+        // L3 baseline: never a fabricated `unreachable`). A fresh
+        // remount after a confirmed loss re-seeds the record (the
+        // retirement cleared it).
+        recordMcpToolWitness(state, server.name, readMcpServerToolSurface(state, server.name))
+        if (wasFailed) {
+          observations.push(`p6t6: mcp mount restored [server ${server.name}] (attempt ${attempts})`)
+          await emitMcpCapabilityEvent(state, 'mount-restored', server.name, 'reachable', attempts, undefined)
+        }
+      } else {
+        state.mcpActivationErrors.set(server.name, reason)
+        observations.push(`p6t6: mcp activation failed [server ${server.name}]: ${reason}`)
+        await emitMcpCapabilityEvent(state, 'mount-failed', server.name, 'unreachable', attempts, reason)
       }
-      const message = error instanceof Error ? error.message : String(error)
-      state.mcpActivationErrors.set(active.name, message)
-      observations.push(`p6t6: mcp activation failed [server ${active.name}]: ${message}`)
-      throw error
-    }
-    // (7) COMMIT: every target server activated — the new fibers join the
-    //     live set and any stale error slot of a re-mounted server clears.
-    for (const { name, fiber } of fresh) {
-      state.mcpFibers.set(name, fiber)
-      state.mcpActivationErrors.delete(name)
     }
   }
 
@@ -1642,6 +2027,25 @@ export function createAgentBindings(deps) {
         mcpViews,
         mcpFibers: new Map(),
         mcpActivationErrors: new Map(),
+        // pre-alpha3 PR-C §C.6: the per-server MCP materialization slots —
+        // { status: 'mounted'|'failed', attempts, lastAttemptAt, reason? }.
+        // EPHEMERAL (rebuilt from the first post-restart reconcile; never a
+        // persisted fabricated failure) — the durable authority is the
+        // capability-runtime telemetry. A `mounted` slot = a live fiber; a
+        // `failed` slot = an isolated failure (retried after the cooldown).
+        mcpMaterialization: new Map(),
+        // F15 (plan §5.1-B / §12): the EPHEMERAL per-server public
+        // tool-surface witness — { everToolBearing, lastObservedNames }.
+        // NEVER persisted (the durable record is the capability-runtime
+        // telemetry); a zero-tool server stays `everToolBearing: false`
+        // (its live-loss observation degrades to unknown, never a
+        // fabricated unreachable).
+        mcpToolWitness: new Map(),
+        // F15 (plan §5.2 / §12): the EPHEMERAL set of server names in a
+        // PLUGIN-INITIATED removal (policy deny / residency drop / row
+        // teardown) — the confirmed-loss detector must not emit runtime
+        // loss telemetry for these disposals.
+        mcpIntentionalRemoval: new Set(),
         appliedRecordIds: new Set(),
         // PR #23 review fix (Finding 1, plan §6): the Agent-keyed MCP
         // scope bridge. `mcpMountCtx` is the context every mini-MCP
@@ -1809,7 +2213,12 @@ export function createAgentBindings(deps) {
       // section), after the tools and before the mcp mount: before ANY work
       // can run on this session. The reused resolver evaluates the preset
       // substrate first (complete -> FATAL, thrown before any install).
-      installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath, teamRootSid)
+      // pre-alpha3 W2-A (review fix F4, guide §5 B): the production path
+      // RESOLVES the real observed substrate first (the await) — an
+      // `unresolved` substrate throws BEFORE any install (fail closed), and
+      // the await keeps the install strictly before any work (the slot's
+      // apply + the pending flush below both run after it).
+      await installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath, teamRootSid)
       // A pre-setup personaSurface.installScopedPersona for this session
       // (the pending window) flushes here too — still before any work.
       const pendingIdentity = personaPending.get(sessionId)
@@ -2255,15 +2664,13 @@ export function createAgentBindings(deps) {
    * — the templateId is REQUIRED, absent -> the resolver's loud TypeError),
    * and installs it through the prompt surface below.
    */
-  function getPersonaSlot() {
-    if (personaSlot !== undefined) return personaSlot
-    const substrate = personaSubstrate()
-    personaSlot = createPersonaOverlaySlot({
-      presetSeam: {
-        // The seam is keyed by the root session id ONLY (Architecture §13.1 —
-        // members inherit the root substrate); one substrate for the team.
-        getSubstrate: () => ({ presetId: substrate.presetId, personaKind: substrate.personaKind }),
-      },
+  // Build ONE persona overlay slot over the given preset seam. The
+  // personaSource / promptSurface are SHARED by every slot of this row
+  // (BP-F / TCM-D4 / D3 semantics are identical on the legacy and the
+  // production path — only the seam's substrate fact differs).
+  function buildPersonaSlot(presetSeam) {
+    return createPersonaOverlaySlot({
+      presetSeam,
       personaSource: {
         // BP-F (issue #2 blueprint-loading, plan §11.2): the persona source
         // resolves the OWNING team root's bound blueprint per call (the
@@ -2340,7 +2747,69 @@ export function createAgentBindings(deps) {
         },
       },
     })
+  }
+
+  function getPersonaSlot() {
+    if (personaSlot !== undefined) return personaSlot
+    const substrate = personaSubstrate()
+    // The LEGACY (factory / test-world) path: config.presetSubstrate ?? the
+    // S5A A11 standard substrate — zero behavior change. The seam is keyed
+    // by the root session id ONLY (Architecture §13.1 — members inherit the
+    // root substrate); one substrate for the team.
+    personaSlot = buildPersonaSlot({
+      getSubstrate: () => ({ presetId: substrate.presetId, personaKind: substrate.personaKind }),
+    })
     return personaSlot
+  }
+
+  // pre-alpha3 W2-A (review fix F4, guide §5 B): the PRODUCTION persona
+  // substrate — the REAL observed effective composition, resolved per
+  // OWNING root on first bind and cached ONLY on success:
+  //   - `unresolved` -> a typed throw (the bind fails closed — the setup
+  //     rejection rolls the unpublished agent back; the slot is NOT
+  //     cached, so a later bind RE-PROBES — never a shipped-state 'standard'
+  //     guess, guide §5 B "不能继续 shipped-state guess");
+  //   - a settled observation (standard / complete / absent) -> the slot is
+  //     built over that substrate and cached for the root (complete still
+  //     hits the adapter's §13.5 FATAL at apply — the conflict is caught
+  //     before any work, as before).
+  // The in-flight map dedupes concurrent first binds of the same root (the
+  // setup callback is async; two agents of one root may race the first
+  // observation).
+  const productionPersonaSlots = new Map()
+  const productionPersonaInflight = new Map()
+  async function getProductionPersonaSlot(rootSessionId) {
+    const key = String(rootSessionId)
+    const cached = productionPersonaSlots.get(key)
+    if (cached !== undefined) return cached
+    const pending = productionPersonaInflight.get(key)
+    if (pending !== undefined) return pending
+    const build = (async () => {
+      const substrate = await resolvePersonaSubstrate(key)
+      if (substrate === undefined || substrate === null || typeof substrate !== 'object') {
+        throw new Error(`agent-bindings: persona substrate for root '${key}': the resolver returned no substrate record (fail closed)`)
+      }
+      if (typeof substrate.presetId !== 'string' || substrate.presetId === '') {
+        throw new Error(`agent-bindings: persona substrate for root '${key}': the resolver returned no presetId (fail closed)`)
+      }
+      if (substrate.personaKind === 'unresolved') {
+        throw new Error(`agent-bindings: persona substrate for root '${key}' is UNRESOLVED (${substrate.reason !== undefined && substrate.reason !== '' ? String(substrate.reason) : 'the effective composition could not be observed'}) — the bind fails closed (a later bind re-probes; never a shipped-state guess)`)
+      }
+      const slot = buildPersonaSlot({
+        // The seam is keyed by the root session id ONLY (Architecture
+        // §13.1 — members inherit the root substrate); one observed
+        // substrate for the team.
+        getSubstrate: () => ({ presetId: substrate.presetId, personaKind: substrate.personaKind }),
+      })
+      productionPersonaSlots.set(key, slot)
+      return slot
+    })()
+    productionPersonaInflight.set(key, build)
+    try {
+      return await build
+    } finally {
+      productionPersonaInflight.delete(key)
+    }
   }
 
   /**
@@ -2409,7 +2878,7 @@ export function createAgentBindings(deps) {
    *    neither a row nor a hint fails closed with a loud error (no silent
    *    persona-less member).
    */
-  function installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath, teamRootSid) {
+  async function installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath, teamRootSid) {
     // A2 (RC2 repair, plan §5.3): the row-config skip is FACTORY-WORLD ONLY
     // (no resolver injected — there the empty anchor means no persona
     // authority at all). With the resolver injected (the production host
@@ -2418,13 +2887,23 @@ export function createAgentBindings(deps) {
     // through the resolver's typed throw — NEVER a silent skip, never a
     // row-anchor fallback.
     if (resolveBoundBlueprint === undefined && String(config.blueprintSource ?? '') === '') return
-    const slot = getPersonaSlot()
     // T12-GLUE: the session may be the root of its OWN team in this row's
     // domain (the handoff target) — it then embodies that team's leader
     // instance, exactly as the boot root does.
     const teamRoot = teamRootSid !== undefined
       ? String(teamRootSid)
       : (sessionId === rootSid ? rootSid : undefined)
+    // pre-alpha3 W2-A (review fix F4, guide §5 B): the PRODUCTION host
+    // injects resolvePersonaSubstrate — the persona substrate is the REAL
+    // observed effective composition of the OWNING root (resolved once per
+    // root, fail closed on `unresolved` — the setup rejection rolls the
+    // unpublished agent back, and a later bind re-probes). A factory /
+    // test world (dep absent) keeps the LEGACY seam (config.presetSubstrate
+    // ?? the S5A 'standard' default) — zero behavior change.
+    const slot =
+      resolvePersonaSubstrate !== undefined && teamRoot !== undefined
+        ? await getProductionPersonaSlot(teamRoot)
+        : getPersonaSlot()
     let target
     let record
     if (teamRoot !== undefined && teamRoot === sessionId) {
@@ -3720,6 +4199,16 @@ export function createAgentBindings(deps) {
     const sid = String(sessionId)
     const handle = liveAgents.get(sid)
     if (handle === undefined) return { dropped: false } // the handle may be absent: no-op by contract
+    // F15 (plan §5.2): a residency drop is a PLUGIN-INITIATED removal —
+    // mark every mounted fiber of the session intentional BEFORE the
+    // disposal (the agent-scope unwind disposes each MCP fiber inside
+    // `handle.dispose()`; the fiber RECORDS survive in the consumption
+    // state until the next setup, so a probe racing the drop must not
+    // classify the withdrawal as a runtime loss — no telemetry).
+    const dropState = consumptionState.get(sid)
+    if (dropState !== undefined && dropState !== null) {
+      for (const name of dropState.mcpFibers.keys()) dropState.mcpIntentionalRemoval.add(name)
+    }
     liveAgents.delete(sid)
     try {
       await handle.dispose()
@@ -3833,11 +4322,19 @@ export function createAgentBindings(deps) {
       // multi-mcp (contract I4): every session may hold several mini-MCP
       // fibers (one per mounted server) — dispose ALL of them, in every
       // session's state, before the maps are cleared with the state.
+      // F15 (plan §5.2): row teardown is a PLUGIN-INITIATED removal —
+      // mark every mounted fiber intentional BEFORE the disposals (a
+      // probe racing the close window must not emit runtime loss
+      // telemetry for the row stop).
+      for (const name of state.mcpFibers.keys()) state.mcpIntentionalRemoval.add(name)
       for (const fiber of [...state.mcpFibers.values()]) {
         try { fiber.dispose() } catch { /* the scope unwind covers it */ }
       }
       state.mcpFibers.clear()
       state.mcpActivationErrors.clear()
+      // pre-alpha3 PR-C §C.6: the ephemeral materialization slots drop with
+      // the state (a row-stop never persists a fabricated failure).
+      state.mcpMaterialization.clear()
       // Finding 1 bridge (plan §6): the per-agent MCP scope fiber (a child
       // of the agent's ctx — the agent disposal already unwinds it, this
       // is the deterministic belt for a state outliving its agent).
@@ -3861,10 +4358,42 @@ export function createAgentBindings(deps) {
     executeTool,
     getConsumptionState: (sessionId) => consumptionState.get(String(sessionId)),
     resolveConsumptionViews,
+    // pre-alpha3 PR-C §C.6: the manual recheck seam — clears a session's
+    // FAILED MCP materialization slots so the next boundary re-attempts those
+    // servers (ignoring the retry cooldown). Non-authority: it only schedules
+    // re-probes; the durable decision is the mcp facet. Mounted servers are
+    // unaffected (they live in `mcpFibers`, not the materialization map).
+    recheckMcpServers: (sessionId) => {
+      const state = consumptionState.get(String(sessionId))
+      if (state === undefined) return false
+      for (const name of [...state.mcpMaterialization.keys()]) {
+        const slot = state.mcpMaterialization.get(name)
+        if (slot !== undefined && slot.status === 'failed') state.mcpMaterialization.delete(name)
+      }
+      return true
+    },
     observations,
     governanceAuthority,
     dropResidency,
     close,
+    // F15 (MCP live-loss, plan §5/§6/§7): the public operational
+    // witness — the production readiness probe port's authority (the
+    // boundary pull-probe over the public tool surface; `tools/change`
+    // is never a classifier). Per session: reads the server's live
+    // public tool surface, updates the ephemeral witness, and
+    // classifies — a confirmed loss (fiber present + previously
+    // tool-bearing + surface withdrawn + still policy-targeted)
+    // retires the exhausted fiber exactly once (idempotent) and
+    // reports `unreachable` + `confirmedLoss`; plugin-initiated
+    // removals and zero-tool servers degrade to `unknown` (no
+    // telemetry, no retirement). Unknown for an absent session.
+    observeMcpOperationalWitness: (sessionId, serverName) => {
+      const state = consumptionState.get(String(sessionId))
+      if (state === undefined || state === null) {
+        return Promise.resolve({ verdict: 'unknown', reason: MCP_REASON_LIVE_WITNESS_UNAVAILABLE })
+      }
+      return observeMcpOperationalWitness(state, String(serverName))
+    },
     // the provider-facing ports (verbatim port)
     childFactory,
     sessionDurability,

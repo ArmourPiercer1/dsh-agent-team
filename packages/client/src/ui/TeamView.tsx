@@ -81,13 +81,13 @@ export interface TeamViewCreationFace {
    * aware CREATE-ONLY creation (stamps contract version 2; the only
    * creation wrapper the new UI uses).
    */
-  readonly teamCreateV2: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
+  readonly teamCreate: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
   /**
    * `team.admitInitialWork` (contract v2, v2-only method, TCM M4 / plan
    * §15.6) — the deferred creation-time initial work (stamps contract
    * version 2).
    */
-  readonly teamAdmitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
+  readonly teamAdmitInitialWork: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
   /**
    * The creation-path session open (D-3): opens the host-created root
    * session, re-pulling the host list once when the stream increment
@@ -1251,8 +1251,8 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
                 listCatalog={creation.listCatalog}
                 getCatalog={creation.getCatalog}
                 probeCompatibility={creation.probeCompatibility}
-                teamCreateV2={creation.teamCreateV2}
-                teamAdmitInitialWorkV2={creation.teamAdmitInitialWorkV2}
+                teamCreate={creation.teamCreate}
+                teamAdmitInitialWork={creation.teamAdmitInitialWork}
                 openCreatedSession={creation.openCreatedSession}
                 onCreated={() => setCreationOpen(false)}
                 pullProjection={pullProjection}

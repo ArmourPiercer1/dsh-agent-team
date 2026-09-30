@@ -1,0 +1,18 @@
+# p6t1-parallel A/B — DATASET 3, run 3 (TREE: folded)
+# WORKTREE: /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure
+# HEAD: 3b7039e89f2ab9a072d89e2e3caa2af01fe7d355
+# CMD: pnpm exec vitest run packages/runtime/test/p6t1-parallel.test.ts
+# START: 2026-09-30T05:55:26Z
+# NOTE: untracked kit edits present (tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs — Part-2 kit fixes, NOT imported by the test under run); packages/ + runtime test tree = exact HEAD state
+────────────────────────────────────────────────────────────
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure
+
+ ✓ packages/runtime/test/p6t1-parallel.test.ts (9 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  13:55:26
+   Duration  611ms (transform 371ms, setup 0ms, import 526ms, tests 4ms, environment 0ms)
+
+# EXIT: 0

@@ -1,0 +1,102 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime
+
+ ❯ test/requirement-d1-d3-decision-scoping.test.ts (42 tests | 3 failed) 12ms
+     ✓ A1 — a required live-unknown subject is PENDING (never a verdict) 1ms
+     ✓ A2 — a confirmed DOWN takes precedence (a sibling unknown is subsumed) 0ms
+     ✓ A3 — the COLD member exemption (materialization not-applicable is never blocked, E.11 #1) 0ms
+     ✓ A4 — an OPTIONAL required=false requirement never blocks 0ms
+     ✓ A5 — no observations (the legacy / factory world): the rule is off 0ms
+     ✓ B1 — the required live-unknown fact is DROPPED; the live-observed facts are kept 0ms
+     ✓ B2 — a live-reachable or live-unreachable observation never drops (real verdicts stand) 0ms
+     ✓ B3 — the PERSONA domain is NEVER touched (U5 FROZEN — the probe persona semantics stand) 0ms
+     ✓ B4 — no observations: nothing is dropped (the rule is off) 0ms
+     ✓ C1 — a required live-unknown (slot pending) blocks with the TYPED PENDING outcome 0ms
+     ✓ C2 — witness: the SAME world on the legacy wiring (no read port) is the seeded false OPEN 0ms
+     ✓ C3 — the block is RECHECKABLE: the slot observed at the next boundary clears it 0ms
+     ✓ C4 — the no-seed unknown is RECLASSIFIED to PENDING (the legacy wiring keeps the FATAL) 0ms
+     ✓ C5 — the DOWN precedence: a confirmed down + a sibling unknown keeps the actionable FATAL 0ms
+     ✓ C6 — the COLD member is never blocked (E.11 negative #1, unit level; the exemption is identical on both wirings) 0ms
+     ✓ C7 — the RESUMING worker (slot pending) PENDING-blocks the first delegate (the kit B5 first half, unit level) 0ms
+     ✓ C8 — the slot FAILED seconds later: the same delegate is the typed down-category FATAL (the kit B5 second half, unit level) 0ms
+     ✓ D1a — witness: the pre-fix boot-scoped wiring FATALs step 6 on a healthy world (the PF-1 signature at the provider) 0ms
+     ✓ D1b — the per-blueprint seam passes step 6 on the SAME healthy world (the activation completes) 0ms
+     ✓ D1c — the inverted durable aggregate stops: the all-up world probes OPEN and the REPROBE rewrites OPEN (never FATAL) 0ms
+     ✓ D1c witness — the pre-fix boot-scoped feed inverts the durable aggregate (the corrupted FATAL row) 0ms
+     ✓ D3a — the provider PENDING-blocks the seeded live-unknown (recovery dispatch unavailable) 0ms
+     ✓ D3b — the no-seed unknown is reclassified to PENDING at the provider (the FATAL category is not kept) 0ms
+     ✓ D3c — the v2 resuming worker (slot pending) PENDING-blocks the admission (the engine PASS is voided) 0ms
+     ✓ D3d — the COLD worker (E.11 #1) is never PENDING-blocked: the first delegate activates 0ms
+     ✓ E1 — the seeded false OPEN at creation is the typed PENDING (never a proceed) 0ms
+     ✓ E2 — the no-seed FATAL is reclassified to PENDING (the blocked scope has no confirmed down) 0ms
+     ✓ E3 — the DOWN precedence: the confirmed down keeps the actionable FATAL 0ms
+     ✓ E4 — PENDING beats CONSENT-REQUIRED (the required pending is the stronger block) 0ms
+     ✓ E5 — the DISABLED template is resolved: its pending requirement never blocks 0ms
+     ✓ E6 — the v2 template no-seed FATAL is reclassified to PENDING (the non-disabled blocked template) 0ms
+     ✓ F1 — the required live-unknown fact is dropped: BLOCKED_FATAL names exactly that server (predicts the gate PENDING) 0ms
+     ✓ F2 — the healthy world: the drop is a no-op (OPEN, two PASS) 0ms
+     ✓ F3 — witness: the SAME pending world on the legacy wiring is the seeded false OPEN (pre-D-3) 0ms
+     ✓ F4 — the PERSONA domain is untouched (U5 FROZEN): the drop filter is active on mcp, byte-identical on persona 0ms
+     × X1 — NEVER-OBSERVED + the seed available:true: the creation preflight PROCEEDS (not PENDING) 4ms
+     × X2 — NEVER-OBSERVED + the seed available:true: the probe is OPEN (probe == gate, INV-9.4 explicit) 1ms
+     × X3 — NEVER-OBSERVED + the seed available:false / ABSENT: FATAL (the seed truth decides; the exemption is not a blanket OPEN) 1ms
+     ✓ X4 — IN-FLIGHT (a pending slot exists on a live session): PENDING at the preflight AND the gate (the B5 window is preserved) 0ms
+     ✓ X5 — the settled pins are unchanged: reachable → OPEN / proceed; unreachable → FATAL (the tri-state is silent on settled verdicts) 0ms
+     ✓ the C-section gate outcomes are typed (allowed outcome / typed error) 0ms
+     ✓ the PENDING_BLOCK typed-code family is the closed const (the single source) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/requirement-d1-d3-decision-scoping.test.ts > PF-2 G — the tri-state: NEVER-OBSERVED is seed-satisfied, IN-FLIGHT stays PENDING > X1 — NEVER-OBSERVED + the seed available:true: the creation preflight PROCEEDS (not PENDING)
+AssertionError: expected 'pending' to be 'proceed' // Object.is equality
+
+Expected: "proceed"
+Received: "pending"
+
+ ❯ test/requirement-d1-d3-decision-scoping.test.ts:1475:26
+    1473| describe('PF-2 G — the tri-state: NEVER-OBSERVED is seed-satisfied, IN…
+    1474|   it('X1 — NEVER-OBSERVED + the seed available:true: the creation pref…
+    1475|     expect(D.x1.outcome).toBe(PREFLIGHT_OUTCOMES.proceed)
+       |                          ^
+    1476|     expect(D.x1.pendingRequirementIds ?? []).toEqual([])
+    1477|     expect(D.x1.fatalRequirementIds.length).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/requirement-d1-d3-decision-scoping.test.ts > PF-2 G — the tri-state: NEVER-OBSERVED is seed-satisfied, IN-FLIGHT stays PENDING > X2 — NEVER-OBSERVED + the seed available:true: the probe is OPEN (probe == gate, INV-9.4 explicit)
+AssertionError: expected 'BLOCKED_FATAL' to be 'OPEN' // Object.is equality
+
+Expected: "OPEN"
+Received: "BLOCKED_FATAL"
+
+ ❯ test/requirement-d1-d3-decision-scoping.test.ts:1482:25
+    1480|
+    1481|   it('X2 — NEVER-OBSERVED + the seed available:true: the probe is OPEN…
+    1482|     expect(D.x2.status).toBe(COMPATIBILITY_STATUS.OPEN)
+       |                         ^
+    1483|     expect(D.x2.counts.pass).toBe(2)
+    1484|     expect(D.x2.counts.fatal).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/requirement-d1-d3-decision-scoping.test.ts > PF-2 G — the tri-state: NEVER-OBSERVED is seed-satisfied, IN-FLIGHT stays PENDING > X3 — NEVER-OBSERVED + the seed available:false / ABSENT: FATAL (the seed truth decides; the exemption is not a blanket OPEN)
+AssertionError: expected 'pending' to be 'fatal' // Object.is equality
+
+Expected: "fatal"
+Received: "pending"
+
+ ❯ test/requirement-d1-d3-decision-scoping.test.ts:1491:36
+    1489|     // preflight does NOT reclassify to PENDING — no confirmed down, no
+    1490|     // in-flight window).
+    1491|     expect(D.x3aPreflight.outcome).toBe(PREFLIGHT_OUTCOMES.fatal)
+       |                                    ^
+    1492|     expect([...D.x3aPreflight.fatalRequirementIds]).toEqual([REPO_ID])
+    1493|     expect(D.x3aPreflight.pendingRequirementIds ?? []).toEqual([])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 39 passed (42)
+   Start at  07:42:18
+   Duration  847ms (transform 535ms, setup 0ms, import 751ms, tests 12ms, environment 0ms)

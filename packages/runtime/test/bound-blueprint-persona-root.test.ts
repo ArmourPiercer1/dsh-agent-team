@@ -78,6 +78,7 @@ import { ADMISSION_OPEN_CODE, isTeamAgentBinderError, TEAM_AGENT_BINDER_ERROR_CO
 import type { TeamAgentBinderError } from '../agent-setup/binder/index.js'
 import { createAgentBindings as createStubBindings } from './p8s5a-stub-glue.mjs'
 import { stubGlueUrl } from './p8s5a-artifacts.mjs'
+import { agentPresetsStandardDouble } from './agent-presets-double.mjs'
 import {
   createMemberInstanceRecord,
   createTeamSessionRecord,
@@ -147,6 +148,11 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
     sessionPersistence: { ensure: async () => {} },
     workspaceRegistry: { list: () => [], resolveByPath: async () => undefined },
     teamStorageSeam: seam,
+    // pre-alpha3 W3-A (F1): the DSH public agentPresets service double — the
+    // W2-A fail-closed contract rejects service-absent worlds without an
+    // explicit row preset id; the standard double restores the shipped-state
+    // substrate through the REAL production observer.
+    agentPresets: agentPresetsStandardDouble(),
   }
   return {
     ctx: {

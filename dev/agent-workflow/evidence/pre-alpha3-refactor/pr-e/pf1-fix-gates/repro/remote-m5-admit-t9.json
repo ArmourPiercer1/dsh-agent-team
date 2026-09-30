@@ -1,0 +1,28 @@
+{
+ "type": "server-response",
+ "rpcId": "m5-admit-t9-5",
+ "result": {
+  "ok": false,
+  "error": {
+   "code": "TEAM_RUNTIME_INITIAL_WORK_ALREADY_ADMITTED",
+   "message": "TeamRuntime: team 'session-prereq-persona-prereq-2026-09-29T20-52-08' already carries a creation-time Root initial work under a different requestToken ('rt-admit-b9b-prereq-2026-09-29T20-52-08', durable sequence 35) — at most one initial work per creation; a fresh operation must use its own token only before any admission, a retry must reuse the admitted token",
+   "details": {
+    "method": "team.admitInitialWork",
+    "endpoint": "team.admitInitialWork",
+    "contractVersion": 2,
+    "requestToken": "rt-repro-admit-repro-1790717413225",
+    "reason": "domain-error",
+    "cause": {
+     "code": "TEAM_RUNTIME_INITIAL_WORK_ALREADY_ADMITTED",
+     "message": "TeamRuntime: team 'session-prereq-persona-prereq-2026-09-29T20-52-08' already carries a creation-time Root initial work under a different requestToken ('rt-admit-b9b-prereq-2026-09-29T20-52-08', durable sequence 35) — at most one initial work per creation; a fresh operation must use its own token only before any admission, a retry must reuse the admitted token",
+     "details": {
+      "rootSessionId": "session-prereq-persona-prereq-2026-09-29T20-52-08",
+      "requestToken": "rt-repro-admit-repro-1790717413225",
+      "existingToken": "rt-admit-b9b-prereq-2026-09-29T20-52-08",
+      "existingSequence": 35
+     }
+    }
+   }
+  }
+ }
+}

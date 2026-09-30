@@ -74,17 +74,19 @@ describe('P5-T2 group 2: compatible preset (complete:false) — scoped identity 
         {
           requirementId: 'team-persona-composition',
           type: 'persona',
-          subjects: ['preset-p5t2'],
+          // PR-E E.3: the persona requirement is re-keyed to the observed
+          // KIND (the composable `standard`), not the preset id.
+          subjects: ['standard'],
           complete: true,
         },
       ],
       environmentFacts: [
         {
           domain: 'persona',
-          subject: 'preset-p5t2',
+          subject: 'standard',
           available: true,
           generation: 1,
-          detail: 'effective persona section is composable (non-complete)',
+          detail: 'the mounted preset observes the composable standard persona kind',
         },
       ],
     })

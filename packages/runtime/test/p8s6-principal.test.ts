@@ -80,6 +80,7 @@ import {
 } from '../../testkit/fault-injection/file-seam.mjs'
 import * as hostEntry from '../src/plugin/host.js'
 import { stubGlueUrl } from './p8s5a-artifacts.mjs'
+import { agentPresetsStandardDouble } from './agent-presets-double.mjs'
 
 // --- the C3 fixture world -----------------------------------------------------------
 
@@ -221,6 +222,9 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
     // world does not exercise the attach port).
     workspaceRegistry: { list: () => [], resolveByPath: async () => undefined },
     teamStorageSeam: seam,
+    // pre-alpha3 W3-A (F1): the agentPresets service double (W2-A fail-closed
+    // contract — service-absent worlds without a row preset id no longer bind).
+    agentPresets: agentPresetsStandardDouble(),
   }
   const effectDisposers: Array<() => void> = []
   return {

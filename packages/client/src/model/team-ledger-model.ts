@@ -90,6 +90,22 @@ const FACT_ROW_KIND: Readonly<Record<string, TeamLedgerRowKind>> = {
  */
 const INTERNAL_FACT_TYPES: ReadonlySet<string> = new Set([
   'artifact-read-granted',
+  // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry — an
+  // operational compatibility-category fact, not user activity. Skipped by
+  // the Events section (otherwise it would land in the `unknown` family and
+  // the generic row would JSON.stringify the whole telemetry payload).
+  'capability-runtime-event',
+  // pre-alpha3 PR-E §E.5: the requirement / recovery durable facts —
+  // compatibility-category authority/audit state (the DegradationConsent,
+  // the template disable/enable, and the recovery-incident open/close
+  // records). A dedicated UI row kind for these is separate work; until
+  // then they stay in the loaded ledger model and are skipped by the Events
+  // section (otherwise each would land in the `unknown` family and the
+  // generic row would JSON.stringify the whole payload).
+  'optional-requirement-accepted',
+  'template-availability-set',
+  'recovery-incident-opened',
+  'recovery-incident-closed',
 ])
 
 /** One rendered Events-section row (one loaded ledger fact). */

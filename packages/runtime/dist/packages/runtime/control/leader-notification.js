@@ -21,6 +21,18 @@
  *   the `toolName` is echoed verbatim when present (the closed tool
  *   vocabulary), everything else is the closed record fields.
  */
+/** Render one canonical subject (pre-alpha3 PR-D, D.2) as a display
+ *  segment: the closed kind plus the kind-selected id. */
+function subjectOfDisplay(subject) {
+    switch (subject.kind) {
+        case 'instance':
+            return `instance ${subject.instanceId}`;
+        case 'template':
+            return `template ${subject.templateId}`;
+        case 'team':
+            return `team ${subject.rootSessionId}`;
+    }
+}
 /** Defensively truncate one display field (durable bound 512; the
  *  rendered text stays well below the model-input hygiene bound). */
 const SUMMARY_DISPLAY_MAX = 256;
@@ -58,7 +70,13 @@ export function renderLeaderApprovalNotification(request) {
         '',
         `requestId: ${request.requestId}`,
         `requester: ${requester}`,
-        `target: ${request.targetInstanceId}`,
+        // The canonical subject (pre-alpha3 PR-D, D.2) plus the legacy
+        // instance projection when present (byte-identical for instance
+        // records; template/team subjects have no targetInstanceId).
+        `subject: ${subjectOfDisplay(request.subject)}`,
+        ...(request.targetInstanceId !== undefined
+            ? [`target: ${request.targetInstanceId}`]
+            : []),
     ];
     const tool = bounded(request.toolName);
     if (tool !== undefined)

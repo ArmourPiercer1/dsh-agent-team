@@ -1,0 +1,1357 @@
+[
+  {
+    "tag": "ready1",
+    "method": "catalog.list",
+    "version": 1,
+    "rpcId": "ready1-g3mm7aco",
+    "params": {},
+    "at": "2026-09-28T20:42:47.813Z",
+    "status": 405,
+    "result": null
+  },
+  {
+    "tag": "ready2",
+    "method": "catalog.list",
+    "version": 1,
+    "rpcId": "ready2-el9lyo82",
+    "params": {},
+    "at": "2026-09-28T20:42:49.823Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "blueprints": [
+            {
+              "blueprintId": "team.mpr-a",
+              "revisions": [
+                1
+              ]
+            },
+            {
+              "blueprintId": "team.mpr-anchor",
+              "revisions": [
+                1,
+                2
+              ]
+            },
+            {
+              "blueprintId": "team.mpr-b",
+              "revisions": [
+                1
+              ]
+            },
+            {
+              "blueprintId": "team.mpr-main",
+              "revisions": [
+                1
+              ]
+            },
+            {
+              "blueprintId": "team.prb-ps",
+              "revisions": [
+                1
+              ]
+            }
+          ]
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "catalog.list",
+          "endpoint": "catalog.list",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  {
+    "tag": "c1-set1",
+    "method": "override.set",
+    "version": 1,
+    "rpcId": "c1-set1-exndrwmp",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "capability": "model",
+      "value": {
+        "kind": "allow",
+        "items": [
+          "deepseek-official/prb-c1-model"
+        ]
+      },
+      "actor": {
+        "kind": "human"
+      },
+      "scope": "instance",
+      "targetInstanceId": "inst-1p8kqfl09bhr"
+    },
+    "at": "2026-09-28T20:42:49.847Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "recordId": "ovr-model-inst-1p8kqfl09bhr-g0",
+          "kind": "human-override",
+          "scope": "instance",
+          "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+          "values": {
+            "model": {
+              "kind": "allow",
+              "items": [
+                "deepseek-official/prb-c1-model"
+              ]
+            }
+          },
+          "generation": 1,
+          "updatedAt": "2026-09-28T20:42:49.849Z",
+          "instanceId": "inst-1p8kqfl09bhr"
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "override.set",
+          "endpoint": "override.set",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  {
+    "tag": "c1-fu1",
+    "method": "member.followup",
+    "version": 1,
+    "rpcId": "c1-fu1-83nszl4j",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "caller": {
+        "kind": "human",
+        "humanId": "session-mpr-t1-mpr-2026-09-27T08-35-52"
+      },
+      "targetInstanceId": "inst-1p8kqfl09bhr",
+      "requestToken": "c1-fu-3hm61djj",
+      "payload": {
+        "prompt": "PR-B C1 marker PRB-C1-fk5khnb0. Reply with one short word."
+      }
+    },
+    "at": "2026-09-28T20:42:49.855Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "outcome": {
+            "status": "executed",
+            "action": "follow-up",
+            "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+            "callerRole": "human",
+            "targetInstanceId": "inst-1p8kqfl09bhr",
+            "effect": {
+              "kind": "work-admitted",
+              "instanceId": "inst-1p8kqfl09bhr",
+              "fromLifecycle": "SETTLED",
+              "lifecycleCommitted": true,
+              "sequence": 45,
+              "replayed": false,
+              "settled": true,
+              "settledSequence": 48,
+              "memberResult": {
+                "requestToken": "c1-fu-3hm61djj",
+                "status": "succeeded",
+                "body": "prb c1 ack"
+              }
+            },
+            "requestToken": "c1-fu-3hm61djj"
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "member.followup",
+          "endpoint": "member.followup",
+          "contractVersion": 1,
+          "requestToken": "c1-fu-3hm61djj",
+          "projectionGeneration": null,
+          "effectSequence": 45
+        }
+      }
+    }
+  },
+  {
+    "tag": "c6-proj1",
+    "method": "team.getProjection",
+    "version": 1,
+    "rpcId": "c6-proj1-dw9npj44",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52"
+    },
+    "at": "2026-09-28T20:42:50.032Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "projection": {
+            "schemaVersion": 2,
+            "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+            "blueprint": {
+              "blueprintId": "team.mpr-main",
+              "revision": "1",
+              "contentHash": "sha256:0586296ed45a2fa73afdd2e2bec3c411188388a06a598d037adb1f555065f0af"
+            },
+            "generation": 36,
+            "generatedAt": "2026-09-28T20:42:50.046Z",
+            "root": {
+              "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+              "createdAt": "2026-09-27T08:35:54.819Z",
+              "policyState": "default",
+              "admission": "OPEN",
+              "compatibility": {
+                "status": "OPEN",
+                "probeGeneration": 1,
+                "requirementFingerprint": "none",
+                "environmentFingerprint": "fp-v1:496d1037b98199e1",
+                "warningCount": 0,
+                "fatalCount": 0,
+                "acknowledgedWarningCount": 0,
+                "lastProbedAt": "2026-09-27T08:35:54.848Z"
+              },
+              "creationBudgetConsumed": 0,
+              "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+            },
+            "templates": [
+              {
+                "kind": "leader",
+                "templateId": "leader",
+                "displayName": "leader",
+                "contextPolicy": "persistent"
+              },
+              {
+                "kind": "member",
+                "templateId": "worker",
+                "displayName": "worker",
+                "contextPolicy": "persistent",
+                "instanceQuota": 8
+              },
+              {
+                "kind": "member",
+                "templateId": "expert",
+                "displayName": "expert",
+                "contextPolicy": "persistent",
+                "instanceQuota": 8
+              },
+              {
+                "kind": "member",
+                "templateId": "control",
+                "displayName": "control",
+                "contextPolicy": "persistent",
+                "instanceQuota": 8
+              }
+            ],
+            "members": [
+              {
+                "instanceId": "inst-04eix3v0rhrj",
+                "templateId": "expert",
+                "label": "expert-pre",
+                "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                "createdAt": "2026-09-27T08:35:55.411Z",
+                "lifecycle": "SETTLED",
+                "contextPolicy": "persistent",
+                "effectiveConfig": {
+                  "model": {
+                    "value": "deepseek-official/role-expert",
+                    "source": "member-template",
+                    "state": "inherited"
+                  },
+                  "workspace": {
+                    "value": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                    "source": "instance-creation",
+                    "state": "locked",
+                    "locked": true
+                  },
+                  "permissions": {},
+                  "autonomy": {
+                    "value": null,
+                    "source": "autonomy-overlay",
+                    "state": "inherited"
+                  }
+                },
+                "liveActivity": {
+                  "residency": "cold"
+                },
+                "childSessionId": "session-team-child-8fc242bd770422735c491c1452e84bcd",
+                "modelState": {
+                  "current": {
+                    "value": "deepseek-official/role-expert",
+                    "source": "member-template",
+                    "state": "inherited"
+                  },
+                  "provenance": {
+                    "layer": "template",
+                    "origin": "static",
+                    "recordId": null,
+                    "explanation": "model: effective allow[deepseek-official/role-expert]; team template(origin=static) allow[deepseek-official/role-expert]; external exists=yes, hard=unspecified"
+                  },
+                  "availability": "available"
+                }
+              },
+              {
+                "instanceId": "inst-0f6c37a0hpcj",
+                "templateId": "control",
+                "label": "w-control",
+                "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                "createdAt": "2026-09-27T08:35:55.555Z",
+                "lifecycle": "SETTLED",
+                "contextPolicy": "persistent",
+                "effectiveConfig": {
+                  "model": {
+                    "value": "deepseek-official/global-default",
+                    "source": "capability",
+                    "state": "inherited"
+                  },
+                  "workspace": {
+                    "value": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                    "source": "instance-creation",
+                    "state": "locked",
+                    "locked": true
+                  },
+                  "permissions": {},
+                  "autonomy": {
+                    "value": null,
+                    "source": "autonomy-overlay",
+                    "state": "inherited"
+                  }
+                },
+                "liveActivity": {
+                  "residency": "cold"
+                },
+                "childSessionId": "session-team-child-b1a1382d1979313801d6c666604a46bd",
+                "modelState": {
+                  "current": {
+                    "value": "deepseek-official/global-default",
+                    "source": "capability",
+                    "state": "inherited"
+                  },
+                  "provenance": {
+                    "layer": "unspecified",
+                    "origin": "static",
+                    "recordId": null,
+                    "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                  },
+                  "availability": "available"
+                }
+              },
+              {
+                "instanceId": "inst-17legoh0ti27",
+                "templateId": "worker",
+                "label": "w-deleg",
+                "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                "createdAt": "2026-09-27T08:35:55.010Z",
+                "lifecycle": "SETTLED",
+                "contextPolicy": "persistent",
+                "effectiveConfig": {
+                  "model": {
+                    "value": "deepseek-official/override-worker",
+                    "source": "explicit-human-override",
+                    "state": "pending-next-boundary"
+                  },
+                  "workspace": {
+                    "value": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                    "source": "instance-creation",
+                    "state": "locked",
+                    "locked": true
+                  },
+                  "permissions": {},
+                  "autonomy": {
+                    "value": "model: allow deepseek-official/override-worker",
+                    "source": "explicit-human-override",
+                    "state": "pending-next-boundary"
+                  }
+                },
+                "liveActivity": {
+                  "residency": "cold"
+                },
+                "childSessionId": "session-team-child-796562d4284593654607730948ad2b04",
+                "modelState": {
+                  "current": {
+                    "value": "deepseek-official/override-worker",
+                    "source": "explicit-human-override",
+                    "state": "pending-next-boundary"
+                  },
+                  "provenance": {
+                    "layer": "humanOverride",
+                    "origin": "human",
+                    "recordId": "ovr-model-inst-17legoh0ti27-g0",
+                    "explanation": "model: effective allow[deepseek-official/override-worker]; team humanOverride(origin=human, ovr-model-inst-17legoh0ti27-g0) allow[deepseek-official/override-worker]; external exists=yes, hard=unspecified"
+                  },
+                  "availability": "available",
+                  "pendingNextBoundary": {
+                    "value": "deepseek-official/override-worker",
+                    "source": "explicit-human-override",
+                    "state": "pending-next-boundary"
+                  }
+                }
+              },
+              {
+                "instanceId": "inst-1p8kqfl09bhr",
+                "templateId": "worker",
+                "label": "w-create",
+                "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                "createdAt": "2026-09-27T08:35:55.157Z",
+                "lifecycle": "SETTLED",
+                "contextPolicy": "persistent",
+                "effectiveConfig": {
+                  "model": {
+                    "value": "deepseek-official/prb-c1-model",
+                    "source": "explicit-human-override",
+                    "state": "pending-next-boundary"
+                  },
+                  "workspace": {
+                    "value": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                    "source": "instance-creation",
+                    "state": "locked",
+                    "locked": true
+                  },
+                  "permissions": {},
+                  "autonomy": {
+                    "value": "model: allow deepseek-official/prb-c1-model",
+                    "source": "explicit-human-override",
+                    "state": "pending-next-boundary"
+                  }
+                },
+                "liveActivity": {
+                  "residency": "resident",
+                  "lastActivityAt": "2026-09-28T20:42:50.046Z"
+                },
+                "childSessionId": "session-team-child-d07982a448e691494993207d279943b0",
+                "modelState": {
+                  "current": {
+                    "value": "deepseek-official/prb-c1-model",
+                    "source": "explicit-human-override",
+                    "state": "pending-next-boundary"
+                  },
+                  "provenance": {
+                    "layer": "humanOverride",
+                    "origin": "human",
+                    "recordId": "ovr-model-inst-1p8kqfl09bhr-g0",
+                    "explanation": "model: effective allow[deepseek-official/prb-c1-model]; team humanOverride(origin=human, ovr-model-inst-1p8kqfl09bhr-g0) allow[deepseek-official/prb-c1-model]; external exists=yes, hard=unspecified"
+                  },
+                  "availability": "available",
+                  "pendingNextBoundary": {
+                    "value": "deepseek-official/prb-c1-model",
+                    "source": "explicit-human-override",
+                    "state": "pending-next-boundary"
+                  }
+                }
+              },
+              {
+                "instanceId": "inst-leader",
+                "templateId": "leader",
+                "label": "leader",
+                "workspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                "createdAt": "2026-09-27T08:35:54.826Z",
+                "lifecycle": "RUNNING",
+                "contextPolicy": "persistent",
+                "effectiveConfig": {
+                  "model": {
+                    "value": "deepseek-official/role-leader",
+                    "source": "member-template",
+                    "state": "inherited"
+                  },
+                  "workspace": {
+                    "value": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                    "source": "blueprint",
+                    "state": "locked",
+                    "locked": true
+                  },
+                  "permissions": {
+                    "team_list_members": {
+                      "value": "team_list_members",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "team_list_templates": {
+                      "value": "team_list_templates",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "team_inspect_config": {
+                      "value": "team_inspect_config",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "team_create_member": {
+                      "value": "team_create_member",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "team_delegate": {
+                      "value": "team_delegate",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "team_follow_up": {
+                      "value": "team_follow_up",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "team_send_message": {
+                      "value": "team_send_message",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "team_report_progress": {
+                      "value": "team_report_progress",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "team_request_control": {
+                      "value": "team_request_control",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "team_resolve_control": {
+                      "value": "team_resolve_control",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "team_list_pending_control": {
+                      "value": "team_list_pending_control",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "team_collect": {
+                      "value": "team_collect",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "team_archive_member": {
+                      "value": "team_archive_member",
+                      "source": "member-template",
+                      "state": "inherited"
+                    }
+                  },
+                  "autonomy": {
+                    "value": null,
+                    "source": "autonomy-overlay",
+                    "state": "inherited"
+                  }
+                },
+                "liveActivity": {
+                  "residency": "cold"
+                },
+                "modelState": {
+                  "current": {
+                    "value": "deepseek-official/role-leader",
+                    "source": "member-template",
+                    "state": "inherited"
+                  },
+                  "provenance": {
+                    "layer": "template",
+                    "origin": "static",
+                    "recordId": null,
+                    "explanation": "model: effective allow[deepseek-official/role-leader]; team template(origin=static) allow[deepseek-official/role-leader]; external exists=yes, hard=unspecified"
+                  },
+                  "availability": "available"
+                }
+              }
+            ],
+            "ledger": {
+              "latestSequence": 48,
+              "totalEntries": 34,
+              "byCategory": {
+                "team": 9,
+                "member": 4,
+                "lifecycle": 7,
+                "message": 0,
+                "control": 0,
+                "policy": 0,
+                "compatibility": 0,
+                "progress": 14
+              },
+              "pendingControlCount": 0
+            }
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "team.getProjection",
+          "endpoint": "team.getProjection",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": 36,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  {
+    "tag": "c6-rs1",
+    "method": "team.getReadState",
+    "version": 1,
+    "rpcId": "c6-rs1-yczxai43",
+    "params": {
+      "sessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52"
+    },
+    "at": "2026-09-28T20:42:50.050Z",
+    "status": 200,
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "method-version-unsupported",
+        "message": "method 'team.getReadState' is not available in remote contract v1 (it is only available in a newer remote contract version)",
+        "details": {
+          "method": "team.getReadState",
+          "endpoint": "team.getReadState",
+          "contractVersion": 1,
+          "requestToken": null,
+          "field": "method",
+          "reason": "method-not-available-in-version"
+        }
+      }
+    }
+  },
+  {
+    "tag": "c2-set1",
+    "method": "override.set",
+    "version": 1,
+    "rpcId": "c2-set1-8c0bcs3r",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "capability": "mcp",
+      "value": {
+        "kind": "allow",
+        "items": [
+          "prb-mcp-a"
+        ]
+      },
+      "actor": {
+        "kind": "human"
+      },
+      "scope": "instance",
+      "targetInstanceId": "inst-04eix3v0rhrj"
+    },
+    "at": "2026-09-28T20:42:50.053Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "recordId": "ovr-mcp-inst-04eix3v0rhrj-g0",
+          "kind": "human-override",
+          "scope": "instance",
+          "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+          "values": {
+            "mcp": {
+              "kind": "allow",
+              "items": [
+                "prb-mcp-a"
+              ]
+            }
+          },
+          "generation": 1,
+          "updatedAt": "2026-09-28T20:42:50.054Z",
+          "instanceId": "inst-04eix3v0rhrj"
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "override.set",
+          "endpoint": "override.set",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  {
+    "tag": "c2-fu1",
+    "method": "member.followup",
+    "version": 1,
+    "rpcId": "c2-fu1-netqljy7",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "caller": {
+        "kind": "human",
+        "humanId": "session-mpr-t1-mpr-2026-09-27T08-35-52"
+      },
+      "targetInstanceId": "inst-04eix3v0rhrj",
+      "requestToken": "c2-fu-jbl5u69s",
+      "payload": {
+        "prompt": "PR-B C2 marker PRB-C2-tfijs2d1. Reply with one short word."
+      }
+    },
+    "at": "2026-09-28T20:42:50.058Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "outcome": {
+            "status": "executed",
+            "action": "follow-up",
+            "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+            "callerRole": "human",
+            "targetInstanceId": "inst-04eix3v0rhrj",
+            "effect": {
+              "kind": "work-admitted",
+              "instanceId": "inst-04eix3v0rhrj",
+              "fromLifecycle": "SETTLED",
+              "lifecycleCommitted": true,
+              "sequence": 49,
+              "replayed": false,
+              "settled": true,
+              "settledSequence": 52,
+              "memberResult": {
+                "requestToken": "c2-fu-jbl5u69s",
+                "status": "succeeded",
+                "body": "prb c2 ack"
+              }
+            },
+            "requestToken": "c2-fu-jbl5u69s"
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "member.followup",
+          "endpoint": "member.followup",
+          "contractVersion": 1,
+          "requestToken": "c2-fu-jbl5u69s",
+          "projectionGeneration": null,
+          "effectSequence": 49
+        }
+      }
+    }
+  },
+  {
+    "tag": "c3n-set1",
+    "method": "policyState.set",
+    "version": 1,
+    "rpcId": "c3n-set1-r34ik04b",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "target": {
+        "stateId": "focus"
+      },
+      "actor": {
+        "kind": "human"
+      }
+    },
+    "at": "2026-09-28T20:42:50.202Z",
+    "status": 200,
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "TEAM_REMOTE_POLICY_STATE_UNKNOWN",
+        "message": "policyState.set names state 'focus' which is outside the bound blueprint's closed set (default, strict)",
+        "details": {
+          "method": "policyState.set",
+          "endpoint": "policyState.set",
+          "contractVersion": 1,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_REMOTE_POLICY_STATE_UNKNOWN",
+            "message": "policyState.set names state 'focus' which is outside the bound blueprint's closed set (default, strict)"
+          }
+        }
+      }
+    }
+  },
+  {
+    "tag": "c3p-get1",
+    "method": "catalog.get",
+    "version": 1,
+    "rpcId": "c3p-get1-kx0xwq5g",
+    "params": {
+      "blueprintId": "team.mpr-anchor"
+    },
+    "at": "2026-09-28T20:42:50.206Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "blueprint": {
+            "schemaVersion": 1,
+            "blueprintId": "team.mpr-anchor",
+            "revision": "2",
+            "contentHash": "sha256:f002db9da3a4c4992af7373f7686637dfcf4ce97504a1dec53cf3b3003236711",
+            "leader": {
+              "templateId": "leader",
+              "persona": "You are the boot anchor leader of the model-preference-routing smoke row."
+            },
+            "members": [
+              {
+                "templateId": "worker",
+                "persona": "PR-B C3 positive worker (no modelPreference; the policyState model cell wins the model lane)."
+              }
+            ],
+            "requirements": [],
+            "policyStates": [
+              {
+                "id": "strict",
+                "fields": [],
+                "description": "PR-B C3 positive: a non-default state in the bound blueprint so the closed set includes it."
+              }
+            ],
+            "displayName": "PR-B C3 positive boot blueprint (saved source rev 2)",
+            "description": "Saved-source rev 2 of the boot blueprint: adds a no-modelPreference worker template + a non-default 'strict' policyState so the C3 positive can create a worker whose baseline uses the world model and whose committed PolicyState model cell wins the next request. The frozen registry row @1 (original) is immutable, so this is a new revision the catalog resolves as the latest."
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "catalog.get",
+          "endpoint": "catalog.get",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  {
+    "tag": "c3s-create1",
+    "method": "team.create",
+    "version": 1,
+    "rpcId": "c3s-create1-b9dnyhri",
+    "params": {
+      "rootSessionId": "session-prb-ps-2026-09-28T20-42-46",
+      "blueprintId": "team.prb-ps"
+    },
+    "at": "2026-09-28T20:42:50.213Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "path": "fresh-root",
+          "durable": {
+            "teamSession": {
+              "schemaVersion": 1,
+              "rootSessionId": "session-prb-ps-2026-09-28T20-42-46",
+              "blueprint": {
+                "blueprintId": "team.prb-ps",
+                "revision": "1",
+                "contentHash": "sha256:290207f2d3c9761e7ceef4f3fda06c0ec14da77e99b7e4949ab6e3b622484584"
+              },
+              "createdAt": "2026-09-28T20:42:50.225Z",
+              "generation": 1,
+              "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+            },
+            "binding": {
+              "schemaVersion": 1,
+              "kind": "team-root",
+              "sessionId": "session-prb-ps-2026-09-28T20-42-46"
+            },
+            "wrote": true,
+            "leaderRow": {
+              "schemaVersion": 2,
+              "rootSessionId": "session-prb-ps-2026-09-28T20-42-46",
+              "instanceId": "inst-leader",
+              "templateId": "leader",
+              "label": "leader",
+              "createdAt": "2026-09-28T20:42:50.232Z",
+              "activityVersion": 1
+            }
+          },
+          "bind": {
+            "requested": "fresh-root",
+            "bound": true,
+            "installed": true,
+            "identity": {
+              "kind": "root",
+              "sessionId": "session-prb-ps-2026-09-28T20-42-46",
+              "rootSessionId": "session-prb-ps-2026-09-28T20-42-46"
+            },
+            "admitted": true,
+            "admissionCode": "ADMISSION_OPEN",
+            "emittedEvents": [
+              {
+                "name": "agent-setup/overlay-installed",
+                "detail": "persona"
+              },
+              {
+                "name": "agent-setup/overlay-installed",
+                "detail": "model"
+              },
+              {
+                "name": "agent-setup/overlay-installed",
+                "detail": "capability"
+              },
+              {
+                "name": "agent-setup/admission-decided",
+                "detail": "ADMISSION_OPEN"
+              }
+            ]
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "team.create",
+          "endpoint": "team.create",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  {
+    "tag": "c3s-psset1",
+    "method": "policyState.set",
+    "version": 1,
+    "rpcId": "c3s-psset1-cdv5982w",
+    "params": {
+      "teamSessionId": "session-prb-ps-2026-09-28T20-42-46",
+      "target": {
+        "stateId": "focus",
+        "cells": {
+          "model": {
+            "value": {
+              "kind": "allow",
+              "items": [
+                "deepseek-official/role-ps-focus"
+              ]
+            }
+          }
+        }
+      },
+      "actor": {
+        "kind": "human"
+      }
+    },
+    "at": "2026-09-28T20:42:50.254Z",
+    "status": 200,
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "TEAM_REMOTE_POLICY_STATE_UNKNOWN",
+        "message": "policyState.set names state 'focus' which is outside the bound blueprint's closed set (default, strict)",
+        "details": {
+          "method": "policyState.set",
+          "endpoint": "policyState.set",
+          "contractVersion": 1,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_REMOTE_POLICY_STATE_UNKNOWN",
+            "message": "policyState.set names state 'focus' which is outside the bound blueprint's closed set (default, strict)"
+          }
+        }
+      }
+    }
+  },
+  {
+    "tag": "c4-set1",
+    "method": "override.set",
+    "version": 1,
+    "rpcId": "c4-set1-w855wjmb",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "capability": "model",
+      "value": {
+        "kind": "allow",
+        "items": [
+          "deepseek-official/prb-c4-model"
+        ]
+      },
+      "actor": {
+        "kind": "human"
+      },
+      "scope": "instance",
+      "targetInstanceId": "inst-0f6c37a0hpcj"
+    },
+    "at": "2026-09-28T20:42:50.257Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "recordId": "ovr-model-inst-0f6c37a0hpcj-g0",
+          "kind": "human-override",
+          "scope": "instance",
+          "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+          "values": {
+            "model": {
+              "kind": "allow",
+              "items": [
+                "deepseek-official/prb-c4-model"
+              ]
+            }
+          },
+          "generation": 1,
+          "updatedAt": "2026-09-28T20:42:50.258Z",
+          "instanceId": "inst-0f6c37a0hpcj"
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "override.set",
+          "endpoint": "override.set",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  {
+    "tag": "c4-fu1",
+    "method": "member.followup",
+    "version": 1,
+    "rpcId": "c4-fu1-btnq4d9y",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "caller": {
+        "kind": "human",
+        "humanId": "session-mpr-t1-mpr-2026-09-27T08-35-52"
+      },
+      "targetInstanceId": "inst-0f6c37a0hpcj",
+      "requestToken": "c4-fu-6n50yr5h",
+      "payload": {
+        "prompt": "PR-B C4 concurrent marker PRB-C4-c9fb495y. Reply with one short word."
+      }
+    },
+    "at": "2026-09-28T20:42:50.257Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "outcome": {
+            "status": "executed",
+            "action": "follow-up",
+            "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+            "callerRole": "human",
+            "targetInstanceId": "inst-0f6c37a0hpcj",
+            "effect": {
+              "kind": "work-admitted",
+              "instanceId": "inst-0f6c37a0hpcj",
+              "fromLifecycle": "SETTLED",
+              "lifecycleCommitted": true,
+              "sequence": 53,
+              "replayed": false,
+              "settled": true,
+              "settledSequence": 56,
+              "memberResult": {
+                "requestToken": "c4-fu-6n50yr5h",
+                "status": "succeeded",
+                "body": "prb c4 ack"
+              }
+            },
+            "requestToken": "c4-fu-6n50yr5h"
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "member.followup",
+          "endpoint": "member.followup",
+          "contractVersion": 1,
+          "requestToken": "c4-fu-6n50yr5h",
+          "projectionGeneration": null,
+          "effectSequence": 53
+        }
+      }
+    }
+  },
+  {
+    "tag": "c4-get1",
+    "method": "override.get",
+    "version": 1,
+    "rpcId": "c4-get1-hbwms5ar",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "capability": "model",
+      "scope": "instance",
+      "targetInstanceId": "inst-0f6c37a0hpcj"
+    },
+    "at": "2026-09-28T20:42:50.372Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "override": {
+            "schemaVersion": 2,
+            "kind": "human-override",
+            "recordId": "ovr-model-inst-0f6c37a0hpcj-g0",
+            "scope": "instance",
+            "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+            "values": {
+              "model": {
+                "items": [
+                  "deepseek-official/prb-c4-model"
+                ],
+                "kind": "allow"
+              }
+            },
+            "generation": 1,
+            "updatedAt": "2026-09-28T20:42:50.258Z",
+            "instanceId": "inst-0f6c37a0hpcj"
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "override.get",
+          "endpoint": "override.get",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  {
+    "tag": "c4-next1",
+    "method": "member.followup",
+    "version": 1,
+    "rpcId": "c4-next1-d7pkqtqm",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "caller": {
+        "kind": "human",
+        "humanId": "session-mpr-t1-mpr-2026-09-27T08-35-52"
+      },
+      "targetInstanceId": "inst-0f6c37a0hpcj",
+      "requestToken": "c4-next-sm3rwtuf",
+      "payload": {
+        "prompt": "PR-B C4 next-boundary marker PRB-C4N-r22tst34. Reply with one short word."
+      }
+    },
+    "at": "2026-09-28T20:42:50.374Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "outcome": {
+            "status": "executed",
+            "action": "follow-up",
+            "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+            "callerRole": "human",
+            "targetInstanceId": "inst-0f6c37a0hpcj",
+            "effect": {
+              "kind": "work-admitted",
+              "instanceId": "inst-0f6c37a0hpcj",
+              "fromLifecycle": "SETTLED",
+              "lifecycleCommitted": true,
+              "sequence": 57,
+              "replayed": false,
+              "settled": true,
+              "settledSequence": 60,
+              "memberResult": {
+                "requestToken": "c4-next-sm3rwtuf",
+                "status": "succeeded",
+                "body": "prb c4 next ack"
+              }
+            },
+            "requestToken": "c4-next-sm3rwtuf"
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "member.followup",
+          "endpoint": "member.followup",
+          "contractVersion": 1,
+          "requestToken": "c4-next-sm3rwtuf",
+          "projectionGeneration": null,
+          "effectSequence": 57
+        }
+      }
+    }
+  },
+  {
+    "tag": "ready21",
+    "method": "catalog.list",
+    "version": 1,
+    "rpcId": "ready21-4btho6o5",
+    "params": {},
+    "at": "2026-09-28T20:42:51.827Z",
+    "status": 405,
+    "result": null
+  },
+  {
+    "tag": "ready22",
+    "method": "catalog.list",
+    "version": 1,
+    "rpcId": "ready22-gs3dgml4",
+    "params": {},
+    "at": "2026-09-28T20:42:53.844Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "blueprints": [
+            {
+              "blueprintId": "team.mpr-a",
+              "revisions": [
+                1
+              ]
+            },
+            {
+              "blueprintId": "team.mpr-anchor",
+              "revisions": [
+                1,
+                2
+              ]
+            },
+            {
+              "blueprintId": "team.mpr-b",
+              "revisions": [
+                1
+              ]
+            },
+            {
+              "blueprintId": "team.mpr-main",
+              "revisions": [
+                1
+              ]
+            },
+            {
+              "blueprintId": "team.prb-ps",
+              "revisions": [
+                1
+              ]
+            }
+          ]
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "catalog.list",
+          "endpoint": "catalog.list",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  {
+    "tag": "c5-f11",
+    "method": "member.followup",
+    "version": 1,
+    "rpcId": "c5-f11-8p9k07z6",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "caller": {
+        "kind": "human",
+        "humanId": "session-mpr-t1-mpr-2026-09-27T08-35-52"
+      },
+      "targetInstanceId": "inst-1p8kqfl09bhr",
+      "requestToken": "c5-f1-ppwp2hnv",
+      "payload": {
+        "prompt": "PR-B C5 restart-model marker PRB-C5C1-ysfhfq59. Reply with one short word."
+      }
+    },
+    "at": "2026-09-28T20:42:53.867Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "outcome": {
+            "status": "executed",
+            "action": "follow-up",
+            "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+            "callerRole": "human",
+            "targetInstanceId": "inst-1p8kqfl09bhr",
+            "effect": {
+              "kind": "work-admitted",
+              "instanceId": "inst-1p8kqfl09bhr",
+              "fromLifecycle": "SETTLED",
+              "lifecycleCommitted": true,
+              "sequence": 61,
+              "replayed": false,
+              "settled": true,
+              "settledSequence": 64,
+              "memberResult": {
+                "requestToken": "c5-f1-ppwp2hnv",
+                "status": "succeeded",
+                "body": "prb c5 c1 ack"
+              }
+            },
+            "requestToken": "c5-f1-ppwp2hnv"
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "member.followup",
+          "endpoint": "member.followup",
+          "contractVersion": 1,
+          "requestToken": "c5-f1-ppwp2hnv",
+          "projectionGeneration": null,
+          "effectSequence": 61
+        }
+      }
+    }
+  },
+  {
+    "tag": "c5-f21",
+    "method": "member.followup",
+    "version": 1,
+    "rpcId": "c5-f21-my6oa3qz",
+    "params": {
+      "teamSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+      "caller": {
+        "kind": "human",
+        "humanId": "session-mpr-t1-mpr-2026-09-27T08-35-52"
+      },
+      "targetInstanceId": "inst-04eix3v0rhrj",
+      "requestToken": "c5-f2-d28e9790",
+      "payload": {
+        "prompt": "PR-B C5 restart-mcp marker PRB-C5C2-w26o6qz1. Reply with one short word."
+      }
+    },
+    "at": "2026-09-28T20:42:54.051Z",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "outcome": {
+            "status": "executed",
+            "action": "follow-up",
+            "rootSessionId": "session-mpr-t1-mpr-2026-09-27T08-35-52",
+            "callerRole": "human",
+            "targetInstanceId": "inst-04eix3v0rhrj",
+            "effect": {
+              "kind": "work-admitted",
+              "instanceId": "inst-04eix3v0rhrj",
+              "fromLifecycle": "SETTLED",
+              "lifecycleCommitted": true,
+              "sequence": 65,
+              "replayed": false,
+              "settled": true,
+              "settledSequence": 68,
+              "memberResult": {
+                "requestToken": "c5-f2-d28e9790",
+                "status": "succeeded",
+                "body": "prb c5 c2 ack"
+              }
+            },
+            "requestToken": "c5-f2-d28e9790"
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "member.followup",
+          "endpoint": "member.followup",
+          "contractVersion": 1,
+          "requestToken": "c5-f2-d28e9790",
+          "projectionGeneration": null,
+          "effectSequence": 65
+        }
+      }
+    }
+  }
+]

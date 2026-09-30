@@ -8,30 +8,29 @@
  * module closes that gap for the production composition: it resolves the
  * four lanes (model / workspace / permissions / autonomy) from the EXISTING
  * layer data — the bound blueprint envelope, the durable PolicyState
- * transitions, the mutation-store records, the durable governance
- * `overrides`, and the static external facts — through the FROZEN P3-T4
- * resolver (reused verbatim, never re-implemented) plus this plane's
+ * transitions, the durable governance `overrides`, and the static external
+ * facts — through the ONE canonical effective-policy read (pre-alpha3
+ * PR-B; the frozen P3-T4 resolver is reused verbatim inside it, never
+ * re-implemented) plus this plane's
  * provenance derivations:
  *
- * - the policy input is assembled by `assembleEffectivePolicyInput`
- *   (the P7-T2 adapter, reused verbatim) over the member's durable
- *   transitions + records at the maximum step horizon (`atStep =
- *   Number.MAX_SAFE_INTEGER` — the production step clock is pinned to 0,
- *   so the resolved horizon sees every admitted future-boundary change);
- * - the durable governance `overrides` (the production write path —
- *   pre-alpha3 PR-A: the governance mutation authority's
- *   `setOverride`/`resetOverride` writes ONLY the storage `overrides`
- *   repository; the mutation-store records lane has no production
- *   caller) are merged in through `selectPolicyOverrides`
- *   (the P8-S4B deterministic slot selection, reused verbatim): a
- *   mutation-store slot wins when present (the test world), the
- *   governance slot fills whatever the store did not produce (the
- *   production world);
+ * - the policy is the ONE canonical read (`readEffectivePolicy`,
+ *   pre-alpha3 PR-B, plan §B.2): the committed PolicyState (the last
+ *   durable transition in COMMIT order — the production step clock is
+ *   retired as a decision source), the durable governance `overrides`
+ *   slot winners (the production write path — pre-alpha3 PR-A: the
+ *   governance mutation authority's `setOverride`/`resetOverride` writes
+ *   ONLY the storage `overrides` repository; the process-local
+ *   mutation-store records lane has no production writer and is retired
+ *   from this assembly), and the static layers (the bound snapshot
+ *   through the production `PolicyReader`) — the SAME read the live
+ *   request boundary and the R2-3 model-state view run;
  * - each capability cell's §18.3 provenance comes from `cellProvenance`
  *   (P8-S4B) with `appliedRecordIds = []` — the boundary-application
  *   record set is PROCESS-LOCAL, so the durable projection reports
- *   record-backed winning values conservatively as PENDING (documented
- *   two-horizon ruling: NOW = 0, NEXT = the maximum step);
+ *   record-backed winning values conservatively as PENDING (the
+ *   committed/applied ruling: the projection cannot observe the
+ *   process-local applied set);
  * - the model lane additionally consumes `modelConsumptionView` (P5-T3),
  *   which applies the documented consumer rule: an `unspecified` cell
  *   keeps the world baseline (the harness-injected static model).
@@ -41,7 +40,9 @@
  * provenance keys `suppressed?`, `unavailable?`, `deniedBy?`,
  * `effectiveFrom?`, `locked?` — every optional key is ABSENT when the
  * fact does not hold (never an own `undefined` key; the contracts v2
- * parse enforces the closed set).
+ * parse enforces the closed set). This producer never sets `effectiveFrom`
+ * (the legacy step display is retired with the production step clock —
+ * the key stays part of the closed DTO shape for other producers).
  *
  * State precedence (highest first, per lane):
  *   unavailable > denied > pending-next-boundary > overridden > inherited
@@ -86,25 +87,21 @@ import type {
 import {
   CAPABILITY_NAMES,
   CAPABILITY_NAME_VALUES,
-  resolveEffectivePolicy,
 } from '../../../domain/policy/src/index.js'
 import type {
   CapabilityName,
   EffectivePolicy,
-  EffectivePolicyInput,
   PolicyEntry,
   TeamLayerOrUnspecified,
 } from '../../../domain/policy/src/index.js'
-import { assembleEffectivePolicyInput } from '../../policy-adapter.js'
-import { selectPolicyOverrides } from '../../activation/index.js'
+import { readEffectivePolicy } from '../../effective-policy/index.js'
+import type { EffectivePolicyRead } from '../../effective-policy/index.js'
 import { cellProvenance } from '../../mutation/index.js'
 import type {
   CellDeniedBy,
   DurableOverrideRef,
-  MutationStore,
   PolicyReader,
   PolicyStateTransitionRecord,
-  StoredMutationRecord,
 } from '../../mutation/index.js'
 import { modelConsumptionView } from '../../agent-setup/model/index.js'
 import type { ModelConsumptionView } from '../../agent-setup/model/index.js'
@@ -125,10 +122,11 @@ export interface EffectiveConfigViewArgs {
   readonly teamDefaultWorkspace?: string
   /** The world baseline model selection (the harness-injected static model). */
   readonly staticModel: ModelSelection
-  /** The member's durable PolicyState transitions (admission order). */
+  /**
+   * The member's durable PolicyState transitions (COMMIT order — the
+   * ledger sequence order; the LAST entry is the committed state).
+   */
   readonly transitions: readonly PolicyStateTransitionRecord[]
-  /** The member's durable mutation records (admission order). */
-  readonly records: readonly StoredMutationRecord[]
   /** Every durable governance override record of the TeamSession. */
   readonly overrides: readonly GovernanceOverrideRecord[]
   /** The static policy reader (blueprint envelope / template / external). */
@@ -153,61 +151,41 @@ export function createEffectiveConfigView(args: EffectiveConfigViewArgs): Effect
     teamDefaultWorkspace,
     staticModel,
     transitions,
-    records,
     overrides,
     policyReader,
   } = args
 
-  // 1. The frozen adapter's input (reused verbatim): the mini store exposes
-  //    exactly the two lanes the adapter reads (`listTransitions` +
-  //    `listRecords`); the cast is type-level only — the adapter calls no
-  //    other store method.
-  const miniStore = {
-    listTransitions: () => transitions,
-    listRecords: () => records,
-  } as unknown as MutationStore
-  const baseInput = assembleEffectivePolicyInput({
-    teamSessionId,
-    member: { rootSessionId: teamSessionId, instanceId },
-    atStep: Number.MAX_SAFE_INTEGER,
-    store: miniStore,
+  // 1. The ONE canonical read (pre-alpha3 PR-B, plan §B.2): the committed
+  //    PolicyState (the last durable transition in commit order) + the
+  //    durable governance slot winners + the static layers (the bound
+  //    snapshot through the production PolicyReader) — the SAME read the
+  //    live request boundary and the R2-3 model-state view run. The
+  //    process-local mutation-store records lane (and the production step
+  //    clock) are RETIRED from the production assembly: the durable
+  //    governance records are the only slot source in production (the
+  //    lane has no production writer since PR-A).
+  const read = readEffectivePolicy({
+    rootSessionId: teamSessionId,
+    instanceId,
     policy: policyReader,
+    transitions,
+    overrides,
   })
+  const policy = read.policy
 
-  // 2. Merge the durable governance slots (documented merge rule, module
-  //    docs): a mutation-store slot wins when present, the governance slot
-  //    fills whatever the store did not produce.
-  const governance = selectPolicyOverrides(overrides, teamSessionId, instanceId)
-  const input: EffectivePolicyInput = {
-    ...baseInput,
-    templateOverlay: baseInput.templateOverlay ?? governance.templateOverlay,
-    instanceOverlay: baseInput.instanceOverlay ?? governance.instanceOverlay,
-    humanOverride: baseInput.humanOverride ?? governance.humanOverride,
-  }
-
-  const policy = resolveEffectivePolicy(input)
-
-  // 3. The backend-truth override refs, scoped to THIS member: team scope +
-  //    this instance only (instance-scoped records of other members must
-  //    not leak into this member's pending set). `appliedRecordIds` is
-  //    empty by the two-horizon ruling (process-local application set).
-  const refs: DurableOverrideRef[] = overrides
-    .filter((record) => record.scope === 'team' || record.instanceId === instanceId)
-    .map((record) => ({
-      recordId: record.recordId,
-      kind: record.kind,
-      scope: record.scope,
-      generation: record.generation,
-      updatedAt: record.updatedAt,
-      values: record.values as Record<string, unknown>,
-    }))
-  const provenanceOptions = { overrides: refs, appliedRecordIds: [] as readonly string[] }
+  // 2. The backend-truth override refs are the canonical read's
+  //    MEMBER-SCOPED refs (team scope + this instance only — instance-
+  //    scoped records of other members must not leak into this member's
+  //    pending set). `appliedRecordIds` is empty by the committed/applied
+  //    ruling (the process-local application set is not durable — the
+  //    projection reports conservatively).
+  const provenanceOptions = { overrides: read.refs, appliedRecordIds: [] as readonly string[] }
 
   return {
-    model: modelLaneOf(policy, staticModel, records, provenanceOptions),
+    model: modelLaneOf(policy, staticModel, provenanceOptions),
     workspace: workspaceLaneOf(memberWorkspace, teamDefaultWorkspace, lifecycle),
-    permissions: permissionsLaneOf(policy, records, provenanceOptions),
-    autonomy: autonomyLaneOf(input, policy, records),
+    permissions: permissionsLaneOf(policy, provenanceOptions),
+    autonomy: autonomyLaneOf(read, policy),
   }
 }
 
@@ -272,27 +250,6 @@ export function externalHardDecides(note: string): boolean {
   return note === 'externalHardDeny' || note === 'externalHardRemovedAll'
 }
 
-/**
- * The v2 `effectiveFrom` of a pending value: the record's durable
- * `effectiveFromStep` when the winning source is backed by a record of the
- * MUTATION lane (safe integer ≥ 1) — otherwise the key is ABSENT (the
- * governance records carry no step; their pending changes are boundary-
- * based without a step, documented per producer).
- */
-/**
- * Exported for the R2-3 model-state view (same derivation, one source).
- */
-export function effectiveFromOf(
-  recordId: string | null,
-  records: readonly StoredMutationRecord[],
-): number | undefined {
-  if (recordId === null) return undefined
-  const record = records.find((candidate) => candidate.recordId === recordId)
-  if (record === undefined) return undefined
-  const step = record.effectiveFromStep
-  return Number.isSafeInteger(step) && step >= 1 ? step : undefined
-}
-
 /** Build one v2 entry with the DURATIONAL-optional keys absent when unset. */
 function buildEntry(fields: {
   readonly value: string | null
@@ -328,7 +285,6 @@ function buildEntry(fields: {
 function modelLaneOf(
   policy: EffectivePolicy,
   staticModel: ModelSelection,
-  records: readonly StoredMutationRecord[],
   options: { readonly overrides: readonly DurableOverrideRef[]; readonly appliedRecordIds: readonly string[] },
 ): EffectiveConfigEntryV2 {
   const view: ModelConsumptionView = modelConsumptionView(policy, staticModel, options)
@@ -347,7 +303,6 @@ function modelLaneOf(
     suppressed?: boolean
     unavailable?: boolean
     deniedBy?: string
-    effectiveFrom?: number
   } = {}
 
   if (view.unavailable) {
@@ -379,12 +334,12 @@ function modelLaneOf(
     extra.deniedBy = deniedByString(view.deniedBy)
   } else if (pending) {
     // Record-backed winning value, not yet applied in this process —
-    // conservatively pending (the two-horizon ruling).
+    // conservatively pending (the committed/applied ruling). The legacy
+    // `effectiveFrom` step display is retired (no runtime step, module
+    // docs of the view).
     value = selectionValue
     source = SOURCE_BY_LAYER[layer]
     state = EFFECTIVE_CONFIG_STATES.pending_next_boundary
-    const from = effectiveFromOf(recordId, records)
-    if (from !== undefined) extra.effectiveFrom = from
   } else if (CLOSER_LAYERS.has(layer)) {
     value = selectionValue
     source = SOURCE_BY_LAYER[layer]
@@ -456,7 +411,6 @@ function workspaceLaneOf(
  */
 function permissionsLaneOf(
   policy: EffectivePolicy,
-  records: readonly StoredMutationRecord[],
   options: { readonly overrides: readonly DurableOverrideRef[]; readonly appliedRecordIds: readonly string[] },
 ): { readonly [permissionName: string]: EffectiveConfigEntryV2 } {
   const out: { [permissionName: string]: EffectiveConfigEntryV2 } = {}
@@ -487,7 +441,6 @@ function permissionsLaneOf(
         suppressed?: boolean
         unavailable?: boolean
         deniedBy?: string
-        effectiveFrom?: number
       } = {}
 
       if (unavailable) {
@@ -511,8 +464,6 @@ function permissionsLaneOf(
       } else if (pending) {
         state = EFFECTIVE_CONFIG_STATES.pending_next_boundary
         source = SOURCE_BY_LAYER[cell.team.layer]
-        const from = effectiveFromOf(prov.source.recordId, records)
-        if (from !== undefined) extra.effectiveFrom = from
       } else if (CLOSER_LAYERS.has(cell.team.layer)) {
         state = EFFECTIVE_CONFIG_STATES.overridden
         source = SOURCE_BY_LAYER[cell.team.layer]
@@ -554,7 +505,7 @@ function overlaySummary(values: Partial<Record<CapabilityName, PolicyEntry>>): s
  * 1. a stored autonomy overlay is currently SUPPRESSED by the PolicyState
  *    (§19.4 non-destructive) — the suppressed entry itself is displayed
  *    (state `suppressed`, flag `suppressed`);
- * 2. the highest ACTIVE governance slot of the merged resolver input
+ * 2. the highest ACTIVE governance slot of the canonical read
  *    (human override > instance overlay > template overlay — the §19.6
  *    closeness order) is displayed as `pending-next-boundary` (application
  *    is process-local — the `overridden` state is unreachable on this
@@ -562,9 +513,8 @@ function overlaySummary(values: Partial<Record<CapabilityName, PolicyEntry>>): s
  * 3. no overlay at all — the neutral entry (`inherited`, `value: null`).
  */
 function autonomyLaneOf(
-  input: EffectivePolicyInput,
+  read: EffectivePolicyRead,
   policy: EffectivePolicy,
-  records: readonly StoredMutationRecord[],
 ): EffectiveConfigEntryV2 {
   const suppressed = policy.suppressed
   if (suppressed.length > 0) {
@@ -598,37 +548,31 @@ function autonomyLaneOf(
     })
   }
 
-  const humanOverride = input.humanOverride
+  const humanOverride = read.humanOverride
   if (humanOverride !== undefined) {
     const text = overlaySummary(humanOverride.values)
-    const from = effectiveFromOf(humanOverride.overrideId, records)
     return buildEntry({
       value: text === '' ? null : text,
       source: EFFECTIVE_CONFIG_SOURCES.explicit_human_override,
       state: EFFECTIVE_CONFIG_STATES.pending_next_boundary,
-      ...(from !== undefined ? { effectiveFrom: from } : {}),
     })
   }
-  const instanceOverlay = input.instanceOverlay
+  const instanceOverlay = read.instanceOverlay
   if (instanceOverlay !== undefined) {
     const text = overlaySummary(instanceOverlay.values)
-    const from = effectiveFromOf(instanceOverlay.overlayId, records)
     return buildEntry({
       value: text === '' ? null : text,
       source: EFFECTIVE_CONFIG_SOURCES.autonomy_overlay,
       state: EFFECTIVE_CONFIG_STATES.pending_next_boundary,
-      ...(from !== undefined ? { effectiveFrom: from } : {}),
     })
   }
-  const templateOverlay = input.templateOverlay
+  const templateOverlay = read.templateOverlay
   if (templateOverlay !== undefined) {
     const text = overlaySummary(templateOverlay.values)
-    const from = effectiveFromOf(templateOverlay.overlayId, records)
     return buildEntry({
       value: text === '' ? null : text,
       source: EFFECTIVE_CONFIG_SOURCES.autonomy_overlay,
       state: EFFECTIVE_CONFIG_STATES.pending_next_boundary,
-      ...(from !== undefined ? { effectiveFrom: from } : {}),
     })
   }
 

@@ -1,0 +1,14 @@
+{
+  "teamSessionT": {
+    "blueprint": {
+      "blueprintId": "team.prereq-main",
+      "contentHash": "sha256:6481c513c79948e808dbfc50fb0225cabed6a4cd983b12956b6b814dc9bff43c",
+      "revision": "1"
+    },
+    "createdAt": "2026-09-30T01:05:08.179Z",
+    "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "generation": 36,
+    "rootSessionId": "session-prereq-main-prereq-2026-09-30T01-05-02",
+    "schemaVersion": 1
+  }
+}

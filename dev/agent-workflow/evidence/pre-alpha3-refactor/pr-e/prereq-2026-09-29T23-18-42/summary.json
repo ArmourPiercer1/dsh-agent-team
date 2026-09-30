@@ -1,0 +1,355 @@
+{
+  "kit": "pr-e-requirement-recovery-smoke.mjs",
+  "runStamp": "prereq-2026-09-29T23-18-42",
+  "verdict": "FATAL",
+  "summary": "team.create (T main, post-consent) failed: TEAM_RUNTIME_COMPATIBILITY_BLOCKED — TeamRuntime: the creation preflight of \"session-prereq-main-prereq-2026-09-29T23-18-42\" is 'pending' — the durable Team bind is refused (zero durable effect; a required capability is not yet observed (materialization pending) — re-drive the creation at the next boundary (or run the compatibility rep",
+  "world": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T23-18-42",
+  "testUse": {
+    "pre": {
+      "head": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    }
+  },
+  "scenarios": {
+    "s1-live-preconditions": {
+      "dumpCarries": true,
+      "liveUp": {
+        "mcp_repo": true,
+        "mcp_leaderreq": true,
+        "mcp_web": true
+      }
+    },
+    "s13-create": {
+      "data": {
+        "path": "fresh-root",
+        "durable": {
+          "teamSession": {
+            "schemaVersion": 1,
+            "rootSessionId": "session-prereq-v1-prereq-2026-09-29T23-18-42",
+            "blueprint": {
+              "blueprintId": "team.mpr-anchor",
+              "revision": "1",
+              "contentHash": "sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37"
+            },
+            "createdAt": "2026-09-29T23:18:44.941Z",
+            "generation": 1,
+            "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+          },
+          "binding": {
+            "schemaVersion": 1,
+            "kind": "team-root",
+            "sessionId": "session-prereq-v1-prereq-2026-09-29T23-18-42"
+          },
+          "wrote": true,
+          "leaderRow": {
+            "schemaVersion": 2,
+            "rootSessionId": "session-prereq-v1-prereq-2026-09-29T23-18-42",
+            "instanceId": "inst-leader",
+            "templateId": "leader",
+            "label": "leader",
+            "createdAt": "2026-09-29T23:18:44.949Z",
+            "activityVersion": 1
+          }
+        },
+        "bind": {
+          "requested": "fresh-root",
+          "bound": true,
+          "installed": true,
+          "identity": {
+            "kind": "root",
+            "sessionId": "session-prereq-v1-prereq-2026-09-29T23-18-42",
+            "rootSessionId": "session-prereq-v1-prereq-2026-09-29T23-18-42"
+          },
+          "admitted": true,
+          "admissionCode": "ADMISSION_OPEN",
+          "emittedEvents": [
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "persona"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "model"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "capability"
+            },
+            {
+              "name": "agent-setup/admission-decided",
+              "detail": "ADMISSION_OPEN"
+            }
+          ]
+        }
+      }
+    },
+    "s1-probe": {
+      "probe": {
+        "type": "server-response",
+        "rpcId": "s1-probe-8df58ca1",
+        "result": {
+          "ok": true,
+          "value": {
+            "data": {
+              "compatibility": {
+                "schemaVersion": 1,
+                "environmentFingerprint": "fp-v1:4b8c215f701ded19",
+                "status": "BLOCKED_FATAL",
+                "requirements": [
+                  {
+                    "requirementId": "team.mcp.repo",
+                    "type": "mcpServer",
+                    "complete": true,
+                    "outcome": "FATAL",
+                    "reasonCode": "COMPLETE_REQUIREMENT_NOT_MET",
+                    "detail": "complete:true requirement unmet: mcp_repo (structural FATAL, not downgradeable)",
+                    "unavailableSubjects": [
+                      "mcp_repo"
+                    ],
+                    "mismatchFingerprint": "fp-v1:216705abfc5080fd",
+                    "acknowledgement": null
+                  },
+                  {
+                    "requirementId": "team.mcp.leaderreq",
+                    "type": "mcpServer",
+                    "complete": true,
+                    "outcome": "FATAL",
+                    "reasonCode": "COMPLETE_REQUIREMENT_NOT_MET",
+                    "detail": "complete:true requirement unmet: mcp_leaderreq (structural FATAL, not downgradeable)",
+                    "unavailableSubjects": [
+                      "mcp_leaderreq"
+                    ],
+                    "mismatchFingerprint": "fp-v1:dab298abad4efddd",
+                    "acknowledgement": null
+                  }
+                ],
+                "counts": {
+                  "pass": 0,
+                  "warning": 0,
+                  "fatal": 2,
+                  "unackedWarning": 0,
+                  "staleAcknowledgement": 0
+                },
+                "unappliedAcknowledgements": []
+              }
+            },
+            "provenance": {
+              "origin": "team-remote",
+              "method": "intent.probe",
+              "endpoint": "intent.probe",
+              "contractVersion": 1,
+              "requestToken": null,
+              "projectionGeneration": null,
+              "effectSequence": null
+            }
+          }
+        }
+      }
+    },
+    "s1-t-create-pre-consent-refusal": {
+      "error": {
+        "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+        "message": "TeamRuntime: the creation preflight of \"session-prereq-main-prereq-2026-09-29T23-18-42\" is 'pending' — the durable Team bind is refused (zero durable effect; a required capability is not yet observed (materialization pending) — re-drive the creation at the next boundary (or run the compatibility reprobe); the block is recheckable, not a deadlock)",
+        "details": {
+          "method": "team.create",
+          "endpoint": "team.create",
+          "contractVersion": 1,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+            "message": "TeamRuntime: the creation preflight of \"session-prereq-main-prereq-2026-09-29T23-18-42\" is 'pending' — the durable Team bind is refused (zero durable effect; a required capability is not yet observed (materialization pending) — re-drive the creation at the next boundary (or run the compatibility reprobe); the block is recheckable, not a deadlock)",
+            "details": {
+              "rootSessionId": "session-prereq-main-prereq-2026-09-29T23-18-42",
+              "source": "creation-preflight",
+              "outcome": "pending",
+              "blockedScopes": [],
+              "consentRequiredRequirementIds": [],
+              "fixOrDisableRequirementIds": [],
+              "fatalRequirementIds": [],
+              "status": "BLOCKED_PENDING",
+              "gateReason": "requiredScopePending",
+              "recheck": "next-boundary-or-compatibility.reprobe",
+              "pendingRequirementIds": [
+                "team.mcp.repo",
+                "team.mcp.leaderreq"
+              ]
+            }
+          }
+        }
+      },
+      "details": {
+        "rootSessionId": "session-prereq-main-prereq-2026-09-29T23-18-42",
+        "source": "creation-preflight",
+        "outcome": "pending",
+        "blockedScopes": [],
+        "consentRequiredRequirementIds": [],
+        "fixOrDisableRequirementIds": [],
+        "fatalRequirementIds": [],
+        "status": "BLOCKED_PENDING",
+        "gateReason": "requiredScopePending",
+        "recheck": "next-boundary-or-compatibility.reprobe",
+        "pendingRequirementIds": [
+          "team.mcp.repo",
+          "team.mcp.leaderreq"
+        ]
+      }
+    },
+    "s13-world-after-b1": {
+      "registry": {
+        "team.prereq-anchor@1": "{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:460af80887c214aee3303504782b0e17a2027b50b2f072a67c93a071b91d43a4\",\"frozenAt\":\"2026-09-29T23:18:44.812Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.prereq-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the PR-E smoke boot team. prereq-2026-09-29T23-18-42 is the run nonce.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}",
+        "team.mpr-anchor@1": "{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"frozenAt\":\"2026-09-29T23:18:44.935Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.mpr-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the boot anchor leader of the model-preference-routing smoke row.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}"
+      },
+      "teamSessions": {
+        "session-prereq-boot-prereq-2026-09-29T23-18-42": "{\"blueprint\":{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:460af80887c214aee3303504782b0e17a2027b50b2f072a67c93a071b91d43a4\",\"revision\":\"1\"},\"createdAt\":\"2026-09-29T23:18:44.820Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":2,\"rootSessionId\":\"session-prereq-boot-prereq-2026-09-29T23-18-42\",\"schemaVersion\":1}",
+        "session-prereq-v1-prereq-2026-09-29T23-18-42": "{\"blueprint\":{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"revision\":\"1\"},\"createdAt\":\"2026-09-29T23:18:44.941Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":1,\"rootSessionId\":\"session-prereq-v1-prereq-2026-09-29T23-18-42\",\"schemaVersion\":1}"
+      }
+    },
+    "s1-b1-consent-grant": {
+      "consentSeqT": 1,
+      "consentSeqT2": 2,
+      "rowT": {
+        "createdAt": "2026-09-29T23:18:45.056Z",
+        "factType": "optional-requirement-accepted",
+        "payload": {
+          "consentedAt": 1790723925056,
+          "consentedBy": "kit-e12",
+          "generation": 1,
+          "requirementId": "lead.mcp.signal"
+        },
+        "rootSessionId": "session-prereq-main-prereq-2026-09-29T23-18-42",
+        "schemaVersion": 2,
+        "sequence": 1
+      },
+      "rowT2": {
+        "createdAt": "2026-09-29T23:18:45.056Z",
+        "factType": "optional-requirement-accepted",
+        "payload": {
+          "consentedAt": 1790723925056,
+          "consentedBy": "kit-e12",
+          "generation": 1,
+          "requirementId": "lead.mcp.signal"
+        },
+        "rootSessionId": "session-prereq-iso-prereq-2026-09-29T23-18-42",
+        "schemaVersion": 2,
+        "sequence": 2
+      }
+    }
+  },
+  "worldDumps": {
+    "afterB1": {
+      "registry": {
+        "team.prereq-anchor@1": "{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:460af80887c214aee3303504782b0e17a2027b50b2f072a67c93a071b91d43a4\",\"frozenAt\":\"2026-09-29T23:18:44.812Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.prereq-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the PR-E smoke boot team. prereq-2026-09-29T23-18-42 is the run nonce.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}",
+        "team.mpr-anchor@1": "{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"frozenAt\":\"2026-09-29T23:18:44.935Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.mpr-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the boot anchor leader of the model-preference-routing smoke row.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}"
+      },
+      "teamSessions": {
+        "session-prereq-boot-prereq-2026-09-29T23-18-42": "{\"blueprint\":{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:460af80887c214aee3303504782b0e17a2027b50b2f072a67c93a071b91d43a4\",\"revision\":\"1\"},\"createdAt\":\"2026-09-29T23:18:44.820Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":2,\"rootSessionId\":\"session-prereq-boot-prereq-2026-09-29T23-18-42\",\"schemaVersion\":1}",
+        "session-prereq-v1-prereq-2026-09-29T23-18-42": "{\"blueprint\":{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"revision\":\"1\"},\"createdAt\":\"2026-09-29T23:18:44.941Z\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":1,\"rootSessionId\":\"session-prereq-v1-prereq-2026-09-29T23-18-42\",\"schemaVersion\":1}"
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "S1",
+      "name": "startup all-template matrix: fresh per-scope evaluation at every admission (team up B1b / team down B5 / worker down B3 / optional degraded B2 / persona pass B9 / persona fatal B9b); pass-3: the pre-consent typed refusal (B1) + the consent grant + the post-consent re-drive (B1b)",
+      "pass": false,
+      "note": "all-ready cell: intent.probe(T) — team scope OPEN (both team requirements PASS) :: status=BLOCKED_FATAL reqs=[\"team.mcp.repo=FATAL\",\"team.mcp.leaderreq=FATAL\"]; pre-consent gate: team.create(T) REFUSED — typed COMPATIBILITY_BLOCKED {source creation-preflight, outcome consentRequired, consentRequiredRequirementIds [lead.mcp.signal]} (the designed W2-A gate) :: code=TEAM_RUNTIME_COMPATIBILITY_BLOCKED details={\"rootSessionId\":\"session-prereq-main-prereq-2026-09-29T23-18-42\",\"source\":\"creation-preflight\",\"outcome\":\"pending\",\"blockedScopes\":[],\"consentRequiredRequirementIds\":[],\"fixOrDisableRequirementIds\":[],\"fatalRequirementIds\":[],\"status\":\"BLOCKED_PENDING\",\"gateReason\":\"requiredScopePending\",\"recheck\":"
+    },
+    {
+      "id": "S2",
+      "name": "optional requirement consent: auto-degraded proceed (B2) + durable optional-requirement-accepted fact readable, gate still ignores it (B2b)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S3",
+      "name": "required template disable: delegate -> gateReason templateDisabled (availability, never policy — negative #9)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S4",
+      "name": "Team-level required outage: the D-3 B5 DUAL — admitInitialWork during the TRANSIENT window (repo mount in flight against the blackhole) -> typed PENDING block (BLOCKED_PENDING / requiredScopePending / recheckable, NO dispatch); post-boundary delegate after the blackhole close -> typed FATAL (BLOCKED_FATAL / requiredScopeDown) + recovery dispatch; disable cannot bypass (B5/B6)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S5",
+      "name": "Leader required MCP down (team-scope model): team scope blocked -> Recovery",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S6",
+      "name": "Human-reviewed recovery dispatch: the kit as human resolver, ALLOW -> recovery attempt proceeds on the reduced original authority",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S7",
+      "name": "degraded Member controlled bash repair: read executes (original allow), bash opens an ASK request (recovery does not turn ask into allow — negative #2), executes after approval",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S8",
+      "name": "service restored -> next boundary NORMAL: incident CLOSED durable, follow-up without recovery correlation, mcp materialized (E.10; no durable recovery flag)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S9",
+      "name": "exact reviewed payload: recovery-dispatch/v1 shape + reducedAuthority + effect + kind user-approval + inline + recovery:<token>:<seq> + canonical sha256 digest recomputed",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S10",
+      "name": "deny / close / abort zero effect: DENY typed block (no new member/incident); abort -> control-request-abandoned + typed abandoned block; later allow rejected (terminal)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S11",
+      "name": "restarts persist, readiness resets: consent + disable facts survive all restarts and drive the fresh evaluation; the compatibility row is recomputed per boot; LIVE readiness is ephemeral — no mounted slot survives a restart, re-probed at the next boundary",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S12",
+      "name": "LIVE persona world (D-2a re-scope): the mounted preset is the authority (rootPresetId -> production persona observer over the agentPresets seam) — standard mounted -> PASS (correct open, no scripted seam); bare preset (no persona row, kit-installed) mounted -> FATAL PERSONA_INCOMPATIBLE + admitInitialWork blocked (no false open)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S13",
+      "name": "old v1 frozen blueprint cold resume: byte-exact pre-PR-E source -> SAME pre-PR-E contentHash under the PR-E code; cold resume re-attaches with the hash unchanged",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S14",
+      "name": "dual-Team isolation: T2 proceeds while T is in a recovery incident; the LIVE probe is host-wide (one row, all live sessions) — the isolation proven here is the DURABLE per-root state (incidents / control facts / compatibility rows never cross roots)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "H1",
+      "name": "test-use pristine BEFORE + AFTER (porcelain empty, HEAD baseline); :3080/:3180 zero-touch (pre == post); the worker bash is a no-op echo",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "H2",
+      "name": "all run ports released after teardown (worldCleaned=true on PASS only)",
+      "pass": true,
+      "note": ""
+    }
+  ],
+  "at": "2026-09-29T23:18:46.679Z"
+}

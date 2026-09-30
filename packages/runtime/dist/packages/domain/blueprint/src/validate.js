@@ -44,7 +44,8 @@
  */
 import { assertRemoteSafeJsonValue, deepFreeze, LEGACY_FORBIDDEN_FIELDS, parseBlueprintId, parseBlueprintRevision, parseTemplateId, teamContractError, toRemoteSafeDetail, } from '../../../contracts/src/index.js';
 import { assertNoUnknownFields, assertPlainRecord, } from '../../../contracts/src/dto/common.js';
-import { BLUEPRINT_CAPABILITIES_FIELDS, BLUEPRINT_DOCUMENT_SCHEMA_VERSION, BLUEPRINT_ENVELOPE_FIELDS, BLUEPRINT_MEMBER_ENVELOPE_ENTRY_FIELDS, BLUEPRINT_POLICY_REFERENCEABLE_FIELDS, BLUEPRINT_POLICY_STATE_FIELDS, BLUEPRINT_QUOTA_FIELDS, BLUEPRINT_QUOTA_SPEC_FIELDS, BLUEPRINT_REQUIREMENT_FIELDS, BLUEPRINT_TEMPLATE_FIELDS, BLUEPRINT_TOP_LEVEL_FIELDS, CAPABILITY_ITEM_MAX_LENGTH, CAPABILITY_POLICY_DECISIONS, CONTEXT_POLICY_MAX_LENGTH, DESCRIPTION_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH, ENVELOPE_OPERATION_MAX_LENGTH, ENVELOPE_OPERATION_PATTERN, METADATA_KEY_MAX_LENGTH, METADATA_KEY_PATTERN, METADATA_VALUE_MAX_LENGTH, MODEL_PREFERENCE_MAX_LENGTH, PERSONA_MAX_LENGTH, PERMISSION_PATH_MAX_LENGTH, PERMISSION_POLICY_DEFAULTS, PERMISSION_POLICY_FIELDS, PERMISSION_RESOURCE_KINDS, PERMISSION_RULE_FIELDS, PERMISSION_TOOL_NAMES, POLICY_STATE_ID_MAX_LENGTH, POLICY_STATE_ID_PATTERN, REQUIREMENT_DOMAIN_MAX_LENGTH, REQUIREMENT_DOMAIN_PATTERN, REQUIREMENT_NAME_MAX_LENGTH, REQUIREMENT_NAME_PATTERN, SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS, } from './schema.js';
+import { assertRequirementType, isRequiredPersonaKind, REQUIRED_PERSONA_KIND_VALUES, } from '../../compatibility/src/requirement.js';
+import { BLUEPRINT_CAPABILITIES_FIELDS, BLUEPRINT_ENVELOPE_FIELDS, BLUEPRINT_MEMBER_ENVELOPE_ENTRY_FIELDS, BLUEPRINT_POLICY_REFERENCEABLE_FIELDS, BLUEPRINT_POLICY_STATE_FIELDS, BLUEPRINT_QUOTA_FIELDS, BLUEPRINT_QUOTA_SPEC_FIELDS, BLUEPRINT_REQUIREMENT_FIELDS, BLUEPRINT_TEMPLATE_FIELDS, BLUEPRINT_TEMPLATE_FIELDS_V2, BLUEPRINT_TOP_LEVEL_FIELDS, BLUEPRINT_TOP_LEVEL_FIELDS_V2, BLUEPRINT_V2_REQUIREMENT_FIELDS, CAPABILITY_ITEM_MAX_LENGTH, CAPABILITY_POLICY_DECISIONS, CONTEXT_POLICY_MAX_LENGTH, DESCRIPTION_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH, ENVELOPE_OPERATION_MAX_LENGTH, ENVELOPE_OPERATION_PATTERN, METADATA_KEY_MAX_LENGTH, METADATA_KEY_PATTERN, METADATA_VALUE_MAX_LENGTH, MODEL_PREFERENCE_MAX_LENGTH, PERSONA_MAX_LENGTH, PERMISSION_PATH_MAX_LENGTH, PERMISSION_POLICY_DEFAULTS, PERMISSION_POLICY_FIELDS, PERMISSION_RESOURCE_KINDS, PERMISSION_RULE_FIELDS, PERMISSION_TOOL_NAMES, POLICY_STATE_ID_MAX_LENGTH, POLICY_STATE_ID_PATTERN, REQUIREMENT_DOMAIN_MAX_LENGTH, REQUIREMENT_DOMAIN_PATTERN, REQUIREMENT_NAME_MAX_LENGTH, REQUIREMENT_NAME_PATTERN, SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS, } from './schema.js';
 import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js';
 import { deriveContentHash } from './hash.js';
 import { parseModelPreferenceToken } from './model-preference.js';
@@ -175,9 +176,15 @@ function stripUndefined(obj) {
  * A2C-1 contract verbatim (allow-lane shell rejected, diagnostics
  * byte-identical).
  */
-function validateTemplate(raw, path, role) {
+function validateTemplate(raw, path, role, schemaVersion) {
     const record = assertPlainRecord(raw, `${path} (template)`);
-    assertNoUnknownFields(record, BLUEPRINT_TEMPLATE_FIELDS, `${path} (template)`);
+    // The template field set is version-gated (plan §E.2): v1 templates parse
+    // against the FROZEN v1 set (a `requirements` key there is an unknown
+    // field and fails loudly — the v1 validator is NOT tightened); v2
+    // templates additionally accept the per-template structured requirement
+    // field `requirements`.
+    const templateFields = schemaVersion === 2 ? BLUEPRINT_TEMPLATE_FIELDS_V2 : BLUEPRINT_TEMPLATE_FIELDS;
+    assertNoUnknownFields(record, templateFields, `${path} (template)`);
     const templateId = parseTemplateId(requireField(record, 'templateId', path));
     const displayName = takeString(record, 'displayName', path, {
         required: false,
@@ -208,6 +215,15 @@ function validateTemplate(raw, path, role) {
     const capabilities = capabilitiesRaw === undefined
         ? undefined
         : validateTemplateCapabilities(capabilitiesRaw, `${path}.capabilities`, role);
+    // Optional schema-v2 per-template structured requirements (absent in v1
+    // documents; absent when a v2 template declares none). `stripUndefined`
+    // OMITS the key when it is `undefined`, so a v1 template (and a v2
+    // template that declares none) hashes byte-identically to before §E.2 —
+    // the same "absent => key omitted" discipline as the A1 `permissions` key.
+    const v2RequirementsRaw = schemaVersion === 2 ? takeArray(record, 'requirements', path) : undefined;
+    const v2Requirements = v2RequirementsRaw === undefined
+        ? undefined
+        : validateV2Requirements(v2RequirementsRaw, `${path}.requirements`);
     return stripUndefined({
         templateId,
         displayName,
@@ -216,6 +232,7 @@ function validateTemplate(raw, path, role) {
         modelPreference,
         contextPolicy,
         capabilities,
+        ...(v2Requirements !== undefined ? { requirements: v2Requirements } : {}),
     });
 }
 /** Validate one capability requirement. */
@@ -242,6 +259,90 @@ function validateRequirement(raw, path) {
         optional = record['optional'];
     }
     return { domain, name, optional };
+}
+/**
+ * Validate one schema-v2 structured requirement (plan §E.2).
+ *
+ * The `type` is the CLOSED §27.1 six-set (validated by the domain
+ * compatibility `assertRequirementType` — the single source of truth, so the
+ * blueprint can never declare a requirement domain the engine cannot probe).
+ * The `requirementId` is a non-empty slug (the engine's outcome/ack binding
+ * key). `subjects` is a non-empty array of non-empty slugs (the probeable
+ * named capabilities). `complete` defaults to `false` (an omitted `complete`
+ * is the ordinary, ack-able case; a present-but-wrong-type `complete` is
+ * malformed — fail closed, never a guess).
+ */
+function validateV2Requirement(raw, path) {
+    const record = assertPlainRecord(raw, `${path} (v2 requirement)`);
+    assertNoUnknownFields(record, BLUEPRINT_V2_REQUIREMENT_FIELDS, `${path} (v2 requirement)`);
+    const requirementIdRaw = requireField(record, 'requirementId', path);
+    if (typeof requirementIdRaw !== 'string' ||
+        requirementIdRaw.length === 0 ||
+        requirementIdRaw.length > REQUIREMENT_NAME_MAX_LENGTH ||
+        !REQUIREMENT_NAME_PATTERN.test(requirementIdRaw)) {
+        throw teamContractError('MALFORMED_DTO', `field ${path}.requirementId must be a lowercase slug (max ${REQUIREMENT_NAME_MAX_LENGTH}), got ${JSON.stringify(requirementIdRaw)}`, { path: `${path}.requirementId` });
+    }
+    const type = assertRequirementType(record['type'], `${path}.type`);
+    const subjectsRaw = takeArray(record, 'subjects', path);
+    if (subjectsRaw === undefined || subjectsRaw.length === 0) {
+        throw teamContractError('MALFORMED_DTO', `field ${path}.subjects must be a non-empty array of non-empty slugs`, { path: `${path}.subjects` });
+    }
+    const subjects = subjectsRaw.map((item, index) => {
+        if (typeof item !== 'string' ||
+            item.length === 0 ||
+            item.length > REQUIREMENT_NAME_MAX_LENGTH ||
+            !REQUIREMENT_NAME_PATTERN.test(item)) {
+            throw teamContractError('MALFORMED_DTO', `field ${path}.subjects[${index}] must be a lowercase slug (max ${REQUIREMENT_NAME_MAX_LENGTH}), got ${JSON.stringify(item)}`, { path: `${path}.subjects[${index}]` });
+        }
+        return item;
+    });
+    const seen = new Set();
+    for (const subject of subjects) {
+        if (seen.has(subject)) {
+            throw teamContractError('MALFORMED_DTO', `duplicate subject '${subject}' at ${path}.subjects`, { path: `${path}.subjects`, subject });
+        }
+        seen.add(subject);
+    }
+    // pre-alpha3 PR-E (plan §E.3) — the ADDITIVE v2 rule (the FROZEN v1
+    // `validateRequirement` above is untouched): a persona-TYPE requirement's
+    // subjects name the REQUIRED persona KIND(s) (the persona KIND convention —
+    // not preset ids). The closed `RequiredPersonaKind` set (the domain
+    // compatibility single source of truth) currently allows exactly `standard`;
+    // any other subject is malformed (fail loud, typed — never a silent
+    // false-OPEN).
+    if (type === 'persona') {
+        for (const subject of subjects) {
+            if (!isRequiredPersonaKind(subject)) {
+                throw teamContractError('MALFORMED_DTO', `field ${path}.subjects must be closed required persona kinds (one of: ${REQUIRED_PERSONA_KIND_VALUES.join(', ')}) for a persona-type requirement, got ${JSON.stringify(subject)}`, { path: `${path}.subjects`, subject, problem: 'unknown required persona kind' });
+            }
+        }
+    }
+    let complete = false;
+    if (Object.hasOwn(record, 'complete') && record['complete'] !== undefined) {
+        if (typeof record['complete'] !== 'boolean') {
+            throw teamContractError('MALFORMED_DTO', `field ${path}.complete must be a boolean, got ${typeof record['complete']}`, { path: `${path}.complete` });
+        }
+        complete = record['complete'];
+    }
+    return { requirementId: requirementIdRaw, type, subjects, complete };
+}
+/**
+ * Validate a schema-v2 structured-requirement list (the Team / Leader /
+ * MemberTemplate `requirements` field): well-formed entries with unique
+ * `requirementId`s within the list.
+ */
+function validateV2Requirements(raw, path) {
+    const requirements = [];
+    const seen = new Set();
+    raw.forEach((item, index) => {
+        const requirement = validateV2Requirement(item, `${path}[${index}]`);
+        if (seen.has(requirement.requirementId)) {
+            throw teamContractError('MALFORMED_DTO', `duplicate v2 requirementId '${requirement.requirementId}' at ${path}[${index}]`, { path: `${path}[${index}].requirementId`, requirementId: requirement.requirementId });
+        }
+        seen.add(requirement.requirementId);
+        requirements.push(requirement);
+    });
+    return requirements;
 }
 /** Validate one mutation envelope (self-consistent allow/deny). */
 function validateEnvelope(raw, path) {
@@ -537,7 +638,6 @@ export function validateBlueprintDocument(raw) {
     assertRemoteSafeJsonValue(raw);
     const record = assertPlainRecord(raw, 'TeamBlueprint');
     assertNoLegacyFieldsDeep(record, '$');
-    assertNoUnknownFields(record, BLUEPRINT_TOP_LEVEL_FIELDS, 'TeamBlueprint');
     // --- schema version -----------------------------------------------------
     const schemaVersion = requireField(record, 'schemaVersion', '$');
     if (typeof schemaVersion !== 'number' ||
@@ -551,6 +651,12 @@ export function validateBlueprintDocument(raw) {
             supported: [...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS],
         });
     }
+    // The TOP-LEVEL closed field set is version-gated (plan §E.2): a v1
+    // document parses against the FROZEN v1 set (the v2 `teamRequirements`
+    // field is an unknown field there — the v1 validator is NOT tightened); a
+    // v2 document additionally accepts `teamRequirements`.
+    const topLevelFields = schemaVersion === 2 ? BLUEPRINT_TOP_LEVEL_FIELDS_V2 : BLUEPRINT_TOP_LEVEL_FIELDS;
+    assertNoUnknownFields(record, topLevelFields, 'TeamBlueprint');
     // --- identity ------------------------------------------------------------
     const blueprintId = parseBlueprintId(requireField(record, 'blueprintId', '$'));
     const revision = parseBlueprintRevision(requireField(record, 'revision', '$'));
@@ -563,10 +669,10 @@ export function validateBlueprintDocument(raw) {
         maxLength: DESCRIPTION_MAX_LENGTH,
     });
     // --- exactly one complete LeaderTemplate (Architecture §5.3) -------------
-    const leader = validateTemplate(requireField(record, 'leader', '$'), '$.leader', 'leader');
+    const leader = validateTemplate(requireField(record, 'leader', '$'), '$.leader', 'leader', schemaVersion);
     // --- 0..N MemberTemplates with unique identity ---------------------------
     const membersRaw = takeArray(record, 'members', '$') ?? [];
-    const members = membersRaw.map((item, index) => validateTemplate(item, `$.members[${index}]`, 'member'));
+    const members = membersRaw.map((item, index) => validateTemplate(item, `$.members[${index}]`, 'member', schemaVersion));
     const seenTemplateIds = new Set([leader.templateId]);
     for (const member of members) {
         if (seenTemplateIds.has(member.templateId)) {
@@ -587,6 +693,14 @@ export function validateBlueprintDocument(raw) {
         seenRequirements.add(key);
         requirements.push(req);
     });
+    // --- schema-v2 TEAM-level structured requirements (plan §E.2) -------------
+    // ABSENT in v1 documents (the field is not in the v1 closed set — an
+    // unknown field there fails loudly). In a v2 document it is optional:
+    // `undefined` when not declared, a (possibly empty) list when declared.
+    const teamRequirementsRaw = schemaVersion === 2 ? takeArray(record, 'teamRequirements', '$') : undefined;
+    const teamRequirements = teamRequirementsRaw === undefined
+        ? undefined
+        : validateV2Requirements(teamRequirementsRaw, '$.teamRequirements');
     // --- Team autonomy/mutation envelope --------------------------------------
     const teamEnvelopeRaw = takeRecord(record, 'teamEnvelope', '$');
     const teamEnvelope = teamEnvelopeRaw === undefined ? undefined : validateEnvelope(teamEnvelopeRaw, '$.teamEnvelope');
@@ -697,7 +811,11 @@ export function validateBlueprintDocument(raw) {
         }
     }
     const core = {
-        schemaVersion: BLUEPRINT_DOCUMENT_SCHEMA_VERSION,
+        // Stamp the document's OWN version (v1 documents => 1, byte-identical to
+        // the pre-§E.2 constant stamp; v2 documents => 2). `stripUndefined` below
+        // OMITS the `teamRequirements` key when it is `undefined`, so a v1
+        // document's core (and hash) is byte-identical to before §E.2.
+        schemaVersion: schemaVersion,
         blueprintId,
         revision,
         displayName,
@@ -705,6 +823,7 @@ export function validateBlueprintDocument(raw) {
         leader,
         members,
         requirements,
+        ...(teamRequirements !== undefined ? { teamRequirements } : {}),
         teamEnvelope,
         memberEnvelopes,
         policyStates,
@@ -755,6 +874,17 @@ export function toHashableBlueprint(core) {
             name: req.name,
             optional: req.optional,
         })),
+        // Schema-v2 TEAM-level structured requirements. PRESENT ONLY when
+        // declared (a v2 document that declares `teamRequirements`); ABSENT in
+        // v1 documents and in v2 documents that declare none. The key is omitted
+        // (never `null`) so a v1 blueprint hashes byte-identically to before
+        // §E.2 — the same "absent => key omitted" discipline as the A1
+        // `permissions` key.
+        ...(core.teamRequirements !== undefined
+            ? {
+                teamRequirements: core.teamRequirements.map(toHashableV2Requirement),
+            }
+            : {}),
         teamEnvelope: core.teamEnvelope === undefined ? null : toHashableEnvelope(core.teamEnvelope),
         memberEnvelopes: core.memberEnvelopes.map((entry) => ({
             templateId: entry.templateId,
@@ -776,7 +906,7 @@ export function toHashableBlueprint(core) {
     };
 }
 function toHashableTemplate(template) {
-    return stripUndefined({
+    const record = {
         templateId: template.templateId,
         displayName: template.displayName ?? null,
         description: template.description ?? null,
@@ -784,7 +914,30 @@ function toHashableTemplate(template) {
         modelPreference: template.modelPreference ?? null,
         contextPolicy: template.contextPolicy ?? null,
         capabilities: template.capabilities === undefined ? null : toHashableCapabilities(template.capabilities),
-    });
+    };
+    // Schema-v2 per-template structured requirements (plan §E.2/§E.3). The key
+    // is PRESENT ONLY when the template declares `requirements`; ABSENT for v1
+    // templates and for v2 templates that declare none — so a v1 template
+    // hashes byte-identically to before §E.2 (the same "absent => key omitted"
+    // discipline as the A1 `permissions` key). A declared `requirements`
+    // (including an explicit `[]`) projects in declaration order.
+    if (template.requirements !== undefined) {
+        record['requirements'] = template.requirements.map(toHashableV2Requirement);
+    }
+    return record;
+}
+/**
+ * The hashable projection of one schema-v2 structured requirement (all four
+ * fields are always concrete after validation: `complete` defaults to
+ * `false`, so no `undefined` is ever projected).
+ */
+function toHashableV2Requirement(requirement) {
+    return {
+        requirementId: requirement.requirementId,
+        type: requirement.type,
+        subjects: [...requirement.subjects],
+        complete: requirement.complete,
+    };
 }
 /**
  * The hashable projection of one capabilities block. The `permissions`

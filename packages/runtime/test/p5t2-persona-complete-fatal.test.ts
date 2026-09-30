@@ -116,7 +116,10 @@ describe('P5-T2 group 3: complete:true preset — FATAL before admission, Team w
     expect(evaluated.requirements[0]?.reasonCode).toBe(
       COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT,
     )
-    expect(evaluated.requirements[0]?.unavailableSubjects).toEqual([COMPLETE_PRESET_ID])
+    // pre-alpha3 PR-E (plan §E.3) — the persona KIND convention: the
+    // required-kind subject is `standard`; the complete OBSERVED kind
+    // (`complete` fact) keys the frozen CONFLICT code.
+    expect(evaluated.requirements[0]?.unavailableSubjects).toEqual(['standard'])
   })
 
   it('a retry of the same complete-persona bind fails identically (the engine re-probes once per attempt)', () => {

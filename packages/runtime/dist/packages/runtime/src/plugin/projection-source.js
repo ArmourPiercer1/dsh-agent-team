@@ -124,12 +124,36 @@ export const TEAM_DOMAIN_READ_PORT_ERROR_CODES = {
 //   'activity-interval-opened'      runtime/activity ledger                  → progress
 //   'activity-interval-closed'      runtime/activity ledger                  → progress
 //   'policy-state-transitioned'     plugin/durable-mutation-store (R2-1)     → policy
+//   'capability-runtime-event'      runtime/readiness telemetry (pre-alpha3
+//                                   PR-C §C.7 — the durable capability
+//                                   readiness transition record; a
+//                                   compatibility-category fact)           → compatibility
+//   'optional-requirement-accepted' runtime/requirements (pre-alpha3 PR-E
+//                                   §E.5 — the durable DegradationConsent:
+//                                   the human accepted an optional-requirement
+//                                   degradation; a compatibility-category
+//                                   fact)                                  → compatibility
+//   'template-availability-set'     runtime/requirements (pre-alpha3 PR-E
+//                                   §E.5 — the durable template disable /
+//                                   enable; a compatibility-category fact)  → compatibility
+//   'recovery-incident-opened'      runtime/requirements (pre-alpha3 PR-E
+//                                   §E.5 — a recovery incident opened (a
+//                                   required requirement went down); a
+//                                   compatibility-category fact)           → compatibility
+//   'recovery-incident-closed'      runtime/requirements (pre-alpha3 PR-E
+//                                   §E.5 — a recovery incident closed (fresh
+//                                   evaluation PASS + materialization); a
+//                                   compatibility-category fact)           → compatibility
 //
-// The `compatibility` category has no production writer in v1 (the
-// compatibility state is its own store and never passes through a ledger
-// fact). Its count stays 0 until a writing task lands — at which point its
-// fact type MUST be added to this table or the read fails closed with
-// LEDGER_CATEGORY_UNKNOWN.
+// The `compatibility` category's first production writer landed in
+// pre-alpha3 PR-C (the `capability-runtime-event` telemetry fact); the
+// pre-alpha3 PR-E requirement / recovery facts (consent, template
+// availability, recovery-incident open/close) are the next writers under the
+// SAME frozen category. The compatibility STATE remains its own store (it
+// never passes through a ledger fact); the LEDGER carries the capability
+// readiness telemetry + the requirement / recovery records under this
+// category. Any NEW compatibility fact type MUST be added to this table or
+// the read fails closed with LEDGER_CATEGORY_UNKNOWN.
 const FACT_TEAM_WORK_ADMITTED = 'team-work-admitted';
 const FACT_TEAM_ROOT_WORK_DELIVERED = 'team-root-work-delivered';
 const FACT_PROVISION_MEMBER_INSTANCE = 'provision-member-instance';
@@ -143,6 +167,15 @@ const FACT_ACTIVITY_PROGRESS_RECORDED = 'activity-progress-recorded';
 const FACT_ACTIVITY_INTERVAL_OPENED = 'activity-interval-opened';
 const FACT_ACTIVITY_INTERVAL_CLOSED = 'activity-interval-closed';
 const FACT_POLICY_STATE_TRANSITIONED = 'policy-state-transitioned';
+const FACT_CAPABILITY_RUNTIME_EVENT = 'capability-runtime-event';
+// pre-alpha3 PR-E §E.5: the requirement / recovery durable facts (the closed
+// vocabulary lives in runtime/requirements/facts.ts; these mirror it here for
+// the fail-closed category table). All four land in the frozen `compatibility`
+// category.
+const FACT_OPTIONAL_REQUIREMENT_ACCEPTED = 'optional-requirement-accepted';
+const FACT_TEMPLATE_AVAILABILITY_SET = 'template-availability-set';
+const FACT_RECOVERY_INCIDENT_OPENED = 'recovery-incident-opened';
+const FACT_RECOVERY_INCIDENT_CLOSED = 'recovery-incident-closed';
 /** The closed fact-type → frozen-category map (see the vocabulary above). */
 const FACT_TYPE_CATEGORY = new Map([
     [FACT_TEAM_WORK_ADMITTED, 'team'],
@@ -160,6 +193,17 @@ const FACT_TYPE_CATEGORY = new Map([
     [FACT_ACTIVITY_INTERVAL_OPENED, 'progress'],
     [FACT_ACTIVITY_INTERVAL_CLOSED, 'progress'],
     [FACT_POLICY_STATE_TRANSITIONED, 'policy'],
+    // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry. The
+    // compatibility category's first production writer (a compatibility
+    // CATEGORY, not a new category — the closed 8-shape is unchanged).
+    [FACT_CAPABILITY_RUNTIME_EVENT, 'compatibility'],
+    // pre-alpha3 PR-E §E.5: the requirement / recovery durable facts (consent,
+    // template availability, recovery-incident open/close) — the frozen
+    // `compatibility` category's next writers (no new category).
+    [FACT_OPTIONAL_REQUIREMENT_ACCEPTED, 'compatibility'],
+    [FACT_TEMPLATE_AVAILABILITY_SET, 'compatibility'],
+    [FACT_RECOVERY_INCIDENT_OPENED, 'compatibility'],
+    [FACT_RECOVERY_INCIDENT_CLOSED, 'compatibility'],
 ]);
 // --- structurally valid empty views (never fabricated values) ------------------
 /**

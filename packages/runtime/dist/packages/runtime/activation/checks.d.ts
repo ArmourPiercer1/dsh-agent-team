@@ -32,8 +32,8 @@ import type { MemberInstanceRecordDto, TeamSessionRecordDto } from '../../contra
 import type { BlueprintCatalog, QuotaSpec, TeamBlueprint } from '../../domain/blueprint/src/index.js';
 import type { CompatibilityResult, EnvironmentFact, RequirementInput, RequirementType, WarningAcknowledgement } from '../../domain/compatibility/src/index.js';
 import type { ContextPolicy } from '../../domain/member/src/index.js';
-import type { AutonomyOverlayRecord, EffectivePolicy, ExternalPolicyFacts, HumanOverrideRecord, PolicyEntry, TemplatePolicy } from '../../domain/policy/src/index.js';
-import type { GovernanceOverrideRecord, OperationRecord } from '../../storage/schema/index.js';
+import type { EffectivePolicy, PolicyEntry } from '../../domain/policy/src/index.js';
+import type { OperationRecord } from '../../storage/schema/index.js';
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js';
 import type { ActivationSource, MemberActivationRequest } from './types.js';
 /**
@@ -197,89 +197,9 @@ export declare function checkQuota(quota: QuotaSpec | undefined, counts: {
     readonly templateTotal: number;
     readonly templateActive: number;
 }, templateId: string): void;
-/**
- * The deterministic overlay/override selection from the durable `overrides`
- * store into the policy resolver's overlay slots (step 8 input half).
- *
- * Mapping (closed, documented ruling):
- *
- * - `scope: 'team'` + `kind: 'autonomy-overlay'` → the `templateOverlay`
- *   slot (kind `'template'`);
- * - `scope: 'instance'` matching the NEW instance id + `kind:
- *   'autonomy-overlay'` → the `instanceOverlay` slot (kind `'instance'`) —
- *   never present for a genuinely fresh instance, supported for re-drive
- *   correctness;
- * - `kind: 'human-override'` → the `humanOverride` slot (the instance-
- *   scoped record wins over the team-scoped one, per the policy contract);
- * - multiple candidates for one slot: the HIGHEST `generation` wins, ties
- *   broken by the LEXICOGRAPHICALLY SMALLEST `recordId` (deterministic;
- *   multi-overlay composition is owned by the later governance work).
- *
- * The stored `values` payload passes through UNTOUCHED: the policy resolver
- * re-validates it (a malformed stored payload fails closed in step 8).
- *
- * @param overrides - the durable governance override records (all teams).
- * @param rootSessionId - the team (root) session id.
- * @param instanceId - the instance being activated.
- * @returns the selected overlay slots (absent when no candidate exists).
- */
-export declare function selectPolicyOverrides(overrides: readonly GovernanceOverrideRecord[], rootSessionId: string, instanceId: string): {
-    readonly templateOverlay?: AutonomyOverlayRecord;
-    readonly instanceOverlay?: AutonomyOverlayRecord;
-    readonly humanOverride?: HumanOverrideRecord;
-};
-/**
- * Step 8 — effective policy resolution for the member being activated.
- *
- * v1 input assembly (documented ruling): the v1 blueprint carries no
- * per-capability value layers (its envelopes are mutation-operation
- * envelopes, not policy cells — the canonical P3-T6 pipeline resolves with
- * empty blueprint/template value layers), so the policy input uses empty
- * value layers; the differentiation comes from the stored
- * overlay/override records (durable, team-scoped) and the external hard
- * facts (injected; no Team layer can bypass them, invariant 34). The
- * PolicyState is the implicit `default` state of v1 (the TeamSession has no
- * durable transition store yet; invariant 40 owns transitions).
- *
- * The OPTIONAL `templateValues` carries the bound Blueprint template's
- * STATIC policy cells — the generic template value layer of the resolver
- * (the model-preference routing fix generalized the former MCP-only shape;
- * currently `model` and `mcp` are the production callers that depend on
- * it):
- *
- * - `mcp` — the template's `capabilities.mcp` entry ONLY when
- *   `kind === 'allow'` (plan MCP_BLUEPRINT_INITIAL_GRANT §4.1; a deny / a
- *   capabilities-less legacy template / a future non-allow state
- *   contribute nothing — they stay fail-closed or governed dynamically in
- *   Alpha.3+);
- * - `model` — the template's `modelPreference` as an `allow` grant
- *   (derivation: `initialTemplateModelGrantOf`; an absent / malformed
- *   preference contributes nothing).
- *
- * Every value sits at the policy resolver's `template` value layer
- * (provenance template/static, no record id): above the PolicyState, below
- * the record-backed templateOverlay / instanceOverlay / humanOverride
- * layers and the external hard facts — so a durable deny/tighten still
- * wins at the next boundary, and no synthetic durable record is ever
- * created (the bound Blueprint snapshot itself is the durable, immutable
- * source of the grants).
- *
- * @param args - the resolution inputs.
- * @returns the frozen effective policy (explainable per-cell, provenance
- *   included).
- * @throws {@link ActivationError} `ACTIVATION_POLICY_RESOLUTION_FAILED` when
- *   the resolver rejects the input (e.g. a malformed stored overlay payload
- *   — fail closed).
- */
-export declare function resolveActivationPolicy(args: {
-    readonly rootSessionId: string;
-    readonly instanceId: string;
-    readonly overrides: readonly GovernanceOverrideRecord[];
-    readonly external: ExternalPolicyFacts;
-    /** The bound template's static policy cells (`model` / `mcp`; absent =
-     *  no template static values — the empty-template contract). */
-    readonly templateValues?: TemplatePolicy['values'];
-}): EffectivePolicy;
+export { selectPolicyOverrides } from '../effective-policy/index.js';
+export { resolveActivationPolicy } from '../effective-policy/index.js';
+export type { ResolveActivationPolicyArgs } from '../effective-policy/index.js';
 /** The per-capability effective values of one resolution (lossless-JSON view). */
 export declare function effectivePolicyValues(policy: EffectivePolicy): Record<string, PolicyEntry>;
 /**

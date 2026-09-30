@@ -4,24 +4,36 @@
  *
  * The public surface of the module:
  * - `createControlService` — the durable control plane service over an
- *   open TeamDomain (requestControl / resolveControl / listControlState /
+ *   open TeamDomain (requestControl / resolveControl / abandonControl-
+ *   Request — the pre-alpha3 PR-D inline abort path / listControlState /
  *   guardOperation / checkExternalOperation — the A2C-4 shared read-only
  *   external hard last-mile recheck / awaitControlDecision — the alpha.2
  *   synchronous wait bridge);
- * - the closed vocabulary (request kinds, decision values/reasons, guard
- *   block reasons, the control-service error codes) and the record types
+ * - the closed vocabulary (request kinds, the canonical subject kinds —
+ *   pre-alpha3 PR-D: instance | template | team — the execution
+ *   couplings guarded | inline, decision values/reasons, guard block
+ *   reasons, the control-service error codes) and the record types
  *   (ControlRequestRecord / ControlDecisionRecord / ControlConsumption-
- *   Record / ControlGuardVerdict / ControlOperationScope).
+ *   Record / ControlAbandonmentRecord / ControlGuardVerdict /
+ *   ControlOperationScope).
  *
  * What this module IS (and deliberately is NOT):
  *
  * - It IS the durable authority for control requests/decisions: every
- *   request, decision and allow-consumption is an append-only TeamDomain
- *   ledger fact (`control-request-recorded` / `control-decision-recorded`
- *   / `control-allow-consumed`) — recoverable after a restart by
+ *   request, decision, allow-consumption and (pre-alpha3 PR-D) abandon
+ *   is an append-only TeamDomain ledger fact (`control-request-recorded`
+ *   / `control-decision-recorded` / `control-allow-consumed` /
+ *   `control-request-abandoned`) — recoverable after a restart by
  *   re-opening the repositories (no in-memory state is authority,
  *   invariant 45), and the last-mile guard is a plain exported function
- *   the P6-T6 tool layer consults BEFORE executing;
+ *   the P6-T6 tool layer consults BEFORE executing. The request scope is
+ *   keyed on the CANONICAL SUBJECT (closed `instance | template | team`;
+ *   the legacy `targetInstanceId`-only addressing normalizes to the
+ *   instance subject — byte-identical for old rows), and the two
+ *   execution couplings (`guarded` — ABSENT = the legacy flow; `inline`
+ *   — request → wait → decision, abort durably records the abandon fact,
+ *   the terminal mark the guard blocks over) are additive optional
+ *   record fields (ABSENT = legacy semantics).
  * - it is NOT a tool executor: the decision only AUTHORIZES the exact
  *   operation scope; the operation itself still runs through the DSH
  *   tool pipeline (Development Plan 19.4);
@@ -105,18 +117,26 @@ export {
   CONTROL_DECISION_REASONS,
   CONTROL_DECISION_VALUES,
   CONTROL_DECISION_VALUE_VALUES,
+  CONTROL_EXECUTION_COUPLINGS,
+  CONTROL_EXECUTION_COUPLING_VALUES,
   CONTROL_GUARD_BLOCK_REASON_VALUES,
   CONTROL_GUARD_BLOCK_REASONS,
   CONTROL_REQUEST_KIND_VALUES,
   CONTROL_REQUEST_KINDS,
   CONTROL_RESOLVER_ROLES,
+  CONTROL_SUBJECT_KINDS,
+  CONTROL_SUBJECT_KIND_VALUES,
+  isControlExecutionCoupling,
+  isControlSubjectKind,
 } from './types.js'
 export type {
+  ControlAbandonmentRecord,
   ControlCallerRef,
   ControlConsumptionRecord,
   ControlDecisionRecord,
   ControlDecisionReason,
   ControlDecisionValue,
+  ControlExecutionCoupling,
   ControlExternalVerdict,
   ControlGuardBlockReason,
   ControlGuardVerdict,
@@ -126,6 +146,8 @@ export type {
   ControlRequestRecord,
   ControlService,
   ControlServiceOptions,
+  ControlSubject,
+  ControlSubjectKind,
   ControlWaitSignal,
 } from './types.js'
 

@@ -1,0 +1,78 @@
+[2026-09-29T21:30:13.232Z] mini MCP mcp_repo up on 127.0.0.1:3492
+[2026-09-29T21:30:13.244Z] mini MCP mcp_leaderreq up on 127.0.0.1:3491
+[2026-09-29T21:30:13.255Z] mini MCP mcp_web up on 127.0.0.1:3493
+[2026-09-29T21:30:13.255Z] services up: mock=3497 repo=3492 leaderreq=3491 web=3493
+[2026-09-29T21:30:13.255Z] patch + directive written (resume, all-ready)
+[2026-09-29T21:30:14.554Z] booted at http://127.0.0.1:3183
+[2026-09-29T21:30:15.564Z] row ready — toolCount=13
+[2026-09-29T21:30:15.580Z] remote compatibility.get v1 [m1-comp-get-t9-before] -> 200 ok=true
+[2026-09-29T21:30:15.580Z] M1 T9 durable row (pre): {"data":{"verdict":{"status":"OPEN","environmentFingerprint":"fp-v1:496d1037b98199e1","generation":3,"recordedAt":"2026-09-29T21:07:40.422Z","counts":{"pass":1,"warning":0,"fatal":0,"unackedWarning":0,"staleAcknowledgement":0}}},"provenance":{"origin":"team-remote","method":"compatibility.get","endpoint":"compatibility.get","contractVersion":1,"requestToken":null,"projectionGeneration":null,"effectSequence":null}}
+[2026-09-29T21:30:15.593Z] remote compatibility.reprobe v1 [m2-comp-reprobe-t9] -> 200 ok=true
+[2026-09-29T21:30:15.593Z] M2 T9 reprobe: {"data":{"probe":{"recordedAt":"2026-09-29T21:30:15.583Z","generation":4,"environmentFingerprint":"fp-v1:496d1037b98199e1","status":"OPEN","pass":1,"warning":0,"fatal":0,"unackedWarning":0,"trigger":"ROOT_COLD_RESUME"}},"provenance":{"origin":"team-remote","method":"compatibility.reprobe","endpoint":"compatibility.reprobe","contractVersion":1,"requestToken":null,"projectionGeneration":null,"effectSequence":null}}
+[2026-09-29T21:30:15.596Z] remote compatibility.get v1 [m3-comp-get-t9-after] -> 200 ok=true
+[2026-09-29T21:30:15.596Z] M3 T9 durable row (post): {"data":{"verdict":{"status":"OPEN","environmentFingerprint":"fp-v1:496d1037b98199e1","generation":4,"recordedAt":"2026-09-29T21:30:15.583Z","counts":{"pass":1,"warning":0,"fatal":0,"unackedWarning":0,"staleAcknowledgement":0}}},"provenance":{"origin":"team-remote","method":"compatibility.get","endpoint":"compatibility.get","contractVersion":1,"requestToken":null,"projectionGeneration":null,"effectSequence":null}}
+[2026-09-29T21:30:15.599Z] remote intent.probe v1 [m4-probe-persona-bare] -> 200 ok=false code=malformed-params msg=method 'intent.probe' requires param field 'environmentFacts'
+[2026-09-29T21:30:15.599Z] M4 flat probe (bare): {"ok":false,"error":{"code":"malformed-params","message":"method 'intent.probe' requires param field 'environmentFacts'","details":{"method":"intent.probe","endpoint":"intent.probe","contractVersion":1,"requestToken":null,"field":"environmentFacts","reason":"missing-required"}}}
+[2026-09-29T21:30:15.608Z] remote team.admitInitialWork v2 [m5-admit-t9] -> 200 ok=false code=TEAM_RUNTIME_INITIAL_WORK_ALREADY_ADMITTED msg=TeamRuntime: team 'session-prereq-persona-prereq-2026-09-29T20-52-08' already carries a creation-time Root initial work under a different requestToken ('rt-admit-b9b-prereq-2026-09-29T20-52-08', durab
+[2026-09-29T21:30:15.609Z] M5 admitInitialWork(T9): {"ok":false,"error":{"code":"TEAM_RUNTIME_INITIAL_WORK_ALREADY_ADMITTED","message":"TeamRuntime: team 'session-prereq-persona-prereq-2026-09-29T20-52-08' already carries a creation-time Root initial work under a different requestToken ('rt-admit-b9b-prereq-2026-09-29T20-52-08', durable sequence 35) — at most one initial work per creation; a fresh operation must use its own token only before any admission, a retry must reuse the admitted token","details":{"method":"team.admitInitialWork","endpoint":"team.admitInitialWork","contractVersion":2,"requestToken":"rt-repro-admit-repro-1790717413225","reason":"domain-error","cause":{"code":"TEAM_RUNTIME_INITIAL_WORK_ALREADY_ADMITTED","message":"TeamR
+[2026-09-29T21:30:15.627Z] remote compatibility.reprobe v1 [m6-comp-reprobe-t] -> 200 ok=true
+[2026-09-29T21:30:15.627Z] M6 T reprobe: {"data":{"probe":{"recordedAt":"2026-09-29T21:30:15.615Z","generation":14,"environmentFingerprint":"fp-v1:69e3c2ef91c429c9","status":"OPEN","pass":2,"warning":0,"fatal":0,"unackedWarning":0,"trigger":"ROOT_COLD_RESUME"}},"provenance":{"origin":"team-remote","method":"compatibility.reprobe","endpoint":"compatibility.reprobe","contractVersion":1,"requestToken":null,"projectionGeneration":null,"effectSequence":null}}
+[2026-09-29T21:30:15.713Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T20-52-08 -> 200 ok=true
+[2026-09-29T21:30:27.716Z] == t-main: envelope status=200 ok=true
+[2026-09-29T21:30:27.716Z] == t-main: FULL tool body: {
+ "ok": true,
+ "value": {
+  "status": "rejected",
+  "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+  "message": "TeamRuntime: the targeted template is disabled — its work cannot start (availability, not a policy denial; re-enable the template or fix + recheck its requirements)",
+  "details": {
+   "rootSessionId": "session-prereq-main-prereq-2026-09-29T20-52-08",
+   "status": "BLOCKED_FATAL",
+   "gateReason": "templateDisabled",
+   "blockedScopes": [
+    "template:worker"
+   ],
+   "blockingRequirementIds": [],
+   "unavailableSubjects": [],
+   "source": "requirement-gate",
+   "recoveryDispatchAvailable": false
+  }
+ }
+}
+[2026-09-29T21:30:27.716Z] == t-main: mock requests before=0 after=0 (delta=0)
+[2026-09-29T21:30:27.777Z] p6t6 tool team_delegate as=session-prereq-iso-prereq-2026-09-29T20-52-08 -> 200 ok=true
+[2026-09-29T21:30:39.780Z] == t-iso: envelope status=200 ok=true
+[2026-09-29T21:30:39.780Z] == t-iso: FULL tool body: {
+ "ok": true,
+ "value": {
+  "status": "rejected",
+  "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+  "message": "activation: the team scope is blocked (a required requirement is down) — admission is blocked (invariant 50)",
+  "details": {
+   "source": "activation-provider",
+   "providerCode": "ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
+   "rootSessionId": "session-prereq-iso-prereq-2026-09-29T20-52-08",
+   "status": "BLOCKED_FATAL",
+   "gateReason": "requiredScopeDown",
+   "blockedScopes": [
+    "team"
+   ],
+   "fingerprint": "fp-v1:e62e9e84ae6782d2",
+   "generation": 6,
+   "reprobed": true,
+   "requirements": [
+    {
+     "requirementId": "team.mcp.repo",
+     "outcome": "FATAL",
+     "reasonCode": "SCOPE_BLOCKED"
+    }
+   ],
+   "unavailableSubjects": [
+    "mcp_repo"
+   ]
+  }
+ }
+}
+[2026-09-29T21:30:39.780Z] == t-iso: mock requests before=0 after=0 (delta=0)
+[2026-09-29T21:30:39.842Z] REPRO DONE
+REPRO_EXIT=0

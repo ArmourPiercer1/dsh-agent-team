@@ -1,0 +1,80 @@
+{
+  "type": "server-response",
+  "rpcId": "g6-create-b3fd703c",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "path": "fresh-root",
+        "durable": {
+          "teamSession": {
+            "schemaVersion": 1,
+            "rootSessionId": "session-g6diag-spill-g6diag-2026-09-30T05-28-54",
+            "blueprint": {
+              "blueprintId": "team.g6diag-spill",
+              "revision": "1",
+              "contentHash": "sha256:1638fc22c08e5fba0a63b40072087c86b66c06bf2f618d56c39c4520bf33f785"
+            },
+            "createdAt": "2026-09-30T05:28:57.870Z",
+            "generation": 1,
+            "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+          },
+          "binding": {
+            "schemaVersion": 1,
+            "kind": "team-root",
+            "sessionId": "session-g6diag-spill-g6diag-2026-09-30T05-28-54"
+          },
+          "wrote": true,
+          "leaderRow": {
+            "schemaVersion": 2,
+            "rootSessionId": "session-g6diag-spill-g6diag-2026-09-30T05-28-54",
+            "instanceId": "inst-leader",
+            "templateId": "leader",
+            "label": "leader",
+            "createdAt": "2026-09-30T05:28:57.876Z",
+            "activityVersion": 1
+          }
+        },
+        "bind": {
+          "requested": "fresh-root",
+          "bound": true,
+          "installed": true,
+          "identity": {
+            "kind": "root",
+            "sessionId": "session-g6diag-spill-g6diag-2026-09-30T05-28-54",
+            "rootSessionId": "session-g6diag-spill-g6diag-2026-09-30T05-28-54"
+          },
+          "admitted": true,
+          "admissionCode": "ADMISSION_OPEN",
+          "emittedEvents": [
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "persona"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "model"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "capability"
+            },
+            {
+              "name": "agent-setup/admission-decided",
+              "detail": "ADMISSION_OPEN"
+            }
+          ]
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.create",
+        "endpoint": "team.create",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

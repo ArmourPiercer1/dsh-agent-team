@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/f15-mcp-live-loss
+
+ ✓ packages/runtime/test/p6t1-parallel.test.ts (9 tests) 6ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  09:28:52
+   Duration  615ms (transform 369ms, setup 0ms, import 527ms, tests 6ms, environment 0ms)

@@ -46,6 +46,7 @@ import { parseRemoteRequest } from '../../../remote/src/contracts/request.js';
 import { buildRemoteError, buildRemoteSuccess, } from '../../../remote/src/contracts/response.js';
 import { REMOTE_PROJECTION_FIELDS, } from '../../../remote/src/contracts/types.js';
 import { REMOTE_CONTRACT_VERSION, REMOTE_CONTRACT_VERSION_V2, } from '../../../remote/src/contracts/version.js';
+import { PROJECTION_SHAPES, TEAM_CREATE_FLAVORS, projectionShapeOf, teamCreateFlavorOf, withLiveProjectionFreshness, } from '../../../remote/src/contracts/semantic.js';
 import { REMOTE_BACKING_ERROR_CODE_SET } from '../../../remote/src/handlers/dispatch.js';
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js';
 import { createLedgerPageTracker } from '../../../remote/src/push/ledger-page.js';
@@ -54,9 +55,10 @@ import { S6_PRINCIPAL_ERROR_CODES, SERVER_PRINCIPAL_TRANSPORTS, createServerPrin
 import { computeLiveTokenFromProjectedMembers, } from './live-token.js';
 import { resolveCaller, TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError, } from '../../admission/index.js';
 import { canonicalJsonStringify } from '../../../contracts/src/index.js';
-import { activePolicyState } from '../../mutation/index.js';
+import { committedPolicyState } from '../../effective-policy/index.js';
 import { PROBE_TRIGGER_VALUES, compatibilityRequirementsOf, } from '../../compatibility/index.js';
 import { evaluateCompatibility, parseEnvironmentFacts, } from '../../../domain/compatibility/src/index.js';
+import { dropSeedFilledPendingFacts } from '../../requirement-facts/index.js';
 import { sha256Hex } from '../../../domain/blueprint/src/index.js';
 import { DEFAULT_POLICY_STATE_ID } from '../../../domain/policy/src/index.js';
 // --- the stable S6 remote error codes (the typed domain errors) ----------------------
@@ -338,17 +340,17 @@ function ledgerEntryWire(record) {
     };
 }
 /**
- * The durable PolicyState read (the mutation store's transition rows).
+ * The durable PolicyState read (the ledger's transition rows).
  *
- * The remote read evaluates at the far-future step: it reports the state of
- * the LATEST durable transition (or the default state when the store is
- * empty). The production step clock is pinned to 0 (the step model advances
- * with the work chain, not with explicit transitions), so evaluating at
- * step 0 would hide every explicit transition from the remote read
- * permanently — the client must read back the state it set.
+ * pre-alpha3 PR-B (plan §B.2): the remote read reports the COMMITTED
+ * state — the last durable transition in COMMIT order (or the default
+ * state when the ledger is empty). The production step clock is retired
+ * as a decision source (the legacy step fields keep parse/display only):
+ * the pinned (requested 0 / effective 1) stamp is a record field, and the
+ * client reads back the state it committed.
  */
-function policyStateReadOf(transitions, atStep) {
-    return activePolicyState(transitions, atStep);
+function policyStateReadOf(transitions) {
+    return committedPolicyState(transitions).state;
 }
 /** The compatibility verdict of one durable state record (defensive read). */
 function compatibilityCurrentOf(state) {
@@ -910,16 +912,48 @@ export function createS6RemotePorts(options) {
             async probe(blueprintId, blueprintRevision, environmentFacts) {
                 const resolved = resolveBlueprint(blueprintId, blueprintRevision);
                 const callerFacts = parseEnvironmentFacts(environmentFacts);
-                const hostFacts = (await options.environmentFacts?.()) ?? [];
+                // PF-1 fix (2026-09-30) — resolve the host feed against the
+                // REQUESTED blueprint's team scope (the SAME world the
+                // post-creation admission gate consumes — the frozen INV-9.4
+                // two-worlds identity). Pre-fix this read the boot-scoped thunk,
+                // which on a multi-blueprint host mis-scoped the feed against the
+                // requested blueprint (a configured + healthy live server probed
+                // as a spurious FATAL). A legacy no-argument thunk ignores the
+                // argument (byte-identical on a single-blueprint host).
+                const requirements = compatibilityRequirementsOf(resolved);
+                let hostFacts;
+                if (options.environmentFactsRead !== undefined) {
+                    // D-3 (2026-09-30) + PF-2 tri-state (2026-09-30 option A) — the
+                    // full-resolution read (the atomic observations + feed pair of
+                    // ONE resolveFacts call): drop the SEED-FILLED facts of every
+                    // REQUIRED requirement whose live observation is `unknown` AND
+                    // IN-FLIGHT (the shared classifier predicate) — the engine then
+                    // reports a missing required fact (FATAL → BLOCKED_FATAL), the
+                    // faithful, STRICTER prediction of the post-creation gate's
+                    // typed PENDING block (INV-9.4; strict = the documented safe
+                    // direction; the persona domain is untouched — U5 FROZEN). A
+                    // NEVER-OBSERVED required unknown keeps its seed-filled fact —
+                    // the probe consumes the seed truth exactly as the gate does
+                    // (the first-create bootstrap exemption; probe == gate).
+                    const resolution = await options.environmentFactsRead(resolved);
+                    hostFacts = dropSeedFilledPendingFacts({
+                        feed: resolution.environmentFacts,
+                        observations: resolution.observations,
+                        requirements,
+                    });
+                }
+                else {
+                    hostFacts = (await options.environmentFacts?.(resolved)) ?? [];
+                }
                 const result = evaluateCompatibility({
-                    requirements: compatibilityRequirementsOf(resolved),
+                    requirements,
                     environmentFacts: mergeProbeEnvironmentFacts(hostFacts, callerFacts),
                 });
                 return result;
             },
         },
-        // --- 3/12 teamCreate: the root binding (fresh or cold), v1 -----------------------
-        teamCreate: {
+        // --- 3/12 teamCreateEmbeddedWork: the root binding (fresh or cold), v1 -----------------------
+        teamCreateEmbeddedWork: {
             async create(requestedRootSessionId, blueprintId, blueprintRevision, initialWork) {
                 // P9-S8 — team.create is the CREATION method: the bound-root guard
                 // does not apply to it. The requested root is either NEW (the
@@ -1046,7 +1080,7 @@ export function createS6RemotePorts(options) {
             },
         },
         // --- TCM vNext §15.6 (G1): the v2 workspace-aware team.create ---------------------
-        teamCreateV2: {
+        teamCreateWorkspace: {
             async create(requestedRootSessionId, blueprintId, blueprintRevision, workspace) {
                 // Same creation semantics as the v1 port (P9-S8 creation method,
                 // no bound-root guard; CR-4 preserved) — CREATE-ONLY: the v2
@@ -1544,7 +1578,7 @@ export function createS6RemotePorts(options) {
         policyState: {
             async read(teamSessionId) {
                 const root = assertBoundRoot('policyState.get', teamSessionId);
-                const view = policyStateReadOf(options.mutationTransitions(root), Number.MAX_SAFE_INTEGER);
+                const view = policyStateReadOf(options.mutationTransitions(root));
                 // R2-1 (BQ-10): the surface reports the CURRENT state plus the
                 // AVAILABLE AUTHORIZED TRANSITIONS — the bound blueprint's closed
                 // state set (default + the declared states, declaration order)
@@ -1764,19 +1798,23 @@ function buildS6CategoryHandlers(ports, principal) {
         [REMOTE_CATEGORIES.TEAM]: ((method, params, envelope) => {
             switch (method) {
                 case 'team.create': {
-                    // TCM vNext §15.3/§15.6 (G1) — the shared parser already
-                    // validated the closed field set per version: v1 (the optional
-                    // `initialWork`) vs v2 (the optional `workspace`, NO initial
-                    // work). Route by the envelope version.
-                    if (envelope.version === 2) {
-                        const v2CreateParams = params;
+                    // pre-alpha3 PR-F (plan §F.3) — the shared parser already
+                    // validated the closed field set per wire version; the
+                    // ENVELOPE version is translated to the SEMANTIC create flavor
+                    // by the contracts semantic adapter (the only version branch
+                    // in the wire surface), and this handler routes on the flavor:
+                    // embedded-work (the optional `initialWork`) vs workspace
+                    // (the optional `workspace`, NO initial work).
+                    const flavor = teamCreateFlavorOf(envelope.version);
+                    if (flavor === TEAM_CREATE_FLAVORS.workspace) {
+                        const workspaceCreateParams = params;
                         return ports
-                            .teamCreateV2.create(v2CreateParams.rootSessionId, v2CreateParams.blueprintId, v2CreateParams.blueprintRevision, v2CreateParams.workspace)
+                            .teamCreateWorkspace.create(workspaceCreateParams.rootSessionId, workspaceCreateParams.blueprintId, workspaceCreateParams.blueprintRevision, workspaceCreateParams.workspace)
                             .then((created) => ({ data: { path: created['path'], durable: created['durable'], bind: created['bind'] } }));
                     }
                     const createParams = params;
                     return ports
-                        .teamCreate.create(createParams.rootSessionId, createParams.blueprintId, createParams.blueprintRevision, createParams.initialWork)
+                        .teamCreateEmbeddedWork.create(createParams.rootSessionId, createParams.blueprintId, createParams.blueprintRevision, createParams.initialWork)
                         .then((created) => ({ data: { path: created['path'], durable: created['durable'], bind: created['bind'] } }));
                 }
                 case 'team.admitInitialWork': {
@@ -1865,13 +1903,18 @@ function buildS6CategoryHandlers(ports, principal) {
                     return ports.projection.project(projectionParams.teamSessionId).then((raw) => {
                         const projection = normalizeS6Projection(raw);
                         const generation = projection['generation'];
-                        // team-view-sync-complete (remote contract v6): the v6
-                        // freshness pair — the SAME durable projection plus the
+                        // pre-alpha3 PR-F (plan §F.3) — the ENVELOPE version is
+                        // translated to the SEMANTIC projection shape by the
+                        // contracts semantic adapter (the only version branch in the
+                        // wire surface); this handler branches on the shape. The
+                        // `live` shape = the SAME durable projection plus the
                         // `durableGeneration` (=== the durable generation) and the
-                        // `liveToken` (the deterministic semantic-live-state
-                        // token — frozen decisions 3 + 4) INSIDE data.projection.
-                        // v1–v5 stay byte-identical (the frozen shape — no v6
-                        // fields).
+                        // `liveToken` (the deterministic semantic-live-state token —
+                        // frozen decisions 3 + 4) INSIDE data.projection, applied
+                        // through the SHARED wire application
+                        // `withLiveProjectionFreshness` (one definition, both
+                        // dispatchers). Every other wire version stays byte-identical
+                        // (the frozen `base` shape — no live fields).
                         //
                         // PR #35 second follow-up P0-2 (same-snapshot): the token is
                         // computed FROM THIS projection's already-materialized
@@ -1879,20 +1922,16 @@ function buildS6CategoryHandlers(ports, principal) {
                         // read exactly once) via the pure
                         // `computeLiveTokenFromProjectedMembers` helper — the frame
                         // and the token can NEVER come from two different live
-                        // snapshots, and no second live read happens on the v6 path.
-                        // The token is a pure function of the served frame's own
-                        // `members[].liveActivity` cells (recomputing it from a
+                        // snapshots, and no second live read happens on the `live`
+                        // path. The token is a pure function of the served frame's
+                        // own `members[].liveActivity` cells (recomputing it from a
                         // received frame reproduces the served token — the client
                         // same-snapshot check).
-                        if (envelope.version >= 6) {
+                        if (projectionShapeOf(envelope.version) === PROJECTION_SHAPES.live) {
                             const liveTokenValue = computeLiveTokenFromProjectedMembers(projection['members']);
                             return {
                                 data: {
-                                    projection: {
-                                        ...projection,
-                                        durableGeneration: generation,
-                                        liveToken: liveTokenValue,
-                                    },
+                                    projection: withLiveProjectionFreshness(projection, liveTokenValue),
                                 },
                                 projectionGeneration: generation,
                             };

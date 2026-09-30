@@ -1,0 +1,45 @@
+{
+  "admitError": null,
+  "details": null,
+  "probeVerdict": {
+    "schemaVersion": 1,
+    "environmentFingerprint": "fp-v1:6cb31629da76b43f",
+    "status": "BLOCKED_FATAL",
+    "requirements": [
+      {
+        "requirementId": "team.persona.standard",
+        "type": "persona",
+        "complete": true,
+        "outcome": "FATAL",
+        "reasonCode": "PERSONA_INCOMPATIBLE",
+        "detail": "complete:true persona requirement unmet: required kind(s) standard not observed — the world provides no persona section that composes (structural FATAL, not downgradeable)",
+        "unavailableSubjects": [
+          "standard"
+        ],
+        "mismatchFingerprint": "fp-v1:f258410fcedf7599",
+        "acknowledgement": null
+      }
+    ],
+    "counts": {
+      "pass": 0,
+      "warning": 0,
+      "fatal": 1,
+      "unackedWarning": 0,
+      "staleAcknowledgement": 0
+    },
+    "unappliedAcknowledgements": []
+  },
+  "compatibility": {
+    "status": "OPEN",
+    "environmentFingerprint": "fp-v1:496d1037b98199e1",
+    "generation": 3,
+    "recordedAt": "2026-09-29T21:07:40.422Z",
+    "counts": {
+      "pass": 1,
+      "warning": 0,
+      "fatal": 0,
+      "unackedWarning": 0,
+      "staleAcknowledgement": 0
+    }
+  }
+}

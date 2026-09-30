@@ -55,8 +55,8 @@ function buildCategoryHandlers(deps) {
         [REMOTE_CATEGORIES.CATALOG]: createRemoteCatalogHandler(deps.catalog),
         [REMOTE_CATEGORIES.INTENT]: createRemoteIntentHandler(deps.intent),
         [REMOTE_CATEGORIES.TEAM]: createRemoteTeamHandler({
-            teamCreate: deps.teamCreate,
-            teamCreateV2: deps.teamCreateV2,
+            teamCreateEmbeddedWork: deps.teamCreateEmbeddedWork,
+            teamCreateWorkspace: deps.teamCreateWorkspace,
             teamAdmitInitialWork: deps.teamAdmitInitialWork,
             teamRoots: deps.teamRoots,
             teamEnsureRootLive: deps.teamEnsureRootLive,
@@ -341,6 +341,15 @@ export const REMOTE_BACKING_ERROR_CODES = [
     // than one durable member row claiming the same child session
     // (ambiguous ownership: failing closed, never a first-wins).
     'TEAM_READ_STATE_OWNERSHIP_CONFLICT',
+    // pre-alpha3 PR-D (D.4) — the additive close fact
+    // `control-request-abandoned` terminal mark. The control service emits a
+    // typed CONTROL_REQUEST_ABANDONED when a decision/resolve/late-allow lands
+    // on an already-abandoned request; the remote boundary must pass that typed
+    // code through UNMAPPED (the durable zero-effect semantics are intact either
+    // way, but a remote caller must not see it downgrade to internal-error —
+    // surfaced by the pre-alpha3 PR-E E.12 real-host gate, scenario S10
+    // late-allow-after-abandon).
+    'CONTROL_REQUEST_ABANDONED',
 ];
 /** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */
 export const REMOTE_BACKING_ERROR_CODE_SET = new Set(REMOTE_BACKING_ERROR_CODES);

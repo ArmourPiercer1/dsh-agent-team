@@ -9,8 +9,8 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { CAPABILITY_NAME_VALUES } from '../../domain/policy/src/index.js'
 import {
+  CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES,
   TEAM_RUNTIME_ERROR_CODES,
 } from '../admission/index.js'
 import type { TeamRuntimeActionOutcome } from '../admission/index.js'
@@ -1030,11 +1030,15 @@ describe('P6-T2 D1: reads, coordination facts, and follow-up work admission', ()
     expect(d1.templatesListed.scoutContextPolicy).toBe('fresh_per_delegation')
   })
 
-  it('inspect-config resolves the effective policy: every closed capability appears once', () => {
+  it('inspect-config resolves the effective policy: every closed capability appears once (F.4: minus the generic `permissions` cell)', () => {
     expect(d1.configInspected.kind).toBe('config-inspected')
     expect(d1.configInspected.capabilityKeys).toEqual(
-      [...CAPABILITY_NAME_VALUES].sort(),
+      [...CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES].sort(),
     )
+    // F.4: the generic `permissions` cell is NOT surfaced in `effective`
+    // (the alpha.2 operation-permission authority is the independent
+    // `operationPermissions` field).
+    expect(d1.configInspected.capabilityKeys).not.toContain('permissions')
   })
 
   it('report-progress (self) records a coordination fact with the closed progress value', () => {
@@ -1058,27 +1062,30 @@ describe('P6-T2 D1: reads, coordination facts, and follow-up work admission', ()
 })
 
 describe('P6-T2 D2: the compatibility gate (single authority) blocks NEW WORK (invariant 50)', () => {
-  it('delegate is blocked after the inline re-probe (source durable-state), probe writes only', () => {
+  it('delegate is blocked after the inline re-probe (source requirement-gate), probe writes only', () => {
     // P8-S4A: with no durable row, the authority re-probes inline (DevPlan
     // §20.1 trigger 5) — the BLOCKED_FATAL verdict is now durable, so the
-    // rejection cites the durable state (reprobed: true) and the probe's 2
-    // writes (compatibility row + generation stamp) precede it (was 0 under
-    // the read-only live-evaluation preflight).
+    // rejection cites the single authority and the probe's 2 writes
+    // (compatibility row + generation stamp) precede it (was 0 under the
+    // read-only live-evaluation preflight). PR-E E.6 cutover: the single
+    // authority is now the requirement gate, so `source` reads
+    // `requirement-gate` (was `durable-state` under the pre-cutover gate) and
+    // the gate evaluates fresh (no `reprobed` detail — the freshness re-probe
+    // is implicit in the fresh evaluation).
     expect(d2.delegate.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
-    expect(d2.delegate.details?.['source']).toBe('durable-state')
+    expect(d2.delegate.details?.['source']).toBe('requirement-gate')
     expect(d2.delegate.details?.['status']).toBe('BLOCKED_FATAL')
-    expect(d2.delegate.details?.['reprobed']).toBe(true)
     expect(d2.delegate.newWrites).toBe(2)
   })
 
   it('follow-up is blocked by the FRESH durable state, zero writes', () => {
     // The delegate's re-probe left a FRESH durable BLOCKED_FATAL row (same
     // fingerprint as the current facts) — the follow-up consults the same
-    // single authority and is blocked WITHOUT re-probing (reprobed: false).
+    // single authority and is blocked. PR-E E.6 cutover: `source` reads
+    // `requirement-gate` and the gate evaluates fresh (no `reprobed` detail).
     expect(d2.followUp.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
-    expect(d2.followUp.details?.['source']).toBe('durable-state')
+    expect(d2.followUp.details?.['source']).toBe('requirement-gate')
     expect(d2.followUp.details?.['status']).toBe('BLOCKED_FATAL')
-    expect(d2.followUp.details?.['reprobed']).toBe(false)
     expect(d2.followUp.newWrites).toBe(0)
   })
 

@@ -39,9 +39,15 @@ import { closeMiniServer, startMiniMcpServer } from '../root-binding/harness/min
 
 /**
  * The exact production mount config literal (agent-bindings.mjs
- * reconcileMcpSet — the only fields the plugin passes; 0.1.7 added the
- * OPTIONAL `maxInstructionBytes` / `reconnect` which the plugin omits by
- * design and the schema defaults).
+ * reconcileMcpSet — the only fields the plugin passes). F15 (plan
+ * §5.1-A): the plugin now passes the explicit SHORT reconnect policy
+ * (never the 0.1.7 defaults — a permanently lost server must not hold
+ * a stale-positive readiness for the ~151.5 s default budget): the 3.5 s
+ * pure-backoff grace (500 + 1000 + 2000) after which the upstream
+ * supervisor exhausts the budget and WITHDRAWS the server's tools (the
+ * confirmed-loss signal the plugin classifies through its public
+ * tool-surface witness). The remaining 0.1.7 optional
+ * (`maxInstructionBytes`) is still omitted by design (schema default).
  */
 function productionConfig(serverName: string, port: number) {
   return {
@@ -51,6 +57,12 @@ function productionConfig(serverName: string, port: number) {
     headers: {},
     toolCallTimeoutMs: 15_000,
     failOnStartupError: true,
+    reconnect: {
+      enabled: true,
+      initialDelayMs: 500,
+      maxDelayMs: 2_000,
+      maxAttempts: 3,
+    },
   }
 }
 
@@ -141,7 +153,7 @@ describe('U6 — dsh-mcp-client 0.1.7 public seam pin', () => {
     expect(typeof (mcpClient as { apply?: unknown }).apply).toBe('function')
   })
 
-  it('accepts the exact production six-field streamable-http config (0.1.7 schema)', async () => {
+  it('accepts the exact production seven-field streamable-http config (0.1.7 schema)', async () => {
     // The 0.1.7 `Config` is a Schemastery schema exposing the Standard
     // Schema interface (`~standard.validate`) — not a zod surface.
     const configSchema = (mcpClient as {
@@ -157,10 +169,19 @@ describe('U6 — dsh-mcp-client 0.1.7 public seam pin', () => {
     expect(parsed.value.headers).toEqual({})
     expect(parsed.value.toolCallTimeoutMs).toBe(15_000)
     expect(parsed.value.failOnStartupError).toBe(true)
-    // The 0.1.7 optionals the plugin deliberately omits get schema defaults
-    // (reconnect policy present, instruction cap at the 32 KiB default).
+    // F15 (plan §5.1-A): the explicit SHORT reconnect policy is ACCEPTED
+    // by the 0.1.7 schema and passes through VERBATIM — the seam witness
+    // for "every production mount carries the policy" (the literal is
+    // the same object agent-bindings.mjs passes: `MCP_UPSTREAM_RECONNECT_POLICY`).
+    expect(parsed.value.reconnect).toEqual({
+      enabled: true,
+      initialDelayMs: 500,
+      maxDelayMs: 2_000,
+      maxAttempts: 3,
+    })
+    // The one 0.1.7 optional the plugin still omits by design gets the
+    // schema default (the 32 KiB instruction cap).
     expect(parsed.value.maxInstructionBytes).toBe(32_768)
-    expect(parsed.value.reconnect).toBeDefined()
   })
 })
 

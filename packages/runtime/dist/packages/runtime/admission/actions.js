@@ -31,6 +31,10 @@
  */
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from './errors.js';
 import { CALLER_ROLES, WORK_EXECUTION_MODES } from './types.js';
+// pre-alpha3 PR-E §E.7: the action → requirement-impact-class metadata (the
+// fine-grained gating axis — the coarse ActionCategory above is FORBIDDEN as
+// the sole gate; the impact class + the action's target scopes decide).
+import { ACTION_IMPACT_CLASSES } from '../requirements/index.js';
 /** The closed action names. */
 export const ACTION_NAMES = {
     /** List the team's member instances (read, team-scoped). */
@@ -373,5 +377,81 @@ export function validateActionRequest(request) {
  */
 export function workExecutionModeOf(request) {
     return request.execution === 'async' ? 'async' : 'sync';
+}
+// ---------------------------------------------------------------------------
+// pre-alpha3 PR-E §E.7 — the action → requirement-impact-class metadata
+// ---------------------------------------------------------------------------
+/**
+ * The closed action → requirement-impact-class map (plan §E.7).
+ *
+ * This is the FINE-GRAINED gating axis the requirement / recovery model keys
+ * on. The coarse {@link ActionCategory} (`read` / `work` / `creation` /
+ * `coordination` / `lifecycle`) is FORBIDDEN as the sole gate — several
+ * categories map to the same impact class (`work` and `creation` are both
+ * `normalWork`; `read` is `diagnostic`, not a work impact) and the impact
+ * class is the one the gate + the action's target scopes decide on.
+ *
+ * The mapping (by action SEMANTICS, not the category label):
+ *
+ * - **diagnostic** — the pure reads (`list-members`, `list-templates`,
+ *   `inspect-config`, `work-status`): read-only, always allowed.
+ * - **normalWork** — the work-starting actions (`follow-up`, `delegate`,
+ *   `create-member`): admit / start NEW work. BLOCKED while any target scope
+ *   is blocked (a required requirement is down) — the recovery model's core
+ *   invariant. (A recovery dispatch of one of these is a SEPARATE invocation
+ *   that the integration layer builds with `recoveryWorkImpact` on the
+ *   reduced original authority — the static map is the DEFAULT, normal
+ *   classification.)
+ * - **crossAgentTrigger** — pre-alpha3 W3-D (review fix F9, guide §8):
+ *   `send-message` is classified by EFFECT, not tool name: it delivers input
+ *   to another agent (it wakes / hands the recipient work), so the gate
+ *   consults every scope the trigger was evaluated against and blocks if
+ *   ANY is down (the trigger would deliver work a downed scope cannot serve).
+ *   `report-progress` / `request-control` / `resolve-control` remain pure
+ *   coordination (no cross-agent wake — they are how recovery is REVIEWED).
+ * - **coordination** — the pure-coordination actions (`report-progress`,
+ *   `request-control`, `resolve-control`): always allowed (coordination is
+ *   never blocked by a capability outage — it is how recovery is REVIEWED).
+ * - **lifecycle** — the member-lifecycle actions (`archive-member`,
+ *   `restore-member`, `dispose-member`): always allowed.
+ *
+ * The `recoveryWork` / `control` impact classes are NOT static here: a
+ * recovery operation is a caller-context choice (the human-reviewed
+ * recovery-dispatch Control coupling) and a control operation is the Control
+ * surface itself — both are built explicitly at the call site, never a
+ * default of a named action.
+ */
+export const ACTION_REQUIREMENT_IMPACT = {
+    [ACTION_NAMES.LIST_MEMBERS]: ACTION_IMPACT_CLASSES.diagnostic,
+    [ACTION_NAMES.LIST_TEMPLATES]: ACTION_IMPACT_CLASSES.diagnostic,
+    [ACTION_NAMES.INSPECT_CONFIG]: ACTION_IMPACT_CLASSES.diagnostic,
+    [ACTION_NAMES.WORK_STATUS]: ACTION_IMPACT_CLASSES.diagnostic,
+    [ACTION_NAMES.FOLLOW_UP]: ACTION_IMPACT_CLASSES.normalWork,
+    [ACTION_NAMES.DELEGATE]: ACTION_IMPACT_CLASSES.normalWork,
+    [ACTION_NAMES.CREATE_MEMBER]: ACTION_IMPACT_CLASSES.normalWork,
+    // pre-alpha3 W3-D (review fix F9, guide §8): send-message is a CROSS-AGENT
+    // EXECUTION TRIGGER (it wakes the recipient — the gate consults every
+    // evaluated scope and blocks if any is down). The other coordination
+    // actions (report-progress / request-control / resolve-control) do NOT
+    // wake a recipient and stay pure coordination.
+    [ACTION_NAMES.SEND_MESSAGE]: ACTION_IMPACT_CLASSES.crossAgentTrigger,
+    [ACTION_NAMES.REPORT_PROGRESS]: ACTION_IMPACT_CLASSES.coordination,
+    [ACTION_NAMES.REQUEST_CONTROL]: ACTION_IMPACT_CLASSES.coordination,
+    [ACTION_NAMES.RESOLVE_CONTROL]: ACTION_IMPACT_CLASSES.coordination,
+    [ACTION_NAMES.ARCHIVE_MEMBER]: ACTION_IMPACT_CLASSES.lifecycle,
+    [ACTION_NAMES.RESTORE_MEMBER]: ACTION_IMPACT_CLASSES.lifecycle,
+    [ACTION_NAMES.DISPOSE_MEMBER]: ACTION_IMPACT_CLASSES.lifecycle,
+};
+/**
+ * Resolve the requirement-impact class of a named action (plan §E.7).
+ * @returns the closed impact class, or `undefined` for a name outside the
+ *   closed action vocabulary (fail-safe: the caller treats an unknown name
+ *   as not-admissible, never as a default impact).
+ */
+export function actionImpactClassOf(name) {
+    const spec = actionSpecOf(name);
+    if (spec === undefined)
+        return undefined;
+    return ACTION_REQUIREMENT_IMPACT[spec.name];
 }
 //# sourceMappingURL=actions.js.map

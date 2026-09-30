@@ -1,0 +1,20 @@
+{
+  "finding": "PR-F-G5",
+  "expectation": "current-branch-behavior: typed FATAL (fail-closed). Target design §16.1 / ADR-24 OPEN semantics (composable ptc must not be judged a conflict merely because the preset id is not standard) NOT satisfied on this branch — escalated in the PR body + parent report; the fix belongs to the PR-E lineage (out of PR-F scope). The source-level readiness reason (provider preset-id lookup vs the v2 kind subject) is recorded in the PR body with source refs; the wire evidence is the typed gate verdict above.",
+  "createError": {
+    "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+    "message": "TeamRuntime: the creation preflight of \"session-prf-persona-prf-2026-09-30T04-48-23\" is 'fatal' — the durable Team bind is refused (zero durable effect; a Team-level required requirement is down — it cannot be bypassed by disabling a template; repair the environment and re-drive the creation)",
+    "details": "{\"method\":\"team.create\",\"endpoint\":\"team.create\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_RUNTIME_COMPATIBILITY_BLOCKED\",\"message\":\"TeamRuntime: the creation preflight of \\\"session-prf-persona-prf-2026-09-30T04-48-23\\\" is 'fatal' — the durable Team bind is refused (zero durable effect; a Team-level required requirement is down — it cannot be bypassed by disabling a template; repair the environment and re-drive the creation)\",\"details\":{\"rootSessionId\":\"session-prf-persona-prf-2026-09-30T04-48-23\",\"source\":\"creation-preflight\",\"outcome\":\"fatal\",\"blockedScopes\":[\"team\"],\"consentRequiredRequirementIds\":[],\"fixOrDisableRequirementIds\":[],\"fatalRequirementIds\":[\"team.persona.standard\"]}}}"
+  },
+  "gateDetails": "{\"rootSessionId\":\"session-prf-persona-prf-2026-09-30T04-48-23\",\"source\":\"creation-preflight\",\"outcome\":\"fatal\",\"blockedScopes\":[\"team\"],\"consentRequiredRequirementIds\":[],\"fixOrDisableRequirementIds\":[],\"fatalRequirementIds\":[\"team.persona.standard\"]}",
+  "zeroEffect": {
+    "getReadStateT9": {
+      "relation": "none",
+      "teamSessionId": null,
+      "memberInstanceId": null,
+      "disposed": false,
+      "durableGeneration": null,
+      "liveToken": null
+    }
+  }
+}

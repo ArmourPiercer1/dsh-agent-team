@@ -46,6 +46,7 @@ import {
   TEAM_PLUGIN_ERROR_CODES,
 } from '../src/plugin/types.js'
 import { stubGlueUrl } from './p8s5a-artifacts.mjs'
+import { agentPresetsStandardDouble } from './agent-presets-double.mjs'
 
 // --- the fixture identities (own ids; structure mirrors T12B1/T12M4) -----------
 
@@ -160,6 +161,9 @@ function makeWorld(extra: Record<string, any>): TestWorld {
     sessionPersistence: { ensure: async () => {} },
     // M2 (plan §15.5): the hard-injected workspace service (stub).
     workspaceRegistry: { list: () => [], resolveByPath: async () => undefined },
+    // pre-alpha3 W3-A (F1): the agentPresets service double (W2-A fail-closed
+    // contract — service-absent worlds without a row preset id no longer bind).
+    agentPresets: agentPresetsStandardDouble(),
     ...extra,
   }
   const effectDisposers: Array<() => void> = []

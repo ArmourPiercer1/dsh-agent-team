@@ -1,0 +1,64 @@
+{
+  "data": {
+    "path": "fresh-root",
+    "durable": {
+      "teamSession": {
+        "schemaVersion": 1,
+        "rootSessionId": "session-prf-main-prf-2026-09-30T04-48-23",
+        "blueprint": {
+          "blueprintId": "team.prf-main",
+          "revision": "1",
+          "contentHash": "sha256:e0235e6cd1d839474a17a0626a66d23535cc8245aad980c6aa27209649fe8436"
+        },
+        "createdAt": "2026-09-30T04:48:26.879Z",
+        "generation": 1,
+        "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+      },
+      "binding": {
+        "schemaVersion": 1,
+        "kind": "team-root",
+        "sessionId": "session-prf-main-prf-2026-09-30T04-48-23"
+      },
+      "wrote": true,
+      "leaderRow": {
+        "schemaVersion": 2,
+        "rootSessionId": "session-prf-main-prf-2026-09-30T04-48-23",
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "label": "leader",
+        "createdAt": "2026-09-30T04:48:26.887Z",
+        "activityVersion": 1
+      }
+    },
+    "bind": {
+      "requested": "fresh-root",
+      "bound": true,
+      "installed": true,
+      "identity": {
+        "kind": "root",
+        "sessionId": "session-prf-main-prf-2026-09-30T04-48-23",
+        "rootSessionId": "session-prf-main-prf-2026-09-30T04-48-23"
+      },
+      "admitted": true,
+      "admissionCode": "ADMISSION_OPEN",
+      "emittedEvents": [
+        {
+          "name": "agent-setup/overlay-installed",
+          "detail": "persona"
+        },
+        {
+          "name": "agent-setup/overlay-installed",
+          "detail": "model"
+        },
+        {
+          "name": "agent-setup/overlay-installed",
+          "detail": "capability"
+        },
+        {
+          "name": "agent-setup/admission-decided",
+          "detail": "ADMISSION_OPEN"
+        }
+      ]
+    }
+  }
+}

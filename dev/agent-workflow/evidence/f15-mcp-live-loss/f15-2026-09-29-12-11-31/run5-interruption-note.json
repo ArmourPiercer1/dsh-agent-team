@@ -1,0 +1,16 @@
+{
+  "note": "F15 run-5 (kit start 2026-09-29T12:11:31Z) was INTERRUPTED at the R3' B1 boundary — journey evidence. This run's run.log is the definitive record of the final root-cause fix: the kit's team.resolveControl calls were sent at remote-contract VERSION 1, but team.resolveControl is the v4-ONLY method (F9 human ingress, frozen contract) — every resolve was typed-rejected method-version-unsupported (HTTP 200 error envelope), so the recovery control request ctrl-1r93wxh1f29ufg0r8knir0pa (correlation recovery:rt-f15-r3a-f15-2026-09-29-12-11-31:1, opened 12:11:49) was never decided and the delegate hit its 120s timeout. The run-4 stall was the SAME failure, silent under the pre-harden poll (one-shot seen-set, no resolve logging).",
+  "result": {
+    "PREF": "PASS",
+    "C0": "PASS",
+    "C1": "PASS",
+    "C2": "PASS",
+    "R1": "PASS",
+    "R2": "PASS (fixed ghost extraction — ghostError='Error: fetch failed', latencyMs=511, the verbatim permanent-loss finding with real timings)",
+    "R4": "PASS (the FIXED leg: team-remote override.set scoped teamSessionId=ROOT_T1 scope=team — recordId ovr-mcp-team-g0 kind human-override generation 1, rootSessionId=the T1 root; fiber disposed, surface withdrawn, delegate admitted, zero new capability facts, slot mounted=false allowed=false materialization=mounted; then override.reset removed:true before boot-2)",
+    "R5": "PASS",
+    "R3": "NOT COMPLETED (resolve version bug — fixed in the run-6 kit)"
+  },
+  "fix": "kit resolveControl now sends version 4 (packages/remote/src/contracts/version.ts: REMOTE_CONTRACT_VERSION_V4 — 'the v4-only team.resolveControl command — the human ingress for the durable control plane'); the closed param set { teamSessionId, requestId, decision, note? } is unchanged and the decision closed set ['allow','deny'] was already satisfied",
+  "cleanup": "home f15-2026-09-29-12-11-31 (+ .lock) deleted after this note; kit ports freed; stable instances untouched (stable-pre.json; no stable-post because the kill pre-empted teardown — run-6 records the pair)"
+}

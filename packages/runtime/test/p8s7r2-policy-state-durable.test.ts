@@ -58,7 +58,8 @@ import {
   scratchDir,
 } from '../../testkit/fault-injection/file-seam.mjs'
 import * as hostEntry from '../src/plugin/host.js'
-import { activePolicyState } from '../policy-adapter.js'
+// pre-alpha3 PR-F: the policy adapter is the INTERNAL test-world kernel.
+import { activePolicyState } from '../mutation/internal/policy-adapter.js'
 import { stubGlueUrl } from './p8s5a-artifacts.mjs'
 
 // --- the R2-1 fixture world ---------------------------------------------------------

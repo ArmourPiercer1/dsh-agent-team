@@ -1,0 +1,119 @@
+{
+  "kit": "pr-e-requirement-recovery-smoke.mjs",
+  "runStamp": "prereq-2026-09-29T01-35-57",
+  "verdict": "PASS",
+  "summary": "authenticate: no set-cookie on 303 (status=401)",
+  "world": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T01-35-57",
+  "testUse": {
+    "pre": {
+      "head": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    }
+  },
+  "scenarios": {},
+  "worldDumps": {},
+  "results": [
+    {
+      "id": "S1",
+      "name": "startup all-template matrix: fresh per-scope evaluation at every admission (team up B1 / team down B5 / worker down B3 / optional degraded B2 / persona pass B9 / persona fatal B9b)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S2",
+      "name": "optional requirement consent: auto-degraded proceed (B2) + durable optional-requirement-accepted fact readable, gate still ignores it (B2b)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S3",
+      "name": "required template disable: delegate -> gateReason templateDisabled (availability, never policy — negative #9)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S4",
+      "name": "Team-level required outage: admitInitialWork COMPATIBILITY_BLOCKED citing source requirement-gate; disable cannot bypass (B5/B6)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S5",
+      "name": "Leader required MCP down (team-scope model): team scope blocked -> Recovery",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S6",
+      "name": "Human-reviewed recovery dispatch: the kit as human resolver, ALLOW -> recovery attempt proceeds on the reduced original authority",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S7",
+      "name": "degraded Member controlled bash repair: read executes (original allow), bash opens an ASK request (recovery does not turn ask into allow — negative #2), executes after approval",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S8",
+      "name": "service restored -> next boundary NORMAL: incident CLOSED durable, follow-up without recovery correlation, mcp materialized (E.10; no durable recovery flag)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S9",
+      "name": "exact reviewed payload: recovery-dispatch/v1 shape + reducedAuthority + effect + kind user-approval + inline + recovery:<token>:<seq> + canonical sha256 digest recomputed",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S10",
+      "name": "deny / close / abort zero effect: DENY typed block (no new member/incident); abort -> control-request-abandoned + typed abandoned block; later allow rejected (terminal)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S11",
+      "name": "restarts persist, readiness resets: consent + disable facts survive all restarts and drive the fresh evaluation; the compatibility row is recomputed per boot",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S12",
+      "name": "PR #22 ptc persona regression: standard observed -> PASS (correct open); absent observed -> FATAL PERSONA_INCOMPATIBLE + admitInitialWork blocked (no false open)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S13",
+      "name": "old v1 frozen blueprint cold resume: byte-exact pre-PR-E source -> SAME pre-PR-E contentHash under the PR-E code; cold resume re-attaches with the hash unchanged",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S14",
+      "name": "dual-Team isolation: T2 proceeds while T is in a recovery incident; per-root durable state (no cross-team incident/control facts)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "H1",
+      "name": "test-use pristine BEFORE + AFTER (porcelain empty, HEAD baseline); :3080/:3180 zero-touch (pre == post); the worker bash is a no-op echo",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "H2",
+      "name": "all run ports released after teardown (worldCleaned=true on PASS only)",
+      "pass": true,
+      "note": ""
+    }
+  ],
+  "at": "2026-09-29T01:36:00.415Z"
+}

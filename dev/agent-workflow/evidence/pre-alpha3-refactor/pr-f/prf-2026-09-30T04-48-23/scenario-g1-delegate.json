@@ -1,0 +1,27 @@
+{
+  "toolOutcome": {
+    "status": "executed",
+    "action": "delegate",
+    "rootSessionId": "session-prf-main-prf-2026-09-30T04-48-23",
+    "callerRole": "leader",
+    "effect": {
+      "kind": "member-activated",
+      "instanceId": "inst-0qg2476054rg",
+      "templateId": "worker",
+      "childSessionId": "session-team-child-b4bf7f04186a58bf27a5c3fb161c57f2",
+      "operationId": "op-10z47bb1wmu9km0iv0no91n1",
+      "replayed": false,
+      "ledgerSequence": 1,
+      "admissionCode": "ADMISSION_OPEN",
+      "workSequence": 2,
+      "workSettled": true,
+      "memberResult": {
+        "requestToken": "rt-g1-prf-2026-09-30T04-48-23",
+        "status": "succeeded",
+        "body": "PRREQ_DONE_W_g1"
+      }
+    },
+    "requestToken": "rt-g1-prf-2026-09-30T04-48-23"
+  },
+  "pendingSeen": []
+}

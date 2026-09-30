@@ -1,0 +1,19 @@
+{
+  "W1": "inst-1ga1juq0m0p2",
+  "toolOk": true,
+  "slot": {
+    "sessionId": "session-prereq-main-prereq-2026-09-30T03-07-57",
+    "mounted": true,
+    "materialization": "mounted",
+    "attempts": 1,
+    "reason": null
+  },
+  "closed": {
+    "closedAt": 1790737816565,
+    "requirementIds": [
+      "worker.mcp.web"
+    ],
+    "scope": "template:worker"
+  },
+  "pendingSeen": []
+}

@@ -305,3 +305,38 @@ export async function writePolicyStateTransitionRow(
     createdAt: now(),
   })
 }
+
+/**
+ * THE DURABLE READ of one root's committed PolicyState transitions
+ * (pre-alpha3 PR-B, plan §B): the ledger fact rows of this lane, in
+ * COMMIT ORDER (ledger sequence order = the atomic admission order of
+ * the commit-before-ack contract, PR-A). This is the production
+ * decision read — the process-local mutation-store transitions CACHE is
+ * no longer a production read source (the cache remains the commit
+ * path's in-memory mirror for the test-world kernel).
+ *
+ * The parse is the lane's own defensive contract
+ * ({@link parseTransitionPayload}): a malformed row is skipped, never a
+ * throw (the durable fact is authoritative; a corrupt row degrades to
+ * "not committed" and surfaces through the compatibility audit, not a
+ * crash).
+ *
+ * @param repositories - the OPENED TeamDomain repositories (the ledger).
+ * @param rootSessionId - the root the rows are filtered to.
+ * @returns the committed transitions in commit order (LAST = committed).
+ */
+export function listDurablePolicyStateTransitions(
+  repositories: TeamDomainRepositories,
+  rootSessionId: string,
+): PolicyStateTransitionRecord[] {
+  const rows: DurableTransitionRow[] = []
+  for (const entry of repositories.ledger.list()) {
+    if (entry.rootSessionId !== rootSessionId) continue
+    if (entry.factType !== POLICY_STATE_FACT_TYPE) continue
+    const transition = parseTransitionPayload(entry.payload)
+    if (transition === undefined) continue
+    rows.push({ sequence: entry.sequence, transition })
+  }
+  rows.sort((a, b) => a.sequence - b.sequence)
+  return rows.map((row) => row.transition)
+}

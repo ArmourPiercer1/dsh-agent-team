@@ -1,0 +1,48 @@
+{
+  "matrixFailures": [],
+  "shapes": {
+    "v5": {
+      "durableGenerationPresent": false,
+      "liveTokenPresent": false
+    },
+    "v6": {
+      "durableGeneration": null,
+      "liveTokenPresent": false
+    }
+  },
+  "gated": {
+    "listRootsV3": null,
+    "getReadStateV6": null,
+    "resolveControlV4": {
+      "code": "CONTROL_REQUEST_NOT_FOUND",
+      "message": "ControlService: no durable control request 'rcr-g7-nonexistent' in team 'session-prf-main-prf-2026-09-30T03-40-24' (a decision without a request)",
+      "details": {
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "CONTROL_REQUEST_NOT_FOUND",
+          "message": "ControlService: no durable control request 'rcr-g7-nonexistent' in team 'session-prf-main-prf-2026-09-30T03-40-24' (a decision without a request)",
+          "details": {
+            "rootSessionId": "session-prf-main-prf-2026-09-30T03-40-24",
+            "requestId": "rcr-g7-nonexistent"
+          }
+        }
+      }
+    }
+  },
+  "v6ExpectedGenerationRejected": {
+    "code": "malformed-params",
+    "message": "method 'override.set' has unknown param field 'expectedGeneration' (closed fields: actor, capability, scope, targetInstanceId, teamSessionId, value)",
+    "details": {
+      "method": "override.set",
+      "endpoint": "override.set",
+      "contractVersion": 6,
+      "requestToken": null,
+      "field": "expectedGeneration",
+      "reason": "unknown-field"
+    }
+  }
+}

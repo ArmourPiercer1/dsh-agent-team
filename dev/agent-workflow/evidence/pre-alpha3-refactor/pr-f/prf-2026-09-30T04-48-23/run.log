@@ -1,0 +1,237 @@
+[2026-09-30T04:48:23.011Z] === pre-alpha3 PR-F F.6 real-host GAP kit (11 criteria: G1-G9 + H1/H2) prf-2026-09-30T04-48-23 ===
+[2026-09-30T04:48:23.012Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure
+[2026-09-30T04:48:23.012Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-09-30T04:48:23.012Z] world=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/tests/homes/prf-2026-09-30T04-48-23
+[2026-09-30T04:48:23.012Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-f/prf-2026-09-30T04-48-23
+[2026-09-30T04:48:23.032Z] stable pre-probes: 3080=401 3180=401
+[2026-09-30T04:48:23.064Z] [H1] PASS — test-use pristine BEFORE :: head=46a7f68b0922
+[2026-09-30T04:48:23.067Z] ports: host=3182 mock=3497 mcpRepo=3492 mcpLeaderreq=3491 mcpWeb=3493 (mcp_signal: never configured — the inert supply-axis fact; E.12 owns the consent scenario)
+[2026-09-30T04:48:23.067Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/tests/homes/prf-2026-09-30T04-48-23 blueprints=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/tests/homes/prf-2026-09-30T04-48-23/blueprints
+[2026-09-30T04:48:23.073Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-09-30T04:48:23.075Z] mini MCP mcp_repo up on 127.0.0.1:3492
+[2026-09-30T04:48:23.086Z] mini MCP mcp_leaderreq up on 127.0.0.1:3491
+[2026-09-30T04:48:23.097Z] mini MCP mcp_web up on 127.0.0.1:3493
+[2026-09-30T04:48:23.097Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-30T04:48:24.352Z] throwaway boot OK: http://127.0.0.1:3182/?token=REDACTED
+[2026-09-30T04:48:24.407Z] web profile ensured (throwaway boot if first use)
+[2026-09-30T04:48:24.408Z] B1-CREATE: patch (bootPhase=create, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[{"name":"mcp_repo","port":3492},{"name":"mcp_leaderreq","port":3491},{"name":"mcp_web","port":3493}], preset=live root=default member=default) + directive (boot=1) written
+[2026-09-30T04:48:25.699Z] B1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-30T04:48:25.703Z] B1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-30T04:48:26.818Z] B1-CREATE: row ready — toolCount=13
+[2026-09-30T04:48:26.851Z] remote intent.probe v1 [g1-probe] -> 200 ok=true
+[2026-09-30T04:48:26.852Z] [G1] PASS — live preconditions: row config CARRIES all three mcpServers + every mini-MCP ANSWERS initialize; intent.probe team scope OPEN (repo + leaderreq PASS) :: dumpCarries=true live={"mcp_repo":true,"mcp_leaderreq":true,"mcp_web":true} status=OPEN reqs=["team.mcp.repo=PASS","team.mcp.leaderreq=PASS"]
+[2026-09-30T04:48:26.974Z] remote team.create v1 [g1-create] -> 200 ok=true
+[2026-09-30T04:48:26.975Z] T created: durable={"teamSession":{"schemaVersion":1,"rootSessionId":"session-prf-main-prf-2026-09-30T04-48-23","blueprint":{"blueprintId":"team.prf-main","revision":"1","contentHash":"sha256:e0235e6cd1d839474a17a0626a66d23535cc8245aad980c6aa27209649fe8436"},"createdAt":"2026-09-30T04:48:26.879Z","generation":1,"defau
+[2026-09-30T04:48:27.137Z] ORACLE worker g1 round 0: mcp__mcp_web__ping
+[2026-09-30T04:48:27.138Z] ORACLE worker g1 round 0: mcp__mcp_web__ping
+[2026-09-30T04:48:27.231Z] p6t6 tool team_delegate as=session-prf-main-prf-2026-09-30T04-48-23 -> 200 ok=true
+[2026-09-30T04:48:27.580Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:27.581Z] [G1] PASS — delegate g1 EXECUTED (worker web pong + DONE; no control request) :: toolOk=true targetInstanceId=inst-0qg2476054rg doneWitness=true pendingControlRequests=0
+[2026-09-30T04:48:27.589Z] remote override.set v7 [g2-set-1] -> 200 ok=true
+[2026-09-30T04:48:27.595Z] remote override.set v7 [g2-set-2] -> 200 ok=true
+[2026-09-30T04:48:27.598Z] remote override.set v7 [g2-set-stale] -> 200 ok=false code=OVERRIDE_GENERATION_CONFLICT
+[2026-09-30T04:48:27.600Z] remote override.get v7 [g2-read-after-stale] -> 200 ok=true
+[2026-09-30T04:48:27.600Z] [G2] PASS — v7 override: ack g1 -> second writer (expectedGeneration=g1) ack g2 -> FIRST writer STALE expectedGeneration=g1 -> typed OVERRIDE_GENERATION_CONFLICT + zero write (the read still g2) :: g1=1 g2=2 staleErr=OVERRIDE_GENERATION_CONFLICT readGen=2 readItems=["mcp_repo","extra-surface"]
+[2026-09-30T04:48:27.661Z] ORACLE worker g4a round 0: mcp__mcp_web__ping
+[2026-09-30T04:48:27.752Z] p6t6 tool team_delegate as=session-prf-main-prf-2026-09-30T04-48-23 -> 200 ok=true
+[2026-09-30T04:48:28.205Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:28.205Z] [G4] PASS — all up: delegate g4a EXECUTED (worker web pong + DONE) :: toolOk=true doneWitness=true
+[2026-09-30T04:48:28.262Z] remote team.create v1 [g9-create] -> 200 ok=true
+[2026-09-30T04:48:28.262Z] TSUB created (the plain leader passed the gate; the worker setup is the subject)
+[2026-09-30T04:48:28.287Z] p6t6 tool team_delegate as=session-prf-subagent-prf-2026-09-30T04-48-23 -> 200 ok=true
+[2026-09-30T04:48:28.867Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:28.870Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:28.870Z] [G9] PASS — strict worker WITHOUT the unmanaged deny set: team.create proceeds, the first delegate FAILS CLOSED typed (the A2C-2 coverage gate), the uncovered-tool witness carries subagent_fork, zero durable member instance :: failClosed=true citesFork=true subInstances=0 errHead=activation: child-session creation failed for member 'inst-0858rlk0yql8': PermissionCoverageUnmanagedError: permission coverage gate failed for instance 'inst-0858rlk0yql8': 19 unmanaged tool(s) on th
+[2026-09-30T04:48:28.936Z] B1-CREATE: stopped (killed=true portFree=true)
+[2026-09-30T04:48:28.937Z] B2-ALLUP-RESUME: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[{"name":"mcp_repo","port":3492},{"name":"mcp_leaderreq","port":3491},{"name":"mcp_web","port":3493}], preset=live root=default member=default) + directive (boot=2) written
+[2026-09-30T04:48:30.446Z] B2-ALLUP-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-30T04:48:30.448Z] B2-ALLUP-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-30T04:48:30.525Z] B2-ALLUP-RESUME: row ready — toolCount=13
+[2026-09-30T04:48:30.590Z] B2-ALLUP-RESUME: stopped (killed=true portFree=true)
+[2026-09-30T04:48:30.590Z] mini MCP web STOPPED on 127.0.0.1:3493 (the live down state)
+[2026-09-30T04:48:30.591Z] B3-WEBDOWN: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[{"name":"mcp_repo","port":3492},{"name":"mcp_leaderreq","port":3491},{"name":"mcp_web","port":3493}], preset=live root=default member=default) + directive (boot=3) written
+[2026-09-30T04:48:31.896Z] B3-WEBDOWN: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-30T04:48:31.905Z] B3-WEBDOWN: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-30T04:48:31.986Z] B3-WEBDOWN: row ready — toolCount=13
+[2026-09-30T04:48:32.013Z] remote intent.probe v1 [g4-probe] -> 200 ok=true
+[2026-09-30T04:48:32.191Z] ORACLE worker g4b round 0: mcp__mcp_web__ping
+[2026-09-30T04:48:32.277Z] p6t6 tool team_delegate as=session-prf-main-prf-2026-09-30T04-48-23 -> 200 ok=true
+[2026-09-30T04:48:32.618Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:32.621Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:32.625Z] [G4] FAIL — C down (pre-boot stop): probe shows team.mcp.repo + team.mcp.leaderreq still PASS (A/B multi-MCP isolation), worker delegate g4b BLOCKED -> typed COMPATIBILITY_BLOCKED (the recovery request is OFFERED then DENIED — zero durable effect, no g4b work fact) :: abHealthy=true (status=OPEN repo=PASS leaderreq=PASS) blocked=false code=null denyDecision=false recoveryPending=0 zeroEffect=false webSlots=[{"sessionId":"session-prf-boot-prf-2026-09-30T04-48-23","mounted":false,"materialization":"pending","attempts":null,"reason":null},{"sessionId":"session-prf-main-prf-2026-09-30T04-48-23","mounted":false,"materialization":"pending","attempts":null,"reason":null},{"sessionId":"session-team-child-b4bf7f04186a58bf27a5c3fb161c57f2","mounted":false,"materialization":"pending","attempts":null,"reason":null}]
+[2026-09-30T04:48:32.702Z] B3-WEBDOWN: stopped (killed=true portFree=true)
+[2026-09-30T04:48:32.705Z] mini MCP mcp_web up on 127.0.0.1:3493
+[2026-09-30T04:48:32.705Z] B4-RESTORE: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[{"name":"mcp_repo","port":3492},{"name":"mcp_leaderreq","port":3491},{"name":"mcp_web","port":3493}], preset=live root=default member=default) + directive (boot=4) written
+[2026-09-30T04:48:34.216Z] B4-RESTORE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-30T04:48:34.219Z] B4-RESTORE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-30T04:48:34.300Z] B4-RESTORE: row ready — toolCount=13
+[2026-09-30T04:48:34.310Z] remote override.get v7 [g2-read-restart] -> 200 ok=true
+[2026-09-30T04:48:34.310Z] [G2] PASS — restart durable: override.get after RESTART -> the slot is still g2 with the second writer values (the governance mutation persisted) :: gen=2 (expected 2) items=["mcp_repo","extra-surface"]
+[2026-09-30T04:48:34.319Z] remote policyState.get v1 [g3-get-1] -> 200 ok=true
+[2026-09-30T04:48:34.319Z] [G3] PASS — policyState.get (bound team): stateId default, availableTransitions carries `paused` (the bound blueprint closed set — not the boot anchor) :: stateId=default available=["paused"]
+[2026-09-30T04:48:34.345Z] remote policyState.set v1 [g3-set-paused] -> 200 ok=true
+[2026-09-30T04:48:34.352Z] remote policyState.get v1 [g3-get-2] -> 200 ok=true
+[2026-09-30T04:48:34.357Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:34.357Z] [G3] PASS — policyState.set(paused): changed transition (entryId + state), the read is `paused`, the durable policy-state-transitioned fact lands :: entryId=ps-paused-0 noChange=null stateAfter=paused available=["default"] transitions=1
+[2026-09-30T04:48:34.359Z] remote policyState.set v1 [g3-set-bogus] -> 200 ok=false code=POLICY_STATE_UNKNOWN
+[2026-09-30T04:48:34.359Z] [G3] PASS — policyState.set(bogus-state): typed POLICY_STATE_UNKNOWN (out of the closed set — zero write) :: err=POLICY_STATE_UNKNOWN msg=policyState target 'bogus-state' is outside the bound blueprint's closed set (default, default, paused)
+[2026-09-30T04:48:34.362Z] remote policyState.get v1 [g3-foreign] -> 200 ok=false code=TEAM_REMOTE_FOREIGN_TEAM
+[2026-09-30T04:48:34.362Z] [G3] PASS — policyState.get(foreign root): typed FOREIGN_TEAM (assertBoundRoot — the query is bound-root-guarded) :: err=TEAM_REMOTE_FOREIGN_TEAM msg=remote method 'policyState.get' addresses TeamSession 'session-prf-foreign-x' which this host does not own (bound root 'session-prf-boot-prf-2026-09-30T04-48-23')
+[2026-09-30T04:48:34.531Z] ORACLE worker g4c round 0: mcp__mcp_web__ping
+[2026-09-30T04:48:34.627Z] p6t6 tool team_delegate as=session-prf-main-prf-2026-09-30T04-48-23 -> 200 ok=true
+[2026-09-30T04:48:34.967Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:34.970Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:34.970Z] [G4] PASS — restore (C remounted after restart): delegate g4c EXECUTED (web pong + DONE) — the next boundary is NORMAL (web auto-mounted at the fresh reconcile); NO recovery incident opens at the restored boundary (scenario 5 exit) :: toolOk=true doneWitness=true pendingSeen=0 incidents=0
+[2026-09-30T04:48:35.103Z] ORACLE spill round 0: bash (head -c 300000 /dev/zero | tr '\0' 'x'...)
+[2026-09-30T04:48:35.120Z] remote team.create v1 [g6-create] -> 200 ok=true
+[2026-09-30T04:48:35.123Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:36.628Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:38.133Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:39.637Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:41.141Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:42.647Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:44.152Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:45.655Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:47.160Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:48.664Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:50.168Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:51.672Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:53.176Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:54.681Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:56.184Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:57.689Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:48:59.194Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:00.698Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:02.202Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:03.707Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:05.212Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:06.716Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:08.221Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:09.726Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:11.230Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:12.734Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:14.238Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:15.742Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:17.247Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:18.752Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:20.256Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:21.760Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:23.264Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:24.768Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:26.271Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:27.776Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:29.280Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:30.784Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:32.288Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:33.792Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:35.297Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:36.802Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:38.306Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:39.811Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:41.315Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:42.819Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:44.324Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:45.829Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:47.333Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:48.838Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:50.343Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:51.847Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:53.351Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:54.855Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:56.359Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:57.864Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:49:59.368Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:00.873Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:02.378Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:03.881Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:05.386Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:06.890Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:08.395Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:09.899Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:11.402Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:12.906Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:14.411Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:15.915Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:17.419Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:18.924Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:20.428Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:21.932Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:23.436Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:24.941Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:26.446Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:27.950Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:29.454Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:30.959Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:32.462Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:33.967Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:35.467Z] [G6] FAIL — the real spill (PR#35 pattern): team.create v1 + initialWork on the leader-only spill team (bash allow-lane + teamEnvelope exec token + permissions policy + 19-unmanaged deny) runs one bash command (300KB stdout > 64KB inline cap) -> the durable artifact-read-granted fact lands (instanceId inst-leader, source shell-foreground/bash — the executor spill -> observer -> authority -> durable fact chain) :: createOk=true createErr=null grants=0 settleMs=null shape=false payloadHead=null
+[2026-09-30T04:50:35.549Z] ORACLE worker g8 round 0: read
+[2026-09-30T04:50:35.593Z] ORACLE worker g8 round 1: bash
+[2026-09-30T04:50:36.074Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:36.094Z] remote team.resolveControl v4 [resolve-g8-ctrl-1ai] -> 200 ok=true
+[2026-09-30T04:50:36.201Z] p6t6 tool team_delegate as=session-prf-main-prf-2026-09-30T04-48-23 -> 200 ok=true
+[2026-09-30T04:50:36.699Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:36.703Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T04:50:36.714Z] remote team.getReadState v6 [g8-readstate] -> 200 ok=true
+[2026-09-30T04:50:36.716Z] remote team.getReadState v6 [g8-readstate] -> 200 ok=true
+[2026-09-30T04:50:36.730Z] remote team.getProjection v6 [g8-projection] -> 200 ok=true
+[2026-09-30T04:50:36.730Z] [G8] PASS — the tab data surface: GET / 200; v6 getReadState (worker session) = the member read state; v6 getProjection = durableGeneration+liveToken; the bash ASK opens a durable control request (the pending-review surface) -> v4 resolveControl allow -> DONE :: page=200 readState=true projOk=true toolOk=true askFacts=1 allowDecision=true pendingBash=1
+[2026-09-30T04:50:36.754Z] remote catalog.list v1 [g7-v1-catalog-list] -> 200 ok=true
+[2026-09-30T04:50:36.765Z] remote team.getProjection v1 [g7-v1-team-getProjection] -> 200 ok=true
+[2026-09-30T04:50:36.768Z] remote team.getLedgerPage v1 [g7-v1-team-getLedgerPage] -> 200 ok=true
+[2026-09-30T04:50:36.770Z] remote override.get v1 [g7-v1-override-get] -> 200 ok=true
+[2026-09-30T04:50:36.779Z] remote policyState.get v1 [g7-v1-policyState-get] -> 200 ok=true
+[2026-09-30T04:50:36.798Z] remote catalog.list v2 [g7-v2-catalog-list] -> 200 ok=true
+[2026-09-30T04:50:36.808Z] remote team.getProjection v2 [g7-v2-team-getProjection] -> 200 ok=true
+[2026-09-30T04:50:36.811Z] remote team.getLedgerPage v2 [g7-v2-team-getLedgerPage] -> 200 ok=true
+[2026-09-30T04:50:36.813Z] remote override.get v2 [g7-v2-override-get] -> 200 ok=true
+[2026-09-30T04:50:36.819Z] remote policyState.get v2 [g7-v2-policyState-get] -> 200 ok=true
+[2026-09-30T04:50:36.836Z] remote catalog.list v3 [g7-v3-catalog-list] -> 200 ok=true
+[2026-09-30T04:50:36.846Z] remote team.getProjection v3 [g7-v3-team-getProjection] -> 200 ok=true
+[2026-09-30T04:50:36.849Z] remote team.getLedgerPage v3 [g7-v3-team-getLedgerPage] -> 200 ok=true
+[2026-09-30T04:50:36.851Z] remote override.get v3 [g7-v3-override-get] -> 200 ok=true
+[2026-09-30T04:50:36.859Z] remote policyState.get v3 [g7-v3-policyState-get] -> 200 ok=true
+[2026-09-30T04:50:36.877Z] remote catalog.list v4 [g7-v4-catalog-list] -> 200 ok=true
+[2026-09-30T04:50:36.886Z] remote team.getProjection v4 [g7-v4-team-getProjection] -> 200 ok=true
+[2026-09-30T04:50:36.889Z] remote team.getLedgerPage v4 [g7-v4-team-getLedgerPage] -> 200 ok=true
+[2026-09-30T04:50:36.890Z] remote override.get v4 [g7-v4-override-get] -> 200 ok=true
+[2026-09-30T04:50:36.896Z] remote policyState.get v4 [g7-v4-policyState-get] -> 200 ok=true
+[2026-09-30T04:50:36.913Z] remote catalog.list v5 [g7-v5-catalog-list] -> 200 ok=true
+[2026-09-30T04:50:36.922Z] remote team.getProjection v5 [g7-v5-team-getProjection] -> 200 ok=true
+[2026-09-30T04:50:36.925Z] remote team.getLedgerPage v5 [g7-v5-team-getLedgerPage] -> 200 ok=true
+[2026-09-30T04:50:36.927Z] remote override.get v5 [g7-v5-override-get] -> 200 ok=true
+[2026-09-30T04:50:36.933Z] remote policyState.get v5 [g7-v5-policyState-get] -> 200 ok=true
+[2026-09-30T04:50:36.950Z] remote catalog.list v6 [g7-v6-catalog-list] -> 200 ok=true
+[2026-09-30T04:50:36.961Z] remote team.getProjection v6 [g7-v6-team-getProjection] -> 200 ok=true
+[2026-09-30T04:50:36.963Z] remote team.getLedgerPage v6 [g7-v6-team-getLedgerPage] -> 200 ok=true
+[2026-09-30T04:50:36.966Z] remote override.get v6 [g7-v6-override-get] -> 200 ok=true
+[2026-09-30T04:50:36.972Z] remote policyState.get v6 [g7-v6-policyState-get] -> 200 ok=true
+[2026-09-30T04:50:36.989Z] remote catalog.list v7 [g7-v7-catalog-list] -> 200 ok=true
+[2026-09-30T04:50:37.000Z] remote team.getProjection v7 [g7-v7-team-getProjection] -> 200 ok=true
+[2026-09-30T04:50:37.003Z] remote team.getLedgerPage v7 [g7-v7-team-getLedgerPage] -> 200 ok=true
+[2026-09-30T04:50:37.005Z] remote override.get v7 [g7-v7-override-get] -> 200 ok=true
+[2026-09-30T04:50:37.013Z] remote policyState.get v7 [g7-v7-policyState-get] -> 200 ok=true
+[2026-09-30T04:50:37.022Z] remote team.getProjection v5 [g7-proj-5] -> 200 ok=true
+[2026-09-30T04:50:37.031Z] remote team.getProjection v6 [g7-proj-6] -> 200 ok=true
+[2026-09-30T04:50:37.034Z] remote team.listRoots v3 [g7-listroots-3] -> 200 ok=true
+[2026-09-30T04:50:37.036Z] remote team.getReadState v6 [g7-readstate-6] -> 200 ok=true
+[2026-09-30T04:50:37.043Z] remote team.resolveControl v4 [g7-resolve-4] -> 200 ok=false code=CONTROL_REQUEST_NOT_FOUND
+[2026-09-30T04:50:37.046Z] remote override.set v6 [g7-v6-guard] -> 200 ok=false code=malformed-params
+[2026-09-30T04:50:37.046Z] [G7] PASS — v1..v7 x stable read set all accepted; projection v<6 base vs v>=6 durableGeneration+liveToken; gated methods served at their own version (listRoots v3, getReadState v6, resolveControl v4); the v7-only expectedGeneration is REJECTED on the v6 wire (typed) :: matrix=[] shapeV5=true shapeV6=true lr3=ok rs6=ok rc4=CONTROL_REQUEST_NOT_FOUND v6GuardErr=malformed-params
+[2026-09-30T04:50:37.121Z] B4-RESTORE: stopped (killed=true portFree=true)
+[2026-09-30T04:50:37.122Z] B5-PTC: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[{"name":"mcp_repo","port":3492},{"name":"mcp_leaderreq","port":3491},{"name":"mcp_web","port":3493}], preset=live root=ptc member=ptc) + directive (boot=5) written
+[2026-09-30T04:50:38.631Z] B5-PTC: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-30T04:50:38.633Z] B5-PTC: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-30T04:50:38.721Z] B5-PTC: row ready — toolCount=13
+[2026-09-30T04:50:38.746Z] remote intent.probe v1 [g5-probe] -> 200 ok=true
+[2026-09-30T04:50:38.746Z] [G5] PASS — ptc mounted: the persona probe (wire intent fact) PASSES — team.persona.standard PASS, status OPEN (the U5 caller-only probe lane) :: status=OPEN persona={"requirementId":"team.persona.standard","type":"persona","complete":true,"outcome":"PASS","reasonCode":"SATISFIED","detail":"all 1 required subject(s) available","unavailableSubjects":[],"mismatchFingerprint":null,"acknowledgement":null}
+[2026-09-30T04:50:38.764Z] remote team.create v1 [g5-create] -> 200 ok=false code=TEAM_RUNTIME_COMPATIBILITY_BLOCKED
+[2026-09-30T04:50:38.768Z] remote team.getReadState v6 [g5-zero-effect] -> 200 ok=true
+[2026-09-30T04:50:38.768Z] [G5] PASS — ptc mounted GATE lane (finding PR-F-G5 recorded): team.create REFUSED typed — TEAM_RUNTIME_COMPATIBILITY_BLOCKED with the typed gate verdict (outcome fatal + fatalRequirementIds [team.persona.standard] — the v2 kind subject vs the provider preset-id lookup, the §16.1 tension), ZERO durable effect (T9 never minted — getReadState none/typed error); the fail-closed contract holds (no false OPEN) :: createErr=TEAM_RUNTIME_COMPATIBILITY_BLOCKED gateOutcome=true zeroEffect=true details={"details":{"method":"team.create","endpoint":"team.create","contractVersion":1,"requestToken":null,"reason":"domain-error","cause":{"code":"TEAM_RUNTIME_COMPATIBILITY_BLOCKED","message":"TeamRuntime: the creation preflight of \"session-prf-persona-prf-2026-09-30T04-48-23\" is 'fatal' — the durable Team bind is refused (zero durable effect; a Team-level required requirement is down — it cannot be bypassed by disabling a template; repair the environment and re-drive the creation)","details":{"roo
+[2026-09-30T04:50:38.832Z] B5-PTC: stopped (killed=true portFree=true)
+[2026-09-30T04:50:38.856Z] [H1] PASS — test-use pristine AFTER (porcelain empty + HEAD baseline; the worker bash was a no-op echo) :: post statusEmpty=true diffEmpty=true head=46a7f68b0922
+[2026-09-30T04:50:38.861Z] [H1] PASS — :3080/:3180 ZERO-TOUCH (read-only probes pre == post) :: before=401,401 after=401,401
+[2026-09-30T04:50:38.863Z] [H2] PASS — run ports released after teardown (worldCleaned=true on PASS only) :: portsHeld=[] worldCleaned=false
+[2026-09-30T04:50:38.871Z] evidence scrubbed: 7 file(s) rewritten (sk- token redactions)
+[2026-09-30T04:50:38.874Z] VERDICT: FAIL — 2 criterion(ia) failed: G4, G6
+[2026-09-30T04:50:38.874Z] world RETAINED at /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/tests/homes/prf-2026-09-30T04-48-23 (non-zero exit protocol)

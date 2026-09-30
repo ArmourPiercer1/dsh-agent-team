@@ -1,0 +1,17 @@
+mock: listening on 127.0.0.1:3497
+mock: 1 [messages] tool-call reply: mcp__mcp_web__ping
+mock: 2 [messages] tool-call reply: mcp__mcp_web__ping
+mock: 3 [messages] text reply (15 chars): "PRREQ_DONE_W_g1"
+mock: 4 [messages] tool-call reply: mcp__mcp_web__ping
+mock: 5 [messages] text reply (16 chars): "PRREQ_DONE_W_g4a"
+mock: 6 [messages] tool-call reply: mcp__mcp_web__ping
+mock: 7 [messages] text reply (16 chars): "PRREQ_DONE_W_g4b"
+mock: 8 [messages] tool-call reply: mcp__mcp_web__ping
+mock: 9 [messages] text reply (16 chars): "PRREQ_DONE_W_g4c"
+mock: 10 [messages] tool-call reply: bash
+mock: 11 [messages] text reply (40 chars): "PRREQ_DONE_SPILL_prf-2026-09-30T04-48-23"
+mock: 12 [messages] tool-call reply: read
+mock: 13 [messages] tool-call reply: bash
+mock: 14 [messages] text reply (41 chars): "PRREQ_DEFAULT_ACK_prf-2026-09-30T04-48-23"
+mock: 15 [messages] text reply (41 chars): "PRREQ_DEFAULT_ACK_prf-2026-09-30T04-48-23"
+mock: 16 [messages] text reply (15 chars): "PRREQ_DONE_W_g8"

@@ -72,7 +72,10 @@ import type {
   ArtifactLedgerPort,
 } from '../../artifact-read/index.js'
 import type { ControlService } from '../../control/index.js'
-import { resolveDurableMcpFacet } from '../../agent-setup/capability/index.js'
+import {
+  MCP_FACET_WILDCARD,
+  resolveDurableMcpFacet,
+} from '../../agent-setup/capability/index.js'
 import { resolveDurableModelSelection } from '../../agent-setup/model/index.js'
 import {
   createOrOpenTeamDomainDetailed,
@@ -89,7 +92,61 @@ import { createBoundBlueprintResolver } from './bound-blueprint.js'
 import { createLiveBlueprintCatalog } from './blueprint-live-catalog.js'
 import { createBlueprintSourceIndex } from './blueprint-source-index.js'
 import { registerTeamSkills } from './team-skills.js'
-import { mcpSupplyValidationIssue } from './mcp-supply.js'
+import { configuredMcpServers, mcpSupplyValidationIssue } from './mcp-supply.js'
+// pre-alpha3 PR-C §C.7: the durable capability-runtime telemetry writer (the
+// `capability-runtime-event` ledger fact — the compatibility category's
+// first production writer); pre-alpha3 W2-A (review fix F1, guide §2.3):
+// the 3-state readiness probe + the materialization vocabulary the
+// production facts provider is built over.
+import {
+  MEMBER_LIVENESS,
+  OBSERVATION_SOURCES,
+  OBSERVATION_STATES,
+  PROBE_VERDICTS,
+  assertCapabilityRuntimeEventKind,
+  createCapabilityReadinessProvider,
+  createCapabilityRuntimeEvent,
+  writeCapabilityRuntimeEvent,
+} from '../../readiness/index.js'
+import type {
+  CapabilityReadinessProvider,
+  MaterializationSlot,
+  MemberLiveness,
+} from '../../readiness/index.js'
+// pre-alpha3 W2-A (review fixes F14 + F1, guide §5 B + §2.3): the
+// production persona observer (the DSH public agentPresets seam — the
+// effective-composition read, fail-closed typed `unresolved`, never a
+// shipped-state guess) + the runtime substrate resolver (the row preset
+// ids + the observer) + the runtime requirement-facts provider (the #40
+// live environment source for the RequirementAuthority).
+import {
+  createProductionPersonaObserver,
+  resolveRuntimeSubstrate,
+} from '../../agent-setup/preset/index.js'
+import type {
+  AgentPresetPersonaSeam,
+  PersonaKindObservation,
+  PresetCompositionMirror,
+  ProductionPersonaObserver,
+  RuntimeSubstratePlan,
+} from '../../agent-setup/preset/index.js'
+import { createRuntimeRequirementFactsProvider } from '../../requirement-facts/index.js'
+import type {
+  MemberMaterializationView,
+  RequirementFactScope,
+} from '../../requirement-facts/index.js'
+// pre-alpha3 W3-A (review fix F1) regression fix: the SHIPPED-STATE persona
+// observation + the deployment-default preset id — the service-absent
+// fallback for the live production substrate (see the `personaObserver`
+// wrapper + `resolveSubstratePlan` below). A test-world host entry that
+// does not provide the DSH `agentPresets` public service falls back to the
+// base pre-W3-A shipped-state substrate; real production (service present)
+// keeps the W2-A F14 live probe + its fail-closed typed `unresolved`
+// contract.
+import {
+  SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID,
+  shippedStatePersonaObserver,
+} from '../../requirements/observed-persona.js'
 import { TEAM_ARTIFACT_AUTHORITY_SERVICE } from './artifact-grant-bridge.js'
 import type { TeamArtifactAuthorityBridge } from './artifact-grant-bridge.js'
 
@@ -333,6 +390,64 @@ interface GlueModule {
      * bound, not a sleep); a test world overrides it for determinism.
      */
     readonly writerHandoffTimeoutMs?: number
+    /**
+     * pre-alpha3 PR-B (plan §B.2, optional additive): the production
+     * PolicyReader reference (the controlServiceRef pattern — the entry
+     * creates the plain `{ current: null }` object, passes it to the
+     * glue, and fills `.current` with `builtRoot.policyReader` right
+     * after the root is constructed). The glue reads it LAZILY in
+     * `resolveConsumptionViews`: present/filled = the canonical live
+     * boundary read (the production PolicyReader + the durable
+     * PolicyState transitions — the SAME read the activation step 8,
+     * inspect-config, and the projection views run); absent/unfilled
+     * (test worlds, and the boot window before the root fills it) = the
+     * pre-PR-B legacy input (config external facts + template static
+     * grants + the implicit `default` state — bit-for-bit unchanged).
+     */
+    readonly policyReaderRef?: { current: unknown }
+    /**
+     * pre-alpha3 PR-C §C.6/§C.7 (optional additive): the durable
+     * capability-runtime telemetry hook. The glue emits one capability
+     * readiness transition per MCP mount (mount-failed / mount-restored);
+     * the production host records each as a `capability-runtime-event`
+     * ledger fact (the compatibility category's first production writer).
+     * Absent (test worlds without the durable telemetry) → the glue's emit
+     * is a no-op. Best-effort on the glue side: the host's write failure
+     * PROPAGATES to the glue's caller, which observes it (never fails the
+     * member's MCP reconciliation).
+     */
+    readonly capabilityTelemetry?: (
+      rootSessionId: string,
+      event: {
+        kind: string
+        capabilityType: string
+        capabilityName: string
+        verdict: 'unknown' | 'reachable' | 'unreachable'
+        source: string
+        observedAt: string
+        attempt?: number
+        reason?: string
+      },
+    ) => Promise<void>
+    /**
+     * pre-alpha3 W2-A (review fix F4, guide §5 B, optional additive): the
+     * PRODUCTION persona-substrate resolver — (rootSessionId) => the REAL
+     * observed substrate fact of the owning root (the RuntimeSubstratePlan
+     * root entry: the row's rootPresetId observed through the production
+     * persona observer over the DSH public agentPresets seam). The glue
+     * AWAITs it on the production path (the persona slot is built over the
+     * observed substrate, cached per root only on success — an
+     * `unresolved` substrate fails the bind closed, and a later bind re-
+     * probes; NEVER the shipped-state 'standard' guess). Absent (factory /
+     * test worlds) -> the glue's legacy seam (config.presetSubstrate ??
+     * the S5A A11 standard default), byte-for-byte unchanged.
+     */
+    readonly resolvePersonaSubstrate?: (rootSessionId: string) => Promise<{
+      readonly presetId: string
+      readonly personaKind: 'standard' | 'complete' | 'absent' | 'unresolved'
+      readonly source?: string
+      readonly reason?: string
+    }>
   }): TeamAgentBindings
 }
 
@@ -968,6 +1083,87 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     },
   }
 
+  // pre-alpha3 W2-A (review fix F14, guide §5 B): the PRODUCTION persona
+  // observer over the DSH public `agentPresets` seam — `compositionInventory`
+  // (the live presence / enablement: a missing or disabled persona row is
+  // `absent`, an `!!js` conditional row is unresolvable offline) +
+  // `readDocument` (the declared composition — the `config.complete` fact
+  // that decides standard vs complete). The seam mirror is LAZY (the
+  // sessionPersistence wrapper pattern — resolved per call, immune to row
+  // apply-order); a service-level failure (absent service, a rejecting
+  // call, a malformed document) REJECTS and the observer maps it to a
+  // typed `unresolved` observation — NEVER a shipped-state 'standard'
+  // guess, and never a throw at assembly (the glue converts an unresolved
+  // substrate into the typed bind failure at persona-slot construction).
+  const personaSeamMirror: AgentPresetPersonaSeam = {
+    async compositionInventory(): Promise<readonly PresetCompositionMirror[]> {
+      const svc = ctx.get('agentPresets') as
+        | { compositionInventory?: () => Promise<readonly PresetCompositionMirror[]> }
+        | null
+        | undefined
+      if (svc === undefined || svc === null || typeof svc.compositionInventory !== 'function') {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+          'the "agentPresets" public service is absent (or lacks compositionInventory) — the production persona observer reads the live preset composition through its public seam (fail closed: a typed unresolved observation, never a shipped-state guess)',
+        )
+      }
+      return svc.compositionInventory()
+    },
+    async readDocument(presetId: string): Promise<string> {
+      const svc = ctx.get('agentPresets') as
+        | {
+            readDocument?: (
+              presetId: string,
+            ) => Promise<string | { readonly content?: string } | unknown>
+          }
+        | null
+        | undefined
+      if (svc === undefined || svc === null || typeof svc.readDocument !== 'function') {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+          'the "agentPresets" public service is absent (or lacks readDocument) — the production persona observer reads the declared preset composition through its public seam (fail closed: a typed unresolved observation, never a shipped-state guess)',
+        )
+      }
+      const doc = await svc.readDocument(presetId)
+      // The public service returns the document object (the `content` YAML
+      // is the declared entry list); a bare string is tolerated for a
+      // test-world double.
+      if (typeof doc === 'string') return doc
+      if (
+        doc !== null &&
+        typeof doc === 'object' &&
+        typeof (doc as { readonly content?: unknown }).content === 'string'
+      ) {
+        return (doc as { readonly content: string }).content
+      }
+      throw new TeamPluginError(
+        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+        `the "agentPresets" readDocument returned a malformed document for preset '${presetId}' — the declared composition cannot be read (fail closed: a typed unresolved observation, never a shipped-state guess)`,
+      )
+    },
+  }
+  const livePersonaObserver = createProductionPersonaObserver(personaSeamMirror)
+  // pre-alpha3 W3-A (review fix F1) regression fix — the service-absent
+  // fallback for the live production persona observer. The W2-A F14 live
+  // probe is only meaningful when the DSH `agentPresets` public service is
+  // present (real production); a test-world host entry that does not provide
+  // the service (or a row without a root preset id) would otherwise observe
+  // a typed `unresolved` and fail the bind closed. Such a service-absent
+  // world falls back to the SHIPPED-STATE persona observation (the base
+  // pre-W3-A substrate — the deployment default's composable `standard`
+  // persona, a pure deployment-knowledge observation with no probe to
+  // await). Real production (service present) keeps the live probe and its
+  // fail-closed typed `unresolved` contract, byte-for-byte.
+  const personaObserver: ProductionPersonaObserver = {
+    observe: (presetId: string): Promise<PersonaKindObservation> => {
+      const svc = ctx.get('agentPresets') as unknown
+      if (svc === undefined || svc === null) {
+        return Promise.resolve(shippedStatePersonaObserver(presetId))
+      }
+      return livePersonaObserver.observe(presetId)
+    },
+  }
+
   // alpha.2 (A6 live fix V1-1): the per-agent `fs` seam accessor (served to
   // the glue under its `fsBackend` deps key): resolved per call via the
   // row's STRICT `ctx.get('fs')` (the global service store — the host
@@ -1363,6 +1559,48 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     resolvedPhase === rowConfig.bootPhase ? rowConfig : { ...rowConfig, bootPhase: resolvedPhase }
   openDomain = domain
 
+  // pre-alpha3 W2-A (review fix F1, guide §2.3): the live runtime substrate
+  // plan thunk (the row preset ids + the production persona observer over
+  // the DSH public agentPresets seam — the F14 closed seam, NO
+  // CORE_SEAM_BLOCKER). The `deploymentDefaultPresetId` is read LAZILY per
+  // call from the live service's `defaultId` getter (a service-absent
+  // composition without an explicit row preset id then fails closed
+  // through the resolver's typed MALFORMED_DTO — no silent default).
+  // A SETTLED plan (root + member both observed) is memoized for the boot
+  // (the preset composition is stable for the row's lifetime — the same
+  // stability the glue's per-root persona-slot cache assumes); an
+  // UNRESOLVED plan is NOT cached — a later call RE-PROBES (a transient
+  // service failure must not permanently fail the persona bind within the
+  // boot; the guide's fail-closed + re-probe contract).
+  let settledSubstratePlan: Promise<RuntimeSubstratePlan> | undefined
+  const resolveSubstratePlan = async (): Promise<RuntimeSubstratePlan> => {
+    if (settledSubstratePlan !== undefined) return settledSubstratePlan
+    const svc = ctx.get('agentPresets') as { readonly defaultId?: string } | null | undefined
+    // pre-alpha3 W3-A (review fix F1) regression fix — the service-absent
+    // fallback for the deployment default preset id. The W2-A F14 contract
+    // is: read the default LAZILY from the live service's `defaultId` getter
+    // (real production). A service-absent world (a test-world host entry that
+    // does not provide the DSH `agentPresets` public service) falls back to
+    // the SHIPPED-STATE deployment default (the base pre-W3-A substrate)
+    // instead of failing closed with "no root preset authority" — the same
+    // fallback the base `resolveRuntimeSubstrate` call used. Real production
+    // (service present, a `defaultId`) keeps the live value, byte-for-byte.
+    const deploymentDefaultPresetId =
+      svc !== undefined && svc !== null && typeof svc.defaultId === 'string' && svc.defaultId !== ''
+        ? svc.defaultId
+        : SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID
+    const plan = await resolveRuntimeSubstrate({
+      rootPresetId: resolvedRowConfig.rootPresetId,
+      memberPresetId: resolvedRowConfig.memberPresetId,
+      deploymentDefaultPresetId,
+      observePersonaKind: (presetId: string) => personaObserver.observe(presetId),
+    })
+    if (plan.root.persona.kind !== 'unresolved' && plan.member.persona.kind !== 'unresolved') {
+      settledSubstratePlan = Promise.resolve(plan)
+    }
+    return plan
+  }
+
   // C1 (restart-recovery, guide §4.2): bind the fence's durable-ownership
   // resolver EARLY — right after the domain open (before the live glue
   // boot, and before any normal Team activation): the classification is
@@ -1451,6 +1689,16 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     anchorBlueprintSource: resolvedRowConfig.blueprintSource,
   })
 
+  // pre-alpha3 PR-B (plan §B.2): the production PolicyReader reference
+  // (the controlServiceRef pattern). The GLUE is built BEFORE the
+  // production root (the root's `live` surface is a glue dependency), so
+  // the ref is created here and filled with `builtRoot.policyReader`
+  // right after `createTeamProductionRoot` returns (BELOW). The glue
+  // reads it lazily in `resolveConsumptionViews` — by the time any agent
+  // boundary resolves, the ref is filled; a world without the ref (test
+  // compositions) keeps the pre-PR-B legacy input.
+  const policyReaderRef: { current: unknown } = { current: null }
+
   const live: TeamAgentBindings = glue.createAgentBindings({
     agents,
     sessionPersistence,
@@ -1487,7 +1735,377 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // recovery in ensureLiveAgent). The fence instance is the SAME object
     // whose listeners were registered at the top of apply() (guide §4.1).
     activationFence,
+    // pre-alpha3 PR-B (plan §B.2): the production PolicyReader reference
+    // (filled with builtRoot.policyReader right after root construction
+    // — the glue reads it lazily per boundary; see the ref's rationale).
+    policyReaderRef,
+    // pre-alpha3 PR-C §C.6/§C.7: the durable capability-runtime telemetry
+    // hook — the glue emits the MCP mount transitions (mount-failed /
+    // mount-restored) and the host durably records each as a
+    // `capability-runtime-event` ledger fact (the compatibility category's
+    // first production writer; the durableGeneration advances through
+    // `ledger.put`). The kind is validated fail-closed (an unknown kind is a
+    // glue bug); the write PROPAGATES a storage failure (the glue observes
+    // it, never fails the member's MCP reconciliation).
+    capabilityTelemetry: async (
+      rootSessionId: string,
+      event: {
+        kind: string
+        capabilityType: string
+        capabilityName: string
+        verdict: 'unknown' | 'reachable' | 'unreachable'
+        source: string
+        observedAt: string
+        attempt?: number
+        reason?: string
+      },
+    ): Promise<void> => {
+      const capabilityEvent = createCapabilityRuntimeEvent({
+        event: assertCapabilityRuntimeEventKind(event.kind, 'capabilityTelemetry.kind'),
+        capabilityType: event.capabilityType,
+        capabilityName: event.capabilityName,
+        verdict: event.verdict,
+        source: event.source,
+        observedAt: event.observedAt,
+        reason: event.reason,
+        attempt: event.attempt,
+      })
+      await writeCapabilityRuntimeEvent(
+        domain.repositories.ledger,
+        rootSessionId,
+        capabilityEvent,
+        () => new Date().toISOString(),
+      )
+    },
+    // pre-alpha3 W2-A (review fix F4, guide §5 B): the PRODUCTION persona-
+    // substrate resolver — the REAL observed effective composition of the
+    // owning root (the RuntimeSubstratePlan root entry, observed through
+    // the production persona observer over the DSH public agentPresets
+    // seam). The glue AWAITs it at persona-slot construction (cached per
+    // root only on success; an `unresolved` substrate fails the bind
+    // closed, and a later bind re-probes — NEVER the shipped-state
+    // 'standard' guess, guide §5 B). The seam is keyed by the root session
+    // id (Architecture §13.1 — members inherit the root substrate); the
+    // row plan is row-global, so the id is provenance, not a plan axis.
+    resolvePersonaSubstrate: async (rootSessionId: string) => {
+      const plan = await resolveSubstratePlan()
+      const entry = plan.root
+      return {
+        presetId: entry.presetId,
+        personaKind: entry.persona.kind,
+        source: entry.persona.source,
+        ...(entry.persona.reason !== undefined ? { reason: entry.persona.reason } : {}),
+      }
+    },
   })
+
+  // --- pre-alpha3 W2-A (review fix F1, guide §2.3): the runtime --------------
+  // --- requirement-facts authority — the production live-environment source --
+  // --- for the RequirementAuthority (the #40 side; the #42 gate consumer     --
+  // --- switching is W3-A and reads this surface off the root).               --
+  //                                                                            --
+  // The MCP readiness probe port reads the LIVE agent MCP state of the rows'  --
+  // live sessions ONLY (guide §2.3: after a restart the readiness recovers to --
+  // `unknown` and re-probes — the durable `capability-runtime-event` telemetry --
+  // is NEVER read back as current readiness; the telemetry is the ledger,     --
+  // the probe is the truth).                                                    --
+  //                                                                            --
+  // F15 (plan §5/§6/§7): fiber presence alone is NO LONGER `reachable` — the   --
+  // upstream 0.1.7-rc.1 supervisor WITHDRAWS the server's tools when the       --
+  // reconnect budget exhausts while the handle stays live ("disposal is the   --
+  // only way back"). Each live session holding the fiber is therefore          --
+  // classified by the glue's OPERATIONAL WITNESS — the boundary pull-probe     --
+  // over the PUBLIC tool surface (`mcp__<serverName>__*`, plan §7 V1 authority; --
+  // `tools/change` is never a classifier): a confirmed loss (fiber present +   --
+  // previously tool-bearing + surface withdrawn + still policy-targeted)       --
+  // retires the session's exhausted fiber (witness side effect, exactly once,  --
+  // idempotent — the slot is stamped `failed`, so the NEXT probe reads the     --
+  // mount failure) and reports `unreachable` + `confirmedLoss`. A witness      --
+  // `unknown` (a zero-tool server — L3; an unreadable surface; a               --
+  // plugin-initiated removal — an R4 policy deny) contributes NOTHING: a       --
+  // fiber's mere presence never fabricates an `unreachable`, and an            --
+  // unobservable capability is not a pending materialization (the settled      --
+  // slot/view state is what decides in-flight; for a removal that is the      --
+  // seed's truth — the observed F15 R4 shape). A pre-F15 glue without the      --
+  // witness seam (the test worlds) keeps the legacy fiber-presence             --
+  // classification.                                                            --
+  //                                                                            --
+  // PF-2 tri-state (2026-09-30, parent adjudication option A): the UNSETTLED  --
+  // `unknown` carries its OBSERVATION STATE — the structural split of the     --
+  // pre-observation world this probe reads:                                    --
+  //   in-flight      a pending materialization state EXISTS on a live session  --
+  //                  (a raw slot without a settled fiber whose view still      --
+  //                  admits the server — settlement in progress, the B5        --
+  //                  window; unapplied durable mcp records; or a template      --
+  //                  grant that admits the server);                            --
+  //   never-observed NO fiber / NO pending slot / NO failed slot on ANY live  --
+  //                  session — the capability is STRUCTURALLY not-yet-        --
+  //                  applicable (the canonical v1→v2 first-create shape: a    --
+  //                  team-scope server materializes only at the leader        --
+  //                  boundary of an EXISTING team — a zero-requirement v1     --
+  //                  anchor mounts nothing) — OR the only materialization      --
+  //                  state observed is a TERMINAL deny (a settled slot         --
+  //                  without its fiber that the view no longer admits — an    --
+  //                  intentional removal: a deny is not a failure, no remount  --
+  //                  is pending — the seed's truth decides; F15 R4).          --
+  // The state rides on the observation; the ONE shared classifier predicate   --
+  // in the requirement-facts layer (pending.ts `isPendingWindow`) is the      --
+  // single consumer — the probe, the creation preflight, the gate and the     --
+  // activation step all inherit identical behavior: probe == gate (INV-9.4).  --
+  // A session whose views cannot be resolved counts AS in-flight (fail-closed --
+  // — the exemption is never inferred from doubt).                             --
+  // Aggregation (both lines): a healthy live fiber on ANY session wins        --
+  // (`reachable` — the server is up; a losing session's fiber is retired and  --
+  // remounts after the 30 s cooldown); a confirmed loss on ALL live fibers is --
+  // `unreachable` (the plugin-owned evidence code                            --
+  // `MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN` as the observation provenance); an    --
+  // observed mount failure (a `failed` materialization slot) stays            --
+  // `unreachable`; nothing else settles — the unsettled verdict carries its   --
+  // observation state above.                                                   --
+  const capabilityReadiness: CapabilityReadinessProvider = createCapabilityReadinessProvider({
+    probes: {
+      mcpServer: {
+        source: OBSERVATION_SOURCES.mcpFiber,
+        probe: async (name: string) => {
+          let mountFailed = false
+          let anyReachable = false
+          let confirmedLoss = false
+          let inFlight = false
+          for (const sessionId of live.listLiveSessions()) {
+            const state = live.getConsumptionState(sessionId) as
+              | {
+                  readonly mcpFibers?: ReadonlyMap<string, unknown>
+                  readonly mcpMaterialization?: ReadonlyMap<
+                    string,
+                    { readonly status: string }
+                  >
+                }
+              | undefined
+            if (state === undefined || state === null) continue
+            if (state.mcpFibers !== undefined && state.mcpFibers.has(name)) {
+              const witness =
+                typeof live.observeMcpOperationalWitness === 'function'
+                  ? await live.observeMcpOperationalWitness(sessionId, name)
+                  : undefined
+              if (witness === undefined) {
+                // A pre-F15 glue (no witness seam — the test worlds): keep
+                // the legacy fiber-presence classification (settled).
+                return { verdict: PROBE_VERDICTS.reachable }
+              }
+              if (witness.verdict === 'reachable') {
+                anyReachable = true
+              } else if (witness.verdict === 'unreachable') {
+                // A confirmed loss: the witness retires this session's
+                // exhausted fiber as a side effect in the SAME owned step
+                // (exactly once, idempotent — the slot is stamped `failed`,
+                // so the next probe reads the mount failure).
+                confirmedLoss = true
+              }
+              // `unknown`: the capability is UNOBSERVED on this session —
+              // a zero-tool server (L3), an unreadable surface, or a
+              // plugin-initiated removal (an R4 policy deny). A fiber's
+              // mere presence never fabricates an `unreachable` (F15
+              // §5.1-C rule 4), and an unobservable capability is not a
+              // pending materialization — it contributes nothing (the
+              // settled slot/view state is what decides in-flight; for a
+              // removal that is the seed's truth).
+              continue
+            }
+            const slot = state.mcpMaterialization?.get(name)
+            if (slot !== undefined && slot.status === 'failed') {
+              // An observed mount failure (a `failed` materialization slot)
+              // settles `unreachable` — both lines agree.
+              mountFailed = true
+              continue
+            }
+            // No fiber, and no failed slot: the session's freshly re-resolved
+            // consumption view decides the PENDING-MATERIALIZATION signal —
+            // identically for (a) a raw slot without a settled fiber (a
+            // settlement in progress — the B5 window) and (b) the no-slot
+            // case (unapplied durable mcp records, or a template grant that
+            // admits the server — the reconcile mounts it at the next
+            // boundary; the SAME state the /__p6t6/state `pending`
+            // projection shows): IN-FLIGHT.
+            // A SETTLED slot without its fiber is in-flight ONLY while a
+            // future materialization is actually pending (the view still
+            // admits the server, or an ADMIT-kind record is queued for the
+            // next boundary — an unapplied deny is a settled withdrawal,
+            // see the pending-filter below). Once the view no longer admits the server
+            // (allowed:false / the view absent — an INTENTIONAL REMOVAL,
+            // F15 R4: the deny disposes the fiber, the slot stays `mounted`
+            // — a deny is not a failure — and no remount is pending) there
+            // is NO pending materialization state: the session contributes
+            // nothing and the seed's truth decides (the observed F15 R4
+            // shape: 'unknown probe → row-seed feeds available'). A session
+            // whose view does NOT admit the server for any other reason also
+            // contributes nothing (structurally not-applicable for it — the
+            // cold-member / non-allowing-template guard, E.11 negative #1 /
+            // guide §2.5.4).
+            try {
+              const views = live.resolveConsumptionViews(sessionId) as
+                | {
+                    readonly mcpViews?: Record<
+                      string,
+                      { readonly allowed?: boolean; readonly pendingNextBoundary?: unknown }
+                    >
+                  }
+                | undefined
+              const serverView =
+                views !== undefined && views !== null ? views.mcpViews?.[name] : undefined
+              const pendingRecords =
+                serverView !== undefined && serverView !== null
+                  ? serverView.pendingNextBoundary
+                  : undefined
+              // THE PENDING-MATERIALIZATION SIGNAL (Option A gate-fix,
+              // parent adjudication 2026-09-30 — FOLDED-STOP R4): count
+              // ADMIT-kind records ONLY. An unapplied durable ALLOW that
+              // names this server (or the wildcard) is a materialization IN
+              // PROGRESS — the E.12 B5 window (governance admitted the
+              // mount; the reconcile runs at the next boundary): in-flight.
+              // An unapplied DENY is NOT one: it is a removal already
+              // durably applied at the boundary (a settled withdrawal —
+              // F15 R4: "a deny is not a failure"; the seed's truth
+              // decides, the observed F15 R4 shape 'unknown probe → row-
+              // seed feeds available'). Liveness ((A)'s adjudication, cited
+              // verbatim as the ruling's own consumer-audit clause):
+              // "PENDING means IN-FLIGHT ONLY (… must never be a state
+              // that only the blocked action itself can settle) … the seed
+              // 2-state is the only liveness-correct behavior" — an
+              // unapplied DENY in another cell of the same team settles
+              // ONLY if the blocked action itself is admitted (that cell's
+              // own request boundary runs), so it is precisely the excluded
+              // shape. OBSERVED, never inferred: the live state of this
+              // session (no fiber, no failed slot, view allowed:false)
+              // contributes nothing; the durable deny is not a live
+              // observation. SHARED CONTRACT (implemented in the PR-F F.4
+               // A' follow-up): `recordAdmitsCapability`
+               // (packages/runtime/mutation/cell-provenance.ts) is the
+               // same ADMIT-kind reading — an ALLOW-kind entry naming at
+               // least one value; a deny-kind entry is a settled
+               // withdrawal, never a pending grant; key-presence alone
+               // was never admission. This probe-side filter is the
+               // PER-SERVER reading of that contract (it additionally
+               // requires the admitted `items` to name THIS server or the
+               // `'*'` wildcard); the read surface shares the KIND
+               // reading.
+              const pendingAdmits =
+                Array.isArray(pendingRecords) &&
+                pendingRecords.some((record) => {
+                  const values =
+                    record !== null && typeof record === 'object'
+                      ? (record as { readonly values?: unknown }).values
+                      : undefined
+                  const mcp =
+                    values !== null && typeof values === 'object'
+                      ? (values as Record<string, unknown>)['mcp']
+                      : undefined
+                  if (
+                    mcp === null ||
+                    typeof mcp !== 'object' ||
+                    (mcp as { readonly kind?: unknown }).kind !== 'allow'
+                  ) {
+                    return false
+                  }
+                  const items = (mcp as { readonly items?: unknown }).items
+                  return (
+                    Array.isArray(items) &&
+                    (items.includes(name) || items.includes(MCP_FACET_WILDCARD))
+                  )
+                })
+              if (
+                (serverView !== undefined && serverView !== null && serverView.allowed === true) ||
+                pendingAdmits
+              ) {
+                inFlight = true
+              }
+            } catch {
+              // A view that cannot be resolved (a data fault, not a normal
+              // state — the P1-B locate/bound-blueprint failure is loud):
+              // the in-flight signal stands (fail-closed — the exemption is
+              // never inferred from doubt).
+              inFlight = true
+            }
+          }
+          if (confirmedLoss && !anyReachable) {
+            return {
+              verdict: PROBE_VERDICTS.unreachable,
+              reason: 'MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN',
+            }
+          }
+          if (anyReachable) return { verdict: PROBE_VERDICTS.reachable }
+          if (mountFailed) return { verdict: PROBE_VERDICTS.unreachable }
+          // The unsettled verdict carries its observation state (the PF-2
+          // tri-state — explicit for both states: the state is OBSERVED
+          // here, the classifier predicate consumes it, never infers it).
+          return inFlight
+            ? { verdict: PROBE_VERDICTS.unknown, observationState: OBSERVATION_STATES.inFlight }
+            : { verdict: PROBE_VERDICTS.unknown, observationState: OBSERVATION_STATES.neverObserved }
+        },
+      },
+    },
+    now: () => new Date().toISOString(),
+  })
+  // The member materialization view of one template/instance boundary (the
+  // glue's EPHEMERAL live MCP state — the durable telemetry is never read
+  // back). No committed v1 MemberInstance row for the boundary → `undefined`
+  // (a cold / not-yet-created member: the materialization axis derives
+  // `not-applicable`, which MUST NOT block, guide §2.3/§2.5.4). The v2
+  // Leader rows (no childSessionId) are filtered out of the match.
+  const memberMaterialization = (
+    scope: RequirementFactScope,
+  ): Promise<MemberMaterializationView | undefined> => {
+    if (scope.kind !== 'template') return Promise.resolve(undefined)
+    const member = domain.repositories.memberInstances
+      .list(resolvedRowConfig.rootSessionId)
+      .find(
+        (record) =>
+          record.schemaVersion === 1 &&
+          record.templateId === scope.templateId &&
+          (scope.instanceId === undefined || record.instanceId === scope.instanceId),
+      )
+    if (member === undefined) return Promise.resolve(undefined)
+    const childSessionId = member.childSessionId
+    const liveness: MemberLiveness = live.hasLive(childSessionId)
+      ? live.isResuming(childSessionId)
+        ? MEMBER_LIVENESS.resuming
+        : MEMBER_LIVENESS.resident
+      : MEMBER_LIVENESS.cold
+    const state = live.getConsumptionState(childSessionId) as
+      | { readonly mcpMaterialization?: ReadonlyMap<string, MaterializationSlot> }
+      | undefined
+    const mcpSlots = new Map<string, MaterializationSlot>()
+    if (state !== undefined && state !== null && state.mcpMaterialization !== undefined) {
+      for (const [serverName, slot] of state.mcpMaterialization) {
+        mcpSlots.set(serverName, slot)
+      }
+    }
+    return Promise.resolve({ liveness, mcpSlots })
+  }
+  const requirementFactsAuthority = {
+    provider: createRuntimeRequirementFactsProvider({
+      // The MCP supply axis (guide §2.3): the row's configured MCP servers —
+      // an UNCONFIGURED required MCP is `unreachable` by configuration
+      // (a structural defect: recovery is reconfiguration, not a wait).
+      configuredMcpServers: configuredMcpServers(resolvedRowConfig).map((server) => server.name),
+      // The 3-state live readiness probe (fresh per resolution — the
+      // restart `unknown` recovery is the port's contract, plan §C.10).
+      readiness: capabilityReadiness,
+      // The row `config.environmentFacts` — a BOOTSTRAP/STATIC SEED ONLY
+      // (guide §2.3): it feeds the engine only for subjects whose live
+      // verdict is `unknown` and never overrides a live verdict.
+      seedFacts: resolvedRowConfig.environmentFacts,
+      // The live runtime substrate plan (the persona domain — the
+      // production observer, F14 closed seam).
+      substratePlan: () => resolveSubstratePlan(),
+      // The member materialization view (the template/instance boundary —
+      // the glue's ephemeral live MCP state).
+      memberMaterialization,
+      now: () => new Date().toISOString(),
+    }),
+    readiness: capabilityReadiness,
+    resolveSubstratePlan,
+    observePersonaKind: (presetId: string) => personaObserver.observe(presetId),
+  }
 
   // --- the frozen legacy reader (A29): layout-agnostic candidate search, --
   // --- production layout FIRST; the root never imports the legacy sources
@@ -1553,8 +2171,21 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // readiness — the mounted remote dispatcher gates the non-catalog
     // methods on it (the mount happens BEFORE the live boot is awaited).
     remoteReadiness: () => teamRuntimeReadiness,
+    // pre-alpha3 W2-A (review fix F1, guide §2.3): the runtime
+    // requirement-facts authority (the #40 live environment source for the
+    // RequirementAuthority — the #42 consumer switching, W3-A, reads it off
+    // the root surface: the gate's BLOCK/OPEN decision consumes the 3-state
+    // `observations` of `resolveFacts`, the 2-state feed keeps the engine's
+    // fingerprint/ack machinery).
+    requirementFacts: requirementFactsAuthority,
   })
   root = builtRoot
+  // pre-alpha3 PR-B (plan §B.2): the production PolicyReader reference is
+  // filled NOW (the glue's lazy read sees it from the next boundary on —
+  // the boot window before this line is unreachable for Team agent
+  // boundaries: the remote surface is not servable until the boot is
+  // armed, and the boot preload below runs after this point).
+  policyReaderRef.current = builtRoot.policyReader
 
   // --- strict-read + core-spill (Phase E, implementation guide §4/§13)
   // --- one artifact-read authority per production root, built over the
@@ -1831,6 +2462,17 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     },
     get config(): TeamPluginConfig {
       return requireRoot().config
+    },
+    // pre-alpha3 W3-B (review fix F7, guide §6): the production
+    // requirement-fact writers (the durable consent grant + the template
+    // disable/enable) — the human resolution channel of the creation
+    // preflight. The root is assigned BEFORE the boot, so the getter
+    // stays live even when the boot create's preflight REFUSES the bind
+    // (a boot failure is terminal — the human resolves through THIS
+    // channel and re-drives the row's boot; the writer's facts are
+    // durable + restart-proof).
+    get requirementAuthority(): TeamProductionRoot['requirementAuthority'] {
+      return requireRoot().requirementAuthority
     },
     get remote(): RemoteMountState | undefined {
       return remoteMountState

@@ -1,0 +1,47 @@
+{
+  "lateError": {
+    "code": "CONTROL_REQUEST_ABANDONED",
+    "message": "ControlService: request 'ctrl-1m3t1db1r8la8e19368id1y3' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+    "details": {
+      "method": "team.resolveControl",
+      "endpoint": "team.resolveControl",
+      "contractVersion": 4,
+      "requestToken": null,
+      "reason": "domain-error",
+      "cause": {
+        "code": "CONTROL_REQUEST_ABANDONED",
+        "message": "ControlService: request 'ctrl-1m3t1db1r8la8e19368id1y3' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+        "details": {
+          "rootSessionId": "session-prereq-main-prereq-2026-09-30T03-07-57",
+          "requestId": "ctrl-1m3t1db1r8la8e19368id1y3"
+        }
+      }
+    }
+  },
+  "lateBody": {
+    "type": "server-response",
+    "rpcId": "b3c-late-allow-57e9e357",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "CONTROL_REQUEST_ABANDONED",
+        "message": "ControlService: request 'ctrl-1m3t1db1r8la8e19368id1y3' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+        "details": {
+          "method": "team.resolveControl",
+          "endpoint": "team.resolveControl",
+          "contractVersion": 4,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "CONTROL_REQUEST_ABANDONED",
+            "message": "ControlService: request 'ctrl-1m3t1db1r8la8e19368id1y3' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+            "details": {
+              "rootSessionId": "session-prereq-main-prereq-2026-09-30T03-07-57",
+              "requestId": "ctrl-1m3t1db1r8la8e19368id1y3"
+            }
+          }
+        }
+      }
+    }
+  }
+}

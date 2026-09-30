@@ -11,7 +11,7 @@
  *    cross-version field leakage in either direction);
  *  - v2 `team.create`: the closed v2 set (rootSessionId, blueprintId,
  *    blueprintRevision?, workspace?) is legal, `workspace` is forwarded
- *    to the `teamCreateV2` port, `initialWork` is unknown-field, v2
+ *    to the `teamCreateWorkspace` port, `initialWork` is unknown-field, v2
  *    responses reuse the v1 shape `{ path, durable, bind }`;
  *  - v2-only `team.admitInitialWork`: legal params forward verbatim to
  *    the port (token echo in provenance), malformed negatives (empty
@@ -120,7 +120,7 @@ const RT = await (async () => {
   const v1Calls: (string | number | undefined | Record<string, unknown>)[][] = []
   const v1RecordingDispatcher = createRemoteDispatcher(
     makeFakePorts({
-      teamCreate: {
+      teamCreateEmbeddedWork: {
         create(
           rootSessionId: string,
           blueprintId: string,
@@ -285,7 +285,7 @@ const RT = await (async () => {
   // Out-of-vocabulary backing error: a Node-style filesystem failure.
   const outOfVocabulary = createRemoteDispatcher(
     makeFakePorts({
-      teamCreateV2: {
+      teamCreateWorkspace: {
         create(): RemoteSafeRecord {
           const error = new Error("ENOENT: no such file or directory, open 'C:\\secret\\workspace'")
           ;(error as Error & { code: string }).code = 'ENOENT'
@@ -378,7 +378,7 @@ describe('TCM M1: v1 wire behavior is preserved (byte-compatible)', () => {
 // ---------------------------------------------------------------------------
 
 describe('TCM M1: v2 team.create (the workspace-aware variant)', () => {
-  it('v2 create → success, served by the teamCreateV2 port (never the v1 port)', () => {
+  it('v2 create → success, served by the teamCreateWorkspace port (never the v1 port)', () => {
     expectSuccess(RT.v2CreateMinimal)
     // The v2 port label is present; the v1 port label is ABSENT (the v1
     // create port was never invoked by any v2 request).

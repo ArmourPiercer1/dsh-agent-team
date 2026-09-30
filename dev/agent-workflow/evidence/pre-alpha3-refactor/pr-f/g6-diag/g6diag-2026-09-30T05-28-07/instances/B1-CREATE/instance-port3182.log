@@ -1,0 +1,13 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+[dsh-agent-team] bootstrap FAILED: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/packages/runtime/dist/packages/runtime/root-binding/harness/seam.mjs' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/packages/runtime/dist/packages/runtime/src/plugin/host.js
+    at finalizeResolution (node:internal/modules/esm/resolve:272:11)
+    at moduleResolve (node:internal/modules/esm/resolve:879:10)
+    at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    at nextResolve (node:internal/modules/esm/hooks:785:28)
+    at resolve (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/packages/runtime/src/plugin/upstream-resolver.mjs:127:12)
+    at nextResolve (node:internal/modules/esm/hooks:785:28)
+    at AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+    at handleMessage (node:internal/modules/esm/worker:251:24)
+    at Immediate.checkForMessages (node:internal/modules/esm/worker:193:28)
+    at process.processImmediate (node:internal/timers:574:21)
+dsh web: http://127.0.0.1:3182/?token=4Y5hnoFB7QGtiPHwlfPXJIzj5jfDB2eJ1TwH_ssNaz4

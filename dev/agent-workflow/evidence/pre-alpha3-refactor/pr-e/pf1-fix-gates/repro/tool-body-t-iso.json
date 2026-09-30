@@ -1,0 +1,31 @@
+{
+ "ok": true,
+ "value": {
+  "status": "rejected",
+  "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+  "message": "activation: the team scope is blocked (a required requirement is down) — admission is blocked (invariant 50)",
+  "details": {
+   "source": "activation-provider",
+   "providerCode": "ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
+   "rootSessionId": "session-prereq-iso-prereq-2026-09-29T20-52-08",
+   "status": "BLOCKED_FATAL",
+   "gateReason": "requiredScopeDown",
+   "blockedScopes": [
+    "team"
+   ],
+   "fingerprint": "fp-v1:e62e9e84ae6782d2",
+   "generation": 6,
+   "reprobed": true,
+   "requirements": [
+    {
+     "requirementId": "team.mcp.repo",
+     "outcome": "FATAL",
+     "reasonCode": "SCOPE_BLOCKED"
+    }
+   ],
+   "unavailableSubjects": [
+    "mcp_repo"
+   ]
+  }
+ }
+}

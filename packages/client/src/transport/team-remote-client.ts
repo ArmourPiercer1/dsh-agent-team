@@ -9,18 +9,26 @@
  * `RemoteResponse` (frozen `code` / `details` / `provenance` intact) is
  * returned as-is, never exception-ified.
  *
- * Version stamping (TCM vNext §15.3) is also exclusive to this module:
- * every existing wrapper stamps contract version 1 (frozen v1 wire
- * behavior); ONLY `teamCreateV2` and `teamAdmitInitialWorkV2` stamp
- * contract version 2, the two D1 v3 wrappers stamp contract version 3,
- * `teamResolveControlV4` (F3/F11/F9/T1.4 repair round r1 F9) stamps
- * contract version 4, `teamPrepareOrdinaryOpenV5` (C1
- * restart-0.1.7-rc.1 recovery, guide §10.2) stamps contract version 5,
- * the v6 wrappers stamp contract version 6, and — pre-alpha3 W1 fix-A
- * (F10) — `overrideSet` / `overrideReset` stamp contract version 7
- * (the version-aware override mutation closed sets gain the optional
- * `expectedGeneration` slot-guard; ABSENT = the byte-for-byte v1
- * behavior, PRESENT = the Governance optimistic guard).
+ * Version stamping (TCM vNext §15.3) is ALSO exclusive to this module —
+ * it is the client REMOTE WRAPPER BOUNDARY, one of the three closed
+ * places a wire contract version may appear (pre-alpha3 PR-F plan §F.3;
+ * the other two are the remote contracts semantic adapter and the
+ * dispatch transport adapter). Every OTHER client module calls the
+ * SEMANTIC wrappers below and never sees a version number: the generic
+ * {@link call} and the two frozen-wire legacy wrappers
+ * ({@link teamCreateEmbeddedWork}, {@link getProjectionLegacy}) stamp
+ * contract version 1 (frozen v1 wire behavior); {@link teamCreate} and
+ * {@link teamAdmitInitialWork} stamp contract version 2;
+ * {@link listRoots} and {@link ensureRootLive} stamp contract version 3;
+ * {@link resolveControl} (F3/F11/F9/T1.4 repair round r1 F9) stamps
+ * contract version 4; {@link prepareOrdinaryOpen} (C1
+ * restart-0.1.7-rc.1 recovery, guide §10.2) stamps contract version 5;
+ * {@link getProjection} (the projection freshness pair) and
+ * {@link getReadState} stamp contract version 6; and — pre-alpha3 W1
+ * fix-A (F10) — {@link overrideSet} / {@link overrideReset} stamp
+ * contract version 7 (the version-aware override mutation closed sets
+ * gain the optional `expectedGeneration` slot-guard; ABSENT = the
+ * byte-for-byte v1 behavior, PRESENT = the Governance optimistic guard).
  *
  * Failure discipline (frozen `RemotePushTransport` contract, mirrored
  * here for the unary path): every RPC-level outcome arrives as a typed
@@ -51,6 +59,10 @@ import {
   REMOTE_CONTRACT_VERSION_V7,
   REMOTE_RPC_CHANNEL,
   PushTransportLossError,
+  assessProjectionSync,
+  assessProjectionSyncV6,
+  extractPushFrame,
+  extractPushFrameV6,
   type RemoteContractVersion,
   type RemoteCatalogGetParams,
   type RemoteCompatibilityAckParams,
@@ -76,6 +88,7 @@ import {
   type RemoteTeamAdmitInitialWorkParams,
   type RemoteTeamResolveControlParams,
 } from '../../../remote/src/index.js'
+import type { ProjectionStoreBindings } from '../state/team-projection-store.js'
 import type { TeamRpcCarrier, TeamRpcResult } from './host-seams.js'
 
 /**
@@ -85,23 +98,28 @@ import type { TeamRpcCarrier, TeamRpcResult } from './host-seams.js'
  * `team.listRoots` / `team.ensureRootLive` + the v4-only
  * `team.resolveControl` + the v5-only `team.prepareOrdinaryOpen` + the
  * v6-only `team.getReadState`; the v6 projection wrapper
- * {@link getProjectionV6} re-addresses the v1 `team.getProjection`
+ * {@link getProjection} re-addresses the v1 `team.getProjection`
  * endpoint with the v6 freshness pair).
  *
- * **Version routing (TCM vNext §15.3)**: every EXISTING wrapper stamps
- * contract version **1** (the frozen v1 wire behavior — unchanged); the
- * two v2 wrappers — {@link teamCreateV2} and
- * {@link teamAdmitInitialWorkV2} — stamp contract version **2**; the two
- * v3 wrappers — {@link teamListRootsV3} and {@link teamEnsureRootLiveV3}
- * — stamp contract version **3** (Team D1-D6 repair v2, D1); the v4
- * wrapper — {@link teamResolveControlV4} — stamps contract version **4**
- * (F3/F11/F9/T1.4 repair round r1 F9); the v5 wrapper —
- * {@link teamPrepareOrdinaryOpenV5} — stamps contract version **5** (C1
- * restart-0.1.7-rc.1 recovery, guide §10.2); the v6 wrappers —
- * {@link getProjectionV6} and {@link getReadStateV6} — stamp contract
- * version **6** (team-view-sync-complete: the projection freshness pair
- * + the per-session durable read-state query). The generic {@link call}
- * also defaults to version 1.
+ * **Version routing (TCM vNext §15.3, pre-alpha3 PR-F plan §F.3)**: the
+ * wrapper NAMES are semantic — the version is an internal detail of each
+ * wrapper (the client remote wrapper boundary is the ONLY client place a
+ * version literal appears). The v6 wrappers — {@link getProjection} and
+ * {@link getReadState} — stamp contract version **6** (team-view-sync-
+ * complete: the projection freshness pair + the per-session durable
+ * read-state query); the v5 wrapper — {@link prepareOrdinaryOpen} —
+ * stamps contract version **5** (C1 restart-0.1.7-rc.1 recovery, guide
+ * §10.2); the v4 wrapper — {@link resolveControl} — stamps contract
+ * version **4** (F3/F11/F9/T1.4 repair round r1 F9); the two v3
+ * wrappers — {@link listRoots} and {@link ensureRootLive} — stamp
+ * contract version **3** (Team D1-D6 repair v2, D1); the two v2
+ * wrappers — {@link teamCreate} (the workspace-aware create, the current
+ * product create) and {@link teamAdmitInitialWork} — stamp contract
+ * version **2**; and the frozen-wire legacy wrappers —
+ * {@link teamCreateEmbeddedWork} (the v1 `team.create` field set) and
+ * {@link getProjectionLegacy} (the v1 `team.getProjection` frozen shape)
+ * — plus the generic {@link call} stamp contract version **1** (the
+ * frozen v1 wire behavior, unchanged).
  */
 export interface TeamRemoteClient {
   /**
@@ -119,8 +137,14 @@ export interface TeamRemoteClient {
    * @returns the typed `RemoteResponse`; rejects only on channel loss.
    */
   call(method: string, params: object): Promise<RemoteResponse>
-  /** `team.getProjection` — the whole-projection pull (frozen G8 feed). */
-  getProjection(teamSessionId: string): Promise<RemoteResponse>
+  /**
+   * `team.getProjection` — the whole-projection pull over the FROZEN
+   * `base` wire shape (the exact nine-field `TeamProjectionDto`, no
+   * freshness cells — the legacy wire wrapper; the current product pull
+   * is {@link getProjection}, which serves the `live` shape with the
+   * `durableGeneration` + `liveToken` pair). Stamps contract version 1.
+   */
+  getProjectionLegacy(teamSessionId: string): Promise<RemoteResponse>
   /**
    * `team.getLedgerPage` — one anchored durable ledger page.
    * @param teamSessionId - the TeamSession (root DSH session) id.
@@ -142,22 +166,22 @@ export interface TeamRemoteClient {
    * `team.create` (contract v1) — materialize a fresh TeamSession.
    * Stamps contract version 1 (frozen v1 wire behavior).
    */
-  teamCreate(params: RemoteTeamCreateParams): Promise<RemoteResponse>
+  teamCreateEmbeddedWork(params: RemoteTeamCreateParams): Promise<RemoteResponse>
   /**
    * `team.create` (contract v2, TCM vNext §15.6) — the workspace-aware
    * creation variant. CREATE-ONLY: the closed v2 field set carries
    * `workspace?` and NO `initialWork` (the creation-time initial work is
-   * issued with {@link teamAdmitInitialWorkV2} after the root is open).
+   * issued with {@link teamAdmitInitialWork} after the root is open).
    * Stamps contract version 2.
    */
-  teamCreateV2(params: RemoteTeamCreateParamsV2): Promise<RemoteResponse>
+  teamCreate(params: RemoteTeamCreateParamsV2): Promise<RemoteResponse>
   /**
    * `team.admitInitialWork` (contract v2, v2-only method, TCM vNext
    * §15.6) — admit the creation-time initial work for one root through
    * the Team compatibility/admission authority (idempotent per
    * `(rootSessionId, requestToken)`). Stamps contract version 2.
    */
-  teamAdmitInitialWorkV2(params: RemoteTeamAdmitInitialWorkParams): Promise<RemoteResponse>
+  teamAdmitInitialWork(params: RemoteTeamAdmitInitialWorkParams): Promise<RemoteResponse>
   /**
    * `team.listRoots` (contract v3, v3-only method, Team D1-D6 repair v2
    * D1) — the durable ownership / root-identity query. No fields (closed
@@ -166,7 +190,7 @@ export interface TeamRemoteClient {
    * (`{ rootSessionId, blueprintId, revision, defaultWorkspace?,
    * createdAt, generation, memberCount }`). Stamps contract version 3.
    */
-  teamListRootsV3(): Promise<RemoteResponse>
+  listRoots(): Promise<RemoteResponse>
   /**
    * `team.ensureRootLive` (contract v3, v3-only method, Team D1-D6 repair
    * v2 D1) — the explicit open-in-Team-mode guarantee for one persisted
@@ -178,7 +202,7 @@ export interface TeamRemoteClient {
    * silent success. Stamps contract version 3.
    * @param teamSessionId - the TeamSession (root session) id to guarantee.
    */
-  teamEnsureRootLiveV3(teamSessionId: string): Promise<RemoteResponse>
+  ensureRootLive(teamSessionId: string): Promise<RemoteResponse>
   /**
    * `team.resolveControl` (contract v4, v4-only method, F3/F11/F9/T1.4
    * repair round r1 F9) — the human ingress of the durable control
@@ -193,7 +217,7 @@ export interface TeamRemoteClient {
    * policy) arrives as the typed `RemoteResponse` error. Stamps contract
    * version 4.
    */
-  teamResolveControlV4(params: RemoteTeamResolveControlParams): Promise<RemoteResponse>
+  resolveControl(params: RemoteTeamResolveControlParams): Promise<RemoteResponse>
   /**
    * `team.prepareOrdinaryOpen` (contract v5, v5-only method, C1
    * restart-0.1.7-rc.1 recovery — guide §10.2) — the narrow one-shot
@@ -211,7 +235,7 @@ export interface TeamRemoteClient {
    * @param teamSessionId - the TeamSession (root session) id whose
    *   ordinary open to permit.
    */
-  teamPrepareOrdinaryOpenV5(teamSessionId: string): Promise<RemoteResponse>
+  prepareOrdinaryOpen(teamSessionId: string): Promise<RemoteResponse>
   /**
    * `team.getProjection` (contract v6, team-view-sync-complete) — the
    * whole-projection pull WITH the v6 freshness pair: on success
@@ -223,10 +247,21 @@ export interface TeamRemoteClient {
    * generation advances the durable view (ledger refresh); an equal
    * durable generation with a changed live token refreshes the live
    * overlay only (no ledger refresh); both equal is a duplicate.
-   * Stamps contract version 6 (the v1 wrapper {@link getProjection}
+   * Stamps contract version 6 (the v1 wrapper {@link getProjectionLegacy}
    * keeps stamping version 1 — v1–v5 wire behavior is unchanged).
    */
-  getProjectionV6(teamSessionId: string): Promise<RemoteResponse>
+  getProjection(teamSessionId: string): Promise<RemoteResponse>
+  /**
+   * The projection store's semantic bindings bound to the
+   * freshness-pair pull ({@link getProjection}) — the pull itself plus
+   * the WRAPPER-BOUND semantic assessor + frame extractor of that
+   * pull's wire contract (pre-alpha3 PR-F plan §F.3: this wrapper is
+   * the only client place the wire version may appear; the projection
+   * store it feeds stays contract-free). Stable for the client's
+   * lifetime (a frozen record — safe to pass straight into the store
+   * options).
+   */
+  readonly projectionBindings: ProjectionStoreBindings
   /**
    * `team.getReadState` (contract v6, v6-only method,
    * team-view-sync-complete) — the per-session durable read-state
@@ -240,7 +275,7 @@ export interface TeamRemoteClient {
    * `none`). Stamps contract version 6.
    * @param sessionId - the DSH session id to classify.
    */
-  getReadStateV6(sessionId: string): Promise<RemoteResponse>
+  getReadState(sessionId: string): Promise<RemoteResponse>
   /** `member.create` — admit one member instance. */
   memberCreate(params: RemoteMemberCreateParams): Promise<RemoteResponse>
   /** `member.send` — first message to a member instance. */
@@ -294,6 +329,78 @@ export interface TeamRemoteClient {
 }
 
 /**
+ * The SEMANTIC store bindings of the FRESHNESS-PAIR projection pull
+ * (the wire contract of {@link TeamRemoteClient.getProjection}): the
+ * frozen pair assessor / extractor bound under their SEMANTIC names —
+ * this wrapper is the single client place the wire version appears
+ * (pre-alpha3 PR-F plan §F.3: de-versioning of the client core; the
+ * projection store consumes these bindings and carries no version of
+ * its own). The mapping from the store's version-agnostic
+ * applied-identity view to the frozen assessor's pair identity
+ * preserves the frozen NULL semantics exactly: the pair identity is
+ * `null` until the applied frame carries BOTH cells (the assessor's
+ * first-frame case).
+ */
+export const freshnessPairProjectionBindings: Omit<
+  ProjectionStoreBindings,
+  'getProjection'
+> = {
+  assessProjectionSync: (applied, response) =>
+    assessProjectionSyncV6(
+      applied.teamSessionId === null ||
+      applied.generation === null ||
+      applied.liveToken === null
+        ? null
+        : {
+            teamSessionId: applied.teamSessionId,
+            durableGeneration: applied.generation,
+            liveToken: applied.liveToken,
+          },
+      response,
+    ),
+  extractPushFrame: (response) => {
+    const frame = extractPushFrameV6(response)
+    return {
+      // (frozen behavior preserved) the legacy-shape fallback of the
+      // apply path — unreachable by the frozen pair contract (apply
+      // ⟹ usable pair frame); the store's inconsistent guard stands
+      // behind it.
+      frame: frame ?? extractPushFrame(response),
+      durableGeneration: frame === null ? null : frame.projection.durableGeneration,
+      liveToken: frame === null ? null : frame.projection.liveToken,
+    }
+  },
+}
+
+/**
+ * The SEMANTIC store bindings of the GENERATION-ONLY projection pull
+ * ({@link TeamRemoteClient.getProjectionLegacy}): the frozen
+ * generation-only assessor / extractor under their semantic names —
+ * the frozen v1–v5 behavior, byte-identical. The durability facts stay
+ * `null`: the store's stale-apply guard remains inert exactly as before
+ * the pair existed. The frozen identity's `null` semantics are
+ * preserved exactly: the identity is `null` only while the session is
+ * unbound (before the first applied frame), matching the pre-pair
+ * store behavior.
+ */
+export const generationOnlyProjectionBindings: Omit<
+  ProjectionStoreBindings,
+  'getProjection'
+> = {
+  assessProjectionSync: (applied, response) =>
+    assessProjectionSync(
+      applied.teamSessionId === null
+        ? null
+        : { teamSessionId: applied.teamSessionId, generation: applied.generation },
+      response,
+    ),
+  extractPushFrame: (response) => {
+    const frame = extractPushFrame(response)
+    return { frame, durableGeneration: null, liveToken: null }
+  },
+}
+
+/**
  * Create the Team Remote client bound to one seam carrier.
  * @param carrier - the public unary RPC carrier (Seam 5; structurally
  *   `ClientConnectionRpc` of the served web app).
@@ -334,40 +441,55 @@ export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClien
     return result
   }
 
-  // TCM vNext §15.3: the public generic `call` STAMPS CONTRACT VERSION 1
-  // (the frozen default — the client defaults every existing method to
-  // v1); only the two V2 wrappers below stamp version 2.
+  // TCM vNext §15.3 (pre-alpha3 PR-F: this module is the client remote
+  // wrapper boundary — the ONLY client place a version literal appears):
+  // the public generic `call` STAMPS CONTRACT VERSION 1 (the frozen
+  // default); every other wrapper above stamps its wire version here.
   const call = (method: string, params: object): Promise<RemoteResponse> =>
     callWithVersion(method, params, REMOTE_CONTRACT_VERSION)
 
+  // team-view-sync-complete (remote contract v6) — the v6 freshness-pair
+  // projection pull (the v6 handler answers the SAME endpoint with the
+  // `durableGeneration` + `liveToken` cells inside data.projection). The
+  // pull is named so the wrapper-bound semantic store bindings below
+  // bind to the SAME function the public wrapper exposes (pre-alpha3
+  // PR-F §F.3: one pull, one contract, one binding — the store stays
+  // contract-free).
+  const projectionPull = (teamSessionId: string): Promise<RemoteResponse> =>
+    callWithVersion('team.getProjection', { teamSessionId }, REMOTE_CONTRACT_VERSION_V6)
+  const projectionBindings: ProjectionStoreBindings = {
+    getProjection: projectionPull,
+    ...freshnessPairProjectionBindings,
+  }
+
   return {
     call,
-    getProjection: (teamSessionId) => call('team.getProjection', { teamSessionId }),
+    getProjectionLegacy: (teamSessionId) => call('team.getProjection', { teamSessionId }),
     getLedgerPage: (teamSessionId, afterSequence = 0, limit = 50) =>
       call('team.getLedgerPage', { teamSessionId, afterSequence, limit }),
     catalogList: () => call('catalog.list', {}),
     catalogGet: (params) => call('catalog.get', params),
     intentProbe: (params) => call('intent.probe', params),
-    teamCreate: (params) => call('team.create', params),
-    teamCreateV2: (params) => callWithVersion('team.create', params, REMOTE_CONTRACT_VERSION_V2),
-    teamAdmitInitialWorkV2: (params) =>
+    teamCreateEmbeddedWork: (params) => call('team.create', params),
+    teamCreate: (params) => callWithVersion('team.create', params, REMOTE_CONTRACT_VERSION_V2),
+    teamAdmitInitialWork: (params) =>
       callWithVersion('team.admitInitialWork', params, REMOTE_CONTRACT_VERSION_V2),
     // Team D1-D6 repair v2 D1 — the two v3-only wrappers (contract
     // version 3). `team.ensureRootLive` is inert until D2 (the host
     // handler arrives with D2; see the interface doc).
-    teamListRootsV3: () => callWithVersion('team.listRoots', {}, REMOTE_CONTRACT_VERSION_V3),
-    teamEnsureRootLiveV3: (teamSessionId) =>
+    listRoots: () => callWithVersion('team.listRoots', {}, REMOTE_CONTRACT_VERSION_V3),
+    ensureRootLive: (teamSessionId) =>
       callWithVersion('team.ensureRootLive', { teamSessionId }, REMOTE_CONTRACT_VERSION_V3),
     // F3/F11/F9/T1.4 repair round r1 F9 — the v4-only human control-
     // resolution command (contract version 4; the host derives the human
     // principal — the closed v4 param set carries no caller fields).
-    teamResolveControlV4: (params) =>
+    resolveControl: (params) =>
       callWithVersion('team.resolveControl', params, REMOTE_CONTRACT_VERSION_V4),
     // C1 restart-0.1.7-rc.1 recovery (guide §10.2) — the v5-only one-shot
     // ordinary-activation permit (contract version 5; a Team control-plane
     // RPC — NO Team ensure, NO Team Agent side effect, no revoke RPC: an
     // unconsumed permit expires by TTL).
-    teamPrepareOrdinaryOpenV5: (teamSessionId) =>
+    prepareOrdinaryOpen: (teamSessionId) =>
       callWithVersion(
         'team.prepareOrdinaryOpen',
         { teamSessionId },
@@ -376,13 +498,13 @@ export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClien
     // team-view-sync-complete (remote contract v6) — the v6 freshness-pair
     // projection pull (the v6 handler answers the SAME endpoint with the
     // `durableGeneration` + `liveToken` cells inside data.projection).
-    getProjectionV6: (teamSessionId) =>
-      callWithVersion('team.getProjection', { teamSessionId }, REMOTE_CONTRACT_VERSION_V6),
+    getProjection: projectionPull,
+    projectionBindings,
     // team-view-sync-complete (remote contract v6) — the v6-only
     // per-session durable read-state query (fail-closed on the host side:
     // a `none` only on positively confirmed no-affiliation; storage /
     // integrity failures arrive as the typed error).
-    getReadStateV6: (sessionId) =>
+    getReadState: (sessionId) =>
       callWithVersion('team.getReadState', { sessionId }, REMOTE_CONTRACT_VERSION_V6),
     memberCreate: (params) => call('member.create', params),
     memberSend: (params) => call('member.send', params),

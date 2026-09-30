@@ -1,0 +1,19 @@
+{
+  "inFlightSlot": null,
+  "failedSlot": {
+    "sessionId": "session-prereq-main-prereq-2026-09-30T03-07-57",
+    "mounted": false,
+    "materialization": "failed",
+    "attempts": 2,
+    "reason": "mcp-client(mcp_repo): initial connection or tool synchronization failed"
+  },
+  "slotsAtAdmit": [
+    {
+      "sessionId": "session-prereq-boot-prereq-2026-09-30T03-07-57",
+      "mounted": false,
+      "materialization": "pending",
+      "attempts": null,
+      "reason": null
+    }
+  ]
+}

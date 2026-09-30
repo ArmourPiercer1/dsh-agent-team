@@ -1,0 +1,21 @@
+{
+  "schema": [
+    "mcp__mcp-f15__ping"
+  ],
+  "toolResults": [
+    "pong:alpha"
+  ],
+  "slot": {
+    "mounted": true,
+    "materialization": "mounted",
+    "attempts": 1,
+    "reason": null,
+    "allowed": true,
+    "source": {
+      "layer": "template",
+      "origin": "static",
+      "recordId": null
+    }
+  },
+  "capEvents": []
+}

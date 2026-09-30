@@ -449,6 +449,51 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
           // server's tools from the agent scope.
           for (const dispose of activationDisposers) dispose()
         },
+        // F15 (MCP live-loss zero-core, plan §5 characterization seam):
+        // models the UPSTREAM post-budget-exhaustion supervisor effect at
+        // the public-seam level — the 0.1.7-rc.1 mcp-client connection
+        // supervisor doc (tests/deepseek-harness-test-use/packages/mcp/
+        // mcp-client/lib/types/connection.d.ts) documents: "Exhaustion
+        // unregisters the server's tools and stops; disposal (including
+        // HMR) is the only way back from that state." The withdrawal
+        // removes the server's tools from the agent scope WITHOUT
+        // disposing the handle (the fiber stays live — `disposed` stays
+        // false, `disposeCount` unchanged): the plugin's fiber-presence
+        // readiness probe (host.ts) therefore keeps answering
+        // `reachable` on a capability whose public tool surface is
+        // withdrawn — exactly the F15 gap under characterization. A
+        // test triggers this on the fiber record it read from the live
+        // state (`state.mcpFibers.get(name)`); the production mcp-client
+        // performs the equivalent through its own supervisor. ADDITIVE
+        // and inert for every pre-F15 world (no existing test calls it).
+        withdrawnToolCount: 0,
+        withdrawTools() {
+          this.withdrawnToolCount += activationDisposers.length
+          for (const dispose of activationDisposers.splice(0)) dispose()
+        },
+        // F15 (plan §9.4 re-sync transient): models the upstream
+        // `syncTools()` generation swap at the public-seam level — "dispose
+        // previous registrations → register new generation" (plan §7). The
+        // swap runs SYNCHRONOUSLY (as the upstream registry sync does within
+        // one connection turn): a boundary pull-probe taken after the swap
+        // observes the NEW generation's (non-empty) surface — a successful
+        // re-sync must NEVER be classified as a loss (the pin: no telemetry,
+        // no fiber retirement, the witness stays `reachable`). The previous
+        // registrations are unwound through the SAME disposers as the
+        // withdrawal, so the final surface is exactly the new names. The
+        // handle is NOT disposed (`disposed`/`disposeCount` unchanged) — a
+        // generation swap keeps the same live connection. ADDITIVE and
+        // inert for every pre-F15 world (no existing test calls it).
+        swapTools(newNames) {
+          for (const dispose of activationDisposers.splice(0)) dispose()
+          for (const name of newNames) {
+            const dispose = ctxSelf.tools.register({
+              name,
+              description: `mcp tool of server ${serverName}`,
+            })
+            activationDisposers.push(dispose)
+          }
+        },
         // `await fiber` (the glue's MCP-activation await) must settle exactly
         // once. The settled value is a NON-thenable (`undefined`): resolving
         // the adoption promise with `fiber` itself would re-enter this `then`
@@ -1049,12 +1094,35 @@ export function createSubagentsDouble(options = {}) {
  * the deployment default the service resolves itself); a configurable
  * rejection (the real service rejects on an unknown preset id).
  *
+ * pre-alpha3 W2-A (review fix F14, guide §5 B): the double also models the
+ * OBSERVATION surface the production persona path consumes (the verified
+ * 0.1.7-rc.1 public service shape — `defaultId` getter +
+ * `compositionInventory()` + `readDocument(presetId)`). The default world:
+ * the deployment default preset (`default`) declares the standard persona
+ * row (enabled) and its document carries NO `complete` flag — the
+ * production observer therefore observes `standard`, exactly the
+ * legacy-shipped-state behavior the pre-W2-A worlds already asserted
+ * (the difference: it is now OBSERVED, not guessed — guide §5 B).
+ *
  * @param {object} [options]
+ * @param {string} [options.defaultId] the deployment default preset id
+ *   (default: `'default'`)
  * @param {'reject'} [options.mountBehavior] reject the mount call
  * @param {string} [options.mountErrorMessage]
  */
 export function createAgentPresetsDouble(options = {}) {
   const mounts = []
+  const defaultId = options.defaultId ?? 'default'
+  // The deployment default preset's effective declared composition (the
+  // js-yaml entryListSchema dump shape — the registry readDocument body):
+  // the standard DSH persona plugin, enabled, no `complete` flag.
+  const defaultDocumentContent = [
+    '- id: agent-persona',
+    "  name: '@deepseek-ai/dsh-persona'",
+    '  config:',
+    '    prefix: You are a coding agent powered by the {{model}} model.',
+    "    suffix: 'Your working directory is {{cwd}}.'",
+  ].join('\n')
   return {
     mounts,
     mount(agentCtx, presetId) {
@@ -1062,7 +1130,41 @@ export function createAgentPresetsDouble(options = {}) {
       if (options.mountBehavior === 'reject') {
         return Promise.reject(new Error(options.mountErrorMessage ?? 'agent presets mount failed'))
       }
-      return Promise.resolve({ presetId: presetId ?? 'default' })
+      return Promise.resolve({ presetId: presetId ?? defaultId })
+    },
+    // F14 observation surface (the real service: a sync getter).
+    get defaultId() {
+      return defaultId
+    },
+    // F14 observation surface: the live presence/enablement inventory.
+    // The default world's deployment default preset carries the enabled
+    // persona row (everything else in the world's composition is
+    // persona-irrelevant and omitted — the observer only ever reads the
+    // persona row).
+    async compositionInventory() {
+      return [
+        {
+          id: defaultId,
+          isDefault: true,
+          rows: [
+            {
+              entryId: 'agent-persona',
+              moduleName: '@deepseek-ai/dsh-persona',
+              enabled: true,
+            },
+          ],
+        },
+      ]
+    },
+    // F14 observation surface: the effective declared composition document
+    // (the real service returns `{ agentPreset, content }`; unknown preset
+    // ids reject — the production observer maps that to a typed
+    // `unresolved`, never a guess).
+    async readDocument(presetId) {
+      if (presetId !== defaultId) {
+        return Promise.reject(new Error(`agentPresets.readDocument: unknown preset '${presetId}'`))
+      }
+      return { agentPreset: defaultId, content: defaultDocumentContent }
     },
   }
 }
@@ -1298,6 +1400,16 @@ export async function createLiveWorld(options = {}) {
     controlServiceRef,
     now,
     ...(options.subagents !== undefined ? { subagents: options.subagents } : {}),
+    // F15 (plan §11): the durable capability-runtime telemetry hook —
+    // the glue's `capabilityTelemetry` dep (a NO-OP when absent: a test
+    // world without durable telemetry omits it and every emit is
+    // silently dropped). A test supplies a recording double to assert
+    // the event stream (exactly one `capability-lost` on a confirmed
+    // loss, exactly one `mount-restored` on the fresh remount, and NO
+    // runtime-loss events from plugin-initiated removals).
+    ...(options.capabilityTelemetry !== undefined
+      ? { capabilityTelemetry: options.capabilityTelemetry }
+      : {}),
     ...(agentPresetsDouble !== null && agentPresetsDouble !== undefined
       ? { agentPresets: agentPresetsDouble }
       : {}),

@@ -26,6 +26,14 @@ export {
 } from './requirement.js'
 export type { Requirement, RequirementInput, RequirementType } from './requirement.js'
 
+// --- persona requirement kinds (pre-alpha3 PR-E, plan §E.3) ------------------
+export {
+  REQUIRED_PERSONA_KINDS,
+  REQUIRED_PERSONA_KIND_VALUES,
+  isRequiredPersonaKind,
+} from './requirement.js'
+export type { RequiredPersonaKind } from './requirement.js'
+
 // --- environment facts + fingerprints ----------------------------------------
 export {
   parseEnvironmentFact,

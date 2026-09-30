@@ -83,6 +83,23 @@ export type {
 } from './contracts/version.js'
 
 export {
+  TEAM_CREATE_FLAVORS,
+  TEAM_CREATE_FLAVOR_VALUES,
+  isTeamCreateFlavor,
+  teamCreateFlavorOf,
+  PROJECTION_SHAPES,
+  PROJECTION_SHAPE_VALUES,
+  isProjectionShape,
+  projectionShapeOf,
+  withLiveProjectionFreshness,
+} from './contracts/semantic.js'
+
+export type {
+  TeamCreateFlavor,
+  ProjectionShape,
+} from './contracts/semantic.js'
+
+export {
   REMOTE_CATEGORIES,
   REMOTE_CATEGORY_VALUES,
   REMOTE_METHOD_CATALOG,
@@ -289,8 +306,8 @@ export type {
 export type {
   RemoteCatalogPort,
   RemoteIntentPort,
-  RemoteTeamCreatePort,
-  RemoteTeamCreateV2Port,
+  RemoteTeamCreateEmbeddedWorkPort,
+  RemoteTeamCreateWorkspacePort,
   RemoteTeamAdmitInitialWorkPort,
   RemoteProjectionPort,
   RemoteLedgerPort,

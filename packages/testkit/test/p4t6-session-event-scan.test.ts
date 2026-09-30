@@ -49,7 +49,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration), and TCM-M1 adds its two v2-surface test files (remote versioned-contract dispatcher spec + runtime s6 production-dispatcher version-routing spec), and D2 (Team D1-D6 repair v2) adds its two v3-surface test files (runtime s6 ensureRootLive handler spec + client open-team-mode mount spec), recording the nine missed increments since the TCM-D4 pin, and D3 (Team D1-D6 repair v2) adds its one ordinary-mode client-mount spec, and A2 (alpha.2 canonical operation) adds its seven scannable operation-permission files (module core types + errors + canonical-operation + index, the fake-resolver unit spec, the real fs-local backend spec .mjs + its .d.mts type surface), recording the ten missed alpha.1 T1-T4 capability increments since the repair-r1 pin + the alpha.2 A1 permission-policy spec file + the A4 control exact-scope spec file + the A3 static resolver source and spec (int integration), and exec-autonomy-contract adds its two spec files (the domain leader-allow-lane contract spec + the runtime dual-gate spec), recording the two increments since the PR #18 pin, and the work-completion-wakeup adds its six scannable files (the runtime work-completion-notification module types + renderer + index, the pure-module spec, the live-glue spec, and the router-observer spec), and team-send-message-liveness adds its one acceptance-boundary regression spec and team-archive-member adds its one A1–A9 tool spec (packages/tools/test/archive-member-tool.test.ts) on the PR #25 merge, and strict-read-core-spill (PR #26 supplemental) adds its one pending-grant table source (runtime artifact-read pending.ts), and strict-read-core-spill (PR #26 final supplemental) adds its one composition override regression spec (runtime team-spill-local-composition.test.ts), and model-preference-routing (fix-model-preference-routing) adds its five scannable files (the runtime model token parser route.ts + the template model grant helper template-model.ts + the Gate B template-model-preference spec + the Gate D model-activation-step8 spec + the Gate E model-blueprint-initial-routing spec), and restart-recovery-017rc1 (task/team-restart-017rc1) adds its one v5 remote contract spec (remote c1-remote-v5.test.ts, the Commit-3 ordinary-open one-shot permit surface), recording the one missed Commit-3 increment since the Commit-2 pin, and restart-recovery-017rc1 supplemental (PR #31 fix round S1–S5) adds its two new scannable test files (runtime team-session-startup-fence H1/H2 spec + client s3-client-generation-spike evidence), recording the two missed supplement increments since the merge-union pin, and v4-work-completion-source (fix/v4-work-completion-source) adds its one live-glue producer-kind type declaration (runtime message-sources.d.ts, the MessageSourceMap augmentation for the producer-owned plugin:dsh-agent-team wake source), recording the one increment since the PR #31 pin, and team-projection-recovery-20260927 (fix/team-projection-recovery-20260927) adds its one compatibility-scope regression spec (runtime team-compatibility-scope.test.ts, the per-target-team compatibility prober scope), recording the one increment since the v4-work-completion-source pin, and team-view-sync-complete (fix/team-view-sync-complete-20260927) adds its ten v6-surface files (the runtime pure session read-state resolver + the pure live-token module and its three s6t specs (read-state resolver / live-token / s6 production-dispatcher v6), the remote pull-v6 pair assessor module and its c6 remote-v6 spec, and the client mount-level refresh coordinator module and its two v6 specs (projection store v6 identity + refresh coordinator)), recording the ten increments since the team-projection-recovery pin, and team-view-sync-complete (fix/team-view-sync-complete-20260927) PR #35 review follow-up adds its two read-state-driven refresh files (the client read-state model module + its outcome-matrix spec), recording the two increments since the v6-surface pin, and team-view-sync-complete (fix/team-view-sync-complete-20260927) PR #35 second follow-up adds its one Team-scoped overlay collision spec (runtime p01-team-scoped-overlay.test.ts, the two-team leader-collision unit over the real overlay + projection service + both token paths), recording the one increment since the review-follow-up pin, and pre-alpha3 PR-A (feat/pre-alpha3-pra-governance) adds its nine scannable files (the runtime governance mutation authority module — types/slot/service/index — plus its five governance test files: mutation-authority / concurrency / idempotence / reset-tombstone / restart), recording the nine increments since the PR-0 pin, and pre-alpha3 W1 fix-A (fix/pre-alpha3-w1a-governance) adds its three scannable test files (the runtime governance-stale-ui-generation spec (F10 optimistic override-generation conflict, zero write) + the runtime remote-override-expected-generation spec (F10 v7 contract surface: optional expectedGeneration on override.set/reset, v1–v6 reject the field) + the runtime policy-state-multi-team-bound-blueprint spec (F11 closed set from the bound Blueprint of the addressed team, shape-only Remote, typed POLICY_STATE_UNKNOWN via invariant 4b, no cross-root leak, restart preserves)), recording the three increments since the PR-A pin, and pre-alpha3 W1 fix-A (fix/pre-alpha3-w1a-governance) review round 2 adds its two scannable files (the runtime bound-blueprint resolver module (the B1 extraction: the three-case bound-Blueprint contract — missing row throws, no-ref legacy row = the row anchor by definition, bound ref through the authority) + the runtime policy-state-bound-blueprint-production-wiring spec (F11 production wiring: the real factory + the real createBlueprintAuthority + real TeamSessionRecordDto rows — S-mismatch typed POLICY_STATE_SNAPSHOT_MISMATCH via the service mapping, S-unresolvable typed MALFORMED_DTO, S-legacy-no-ref the documented legacy binding pinned)), recording the two increments since the 792 pin', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration), and TCM-M1 adds its two v2-surface test files (remote versioned-contract dispatcher spec + runtime s6 production-dispatcher version-routing spec), and D2 (Team D1-D6 repair v2) adds its two v3-surface test files (runtime s6 ensureRootLive handler spec + client open-team-mode mount spec), recording the nine missed increments since the TCM-D4 pin, and D3 (Team D1-D6 repair v2) adds its one ordinary-mode client-mount spec, and A2 (alpha.2 canonical operation) adds its seven scannable operation-permission files (module core types + errors + canonical-operation + index, the fake-resolver unit spec, the real fs-local backend spec .mjs + its .d.mts type surface), recording the ten missed alpha.1 T1-T4 capability increments since the repair-r1 pin + the alpha.2 A1 permission-policy spec file + the A4 control exact-scope spec file + the A3 static resolver source and spec (int integration), and exec-autonomy-contract adds its two spec files (the domain leader-allow-lane contract spec + the runtime dual-gate spec), recording the two increments since the PR #18 pin, and the work-completion-wakeup adds its six scannable files (the runtime work-completion-notification module types + renderer + index, the pure-module spec, the live-glue spec, and the router-observer spec), and team-send-message-liveness adds its one acceptance-boundary regression spec and team-archive-member adds its one A1–A9 tool spec (packages/tools/test/archive-member-tool.test.ts) on the PR #25 merge, and strict-read-core-spill (PR #26 supplemental) adds its one pending-grant table source (runtime artifact-read pending.ts), and strict-read-core-spill (PR #26 final supplemental) adds its one composition override regression spec (runtime team-spill-local-composition.test.ts), and model-preference-routing (fix-model-preference-routing) adds its five scannable files (the runtime model token parser route.ts + the template model grant helper template-model.ts + the Gate B template-model-preference spec + the Gate D model-activation-step8 spec + the Gate E model-blueprint-initial-routing spec), and restart-recovery-017rc1 (task/team-restart-017rc1) adds its one v5 remote contract spec (remote c1-remote-v5.test.ts, the Commit-3 ordinary-open one-shot permit surface), recording the one missed Commit-3 increment since the Commit-2 pin, and restart-recovery-017rc1 supplemental (PR #31 fix round S1–S5) adds its two new scannable test files (runtime team-session-startup-fence H1/H2 spec + client s3-client-generation-spike evidence), recording the two missed supplement increments since the merge-union pin, and v4-work-completion-source (fix/v4-work-completion-source) adds its one live-glue producer-kind type declaration (runtime message-sources.d.ts, the MessageSourceMap augmentation for the producer-owned plugin:dsh-agent-team wake source), recording the one increment since the PR #31 pin, and team-projection-recovery-20260927 (fix/team-projection-recovery-20260927) adds its one compatibility-scope regression spec (runtime team-compatibility-scope.test.ts, the per-target-team compatibility prober scope), recording the one increment since the v4-work-completion-source pin, and team-view-sync-complete (fix/team-view-sync-complete-20260927) adds its ten v6-surface files (the runtime pure session read-state resolver + the pure live-token module and its three s6t specs (read-state resolver / live-token / s6 production-dispatcher v6), the remote pull-v6 pair assessor module and its c6 remote-v6 spec, and the client mount-level refresh coordinator module and its two v6 specs (projection store v6 identity + refresh coordinator)), recording the ten increments since the team-projection-recovery pin, and team-view-sync-complete (fix/team-view-sync-complete-20260927) PR #35 review follow-up adds its two read-state-driven refresh files (the client read-state model module + its outcome-matrix spec), recording the two increments since the v6-surface pin, and team-view-sync-complete (fix/team-view-sync-complete-20260927) PR #35 second follow-up adds its one Team-scoped overlay collision spec (runtime p01-team-scoped-overlay.test.ts, the two-team leader-collision unit over the real overlay + projection service + both token paths), recording the one increment since the review-follow-up pin, and pre-alpha3 PR-A (feat/pre-alpha3-pra-governance) adds its nine scannable files (the runtime governance mutation authority module — types/slot/service/index — plus its five governance test files: mutation-authority / concurrency / idempotence / reset-tombstone / restart), recording the nine increments since the PR-0 pin, and pre-alpha3 PR-B (feat/pre-alpha3-prb-effective-policy) adds its ten scannable files (the runtime effective-policy canonical read module — packages/runtime/effective-policy/types.ts + reader.ts + select.ts + legacy.ts + activation-policy.ts + index.ts — plus its four specs: packages/runtime/test/effective-policy-single-source.test.ts / effective-policy-policy-state-live.test.ts / boundary-committed-applied.test.ts / restart-effective-policy.test.ts), recording the ten increments since the PR-A pin, and pre-alpha3 PR-D adds its seven control-generalization test files (subject normalization + template/team subject + inline review/abandon + review payload roundtrip + legacy row compat), and pre-alpha3 PR-D review-fix (fix/pre-alpha3-w1c-control) adds its three control-abandon review test files (the narrow-close-authority spec control-abandon-without-resolve-envelope + the remote unmapped-code spec remote-control-abandoned-code + the abandon durable-write fault spec control-abandon-storage-fault), recording the three increments since the PR-D pin, and pre-alpha3 PR-D fix round 3 (feat/pre-alpha3-prd-control-generalization) adds its one wait-abort cascade suite (runtime control-inline-wait-abort.test.ts, the S1-S7 coupling-aware cascade: the inline mid-wait + pre-abort aborts durably abandon the SAME request via the shared abandon write path, the guarded/legacy aborts stay byte-identical, the decision race wins, the faulted cascade rejects typed), recording the one increment since the PR-D review-fix pin, and pre-alpha3 PR #42 fold (feat/pre-alpha3-pre-e-requirement-recovery, merge 1 ab108388) folds in the D-fix line (fix/d-req-recovery @ e696823e): its fifty-eight scannable files accumulated since the 822 pin (the nine W2-A requirement-facts + production-persona-substrate files + the thirty-five superseding PR-E cutover files (3ccbfe82) + the fourteen W3-D fix files)), recording the fifty-eight increments since the PR-D round-3 pin, and pre-alpha3 PR #42 pass 3 adds its one per-blueprint-scoping spec (runtime requirement-probe-blueprint-scoping.test.ts, the PF-1 fix suite) and pass 3b adds its two D-1/D-3 decision-scoping files (the runtime requirement-facts pending.ts classifier module + the 37-test requirement-d1-d3-decision-scoping spec), recording the three increments since the merge-1 pin, and pre-alpha3 F15 (feat/pre-alpha3-f15-mcp-live-loss) adds its two MCP live-loss specs (runtime f15-mcp-live-loss-characterization.test.ts, the RED gap probe + the public-seam tool-withdrawal evidence) and its §9 unit-matrix spec (runtime f15-mcp-live-loss.test.ts, the L1 normal / §9.4 re-sync / L2 permanent loss / L6 idempotence / L7 remount recovery / L3 zero-tool / L4 deny / L5 close / §9.5 multi-MCP isolation legs + the §9.2 static reconnect-policy call-site witness), recording the two increments since the 886 pin, and pre-alpha3 PR-F (feat/pre-alpha3-prf-closure) adds its three re-landed scannable files (the remote contracts semantic adapter (semantic.ts, the F.3 version->semantic translation + the shared live-projection wire application) + the runtime internal test-world mutation kernel (mutation/internal/mutation-service.ts, the F.2 StepClock/MutationService extraction) + the runtime same-source read-surface pin spec (prf-inspect-same-source.test.ts, the F.4 config-inspected policy/requirement/recovery views over the same durable facts the gates consume)), recording the three increments since the 888 pin, and the w1a F10/F11 stack-side re-land (master e44ebbbd, pre-e->master closure merge shared base) adds its five scannable files (the runtime bound-blueprint resolver (bound-blueprint.ts, the three-case bound-Blueprint contract) + the four runtime F10/F11 specs (governance-stale-ui-generation + remote-override-expected-generation + policy-state-multi-team-bound-blueprint + policy-state-bound-blueprint-production-wiring)), recording the five increments since the PR-F pin', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -1349,49 +1349,169 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // denylist vocabulary; the frozen quarantine hit set is unchanged
     // at fifteen. Scanner unchanged. Single-writer pin bump on the
     // task branch.
-    // pre-alpha3 W1 fix-A (fix/pre-alpha3-w1a-governance, this commit):
-    // +3 on top of the 789 pin = 792 — the three new scannable test
-    // files of the Wave 1 fix-A (F10 + F11): (a) packages/runtime/test/
+    // pre-alpha3 PR-B (feat/pre-alpha3-prb-effective-policy, this
+    // commit): +10 on top of the 789 pin = 799 — the ten new scannable
+    // files of the effective-policy canonical read plane: (a-f) the
+    // runtime effective-policy module (packages/runtime/effective-policy/
+    // types.ts + reader.ts + select.ts + legacy.ts + activation-policy.ts
+    // + index.ts) + (g-j) their four specs (packages/runtime/test/
+    // effective-policy-single-source.test.ts /
+    // effective-policy-policy-state-live.test.ts /
+    // boundary-committed-applied.test.ts /
+    // restart-effective-policy.test.ts). Carries zero denylist
+    // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
+    // Scanner unchanged. Single-writer pin bump on the task branch.
+    // pre-alpha3 PR-C (feat/pre-alpha3-prc-runtime-env, this commit):
+    // +13 on top of the 799 pin = 812 — the thirteen new scannable files
+    // of the runtime-environment unification: (a-g) the runtime readiness
+    // module (packages/runtime/readiness/types.ts + errors.ts +
+    // provider.ts + registry.ts + telemetry.ts + index.ts + status.ts) +
+    // (h) the runtime substrate resolver (packages/runtime/agent-setup/
+    // preset/substrate-resolver.ts) + (i-m) their five specs (packages/
+    // runtime/test/ capability-readiness-provider.test.ts /
+    // capability-runtime-status.test.ts / capability-telemetry.test.ts /
+    // persona-observed-kind.test.ts / runtime-substrate-resolver.test.ts).
+    // Carries zero denylist vocabulary; the frozen quarantine hit set is
+    // unchanged at fifteen. Scanner unchanged. Single-writer pin bump on
+    // the task branch.
+    // pre-alpha3 PR-D review-fix (fix/pre-alpha3-w1c-control, this commit):
+    // +3 on top of the 819 pin = 822 — the three new scannable review
+    // test files: (a) packages/runtime/test/
+    // control-abandon-without-resolve-envelope.test.ts (the F3 narrow
+    // close authority, independent of the resolve-control envelope) +
+    // (b) packages/runtime/test/remote-control-abandoned-code.test.ts
+    // (the F12 CONTROL_REQUEST_ABANDONED remote unmapped-code pass) +
+    // (c) packages/runtime/test/control-abandon-storage-fault.test.ts
+    // (the F2 #41-side fault: a failed abandon durable write is a typed
+    // failure, never a claimed abandon). Carries zero denylist
+    // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
+    // Scanner unchanged. Single-writer pin bump on the task branch.
+    // pre-alpha3 PR #41 review-fix round 2 (feat/pre-alpha3-prd-control-
+    // generalization, this commit): +2 on top of the 822 pin = 824 — the
+    // two new scannable control review test files: (a) packages/runtime/
+    // test/control-subject-cross-kind-alias.test.ts (the B1 cross-kind
+    // request-key aliasing regression — an instance request and a template
+    // request with the SAME id create DISTINCT request rows; the scope key
+    // is the kind-prefixed subject identity) + (b) packages/runtime/test/
+    // control-guard-coupling.test.ts (the B2/D.4 lane-disjointness
+    // regression — a guarded guard attempt against an inline-allowed scope
+    // is BLOCKED with zero consumption, and an inline execution never
+    // consumes a guarded allow). Carries zero denylist vocabulary; the
+    // frozen quarantine hit set is unchanged at fifteen. Scanner unchanged.
+    // Single-writer pin bump on the task branch.
+    // pre-alpha3 PR #41 fix round 3 (feat/pre-alpha3-prd-control-
+    // generalization, this commit): +1 on top of the 824 pin = 825 — the
+    // one new scannable suite packages/runtime/test/
+    // control-inline-wait-abort.test.ts (the S1-S7 coupling-aware
+    // wait-abort cascade: the INLINE mid-wait and pre-aborted aborts
+    // durably abandon the SAME request through the shared abandon write
+    // path (one control-request-abandoned fact, reason wait-aborted),
+    // the GUARDED and coupling-ABSENT aborts keep TODAY's byte-identical
+    // PENDING behavior, the decision-vs-abort race resolves with the
+    // durable decision, and the faulted cascade rejects typed
+    // DURABLE_WRITE_FAILED with zero side effects). Carries zero denylist
+    // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
+    // Scanner unchanged. Single-writer pin bump on the task branch.
+    // pre-alpha3 PR #42 fold (feat/pre-alpha3-pre-e-requirement-recovery,
+    // this commit): +58 on top of the 825 fold pin = 883 — the fifty-eight
+    // new scannable files of the D-fix line (fix/d-req-recovery @
+    // e696823e) folded into this branch by merge 1 (ab108388): (i) the
+    // nine W2-A files merged into the fixed #41 base (packages/runtime/
+    // requirement-facts/ types.ts + provider.ts + index.ts;
+    // packages/runtime/agent-setup/preset/production-observer.ts +
+    // persona-composition.ts; the four W2-A specs) + (ii) the thirty-five
+    // superseding PR-E files (Blueprint v2 + RequirementAuthority +
+    // Requirement/Recovery atomic cutover, D-fix cutover 3ccbfe82 + E.12)
+    // + (iii) the fourteen W3-D fix files (crossAgentTrigger impact class
+    // + creation-preflight + host-entry + the new W3-A/B/C/D/E specs).
+    // The D-fix line's own provenance recorded the same 58 files as "+58
+    // on top of the 822 pin = 880"; on the folded tree they stack on top
+    // of the PR-D line's 825 (822 W1-C + 2 round-2 + 1 round-3). The
+    // scanner run on the folded tree reports filesScanned = 883
+    // (authoritative; not hand-computed). Carries zero denylist
+    // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
+    // Scanner unchanged. Single-writer pin bump on the fold branch.
+    // pre-alpha3 PR #42 pass 3 (feat/pre-alpha3-pre-e-requirement-recovery,
+    // this commit): +1 on top of the 883 fold pin = 884 — the one new
+    // scannable suite packages/runtime/test/
+    // requirement-probe-blueprint-scoping.test.ts (the PF-1 fix suite:
+    // per-blueprint facts scoping of the remote intent.probe / per-root
+    // prober / admission gates — multi-blueprint probe vs gate, typed
+    // identity, live-server verdicts, the single-blueprint byte-identity
+    // pins). Carries zero denylist vocabulary; the frozen quarantine hit
+    // set is unchanged at fifteen. Scanner unchanged. Single-writer pin
+    // bump on the fold branch.
+    // pre-alpha3 PR #42 pass 3b (feat/pre-alpha3-pre-e-requirement-
+    // recovery, this commit): +2 on top of the 884 pin = 886 — the two
+    // new scannable files of the D-1/D-3 decision-scoping line:
+    // packages/runtime/requirement-facts/pending.ts (the pure PENDING/
+    // DOWN classifier + the s6 probe seed-filled-fact drop filter, D-3 +
+    // the probeable narrowing) + packages/runtime/test/
+    // requirement-d1-d3-decision-scoping.test.ts (the 37-test D-1 + D-3
+    // decision-path suite). Carries zero denylist vocabulary; the frozen
+    // quarantine hit set is unchanged at fifteen. Scanner unchanged.
+    // Single-writer pin bump on the fold branch.
+    // pre-alpha3 F15 (feat/pre-alpha3-f15-mcp-live-loss, folded
+    // 2026-09-30): +2 on top of the 886 pin = 888 — the two new
+    // scannable files of the MCP live-loss line:
+    // packages/runtime/test/f15-mcp-live-loss-characterization.test.ts
+    // (the RED gap probe: mounted fiber + upstream post-budget-exhaustion
+    // tool-surface withdrawal via the bridge double's public-seam trigger,
+    // the frozen legacy fiber-presence-probe oracle (the stale positive),
+    // and the assertion on the observeMcpOperationalWitness seam) +
+    // packages/runtime/test/f15-mcp-live-loss.test.ts (the §9 unit-matrix
+    // spec — L1 normal / §9.4 re-sync transient / L2 permanent loss +
+    // same-step retirement + exactly-one capability-lost / L6 idempotence
+    // / L7 cooldown-blocked same boundary + fresh remount + exactly-one
+    // mount-restored / L3 zero-tool unknown / L4 policy-deny suppression
+    // / L5 teardown-close suppression / §9.5 multi-MCP isolation / the
+    // §9.2 static reconnect-policy call-site witness). The F15 product +
+    // bridge modifications (agent-bindings.mjs, readiness/provider.ts +
+    // index.ts, plugin/host.ts, plugin/types.ts,
+    // u6-mcp-017-regression.test.ts, t12a-live-bridge.mjs) are
+    // already-scanned files (no count delta). Carries zero denylist
+    // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
+    // Scanner unchanged. The 888 value is the scanner run on the folded
+    // tree (authoritative; not hand-computed).
+    // pre-alpha3 PR-F (feat/pre-alpha3-prf-closure, this commit): +8 on
+    // top of the 888 pin = 896 — the eight new scannable files of the
+    // final closure increment: (a) packages/remote/src/contracts/
+    // semantic.ts (the F.3 semantic version adapter — the ONLY
+    // version->semantic translation in the wire surface, with the shared
+    // `live` projection wire application) + (b) packages/runtime/
+    // mutation/internal/mutation-service.ts (the F.2 internal test-world
+    // kernel: the StepClock + MutationService + structural intake
+    // validators + the frozen-error mapper, retired from production by
+    // PR-A and pulled off the public surface by PR-F) + (c) packages/
+    // runtime/test/prf-inspect-same-source.test.ts (the F.4 same-source
+    // read-surface pin: config-inspected policy/requirement/recovery
+    // views over the SAME durable facts the gates consume) — the three
+    // WIP re-landed files (the policy-adapter.ts move
+    // packages/runtime/policy-adapter.ts -> packages/runtime/
+    // mutation/internal/policy-adapter.ts is an already-scanned
+    // relocation, no count delta) — plus (d-h) the five scannable files
+    // of the w1a F10/F11 stack-side re-land (master e44ebbbd, the
+    // pre-e->master closure merge's shared base): (d) packages/runtime/
+    // src/plugin/bound-blueprint.ts (the production bound-Blueprint
+    // resolver, the three-case contract) + (e) packages/runtime/test/
     // governance-stale-ui-generation.test.ts (the F10 optimistic
-    // override-generation conflict: stale UI generation refused with
-    // OVERRIDE_GENERATION_CONFLICT, zero write, tombstone slot winner) +
-    // (b) packages/runtime/test/remote-override-expected-generation.
-    // test.ts (the F10 v7 contract surface: v7 override.set/reset
-    // closed sets gain the optional expectedGeneration — absent =
-    // legacy no-conflict-check, present = optimistic conflict; v1–v6
-    // byte-identical and REJECT the field — over the real dispatcher +
-    // real service) + (c) packages/runtime/test/
+    // override-generation conflict, zero write) + (f) packages/runtime/
+    // test/remote-override-expected-generation.test.ts (the F10 v7
+    // contract surface) + (g) packages/runtime/test/
     // policy-state-multi-team-bound-blueprint.test.ts (the F11 closed
-    // set: two teams on one host with different bound Blueprints — the
-    // Remote does shape validation only, the closed set is the
-    // Governance service's authority over the addressed team's bound
-    // Blueprint, the typed POLICY_STATE_UNKNOWN surfaces via invariant
-    // 4b, no cross-root ledger leak, restart preserves). Carries zero
-    // denylist vocabulary; the frozen quarantine hit set is unchanged
-    // at fifteen. Scanner unchanged. Single-writer pin bump on the
-    // task branch.
-    // pre-alpha3 W1 fix-A (fix/pre-alpha3-w1a-governance) review round 2
-    // (this commit): +2 on top of the 792 pin = 794 — the two new
-    // scannable files of the review round 2 (B1/M1): (a) packages/
-    // runtime/src/plugin/bound-blueprint.ts (the extracted production
-    // bound-Blueprint resolver: the three-case contract — missing row
-    // throws, no-ref legacy row = the row anchor by definition (the
-    // documented legacy binding, not a boot fallback), bound ref
-    // resolves through the authority) + (b) packages/runtime/test/
-    // policy-state-bound-blueprint-production-wiring.test.ts (the F11
-    // production wiring: policyState.get/set driven through the real
-    // factory + the real createBlueprintAuthority + real
-    // TeamSessionRecordDto rows — S-mismatch (the raw
-    // TEAM_BLUEPRINT_SNAPSHOT_MISMATCH mapped at the service boundary
-    // to the typed POLICY_STATE_SNAPSHOT_MISMATCH), S-unresolvable
-    // (typed MALFORMED_DTO blueprint-not-found), S-legacy-no-ref (the
-    // anchor's closed set advertised, anchor-declared state commits,
-    // outside refused typed POLICY_STATE_UNKNOWN)). Carries zero
-    // denylist vocabulary; the frozen quarantine hit set is unchanged
-    // at fifteen. Scanner unchanged. Single-writer pin bump on the
-    // task branch.
-    expect(scanResult.filesScanned).toBe(794)
-    expect(scanResult.files.length).toBe(794)
+    // set over the addressed team's bound Blueprint) + (h) packages/
+    // runtime/test/policy-state-bound-blueprint-production-wiring.test.
+    // ts (the F11 production wiring over the real factory + authority).
+    // The w1a re-landed modifications (s6-remote.ts, host.ts, root.ts,
+    // governance/service.ts, mutation/errors.ts, remote contracts
+    // params/catalog/version/dispatch/index, team-remote-client.ts,
+    // team-governance.ts, TeamGovernance.tsx + the modified test files)
+    // are already-scanned files (no count delta). Carries zero denylist
+    // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
+    // Scanner unchanged. The 896 value is the scanner run on the merged
+    // tree (authoritative; not hand-computed).
+    expect(scanResult.filesScanned).toBe(896)
+    expect(scanResult.files.length).toBe(896)
 
   })
 

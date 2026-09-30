@@ -1,0 +1,31 @@
+{
+  "type": "server-response",
+  "rpcId": "r4-deny-5cdq8hi397",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "recordId": "ovr-mcp-team-g0",
+        "kind": "human-override",
+        "scope": "team",
+        "rootSessionId": "session-f15-t1-f15-2026-09-29-12-13-30",
+        "values": {
+          "mcp": {
+            "kind": "deny"
+          }
+        },
+        "generation": 1,
+        "updatedAt": "2026-09-29T12:13:44.159Z"
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "override.set",
+        "endpoint": "override.set",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

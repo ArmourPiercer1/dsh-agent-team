@@ -329,7 +329,11 @@ const chain: GovernanceChainPort = {
     }),
 }
 const transitionCommit: GovernanceTransitionCommit = {
-  commit: (transition) => {
+  // pre-alpha3 re-land (w1a → pre-e base): the pre-e lineage widened the
+  // commit port to the per-root (rootSessionId, transition) pair; the
+  // lane still resolves through the chain tracker (the explicit root is
+  // the same root the chain addresses inside its step).
+  commit: (_rootSessionId, transition) => {
     const root = tracker.current
     if (root === undefined) {
       return Promise.reject(new Error('POLICY-STATE-PW guard: commit outside the chain — impossible'))

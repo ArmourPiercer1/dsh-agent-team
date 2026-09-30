@@ -11,7 +11,7 @@
  *
  * Version routing (TCM vNext §15.3): the generic `call` and every
  * EXISTING wrapper stamp contract version 1 (frozen v1 wire behavior);
- * ONLY `teamCreateV2` / `teamAdmitInitialWorkV2` stamp contract version 2
+ * ONLY `teamCreate` / `teamAdmitInitialWork` stamp contract version 2
  * — and a typed error served to a v2 wrapper still resolves intact.
  *
  * Shim-constrained spec (run-tests.mjs): the `it()` bodies are
@@ -88,7 +88,7 @@ const envelopeScenario = await (async () => {
 const getProjectionWrapperScenario = await (async () => {
   const { carrier, calls } = makeCarrier(() => successEnvelope())
   const client = createTeamRemoteClient(carrier)
-  await client.getProjection('t-42')
+  await client.getProjectionLegacy('t-42')
   return { calls }
 })()
 
@@ -131,7 +131,7 @@ const wrapperMappingScenario = await (async () => {
       'intent.probe',
     ],
     [
-      () => client.teamCreate({ rootSessionId: 's0', blueprintId: 'b1' }),
+      () => client.teamCreateEmbeddedWork({ rootSessionId: 's0', blueprintId: 'b1' }),
       'team.create',
     ],
     [
@@ -224,7 +224,7 @@ const teamCreateV1DefaultScenario = await (async () => {
   const client = createTeamRemoteClient(carrier)
   // The v1 wrapper is UNCHANGED: it stamps version 1 and carries the
   // v1-only `initialWork` field verbatim.
-  await client.teamCreate({
+  await client.teamCreateEmbeddedWork({
     rootSessionId: 's0',
     blueprintId: 'b1',
     initialWork: { prompt: 'the v1 initial work' },
@@ -232,10 +232,10 @@ const teamCreateV1DefaultScenario = await (async () => {
   return { calls }
 })()
 
-const teamCreateV2Scenario = await (async () => {
+const teamCreateScenario = await (async () => {
   const { carrier, calls } = makeCarrier(() => successEnvelope())
   const client = createTeamRemoteClient(carrier)
-  await client.teamCreateV2({
+  await client.teamCreate({
     rootSessionId: 's0',
     blueprintId: 'b1',
     blueprintRevision: 2,
@@ -244,10 +244,10 @@ const teamCreateV2Scenario = await (async () => {
   return { calls }
 })()
 
-const teamAdmitInitialWorkV2Scenario = await (async () => {
+const teamAdmitInitialWorkScenario = await (async () => {
   const { carrier, calls } = makeCarrier(() => successEnvelope())
   const client = createTeamRemoteClient(carrier)
-  await client.teamAdmitInitialWorkV2({
+  await client.teamAdmitInitialWork({
     rootSessionId: 's0',
     requestToken: 'ik-v2-1',
     prompt: 'the initial work',
@@ -271,7 +271,7 @@ const v2TypedErrorScenario = await (async () => {
   const { carrier, calls } = makeCarrier(() => envelope)
   const client = createTeamRemoteClient(carrier)
   const result = await capture(() =>
-    client.teamAdmitInitialWorkV2({
+    client.teamAdmitInitialWork({
       rootSessionId: 's0',
       requestToken: 'ik-v2-1',
       prompt: 'the initial work',
@@ -349,7 +349,7 @@ describe('createTeamRemoteClient — envelope assembly (S2-A)', () => {
     })
   })
 
-  it('getProjection wraps the catalog method with the closed param object', () => {
+  it('getProjectionLegacy wraps the catalog method with the closed param object', () => {
     expect(getProjectionWrapperScenario.calls[0]!.endpoint).toBe('team.getProjection')
     expect(getProjectionWrapperScenario.calls[0]!.payload).toEqual({
       version: REMOTE_CONTRACT_VERSION,
@@ -403,7 +403,7 @@ describe('createTeamRemoteClient — envelope assembly (S2-A)', () => {
 })
 
 describe('createTeamRemoteClient — v2 version routing (TCM vNext §15.3)', () => {
-  it('the v1 teamCreate wrapper stays on version 1 (frozen wire behavior, initialWork intact)', () => {
+  it('the v1 teamCreateEmbeddedWork wrapper stays on version 1 (frozen wire behavior, initialWork intact)', () => {
     expect(teamCreateV1DefaultScenario.calls.length).toBe(1)
     expect(teamCreateV1DefaultScenario.calls[0]!.channel).toBe(REMOTE_RPC_CHANNEL)
     expect(teamCreateV1DefaultScenario.calls[0]!.endpoint).toBe('team.create')
@@ -417,11 +417,11 @@ describe('createTeamRemoteClient — v2 version routing (TCM vNext §15.3)', () 
     })
   })
 
-  it('teamCreateV2 stamps version 2 on team.create and spreads the v2 closed fields verbatim', () => {
-    expect(teamCreateV2Scenario.calls.length).toBe(1)
-    expect(teamCreateV2Scenario.calls[0]!.channel).toBe(REMOTE_RPC_CHANNEL)
-    expect(teamCreateV2Scenario.calls[0]!.endpoint).toBe('team.create')
-    expect(teamCreateV2Scenario.calls[0]!.payload).toEqual({
+  it('teamCreate stamps version 2 on team.create and spreads the v2 closed fields verbatim', () => {
+    expect(teamCreateScenario.calls.length).toBe(1)
+    expect(teamCreateScenario.calls[0]!.channel).toBe(REMOTE_RPC_CHANNEL)
+    expect(teamCreateScenario.calls[0]!.endpoint).toBe('team.create')
+    expect(teamCreateScenario.calls[0]!.payload).toEqual({
       version: REMOTE_CONTRACT_VERSION_V2,
       params: {
         rootSessionId: 's0',
@@ -432,11 +432,11 @@ describe('createTeamRemoteClient — v2 version routing (TCM vNext §15.3)', () 
     })
   })
 
-  it('teamAdmitInitialWorkV2 stamps version 2 on the v2-only endpoint with the token intact', () => {
-    expect(teamAdmitInitialWorkV2Scenario.calls.length).toBe(1)
-    expect(teamAdmitInitialWorkV2Scenario.calls[0]!.channel).toBe(REMOTE_RPC_CHANNEL)
-    expect(teamAdmitInitialWorkV2Scenario.calls[0]!.endpoint).toBe('team.admitInitialWork')
-    expect(teamAdmitInitialWorkV2Scenario.calls[0]!.payload).toEqual({
+  it('teamAdmitInitialWork stamps version 2 on the v2-only endpoint with the token intact', () => {
+    expect(teamAdmitInitialWorkScenario.calls.length).toBe(1)
+    expect(teamAdmitInitialWorkScenario.calls[0]!.channel).toBe(REMOTE_RPC_CHANNEL)
+    expect(teamAdmitInitialWorkScenario.calls[0]!.endpoint).toBe('team.admitInitialWork')
+    expect(teamAdmitInitialWorkScenario.calls[0]!.payload).toEqual({
       version: REMOTE_CONTRACT_VERSION_V2,
       params: {
         rootSessionId: 's0',

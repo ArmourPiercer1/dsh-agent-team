@@ -88,7 +88,8 @@ describe('P3-T5 engine outcomes (PASS / WARNING / FATAL)', () => {
     const persona = requireResult(result.requirements, 'req-persona')
     expect(persona.outcome).toBe('FATAL')
     expect(persona.reasonCode).toBe(COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE)
-    expect(persona.unavailableSubjects).toEqual(['team-preset-cordis'])
+    // pre-alpha3 PR-E (plan §E.3): persona kind convention — the required-kind subject.
+    expect(persona.unavailableSubjects).toEqual(['standard'])
     expect(persona.acknowledgement).toBe(null)
   })
 

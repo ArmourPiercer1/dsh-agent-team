@@ -107,6 +107,7 @@ import type {
   CapabilityName,
   ExternalPolicyFacts,
   PolicyEntry,
+  TemplatePolicy,
 } from '../../../domain/policy/src/index.js'
 import {
   canonicalJsonStringify,
@@ -164,6 +165,20 @@ import type {
   ScopedPersonaPromptSurface,
   TeamBlueprintPersonaSource,
 } from '../../agent-setup/persona/index.js'
+import type { RuntimeSubstratePlan } from '../../agent-setup/preset/index.js'
+import {
+  blockedScopeKeysOf,
+  grantDegradationConsent,
+  PENDING_BLOCK,
+  PREFLIGHT_OUTCOMES,
+  runCreationPreflight,
+  setTemplateAvailabilityFact,
+  SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID,
+  scopeRequirementInputsOf,
+  shippedStatePersonaObserver,
+} from '../../requirements/index.js'
+import type { RequirementFactLedger } from '../../requirements/index.js'
+import type { RequirementFactsResolution } from '../../requirement-facts/index.js'
 import {
   TeamModelOverlaySlot,
   TeamModelSelectionAdapter,
@@ -183,7 +198,13 @@ import type {
   CapabilityOverlayConfig,
 } from '../../agent-setup/capability/index.js'
 import { createActivationProvider } from '../../activation/index.js'
-import { ACTION_NAMES, enforceCompatibilityGate } from '../../admission/index.js'
+import {
+  ACTION_NAMES,
+  enforceCompatibilityGate,
+  readRequirementFacts,
+  TEAM_RUNTIME_ERROR_CODES,
+  TeamRuntimeError,
+} from '../../admission/index.js'
 import type { LifecycleCommitPort } from '../../admission/index.js'
 import {
   commitDurableFact,
@@ -257,8 +278,12 @@ import { createTeamDomainReadPort } from './projection-source.js'
 import { createEffectiveConfigView } from './effective-config-view.js'
 import { createModelStateView } from './model-state-view.js'
 import type { TeamDomainReadPortDeps } from './projection-source.js'
-import { createDurableMutationStore, writePolicyStateTransitionRow } from './durable-mutation-store.js'
-import { activePolicyState } from '../../policy-adapter.js'
+import {
+  createDurableMutationStore,
+  listDurablePolicyStateTransitions,
+  writePolicyStateTransitionRow,
+} from './durable-mutation-store.js'
+import { committedPolicyState } from '../../effective-policy/index.js'
 import { createLiveResidencyOverlay } from './s6-live-overlay.js'
 import { computeTeamLiveToken } from './live-token.js'
 import { resolveSessionReadState } from './team-read-state.js'
@@ -269,6 +294,7 @@ import { buildTeamRootOwnershipIndex, toTeamRootWireRow } from '../team-ownershi
 import type { DurableTemplateRow } from '../../projection/index.js'
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js'
 import type {
+  RequirementFactsAuthority,
   TeamAgentBindings,
   TeamPluginConfig,
   TeamProductionRoot,
@@ -687,6 +713,17 @@ export interface TeamProductionRootParams {
    * "templateId missing").
    */
   readonly resolveBoundBlueprint?: (teamRootSid: string) => TeamBlueprint
+  /**
+   * pre-alpha3 W2-A (review fix F1, guide §2.3) — the runtime
+   * requirement-facts authority (the #40 live environment source for the
+   * RequirementAuthority: the live provider + the 3-state readiness probe
+   * + the production substrate plan + the persona observer). OPTIONAL at
+   * the factory level: absent → the root surface carries no
+   * `requirementFacts` (factory worlds). The production host entry ALWAYS
+   * passes one (it assembles the authority over the live glue + the DSH
+   * public `agentPresets` seam).
+   */
+  readonly requirementFacts?: RequirementFactsAuthority
 }
 
 /**
@@ -715,6 +752,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     blueprintCatalog,
     blueprintAuthority,
     resolveBoundBlueprint,
+    requirementFacts,
   } = params
   const repos: TeamDomainRepositories = domain.repositories
   const rootSid: string = config.rootSessionId
@@ -775,13 +813,163 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const leaderIdentity: MemberIdentity = leaderMemberIdentityOf(rootSid as TeamSessionId)
 
   // --- the fresh-read fact thunks (the config carries the boot-world facts) -----------
-  const environmentFacts = async (): Promise<readonly EnvironmentFact[]> =>
-    config.environmentFacts.map((fact) => ({
-      domain: fact.domain as EnvironmentFact['domain'],
-      subject: fact.subject,
-      available: fact.available,
-      generation: fact.generation,
-    }))
+  // pre-alpha3 W3-A (review fix F1, guide §2.3) — the LIVE environment feed
+  // switch (the #42 consumer switch of B's W2-A provider): with the
+  // requirement-facts authority present (the production host entry world)
+  // the Team scope's facts resolve FRESH from the live provider on every
+  // read (the provider's 3-state → 2-state projection IS the engine feed:
+  // reachable→true, unreachable→false, unknown+seed→the bootstrap seed,
+  // unknown+no-seed→omitted — the engine's documented "absence = unprobed"
+  // fail-closed sentinel). The row `config.environmentFacts` stays the
+  // BOOTSTRAP SEED (the host wired it to the provider's `seedFacts` port) —
+  // NEVER the runtime truth (guide §2.5: static available:true + live
+  // unreachable → the required BLOCK). Without the authority (factory
+  // worlds) the legacy static row feed stands, byte-for-byte.
+  const environmentFacts: () => Promise<readonly EnvironmentFact[]> =
+    requirementFacts === undefined
+      ? async () =>
+          config.environmentFacts.map((fact) => ({
+            domain: fact.domain as EnvironmentFact['domain'],
+            subject: fact.subject,
+            available: fact.available,
+            generation: fact.generation,
+          }))
+      : async () =>
+          (
+            await requirementFacts.provider.resolveFacts({
+              requirements: scopeRequirementInputsOf(blueprint).team,
+              scope: { kind: 'team' },
+            })
+          ).environmentFacts
+
+  // pre-alpha3 W3-A (review fix F1, guide §2.3) — the per-TEMPLATE scope
+  // facts feed (the template boundary: supply + fresh readiness +
+  // materialization — a COLD member is `not-applicable`, never a blocker; a
+  // resident member's failed MCP mount blocks that template's work).
+  // Per-scope feeds only: the team scope's and a template scope's
+  // (domain, subject) pairs may collide, and the engine keys its probes by
+  // (domain, subject) — unioning the feeds would conflate the scopes.
+  // Absent without the authority (factory worlds): the gate evaluates every
+  // scope against the single team-scope array (the legacy behavior).
+  const templateEnvironmentFacts:
+    | ((templateId: string) => Promise<readonly EnvironmentFact[]>)
+    | undefined =
+    requirementFacts === undefined
+      ? undefined
+      : (templateId: string): Promise<readonly EnvironmentFact[]> => {
+          const templateInputs = scopeRequirementInputsOf(blueprint).templates
+          const requirements = templateInputs[templateId] ?? []
+          return requirementFacts.provider
+            .resolveFacts({
+              requirements,
+              scope: { kind: 'template', templateId },
+            })
+            .then((resolution) => resolution.environmentFacts)
+        }
+  // pre-alpha3 W3-A (review fix F1, guide §2.3) + PF-1 fix (2026-09-30,
+  // adjudicated product defect) — the SINGLE dynamic per-blueprint live
+  // facts source. The W3-A thunks above resolve the live provider against
+  // the BOOT blueprint's requirements — correct for the boot root's OWN
+  // consumption (the prober / authority / activation below), but the same
+  // boot-scoped feed was ALSO shared with every consumer that evaluates an
+  // ARBITRARY blueprint's requirements: the remote surface's `intent.probe`
+  // (the requested blueprint), the per-root compatibility prober (each
+  // created root's bound blueprint), and the new-work / initial-work
+  // admission gates (each request's bound blueprint). On a multi-blueprint
+  // host (boot blueprint ≠ the probed/bound blueprint) the feed was
+  // mis-scoped — the engine's "missing = unprobed" fail-closed then turned
+  // a CONFIGURED + HEALTHY live server into a spurious FATAL, breaking the
+  // frozen INV-9.4 two-worlds identity (s6-remote.ts: the probe is a
+  // FAITHFUL PREDICTOR of the post-creation admission gate — the SAME
+  // world). These sources resolve the provider against the passed
+  // blueprint's own scope, so every such consumer evaluates its blueprint
+  // against its own feed (one seam — no per-consumer patches).
+  //
+  // Factory worlds (no authority): the legacy static row feed stands
+  // byte-identically (the static facts are not blueprint-scoped — the
+  // blueprint argument is ignored, exactly as pre-W2-A); the per-template
+  // feed is ABSENT (the legacy single-array gate), matching the thunks
+  // above.
+  const environmentFactsForBlueprint = (
+    target: TeamBlueprint,
+  ): Promise<readonly EnvironmentFact[]> =>
+    requirementFacts === undefined
+      ? Promise.resolve(
+          config.environmentFacts.map((fact) => ({
+            domain: fact.domain as EnvironmentFact['domain'],
+            subject: fact.subject,
+            available: fact.available,
+            generation: fact.generation,
+          })),
+        )
+      : requirementFacts.provider
+          .resolveFacts({
+            requirements: scopeRequirementInputsOf(target).team,
+            scope: { kind: 'team' },
+          })
+          .then((resolution) => resolution.environmentFacts)
+
+  const templateEnvironmentFactsForBlueprint:
+    | ((target: TeamBlueprint, templateId: string) => Promise<readonly EnvironmentFact[]>)
+    | undefined =
+    requirementFacts === undefined
+      ? undefined
+      : (target: TeamBlueprint, templateId: string): Promise<readonly EnvironmentFact[]> => {
+          const requirements =
+            scopeRequirementInputsOf(target).templates[templateId] ?? []
+          return requirementFacts.provider
+            .resolveFacts({
+              requirements,
+              scope: { kind: 'template', templateId },
+            })
+            .then((resolution) => resolution.environmentFacts)
+        }
+
+  // D-3 (2026-09-30, adjudicated product semantics — fail-closed PENDING)
+  // — the FULL-resolution per-blueprint seams (the atomic facts + 3-state
+  // observations pair of ONE `resolveFacts` call). The D-1 facts seams
+  // above drop the observations; the DECISION consumers (the router /
+  // admit requirement gates, the activation provider's step 6, the
+  // creation preflight, the remote probe) need the 3-state truth of the
+  // SAME call whose facts the verdict reads, to apply the PENDING rule
+  // (a REQUIRED requirement whose live observation is `unknown` blocks
+  // with the typed PENDING outcome — never a seed-filled PASS; plan §C.3
+  // 禁止 false OPEN + E.3 + E.11 negative #10). Factory worlds: the
+  // static row feed with EMPTY observations — no live probe ⇒ no pending
+  // materialization ⇒ the PENDING rule stays off (byte-identical).
+  const environmentFactsReadForBlueprint = (
+    target: TeamBlueprint,
+  ): Promise<RequirementFactsResolution> =>
+    requirementFacts === undefined
+      ? Promise.resolve({
+          observations: [],
+          environmentFacts: config.environmentFacts.map((fact) => ({
+            domain: fact.domain as EnvironmentFact['domain'],
+            subject: fact.subject,
+            available: fact.available,
+            generation: fact.generation,
+          })),
+          resolvedAt: now(),
+        })
+      : requirementFacts.provider.resolveFacts({
+          requirements: scopeRequirementInputsOf(target).team,
+          scope: { kind: 'team' },
+        })
+
+  const templateEnvironmentFactsReadForBlueprint:
+    | ((target: TeamBlueprint, templateId: string) => Promise<RequirementFactsResolution>)
+    | undefined =
+    requirementFacts === undefined
+      ? undefined
+      : (target: TeamBlueprint, templateId: string): Promise<RequirementFactsResolution> => {
+          const requirements =
+            scopeRequirementInputsOf(target).templates[templateId] ?? []
+          return requirementFacts.provider.resolveFacts({
+            requirements,
+            scope: { kind: 'template', templateId },
+          })
+        }
+
   const externalPolicyFacts = async (): Promise<ExternalPolicyFacts> =>
     config.externalPolicyFacts as unknown as ExternalPolicyFacts
 
@@ -807,11 +995,117 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   }
 
   // --- A11 + A12 + A13 the three overlay slots ------------------------------------------
-  // The preset seam reports the production plugin's own substrate facts
-  // (the S5A boot world has no standing DSH preset persona; 'standard' is
-  // the composable non-complete case the persona engine composes with).
+  // pre-alpha3 W3-A (review fix F1, guide §2.3): the preset seam is the
+  // TYPED substrate authority — NEVER a silent hardcode. Three sources, in
+  // order:
+  //
+  //   1. `config.presetSubstrate` — the SCRIPTED test-world port (the T12-M2
+  //      worlds script the observed persona three-state; byte-for-byte the
+  //      legacy behavior).
+  //   2. the production host's LIVE substrate plan (pre-alpha3 W2-A,
+  //      review fix F14: `requirementFacts.resolveSubstratePlan` — the row
+  //      preset ids + the production persona observer over the DSH public
+  //      `agentPresets` seam; a settled plan is memoized by the host, an
+  //      unresolved one re-probes — the shipped-state GUESS is gone from
+  //      the production path: the production observer observes, and a
+  //      failure stays `unresolved`, never a kind). The sync seam cannot
+  //      express a PENDING observation, so the production bind settles the
+  //      plan in the rootBinding `bindFresh` wrapper (below) BEFORE any
+  //      overlay slot applies — `getSubstrate` then reads the settled
+  //      entry. A plan FAILURE or a settled `unresolved` root observation
+  //      still fails closed (typed throw — the bind never starts work on a
+  //      guessed persona).
+  //   3. the FACTORY world (no host authority, no scripted port): the
+  //      legacy shipped-state observation (the deployment default's
+  //      composable persona — the TYPED, NAMED `shippedStatePersonaObserver`,
+  //      computed synchronously — the shipped-state adapter is a pure
+  //      deployment-knowledge observation with no probe to await; byte-for-
+  //      byte the pre-W3-A factory behavior). NOT the production path: the
+  //      production host entry ALWAYS passes the `requirementFacts`
+  //      authority (source 2).
+  // ONE plan promise for this root (captured at construction): the
+  // production host memoizes it once settled, and the rootBinding
+  // `bindFresh` wrapper (below) awaits the SAME promise before the bind —
+  // one observer round-trip per boot, shared with the glue's production
+  // persona slot. Absent for factory worlds (the legacy shipped-state
+  // observation needs no probe) and scripted test worlds (the port is the
+  // authority there).
+  const productionSubstratePlan: Promise<RuntimeSubstratePlan> | undefined =
+    config.presetSubstrate === undefined && requirementFacts !== undefined
+      ? requirementFacts.resolveSubstratePlan()
+      : undefined
+  let settledSubstratePlan: RuntimeSubstratePlan | undefined
+  let substratePlanFailure: unknown
+  let substratePlanFailed = false
+  if (productionSubstratePlan !== undefined) {
+    // Both settle handlers are attached here so a rejection is handled
+    // exactly once (no unhandled rejection); the bindFresh wrapper's await
+    // handles the same rejection on its own chain.
+    void productionSubstratePlan.then(
+      (plan) => {
+        settledSubstratePlan = plan
+      },
+      (error: unknown) => {
+        substratePlanFailure = error
+        substratePlanFailed = true
+      },
+    )
+  }
+  const factorySubstratePresetId =
+    config.rootPresetId ?? SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID
   const presetSeam: AgentPresetSeam = {
-    getSubstrate: () => ({ presetId: 'dsh-agent-team', personaKind: 'standard' }),
+    getSubstrate: () => {
+      if (config.presetSubstrate !== undefined) {
+        return {
+          presetId: config.presetSubstrate.presetId,
+          personaKind: config.presetSubstrate.personaKind,
+        }
+      }
+      if (requirementFacts !== undefined) {
+        if (substratePlanFailed) {
+          // The resolver's typed failure (e.g. MALFORMED_DTO — no root
+          // preset authority) propagates verbatim: fail closed, never a
+          // guessed persona (guide §2.3).
+          throw substratePlanFailure
+        }
+        if (settledSubstratePlan === undefined) {
+          throw new TeamPluginError(
+            TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CONFIG_INVALID,
+            `the runtime substrate plan has not settled — the sync preset seam cannot express a pending observation (fail closed; the production bind settles the plan in the bindFresh wrapper before any overlay slot applies)`,
+          )
+        }
+        // The bind-time persona slot reads the ROOT entry (Architecture
+        // §13.1: members inherit the root's bind substrate — the resolver
+        // doc; the MEMBER observation serves the requirement authority).
+        const rootEntry = settledSubstratePlan.root
+        if (rootEntry.persona.kind === 'unresolved') {
+          throw new TeamPluginError(
+            TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CONFIG_INVALID,
+            `the mounted root preset '${rootEntry.presetId}' has an UNRESOLVED persona observation (source: ${rootEntry.persona.source}) — the preset seam cannot express the failure (fail closed); ${rootEntry.persona.reason ?? 'no observation reason recorded'}`,
+          )
+        }
+        return { presetId: rootEntry.presetId, personaKind: rootEntry.persona.kind }
+      }
+      // Source 3 — the factory-world legacy shipped-state observation
+      // (synchronous; byte-for-byte the pre-W3-A factory behavior: the
+      // old sync resolver produced the same preset id + observed kind for
+      // every world without the host authority). The shipped-state adapter
+      // never produces `unresolved` (its kind is the deployment-knowledge
+      // `standard`); the guard below keeps the sync seam's closed
+      // `PresetPersonaKind` surface honest (typed fail-closed, never a
+      // guess) in case a future adapter change ever does.
+      const shippedKind = shippedStatePersonaObserver(factorySubstratePresetId).kind
+      if (shippedKind === 'unresolved') {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CONFIG_INVALID,
+          `the factory-world shipped-state observation is UNRESOLVED — the preset seam cannot express the failure (fail closed)`,
+        )
+      }
+      return {
+        presetId: factorySubstratePresetId,
+        personaKind: shippedKind,
+      }
+    },
   }
   // A2 (RC2 repair, plan §5.2): the persona source — the BOUND blueprint
   // snapshot is the persona authority for every bound Team. With the
@@ -962,8 +1256,155 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     slots,
     now,
   }
+  // pre-alpha3 W3-B (review fix F6, guide §6) — the CREATION preflight
+  // authority: the server-side enforcement of "Team + Leader + ALL
+  // MemberTemplate requirements" BEFORE the durable Team bind. It runs on
+  // the production path ONLY (the `requirementFacts` authority present;
+  // factory worlds keep the legacy no-preflight behavior, byte-for-byte).
+  //
+  // The evaluation is the CREATION-TIME form (guide §6.2): the bound
+  // snapshot ref is resolved to the full blueprint from the catalog, EVERY
+  // declared scope (the Team scope + every v2 template scope — Leader
+  // included; NO instance of the template is needed) is evaluated on a
+  // FRESH live-facts read (the W3-A provider, per-scope feeds — the team
+  // scope's and a template scope's (domain, subject) pairs may collide),
+  // the durable consents + template availability are read under the
+  // (pre-bind, client-minted) rootSessionId (the read is legal without a
+  // TeamSession row), and the PR-E `startupPreflight` classifies.
+  //
+  // A non-`proceed` outcome throws the TYPED COMPATIBILITY_BLOCKED BEFORE
+  // the registry freeze and before any durable write: zero durable effect
+  // (no TeamSession record, no binding row, no leader mint, no fact row).
+  // The human resolves through the F7 writers (the root-level
+  // `requirementAuthority` services) and re-drives the creation — the
+  // idempotent re-drive re-runs this preflight on fresh facts.
+  const enforceCreationPreflight = (input: FreshRootBindingInput): Promise<void> => {
+    if (requirementFacts === undefined) return Promise.resolve()
+    const authority = requirementFacts
+    return (async () => {
+      // 1. Resolve the bound snapshot to the full blueprint (a create may
+      //    name a DIFFERENT saved-source blueprint than the row's bound
+      //    one — the preflight evaluates the snapshot the CREATE binds).
+      let bound: TeamBlueprint
+      try {
+        bound = catalog.resolve(input.blueprint.blueprintId, input.blueprint.revision)
+      } catch (error) {
+        throw new TeamRuntimeError(
+          TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+          `TeamRuntime: the creation preflight cannot resolve the bound blueprint '${input.blueprint.blueprintId}' revision '${input.blueprint.revision}' from the catalog — the creation fails closed (zero durable effect)`,
+          {
+            source: 'creation-preflight',
+            reason: 'blueprint-unresolvable',
+            blueprintId: input.blueprint.blueprintId,
+            revision: input.blueprint.revision,
+            cause: error instanceof Error ? error.message : String(error),
+          },
+        )
+      }
+      if (bound.contentHash !== input.blueprint.contentHash) {
+        throw new TeamRuntimeError(
+          TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+          `TeamRuntime: the creation preflight found a content-hash mismatch for blueprint '${input.blueprint.blueprintId}' revision '${input.blueprint.revision}' (the bound snapshot is immutable, invariant 10) — the creation fails closed (zero durable effect)`,
+          {
+            source: 'creation-preflight',
+            reason: 'blueprint-hash-mismatch',
+            boundContentHash: input.blueprint.contentHash,
+            resolvedContentHash: bound.contentHash,
+          },
+        )
+      }
+      // 2. FRESH per-scope feeds for THIS blueprint (the row-scoped feeds
+      //    are keyed on the row's bound blueprint — they cannot serve a
+      //    create naming a different one).
+      const preflightTeamFacts = (): Promise<readonly EnvironmentFact[]> =>
+        authority.provider
+          .resolveFacts({ requirements: scopeRequirementInputsOf(bound).team, scope: { kind: 'team' } })
+          .then((resolution) => resolution.environmentFacts)
+      const preflightTemplateFacts = (templateId: string): Promise<readonly EnvironmentFact[]> => {
+        const templateInputs = scopeRequirementInputsOf(bound).templates
+        return authority.provider
+          .resolveFacts({
+            requirements: templateInputs[templateId] ?? [],
+            scope: { kind: 'template', templateId },
+          })
+          .then((resolution) => resolution.environmentFacts)
+      }
+      // 3. The durable consents + availability under the (future) root
+      //    session id (a pre-bind read is legal — no TeamSession row is
+      //    required; the pre-bind defaults are: no consents, all available).
+      const durable = readRequirementFacts(repos, input.rootSessionId)
+      // 4. Classify (the PR-E pure classifier, unchanged) + the D-3
+      //    (2026-09-30) PENDING overlay — the full-resolution read ports
+      //    (the atomic observations + feed pair; the SAME per-create
+      //    blueprint scoping as the facts thunks above): a REQUIRED
+      //    capability whose live observation is UNKNOWN is the typed
+      //    `pending` outcome — never a seed-filled PASS (plan §C.3 禁止
+      //    false OPEN + E.3).
+      const result = await runCreationPreflight({
+        blueprint: bound,
+        environmentFacts: preflightTeamFacts,
+        templateEnvironmentFacts: preflightTemplateFacts,
+        environmentFactsRead: () => environmentFactsReadForBlueprint(bound),
+        ...(templateEnvironmentFactsReadForBlueprint !== undefined
+          ? {
+              templateEnvironmentFactsRead: (templateId: string) =>
+                templateEnvironmentFactsReadForBlueprint(bound, templateId),
+            }
+          : {}),
+        consents: durable.consents,
+        availability: durable.availability,
+      })
+      if (result.outcome === PREFLIGHT_OUTCOMES.proceed) return
+      // 5. The TYPED block (zero durable effect; the details carry the
+      //    human's resolution path — the F7 writers' inputs).
+      const resolutionHint =
+        result.outcome === PREFLIGHT_OUTCOMES.fatal
+          ? 'a Team-level required requirement is down — it cannot be bypassed by disabling a template; repair the environment and re-drive the creation'
+          : result.outcome === PREFLIGHT_OUTCOMES.fixOrDisable
+            ? 'a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation'
+            : result.outcome === PREFLIGHT_OUTCOMES.pending
+              ? 'a required capability is not yet observed (materialization pending) — re-drive the creation at the next boundary (or run the compatibility reprobe); the block is recheckable, not a deadlock'
+              : 'an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation'
+      throw new TeamRuntimeError(
+        TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+        `TeamRuntime: the creation preflight of "${input.rootSessionId}" is '${result.outcome}' — the durable Team bind is refused (zero durable effect; ${resolutionHint})`,
+        {
+          rootSessionId: input.rootSessionId,
+          source: 'creation-preflight',
+          outcome: result.outcome,
+          blockedScopes: blockedScopeKeysOf(result),
+          consentRequiredRequirementIds: [...result.consentRequiredRequirementIds],
+          fixOrDisableRequirementIds: [...result.fixOrDisableRequirementIds],
+          fatalRequirementIds: [...result.fatalRequirementIds],
+          // D-3 (2026-09-30) — the typed PENDING details (the closed
+          // typed-code family: the wire code stays COMPATIBILITY_BLOCKED;
+          // the category rides the details — see PENDING_BLOCK).
+          ...(result.outcome === PREFLIGHT_OUTCOMES.pending
+            ? {
+                status: PENDING_BLOCK.status,
+                gateReason: PENDING_BLOCK.gateReason,
+                recheck: PENDING_BLOCK.recheck,
+                pendingRequirementIds: [...(result.pendingRequirementIds ?? [])],
+              }
+            : {}),
+        },
+      )
+    })()
+  }
+
   const rootBinding = {
     bindFresh: (input: FreshRootBindingInput): Promise<RootBindingResult> => {
+      // pre-alpha3 W3-A (review fix F1, guide §2.3): settle the production
+      // LIVE substrate plan BEFORE the bind — the sync preset seam reads
+      // the settled entry when the binder applies the overlay slots (it
+      // cannot express a pending observation). The plan promise is the
+      // SAME one the seam captured at construction (one observer
+      // round-trip, host-memoized once settled); a plan FAILURE propagates
+      // BEFORE the registry freeze and before any durable write (zero
+      // durable effect, fail closed — no bind on a guessed persona).
+      // Factory worlds (no authority) have no plan to settle.
+      const settleSubstratePlan: Promise<unknown> =
+        productionSubstratePlan === undefined ? Promise.resolve() : productionSubstratePlan
       // BP6 (issue #2 blueprint-loading, plan §10): the freeze barrier at
       // the SINGLE choke point every fresh TeamSession mint of this root
       // shares (the real create boot, team.create v1/v2, the shared
@@ -971,11 +1412,16 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       // durable write (the plan's write order); the barrier is idempotent
       // (a same-hash re-freeze is a no-op). Factory worlds without an
       // injected authority keep the legacy no-freeze behavior.
+      // pre-alpha3 W3-B (review fix F6, guide §6): the creation preflight
+      // runs AFTER the plan settle and BEFORE the freeze — a non-proceed
+      // outcome refuses the bind with ZERO durable effect (the freeze and
+      // the bind writes never run); the factory branch has no preflight.
       if (blueprintAuthority === undefined) {
-        return bindFreshTeamRoot(rootBindingPorts, input)
+        return settleSubstratePlan.then(() => bindFreshTeamRoot(rootBindingPorts, input))
       }
-      return blueprintAuthority
-        .freezeSnapshot(input.blueprint)
+      return settleSubstratePlan
+        .then(() => enforceCreationPreflight(input))
+        .then(() => blueprintAuthority.freezeSnapshot(input.blueprint))
         .then(() => bindFreshTeamRoot(rootBindingPorts, input))
     },
     rehydrateCold: (input: ColdRootBindingInput): Promise<RootBindingResult> =>
@@ -999,16 +1445,122 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       rehydrateColdMember(memberResidencyPorts, input),
   }
 
+  // pre-alpha3 PR-B (plan §B.2): the production PolicyReader — the bound-
+  // snapshot static authority (the bound blueprint's envelope / the
+  // durable member template policy / the external hard facts). Constructed
+  // HERE (before the activation provider, the router, the projection read
+  // ports and the remote surface) so EVERY canonical-read consumer — the
+  // activation step 8, the router's inspect-config, the R2-2/R2-3
+  // projection views, the governance write-time checks, and the live
+  // request boundary (through the glue) — consumes the SAME reader
+  // instance (one static layer, one source).
+  const policyReader: PolicyReader = {
+    // model-preference routing fix (guide §4.7.2): the blueprint envelope
+    // reads the OWNING root's bound snapshot through the shared per-root
+    // resolver (the pre-fix closure read the bootstrap row anchor for
+    // every root — a dynamic Team root's own envelope was never read).
+    readBlueprintEnvelope: (teamSessionId) => {
+      const bound = boundBlueprintFor(teamSessionId)
+      const values = capabilityValuesOf(bound.capabilityPolicy)
+      return values === undefined ? {} : { values }
+    },
+    // alpha.1 (plan §10.3): the bound blueprint snapshot + the DURABLE
+    // member-instance templateId -> the template's static TemplatePolicy
+    // (the production `readTemplatePolicy` is no longer the unconditional
+    // empty placeholder — DoD #3). A LEGACY template (no `capabilities`
+    // field) keeps the original honest-empty reader for the CAPABILITY
+    // cells (never a synthesized empty TemplatePolicy — the resolver's
+    // fail-closed must stay untouched, plan §10.3), and an identity the
+    // domain cannot resolve to a row also reads empty (honest: no template
+    // authority there).
+    // model-preference routing fix (guide §4.7.3): capabilities absence
+    // != template policy completely absent — a legacy template (no
+    // `capabilities`) that declares `modelPreference` still carries a
+    // legal static template MODEL (the shared
+    // `initialTemplateModelGrantOf` derivation, the SAME one the live
+    // consumption / step-8 / inspect-config use). The per-root bound
+    // snapshot is read through `boundBlueprintFor` (no bootstrap-anchor
+    // closure).
+    readTemplatePolicy: (teamSessionId, member) => {
+      const bound = boundBlueprintFor(teamSessionId)
+      const template = staticTemplateOf(bound, teamSessionId, member.instanceId, repos.memberInstances)
+      if (template === undefined) return {}
+      const capValues = selectiveToTemplatePolicyValues(staticCapabilitiesOf(bound, template))
+      const modelValue = initialTemplateModelGrantOf(template, {
+        provider: config.staticModel.provider,
+        model: config.staticModel.model,
+      })
+      // pre-alpha3 PR-B (the canonical read plane became the PRODUCTION
+      // static layer): the domain mapper emits an explicit empty allow
+      // (`allow(items: [])` — the documented "deny everything" value,
+      // P1 hardening §6) verbatim, but the frozen P3-T4 resolver rejects
+      // an empty-allow entry as malformed ("use kind:'deny' for no
+      // items"). The production reader normalizes the empty-allow cells
+      // to `deny` so the SAME deny-everything semantic reaches the
+      // resolver in its closed vocabulary (the mapper's contract and the
+      // t1-capability-schema E1-E3 assertions are untouched).
+      const normalizedValues =
+        capValues === undefined
+          ? undefined
+          : (Object.fromEntries(
+              Object.entries(capValues).map(([name, entry]) => [
+                name,
+                entry !== undefined && entry.kind === 'allow' && entry.items.length === 0
+                  ? ({ kind: 'deny' } as const)
+                  : entry,
+              ]),
+            ) as TemplatePolicy['values'])
+      const values = {
+        ...(normalizedValues ?? {}),
+        ...(modelValue !== undefined ? { model: modelValue } : {}),
+      }
+      return Object.keys(values).length === 0 ? {} : { values }
+    },
+    readExternalFacts: () => config.externalPolicyFacts as unknown as ExternalPolicyFacts,
+  }
+
   // --- A16 the activation provider (the ONLY creation path) --------------------------------
   const provider = createActivationProvider({
     teamDomain: domain,
     blueprintCatalog: catalog,
     environmentFacts,
+    // D-1 (2026-09-30, adjudicated product defect — the PF-1 family
+    // extended to the activation provider): step 6's team / target-template
+    // scopes evaluate the TARGET root's bound blueprint against the
+    // TARGET-scoped live feeds (the SAME per-blueprint seam the router
+    // gate / admit gate / remote probe / per-root prober consume). Pre-fix
+    // the boot-scoped thunk above was handed to the provider, so a
+    // multi-blueprint host evaluated the target's requirements against a
+    // feed scoped to the BOOT blueprint (empty for a zero-requirement
+    // boot anchor → every required requirement unobserved → spurious
+    // FATAL + corrupted durable aggregates). D-3 (2026-09-30): the
+    // full-resolution (facts + observations) variants carry the 3-state
+    // truth for the fail-closed PENDING rule. Backward-compatible option
+    // (deviations (b)/(c)): absent in factory worlds → the legacy
+    // no-argument thunk stands byte-identically.
+    ...(requirementFacts !== undefined
+      ? {
+          environmentFactsForBlueprint,
+          ...(templateEnvironmentFactsForBlueprint !== undefined
+            ? { templateEnvironmentFactsForBlueprint }
+            : {}),
+          environmentFactsReadForBlueprint,
+          ...(templateEnvironmentFactsReadForBlueprint !== undefined
+            ? { templateEnvironmentFactsReadForBlueprint }
+            : {}),
+        }
+      : {}),
     externalPolicyFacts,
     staticModel: {
       provider: config.staticModel.provider,
       model: config.staticModel.model,
     },
+    // pre-alpha3 PR-B (plan §B.2): the canonical step-8 input — the
+    // production PolicyReader + the durable PolicyState transitions
+    // (the committed state participates in the creation-frozen policy).
+    policy: policyReader,
+    policyStateTransitions: (rootSessionId) =>
+      listDurablePolicyStateTransitions(repos, rootSessionId),
     childSessionFactory: live.childFactory,
     sessionDurability: live.sessionDurability,
     surface: live.surface,
@@ -1069,7 +1621,13 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       repositories: repos,
       rootSessionId: key,
       blueprint: boundBlueprintFor(key),
-      environmentFacts,
+      // PF-1 fix (2026-09-30) — per-root BLUEPRINT-scoped live feed (item 2
+      // of the adjudicated design): this prober addresses the addressed
+      // root's OWN bound blueprint, so its fresh-facts read must resolve
+      // against THAT blueprint's team scope — never the boot-scoped thunk
+      // (which on a multi-blueprint host evaluates this root's requirements
+      // against the boot blueprint's feed → spurious FATAL).
+      environmentFacts: () => environmentFactsForBlueprint(boundBlueprintFor(key)),
       now,
     })
     const scoped: S6RemoteCompatibilityOperations = {
@@ -1113,6 +1671,27 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           teamLocks: coordination.chains,
           repositories: repos,
           environmentFacts,
+          // pre-alpha3 W3-A (review fix F1, guide §2.3): the per-template
+          // scope feed (absent in factory worlds — the legacy single-array
+          // gate).
+          ...(templateEnvironmentFacts !== undefined ? { templateEnvironmentFacts } : {}),
+          // PF-1 fix (2026-09-30) — per-target BLUEPRINT scoping (the same
+          // seam as the router gate / remote probe / per-root prober): the
+          // Phase A gate resolves the live feed against the TARGET root's
+          // bound blueprint (INV-9.4 two-worlds identity).
+          ...(requirementFacts !== undefined ? { environmentFactsForBlueprint } : {}),
+          ...(templateEnvironmentFactsForBlueprint !== undefined
+            ? { templateEnvironmentFactsForBlueprint }
+            : {}),
+          // D-3 (2026-09-30) — the full-resolution read ports (the
+          // atomic observations + feed pair): the Phase A gate consumes
+          // them (the PENDING rule is live); factory worlds (no
+          // requirementFacts) keep the legacy facts-only ports,
+          // byte-identical.
+          ...(requirementFacts !== undefined ? { environmentFactsReadForBlueprint } : {}),
+          ...(templateEnvironmentFactsReadForBlueprint !== undefined
+            ? { templateEnvironmentFactsReadForBlueprint }
+            : {}),
           now,
           deliverRootWork: rootWorkDelivery,
         })
@@ -1217,11 +1796,38 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     activationProvider: provider,
     blueprintCatalog: catalog,
     environmentFacts,
+    // pre-alpha3 W3-A (review fix F1, guide §2.3): the per-template scope
+    // feed (absent in factory worlds — the legacy single-array gate).
+    ...(templateEnvironmentFacts !== undefined ? { templateEnvironmentFacts } : {}),
+    // PF-1 fix (2026-09-30) — per-request BLUEPRINT scoping (the same seam
+    // as the router gate / remote probe / per-root prober): the new-work
+    // admission gate resolves the live feed against the REQUEST's bound
+    // blueprint's team requirements (the frozen INV-9.4 two-worlds
+    // identity — probe == gate == the same world).
+    ...(requirementFacts !== undefined ? { environmentFactsForBlueprint } : {}),
+    ...(templateEnvironmentFactsForBlueprint !== undefined
+      ? { templateEnvironmentFactsForBlueprint }
+      : {}),
+    // D-3 (2026-09-30) — the full-resolution read ports (the atomic
+    // observations + feed pair): the router gate consumes them (the
+    // PENDING rule is live); factory worlds (no requirementFacts) keep
+    // the legacy facts-only ports, byte-identical.
+    ...(requirementFacts !== undefined ? { environmentFactsReadForBlueprint } : {}),
+    ...(templateEnvironmentFactsReadForBlueprint !== undefined
+      ? { templateEnvironmentFactsReadForBlueprint }
+      : {}),
     externalPolicyFacts,
     staticModel: {
       provider: config.staticModel.provider,
       model: config.staticModel.model,
     },
+    // pre-alpha3 PR-B (plan §B.2): the canonical inspect-config input —
+    // the SAME production PolicyReader + the durable PolicyState
+    // transitions (the committed state participates — the inspection
+    // reports what the next request will actually run).
+    policy: policyReader,
+    policyStateTransitions: (rootSessionId) =>
+      listDurablePolicyStateTransitions(repos, rootSessionId),
     now,
     lifecycleCommit,
     lifecyclePorts,
@@ -1229,6 +1835,12 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     workDelivery: live.workDelivery,
     workActivity,
     ...(workCompletionNotifier !== undefined ? { workCompletionNotification: workCompletionNotifier } : {}),
+    // pre-alpha3 PR-E (plan §E.9): the Control service LAZY REF (the SAME
+    // ref object the glue's setup callback reads — the service is created
+    // below and its `current` is filled then; the router's recovery
+    // dispatch reads `current` at dispatch time: ABSENT = no recovery
+    // coupling, the typed block stands).
+    controlServiceRef,
   })
 
   // --- A25 the control service --------------------------------------------------------------
@@ -1533,6 +2145,18 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     if (context !== undefined) {
       requireHandoffAgentPorts()
     }
+    // pre-alpha3 W3-B (review fix F6, guide §6): the creation preflight
+    // BEFORE the pre-freeze — the handoff mints its TeamSession record
+    // DIRECTLY (the pre-put below), so a non-proceed outcome must refuse
+    // BEFORE that durable row exists (zero durable effect: no record, no
+    // binding, no leader, no fact). The bound blueprint is THIS row's
+    // (single-blueprint row — `snapshot` above). Production path only
+    // (the helper is a no-op without the requirement-facts authority).
+    await enforceCreationPreflight({
+      rootSessionId: minted,
+      blueprint: snapshot,
+      generation: 1,
+    })
     // BP6 (issue #2 blueprint-loading, plan §10): the pre-freeze BEFORE
     // the pre-put — the handoff mints its TeamSession record DIRECTLY
     // (the pre-put below), so the barrier lands here, not only in the
@@ -1665,50 +2289,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   }
 
   // --- A22 + A23 the mutation service + the governance override admission -------------------------
-  const policyReader: PolicyReader = {
-    // model-preference routing fix (guide §4.7.2): the blueprint envelope
-    // reads the OWNING root's bound snapshot through the shared per-root
-    // resolver (the pre-fix closure read the bootstrap row anchor for
-    // every root — a dynamic Team root's own envelope was never read).
-    readBlueprintEnvelope: (teamSessionId) => {
-      const bound = boundBlueprintFor(teamSessionId)
-      const values = capabilityValuesOf(bound.capabilityPolicy)
-      return values === undefined ? {} : { values }
-    },
-    // alpha.1 (plan §10.3): the bound blueprint snapshot + the DURABLE
-    // member-instance templateId -> the template's static TemplatePolicy
-    // (the production `readTemplatePolicy` is no longer the unconditional
-    // empty placeholder — DoD #3). A LEGACY template (no `capabilities`
-    // field) keeps the original honest-empty reader for the CAPABILITY
-    // cells (never a synthesized empty TemplatePolicy — the resolver's
-    // fail-closed must stay untouched, plan §10.3), and an identity the
-    // domain cannot resolve to a row also reads empty (honest: no template
-    // authority there).
-    // model-preference routing fix (guide §4.7.3): capabilities absence
-    // != template policy completely absent — a legacy template (no
-    // `capabilities`) that declares `modelPreference` still carries a
-    // legal static template MODEL (the shared
-    // `initialTemplateModelGrantOf` derivation, the SAME one the live
-    // consumption / step-8 / inspect-config use). The per-root bound
-    // snapshot is read through `boundBlueprintFor` (no bootstrap-anchor
-    // closure).
-    readTemplatePolicy: (teamSessionId, member) => {
-      const bound = boundBlueprintFor(teamSessionId)
-      const template = staticTemplateOf(bound, teamSessionId, member.instanceId, repos.memberInstances)
-      if (template === undefined) return {}
-      const capValues = selectiveToTemplatePolicyValues(staticCapabilitiesOf(bound, template))
-      const modelValue = initialTemplateModelGrantOf(template, {
-        provider: config.staticModel.provider,
-        model: config.staticModel.model,
-      })
-      const values = {
-        ...(capValues ?? {}),
-        ...(modelValue !== undefined ? { model: modelValue } : {}),
-      }
-      return Object.keys(values).length === 0 ? {} : { values }
-    },
-    readExternalFacts: () => config.externalPolicyFacts as unknown as ExternalPolicyFacts,
-  }
+  // The production PolicyReader (the bound-snapshot static authority) is
+  // constructed ABOVE the activation provider (the A16 section) so the
+  // provider / router / projection / glue all consume the SAME reader
+  // instance (pre-alpha3 PR-B: the canonical read plane's static layer).
   const defaultOverrideStore: OverrideStorePort = {
     list: (rootSessionId) =>
       Promise.resolve(repos.overrides.list(rootSessionId) as readonly OverrideRecordView[]),
@@ -1756,13 +2340,34 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       chain: coordination,
       // The durable `overrides` repository (the team_domain store).
       overrides: defaultOverrideStore,
-      // The in-memory read cache (the transitions lane view; the commit
-      // writes the durable row first, then appends here).
-      transitions: mutationStore,
-      // The durable transition commit (commit-before-ack).
+      // pre-alpha3 PR-B (plan §B.2): the transition read seam — the READ
+      // is the durable ledger rows in commit order (the production
+      // decision read no longer consumes the process-local cache); the
+      // APPEND mirrors into the durable-mutation-store's process-local
+      // lane (commit-before-ack is unchanged: the durable row is written
+      // first, the mirror second).
+      transitions: {
+        listTransitions: (rootSessionId) =>
+          listDurablePolicyStateTransitions(repos, rootSessionId as TeamSessionId),
+        appendTransition: (rootSessionId, transition) =>
+          mutationStore.appendTransition(rootSessionId as TeamSessionId, transition),
+      },
+      // The durable transition commit (commit-before-ack). The row is
+      // stamped with the ADDRESSED root the governance service targets
+      // (the port threads it through) — NOT this production root's own
+      // `rootSid`: the durable read (listDurablePolicyStateTransitions) is
+      // root-keyed to the addressed TeamSession, so stamping the row root
+      // would make the committed state invisible to the addressed team and
+      // leak it to this root (the C3 host-smoke finding — the override
+      // lane already stamps its addressed root, service.ts:266/283).
       transitionCommit: {
-        commit: (transition) =>
-          writePolicyStateTransitionRow(repos.ledger, rootSid, transition, now),
+        commit: (rootSessionId, transition) =>
+          writePolicyStateTransitionRow(
+            repos.ledger,
+            rootSessionId,
+            transition,
+            now,
+          ),
       },
       // The static policy facts (the bound blueprint envelope / template
       // policy / the external hard facts — the same reader the resolution
@@ -1845,20 +2450,25 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         ),
       ]
     },
+    // pre-alpha3 PR-B (plan §B.2): the committed PolicyState of the root —
+    // the LAST durable transition in commit order (the production step
+    // clock is retired as a decision source; the legacy step fields keep
+    // parse/display only).
     policyState: (rootSessionId) =>
-      activePolicyState(
-        mutationStore.listTransitions(rootSessionId as TeamSessionId),
-        Number.MAX_SAFE_INTEGER,
-      ).stateId,
+      committedPolicyState(
+        listDurablePolicyStateTransitions(repos, rootSessionId as TeamSessionId),
+      ).state.stateId,
     // R2-2 (P8-S7-R2): the BQ-08 resolved effective-config view (F01-F08,
-    // G01, G02, G05, G06, G09, H04, H12, L11). The resolver runs the
-    // two-stage policy resolution over the SAME durable transition rows the
-    // mutation service writes (the R2-1 cache), the merged mutation-store +
-    // governance-override records, and the bound policy reader, at the
-    // maximum step horizon: the process-local applied-record state is not
-    // durable, so boundary-pending changes are reported conservatively as
-    // pending (appliedRecordIds empty). A resolver failure degrades the
-    // lane to the closed default, never the row (fail closed).
+    // G01, G02, G05, G06, G09, H04, H12, L11). pre-alpha3 PR-B: the ONE
+    // canonical read (`readEffectivePolicy` inside the view) over the
+    // durable PolicyState transition rows (the ledger — the same rows the
+    // governance authority commits), the durable governance `overrides`,
+    // and the bound policy reader: the committed state + the slot winners
+    // + the static layers — the SAME read the live request boundary runs.
+    // The process-local applied-record state is not durable, so
+    // record-backed winning values are reported conservatively as pending
+    // (appliedRecordIds empty). A resolver failure degrades the lane to
+    // the closed default, never the row (fail closed).
     effectiveConfig: (rootSessionId, member): EffectiveConfigDtoV2 | null => {
       try {
         return createEffectiveConfigView({
@@ -1871,8 +2481,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             provider: config.staticModel.provider,
             model: config.staticModel.model,
           },
-          transitions: mutationStore.listTransitions(rootSessionId as TeamSessionId),
-          records: mutationStore.listRecords(rootSessionId as TeamSessionId),
+          transitions: listDurablePolicyStateTransitions(repos, rootSessionId as TeamSessionId),
           overrides: repos.overrides.list(rootSessionId),
           policyReader,
         })
@@ -1881,29 +2490,25 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       }
     },
     // R2-3 (P8-S7-R2): the BQ-11 per-member model state view (D09/H06/H09/
-    // H10/H12). Dual-horizon resolution over the SAME durable transition
-    // rows, the merged mutation-store + governance-override records, and
-    // the bound policy reader: the NOW horizon (the production step clock
-    // is pinned to 0 — a transition requested at step 0 takes effect from
-    // step 1, so at the current step the admitted team model is always the
-    // pre-transition state) resolves `current` + `provenance` +
-    // `availability`; the MAX horizon resolves the next-boundary winner,
-    // and a pending transition (or a winner backed by an admitted-but-
-    // unapplied record) fills `pendingNextBoundary`. A resolver failure
-    // drops the `modelState` key (DURATIONAL-optional — absent, never
-    // undefined), never the row.
+    // H10/H12). pre-alpha3 PR-B: the committed/applied horizon (the
+    // production step clock is retired as a decision source): the SAME
+    // canonical read as the live request boundary — `current` is the
+    // COMMITTED model (the durable last transition in commit order + the
+    // governance slot winners + the static layers), and
+    // `pendingNextBoundary` is present when a durable fact may not yet be
+    // applied by this process (a committed transition or a record-backed
+    // winner). A resolver failure drops the `modelState` key
+    // (DURATIONAL-optional — absent, never undefined), never the row.
     modelState: (rootSessionId, instanceId): MemberModelStateDto | undefined => {
       try {
         return createModelStateView({
           teamSessionId: rootSessionId,
           instanceId,
-          currentStep: 0,
           staticModel: {
             provider: config.staticModel.provider,
             model: config.staticModel.model,
           },
-          transitions: mutationStore.listTransitions(rootSessionId as TeamSessionId),
-          records: mutationStore.listRecords(rootSessionId as TeamSessionId),
+          transitions: listDurablePolicyStateTransitions(repos, rootSessionId as TeamSessionId),
           overrides: repos.overrides.list(rootSessionId),
           policyReader,
         })
@@ -1968,14 +2573,34 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       : {}),
     // T1.4-B — the row-config environment facts: the SAME injected source
     // the post-creation admission gate consumes (the prober / authority /
-    // activation / runtime wiring above all read this very thunk over
-    // `config.environmentFacts`). The intent.probe port merges it with
-    // the caller's persona fact, so the pre-creation probe and the gate
+    // activation / runtime wiring above all read over `config.environmentFacts`
+    // through the live provider). The intent.probe port merges it with the
+    // caller's persona fact, so the pre-creation probe and the gate
     // evaluate the same world (INV-9.4 — the T1.4 two-worlds mismatch
     // closed: the UI probe no longer sees client persona facts only, and
     // a required MCP present in the row facts now passes the pre-create
     // probe exactly as it passes the gate).
-    environmentFacts,
+    // PF-1 fix (2026-09-30) — the surface consumes the PER-BLUEPRINT live
+    // facts source (item 1 of the adjudicated design): `intent.probe`
+    // resolves the feed against the REQUESTED blueprint's team
+    // requirements, so on a multi-blueprint host the probe evaluates the
+    // SAME world the post-creation admission gate consumes (pre-fix this
+    // was the boot-scoped thunk — a zero-requirement boot anchor left the
+    // feed empty and a configured + healthy live server probed as a
+    // spurious FATAL).
+    ...(requirementFacts !== undefined
+      ? { environmentFacts: environmentFactsForBlueprint }
+      : { environmentFacts }),
+    // D-3 (2026-09-30) — the PER-BLUEPRINT FULL-RESOLUTION read port:
+    // `intent.probe` drops the SEED-FILLED facts of every REQUIRED
+    // requirement whose live observation is still `unknown` — the probe's
+    // BLOCKED_FATAL then faithfully (STRICTER) predicts the post-creation
+    // gate's typed PENDING block (INV-9.4: complete the observation, not
+    // weaken the verdict; plan §C.3 禁止 false OPEN). Factory worlds: no
+    // port — the PENDING rule stays off (byte-identical).
+    ...(requirementFacts !== undefined
+      ? { environmentFactsRead: environmentFactsReadForBlueprint }
+      : {}),
     repositories: repos,
     catalog,
     blueprint,
@@ -1988,8 +2613,13 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // routes override.set / override.reset / policyState.set through it
     // (serialized on the shared chain, committed before the ack).
     governance: mutation.governance,
+    // pre-alpha3 PR-B (plan §B.2): the remote PolicyState read surface
+    // reads the DURABLE transition rows (the ledger) directly — the
+    // commit-order read the committed-state derivation consumes (the
+    // process-local cache is no longer the read source of any production
+    // decision).
     mutationTransitions: (teamSessionId) =>
-      mutationStore.listTransitions(teamSessionId as TeamSessionId),
+      listDurablePolicyStateTransitions(repos, teamSessionId as TeamSessionId),
     overrideRecords: (teamSessionId) =>
       repos.overrides.list(teamSessionId) as unknown as readonly RemoteSafeRecord[],
     rootBinding,
@@ -2254,6 +2884,21 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const boot = async (): Promise<void> => {
     if (bootStarted) return
     bootStarted = true
+    if (productionSubstratePlan !== undefined) {
+      // pre-alpha3 W3-A (F1): the sync preset seam (`getSubstrate`) cannot
+      // express a PENDING observation — it answers from the settled plan, or
+      // fails closed. The plan is therefore settled BEFORE any boot effect,
+      // so the root is only "ready" (the host awaits `boot()` before
+      // resolving `teamRoot.ready`) once `getSubstrate` can answer. This is
+      // what the post-commit member binds (`bindFreshMember`, which do NOT
+      // go through the `bindFresh` wrapper's settle) rely on: a RESUME boot
+      // re-binds members after ready, and the plan must already be settled.
+      // A typed plan failure (e.g. the resolver's MALFORMED_DTO — no root
+      // preset authority) rejects the boot: fail closed, never a guessed
+      // persona. The `bindFresh` wrapper's settle of the SAME promise is
+      // then a no-op (idempotent).
+      await productionSubstratePlan
+    }
     if (config.bootPhase === 'create') {
       if (fixtureWorld) {
         // The legacy/test fixture world (unchanged frozen contract).
@@ -2370,12 +3015,92 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     await domain.close()
   }
 
+  // --- pre-alpha3 W3-B (review fix F7, guide §6) — the production requirement-fact writers ----------
+  // The durable human decisions of the creation preflight as ROOT-LEVEL
+  // services (the frozen remote contract v1–v6 gains NO method — the UI
+  // flow consumes the typed preflight result and re-drives the creation).
+  // Both writers resolve the NAMED bound snapshot from the catalog (an
+  // explicit revision — no "latest"), validate fail-closed against the
+  // bound blueprint (a typed refusal leaves ZERO writes), and write ONE
+  // fact row commit-before-ack over the frozen `compatibility` category
+  // (a write failure propagates; the ack never precedes the durable
+  // write). Production path only (the `requirementFacts` authority
+  // present — the writers evaluate on the LIVE feeds; factory worlds have
+  // no live source, so the surface stays absent).
+  let requirementAuthority: TeamProductionRoot['requirementAuthority']
+  if (requirementFacts !== undefined) {
+    const authority = requirementFacts
+    const resolveNamedSnapshot = (blueprintId: string, revision: string): TeamBlueprint =>
+      catalog.resolve(blueprintId, revision)
+    const freshTeamFacts =
+      (bound: TeamBlueprint): (() => Promise<readonly EnvironmentFact[]>) =>
+      () =>
+        authority.provider
+          .resolveFacts({ requirements: scopeRequirementInputsOf(bound).team, scope: { kind: 'team' } })
+          .then((resolution) => resolution.environmentFacts)
+    const freshTemplateFacts =
+      (bound: TeamBlueprint): ((templateId: string) => Promise<readonly EnvironmentFact[]>) =>
+      (templateId) => {
+        const templateInputs = scopeRequirementInputsOf(bound).templates
+        return authority.provider
+          .resolveFacts({
+            requirements: templateInputs[templateId] ?? [],
+            scope: { kind: 'template', templateId },
+          })
+          .then((resolution) => resolution.environmentFacts)
+      }
+    // pre-alpha3 W3-B (review fix F7, guide §6): the requirement-fact
+    // write port with the PRE-TEAM variant selected per input — the
+    // refuse→consent→re-drive workflow writes the durable fact BEFORE
+    // the TeamSession record is minted (no stamp to advance: the
+    // record lands with the fresh generation and the next post-bind
+    // fact catches the stamp up, the documented v1 lag model); once the
+    // record EXISTS the stamped `put` applies (the S1-A push stamp).
+    const factLedgerFor = (rootSessionId: string): RequirementFactLedger => ({
+      allocateSequence: () => repos.ledger.allocateSequence(),
+      put: (entry) =>
+        repos.teamSessions.get(rootSessionId) === undefined
+          ? repos.ledger.putPreTeam(entry)
+          : repos.ledger.put(entry),
+    })
+    requirementAuthority = {
+      grantDegradationConsent: (input) =>
+        (async () => {
+          const bound = resolveNamedSnapshot(input.blueprintId, input.revision)
+          return grantDegradationConsent({
+            ledger: factLedgerFor(input.rootSessionId),
+            blueprint: bound,
+            rootSessionId: input.rootSessionId,
+            requirementId: input.requirementId,
+            generation: input.generation,
+            consentedBy: input.consentedBy,
+            environmentFacts: freshTeamFacts(bound),
+            templateEnvironmentFacts: freshTemplateFacts(bound),
+            now,
+          })
+        })(),
+      setTemplateAvailability: (input) =>
+        (async () => {
+          const bound = resolveNamedSnapshot(input.blueprintId, input.revision)
+          return setTemplateAvailabilityFact({
+            ledger: factLedgerFor(input.rootSessionId),
+            blueprint: bound,
+            rootSessionId: input.rootSessionId,
+            templateId: input.templateId,
+            available: input.available,
+            now,
+          })
+        })(),
+    }
+  }
+
   return {
     config,
     domain,
     storageSeam,
     catalog,
     blueprint,
+    policyReader,
     leaderIdentity,
     intent,
     compatibility,
@@ -2401,5 +3126,14 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     tools,
     boot,
     close,
+    // pre-alpha3 W2-A (review fix F1, guide §2.3): the runtime
+    // requirement-facts authority (the #40 live environment source) —
+    // present only in the production host entry world (the additive-
+    // optional param; factory worlds carry none, the surface stays absent).
+    requirementFacts,
+    // pre-alpha3 W3-B (review fix F7, guide §6): the production
+    // requirement-fact writers (the durable consent grant + the template
+    // disable/enable) — present only in the production host entry world.
+    ...(requirementAuthority !== undefined ? { requirementAuthority } : {}),
   }
 }

@@ -33,6 +33,7 @@
 
 import type {
   BlueprintCatalog,
+  TeamBlueprint,
 } from '../../domain/blueprint/src/index.js'
 import type {
   EnvironmentFact,
@@ -58,8 +59,15 @@ import type {
   SessionDurabilityPort,
 } from '../member-residency/index.js'
 import type {
+  RequirementFactsResolution,
+} from '../requirement-facts/index.js'
+import type {
   ModelSelection,
 } from '../agent-setup/model/index.js'
+import type {
+  PolicyReader,
+  PolicyStateTransitionRecord,
+} from '../mutation/index.js'
 
 // --- sources -------------------------------------------------------------------
 
@@ -152,6 +160,23 @@ export interface MemberActivationRequest {
    *  compatibility engine (Architecture §27.3; a valid ack degrades a
    *  BLOCKED_WARNING to DEGRADED_ACKNOWLEDGED). */
   readonly acknowledgements?: readonly WarningAcknowledgement[]
+  /**
+   * pre-alpha3 PR-E (plan §E.9) — the reviewed RECOVERY marker: present
+   * when this activation is the human-reviewed recovery dispatch of a
+   * blocked scope (the router's Control inline coupling returned `allow`).
+   * Step 6 then admits a REQUIRED-down scope (team or the target template)
+   * when the marker covers it — the member STARTS for recovery on the
+   * REDUCED original authority (the downed capability subjects are
+   * unavailable — the MCP simply cannot mount while its server is down —
+   * everything else runs on the original permissions; the external hard
+   * ceiling stays absolute). A marker without an actually-blocked scope is
+   * a no-op. The marker is echoed on the activation result (durable
+   * provenance: this member was started for recovery).
+   */
+  readonly recovery?: {
+    readonly scopeKeys: readonly string[]
+    readonly unavailableSubjects: readonly string[]
+  }
 }
 
 // --- ports ---------------------------------------------------------------------
@@ -202,6 +227,69 @@ export interface ActivationPorts {
   readonly blueprintCatalog: BlueprintCatalog
   /** The environment-facts probe (step 6: compatibility). */
   readonly environmentFacts: () => Promise<readonly EnvironmentFact[]>
+  /**
+   * D-1 (2026-09-30, adjudicated product defect — the PF-1 family, extended
+   * to the activation provider): the per-TARGET-blueprint live facts source
+   * for step 6's TEAM scope. The provider already resolves the TARGET
+   * root's bound blueprint (step 2); before D-1 the step-6 authority was
+   * handed the BOOT-scoped thunk (the production root's own row-scoped
+   * feed), so on a multi-blueprint host the target's required requirements
+   * were evaluated against a feed scoped to a DIFFERENT blueprint —
+   * missing facts, spurious FATAL, corrupted durable aggregates. When
+   * present, step 6 evaluates the target's team requirements against
+   * `environmentFactsForBlueprint(blueprint)` (the SAME seam the router
+   * gate / admit gate / remote probe / per-root prober consume — one seam,
+   * no per-consumer patches). ABSENT → the legacy no-argument thunk stands
+   * byte-identically (factory worlds + single-blueprint hosts; the
+   * backward-compatible option, deviations (b)/(c)).
+   */
+  readonly environmentFactsForBlueprint?: (
+    blueprint: TeamBlueprint,
+  ) => Promise<readonly EnvironmentFact[]>
+  /**
+   * D-1 (2026-09-30) — the per-TARGET-blueprint live facts source for
+   * step 6's v2 TARGET-TEMPLATE scope (the per-template boundary feed:
+   * supply + fresh readiness + materialization). The pre-D-1 template
+   * evaluation reused the authority chain's team-scope facts read —
+   * mis-scoped on a multi-blueprint host for the same reason as the team
+   * scope. ABSENT → the legacy behavior (the authority's facts) stands
+   * byte-identically.
+   */
+  readonly templateEnvironmentFactsForBlueprint?: (
+    blueprint: TeamBlueprint,
+    templateId: string,
+  ) => Promise<readonly EnvironmentFact[]>
+  /**
+   * D-3 (2026-09-30, adjudicated product semantics — fail-closed PENDING,
+   * plan §C.3 "否则 unresolved fail closed；禁止 false OPEN" + E.3 "no
+   * false OPEN" + E.11 negative #10 "readiness 重置 unknown"): the
+   * per-TARGET-blueprint FULL resolution (the 2-state facts AND the 3-state
+   * observations as the ATOMIC pair of ONE `resolveFacts` call) for step
+   * 6's TEAM scope. A REQUIRED applicable requirement whose live
+   * observation is `unknown` (materialization slot pending / not yet
+   * probed) blocks the admission with the TYPED PENDING outcome — never a
+   * seed-filled PASS (the static seed remains bootstrap/display only,
+   * guide §2.5). When present, the step-6 authority consumes THIS source
+   * (facts = the resolution's feed; observations = the same call's 3-state
+   * truth — the pair is atomic: the authority's inline re-probe re-reads
+   * through the same thunk, so the observations always accompany the
+   * facts the verdict was computed from). ABSENT → no PENDING rule (the
+   * legacy facts-only sources stand byte-identically — factory worlds have
+   * no live probe, hence no pending materialization).
+   */
+  readonly environmentFactsReadForBlueprint?: (
+    blueprint: TeamBlueprint,
+  ) => Promise<RequirementFactsResolution>
+  /**
+   * D-3 (2026-09-30) — the per-TARGET-blueprint FULL resolution for step
+   * 6's v2 TARGET-TEMPLATE scope (the atomic facts + observations pair of
+   * the template-boundary feed). Same ABSENT semantics as
+   * {@link ActivationPorts.environmentFactsReadForBlueprint}.
+   */
+  readonly templateEnvironmentFactsReadForBlueprint?: (
+    blueprint: TeamBlueprint,
+    templateId: string,
+  ) => Promise<RequirementFactsResolution>
   /** The external hard policy + capability-existence facts (step 8: policy
    *  resolver stage 2, Architecture §19.2/§19.6). */
   readonly externalPolicyFacts: () => Promise<ExternalPolicyFacts>
@@ -229,6 +317,21 @@ export interface ActivationPorts {
   readonly projectionPublisher?: (event: ActivationProjectionEvent) => void
   /** Optional clock (ISO-8601); absent = system clock. */
   readonly now?: () => string
+  /**
+   * THE CANONICAL INPUT (pre-alpha3 PR-B, plan §B.2) — the static policy
+   * authority (the production PolicyReader: the bound snapshot's blueprint
+   * envelope + per-member template policy + external hard facts). Absent
+   * = the pre-PR-B legacy step-8 input (`externalPolicyFacts` + the
+   * template-derived static grants).
+   */
+  readonly policy?: PolicyReader
+  /**
+   * THE CANONICAL INPUT (pre-alpha3 PR-B, plan §B.2) — the durable
+   * PolicyState transitions of the addressed root (COMMIT order; the last
+   * entry is the committed state). Absent = the implicit `default` state
+   * (the pre-PR-B behavior).
+   */
+  readonly policyStateTransitions?: (rootSessionId: string) => readonly PolicyStateTransitionRecord[]
 }
 
 // --- projection ------------------------------------------------------------------
@@ -327,6 +430,17 @@ export type ActivationResult =
       /** The projection outcome (best-effort). */
       readonly projection: ActivationProjectionState
       readonly createdAt: string
+      /**
+       * pre-alpha3 PR-E (plan §E.9) — the reviewed RECOVERY marker when this
+       * activation was the human-reviewed recovery dispatch of a blocked
+       * scope (durable provenance: this member was STARTED for recovery on
+       * the reduced original authority; the downed capability subjects are
+       * `unavailableSubjects`). Absent on every non-recovery activation.
+       */
+      readonly recovery?: {
+        readonly scopeKeys: readonly string[]
+        readonly unavailableSubjects: readonly string[]
+      }
     }
   | {
       readonly kind: 'continued'

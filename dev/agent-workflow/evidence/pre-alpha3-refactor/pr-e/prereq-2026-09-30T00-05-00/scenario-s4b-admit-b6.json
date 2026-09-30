@@ -1,0 +1,49 @@
+{
+  "admitError": {
+    "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+    "message": "TeamRuntime: a required scope is down (team) — new work admission is blocked (invariant 50)",
+    "details": {
+      "method": "team.admitInitialWork",
+      "endpoint": "team.admitInitialWork",
+      "contractVersion": 2,
+      "requestToken": "rt-admit-b6-prereq-2026-09-30T00-05-00",
+      "reason": "domain-error",
+      "cause": {
+        "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+        "message": "TeamRuntime: a required scope is down (team) — new work admission is blocked (invariant 50)",
+        "details": {
+          "rootSessionId": "session-prereq-main-prereq-2026-09-30T00-05-00",
+          "status": "BLOCKED_FATAL",
+          "gateReason": "requiredScopeDown",
+          "blockedScopes": [
+            "team"
+          ],
+          "blockingRequirementIds": [
+            "team.mcp.repo"
+          ],
+          "unavailableSubjects": [
+            "mcp_repo"
+          ],
+          "source": "requirement-gate",
+          "recoveryDispatchAvailable": true
+        }
+      }
+    }
+  },
+  "details": {
+    "rootSessionId": "session-prereq-main-prereq-2026-09-30T00-05-00",
+    "status": "BLOCKED_FATAL",
+    "gateReason": "requiredScopeDown",
+    "blockedScopes": [
+      "team"
+    ],
+    "blockingRequirementIds": [
+      "team.mcp.repo"
+    ],
+    "unavailableSubjects": [
+      "mcp_repo"
+    ],
+    "source": "requirement-gate",
+    "recoveryDispatchAvailable": true
+  }
+}

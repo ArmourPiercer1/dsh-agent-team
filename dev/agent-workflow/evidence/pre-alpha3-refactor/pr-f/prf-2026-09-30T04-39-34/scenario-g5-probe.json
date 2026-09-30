@@ -1,0 +1,28 @@
+{
+  "compatibility": {
+    "schemaVersion": 1,
+    "environmentFingerprint": "fp-v1:496d1037b98199e1",
+    "status": "OPEN",
+    "requirements": [
+      {
+        "requirementId": "team.persona.standard",
+        "type": "persona",
+        "complete": true,
+        "outcome": "PASS",
+        "reasonCode": "SATISFIED",
+        "detail": "all 1 required subject(s) available",
+        "unavailableSubjects": [],
+        "mismatchFingerprint": null,
+        "acknowledgement": null
+      }
+    ],
+    "counts": {
+      "pass": 1,
+      "warning": 0,
+      "fatal": 0,
+      "unackedWarning": 0,
+      "staleAcknowledgement": 0
+    },
+    "unappliedAcknowledgements": []
+  }
+}

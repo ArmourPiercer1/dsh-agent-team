@@ -24,11 +24,16 @@
  * Pure module: no I/O, no ambient state.
  * @module @dsh-agent-team/runtime/agent-setup/capability/mcp-adapter
  */
+import { MCP_FACET_WILDCARD } from './mcp-facet.js';
 /**
  * Filter configured MCP server names against the policy entry.
  *
  * - `allow(items)` → returns configured servers whose name appears in
- *   `items`;
+ *   `items`, OR every configured server when `items` contains the
+ *   `MCP_FACET_WILDCARD` (`*`) (allow-all — the SAME wildcard the durable
+ *   mcp facet view honors, closing the template-vs-facet asymmetry where a
+ *   `mcp: allow ['*']` template would have silently excluded every server
+ *   while the facet view allowed them);
  * - `deny` → returns `[]` (no servers allowed).
  *
  * @param configuredServers - the servers the host has configured (available
@@ -41,9 +46,13 @@ export function filterMcpServers(configuredServers, policy) {
         return [];
     }
     const allowed = new Set(policy.items);
+    // The wildcard: `allow ['*']` mounts every configured server (matching the
+    // facet view's `items.includes(MCP_FACET_WILDCARD)` — the template gate
+    // previously had no wildcard branch, so a wildcard template excluded all).
+    const allowAll = allowed.has(MCP_FACET_WILDCARD);
     const result = [];
     for (const server of configuredServers) {
-        if (allowed.has(server) && !result.includes(server)) {
+        if ((allowAll || allowed.has(server)) && !result.includes(server)) {
             result.push(server);
         }
     }

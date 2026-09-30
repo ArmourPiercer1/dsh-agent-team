@@ -23,9 +23,15 @@
  *   (invariant 41).
  */
 
+import {
+  CAPABILITY_NAMES,
+  CAPABILITY_NAME_VALUES,
+} from '../../domain/policy/src/index.js'
 import type {
   CapabilityName,
   PolicyEntry,
+  PolicyStateCellView,
+  TeamValueOrigin,
 } from '../../domain/policy/src/index.js'
 import type { LifecycleOperation } from '../../domain/lifecycle/src/index.js'
 import type {
@@ -39,7 +45,32 @@ import {
 import type {
   MemberLifecycleState,
   MemberInstanceRecordDto,
+  RemoteSafeRecord,
 } from '../../contracts/src/index.js'
+import { committedPolicyState } from '../effective-policy/index.js'
+import type { PolicyStateTransitionRecord } from '../mutation/index.js'
+import {
+  OPTIONAL_REQUIREMENT_ACCEPTED_FACT_TYPE,
+  parseOptionalRequirementAccepted,
+  parseRecoveryIncidentClosed,
+  parseRecoveryIncidentOpened,
+  parseTemplateAvailabilitySet,
+  RECOVERY_INCIDENT_CLOSED_FACT_TYPE,
+  RECOVERY_INCIDENT_OPENED_FACT_TYPE,
+  TEMPLATE_AVAILABILITY_SET_FACT_TYPE,
+} from '../requirements/index.js'
+import type {
+  OptionalRequirementAccepted,
+  RecoveryIncidentClosed,
+  RecoveryIncidentOpened,
+  TemplateAvailabilitySet,
+} from '../requirements/index.js'
+import type {
+  CompatibilityAcknowledgement,
+  CompatibilityStateRecord,
+  CompatibilityStatus,
+  LedgerEntry,
+} from '../../storage/schema/index.js'
 
 // --- caller roles ----------------------------------------------------------------
 
@@ -170,6 +201,29 @@ export interface TeamRuntimeActionRequest {
   readonly execution?: WorkExecutionMode
   /** Transient caller cancellation; never serialized or persisted. */
   readonly signal?: unknown
+  /**
+   * pre-alpha3 PR-E (plan §E.9) — the RECOVERY marker: present when this
+   * attempt is the human-REVIEWED recovery dispatch of a previously
+   * blocked normal-work attempt (the router's Control inline coupling
+   * returned `allow` for the recovery Control request). The gate then
+   * classifies the action as `recoveryWork` (allowed on the blocked
+   * scopes) and the activation runs on the REDUCED original authority
+   * (the downed capability subjects unavailable; everything else
+   * unchanged; the external hard ceiling absolute). NEVER set by the
+   * caller (the team tools / remote layer cannot forge it — it is
+   * produced exclusively by the router's recovery dispatch after a
+   * durable allow decision); a present marker without a blocked scope is
+   * a no-op (the gate falls back to the normal-work classification).
+   */
+  readonly recovery?: {
+    /** The scope keys the reviewed recovery covers (e.g. `['team']`,
+     *   `['template:x']`). */
+    readonly scopeKeys: readonly string[]
+    /** The downed capability subjects (the FATAL verdicts' unavailable
+     *   subjects across the covered scopes) — the reduced authority
+     *   excludes exactly these (plan §E.9). */
+    readonly unavailableSubjects: readonly string[]
+  }
 }
 
 // --- effects / results -------------------------------------------------------------
@@ -277,27 +331,56 @@ export type RuntimeActionEffect =
    * continuation's terminal result read-back, served losslessly).
    */
   | { readonly kind: 'work-status'; readonly entries: readonly WorkStatusEntry[] }
-  /** The per-capability effective policy view (inspect-config).
+  /**
+   * The per-capability effective policy view (inspect-config).
    *
-   * A2C-3 (plan §10): `effective` is the LEGACY generic capability policy
-   * view (the five generic cells after overlay + external facts — the
-   * generic `permissions` cell is NOT the alpha.2 operation-permission
-   * authority). The independent `operationPermissions` field carries the
-   * ACTUAL alpha.2 static parameter-aware policy (see
-   * {@link OperationPermissionView}). */
+   * A2C-3 (plan §10) + pre-alpha3 PR-F (plan §F.4): the read surface is
+   * SAME-SOURCE with the runtime authority. `effective` is the canonical
+   * effective policy of the SAME single assembly the live request
+   * boundary and the host projection run — over the closed capability
+   * set MINUS the generic `permissions` cell (the FAKE legacy cell; the
+   * ACTUAL alpha.2 operation-permission authority is the independent
+   * `operationPermissions` field, see {@link OperationPermissionView}).
+   * `policyState` / `requirement` / `recovery` carry the DURABLE facts —
+   * the committed PolicyState, the PR-E requirement / consent /
+   * availability facts, and the DERIVED recovery state — read straight
+   * from the TeamDomain (pure reads: the effect phase writes nothing and
+   * never re-probes the gate chain). */
   | {
       readonly kind: 'config-inspected'
+      /**
+       * The effective policy cells over {@link CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES}
+       * (the closed set minus the generic `permissions` cell).
+       */
       readonly effective: Record<string, PolicyEntry>
       /**
        * A2C-3 (plan §10): the ACTUAL alpha.2 operation permission of the
        * target — the bound template's static parameter-aware policy
        * (`boundTemplate.capabilities.permissions` → the TemplatePermission
        * Policy enforced by the pre-execute adapter). INDEPENDENT from the
-       * legacy generic `effective.permissions` cell. alpha.2 has no
+       * legacy generic `effective.permissions` cell (which is no longer
+       * surfaced at all — pre-alpha3 PR-F, plan §F.4). alpha.2 has no
        * dynamic permission mutation: the static policy IS the current
        * operation policy (no alpha.3 grants/overlays are invented).
        */
       readonly operationPermissions: OperationPermissionView
+      /**
+       * pre-alpha3 PR-F (plan §F.4): the COMMITTED PolicyState of the
+       * inspected root (the same durable read the live boundary and the
+       * host projection use).
+       */
+      readonly policyState: ConfigInspectedPolicyStateView
+      /**
+       * pre-alpha3 PR-F (plan §F.4): the DURABLE requirement / consent /
+       * availability facts of the root (the PR-E RequirementAuthority
+       * records + the durable compatibility verdict).
+       */
+      readonly requirement: ConfigInspectedRequirementView
+      /**
+       * pre-alpha3 PR-F (plan §F.4): the DERIVED recovery state (from the
+       * durable PR-E incident facts — no durable "recovery" flag exists).
+       */
+      readonly recovery: ConfigInspectedRecoveryView
     }
   /** The member list view (list-members). */
   | {
@@ -612,6 +695,66 @@ export interface TeamRuntimeOptions {
   readonly environmentFacts: () => Promise<
     readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]
   >
+  /**
+   * pre-alpha3 W3-A (review fix F1, guide §2.3) — the per-TEMPLATE scope
+   * facts port (the live provider's template-boundary feed: supply + fresh
+   * readiness + materialization). Present in the production host entry
+   * world; ABSENT in factory/test worlds, where the gate evaluates every
+   * scope against the single `environmentFacts` array (the legacy
+   * behavior, byte-identical).
+   */
+  readonly templateEnvironmentFacts?: (
+    templateId: string,
+  ) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>
+  /**
+   * PF-1 fix (2026-09-30, adjudicated product defect) — the per-BLUEPRINT
+   * live environment-facts source (the SAME seam the remote surface's
+   * `intent.probe` and the per-root compatibility prober consume): when
+   * PRESENT the requirement gate resolves the live feed against the team
+   * requirements of the REQUEST's bound blueprint — multi-blueprint hosts
+   * (boot blueprint ≠ bound blueprint) keep the frozen INV-9.4 two-worlds
+   * identity (the probe, the gate and the compatibility aggregate evaluate
+   * the SAME world; a configured + healthy live server never probes
+   * unreachable). When ABSENT the legacy single `environmentFacts` feed
+   * stands (factory / single-blueprint worlds — byte-identical verdicts).
+   */
+  readonly environmentFactsForBlueprint?: (
+    blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint,
+  ) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>
+  /**
+   * PF-1 fix (2026-09-30) — the per-BLUEPRINT per-template feed (the twin
+   * of `templateEnvironmentFacts` scoped to the request's bound blueprint;
+   * ABSENT in factory worlds — the legacy single-array gate stands,
+   * byte-identical).
+   */
+  readonly templateEnvironmentFactsForBlueprint?: (
+    blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint,
+    templateId: string,
+  ) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>
+  /**
+   * D-3 fix (2026-09-30, adjudicated product semantics — fail-closed
+   * PENDING) — the per-BLUEPRINT FULL-RESOLUTION live read (the atomic
+   * 3-state observations + 2-state feed pair of `resolveFacts`). When
+   * PRESENT the requirement gate consumes THIS source: the feed half
+   * drives the compatibility engine, the observations (the 3-state truth)
+   * drive the PENDING rule (a REQUIRED capability whose live observation
+   * is UNKNOWN is a typed PENDING block — never a seed-filled PASS; the
+   * static seed remains bootstrap/display only, guide §2.5). When ABSENT
+   * the facts-only ports stand (byte-identical; the PENDING rule is off —
+   * no live probe ⇒ no pending materialization).
+   */
+  readonly environmentFactsReadForBlueprint?: (
+    blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint,
+  ) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>
+  /**
+   * D-3 fix (2026-09-30) — the per-BLUEPRINT per-template FULL-RESOLUTION
+   * live read (the twin of `templateEnvironmentFactsForBlueprint`; same
+   * presence/absence semantics).
+   */
+  readonly templateEnvironmentFactsReadForBlueprint?: (
+    blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint,
+    templateId: string,
+  ) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>
   /** The external hard facts (effective-config read, stage 2). */
   readonly externalPolicyFacts: () => Promise<
     import('../../domain/policy/src/index.js').ExternalPolicyFacts
@@ -628,6 +771,19 @@ export interface TeamRuntimeOptions {
    *  preference still contributes no model grant with or without a
    *  baseline (no-preference behavior unchanged). */
   readonly staticModel: import('../agent-setup/model/index.js').ModelSelection
+  /** THE CANONICAL INPUT (pre-alpha3 PR-B, plan §B.2) — the static policy
+   *  authority (the production PolicyReader: the bound snapshot's
+   *  blueprint envelope + per-member template policy + external hard
+   *  facts). Absent = the pre-PR-B legacy inspect input
+   *  (`externalPolicyFacts` + the template-derived static grants). */
+  readonly policy?: import('../mutation/index.js').PolicyReader
+  /** THE CANONICAL INPUT (pre-alpha3 PR-B, plan §B.2) — the durable
+   *  PolicyState transitions of the addressed root (COMMIT order; the
+   *  last entry is the committed state). Absent = the implicit
+   *  `default` state (the pre-PR-B behavior). */
+  readonly policyStateTransitions?: (
+    rootSessionId: string,
+  ) => readonly import('../mutation/index.js').PolicyStateTransitionRecord[]
   /** The deterministic clock (ISO-8601) for durable fact timestamps. */
   readonly now: () => string
   /** The lifecycle transition commit port (the P7-T3 lifecycle module).
@@ -669,6 +825,19 @@ export interface TeamRuntimeOptions {
    *  production root wires through the same map. Absent in the P6-T2
    *  default wiring: the runtime owns a private map (previous behavior). */
   readonly teamLocks?: Map<string, Promise<unknown>>
+  /**
+   * pre-alpha3 PR-E (plan §E.9) — the Control service LAZY REF for the
+   * recovery dispatch: the production root wires the SAME ref object it
+   * hands the control tools (the service is created lazily on first use —
+   * the ref's `current` is `undefined` until then; a test world may wire a
+   * pre-built service or omit the ref entirely — ABSENT = recovery
+   * dispatch unavailable: a blocked normal-work attempt fails closed with
+   * the typed block, no Control coupling). The ref (not the service) is
+   * the wiring unit so the router never reorders the root's construction.
+   */
+  readonly controlServiceRef?: {
+    readonly current?: import('../control/index.js').ControlService
+  }
 }
 
 /**
@@ -722,6 +891,265 @@ export function memberSummary(member: MemberInstanceRecordDto): {
     label: member.label,
     ...(member.lifecycle !== undefined ? { lifecycle: member.lifecycle } : {}),
     ...(member.childSessionId !== undefined ? { childSessionId: member.childSessionId } : {}),
+  }
+}
+
+// --- pre-alpha3 PR-F (plan §F.4): the config-inspected same-source fact views ----
+
+/**
+ * The closed capability set of the `config-inspected` `effective` view
+ * (pre-alpha3 PR-F, plan §F.4): the five closed capability domains MINUS
+ * the generic `permissions` cell — the FAKE legacy cell that was the
+ * five-domain "dynamic" authority. The ACTUAL alpha.2 operation-permission
+ * authority is the independent `operationPermissions` field
+ * ({@link OperationPermissionView}), so the generic cell is no longer
+ * surfaced at all (neither displayed nor conflated).
+ */
+export const CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES: readonly CapabilityName[] = CAPABILITY_NAME_VALUES.filter(
+  (name) => name !== CAPABILITY_NAMES.PERMISSIONS,
+)
+
+/**
+ * The `policyState` field of the `config-inspected` effect (pre-alpha3
+ * PR-F, plan §F.4): the COMMITTED PolicyState of the inspected root —
+ * the SAME durable read the live request boundary and the host projection
+ * use (`committedPolicyState` over the durable transition rows): the last
+ * committed transition in commit order, or the implicit blueprint
+ * `default` state when no transition was ever committed.
+ */
+export interface ConfigInspectedPolicyStateView {
+  /** The committed state id (`default` = the implicit blueprint state). */
+  readonly stateId: string
+  /**
+   * `blueprint-default` — no durable transition row exists; the state is
+   * the implicit blueprint default. `durable-transition` — the state was
+   * committed by an explicit (human / authorized-leader) transition.
+   */
+  readonly source: 'blueprint-default' | 'durable-transition'
+  /** The committed state's per-capability cells (absent cell = open). */
+  readonly cells: Partial<Record<CapabilityName, PolicyStateCellView>>
+  /**
+   * Present for `durable-transition`: the durable entry that committed
+   * the state + the authority origin of the transition (the frozen
+   * `TeamValueOrigin` vocabulary).
+   */
+  readonly transition?: {
+    readonly entryId: string
+    readonly origin: TeamValueOrigin
+  }
+}
+
+/**
+ * Build the `policyState` view from the durable transition rows — the
+ * SAME `committedPolicyState` fold the production root uses for the
+ * projection's `policyState` cell (one read, one authority; no re-probe).
+ *
+ * @param transitions - the durable PolicyState transitions of the
+ *   inspected root (COMMIT order; empty = never transitioned).
+ */
+export function configInspectedPolicyStateView(
+  transitions: readonly PolicyStateTransitionRecord[],
+): ConfigInspectedPolicyStateView {
+  const { state, transition } = committedPolicyState(transitions)
+  return {
+    stateId: state.stateId,
+    source: transition === null ? 'blueprint-default' : 'durable-transition',
+    cells: { ...(state.cells ?? {}) },
+    ...(transition === null
+      ? {}
+      : { transition: { entryId: transition.entryId, origin: transition.origin } }),
+  }
+}
+
+/**
+ * The `requirement` field of the `config-inspected` effect (pre-alpha3
+ * PR-F, plan §F.4): the DURABLE requirement / consent / availability
+ * facts of the inspected root — the SAME records the runtime
+ * RequirementAuthority consumes. No re-probe: the gate chain re-evaluates
+ * live at the boundary; this read surfaces the durable facts only:
+ *
+ * - `compatibility` — the durable compatibility verdict (the storage
+ *   record, verbatim: status + fingerprint + generation + lossless
+ *   requirement outcomes + the durable human acknowledgements);
+ * - `consents` — the LATEST durable `optional-requirement-accepted` fact
+ *   per requirement (the DegradationConsent — survives restart);
+ * - `templateAvailability` — the LATEST durable `template-availability-set`
+ *   fact per template (absent entry = the blueprint availability,
+ *   unchanged).
+ */
+export interface ConfigInspectedRequirementView {
+  /** The durable compatibility verdict (ABSENT = never probed). */
+  readonly compatibility?: {
+    readonly status: CompatibilityStatus
+    readonly fingerprint: string
+    readonly generation: number
+    readonly outcomes: RemoteSafeRecord
+    readonly acknowledgements: readonly CompatibilityAcknowledgement[]
+    readonly computedAt: string
+  }
+  /** The latest durable consent per optional requirement (requirementId order). */
+  readonly consents: readonly {
+    readonly requirementId: string
+    readonly consentedBy: string
+    readonly consentedAt: number
+  }[]
+  /** The latest durable availability fact per template (templateId order). */
+  readonly templateAvailability: readonly {
+    readonly templateId: string
+    readonly available: boolean
+    readonly at: number
+  }[]
+}
+
+/**
+ * Build the `requirement` view from the durable compatibility record and
+ * the PR-E requirement facts (ledger rows, SEQUENCE order — the latest
+ * fact per key wins; the fail-closed parsers reject a corrupted row).
+ *
+ * @param compatibility - the durable compatibility state of the root
+ *   (`undefined` = never probed).
+ * @param ledgerEntries - the root's durable ledger entries (sequence
+ *   order; the PR-E fact types are the only ones consumed).
+ */
+export function configInspectedRequirementView(
+  compatibility: CompatibilityStateRecord | undefined,
+  ledgerEntries: readonly LedgerEntry[],
+): ConfigInspectedRequirementView {
+  const latestConsentByRequirement = new Map<string, OptionalRequirementAccepted>()
+  const latestAvailabilityByTemplate = new Map<string, TemplateAvailabilitySet>()
+  for (const entry of ledgerEntries) {
+    if (entry.factType === OPTIONAL_REQUIREMENT_ACCEPTED_FACT_TYPE) {
+      const fact = parseOptionalRequirementAccepted(
+        entry.payload,
+        `ledger[${entry.sequence}].payload`,
+      )
+      latestConsentByRequirement.set(fact.requirementId, fact)
+    } else if (entry.factType === TEMPLATE_AVAILABILITY_SET_FACT_TYPE) {
+      const fact = parseTemplateAvailabilitySet(
+        entry.payload,
+        `ledger[${entry.sequence}].payload`,
+      )
+      latestAvailabilityByTemplate.set(fact.templateId, fact)
+    }
+  }
+  const consents = [...latestConsentByRequirement.values()]
+    .sort((a, b) => a.requirementId.localeCompare(b.requirementId))
+    .map((fact) => ({
+      requirementId: fact.requirementId,
+      consentedBy: fact.consentedBy,
+      consentedAt: fact.consentedAt,
+    }))
+  const templateAvailability = [...latestAvailabilityByTemplate.values()]
+    .sort((a, b) => a.templateId.localeCompare(b.templateId))
+    .map((fact) => ({ templateId: fact.templateId, available: fact.available, at: fact.at }))
+  return {
+    ...(compatibility === undefined
+      ? {}
+      : {
+          compatibility: {
+            status: compatibility.status,
+            fingerprint: compatibility.fingerprint,
+            generation: compatibility.generation,
+            outcomes: { ...compatibility.outcomes },
+            acknowledgements: [...compatibility.acknowledgements],
+            computedAt: compatibility.computedAt,
+          },
+        }),
+    consents,
+    templateAvailability,
+  }
+}
+
+/**
+ * The `recovery` field of the `config-inspected` effect (pre-alpha3
+ * PR-F, plan §F.4): the DERIVED recovery state — computed from the
+ * durable PR-E incident facts, never stored (the authority negative:
+ * recovery is DERIVED; a durable "recovery" flag does not exist):
+ *
+ * - `openIncidents` — the scopes whose LATEST incident fact is a
+ *   `recovery-incident-opened` (the incident is still open);
+ * - `lastClosed` — the most recent `recovery-incident-closed` fact per
+ *   scope (the DURABLE RECORD of the exit — history, not live state);
+ * - `active` — true when any recovery incident is currently open.
+ */
+export interface ConfigInspectedRecoveryView {
+  /** The currently open incidents (scope order). */
+  readonly openIncidents: readonly {
+    readonly scope: string
+    readonly requirementIds: readonly string[]
+    readonly openedAt: number
+  }[]
+  /** The most recent closed incident per scope (scope order). */
+  readonly lastClosed: readonly {
+    readonly scope: string
+    readonly requirementIds: readonly string[]
+    readonly closedAt: number
+  }[]
+  /** Whether any recovery incident is currently open (derived). */
+  readonly active: boolean
+}
+
+/**
+ * Build the `recovery` view from the durable PR-E incident facts (ledger
+ * rows, SEQUENCE order — the latest incident fact per scope decides; the
+ * fail-closed parsers reject a corrupted row).
+ *
+ * @param ledgerEntries - the root's durable ledger entries (sequence
+ *   order; the two incident fact types are the only ones consumed).
+ */
+export function configInspectedRecoveryView(
+  ledgerEntries: readonly LedgerEntry[],
+): ConfigInspectedRecoveryView {
+  type IncidentFact =
+    | { readonly kind: 'opened'; readonly fact: RecoveryIncidentOpened }
+    | { readonly kind: 'closed'; readonly fact: RecoveryIncidentClosed }
+  const latestByScope = new Map<string, IncidentFact>()
+  for (const entry of ledgerEntries) {
+    if (entry.factType === RECOVERY_INCIDENT_OPENED_FACT_TYPE) {
+      const fact = parseRecoveryIncidentOpened(
+        entry.payload,
+        `ledger[${entry.sequence}].payload`,
+      )
+      latestByScope.set(fact.scope, { kind: 'opened', fact })
+    } else if (entry.factType === RECOVERY_INCIDENT_CLOSED_FACT_TYPE) {
+      const fact = parseRecoveryIncidentClosed(
+        entry.payload,
+        `ledger[${entry.sequence}].payload`,
+      )
+      latestByScope.set(fact.scope, { kind: 'closed', fact })
+    }
+  }
+  const openIncidents: {
+    readonly scope: string
+    readonly requirementIds: readonly string[]
+    readonly openedAt: number
+  }[] = []
+  const lastClosed: {
+    readonly scope: string
+    readonly requirementIds: readonly string[]
+    readonly closedAt: number
+  }[] = []
+  for (const incident of latestByScope.values()) {
+    if (incident.kind === 'opened') {
+      openIncidents.push({
+        scope: incident.fact.scope,
+        requirementIds: [...incident.fact.requirementIds],
+        openedAt: incident.fact.openedAt,
+      })
+    } else {
+      lastClosed.push({
+        scope: incident.fact.scope,
+        requirementIds: [...incident.fact.requirementIds],
+        closedAt: incident.fact.closedAt,
+      })
+    }
+  }
+  openIncidents.sort((a, b) => a.scope.localeCompare(b.scope))
+  lastClosed.sort((a, b) => a.scope.localeCompare(b.scope))
+  return {
+    openIncidents,
+    lastClosed,
+    active: openIncidents.length > 0,
   }
 }
 

@@ -1,0 +1,27 @@
+[2026-09-29T20:05:02.380Z] === pre-alpha3 PR-E E.12 real-host gate (14 scenarios) prereq-2026-09-29T20-05-02 ===
+[2026-09-29T20:05:02.380Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery
+[2026-09-29T20:05:02.380Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-09-29T20:05:02.380Z] world=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T20-05-02
+[2026-09-29T20:05:02.380Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-09-29T20-05-02
+[2026-09-29T20:05:02.396Z] stable pre-probes: 3080=401 3180=401
+[2026-09-29T20:05:02.423Z] [H1] PASS — test-use pristine BEFORE :: head=46a7f68b0922
+[2026-09-29T20:05:02.426Z] ports: host=3182 mock=3497 mcpRepo=3492 mcpLeaderreq=3491 mcpWeb=3493 (mcp_signal: never configured — the S2 supply axis)
+[2026-09-29T20:05:02.426Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T20-05-02 blueprints=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T20-05-02/blueprints
+[2026-09-29T20:05:02.432Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-09-29T20:05:02.434Z] mini MCP mcp_repo up on 127.0.0.1:3492
+[2026-09-29T20:05:02.445Z] mini MCP mcp_leaderreq up on 127.0.0.1:3491
+[2026-09-29T20:05:02.456Z] mini MCP mcp_web up on 127.0.0.1:3493
+[2026-09-29T20:05:02.456Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-29T20:05:03.459Z] throwaway boot OK: http://127.0.0.1:3182/?token=REDACTED
+[2026-09-29T20:05:03.545Z] web profile ensured (throwaway boot if first use)
+[2026-09-29T20:05:03.546Z] B1-CREATE: patch (bootPhase=create, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[{"name":"mcp_repo","port":3492},{"name":"mcp_leaderreq","port":3491},{"name":"mcp_web","port":3493}]) + directive (boot=1) written
+[2026-09-29T20:05:04.858Z] B1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T20:05:04.861Z] B1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T20:05:04.942Z] B1-CREATE: row ready — toolCount=13
+[2026-09-29T20:05:04.956Z] [S1] PASS — live preconditions: row config CARRIES all three mcpServers (supply axis) + every mini-MCP ANSWERS initialize on its port :: dumpCarries=true live={"mcp_repo":true,"mcp_leaderreq":true,"mcp_web":true}
+[2026-09-29T20:05:05.012Z] remote team.create v1 [t13-create] -> 200 ok=true
+[2026-09-29T20:05:05.012Z] T13 (v1 frozen) created: durable={"teamSession":{"schemaVersion":1,"rootSessionId":"session-prereq-v1-prereq-2026-09-29T20-05-02","blueprint":{"blueprintId":"team.mpr-anchor","revision":"1","contentHash":"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37"},"createdAt":"2026-09-29T20:05:04.979Z","generation":1,
+[2026-09-29T20:05:05.025Z] remote intent.probe v1 [s1-probe] -> 200 ok=true
+[2026-09-29T20:05:05.025Z] [S1] FAIL — all-ready cell: intent.probe(T) — team scope OPEN (both team requirements PASS) :: status=BLOCKED_FATAL reqs=["team.mcp.repo=FATAL","team.mcp.leaderreq=FATAL"]
+[2026-09-29T20:05:05.039Z] remote team.create v1 [t-create] -> 200 ok=false code=TEAM_RUNTIME_COMPATIBILITY_BLOCKED
+[2026-09-29T20:05:05.039Z] FATAL: team.create (T main) failed: TEAM_RUNTIME_COMPATIBILITY_BLOCKED — TeamRuntime: the creation preflight of "session-prereq-main-prereq-2026-09-29T20-05-02" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive th

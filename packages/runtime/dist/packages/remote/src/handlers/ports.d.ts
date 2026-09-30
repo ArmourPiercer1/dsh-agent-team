@@ -2,14 +2,22 @@
  * The backing ports of the Remote handler layer (deviation D-2).
  *
  * The handler layer depends on NO runtime types: its entire dependency
- * surface is these 18 structural ports (12 frozen P8-T3 ports + the two
- * TCM vNext §15.6 v2 ports + the two Team D1-D6 repair v2 v3 ports + the
- * F3/F11/F9/T1.4 repair round r1 F9 v4 port + the C1
- * restart-0.1.7-rc.1 recovery v5 port),
+ * surface is these 20 structural ports (12 frozen P8-T3 ports + the two
+ * TCM vNext §15.6 create-flavor ports + the two Team D1-D6 repair v2 v3
+ * ports + the F3/F11/F9/T1.4 repair round r1 F9 v4 port + the C1
+ * restart-0.1.7-rc.1 recovery v5 port + the two team-view-sync-complete
+ * v6 ports),
  * each of which the host wiring implements over the runtime APIs
  * (design note §3 table, "Backing API" column). Every port method returns
  * a lossless-JSON-safe record (or `null` where the wire shape allows it):
  * the remote layer never sees a live DSH object.
+ *
+ * Semantic naming (pre-alpha3 PR-F, plan §F.3): the ports are named for
+ * the SEMANTIC decision they serve (the create flavors, the projection
+ * shapes), never for a wire contract version — the version -> semantic
+ * translation lives in the contracts semantic adapter
+ * (`../contracts/semantic.js`), and the category handlers branch on the
+ * semantic values only.
  *
  * The port methods are synchronous: the vNext runtime services and storage
  * repositories are in-process and synchronous; the seam itself is
@@ -47,8 +55,14 @@ export interface RemoteIntentPort {
      */
     probe(blueprintId: string, blueprintRevision: number | undefined, environmentFacts: readonly RemoteSafeRecord[]): RemoteSafeRecord;
 }
-/** The TeamSession creation (root binding) port. */
-export interface RemoteTeamCreatePort {
+/**
+ * The TeamSession creation (root binding) port for the `embedded-work`
+ * create flavor (the contract v1 wire field set: the optional
+ * creation-time `initialWork` admitted inside the create —
+ * pre-alpha3 PR-F semantic naming, plan §F.3; the version -> flavor
+ * translation lives in the contracts semantic adapter, never here).
+ */
+export interface RemoteTeamCreateEmbeddedWorkPort {
     /**
      * Bind a fresh root or rehydrate a cold root for the requested
      * blueprint.
@@ -61,28 +75,30 @@ export interface RemoteTeamCreatePort {
 /** The whole-projection read port. */
 export interface RemoteProjectionPort {
     /**
-     * Project one TeamSession to its whole read-only view (the v1–v5 path
-     * — the frozen shape, served for contract versions <= 5).
+     * Project one TeamSession to its whole read-only view (the `base`
+     * projection shape — the exact frozen shape, served for contract
+     * versions 1-5; pre-alpha3 PR-F semantic naming, plan §F.3).
      * @returns the exact P8-T1 `TeamProjectionDto` (nine top-level fields,
      *   lossless JSON).
      */
     project(teamSessionId: string): RemoteSafeRecord;
     /**
-     * The v6 ATOMIC projection read (team-view-sync-complete, PR #35 second
-     * follow-up P0-2 — the same-snapshot guarantee): the whole projection
-     * PLUS its `liveToken` computed FROM THE SAME PROJECTION RESULT. The
-     * adapter materializes the live overlay ONCE (the Team-scoped
-     * `snapshot(teamSessionId)`), folds it into the member rows, and derives
-     * the token from those already-materialized `members[].liveActivity`
-     * cells — the frame's live state and the token can NEVER come from two
-     * different live snapshots, and no second live read happens on the v6
-     * path (the lightweight `liveToken` port remains for the v6
+     * The `live` projection shape's ATOMIC read (team-view-sync-complete,
+     * PR #35 second follow-up P0-2 — the same-snapshot guarantee; served
+     * for contract version 6): the whole projection PLUS its `liveToken`
+     * computed FROM THE SAME PROJECTION RESULT. The adapter materializes
+     * the live overlay ONCE (the Team-scoped `snapshot(teamSessionId)`),
+     * folds it into the member rows, and derives the token from those
+     * already-materialized `members[].liveActivity` cells — the frame's
+     * live state and the token can NEVER come from two different live
+     * snapshots, and no second live read happens on the live-shape path
+     * (the lightweight `liveToken` port remains for the v6
      * `team.getReadState` probe, which must NOT build a full projection).
      * @returns the projection (the same lossless-JSON `TeamProjectionDto`
      *   shape as `project`) plus its same-snapshot `liveToken` (a
      *   non-empty opaque `lt-v1-*` string).
      */
-    projectV6(teamSessionId: string): {
+    projectLive(teamSessionId: string): {
         projection: RemoteSafeRecord;
         liveToken: string;
     };
@@ -233,14 +249,16 @@ export interface RemoteLegacyPort {
     inspect(dshHome: string, workspaceCwd: string | undefined, projectDir: string | undefined): RemoteSafeRecord;
 }
 /**
- * The v2 `team.create` port (TCM vNext §15.6): the workspace-aware
- * creation variant. v2 create is CREATE-ONLY — it never carries initial
- * work (that travels the v2-only `team.admitInitialWork` command,
- * port 14, after the root is open). Typed failures raised here (e.g.
- * `TEAM_CREATE_WORKSPACE_*`) pass through the dispatcher unchanged
- * (invariant 4b, the closed backing vocabulary).
+ * The `workspace` create-flavor `team.create` port (TCM vNext §15.6 —
+ * the contract v2 wire field set; pre-alpha3 PR-F semantic naming, plan
+ * §F.3). The workspace-aware creation variant. This flavor is
+ * CREATE-ONLY — it never carries initial work (that travels the
+ * `team.admitInitialWork` command, port 14, after the root is open).
+ * Typed failures raised here (e.g. `TEAM_CREATE_WORKSPACE_*`) pass
+ * through the dispatcher unchanged (invariant 4b, the closed backing
+ * vocabulary).
  */
-export interface RemoteTeamCreateV2Port {
+export interface RemoteTeamCreateWorkspacePort {
     /**
      * Bind a fresh root (or rehydrate a cold root) for the requested
      * blueprint, resolving `workspace` through the host workspace registry
@@ -420,9 +438,9 @@ export interface RemoteTeamReadStatePort {
  *
  * Scope (PR #35 second follow-up P0-2): this port serves the LIGHTWEIGHT
  * v6 `team.getReadState` probe ONLY — the probe must NOT build a full
- * projection. The v6 `team.getProjection` does not consult it: its token
- * comes from the ATOMIC `RemoteProjectionPort.projectV6` read (the token
- * is computed from the same projection result — same snapshot).
+ * projection. The `live` projection shape does not consult it: its token
+ * comes from the ATOMIC `RemoteProjectionPort.projectLive` read (the
+ * token is computed from the same projection result — same snapshot).
  */
 export interface RemoteLiveTokenPort {
     /**
@@ -436,8 +454,9 @@ export interface RemoteLiveTokenPort {
 }
 /**
  * The complete dependency surface of the handler layer: exactly 20 ports
- * (the 12 frozen P8-T3 ports + the two TCM vNext §15.6 v2 ports + the
- * two Team D1-D6 repair v2 v3 ports + the F9 v4 port + the C1
+ * (the 12 frozen P8-T3 ports + the two TCM vNext §15.6 create-flavor
+ * ports (the workspace flavor + the initial-work admission) + the two
+ * Team D1-D6 repair v2 v3 ports + the F9 v4 port + the C1
  * restart-0.1.7-rc.1 recovery v5 port + the two team-view-sync-complete
  * v6 ports: the authoritative per-session read-state port and the
  * semantic-live-state token port), none of which is a mirror of the
@@ -447,8 +466,8 @@ export interface RemoteLiveTokenPort {
 export interface RemoteHandlerDeps {
     readonly catalog: RemoteCatalogPort;
     readonly intent: RemoteIntentPort;
-    readonly teamCreate: RemoteTeamCreatePort;
-    readonly teamCreateV2: RemoteTeamCreateV2Port;
+    readonly teamCreateEmbeddedWork: RemoteTeamCreateEmbeddedWorkPort;
+    readonly teamCreateWorkspace: RemoteTeamCreateWorkspacePort;
     readonly teamAdmitInitialWork: RemoteTeamAdmitInitialWorkPort;
     readonly teamRoots: RemoteTeamRootsPort;
     readonly teamEnsureRootLive: RemoteTeamEnsureRootLivePort;

@@ -47,7 +47,6 @@ import type {
 } from '../../domain/policy/src/index.js'
 import {
   MutationError,
-  MutationService,
   type EffectiveConfigCapture,
   type EffectiveConfiguration,
   type EffectivePolicyLike,
@@ -56,12 +55,18 @@ import {
   type MutationStore,
   type PolicyReader,
   type PolicyStateTransitionRecord,
-  type StepClock,
   type StoredMutationRecord,
   type SuppressionRecord,
   type CreationFieldRecord,
   type TeamSessionId,
 } from '../mutation/index.js'
+// pre-alpha3 PR-F: the `MutationService` class + the `StepClock` port are
+// the INTERNAL test-world kernel (pulled off the public mutation surface —
+// this helper is its direct test seam).
+import {
+  MutationService,
+  type StepClock,
+} from '../mutation/internal/mutation-service.js'
 
 // ---------------------------------------------------------------------------
 // Fixture ids

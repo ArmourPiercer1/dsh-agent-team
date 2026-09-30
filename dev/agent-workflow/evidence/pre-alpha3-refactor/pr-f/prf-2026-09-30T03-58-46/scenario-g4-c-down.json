@@ -1,0 +1,47 @@
+{
+  "pongA": {
+    "ok": true,
+    "value": {
+      "content": [
+        {
+          "type": "text",
+          "text": "pong:mcp_repo:g4-a"
+        }
+      ]
+    }
+  },
+  "pongB": {
+    "ok": false,
+    "error": {
+      "message": "unknown tool \"mcp__mcp_leaderreq__ping\"",
+      "info": {
+        "name": "ToolNotFoundError",
+        "code": "UNKNOWN_TOOL"
+      }
+    }
+  },
+  "toolOutcome": {
+    "status": "executed",
+    "action": "delegate",
+    "rootSessionId": "session-prf-main-prf-2026-09-30T03-58-46",
+    "callerRole": "leader",
+    "effect": {
+      "kind": "work-admitted",
+      "instanceId": "inst-10idvva0zi5d",
+      "fromLifecycle": "SETTLED",
+      "lifecycleCommitted": true,
+      "sequence": 10,
+      "replayed": false,
+      "settled": true,
+      "settledSequence": 13,
+      "memberResult": {
+        "requestToken": "rt-g4b-prf-2026-09-30T03-58-46",
+        "status": "succeeded",
+        "body": "PRREQ_DONE_W_g4b"
+      }
+    },
+    "requestToken": "rt-g4b-prf-2026-09-30T03-58-46"
+  },
+  "decisions": [],
+  "incidentPayload": null
+}

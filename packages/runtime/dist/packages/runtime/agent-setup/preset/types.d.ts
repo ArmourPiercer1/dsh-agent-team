@@ -63,6 +63,48 @@ export declare const PRESET_PERSONA_KINDS: {
 /** One of the three closed effective-persona states. */
 export type PresetPersonaKind = (typeof PRESET_PERSONA_KINDS)[keyof typeof PRESET_PERSONA_KINDS];
 /**
+ * The OBSERVED persona kind of the actually-mounted preset (pre-alpha3
+ * PR-C §C.3) — the frozen four-state the runtime reports for the preset it
+ * WILL mount (`config.rootPresetId` / `config.memberPresetId`, absent → the
+ * deployment default).
+ *
+ * This is the observation of the preset's effective persona from the REAL
+ * mount (not the historical hardcoded substrate, the UI-selected id, or the
+ * static row facts). The three resolved states mirror
+ * {@link PresetPersonaKind}; the fourth, `unresolved`, is a TYPED
+ * host/probe failure — the observation could not be resolved (the service is
+ * absent, the preset is unknown/unreadable, or a conditional disable is not
+ * evaluatable by any source). `unresolved` is fail-closed (no silent install)
+ * and is NOT an ordinary incompatibility: it is a distinct, honest state the
+ * plan §C.3 requires the engine and the UI to name rather than guess a kind
+ * from.
+ */
+export declare const OBSERVED_PERSONA_KINDS: {
+    /** No effective persona observed on the mounted preset. */
+    readonly absent: "absent";
+    /** A composable non-complete effective persona observed (the compatible case). */
+    readonly standard: "standard";
+    /** A complete effective persona observed (structural FATAL for Team, §13.5). */
+    readonly complete: "complete";
+    /**
+     * A TYPED observation failure: the kind could not be resolved from any
+     * source (fail-closed, never a kind guess, never ordinary incompatibility).
+     */
+    readonly unresolved: "unresolved";
+};
+/** One of the four closed observed-persona states. */
+export type ObservedPersonaKind = (typeof OBSERVED_PERSONA_KINDS)[keyof typeof OBSERVED_PERSONA_KINDS];
+/** Every observed-persona value, for closed-set membership tests. */
+export declare const OBSERVED_PERSONA_KIND_VALUES: readonly string[];
+/**
+ * Assert that `value` is a closed observed-persona kind.
+ * @param value - the raw kind.
+ * @param path - pointer used in the error details.
+ * @returns the typed kind.
+ * @throws `MALFORMED_DTO` for any value outside the four-state vocabulary.
+ */
+export declare function assertObservedPersonaKind(value: unknown, path: string): ObservedPersonaKind;
+/**
  * The effective composition substrate facts of one AgentPreset — the
  * minimal lossless-JSON observation the persona adapter needs.
  *

@@ -40,11 +40,11 @@ import type { TeamCreateAttempt } from './team-intent-model.js'
 /** The three faces the flow drives (all frozen-seam wrappers, verbatim). */
 export interface TeamCreateFlowFaces {
   /** `team.create` (contract v2) — the workspace-aware CREATE-ONLY variant. */
-  readonly createV2: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
+  readonly create: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
   /** The creation-path session open (the host-created root; rejects when unknown after the re-pull). */
   readonly openCreatedSession: (sessionId: string) => Promise<void>
   /** `team.admitInitialWork` (contract v2, v2-only method). */
-  readonly admitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
+  readonly admitInitialWork: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
 }
 
 /**
@@ -111,7 +111,7 @@ export async function runTeamCreateFlow(
     }
     let createResponse: RemoteResponse
     try {
-      createResponse = await faces.createV2(createParams)
+      createResponse = await faces.create(createParams)
     } catch (error) {
       return { ok: false, stage: 'create', code: LOCAL_ERROR_CODE, message: throwableMessage(error) }
     }
@@ -154,7 +154,7 @@ export async function runTeamCreateFlow(
   }
   let workResponse: RemoteResponse
   try {
-    workResponse = await faces.admitInitialWorkV2(workParams)
+    workResponse = await faces.admitInitialWork(workParams)
   } catch (error) {
     return { ok: false, stage: 'work', code: LOCAL_ERROR_CODE, message: throwableMessage(error) }
   }

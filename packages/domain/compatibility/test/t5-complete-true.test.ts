@@ -58,9 +58,12 @@ describe('P3-T5 complete:true (mandatory FATAL, no downgrade)', () => {
     expect(persona.complete).toBe(true)
     expect(persona.reasonCode).toBe('TEAM_PERSONA_COMPLETE_PRESET_CONFLICT')
     expect(persona.reasonCode).toBe(TeamContractErrorCode.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT)
-    expect(persona.unavailableSubjects).toEqual(['cordis-preset'])
+    // pre-alpha3 PR-E (plan §E.3) — the persona KIND convention: the
+    // required-kind subject is `standard`; the world provides the
+    // `complete` kind, which keys the frozen CONFLICT code.
+    expect(persona.unavailableSubjects).toEqual(['standard'])
     expect(persona.detail).toBe(
-      'complete:true persona requirement unmet: cordis-preset (structural FATAL, not downgradeable)',
+      'complete:true persona requirement unmet: required kind(s) standard not composable — the world provides a complete persona section (structural FATAL, not downgradeable)',
     )
     expect(result.counts.fatal).toBe(1)
   })
@@ -132,7 +135,8 @@ describe('P3-T5 complete:true (mandatory FATAL, no downgrade)', () => {
   it('a satisfied complete:true requirement is PASS (complete only binds the unmet case)', () => {
     const result = evaluateCompatibility({
       requirements: [COMPLETE_PERSONA_REQUIREMENT],
-      environmentFacts: [{ domain: 'persona', subject: 'cordis-preset', available: true, generation: 2 }],
+      // pre-alpha3 PR-E (plan §E.3): the world observes the required kind.
+      environmentFacts: [{ domain: 'persona', subject: 'standard', available: true, generation: 2 }],
     })
     expect(result.status).toBe(COMPATIBILITY_STATUS.OPEN)
     const persona = result.requirements.find((entry) => entry.requirementId === 'req-persona-complete')
@@ -140,5 +144,22 @@ describe('P3-T5 complete:true (mandatory FATAL, no downgrade)', () => {
     expect(persona.outcome).toBe('PASS')
     expect(persona.reasonCode).toBe(COMPATIBILITY_REASON_CODES.SATISFIED)
     expect(persona.mismatchFingerprint).toBe(null)
+  })
+
+  it('pre-alpha3 PR-E §E.3: a BARE world (no persona fact) reports the honest PERSONA_INCOMPATIBLE — never a false CONFLICT', () => {
+    const result = evaluateCompatibility({
+      requirements: [COMPLETE_PERSONA_REQUIREMENT],
+      environmentFacts: [],
+    })
+    expect(result.status).toBe(COMPATIBILITY_STATUS.BLOCKED_FATAL)
+    const persona = result.requirements.find((entry) => entry.requirementId === 'req-persona-complete')
+    if (persona === undefined) throw new Error('persona requirement missing from result')
+    expect(persona.outcome).toBe('FATAL')
+    expect(persona.complete).toBe(true)
+    expect(persona.reasonCode).toBe(COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE)
+    expect(persona.unavailableSubjects).toEqual(['standard'])
+    expect(persona.detail).toBe(
+      'complete:true persona requirement unmet: required kind(s) standard not observed — the world provides no persona section that composes (structural FATAL, not downgradeable)',
+    )
   })
 })

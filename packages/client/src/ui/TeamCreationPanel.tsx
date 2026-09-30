@@ -68,7 +68,7 @@ import type {
 import {
   intentCreateGate,
   intentEnvironmentFacts,
-  isPersonaPresetFatal,
+  personaFatalLane,
   mintRootSessionId,
   parseBlueprintDetail,
   parseCatalogList,
@@ -160,13 +160,13 @@ export interface TeamCreationPanelProps {
    * the root leader agent. Stamps contract version 2 (the ONLY creation
    * wrapper the new UI uses; every non-create wrapper stays v1, §15.3).
    */
-  readonly teamCreateV2: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
+  readonly teamCreate: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
   /**
    * `team.admitInitialWork` (contract v2, v2-only method, TCM M4 / plan
    * §15.6) — the deferred creation-time initial work, admitted through
    * the Team compatibility/admission authority after the root is open.
    */
-  readonly teamAdmitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
+  readonly teamAdmitInitialWork: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
   /**
    * The creation-path session open (D-3): opens the host-created root
    * session (the host mints it during `team.create` v2 — the client only
@@ -252,7 +252,7 @@ function panelCompatStatus(
 /** The New Team creation panel (UI §3–§9). */
 export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Element {
   const {
-    listCatalog, getCatalog, probeCompatibility, teamCreateV2, teamAdmitInitialWorkV2,
+    listCatalog, getCatalog, probeCompatibility, teamCreate, teamAdmitInitialWork,
     openCreatedSession, listAgentPresets, workspaces,
     handoffSource, handoffFace,
     draft, onDraftChange, onCancel, t, onCreated,
@@ -614,9 +614,9 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
       // (channel loss / failed open) maps onto the local marker.
       const outcome = await runTeamCreateFlow(
         {
-          createV2: teamCreateV2,
+          create: teamCreate,
           openCreatedSession,
-          admitInitialWorkV2: teamAdmitInitialWorkV2,
+          admitInitialWork: teamAdmitInitialWork,
         },
         snap,
         resumeAt,
@@ -1104,9 +1104,20 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
                 {t('intent.compatibility.owner')} {row.requirementId} — {row.detail}
               </p>
             ))}
-            {isPersonaPresetFatal(compat) && (
-              <p className={styles.fatalPreset}>{t('intent.fatal.preset')}</p>
-            )}
+            {(() => {
+              // pre-alpha3 PR-E (plan §E.3) — the persona KIND convention:
+              // both persona-preset FATAL lanes offer the preset remedy,
+              // with lane-honest copy (the bare-world lane must not claim a
+              // complete persona).
+              const lane = personaFatalLane(compat)
+              return lane === null
+                ? null
+                : (
+                  <p className={styles.fatalPreset}>
+                    {t(lane === 'conflict' ? 'intent.fatal.preset' : 'intent.fatal.presetIncompatible')}
+                  </p>
+                )
+            })()}
           </div>
         )}
       </div>

@@ -1,0 +1,82 @@
+{
+  "set1": {
+    "error": null,
+    "data": {
+      "recordId": "ovr-mcp-team-g0",
+      "kind": "human-override",
+      "scope": "team",
+      "rootSessionId": "session-prf-main-prf-2026-09-30T03-58-46",
+      "values": {
+        "mcp": {
+          "kind": "allow",
+          "items": [
+            "mcp_repo"
+          ]
+        }
+      },
+      "generation": 1,
+      "updatedAt": "2026-09-30T03:58:51.128Z"
+    }
+  },
+  "set2": {
+    "error": null,
+    "data": {
+      "recordId": "ovr-mcp-team-g1",
+      "kind": "human-override",
+      "scope": "team",
+      "rootSessionId": "session-prf-main-prf-2026-09-30T03-58-46",
+      "values": {
+        "mcp": {
+          "kind": "allow",
+          "items": [
+            "mcp_repo",
+            "extra-surface"
+          ]
+        }
+      },
+      "generation": 2,
+      "updatedAt": "2026-09-30T03:58:51.134Z"
+    }
+  },
+  "stale": {
+    "error": {
+      "code": "OVERRIDE_GENERATION_CONFLICT",
+      "message": "the slot winner moved since the caller read it",
+      "details": {
+        "method": "override.set",
+        "endpoint": "override.set",
+        "contractVersion": 7,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "OVERRIDE_GENERATION_CONFLICT",
+          "message": "the slot winner moved since the caller read it",
+          "details": {
+            "expectedGeneration": 1,
+            "actualGeneration": 2
+          }
+        }
+      }
+    }
+  },
+  "readAfterStale": {
+    "override": {
+      "schemaVersion": 2,
+      "kind": "human-override",
+      "recordId": "ovr-mcp-team-g1",
+      "scope": "team",
+      "rootSessionId": "session-prf-main-prf-2026-09-30T03-58-46",
+      "values": {
+        "mcp": {
+          "items": [
+            "mcp_repo",
+            "extra-surface"
+          ],
+          "kind": "allow"
+        }
+      },
+      "generation": 2,
+      "updatedAt": "2026-09-30T03:58:51.134Z"
+    }
+  }
+}

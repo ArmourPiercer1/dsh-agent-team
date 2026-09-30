@@ -1,0 +1,48 @@
+{
+  "type": "server-response",
+  "rpcId": "intent-probe-zpck3sx7u0",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "compatibility": {
+          "schemaVersion": 1,
+          "environmentFingerprint": "fp-v1:3531d25c618b5eda",
+          "status": "BLOCKED_FATAL",
+          "requirements": [
+            {
+              "requirementId": "req-f15-mcp",
+              "type": "mcpServer",
+              "complete": true,
+              "outcome": "FATAL",
+              "reasonCode": "COMPLETE_REQUIREMENT_NOT_MET",
+              "detail": "complete:true requirement unmet: mcp-f15 (structural FATAL, not downgradeable)",
+              "unavailableSubjects": [
+                "mcp-f15"
+              ],
+              "mismatchFingerprint": "fp-v1:510bd65aa0f3d1bc",
+              "acknowledgement": null
+            }
+          ],
+          "counts": {
+            "pass": 0,
+            "warning": 0,
+            "fatal": 1,
+            "unackedWarning": 0,
+            "staleAcknowledgement": 0
+          },
+          "unappliedAcknowledgements": []
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "intent.probe",
+        "endpoint": "intent.probe",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+ "type": "server-response",
+ "rpcId": "m1-comp-get-t9-before-1",
+ "result": {
+  "ok": true,
+  "value": {
+   "data": {
+    "verdict": {
+     "status": "OPEN",
+     "environmentFingerprint": "fp-v1:496d1037b98199e1",
+     "generation": 3,
+     "recordedAt": "2026-09-29T21:07:40.422Z",
+     "counts": {
+      "pass": 1,
+      "warning": 0,
+      "fatal": 0,
+      "unackedWarning": 0,
+      "staleAcknowledgement": 0
+     }
+    }
+   },
+   "provenance": {
+    "origin": "team-remote",
+    "method": "compatibility.get",
+    "endpoint": "compatibility.get",
+    "contractVersion": 1,
+    "requestToken": null,
+    "projectionGeneration": null,
+    "effectSequence": null
+   }
+  }
+ }
+}

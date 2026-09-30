@@ -148,7 +148,7 @@ export function createP8T4FakeServer(options: P8T4FakeServerOptions = {}): P8T4F
     // from it (same-snapshot by construction). The fake world has no
     // live overlay, so the deterministic semantic token is a fixed
     // `lt-v1-*` string (no clock facts — frozen decision 3).
-    projectV6(teamSessionId: string): {
+    projectLive(teamSessionId: string): {
       projection: RemoteSafeRecord
       liveToken: string
     } {

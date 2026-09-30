@@ -1,0 +1,38 @@
+{
+  "type": "server-response",
+  "rpcId": "t1-1y292lml1z",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+      "message": "TeamRuntime: a required scope is down (team) — new work admission is blocked (invariant 50)",
+      "details": {
+        "method": "team.create",
+        "endpoint": "team.create",
+        "contractVersion": 1,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+          "message": "TeamRuntime: a required scope is down (team) — new work admission is blocked (invariant 50)",
+          "details": {
+            "rootSessionId": "session-f15-t1-f15-2026-09-29-11-09-36",
+            "status": "BLOCKED_FATAL",
+            "gateReason": "requiredScopeDown",
+            "blockedScopes": [
+              "team"
+            ],
+            "blockingRequirementIds": [
+              "req-f15-mcp"
+            ],
+            "unavailableSubjects": [
+              "mcp-f15"
+            ],
+            "source": "requirement-gate",
+            "recoveryDispatchAvailable": true
+          }
+        }
+      }
+    }
+  }
+}

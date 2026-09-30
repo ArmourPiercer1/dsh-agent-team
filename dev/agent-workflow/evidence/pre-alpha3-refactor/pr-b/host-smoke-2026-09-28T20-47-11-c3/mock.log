@@ -1,0 +1,9 @@
+mock: listening on 127.0.0.1:3497
+mock: 1 [messages] text reply (10 chars): "prb c1 ack"
+mock: 2 [messages] text reply (10 chars): "prb c2 ack"
+mock: 3 [messages] text reply (20 chars): "prb c3a baseline ack"
+mock: 4 [messages] text reply (20 chars): "prb c3a baseline ack"
+mock: 5 [messages] text reply (10 chars): "prb c4 ack"
+mock: 6 [messages] text reply (15 chars): "prb c4 next ack"
+mock: 7 [messages] text reply (13 chars): "prb c5 c1 ack"
+mock: 8 [messages] text reply (13 chars): "prb c5 c2 ack"

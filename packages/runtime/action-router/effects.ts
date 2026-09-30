@@ -54,7 +54,6 @@ import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js'
 import type { MemberInstanceRecordDto } from '../../contracts/src/index.js'
 import type { BlueprintTemplate, TeamBlueprint } from '../../domain/blueprint/src/index.js'
 import {
-  CAPABILITY_NAME_VALUES,
   initialMcpGrantOf,
   staticCapabilitiesOf,
 } from '../../domain/policy/src/index.js'
@@ -84,6 +83,10 @@ import { isTeamDomainError } from '../../storage/schema/index.js'
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from '../admission/errors.js'
 import type { ActionSpec } from '../admission/actions.js'
 import type { ResolvedCaller } from '../admission/resolve.js'
+import type {
+  PolicyReader,
+  PolicyStateTransitionRecord,
+} from '../mutation/index.js'
 import { enforceWorkAcceptingState, mapActivationError } from '../admission/gate.js'
 import { resolveInstanceToken } from '../admission/resolve.js'
 import type {
@@ -96,7 +99,15 @@ import type {
 import type { LifecyclePorts } from '../lifecycle/types.js'
 import { archiveMember, disposeMember, restoreMember } from '../lifecycle/index.js'
 import { isLifecycleRuntimeError } from '../lifecycle/errors.js'
-import { effectivePolicyView, memberSummary, operationPermissionView } from '../admission/types.js'
+import {
+  CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES,
+  configInspectedPolicyStateView,
+  configInspectedRecoveryView,
+  configInspectedRequirementView,
+  effectivePolicyView,
+  memberSummary,
+  operationPermissionView,
+} from '../admission/types.js'
 import { ACTION_NAMES } from '../admission/actions.js'
 import {
   admitWorkLocked,
@@ -127,6 +138,16 @@ export interface EffectContext {
    *  routing fix). An ABSENT preference still contributes no inspect-time
    *  model grant (no-preference behavior unchanged). */
   readonly staticModel: ModelSelection
+  /** THE CANONICAL INPUT (pre-alpha3 PR-B, plan §B.2) — the static policy
+   *  authority (the production PolicyReader). Absent = the pre-PR-B
+   *  legacy inspect input (`externalPolicyFacts` + the template-derived
+   *  static grants). */
+  readonly policy?: PolicyReader
+  /** THE CANONICAL INPUT (pre-alpha3 PR-B, plan §B.2) — the durable
+   *  PolicyState transitions of the addressed root (COMMIT order; the
+   *  last entry is the committed state). Absent = the implicit
+   *  `default` state. */
+  readonly policyStateTransitions?: (rootSessionId: string) => readonly PolicyStateTransitionRecord[]
   readonly now: () => string
   readonly spec: ActionSpec
   readonly request: TeamRuntimeActionRequest
@@ -334,53 +355,98 @@ async function runEffect(ctx: EffectContext): Promise<RuntimeActionEffect | Work
     case ACTION_NAMES.INSPECT_CONFIG: {
       const target = ctx.target
       if (target === undefined) internalInvariant('inspect-config requires a resolved target')
-      const external = await ctx.externalPolicyFacts()
-      // PR #23 review fix (plan §3): inspect-config resolves the SAME
-      // effective policy the live consumption and the activation step 8
-      // resolve — including the bound template's INITIAL static mcp grant
-      // (the shared `initialMcpGrantOf(staticCapabilitiesOf(...))`
-      // derivation; an absent / non-allow / legacy template contributes
-      // nothing, never a synthesized override). Without this layer the
-      // inspection reported the template's allow as an unspecified
-      // fail-closed mcp cell while the agent actually ran with the grant
-      // (the P1 inconsistency: state showed allowed=false /
-      // source=unspecified while the MCP was mounted).
-      const boundTemplate = boundTemplateOf(ctx.blueprint, target)
-      const initialMcpGrant = initialMcpGrantOf(staticCapabilitiesOf(ctx.blueprint, boundTemplate))
-      // model-preference routing fix: the inspection ALSO carries the bound
-      // template's INITIAL static MODEL grant — the SAME
-      // `initialTemplateModelGrantOf` derivation the live consumption and
-      // the activation step 8 use — so team_inspect_config reports the
-      // SAME effective model cell the agent actually runs with (a
-      // declared `modelPreference` resolves at the template layer, not
-      // the unspecified -> staticModel baseline). The generic
-      // `templateValues` (model + mcp) feeds the ONE resolver.
-      const initialModelGrant = initialTemplateModelGrantOf(boundTemplate, ctx.staticModel)
-      const templateValues = {
-        ...(initialModelGrant !== undefined ? { model: initialModelGrant } : {}),
-        ...(initialMcpGrant !== undefined ? { mcp: initialMcpGrant } : {}),
-      }
       let policy
       try {
-        policy = resolveActivationPolicy({
-          rootSessionId: ctx.rootSessionId,
-          instanceId: target.instanceId,
-          overrides: ctx.repositories.overrides.list(ctx.rootSessionId),
-          external,
-          ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
-        })
+        if (ctx.policy !== undefined) {
+          // pre-alpha3 PR-B (plan §B.2): the canonical inspect read — the
+          // SAME single assembly as the live request boundary: the
+          // production PolicyReader (bound snapshot) + the durable
+          // PolicyState transitions + the durable governance records.
+          policy = resolveActivationPolicy({
+            rootSessionId: ctx.rootSessionId,
+            instanceId: target.instanceId,
+            overrides: ctx.repositories.overrides.list(ctx.rootSessionId),
+            policy: ctx.policy,
+            transitions: ctx.policyStateTransitions?.(ctx.rootSessionId) ?? [],
+          })
+        } else {
+          // LEGACY (pre-PR-B, the test worlds): the probed external facts
+          // + the template-derived static grants (below) + the implicit
+          // `default` PolicyState.
+          const external = await ctx.externalPolicyFacts()
+          // PR #23 review fix (plan §3): inspect-config resolves the SAME
+          // effective policy the live consumption and the activation
+          // step 8 resolve — including the bound template's INITIAL
+          // static mcp grant (the shared
+          // `initialMcpGrantOf(staticCapabilitiesOf(...))`
+          // derivation; an absent / non-allow / legacy template
+          // contributes nothing, never a synthesized override). Without
+          // this layer the inspection reported the template's allow as
+          // an unspecified fail-closed mcp cell while the agent actually
+          // ran with the grant (the P1 inconsistency: state showed
+          // allowed=false / source=unspecified while the MCP was
+          // mounted).
+          const boundTemplate = boundTemplateOf(ctx.blueprint, target)
+          const initialMcpGrant = initialMcpGrantOf(staticCapabilitiesOf(ctx.blueprint, boundTemplate))
+          // model-preference routing fix: the inspection ALSO carries
+          // the bound template's INITIAL static MODEL grant — the SAME
+          // `initialTemplateModelGrantOf` derivation the live
+          // consumption and the activation step 8 use — so
+          // team_inspect_config reports the SAME effective model cell
+          // the agent actually runs with (a declared `modelPreference`
+          // resolves at the template layer, not the unspecified ->
+          // staticModel baseline). The generic `templateValues` (model +
+          // mcp) feeds the ONE resolver.
+          const initialModelGrant = initialTemplateModelGrantOf(boundTemplate, ctx.staticModel)
+          const templateValues = {
+            ...(initialModelGrant !== undefined ? { model: initialModelGrant } : {}),
+            ...(initialMcpGrant !== undefined ? { mcp: initialMcpGrant } : {}),
+          }
+          policy = resolveActivationPolicy({
+            rootSessionId: ctx.rootSessionId,
+            instanceId: target.instanceId,
+            overrides: ctx.repositories.overrides.list(ctx.rootSessionId),
+            external,
+            ...(Object.keys(templateValues).length > 0 ? { templateValues } : {}),
+          })
+        }
       } catch (error) {
         if (isActivationError(error)) throw mapActivationError(error)
         throw error
       }
+      // pre-alpha3 PR-F (plan §F.4): the SAME-SOURCE read surface — the
+      // durable fact reads run once here (pure reads: the effect phase
+      // writes nothing and never re-probes the gate chain).
+      const transitions = ctx.policyStateTransitions?.(ctx.rootSessionId) ?? []
+      const ledgerEntries = ctx.repositories.ledger.list()
       return {
         kind: 'config-inspected',
-        effective: effectivePolicyView(effectivePolicyValues(policy), CAPABILITY_NAME_VALUES),
+        // F.4: the generic `permissions` cell is excluded from the
+        // effective view — the FAKE legacy cell; the ACTUAL alpha.2
+        // operation-permission authority is the independent
+        // `operationPermissions` field below.
+        effective: effectivePolicyView(
+          effectivePolicyValues(policy),
+          CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES,
+        ),
         // A2C-3 (plan §10): the ACTUAL alpha.2 operation permission — the
         // bound template's static parameter-aware policy (bound snapshot,
         // never runtime observation). Pure read: the effect phase writes
         // nothing (the seam write log is unchanged by this effect).
         operationPermissions: operationPermissionView(boundTemplateOf(ctx.blueprint, target)),
+        // F.4: the committed PolicyState — the SAME durable fold the
+        // production root's projection runs (one read, one authority).
+        policyState: configInspectedPolicyStateView(transitions),
+        // F.4: the durable requirement / consent / availability facts
+        // (the PR-E RequirementAuthority records + the compatibility
+        // verdict — verbatim from the TeamDomain).
+        requirement: configInspectedRequirementView(
+          ctx.repositories.compatibility.get(ctx.rootSessionId),
+          ledgerEntries,
+        ),
+        // F.4: the DERIVED recovery state (from the durable PR-E
+        // incident facts — no durable "recovery" flag exists).
+        recovery: configInspectedRecoveryView(ledgerEntries),
       }
     }
     case ACTION_NAMES.WORK_STATUS: {
@@ -838,6 +904,10 @@ async function runDelegate(ctx: EffectContext): Promise<RuntimeActionEffect | Wo
       : {}),
     requestToken: request.requestToken,
     callerId: LEADER_INSTANCE_ID,
+    // pre-alpha3 PR-E (plan §E.9): the reviewed recovery marker (the
+    // provider admits a blocked scope when the marker covers it — the
+    // reduced original authority).
+    ...(request.recovery !== undefined ? { recovery: request.recovery } : {}),
   }
   const result = await callProvider(ctx, activationRequest)
   if (result.kind === 'activated') {
@@ -936,6 +1006,10 @@ async function runCreateMember(ctx: EffectContext): Promise<RuntimeActionEffect>
       : {}),
     requestToken: request.requestToken,
     callerId: isHuman ? ctx.caller.humanId : LEADER_INSTANCE_ID,
+    // pre-alpha3 PR-E (plan §E.9): the reviewed recovery marker (the
+    // provider admits a blocked scope when the marker covers it — the
+    // reduced original authority).
+    ...(request.recovery !== undefined ? { recovery: request.recovery } : {}),
   }
   const result = await callProvider(ctx, activationRequest)
   if (result.kind !== 'activated') {

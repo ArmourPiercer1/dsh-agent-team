@@ -1,0 +1,6 @@
+[2026-09-30T03:07:25.117Z] === pre-alpha3 PR-E E.12 real-host gate (14 scenarios) prereq-2026-09-30T03-07-25 ===
+[2026-09-30T03:07:25.118Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure
+[2026-09-30T03:07:25.118Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-09-30T03:07:25.118Z] world=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/tests/homes/prereq-2026-09-30T03-07-25
+[2026-09-30T03:07:25.118Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-09-30T03-07-25
+[2026-09-30T03:07:25.134Z] stable pre-probes: 3080=401 3180=401

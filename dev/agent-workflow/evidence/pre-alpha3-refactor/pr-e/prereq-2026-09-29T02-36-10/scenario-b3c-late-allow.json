@@ -1,0 +1,31 @@
+{
+  "lateError": {
+    "code": "internal-error",
+    "message": "internal error in remote handler",
+    "details": {
+      "method": "team.resolveControl",
+      "endpoint": "team.resolveControl",
+      "contractVersion": 4,
+      "requestToken": null,
+      "reason": "untyped-error"
+    }
+  },
+  "lateBody": {
+    "type": "server-response",
+    "rpcId": "b3c-late-allow-84fb5120",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "internal-error",
+        "message": "internal error in remote handler",
+        "details": {
+          "method": "team.resolveControl",
+          "endpoint": "team.resolveControl",
+          "contractVersion": 4,
+          "requestToken": null,
+          "reason": "untyped-error"
+        }
+      }
+    }
+  }
+}

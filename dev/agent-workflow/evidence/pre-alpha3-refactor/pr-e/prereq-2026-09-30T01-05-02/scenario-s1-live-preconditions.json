@@ -1,0 +1,8 @@
+{
+  "dumpCarries": true,
+  "liveUp": {
+    "mcp_repo": true,
+    "mcp_leaderreq": true,
+    "mcp_web": true
+  }
+}

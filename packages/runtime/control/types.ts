@@ -63,6 +63,40 @@
  * BLOCKED; a new attempt at the operation must create a NEW control
  * request with a NEW correlation (no reuse).
  *
+ * Pre-Alpha.3 PR-D (plan §D — Control Plane Generalization): the
+ * instance-only approval service generalizes to the unified durable
+ * decision plane (the Recovery inline Human Review substrate):
+ *
+ * - the CANONICAL subject (`ControlSubject` — D.2): the scope's second
+ *   identity element is the SUBJECT, closed three-kind
+ *   `instance | template | team`. `targetInstanceId` is KEPT (additive,
+ *   not removed) as the legacy read-compatibility projection of an
+ *   INSTANCE subject; a durable row / scope carrying `targetInstanceId`
+ *   but NO explicit `subject` parses to
+ *   `subject = { kind: 'instance', instanceId: targetInstanceId }`
+ *   (byte-identical semantics — old durable rows keep working
+ *   unchanged, no migration). The scope key derives from the SUBJECT id
+ *   (instance → instanceId, template → templateId, team → rootSessionId);
+ *   for a legacy instance row the subject id IS `targetInstanceId`, so
+ *   the key is byte-identical to the pre-PR-D key;
+ * - the REVIEW PAYLOAD (D.3): the additive optional request fields
+ *   `reviewPayload?` (the lossless-JSON value the Remote/UI must display
+ *   losslessly — the Recovery reviewed invocation), `reviewPayload-
+ *   Digest?` (its stable digest string) and `executionCoupling?` (closed
+ *   `guarded | inline`). ABSENT = legacy semantics (byte-identical for
+ *   old rows);
+ * - the TWO COUPLINGS (D.4): `guarded` (the existing flow: request →
+ *   wait → decision → guard → consume → execute — unchanged) and the NEW
+ *   `inline` (request → wait → decision; on `allow` the current frozen
+ *   invocation continues — NO `control-allow-consumed` fact is written,
+ *   the allow is not consumed by a guard; on `deny` zero effect; on
+ *   `abort` the NEW additive close fact `control-request-abandoned` is
+ *   durably recorded — the append-only ledger has no delete primitive —
+ *   and the request state becomes DERIVED: `pending | decided |
+ *   abandoned`, with the abandon fact the TERMINAL mark (like
+ *   `stale-denied`): an abandoned request can never become an allow, and
+ *   the last-mile guard sees the abandon and blocks.
+ *
  * Synchronous wait bridge (alpha.2 §9.4): `ControlService.
  * awaitControlDecision` is the minimal liveness bridge over the SAME
  * durable rows — it polls the durable control state (the authority is
@@ -75,6 +109,7 @@
  * @module @dsh-agent-team/runtime/control/types
  */
 
+import type { RemoteSafeJsonValue } from '../../contracts/src/index.js'
 import type { CapabilityName } from '../../domain/policy/src/index.js'
 import type { ActionCaller } from '../admission/index.js'
 
@@ -170,6 +205,100 @@ export type ControlDecisionReason = (typeof CONTROL_DECISION_REASONS)[keyof type
 /** Every durable-decision reason value, for membership checks. */
 export const CONTROL_DECISION_REASON_VALUES: readonly string[] = Object.values(CONTROL_DECISION_REASONS)
 
+// --- canonical subject (pre-alpha3 PR-D, D.2) --------------------------------------------
+
+/**
+ * The closed CANONICAL subject kinds of a control operation scope
+ * (pre-alpha3 PR-D, D.2): the scope's second identity element generalizes
+ * from "the target instance" to a subject the operation is about:
+ *
+ * - `instance` — the operation is addressed to one member instance
+ *   (the pre-PR-D identity; a legacy row's `targetInstanceId` IS this
+ *   subject id — byte-identical semantics);
+ * - `template` — the operation is about one blueprint TEMPLATE (e.g. a
+ *   Recovery reviewed invocation of a template's work): templates carry
+ *   no lifecycle, so the instance stale validators NEVER apply to a
+ *   template subject (the stale check branches on the subject kind);
+ * - `team` — the operation is about the TEAM as a whole (the subject id
+ *   is the team's own root session id).
+ */
+export const CONTROL_SUBJECT_KINDS = {
+  /** The operation is addressed to one member instance. */
+  INSTANCE: 'instance',
+  /** The operation is about one blueprint template. */
+  TEMPLATE: 'template',
+  /** The operation is about the team as a whole (the root session). */
+  TEAM: 'team',
+} as const
+
+/** One of the closed canonical subject kinds. */
+export type ControlSubjectKind = (typeof CONTROL_SUBJECT_KINDS)[keyof typeof CONTROL_SUBJECT_KINDS]
+
+/** Every canonical subject kind value, for membership checks. */
+export const CONTROL_SUBJECT_KIND_VALUES: readonly string[] = Object.values(CONTROL_SUBJECT_KINDS)
+
+/** Type guard: is `value` a {@link ControlSubjectKind}? */
+export function isControlSubjectKind(value: unknown): value is ControlSubjectKind {
+  return typeof value === 'string' && (CONTROL_SUBJECT_KIND_VALUES as readonly string[]).includes(value)
+}
+
+/**
+ * The CANONICAL subject of a control operation scope (pre-alpha3 PR-D,
+ * D.2): the frozen identity the scope — and therefore the request, the
+ * decision snapshot and the scope key — is keyed on. Exactly ONE id field
+ * is present, selected by the kind:
+ *
+ * - `instance` → `instanceId` (the member instance, invariant 18/19);
+ * - `template` → `templateId` (the bound blueprint's static template
+ *   identity, invariant 19);
+ * - `team`     → `rootSessionId` (the team's own root session id).
+ */
+export type ControlSubject =
+  | { readonly kind: 'instance'; readonly instanceId: string }
+  | { readonly kind: 'template'; readonly templateId: string }
+  | { readonly kind: 'team'; readonly rootSessionId: string }
+
+// --- execution coupling (pre-alpha3 PR-D, D.3/D.4) -----------------------------------------
+
+/**
+ * The closed EXECUTION COUPLINGS of a control request (pre-alpha3 PR-D,
+ * D.3/D.4): how the requested decision is coupled to the operation's
+ * execution.
+ *
+ * - `guarded` — the EXISTING flow (request → wait → decision → guard →
+ *   consume → execute): the allow is consumed EXACTLY ONCE by the
+ *   last-mile guard's check-and-reserve (`control-allow-consumed`);
+ * - `inline` — the NEW flow (request → wait → decision; on `allow` the
+ *   current frozen invocation CONTINUES — no consumption fact is written,
+ *   the allow is not consumed by a guard; on `deny` zero effect; on
+ *   `abort` the additive close fact `control-request-abandoned` durably
+ *   closes the request with zero effect — the abandon fact is the
+ *   terminal mark, like `stale-denied`).
+ *
+ * ABSENT on the request = LEGACY semantics (byte-identical for old rows):
+ * the legacy instance-only flow is the guarded flow.
+ */
+export const CONTROL_EXECUTION_COUPLINGS = {
+  /** The existing guarded flow (guard consumes the allow exactly once). */
+  GUARDED: 'guarded',
+  /** The inline flow (the frozen invocation continues on allow; abort
+   *  durably abandons the request — no consumption fact is ever written). */
+  INLINE: 'inline',
+} as const
+
+/** One of the closed execution couplings. */
+export type ControlExecutionCoupling = (typeof CONTROL_EXECUTION_COUPLINGS)[keyof typeof CONTROL_EXECUTION_COUPLINGS]
+
+/** Every execution coupling value, for membership checks. */
+export const CONTROL_EXECUTION_COUPLING_VALUES: readonly string[] = Object.values(CONTROL_EXECUTION_COUPLINGS)
+
+/** Type guard: is `value` a {@link ControlExecutionCoupling}? */
+export function isControlExecutionCoupling(value: unknown): value is ControlExecutionCoupling {
+  return (
+    typeof value === 'string' && (CONTROL_EXECUTION_COUPLING_VALUES as readonly string[]).includes(value)
+  )
+}
+
 // --- scope ----------------------------------------------------------------------------
 
 /**
@@ -179,8 +308,23 @@ export const CONTROL_DECISION_REASON_VALUES: readonly string[] = Object.values(C
 export interface ControlOperationScope {
   /** The TeamSession (root session id, invariant 9) the operation belongs to. */
   readonly rootSessionId: string
-  /** The instance the operation is addressed to (invariant 18/19). */
-  readonly targetInstanceId: string
+  /**
+   * The CANONICAL subject of the scope (pre-alpha3 PR-D, D.2). OPTIONAL
+   * in the input surface for legacy compatibility: ABSENT = the legacy
+   * `targetInstanceId`-only path (the scope normalizes to the instance
+   * subject `subject.instanceId === targetInstanceId` — byte-identical
+   * scope key); PRESENT = the canonical identity (the service validates
+   * the closed kind + the non-empty kind-selected id).
+   */
+  readonly subject?: ControlSubject
+  /**
+   * The instance the operation is addressed to (invariant 18/19) — the
+   * LEGACY read-compatibility projection of an INSTANCE subject (kept
+   * additive, not removed, pre-alpha3 PR-D D.2). PRESENT for instance
+   * subjects (equal to `subject.instanceId` when a subject is given);
+   * ABSENT for template/team subjects (they have no target instance).
+   */
+  readonly targetInstanceId?: string
   /** The logical operation name being requested. */
   readonly actionName: string
   /** Present when the operation is a DSH tool-pipeline operation. */
@@ -231,8 +375,19 @@ export interface ControlRequestRecord {
   /** The requesting principal (the member, or the leader where the
    *  leader requests on its own/another instance's behalf). */
   readonly requester: ControlCallerRef
-  /** The instance the requested operation is addressed to. */
-  readonly targetInstanceId: string
+  /** The CANONICAL subject of the request (pre-alpha3 PR-D, D.2). ALWAYS
+   *  present on records produced by the service: a durable row carrying
+   *  an explicit `subject` uses it; a LEGACY row (targetInstanceId only,
+   *  no explicit subject) parses to the instance subject
+   *  `{ kind: 'instance', instanceId: targetInstanceId }` (byte-identical
+   *  semantics — old durable rows keep working unchanged, no migration). */
+  readonly subject: ControlSubject
+  /** The instance the requested operation is addressed to — the LEGACY
+   *  read-compatibility projection of an INSTANCE subject (pre-alpha3
+   *  PR-D D.2; kept additive, not removed). PRESENT for instance
+   *  subjects (equal to `subject.instanceId`); ABSENT for template/team
+   *  subjects (they have no target instance). */
+  readonly targetInstanceId?: string
   /** The logical operation name. */
   readonly actionName: string
   /** Present when the operation is a tool-pipeline operation. */
@@ -248,11 +403,41 @@ export interface ControlRequestRecord {
   readonly operationFingerprint?: string
   /** The requested operation summary (free text; NOT authority data). */
   readonly summary?: string
-  /** The request's durable state, DERIVED at read time from the decision
-   *  facts: `pending` while no decision fact exists for the requestId,
-   *  `decided` once a decision fact does (the row itself is never
+  /**
+   * The lossless-JSON review payload (pre-alpha3 PR-D, D.3): the value
+   * the Remote/UI must be able to display LOSSLESSLY (the Recovery
+   * reviewed invocation). ABSENT = legacy semantics (the field is
+   * OMITTED, never present-but-undefined — the row is byte-identical to
+   * the legacy shape). A present value must survive the
+   * `JSON.stringify`/`JSON.parse` round trip (the contracts
+   * `RemoteSafeJsonValue`); a present-but-non-lossless value is
+   * malformed input at the service boundary (fail closed) and a corrupted
+   * durable line is ABSENT (never a guess).
+   */
+  readonly reviewPayload?: RemoteSafeJsonValue
+  /**
+   * The STABLE DIGEST string of the review payload (pre-alpha3 PR-D,
+   * D.3): a present digest REQUIRES a present `reviewPayload` (a digest
+   * of a value the row does not carry is malformed input — fail closed);
+   * a present payload without a digest is fine (the digest is optional
+   * metadata of the payload). ABSENT = legacy semantics.
+   */
+  readonly reviewPayloadDigest?: string
+  /**
+   * The execution coupling (pre-alpha3 PR-D, D.3/D.4): closed
+   * `guarded | inline` (see {@link CONTROL_EXECUTION_COUPLINGS}).
+   * ABSENT = legacy semantics — the legacy instance-only flow is the
+   * GUARDED flow (byte-identical for old rows).
+   */
+  readonly executionCoupling?: ControlExecutionCoupling
+  /** The request's durable state, DERIVED at read time from the durable
+   *  facts: `pending` while no decision fact and no abandon fact exists
+   *  for the requestId, `decided` once a decision fact does (and no
+   *  abandon fact), `abandoned` once the additive close fact
+   *  `control-request-abandoned` does (the abandon fact is the TERMINAL
+   *  mark — it wins over a concurrent decision; the row itself is never
    *  rewritten — append-only ledger). */
-  readonly status: 'pending' | 'decided'
+  readonly status: 'pending' | 'decided' | 'abandoned'
   /** Fact creation time, ISO-8601 (the deterministic clock). */
   readonly createdAt: string
   /** The ledger sequence of the request row (durable identity). */
@@ -304,6 +489,32 @@ export interface ControlConsumptionRecord {
   readonly consumedAt: string
 }
 
+/**
+ * The durable abandonment record of an inline-coupling control request
+ * (pre-alpha3 PR-D, D.4): realized as the ADDITIVE ledger fact
+ * `control-request-abandoned` payload. The append-only ledger has no
+ * delete primitive — the abandon fact CLOSES the request without
+ * physically deleting it, and it is the TERMINAL mark (like the
+ * `stale-denied` decision): once recorded, the request can never become
+ * an allow (a later decision is rejected with
+ * CONTROL_REQUEST_ABANDONED; the last-mile guard blocks with the
+ * `request-abandoned` verdict even over a durable allow recorded
+ * BEFORE the abandon).
+ */
+export interface ControlAbandonmentRecord {
+  /** The request this abandon closes. */
+  readonly requestId: string
+  /** The TeamSession (root session id) the request belongs to. */
+  readonly rootSessionId: string
+  /** Abandonment time, ISO-8601 (the deterministic clock). */
+  readonly abandonedAt: string
+  /** The optional free-form abandon reason (evidence text; NOT authority
+   *  data). ABSENT = no reason carried. */
+  readonly reason?: string
+  /** The ledger sequence of this abandon row (durable identity). */
+  readonly abandonmentSequence: number
+}
+
 // --- guard verdicts -------------------------------------------------------------------
 
 /**
@@ -320,6 +531,14 @@ export const CONTROL_GUARD_BLOCK_REASONS = {
   DECISION_DENY: 'decision-deny',
   /** The durable decision is `stale-denied` (the request is closed). */
   REQUEST_STALE: 'request-stale',
+  /** The request is durably ABANDONED (the additive close fact
+   *  `control-request-abandoned` exists — pre-alpha3 PR-D, D.4). The
+   *  abandon fact is the TERMINAL mark (like `stale-denied`): even a
+   *  durable `allow` recorded BEFORE the abandon cannot execute — the
+   *  guard sees the abandon and blocks (zero effect; the inline allow
+   *  was never consumed by a guard, so there is no consumption to
+   *  honor). */
+  REQUEST_ABANDONED: 'request-abandoned',
   /** The durable allow exists but was already consumed (exactly-once). */
   ALLOW_CONSUMED: 'allow-consumed',
   /** A durable decision exists for the correlation but a scope field
@@ -475,7 +694,8 @@ export interface ControlRequestNotificationPort {
 
 /**
  * The durable control plane service (P6-T4 acceptance object):
- * requestControl / resolveControl / listControlState / guardOperation /
+ * requestControl / resolveControl / abandonControlRequest (the pre-alpha3
+ * PR-D inline abort path) / listControlState / guardOperation /
  * checkExternalOperation (the A2C-4 shared read-only external recheck) /
  * awaitControlDecision.
  *
@@ -489,6 +709,23 @@ export interface ControlService {
    * Durably record one control request (BEFORE any effect — the request
    * row is the only effect). Idempotent over the scope identity: a
    * retried/duplicate request (same scope key) returns the existing row.
+   *
+   * Subject addressing (pre-alpha3 PR-D, D.2): the CANONICAL identity is
+   * the `subject` (closed `instance | template | team`). ABSENT subject
+   * = the LEGACY `targetInstanceId`-only path (the request normalizes to
+   * the instance subject — byte-identical scope key and durable row
+   * semantics for old callers). A PRESENT instance subject must agree
+   * with a present `targetInstanceId`; a present `targetInstanceId` for
+   * a template/team subject is malformed input (fail closed). The
+   * instance stale validators apply ONLY to instance subjects (a
+   * template subject is never "stale" in the instance-lifecycle sense).
+   *
+   * Review payload (pre-alpha3 PR-D, D.3): the additive optional
+   * `reviewPayload?` (lossless JSON — ABSENT = legacy semantics),
+   * `reviewPayloadDigest?` (requires a present payload) and
+   * `executionCoupling?` (closed `guarded | inline`; ABSENT = the
+   * legacy guarded flow).
+   *
    * @param args - the requesting principal, the kind, and the operation scope.
    * @throws the facade's TeamRuntimeError codes (resolution phase, zero
    *   side effects) or CONTROL_REQUEST_MALFORMED / CONTROL_TARGET_STALE.
@@ -497,13 +734,29 @@ export interface ControlService {
     readonly rootSessionId: string
     readonly caller: ActionCaller
     readonly kind: ControlRequestKind
-    readonly targetInstanceId: string
+    /** The CANONICAL subject (pre-alpha3 PR-D, D.2). ABSENT = the legacy
+     *  `targetInstanceId`-only instance path (required in that case). */
+    readonly subject?: ControlSubject
+    /** The legacy instance addressing (kept additive). REQUIRED when no
+     *  `subject` is given; for an explicit instance subject it must be
+     *  ABSENT or agree with `subject.instanceId`; ABSENT (not merely
+     *  empty) for template/team subjects. */
+    readonly targetInstanceId?: string
     readonly actionName: string
     readonly toolName?: string
     readonly capabilityDomain?: CapabilityName
     readonly correlation: string
     readonly operationFingerprint?: string
     readonly summary?: string
+    /** The lossless-JSON review payload (pre-alpha3 PR-D, D.3). ABSENT =
+     *  legacy semantics (the field stays OMITTED on the durable row). */
+    readonly reviewPayload?: RemoteSafeJsonValue
+    /** The stable digest string of the review payload (requires a
+     *  present `reviewPayload`). ABSENT = legacy semantics. */
+    readonly reviewPayloadDigest?: string
+    /** The execution coupling (closed `guarded | inline`; ABSENT = the
+     *  legacy guarded flow). */
+    readonly executionCoupling?: ControlExecutionCoupling
   }): Promise<ControlRequestRecord>
   /**
    * Durably record one control decision closing a pending request. The
@@ -512,9 +765,10 @@ export interface ControlService {
    * @param args - the deciding principal, the requestId and the decision.
    * @throws the facade's TeamRuntimeError codes (resolution phase),
    *   CONTROL_REQUEST_NOT_FOUND / CONTROL_REQUEST_DECIDED /
-   *   CONTROL_RESOLVER_NOT_AUTHORIZED / CONTROL_REQUEST_MALFORMED, or —
-   *   after recording the durable decision row —
-   *   CONTROL_REQUEST_STALE / CONTROL_EXTERNAL_POLICY_DENIED.
+   *   CONTROL_REQUEST_ABANDONED / CONTROL_RESOLVER_NOT_AUTHORIZED /
+   *   CONTROL_REQUEST_MALFORMED, or — after recording the durable
+   *   decision row — CONTROL_REQUEST_STALE /
+   *   CONTROL_EXTERNAL_POLICY_DENIED.
    */
   resolveControl(args: {
     readonly rootSessionId: string
@@ -524,6 +778,46 @@ export interface ControlService {
     readonly note?: string
   }): Promise<ControlDecisionRecord>
   /**
+   * Durably ABANDON one control request (pre-alpha3 PR-D, D.4 — the
+   * inline abort path): records the ADDITIVE close fact
+   * `control-request-abandoned` (payload: requestId, rootSessionId,
+   * abandonedAt, reason?) BEFORE any effect — the row IS the durable
+   * close; the append-only ledger has no delete primitive, so the
+   * request row is never physically removed. The abandon fact is the
+   * TERMINAL mark (like `stale-denied`): once recorded, the request can
+   * never become an allow (a later decision is rejected with
+   * CONTROL_REQUEST_ABANDONED) and the last-mile guard blocks with the
+   * `request-abandoned` verdict even over a durable `allow` recorded
+   * BEFORE the abandon (the old allow/decision cannot execute the
+   * operation — zero effect).
+   *
+   * Close authority (closed rule — the CONTROL INTERNAL close authority,
+   * pre-alpha3 review F3): the human may abandon any request, the
+   * Leader any of the current Team's requests, and a member ONLY ITS
+   * OWN request (the requester ref's instanceId). The caller must be
+   * live (the facade's `resolveCaller`) and the team must exist. The
+   * close authority is INDEPENDENT of the `resolve-control` mutation
+   * envelope (abandon does NOT reuse the resolve-control op spec or
+   * perform any envelope check — a caller that may request a review
+   * can always abandon its own waiting review; no new Team tool
+   * permission or mutation op is exposed). Abandoning an
+   * already-abandoned request is rejected with
+   * CONTROL_REQUEST_ABANDONED (the terminal mark is written exactly
+   * once). Abandoning a DECIDED request is allowed: that is the
+   * allow-invalidating path (the abandon closes the durable allow).
+   * @param args - the closing principal, the requestId and the optional
+   *   reason.
+   * @throws the facade's TeamRuntimeError codes (resolution phase),
+   *   CONTROL_REQUEST_NOT_FOUND / CONTROL_REQUEST_ABANDONED /
+   *   CONTROL_RESOLVER_NOT_AUTHORIZED / CONTROL_REQUEST_MALFORMED.
+   */
+  abandonControlRequest(args: {
+    readonly rootSessionId: string
+    readonly caller: ActionCaller
+    readonly requestId: string
+    readonly reason?: string
+  }): Promise<ControlAbandonmentRecord>
+  /**
    * Read the team's durable control state (fresh ledger read; the
    * in-process holds NO cached authority — invariant 45).
    * @param rootSessionId - the team (root) session id.
@@ -532,6 +826,9 @@ export interface ControlService {
     readonly requests: readonly ControlRequestRecord[]
     readonly decisions: readonly ControlDecisionRecord[]
     readonly consumptions: readonly ControlConsumptionRecord[]
+    /** The durable abandonments (pre-alpha3 PR-D, D.4; the additive
+     *  `control-request-abandoned` facts). */
+    readonly abandonments: readonly ControlAbandonmentRecord[]
   }>
   /**
    * The TOOL PIPELINE LAST-MILE GUARD (the public seam P6-T6 wires into

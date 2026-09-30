@@ -60,7 +60,7 @@ import {
 import { MUTATION_ERROR_CODES, MutationError } from '../mutation/errors.js'
 import { normalizeStateView } from '../mutation/service.js'
 import type { AdmittedGovernanceOverride, OverrideRecordView } from '../mutation/override-admission.js'
-import { activePolicyState } from '../policy-adapter.js'
+import { committedPolicyState } from '../effective-policy/index.js'
 import {
   assertCells,
   buildReissueRecord,
@@ -97,13 +97,6 @@ const STORAGE_RECORD_DUPLICATE = 'RECORD_DUPLICATE'
  */
 const PRODUCTION_REQUESTED_AT_STEP = 0
 const PRODUCTION_EFFECTIVE_FROM_STEP = 1
-
-/**
- * The read horizon of the active-state selection (the production clock
- * is pinned to 0, so the maximum step sees every admitted transition —
- * the same horizon the remote `policyState.get` and the projection read).
- */
-const DEFAULT_AT_STEP = Number.MAX_SAFE_INTEGER
 
 function storageErrorCode(error: unknown): string | undefined {
   if (error instanceof Error) {
@@ -238,8 +231,6 @@ function admittedView(args: {
 export function createGovernanceMutationService(
   deps: GovernanceMutationServiceDeps,
 ): GovernanceMutationService {
-  const atStep = deps.atStep ?? DEFAULT_AT_STEP
-
   /**
    * The write-time checks common to every cell set: the external hard
    * facts (EVERY origin) + the autonomy envelope (agent origins only).
@@ -471,8 +462,11 @@ export function createGovernanceMutationService(
         )
       }
       const transitions = deps.transitions.listTransitions(args.rootSessionId)
-      const active = activePolicyState(transitions, atStep)
-      if (active.stateId === target.stateId) {
+      // pre-alpha3 PR-B (plan §B.2): the no-change check runs against the
+      // COMMITTED state — the last durable transition in commit order
+      // (the production step clock is retired as a decision source).
+      const committed = committedPolicyState(transitions)
+      if (committed.state.stateId === target.stateId) {
         return {
           changed: false as const,
           reason: 'no-change' as const,
@@ -499,8 +493,12 @@ export function createGovernanceMutationService(
       })
       // COMMIT-BEFORE-ACK: the durable ledger row is written BEFORE the
       // ack (the R2-1 fire-and-schedule window is closed); only then the
-      // in-memory read cache is appended.
-      await deps.transitionCommit.commit(transition)
+      // in-memory read cache is appended. The row is stamped with the
+      // ADDRESSED TeamSession (args.rootSessionId) — the durable read is
+      // root-keyed, so stamping anything else would make the committed
+      // state invisible to this team and leak it to a foreign root (the
+      // overrides lane stamps args.rootSessionId the same way, :266/283).
+      await deps.transitionCommit.commit(args.rootSessionId, transition)
       deps.transitions.appendTransition(args.rootSessionId, transition)
       return { changed: true as const, transition }
     })

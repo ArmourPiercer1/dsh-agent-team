@@ -1,0 +1,116 @@
+[2026-09-30T05:28:54.873Z] === G6 one-off diagnostic (PR-F closure, increment 2) ===
+[2026-09-30T05:28:54.873Z] runStamp=g6diag-2026-09-30T05-28-54 worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure
+[2026-09-30T05:28:54.873Z] host baseline sha=46a7f68b0922371ce7144b668b90e377d8e799f4 (paths.mjs pin)
+[2026-09-30T05:28:54.894Z] test-use preflight: head=46a7f68b0922371ce7144b668b90e377d8e799f4 porcelainEmpty=true
+[2026-09-30T05:28:54.911Z] stable pre-probes: 3080=401 3180=401
+[2026-09-30T05:28:54.917Z] ports: host=3182 mock=3497 mcpRepo=3492 mcpLeaderreq=3491 mcpWeb=3493
+[2026-09-30T05:28:54.917Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/tests/homes/g6diag-2026-09-30T05-28-54 blueprints=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/tests/homes/g6diag-2026-09-30T05-28-54/blueprints TMPDIR pinned (unset) -> /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/tests/homes/g6diag-2026-09-30T05-28-54/tmp
+[2026-09-30T05:28:54.923Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-09-30T05:28:54.925Z] mini MCP mcp_repo up on 127.0.0.1:3492
+[2026-09-30T05:28:54.937Z] mini MCP mcp_leaderreq up on 127.0.0.1:3491
+[2026-09-30T05:28:54.948Z] mini MCP mcp_web up on 127.0.0.1:3493
+[2026-09-30T05:28:54.948Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-30T05:28:56.203Z] throwaway boot OK: http://127.0.0.1:3182/?token=XLBH4pWm7i0XvolXU1Wack6RQLyB59VrpfhpQRwLt2M
+[2026-09-30T05:28:56.258Z] web profile ensured (throwaway boot if first use)
+[2026-09-30T05:28:56.259Z] B1-CREATE: patch written (bootPhase=create, facts=all-true, mcp=[{"name":"mcp_repo","port":3492},{"name":"mcp_leaderreq","port":3491},{"name":"mcp_web","port":3493}]) + directive
+[2026-09-30T05:28:57.769Z] B1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-30T05:28:57.772Z] B1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-30T05:28:57.850Z] B1-CREATE: row ready — toolCount=13
+[2026-09-30T05:28:57.994Z] ORACLE spill round 0: bash (head -c 300000 /dev/zero | tr '\0' 'x'...)
+[2026-09-30T05:28:58.087Z] remote team.create v1 [g6-create] -> 200 ok=true
+[2026-09-30T05:28:58.087Z] team.create (TSPILL) -> ok=true
+[2026-09-30T05:28:58.090Z] observations after create (4): ["alpha2-perm: coverage PASS safe-unmanaged tool 'todo_write' on session-g6diag-spill-g6diag-2026-09-30T05-28-54 (source-reviewed closed registry)","alpha2-artifact-grant: shell-result-observer installed","alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-g6diag-d146aeb6\",\"tool\":\"bash\",\"resourceKind\":\"tool\",\"resourceDisplay\":\"bash\",\"fingerprint\":\"sha256:fdf510eb39595dc7fa85c6a58ff0cbd1f0481fe50431bcb5a5e0dded83ae3ce7\"}","alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-g6diag-d146aeb6\",\"decision\":\"allow\",\"provenance\":{\"source\":\"rule\",\"effect\":\"allow\",\"lane\":\"allow\",\"ruleIndex\":0}}"]
+[2026-09-30T05:28:58.093Z] mock requests captured: 3; turnCompleted=true; toolResultSpillRef=none
+[2026-09-30T05:28:58.093Z] world tmp tree: 10 entries; subprocess spill files: 0
+[2026-09-30T05:28:58.097Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:28:59.602Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:01.107Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:02.611Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:04.115Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:05.618Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:07.122Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:08.627Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:10.132Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:11.636Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:13.139Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:14.643Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:16.146Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:17.650Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:19.153Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:20.658Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:22.163Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:23.667Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:25.170Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:26.673Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:28.177Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:29.683Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:31.187Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:32.690Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:34.195Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:35.699Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:37.202Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:38.706Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:40.209Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:41.712Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:43.215Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:44.719Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:46.223Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:47.727Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:49.231Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:50.735Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:52.239Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:53.743Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:55.247Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:56.751Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:58.254Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:29:59.758Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:01.261Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:02.765Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:04.269Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:05.772Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:07.276Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:08.778Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:10.282Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:11.786Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:13.289Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:14.792Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:16.296Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:17.800Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:19.303Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:20.807Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:22.311Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:23.815Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:25.318Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:26.822Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:28.326Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:29.830Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:31.334Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:32.837Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:34.339Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:35.842Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:37.346Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:38.850Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:40.353Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:41.857Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:43.360Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:44.864Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:46.366Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:47.869Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:49.373Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:50.877Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:52.381Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:53.884Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:55.388Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:56.891Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:58.392Z] ledger settle: grants=0 settleMs=null
+[2026-09-30T05:30:58.398Z] remote team.getLedgerPage v1 [ledger-p0] -> 200 ok=true
+[2026-09-30T05:30:58.398Z] DETERMINATION: B: the bash result carried NO stdout.spillPath and NO subprocess spill file exists — the spill itself did not happen upstream (300KB < the effective inline cap on this world shape)
+[2026-09-30T05:30:58.398Z]   createOk=true turnCompleted=true observerInstalled=true recordFaults=0 spillRef=none worldSpillFiles=0 grant=none settleMs=null
+[2026-09-30T05:30:58.478Z] host stopped (killed=true portFree=true)
+[2026-09-30T05:30:58.478Z] mini MCP mcp_repo stopped on 127.0.0.1:3492
+[2026-09-30T05:30:58.478Z] mini MCP mcp_leaderreq stopped on 127.0.0.1:3491
+[2026-09-30T05:30:58.478Z] mini MCP mcp_web stopped on 127.0.0.1:3493
+[2026-09-30T05:30:58.483Z] stable post-probes: 3080=401 3180=401 unchanged=true
+[2026-09-30T05:30:58.487Z] port release: [{"port":3182,"free":true},{"port":3497,"free":true},{"port":3492,"free":true},{"port":3491,"free":true},{"port":3493,"free":true}]
+[2026-09-30T05:30:58.487Z] === diagnostic complete (world RETAINED at /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/tests/homes/g6diag-2026-09-30T05-28-54; evidence at /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-f/g6-diag/g6diag-2026-09-30T05-28-54) ===
+[2026-09-30T05:30:58.487Z] EXIT=0
