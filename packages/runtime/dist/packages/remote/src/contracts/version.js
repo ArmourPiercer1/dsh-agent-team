@@ -32,8 +32,10 @@ export const REMOTE_CONTRACT_VERSION = 1;
  * The remote contract v2 (TCM vNext §15.6, the Team-create minimal fix):
  * the workspace-aware `team.create` variant plus the v2-only
  * `team.admitInitialWork` command. Only the two v2 client wrappers
- * (`teamCreateV2` / `teamAdmitInitialWorkV2`) stamp this version; every
- * other wrapper keeps stamping {@link REMOTE_CONTRACT_VERSION}.
+ * (`teamCreate` / `teamAdmitInitialWork` — the pre-alpha3 PR-F
+ * de-versioned names; the v1 legacy create is `teamCreateEmbeddedWork`)
+ * stamp this version; every other wrapper keeps stamping
+ * {@link REMOTE_CONTRACT_VERSION}.
  */
 export const REMOTE_CONTRACT_VERSION_V2 = 2;
 /**
@@ -92,15 +94,35 @@ export const REMOTE_CONTRACT_VERSION_V5 = 5;
  */
 export const REMOTE_CONTRACT_VERSION_V6 = 6;
 /**
- * All remote contract versions this build accepts: `[1, 2, 3, 4, 5, 6]`.
+ * The remote contract v7 (pre-alpha3 W1 fix-A, F10 — the Governance
+ * optimistic-guard ingress): the version-aware `override.set` /
+ * `override.reset` closed field sets gain the optional
+ * `expectedGeneration` — the client-supplied slot-generation guard of the
+ * production Governance mutation authority (PR-A / ADR-03: the service
+ * compares it against the current slot winner inside the shared chain and
+ * answers the typed `OVERRIDE_GENERATION_CONFLICT` with zero write on
+ * mismatch). ABSENT is legacy-compatible (no conflict check — the
+ * byte-for-byte v1–v6 wire behavior); PRESENT is the optimistic guard
+ * (a non-negative safe integer). NO new method: every v1/v2/v3/v4/v5/v6
+ * method stays available in v7 and every v1–v6 wire shape is preserved
+ * for version-1–6 requests (a version bump ADDS supported versions,
+ * never edits v1/v2/v3/v4/v5/v6 semantics).
+ */
+export const REMOTE_CONTRACT_VERSION_V7 = 7;
+/**
+ * All remote contract versions this build accepts:
+ * `[1, 2, 3, 4, 5, 6, 7]`.
  * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision;
  * v3 by the Team D1-D6 repair v2 D1 task; v4 by the F3/F11/F9/T1.4
  * repair round r1 F9 task; v5 by the C1 restart-0.1.7-rc.1 recovery
  * task (guide §10.2: the v5-only `team.prepareOrdinaryOpen` permit);
  * v6 by the team-view-sync-complete task (2026-09-28: the v6-only
  * `team.getReadState` read + the version-aware v6 projection shape with
- * `durableGeneration` / `liveToken`) (a version bump ADDS supported
- * versions, never edits v1/v2/v3/v4/v5 semantics).
+ * `durableGeneration` / `liveToken`); v7 by the pre-alpha3 W1 fix-A task
+ * (F10: the version-aware `override.set` / `override.reset` closed sets
+ * gain the optional `expectedGeneration` slot-guard field — additive,
+ * NO new method) (a version bump ADDS supported versions, never edits
+ * v1/v2/v3/v4/v5/v6 semantics).
  */
 export const SUPPORTED_REMOTE_CONTRACT_VERSIONS = [
     REMOTE_CONTRACT_VERSION,
@@ -109,6 +131,7 @@ export const SUPPORTED_REMOTE_CONTRACT_VERSIONS = [
     REMOTE_CONTRACT_VERSION_V4,
     REMOTE_CONTRACT_VERSION_V5,
     REMOTE_CONTRACT_VERSION_V6,
+    REMOTE_CONTRACT_VERSION_V7,
 ];
 /**
  * Is `value` a supported remote contract version (a positive integer in the

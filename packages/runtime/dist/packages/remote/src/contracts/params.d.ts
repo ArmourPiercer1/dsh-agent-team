@@ -35,7 +35,18 @@
  * command, never an identity); the v5 bump (guide §10.2) adds exactly
  * the one v5-only method `team.prepareOrdinaryOpen` (closed set:
  * `teamSessionId` — the narrow one-shot ordinary-activation permit of
- * the Team fence; the payload is a command, never an identity).
+ * the Team fence; the payload is a command, never an identity); the v6
+ * bump (team-view-sync-complete) adds exactly the one v6-only method
+ * `team.getReadState` (closed set: `sessionId`) plus the version-aware
+ * v6 `team.getProjection` wire shape; the v7 bump (pre-alpha3 W1 fix-A,
+ * F10) adds NO method: the version-aware `override.set` / `override.reset`
+ * closed field sets gain the optional `expectedGeneration` — the
+ * client-supplied slot-generation guard of the production Governance
+ * mutation authority (PR-A / ADR-03). ABSENT = legacy-compatible (no
+ * conflict check — the v1–v6 wire behavior, byte-for-byte); PRESENT =
+ * the optimistic guard (a non-negative safe integer; on mismatch the
+ * service answers the typed `OVERRIDE_GENERATION_CONFLICT` with zero
+ * write).
  * {@link parseRemoteMethodParams} routes on
  * the request version: a request to a method of a NEWER version is
  * typed-rejected (`method-version-unsupported`) AFTER the envelope
@@ -333,6 +344,24 @@ export interface RemoteOverrideResetParams {
     readonly scope?: RemoteMutationScope;
     readonly targetInstanceId?: string;
 }
+/**
+ * `override.set` (contract v7 — pre-alpha3 W1 fix-A, F10): the v1 closed
+ * field set plus the optional `expectedGeneration` (the slot-generation
+ * guard of the production Governance mutation authority — ABSENT is
+ * legacy-compatible, PRESENT is the optimistic conflict check).
+ */
+export interface RemoteOverrideSetParamsV7 extends RemoteOverrideSetParams {
+    readonly expectedGeneration?: number;
+}
+/**
+ * `override.reset` (contract v7 — pre-alpha3 W1 fix-A, F10): the v1
+ * closed field set plus the optional `expectedGeneration` (the
+ * slot-generation guard of the production Governance mutation authority —
+ * ABSENT is legacy-compatible, PRESENT is the optimistic conflict check).
+ */
+export interface RemoteOverrideResetParamsV7 extends RemoteOverrideResetParams {
+    readonly expectedGeneration?: number;
+}
 /** `policyState.get`. */
 export interface RemotePolicyStateGetParams {
     readonly teamSessionId: string;
@@ -376,7 +405,7 @@ export interface RemoteLegacyInspectParams {
     readonly projectDir?: string;
 }
 /** The union of every method's parsed param object. */
-export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamCreateParamsV2 | RemoteTeamAdmitInitialWorkParams | RemoteTeamListRootsParams | RemoteTeamEnsureRootLiveParams | RemoteTeamResolveControlParams | RemoteTeamPrepareOrdinaryOpenParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideResetParams | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams;
+export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamCreateParamsV2 | RemoteTeamAdmitInitialWorkParams | RemoteTeamListRootsParams | RemoteTeamEnsureRootLiveParams | RemoteTeamResolveControlParams | RemoteTeamPrepareOrdinaryOpenParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideSetParamsV7 | RemoteOverrideResetParams | RemoteOverrideResetParamsV7 | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams;
 /** The parse result of one request's `params` (typed + token echo). */
 export interface RemoteParsedParams {
     /** The catalog method the params were parsed for. */
@@ -423,6 +452,21 @@ export declare const REMOTE_MEMBER_LIFECYCLE_FIELDS: readonly string[];
 export declare const REMOTE_OVERRIDE_GET_FIELDS: readonly string[];
 export declare const REMOTE_OVERRIDE_SET_FIELDS: readonly string[];
 export declare const REMOTE_OVERRIDE_RESET_FIELDS: readonly string[];
+/**
+ * `override.set` (contract v7 — pre-alpha3 W1 fix-A, F10) — the CLOSED
+ * v7 field set: the frozen v1 set plus the optional `expectedGeneration`
+ * (the slot-generation guard; a non-negative safe integer). `expectedGeneration`
+ * on a v1–v6 request is an unknown field (typed `malformed-params` /
+ * `unknown-field` — the v1–v6 wire behavior is preserved byte-for-byte).
+ */
+export declare const REMOTE_OVERRIDE_SET_FIELDS_V7: readonly string[];
+/**
+ * `override.reset` (contract v7 — pre-alpha3 W1 fix-A, F10) — the CLOSED
+ * v7 field set: the frozen v1 set plus the optional `expectedGeneration`
+ * (the slot-generation guard; a non-negative safe integer). See
+ * {@link REMOTE_OVERRIDE_SET_FIELDS_V7}.
+ */
+export declare const REMOTE_OVERRIDE_RESET_FIELDS_V7: readonly string[];
 export declare const REMOTE_POLICY_STATE_GET_FIELDS: readonly string[];
 export declare const REMOTE_POLICY_STATE_SET_FIELDS: readonly string[];
 export declare const REMOTE_COMPATIBILITY_GET_FIELDS: readonly string[];
@@ -475,6 +519,14 @@ export declare function parseRemoteOverrideGetParams(method: string, params: Rem
 export declare function parseRemoteOverrideSetParams(method: string, params: RemoteSafeRecord): RemoteOverrideSetParams;
 /** Parse `override.reset` params. */
 export declare function parseRemoteOverrideResetParams(method: string, params: RemoteSafeRecord): RemoteOverrideResetParams;
+/** Parse `override.set` params (contract v7 — the v1 set + the optional
+ *  `expectedGeneration` slot-guard; v1–v6 requests keep the frozen v1
+ *  closed set, `expectedGeneration` among them is an unknown field). */
+export declare function parseRemoteOverrideSetParamsV7(method: string, params: RemoteSafeRecord): RemoteOverrideSetParamsV7;
+/** Parse `override.reset` params (contract v7 — the v1 set + the optional
+ *  `expectedGeneration` slot-guard; v1–v6 requests keep the frozen v1
+ *  closed set, `expectedGeneration` among them is an unknown field). */
+export declare function parseRemoteOverrideResetParamsV7(method: string, params: RemoteSafeRecord): RemoteOverrideResetParamsV7;
 /** Parse `policyState.get` params. */
 export declare function parseRemotePolicyStateGetParams(method: string, params: RemoteSafeRecord): RemotePolicyStateGetParams;
 /** Parse `policyState.set` params. */

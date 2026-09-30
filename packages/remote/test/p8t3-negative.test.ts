@@ -4,7 +4,7 @@
  * upstream / session-log source at all.
  *
  * Three proofs:
- *   1. The owned-file scan: exactly the 28 `packages/remote/src` files are
+ *   1. The owned-file scan: exactly the 30 `packages/remote/src` files are
  *      scanned, every import specifier is relative, and rules R1–R6 report
  *      zero violations.
  *   2. Positive controls: synthetic texts (built by the scanner, never
@@ -32,7 +32,7 @@ import {
 } from './p8t3-negative-scan.mjs'
 import { makeFakePorts } from './p8t3-helpers.js'
 
-/** The exact 29 P8-T3-owned source files, in the scanner's sorted order. */
+/** The exact 30 P8-T3-owned source files, in the scanner's sorted order. */
 const P8T3_EXPECTED_FILES = [
   'packages/remote/src/contracts/catalog.ts',
   'packages/remote/src/contracts/errors.ts',
@@ -41,6 +41,7 @@ const P8T3_EXPECTED_FILES = [
   'packages/remote/src/contracts/remote-safe.ts',
   'packages/remote/src/contracts/request.ts',
   'packages/remote/src/contracts/response.ts',
+  'packages/remote/src/contracts/semantic.ts',
   'packages/remote/src/contracts/types.ts',
   'packages/remote/src/contracts/version.ts',
   'packages/remote/src/handlers/catalog.ts',
@@ -87,8 +88,8 @@ const P8T3_EXPECTED_PORT_KEYS = [
   'policyState',
   'projection',
   'teamAdmitInitialWork',
-  'teamCreate',
-  'teamCreateV2',
+  'teamCreateEmbeddedWork',
+  'teamCreateWorkspace',
   'teamEnsureRootLive',
   'teamPrepareOrdinaryOpen',
   'teamReadState',
@@ -97,9 +98,9 @@ const P8T3_EXPECTED_PORT_KEYS = [
 ]
 
 describe('P8-T3 negative scan (Brief §87–96)', () => {
-  it('scans exactly the 29 owned packages/remote/src files', () => {
+  it('scans exactly the 30 owned packages/remote/src files', () => {
     const scan = scanP8T3OwnedFiles()
-    expect(scan.files.length).toBe(29)
+    expect(scan.files.length).toBe(30)
     expect(scan.files).toEqual(P8T3_EXPECTED_FILES)
   })
 

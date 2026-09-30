@@ -22,10 +22,12 @@
  * - durable writes go ONLY through the injected TeamDomain repositories
  *   (invariant 41).
  */
-import type { CapabilityName, PolicyEntry } from '../../domain/policy/src/index.js';
+import type { CapabilityName, PolicyEntry, PolicyStateCellView, TeamValueOrigin } from '../../domain/policy/src/index.js';
 import type { LifecycleOperation } from '../../domain/lifecycle/src/index.js';
 import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/index.js';
-import type { MemberLifecycleState, MemberInstanceRecordDto } from '../../contracts/src/index.js';
+import type { MemberLifecycleState, MemberInstanceRecordDto, RemoteSafeRecord } from '../../contracts/src/index.js';
+import type { PolicyStateTransitionRecord } from '../mutation/index.js';
+import type { CompatibilityAcknowledgement, CompatibilityStateRecord, CompatibilityStatus, LedgerEntry } from '../../storage/schema/index.js';
 /** The closed caller roles the facade resolves from the TeamDomain. */
 export declare const CALLER_ROLES: {
     /** A non-instance principal: the team owner (never envelope-bound; may
@@ -285,27 +287,56 @@ export type RuntimeActionEffect =
     readonly kind: 'work-status';
     readonly entries: readonly WorkStatusEntry[];
 }
-/** The per-capability effective policy view (inspect-config).
+/**
+ * The per-capability effective policy view (inspect-config).
  *
- * A2C-3 (plan §10): `effective` is the LEGACY generic capability policy
- * view (the five generic cells after overlay + external facts — the
- * generic `permissions` cell is NOT the alpha.2 operation-permission
- * authority). The independent `operationPermissions` field carries the
- * ACTUAL alpha.2 static parameter-aware policy (see
- * {@link OperationPermissionView}). */
+ * A2C-3 (plan §10) + pre-alpha3 PR-F (plan §F.4): the read surface is
+ * SAME-SOURCE with the runtime authority. `effective` is the canonical
+ * effective policy of the SAME single assembly the live request
+ * boundary and the host projection run — over the closed capability
+ * set MINUS the generic `permissions` cell (the FAKE legacy cell; the
+ * ACTUAL alpha.2 operation-permission authority is the independent
+ * `operationPermissions` field, see {@link OperationPermissionView}).
+ * `policyState` / `requirement` / `recovery` carry the DURABLE facts —
+ * the committed PolicyState, the PR-E requirement / consent /
+ * availability facts, and the DERIVED recovery state — read straight
+ * from the TeamDomain (pure reads: the effect phase writes nothing and
+ * never re-probes the gate chain). */
  | {
     readonly kind: 'config-inspected';
+    /**
+     * The effective policy cells over {@link CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES}
+     * (the closed set minus the generic `permissions` cell).
+     */
     readonly effective: Record<string, PolicyEntry>;
     /**
      * A2C-3 (plan §10): the ACTUAL alpha.2 operation permission of the
      * target — the bound template's static parameter-aware policy
      * (`boundTemplate.capabilities.permissions` → the TemplatePermission
      * Policy enforced by the pre-execute adapter). INDEPENDENT from the
-     * legacy generic `effective.permissions` cell. alpha.2 has no
+     * legacy generic `effective.permissions` cell (which is no longer
+     * surfaced at all — pre-alpha3 PR-F, plan §F.4). alpha.2 has no
      * dynamic permission mutation: the static policy IS the current
      * operation policy (no alpha.3 grants/overlays are invented).
      */
     readonly operationPermissions: OperationPermissionView;
+    /**
+     * pre-alpha3 PR-F (plan §F.4): the COMMITTED PolicyState of the
+     * inspected root (the same durable read the live boundary and the
+     * host projection use).
+     */
+    readonly policyState: ConfigInspectedPolicyStateView;
+    /**
+     * pre-alpha3 PR-F (plan §F.4): the DURABLE requirement / consent /
+     * availability facts of the root (the PR-E RequirementAuthority
+     * records + the durable compatibility verdict).
+     */
+    readonly requirement: ConfigInspectedRequirementView;
+    /**
+     * pre-alpha3 PR-F (plan §F.4): the DERIVED recovery state (from the
+     * durable PR-E incident facts — no durable "recovery" flag exists).
+     */
+    readonly recovery: ConfigInspectedRecoveryView;
 }
 /** The member list view (list-members). */
  | {
@@ -778,6 +809,141 @@ export declare function memberSummary(member: MemberInstanceRecordDto): {
     readonly lifecycle?: MemberLifecycleState;
     readonly childSessionId?: string;
 };
+/**
+ * The closed capability set of the `config-inspected` `effective` view
+ * (pre-alpha3 PR-F, plan §F.4): the five closed capability domains MINUS
+ * the generic `permissions` cell — the FAKE legacy cell that was the
+ * five-domain "dynamic" authority. The ACTUAL alpha.2 operation-permission
+ * authority is the independent `operationPermissions` field
+ * ({@link OperationPermissionView}), so the generic cell is no longer
+ * surfaced at all (neither displayed nor conflated).
+ */
+export declare const CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES: readonly CapabilityName[];
+/**
+ * The `policyState` field of the `config-inspected` effect (pre-alpha3
+ * PR-F, plan §F.4): the COMMITTED PolicyState of the inspected root —
+ * the SAME durable read the live request boundary and the host projection
+ * use (`committedPolicyState` over the durable transition rows): the last
+ * committed transition in commit order, or the implicit blueprint
+ * `default` state when no transition was ever committed.
+ */
+export interface ConfigInspectedPolicyStateView {
+    /** The committed state id (`default` = the implicit blueprint state). */
+    readonly stateId: string;
+    /**
+     * `blueprint-default` — no durable transition row exists; the state is
+     * the implicit blueprint default. `durable-transition` — the state was
+     * committed by an explicit (human / authorized-leader) transition.
+     */
+    readonly source: 'blueprint-default' | 'durable-transition';
+    /** The committed state's per-capability cells (absent cell = open). */
+    readonly cells: Partial<Record<CapabilityName, PolicyStateCellView>>;
+    /**
+     * Present for `durable-transition`: the durable entry that committed
+     * the state + the authority origin of the transition (the frozen
+     * `TeamValueOrigin` vocabulary).
+     */
+    readonly transition?: {
+        readonly entryId: string;
+        readonly origin: TeamValueOrigin;
+    };
+}
+/**
+ * Build the `policyState` view from the durable transition rows — the
+ * SAME `committedPolicyState` fold the production root uses for the
+ * projection's `policyState` cell (one read, one authority; no re-probe).
+ *
+ * @param transitions - the durable PolicyState transitions of the
+ *   inspected root (COMMIT order; empty = never transitioned).
+ */
+export declare function configInspectedPolicyStateView(transitions: readonly PolicyStateTransitionRecord[]): ConfigInspectedPolicyStateView;
+/**
+ * The `requirement` field of the `config-inspected` effect (pre-alpha3
+ * PR-F, plan §F.4): the DURABLE requirement / consent / availability
+ * facts of the inspected root — the SAME records the runtime
+ * RequirementAuthority consumes. No re-probe: the gate chain re-evaluates
+ * live at the boundary; this read surfaces the durable facts only:
+ *
+ * - `compatibility` — the durable compatibility verdict (the storage
+ *   record, verbatim: status + fingerprint + generation + lossless
+ *   requirement outcomes + the durable human acknowledgements);
+ * - `consents` — the LATEST durable `optional-requirement-accepted` fact
+ *   per requirement (the DegradationConsent — survives restart);
+ * - `templateAvailability` — the LATEST durable `template-availability-set`
+ *   fact per template (absent entry = the blueprint availability,
+ *   unchanged).
+ */
+export interface ConfigInspectedRequirementView {
+    /** The durable compatibility verdict (ABSENT = never probed). */
+    readonly compatibility?: {
+        readonly status: CompatibilityStatus;
+        readonly fingerprint: string;
+        readonly generation: number;
+        readonly outcomes: RemoteSafeRecord;
+        readonly acknowledgements: readonly CompatibilityAcknowledgement[];
+        readonly computedAt: string;
+    };
+    /** The latest durable consent per optional requirement (requirementId order). */
+    readonly consents: readonly {
+        readonly requirementId: string;
+        readonly consentedBy: string;
+        readonly consentedAt: number;
+    }[];
+    /** The latest durable availability fact per template (templateId order). */
+    readonly templateAvailability: readonly {
+        readonly templateId: string;
+        readonly available: boolean;
+        readonly at: number;
+    }[];
+}
+/**
+ * Build the `requirement` view from the durable compatibility record and
+ * the PR-E requirement facts (ledger rows, SEQUENCE order — the latest
+ * fact per key wins; the fail-closed parsers reject a corrupted row).
+ *
+ * @param compatibility - the durable compatibility state of the root
+ *   (`undefined` = never probed).
+ * @param ledgerEntries - the root's durable ledger entries (sequence
+ *   order; the PR-E fact types are the only ones consumed).
+ */
+export declare function configInspectedRequirementView(compatibility: CompatibilityStateRecord | undefined, ledgerEntries: readonly LedgerEntry[]): ConfigInspectedRequirementView;
+/**
+ * The `recovery` field of the `config-inspected` effect (pre-alpha3
+ * PR-F, plan §F.4): the DERIVED recovery state — computed from the
+ * durable PR-E incident facts, never stored (the authority negative:
+ * recovery is DERIVED; a durable "recovery" flag does not exist):
+ *
+ * - `openIncidents` — the scopes whose LATEST incident fact is a
+ *   `recovery-incident-opened` (the incident is still open);
+ * - `lastClosed` — the most recent `recovery-incident-closed` fact per
+ *   scope (the DURABLE RECORD of the exit — history, not live state);
+ * - `active` — true when any recovery incident is currently open.
+ */
+export interface ConfigInspectedRecoveryView {
+    /** The currently open incidents (scope order). */
+    readonly openIncidents: readonly {
+        readonly scope: string;
+        readonly requirementIds: readonly string[];
+        readonly openedAt: number;
+    }[];
+    /** The most recent closed incident per scope (scope order). */
+    readonly lastClosed: readonly {
+        readonly scope: string;
+        readonly requirementIds: readonly string[];
+        readonly closedAt: number;
+    }[];
+    /** Whether any recovery incident is currently open (derived). */
+    readonly active: boolean;
+}
+/**
+ * Build the `recovery` view from the durable PR-E incident facts (ledger
+ * rows, SEQUENCE order — the latest incident fact per scope decides; the
+ * fail-closed parsers reject a corrupted row).
+ *
+ * @param ledgerEntries - the root's durable ledger entries (sequence
+ *   order; the two incident fact types are the only ones consumed).
+ */
+export declare function configInspectedRecoveryView(ledgerEntries: readonly LedgerEntry[]): ConfigInspectedRecoveryView;
 /**
  * The lossless-JSON view of the BOUND template's static parameter-aware
  * operation permission policy (A2C-3, plan §10.2/§10.3) — the ACTUAL

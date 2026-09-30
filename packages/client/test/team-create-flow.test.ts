@@ -80,7 +80,7 @@ interface SpyFaces extends TeamCreateFlowFaces {
 }
 
 /** Spy faces (the default is the happy path); `calls` records the order. */
-function makeFaces(overrides: Partial<Pick<TeamCreateFlowFaces, 'createV2' | 'openCreatedSession' | 'admitInitialWorkV2'>> = {}): SpyFaces {
+function makeFaces(overrides: Partial<Pick<TeamCreateFlowFaces, 'create' | 'openCreatedSession' | 'admitInitialWork'>> = {}): SpyFaces {
   const calls: string[] = []
   const createParams: RemoteTeamCreateParamsV2[] = []
   const admitParams: RemoteTeamAdmitInitialWorkParams[] = []
@@ -92,11 +92,11 @@ function makeFaces(overrides: Partial<Pick<TeamCreateFlowFaces, 'createV2' | 'op
     createParams,
     admitParams,
     opened,
-    createV2: (params) => {
+    create: (params) => {
       calls.push('create')
       createParams.push(params)
-      return overrides.createV2 !== undefined
-        ? overrides.createV2(params)
+      return overrides.create !== undefined
+        ? overrides.create(params)
         : Promise.resolve(okResponse({ path: ATTEMPT.rootSessionId, durable: true, bind: {} }, 'team.create'))
     },
     openCreatedSession: (sessionId) => {
@@ -106,11 +106,11 @@ function makeFaces(overrides: Partial<Pick<TeamCreateFlowFaces, 'createV2' | 'op
         ? overrides.openCreatedSession(sessionId)
         : Promise.resolve()
     },
-    admitInitialWorkV2: (params) => {
+    admitInitialWork: (params) => {
       calls.push('admit')
       admitParams.push(params)
-      return overrides.admitInitialWorkV2 !== undefined
-        ? overrides.admitInitialWorkV2(params)
+      return overrides.admitInitialWork !== undefined
+        ? overrides.admitInitialWork(params)
         : Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))
     },
   }
@@ -154,7 +154,7 @@ const omittedOptionals = await (async (): Promise<Scenario> => {
 
 const typedCreateFailure = await (async (): Promise<Scenario> => {
   const faces = makeFaces({
-    createV2: () => Promise.resolve(
+    create: () => Promise.resolve(
       errorResponse('TEAM_CREATE_WORKSPACE_NOT_FOUND', "no workspace 'D:/ghost'", 'team.create'),
     ),
   })
@@ -164,7 +164,7 @@ const typedCreateFailure = await (async (): Promise<Scenario> => {
 
 const rejectedCreate = await (async (): Promise<Scenario> => {
   const faces = makeFaces({
-    createV2: () => Promise.reject(new Error('channel lost')),
+    create: () => Promise.reject(new Error('channel lost')),
   })
   const outcome = await runTeamCreateFlow(faces, ATTEMPT)
   return { faces, outcome }
@@ -180,7 +180,7 @@ const failedOpen = await (async (): Promise<Scenario> => {
 
 const typedWorkFailure = await (async (): Promise<Scenario> => {
   const faces = makeFaces({
-    admitInitialWorkV2: () => Promise.resolve(
+    admitInitialWork: () => Promise.resolve(
       errorResponse('TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED', 'the glue refused delivery', 'team.admitInitialWork'),
     ),
   })
@@ -190,7 +190,7 @@ const typedWorkFailure = await (async (): Promise<Scenario> => {
 
 const rejectedWork = await (async (): Promise<Scenario> => {
   const faces = makeFaces({
-    admitInitialWorkV2: () => Promise.reject(new Error('channel lost')),
+    admitInitialWork: () => Promise.reject(new Error('channel lost')),
   })
   const outcome = await runTeamCreateFlow(faces, ATTEMPT)
   return { faces, outcome }
@@ -198,7 +198,7 @@ const rejectedWork = await (async (): Promise<Scenario> => {
 
 const workRetry = await (async () => {
   const first = makeFaces({
-    admitInitialWorkV2: () => Promise.resolve(
+    admitInitialWork: () => Promise.resolve(
       errorResponse('TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED', 'the glue refused delivery', 'team.admitInitialWork'),
     ),
   })

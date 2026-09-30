@@ -166,8 +166,8 @@ export interface TeamProjectionScheduler {
 /** Store options (all dependencies injected; no hidden globals). */
 export interface TeamProjectionStoreOptions {
   /**
-   * The frozen projection pull (TeamRemoteClient.getProjection for the
-   * v1 identity; TeamRemoteClient.getProjectionV6 for the v6 pair).
+   * The frozen projection pull (TeamRemoteClient.getProjectionLegacy for
+   * the v1 identity; TeamRemoteClient.getProjection for the v6 pair).
    */
   readonly getProjection: (teamSessionId: string) => Promise<RemoteResponse>
   /**

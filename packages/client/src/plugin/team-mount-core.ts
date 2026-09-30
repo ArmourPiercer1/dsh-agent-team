@@ -573,7 +573,7 @@ export function applyTeamMount(
     // `appliedGeneration`, so the applied-generation advance below
     // stays the client's single ledger-refresh trigger.
     const store = createTeamProjectionStore({
-      getProjection: (id) => teamRemote.getProjectionV6(id),
+      getProjection: (id) => teamRemote.getProjection(id),
       contract: 'v6',
     })
     const dispose = store.subscribe(() => {
@@ -708,7 +708,7 @@ export function applyTeamMount(
   // No new global store, no private store reach: the public `sessions`
   // seam only (CORE PATCH BUDGET = 0).
   const openTeamMode = async (rootSessionId: string): Promise<TeamOpenModeOutcome> => {
-    const result = await teamRemote.teamEnsureRootLiveV3(rootSessionId)
+    const result = await teamRemote.ensureRootLive(rootSessionId)
     if (result.ok === false) {
       // The ensure failed typed: never open, never mark, never refresh
       // (a stale mark from a prior attempt of the same root is cleared
@@ -758,7 +758,7 @@ export function applyTeamMount(
     // (a) the one-shot ordinary-activation permit (v5 control-plane RPC —
     // the ONLY team.* call of this entry; NO Team ensure, NO Team Agent
     // side effect).
-    const permit = await teamRemote.teamPrepareOrdinaryOpenV5(rootSessionId)
+    const permit = await teamRemote.prepareOrdinaryOpen(rootSessionId)
     if (permit.ok === false) {
       // Typed permit failure (foreign root / no fence armed / port
       // unavailable): never open, never mark (a stale mark from a prior
@@ -962,8 +962,8 @@ export function applyTeamMount(
     // v2 wrappers (contract version 2): the workspace-aware CREATE-ONLY
     // `team.create` and the v2-only `team.admitInitialWork`. Every
     // non-create wrapper on `teamRemote` stays on the frozen v1 default.
-    teamCreateV2: (params) => teamRemote.teamCreateV2(params),
-    teamAdmitInitialWorkV2: (params) => teamRemote.teamAdmitInitialWorkV2(params),
+    teamCreate: (params) => teamRemote.teamCreate(params),
+    teamAdmitInitialWork: (params) => teamRemote.teamAdmitInitialWork(params),
     openCreatedSession,
     listAgentPresets: async () => {
       // The frozen public seam answers the RemoteResult envelope (the roster
@@ -1048,8 +1048,8 @@ export function applyTeamMount(
   // silent success). Always present (no config gate — the transport is a
   // hard seam).
   const roots: TeamViewRootsFace = {
-    listRoots: () => teamRemote.teamListRootsV3(),
-    ensureRootLive: (teamSessionId) => teamRemote.teamEnsureRootLiveV3(teamSessionId),
+    listRoots: () => teamRemote.listRoots(),
+    ensureRootLive: (teamSessionId) => teamRemote.ensureRootLive(teamSessionId),
   }
 
   // (15c) F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the
@@ -1061,7 +1061,7 @@ export function applyTeamMount(
   // Always present (no config gate — the transport is a hard seam; the
   // production host always builds the A25 control service).
   const control: TeamViewControlFace = {
-    resolveControl: (params) => teamRemote.teamResolveControlV4(params),
+    resolveControl: (params) => teamRemote.resolveControl(params),
   }
 
   // (16) D-T9-1: the parameterless legacyInspect face binds the `dshHome`
@@ -1261,8 +1261,8 @@ export function applyTeamMount(
           listCatalog: creation.listCatalog,
           getCatalog: creation.getCatalog,
           probeCompatibility: creation.probeCompatibility,
-          teamCreateV2: creation.teamCreateV2,
-          teamAdmitInitialWorkV2: creation.teamAdmitInitialWorkV2,
+          teamCreate: creation.teamCreate,
+          teamAdmitInitialWork: creation.teamAdmitInitialWork,
           openCreatedSession: creation.openCreatedSession,
           // D4-A1: the overlay create-success refresh (the same
           // generation-safe pull; targets the NEW team's id).

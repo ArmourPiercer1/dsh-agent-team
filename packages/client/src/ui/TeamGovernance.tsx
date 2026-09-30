@@ -38,9 +38,10 @@ import {
   type RemoteCompatibilityAckParams,
   type RemoteCompatibilityGetParams,
   type RemoteCompatibilityReprobeParams,
+  type RemoteLosslessRecord,
   type RemoteOverrideGetParams,
-  type RemoteOverrideResetParams,
-  type RemoteOverrideSetParams,
+  type RemoteOverrideResetParamsV7,
+  type RemoteOverrideSetParamsV7,
   type RemotePolicyEntry,
   type RemotePolicyStateGetParams,
   type RemotePolicyStateSetParams,
@@ -93,10 +94,14 @@ export interface TeamGovernanceFace {
   /** `override.get` (read: the Explicit Human Override record). */
   overrideGet: (params: RemoteOverrideGetParams) => Promise<RemoteResponse>
   /** `override.set` (command: set the override — it edits ONLY the
-   * Explicit Human Override layer, never the Blueprint). */
-  overrideSet: (params: RemoteOverrideSetParams) => Promise<RemoteResponse>
-  /** `override.reset` (command: remove the override). */
-  overrideReset: (params: RemoteOverrideResetParams) => Promise<RemoteResponse>
+   * Explicit Human Override layer, never the Blueprint). Contract v7
+   * (pre-alpha3 W1 fix-A, F10): the optional `expectedGeneration`
+   * slot-guard (ABSENT = legacy, no conflict check). */
+  overrideSet: (params: RemoteOverrideSetParamsV7) => Promise<RemoteResponse>
+  /** `override.reset` (command: remove the override). Contract v7
+   * (pre-alpha3 W1 fix-A, F10): the optional `expectedGeneration`
+   * slot-guard (ABSENT = legacy, no conflict check). */
+  overrideReset: (params: RemoteOverrideResetParamsV7) => Promise<RemoteResponse>
   /** The post-success projection pull (the final-state authority).
    * (repair 20260927, S1-C2) the tightened assessment — the pull's
    * round-trip outcome is a FIRST-CLASS result the dispatch inspects. */
@@ -392,6 +397,30 @@ export function TeamGovernance({
       })
   }
 
+  /**
+   * pre-alpha3 W1 fix-A (F10) — the optimistic guard for the override
+   * mutations below: the generation of the slot winner this tab most
+   * recently READ (the settled `override.get` wire record's
+   * `generation`). An unsettled / failed read, or a read that found NO
+   * slot winner (an empty slot or a reset tombstone — the read reports
+   * `null`), has NO readable generation: the field stays ABSENT
+   * (legacy-compatible, no conflict check) — never a locally invented
+   * one.
+   */
+  const readSlotGeneration = (
+    instanceId: string,
+    capability: RemoteCapability,
+  ): number | undefined => {
+    const read = overrideReads[`${instanceId}:${capability}`]
+    if (read === undefined || read.ok !== true) return undefined
+    const wire = read.wire.override
+    if (wire === null) return undefined
+    const generation = wire['generation']
+    return typeof generation === 'number' && Number.isSafeInteger(generation)
+      ? generation
+      : undefined
+  }
+
   // -- the commands (the G5 dispatch) ---------------------------------------
 
   /** The human Recheck (UI §10.4): a new probe generation; the closed
@@ -437,21 +466,56 @@ export function TeamGovernance({
     const value: RemotePolicyEntry = draft.kind === 'deny'
       ? { kind: 'deny' }
       : { kind: 'allow', items }
+    // pre-alpha3 W1 fix-A (F10): the optimistic guard — the most
+    // recently read slot generation (ABSENT = legacy, no conflict check).
+    const expectedGeneration = readSlotGeneration(instanceId, draft.capability)
+    const readKey = `${instanceId}:${draft.capability}`
     const token = nextToken()
     dispatch('override-set', `override-set:${instanceId}`, token, () =>
       governance.overrideSet(
-        overrideSetParams(teamSessionId, draft.capability, value, 'instance', instanceId),
-      ),
+        overrideSetParams(teamSessionId, draft.capability, value, 'instance', instanceId, expectedGeneration),
+      ).then(response => {
+        // The ack carries the freshly committed record — refresh the
+        // settled read so the NEXT mutation in this tab guards against
+        // the NEW slot generation (a stale cache would false-conflict
+        // on the user's own second edit).
+        if (response.ok) {
+          setOverrideReads(prev => ({
+            ...prev,
+            [readKey]: { ok: true, wire: { override: response.value.data as RemoteLosslessRecord } },
+          }))
+        }
+        return response
+      }),
     )
   }
 
   /** The per-member override reset (the value is recomputed from the lower layers). */
   const runOverrideReset = (instanceId: string, capability: RemoteCapability): void => {
+    // pre-alpha3 W1 fix-A (F10): the optimistic guard — the most
+    // recently read slot generation (ABSENT = legacy, no conflict check).
+    const expectedGeneration = readSlotGeneration(instanceId, capability)
+    const readKey = `${instanceId}:${capability}`
     const token = nextToken()
     dispatch('override-reset', `override-reset:${instanceId}`, token, () =>
       governance.overrideReset(
-        overrideResetParams(teamSessionId, capability, 'instance', instanceId),
-      ),
+        overrideResetParams(teamSessionId, capability, 'instance', instanceId, expectedGeneration),
+      ).then(response => {
+        // The reset ack carries NO slot generation (the tombstone's is
+        // server-minted) — on a REMOVED reset drop the settled read so
+        // the next read is fresh; a mutation without a read stays
+        // legacy (no check) until the user reads again. A no-op reset
+        // (`removed: false`) left the slot winner untouched — the read
+        // stays valid.
+        if (response.ok && (response.value.data as RemoteLosslessRecord)['removed'] === true) {
+          setOverrideReads(prev => {
+            const next = { ...prev }
+            delete next[readKey]
+            return next
+          })
+        }
+        return response
+      }),
     )
   }
 

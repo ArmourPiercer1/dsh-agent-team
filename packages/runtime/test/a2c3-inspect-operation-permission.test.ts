@@ -35,10 +35,12 @@
  *   R1  RED probe — the config-inspected payload carries the independent
  *       `operationPermissions` field (ABSENT on the pre-fix tree);
  *   R2  RED probe — the semantic split is real: the fixture diverges the
- *       generic `effective.permissions` cell (a team-scoped HUMAN
- *       override grants a legacy permission name) from the bound static
- *       policy; post-fix `operationPermissions` mirrors the BOUND policy,
- *       never the generic cell (ABSENT on the pre-fix tree);
+ *       generic `permissions` value (a team-scoped HUMAN override grants
+ *       a legacy permission name) from the bound static policy; post-fix
+ *       `operationPermissions` mirrors the BOUND policy, never the
+ *       generic value — and (pre-alpha3 PR-F, plan §F.4) the generic
+ *       `permissions` cell is no longer surfaced in `effective` at all
+ *       (ABSENT on the pre-fix tree; the cell is filtered post-PR-F).
  *   T1  member static policy exact/any/subtree round-trip (the rules as
  *       stored in the blueprint round-trip losslessly, declaration order);
  *   T2  leader static policy (the reserved leader id maps to the bound
@@ -54,9 +56,11 @@
  *       dispatcher over the p8t3 fake ports: the static effect — new
  *       field included — passes through the wire envelope unchanged,
  *       `effectSequence` provenance null as a read effect);
- *   T9  old `effective` consumers unregressed (the five-cell generic view
- *       is byte-identical to the pre-fix producer output — including the
- *       diverged `permissions` cell).
+ *   T9  old `effective` consumers unregressed (the generic view is
+ *       byte-identical to the pre-fix producer output MINUS the generic
+ *       `permissions` cell — pre-alpha3 PR-F, plan §F.4 filters it out:
+ *       the alpha.2 operation-permission authority is
+ *       `operationPermissions`, never the five-domain generic cell).
  *
  * RUNNER CONSTRAINTS (this repo's plain-node shim — see the a2/a2c5 suite
  * headers): every async scenario runs at MODULE level (top-level await)
@@ -276,14 +280,16 @@ const A2C3_LEADER_STATIC_VIEW: RemoteSafeJsonValue = {
   resourceKinds: [...PERMISSION_RESOURCE_KINDS],
 }
 
-/** The expected generic `effective` view for EVERY target of this world
- *  (T9): the five legacy generic cells — the human override wins the
- *  `permissions` cell, the other cells fail closed. Byte-identical to
- *  the pre-fix producer output (the old field is untouched). */
+/** The expected `effective` view for EVERY target of this world (T9):
+ *  the FOUR generic cells after pre-alpha3 PR-F (plan §F.4) — the legacy
+ *  generic `permissions` cell is NO LONGER surfaced (the alpha.2
+ *  operation-permission authority is the independent `operationPermissions`
+ *  field). The human override still RESOLVES into the generic permissions
+ *  value internally, but it is filtered out of the inspect view. The other
+ *  cells fail closed. */
 const A2C3_EXPECTED_EFFECTIVE: RemoteSafeJsonValue = {
   model: { kind: 'deny' },
   tools: { kind: 'deny' },
-  permissions: { kind: 'allow', items: [A2C3_GENERIC_PERMISSION_ITEM] },
   skills: { kind: 'deny' },
   mcp: { kind: 'deny' },
 }
@@ -562,12 +568,12 @@ describe('A2C-3: team_inspect_config exposes the real operation permission (plan
 
   it('R2: the semantic split is real — the bound policy, not the generic cell, is exposed', () => {
     const worker = inspectLike(A2C3.inspectWorker)
-    // The GENERIC cell carries the human-override item (the legacy view is
-    // intact — and provably NOT the operation-permission authority).
-    expect(worker.effective?.['permissions']).toEqual({
-      kind: 'allow',
-      items: [A2C3_GENERIC_PERMISSION_ITEM],
-    })
+    // pre-alpha3 PR-F (plan §F.4): the generic `permissions` cell is NO
+    // LONGER surfaced in `effective` — the durable human override still
+    // resolves into the generic value internally (T9's fixture), but the
+    // inspect view exposes only model / tools / skills / mcp. The
+    // operation-permission authority is the independent field below.
+    expect('permissions' in (worker.effective ?? {})).toBe(false)
     // The BOUND static policy is what the field exposes — mode static,
     // the rules as stored, the FINAL vocabularies.
     expect(worker.operationPermissions).toEqual(A2C3_WORKER_STATIC_VIEW)
@@ -654,7 +660,7 @@ describe('A2C-3: team_inspect_config exposes the real operation permission (plan
     expect(success.value.provenance.requestToken).toBe(P8T3_REQUEST_TOKEN)
   })
 
-  it('T9: old effective consumers unregressed — the five-cell generic view is byte-identical to the pre-fix producer', () => {
+  it('T9: old effective consumers unregressed — the four-cell generic view (F.4: the `permissions` cell is filtered out)', () => {
     for (const outcome of [
       A2C3.inspectWorker,
       A2C3.inspectLeader,
@@ -662,7 +668,7 @@ describe('A2C-3: team_inspect_config exposes the real operation permission (plan
     ]) {
       const effect = inspectLike(outcome)
       expect(Object.keys(effect.effective ?? {}).sort()).toEqual(
-        ['mcp', 'model', 'permissions', 'skills', 'tools'],
+        ['mcp', 'model', 'skills', 'tools'],
       )
       expect(effect.effective).toEqual(A2C3_EXPECTED_EFFECTIVE)
     }

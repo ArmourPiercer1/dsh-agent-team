@@ -5,18 +5,25 @@
  * and the v5-only one-shot ordinary-activation permit
  * (`team.prepareOrdinaryOpen`, C1 restart-0.1.7-rc.1 recovery — guide
  * §10.2). Backed by nine ports:
- * {@link RemoteTeamCreatePort} (root binding, P5-T5),
- * {@link RemoteTeamCreateV2Port} (the v2 workspace-aware creation
+ * {@link RemoteTeamCreateEmbeddedWorkPort} (root binding, P5-T5),
+ * {@link RemoteTeamCreateWorkspacePort} (the workspace-aware creation
  * variant, TCM vNext §15.6), {@link RemoteTeamAdmitInitialWorkPort}
- * (the v2-only creation-time initial work command, TCM vNext §15.6),
- * {@link RemoteTeamRootsPort} (the v3-only durable root ownership list,
- * D1), {@link RemoteTeamEnsureRootLivePort} (the v3-only Team-mode
- * ensure, D2-wired), {@link RemoteTeamResolveControlPort} (the v4-only
- * human control resolution command, F9),
- * {@link RemoteTeamPrepareOrdinaryOpenPort} (the v5-only one-shot
+ * (the creation-time initial work command, TCM vNext §15.6),
+ * {@link RemoteTeamRootsPort} (the durable root ownership list, D1),
+ * {@link RemoteTeamEnsureRootLivePort} (the Team-mode ensure, D2-wired),
+ * {@link RemoteTeamResolveControlPort} (the human control resolution
+ * command, F9),
+ * {@link RemoteTeamPrepareOrdinaryOpenPort} (the one-shot
  * ordinary-activation permit, C1), {@link RemoteProjectionPort}
  * (ProjectionService, P8-T2), and {@link RemoteLedgerPort} (storage
  * ledger behind a slicing adapter, D-5).
+ *
+ * Semantic routing (pre-alpha3 PR-F, plan §F.3): the dispatcher passes
+ * the request's contract version through (the transport adapter's
+ * concern), but this handler routes on the SEMANTIC decisions from the
+ * contracts semantic adapter — the `team.create` flavor
+ * ({@link teamCreateFlavorOf}) and the `team.getProjection` shape
+ * ({@link projectionShapeOf}) — and never on a literal version number.
  *
  * The projection is validated at the TOP LEVEL only (D-4): the nine frozen
  * `TeamProjectionDto` fields must be present with the right structural
@@ -29,6 +36,7 @@
  */
 import { remoteContractError } from '../contracts/errors.js';
 import { REMOTE_LEDGER_ENTRY_FIELDS, REMOTE_PROJECTION_FIELDS, } from '../contracts/types.js';
+import { PROJECTION_SHAPES, TEAM_CREATE_FLAVORS, projectionShapeOf, teamCreateFlavorOf, withLiveProjectionFreshness, } from '../contracts/semantic.js';
 /** Is `value` a plain (non-array) object? */
 function isPlainRecord(value) {
     if (value === null || typeof value !== 'object' || Array.isArray(value))
@@ -427,32 +435,42 @@ function normalizeTeamGetReadStateValue(raw) {
     };
 }
 /**
- * The team category handler (`team.create` [v1 + v2],
+ * The team category handler (`team.create` [the two create flavors],
  * `team.admitInitialWork` [v2-only], `team.listRoots` [v3-only],
  * `team.ensureRootLive` [v3-only], `team.resolveControl` [v4-only],
  * `team.prepareOrdinaryOpen` [v5-only], `team.getReadState` [v6-only],
- * `team.getProjection` [v1-v5 frozen shape; v6 adds
- * `durableGeneration` + `liveToken`], `team.getLedgerPage`).
+ * `team.getProjection` [the `base` shape for v1-v5; the `live` shape for
+ * v6 adds `durableGeneration` + `liveToken`], `team.getLedgerPage`).
  *
- * Version-aware (TCM vNext §15.3): the dispatcher passes the request's
- * contract version; `team.create` routes to the v1 port (closed v1 field
- * set, `initialWork` allowed) or the v2 port (closed v2 field set,
- * `workspace` allowed, CREATE-ONLY) — the version-specific parsed param
- * object is already the matching typed shape.
+ * Semantic routing (pre-alpha3 PR-F, plan §F.3): the dispatcher passes
+ * the request's contract version (the transport adapter's concern); this
+ * handler translates it to the SEMANTIC create flavor / projection shape
+ * through the contracts semantic adapter and branches on those — no
+ * literal version comparison in the handler body. The version-specific
+ * parsed param object is already the matching typed shape (the shared
+ * version-aware param parser validated the closed field set per wire
+ * version before dispatch).
  */
 export function createRemoteTeamHandler(ports) {
     return (method, params, version) => {
         switch (method) {
             case 'team.create': {
-                if (version === 2) {
+                // pre-alpha3 PR-F (plan §F.3) — the version is translated to the
+                // SEMANTIC create flavor by the contracts semantic adapter (the
+                // only version branch in the wire surface); the handler routes on
+                // the flavor. The version-aware param parser already validated the
+                // matching closed field set (embedded-work: the optional
+                // `initialWork`; workspace: the optional `workspace`, CREATE-ONLY).
+                const flavor = teamCreateFlavorOf(version);
+                if (flavor === TEAM_CREATE_FLAVORS.workspace) {
                     const createParams = params;
-                    const created = ports.teamCreateV2.create(createParams.rootSessionId, createParams.blueprintId, createParams.blueprintRevision, createParams.workspace);
-                    return normalizeTeamCreateValue('teamCreateV2', created);
+                    const created = ports.teamCreateWorkspace.create(createParams.rootSessionId, createParams.blueprintId, createParams.blueprintRevision, createParams.workspace);
+                    return normalizeTeamCreateValue('teamCreateWorkspace', created);
                 }
                 const createParams = params;
-                const teamCreate = ports.teamCreate;
+                const teamCreate = ports.teamCreateEmbeddedWork;
                 const created = teamCreate.create(createParams.rootSessionId, createParams.blueprintId, createParams.blueprintRevision, createParams.initialWork);
-                return normalizeTeamCreateValue('teamCreate', created);
+                return normalizeTeamCreateValue('teamCreateEmbeddedWork', created);
             }
             case 'team.admitInitialWork': {
                 // v2-only: the version-aware param parser guarantees the request
@@ -522,37 +540,40 @@ export function createRemoteTeamHandler(ports) {
             }
             case 'team.getProjection': {
                 const projectionParams = params;
-                if (version >= 6) {
-                    // The v6 projection: the frozen v1-v5 shape PLUS the two
-                    // additive freshness fields (team-view-sync-complete Phase 2
-                    // frozen decision 4) — `durableGeneration` (always ===
-                    // `generation`, named for the client freshness PAIR) and
-                    // `liveToken` (the deterministic opaque semantic-live-state
-                    // token). Contract versions <= 5 serve the EXACT frozen shape
-                    // (byte-identical passthrough — v1-v5 are unchanged).
+                // pre-alpha3 PR-F (plan §F.3) — the version is translated to the
+                // SEMANTIC projection shape by the contracts semantic adapter; the
+                // handler branches on the shape (the shared wire application of the
+                // `live` shape is withLiveProjectionFreshness — defined in exactly
+                // one place).
+                const shape = projectionShapeOf(version);
+                if (shape === PROJECTION_SHAPES.live) {
+                    // The `live` shape: the frozen base shape PLUS the two additive
+                    // freshness cells (team-view-sync-complete Phase 2 frozen
+                    // decision 4) — `durableGeneration` (always === `generation`,
+                    // named for the client freshness PAIR) and `liveToken` (the
+                    // deterministic opaque semantic-live-state token). Every other
+                    // wire version serves the EXACT frozen `base` shape
+                    // (byte-identical passthrough — the v6 cells are absent, not
+                    // null).
                     //
-                    // PR #35 second follow-up P0-2 (same-snapshot): the v6 read
-                    // goes through the ATOMIC `projectV6` port — the projection
+                    // PR #35 second follow-up P0-2 (same-snapshot): the `live` read
+                    // goes through the ATOMIC `projectLive` port — the projection
                     // plus a token computed FROM THE SAME PROJECTION RESULT (the
                     // adapter materializes the live overlay once and derives the
                     // token from the already-materialized
                     // `members[].liveActivity` cells). The frame and the token can
                     // never come from two different live snapshots, and the
-                    // lightweight `liveToken` port is NOT consulted on the v6
+                    // lightweight `liveToken` port is NOT consulted on the `live`
                     // projection path (it serves the getReadState probe).
-                    const v6 = ports.projection.projectV6(projectionParams.teamSessionId);
-                    const projection = normalizeProjection(v6.projection);
-                    const liveToken = v6.liveToken;
+                    const live = ports.projection.projectLive(projectionParams.teamSessionId);
+                    const projection = normalizeProjection(live.projection);
+                    const liveToken = live.liveToken;
                     if (typeof liveToken !== 'string' || liveToken.length === 0) {
-                        throw portContractError('projectV6.liveToken', 'must be a non-empty string');
+                        throw portContractError('projectLive.liveToken', 'must be a non-empty string');
                     }
                     return {
                         data: {
-                            projection: {
-                                ...projection,
-                                durableGeneration: projection.generation,
-                                liveToken,
-                            },
+                            projection: withLiveProjectionFreshness(projection, liveToken),
                         },
                         projectionGeneration: projection.generation,
                     };

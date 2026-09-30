@@ -531,7 +531,14 @@ it('C4.3 policyState.set switches through the mutation service and policyState.g
 
 it('C4.3b an unknown policy state is rejected with the closed-set code', () => {
   expect(c4.policyUnknown.ok).toBe(false)
-  expect(codeOf(c4.policyUnknown)).toBe('TEAM_REMOTE_POLICY_STATE_UNKNOWN')
+  // pre-alpha3 W1 fix-A (F11): the Remote's semantic closed-set precheck
+  // is GONE (shape validation only) — the closed set is the Governance
+  // service's authority, resolved against the addressed team's bound
+  // Blueprint. The service's typed POLICY_STATE_UNKNOWN (a closed backing
+  // code) now surfaces on the wire through the dispatcher's invariant 4b
+  // pass-through, replacing the remote plane's old
+  // TEAM_REMOTE_POLICY_STATE_UNKNOWN precheck code for this case.
+  expect(codeOf(c4.policyUnknown)).toBe('POLICY_STATE_UNKNOWN')
 })
 
 it('C4.4 a malformed member.create is rejected by the facade validator with zero writes', () => {

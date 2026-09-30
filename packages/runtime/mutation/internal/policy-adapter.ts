@@ -1,7 +1,19 @@
 /**
- * P7-T2 — the runtime-side policy adapter: assemble the FROZEN resolver's
- * `EffectivePolicyInput` from the mutation store + the static policy
- * reader, as of one step boundary.
+ * P7-T2 — the runtime-side policy adapter (INTERNAL, test-world kernel;
+ * moved here from `packages/runtime/policy-adapter.ts` by pre-alpha3
+ * PR-F, plan §F.2): assemble the FROZEN resolver's `EffectivePolicyInput`
+ * from the mutation store + the static policy reader, as of one step
+ * boundary.
+ *
+ * This was the PROCESS-LOCAL effective-policy assembly of the
+ * MutationStore era — the "duplicate effective policy assembly" the
+ * pre-alpha3 refactor retires from production: the ONE production
+ * assembly is the canonical read
+ * ({@link @dsh-agent-team/runtime/effective-policy} —
+ * `readEffectivePolicy`). The only remaining consumer is the test-world
+ * kernel {@link ./mutation-service.js} (the P7-T2 test family), which
+ * assembles over its fake mutation store exactly as pre-PR-B worlds did
+ * (bit-for-bit). No production module imports this file.
  *
  * This module is the single seam between the runtime's append-only durable
  * records and the P3-T4 resolver: the resolver is reused VERBATIM (never
@@ -30,10 +42,10 @@
  * precise record mapping lives in the provenance ledger (the service's
  * `contributions`), which the card acceptance reads for the source chain.
  *
- * @module @dsh-agent-team/runtime/policy-adapter
+ * @module @dsh-agent-team/runtime/mutation/internal/policy-adapter
  */
 
-import { DEFAULT_POLICY_STATE_ID } from '../domain/policy/src/index.js'
+import { DEFAULT_POLICY_STATE_ID } from '../../../domain/policy/src/index.js'
 import type {
   AutonomyOverlayRecord,
   CapabilityName,
@@ -46,15 +58,15 @@ import type {
   PolicyStateView,
   TeamSessionId,
   TeamValueOrigin,
-} from '../domain/policy/src/index.js'
-import { MUTATION_RECORD_KINDS } from './mutation/types.js'
+} from '../../../domain/policy/src/index.js'
+import { MUTATION_RECORD_KINDS } from '../types.js'
 import type {
   MutationRecordKind,
   MutationStore,
   PolicyReader,
   PolicyStateTransitionRecord,
   StoredMutationRecord,
-} from './mutation/types.js'
+} from '../types.js'
 
 /** The arguments of {@link assembleEffectivePolicyInput}. */
 export interface AssembleEffectivePolicyInputArgs {

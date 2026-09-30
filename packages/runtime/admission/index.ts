@@ -45,6 +45,10 @@ export {
 } from './errors.js'
 export type { TeamRuntimeErrorCode } from './errors.js'
 
+// pre-alpha3 PR-F (plan §F.4): the config-inspected same-source fact
+// views (the closed effective-capability set minus the generic
+// `permissions` cell + the committed-policyState / requirement /
+// recovery durable-fact builders) are appended to the types re-export.
 export {
   CALLER_ROLES,
   CALLER_ROLE_VALUES,
@@ -52,6 +56,10 @@ export {
   WORK_EXECUTION_MODES,
   effectivePolicyView,
   memberSummary,
+  CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES,
+  configInspectedPolicyStateView,
+  configInspectedRequirementView,
+  configInspectedRecoveryView,
 } from './types.js'
 export type {
   ActionCaller,
@@ -68,6 +76,9 @@ export type {
   WorkDeliveryStatus,
   WorkExecutionMode,
   WorkStatusEntry,
+  ConfigInspectedPolicyStateView,
+  ConfigInspectedRequirementView,
+  ConfigInspectedRecoveryView,
 } from './types.js'
 
 export {

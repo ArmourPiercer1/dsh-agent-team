@@ -25,7 +25,10 @@
  *  - P6 the human-override and instance-overlay slots carry their own
  *     layer/origin provenance (and the instance layer outranks the team
  *     overlay layer for the addressed instance);
- *  - P7 recordAdmitsCapability: the values-key predicate.
+ *  - P7 recordAdmitsCapability: the ADMIT-kind contract (pre-alpha3
+ *    PR-F F.4 A' follow-up — an ALLOW-kind entry naming at least one
+ *    value; a deny-kind entry is a settled withdrawal, never a pending
+ *    grant; key presence alone is not admission).
  *
  * @module @dsh-agent-team/runtime/test/p8s4b-cell-provenance
  */
@@ -227,9 +230,34 @@ describe('P8-S4B M6 cell provenance (§18.3 backend truth)', () => {
     expect(provInstance.effective).toEqual({ kind: 'deny' })
   })
 
-  it('P7 recordAdmitsCapability keys on the values payload', () => {
-    expect(recordAdmitsCapability({ values: valuesWith }, 'model')).toBe(true)
+  it('P7 recordAdmitsCapability is the ADMIT-kind contract (the A\' follow-up)', () => {
+    // pre-alpha3 PR-F F.4 (the A' follow-up of the F15 Option A
+    // adjudication, 2026-09-30): key PRESENCE of the capability key is
+    // not admission (the pre-fix values-key predicate, corrected). A
+    // record admits a value for the cell ONLY when its entry for the
+    // cell is an ALLOW-kind PolicyEntry naming at least one value (for
+    // `mcp`: server names or the `'*'` wildcard). A deny-kind entry is a
+    // settled withdrawal — F15 R4: a policy deny is not a loss — and is
+    // never a pending grant; a malformed shape admits nothing
+    // (fail-closed, never inferred). This is the SAME contract the
+    // probe-side pending filter in src/plugin/host.ts applies (the read
+    // surface and the probe share one admission reading — F.4
+    // same-source).
+    expect(
+      recordAdmitsCapability({ values: { model: { kind: 'allow', items: ['m'] } } }, 'model'),
+    ).toBe(true)
+    expect(
+      recordAdmitsCapability({ values: { mcp: { kind: 'allow', items: ['s', '*'] } } }, 'mcp'),
+    ).toBe(true)
+    // A deny-kind entry: a settled withdrawal, NOT a pending grant.
+    expect(recordAdmitsCapability({ values: valuesWithout }, 'mcp')).toBe(false)
+    // A key whose value is not an entry at all (malformed): fail-closed.
+    expect(recordAdmitsCapability({ values: valuesWith }, 'model')).toBe(false)
+    // An absent capability key: no admission.
     expect(recordAdmitsCapability({ values: valuesWithout }, 'model')).toBe(false)
-    expect(recordAdmitsCapability({ values: valuesWithout }, 'mcp')).toBe(true)
+    // An empty allow-list (malformed under the closed set): no admission.
+    expect(
+      recordAdmitsCapability({ values: { model: { kind: 'allow', items: [] } } }, 'model'),
+    ).toBe(false)
   })
 })

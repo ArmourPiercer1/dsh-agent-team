@@ -294,7 +294,7 @@ export function parseTeamReadStateResponse(
 /** The minimal client seam the resolver needs (the production
  *  `TeamRemoteClient` satisfies it; tests pass doubles). */
 export interface TeamReadStateClient {
-  readonly getReadStateV6: (sessionId: string) => Promise<RemoteResponse>
+  readonly getReadState: (sessionId: string) => Promise<RemoteResponse>
 }
 
 /**
@@ -314,7 +314,7 @@ export async function resolveTeamReadState(
 ): Promise<TeamReadStateOutcome> {
   let response: RemoteResponse
   try {
-    response = await teamRemote.getReadStateV6(sessionId)
+    response = await teamRemote.getReadState(sessionId)
   } catch (error) {
     // The frozen seam contract: PushTransportLossError is the ONLY
     // rejection kind. Anything else is an internal client bug — keep

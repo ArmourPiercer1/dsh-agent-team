@@ -1,25 +1,36 @@
 /**
- * P7-T2 — the runtime mutation/provenance module (public surface).
+ * P7-T2 — the runtime mutation/provenance module (public surface;
+ * reshaped by pre-alpha3 PR-F, plan §F.2).
  *
- * The runtime half of the frozen DevPlan §20.2 "Runtime mutation"
- * contract: future-boundary mutation of the five capability domains
- * (model / tools / permissions / skills / mcp), PolicyState transitions
- * with lazy non-destructive suppression, the Autonomy Overlay and
- * Explicit Human Override record families, and fully-explained effective
- * configuration (every item resolves to a source chain — the frozen
- * P3-T4 resolver's per-cell provenance plus this module's provenance
- * ledger).
+ * What the PUBLIC surface carries after PR-F:
  *
- * Pure module: no I/O, no DSH imports, no ambient state. The service is
- * constructed over injected ports (clock / store / reader) — see
- * {@link ./service.js} and {@link ./types.js}.
+ * - the frozen mutation/provenance VOCABULARY ({@link ./types.js}): the
+ *   record families (PolicyState transitions, Autonomy Overlay, Explicit
+ *   Human Override, creation fields, the append-only provenance ledger
+ *   and suppression records) and the injected port shapes
+ *   (`MutationStore`, `PolicyReader` — the ports the PRODUCTION
+ *   governance authority and the canonical policy read consume);
+ * - the exported PURE KERNELS ({@link ./service.js}) the production
+ *   governance authority ({@link @dsh-agent-team/runtime/governance})
+ *   reuses — one closed error surface for intake + durable write;
+ * - the §18.3 backend-truth cell provenance derivation
+ *   ({@link ./cell-provenance.js});
+ * - the narrow durable-governance-override persistence primitive
+ *   ({@link ./override-admission.js}) — demoted by pre-alpha3 PR-A from
+ *   the production admission authority to the full-slot re-issue +
+ *   `put` kernel (the production write authority is the governance
+ *   mutation service).
  *
- * P8-S4B additions: the §18.3 backend-truth cell provenance derivation
- * ({@link ./cell-provenance.js}) and the durable governance override
- * persistence primitive ({@link ./override-admission.js}) — demoted by
- * pre-alpha3 PR-A from the production admission authority to the narrow
- * full-slot re-issue + `put` kernel (the production authority is now
- * {@link @dsh-agent-team/runtime/governance}).
+ * What the public surface NO LONGER carries (PR-F): the
+ * `MutationService` class, the `StepClock` port, the step-boundary
+ * policy assembly, and the frozen-error mapper — all of it moved to the
+ * INTERNAL test-world kernel
+ * ({@link ./internal/mutation-service.js} +
+ * {@link ./internal/policy-adapter.js}); the only consumers are the
+ * P7-T2 test family and the legacy integrated admission test world. No
+ * production module imports the internal kernel.
+ *
+ * Pure module: no I/O, no DSH imports, no ambient state.
  *
  * @module @dsh-agent-team/runtime/mutation
  */
@@ -52,7 +63,6 @@ export type {
   SuppressionRecord,
   EffectiveConfiguration,
   EffectiveConfigCapture,
-  StepClock,
   MutationStore,
   PolicyReader,
   BlueprintEnvelopeLike,
@@ -75,17 +85,17 @@ export type {
   TeamValueOrigin,
 } from '../../domain/policy/src/index.js'
 
+// pre-alpha3 PR-A (the exported pure kernels the production governance
+// authority, packages/runtime/governance, reuses) — the ONLY production
+// surface of the mutation module after PR-F. The `MutationService` class,
+// `MutationServiceDeps`, `mapFrozenError`, and `activePolicyState` moved
+// to the INTERNAL test-world kernel ({@link ./internal/mutation-service.js}
+// + {@link ./internal/policy-adapter.js}).
 export {
-  MutationService,
-  mapFrozenError,
-  activePolicyState,
-  // pre-alpha3 PR-A — the exported pure kernels the production governance
-  // authority (packages/runtime/governance) reuses:
   normalizePolicyEntry,
   normalizeStateView,
   checkExternalHardFacts,
 } from './service.js'
-export type { MutationServiceDeps } from './service.js'
 
 export {
   memberEnvelopeItems,

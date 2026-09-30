@@ -9,8 +9,8 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { CAPABILITY_NAME_VALUES } from '../../domain/policy/src/index.js'
 import {
+  CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES,
   TEAM_RUNTIME_ERROR_CODES,
 } from '../admission/index.js'
 import type { TeamRuntimeActionOutcome } from '../admission/index.js'
@@ -1030,11 +1030,15 @@ describe('P6-T2 D1: reads, coordination facts, and follow-up work admission', ()
     expect(d1.templatesListed.scoutContextPolicy).toBe('fresh_per_delegation')
   })
 
-  it('inspect-config resolves the effective policy: every closed capability appears once', () => {
+  it('inspect-config resolves the effective policy: every closed capability appears once (F.4: minus the generic `permissions` cell)', () => {
     expect(d1.configInspected.kind).toBe('config-inspected')
     expect(d1.configInspected.capabilityKeys).toEqual(
-      [...CAPABILITY_NAME_VALUES].sort(),
+      [...CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES].sort(),
     )
+    // F.4: the generic `permissions` cell is NOT surfaced in `effective`
+    // (the alpha.2 operation-permission authority is the independent
+    // `operationPermissions` field).
+    expect(d1.configInspected.capabilityKeys).not.toContain('permissions')
   })
 
   it('report-progress (self) records a coordination fact with the closed progress value', () => {

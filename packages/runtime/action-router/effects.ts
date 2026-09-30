@@ -54,7 +54,6 @@ import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js'
 import type { MemberInstanceRecordDto } from '../../contracts/src/index.js'
 import type { BlueprintTemplate, TeamBlueprint } from '../../domain/blueprint/src/index.js'
 import {
-  CAPABILITY_NAME_VALUES,
   initialMcpGrantOf,
   staticCapabilitiesOf,
 } from '../../domain/policy/src/index.js'
@@ -100,7 +99,15 @@ import type {
 import type { LifecyclePorts } from '../lifecycle/types.js'
 import { archiveMember, disposeMember, restoreMember } from '../lifecycle/index.js'
 import { isLifecycleRuntimeError } from '../lifecycle/errors.js'
-import { effectivePolicyView, memberSummary, operationPermissionView } from '../admission/types.js'
+import {
+  CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES,
+  configInspectedPolicyStateView,
+  configInspectedRecoveryView,
+  configInspectedRequirementView,
+  effectivePolicyView,
+  memberSummary,
+  operationPermissionView,
+} from '../admission/types.js'
 import { ACTION_NAMES } from '../admission/actions.js'
 import {
   admitWorkLocked,
@@ -407,14 +414,39 @@ async function runEffect(ctx: EffectContext): Promise<RuntimeActionEffect | Work
         if (isActivationError(error)) throw mapActivationError(error)
         throw error
       }
+      // pre-alpha3 PR-F (plan §F.4): the SAME-SOURCE read surface — the
+      // durable fact reads run once here (pure reads: the effect phase
+      // writes nothing and never re-probes the gate chain).
+      const transitions = ctx.policyStateTransitions?.(ctx.rootSessionId) ?? []
+      const ledgerEntries = ctx.repositories.ledger.list()
       return {
         kind: 'config-inspected',
-        effective: effectivePolicyView(effectivePolicyValues(policy), CAPABILITY_NAME_VALUES),
+        // F.4: the generic `permissions` cell is excluded from the
+        // effective view — the FAKE legacy cell; the ACTUAL alpha.2
+        // operation-permission authority is the independent
+        // `operationPermissions` field below.
+        effective: effectivePolicyView(
+          effectivePolicyValues(policy),
+          CONFIG_INSPECTED_EFFECTIVE_CAPABILITIES,
+        ),
         // A2C-3 (plan §10): the ACTUAL alpha.2 operation permission — the
         // bound template's static parameter-aware policy (bound snapshot,
         // never runtime observation). Pure read: the effect phase writes
         // nothing (the seam write log is unchanged by this effect).
         operationPermissions: operationPermissionView(boundTemplateOf(ctx.blueprint, target)),
+        // F.4: the committed PolicyState — the SAME durable fold the
+        // production root's projection runs (one read, one authority).
+        policyState: configInspectedPolicyStateView(transitions),
+        // F.4: the durable requirement / consent / availability facts
+        // (the PR-E RequirementAuthority records + the compatibility
+        // verdict — verbatim from the TeamDomain).
+        requirement: configInspectedRequirementView(
+          ctx.repositories.compatibility.get(ctx.rootSessionId),
+          ledgerEntries,
+        ),
+        // F.4: the DERIVED recovery state (from the durable PR-E
+        // incident facts — no durable "recovery" flag exists).
+        recovery: configInspectedRecoveryView(ledgerEntries),
       }
     }
     case ACTION_NAMES.WORK_STATUS: {

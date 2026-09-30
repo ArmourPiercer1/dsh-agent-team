@@ -7,9 +7,9 @@
  *  - envelope assembly: channel `/team-remote`, payload
  *    `{ version: 3, params }` — the v3 wrappers are the ONLY v3-stamping
  *    wrappers (every other wrapper keeps its v1/v2 stamp);
- *  - `teamListRootsV3` stamps `{ version: 3, params: {} }` (the closed
+ *  - `listRoots` stamps `{ version: 3, params: {} }` (the closed
  *    param set is EMPTY — a zero-field payload);
- *  - `teamEnsureRootLiveV3(teamSessionId)` stamps
+ *  - `ensureRootLive(teamSessionId)` stamps
  *    `{ version: 3, params: { teamSessionId } }` (the closed param set is
  *    exactly `['teamSessionId']` — nothing else rides);
  *  - outcome pass-through: a success envelope and a TYPED error envelope
@@ -133,14 +133,14 @@ async function capture(
 const listRootsScenario = await (async () => {
   const { carrier, calls } = makeCarrier(() => listRootsSuccess())
   const client = createTeamRemoteClient(carrier)
-  const result = await capture(() => client.teamListRootsV3())
+  const result = await capture(() => client.listRoots())
   return { calls, result }
 })()
 
 const ensureRootLiveScenario = await (async () => {
   const { carrier, calls } = makeCarrier(() => ensureRootLiveNotImplemented())
   const client = createTeamRemoteClient(carrier)
-  const result = await capture(() => client.teamEnsureRootLiveV3('root-session-d1'))
+  const result = await capture(() => client.ensureRootLive('root-session-d1'))
   return { calls, result }
 })()
 
@@ -159,14 +159,14 @@ const ensureRootLiveSuccessScenario = await (async () => {
     ),
   )
   const client = createTeamRemoteClient(carrier)
-  const result = await capture(() => client.teamEnsureRootLiveV3('root-session-d1'))
+  const result = await capture(() => client.ensureRootLive('root-session-d1'))
   return { calls, result }
 })()
 
 const listRootsUnavailableScenario = await (async () => {
   const { carrier, calls } = makeCarrier(() => listRootsUnavailable())
   const client = createTeamRemoteClient(carrier)
-  const result = await capture(() => client.teamListRootsV3())
+  const result = await capture(() => client.listRoots())
   return { calls, result }
 })()
 
@@ -179,7 +179,7 @@ const carrierRejectionScenario = await (async () => {
     },
   }
   const client = createTeamRemoteClient(carrier)
-  const result = await capture(() => client.teamListRootsV3())
+  const result = await capture(() => client.listRoots())
   return { calls, result }
 })()
 
@@ -187,9 +187,9 @@ const versionStampingScenario = await (async () => {
   const { carrier, calls } = makeCarrier(() => listRootsSuccess())
   const client = createTeamRemoteClient(carrier)
   await client.call('team.getProjection', { teamSessionId: 't1' })
-  await client.teamCreateV2({ rootSessionId: 't1', blueprintId: 'BP-D1' })
-  await client.teamListRootsV3()
-  await client.teamEnsureRootLiveV3('t1')
+  await client.teamCreate({ rootSessionId: 't1', blueprintId: 'BP-D1' })
+  await client.listRoots()
+  await client.ensureRootLive('t1')
   return { calls }
 })()
 
@@ -197,7 +197,7 @@ const versionStampingScenario = await (async () => {
 // Assertions (synchronous it() bodies over the captured scenario state)
 // ---------------------------------------------------------------------------
 
-describe('D1 (client transport): teamListRootsV3', () => {
+describe('D1 (client transport): listRoots', () => {
   it('stamps the closed EMPTY param set with contract version 3 on the frozen channel', () => {
     expect(listRootsScenario.calls.length).toBe(1)
     const call = listRootsScenario.calls[0] as CallRecord
@@ -240,7 +240,7 @@ describe('D1 (client transport): teamListRootsV3', () => {
   })
 })
 
-describe('D1 (client transport): teamEnsureRootLiveV3', () => {
+describe('D1 (client transport): ensureRootLive', () => {
   it('stamps the closed { teamSessionId } param set with contract version 3 on the frozen channel', () => {
     expect(ensureRootLiveScenario.calls.length).toBe(1)
     const call = ensureRootLiveScenario.calls[0] as CallRecord

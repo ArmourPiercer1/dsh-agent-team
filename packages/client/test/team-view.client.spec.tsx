@@ -113,8 +113,8 @@ function makeCreationFace(): TeamViewCreationFace {
     probeCompatibility: vi.fn(() => Promise.resolve(
       okResponse({ compatibility: { status: 'OPEN', requirements: [] } }, 'intent.probe'),
     )),
-    teamCreateV2: vi.fn(() => Promise.resolve(okResponse({ path: 'root', durable: true, bind: {} }, 'team.create'))),
-    teamAdmitInitialWorkV2: vi.fn(() => Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))),
+    teamCreate: vi.fn(() => Promise.resolve(okResponse({ path: 'root', durable: true, bind: {} }, 'team.create'))),
+    teamAdmitInitialWork: vi.fn(() => Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))),
     openCreatedSession: vi.fn(async () => undefined),
     listAgentPresets: vi.fn(() => Promise.resolve([
       { id: 'team', name: 'Team', isDefault: false },
