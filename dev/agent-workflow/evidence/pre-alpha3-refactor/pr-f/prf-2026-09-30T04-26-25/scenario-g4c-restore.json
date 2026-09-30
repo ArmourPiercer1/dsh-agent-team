@@ -1,0 +1,25 @@
+{
+  "toolOutcome": {
+    "status": "executed",
+    "action": "delegate",
+    "rootSessionId": "session-prf-main-prf-2026-09-30T04-26-25",
+    "callerRole": "leader",
+    "effect": {
+      "kind": "work-admitted",
+      "instanceId": "inst-1x2154a0naty",
+      "fromLifecycle": "SETTLED",
+      "lifecycleCommitted": true,
+      "sequence": 15,
+      "replayed": false,
+      "settled": true,
+      "settledSequence": 18,
+      "memberResult": {
+        "requestToken": "rt-g4c-prf-2026-09-30T04-26-25",
+        "status": "succeeded",
+        "body": "PRREQ_DONE_W_g4c"
+      }
+    },
+    "requestToken": "rt-g4c-prf-2026-09-30T04-26-25"
+  },
+  "incidents": 0
+}

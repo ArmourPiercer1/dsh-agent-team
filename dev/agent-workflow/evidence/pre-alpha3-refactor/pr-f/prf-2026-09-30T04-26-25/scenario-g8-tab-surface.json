@@ -1,0 +1,71 @@
+{
+  "page": {
+    "status": 200
+  },
+  "readState": {
+    "session": "session-team-child-cbb2ca757c612cb6c28c3232ce07295c",
+    "relation": "team-member",
+    "teamSessionId": "session-prf-main-prf-2026-09-30T04-26-25",
+    "memberInstanceId": "inst-1x2154a0naty",
+    "disposed": false,
+    "durableGeneration": 27,
+    "liveToken": "lt-v1-9ca9956919f89ff00d9b78a782cbd7faeaf4f745b11055638dbd6f566667127c"
+  },
+  "projection": {
+    "generation": 27,
+    "durableGeneration": 27,
+    "liveToken": "lt-v1-9ca9956919f89ff00d9b78a782cbd7faeaf4f745b11055638dbd6f566667127c"
+  },
+  "toolOutcome": {
+    "status": "executed",
+    "action": "delegate",
+    "rootSessionId": "session-prf-main-prf-2026-09-30T04-26-25",
+    "callerRole": "leader",
+    "effect": {
+      "kind": "work-admitted",
+      "instanceId": "inst-1x2154a0naty",
+      "fromLifecycle": "SETTLED",
+      "lifecycleCommitted": true,
+      "sequence": 21,
+      "replayed": false,
+      "settled": true,
+      "settledSequence": 27,
+      "memberResult": {
+        "requestToken": "rt-g8-prf-2026-09-30T04-26-25",
+        "status": "succeeded",
+        "body": "PRREQ_DONE_W_g8"
+      }
+    },
+    "requestToken": "rt-g8-prf-2026-09-30T04-26-25"
+  },
+  "askRequests": [
+    {
+      "actionName": "parameter-permission",
+      "correlation": "call-prf-fb3e58bb",
+      "kind": "leader-approval",
+      "operationFingerprint": "sha256:ed00b4242c97d4d69759804d8f1f35e78bf6eee4fd0ba9370d7a750c87172318",
+      "requestId": "ctrl-0gt7jg404xpy171noyv561fa",
+      "requester": {
+        "instanceId": "inst-1x2154a0naty",
+        "kind": "instance",
+        "role": "member"
+      },
+      "subject": {
+        "instanceId": "inst-1x2154a0naty",
+        "kind": "instance"
+      },
+      "summary": "bash [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use] echo prf-g8-prf-2026-09-30T04-26-25",
+      "targetInstanceId": "inst-1x2154a0naty",
+      "toolName": "bash"
+    }
+  ],
+  "decisions": [
+    {
+      "requestId": "ctrl-0gt7jg404xpy171noyv561fa",
+      "class": "ask",
+      "decision": "allow",
+      "resolveStatus": 200,
+      "resolveError": null
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "determination": "B: the bash result carried NO stdout.spillPath and NO subprocess spill file exists — the spill itself did not happen upstream (300KB < the effective inline cap on this world shape)",
+  "createOk": true,
+  "turnCompleted": true,
+  "observerInstalled": true,
+  "recordFaults": [],
+  "toolResultSpillRef": null,
+  "worldSpillFiles": [],
+  "grant": null,
+  "grantShape": false,
+  "settleMs": null,
+  "observations": [
+    "alpha2-perm: coverage PASS safe-unmanaged tool 'todo_write' on session-g6diag-spill-g6diag-2026-09-30T05-28-54 (source-reviewed closed registry)",
+    "alpha2-artifact-grant: shell-result-observer installed",
+    "alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-g6diag-d146aeb6\",\"tool\":\"bash\",\"resourceKind\":\"tool\",\"resourceDisplay\":\"bash\",\"fingerprint\":\"sha256:fdf510eb39595dc7fa85c6a58ff0cbd1f0481fe50431bcb5a5e0dded83ae3ce7\"}",
+    "alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-g6diag-d146aeb6\",\"decision\":\"allow\",\"provenance\":{\"source\":\"rule\",\"effect\":\"allow\",\"lane\":\"allow\",\"ruleIndex\":0}}"
+  ]
+}

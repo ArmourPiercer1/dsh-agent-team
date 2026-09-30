@@ -1,0 +1,42 @@
+# p6t1-parallel A/B — DATASET 3, run 2 (TREE: base)
+# WORKTREE: /home/user/dsh-plugins/dsh-agent-team/.worktrees/p6t1-ab-ds3-base
+# HEAD: 0a0a19a603db7ef5c560a05895835462372f5910
+# CMD: pnpm exec vitest run packages/runtime/test/p6t1-parallel.test.ts
+# START: 2026-09-30T05:50:36Z
+────────────────────────────────────────────────────────────
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/p6t1-ab-ds3-base
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (9 tests | 1 failed) 7ms
+     ✓ two activated results with distinct instance ids and child Sessions 1ms
+     ✓ two COMMITTED operations, two members, two distinct child Sessions 0ms
+     ✓ five activated results, five COMMITTED operations, five members, five child Sessions 0ms
+     ✓ exactly two activations succeed 0ms
+     × exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 3ms
+     ✓ the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 0ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota)
+Error: assertActivationCode: expected ActivationError code 'ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES' but got ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL: activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)
+ ❯ assertActivationCode packages/runtime/test/p6t1-helpers.ts:581:11
+    579|         ? `${record.name ?? error.name}/${record.code ?? 'n/a'}: ${err…
+    580|         : String(error)
+    581|     throw new Error(`assertActivationCode: expected ActivationError co…
+       |           ^
+    582|   }
+    583|   const details = record.details
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:231:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  13:50:36
+   Duration  649ms (transform 380ms, setup 0ms, import 555ms, tests 7ms, environment 0ms)
+
+# EXIT: 1

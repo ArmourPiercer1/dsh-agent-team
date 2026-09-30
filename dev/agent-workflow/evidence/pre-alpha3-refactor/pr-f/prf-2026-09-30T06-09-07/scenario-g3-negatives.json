@@ -1,0 +1,41 @@
+{
+  "bogus": {
+    "code": "POLICY_STATE_UNKNOWN",
+    "message": "policyState target 'bogus-state' is outside the bound blueprint's closed set (default, default, paused)",
+    "details": {
+      "method": "policyState.set",
+      "endpoint": "policyState.set",
+      "contractVersion": 1,
+      "requestToken": null,
+      "reason": "domain-error",
+      "cause": {
+        "code": "POLICY_STATE_UNKNOWN",
+        "message": "policyState target 'bogus-state' is outside the bound blueprint's closed set (default, default, paused)",
+        "details": {
+          "reason": "unknown-state",
+          "stateId": "bogus-state",
+          "closedStates": [
+            "default",
+            "default",
+            "paused"
+          ]
+        }
+      }
+    }
+  },
+  "foreign": {
+    "code": "TEAM_REMOTE_FOREIGN_TEAM",
+    "message": "remote method 'policyState.get' addresses TeamSession 'session-prf-foreign-x' which this host does not own (bound root 'session-prf-boot-prf-2026-09-30T06-09-07')",
+    "details": {
+      "method": "policyState.get",
+      "endpoint": "policyState.get",
+      "contractVersion": 1,
+      "requestToken": null,
+      "reason": "domain-error",
+      "cause": {
+        "code": "TEAM_REMOTE_FOREIGN_TEAM",
+        "message": "remote method 'policyState.get' addresses TeamSession 'session-prf-foreign-x' which this host does not own (bound root 'session-prf-boot-prf-2026-09-30T06-09-07')"
+      }
+    }
+  }
+}

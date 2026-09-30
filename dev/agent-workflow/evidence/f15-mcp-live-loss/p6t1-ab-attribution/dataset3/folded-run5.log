@@ -1,0 +1,87 @@
+# p6t1-parallel A/B — DATASET 3, run 5 (TREE: folded)
+# WORKTREE: /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure
+# HEAD: 3b7039e89f2ab9a072d89e2e3caa2af01fe7d355
+# CMD: pnpm exec vitest run packages/runtime/test/p6t1-parallel.test.ts
+# START: 2026-09-30T05:55:28Z
+# NOTE: untracked kit edits present (tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs — Part-2 kit fixes, NOT imported by the test under run); packages/ + runtime test tree = exact HEAD state
+────────────────────────────────────────────────────────────
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-prf-closure
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (9 tests | 3 failed) 8ms
+     × two activated results with distinct instance ids and child Sessions 5ms
+     × two COMMITTED operations, two members, two distinct child Sessions 1ms
+     × five activated results, five COMMITTED operations, five members, five child Sessions 1ms
+     ✓ exactly two activations succeed 0ms
+     ✓ exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     ✓ the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 0ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:154:31
+    152| describe('P6-T1 P1: N=2 same-template parallel activations both succee…
+    153|   it('two activated results with distinct instance ids and child Sessi…
+    154|     expect(p1?.errors.length).toBe(0)
+       |                               ^
+    155|     expect(p1?.results.length).toBe(2)
+    156|     if (p1 === undefined) throw new Error('P1: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:167:30
+    165|
+    166|   it('two COMMITTED operations, two members, two distinct child Sessio…
+    167|     expect(p1?.committedOps).toBe(2)
+       |                              ^
+    168|     expect(p1?.memberCount).toBe(2)
+    169|     expect(p1?.distinctChildren).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions
+AssertionError: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:193:31
+    191| describe('P6-T1 P2: N=5 same-template parallel activations all succeed…
+    192|   it('five activated results, five COMMITTED operations, five members,…
+    193|     expect(p2?.errors.length).toBe(0)
+       |                               ^
+    194|     expect(p2?.results.length).toBe(5)
+    195|     if (p2 === undefined) throw new Error('P2: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 6 passed (9)
+   Start at  13:55:28
+   Duration  641ms (transform 381ms, setup 0ms, import 543ms, tests 8ms, environment 0ms)
+
+# EXIT: 1

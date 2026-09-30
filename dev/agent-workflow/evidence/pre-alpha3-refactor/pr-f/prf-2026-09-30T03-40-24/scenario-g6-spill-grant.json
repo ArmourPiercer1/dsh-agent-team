@@ -1,0 +1,25 @@
+{
+  "toolOutcome": {
+    "status": "executed",
+    "action": "delegate",
+    "rootSessionId": "session-prf-main-prf-2026-09-30T03-40-24",
+    "callerRole": "leader",
+    "effect": {
+      "kind": "work-admitted",
+      "instanceId": "inst-1b2ikhm0ddlr",
+      "fromLifecycle": "SETTLED",
+      "lifecycleCommitted": true,
+      "sequence": 19,
+      "replayed": false,
+      "settled": true,
+      "settledSequence": 22,
+      "memberResult": {
+        "requestToken": "rt-g6-prf-2026-09-30T03-40-24",
+        "status": "succeeded",
+        "body": "PRREQ_DONE_W_g6"
+      }
+    },
+    "requestToken": "rt-g6-prf-2026-09-30T03-40-24"
+  },
+  "grants": []
+}
