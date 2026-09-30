@@ -30,4 +30,3 @@ Received: "undefined"
       Tests  1 failed | 1 passed (2)
    Start at  17:39:14
    Duration  961ms (transform 616ms, setup 0ms, import 874ms, tests 5ms, environment 0ms)
-
