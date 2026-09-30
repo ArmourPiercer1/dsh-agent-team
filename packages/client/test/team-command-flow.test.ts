@@ -45,7 +45,10 @@ import {
   parseMemberCommandOutcome,
 } from '../src/model/team-member-commands.js'
 import { createTeamProjectionStore } from '../src/state/team-projection-store.js'
-import { createTeamRemoteClient } from '../src/transport/team-remote-client.js'
+import {
+  createTeamRemoteClient,
+  generationOnlyProjectionBindings,
+} from '../src/transport/team-remote-client.js'
 import type { TeamRpcCarrier } from '../src/transport/host-seams.js'
 
 const TEAM = 'team-1'
@@ -214,8 +217,14 @@ async function flush(turns = 16): Promise<void> {
 const flow = await (async () => {
   const { carrier, calls, resolveSend } = makeScriptedCarrier()
   const client = createTeamRemoteClient(carrier)
+  // (pre-alpha3 PR-F F.3) this scenario's scripted carrier answers the
+  // FROZEN GENERATION-ONLY shape (no pair cells), so the store is bound
+  // with the generation-only semantic bindings over the same pull —
+  // the frozen v1 behavior, byte-identical (the pair-contract path is
+  // the v6 spec file's + the production mount's).
   const store = createTeamProjectionStore({
     getProjection: (id) => client.getProjection(id),
+    ...generationOnlyProjectionBindings,
     scheduler: makeManualScheduler(),
   })
 

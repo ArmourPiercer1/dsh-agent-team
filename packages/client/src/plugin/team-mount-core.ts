@@ -565,17 +565,16 @@ export function applyTeamMount(
     const existing = projectionStores.get(teamSessionId)
     if (existing !== undefined) return existing
     // (team-view-sync-complete, frozen decisions 3 + 4) the projection
-    // pull is the CONTRACT v6 freshness-pair pull: the host answers the
-    // same endpoint with `durableGeneration` (=== the durable
-    // generation) + `liveToken` inside data.projection; the store
-    // assesses against the applied PAIR. A live-only apply (equal
-    // durable generation, changed token) does NOT advance
+    // pull is the freshness-pair pull: the host answers the same
+    // endpoint with `durableGeneration` (=== the durable generation) +
+    // `liveToken` inside data.projection; the store assesses against
+    // the applied PAIR through the client's wrapper-bound semantic
+    // bindings (pre-alpha3 PR-F §F.3: the wire version is bound at the
+    // client wrapper — the store itself is contract-free). A live-only
+    // apply (equal durable generation, changed token) does NOT advance
     // `appliedGeneration`, so the applied-generation advance below
     // stays the client's single ledger-refresh trigger.
-    const store = createTeamProjectionStore({
-      getProjection: (id) => teamRemote.getProjection(id),
-      contract: 'v6',
-    })
+    const store = createTeamProjectionStore(teamRemote.projectionBindings)
     const dispose = store.subscribe(() => {
       const state = store.getState()
       // (repair 20260927, S1-C1) KEY ORDER: publish the COMPLETE store

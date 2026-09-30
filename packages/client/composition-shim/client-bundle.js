@@ -1436,17 +1436,16 @@ var __dshFactory = (require) => {
 			        if (existing !== undefined)
 			            return existing;
 			        // (team-view-sync-complete, frozen decisions 3 + 4) the projection
-			        // pull is the CONTRACT v6 freshness-pair pull: the host answers the
-			        // same endpoint with `durableGeneration` (=== the durable
-			        // generation) + `liveToken` inside data.projection; the store
-			        // assesses against the applied PAIR. A live-only apply (equal
-			        // durable generation, changed token) does NOT advance
+			        // pull is the freshness-pair pull: the host answers the same
+			        // endpoint with `durableGeneration` (=== the durable generation) +
+			        // `liveToken` inside data.projection; the store assesses against
+			        // the applied PAIR through the client's wrapper-bound semantic
+			        // bindings (pre-alpha3 PR-F §F.3: the wire version is bound at the
+			        // client wrapper — the store itself is contract-free). A live-only
+			        // apply (equal durable generation, changed token) does NOT advance
 			        // `appliedGeneration`, so the applied-generation advance below
 			        // stays the client's single ledger-refresh trigger.
-			        const store = createTeamProjectionStore({
-			            getProjection: (id) => teamRemote.getProjection(id),
-			            contract: 'v6',
-			        });
+			        const store = createTeamProjectionStore(teamRemote.projectionBindings);
 			        const dispose = store.subscribe(() => {
 			            const state = store.getState();
 			            // (repair 20260927, S1-C1) KEY ORDER: publish the COMPLETE store
@@ -5999,14 +5998,10 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=team-ledger-store.js.map
 			}, exports: {} };
 		__mods["state/team-projection-store.js"] = { done: false, fn: function (exports) {
-			const __imp97 = __req("../../remote/src/index.js");
-			const assessProjectionSync = __imp97.assessProjectionSync;
-			const assessProjectionSyncV6 = __imp97.assessProjectionSyncV6;
-			const backoffCapMs = __imp97.backoffCapMs;
-			const extractPushFrame = __imp97.extractPushFrame;
-			const extractPushFrameV6 = __imp97.extractPushFrameV6;
-			const isApplyAssessment = __imp97.isApplyAssessment;
-			const pickBackoffDelayMs = __imp97.pickBackoffDelayMs;
+			const __imp105 = __req("../../remote/src/index.js");
+			const backoffCapMs = __imp105.backoffCapMs;
+			const isApplyAssessment = __imp105.isApplyAssessment;
+			const pickBackoffDelayMs = __imp105.pickBackoffDelayMs;
 			/**
 			 * P9-T3 (S2-B) — the generation-safe Team projection store.
 			 *
@@ -6019,16 +6014,21 @@ var __dshFactory = (require) => {
 			 * out-of-order, foreign, or provenance-mismatched response can never
 			 * overwrite newer state (gate G2).
 			 *
-			 * Contract v6 (team-view-sync-complete): the `contract: 'v6'` option
-			 * assesses every response with the frozen `assessProjectionSyncV6`
-			 * against the applied freshness PAIR (`appliedGeneration` +
-			 * `appliedLiveToken`) and extracts the v6 frame (`extractPushFrameV6`).
-			 * A live-only apply (equal durable generation, changed live token)
-			 * records the new token WITHOUT advancing `appliedGeneration` — the
-			 * applied-generation advance remains the client's single
-			 * ledger-refresh trigger, so a live-only apply never refreshes the
-			 * ledger (frozen decision 4). The `contract: 'v1'` default keeps the
-			 * frozen generation-only behavior byte-identical.
+			 * Wire-contract neutrality (team-view-sync-complete + pre-alpha3 PR-F
+			 * F.3): the store carries NO wire-contract version. The pull's contract
+			 * is expressed by the two WRAPPER-BOUND semantic bindings injected
+			 * alongside it (`assessProjectionSync` + `extractPushFrame`, bound to
+			 * the SAME pull at the client wrapper boundary — the only client place
+			 * the wire version may appear): the freshness-pair pull assesses every
+			 * response against the applied freshness PAIR (`appliedGeneration` +
+			 * `appliedLiveToken`) and extracts the pair frame; a live-only apply
+			 * (equal durable generation, changed live token) records the new token
+			 * WITHOUT advancing `appliedGeneration` — the applied-generation advance
+			 * remains the client's single ledger-refresh trigger, so a live-only
+			 * apply never refreshes the ledger (frozen decision 4). The
+			 * generation-only pull keeps the frozen generation-only behavior
+			 * byte-identical (its extractor's durability facts stay `null`, so the
+			 * stale-apply guard below stays inert).
 			 *
 			 * The store is React-free (data-object layer per the web client
 			 * stack rules): a bare observable source — stable snapshot between
@@ -6069,17 +6069,20 @@ var __dshFactory = (require) => {
 			 * assumed by the store logic (the default scheduler may use
 			 * `setTimeout`; tests inject a manual scheduler).
 			 *
-			 * v6 stale-apply guard (PR #35 follow-up, P0-3): the F1 request-order
+			 * Stale-apply guard (PR #35 follow-up, P0-3): the F1 request-order
 			 * authority previously governed only the NON-apply verdicts (the
 			 * applied frame was deliberately untouched by request order — G2 hard
-			 * invariant). The v6 freshness PAIR extended the exposure: an OLD
-			 * same-generation response (typically a live-only frame carrying an
-			 * older `liveToken`) settling LATE than a newer round trip would
-			 * still `apply` and ROLL BACK the newer token / frame. The guard
-			 * closes that case: an apply verdict of a superseded request is
-			 * dropped when it carries no durable advance (`durableGeneration <=
-			 * appliedGeneration`); a late response with a genuinely NEWER durable
-			 * generation still applies (durable authority outranks request order).
+			 * invariant). The freshness PAIR (the pair-carrying pull's contract)
+			 * extended the exposure: an OLD same-generation response (typically a
+			 * live-only frame carrying an older `liveToken`) settling LATE than a
+			 * newer round trip would still `apply` and ROLL BACK the newer token /
+			 * frame. The guard closes that case: an apply verdict of a superseded
+			 * request is dropped when it carries no durable advance (the
+			 * wrapper-bound extractor's `durableGeneration` — the fact is
+			 * contract-bound at the client wrapper; for a generation-only pull it
+			 * is `null` and the guard stays inert, exactly as before the pair); a
+			 * late response with a genuinely NEWER durable generation still applies
+			 * (durable authority outranks request order).
 			 *
 			 * Request-order liveness authority (PR #34 review follow-up, F1): the
 			 * request sequence ALSO decides which completed response owns the UI
@@ -6123,11 +6126,13 @@ var __dshFactory = (require) => {
 			function createTeamProjectionStore(options) {
 			    const backoff = options.backoff === undefined ? DEFAULT_TEAM_PROJECTION_BACKOFF : options.backoff;
 			    const scheduler = options.scheduler === undefined ? createDefaultScheduler() : options.scheduler;
-			    // (team-view-sync-complete) the wire contract of the injected pull —
-			    // fixed for the store's lifetime: v6 pulls carry the freshness PAIR
-			    // and assess against it; v1 pulls keep the frozen generation-only
-			    // identity (byte-identical behavior).
-			    const isV6 = options.contract === 'v6';
+			    // (pre-alpha3 PR-F F.3) the wrapper-bound semantic bindings of the
+			    // injected pull — the store carries no wire-contract version: the
+			    // assessor / extractor shapes are the pull's contract, bound at the
+			    // client wrapper boundary (one store per pull, fixed for the store's
+			    // lifetime).
+			    const assess = options.assessProjectionSync;
+			    const extract = options.extractPushFrame;
 			    let state = {
 			        status: 'idle',
 			        teamSessionId: null,
@@ -6172,19 +6177,14 @@ var __dshFactory = (require) => {
 			        scheduler.cancel(pendingRetry);
 			        pendingRetry = null;
 			    };
-			    const appliedIdentity = () => state.frame === null || state.teamSessionId === null
-			        ? null
-			        : { teamSessionId: state.teamSessionId, generation: state.appliedGeneration };
-			    /** The v6 applied identity: the frozen PAIR (null before the first
-			     *  v6 frame — the assessor treats that as the first-frame case). */
-			    const appliedIdentityV6 = () => state.frame === null ||
-			        state.teamSessionId === null ||
-			        state.appliedGeneration === null ||
-			        state.appliedLiveToken === null
-			        ? null
+			    /** The applied-identity VIEW (version-agnostic — the wrapper-bound
+			     *  assessor maps it to the frozen assessor's identity shape; all
+			     *  fields null before the first applied frame). */
+			    const appliedView = () => state.frame === null || state.teamSessionId === null
+			        ? { teamSessionId: null, generation: null, liveToken: null }
 			        : {
 			            teamSessionId: state.teamSessionId,
-			            durableGeneration: state.appliedGeneration,
+			            generation: state.appliedGeneration,
 			            liveToken: state.appliedLiveToken,
 			        };
 			    /**
@@ -6284,9 +6284,7 @@ var __dshFactory = (require) => {
 			            scheduleRetry({ ...state, teamSessionId });
 			            return assessment;
 			        }
-			        const assessment = isV6
-			            ? assessProjectionSyncV6(appliedIdentityV6(), response)
-			            : assessProjectionSync(appliedIdentity(), response);
+			        const assessment = assess(appliedView(), response);
 			        // (PR #34 review follow-up, F1) request-order LIVENESS authority,
 			        // captured BEFORE the baseline advances: a response whose request
 			        // an LATER request already superseded (a valid round trip
@@ -6318,8 +6316,8 @@ var __dshFactory = (require) => {
 			            return assessment;
 			        }
 			        if (isApplyAssessment(assessment)) {
-			            const frameV6 = isV6 ? extractPushFrameV6(response) : null;
-			            const frame = frameV6 ?? extractPushFrame(response);
+			            const extracted = extract(response);
+			            const frame = extracted.frame;
 			            if (frame === null) {
 			                // Unreachable by the frozen contract (apply ⟹ usable frame);
 			                // treat it as the inconsistent class rather than a write.
@@ -6333,22 +6331,24 @@ var __dshFactory = (require) => {
 			                });
 			                return { status: 'inconsistent', receivedGeneration: null };
 			            }
-			            // (PR #35 follow-up, P0-3) the v6 stale-APPLY guard: a response
-			            // whose request a LATER request already superseded (the F1
-			            // round-trip evidence) must not roll back the applied freshness
-			            // PAIR when it carries NO durable advance — an old same-
-			            // generation response (e.g. a live-only frame with an older
-			            // liveToken) that settles late would otherwise overwrite the
-			            // newer liveToken / frame of the round trip that already
-			            // completed. The guard drops ONLY the no-advance case: a late
-			            // response carrying a genuinely NEWER durable generation still
-			            // applies (the frozen generation-verdict authority stands —
+			            // (PR #35 follow-up, P0-3) the stale-APPLY guard (behavior
+			            // unchanged): a response whose request a LATER request already
+			            // superseded (the F1 round-trip evidence) must not roll back the
+			            // applied freshness state when it carries NO durable advance —
+			            // an old same-generation response (e.g. a live-only frame with an
+			            // older liveToken) that settles late would otherwise overwrite
+			            // the newer liveToken / frame of the round trip that already
+			            // completed. The durability fact comes from the wrapper-bound
+			            // extractor (contract-bound at the client wrapper — `null` for a
+			            // generation-only pull, where the guard stays inert exactly as
+			            // before the pair). The guard drops ONLY the no-advance case: a
+			            // late response carrying a genuinely NEWER durable generation
+			            // still applies (the frozen generation-verdict authority stands —
 			            // request order never suppresses a newer durable frame).
-			            if (isV6 &&
-			                supersededByNewerRoundTrip &&
-			                frameV6 !== null &&
+			            if (supersededByNewerRoundTrip &&
+			                extracted.durableGeneration !== null &&
 			                state.appliedGeneration !== null &&
-			                frameV6.projection.durableGeneration <= state.appliedGeneration) {
+			                extracted.durableGeneration <= state.appliedGeneration) {
 			                return assessment;
 			            }
 			            publish({
@@ -6356,13 +6356,15 @@ var __dshFactory = (require) => {
 			                teamSessionId,
 			                status: 'ready',
 			                appliedGeneration: assessment.receivedGeneration,
-			                // (team-view-sync-complete) the v6 apply records the PAIR. The
-			                // live-only case (equal durable generation, changed token)
-			                // advances the token while appliedGeneration stays UNCHANGED —
-			                // the applied-generation advance is the client's single
-			                // ledger-refresh trigger, so a live-only apply never refreshes
-			                // the ledger (frozen decision 4).
-			                appliedLiveToken: frameV6 !== null ? frameV6.projection.liveToken : state.appliedLiveToken,
+			                // (team-view-sync-complete, frozen decision 4) the pair-carrying
+			                // apply records the PAIR. The live-only case (equal durable
+			                // generation, changed token) advances the token while
+			                // appliedGeneration stays UNCHANGED — the applied-generation
+			                // advance is the client's single ledger-refresh trigger, so a
+			                // live-only apply never refreshes the ledger. The
+			                // generation-only contract carries no token fact — the prior
+			                // value is kept (byte-identical pre-pair behavior).
+			                appliedLiveToken: extracted.liveToken ?? state.appliedLiveToken,
 			                frame,
 			                lastError: undefined,
 			                lastAssessment: assessment,
@@ -7175,6 +7177,10 @@ var __dshFactory = (require) => {
 			const REMOTE_CONTRACT_VERSION_V7 = __imp50.REMOTE_CONTRACT_VERSION_V7;
 			const REMOTE_RPC_CHANNEL = __imp50.REMOTE_RPC_CHANNEL;
 			const PushTransportLossError = __imp50.PushTransportLossError;
+			const assessProjectionSync = __imp50.assessProjectionSync;
+			const assessProjectionSyncV6 = __imp50.assessProjectionSyncV6;
+			const extractPushFrame = __imp50.extractPushFrame;
+			const extractPushFrameV6 = __imp50.extractPushFrameV6;
 			/**
 			 * P9-T3 (S2-A) — the Team Remote client over the frozen public seam.
 			 *
@@ -7226,6 +7232,64 @@ var __dshFactory = (require) => {
 			 * @module @dsh-agent-team/client/transport/team-remote-client
 			 */
 			/**
+			 * The SEMANTIC store bindings of the FRESHNESS-PAIR projection pull
+			 * (the wire contract of {@link TeamRemoteClient.getProjection}): the
+			 * frozen pair assessor / extractor bound under their SEMANTIC names —
+			 * this wrapper is the single client place the wire version appears
+			 * (pre-alpha3 PR-F plan §F.3: de-versioning of the client core; the
+			 * projection store consumes these bindings and carries no version of
+			 * its own). The mapping from the store's version-agnostic
+			 * applied-identity view to the frozen assessor's pair identity
+			 * preserves the frozen NULL semantics exactly: the pair identity is
+			 * `null` until the applied frame carries BOTH cells (the assessor's
+			 * first-frame case).
+			 */
+			const freshnessPairProjectionBindings = {
+			    assessProjectionSync: (applied, response) => assessProjectionSyncV6(applied.teamSessionId === null ||
+			        applied.generation === null ||
+			        applied.liveToken === null
+			        ? null
+			        : {
+			            teamSessionId: applied.teamSessionId,
+			            durableGeneration: applied.generation,
+			            liveToken: applied.liveToken,
+			        }, response),
+			    extractPushFrame: (response) => {
+			        const frame = extractPushFrameV6(response);
+			        return {
+			            // (frozen behavior preserved) the legacy-shape fallback of the
+			            // apply path — unreachable by the frozen pair contract (apply
+			            // ⟹ usable pair frame); the store's inconsistent guard stands
+			            // behind it.
+			            frame: frame ?? extractPushFrame(response),
+			            durableGeneration: frame === null ? null : frame.projection.durableGeneration,
+			            liveToken: frame === null ? null : frame.projection.liveToken,
+			        };
+			    },
+			};
+			Object.defineProperty(exports, "freshnessPairProjectionBindings", { enumerable: true, get: () => freshnessPairProjectionBindings });
+			/**
+			 * The SEMANTIC store bindings of the GENERATION-ONLY projection pull
+			 * ({@link TeamRemoteClient.getProjectionLegacy}): the frozen
+			 * generation-only assessor / extractor under their semantic names —
+			 * the frozen v1–v5 behavior, byte-identical. The durability facts stay
+			 * `null`: the store's stale-apply guard remains inert exactly as before
+			 * the pair existed. The frozen identity's `null` semantics are
+			 * preserved exactly: the identity is `null` only while the session is
+			 * unbound (before the first applied frame), matching the pre-pair
+			 * store behavior.
+			 */
+			const generationOnlyProjectionBindings = {
+			    assessProjectionSync: (applied, response) => assessProjectionSync(applied.teamSessionId === null
+			        ? null
+			        : { teamSessionId: applied.teamSessionId, generation: applied.generation }, response),
+			    extractPushFrame: (response) => {
+			        const frame = extractPushFrame(response);
+			        return { frame, durableGeneration: null, liveToken: null };
+			    },
+			};
+			Object.defineProperty(exports, "generationOnlyProjectionBindings", { enumerable: true, get: () => generationOnlyProjectionBindings });
+			/**
 			 * Create the Team Remote client bound to one seam carrier.
 			 * @param carrier - the public unary RPC carrier (Seam 5; structurally
 			 *   `ClientConnectionRpc` of the served web app).
@@ -7263,6 +7327,18 @@ var __dshFactory = (require) => {
 			    // the public generic `call` STAMPS CONTRACT VERSION 1 (the frozen
 			    // default); every other wrapper above stamps its wire version here.
 			    const call = (method, params) => callWithVersion(method, params, REMOTE_CONTRACT_VERSION);
+			    // team-view-sync-complete (remote contract v6) — the v6 freshness-pair
+			    // projection pull (the v6 handler answers the SAME endpoint with the
+			    // `durableGeneration` + `liveToken` cells inside data.projection). The
+			    // pull is named so the wrapper-bound semantic store bindings below
+			    // bind to the SAME function the public wrapper exposes (pre-alpha3
+			    // PR-F §F.3: one pull, one contract, one binding — the store stays
+			    // contract-free).
+			    const projectionPull = (teamSessionId) => callWithVersion('team.getProjection', { teamSessionId }, REMOTE_CONTRACT_VERSION_V6);
+			    const projectionBindings = {
+			        getProjection: projectionPull,
+			        ...freshnessPairProjectionBindings,
+			    };
 			    return {
 			        call,
 			        getProjectionLegacy: (teamSessionId) => call('team.getProjection', { teamSessionId }),
@@ -7290,7 +7366,8 @@ var __dshFactory = (require) => {
 			        // team-view-sync-complete (remote contract v6) — the v6 freshness-pair
 			        // projection pull (the v6 handler answers the SAME endpoint with the
 			        // `durableGeneration` + `liveToken` cells inside data.projection).
-			        getProjection: (teamSessionId) => callWithVersion('team.getProjection', { teamSessionId }, REMOTE_CONTRACT_VERSION_V6),
+			        getProjection: projectionPull,
+			        projectionBindings,
 			        // team-view-sync-complete (remote contract v6) — the v6-only
 			        // per-session durable read-state query (fail-closed on the host side:
 			        // a `none` only on positively confirmed no-affiliation; storage /

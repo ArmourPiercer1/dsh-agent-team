@@ -59,6 +59,10 @@ import {
   REMOTE_CONTRACT_VERSION_V7,
   REMOTE_RPC_CHANNEL,
   PushTransportLossError,
+  assessProjectionSync,
+  assessProjectionSyncV6,
+  extractPushFrame,
+  extractPushFrameV6,
   type RemoteContractVersion,
   type RemoteCatalogGetParams,
   type RemoteCompatibilityAckParams,
@@ -84,6 +88,7 @@ import {
   type RemoteTeamAdmitInitialWorkParams,
   type RemoteTeamResolveControlParams,
 } from '../../../remote/src/index.js'
+import type { ProjectionStoreBindings } from '../state/team-projection-store.js'
 import type { TeamRpcCarrier, TeamRpcResult } from './host-seams.js'
 
 /**
@@ -247,6 +252,17 @@ export interface TeamRemoteClient {
    */
   getProjection(teamSessionId: string): Promise<RemoteResponse>
   /**
+   * The projection store's semantic bindings bound to the
+   * freshness-pair pull ({@link getProjection}) — the pull itself plus
+   * the WRAPPER-BOUND semantic assessor + frame extractor of that
+   * pull's wire contract (pre-alpha3 PR-F plan §F.3: this wrapper is
+   * the only client place the wire version may appear; the projection
+   * store it feeds stays contract-free). Stable for the client's
+   * lifetime (a frozen record — safe to pass straight into the store
+   * options).
+   */
+  readonly projectionBindings: ProjectionStoreBindings
+  /**
    * `team.getReadState` (contract v6, v6-only method,
    * team-view-sync-complete) — the per-session durable read-state
    * query: resolves ONE DSH session's authoritative Team affiliation
@@ -313,6 +329,78 @@ export interface TeamRemoteClient {
 }
 
 /**
+ * The SEMANTIC store bindings of the FRESHNESS-PAIR projection pull
+ * (the wire contract of {@link TeamRemoteClient.getProjection}): the
+ * frozen pair assessor / extractor bound under their SEMANTIC names —
+ * this wrapper is the single client place the wire version appears
+ * (pre-alpha3 PR-F plan §F.3: de-versioning of the client core; the
+ * projection store consumes these bindings and carries no version of
+ * its own). The mapping from the store's version-agnostic
+ * applied-identity view to the frozen assessor's pair identity
+ * preserves the frozen NULL semantics exactly: the pair identity is
+ * `null` until the applied frame carries BOTH cells (the assessor's
+ * first-frame case).
+ */
+export const freshnessPairProjectionBindings: Omit<
+  ProjectionStoreBindings,
+  'getProjection'
+> = {
+  assessProjectionSync: (applied, response) =>
+    assessProjectionSyncV6(
+      applied.teamSessionId === null ||
+      applied.generation === null ||
+      applied.liveToken === null
+        ? null
+        : {
+            teamSessionId: applied.teamSessionId,
+            durableGeneration: applied.generation,
+            liveToken: applied.liveToken,
+          },
+      response,
+    ),
+  extractPushFrame: (response) => {
+    const frame = extractPushFrameV6(response)
+    return {
+      // (frozen behavior preserved) the legacy-shape fallback of the
+      // apply path — unreachable by the frozen pair contract (apply
+      // ⟹ usable pair frame); the store's inconsistent guard stands
+      // behind it.
+      frame: frame ?? extractPushFrame(response),
+      durableGeneration: frame === null ? null : frame.projection.durableGeneration,
+      liveToken: frame === null ? null : frame.projection.liveToken,
+    }
+  },
+}
+
+/**
+ * The SEMANTIC store bindings of the GENERATION-ONLY projection pull
+ * ({@link TeamRemoteClient.getProjectionLegacy}): the frozen
+ * generation-only assessor / extractor under their semantic names —
+ * the frozen v1–v5 behavior, byte-identical. The durability facts stay
+ * `null`: the store's stale-apply guard remains inert exactly as before
+ * the pair existed. The frozen identity's `null` semantics are
+ * preserved exactly: the identity is `null` only while the session is
+ * unbound (before the first applied frame), matching the pre-pair
+ * store behavior.
+ */
+export const generationOnlyProjectionBindings: Omit<
+  ProjectionStoreBindings,
+  'getProjection'
+> = {
+  assessProjectionSync: (applied, response) =>
+    assessProjectionSync(
+      applied.teamSessionId === null
+        ? null
+        : { teamSessionId: applied.teamSessionId, generation: applied.generation },
+      response,
+    ),
+  extractPushFrame: (response) => {
+    const frame = extractPushFrame(response)
+    return { frame, durableGeneration: null, liveToken: null }
+  },
+}
+
+/**
  * Create the Team Remote client bound to one seam carrier.
  * @param carrier - the public unary RPC carrier (Seam 5; structurally
  *   `ClientConnectionRpc` of the served web app).
@@ -360,6 +448,20 @@ export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClien
   const call = (method: string, params: object): Promise<RemoteResponse> =>
     callWithVersion(method, params, REMOTE_CONTRACT_VERSION)
 
+  // team-view-sync-complete (remote contract v6) — the v6 freshness-pair
+  // projection pull (the v6 handler answers the SAME endpoint with the
+  // `durableGeneration` + `liveToken` cells inside data.projection). The
+  // pull is named so the wrapper-bound semantic store bindings below
+  // bind to the SAME function the public wrapper exposes (pre-alpha3
+  // PR-F §F.3: one pull, one contract, one binding — the store stays
+  // contract-free).
+  const projectionPull = (teamSessionId: string): Promise<RemoteResponse> =>
+    callWithVersion('team.getProjection', { teamSessionId }, REMOTE_CONTRACT_VERSION_V6)
+  const projectionBindings: ProjectionStoreBindings = {
+    getProjection: projectionPull,
+    ...freshnessPairProjectionBindings,
+  }
+
   return {
     call,
     getProjectionLegacy: (teamSessionId) => call('team.getProjection', { teamSessionId }),
@@ -396,8 +498,8 @@ export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClien
     // team-view-sync-complete (remote contract v6) — the v6 freshness-pair
     // projection pull (the v6 handler answers the SAME endpoint with the
     // `durableGeneration` + `liveToken` cells inside data.projection).
-    getProjection: (teamSessionId) =>
-      callWithVersion('team.getProjection', { teamSessionId }, REMOTE_CONTRACT_VERSION_V6),
+    getProjection: projectionPull,
+    projectionBindings,
     // team-view-sync-complete (remote contract v6) — the v6-only
     // per-session durable read-state query (fail-closed on the host side:
     // a `none` only on positively confirmed no-affiliation; storage /

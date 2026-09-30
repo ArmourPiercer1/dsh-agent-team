@@ -54,6 +54,7 @@ import {
   DEFAULT_TEAM_PROJECTION_BACKOFF,
   type TeamProjectionScheduler,
 } from '../src/state/team-projection-store.js'
+import { generationOnlyProjectionBindings } from '../src/transport/team-remote-client.js'
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -171,7 +172,7 @@ async function flush(turns = 8): Promise<void> {
 const firstFrameScenario = await (async () => {
   const { calls, getProjection } = makeResponder([res(projectionSuccess('t1', 1))])
   const scheduler = makeManualScheduler()
-  const store = createTeamProjectionStore({ getProjection, scheduler })
+  const store = createTeamProjectionStore({ getProjection, scheduler, ...generationOnlyProjectionBindings })
   const before = store.getState()
   const assessment = await store.pull('t1')
   await flush()
@@ -186,7 +187,7 @@ const generationPlusOneScenario = await (async () => {
     res(projectionSuccess('t1', 2)),
   ])
   const scheduler = makeManualScheduler()
-  const store = createTeamProjectionStore({ getProjection, scheduler })
+  const store = createTeamProjectionStore({ getProjection, scheduler, ...generationOnlyProjectionBindings })
   await store.pull('t1')
   await flush()
   const frameAfterFirst = store.getState().frame
@@ -201,7 +202,7 @@ const duplicateScenario = await (async () => {
     res(projectionSuccess('t1', 1)),
     res(projectionSuccess('t1', 1)),
   ])
-  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler() })
+  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler(), ...generationOnlyProjectionBindings })
   await store.pull('t1')
   await flush()
   const frameAfterFirst = store.getState().frame
@@ -217,7 +218,7 @@ const staleScenario = await (async () => {
     res(projectionSuccess('t1', 3)),
     res(projectionSuccess('t1', 2)),
   ])
-  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler() })
+  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler(), ...generationOnlyProjectionBindings })
   await store.pull('t1')
   await store.pull('t1')
   await flush()
@@ -232,7 +233,7 @@ const foreignScenario = await (async () => {
     res(projectionSuccess('t1', 1)),
     res(projectionSuccess('t2', 2)),
   ])
-  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler() })
+  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler(), ...generationOnlyProjectionBindings })
   await store.pull('t1')
   await flush()
   const frameAfterFirst = store.getState().frame
@@ -247,7 +248,7 @@ const provenanceMismatchScenario = await (async () => {
     res(projectionSuccess('t1', 1)),
     res(projectionSuccess('t1', 2, 99)),
   ])
-  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler() })
+  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler(), ...generationOnlyProjectionBindings })
   await store.pull('t1')
   await flush()
   const frameAfterFirst = store.getState().frame
@@ -260,7 +261,7 @@ const provenanceMismatchScenario = await (async () => {
 const rpcErrorScenario = await (async () => {
   const envelope = projectionError('team-not-found', 'no such team')
   const { getProjection } = makeResponder([res(projectionSuccess('t1', 1)), res(envelope)])
-  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler() })
+  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler(), ...generationOnlyProjectionBindings })
   await store.pull('t1')
   await flush()
   const frameAfterFirst = store.getState().frame
@@ -294,6 +295,7 @@ const lateStaleAfterReconnectScenario = await (async () => {
   ]
   const calls: string[] = []
   const store = createTeamProjectionStore({
+    ...generationOnlyProjectionBindings,
     scheduler: makeManualScheduler(),
     getProjection: (id) => {
       calls.push(id)
@@ -336,7 +338,7 @@ const lateStaleAfterReconnectScenario = await (async () => {
 const backoffScenario = await (async () => {
   const { calls, getProjection } = makeResponder([LOSS, LOSS, res(projectionSuccess('t1', 1))])
   const scheduler = makeManualScheduler()
-  const store = createTeamProjectionStore({ getProjection, scheduler })
+  const store = createTeamProjectionStore({ getProjection, scheduler, ...generationOnlyProjectionBindings })
   const assessmentOne = await store.pull('t1')
   await flush()
   const afterFirstLoss = store.getState()
@@ -377,7 +379,7 @@ const backoffScenario = await (async () => {
 const restoredScenario = await (async () => {
   const { calls, getProjection } = makeResponder([LOSS, res(projectionSuccess('t1', 1))])
   const scheduler = makeManualScheduler()
-  const store = createTeamProjectionStore({ getProjection, scheduler })
+  const store = createTeamProjectionStore({ getProjection, scheduler, ...generationOnlyProjectionBindings })
   await store.pull('t1')
   await flush()
   const lost = store.getState()
@@ -405,6 +407,7 @@ const staleLossReportScenario = await (async () => {
   })
   const order: Array<Promise<RemoteResponse>> = [gateA, gateB]
   const store = createTeamProjectionStore({
+    ...generationOnlyProjectionBindings,
     scheduler: makeManualScheduler(),
     getProjection: (_id) => {
       const gate = order.shift()
@@ -433,7 +436,7 @@ const staleLossReportScenario = await (async () => {
 const resetScenario = await (async () => {
   const { getProjection } = makeResponder([LOSS, res(projectionSuccess('t1', 1))])
   const scheduler = makeManualScheduler()
-  const store = createTeamProjectionStore({ getProjection, scheduler })
+  const store = createTeamProjectionStore({ getProjection, scheduler, ...generationOnlyProjectionBindings })
   await store.pull('t1')
   await flush()
   const lost = store.getState()
@@ -449,7 +452,7 @@ const subscribeScenario = await (async () => {
     res(projectionSuccess('t1', 1)),
     res(projectionSuccess('t1', 2)),
   ])
-  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler() })
+  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler(), ...generationOnlyProjectionBindings })
   let notifications = 0
   const dispose = store.subscribe(() => {
     notifications += 1
@@ -491,7 +494,7 @@ const successThenLossScenario = await (async () => {
     res(projectionSuccess('t1', 2)),
   ])
   const scheduler = makeManualScheduler()
-  const store = createTeamProjectionStore({ getProjection, scheduler })
+  const store = createTeamProjectionStore({ getProjection, scheduler, ...generationOnlyProjectionBindings })
   await store.pull('t1')
   await flush()
   const afterSuccess = store.getState()
@@ -520,7 +523,7 @@ const successThenLossScenario = await (async () => {
 const restoredPullLossScenario = await (async () => {
   const { calls, getProjection } = makeResponder([LOSS, LOSS, res(projectionSuccess('t1', 1))])
   const scheduler = makeManualScheduler()
-  const store = createTeamProjectionStore({ getProjection, scheduler })
+  const store = createTeamProjectionStore({ getProjection, scheduler, ...generationOnlyProjectionBindings })
   await store.pull('t1')
   await flush()
   const lost = store.getState()
@@ -582,7 +585,7 @@ const notedRestoreScenario = await (async () => {
     return next
   }
   const scheduler = makeManualScheduler()
-  const store = createTeamProjectionStore({ getProjection, scheduler })
+  const store = createTeamProjectionStore({ getProjection, scheduler, ...generationOnlyProjectionBindings })
   await store.pull('t1')
   await flush()
   const pendingPull = store.pull('t1')
@@ -637,7 +640,7 @@ const typedErrorRecoveryScenario = await (async () => {
     res(projectionError('remote-timeout', 'upstream timed out')),
     res(projectionSuccess('t1', 2)),
   ])
-  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler() })
+  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler(), ...generationOnlyProjectionBindings })
   await store.pull('t1')
   await flush()
   await store.pull('t1')
@@ -661,7 +664,7 @@ const sameGenerationRecoveryScenario = await (async () => {
     res(projectionError('remote-timeout', 'upstream timed out')),
     res(projectionSuccess('t1', 1)),
   ])
-  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler() })
+  const store = createTeamProjectionStore({ getProjection, scheduler: makeManualScheduler(), ...generationOnlyProjectionBindings })
   await store.pull('t1')
   await flush()
   await store.pull('t1')
@@ -699,6 +702,7 @@ const lateRequestAfterResetScenario = await (async () => {
   // the responder synchronously before its first await).
   const gates: Gate[] = []
   const store = createTeamProjectionStore({
+    ...generationOnlyProjectionBindings,
     scheduler,
     getProjection: (_id) => {
       const gate = makeGate()
@@ -759,6 +763,7 @@ const staleLossAfterNewerSuccessScenario = await (async () => {
   const order: Array<Promise<RemoteResponse>> = [gateA, gateB]
   const scheduler = makeManualScheduler()
   const store = createTeamProjectionStore({
+    ...generationOnlyProjectionBindings,
     scheduler,
     getProjection: (_id) => {
       const gate = order.shift()
@@ -809,6 +814,7 @@ const staleTypedErrorAfterNewerSuccessScenario = await (async () => {
   })
   const order: Array<Promise<RemoteResponse>> = [gateA, gateB]
   const store = createTeamProjectionStore({
+    ...generationOnlyProjectionBindings,
     scheduler: makeManualScheduler(),
     getProjection: (_id) => {
       const gate = order.shift()
@@ -849,6 +855,7 @@ const staleForeignAfterNewerSuccessScenario = await (async () => {
   })
   const order: Array<Promise<RemoteResponse>> = [gateA, gateB]
   const store = createTeamProjectionStore({
+    ...generationOnlyProjectionBindings,
     scheduler: makeManualScheduler(),
     getProjection: (_id) => {
       const gate = order.shift()
@@ -889,6 +896,7 @@ const staleInconsistentAfterNewerSuccessScenario = await (async () => {
   })
   const order: Array<Promise<RemoteResponse>> = [gateA, gateB]
   const store = createTeamProjectionStore({
+    ...generationOnlyProjectionBindings,
     scheduler: makeManualScheduler(),
     getProjection: (_id) => {
       const gate = order.shift()
@@ -939,6 +947,7 @@ async function lateNonApplyAfterNewerErrorScenario(kind: 'duplicate' | 'stale') 
     gateB,
   ]
   const store = createTeamProjectionStore({
+    ...generationOnlyProjectionBindings,
     scheduler: makeManualScheduler(),
     getProjection: (_id) => {
       const gate = order.shift()
@@ -996,6 +1005,7 @@ const lateApplyAfterNewerErrorScenario = await (async () => {
     gateB,
   ]
   const store = createTeamProjectionStore({
+    ...generationOnlyProjectionBindings,
     scheduler: makeManualScheduler(),
     getProjection: (_id) => {
       const gate = order.shift()
