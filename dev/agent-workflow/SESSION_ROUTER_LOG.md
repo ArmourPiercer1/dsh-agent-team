@@ -4681,3 +4681,15 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **PR body re-patch（finding 2 修复）**: `gh api repos/ArmourPiercer1/dsh-agent-team/pulls/45 -X PATCH -f body=@.gate-tmp/prf-pr-body.md`（HOUSE RULE: 无 `gh pr edit`）— head → 最终 tip + 正确 commit 数 + 修正 F.2/F.3 scope 行（F.3 行含 "client-core de-versioning completion (round-2 fix: store version branch removed, wrapper-bound semantic assessors)"）+ round-1 FAIL → fix disclosure 段；DO-NOT-MERGE 注记 + 其余 body（root-cause record / battery / 20-item DoD / known-debt FINAL / red lines）原样保留（仍准确）。
 - **FF push = plain**（本 PR disclosed head-update #1 — house precedent：head_sha 语义 = 簿记/fix 后的新 reviewed tip；零 force-push）。push 后 PR 状态 = OPEN / do-not-merge / MERGEABLE 待核。
 - **parent 通知**: fix commit sha + 设计落地（文件 + 语义 option 形状 + P0-3 保留证明）+ 全 re-verification 表 + body-patch 确认 + 新 head → parent 即派 review round 2。Red lines unchanged；adjudication list 不受本 fix 触及（完成 F.3 = plan scope）。
+
+## 2026-09-30 — GAP RESOLVED: post-fix full-suite raw logs moved to committed evidence（无重跑 — .gate-tmp 四个 raw log 完好, parent 定位确认）
+
+**GAP（上条自披露）**: post-fix full-root-suite 的 raw logs 未留在 committed evidence — 仅 tail-30 摘要在案（run 1）— 且 raw logs 本身留在 workspace root 的 untracked scratch `.gate-tmp/`（main checkout 的 untracked noise）。
+**RESOLUTION（parent 指令, 2026-09-30; 无产品工作, 仅 evidence + 簿记 + push）**: 四个 raw artifact 全部完好, 现提交至 `dev/agent-workflow/evidence/pre-alpha3-refactor/pr-f/full-suite/`（standard 4-line header + `---` 前置, 与既有 run1.log 先例完全一致; 既有 raw bytes 未动）:
+- **`postfix-run4-clean.log`** — **clean run = 精确 9F|19F|4700P(4719) 基线 identity**（raw 可核验: RUN 头 worktree 归属 + 尾 Test Files 9 failed | 398 passed (407) / Tests 19 failed | 4700 passed (4719)）= **zero-new gate 的 gate input（committed, 可核验）**
+- `postfix-run1-tail30.md` — **tail-30 ONLY**（该 run 的 raw log 被 capture-regex 缺陷所失 — 自披露; 10F|21F = 基线 + p6t1 P1 族 = RECORD）; header 注记 + 本条留痕
+- `postfix-run2-sigterm.log` — 被我 job_kill SIGTERM 的 run（首版捕获正则错）— **raw log 现可核验**（5 遗留 scratch 世界的根因在案可查）
+- `postfix-run3-inherited.log` — 继承 run-2 遗留污染的 run（+2 文件级 `team_domain already exists` = 对遗留世界 `a2c1-mal`+`a4a-w1` 的确定性碰撞 — 状态伪迹, 非代码签名）— **raw log 现可核验**
+- 四 run 皆 15:00–15:08 local（簿记 commit 之前）→ **HEAD at run time = `b3e932b87e4fc70985b7d9a1a02da8f0c533a3a0`（reviewed product tip）**（各文件自嵌 header 在案: tree/worktree/HEAD 全 sha/UTC START [run 的 "Start at" local 按 UTC+8 精确转换]）
+- `.gate-tmp/` scratch 目录已删（commit-msg 草稿 + lint 快照 + PR body 草稿皆 scratch; 删后 main checkout `git status --porcelain` 核验干净）
+- PR body 已 re-patch 至新 tip + 8 commits（`gh api … PATCH`, house rule — 无 `gh pr edit`）— **本 PR disclosed head-update #2**; **reviewed product tip 保持 `b3e932b8`**（本 commit = evidence + 簿记 only, head_sha 语义: 不 bump reviewed tip）
