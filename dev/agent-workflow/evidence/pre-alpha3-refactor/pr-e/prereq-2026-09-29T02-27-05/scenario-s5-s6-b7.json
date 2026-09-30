@@ -1,0 +1,119 @@
+{
+  "W3": null,
+  "reviewPayload": {
+    "action": "delegate",
+    "blockedScopes": [
+      "team"
+    ],
+    "caller": {
+      "instanceId": "inst-leader",
+      "kind": "instance"
+    },
+    "downedCapabilitySubjects": [
+      "mcp_leaderreq"
+    ],
+    "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+    "reducedAuthority": {
+      "externalHardCeiling": "absolute (never bypassed)",
+      "otherwise": "unchanged (the original permissions apply)",
+      "policy": "reduced original authority (plan §E.9)",
+      "unavailableSubjects": [
+        "mcp_leaderreq"
+      ]
+    },
+    "requestedOperation": "one recovery attempt of 'delegate' on template 'helper'",
+    "rootSessionId": "session-prereq-main-prereq-2026-09-29T02-27-05",
+    "schema": "dsh-agent-team/recovery-dispatch/v1",
+    "templateId": "helper"
+  },
+  "controlPayload": {
+    "actionName": "delegate",
+    "correlation": "recovery:rt-b7-prereq-2026-09-29T02-27-05:1",
+    "executionCoupling": "inline",
+    "kind": "user-approval",
+    "requestId": "ctrl-14rtxku0bmvl871b1nh2w0wk",
+    "requester": {
+      "instanceId": "inst-leader",
+      "kind": "instance",
+      "role": "leader"
+    },
+    "reviewPayload": {
+      "action": "delegate",
+      "blockedScopes": [
+        "team"
+      ],
+      "caller": {
+        "instanceId": "inst-leader",
+        "kind": "instance"
+      },
+      "downedCapabilitySubjects": [
+        "mcp_leaderreq"
+      ],
+      "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+      "reducedAuthority": {
+        "externalHardCeiling": "absolute (never bypassed)",
+        "otherwise": "unchanged (the original permissions apply)",
+        "policy": "reduced original authority (plan §E.9)",
+        "unavailableSubjects": [
+          "mcp_leaderreq"
+        ]
+      },
+      "requestedOperation": "one recovery attempt of 'delegate' on template 'helper'",
+      "rootSessionId": "session-prereq-main-prereq-2026-09-29T02-27-05",
+      "schema": "dsh-agent-team/recovery-dispatch/v1",
+      "templateId": "helper"
+    },
+    "reviewPayloadDigest": "sha256:239ee0cdc58ee54b3f44217ab6f1dc712bfd73921ce69564093d3490ca7b8fdb",
+    "subject": {
+      "kind": "template",
+      "templateId": "helper"
+    },
+    "summary": "recovery dispatch: one reviewed attempt of 'delegate' on the blocked scope(s) [team] on the reduced original authority"
+  },
+  "decisions": [
+    {
+      "requestId": "ctrl-14rtxku0bmvl871b1nh2w0wk",
+      "class": "recovery",
+      "decision": "allow",
+      "resolveStatus": 200,
+      "resolveError": null
+    }
+  ],
+  "pendingSeen": [
+    {
+      "requestId": "ctrl-14rtxku0bmvl871b1nh2w0wk",
+      "kind": "user-approval",
+      "correlation": "recovery:rt-b7-prereq-2026-09-29T02-27-05:1",
+      "toolName": null,
+      "actionName": "delegate",
+      "reviewPayload": {
+        "action": "delegate",
+        "blockedScopes": [
+          "team"
+        ],
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance"
+        },
+        "downedCapabilitySubjects": [
+          "mcp_leaderreq"
+        ],
+        "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+        "reducedAuthority": {
+          "externalHardCeiling": "absolute (never bypassed)",
+          "otherwise": "unchanged (the original permissions apply)",
+          "policy": "reduced original authority (plan §E.9)",
+          "unavailableSubjects": [
+            "mcp_leaderreq"
+          ]
+        },
+        "requestedOperation": "one recovery attempt of 'delegate' on template 'helper'",
+        "rootSessionId": "session-prereq-main-prereq-2026-09-29T02-27-05",
+        "schema": "dsh-agent-team/recovery-dispatch/v1",
+        "templateId": "helper"
+      },
+      "reviewPayloadDigest": "sha256:239ee0cdc58ee54b3f44217ab6f1dc712bfd73921ce69564093d3490ca7b8fdb",
+      "executionCoupling": "inline"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+mock: listening on 127.0.0.1:3497
+mock: 1 [messages] text reply (15 chars): "PRREQ_DONE_W_b1"
+mock: 2 [messages] text reply (15 chars): "PRREQ_DONE_W_b1"
+mock: 3 [messages] text reply (17 chars): "PRREQ_DONE_W_t2b1"
+mock: 4 [messages] text reply (17 chars): "PRREQ_DONE_W_t2b1"
+mock: 5 [messages] text reply (15 chars): "PRREQ_DONE_W_b2"
+mock: 6 [messages] text reply (16 chars): "PRREQ_DONE_W_b2b"
+mock: 7 [messages] tool-call reply: read
+mock: 8 [messages] tool-call reply: bash
+mock: 9 [messages] text reply (44 chars): "PRREQ_DEFAULT_ACK_prereq-2026-09-29T02-27-05"
+mock: 10 [messages] text reply (44 chars): "PRREQ_DEFAULT_ACK_prereq-2026-09-29T02-27-05"
+mock: 11 [messages] text reply (16 chars): "PRREQ_DONE_W_b3a"
+mock: 12 [messages] text reply (17 chars): "PRREQ_DONE_W_t2b3"
+mock: 13 [messages] text reply (15 chars): "PRREQ_DONE_W_b7"
+mock: 14 [messages] text reply (15 chars): "PRREQ_DONE_W_b7"
+mock: 15 [messages] text reply (16 chars): "PRREQ_DONE_W_b8h"
+mock: 16 [messages] text reply (15 chars): "PRREQ_DONE_W_b9"
+mock: 17 [messages] text reply (15 chars): "PRREQ_DONE_W_b9"

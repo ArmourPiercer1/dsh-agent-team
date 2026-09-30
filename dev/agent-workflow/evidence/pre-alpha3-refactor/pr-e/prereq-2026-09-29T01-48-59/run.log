@@ -1,0 +1,29 @@
+[2026-09-29T01:48:59.518Z] === pre-alpha3 PR-E E.12 real-host gate (14 scenarios) prereq-2026-09-29T01-48-59 ===
+[2026-09-29T01:48:59.519Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery
+[2026-09-29T01:48:59.519Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-09-29T01:48:59.519Z] world=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T01-48-59
+[2026-09-29T01:48:59.519Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-09-29T01-48-59
+[2026-09-29T01:48:59.534Z] stable pre-probes: 3080=401 3180=401
+[2026-09-29T01:48:59.559Z] [H1] PASS — test-use pristine BEFORE :: head=46a7f68b0922
+[2026-09-29T01:48:59.562Z] ports: host=3182 mock=3497 mcpLeaderreq=3491 mcpWeb=3493
+[2026-09-29T01:48:59.563Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T01-48-59 blueprints=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T01-48-59/blueprints
+[2026-09-29T01:48:59.568Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-09-29T01:48:59.570Z] mini MCP mcp_leaderreq up on 127.0.0.1:3491
+[2026-09-29T01:48:59.581Z] mini MCP mcp_web up on 127.0.0.1:3493
+[2026-09-29T01:48:59.581Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-29T01:49:00.585Z] throwaway boot OK: http://127.0.0.1:3182/?token=REDACTED
+[2026-09-29T01:49:00.669Z] web profile ensured (throwaway boot if first use)
+[2026-09-29T01:49:00.670Z] B1-CREATE: patch (bootPhase=create, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[]) + directive (boot=1) written
+[2026-09-29T01:49:01.980Z] B1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T01:49:01.984Z] B1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T01:49:02.072Z] B1-CREATE: row ready — toolCount=13
+[2026-09-29T01:49:02.134Z] remote team.create v1 [t13-create] -> 200 ok=true
+[2026-09-29T01:49:02.134Z] T13 (v1 frozen) created: durable={"teamSession":{"schemaVersion":1,"rootSessionId":"session-prereq-v1-prereq-2026-09-29T01-48-59","blueprint":{"blueprintId":"team.mpr-anchor","revision":"1","contentHash":"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37"},"createdAt":"2026-09-29T01:49:02.093Z","generation":1,
+[2026-09-29T01:49:02.145Z] remote intent.probe v1 [s1-probe] -> 200 ok=true
+[2026-09-29T01:49:02.145Z] [S1] PASS — all-ready cell: intent.probe(T) — team scope OPEN (both team requirements PASS) :: status=OPEN reqs=["team.mcp.repo=PASS","team.mcp.leaderreq=PASS"]
+[2026-09-29T01:49:02.193Z] remote team.create v1 [t-create] -> 200 ok=true
+[2026-09-29T01:49:02.193Z] T created: durable={"teamSession":{"schemaVersion":1,"rootSessionId":"session-prereq-main-prereq-2026-09-29T01-48-59","blueprint":{"blueprintId":"team.prereq-main","revision":"1","contentHash":"sha256:300384d036a9e909c868085bdf0918bf15b6bbcbe327c31ec15162f1e7dc624a"},"createdAt":"2026-09-29T01:49:02.158Z","generation"
+[2026-09-29T01:49:02.235Z] remote team.create v1 [t2-create] -> 200 ok=true
+[2026-09-29T01:49:02.235Z] T2 created
+[2026-09-29T01:49:02.266Z] p6t6 tool team_delegate as=session-prereq-main-prereq-2026-09-29T01-48-59 -> 200 ok=true
+[2026-09-29T01:49:02.840Z] remote team.getLedgerPage v1 [ledger] -> 200 ok=false code=malformed-params

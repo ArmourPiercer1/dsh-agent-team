@@ -1,0 +1,24 @@
+[2026-09-29T01:46:21.673Z] === pre-alpha3 PR-E E.12 real-host gate (14 scenarios) prereq-2026-09-29T01-46-21 ===
+[2026-09-29T01:46:21.673Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery
+[2026-09-29T01:46:21.673Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-09-29T01:46:21.673Z] world=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T01-46-21
+[2026-09-29T01:46:21.673Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-09-29T01-46-21
+[2026-09-29T01:46:21.689Z] stable pre-probes: 3080=401 3180=401
+[2026-09-29T01:46:21.715Z] [H1] PASS — test-use pristine BEFORE :: head=46a7f68b0922
+[2026-09-29T01:46:21.717Z] ports: host=3182 mock=3497 mcpLeaderreq=3491 mcpWeb=3493
+[2026-09-29T01:46:21.717Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T01-46-21 blueprints=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T01-46-21/blueprints
+[2026-09-29T01:46:21.723Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-09-29T01:46:21.726Z] mini MCP mcp_leaderreq up on 127.0.0.1:3491
+[2026-09-29T01:46:21.737Z] mini MCP mcp_web up on 127.0.0.1:3493
+[2026-09-29T01:46:21.737Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-29T01:46:23.241Z] throwaway boot OK: http://127.0.0.1:3182/?token=REDACTED
+[2026-09-29T01:46:23.304Z] web profile ensured (throwaway boot if first use)
+[2026-09-29T01:46:23.305Z] B1-CREATE: patch (bootPhase=create, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[]) + directive (boot=1) written
+[2026-09-29T01:46:25.065Z] B1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T01:46:25.070Z] UNCAUGHT: Error: authenticate: no set-cookie on 303 (status=401)
+    at authenticate (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:325:22)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async bootHost (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:1203:16)
+    at async main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:1458:13)
+[2026-09-29T01:46:25.070Z] sweep: stopping still-live host B1-CREATE
+[2026-09-29T01:46:25.143Z] B1-CREATE: stopped (killed=true portFree=true)

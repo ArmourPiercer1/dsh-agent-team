@@ -192,6 +192,8 @@ import {
   parseEnvironmentFacts,
 } from '../../../domain/compatibility/src/index.js'
 import type { EnvironmentFact } from '../../../domain/compatibility/src/index.js'
+import { dropSeedFilledPendingFacts } from '../../requirement-facts/index.js'
+import type { RequirementFactsResolution } from '../../requirement-facts/index.js'
 import type {
   BlueprintCatalog,
   BlueprintTemplate,
@@ -801,8 +803,21 @@ export interface S6RemoteOptions {
    * T1.4-B (U5/T1-B strict, CF2 entry 2) — the authoritative host
    * row-config environment facts: the SAME injected source the
    * post-creation admission gate consumes (the production root passes
-   * its fresh-read fact thunk over `config.environmentFacts — the very
+   * its fresh-read fact source over `config.environmentFacts — the very
    * source the prober / authority / runtime wiring reads).
+   *
+   * PF-1 fix (2026-09-30, adjudicated product defect) — the source is
+   * PER-BLUEPRINT: `intent.probe` calls it with the RESOLVED requested
+   * blueprint, and the host resolves the live provider against THAT
+   * blueprint's team requirements (the same seam the per-root
+   * compatibility prober and the admission gates consume). Pre-fix this
+   * was a boot-blueprint-scoped thunk: on a multi-blueprint host (boot
+   * blueprint ≠ requested blueprint) the feed was mis-scoped and a
+   * configured + healthy live server probed as a spurious FATAL,
+   * breaking the frozen INV-9.4 two-worlds identity. A legacy
+   * no-argument thunk remains assignable (it ignores the blueprint —
+   * byte-identical on a single-blueprint host / factory world).
+   *
    * `intent.probe` merges these with the caller's wire facts under the
    * strict U5 rule ({@link mergeProbeEnvironmentFacts}): the caller
    * contributes ONLY the `persona` domain (the selected preset — user
@@ -816,7 +831,42 @@ export interface S6RemoteOptions {
    * facts remain fail-closed — the observation is completed, the
    * verdict is never weakened).
    */
-  readonly environmentFacts?: () => Promise<readonly EnvironmentFact[]>
+  readonly environmentFacts?: (
+    blueprint: TeamBlueprint,
+  ) => Promise<readonly EnvironmentFact[]>
+  /**
+   * D-3 (2026-09-30, adjudicated product semantics — fail-closed
+   * PENDING) — the PER-BLUEPRINT FULL-RESOLUTION live read: the atomic
+   * pair of the 3-state observations and the 2-state feed of ONE
+   * `resolveFacts` call (the same seam the admission gates consume).
+   *
+   * When PRESENT, `intent.probe` reads the host facts from THIS port and
+   * drops the SEED-FILLED facts of every REQUIRED requirement whose live
+   * observation is `unknown` AND IN-FLIGHT ({@link dropSeedFilledPendingFacts}
+   * — the ONE shared classifier predicate, the PF-2 tri-state, 2026-09-30
+   * option A): the engine then reports a missing required fact (FATAL),
+   * so the probe BLOCKS with BLOCKED_FATAL — the faithful, STRICTER
+   * prediction of the post-creation gate's typed PENDING block (the
+   * probe's wire verdict is the engine's 2-state vocabulary; INV-9.4
+   * "complete the observation, not weaken the verdict" — strict is the
+   * documented safe direction; plan §C.3 禁止 false OPEN + E.3). A
+   * NEVER-OBSERVED required unknown (no fiber / pending slot / failed
+   * slot on ANY live session — the first-create bootstrap window) is NOT
+   * dropped: the probe consumes the seed truth exactly as the gate does
+   * (seed available `true` → OPEN, `false`/absent → FATAL — the PF-2
+   * first-create bootstrap exemption; probe == gate, INV-9.4 RESTORED AND
+   * MAINTAINED — the probe no longer diverges from the gate in the
+   * never-observed world that was the pre-fix mcp-domain FATAL/OPEN
+   * split). The `persona` domain is NEVER touched (U5 caller-only persona
+   * merge FROZEN — T1.4-B).
+   *
+   * When ABSENT (legacy wiring / factory worlds): the facts-only
+   * `environmentFacts` port stands, byte-identical (the PENDING rule is
+   * off — no live 3-state observations ⇒ no pending materialization).
+   */
+  readonly environmentFactsRead?: (
+    blueprint: TeamBlueprint,
+  ) => Promise<RequirementFactsResolution>
   /**
    * TCM vNext §15.5 (M2) — the narrow workspace attach port (the host
    * entry's closure over the hard-injected public `workspaceRegistry`
@@ -1959,9 +2009,40 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
       ): Promise<RemoteSafeRecord> {
         const resolved = resolveBlueprint(blueprintId, blueprintRevision)
         const callerFacts = parseEnvironmentFacts(environmentFacts)
-        const hostFacts = (await options.environmentFacts?.()) ?? []
+        // PF-1 fix (2026-09-30) — resolve the host feed against the
+        // REQUESTED blueprint's team scope (the SAME world the
+        // post-creation admission gate consumes — the frozen INV-9.4
+        // two-worlds identity). Pre-fix this read the boot-scoped thunk,
+        // which on a multi-blueprint host mis-scoped the feed against the
+        // requested blueprint (a configured + healthy live server probed
+        // as a spurious FATAL). A legacy no-argument thunk ignores the
+        // argument (byte-identical on a single-blueprint host).
+        const requirements = compatibilityRequirementsOf(resolved)
+        let hostFacts: readonly EnvironmentFact[]
+        if (options.environmentFactsRead !== undefined) {
+          // D-3 (2026-09-30) + PF-2 tri-state (2026-09-30 option A) — the
+          // full-resolution read (the atomic observations + feed pair of
+          // ONE resolveFacts call): drop the SEED-FILLED facts of every
+          // REQUIRED requirement whose live observation is `unknown` AND
+          // IN-FLIGHT (the shared classifier predicate) — the engine then
+          // reports a missing required fact (FATAL → BLOCKED_FATAL), the
+          // faithful, STRICTER prediction of the post-creation gate's
+          // typed PENDING block (INV-9.4; strict = the documented safe
+          // direction; the persona domain is untouched — U5 FROZEN). A
+          // NEVER-OBSERVED required unknown keeps its seed-filled fact —
+          // the probe consumes the seed truth exactly as the gate does
+          // (the first-create bootstrap exemption; probe == gate).
+          const resolution = await options.environmentFactsRead(resolved)
+          hostFacts = dropSeedFilledPendingFacts({
+            feed: resolution.environmentFacts,
+            observations: resolution.observations,
+            requirements,
+          })
+        } else {
+          hostFacts = (await options.environmentFacts?.(resolved)) ?? []
+        }
         const result = evaluateCompatibility({
-          requirements: compatibilityRequirementsOf(resolved),
+          requirements,
           environmentFacts: mergeProbeEnvironmentFacts(hostFacts, callerFacts),
         })
         return result as unknown as RemoteSafeRecord

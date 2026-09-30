@@ -149,6 +149,29 @@ export interface TeamRuntimeActionRequest {
     readonly execution?: WorkExecutionMode;
     /** Transient caller cancellation; never serialized or persisted. */
     readonly signal?: unknown;
+    /**
+     * pre-alpha3 PR-E (plan §E.9) — the RECOVERY marker: present when this
+     * attempt is the human-REVIEWED recovery dispatch of a previously
+     * blocked normal-work attempt (the router's Control inline coupling
+     * returned `allow` for the recovery Control request). The gate then
+     * classifies the action as `recoveryWork` (allowed on the blocked
+     * scopes) and the activation runs on the REDUCED original authority
+     * (the downed capability subjects unavailable; everything else
+     * unchanged; the external hard ceiling absolute). NEVER set by the
+     * caller (the team tools / remote layer cannot forge it — it is
+     * produced exclusively by the router's recovery dispatch after a
+     * durable allow decision); a present marker without a blocked scope is
+     * a no-op (the gate falls back to the normal-work classification).
+     */
+    readonly recovery?: {
+        /** The scope keys the reviewed recovery covers (e.g. `['team']`,
+         *   `['template:x']`). */
+        readonly scopeKeys: readonly string[];
+        /** The downed capability subjects (the FATAL verdicts' unavailable
+         *   subjects across the covered scopes) — the reduced authority
+         *   excludes exactly these (plan §E.9). */
+        readonly unavailableSubjects: readonly string[];
+    };
 }
 /** One durable effect of an executed action (lossless JSON, no live data). */
 export type RuntimeActionEffect = 
@@ -600,6 +623,54 @@ export interface TeamRuntimeOptions {
     readonly blueprintCatalog: import('../../domain/blueprint/src/index.js').BlueprintCatalog;
     /** The environment probe facts (compatibility gate, live evaluation). */
     readonly environmentFacts: () => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>;
+    /**
+     * pre-alpha3 W3-A (review fix F1, guide §2.3) — the per-TEMPLATE scope
+     * facts port (the live provider's template-boundary feed: supply + fresh
+     * readiness + materialization). Present in the production host entry
+     * world; ABSENT in factory/test worlds, where the gate evaluates every
+     * scope against the single `environmentFacts` array (the legacy
+     * behavior, byte-identical).
+     */
+    readonly templateEnvironmentFacts?: (templateId: string) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>;
+    /**
+     * PF-1 fix (2026-09-30, adjudicated product defect) — the per-BLUEPRINT
+     * live environment-facts source (the SAME seam the remote surface's
+     * `intent.probe` and the per-root compatibility prober consume): when
+     * PRESENT the requirement gate resolves the live feed against the team
+     * requirements of the REQUEST's bound blueprint — multi-blueprint hosts
+     * (boot blueprint ≠ bound blueprint) keep the frozen INV-9.4 two-worlds
+     * identity (the probe, the gate and the compatibility aggregate evaluate
+     * the SAME world; a configured + healthy live server never probes
+     * unreachable). When ABSENT the legacy single `environmentFacts` feed
+     * stands (factory / single-blueprint worlds — byte-identical verdicts).
+     */
+    readonly environmentFactsForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>;
+    /**
+     * PF-1 fix (2026-09-30) — the per-BLUEPRINT per-template feed (the twin
+     * of `templateEnvironmentFacts` scoped to the request's bound blueprint;
+     * ABSENT in factory worlds — the legacy single-array gate stands,
+     * byte-identical).
+     */
+    readonly templateEnvironmentFactsForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint, templateId: string) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>;
+    /**
+     * D-3 fix (2026-09-30, adjudicated product semantics — fail-closed
+     * PENDING) — the per-BLUEPRINT FULL-RESOLUTION live read (the atomic
+     * 3-state observations + 2-state feed pair of `resolveFacts`). When
+     * PRESENT the requirement gate consumes THIS source: the feed half
+     * drives the compatibility engine, the observations (the 3-state truth)
+     * drive the PENDING rule (a REQUIRED capability whose live observation
+     * is UNKNOWN is a typed PENDING block — never a seed-filled PASS; the
+     * static seed remains bootstrap/display only, guide §2.5). When ABSENT
+     * the facts-only ports stand (byte-identical; the PENDING rule is off —
+     * no live probe ⇒ no pending materialization).
+     */
+    readonly environmentFactsReadForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
+    /**
+     * D-3 fix (2026-09-30) — the per-BLUEPRINT per-template FULL-RESOLUTION
+     * live read (the twin of `templateEnvironmentFactsForBlueprint`; same
+     * presence/absence semantics).
+     */
+    readonly templateEnvironmentFactsReadForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint, templateId: string) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
     /** The external hard facts (effective-config read, stage 2). */
     readonly externalPolicyFacts: () => Promise<import('../../domain/policy/src/index.js').ExternalPolicyFacts>;
     /** The deployment default model (the `staticModel`) — REQUIRED (PR #30
@@ -664,6 +735,19 @@ export interface TeamRuntimeOptions {
      *  production root wires through the same map. Absent in the P6-T2
      *  default wiring: the runtime owns a private map (previous behavior). */
     readonly teamLocks?: Map<string, Promise<unknown>>;
+    /**
+     * pre-alpha3 PR-E (plan §E.9) — the Control service LAZY REF for the
+     * recovery dispatch: the production root wires the SAME ref object it
+     * hands the control tools (the service is created lazily on first use —
+     * the ref's `current` is `undefined` until then; a test world may wire a
+     * pre-built service or omit the ref entirely — ABSENT = recovery
+     * dispatch unavailable: a blocked normal-work attempt fails closed with
+     * the typed block, no Control coupling). The ref (not the service) is
+     * the wiring unit so the router never reorders the root's construction.
+     */
+    readonly controlServiceRef?: {
+        readonly current?: import('../control/index.js').ControlService;
+    };
 }
 /**
  * The unified runtime/control action facade (the P6-T2 acceptance object:

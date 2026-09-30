@@ -17,6 +17,7 @@
  * @module @dsh-agent-team/domain/blueprint/types
  */
 import type { BlueprintContentHash, BlueprintId, BlueprintRevision, TemplateId } from '../../../contracts/src/index.js';
+import type { RequirementType } from '../../compatibility/src/requirement.js';
 /**
  * The seven tools whose individual calls a static permission policy may
  * gate (alpha.2 plan §4 + A2C-1). The file tools (`read`, `read_image`,
@@ -176,6 +177,15 @@ export interface BlueprintTemplate {
     readonly contextPolicy?: string;
     /** Per-template capability policy (absent = legacy mode, no restrictions). */
     readonly capabilities?: TemplateCapabilities;
+    /**
+     * Schema-v2 structured requirements bound to THIS template (the Leader or
+     * one MemberTemplate; plan §E.2/§E.3). A v2 document may declare, e.g., a
+     * `persona` requirement (the required persona kind) or `mcpServer`
+     * requirements the template needs. ABSENT in v1 documents and in v2
+     * documents that declare none (omitted, never present-but-empty-at-parse —
+     * a declared `[]` is a legal empty list).
+     */
+    readonly requirements?: readonly BlueprintRequirement[];
 }
 /** The Blueprint's exactly-one complete Leader (Architecture §5.3). */
 export type LeaderTemplate = BlueprintTemplate;
@@ -189,6 +199,32 @@ export interface CapabilityRequirement {
     readonly name: string;
     /** Whether the requirement is optional (degraded vs fatal). */
     readonly optional: boolean;
+}
+/**
+ * A schema-v2 structured requirement (plan §E.2) — the richer requirement
+ * declaration available at all three levels (Team / Leader / MemberTemplate).
+ *
+ * It reuses the domain compatibility requirement vocabulary (Architecture
+ * §27.1) directly: the same closed six-set `type`, a `requirementId` (the
+ * identity the compatibility engine binds outcomes and acknowledgements to),
+ * the probeable `subjects`, and the structural `complete` ruling (unmet
+ * `complete:true` => mandatory FATAL, no downgrade, §13.5). Unlike the v1
+ * {@link CapabilityRequirement} flat `{domain, name, optional}` row, it
+ * carries an explicit `requirementId`, may name MULTIPLE subjects, and
+ * declares `complete` rather than inverting it from `optional`.
+ *
+ * The normalized (validated) form always carries a concrete `complete`
+ * (the source's `complete` defaults to `false`).
+ */
+export interface BlueprintRequirement {
+    /** The requirement's stable identity (the compatibility engine's binding key). */
+    readonly requirementId: string;
+    /** The probeable domain (the closed §27.1 six-set). */
+    readonly type: RequirementType;
+    /** Named subjects the requirement probes (one or more). */
+    readonly subjects: readonly string[];
+    /** Structural requirement: unmet => mandatory FATAL, no downgrade (§13.5). */
+    readonly complete: boolean;
 }
 /**
  * A Team or Member autonomy/mutation envelope: which mutation operations
@@ -272,8 +308,13 @@ export type BlueprintMetadata = Readonly<Record<string, string>>;
  * `{ blueprintId, revision, contentHash }`.
  */
 export interface TeamBlueprint {
-    /** The blueprint document schema version (v1: exactly 1). */
-    readonly schemaVersion: 1;
+    /**
+     * The blueprint document schema version. `1` = the frozen v1 document
+     * (the flat top-level {@link CapabilityRequirement} list only); `2` = the
+     * structured requirement levels (plan §E.2: Team / Leader /
+     * MemberTemplate requirements in the compatibility vocabulary).
+     */
+    readonly schemaVersion: 1 | 2;
     /** Stable logical identity (not a path, not a display name). */
     readonly blueprintId: BlueprintId;
     /** Human-readable revision. */
@@ -288,8 +329,19 @@ export interface TeamBlueprint {
     readonly leader: LeaderTemplate;
     /** The 0..N MemberTemplates (unique templateIds). */
     readonly members: readonly MemberTemplate[];
-    /** Capability requirements (unique (domain, name) pairs). */
+    /**
+     * The v1 flat capability-requirement list (frozen v1 shape; unique
+     * (domain, name) pairs). Present at every schema version — in v2 documents
+     * it is the LEGACY team-level mechanism and is typically empty; the v2
+     * team-level structured requirements live in {@link teamRequirements}.
+     */
     readonly requirements: readonly CapabilityRequirement[];
+    /**
+     * Schema-v2 TEAM-level structured requirements (plan §E.2). ABSENT in v1
+     * documents and in v2 documents that declare none (omitted, never
+     * present-but-undefined). A declared `[]` is a legal empty list.
+     */
+    readonly teamRequirements?: readonly BlueprintRequirement[];
     /** Team autonomy/mutation envelope (absent = none declared). */
     readonly teamEnvelope?: MutationEnvelope;
     /** Member mutation envelopes (unique templateIds, resolvable). */

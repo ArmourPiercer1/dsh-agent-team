@@ -65,6 +65,7 @@ import { REMOTE_RPC_CHANNEL } from '../../remote/src/handlers/register.js'
 import * as hostEntry from '../src/plugin/host.js'
 import type { TeamPluginHostContext } from '../src/plugin/host.js'
 import { stubGlueUrl } from './p8s5a-artifacts.mjs'
+import { agentPresetsStandardDouble } from './agent-presets-double.mjs'
 
 // --- the 0.1.5-topology connection service (the probe-verified pattern) ----
 
@@ -212,6 +213,9 @@ async function bootF1World(mode: '015' | '012', label: string): Promise<F1World>
   root.reflect.provide('workspaceRegistry', { list: () => [], resolveByPath: async () => undefined })
   root.reflect.provide('sessionPersistence', { ensure: async () => {} })
   root.reflect.provide('teamStorageSeam', new FileStorageSeam(dir))
+  // pre-alpha3 W3-A (F1): the agentPresets service double (W2-A fail-closed
+  // contract — service-absent worlds without a row preset id no longer bind).
+  root.reflect.provide('agentPresets', agentPresetsStandardDouble())
 
   // The REAL production entry — the shim under test is installed by it.
   await hostEntry.apply(root as unknown as TeamPluginHostContext, rowConfig(dir))

@@ -1,0 +1,8 @@
+mock: listening on 127.0.0.1:3497
+mock: 1 [messages] text reply (44 chars): "PRREQ_DEFAULT_ACK_prereq-2026-09-29T20-52-08"
+mock: 2 [messages] text reply (44 chars): "PRREQ_DEFAULT_ACK_prereq-2026-09-29T20-52-08"
+mock: 3 [messages] text reply (15 chars): "PRREQ_DONE_W_b7"
+mock: 4 [messages] text reply (15 chars): "PRREQ_DONE_W_b7"
+mock: 5 [messages] text reply (16 chars): "PRREQ_DONE_W_b8h"
+mock: 6 [messages] text reply (44 chars): "PRREQ_DEFAULT_ACK_prereq-2026-09-29T20-52-08"
+mock: 7 [messages] text reply (44 chars): "PRREQ_DEFAULT_ACK_prereq-2026-09-29T20-52-08"

@@ -1,0 +1,39 @@
+{
+  "error": {
+    "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+    "message": "TeamRuntime: the creation preflight of \"session-prereq-main-prereq-2026-09-30T00-05-00\" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)",
+    "details": {
+      "method": "team.create",
+      "endpoint": "team.create",
+      "contractVersion": 1,
+      "requestToken": null,
+      "reason": "domain-error",
+      "cause": {
+        "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+        "message": "TeamRuntime: the creation preflight of \"session-prereq-main-prereq-2026-09-30T00-05-00\" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)",
+        "details": {
+          "rootSessionId": "session-prereq-main-prereq-2026-09-30T00-05-00",
+          "source": "creation-preflight",
+          "outcome": "consentRequired",
+          "blockedScopes": [],
+          "consentRequiredRequirementIds": [
+            "lead.mcp.signal"
+          ],
+          "fixOrDisableRequirementIds": [],
+          "fatalRequirementIds": []
+        }
+      }
+    }
+  },
+  "details": {
+    "rootSessionId": "session-prereq-main-prereq-2026-09-30T00-05-00",
+    "source": "creation-preflight",
+    "outcome": "consentRequired",
+    "blockedScopes": [],
+    "consentRequiredRequirementIds": [
+      "lead.mcp.signal"
+    ],
+    "fixOrDisableRequirementIds": [],
+    "fatalRequirementIds": []
+  }
+}

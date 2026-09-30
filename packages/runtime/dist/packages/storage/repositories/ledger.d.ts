@@ -25,7 +25,11 @@
  * state-durable-before-stamp by construction. The accepted crash window
  * (fact durable, stamp not yet advanced — a lag of exactly one change,
  * caught up at the next mutation) is the documented v1 consistency
- * model; stamp-first ordering is never used.
+ * model; stamp-first ordering is never used. The one deliberate
+ * exception is the pre-TEAM requirement-fact write (pre-alpha3 W3-B
+ * F7, `putPreTeam`): a fact durable BEFORE the team record is minted
+ * has no stamp to advance — the record lands with the fresh generation
+ * and the next post-bind fact catches the stamp up.
  *
  * @module @dsh-agent-team/storage/repositories/ledger
  */
@@ -70,6 +74,28 @@ export declare class LedgerRepository extends BaseRepository {
      * @returns the frozen entry.
      */
     put(entry: unknown): Promise<LedgerEntry>;
+    /**
+     * Durably put one PRE-TEAM ledger entry — the SAME put rules as
+     * {@link put} WITHOUT the S1-A stamp advance.
+     *
+     * pre-alpha3 W3-B (review fix F7, guide §6): the durable requirement
+     * facts (the degradation consent, the template-availability set) are
+     * committed BEFORE the TeamSession record is minted — the F6→F7
+     * refuse→consent→re-drive workflow, where the creation preflight
+     * refuses the durable bind and the human's resolution fact must already
+     * be durable when the creation is re-driven. There is no stamp row to
+     * advance before the record exists; the record is minted at the next
+     * bind with the fresh generation, and the NEXT post-bind fact advances
+     * the stamp — the documented v1 lag model (fact durable, stamp one
+     * behind, caught up at the next mutation) covers this window by
+     * construction. The stamped {@link put} remains the contract of every
+     * other writer (its missing-row loud failure is unchanged and pinned).
+     * @param entry - the unknown input, parsed via `parseLedgerEntry`.
+     * @returns the frozen entry.
+     */
+    putPreTeam(entry: unknown): Promise<LedgerEntry>;
+    /** The shared put body (the stamp advance is the sole parameter). */
+    private putEntry;
     /**
      * Read one ledger entry by sequence.
      * @returns the frozen entry, or `undefined` when absent (a gap).

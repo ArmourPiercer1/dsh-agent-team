@@ -275,16 +275,50 @@ export function intentCreateGate(
 }
 
 /**
- * Whether the FATAL verdict is the §7.4 complete-persona preset conflict
- * (the panel then offers "change runtime preset" as the remedy and keeps
+ * The closed lanes of a FATAL persona-preset verdict (pre-alpha3 PR-E,
+ * plan §E.3 — the persona KIND convention re-keying):
+ *
+ * - `conflict` — the frozen §13.5 code: the selected preset's effective
+ *   persona IS a complete section (the structural conflict — Team
+ *   identity cannot be composed with it);
+ * - `incompatible` — the HONEST bare-world lane: the selected preset
+ *   provides no composable standard persona (the required kind is simply
+ *   absent — not a conflict with a complete section).
+ *
+ * Both lanes keep Create disabled with no Continue-anyway path; the panel
+ * offers "change runtime preset" as the remedy in BOTH lanes (the honest
+ * copy differs — the incompatible lane must not claim a complete persona).
+ */
+export type PersonaFatalLane = 'conflict' | 'incompatible'
+
+/**
+ * The persona-preset FATAL lane of the verdict, or `null` when the FATAL
+ * (if any) is not a persona-preset verdict.
+ * @param compat - the parsed probe result, if one has landed.
+ * @returns `conflict` / `incompatible` when a FATAL row carries one of the
+ *   two honest persona codes; `null` otherwise.
+ */
+export function personaFatalLane(compat: IntentCompatibility | undefined): PersonaFatalLane | null {
+  if (compat === undefined || !compat.ok) return null
+  if (compat.status !== 'BLOCKED_FATAL') return null
+  const conflict = compat.fatals.some(row => row.reasonCode === 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT')
+  if (conflict) return 'conflict'
+  const incompatible = compat.fatals.some(row => row.reasonCode === 'PERSONA_INCOMPATIBLE')
+  return incompatible ? 'incompatible' : null
+}
+
+/**
+ * Whether the FATAL verdict is a persona-preset FATAL — EITHER the §7.4
+ * complete-persona preset conflict OR the honest bare-world
+ * PERSONA_INCOMPATIBLE lane (pre-alpha3 PR-E, plan §E.3: the panel then
+ * offers "change runtime preset" as the remedy in both lanes and keeps
  * Create disabled with no Continue-anyway path).
  * @param compat - the parsed probe result, if one has landed.
- * @returns true when a FATAL row carries the frozen conflict reason code.
+ * @returns true when a FATAL row carries one of the two honest persona
+ *   reason codes.
  */
 export function isPersonaPresetFatal(compat: IntentCompatibility | undefined): boolean {
-  if (compat === undefined || !compat.ok) return false
-  if (compat.status !== 'BLOCKED_FATAL') return false
-  return compat.fatals.some(row => row.reasonCode === 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT')
+  return personaFatalLane(compat) !== null
 }
 
 // ---------------------------------------------------------------------------
@@ -372,13 +406,19 @@ export const emptyTeamIntentDraft: TeamIntentDraft = {
  * The pre-creation probe environment fact for the selected runtime preset
  * (the frozen `intent.probe` carries `environmentFacts` as the only
  * environment input channel; the engine treats a missing fact as
- * `available: false`). This is how UI §7.4 reaches the frozen FATAL: the
- * blueprint's `persona` requirement names preset ids as subjects, and a
- * `complete:true` requirement unmet by the selected preset's fact is the
- * structural `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT`.
+ * `available: false`).
+ *
+ * pre-alpha3 PR-E (plan §E.3) — the persona KIND convention: this is how
+ * UI §7.4 reaches the frozen FATAL under the re-keyed engine: the
+ * blueprint's `persona` requirement names the REQUIRED kind (`standard`)
+ * as its subject, and the world fact's subject is the OBSERVED kind of the
+ * selected preset. A `complete:true` requirement unmet against a
+ * `complete`-kind world fact is the structural
+ * `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT`; unmet against any other world
+ * shape (bare, divergent kind) it is the honest `PERSONA_INCOMPATIBLE`.
  *
  * `generation: 0` — the client has no host generation to echo; it only
- * attests the seam row exists (available), never a probe epoch.
+ * attests the seam row exists, never a probe epoch.
  *
  * A `type` alias, not an `interface`: the frozen `RemoteSafeRecord` is an
  * index-signature type, and only object-literal aliases (never interfaces)
@@ -387,13 +427,41 @@ export const emptyTeamIntentDraft: TeamIntentDraft = {
 export type IntentEnvironmentFact = {
   readonly domain: 'persona'
   readonly subject: string
-  readonly available: true
+  readonly available: boolean
   readonly generation: 0
 }
 
 /**
+ * The STATIC roster of shipped-state persona kinds per preset id
+ * (pre-alpha3 PR-E, plan §E.3 — the persona KIND convention).
+ *
+ * The client's pre-creation probe must express the selected preset as an
+ * OBSERVED KIND (not a preset id). In the shipped state the live persona
+ * probe is a documented follow-up (known_debt "live persona probe"), so
+ * the client approximates the observation with this static roster of the
+ * known preset ids:
+ *
+ * - `standard`, `ptc`, `cordis` → the composable `standard` kind
+ * - `minimal` (the web-bundle complete preset) → the `complete` kind
+ *
+ * Any preset id OUTSIDE this roster is PASSED THROUGH as its own subject
+ * (the documented fail-loud lane): the engine then classifies the required
+ * kind as unmet (the id matches neither the required kind nor the
+ * `complete` kind) — an unknown preset fails closed as a FATAL
+ * PERSONA_INCOMPATIBLE, never a silent false-OPEN.
+ */
+const PRESET_PERSONA_KIND_ROSTER: Readonly<Record<string, 'standard' | 'complete'>> = {
+  standard: 'standard',
+  ptc: 'standard',
+  cordis: 'standard',
+  minimal: 'complete',
+}
+
+/**
  * Build the probe environment facts for one draft: the single persona fact
- * for the selected preset when a seam row attests it, else no facts.
+ * for the selected preset (subject = the OBSERVED KIND via the static
+ * roster, pass-through for unknown ids) when a seam row attests it, else
+ * no facts.
  * @param draft - the draft (only its `presetId` is read).
  * @param presets - the seam rows (broken rows already filtered).
  * @returns the facts array (possibly empty) for `RemoteIntentProbeParams`.
@@ -405,7 +473,13 @@ export function intentEnvironmentFacts(
   if (draft.presetId === null) return []
   const row = presets.find(candidate => candidate.id === draft.presetId)
   if (row === undefined) return []
-  return [{ domain: 'persona', subject: row.id, available: true, generation: 0 }]
+  const observedKind = PRESET_PERSONA_KIND_ROSTER[row.id] ?? row.id
+  return [{
+    domain: 'persona',
+    subject: observedKind,
+    available: observedKind === 'standard',
+    generation: 0,
+  }]
 }
 
 /**

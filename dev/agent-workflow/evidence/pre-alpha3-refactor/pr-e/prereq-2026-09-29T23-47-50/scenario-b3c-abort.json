@@ -1,0 +1,55 @@
+{
+  "elapsedMs": 120464,
+  "toolOutcome": {
+    "message": "tool call aborted",
+    "info": {
+      "name": "AbortError",
+      "code": "ABORTED"
+    }
+  },
+  "abandonFacts": [
+    {
+      "abandonedAt": "2026-09-29T23:50:06.733Z",
+      "reason": "wait-aborted",
+      "requestId": "ctrl-0yyeuwd0dx6j2w0qlrsj707f",
+      "rootSessionId": "session-prereq-main-prereq-2026-09-29T23-47-50"
+    }
+  ],
+  "pendingSeen": [
+    {
+      "requestId": "ctrl-0yyeuwd0dx6j2w0qlrsj707f",
+      "kind": "user-approval",
+      "correlation": "recovery:rt-b3c-prereq-2026-09-29T23-47-50:3",
+      "toolName": null,
+      "actionName": "delegate",
+      "reviewPayload": {
+        "action": "delegate",
+        "blockedScopes": [
+          "template:worker"
+        ],
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance"
+        },
+        "downedCapabilitySubjects": [
+          "mcp_web"
+        ],
+        "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+        "reducedAuthority": {
+          "externalHardCeiling": "absolute (never bypassed)",
+          "otherwise": "unchanged (the original permissions apply)",
+          "policy": "reduced original authority (plan §E.9)",
+          "unavailableSubjects": [
+            "mcp_web"
+          ]
+        },
+        "requestedOperation": "one recovery attempt of 'delegate' on template 'worker'",
+        "rootSessionId": "session-prereq-main-prereq-2026-09-29T23-47-50",
+        "schema": "dsh-agent-team/recovery-dispatch/v1",
+        "templateId": "worker"
+      },
+      "reviewPayloadDigest": "sha256:b7b07aed00490b8d3696061b76535db9e27858c3273747072908f8f27db5f72f",
+      "executionCoupling": "inline"
+    }
+  ]
+}

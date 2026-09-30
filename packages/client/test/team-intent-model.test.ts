@@ -23,6 +23,7 @@ import {
   parseBlueprintDetail,
   parseCatalogList,
   parseCompatibilityResult,
+  personaFatalLane,
   planTeamCreateAttempt,
   selectDefaultPresetId,
   teamWorkspaceOptions,
@@ -192,19 +193,45 @@ describe('intentCreateGate', () => {
 })
 
 describe('isPersonaPresetFatal', () => {
-  it('is true only for the BLOCKED_FATAL verdict carrying the frozen conflict reason code', () => {
+  it('is true for the BLOCKED_FATAL verdict carrying EITHER honest persona code (pre-alpha3 PR-E §E.3 dual lane)', () => {
     const fatal = compat('BLOCKED_FATAL', [
       { outcome: 'FATAL', requirementId: 'req-persona-team', reasonCode: 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT' },
     ])
     expect(isPersonaPresetFatal(fatal)).toBe(true)
+    // The HONEST bare-world lane (the required kind is absent — not a
+    // conflict with a complete section) is also a persona-preset FATAL.
     expect(isPersonaPresetFatal(compat('BLOCKED_FATAL', [
       { outcome: 'FATAL', requirementId: 'req-persona-team', reasonCode: 'PERSONA_INCOMPATIBLE' },
-    ]))).toBe(false)
+    ]))).toBe(true)
     expect(isPersonaPresetFatal(compat('BLOCKED_WARNING', [
       { outcome: 'FATAL', requirementId: 'req-persona-team', reasonCode: 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT' },
     ]))).toBe(false)
     expect(isPersonaPresetFatal(undefined)).toBe(false)
     expect(isPersonaPresetFatal({ ok: false, message: 'boom' })).toBe(false)
+  })
+})
+
+describe('personaFatalLane', () => {
+  it('returns the closed lane per verdict (conflict > incompatible; null otherwise)', () => {
+    expect(personaFatalLane(compat('BLOCKED_FATAL', [
+      { outcome: 'FATAL', requirementId: 'req-persona-team', reasonCode: 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT' },
+    ]))).toBe('conflict')
+    expect(personaFatalLane(compat('BLOCKED_FATAL', [
+      { outcome: 'FATAL', requirementId: 'req-persona-team', reasonCode: 'PERSONA_INCOMPATIBLE' },
+    ]))).toBe('incompatible')
+    // The CONFLICT lane wins when both rows are present (the structural
+    // conflict is the more specific diagnosis).
+    expect(personaFatalLane(compat('BLOCKED_FATAL', [
+      { outcome: 'FATAL', requirementId: 'req-persona-a', reasonCode: 'PERSONA_INCOMPATIBLE' },
+      { outcome: 'FATAL', requirementId: 'req-persona-b', reasonCode: 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT' },
+    ]))).toBe('conflict')
+    // A non-persona FATAL is not a persona-preset verdict.
+    expect(personaFatalLane(compat('BLOCKED_FATAL', [
+      { outcome: 'FATAL', requirementId: 'req-mcp-x', reasonCode: 'COMPLETE_REQUIREMENT_NOT_MET' },
+    ]))).toBe(null)
+    expect(personaFatalLane(compat('BLOCKED_WARNING', []))).toBe(null)
+    expect(personaFatalLane(undefined)).toBe(null)
+    expect(personaFatalLane({ ok: false, message: 'boom' })).toBe(null)
   })
 })
 
@@ -320,11 +347,45 @@ describe('intentEnvironmentFacts', () => {
       { id: 'team', name: 'Team', isDefault: true },
       { id: 'coder', isDefault: false },
     ]
+    // pre-alpha3 PR-E (plan §E.3): the subject is the OBSERVED KIND —
+    // `coder` is outside the static roster, so it passes through as its own
+    // subject (the documented fail-loud lane: NOT `standard`, so
+    // `available: false`; the engine classifies the required kind unmet).
     expect(intentEnvironmentFacts({ presetId: 'coder' }, presets)).toEqual([{
       domain: 'persona',
       subject: 'coder',
-      available: true,
+      available: false,
       generation: 0,
+    }])
+  })
+
+  it('pre-alpha3 PR-E §E.3: the subject is the OBSERVED KIND via the static roster (pass-through for unknown ids)', () => {
+    const presets: readonly TeamPresetRow[] = [
+      { id: 'standard', isDefault: false },
+      { id: 'ptc', isDefault: false },
+      { id: 'cordis', isDefault: false },
+      { id: 'minimal', isDefault: false },
+      { id: 'mystery', isDefault: false },
+    ]
+    // The rostered composable presets → the required `standard` kind (available).
+    expect(intentEnvironmentFacts({ presetId: 'standard' }, presets)).toEqual([{
+      domain: 'persona', subject: 'standard', available: true, generation: 0,
+    }])
+    expect(intentEnvironmentFacts({ presetId: 'ptc' }, presets)).toEqual([{
+      domain: 'persona', subject: 'standard', available: true, generation: 0,
+    }])
+    expect(intentEnvironmentFacts({ presetId: 'cordis' }, presets)).toEqual([{
+      domain: 'persona', subject: 'standard', available: true, generation: 0,
+    }])
+    // The web-bundle complete preset → the `complete` kind (the §13.5 conflict world).
+    expect(intentEnvironmentFacts({ presetId: 'minimal' }, presets)).toEqual([{
+      domain: 'persona', subject: 'complete', available: false, generation: 0,
+    }])
+    // An UNKNOWN id passes through as its own subject (the documented
+    // fail-loud lane: the engine classifies the required kind unmet —
+    // never a silent false-OPEN).
+    expect(intentEnvironmentFacts({ presetId: 'mystery' }, presets)).toEqual([{
+      domain: 'persona', subject: 'mystery', available: false, generation: 0,
     }])
   })
 

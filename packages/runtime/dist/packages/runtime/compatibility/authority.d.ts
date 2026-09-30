@@ -52,7 +52,7 @@
  * environment-facts port; no node: builtins, no upstream imports.
  * @module @dsh-agent-team/runtime/compatibility/authority
  */
-import type { CompatibilityStatus, EnvironmentFact, WarningAcknowledgement } from '../../domain/compatibility/src/index.js';
+import type { CompatibilityResult, CompatibilityStatus, EnvironmentFact, WarningAcknowledgement } from '../../domain/compatibility/src/index.js';
 import type { TeamBlueprint } from '../../domain/blueprint/src/index.js';
 import type { CompatibilityStateRecord } from '../../storage/schema/index.js';
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js';
@@ -152,6 +152,37 @@ export interface CompatibilityAuthorityAdmitOptions {
      */
     readonly acknowledgements?: readonly WarningAcknowledgement[];
 }
+/**
+ * The `evaluate` result: the SAME single-chain consultation as
+ * {@link CompatibilityAuthority.admit} but WITHOUT the admit/block mapping —
+ * it returns the RAW engine {@link CompatibilityResult} (the fresh
+ * re-derivation of step 4/5) alongside the durable-state metadata the
+ * recovery-model authority (plan §E.4) needs to project per-scope
+ * verdicts. When the chain itself fails (facts-unavailable / reprobe-failed
+ * / no-state / state-mismatch) the result carries the closed reprobe reason
+ * and NO engine result — the consumer MUST fail closed, exactly as
+ * `admit` maps the same condition to a `reprobe` decision.
+ */
+export interface CompatibilityEvaluation {
+    /** Whether the chain produced a verdict (`true`) or failed (`false`). */
+    readonly chainOk: boolean;
+    /** The reprobe failure reason when `chainOk` is `false` (closed vocabulary). */
+    readonly reprobeReason?: ReprobeReason;
+    /** The live environment fingerprint when it was computed. */
+    readonly fingerprint?: string;
+    /** The original downstream fault (facts-unavailable / reprobe-failed). */
+    readonly cause?: Error;
+    /** The logical admission state of the fresh durable state (only when `chainOk`). */
+    readonly status?: CompatibilityStatus;
+    /** The compatibility generation the evaluation was made under (only when `chainOk`). */
+    readonly generation?: number;
+    /** Whether THIS attempt re-probed to ensure freshness (only when `chainOk`). */
+    readonly reprobed?: boolean;
+    /** The RAW engine result of the step 4/5 re-derivation (only when `chainOk`). */
+    readonly result?: CompatibilityResult;
+    /** The fresh environment facts the chain read (only when `chainOk`). */
+    readonly facts?: readonly EnvironmentFact[];
+}
 /** The single compatibility admission authority for one TeamSession. */
 export interface CompatibilityAuthority {
     /** The root session id the authority owns. */
@@ -161,6 +192,14 @@ export interface CompatibilityAuthority {
      * state → ACK validity → one result). See the module docs.
      */
     admit(options?: CompatibilityAuthorityAdmitOptions): Promise<CompatibilityAdmissionDecision>;
+    /**
+     * The SAME single chain as {@link admit} without the admit/block mapping —
+     * it returns the RAW engine result + the durable-state metadata (plan
+     * §E.4: the recovery-model authority projects per-scope verdicts from it).
+     * A chain failure is reported (not mapped to a decision) with the closed
+     * reprobe reason; the consumer MUST fail closed.
+     */
+    evaluate(options?: CompatibilityAuthorityAdmitOptions): Promise<CompatibilityEvaluation>;
     /** Run one explicit re-probe under a frozen trigger (durable replace). */
     reprobe(trigger: ProbeTrigger): Promise<ProbeOutcome>;
     /** Read the current durable compatibility state (or `undefined`). */

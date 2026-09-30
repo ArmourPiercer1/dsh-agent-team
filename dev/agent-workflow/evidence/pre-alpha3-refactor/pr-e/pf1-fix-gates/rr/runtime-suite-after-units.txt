@@ -1,0 +1,46 @@
+    ],
+    "consentRequiredRequirementIds": [],
+    "fatalRequirementIds": [],
+    "fixOrDisableRequirementIds": [],
+    "gateReason": "requiredScopePending",
+    "outcome": "pending",
+    "pendingRequirementIds": [
+      "req-skill-base",
+    ],
+    "recheck": "next-boundary-or-compatibility.reprobe",
+    "rootSessionId": "session-std-r3",
+    "source": "creation-preflight",
+    "status": "BLOCKED_PENDING",
+  },
+  "name": "TeamRuntimeError",
+}
+
+ ❯ test/startup-template-disable-production.test.ts:393:27
+    391|
+    392|   it('the re-driven creation proceeds (the disabled scope is RESOLVED)…
+    393|     expect(d3b.bootError).toBeNull()
+       |                           ^
+    394|     expect(d3b.root).not.toBeNull()
+    395|     expect(finalAudit.repositories.teamSessions.get(ROOT3)).toBeDefine…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/29]⎯
+
+ FAIL  test/startup-template-disable-production.test.ts > W3-B S3a — the disable is idempotent at the semantic level (and stamped once the team exists) > the second disable went through the STAMPED put (the team record exists — the S1-A advance moved the generation by EXACTLY one)
+Error: S3b: the team-session row is missing (stamp arithmetic undefined)
+ ❯ test/startup-template-disable-production.test.ts:423:13
+    421|     const after = finalAudit.repositories.teamSessions.get(ROOT3)?.gen…
+    422|     if (before === undefined || after === undefined) {
+    423|       throw new Error('S3b: the team-session row is missing (stamp ari…
+       |             ^
+    424|     }
+    425|     expect(before).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/29]⎯
+
+
+ Test Files  19 failed | 246 passed (265)
+      Tests  17 failed | 2631 passed (2648)
+   Start at  06:38:48
+   Duration  14.91s (transform 42.08s, setup 0ms, import 173.55s, tests 4.91s, environment 33ms)
+
+RUNTIME_SUITE_EXIT=0

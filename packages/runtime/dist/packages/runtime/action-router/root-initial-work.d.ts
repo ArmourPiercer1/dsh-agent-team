@@ -155,7 +155,22 @@ import type { TeamBlueprint } from '../../domain/blueprint/src/index.js';
 import type { EnvironmentFact } from '../../domain/compatibility/src/index.js';
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js';
 import type { ResolvedCaller } from '../admission/resolve.js';
+import type { RequirementScope } from '../requirements/types.js';
 import type { TeamOperationChainMap } from '../coordination/index.js';
+/**
+ * pre-alpha3 W3-C (review fix F8, guide §7.2) — the scope refs of the
+ * Leader's real request boundary (the Root initial work): the Team scope
+ * ALWAYS + the Leader template scope when the leader template declares v2
+ * structured requirements. The Leader's normal model request depends on
+ * the leader template's requirements (the leader IS the resident member of
+ * its own template) — not just the team scope. A v1 document (no
+ * per-template requirements) and a v2 leader template that declares no
+ * requirements keep the Team scope only (byte-identical pre-W3-C).
+ *
+ * Member template scopes are NEVER referenced here: an unrelated member
+ * requirement down must not block the Leader (guide §7.3 case 4).
+ */
+export declare function leaderTemplateScopeRefs(blueprint: TeamBlueprint): readonly RequirementScope[];
 /** The payload discriminator of a Root initial-work fact (the scanner's filter). */
 export declare const ROOT_TARGET_KIND = "root";
 /** The EXISTING admission fact type (the Root entries carry `targetKind: 'root'`). */
@@ -367,6 +382,48 @@ export interface RootInitialWorkClosureInput {
     readonly repositories: TeamDomainRepositories;
     /** The environment-facts port (the compatibility gate's fresh-facts read). */
     readonly environmentFacts: () => Promise<readonly EnvironmentFact[]>;
+    /**
+     * pre-alpha3 W3-A (review fix F1, guide §2.3) — the per-TEMPLATE scope
+     * facts port (the live provider's template-boundary feed). Present in the
+     * production host entry world; ABSENT in factory worlds (the gate
+     * evaluates every scope against the single `environmentFacts` array —
+     * the legacy behavior, byte-identical).
+     */
+    readonly templateEnvironmentFacts?: (templateId: string) => Promise<readonly EnvironmentFact[]>;
+    /**
+     * PF-1 fix (2026-09-30, adjudicated product defect) — the per-BLUEPRINT
+     * live environment-facts source (the SAME seam the remote surface's
+     * `intent.probe`, the per-root compatibility prober and the new-work
+     * admission gate consume): when PRESENT the Phase A gate resolves the
+     * live feed against the TARGET root's bound blueprint's team
+     * requirements (the frozen INV-9.4 two-worlds identity on
+     * multi-blueprint hosts); when ABSENT the legacy single
+     * `environmentFacts` feed stands (byte-identical).
+     */
+    readonly environmentFactsForBlueprint?: (blueprint: TeamBlueprint) => Promise<readonly EnvironmentFact[]>;
+    /**
+     * PF-1 fix (2026-09-30) — the per-BLUEPRINT per-template feed (the twin
+     * of `templateEnvironmentFacts` scoped to the target root's bound
+     * blueprint; ABSENT in factory worlds — legacy behavior, byte-identical).
+     */
+    readonly templateEnvironmentFactsForBlueprint?: (blueprint: TeamBlueprint, templateId: string) => Promise<readonly EnvironmentFact[]>;
+    /**
+     * D-3 fix (2026-09-30, adjudicated product semantics — fail-closed
+     * PENDING) — the per-BLUEPRINT FULL-RESOLUTION live read (the atomic
+     * 3-state observations + 2-state feed pair of `resolveFacts`). Present →
+     * the Phase A gate consumes THIS source (the facts-only ports are not
+     * consulted) and the PENDING rule is live (a REQUIRED capability whose
+     * live observation is UNKNOWN is a typed PENDING block — never a
+     * seed-filled PASS). Absent → legacy byte-identical (the PENDING rule
+     * is off).
+     */
+    readonly environmentFactsReadForBlueprint?: (blueprint: TeamBlueprint) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
+    /**
+     * D-3 fix (2026-09-30) — the per-BLUEPRINT per-template FULL-RESOLUTION
+     * live read (the twin of `templateEnvironmentFactsForBlueprint`; same
+     * presence/absence semantics).
+     */
+    readonly templateEnvironmentFactsReadForBlueprint?: (blueprint: TeamBlueprint, templateId: string) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
     /** The deterministic clock (ISO-8601). */
     readonly now: () => string;
     /** The live Root input delivery port (the glue's `deliverRootWork`). */
@@ -380,10 +437,12 @@ export type AdmitRootInitialWork = (args: RootInitialWorkArgs) => Promise<RootIn
  *
  *   Phase A, in ONE withTeamLock acquisition of the shared
  *   coordination.chains:
- *     enforceCompatibilityGate (the existing single compatibility
- *     authority, INSIDE the lock: the gate may re-probe inline and a
- *     racing new-work admission for the same team must not interleave —
- *     the CR-8 analog, gate + Phase A in ONE acquisition) ->
+ *     enforceRequirementGate (the pre-alpha3 PR-E REQUIREMENT GATE — the
+ *     successor of the P6-T2 compatibility gate, INSIDE the lock: the gate
+ *     may re-probe inline and a racing new-work admission for the same
+ *     team must not interleave — the CR-8 analog, gate + Phase A in ONE
+ *     acquisition; a BLOCKED scope blocks the work, a DEGRADED scope
+ *     auto-degrades and the work continues) ->
  *     admitRootInitialWorkLocked (scan + decision + the fresh admission
  *     fact; a replay / a typed rejection completes in the same
  *     acquisition).

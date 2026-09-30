@@ -1,0 +1,25 @@
+[2026-09-29T19:32:45.371Z] === pre-alpha3 PR-E E.12 real-host gate (14 scenarios) prereq-2026-09-29T19-32-45 ===
+[2026-09-29T19:32:45.371Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery
+[2026-09-29T19:32:45.371Z] testuse=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-09-29T19:32:45.372Z] world=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T19-32-45
+[2026-09-29T19:32:45.372Z] evidence=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-09-29T19-32-45
+[2026-09-29T19:32:45.388Z] stable pre-probes: 3080=401 3180=401
+[2026-09-29T19:32:45.415Z] [H1] PASS — test-use pristine BEFORE :: head=46a7f68b0922
+[2026-09-29T19:32:45.417Z] ports: host=3182 mock=3497 mcpLeaderreq=3491 mcpWeb=3493
+[2026-09-29T19:32:45.417Z] world materialized: home=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T19-32-45 blueprints=/home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/tests/homes/prereq-2026-09-29T19-32-45/blueprints
+[2026-09-29T19:32:45.422Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-09-29T19:32:45.425Z] mini MCP mcp_leaderreq up on 127.0.0.1:3491
+[2026-09-29T19:32:45.436Z] mini MCP mcp_web up on 127.0.0.1:3493
+[2026-09-29T19:32:45.436Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-29T19:32:46.439Z] throwaway boot OK: http://127.0.0.1:3182/?token=REDACTED
+[2026-09-29T19:32:46.547Z] web profile ensured (throwaway boot if first use)
+[2026-09-29T19:32:46.548Z] B1-CREATE: patch (bootPhase=create, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[]) + directive (boot=1) written
+[2026-09-29T19:32:47.808Z] B1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-29T19:32:47.895Z] B1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-29T19:32:47.975Z] B1-CREATE: row ready — toolCount=13
+[2026-09-29T19:32:48.029Z] remote team.create v1 [t13-create] -> 200 ok=true
+[2026-09-29T19:32:48.029Z] T13 (v1 frozen) created: durable={"teamSession":{"schemaVersion":1,"rootSessionId":"session-prereq-v1-prereq-2026-09-29T19-32-45","blueprint":{"blueprintId":"team.mpr-anchor","revision":"1","contentHash":"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37"},"createdAt":"2026-09-29T19:32:47.999Z","generation":1,
+[2026-09-29T19:32:48.040Z] remote intent.probe v1 [s1-probe] -> 200 ok=true
+[2026-09-29T19:32:48.040Z] [S1] FAIL — all-ready cell: intent.probe(T) — team scope OPEN (both team requirements PASS) :: status=BLOCKED_FATAL reqs=["team.mcp.repo=FATAL","team.mcp.leaderreq=FATAL"]
+[2026-09-29T19:32:48.052Z] remote team.create v1 [t-create] -> 200 ok=false code=TEAM_RUNTIME_COMPATIBILITY_BLOCKED
+[2026-09-29T19:32:48.053Z] FATAL: team.create (T main) failed: TEAM_RUNTIME_COMPATIBILITY_BLOCKED — TeamRuntime: the creation preflight of "session-prereq-main-prereq-2026-09-29T19-32-45" is 'fatal' — the durable Team bind is refused (zero durable effect; a Team-level required requirement is down — it cannot be bypassed by disabling a template; repair the environment and re-drive the creation)

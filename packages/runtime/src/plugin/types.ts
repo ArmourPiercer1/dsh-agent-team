@@ -265,10 +265,26 @@ export interface TeamPluginConfig {
   /**
    * T12-M2 (optional additive): the AgentPreset substrate facts the persona
    * resolver evaluates — the effective-persona three-state of the preset
-   * composing the team agents. Absent = the S5A A11 decision for the
-   * dsh-agent-team preset ({ presetId: 'dsh-agent-team',
-   * personaKind: 'standard' }); a `complete` substrate is a structural
-   * FATAL inside the resolver (no downgrade, no Continue Anyway).
+   * composing the team agents. The SCRIPTED test-world port: a production
+   * host never sets it.
+   *
+   * pre-alpha3 W3-A (review fix F1, guide §2.3): ABSENT = the TYPED,
+   * OBSERVING path (never a guess):
+   *
+   * - the PRODUCTION host entry world (the `requirementFacts` authority
+   *   present) — the live RuntimeSubstratePlan from the host's
+   *   `resolveSubstratePlan` (pre-alpha3 W2-A: the row preset ids + the
+   *   production persona observer over the DSH public `agentPresets`
+   *   seam; a settled plan is memoized, an unresolved one re-probes; the
+   *   bind-time slot reads the ROOT entry, an `unresolved` root
+   *   observation fails the bind closed);
+   * - a FACTORY world (no host authority) — the legacy shipped-state
+   *   observation (`shippedStatePersonaObserver`: the deployment default's
+   *   composable `standard` persona, source `none` — a pure
+   *   deployment-knowledge observation for worlds with no live seam).
+   *
+   * A `complete` substrate is a structural FATAL inside the resolver (no
+   * downgrade, no Continue Anyway).
    */
   readonly presetSubstrate?: {
     readonly presetId: string
@@ -624,6 +640,41 @@ export type RemoteQueryCommandCompletion = (input: {
 // --- the production root surface ---------------------------------------------------
 
 /**
+ * pre-alpha3 W2-A (review fix F1, guide §2.3) — the runtime
+ * requirement-facts authority surface (the #40 live environment source for
+ * the RequirementAuthority).
+ *
+ * The production host entry assembles ONE authority per row (the live
+ * provider + the 3-state readiness probe + the production substrate plan +
+ * the persona observer) and exposes it on the production root. The #42
+ * consumer switching (W3-A) reads it from the root: the gate's BLOCK/OPEN
+ * decision consumes the 3-state `observations` of `resolveFacts`, and the
+ * 2-state `environmentFacts` feed keeps the compatibility engine's
+ * fingerprint/ack machinery. Factory worlds (the root assembled directly,
+ * no host entry) carry no authority — the surface stays absent.
+ */
+export interface RequirementFactsAuthority {
+  /** The live requirement-facts provider (the ONE live environment source). */
+  readonly provider: import('../../requirement-facts/index.js').RuntimeRequirementFactsProvider
+  /** The 3-state capability readiness probe (fresh probe per call, fail-soft). */
+  readonly readiness: import('../../readiness/index.js').CapabilityReadinessProvider
+  /**
+   * The live runtime substrate plan (the production resolver: the row
+   * preset ids + the production persona observer — resolved fresh per call;
+   * a settled plan is memoized by the host, an unresolved one re-probes).
+   */
+  readonly resolveSubstratePlan: () =>
+    Promise<import('../../agent-setup/preset/index.js').RuntimeSubstratePlan>
+  /**
+   * The production persona observer (the DSH public `agentPresets` seam —
+   * the effective-composition read, fail-closed typed `unresolved`, never
+   * a `standard` guess).
+   */
+  readonly observePersonaKind: (presetId: string) =>
+    Promise<import('../../agent-setup/preset/index.js').PersonaKindObservation>
+}
+
+/**
  * The complete assembled production root (plan §19.1, A01–A29 + the four
  * S6 seams A30/A31/A32/A34 + the live-agent glue bundle + the tools).
  *
@@ -776,6 +827,55 @@ export interface TeamProductionRoot {
   boot(): Promise<void>
   /** Close the root (the glue bundle + the TeamDomain). Idempotent. */
   close(): Promise<void>
+  /**
+   * pre-alpha3 W2-A (review fix F1, guide §2.3) — the runtime
+   * requirement-facts authority (the #40 live environment source: the live
+   * provider + the 3-state readiness probe + the production substrate plan
+   * + the persona observer). PRESENT in the production host entry world;
+   * ABSENT when the root is assembled directly (factory worlds — the
+   * additive-optional pattern, cf. `workspaceAttach`).
+   */
+  readonly requirementFacts?: RequirementFactsAuthority
+  /**
+   * pre-alpha3 W3-B (review fix F7, guide §6) — the PRODUCTION
+   * requirement-fact writers: the durable human decisions of the creation
+   * preflight (the DegradationConsent grant + the template
+   * disable/enable), commit-before-ack over the frozen `compatibility`
+   * ledger category. ROOT-LEVEL services only — the frozen remote
+   * contract v1–v6 gains NO method (the UI flow consumes the typed
+   * preflight result and re-drives the creation). Present only in the
+   * production host entry world (the `requirementFacts` authority —
+   * factory worlds carry none, the surface stays absent).
+   */
+  readonly requirementAuthority?: {
+    /** Durably grant ONE degradation consent: validated against a FRESH
+     *   evaluation (required-target / satisfied-target / undeclared-
+     *   target = typed refusal, zero writes), then the
+     *   `optional-requirement-accepted` fact is written BEFORE the ack.
+     *   The blueprint identity names the bound snapshot the consent is
+     *   given against (an explicit revision — no "latest"). */
+    readonly grantDegradationConsent: (input: {
+      readonly rootSessionId: string
+      readonly blueprintId: string
+      readonly revision: string
+      readonly requirementId: string
+      readonly generation: number
+      readonly consentedBy: string
+    }) => Promise<import('../../requirements/index.js').OptionalRequirementAccepted>
+    /** Durably set ONE template's availability (the `fixOrDisable`
+     *   resolution): validated against the bound blueprint's template
+     *   set (unknown template = typed refusal, zero writes), then the
+     *   `template-availability-set` fact is written BEFORE the ack. A
+     *   repeated set appends a new row (latest-wins read; re-runs
+     *   converge). */
+    readonly setTemplateAvailability: (input: {
+      readonly rootSessionId: string
+      readonly blueprintId: string
+      readonly revision: string
+      readonly templateId: string
+      readonly available: boolean
+    }) => Promise<import('../../requirements/index.js').TemplateAvailabilitySet>
+  }
 }
 
 // --- imported function-shape aliases (self-documenting surface) ---------------------

@@ -1,0 +1,6 @@
+P6T1-DIAG-ERROR ActivationError: activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)
+P6T1-DIAG-ERROR ActivationError: activation: member quota maxInstances=2 exhausted for template 'worker' (current+reserved=2, +1 requested)
+P6T1-DIAG-ERROR ActivationError: activation: member quota maxInstances=2 exhausted for template 'worker' (current+reserved=2, +1 requested)
+P6T1-DIAG-ERROR ActivationError: activation: member quota maxInstances=2 exhausted for template 'worker' (current+reserved=2, +1 requested)
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions

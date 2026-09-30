@@ -20,7 +20,9 @@ export const BLUEPRINT_REQUIREMENTS: readonly RequirementInput[] = [
   { requirementId: 'req-skill-review', type: 'skill', subjects: ['code-review'] },
   { requirementId: 'req-mcp-abtem', type: 'mcpServer', subjects: ['abtem'] },
   { requirementId: 'req-model-route', type: 'modelRoute', subjects: ['qwen3.8-27b'] },
-  { requirementId: 'req-persona', type: 'persona', subjects: ['team-preset-cordis'] },
+  // pre-alpha3 PR-E (plan §E.3): the subject is the REQUIRED persona KIND
+  // (the persona kind convention), not a preset id.
+  { requirementId: 'req-persona', type: 'persona', subjects: ['standard'] },
   {
     requirementId: 'req-team-structure',
     type: 'teamStructure',
@@ -28,11 +30,18 @@ export const BLUEPRINT_REQUIREMENTS: readonly RequirementInput[] = [
   },
 ]
 
-/** A `complete:true` persona requirement (Architecture §13.5). */
+/**
+ * A `complete:true` persona requirement (Architecture §13.5).
+ *
+ * pre-alpha3 PR-E (plan §E.3) — the persona KIND convention: the subject
+ * is the REQUIRED persona KIND (`standard`), not a preset id; the world
+ * fact's subject is the OBSERVED kind (the fixture world below provides
+ * the `complete` kind).
+ */
 export const COMPLETE_PERSONA_REQUIREMENT: RequirementInput = {
   requirementId: 'req-persona-complete',
   type: 'persona',
-  subjects: ['cordis-preset'],
+  subjects: ['standard'],
   complete: true,
 }
 

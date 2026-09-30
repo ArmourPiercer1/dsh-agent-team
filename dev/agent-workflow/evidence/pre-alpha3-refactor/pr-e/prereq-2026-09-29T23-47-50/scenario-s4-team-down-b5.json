@@ -1,0 +1,72 @@
+{
+  "recoveryRecord": {
+    "actionName": "delegate",
+    "correlation": "recovery:rt-b5-prereq-2026-09-29T23-47-50:1",
+    "executionCoupling": "inline",
+    "kind": "user-approval",
+    "requestId": "ctrl-1j33eqc07kcyor1sx09je0xp",
+    "requester": {
+      "instanceId": "inst-leader",
+      "kind": "instance",
+      "role": "leader"
+    },
+    "reviewPayload": {
+      "action": "delegate",
+      "blockedScopes": [
+        "team"
+      ],
+      "caller": {
+        "instanceId": "inst-leader",
+        "kind": "instance"
+      },
+      "downedCapabilitySubjects": [
+        "mcp_repo"
+      ],
+      "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+      "reducedAuthority": {
+        "externalHardCeiling": "absolute (never bypassed)",
+        "otherwise": "unchanged (the original permissions apply)",
+        "policy": "reduced original authority (plan §E.9)",
+        "unavailableSubjects": [
+          "mcp_repo"
+        ]
+      },
+      "requestedOperation": "one recovery attempt of 'delegate' on template 'helper'",
+      "rootSessionId": "session-prereq-main-prereq-2026-09-29T23-47-50",
+      "schema": "dsh-agent-team/recovery-dispatch/v1",
+      "templateId": "helper"
+    },
+    "reviewPayloadDigest": "sha256:325f3359504cc74dde0dc36a84c58b2540099f23b7eee2445663d086ff7d73d0",
+    "subject": {
+      "kind": "template",
+      "templateId": "helper"
+    },
+    "summary": "recovery dispatch: one reviewed attempt of 'delegate' on the blocked scope(s) [team] on the reduced original authority"
+  },
+  "teamIncident": null,
+  "decisions": [
+    {
+      "requestId": "ctrl-1j33eqc07kcyor1sx09je0xp",
+      "class": "recovery",
+      "decision": "deny",
+      "resolveStatus": 200,
+      "resolveError": null
+    }
+  ],
+  "delegateValue": {
+    "status": "rejected",
+    "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+    "message": "TeamRuntime: the recovery dispatch was denied by the reviewer — zero durable effect (the operation remains blocked)",
+    "details": {
+      "rootSessionId": "session-prereq-main-prereq-2026-09-29T23-47-50",
+      "status": "BLOCKED_FATAL",
+      "gateReason": "requiredScopeDown",
+      "blockedScopes": [
+        "team"
+      ],
+      "source": "requirement-gate",
+      "controlDecision": "deny",
+      "controlRequestId": "ctrl-1j33eqc07kcyor1sx09je0xp"
+    }
+  }
+}

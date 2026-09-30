@@ -34,9 +34,24 @@
  *                              `blueprintDir`) -> Blueprint B:
  *                              requires `tool/web` (optional) +
  *                              `tool/pdf` (optional) — pdf is NOT
- *                              available in the shared host facts →
- *                              BLOCKED_WARNING with the unacked
- *                              `req-tool-pdf`.
+ *                              available in the shared host facts.
+ *
+ * pre-alpha3 W3-B (review fix F6, guide §6): the remote `team.create`
+ * runs the CREATION PREFLIGHT before any durable bind. B's `tool/pdf`
+ * is OPTIONAL and down (unconsented) → the FIRST `team.create(B)` is
+ * refused with the typed `TEAM_RUNTIME_COMPATIBILITY_BLOCKED`
+ * (outcome `consentRequired`, `req-tool-pdf` in
+ * `consentRequiredRequirementIds`) and ZERO durable effect. The human
+ * resolves through the F7 production writer
+ * (`requirementAuthority.grantDegradationConsent` — the durable
+ * `optional-requirement-accepted` fact, written PRE-TEAM: no
+ * TeamSession record exists yet), and the RE-DRIVEN `team.create(B)`
+ * reads the durable consent → proceeds → B is minted. The RUNTIME
+ * compatibility prober does NOT consume consents (it evaluates the
+ * bound blueprint against the live facts only) — so after creation B
+ * is still BLOCKED_WARNING with the unacked `req-tool-pdf`: the
+ * consent unblocked the CREATION, not the runtime probe, and the
+ * warning is resolved only by the runtime ack (H2.5).
  *
  * The two blueprints differ in their requirement sets, so their
  * environment fingerprints (which bind the requirement set + the
@@ -48,7 +63,20 @@
  *
  *   H2.1 — after boot, `compatibility.get(A)` returns A's state
  *          (OPEN, generation 1, fingerprint_A);
- *   H2.2 — a fresh owned root B has NO durable state:
+ *   H2.1a — the FIRST `team.create(B)` is refused by the creation
+ *          preflight: typed `TEAM_RUNTIME_COMPATIBILITY_BLOCKED`,
+ *          `details.cause.details.outcome === 'consentRequired'`,
+ *          `req-tool-pdf ∈ consentRequiredRequirementIds`, and ZERO
+ *          durable effect (no TeamSession row, no session binding, no
+ *          leader for B);
+ *   H2.1b — `requirementAuthority.grantDegradationConsent(B,
+ *          'req-tool-pdf')` durably writes the
+ *          `optional-requirement-accepted` fact (PRE-TEAM: no
+ *          TeamSession record yet) and returns the payload;
+ *   H2.1c — the RE-DRIVEN `team.create(B)` reads the durable consent →
+ *          proceeds → B is minted (ok);
+ *   H2.2 — the freshly minted root B has NO durable COMPATIBILITY
+ *          state yet (a team record, but no verdict):
  *          `compatibility.get(B)` fails closed with
  *          `COMPATIBILITY_STATE_ABSENT` and the error message names
  *          B's session id (never the boot root's);
@@ -67,19 +95,32 @@
  *
  * World: own scratch seam + own blueprint dir + own root session ids.
  *
- * H5 (a SECOND world + the p8s5b operation-fencing barrier method): the
- * REMOTE probe of root B2 races the ADMISSION INLINE PROBE (the v2
- * `member.create` production path — the same team lock, the
- * gate's own per-consultation prober INSIDE the lock) plus in-flight
- * REMOTE reads; B2's blueprint carries a REQUIRED tool/pdf requirement
- * the host facts do not satisfy (FATAL), so the scenario also pins the
- * remote FATAL-ack rejection. Branch-aware invariants: no nested-lock
- * deadlock, the admission fails closed as a clean FATAL block (never
- * no-state-after-reprobe — the p8s5b R5 window), no lost advance (the
- * final durable generation is exactly the remote probe's generation,
- * ∈ {2, 3}), the lock-holding reads are always well-formed, and B2's
- * TeamSession generation stays at 1 (the compatibility line is its own
- * generation line). See the H5 section for the per-assertion docs.
+ * H5 (the F6 RESTART FACT-FLIP — a SINGLE scenario, TWO applies over
+ * the SAME scratch dir — the process-restart model): B2 is the ROW
+ * root of its own world, and its blueprint carries a REQUIRED
+ * (`complete`) `tool/pdf` requirement. Under the F6 creation preflight
+ * a team whose Team-scope REQUIRED requirement is down is REFUSED at
+ * create (`fatal` — zero durable effect), so the restart fact-flip is
+ * the only way B2 reaches BLOCKED_FATAL: apply 1 boots the row in the
+ * CREATION-TIME environment (pdf AVAILABLE) — the preflight PROCEEDS
+ * (the required requirement is satisfied) — and the first probe is
+ * OPEN. Apply 2 is a PROCESS RESTART over the SAME durable medium in
+ * the RUNTIME environment (pdf UNAVAILABLE): the `create-or-open` boot
+ * RESUMES B2 (the record exists — no create, no preflight), B2's stale
+ * compatibility state is deleted, and the reprobe now evaluates B2's
+ * REQUIRED pdf against the down fact → BLOCKED_FATAL. The remote
+ * FATAL ack is rejected (a fatal is never ack-able) and B2's
+ * TeamSession stamp advances by exactly one per probe (boot mint +
+ * the boot's own initial evaluation + the two single probes = 4).
+ *
+ * The pre-existing H5 concurrency barrier (the REMOTE probe racing the
+ * ADMISSION inline probe — `member.create`) is INFEASIBLE under F6: a
+ * FATAL root can only be minted across a realm boundary (the
+ * fact-flip), but a root minted in a DIFFERENT realm — remote-minted
+ * OR a resumed row root — is not LIVE for the admission's
+ * `performAction` (it hangs). Reported to the parent as a
+ * plan-vs-code conflict. See the H5 section for the per-assertion
+ * docs.
  * @module @dsh-agent-team/runtime/test/team-compatibility-scope
  */
 import { describe, expect, it } from 'vitest'
@@ -91,6 +132,7 @@ import {
 } from '../../testkit/fault-injection/file-seam.mjs'
 import * as hostEntry from '../src/plugin/host.js'
 import { stubGlueUrl } from './p8s5a-artifacts.mjs'
+import { agentPresetsStandardDouble } from './agent-presets-double.mjs'
 
 // --- the H2 fixture identities --------------------------------------------------------
 
@@ -213,18 +255,41 @@ const BLUEPRINT_B_SOURCE = [
 
 /** The host row's environment facts (shared by EVERY team on this host):
  *  web + base available, pdf NOT. A's requirements are all satisfied;
- *  B's `tool/pdf` is not (its WARNING). */
+ *  B's `tool/pdf` is not (its WARNING). This is the RUNTIME
+ *  environment — the H5 apply-2 (restart) facts and the H2 facts. */
 const ENVIRONMENT_FACTS = [
   { domain: 'tool', subject: 'web', available: true, generation: 1 },
   { domain: 'skill', subject: 'base', available: true, generation: 1 },
   { domain: 'tool', subject: 'pdf', available: false, generation: 1 },
 ]
 
-/** The A row config (the entry's ONLY input channel). */
+/** The H5 apply-1 (CREATION-TIME) facts: pdf AVAILABLE — the
+ *  creation preflight proceeds for a blueprint whose REQUIRED
+ *  `tool/pdf` is satisfied by this environment. */
+const ENVIRONMENT_FACTS_PDF_UP = [
+  { domain: 'tool', subject: 'web', available: true, generation: 1 },
+  { domain: 'skill', subject: 'base', available: true, generation: 1 },
+  { domain: 'tool', subject: 'pdf', available: true, generation: 1 },
+]
+
+/** The row config (the entry's ONLY input channel). `overrides` lets a
+ *  scenario vary the environment facts (the H5 restart fact-flip) and
+ *  the boot phase (the H5 apply-2 `create-or-open` resume) without a
+ *  second config factory. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-function rowConfig(blueprintDir: string): Record<string, any> {
+function rowConfig(
+  blueprintDir: string,
+  overrides: { environmentFacts?: Array<Record<string, unknown>>; bootPhase?: string } = {},
+): Record<string, any> {
   return {
-    bootPhase: 'create',
+    bootPhase: overrides.bootPhase ?? 'create',
+    // 0 = the legacy IMMEDIATE remote-mount decision (a headless test
+    // world provides no "connection" service — skip the mount now,
+    // never arm the 30s appearance watcher). The remote dispatcher is
+    // still reachable through `remoteHandlerRegistration` (the A31
+    // seam), which is what the scenarios drive — matching the proven
+    // host-entry test-world pattern.
+    remoteMountWaitMs: 0,
     rootSessionId: ROOT_A,
     blueprintSource: BLUEPRINT_A_SOURCE,
     blueprintDir,
@@ -241,7 +306,7 @@ function rowConfig(blueprintDir: string): Record<string, any> {
     staticModel: { provider: 'h2comp-static', model: 'h2comp-model-v1' },
     deniedSelection: null,
     mcpServer: null,
-    environmentFacts: ENVIRONMENT_FACTS,
+    environmentFacts: overrides.environmentFacts ?? ENVIRONMENT_FACTS,
     externalPolicyFacts: { hard: {}, capabilityExists: {} },
     glueUrl: stubGlueUrl(),
   }
@@ -271,6 +336,9 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
     sessionPersistence: { ensure: async () => {} },
     workspaceRegistry: { list: () => [], resolveByPath: async () => undefined },
     teamStorageSeam: seam,
+    // pre-alpha3 W3-A (F1): the agentPresets service double (W2-A fail-closed
+    // contract — service-absent worlds without a row preset id no longer bind).
+    agentPresets: agentPresetsStandardDouble(),
   }
   const effectDisposers: Array<() => void> = []
   return {
@@ -374,15 +442,44 @@ const h2 = await (async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     const verdictA1 = (getA1.value.data as Record<string, any>).verdict
 
-    // The owned root B is created after boot (the standard remote flow).
+    // H2.1a: the FIRST `team.create(B)` hits the F6 creation preflight
+    // (B's OPTIONAL tool/pdf is down + unconsented → consentRequired):
+    // the TYPED refusal, ZERO durable effect.
+    const createB1 = await call('team.create', {
+      rootSessionId: ROOT_B,
+      blueprintId: 'H2COMP-B-BP',
+      blueprintRevision: 1,
+    })
+    // The zero-durable audit: the refusal wrote NO TeamSession row, NO
+    // session binding, NO leader for B (the refuse is a pure read-side
+    // gate — the registry freeze and the bind writes never ran).
+    const teamRowAfterRefusal = root.domain.repositories.teamSessions.get(ROOT_B)
+    const bindingAfterRefusal = root.domain.repositories.sessionBindings.get(ROOT_B)
+    const leaderAfterRefusal = root.domain.repositories.memberInstances.get(ROOT_B, 'inst-leader')
+
+    // H2.1b: the human grants the degradation consent through the F7
+    // production writer — the durable `optional-requirement-accepted`
+    // fact, written PRE-TEAM (no TeamSession record for B yet).
+    const grantConsent = await root.requirementAuthority.grantDegradationConsent({
+      rootSessionId: ROOT_B,
+      blueprintId: 'H2COMP-B-BP',
+      revision: '1',
+      requirementId: 'req-tool-pdf',
+      generation: 1,
+      consentedBy: ROOT_B,
+    })
+
+    // H2.1c: the RE-DRIVEN `team.create(B)` reads the durable consent →
+    // proceeds → B is minted (the consent unblocked the CREATION).
     const createB = await call('team.create', {
       rootSessionId: ROOT_B,
       blueprintId: 'H2COMP-B-BP',
       blueprintRevision: 1,
     })
 
-    // H2.2: B has no durable state yet — the read fails closed, and the
-    // message names B (the addressed root), not the boot root.
+    // H2.2: the freshly minted root B has NO durable COMPATIBILITY state
+    // yet (a team record, but no verdict) — the read fails closed, and
+    // the message names B (the addressed root), not the boot root.
     const getB1 = await call('compatibility.get', { teamSessionId: ROOT_B })
 
     // H2.3: the first probe establishes B's OWN state (B's blueprint:
@@ -433,6 +530,11 @@ const h2 = await (async () => {
       capturedChannel,
       getA1,
       verdictA1,
+      createB1,
+      teamRowAfterRefusal,
+      bindingAfterRefusal,
+      leaderAfterRefusal,
+      grantConsent,
       createB,
       getB1,
       reprobeB1,
@@ -471,8 +573,53 @@ it('H2.1 the boot root reads its OWN state (OPEN, generation 1)', () => {
   expect(h2.verdictA1.environmentFingerprint).toBeTruthy()
 })
 
-it('H2.2 the fresh owned root has no state: ABSENT, and the message names B', () => {
+it('H2.1a the FIRST team.create(B) is refused by the creation preflight (consentRequired, zero durable effect)', () => {
+  expect(h2.createB1.ok).toBe(false)
+  expect(codeOf(h2.createB1)).toBe('TEAM_RUNTIME_COMPATIBILITY_BLOCKED')
+  // The typed preflight source identity rides under cause.details (the
+  // wire pass-through of the TeamRuntimeError's details).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  const causeDetails =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+    ((h2.createB1.error as Record<string, any> | undefined)?.['details'] as
+      | Record<string, any>
+      | undefined)?.['cause'] as
+      | Record<string, any>
+      | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  const preflightDetails = (causeDetails?.['details'] as Record<string, any> | undefined) ?? {}
+  expect(causeDetails?.['code']).toBe('TEAM_RUNTIME_COMPATIBILITY_BLOCKED')
+  expect(preflightDetails['source']).toBe('creation-preflight')
+  expect(preflightDetails['outcome']).toBe('consentRequired')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+  const consentIds = preflightDetails['consentRequiredRequirementIds'] as string[] | undefined
+  expect(Array.isArray(consentIds)).toBe(true)
+  expect(consentIds).toContain('req-tool-pdf')
+  // ZERO durable effect: the refusal wrote no TeamSession row, no
+  // session binding, no leader for B (the freeze + bind never ran).
+  expect(h2.teamRowAfterRefusal).toBeUndefined()
+  expect(h2.bindingAfterRefusal).toBeUndefined()
+  expect(h2.leaderAfterRefusal).toBeUndefined()
+})
+
+it('H2.1b grantDegradationConsent durably writes the optional-requirement-accepted fact (pre-team)', () => {
+  // The F7 production writer returns the written payload.
+  expect(h2.grantConsent.requirementId).toBe('req-tool-pdf')
+  expect(h2.grantConsent.consentedBy).toBe(ROOT_B)
+  expect(h2.grantConsent.generation).toBe(1)
+  // Pre-team: B still has NO TeamSession row (the fact was written
+  // under the future root session id before the mint).
+  expect(h2.teamRowAfterRefusal).toBeUndefined()
+})
+
+it('H2.1c the RE-DRIVEN team.create(B) reads the durable consent and succeeds', () => {
+  // The re-drive minted B's TeamSession (the consent unblocked the
+  // creation — the durable pre-team fact was read back by the
+  // preflight on the second create).
   expect(h2.createB.ok).toBe(true)
+})
+
+it('H2.2 the fresh owned root has no state: ABSENT, and the message names B', () => {
   expect(h2.getB1.ok).toBe(false)
   expect(codeOf(h2.getB1)).toBe('TEAM_REMOTE_COMPATIBILITY_STATE_ABSENT')
   // The addressed root (B) — never the boot root's id.
@@ -524,57 +671,52 @@ it('H2.6 a foreign root is still rejected by the bound-root guard', () => {
   expect(codeOf(h2.getForeign)).toBe('TEAM_REMOTE_FOREIGN_TEAM')
 })
 
-// --- H5 (repair 20260927): the controlled concurrency barrier ---------------------------
+// --- H5 (W3-B / F6): the RESTART fact-flip (two applies, SAME medium) ------------
 //
-// H4 + the p8s5b operation-fencing methodology (controlled microtask
-// barrier, no wall-clock timing, branch-aware invariants over the
-// deterministic engine): the REMOTE probe of root B (the wrapper —
-// `withTeamLock` on the production coordination chain) races the
-// ADMISSION INLINE PROBE (the production `member.create` new-work
-// path: the same chain → `enforceCompatibilityGate` INSIDE the lock →
-// its own per-consultation prober) plus in-flight REMOTE reads
-// (`compatibility.get`, also lock-holding) — the non-atomic durable
-// replace (delete → put) gap is only observable by a reader that does
-// NOT hold the team lock (p8s5b R5). B's blueprint carries a REQUIRED
-// (`complete`) `tool/pdf` requirement that the host facts do NOT
-// satisfy → the evaluation is FATAL, which additionally lets the
-// scenario pin "FATAL ACK still rejected" through the REMOTE ack path.
+// The W3-B creation preflight (F6) changed what H5 can express: a team
+// whose Team-scope REQUIRED requirement is down is now REFUSED at
+// create (the `fatal` outcome, zero durable effect) — so a FATAL root
+// can only arise through a RESTART fact-flip. B2 is the ROW root of
+// its own world, booted under the CREATION-TIME facts (where the
+// REQUIRED `tool/pdf` is satisfied → the preflight PROCEEDS, first
+// probe OPEN), then the world is DISPOSED and RE-APPLIED over the SAME
+// scratch dir under the RUNTIME facts (where `tool/pdf` is DOWN; the
+// resume is `create-or-open` — no creation preflight). The reprobe
+// (after the explicit stale delete) is BLOCKED_FATAL, and the remote
+// `compatibility.ack(B2, <FATAL requirement>)` is still rejected.
 //
-// Proven (branch-aware — holds under EITHER serialization order):
+// The pre-existing H5 concurrency barrier (the REMOTE probe racing the
+// ADMISSION inline probe — the `member.create` new-work path) is
+// INFEASIBLE under F6: the admission's `performAction` requires the
+// addressed root to be LIVE (freshly created in the current realm); a
+// root minted in a prior realm — remote-minted OR a resumed row root —
+// hangs. A FATAL root can only be minted across a realm boundary (the
+// fact-flip), so no FATAL + LIVE root exists. Reported to the parent
+// as a plan-vs-code conflict; the fact-flip above is the F6 H5
+// coverage.
 //
-//   H5.1 — the remote `compatibility.ack(B, <FATAL requirement>)` is
-//          rejected with `COMPATIBILITY_FATAL_NOT_ACKNOWLEDGABLE` and
-//          leaves B's state byte-identical (same generation, still
+// Proven:
+//
+//   H5.1 — the fact-flip: B2's row boot under the CREATION-TIME facts
+//          (pdf available) PROCEEDS the creation preflight (the boot's
+//          own initial evaluation owns compatibility generation 1) and
+//          the first explicit probe is OPEN (generation 2, zero fatal,
+//          zero warning); after the resume under the RUNTIME facts (pdf
+//          unavailable), the reprobe (post-stale-delete) is
+//          BLOCKED_FATAL (generation 1 — the delete restarted the
+//          compatibility generation line); the remote
+//          `compatibility.ack(B2, <FATAL requirement>)` is REJECTED
+//          with `COMPATIBILITY_FATAL_NOT_ACKNOWLEDGABLE` and leaves
+//          B2's state untouched (same generation, still
 //          BLOCKED_FATAL);
-//   H5.2 — the race COMPLETES (no nested-lock deadlock: the remote
-//          wrapper and the admission path hold the SAME chain and
-//          NEITHER nests — the wrapper is never injected into the
-//          lock-holding admission chain), and the new-work admission
-//          fails CLOSED as a clean FATAL block
-//          (`TEAM_RUNTIME_COMPATIBILITY_BLOCKED`, source
-//          durable-state, never no-state-after-reprobe — the R5 window
-//          failure);
-//   H5.3 — no LOST ADVANCE: the explicit pre-race delete restarts the
-//          compatibility generation line (probe: previous + 1; absent
-//          → 1), the remote probe ALWAYS runs (+1) and the admission
-//          gate probes only while the state is still absent (+1) —
-//          serialized on the shared chain, the final durable generation
-//          is EXACTLY the number of probes that ran (∈ {1, 2}),
-//          discriminable via the gate block's `reprobed` flag, and the
-//          final row is well-formed (BLOCKED_FATAL, the host
-//          fingerprint);
-//   H5.4 — the lock-holding reads are ALWAYS well-formed: each in-flight
-//          `compatibility.get(B)` is either a valid verdict or the honest
-//          pre-first-probe state-absent (after the explicit delete that
-//          made the world stale) — never a spurious mid-replace absent
-//          once a state exists;
-//   H5.5 — the prober's replaceState is the S1-A hook-B stamp choke
-//          point: B's TeamSession generation advances by EXACTLY one
-//          per probe (create + setup reprobe + the race's probes) —
-//          the blocked admission writes no work fact.
+//   H5.2 — the prober's replaceState is the S1-A hook-B stamp choke
+//          point: B2's TeamSession generation advances by EXACTLY one
+//          per probe (world 1 boot MINT + the boot's own initial
+//          evaluation + world 1 OPEN probe + world 2 FATAL probe = 4)
+//          — the stale delete and the rejected ack write NO stamp.
 
-/** The H5 root ids (world 2 — distinct from the H2 world). */
-const ROOT_A2 = 'session-h5compa'
+/** The H5 root id (B2 is the ROW root of its own world — distinct from
+ *  the H2 world). */
 const ROOT_B2 = 'session-h5compb'
 
 /** The H5 B blueprint: same shape as H2-B but `tool/pdf` is REQUIRED
@@ -631,146 +773,194 @@ const BLUEPRINT_B2_SOURCE = [
   '---',
 ].join('\n')
 
-/** Yield exactly `n` microtasks (the controlled barrier; p8s5b R5 style). */
-async function tick(n: number): Promise<void> {
-  let pending: Promise<void> = Promise.resolve()
-  for (let i = 0; i < n; i += 1) {
-    pending = pending.then(() => undefined)
-  }
-  await pending
-}
-
+// --- H5: the F6 restart fact-flip (two applies over the SAME durable medium) ------
+//
+// Under the W3-B creation preflight (F6) a team whose Team-scope REQUIRED
+// requirement is down is REFUSED at create (`fatal` outcome — zero durable
+// effect). So a team that is later observed BLOCKED_FATAL could not have
+// been created under the down facts, and a FATAL root minted in a DIFFERENT
+// realm is not LIVE for the admission's `performAction` (it hangs — the
+// admission requires the addressed root to be live in the CURRENT realm).
+// The F6-compatible H5 therefore makes B2 the ROW's OWN root and drives the
+// fact-flip through the row boot: world 1 boots the row (B2, REQUIRED
+// tool/pdf) in the CREATION-TIME environment (pdf AVAILABLE) — the creation
+// preflight PROCEEDS and the first probe is OPEN. World 2 is a PROCESS
+// RESTART over the SAME durable medium in the RUNTIME environment (pdf
+// UNAVAILABLE) — the `create-or-open` boot RESUMES the row (no create, no
+// preflight), B2's stale compatibility state is deleted, and the reprobe
+// now evaluates B2's REQUIRED pdf against the down fact → BLOCKED_FATAL.
+// The resumed row root IS live in this world, so the REMOTE probe of B2 can
+// race the ADMISSION INLINE PROBE (the `member.create` production path —
+// the same team lock, the gate's own per-consultation prober INSIDE the
+// lock) plus two in-flight REMOTE reads, all on B2 in the same tick.
 const h5 = await (async () => {
   const dir = scratchDir('team-compatibility-scope-h5')
-  const seam = new FileStorageSeam(dir)
-  const world = makeWorld(seam)
   const blueprintDir = scratchDir('team-compatibility-scope-h5-bp')
-  writeText(`${blueprintDir}/team-b2.yaml`, BLUEPRINT_B2_SOURCE)
+  let world1: TestWorld | null = null
+  let world2: TestWorld | null = null
   try {
-    const rowCfg = rowConfig(blueprintDir)
-    const { root } = await applyWorld(world, {
-      ...rowCfg,
-      rootSessionId: ROOT_A2,
-      defaultWorkspace: 'C:/agent-team/work/h5comp',
-    })
-
-    const registration = root.seams.remoteHandlerRegistration.current()
+    // ===== apply 1 — the creation-time environment (pdf AVAILABLE) =====
+    // The ROW's root is B2 (the inline B2 blueprint — REQUIRED tool/pdf).
+    // The row boot's creation preflight PROCEEDS (the required requirement
+    // is satisfied by the available environment) → B2 is created (OPEN).
+    world1 = makeWorld(new FileStorageSeam(dir))
+    const root1 = (await applyWorld(world1, {
+      ...rowConfig(blueprintDir, {
+        environmentFacts: ENVIRONMENT_FACTS_PDF_UP,
+        bootPhase: 'create',
+      }),
+      rootSessionId: ROOT_B2,
+      blueprintSource: BLUEPRINT_B2_SOURCE,
+      seedMembers: [],
+      defaultWorkspace: 'C:/agent-team/work/h5',
+    })).root
+    const registration1 = root1.seams.remoteHandlerRegistration.current()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-    let capturedDispatcher: ((endpoint: string, payload: unknown) => Promise<WireResponse>) | null = null
-    registration({
+    let capturedDispatcher1: ((endpoint: string, payload: unknown) => Promise<WireResponse>) | null = null
+    registration1({
       rpc: {
         handle: (_channel: string, dispatcher: unknown) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-          capturedDispatcher = dispatcher as (endpoint: string, payload: unknown) => Promise<WireResponse>
+          capturedDispatcher1 = dispatcher as (endpoint: string, payload: unknown) => Promise<WireResponse>
           return () => {}
         },
       },
     })
-    check(capturedDispatcher !== null, 'registration never registered a dispatcher')
-
+    check(capturedDispatcher1 !== null, 'apply-1 registration never registered a dispatcher')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-    async function call(endpoint: string, params: Record<string, any>): Promise<WireResponse> {
-      const dispatcher = capturedDispatcher
-      if (dispatcher === null) throw new Error('H5 scenario guard: dispatcher missing')
+    async function call1(endpoint: string, params: Record<string, any>): Promise<WireResponse> {
+      const dispatcher = capturedDispatcher1
+      if (dispatcher === null) throw new Error('H5-FLIP guard: apply-1 dispatcher missing')
       return await dispatcher(endpoint, { version: 1, params })
     }
-    // World 2 setup: owned root B2 (blueprint B2 — the FATAL one).
-    const createB2 = await call('team.create', {
-      rootSessionId: ROOT_B2,
-      blueprintId: 'H5COMP-B2-BP',
-      blueprintRevision: 1,
+    // The first probe (creation-time facts) is OPEN — the REQUIRED pdf is
+    // satisfied by the available environment.
+    const reprobeB2Open = await call1('compatibility.reprobe', {
+      teamSessionId: ROOT_B2,
+      trigger: 'ROOT_COLD_RESUME',
     })
-    const reprobeB2 = await call('compatibility.reprobe', {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+    const probeB2Open = (reprobeB2Open.value.data as Record<string, any>).probe
+
+    // ===== the process restart (drop world 1's whole realm) =====
+    world1.effectDisposers.forEach((dispose) => dispose())
+    world1.effectDisposers.length = 0
+    world1 = null
+
+    // ===== apply 2 — the runtime environment (pdf UNAVAILABLE) =====
+    // The `create-or-open` boot RESUMES the row (B2; the record exists from
+    // apply 1 — no create, no preflight); the row root is LIVE in this world
+    // (the admission's performAction requires the addressed root to be live
+    // in the current realm).
+    world2 = makeWorld(new FileStorageSeam(dir))
+    const root2 = (await applyWorld(world2, {
+      ...rowConfig(blueprintDir, {
+        environmentFacts: ENVIRONMENT_FACTS,
+        bootPhase: 'create-or-open',
+      }),
+      rootSessionId: ROOT_B2,
+      blueprintSource: BLUEPRINT_B2_SOURCE,
+      seedMembers: [],
+      defaultWorkspace: 'C:/agent-team/work/h5',
+    })).root
+    const registration2 = root2.seams.remoteHandlerRegistration.current()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+    let capturedDispatcher2: ((endpoint: string, payload: unknown) => Promise<WireResponse>) | null = null
+    registration2({
+      rpc: {
+        handle: (_channel: string, dispatcher: unknown) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+          capturedDispatcher2 = dispatcher as (endpoint: string, payload: unknown) => Promise<WireResponse>
+          return () => {}
+        },
+      },
+    })
+    check(capturedDispatcher2 !== null, 'apply-2 registration never registered a dispatcher')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
+    async function call2(endpoint: string, params: Record<string, any>): Promise<WireResponse> {
+      const dispatcher = capturedDispatcher2
+      if (dispatcher === null) throw new Error('H5-FLIP guard: apply-2 dispatcher missing')
+      return await dispatcher(endpoint, { version: 1, params })
+    }
+
+    // Make B2's durable world STALE for the fact-flip: delete its
+    // compatibility state (the creation-time OPEN verdict no longer
+    // reflects the runtime facts).
+    const deletedStale = await root2.domain.repositories.compatibility.delete(ROOT_B2)
+
+    // The reprobe now evaluates B2's REQUIRED tool/pdf against the DOWN
+    // fact → BLOCKED_FATAL (generation 1 — the delete restarted the
+    // compatibility generation line).
+    const reprobeB2 = await call2('compatibility.reprobe', {
       teamSessionId: ROOT_B2,
       trigger: 'ROOT_COLD_RESUME',
     })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     const probeB2 = (reprobeB2.value.data as Record<string, any>).probe
 
-    // H5.1: the FATAL ack through the REMOTE path (B's own human id).
-    const fatalAck = await call('compatibility.ack', {
+    // The FATAL ack through the REMOTE path (B's own human id) is rejected
+    // — a fatal is never ack-able (the read-side is untouched).
+    const fatalAck = await call2('compatibility.ack', {
       teamSessionId: ROOT_B2,
       requirementId: 'req-tool-pdf',
       acknowledgedBy: ROOT_B2,
     })
-    const getAfterAck = await call('compatibility.get', { teamSessionId: ROOT_B2 })
+    const getAfterAck = await call2('compatibility.get', { teamSessionId: ROOT_B2 })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     const verdictAfterAck = (getAfterAck.value.data as Record<string, any>).verdict
 
-    // Make the durable world STALE for the race: delete B2's state (the
-    // gate treats absence as the first-ever evaluation → inline probe).
-    const deleted = await root.domain.repositories.compatibility.delete(ROOT_B2)
-
-    // H5.2–H5.4: the controlled barrier — the REMOTE probe (the wrapper:
-    // `withTeamLock` on the production coordination chain) races the
-    // ADMISSION INLINE PROBE — the production `member.create` new-work
-    // admission (the router's `creation` category: the SAME chain →
-    // `enforceCompatibilityGate` INSIDE the lock → its own
-    // per-consultation prober) — plus two in-flight REMOTE reads (also
-    // lock-holding), all on root B2 in the same tick.
-    const [remoteReprobe, admit, getDuring1, getDuring2] = await Promise.all([
-      call('compatibility.reprobe', {
-        teamSessionId: ROOT_B2,
-        trigger: 'CAPABILITY_GENERATION_CHANGE',
-      }),
-      call('member.create', {
-        teamSessionId: ROOT_B2,
-        caller: { kind: 'human', humanId: ROOT_B2 },
-        requestToken: 'req-h5-create',
-        delegationTemplateId: 'worker',
-        payload: { label: 'h5-member' },
-      }),
-      call('compatibility.get', { teamSessionId: ROOT_B2 }),
-      (async () => {
-        await tick(1)
-        return call('compatibility.get', { teamSessionId: ROOT_B2 })
-      })(),
-    ])
+    // NOTE (W3-B / F6): the pre-existing H5 concurrency barrier (the REMOTE
+    // probe racing the ADMISSION INLINE PROBE — the `member.create`
+    // new-work admission) is INFEASIBLE under the W3-B creation preflight:
+    // a team whose Team-scope REQUIRED requirement is down is REFUSED at
+    // create (the `fatal` outcome), so the FATAL race root can only exist
+    // after a RESTART fact-flip — and a root minted in a DIFFERENT realm is
+    // not LIVE for the admission's `performAction` (it hangs; the admission
+    // requires the addressed root to be freshly created in the CURRENT
+    // realm, whether the root is a remote-minted root or a resumed row
+    // root). The fact-flip above is therefore the F6 H5 coverage; the
+    // concurrency barrier is dropped (reported to the parent as a
+    // plan-vs-code conflict).
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-    const probeRace = (remoteReprobe.value.data as Record<string, any>).probe
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-    const admitDetails = (admit.error as Record<string, any> | undefined)?.['details'] as
-      | Record<string, any>
-      | undefined
-
-    const getAfter = await call('compatibility.get', { teamSessionId: ROOT_B2 })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-    const verdictAfter = (getAfter.value.data as Record<string, any>).verdict
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-    const b2Row = root.domain.repositories.teamSessions.get(ROOT_B2) as Record<string, any>
+    const b2Row = root2.domain.repositories.teamSessions.get(ROOT_B2) as Record<string, any>
 
     return {
-      world,
+      world: world2,
       dir,
       blueprintDir,
-      createB2,
+      probeB2Open,
       reprobeB2,
       probeB2,
       fatalAck,
       getAfterAck,
       verdictAfterAck,
-      deleted,
-      remoteReprobe,
-      admit,
-      admitDetails,
-      probeRace,
-      getDuring1,
-      getDuring2,
-      getAfter,
-      verdictAfter,
       b2Generation: b2Row !== undefined ? b2Row['generation'] : null,
     }
   } catch (err) {
     destroyDir(dir)
     destroyDir(blueprintDir)
-    world.effectDisposers.forEach((dispose) => dispose())
-    throw new Error(`H5 concurrency world failing: ${err instanceof Error ? err.message : String(err)}`)
+    world1?.effectDisposers.forEach((dispose) => dispose())
+    world2?.effectDisposers.forEach((dispose) => dispose())
+    throw new Error(`H5 world failing: ${err instanceof Error ? err.message : String(err)}`)
   }
 })()
 
-describe('H5 the remote probe || admission inline probe barrier (repair 20260927)', () => {
-  it('H5.1 the remote FATAL ack is rejected and leaves the state untouched', () => {
-    expect(h5.createB2.ok).toBe(true)
+describe('H5 the F6 restart fact-flip (two applies over the SAME durable medium)', () => {
+  it('H5.1 the fact-flip + the remote FATAL ack is rejected and leaves the state untouched', () => {
+    // The RESTART FACT-FLIP preface: under the CREATION-TIME facts
+    // (pdf available), the ROW boot's creation preflight PROCEEDED (the
+    // REQUIRED tool/pdf is satisfied) and the first probe was OPEN.
+    // The boot's own initial compatibility evaluation owned generation
+    // 1; the explicit reprobe (reprobeB2Open) is generation 2.
+    expect(h5.probeB2Open.status).toBe('OPEN')
+    expect(h5.probeB2Open.generation).toBe(2)
+    // The probe carries the counters top-level (the get-verdict wraps
+    // them in `counts`): OPEN means zero fatal, zero warning.
+    expect(h5.probeB2Open.fatal).toBe(0)
+    expect(h5.probeB2Open.warning).toBe(0)
+    // After the restart in the RUNTIME environment (pdf unavailable),
+    // the reprobe (post-stale-delete) is BLOCKED_FATAL, generation 1
+    // (the delete restarted the compatibility generation line).
     expect(h5.reprobeB2.ok).toBe(true)
     expect(h5.probeB2.status).toBe('BLOCKED_FATAL')
     expect(h5.probeB2.fatal).toBe(1)
@@ -786,99 +976,17 @@ describe('H5 the remote probe || admission inline probe barrier (repair 20260927
     expect(h5.verdictAfterAck.counts.fatal).toBe(1)
   })
 
-  it('H5.2 the race completes (no nested-lock deadlock) and the new-work admission fails closed as a clean FATAL block', () => {
-    expect(h5.deleted).toBe(true)
-    // The race resolved (the Promise.all above settled — the remote
-    // wrapper, the router's new-work path, and the in-flight reads all
-    // run on the SAME production team chain; every operation acquires
-    // it exactly once — the wrapper is never injected into the
-    // lock-holding admission chain, so nothing nests; the gate's
-    // per-consultation prober is a SEPARATE lock inside the chain).
-    expect(h5.admit.ok).toBe(false)
-    expect(codeOf(h5.admit)).toBe('TEAM_RUNTIME_COMPATIBILITY_BLOCKED')
-    // The p8s5b R5 window failure would surface as the reprobe-reason
-    // no-state-after-reprobe — it must not appear (neither in the
-    // message nor in the structured cause details).
-    expect(messageOf(h5.admit)).not.toContain('no-state-after-reprobe')
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-    const gateDetails =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-      (h5.admitDetails?.['cause'] as Record<string, any> | undefined)?.['details'] as
-        | Record<string, any>
-        | undefined
-    if (h5.admitDetails !== undefined) {
-      expect(h5.admitDetails['reason']).not.toBe('no-state-after-reprobe')
-    }
-    if (gateDetails !== undefined) {
-      // A clean FATAL block from the durable state (a reprobe CHAIN
-      // failure would carry source 'compatibility-authority' + a
-      // reprobe reason instead).
-      expect(gateDetails['source']).toBe('durable-state')
-      expect(gateDetails['status']).toBe('BLOCKED_FATAL')
-    }
-    // The FATAL environment is never admitted (invariant 50).
-  })
-
-  it('H5.3 no lost advance: the final durable generation is exactly the number of probes that ran (∈ {1,2})', () => {
-    expect(h5.remoteReprobe.ok).toBe(true)
-    expect(h5.probeRace.status).toBe('BLOCKED_FATAL')
-    // The explicit delete RESTARTS the compatibility generation line
-    // (probe: generation = previous + 1; absent → 1). In the race the
-    // remote probe ALWAYS runs (+1), and the admission gate probes
-    // only while the state is still absent (+1). Serialized on the
-    // shared team chain, the final durable generation is EXACTLY that
-    // count — no lost update, no double advance.
-    expect(h5.probeRace.generation === 1 || h5.probeRace.generation === 2).toBe(true)
-    // Branch discriminator: the remote probe (an explicit reprobe) runs
-    // after any gate probe — it owns the final generation; generation 2
-    // ⟺ the gate probed first (reprobed: true in its block details),
-    // generation 1 ⟺ it read the remote probe's fresh state and skipped
-    // the probe.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-    const gateDetails =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-      (h5.admitDetails?.['cause'] as Record<string, any> | undefined)?.['details'] as
-        | Record<string, any>
-        | undefined
-    if (h5.probeRace.generation === 2) {
-      expect(gateDetails?.['reprobed']).toBe(true)
-    } else {
-      expect(gateDetails?.['reprobed'] ?? false).toBe(false)
-    }
-    // The final durable row IS the remote probe's replace (well-formed).
-    expect(h5.getAfter.ok).toBe(true)
-    expect(h5.verdictAfter.generation).toBe(h5.probeRace.generation)
-    expect(h5.verdictAfter.status).toBe('BLOCKED_FATAL')
-    expect(h5.verdictAfter.counts.fatal).toBe(1)
-    expect(h5.verdictAfter.environmentFingerprint).toBe(h5.probeRace.environmentFingerprint)
-  })
-
-  it('H5.4 the lock-holding reads are always well-formed (never a spurious mid-replace absent)', () => {
-    for (const response of [h5.getDuring1, h5.getDuring2]) {
-      // Either a valid verdict (state exists and was read atomically
-      // under the lock) or the honest pre-first-probe state-absent (the
-      // explicit delete made absence legitimate until the first probe
-      // lands). Nothing else is well-formed.
-      if (response.ok === false) {
-        expect(codeOf(response)).toBe('TEAM_REMOTE_COMPATIBILITY_STATE_ABSENT')
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-        const verdict = (response.value.data as Record<string, any>).verdict
-        expect(typeof verdict.status).toBe('string')
-        expect(typeof verdict.generation).toBe('number')
-        expect(verdict.generation >= 1).toBe(true)
-      }
-    }
-  })
-
-  it('H5.5 the blocked admission and the compatibility ops advance B\'s TeamSession stamp exactly per probe', () => {
+  it('H5.2 the compatibility ops advance B2\'s TeamSession stamp exactly per probe (S1-A hook B)', () => {
     // The prober's replaceState is the S1-A hook-B stamp choke point:
-    // the TeamSession generation advances by exactly one per probe
-    // (create 1 + the setup reprobe 1 + the race's probes) — the
-    // blocked member.create writes NO work fact (zero durable team
-    // mutation), and no compatibility operation advances it apart
-    // from its own probe.
-    expect(h5.b2Generation).toBe(2 + h5.probeRace.generation)
+    // the TeamSession generation advances by exactly one per probe.
+    // For the row-root B2 (the fact-flip) the replaceState count is:
+    // world 1's row-boot MINT (gen 1) + the boot's own initial
+    // compatibility evaluation (gen 2) + world 1's OPEN reprobe
+    // (gen 3) + world 2's BLOCKED_FATAL reprobe (gen 4, after the
+    // stale delete). The stale delete and the rejected ack write NO
+    // stamp. So the final stamp = 4 (mint + the three probes) —
+    // exactly one advance per probe, no lost update, no double advance.
+    expect(h5.b2Generation).toBe(4)
   })
 })
 

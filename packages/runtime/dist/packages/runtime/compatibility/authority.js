@@ -87,7 +87,7 @@ export function createCompatibilityAuthority(options) {
         ...(options.now !== undefined ? { now: options.now } : {}),
         ...(options.onProbe !== undefined ? { onProbe: options.onProbe } : {}),
     });
-    async function admit(admitOptions) {
+    async function evaluate(admitOptions) {
         // 1. READ current environment facts (fresh; a failure is a chain
         //    failure — never an admission).
         let facts;
@@ -96,7 +96,7 @@ export function createCompatibilityAuthority(options) {
         }
         catch (error) {
             return {
-                decision: 'reprobe',
+                chainOk: false,
                 reprobeReason: REPROBE_REASONS.FACTS_UNAVAILABLE,
                 cause: error instanceof Error ? error : undefined,
             };
@@ -115,7 +115,7 @@ export function createCompatibilityAuthority(options) {
             }
             catch (error) {
                 return {
-                    decision: 'reprobe',
+                    chainOk: false,
                     reprobeReason: REPROBE_REASONS.REPROBE_FAILED,
                     fingerprint: liveFingerprint,
                     cause: error instanceof Error ? error : undefined,
@@ -124,7 +124,7 @@ export function createCompatibilityAuthority(options) {
             state = options.repositories.compatibility.get(rootSessionId);
             if (state === undefined) {
                 return {
-                    decision: 'reprobe',
+                    chainOk: false,
                     reprobeReason: REPROBE_REASONS.NO_STATE_AFTER_REPROBE,
                     fingerprint: liveFingerprint,
                 };
@@ -147,18 +147,44 @@ export function createCompatibilityAuthority(options) {
         // closed on a re-probe verdict, never admit on the mismatch.
         if (requestAcks.length === 0 && result.status !== state.status) {
             return {
-                decision: 'reprobe',
+                chainOk: false,
                 reprobeReason: REPROBE_REASONS.STATE_MISMATCH,
                 fingerprint: liveFingerprint,
             };
         }
-        // 6. EXACTLY ONE result per attempt.
-        if (result.status === 'OPEN' || result.status === 'DEGRADED_ACKNOWLEDGED') {
+        // 6. The RAW evaluation (the admit/block mapping is the CONSUMER's job
+        //    — `admit` maps it byte-identically to the pre-PR-E decision).
+        return {
+            chainOk: true,
+            fingerprint: state.fingerprint,
+            status: result.status,
+            generation: state.generation,
+            reprobed,
+            result,
+            facts,
+        };
+    }
+    async function admit(admitOptions) {
+        const evaluation = await evaluate(admitOptions);
+        if (!evaluation.chainOk) {
+            return {
+                decision: 'reprobe',
+                reprobeReason: evaluation.reprobeReason,
+                ...(evaluation.fingerprint !== undefined ? { fingerprint: evaluation.fingerprint } : {}),
+                ...(evaluation.cause !== undefined ? { cause: evaluation.cause } : {}),
+            };
+        }
+        const status = evaluation.status;
+        const fingerprint = evaluation.fingerprint;
+        const generation = evaluation.generation;
+        const reprobed = evaluation.reprobed;
+        const result = evaluation.result;
+        if (status === 'OPEN' || status === 'DEGRADED_ACKNOWLEDGED') {
             return {
                 decision: 'admit',
-                status: result.status,
-                fingerprint: state.fingerprint,
-                generation: state.generation,
+                status,
+                fingerprint,
+                generation,
                 reprobed,
             };
         }
@@ -167,9 +193,9 @@ export function createCompatibilityAuthority(options) {
                 (requirement.acknowledgement === null || requirement.acknowledgement.status !== 'VALID')));
         return {
             decision: 'block',
-            status: result.status,
-            fingerprint: state.fingerprint,
-            generation: state.generation,
+            status,
+            fingerprint,
+            generation,
             reprobed,
             blockingRequirements: blocking.map((requirement) => ({
                 requirementId: requirement.requirementId,
@@ -185,6 +211,7 @@ export function createCompatibilityAuthority(options) {
     return {
         rootSessionId,
         admit,
+        evaluate,
         reprobe: (trigger) => prober.probe(trigger),
         current: () => prober.current(),
         acknowledge: (input) => prober.acknowledge(input),

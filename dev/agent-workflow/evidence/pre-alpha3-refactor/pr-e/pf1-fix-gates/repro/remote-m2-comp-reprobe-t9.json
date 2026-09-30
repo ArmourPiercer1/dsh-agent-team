@@ -1,0 +1,31 @@
+{
+ "type": "server-response",
+ "rpcId": "m2-comp-reprobe-t9-2",
+ "result": {
+  "ok": true,
+  "value": {
+   "data": {
+    "probe": {
+     "recordedAt": "2026-09-29T21:30:15.583Z",
+     "generation": 4,
+     "environmentFingerprint": "fp-v1:496d1037b98199e1",
+     "status": "OPEN",
+     "pass": 1,
+     "warning": 0,
+     "fatal": 0,
+     "unackedWarning": 0,
+     "trigger": "ROOT_COLD_RESUME"
+    }
+   },
+   "provenance": {
+    "origin": "team-remote",
+    "method": "compatibility.reprobe",
+    "endpoint": "compatibility.reprobe",
+    "contractVersion": 1,
+    "requestToken": null,
+    "projectionGeneration": null,
+    "effectSequence": null
+   }
+  }
+ }
+}

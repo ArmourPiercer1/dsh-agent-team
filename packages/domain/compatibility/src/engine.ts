@@ -145,14 +145,31 @@ export function evaluateCompatibility(input: CompatibilityEvaluationInput): Comp
     let detail: string
     if (requirement.complete) {
       outcome = 'FATAL'
-      reasonCode =
-        requirement.type === 'persona'
+      if (requirement.type === 'persona') {
+        // pre-alpha3 PR-E (plan §E.3) — the KIND-convention re-keying: the
+        // frozen CONFLICT code (contracts v1, Architecture §13.5) applies
+        // ONLY when the world PROVIDES a `complete` persona fact — the
+        // actually-mounted preset's effective persona IS a complete
+        // section (the structural §13.5 conflict: Team identity cannot be
+        // composed with it). A BARE world (no persona fact at all, or a
+        // non-complete observation) gets the honest PERSONA_INCOMPATIBLE
+        // (the required kind is simply absent — not a conflict with a
+        // complete section). The world fact's SUBJECT is the OBSERVED
+        // KIND (the persona kind convention), so the key is a typed
+        // subject comparison, never a free-text detail parse.
+        const completePersonaObserved = facts.some(
+          (fact) => fact.domain === 'persona' && fact.subject === 'complete',
+        )
+        reasonCode = completePersonaObserved
           ? COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT
-          : COMPATIBILITY_REASON_CODES.COMPLETE_REQUIREMENT_NOT_MET
-      detail =
-        requirement.type === 'persona'
-          ? `complete:true persona requirement unmet: ${unavailableSubjects.join(', ')} (structural FATAL, not downgradeable)`
-          : `complete:true requirement unmet: ${unavailableSubjects.join(', ')} (structural FATAL, not downgradeable)`
+          : COMPATIBILITY_REASON_CODES.PERSONA_INCOMPATIBLE
+        detail = completePersonaObserved
+          ? `complete:true persona requirement unmet: required kind(s) ${unavailableSubjects.join(', ')} not composable — the world provides a complete persona section (structural FATAL, not downgradeable)`
+          : `complete:true persona requirement unmet: required kind(s) ${unavailableSubjects.join(', ')} not observed — the world provides no persona section that composes (structural FATAL, not downgradeable)`
+      } else {
+        reasonCode = COMPATIBILITY_REASON_CODES.COMPLETE_REQUIREMENT_NOT_MET
+        detail = `complete:true requirement unmet: ${unavailableSubjects.join(', ')} (structural FATAL, not downgradeable)`
+      }
     } else if (requirement.type === 'teamStructure') {
       outcome = 'FATAL'
       reasonCode = COMPATIBILITY_REASON_CODES.STRUCTURAL_CAPABILITY_MISSING

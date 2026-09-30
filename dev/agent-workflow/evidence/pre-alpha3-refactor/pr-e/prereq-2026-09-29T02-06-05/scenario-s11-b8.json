@@ -1,0 +1,38 @@
+{
+  "consentFacts": [
+    {
+      "consentedAt": 1790647571174,
+      "consentedBy": "kit-e12",
+      "generation": 1,
+      "requirementId": "lead.mcp.signal"
+    }
+  ],
+  "disableFacts": [
+    {
+      "at": 1790647821786,
+      "available": false,
+      "templateId": "worker"
+    }
+  ],
+  "compatB8": {
+    "status": "OPEN",
+    "environmentFingerprint": "fp-v1:69e3c2ef91c429c9",
+    "generation": 4,
+    "recordedAt": "2026-09-29T02:12:27.509Z",
+    "counts": {
+      "pass": 2,
+      "warning": 0,
+      "fatal": 0,
+      "unackedWarning": 0,
+      "staleAcknowledgement": 0
+    }
+  },
+  "closedTeam": null,
+  "slot": {
+    "sessionId": "session-prereq-boot-prereq-2026-09-29T02-06-05",
+    "mounted": false,
+    "materialization": "pending",
+    "attempts": null,
+    "reason": null
+  }
+}

@@ -363,6 +363,8 @@ const s5: {
   callerAuthorityDenied: unknown
   compatibilityFatal: unknown
   compatibilityWarning: unknown
+  compatibilityWarningResult: ActivationResult | undefined
+  compatibilityWarningTables: string[]
   quotaTeamMaxInstances: unknown
   quotaTeamMaxConcurrent: unknown
   quotaMemberMaxInstances: unknown
@@ -389,6 +391,8 @@ const s5: {
   callerAuthorityDenied: undefined,
   compatibilityFatal: undefined,
   compatibilityWarning: undefined,
+  compatibilityWarningResult: undefined,
+  compatibilityWarningTables: [],
   quotaTeamMaxInstances: undefined,
   quotaTeamMaxConcurrent: undefined,
   quotaMemberMaxInstances: undefined,
@@ -485,6 +489,12 @@ const s5: {
     await destroyP6T1World(fatalWorld)
   }
   // 5g: compatibility WARNING (optional tool unavailable, no ack)
+  // pre-alpha3 PR-E (plan §E.4) — the product switch: a WARNING (optional
+  // requirement down) is a DEGRADED scope, NOT a block. The member is
+  // started in the degraded scope (work CONTINUES — the old
+  // COMPATIBILITY_BLOCKED_WARNING throw is gone). The probe's compatibility
+  // row is still written (the authority chain is unchanged), plus the full
+  // activation writes.
   const warningWorld = await createP6T1World('p6t1x-s5g', {
     environmentFacts: async () => [
       { domain: 'tool' as const, subject: 'web', available: false, generation: 1 },
@@ -492,14 +502,10 @@ const s5: {
     ],
   })
   try {
-    const before = warningWorld.seam.writeCount
     const warning = await runActivate(warningWorld, makeRequest({ requestToken: 'tok-p6t1-s5g' }))
     s5.compatibilityWarning = warning.error
-    // P8-S4A: the single compatibility authority re-probes inline on the
-    // first-ever evaluation (DevPlan §20.1 trigger 5) — the probe's
-    // compatibility row + generation stamp are written before the BLOCKED
-    // verdict is surfaced (was 0 under the read-only preflight).
-    expect(warningWorld.seam.writeCount - before).toBe(2)
+    s5.compatibilityWarningResult = warning.result
+    s5.compatibilityWarningTables = warningWorld.writesSinceSeed().map((w) => w.table)
   } finally {
     await destroyP6T1World(warningWorld)
   }
@@ -651,8 +657,25 @@ describe('P6-T1 S5: the negative matrix (every reject carries ZERO durable write
     assertActivationCode(s5.compatibilityFatal, ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_FATAL)
     expect(s5.writesCompat).toBe(2)
   })
-  it('step 6: an unavailable OPTIONAL capability without an ack is COMPATIBILITY_BLOCKED_WARNING', () => {
-    assertActivationCode(s5.compatibilityWarning, ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_WARNING)
+  it('step 6: an unavailable OPTIONAL capability without an ack proceeds auto-degraded (pre-alpha3 PR-E product switch)', () => {
+    // pre-alpha3 PR-E (plan §E.4): the WARNING is a DEGRADED scope, NOT a
+    // block — the member is started in the degraded scope (work CONTINUES;
+    // the old COMPATIBILITY_BLOCKED_WARNING throw is gone). The probe's
+    // compatibility row is still written (the authority chain is unchanged)
+    // and the activation sequence is identical to the OPEN happy path (S1).
+    expect(s5.compatibilityWarning).toBe(undefined)
+    expect(s5.compatibilityWarningResult?.kind).toBe('activated')
+    const tables = s5.compatibilityWarningTables.filter((t) => t !== 'ledger')
+    expect(tables).toEqual([
+      'compatibility',
+      'team_sessions',
+      'operations',
+      'operations',
+      'member_instances',
+      'session_bindings',
+      'team_sessions',
+      'operations',
+    ])
   })
   it('step 7: the team instance quota is QUOTA_TEAM_MAX_INSTANCES (probe writes only)', () => {
     // P8-S4A: step 6 (the single compatibility authority) runs before step 7
