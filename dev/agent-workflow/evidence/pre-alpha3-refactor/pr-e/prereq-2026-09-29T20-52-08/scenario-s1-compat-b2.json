@@ -1,0 +1,13 @@
+{
+  "status": "BLOCKED_FATAL",
+  "environmentFingerprint": "fp-v1:4b8c215f701ded19",
+  "generation": 2,
+  "recordedAt": "2026-09-29T20:52:12.406Z",
+  "counts": {
+    "pass": 0,
+    "warning": 0,
+    "fatal": 2,
+    "unackedWarning": 0,
+    "staleAcknowledgement": 0
+  }
+}
