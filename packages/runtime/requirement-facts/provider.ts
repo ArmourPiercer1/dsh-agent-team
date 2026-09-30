@@ -27,6 +27,45 @@
  * (guide §2.3): it feeds the engine for subjects whose live verdict is
  * `unknown` — never for a subject with a live verdict.
  *
+ * **Probeable scoping (D-3 narrowing, 2026-09-30 — parent adjudication,
+ * option 1).** Each observation carries the `probeable` STRUCTURAL fact:
+ * whether a live probe port is registered for its capability type (read
+ * here from the host's probe-port registry through the readiness port's
+ * `hasProbe` query — the single source of truth; a readiness surface
+ * without the query is treated as fully probeable). The D-3 PENDING
+ * reclassification (see `./pending.js`) applies to REQUIRED subjects of
+ * PROBEABLE types whose observation has not settled (the transient
+ * materialization window — B5). A required `unknown` of a NON-probeable
+ * type (no live probe port — structurally unobservable live; in the
+ * current production host: `skill`/`tool`/`modelRoute`/`teamStructure`,
+ * which register no probe port, while `mcpServer` does) keeps the legacy
+ * seed-satisfied 2-state — the documented known gap (the bootstrap seed
+ * is the only source for such types), the pre-W2-A behavior preserved
+ * DELIBERATELY; it is NOT the W2-A "seed never truth" rule, which applies
+ * to probeable domains where the live verdict settles.
+ *
+ * **The PF-2 tri-state (2026-09-30 — parent adjudication, option A).** The
+ * probe port's observation of an UNSETTLED (`unknown`) probeable subject
+ * may carry the `observationState` (see {@link ObservationState}):
+ * `in-flight` — a pending materialization slot exists on a live session
+ * (the B5 transient window; the D-3 typed PENDING stands) — or
+ * `never-observed` — no fiber / pending slot / failed slot on ANY live
+ * session (the capability is STRUCTURALLY not-yet-applicable; the
+ * canonical v1→v2 first-create shape where a team-scope server
+ * materializes only at the leader boundary of an EXISTING team — PENDING
+ * there would be a liveness deadlock, because no observation can settle
+ * short of the create itself). The provider carries the state onto each
+ * observation (only `never-observed` is written; absent = `in-flight`,
+ * the conservative default — the exemption is never inferred) and the ONE
+ * shared classifier predicate in `./pending.js` applies it: a
+ * never-observed required subject keeps the legacy seed-satisfied 2-state
+ * (the bootstrap seed is the only pre-observation source — C.2; E.6
+ * preflight; the seed's TRUTH decides — available `true` → OPEN/proceed,
+ * `false`/absent → FATAL — the exemption is NOT a blanket OPEN), while
+ * every other decision consumer (the probe drop-filter, the creation
+ * preflight, the gate, the activation step) inherits identical behavior
+ * from the same predicate — probe == gate (INV-9.4).
+ *
  * Pure module over injected ports: no I/O, no live Agent, no `node:`
  * builtins. The ports are the I/O boundary (the production host binds them
  * to the glue's live state + the DSH public seams).
@@ -45,6 +84,7 @@ import {
   SUPPLY_AXIS,
   deriveMaterializationStatus,
   type CapabilityObservation,
+  type ObservationState,
   type ProbeVerdict,
 } from '../readiness/index.js'
 import {
@@ -180,6 +220,19 @@ export function createRuntimeRequirementFactsProvider(ports: RequirementFactsPor
         return pending
       }
 
+      // D-3 narrowing (2026-09-30, parent adjudication — option 1): the
+      // deterministic STRUCTURAL fact — whether a live probe port is
+      // registered for the capability type. The single source of truth is
+      // the host's probe-port registry, read through the readiness port's
+      // `hasProbe` query; a readiness surface without the query (test
+      // doubles predating it) is treated as fully probeable — the
+      // conservative default that preserves the D-3 PENDING semantics
+      // wherever the structural fact is unavailable (never a timing- or
+      // observation-count-based guess).
+      const hasProbe = ports.readiness.hasProbe
+      const isProbeable = (type: Requirement['type']): boolean =>
+        hasProbe === undefined ? true : hasProbe(type)
+
       // One materialization view for the whole call (the scope is one).
       const view = await materializationView()
 
@@ -195,6 +248,9 @@ export function createRuntimeRequirementFactsProvider(ports: RequirementFactsPor
             case 'mcpServer': {
               const supply = configured.has(subject) ? SUPPLY_AXIS.configured : SUPPLY_AXIS.unconfigured
               let readiness: ReadinessView
+              // The live probe observation (undefined when unconfigured — the
+              // deterministic supply-unreachable path probes nothing).
+              let live: CapabilityObservation | undefined
               if (supply === SUPPLY_AXIS.unconfigured) {
                 // Unconfigured: the capability CANNOT be live (a structural
                 // configuration defect, not a runtime outage — recovery is
@@ -206,7 +262,7 @@ export function createRuntimeRequirementFactsProvider(ports: RequirementFactsPor
                   reason: `mcp server '${subject}' is not configured on this row`,
                 }
               } else {
-                const live = await probe('mcpServer', subject)
+                live = await probe('mcpServer', subject)
                 readiness = observationToView(live)
               }
               const materialization =
@@ -225,6 +281,13 @@ export function createRuntimeRequirementFactsProvider(ports: RequirementFactsPor
                 readinessSource: readiness.source,
                 readinessObservedAt: readiness.observedAt,
                 ...(readiness.reason !== undefined ? { readinessReason: readiness.reason } : {}),
+                // D-3 narrowing: only NON-probeable types are marked (the
+                // absent field = the probeable default; see types.ts).
+                ...(isProbeable(requirement.type) ? {} : { probeable: false }),
+                // PF-2 tri-state: the probe port's observation state of an
+                // unsettled verdict rides through (only `never-observed` is
+                // written; absent = in-flight — the conservative default).
+                ...(live !== undefined && live.observationState === 'never-observed' ? { observationState: live.observationState } : {}),
                 ...(materialization !== undefined ? { materialization } : {}),
               })
               break
@@ -258,6 +321,12 @@ export function createRuntimeRequirementFactsProvider(ports: RequirementFactsPor
                 readinessSource: readiness.source,
                 readinessObservedAt: readiness.observedAt,
                 ...(readiness.reason !== undefined ? { readinessReason: readiness.reason } : {}),
+                // D-3 narrowing: persona is observed via the substrate
+                // plan, never a readiness probe port — the registry's
+                // structural fact applies (the production host registers
+                // no `persona` probe port: persona-unknown keeps the
+                // legacy 2-state, it is not the transient probe window).
+                ...(isProbeable(requirement.type) ? {} : { probeable: false }),
               })
               break
             }
@@ -275,6 +344,13 @@ export function createRuntimeRequirementFactsProvider(ports: RequirementFactsPor
                 readinessSource: readiness.source,
                 readinessObservedAt: readiness.observedAt,
                 ...(readiness.reason !== undefined ? { readinessReason: readiness.reason } : {}),
+                // D-3 narrowing: tool/skill/modelRoute/teamStructure carry
+                // the registry's structural fact (absent = probeable).
+                ...(isProbeable(requirement.type) ? {} : { probeable: false }),
+                // PF-2 tri-state: the probe port's observation state of an
+                // unsettled verdict rides through (only `never-observed` is
+                // written; absent = in-flight — the conservative default).
+                ...(live.observationState === 'never-observed' ? { observationState: live.observationState } : {}),
               })
               break
             }

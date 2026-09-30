@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime
+
+ ✓ test/requirement-d1-d3-decision-scoping.test.ts (42 tests) 6ms
+
+ Test Files  1 passed (1)
+      Tests  42 passed (42)
+   Start at  07:42:31
+   Duration  846ms (transform 538ms, setup 0ms, import 760ms, tests 6ms, environment 0ms)
+

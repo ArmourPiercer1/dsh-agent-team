@@ -470,6 +470,21 @@ export function createTeamRuntime(options) {
                             : options.templateEnvironmentFacts !== undefined
                                 ? { templateEnvironmentFacts: options.templateEnvironmentFacts }
                                 : {}),
+                        // D-3 (2026-09-30) — the full-resolution read ports (the
+                        // atomic observations + feed pair): present → the gate
+                        // consumes THIS source (the facts-only ports above are then
+                        // not consulted) and the PENDING rule is live; absent →
+                        // legacy byte-identical (the PENDING rule is off).
+                        ...(options.environmentFactsReadForBlueprint !== undefined
+                            ? {
+                                environmentFactsRead: () => options.environmentFactsReadForBlueprint(blueprint),
+                            }
+                            : {}),
+                        ...(options.templateEnvironmentFactsReadForBlueprint !== undefined
+                            ? {
+                                templateEnvironmentFactsRead: (templateId) => options.templateEnvironmentFactsReadForBlueprint(blueprint, templateId),
+                            }
+                            : {}),
                         ...(options.now !== undefined ? { now: options.now } : {}),
                     }, impact);
                     return executeEffectLocked(ctx);

@@ -18,5 +18,6 @@
  * @module @dsh-agent-team/runtime/requirement-facts
  */
 export { createRuntimeRequirementFactsProvider, } from './provider.js';
+export { classifyScopeReadiness, dropSeedFilledPendingFacts, } from './pending.js';
 export { assertRequirementFactScope, } from './types.js';
 //# sourceMappingURL=index.js.map

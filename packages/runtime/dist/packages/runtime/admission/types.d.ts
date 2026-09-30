@@ -652,6 +652,25 @@ export interface TeamRuntimeOptions {
      * byte-identical).
      */
     readonly templateEnvironmentFactsForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint, templateId: string) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>;
+    /**
+     * D-3 fix (2026-09-30, adjudicated product semantics — fail-closed
+     * PENDING) — the per-BLUEPRINT FULL-RESOLUTION live read (the atomic
+     * 3-state observations + 2-state feed pair of `resolveFacts`). When
+     * PRESENT the requirement gate consumes THIS source: the feed half
+     * drives the compatibility engine, the observations (the 3-state truth)
+     * drive the PENDING rule (a REQUIRED capability whose live observation
+     * is UNKNOWN is a typed PENDING block — never a seed-filled PASS; the
+     * static seed remains bootstrap/display only, guide §2.5). When ABSENT
+     * the facts-only ports stand (byte-identical; the PENDING rule is off —
+     * no live probe ⇒ no pending materialization).
+     */
+    readonly environmentFactsReadForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
+    /**
+     * D-3 fix (2026-09-30) — the per-BLUEPRINT per-template FULL-RESOLUTION
+     * live read (the twin of `templateEnvironmentFactsForBlueprint`; same
+     * presence/absence semantics).
+     */
+    readonly templateEnvironmentFactsReadForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint, templateId: string) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
     /** The external hard facts (effective-config read, stage 2). */
     readonly externalPolicyFacts: () => Promise<import('../../domain/policy/src/index.js').ExternalPolicyFacts>;
     /** The deployment default model (the `staticModel`) — REQUIRED (PR #30

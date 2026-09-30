@@ -35,6 +35,7 @@ export {
   isGateReason,
   isRequirementOutcome,
   isScopeState,
+  PENDING_BLOCK,
   PREFLIGHT_OUTCOME_VALUES,
   PREFLIGHT_OUTCOMES,
   REQUIREMENT_LEVELS,

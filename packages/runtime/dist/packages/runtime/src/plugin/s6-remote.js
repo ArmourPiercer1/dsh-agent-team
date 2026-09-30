@@ -57,6 +57,7 @@ import { canonicalJsonStringify } from '../../../contracts/src/index.js';
 import { committedPolicyState } from '../../effective-policy/index.js';
 import { PROBE_TRIGGER_VALUES, compatibilityRequirementsOf, } from '../../compatibility/index.js';
 import { evaluateCompatibility, parseEnvironmentFacts, } from '../../../domain/compatibility/src/index.js';
+import { dropSeedFilledPendingFacts } from '../../requirement-facts/index.js';
 import { sha256Hex } from '../../../domain/blueprint/src/index.js';
 import { DEFAULT_POLICY_STATE_ID } from '../../../domain/policy/src/index.js';
 // --- the stable S6 remote error codes (the typed domain errors) ----------------------
@@ -905,9 +906,33 @@ export function createS6RemotePorts(options) {
                 // requested blueprint (a configured + healthy live server probed
                 // as a spurious FATAL). A legacy no-argument thunk ignores the
                 // argument (byte-identical on a single-blueprint host).
-                const hostFacts = (await options.environmentFacts?.(resolved)) ?? [];
+                const requirements = compatibilityRequirementsOf(resolved);
+                let hostFacts;
+                if (options.environmentFactsRead !== undefined) {
+                    // D-3 (2026-09-30) + PF-2 tri-state (2026-09-30 option A) — the
+                    // full-resolution read (the atomic observations + feed pair of
+                    // ONE resolveFacts call): drop the SEED-FILLED facts of every
+                    // REQUIRED requirement whose live observation is `unknown` AND
+                    // IN-FLIGHT (the shared classifier predicate) — the engine then
+                    // reports a missing required fact (FATAL → BLOCKED_FATAL), the
+                    // faithful, STRICTER prediction of the post-creation gate's
+                    // typed PENDING block (INV-9.4; strict = the documented safe
+                    // direction; the persona domain is untouched — U5 FROZEN). A
+                    // NEVER-OBSERVED required unknown keeps its seed-filled fact —
+                    // the probe consumes the seed truth exactly as the gate does
+                    // (the first-create bootstrap exemption; probe == gate).
+                    const resolution = await options.environmentFactsRead(resolved);
+                    hostFacts = dropSeedFilledPendingFacts({
+                        feed: resolution.environmentFacts,
+                        observations: resolution.observations,
+                        requirements,
+                    });
+                }
+                else {
+                    hostFacts = (await options.environmentFacts?.(resolved)) ?? [];
+                }
                 const result = evaluateCompatibility({
-                    requirements: compatibilityRequirementsOf(resolved),
+                    requirements,
                     environmentFacts: mergeProbeEnvironmentFacts(hostFacts, callerFacts),
                 });
                 return result;

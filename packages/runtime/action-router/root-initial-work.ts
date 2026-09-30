@@ -847,6 +847,28 @@ export interface RootInitialWorkClosureInput {
     blueprint: TeamBlueprint,
     templateId: string,
   ) => Promise<readonly EnvironmentFact[]>
+  /**
+   * D-3 fix (2026-09-30, adjudicated product semantics — fail-closed
+   * PENDING) — the per-BLUEPRINT FULL-RESOLUTION live read (the atomic
+   * 3-state observations + 2-state feed pair of `resolveFacts`). Present →
+   * the Phase A gate consumes THIS source (the facts-only ports are not
+   * consulted) and the PENDING rule is live (a REQUIRED capability whose
+   * live observation is UNKNOWN is a typed PENDING block — never a
+   * seed-filled PASS). Absent → legacy byte-identical (the PENDING rule
+   * is off).
+   */
+  readonly environmentFactsReadForBlueprint?: (
+    blueprint: TeamBlueprint,
+  ) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>
+  /**
+   * D-3 fix (2026-09-30) — the per-BLUEPRINT per-template FULL-RESOLUTION
+   * live read (the twin of `templateEnvironmentFactsForBlueprint`; same
+   * presence/absence semantics).
+   */
+  readonly templateEnvironmentFactsReadForBlueprint?: (
+    blueprint: TeamBlueprint,
+    templateId: string,
+  ) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>
   /** The deterministic clock (ISO-8601). */
   readonly now: () => string
   /** The live Root input delivery port (the glue's `deliverRootWork`). */
@@ -959,6 +981,22 @@ export function createAdmitRootInitialWork(
               : input.templateEnvironmentFacts !== undefined
                 ? { templateEnvironmentFacts: input.templateEnvironmentFacts }
                 : {}),
+            // D-3 (2026-09-30) — the full-resolution read ports (the
+            // atomic observations + feed pair): present → the gate
+            // consumes THIS source and the PENDING rule is live; absent
+            // → legacy byte-identical (the PENDING rule is off).
+            ...(input.environmentFactsReadForBlueprint !== undefined
+              ? {
+                  environmentFactsRead: () =>
+                    input.environmentFactsReadForBlueprint!(args.blueprint),
+                }
+              : {}),
+            ...(input.templateEnvironmentFactsReadForBlueprint !== undefined
+              ? {
+                  templateEnvironmentFactsRead: (templateId: string) =>
+                    input.templateEnvironmentFactsReadForBlueprint!(args.blueprint, templateId),
+                }
+              : {}),
             now: input.now,
           },
           normalWorkImpact(leaderTemplateScopeRefs(args.blueprint)),

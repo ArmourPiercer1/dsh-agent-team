@@ -28,7 +28,9 @@
  * (`source` — which seam produced it; `observedAt` — ISO-8601; `reason` —
  * optional structured diagnostic). The `reason`/`observedAt`/`source` are
  * provenance only — they NEVER enter any fingerprint input (the same
- * discipline the domain applies to `EnvironmentFact.detail`).
+ * discipline the domain applies to `EnvironmentFact.detail`). An unsettled
+ * (`unknown`) verdict may carry the optional `observationState` (the PF-2
+ * tri-state — in-flight vs never-observed; see {@link OBSERVATION_STATES}).
  *
  * Pure module: no I/O, no live Agent, no `node:` builtins. Probes run
  * through the injected ports of {@link ./provider.js}; the observation is
@@ -68,6 +70,58 @@ export declare const PROBE_VERDICT_VALUES: readonly string[];
  */
 export declare function assertProbeVerdict(value: unknown, path: string): ProbeVerdict;
 /**
+ * The closed 2-state OBSERVATION STATE of an unsettled (`unknown`) readiness
+ * verdict — the PF-2 tri-state split (2026-09-30, parent adjudication,
+ * option A — the first-create bootstrap exemption). `unknown` alone cannot
+ * distinguish the two structurally different pre-observation worlds:
+ *
+ * - `in-flight` — a PENDING materialization slot EXISTS on a live session
+ *   (a raw materialization slot without a settled fiber, or unapplied
+ *   durable records / a template grant that drive a mount at the next
+ *   boundary — the B5 transient window). The observation is IN PROGRESS:
+ *   the typed PENDING block stands (genuinely recheckable — plan §C.3
+ *   fail-closed scope, C.5 "pending is a real materialization state");
+ * - `never-observed` — NO fiber / NO pending slot / NO failed slot on ANY
+ *   live session (the capability is STRUCTURALLY not-yet-applicable — the
+ *   canonical v1→v2 first-create shape: a team-scope server that only
+ *   materializes at the leader boundary of an EXISTING team). No observation
+ *   can settle it short of the create itself (a liveness deadlock if
+ *   PENDING); the bootstrap seed is the only pre-observation source (C.2 —
+ *   the seed as static bootstrap source) and its truth decides: the
+ *   legacy seed-satisfied 2-state stands for this state ONLY (E.6
+ *   preflight; the exemption is the seed's, never a blanket OPEN).
+ *
+ * The state rides on the observation (provenance of the unsettled verdict —
+ * like `reason`/`observedAt`, never a fingerprint input) and is consumed by
+ * the ONE shared classifier predicate in the requirement-facts layer
+ * (`classifyScopeReadiness` / `dropSeedFilledPendingFacts`), so every
+ * decision consumer (the probe, the creation preflight, the gate, the
+ * activation step) inherits identical behavior: probe == gate (INV-9.4).
+ *
+ * A SETTLED verdict (`reachable`/`unreachable`) carries NO observation
+ * state (malformed if present); an `unknown` WITHOUT the field defaults to
+ * IN-FLIGHT (the conservative D-3 default — the exemption is never
+ * inferred, only observed).
+ */
+export declare const OBSERVATION_STATES: {
+    /** A pending materialization slot exists on a live session (in progress). */
+    readonly inFlight: "in-flight";
+    /** No fiber / pending slot / failed slot on any live session (not yet applicable). */
+    readonly neverObserved: "never-observed";
+};
+/** One of the closed observation states of an unsettled verdict. */
+export type ObservationState = (typeof OBSERVATION_STATES)[keyof typeof OBSERVATION_STATES];
+/** Every observation-state value, for closed-set membership tests. */
+export declare const OBSERVATION_STATE_VALUES: readonly string[];
+/**
+ * Assert that `value` is a closed observation state.
+ * @param value - the raw state.
+ * @param path - pointer used in the error details.
+ * @returns the typed state.
+ * @throws `MALFORMED_DTO` for any value outside the 2-state vocabulary.
+ */
+export declare function assertObservationState(value: unknown, path: string): ObservationState;
+/**
  * The known observation *sources* — which seam produced a readiness
  * observation. The field itself is a free-form string (a new seam may add a
  * new source without changing the vocabulary), but these are the closed set
@@ -106,6 +160,14 @@ export interface CapabilityObservation {
     readonly reason?: string;
     /** Optional probe generation (staleness/generation, §14.3 E). */
     readonly generation?: number;
+    /**
+     * The observation state of an UNSETTLED verdict (the PF-2 tri-state,
+     * 2026-09-30 — parent adjudication option A; see {@link OBSERVATION_STATES}).
+     * Present ONLY with the `unknown` verdict (malformed otherwise); ABSENT
+     * with `unknown` = `in-flight` (the conservative D-3 default — the
+     * first-create bootstrap exemption is never inferred, only observed).
+     */
+    readonly observationState?: ObservationState;
 }
 /**
  * The (capabilityType, capabilityName) identity of one probed capability —
@@ -121,7 +183,9 @@ export interface CapabilityIdentity {
  * @param path - pointer used in the error details (defaults to `$`).
  * @returns the frozen observation.
  * @throws `MALFORMED_DTO` for unknown fields, an unknown verdict, a non-§27.1
- *   capability type, or a malformed identity/source/observedAt/generation.
+ *   capability type, or a malformed identity/source/observedAt/generation,
+ *   or an `observationState` outside the closed 2-state set (or with a
+ *   settled verdict).
  */
 export declare function parseCapabilityObservation(value: unknown, path?: string): CapabilityObservation;
 /**
@@ -140,6 +204,8 @@ export declare function createCapabilityObservation(args: {
     readonly observedAt: string;
     readonly reason?: string;
     readonly generation?: number;
+    /** The observation state of an unsettled verdict (see {@link OBSERVATION_STATES}). */
+    readonly observationState?: ObservationState;
 }): CapabilityObservation;
 /** The collision-proof (capabilityType, capabilityName) registry key. */
 export declare function capabilityKey(capabilityType: CapabilityType, capabilityName: string): string;

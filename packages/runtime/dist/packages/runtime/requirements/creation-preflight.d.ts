@@ -64,6 +64,7 @@
 import type { EnvironmentFact } from '../../domain/compatibility/src/index.js';
 import type { TeamBlueprint } from '../../domain/blueprint/src/index.js';
 import type { DegradationConsent, PreflightResult, RequirementVerdict, ScopeVerdict, TemplateAvailability } from './types.js';
+import { type RequirementFactsResolution } from '../requirement-facts/index.js';
 import type { OptionalRequirementAccepted, TemplateAvailabilitySet } from './facts.js';
 /** The narrow durable-write port of the requirement-fact ledger. */
 export interface RequirementFactLedger {
@@ -82,6 +83,28 @@ export interface CreationScopeEvaluationOptions {
      * the same fresh team-scope facts read (the legacy behavior).
      */
     readonly templateEnvironmentFacts?: (templateId: string) => Promise<readonly EnvironmentFact[]>;
+    /**
+     * D-3 (2026-09-30, adjudicated product semantics — fail-closed PENDING)
+     * — the Team-scope FULL-RESOLUTION live read (the atomic 3-state
+     * observations + 2-state feed pair). PRESENT → the preflight consumes
+     * THIS source (the feed drives the engine, the observations drive the
+     * PENDING rule: a REQUIRED capability whose live observation is UNKNOWN
+     * is a typed `pending` outcome — never a seed-filled PASS). ABSENT →
+     * the facts-only port stands (byte-identical; the PENDING rule is off).
+     */
+    readonly environmentFactsRead?: () => Promise<RequirementFactsResolution>;
+    /**
+     * D-3 (2026-09-30) — the per-TEMPLATE FULL-RESOLUTION live read (the
+     * twin of `templateEnvironmentFacts`; same presence/absence semantics).
+     */
+    readonly templateEnvironmentFactsRead?: (templateId: string) => Promise<RequirementFactsResolution>;
+}
+/** The captured full-resolution reads of one creation-scope evaluation. */
+export interface CreationScopeLiveReads {
+    /** The Team scope's full resolution (present when the read port ran). */
+    readonly team?: RequirementFactsResolution;
+    /** The per-TEMPLATE full resolutions (keyed by templateId). */
+    readonly templates: ReadonlyMap<string, RequirementFactsResolution>;
 }
 /** The per-scope verdicts of one creation-scope evaluation. */
 export interface CreationScopeEvaluation {
@@ -89,6 +112,13 @@ export interface CreationScopeEvaluation {
     readonly scopeVerdicts: Readonly<Record<string, readonly RequirementVerdict[]>>;
     /** The classified scope verdicts (ready / degraded / blocked). */
     readonly scopeStates: readonly ScopeVerdict[];
+    /**
+     * D-3 (2026-09-30) — the captured full-resolution reads (present only
+     * when a read port was supplied — the PENDING rule's 3-state input; the
+     * pair is ATOMIC: the observations always accompany the facts the
+     * verdicts were computed from).
+     */
+    readonly liveReads?: CreationScopeLiveReads;
 }
 /**
  * Evaluate EVERY scope of the blueprint against ONE fresh facts read — the
@@ -115,10 +145,44 @@ export interface CreationPreflightOptions extends CreationScopeEvaluationOptions
  * Run the creation preflight (guide §6.2): evaluate ALL scopes on fresh
  * runtime facts, fold in the durable consents + template availability, and
  * classify through the PR-E {@link startupPreflight} (the pure classifier,
- * unchanged).
+ * unchanged) — then apply the D-3 (2026-09-30) PENDING overlay when a
+ * full-resolution read was captured.
+ *
+ * D-3 overlay (the same adjudicated fail-closed PENDING semantics as the
+ * requirement gate / activation provider — plan §C.3 "否则 unresolved fail
+ * closed；禁止 false OPEN" + E.3 "no false OPEN" + E.11 negative #10
+ * "readiness 重置 unknown" + C.5): a REQUIRED applicable requirement whose
+ * LIVE observation is UNKNOWN and IN-FLIGHT (a pending materialization slot
+ * exists on a live session — the B5 transient window) is a typed `pending`
+ * outcome — NEVER a seed-filled PASS (the static seed remains
+ * bootstrap/display only, guide §2.5). PF-2 tri-state (2026-09-30 — parent
+ * adjudication option A): an UNKNOWN that is NEVER-OBSERVED (no fiber /
+ * pending slot / failed slot on ANY live session — structurally
+ * not-yet-applicable, the first-create bootstrap window) is NOT pending —
+ * its seed-satisfied 2-state stands and the seed's TRUTH decides (C.2/E.6;
+ * available `true` → `proceed`/`consentRequired` per the other rules,
+ * `false`/absent → `fatal` — the exemption is not a blanket OPEN); the
+ * overlay reads the ONE shared classifier predicate, so the probe, the
+ * gate and the preflight classify identically (probe == gate, INV-9.4).
+ * Precedence
+ * (documented judgment): down-based outcomes stand first — a CONFIRMED
+ * unreachable required wins (`fatal` / `fixOrDisable`, the actionable
+ * ones); a down outcome whose blocked scope has NO confirmed down (a
+ * no-seed unknown the engine reported as a missing FATAL) is RECLASSIFIED
+ * to `pending`; otherwise `pending` beats `consentRequired` / `proceed`.
+ * Disabled templates are RESOLVED (their work will not start) — excluded
+ * from the pending partition. RECHECKABLE by construction: PENDING now
+ * means IN-FLIGHT ONLY (the PF-2 product-message correction — every
+ * PENDING the decision paths emit is genuinely recheckable at the next
+ * boundary; the never-observed deadlock state no longer PENDINGs), the
+ * block is a verdict, not a write (zero durable effect); the re-driven
+ * creation
+ * re-evaluates on a fresh read (the "重新 preflight"), and the manual
+ * `compatibility.reprobe` seam clears a stuck slot.
  *
  * @returns the closed {@link PreflightResult} (`proceed` / `consentRequired`
- *   / `fixOrDisable` / `fatal`).
+ *   / `fixOrDisable` / `fatal` / `pending` — the last only with a
+ *   full-resolution read).
  */
 export declare function runCreationPreflight(options: CreationPreflightOptions): Promise<PreflightResult>;
 /**

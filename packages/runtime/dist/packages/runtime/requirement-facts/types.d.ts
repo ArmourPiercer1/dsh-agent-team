@@ -47,7 +47,21 @@
  * - the row `config.environmentFacts` is a BOOTSTRAP/STATIC SEED only
  *   (the `seedFacts` port): it feeds the engine only for subjects whose
  *   live verdict is `unknown` (no live observation yet), and it NEVER
- *   overrides a live verdict (reachable/unreachable).
+ *   overrides a live verdict (reachable/unreachable);
+ * - D-3 narrowing (2026-09-30, parent adjudication — option 1): the
+ *   `probeable` structural fact on each observation (the host's
+ *   probe-port registry read at observation time via the readiness port's
+ *   `hasProbe` query; absent = probeable) scopes the D-3 PENDING
+ *   reclassification (see `./pending.js`) to PROBEABLE required types
+ *   whose observation has not settled (the transient materialization
+ *   window). A required `unknown` of a NON-probeable type — no live probe
+ *   port registered (the documented known gap; the current production
+ *   host registers only `mcpServer`, so `skill`/`tool`/`modelRoute`/
+ *   `teamStructure` — and the substrate-plan-observed `persona` — are
+ *   non-probeable) — is structurally unobservable live and keeps the
+ *   legacy seed-satisfied 2-state (the pre-W2-A behavior preserved
+ *   DELIBERATELY; NOT the W2-A "seed never truth" rule, which applies to
+ *   probeable domains where the live verdict settles).
  *
  * The 3-state readiness (`unknown | reachable | unreachable`) is the
  * readiness module's vocabulary (plan §C.4) — `unknown` is a distinct
@@ -63,7 +77,7 @@
  * @module @dsh-agent-team/runtime/requirement-facts/types
  */
 import type { EnvironmentFact, RequirementInput, RequirementType } from '../../domain/compatibility/src/index.js';
-import type { CapabilityReadinessProvider, MaterializationSlot, MaterializationStatus, MemberLiveness, ProbeVerdict, SupplyAxis } from '../readiness/index.js';
+import type { CapabilityReadinessProvider, MaterializationSlot, MaterializationStatus, MemberLiveness, ObservationState, ProbeVerdict, SupplyAxis } from '../readiness/index.js';
 import type { RuntimeSubstratePlan } from '../agent-setup/preset/index.js';
 /**
  * The boundary scope of one fact resolution (guide §2.3).
@@ -123,6 +137,37 @@ export interface RequirementObservation {
     readonly readinessObservedAt: string;
     /** Optional readiness diagnostic (provenance). */
     readonly readinessReason?: string;
+    /**
+     * D-3 narrowing (2026-09-30, parent adjudication — option 1): whether a
+     * live probe port is registered for this capability type — the
+     * deterministic STRUCTURAL fact the provider reads from the host's
+     * probe-port registry (the readiness port's `hasProbe` query — the
+     * single source of truth; consumers never duplicate it as a type list).
+     * ABSENT = probeable (the conservative default: observation records
+     * produced before the query existed, and test doubles without it, keep
+     * the full D-3 PENDING semantics). Only `false` is written — for a
+     * REQUIRED subject, a live `unknown` of a NON-probeable type is not the
+     * transient materialization window (the type is structurally
+     * unobservable live — the documented known gap) and keeps the legacy
+     * seed-satisfied 2-state instead of the typed PENDING.
+     */
+    readonly probeable?: boolean;
+    /**
+     * PF-2 tri-state (2026-09-30, parent adjudication — option A): the
+     * observation state of an UNSETTLED (`readiness: unknown`) observation of
+     * a probeable type — the split of the D-3 PENDING window (the
+     * {@link ObservationState} closed set). Only `never-observed` is written
+     * (no fiber / pending slot / failed slot on ANY live session — the
+     * structurally not-yet-applicable first-create bootstrap window; the
+     * bootstrap seed's truth decides — C.2/E.6, NOT a blanket OPEN). ABSENT =
+     * `in-flight` (the conservative default: a pending materialization slot
+     * exists or cannot be excluded — the typed PENDING stands; observation
+     * records produced before the state existed, and test doubles without it,
+     * keep the full D-3 PENDING semantics). Consumed by the ONE shared
+     * classifier predicate in the requirement-facts layer — every decision
+     * consumer inherits identical behavior (probe == gate, INV-9.4).
+     */
+    readonly observationState?: ObservationState;
     /** The ephemeral mount state (`mcpServer`, the template/instance boundary only). */
     readonly materialization?: MaterializationStatus;
 }

@@ -44,6 +44,7 @@ import { DEFAULT_CONTEXT_POLICY, isContextPolicy, resolveDelegationTarget, resol
 import { evaluateCompatibility, } from '../../domain/compatibility/src/index.js';
 import { classifyScope, } from '../requirements/evaluator.js';
 import { projectVerdicts, scopeRequirementInputsOf, } from '../requirements/scope-requirements.js';
+import { classifyScopeReadiness, } from '../requirement-facts/index.js';
 import { createProvisioningCoordinator, } from '../../storage/provisioning/index.js';
 import { OPERATION_PHASES, isTeamDomainError, } from '../../storage/schema/index.js';
 import { TeamAgentBinder, createTeamDomainReadHandle, } from '../agent-setup/binder/index.js';
@@ -487,11 +488,31 @@ export function createActivationProvider(ports) {
         // acknowledgements` travel as transient admission input for THIS
         // attempt only (never persisted; durable acks are written by the
         // authority's `acknowledge`).
+        // D-1 + D-3 (2026-09-30) — the step-6 TEAM-scope feed source, in
+        // precedence order:
+        //   1. the D-3 FULL resolution (the atomic facts + 3-state-observations
+        //      pair of ONE `resolveFacts` call) — the capturing thunk keeps the
+        //      pair atomic across the authority's inline re-probe re-reads
+        //      (the observations always accompany the facts the verdict was
+        //      computed from);
+        //   2. the D-1 per-TARGET-blueprint facts thunk (the PF-1 seam — no
+        //      observations, hence no PENDING rule);
+        //   3. the legacy no-argument boot-scoped thunk (byte-identical
+        //      fallback — factory / single-blueprint worlds; deviations (b)/(c)).
+        let teamRead;
+        const teamFactsForAuthority = ports.environmentFactsReadForBlueprint !== undefined
+            ? () => ports.environmentFactsReadForBlueprint(blueprint).then((resolution) => {
+                teamRead = resolution;
+                return resolution.environmentFacts;
+            })
+            : ports.environmentFactsForBlueprint !== undefined
+                ? () => ports.environmentFactsForBlueprint(blueprint)
+                : ports.environmentFacts;
         const authority = createCompatibilityAuthority({
             repositories,
             rootSessionId,
             blueprint,
-            environmentFacts: ports.environmentFacts,
+            environmentFacts: teamFactsForAuthority,
             ...(ports.now !== undefined ? { now: ports.now } : {}),
         });
         const admission = await authority.evaluate({
@@ -522,10 +543,30 @@ export function createActivationProvider(ports) {
         const scopeInputs = scopeRequirementInputsOf(blueprint);
         const targetTemplateInputs = blueprint.schemaVersion === 2 ? scopeInputs.templates[createTemplateId] : undefined;
         const templateScopeKey = `template:${createTemplateId}`;
+        // D-1 + D-3 (2026-09-30) — the v2 target-template scope feed, in the
+        // SAME precedence order as the team scope: the D-3 full resolution
+        // (atomic pair), then the D-1 per-blueprint template feed, then the
+        // legacy reuse of the authority chain's team-scope facts read (the
+        // pre-D-1 behavior — a multi-blueprint host mis-scoped this feed for
+        // the same root cause as the team scope).
+        let templateRead;
+        let templateFacts;
+        if (targetTemplateInputs !== undefined) {
+            if (ports.templateEnvironmentFactsReadForBlueprint !== undefined) {
+                templateRead = await ports.templateEnvironmentFactsReadForBlueprint(blueprint, createTemplateId);
+                templateFacts = templateRead.environmentFacts;
+            }
+            else if (ports.templateEnvironmentFactsForBlueprint !== undefined) {
+                templateFacts = await ports.templateEnvironmentFactsForBlueprint(blueprint, createTemplateId);
+            }
+            else {
+                templateFacts = admission.facts;
+            }
+        }
         const templateVerdict = targetTemplateInputs !== undefined
             ? classifyScope({ level: 'template', templateId: createTemplateId }, projectVerdicts(evaluateCompatibility({
                 requirements: targetTemplateInputs,
-                environmentFacts: admission.facts,
+                environmentFacts: templateFacts,
             })))
             : undefined;
         // The recovery carve-out (plan §E.9): the reviewed marker covers the
@@ -533,7 +574,54 @@ export function createActivationProvider(ports) {
         // (the normal semantics apply — a forged/stale marker cannot widen
         // anything).
         const recoveryCovers = (key) => request.recovery !== undefined && request.recovery.scopeKeys.includes(key);
+        // D-3 (2026-09-30) — the live 3-state readiness classification of the
+        // two evaluated scopes, via the SAME shared classifier as the
+        // requirement gate (the COLD-member `not-applicable` mcpServer
+        // exemption lives inside it — E.11 negative #1, guide §2.5.4: a cold
+        // member's capability materialization is not applicable until the
+        // member exists, so it never PENDING-blocks the very admission that
+        // creates it). Computed BEFORE the FATAL throws so that a blocked
+        // scope whose unmet required requirement is live-UNKNOWN (a no-seed
+        // omission the engine reported as a missing FATAL) is reclassified to
+        // the honest PENDING category; a confirmed DOWN (unreachable) keeps
+        // the FATAL-down block (the actionable one — recovery dispatch).
+        const teamClassification = classifyScopeReadiness({
+            scopeKey: 'team',
+            inputs: scopeInputs.team,
+            observations: teamRead?.observations ?? [],
+        });
+        const templateClassification = targetTemplateInputs !== undefined
+            ? classifyScopeReadiness({
+                scopeKey: templateScopeKey,
+                inputs: targetTemplateInputs,
+                observations: templateRead?.observations ?? [],
+            })
+            : undefined;
+        const throwPending = (findings) => {
+            throw new ActivationError(ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_FATAL, 'activation: a required capability is not yet observed (materialization pending) — admission is blocked with the typed PENDING outcome (fail-closed; recheck at the next boundary or via the compatibility reprobe)', {
+                rootSessionId,
+                status: 'BLOCKED_PENDING',
+                gateReason: 'requiredScopePending',
+                blockedScopes: [...new Set(findings.map((entry) => entry.scopeKey))],
+                pendingRequirements: findings.map((entry) => ({
+                    requirementId: entry.requirementId,
+                    subject: entry.subject,
+                })),
+                recheck: 'next-boundary-or-compatibility.reprobe',
+                source: 'activation-provider',
+                // No recovery dispatch for a pending scope: the reduced
+                // authority computation needs a KNOWN-DOWN set (plan §E.9) — a
+                // pending observation offers nothing to reduce against
+                // (fail-closed).
+                recoveryDispatchAvailable: false,
+            });
+        };
         if (teamVerdict.state === 'blocked' && !recoveryCovers('team')) {
+            if (teamClassification.down.length === 0 && teamClassification.pending.length > 0) {
+                // D-3 reclassification: the engine FATAL is a no-seed unknown
+                // (not a confirmed down) — the honest category is PENDING.
+                throwPending(teamClassification.pending);
+            }
             throw new ActivationError(ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_FATAL, 'activation: the team scope is blocked (a required requirement is down) — admission is blocked (invariant 50)', {
                 rootSessionId,
                 status: 'BLOCKED_FATAL',
@@ -553,6 +641,11 @@ export function createActivationProvider(ports) {
             });
         }
         if (templateVerdict !== undefined && templateVerdict.state === 'blocked' && !recoveryCovers(templateScopeKey)) {
+            if (templateClassification !== undefined && templateClassification.down.length === 0 && templateClassification.pending.length > 0) {
+                // D-3 reclassification: the engine FATAL is a no-seed unknown
+                // (not a confirmed down) — the honest category is PENDING.
+                throwPending(templateClassification.pending);
+            }
             throw new ActivationError(ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_FATAL, `activation: the target template scope is blocked (a required requirement is down) — admission is blocked (invariant 50)`, {
                 rootSessionId,
                 status: 'BLOCKED_FATAL',
@@ -564,6 +657,76 @@ export function createActivationProvider(ports) {
                     reasonCode: 'SCOPE_BLOCKED',
                 })),
             });
+        }
+        // D-3 (2026-09-30, adjudicated product semantics — fail-closed
+        // PENDING; plan §C.3 "否则 unresolved fail closed；禁止 false OPEN" +
+        // E.3 "no false OPEN" + E.11 negative #10 "readiness 重置 unknown" +
+        // C.5 (pending is a real materialization state)): a REQUIRED
+        // requirement of an evaluated scope whose live observation is UNKNOWN
+        // and IN-FLIGHT (a pending materialization slot exists on a live
+        // session — the B5 transient window; PF-2 tri-state, 2026-09-30
+        // option A — a NEVER-OBSERVED unknown is seed-satisfied and the
+        // seed's truth decides) blocks the admission with the TYPED PENDING
+        // outcome — NEVER a seed-filled PASS for an in-flight required (the
+        // static seed remains bootstrap/display only, guide §2.5: static
+        // available:true + live unresolved is not the runtime truth). The
+        // classification above (the shared {@link classifyScopeReadiness})
+        // carries the applicability guard: a COLD member's mcpServer
+        // capability (materialization `not-applicable`) is NEVER pending-
+        // blocked — its materialization is not applicable until the member
+        // exists, so the admission that CREATES the member is not deadlocked
+        // by its own future materialization (E.11 negative #1 "cold member
+        // required MCP + mounted false ≠ blocked"; guide §2.5.4).
+        //
+        // Precedence + scope of the rule (documented judgment on the closed
+        // typed-code family — the wire code stays COMPATIBILITY_BLOCKED /
+        // ACTIVATION_COMPATIBILITY_BLOCKED_FATAL; the NEW category rides the
+        // typed details `status: 'BLOCKED_PENDING'` +
+        // `gateReason: 'requiredScopePending'`):
+        //   - a deterministic DOWN already threw above (FATAL wins over
+        //     pending — the down block is the actionable one); a blocked
+        //     scope with NO confirmed down (a no-seed unknown the engine
+        //     reported as a missing FATAL) was reclassified to PENDING at the
+        //     FATAL site;
+        //   - this rule voids an otherwise-ALLOWED (or recovery-suppressed)
+        //     admission — the unsettled world admits nothing (fail-closed);
+        //   - it applies to the scopes this activation's work depends on:
+        //     the Team scope (always) + the v2 target template scope;
+        //   - PROBEABLE scoping only (D-3 narrowing, 2026-09-30 — parent
+        //     adjudication option 1): the rule fires for REQUIRED subjects
+        //     whose capability type has a live probe port registered (the
+        //     STRUCTURAL fact on the observation — read from the host's
+        //     probe-port registry; absent = probeable). A required `unknown`
+        //     of a NON-probeable type (no live probe port — structurally
+        //     unobservable live; the documented known gap — e.g.
+        //     `skill`/`tool`/`modelRoute`/`teamStructure` in the current
+        //     production host) is NOT the transient window and keeps the
+        //     legacy seed-satisfied 2-state (pre-W2-A behavior preserved
+        //     deliberately — the SAME seed-satisfied 2-state the PF-2
+        //     tri-state applies to the NEVER-OBSERVED window; the shared
+        //     classifier predicate is one decision, probe == gate, INV-9.4 —
+        //     see the requirement-facts `pending` module);
+        //   - the RECOVERY marker does NOT cover a pending scope (the marker
+        //     covers the KNOWN-DOWN scopes of the incident; the reduced
+        //     authority computation needs a known down set — a pending
+        //     observation blocks recovery work too, fail-closed);
+        //   - RECHECKABLE by construction: the block is a verdict, not a
+        //     write (zero durable effect — steps 7-15 never run); PENDING now
+        //     means IN-FLIGHT ONLY (the PF-2 product-message correction — the
+        //     never-observed state that only the blocked action could settle
+        //     no longer PENDINGs), so it clears on the next boundary (any
+        //     later admission re-evaluates on a fresh read) or via the manual
+        //     `compatibility.reprobe` seam (a stuck slot is honest, not a
+        //     deadlock).
+        //   - ABSENT read ports (factory / single-blueprint worlds, or
+        //     pre-D-3 wiring) → empty classifications → the rule is OFF
+        //     (the legacy facts-only semantics stand, byte-identical).
+        const pendingFindings = [
+            ...teamClassification.pending,
+            ...(templateClassification?.pending ?? []),
+        ];
+        if (pendingFindings.length > 0) {
+            throwPending(pendingFindings);
         }
         // DEGRADED scopes (warnings) proceed (the PR-E auto-degraded semantics;
         // the durable compatibility status is recorded on the result as the

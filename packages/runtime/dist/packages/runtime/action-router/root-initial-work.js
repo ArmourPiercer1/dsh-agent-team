@@ -666,6 +666,20 @@ export function createAdmitRootInitialWork(input) {
                     : input.templateEnvironmentFacts !== undefined
                         ? { templateEnvironmentFacts: input.templateEnvironmentFacts }
                         : {}),
+                // D-3 (2026-09-30) — the full-resolution read ports (the
+                // atomic observations + feed pair): present → the gate
+                // consumes THIS source and the PENDING rule is live; absent
+                // → legacy byte-identical (the PENDING rule is off).
+                ...(input.environmentFactsReadForBlueprint !== undefined
+                    ? {
+                        environmentFactsRead: () => input.environmentFactsReadForBlueprint(args.blueprint),
+                    }
+                    : {}),
+                ...(input.templateEnvironmentFactsReadForBlueprint !== undefined
+                    ? {
+                        templateEnvironmentFactsRead: (templateId) => input.templateEnvironmentFactsReadForBlueprint(args.blueprint, templateId),
+                    }
+                    : {}),
                 now: input.now,
             }, normalWorkImpact(leaderTemplateScopeRefs(args.blueprint)));
             return admitRootInitialWorkLocked(deps);

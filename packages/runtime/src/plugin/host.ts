@@ -97,6 +97,7 @@ import { configuredMcpServers, mcpSupplyValidationIssue } from './mcp-supply.js'
 import {
   MEMBER_LIVENESS,
   OBSERVATION_SOURCES,
+  OBSERVATION_STATES,
   PROBE_VERDICTS,
   assertCapabilityRuntimeEventKind,
   createCapabilityReadinessProvider,
@@ -1807,14 +1808,37 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // is NEVER read back as current readiness; the telemetry is the ledger,     --
   // the probe is the truth). A live fiber for the server on ANY live session  --
   // is `reachable`; an observed mount failure on a live session is            --
-  // `unreachable`; nothing live is `unknown` (fresh boot / no materialization --
-  // yet — the fail-soft re-probable state, plan §C.10 gate 3).                --
+  // `unreachable`; nothing live settles the verdict to `unknown` (fresh boot / --
+  // no materialization yet — the fail-soft re-probable state, plan §C.10      --
+  // gate 3).                                                                   --
+  //                                                                            --
+  // PF-2 tri-state (2026-09-30, parent adjudication option A): the UNSETTLED  --
+  // `unknown` carries its OBSERVATION STATE — the structural split of the     --
+  // pre-observation world this probe reads:                                    --
+  //   in-flight      a pending materialization state EXISTS on a live session  --
+  //                  (a raw slot without a settled fiber; unapplied durable   --
+  //                  mcp records; or a template grant that admits the server  --
+  //                  — the SAME state the /__p6t6/state `pending` projection  --
+  //                  shows; observation in progress — the B5 window);         --
+  //   never-observed NO fiber / NO pending slot / NO failed slot on ANY live  --
+  //                  session — the capability is STRUCTURALLY not-yet-        --
+  //                  applicable (the canonical v1→v2 first-create shape: a    --
+  //                  team-scope server materializes only at the leader        --
+  //                  boundary of an EXISTING team — a zero-requirement v1     --
+  //                  anchor mounts nothing).                                   --
+  // The state rides on the observation; the ONE shared classifier predicate   --
+  // in the requirement-facts layer (pending.ts `isPendingWindow`) is the      --
+  // single consumer — the probe, the creation preflight, the gate and the     --
+  // activation step all inherit identical behavior: probe == gate (INV-9.4).  --
+  // A session whose views cannot be resolved counts AS in-flight (fail-closed --
+  // — the exemption is never inferred from doubt).                             --
   const capabilityReadiness: CapabilityReadinessProvider = createCapabilityReadinessProvider({
     probes: {
       mcpServer: {
         source: OBSERVATION_SOURCES.mcpFiber,
         probe: (name: string) => {
           let mountFailed = false
+          let inFlight = false
           for (const sessionId of live.listLiveSessions()) {
             const state = live.getConsumptionState(sessionId) as
               | {
@@ -1827,14 +1851,66 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
               | undefined
             if (state === undefined || state === null) continue
             if (state.mcpFibers !== undefined && state.mcpFibers.has(name)) {
-              return PROBE_VERDICTS.reachable
+              return { verdict: PROBE_VERDICTS.reachable }
             }
             const slot = state.mcpMaterialization?.get(name)
-            if (slot !== undefined && slot.status === 'failed') {
-              mountFailed = true
+            if (slot !== undefined) {
+              if (slot.status === 'failed') {
+                mountFailed = true
+              } else {
+                // A raw slot that is not a settled fiber (the closed raw set
+                // is mounted/failed — a mounted slot without its fiber is a
+                // settlement in flight): observation in progress — the
+                // in-flight signal (never never-observed).
+                inFlight = true
+              }
+              continue
+            }
+            // No raw slot: the session's freshly re-resolved consumption
+            // view decides the p6t6 `pending` projection for this server —
+            // unapplied durable mcp records (a governance mutation admitted
+            // for the cell, not yet applied at a boundary), or a template
+            // grant that admits the server (the reconcile mounts it at the
+            // next boundary): IN-FLIGHT. A session whose view does NOT
+            // admit the server contributes nothing (structurally
+            // not-applicable for it — the cold-member / non-allowing-
+            // template guard, E.11 negative #1 / guide §2.5.4).
+            try {
+              const views = live.resolveConsumptionViews(sessionId) as
+                | {
+                    readonly mcpViews?: Record<
+                      string,
+                      { readonly allowed?: boolean; readonly pendingNextBoundary?: unknown }
+                    >
+                  }
+                | undefined
+              const serverView =
+                views !== undefined && views !== null ? views.mcpViews?.[name] : undefined
+              const pendingRecords =
+                serverView !== undefined && serverView !== null
+                  ? serverView.pendingNextBoundary
+                  : undefined
+              if (
+                (serverView !== undefined && serverView !== null && serverView.allowed === true) ||
+                (Array.isArray(pendingRecords) && pendingRecords.length > 0)
+              ) {
+                inFlight = true
+              }
+            } catch {
+              // A view that cannot be resolved (a data fault, not a normal
+              // state — the P1-B locate/bound-blueprint failure is loud):
+              // the in-flight signal stands (fail-closed — the exemption is
+              // never inferred from doubt).
+              inFlight = true
             }
           }
-          return mountFailed ? PROBE_VERDICTS.unreachable : PROBE_VERDICTS.unknown
+          if (mountFailed) return { verdict: PROBE_VERDICTS.unreachable }
+          // The unsettled verdict carries its observation state (the PF-2
+          // tri-state — explicit for both states: the state is OBSERVED
+          // here, the classifier predicate consumes it, never infers it).
+          return inFlight
+            ? { verdict: PROBE_VERDICTS.unknown, observationState: OBSERVATION_STATES.inFlight }
+            : { verdict: PROBE_VERDICTS.unknown, observationState: OBSERVATION_STATES.neverObserved }
         },
       },
     },

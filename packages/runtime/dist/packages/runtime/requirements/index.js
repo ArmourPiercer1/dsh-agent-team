@@ -25,7 +25,7 @@
  * @module @dsh-agent-team/runtime/requirements
  */
 // types (the closed vocabularies + the data shapes)
-export { ACTION_IMPACT_CLASSES, ACTION_IMPACT_CLASS_VALUES, GATE_REASONS, GATE_REASON_VALUES, isActionImpactClass, isGateReason, isRequirementOutcome, isScopeState, PREFLIGHT_OUTCOME_VALUES, PREFLIGHT_OUTCOMES, REQUIREMENT_LEVELS, REQUIREMENT_LEVEL_VALUES, REQUIREMENT_OUTCOME_VALUES, REQUIREMENT_OUTCOMES, SCOPE_STATE_VALUES, SCOPE_STATES, scopeKey, teamScope, templateScope, } from './types.js';
+export { ACTION_IMPACT_CLASSES, ACTION_IMPACT_CLASS_VALUES, GATE_REASONS, GATE_REASON_VALUES, isActionImpactClass, isGateReason, isRequirementOutcome, isScopeState, PENDING_BLOCK, PREFLIGHT_OUTCOME_VALUES, PREFLIGHT_OUTCOMES, REQUIREMENT_LEVELS, REQUIREMENT_LEVEL_VALUES, REQUIREMENT_OUTCOME_VALUES, REQUIREMENT_OUTCOMES, SCOPE_STATE_VALUES, SCOPE_STATES, scopeKey, teamScope, templateScope, } from './types.js';
 // errors
 export { isRequirementError, REQUIREMENT_ERROR_CODE_VALUES, REQUIREMENT_ERROR_CODES, RequirementError, } from './errors.js';
 // evaluator (scope classification + recovery derivation + action gating)

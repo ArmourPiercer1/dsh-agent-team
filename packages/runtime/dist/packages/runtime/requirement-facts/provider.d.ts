@@ -27,6 +27,45 @@
  * (guide §2.3): it feeds the engine for subjects whose live verdict is
  * `unknown` — never for a subject with a live verdict.
  *
+ * **Probeable scoping (D-3 narrowing, 2026-09-30 — parent adjudication,
+ * option 1).** Each observation carries the `probeable` STRUCTURAL fact:
+ * whether a live probe port is registered for its capability type (read
+ * here from the host's probe-port registry through the readiness port's
+ * `hasProbe` query — the single source of truth; a readiness surface
+ * without the query is treated as fully probeable). The D-3 PENDING
+ * reclassification (see `./pending.js`) applies to REQUIRED subjects of
+ * PROBEABLE types whose observation has not settled (the transient
+ * materialization window — B5). A required `unknown` of a NON-probeable
+ * type (no live probe port — structurally unobservable live; in the
+ * current production host: `skill`/`tool`/`modelRoute`/`teamStructure`,
+ * which register no probe port, while `mcpServer` does) keeps the legacy
+ * seed-satisfied 2-state — the documented known gap (the bootstrap seed
+ * is the only source for such types), the pre-W2-A behavior preserved
+ * DELIBERATELY; it is NOT the W2-A "seed never truth" rule, which applies
+ * to probeable domains where the live verdict settles.
+ *
+ * **The PF-2 tri-state (2026-09-30 — parent adjudication, option A).** The
+ * probe port's observation of an UNSETTLED (`unknown`) probeable subject
+ * may carry the `observationState` (see {@link ObservationState}):
+ * `in-flight` — a pending materialization slot exists on a live session
+ * (the B5 transient window; the D-3 typed PENDING stands) — or
+ * `never-observed` — no fiber / pending slot / failed slot on ANY live
+ * session (the capability is STRUCTURALLY not-yet-applicable; the
+ * canonical v1→v2 first-create shape where a team-scope server
+ * materializes only at the leader boundary of an EXISTING team — PENDING
+ * there would be a liveness deadlock, because no observation can settle
+ * short of the create itself). The provider carries the state onto each
+ * observation (only `never-observed` is written; absent = `in-flight`,
+ * the conservative default — the exemption is never inferred) and the ONE
+ * shared classifier predicate in `./pending.js` applies it: a
+ * never-observed required subject keeps the legacy seed-satisfied 2-state
+ * (the bootstrap seed is the only pre-observation source — C.2; E.6
+ * preflight; the seed's TRUTH decides — available `true` → OPEN/proceed,
+ * `false`/absent → FATAL — the exemption is NOT a blanket OPEN), while
+ * every other decision consumer (the probe drop-filter, the creation
+ * preflight, the gate, the activation step) inherits identical behavior
+ * from the same predicate — probe == gate (INV-9.4).
+ *
  * Pure module over injected ports: no I/O, no live Agent, no `node:`
  * builtins. The ports are the I/O boundary (the production host binds them
  * to the glue's live state + the DSH public seams).

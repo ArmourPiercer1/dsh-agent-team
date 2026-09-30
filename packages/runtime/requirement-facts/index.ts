@@ -23,6 +23,13 @@ export {
 } from './provider.js'
 
 export {
+  classifyScopeReadiness,
+  dropSeedFilledPendingFacts,
+  type LiveReadinessSubject,
+  type ScopeReadinessClassification,
+} from './pending.js'
+
+export {
   assertRequirementFactScope,
   type MemberMaterializationView,
   type RequirementFactScope,

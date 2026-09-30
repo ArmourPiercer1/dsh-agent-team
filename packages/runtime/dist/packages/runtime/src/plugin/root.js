@@ -92,7 +92,7 @@ import { createTeamDomainWritePort, bindFreshTeamRoot, rehydrateColdTeamRoot, } 
 import { createFreshMember, createMemberDomainWritePort, rehydrateColdMember, } from '../../member-residency/index.js';
 import { TeamAgentBinder, createTeamDomainReadHandle, } from '../../agent-setup/binder/index.js';
 import { createPersonaOverlaySlot } from '../../agent-setup/persona/index.js';
-import { blockedScopeKeysOf, grantDegradationConsent, PREFLIGHT_OUTCOMES, runCreationPreflight, setTemplateAvailabilityFact, SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID, scopeRequirementInputsOf, shippedStatePersonaObserver, } from '../../requirements/index.js';
+import { blockedScopeKeysOf, grantDegradationConsent, PENDING_BLOCK, PREFLIGHT_OUTCOMES, runCreationPreflight, setTemplateAvailabilityFact, SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID, scopeRequirementInputsOf, shippedStatePersonaObserver, } from '../../requirements/index.js';
 import { TeamModelOverlaySlot, TeamModelSelectionAdapter, resolveDurableModelSelection, initialTemplateModelGrantOf, } from '../../agent-setup/model/index.js';
 import { CAPABILITY_FACETS, createCapabilityOverlaySlot, resolveDurableMcpFacet, } from '../../agent-setup/capability/index.js';
 import { createActivationProvider } from '../../activation/index.js';
@@ -455,6 +455,42 @@ export function createTeamProductionRoot(params) {
             })
                 .then((resolution) => resolution.environmentFacts);
         };
+    // D-3 (2026-09-30, adjudicated product semantics — fail-closed PENDING)
+    // — the FULL-resolution per-blueprint seams (the atomic facts + 3-state
+    // observations pair of ONE `resolveFacts` call). The D-1 facts seams
+    // above drop the observations; the DECISION consumers (the router /
+    // admit requirement gates, the activation provider's step 6, the
+    // creation preflight, the remote probe) need the 3-state truth of the
+    // SAME call whose facts the verdict reads, to apply the PENDING rule
+    // (a REQUIRED requirement whose live observation is `unknown` blocks
+    // with the typed PENDING outcome — never a seed-filled PASS; plan §C.3
+    // 禁止 false OPEN + E.3 + E.11 negative #10). Factory worlds: the
+    // static row feed with EMPTY observations — no live probe ⇒ no pending
+    // materialization ⇒ the PENDING rule stays off (byte-identical).
+    const environmentFactsReadForBlueprint = (target) => requirementFacts === undefined
+        ? Promise.resolve({
+            observations: [],
+            environmentFacts: config.environmentFacts.map((fact) => ({
+                domain: fact.domain,
+                subject: fact.subject,
+                available: fact.available,
+                generation: fact.generation,
+            })),
+            resolvedAt: now(),
+        })
+        : requirementFacts.provider.resolveFacts({
+            requirements: scopeRequirementInputsOf(target).team,
+            scope: { kind: 'team' },
+        });
+    const templateEnvironmentFactsReadForBlueprint = requirementFacts === undefined
+        ? undefined
+        : (target, templateId) => {
+            const requirements = scopeRequirementInputsOf(target).templates[templateId] ?? [];
+            return requirementFacts.provider.resolveFacts({
+                requirements,
+                scope: { kind: 'template', templateId },
+            });
+        };
     const externalPolicyFacts = async () => config.externalPolicyFacts;
     // --- A14 + A15 compatibility prober / authority / work gate --------------------------
     const prober = createCompatibilityProber({
@@ -777,11 +813,23 @@ export function createTeamProductionRoot(params) {
             //    session id (a pre-bind read is legal — no TeamSession row is
             //    required; the pre-bind defaults are: no consents, all available).
             const durable = readRequirementFacts(repos, input.rootSessionId);
-            // 4. Classify (the PR-E pure classifier, unchanged).
+            // 4. Classify (the PR-E pure classifier, unchanged) + the D-3
+            //    (2026-09-30) PENDING overlay — the full-resolution read ports
+            //    (the atomic observations + feed pair; the SAME per-create
+            //    blueprint scoping as the facts thunks above): a REQUIRED
+            //    capability whose live observation is UNKNOWN is the typed
+            //    `pending` outcome — never a seed-filled PASS (plan §C.3 禁止
+            //    false OPEN + E.3).
             const result = await runCreationPreflight({
                 blueprint: bound,
                 environmentFacts: preflightTeamFacts,
                 templateEnvironmentFacts: preflightTemplateFacts,
+                environmentFactsRead: () => environmentFactsReadForBlueprint(bound),
+                ...(templateEnvironmentFactsReadForBlueprint !== undefined
+                    ? {
+                        templateEnvironmentFactsRead: (templateId) => templateEnvironmentFactsReadForBlueprint(bound, templateId),
+                    }
+                    : {}),
                 consents: durable.consents,
                 availability: durable.availability,
             });
@@ -793,7 +841,9 @@ export function createTeamProductionRoot(params) {
                 ? 'a Team-level required requirement is down — it cannot be bypassed by disabling a template; repair the environment and re-drive the creation'
                 : result.outcome === PREFLIGHT_OUTCOMES.fixOrDisable
                     ? 'a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation'
-                    : 'an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation';
+                    : result.outcome === PREFLIGHT_OUTCOMES.pending
+                        ? 'a required capability is not yet observed (materialization pending) — re-drive the creation at the next boundary (or run the compatibility reprobe); the block is recheckable, not a deadlock'
+                        : 'an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation';
             throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, `TeamRuntime: the creation preflight of "${input.rootSessionId}" is '${result.outcome}' — the durable Team bind is refused (zero durable effect; ${resolutionHint})`, {
                 rootSessionId: input.rootSessionId,
                 source: 'creation-preflight',
@@ -802,6 +852,17 @@ export function createTeamProductionRoot(params) {
                 consentRequiredRequirementIds: [...result.consentRequiredRequirementIds],
                 fixOrDisableRequirementIds: [...result.fixOrDisableRequirementIds],
                 fatalRequirementIds: [...result.fatalRequirementIds],
+                // D-3 (2026-09-30) — the typed PENDING details (the closed
+                // typed-code family: the wire code stays COMPATIBILITY_BLOCKED;
+                // the category rides the details — see PENDING_BLOCK).
+                ...(result.outcome === PREFLIGHT_OUTCOMES.pending
+                    ? {
+                        status: PENDING_BLOCK.status,
+                        gateReason: PENDING_BLOCK.gateReason,
+                        recheck: PENDING_BLOCK.recheck,
+                        pendingRequirementIds: [...(result.pendingRequirementIds ?? [])],
+                    }
+                    : {}),
             });
         })();
     };
@@ -928,6 +989,32 @@ export function createTeamProductionRoot(params) {
         teamDomain: domain,
         blueprintCatalog: catalog,
         environmentFacts,
+        // D-1 (2026-09-30, adjudicated product defect — the PF-1 family
+        // extended to the activation provider): step 6's team / target-template
+        // scopes evaluate the TARGET root's bound blueprint against the
+        // TARGET-scoped live feeds (the SAME per-blueprint seam the router
+        // gate / admit gate / remote probe / per-root prober consume). Pre-fix
+        // the boot-scoped thunk above was handed to the provider, so a
+        // multi-blueprint host evaluated the target's requirements against a
+        // feed scoped to the BOOT blueprint (empty for a zero-requirement
+        // boot anchor → every required requirement unobserved → spurious
+        // FATAL + corrupted durable aggregates). D-3 (2026-09-30): the
+        // full-resolution (facts + observations) variants carry the 3-state
+        // truth for the fail-closed PENDING rule. Backward-compatible option
+        // (deviations (b)/(c)): absent in factory worlds → the legacy
+        // no-argument thunk stands byte-identically.
+        ...(requirementFacts !== undefined
+            ? {
+                environmentFactsForBlueprint,
+                ...(templateEnvironmentFactsForBlueprint !== undefined
+                    ? { templateEnvironmentFactsForBlueprint }
+                    : {}),
+                environmentFactsReadForBlueprint,
+                ...(templateEnvironmentFactsReadForBlueprint !== undefined
+                    ? { templateEnvironmentFactsReadForBlueprint }
+                    : {}),
+            }
+            : {}),
         externalPolicyFacts,
         staticModel: {
             provider: config.staticModel.provider,
@@ -1051,6 +1138,15 @@ export function createTeamProductionRoot(params) {
             ...(templateEnvironmentFactsForBlueprint !== undefined
                 ? { templateEnvironmentFactsForBlueprint }
                 : {}),
+            // D-3 (2026-09-30) — the full-resolution read ports (the
+            // atomic observations + feed pair): the Phase A gate consumes
+            // them (the PENDING rule is live); factory worlds (no
+            // requirementFacts) keep the legacy facts-only ports,
+            // byte-identical.
+            ...(requirementFacts !== undefined ? { environmentFactsReadForBlueprint } : {}),
+            ...(templateEnvironmentFactsReadForBlueprint !== undefined
+                ? { templateEnvironmentFactsReadForBlueprint }
+                : {}),
             now,
             deliverRootWork: rootWorkDelivery,
         });
@@ -1162,6 +1258,14 @@ export function createTeamProductionRoot(params) {
         ...(requirementFacts !== undefined ? { environmentFactsForBlueprint } : {}),
         ...(templateEnvironmentFactsForBlueprint !== undefined
             ? { templateEnvironmentFactsForBlueprint }
+            : {}),
+        // D-3 (2026-09-30) — the full-resolution read ports (the atomic
+        // observations + feed pair): the router gate consumes them (the
+        // PENDING rule is live); factory worlds (no requirementFacts) keep
+        // the legacy facts-only ports, byte-identical.
+        ...(requirementFacts !== undefined ? { environmentFactsReadForBlueprint } : {}),
+        ...(templateEnvironmentFactsReadForBlueprint !== undefined
+            ? { templateEnvironmentFactsReadForBlueprint }
             : {}),
         externalPolicyFacts,
         staticModel: {
@@ -1848,6 +1952,16 @@ export function createTeamProductionRoot(params) {
         ...(requirementFacts !== undefined
             ? { environmentFacts: environmentFactsForBlueprint }
             : { environmentFacts }),
+        // D-3 (2026-09-30) — the PER-BLUEPRINT FULL-RESOLUTION read port:
+        // `intent.probe` drops the SEED-FILLED facts of every REQUIRED
+        // requirement whose live observation is still `unknown` — the probe's
+        // BLOCKED_FATAL then faithfully (STRICTER) predicts the post-creation
+        // gate's typed PENDING block (INV-9.4: complete the observation, not
+        // weaken the verdict; plan §C.3 禁止 false OPEN). Factory worlds: no
+        // port — the PENDING rule stays off (byte-identical).
+        ...(requirementFacts !== undefined
+            ? { environmentFactsRead: environmentFactsReadForBlueprint }
+            : {}),
         repositories: repos,
         catalog,
         blueprint,

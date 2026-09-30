@@ -72,7 +72,13 @@ import type {
   ScopeVerdict,
   TemplateAvailability,
 } from './types.js'
-import { scopeKey, SCOPE_STATES } from './types.js'
+import { scopeKey, SCOPE_STATES, PREFLIGHT_OUTCOMES } from './types.js'
+import {
+  classifyScopeReadiness,
+  type LiveReadinessSubject,
+  type RequirementFactsResolution,
+  type ScopeReadinessClassification,
+} from '../requirement-facts/index.js'
 import { evaluateScopes } from './evaluator.js'
 import { scopeRequirementInputsOf, projectVerdicts } from './scope-requirements.js'
 import { startupPreflight } from './startup-preflight.js'
@@ -115,6 +121,31 @@ export interface CreationScopeEvaluationOptions {
    * the same fresh team-scope facts read (the legacy behavior).
    */
   readonly templateEnvironmentFacts?: (templateId: string) => Promise<readonly EnvironmentFact[]>
+  /**
+   * D-3 (2026-09-30, adjudicated product semantics — fail-closed PENDING)
+   * — the Team-scope FULL-RESOLUTION live read (the atomic 3-state
+   * observations + 2-state feed pair). PRESENT → the preflight consumes
+   * THIS source (the feed drives the engine, the observations drive the
+   * PENDING rule: a REQUIRED capability whose live observation is UNKNOWN
+   * is a typed `pending` outcome — never a seed-filled PASS). ABSENT →
+   * the facts-only port stands (byte-identical; the PENDING rule is off).
+   */
+  readonly environmentFactsRead?: () => Promise<RequirementFactsResolution>
+  /**
+   * D-3 (2026-09-30) — the per-TEMPLATE FULL-RESOLUTION live read (the
+   * twin of `templateEnvironmentFacts`; same presence/absence semantics).
+   */
+  readonly templateEnvironmentFactsRead?: (
+    templateId: string,
+  ) => Promise<RequirementFactsResolution>
+}
+
+/** The captured full-resolution reads of one creation-scope evaluation. */
+export interface CreationScopeLiveReads {
+  /** The Team scope's full resolution (present when the read port ran). */
+  readonly team?: RequirementFactsResolution
+  /** The per-TEMPLATE full resolutions (keyed by templateId). */
+  readonly templates: ReadonlyMap<string, RequirementFactsResolution>
 }
 
 /** The per-scope verdicts of one creation-scope evaluation. */
@@ -123,6 +154,13 @@ export interface CreationScopeEvaluation {
   readonly scopeVerdicts: Readonly<Record<string, readonly RequirementVerdict[]>>
   /** The classified scope verdicts (ready / degraded / blocked). */
   readonly scopeStates: readonly ScopeVerdict[]
+  /**
+   * D-3 (2026-09-30) — the captured full-resolution reads (present only
+   * when a read port was supplied — the PENDING rule's 3-state input; the
+   * pair is ATOMIC: the observations always accompany the facts the
+   * verdicts were computed from).
+   */
+  readonly liveReads?: CreationScopeLiveReads
 }
 
 /**
@@ -142,10 +180,22 @@ export async function evaluateCreationScopes(
   const { blueprint, environmentFacts, templateEnvironmentFacts } = options
   const inputs = scopeRequirementInputsOf(blueprint)
 
+  // D-3 (2026-09-30) — the captured full-resolution reads (the atomic
+  // observations + feed pair; the PENDING rule's 3-state input).
+  const liveReads: { team?: RequirementFactsResolution; templates: Map<string, RequirementFactsResolution> } =
+    { templates: new Map() }
+
   // 1. Team scope — one fresh facts read (a failure is a chain failure).
   let teamFacts: readonly EnvironmentFact[]
   try {
-    teamFacts = await environmentFacts()
+    if (options.environmentFactsRead !== undefined) {
+      // D-3: the full-resolution read (the feed half drives the engine;
+      // the observations half is captured for the PENDING rule).
+      liveReads.team = await options.environmentFactsRead()
+      teamFacts = liveReads.team.environmentFacts
+    } else {
+      teamFacts = await environmentFacts()
+    }
   } catch (error) {
     throw new TeamRuntimeError(
       TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
@@ -167,7 +217,25 @@ export async function evaluateCreationScopes(
   if (blueprint.schemaVersion === 2) {
     for (const [templateId, requirementInputs] of Object.entries(inputs.templates)) {
       let templateFacts: readonly EnvironmentFact[]
-      if (templateEnvironmentFacts === undefined) {
+      if (options.templateEnvironmentFactsRead !== undefined) {
+        // D-3: the full-resolution read (captured per template).
+        try {
+          const resolution = await options.templateEnvironmentFactsRead(templateId)
+          liveReads.templates.set(templateId, resolution)
+          templateFacts = resolution.environmentFacts
+        } catch (error) {
+          throw new TeamRuntimeError(
+            TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+            `TeamRuntime: the template-environment-facts-read port failed for template '${templateId}' during the creation preflight — the creation fails closed (zero durable effect)`,
+            {
+              source: 'creation-preflight',
+              reason: 'facts-unavailable',
+              templateId,
+              cause: error instanceof Error ? error.message : undefined,
+            },
+          )
+        }
+      } else if (templateEnvironmentFacts === undefined) {
         templateFacts = teamFacts
       } else {
         try {
@@ -194,6 +262,9 @@ export async function evaluateCreationScopes(
   return {
     scopeVerdicts,
     scopeStates: evaluateScopes({ scopeVerdicts }),
+    ...(liveReads.team !== undefined || liveReads.templates.size > 0
+      ? { liveReads: { ...(liveReads.team !== undefined ? { team: liveReads.team } : {}), templates: liveReads.templates } }
+      : {}),
   }
 }
 
@@ -211,18 +282,158 @@ export interface CreationPreflightOptions extends CreationScopeEvaluationOptions
  * Run the creation preflight (guide §6.2): evaluate ALL scopes on fresh
  * runtime facts, fold in the durable consents + template availability, and
  * classify through the PR-E {@link startupPreflight} (the pure classifier,
- * unchanged).
+ * unchanged) — then apply the D-3 (2026-09-30) PENDING overlay when a
+ * full-resolution read was captured.
+ *
+ * D-3 overlay (the same adjudicated fail-closed PENDING semantics as the
+ * requirement gate / activation provider — plan §C.3 "否则 unresolved fail
+ * closed；禁止 false OPEN" + E.3 "no false OPEN" + E.11 negative #10
+ * "readiness 重置 unknown" + C.5): a REQUIRED applicable requirement whose
+ * LIVE observation is UNKNOWN and IN-FLIGHT (a pending materialization slot
+ * exists on a live session — the B5 transient window) is a typed `pending`
+ * outcome — NEVER a seed-filled PASS (the static seed remains
+ * bootstrap/display only, guide §2.5). PF-2 tri-state (2026-09-30 — parent
+ * adjudication option A): an UNKNOWN that is NEVER-OBSERVED (no fiber /
+ * pending slot / failed slot on ANY live session — structurally
+ * not-yet-applicable, the first-create bootstrap window) is NOT pending —
+ * its seed-satisfied 2-state stands and the seed's TRUTH decides (C.2/E.6;
+ * available `true` → `proceed`/`consentRequired` per the other rules,
+ * `false`/absent → `fatal` — the exemption is not a blanket OPEN); the
+ * overlay reads the ONE shared classifier predicate, so the probe, the
+ * gate and the preflight classify identically (probe == gate, INV-9.4).
+ * Precedence
+ * (documented judgment): down-based outcomes stand first — a CONFIRMED
+ * unreachable required wins (`fatal` / `fixOrDisable`, the actionable
+ * ones); a down outcome whose blocked scope has NO confirmed down (a
+ * no-seed unknown the engine reported as a missing FATAL) is RECLASSIFIED
+ * to `pending`; otherwise `pending` beats `consentRequired` / `proceed`.
+ * Disabled templates are RESOLVED (their work will not start) — excluded
+ * from the pending partition. RECHECKABLE by construction: PENDING now
+ * means IN-FLIGHT ONLY (the PF-2 product-message correction — every
+ * PENDING the decision paths emit is genuinely recheckable at the next
+ * boundary; the never-observed deadlock state no longer PENDINGs), the
+ * block is a verdict, not a write (zero durable effect); the re-driven
+ * creation
+ * re-evaluates on a fresh read (the "重新 preflight"), and the manual
+ * `compatibility.reprobe` seam clears a stuck slot.
  *
  * @returns the closed {@link PreflightResult} (`proceed` / `consentRequired`
- *   / `fixOrDisable` / `fatal`).
+ *   / `fixOrDisable` / `fatal` / `pending` — the last only with a
+ *   full-resolution read).
  */
 export async function runCreationPreflight(options: CreationPreflightOptions): Promise<PreflightResult> {
-  const { scopeVerdicts } = await evaluateCreationScopes(options)
-  return startupPreflight({
-    scopeVerdicts,
+  const evaluation = await evaluateCreationScopes(options)
+  const base = startupPreflight({
+    scopeVerdicts: evaluation.scopeVerdicts,
     ...(options.consents !== undefined ? { consents: options.consents } : {}),
     ...(options.availability !== undefined ? { availability: options.availability } : {}),
   })
+  if (evaluation.liveReads === undefined) return base
+  return applyPendingOverlay(base, evaluation, options)
+}
+
+/**
+ * D-3 (2026-09-30) — the PENDING overlay over the classifier's result
+ * (pure over the captured full-resolution reads; see
+ * {@link runCreationPreflight} for the adjudicated semantics).
+ */
+function applyPendingOverlay(
+  base: PreflightResult,
+  evaluation: CreationScopeEvaluation,
+  options: CreationPreflightOptions,
+): PreflightResult {
+  const inputs = scopeRequirementInputsOf(options.blueprint)
+  const liveReads = evaluation.liveReads!
+  const availability = new Map(
+    (options.availability ?? []).map((entry) => [entry.templateId, entry.available]),
+  )
+
+  // The shared classifier (the COLD-member `not-applicable` mcpServer
+  // exemption lives inside it — E.11 negative #1, guide §2.5.4).
+  const emptyClassification: ScopeReadinessClassification = { pending: [], down: [] }
+  const teamClass =
+    liveReads.team !== undefined
+      ? classifyScopeReadiness({
+          scopeKey: 'team',
+          inputs: inputs.team,
+          observations: liveReads.team.observations,
+        })
+      : emptyClassification
+  const templateClasses = new Map<string, ScopeReadinessClassification>()
+  for (const [templateId, requirementInputs] of Object.entries(inputs.templates)) {
+    const read = liveReads.templates.get(templateId)
+    if (read === undefined) continue
+    templateClasses.set(
+      templateId,
+      classifyScopeReadiness({
+        scopeKey: scopeKey({ level: 'template', templateId }),
+        inputs: requirementInputs,
+        observations: read.observations,
+      }),
+    )
+  }
+
+  // 1. Reclassification: a down outcome whose blocked scope has NO
+  //    confirmed down (a no-seed unknown the engine reported as a missing
+  //    FATAL) is the honest PENDING category; a confirmed down keeps the
+  //    actionable down outcome.
+  if (base.outcome === PREFLIGHT_OUTCOMES.fatal) {
+    if (teamClass.down.length === 0 && teamClass.pending.length > 0) {
+      return pendingPreflight(base, teamClass.pending)
+    }
+    return base
+  }
+  if (base.outcome === PREFLIGHT_OUTCOMES.fixOrDisable) {
+    // The classifier's fix-or-disable targets: the blocked, NON-disabled
+    // template scopes (a disabled template is resolved — its required
+    // work will not start).
+    const targetIds = base.scopes
+      .filter(
+        (scope) =>
+          scope.scope.level === 'template' &&
+          scope.state === SCOPE_STATES.blocked &&
+          scope.scope.templateId !== undefined &&
+          availability.get(scope.scope.templateId) !== false,
+      )
+      .map((scope) => scope.scope.templateId as string)
+    const targetsHaveDown = targetIds.some(
+      (templateId) => (templateClasses.get(templateId)?.down.length ?? 0) > 0,
+    )
+    if (!targetsHaveDown) {
+      const findings = targetIds.flatMap((templateId) => templateClasses.get(templateId)?.pending ?? [])
+      if (findings.length > 0) return pendingPreflight(base, findings)
+    }
+    return base
+  }
+
+  // 2. Not a down outcome: `pending` beats `consentRequired` / `proceed`
+  //    (a required capability that has not yet been observed admits
+  //    nothing — fail-closed). Disabled templates are resolved (excluded).
+  const pendingFindings: readonly LiveReadinessSubject[] = [
+    ...teamClass.pending,
+    ...[...templateClasses.entries()]
+      .filter(([templateId]) => availability.get(templateId) !== false)
+      .flatMap(([, classification]) => classification.pending),
+  ]
+  if (pendingFindings.length > 0) {
+    return pendingPreflight(base, pendingFindings)
+  }
+  return base
+}
+
+/** Build the typed `pending` preflight result from the live findings. */
+function pendingPreflight(
+  base: PreflightResult,
+  findings: readonly LiveReadinessSubject[],
+): PreflightResult {
+  return {
+    outcome: PREFLIGHT_OUTCOMES.pending,
+    scopes: base.scopes,
+    consentRequiredRequirementIds: [],
+    fixOrDisableRequirementIds: [],
+    fatalRequirementIds: [],
+    pendingRequirementIds: [...new Set(findings.map((finding) => finding.requirementId))],
+  }
 }
 
 /**

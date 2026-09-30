@@ -52,6 +52,8 @@
 import type { CompatibilityResult, EnvironmentFact } from '../../domain/compatibility/src/index.js';
 import type { TeamBlueprint } from '../../domain/blueprint/src/index.js';
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js';
+import { type RequirementFactsResolution } from '../requirement-facts/index.js';
+import { PENDING_BLOCK } from '../requirements/types.js';
 import type { ActionImpact, DegradationConsent, GateDecision, RecoveryState, RequirementScope, RequirementVerdict, ScopeVerdict, TemplateAvailability } from '../requirements/types.js';
 /** The outcome of one requirement-gate passage (allowed only — blocks throw). */
 export interface RequirementGateOutcome {
@@ -68,6 +70,7 @@ export interface RequirementGateOutcome {
      *   flag — recomputed on every passage). */
     readonly recovery: RecoveryState;
 }
+export { PENDING_BLOCK };
 /** The dependencies of one requirement-gate consultation (all injected). */
 export interface RequirementGateOptions {
     /** The TeamDomain repositories (durable compat state + the requirement
@@ -96,6 +99,31 @@ export interface RequirementGateOptions {
      * conflate the scopes.
      */
     readonly templateEnvironmentFacts?: (templateId: string) => Promise<readonly EnvironmentFact[]>;
+    /**
+     * D-3 (2026-09-30) — the FULL-resolution facts source (the atomic
+     * facts + 3-state observations pair of ONE `resolveFacts` call) for the
+     * TEAM scope. When present, the gate consumes THIS source (the
+     * facts-only {@link RequirementGateOptions.environmentFacts} port is
+     * not consulted for the verdict) and applies the fail-closed PENDING
+     * rule against the observations of the SAME call whose facts the
+     * verdict reads (a REQUIRED requirement with a live observation
+     * `unknown` AND IN-FLIGHT — a pending materialization slot on a live
+     * session — blocks with {@link PENDING_BLOCK}; a NEVER-OBSERVED unknown
+     * — no fiber / pending slot / failed slot on ANY live session, the
+     * first-create bootstrap window — is seed-satisfied and the seed's
+     * truth decides, the PF-2 tri-state, 2026-09-30 option A). Never a
+     * seed-filled PASS for an in-flight required. ABSENT → the legacy
+     * facts-only semantics stand byte-identically (factory worlds have no
+     * live probe, hence no pending materialization — the PENDING rule
+     * stays off).
+     */
+    readonly environmentFactsRead?: () => Promise<RequirementFactsResolution>;
+    /**
+     * D-3 (2026-09-30) — the FULL-resolution facts source for one v2
+     * TEMPLATE scope (the atomic pair of the template-boundary feed). Same
+     * ABSENT semantics as {@link RequirementGateOptions.environmentFactsRead}.
+     */
+    readonly templateEnvironmentFactsRead?: (templateId: string) => Promise<RequirementFactsResolution>;
     /** The deterministic ISO-8601 clock (defaults to the authority clock). */
     readonly now?: () => string;
     /** The epoch-ms clock for the requirement fact payloads (defaults to
