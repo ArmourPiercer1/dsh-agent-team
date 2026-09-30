@@ -1,0 +1,8 @@
+M  packages/client/composition-shim/client-bundle.js
+M  packages/client/src/plugin/team-mount-core.ts
+M  packages/client/src/state/team-projection-store.ts
+M  packages/client/src/transport/team-remote-client.ts
+M  packages/client/test/team-command-flow.test.ts
+M  packages/client/test/team-projection-store-v6.test.ts
+M  packages/client/test/team-projection-store.test.ts
+?? dev/agent-workflow/evidence/f15-mcp-live-loss/f15-2026-09-30-07-05-00/
