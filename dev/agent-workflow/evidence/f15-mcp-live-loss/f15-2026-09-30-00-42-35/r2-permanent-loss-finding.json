@@ -1,0 +1,35 @@
+{
+  "killAt": "2026-09-30T00:42:40.902Z",
+  "plannedWaitMs": 4500,
+  "realWaitMs": 4500,
+  "finding": {
+    "headline": "The pinned 0.1.7-rc.1 mcp-client supervisor does NOT detect a live streamable-http server death (onclose-only entry; the streamable-http transport fires onclose only on explicit close()). The registered tools remain on the public surface forever (ghost tools); readiness stays reachable; the F15 gate stays open; only the model sees the failure — via the tool error of the ghost call.",
+    "evidence": {
+      "supervisorLogLinesSinceKill": [],
+      "allHostLogLinesSinceKill": [],
+      "ghostSurfaceRetained": true,
+      "boundaryAdmittedDespiteLoss": true,
+      "ghostToolCall": {
+        "startAt": "2026-09-30T00:42:46.922Z",
+        "endAt": "2026-09-30T00:42:47.432Z",
+        "wallClockMs": 510,
+        "pongSeen": false,
+        "modelVisibleError": "Error: fetch failed"
+      },
+      "slotAfter": {
+        "mounted": true,
+        "materialization": "mounted",
+        "attempts": 1,
+        "reason": null,
+        "allowed": true,
+        "source": {
+          "layer": "template",
+          "origin": "static",
+          "recordId": null
+        }
+      },
+      "capabilityLostEvents": [],
+      "retirementObservations": []
+    }
+  }
+}

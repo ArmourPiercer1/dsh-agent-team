@@ -1,0 +1,38 @@
+{
+  "mutateAt": "2026-09-30T00:42:47.445Z",
+  "mutateValue": {
+    "recordId": "ovr-mcp-team-g0",
+    "kind": "human-override",
+    "scope": "team",
+    "rootSessionId": "session-f15-t1-f15-2026-09-30-00-42-35",
+    "values": {
+      "mcp": {
+        "kind": "deny"
+      }
+    },
+    "generation": 1,
+    "updatedAt": "2026-09-30T00:42:47.448Z"
+  },
+  "boundary": {
+    "admitted": false
+  },
+  "surface": [],
+  "slot": {
+    "mounted": false,
+    "materialization": "mounted",
+    "attempts": 1,
+    "reason": null,
+    "allowed": false,
+    "source": {
+      "layer": "humanOverride",
+      "origin": "human",
+      "recordId": "ovr-mcp-team-g0"
+    }
+  },
+  "newCapSinceR2": 0,
+  "controlRequestsSeen": [],
+  "reset": {
+    "status": 200,
+    "removed": true
+  }
+}
