@@ -1,0 +1,13 @@
+{
+  "T_incidents": [
+    {
+      "openedAt": 1790737691499,
+      "requirementIds": [
+        "worker.mcp.web"
+      ],
+      "scope": "template:worker"
+    }
+  ],
+  "T2_incidents": [],
+  "T2_control": []
+}

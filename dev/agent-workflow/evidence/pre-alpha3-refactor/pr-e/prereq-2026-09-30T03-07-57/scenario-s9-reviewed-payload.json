@@ -1,0 +1,56 @@
+{
+  "recorded": {
+    "schemaVersion": 2,
+    "sequence": 23,
+    "rootSessionId": "session-prereq-main-prereq-2026-09-30T03-07-57",
+    "factType": "control-request-recorded",
+    "payload": {
+      "actionName": "delegate",
+      "correlation": "recovery:rt-b3a-prereq-2026-09-30T03-07-57:1",
+      "executionCoupling": "inline",
+      "kind": "user-approval",
+      "requestId": "ctrl-1keen2j0xnkvtq019xw7d0d0",
+      "requester": {
+        "instanceId": "inst-leader",
+        "kind": "instance",
+        "role": "leader"
+      },
+      "reviewPayload": {
+        "action": "delegate",
+        "blockedScopes": [
+          "template:worker"
+        ],
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance"
+        },
+        "downedCapabilitySubjects": [
+          "mcp_web"
+        ],
+        "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+        "reducedAuthority": {
+          "externalHardCeiling": "absolute (never bypassed)",
+          "otherwise": "unchanged (the original permissions apply)",
+          "policy": "reduced original authority (plan §E.9)",
+          "unavailableSubjects": [
+            "mcp_web"
+          ]
+        },
+        "requestedOperation": "one recovery attempt of 'delegate' on template 'worker'",
+        "rootSessionId": "session-prereq-main-prereq-2026-09-30T03-07-57",
+        "schema": "dsh-agent-team/recovery-dispatch/v1",
+        "templateId": "worker"
+      },
+      "reviewPayloadDigest": "sha256:6b3a9145e46f1b2a2cfa7b195256536eccc9514b38fbfec21b6f567d02d32d41",
+      "subject": {
+        "kind": "template",
+        "templateId": "worker"
+      },
+      "summary": "recovery dispatch: one reviewed attempt of 'delegate' on the blocked scope(s) [template:worker] on the reduced original authority"
+    },
+    "operationId": null,
+    "createdAt": "2026-09-30T03:08:10.732Z"
+  },
+  "digestOk": true,
+  "shapeOk": true
+}
