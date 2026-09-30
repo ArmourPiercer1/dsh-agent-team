@@ -86,8 +86,9 @@ Structural rules (all fail loudly with a classified reason):
   delimiters; a markdown body is rejected (`markdown-body-not-allowed`);
 - BOM is stripped, CRLF normalized, the YAML must decode cleanly;
 - identity fields:
-  - `schemaVersion` — positive integer, currently **1** is the only supported
-    value;
+  - `schemaVersion` — positive integer; supported: **1** (the flat v1
+    document) and **2** (v1 shape + structured `teamRequirements` +
+    per-template `requirements` — §4.2);
   - `blueprintId` — non-empty, ≤128 chars, no whitespace/control characters,
     no `@` (reserved for the `blueprintId@revision` form);
   - `revision` — a positive integer (the shipped convention writes it
@@ -98,15 +99,20 @@ Structural rules (all fail loudly with a classified reason):
 - **Top level (14)**: `schemaVersion`, `blueprintId`, `revision`,
   `displayName`, `description`, `leader`, `members`, `requirements`,
   `teamEnvelope`, `memberEnvelopes`, `policyStates`, `quotas`,
-  `capabilityPolicy`, `metadata`.
+  `capabilityPolicy`, `metadata`. (v2 ADDITIONALLY accepts
+  `teamRequirements` — §4.2.)
 - **Template (leader and members share one schema)**: `templateId` (required),
   `displayName` (≤128), `description` (≤4096), `persona` (**required**,
   non-empty, ≤32768), `modelPreference`, `contextPolicy`, `capabilities`.
+  (v2 ADDITIONALLY accepts a per-template `requirements` — §4.2.)
 - **capabilities**: `teamTools`, `builtinToolDeny`, `skills`, `mcp` (all four
   REQUIRED when the block is present) + optional `permissions`.
 - **permissions policy**: `default`, `allow`, `ask`, `deny` (all required).
 - **permission rule**: `tool`, `resource`.
-- **requirement**: `domain`, `name`, `optional`.
+- **requirement** (v1 flat list): `domain`, `name`, `optional`.
+- **structured requirement** (v2 `teamRequirements` / per-template
+  `requirements`, §4.2): `requirementId`, `type`, `subjects` (lowercase slug
+  list, unique), `complete` (optional boolean).
 - **envelope**: `allow`, `deny` (arrays of operation tokens, lowercase slug
   `[a-z][a-z0-9._-]{0,127}`). Two recognized token classes: the
   team-governance operations (`assign-task`, `create-member`,
@@ -162,6 +168,74 @@ Agent model-selection path as a TEMPLATE-STATIC policy value.)
    the same envelope.
 6. **policyStates**: referenced fields must exist in the frozen field set.
 7. **quotas**: positive integers; `maxConcurrent ≤ maxInstances` per block.
+
+### 4.1 The `persona` requirement: declare the KIND, never a preset id
+
+A requirement whose domain/type is `persona` names the **persona kind** the
+team runtime needs — NOT the runtime preset's id. The pre-create probe
+observes the selected preset's effective persona section as an OBSERVED kind
+(`absent` / `standard` / `complete`; `unresolved` when it cannot be read
+host-side over the DSH public `agentPresets` seam — never a guess) and the
+requirement's subject is matched against that observed kind.
+
+- The closed set of REQUIRED persona kinds (`RequiredPersonaKind`) currently
+  allows exactly **`standard`** = a composable persona base (the
+  prefix/suffix persona slot the Team composes its Leader/Member identity
+  into). `absent` / `complete` as REQUIRED kinds are outside the closed set
+  until an ADR gives them product semantics (they remain valid OBSERVED
+  kinds).
+- A preset satisfies `standard` when its effective persona section is
+  present and composable — under ANY preset id (`standard`, `ptc`, `cordis`,
+  a bespoke id).
+- An unmet `complete:true` persona requirement is a structural FATAL,
+  classified by the world:
+  - the selected preset's effective persona is `complete` →
+    `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` — a complete system persona
+    cannot carry the team's Leader/Member identity (Architecture §13.5);
+    not downgradeable, no Continue-anyway;
+  - the world is bare / no composable persona section →
+    `PERSONA_INCOMPATIBLE`.
+  The remedy in both lanes: pick a preset whose persona is composable
+  (`standard`), or make that preset's persona composable.
+- Why kind, not id: the historical convention matched the requirement name
+  against the selected preset's ID (the 2026-09-19/20
+  persona-requirement-preset-id bug, `docs/issues/`: any composable preset
+  whose id differs from the requirement name failed with a FATAL whose copy
+  falsely claimed a "complete system persona", and the only workaround was
+  renaming the requirement after the preset id — a config-level detour).
+  The kind convention is user-rulled (PR #22 Direction B) and re-landed by
+  the pre-Alpha.3 series (PR-E §E.3, incl. the live host-side observer).
+  Naming a requirement after a preset id (e.g. `team-small-ctb`) is NO
+  LONGER matched — the world fact is keyed by the observed kind.
+- Validation split: a **v2** document's structured persona requirement
+  subjects are validated against the closed set at parse time (any other
+  subject → `MALFORMED_DTO`, `unknown required persona kind`). A **v1**
+  flat `name` is free-form at parse time (frozen v1), so an off-kind name is
+  accepted by the parser but GUARANTEED to FATAL at the pre-create probe —
+  treat every persona requirement name as a kind, and use `standard`.
+- Existing `name: standard` blueprints stay valid unchanged (`standard` is
+  both a preset id and a kind); a bespoke id (e.g. `team-small-ctx`) must
+  become `standard`.
+
+### 4.2 `schemaVersion: 2` — structured requirements (additive)
+
+v2 keeps the entire v1 shape (the flat top-level `requirements` list still
+parses unchanged) and adds two structured requirement surfaces
+(`{requirementId, type, subjects, complete?}`; `subjects` = unique lowercase
+slugs):
+
+- top-level **`teamRequirements`** — team-level structured requirements
+  (plan §E.2); ABSENT in v1 and in a v2 document that declares none
+  (omitted, never present-but-undefined); a declared `[]` is legal;
+- per-template **`requirements`** on the leader and member templates —
+  requirements bound to that template; ABSENT in v1; a v2 template that
+  declares none hashes byte-identically to its v1 form.
+
+The v2 ADDITIONAL rule: a persona-TYPE structured requirement's subjects
+must be closed required persona kinds — currently `standard` (§4.1). The v1
+flat list is NOT re-keyed by this rule (frozen v1): its `name` still must
+SEMANTICALLY be a kind (§4.1), even though the parser does not reject an
+off-kind name.
 
 ## 5. Capabilities (per template)
 
@@ -383,7 +457,10 @@ Run these in order on the authored file; stop at the first failure and fix:
    `kind` in {exact, subtree, any}; the shell-class rejections of §5.1
    (allow-lane `any` rejected on MEMBERS only — the leader exception is
    legal but runtime-dual-gated; exact/subtree rejected for every role).
-7. **Requirements** — unique `(domain, name)`.
+7. **Requirements** — unique `(domain, name)`; a `persona` requirement's
+   name/subject is a persona KIND (`standard` — the only closed required
+   kind today), never a preset id (§4.1); v2 structured requirements:
+   `requirementId`/`type`/`subjects`/`complete` grammar (§4.2).
 8. **Envelopes** — operation token grammar; no operation in both `allow` and
    `deny`.
 9. **policyStates** — `fields` reference only frozen fields.
@@ -439,6 +516,12 @@ already bound to in place (frozen revisions replay their stored source).
 - A `blueprintId` containing `@` or whitespace.
 - Forgetting `persona` on the leader (or leaving it empty) — the most common
   structural FATAL.
+- Writing a runtime preset id (e.g. `team-small-ctb`) as a `persona`
+  requirement name — under the persona-KIND convention the pre-create probe
+  matches the OBSERVED kind, never a preset id, so such a name can never be
+  satisfied: the probe FATALs (`TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` when
+  the selected preset's persona is complete, `PERSONA_INCOMPATIBLE`
+  otherwise) — §4.1.
 - Putting an operation in both `allow` and `deny` of one envelope.
 - `permissions.default: allow` — always rejected.
 - Giving `bash`/`pwsh` an `exact`/`subtree` resource (any role), or an
