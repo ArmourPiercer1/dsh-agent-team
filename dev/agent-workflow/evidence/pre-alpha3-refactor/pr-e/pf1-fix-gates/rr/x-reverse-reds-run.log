@@ -100,4 +100,3 @@ Received: "pending"
       Tests  3 failed | 39 passed (42)
    Start at  07:42:18
    Duration  847ms (transform 535ms, setup 0ms, import 751ms, tests 12ms, environment 0ms)
-

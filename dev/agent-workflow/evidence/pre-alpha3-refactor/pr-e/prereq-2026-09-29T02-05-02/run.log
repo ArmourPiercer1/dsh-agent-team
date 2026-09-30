@@ -60,4 +60,3 @@
     at TeamArtifactAuthority.rebuildFromLedger (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/runtime/artifact-read/authority.js:243:49)
     at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/pre-alpha3-pre-e-requirement-recovery/packages/runtime/dist/packages/runtime/src/plugin/host.js:1280:33)
 dsh web: http://127.0.0.1:3182/?token=REDACTED
-
