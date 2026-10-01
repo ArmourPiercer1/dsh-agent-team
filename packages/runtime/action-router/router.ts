@@ -208,6 +208,17 @@ function recoveryDispatchSubject(
   if (request.action === 'follow-up' && request.targetInstanceId !== undefined) {
     return { kind: 'instance', instanceId: String(request.targetInstanceId) }
   }
+  // fix-control-authz H: a send-message is INSTANCE-addressed — the
+  // messaging coordinator (and the facade's own addressing) carry the
+  // RECIPIENT in `targetInstanceId`; the recovery subject must be that
+  // recipient instance. The old mapping fell through to the recipient's
+  // TEMPLATE subject while the dispatch still passed `targetInstanceId`
+  // — a combination the real control validator rejects fail-closed
+  // (CONTROL_REQUEST_MALFORMED), so the recovery send-message never
+  // reached review.
+  if (request.action === 'send-message' && request.targetInstanceId !== undefined) {
+    return { kind: 'instance', instanceId: String(request.targetInstanceId) }
+  }
   if (targetTemplateId !== undefined) {
     return { kind: 'template', templateId: targetTemplateId }
   }
@@ -215,31 +226,107 @@ function recoveryDispatchSubject(
 }
 
 /**
- * pre-alpha3 PR-E (plan §E.9) — the COMPLETE normalized review payload of
- * one recovery dispatch (lossless JSON): every fact a human reviewer needs
- * to decide — the exact operation, the blocked scopes with their fatal
- * requirements and the downed capability subjects, and the reduced-
- * authority preview (the reduced ORIGINAL authority: the downed subjects
- * unavailable, everything else unchanged, the external hard ceiling
- * absolute). The digest of this payload is the review identity the UI
- * shows (the "exact reviewed payload" — scenario: the UI must display
- * what was actually approved).
+ * fix-control-authz B — the FROZEN review snapshot: a deep copy of the
+ * dispatched request (the `payload` deep-copied + recursively frozen;
+ * the transient `signal` rides by reference — it is never serialized or
+ * persisted) taken ONCE at dispatch time, before anything durable is
+ * written. The SAME frozen snapshot feeds the review payload (persist +
+ * digest) and the post-approval re-execution — the review UI and the
+ * execution share ONE immutable object (target-design §11.2/§11.3:
+ * "UI 展示的 payload 与实际执行使用同一个 frozen object"): a mutation of
+ * the caller's original request while the approval is pending can never
+ * change what is reviewed or what is executed.
+ */
+function deepFreezeCopyValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return Object.freeze(value.map((entry) => deepFreezeCopyValue(entry)))
+  }
+  if (value !== null && typeof value === 'object') {
+    const copy: Record<string, unknown> = {}
+    for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+      copy[key] = deepFreezeCopyValue(entry)
+    }
+    return Object.freeze(copy)
+  }
+  return value
+}
+
+function freezeRequestSnapshot(request: TeamRuntimeActionRequest): TeamRuntimeActionRequest {
+  const snapshot: TeamRuntimeActionRequest = {
+    rootSessionId: request.rootSessionId,
+    action: request.action,
+    caller: { ...request.caller },
+    requestToken: request.requestToken,
+    ...(request.payload !== undefined
+      ? { payload: deepFreezeCopyValue(request.payload) as Record<string, unknown> }
+      : {}),
+    ...(request.targetInstanceId !== undefined ? { targetInstanceId: request.targetInstanceId } : {}),
+    ...(request.delegationTemplateId !== undefined
+      ? { delegationTemplateId: request.delegationTemplateId }
+      : {}),
+    ...(request.delegationInstanceId !== undefined
+      ? { delegationInstanceId: request.delegationInstanceId }
+      : {}),
+    ...(request.execution !== undefined ? { execution: request.execution } : {}),
+    ...(request.signal !== undefined ? { signal: request.signal } : {}),
+  }
+  Object.freeze(snapshot.caller)
+  return Object.freeze(snapshot)
+}
+
+/**
+ * pre-alpha3 PR-E (plan §E.9) + fix-control-authz B — the COMPLETE
+ * normalized review payload of one recovery dispatch (lossless JSON):
+ * every fact a human reviewer needs to decide — the COMPLETE normalized
+ * invocation (target-design §11.3: toolName, rootSessionId, requestToken,
+ * subject, arguments — the work prompt / attachedContext / the message
+ * recipient + body — execution mode, the delegation identity), the
+ * blocked scopes with their fatal requirements and the downed capability
+ * subjects, and the reduced-authority preview (the reduced ORIGINAL
+ * authority: the downed subjects unavailable, everything else unchanged,
+ * the external hard ceiling absolute). Built from the FROZEN snapshot
+ * (the `request` argument is the `freezeRequestSnapshot` result) so the
+ * persisted payload, its digest and the post-approval execution share
+ * one immutable object. The digest of this payload is the review
+ * identity the UI shows (the "exact reviewed payload" — scenario: the UI
+ * must display what was actually approved; a work-content-only change —
+ * e.g. the prompt — MUST change the digest).
  */
 function buildRecoveryDispatchPayload(args: {
   readonly request: TeamRuntimeActionRequest
+  readonly subject: ControlSubject
   readonly rootSessionId: string
   readonly targetTemplateId: string | undefined
   readonly blockedScopes: readonly string[]
   readonly unavailableSubjects: readonly string[]
 }): RemoteSafeJsonValue {
+  const { request } = args
   return {
     schema: 'dsh-agent-team/recovery-dispatch/v1',
+    // The COMPLETE normalized invocation (spec §11.3 — the human
+    // reviews exactly what will execute):
+    toolName: request.action,
     rootSessionId: args.rootSessionId,
-    action: args.request.action,
-    caller: args.request.caller,
-    ...(args.request.targetInstanceId !== undefined
-      ? { targetInstanceId: args.request.targetInstanceId }
+    requestToken: request.requestToken,
+    subject: args.subject,
+    // The full model-visible arguments of the reviewed operation (the
+    // work prompt / attachedContext / taskSummary / label — or, for a
+    // send-message, the recipient + subject + body). Deep-frozen: a
+    // caller mutation of the original payload after this point cannot
+    // change the reviewed content.
+    arguments: (request.payload !== undefined ? request.payload : {}) as RemoteSafeJsonValue,
+    ...(request.execution !== undefined ? { execution: request.execution } : {}),
+    ...(request.delegationTemplateId !== undefined
+      ? { delegationTemplateId: request.delegationTemplateId }
       : {}),
+    ...(request.delegationInstanceId !== undefined
+      ? { delegationInstanceId: request.delegationInstanceId }
+      : {}),
+    // The existing review context (the blocked scope + the reduced
+    // authority preview):
+    action: request.action,
+    caller: request.caller,
+    ...(request.targetInstanceId !== undefined ? { targetInstanceId: request.targetInstanceId } : {}),
     ...(args.targetTemplateId !== undefined ? { templateId: args.targetTemplateId } : {}),
     requestedOperation: `one recovery attempt of '${args.request.action}'${
       args.request.targetInstanceId !== undefined
@@ -293,10 +380,36 @@ export function createTeamRuntime(
   // admission; removed on settlement or fail-closed throw).
   const inFlightDetachedWork = new Set<Promise<unknown>>()
 
-  // pre-alpha3 PR-E (plan §E.9): the per-runtime recovery-dispatch
-  // sequence — the control `correlation` must be NEW per attempt (a retry
-  // after a deny creates a NEW control request; the control service docs).
-  let recoveryDispatchSequence = 0
+  // pre-alpha3 PR-E (plan §E.9) + fix-control-authz D: the recovery-
+  // dispatch ATTEMPT identity. Each attempt carries a FRESH unique nonce
+  // in its control correlation (the correlation is the logical-operation
+  // identity that ties one request + decision to one logical operation).
+  // EVERY attempt requires a fresh Human (target-design §11.3 "每次
+  // Recovery dispatch attempt 都重新审批；不做 approval replay"; ADR-19
+  // "每一次真实执行尝试都重新审批，不复用上一次批准"): a retry after a
+  // deny AND a COLD-RESTART retry of the SAME requestToken must create a
+  // NEW pending request — never re-arm an existing approval. The old
+  // process-local COUNTER reset to 0 on restart: a cold retry re-derived
+  // the first attempt's correlation and directly re-armed the stale
+  // inline approval (the persisted allow executed the new invocation
+  // with no fresh Human; work idempotency could not protect — no work
+  // had been committed yet). A RESTART-UNIQUE per-attempt nonce
+  // (randomUUID — never derivable from the requestToken alone) makes
+  // that impossible by construction.
+  const platformCrypto = globalThis as unknown as {
+    readonly crypto?: { readonly randomUUID?: () => string }
+  }
+  let recoveryAttemptCounter = 0
+  function nextRecoveryAttemptId(): string {
+    recoveryAttemptCounter += 1
+    const uuid =
+      typeof platformCrypto.crypto?.randomUUID === 'function'
+        ? platformCrypto.crypto.randomUUID()
+        : undefined
+    return uuid !== undefined
+      ? uuid
+      : `fallback-${recoveryAttemptCounter.toString(36)}-${Date.now().toString(36)}`
+  }
 
   /**
    * pre-alpha3 PR-E (plan §E.9) — the recovery dispatch: when the
@@ -343,26 +456,41 @@ export function createTeamRuntime(
       return undefined
     }
     const { request } = args
+    // fix-control-authz B: the request is normalized + deep-frozen
+    // ONCE, now — before anything durable is written. Every consumer
+    // below (the subject, the review payload, the digest, the
+    // post-approval re-execution) reads this ONE frozen snapshot: the
+    // review UI and the execution share the same immutable object
+    // (target-design §11.2/§11.3), and a mutation of the caller's
+    // original request while the approval is pending can never change
+    // what is reviewed or what is executed.
+    const frozen = freezeRequestSnapshot(request)
+    const subject = recoveryDispatchSubject(frozen, args.targetTemplateId, args.rootSessionId)
     const payload = buildRecoveryDispatchPayload({
-      request,
+      request: frozen,
+      subject,
       rootSessionId: args.rootSessionId,
       targetTemplateId: args.targetTemplateId,
       blockedScopes,
       unavailableSubjects,
     })
-    recoveryDispatchSequence += 1
+    // fix-control-authz D: the restart-unique per-attempt identity (a
+    // retry after a deny AND a cold-restart retry of the same token are
+    // NEW attempts — a NEW pending request, a fresh Human; the stale
+    // approval can never authorize a new invocation).
+    const attemptId = nextRecoveryAttemptId()
     const record = await controlService.requestControl({
       rootSessionId: args.rootSessionId,
-      caller: request.caller,
+      caller: frozen.caller,
       kind: CONTROL_REQUEST_KINDS.USER_APPROVAL,
-      subject: recoveryDispatchSubject(request, args.targetTemplateId, args.rootSessionId),
-      ...(request.targetInstanceId !== undefined
-        ? { targetInstanceId: String(request.targetInstanceId) }
+      subject,
+      ...(frozen.targetInstanceId !== undefined
+        ? { targetInstanceId: String(frozen.targetInstanceId) }
         : {}),
-      actionName: request.action,
-      correlation: `recovery:${request.requestToken}:${recoveryDispatchSequence.toString(36)}`,
+      actionName: frozen.action,
+      correlation: `recovery:${frozen.requestToken}:${attemptId}`,
       summary:
-        `recovery dispatch: one reviewed attempt of '${request.action}' on the blocked ` +
+        `recovery dispatch: one reviewed attempt of '${frozen.action}' on the blocked ` +
         `scope(s) [${blockedScopes.join(', ')}] on the reduced original authority`,
       reviewPayload: payload,
       reviewPayloadDigest: `sha256:${sha256Hex(canonicalJsonStringify(payload))}`,
@@ -373,15 +501,22 @@ export function createTeamRuntime(
       decision = await controlService.awaitControlDecision({
         rootSessionId: args.rootSessionId,
         requestId: record.requestId,
-        ...(request.signal !== undefined
-          ? { signal: request.signal as ControlWaitSignal }
+        ...(frozen.signal !== undefined
+          ? { signal: frozen.signal as ControlWaitSignal }
           : {}),
       })
     } catch (waitError) {
       if (
         isControlError(waitError) &&
         (waitError.code === CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED ||
-          waitError.code === CONTROL_ERROR_CODES.CONTROL_WAIT_CLOSED)
+          waitError.code === CONTROL_ERROR_CODES.CONTROL_WAIT_CLOSED ||
+          // fix-control-authz C: the request was DURABLY ABANDONED while
+          // the wait parked (the terminal mark settled the waiter — the
+          // wait bridge's typed terminal outcome, fix-control-authz C):
+          // the same zero-effect typed block stands (the terminal mark
+          // is already durable — the abandon below is the tolerated
+          // concurrent-abandon no-op).
+          waitError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED)
       ) {
         // Abort: the requester ABANDONS the request — the durable
         // `control-request-abandoned` terminal mark is written BEFORE
@@ -390,7 +525,7 @@ export function createTeamRuntime(
         try {
           await controlService.abandonControlRequest({
             rootSessionId: args.rootSessionId,
-            caller: request.caller,
+            caller: frozen.caller,
             requestId: record.requestId,
             reason: String(waitError.code),
           })
@@ -448,13 +583,81 @@ export function createTeamRuntime(
         },
       )
     }
+    // fix-control-authz C: the FINAL inline-authorization / terminal
+    // check immediately before the side effects (the wait→admission
+    // race): the wait bridge settles on the decision it OBSERVED; if the
+    // terminal abandon mark landed AFTER that observation (an allow +
+    // abandon race — every interleaving), or the caller's signal aborted
+    // after the settle (the frozen invocation is dead), the allow must
+    // NEVER execute — the typed zero-effect block stands (the same
+    // `controlDecision: 'abandoned'` contract as the abort path).
+    const frozenSignal = asAbortLike(frozen.signal)
+    if (frozenSignal !== undefined && frozenSignal.aborted) {
+      // The invocation was cancelled after the wait settled: durably
+      // close the request (legal for a decided request — the abandon
+      // closes the durable allow; the tolerated outcome is the mark
+      // already present) and keep the typed zero-effect block.
+      try {
+        await controlService.abandonControlRequest({
+          rootSessionId: args.rootSessionId,
+          caller: frozen.caller,
+          requestId: record.requestId,
+          reason: 'wait-aborted',
+        })
+      } catch (abandonError) {
+        if (
+          !(
+            isControlError(abandonError) &&
+            abandonError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED
+          )
+        ) {
+          throw abandonError
+        }
+      }
+      throw new TeamRuntimeError(
+        TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+        'TeamRuntime: the recovery dispatch was abandoned (the invocation aborted after the wait settled) — zero durable effect (the operation remains blocked)',
+        {
+          rootSessionId: args.rootSessionId,
+          status: 'BLOCKED_FATAL',
+          gateReason: 'requiredScopeDown',
+          blockedScopes: [...blockedScopes],
+          source: 'requirement-gate',
+          controlDecision: 'abandoned',
+          controlRequestId: record.requestId,
+        },
+      )
+    }
+    const terminalState = await controlService.listControlState(args.rootSessionId)
+    if (terminalState.abandonments.some((a) => a.requestId === record.requestId)) {
+      // The terminal mark won after the wait settled (the stale allow is
+      // closed — the abandon is the terminal mark, like `stale-denied`):
+      // the allow never executes. The mark is already durable — no
+      // abandon call (exactly-once).
+      throw new TeamRuntimeError(
+        TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+        'TeamRuntime: the recovery dispatch was abandoned (the durable abandon mark landed after the wait settled — the stale allow is closed) — zero durable effect (the operation remains blocked)',
+        {
+          rootSessionId: args.rootSessionId,
+          status: 'BLOCKED_FATAL',
+          gateReason: 'requiredScopeDown',
+          blockedScopes: [...blockedScopes],
+          source: 'requirement-gate',
+          controlDecision: 'abandoned',
+          controlRequestId: record.requestId,
+        },
+      )
+    }
     // Allow: the FRESH admission with the reviewed recovery marker (the
     // full chain re-runs — the gate now classifies the action as
     // recoveryWork and allows it on the blocked scopes, writing the
     // incident-opened fact; the provider admits the activation on the
-    // reduced original authority).
+    // reduced original authority). fix-control-authz B: the re-execution
+    // uses the SAME frozen snapshot the review payload was built from —
+    // the reviewed immutable object, never the caller's (possibly
+    // mutated) original request.
     return performAction({
-      ...request,
+      ...frozen,
       recovery: {
         scopeKeys: [...blockedScopes],
         unavailableSubjects: [...unavailableSubjects],

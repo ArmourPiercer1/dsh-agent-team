@@ -1905,17 +1905,24 @@ export function createControlService(options) {
             if (request.payload.executionCoupling !== CONTROL_EXECUTION_COUPLINGS.INLINE) {
                 return { kind: 'none' };
             }
-            // A durable decision won the race: the first decision is
-            // authoritative — no second terminal mark over it; the wait
-            // RESOLVES with the decision (today's poll fast path).
+            // fix-control-authz C: the durable ABANDON mark is TERMINAL — it
+            // is consulted FIRST, before any decision (the pre-fix order let a
+            // decision recorded BEFORE the abandon win: the wait resolved with
+            // the stale allow — the key negative "abort 后旧 allow/decision
+            // 不得执行 operation", refactor-plan D.4/D.5). The abandon closes
+            // the allow: no terminal mark is written over it (exactly-once)
+            // and the caller settles the waiter rejected typed.
+            if (state.abandonments.some((a) => a.payload.requestId === requestId)) {
+                return { kind: 'already-abandoned' };
+            }
+            // A durable decision WITHOUT an abandon mark is authoritative — no
+            // second terminal mark over it; the wait RESOLVES with the
+            // decision (today's poll fast path — the S6 pin is preserved: a
+            // racing decision with NO abandon mark still settles the wait with
+            // the decision and writes no abandon fact).
             const decision = state.decisions.find((d) => d.payload.requestId === requestId);
             if (decision !== undefined) {
                 return { kind: 'decided', decision: toDecisionRecord(decision.entry, decision.payload) };
-            }
-            // Already terminal via the abandon mark (a concurrent explicit
-            // abandon landed first): exactly-once — no second fact.
-            if (state.abandonments.some((a) => a.payload.requestId === requestId)) {
-                return { kind: 'already-abandoned' };
             }
             // PENDING inline: durably close it FIRST (the shared terminal-mark
             // write — exactly-once + storage-fault contract by code reuse),
@@ -2035,6 +2042,21 @@ export function createControlService(options) {
                     return;
                 try {
                     const state = loadControlState(root);
+                    // fix-control-authz C: the durable ABANDON mark is TERMINAL —
+                    // the waiter settles REJECTED now. The pre-fix poll consulted
+                    // decisions only: a parked waiter on an abandoned row with a
+                    // pre-abandon decision RESOLVED the stale allow, and a waiter
+                    // on an abandoned row without one (including the COLD waiter
+                    // of a restart retry hitting the abandoned row — the row's
+                    // scope key is reused) polled FOREVER for a decision that can
+                    // no longer land. The terminal mark beats any stale decision —
+                    // the same precedence the inline-abort cascade applies on the
+                    // signal path (refactor-plan D.4/D.5: abort 后旧 allow/
+                    // decision 不得执行 operation).
+                    if (state.abandonments.some((a) => a.payload.requestId === requestId)) {
+                        settle(() => reject(new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED, `ControlService: the request '${requestId}' was abandoned before the wait could settle (the durable abandon mark is the terminal outcome — no decision can land on an abandoned request)`, { rootSessionId: root, requestId })));
+                        return;
+                    }
                     const decision = state.decisions.find((d) => d.payload.requestId === requestId);
                     if (decision !== undefined) {
                         settle(() => resolve(toDecisionRecord(decision.entry, decision.payload)));
