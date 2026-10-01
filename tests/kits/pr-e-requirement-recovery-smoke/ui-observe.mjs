@@ -371,3 +371,41 @@ export function summarizeUiObserve({ runStamp = null, origin = null, requestId =
     at: new Date().toISOString(),
   }
 }
+
+// ── UI BOOTSTRAP CLIENT ROW (FIX-1) ─────────────────────────────────────────
+
+/**
+ * The S8-pattern CLIENT row contract, copied from the browser-smoke-host
+ * `rewriteWorldProfile` (tests/kits/team-view-sync-complete-e2e/
+ * browser-smoke-host.mjs L346-372): the browser needs a second, INERT node
+ * half whose package.json manifest serves the `./client` export (the built
+ * client-bundle.js) to the dynamic cordis runner — without it the team client
+ * half never loads in a browser tab (no 团队 tab, zero /team-remote traffic).
+ * The row MUST ride in an `insert:` LIST (a top-level `- id:`/`- name:`
+ * mapping form is a PatchOptions target and is silently dropped — the
+ * smoke-host negative-verified that trap; mirrored here).
+ */
+export const UI_CLIENT_ROW_ID = 'dsh-agent-team-client'
+
+export function uiClientShimIndexHref(worktree) {
+  return `file://${join(String(worktree), 'packages', 'client', 'composition-shim', 'index.js')}`
+}
+
+export function uiClientBundlePath(worktree) {
+  return join(String(worktree), 'packages', 'client', 'composition-shim', 'client-bundle.js')
+}
+
+/**
+ * The client-row patch lines. `enabled:false` => [] — the kit's assembled
+ * cordis.patch.yml stays BYTE-IDENTICAL to the committed flag-off form
+ * (golden-pinned in ui-observe.test.mjs).
+ */
+export function uiClientPatchLines({ worktree, enabled = true } = {}) {
+  if (enabled !== true) return []
+  return [
+    '# browser client row (S8 pattern — the team client half bundle; UI OBSERVE bootstrap):',
+    '- insert:',
+    `    - id: ${UI_CLIENT_ROW_ID}`,
+    `      name: "${uiClientShimIndexHref(worktree)}"`,
+  ]
+}

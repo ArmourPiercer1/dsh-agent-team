@@ -17,6 +17,7 @@ import {
   sha256Hex, canonicalJson, reviewPayloadDigestOf,
   parseObserveFlags, validateAccessRecordPath, readMarkerHint,
   verifyUiTruth, planUiHoldStep, summarizeUiObserve,
+  UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
 } from './ui-observe.mjs'
 
 // ── fixtures ────────────────────────────────────────────────────────────────
@@ -324,4 +325,31 @@ test('summarizeUiObserve: scrubbed origin, digest PREFIX only, zero token patter
   assert.equal(summary.requestId, RID)
   assert.equal(summary.outcome, 'AWAITING')
   assert.equal(summary.holdMs, 180_000)
+})
+
+// ── 9. FIX-1: UI bootstrap client row (S8-pattern contract) ─────────────────
+
+test('FIX-1: flag-off — the builder contributes ZERO bytes (patch text byte-identical)', () => {
+  assert.deepEqual(uiClientPatchLines({ worktree: '/repo', enabled: false }), [])
+  // Assembled-patch golden: with the builder OFF the kit's patch assembly is
+  // the current committed form byte-for-byte (the '' trailing entry stays).
+  const base = ['# hdr', '# c', '- insert:', '    - id: dsh-agent-team', '    - id: p6t6-team-tools']
+  const assemble = (enabled) => [...base,
+    ...(enabled ? ['', ...uiClientPatchLines({ worktree: '/repo', enabled })] : []),
+    ''].join('\n')
+  const legacy = [...base, ''].join('\n')
+  assert.equal(assemble(false), legacy)
+})
+
+test('FIX-1: client row golden — the S8 contract shape (browser-smoke-host rewriteWorldProfile)', () => {
+  const golden = [
+    '# browser client row (S8 pattern — the team client half bundle; UI OBSERVE bootstrap):',
+    '- insert:',
+    '    - id: dsh-agent-team-client',
+    '      name: "file:///repo/packages/client/composition-shim/index.js"',
+  ].join('\n')
+  assert.equal(uiClientPatchLines({ worktree: '/repo', enabled: true }).join('\n'), golden)
+  assert.equal(uiClientShimIndexHref('/repo'), 'file:///repo/packages/client/composition-shim/index.js')
+  assert.equal(uiClientBundlePath('/repo'), '/repo/packages/client/composition-shim/client-bundle.js')
+  assert.equal(UI_CLIENT_ROW_ID, 'dsh-agent-team-client')
 })

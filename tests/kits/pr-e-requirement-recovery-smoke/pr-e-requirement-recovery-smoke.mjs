@@ -250,6 +250,7 @@ import {
   parseObserveFlags, validateAccessRecordPath, readMarkerHint, verifyUiTruth,
   planUiHoldStep, summarizeUiObserve, reviewPayloadDigestOf,
   sha256Hex, canonicalJson,
+  UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
 } from './ui-observe.mjs'
 import {
   TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH,
@@ -1644,6 +1645,20 @@ function yamlEmitItem(item, indent) {
 
 function writeTeamPatchFile(patchPath, rowConfig, comment) {
   mkdirSync(dirname(patchPath), { recursive: true })
+  // UI OBSERVE bootstrap (FIX-1; FLAGS OFF => every block below is inert and
+  // the written patch stays BYTE-IDENTICAL to the committed flag-off form).
+  // The browser lane needs the S8-pattern CLIENT row (the inert node half whose
+  // manifest serves the built client-bundle.js to the dynamic cordis runner);
+  // the bundle is verified BEFORE boot and the written patch AFTER write — a
+  // missing piece is a typed UI NOT_RUN fail-closed (never boot the UI lane on
+  // a silently-dropped row: the smoke-host's `- id:` mapping-form trap).
+  if (UI_OBSERVE.enabled) {
+    const bundlePath = uiClientBundlePath(WORKTREE)
+    if (!existsSync(bundlePath)) {
+      check('S9', 'UI NOT_RUN: UI OBSERVE client bootstrap bundle missing — refusing to boot the UI lane', false, bundlePath)
+      dieFatal(`UI NOT_RUN: client bundle missing for the UI OBSERVE bootstrap row: ${bundlePath}`)
+    }
+  }
   const lines = [
     `# pre-alpha3 PR-E E.12 gate patch layer (world ${RUN_STAMP}): production dsh-agent-team row (WORKTREE dist — this branch's build) + p6t6 observability row + the D-2a \`bare\` preset (a composable preset with NO persona row — the LIVE-ABSENT persona world; the production persona observer maps it to kind \`absent\` (source effective-composition) and the required-standard persona requirement FATALs (PERSONA_INCOMPATIBLE) — the S12b re-scope subject) — mounted ONLY through this public profile-patch seam (CORE PATCH BUDGET = 0).`,
     `# ${comment}`,
@@ -1661,9 +1676,18 @@ function writeTeamPatchFile(patchPath, rowConfig, comment) {
         ],
       },
     }, 2),
+    ...(UI_OBSERVE.enabled ? ['', ...uiClientPatchLines({ worktree: WORKTREE, enabled: true })] : []),
     '',
   ]
   writeFileSync(patchPath, lines.join('\n'))
+  if (UI_OBSERVE.enabled) {
+    const written = readFileSync(patchPath, 'utf8')
+    const shimIndex = uiClientShimIndexHref(WORKTREE)
+    if (!written.includes(UI_CLIENT_ROW_ID) || !written.includes(shimIndex)) {
+      check('S9', 'UI NOT_RUN: written profile patch lacks the UI client row or the shim bundle path', false, `row=${written.includes(UI_CLIENT_ROW_ID)} shim=${written.includes(shimIndex)}`)
+      dieFatal(`UI NOT_RUN: written profile patch lacks the ${UI_CLIENT_ROW_ID} row or the shim bundle path (${patchPath})`)
+    }
+  }
 }
 
 // ── world boot / stop ───────────────────────────────────────────────────────
