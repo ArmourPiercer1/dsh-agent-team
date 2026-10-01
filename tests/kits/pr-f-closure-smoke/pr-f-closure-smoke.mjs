@@ -2757,19 +2757,30 @@ async function main() {
     // ACTUALLY MOUNTED through the public row config — NO scripted seam;
     // the C.8 actual-mount donor: actual mount preset == observed substrate
     // source). G5 cells: (a) probe lane (the U5 caller-only wire fact)
-    // PASSes; (b) GATE lane under the mounted ptc — FINDING PR-F-G5
-    // recorded as current-branch behavior: the v2 persona subject (required
-    // KIND `standard`, the domain schema closed set) vs the requirement-
-    // facts provider's preset-id lookup -> under ptc the kind subject finds
-    // no root/member entry -> typed unknown -> required Team-level
-    // requirement down -> the create is REFUSED typed (FATAL, zero durable
-    // effect). Target design §16.1 / ADR-24 (composable ptc must not be
-    // judged a conflict merely because the preset id is not `standard`) is
-    // NOT the current branch behavior on this path — PR-E lineage, out of
-    // PR-F scope, escalated (the cell asserts the fail-closed contract:
-    // typed FATAL + zero effect + honest reason, never a false OPEN). No
-    // seeded persona fact (U5: the persona domain is caller-only in the
-    // probe; the live observer is the only GATE input).
+    // PASSes; (b) GATE lane under the mounted ptc — POST-RESOLUTION (2026-10-01
+    // test-infra): the ORIGINAL finding PR-F-G5 was recorded at PR-F time as
+    // current-branch behavior (the v2 persona subject — required KIND
+    // `standard`, the domain schema closed set — vs the requirement-facts
+    // provider's preset-id lookup -> under ptc the kind subject found no
+    // root/member entry -> typed unknown -> required Team-level requirement
+    // down -> the create REFUSED typed, FATAL, zero durable effect; target
+    // design §16.1 / ADR-24 not satisfied on that branch — PR-E lineage,
+    // out of PR-F scope, escalated). It is since RESOLVED on master by the
+    // persona-kind work (A-contract, PR #46: the kind subject resolves
+    // through the KIND path, no legacy preset-id shadowing). The cell now
+    // asserts the post-resolution contract: the create is ACCEPTED under
+    // the mounted ptc with the persona genuinely satisfied — TRUE OPEN, T9
+    // minted durable as team-root with a POSITIVE durableGeneration (v6
+    // team-root contract — null only on the `none` relation; the remote
+    // handler rejects a null team-root answer,
+    // packages/remote/src/handlers/team.ts L563-566). The fail-closed
+    // direction (never a false OPEN) is asserted CROSS-KIT: the E.12 S12b
+    // leg (bare/absent preset -> FATAL PERSONA_INCOMPATIBLE,
+    // admitInitialWork blocked) + the merged suite persona-kind tests
+    // (complete-mounted-preset chain FATALs end-to-end); this kit carries
+    // no bare-preset boot cell of its own. No seeded persona fact (U5: the
+    // persona domain is caller-only in the probe; the live observer is the
+    // only GATE input).
     B = await bootHost({
       label: 'B5-PTC', port: HOST_PORT, boot: 5, phase: 'resume',
       facts: factsAll(), mcpServers: ROW_MCP_SERVERS,
