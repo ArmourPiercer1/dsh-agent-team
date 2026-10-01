@@ -320,7 +320,7 @@ function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances)
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params) {
-    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, permissionOverlay, fsContainsKeys, permissionPlaneRef, permissionEnvelope, permissionStaticLayers, } = params;
+    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, permissionOverlay, fsContainsKeys, permissionPlaneRef, permissionEnvelope, permissionStaticLayers, permissionLeaderAuthorityFacts, } = params;
     const repos = domain.repositories;
     const rootSid = config.rootSessionId;
     // --- A02 handle / write ports ------------------------------------------------------
@@ -1789,11 +1789,15 @@ export function createTeamProductionRoot(params) {
         : createPermissionGovernanceLane({
             overlay: permissionOverlay,
             ...(fsContainsKeys === undefined ? {} : { fsContainsKeys }),
-            // Round 3 (BLOCK-1): the two fact readers pass through VERBATIM —
-            // this factory neither synthesizes nor withholds them (absent =
-            // the kernel's distinct UNKNOWN / zero-envelope postures).
+            // Round 3 (BLOCK-1) / round 4 (addressed-team + X1 ceiling): the
+            // fact readers pass through VERBATIM — this factory neither
+            // synthesizes nor withholds them (absent = the kernel's distinct
+            // UNKNOWN / zero-envelope / no-ceiling postures).
             ...(permissionStaticLayers === undefined ? {} : { staticLayers: permissionStaticLayers }),
             ...(permissionEnvelope === undefined ? {} : { permissionEnvelope }),
+            ...(permissionLeaderAuthorityFacts === undefined
+                ? {}
+                : { leaderAuthorityFacts: permissionLeaderAuthorityFacts }),
         });
     const mutation = {
         // R2-1: the durable-backed store is exposed on the root surface (an

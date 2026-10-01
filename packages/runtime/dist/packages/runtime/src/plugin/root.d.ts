@@ -89,7 +89,7 @@ import type { ControlService } from '../../control/index.js';
 import type { HandoffOperationState } from '../../handoff/index.js';
 import type { LegacyHomePort, LegacyInspectFn } from './legacy-surface.js';
 import type { TeamToolSet } from '../../../tools/src/index.js';
-import type { PermissionMutationEnvelope, PermissionStaticLayerFacts } from '../../governance/index.js';
+import type { GovernancePermissionLaneDeps } from '../../governance/index.js';
 import type { CanonicalKeyContains, TeamPermissionPlane } from './permission-plane.js';
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js';
 import type { TeamDomain } from '../../../storage/repositories/index.js';
@@ -346,24 +346,37 @@ export interface TeamProductionRootParams {
         current: TeamPermissionPlane | undefined;
     };
     /**
-     * pre-alpha3 PR4 (round 3, BLOCK-1) — the bound §6 expansion ceiling
-     * reader, forwarded VERBATIM into the governance permission lane. This
-     * factory grants NOTHING of its own: absent → the service's zero-envelope
-     * default (no Leader expansion authority). The host entry injects the
-     * document derived from the SAME bound snapshot (the permission-plane
-     * module's authority-facts builder); test/legacy assemblers hand-author or
-     * omit it. Synchronous data reader — no authority, no I/O.
+     * pre-alpha3 PR4 (round 4, addressed-team binding) — the bound §6
+     * expansion-ceiling reader for one ADDRESSED (team, target member),
+     * forwarded VERBATIM into the governance permission lane. This factory
+     * grants NOTHING of its own: absent → the service's zero-envelope default
+     * (no Leader expansion authority). The host entry injects the plane's
+     * authority-facts reader, which resolves the ADDRESSED team's own bound
+     * Blueprint (never the row anchor) and canonicalizes the carrier's file
+     * matchers at the TARGET member's documented envelope path basis through
+     * the real fs provider — hence async-capable (the service awaits; a
+     * fixed-document sync reader stays valid). Test/legacy assemblers
+     * hand-author fixed documents (sync readers).
      */
-    readonly permissionEnvelope?: (teamSessionId: string) => PermissionMutationEnvelope;
+    readonly permissionEnvelope?: GovernancePermissionLaneDeps['permissionEnvelope'];
     /**
-     * pre-alpha3 PR4 (round 3, BLOCK-1) — the lower-layer static-facts reader
-     * for the Leader's expansion comparisons, forwarded VERBATIM. The three
-     * states stay DISTINCT (governance/types.ts): absent / `undefined` →
-     * UNKNOWN (typed `PERMISSION_EFFECT_CONTEXT_UNAVAILABLE`), `{layers: []}`
-     * → DECLARED-NONE. The host entry injects the identity-bound documents
-     * built by the permission-plane module's authority-facts builder.
+     * pre-alpha3 PR4 (round 4) — the lower-layer static-facts reader for the
+     * Leader's expansion comparisons, forwarded VERBATIM. The three states
+     * stay DISTINCT (governance/types.ts): absent / `undefined` → UNKNOWN
+     * (typed `PERMISSION_EFFECT_CONTEXT_UNAVAILABLE`), `{layers: []}` →
+     * DECLARED-NONE. The host entry injects the plane's addressed-team,
+     * target-member-anchored reader (async-capable, same contract as
+     * {@link permissionEnvelope}).
      */
-    readonly permissionStaticLayers?: (teamSessionId: string, memberInstanceId: string) => PermissionStaticLayerFacts | undefined;
+    readonly permissionStaticLayers?: GovernancePermissionLaneDeps['staticLayers'];
+    /**
+     * pre-alpha3 PR4 (round 4, external review X1) — the acting leader's OWN
+     * static-facts reader (the authority ceiling checked against every risen
+     * cell). Forwarded VERBATIM; absent = the pre-round-4 envelope-only
+     * judgement (hand-authored test/legacy lanes keep working byte-for-byte).
+     * The host entry injects `permissionFacts.staticLayers(team, LEADER)`.
+     */
+    readonly permissionLeaderAuthorityFacts?: GovernancePermissionLaneDeps['leaderAuthorityFacts'];
 }
 /**
  * Assemble the complete production root (A01–A29 + the four S6 seams).

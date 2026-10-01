@@ -114,14 +114,27 @@ export interface GovernancePermissionLaneDeps {
      */
     readonly overlay: PermissionOverlayRepositoryPort;
     /**
-     * The bound §6 MutationEnvelope for one team (the Leader's expansion
-     * authority; design §4 model, ADR §6 semantics). Absent = NO envelope =
-     * no Leader expansion authority (tightenings unaffected) — fail closed.
-     * The returned document is validated (typed refusal on a malformed
-     * envelope, before any write).
+     * The bound §6 MutationEnvelope for one team's addressed mutation (the
+     * Leader's expansion authority; design §4 model, ADR §6 semantics). Absent
+     * = NO envelope = no Leader expansion authority (tightenings unaffected) —
+     * fail closed. The returned document is validated (typed refusal on a
+     * malformed envelope, before any write).
+     *
+     * Round 4 (addressed-team binding): the reader is addressed by the SAME
+     * (team, target member) the mutation names. The envelope's FILE matchers
+     * are canonical keys and are compared against the rising cells the kernel
+     * partitions from the target member's overlay + static layers — one
+     * decision, ONE canonical key space — so a provider-backed reader
+     * canonicalizes them at the TARGET member's documented envelope path basis
+     * (the member's effective workspace), never a row-wide constant. A
+     * provider-backed reader is ASYNC (canonicalization goes through the real
+     * fs provider); a sync reader (a fixed document) stays valid — the service
+     * awaits either. The parameter is ADDITIVE: a one-parameter reader keeps
+     * working verbatim.
      * @param teamSessionId - the team whose bound envelope is read.
+     * @param memberInstanceId - the target instance of the addressed mutation.
      */
-    readonly permissionEnvelope?: (teamSessionId: string) => PermissionMutationEnvelope;
+    readonly permissionEnvelope?: (teamSessionId: string, memberInstanceId: string) => PermissionMutationEnvelope | Promise<PermissionMutationEnvelope>;
     /**
      * The LOWER-LAYER FACTS the Leader authorization compares effective
      * before/after against (design v2 — expansion is a property of the
@@ -134,10 +147,37 @@ export interface GovernancePermissionLaneDeps {
      * verdict depends on lower facts refuse EFFECT_CONTEXT_UNAVAILABLE; a
      * reader returning `{ layers: [] }` = DECLARED-NONE (known deny fallback)
      * → decidable. Never conflated.
+     *
+     * Round 4: the facts are the TARGET MEMBER'S OWN (canonicalized at its
+     * actual effective workspace through the real provider), so the reader may
+     * be ASYNC; the service awaits it inside the serialized section (the
+     * reader itself re-validates its bindings across the await and abstains on
+     * drift). A sync reader keeps working verbatim.
      * @param teamSessionId - the team whose static permission layers are read.
      * @param memberInstanceId - the instance the effective policy is for.
      */
-    readonly staticLayers?: (teamSessionId: string, memberInstanceId: string) => PermissionStaticLayerFacts | undefined;
+    readonly staticLayers?: (teamSessionId: string, memberInstanceId: string) => PermissionStaticLayerFacts | undefined | Promise<PermissionStaticLayerFacts | undefined>;
+    /**
+     * PR4 round 4 (external review X1) — the ACTING LEADER's OWN static facts
+     * for one team (the leader position's template layer, canonicalized by the
+     * same addressed-team reader that serves members). Together with the
+     * leader lane's durable overlay (read by the service through the SAME
+     * overlay port), it forms the AUTHORITY CEILING checked against every
+     * risen cell: a leader cannot grant a member an effect the leader does not
+     * itself hold. ABSENT = the ceiling check stays inert (pre-round-4
+     * envelope-only judgement — test/legacy lanes that hand-author envelopes
+     * and inject no leader policy keep working byte-for-byte); a PRESENT
+     * reader returning `undefined` = UNKNOWN leader facts → risen cells whose
+     * grantor-side answer depends on them refuse EFFECT_CONTEXT_UNAVAILABLE
+     * (an unknown grantor is never assumed to hold the effect).
+     * @param teamSessionId - the team whose leader static facts are read.
+     * @param targetMemberInstanceId - the mutation's target member: the
+     *   leader's template rules are evaluated AS IF applied in the target's
+     *   canonical key space (the ONE space the rising cells live in — an
+     *   unknown-vs-mismatched grantor space can only make the ceiling
+     *   STRICTER, never looser: fail closed).
+     */
+    readonly leaderAuthorityFacts?: (teamSessionId: string, targetMemberInstanceId: string) => PermissionStaticLayerFacts | undefined | Promise<PermissionStaticLayerFacts | undefined>;
     /**
      * The WHOLE-MATCHER containment predicate over two canonical identities
      * of the SAME backend namespace — the ONLY containment relation this lane

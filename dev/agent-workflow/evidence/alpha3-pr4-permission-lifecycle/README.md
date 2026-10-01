@@ -15,7 +15,7 @@ round touched the host, any port, any DSH_HOME world, the acceptance carrier
 | worktree | `.worktrees/pr4-permission-lifecycle` (one worktree, one writer) |
 | base (= `origin/master` at branch creation) | `d8953d6a53047e7d2e787450c0f0efb7e46ad024` (PR3 squash = merged permission kernel) |
 | round-1 commit | `440ede5172c6bb0d669426d5cf019012620e4f9f` — 56 files, +5973 / −22 |
-| round-2 commit (this ledger + the folded test leg) | forward-only child of the round-1 commit, single commit, no force; its 40-char hash is reported in PR #60 and in the parent report (a commit cannot contain its own hash) |
+| round-2 commit (this ledger + the folded test leg) | **CORRECTED ROUND 4 (R-C B-1): NO round-2 commit exists in the shipped history.** `440ede51…` contains the lane spec at exactly 25 `it()` legs, and the 26th leg's +58 lines ship INSIDE `3d432261` (folded). The round-2 battery counts (`…3189`) were taken from the UNCOMMITTED WIP tree — stated as such. Whether the hash that round-2 reported was ever pushed is NOT verifiable offline from this worktree; no claim is made either way. Original text kept above/below for the audit trail. Original claim: forward-only child of the round-1 commit, single commit, no force; its 40-char hash is reported in PR #60 and in the parent report (a commit cannot contain its own hash) |
 | remote verification | round-1 raw `git ls-remote origin` output verbatim in `readback-round1.txt`; `refs/heads/master` stays at `d8953d6a…` (never touched) |
 | PR | #60 — DRAFT, base `master` |
 
@@ -56,9 +56,9 @@ file list, chains (`ROUND3-VERIFIED-CHAINS-AND-RULINGS.md`), RED/GREEN raws and 
 | 1 | `npx vitest run` (`packages/runtime`) — PR4 tree, clean scratch, round 1 | 1 | `Test Files 6 failed | 293 passed (299)`, `Tests 8 failed | 3180 passed (3188)` | `a3p4-runtime-suite.log` (repeat: `a3p4-runtime-suite-repeat1.log`) |
 | 2 | `npx vitest run` (`packages/runtime`) — pristine base `d8953d6a`, detached read-only worktree (deps symlinked, worktree removed afterwards) | 1 | `Test Files 6 failed | 291 passed (297)`, `Tests 8 failed | 3148 passed (3156)` — the baseline set | `baseline-runtime-suite.log` (+ `baseline-runtime-suite-repeat1.log`) |
 | 3 | `npx vitest run` — round 2 (26-leg lane spec included) | 1 | `Test Files 6 failed | 293 passed (299)`, `Tests 8 failed | 3181 passed (3189)`; **`diff baseline-failset.txt r2-repeat-failset.txt` = byte-identical (exit 0)** | `a3p4-runtime-suite-r2-repeat.log`, `baseline-failset.txt`, `r2-repeat-failset.txt` |
-| 4 | `npx vitest run test/a3p4-permission-lifecycle-e2e.test.ts` | 0 | round 1: 25 passed → round 2: **26 passed** | per-file sections of `a3p4-runtime-suite.log` / `a3p4-runtime-suite-r2-repeat.log` |
+| 4 | `npx vitest run test/a3p4-permission-lifecycle-e2e.test.ts` | 0 | round 1: 25 passed → round 2: **26 passed** | **CORRECTED ROUND 4 (R-C A-2): the named "per-file sections" citation does not exist in those logs.** The retained raw for 26 passed is `a3p4-r3-green-existing-p-e2e.log` (round-3 GREEN run of the same spec) |
 | 5 | `npx vitest run test/a3p4-production-permission-plane.test.ts` | 0 | `Tests 7 passed (7)` | `a3p4-runtime-suite.log` |
-| 6 | `npx vitest run test/p4t6-session-event-scan.test.ts` (`packages/testkit`) | 0 | `Tests 10 passed (10)` after the honest recount 934 → **941** (the pre-recount run reported `expected 941 to be 934`); re-run in round 2 unchanged (no new files) | `a3p4-p4t6-scan.log`, `a3p4-p4t6-scan-r2.log` |
+| 6 | `npx vitest run test/p4t6-session-event-scan.test.ts` (`packages/testkit`) | 0 | `Tests 10 passed (10)` after the honest recount 934 → **941**. **CORRECTED ROUND 4 (R-C A-1): the quoted `expected 941 to be 934` line has NO retained raw** — the assertion text is reconstructed, not quoted from evidence. The externally verifiable retained content is `Tests 10 passed (10)` (`a3p4-p4t6-scan-r2.log`) | `a3p4-p4t6-scan.log`, `a3p4-p4t6-scan-r2.log` |
 | 7 | `npx tsc -p tsconfig.json --noEmit` (`packages/runtime`; includes `src` + `test`) | **0** (a clean `tsc` prints nothing ⇒ 0-byte stdout) | round 1: `a3p4-tsc-runtime.log` (0 B) with `a3p4-tsc-runtime.log.exit` = `0`; round 2: `a3p4-tsc-r2.log` (0 B) with `a3p4-tsc-r2.exit` = `0` | as named |
 | 8 | `pnpm build` (repo root) | 0 | all packages built | `a3p4-build.log` |
 | 9 | `pnpm build:composition` BEFORE staging the drift | 1 | lists 32 `produced-but-untracked` + 12 `content-drift` dist files | `a3p4-composition.log` |
@@ -113,8 +113,10 @@ legs and the whole-suite count 3188 → 3189.
 - **`p4t6` recount is a pin move, not a scanner change.** 934 → 941 = +7 files (4 lane modules +
   `src/plugin/permission-plane.ts` + the 2 new specs); the scanner `.mjs` is untouched and the
   frozen quarantine hit set stays at 15 occurrences. Round 2 added no file so the pin held;
-  round 3 adds the 2 RED-first regression specs → scanner-reported **943** (`a3p4-r3-p4t6-recount.log`
-  first reported `expected 943 to be 941`, then the pin moved to the scanner's own number —
+  round 3 adds the 2 RED-first regression specs → scanner-reported **943** (**CORRECTED ROUND 4:
+  the 943/941 counts are NOT externally verifiable from the retained raws — `a3p4-r3-p4t6-recount-r2.log`
+  shows only `Tests 10 passed (10)`; the `expected 943 to be 941` line is reconstructed**) —
+  then the pin moved to the scanner's own number —
   `a3p4-r3-p4t6-recount-r2.log`, 10/10 green; hit set unchanged at 15).
 - **Scope discipline.** No `tests/deepseek-harness-test-use` change (CORE PATCH BUDGET 0 — the
   containment authority stays the pinned public `FileSystem.contains`, called with the provider's
@@ -251,3 +253,151 @@ REAL `createAgentBindings` glue world); amended pins: `test/a3p3-governance-lane
    sides (all specs use absolute paths); relative template paths would resolve against
    `defaultWorkspace` at boot and against the agent cwd at decision time — flagged for the next
    round rather than silently normalized.
+
+
+---
+
+## Round 4 — the four-BLOCK close batch: addressed-team authority + the explicit §6 carrier (sole writer, fresh)
+
+Tree base `3d432261a4941328e78ff1785c694fff65d70f3d` (parent `440ede51…`); forward-only.
+Input: parent CONFIRMED-GO + the five reviewer reports (R-A, R-B, X1, X2, R-C). Design
+rulings + per-BLOCK chains in full: **`ROUND4-FIX-DESIGN-NOTE.md`**. Round-4 raw exit
+files use the `rc=N` convention.
+
+### What landed (round 4, non-dist)
+
+| file | change |
+| --- | --- |
+| `packages/domain/blueprint/src/schema.ts` / `types.ts` / `validate.ts` / `index.ts` | the NEW top-level `permissionMutationEnvelope` carrier (`{operationClass, matcher{exact|subtree→path \| fingerprint→fingerprint}, maximumEffect}`, closed sets, shell↔fingerprint / file↔path enforced AT THE GRAMMAR, duplicate pair refusal); present-only hash inclusion (pre-round-4 contentHashes byte-identical) |
+| `packages/runtime/governance/permission-mutation.ts` | `LeaderMutationAuthorizationInput.authorityCeiling?` — every risen cell is additionally capped by the GRANTOR'S EFFECTIVE answer (`permissionEffectiveAnswer` over the leader's own overlay + static facts: deny/ask EXCEPTIONS subtracted, never a lane union); below-ceiling → `EXPANSION_OUTSIDE_ENVELOPE` / `expansion-exceeds-authority-ceiling`, unknown grantor → `EFFECT_CONTEXT_UNAVAILABLE`; ABSENT `authorityCeiling` = the PR3 algebra byte-for-byte |
+| `packages/runtime/governance/types.ts` | the lane readers become ADDRESSED: `permissionEnvelope(teamSessionId, memberInstanceId)`, `staticLayers(…)`, NEW `leaderAuthorityFacts(teamSessionId, targetMemberInstanceId)`; `T \| Promise<T>` (sync fakes stay legal) |
+| `packages/runtime/governance/service.ts` | awaits the ADDRESSED readers inside the serialized section; folds `authorityCeiling` from the LEADER durable lane (`LEADER_INSTANCE_ID`) + `leaderAuthorityFacts` |
+| `packages/runtime/src/plugin/permission-plane.ts` | REWRITE (~640 lines): per-addressed-team `resolveBoundBlueprint` reads (row-wide constant `void teamSessionId` GONE), canonicalization at the TARGET member's effective workspace via the REAL provider, binding tuple `{blueprintId, revision, contentHash, templateId, cwd, providerVersion}` re-validated AFTER every await (drift → discard + abstain, never mixed identity, faults never cached), envelope = the EXPLICIT carrier ONLY (the static-lane DERIVATION is deleted; fingerprints verbatim), `leaderAuthorityFacts`, warm-refresh semantics (§ GAP3 below) |
+| `packages/runtime/src/plugin/root.ts` | `permissionLeaderAuthorityFacts` pass-through; lane deps types via `GovernancePermissionLaneDeps` |
+| `packages/runtime/src/plugin/host.ts` | the facts wiring is built on `resolveBoundBlueprint(team)` (three-case bound authority, throw→UNKNOWN wrapper — never the anchor fallback), per-member effective workspace (`row.workspace ?? defaultWorkspace`), the real fs canonicalizer (`resolve(path,{cwd}).targetKey`); loud post-boot log rewritten (warm-up semantics, carrier wording, addressed-team text) |
+| `packages/testkit/test/p4t6-session-event-scan.test.ts` | honest recount pin 943 → **944** (one new spec file; RED raw `round4/r4-p4t6-scan.log` shows `expected 944 to be 943` BEFORE the recount) |
+| `packages/runtime/test/a3p4-r4-authority-binding.test.ts` | NEW (14 legs, group A/B below) |
+| `packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts` | E2 fixture re-anchored DERIVED→configured carrier (+comment/title honesty); NEW `R4` describe: 6 host-`apply()` legs |
+
+### Blocks closed (chain → RED raw → GREEN raw), each pinned at production entry
+
+- **BLOCK-1 exec UNREACHABLE** — carrier grammar carries exec fingerprint authority → builder
+  maps it VERBATIM → real boot commits the exact-fingerprint grant. RED: round 3 could not even
+  express the carrier (grammar rejection; the derivation skipped shell rules — R-A BLOCK1/B-0).
+  GREEN: `R4-exec` (legal fingerprint ALLOW commits at host apply; uncarriered fingerprint
+  refuses `PERMISSION_ENVELOPE_EXPANSION_DENIED`; envelope-free tightening still legal) —
+  `round4/r4-family-green.log`; root-level `A3` (verbatim, ZERO provider calls).
+- **BLOCK-2 ROW-A-ON-BEHALF-OF-TEAM-B** — `void teamSessionId` deleted; every fact resolves
+  through `resolveBoundBlueprint(ADDRESSED team)`; identical-templateId isolation. GREEN: `A1`
+  (teams A/B share templateId `worker`, carrier on A only → A expands, B has zero authority,
+  ghost team abstains) + the whole E/R4 entry family.
+- **BLOCK-3 CWD WRONG-SOURCE** — canonical anchor = TARGET member's effective workspace (never
+  the acting row/anchor cwd), envelope + target static facts + leader-ceiling facts + rising
+  cells share ONE canonical key space per decision (documented ruling; cross-workspace ceiling
+  interpretation can only make ceilings STRICTER = fail closed); drift revalidation after the
+  canonicalization await. GREEN: `A2` (two members, same relative rule → divergent keys),
+  `A7` (mid-await workspace drift → document discarded, never cached), `A8` (cache keyed by the
+  FULL tuple; rebind rebuilds), `R4-anchor` (member-basis key COMMITS, foreign-basis key
+  refuses — the round-3 inversion).
+- **BLOCK-4 DERIVE SWALLOWING DENY/ASK** — derivation DELETED (absence ≠ read failure: absent
+  carrier = legal typed zero authority, NO hard-fail of unrelated reads — `A4`, `R4-absent`:
+  tightening commits while the same static-lane grant that round 3 DERIVED to legal now
+  refuses); risen effects additionally checked against the leader's EFFECTIVE answer. GREEN:
+  `B1` (X1 demo 1 verbatim: deny-exception leg — exception refuses, exception-subtracted rest
+  grants) + `B2` (X1 demo 2 verbatim: ask-ceiling leg) + `B3` (unknown grantor =
+  `EFFECT_CONTEXT_UNAVAILABLE`, never assumed) + `B5` (deny→allow laundering class stays closed)
+  + entry `R4-derive` (carrier covers, CEILING refuses, through the real boot) + `B4` (legacy
+  callers WITHOUT `authorityCeiling` keep the PR3 algebra byte-for-byte — the a3p3 80/80 family
+  untouched and green).
+- **GAP3 refresh-FAILURE semantics (recorded, pinned)** — boot refresh is a WARMUP: a provider
+  fault logs LOUD (`console.error` + degraded `console.info` line), the boot CONTINUES
+  (never a boot failure), expansion-capable reads ABSTAIN typed (`EFFECT_CONTEXT_UNAVAILABLE`
+  / zero-authority refusal) meanwhile, UNAFFECTED readers keep serving correct current facts,
+  faults are NEVER cached so the next addressed read REBUILDS (bounded recovery). GREEN:
+  `A6` (unit) + `R4-recover` (entry: fault → typed refusal + unaffected commit → fault clears
+  → the SAME mutation now commits).
+
+### Reviewer findings → disposition (CLOSED per each reviewer's re-verification; this table is the FIXED ledger)
+
+| reviewer | finding | round-4 disposition |
+| --- | --- | --- |
+| R-A | BLOCK1 async ordering (host.ts:2623-2652) + facts shape | CLOSED at round 3 re-verification; the async ordering fix STAYS (post-boot `await refresh()` preserved through the round-4 rewrite) |
+| R-A | BLOCK5 mandatory-open | CLOSED round 3; unchanged, still pinned (E0/E1 negative controls green) |
+| R-A | envelope/static semantics confusion | FIXED round 4: carrier is the ONLY envelope source; `A3`/`A4`/`R4-absent` pin the separation |
+| R-A | GAP3 fail-closed refresh semantics undocumented | FIXED round 4: semantics documented here + in the design note, pinned `A6`/`R4-recover` |
+| R-B | BLOCK2 cross-team / BLOCK3 cwd / BLOCK4 derive | FIXED round 4 (above), pinned at BOTH levels |
+| R-B | exec code identity | FIXED round 4: fingerprint verbatim end-to-end, `A3` + `R4-exec` |
+| X1 | exec-reachability split (carrier needed for exec authority; `any` may NEVER derive exec authority) | FIXED round 4 exactly along the split: carrier-fingerprint path added, `any`-derivation stays forbidden; dual gate + overlay exec-shape rules untouched (decision plane untouched — no diff there) |
+| X1 | demos: deny-exception + ask-ceiling must both pin | `B1`/`B2` verbatim + `R4-derive`/`R4-ceiling` at entry |
+| X2 | decision-plane-per-team refinement (live glue CORRECT today; mutation-authority plane was the defect; no verdict cache exists) | respected: glue untouched; isolation pinned at the mutation plane (`A1`); **no production wire caller of `grantInstance` at this commit** — the root `permissionPlane` surface + these entry tests are what make the isolation real (stated per X2, no live-RPC claim) |
+| R-C | B-1/A-1/A-2 ledger errors | FIXED this round — see "Ledger corrections (round 4)" below |
+
+### Round-4 battery (real exits, this worktree, clean scratch; raws under `round4/`)
+
+| # | command (cwd) | exit | recorded result (QUOTED from the raw) | log |
+| --- | --- | --- | --- | --- |
+| 1 | RED probe — family with the NEW carrier semantics BEFORE the E2 fixture re-anchor | 1 | `Tests 1 failed \| 54 passed (55)` (the old derived-envelope leg `E2-i-host`, refusing exactly as the new rules demand) | `r4-family-redprobe.log` |
+| 2 | `npx vitest run test/a3p4-r4-authority-binding.test.ts` (`packages/runtime`) | 0 | `Tests 14 passed (14)` | `r4-spec1-authority-binding.log` |
+| 3 | `npx tsc -p tsconfig.json` (`packages/runtime`; includes `src` + `test`) | 0 | 0-byte stdout | `r4-tsc.log` |
+| 4 | PR4 family (plane 7 + routing 13 + entry 15 + e2e 26 + authority-binding 14) | 0 | `Tests 75 passed (75)` | `r4-family-green.log` |
+| 5 | `pnpm run build` (repo root) | 0 | all packages built | `r4-build.log` |
+| 6 | `node scripts/check-artifacts-committed.mjs` BEFORE staging | 1 | content-drift list = exactly the modules round 4 edited | `r4-artifacts-PRESTAGE.log` |
+| 7 | FULL runtime suite run 1 | 1 | `Test Files 6 failed \| 296 passed (302)`, `Tests 8 failed \| 3223 passed (3231)`; **failset vs `baseline-failset.txt` = byte-identical (`diff` exit 0)** | `r4-battery-full.log`, `r4-battery-failset.txt` |
+| 8 | FULL runtime suite run 2 (repeat) | 1 | `Tests 8 failed \| 3223 passed (3231)`; repeat failset byte-identical to BOTH run 1 and the baseline | `r4-battery-full-repeat.log`, `r4-battery-repeat-failset.txt` |
+| 9 | FULL runtime suite run 3 (final tree, after the post-battery tsc fix + rebuild) | 1 | `Test Files 6 failed \| 296 passed (302)`, `Tests 8 failed \| 3223 passed (3231)` | `r4-battery-final.log` |
+| 10 | `p4t6` scanner (`packages/testkit`) RED (pre-recount) → GREEN (pin 944) | 1 → 0 | `expected 944 to be 943` → `Tests 10 passed (10)` | `r4-p4t6-scan.log` → `r4-p4t6-scan-r2.log` |
+| 11 | `node scripts/check-artifacts-committed.mjs` AFTER staging (same commit) | 0 | `[check-artifacts-committed] OK: 1424 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))` (dist total UNCHANGED at 1424 — round 4 edited only already-shipped modules) | `r4-artifacts-COMMITTED.log` |
+| 12 | `git diff --cached \| grep -icE 'api[_-]?key\|secret\|passwd\|password\|ghp_\|AKIA\|-----BEGIN'` | 0 (20 matches) | **stated per-log, not blended**: ALL 20 matches are the round-4 deny-exception DEMO fixture (`/work/secret`, `secretPath`) from `a3p4-r4-authority-binding`/entry `R4-derive`; zero high-confidence indicators (`ghp_`/`AKIA`/`api_key`/`-----BEGIN` matched nothing). Round 1's row 11 reported `0` because no prior round used the word | recorded here |
+
+**Per-log failset statements (no blended claims).** Run 7 (`r4-battery-full.log`) FAIL
+lines = 11, `diff` against `baseline-failset.txt` (11 lines) exits 0 — byte-identical,
+so round 4 adds ZERO new failures AND clears none of the pre-existing ones (the
+round-3 hygiene-pin extra is gone because the pin was fixed in round 3). Run 8
+(`r4-battery-full-repeat.log`) FAIL lines = same 11 (diff vs run 7 exit 0) — the two
+`p6t1-parallel` flakes from round-3 run 2 did NOT recur in either round-4 run. Run 9
+(final tree) summary byte-equal to run 7 (`r4-battery-final.summary`). Test-count
+delta vs round 3's final battery (3211): +20 = the 14 new spec-1 legs + the 6 new R4
+entry legs; the prior 55 family legs all still pass (no weakening — E2's absolute-path
+legs retained, the relative-divergence coverage ADDED alongside, per parent ruling).
+
+### Ledger corrections (round 4 — mandatory, per R-C B-1/A-1/A-2)
+
+1. **(B-1) There is NO round-2 commit in the shipped history.** `440ede51` contains the lane
+   spec at exactly 25 `it()` legs; the 26th leg's +58 lines ship INSIDE `3d432261` (folded
+   WIP). The round-2 battery figure `…3189` was taken from the UNCOMMITTED WIP tree and is
+   reported here as exactly that. Whether the hash that round 2 reported was ever pushed is
+   NOT verifiable offline from this worktree — no claim either way. (The Identity-table row is
+   annotated in place; the battery-table rows 3 keep their raws — they ARE the WIP-tree raws.)
+2. **(A-1) The round-1 quote `expected 941 to be 934` has no retained raw** — reconstructed,
+   not quoted (table row 6 annotated). The externally verifiable retained content is
+   `Tests 10 passed (10)`.
+3. **(A-2) Entry 9's line-4 citation "per-file sections of …" does not exist** in the named
+   logs; the retained raw for `26 passed` is `a3p4-r3-green-existing-p-e2e.log` (annotated).
+4. **Scanner counts 943/941 are NOT externally verifiable from retained raws** (round-3
+   `a3p4-r3-p4t6-recount-r2.log` shows only `Tests 10 passed (10)`); annotated at the
+   round-3 caveat. Round 4's own recount keeps BOTH raws (RED `expected 944 to be 943` +
+   GREEN `10 passed`) so this round is verifiable.
+5. **`ROUND3-VERIFIED-CHAINS-AND-RULINGS.md` "This never widens" is FALSE as shipped** — the
+   derivation DID widen past the leader's effective answer at deny/ask exception regions;
+   correction appended IN PLACE at the claim (line ~44) and the false code comment (then
+   `permission-plane.ts:259-260`) is deleted with the round-4 rewrite.
+6. **Failset comparisons are now stated PER LOG** (see the dedicated paragraph above); earlier
+   rounds' blended phrasings are superseded by it.
+
+### Honest non-closures / recorded edges (round 4)
+
+- No production wire caller of `grantInstance` at this commit (root `permissionPlane` surface +
+  tests only). The isolation/entry tests exercise the REAL host boot + mutation service — they
+  are not live-RPC claims (per X2, stated plainly).
+- Tool-surface canonicalization of leader-authored grant RESOURCE texts at the target-member
+  basis is FUTURE wiring; grant matchers remain canonical keys (the R4-anchor foreign-key leg
+  pins that a non-member-basis key simply gets NO authority — fail-closed).
+- A SECOND TeamSession booted inside ONE host world was not added; cross-team isolation is
+  pinned (a) directly on the builder with identical templateIds (`A1` — the exact BLOCK-2
+  shape) and (b) through the bound-Blueprint resolver those multi-team specs already pin
+  (`policy-state-multi-team-bound-blueprint.test.ts` stays green in the battery).
+- The lane's no-change early return stays byte-stable BY DESIGN (X2's refined site): pair
+  equality = opaque identity; staleness is eliminated upstream at the readers (anchor +
+  revalidation), and an unchanged effective state is not an expansion.
+- X1's standing exec truths preserved verbatim (dual gate; overlay exec shapes; no `any`
+  derivation) — `CONSOLIDATED-FIX-DESIGN-NOTE.md` §:64 unmet-line now CLOSED by the carrier.

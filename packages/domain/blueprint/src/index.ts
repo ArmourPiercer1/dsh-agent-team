@@ -38,6 +38,7 @@ export {
   MODEL_PREFERENCE_MAX_LENGTH,
   PERSONA_MAX_LENGTH,
   PERMISSION_PATH_MAX_LENGTH,
+  PERMISSION_FINGERPRINT_MAX_LENGTH,
   PERMISSION_POLICY_DEFAULTS,
   PERMISSION_POLICY_FIELDS,
   PERMISSION_RESOURCE_KINDS,
@@ -54,6 +55,9 @@ export {
 
 export type {
   BlueprintMetadata,
+  BlueprintPermissionMutationEnvelope,
+  BlueprintPermissionMutationEnvelopeMatcher,
+  BlueprintPermissionMutationEnvelopeRule,
   BlueprintRequirement,
   BlueprintTemplate,
   CapabilityPolicy,

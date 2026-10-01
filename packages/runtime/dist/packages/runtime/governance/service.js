@@ -55,6 +55,7 @@ import { normalizeStateView } from '../mutation/service.js';
 import { committedPolicyState } from '../effective-policy/index.js';
 import { assertCells, buildReissueRecord, buildTombstoneRecord, checkCellsAgainstEnvelope, checkCellsExternalHard, isNoChange, mergedSlotValues, mintRecordId, selectSlotWinner, slotIdentityOf, slotOf, } from './slot.js';
 import { authorizeLeaderPermissionMutation, parsePermissionMutation, parsePermissionMutationEnvelope, parsePermissionStaticLayerFacts, planPermissionMutation, PERMISSION_MUTATION_ERROR_CODES, PermissionMutationError, } from './permission-mutation.js';
+import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js';
 /** The storage duplicate code string (mirrors TEAM_DOMAIN_ERROR_CODES). */
 const STORAGE_RECORD_DUPLICATE = 'RECORD_DUPLICATE';
 /**
@@ -482,11 +483,38 @@ export function createGovernanceMutationService(deps) {
                 // mid-check): the envelope document + the LOWER-LAYER FACTS.
                 // `undefined` (no reader / reader abstains) = UNKNOWN;
                 // `{ layers: [] }` = DECLARED-NONE (known deny fallback) — distinct.
+                // PR4 round 4 (parent-binding): BOTH readers are addressed by the
+                // mutation's own (team, member) — the envelope's file matchers are
+                // canonical keys compared against the SAME member's rising cells, so
+                // they canonicalize at that member's basis, never a row-wide
+                // constant. Provider-backed readers are AWAITED (they re-validate
+                // binding/cwd/provider across their own await and abstain on drift);
+                // fixed-document sync readers keep working byte-identically (await
+                // of a non-promise).
                 const envelopeDoc = lane.permissionEnvelope === undefined
                     ? parsePermissionMutationEnvelope({ rules: [] })
-                    : parsePermissionMutationEnvelope(lane.permissionEnvelope(mutation.teamSessionId));
-                const factsRaw = lane.staticLayers?.(mutation.teamSessionId, mutation.memberInstanceId);
+                    : parsePermissionMutationEnvelope(await lane.permissionEnvelope(mutation.teamSessionId, mutation.memberInstanceId));
+                const factsRaw = await lane.staticLayers?.(mutation.teamSessionId, mutation.memberInstanceId);
                 const staticFacts = factsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(factsRaw);
+                // PR4 round 4 (external review X1) — the ACTING LEADER's authority
+                // ceiling: its OWN overlay lane + its OWN static facts, read through
+                // the same ports inside this serialized section. Every risen cell
+                // additionally needs the leader's EFFECTIVE answer at >= the risen
+                // effect (exceptions subtract authority — an envelope union never
+                // substitutes for it). Absent reader = the pre-round-4 envelope-only
+                // judgement stays byte-for-byte (hand-authored test/legacy lanes).
+                let authorityCeiling;
+                if (lane.leaderAuthorityFacts !== undefined) {
+                    const leaderFactsRaw = await lane.leaderAuthorityFacts(mutation.teamSessionId, mutation.memberInstanceId);
+                    const leaderOverlay = await overlay.latest({
+                        teamSessionId: mutation.teamSessionId,
+                        memberInstanceId: LEADER_INSTANCE_ID,
+                    });
+                    authorityCeiling = {
+                        overlayRules: leaderOverlay === undefined ? [] : leaderOverlay.state.rules,
+                        staticFacts: leaderFactsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(leaderFactsRaw),
+                    };
+                }
                 // ONE pure authorization step: effective rises inside the mutation's
                 // closed regions need whole-matcher envelope coverage with the risen
                 // effect ceiling (all-or-nothing, ladder-strict, ADR §6); a region
@@ -499,6 +527,7 @@ export function createGovernanceMutationService(deps) {
                     envelope: envelopeDoc,
                     staticFacts,
                     subtreeContains: lane.subtreeContains,
+                    ...(authorityCeiling !== undefined ? { authorityCeiling } : {}),
                 });
             }
             // 5. Commit ONE new FULL snapshot THROUGH the persistence-only port

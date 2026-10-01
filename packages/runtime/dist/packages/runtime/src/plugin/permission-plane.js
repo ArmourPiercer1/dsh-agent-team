@@ -35,19 +35,25 @@
  *    dep is simply ABSENT, and the merged PR3 gate refuses a subtree
  *    mutation typed instead of guessing.
  *
- * 2. **THE STATIC FACTS OF THE MUTATION PLANE ARE DERIVED, NEVER INVENTED.**
- *    The kernel compares a Leader's expansion against the LOWER static
- *    layers expressed in the SAME canonical identity space as the overlay
- *    rules; turning a blueprint PATH into a canonical key is the fs
- *    provider's job (A2), not this module's. The production entry therefore
- *    builds the facts documents through {@link createPermissionAuthorityFacts}
- *    (below): ONE frozen, identity-bound build at the root's post-boot async
- *    boundary — every template rule canonicalized by the SAME A2 provider —
- *    consumed SYNCHRONOUSLY by the pure kernel, which abstains (UNKNOWN /
- *    zero envelope → typed refusal, never a stale answer) when the bound
- *    snapshot drifts. When NO caller injects a provider (test/legacy roots)
- *    the reader stays ABSENT (= UNKNOWN facts) and the regions that depend
- *    on lower facts refuse typed (`PERMISSION_EFFECT_CONTEXT_
+ * 2. **THE STATIC FACTS AND THE §6 ENVELOPE OF THE MUTATION PLANE READ THE
+ *    ADDRESSED TEAM'S OWN BOUND BLUEPRINT, ANCHORED AT THE TARGET'S
+ *    WORKSPACE.** The kernel compares a Leader's expansion against the LOWER
+ *    static layers and the §6 envelope, all expressed in the SAME canonical
+ *    identity space as the overlay rules; turning a blueprint PATH into a
+ *    canonical key is the fs provider's job (A2), not this module's. The
+ *    production entry therefore builds them through
+ *    {@link createPermissionAuthorityFacts} (below): every document is read
+ *    through `resolveBlueprint(teamSessionId)` (the SAME three-case bound-
+ *    Blueprint authority the team identity binds to — a bound ref NEVER falls
+ *    back to the row anchor), the file paths canonicalized against the TARGET
+ *    member's effective workspace (its runtime cwd), and the §6 envelope taken
+ *    from the bound Blueprint's EXPLICIT `permissionMutationEnvelope` carrier
+ *    (never a derivation of the leader's static lanes). The kernel awaits
+ *    these readers, which re-validate team/member/binding/cwd/provider across
+ *    their await and abstain on drift (UNKNOWN / zero envelope → typed
+ *    refusal, never a stale answer). When NO caller injects a provider (test/
+ *    legacy roots) the reader stays ABSENT (= UNKNOWN facts) and the regions
+ *    that depend on lower facts refuse typed (`PERMISSION_EFFECT_CONTEXT_
  *    UNAVAILABLE`) — the sanctioned posture for a round whose facts are
  *    unavailable. This is the MUTATION plane's authority check ONLY: the
  *    DECISION plane (the lane below) never runs on absent facts — its static
@@ -62,7 +68,6 @@
  * @module @dsh-agent-team/runtime/src/plugin/permission-plane
  */
 import { parsePermissionMutationEnvelope, parsePermissionResourceText, parsePermissionStaticLayerFacts, permissionEffectiveAnswer, PermissionMutationError, } from '../../governance/index.js';
-import { classifyPermissionOperationClass } from '../../governance/permission-mutation.js';
 import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js';
 import { createPermissionDecisionLane, createPermissionLifecycleMutationLane } from '../../permission-lifecycle/index.js';
 /**
@@ -113,13 +118,17 @@ export function createMemberLifecycleReader(rows, teamSessions) {
  * @param deps.permissionEnvelope - the bound §6 expansion ceiling for the
  *   Leader; forwarded VERBATIM (this module grants nothing — absent = the
  *   service's zero-authority default).
+ * @param deps.leaderAuthorityFacts - the acting leader's OWN static facts
+ *   (the authority ceiling X1 requires on every risen cell; forwarded
+ *   VERBATIM — absent = the pre-round-4 envelope-only judgement).
  */
 export function createPermissionGovernanceLane(deps) {
-    const { overlay, fsContainsKeys, staticLayers, permissionEnvelope } = deps;
+    const { overlay, fsContainsKeys, staticLayers, permissionEnvelope, leaderAuthorityFacts } = deps;
     return {
         overlay,
         ...(staticLayers === undefined ? {} : { staticLayers }),
         ...(permissionEnvelope === undefined ? {} : { permissionEnvelope }),
+        ...(leaderAuthorityFacts === undefined ? {} : { leaderAuthorityFacts }),
         ...(fsContainsKeys === undefined
             ? {}
             : {
@@ -166,134 +175,222 @@ export function createTeamPermissionLanes(deps) {
     };
 }
 const DECLARED_NONE = { layers: [] };
+/** The zero-authority envelope document (absent carrier / UNKNOWN). */
+const NO_ENVELOPE = { rules: [] };
+/** The provider version when the host supplies none (single-provider host). */
+const SINGLE_PROVIDER = 'single';
+function bindingsEqual(a, b) {
+    return (a.blueprintId === b.blueprintId &&
+        a.revision === b.revision &&
+        a.contentHash === b.contentHash &&
+        a.templateId === b.templateId &&
+        a.cwd === b.cwd &&
+        a.providerVersion === b.providerVersion);
+}
+function bindingKey(kind, team, member, t) {
+    return `${kind}\u0000${team}\u0000${member}\u0000${t.contentHash}\u0000${t.cwd}\u0000${t.providerVersion}`;
+}
 /**
- * Build the identity-bound authority documents (see the section header).
- * @param deps - the injected policy/identity/canonicalizer sources.
+ * Build the addressed-team, per-member authority readers (see the section
+ * header for the three bindings and the fail-closed rules).
+ * @param deps - the injected bound-Blueprint / member / canonicalizer sources.
  */
 export function createPermissionAuthorityFacts(deps) {
-    let built;
-    async function build() {
-        const bound = deps.identity();
-        const layersByTemplate = new Map();
-        for (const templateId of deps.templateIds) {
-            const policy = deps.policyOf(templateId);
-            if (policy === undefined) {
-                // Declares no static lane: the DECLARED-NONE document, no fs calls.
-                layersByTemplate.set(templateId, DECLARED_NONE);
-                continue;
-            }
-            const rules = [];
-            for (const lane of ['allow', 'ask', 'deny']) {
-                for (const rule of policy[lane]) {
-                    if (rule.resource.kind === 'any') {
-                        rules.push({ operationClass: rule.tool, matcher: { kind: 'any' }, effect: lane });
-                        continue;
-                    }
-                    // A canonicalization fault throws → the WHOLE build fails closed
-                    // (never a partially canonicalized authority).
-                    const key = await deps.canonicalize(rule.resource.path);
-                    if (typeof key !== 'string' || key.length === 0) {
-                        throw new Error(`permission authority facts: the fs provider returned no canonical key for ${JSON.stringify(rule.resource.path)}`);
-                    }
-                    rules.push({
-                        operationClass: rule.tool,
-                        matcher: { kind: rule.resource.kind, resource: key },
-                        effect: lane,
-                    });
-                }
-            }
-            layersByTemplate.set(templateId, parsePermissionStaticLayerFacts({
-                layers: [{ label: templateId, default: policy.default, rules }],
-            }));
+    const providerVersion = deps.providerVersion ?? (() => SINGLE_PROVIDER);
+    /** Cached documents keyed by (kind, team, member, binding); a fault is
+     *  NEVER stored here (the next read retries → bounded recovery). */
+    const cache = new Map();
+    let healthyFlag = false;
+    function providerVersionOf() {
+        try {
+            return providerVersion();
         }
-        // The Leader's expansion ceiling: its own bound ALLOW/ASK lanes, fs
-        // class only (see the section header for the exec-class ruling).
-        const leaderPolicy = deps.policyOf(deps.leaderTemplateId());
-        const envelopeRules = [];
-        if (leaderPolicy !== undefined) {
-            for (const [lane, maximumEffect] of [
-                ['allow', 'allow'],
-                ['ask', 'ask'],
-            ]) {
-                for (const rule of leaderPolicy[lane]) {
-                    if (rule.resource.kind === 'any')
-                        continue; // no envelope matcher expresses `any`
-                    if (classifyPermissionOperationClass(rule.tool) !== 'fs')
-                        continue; // exec: §6 carrier required
-                    const key = await deps.canonicalize(rule.resource.path);
-                    if (typeof key !== 'string' || key.length === 0) {
-                        throw new Error(`permission authority facts: the fs provider returned no canonical key for ${JSON.stringify(rule.resource.path)}`);
-                    }
-                    envelopeRules.push({
-                        operationClass: rule.tool,
-                        matcher: { kind: rule.resource.kind, resource: key },
-                        maximumEffect,
-                    });
+        catch {
+            // A provider-version fault is an unknown provider → no cached doc is
+            // trustworthy this round; surface as a distinct token (forces a rebuild
+            // and, if it persists, an UNKNOWN read rather than a stale serve).
+            return 'provider-version-fault';
+        }
+    }
+    /** Read the CURRENT binding tuple for one (team, member), or `undefined`
+     *  when any binding is UNKNOWN (unresolvable bound Blueprint, no member
+     *  row, no workspace). Never guesses. */
+    function currentBinding(teamSessionId, memberInstanceId) {
+        const blueprint = deps.resolveBlueprint(teamSessionId);
+        if (blueprint === undefined)
+            return undefined;
+        const isLeader = memberInstanceId === LEADER_INSTANCE_ID;
+        const templateId = isLeader
+            ? blueprint.leader.templateId
+            : deps.memberTemplateId(teamSessionId, memberInstanceId);
+        if (!isLeader && templateId === undefined)
+            return undefined; // no durable row → UNKNOWN
+        const cwd = deps.memberWorkspace(teamSessionId, memberInstanceId);
+        if (typeof cwd !== 'string' || cwd.length === 0)
+            return undefined;
+        return {
+            blueprint,
+            tuple: {
+                blueprintId: String(blueprint.blueprintId),
+                revision: String(blueprint.revision),
+                contentHash: String(blueprint.contentHash),
+                templateId,
+                cwd,
+                providerVersion: providerVersionOf(),
+            },
+        };
+    }
+    /** Canonicalize the target member's template policy into the kernel's
+     *  static-facts document AT THE MEMBER'S WORKSPACE. A fault throws (the
+     *  caller abstains + retries next read); a no-permissions template is the
+     *  DECLARED-NONE document with ZERO fs calls. */
+    async function buildStaticFacts(blueprint, templateId, cwd) {
+        const policy = policyOfTemplate(blueprint, templateId);
+        if (policy === undefined)
+            return DECLARED_NONE;
+        const rules = [];
+        for (const lane of ['allow', 'ask', 'deny']) {
+            for (const rule of policy[lane]) {
+                if (rule.resource.kind === 'any') {
+                    rules.push({ operationClass: rule.tool, matcher: { kind: 'any' }, effect: lane });
+                    continue;
                 }
+                const key = await deps.canonicalize(rule.resource.path, cwd);
+                if (typeof key !== 'string' || key.length === 0) {
+                    throw new Error(`permission authority facts: the fs provider returned no canonical key for ${JSON.stringify(rule.resource.path)}`);
+                }
+                rules.push({ operationClass: rule.tool, matcher: { kind: rule.resource.kind, resource: key }, effect: lane });
             }
         }
-        const leaderFacts = layersByTemplate.get(deps.leaderTemplateId()) ?? DECLARED_NONE;
-        built = parseBuiltDocuments({
-            bound,
-            layersByTemplate,
-            envelope: parsePermissionMutationEnvelope({ rules: envelopeRules }),
-            leaderLayerFacts: leaderFacts,
+        return parsePermissionStaticLayerFacts({
+            layers: [{ label: templateId, default: policy.default, rules }],
         });
     }
-    function current() {
-        if (built === undefined)
-            return undefined;
-        const now = deps.identity();
-        const bound = built.bound;
-        if (now.blueprintId !== bound.blueprintId ||
-            now.revision !== bound.revision ||
-            now.contentHash !== bound.contentHash) {
-            // The bound snapshot moved under the documents: abstain, never serve
-            // stale facts (the kernel's UNKNOWN / zero-envelope posture).
-            return undefined;
+    /** Build the §6 envelope from the bound Blueprint's EXPLICIT config carrier
+     *  (never a static derivation — see the section header). File matchers are
+     *  canonicalized AT THE TARGET MEMBER'S WORKSPACE (the envelope-path basis:
+     *  the envelope must compare in the same key space as the rising cells the
+     *  kernel partitions from the member's overlay + static facts); exec
+     *  fingerprints are carried VERBATIM (exact identity). Absent carrier →
+     *  zero-authority (a legal typed absence, zero fs calls). */
+    async function buildEnvelope(blueprint, cwd) {
+        const carrier = blueprint.permissionMutationEnvelope;
+        if (carrier === undefined || carrier.rules.length === 0)
+            return NO_ENVELOPE;
+        const rules = [];
+        for (const rule of carrier.rules) {
+            if (rule.matcher.kind === 'fingerprint') {
+                // Exec lane: the canonical fingerprint IS the identity — verbatim,
+                // never canonicalized, never widened (design §5).
+                rules.push({
+                    operationClass: rule.operationClass,
+                    matcher: { kind: 'fingerprint', resource: rule.matcher.fingerprint },
+                    maximumEffect: rule.maximumEffect,
+                });
+                continue;
+            }
+            // File lane: exact | subtree — canonicalized at the target basis.
+            const key = await deps.canonicalize(rule.matcher.path, cwd);
+            if (typeof key !== 'string' || key.length === 0) {
+                throw new Error(`permission authority envelope: the fs provider returned no canonical key for ${JSON.stringify(rule.matcher.path)}`);
+            }
+            rules.push({
+                operationClass: rule.operationClass,
+                matcher: { kind: rule.matcher.kind, resource: key },
+                maximumEffect: rule.maximumEffect,
+            });
         }
-        return built;
+        return parsePermissionMutationEnvelope({ rules });
     }
+    /** The shared read path: build-or-cache, then RE-VALIDATE the binding tuple
+     *  across the canonicalization await (drift → abstain, discard, retry next
+     *  read; never serve a half-trusted / stale document). Bounded to two build
+     *  attempts, then a typed abstention. */
+    async function readCached(kind, teamSessionId, memberInstanceId, build, unknownValue) {
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+            const now = currentBinding(teamSessionId, memberInstanceId);
+            if (now === undefined) {
+                healthyFlag = false;
+                return unknownValue; // UNKNOWN bindings → abstain (never a guess)
+            }
+            const key = bindingKey(kind, teamSessionId, memberInstanceId, now.tuple);
+            const cached = cache.get(key);
+            if (cached !== undefined) {
+                healthyFlag = true;
+                return cached;
+            }
+            let built;
+            try {
+                built = await build(now.blueprint, now.tuple);
+            }
+            catch {
+                // A canonicalization fault: NO cache (next read retries = bounded
+                // recovery), UNKNOWN this round, never a partially canonicalized doc.
+                healthyFlag = false;
+                return unknownValue;
+            }
+            // RE-VALIDATE across the await: the bindings must be UNCHANGED or the
+            // document is mixed-identity and is discarded (abstain this round, the
+            // next read rebuilds against the current bindings).
+            const after = currentBinding(teamSessionId, memberInstanceId);
+            if (after === undefined || !bindingsEqual(now.tuple, after.tuple)) {
+                healthyFlag = false;
+                return unknownValue;
+            }
+            cache.set(key, built);
+            healthyFlag = true;
+            return built;
+        }
+        healthyFlag = false;
+        return unknownValue;
+    }
+    const staticLayers = (teamSessionId, memberInstanceId) => readCached('static', teamSessionId, memberInstanceId, (blueprint, tuple) => buildStaticFacts(blueprint, tuple.templateId, tuple.cwd), undefined);
+    const permissionEnvelope = (teamSessionId, memberInstanceId) => readCached('env', teamSessionId, memberInstanceId, (blueprint, tuple) => buildEnvelope(blueprint, tuple.cwd), NO_ENVELOPE);
+    // The acting leader's OWN static facts (X1 authority ceiling), evaluated
+    // against the TARGET member's effective-workspace basis (the SAME space
+    // the rising cells and the envelope occupy — the leader template's relative
+    // rules resolve identically to how they are judged at execution, so a
+    // `deny exact <path>` exception lands on the exact key it must subtract).
+    // The target's binding tuple (freshness + UNKNOWN) governs the read; the
+    // policy CONTENT is the leader template's.
+    const leaderAuthorityFacts = (teamSessionId, targetMemberInstanceId) => readCached('leader', teamSessionId, targetMemberInstanceId, (blueprint, tuple) => buildStaticFacts(blueprint, String(blueprint.leader.templateId), tuple.cwd), undefined);
     return {
         async refresh() {
-            await build();
+            const targets = deps.bootWarmTargets?.() ?? [];
+            // Best-effort warm: build each target so the FIRST grant (post-boot,
+            // pre-readiness) is reachable (BLOCK-1); an individual fault just leaves
+            // that target to retry lazily, but flips `healthy` (the loud host log
+            // reports it) — never a hard boot failure on a transient fs fault.
+            let allOk = true;
+            for (const target of targets) {
+                try {
+                    await staticLayers(target.teamSessionId, target.memberInstanceId);
+                    await permissionEnvelope(target.teamSessionId, target.memberInstanceId);
+                }
+                catch {
+                    allOk = false;
+                }
+            }
+            healthyFlag = allOk;
         },
-        healthy: () => current() !== undefined,
-        staticLayers: (teamSessionId, memberInstanceId) => {
-            const docs = current();
-            if (docs === undefined)
-                return undefined;
-            if (memberInstanceId === LEADER_INSTANCE_ID)
-                return docs.leaderLayerFacts;
-            const templateId = deps.memberTemplateId(teamSessionId, memberInstanceId);
-            if (templateId === undefined)
-                return undefined; // no row = UNKNOWN (never guessed)
-            // A template OUTSIDE the bound snapshot has no declared facts here:
-            // UNKNOWN (not DECLARED-NONE — the build never saw its lanes).
-            return docs.layersByTemplate.get(templateId);
-        },
-        permissionEnvelope: (teamSessionId) => {
-            const docs = current();
-            if (docs === undefined)
-                return { rules: [] };
-            void teamSessionId;
-            return docs.envelope;
-        },
+        healthy: () => healthyFlag,
+        // Async-normalizing wrappers: the internal readers forward the deps'
+        // `T | Promise<T>` shape (sync test fakes stay legal); the PRODUCTION
+        // surface is exactly-Promise (the PermissionAuthorityFacts contract).
+        staticLayers: async (teamSessionId, memberInstanceId) => staticLayers(teamSessionId, memberInstanceId),
+        permissionEnvelope: async (teamSessionId, memberInstanceId) => permissionEnvelope(teamSessionId, memberInstanceId),
+        leaderAuthorityFacts: async (teamSessionId, targetMemberInstanceId) => leaderAuthorityFacts(teamSessionId, targetMemberInstanceId),
     };
 }
-/** Validate every derived document through the KERNEL's own parsers (a
- *  builder bug can only ever become a typed refusal downstream, never a
- *  malformed durable-adjacent document) and freeze the bundle. */
-function parseBuiltDocuments(input) {
-    const layersByTemplate = new Map();
-    for (const [templateId, facts] of input.layersByTemplate) {
-        layersByTemplate.set(templateId, parsePermissionStaticLayerFacts(facts));
-    }
-    return {
-        bound: input.bound,
-        layersByTemplate,
-        envelope: input.envelope,
-        leaderLayerFacts: parsePermissionStaticLayerFacts(input.leaderLayerFacts),
-    };
+/** The permission policy of one template of the bound Blueprint (the leader
+ *  position included); `undefined` when the template declares none or its id
+ *  is not present in the bound snapshot (UNKNOWN upstream). */
+function policyOfTemplate(blueprint, templateId) {
+    const templates = [
+        blueprint.leader,
+        ...blueprint.members,
+    ];
+    const found = templates.find((template) => template.templateId === templateId);
+    return found?.capabilities?.permissions;
 }
 //# sourceMappingURL=permission-plane.js.map

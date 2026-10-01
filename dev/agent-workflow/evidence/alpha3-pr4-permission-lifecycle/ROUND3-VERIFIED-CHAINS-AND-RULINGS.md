@@ -42,6 +42,12 @@ re-derived; the predecessor's note is corroborated except where marked.
   ⇒ NO exec expansion authority from the grammar (Leader exec fingerprint expansions refuse
   typed `EXPANSION_DENIED` at the production entry until a blueprint grammar PR carries §6).
   This never widens (the Leader can only expand inside what its own bound template allows) and is
+  **[ROUND-4 CORRECTION — the "never widens" claim is FALSE as shipped.** The round-3 derivation
+  copied the leader's ALLOW/ASK lanes but SILENTLY DROPPED the same-lane DENY/ASK exceptions, so a
+  member COULD be widened past the leader's EFFECTIVE answer at exception regions (X1's two demos:
+  deny-exception + ask-ceiling). Round 4 removed the derivation (explicit carrier only) and added
+  the `authorityCeiling` effective comparison; the false code comment (then permission-plane.ts
+  :259-260) is deleted with the rewrite. Pins: `a3p4-r4-authority-binding` B1/B2/B5 + entry `R4-derive`.]**
   version-explicit: the facts document binds {blueprintId, revision, contentHash} and abstains
   (UNKNOWN / zero-envelope) on drift ⇒ typed refusal, never a stale answer.
 

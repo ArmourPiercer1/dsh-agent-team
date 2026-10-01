@@ -1,0 +1,42 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+ ✓ test/a3p4-permission-lifecycle-e2e.test.ts (26 tests) 97ms
+ ✓ test/a3p4-production-permission-plane.test.ts (7 tests) 61ms
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry derives the facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > a booted permissions row lets the LEADER expansion commit through the DERIVED envelope and the plane answers allow (i-host)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4E2-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts (13 tests) 387ms
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts (9 tests | 1 failed) 410ms
+     ✓ the LEADER resolves LIVE for a decision over the real TeamSession (no member row exists for the leader — v2 design) 22ms
+     ✓ member semantics unchanged: a ghost instance still refuses INSTANCE_UNKNOWN 7ms
+     ✓ a LEADER exact grant inside the injected envelope COMMITS at the assembled root and the plane answers the overlay allow (BLOCK-1) 8ms
+     ✓ NEGATIVE: an envelope region WITHOUT coverage refuses typed EXPANSION_DENIED and writes nothing 4ms
+     ✓ UNKNOWN static facts refuse EFFECT_CONTEXT_UNAVAILABLE (never a guessed baseline) 4ms
+     × a booted permissions row lets the LEADER expansion commit through the DERIVED envelope and the plane answers allow (i-host) 169ms
+     ✓ store-open failure at apply(): typed startup failure, never a warn-only boot (BLOCK-5, fail-open closed) 5ms
+     ✓ NEGATIVE CONTROL: a healthy no-permissions world gains ZERO new startup failures and no permission warning 9ms
+     ✓ a persisted overlay DENY beats the template ALLOW through the real glue pipeline 179ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry derives the facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > a booted permissions row lets the LEADER expansion commit through the DERIVED envelope and the plane answers allow (i-host)
+PermissionMutationError: a LEADER mutation raises the EFFECTIVE effect in 1 region(s) the envelope does not cover (ladder-strict; reveals included; all-or-nothing) — zero write (problem: expansion-region-uncovered)
+ ❯ refuse governance/permission-mutation.ts:206:9
+    204|   details: Record<string, unknown> = {},
+    205| ): never {
+    206|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    207|     problem,
+    208|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeLeaderPermissionMutation governance/permission-mutation.ts:1276:5
+ ❯ governance/service.ts:686:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 54 passed (55)
+   Start at  23:37:11
+   Duration  1.50s (transform 2.74s, setup 0ms, import 3.74s, tests 955ms, environment 0ms)
+

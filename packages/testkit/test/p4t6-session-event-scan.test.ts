@@ -1626,8 +1626,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // set included, is UNCHANGED). The 943 value is the scanner run on this
     // tree (authoritative: this suite reported `expected 943 to be 941`
     // before the recount; not hand-computed).
-    expect(scanResult.filesScanned).toBe(943)
-    expect(scanResult.files.length).toBe(943)
+    // ALPHA.3 PR4 permission-lifecycle ROUND 4 (2026-10-07): 943 + 1 = 944 —
+    // the one new direct authority-facts + kernel-ceiling spec
+    // (`a3p4-r4-authority-binding.test.ts`, SessionEvent-free; every other
+    // pin of this suite is UNCHANGED — the round-4 production edits are
+    // in-place changes on already-scanned files). The 944 value is the
+    // scanner run on this tree (authoritative: this suite reported
+    // `expected 944 to be 943` before the recount — raw retained as
+    // `round4/r4-p4t6-scan.log`; not hand-computed).
+    expect(scanResult.filesScanned).toBe(944)
+    expect(scanResult.files.length).toBe(944)
 
   })
 

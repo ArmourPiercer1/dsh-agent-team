@@ -287,6 +287,52 @@ export interface MemberEnvelopeEntry {
 }
 
 /**
+ * The Alpha.3 PR4 Leader permission-EXPANSION authority carrier
+ * (ADR §6 / design §4) — conceptually DISTINCT from {@link MutationEnvelope}
+ * (the operation-token capability set above). Where a {@link MutationEnvelope}
+ * answers "which MUTATION OPERATIONS / exec tokens may this actor use at
+ * all", this answers "for one resource matcher, up to which EFFECT may a
+ * Leader EXPAND a member's overlay". The two never read each other and there
+ * is NO transformation between them (D2: one concept, one source of truth).
+ *
+ * The shape mirrors the runtime kernel's canonical
+ * `PermissionMutationEnvelope` (governance/permission-mutation.ts) — the
+ * runtime envelope rules use the same {operationClass, matcher, maximumEffect}
+ * concept — with one difference forced by the blueprint being pure data:
+ * a FILE matcher carries a workspace PATH here, which the runtime fs provider
+ * (A2) canonicalizes to the opaque key at build time; the kernel envelope's
+ * file matcher carries the already-canonical `resource`. An EXEC matcher
+ * carries the canonical fingerprint VERBATIM (exact identity, never
+ * canonicalized — it already IS the canonical operation identity).
+ */
+export interface BlueprintPermissionMutationEnvelope {
+  /** The expansion-authority rules (possibly empty = NO expansion authority). */
+  readonly rules: readonly BlueprintPermissionMutationEnvelopeRule[]
+}
+
+/** One {@link BlueprintPermissionMutationEnvelope} rule. */
+export interface BlueprintPermissionMutationEnvelopeRule {
+  /** The closed operation-class token (one of {@link PERMISSION_TOOL_NAMES}). */
+  readonly operationClass: string
+  /** The resource matcher; its shape is picked by the operation class (§5). */
+  readonly matcher: BlueprintPermissionMutationEnvelopeMatcher
+  /** The closed effect ceiling this rule admits an expansion up to (§6). */
+  readonly maximumEffect: 'allow' | 'ask' | 'deny'
+}
+
+/**
+ * The matcher of one {@link BlueprintPermissionMutationEnvelopeRule}. The
+ * `operationClass` picks the legal variant: a FILE-class operation pairs with
+ * `exact`/`subtree` (a workspace `path`); a SHELL-class operation (`bash` /
+ * `pwsh`) pairs with `fingerprint` ONLY (the canonical operation identity,
+ * carried verbatim — no subtree, no `any`, no path; design §5).
+ */
+export type BlueprintPermissionMutationEnvelopeMatcher =
+  | { readonly kind: 'exact'; readonly path: string }
+  | { readonly kind: 'subtree'; readonly path: string }
+  | { readonly kind: 'fingerprint'; readonly fingerprint: string }
+
+/**
  * A PolicyState definition (Architecture §5.4, optional). Its `fields`
  * reference top-level blueprint fields that exist in this document
  * (Architecture §5.5: "PolicyState 不引用不存在的字段").
@@ -376,6 +422,18 @@ export interface TeamBlueprint {
   readonly teamEnvelope?: MutationEnvelope
   /** Member mutation envelopes (unique templateIds, resolvable). */
   readonly memberEnvelopes: readonly MemberEnvelopeEntry[]
+  /**
+   * The Alpha.3 PR4 Leader permission-EXPANSION authority carrier (absent =
+   * NO declared expansion authority — a LEGAL typed absence, never a read
+   * failure: expansions simply find no ceiling rule and refuse, while every
+   * unaffected decision keeps answering). Conceptually distinct from the
+   * operation-token {@link teamEnvelope} / {@link memberEnvelopes} capability
+   * sets: this is the per-rule permission ceiling the mutation kernel
+   * consults for Leader EXPANSION (ADR §6). Present-only in the content
+   * hash (the teamRequirements/permissions "absent ⇒ key omitted"
+   * discipline): documents that do not declare it hash byte-identically.
+   */
+  readonly permissionMutationEnvelope?: BlueprintPermissionMutationEnvelope
   /** PolicyState definitions (unique ids, resolvable field refs). */
   readonly policyStates: readonly PolicyStateDefinition[]
   /** Instance/team quotas (absent = none declared). */

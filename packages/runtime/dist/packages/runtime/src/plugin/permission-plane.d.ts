@@ -35,19 +35,25 @@
  *    dep is simply ABSENT, and the merged PR3 gate refuses a subtree
  *    mutation typed instead of guessing.
  *
- * 2. **THE STATIC FACTS OF THE MUTATION PLANE ARE DERIVED, NEVER INVENTED.**
- *    The kernel compares a Leader's expansion against the LOWER static
- *    layers expressed in the SAME canonical identity space as the overlay
- *    rules; turning a blueprint PATH into a canonical key is the fs
- *    provider's job (A2), not this module's. The production entry therefore
- *    builds the facts documents through {@link createPermissionAuthorityFacts}
- *    (below): ONE frozen, identity-bound build at the root's post-boot async
- *    boundary — every template rule canonicalized by the SAME A2 provider —
- *    consumed SYNCHRONOUSLY by the pure kernel, which abstains (UNKNOWN /
- *    zero envelope → typed refusal, never a stale answer) when the bound
- *    snapshot drifts. When NO caller injects a provider (test/legacy roots)
- *    the reader stays ABSENT (= UNKNOWN facts) and the regions that depend
- *    on lower facts refuse typed (`PERMISSION_EFFECT_CONTEXT_
+ * 2. **THE STATIC FACTS AND THE §6 ENVELOPE OF THE MUTATION PLANE READ THE
+ *    ADDRESSED TEAM'S OWN BOUND BLUEPRINT, ANCHORED AT THE TARGET'S
+ *    WORKSPACE.** The kernel compares a Leader's expansion against the LOWER
+ *    static layers and the §6 envelope, all expressed in the SAME canonical
+ *    identity space as the overlay rules; turning a blueprint PATH into a
+ *    canonical key is the fs provider's job (A2), not this module's. The
+ *    production entry therefore builds them through
+ *    {@link createPermissionAuthorityFacts} (below): every document is read
+ *    through `resolveBlueprint(teamSessionId)` (the SAME three-case bound-
+ *    Blueprint authority the team identity binds to — a bound ref NEVER falls
+ *    back to the row anchor), the file paths canonicalized against the TARGET
+ *    member's effective workspace (its runtime cwd), and the §6 envelope taken
+ *    from the bound Blueprint's EXPLICIT `permissionMutationEnvelope` carrier
+ *    (never a derivation of the leader's static lanes). The kernel awaits
+ *    these readers, which re-validate team/member/binding/cwd/provider across
+ *    their await and abstain on drift (UNKNOWN / zero envelope → typed
+ *    refusal, never a stale answer). When NO caller injects a provider (test/
+ *    legacy roots) the reader stays ABSENT (= UNKNOWN facts) and the regions
+ *    that depend on lower facts refuse typed (`PERMISSION_EFFECT_CONTEXT_
  *    UNAVAILABLE`) — the sanctioned posture for a round whose facts are
  *    unavailable. This is the MUTATION plane's authority check ONLY: the
  *    DECISION plane (the lane below) never runs on absent facts — its static
@@ -61,9 +67,10 @@
  *
  * @module @dsh-agent-team/runtime/src/plugin/permission-plane
  */
+import type { PermissionMutationEnvelope, PermissionStaticLayerFacts } from '../../governance/index.js';
 import type { GovernanceMutationService, GovernancePermissionLaneDeps } from '../../governance/types.js';
 import type { MemberLifecycleState } from '../../../contracts/src/index.js';
-import type { TemplatePermissionPolicy } from '../../../domain/blueprint/src/index.js';
+import type { TeamBlueprint } from '../../../domain/blueprint/src/index.js';
 import type { MemberLifecycleReaderPort, PermissionDecisionLane, PermissionLifecycleMutationLane, PermissionLifecycleRestorePort } from '../../permission-lifecycle/index.js';
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js';
 /** The durable member-instance read surface the lifecycle facts come from. */
@@ -122,12 +129,16 @@ export declare function createMemberLifecycleReader(rows: MemberInstanceRowReade
  * @param deps.permissionEnvelope - the bound §6 expansion ceiling for the
  *   Leader; forwarded VERBATIM (this module grants nothing — absent = the
  *   service's zero-authority default).
+ * @param deps.leaderAuthorityFacts - the acting leader's OWN static facts
+ *   (the authority ceiling X1 requires on every risen cell; forwarded
+ *   VERBATIM — absent = the pre-round-4 envelope-only judgement).
  */
 export declare function createPermissionGovernanceLane(deps: {
     readonly overlay: PermissionOverlayRepositoryPort;
     readonly fsContainsKeys?: CanonicalKeyContains;
     readonly staticLayers?: GovernancePermissionLaneDeps['staticLayers'];
     readonly permissionEnvelope?: GovernancePermissionLaneDeps['permissionEnvelope'];
+    readonly leaderAuthorityFacts?: GovernancePermissionLaneDeps['leaderAuthorityFacts'];
 }): GovernancePermissionLaneDeps;
 /**
  * The two PR4 lanes over the already-assembled authority + lifecycle path.
@@ -149,34 +160,54 @@ export interface PermissionFactsIdentity {
     readonly revision: string;
     readonly contentHash: string;
 }
+/** One warmed (team, member) target for {@link PermissionAuthorityFacts.refresh}. */
+export interface PermissionFactsWarmTarget {
+    readonly teamSessionId: string;
+    readonly memberInstanceId: string;
+}
 /** The inputs of {@link createPermissionAuthorityFacts} (all injected). */
 export interface PermissionAuthorityFactsDeps {
-    /** Every template id of the bound snapshot (leader included). */
-    readonly templateIds: readonly string[];
-    /** The template's permission policy (`undefined` = declares none). */
-    readonly policyOf: (templateId: string) => TemplatePermissionPolicy | undefined;
-    /** The leader position's template id (from the bound snapshot). */
-    readonly leaderTemplateId: () => string;
-    /** The member row's template id (`undefined` = no durable row). */
+    /** The ADDRESSED team's real bound Blueprint (the SAME three-case authority
+     *  the team identity binds to; `undefined` = unresolvable → UNKNOWN). */
+    readonly resolveBlueprint: (teamSessionId: string) => TeamBlueprint | undefined;
+    /** The member row's template id (`undefined` = no durable row → UNKNOWN). */
     readonly memberTemplateId: (teamSessionId: string, memberInstanceId: string) => string | undefined;
-    /** The A2 canonicalizer (the row's fs provider; the ONLY legal key source). */
-    readonly canonicalize: (path: string) => Promise<string>;
-    /** The CURRENT bound-snapshot identity (re-verified on every sync read). */
-    readonly identity: () => PermissionFactsIdentity;
+    /** The target member's EFFECTIVE workspace = its actual runtime cwd (the
+     *  canonicalization anchor; `undefined` = UNKNOWN). The leader position is
+     *  the team's default workspace. NEVER the acting row/anchor cwd. */
+    readonly memberWorkspace: (teamSessionId: string, memberInstanceId: string) => string | undefined;
+    /** The A2 canonicalizer (the row's fs provider — the ONLY legal key
+     *  source), anchored at the caller-supplied cwd. */
+    readonly canonicalize: (path: string, cwd: string) => Promise<string>;
+    /** A token identifying the CURRENT fs provider instance/epoch (identity
+     *  across which a cached document stays valid; default = a constant so a
+     *  single-provider host is unaffected). A change invalidates every cache. */
+    readonly providerVersion?: () => string;
+    /** The boot warm targets (leader + existing members of the boot team). */
+    readonly bootWarmTargets?: () => readonly PermissionFactsWarmTarget[];
 }
-/** The built authority: one async build, two sync kernel readers. */
+/** The built authority: a warm build + two kernel readers (async-capable). */
 export interface PermissionAuthorityFacts {
-    /** The async build boundary (host: after `builtRoot.boot()`). Idempotent;
-     *  a repeat REBUILDS from the current identity (a rebind re-canonicalizes). */
+    /** The async warm boundary (host: after `builtRoot.boot()`, before
+     *  readiness). Best-effort: builds the boot warm targets; a fault marks the
+     *  authority unhealthy and the readers RETRY lazily on the next read (never
+     *  a cached failure). Idempotent; a repeat rebuilds from CURRENT bindings. */
     refresh(): Promise<void>;
-    /** `true` while the last build succeeded against its bound identity. */
+    /** `true` while the last warm/read against the current bindings succeeded. */
     readonly healthy: () => boolean;
-    readonly staticLayers: GovernancePermissionLaneDeps['staticLayers'];
-    readonly permissionEnvelope: GovernancePermissionLaneDeps['permissionEnvelope'];
+    /** EXACT (non-optional) signatures: the builder ALWAYS wires these —
+     *  the LANE deps may omit them (legacy), the production surface may not. */
+    readonly staticLayers: (teamSessionId: string, memberInstanceId: string) => Promise<PermissionStaticLayerFacts | undefined>;
+    readonly permissionEnvelope: (teamSessionId: string, memberInstanceId: string) => Promise<PermissionMutationEnvelope>;
+    /** The acting leader's OWN static facts for one addressed (team, target
+     *  member) — the authority-ceiling facts the service folds into every
+     *  risen cell (X1). Same revalidation + recovery discipline as the others. */
+    readonly leaderAuthorityFacts: (teamSessionId: string, targetMemberInstanceId: string) => Promise<PermissionStaticLayerFacts | undefined>;
 }
 /**
- * Build the identity-bound authority documents (see the section header).
- * @param deps - the injected policy/identity/canonicalizer sources.
+ * Build the addressed-team, per-member authority readers (see the section
+ * header for the three bindings and the fail-closed rules).
+ * @param deps - the injected bound-Blueprint / member / canonicalizer sources.
  */
 export declare function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDeps): PermissionAuthorityFacts;
 //# sourceMappingURL=permission-plane.d.ts.map

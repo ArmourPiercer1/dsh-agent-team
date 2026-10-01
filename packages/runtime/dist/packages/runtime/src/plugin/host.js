@@ -1239,51 +1239,69 @@ export async function apply(ctx, config) {
         catch (error) {
             throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_PERMISSION_AUTHORITY_UNAVAILABLE, `the durable permission authority of this row could not be read (${error instanceof Error ? error.message : String(error)}) — the production entry treats it as MANDATORY: booting past this would run every bound permission decision without the durable overlay while mutations refuse, which is exactly the fail-open this entry refuses to ship`);
         }
-        // pre-alpha3 PR4 (round 3, BLOCK-1) — the identity-bound authority facts
-        // (the Leader's §6 expansion ceiling + the per-member static layers),
-        // DERIVED from the same bound snapshot the root runs on. The documents
-        // build at the POST-BOOT async boundary below (the durable TeamSession
-        // must exist first, and the fs provider is consulted only for rules that
-        // actually exist — a world without `capabilities.permissions` performs
-        // ZERO fs calls here); the kernel consumes them SYNCHRONOUSLY afterwards
-        // and abstains on snapshot drift (UNKNOWN / zero envelope — never stale
-        // facts, never a second authority).
-        const factsBlueprint = parseBlueprint(resolvedRowConfig.blueprintSource);
-        const factsTemplates = [
-            factsBlueprint.leader,
-            ...factsBlueprint.members,
-        ].map((template) => ({
-            templateId: template.templateId,
-            ...(template.capabilities?.permissions !== undefined
-                ? { policy: template.capabilities.permissions }
-                : {}),
-        }));
+        // pre-alpha3 PR4 (round 4) — the ADDRESSED-TEAM authority facts (the §6
+        // expansion ceiling from the bound Blueprint's explicit
+        // `permissionMutationEnvelope` carrier + the per-member static layers).
+        // Round 3 built these ONCE from the ROW ANCHOR with a frozen identity and a
+        // row-wide-constant envelope — external review showed (BLOCK-2) two teams
+        // minted from the same blueprint/template made team B's member evaluated
+        // under team A's authority, and (BLOCK-3) canonicalizing at the row's
+        // defaultWorkspace while the member RUNS at its own effective workspace let
+        // relative rules mis-resolve, laundering an expansion past the envelope.
+        // Round 4 reads every document THROUGH `resolveBoundBlueprint(teamSessionId)`
+        // — the SAME three-case bound-Blueprint authority the team-root/member
+        // identity binds to — canonicalizes at the TARGET member's effective
+        // workspace (durable `member.workspace ?? defaultWorkspace` — exactly the
+        // glue's `memberCwd` doctrine, so facts, envelope, overlay and the decision
+        // plane share ONE canonical key space per member), and re-validates the
+        // binding tuple across each canonicalization await (drift → abstain). The
+        // fs provider is consulted only for rules that actually exist (a world
+        // without `capabilities.permissions` performs ZERO fs calls); failures are
+        // never cached, so the next read retries (bounded recovery).
         const permissionFacts = createPermissionAuthorityFacts({
-            templateIds: factsTemplates.map((entry) => entry.templateId),
-            policyOf: (templateId) => factsTemplates.find((entry) => entry.templateId === templateId)?.policy,
-            leaderTemplateId: () => factsBlueprint.leader.templateId,
+            resolveBlueprint: (teamSessionId) => {
+                try {
+                    return resolveBoundBlueprint(teamSessionId);
+                }
+                catch {
+                    // No durable row / unresolvable bound ref: UNKNOWN facts (typed
+                    // refusal downstream), never a fall-back to the row anchor.
+                    return undefined;
+                }
+            },
             memberTemplateId: (teamSessionId, memberInstanceId) => domain.repositories.memberInstances
                 .get(teamSessionId, memberInstanceId)
                 ?.templateId,
-            canonicalize: async (path) => {
-                const resolved = (await fsBackend().resolve(path, {
-                    cwd: resolvedRowConfig.defaultWorkspace,
-                }));
+            memberWorkspace: (teamSessionId, memberInstanceId) => {
+                const workspace = domain.repositories.memberInstances.get(teamSessionId, memberInstanceId)?.workspace;
+                // The member's EFFECTIVE workspace — the durable row's own
+                // `workspace`, falling back to the team's default exactly as the live
+                // glue computes `memberCwd` (agent-bindings). The leader position has
+                // no row and runs at the default workspace. NEVER the acting row's
+                // anchor as a CONSTANT for every member.
+                return typeof workspace === 'string' && workspace !== '' ? workspace : resolvedRowConfig.defaultWorkspace;
+            },
+            canonicalize: async (path, cwd) => {
+                const resolved = (await fsBackend().resolve(path, { cwd }));
                 const key = resolved?.targetKey;
                 if (typeof key !== 'string' || key.length === 0) {
                     throw new Error(`permission authority facts: the fs provider returned no canonical key for ${JSON.stringify(path)}`);
                 }
                 return key;
             },
-            identity: () => ({
-                blueprintId: String(factsBlueprint.blueprintId),
-                revision: String(factsBlueprint.revision),
-                contentHash: String(factsBlueprint.contentHash),
-            }),
+            bootWarmTargets: () => [
+                // The boot team's leader position (member documents warm lazily on
+                // their first addressed read — every build is a re-validated build).
+                { teamSessionId: rowConfig.rootSessionId, memberInstanceId: LEADER_INSTANCE_ID },
+            ],
         });
-        const permissionsBearingTemplates = factsTemplates
-            .filter((entry) => entry.policy !== undefined)
-            .map((entry) => entry.templateId);
+        // Loud-log only: the boot anchor's declared permissions-bearing templates.
+        // (NOT an authority source — the round-4 readers resolve per addressed
+        // team; this stays for the operator-facing startup line.)
+        const factsAnchorBlueprint = parseBlueprint(resolvedRowConfig.blueprintSource);
+        const permissionsBearingTemplates = [factsAnchorBlueprint.leader, ...factsAnchorBlueprint.members]
+            .filter((template) => template.capabilities?.permissions !== undefined)
+            .map((template) => template.templateId);
         const live = glue.createAgentBindings({
             agents,
             sessionPersistence,
@@ -1791,10 +1809,15 @@ export async function apply(ctx, config) {
             permissionOverlay,
             fsContainsKeys,
             permissionPlaneRef,
-            // pre-alpha3 PR4 (round 3, BLOCK-1): the identity-bound fact readers
-            // (the root forwards them VERBATIM into the pure governance lane).
+            // pre-alpha3 PR4 (round 3 BLOCK-1 + round 4 addressed-team binding): the
+            // authority fact readers (the root forwards them VERBATIM into the pure
+            // governance lane). The envelope + static facts resolve the ADDRESSED
+            // team's bound Blueprint and the TARGET member's effective workspace;
+            // the leader-ceiling reader is the plane's LEADER-position static facts
+            // (X1 authority ceiling on every risen cell).
             permissionEnvelope: permissionFacts.permissionEnvelope,
             permissionStaticLayers: permissionFacts.staticLayers,
+            permissionLeaderAuthorityFacts: permissionFacts.leaderAuthorityFacts,
             legacyInspect,
             // BP5 (issue #2 blueprint-loading, plan §9): the live catalog over the
             // saved sources + the frozen registry + this row's anchor (the legacy
@@ -2005,27 +2028,32 @@ export async function apply(ctx, config) {
         // route from it, never the world from it).
         try {
             await builtRoot.boot();
-            // pre-alpha3 PR4 (round 3, BLOCK-1): build the authority documents at
-            // this async boundary — AFTER the boot effect (the durable TeamSession
-            // row exists from here on; the only entry that could reach
-            // `mutatePermission` remotely is gated on `teamRuntimeReadiness`, which
-            // flips below) and BEFORE readiness (no consumer can observe a
-            // half-built facts state). A build failure ships NO facts: the readers
-            // abstain (Leader expansions refuse typed, zero envelope authority)
-            // behind the loud line — never half-canonicalized authority, never a
-            // silent UNKNOWN (the artifact-authority rebuild precedent: the
-            // permission vertical never comes up half-built quietly).
+            // pre-alpha3 PR4 (round 4): WARM the authority documents at this async
+            // boundary — AFTER the boot effect (the durable TeamSession row exists
+            // from here on; the only entry that could reach `mutatePermission`
+            // remotely is gated on `teamRuntimeReadiness`, which flips below) and
+            // BEFORE readiness. This is a WARMUP, not the authority's existence: the
+            // round-4 readers resolve the ADDRESSED team's bound Blueprint and the
+            // TARGET member's workspace at READ time, so a warmup failure (or a
+            // member created after boot) self-heals — the next addressed read
+            // rebuilds (bounded recovery, fail-closed preserved: until then Leader
+            // EXPANSIONS refuse typed, zero envelope authority, while decisions,
+            // execution, and every unaffected reader keep serving correct current
+            // facts). The loud line below stays the operator signal; boot continues
+            // (a transient fs fault at boot must not fail the world — the artifact-
+            // authority rebuild precedent).
             try {
                 await permissionFacts.refresh();
             }
             catch (error) {
-                console.error(`[dsh-agent-team] the permission authority facts could not be derived from the bound snapshot (${error instanceof Error ? error.message : String(error)}) — Leader permission EXPANSIONS refuse typed (EFFECT_CONTEXT_UNAVAILABLE) until the facts build succeeds; decisions and execution are unaffected`);
+                console.error(`[dsh-agent-team] the permission authority facts warm-up failed (${error instanceof Error ? error.message : String(error)}) — Leader permission EXPANSIONS refuse typed (EFFECT_CONTEXT_UNAVAILABLE / zero envelope authority) until an addressed read rebuilds the facts (bounded recovery); decisions and execution are unaffected`);
             }
             if (permissionsBearingTemplates.length > 0) {
                 console.info(`[dsh-agent-team] durable permission authority ACTIVE for row ${rowConfig.rootSessionId}: ` +
-                    `templates declaring capabilities.permissions = ${JSON.stringify(permissionsBearingTemplates)}, ` +
-                    `facts bound to blueprint ${String(factsBlueprint.blueprintId)}@${String(factsBlueprint.revision)} ` +
-                    `(expansion ceiling derived from the leader lane; facts healthy: ${String(permissionFacts.healthy())})`);
+                    `anchor templates declaring capabilities.permissions = ${JSON.stringify(permissionsBearingTemplates)}, ` +
+                    `facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor ${String(factsAnchorBlueprint.blueprintId)}@${String(factsAnchorBlueprint.revision)}), ` +
+                    `canonicalized at each target member's effective workspace; expansion ceiling = the bound ` +
+                    `Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: ${String(permissionFacts.healthy())})`);
             }
             teamRuntimeReadiness = 'ready';
         }
