@@ -842,6 +842,12 @@ type MatrixPoint =
   | 'pre-flight-authority'
   | 'pre-flight-provider-lock'
   | 'pre-flight-external-facts'
+  // residual-3 — the pre-reservation REJECT-region points (the
+  // dedicated rows below — NOT enumerated in MATRIX_POINTS, so the
+  // 60-row matrix and its arithmetic are untouched):
+  | 'pre-flight-external-facts-reject'
+  | 'pre-flight-template-feed-reject'
+  | 'fault-preflight-oneshot'
   | 'post-commit'
   | 'fault-admission'
   | 'fault-preflight'
@@ -1286,6 +1292,22 @@ describe('fix-control-authz C9: the bounded C matrix (every pre-commit await set
     const chains = new Map<string, Promise<unknown>>()
     const events: string[] = []
     const hold = c9Barrier()
+    // The explicit LATER-WRITER-ENTERED barrier event (the user ruling
+    // on the F1 closure — no real-time gap, no microtask-count luck):
+    // the later writer's work resolves this promise the moment it
+    // ENTERS (its queue slot is granted and the work has begun). The
+    // overtake proof rests on THIS event: on the BROKEN base the entry
+    // is a pending microtask (the old tail chains the later writer onto
+    // the already-resolved cancelled-waiter entry — it drains before
+    // any timer fires, the spec's event-loop ordering) while the holder
+    // is still parked; on the FIXED base the entry is structurally
+    // IMPOSSIBLE before the holder settles (the cancelled waiter's tail
+    // keeps its slot until the holder's settlement) — so no observation
+    // window length can change either outcome.
+    let laterEnteredResolve: (() => void) | undefined
+    const laterEntered = new Promise<void>((resolve) => {
+      laterEnteredResolve = resolve
+    })
     const holder = withTeamLock(chains, 'root-serial', async () => {
       events.push('holder-start')
       await hold.held
@@ -1315,9 +1337,36 @@ describe('fix-control-authz C9: the bounded C matrix (every pre-commit await set
     // overtake the still-running holder: its slot sits behind the
     // holder's settlement.
     const later = withTeamLock(chains, 'root-serial', async () => {
+      // The explicit ENTERED event: the later writer's queue slot was
+      // granted — the work has begun (the overtake observation point).
+      laterEnteredResolve?.()
       events.push('later-writer')
       return undefined
     })
+    // The observation window on the entered event (the user ruling's
+    // explicit-barrier choreography — the literal "wait on entered,
+    // THEN release" would deadlock on the FIXED base, where entry is
+    // structurally impossible before the release; the bounded window is
+    // the same observation made non-deadlocking, with the outcome
+    // structurally determined — see the barrier declaration above):
+    // on the BROKEN base the entered event fires inside the window
+    // (the overtake is directly observable while the holder is still
+    // parked); on the FIXED base the window expires deterministically.
+    const enteredBeforeRelease = await withTimeout(
+      laterEntered,
+      2_000,
+      'the later-writer entered event (the overtake observation window)',
+    )
+      .then(() => true)
+      .catch(() => false)
+    if (enteredBeforeRelease) {
+      // The overtake is DIRECTLY OBSERVED: the later writer entered
+      // while the holder is still running (the hold is not released —
+      // the holder is provably parked). The correct-ordering assertion
+      // below then FAILS — the genuine deterministic RED pin for the
+      // unfixed tail (committed-bytes RED: c9-red-baseline-v2.log).
+      expect(events).not.toContain('holder-end')
+    }
     hold.release()
     await withTimeout(holder, 15_000, 'the holder settlement')
     await withTimeout(later, 15_000, 'the later writer')
@@ -1329,6 +1378,10 @@ describe('fix-control-authz C9: the bounded C matrix (every pre-commit await set
     // The full order: holder-start → waiter-rejected → holder-end →
     // later-writer (the cancelled waiter's tail kept the serial chain
     // intact — the close is a side effect, never a chain detach).
+    // BROKEN base: 'later-writer' was observed BEFORE the release
+    // (above) → this FAILS (the RED pin). FIXED base: the entered event
+    // can only fire after the holder settlement → this PASSES (the
+    // GREEN pin).
     expect(events).toEqual(['holder-start', 'waiter-rejected', 'holder-end', 'later-writer'])
   })
 })
@@ -1687,10 +1740,22 @@ async function c9PreFlight(
     }
     if (row.point === 'pre-flight-external-facts') {
       if (isHolder) {
+        // The holder A holds the provider lock at ITS OWN step-8 probe —
+        // and RETURNS immediately after passing its own barrier (the
+        // false-coverage correction: the old body fell through PAST its
+        // own barrier into bExtBarrier — the holder (which should be
+        // gone) occupied B's slot, and B was caught at checkpoint 3
+        // instead of its externalFacts site — the row passed for the
+        // wrong reason).
         holderExtBarrier.pauseArrive()
         await holderExtBarrier.held
+        return realExt()
       }
-      // B's step-8 probe (call #2) holds.
+      // B's OWN step-8 probe (call #2 — the holder took call #1 and
+      // returned) holds: `bExtBarrier.paused` resolving is the
+      // per-row SITE PROOF that B is actually parked at the intended
+      // externalFacts site (a row that cannot prove it reached its
+      // site is not green).
       bExtBarrier.pauseArrive()
       await bExtBarrier.held
     }
@@ -1741,12 +1806,25 @@ async function c9PreFlight(
   // Pin B at the sub-point:
   if (row.point === 'pre-flight-authority') {
     await withTimeout(authorityBarrier.paused, 15_000, 'B is pinned at its authority probe')
+  } else if (row.point === 'pre-flight-external-facts') {
+    // The false-coverage-corrected choreography: the holder A is
+    // released FIRST (it returns from its own barrier and completes its
+    // activation — releasing the provider lock), and the abort is
+    // gated on B's EXPLICIT "externalFacts ENTERED" event: bExtBarrier
+    // is B's OWN step-8 probe (call #2 — the holder took call #1 and
+    // returned), so `paused` resolving proves B is parked at the
+    // intended site BEFORE `ac.abort` fires (an abort that fired first
+    // — with B still in the provider queue — would catch B at
+    // checkpoint 3, not its externalFacts site).
+    holderExtBarrier.release()
+    await withTimeout(bExtBarrier.paused, 15_000, 'B is ENTERED at its own step-8 external probe (site proof)')
   } else {
-    // B progresses past its authority (real) and QUEUES on the provider
-    // lock behind A (the hold is still parked). A short settle lets B
-    // reach the lock queue deterministically (every remaining step is a
-    // fast in-memory call; B cannot pass the held lock before the
-    // release, which happens AFTER the abort).
+    // pre-flight-provider-lock: B progresses past its authority (real)
+    // and QUEUES on the provider lock behind A (the hold is still
+    // parked). A short settle lets B reach the lock queue
+    // deterministically (every remaining step is a fast in-memory call;
+    // B cannot pass the held lock before the release, which happens
+    // AFTER the abort).
     await sleep(20)
   }
   if (row.preState === 'already-abandoned') {
@@ -1775,13 +1853,13 @@ async function c9PreFlight(
   // Release the pins (B proceeds to the pre-reservation boundary).
   if (row.point === 'pre-flight-authority') {
     authorityBarrier.release()
+  } else if (row.point === 'pre-flight-external-facts') {
+    // B (parked at its own probe — the site proven above) proceeds to
+    // checkpoint 4 (the pre-reservation boundary at the externalFacts
+    // site) on the release.
+    bExtBarrier.release()
   } else {
     holderExtBarrier.release()
-    if (row.point === 'pre-flight-external-facts') {
-      // B now acquires the provider lock and reaches its step-8 probe.
-      await withTimeout(bExtBarrier.paused, 15_000, 'B is pinned at its step-8 external probe')
-      bExtBarrier.release()
-    }
   }
   const outcome = await started.promise
   // The expected member count includes the holder A's member (it
@@ -1956,3 +2034,310 @@ async function c9FaultPreflight(
     restoreFault()
   }
 }
+
+// =====================================================================
+// C9 residual-3 — the pre-reservation REJECT region (RED-first, frozen
+// scope): the provider's pre-reservation awaits REJECT while the
+// invocation's signal is ALREADY ABORTED. At bae0a7ae the raw rejection
+// escapes BEFORE any boundary settle (the check points cover only the
+// FULFILLMENT case; the router's `effectCommitStarted` flips at
+// PROVIDER ENTRY — router.ts L817 — disabling the outer pre-commit
+// settle) → ZERO durable close, the request left `decided` on the raw
+// probe error. The fix converges the WHOLE pre-reservation region (any
+// reject / validation throw — strictly before journal.allocate) onto
+// the same settle when the signal is aborted (the durable close + the
+// typed zero-provisioning abort); a close persist fault escapes AS-IS —
+// the first close failure is the terminal outcome, NEVER re-attempted.
+//
+// Rows (pure additions — the 60-row matrix, c9-serial and C1–C8 are
+// untouched): c9-r3-1 (v2 templateFeed REJECT — its intended
+// templateFacts site), c9-r3-2 (legacy externalFacts REJECT — the
+// step-8 externalFacts site), c9-r3-3 (the one-shot close-failure on
+// the reject path — the FIRST fault propagates unchanged, exactly one
+// close attempt). Site proof on every row: the target B's ENTERED
+// event at the intended port BEFORE the abort fires (a row that cannot
+// prove it reached its site is not green, however the counters read).
+// =====================================================================
+
+/** The v2 variant of the P6-T2 fixture blueprint (residual-3 row
+ *  c9-r3-1): the SAME world at schemaVersion 2 with the worker
+ *  template's structured requirement (`complete: true` — structurally
+ *  satisfied, NEVER fatal — the v2 closed requirement fields carry no
+ *  `optional`). The worker requirement makes the v2 target-template
+ *  scope feed live (`scopeRequirementInputsOf` populates
+ *  `templates['worker']` → `targetTemplateInputs` present → the
+ *  `templateEnvironmentFactsForBlueprint` await exists in the
+ *  provider's preflight); the team scope stays compat-blocked
+ *  (skill/base down — the v1 flat `requirements` list, legal in v2
+ *  documents). */
+const P6T2_V2_BLUEPRINT_SOURCE = [
+  '---',
+  'schemaVersion: 2',
+  'blueprintId: P6T2-BP',
+  'revision: "1"',
+  'leader:',
+  '  templateId: leader',
+  '  persona: You lead the P6T2 team.',
+  'members:',
+  '  - templateId: worker',
+  '    displayName: Worker',
+  '    persona: You do the P6T2 work.',
+  '    requirements:',
+  '      - requirementId: worker-mcp-base',
+  '        type: mcpServer',
+  '        subjects:',
+  '          - test-mcp-worker',
+  '        complete: true',
+  '  - templateId: scout',
+  '    displayName: Scout',
+  '    persona: You scout for the P6T2 team.',
+  '    contextPolicy: fresh_per_delegation',
+  'requirements:',
+  '  - domain: tool',
+  '    name: web',
+  '    optional: true',
+  '  - domain: skill',
+  '    name: base',
+  'teamEnvelope:',
+  '  allow:',
+  '    - assign-task',
+  '    - create-member',
+  '    - send-message',
+  '    - report-progress',
+  '    - request-control',
+  '    - resolve-control',
+  '    - archive-member',
+  '    - restore-member',
+  '  deny:',
+  '    - delete-team',
+  'memberEnvelopes:',
+  '  - templateId: worker',
+  '    envelope:',
+  '      allow:',
+  '        - send-message',
+  '        - report-progress',
+  '      deny: []',
+  '  - templateId: scout',
+  '    envelope:',
+  '      allow:',
+  '        - send-message',
+  '        - report-progress',
+  '        - request-control',
+  '      deny: []',
+  'policyStates:',
+  '  - id: default',
+  '    description: The P6T2 default state.',
+  'quotas:',
+  '  team:',
+  '    maxInstances: 4',
+  '    maxConcurrent: 4',
+  '  members:',
+  '    maxInstances: 2',
+  '    maxConcurrent: 2',
+  'metadata: {}',
+  '---',
+].join('\n')
+
+/** The ONE-SHOT abandon-persist fault (residual-3 defect c): the
+ *  `control-request-abandoned` put FAILS EXACTLY ONCE (the first close
+ *  attempt). A SECOND attempt (the retry the fix must never make — the
+ *  D2 router catch re-entering the unit's close) would SUCCEED and MASK
+ *  the first fault as a settled close. The attempt counter pins "the
+ *  first failed write is not represented as success": attempts > 1 = a
+ *  retry happened. */
+function c9PatchAbandonPersistOneShotFault(
+  w: AuthzWorld,
+): { restore: () => void; attempts: () => number } {
+  const ledger = w.world.domain.repositories.ledger
+  const realPut = ledger.put.bind(ledger)
+  let first = true
+  let attemptCount = 0
+  ledger.put = (entry: unknown) => {
+    if (
+      entry !== null &&
+      typeof entry === 'object' &&
+      'factType' in entry &&
+      (entry as { readonly factType?: unknown }).factType === 'control-request-abandoned'
+    ) {
+      attemptCount++
+      if (first) {
+        first = false
+        throw new Error('c9 residual-3: the durable close write faulted (one-shot injected)')
+      }
+    }
+    return realPut(entry)
+  }
+  return {
+    restore: (): void => {
+      ledger.put = realPut
+    },
+    attempts: () => attemptCount,
+  }
+}
+
+/** The provider-ports type (the C9RuntimeOptions pattern — no
+ *  duplicated port typings). */
+type C9ProviderPorts = Parameters<typeof createActivationProvider>[0]
+
+/** The shared residual-3 reject-row runner: fresh create-member (B)
+ *  over a provider whose step-8 external-policy-facts probe parks at
+ *  the barrier (the ENTERED site proof) and REJECTS on the release —
+ *  while the signal is ALREADY aborted. `oneShot` swaps in the
+ *  one-shot abandon-persist fault (c9-r3-3) with its dedicated
+ *  first-fault-propagates-unchanged assertions. */
+async function c9R3ExternalFactsReject(rowId: string, oneShot: boolean): Promise<void> {
+  const w = await createAuthzWorld(`authz-${rowId}`)
+  world = w
+  const memberBaseline = w.world.domain.repositories.memberInstances.list(AUTHZ_ROOT).length
+  const realExt = w.world.ports.externalPolicyFacts
+  const probeBarrier = c9Barrier()
+  let extCall = 0
+  const providerExternal = async () => {
+    extCall++
+    // B's OWN step-8 probe (call #1 — no holder on the reject rows):
+    // park at the site, then REJECT on the release (the await rejects
+    // while the signal is ALREADY aborted — the pre-reservation reject
+    // path the success-path check points never cover).
+    if (extCall === 1) {
+      probeBarrier.pauseArrive()
+      await probeBarrier.held
+      throw new Error(`c9 ${rowId}: the external-policy-facts port rejected (residual-3 reject variant)`)
+    }
+    return realExt()
+  }
+  const provider = createActivationProvider({
+    teamDomain: w.world.domain,
+    blueprintCatalog: w.world.catalog,
+    environmentFacts: w.world.ports.environmentFacts,
+    externalPolicyFacts: providerExternal,
+    staticModel: TEST_STATIC_MODEL,
+    childSessionFactory: w.world.childFactory,
+    sessionDurability: w.world.durability,
+    surface: w.world.surface,
+  })
+  const runtime = c9Runtime(w, { provider })
+  const ac = new AbortController()
+  const token = `tok-${rowId}`
+  const row: MatrixRow = {
+    id: rowId,
+    action: 'create-member',
+    point: 'pre-flight-external-facts-reject',
+    preState: 'no-mark',
+  }
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(w.control, token)
+  await c9Allow(w.control, requestId)
+  // SITE PROOF: B is ENTERED at its own step-8 external probe BEFORE
+  // the abort fires (the reject row's site — the await that rejects).
+  await withTimeout(probeBarrier.paused, 15_000, 'B is ENTERED at its own step-8 external probe (site proof)')
+  ac.abort()
+  const oneShotFault = oneShot ? c9PatchAbandonPersistOneShotFault(w) : undefined
+  try {
+    // Release → the probe REJECTS while the signal is already aborted.
+    probeBarrier.release()
+    const outcome = await started.promise
+    if (oneShotFault === undefined) {
+      await c9AssertClose(outcome, w, w.control, requestId, memberBaseline, started.sessionInputCalls, true)
+    } else {
+      // The ONE-SHOT CLOSE-FAILURE assertions (residual-3 defect c):
+      // the FIRST close fault propagates UNCHANGED (the typed
+      // DURABLE_WRITE_FAILED carrying the injected error text — not a
+      // second-attempt success, not a reclassified code), ZERO
+      // effects, ZERO marks (the put failed — the state could not be
+      // made terminal), and EXACTLY ONE abandon put attempt (a second
+      // attempt = the retry that would mask the first fault).
+      expect(outcome.ok).toBe(false)
+      const error = outcome.ok === false ? outcome.error : undefined
+      expect((error as { code?: string } | undefined)?.code).toBe(
+        TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED,
+      )
+      expect(String((error as { message?: unknown } | undefined)?.message ?? '')).toContain(
+        'c9 residual-3: the durable close write faulted (one-shot injected)',
+      )
+      expect(authzFacts(w.world, 'team-work-admitted').length).toBe(0)
+      expect(w.deliveryCalls.length).toBe(0)
+      expect(authzFacts(w.world, 'team-coordination-recorded').length).toBe(0)
+      expect(w.world.domain.repositories.memberInstances.list(AUTHZ_ROOT).length).toBe(memberBaseline)
+      const state = await w.control.listControlState(AUTHZ_ROOT)
+      expect(state.abandonments.filter((a) => a.requestId === requestId).length).toBe(0)
+      expect(oneShotFault.attempts()).toBe(1)
+    }
+  } finally {
+    oneShotFault?.restore()
+  }
+}
+
+/** The residual-3 v2 row: fresh create-member (B) over the v2
+ *  compat-blocked world, with the provider's `templateEnvironmentFactsForBlueprint`
+ *  feed port parked at the barrier (the ENTERED site proof) and
+ *  REJECTING on the release — while the signal is ALREADY aborted (the
+ *  v2 templateFacts await rejects; check point 2 — placed for the
+ *  FULFILLMENT case — is jumped over on the reject path). */
+async function c9R3TemplateFeedReject(rowId: string): Promise<void> {
+  const w = await createAuthzWorld(`authz-${rowId}`, ['leader', 'worker'], {
+    blueprintSource: P6T2_V2_BLUEPRINT_SOURCE,
+  })
+  world = w
+  const memberBaseline = w.world.domain.repositories.memberInstances.list(AUTHZ_ROOT).length
+  const feedBarrier = c9Barrier()
+  let feedCall = 0
+  const providerFeed: C9ProviderPorts['templateEnvironmentFactsForBlueprint'] = async (
+    blueprint,
+    templateId,
+  ) => {
+    feedCall++
+    // B's template-scope feed (call #1 — no holder): park at the site,
+    // then REJECT on the release.
+    if (feedCall === 1) {
+      feedBarrier.pauseArrive()
+      await feedBarrier.held
+      throw new Error(
+        `c9 ${rowId}: the template-facts port (blueprint '${blueprint.blueprintId}', template '${templateId}') rejected (residual-3 v2 reject variant)`,
+      )
+    }
+    return w.world.ports.environmentFacts()
+  }
+  const provider = createActivationProvider({
+    teamDomain: w.world.domain,
+    blueprintCatalog: w.world.catalog,
+    environmentFacts: w.world.ports.environmentFacts,
+    externalPolicyFacts: w.world.ports.externalPolicyFacts,
+    staticModel: TEST_STATIC_MODEL,
+    childSessionFactory: w.world.childFactory,
+    sessionDurability: w.world.durability,
+    surface: w.world.surface,
+    templateEnvironmentFactsForBlueprint: providerFeed,
+  })
+  const runtime = c9Runtime(w, { provider })
+  const ac = new AbortController()
+  const token = `tok-${rowId}`
+  const row: MatrixRow = {
+    id: rowId,
+    action: 'create-member',
+    point: 'pre-flight-template-feed-reject',
+    preState: 'no-mark',
+  }
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(w.control, token)
+  await c9Allow(w.control, requestId)
+  // SITE PROOF: B is ENTERED at the v2 templateFacts feed await BEFORE
+  // the abort fires (the intended templateFacts site).
+  await withTimeout(feedBarrier.paused, 15_000, 'B is ENTERED at the v2 templateFacts feed await (site proof)')
+  ac.abort()
+  // Release → the feed REJECTS while the signal is already aborted.
+  feedBarrier.release()
+  const outcome = await started.promise
+  await c9AssertClose(outcome, w, w.control, requestId, memberBaseline, started.sessionInputCalls, true)
+}
+
+describe('fix-control-authz C9 residual-3: the pre-reservation REJECT region', () => {
+  it('c9-r3-1: v2 templateFeed — park at B\'s templateFacts feed await (ENTERED proven), abort, the feed REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal)', async () => {
+    await c9R3TemplateFeedReject('c9-r3-1')
+  })
+  it('c9-r3-2: legacy externalFacts — park at B\'s step-8 probe (ENTERED proven), abort, the probe REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal)', async () => {
+    await c9R3ExternalFactsReject('c9-r3-2', false)
+  })
+  it('c9-r3-3: one-shot close-failure on the reject path — the FIRST close fault propagates UNCHANGED (typed DURABLE_WRITE_FAILED carrying the injected error), zero effects, zero marks, EXACTLY ONE abandon put attempt (never re-attempted — a second attempt would succeed and mask the fault)', async () => {
+    await c9R3ExternalFactsReject('c9-r3-3', true)
+  })
+})

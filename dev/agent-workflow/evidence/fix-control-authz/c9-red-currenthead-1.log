@@ -1,0 +1,149 @@
+$ cd packages/runtime && pnpm vitest run test/fix-control-authz-c-abandon-terminal.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime
+
+ ❯ test/fix-control-authz-c-abandon-terminal.test.ts (72 tests | 3 failed) 3986ms
+     ✓ C1: pending → parked waiter → explicit abandon: the waiter settles terminal, the router keeps the typed block, ZERO work 83ms
+     ✓ C2: allow → abandon → a fresh await on the abandoned row settles REJECTED terminal (bounded — the cold-retry liveness) 8ms
+     ✓ C3: the abort race over the stale decision (mid-wait abort with BOTH marks durable): the abandon mark wins the cascade (the stale allow never settles the waiter) 24ms
+     ✓ C4: the wait→admission race (allow + abandon both land while the router waits): the typed zero-effect block holds for EVERY interleaving; the abandoned allow never executes 39ms
+     ✓ C5: the effect-admission boundary (the external-review TOCTOU) — a durable abandon landing DURING the gate re-probe (AFTER the pre-dispatch snapshot) NEVER admits the reviewed work: zero admitted / zero effect, the typed abandoned block, the durable close stands 20ms
+     ✓ C6: the COORDINATION reentry (send-message — the recoveryWork impact that bypasses the gated branch) hits the SAME effect-admission boundary — the reentry queued behind the shared runtime lock, a real abandon on the control lock, release ⇒ the coordination fact is NEVER committed unchecked (zero fact / zero delivery, the typed block, the durable close stands) over the REAL MessagingCoordinator 19ms
+     ✓ C7 (residual C-2 leg a): an AbortSignal aborting DURING the gate re-probe await (no explicit abandon) — the serialized boundary sees the live signal, PERSISTS the abandon (the durable close, the same footprint as an explicit abandon) and rejects typed; ZERO work 18ms
+     ✓ C8 (residual C-2 leg b): the signal aborting while the unit is BLOCKED WAITING for the control lock (between queue and acquisition) — the commit is STILL rejected with a durable close; ZERO work 81ms
+     ✓ c9-1: delegate × decision-settle × no-mark 17ms
+     ✓ c9-2: delegate × decision-settle × already-abandoned 16ms
+     ✓ c9-3: delegate × terminal-snapshot × no-mark 18ms
+     ✓ c9-4: delegate × terminal-snapshot × already-abandoned 17ms
+     ✓ c9-5: delegate × outer-queue × no-mark 17ms
+     ✓ c9-6: delegate × outer-queue × already-abandoned 16ms
+     ✓ c9-7: delegate × gate-success × no-mark 16ms
+     ✓ c9-8: delegate × gate-success × already-abandoned 17ms
+     ✓ c9-9: delegate × gate-reject × no-mark 16ms
+     ✓ c9-10: delegate × gate-reject × already-abandoned 16ms
+     ✓ c9-11: delegate × control-queue × no-mark 79ms
+     ✓ c9-12: delegate × control-queue × already-abandoned 79ms
+     ✓ c9-13: delegate × pre-flight-authority × no-mark 18ms
+     ✓ c9-14: delegate × pre-flight-authority × already-abandoned 18ms
+     ✓ c9-15: delegate × pre-flight-provider-lock × no-mark 42ms
+     ✓ c9-16: delegate × pre-flight-provider-lock × already-abandoned 37ms
+     ✓ c9-17: delegate × pre-flight-external-facts × no-mark 19ms
+     ✓ c9-18: delegate × pre-flight-external-facts × already-abandoned 20ms
+     ✓ c9-19: delegate × post-commit × no-mark 22ms
+     ✓ c9-20: follow-up × decision-settle × no-mark 14ms
+     ✓ c9-21: follow-up × decision-settle × already-abandoned 14ms
+     ✓ c9-22: follow-up × terminal-snapshot × no-mark 15ms
+     ✓ c9-23: follow-up × terminal-snapshot × already-abandoned 15ms
+     ✓ c9-24: follow-up × outer-queue × no-mark (the external named repro) 17ms
+     ✓ c9-25: follow-up × outer-queue × already-abandoned 17ms
+     ✓ c9-26: follow-up × gate-success × no-mark 18ms
+     ✓ c9-27: follow-up × gate-success × already-abandoned 16ms
+     ✓ c9-28: follow-up × gate-reject × no-mark 16ms
+     ✓ c9-29: follow-up × gate-reject × already-abandoned 16ms
+     ✓ c9-30: follow-up × control-queue × no-mark 79ms
+     ✓ c9-31: follow-up × control-queue × already-abandoned 79ms
+     ✓ c9-32: follow-up × post-commit × no-mark 20ms
+     ✓ c9-33: follow-up × fault-admission × no-mark 79ms
+     ✓ c9-34: send-message × decision-settle × no-mark 16ms
+     ✓ c9-35: send-message × decision-settle × already-abandoned 14ms
+     ✓ c9-36: send-message × terminal-snapshot × no-mark 16ms
+     ✓ c9-37: send-message × terminal-snapshot × already-abandoned 15ms
+     ✓ c9-38: send-message × outer-queue × no-mark 16ms
+     ✓ c9-39: send-message × outer-queue × already-abandoned 15ms
+     ✓ c9-40: send-message × control-queue × no-mark 78ms
+     ✓ c9-41: send-message × control-queue × already-abandoned 78ms
+     ✓ c9-42: create-member × decision-settle × no-mark 14ms
+     ✓ c9-43: create-member × decision-settle × already-abandoned 14ms
+     ✓ c9-44: create-member × terminal-snapshot × no-mark 15ms
+     ✓ c9-45: create-member × terminal-snapshot × already-abandoned 16ms
+     ✓ c9-46: create-member × outer-queue × no-mark 15ms
+     ✓ c9-47: create-member × outer-queue × already-abandoned 16ms
+     ✓ c9-48: create-member × gate-success × no-mark 17ms
+     ✓ c9-49: create-member × gate-success × already-abandoned 17ms
+     ✓ c9-50: create-member × gate-reject × no-mark 16ms
+     ✓ c9-51: create-member × gate-reject × already-abandoned 15ms
+     ✓ c9-52: create-member × control-queue × no-mark 78ms
+     ✓ c9-53: create-member × control-queue × already-abandoned 79ms
+     ✓ c9-54: create-member × pre-flight-authority × no-mark 16ms
+     ✓ c9-55: create-member × pre-flight-authority × already-abandoned 16ms
+     ✓ c9-56: create-member × pre-flight-provider-lock × no-mark 39ms
+     ✓ c9-57: create-member × pre-flight-provider-lock × already-abandoned 38ms
+     ✓ c9-58: create-member × pre-flight-external-facts × no-mark 18ms
+     ✓ c9-59: create-member × pre-flight-external-facts × already-abandoned 19ms
+     ✓ c9-60: create-member × fault-preflight × no-mark 16ms
+     ✓ c9-serial: a cancelled waiter KEEPS its queue slot — a later writer never overtakes the still-running holder (the reviewer sequence: holder start → cancel waiter → later writer → holder end)  2003ms
+     × c9-r3-1: v2 templateFeed — park at B's templateFacts feed await (ENTERED proven), abort, the feed REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal) 21ms
+     × c9-r3-2: legacy externalFacts — park at B's step-8 probe (ENTERED proven), abort, the probe REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal) 16ms
+     × c9-r3-3: one-shot close-failure on the reject path — the FIRST close fault propagates UNCHANGED (typed DURABLE_WRITE_FAILED carrying the injected error), zero effects, zero marks, EXACTLY ONE abandon put attempt (never re-attempted — a second attempt would succeed and mask the fault) 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9 residual-3: the pre-reservation REJECT region > c9-r3-1: v2 templateFeed — park at B's templateFacts feed await (ENTERED proven), abort, the feed REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal)
+AssertionError: expected undefined to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+
+- Expected:
+"TEAM_RUNTIME_COMPATIBILITY_BLOCKED"
+
++ Received:
+undefined
+
+ ❯ c9AssertClose test/fix-control-authz-c-abandon-terminal.test.ts:1145:46
+    1143|   expect(outcome.ok).toBe(false)
+    1144|   const error = outcome.ok === false ? outcome.error : undefined
+    1145|   expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_C…
+       |                                              ^
+    1146|   expect(asDetails(error)?.['controlDecision']).toBe('abandoned')
+    1147|   expect(asDetails(error)?.['controlRequestId']).toBe(requestId)
+ ❯ c9R3TemplateFeedReject test/fix-control-authz-c-abandon-terminal.test.ts:2330:9
+ ❯ test/fix-control-authz-c-abandon-terminal.test.ts:2335:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9 residual-3: the pre-reservation REJECT region > c9-r3-2: legacy externalFacts — park at B's step-8 probe (ENTERED proven), abort, the probe REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal)
+AssertionError: expected undefined to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+
+- Expected:
+"TEAM_RUNTIME_COMPATIBILITY_BLOCKED"
+
++ Received:
+undefined
+
+ ❯ c9AssertClose test/fix-control-authz-c-abandon-terminal.test.ts:1145:46
+    1143|   expect(outcome.ok).toBe(false)
+    1144|   const error = outcome.ok === false ? outcome.error : undefined
+    1145|   expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_C…
+       |                                              ^
+    1146|   expect(asDetails(error)?.['controlDecision']).toBe('abandoned')
+    1147|   expect(asDetails(error)?.['controlRequestId']).toBe(requestId)
+ ❯ c9R3ExternalFactsReject test/fix-control-authz-c-abandon-terminal.test.ts:2240:13
+ ❯ test/fix-control-authz-c-abandon-terminal.test.ts:2338:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9 residual-3: the pre-reservation REJECT region > c9-r3-3: one-shot close-failure on the reject path — the FIRST close fault propagates UNCHANGED (typed DURABLE_WRITE_FAILED carrying the injected error), zero effects, zero marks, EXACTLY ONE abandon put attempt (never re-attempted — a second attempt would succeed and mask the fault)
+AssertionError: expected undefined to be 'TEAM_RUNTIME_DURABLE_WRITE_FAILED' // Object.is equality
+
+- Expected:
+"TEAM_RUNTIME_DURABLE_WRITE_FAILED"
+
++ Received:
+undefined
+
+ ❯ c9R3ExternalFactsReject test/fix-control-authz-c-abandon-terminal.test.ts:2251:62
+    2249|       expect(outcome.ok).toBe(false)
+    2250|       const error = outcome.ok === false ? outcome.error : undefined
+    2251|       expect((error as { code?: string } | undefined)?.code).toBe(
+       |                                                              ^
+    2252|         TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED,
+    2253|       )
+ ❯ test/fix-control-authz-c-abandon-terminal.test.ts:2341:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 69 passed (72)
+   Start at  08:44:36
+   Duration  4.81s (transform 572ms, setup 0ms, import 730ms, tests 3.99s, environment 0ms)
+
+EXIT=1 (focused C file at bae0a7ae — 3 new residual-3 rows RED, 69 pre-existing GREEN)

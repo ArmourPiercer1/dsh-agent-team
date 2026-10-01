@@ -30,7 +30,7 @@ import type {
 } from '../admission/index.js'
 import { createWorkActivityWriter } from '../activity/index.js'
 import type { LedgerEntry } from '../../storage/schema/index.js'
-import { destroyP6T1World } from './p6t1-helpers.js'
+import { destroyP6T1World, makeEnvironmentFacts } from './p6t1-helpers.js'
 import type { P6T1World } from './p6t1-helpers.js'
 import {
   P6T2_NOW,
@@ -39,6 +39,7 @@ import {
   TEST_STATIC_MODEL,
   createFakeLifecycleCommitPort,
   createP6T2CompatBlockedWorld,
+  createP6T2World,
   makeActionRequest,
 } from './p6t2-helpers.js'
 import type { P6T2SeedName } from './p6t2-helpers.js'
@@ -110,8 +111,20 @@ export interface AuthzWorld {
 export async function createAuthzWorld(
   basename: string,
   seedNames: readonly P6T2SeedName[] = ['leader', 'worker'],
+  options: { readonly blueprintSource?: string } = {},
 ): Promise<AuthzWorld> {
-  const world = await createP6T2CompatBlockedWorld(basename, seedNames)
+  const world =
+    options.blueprintSource !== undefined
+      ? await createP6T2World(basename, seedNames, {
+          blueprintSource: options.blueprintSource,
+          environmentFacts: () =>
+            Promise.resolve(
+              makeEnvironmentFacts([
+                { domain: 'skill', subject: 'base', available: false, generation: 2 },
+              ]),
+            ),
+        })
+      : await createP6T2CompatBlockedWorld(basename, seedNames)
   const delivery = createRecordingDeliveryPort()
   const control = createControlService({
     teamDomain: world.domain,
