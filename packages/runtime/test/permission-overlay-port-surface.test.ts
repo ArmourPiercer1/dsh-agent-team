@@ -15,8 +15,12 @@
  *    module;
  * 3. the CONTRACT TEXT — the docstring assigning mutation authority to the
  *    future GovernanceMutationService is part of the pinned contract;
- * 4. the PLACEMENT SEAM — the durable domain name is literalized in exactly
- *    one module, so the open placement decision stays a one-file flip.
+ * 4. the PLACEMENT SEAM — the store name is literalized in exactly ONE
+ *    production module (`storage/schema/stores.ts`, the TeamDomain registry),
+ *    and the standalone `team_permission_overlay` domain this PR first drew
+ *    appears NOWHERE (coordinator ruling 2026-10-01: the rows live in the
+ *    `team_domain` tenth store; the withdrawn design survives only in git
+ *    history).
  */
 
 import { readFileSync, readdirSync } from 'node:fs'
@@ -151,8 +155,9 @@ describe('permission-overlay port surface (ADR §1 non-responsibilities)', () =>
     expect(portSource).toContain('NO resolver or notification surface')
   })
 
-  it('keeps the durable placement literalized in ONE module (a one-file flip for the open decision)', () => {
-    const literalSites: string[] = []
+  it('literalizes the store name in ONE module and keeps the withdrawn standalone domain out of the tree', () => {
+    const storeLiteralSites: string[] = []
+    const withdrawnDomainSites: string[] = []
     const walk = (dir: string): void => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
         const path = join(dir, entry.name)
@@ -162,13 +167,18 @@ describe('permission-overlay port surface (ADR §1 non-responsibilities)', () =>
           continue
         }
         if (!entry.name.endsWith('.ts')) continue
-        // The single sanctioned literalization site.
-        if (path.endsWith(join('storage', 'schema', 'permission-overlay.ts'))) continue
-        if (readFileSync(path, 'utf8').includes("'team_permission_overlay'")) literalSites.push(path)
+        const source = readFileSync(path, 'utf8')
+        if (source.includes("'permission_overlays'")) storeLiteralSites.push(path)
+        // the QUOTED literal is what would re-introduce the withdrawn domain
+        // as a placement; prose may name it only to record the withdrawal.
+        if (source.includes("'team_permission_overlay'")) withdrawnDomainSites.push(path)
       }
     }
     walk(join(PACKAGE_ROOT, 'storage'))
     walk(join(PACKAGE_ROOT, 'runtime'))
-    expect(literalSites).toEqual([])
+    // the ONE literalization site is the TeamDomain store registry…
+    expect(storeLiteralSites).toEqual([join(PACKAGE_ROOT, 'storage', 'schema', 'stores.ts')])
+    // …and the withdrawn standalone domain is gone from the final tree.
+    expect(withdrawnDomainSites).toEqual([])
   })
 })

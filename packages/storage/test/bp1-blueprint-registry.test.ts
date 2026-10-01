@@ -173,7 +173,7 @@ describe('bp1 blueprint_registry store (TeamDomain v2)', () => {
     expect(rAlpha1.source).toBe(SOURCE_A)
     expect(rAlpha1.frozenAt).toBe(FROZEN_AT)
     expect(Object.isFrozen(rAlpha1)).toBe(true)
-    expect(writesAfterAppend - 9).toBe(1) // 9 = the v2 schema_meta stamp writes
+    expect(writesAfterAppend - 10).toBe(1) // 10 = the v2 schema_meta stamp writes (ten stores since Alpha.3 PR1)
     expect(storedRaw).toBe(serializeBlueprintRegistryRecord(rAlpha1))
   })
 

@@ -18,7 +18,8 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { writeText } from '../../testkit/fault-injection/file-seam.mjs'
-import { PERMISSION_OVERLAY_DOMAIN_NAME, PERMISSION_OVERLAY_STORE } from '../../storage/schema/permission-overlay.js'
+import { PERMISSION_OVERLAY_STORE } from '../../storage/schema/permission-overlay.js'
+import { TEAM_DOMAIN_NAME } from '../../storage/schema/index.js'
 import {
   OTHER_INSTANCE_ID,
   capture,
@@ -164,7 +165,7 @@ describe('permission-overlay generation conflict / CAS (PR1 plan test 5)', () =>
     for (const [key, value] of Object.entries(rows)) {
       if (key !== fixtureKey(2)) damaged[key] = value
     }
-    writeText(join(world.dir, PERMISSION_OVERLAY_DOMAIN_NAME, `${PERMISSION_OVERLAY_STORE}.json`), JSON.stringify(damaged))
+    writeText(join(world.dir, TEAM_DOMAIN_NAME, `${PERMISSION_OVERLAY_STORE}.json`), JSON.stringify(damaged))
 
     const reopened = await world.reopen()
     const attempt = await capture(() => reopened.port.append(snapshotInput(2)))

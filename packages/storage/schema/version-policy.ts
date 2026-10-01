@@ -11,10 +11,15 @@
  *   migration, ever).
  * - **L2 — store level:** one schema stamp row per store in the
  *   `schema_meta` table, `version: 2`. `createTeamDomain` stamps all
- *   nine stores; `openTeamDomain` verifies all nine stamps are present
- *   and at the supported version, failing loudly with the exact store,
- *   expected version, and found value (G4: "schema version mismatch
- *   fails loudly").
+ *   ten stores; `openTeamDomain` verifies all nine BASELINE stamps are
+ *   present and at the supported version, failing loudly with the exact
+ *   store, expected version, and found value (G4: "schema version
+ *   mismatch fails loudly"). The tenth store (`permission_overlays`) is
+ *   an ADDITIVE store: a medium stamped before it existed is legitimate,
+ *   so its stamp is bootstrapped on open when — and only when — the nine
+ *   baseline stamps are valid AND the new table holds no rows. A new
+ *   table with rows but no stamp is corruption and fails exactly like any
+ *   other missing stamp.
  * - **L3 — record level:** every record carries its own `schemaVersion`
  *   field; the frozen contracts v1 parsers enforce it for the contracts
  *   DTOs, and the storage-level record parsers enforce it for the
@@ -29,6 +34,16 @@
  * a documented future extension point only: a future version ships the
  * migration as a new supported version plus an explicit migration
  * operation, never as an implicit in-place rewrite.
+ *
+ * **A new STORE is not a new VERSION.** Adding a table to the declared
+ * store set at an unchanged `TEAM_DOMAIN_SCHEMA_VERSION` (the tenth
+ * store, Alpha.3 PR1) is not a version change: nothing bumps, no
+ * migration operation exists or runs, no world resets, and the nine
+ * existing stores keep their rows and their stamp bytes untouched. It is
+ * also what the pinned upstream backends do with a declared-but-absent
+ * table — they initialize it empty
+ * (<https://github.com/deepseek-ai/deepseek-harness/blob/46a7f68b0922371ce7144b668b90e377d8e799f4/packages/storage/storage-json/src/format.ts#L77-L85>,
+ * <https://github.com/deepseek-ai/deepseek-harness/blob/46a7f68b0922371ce7144b668b90e377d8e799f4/packages/storage/storage-sqlite/src/index.ts#L110-L131>).
  *
  * Pure module: no I/O.
  * @module @dsh-agent-team/storage/schema/version-policy

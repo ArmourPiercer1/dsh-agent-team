@@ -29,11 +29,9 @@ import { parseInstanceId, parseRootSessionId } from '../../contracts/src/index.j
 import type { InstanceId, RootSessionId } from '../../contracts/src/index.js'
 import { destroyDir, FileStorageSeam, scratchDir } from '../../testkit/fault-injection/file-seam.mjs'
 import { openPermissionOverlayStore } from '../../storage/repositories/permission-overlays.js'
+import { TEAM_DOMAIN_NAME } from '../../storage/schema/index.js'
 import type { PermissionOverlayStore } from '../../storage/repositories/permission-overlays.js'
-import {
-  PERMISSION_OVERLAY_DOMAIN_NAME,
-  PERMISSION_OVERLAY_STORE,
-} from '../../storage/schema/permission-overlay.js'
+import { PERMISSION_OVERLAY_STORE } from '../../storage/schema/permission-overlay.js'
 import type {
   PermissionOverlayEffect,
   PermissionOverlaySnapshotInput,
@@ -168,7 +166,7 @@ export function fixtureKey(generation: number): string {
  * @param dir - the world's scratch dir.
  */
 export function rawOverlayRows(dir: string): Record<string, string> {
-  const path = join(dir, PERMISSION_OVERLAY_DOMAIN_NAME, `${PERMISSION_OVERLAY_STORE}.json`)
+  const path = join(dir, TEAM_DOMAIN_NAME, `${PERMISSION_OVERLAY_STORE}.json`)
   return JSON.parse(readFileSync(path, 'utf8')) as Record<string, string>
 }
 

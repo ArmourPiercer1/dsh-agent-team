@@ -17,11 +17,8 @@
  * - `schemaVersion` — the L3 row stamp every TeamDomain-owned record carries
  *   (`OperationRecord`, `GovernanceOverride`, `CompatibilityState`,
  *   `LedgerEntry`, `SchemaMetaStamp`, `BlueprintRegistryRecord` all do it).
- *   It is pinned to {@link PERMISSION_OVERLAY_SCHEMA_VERSION}, the version of
- *   THIS row type — deliberately NOT the `team_domain` domain version: the
- *   overlay store is its own durable domain (see "Durable placement" below),
- *   so coupling this stamp to `TEAM_DOMAIN_SCHEMA_VERSION` would drag a
- *   future `team_domain` bump into overlay rows and vice versa.
+ *   It is pinned to `TEAM_DOMAIN_SCHEMA_VERSION`, the version of the domain
+ *   this row lives in — the same value the other nine stores' rows carry.
  * - `snapshotId` — the address `metadata.previousSnapshotId` points at, and
  *   the durable row key. It is DERIVED
  *   (`<teamSessionId>#<memberInstanceId>#<generation>`), never caller
@@ -55,20 +52,22 @@
  * must be the thing that refuses, so that the refusal is auditable at the
  * authority layer instead of being silently duplicated in storage.
  *
- * ## Durable placement (open plan-level decision, PR1 interim)
+ * ## Durable placement (coordinator ruling 2026-10-01: the TeamDomain route)
  *
- * The plan asks for "TeamDomain schema". Joining the frozen `team_domain`
- * unit is NOT an additive move at this base: its nine-store table set
- * (`schema/stores.ts` `TEAM_DOMAIN_STORES`) is what the seam spec declares,
- * and the public StorageDomain rejects both a same-version table-set change
- * (`malformed-medium`) and a version bump without migration
- * (`version-mismatch`) against every already-persisted `team_domain` medium.
- * Rather than change the boot semantics of existing durable worlds (a
- * plan-level schema-migration decision), PR1 registers the overlay store as
- * its OWN Team-owned durable domain — one domain, one table, L1 version at
- * open, L3 stamp per row — opened through the SAME public
- * {@link StorageDomainSeam}. The domain/table names are literalized ONLY
- * here, so the placement flip is a one-file change. See the PR body.
+ * The overlay rows live in `team_domain`, the single Team control-plane
+ * domain: `permission_overlays` is its TENTH declared store. That is a
+ * same-version ADDITION, not a schema-version change — the pinned upstream
+ * backend initializes a declared-but-missing table EMPTY inside one version
+ * (`storage-json format.ts` L77-85; `storage-sqlite index.ts` L110-131 at
+ * baseline `46a7f68b09`), so no migration, no version bump, and no world
+ * reset is involved, and the nine existing stores keep their rows untouched.
+ * The store name is declared once, in `schema/stores.ts`
+ * (`TEAM_PERMISSION_OVERLAY_STORE`), which this module re-exports as
+ * {@link PERMISSION_OVERLAY_STORE}; the L2 stamp bootstrap for a medium that
+ * predates the store lives in `repositories/team-domain.ts`. This module
+ * names NO domain of its own: an earlier round of this PR gave the store a
+ * standalone `team_permission_overlay` domain, which the coordinator ruling
+ * withdrew (history only, not in the final tree).
  *
  * Pure module: no I/O.
  * @module @dsh-agent-team/storage/schema/permission-overlay
@@ -92,59 +91,26 @@ import {
   parseWorkspaceField,
 } from '../../contracts/src/dto/common.js'
 import { teamDomainError } from './errors.js'
-import type { StorageDomainSpec } from './seam.js'
-import { UNIT_NAME_PATTERN } from './stores.js'
+import { TEAM_DOMAIN_SCHEMA_VERSION, TEAM_PERMISSION_OVERLAY_STORE } from './stores.js'
 
 // ---------------------------------------------------------------------------
-// Durable placement (the ONLY literalization site — see the header)
+// Durable placement (the TeamDomain tenth store — see the header)
 // ---------------------------------------------------------------------------
 
-/** The durable domain the overlay store lives in (public unit-name rule). */
-export const PERMISSION_OVERLAY_DOMAIN_NAME = 'team_permission_overlay'
-
-/** The single table of that domain: the append-only snapshot rows. */
-export const PERMISSION_OVERLAY_STORE = 'permission_overlays'
+/**
+ * The store these rows live in: the tenth declared table of `team_domain`.
+ * The name is declared ONCE, in `schema/stores.ts`; this is a re-export, so
+ * the store name has exactly one literalization site in the repo.
+ */
+export const PERMISSION_OVERLAY_STORE = TEAM_PERMISSION_OVERLAY_STORE
 
 /**
- * The schema version of THIS row type (L1 of the overlay domain and L3 of
- * each row). No migration path is built in: a medium at another version
- * rejects at open, exactly like `team_domain`'s own policy.
+ * The row version (L3) of an overlay snapshot: the version of the domain the
+ * row lives in, exactly like the rows of the other nine stores. A row at any
+ * other version rejects at read (`RECORD_INVALID`); no migration path is
+ * built in, per the domain's version policy.
  */
-export const PERMISSION_OVERLAY_SCHEMA_VERSION = 1
-
-/** The supported row/domain versions of the overlay store (no migration). */
-export const SUPPORTED_PERMISSION_OVERLAY_SCHEMA_VERSIONS: readonly number[] = [1]
-
-/**
- * The seam spec the overlay store opens with: one domain, one declared
- * table. Fresh array per call (the seam may hold on to it).
- * @returns the seam spec.
- */
-export function createPermissionOverlaySeamSpec(): StorageDomainSpec {
-  assertOverlayUnitName(PERMISSION_OVERLAY_DOMAIN_NAME, 'domain')
-  assertOverlayUnitName(PERMISSION_OVERLAY_STORE, 'table')
-  return {
-    name: PERMISSION_OVERLAY_DOMAIN_NAME,
-    version: PERMISSION_OVERLAY_SCHEMA_VERSION,
-    tables: [PERMISSION_OVERLAY_STORE],
-  }
-}
-
-/**
- * Mirror of the public unit-name rule for the overlay domain/table (the same
- * rule `team_domain` mirrors in `stores.ts`), checked before it crosses the
- * seam so a typo fails at the module boundary, not in the backend.
- */
-function assertOverlayUnitName(value: string, kind: 'domain' | 'table'): string {
-  if (!UNIT_NAME_PATTERN.test(value)) {
-    throw teamDomainError(
-      'RECORD_INVALID',
-      `permission overlay ${kind} name '${value}' violates the public unit-name rule`,
-      { kind, problem: 'invalid-unit-name' },
-    )
-  }
-  return value
-}
+export const PERMISSION_OVERLAY_SCHEMA_VERSION = TEAM_DOMAIN_SCHEMA_VERSION
 
 // ---------------------------------------------------------------------------
 // The closed vocabulary and field sets (ADR §2)

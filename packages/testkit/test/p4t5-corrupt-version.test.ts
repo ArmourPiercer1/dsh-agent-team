@@ -6,6 +6,9 @@
  * by a brand-new stack — the process-restart model) unless noted:
  *
  * - **(a) version tamper fails LOUDLY, never migrates** (SUPPORTED = [2],
+ *   and the tenth store is an ADDITIVE table at this SAME version —
+ *   Alpha.3 PR1; the only write a pre-existing medium ever sees is the new
+ *   store's own stamp row, never a version change of an existing one),
  *   no built-in migration):
  *   - (a1) a tampered `schema_meta` stamp (store `ledger`, version 2→3) →
  *     `SCHEMA_STAMP_MISMATCH` naming the exact store, expected and found;
@@ -349,7 +352,11 @@ try {
 it('(S0) the committed-world fixture reopens on a brand-new stack as the committed world (1 member, 1 fact, 0 orphans, COMMITTED row, team-member binding)', () => {
   expect(s0).not.toBe(undefined)
   expect(s0?.openOk).toBe(true)
-  expect(s0?.readWrites).toBe(0)
+  // The fixture is a genuine PRE-Alpha.3 nine-store world; its first reopen
+  // under the tenth store's declaration pays exactly ONE durable write — the
+  // L2 stamp row of `permission_overlays` (a second reopen is 0-write, pinned
+  // in p4t5-retry-restart and in a3p1-team-domain-tenth-store).
+  expect(s0?.readWrites).toBe(1)
   expect(s0?.stage).toBe(PROVISIONING_STAGES.INSTANCE_COMMITTED)
   expect(s0?.committed).toBe(true)
   expect(s0?.diagnostic).toBe(undefined)

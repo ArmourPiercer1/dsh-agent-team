@@ -1561,8 +1561,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // quarantine hit set stays at fifteen occurrences. Scanner .mjs
     // unchanged. The 922 value is the scanner run on this tree
     // (authoritative; not hand-computed).
-    expect(scanResult.filesScanned).toBe(922)
-    expect(scanResult.files.length).toBe(922)
+    // ALPHA.3 PR1 additive-store round: 922 + 2 = 924 — the two scannable
+    // spec files that pin the tenth store (testkit a3p1-team-domain-tenth-
+    // store + a3p1-seam-additive-tables). No new source file: the store is
+    // the same `schema/permission-overlay.ts` + `repositories/permission-
+    // overlays.ts` pair already counted above. Zero new denylist vocabulary;
+    // the frozen quarantine hit set stays at fifteen occurrences; scanner
+    // .mjs unchanged. The 924 value is the scanner run on this tree
+    // (authoritative; not hand-computed).
+    expect(scanResult.filesScanned).toBe(924)
+    expect(scanResult.files.length).toBe(924)
 
   })
 

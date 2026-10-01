@@ -65,12 +65,22 @@ function seamError(code: string, message: string, details?: Record<string, unkno
   return error
 }
 
-function sameTableSet(a: Set<string>, b: readonly string[]): boolean {
-  if (a.size !== b.length) return false
-  for (const table of b) {
-    if (!a.has(table)) return false
-  }
-  return true
+/**
+ * Is the persisted table set a canonical PREFIX of the declared set? That is
+ * the shape of a legal SAME-VERSION TABLE ADDITION: the pinned upstream
+ * backend initializes a declared table the medium does not carry as an EMPTY
+ * table, inside one version (`storage-json format.ts` L77-85 and
+ * `storage-sqlite index.ts` L110-131 at baseline
+ * `46a7f68b0922371ce7144b668b90e377d8e799f4`), so a store declared after the
+ * medium was created is an ADDITION, not a corrupt medium. Alpha.3 PR1
+ * aligned this fake to that behavior (the `FileStorageSeam` double documents
+ * the one strictness it keeps on purpose); a HOLE in the prefix — a removed
+ * table, a foreign table — is still a malformed medium.
+ */
+function isAdditiveTableExtension(persisted: Set<string>, declared: readonly string[]): boolean {
+  const missing = declared.filter((table) => !persisted.has(table))
+  const trailingSlots = declared.slice(declared.length - missing.length)
+  return missing.every((table) => trailingSlots.includes(table))
 }
 
 interface FakeUnit {
@@ -200,10 +210,15 @@ export class InMemoryStorageSeam implements StorageDomainSeam {
         { found: existing.version, expected: spec.version },
       )
     }
-    if (existing !== undefined && existing.version === spec.version && !sameTableSet(existing.tables, spec.tables)) {
+    if (
+      existing !== undefined &&
+      existing.version === spec.version &&
+      (!isAdditiveTableExtension(existing.tables, spec.tables) ||
+        [...existing.tables].some((table) => !spec.tables.includes(table)))
+    ) {
       throw seamError(
         'malformed-medium',
-        `domain '${spec.name}' was persisted with a different table set`,
+        `domain '${spec.name}' was persisted with a table set that is not a canonical prefix of the declared set`,
         { found: [...existing.tables].sort(), expected: [...spec.tables].sort() },
       )
     }

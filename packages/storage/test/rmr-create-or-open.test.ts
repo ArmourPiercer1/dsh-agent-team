@@ -10,14 +10,14 @@
  * create-or-open entry must:
  *
  *   1. FRESH   — a never-stamped medium is initialized with the full
- *                nine-store stamp, so FIRST-EVER production boots work
+ *                ten-store stamp, so FIRST-EVER production boots work
  *                under `resume` (pre-fix `resume` called openTeamDomain,
  *                which throws SCHEMA_STAMP_MISSING on a fresh medium —
  *                first-ever boots would have broken);
  *   2. ADOPT   — an existing stamped domain is adopted WITHOUT re-stamping
  *                (stampedAt values preserved — adopt, never touch), so
  *                RETURNING production hosts work under `resume`;
- *   3. PARTIAL — a crash between the nine stamp writes leaves a partial
+ *   3. PARTIAL — a crash between the ten stamp writes leaves a partial
  *                domain diagnosed EXACTLY as openTeamDomain diagnoses it
  *                (SCHEMA_STAMP_MISSING, the exact first missing store in
  *                canonical order) — adopt-or-initialize never papers over
@@ -84,9 +84,9 @@ const l1Adopt = await capture(() => createOrOpenTeamDomain(seamL1))
 const notASeam = await capture(() => createOrOpenTeamDomain({} as never))
 
 describe('rmr createOrOpenTeamDomain (adopt-or-initialize, root cause B)', () => {
-  it('initializes a fresh medium with the full nine-store stamp (first-ever boot)', () => {
+  it('initializes a fresh medium with the full ten-store stamp (first-ever boot)', () => {
     expect(freshDomain.name).toBe(TEAM_DOMAIN_NAME)
-    expect(freshStamps.size).toBe(9)
+    expect(freshStamps.size).toBe(10)
     for (const store of P4_STORES) {
       expect(freshStamps.get(store) !== undefined).toBe(true)
     }
@@ -94,13 +94,13 @@ describe('rmr createOrOpenTeamDomain (adopt-or-initialize, root cause B)', () =>
     // (the create-equivalent, not a half-world)
     expect(freshReopen.ok).toBe(true)
     if (freshReopen.ok && freshReopen.value !== undefined) {
-      expect(freshReopen.value.repositories.schemaMeta.listStamps().size).toBe(9)
+      expect(freshReopen.value.repositories.schemaMeta.listStamps().size).toBe(10)
     }
   })
 
   it('adopts an existing stamped domain WITHOUT re-stamping (returning home)', () => {
     expect(adopted.name).toBe(TEAM_DOMAIN_NAME)
-    expect(adoptedStamps.size).toBe(9)
+    expect(adoptedStamps.size).toBe(10)
     // adopt, never touch: every stampedAt value survived byte-for-byte
     for (const [store, stamp] of originalStamps) {
       const adoptedStamp = adoptedStamps.get(store)

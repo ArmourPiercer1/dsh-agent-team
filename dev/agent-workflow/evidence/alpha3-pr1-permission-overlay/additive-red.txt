@@ -1,0 +1,174 @@
+$ git stash push -m "a3p1-additive-red-probe" -- packages/   # production back to the pre-batch (nine-store) tree; the two NEW specs are untracked and stay
+$ node_modules/.bin/vitest run packages/testkit/test/a3p1-team-domain-tenth-store.test.ts packages/testkit/test/a3p1-seam-additive-tables.test.ts packages/runtime/test/permission-overlay-append.test.ts packages/runtime/test/permission-overlay-port-surface.test.ts --reporter=dot
+
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay
+
+x····xx··············xxxx·x···x
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/a3p1-seam-additive-tables.test.ts > a3p1 — the seam doubles accept a same-version additive table, like upstream does > file seam: a declared-but-absent TRAILING table opens as an empty table instead of malformed-medium, at zero write cost
+Error: table 'permission_overlays' is not declared on 'team_domain'
+ ❯ seamError packages/testkit/fault-injection/file-seam.mjs:96:17
+     94| /** One seam-level error (Error instance carrying a string `code`). */
+     95| function seamError(code, message, detail) {
+     96|   const error = new Error(message)
+       |                 ^
+     97|   error['code'] = code
+     98|   if (detail !== undefined) {
+ ❯ Object.table packages/testkit/fault-injection/file-seam.mjs:301:17
+ ❯ packages/testkit/test/a3p1-seam-additive-tables.test.ts:113:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  packages/testkit/test/a3p1-seam-additive-tables.test.ts > a3p1 — the seam doubles accept a same-version additive table, like upstream does > in-memory fake: the same-version addition opens, the added table starts empty
+Error: table 'permission_overlays' is not declared on 'team_domain'
+ ❯ seamError packages/storage/test/p4-helpers.ts:62:17
+     60|
+     61| function seamError(code: string, message: string, details?: Record<str…
+     62|   const error = new Error(message) as Error & { code?: string; details…
+       |                 ^
+     63|   error['code'] = code
+     64|   if (details !== undefined) error['details'] = details
+ ❯ Object.table packages/storage/test/p4-helpers.ts:229:43
+ ❯ packages/testkit/test/a3p1-seam-additive-tables.test.ts:183:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  packages/testkit/test/a3p1-seam-additive-tables.test.ts > a3p1 — the seam doubles accept a same-version additive table, like upstream does > in-memory fake: a REMOVED table is still malformed-medium (the prefix rule, both directions)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/testkit/test/a3p1-seam-additive-tables.test.ts:195:23
+    193|     const result = await capture(async () => seam.open(nineTableSpec()…
+    194|
+    195|     expect(result.ok).toBe(false)
+       |                       ^
+    196|     expect(codeOf(failureOf(result))).toBe('malformed-medium')
+    197|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  packages/testkit/test/a3p1-team-domain-tenth-store.test.ts > a3p1 — the overlay store is the tenth TeamDomain store, added additively at v2 > declares permission_overlays as the tenth store, appended last, with the schema version UNCHANGED
+AssertionError: expected 9 to be 10 // Object.is equality
+
+- Expected
++ Received
+
+- 10
++ 9
+
+ ❯ packages/testkit/test/a3p1-team-domain-tenth-store.test.ts:148:39
+    146|     expect(TEAM_DOMAIN_SCHEMA_VERSION).toBe(2)
+    147|     expect(SUPPORTED_TEAM_DOMAIN_SCHEMA_VERSIONS).toEqual([2])
+    148|     expect(TEAM_DOMAIN_STORES.length).toBe(10)
+       |                                       ^
+    149|     expect(TEAM_DOMAIN_STORES[9]).toBe(TENTH_STORE)
+    150|     // the nine pre-existing stores keep their exact canonical positio…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  packages/testkit/test/a3p1-team-domain-tenth-store.test.ts > a3p1 — the overlay store is the tenth TeamDomain store, added additively at v2 > opens a stamped nine-store v2 medium under the tenth-store spec: nine tables byte-identical, the new table empty and stamped
+AssertionError: expected [] to deeply equal [ 'permission_overlays' ]
+
+- Expected
++ Received
+
+- [
+-   "permission_overlays",
+- ]
++ []
+
+ ❯ packages/testkit/test/a3p1-team-domain-tenth-store.test.ts:174:19
+    172|     const stampsBefore = JSON.parse(before['team_domain/schema_meta.js…
+    173|     const added = Object.keys(stampsAfter).filter((key) => !(key in st…
+    174|     expect(added).toEqual([TENTH_STORE])
+       |                   ^
+    175|     // …the nine pre-existing stamp rows are byte-identical…
+    176|     for (const store of NINE_STORE_V2_TABLES) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  packages/testkit/test/a3p1-team-domain-tenth-store.test.ts > a3p1 — the overlay store is the tenth TeamDomain store, added additively at v2 > bootstraps the new stamp exactly once — a reopen after the bootstrap writes nothing at all
+AssertionError: expected 9 to be 10 // Object.is equality
+
+- Expected
++ Received
+
+- 10
++ 9
+
+ ❯ packages/testkit/test/a3p1-team-domain-tenth-store.test.ts:213:62
+    211|
+    212|     expect(treeSnapshot(dir)).toEqual(afterBootstrap)
+    213|     expect(Object.keys(rawTable(dir, 'schema_meta')).length).toBe(10)
+       |                                                              ^
+    214|   })
+    215|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  packages/testkit/test/a3p1-team-domain-tenth-store.test.ts > a3p1 — the overlay store is the tenth TeamDomain store, added additively at v2 > createOrOpenTeamDomain (the production boot entry) adopts a nine-store medium the same way
+AssertionError: expected 9 to be 10 // Object.is equality
+
+- Expected
++ Received
+
+- 10
++ 9
+
+ ❯ packages/testkit/test/a3p1-team-domain-tenth-store.test.ts:231:27
+    229|     expect(readText(join(dir, TEAM_DOMAIN_NAME, 'ledger.json'))).toBe(…
+    230|     const stamps = Object.keys(rawTable(dir, 'schema_meta'))
+    231|     expect(stamps.length).toBe(10)
+       |                           ^
+    232|     expect(stamps).toContain(TENTH_STORE)
+    233|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  packages/testkit/test/a3p1-team-domain-tenth-store.test.ts > a3p1 — the overlay store is the tenth TeamDomain store, added additively at v2 > does NOT treat a non-empty un-stamped permission_overlays table as fresh: SCHEMA_STAMP_MISSING, zero writes
+AssertionError: expected 'SEAM_FAILURE' to be 'SCHEMA_STAMP_MISSING' // Object.is equality
+
+Expected: "SCHEMA_STAMP_MISSING"
+Received: "SEAM_FAILURE"
+
+ ❯ packages/testkit/test/a3p1-team-domain-tenth-store.test.ts:256:40
+    254|
+    255|     expect(outcome.ok).toBe(false)
+    256|     expect(codeOf(failureOf(outcome))).toBe('SCHEMA_STAMP_MISSING')
+       |                                        ^
+    257|     expect(detailOf(failureOf(outcome))?.['store']).toBe(TENTH_STORE)
+    258|     // nothing was repaired, deleted, or overwritten
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  packages/testkit/test/a3p1-team-domain-tenth-store.test.ts > a3p1 — the overlay store is the tenth TeamDomain store, added additively at v2 > appends onto team_domain/permission_overlays.json and survives a restart
+AssertionError: expected 'team_permission_overlay' to be 'team_domain' // Object.is equality
+
+Expected: "team_domain"
+Received: "team_permission_overlay"
+
+ ❯ packages/testkit/test/a3p1-team-domain-tenth-store.test.ts:320:24
+    318|
+    319|     const first = await openPermissionOverlayStore(new FileStorageSeam…
+    320|     expect(first.name).toBe(TEAM_DOMAIN_NAME)
+       |                        ^
+    321|     expect(first.schemaVersion).toBe(TEAM_DOMAIN_SCHEMA_VERSION)
+    322|     await first.repository.append(snapshotInput(1))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  2 failed | 2 passed (4)
+      Tests  9 failed | 22 passed (31)
+   Start at  18:43:36
+   Duration  367ms (transform 584ms, setup 0ms, import 790ms, tests 75ms, environment 0ms)
+
+[exit code: 1]

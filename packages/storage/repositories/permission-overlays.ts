@@ -60,26 +60,31 @@
  * `GovernanceMutationService`'s mutation serialization, which is why this
  * repository is a port, not an entry point.
  *
- * ## Durable placement
+ * ## Durable placement (the TeamDomain tenth store)
  *
- * Its own Team-owned domain, one table, opened through the public seam: L1 is
- * the domain version checked at open, L3 is the row `schemaVersion`. There is
- * deliberately no `schema_meta` stamp table: team_domain carries one because
- * nine stores share a single seam version and need per-store stamps; with a
- * single table the open-time version plus the row stamp already pin the
- * shape, and a stamp table would add writes without a check. Placement
- * literalization lives in `schema/permission-overlay.ts` only (open
- * plan-level decision — see the PR body).
+ * `permission_overlays` is the TENTH declared table of `team_domain`
+ * (coordinator ruling 2026-10-01; the store name is declared once, in
+ * `schema/stores.ts`). So this store shares the domain's L1 seam version,
+ * its write chain, and its `schema_meta` L2 stamps, and
+ * {@link openPermissionOverlayStore} gets its verification from the
+ * PRODUCTION TeamDomain entry (`createOrOpenTeamDomain`): the nine baseline
+ * stamps verified, the tenth bootstrapped when the medium predates the
+ * store, corruption rejected. No stamp logic is duplicated here.
+ *
+ * This repository deliberately does NOT join the `TeamDomainRepositories`
+ * facade: Alpha.3 PR1 ships the persistence layer with zero production-path
+ * imports of the overlay capability (the intended consumer is PR3's
+ * `GovernanceMutationService`). It takes the very same
+ * `StorageDomainHandle` the facade is built on, so PR3 can compose a single
+ * open without changing anything in this module.
  *
  * @module @dsh-agent-team/storage/repositories/permission-overlays
  */
 
 import { isTeamContractError, parseInstanceId, parseRootSessionId } from '../../contracts/src/index.js'
 import {
-  PERMISSION_OVERLAY_DOMAIN_NAME,
   PERMISSION_OVERLAY_SCHEMA_VERSION,
   PERMISSION_OVERLAY_STORE,
-  createPermissionOverlaySeamSpec,
   createPermissionOverlaySnapshot,
   deserializePermissionOverlaySnapshot,
   permissionOverlaySnapshotKey,
@@ -87,13 +92,15 @@ import {
 } from '../schema/permission-overlay.js'
 import type { PermissionOverlaySnapshot, PermissionOverlaySnapshotInput } from '../schema/permission-overlay.js'
 import {
+  TEAM_DOMAIN_NAME,
+  createTeamDomainSeamSpec,
   isTeamDomainError,
   normalizeSeamError,
   normalizeValidationError,
-  seamErrorCode,
   teamDomainError,
 } from '../schema/index.js'
 import type { StorageDomainHandle, StorageDomainSeam, StorageKvTable, TeamDomainError } from '../schema/index.js'
+import { createOrOpenTeamDomain } from './team-domain.js'
 
 /** The closed set of append-conflict `details.problem` tags. */
 export const PERMISSION_OVERLAY_CONFLICT_PROBLEMS = [
@@ -421,48 +428,50 @@ export class PermissionOverlayRepository {
 
 /** One open overlay store: the repository plus the handle lifecycle. */
 export interface PermissionOverlayStore {
-  /** The durable domain name. */
+  /** The durable domain the store lives in (`team_domain`). */
   readonly name: string
   /** The append-only snapshot repository. */
   readonly repository: PermissionOverlayRepository
-  /** The overlay row version this store serves. */
+  /** The row version this store serves (the domain version, L3 per row). */
   readonly schemaVersion: number
   /** Close the domain (idempotent; the medium keeps its state). */
   close(): Promise<void>
 }
 
 /**
- * Open (or initialize, then open) the durable overlay store — the
- * restart-safe entry point. The public seam initializes a fresh medium on
- * first open and adopts an existing one, re-checking the L1 domain version on
- * every open; a medium stamped at another version rejects loudly
- * (`SCHEMA_VERSION_MISMATCH`, no built-in migration — the same policy
- * `team_domain` states in its version policy).
+ * Open the overlay store — the restart-safe entry point of the TeamDomain
+ * TENTH table.
+ *
+ * The verification is NOT re-implemented here: the store is opened by the
+ * production TeamDomain boot entry `createOrOpenTeamDomain`, which checks L1
+ * at the seam, verifies the nine baseline L2 stamps, bootstraps the tenth
+ * store's stamp when the medium predates it, and fails loudly on a partial
+ * or corrupt domain. That entry owns a handle only for the duration of the
+ * create/adopt, so this helper releases it and re-opens the domain for the
+ * overlay store's own use — one extra rehydration, zero duplicated policy.
+ * (When PR3 composes the `GovernanceMutationService` it can hand this
+ * repository the already-open handle instead.)
+ *
  * @param seam - the public storage seam (injected; the file-backed seam in
  *   tests, the real `StorageDomain` binding in production).
- * @returns the open store.
- * @throws `SCHEMA_VERSION_MISMATCH` for a foreign-version medium,
+ * @returns the open store (the team_domain handle stays private to it).
+ * @throws `SCHEMA_VERSION_MISMATCH` / `SCHEMA_STAMP_MISSING` /
+ *   `SCHEMA_STAMP_MISMATCH` from the TeamDomain boot verification,
  *   `SEAM_FAILURE` for any other seam failure.
  */
 export async function openPermissionOverlayStore(seam: StorageDomainSeam): Promise<PermissionOverlayStore> {
+  const adopted = await createOrOpenTeamDomain(seam)
+  await adopted.close()
   let handle: StorageDomainHandle
   try {
-    handle = await seam.open(createPermissionOverlaySeamSpec())
+    handle = await seam.open(createTeamDomainSeamSpec())
   } catch (error) {
-    if (seamErrorCode(error) === 'version-mismatch') {
-      const detail = (error as { detail?: unknown; details?: unknown })['detail'] ?? (error as { details?: unknown })['details']
-      const found =
-        typeof detail === 'object' && detail !== null ? (detail as Record<string, unknown>)['found'] ?? null : null
-      throw teamDomainError(
-        'SCHEMA_VERSION_MISMATCH',
-        `the permission overlay store is persisted at schema version ${JSON.stringify(found)}; this store supports version ${String(PERMISSION_OVERLAY_SCHEMA_VERSION)} and has no built-in migration`,
-        { expected: PERMISSION_OVERLAY_SCHEMA_VERSION, found },
-      )
-    }
-    throw normalizeSeamError(error, PERMISSION_OVERLAY_STORE, 'open')
+    throw normalizeSeamError(error, TEAM_DOMAIN_NAME, 'open')
   }
   return {
-    name: PERMISSION_OVERLAY_DOMAIN_NAME,
+    name: TEAM_DOMAIN_NAME,
+    // the store's version IS the TeamDomain version: the tenth store joined
+    // the declared set additively, at an unchanged schema version.
     schemaVersion: PERMISSION_OVERLAY_SCHEMA_VERSION,
     repository: new PermissionOverlayRepository(handle),
     close: () => handle.close(),

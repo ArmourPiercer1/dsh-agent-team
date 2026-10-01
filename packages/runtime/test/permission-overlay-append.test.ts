@@ -5,19 +5,21 @@
  * file-backed storage seam: the four ADR §2 sections round-trip byte-for-byte
  * through the medium, an identical re-append is an idempotent no-op, and
  * snapshots of different identities (TeamSession / MemberInstance) never see
- * each other.
+ * each other. The rows live in `team_domain`'s TENTH table
+ * (`permission_overlays`, added additively at schema version 2 — coordinator
+ * ruling 2026-10-01), which the placement leg pins.
  *
  * Scope guard: no resolver, no assembler, no notification, no mutation
  * authority — this is the persistence foundation only.
  */
 
+import { readdirSync } from 'node:fs'
+import { join } from 'node:path'
+
 import { describe, expect, it } from 'vitest'
 
-import {
-  PERMISSION_OVERLAY_DOMAIN_NAME,
-  PERMISSION_OVERLAY_SCHEMA_VERSION,
-  PERMISSION_OVERLAY_STORE,
-} from '../../storage/schema/permission-overlay.js'
+import { PERMISSION_OVERLAY_SCHEMA_VERSION, PERMISSION_OVERLAY_STORE } from '../../storage/schema/permission-overlay.js'
+import { TEAM_DOMAIN_NAME, TEAM_DOMAIN_SCHEMA_VERSION, TEAM_DOMAIN_STORES } from '../../storage/schema/index.js'
 import {
   FIXTURE_INSTANCE_ID,
   FIXTURE_TEAM_SESSION_ID,
@@ -160,13 +162,24 @@ describe('permission-overlay append (PR1 plan test 1)', () => {
     world.destroy()
   })
 
-  it('names the overlay domain and store exactly (the durable placement contract)', async () => {
+  it('places the store as the tenth TeamDomain store at the unchanged schema version', async () => {
     const world = await openWorld('append-placement')
-    expect(PERMISSION_OVERLAY_DOMAIN_NAME).toBe('team_permission_overlay')
-    expect(PERMISSION_OVERLAY_STORE).toBe('permission_overlays')
-    expect(world.store.name).toBe(PERMISSION_OVERLAY_DOMAIN_NAME)
+    // declared in canonical order, appended LAST, with no version bump…
+    expect(TEAM_DOMAIN_SCHEMA_VERSION).toBe(2)
+    expect(TEAM_DOMAIN_STORES.length).toBe(10)
+    expect(TEAM_DOMAIN_STORES[9]).toBe(PERMISSION_OVERLAY_STORE)
+    // …the store opens through team_domain, and its rows carry the domain version
+    expect(world.store.name).toBe(TEAM_DOMAIN_NAME)
     expect(world.store.repository.store).toBe(PERMISSION_OVERLAY_STORE)
-    expect(world.store.schemaVersion).toBe(PERMISSION_OVERLAY_SCHEMA_VERSION)
+    expect(PERMISSION_OVERLAY_SCHEMA_VERSION).toBe(TEAM_DOMAIN_SCHEMA_VERSION)
+    expect(world.store.schemaVersion).toBe(TEAM_DOMAIN_SCHEMA_VERSION)
+
+    // the durable evidence: the row lands in team_domain/permission_overlays.json
+    await world.port.append(snapshotInput(1))
+    expect(Object.keys(rawOverlayRows(world.dir))).toEqual([fixtureKey(1)])
+    // and the withdrawn standalone overlay domain does not exist on the medium
+    expect(readdirSync(world.dir).sort()).toEqual([TEAM_DOMAIN_NAME, `${TEAM_DOMAIN_NAME}.meta.json`])
+    expect(readdirSync(join(world.dir, TEAM_DOMAIN_NAME))).toContain(`${PERMISSION_OVERLAY_STORE}.json`)
     world.destroy()
   })
 })

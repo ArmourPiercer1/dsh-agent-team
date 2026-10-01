@@ -190,3 +190,47 @@ Zero other existing file changed; `packages/storage/schema/stores.ts`,
 `packages/storage/repositories/team-domain.ts`, `control/`,
 `operation-permission/`, `effective-policy/`, `governance/`, `mutation/`,
 notification, client projection and the recovery paths are untouched.
+
+---
+
+## Placement round (supersedes the "interim standalone domain" note above)
+
+The escalation in the first round of this PR was WRONG and is retracted: the
+"same-version table-set change is rejected" conclusion came from OUR two test
+doubles, not from the pinned upstream, which initializes a declared-but-absent
+table EMPTY (storage-json `format.ts` L77-85; storage-sqlite `index.ts`
+L110-131, at `46a7f68b0922371ce7144b668b90e377d8e799f4`). The store therefore
+lives where the ADR diagram says it lives: `permission_overlays` is the TENTH
+declared store of the single `team_domain` domain, at the UNCHANGED schema
+version 2. No version bump, no migration, no world reset, no fixture restamp.
+
+Reading order for this round:
+
+1. `packages/storage/schema/stores.ts` — `TEAM_DOMAIN_BASELINE_STORES` (nine)
+   + `TEAM_DOMAIN_ADDITIVE_STORES` (one) = `TEAM_DOMAIN_STORES` (ten); the
+   version constants do not move.
+2. `packages/storage/repositories/team-domain.ts` — `verifyStamps()`: nine
+   baseline stamps verified exactly as before; the additive stamp is created
+   ONLY if (stamp absent) AND (table empty) AND (the nine verified). Used by
+   both `openTeamDomain` and `createOrOpenTeamDomain`.
+3. `packages/testkit/test/a3p1-team-domain-tenth-store.test.ts` (10 legs) and
+   `packages/testkit/test/a3p1-seam-additive-tables.test.ts` (8 legs) — the
+   regressions: compat open byte-identical, one-time bootstrap, corruption
+   still loud, both doubles faithful to upstream.
+4. `packages/testkit/fault-injection/file-seam.mjs` + `packages/storage/test/p4-helpers.ts`
+   — the fidelity fix (canonical-prefix rule; retained strictness for prefix
+   holes is a documented deviation, because the double stores one file per table).
+
+Files this round touched beyond the first round's set: `schema/version-policy.ts`
+(prose), the four storage count pins, the three p4t5 files, `p4t6` (922 -> 924),
+six `permission-overlay-*` specs and their helper, and the two runtime
+re-exports. The committed `committed-world` fixture stays NINE-store on purpose:
+it is the compatibility witness, and every run now dogfoods the additive
+bootstrap against it (first reopen = 1 write, second = 0 — pinned).
+
+Evidence: `additive-red.txt` (RED against the stashed nine-store tree,
+exit 1), `additive-green-target-specs.txt` (31/31, exit 0),
+`additive-green-full-overlay-surface.txt` (9 files / 87 tests, exit 0),
+`full-suite-branch-additive.txt` + `additive-fail-files.txt` (failing set
+IDENTICAL to `baseline-fail-files.txt`),
+`mutation-probe-additive.txt` (3 probes caught, source restored byte-identical).

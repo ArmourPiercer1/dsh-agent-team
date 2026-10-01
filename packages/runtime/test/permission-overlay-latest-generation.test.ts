@@ -11,7 +11,8 @@ import { writeText } from '../../testkit/fault-injection/file-seam.mjs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { PERMISSION_OVERLAY_DOMAIN_NAME, PERMISSION_OVERLAY_STORE } from '../../storage/schema/permission-overlay.js'
+import { PERMISSION_OVERLAY_STORE } from '../../storage/schema/permission-overlay.js'
+import { TEAM_DOMAIN_NAME } from '../../storage/schema/index.js'
 import {
   OTHER_INSTANCE_ID,
   fixtureKey,
@@ -43,7 +44,7 @@ describe('permission-overlay latest = highest generation (PR1 plan test 2)', () 
     const reversed: Record<string, string> = {}
     for (const key of Object.keys(before).reverse()) reversed[key] = before[key]!
     expect(Object.keys(reversed)[0]).toBe(fixtureKey(3))
-    writeText(join(world.dir, PERMISSION_OVERLAY_DOMAIN_NAME, `${PERMISSION_OVERLAY_STORE}.json`), JSON.stringify(reversed))
+    writeText(join(world.dir, TEAM_DOMAIN_NAME, `${PERMISSION_OVERLAY_STORE}.json`), JSON.stringify(reversed))
 
     const reopened = await world.reopen()
     const latest = await reopened.port.latest(world.identity)
@@ -103,7 +104,7 @@ describe('permission-overlay latest = highest generation (PR1 plan test 2)', () 
     for (const [key, value] of Object.entries(rows)) {
       if (key !== fixtureKey(2)) withoutMiddle[key] = value
     }
-    writeText(join(world.dir, PERMISSION_OVERLAY_DOMAIN_NAME, `${PERMISSION_OVERLAY_STORE}.json`), JSON.stringify(withoutMiddle))
+    writeText(join(world.dir, TEAM_DOMAIN_NAME, `${PERMISSION_OVERLAY_STORE}.json`), JSON.stringify(withoutMiddle))
 
     const reopened = await world.reopen()
     expect((await reopened.port.latest(world.identity))?.metadata.generation).toBe(3)

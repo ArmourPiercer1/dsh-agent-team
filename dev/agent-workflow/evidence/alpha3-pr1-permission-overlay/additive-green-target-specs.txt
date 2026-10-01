@@ -1,0 +1,13 @@
+$ node_modules/.bin/vitest run packages/testkit/test/a3p1-team-domain-tenth-store.test.ts packages/testkit/test/a3p1-seam-additive-tables.test.ts packages/runtime/test/permission-overlay-append.test.ts packages/runtime/test/permission-overlay-port-surface.test.ts --reporter=dot
+
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay
+
+·······························
+
+ Test Files  4 passed (4)
+      Tests  31 passed (31)
+   Start at  18:43:42
+   Duration  356ms (transform 647ms, setup 0ms, import 887ms, tests 86ms, environment 0ms)
+
+[exit code: 0]

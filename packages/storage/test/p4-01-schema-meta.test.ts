@@ -1,8 +1,10 @@
 /**
  * p4-01 — schema_meta store + create/open lifecycle + layered version policy.
  *
- * Proves the L2/L3 policy surfaces: create stamps all nine stores (schema
- * version 2) with canonical bytes; open verifies the seam (L1) and the
+ * Proves the L2/L3 policy surfaces: create stamps all ten stores (schema
+ * version 2 — the tenth store `permission_overlays` was added ADDITIVELY at
+ * that same version by Alpha.3 PR1, so a fresh create now writes ten
+ * canonical stamp rows) with canonical bytes; open verifies the seam (L1) and the
  * per-store stamps (L2) and fails loudly with the exact store/version on
  * mismatch; a crash between stamp writes leaves a partial domain whose
  * diagnosis is stable across re-opens (roll-forward, never rollback).
@@ -86,9 +88,9 @@ seamCorrupt.rawRows(TEAM_DOMAIN_NAME, 'schema_meta').set('team_sessions', 42)
 const corruptOpen = await capture(() => openTeamDomain(seamCorrupt))
 
 describe('p4-01 schema_meta / create-open lifecycle / version policy', () => {
-  it('create stamps all nine stores at schema version 2 with canonical bytes', () => {
+  it('create stamps all ten stores at schema version 2 with canonical bytes', () => {
     expect(domain.name).toBe(TEAM_DOMAIN_NAME)
-    expect(stamps.size).toBe(9)
+    expect(stamps.size).toBe(10)
     for (const store of P4_STORES) {
       const stamp = stamps.get(store)
       expect(stamp === undefined).toBe(false)
@@ -103,7 +105,7 @@ describe('p4-01 schema_meta / create-open lifecycle / version policy', () => {
 
   it('openTeamDomain re-opens a closed domain and hands out all nine repositories', () => {
     expect(reopenedName).toBe(TEAM_DOMAIN_NAME)
-    expect(reopenedStampCount).toBe(9)
+    expect(reopenedStampCount).toBe(10)
     expect(reopenedStoreSizes.length).toBe(8)
     for (const [, size] of reopenedStoreSizes) {
       expect(size).toBe(0)
@@ -133,7 +135,7 @@ describe('p4-01 schema_meta / create-open lifecycle / version policy', () => {
     const error = asTeamDomainError(createAgain.error)
     expect(error.code).toBe('TEAM_DOMAIN_EXISTS')
     expect(detail(error, 'store')).toBe('schema_meta')
-    expect(detail(error, 'size')).toBe(9)
+    expect(detail(error, 'size')).toBe(10)
   })
 
   it('openTeamDomain on an empty seam raises SCHEMA_STAMP_MISSING for the first store', () => {

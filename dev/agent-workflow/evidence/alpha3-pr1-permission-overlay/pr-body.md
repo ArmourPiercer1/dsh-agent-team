@@ -69,12 +69,31 @@ Authority order used: upstream public contract → the 20260829 frozen four →
 | `packages/runtime/permission-governance/index.ts` | the package barrel |
 | `packages/runtime/test/permission-overlay-helpers.ts` | fixtures + the per-case durable-world harness (fresh scratch dir per `it`) |
 | `packages/runtime/test/permission-overlay-{append,latest-generation,restart-persistence,history-immutability,generation-conflict,validation,port-surface}.test.ts` | the seven specs (§4) |
+| `packages/testkit/test/a3p1-team-domain-tenth-store.test.ts` | **added in the placement round** — 10 legs pinning the additive tenth store (compat open, byte-identical nine tables, one-time stamp bootstrap + idempotence, boot-entry parity, fresh-create ten stamps in canonical order, rows-without-stamp, a pre-existing missing stamp still named, tampered L1/L2, ghost file / missing pre-existing table, append + restart) |
+| `packages/testkit/test/a3p1-seam-additive-tables.test.ts` | **added in the placement round** — 8 legs pinning the seam fidelity fix on BOTH sanctioned doubles (trailing addition opens empty at zero write cost and materializes on first write; prefix hole, ghost file, removed table and foreign version all stay loud) |
 
-**Existing files modified — exactly one:**
-`packages/testkit/test/p4t6-session-event-scan.test.ts` — the shared
-file-count scan pin `908 → 922` (this PR's fourteen scannable files) plus its
-prose line. Zero new denylist vocabulary: the frozen quarantine hit set stays
-at fifteen occurrences; the scanner `.mjs` is unchanged.
+**Existing files modified.** The first round touched exactly one existing file
+(the shared scan pin). The placement round — moving the store from the
+withdrawn standalone domain into `team_domain` — necessarily touched the
+TeamDomain declaration, its open path, both test doubles, and every existing
+assertion that counts stamped stores. Each of those is a count or a path
+following the tenth store, and one is a deliberate fidelity fix; nothing in
+them changes a version policy or a durability rule:
+
+| file | why it moved |
+| --- | --- |
+| `packages/storage/schema/stores.ts` | `permission_overlays` joins the declared set as the **tenth** store (`TEAM_DOMAIN_BASELINE_STORES` + `TEAM_DOMAIN_ADDITIVE_STORES`); `TEAM_DOMAIN_SCHEMA_VERSION` and `SUPPORTED_TEAM_DOMAIN_SCHEMA_VERSIONS` **unchanged** at `2` / `[2]` |
+| `packages/storage/repositories/team-domain.ts` | `verifyStamps()` — the nine baseline stamps verified exactly as before, plus the additive store's bootstrap-only-if-empty rule; shared by `openTeamDomain` and `createOrOpenTeamDomain`. `permissionOverlays` is deliberately **not** added to `TeamDomainRepositories` (zero production-path imports stay zero) |
+| `packages/storage/schema/version-policy.ts` | prose only: "a new STORE is not a new VERSION", with the two upstream citations. The no-migration-for-versions rule is untouched |
+| `packages/storage/schema/permission-overlay.ts` | placement constants retargeted to the TeamDomain store (`PERMISSION_OVERLAY_STORE`, `PERMISSION_OVERLAY_SCHEMA_VERSION = TEAM_DOMAIN_SCHEMA_VERSION`); the standalone domain's constants and seam spec are deleted |
+| `packages/storage/repositories/permission-overlays.ts` | `openPermissionOverlayStore` opens the **`team_domain`** handle; port surface, CAS, conflict and row encoding unchanged (prototype methods still exactly `append`/`at`/`history`/`latest`/`store`) |
+| `packages/runtime/permission-governance/{types,index}.ts` | the withdrawn `PERMISSION_OVERLAY_DOMAIN_NAME` re-export removed |
+| `packages/testkit/fault-injection/file-seam.mjs` | **fidelity fix**: same-version trailing table additions open empty at zero write cost (matching the pinned upstream); prefix holes, ghost files and foreign versions stay `malformed-medium` / `version-mismatch` |
+| `packages/storage/test/p4-helpers.ts` | the same fidelity fix for the `InMemoryStorageSeam` mirror (`isAdditiveTableExtension` replaces the table-set equality check) |
+| `packages/storage/test/{p4-01-schema-meta,p4-07-durability-crash,bp1-blueprint-registry,rmr-create-or-open}.test.ts` | stamp counts / write bases 9 → 10 |
+| `packages/testkit/test/p4t5-helpers.ts`, `p4t5-retry-restart.test.ts`, `p4t5-corrupt-version.test.ts` | `STAMP_WRITE_COUNT` 9 → 10; the committed fixture is a pre-Alpha.3 nine-store world, so its first reopen pays the ONE tenth-store stamp write — and "the next reopen is 0-write" is now pinned as its own leg |
+| `packages/testkit/test/p4t6-session-event-scan.test.ts` | the shared file-count pin `908 → 922 → 924` (+14 first round, +2 placement specs). Zero new denylist vocabulary: the frozen quarantine hit set stays at fifteen occurrences; the scanner `.mjs` is unchanged |
+| `packages/runtime/test/permission-overlay-*.test.ts` (6 of the 7) | placement legs + raw-row paths retargeted to `team_domain/permission_overlays.json`; port surface, CAS, restart and validation legs unchanged |
 
 **Explicitly NOT added / NOT touched** (plan *"Do NOT add: - resolver logic;
 - notification; - UI."* plus the coordinator's scope list): no resolver logic,
@@ -83,16 +102,21 @@ no notification, no UI, no `EffectivePermissionAssembler`, no
 no grant/revoke/lifecycle, no inheritance. Untouched:
 `operation-permission/` (the pure resolver), `effective-policy/`, `control/`,
 `mutation/`, `governance/`, notification, the client projection / `TeamLedger`,
-the recovery paths, `packages/storage/schema/stores.ts`,
-`packages/storage/repositories/team-domain.ts`, `packages/runtime/src/**`, and
-every PR54/PR55/PR56 line.
+the recovery paths, `packages/runtime/src/**` (including the boot call site at
+`host.ts:1531-1545` — it keeps calling `createOrOpenTeamDomain`, which now
+also bootstraps the tenth stamp), the committed
+`fault-injection/fixtures/committed-world` fixture (deliberately still the
+nine-store pre-Alpha.3 world: it is the compatibility witness), and every
+PR54/PR55/PR56 line.
 
 `permission-overlay-port-surface.test.ts` pins that isolation four ways: the
 port surface is exactly `append`/`history`/`latest`; no owned module imports a
 resolver / assembler / governance-mutation / control / notification /
 projection / admission / lifecycle module; the contract docstrings naming the
 `GovernanceMutationService` as the mutation authority are asserted text; and
-the durable domain name is literalized in exactly one module.
+the store name is literalized in exactly one module
+(`packages/storage/schema/stores.ts`), and the withdrawn standalone domain's
+quoted literal appears nowhere in `packages/storage` or `packages/runtime`.
 
 ## 4. TDD — RED and GREEN, verbatim
 
@@ -176,22 +200,109 @@ The new sources are inside the typecheck program (reached from
 **not** added to `packages/runtime/tsconfig.build.json`'s include list, so no
 build output changes.
 
+### A contract-bound bug the max-length regression found (`9413fd36`)
+
+A `snapshotId` is not free-form text: `permissionOverlaySnapshotKey` **derives**
+it as `teamSessionId + '#' + memberInstanceId + '#' + generation`, while
+`PERMISSION_OVERLAY_MAX_SNAPSHOT_ID_LENGTH` was a hand-set **256** and is the
+bound the metadata gate applies to `previousSnapshotId`. For a legal
+maximum-length identity the derived key is
+`255 (SESSION_ID_MAX_LENGTH) + 1 + 37 (INSTANCE_ID_MAX_LENGTH = 'inst-' + 32) + 1 + 16 (String(Number.MAX_SAFE_INTEGER).length) = 310`
+characters — so the bound sat **below the length of a key the store itself
+produced**. Generation 1 appended; generation 2, whose `previousSnapshotId` is
+generation 1's key, was **necessarily rejected**: a legal max-identity team
+could never chain a second overlay generation.
+
+RED (`snapshot-id-bound-red.txt`) — the required regression is a max-identity
+chain of **two** generations, because a single append cannot see this:
+
+```
+ FAIL  packages/runtime/test/permission-overlay-append.test.ts > … chains TWO generations on a MAX-length identity (the snapshot-id bound must be derived)
+TeamDomainError: PermissionOverlaySnapshot metadata.previousSnapshotId must be null or a non-empty string of at most 256 chars
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+ Test Files  1 failed | 7 skipped (8)
+      Tests  1 failed | 8 skipped (9)
+[exit code: 1]
+```
+
+GREEN (`snapshot-id-bound-green.txt`): the bound is now **derived from its
+component maxima** (`SESSION_ID_MAX_LENGTH + 1 + INSTANCE_ID_MAX_LENGTH + 1 +
+MAX_GENERATION_DIGITS`, documented as the 255+1+37+1+16 = 310 table in the
+module), the ID format and grammar are unchanged, and the whole overlay surface
+passes:
+
+```
+ Test Files  8 passed (8)
+      Tests  79 passed (79)
+[exit code: 0]
+```
+
+### The placement round (tenth TeamDomain store) — RED and GREEN, verbatim
+
+RED first, honestly staged: the two new specs are untracked, so
+`git stash push -- packages/` puts the production tree back on the
+**nine-store** code while the new specs stay. Captured in
+`additive-red.txt` (the stash is popped immediately after; `git status`
+verified):
+
+```
+$ git stash push -m "a3p1-additive-red-probe" -- packages/
+$ node_modules/.bin/vitest run packages/testkit/test/a3p1-team-domain-tenth-store.test.ts packages/testkit/test/a3p1-seam-additive-tables.test.ts packages/runtime/test/permission-overlay-append.test.ts packages/runtime/test/permission-overlay-port-surface.test.ts --reporter=dot
+ ...
+ FAIL  packages/testkit/test/a3p1-team-domain-tenth-store.test.ts > … createOrOpenTeamDomain (the production boot entry) adopts a nine-store medium the same way
+AssertionError: expected 9 to be 10 // Object.is equality
+ ...
+ Test Files  2 failed | 2 passed (4)
+      Tests  9 failed | 22 passed (31)
+[exit code: 1]
+```
+
+GREEN, same command (no stash):
+
+```
+$ node_modules/.bin/vitest run packages/testkit/test/a3p1-team-domain-tenth-store.test.ts packages/testkit/test/a3p1-seam-additive-tables.test.ts packages/runtime/test/permission-overlay-append.test.ts packages/runtime/test/permission-overlay-port-surface.test.ts --reporter=dot
+ Test Files  4 passed (4)
+      Tests  31 passed (31)
+[exit code: 0]
+```
+
+The whole permission-overlay surface (7 runtime specs + the 2 new testkit
+specs = 9 files, 87 tests — the CAS / append / latest / history / restart /
+validation behaviour retargeted onto the tenth table, unchanged):
+
+```
+$ node_modules/.bin/vitest run packages/runtime/test/permission-overlay-append.test.ts packages/runtime/test/permission-overlay-latest-generation.test.ts packages/runtime/test/permission-overlay-restart-persistence.test.ts packages/runtime/test/permission-overlay-history-immutability.test.ts packages/runtime/test/permission-overlay-generation-conflict.test.ts packages/runtime/test/permission-overlay-validation.test.ts packages/runtime/test/permission-overlay-port-surface.test.ts packages/testkit/test/a3p1-team-domain-tenth-store.test.ts packages/testkit/test/a3p1-seam-additive-tables.test.ts --reporter=dot
+ Test Files  9 passed (9)
+      Tests  87 passed (87)
+[exit code: 0]
+```
+
+`tsc -p tsconfig.json` → exit 0 in `packages/storage`, `packages/runtime` and
+`packages/testkit`; `eslint` over every changed `.ts`/`.mjs` → exit 0;
+`node scripts/check-artifacts-committed.mjs` →
+`OK: 1372 files` (no composition surface changed — the store has zero
+production-path imports). The CAS mutation probe was re-run on this tree: three
+probes, each caught by the pinned specs, source restored byte-identical
+(`mutation-probe-additive.txt`).
+
 ### Full offline suite — parity against the pristine base
 
 | tree | files | tests |
 | --- | --- | --- |
-| this branch | 10 failed / 415 passed (425) | 20 failed / 4932 passed (4952) |
+| this branch (placement round) | 9 failed / 418 passed (427) | 19 failed / 4953 passed (4972) |
+| this branch (first round) | 10 failed / 415 passed (425) | 20 failed / 4932 passed (4952) |
 | pristine `1385f1ee` (this PR's files stashed out) | 9 failed / 409 passed (418) | 19 failed / 4865 passed (4884) |
 
-The delta is exactly **+7 test files / +68 passing tests**, plus one extra
-entry: `packages/runtime/test/p6t1-parallel.test.ts`, which is **flaky on the
-pristine base too** (24 single-file repeats: 2/12 failing with this PR's files,
-4/12 failing at the stashed base — activation-quota / compatibility-reprobe
-timing). The nine other pre-existing failing files fail identically with and
-without this PR's files (isolated ten-file run: 9 failed / 1 passed,
-19 failed tests / 56 passed in both states). They are recorded **by identity
-only** and are neither attributed nor fixed here — none of them reaches the
-permission-overlay sources:
+At the placement round the branch's failing-file set is **identical, by
+identity, to the pristine base's** (`diff` of the two sorted lists: empty —
+`additive-fail-files.txt` vs `baseline-fail-files.txt`), i.e. zero
+regressions attributable to this PR. The first round's extra entry,
+`packages/runtime/test/p6t1-parallel.test.ts`, is **flaky on the pristine base
+too** (24 single-file repeats: 2/12 failing with this PR's files, 4/12 failing
+at the stashed base — activation-quota / compatibility-reprobe timing); it did
+not recur in this run. The nine pre-existing failing files below are recorded
+**by identity only** and are neither attributed nor fixed here — none of them
+reaches the permission-overlay sources:
 `packages/domain/test/t1-capability-schema.test.ts`,
 `packages/domain/test/t2-blueprint-hash.test.ts`,
 `packages/runtime/test/d3-member-identity-context.test.ts`,
@@ -249,84 +360,104 @@ following was executed — this PR's evidence is entirely offline:
   into `pr56`, no package or manifest changed, and no broad copy or cleanup
   sweep was performed.
 
-## 7. OPEN PLAN-LEVEL DECISION — durable placement (escalated, not decided here)
+## 7. Durable placement — RESOLVED: the tenth `TeamDomain` store, added additively at v2
 
-The ADR §1 authority chain terminates in **`TeamDomain`**, and the plan's PR1
-list says `Add: … TeamDomain schema`:
+### 7.0 Retraction (one note, forward-only; nothing is being re-litigated here)
 
-```
-    Leader/Human request
-            |
-    GovernanceMutationService
-            |
-    PermissionOverlayRepository
-            |
-    TeamDomain
-```
+An earlier round of this PR escalated durable placement as an **open
+plan-level decision** with three options (a v2 → v3 `TeamDomain` bump plus an
+explicit migration operation; a BP1-style world reset; or a **permanent
+separate** Team-owned domain `team_permission_overlay`), and the interim
+implementation followed the third. **That escalation was wrong and is
+retracted.** All three options rested on a test-double artifact, not on the
+pinned upstream backend: the conclusion "a same-version change to the table set
+of an existing domain is rejected as `malformed-medium`" came from **our own
+stricter mirrors** — `packages/storage/test/p4-helpers.ts` (`InMemoryStorageSeam`,
+the sanctioned P4 test seam) and
+`packages/testkit/fault-injection/file-seam.mjs` (`FileStorageSeam`) — which
+compared persisted and declared table sets for equality. The real pinned
+backends at `46a7f68b0922371ce7144b668b90e377d8e799f4` do no such thing: a
+declared table that the medium does not carry is initialized **empty** —
 
-Placing the overlay store **inside** the `team_domain` storage domain is
-**not achievable additively**, and this PR did not silently pick a resolution:
+* storage-json: [`packages/storage/storage-json/src/format.ts#L77-L85`](https://github.com/deepseek-ai/deepseek-harness/blob/46a7f68b0922371ce7144b668b90e377d8e799f4/packages/storage/storage-json/src/format.ts#L77-L85)
+  (`records === undefined → state.tables.set(table, new Map())`),
+* storage-sqlite: [`packages/storage/storage-sqlite/src/index.ts#L110-L131`](https://github.com/deepseek-ai/deepseek-harness/blob/46a7f68b0922371ce7144b668b90e377d8e799f4/packages/storage/storage-sqlite/src/index.ts#L110-L131)
+  (`CREATE TABLE IF NOT EXISTS` per declared table, inside the same version).
 
-* `packages/storage/schema/stores.ts:42` pins `TEAM_DOMAIN_SCHEMA_VERSION = 2`
-  and `:45` `SUPPORTED_TEAM_DOMAIN_SCHEMA_VERSIONS = [2]`; `:48-58` declares
-  exactly **nine** stores and `:99-105` declares precisely those nine in the
-  seam spec.
-* Adding a tenth store at the **same** version makes every existing
-  `team_domain` medium fail at **open**:
-  `packages/storage/test/p4-helpers.ts:203-209` — same version + different
-  table set → seam code `malformed-medium`. Bumping the version instead yields
-  `version-mismatch` (`packages/storage/repositories/team-domain.ts:109-119` →
-  `SCHEMA_VERSION_MISMATCH`). Both reject on the **production boot path**
-  (`packages/runtime/src/plugin/host.ts:1531-1545`, create-or-open on every
-  boot).
-* `packages/storage/schema/version-policy.ts:23-31` closes the third door:
-  *"There is NO built-in migration … the upgrade strategy is a documented
-  future extension point only: a future version ships the migration as a new
-  supported version plus an explicit migration operation, **never as an
-  implicit in-place rewrite**."*
-* The nine-store set is also pinned by existing tests and by a committed world
-  fixture: `packages/storage/test/p4-01-schema-meta.test.ts:91,106`;
-  `packages/storage/test/p4t4-per-stage-retry.test.ts:171,284`;
-  `packages/testkit/test/p4t5-retry-restart.test.ts:447`;
-  `packages/testkit/test/p4t5-crash-matrix.test.ts:289,339-343`;
-  `packages/testkit/fault-injection/fixtures/committed-world/team_domain.meta.json`
-  (= `{"version":2}` plus the nine table files).
-* Precedent: the ninth store (`blueprint_registry`, issue #2 BP1/BP2) was added
-  by a real **v1 → v2** bump + fixture restamp + runtime L3 restamp — a
-  plan-level alpha decision that the three Alpha.3 revised docs **do not
-  contain** an equivalent of.
+No table-set equality check exists anywhere in the upstream backends. There is
+therefore no version conflict to escalate: **a new store is not a new
+version.** The standalone-domain code from that round is **withdrawn design** —
+it survives only in this branch's history and is not in the final tree (no
+`team_permission_overlay` domain, no
+`SUPPORTED_PERMISSION_OVERLAY_SCHEMA_VERSIONS`, no
+`createPermissionOverlaySeamSpec`; `permission-overlay-port-surface.test.ts`
+fails if the quoted domain literal reappears in `packages/storage` or
+`packages/runtime`). Authority wiring is unchanged by this correction.
 
-**Interim taken (coordinator-approved, new files only, zero existing-file
-behaviour change):** its own Team-owned durable domain
-`team_permission_overlay` at schema version 1, table `permission_overlays`,
-opened through the same public `StorageDomainSeam` (L1 version at open, L3 row
-`schemaVersion`; no `schema_meta` stamp table, and the reason is documented in
-the module header). The placement literal lives in **one** module
-(`packages/storage/schema/permission-overlay.ts`), so a reversal is a
-one-file flip — and `permission-overlay-port-surface.test.ts` fails if a second
-literalization site appears.
+### 7.1 What shipped
 
-**The decision left to the plan owner** (each option has a different durability
-and compatibility consequence, so it is plan-level, not implementer-level):
+`permission_overlays` is the **tenth declared store of the single public
+`team_domain` domain**, appended last in `TEAM_DOMAIN_STORES`
+(`packages/storage/schema/stores.ts`), at the **unchanged**
+`TEAM_DOMAIN_SCHEMA_VERSION = 2` with `SUPPORTED_TEAM_DOMAIN_SCHEMA_VERSIONS
+= [2]`. No version bump, no migration operation, no world reset, no fixture
+restamp: the nine existing stores keep their rows and their stamp bytes, and
+the only durable write a pre-existing medium ever sees is the new store's own
+single `schema_meta` stamp row.
 
-1. move the overlay store **into `team_domain`** as the tenth store with a
-   **v2 → v3** bump **plus an explicit migration operation** (and the fixture /
-   committed-world restamps that implies); or
-2. a **BP1-style world reset** — bump and restamp, accepting that pre-alpha3
-   `team_domain` media are dropped rather than migrated; or
-3. keep `team_permission_overlay` as a **permanent** separate Team-owned
-   domain, and amend the ADR §1 diagram / plan wording to say so explicitly
-   (the diagram currently promises a single `TeamDomain`).
+**The stamp rule** (`verifyStamps` in
+`packages/storage/repositories/team-domain.ts`, used by `openTeamDomain` *and*
+by the production boot entry `createOrOpenTeamDomain`):
 
-Whichever way this is decided, PR1's record shape, port surface and CAS
-semantics are unaffected; only the domain placement constants move.
+* the nine **baseline** stamps are verified exactly as before — missing →
+  `SCHEMA_STAMP_MISSING` naming the exact store, foreign version →
+  `SCHEMA_STAMP_MISMATCH`, and an L1 foreign-version medium →
+  `SCHEMA_VERSION_MISMATCH`, all with the medium untouched;
+* the **additive** store's stamp is bootstrapped **only** when the store is
+  freshly initialized empty: stamp absent **and** the table holds zero rows
+  **and** the nine baseline stamps already verified. Anything else stays loud —
+  rows without a stamp is corruption (`SCHEMA_STAMP_MISSING` with
+  `details.problem = 'rows-without-stamp'`, zero writes), never "fresh".
+
+**The seam fidelity fix** (the one deliberate existing-file behaviour change,
+listed explicitly): both sanctioned doubles now match the pinned upstream for
+same-version table additions. The rule they implement is: *a same-version
+table-set change is legal exactly when the persisted table set is a canonical
+**prefix** of the declared set; the missing trailing tables are empty in memory
+and cost no durable write.* Strictness that upstream cannot express is
+**retained on purpose**: because `FileStorageSeam` persists one file per table,
+a *hole* in the prefix (a lost middle store) is still `malformed-medium`, and so
+are undeclared/ghost files, removed tables and foreign versions. Pinned by
+`packages/testkit/test/a3p1-seam-additive-tables.test.ts` (8 legs, both doubles).
+
+**Existing-file syncs this required** (each is a count or a path following the
+tenth store, not a policy change): `p4-01-schema-meta` (create stamps ten),
+`p4-07-durability-crash`, `bp1-blueprint-registry` (stamp-write base),
+`rmr-create-or-open` (fresh/adopt stamp counts), `p4t5-helpers.STAMP_WRITE_COUNT`
+(9 → 10), `p4t5-retry-restart` + `p4t5-corrupt-version` (the committed fixture is
+a genuine pre-Alpha.3 nine-store world, so its **first** reopen now pays exactly
+**one** write — the tenth stamp row — and a second reopen is 0-write, which is
+now pinned as its own leg), `p4t6-session-event-scan` (scannable-file pin
+922 → 924, +2 new specs), and the seven `permission-overlay-*` specs' placement
+legs plus `permission-overlay-helpers.ts` (rows now read from
+`team_domain/permission_overlays.json`). The committed
+`fault-injection/fixtures/committed-world` fixture is deliberately **left
+nine-store**: it is the compatibility witness, not a stale artifact — dogfooding
+the additive path on every reopen is exactly what it now proves.
 
 ## 8. Reviewer quick map
 
+* the store declaration (nine baseline + one additive, the version pinned at
+  2): `packages/storage/schema/stores.ts`
+* open/verify/bootstrap of the stamps: `verifyStamps` in
+  `packages/storage/repositories/team-domain.ts`
 * record + placement constants: `packages/storage/schema/permission-overlay.ts`
 * append-only store + CAS: `packages/storage/repositories/permission-overlays.ts`
   (header explains the three design non-responsibilities, the CAS problem
   table, and why appends are serialized on the instance)
+* the two test doubles' additive-table rule (the fidelity fix):
+  `packages/testkit/fault-injection/file-seam.mjs` (open) and
+  `packages/storage/test/p4-helpers.ts` (`isAdditiveTableExtension`)
 * port: `packages/runtime/permission-governance/port.ts`
 * adapter: `packages/runtime/permission-governance/overlay-repository.ts`
 * evidence + reading order:

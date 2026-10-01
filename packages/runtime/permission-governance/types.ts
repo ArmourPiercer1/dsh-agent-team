@@ -29,7 +29,6 @@ export type {
 } from '../../storage/schema/permission-overlay.js'
 
 export {
-  PERMISSION_OVERLAY_DOMAIN_NAME,
   PERMISSION_OVERLAY_EFFECT_VALUES,
   PERMISSION_OVERLAY_MAX_RULES,
   PERMISSION_OVERLAY_SCHEMA_VERSION,
