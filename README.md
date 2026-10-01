@@ -54,12 +54,27 @@ gitignored) — this section is a pointer summary, not the authority:
 ## Release status
 
 - **Current RC baseline:** `0.1.0-rc.1` (`origin/stable` @ `b0e5aeb4`, unchanged). This release freezes the manually tested and Playwright-validated Team vNext product as the baseline for future work.
-- **Current master (alpha):** `0.1.1-alpha.2` (all 9 packages) at master @ `e22c659a`
-  (PR #35 team-view-sync-complete merged, 2026-09-28); host pin
+- **Current master (alpha):** `0.1.1-alpha.2` (all 9 packages) at master @
+  `31ad828d` (2026-10-01 re-verified = origin/master) — the pre-Alpha.3 refactor
+  series (PR-0 #37 + A #38 + B #39 + C #40 + D #41 + E #42 + w1a #43 + F15 #44 +
+  F #45) is fully merged on master via series-closure merge `533dfcbb`
+  (2026-09-30) + bookkeeping `5e1832a3` + skill sync `31ad828d`. Host pin
   `@deepseek-ai/dsh@0.1.7-rc.1` (root `peerDependencies`). `0.1.1-alpha.1`
-  (frozen 2026-09-11) is superseded. Open PR as of 2026-09-28: **PR #22**
-  (fix/persona-requirement-kind @ `d30397b8`, persona requirement kind-matching
-  fix, awaiting review/merge ruling).
+  (frozen 2026-09-11) is superseded.
+  **Superseded (2026-10-01 handoff closure):** the 2026-09-28 lines "master @
+  `e22c659a`" and "Open PR = **PR #22**" — PR #22 is CLOSED as superseded
+  (plan §8.6; the persona kind-matching semantics re-landed inside PR-E #42 of
+  the pre-alpha3 series), and the series-closure merges moved master to
+  `31ad828d`. **Superseded (2026-10-01 07:07Z):** master has since advanced via
+  two user-authorized single-HEAD merges — #47 (E+G) → merge commit
+  `2bfbca12c0b4b7260e8bc9b5b05cd339189c74e4` (06:24Z), then #46 (A) → merge commit
+  `8e18819c4e589f685b99a86769251565ee4fc7ec` (07:07Z, = origin/master); both
+  expectedHeadOid-guarded with reviewed-commit inclusion verified. Open work as of 2026-10-01:
+  four fix PRs (#47 and #46 now MERGED; #48 I+J and #49 B/C/D/H at post-sync
+  HEADs under final-HEAD review) + the unpublished F fix branch
+  (`fix/mcp-target-materialization`) for the independently confirmed findings
+  A–J (5 P1 + 5 P2) from the 2026-10-01 external review of the merged series — see
+  `dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md`.
 - **Pre-1.0 branch policy:** `master` carries ongoing alpha development; `stable` tracks only release-candidate baselines and RC-qualified fixes. Do not merge unqualified alpha work from `master` directly into `stable`.
 - **Product foundation:** the full vNext product (P0–P9 + T12 vertical +
   upstream-0.1.2-rc.1 compat + fresh-machine install chain, 1284 files / +85,679)
@@ -93,17 +108,24 @@ gitignored) — this section is a pointer summary, not the authority:
   intentional deferral per the upgrade plan U3 (see `docs/TEST_METHODS.md`
   §1/§4.2). History: 0.1.2-rc.1 @ `76fda72979` (2026-09-04, R122) →
   0.1.5-rc.2 @ `fb2c4b9e` (2026-09-17, rc2-repair) → 0.1.7-rc.1 (2026-09-24).
-- Push: origin/master updated through 2026-09-28 under per-round one-shot user
-  push authorizations — PRs #16–#21 and #23–#35 merged (latest: PR #35
-  team-view-sync-complete, merged @ `e22c659a`); **PR #22
-  (fix/persona-requirement-kind @ `d30397b8`) still open**. **origin/master @
-  `e22c659a`**;
+- Push: origin/master updated through 2026-10-01 under per-round one-shot user
+  push authorizations — PRs #16–#21 and #23–#35 merged, then the pre-alpha3
+  series PRs #37–#45 merged (latest: PR #45 (PR-F) merged @ `365f635c`,
+  2026-09-30); **PR #22 CLOSED as superseded (2026-09-30, plan §8.6)**.
+  **origin/master @ `31ad828d`** (2026-10-01 re-verified; superseded 07:07Z → `8e18819c…` after the two authorized merges above);
   **origin/stable @ `b0e5aeb4`** (0.1.0-rc.1 freeze, unchanged). Zero force-push
   on gated history; each push verified via ls-remote.
-- Next: no in-flight task round (2026-09-28); open PR = **PR #22**
-  (fix/persona-requirement-kind — match persona requirements by persona kind,
-  not preset id; head `d30397b8`, base master, mergeable/clean) awaiting
-  review/merge ruling. Awaiting user direction: **PR #22**, **G8-S (P9 proper
+- Next (2026-10-01 handoff closure round): five DRAFT fix PRs for findings
+  A–J (5 P1 + 5 P2) confirmed by the 2026-10-01 independent external review of
+  the merged series — `fix/persona-kind-preflight` (A) /
+  `fix/control-authz-boundary` (B, C, D, H) / `fix/effective-policy-reset-fallback`
+  (E, G) / `fix/mcp-target-materialization` (F) / `fix/runtime-template-consent`
+  (I, J), all base `31ad828d`, plus the handoff-closure branch carrying the
+  final DoD-20 series report — **NONE merged, NO auto-merge; merging waits
+  exclusively on the user's explicit per-HEAD instruction after external review
+  passes a specific HEAD**. [Superseded, 2026-09-28:] no in-flight task round;
+  open PR = **PR #22** awaiting review/merge ruling. Still awaiting user
+  direction: **G8-S (P9 proper
   line)** ruling (graph `blocked`, pending prototype outcome) and the
   registered follow-up backlog (per-PR `followups` in `graph.yaml`: c1/rc2 kit
   0.1.7 re-adaptation, g5 real-host re-run, p6t1-parallel load flake, F-rc1

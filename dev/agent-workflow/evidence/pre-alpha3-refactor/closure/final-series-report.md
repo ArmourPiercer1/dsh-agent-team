@@ -1,0 +1,171 @@
+# pre-Alpha.3 系列最终收尾报告（DoD 20 项）
+
+**性质**：pre-alpha3 重构系列（PR-0 #37 + A #38 + B #39 + C #40 + D #41 + E #42 + w1a #43 + F15 #44 + F #45）的 handoff closure 报告。
+**基线**：master @ `31ad828d06b5bcca858532f1930ac10c51c0f1bb`（= origin/master，2026-10-01 复核）。
+**本轮环境**：Linux x86_64，node v24.21.0 / pnpm 11.7.0 / git 2.43.0；workspace `/srv/workspace/dsh-plugins/dsh-agent-team`（文档历史记录路径为 `/home/user/dsh-plugins/dsh-agent-team`，本轮全部以实际路径为准）；bwrap workspace-write 沙箱；:3080 稳定实例零触碰。
+**模型路由核验**：本会话模型 = `qwen3.8-27b`（ROUTER_RULES §1 要求 `qiyuan-self/qwen3.8-27b`；基模型名一致，provider 前缀 `qiyuan-self` 无法在会话内自证 —— 按用户 2026-10-01 指令保持已配置模型、只报告冲突、不改设置）。
+
+---
+
+## 0. 本轮结论（先行）
+
+1. **系列 9 个 PR（#37–#45）全部已合并入 master**（远端 gh 复核在案），series-closure merge `533dfcbb` + bookkeeping `5e1832a3` + skill sync `31ad828d` 在 master 上。
+2. **独立外部审查于本基线上确认 10 条缺陷（A–J：5×P1 + 5×P2）**，本轮全部实测复现（逐条证据见 §4 与对应修复 PR）。因此 **DoD 20 项中 6 项在本基线判 fail**（#10/#11/#12/#13/#16/#19 —— 见 §3 表）、**1 项 deferred**（#20 —— 历史收口树门全绿在案；本轮本环境未重跑实宿主三跑/browser/20-scenario，不声称重跑）、13 项 pass（其中 5 项带缺陷注记）。**本系列在 31ad828d 上不构成"全部 DoD 通过"的关闭**；本报告按用户纪律如实记录，未将未修复问题标为 pass。
+3. **5 个 DRAFT 修复 PR**（与文档 closure PR 分离、可独立审查）：persona(A) / control(B,C,D,H) / policy(E,G) / mcp-scoped(F) / runtime-template-consent(I,J)。全部 DRAFT、未合并、无自动合并；合并仅等待用户对外部复审通过的**具体 HEAD** 的明确指令。
+4. **本轮真实执行 vs 历史证据**的区分贯穿全报告：标注 `[本轮]` 的是 2026-10-01 本环境实跑；标注 `[历史]` 的是 2026-09-28..30 系列期间证据（路径在案）。
+
+## 1. 基线复核（本轮）
+
+| 项 | 值 | 核验方式 |
+|---|---|---|
+| master HEAD | `31ad828d` | `git rev-parse master` + `git fetch origin` 后 `origin/master` 一致 |
+| 工作树 | clean（唯一 untracked = 用户恢复的 `docs/memo/`，未触碰） | `git status --porcelain` |
+| PR #37–#45 | 全部 MERGED（#37 PR-0 / #38 A / #39 B / #40 C / #41 D / #42 E / #43 w1a / #44 F15 / #45 F） | `gh pr list --state merged` 远端复核 |
+| series-closure | merge `533dfcbb`（pre-e `401e8a12` → master，23 冲突裁决在案）+ `5e1832a3` bookkeeping + `31ad828d` skill sync | `git log` |
+| 恢复文档 | `docs/plans/active/` 5 份（grilling-ADR / target-system-design / refactor-plan / F15-plan / pr37-42-review-fix-guide）可读；**gitignored**（`.gitignore:2 docs/plans`），untracked，不入库 | `ls -la` + `git check-ignore` |
+| 冻结 legacy 锚点 | 本环境 `references/` 不存在（gitignored，未随 clone 迁移）—— 零-core 自证改以 test-use pristine 为锚（§6） | `ls references/` |
+| 测试基础设施 | `tests/deepseek-harness-test-use` 与 `tests/homes/` 本环境缺失（gitignored，未随 clone 迁移）—— 本轮宿主验证可行性见 §6 | `ls tests/` |
+
+## 2. 20 条 DoD（plan §9）—— 历史证据索引（系列期间）
+
+（历史证据均位于 `dev/agent-workflow/evidence/pre-alpha3-refactor/` 与 `f15-mcp-live-loss/`；20-scenario real-host 映射全文在 `pr-f/prf-f6-battery-record.md`。本表 = 每项 DoD 在系列期间的证据来源；判定见 §3。）
+
+| # | DoD（plan §9 原文缩写） | 系列期间证据 `[历史]` |
+|---|---|---|
+| 1 | governance write authority 唯一 | PR-A #38（`governance/service.ts` 单一 mutation authority；pr-a/full-suite + 6× host-smoke 2026-09-28） |
+| 2 | effective policy read authority 唯一 | PR-B #39（canonical read plane；pr-b host-smoke C3 系列） |
+| 3 | security/governance mutation durable-before-ack | PR-A #38（durable put 先于 ack；pr-a host-smoke） |
+| 4 | no production StepClock authority | PR-B #39（production StepClock 移除；B.2 "移除 production StepClock"） |
+| 5 | v1 frozen Blueprint 可恢复 | E.12 S13（prereq-2026-09-30T03-07-57：registry+team_sessions hash 字节精确 + 冷 resume） |
+| 6 | v2 per-template requirements 可运行 | F15 C0/C1 + prf G1（v2 create/resume；per-template requirements honored） |
+| 7 | requirement/policy/supply/readiness/materialization 分离 | PR-C #40 + PR-E #42（C.2-C.7 substrate/readiness 分离；E.6 preflight） |
+| 8 | cold member 未 mounted 不构成 required failure | W3-A（cold = not-applicable 非 blocker）；E.12 S7 形（web slot materialization failed 与 template 可用性分离） |
+| 9 | MCP per-server failure 不拖垮其他 server | E.12 S7/S8 + F15 10/10（f15-2026-09-30-03-12-56：A/B 隔离、restore、telemetry） |
+| 10 | optional startup consent / runtime auto-degrade 正确 | E.12 S1/S2（consent 拒绝→授予→create；optional missing 自动降级） |
+| 11 | required outage Recovery 不扩权 | E.12 S5/S6/S9（reduced-authority recovery dispatch + digest 重算） |
+| 12 | Recovery cross-Agent work Human synchronous review | E.12 S9（exact reviewed payload recovery-dispatch/v1 + digest）+ S6（human ALLOW→reduced authority 执行） |
+| 13 | approval abort zero effect + durable audit | E.12 S10（abort→durable abandoned；abandoned 上再 ALLOW 被拒 terminal） |
+| 14 | Recovery mode 无第二 durable flag authority | E.12 S8（incident-closed 事实 + 无 durable recovery flag；session 行/ledger 无存储态） |
+| 15 | telemetry 完整并推进 durableGeneration | F15 R2/R3 + E.12 S8/S11 + prf G2/G3（mount-restored 恰一次；8×restart 后 seeded facts 可读、readiness 重置） |
+| 16 | persona preflight 与 actual runtime substrate 同源 | E.12 S12（live standard→OPEN；bare→FATAL PERSONA_INCOMPATIBLE；ptc absent→BLOCKED_FATAL）+ prf G5（U5 caller-only probe lane vs gate lane 分裂——**即本轮 P1-A 的系列内 finding-of-record**） |
+| 17 | Remote v1–v6 保持兼容（更正后 v1–v7） | prf G7（v1..v7 × stable read set；gated methods 各自版本；v7-only 参数在 v6 wire 上 typed 拒绝） |
+| 18 | old Control rows 保持兼容 | PR-D #41 D.6 real-host gate 40/40（prd-control-* 2026-09-29） |
+| 19 | restart 精确恢复 durable intent | E.12 S11（8 restart 后 consent/disable 可读）+ prf G2（override gen 3 跨 restart 保留） |
+| 20 | full host/browser/dual-team/concurrency/zero-core gates 通过 | 收口树门（closure-gates-summary.md：build 9/9、typecheck 9/9、p4t6 10/10@896、p6t6 9/9、full suite ×2 = 10F\|21F\|4698P(4719) 零新增、p6t1 隔离 ×24 零新签名、test-use pristine）+ 实宿主三跑全绿（E.12 16/16 / F15 10/10 / prf 11/11）+ 20-scenario 映射 20/20 |
+
+## 3. 20 条 DoD —— 本轮判定（31ad828d @ 2026-10-01）
+
+> 判定口径：`pass` = 该项性质在本基线成立（历史 + 本轮证据）；`fail` = 本轮实测复现了违反该项性质的缺陷（finding 在案，修复 PR pending）；`deferred` = 本轮无法在环境内执行该项验证（记录历史证据 + 解除条件）。未修复的 finding **不得**使对应项判 pass。
+
+| # | 判定 | 依据（finding → 证据） |
+|---|---|---|
+| 1 | pass | 本轮静态核验：production mutation 入口唯一（`packages/runtime/.../governance/service.ts`，F.2 后旧 authority 已删）；历史 pr-a host-smoke `[历史]` |
+| 2 | pass（缺陷注记 E） | 读 authority 唯一性成立（PR-B canonical plane）；**但 finding E（P1）[本轮复现]**：reset tombstone 使 canonical read 的 slot 优先级错误（TEAM deny 被遮蔽 → allow），修复 PR `fix/effective-policy-reset-fallback` pending —— 唯一性不受影响，正确性缺陷单列于 §4-E |
+| 3 | pass | 本轮静态核验（durable put → ack 顺序在 governance service）；历史 pr-a `[历史]` |
+| 4 | pass | 本轮 grep 核验：production 路径无 StepClock authority（PR-B 移除在案）；p6t6 bypass scan `[本轮]` |
+| 5 | pass | v1 frozen 测试套件 `[本轮]` + E.12 S13 `[历史]`（hash 字节精确） |
+| 6 | pass（缺陷注记 I） | v2 per-template 评估链 `[本轮]` 测试绿；**finding I（P2）[本轮复现]**：无 requirements 的 disabled template 仍可执行（availability 强制缺口），修复 PR `fix/runtime-template-consent` pending |
+| 7 | pass（缺陷注记 I） | 五平面分离结构 `[本轮]` 静态核验；finding I 的强制缺口注记同上 |
+| 8 | pass（回归风险注记 F） | cold not-applicable 语义 `[本轮]` 测试绿（W3-A 在案）；finding F 修复必须以不破坏此项为回归底线（T5 场景） |
+| 9 | pass（缺陷注记 F） | per-server 隔离性质 `[本轮]` 测试绿 + F15 10/10 `[历史]`；**finding F（P1）[本轮复现]**：target 自身的 failed materialization 被跨 session 聚合掩盖（scope identity 未接通），修复 PR `fix/mcp-target-materialization` pending |
+| 10 | **fail** | **finding J（P2）[本轮复现]**：startup consent 丢失 scope/hash —— 跨 scope 同 ID 串 consent + 蓝图 hash 变更继承旧 consent；修复 PR `fix/runtime-template-consent` pending |
+| 11 | **fail** | **finding B（P1）+ D（P1）[本轮复现]**：执行对象可偏离被审对象（reviewPayload 丢 payload/execution 字段、digest 不覆盖 prompt）；restart 后旧 recovery approval 可回放授权新 invocation —— Recovery 授权边界不封闭 |
+| 12 | **fail** | **finding B（P1）[本轮复现]**：review UI 与执行不使用同一冻结对象；仅改 prompt 不改变 digest（当前相同）；批准期间 mutate payload 可被执行 |
+| 13 | **fail** | **finding C（P2）[本轮复现]**：durable abandon 不压过旧 allow（awaitControlDecision 返回陈旧 allow）；pending abandonment waiter 不 settle；cold retry 命中 abandoned row liveness 问题。注：生产 abandon 主路径经 router abort（signal 已 aborted）+ 最终 teamlock，本轮未复现"任意 UI 操作→未授权执行"的生产 race（P2 口径） |
+| 14 | pass | 本轮测试绿（无第二 durable recovery flag；E.12 S8 形 `[历史]`） |
+| 15 | pass | 本轮测试绿（durableGeneration 推进 + telemetry 事实）；F15 R2/R3 `[历史]` |
+| 16 | **pass（finding A 已收口 = PR #46 MERGED）** | **finding A（P1）[本轮复现]**（原文照录：v2 persona requirement 的 kind subject（'standard'）与 provider 的 presetId 匹配永不相交 → live verdict unknown → 无 seed 时 (persona,'standard') fact 缺失 → 创建 FATAL；probe/create lane 分裂；系列内 prf G5 gate-lane REFUSED 即此 finding-of-record `[历史]`）→ 修复经外部内容 PASS + 最终 DELTA PASS + 内部 3/3，**用户具体 HEAD 指令合并 @ `8e18819c…`（07:07:11Z，9/9 已审 commit IN-MASTER 已验）**——修复在 master 生效，判定翻 pass |
+| 17 | pass | 本轮 v1–v7 兼容测试绿；prf G7 `[历史]` |
+| 18 | pass | 本轮 control 兼容测试绿；PR-D D.6 40/40 `[历史]` |
+| 19 | **fail** | **finding D（P1）[本轮复现]**：冷重启后 recovery approval 回放（process-local counter 重置 → correlation 重推 → 复用已 decided 行），fresh Human per attempt 被违反；finding C 的 cold-retry liveness 同注记 |
+| 20 | **deferred** | 历史收口树门全绿 `[历史]`（closure-gates-summary.md：静态门 + full suite ×2 零新增 + p6t1 隔离 ×24 + 实宿主三跑全绿 + 20-scenario 20/20 映射）= "当时记录"保持。本轮本环境：套件/静态门按 §5 重跑（同环境同命令），**实宿主三跑（E.12/F15/prf）与 browser（F.6 scenario 18）未重跑** —— 本环境 `tests/homes/` 未随 clone 迁移、无浏览器实跑条件；**不声称本轮实宿主/浏览器重跑**。解除条件：环境齐备（homes 重建 + 宿主授权轮）后在修复 PR 合并树上重跑。meta 注记：10 条 finding 本轮复现表明历史门禁集存在探测盲区（套件门当时"零新增"通过但缺陷潜伏）——本轮每个 finding 的新增回归测试即为门禁集补强。 |
+
+## 4. Finding 登记（A–J：5 P1 + 5 P2）
+
+> 每条：状态 / 复现证据（本轮命令 + 日志）/ 修复 commit / 测试 / DRAFT PR。修复 PR 与文档 closure 分离，可独立审查。外部复审通过具体 HEAD 前**不合并、不自动合并**。
+
+| ID | 级 | 摘要 | 复现（本轮） | 修复 PR / HEAD / 审查状态（2026-10-01 更新） |
+|---|---|---|---|---|
+| A | P1 | persona KIND subject vs presetId provider→gate 链路不匹配 | `[本轮]` fix-persona-kind RED 测试（t1-t6-red.log EXIT=1，7F\|4P，在案） | **[PR #46](https://github.com/ArmourPiercer1/dsh-agent-team/pull/46)** — 外部 3 项 BLOCK 全修复 @ `4cebc0c6…`（`1461a6f2` B1 role 契约+leader fix / `7a4d7d60` B3 typed / `fcf67b6f` B2 dist+smoke / 簿记）→ **外部内容复审 @ 4cebc0c6 = PASS** → 受控 master 同步完成（POST-SYNC HEAD `a6e2d90c…` 06:47Z 已推送，ff 无 force；merge `3c340110` parents 4cebc0c6 + master `2bfbca12…`；唯一冲突 = SESSION_ROUTER_LOG append-only union 零重写；54 文件 disjoint 自动合并；产物自合并树重生成 check:artifacts 1372 EXIT=0；**p4t6 898→898 delta 0** 已验；门 focused 91/91 + full setdiff=仅 p6t1 flake 2∈0–2（9/9 isolated ×2）+ typecheck 0 + lint 142 vs 143 零新增 + p4t6 10/10@898 全可读；B1 = `1461a6f2…` 不变 = F pick 锚点）→ 内部新 3 审 @ a6e2d90c = **3/3 通过**（r1 2d9ac1cd / r2 808ba72f / r3 0c8e202b；零 blocker）→ **外部最终 DELTA 外审 = PASS（用户 07:06Z 独立核实）** → **用户对该具体 HEAD 的明确合并指令（07:06Z）→ MERGED @ `8e18819c4e589f685b99a86769251565ee4fc7ec`（07:07:11Z，新 MASTER）**：合并前核对 07:07:02Z headRefOid/baseRefOid/MERGEABLE/远端/无新 blocker 全等 → `gh pr ready` → GraphQL `mergePullRequest(mergeMethod:MERGE, expectedHeadOid=a6e2d90c…)` → merged=true；parents = 2bfbca12 + a6e2d90c 已验；**9/9 已审 commit IN-MASTER 已验**（3418b358/69b40c2c/141ee133/1461a6f2/7a4d7d60/fcf67b6f/4cebc0c6/3c340110/a6e2d90c）。**A 收口（merged）**。授权范围 = 仅 #46 该 HEAD |
+| B | P1 | reviewPayload 不完整 + 执行原始可变 request（无 frozen snapshot） | `[本轮]` fix-control-authz RED 测试（red-capture-2/3.log EXIT=1 在案） | **[PR #49](https://github.com/ArmourPiercer1/dsh-agent-team/pull/49)** @ `41e53c98ca3fd9612cb81d205cc70d0fa93349b3`（2 commits：`c4bb2c53` 修复 [frozen snapshot 单一来源 + terminal-abandonment 优先级 & waiter liveness + restart-unique attempt nonce + send-message recipient subject；12 新真链回归；2 disclosed masking-test 身份调整；p4t6 896→901；dist 镜像 6 文件] / `41e53c98` 簿记 [日志+22 证据]）— **外部复审（初步）：B/D/H 源码正确，C = BLOCK**：TOCTOU 窗口 —— final abandon read（router.ts L631–650）先于 recursive performAction（L659–665），recursive admission 在另一 team lock 内 await facts（L752–810）而 control.abandon 用私有锁 → durable abandon 可在 final snapshot 后、gate await 期间提交，恢复后仍 commit effect（recursive 仅携 recovery scopes、无 controlRequestId，L809 边界无法重验）。外部确定性复现（已转 RED 测试）：真实 control recovery follow-up approve → recursive environmentFacts provider（requirement-gate.ts L372 / router.ts L765–808，晚于 final snapshot）barrier 暂停 → 真实 abandonControlRequest 持久化（无 AbortSignal）→ release → 必须 zero admitted/effect。修复要求 = 真正序列化的 auth/effect-admission 边界（在 effect 边界处相对 durable abandon 线性化：共享序列化点/guarded consume，deadlock 谨慎、锁序在案；**不得再加一个更早 snapshot 宣称消除**；保持 inline≠guarded、不造 synthetic consumed fact；定性 P2 service race）。**外部 2 residual 全修复 @ `88ad149abfc1693f184482b34b4bf90122e69088`**（RED-first 真实链：C6 = C-1 精确 queued-lock race over 真实 MessagingCoordinator / C7 = C-2 gate-await abort / C8 = C-2 control-lock-wait abort；RED `red-toctou-2.log` EXIT=1 → GREEN C 8/8；C-1 = commitReviewedEffect 仅键控 controlRequestId（绝不 spec.category），非门控 fallback 经 withTeamLock(a)→commitEffectIfAuthorized(b)→executeEffectLocked（无 (b)→(a) 锁环，锁序在码内）；C-2 = 活 signal 进入同一 lock hold 内的 terminal read，commit 前 abort → 持久化 abandon（exactly-once）+ typed reject CONTROL_REQUEST_ADMISSION_ABORTED，commit 中无 signal 检查，settle 语义保持）+ 证据 `414c9698` → **受控同步 master（2bfbca12）完成 @ `a2b3df7935080e9c08feedd7a105957bbbee2269`（07:05Z 已推送，ff 无 force）**：merge `b45d7ff5`（唯一冲突 = router-log union 字节验；dist 重生成零漂移 check:artifacts 1372；p4t6 901 不变）+ 簿记；门 @ merged head：focused 29F/228T + full 9F|402P/19F|4747P（setdiff vs 债集 = 空；4747=4719+13+3+12）+ lint 零新增 + typecheck/check:artifacts 全可读 + p4t6 10/10@901；披露 = spy +commitEffectIfAuthorized surface（deviation 11，断言不变）。**内部 3 审 @ a2b3df79：r2 8ed26eb7 = 通过（7/7，p4t6 独立重算 896+5、dist 双内容逐行引证、committed logs 字节审计、fresh full = 债集）**；r1/r3 在跑。**外部复审 @ a2b3df79 → 1 residual P2**（outer runtime lock 排队取消 = 无 durable close：router L911/L947–951 signal 传入 withTeamLock，helper 在 commitReviewedEffect 前 reject；settled waiter listener 已移除；followup catch 重抛 raw abort、coordination 无 catch；zeroeffects 但 allow 停在 decided 无 typed terminal）→ **用户 07:11Z 有界 C 矩阵指令（同批，基线 a2b3df79）**：6 项全 await 点覆盖（decision-settle 已覆盖 / terminal-snapshot+outer queue GAP / outer gate REJECT-while-aborted GAP / Control queue 已覆盖 / **NEW：fresh create-member/delegate-create 的 SECOND PREFLIGHT**（effects L912/L1014 → authority.evaluate L701 / templateFacts L746/752 / providerLock L955 / externalFacts L985 → journal reservation L1045；MemberActivationRequest 无 signal → 此窗 abort 仍 create member → 取消传到 pre-reservation 最终边界，无 deadlock（外层 Control lock 已持有）durable close，授权失效前零 reservation/provision）/ post-commit 保持 settle 不 retroactive undo）；table-driven 矩阵 {delegate,follow-up,send-message,fresh create-member} × 6 abort 点 × {no-mark,already-abandoned} + persist-failure legs（TEAM_RUNTIME_DURABLE_WRITE_FAILED fail-closed）；**与 #46（8e18819c）同步同批 → 单一最终 HEAD → 外审**。修复进行中（同分支同 writer e39b4fb6）；新 HEAD 另报 + 新 3 审 |
+| C | P2 | abandon 终态优先级 + waiter/cold-retry liveness（生产 race 未复现，不声称越权） | `[本轮]` 同上 | 同 B（PR #49）— 外部 2 residual（C-1 send-message/coordination 绕过边界单元 / C-2 活 signal 未达边界）@ `88ad149a` 全修复（RED→GREEN 真实链在案，见 B 行）；外部复审 @ a2b3df79 再报 1 residual P2（outer runtime lock 排队取消无 durable close）+ 有界 C 矩阵（含 NEW second-preflight 窗）— 系统性修复 + table-driven 矩阵进行中（同批 #46 同步，见 B 行）；P2 口径不变：不声称任意 GUI 未授权执行 |
+| D | P1 | 冷重启复用 recovery approval（无 fresh Human per attempt） | `[本轮]` 同上 | 同 B（`fix/control-authz-boundary`） |
+| E | P1 | instance reset tombstone 遮蔽仍有效 TEAM deny（reset→allow） | `[本轮]` fix-policy-reset RED 测试（red-E-G.log，真 mutation service + 真 storage） | **[PR #47](https://github.com/ArmourPiercer1/dsh-agent-team/pull/47) — MERGED @ `2bfbca12c0b4b7260e8bc9b5b05cd339189c74e4`**（2026-10-01 06:24:42Z，用户对该具体 HEAD 的明确合并指令）：HEAD `a509cffa97d83408127a8b64b348930d32fd3667`（base `31ad828d`）= `958e96a3`+簿记 `5ada3453` + G-fix `80607c6b0b79ecbe371f49132c78a23b9b2ebb32` + 簿记 `a509cffa`。E 外部复审通过；G mixed-kind 修复后外部复审通过。**内部 3 审 @ a509cffa = 3/3 通过**（r1 base gates / r2 semantic depth / r3 consumer survey；零 blocker/supplement）。合并前置：GraphQL 预检 head/base/MERGEABLE 全等 + 标 Ready + **`mergePullRequest(expectedHeadOid=a509cffa…)`**（mergeMethod=MERGE，仓库先例 merge-commit）→ 新 master `2bfbca12c0b4b7260e8bc9b5b05cd339189c74e4`（parents = 31ad828d + a509cffa）→ 已验 ae51385b/958e96a3/80607c6b/a509cffa 全部 IN-MASTER。授权范围 = 仅 #47 该 HEAD（#46/#48/#49/F/closure 不涵盖） |
+| F | P1 | target-specific MCP materialization/readiness 被聚合掩盖 + scope identity 未接通 | `[本轮]` fix-mcp-materialization 基线在案（05:31–34）；RED 测试进行中 | **已提交 3 commits @ `a8ac28e8`**（`30ed0d68` RED 矩阵 T1–T6 冻结（4 世界 A/B/E/D + T6 unit）/ `9162e0f1` = A 契约 `1461a6f2` cherry-pick -x（B1 锚点，内容在树核验标记全在）/ `a8ac28e8` increment (a) scoped-identity plumbing）。**双 writer 事件（已解决 + 全审计在案）**：原 builder 02e1512b 曾被误判死亡 → 替换 builder 37c48419 并行（06:44–07:00）；原 builder 实为增量 (b) WIP + T4/T5 修复 + 冻结测试 +18 修正（world-D 冷路径 fixture 经 glue dropResidency seam，断言不变、修复前 T5 = RED 无弱化旧绿）的作者；三次中断后 ~07:00 停止确认（no closing message），07:04:53 树静默核验；zz 诊断 0 残留 + 临时文件删除；**无代码丢失**（停止中断的是 turn 不是文件）+ **无测试弱化**（冻结测试仅 1 hunk fixture）——证据 `.scratch-logs/mcp/incident-evidence/`（timeline + per-file provenance + stop confirmations + retention 5 点）。**T1–T6 全 GREEN @ 07:05**（2 files/10 tests；负载身份核验）。条件性 commit green light 已发（provenance 标注 commit(s) + fix-report 事件节 NEW UNREVIEWED CHANGES + 全门 + p4t6 重算 + dist+smoke + 与 A 契约 combined tests + template-scope 缺 role 审计 + 同步 8e18819c + DRAFT 发布，body 含事件 + 无丢失/无弱化验证）。PR 未发布；无合并授权 |
+| G | P2 | override.get 扫历史复活 reset 值 / 旧 generation → 下一 UI 写确定 conflict | `[本轮]` fix-policy-reset RED 测试（red-E-G.log + red-E-mixedkind.log 4 腿 EXIT=1） | 同 E（**PR #47 MERGED @ `2bfbca12…`**）— 外部复审曾 BLOCK（G 修复引入 mixed-kind 回归）→ **修复 @ `80607c6b…` 经外部复审通过并随 E 一并合并**：inSlot 按 FULL slot identity（含 KIND）选 latest = HUMAN 读平面（端口语义在码内定义）；每 KIND 独立 generation 序列（member gen 永不作 human CAS 输入）；写路径 guard 未触碰；外部复现逐腿 before→after 在案（见 E 行合并记录 + fix-report G-external 段）；新 HEAD 内部 3/3 通过后合并。master 现含 E+G 完整修复链（ae51385b→958e96a3→80607c6b→a509cffa 全部 IN-MASTER 已验） |
+| H | P2 | recovery send-message 审核前被 malformed 拒绝（subject/targetInstanceId 不一致） | `[本轮]` 同上 | 同 B（`fix/control-authz-boundary`） |
+| I | P2 | 无 requirements 的 disabled template 仍可执行（disabledRefs 仅从 verdicts 派生） | `[本轮]` fix-runtime-template-consent RED 测试（red-ij.log EXIT=1：I 2/4 RED） | **[PR #48](https://github.com/ArmourPiercer1/dsh-agent-team/pull/48)** @ `4a066408`（3 commits：I / J / 簿记）— 内部 3 审（旧 HEAD 轮）已全部完成：r1/r2 = 补充内容（代码正确，缺 S1 legacy 行 fail-closed pin + S2 typed 拒绝 pin），r3 = 阻塞（I 不完整：`leaderTemplateScopeRefs` L183–192 仅当 v2 且 leader.requirements 非空才含 leader scope → empty-req LEADER disable 在 initial-work 边界不可见；J 单独通过）；外部复审同样 BLOCK I（同点）。**三者结论一致且与在修方案吻合**：unconditional leader scope（worker/member 本已 unconditional；scope-requirements.ts 不改——空 scope 本就无 verdict 行，availability 判定不读 verdicts）+ unit pins 更新 + 真链回归 + S1/S2/CONSENT_TARGET_SATISFIED pins + 已提交原始日志。leader fix 无条件化（L197–199 `templateScope(blueprint.leader.templateId)`）+ 真链回归 + S1/S2 pins @ `dce6d4a3` → **外部复审 leader+J = PASS**（scope ruling：disabled-template 既有实例 send-message 豁免 = intentional，不扩 scope）→ 受控同步 master（2bfbca12）：merge `67df74eb`（唯一冲突 = router-log union）+ 簿记 `17d95eef`（全量门：focused 20F/234T + full run2 = 债集 4761=4749+12 + lint 零新增 + typecheck/check:artifacts 全可读 + p4t6 899→899）+ 簿记 `45b5b975`（SESSION_ROUTER_LOG +13 纯文档，parent 字节核验）= **最终 tip `45b5b9753ac81e1a7228cab5e99568f0ed0935d6`（06:55Z 已推送，ff 无 force）**。**内部门禁 3/3 通过 @ 45b5b975**（r1 991be35c / r2 2e063892 — 两者均在实际 tip 执行 fresh 检查；r3 95a643e6 通过；**13 行纯文档 delta 专项审 d1f0b2ae = 通过**（numstat 13/0、packages/+evidence/ EMPTY、APPEND-only 证明、merge-purity 加验）——按用户 07:05Z 覆盖裁决：17d95eef 全量 + 13 行 delta 专项 = 最终 HEAD 覆盖，不做冗余全量重测）。**再同步 8e18819c 进行中**（#46 合并解锁：role 接线审计 + RED-first 修复 [template-disable L198 scope 缺 role] + p4t6 实算重定 [预计 901=896+2A+3IJ] + 全门 + 新 tip 外审）。无合并授权 |
+| J | P2 | startup consent 丢失 scope/hash（跨 scope 串 consent / 旧蓝图继承） | `[本轮]` 同上（J 5/10 RED） | 同 I（PR #48）— 修复：consent key = (scopeKey, contentHash, requirementId)；ADDITIVE 字段 4→6（omit-when-absent，legacy 行 round-trip 字节不变）；keyed 评估对 unkeyed legacy 行 **fail-closed**（human 重授；迁移在案）；无新 error code（复用 closed DUPLICATE_REQUIREMENT_SCOPE 拒绝）；frozen remote contract v1–v6 未动；真链 10 测试（host entry → preflight → 生产 consent writer → re-drive：J1 跨 scope 同 reqID 不串 / J2 stale rev1 不被 rev2 继承）；p4t6 897→898；dist 同 commit |
+
+**审查纪律记录（2026-10-01）**：
+- 内部门禁 = 每 PR HEAD 3 个全新独立盲审子代理（不继承会话、不读 ROUTER_RULES/SESSION_ROUTER_LOG/graph.yaml）；3/3 通过或投机通过方可发布/维持。
+- 外部复审（用户侧）对 PR #46 @ `141ee133` 与 PR #47 @ `958e96a3` 给出 BLOCK 裁决（上述具体项）；内部 3 审在 #46 上 3/3 通过未拦住 leader-template 与 shipped-dist 两项 —— 教训记录：内部 brief 须含 shipped-artifact 门（dist 同 commit + 公开导出路径 smoke）与"scope 闭包中每个成员身份"深查（template scope 的 leader/member 区分）。**修复后 HEAD 全部重新走 3 审**，外部复审再裁决；**任何时刻不合并、不自动合并**。
+- 复审-修复回路进展（截至 06:15Z）：#47 G 已修复并推送新 HEAD `a509cffa…`（新 3 审已派发）；#48 I 内部 3 审旧 HEAD 轮全部完成（r1/r2 补充内容 + r3 阻塞，三点一致指向同一最小修复，与在修方案吻合）；#49 C 外部初步 BLOCK（TOCTOU 序列化边界要求）修复进行中；#46 A 三项修复进行中（Blocker-1 role 契约已落 commit `1461a6f2…`，B3/B2 随后）。
+- push 纪律：本会话唯一 push = 用户明确指令的 DRAFT 发布推送（05:44:02Z persona，其后 policy/template-consent 同授权流程），一次性 env 注入 gh credential helper，token 未落日志；无 force-push；无 master/stable 推送。
+- **合并执行记录（仓库先例 merge-commit + expectedHead 守卫）**：#47 @ `a509cffa…` → merge commit `2bfbca12c0b4b7260e8bc9b5b05cd339189c74e4`（2026-10-01 06:24:42Z，用户对该具体 HEAD 的明确指令）；#46 @ `a6e2d90c…` → merge commit `8e18819c4e589f685b99a86769251565ee4fc7ec`（07:07:11Z，同指令格式）。两者均：合并前 headRefOid/baseRefOid/MERGEABLE/远端一致性核对 + 无新 blocker 核对 → `gh pr ready` → GraphQL `mergePullRequest(mergeMethod:MERGE, expectedHeadOid=…)` → 合并后 parents + 已审 commit IN-MASTER 包含性验证。授权严格 per-HEAD：其余 PR（#48/#49/F/closure）均**无**合并授权。
+- **受控 master 同步协议（#47 合并后所有 fix 分支，用户裁决）**：`git merge origin/master`（MERGE 策略，**零 rebase/零 history rewrite/零 force-push**，旧 HEAD 保持 ancestor）；产物（dist）自合并树**重新生成**（build + composition + check:artifacts = 合并后 dist 为 canonical）；SESSION_ROUTER_LOG 双侧 append **逐字保留**（chronological union，零重写）；p4t6 pin **自合并树重算**（记录 old→new + 理由；scanner 字节不变）；**每个冲突解决 = 新未审变更**（NEW UNREVIEWED CHANGES 标记 + 同步后 HEAD 交外部 delta re-review）；同步后全量重测（fix 家族 + full vs 31ad828d 债集 + lint fp + 全可读 typecheck/check:artifacts + p4t6）→ 簿记 → 普通 ff push → 报 40 位 HEAD → 新 3 内审。
+- **证据日志可读标准（外部强制，适用全部分支）**：每个提交证据日志 = 首行精确命令行字面 + 完整 stdout/stderr + 真实退出行；无 stub、无 1-byte 文件、无 tail-only。（r2 非阻塞注记：focused/red 类日志存在"首行无命令行的 house convention"——最终 HEAD 的日志一律补齐命令行首行。）
+- **F 双 writer 事件与可审计恢复（用户 06:58Z 指令）**：原 builder 误判死亡 → 并行写入（06:44–07:00）；恢复 = 全审计证据（两 writer 最后 commit + stop confirmations + worktree 快照 + per-file provenance + 冻结测试还原 diff + zz 清除检查 + 无代码丢失/无测试弱化 5 点验证），禁止口头单 writer 声明、禁止盲目丢弃未提交变更；最终 PR body 必须记录事件 + 验证方式。事件档案 `.scratch-logs/mcp/incident-evidence/f-double-writer-incident.md`。
+- **#48 覆盖裁决（用户 07:05Z）**：最终 tip 相对前一簿记 commit 若为纯文档 delta（13 行 router-log，parent 字节核验 packages/+evidence/ 为空），则**不重复全量重测**——最终 HEAD 覆盖 = 全量已审 commit 的面板 + 针对该 delta 的明确专项审（SHA 对应精确记录）。
+- **#48 顺序集成预告（用户 07:06Z）**：#46 合并后 #48 必须再同步含 #46 的新 master、修 scope role 接线（template-disable L198 等 template-scope 构造缺 role → MALFORMED_DTO 风险）、**实际重算** scanner（预计 901 = 896+2A+3IJ）、重跑 gates、新 tip 外审；旧 base 的 PASS 不自动覆盖未来集成。
+
+## 5. 本轮验证记录（31ad828d 基线树，handoff-closure worktree）
+
+> 纪律：所有命令保留真实退出码与完整日志（`.worktrees/.scratch-logs/closure-baseline*`）；安装成功只记环境准备，不计测试验证。base/changed 对比口径：同一 harness/环境/依赖版本/命令/配置；基线 SHA = `31ad828d06b5bcca858532f1930ac10c51c0f1bb`（在案 `.worktrees/.scratch-logs/closure-baseline-v2/base-sha.txt`）。
+
+**阶段 0（环境缺口期，test-use 缺失）** —— 仅记录，不作为任何 PR 的对比基线：full suite 39 文件级 collection 失败（t12a-live-bridge marker 缺失 = 环境性）；lint 118E|25W（既有债）。日志：`closure-baseline/`。
+
+**阶段 1（官方基线，test-use pristine @ `46a7f68b09` 在位，base @ `31ad828d`）** —— 本环境各 PR 零新增门的正式对照基线：
+
+| 门 | 命令 | 结果（EXIT 在案） |
+|---|---|---|
+| typecheck | `pnpm run typecheck` | **EXIT=0**（9/9 Done） |
+| build | `pnpm run build` | **EXIT=0**（9/9 Done） |
+| composition | `pnpm run build:composition` | **EXIT=0**（place-dist-glue 1 placement + client-bundle 1146091 B） |
+| artifacts | `pnpm run check:artifacts` | **EXIT=0**（OK: 1372 files 零漂移） |
+| lint | `pnpm run lint` | **EXIT=1 — 143 problems (118E\|25W)**：既有债（历史收口门清单未含 lint 项；错误全在既有文件，指纹在案 `closure/baseline-lint-fingerprint.txt`）；各修复 PR 必须证明零新增（指纹 diff） |
+| full suite | `pnpm vitest run` | **EXIT=1 — 9F\|19F\|4700P(4719) + 3 文件级 collection**（v3 终跑，test-use 完整恢复后；`closure-baseline-v3/full_suite.log`）。**与历史口径的逐身份核对（不凭计数推定）**：4719 总量与历史一致；失败**测试名**集合逐条 diff（`closure-baseline-v3/hist-run2-ids.txt` vs `v3-ids.txt`）= **当前 19 条是历史 21 条的严格子集，且差集恰为 2 条 p6t1-parallel 已知 flaky 用例**（身份逐字：`two activated results with distinct instance ids and child Sessions` / `two COMMITTED operations, two members, two distinct child Sessions` = P6-T1 P1 "N=2 same-template parallel activations"，1-vs-2 家族，在案 `evidence/f15-mcp-live-loss/p6t1-ab-attribution/AB-ATTRIBUTION.md` L41–42 = KNOWN-DEBT FINAL 家族成员）；反向 diff 为空（当前无任何历史 21 条之外的失败）。历史 21 条本身 = 19 条基线债 + 这 2 条 flake（`closure-gates-summary.md` run 2：10F\|21F\|4698P(4719)，raw 在案 `closure/full-suite/run2.log`）。**表述口径：当前可比基线 = 19F + 3 collection；历史合并轮 = 21F + 3 collection（含 2 条已知 flaky）；两者非"数字完全一致"，差异 = p6t1 家族动态（v2 同环境曾复现这 2 条失败、v3 通过 —— 双向 flake 在案）**。19F 名单：t1-capability-schema 9 / t2-blueprint-hash 1 / d3-member-identity-context 1 / p6t3-mediation 5 / p6t3-restart 2 / p6t6-actions 1；collection = p8s3b-result-effects / t12a-b2-child-identity / t12a-glue-handoff-ports（与历史同名单） |
+
+**本轮两个 observed run（均保留，各自上下文；均非"历史基线"本身）**：
+- **v2**（`closure-baseline-v2/`，test-use 仅 clone+install 未 build）：12F\|36F\|4683P(4719) + 3 collection = 19F 基线债 + p6t1 2T（上列 2 条 flaky 身份，24ms/3ms）+ a2c7-subtree-matcher 9 + plugin-dsh-compat 6（后两组 = test-use 预构建 lib 缺失，环境性，见下）。
+- **v3**（`closure-baseline-v3/`，test-use 完整恢复 = clone+install+build，porcelain 空）：**官方可比基线** 9F\|19F\|4700P(4719) + 3 collection（上）。
+- 树状态注记：v2/v3 均跑于 handoff-closure worktree @ base `31ad828d`（`base-sha.txt` 在案）；v2 时树 clean，v3 时树含**仅文档协调改动**（M AGENTS.md / README.md / docs/STATUS.md + untracked 证据文件；**零产品代码 diff** —— `git diff --name-only` 无 packages/ 命中）；各修复 PR 的对比基线跑于各自 pristine base worktree（无文档改动），命令/依赖/环境同一。
+
+**环境增量的定因记录（v2 → v3）**：test-use 仅 clone+install（未 build）时，full suite 出现 2 个历史债务外的失败文件组 —— a2c7-subtree-matcher 9F（"the prebuilt pinned lib is present on this host" = false：`packages/fs/fs-local/lib/index.js` 缺失）与 plugin-dsh-compat 6F（`packages/boot/app-boot/lib/index.js` 缺失，`Cannot find module ... lib/index.js`）；test-use `pnpm run build`（`DSH_CLIENT_COMMIT_HASH=46a7f68b09 ESBUILD_WORKER_THREADS=1 pnpm run build`，EXIT=0，porcelain 空复原）后两文件组 **38/38 全绿**（`closure-baseline-v2/delta-verify.log`）—— 根因 = 环境构建产物缺失，**非产品回归**，不并入基线债、不自动标 inherited。
+
+## 6. 宿主/浏览器验证 —— 本轮可行性与诚实边界
+
+- `tests/deepseek-harness-test-use`（0.1.7-rc.1 @ `46a7f68b09`）与 `tests/homes/` 未随 clone 迁移（gitignored）。本轮是否重建 test-use 执行实宿主 kit：见最终判定（未执行 = 历史证据在案 + 解除条件，**不声称本轮实宿主重跑**）。
+- browser（F.6 scenario 18 / DoD #20 browser 子项）：本环境无浏览器实跑条件 —— **仅历史证据 prf G8**，不声称重跑。
+- zero-core：`references/` 冻结 fork 不在本环境；本轮以（若重建）test-use pristine 自证 + 套件级 private-import 扫描为准；历史 zero-core 证据 `[历史]`（t12/closure 在案）。
+
+## 7. 遗留债务与后续 Alpha.3 边界
+
+### 7.1 本轮新增（A–J 修复 PR pending 外部复审）
+- 10 条 finding 的 5 个 DRAFT PR（§4）；合并条件 = 用户对外部复审通过的**具体 HEAD** 的明确指令。**截至 07:15Z：#47 MERGED @ `2bfbca12…`、#46 MERGED @ `8e18819c…`（授权各覆盖单一 HEAD）；#48（再同步 8e18819c + role 接线进行中）、#49（residual P2 + 有界 C 矩阵 + #46 同步同批进行中）、F（未发布，commit 序列进行中）— 均无合并授权**。
+
+### 7.2 系列期间已知债（保持，不扩张）
+- **full suite 基线债**（9F|19F + 3 文件级 collection failure）：t1-capability-schema 9 / t2-blueprint-hash 1 / d3-member-identity-context 1 / p6t3-mediation 5 / p6t3-restart 2 / p6t6-actions 1（messaging worker->leader 已知失败）+ p8s3b-result-effects / t12a-b2-child-identity / t12a-glue-handoff-ports（file-level）——"零新增失败"门槛相对此基线。
+- **p6t1-parallel flake 家族**（P1/P2/P3；A/B 归因在案：P2 = base 直接观测 exoneration；guard clause：同族=记录、新签名=STOP）—— `pr-f/p6t1-ab-attribution/AB-ATTRIBUTION.md`。
+- **F.5 DEFERRED 五项**（plan §F.5 明示）：post-gate subagent surface expansion / recovery preset/surface contraction / Alpha.3 dynamic permission grants / telemetry flap/retention / async recovery continuation —— **属于正式 Alpha.3 范围，本轮不进入**。
+- **低优先级（非 blocker，登记在案）**：`tests/kits` 中 PR-A/B 专属 smoke 的 `.worktrees` 硬编码路径（归档/canonical-helper 整理）；`tests/deepseek-harness-test-use` + `tests/homes/` 未随 clone 迁移（环境迁移缺口，实宿主 kit 重跑的前置）；`references/` 冻结 fork 不在本环境（zero-core 自证锚缺失）。
+
+### 7.3 后续 Alpha.3 边界
+- 本轮 = preAlpha3 **handoff closure**：20 条 DoD 报告 + 文档协调 + A–J 修复 PR（DRAFT）。
+- **不进入**：正式 Alpha.3 功能开发、版本 bump（当前 0.1.1-alpha.2 不变）、F.5 DEFERRED 五项、浏览器实跑、实宿主 kit 重跑（除非环境补齐 test-use + 裁决授权）。
+
+## 8. 文档协调记录（历史保留；明细见 closure commit diff）
+
+协调方式统一 = **追加替代标注（supersede 注记 + 历史行保留），不抹任何历史**。
+
+| 文件 | 过时点（2026-10-01 复核） | 协调 |
+|---|---|---|
+| AGENTS.md 文档权威序段 + 目录约定 `docs/plans/active/` 行 | "当前阶段 = pre-alpha3 PR 系列收口（PR #44 已 merge @ 0a0a19a6；PR-F increment-2 收口中 — branch local、PR DO-NOT-MERGE 待裁决）" —— 与已合并事实（PR #45 @ `365f635c`、series 在 master `31ad828d`）冲突 | 新阶段行 = handoff closure 轮（series 全合并 + A–J 10 条 finding → 5 DRAFT 修复 PR + DoD 报告 + 不合并/无自动合并声明）；旧阶段行降为 "[历史阶段行，2026-09-30 前状态，已取代]"（G8-S 待裁决状态在两行均保留 = 仍然属实） |
+| README Release-status "Current master" 行 | "master @ `e22c659a`" + "Open PR as of 2026-09-28: **PR #22**" | 新行 = master @ `31ad828d`（2026-10-01 复核 = origin/master）+ series 合并事实 + **Superseded 注记**（PR #22 = CLOSED superseded，plan §8.6；kind 语义已在 PR-E #42 re-land）+ 当前开放工作 = 5 DRAFT 修复 PR + closure |
+| README "Push" 行 | "PR #22 still open" + "origin/master @ e22c659a" | 更新 = PR #37–#45 merged（latest #45 @ `365f635c`）+ PR #22 CLOSED + origin/master @ `31ad828d`（2026-10-01 re-verified）；stable 行未动（未变） |
+| README "Next" 行 | "open PR = PR #22 … Awaiting user direction: PR #22, G8-S…" | 新 Next（2026-10-01）= 5 DRAFT 修复 PR + closure + **不合并/无自动合并/等用户具体 HEAD 指令**；旧 Next 降为 "[Superseded, 2026-09-28:]"（G8-S + follow-up backlog 段保留 = 仍待裁决，仍属实） |
+| docs/STATUS.md 头部注记 | "日志已记录至 PR #36 审查意见修正轮，2026-09-28" | 更正 = "已记录至 pre-alpha3 handoff closure 轮，2026-10-01"（事实更正：日志实际已远至 series-closure） |
+| docs/STATUS.md 更新史 + 一句话现状 | 最新行 = 2026-09-30 收口轮（"下一项 = 最终系列报告"） | 顶部追加 2026-10-01 handoff closure 轮行（A–J 全登记 + 5 DRAFT PR + 基线恒等 + lint 债 + 模型路由核验 + DoD 判定摘要 + 环境迁移缺口）；旧行降为 "上次更新"；一句话现状顶部加"当前（2026-10-01）"、旧"当前"降"此前" |
+| dev/agent-workflow/graph.yaml `current_phase` | "series closure completed… next item = final series report" | closure 提交时更新 = "handoff closure 完成：DoD 20 报告 + 5 DRAFT 修复 PR（A–J）已发布，待外部复审具体 HEAD + 用户合并指令"（追加式，历史块不动） |
+
+**低优先级登记（非本轮 blocker，不冒充收尾 blocker）**：`tests/kits/` 中 PR-A/B 专属 host-smoke kit 的 `.worktrees` 硬编码路径（归档/canonical-helper 整理）；`tests/homes/`、`references/` 冻结 fork、（本环境新增）`tests/deepseek-harness-test-use` 的迁移/重建协议已按 TEST_METHODS 执行并在 §1/§5 留痕。
