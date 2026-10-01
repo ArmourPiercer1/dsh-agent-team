@@ -59,6 +59,14 @@ import { ARTIFACT_READ_GRANTED_FACT_TYPE, TeamArtifactAuthority, } from '../../a
 import { MCP_FACET_WILDCARD, resolveDurableMcpFacet, } from '../../agent-setup/capability/index.js';
 import { resolveDurableModelSelection } from '../../agent-setup/model/index.js';
 import { createOrOpenTeamDomainDetailed, createTeamDomain, openTeamDomain, } from '../../../storage/repositories/index.js';
+// pre-alpha3 PR4 (plan PR4 "production entry wiring"): the durable
+// `permission_overlays` store (the TeamDomain's tenth store) is OPENED by the
+// host entry — the entry owns the async boot and the teardown order — and
+// handed to the production root as a port. The persistence-only face
+// (`append`/`latest`/`history`) is what crosses; nothing else reaches the
+// repository (PR1 ADR §1).
+import { openPermissionOverlayStore } from '../../../storage/repositories/permission-overlays.js';
+import { createPermissionOverlayRepositoryPort } from '../../permission-governance/index.js';
 import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../../storage/schema/index.js';
 import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js';
 import { createBlueprintAuthority } from './blueprint-authority.js';
@@ -784,6 +792,11 @@ export async function apply(ctx, config) {
     // with the other runtime services; the durable facts are the source
     // of truth, the runtime projection a rebuilt cache).
     const artifactAuthorityRef = { current: undefined };
+    // pre-alpha3 PR4 — the overlay store handle of THIS row, declared in the
+    // apply scope (like the artifact-authority reference above): `bootstrap()`
+    // opens it, the row teardown closes it (the durable rows stay on the
+    // medium; only this handle is released).
+    let permissionOverlayStore;
     // The row-scope BRIDGE the host provides under
     // TEAM_ARTIFACT_AUTHORITY_SERVICE (module docs for the visibility and
     // lifetime contract): the Team-aware spill provider row (the
@@ -1172,6 +1185,47 @@ export async function apply(ctx, config) {
         // boundary resolves, the ref is filled; a world without the ref (test
         // compositions) keeps the pre-PR-B legacy input.
         const policyReaderRef = { current: null };
+        // pre-alpha3 PR4 — the shared permission-plane reference (the exact
+        // `controlServiceRef` / `artifactAuthorityRef` precedent): a construction-
+        // time object the ROOT fills during its construction; the live glue reads
+        // `.current` at agent setup and wires the pre-execute decision seam.
+        const permissionPlaneRef = {
+            current: undefined,
+        };
+        // pre-alpha3 PR4 — the containment predicate over two canonical keys of the
+        // SAME provider: the pinned public `FileSystem.contains`, resolved per call
+        // through the row's strict `ctx.get('fs')` accessor (the `fsBackend`
+        // rationale above — never a captured service). The canonical keys ARE the
+        // provider's own `FsTarget.targetKey` strings (the glue's `resolveTarget`
+        // unbrands exactly that), so the predicate hands the SAME values the
+        // handles carry to the ONE legal containment authority — no key parsing, no
+        // `startsWith`, no consumer-side path arithmetic, no cache (plan §9.4 /
+        // H4). A composition without the service, or a provider without the public
+        // `contains`, THROWS: the plane maps that to the kernel's typed
+        // `PERMISSION_EFFECT_CONTEXT_UNAVAILABLE` (unknown coverage is never a
+        // verdict), never to a silent `false`.
+        const fsContainsKeys = (parentKey, childKey) => {
+            const backend = fsBackend();
+            if (typeof backend.contains !== 'function') {
+                throw new Error('the fs provider does not expose a public contains() seam (the subtree containment is undeterminable)');
+            }
+            return backend.contains({ targetKey: parentKey }, { targetKey: childKey }) === true;
+        };
+        // pre-alpha3 PR4 — open the durable overlay store of THIS row's TeamDomain.
+        // A failure to open is NOT swallowed into a fake authority: the port stays
+        // absent, the governance service gets no permission lane, and every
+        // permission mutation refuses `PERMISSION_MUTATION_NOT_CONFIGURED` (fail
+        // closed, zero write) while the rest of the team keeps booting.
+        let permissionOverlay;
+        try {
+            permissionOverlayStore = await openPermissionOverlayStore(seam);
+            permissionOverlay = createPermissionOverlayRepositoryPort({
+                repository: permissionOverlayStore.repository,
+            });
+        }
+        catch (error) {
+            console.warn(`[dsh-agent-team] the permission overlay store could not be opened (${error instanceof Error ? error.message : String(error)}) — the permission mutation lane stays unconfigured (fail closed)`);
+        }
         const live = glue.createAgentBindings({
             agents,
             sessionPersistence,
@@ -1202,6 +1256,11 @@ export async function apply(ctx, config) {
             // constructed + rebuilt — see the ref's rationale). Additive optional
             // dep: never in the hard inject array.
             artifactAuthorityRef,
+            // pre-alpha3 PR4: the shared permission-plane reference (the root fills
+            // it during construction; the glue wires the pre-execute decision seam
+            // from it per agent). Additive optional dep: never in the hard inject
+            // array.
+            permissionPlaneRef,
             // C1 (restart-recovery, guide §4.3): the Team session-activation fence
             // — the production host MUST pass it (the glue wraps every Team
             // create/resume in runOwned and performs the bounded writer-conflict
@@ -1668,6 +1727,12 @@ export async function apply(ctx, config) {
             // root fills `controlServiceRef.current` during construction (the same
             // object the glue reads lazily in agentSetup).
             controlServiceRef,
+            // pre-alpha3 PR4 (plan PR4 "production entry wiring"): the durable
+            // overlay port + the runtime containment predicate + the plane reference
+            // the root fills.
+            ...(permissionOverlay === undefined ? {} : { permissionOverlay }),
+            fsContainsKeys,
+            permissionPlaneRef,
             legacyInspect,
             // BP5 (issue #2 blueprint-loading, plan §9): the live catalog over the
             // saved sources + the frozen registry + this row's anchor (the legacy
@@ -2034,6 +2099,15 @@ export async function apply(ctx, config) {
             }
             catch {
                 // a throwing disposer is swallowed: the row teardown proceeds
+            }
+            // pre-alpha3 PR4: release the overlay store's own domain handle
+            // (the durable rows stay on the medium; the plane is stateless).
+            // Never fails the row teardown.
+            try {
+                void permissionOverlayStore?.close().catch(() => undefined);
+            }
+            catch {
+                // a throwing close is swallowed: the row teardown proceeds
             }
             if (settled !== undefined) {
                 void settled.close().catch(() => undefined);

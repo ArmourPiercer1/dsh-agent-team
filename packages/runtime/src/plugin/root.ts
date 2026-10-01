@@ -256,6 +256,18 @@ import type { ProjectionService } from '../../projection/index.js'
 import { createTeamTools } from '../../../tools/src/index.js'
 import type { TeamToolSet } from '../../../tools/src/index.js'
 import { createGovernanceMutationService } from '../../governance/index.js'
+// pre-alpha3 PR4 (plan "PR4: Grant/Revoke/Lifecycle", production entry
+// wiring): the production PERMISSION PLANE assembly (the overlay port's
+// lane deps + the two lifecycle lanes). The root owns the wiring only —
+// the durable write stays inside `mutatePermission` (ADR §2) and the
+// effective answer stays inside the merged read plane (ADR §3).
+import {
+  createMemberLifecycleReader,
+  createPermissionGovernanceLane,
+  createTeamPermissionLanes,
+} from './permission-plane.js'
+import type { CanonicalKeyContains, TeamPermissionPlane } from './permission-plane.js'
+import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js'
 import type { OverrideRecordView, OverrideStorePort } from '../../mutation/index.js'
 import type {
   CreationFieldRecord,
@@ -725,6 +737,38 @@ export interface TeamProductionRootParams {
    * public `agentPresets` seam).
    */
   readonly requirementFacts?: RequirementFactsAuthority
+  /**
+   * pre-alpha3 PR4 (plan PR4 "production entry wiring") — the open PR1
+   * permission-overlay port (the persistence-only `append`/`latest`/`history`
+   * face of the durable `permission_overlays` store). OPTIONAL at the factory
+   * level, like `workspaceAttach` / `blueprintCatalog`: ABSENT (a factory or
+   * test root, or a host whose overlay store failed to open) → the
+   * governance service gets NO permission lane and `mutatePermission` refuses
+   * `PERMISSION_MUTATION_NOT_CONFIGURED` (fail closed, zero write), and no
+   * lifecycle lane is exposed. PRESENT → the canonical path is live: the
+   * durable overlay is the ONE permission authority and the lifecycle gate
+   * (ADR §8) guards execution.
+   */
+  readonly permissionOverlay?: PermissionOverlayRepositoryPort
+  /**
+   * pre-alpha3 PR4 — the runtime CONTAINMENT predicate over two canonical
+   * keys of the SAME provider (the host entry's closure over the pinned
+   * public `FileSystem.contains`, resolved lazily per call). A `subtree`
+   * matcher is judged ONLY by it (plan §9.4); ABSENT → the merged PR3 gate
+   * refuses a subtree mutation typed instead of guessing (the predicate is
+   * never synthesized from key text here).
+   */
+  readonly fsContainsKeys?: CanonicalKeyContains
+  /**
+   * pre-alpha3 PR4 — the shared reference the root FILLS during construction
+   * with the assembled permission plane (the exact `controlServiceRef` /
+   * `teamToolsRef` precedent: a construction-time object, filled during
+   * construction, read lazily by the live glue at agent setup). The live glue
+   * consults `permissionPlaneRef.current.decisions` at the pre-execute
+   * decision point; the root fills it, the entry calls `boot()` only after.
+   */
+  readonly permissionPlaneRef?: { current: TeamPermissionPlane | undefined }
+
 }
 
 /**
@@ -754,6 +798,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     blueprintAuthority,
     resolveBoundBlueprint,
     requirementFacts,
+    permissionOverlay,
+    fsContainsKeys,
+    permissionPlaneRef,
   } = params
   const repos: TeamDomainRepositories = domain.repositories
   const rootSid: string = config.rootSessionId
@@ -2391,6 +2438,20 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     now,
   )
   const mutationStore = durableMutation.store
+  // --- pre-alpha3 PR4 the permission lane of the ONE governance authority --
+  // The deps of `mutatePermission` (PR3): the PR1 persistence-only overlay
+  // port + the runtime containment predicate. Constructed BEFORE the
+  // governance service because the service takes them at construction; the
+  // durable append stays inside the service (ADR §2), and the plane below is
+  // built AFTER it (its write entries need the service).
+  const permissionGovernanceLane =
+    permissionOverlay === undefined
+      ? undefined
+      : createPermissionGovernanceLane({
+          overlay: permissionOverlay,
+          ...(fsContainsKeys === undefined ? {} : { fsContainsKeys }),
+        })
+
   const mutation = {
     // R2-1: the durable-backed store is exposed on the root surface (an
     // additive read-side seam): the remote policyState surface, the
@@ -2474,9 +2535,42 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         ...boundBlueprintFor(root).policyStates.map((state) => state.id),
       ],
       now,
+      // pre-alpha3 PR4: the permission-mutation lane of this SAME authority
+      // (ADR §1/§2 — there is no second writer of the overlay; absent the
+      // port the lane is absent and the method refuses typed).
+      ...(permissionGovernanceLane === undefined
+        ? {}
+        : { permissionLane: permissionGovernanceLane }),
     }),
     resolveDurableModelSelection,
     resolveDurableMcpFacet,
+  }
+
+  // --- pre-alpha3 PR4 the permission LIFECYCLE planes (plan PR4) ----------
+  // The write entries (grant / revoke / restore) ride `mutation.governance`
+  // and the EXISTING lifecycle service; the decision plane reads the same
+  // overlay authority behind the ADR §8 gate. `restore` threads the ONE
+  // lifecycle path (ARCHIVED -> SETTLED, one durable commit, zero live
+  // contact) — the lane performs no transition of its own and writes no
+  // permission snapshot for a pure restore (a genuine rule change at restore
+  // time is an ordinary PermissionMutation).
+  const permissionPlane: TeamPermissionPlane | undefined =
+    permissionOverlay === undefined
+      ? undefined
+      : createTeamPermissionLanes({
+          governance: mutation.governance,
+          overlay: permissionOverlay,
+          members: createMemberLifecycleReader(repos.memberInstances),
+          lifecycle: {
+            restore: (target) =>
+              lifecycleService.restoreMember({
+                rootSessionId: target.rootSessionId,
+                instanceId: target.instanceId,
+              }),
+          },
+        })
+  if (permissionPlaneRef !== undefined) {
+    permissionPlaneRef.current = permissionPlane
   }
 
   // --- A30 the projection service (durable source + the S6 overlay seam) ---------------------------

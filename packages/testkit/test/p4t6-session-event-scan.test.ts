@@ -1598,8 +1598,28 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (outside the scanner's denylist); the frozen quarantine hit set stays
     // at fifteen occurrences; scanner .mjs unchanged. The 934 value is the
     // scanner run on this tree (authoritative; not hand-computed).
-    expect(scanResult.filesScanned).toBe(934)
-    expect(scanResult.files.length).toBe(934)
+    // ALPHA.3 PR4 permission-lifecycle round (2026-10-02): 934 + 7 = 941 —
+    // the seven scannable files this PR adds: the lifecycle lane module set
+    // (`runtime/permission-lifecycle/types.ts` + `mutation-lane.ts` +
+    // `decision-lane.ts` + `index.ts` — the grant / revoke / restore entries
+    // riding the SAME `PermissionMutation` authority, the ADR §8 execution
+    // gate, and the merged file / exec decision planes), the production
+    // assembly helper (`runtime/src/plugin/permission-plane.ts` — the
+    // governance lane the root injects + the plane reference the live glue
+    // reads), and the two specs (`a3p4-permission-lifecycle-e2e`, the
+    // end-to-end service / call-chain legs over the real durable store and
+    // the real lifecycle service, and `a3p4-production-permission-plane`, the
+    // production-root assembly reachability legs). The `root.ts` / `host.ts`
+    // / `agent-bindings.mjs` / `pre-execute-adapter.ts` edits are in-place
+    // changes on already-scanned files (no count delta). Zero new denylist
+    // vocabulary — the lifecycle words this lane carries are the contracts FSM
+    // vocabulary (`ARCHIVE` / `RESTORE` / `ARCHIVED` / `DISPOSED`), not legacy
+    // Team SessionEvent names; the frozen quarantine hit set stays at fifteen
+    // occurrences and the scanner .mjs is unchanged. The 941 value is the
+    // scanner run on this tree (authoritative: this suite reported
+    // `expected 941 to be 934` before the recount; not hand-computed).
+    expect(scanResult.filesScanned).toBe(941)
+    expect(scanResult.files.length).toBe(941)
 
   })
 

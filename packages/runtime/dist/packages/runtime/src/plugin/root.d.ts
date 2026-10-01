@@ -89,6 +89,8 @@ import type { ControlService } from '../../control/index.js';
 import type { HandoffOperationState } from '../../handoff/index.js';
 import type { LegacyHomePort, LegacyInspectFn } from './legacy-surface.js';
 import type { TeamToolSet } from '../../../tools/src/index.js';
+import type { CanonicalKeyContains, TeamPermissionPlane } from './permission-plane.js';
+import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js';
 import type { TeamDomain } from '../../../storage/repositories/index.js';
 import type { StorageDomainSeam } from '../../../storage/schema/index.js';
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js';
@@ -309,6 +311,39 @@ export interface TeamProductionRootParams {
      * public `agentPresets` seam).
      */
     readonly requirementFacts?: RequirementFactsAuthority;
+    /**
+     * pre-alpha3 PR4 (plan PR4 "production entry wiring") — the open PR1
+     * permission-overlay port (the persistence-only `append`/`latest`/`history`
+     * face of the durable `permission_overlays` store). OPTIONAL at the factory
+     * level, like `workspaceAttach` / `blueprintCatalog`: ABSENT (a factory or
+     * test root, or a host whose overlay store failed to open) → the
+     * governance service gets NO permission lane and `mutatePermission` refuses
+     * `PERMISSION_MUTATION_NOT_CONFIGURED` (fail closed, zero write), and no
+     * lifecycle lane is exposed. PRESENT → the canonical path is live: the
+     * durable overlay is the ONE permission authority and the lifecycle gate
+     * (ADR §8) guards execution.
+     */
+    readonly permissionOverlay?: PermissionOverlayRepositoryPort;
+    /**
+     * pre-alpha3 PR4 — the runtime CONTAINMENT predicate over two canonical
+     * keys of the SAME provider (the host entry's closure over the pinned
+     * public `FileSystem.contains`, resolved lazily per call). A `subtree`
+     * matcher is judged ONLY by it (plan §9.4); ABSENT → the merged PR3 gate
+     * refuses a subtree mutation typed instead of guessing (the predicate is
+     * never synthesized from key text here).
+     */
+    readonly fsContainsKeys?: CanonicalKeyContains;
+    /**
+     * pre-alpha3 PR4 — the shared reference the root FILLS during construction
+     * with the assembled permission plane (the exact `controlServiceRef` /
+     * `teamToolsRef` precedent: a construction-time object, filled during
+     * construction, read lazily by the live glue at agent setup). The live glue
+     * consults `permissionPlaneRef.current.decisions` at the pre-execute
+     * decision point; the root fills it, the entry calls `boot()` only after.
+     */
+    readonly permissionPlaneRef?: {
+        current: TeamPermissionPlane | undefined;
+    };
 }
 /**
  * Assemble the complete production root (A01–A29 + the four S6 seams).

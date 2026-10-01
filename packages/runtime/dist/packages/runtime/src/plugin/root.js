@@ -112,6 +112,12 @@ import { readCanonicalSourceSurface, summarizeSourceSurface, } from './handoff-s
 import { createProjectionService } from '../../projection/index.js';
 import { createTeamTools } from '../../../tools/src/index.js';
 import { createGovernanceMutationService } from '../../governance/index.js';
+// pre-alpha3 PR4 (plan "PR4: Grant/Revoke/Lifecycle", production entry
+// wiring): the production PERMISSION PLANE assembly (the overlay port's
+// lane deps + the two lifecycle lanes). The root owns the wiring only —
+// the durable write stays inside `mutatePermission` (ADR §2) and the
+// effective answer stays inside the merged read plane (ADR §3).
+import { createMemberLifecycleReader, createPermissionGovernanceLane, createTeamPermissionLanes, } from './permission-plane.js';
 import { createFailClosedOverlayProxy, createProjectionLiveOverlaySeam, createRemoteHandlerRegistrationSeam, createRemoteQueryCommandCompletionSeam, createServerPrincipalDerivationSeam, } from './seams.js';
 import { createTeamDomainReadPort } from './projection-source.js';
 import { createEffectiveConfigView } from './effective-config-view.js';
@@ -314,7 +320,7 @@ function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances)
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params) {
-    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, } = params;
+    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, permissionOverlay, fsContainsKeys, permissionPlaneRef, } = params;
     const repos = domain.repositories;
     const rootSid = config.rootSessionId;
     // --- A02 handle / write ports ------------------------------------------------------
@@ -1772,6 +1778,18 @@ export function createTeamProductionRoot(params) {
     // ./durable-mutation-store.js).
     const durableMutation = createDurableMutationStore(createEphemeralMutationStore(), repos, rootSid, now);
     const mutationStore = durableMutation.store;
+    // --- pre-alpha3 PR4 the permission lane of the ONE governance authority --
+    // The deps of `mutatePermission` (PR3): the PR1 persistence-only overlay
+    // port + the runtime containment predicate. Constructed BEFORE the
+    // governance service because the service takes them at construction; the
+    // durable append stays inside the service (ADR §2), and the plane below is
+    // built AFTER it (its write entries need the service).
+    const permissionGovernanceLane = permissionOverlay === undefined
+        ? undefined
+        : createPermissionGovernanceLane({
+            overlay: permissionOverlay,
+            ...(fsContainsKeys === undefined ? {} : { fsContainsKeys }),
+        });
     const mutation = {
         // R2-1: the durable-backed store is exposed on the root surface (an
         // additive read-side seam): the remote policyState surface, the
@@ -1844,10 +1862,40 @@ export function createTeamProductionRoot(params) {
                 ...boundBlueprintFor(root).policyStates.map((state) => state.id),
             ],
             now,
+            // pre-alpha3 PR4: the permission-mutation lane of this SAME authority
+            // (ADR §1/§2 — there is no second writer of the overlay; absent the
+            // port the lane is absent and the method refuses typed).
+            ...(permissionGovernanceLane === undefined
+                ? {}
+                : { permissionLane: permissionGovernanceLane }),
         }),
         resolveDurableModelSelection,
         resolveDurableMcpFacet,
     };
+    // --- pre-alpha3 PR4 the permission LIFECYCLE planes (plan PR4) ----------
+    // The write entries (grant / revoke / restore) ride `mutation.governance`
+    // and the EXISTING lifecycle service; the decision plane reads the same
+    // overlay authority behind the ADR §8 gate. `restore` threads the ONE
+    // lifecycle path (ARCHIVED -> SETTLED, one durable commit, zero live
+    // contact) — the lane performs no transition of its own and writes no
+    // permission snapshot for a pure restore (a genuine rule change at restore
+    // time is an ordinary PermissionMutation).
+    const permissionPlane = permissionOverlay === undefined
+        ? undefined
+        : createTeamPermissionLanes({
+            governance: mutation.governance,
+            overlay: permissionOverlay,
+            members: createMemberLifecycleReader(repos.memberInstances),
+            lifecycle: {
+                restore: (target) => lifecycleService.restoreMember({
+                    rootSessionId: target.rootSessionId,
+                    instanceId: target.instanceId,
+                }),
+            },
+        });
+    if (permissionPlaneRef !== undefined) {
+        permissionPlaneRef.current = permissionPlane;
+    }
     // --- A30 the projection service (durable source + the S6 overlay seam) ---------------------------
     const seams = {
         projectionLiveOverlay: createProjectionLiveOverlaySeam(),
