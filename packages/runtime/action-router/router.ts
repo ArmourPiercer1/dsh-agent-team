@@ -63,6 +63,7 @@ import type {
   TeamRuntimeActionOutcome,
   TeamRuntimeActionRequest,
   TeamRuntimeOptions,
+  TemplateFeedContext,
 } from '../admission/index.js'
 import {
   TEAM_RUNTIME_ERROR_CODES,
@@ -136,39 +137,57 @@ async function notifyAsyncWorkCompletionIfTerminal(args: {
 }
 
 /**
- * pre-alpha3 PR-E (plan §E.9) — the target template id of one NEW WORK
- * request (for the requirement impact's scopeRefs): the follow-up's
- * addressed member template, the delegate's named template (or the
- * addressed member's template in the instance-first form), the
+ * pre-alpha3 PR-E (plan §E.9) + Finding F (scoped identity) — the NEW-WORK
+ * target of one request: the template the gate's impact names (the
+ * follow-up's addressed member template, the delegate's named template —
+ * or the addressed member's template in the instance-first form — the
  * create-member's named template; `undefined` when the action names no
- * template (the Team scope only).
+ * template, the Team scope only) + the target INSTANCE when the action
+ * addresses an existing member (follow-up's target, the delegate's
+ * instance-first form, the send-message recipient). The `instanceId` is
+ * the gate's `targetInstanceId` (the target's OWN boundary read — the
+ * decision reads the target's materialization, never the scope's
+ * aggregate). `create-member` / template-addressed delegate have no
+ * target instance (the new member's window settles at its own boundary —
+ * never a gate-time block).
  */
-function newWorkTargetTemplateId(
+function newWorkTarget(
   request: TeamRuntimeActionRequest,
   spec: ActionSpec,
   resolved: ResolvedTeamTarget,
   repositories: TeamDomainRepositories,
-): string | undefined {
+): { readonly templateId?: string; readonly instanceId?: string } {
   if (request.action === 'follow-up') {
-    return resolved.target !== undefined ? String(resolved.target.templateId) : undefined
+    return resolved.target !== undefined
+      ? {
+          templateId: String(resolved.target.templateId),
+          instanceId: String(resolved.target.instanceId),
+        }
+      : {}
   }
   if (request.action === 'delegate') {
     if (request.delegationTemplateId !== undefined) {
-      return String(request.delegationTemplateId)
+      return { templateId: String(request.delegationTemplateId) }
     }
     if (request.delegationInstanceId !== undefined) {
       const member = repositories.memberInstances.get(
         resolved.rootSessionId,
         String(request.delegationInstanceId),
       )
-      return member !== undefined ? String(member.templateId) : undefined
+      return member !== undefined
+        ? {
+            templateId: String(member.templateId),
+            instanceId: String(request.delegationInstanceId),
+          }
+        : {}
     }
-    return undefined
+    return {}
   }
   // pre-alpha3 W3-D (review fix F9, guide §8): send-message is a cross-agent
   // execution trigger — its work targets the RECIPIENT's template (the wake
   // delivers input to that member). The gate then blocks the trigger if the
-  // recipient's template scope (or the team scope) is down.
+  // recipient's template scope (or the team scope) is down. Finding F: the
+  // recipient's OWN boundary is the trigger's decision read.
   if (request.action === 'send-message') {
     const recipientInstanceId = request.payload?.['recipientInstanceId']
     if (recipientInstanceId !== undefined) {
@@ -181,15 +200,22 @@ function newWorkTargetTemplateId(
           resolved.rootSessionId,
           String(recipientInstanceId),
         )
-        return recipient !== undefined ? String(recipient.templateId) : undefined
+        return recipient !== undefined
+          ? {
+              templateId: String(recipient.templateId),
+              instanceId: String(recipientInstanceId),
+            }
+          : {}
       } catch {
-        return undefined
+        return {}
       }
     }
-    return undefined
+    return {}
   }
-  // create-member: the named template.
-  return request.delegationTemplateId !== undefined ? String(request.delegationTemplateId) : undefined
+  // create-member: the named template (no target instance).
+  return request.delegationTemplateId !== undefined
+    ? { templateId: String(request.delegationTemplateId) }
+    : {}
 }
 
 /**
@@ -508,7 +534,12 @@ export function createTeamRuntime(
     // on the reduced original authority). Deny / abort → the typed
     // zero-effect block (the operation remains blocked; no durable effect
     // of the attempted work).
-    const targetTemplateId = newWorkTargetTemplateId(request, spec, resolved, repositories)
+    // Finding F (scoped identity): the target's template (the impact's
+    // scopeRefs) + the target instance (the gate's `targetInstanceId` —
+    // the target's OWN boundary is the decision read).
+    const newWork = newWorkTarget(request, spec, resolved, repositories)
+    const targetTemplateId = newWork.templateId
+    const targetInstanceId = newWork.instanceId
     const impact = actionImpactOf(request.action, targetTemplateId, request.recovery !== undefined)
     const ctx: EffectContext = {
       repositories,
@@ -570,10 +601,16 @@ export function createTeamRuntime(
                   : options.environmentFacts(),
               ...(options.templateEnvironmentFactsForBlueprint !== undefined
                 ? {
-                    templateEnvironmentFacts: (templateId: string) =>
+                    // Finding F (scoped identity): forward the gate's
+                    // FEED CONTEXT (the owning root + the target instance
+                    // for the target-template decision read) to the
+                    // per-blueprint seam — the legacy template-only
+                    // contract stands when the gate passes no context.
+                    templateEnvironmentFacts: (templateId: string, context?: TemplateFeedContext) =>
                       options.templateEnvironmentFactsForBlueprint!(
                         blueprint,
                         templateId,
+                        context,
                       ),
                   }
                 : options.templateEnvironmentFacts !== undefined
@@ -592,13 +629,25 @@ export function createTeamRuntime(
                 : {}),
               ...(options.templateEnvironmentFactsReadForBlueprint !== undefined
                 ? {
-                    templateEnvironmentFactsRead: (templateId: string) =>
+                    // Finding F (scoped identity): the FULL-resolution
+                    // read seam forwards the feed context the same way —
+                    // the gate performs the conservative scope read
+                    // (root only) and, for the action's target, the
+                    // target instance's OWN boundary read (root +
+                    // instance) through THIS port.
+                    templateEnvironmentFactsRead: (templateId: string, context?: TemplateFeedContext) =>
                       options.templateEnvironmentFactsReadForBlueprint!(
                         blueprint,
                         templateId,
+                        context,
                       ),
                   }
                 : {}),
+              // Finding F (scoped identity): the action's target INSTANCE
+              // (the gate's target-template decision read; absent for
+              // create-member / template-addressed delegate — no target
+              // instance).
+              ...(targetInstanceId !== undefined ? { targetInstanceId } : {}),
               ...(options.now !== undefined ? { now: options.now } : {}),
             },
             impact,

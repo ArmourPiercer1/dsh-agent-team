@@ -555,9 +555,9 @@ const A = await (async () => {
   // materialization is satisfied — all live instances converged).
   const bFollowup = await expectWorkAdmitted(world, followUpRequest(A_ROOT, instB.instanceId), 'T2 follow-up B (converged)')
   const incidentClosed = !openIncidentOf(world, A_ROOT, 'template:worker')
-  const closeRows = incidentsOf(world, A_ROOT, 'template:worker').filter(
-    (row) => row.type === RECOVERY_INCIDENT_CLOSED_FACT_TYPE,
-  )
+  const closeRows = incidentsOf(world, A_ROOT)
+    .filter((row) => row.scope === 'template:worker')
+    .filter((row) => row.type === RECOVERY_INCIDENT_CLOSED_FACT_TYPE)
 
   return {
     world,
@@ -793,7 +793,9 @@ describe('Finding F — target-specific MCP materialization (real chain: host en
     expect(A.bFollowup.instanceId).toBe(A.instB.instanceId)
     expect(A.incidentClosed, 'the incident must close once B converged').toBe(true)
     expect(A.closeRows.length).toBeGreaterThanOrEqual(1)
-    expect(A.closeRows[0].scope).toBe('template:worker')
+    const firstClose = A.closeRows[0]
+    expect(firstClose).toBeDefined()
+    expect(firstClose?.scope).toBe('template:worker')
   })
 
   it('T3 — two roots, same templateId: the target root OWN failed instance gates the target root (no cross-root conflation)', () => {

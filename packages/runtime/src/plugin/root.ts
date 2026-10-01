@@ -206,7 +206,7 @@ import {
   TEAM_RUNTIME_ERROR_CODES,
   TeamRuntimeError,
 } from '../../admission/index.js'
-import type { LifecycleCommitPort } from '../../admission/index.js'
+import type { LifecycleCommitPort, TemplateFeedContext } from '../../admission/index.js'
 import {
   commitDurableFact,
   createAdmitRootInitialWork,
@@ -914,11 +914,19 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           .then((resolution) => resolution.environmentFacts)
 
   const templateEnvironmentFactsForBlueprint:
-    | ((target: TeamBlueprint, templateId: string) => Promise<readonly EnvironmentFact[]>)
+    | ((
+        target: TeamBlueprint,
+        templateId: string,
+        context?: TemplateFeedContext,
+      ) => Promise<readonly EnvironmentFact[]>)
     | undefined =
     requirementFacts === undefined
       ? undefined
-      : (target: TeamBlueprint, templateId: string): Promise<readonly EnvironmentFact[]> => {
+      : (
+          target: TeamBlueprint,
+          templateId: string,
+          context?: TemplateFeedContext,
+        ): Promise<readonly EnvironmentFact[]> => {
           const requirements =
             scopeRequirementInputsOf(target).templates[templateId] ?? []
           return requirementFacts.provider
@@ -927,7 +935,18 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
               // Blocker-1: the template scope carries its role identity
               // (the bound blueprint knows its leader template id — the
               // leader IS the root: the root mounts config.rootPresetId).
-              scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(target.leader.templateId, templateId) },
+              // Finding F (scoped identity): the feed context's OWNING
+              // root + target instance (the orthogonal coordinates — the
+              // host port lists the owning root's instances and reads the
+              // target's own boundary; absent = the legacy template-only
+              // scope, byte-identical).
+              scope: {
+                kind: 'template',
+                templateId,
+                role: requirementFactScopeRoleOf(target.leader.templateId, templateId),
+                ...(context?.instanceId !== undefined ? { instanceId: context.instanceId } : {}),
+                ...(context?.rootSessionId !== undefined ? { rootSessionId: context.rootSessionId } : {}),
+              },
             })
             .then((resolution) => resolution.environmentFacts)
         }
@@ -964,11 +983,19 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         })
 
   const templateEnvironmentFactsReadForBlueprint:
-    | ((target: TeamBlueprint, templateId: string) => Promise<RequirementFactsResolution>)
+    | ((
+        target: TeamBlueprint,
+        templateId: string,
+        context?: TemplateFeedContext,
+      ) => Promise<RequirementFactsResolution>)
     | undefined =
     requirementFacts === undefined
       ? undefined
-      : (target: TeamBlueprint, templateId: string): Promise<RequirementFactsResolution> => {
+      : (
+          target: TeamBlueprint,
+          templateId: string,
+          context?: TemplateFeedContext,
+        ): Promise<RequirementFactsResolution> => {
           const requirements =
             scopeRequirementInputsOf(target).templates[templateId] ?? []
           return requirementFacts.provider.resolveFacts({
@@ -976,7 +1003,17 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             // Blocker-1: the template scope carries its role identity
             // (the bound blueprint knows its leader template id — the
             // leader IS the root: the root mounts config.rootPresetId).
-            scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(target.leader.templateId, templateId) },
+            // Finding F (scoped identity): the feed context's OWNING
+            // root + target instance (the atomic pair the decision and
+            // the bookkeeping read — same seam, same coordinates;
+            // absent = the legacy template-only scope, byte-identical).
+            scope: {
+              kind: 'template',
+              templateId,
+              role: requirementFactScopeRoleOf(target.leader.templateId, templateId),
+              ...(context?.instanceId !== undefined ? { instanceId: context.instanceId } : {}),
+              ...(context?.rootSessionId !== undefined ? { rootSessionId: context.rootSessionId } : {}),
+            },
           })
         }
 

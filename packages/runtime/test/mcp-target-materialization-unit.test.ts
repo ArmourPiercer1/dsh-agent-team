@@ -49,6 +49,7 @@ import { parseBlueprint } from '../../domain/blueprint/src/index.js'
 import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
 import {
   createRuntimeRequirementFactsProvider,
+  requirementFactScopeRoleOf,
 } from '../requirement-facts/index.js'
 import type {
   RequirementFactsResolution,
@@ -222,6 +223,9 @@ function makeU6World(opts: {
       scope: {
         kind: 'template',
         templateId: 'worker',
+        // Blocker-1 shared contract: the template scope carries its role
+        // identity (worker ≠ the leader template ⇒ member).
+        role: requirementFactScopeRoleOf(V2.leader.templateId, 'worker'),
         ...(context?.instanceId !== undefined ? { instanceId: context.instanceId } : {}),
         ...(context?.rootSessionId !== undefined ? { rootSessionId: context.rootSessionId } : {}),
       },
@@ -239,19 +243,30 @@ interface ReadCapture {
 
 // --- the gate consultation (real repositories, real engine) ----------------------
 
-interface GateCapture {
-  readonly outcome:
-    | { readonly kind: 'allowed'; readonly reason: string; readonly scopeVerdicts: Array<{ key: string; state: string }> }
-    | { readonly kind: 'blocked'; readonly status: string; readonly gateReason: string; readonly blockedScopes: readonly string[]; readonly unavailableSubjects: readonly string[]; readonly recoveryDispatchAvailable: boolean }
-  /**
-   * Each captured template-scope read (the atomic facts + observations
-   * pair), keyed by the read's instance context (`__template__` = the
-   * no-instance (template-only) read) — the target template is read ONCE
-   * per instance context (the decision read) and ONCE template-only (the
-   * conservative scope read for the bookkeeping).
-   */
-  readonly templateReads: Map<string, () => Promise<ReadCapture>>
-}
+/**
+ * The captured outcome of one gate consultation. The two variants carry
+ * each captured template-scope read (the atomic facts + observations
+ * pair) in `templateReads`, keyed by the read's instance context
+ * (`__template__` = the no-instance (template-only) read) — the target
+ * template is read ONCE per instance context (the decision read) and ONCE
+ * template-only (the conservative scope read for the bookkeeping).
+ */
+type GateCapture =
+  | {
+      readonly kind: 'allowed'
+      readonly reason: string
+      readonly scopeVerdicts: Array<{ key: string; state: string }>
+      readonly templateReads: Map<string, () => Promise<ReadCapture>>
+    }
+  | {
+      readonly kind: 'blocked'
+      readonly status: string
+      readonly gateReason: string
+      readonly blockedScopes: readonly string[]
+      readonly unavailableSubjects: readonly string[]
+      readonly recoveryDispatchAvailable: boolean
+      readonly templateReads: Map<string, () => Promise<ReadCapture>>
+    }
 
 async function consultGate(
   u6: U6World,
@@ -409,10 +424,14 @@ describe('Finding F T6 — the scoped-identity plumbing + materialization axis (
     // the template-scope read with the action's target instance context.
     const targetScopes = U6.u2.scopesSeen.filter((s) => s.templateId === 'worker' && s.instanceId === INST_B)
     expect(targetScopes.length).toBeGreaterThanOrEqual(1)
-    expect(targetScopes[0].rootSessionId).toBe(ROOT)
+    const firstTargetScope = targetScopes[0]
+    expect(firstTargetScope).toBeDefined()
+    expect(firstTargetScope?.rootSessionId).toBe(ROOT)
     const aScopes = U6.u3.scopesSeen.filter((s) => s.templateId === 'worker' && s.instanceId === INST_A)
     expect(aScopes.length).toBeGreaterThanOrEqual(1)
-    expect(aScopes[0].rootSessionId).toBe(ROOT)
+    const firstAScope = aScopes[0]
+    expect(firstAScope).toBeDefined()
+    expect(firstAScope?.rootSessionId).toBe(ROOT)
     // The template-only (no-instance) read of the same consultations
     // carries the target root WITHOUT an instance (the conservative
     // scope view — the incident bookkeeping's own truth).

@@ -684,6 +684,26 @@ export interface WorkActivityPort {
  * The facade ports (injected, mock-first; every durable write flows
  * through `teamDomain` — invariant 41).
  */
+/**
+ * Finding F (scoped identity, additive) — the per-template FEED CONTEXT the
+ * requirement gate passes to the per-template live-read seams: WHICH team
+ * root the boundary resolves under (`rootSessionId` — the multi-root host
+ * shape: the port lists THAT root's member instances, never the entry's
+ * boot root) and, for the ACTION's target template only, WHICH instance's
+ * own boundary (`instanceId`) — the target's materialization is the
+ * decision's truth (the healthy sibling must not mask the failed target,
+ * and vice versa). The conservative scope read (the incident/recovery
+ * bookkeeping) omits `instanceId` (the template-level worst case). Both
+ * fields are optional: absent = the legacy single-root, template-only
+ * contract (every pre-fix caller stays byte-identical).
+ */
+export interface TemplateFeedContext {
+  /** The owning team root (the action's target root). */
+  readonly rootSessionId?: string
+  /** The action's target instance (the target-template decision read only). */
+  readonly instanceId?: string
+}
+
 export interface TeamRuntimeOptions {
   /** The open TeamDomain (the durable control-plane authority, inv 41). */
   readonly teamDomain: import('../../storage/repositories/index.js').TeamDomain
@@ -705,6 +725,10 @@ export interface TeamRuntimeOptions {
    */
   readonly templateEnvironmentFacts?: (
     templateId: string,
+    // Finding F (scoped identity): the feed context (root + target
+    // instance); optional — the legacy template-only contract stands
+    // for every pre-fix caller.
+    context?: TemplateFeedContext,
   ) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>
   /**
    * PF-1 fix (2026-09-30, adjudicated product defect) — the per-BLUEPRINT
@@ -730,6 +754,10 @@ export interface TeamRuntimeOptions {
   readonly templateEnvironmentFactsForBlueprint?: (
     blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint,
     templateId: string,
+    // Finding F (scoped identity): the feed context (the owning root +
+    // the target instance for the target-template decision read);
+    // optional — the legacy template-only contract stands.
+    context?: TemplateFeedContext,
   ) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>
   /**
    * D-3 fix (2026-09-30, adjudicated product semantics — fail-closed
@@ -754,6 +782,10 @@ export interface TeamRuntimeOptions {
   readonly templateEnvironmentFactsReadForBlueprint?: (
     blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint,
     templateId: string,
+    // Finding F (scoped identity): the feed context (the owning root +
+    // the target instance for the target-template decision read);
+    // optional — the legacy template-only contract stands.
+    context?: TemplateFeedContext,
   ) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>
   /** The external hard facts (effective-config read, stage 2). */
   readonly externalPolicyFacts: () => Promise<
