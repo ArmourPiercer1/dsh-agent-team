@@ -1,24 +1,18 @@
 /**
  * dod20-ui-driver.test.mjs — OFFLINE tests for the DDoD20 UI driver's pure
  * navigation/locator/verdict core (node --test; no browser, no host, no
- * network, no jsdom). Run:
+ * network, no jsdom). The CALLER-side coverage (the real leg orchestration
+ * driven through fake pages/networks) lives in
+ * dod20-ui-driver-orchestration.test.mjs — this file is not, and does not
+ * claim to be, a substitute for it.
  *
  *   node --test tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.test.mjs
  *
- * Every fixture is a static HTML string hand-modeled on the read-only env
- * evidence (see dod20-ui-driver-fixtures.mjs). The tests encode the failure
- * lessons of driver v1–v3:
- *  - v1: the Internal Testing Notice stayed open and the list stayed collapsed
- *    => zero traffic, zero cases.
- *  - v2: expandList had the Ungrouped click (dod20-driver2.mjs:67) but mapped
- *    rows by click-order + pop() fallback => contaminated title→id map,
- *    MAP-FAIL.
- *  - v3: openContext LOST the Ungrouped click (zero 'Ungrouped' hits in
- *    dod20-driver3.mjs); the overflow button only exists after expansion, so
- *    its overflow-only "expand" was a silent no-op => four legs NOT_RUN with
- *    zero /team-remote traffic — a driver defect, and worse, E2 recorded FAIL
- *    on a window the driver never reached. This driver must record NOT_RUN for
- *    any leg its navigation did not verifiably reach.
+ * Every fixture is a static HTML string or a plain data model hand-modeled on
+ * the read-only env evidence (see dod20-ui-driver-fixtures.mjs). The tests
+ * encode the failure lessons of driver v1–v3 AND the external-review P2 list
+ * of the PR #55 round (correlated responses, product-derived cadence,
+ * realpath authorization, consistent aggregation).
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -29,17 +23,24 @@ import {
   groupCollapsed,
   overflowPending,
   parseParams,
+  parseRequestEnvelope,
+  parseServerResponseEnvelope,
   canonicalTargets,
   detectBlockingModal,
+  authorizeWorkspace,
   e2WorkspaceSteps,
   e2AbortSteps,
   assertSessionCwd,
   verifySelection,
+  findCreatedSession,
   evalE1,
   evalE2,
   evalE3,
   evalE5,
   e4NotRun,
+  summarize,
+  parseTickMsSource,
+  parseArgs,
   scrubEvidence,
   redactOut,
 } from './dod20-ui-driver.mjs'
@@ -123,11 +124,29 @@ test('locateTitle: a collapsed rail cannot contain the target => the v3 miss is 
   assert.equal(hit.status, 'NOT_FOUND')
 })
 
-// ── canonical identity plumbing ────────────────────────────────────────────
+// ── canonical identity plumbing + wire envelopes ───────────────────────────
 test('parseParams: /team-remote client-request envelope yields the params (probe3 wire shape)', () => {
   const post = '{"type":"client-request","rpcId":"1dc93440","method":"team.getReadState","payload":{"version":6,"params":{"sessionId":"session-team-child-52860b"}}}'
   assert.deepEqual(parseParams(post), { sessionId: 'session-team-child-52860b' })
   assert.equal(parseParams('not json'), null)
+})
+
+test('parseRequestEnvelope: rpcId + params come out of the frozen client-request envelope', () => {
+  const env = parseRequestEnvelope('{"type":"client-request","rpcId":"1dc93440","method":"team.getReadState","payload":{"version":6,"params":{"sessionId":"s1"}}}')
+  assert.equal(env.rpcId, '1dc93440')
+  assert.deepEqual(env.params, { sessionId: 's1' })
+  assert.equal(parseRequestEnvelope('nope'), null)
+})
+
+test('parseServerResponseEnvelope: the frozen { rpcId, result } envelope; garbage is UNCORRELATED (null)', () => {
+  const ok = parseServerResponseEnvelope('{"rpcId":"r7","result":{"ok":true,"value":{"data":{"relation":"team-member","memberInstanceId":"inst-x"},"provenance":{}}}}')
+  assert.equal(ok.rpcId, 'r7')
+  assert.equal(ok.ok, true)
+  assert.equal(ok.data.relation, 'team-member')
+  const err = parseServerResponseEnvelope('{"rpcId":"r7","result":{"ok":false,"error":{"code":"internal","message":"m","details":{}}}}')
+  assert.equal(err.ok, false)
+  assert.equal(err.error, 'internal')
+  assert.equal(parseServerResponseEnvelope('{"relation":"team-member"}'), null, 'a bare body without the rpcId/result envelope is NEVER accepted')
 })
 
 test('canonicalTargets: unique canonical titles build the (id,title) targets', () => {
@@ -155,60 +174,105 @@ test('canonicalTargets: null title (the boot-row shape) is never a matchable tit
 })
 
 // ── E2 workspace picker (shot-E2-ordinary-v3.png root cause) ───────────────
-test('detectBlockingModal: the Select Workspace Directory dialog is detected as a blocker', () => {
+test('detectBlockingModal (OFFLINE fixture adapter): the dialog model is built from modeled HTML — never from innerText', () => {
   const d = detectBlockingModal(F.MODAL_WORKSPACE_PICKER)
   assert.equal(d.blocking, true)
+  assert.equal(d.open, true)
   assert.equal(d.title, 'Select Workspace Directory')
-  assert.equal(d.rootLabel, 'Home')
+  assert.equal(d.crumbLabel, 'Home')
+  assert.equal(detectBlockingModal('plain innerText has no tags at all — the P2 defect input').blocking, false,
+    'innerText fed in finds nothing, which is exactly why the live lane reads REAL DOM dialog state instead')
 })
 
-// ── E2 authorized-workspace discipline (coordinator ruling 2026-10-01) ─────
-// The folder picked MUST be the EXPLICIT AUTHORIZED test workspace passed as
-// a driver input (exact name under the exact authorized parent) — never the
-// modal's first item, never a neighbor, never a personal directory.
-const AUTH_WS = '/home/user/workspace'
+// ── realpath authorization (external review P6) ────────────────────────────
+const HOME = '/home/user'
 
-test('e2WorkspaceSteps: authorized dir present under the authorized root => OK, exact-name click + post-action cwd verify', () => {
-  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER), testWorkspace: AUTH_WS })
+test('authorizeWorkspace: direct child of the approved root passes', () => {
+  const a = authorizeWorkspace({ testWorkspaceReal: '/home/user/testhome/ws', authorizedRootReal: '/home/user/testhome', homeReal: HOME })
+  assert.equal(a.ok, true)
+  assert.deepEqual(a.ancestors, ['testhome'])
+  assert.equal(a.folder, 'ws')
+})
+
+test('authorizeWorkspace: DEEP nesting under the approved root passes with the full level plan', () => {
+  const a = authorizeWorkspace({ testWorkspaceReal: '/home/user/testhome/fixtures/ws', authorizedRootReal: '/home/user/testhome', homeReal: HOME })
+  assert.equal(a.ok, true)
+  assert.deepEqual(a.ancestors, ['testhome', 'fixtures'])
+})
+
+test('authorizeWorkspace: outside the approved root (realpath escape) is REJECTED — a name match is not authorization', () => {
+  const a = authorizeWorkspace({ testWorkspaceReal: '/elsewhere/private/testhome-ws', authorizedRootReal: '/home/user/testhome', homeReal: HOME })
+  assert.equal(a.ok, false)
+  assert.match(a.reason, /containment|not inside/i)
+})
+
+test('authorizeWorkspace: the approved root may NOT be the private home itself', () => {
+  const a = authorizeWorkspace({ testWorkspaceReal: '/home/user/workspace', authorizedRootReal: HOME, homeReal: HOME })
+  assert.equal(a.ok, false)
+  assert.match(a.reason, /private home|too broad/i)
+})
+
+test('authorizeWorkspace: a workspace above/outside the home is rejected (the dialog browses from Home only)', () => {
+  const a = authorizeWorkspace({ testWorkspaceReal: '/srv/fixtures/ws', authorizedRootReal: '/srv/fixtures', homeReal: HOME })
+  assert.equal(a.ok, false)
+  assert.match(a.reason, /home root|not under/i)
+})
+
+// ── E2 dialog plan discipline (coordinator ruling 2026-10-01 + review P6) ──
+const AUTH_WS = '/home/user/workspace'
+const flatAuthz = { ancestors: [], folder: 'workspace' }
+
+test('e2WorkspaceSteps: authorized dir under the authorized root => OK, exact-name select + post-action cwd verify', () => {
+  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER), authz: flatAuthz, absPath: AUTH_WS })
   assert.equal(s.ok, true)
-  assert.deepEqual(s.steps, ['click-folder:workspace', 'click-open', 'assert-dialog-closed', 'verify-session-cwd:' + AUTH_WS])
+  assert.deepEqual(s.steps, ['select:workspace', 'open', 'assert-dialog-closed', 'verify-session-cwd:' + AUTH_WS])
+})
+
+test('e2WorkspaceSteps: a NESTED approved fixture emits the level-by-level cd plan (no direct-child-of-home rule)', () => {
+  const s = e2WorkspaceSteps({
+    dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_NESTED),
+    authz: { ancestors: ['testhome', 'fixtures'], folder: 'ws' },
+    absPath: '/home/user/testhome/fixtures/ws',
+  })
+  assert.equal(s.ok, true)
+  assert.deepEqual(s.steps, ['cd:testhome', 'cd:fixtures', 'select:ws', 'open', 'assert-dialog-closed', 'verify-session-cwd:/home/user/testhome/fixtures/ws'])
 })
 
 test('e2WorkspaceSteps: authorized dir absent from the listing => NOT_RUN (no neighbor pick)', () => {
-  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_NO_FOLDER), testWorkspace: AUTH_WS })
+  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_NO_FOLDER), authz: flatAuthz, absPath: AUTH_WS })
   assert.equal(s.ok, false)
   assert.match(s.reason, /workspace folder|folder/i)
 })
 
 test('e2WorkspaceSteps: near-miss names (same prefix / suffix / spaced copy) are REJECTED', () => {
-  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_NEAR_MISS), testWorkspace: AUTH_WS })
+  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_NEAR_MISS), authz: flatAuthz, absPath: AUTH_WS })
   assert.equal(s.ok, false)
   assert.match(s.reason, /never pick/i)
 })
 
-test('e2WorkspaceSteps: dialog browsed to a foreign root => NOT_RUN (exact-parent discipline, even when the folder name is offered)', () => {
-  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_FOREIGN_ROOT), testWorkspace: AUTH_WS })
+test('e2WorkspaceSteps: dialog browsed to a foreign root => NOT_RUN (exact-root discipline, even when the folder name is offered)', () => {
+  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_FOREIGN_ROOT), authz: flatAuthz, absPath: AUTH_WS })
   assert.equal(s.ok, false)
   assert.match(s.reason, /root/i)
 })
 
-test('e2WorkspaceSteps: a testWorkspace outside the dialog root parent is rejected before Open', () => {
-  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER), testWorkspace: '/somewhere/else/workspace' })
-  assert.equal(s.ok, false)
-  assert.match(s.reason, /parent|root/i)
-})
-
-test('e2WorkspaceSteps: a relative testWorkspace path is rejected (absolute paths only)', () => {
-  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER), testWorkspace: 'workspace' })
+test('e2WorkspaceSteps: a non-absolute authorized realpath never reaches Open', () => {
+  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER), authz: flatAuthz, absPath: 'workspace' })
   assert.equal(s.ok, false)
   assert.match(s.reason, /absolute/i)
 })
 
+test('e2WorkspaceSteps: no dialog open => NOT_RUN reason', () => {
+  const s = e2WorkspaceSteps({ dialog: null, authz: flatAuthz, absPath: AUTH_WS })
+  assert.equal(s.ok, false)
+  assert.match(s.reason, /not open/i)
+})
+
 test('e2AbortSteps: fail-closed BEFORE Open leaves the modal UNCONFIRMED via the asserted Cancel path', () => {
-  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_NO_FOLDER), testWorkspace: AUTH_WS })
+  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_NO_FOLDER), authz: flatAuthz, absPath: AUTH_WS })
   const a = e2AbortSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_NO_FOLDER), failedBeforeOpen: !s.ok })
   assert.deepEqual(a.steps, ['click-cancel', 'assert-dialog-closed'])
-  assert.equal(e2AbortSteps({ dialog: { blocking: false }, failedBeforeOpen: true }).steps.length, 0, 'nothing to cancel when no dialog is open')
+  assert.equal(e2AbortSteps({ dialog: { open: false }, failedBeforeOpen: true }).steps.length, 0, 'nothing to cancel when no dialog is open')
   assert.equal(e2AbortSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER), failedBeforeOpen: false }).steps.length, 0, 'after Open there is no modal to cancel')
 })
 
@@ -223,60 +287,111 @@ test('assertSessionCwd: the created session\'s projcache identity.cwd must equal
   assert.equal(missing.ok, false, 'no projcache record is NOT a pass (fail-closed)')
 })
 
-// ── selection verification: BOTH header and network, or nothing ────────────
-const expectedMember = { sessionId: F.MEMBER_ID, relation: 'team-member', title: F.MEMBER_TITLE }
-const freshReq = [{ kind: 'req', t: 2000, m: 'team.getReadState', p: { sessionId: F.MEMBER_ID } }]
-const freshBodies = [{ t: 2001, body: '{"relation":"team-member","memberInstanceId":"inst-0iin89s0dvix","liveToken":null}' }]
+// ── selection verification: EXACT header + CORRELATED success response ──────
+const expectedMember = { sessionId: F.MEMBER_ID, relation: 'team-member', title: F.MEMBER_TITLE, instance: F.MEMBER_INSTANCE }
+const req1 = { seq: 1, kind: 'req', t: 2000, m: 'team.getReadState', rpcId: 'r1', p: { sessionId: F.MEMBER_ID } }
+const resOk = { seq: 2, kind: 'res', m: 'team.getReadState', reqSeq: 1, rpcId: 'r1', status: 200, ok: true, t: 2001, data: { relation: 'team-member', memberInstanceId: F.MEMBER_INSTANCE, liveToken: 'lt-v1-x' } }
 
-test('verifySelection: header id + fresh readState(id) + relation corroboration => verified', () => {
-  const v = verifySelection({
-    headerLeaves: htmlLeaves(F.sessionHeaderHtml(F.MEMBER_ID)),
-    freshRequests: freshReq,
-    freshBodies,
-    expected: expectedMember,
-  })
+const vWith = (over = {}) => verifySelection({
+  headerLeaves: htmlLeaves(F.sessionHeaderHtml(F.MEMBER_ID)),
+  freshRequests: [req1],
+  freshResponses: [resOk],
+  expected: expectedMember,
+  ...over,
+})
+
+test('verifySelection: header id EXACTLY + fresh readState(id) + correlated SUCCESS response => verified', () => {
+  const v = vWith()
   assert.equal(v.verified, true)
   assert.equal(v.headerOk, true)
   assert.equal(v.networkOk, true)
+  assert.equal(v.resSeq, 2)
 })
 
 test('verifySelection: header alone is NOT a verified selection', () => {
-  const v = verifySelection({ headerLeaves: htmlLeaves(F.sessionHeaderHtml(F.MEMBER_ID)), freshRequests: [], freshBodies: [], expected: expectedMember })
+  const v = vWith({ freshResponses: [] })
   assert.equal(v.verified, false)
   assert.equal(v.headerOk, true)
   assert.equal(v.networkOk, false)
+  assert.equal(v.why, 'no-bound-response')
 })
 
 test('verifySelection: network alone is NOT a verified selection', () => {
-  const v = verifySelection({ headerLeaves: htmlLeaves('<header><h1>ack something</h1></header>'), freshRequests: freshReq, freshBodies, expected: expectedMember })
+  const v = vWith({ headerLeaves: htmlLeaves('<header><h1>ack something</h1></header>') })
   assert.equal(v.verified, false)
   assert.equal(v.headerOk, false)
   assert.equal(v.networkOk, true)
 })
 
+test('verifySelection: a SUBSTRING header is not the selection (exact id leaf only)', () => {
+  const v = vWith({ headerLeaves: [{ text: 'x' + F.MEMBER_ID + ' — decorated', y: 20 }, { text: 'team notes mention ' + F.MEMBER_ID, y: 40 }] })
+  assert.equal(v.headerOk, false, 'decorated/informative leaves containing the id NEVER authenticate (review P4)')
+  assert.equal(v.verified, false)
+})
+
 test('verifySelection: a fresh readState for a DIFFERENT session id is not the target', () => {
-  const v = verifySelection({
-    headerLeaves: htmlLeaves(F.sessionHeaderHtml(F.MEMBER_ID)),
-    freshRequests: [{ kind: 'req', t: 2000, m: 'team.getReadState', p: { sessionId: 'session-team-child-259520eccdc5502ef43ef3f0762921e6' } }],
-    freshBodies,
-    expected: expectedMember,
+  const v = vWith({
+    freshRequests: [{ seq: 9, kind: 'req', t: 2000, m: 'team.getReadState', rpcId: 'r9', p: { sessionId: 'session-team-child-259520eccdc5502ef43ef3f0762921e6' } }],
   })
   assert.equal(v.verified, false)
 })
 
 test('verifySelection: stale events (t < click time) never verify the selection', () => {
-  const v = verifySelection({
-    headerLeaves: htmlLeaves(F.sessionHeaderHtml(F.MEMBER_ID)),
-    freshRequests: [{ kind: 'req', t: 900, m: 'team.getReadState', p: { sessionId: F.MEMBER_ID } }],
-    freshBodies,
-    expected: expectedMember,
+  const v = vWith({
+    freshRequests: [{ seq: 1, kind: 'req', t: 900, m: 'team.getReadState', rpcId: 'r1', p: { sessionId: F.MEMBER_ID } }],
     clickT: 1000,
   })
   assert.equal(v.networkOk, false)
   assert.equal(v.verified, false)
 })
 
-// ── leg oracles, ported verbatim from v2/v3 (NEITHER weakened nor tightened) ─
+test('verifySelection: a response bound to a FOREIGN request or rpcId rejects (late-foreign hazard)', () => {
+  assert.equal(vWith({ freshResponses: [{ ...resOk, reqSeq: 77 }] }).verified, false, 'bound to another request')
+  assert.equal(vWith({ freshResponses: [{ ...resOk, rpcId: 'ffffffff' }] }).verified, false, 'rpcId does not match the request')
+  assert.equal(vWith({ freshResponses: [{ ...resOk, rpcId: null }] }).verified, false, 'uncorrelated body never authenticates')
+})
+
+test('verifySelection: failed responses reject — status 500 and envelope ok:false', () => {
+  assert.equal(vWith({ freshResponses: [{ ...resOk, status: 500 }] }).verified, false)
+  assert.equal(vWith({ freshResponses: [{ ...resOk, ok: false, data: null, error: 'internal' }] }).verified, false)
+})
+
+test('verifySelection: wrong relation or a foreign memberInstanceId rejects (parsed-data check)', () => {
+  assert.equal(vWith({ freshResponses: [{ ...resOk, data: { relation: 'team-root', liveToken: 'lt-v1-x' } }] }).verified, false)
+  assert.equal(vWith({ freshResponses: [{ ...resOk, data: { relation: 'team-member', memberInstanceId: 'inst-OTHER', liveToken: 'lt-v1-x' } }] }).verified, false)
+})
+
+test('verifySelection: the root case verifies on the team-root relation of ITS correlated response', () => {
+  const v = verifySelection({
+    headerLeaves: [{ text: F.ROOT_ID, y: 20, region: 'main' }],
+    freshRequests: [{ seq: 3, kind: 'req', t: 10, m: 'team.getReadState', rpcId: 'r3', p: { sessionId: F.ROOT_ID } }],
+    freshResponses: [{ seq: 4, kind: 'res', m: 'team.getReadState', reqSeq: 3, rpcId: 'r3', status: 200, ok: true, t: 12, data: { relation: 'team-root', durableGeneration: 32 } }],
+    expected: { sessionId: F.ROOT_ID, relation: 'team-root' },
+  })
+  assert.equal(v.verified, true)
+})
+
+// ── created-session discovery (review P4: never an exclusion guess) ─────────
+const reqA = { seq: 10, kind: 'req', m: 'team.getReadState', rpcId: 'ra', p: { sessionId: F.MEMBER_ID }, t: 0 }
+const reqNew = { seq: 11, kind: 'req', m: 'team.getReadState', rpcId: 'rn', p: { sessionId: 'ses-new-ordinary-1' }, t: 100 }
+const resNone = { seq: 12, kind: 'res', m: 'team.getReadState', reqSeq: 11, rpcId: 'rn', status: 200, ok: true, t: 110, data: { relation: 'none', liveToken: null } }
+
+test('findCreatedSession: the SUCCESS relation-none correlated response names the session', () => {
+  const f = findCreatedSession({ responses: [resNone], requests: [reqA, reqNew], excludeIds: [F.ROOT_ID, F.MEMBER_ID], afterT: 50 })
+  assert.equal(f.ok, true)
+  assert.equal(f.sessionId, 'ses-new-ordinary-1')
+})
+
+test('findCreatedSession: failed / uncorrelated / stale / ambiguous candidates never resolve to a pick', () => {
+  assert.equal(findCreatedSession({ responses: [{ ...resNone, ok: false, data: null }], requests: [reqNew], excludeIds: [], afterT: 0 }).ok, false)
+  assert.equal(findCreatedSession({ responses: [{ ...resNone, rpcId: 'ghost' }], requests: [reqNew], excludeIds: [], afterT: 0 }).ok, false, 'rpcId mismatch unbinds the response')
+  assert.equal(findCreatedSession({ responses: [{ ...resNone, t: 10 }], requests: [reqNew], excludeIds: [], afterT: 50 }).ok, false, 'before the Open moment')
+  const two = findCreatedSession({ responses: [resNone, { ...resNone, seq: 13, reqSeq: 14, rpcId: 'rn2' }], requests: [reqNew, { seq: 14, kind: 'req', m: 'team.getReadState', rpcId: 'rn2', p: { sessionId: 'ses-other' }, t: 105 }], excludeIds: [], afterT: 0 })
+  assert.equal(two.ok, false)
+  assert.match(two.reason, /ambiguous/)
+})
+
+// ── leg oracles ──────────────────────────────────────────────────────────────
 const rs = (t, sessionId) => ({ kind: 'req', t, m: 'team.getReadState', p: { sessionId } })
 const pj = (t, teamSessionId) => ({ kind: 'req', t, m: 'team.getProjection', p: { teamSessionId } })
 const lg = (t, teamSessionId, afterSequence = 0, limit = 50) => ({ kind: 'req', t, m: 'team.getLedgerPage', p: { teamSessionId, afterSequence, limit } })
@@ -299,19 +414,44 @@ test('evalE1: preClick traffic or a second projection FAILs (semantics not weake
   assert.equal(evalE1({ net: [...net, pj(7000, F.ROOT_ID)], bodies, expectedMember: { sessionId: F.MEMBER_ID, instance: F.MEMBER_INSTANCE }, expectedRootId: F.ROOT_ID, preClick: 0, t0: -1 }).verdict, 'FAIL')
 })
 
-test('evalE3: >=7 readStates, ~3s band, exactly-1 cold projection, 1 ledger', () => {
+const e3Net = (root = F.ROOT_ID, interval = 3000) => {
   const net = [pj(0, F.ROOT_ID), lg(1, F.ROOT_ID)]
-  for (let i = 0; i < 7; i += 1) net.push(rs(10 + i * 3000, F.ROOT_ID))
-  const v = evalE3({ net, expectedRootId: F.ROOT_ID, t0: -1 })
+  for (let i = 0; i < 7; i += 1) net.push(rs(10 + i * interval, root))
+  return net
+}
+
+test('evalE3: >=7 readStates, cadence from the PRODUCT interval, exactly-1 cold projection, 1 ledger', () => {
+  const v = evalE3({ net: e3Net(), expectedRootId: F.ROOT_ID, t0: -1, intervalMs: 3000 })
   assert.equal(v.verdict, 'PASS')
   assert.equal(v.measured.projections, 1)
+  assert.equal(v.measured.rootIdentityOk, true)
+  assert.ok(v.measured.deltasMs.length >= 6, '>=6 target tick deltas')
+})
+
+test('evalE3: a non-default PRODUCT cadence passes at ITS band — the old hardcoded 2700-3300 is gone', () => {
+  const fast = evalE3({ net: e3Net(F.ROOT_ID, 1000), expectedRootId: F.ROOT_ID, t0: -1, intervalMs: 1000 })
+  assert.equal(fast.verdict, 'PASS', 'the band derives from the injected product tickMs, not from the historical measurement')
+  const staleBand = evalE3({ net: e3Net(F.ROOT_ID, 1000), expectedRootId: F.ROOT_ID, t0: -1, intervalMs: 3000 })
+  assert.equal(staleBand.verdict, 'FAIL', 'and it still REJECTS a cadence that disagrees with the configured interval')
 })
 
 test('evalE3: a second (periodic) projection FAILs — cold-read-only semantics preserved', () => {
-  const net = [pj(0, F.ROOT_ID), lg(1, F.ROOT_ID)]
-  for (let i = 0; i < 7; i += 1) net.push(rs(10 + i * 3000, F.ROOT_ID))
+  const net = e3Net()
   net.push(pj(9000, F.ROOT_ID))
-  assert.equal(evalE3({ net, expectedRootId: F.ROOT_ID, t0: -1 }).verdict, 'FAIL')
+  assert.equal(evalE3({ net, expectedRootId: F.ROOT_ID, t0: -1, intervalMs: 3000 }).verdict, 'FAIL')
+})
+
+test('evalE3: FOREIGN-root readStates FAIL even with perfect cadence (expectedRootId is enforced)', () => {
+  assert.equal(evalE3({ net: e3Net('session-OTHER-root'), expectedRootId: F.ROOT_ID, t0: -1, intervalMs: 3000 }).verdict, 'FAIL')
+})
+
+test('evalE3: without an injected interval there is NO hardcoded fallback — fail closed', () => {
+  assert.throws(() => evalE3({ net: e3Net(), expectedRootId: F.ROOT_ID, t0: -1 }), /product config/)
+})
+
+test('parseTickMsSource: the frozen mount-config cadence is READ from the product source', () => {
+  assert.equal(parseTickMsSource('export const x = 1\n  tickMs: 3000,\n'), 3000)
+  assert.equal(parseTickMsSource('nothing here'), null)
 })
 
 test('evalE5: exactly 1 ledger{afterSequence:0,limit:50} + reprobe + listRoots, 0 projections', () => {
@@ -350,6 +490,52 @@ test('e4NotRun: E4 is an explicit not_run entry — no browser oracle is invente
   const e = e4NotRun()
   assert.equal(e.verdict, 'NOT_RUN')
   assert.match(e.reason, /unit\/E2E/i)
+})
+
+// ── aggregation (external review P7) ────────────────────────────────────────
+const legsOf = (E1, E2, E3, E5, E4 = 'NOT_RUN') => ({
+  legs: {
+    E1: E1 ? { verdict: E1 } : {},
+    E2: E2 ? { verdict: E2 } : {},
+    E3E5: { E3: E3 ? { verdict: E3 } : undefined, E5: E5 ? { verdict: E5 } : undefined },
+    E4: { verdict: E4 },
+  },
+})
+
+test('summarize: all browser legs PASS => ok, exit 0; E4 stays NOT_RUN and changes nothing', () => {
+  const s = summarize(legsOf('PASS', 'PASS', 'PASS', 'PASS'))
+  assert.equal(s.ok, true)
+  assert.equal(s.exitCode, 0)
+  assert.equal(s.verdicts.E4, 'NOT_RUN')
+})
+
+test('summarize: any FAIL => exit 1; FAIL outranks NOT_RUN', () => {
+  assert.equal(summarize(legsOf('FAIL', 'PASS', 'PASS', 'PASS')).exitCode, 1)
+  assert.equal(summarize(legsOf('FAIL', 'PASS', 'PASS', 'NOT_RUN')).exitCode, 1)
+  assert.equal(summarize(legsOf('FAIL', 'PASS', 'PASS', 'PASS')).ok, false)
+})
+
+test('summarize: NOT_RUN is NEVER a PASS — exit 2, ok=false, reason recorded', () => {
+  const s = summarize(legsOf('PASS', 'PASS', 'PASS', 'NOT_RUN'))
+  assert.equal(s.ok, false)
+  assert.equal(s.exitCode, 2)
+  assert.match(s.reasons.join(' '), /E5/)
+})
+
+test('summarize: fatal => exit 3; missing nested E3/E5 materialize as NOT_RUN (no parent stamping)', () => {
+  assert.equal(summarize({ fatal: 'boom', legs: {} }).exitCode, 3)
+  assert.equal(summarize({ legs: { E3E5: { E3: { verdict: 'PASS' } } } }).verdicts.E5, 'NOT_RUN')
+  const s = summarize({ legs: { E1: { verdict: 'PASS' }, E2: { verdict: 'PASS' }, E3E5: { E3: { verdict: 'PASS' } }, E4: e4NotRun() } })
+  assert.equal(s.exitCode, 2, 'E5 never recorded is NOT_RUN, not PASS')
+})
+
+test('parseArgs: --test-workspace / --authorized-root have NO defaults (review P6)', () => {
+  const a = parseArgs(['node', 'dod20-ui-driver.mjs', '--confirm-live', '--access', 'x', '--smoke-host', 'y', '--world', 'z', '--out', 'o'])
+  assert.equal(a.testWorkspace, undefined, 'an unnamed default workspace is never authorized')
+  assert.equal(a.authorizedRoot, undefined)
+  const b = parseArgs(['--test-workspace', '/home/user/testhome/ws', '--authorized-root', '/home/user/testhome'])
+  assert.equal(b.testWorkspace, '/home/user/testhome/ws')
+  assert.equal(b.authorizedRoot, '/home/user/testhome')
 })
 
 // ── credential hygiene ─────────────────────────────────────────────────────

@@ -4,9 +4,10 @@
  * E1/E2/E3/E5 browser legs (test-driver repair, PR #55 side-branch).
  * NON-PRODUCT test tooling. The LIVE lane is gated on external review: this
  * file refuses to run without `--confirm-live`, and until then nothing here is
- * executed — the accepted evidence for this change is the OFFLINE test:
+ * executed — the accepted evidence for this change is the OFFLINE suites:
  *
- *   node --test tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.test.mjs
+ *   node --test tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.test.mjs                  # pure core
+ *   node --test tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-orchestration.test.mjs     # leg orchestration via injected fakes
  *
  * WHY THIS DRIVER EXISTS (failure chain, evidence
  * dev/agent-workflow/evidence/dod20-browser-20261001/2026-10-01T15-13-44/):
@@ -39,24 +40,56 @@
  *      AMBIGUOUS fail-closed. NEVER a pop-up pick, a last-match, a positional
  *      neighbor, or any target-changing retry;
  *   5. BEFORE any leg action, verify selection: the main-pane header must
- *      show the canonical SESSION ID (proven by probe3-after-rowclick.png)
- *      AND a FRESH team.getReadState must carry that exact sessionId (plus
- *      the expected relation in its body as corroboration). At most ONE
- *      re-click of the SAME located row; still unverified => NOT_RUN.
+ *      show the canonical SESSION ID EXACTLY (probe3-after-rowclick.png) AND
+ *      a SUCCESS team.getReadState response CORRELATED to the fresh request
+ *      for exactly that sessionId — the wire envelope is
+ *      { rpcId, result: { ok, value: { data } } } (packages/remote/src/
+ *      contracts/response.ts + push/types.ts: "the correlation id of the
+ *      answered request"), so the response is accepted only when its rpcId
+ *      matches THAT request, status is 2xx, result.ok is true, and the parsed
+ *      data carries the expected relation (member: + memberInstanceId). A
+ *      late/foreign/failed/uncorrelated response NEVER authenticates. At most
+ *      ONE re-click of the SAME located row; still unverified => NOT_RUN.
  *
- * LEG SEMANTICS are ported VERBATIM from dod20-driver3.mjs /
- * dod20-driver2.mjs (the wp9b-round frozen expectations; the kit header in
- * browser-smoke-host.mjs states E1–E5). The ONLY verdict-discipline change:
- * an assertion window the navigation never verifiably reached records
- * NOT_RUN (driver defect), never FAIL (v3's E2 mislabel). E4 stays an
- * explicit not_run entry (unit/E2E layer; no browser oracle is invented).
+ * WINDOW BOUNDARIES (external review P1/P3): every boundary is a sequence or
+ * timestamp captured at the exact real event —
+ *  - E1 preClick counts requests with seq <= the seq captured BEFORE the
+ *    verified target click (the frozen v3 oracle 'preClick must be 0: fresh
+ *    context, no auto session'); the click's own cold round is NOT preClick,
+ *    and the reload window starts at the captured lt0.
+ *  - the E3 stable window STARTS at the cold-open click (clickT) — the very
+ *    cold projection/ledger the oracle requires are the ones the navigation
+ *    produced; E5's window starts at its refresh click.
+ *  - E3 cadence comes from the PRODUCT config (tickMs in
+ *    packages/client/src/plugin/team-mount-core.ts — frozen default 3000,
+ *    team-refresh-coordinator.ts:153/331), read at runtime; the historical
+ *    2995–3008ms deltas are recorded, never hardcoded as the spec.
+ *
+ * E2 WORKSPACE AUTHORIZATION (external review P6): --test-workspace and
+ * --authorized-root are REQUIRED, explicit, absolute inputs; BEFORE any
+ * browser leg opens, both are realpath()-ed and the workspace must be
+ * CONTAINED (realpath) under the authorized root, which must itself not be
+ * the private home (name/parent matching is not authorization). The dialog is
+ * driven from REAL DOM state (snapshot + per-level crumb verification,
+ * shot-E2-ordinary-v3.png), so NESTED fixtures under the approved root are
+ * reached level-by-level — a direct-child-of-home rule is gone, and nothing
+ * ever falls back to a wider directory. Post-Open, the created session's
+ * identity.cwd is re-verified from the world's projcache record.
+ *
+ * VERDICT DISCIPLINE (external review P7): a driver-side failure is NOT_RUN
+ * (never a product FAIL); the parent E3E5 record never stamps the nested E3/E5
+ * verdicts; summarize() fails the run on fatal (exit 3) or any FAIL (exit 1)
+ * and NEVER treats NOT_RUN as a pass (exit 2); E4 stays an explicit not_run
+ * entry (unit/E2E tier; no browser oracle invented).
  *
  * AUTH HYGIENE: the raw launch URL is read ONLY from the world's private 0600
  * browser-access.json at runtime (never printed, never copied into output —
  * redactOut() strips launchUrl keys and scrubEvidence() masks token=, lt-v1
- * values and liveToken fields). Credential redaction reuses the merged kit module
- * live-token-redact.mjs. The two kit raw instance.log files flagged in the
- * evidence index each carry one dead-host launch URL and are NEVER staged.
+ * values and liveToken fields — lt-v1 is a freshness hash rather than a
+ * credential, but it is masked anyway as defense-in-depth). Credential
+ * redaction reuses the merged kit module live-token-redact.mjs. The two kit
+ * raw instance.log files flagged in the evidence index each carry one
+ * dead-host launch URL and are NEVER staged.
  */
 import fs from 'node:fs'
 import os from 'node:os'
@@ -64,12 +97,13 @@ import path from 'node:path'
 import { createRequire } from 'node:module'
 import { redactLiveTokenFields, redactLiveTokenText } from './live-token-redact.mjs'
 
-// ══════════════════════════════ PURE CORE (tested offline) ══════════════════
+// ══════════════════════════ PURE CORE (tested offline) ══════════════════════
 
-/** Minimal leaf-element tokenizer over a STATIC HTML STRING (fixtures only).
- *  A leaf = element with non-empty DIRECT text and no child elements.
- *  Returns [{tag, cls, role, text}] in document order. Geometry-free by
- *  design; the live lane feeds the same-shaped records from the real DOM. */
+/** Minimal leaf-element tokenizer over a STATIC HTML STRING (FIXTURES ONLY —
+ *  the live lane never feeds page text through this; the dialog uses real DOM
+ *  state, the rail uses the in-page collector). A leaf = element with
+ *  non-empty DIRECT text and no child elements. Returns [{tag, cls, role,
+ *  text}] in document order. */
 export function htmlLeaves (html) {
   const VOID = new Set(['br', 'hr', 'img', 'input', 'meta', 'link'])
   const src = String(html)
@@ -163,11 +197,37 @@ export function locateTitle (leaves, title, { exclude = [] } = {}) {
   return { status: 'FOUND', leaf: matches[0], matches, index: rows.indexOf(matches[0]) }
 }
 
-/** /team-remote wire envelope -> params (probe3 net sample shape). */
+/** /team-remote client-request envelope -> params (probe3 wire shape). */
 export function parseParams (post) {
   try {
     const j = JSON.parse(post)
     return j && j.payload ? j.payload.params ?? null : (j && j.params) || null
+  } catch { return null }
+}
+
+/** The frozen request envelope: { type:'client-request', rpcId, method,
+ *  payload:{ version, params } } (packages/remote/src/contracts/request.ts). */
+export function parseRequestEnvelope (post) {
+  try {
+    const j = JSON.parse(String(post))
+    if (!j || typeof j !== 'object') return null
+    const params = j.payload && typeof j.payload === 'object' ? j.payload.params ?? null : j.params ?? null
+    return { rpcId: j.rpcId ?? null, method: j.method ?? null, params }
+  } catch { return null }
+}
+
+/** The frozen server-response envelope (contracts/response.ts + push/types.ts
+ *  SeamServerResponse): { rpcId, result: { ok:true, value:{ data, provenance } }
+ *  | { ok:false, error } }. Anything that does not parse as this envelope is
+ *  UNCORRELATED (null) and can never authenticate a selection. */
+export function parseServerResponseEnvelope (text) {
+  try {
+    const j = JSON.parse(String(text))
+    if (!j || typeof j !== 'object') return null
+    if (!Object.prototype.hasOwnProperty.call(j, 'rpcId')) return null
+    if (!j.result || typeof j.result !== 'object' || typeof j.result.ok !== 'boolean') return null
+    const data = j.result.ok === true && j.result.value && typeof j.result.value === 'object' ? j.result.value.data ?? null : null
+    return { rpcId: j.rpcId, ok: j.result.ok === true, data, error: j.result.ok === false && j.result.error && typeof j.result.error === 'object' ? j.result.error.code ?? 'error' : null }
   } catch { return null }
 }
 
@@ -200,55 +260,88 @@ export function canonicalTargets ({ projcache, rootId, memberIds }) {
   return { ok: true, targets: { root: { id: rootId, title: root.title }, member: members[0] || null, members } }
 }
 
-/** Detect the blocking workspace-directory dialog (shot-E2-ordinary-v3.png). */
+/** OFFLINE fixture adapter only (pure tests): builds the dialog MODEL from a
+ *  hand-modeled static HTML string. The live lane NEVER calls this — it reads
+ *  real DOM state through DIALOG_STATE_SOURCE below; page text (innerText) is
+ *  not HTML and must never be fed to htmlLeaves (external review P2). */
 export function detectBlockingModal (html) {
   const leaves = htmlLeaves(html)
   const title = leaves.find((l) => l.text === 'Select Workspace Directory')
-  if (!title) return { blocking: false, title: null, rootLabel: null, folders: [], buttons: [] }
+  if (!title) return { blocking: false, open: false, title: null, rootLabel: null, crumbLabel: null, folders: [], buttons: [] }
   return {
     blocking: true,
+    open: true,
     title: title.text,
     rootLabel: leaves.find((l) => String(l.cls || '').includes('crumb'))?.text ?? null,
+    crumbLabel: leaves.find((l) => String(l.cls || '').includes('crumb'))?.text ?? null,
     folders: leaves.filter((l) => String(l.cls || '').includes('folderName')).map((l) => l.text),
     buttons: leaves.filter((l) => l.tag === 'button').map((l) => l.text),
   }
 }
 
 /** The dialog root label the live world uses for the host home directory
- *  (shot-E2-ordinary-v3.png breadcrumb). The authorized workspace must sit
- *  directly under it — anything else is a foreign root and fail-closed. */
+ *  (shot-E2-ordinary-v3.png breadcrumb). The dialog browses from here. */
 export const DIALOG_HOME_LABEL = 'Home'
 
-/** The fixed E2 dialog script under the AUTHORIZED-WORKSPACE ruling: the
- *  folder is the basename of the explicit `--test-workspace` ABSOLUTE path,
- *  matched EXACTLY (a same-prefix/suffix lookalike is a rejection, never a
- *  pick), under the EXACTLY authorized parent, and after Open the created
- *  session's workspace is re-verified from the world's projcache record
- *  (record.identity.cwd). Any miss is a fail-closed NOT_RUN reason. */
-export function e2WorkspaceSteps ({ dialog, testWorkspace, resolvedHome = '/home/user' }) {
-  if (!dialog || !dialog.blocking) return { ok: false, reason: 'workspace dialog not open (Select Workspace Directory never appeared)' }
-  if (typeof testWorkspace !== 'string' || !testWorkspace.startsWith('/')) return { ok: false, reason: `--test-workspace must be an absolute authorized path (got ${JSON.stringify(testWorkspace)})` }
-  const folder = testWorkspace.slice(testWorkspace.lastIndexOf('/') + 1)
-  const parent = testWorkspace.slice(0, testWorkspace.lastIndexOf('/')) || '/'
-  if (dialog.rootLabel !== DIALOG_HOME_LABEL) return { ok: false, reason: `dialog root label ${JSON.stringify(dialog.rootLabel)} is not the authorized '${DIALOG_HOME_LABEL}' — foreign root, never browse into it` }
-  if (parent !== resolvedHome) return { ok: false, reason: `authorized workspace parent ${JSON.stringify(parent)} is not the dialog root ${JSON.stringify(resolvedHome)} — exact-path match required before Open` }
-  if (!folder) return { ok: false, reason: 'authorized path carries no folder name' }
-  if (!dialog.folders.includes(folder)) return { ok: false, reason: `authorized workspace folder '${folder}' not offered by the dialog (never pick a neighbor or near-miss folder)` }
-  if (!dialog.buttons.includes('Open')) return { ok: false, reason: 'dialog offers no exact Open button' }
-  return { ok: true, folder, steps: [`click-folder:${folder}`, 'click-open', 'assert-dialog-closed', `verify-session-cwd:${testWorkspace}`] }
+/** FILESYSTEM authorization (external review P6): authorization is REALPATH
+ *  CONTAINMENT under an explicit authorized root — an exact name or parent
+ *  LABEL match is not authorization. The root itself may not be the private
+ *  home (too broad), the workspace may not be the home, and the workspace
+ *  must live under the dialog's Home root (the UI browses from Home; there is
+ *  no wider browse). Returns the level-by-level plan inputs derived from the
+ *  REAL path: ancestors + folder. All inputs must already be realpath()-ed. */
+export function authorizeWorkspace ({ testWorkspaceReal, authorizedRootReal, homeReal }) {
+  for (const [name, p] of [['--test-workspace (realpath)', testWorkspaceReal], ['--authorized-root (realpath)', authorizedRootReal], ['home (realpath)', homeReal]]) {
+    if (typeof p !== 'string' || !p.startsWith('/')) return { ok: false, reason: `${name} must be an absolute realpath string (got ${JSON.stringify(p)})` }
+  }
+  if (authorizedRootReal === homeReal) return { ok: false, reason: `--authorized-root resolves to the private home itself (${homeReal}) — too broad; approve a dedicated fixture root, never the home` }
+  const rel = path.relative(authorizedRootReal, testWorkspaceReal)
+  if (!rel || rel === '..' || rel.startsWith('..' + path.sep) || path.isAbsolute(rel)) {
+    return { ok: false, reason: `realpath containment FAILED: ${testWorkspaceReal} is not inside the authorized root ${authorizedRootReal} — authorization is the resolved filesystem position, not a name/parent match` }
+  }
+  const relHome = path.relative(homeReal, testWorkspaceReal)
+  if (!relHome || relHome === '..' || relHome.startsWith('..' + path.sep) || path.isAbsolute(relHome)) {
+    return { ok: false, reason: `the workspace dialog browses from the home root (${homeReal}); ${testWorkspaceReal} is not under it — no wider browse is ever attempted` }
+  }
+  const segments = relHome.split(path.sep).filter(Boolean)
+  const folder = segments[segments.length - 1]
+  if (!folder) return { ok: false, reason: `realpath ${testWorkspaceReal} carries no folder name` }
+  return { ok: true, ancestors: segments.slice(0, -1), folder, testWorkspaceReal, authorizedRootReal, homeReal }
+}
+
+/** The fixed E2 dialog plan (pure): steps generated from the REAL-path
+ *  authorization + the CURRENT dialog state. Only the current level can be
+ *  listing-checked here — the live loop re-verifies EVERY deeper level from
+ *  real DOM state before clicking (crumb advanced, folder unique-exact), and
+ *  anything unexpected is a fail-closed Cancel, never an Open on a broader
+ *  directory. crumbLabel is compared against the dialog's proven root. */
+export function e2WorkspaceSteps ({ dialog, authz, absPath }) {
+  if (!dialog || !(dialog.open ?? dialog.blocking)) return { ok: false, reason: 'workspace dialog not open (Select Workspace Directory never appeared)' }
+  if (dialog.title !== 'Select Workspace Directory') return { ok: false, reason: `workspace dialog title ${JSON.stringify(dialog.title)} is not the proven 'Select Workspace Directory' (shot-E2-ordinary-v3.png)` }
+  if ((dialog.crumbLabel ?? dialog.rootLabel) !== DIALOG_HOME_LABEL) return { ok: false, reason: `dialog root label ${JSON.stringify(dialog.crumbLabel ?? dialog.rootLabel)} is not the authorized '${DIALOG_HOME_LABEL}' — foreign root, never browse into it` }
+  if (!authz || !Array.isArray(authz.ancestors) || !authz.folder) return { ok: false, reason: 'no filesystem authorization was resolved (run authorizeWorkspace first)' }
+  if (typeof absPath !== 'string' || !absPath.startsWith('/')) return { ok: false, reason: `authorized workspace must be an absolute realpath (got ${JSON.stringify(absPath)})` }
+  const want = authz.ancestors[0] ?? authz.folder
+  const hits = (dialog.folders || []).filter((f) => f === want).length
+  if (hits === 0) return { ok: false, reason: `authorized workspace folder '${want}' not offered by the dialog (never pick a neighbor or near-miss folder)` }
+  if (hits > 1) return { ok: false, reason: `'${want}' rendered ${hits} times — ambiguous listing, fail closed before Open` }
+  if (!(dialog.buttons || []).includes('Open')) return { ok: false, reason: 'dialog offers no exact Open button' }
+  if (!(dialog.buttons || []).includes('Cancel')) return { ok: false, reason: 'dialog offers no exact Cancel button (fail-closed abort unavailable)' }
+  const steps = [...authz.ancestors.map((a) => 'cd:' + a), 'select:' + authz.folder, 'open', 'assert-dialog-closed', 'verify-session-cwd:' + absPath]
+  return { ok: true, folder: authz.folder, steps }
 }
 
 /** Fail-closed BEFORE Open => leave the modal UNCONFIRMED via the asserted
  *  Cancel path (coordinator ruling: Cancel is acceptable, and closed). */
 export function e2AbortSteps ({ dialog, failedBeforeOpen }) {
-  if (!failedBeforeOpen || !dialog || !dialog.blocking) return { steps: [] }
-  if (!dialog.buttons.includes('Cancel')) return { steps: ['assert-dialog-still-open-recorded'], note: 'no Cancel button offered — record and let the leg die fail-closed' }
+  if (!failedBeforeOpen || !dialog || !(dialog.open ?? dialog.blocking)) return { steps: [] }
+  if (!(dialog.buttons || []).includes('Cancel')) return { steps: ['assert-dialog-still-open-recorded'], note: 'no Cancel button offered — record and let the leg die fail-closed' }
   return { steps: ['click-cancel', 'assert-dialog-closed'] }
 }
 
 /** Post-action workspace state: the created session's projcache record
  *  (record.identity.cwd — signal verified read-only against the retained
- *  world, see fixtures) must equal the authorized path EXACTLY. A missing
+ *  world, see fixtures) must equal the authorized realpath EXACTLY. A missing
  *  record is not a pass. */
 export function assertSessionCwd ({ record, expectedPath }) {
   if (!record || !record.record || !record.record.identity) return { ok: false, reason: 'created session projcache record not found (cwd unverifiable — fail-closed)' }
@@ -257,27 +350,67 @@ export function assertSessionCwd ({ record, expectedPath }) {
   return { ok: true, cwd }
 }
 
-/** SELECTION VERIFICATION: the frozen discipline is BOTH the selected header
- *  (the pane header shows the raw canonical session id) AND the observed
- *  network (a FRESH team.getReadState for exactly that sessionId, with the
- *  expected relation corroborated in a fresh response body). Either alone is
- *  NOT a verified selection. */
-export function verifySelection ({ headerLeaves, freshRequests, freshBodies, expected, clickT = 0 }) {
-  const headerOk = (headerLeaves || []).some((l) => l.text.includes(expected.sessionId))
+/** SELECTION VERIFICATION (external review P4): BOTH
+ *  - the selected header leaf whose text is EXACTLY the canonical session id
+ *    (substring matches accept decoration/foreign ids — forbidden), and
+ *  - a SUCCESS response CORRELATED to one fresh readState request for exactly
+ *    that sessionId: r.reqSeq === req.seq (transport-level binding),
+ *    r.rpcId === req.rpcId (wire correlation), 2xx, envelope result.ok, and
+ *    the parsed data carrying the expected relation (member: memberInstanceId
+ *    must equal the expected instance; root: relation team-root).
+ *  A late/foreign/failed/mis-correlated response can never verify anything. */
+export function verifySelection ({ headerLeaves, freshRequests, freshResponses, expected, clickT = 0 }) {
+  const headerOk = (headerLeaves || []).some((l) => String(l.text).trim() === expected.sessionId)
   const req = (freshRequests || []).find((e) => e.kind === 'req' && e.m === 'team.getReadState' && e.t >= clickT && e.p && e.p.sessionId === expected.sessionId)
-  const relationSeen = (freshBodies || []).some((s) => s.t >= clickT && s.body.includes('"' + expected.relation + '"'))
-  const networkOk = !!req && relationSeen
-  return { verified: headerOk && networkOk, headerOk, networkOk, relationSeen, reqSeq: req ? req.seq ?? null : null }
+  let networkOk = false
+  let why = req ? null : 'no-fresh-readstate-request'
+  let resSeq = null
+  if (req) {
+    const res = (freshResponses || []).find((r) => r.kind === 'res' && r.m === 'team.getReadState' && r.reqSeq === req.seq && r.t >= req.t)
+    if (!res) why = 'no-bound-response'
+    else if (res.rpcId == null || req.rpcId == null || String(res.rpcId) !== String(req.rpcId)) why = 'rpcid-mismatch-or-uncorrelated'
+    else if (!(res.status >= 200 && res.status < 300)) why = 'status-' + res.status
+    else if (res.ok !== true) why = 'envelope-not-success'
+    else if (!res.data) why = 'no-parsed-data'
+    else if (res.data.relation !== expected.relation) why = 'relation-mismatch'
+    else if (expected.relation === 'team-member' && expected.instance && res.data.memberInstanceId !== expected.instance) why = 'member-instance-mismatch'
+    else { networkOk = true; resSeq = res.seq }
+  }
+  return { verified: headerOk && networkOk, headerOk, networkOk, relationSeen: networkOk, why, reqSeq: req ? req.seq : null, resSeq }
 }
 
-// ── leg oracles, ported VERBATIM from dod20-driver3.mjs / v2 (neither
-//    weakened nor tightened) ────────────────────────────────────────────────
+/** The created-session id (E2) comes from a SUCCESS relation-none readState
+ *  response CORRELATED to its own request — never from popping/last/exclusion
+ *  guessing over an id array (external review P4). Ambiguous => fail-closed. */
+export function findCreatedSession ({ responses = [], requests = [], excludeIds = [], afterT = 0 }) {
+  const reqById = new Map(requests.map((r) => [r.seq, r]))
+  const ids = new Set()
+  for (const r of responses) {
+    if (r.kind !== 'res' || r.m !== 'team.getReadState') continue
+    if (!(r.t >= afterT) || r.ok !== true) continue
+    if (!(r.status >= 200 && r.status < 300)) continue
+    if (!r.data || r.data.relation !== 'none') continue
+    if (r.reqSeq == null) continue
+    const q = reqById.get(r.reqSeq)
+    if (!q || !q.p || typeof q.p.sessionId !== 'string') continue
+    if (q.rpcId != null && r.rpcId != null && String(q.rpcId) !== String(r.rpcId)) continue
+    if (excludeIds.includes(q.p.sessionId)) continue
+    ids.add(q.p.sessionId)
+  }
+  if (ids.size === 0) return { ok: false, reason: 'no successful relation-none readState response identified the created session' }
+  if (ids.size > 1) return { ok: false, reason: `ambiguous created-session candidates (${[...ids].join(', ')}) — fail closed, never pick one` }
+  return { ok: true, sessionId: [...ids][0] }
+}
+
+// ── leg oracles ──────────────────────────────────────────────────────────────
 
 const reqsOf = (net, m) => (net || []).filter((e) => e.kind === 'req' && (!m || e.m === m))
 
-/** E1 — fresh context, member-first cold reload window: preClick=0, first
- *  readState is the member, exactly ONE projection (on the root), 1 ledger,
- *  >=3 readStates, member relation face with its instance id. */
+/** E1 — fresh context, member-first cold reload window: preClick=0 (measured
+ *  AT the click — the caller passes the boundary seq count), first readState
+ *  is the member, exactly ONE projection (on the root), 1 ledger, >=3
+ *  readStates, member relation face with its instance id. FROZEN from the
+ *  v2/v3 round (neither weakened nor tightened). */
 export function evalE1 ({ net, bodies, expectedMember, expectedRootId, preClick, t0 }) {
   const win = (net || []).filter((e) => e.kind === 'req' && e.t >= t0)
   const rs = win.filter((e) => e.m === 'team.getReadState')
@@ -291,22 +424,35 @@ export function evalE1 ({ net, bodies, expectedMember, expectedRootId, preClick,
   return { verdict, measured: { preClickTeamReqs: preClick, readStates: rs.length, projections: pj.length, ledger: lg.length, firstIsMember: !!firstMember, projOnceOnRoot: !!projOnceRoot, memberFaceSeen: memberFace } }
 }
 
-/** E3 — stable root page: >=7 readStates, deltas in the 2.7–3.3 s band
- *  (all but at most one), exactly-1 COLD projection, 1 ledger. */
-export function evalE3 ({ net, expectedRootId, t0 }) {
-  const win = (net || []).filter((e) => e.t >= t0)
+/** E3 — root cold round + stable page: the window starts at the cold-open
+ *  click so the COLD projection/ledger the oracle counts are the ones the
+ *  navigation produced (external review P3). The cadence band is DERIVED from
+ *  the product tickMs (packages/client/src/plugin/team-mount-core.ts; frozen
+ *  default 3000 in team-refresh-coordinator.ts) — the historical 2995–3008ms
+ *  is a recorded observation, not the spec (external review P5). Every
+ *  readState must carry the EXPECTED ROOT id. >=7 readStates = the cold read
+ *  + >=6 target ticks; all but at most ONE delta inside interval ± tolerance
+ *  (the frozen leniency is kept, not weakened); exactly-1 cold projection and
+ *  1 ledger, both on the root. */
+export function evalE3 ({ net, expectedRootId, t0, intervalMs, toleranceMs }) {
+  if (!Number.isFinite(intervalMs) || intervalMs <= 0) throw new Error('evalE3: intervalMs must come from the product config — a hardcoded cadence band is what review P5 rejected')
+  const tol = Number.isFinite(toleranceMs) && toleranceMs >= 0 ? toleranceMs : Math.max(300, Math.round(intervalMs * 0.1))
+  const win = (net || []).filter((e) => e.kind === 'req' && e.t >= t0)
   const rs = reqsOf(win, 'team.getReadState')
   const pj = reqsOf(win, 'team.getProjection')
   const lg = reqsOf(win, 'team.getLedgerPage')
+  const rootIdentityOk = rs.length > 0 && rs.every((e) => e.p && e.p.sessionId === expectedRootId)
   const deltas = []
   for (let i = 1; i < rs.length; i += 1) deltas.push(rs[i].t - rs[i - 1].t)
-  const inBand = deltas.filter((d) => d >= 2700 && d <= 3300).length
-  const verdict = (rs.length >= 7 && pj.length === 1 && lg.length === 1 && inBand >= Math.max(1, deltas.length - 1)) ? 'PASS' : 'FAIL'
-  return { verdict, measured: { readStates: rs.length, deltasMs: deltas, deltasIn3sBand: inBand, projections: pj.length, ledger: lg.length, note: '2995-3008ms was the historical measurement; actual deltas reported, cadence band asserted' } }
+  const inBand = deltas.filter((d) => Math.abs(d - intervalMs) <= tol).length
+  const projOnceRoot = pj.length === 1 && pj[0].p && pj[0].p.teamSessionId === expectedRootId
+  const ledgerOnceRoot = lg.length === 1 && lg[0].p && lg[0].p.teamSessionId === expectedRootId
+  const verdict = (rootIdentityOk && rs.length >= 7 && deltas.length >= 6 && inBand >= deltas.length - 1 && projOnceRoot && ledgerOnceRoot) ? 'PASS' : 'FAIL'
+  return { verdict, measured: { readStates: rs.length, deltasMs: deltas, deltasInBand: inBand, intervalMs, toleranceMs, rootIdentityOk, projections: pj.length, ledger: lg.length, note: 'intervalMs comes from the product tickMs config; actual deltas reported (the historical 2995-3008ms is an observation, not a spec)' } }
 }
 
 /** E5 — one manual refresh click => exactly 1 ledger{afterSequence:0,
- *  limit:50}, >=1 readState reprobe, >=1 listRoots, 0 projections. */
+ *  limit:50}, >=1 readState reprobe, >=1 listRoots, 0 projections. FROZEN. */
 export function evalE5 ({ after, expectedRootId }) {
   const lg = reqsOf(after, 'team.getLedgerPage')
   const pj = reqsOf(after, 'team.getProjection')
@@ -319,7 +465,7 @@ export function evalE5 ({ after, expectedRootId }) {
 
 /** E2 — ordinary (UI-created) session: >=2 readStates in window, ZERO
  *  projections for the WHOLE leg, a none-relation body carrying the
- *  liveToken:null cell, >=1 listRoots. */
+ *  liveToken:null cell, >=1 listRoots. FROZEN. */
 export function evalE2 ({ net, bodies, t0 }) {
   const window = (net.window || []).filter((e) => e.t >= t0)
   const rs = reqsOf(window, 'team.getReadState')
@@ -336,9 +482,41 @@ export function e4NotRun () {
   return { verdict: 'NOT_RUN', reason: 'frozen record: unit/E2E layer only; no browser-level original assertion exists in the frozen tree; coordinator ruling 2026-10-01' }
 }
 
-// ── credential hygiene ──────────────────────────────────────────────────────
+/** CONSISTENT AGGREGATION (external review P7): fatal => exit 3; any FAIL =>
+ *  exit 1; any NOT_RUN browser leg => exit 2 (NOT_RUN is NEVER a PASS);
+ *  exit 0 only when E1/E2/E3/E5 are all PASS. The E3E5 parent record never
+ *  stamps nested verdicts — a missing nested entry is materialized as
+ *  NOT_RUN here. E4 is the declared non-browser tier: reported, never a
+ *  failure and never a PASS contributor. */
+export function summarize (out) {
+  const legs = (out && out.legs) || {}
+  const x35 = legs.E3E5 || {}
+  const verdicts = {
+    E1: legs.E1?.verdict || 'NOT_RUN',
+    E2: legs.E2?.verdict || 'NOT_RUN',
+    E3: x35.E3?.verdict || 'NOT_RUN',
+    E5: x35.E5?.verdict || 'NOT_RUN',
+    E4: legs.E4?.verdict || 'NOT_RUN',
+  }
+  const reasons = []
+  if (out && out.fatal) reasons.push('fatal: ' + out.fatal)
+  for (const e of (out && out.errors) || []) reasons.push(String(e))
+  if (reasons.length) return { ok: false, exitCode: 3, verdicts, reasons }
+  const browser = ['E1', 'E2', 'E3', 'E5']
+  for (const k of browser) if (verdicts[k] !== 'PASS' && verdicts[k] !== 'FAIL') reasons.push(`${k}: ${verdicts[k]} — ${legs[k]?.reason ?? x35.reason ?? 'no assertion window recorded'}`)
+  const fails = browser.filter((k) => verdicts[k] === 'FAIL')
+  const notRun = browser.filter((k) => verdicts[k] !== 'PASS')
+  const exitCode = fails.length ? 1 : notRun.length ? 2 : 0
+  for (const k of fails) reasons.push(`${k}: FAIL — ${JSON.stringify(legs[k]?.measured ?? x35[k]?.measured ?? null)}`)
+  return { ok: exitCode === 0, exitCode, verdicts, reasons }
+}
 
-/** Mask every credential-shaped substring on the way OUT of this process. */
+// ── credential hygiene ───────────────────────────────────────────────────────
+
+/** Mask every credential-shaped substring on the way OUT of this process.
+ *  (lt-v1 is a freshness hash rather than a credential, but it is masked as
+ *  defense-in-depth — the old "hard credential" characterization is
+ *  withdrawn.) */
 export function scrubEvidence (text) {
   const masked = redactLiveTokenText(String(text).replace(/token=[A-Za-z0-9_-]+/g, 'token=SCRUBBED'))
   return masked.replace(/"liveToken"\s*:\s*("(\\.|[^"\\])*")/g, '"liveToken":"lt-v1-REDACTED"')
@@ -360,7 +538,418 @@ export function redactOut (value) {
   return redactLiveTokenFields(strip(value))
 }
 
-// ══════════════════════════ LIVE LANE (gated on review) ═════════════════════
+// ══════════════════ ORCHESTRATION CORE (offline-tested via fakes) ═══════════
+// runDriverCore owns the leg orchestration and talks to the outside ONLY
+// through `io` — openLeg(name, net) hands out the 12-method UiPage seam the
+// Playwright adapter implements; fs/clock/log/tickMs come from the host. The
+// offline suite injects scripted worlds through the SAME seams, so the legs
+// under test here are the ones the live lane runs.
+
+export class FailClosed extends Error {
+  constructor (reason, diag) { super(reason); this.name = 'FailClosed'; this.diag = diag ?? null }
+}
+class Fatal extends Error {
+  constructor (reason) { super(reason); this.name = 'Fatal' }
+}
+
+/** Correlated request/response recorder. Requests carry {seq, rpcId, params};
+ *  responses bind to THEIR request via the transport-level request object at
+ *  record time and the wire rpcId, and parse into {status, ok, data, error}. */
+export function createNetworkLog () {
+  const entries = []
+  let seq = 0
+  return {
+    entries,
+    lastSeq: () => seq,
+    byId: (s) => entries.find((e) => e.seq === s) || null,
+    recordRequest ({ leg, m, rpcId, p, t }) {
+      const e = { seq: ++seq, leg, kind: 'req', t, m, rpcId: rpcId ?? null, p: p ?? null }
+      entries.push(e)
+      return e
+    },
+    recordResponse ({ leg, m, req, status, t, envelope, bodyText }) {
+      const rpcId = envelope && Object.prototype.hasOwnProperty.call(envelope, 'rpcId') ? envelope.rpcId : null
+      const ok = !!(envelope && envelope.result && envelope.result.ok === true)
+      const e = {
+        seq: ++seq, leg, kind: 'res', t, m: m || (req && req.m) || null,
+        reqSeq: req ? req.seq : null, rpcId, status,
+        ok, data: ok ? (envelope.result.value && envelope.result.value.data) ?? null : null,
+        error: envelope && envelope.result && envelope.result.ok === false ? (envelope.result.error && envelope.result.error.code) || 'error' : null,
+        body: bodyText ?? '',
+      }
+      entries.push(e)
+      return e
+    },
+    reqs (leg, m) { return entries.filter((e) => e.kind === 'req' && e.leg === leg && (!m || e.m === m)) },
+    resps (leg, m) { return entries.filter((e) => e.kind === 'res' && e.leg === leg && (!m || e.m === m)) },
+    bodiesFor (leg, m) { return entries.filter((e) => e.kind === 'res' && e.leg === leg && e.m === m).map((e) => ({ t: e.t, body: e.body })) },
+  }
+}
+
+const railLeavesOf = (leaves) => (leaves || []).filter((l) => l.region === 'rail')
+const mainLeavesOf = (leaves) => (leaves || []).filter((l) => l.region === 'main')
+const crumbTail = (label) => String(label ?? '').split('/').pop().trim()
+
+/** THE fixed navigation (v1/v3 killer steps 1–3 + exact locate + verified
+ *  selection). Returns the click boundary (clickT + clickSeq) the leg
+ *  oracles use to delimit windows — navigation NEVER contributes to preClick
+ *  after the click boundary (P1). */
+async function navigate (page, net, leg, label, expected, io, out) {
+  const steps = []
+  const notice = await page.dismissNoticeIfVisible()
+  if (notice === 'present-undismissable') throw new FailClosed('notice-present-but-undismissable')
+  if (notice === 'dismissed') steps.push('dismiss-notice')
+  let leaves = railLeavesOf(await page.collectLeaves())
+  steps.push('expand-ungrouped-group')
+  if (groupCollapsed(leaves)) {
+    const header = groupHeaderLeaf(leaves) || leaves.find((l) => l.text === GROUP_TITLE)
+    if (!header) throw new FailClosed('ungrouped-group-header-missing')
+    await page.clickLeaf(header)
+    await page.wait(1500)
+    leaves = railLeavesOf(await page.collectLeaves())
+    if (groupCollapsed(leaves)) throw new FailClosed('ungrouped-still-collapsed-after-click')
+  }
+  let guard = 0
+  while (overflowPending(leaves) && guard < 3) {
+    const btn = leaves.find((l) => l.tag === 'button' && OVERFLOW_RE.test(l.text))
+    await page.clickLeaf(btn)
+    await page.wait(1200)
+    leaves = railLeavesOf(await page.collectLeaves())
+    steps.push('expand-overflow')
+    guard += 1
+  }
+  if (!expected) return { steps, leaves }
+  await page.parkMouse()
+  await page.wait(300)
+  leaves = railLeavesOf(await page.collectLeaves())
+  const hit = locateTitle(leaves, expected.title, { exclude: [GROUP_TITLE] })
+  if (hit.status !== 'FOUND') {
+    throw new FailClosed(`locate-${hit.status.toLowerCase()}`, { title: expected.title, hits: (hit.matches || []).length, railRowCount: leaves.filter((l) => String(l.cls || '').includes(ROW_CLUE) && l.text !== GROUP_TITLE).length })
+  }
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const clickSeq = net.lastSeq() // preClick boundary: every entry BEFORE the click
+    const clickT = io.now()
+    await page.clickLeaf(hit.leaf)
+    await page.wait(800)
+    let verified = null
+    const t0 = io.now()
+    while (io.now() - t0 < 8000) {
+      verified = verifySelection({
+        headerLeaves: mainLeavesOf(await page.collectLeaves()).filter((l) => l.y < 120),
+        freshRequests: net.reqs(leg),
+        freshResponses: net.resps(leg),
+        expected,
+        clickT,
+      })
+      if (verified.verified) break
+      await io.sleep(400)
+    }
+    out.legs[label] = out.legs[label] || {}
+    out.legs[label]['verifyAttempt' + attempt] = { ...verified, clickT, clickSeq }
+    if (verified.verified) return { steps, leaves, clickT, clickSeq }
+    if (attempt === 1) await page.screenshot(`shot-${label}-verify-anomaly.png`)
+  }
+  throw new FailClosed('selection-unverified-after-one-same-row-retry', out.legs[label])
+}
+
+async function waitForDialog (page, io, tries = 12) {
+  for (let w = 0; w < tries; w += 1) {
+    await io.sleep(500)
+    const s = await page.dialogSnapshot()
+    if (s && s.open) return s
+  }
+  return null
+}
+
+async function waitForDialogClosed (page, io, tries = 10) {
+  for (let w = 0; w < tries; w += 1) {
+    const s = await page.dialogSnapshot()
+    if (!s || !s.open) return true
+    await io.sleep(400)
+  }
+  return false
+}
+
+async function abortDialog (page, io, dialog) {
+  const abort = e2AbortSteps({ dialog: dialog || { open: false }, failedBeforeOpen: true })
+  for (const step of abort.steps) {
+    if (step === 'click-cancel') await page.dialogClickButton('Cancel')
+    if (step === 'assert-dialog-closed') await waitForDialogClosed(page, io)
+  }
+}
+
+/** Live execution of the workspace plan: EVERY level is verified from real
+ *  DOM state before clicking; any divergence fails CLOSED via the asserted
+ *  Cancel path — a broader directory is NEVER opened. */
+async function runWorkspacePlan (page, io, plan, authz) {
+  for (const seg of authz.ancestors) {
+    const before = await page.dialogSnapshot()
+    if (!before || !before.open) throw new FailClosed('e2-workspace-dialog: dialog vanished before cd:' + seg)
+    if ((before.folders || []).filter((f) => f === seg).length !== 1) throw new FailClosed(`e2-workspace-dialog: cd:${seg} not uniquely offered at ${JSON.stringify(before.crumbLabel)} — never pick a neighbor or near-miss folder`)
+    await page.dialogClickFolder(seg)
+    const after = await page.dialogSnapshot()
+    if (!after || !after.open) throw new FailClosed('e2-workspace-dialog: dialog vanished after cd:' + seg)
+    if (crumbTail(after.crumbLabel) !== seg) throw new FailClosed(`e2-workspace-dialog: cd:${seg} crumb did not advance (expected ${JSON.stringify(seg)}, saw ${JSON.stringify(after.crumbLabel)})`)
+  }
+  const at = await page.dialogSnapshot()
+  if (!at || !at.open) throw new FailClosed('e2-workspace-dialog: dialog vanished before select:' + authz.folder)
+  if ((at.folders || []).filter((f) => f === authz.folder).length !== 1) throw new FailClosed(`e2-workspace-dialog: select:${authz.folder} not uniquely offered at ${JSON.stringify(at.crumbLabel)}`)
+  await page.dialogClickFolder(authz.folder)
+  const sel = await page.dialogSnapshot()
+  if (!sel || !sel.open) throw new FailClosed('e2-workspace-dialog: dialog vanished after select:' + authz.folder)
+  const confirmed = sel.selectedFolder === authz.folder || crumbTail(sel.crumbLabel) === authz.folder
+  if (!confirmed) throw new FailClosed(`e2-workspace-dialog: select:${authz.folder} not confirmed (selected=${JSON.stringify(sel.selectedFolder)}, crumb=${JSON.stringify(sel.crumbLabel)}) — fail closed before Open`)
+}
+
+/** Parse the product tick cadence from the frozen mount config source.
+ *  No fallback constant: unresolved cadence is a fail-closed FATAL. */
+export function parseTickMsSource (src) {
+  const m = /tickMs:\s*(\d+)/.exec(String(src))
+  return m ? Number(m[1]) : null
+}
+
+export function readProductTickMs (repoRoot, fsx = fs) {
+  const p = path.join(repoRoot, 'packages', 'client', 'src', 'plugin', 'team-mount-core.ts')
+  try { return parseTickMsSource(fsx.readFileSync(p, 'utf8')) } catch { return null }
+}
+
+/** Read the canonical title map, READ-ONLY, from the world's projcache. */
+export function readProjcacheTitles (worldDir, fsx = fs) {
+  const dir = path.join(worldDir, 'storages', 'session_projcache', 'sessions')
+  const map = {}
+  for (const f of fsx.readdirSync(dir)) {
+    if (!f.endsWith('.json')) continue
+    try {
+      const rec = JSON.parse(fsx.readFileSync(path.join(dir, f), 'utf8'))
+      map[f.slice(0, -'.json'.length)] = rec?.record?.rows?.title?.val ?? null
+    } catch { map[f.slice(0, -5)] = null }
+  }
+  return map
+}
+
+/**
+ * The leg orchestration. cfg = { accessPath, smokeHostPath, world, out,
+ * testWorkspace, authorizedRoot, railMaxX?, tickMs }; io = { fs, realpathSync,
+ * homedir, now, sleep, log, openLeg(name, net) -> {page, close} }.
+ * Returns the record (out); exit-code/ok semantics: see summarize().
+ */
+export async function runDriverCore (cfg, io) {
+  const fsx = io.fs
+  const out = {
+    ok: false, fatal: null, startedAt: new Date(io.now()).toISOString(),
+    cfg: { accessRecordPath: cfg.accessPath, smokeHost: cfg.smokeHostPath, world: cfg.world, testWorkspace: cfg.testWorkspace, authorizedRoot: cfg.authorizedRoot, railMaxX: cfg.railMaxX ?? 260 },
+    net: [], legs: {}, errors: [],
+  }
+  const closes = []
+  let net = null
+  const legWrap = async (name, fn, { nested = false } = {}) => {
+    out.legs[name] = out.legs[name] || {}
+    try {
+      await fn()
+      if (!nested && !out.legs[name].verdict) { out.legs[name].verdict = 'NOT_RUN'; if (!out.legs[name].reason) out.legs[name].reason = 'leg ended without an assertion window' }
+    } catch (e) {
+      if (e instanceof Fatal) throw e
+      // Driver-side failure = NOT_RUN (a driver defect is NOT a product FAIL —
+      // the v2/v3 mislabels this). Never a partial-FAIL on an unreached window.
+      if (!nested) out.legs[name].verdict = 'NOT_RUN'
+      out.legs[name].reason = e instanceof FailClosed ? `fail-closed: ${e.message}` : `driver-error: ${String(e.message || e).slice(0, 300)}`
+      if (e instanceof FailClosed && e.diag) out.legs[name].diag = e.diag
+      io.log(scrubEvidence(`[${name}] ${out.legs[name].reason}`))
+    }
+  }
+  try {
+    // ── preflight: identity + workspace authorization BEFORE any browser leg ─
+    if (typeof cfg.accessPath !== 'string' || typeof cfg.smokeHostPath !== 'string' || typeof cfg.world !== 'string' || typeof cfg.out !== 'string') {
+      throw new Fatal('access/smoke-host/world/out are all required')
+    }
+    let access
+    try { access = JSON.parse(fsx.readFileSync(cfg.accessPath, 'utf8')) } catch (e) { throw new Fatal('cannot read the private access record: ' + String(e.message || e).slice(0, 120)) }
+    const launchUrl = access?.launchUrl
+    if (typeof launchUrl !== 'string' || !launchUrl.includes('?token=')) throw new Fatal('access record has no launchUrl with a token — refusing')
+    let host
+    try { host = JSON.parse(fsx.readFileSync(cfg.smokeHostPath, 'utf8')) } catch (e) { throw new Fatal('cannot read smoke-host.json: ' + String(e.message || e).slice(0, 120)) }
+    const targets = canonicalTargets({ projcache: readProjcacheTitles(cfg.world, fsx), rootId: host.t1, memberIds: [host.t1MemberSession] })
+    if (!targets.ok) throw new Fatal(targets.reason)
+    if (typeof cfg.testWorkspace !== 'string' || !cfg.testWorkspace.startsWith('/')) {
+      throw new Fatal('--test-workspace must be given EXPLICITLY as an absolute path — an unnamed default directory is never authorized (review P6)')
+    }
+    if (typeof cfg.authorizedRoot !== 'string' || !cfg.authorizedRoot.startsWith('/')) {
+      throw new Fatal('--authorized-root must be given EXPLICITLY as an absolute path — the approval boundary of this round')
+    }
+    let testWorkspaceReal, authorizedRootReal, homeReal
+    try {
+      testWorkspaceReal = io.realpathSync(cfg.testWorkspace)
+      authorizedRootReal = io.realpathSync(cfg.authorizedRoot)
+      homeReal = io.realpathSync(io.homedir())
+    } catch (e) { throw new Fatal('cannot realpath the workspace authorization inputs (the fixture must exist before the run): ' + String(e.message || e).slice(0, 120)) }
+    const authz = authorizeWorkspace({ testWorkspaceReal, authorizedRootReal, homeReal })
+    if (!authz.ok) throw new Fatal(authz.reason)
+    const tickMs = Number.isFinite(cfg.tickMs) && cfg.tickMs > 0 ? cfg.tickMs : io.tickMs
+    if (!Number.isFinite(tickMs) || tickMs <= 0) throw new Fatal('the readState tick interval is unresolved from the product config (packages/client/src/plugin/team-mount-core.ts) — refusing to guess a cadence band')
+    out.cfg.tickMs = tickMs
+    out.cfg.workspaceAuthz = { testWorkspaceReal, authorizedRootReal, homeReal, ancestors: authz.ancestors, folder: authz.folder }
+
+    net = createNetworkLog()
+    out.net = net.entries
+
+    // ── E1: fresh context; preClick boundary AT the click; member-first ─────
+    await legWrap('E1', async () => {
+      const leg = await io.openLeg('E1', net)
+      closes.push(leg.close)
+      const page = leg.page
+      await page.gotoApp(launchUrl)
+      await page.wait(4500)
+      const nav = await navigate(page, net, 'E1', 'E1', { sessionId: targets.targets.member.id, title: targets.targets.member.title, relation: 'team-member', instance: host.t1MemberInstance }, io, out)
+      const preClick = net.reqs('E1').filter((e) => e.seq <= nav.clickSeq).length
+      out.legs.E1.navSteps = nav.steps
+      out.legs.E1.clickSeq = nav.clickSeq
+      out.legs.E1.preClickNavReqs = preClick // pre-click traffic only — the click's own cold round is NOT preClick (P1)
+      await page.wait(2500)
+      const lt0 = io.now()
+      await page.reload()
+      const nd = await page.dismissNoticeIfVisible()
+      if (nd === 'present-undismissable') throw new FailClosed('notice-present-but-undismissable-after-reload')
+      await page.wait(10000)
+      await page.screenshot('shot-E1-member-pure.png')
+      Object.assign(out.legs.E1, evalE1({
+        net: net.reqs('E1'),
+        bodies: net.bodiesFor('E1', 'team.getReadState'),
+        expectedMember: { sessionId: targets.targets.member.id, instance: host.t1MemberInstance },
+        expectedRootId: host.t1, preClick, t0: lt0,
+      }))
+    })
+
+    // ── E3+E5: fresh context; root cold round (window STARTS at the click),
+    //    >=6 ticks at the PRODUCT cadence, manual refresh ─────────────────────
+    await legWrap('E3E5', async () => {
+      const leg = await io.openLeg('E3', net)
+      closes.push(leg.close)
+      const page = leg.page
+      await page.gotoApp(launchUrl)
+      await page.wait(4500)
+      const nav = await navigate(page, net, 'E3', 'E3E5', { sessionId: targets.targets.root.id, title: targets.targets.root.title, relation: 'team-root' }, io, out)
+      out.legs.E3E5.navSteps = nav.steps
+      const w0 = nav.clickT // P3: the cold round IS in the window
+      await page.wait(10000)
+      const tabHits = mainLeavesOf(await page.collectLeaves()).filter((l) => ALLOWED_TAB_NAMES.includes(l.text))
+      out.legs.E3E5.teamTabHits = tabHits.length
+      if (tabHits.length === 1) { await page.clickLeaf(tabHits[0]); await page.wait(1200) }
+      await page.wait(6 * tickMs + 1000)
+      await page.screenshot('shot-E3-root-team.png')
+      out.legs.E3E5.E3 = evalE3({ net: net.reqs('E3'), expectedRootId: host.t1, t0: w0, intervalMs: tickMs })
+      const rfHits = mainLeavesOf(await page.collectLeaves()).filter((l) => l.tag === 'button' && ALLOWED_REFRESH_NAMES.includes(l.text))
+      if (rfHits.length !== 1) {
+        out.legs.E3E5.E5 = { verdict: 'NOT_RUN', reason: rfHits.length === 0 ? 'refresh-control-not-found (exact-name allowlist, zero hits)' : 'refresh-control-ambiguous (exact-name allowlist, multiple hits — fail-closed)' }
+        await page.screenshot('shot-E5-control-anomaly.png')
+      } else {
+        const t5 = io.now()
+        await page.clickLeaf(rfHits[0])
+        await page.wait(6500)
+        await page.screenshot('shot-E5-refresh.png')
+        const after = net.reqs('E3').filter((e) => e.t >= t5)
+        const ledRes = net.resps('E3', 'team.getLedgerPage').find((r) => {
+          const q = net.byId(r.reqSeq)
+          return r.t > t5 && q && q.t >= t5
+        })
+        out.legs.E3E5.E5 = { ...evalE5({ after, expectedRootId: host.t1 }), measuredExtra: { ledgerResponseLatencyMs: ledRes ? ledRes.t - t5 : null } }
+      }
+    }, { nested: true })
+
+    // ── E2: fresh context; UI-created ordinary session (zero-state) ──────────
+    await legWrap('E2', async () => {
+      const leg = await io.openLeg('E2', net)
+      closes.push(leg.close)
+      const page = leg.page
+      await page.gotoApp(launchUrl)
+      await page.wait(4500)
+      const nav = await navigate(page, net, 'E2', 'E2', null, io, out)
+      out.legs.E2.navSteps = nav.steps
+      // 'New Session' is a rail chrome control, located by EXACT text — not a
+      // session row, so locateTitle-with-exclude does not apply here.
+      const rail = railLeavesOf(await page.collectLeaves())
+      const ns = rail.filter((l) => l.text === 'New Session')
+      if (ns.length !== 1) throw new FailClosed('new-session-control-not-unique', { hits: ns.length })
+      await page.clickLeaf(ns[0])
+      // The proven blocker: the Select Workspace Directory dialog — read as
+      // REAL dialog state (snapshot + crumb), NEVER innerText through an HTML
+      // parser (review P2).
+      let dialog = await waitForDialog(page, io)
+      if (!dialog) {
+        // v1 body text shows the 'Choose workspace' affordance BEFORE a dialog.
+        const wsBtn = mainLeavesOf(await page.collectLeaves()).filter((l) => l.text === 'Choose workspace')
+        if (wsBtn.length === 1) {
+          await page.clickLeaf(wsBtn[0])
+          dialog = await waitForDialog(page, io)
+        }
+      }
+      const plan = e2WorkspaceSteps({ dialog: dialog || { open: false }, authz, absPath: testWorkspaceReal })
+      if (!plan.ok) {
+        await abortDialog(page, io, dialog)
+        await page.screenshot('shot-E2-workspace-anomaly.png')
+        throw new FailClosed('e2-workspace-dialog: ' + plan.reason)
+      }
+      out.legs.E2.workspacePlan = plan.steps
+      try {
+        await runWorkspacePlan(page, io, plan, authz)
+      } catch (e) {
+        if (e instanceof FailClosed) {
+          await abortDialog(page, io, await page.dialogSnapshot())
+          await page.screenshot('shot-E2-workspace-anomaly.png')
+        }
+        throw e
+      }
+      const openT = io.now()
+      await page.dialogClickButton('Open')
+      if (!await waitForDialogClosed(page, io)) throw new FailClosed('e2-dialog-did-not-close')
+      await page.fillComposer('ping')
+      // POST-ACTION WORKSPACE STATE (coordinator ruling): the created
+      // session's workspace must equal the AUTHORIZED realpath. The created
+      // session id comes from a SUCCESS relation-none correlated response
+      // (never an exclusion guess). Signal source: the world's projcache
+      // record -> record.identity.cwd (shape verified read-only against the
+      // retained world; see fixtures).
+      const found = findCreatedSession({ responses: net.resps('E2'), requests: net.reqs('E2'), excludeIds: [targets.targets.root.id, targets.targets.member.id], afterT: openT })
+      let cwdCheck = found.ok ? { ok: false, reason: 'projcache record unreadable' } : { ok: false, reason: found.reason }
+      if (found.ok) {
+        const recPath = path.join(cfg.world, 'storages', 'session_projcache', 'sessions', found.sessionId + '.json')
+        for (let w = 0; w < 40 && !fsx.existsSync(recPath); w += 1) await io.sleep(500)
+        let rec = null
+        try { rec = JSON.parse(fsx.readFileSync(recPath, 'utf8')) } catch { rec = null }
+        cwdCheck = assertSessionCwd({ record: rec, expectedPath: testWorkspaceReal })
+        cwdCheck.sessionId = found.sessionId
+      }
+      cwdCheck.signal = 'session_projcache record.identity.cwd'
+      out.legs.E2.workspaceCwdCheck = cwdCheck
+      if (!cwdCheck.ok) throw new FailClosed('e2-workspace-cwd: ' + cwdCheck.reason, cwdCheck)
+      await page.wait(7000)
+      const w0 = io.now()
+      const tabHits = mainLeavesOf(await page.collectLeaves()).filter((l) => ALLOWED_TAB_NAMES.includes(l.text))
+      if (tabHits.length === 1) { await page.clickLeaf(tabHits[0]); await page.wait(1200) }
+      await page.wait(9000)
+      await page.screenshot('shot-E2-ordinary.png')
+      const legNet = net.reqs('E2')
+      out.legs.E2 = { ...out.legs.E2, ...evalE2({ net: { window: legNet.filter((e) => e.t >= w0), wholeLeg: legNet }, bodies: net.bodiesFor('E2', 'team.getReadState'), t0: w0 }) }
+    })
+
+    out.legs.E4 = e4NotRun()
+  } catch (e) {
+    if (e instanceof Fatal) out.fatal = e.message
+    else out.errors.push('fatal: ' + String(e.message || e).slice(0, 500))
+  } finally {
+    for (const c of closes) { try { await c() } catch { /* ignore */ } }
+    const s = summarize(out)
+    out.ok = s.ok
+    out.finishedAt = new Date(io.now()).toISOString()
+    try {
+      fsx.mkdirSync(cfg.out, { recursive: true })
+      fsx.writeFileSync(path.join(cfg.out, 'dod20-driver-out.json'), JSON.stringify(redactOut(out), null, 1))
+    } catch (e) { out.errors.push('out-write failed: ' + String(e.message || e).slice(0, 200)) }
+    io.log('driver done ok=' + out.ok + ' exit=' + s.exitCode + ' legs=' + JSON.stringify(Object.fromEntries(Object.entries(s.verdicts).map(([k, v]) => [k, v]))))
+  }
+  return out
+}
+
+// ══════════════════════ LIVE LANE (gated on review) ═════════════════════
 // Everything below only executes under an explicit `--confirm-live` in the
 // REAL acceptance environment (the carrier world booted by the merged
 // browser-smoke-host kit). Nothing in this section runs for the offline tests.
@@ -368,10 +957,6 @@ export function redactOut (value) {
 export const ALLOWED_TAB_NAMES = Object.freeze(['Team', '团队'])
 export const ALLOWED_REFRESH_NAMES = Object.freeze(['刷新团队视图', 'Refresh team view'])
 const WEAK = ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu-sandbox', '--disable-web-security', '--disable-features=Sandbox', '--disable-seccomp-filter-sandbox']
-
-class FailClosed extends Error {
-  constructor (reason, diag) { super(reason); this.name = 'FailClosed'; this.diag = diag ?? null }
-}
 
 export function parseArgs (argv) {
   const get = (name, dflt) => {
@@ -388,29 +973,13 @@ export function parseArgs (argv) {
     out: get('out'),
     testuse: get('testuse', '/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use'),
     chrome: get('chrome', '/opt/google/chrome/chrome'),
-    // The EXPLICIT AUTHORIZED test workspace for this round (coordinator
-    // ruling 2026-10-01): an absolute path whose parent is the dialog's Home
-    // root (/home/user in the carrier env — its listing is visible in
-    // shot-E2-ordinary-v3.png as bin / deepseek-harness / workspace). Exact
-    // name + exact parent match before Open; post-Open the created session's
-    // record.identity.cwd is re-verified against it.
-    testWorkspace: get('test-workspace', '/home/user/workspace'),
+    // EXPLICIT AUTHORIZED inputs for this round (review P6): NO defaults —
+    // an unnamed directory is never authorized. Both are realpath-contained
+    // against each other before any browser leg opens (runDriverCore).
+    testWorkspace: get('test-workspace'),
+    authorizedRoot: get('authorized-root'),
     railMaxX: Number(get('rail-max-x', '260')),
   }
-}
-
-/** Read the canonical title map, READ-ONLY, from the world's projcache. */
-export function readProjcacheTitles (worldDir) {
-  const dir = path.join(worldDir, 'storages', 'session_projcache', 'sessions')
-  const map = {}
-  for (const f of fs.readdirSync(dir)) {
-    if (!f.endsWith('.json')) continue
-    try {
-      const rec = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'))
-      map[f.slice(0, -'.json'.length)] = rec?.record?.rows?.title?.val ?? null
-    } catch { map[f.slice(0, -5)] = null }
-  }
-  return map
 }
 
 /** The rail leaf collector injected into the page: geometry-filtered leaf
@@ -432,328 +1001,140 @@ export function railCollectorSource (railMaxX) {
   })()`
 }
 
+/** THE single live dialog-state probe: reads REAL DOM state (live elements,
+ *  not innerText text, not an HTML string fed to our parser — review P2):
+ *  dialog presence + exact title, the browse crumb, folder rows + selection,
+ *  buttons. Actions go through Playwright semantic locators (getByRole). */
+export const DIALOG_STATE_SOURCE = `(() => {
+  const dlg = document.querySelector('[role="dialog"], dialog')
+  if (!dlg) return { open: false, title: null, crumbLabel: null, folders: [], buttons: [], selectedFolder: null }
+  const txt = (el) => ((el && el.textContent) || '').replace(/\\s+/g, ' ').trim()
+  const titles = [...dlg.querySelectorAll('h1,h2,h3,[role="heading"]')].map(txt)
+  const title = titles.find((t) => t === 'Select Workspace Directory') || titles[0] || null
+  const crumbEl = dlg.querySelector('[class*="crumb"], [class*="breadcrumb"], [data-crumb]')
+  const folders = []
+  let selectedFolder = null
+  for (const row of dlg.querySelectorAll('li, [role="listitem"], [role="treeitem"], [role="option"]')) {
+    const name = txt(row.querySelector('[class*="folderName"], [class*="folder"]')) || txt(row)
+    if (!name || name.length > 200) continue
+    folders.push(name)
+    const sel = row.getAttribute('aria-selected') || row.getAttribute('data-selected')
+    if (sel === 'true') selectedFolder = name
+  }
+  const buttons = [...dlg.querySelectorAll('button')].map(txt).filter(Boolean)
+  return { open: title === 'Select Workspace Directory', title, crumbLabel: crumbEl ? txt(crumbEl) : null, folders, buttons, selectedFolder }
+})()`
+
 export function loadPlaywright (testuseDir) {
   const req = createRequire(path.join(testuseDir, 'package.json'))
   return req('playwright')
 }
 
-export async function runLiveDriver (cfg, { log = (m) => process.stdout.write(m + '\n') } = {}) {
-  if (!cfg.access || !cfg.smokeHost || !cfg.world || !cfg.out) throw new Error('--access --smoke-host --world --out are all required')
-  const { chromium } = loadPlaywright(cfg.testuse)
-  // The private 0600 record is read here and NOWHERE else; its value goes
-  // straight into the launch, never into out/log (redactOut strips launchUrl).
-  const access = JSON.parse(fs.readFileSync(cfg.access, 'utf8'))
-  const launchUrl = access.launchUrl
-  if (typeof launchUrl !== 'string' || !launchUrl.includes('?token=')) throw new Error('access record has no launchUrl with a token — refusing')
-  const host = JSON.parse(fs.readFileSync(cfg.smokeHost, 'utf8'))
-  const projcache = readProjcacheTitles(cfg.world)
-  const targets = canonicalTargets({ projcache, rootId: host.t1, memberIds: [host.t1MemberSession] })
-  if (!targets.ok) { log(scrubEvidence('FATAL ' + targets.reason)); return { fatal: targets.reason } }
-
-  const out = { ok: false, startedAt: new Date().toISOString(), cfg: { accessRecordPath: cfg.access, smokeHost: cfg.smokeHost, world: cfg.world, testWorkspace: cfg.testWorkspace, railMaxX: cfg.railMaxX }, env: {}, net: [], bodies: {}, legs: {}, errors: [] }
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-  let seq = 0
-  const reqs = (leg, m) => out.net.filter((e) => e.leg === leg && e.kind === 'req' && (!m || e.m === m))
-  const attach = (ctx, leg) => {
-    ctx.on('request', (r) => {
-      const u = r.url(); if (!u.includes('/team-remote/')) return
-      let post = null; try { post = r.postData() } catch { /* ignore */ }
-      out.net.push({ seq: ++seq, leg, kind: 'req', t: Date.now(), m: (u.split('/team-remote/')[1] || '').split('?')[0], p: parseParams(post) })
-    })
-    ctx.on('response', async (res) => {
-      const u = res.url(); if (!u.includes('/team-remote/')) return
-      const key = (u.split('/team-remote/')[1] || '').split('?')[0]
-      try {
-        const b = await res.body()
-        const s = out.bodies[leg + ':' + key] = out.bodies[leg + ':' + key] || []
-        if (s.length < 12) s.push({ t: Date.now(), body: b.toString('utf8', 0, 640) })
-      } catch { /* ignore */ }
-    })
-  }
-  const listChrome = () => { const r = []; for (const x of fs.readdirSync('/proc')) { if (/^\d+$/.test(x)) { try { const c = fs.readFileSync(`/proc/${x}/cmdline`, 'utf8'); if (c.includes(cfg.chrome)) r.push({ pid: Number(x), argv: c.split('\0').filter(Boolean) }) } catch { /* ignore */ } } } return r }
-
-  const leavesOf = async (page) => page.evaluate(railCollectorSource(cfg.railMaxX))
-  const railLeaves = (leaves) => leaves.filter((l) => l.region === 'rail')
-  const mainLeaves = (leaves) => leaves.filter((l) => l.region === 'main')
-
-  async function realClickLeaf (page, leaf) {
-    await page.mouse.click(leaf.x + Math.min(40, leaf.w / 2), leaf.y + leaf.h / 2)
-  }
-
-  /** THE fixed navigation (v1/v3 killer steps 1–3 + exact locate + verify). */
-  async function navigate (page, leg, label, expected) {
-    const steps = []
-    await page.goto(launchUrl, { waitUntil: 'load', timeout: 60000 })
-    await page.waitForTimeout(4500)
-    // 1) notice, if present
-    const notice = page.getByRole('button', { name: 'Continue' }).first()
-    if (await notice.isVisible().catch(() => false)) {
-      const box = await notice.boundingBox().catch(() => null)
-      if (!box) throw new FailClosed('notice-present-but-undismissable')
+/** The UiPage adapter over a real Playwright page — the SAME 12-method seam
+ *  the offline fakes implement. */
+export function createPlaywrightPage (page, cfg) {
+  const dialogScope = () => page.locator('[role="dialog"], dialog').last()
+  return {
+    gotoApp: (url) => page.goto(url, { waitUntil: 'load', timeout: 60000 }),
+    reload: () => page.reload({ waitUntil: 'load', timeout: 60000 }),
+    wait: (ms) => page.waitForTimeout(ms),
+    screenshot: (name) => page.screenshot({ path: path.join(cfg.out, name) }).catch(() => {}),
+    collectLeaves: () => page.evaluate(railCollectorSource(cfg.railMaxX ?? 260)),
+    clickLeaf: async (l) => { await page.mouse.click(l.x + Math.min(40, l.w / 2), l.y + l.h / 2) },
+    parkMouse: () => page.mouse.move((cfg.railMaxX ?? 260) + 400, 400),
+    dismissNoticeIfVisible: async () => {
+      const btn = page.getByRole('button', { name: 'Continue' }).first()
+      if (!(await btn.isVisible().catch(() => false))) return 'absent'
+      const box = await btn.boundingBox().catch(() => null)
+      if (!box) return 'present-undismissable'
       await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
       await page.waitForTimeout(1500)
-      if (await page.getByRole('button', { name: 'Continue' }).first().isVisible().catch(() => false)) throw new FailClosed('notice-still-visible-after-click')
-      steps.push('dismiss-notice')
-    }
-    // 2) expand the Ungrouped group — THE probe3:50 step v3 lost. Skipped
-    //    only when rows already rendered (the header is a toggle); if after a
-    //    click no row renders, fail closed — locating would be hopeless.
-    let leaves = railLeaves(await leavesOf(page))
-    steps.push('expand-ungrouped-group')
-    if (groupCollapsed(leaves)) {
-      const header = locateTitle(leaves, 'Ungrouped', { exclude: [] }).status === 'FOUND'
-        ? locateTitle(leaves, 'Ungrouped', { exclude: [] }).leaf
-        : locateTitle(leaves, 'Ungrouped', { exclude: [] }).matches?.[0] || leaves.find((l) => l.text === 'Ungrouped')
-      if (!header) throw new FailClosed('ungrouped-group-header-missing')
-      await realClickLeaf(page, header)
-      await page.waitForTimeout(1500)
-      leaves = railLeaves(await leavesOf(page))
-      if (groupCollapsed(leaves)) throw new FailClosed('ungrouped-still-collapsed-after-click')
-    }
-    // 3) the overflow button, while visible (post-expansion only)
-    let guard = 0
-    while (overflowPending(leaves) && guard < 3) {
-      const btn = leaves.find((l) => l.tag === 'button' && /^Show \d+ more sessions$/.test(l.text))
-      await realClickLeaf(page, btn)
-      await page.waitForTimeout(1200)
-      leaves = railLeaves(await leavesOf(page))
-      steps.push('expand-overflow')
-      guard += 1
-    }
-    if (!expected) return { steps, leaves }
-    // 4) exact canonical-title locate, fail-closed
-    await page.mouse.move(cfg.railMaxX + 400, 400) // park the mouse (anti-tooltip)
-    await page.waitForTimeout(300)
-    leaves = railLeaves(await leavesOf(page))
-    const hit = locateTitle(leaves, expected.title, { exclude: ['Ungrouped'] })
-    if (hit.status !== 'FOUND') throw new FailClosed(`locate-${hit.status.toLowerCase()}`, { title: expected.title, hits: hit.matches?.length ?? 0, railRowCount: leaves.filter((l) => l.cls.includes('W0d-vW_title') && l.text !== 'Ungrouped').length })
-    // 5) click ONCE, then the BOTH header+network verification (one same-row
-    //    retry at most; a different target is NEVER tried)
-    for (let attempt = 1; attempt <= 2; attempt += 1) {
-      const clickT = Date.now()
-      await realClickLeaf(page, hit.leaf)
-      await page.waitForTimeout(800)
-      let verified = null
-      const t0 = Date.now()
-      while (Date.now() - t0 < 8000) {
-        verified = verifySelection({
-          headerLeaves: mainLeaves(await leavesOf(page)).filter((l) => l.y < 120),
-          freshRequests: reqs(leg),
-          freshBodies: out.bodies[leg + ':team.getReadState'] || [],
-          expected,
-          clickT,
-        })
-        if (verified.verified) break
-        await sleep(400)
-      }
-      out.legs[label] = out.legs[label] || {}
-      out.legs[label]['verifyAttempt' + attempt] = { ...verified, clickT }
-      if (verified.verified) return { steps, leaves, clickT }
-      if (attempt === 1) await page.screenshot({ path: path.join(cfg.out, `shot-${label}-verify-anomaly.png`) }).catch(() => {})
-    }
-    throw new FailClosed('selection-unverified-after-one-same-row-retry', out.legs[label])
+      const still = await page.getByRole('button', { name: 'Continue' }).first().isVisible().catch(() => false)
+      return still ? 'present-undismissable' : 'dismissed'
+    },
+    dialogSnapshot: async () => page.evaluate(DIALOG_STATE_SOURCE),
+    dialogClickFolder: async (name) => { await dialogScope().getByText(name, { exact: true }).first().click({ timeout: 5000 }) },
+    dialogClickButton: async (name) => { await dialogScope().getByRole('button', { name, exact: true }).first().click({ timeout: 5000 }) },
+    fillComposer: async (text) => {
+      const loc = page.locator('textarea, [contenteditable="true"]').first()
+      if (!(await loc.isVisible().catch(() => false))) throw new FailClosed('e2-composer-missing')
+      await loc.click(); await loc.fill(text); await page.keyboard.press('Enter')
+    },
   }
+}
 
+export async function runLiveDriver (cfg, { log = (m) => process.stdout.write(m + '\n') } = {}) {
+  if (!cfg.access || !cfg.smokeHost || !cfg.world || !cfg.out) throw new Error('--access --smoke-host --world --out are all required')
+  if (!cfg.testWorkspace || !cfg.authorizedRoot) throw new Error('--test-workspace and --authorized-root are both required, explicit and absolute (review P6 — no defaults)')
+  const { chromium } = loadPlaywright(cfg.testuse)
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+  const listChrome = () => { const r = []; for (const x of fs.readdirSync('/proc')) { if (/^\d+$/.test(x)) { try { const c = fs.readFileSync(`/proc/${x}/cmdline`, 'utf8'); if (c.includes(cfg.chrome)) r.push({ pid: Number(x), argv: c.split('\0').filter(Boolean) }) } catch { /* ignore */ } } } return r }
+  const baseline = new Set(listChrome().map((p) => p.pid))
   let browser = null
   const tree = []
   const open = []
-  const legWrap = async (name, fn) => {
-    out.legs[name] = out.legs[name] || {}
-    try { await fn(); if (!out.legs[name].verdict) out.legs[name].verdict = 'NOT_RUN'; if (!out.legs[name].reason) out.legs[name].reason = 'leg ended without an assertion window' } catch (e) {
-      // Driver-side failure = NOT_RUN (a driver defect is NOT a product FAIL —
-      // the v2/v3 mislabels this). Never a partial-FAIL on an unreached window.
-      out.legs[name].verdict = 'NOT_RUN'
-      out.legs[name].reason = e instanceof FailClosed ? `fail-closed: ${e.message}` : `driver-error: ${String(e.message || e).slice(0, 300)}`
-      if (e instanceof FailClosed && e.diag) out.legs[name].diag = e.diag
-      log(scrubEvidence(`[${name}] ${out.legs[name].reason}`))
-    }
+  const coreCfg = {
+    accessPath: cfg.access, smokeHostPath: cfg.smokeHost, world: cfg.world, out: cfg.out,
+    testWorkspace: cfg.testWorkspace, authorizedRoot: cfg.authorizedRoot, railMaxX: cfg.railMaxX,
+    tickMs: readProductTickMs(path.resolve(new URL('.', import.meta.url).pathname, '../../..')),
   }
   try {
-    fs.mkdirSync(cfg.out, { recursive: true })
-    const baseline = new Set(listChrome().map((p) => p.pid))
     browser = await chromium.launch({ executablePath: cfg.chrome, headless: true, chromiumSandbox: true, timeout: 30000 })
     const launched = listChrome().filter((p) => !baseline.has(p.pid))
     for (const p of launched) tree.push(p.pid)
     const mainProc = launched.find((p) => !(p.argv || []).some((a) => a.startsWith('--type='))) || launched[0]
     const argv = (mainProc && mainProc.argv) || []
+    if (WEAK.some((w) => argv.some((a) => a === w || a.startsWith(w + '='))) || argv.some((a) => a.startsWith('--remote-debugging-port'))) throw new Error('launch argv guard FAILED')
+    const out = await runDriverCore(coreCfg, {
+      fs, realpathSync: fs.realpathSync, homedir: os.homedir, now: Date.now, sleep, log,
+      tickMs: coreCfg.tickMs,
+      openLeg: async (name, net) => {
+        const ctx = await browser.newContext()
+        open.push(ctx)
+        const requestBindings = new Map()
+        ctx.on('request', (r) => {
+          const u = r.url(); if (!u.includes('/team-remote/')) return
+          let post = null; try { post = r.postData() } catch { /* ignore */ }
+          const env = parseRequestEnvelope(post)
+          const entry = net.recordRequest({ leg: name, m: (u.split('/team-remote/')[1] || '').split('?')[0], rpcId: env?.rpcId ?? null, p: env?.params ?? null, t: Date.now() })
+          requestBindings.set(r, entry)
+        })
+        ctx.on('response', async (res) => {
+          const u = res.url(); if (!u.includes('/team-remote/')) return
+          let text = ''
+          try { text = (await res.body()).toString('utf8') } catch { /* ignore */ }
+          net.recordResponse({
+            leg: name,
+            m: (u.split('/team-remote/')[1] || '').split('?')[0],
+            req: requestBindings.get(res.request()) ?? null,
+            status: res.status(),
+            t: Date.now(),
+            envelope: parseServerResponseEnvelope(text),
+            bodyText: text.slice(0, 640),
+          })
+        })
+        const page = await ctx.newPage()
+        return { page: createPlaywrightPage(page, cfg), close: () => ctx.close() }
+      },
+    })
     out.env = {
       launchArgvScrubbed: scrubEvidence(argv.join(' ')).slice(0, 1200),
       weakFlagsFound: WEAK.filter((w) => argv.some((a) => a === w || a.startsWith(w + '='))),
       pipeTransport: { remoteDebuggingPipe: argv.includes('--remote-debugging-pipe'), remoteDebuggingPort: argv.some((a) => a.startsWith('--remote-debugging-port')) },
       chromeTree: tree.slice(),
     }
-    if (out.env.weakFlagsFound.length || out.env.pipeTransport.remoteDebuggingPort) throw new Error('launch argv guard FAILED')
-
-    // ── E1: fresh context; preClick=0; member-first; reload window ──────────
-    await legWrap('E1', async () => {
-      const ctx = await browser.newContext(); attach(ctx, 'E1'); open.push(ctx)
-      const page = await ctx.newPage()
-      const beforeNav = out.net.filter((e) => e.leg === 'E1').length
-      const nav = await navigate(page, 'E1', 'E1', { sessionId: targets.targets.member.id, title: targets.targets.member.title, relation: 'team-member' })
-      const preClick = out.net.filter((e) => e.leg === 'E1' && e.kind === 'req').length - beforeNav
-      out.legs.E1.navSteps = nav.steps
-      out.legs.E1.preClickNavReqs = preClick // nav clicks must not produce /team-remote traffic
-      await page.waitForTimeout(2500)
-      const lt0 = Date.now()
-      await page.reload({ waitUntil: 'load', timeout: 60000 })
-      const n2 = page.getByRole('button', { name: 'Continue' }).first()
-      if (await n2.isVisible().catch(() => false)) { const b = await n2.boundingBox(); await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2); await page.waitForTimeout(1500) }
-      await page.waitForTimeout(10000)
-      await page.screenshot({ path: path.join(cfg.out, 'shot-E1-member-pure.png') }).catch(() => {})
-      Object.assign(out.legs.E1, evalE1({
-        net: out.net.filter((e) => e.leg === 'E1'),
-        bodies: out.bodies['E1:team.getReadState'] || [],
-        expectedMember: { sessionId: targets.targets.member.id, instance: host.t1MemberInstance },
-        expectedRootId: host.t1, preClick, t0: lt0,
-      }))
-    })
-
-    // ── E3+E5: fresh context; root cold round, >=6 ticks, manual refresh ────
-    await legWrap('E3E5', async () => {
-      const ctx = await browser.newContext(); attach(ctx, 'E3'); open.push(ctx)
-      const page = await ctx.newPage()
-      const nav = await navigate(page, 'E3', 'E3E5', { sessionId: targets.targets.root.id, title: targets.targets.root.title, relation: 'team-root' })
-      out.legs.E3E5.navSteps = nav.steps
-      const w0 = Date.now()
-      await page.waitForTimeout(10000)
-      const tabHits = mainLeaves(await leavesOf(page)).filter((l) => ALLOWED_TAB_NAMES.includes(l.text))
-      out.legs.E3E5.teamTabHits = tabHits.length
-      if (tabHits.length === 1) { await realClickLeaf(page, tabHits[0]); await page.waitForTimeout(1200) }
-      await page.waitForTimeout(6 * 3000 + 1000)
-      await page.screenshot({ path: path.join(cfg.out, 'shot-E3-root-team.png') }).catch(() => {})
-      out.legs.E3E5.E3 = evalE3({ net: out.net.filter((e) => e.leg === 'E3'), expectedRootId: host.t1, t0: w0 })
-      const rfHits = mainLeaves(await leavesOf(page)).filter((l) => l.tag === 'button' && ALLOWED_REFRESH_NAMES.includes(l.text))
-      if (rfHits.length !== 1) {
-        out.legs.E3E5.E5 = { verdict: 'NOT_RUN', reason: rfHits.length === 0 ? 'refresh-control-not-found (exact-name allowlist, zero hits)' : 'refresh-control-ambiguous (exact-name allowlist, multiple hits — fail-closed)' }
-        await page.screenshot({ path: path.join(cfg.out, 'shot-E5-control-anomaly.png') }).catch(() => {})
-      } else {
-        const t5 = Date.now()
-        await realClickLeaf(page, rfHits[0])
-        await page.waitForTimeout(6500)
-        await page.screenshot({ path: path.join(cfg.out, 'shot-E5-refresh.png') }).catch(() => {})
-        const after = out.net.filter((e) => e.leg === 'E3' && e.kind === 'req' && e.t >= t5)
-        const ledRes = out.net.filter((e) => e.leg === 'E3' && e.kind === 'res' && e.m === 'team.getLedgerPage' && e.t > t5)[0]
-        out.legs.E3E5.E5 = { ...evalE5({ after, expectedRootId: host.t1 }), measuredExtra: { ledgerResponseLatencyMs: ledRes ? ledRes.t - t5 : null } }
-      }
-    })
-
-    // ── E2: fresh context; UI-created ordinary session (zero-state) ─────────
-    await legWrap('E2', async () => {
-      const ctx = await browser.newContext(); attach(ctx, 'E2'); open.push(ctx)
-      const page = await ctx.newPage()
-      const nav = await navigate(page, 'E2', 'E2', null)
-      out.legs.E2.navSteps = nav.steps
-      // 'New Session' is a rail chrome control, located by EXACT text — not a
-      // session row, so locateTitle-with-exclude does not apply here.
-      const rail = railLeaves(await leavesOf(page))
-      const ns = rail.filter((l) => l.text === 'New Session')
-      if (ns.length !== 1) throw new FailClosed('new-session-control-not-unique', { hits: ns.length })
-      await realClickLeaf(page, ns[0])
-      // The proven blocker: the Select Workspace Directory dialog.
-      let dialog = null
-      for (let w = 0; w < 12; w += 1) {
-        await page.waitForTimeout(500)
-        const probe = detectBlockingModal(await page.evaluate('document.body.innerText'))
-        if (probe.blocking) { dialog = probe; break }
-      }
-      if (!dialog) {
-        // v1 body text shows the 'Choose workspace' affordance BEFORE a dialog.
-        const wsBtn = mainLeaves(await leavesOf(page)).filter((l) => l.text === 'Choose workspace')
-        if (wsBtn.length === 1) {
-          await realClickLeaf(page, wsBtn[0])
-          for (let w = 0; w < 12; w += 1) {
-            await page.waitForTimeout(500)
-            const probe = detectBlockingModal(await page.evaluate('document.body.innerText'))
-            if (probe.blocking) { dialog = probe; break }
-          }
-        }
-      }
-      const plan = e2WorkspaceSteps({ dialog: dialog || { blocking: false }, testWorkspace: cfg.testWorkspace, resolvedHome: fs.realpathSync(os.homedir()) })
-      if (!plan.ok) {
-        // Fail-closed BEFORE Open: leave the modal UNCONFIRMED via Cancel,
-        // asserted closed (coordinator ruling — Cancel is acceptable).
-        const abort = e2AbortSteps({ dialog: dialog || { blocking: false }, failedBeforeOpen: true })
-        for (const step of abort.steps) {
-          if (step === 'click-cancel') {
-            const cancel = mainLeaves(await leavesOf(page)).filter((l) => l.tag === 'button' && l.text === 'Cancel')
-            if (cancel.length === 1) await realClickLeaf(page, cancel[0])
-          }
-          if (step === 'assert-dialog-closed') {
-            for (let w = 0; w < 10; w += 1) {
-              await page.waitForTimeout(400)
-              if (!detectBlockingModal(await page.evaluate('document.body.innerText')).blocking) break
-            }
-          }
-        }
-        await page.screenshot({ path: path.join(cfg.out, 'shot-E2-workspace-anomaly.png') }).catch(() => {})
-        throw new FailClosed('e2-workspace-dialog: ' + plan.reason)
-      }
-      out.legs.E2.workspacePlan = plan.steps
-      const all = await leavesOf(page)
-      const folder = mainLeaves(all).filter((l) => l.text === plan.folder)
-      if (folder.length !== 1) throw new FailClosed('e2-folder-not-unique', { hits: folder.length })
-      await realClickLeaf(page, folder[0])
-      const openBtn = mainLeaves(await leavesOf(page)).filter((l) => l.tag === 'button' && l.text === 'Open')
-      if (openBtn.length !== 1) throw new FailClosed('e2-open-button-not-unique', { hits: openBtn.length })
-      const openT = Date.now()
-      await realClickLeaf(page, openBtn[0])
-      for (let w = 0; w < 10; w += 1) {
-        await page.waitForTimeout(500)
-        if (!detectBlockingModal(await page.evaluate('document.body.innerText')).blocking) break
-        if (w === 9) throw new FailClosed('e2-dialog-did-not-close')
-      }
-      const input = page.locator('textarea, [contenteditable="true"]').first()
-      if (!await input.isVisible().catch(() => false)) throw new FailClosed('e2-composer-missing')
-      await input.click(); await input.fill('ping'); await page.keyboard.press('Enter')
-      const composerT = Date.now()
-      // POST-ACTION WORKSPACE STATE (coordinator ruling): the created
-      // session's workspace must equal the AUTHORIZED path. Signal source:
-      // the world's projcache record <world>/storages/session_projcache/
-      // sessions/<newSessionId>.json -> record.identity.cwd (field shape
-      // verified read-only against the retained world; see fixtures). The
-      // new session id comes from the leg's own fresh getReadState traffic.
-      const freshIds = reqs('E2', 'team.getReadState').filter((e) => e.t >= openT && e.p && e.p.sessionId).map((e) => e.p.sessionId)
-      const newId = freshIds.find((id) => id !== targets.targets.root.id && id !== targets.targets.member.id) || null
-      let cwdCheck = { ok: false, reason: 'no fresh readState identified the created session' }
-      if (newId) {
-        const recPath = path.join(cfg.world, 'storages', 'session_projcache', 'sessions', newId + '.json')
-        for (let w = 0; w < 40; w += 1) {
-          if (fs.existsSync(recPath)) break
-          await sleep(500)
-        }
-        let rec = null
-        try { rec = JSON.parse(fs.readFileSync(recPath, 'utf8')) } catch { rec = null }
-        cwdCheck = assertSessionCwd({ record: rec, expectedPath: fs.realpathSync(cfg.testWorkspace) })
-        cwdCheck.signal = 'session_projcache record.identity.cwd'
-        cwdCheck.sessionId = newId
-      }
-      out.legs.E2.workspaceCwdCheck = cwdCheck
-      if (!cwdCheck.ok) throw new FailClosed('e2-workspace-cwd: ' + cwdCheck.reason, cwdCheck)
-      await page.waitForTimeout(7000)
-      const w0 = Date.now()
-      const tabHits = mainLeaves(await leavesOf(page)).filter((l) => ALLOWED_TAB_NAMES.includes(l.text))
-      if (tabHits.length === 1) { await realClickLeaf(page, tabHits[0]); await page.waitForTimeout(1200) }
-      await page.waitForTimeout(9000)
-      await page.screenshot({ path: path.join(cfg.out, 'shot-E2-ordinary.png') }).catch(() => {})
-      const legNet = out.net.filter((e) => e.leg === 'E2' && e.kind === 'req')
-      out.legs.E2 = { ...out.legs.E2, ...evalE2({ net: { window: legNet.filter((e) => e.t >= w0), wholeLeg: legNet }, bodies: out.bodies['E2:team.getReadState'] || [], t0: w0 }) }
-    })
-
-    out.legs.E4 = e4NotRun()
-    out.ok = true
-  } catch (e) {
-    out.errors.push('fatal: ' + String(e.message || e).slice(0, 500))
+    // core wrote the record under the output dir already — rewrite once more so
+    // the on-disk copy carries the env block too (values still scrubbed).
+    try { fs.writeFileSync(path.join(cfg.out, 'dod20-driver-out.json'), JSON.stringify(redactOut(out), null, 1)) } catch { /* ignore */ }
+    return { out, exitCode: summarize(out).exitCode }
   } finally {
     for (const c of open) { try { await c.close() } catch { /* ignore */ } }
     if (browser) { try { await browser.close() } catch { /* ignore */ } }
     await sleep(1500)
     for (const p of tree) { try { process.kill(p, 'SIGKILL') } catch { /* ignore */ } }
-    out.env.processGone = tree.map((p) => ({ pid: p, alive: (() => { try { process.kill(p, 0); return true } catch { return false } })() }))
-    out.finishedAt = new Date().toISOString()
-    fs.writeFileSync(path.join(cfg.out, 'dod20-driver-out.json'), JSON.stringify(redactOut(out), null, 1))
-    log('driver done ok=' + out.ok + ' legs=' + JSON.stringify(Object.fromEntries(Object.entries(out.legs).map(([k, v]) => [k, v.verdict || v.E3?.verdict || 'partial']))))
+    const gone = tree.map((p) => ({ pid: p, alive: (() => { try { process.kill(p, 0); return true } catch { return false } })() }))
+    log('chrome tree gone: ' + JSON.stringify(gone))
   }
-  return out
 }
 
 // ── entry point (LIVE lane only under an explicit gate) ─────────────────────
@@ -761,8 +1142,10 @@ const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === pat
 if (invokedDirectly) {
   const argv = process.argv.slice(2)
   if (!argv.includes('--confirm-live')) {
-    process.stderr.write('REFUSED: the DoD20 live lane is gated on external review (PR #55). Run `node --test .../dod20-ui-driver.test.mjs` for the offline suite. Pass --confirm-live ONLY in the carrier acceptance environment.\n')
+    process.stderr.write('REFUSED: the DoD20 live lane is gated on external review (PR #55). Run `node --test .../dod20-ui-driver.test.mjs` and `node --test .../dod20-ui-driver-orchestration.test.mjs` for the offline suites. Pass --confirm-live ONLY in the carrier acceptance environment.\n')
     process.exit(2)
   }
-  runLiveDriver(parseArgs(argv)).then((o) => process.exit(o && o.fatal ? 3 : 0)).catch((e) => { process.stderr.write(scrubEvidence('unhandled: ' + String(e.stack || e)) + '\n'); process.exit(3) })
+  runLiveDriver(parseArgs(argv))
+    .then(({ exitCode }) => process.exit(exitCode))
+    .catch((e) => { process.stderr.write(scrubEvidence('unhandled: ' + String(e.stack || e)) + '\n'); process.exit(3) })
 }

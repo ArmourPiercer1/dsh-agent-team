@@ -165,6 +165,23 @@ export const MODAL_WORKSPACE_PICKER = `
   <button type="button">Open</button>
 </div>`
 
+/** The picker at the Home root WITH the approved fixture root offered —
+ *  the nested-workspace shape (authorized `/home/user/testhome/...` under the
+ *  explicit authorized root; review P6 level-by-level plan input). */
+export const MODAL_WORKSPACE_PICKER_NESTED = `
+<div class="dialog" role="dialog">
+  <h2>Select Workspace Directory</h2>
+  <span class="crumb">Home</span>
+  <ul>
+    <li><span class="folderName">bin</span></li>
+    <li><span class="folderName">testhome</span></li>
+    <li><span class="folderName">workspace</span></li>
+  </ul>
+  <button type="button">New folder</button>
+  <button type="button">Cancel</button>
+  <button type="button">Open</button>
+</div>`
+
 /** The picker WITHOUT the expected folder (e.g. a different host layout):
  *  E2 must fail closed, never pick a neighbor folder. */
 export const MODAL_WORKSPACE_PICKER_NO_FOLDER = `
