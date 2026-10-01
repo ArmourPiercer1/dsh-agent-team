@@ -156,11 +156,27 @@ export function gateAction(impact: ActionImpact, input: EvaluationInput): GateDe
   const refs = [...refKeys].map((k) => verdictsByScope.get(k))
 
   const blockedRefs = refs.filter((v) => v !== undefined && v.state === SCOPE_STATES.blocked)
-  const disabledRefs = refs.filter((v) => {
-    if (v === undefined || v.scope.level !== 'template' || v.scope.templateId === undefined) return false
-    const entry = (input.availability ?? []).find((a) => a.templateId === v.scope.templateId)
-    return entry !== undefined && entry.available === false
-  })
+  // Finding I (2026-10-01) — the disabled set is derived DIRECTLY from the
+  // action's scope dependencies + the durable availability, NEVER from the
+  // verdicts: a disabled template with NO requirements produces no verdict
+  // row at all (the scope extraction skips empty template scopes), so a
+  // verdict-derived disabled set is BLIND to it and its normal work was
+  // admitted. The availability block must key on the policy state alone:
+  // every template scope the work depends on is blocked when its durable
+  // availability is `available:false`, regardless of its requirement set
+  // (the re-enable is symmetric — the work resumes through the same checks,
+  // not because requirements appeared).
+  const disabledRefs: readonly RequirementScope[] = (() => {
+    const out: RequirementScope[] = []
+    for (const scope of impact.scopeRefs) {
+      if (scope.level !== 'template' || scope.templateId === undefined) continue
+      const key = scopeKey(scope)
+      if (out.some((s) => scopeKey(s) === key)) continue
+      const entry = (input.availability ?? []).find((a) => a.templateId === scope.templateId)
+      if (entry !== undefined && entry.available === false) out.push(scope)
+    }
+    return out
+  })()
 
   // The impact class decides the gate.
   switch (impact.impact) {
@@ -176,7 +192,7 @@ export function gateAction(impact: ActionImpact, input: EvaluationInput): GateDe
         return {
           allowed: false,
           reason: GATE_REASONS.templateDisabled,
-          blockedScopes: disabledRefs.map((v) => v!.scope),
+          blockedScopes: [...disabledRefs],
         }
       }
       if (blockedRefs.length > 0) {
