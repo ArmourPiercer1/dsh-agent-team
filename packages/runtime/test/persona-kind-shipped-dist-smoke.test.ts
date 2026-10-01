@@ -6,10 +6,11 @@
  * consumed from the committed `dist` mirror WITHOUT a separate build
  * step (root package.json `./host` export →
  * `packages/runtime/dist/packages/runtime/src/plugin/host.js`; README
- * L85–88/L121: the required generated artifacts must be committed in the
- * same commit as the source). This smoke imports the PUBLIC dist export
- * surface — the BUILT `provider.js` the host entry chains into — via the
- * file-URL dynamic-import precedent (the way
+ * L85–88: install-and-run with no build step; L121: the required
+ * generated artifacts must be committed in the same commit as the
+ * source). This smoke imports the PUBLIC dist export surface — the
+ * BUILT `provider.js` the host entry chains into — via the file-URL
+ * dynamic-import precedent (the way
  * `packages/testkit/test/plugin-dsh-compat.test.ts` imports a prebuilt
  * lib), and asserts the finding-A semantics over the SHIPPED module:
  * the kind-subject resolution returns the OBSERVED-kind fact (never
@@ -26,9 +27,15 @@
  */
 
 import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { describe, expect, it } from 'vitest'
+
+import type { RequirementType } from '../../domain/compatibility/src/index.js'
+import { PERSONA_OBSERVATION_SOURCES } from '../agent-setup/preset/index.js'
+import type { RuntimeSubstratePlan } from '../agent-setup/preset/index.js'
+import { PROBE_VERDICTS } from '../readiness/index.js'
 
 // The public dist surface: the BUILT provider module of the runtime
 // package (the host entry `./host` → dist .../src/plugin/host.js chains
@@ -36,28 +43,31 @@ import { describe, expect, it } from 'vitest'
 // import-side-effect-free). The vitest runner's .js→.ts sibling hook
 // cannot rewrite this path (there is NO .ts sibling inside the dist
 // mirror), so the loaded module is the built JS artifact itself.
-const distProviderPath = fileURLToPath(
-  new URL('../dist/packages/runtime/requirement-facts/provider.js', import.meta.url),
+// (The path is built from a plain string via pathToFileURL — the
+// plugin-dsh-compat precedent — never from a URL object.)
+const distProviderPath = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  'dist',
+  'packages',
+  'runtime',
+  'requirement-facts',
+  'provider.js',
 )
+const distProviderUrl = pathToFileURL(distProviderPath).href
 
-// The SHIPPED module (typed against the source surface — the dist mirror
-// is built from exactly this source). Loaded ONCE, over the file URL, so
-// the vitest transform pipeline is bypassed (the plugin-dsh-compat
-// precedent).
+// The SHIPPED module (typed against the source surface — the dist
+// mirror is built from exactly this source). Loaded ONCE, over the file
+// URL, so the vitest transform pipeline is bypassed.
 const shipped = (await import(
-  /* @vite-ignore */ pathToFileURL(distProviderPath).href
+  /* @vite-ignore */ distProviderUrl
 )) as typeof import('../requirement-facts/index.js')
 
 /** The production observer-seam observation shape (plan §C.2). */
-const observation = (kind: 'standard' | 'complete'): { kind: 'standard' | 'complete'; source: string } => ({
+const observation = (kind: 'standard' | 'complete') => ({
   kind,
-  source: 'effective-composition',
+  source: PERSONA_OBSERVATION_SOURCES.effectiveComposition,
 })
-
-type ShippedPlan = {
-  readonly root: { readonly presetId: string; readonly persona: { kind: 'standard' | 'complete'; source: string } }
-  readonly member: { readonly presetId: string; readonly persona: { kind: 'standard' | 'complete'; source: string } }
-}
 
 /**
  * One SHIPPED provider instance over a plain substrate-plan double (the
@@ -65,15 +75,22 @@ type ShippedPlan = {
  * covered by the source-level suite; the plan shape is the resolver's
  * frozen output contract).
  */
-function shippedProvider(plan: ShippedPlan) {
+function shippedProvider(plan: RuntimeSubstratePlan) {
   return shipped.createRuntimeRequirementFactsProvider({
     configuredMcpServers: [],
     // The production structural fact (the mcpServer-only probe registry —
     // no `persona` probe port): a plain double is sufficient for the
-    // artifact-lane assertions (persona never probes).
+    // artifact-lane assertions (persona never probes; the mcpServer
+    // capability name is never probed in this smoke).
     readiness: {
       hasProbe: (type: string) => type === 'mcpServer',
-      probe: async () => ({ verdict: 'reachable', source: 'mcp-fiber', observedAt: '2026-10-02T00:00:00.000Z' }),
+      probe: async (capabilityType: RequirementType, capabilityName: string) => ({
+        capabilityType,
+        capabilityName,
+        verdict: PROBE_VERDICTS.reachable,
+        source: 'mcp-fiber',
+        observedAt: '2026-10-02T00:00:00.000Z',
+      }),
     },
     substratePlan: async () => plan,
     now: () => '2026-10-02T00:00:00.000Z',

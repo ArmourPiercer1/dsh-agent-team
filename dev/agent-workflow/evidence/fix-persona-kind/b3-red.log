@@ -1,0 +1,106 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-persona-kind
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts (14 tests | 3 failed) 19ms
+     ✓ the team-scope preflight PASSES (pre-fix the kind subject was unknown ⇒ seed-less FATAL) 4ms
+     ✓ evaluateCreationScopes agrees: the team verdict is PASS with the typed reason 1ms
+     × the team scope PASSES on the ROOT observation; the member template scope FATALs on the MEMBER observation 6ms
+     × the team scope FATALs with the typed conflict observation (no downgrade through the kind path) 1ms
+     ✓ no seed ⇒ unknown ⇒ the fact is omitted ⇒ the preflight FATALs (fail-closed, NOT pending) 1ms
+     ✓ WITH a bootstrap seed available:true the seed truth decides ⇒ proceed (the documented 2-state) 1ms
+     ✓ WITH a bootstrap seed available:false the seed truth decides ⇒ FATAL (the 2-state is not a blanket OPEN) 1ms
+     ✓ a NON-kind subject keeps the legacy root/member preset-id matching (v1 frozen Blueprint cold resume) 0ms
+     ✓ a kind subject resolves through the KIND path even when the mounted id equals a preset (no legacy shadowing) 1ms
+     ✓ a v2 blueprint with the persona teamRequirement `standard` + a mounted composable preset PASSES with no seed 1ms
+     × the SAME chain with a complete mounted preset FATALs end-to-end (no false OPEN) 2ms
+     ✓ BL1: a HEALTHY leader template PASSES on the leader OWN (root) observation — the no-member-requirement world (pre-fix: judged by the MEMBER entry ⇒ spurious FATAL) 1ms
+     ✓ BL2: a leader whose OWN observation is `complete` FATALs with the leader observation (pre-fix: FALSE PASS — the leader was judged by the member entry) 1ms
+     ✓ BL3: in ONE world, the leader template is judged by the ROOT observation and the member template by the MEMBER observation (per-template role dispatch) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T2 — root observes `standard`, member observes `complete` (R8 split) > the team scope PASSES on the ROOT observation; the member template scope FATALs on the MEMBER observation
+AssertionError: expected [ { domain: 'persona', …(3) } ] to deeply equal [ { domain: 'persona', …(3) }, …(1) ]
+
+- Expected
++ Received
+
+@@ -1,13 +1,7 @@
+  [
+    {
+-     "available": true,
+-     "domain": "persona",
+-     "generation": 1,
+-     "subject": "complete",
+-   },
+-   {
+      "available": false,
+      "domain": "persona",
+      "generation": 1,
+      "subject": "standard",
+    },
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:414:47
+    412|     // alongside world fact (the engine's typed §13.5 lane keys on exa…
+    413|     // that fact — the kind-subject fact keying is preserved).
+    414|     expect(workerResolution.environmentFacts).toEqual([
+       |                                               ^
+    415|       { domain: 'persona', subject: 'complete', available: true, gener…
+    416|       { domain: 'persona', subject: 'standard', available: false, gene…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T3 — root observes `complete` (the §13.5 conflict) > the team scope FATALs with the typed conflict observation (no downgrade through the kind path)
+AssertionError: expected [ { domain: 'persona', …(3) } ] to deeply equal [ { domain: 'persona', …(3) }, …(1) ]
+
+- Expected
++ Received
+
+@@ -1,13 +1,7 @@
+  [
+    {
+-     "available": true,
+-     "domain": "persona",
+-     "generation": 1,
+-     "subject": "complete",
+-   },
+-   {
+      "available": false,
+      "domain": "persona",
+      "generation": 1,
+      "subject": "standard",
+    },
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:480:41
+    478|     // that fact (without it the host lane degraded to the generic
+    479|     // PERSONA_INCOMPATIBLE).
+    480|     expect(resolution.environmentFacts).toEqual([
+       |                                         ^
+    481|       { domain: 'persona', subject: 'complete', available: true, gener…
+    482|       { domain: 'persona', subject: 'standard', available: false, gene…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T6 — end-to-end through the creation preflight (root.ts port shape) > the SAME chain with a complete mounted preset FATALs end-to-end (no false OPEN)
+AssertionError: expected 'PERSONA_INCOMPATIBLE' to be 'TEAM_PERSONA_COMPLETE_PRESET_CONFLICT' // Object.is equality
+
+Expected: "TEAM_PERSONA_COMPLETE_PRESET_CONFLICT"
+Received: "PERSONA_INCOMPATIBLE"
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:718:54
+    716|       environmentFacts: (await world.teamRead(PK_TEAM)).environmentFac…
+    717|     })
+    718|     expect(engineResult.requirements[0]?.reasonCode).toBe(
+       |                                                      ^
+    719|       COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT,
+    720|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 11 passed (14)
+   Start at  06:11:34
+   Duration  461ms (transform 258ms, setup 0ms, import 348ms, tests 19ms, environment 0ms)
+
+EXIT=1
