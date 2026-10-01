@@ -2165,6 +2165,52 @@ export function createControlService(options) {
             return input.commitEffect();
         });
     }
+    /**
+     * fix-control-authz C (the residual pre-reservation boundary) — the
+     * LOCK-FREE durable close for the activation provider's
+     * pre-reservation abort boundary (the provider preflight awaits —
+     * the compatibility authority, the v2 template-scope feed, the
+     * provider-lock queue, the step-8 external-facts read — which run
+     * INSIDE `commitEffectIfAuthorized`'s commitEffect, i.e. under this
+     * service's per-team lock hold).
+     *
+     * Precondition: the caller ALREADY holds this service's per-team
+     * lock (the effect-admission unit's lock hold). This function
+     * performs NO lock acquisition: re-acquiring would deadlock on the
+     * caller's own hold. It is the same `commitAbandonmentFact`
+     * primitive the explicit abandon and the unit's abort branch use —
+     * the terminal mark is written exactly once; the re-read below is
+     * the lock's fresh-state verification (invariant 45).
+     *
+     * Contract: resolves when the durable close is GUARANTEED — either
+     * this call persisted the terminal mark, or the mark was ALREADY
+     * durable (the idempotent no-op — the pre-dispatch best-effort
+     * abandon, a concurrent explicit abandon, or a prior unit settle).
+     * Rejects ONLY when the close persist itself faults (the typed
+     * DURABLE_WRITE_FAILED via `putEntry`'s fault admission —
+     * fail-closed) or the request id is unknown (typed
+     * CONTROL_REQUEST_NOT_FOUND — loud). The caller (the provider
+     * boundary) propagates the reject unchanged and rejects typed
+     * ACTIVATION_REQUEST_ABORTED after the settle.
+     */
+    async function persistAbandonCloseLocked(input) {
+        const root = parseRoot(input.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'wait');
+        if (typeof input.requestId !== 'string' || input.requestId.length === 0) {
+            throw malformed('wait', 'requestId', 'requestId must be a non-empty string');
+        }
+        try {
+            await commitAbandonmentFact(root, input.requestId, 'the invocation aborted in the pre-reservation preflight (the durable close)');
+        }
+        catch (error) {
+            if (error instanceof ControlError &&
+                error.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED) {
+                // The terminal mark is already durable — the close is
+                // guaranteed; the idempotent no-op resolves.
+                return;
+            }
+            throw error;
+        }
+    }
     return {
         requestControl,
         resolveControl,
@@ -2174,6 +2220,7 @@ export function createControlService(options) {
         checkExternalOperation,
         awaitControlDecision,
         commitEffectIfAuthorized,
+        persistAbandonCloseLocked,
     };
 }
 //# sourceMappingURL=service.js.map

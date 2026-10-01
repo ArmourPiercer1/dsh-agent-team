@@ -45,6 +45,7 @@
  */
 import { actionImpactOf, checkCallerRoleAuthority, callerEnvelope, enforceEnvelope, enforceRequirementGate, isNewWorkAdmission, resolveCaller, resolveTeamAndTarget, validateActionRequest, workExecutionModeOf, } from '../admission/index.js';
 import { ACTION_IMPACT_CLASSES } from '../requirements/index.js';
+import { ACTIVATION_ERROR_CODES } from '../activation/index.js';
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError, isTeamRuntimeError, } from '../admission/errors.js';
 import { CONTROL_ERROR_CODES, CONTROL_EXECUTION_COUPLINGS, CONTROL_REQUEST_KINDS, isControlError, } from '../control/index.js';
 import { sha256Hex } from '../../domain/blueprint/src/index.js';
@@ -619,6 +620,7 @@ export function createTeamRuntime(options) {
             workActivity: options.workActivity,
             lifecyclePorts: options.lifecyclePorts,
             teamLocks,
+            controlServiceRef: options.controlServiceRef,
             staticModel: options.staticModel,
             policy: options.policy,
             policyStateTransitions: options.policyStateTransitions,
@@ -671,23 +673,64 @@ export function createTeamRuntime(options) {
         // (a) → (b) → storage seam, no new lock cycles. A non-abandoned,
         // non-aborted request is transparent (the unit runs the effect and
         // returns its result unchanged).
+        // fix-control-authz C (the residual pre-commit awaits) — the
+        // SETTLE TRACKING for the systematic pre-commit abort settle:
+        // `effectCommitStarted` flips the moment the effect commit RUNS
+        // (a durable write may have landed — the post-commit world: the
+        // typed effect fault surfaces unchanged and the committed Phase A
+        // fact is NEVER re-marked). `boundarySettled` flips when the
+        // unit's pre-commit rejection was already converted into the typed
+        // abandon block (the close is settled — no double settle). Both
+        // false = the admission is still pre-commit (the settle applies).
+        let effectCommitStarted = false;
+        let boundarySettled = false;
         const commitReviewedEffect = () => {
             const recoveryControlRequestId = request.recovery?.controlRequestId;
             const controlService = options.controlServiceRef?.current;
             if (recoveryControlRequestId === undefined || controlService === undefined) {
+                effectCommitStarted = true;
                 return executeEffectLocked(ctx);
             }
             return controlService
                 .commitEffectIfAuthorized({
                 rootSessionId,
                 requestId: recoveryControlRequestId,
-                commitEffect: () => executeEffectLocked(ctx),
+                commitEffect: () => {
+                    effectCommitStarted = true;
+                    return executeEffectLocked(ctx);
+                },
                 signal: asAbortLike(request.signal),
             })
                 .catch((boundaryError) => {
+                // fix-control-authz C (the residual pre-reservation boundary):
+                // the provider preflight settled the aborted invocation at a
+                // pre-reservation check point (the durable close is settled —
+                // the lock-free callback ran FIRST, exactly-once) and rejected
+                // typed `ACTIVATION_REQUEST_ABORTED` (the gate maps it to the
+                // compatibility block carrying the provider code). The caller
+                // sees the SAME typed zero-effect abandon terminal as every
+                // other pre-commit abort settle (the request IS durably
+                // closed — exactly one mark — the idempotent composition
+                // stands). `boundarySettled` = true: the D2 wrapper must not
+                // settle again (the close already landed).
+                if (boundaryError instanceof TeamRuntimeError &&
+                    boundaryError.code === TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED &&
+                    boundaryError.details?.['providerCode'] === ACTIVATION_ERROR_CODES.REQUEST_ABORTED) {
+                    boundarySettled = true;
+                    throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, 'TeamRuntime: the recovery dispatch was abandoned (the invocation aborted in the activation pre-reservation preflight — the durable close is settled) — zero durable effect (the operation remains blocked)', {
+                        rootSessionId,
+                        status: 'BLOCKED_FATAL',
+                        gateReason: 'requiredScopeDown',
+                        blockedScopes: [...(request.recovery?.scopeKeys ?? [])],
+                        source: 'requirement-gate',
+                        controlDecision: 'abandoned',
+                        controlRequestId: recoveryControlRequestId,
+                    });
+                }
                 if (isControlError(boundaryError) &&
                     (boundaryError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED ||
                         boundaryError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ADMISSION_ABORTED)) {
+                    boundarySettled = true;
                     throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, boundaryError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ADMISSION_ABORTED
                         ? 'TeamRuntime: the recovery dispatch was abandoned (the invocation aborted before the effect-admission boundary — the durable close was persisted at the boundary) — zero durable effect (the operation remains blocked)'
                         : 'TeamRuntime: the recovery dispatch was abandoned (the durable abandon mark landed before the effect-admission boundary — after the pre-dispatch snapshot — the terminal mark closed the authorization) — zero durable effect (the operation remains blocked)', {
@@ -702,6 +745,60 @@ export function createTeamRuntime(options) {
                 }
                 throw boundaryError;
             });
+        };
+        // fix-control-authz C (the residual pre-commit awaits) — the
+        // SYSTEMATIC SETTLE for an invocation that aborted BEFORE the
+        // effect commit: whatever await of this admission the abort landed
+        // at (the runtime-chain queue, the pre-dispatch terminal snapshot,
+        // the gate re-probe, the unit's control-lock queue), the request
+        // is durably closed by the SAME unit the commit takes (a never-run
+        // commitEffect — the unit then only performs its mark check +
+        // signal check, persisting the close exactly-once) and the
+        // invocation settles with the typed zero-effect abandon block.
+        // This runs OUTSIDE any chain hold (the reentry that reached here
+        // rejected from inside the chain acquisition and released it, or
+        // never acquired it) — the settle acquires the control lock alone
+        // → no deadlock, and the close composes idempotently with the
+        // pre-dispatch best-effort abandon and with a concurrent explicit
+        // abandon (already-terminal → the typed no-op). A settle persist
+        // fault (the typed DURABLE_WRITE_FAILED) propagates — fail-closed.
+        const settleAbortedPreCommit = async (controlRequestId) => {
+            const controlService = options.controlServiceRef?.current;
+            if (controlService === undefined) {
+                // Unreachable: the settle callers check presence first.
+                throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED, 'TeamRuntime: the aborted recovery dispatch cannot be settled (the control service is absent) — zero durable effect (internal wiring defect)', { rootSessionId });
+            }
+            try {
+                await controlService.commitEffectIfAuthorized({
+                    rootSessionId,
+                    requestId: controlRequestId,
+                    commitEffect: () => Promise.reject(new Error('unreachable: the aborted-pre-commit settle never runs the effect commit')),
+                    signal: asAbortLike(request.signal),
+                });
+            }
+            catch (settleError) {
+                if (isControlError(settleError) &&
+                    (settleError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED ||
+                        settleError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ADMISSION_ABORTED)) {
+                    // The close is durable (the unit just persisted it —
+                    // ADMISSION_ABORTED — or it was already terminal —
+                    // ABANDONED): the typed zero-effect abandon block stands
+                    // (the same contract as the pre-dispatch abort path).
+                    throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, 'TeamRuntime: the recovery dispatch was abandoned (the invocation aborted before the effect commit — the durable close is settled) — zero durable effect (the operation remains blocked)', {
+                        rootSessionId,
+                        status: 'BLOCKED_FATAL',
+                        gateReason: 'requiredScopeDown',
+                        blockedScopes: [...(request.recovery?.scopeKeys ?? [])],
+                        source: 'requirement-gate',
+                        controlDecision: 'abandoned',
+                        controlRequestId,
+                    });
+                }
+                throw settleError;
+            }
+            // Unreachable: the unit rejects in the aborted state (the settle
+            // precondition) or on the durable mark.
+            throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED, 'TeamRuntime: the aborted recovery dispatch settle returned without a typed reject (internal defect) — zero durable effect (the operation remains blocked)', { rootSessionId, controlRequestId });
         };
         if (isNewWorkAdmission(spec) ||
             impact.impact === ACTION_IMPACT_CLASSES.crossAgentTrigger) {
@@ -772,6 +869,24 @@ export function createTeamRuntime(options) {
                 }, asAbortLike(request.signal));
             }
             catch (error) {
+                // fix-control-authz C (the residual pre-commit awaits) — the
+                // systematic settle, first: the invocation aborted BEFORE the
+                // effect commit (the effect commit never started — no durable
+                // write of this admission landed) and the boundary did not
+                // already settle the close (its typed block is in flight):
+                // durably close the request and settle with the typed
+                // zero-effect abandon block (the settle ALWAYS throws — the
+                // recovery dispatch below is then skipped; a committed effect
+                // is never retroactively marked — the post-commit fault
+                // surfaces unchanged). Non-aborted / non-marker /
+                // commit-started / already-settled errors: byte-identical.
+                if (!effectCommitStarted &&
+                    !boundarySettled &&
+                    request.recovery?.controlRequestId !== undefined &&
+                    options.controlServiceRef?.current !== undefined &&
+                    asAbortLike(request.signal)?.aborted === true) {
+                    await settleAbortedPreCommit(request.recovery.controlRequestId);
+                }
                 // OUTSIDE the lock: the recovery dispatch (the human-reviewed
                 // Control inline coupling). A non-offer error returns `undefined`
                 // (the ORIGINAL typed error is re-thrown unchanged); a durable
@@ -805,7 +920,24 @@ export function createTeamRuntime(options) {
             const recoveryControlRequestId = request.recovery?.controlRequestId;
             if (recoveryControlRequestId !== undefined &&
                 options.controlServiceRef?.current !== undefined) {
-                staged = await withTeamLock(teamLocks, rootSessionId, () => commitReviewedEffect(), asAbortLike(request.signal));
+                try {
+                    staged = await withTeamLock(teamLocks, rootSessionId, () => commitReviewedEffect(), asAbortLike(request.signal));
+                }
+                catch (error) {
+                    // fix-control-authz C (the residual pre-commit awaits) — the
+                    // systematic settle (the fallback reentry has no gate re-
+                    // probe, but the same pre-commit await points stand: the
+                    // chain queue and the unit's control-lock queue). Same
+                    // condition, same settle — ALWAYS throws; the original
+                    // error is unreachable (the typed abandon block / the
+                    // settle fault is the terminal).
+                    if (!effectCommitStarted &&
+                        !boundarySettled &&
+                        asAbortLike(request.signal)?.aborted === true) {
+                        await settleAbortedPreCommit(recoveryControlRequestId);
+                    }
+                    throw error;
+                }
             }
             else {
                 staged = await executeEffect(teamLocks, ctx);

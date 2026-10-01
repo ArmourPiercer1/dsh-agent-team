@@ -515,11 +515,32 @@ export function createActivationProvider(ports) {
             environmentFacts: teamFactsForAuthority,
             ...(ports.now !== undefined ? { now: ports.now } : {}),
         });
+        // fix-control-authz C (the residual pre-reservation boundary) — the
+        // settlement for an abort that landed at a preflight await BEFORE
+        // the journal reservation (step 12, the first durable write):
+        // persist the durable close (the lock-free callback — the caller
+        // holds the control lock under the effect-admission unit; a
+        // missing callback = no request to close) and reject typed with
+        // ZERO provisioning. A close persist fault (the typed
+        // DURABLE_WRITE_FAILED) propagates unchanged — fail-closed.
+        async function settleAbortBeforeReservation() {
+            await request.persistAbandonClose?.();
+            throw new ActivationError(ACTIVATION_ERROR_CODES.REQUEST_ABORTED, `activation: the invocation aborted before the durable reservation (requestToken='${request.requestToken}') — zero provisioning (no journal reservation, no child session, no member row)`, {
+                rootSessionId,
+                requestToken: request.requestToken,
+                stage: 'pre-reservation',
+            });
+        }
         const admission = await authority.evaluate({
             ...(request.acknowledgements !== undefined
                 ? { acknowledgements: request.acknowledgements }
                 : {}),
         });
+        // Boundary check point 1: after the compatibility-authority await
+        // (step 6).
+        if (request.signal !== undefined && request.signal.aborted === true) {
+            throw await settleAbortBeforeReservation();
+        }
         if (!admission.chainOk) {
             // fail-closed: the chain itself failed (invariant 50). A
             // facts-unavailable fault re-throws the ORIGINAL error unwrapped (the
@@ -562,6 +583,13 @@ export function createActivationProvider(ports) {
             else {
                 templateFacts = admission.facts;
             }
+        }
+        // Boundary check point 2: after the v2 target-template scope feed
+        // await (structurally absent on schemaVersion-1 blueprints — the
+        // feed reuses the authority chain's facts read; the check is
+        // placed anyway so the v2 world is covered by the same code).
+        if (request.signal !== undefined && request.signal.aborted === true) {
+            throw await settleAbortBeforeReservation();
         }
         const templateVerdict = targetTemplateInputs !== undefined
             ? classifyScope({ level: 'template', templateId: createTemplateId }, projectVerdicts(evaluateCompatibility({
@@ -737,6 +765,12 @@ export function createActivationProvider(ports) {
         // steps 7-15 under the team lock (all durable writes for this team are
         // serialized; the views below are fresh under the lock).
         return withTeamLock(rootSessionId, async () => {
+            // Boundary check point 3: the provider-lock acquisition (an abort
+            // that landed while this activation queued on the provider lock —
+            // after the pre-lock checks 1-2, before any step 7-15 work).
+            if (request.signal !== undefined && request.signal.aborted === true) {
+                throw await settleAbortBeforeReservation();
+            }
             const members = repositories.memberInstances.list(rootSessionId);
             const operations = repositories.operations.list();
             const view = { members, operations };
@@ -806,6 +840,13 @@ export function createActivationProvider(ports) {
             if (instanceId !== identity.instanceId) {
                 // Unreachable (both derive from the same input) — fail loudly.
                 throw new ActivationError(ACTIVATION_ERROR_CODES.INSTANCE_ID_CONFLICT, `activation: the allocated instance id '${instanceId}' diverges from the stable operation identity instance id '${identity.instanceId}' (internal derivation defect)`, { allocated: instanceId, identity: identity.instanceId });
+            }
+            // Boundary check point 4: immediately before the journal
+            // reservation (step 12 — the FIRST durable write): an abort that
+            // landed at the step-8 external-policy-facts await (or any step
+            // 7-11 step) is settled HERE, before any durable write.
+            if (request.signal !== undefined && request.signal.aborted === true) {
+                throw await settleAbortBeforeReservation();
             }
             // step 12: journal prepare (the durable reservation)
             const coordinator = getCoordinator(rootSessionId);

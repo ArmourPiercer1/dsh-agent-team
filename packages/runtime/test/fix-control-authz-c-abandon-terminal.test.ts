@@ -1664,11 +1664,10 @@ async function c9PreFlight(
   const authorityBarrier = c9Barrier()
   const holderExtBarrier = c9Barrier()
   const bExtBarrier = c9Barrier()
-  let envCall = 0
   const providerEnvFacts = async () => {
-    envCall++
     if (row.point === 'pre-flight-authority') {
-      // B's authority probe (call #1 — no holder) holds.
+      // B's authority probe (the only envFacts call on this row — no
+      // holder) holds.
       authorityBarrier.pauseArrive()
       await authorityBarrier.held
     }

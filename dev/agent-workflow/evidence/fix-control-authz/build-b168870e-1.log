@@ -1,0 +1,58 @@
+$ cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz && pnpm -r run build
+Scope: 9 of 10 workspace projects
+packages/contracts build$ tsc -p tsconfig.build.json
+packages/domain build$ tsc -p tsconfig.build.json
+packages/legacy build$ tsc -p tsconfig.build.json
+packages/remote build$ tsc -p tsconfig.build.json
+packages/domain build: Done
+packages/runtime build$ tsc -p tsconfig.build.json
+packages/legacy build: Done
+packages/storage build$ tsc -p tsconfig.build.json
+packages/remote build: Done
+packages/testkit build$ tsc -p tsconfig.build.json
+packages/contracts build: Done
+packages/tools build$ tsc -p tsconfig.build.json
+packages/storage build: Done
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+EXIT=0 (pnpm -r run build at b168870e)
+$ cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz && pnpm build:composition
+$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition: 91 modules, 11 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/client/composition-shim/client-bundle.js (1146091 B)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/client/composition-shim/package.json
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/effects.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/effects.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/effects.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/effects.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/router.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/router.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/router.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/activation/errors.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/activation/errors.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/activation/errors.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/activation/errors.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/activation/provider.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/activation/provider.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/activation/provider.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/activation/types.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/activation/types.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/gate.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/gate.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/gate.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/service.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/service.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/service.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.d.ts.map
+[ELIFECYCLE] Command failed with exit code 1.
+EXIT=1 (build:composition at b168870e)

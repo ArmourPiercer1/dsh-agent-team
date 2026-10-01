@@ -912,5 +912,32 @@ export interface ControlService {
         readonly commitEffect: () => Promise<T>;
         readonly signal?: ControlWaitSignal;
     }): Promise<T>;
+    /**
+     * fix-control-authz C (the residual pre-reservation boundary) — the
+     * LOCK-FREE durable close for the activation provider's
+     * pre-reservation abort boundary.
+     *
+     * Precondition: the caller ALREADY holds this service's per-team
+     * lock (the effect-admission unit `commitEffectIfAuthorized` runs
+     * its commitEffect — where the provider preflight lives — under the
+     * SAME lock hold). This method performs NO lock acquisition
+     * (re-acquiring would deadlock on the caller's own hold).
+     *
+     * Contract: resolves when the durable close is GUARANTEED — either
+     * this call persisted the terminal mark (the additive close fact,
+     * exactly-once, the same `commitAbandonmentFact` primitive the
+     * explicit abandon and the unit's abort branch use) or the mark was
+     * ALREADY durable (the idempotent no-op). Rejects ONLY when the
+     * close persist itself faults (the typed DURABLE_WRITE_FAILED —
+     * fail-closed) or the request id is unknown (typed
+     * CONTROL_REQUEST_NOT_FOUND — loud).
+     * @param input.rootSessionId - the team (root) session id.
+     * @param input.requestId - the recovery Control request id whose
+     *   durable close this settles.
+     */
+    persistAbandonCloseLocked(input: {
+        readonly rootSessionId: string;
+        readonly requestId: string;
+    }): Promise<void>;
 }
 //# sourceMappingURL=types.d.ts.map

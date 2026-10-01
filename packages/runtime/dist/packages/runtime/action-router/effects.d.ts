@@ -110,6 +110,18 @@ export interface EffectContext {
      *  (settlement / fail-closed) re-acquires the SAME map after delivery,
      *  without the request signal. */
     readonly teamLocks: Map<string, Promise<unknown>>;
+    /**
+     * fix-control-authz C (the residual pre-reservation boundary) — the
+     * control-service reference (the controlServiceRef pattern; absent
+     * when the recovery dispatch is unavailable). The activation
+     * provider's pre-reservation abort boundary settles the recovery
+     * request's durable close through its LOCK-FREE
+     * `persistAbandonCloseLocked` (the caller holds the control lock
+     * under the effect-admission unit — no re-acquisition, no deadlock).
+     */
+    readonly controlServiceRef?: {
+        readonly current?: import('../control/index.js').ControlService;
+    };
 }
 /**
  * A staged work-chain effect (INV-9.1, repair-r1 F3-A). The full P8-S3
