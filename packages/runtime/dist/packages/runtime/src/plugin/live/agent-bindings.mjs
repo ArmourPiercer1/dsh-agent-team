@@ -345,6 +345,13 @@ import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
 // blueprint persona onto the real DSH Agent at create/setup.
 import { parseBlueprint, PERMISSION_TOOL_NAMES } from '../../../../domain/blueprint/src/index.js'
 import { initialMcpGrantOf, staticCapabilitiesOf } from '../../../../domain/policy/src/index.js'
+// Finding F (residual round — the requirement-aware final-input verdict):
+// the SAME per-scope requirement extraction the admission gate uses (the
+// team scope: the v1 flat list + the v2 teamRequirements; the target
+// template scope: the v2 leader / members[i] requirements) — the verdict
+// classifies a failed mcp server as REQUIRED/optional through the bound
+// blueprint's in-scope requirements, never by a second copy of semantics.
+import { scopeRequirementInputsOf } from '../../../requirements/scope-requirements.js'
 import { initialTemplateModelGrantOf } from '../../../agent-setup/model/index.js'
 import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
 // alpha.1 (plan §10): the capability wiring adapters — the team tool
@@ -3115,6 +3122,100 @@ export function createAgentBindings(deps) {
   }
 
   /**
+   * The requirement-aware FINAL-INPUT VERDICT of one session's FINAL
+   * applicable mcp materialization truth (Finding F residual round — the
+   * unified verdict that REPLACES the residual-1 attempt-clock-delta
+   * judgment): the per-server slots read AFTER the full
+   * ensure/resume/prepare sequence (the class-1 gap: the cold-resume
+   * setup reconcile stamps the remount failure, the prepare's cooldown
+   * SKIP leaves the attempt clock untouched, and a timestamp delta is
+   * BLIND to the failure — the delivery then ran on the failed truth).
+   * Classification of each failed APPLICABLE (target-set, policy-allowed)
+   * server:
+   *   - EXEMPT when the request carries the human-reviewed `recovery`
+   *     marker naming it in `unavailableSubjects` (the reviewed re-run —
+   *     the reviewed scope is allowed even while the remount keeps
+   *     failing — the L4c anti-over-block shape);
+   *   - BLOCKED when a requirement in the target's scopes of the bound
+   *     blueprint names it with type `mcpServer` and `complete: true`
+   *     (the in-scope set: the TEAM scope — the v1 flat list + the v2
+   *     teamRequirements — and the TARGET template scope — the v2
+   *     leader / members[i] requirements — the SAME extraction the
+   *     admission gate consumes): the required materialization must
+   *     succeed BEFORE actual input (the bootstrap contract's second
+   *     half: BEFORE ACTUAL INPUT = the materialization SUCCESS is
+   *     verified);
+   *   - DEGRADED otherwise (the optional / no-requirement outage — the
+   *     engine's WARNING / empty-scope shape: it degrades, never blocks —
+   *     the L4a/L4b anti-over-block shapes).
+   * NEVER a blanket throw at prepare: the mount attempt itself stays
+   * ALLOWED (the bootstrap contract's first half: PENDING = the mount
+   * attempt is admissible — a fresh member that never mounted is
+   * admissible, never a blanket block).
+   * @param {object} state - the session's consumption state (the FINAL slots).
+   * @param {string} sessionId
+   * @param {string|undefined} teamRootSid
+   * @param {string[]} target - the applicable (target-set, policy-allowed) names.
+   * @param {{scopeKeys?: readonly string[], unavailableSubjects?: readonly string[]}|undefined} recovery
+   *   - the human-reviewed recovery marker (the router's recovery
+   *   dispatch — NEVER caller-forged; absent = no exemption).
+   * @returns {{blocked: boolean, failedServers: string[], blockedServers: string[], degradedServers: string[], recoveryCoveredServers: string[]}}
+   *   the verdict: `blocked` = at least one failed required server NOT
+   *   covered by the reviewed scope.
+   */
+  function finalInputVerdictOf(state, sessionId, teamRootSid, target, recovery) {
+    const slots = state.mcpMaterialization
+    const failedServers = target.filter((name) => {
+      const slot = slots?.get(name)
+      return slot !== undefined && slot.status === 'failed'
+    })
+    if (failedServers.length === 0) {
+      return { blocked: false, failedServers: [], blockedServers: [], degradedServers: [], recoveryCoveredServers: [] }
+    }
+    // The target template: the root session IS the leader; a member
+    // session is its durable row's template (the row read — the same
+    // authority the setup's static capabilities use).
+    const rootSid = teamRootSid !== undefined ? String(teamRootSid) : undefined
+    let templateId = 'leader'
+    if (rootSid === undefined || String(sessionId) !== rootSid) {
+      const members = domain.repositories.memberInstances.list(rootSid ?? String(sessionId))
+      const row = members.find((member) => member.childSessionId === sessionId)
+      if (row !== undefined && row.templateId !== undefined) templateId = String(row.templateId)
+    }
+    // The in-scope requirements of the bound blueprint (the SAME
+    // extraction the admission gate uses — no second copy of semantics):
+    // the TEAM scope + the TARGET template scope.
+    const blueprint = getBoundBlueprint(rootSid ?? String(sessionId))
+    const inputs = scopeRequirementInputsOf(blueprint)
+    const requiredSubjects = new Set()
+    for (const input of [...inputs.team, ...(inputs.templates[templateId] ?? [])]) {
+      if (input.type === 'mcpServer' && input.complete !== false) {
+        for (const subject of input.subjects) requiredSubjects.add(subject)
+      }
+    }
+    // The reviewed scope: the marker's unavailable subjects (the
+    // human-reviewed re-run's named downed subjects).
+    const reviewedSubjects = new Set(
+      recovery !== undefined && Array.isArray(recovery.unavailableSubjects)
+        ? recovery.unavailableSubjects.map(String)
+        : [],
+    )
+    const blockedServers = []
+    const degradedServers = []
+    const recoveryCoveredServers = []
+    for (const name of failedServers) {
+      if (!requiredSubjects.has(name)) {
+        degradedServers.push(name) // optional / no requirement — the degraded allow
+      } else if (reviewedSubjects.has(name)) {
+        recoveryCoveredServers.push(name) // the reviewed scope — the exemption
+      } else {
+        blockedServers.push(name) // the required outage — the block
+      }
+    }
+    return { blocked: blockedServers.length > 0, failedServers, blockedServers, degradedServers, recoveryCoveredServers }
+  }
+
+  /**
    * The request-boundary reconciliation (P8-S4B §18.2): re-read the backend
    * truth and bring the live agent's model selection + mcp mount SET in line
    * with it BEFORE the next real request. Future-boundary semantics come from the
@@ -3123,26 +3224,37 @@ export function createAgentBindings(deps) {
    * @param {string} sessionId
    * @param {string} [teamRootSid] - the team root the session belongs to
    *   (T12-GLUE; absent = this row's boot root, as before).
-   * @returns {Promise<{mcpFailedApplicable: string[]}>} the SAME-PASSAGE
-   *   truth (Finding F residual-1): the APPLICABLE (target-set) mcp
-   *   servers whose slot is `failed` because THIS passage's mount attempt
-   *   just failed (the attempt clock advanced during the prepare). The
-   *   mount attempt itself is ALLOWED (the bootstrap path: a fresh member
-   *   that never mounted is admissible — never a blanket block); a
-   *   same-passage failure must block the delivery that follows this
-   *   boundary (no real work before the materialization succeeds). A
-   *   pre-passage failure (the cooldown skip / the existing failed slot
-   *   admission already gates / the recovery re-run) is NOT reported here.
+   * @param {{scopeKeys?: readonly string[], unavailableSubjects?: readonly string[]}|undefined} [recovery]
+   *   - the human-reviewed recovery marker of the delivering request (the
+   *   router's recovery dispatch — NEVER caller-forged): a failed required
+   *   server it names in `unavailableSubjects` is EXEMPT in the returned
+   *   verdict (the reviewed scope is allowed — the L4c shape). Absent: no
+   *   exemption. The observation-only callers (the completion wake,
+   *   executeTool) pass nothing.
+   * @returns {Promise<{verdict: {blocked: boolean, failedServers: string[], blockedServers: string[], degradedServers: string[], recoveryCoveredServers: string[]}>}
+   *   the FINAL-INPUT VERDICT (Finding F residual round): the FINAL
+   *   required-truth of the target's applicable mcp materialization AFTER
+   *   the full ensure/resume/prepare sequence — the NORMAL-INPUT consumers
+   *   (workDelivery.deliver / sessionInput.submitAttributedInput /
+   *   deliverRootInput) MUST consult it before the first model-visible
+   *   input (a `blocked` verdict = zero input; the fail-closed
+   *   settlement / the typed delivery failure is their contract). The
+   *   liveness paths (the completion wake, the control notification,
+   *   executeTool) stay observation-only (they ignore the verdict — a
+   *   liveness failure is a liveness failure).
    */
-  async function prepareAgentForRequest(sessionId, teamRootSid) {
+  async function prepareAgentForRequest(sessionId, teamRootSid, recovery) {
     const state = consumptionState.get(sessionId)
-    if (state === undefined) return { mcpFailedApplicable: [] } // defensive: every row agent has consumption state
+    if (state === undefined) {
+      // defensive: every row agent has consumption state
+      return { verdict: { blocked: false, failedServers: [], blockedServers: [], degradedServers: [], recoveryCoveredServers: [] } }
+    }
     const { modelView, mcpViews } = resolveConsumptionViews(sessionId, undefined, teamRootSid)
     const selection = modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection
     if (state.ref.current.provider !== selection.provider || state.ref.current.model !== selection.model) {
       state.ref.current = selection
     }
-    let mcpFailedApplicable = []
+    let verdict = { blocked: false, failedServers: [], blockedServers: [], degradedServers: [], recoveryCoveredServers: [] }
     const handle = liveAgents.get(sessionId)
     if (handle !== undefined && Object.keys(mcpViews).length > 0) {
       // alpha.1 (plan §10.8) + multi-mcp (contract I4 §2.3): the
@@ -3159,39 +3271,20 @@ export function createAgentBindings(deps) {
           ? filterMcpServers(configuredMcpNames, caps.mcp)
           : [...configuredMcpNames]
       const target = templateAllowedNames.filter((name) => mcpViews[name]?.allowed === true)
-      // Finding F residual-1 (the first-mount PENDING window): the
-      // PRE-prepare attempt clock per target server. The gate must fire
-      // ONLY when THIS passage's prepare made the mount attempt and it
-      // failed (the attempt's `lastAttemptAt` advanced during the
-      // reconcile). A pre-passage failure is NOT this passage's attempt
-      // and must not be blocked here: the cooldown skip leaves the slot
-      // untouched, an existing failed slot is already gated at admission
-      // (the feed's failed -> DOWN), and the human-reviewed recovery
-      // re-run MUST be allowed to run its boundary.
-      const preAttemptAt = new Map(
-        target.map((name) => {
-          const preSlot = state.mcpMaterialization?.get(name)
-          return [name, preSlot !== undefined && typeof preSlot.lastAttemptAt === 'number' ? preSlot.lastAttemptAt : undefined]
-        }),
-      )
+      // The MOUNT ATTEMPT is ALLOWED (the bootstrap contract: PENDING =
+      // the mount attempt is admissible — a fresh member that never
+      // mounted is admissible, never a blanket block; the cooldown skip
+      // is the retry discipline, not a verdict). The VERDICT reads the
+      // FINAL slot truth AFTER this reconcile — never a pre/post attempt-
+      // clock delta (the class-1 gap: the setup-stamped failure carries
+      // the same clock the prepare sees, and the delta is blind to it).
       await reconcileMcpSet(state, target)
-      // Post-prepare truth (the attempt IS allowed — the bootstrap path:
-      // a fresh member that never mounted is admissible, never a blanket
-      // block): an APPLICABLE (target-set) server whose slot is `failed`
-      // because THIS passage's attempt just failed has NOT succeeded its
-      // materialization before this boundary's actual input — the truth
-      // the delivery gate reads.
-      mcpFailedApplicable = target.filter((name) => {
-        const slot = state.mcpMaterialization?.get(name)
-        if (slot === undefined || slot.status !== 'failed') return false
-        // This passage's attempt ran (the clock advanced) and failed.
-        return preAttemptAt.get(name) !== slot.lastAttemptAt
-      })
+      verdict = finalInputVerdictOf(state, sessionId, teamRootSid, target, recovery)
     }
     applyBoundaryRecords(state, modelView, mcpViews)
     state.modelView = modelView
     state.mcpViews = mcpViews
-    return { mcpFailedApplicable }
+    return { verdict }
   }
 
   // ── the activation ports (real external effects, minimal surface) ─────
@@ -3419,7 +3512,24 @@ export function createAgentBindings(deps) {
       // TCM-D4: under the session's OWNING root (the boot root only when
       // the session belongs to it; a member of another team root — or a
       // team root itself — resolves under its own root's truth).
-      await prepareAgentForRequest(String(input.sessionId), teamRootOfSession(input.sessionId))
+      const prepared = await prepareAgentForRequest(String(input.sessionId), teamRootOfSession(input.sessionId))
+      // Finding F residual round (the requirement-aware FINAL-INPUT
+      // verdict): the attributed input IS ACTUAL input on the recipient
+      // session (the relayed model-visible turn) — the recipient's FINAL
+      // required-truth gates it exactly like the work delivery. A
+      // `blocked` verdict (a failed REQUIRED server of the recipient's
+      // applicable materialization, not covered by a reviewed recovery —
+      // no such marker rides the wire today: the frozen member.send
+      // contract carries none) throws BEFORE the inbox acceptance; the
+      // coordinator maps the rejection to MESSAGING_DELIVERY_FAILED and
+      // keeps the intent pending (R2/R3: the coordination is recoverable
+      // — zero model-visible input, no confirmation fact). The optional /
+      // no-requirement outage degrades (the relay delivers).
+      if (prepared.verdict.blocked) {
+        throw new Error(
+          `messaging delivery blocked before input: the recipient's required mcp materialization is failed after this boundary [${prepared.verdict.blockedServers.join(', ')}] — the materialization must succeed before real work (Finding F residual round: the requirement-aware final-input verdict)`,
+        )
+      }
       const message = createUserMessage({
         content: [{ type: 'text', text: input.text }],
         source: { kind: 'user' },
@@ -3447,24 +3557,32 @@ export function createAgentBindings(deps) {
       // TCM-D4: under the child's OWNING root (the boot root only when the
       // child belongs to it — a member of another team root resolves
       // under its own root's truth).
-      const prepared = await prepareAgentForRequest(String(args.childSessionId), teamRootOfSession(args.childSessionId))
-      // Finding F residual-1 (the first-mount PENDING window): the
-      // SAME-PASSAGE materialization gate — BEFORE ACTUAL INPUT (the
-      // model-visible followup below). The prepare above ran the target's
-      // own boundary reconcile: the MOUNT ATTEMPT — ALLOWED even for the
-      // PENDING bootstrap phase (a fresh member that never mounted is
-      // admissible; never a blanket pending block). If that attempt FAILED
-      // the target's own applicable materialization, the contract (the
-      // applicable materialization must succeed BEFORE real work) forbids
-      // THIS passage's delivery — the pre-fix window delivered the
-      // follow-up on the very passage that failed the first mount. The
-      // throw is the fail-closed signal: the work chain settles
-      // delivery-failed (durable, N3 throw-after-settle) and ZERO
-      // model-visible input reaches the member; the NEXT passage is
-      // gated as `failed` at admission (the feed's failed -> DOWN).
-      if (prepared.mcpFailedApplicable.length > 0) {
+      const prepared = await prepareAgentForRequest(
+        String(args.childSessionId),
+        teamRootOfSession(args.childSessionId),
+        args.recovery,
+      )
+      // Finding F residual round (the requirement-aware FINAL-INPUT
+      // verdict): BEFORE ACTUAL INPUT (the model-visible followup below).
+      // The prepare above ran the target's own boundary reconcile (the
+      // MOUNT ATTEMPT — ALLOWED: the bootstrap contract's PENDING = the
+      // mount attempt is admissible; a fresh member that never mounted is
+      // admissible, never a blanket block) and returned the FINAL
+      // required-truth of the target's applicable mcp materialization
+      // AFTER the full ensure/resume/prepare sequence. A `blocked`
+      // verdict = a failed REQUIRED server (an in-scope bound-blueprint
+      // requirement, `mcpServer` + `complete: true`) NOT covered by the
+      // request's reviewed `recovery` marker — the contract (the
+      // materialization SUCCESS is verified before actual input) forbids
+      // THIS passage's delivery. The throw is the fail-closed signal: the
+      // work chain settles delivery-failed (durable, N3 throw-after-
+      // settle) and ZERO model-visible input reaches the member; the NEXT
+      // passage is gated as `failed` at admission (the feed's failed ->
+      // DOWN). The optional / no-requirement outage degrades (delivers);
+      // the reviewed-scope outage is exempt (the human-reviewed re-run).
+      if (prepared.verdict.blocked) {
         throw new Error(
-          `team work delivery blocked before input: the target's applicable mcp materialization failed on this passage [${prepared.mcpFailedApplicable.join(', ')}] — the materialization must succeed before real work (Finding F residual-1: the first-mount PENDING window)`,
+          `team work delivery blocked before input: the target's required mcp materialization is failed after this boundary [${prepared.verdict.blockedServers.join(', ')}] — the materialization must succeed before real work (Finding F residual round: the requirement-aware final-input verdict)`,
         )
       }
       const text = args.attachedContext !== undefined && args.attachedContext.length > 0
@@ -3632,7 +3750,25 @@ export function createAgentBindings(deps) {
     const handle = await ensureLiveAgent(sid)
     // The target root IS the team root of its own team — the boundary
     // reconciliation resolves under that root's durable truth.
-    await prepareAgentForRequest(sid, sid)
+    const prepared = await prepareAgentForRequest(sid, sid)
+    // Finding F residual round (the requirement-aware FINAL-INPUT
+    // verdict): the root input IS ACTUAL input on the root session — the
+    // root's (the leader's) FINAL required-truth gates it exactly like
+    // the work delivery (the cold-resume shape: the admission reads the
+    // stale cold truth and admits; the failure stands where the first
+    // model-visible input would go). A `blocked` verdict throws BEFORE
+    // the followup: the root initial-work strategy maps the rejection to
+    // WORK_DELIVERY_FAILED (the remote
+    // TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED) and keeps the durable
+    // admission for the same-token retry (NO terminal root-work fact);
+    // the B6 context / control-notification callers own their
+    // at-least-once/liveness contracts over the same throw. The optional
+    // / no-requirement outage degrades (the input delivers).
+    if (prepared.verdict.blocked) {
+      throw new Error(
+        `root input delivery blocked before input: the root's required mcp materialization is failed after this boundary [${prepared.verdict.blockedServers.join(', ')}] — the materialization must succeed before real work (Finding F residual round: the requirement-aware final-input verdict)`,
+      )
+    }
     const message = createUserMessage({
       content: [{ type: 'text', text }],
       source: { kind: 'user' },

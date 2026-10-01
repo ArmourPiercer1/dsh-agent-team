@@ -604,6 +604,20 @@ export interface WorkDeliveryPort {
         readonly attachedContext?: string;
         /** Transient cancellation signal for the live turn; never durable. */
         readonly signal?: unknown;
+        /**
+         * The human-reviewed RECOVERY marker of this request (the router's
+         * recovery dispatch: the reviewed re-run of a blocked action — NEVER
+         * forgeable by the caller, produced exclusively after a durable
+         * allow decision). Consumed by the delivery's requirement-aware
+         * final-input verdict: a failed REQUIRED mcp server named in
+         * `unavailableSubjects` is EXEMPT for the reviewed scope (the
+         * human's decision stands even while the remount keeps failing).
+         * Absent: no exemption.
+         */
+        readonly recovery?: {
+            readonly scopeKeys: readonly string[];
+            readonly unavailableSubjects: readonly string[];
+        };
     }): Promise<WorkDeliveryResult>;
 }
 /**

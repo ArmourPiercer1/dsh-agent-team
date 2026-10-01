@@ -426,6 +426,7 @@ export async function deliverWork(deps, admitted) {
         prompt: deps.prompt,
         ...(deps.attachedContext !== undefined ? { attachedContext: deps.attachedContext } : {}),
         ...(deps.signal !== undefined ? { signal: deps.signal } : {}),
+        ...(deps.recovery !== undefined ? { recovery: deps.recovery } : {}),
     });
 }
 /**
