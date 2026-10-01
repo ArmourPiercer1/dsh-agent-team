@@ -1,0 +1,45 @@
+=== run-3 result capture (single launch; carrier 58554343 with the scoped-activation observer fix) ===
+captured_utc=2026-10-01T20:44:48.248Z  launch_utc=2026-10-01T20:33:42.981Z  world=prereq-2026-10-01T20-33-43
+carrier HEAD=585543433e8a603c112a9dff4483d79ce4f402b7 tree=cccc3071c140cf619cb771b6d3eaca1ab51bec01
+
+--- exits as printed/written ---
+  [2026-10-01T20:44:26.941Z] runner=2 kit=2
+  [2026-10-01T20:44:26.942Z] paired=FAIL — state kept, no cleanup
+  11-paired-exit.txt=2
+  recorder: paired_exit=2 recorder_end_utc=2026-10-01T20:44:29.451Z
+
+--- kit ---
+  VERDICT: FAIL — 6 criterion(ia) failed: S1, S6, S7, S8, S9, S14
+  criteria PASS=50 FAIL=10
+    [S14] FAIL — per-root durable isolation
+    [S1] FAIL — worker-down cell
+    [S6] FAIL — human-reviewed recovery ALLOW
+    [S7] FAIL — degraded member controlled bash
+    [S7] FAIL — recovery keeps bash ASK (negative #2)
+    [S7] FAIL — W1 materialization
+    [S8] FAIL — E.10 exit record
+    [S8] FAIL — materialization succeeds
+    [S8] FAIL — restored -> next boundary NORMAL
+    [S9] FAIL — UI NOT_RUN
+    [2026-10-01T20:33:55.307Z] b3a: UI OBSERVE hold — requestId=ctrl-1okt8od07n7ove0vma02v1ow digest=sha256:3a2db1505e3… holdMs=180000; access record /srv/workspace/dsh-p
+    [2026-10-01T20:36:55.430Z] [S9] FAIL — UI NOT_RUN: UI OBSERVE hold point expired FAIL-CLOSED — no auto-allow, no kit resolve-on-behalf :: tag=b3a requestId=ctrl-1okt8
+    [2026-10-01T20:38:55.581Z] [S6] FAIL — human-reviewed recovery ALLOW: the recovery decision resolved + the work EXECUTED on the reduced original authority (W1 created) 
+
+--- observer ---
+  typed: STAGE2_OBSERVER_FAIL S2O_ROOT_ROW_MISSING :: no session-browser row carries data-row-key="session:session-prereq-main-prereq-2026-10-01T20-33-43" even after the bounded fresh-boot activation (notice/g
+  marker=NOT_RUN  success screenshots=0  failure artifacts: s2o-entry-dump.html  (entry dump 0600, body suppressed by the observer's own token tripwire => carries no DOM)
+  click telemetry for notice/group/overflow: 0 lines anywhere in captured stdout => clicks NOT evidenced (only the failure message's wording references the path)
+  token: consumed once by the observer's own first goto; access record mode=600 never read/echoed
+
+--- identity census kinds (proves the ownership capture covered the whole subtree) ---
+    bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scr
+    /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/b
+    node -e 
+    node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-
+
+--- clocks, both recorded ---
+    S2O STEP1 start iso=2026-10-01T20:33:43.033Z monotonicMs=0 observeDir=/srv/workspace/dsh-plugins
+    S2O STEP1 accept iso=2026-10-01T20:33:55.538Z waitedMs=12505 polls=26 observeDir=/srv/workspace/
+    kit boot stamp: [2026-10-01T20:33:43.066Z] === pre-alpha3 PR-E E.12 real-hos
+    kit AWAITING: [2026-10-01T20:33:55.307Z] b3a: UI OBSERVE hold — requestI
+    observed mtime anomaly: observer/s2o-entry-dump.html mtime=2026-10-01 20:37:05.223014995 +0000 although the same file was already listed at the 20:34:15Z check (forward-mtime behaviour also recorded in run 1). Reported as observed; no clock cause asserted.

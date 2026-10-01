@@ -1,0 +1,27 @@
+=== run-7 finally — identity-only (no signal issued; everything exited on its own) ===
+captured_utc=2026-10-01T22:50:36.739Z
+signal policy: field-keyed pid+startticks+chain only; substring/port scans read-only and never a signalling basis.
+  recorded_pairs=26 alive_with_matching_starttime=0  signals_issued_in_this_run=0 (paired exited normally, exit 0)
+--- ports / stable instance ---
+  listeners 3181-3186/3491-3493/3496-3497=0 3180=0 all_test_families=0
+  stable 3080: listeners=1 GET=401
+  chrome=0 node=0 (read-only counts)
+--- pins ---
+  TestUse HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4 porcelain=0
+  carrier HEAD=e63da1256f7313822a2205b34696d330bba79e65 tree=da83b95bce459aa0b525535d5431200a5b2524d6 tracked-modified=0
+  launchers 301e8e5726f97884/042a5981a093ffe8 never edited
+--- artifact integrity vs the observer's own manifest.json ---
+  comparisons.json    MATCH
+  dom-narrow.json     MATCH
+  dom-normal.json     MATCH
+  meta.json           MATCH
+  panel-narrow.png    MATCH
+  panel-normal.png    MATCH
+  shot-narrow.png     MATCH
+  shot-normal.png     MATCH
+--- kit's own PASS-path housekeeping (the kit did this, not me) ---
+  kit log: evidence scrubbed: 14 file(s) rewritten (sk- token redactions
+  kit log: [H2] PASS — run ports released after teardown (worldCleaned=true on PASS only)  :: portsHeld=[] worldCleaned=true
+  world dir tests/homes/prereq-2026-10-01T22-46-27 exists=NO (removed by the kit itself on PASS — see H2 worldCleaned=true)
+  earlier worlds retained: 2026-10-01T19-42-45=RETAINED 2026-10-01T20-10-50=RETAINED 2026-10-01T20-33-43=RETAINED 2026-10-01T20-57-09=RETAINED 2026-10-01T21-44-23=RETAINED 2026-10-01T22-15-13=RETAINED 
+  run dirs: 7 present; deleted_by_me=0

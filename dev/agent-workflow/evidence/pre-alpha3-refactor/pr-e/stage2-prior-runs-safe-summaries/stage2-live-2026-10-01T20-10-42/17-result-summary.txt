@@ -1,0 +1,45 @@
+=== Stage-2 LIVE attempt 2 — real result capture (single launch, no patch, no second browser) ===
+captured_utc=2026-10-01T20:21:07.224Z
+carrier HEAD=258e15deaa387a3fc96657a11abcd6c6d7fa56a1 tree=d435c72898f5c82744548e884e05600e9f72b6a6
+launchers: runner sha256=dd09c8fdb28d15bfd61329f41553c589891e6daf94765da789b32641886d0a18 paired sha256=042a5981a093ffe8ae1a1bb844f3bf7949ad238f3ee321872b3925931b500d5e (both re-verified identical before launch)
+run: launch_utc=2026-10-01T20:10:50.218Z  recorder_pid=505317  direct_child(paired)=505320  world=prereq-2026-10-01T20-10-50
+world / RUN_STAMP=prereq-2026-10-01T20-10-50 ; requestId=ctrl-01dvdl10mb6y46105vw6b1t0 ; digest=sha256:87438d55586c89eea7849c7ef6add6fb04ae06b2378de93c31b0246a2c247950 ; rootSessionId(session-prereq-main-prereq-2026-10-01T20-10-50) per durable row
+
+--- exit codes, taken from the files the launcher itself wrote (never inferred from a tail) ---
+  runner / kit / paired lines as printed:
+    [2026-10-01T20:10:50.232Z] paired> start observeDir=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T20-10-42/ob
+    S2O STEP1 start iso=2026-10-01T20:10:50.274Z monotonicMs=0 observeDir=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026
+    S2O STEP1 accept iso=2026-10-01T20:11:02.779Z waitedMs=12504 polls=26 observeDir=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage
+    snapshot: runStamp=prereq-2026-10-01T20-10-50 requestId=ctrl-01dvdl10mb6y46105vw6b1t0 digestPrefix=sha256:87438d55586
+    kit-log cross-check: OK
+    durable row extracted; rootSessionId=session-prereq-main-prereq-2026-10-01T20-10-50 digest=sha256:87438d55586c89eea7849c7ef6add6fb04ae06b2378de93c31b0246a2c247950
+    STAGE2_OBSERVER_FAIL S2O_ROOT_ROW_MISSING :: no session-browser row carries data-row-key="session:session-prereq-main-prereq-2026-10-01T20-10-50" — refusing to observe whatever session the page landed on
+  paired exit file (11-paired-exit.txt) = 2
+  recorder paired_exit = paired_exit=2 at recorder_end_utc=2026-10-01T20:20:34.478Z
+
+--- kit verdict ---
+  VERDICT: FAIL — 6 criterion(ia) failed: S1, S6, S7, S8, S9, S14
+  criterion lines: PASS=50 FAIL=10
+    [S14] FAIL — per-root durable isolation
+    [S1] FAIL — worker-down cell
+    [S6] FAIL — human-reviewed recovery ALLOW
+    [S7] FAIL — degraded member controlled bash
+    [S7] FAIL — recovery keeps bash ASK (negative #2)
+    [S7] FAIL — W1 materialization
+    [S8] FAIL — E.10 exit record
+    [S8] FAIL — materialization succeeds
+    [S8] FAIL — restored -> next boundary NORMAL
+    [S9] FAIL — UI NOT_RUN
+  hygiene: [H1] PASS — test-use pristine BEFORE ;[H1] PASS — test-use pristine AFTER (porcelain empty + HEAD baseline; the worker b;[H1] PASS — ;[H2] PASS — run ports released after teardown (worldCleaned=true on PASS only) 
+
+--- ui-observe stage outcome as the kit recorded it ---
+    [2026-10-01T20:11:02.281Z] b3a: UI OBSERVE hold — requestId=ctrl-01dvdl10mb6y46105vw6b1t0 digest=sha256:87438d55586… holdMs=180000; access record /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/hom
+    [2026-10-01T20:14:02.409Z] [S9] FAIL — UI NOT_RUN: UI OBSERVE hold point expired FAIL-CLOSED — no auto-allow, no kit resolve-on-behalf :: tag=b3a requestId=ctrl-01dvdl10mb6y46105vw6b1t0 lastReason=no marker seen holdMs=180000
+    [2026-10-01T20:18:04.989Z] [S6] FAIL — human-reviewed recovery ALLOW: the recovery decision resolved + the work EXECUTED on the reduced original authority (W1 created) :: recoveryDecision={"requestId":"ctrl-01dvdl10mb6y46105vw6b
+
+--- observer artifacts ---
+  marker.json: NOT_RUN (never written — observer refuses to write unless ALL checks pass)
+  screenshots: 0 file(s) -> NOT_RUN (typed failure precedes both viewport passes)
+  durable extraction (0600): digest-row.json payload.json 
+  typed failure: STAGE2_OBSERVER_FAIL S2O_ROOT_ROW_MISSING :: no session-browser row carries data-row-key="session:session-prereq-main-prereq-2026-10-01T20-10-50" — refusing to observe whatever session the page landed on
+  token consumption: single, by the observer's first goto (no prefetch, no second browser); access record never read/echoed: world browser-access.json mode=600

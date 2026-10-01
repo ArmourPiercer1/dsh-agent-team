@@ -1,0 +1,10 @@
+=== Stage-2 LIVE attempt: FAILURE NOTE (scene preserved, zero patches, zero repeated launches) ===
+recorded_utc=2026-10-01T19:44:29.374Z
+launch: single paired run at 19:42:45Z (02-launch-time.txt); WT=258e15deaa387a3fc96657a11abcd6c6d7fa56a1 tree=d435c72898f5c82744548e884e05600e9f72b6a6
+KIT (real, from WT, not the stub): booted 19:42:45.900Z; RUN_STAMP=prereq-2026-10-01T19-42-45; host http://127.0.0.1:3182; mock 127.0.0.1:3497; mini-MCP 3491/3492/3493; 'row ready — toolCount=13'; team.getLedgerPage -> 200 ok=true
+AWAITING reached: 19:42:57.920Z b3a hold requestId=ctrl-1afdad00usdt2v0zhrjt210z digestPrefix=sha256:85f41febeb2 holdMs=180000; access record 0600 world-only; observe/summary.json written (324 B, token-free)
+RUNNER: exited S2O_RUNNER_AWAIT_TIMEOUT. Consequence chain: STEP-2 never ran (scratch/ EMPTY), observer NEVER launched (observer/ EMPTY, no chrome process ever existed, marker.json never created) => the launch token was NEVER consumed, no page was ever opened, no viewport check, no marker, kit cannot see a hint.
+Snapshot is NOT the cause: replaying the runner's own validators against the real summary.json passes everything (outcome=AWAITING, runStamp OK, requestId OK, digestPrefix matches ^sha256:[0-9a-f]{11}$).
+TWO UNRESOLVED OBSERVED ANOMALIES (stated as observed, cause NOT asserted): (1) the await timeout appeared <=44 s after the 19:42:45 launch, although the STEP-1 budget is 90000 ms (exported) with a 60000 ms default — neither arithmetic yields ~44 s; (2) 10-paired-console-raw.log reports mtime 19:46:04.874 while the container clock reads 19:44:11 (a future mtime relative to date -u). kit-run.log/summary.json mtimes are consistent with their own content stamps, so this is localized to the console file.
+KIT STATE AT NOTE TIME: still inside its 180 s hold (expiry ≈19:45:57.9); paired is waiting the owned kit PID. On expiry the kit fail-closes its ui-observe criterion on its own (UI NOT_RUN/TIMEOUT) — expected, not a patch, not a rerun.
+PRESERVED: everything. No cleanup, no relaunch, no source/oracle/launcher change, no world deletion. Prior evidence dirs untouched.

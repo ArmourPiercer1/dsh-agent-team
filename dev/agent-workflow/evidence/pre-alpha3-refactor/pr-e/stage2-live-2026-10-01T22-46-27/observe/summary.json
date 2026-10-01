@@ -1,0 +1,11 @@
+{
+  "kit": "pr-e-requirement-recovery-smoke/ui-observe",
+  "runStamp": "prereq-2026-10-01T22-46-27",
+  "origin": "http://127.0.0.1:3182",
+  "requestId": "ctrl-0vl9ypc11b9h7308kmqom0hy",
+  "digestPrefix": "sha256:7d3904c82d8",
+  "outcome": "VERIFIED:observed-pending",
+  "claim": "observed-pending",
+  "holdMs": 180000,
+  "at": "2026-10-01T22:46:42.908Z"
+}

@@ -1,0 +1,40 @@
+=== run-7 runtime-restored proof (read-only; no signalling, no host started, no prior raw modified, no token touched) ===
+captured_utc=2026-10-01T22:52:46.592Z  policy: workspace-write + ask (UI-restored after 22:50Z)
+run dir: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T22-46-27
+--- runtime ---
+  pid1=bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /srv/workspace/dsh-plugins/dsh-agent-team /s
+  CapPrm:0000000000000000
+  CapEff:0000000000000000
+  CapBnd:0000000000000000
+  NoNewPrivs:1
+  Seccomp:0
+  attr_current=bwrap//&unpriv_bwrap (enforce)   lsm=lockdown,capability,landlock,yama,apparmor
+  access(2) only: /home/user writable=NO  workspace writable=YES
+--- ownership ---
+  recorded_pairs=26  alive_with_matching_starttime=0   total_signals_issued_in_run_7=0 (runner=0 kit=0 paired=0, all exited normally)
+--- ports / stable instance ---
+  listeners 3181-3186/3491-3493/3496-3497=0  3180=0  all_test_families=0
+  stable 3080: listeners=1 GET=401
+  chrome=0 node=0
+--- anchors (source and launchers, unmodified) ---
+  carrier HEAD=e63da1256f7313822a2205b34696d330bba79e65 tree=da83b95bce459aa0b525535d5431200a5b2524d6 tracked-modified=0
+  observer=06ed02d49aa266aebe7e2144393b1075df2e1db8 (commit 034b7418 = 06ed02d49aa2…)  test=a13120cfbde9dbeb32e5e01026d2fff0f98a968a
+  css=35d884486d1839a20f37e42d87eeedce4525ce53 bundle=38b136f8fc76609d64c681ecc88f13cf2fae0f18 (commit 28416977)
+  TestUse HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4 porcelain=0
+  runner=301e8e5726f978842f05eff55fb2de6983f4b328b3da62f0fbdf3f5b41b8b2e4
+  paired=042a5981a093ffe8ae1a1bb844f3bf7949ad238f3ee321872b3925931b500d5e  (never edited)
+--- observer artifact integrity (vs its own manifest.json) ---
+  comparisons.json    19955B MATCH
+  dom-narrow.json     1753B MATCH
+  dom-normal.json     1753B MATCH
+  meta.json           601B MATCH
+  panel-narrow.png    43395B MATCH
+  panel-normal.png    55130B MATCH
+  shot-narrow.png     71440B MATCH
+  shot-normal.png     106343B MATCH
+  8/8 match
+--- attribution kept as it happened ---
+  kit PASS-path housekeeping, done by the kit and NOT by me: evidence scrubbed: 14 file(s) rewritten (sk- token redactions); portsHeld=[] worldCleaned=true
+  therefore run-7 world tests/homes/prereq-2026-10-01T22-46-27 exists=NO — removed by the kit's own PASS path; this record does not claim it still exists.
+  the six failing-attempt worlds are untouched: 2026-10-01T19-42-45=RETAINED 2026-10-01T20-10-50=RETAINED 2026-10-01T20-33-43=RETAINED 2026-10-01T20-57-09=RETAINED 2026-10-01T21-44-23=RETAINED 2026-10-01T22-15-13=RETAINED 
+  no raw file from runs 1-7 was edited or deleted by me; no eighth run authorized or started.
