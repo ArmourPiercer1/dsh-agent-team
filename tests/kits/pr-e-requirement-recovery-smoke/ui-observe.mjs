@@ -24,7 +24,7 @@
  * pinned by the golden vectors in ui-observe.test.mjs).
  */
 
-import { existsSync, readFileSync, realpathSync } from 'node:fs'
+import { closeSync, constants, existsSync, fstatSync, lstatSync, openSync, readFileSync, realpathSync, rmSync, writeSync } from 'node:fs'
 import { basename, dirname, join, resolve, sep } from 'node:path'
 import { createHash } from 'node:crypto'
 
@@ -105,7 +105,7 @@ function isInsideOrSame(childReal, parentReal) {
 
 /**
  * Parse the two UI flags out of argv.
- *   `--ui-observe <dir>`  enables the mode. COORDINATOR RULING (2026-10-05):
+ *   `--ui-observe <dir>`  enables the mode. COORDINATOR RULING (2026-10-01):
  *                         the dir must resolve INSIDE the authorized
  *                         workspace (`workspaceRoot`, e.g. a controlled dir
  *                         like `<repo>/.worktrees/.scratch-logs/pr54-ui-observe/`),
@@ -161,6 +161,9 @@ export function parseObserveFlags(argv, { workspaceRoot, worldDir } = {}) {
   if (isInsideOrSame(obsReal, homesReal)) {
     throw new ObserveFlagError('UI_OBSERVE_INSIDE_HOME', `the observe dir must live OUTSIDE tests/homes (${homesReal}); got ${obsReal}`)
   }
+  if (worldReal !== null && isInsideOrSame(worldReal, obsReal)) {
+    throw new ObserveFlagError('UI_OBSERVE_CONTAINS_WORLD', 'the observe dir must be DISJOINT from the test world — the world may not live under it (FIX-3 inverse containment)')
+  }
   let holdMs = DEFAULT_UI_HOLD_MS
   if (h !== -1) {
     const rawHold = args[h + 1]
@@ -195,12 +198,22 @@ export function validateAccessRecordPath({ repoRoot, worldDir, fileName = UI_ACC
   }
   const repoReal = realpathNearest(resolve(repoRoot))
   const homesReal = realpathNearest(join(repoReal, 'tests', 'homes'))
+  // FIX-3(a): the HOMES ROOT ITSELF must stay inside the authorized repo tree
+  // (a symlinked tests/homes escaping the repo is refused before anything else).
+  if (!isInsideOrSame(homesReal, repoReal)) {
+    throw new ObserveFlagError('UI_ACCESS_HOMES_ESCAPES_REPO', `tests/homes must stay inside the authorized repo tree (${repoReal}); realpath says ${homesReal}`)
+  }
   const worldReal = realpathNearest(resolve(worldDir))
   if (worldReal === homesReal) {
     throw new ObserveFlagError('UI_ACCESS_WORLD_IS_HOMES_ROOT', 'the access record belongs INSIDE one tests/homes/<world>, not the homes root')
   }
   if (!isInsideOrSame(worldReal, homesReal)) {
     throw new ObserveFlagError('UI_ACCESS_NOT_IN_HOMES', `the access record may ONLY be written inside tests/homes/<world> (${homesReal}); got ${worldReal}`)
+  }
+  // Belt-and-braces (FIX-3(a)): the world's repo containment is IMPLIED by the
+  // homes chain above (homes ⊆ repo ∧ world ⊆ homes) — proven again explicitly.
+  if (!isInsideOrSame(worldReal, repoReal)) {
+    throw new ObserveFlagError('UI_ACCESS_WORLD_ESCAPES_REPO', `the world must stay inside the authorized repo tree (${repoReal}); realpath says ${worldReal}`)
   }
   return join(worldReal, fileName)
 }
@@ -443,4 +456,83 @@ export function evaluateUiReadResult({ readDoneMs, deadlineMs, truthOk = false, 
     return { action: 'verified', autoResolve: false }
   }
   return { action: 'not-verified', autoResolve: false }
+}
+
+// ── FIX-3: secure private access-record write ───────────────────────────────
+
+function leafState(path) {
+  // lstat — NEVER stat: a symlinked leaf must surface as a symlink, not a file.
+  try {
+    const st = lstatSync(path)
+    if (st.isSymbolicLink()) return { exists: true, kind: 'symlink', mode: st.mode & 0o777 }
+    if (st.isFile()) return { exists: true, kind: 'file', mode: st.mode & 0o777 }
+    return { exists: true, kind: 'other', mode: st.mode & 0o777 }
+  } catch (error) {
+    if (error && error.code === 'ENOENT') return { exists: false, kind: 'absent', mode: null }
+    throw new ObserveFlagError('UI_ACCESS_LEAF_UNSTATABLE', `cannot lstat the access-record leaf: ${String(error?.message ?? error)}`)
+  }
+}
+
+function refuseExistingLeaf(leaf) {
+  // (c)/(d): symlink => refuse (never followed); looser-than-0600 => refuse
+  // WITHOUT chmod (legacy private records are never rewritten); a pre-existing
+  // 0600 record is STILL refused — this lane only ever writes NEW fixtures it
+  // just created under its own name.
+  if (leaf.kind === 'symlink') {
+    throw new ObserveFlagError('UI_ACCESS_LEAF_SYMLINK', 'the access-record leaf is a symlink — refused, never followed, never rewritten')
+  }
+  if (leaf.kind !== 'file' || leaf.mode !== 0o600) {
+    throw new ObserveFlagError('UI_ACCESS_LEAF_MODE', `a pre-existing leaf (kind=${leaf.kind} mode=0o${(leaf.mode ?? 0).toString(8)}) is not a fresh 0600 record this lane created — refused without chmod/chown/overwrite`)
+  }
+  throw new ObserveFlagError('UI_ACCESS_LEAF_EXISTS', 'the access-record leaf already exists — this lane only ever writes NEW records it just created')
+}
+
+/**
+ * writePrivateAccessRecord({ repoRoot, worldDir, payload, fileName }) ->
+ *   { path, mode: 0o600 }
+ *
+ * The ONLY sanctioned way the UI lane persists the PRIVATE browser access
+ * record (raw launch URL). Guarantees, all fail-closed (ObserveFlagError):
+ *  - placement (validateAccessRecordPath: world inside realpath-pinned
+ *    tests/homes inside the authorized repo; homes root itself refused);
+ *  - a pre-existing leaf (symlink, wrong kind, or ANY mode) is refused UNTOUCHED —
+ *    never followed, never chmod'ed, never overwritten (this lane only writes
+ *    NEW fixtures it just created);
+ *  - the write uses O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW with mode 0o600 (no temp
+ *    file + rename: the leaf is never swapped behind a rename window; the
+ *    record is tiny and written once per target request);
+ *  - post-write verification: fstat mode === 0o600 AND realpath(leaf) ===
+ *    expected path; any mismatch removes OUR OWN fresh record and refuses.
+ */
+export function writePrivateAccessRecord({ repoRoot, worldDir, payload, fileName = UI_ACCESS_FILE } = {}) {
+  const path = validateAccessRecordPath({ repoRoot, worldDir, fileName })
+  const before = leafState(path)
+  if (before.exists) refuseExistingLeaf(before)
+  let fd
+  try {
+    fd = openSync(path, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600)
+  } catch (error) {
+    if (error && error.code === 'EEXIST') {
+      // Raced into an existing leaf — (c)/(d) checks then refuse, NEVER adopt it.
+      refuseExistingLeaf(leafState(path))
+    }
+    throw new ObserveFlagError('UI_ACCESS_WRITE_FAILED', String(error?.message ?? error))
+  }
+  try {
+    writeSync(fd, JSON.stringify(payload, null, 2))
+    const st = fstatSync(fd)
+    if (!st.isFile() || (st.mode & 0o777) !== 0o600) {
+      throw new Error(`fstat mode 0o${(st.mode & 0o777).toString(8)} is not 0600`)
+    }
+  } catch (error) {
+    try { closeSync(fd) } catch { /* best effort */ }
+    try { rmSync(path) } catch { /* best effort — OUR OWN record only */ }
+    throw new ObserveFlagError('UI_ACCESS_WRITE_UNVERIFIED', `post-write fstat verification failed: ${String(error?.message ?? error)}`)
+  }
+  closeSync(fd)
+  if (realpathSync(path) !== path) {
+    try { rmSync(path) } catch { /* best effort — OUR OWN record only */ }
+    throw new ObserveFlagError('UI_ACCESS_WRITE_UNVERIFIED', 'realpath(access record) drifted from the guarded path — refused')
+  }
+  return { path, mode: 0o600 }
 }

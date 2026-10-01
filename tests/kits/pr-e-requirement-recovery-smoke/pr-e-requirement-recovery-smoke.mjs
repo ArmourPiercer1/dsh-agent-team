@@ -247,7 +247,7 @@ import { pathToFileURL } from 'node:url'
 // is the ONE implementation of canonicalJson/sha256Hex (the kit's former local
 // copies — results pinned byte-identical by ui-observe.test.mjs golden vectors).
 import {
-  parseObserveFlags, validateAccessRecordPath, readMarkerHint, verifyUiTruth,
+  parseObserveFlags, writePrivateAccessRecord, readMarkerHint, verifyUiTruth,
   planUiHoldStep, summarizeUiObserve, reviewPayloadDigestOf,
   sha256Hex, canonicalJson,
   UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
@@ -1819,17 +1819,25 @@ async function uiObserveHold(rec, rootSessionId, req, rid, tag) {
   const expectedDigest = reviewPayloadDigestOf(req.reviewPayload ?? null)
   let accessPath = null
   try {
-    accessPath = validateAccessRecordPath({ repoRoot: WORKTREE, worldDir: HOME })
-    writeFileSync(accessPath, JSON.stringify({
-      note: 'PRIVATE operational record — raw launch URL. Not evidence: never commit, never paste into a log or a report. Valid only while this boot is live.',
-      runStamp: RUN_STAMP,
-      world: HOME,
-      boot: rec.label,
-      origin: rec.origin,
-      launchUrl: rec.url,
-      requestId: rid,
-      reviewPayloadDigest: expectedDigest,
-    }, null, 2), { mode: 0o600 })
+    // FIX-3 secure write: placement guard + O_CREAT|O_EXCL|O_NOFOLLOW 0600 +
+    // post-write fstat/realpath verification; a pre-existing leaf (symlink OR
+    // loose mode) is refused UNTOUCHED — this lane only writes NEW records it
+    // just created; legacy private records are never followed/chmod'ed/rewritten.
+    const writtenRecord = writePrivateAccessRecord({
+      repoRoot: WORKTREE,
+      worldDir: HOME,
+      payload: {
+        note: 'PRIVATE operational record — raw launch URL. Not evidence: never commit, never paste into a log or a report. Valid only while this boot is live.',
+        runStamp: RUN_STAMP,
+        world: HOME,
+        boot: rec.label,
+        origin: rec.origin,
+        launchUrl: rec.url,
+        requestId: rid,
+        reviewPayloadDigest: expectedDigest,
+      },
+    })
+    accessPath = writtenRecord.path
   } catch (error) {
     const reason = `ACCESS_RECORD_REJECTED :: ${String(error?.code ?? error?.message ?? error).slice(0, 200)}`
     check('S9', 'UI NOT_RUN: UI OBSERVE access record rejected by the placement guard (fail closed)', false, reason)

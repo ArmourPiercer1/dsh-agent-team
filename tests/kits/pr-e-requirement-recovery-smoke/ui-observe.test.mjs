@@ -8,7 +8,7 @@
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, writeFileSync, symlinkSync, realpathSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, symlinkSync, realpathSync, lstatSync, chmodSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createHash } from 'node:crypto'
@@ -18,7 +18,7 @@ import {
   parseObserveFlags, validateAccessRecordPath, readMarkerHint,
   verifyUiTruth, planUiHoldStep, summarizeUiObserve,
   UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
-  UI_LEDGER_READ_BUDGET_MS, evaluateUiReadResult,
+  UI_LEDGER_READ_BUDGET_MS, evaluateUiReadResult, writePrivateAccessRecord,
 } from './ui-observe.mjs'
 
 // ── fixtures ────────────────────────────────────────────────────────────────
@@ -81,7 +81,7 @@ test('flags: malformed values fail closed (typed errors)', () => {
   }
 })
 
-// ── 2. observe-dir placement guards (coordinator ruling 2026-10-05: the dir
+// ── 2. observe-dir placement guards (coordinator ruling 2026-10-01: the dir
 //     must live INSIDE the authorized workspace, fully separated from the
 //     tests/homes private 0600 auth world) ──────────────────────────────────
 
@@ -390,4 +390,50 @@ test('FIX-2: fake-clock — read-budget overrun is not-yet-verified, never verif
   assert.equal(r.autoResolve, false)
   assert.ok(!('decision' in r) && !('resolve' in r))
   assert.ok(UI_LEDGER_READ_BUDGET_MS > 0 && UI_LEDGER_READ_BUDGET_MS < DEFAULT_UI_HOLD_MS)
+})
+
+// ── 11. FIX-3: secure auth write (world-only 0600; O_EXCL|O_NOFOLLOW; never
+//         follows/rewrites pre-existing leaves; homes pinned inside the repo) ─
+
+test('FIX-3: a tests/homes symlink escaping the authorized repo root is rejected', () => {
+  const base = mkTmp('uio-repo2-')
+  mkdirSync(join(base, 'tests'), { recursive: true })
+  const elsewhere = mkTmp('uio-homesout-')
+  symlinkSync(elsewhere, join(base, 'tests', 'homes'))
+  throwsCode(() => validateAccessRecordPath({ repoRoot: base, worldDir: join(base, 'tests', 'homes', 'w1') }), 'UI_ACCESS_HOMES_ESCAPES_REPO')
+})
+
+test('FIX-3: observe dir may NOT contain the world (inverse disjointness)', () => {
+  const { root, world } = mkFakeRepo()
+  throwsCode(() => parseObserveFlags(['--ui-observe', join(root, 'tests')], { workspaceRoot: root, worldDir: world }), 'UI_OBSERVE_CONTAINS_WORLD')
+})
+
+test('FIX-3: leaf symlink + loose-mode leaf refused UNTOUCHED; happy path writes a verified 0600 record', () => {
+  const { root, world } = mkFakeRepo()
+  const leaf = join(world, 'browser-access.json')
+  const payload = { note: 'x', requestId: 'r-1' }
+  // (c) pre-existing LEAF symlink — refused, never followed, never rewritten
+  const target = join(mkTmp('uio-target-'), 'victim.json')
+  writeFileSync(target, 'VICTIM')
+  symlinkSync(target, leaf)
+  throwsCode(() => writePrivateAccessRecord({ repoRoot: root, worldDir: world, payload }), 'UI_ACCESS_LEAF_SYMLINK')
+  assert.ok(lstatSync(leaf).isSymbolicLink(), 'leaf symlink untouched')
+  assert.equal(readFileSync(target, 'utf8'), 'VICTIM', 'symlink target untouched')
+  rmSync(leaf)
+  // (d) pre-existing leaf with looser mode — refused WITHOUT chmod (legacy records are never rewritten)
+  writeFileSync(leaf, 'LEGACY')
+  chmodSync(leaf, 0o644)
+  throwsCode(() => writePrivateAccessRecord({ repoRoot: root, worldDir: world, payload }), 'UI_ACCESS_LEAF_MODE')
+  assert.equal(readFileSync(leaf, 'utf8'), 'LEGACY', 'loose-mode leaf content untouched')
+  assert.equal(lstatSync(leaf).mode & 0o777, 0o644, 'loose-mode leaf mode untouched (no chmod)')
+  rmSync(leaf)
+  // (e/f) happy path — NEW record only: O_EXCL|O_NOFOLLOW 0600, fstat+realpath verified
+  const written = writePrivateAccessRecord({ repoRoot: root, worldDir: world, payload })
+  assert.equal(written.path, join(realpathSync(world), 'browser-access.json'))
+  assert.equal(lstatSync(written.path).mode & 0o777, 0o600)
+  assert.equal(realpathSync(written.path), written.path)
+  assert.deepEqual(JSON.parse(readFileSync(written.path, 'utf8')), payload)
+  // this lane only ever writes NEW fixtures it created — a re-write is refused
+  throwsCode(() => writePrivateAccessRecord({ repoRoot: root, worldDir: world, payload }), 'UI_ACCESS_LEAF_EXISTS')
+  assert.deepEqual(JSON.parse(readFileSync(written.path, 'utf8')), payload, 'refused re-write left the created record intact')
 })
