@@ -43,12 +43,12 @@
    - `unshare -U --map-root-user true`（userns 内 `/proc/self/uid_map` 写入）→ **EXIT=1 EPERM（拒绝）**；
    - `bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp true` → **EXIT=1**，bwrap 自身打印（bwrap 的泛化诊断文案，非内核原文）："bwrap: No permissions to create new namespace, likely because the kernel does not allow non- privileged user namespaces."；
    - 即被拒步骤 = **userns+mountns 组合** 与 **uid_map 写入**（容器运行时层对嵌套/映射的拦截），不是"userns 完全不可用"（单独 userns 成功）；
-   - Landlock：`/boot/config-6.8.0-142-generic` 无 CONFIG_LANDLOCK_* 条目 = **未构建**；sandbox-exec/ACL-restricted-token 后端在本 Linux 环境不适用。
-   结论（分阶段）：bwrap 受限沙箱后端在本容器**不可运行**（缺 userns 嵌套 + uid_map 能力），Landlock 未构建 ⇒ DSH 宿主沙箱包（upstream）无可用后端 ⇒ 宿主 bash 工具按 fail-closed 设计拒绝一切受限执行。
-4. TEST_METHODS.md 只读核查：§5 沙箱约束 = "测试实例工作默认在 workspace-write 内完成，不发起升级请求"；**不存在**"为宿主 bash 沙箱后端缺失准备的已文档化安全启动方式" —— 即隔离 host 配置未"漏接"任何已文档化的安全路径；此缺失是宿主内核能力问题。
+   - Landlock：`/boot/config-6.8.0-142-generic` 无 CONFIG_LANDLOCK_* 条目 = **未构建**【**历史推论 — SUPERSEDED（2026-10-01 diagnostics §9 更正）：运行时 `/sys/kernel/security/lsm` = `lockdown,capability,landlock,yama,apparmor` → 运行内核 landlock 已编译且 ACTIVE（两证据矛盾，运行时权威，/boot/config 判不可靠/疑 stale）；当前事实 = DSH landlock 轮缺 helper `landlock-run` 二进制（pinned 树），用户已自行安装、独立环境 session 验证中，不预支结论**】；sandbox-exec/ACL-restricted-token 后端在本 Linux 环境不适用。
+   结论（分阶段；**前段维持、后段 SUPERSEDED**）：bwrap 受限沙箱后端**在本 agent 会话 wrapper 子树上下文**不可运行（缺第二层非特权 userns 嵌套 + uid_map 写入能力 —— 注意 **非 kernel 全局禁止**：裸 `unshare -U` EXIT=0；旧措辞"内核无 userns" = **superseded**，见 diagnostics §8/§9）；【原文"Landlock 未构建 ⇒ 无可用后端" = **superseded**（运行内核 landlock ACTIVE；实际缺失 = helper 二进制 + 嵌套上下文受限；安装验证 pending，不预支结论）】⇒ 本轮 2 项宿主 bash 侧效检查 = 未验证（环境 blocker，如实记录）。
+4. TEST_METHODS.md 只读核查：§5 沙箱约束 = "测试实例工作默认在 workspace-write 内完成，不发起升级请求"；**不存在**"为宿主 bash 沙箱后端缺失准备的已文档化安全启动方式" —— 即隔离 host 配置未"漏接"任何已文档化的安全路径；此缺失是**宿主上下文（wrapper 子树特权链）能力问题**（kernel 裸 userns 可用 —— 旧措辞"宿主内核能力问题" = superseded，见 diagnostics §8/§9）。
 5. 因此按用户裁决口径：**不做** sandbox 禁用/弱化、不改安全配置、不安装。若未来要在具备 userns/Landlock 的宿主上补齐 40/40，具体动作 = 在该宿主运行同一 tracked kit（零改动）；本环境的 2 项侧效检查保持"未验证（环境 blocker）"。
 
 ## 对 DoD #20 的意义
 
-- pr-d（#49 control 面积）= **PARTIAL**：38/40 控制面语义在合并树（产品 mergeSHA c19af195）实宿主验证；2 项 bash 侧效执行 = 环境 blocker（内核无 userns → 宿主沙箱后端不可用），具体技术 blocker、非耗时、非产品回归。
+- pr-d（#49 control 面积）= **PARTIAL**：38/40 控制面语义在合并树（产品 mergeSHA c19af195）实宿主验证；2 项 bash 侧效执行 = 环境 blocker（**2026-10-01 更正口径**：wrapper 子树内第二层非特权 userns+mountns 组合 + uid_map 写入被拒 —— 非 kernel 全局禁止 + DSH landlock 轮 helper 缺失（pinned 树）；用户已自行安装 landlock-run，安装是否落正确路径 = 独立环境 session 验证中），具体技术 blocker、非耗时、非产品回归。
 - 该 blocker 同样约束其他 kit 中**依赖宿主 bash 真实执行**的腿（已见实例：prf G6 的 300KB spill → artifact-read-granted 链 = 同因未验证；E.12 各腿不依赖宿主 bash 执行 —— 见其 keyed re-run 结果）。

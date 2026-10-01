@@ -90,9 +90,12 @@ gitignored) — this section is a pointer summary, not the authority:
   backend on 2026-10-01; an independent environment session performs the real
   verification — the main session has stopped environment probing; browser-rendering
   dimension: no browser binaries in this environment). Test-infra PR #51 (tracked kit
-  fixes + tracked-run evidence) = DRAFT @ `43a4274c2b5af262a5fd4108076897da730d0e82`
-  (base c19af195; external final code/assertions PASS @ 509751ad; internal 3-review in
-  flight; merge pending the gated conditions). See
+  fixes + tracked-run evidence) = **MERGED 2026-10-01 12:27:37Z (user-authorized guarded
+  SQUASH)**: final HEAD `4757112c7153b12ed9a81f31699bb39d69c51fa7` → mergeSHA `427219e443ece4d57ac8558f13850c5f42ff8330`
+  (base c19af195; external final delta PASS @ 509751ad + external exact-HEAD review PASS @ 4757112c;
+  internal 3-review PASS @ 4757112c — delta re-review after the R3-F1 liveToken redaction fix;
+  credential values from the 509751ad era remain in the fork branch history — NOT claimed
+  cleared/invalidated). See
   `dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md` and
   `…/realhost-battery-post-merge/` (battery logs + namespace-sandbox-diagnostics §1-9).
 - **Pre-1.0 branch policy:** `master` carries ongoing alpha development; `stable` tracks only release-candidate baselines and RC-qualified fixes. Do not merge unqualified alpha work from `master` directly into `stable`.
@@ -132,10 +135,10 @@ gitignored) — this section is a pointer summary, not the authority:
   push authorizations — PRs #16–#21 and #23–#35 merged, then the pre-alpha3
   series PRs #37–#45 merged (latest: PR #45 (PR-F) merged @ `365f635c`,
   2026-09-30); **PR #22 CLOSED as superseded (2026-09-30, plan §8.6)**.
-  **origin/master @ `31ad828d`** (2026-10-01 re-verified; superseded 07:07Z → `8e18819c…` after #47+#46, then 08:07Z → `621fdba1…` after the #48 authorized merge);
+  **origin/master = `427219e443ece4d57ac8558f13850c5f42ff8330`** (2026-10-01 12:27Z = PR #51 guarded SQUASH; history: `31ad828d` → 07:07Z `8e18819c…` (#47+#46) → 08:07Z `621fdba1…` (#48) → 10:0xZ `26c48c87…` (#49) → 11:02Z `c19af195…` (#50) → 12:27Z `427219e4…` (#51));
   **origin/stable @ `b0e5aeb4`** (0.1.0-rc.1 freeze, unchanged). Zero force-push
   on gated history; each push verified via ls-remote.
-- Next (2026-10-01 handoff closure round): five DRAFT fix PRs for findings
+- [HISTORY — 2026-10-01 morning snapshot; superseded 12:3xZ — see CURRENT block below] Next (2026-10-01 handoff closure round): five fix PRs for findings
   A–J (5 P1 + 5 P2) confirmed by the 2026-10-01 independent external review of
   the merged series — `fix/persona-kind-preflight` (A) /
   `fix/control-authz-boundary` (B, C, D, H) / `fix/effective-policy-reset-fallback`
@@ -143,7 +146,7 @@ gitignored) — this section is a pointer summary, not the authority:
   (I, J), all base `31ad828d`, plus the handoff-closure branch carrying the
   final DoD-20 series report — **NONE merged, NO auto-merge; merging waits
   exclusively on the user's explicit per-HEAD instruction after external review
-  passes a specific HEAD**. [Superseded, 2026-09-28:] no in-flight task round;
+  passes a specific HEAD**. **CURRENT (2026-10-01 12:3xZ, post-PR#51-merge):** all five fix PRs MERGED (#46 @ `8e18819c…` / #47 @ `2bfbca12…` / #48 @ `621fdba1…` / #49 @ `26c48c87…` / #50 @ `c19af195…`) + **test-infra PR #51 MERGED @ `427219e443ece4d57ac8558f13850c5f42ff8330`** (2026-10-01 12:27:37Z, user-authorized guarded SQUASH of final HEAD `4757112c7153b12ed9a81f31699bb39d69c51fa7`; internal 3-review PASS @ 4757112c (delta re-review) + external final delta PASS @ 509751ad + external exact-HEAD review PASS @ 4757112c + user per-HEAD authorization; final tree == approved head verified empty; credential values from the 509751ad era remain in the fork branch history — NOT claimed cleared/invalidated) + **closure PR #52 DRAFT published** (`task/pre-alpha3-handoff-closure`, docs/evidence-only; **NO merge authorization** — user's independent review + internal 3-review in progress; external exact-HEAD review @ a9bf52b4 = 4 doc-accuracy BLOCKs, closed by this bounded revision). [Superseded, 2026-09-28:] no in-flight task round;
   open PR = **PR #22** awaiting review/merge ruling. Still awaiting user
   direction: **G8-S (P9 proper
   line)** ruling (graph `blocked`, pending prototype outcome) and the
