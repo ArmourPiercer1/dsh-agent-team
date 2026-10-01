@@ -86,6 +86,7 @@ import {
 } from '../../domain/compatibility/src/index.js'
 import type { EnvironmentFact, Requirement } from '../../domain/compatibility/src/index.js'
 import {
+  MATERIALIZATION_STATES,
   MEMBER_LIVENESS,
   PROBE_VERDICTS,
   SUPPLY_AXIS,
@@ -97,7 +98,6 @@ import {
 import {
   assertRequirementFactScope,
   REQUIREMENT_FACT_SCOPE_ROLES,
-  type MemberMaterializationView,
   type RequirementFactsPorts,
   type RequirementFactsResolution,
   type RequirementObservation,
@@ -204,17 +204,11 @@ export function createRuntimeRequirementFactsProvider(ports: RequirementFactsPor
         return planPromise
       }
 
-      // The member materialization view resolves at most once per call.
-      let materializationPromise: Promise<MemberMaterializationView | undefined> | undefined
-      const materializationView = (): Promise<MemberMaterializationView | undefined> => {
-        if (materializationPromise === undefined) {
-          materializationPromise =
-            scope.kind === 'template' && ports.memberMaterialization !== undefined
-              ? ports.memberMaterialization(scope)
-              : Promise.resolve(undefined)
-        }
-        return materializationPromise
-      }
+      // The member materialization view is resolved per (scope, subject)
+      // INSIDE the mcpServer branch, after that subject's readiness probe
+      // (Finding F: the probe of this very call may have just stamped the
+      // slot `failed` — the view must read the post-stamp truth; see the
+      // mcpServer case). No memoization: the port is a pure state read.
 
       // The readiness probe memoized per (type, subject) within this call.
       const probeCache = new Map<string, Promise<CapabilityObservation>>()
@@ -240,9 +234,6 @@ export function createRuntimeRequirementFactsProvider(ports: RequirementFactsPor
       const hasProbe = ports.readiness.hasProbe
       const isProbeable = (type: Requirement['type']): boolean =>
         hasProbe === undefined ? true : hasProbe(type)
-
-      // One materialization view for the whole call (the scope is one).
-      const view = await materializationView()
 
       const observations: RequirementObservation[] = []
       // The feed is per (domain, subject) — unique (the engine rejects
@@ -273,6 +264,27 @@ export function createRuntimeRequirementFactsProvider(ports: RequirementFactsPor
                 live = await probe('mcpServer', subject)
                 readiness = observationToView(live)
               }
+              // Finding F (confirmed-loss ordering) — the materialization
+              // view is resolved AFTER this subject's readiness probe: the
+              // aggregate probe of THIS VERY resolution may have just
+              // witnessed the confirmed loss (retired the fiber, stamped
+              // the slot `failed`) — the view must read the POST-stamp
+              // truth, so the scope verdict and the target verdict agree
+              // on the same boundary state within one gate passage (a
+              // pre-probe capture left the scope verdict `mounted` while
+              // the target verdict saw `failed` — the same boundary, two
+              // truths, one passage). One port call per (scope, subject):
+              // the port is a pure state read (the host's member row list
+              // + the ephemeral consumption state), and a LATER subject's
+              // probe may stamp its own slot after this one's view was
+              // read (no per-call memoization — the fresh read is the
+              // point). Template scopes only (the team scope has no
+              // instance boundary); port absent (factory / test worlds) →
+              // `undefined` → the cold default (byte-identical legacy).
+              const view =
+                scope.kind === 'template' && ports.memberMaterialization !== undefined
+                  ? await ports.memberMaterialization(scope)
+                  : undefined
               const materialization =
                 scope.kind === 'template'
                   ? deriveMaterializationStatus({
@@ -440,6 +452,26 @@ function deriveEngineFact(
   observation: RequirementObservation,
   seedBySubject: ReadonlyMap<string, EnvironmentFact>,
 ): EnvironmentFact | undefined {
+  // Finding F (target-specific gating) — the FIRST check, beating the
+  // readiness verdict and the bootstrap seed: a confirmed materialization
+  // FAILURE is the 2-state DOWN even when the aggregate readiness is
+  // `reachable` (the mask Finding F reports: a healthy sibling's fiber
+  // keeps the SERVER-level probe up while the boundary's own mount is
+  // `failed`) and even when the seed says `available` (the seed is a
+  // bootstrap truth, never the boundary truth). Guide §2.5.5: a resident
+  // member with a failed slot blocks that template's normal work. The
+  // axis is present only for the mcpServer domain (the template/instance
+  // boundary) — `pending` / `mounted` / `not-applicable` never flip the
+  // feed (the readiness axis decides there: the liveness adjudication —
+  // PENDING must never be a state only the blocked action can settle).
+  if (observation.materialization === MATERIALIZATION_STATES.failed) {
+    return deepFreeze({
+      domain: domain as EnvironmentFact['domain'],
+      subject,
+      available: false,
+      generation: observationGeneration(observation),
+    })
+  }
   if (observation.readiness === PROBE_VERDICTS.reachable) {
     return deepFreeze({
       domain: domain as EnvironmentFact['domain'],

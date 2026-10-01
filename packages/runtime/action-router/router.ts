@@ -337,7 +337,13 @@ export function createTeamRuntime(
    * operation remains blocked, no durable effect); returns `undefined` for
    * a non-offer error (a different code, no `recoveryDispatchAvailable`,
    * no Control service wired — the caller re-throws the ORIGINAL error
-   * unchanged: the original typed contract stands).
+   * unchanged: the original typed contract stands). Finding F: a
+   * REJECTED OFFER is also non-offer — the control service re-runs the
+   * caller's authority steps and rejects a caller whose envelope does
+   * not carry the `request-control` op (ENVELOPE_OUT_OF_BOUNDS); that
+   * rejection (like any non-typed offer fault) returns `undefined` so
+   * the ORIGINAL typed block stands (the dispatch is an offer, never a
+   * precondition; zero durable effect — a rejected offer writes no row).
    */
   async function dispatchRecoveryIfOffered(
     error: unknown,
@@ -377,23 +383,37 @@ export function createTeamRuntime(
       unavailableSubjects,
     })
     recoveryDispatchSequence += 1
-    const record = await controlService.requestControl({
-      rootSessionId: args.rootSessionId,
-      caller: request.caller,
-      kind: CONTROL_REQUEST_KINDS.USER_APPROVAL,
-      subject: recoveryDispatchSubject(request, args.targetTemplateId, args.rootSessionId),
-      ...(request.targetInstanceId !== undefined
-        ? { targetInstanceId: String(request.targetInstanceId) }
-        : {}),
-      actionName: request.action,
-      correlation: `recovery:${request.requestToken}:${recoveryDispatchSequence.toString(36)}`,
-      summary:
-        `recovery dispatch: one reviewed attempt of '${request.action}' on the blocked ` +
-        `scope(s) [${blockedScopes.join(', ')}] on the reduced original authority`,
-      reviewPayload: payload,
-      reviewPayloadDigest: `sha256:${sha256Hex(canonicalJsonStringify(payload))}`,
-      executionCoupling: CONTROL_EXECUTION_COUPLINGS.INLINE,
-    })
+    let record
+    try {
+      record = await controlService.requestControl({
+        rootSessionId: args.rootSessionId,
+        caller: request.caller,
+        kind: CONTROL_REQUEST_KINDS.USER_APPROVAL,
+        subject: recoveryDispatchSubject(request, args.targetTemplateId, args.rootSessionId),
+        ...(request.targetInstanceId !== undefined
+          ? { targetInstanceId: String(request.targetInstanceId) }
+          : {}),
+        actionName: request.action,
+        correlation: `recovery:${request.requestToken}:${recoveryDispatchSequence.toString(36)}`,
+        summary:
+          `recovery dispatch: one reviewed attempt of '${request.action}' on the blocked ` +
+          `scope(s) [${blockedScopes.join(', ')}] on the reduced original authority`,
+        reviewPayload: payload,
+        reviewPayloadDigest: `sha256:${sha256Hex(canonicalJsonStringify(payload))}`,
+        executionCoupling: CONTROL_EXECUTION_COUPLINGS.INLINE,
+      })
+    } catch {
+      // Finding F (the dispatch is an OFFER, never a precondition): a
+      // REJECTED offer — the control service re-runs the caller's
+      // authority steps and the caller's envelope does not carry the
+      // `request-control` op (ENVELOPE_OUT_OF_BOUNDS — the mtm F-matrix
+      // world: the leader's team envelope carries only the work ops) — or
+      // a non-typed offer fault must NOT replace the original typed
+      // block: the original COMPATIBILITY_BLOCKED stands unchanged
+      // (fail-closed — the work stays blocked; a rejected offer writes no
+      // dispatch row, so zero durable effect).
+      return undefined
+    }
     let decision: ControlDecisionRecord
     try {
       decision = await controlService.awaitControlDecision({

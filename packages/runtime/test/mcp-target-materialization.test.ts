@@ -710,13 +710,17 @@ const D = await (async () => {
   // materialization settles only at the first boundary).
   const slotCAtBoot = slotOf(world, instC.childSessionId, D_SERVER)
 
-  // Cold C: dispose its agent (the handle is gone — `hasLive` false;
-  // the session stays durable from the activation barrier, so the
-  // later delivery RESUMES C, it does not re-create it).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the bridge agents double
-  const handle: any = (world.agents as any).handles.get(instC.childSessionId)
-  if (handle === undefined) throw new Error('mtm D: C has no live handle to dispose')
-  await handle.dispose()
+  // Cold C: drop its RESIDENCY through the glue's own seam (the
+  // production cold path — the host-restart-style removal: the live
+  // handle leaves the glue's registry, so the materialization port
+  // sees the member COLD (`hasLive` false → `not-applicable`) while
+  // the session stays durable from the activation barrier — the later
+  // delivery RESUMES C through agents.resume, it does not re-create it).
+  // A direct double-handle dispose would BYPASS the glue's registry (a
+  // stale resident handle would stay "live" — the wrong state for this
+  // guard: that is a plugin-internal fault, not the cold member).
+  const dropResult: { dropped?: boolean } = await world.root.live.dropResidency(instC.childSessionId)
+  if (dropResult.dropped !== true) throw new Error('mtm D: C residency did not drop')
 
   // T5 — the follow-up to the COLD instance: NOT blocked (the
   // `not-applicable` materialization never blocks — applicability gates

@@ -86,6 +86,7 @@ import type { TeamDomain } from '../../../storage/repositories/index.js'
 import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../../storage/schema/index.js'
 import type { StorageDomainSeam } from '../../../storage/schema/index.js'
 import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js'
+import type { MemberInstanceRecordDto } from '../../../contracts/src/index.js'
 import type { LegacyInspectFn } from './legacy-surface.js'
 import { createBlueprintAuthority } from './blueprint-authority.js'
 import { createBoundBlueprintResolver } from './bound-blueprint.js'
@@ -2047,39 +2048,140 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   })
   // The member materialization view of one template/instance boundary (the
   // glue's EPHEMERAL live MCP state — the durable telemetry is never read
-  // back). No committed v1 MemberInstance row for the boundary → `undefined`
-  // (a cold / not-yet-created member: the materialization axis derives
-  // `not-applicable`, which MUST NOT block, guide §2.3/§2.5.4). The v2
-  // Leader rows (no childSessionId) are filtered out of the match.
+  // back). Finding F (scoped identity): the boundary names its OWNING team
+  // root (`scope.rootSessionId` — the multi-root host shape: a production
+  // host row hosts EVERY team root of the domain, the router resolves ANY
+  // root in the domain; absent = the entry's boot root, the legacy
+  // single-root contract, byte-identical) and, for the gate's target
+  // read, its target INSTANCE (`scope.instanceId`).
+  //
+  // - TARGET read (instanceId present): the EXACT row's own view — a
+  //   healthy sibling's slot must never stand in for the target's own
+  //   mount state (the masking Finding F reports: the aggregate probe
+  //   says `reachable` on a healthy fiber while the target's own mount
+  //   is `failed`). No committed row → `undefined` (the cold /
+  //   not-yet-created member: the axis derives `not-applicable`, which
+  //   MUST NOT block, guide §2.3/§2.5.4).
+  // - SCOPE read (instanceId absent): the CONSERVATIVE worst case over
+  //   the owning root's committed rows of the template — any live
+  //   instance's `failed` slot keeps the axis failed; only when EVERY
+  //   live instance's slot is `mounted` does the axis read mounted; a
+  //   mixed live set (an in-flight instance) OMITS the axis (the gate's
+  //   scope exit treats the omission as unsatisfied — the scope has not
+  //   converged). No committed rows → `undefined`; every committed row
+  //   COLD → the cold view (`not-applicable` — the cold member MUST NOT
+  //   block, guide §2.5.4).
+  //
+  // The session one row's fiber lives on: a v1 MEMBER row binds its
+  // durable child Session; a v2 LEADER row (no childSessionId — the
+  // Leader IS the Root Session itself, Architecture §9.2) lives on the
+  // root session (the LEADER MOUNT AUTHORITY, Blocker-1 contract: the
+  // root mounts config.rootPresetId — the leader's fiber is the root's
+  // fiber).
   const memberMaterialization = (
     scope: RequirementFactScope,
   ): Promise<MemberMaterializationView | undefined> => {
     if (scope.kind !== 'template') return Promise.resolve(undefined)
-    const member = domain.repositories.memberInstances
-      .list(resolvedRowConfig.rootSessionId)
-      .find(
-        (record) =>
-          record.schemaVersion === 1 &&
-          record.templateId === scope.templateId &&
-          (scope.instanceId === undefined || record.instanceId === scope.instanceId),
-      )
-    if (member === undefined) return Promise.resolve(undefined)
-    const childSessionId = member.childSessionId
-    const liveness: MemberLiveness = live.hasLive(childSessionId)
-      ? live.isResuming(childSessionId)
-        ? MEMBER_LIVENESS.resuming
-        : MEMBER_LIVENESS.resident
-      : MEMBER_LIVENESS.cold
-    const state = live.getConsumptionState(childSessionId) as
-      | { readonly mcpMaterialization?: ReadonlyMap<string, MaterializationSlot> }
-      | undefined
-    const mcpSlots = new Map<string, MaterializationSlot>()
-    if (state !== undefined && state !== null && state.mcpMaterialization !== undefined) {
-      for (const [serverName, slot] of state.mcpMaterialization) {
-        mcpSlots.set(serverName, slot)
-      }
+    const owningRoot = scope.rootSessionId ?? resolvedRowConfig.rootSessionId
+    const rows = domain.repositories.memberInstances
+      .list(owningRoot)
+      .filter((record) => record.templateId === scope.templateId)
+    const sessionOf = (record: MemberInstanceRecordDto): string => {
+      // A v2 LEADER row (the LeaderInstance record — no childSessionId;
+      // the Leader IS the Root Session itself, Architecture §9.2) lives on
+      // the root session (the LEADER MOUNT AUTHORITY, Blocker-1 contract:
+      // the root mounts config.rootPresetId — the leader's fiber is the
+      // root's fiber). The repository list's DECLARED v1 return carries
+      // the unowned leader row (the documented type lie, contracts
+      // member-instance-record), so the RUNTIME schemaVersion
+      // discriminates; every v1 row (including a legacy harness-style
+      // leader row that carries a childSessionId) keeps the child-session
+      // resolution byte-identically.
+      const raw = record as unknown as { readonly schemaVersion?: number }
+      return raw.schemaVersion === 2
+        ? String(record.rootSessionId)
+        : String(record.childSessionId)
     }
-    return Promise.resolve({ liveness, mcpSlots })
+    const livenessOf = (session: string): MemberLiveness =>
+      live.hasLive(session)
+        ? live.isResuming(session)
+          ? MEMBER_LIVENESS.resuming
+          : MEMBER_LIVENESS.resident
+        : MEMBER_LIVENESS.cold
+    const slotsOf = (session: string): Map<string, MaterializationSlot> => {
+      const state = live.getConsumptionState(session) as
+        | { readonly mcpMaterialization?: ReadonlyMap<string, MaterializationSlot> }
+        | undefined
+      const mcpSlots = new Map<string, MaterializationSlot>()
+      if (state !== undefined && state !== null && state.mcpMaterialization !== undefined) {
+        for (const [serverName, slot] of state.mcpMaterialization) {
+          mcpSlots.set(serverName, slot)
+        }
+      }
+      return mcpSlots
+    }
+    if (scope.instanceId !== undefined) {
+      // THE TARGET's own boundary: the exact row (no first-match
+      // conflation).
+      const member = rows.find((record) => record.instanceId === scope.instanceId)
+      if (member === undefined) return Promise.resolve(undefined)
+      const session = sessionOf(member)
+      return Promise.resolve({ liveness: livenessOf(session), mcpSlots: slotsOf(session) })
+    }
+    // THE CONSERVATIVE SCOPE VIEW (the template-only read).
+    if (rows.length === 0) return Promise.resolve(undefined)
+    const liveRows = rows.filter((record) => live.hasLive(sessionOf(record)))
+    if (liveRows.length === 0) {
+      return Promise.resolve({ liveness: MEMBER_LIVENESS.cold, mcpSlots: new Map() })
+    }
+    const liveLiveness: MemberLiveness = liveRows.some(
+      (record) => !live.isResuming(sessionOf(record)),
+    )
+      ? MEMBER_LIVENESS.resident
+      : MEMBER_LIVENESS.resuming
+    // The per-row slot views (one consumption-state read per live row).
+    // A RESUMING row's slot is the truth of a PREVIOUS attempt — its own
+    // materialization derives `pending` (the resume re-runs the mount at
+    // the next boundary), so only RESIDENT rows' slots are confirmed
+    // boundary truth in the fold; a resuming row counts as in-flight.
+    const residentRows = liveRows.filter((record) => !live.isResuming(sessionOf(record)))
+    const residentSlots: ReadonlyMap<string, MaterializationSlot>[] = residentRows.map(
+      (record) => slotsOf(sessionOf(record)),
+    )
+    // The servers any resident instance carries.
+    const serverNames = new Set<string>()
+    for (const rowSlots of residentSlots) {
+      for (const serverName of rowSlots.keys()) serverNames.add(serverName)
+    }
+    // Per server: a RESIDENT row's `failed` slot wins (the failed slot of
+    // the first failing live instance is retained — a confirmed boundary
+    // failure the mask must not hide); `mounted` only when EVERY live
+    // instance has converged (no resuming rows AND every resident row
+    // carries a `mounted` slot for the server); a mixed set (an in-flight
+    // instance — a resuming row or a resident row WITHOUT the slot) OMITS
+    // the axis: the scope has not converged (the gate's scope exit
+    // treats the omission as unsatisfied).
+    const mcpSlots = new Map<string, MaterializationSlot>()
+    for (const serverName of serverNames) {
+      const rowSlots = residentSlots
+        .map((row) => row.get(serverName))
+        .filter((slot): slot is MaterializationSlot => slot !== undefined)
+      const failedSlot = rowSlots.find((slot) => slot.status === 'failed')
+      if (failedSlot !== undefined) {
+        mcpSlots.set(serverName, failedSlot)
+        continue
+      }
+      if (
+        residentRows.length === liveRows.length &&
+        rowSlots.length === residentRows.length &&
+        rowSlots.every((slot) => slot.status === 'mounted')
+      ) {
+        const mountedSlot = rowSlots[0]
+        if (mountedSlot !== undefined) mcpSlots.set(serverName, mountedSlot)
+      }
+      // else: an in-flight live instance — omit the axis.
+    }
+    return Promise.resolve({ liveness: liveLiveness, mcpSlots })
   }
   const requirementFactsAuthority = {
     provider: createRuntimeRequirementFactsProvider({
