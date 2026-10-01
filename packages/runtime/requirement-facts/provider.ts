@@ -96,6 +96,7 @@ import {
 } from '../readiness/index.js'
 import {
   assertRequirementFactScope,
+  REQUIREMENT_FACT_SCOPE_ROLES,
   type MemberMaterializationView,
   type RequirementFactsPorts,
   type RequirementFactsResolution,
@@ -306,14 +307,23 @@ export function createRuntimeRequirementFactsProvider(ports: RequirementFactsPor
               // closed set is the single source of truth): a subject that IS a
               // closed required persona kind names the REQUIRED kind — the world
               // fact is the OBSERVED kind of the role the SCOPE addresses
-              // (plan §C.2 R8: team scope ⇒ the ROOT entry, template scope ⇒ the
-              // MEMBER entry — the member requirement uses the member's actual
-              // observation, not the root's). A subject that is NOT a kind keeps
-              // the LEGACY preset-id path byte-for-byte (the frozen v1
-              // convention: the subject is the observed root/member preset id —
-              // the v1 frozen Blueprint cold resume is unchanged).
+              // (plan §C.2 R8): team scope ⇒ the ROOT entry; template scope ⇒
+              // the entry of the role the scope CARRIES (Blocker-1 shared
+              // contract — the scope's `role` identity):
+              //   - role `leader` ⇒ the ROOT entry — the leader IS the root
+              //     (the root mounts config.rootPresetId, agent-bindings v3;
+              //     plan §C.2: the ROOT entry is "the actual preset used by
+              //     the Leader"; the bind-time persona slot reads the ROOT
+              //     entry, root.ts presetSeam — Architecture §13.1: members
+              //     inherit the root's bind substrate);
+              //   - role `member` ⇒ the MEMBER entry — the member requirement
+              //     uses the member's actual observation, not the root's.
+              // A subject that is NOT a kind keeps the LEGACY preset-id path
+              // byte-for-byte (the frozen v1 convention: the subject is the
+              // observed root/member preset id — the v1 frozen Blueprint cold
+              // resume is unchanged).
               const entry: RuntimeSubstratePlanEntry | undefined = isRequiredPersonaKind(subject)
-                ? scope.kind === 'template'
+                ? scope.kind === 'template' && scope.role === REQUIREMENT_FACT_SCOPE_ROLES.member
                   ? plan.member
                   : plan.root
                 : subject === plan.root.presetId

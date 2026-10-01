@@ -56,7 +56,18 @@
  *   `seedFacts` = the row `config.environmentFacts` (empty): a v2 blueprint
  *   with the persona teamRequirement `standard` and a mounted COMPOSABLE
  *   preset PASSES with no seed (the probe/create split the review flagged —
- *   the create path and the probe path now share the same provider verdict).
+ *   the create path and the probe path now share the same provider verdict);
+ * - Blocker-1 (external review, P1): the template scope carries its ROLE
+ *   identity (`leader` | `member`) — the LEADER template IS the root
+ *   session's template (the root mounts `config.rootPresetId`,
+ *   agent-bindings v3; plan §C.2: the plan's ROOT entry is "the actual
+ *   preset used by the Leader"; the bind-time persona slot reads the ROOT
+ *   entry — root.ts presetSeam, Architecture §13.1: members inherit the
+ *   root's bind substrate). The kind path addresses the LEADER's own
+ *   (root) observation for the leader role and the MEMBER observation for
+ *   the member role — a template-scope kind subject must NEVER be judged
+ *   by the wrong role's entry (both directions pinned: the healthy leader
+ *   PASSES; the complete-observing leader FATALs on its OWN observation).
  *
  * @module @dsh-agent-team/runtime/test/persona-kind-provider-preflight
  */
@@ -279,7 +290,17 @@ function makeWorld(opts: WorldOptions) {
   const templateRead = (blueprint: TeamBlueprint, templateId: string): Promise<RequirementFactsResolution> =>
     provider.resolveFacts({
       requirements: scopeRequirementInputsOf(blueprint).templates[templateId] ?? [],
-      scope: { kind: 'template', templateId },
+      // The role identity of the template scope (Blocker-1 shared contract —
+      // the bound blueprint knows its leader template id; the production
+      // root.ts sites derive it the same way): the LEADER template is the
+      // root session's template (the root mounts config.rootPresetId —
+      // agent-bindings v3; plan §C.2: the ROOT entry is the actual preset
+      // used by the Leader), every other template is a member boundary.
+      scope: {
+        kind: 'template',
+        templateId,
+        role: templateId === blueprint.leader.templateId ? 'leader' : 'member',
+      },
     })
   const preflight = async (blueprint: TeamBlueprint) =>
     runCreationPreflight({
@@ -553,7 +574,7 @@ describe('T5 — the frozen v1 preset-ID convention (unchanged legacy path)', ()
     // entry (complete → the §13.5 conflict).
     const memberResolution = await world.provider.resolveFacts({
       requirements: [{ requirementId: 'legacy-member', type: 'persona', subjects: ['minimal'], complete: true }],
-      scope: { kind: 'template', templateId: 'worker' },
+      scope: { kind: 'template', templateId: 'worker', role: 'member' },
     })
     expect(memberResolution.observations[0]!.readiness).toBe(PROBE_VERDICTS.unreachable)
     expect(memberResolution.observations[0]!.readinessReason).toContain('complete effective persona')
@@ -649,5 +670,174 @@ describe('T6 — end-to-end through the creation preflight (root.ts port shape)'
     expect(result.outcome).toBe(PREFLIGHT_OUTCOMES.fatal)
     expect(result.fatalRequirementIds).toEqual([TEAM_REQ_ID])
     expect(blockedScopeKeysOf(result)).toEqual(['team'])
+  })
+})
+
+// --- Blocker-1 — leader/member role identity (external review, P1) ----------------
+
+// The LEADER template carries the persona requirement (the member template
+// declares none — the "no member requirement" world the review's concrete
+// regression pins): the leader block of the v2 document gets the SAME
+// structured-requirements shape the worker block uses (the closed leader
+// schema = the member schema; the v2 validator accepts it).
+const LEADER_PERSONA_LINE = '  persona: You lead the persona-kind team.'
+const LEADER_REQ_BLOCK = [
+  '  requirements:',
+  '    - requirementId: req-persona-standard-leader',
+  '      type: persona',
+  '      subjects:',
+  '        - standard',
+  '      complete: true',
+].join('\n')
+
+/**
+ * Blocker-1 shape — ONLY the leader template requires `standard` (a pure
+ * leader world: the v2 document carries NO team requirements — ABSENT =
+ * omitted — and the member template declares none either; the exact
+ * shape of the review's concrete regression).
+ */
+const PK_NO_TEAM_SOURCE = PK_TEAM_SOURCE.replace(
+  [
+    'requirements: []',
+    'teamRequirements:',
+    '  - requirementId: req-persona-standard-team',
+    '    type: persona',
+    '    subjects:',
+    '      - standard',
+    '    complete: true',
+  ].join('\n'),
+  'requirements: []',
+)
+
+/** Blocker-1 shape — ONLY the leader template requires `standard`. */
+const PK_LEADER_SOURCE = PK_NO_TEAM_SOURCE.replace(
+  LEADER_PERSONA_LINE,
+  `${LEADER_PERSONA_LINE}\n${LEADER_REQ_BLOCK}`,
+)
+
+/**
+ * Blocker-1 both-roles shape — the leader AND the worker require
+ * `standard` (the v2 document ALSO carries the team requirement — in the
+ * BL3 world the team scope passes on the ROOT observation, isolating the
+ * per-template role dispatch).
+ */
+const PK_LEADER_AND_WORKER_SOURCE = PK_FULL_SOURCE_WITH_WORKER.replace(
+  LEADER_PERSONA_LINE,
+  `${LEADER_PERSONA_LINE}\n${LEADER_REQ_BLOCK}`,
+)
+
+const PK_LEADER = parseBlueprint(PK_LEADER_SOURCE)
+const PK_LEADER_AND_WORKER = parseBlueprint(PK_LEADER_AND_WORKER_SOURCE)
+
+const LEADER_REQ_ID = 'req-persona-standard-leader'
+
+describe('Blocker-1 — the template scope carries its role (leader ≠ member observation)', () => {
+  it('BL1: a HEALTHY leader template PASSES on the leader OWN (root) observation — the no-member-requirement world (pre-fix: judged by the MEMBER entry ⇒ spurious FATAL)', async () => {
+    // The review's concrete regression, direction 1: root preset id
+    // `standard` (observed standard), member preset id `minimal` (observed
+    // complete), the LEADER requires `standard`, NO member requirement
+    // (and no team requirement — the pure leader world).
+    // The leader IS the root (the root mounts config.rootPresetId —
+    // agent-bindings v3; plan §C.2: the ROOT plan entry is the actual preset
+    // used by the Leader): the leader scope must read the ROOT observation
+    // (`standard` → composable), not the member's (`complete`).
+    const world = makeWorld({
+      rootPresetId: 'standard',
+      memberPresetId: 'minimal',
+      observer: observerFor({ standard: 'standard', minimal: 'complete' }),
+    })
+    const resolution = await world.templateRead(PK_LEADER, 'leader')
+    expect(resolution.observations[0]).toMatchObject({
+      subject: 'standard',
+      readiness: PROBE_VERDICTS.reachable,
+    })
+    expect(resolution.environmentFacts).toEqual([
+      { domain: 'persona', subject: 'standard', available: true, generation: 1 },
+    ])
+    const result = await world.preflight(PK_LEADER)
+    expect(result.outcome).toBe(PREFLIGHT_OUTCOMES.proceed)
+    expect(blockedScopeKeysOf(result)).toEqual([])
+    const leaderScope = result.scopes.find(
+      (scope) => scope.scope.level === 'template' && scope.scope.templateId === 'leader',
+    )!
+    expect(leaderScope.state).toBe(SCOPE_STATES.ready)
+  })
+
+  it('BL2: a leader whose OWN observation is `complete` FATALs with the leader observation (pre-fix: FALSE PASS — the leader was judged by the member entry)', async () => {
+    // Direction 2 (the inverse): root preset id `minimal` (observed
+    // complete), member preset id `standard` (observed standard), the
+    // LEADER requires `standard`. The leader's own mounted preset is the
+    // complete one — the structural §13.5 conflict belongs to the LEADER
+    // scope (its verdict FATALs; the preflight classifies a blocked
+    // template scope as fixOrDisable — the human may disable the leader
+    // template or repair the preset). What is asserted is the preflight
+    // verdict, not an execution claim: the bind-time persona slot (root.ts
+    // presetSeam) reads the ROOT entry and has its own guard downstream.
+    const world = makeWorld({
+      rootPresetId: 'minimal',
+      memberPresetId: 'standard',
+      observer: observerFor({ minimal: 'complete', standard: 'standard' }),
+    })
+    const resolution = await world.templateRead(PK_LEADER, 'leader')
+    expect(resolution.observations[0]).toMatchObject({
+      subject: 'standard',
+      readiness: PROBE_VERDICTS.unreachable,
+    })
+    // The typed reason names the LEADER's own (root) preset — not the
+    // member's `standard` id (which would be the pre-fix misjudgment).
+    expect(resolution.observations[0]!.readinessReason).toContain('minimal')
+    expect(resolution.observations[0]!.readinessReason).toContain('complete effective persona')
+
+    const result = await world.preflight(PK_LEADER)
+    expect(result.outcome).toBe(PREFLIGHT_OUTCOMES.fixOrDisable)
+    expect(blockedScopeKeysOf(result)).toEqual([scopeKey({ level: 'template', templateId: 'leader' })])
+    expect(result.fixOrDisableRequirementIds).toEqual([LEADER_REQ_ID])
+    // The engine verdict of the leader scope: FATAL (the leader's own
+    // complete observation — never the member's standard one).
+    // The team ports are REQUIRED (the evaluator always reads the team
+    // scope — here against the EMPTY team inputs, the pure leader world).
+    const evaluation = await evaluateCreationScopes({
+      blueprint: PK_LEADER,
+      environmentFacts: () => world.teamRead(PK_LEADER).then((r) => r.environmentFacts),
+      templateEnvironmentFacts: (templateId) =>
+        world.templateRead(PK_LEADER, templateId).then((r) => r.environmentFacts),
+      environmentFactsRead: () => world.teamRead(PK_LEADER),
+      templateEnvironmentFactsRead: (templateId) => world.templateRead(PK_LEADER, templateId),
+    })
+    expect(evaluation.scopeVerdicts[scopeKey({ level: 'template', templateId: 'leader' })]).toEqual([
+      expect.objectContaining({ requirementId: LEADER_REQ_ID, outcome: REQUIREMENT_OUTCOMES.fatal }),
+    ])
+  })
+
+  it('BL3: in ONE world, the leader template is judged by the ROOT observation and the member template by the MEMBER observation (per-template role dispatch)', async () => {
+    // Both-roles world: the leader AND the worker require `standard`; the
+    // root observes `standard`, the member observes `complete`. The SAME
+    // provider, SAME plan: the leader scope passes (root observation)
+    // while the worker scope blocks (member observation) — the role is
+    // carried PER TEMPLATE, not a single template-scope default.
+    const world = makeWorld({
+      rootPresetId: 'ptc/team-small-ctb',
+      memberPresetId: 'ptc/member-custom',
+      observer: observerFor({
+        'ptc/team-small-ctb': 'standard',
+        'ptc/member-custom': 'complete',
+      }),
+    })
+    const result = await world.preflight(PK_LEADER_AND_WORKER)
+    expect(result.outcome).toBe(PREFLIGHT_OUTCOMES.fixOrDisable)
+    expect(blockedScopeKeysOf(result)).toEqual([scopeKey({ level: 'template', templateId: 'worker' })])
+    const leaderScope = result.scopes.find(
+      (scope) => scope.scope.level === 'template' && scope.scope.templateId === 'leader',
+    )!
+    const workerScope = result.scopes.find(
+      (scope) => scope.scope.level === 'template' && scope.scope.templateId === 'worker',
+    )!
+    expect(leaderScope.state).toBe(SCOPE_STATES.ready)
+    expect(workerScope.state).toBe(SCOPE_STATES.blocked)
+    // The two scopes read DIFFERENT plan entries for the SAME subject.
+    const leaderResolution = await world.templateRead(PK_LEADER_AND_WORKER, 'leader')
+    expect(leaderResolution.observations[0]!.readiness).toBe(PROBE_VERDICTS.reachable)
+    const workerResolution = await world.templateRead(PK_LEADER_AND_WORKER, 'worker')
+    expect(workerResolution.observations[0]!.readiness).toBe(PROBE_VERDICTS.unreachable)
   })
 })

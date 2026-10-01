@@ -117,7 +117,10 @@ function makeProvider(state: GlueMcpState, args: {
 
 const GITHUB_REQ = { requirementId: 'req-github', type: 'mcpServer' as const, subjects: ['github'], complete: true }
 const TEAM = { kind: 'team' as const }
-const TEMPLATE = { kind: 'template' as const, templateId: 'dev' }
+// Blocker-1: the scope carries its role identity — this suite's `dev`
+// template is a MEMBER boundary (the persona lane is never exercised
+// here: the substratePlan port throws).
+const TEMPLATE = { kind: 'template' as const, templateId: 'dev', role: 'member' as const }
 
 describe('live fiber → reachable (overrides a stale static false)', () => {
   it('the feed is available:true even when the seed said available:false', async () => {
