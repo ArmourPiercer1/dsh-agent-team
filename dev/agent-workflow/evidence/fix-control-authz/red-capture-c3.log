@@ -1,0 +1,88 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz
+
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts (4 tests | 4 failed) 5080ms
+     × C1: pending → parked waiter → explicit abandon: the waiter settles terminal, the router keeps the typed block, ZERO work 5004ms
+     × C2: allow → abandon → a fresh await on the abandoned row settles REJECTED terminal (bounded — the cold-retry liveness) 11ms
+     × C3: the abort race over the stale decision (mid-wait abort with BOTH marks durable): the abandon mark wins the cascade (the stale allow never settles the waiter) 21ms
+     × C4: the wait→admission race (allow + abandon both land while the router waits): the typed zero-effect block holds for EVERY interleaving; the abandoned allow never executes 42ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C1: pending → parked waiter → explicit abandon: the waiter settles terminal, the router keeps the typed block, ZERO work
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:94:3
+     92|
+     93| describe('fix-control-authz C — the durable abandonment is the TERMINA…
+     94|   it('C1: pending → parked waiter → explicit abandon: the waiter settl…
+       |   ^
+     95|     world = await createAuthzWorld('authz-c-1')
+     96|     const promise = withTimeout(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C2: allow → abandon → a fresh await on the abandoned row settles REJECTED terminal (bounded — the cold-retry liveness)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:168:31
+    166|       'the fresh await on the abandoned row (must settle, not hang)',
+    167|     )
+    168|     expect(rejected.resolved).toBe(false)
+       |                               ^
+    169|     const error = rejected.resolved === false ? rejected.error : undef…
+    170|     expect(isControlError(error)).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C3: the abort race over the stale decision (mid-wait abort with BOTH marks durable): the abandon mark wins the cascade (the stale allow never settles the waiter)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:220:30
+    218|       'the aborted-signal await (the cascade must settle terminal)',
+    219|     )
+    220|     expect(settled.resolved).toBe(false)
+       |                              ^
+    221|     const error = settled.resolved === false ? settled.error : undefin…
+    222|     expect(isControlError(error)).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C4: the wait→admission race (allow + abandon both land while the router waits): the typed zero-effect block holds for EVERY interleaving; the abandoned allow never executes
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:268:24
+    266|     // yield the SAME typed block, never a raw ControlError and never …
+    267|     // execution).
+    268|     expect(outcome.ok).toBe(false)
+       |                        ^
+    269|     const error = outcome.ok === false ? outcome.error : undefined
+    270|     expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  05:40:04
+   Duration  5.88s (transform 552ms, setup 0ms, import 707ms, tests 5.08s, environment 0ms)
+
+EXIT=1

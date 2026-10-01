@@ -1,0 +1,16 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz
+
+ ✓ packages/runtime/test/p6t4-allow-once.test.ts (4 tests) 5ms
+ ✓ packages/runtime/test/p6t4-deny.test.ts (3 tests) 4ms
+ ✓ packages/runtime/test/p6t4-restart.test.ts (3 tests) 4ms
+ ✓ packages/runtime/test/p6t4-stale.test.ts (5 tests) 4ms
+ ✓ packages/runtime/test/p6t4-negatives.test.ts (11 tests) 4ms
+ ✓ packages/runtime/test/p6t4-external-policy.test.ts (6 tests) 3ms
+
+ Test Files  6 passed (6)
+      Tests  32 passed (32)
+   Start at  05:47:54
+   Duration  1.14s (transform 2.69s, setup 0ms, import 4.14s, tests 23ms, environment 0ms)
+
+EXIT=0
