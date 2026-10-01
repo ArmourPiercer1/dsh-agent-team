@@ -400,6 +400,144 @@ const C = await (async () => {
 })()
 
 // ---------------------------------------------------------------------------
+// Part D — G-regression (fix/effective-policy-reset-fallback): the
+// `override.get` value derives from the CURRENT LATEST slot winner ONLY —
+// the full-slot re-issue lane means the LATEST row is the complete current
+// state of the slot, so a capability the latest row does not carry has NO
+// value at the slot (null): an older history row carrying it is
+// AUDIT-ONLY. (The pre-fix scan resurrected the g1 `model` value after
+// model->reset->mcp, handing the client a stale generation 1 that made the
+// NEXT guarded write false-conflict against the LATEST row the write path
+// actually validates — a deterministic conflict with zero concurrent
+// writers.)
+// ---------------------------------------------------------------------------
+
+const D = await (async () => {
+  const overrides = new AsyncOverrides()
+  const service = createGovernanceMutationService({
+    chain: createTeamOperationCoordinator(),
+    overrides,
+    transitions: new MemTransitions(),
+    transitionCommit: new MemCommit(),
+    policy: noopPolicy,
+    registeredMembers: () => Promise.resolve([]),
+    policyStates: () => ['default', 'strict'],
+    now: () => NOW,
+  })
+  const ports = createS6RemotePorts(
+    {
+      rootSessionId: ROOT_SID,
+      repositories: tripWireRepositories(),
+      governance: service,
+      overrideRecords: (rootSessionId: string) =>
+        overrides.all
+          .filter((record) => record.rootSessionId === rootSessionId)
+          .map((record) => record as unknown as Record<string, unknown>),
+      mutationTransitions: () => [],
+      leaderInstanceId: 'inst-leader',
+      now: () => NOW,
+    } as unknown as S6RemoteOptions,
+  )
+  const dispatch = createS6RemoteDispatcher(ports, humanPrincipal)
+
+  const INST = { teamSessionId: ROOT_SID, scope: 'instance', targetInstanceId: 'inst-d' }
+  // 1. g1 {model: A} (the instance slot).
+  const d1 = await dispatch(
+    'override.set',
+    wire(REMOTE_CONTRACT_VERSION_V7, {
+      ...INST,
+      capability: 'model',
+      value: { kind: 'allow', items: ['m-a'] },
+      actor: { kind: 'human' },
+    }),
+  )
+  // 2. reset the instance slot -> the g2 tombstone {}.
+  const d2 = await dispatch(
+    'override.reset',
+    wire(REMOTE_CONTRACT_VERSION_V7, {
+      ...INST,
+      capability: 'model',
+      actor: { kind: 'human' },
+    }),
+  )
+  // 3. g3 {mcp: S} — a DIFFERENT capability in the SAME slot.
+  const d3 = await dispatch(
+    'override.set',
+    wire(REMOTE_CONTRACT_VERSION_V7, {
+      ...INST,
+      capability: 'mcp',
+      value: { kind: 'allow', items: ['srv-s'] },
+      actor: { kind: 'human' },
+    }),
+  )
+  // 4. get(model): the LATEST row (g3) has no `model` -> null at the slot
+  //    (NOT the resurrected g1 value A with its stale generation 1).
+  const d4 = await dispatch(
+    'override.get',
+    wire(REMOTE_CONTRACT_VERSION_V7, {
+      teamSessionId: ROOT_SID,
+      capability: 'model',
+      scope: 'instance',
+      targetInstanceId: 'inst-d',
+    }),
+  )
+  // 5. get(mcp): the LATEST row carries it -> the g3 record.
+  const d5 = await dispatch(
+    'override.get',
+    wire(REMOTE_CONTRACT_VERSION_V7, {
+      teamSessionId: ROOT_SID,
+      capability: 'mcp',
+      scope: 'instance',
+      targetInstanceId: 'inst-d',
+    }),
+  )
+  // 6. the next UI write guarded by the CURRENT slot generation (3) ->
+  //    commits g4 (no spurious conflict — the guard validates against the
+  //    LATEST row).
+  const d6 = await dispatch(
+    'override.set',
+    wire(REMOTE_CONTRACT_VERSION_V7, {
+      ...INST,
+      capability: 'model',
+      value: { kind: 'allow', items: ['m-b'] },
+      actor: { kind: 'human' },
+      expectedGeneration: 3,
+    }),
+  )
+  // 7. the RESURRECTED stale generation (1, from the g1 history row) still
+  //    conflicts — the guard uses the LATEST row (g4), never a history row.
+  const d7 = await dispatch(
+    'override.set',
+    wire(REMOTE_CONTRACT_VERSION_V7, {
+      ...INST,
+      capability: 'model',
+      value: { kind: 'allow', items: ['m-c'] },
+      actor: { kind: 'human' },
+      expectedGeneration: 1,
+    }),
+  )
+  // 8. control: get(model) after d6 -> the g4 record (model is back in the
+  //    LATEST row).
+  const d8 = await dispatch(
+    'override.get',
+    wire(REMOTE_CONTRACT_VERSION_V7, {
+      teamSessionId: ROOT_SID,
+      capability: 'model',
+      scope: 'instance',
+      targetInstanceId: 'inst-d',
+    }),
+  )
+  // 9. control: get(model) on the TEAM slot (never written in this world)
+  //    -> null.
+  const d9 = await dispatch(
+    'override.get',
+    wire(REMOTE_CONTRACT_VERSION_V7, { teamSessionId: ROOT_SID, capability: 'model' }),
+  )
+
+  return { d1, d2, d3, d4, d5, d6, d7, d8, d9, count: overrides.all.length }
+})()
+
+// ---------------------------------------------------------------------------
 // Assertions
 // ---------------------------------------------------------------------------
 
@@ -569,5 +707,44 @@ describe('pre-alpha3 W1 fix-A F10 — the ingress arg shape (verbatim / structur
       expect('expectedGeneration' in setAbsent.args).toBe(false)
       expect('expectedGeneration' in resetAbsent.args).toBe(false)
     }
+  })
+})
+
+describe('G-regression — override.get derives from the CURRENT LATEST slot winner only (no history resurrection)', () => {
+  it('model->reset->mcp: get(model) is null at the slot (NOT the resurrected g1 value A / stale generation 1)', () => {
+    expect(D.d1.ok).toBe(true)
+    expect(dataOf(D.d1)['generation']).toBe(1)
+    expect(D.d2.ok).toBe(true)
+    expect(dataOf(D.d2)['removed']).toBe(true)
+    expect(D.d3.ok).toBe(true)
+    expect(dataOf(D.d3)['generation']).toBe(3)
+    expect(dataOf(D.d4)['override']).toBeNull()
+  })
+
+  it('get(mcp) returns the LATEST row (g3) with the current slot generation', () => {
+    const override = dataOf(D.d5)['override'] as Record<string, unknown>
+    expect(override['recordId']).toBe('ovr-mcp-inst-d-g2')
+    expect(override['generation']).toBe(3)
+    expect(override['values']).toEqual({ mcp: { kind: 'allow', items: ['srv-s'] } })
+  })
+
+  it('the next UI write guarded by the CURRENT slot generation commits (no spurious conflict); the resurrected stale generation still conflicts', () => {
+    expect(D.d6.ok).toBe(true)
+    expect(dataOf(D.d6)['generation']).toBe(4)
+    const error = errorOf(D.d7)
+    expect(error['code']).toBe('OVERRIDE_GENERATION_CONFLICT')
+    const details = error['details'] as Record<string, unknown>
+    const cause = details['cause'] as Record<string, unknown>
+    expect(cause['details']).toEqual({ expectedGeneration: 1, actualGeneration: 4 })
+    // Zero write from the refused set: g1 + tombstone + g3 + g4 exactly.
+    expect(D.count).toBe(4)
+  })
+
+  it('control: get(model) after the fresh write returns the LATEST row; the untouched TEAM slot reads null', () => {
+    const override = dataOf(D.d8)['override'] as Record<string, unknown>
+    expect(override['generation']).toBe(4)
+    expect((override['values'] as Record<string, unknown>)['model']).toEqual({ kind: 'allow', items: ['m-b'] })
+    expect((override['values'] as Record<string, unknown>)['mcp']).toEqual({ kind: 'allow', items: ['srv-s'] })
+    expect(dataOf(D.d9)['override']).toBeNull()
   })
 })
