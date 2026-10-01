@@ -1,7 +1,9 @@
 # test-infra-fixture-param — fixture parameterization + launch-token log redaction
 
 Branch `task/test-infra-fixture-parameterization` · base `origin/master` = `427219e443ece4d57ac8558f13850c5f42ff8330`
-Head at the time of this record: `984b910c80319bb0efb051089483e56e9fb8a285`
+Head at the time of the first writing of this record: `984b910c80319bb0efb051089483e56e9fb8a285`
+(followed by the evidence commit `519559f7`; round 2 adds two code commits + one evidence commit on top —
+the pushed HEAD is reported in the PR comment rather than mirrored here, so this file cannot go stale).
 Draft PR: https://github.com/ArmourPiercer1/dsh-agent-team/pull/53 (no merge authorization)
 Worktree: `/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param` (sole writer)
 Test runtime: `tests/deepseek-harness-test-use` @ `46a7f68b0922371ce714b668b90e377d8e799f4`, porcelain 0 before and after every run.
@@ -175,6 +177,27 @@ criterion is reported as FAIL with its raw wire evidence (`run-pr-b-2026-10-01T1
    an alignment to the authoritative production contract, to be documented as revalidation, not weakening;
 2. keep the historical expectation and mark the leg known-stale pending product-owner review.
 
+### 5.1 RESOLVED (2026-10-01, coordinator clearance after external review of PR #53)
+
+The two-option question above is **closed by ruling**, so it is recorded rather than re-litigated: option 1
+was directed. The external review ruled the leg **STALE CONTRACT** — the base's own ancestry contains F11
+fix-A (`3b7039e89f2ab9a072d89e2e3caa2af01fe7d355`, 2026-09-30; `git merge-base --is-ancestor` re-verified
+this round against base `427219e4`), and the production rule since then is *closed set = the ADDRESSED
+team's bound Blueprint; a BOUND ref never consults the host boot Blueprint*. The coordinator directed a
+recalibration **keeping strength** (documented revalidation, not weakening), with a required positive
+direction, a required negative direction, the retained T1-unknown negative, the retained T-C3 positive and
+the retained restart leg.
+
+Implemented in the B1 code commit (see §12.1). The C3 criterion's outcome for the earlier run
+(`run-pr-b-2026-10-01T13-22-22-c3/`) is **not retro-edited**: that record stands as the 5PASS/1FAIL result
+it was, with this ruling as its explanation.
+
+Independent durable-store corroboration of the F11 direction, already present in that retained world:
+`tests/homes/prb-ep-2026-10-01T13-22-22/storages/team_domain.json`, `ledger` contains exactly one
+`policy-state-transitioned` row for `session-prb-ps-2026-10-01T13-22-22` —
+`entryId ps-focus-0`, `state.stateId focus`, `cells.model.value.items = ["deepseek-official/role-ps-focus"]`
+— i.e. the `focus` switch the stale oracle expected to be rejected was in fact **committed durably**.
+
 ## 6. Evidence handling and redaction
 
 Every file in `run-mpr-…/` and `run-pr-b-…/` is an **independent redaction copy** produced by
@@ -231,6 +254,9 @@ browser-smoke-host: the two defaults plus `T1_MEMBER_SESSION='session-team-child
 `T1_MEMBER_INSTANCE='inst-17legoh0ti27'` — the latter pair is the same class of member coupling as pr-b's
 and would need the same treatment; it is **out of this PR's authorized target list**, so it is listed here
 rather than silently left as if benign.
+**[2026-10-01 update: external review ruled that pair in scope; it no longer exists as a literal — the pair
+is derived from the selected world's durable store. See §12.2. The two DEFAULT world/team literals above
+remain defaults.]**
 
 ## 9. Disclosed incident
 
@@ -240,9 +266,14 @@ In a freshly checked-out worktree that predicate also matched **87 tracked histo
 `…/team-view-sync-complete/wp9b-browser-smoke-2026-09-28*`), because checkout gives tracked files a fresh mtime.
 Restored immediately with `git restore dev/agent-workflow/evidence/` and verified:
 `git status --porcelain` empty, `git diff HEAD` empty, and on-disk file counts equal to the tracked counts
-(42 pr-b files, 127 team-view-sync files). No commit in this branch contains the deletion and no historical
-evidence is modified. Every cleanup after that uses only the literal paths the run itself created — visible
-in the probe scripts' explicit `rm -rf` lists.
+(42 pr-b files, 45 team-view-sync files — the "127" figure first written here was wrong and is corrected
+against the per-file hash audit in §11). No commit in this branch contains the deletion, and no historical
+evidence content differs from the base tree. Every cleanup after that uses only the literal paths the run
+itself created — visible in the probe scripts' explicit `rm -rf` lists.
+
+This section is the short form. **§11 is the full incident audit** (ruled necessary by external review): it
+carries the verbatim commands, the timeline, the proven scope, and the losses that a restore does **not**
+undo. Read §11 rather than relying on this paragraph.
 
 ## 10. Housekeeping state at this checkpoint
 
@@ -254,3 +285,284 @@ in the probe scripts' explicit `rm -rf` lists.
 * the frozen PR #52 worktree used read-only: 0 tracked-diff lines before and after;
 * environment provisioning and its revert command: `environment-facts.txt` (including the corrected note
   that the links are **untracked**, not ignored, and the corrected reason no product delta can enter).
+
+## 11. Incident audit — the 87-file deletion (full form, ruled necessary by external review)
+
+Sources in this directory (copied, not moved, from the coordinator's scratch area
+`.worktrees/.scratch-logs/incident-audit-20261001/`; per-file sha256 in `COPY-MANIFEST.json`):
+`verbatim-commands.txt`, `tool-events-1306-1308.txt`, `affected-87-paths.txt`, `poststate-proof.txt`,
+`hash-table-evidence-subtree.txt`. The commands were recovered from the writer's **own** session record
+(`session.v4.jsonl.zstd`, read-only `zstd -dc | python3`), not from memory. Where something cannot be
+established from a record it is written **UNKNOWN** below; nothing is reconstructed and no "nothing was
+lost" claim is made anywhere in this record.
+
+### 11.1 Verbatim commands and their literal scope
+
+Both removals lived in `tests/homes/.probe/param-accept.sh` **v1** (written 13:06:59), executed by session
+seq 476 at **13:07:07.756**, script finished 13:07:08.141, cwd = `$WT` via the script's own `cd "$WT"`:
+
+```bash
+find "$WT/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b" -maxdepth 1 -name 'host-smoke-*' \
+     -newermt '-10 minutes' -print -exec rm -rf {} + 2>/dev/null
+find "$WT/dev/agent-workflow/evidence/team-view-sync-complete" -maxdepth 1 -name 'wp9b-browser-smoke-*' \
+     -newermt '-10 minutes' -print -exec rm -rf {} + 2>/dev/null
+ls -d "$HOMES"/prb-ep-* "$HOMES"/tvs-smoke-* 2>/dev/null
+rm -rf "$HOMES"/prb-ep-* "$HOMES"/tvs-smoke-*
+```
+
+Verbatim variable assignments:
+
+* `WT=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param`
+* `HOMES=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes`
+
+Flags as they actually were: **no `-L`, no `-follow`, no `-delete`**; `-maxdepth 1` (so `find` matched
+*directories* only at depth 1 and `-exec rm -rf` did the recursion); `2>/dev/null` suppressed `rm`
+diagnostics (writer-flagged error — it removed the failure channel, not the failure).
+
+Why the predicate did not discriminate: this worktree was checked out at **12:58:10**, so every tracked
+file in it carries an mtime inside the 10-minute window. `-newermt` therefore passed for **all** files, and
+the two name globs matched historical directories exactly as well as fresh ones.
+
+### 11.2 Glob ground truth (from the run's own stdout, not inferred)
+
+* pr-b root: `-print` emitted **exactly 8 directories** = 7 historical `host-smoke-2026-09-28*` + the run's
+  own `host-smoke-2026-10-01T13-07-07-c3`.
+* team-view root: **exactly 7 directories** = `wp9b-browser-smoke-round2` + 6 ×
+  `wp9b-browser-smoke-tvs-smoke-2026-09-28*` (`05-31-39`, `05-43-23`, `05-49-08`, `07-39-41`, `08-54-21`,
+  `09-36-36`). 15 directories total.
+* HOMES glob: `ls -d` (same stdout, immediately before the `rm`) listed **exactly ONE match**:
+  `/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/prb-ep-2026-10-01T13-07-07`, created ~1 s earlier
+  **by the same v1 run** (kit line `world copied: …/paramprobe-empty -> …/prb-ep-2026-10-01T13-07-07`).
+  No `tvs-smoke-*` and no older `prb-ep-*` matched: the glob self-cannibalized the run's own world.
+
+### 11.3 Timeline (all 2026-10-01 UTC, from the session record)
+
+| time | event |
+| --- | --- |
+| 12:58:10 | worktree checkout — the mtime condition that made `-newermt` vacuous |
+| 13:06:59 | `.probe/param-accept.sh` v1 written (contains the offending cleanup block) |
+| 13:07:07.756 | seq 476 runs v1; the two `find … -exec rm -rf` and the `rm -rf "$HOMES"/…` globs execute |
+| 13:07:08.141 | script ends; its stdout holds the 15 `-print` dirs and the single `ls -d` match |
+| 13:07:11.299–11.522 | seq 481: `git status --porcelain \| grep '^ D' \| wc -l` → **87**, then `git restore dev/agent-workflow/evidence/`; output `RESTORED — porcelain now: 0` |
+| 13:07:17.079 | seq 486 integrity re-check (`git diff HEAD --stat`, counts per root) |
+| 13:07:28 | v2 rerun (seq 497/502) creates `prb-ep-2026-10-01T13-07-28` + `host-smoke-…-13-07-28-c3`, fatals honestly on `ENOENT cordis.patch.yml`, then v2's own **explicit-literal-path** cleanup block removes those two self-created artifacts (exact removal time not independently pinned) |
+| 13:16:25 | the 4 `packages/*/node_modules` resolution links created (≈9 min **after** the incident; unrelated to it) |
+| 13:28:51.093 | `tests/homes/.probe` deleted by the writer — **before** the writer read the coordinator's HOLD; see §11.5 |
+| 13:31:26 | `tests/homes/.audit-paths.txt` created by an unintended redirect (after the HOLD); retained, removal awaiting clearance — see §12.4 |
+
+### 11.4 What the restore did recover, and how that was proven
+
+* exactly **87** files re-materialized at 13:07:11.*(mtimes); distribution **42** under
+  `dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b` (7 run directories) and **45** under
+  `…/team-view-sync-complete` (7 run directories); **0** anywhere else;
+* per file, `git rev-parse 427219e4:<path>` equals `git hash-object <path>` → **87 MATCH / 0 mismatch**;
+  `git ls-files -d` = 0; the base..HEAD diff over both roots is empty;
+* the coordinator independently hashed the **whole** evidence subtree —
+  `hash-table-evidence-subtree.txt` records **11,276 files compared (11,275 regular + 1 symlink),
+  0 mismatches** at HEAD `519559f7`;
+* blast radius: 87 files in this writer's worktree only — 0 in the main checkout and 0 in each of the other
+  8 worktrees; no symlink existed under either root at any point (`-maxdepth 1` + no `-L`).
+
+**87/87 tracked files are byte-identical to the base tree, and the 11,276-file hash audit shows no
+difference in the evidence subtree.** That statement is about *tracked content*. It does **not** extend to
+the untracked material in §11.5 and §11.6, which the restore could not and did not recover.
+
+### 11.5 Untracked losses the restore did not undo (named, not guessed)
+
+Proven lost by the deletion itself (each appears verbatim in the run's own `-print` / `ls -d` output):
+
+1. `dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-07-07-c3` — the kit run
+   directory of the very probe run. Untracked (kit run directories are never added), so `git restore` had
+   nothing to restore. It died in `prepareWorld`, so its base content is at most a stub; **its actual
+   contents are UNKNOWN and are not guessed here.**
+2. `tests/homes/prb-ep-2026-10-01T13-07-07` — the same run's DSH_HOME world. Base content is **proven** to
+   be a copy of `tests/homes/paramprobe-empty` (the kit's own `world copied:` line); **any delta the dying
+   kit wrote in its ~0.4 s lifetime is UNKNOWN.**
+
+Proven lost by the later `.probe` deletion at 13:28:51.093 (untracked working files; no raw survivor
+anywhere — this deletion happened *before* the writer read the HOLD, and is itself a disclosed violation):
+
+* `.probe/out/tvs-accept.log` — the browser-kit acceptance console. **GONE, no raw copy.** Largest single
+  loss in this incident.
+* `.probe/out/mpr-console.log` — the **mpr run #1 console** (the `exit 1` environment-setup diagnosis).
+  **GONE, no raw copy**; §3.1's summary of it remains, and `run-mpr-console.log` in this directory is run
+  **#2**, not run #1.
+* `.probe/out/added-lines.txt`, `.probe/out/pr-body.md`, `.probe/out/pr-comment.md` — **GONE** (one file,
+  not two: an earlier description of this item was wrong and is corrected here).
+* `.probe/out/mpr-run2-console.log` — survives **only** as the normalized `run-mpr-console.log`; no raw copy.
+* `.probe/out/prb-accept.log` **v1** — overwritten by the v2 run (a write, not a delete, but the v1 bytes
+  are gone).
+
+**UNKNOWN, stated explicitly:** the writer never captured a listing of `tests/homes/.probe` before deleting
+it, so the **complete** set of files it held is UNKNOWN. The five items above are those traceable through
+transcript-visible writes; they are not asserted to be the whole contents.
+
+### 11.6 Standing consequence adopted by this task
+
+No time-predicate or glob cleanup, ever, in this task's scripts: every cleanup step names only literal
+paths that the same run created, and a kit's own cleanup block is inspected **before** each run (§12.3).
+This incident is the reason that rule is a gate rather than a preference.
+
+## 12. Round 2 under the coordinator clearance (2026-10-01, after external review of PR #53)
+
+Scope of this round was exactly the authorized items: **B1** C3 recalibration, **B2** browser-kit member
+identity, **B3** structural verification of the carrier gate (no UI run), plus this audit commit. No other
+file changed; `packages/**` is still untouched.
+
+### 12.1 B1 — `legC3Structural` recalibrated to the F11 rule (own code commit in this push)
+
+The leg (kit `tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs`) now asserts, in order,
+on ONE team bound to `team.prb-ps`:
+
+1. **pre-flight disjointness**, read live from the catalog — boot `team.mpr-anchor` declares `strict` and not
+   `focus`; bound `team.prb-ps` declares `focus` and not `strict`. Each direction is vacuous if this fails,
+   so failing it is fatal rather than silently weaker.
+2. **POSITIVE** — `policyState.set(focus, cells.model)` **COMMITS** (`entryId`, no `noChange`, the acked
+   state carries the committed model cell) although the boot blueprint does not declare `focus`.
+3. **durable before observable** — the committed `entryId` is in the store's `ledger` and is the *only*
+   T-PS `policy-state-transitioned` row (quiescence-polled read, not a single-shot read).
+4. **READ plane** — `policyState.get` reports the bound set: `focus` active, `strict` **not** advertised in
+   `availableTransitions`, every bound state accounted for.
+5. **NEGATIVE** — `policyState.set(strict)` (boot-only) on the same team is rejected the typed
+   `POLICY_STATE_UNKNOWN`, and the rejection **reports the bound closed set** in
+   `details.cause.details.closedStates`; equality is asserted as a SET (the host's raw message lists
+   `default` twice — the raw string is preserved verbatim in evidence, the comparison is set membership).
+6. **DURABLE INERTIA** — table row counts, the ledger high-water mark, every override record/generation pair
+   and the T-PS transition ledger are identical before and after the rejection, and the active state reads
+   back as the still-committed `focus`.
+
+Kept untouched: the T1-unknown negative, the T-C3 positive leg, the restart leg, every other criterion, and
+all shape guards. Provenance notes updated at each site that stated the stale contract (the leg header, the
+STEP 1a world-edit comment, the C3-negative docstring, the kit header), each naming `3b7039e8` as the
+superseding anchor instead of deleting history.
+
+Live run (the same six real seed ids as run #3, same seed world):
+
+```
+$ node tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs \
+    --seed-world mpr-2026-10-01T13-21-34 \
+    --seed-blueprint-dir /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-10-01T13-21-34/blueprints \
+    --t1 session-mpr-t1-mpr-2026-10-01T13-21-34 \
+    --worker-instance inst-1722vhu1h1z1 --expert-instance inst-1qazuqc1ylx9 --control-instance inst-0e84f9t1xgok
+exit 0 · fatal=none · C1 PASS C2 PASS C3 PASS C4 PASS C5 PASS C6 PASS
+world tests/homes/prb-ep-2026-10-01T13-53-35 (the kit's G9 freed its own world on the clean pass — reported and accepted before the run)
+run dir dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-53-35-c3
+redacted copy here: run-pr-b-2026-10-01T13-53-35/ (7 files, 6 credential-value redactions) · console: run-pr-b-console-pass-6of6.log
+
+  C3 PASS  [negative=POLICY_STATE_UNKNOWN; C3a baseline=global-default -> C3b=prb-c3-strict (entryId ps-strict-0);
+            structural=bound-set(default, focus) positive-on-bound=ps-focus-0 boot-only-rejected=POLICY_STATE_UNKNOWN
+            durable-inert=yes]
+```
+
+`summary.json → legs.C3.structural` carries the machine-readable proof: `bootStates ["strict"]`,
+`boundStates ["default","focus"]`, `positiveEntryId ps-focus-0`,
+`positiveModelCell ["deepseek-official/role-ps-focus"]`, `readActive focus`,
+`readAvailableTransitions ["default"]`, negative `message`
+`policyState target 'strict' is outside the bound blueprint's closed set (default, default, focus)`,
+`closedSet "default, focus"`, and the durable snapshot
+(`ledger` 64 rows / high-water 63, 3 override records at generation 1, T-PS transitions `["ps-focus-0"]`).
+
+**Attempt 1 of this run failed for an environment reason and is kept as a labeled diagnosis, not a
+result**: `FATAL: host 1 (resume) boot failed: no boot marker within 150000ms`, instance log
+`remote mount: SKIPPED — the row stopped before the "connection" public service appeared` then
+`bootstrap FAILED: … setup aborted: owner disposed during setup`, **zero** mock requests (the PASS run's
+mock log has 11). All six criteria were `N/A`, exit 1, the world was retained and is untouched. Its run
+directory is preserved (`run-pr-b-2026-10-01T13-52-56-bootfailure/`, 6 files, no redaction needed) together
+with `run-pr-b-console-attempt1-bootfailure.log` outside the worktree. Nothing in the diff touches the boot
+path; the immediate retry with identical flags booted in the normal window and passed 6/6, so it is
+recorded as a boot flake, root cause not established.
+
+The only edit made **after** this run is a comment (the set-equality note in step 5 above); no executed
+line changed after the PASS.
+
+### 12.2 B2 — the browser kit addresses a DERIVED member, and readiness is positive
+
+`tests/kits/team-view-sync-complete-e2e/browser-smoke-host.mjs`:
+
+* the literals `T1_MEMBER_SESSION='session-team-child-796…'` / `T1_MEMBER_INSTANCE='inst-17legoh0ti27'` are
+  **gone**; the pair is derived by `deriveT1MemberPair()` from the durable store of the selected
+  `--seed-world`, requiring a `member_instances` row under `T1` with a non-leader template and its own
+  `childSessionId`, corroborated by a `session_bindings` row of kind `team-member` naming that instance
+  under that root — the same authority `team.getReadState` resolves affiliations from. Deterministic pick:
+  a plain `worker` first, then instanceId. Failure modes are fatal with the whole candidate table printed.
+* the pair is **re-derived from the copy that boots** (`seeded copy`), and a seed↔copy disagreement is fatal.
+* readiness is now positive: the launch token is exchanged for the session cookie (303 + set-cookie, the
+  same handshake the spill driver uses) and the wait loops until
+  `team.getReadState(derived session)` answers HTTP 200 with `relation=team-member`,
+  `teamSessionId=T1`, `memberInstanceId=<derived>` and `disposed=false`. The old first-non-405 exit — which
+  a 401/404/typed error also satisfied — is gone. `smoke-host.json` now records the pair, the derivation
+  source, `owningRootSessionId`, `bindingKind`, `corroboratedMembers`, `seedAndCopyAgree` and the affirmative
+  `readyReadState`.
+* no other kit behavior changed: the porcelain gate, ports, stable probes, token scrubbing and the teardown
+  record are byte-identical in effect.
+
+Verification **without booting or opening a browser** (`incident-audit-20261001/derive-probes.log`; each case
+is the real kit file executed, ending in a fatal, zero boot lines):
+
+| case | result |
+| --- | --- |
+| `--seed-world mpr-2026-10-01T13-21-34 --t1 session-mpr-t1-…` | derivation resolved (the run proceeded to the untouched empty-porcelain gate and stopped there) |
+| independent recomputation of the documented rule on the same store | 5 rooted rows, 4 corroborated → `session-team-child-52860b5a204e428e1cb00690a10eb02f` / `inst-0iin89s0dvix` (template `worker`, label `w-deleg`, lifecycle `SETTLED`) — agrees with the kit |
+| probe copy with its 4 T1 member bindings stripped | FATAL `no member of … has a child session corroborated by a team-member binding (rows: …)` — the full table is printed |
+| world with no durable store | FATAL `seed world: durable store missing: …/storages/team_domain.json` |
+| world that does not contain the team | FATAL `the durable store carries no member_instances row rooted at …` |
+| `--t1` shape violations (boot root, `ta` root) | FATAL at the pre-existing `--t1` pattern guard (unchanged) |
+
+Residual gap, stated rather than papered over: the success-path log line and `readyReadState` can only be
+observed from a **clean carrier**, which this worktree is not (§12.3); the positive-readiness assertion is
+therefore code-reviewed and dry-probed, not yet executed. Also observed: the kit's **default** seed
+`mpr-2026-09-27T08-35-52` no longer exists on disk, so an unflagged run dies at the pre-existing
+`--seed-world` guard with `does not resolve` (pre-existing condition, not introduced here — the default was
+left as documented).
+
+The sibling driver `team-view-sync-complete-e2e.mjs` still hardcodes `SRC_WORLD`/`T1`/the member pair
+(L168, L182–184). It is **not** parameterized at all, so its literals are self-consistent with the world it
+selects — there is no coupling leak of the B2 class there, and parameterizing it is outside this
+authorization. Recorded as a known follow-up.
+
+### 12.3 Pre-run cleanup-block verification (the post-incident regression guard)
+
+Performed **before** every kit run this round, by reading the kit source (not by assuming):
+
+* **pr-b kit** — exactly two destructive calls, `rmSync(HOME, {recursive,force})` at kit lines 538 (pre-copy
+  guard, immediately before `cpSync(SEED_WORLD, HOME)`) and 1449 (the G9 block, gated on
+  `EXIT_CODE === 0`); `HOME` is the single literal `tests/homes/prb-ep-<this run's STAMP>`; no
+  `unlinkSync`/`rmdirSync`/`renameSync`, no `rm` spawn, no glob, no `-newermt`, no evidence-directory
+  cleanup; `execSync` is only `git rev-parse HEAD` / `git status --porcelain` against test-use. Seed world
+  is only ever a `cpSync` **source**. Reported to the coordinator and accepted before running.
+* **browser smoke host** — two destructive calls: `rmSync(WORLD, …)` on its own unique
+  `tests/homes/tvs-smoke-<stamp>` immediately before that run's own `cp -r` seed, and removal of
+  `session.lock` files **inside that copy**. No finally-block world deletion (the world survives for
+  inspection). Verified before the dry probes; the kit was not booted this round.
+
+### 12.4 B3 — the empty-porcelain carrier gate: verified structurally, and a stop condition
+
+The gate is kept **exactly as written** (`worktree porcelain not empty … dieFatal`) — not weakened, not
+gitignored, not self-excluded, nothing deleted. Structural finding on why this worktree cannot carry a
+browser run:
+
+* the gate requires `git status --porcelain` == `''`; this worktree legitimately shows the 4
+  `packages/*/node_modules` **symlinks** as untracked;
+* `.gitignore:13 tests/homes/` and the `node_modules/` pattern **do not** cover them: a trailing-slash
+  directory pattern does not match a *symlink*, which is precisely why the Option A links are untracked
+  rather than ignored (already corrected in `environment-facts.txt`);
+* a real install (pnpm) would create real `node_modules` **directories**, which the ignore pattern *does*
+  match → porcelain clean → the gate passes. That is the "prepare deps properly" branch of B3, and it
+  requires an install step this authorization does not include.
+
+**Stop condition reported, not acted on**: no install, no gate edit, no link deletion, no new carrier
+worktree created. The browser lane needs either (a) authorization for a proper install in a fresh carrier
+worktree, or (b) a decision that the browser smoke runs from a worktree provisioned by the install lane.
+
+Housekeeping at this checkpoint (all retained; **no deletion performed this round**):
+
+* kept untracked: `tests/homes/mpr-2026-10-01T13-21-34`, `mpr-2026-10-01T13-08-04`,
+  `prb-ep-2026-10-01T13-22-22`, the two probe worlds `tvs-derive-probe-20261001T135123Z` and
+  `tvs-derive-probe-empty-20261001T135123Z` (B2 negative probes), the kit run directories, and the 4 links;
+  `prb-ep-2026-10-01T13-52-56` (boot-failure world) likewise;
+* `tests/homes/prb-ep-2026-10-01T13-53-35` was removed **by the kit itself** (its G9 clean-pass branch on its
+  own world), after the report+acceptance in §12.1 — not by any action of mine;
+* `tests/homes/.audit-paths.txt` (the stray file from 13:31:26) is **still present**, retained pending an
+  explicit instruction, because this round's envelope forbids me any deletion;
+* ports 3181–3186 / 3491–3500 free, no kit process alive, `:3080` only ever read-probed (401 pre and post),
+  `:3180` unreachable; `tests/deepseek-harness-test-use` porcelain 0 at the pinned baseline.
