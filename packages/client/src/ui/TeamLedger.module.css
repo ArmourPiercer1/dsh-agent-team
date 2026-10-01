@@ -316,3 +316,52 @@
   color: var(--dsw-alias-label-caption);
   font: var(--dsw-font-xxxs-11);
 }
+
+/* PR #56 — the control-detail extensions (display ≠ verification): the
+   FULL wire digest and the FULL review payload render VERBATIM and are
+   NEVER truncated (the base `.controlField dd` ellipsis is overridden;
+   the payload block scrolls instead). */
+.controlFieldWide {
+  flex: 1 1 100%;
+  align-items: flex-start;
+}
+
+.controlFieldWide dd {
+  display: flex;
+  flex: 1 1 auto;
+  overflow: visible;
+  white-space: normal;
+}
+
+.controlDigestValue {
+  overflow: visible;
+  white-space: normal;
+  font-family: var(--dsw-font-family-mono, ui-monospace, monospace);
+  word-break: break-all;
+  user-select: all;
+}
+
+.controlPayload {
+  flex: 1 1 auto;
+  max-height: 16rem;
+  margin: 0;
+  padding: 4px 6px;
+  overflow: auto;
+  border: 1px solid var(--dsw-alias-border-primary, currentColor);
+  border-radius: 4px;
+  background: var(--dsw-alias-bg-layer-2);
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xxxs-11) var(--dsw-font-family-mono, ui-monospace, monospace);
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: text;
+}
+
+.cannotReview {
+  flex: 1 1 100%;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--dsw-alias-bg-layer-2);
+  color: var(--dsw-alias-state-error-primary);
+  font: var(--dsw-font-xxxs-11);
+}
