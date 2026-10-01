@@ -14,6 +14,25 @@
 3. **5 个 DRAFT 修复 PR**（与文档 closure PR 分离、可独立审查）：persona(A) / control(B,C,D,H) / policy(E,G) / mcp-scoped(F) / runtime-template-consent(I,J)。全部 DRAFT、未合并、无自动合并；合并仅等待用户对外部复审通过的**具体 HEAD** 的明确指令。
 4. **本轮真实执行 vs 历史证据**的区分贯穿全报告：标注 `[本轮]` 的是 2026-10-01 本环境实跑；标注 `[历史]` 的是 2026-09-28..30 系列期间证据（路径在案）。
 
+> **最终状态（2026-10-01 11:0xZ 追加，不取代上文 08:0xZ 时的状态行；11:1xZ 再修正 — 见下）**：5 个修复 PR **全部已按用户 per-HEAD 明确指令合并入 master** — #47 @ `2bfbca12…`（06:24Z）/ #46 @ `8e18819c…`（07:07Z）/ #48 @ `621fdba1…`（08:07Z）/ #49 @ `26c48c87ff8687464636839d16e5303c275a202a`（10:0xZ）/ **#50（finding F）@ merge commit `c19af1954239c6b3933e708fd9bdb0d50dbe1ea4`（11:02:43Z，head `aab727574601bd9b891a71ddc05eb7e45ca641d0` / base `26c48c87…`，expectedHead 守卫 + 双父 + 5/5 已审 commit 包含性已验）= 当前 MASTER**（用户已独立核实）。A–J 10 条 finding 全部修复在 master（§4 更新行）。本 closure 分支 = 文档/证据线（产品树与合并后 master 字节一致，identity proof 在案 §5.1），**closure DRAFT PR 待发布——closure PR 无合并授权**。
+>
+> **DoD 20 项状态（11:1xZ 修正，取代本段首版"19 pass + 1 deferred"的过早表述）**：按用户指令（DoD #20 不得静默降级；19 项每条须实际充分证据，partial 标 partial/pending；Draft 可保留 pending）——
+> - **#20 = IN PROGRESS（不是 deferred）**：plan §9 原文 = "full host/browser/dual-team/concurrency/zero-core gates 通过"。实宿主电池已在本环境执行（test-use 0.1.7-rc.1 @ `46a7f68b09` pristine + 预构建 lib 已在位——**此前"环境缺失无法重跑"的理由已不成立**，本环境 3180 族端口全空闲、homes 工作区内可建、kit 自包含）：**F15 实宿主 10/10 = PASS（合并树产品，11:13Z，全腿含 R2 first-class finding / R3' 30s cooldown / H1 卫生）**；pr-d（40/40 control，#49 面积）执行中；pr-c（per-server MCP 隔离）排队；prf（G1-G9 含 G8 browser 数据面）+ E.12（16 场景含 dual-team/concurrency/restart×8）= tracked kit 的 stable-probe bug（:3180 本环境无监听 → fetch catch 对象 → `r.text is not a function`；probe = 红线观测项、零测试语义）fast-fail → **scratch 修正版（diff = 仅 probe 函数 + 披露注释；tracked kit 未动）排队重跑**；pr-b = **BLOCKED（具体技术 blocker：seed blueprint 世界从未 commit + kit 路径机器耦合；非耗时问题——覆盖回退 = #47 树时代实宿主证据 + 合并树 suite policy 测试绿 + post-#47 产品 delta 零 policy 文件，已验证）**；zero-core bookends = preflight PASS（test-use pristine + 端口 + :3080 仅观测）+ post 待完成 + suite 级 private-import 检查在合并树 full run 绿；**browser 子项 = prf G8 数据面（HTTP，plan scenario-18 的检查形态）随 prf 重跑——本环境无浏览器二进制（无 chromium/chrome/playwright），真实浏览器渲染维度 = 具体技术 blocker（仅历史 P9 证据，不声称）**。
+> - **其余 19 项**：合并树证据 = full 19F|4865P(4884)（产品树与 c19af195 字节一致）+ 合并树静态复核（§5.2：governance/policy/readiness 平面 5 个 merge 中字节未动、StepClock 生产 src 零引用、5-merge 产品 src delta = 逐 PR 已审文件集）+ 各 finding 修复测试在合并树 full run 绿。**实宿主维度的项（#9/#18 及其余经实宿主验证的项）= suite 级在合并树已充分、实宿主重跑进行中（电池在途）→ 该项最终判定随电池落定**；纯 suite/静态项 = 现有合并树证据即充分。最终判定表见 §3.1（随电池更新）。
+
+> **最终状态（2026-10-01 11:4xZ — 实宿主电池落定，取代上文 11:1xZ 的"进行中"表述；上两行保留为当时记录）**：
+> - **实宿主电池（合并树产品 c19af195，closure HEAD 产品树字节一致；test-use 0.1.7-rc.1 @ 46a7f68b09 pristine；3180 族独立端口；homes 工作区内；:3080/:3180 全程零触碰 = kit H1 腿逐跑核验 before==after）最终判定**：
+>   - **F15（MCP live-loss，#50/finding-F 面积）= PASS 10/10**（EXIT=0；11:12:45→11:13:34Z；`battery-03-f15-mcp-liveloss.log` + 证据目录 `f15-2026-10-01T11-12-45/`）。
+>   - **pr-c（per-server MCP 隔离）= PASS**（core=PASS / hygiene=PASS / all=PASS；EXIT=0；`battery-05-prc-mcp-isolation.log` + `prc-mcp-2026-10-01T11-15-34/`）。
+>   - **pr-d（control 兼容 40 检查，#49 面积）= 38 PASS / 2 FAIL（EXIT=2）— 拆分记录（不整体声称通过）**：38 = control-plane 全腿（durable 事实链 + guard 消费 + 执行释放至宿主 bash 工具边界）；2 = **宿主 bash 侧效文件腿（C1/C2a）= 环境阻塞** —— 宿主 bash 工具按 fail-closed 设计拒绝受限执行（upstream `SandboxUnavailableError`；**分阶段**诊断：内核允许 userns（单独 `unshare -U` EXIT=0），被拒步骤 = userns+mountns 组合（EXIT=1 EPERM）与 uid_map 写入（EXIT=1 EPERM）；bwrap 已安装但在 harness wrapper 子树内不可运行（其打印为 bwrap 自身泛化诊断文案）；**Landlock（2026-10-01 更正，diagnostics §9）：运行内核 landlock LSM active（`/sys/kernel/security/lsm` 运行时权威；/boot/config 无条目 = 判不可靠）—— DSH landlock 轮被阻于 helper 二进制缺失（常规 build 不构建 landlock-run，需 musl-gcc，VM 无），未被 kernel 触达** —— 精确命令/原始错误/退出码/能力矩阵见 `realhost-battery-post-merge/namespace-sandbox-diagnostics.md`；原始 tool_result 逐字在 `prd-control-merged-tree-record.md`）。**按用户裁决：不弱化/不绕过/不改安全配置/不安装后端；control-plane 通过与 bash 侧效未验证分开记录**。
+>   - **prf（G1–G9 含 G8）= tracked kit 因 probe 缺陷 fast-fail（EXIT=1，日志保留）→ 披露 scratch 修正版（diff = 仅 probe 函数 + 披露注释；完整逐行 diff = `scratch-adaptation-diff.txt`）= 除 G5/G6 外全腿绿**：G5 = **kit 期望过时（非产品回归）** —— 记录的 finding PR-F-G5 已被 master 的 persona-kind 工作（#46 A-contract）解决，合并树 create = ACCEPTED（true OPEN）；G6 = 与 pr-d 同一环境阻塞（300KB bash spill 未执行 → grants=0）。
+>   - **E.12（16 标准：14 场景 + H1/H2 卫生，含 dual-team S14 / 并发恢复腿 / restart×8 S11 / S13 冻结 v1）= tracked kit 同 probe 缺陷 fast-fail → scratch 两轮**：r3 = 15/16（唯一失败 S9 = **kit 正则过时**：#49 将 recovery attempt id 从单调序列改为 `crypto.randomUUID()`（`nextRecoveryAttemptId`），#48 时代正则 `[0-9a-z]+` 不再匹配带连字符 UUID；payload 逐字段核验全对 + digest 重算 OK = 非产品信号）→ r4（加 S9 charset 适配）= **VERDICT PASS — all 16 criteria green；world cleaned；EXIT=0**（11:33:56Z）。
+>   - **pr-b（effective-policy 实宿主）= BLOCKED（具体技术 blocker，非耗时）**：kit 硬编码原机 seed 路径（`SEED_BLUEPRINT_DIR` = `/home/user/…/tests/homes/mpr-2026-09-27T08-35-52/blueprints` L93）+ 该 seed 世界从未 commit（全仓搜索无对应 blueprint YAML）+ 成员实例 id 非确定 → **无法忠实重建**（重建 = 伪造测试输入，不做）；路径补丁 = tracked 测试改动（不静默做）。覆盖回退 = #47 树时代实宿主证据（committed）+ 合并树 suite policy 测试（4865P 内绿）+ 已验证 post-#47 产品 delta 零 policy/effective 文件触碰。
+>   - **zero-core bookends = PASS**（preflight：test-use rev+porcelain+bin 核验 + 端口空闲 + :3080 仅观测；post：test-use pristine + 端口释放 + :3080/:3180 before==after）+ suite 级 private-import 扫描在合并树 full run 绿 + core-budget grep 零新增。
+> - **test-infra DRAFT PR 已发布（用户指令：kit 缺陷须独立 focused test-infra PR 供审；scratch 成功证据不可暗称原 kit 通过；断言不弱化）**：**PR #51**（`test/kits-stable-probe-consent-fix` @ `b9db6e80a38848b26ff480841ab7d6a325a11c56`，base = c19af195；2 kit 文件 +120/−56）= (1) probeStableInstance refusal-safe（两 kit，红线观测项零断言影响）(2) E.12 Finding-J keyed-consent fixture（3 seed 站点 + 宿主自身 parseBlueprint 计算 contentHash；断言不变）(3) E.12 **S9 严格断言**（精确前缀 `recovery:rt-b3a-<NONCE>:` + 生产 attempt-id 契约的精确形状 = UUID(8-4-4-4-12 小写 hex) 或 `fallback-<base36>-<base36>`；**非通配放宽**；S9 其余 payload/digest 断言不动）+ **新 S10 freshness 检查**（b3a/b3b/b3c 三个恢复尝试的 attempt id 两两不同且各合形状）(4) prf G5 gate-lane 后置解决更新（断言 create ACCEPTED + T9 durable team-root = true OPEN；fail-closed 方向由 S12b 腿保持；死代码 helper 移除；docstring 更新）。**DRAFT，无合并授权**。tracked kit 自该分支的最终证据跑：**battery-t1（E.12 tracked）= VERDICT PASS — all 16 criteria green（11:40:34Z，EXIT=0，world cleaned）—— 严格 S9（精确前缀 + UUID 形状实测 `f12f2d5f-…` 型）+ digest 重算 + 新 S10 freshness（b3a/b3b/b3c 两两不同 UUID）全绿**；**battery-t2（prf tracked）= 在途**（预期 G5 gate-lane 转绿 + G6 环境阻塞披露）—— 结果追加至 PR #51（用户指令：长 kit 重跑结果后续追加准确证据，不必等全部日志/文档才发表）。
+> - **DoD #20 最终分类（不静默降级、不整体声称 PASS）**：**partial — 环境验收 gate 待用户环境动作**。已在本环境以独立端口/test home 安全执行并落定的全部有界检查：host 腿（F15/pr-c/pr-d-38/prf-G1-G9 除 G6/E.12 16 场景含 dual-team S14 + 并发恢复腿 + restart×8）+ zero-core 腿（bookends + suite + grep）= 证据在案（§5.3）；**剩余 2 项环境验收 gate 需用户环境动作**：(a) 宿主 bash 侧效腿（pr-d C1/C2a + prf G6）= 需具备 userns 嵌套 + uid_map 能力或 Landlock 的宿主（本容器运行时层拒绝该组合，内核本身构建允许 userns —— 分阶段诊断在案）；(b) **真实浏览器渲染维度 = 单列于 HTTP 数据面之外**（G8 = plan scenario-18 的 HTTP 检查形态，已随 prf 跑绿；本环境无浏览器二进制 = 真实 UI 渲染的具体技术 blocker，不将 HTTP 检查标成浏览器实跑）。**本报告不声称"所有 DoD PASS"；收尾表述 = 剩余环境验收 gate 需用户环境动作**（用户已获告知环境阻塞；不进入 Alpha3；不现在改环境）。
+> - **模型路由冲突（仅报告）**：本会话模型 = `qwen3.8-27b`；ROUTER_RULES §1 要求 `qiyuan-self/qwen3.8-27b` —— provider 前缀无法在会话内自证；按指令保持配置、不改设置。
+
 ## 1. 基线复核（本轮）
 
 | 项 | 值 | 核验方式 |
@@ -80,6 +99,35 @@
 | 19 | **fail** | **finding D（P1）[本轮复现]**：冷重启后 recovery approval 回放（process-local counter 重置 → correlation 重推 → 复用已 decided 行），fresh Human per attempt 被违反；finding C 的 cold-retry liveness 同注记 |
 | 20 | **deferred** | 历史收口树门全绿 `[历史]`（closure-gates-summary.md：静态门 + full suite ×2 零新增 + p6t1 隔离 ×24 + 实宿主三跑全绿 + 20-scenario 20/20 映射）= "当时记录"保持。本轮本环境：套件/静态门按 §5 重跑（同环境同命令），**实宿主三跑（E.12/F15/prf）与 browser（F.6 scenario 18）未重跑** —— 本环境 `tests/homes/` 未随 clone 迁移、无浏览器实跑条件；**不声称本轮实宿主/浏览器重跑**。解除条件：环境齐备（homes 重建 + 宿主授权轮）后在修复 PR 合并树上重跑。meta 注记：10 条 finding 本轮复现表明历史门禁集存在探测盲区（套件门当时"零新增"通过但缺陷潜伏）——本轮每个 finding 的新增回归测试即为门禁集补强。 |
 
+## 3.1 20 条 DoD —— 最终判定（post-#50-merge master = `c19af195…`，2026-10-01 落定）
+
+> 判定口径同 §3：pass = 性质在该基线成立（历史 + 本轮/合并后证据）；fail = 实测复现违反缺陷且修复 pending；deferred = 环境内无法执行。上表（§3，31ad828d 时点）保留为历史判定；本节为合并完成后的最终判定。**最终 = 19 pass（所有 finding 注记经 5 个已授权合并全部收口）+ 1 deferred（#20）**。19F 既有债集（§5.1/§7.2）身份在案、非本轮回归；与 DoD 项性质面积重叠处如实带 debt 注记——债**不声称已修**。
+
+合并引用：A = #46 MERGED @ `8e18819c…` / B,C,D,H = #49 MERGED @ `26c48c87ff8687464636839d16e5303c275a202a` / E,G = #47 MERGED @ `2bfbca12c0b4b7260e8bc9b5b05cd339189c74e4` / I,J = #48 MERGED @ `621fdba1f9feaf7dc192f8c8e89e2b9c848881b7` / F = #50 MERGED @ `c19af1954239c6b3933e708fd9bdb0d50dbe1ea4`（head `aab727574601bd9b891a71ddc05eb7e45ca641d0`，外部 FINAL PASS @ 精确 HEAD + 内部 3 审 R1 通过/R2 通过/R3 投机通过（MINOR 父裁决 = PR body 记录充分）+ 用户条件合并授权全条件满足）。
+
+| # | DoD（plan §9 缩写） | 最终判定 | 依据（finding 收口 → 证据） |
+|---|---|---|---|
+| 1 | governance write authority 唯一 | **pass** | §3 本轮静态核验（唯一 mutation 入口）+ 历史 pr-a host-smoke；后续合并未触该平面（closure 头全量门零新增佐证，§5.1） |
+| 2 | effective policy read authority 唯一 | **pass**（注记 E 已收口） | 唯一性成立；finding E（P1，reset tombstone slot 优先级）经 #47 MERGED 收口（2bfbca12…，外部复审 + 内部 3/3 + per-HEAD 指令）；E/G 修复测试在 master 树全量门零新增 |
+| 3 | security/governance mutation durable-before-ack | **pass** | §3 本轮静态核验 + 历史 pr-a；平面未动 |
+| 4 | no production StepClock authority | **pass**（debt 注记） | §3 grep 核验 + p6t6 bypass scan；p6t6-actions 1F = pre-existing debt（基线身份在案 §7.2），非本轮回归 |
+| 5 | v1 frozen Blueprint 可恢复 | **pass**（debt 注记） | v1 frozen 套件本轮绿 + E.12 S13 历史 + **E.12 S13 合并树实宿主绿**（battery-r4 16/16 一腿；**tracked 分支最终跑 battery-t1 = PASS 16/16**（11:40:34Z，PR #51 证据））；t2-blueprint-hash 1F + d3-member-identity-context 1F = pre-existing debt（身份在案） |
+| 6 | v2 per-template requirements 可运行 | **pass**（注记 I 已收口 + debt 注记） | finding I（P2）经 #48 MERGED 收口（621fdba1…）；t1-capability-schema 9F = pre-existing debt（能力 schema 面积，身份在案） |
+| 7 | requirement/policy/supply/readiness/materialization 分离 | **pass**（注记 I 已收口） | §3 五平面分离静态核验；finding I 强制缺口经 #48 收口 |
+| 8 | cold member 未 mounted 不构成 required failure | **pass**（注记 F 已收口） | W3-A 语义本轮绿；finding F 的回归底线（T5 场景）由 #50 的 21/21 focused legs（含 T5 冷路径）+ 合并树全量门 zero-new（三桶 (iii)=ZERO）保护 |
+| 9 | MCP per-server failure 不拖垮其他 server | **pass**（注记 F 已收口） | per-server 隔离本轮绿 + F15 10/10 历史 + **F15 合并树实宿主 PASS 10/10**（battery-03，11:13Z，#50 面积全腿含 R2 first-class finding / R3' 30s cooldown / R5-R3' remount telemetry 恰一次 / H1 卫生）+ pr-c 合并树实宿主 PASS（battery-05）；finding F（P1，target failed materialization 跨 session 聚合掩盖 / scope identity 未接通）经 #50 MERGED 收口：外部最终 delta 外审 CODE PASS（无 P1/P2；独立验证 test code @ 2b0aef87 + docs-only head、相同 19F/3 collection、无新增 lint、pin 908）+ 内部 3 审 pass-class + 用户精确 FINAL PASS @ aab72757 + 条件合并授权执行（c19af195） |
+| 10 | optional startup consent / runtime auto-degrade 正确 | **pass**（注记 J 已收口） | finding J（P2，consent 丢失 scope/hash）经 #48 MERGED 收口（621fdba1…；consent key = (scopeKey, contentHash, requirementId) + fail-closed legacy + 真链 10 测试） |
+| 11 | required outage Recovery 不扩权 | **pass**（注记 B+D 已收口） | finding B（P1）+ D（P1）经 #49 MERGED 收口（26c48c87…：frozen snapshot 单一来源 + restart-unique attempt identity + C9 有界矩阵 + 全量门 zero-new） |
+| 12 | Recovery cross-Agent work Human synchronous review | **pass**（注记 B 已收口 + debt 注记） | finding B 经 #49 收口（reviewPayload/execution 字段冻结 + digest 覆盖）；p6t3-mediation 5F = pre-existing debt（身份在案），非 B/D 回归 |
+| 13 | approval abort zero effect + durable audit | **pass**（注记 C 已收口） | finding C（P2）经 #49 收口（durable abandon 优先级 + waiter settle + terminal 边界；C6/C7/C8 + C9 矩阵 RED→GREEN） |
+| 14 | Recovery mode 无第二 durable flag authority | **pass** | §3 本轮测试绿 + E.12 S8 历史；平面未动 |
+| 15 | telemetry 完整并推进 durableGeneration | **pass** | §3 本轮测试绿 + F15 R2/R3 历史 |
+| 16 | persona preflight 与 actual runtime substrate 同源 | **pass**（注记 A 已收口） | finding A（P1）经 #46 MERGED 收口（8e18819c…，外部最终 DELTA PASS + 9/9 已审 commit 包含性已验） |
+| 17 | Remote v1–v7 保持兼容 | **pass** | §3 本轮 v1–v7 兼容测试绿 + prf G7 历史 |
+| 18 | old Control rows 保持兼容 | **pass** | §3 本轮 control 兼容测试绿 + PR-D D.6 40/40 历史 + **pr-d 合并树实宿主 38/40**（control-plane 全腿绿；2 FAIL = 宿主 bash 侧效环境阻塞，拆分记录不整体声称通过 —— `prd-control-merged-tree-record.md` + `namespace-sandbox-diagnostics.md`） |
+| 19 | restart 精确恢复 durable intent | **pass**（注记 D 已收口 + debt 注记） | finding D（P1，冷重启 approval 回放）经 #49 收口（nextRecoveryAttemptId per-attempt identity 取代 process-local counter）+ **E.12 S11 合并树实宿主绿**（8×restart 后 seeded facts 可读、readiness 重置；battery-r4 一腿；#49 的 per-attempt identity 在 S9/S10 腿以 UUID attempt id 形态实测在案）；p6t3-restart 2F = pre-existing debt（身份在案） |
+| 20 | full host/browser/dual-team/concurrency/zero-core gates 通过 | **partial — 环境验收 gate 待用户环境动作**（11:4xZ 电池落定，取代"deferred"） | **本环境已执行并落定的有界检查（合并树 c19af195，独立端口 + 工作区 test home，:3080/:3180 零触碰逐跑核验）**：host 腿 = F15 **PASS 10/10** + pr-c **PASS** + pr-d **38/40（2 = 宿主 bash 侧效环境阻塞，拆分记录）** + prf G1–G9（G5 = kit 期望过时已定位，G6 = 同环境阻塞；G8 = plan scenario-18 的 HTTP 数据面形态绿）+ **E.12 16/16（scratch 披露适配 r4 = 16/16；tracked 分支最终跑 battery-t1 = **PASS 16/16**（11:40:34Z，严格 S9 + S10 freshness 实测）；t2（prf）在途 —— 证据追加 PR #51）**（E.12 含 **dual-team S14 + 并发恢复腿 + restart×8 S11 + S13 冻结 v1**）；zero-core 腿 = bookends PASS + suite private-import 扫描绿（合并树 full run）+ core-budget grep 零新增。历史收口树门全绿 `[历史]`（静态门 + full suite ×2 + p6t1 隔离 ×24 + 实宿主三跑全绿 + 20-scenario 20/20）保持为"当时记录"。**剩余 2 项 = 环境验收 gate（需用户环境动作，用户已获告知；不弱化/不绕过/不改环境/不现在改）**：(a) 宿主 bash 侧效腿（pr-d C1/C2a + prf G6）—— 需具备 **userns 嵌套（CLONE_NEWUSER|CLONE_NEWNS）+ uid_map 写入** 或 **Landlock** 能力的宿主（harness wrapper 子树：内核允许单独 userns，子树特权链拒绝嵌套组合与 uid_map 写入；**Landlock = 运行内核 active（§9 更正），DSH landlock 轮缺 helper 二进制 —— 分阶段精确诊断 = `realhost-battery-post-merge/namespace-sandbox-diagnostics.md` §3+§8+§9**）；(b) **真实浏览器渲染维度（与 HTTP 数据面单列）** —— 需浏览器二进制（本环境无 chromium/chrome/playwright；G8 HTTP 面已绿 ≠ 浏览器实跑）。**不声称"所有 DoD PASS"**。meta 注记（不变）：10 条 finding 本轮复现表明历史门禁集存在探测盲区；每项 finding 的新增回归测试 = 门禁集补强（已全部在 master） |
+
 ## 4. Finding 登记（A–J：5 P1 + 5 P2）
 
 > 每条：状态 / 复现证据（本轮命令 + 日志）/ 修复 commit / 测试 / DRAFT PR。修复 PR 与文档 closure 分离，可独立审查。外部复审通过具体 HEAD 前**不合并、不自动合并**。
@@ -109,6 +157,8 @@
 - **#48 覆盖裁决（用户 07:05Z）**：最终 tip 相对前一簿记 commit 若为纯文档 delta（13 行 router-log，parent 字节核验 packages/+evidence/ 为空），则**不重复全量重测**——最终 HEAD 覆盖 = 全量已审 commit 的面板 + 针对该 delta 的明确专项审（SHA 对应精确记录）。
 - **#48 顺序集成预告（用户 07:06Z）**：#46 合并后 #48 必须再同步含 #46 的新 master、修 scope role 接线（template-disable L198 等 template-scope 构造缺 role → MALFORMED_DTO 风险）、**实际重算** scanner（预计 901 = 896+2A+3IJ）、重跑 gates、新 tip 外审；旧 base 的 PASS 不自动覆盖未来集成。
 
+> **合并状态最终更新（2026-10-01 11:0xZ；上表各行保留为当时记录，以下为准）**：A = **#46 MERGED @ `8e18819c4e589f685b99a86769251565ee4fc7ec`**（07:07:11Z）；B/C/D/H = **#49 MERGED @ `26c48c87ff8687464636839d16e5303c275a202a`**（10:0xZ，head `aa97fc2caecc2a6596dc681ce4439b6e8489b060`，expectedHead 守卫 + 双父 + 24/24 已审 commit 包含性已验）；E/G = **#47 MERGED @ `2bfbca12c0b4b7260e8bc9b5b05cd339189c74e4`**（06:24Z，precheck + expectedHead 守卫 + parents 已验）；I/J = **#48 MERGED @ `621fdba1f9feaf7dc192f8c8e89e2b9c848881b7`**（08:07Z，外部最终 delta PASS + per-HEAD 指令 + 15/15 包含性已验）；F = **#50 MERGED @ `c19af1954239c6b3933e708fd9bdb0d50dbe1ea4`**（11:02:43Z，head `aab727574601bd9b891a71ddc05eb7e45ca641d0` / base `26c48c87…`；外部最终 delta 外审 CODE PASS 无 P1/P2 + 用户精确 FINAL PASS + 内部 3 审 pass-class（R1 通过 2 NOTEs / R2 通过 1 INFO+1 MINOR / R3 投机通过 1 MINOR 父裁决+6 NOTEs，零 block）+ 用户条件合并授权全条件满足：内部门 3/3 pass-class + head/base 合并前未变（11:01Z 复核 aab72757/26c48c87，MERGEABLE/clean）+ 已验证路线（gh pr ready + gh pr merge --merge --match-head-commit expectedHead 守卫，11:02:39Z MERGE_EXIT=0）+ 合并后验证（API merged=true 11:02:43Z + merge_commit_sha + origin/master = c19af195… + 双父 26c48c87+aab72757 + 5/5 已审 commit 包含性 aab72757/2b0aef87/29479b70/bcaeb64b/26c48c87 全 is-ancestor of origin/master）。**10/10 finding 全部修复在 master；每条 finding 的新增回归测试均在 master 全量门零新增失败集内（三桶分类 (iii)=ZERO，§3.1 #9 与 fix-report §17.6 在案）。**
+
 ## 5. 本轮验证记录（31ad828d 基线树，handoff-closure worktree）
 
 > 纪律：所有命令保留真实退出码与完整日志（`.worktrees/.scratch-logs/closure-baseline*`）；安装成功只记环境准备，不计测试验证。base/changed 对比口径：同一 harness/环境/依赖版本/命令/配置；基线 SHA = `31ad828d06b5bcca858532f1930ac10c51c0f1bb`（在案 `.worktrees/.scratch-logs/closure-baseline-v2/base-sha.txt`）。
@@ -133,15 +183,46 @@
 
 **环境增量的定因记录（v2 → v3）**：test-use 仅 clone+install（未 build）时，full suite 出现 2 个历史债务外的失败文件组 —— a2c7-subtree-matcher 9F（"the prebuilt pinned lib is present on this host" = false：`packages/fs/fs-local/lib/index.js` 缺失）与 plugin-dsh-compat 6F（`packages/boot/app-boot/lib/index.js` 缺失，`Cannot find module ... lib/index.js`）；test-use `pnpm run build`（`DSH_CLIENT_COMMIT_HASH=46a7f68b09 ESBUILD_WORKER_THREADS=1 pnpm run build`，EXIT=0，porcelain 空复原）后两文件组 **38/38 全绿**（`closure-baseline-v2/delta-verify.log`）—— 根因 = 环境构建产物缺失，**非产品回归**，不并入基线债、不自动标 inherited。
 
-## 6. 宿主/浏览器验证 —— 本轮可行性与诚实边界
+### 5.3 实宿主电池（合并树 c19af195，2026-10-01 11:1x–11:4xZ —— DoD #20 本轮实宿主腿）
 
-- `tests/deepseek-harness-test-use`（0.1.7-rc.1 @ `46a7f68b09`）与 `tests/homes/` 未随 clone 迁移（gitignored）。本轮是否重建 test-use 执行实宿主 kit：见最终判定（未执行 = 历史证据在案 + 解除条件，**不声称本轮实宿主重跑**）。
-- browser（F.6 scenario 18 / DoD #20 browser 子项）：本环境无浏览器实跑条件 —— **仅历史证据 prf G8**，不声称重跑。
-- zero-core：`references/` 冻结 fork 不在本环境；本轮以（若重建）test-use pristine 自证 + 套件级 private-import 扫描为准；历史 zero-core 证据 `[历史]`（t12/closure 在案）。
+> 全部日志 = `dev/agent-workflow/evidence/pre-alpha3-refactor/closure/realhost-battery-post-merge/`（CMD-first provenance 在日志首段）；产品树 = 合并 master `c19af1954239c6b3933e708fd9bdb0d50dbe1ea4`（closure HEAD `59b619c6…` 产品树字节一致 = `post-merge-identity-proof.txt`）；host = 主仓 pristine test-use `46a7f68b0922371ce7144b668b90e377d8e799f4`（0.1.7-rc.1）+ 预构建 lib；ports = 3180 族（kit 自有 3182-3186 + mini-MCP 3491-3498 + mock 3506）；homes = `tests/homes/<world>`（工作区内，gitignored，清理在案 `post-merge-home-cleanup.log`）；**stable :3080 = 全程仅观测（kit H1 腿逐跑 before==after = 401,0）；:3180 本环境无监听 = 探针红线观测项如实记录**。**不声称任何未实跑的腿。**
+
+| 跑 | kit / 面 | 判定 | 证据 |
+|---|---|---|---|
+| PREFLIGHT | 环境核验（test-use rev+porcelain+bin / 端口空闲 / :3080 观测） | **PASS** | `battery-00-preflight.log` |
+| [1] | prf-closure-smoke（tracked） | fast-fail EXIT=1 = **kit probe 缺陷**（`r.text is not a function` @ probeStableInstance；probe = 红线观测项，零测试语义）—— 日志保留，tracked kit 未动 | `battery-01-prf-closure.log` |
+| [2] | E.12 pr-e-requirement-recovery-smoke（tracked） | 同 probe 缺陷 fast-fail EXIT=1 —— 日志保留 | `battery-02-ereq-recovery.log` |
+| [3] | F15 f15-mcp-live-loss-smoke | **VERDICT PASS — [PREF,C0,C1,C2,R1,R2,R4,R5,R3,H1] EXIT=0**（11:12:45→11:13:34Z；#50/finding-F 面积全腿：R1 transient / R2 PERMANENT-LOSS first-class finding 逐字 / R4 policy-deny≠loss / R5+R3' mount-failure 30s 真 cooldown + remount attempts=2 + mount-restored telemetry 恰一次 / H1 卫生） | `battery-03-f15-mcp-liveloss.log` + `…/f15-mcp-live-loss/f15-2026-10-01T11-12-45/` |
+| [4] | pr-d-control-real-host | **38 PASS / 2 FAIL（EXIT=2）** —— 2 = 宿主 bash 侧效腿环境阻塞（upstream fail-closed 拒绝；原始 tool_result 逐字 + 分阶段诊断见下两行）。**control-plane 38 全腿绿 vs bash 侧效 UNVERIFIED 分开记录，不整体声称通过** | `battery-04-prd-control.log` + `prd-control-merged-tree-record.md` + `…/pr-d/prd-control-2026-10-01T11-13-39/`（mock.log = 精确拒绝 tool_result @ call-prd-g0d36xo0） |
+| [5] | pr-c-mcp-isolation-smoke | **core=PASS / hygiene=PASS / all=PASS（EXIT=0）** | `battery-05-prc-mcp-isolation.log` + `…/pr-c/prc-mcp-2026-10-01T11-15-34/` |
+| [6] | pr-b-effective-policy-smoke | **BLOCKED（记录，非耗时）**：seed 世界从未 commit + kit 路径机器耦合 + 成员实例 id 非确定 → 无法忠实重建；覆盖回退 = #47 树时代实宿主证据（committed）+ 合并树 suite policy 测试绿 + post-#47 产品 delta 零 policy/effective 文件（已验证） | `battery-06-prb-blocked.md` |
+| POST | 卫生（test-use pristine / 端口释放 / :3080 在场） | **PASS** | `battery-99-post.log` |
+| r1/r2 | prf + E.12 scratch（布局修正轮） | 布局失败日志保留（scratch 布局教训 = `tests/kits-scratch/<kit>/` 唯一可行位） | `battery-r1-*.log` |
+| r3 | E.12 scratch（probe 修正 + Finding-J keyed-consent fixture） | 15/16（唯一失败 S9 = kit 正则过时；payload 逐字段核验全对 + digest OK） | `battery-r3-ereq-keyed-rerun.log` + run 证据 `…/pr-e/prereq-2026-10-01T11-25-41/scenario-s9-reviewed-payload.json` |
+| r4 | E.12 scratch（+ S9 charset 适配 = 3 处披露适配全） | **VERDICT PASS — all 16 criteria green（14 场景 + H1/H2）；world cleaned；EXIT=0**（11:33:56Z） | `battery-r4-ereq-uuid-rerun.log` |
+| t1 | **E.12 tracked kit 自 test-infra 分支**（PR #51 @ b9db6e80：probe + keyed consent + 严格 S9 + 新 S10 freshness） | **VERDICT PASS — all 16 criteria green；world cleaned；EXIT=0**（11:40:34Z；S9 严格断言 + digest 重算 + S10 freshness 实测 UUID `f12f2d5f-…` 两两不同全绿）—— **PR #51 E.12 侧最终记录** | `battery-t1-e12-tracked.log` |
+| t2 | **prf tracked kit 自 test-infra 分支**（G5 gate-lane 后置解决 + probe） | 在途（预期 G5 gate-lane 转绿；G6 = 环境阻塞披露） | `battery-t2-prf-tracked.log`（追加至 PR #51） |
+
+**环境阻塞（分阶段精确记录 —— 权威 = `namespace-sandbox-diagnostics.md`：可复现命令 + 原始错误 + 退出码 + 内核/运行环境能力矩阵 + 所需独立能力描述 + §7 执行层补证）**：
+- 内核 6.8.0-142-generic（Ubuntu，systemd VM，`/proc/1/cgroup` = `0::/system.slice/dsh.service`，非 docker）：CONFIG_USER_NS=y；`max_user_namespaces=2147483647`；`unprivileged_userns_clone=1`；**⚠ 更正（diagnostics §9）：/boot/config-6.8.0-142-generic 无 `CONFIG_LANDLOCK` 条目，但运行时 `/sys/kernel/security/lsm` = `lockdown,capability,landlock,yama,apparmor` → 运行内核 landlock 已编译且 ACTIVE（两证据矛盾，运行时权威，config 文件判不可靠/疑 stale）**；无 seccomp（0）/AppArmor 在 lsm 列表（本会话进程无 AppArmor profile 约束观测）/无 SELinux。
+- 分阶段探针（全只读）：(A) `unshare -U true` → **EXIT=0（单独 userns 成功）**；(B) `unshare -U -m true`（CLONE_NEWUSER|CLONE_NEWNS 单调用组合）→ **EXIT=1 EPERM（拒绝）**；(B') `unshare -m true`（纯 mountns）→ **EXIT=1 EPERM**（同轴）；(C) `unshare -U --map-root-user true`（uid_map 写入）→ **EXIT=1 EPERM（拒绝）**；(D) `bwrap --ro-bind / / --dev /dev --proc /proc true` → **EXIT=1**（bwrap 打印 = bwrap 自身泛化诊断文案，**非内核原文，与本环境实测不符** —— 内核允许裸 userns）；(E) Landlock = 运行内核 active（lsm 列表）；DSH landlock 轮 = helper `landlock-run` 二进制缺失（pinned 树 bin/ 仅 glibc/system.node；--host-addon-only 跳过 static-musl 类；musl-gcc 不在 VM）→ probe 在 'unusable' 即止，**kernel 未被 DSH probe 触达**（§9）。
+- **执行层结论（§7 补证）**：失败 bash 运行于 **三级嵌套**：VM → dsh.service（root）→ harness bwrap wrapper（userns outer-root→inner-1000 + mountns + pidns）→ 会话进程（uid 1000，**CapBnd=0 空 bounding set**，**NoNewPrivs=1**，setgroups=deny）→ DSH host → 宿主 bwrap（第 3 层，失败点）。被拒 = **第二层非特权** userns+mountns 组合 + uid_map 写入（空 CapBnd + no_new_privs + setgroups deny 三重继承）—— **不是 kernel 全局禁止**（裸 `-U` 成功；root 层 wrapper 的 userns+mountns+pidns 此刻就在运行 = 活证据）。
+- 所需独立能力（§5）= 可工作的受限 sandbox backend（userns 嵌套 + uid_map 映射，或 Landlock 强制内核）；用户侧一条命令自验（普通终端）：`unshare -U -m true && echo NESTED-OK`（OK = 该上下文重跑 tracked kit 即解锁，零配置变更）。**处置 = 用户环境动作（不弱化/不绕过/不改内核配置/不安装；用户已获告知）**。
+- **浏览器维度（与 HTTP 数据面单列）**：本环境无浏览器二进制（chromium/chrome/playwright 均无）= 真实 UI 渲染的具体技术 blocker；plan scenario-18 的 HTTP 检查形态（G8：GET / 服务 UI + getReadState/getProjection/ledger pending-review 面 + resolveControl→bash→DONE）随 prf 跑绿 = **HTTP 数据面 ≠ 浏览器实跑，不混标**；历史 P9 浏览器证据 `[历史]` 在案（不声称本轮重跑）。
+
+## 6. 宿主/浏览器验证 —— 本轮可行性与诚实边界（11:4xZ 重写，取代首版"未执行"表述）
+
+- **可行性（本轮落定）**：test-use 0.1.7-rc.1 @ `46a7f68b09` pristine + 预构建 lib 在位（主仓）；homes 工作区内可建（TEST_METHODS §7）；3180 族端口全空闲；kit 自包含（WORKTREE 相对解析）。**实宿主电池已执行 = §5.3**（此前"环境缺失无法重跑"的理由已不成立——test-use 本就在位，旧 deferred 理由作废）。
+- **具体技术/权限 blocker（与耗时区分）**：(a) 宿主 bash 侧效 = harness wrapper 子树特权链缺口（分阶段诊断 §5.3；非配置漏接、非 kernel 禁止、非耗时）；(b) 浏览器渲染 = 无浏览器二进制（非耗时）；(c) pr-b seed 世界不可忠实重建（数据缺失，非耗时）。三者均 = **环境验收 gate，需用户环境动作**（用户已获告知）。
+- **安全/纪律边界（用户裁决，遵守）**：不弱化/不绕过/不禁用 sandbox；不改内核配置；不安装后端；不改安全配置；stable :3080 零触碰（逐跑核验）；scratch 成功证据与 tracked kit 通过严格分开（test-infra PR #51 = 长期修复通道；断言不弱化）。
+- zero-core：`references/` 冻结 fork 不在本环境；以 test-use pristine 自证（bookends 在案）+ suite 级 private-import 扫描（合并树 full run 绿）+ core-budget grep 零新增；历史 zero-core 证据 `[历史]`（t12/closure 在案）。
 
 ## 7. 遗留债务与后续 Alpha.3 边界
 
-### 7.1 本轮新增（A–J 修复 PR pending 外部复审）
+### 7.1 本轮新增（11:4xZ 更新：A–J 5 修复 PR 全部 MERGED + test-infra PR #51 DRAFT 已发布）
+- **5 个修复 PR 全部按用户 per-HEAD 明确指令合并入 master**（#47 @ `2bfbca12…` 06:24Z / #46 @ `8e18819c…` 07:07Z / #48 @ `621fdba1…` 08:07Z / #49 @ `26c48c87…` 10:0xZ / #50 @ `c19af195…` 11:02:43Z —— 合并执行记录 + expectedHead 守卫 + 包含性验证在 §4 更新行）；10/10 finding 修复在 master。
+- **test-infra PR #51（DRAFT，无合并授权）** = `test/kits-stable-probe-consent-fix` @ `b9db6e80a38848b26ff480841ab7d6a325a11c56`（base c19af195；2 kit 文件 +120/−56）：probe 修正（两 kit）+ E.12 keyed-consent fixture + E.12 严格 S9 + 新 S10 freshness + prf G5 gate-lane 后置解决。最终证据：battery-t1（E.12 tracked）**PASS 16/16**（11:40:34Z）；battery-t2（prf tracked）在途 → 追加至 PR。
+- **closure DRAFT PR（本分支）待发布** = 文档/证据 only（产品树零改动，identity proof 在案）；**无合并授权**。
 - 10 条 finding 的 5 个 DRAFT PR（§4）；合并条件 = 用户对外部复审通过的**具体 HEAD** 的明确指令。****截至 08:0xZ**：#47 MERGED @ `2bfbca12…`、#46 MERGED @ `8e18819c…`（授权各覆盖单一 HEAD）；**#48 MERGED @ `621fdba1…`**（外部最终 delta PASS + 用户具体 HEAD 指令 08:0xZ；expectedHeadOid 守卫 + parents + 15/15 包含性已验；**新 MASTER**）；**#49 @ `a2b3df79…` + final 批次（有界 C 矩阵 + 串行性 + #46 同步）执行中**（RED 完全映射 32/29 与设计吻合、D1–D4 已设计零行已写、无阻塞、范围锁定、30min checkpoint 在途）；**F = PR #50 @ `698468d7…` 内审覆盖闭合，但**外部复审确认 1 residual F / P1**（首次 mount 的 pending 窗口仍放行真实 work：provider L482–508 仅 failed→DOWN、pending+reachable sibling 仍 allow [U4 现 pin 此行为]；agent-bindings L3406–3420 prepareAgentForRequest 后无条件 followup；reconcile L1700–1715 捕获首次 mount rejection、stamp failed 后 resolve = 同次 passage 仍 work-delivered）→ **F 唯一 writer 复现 + 修复工单已发**（RED-first：T1 搭 A healthy/B fresh，B 首次 followup 前设 mutable mcpFailures[server]，断言 failed mount 之后 zero followup/model/work；修复 = actual delivery 之前的 post-prepare/materialization gate 或等价传播 prepare failure；**不得 blanket block pending 于 mount 机会之前**（bootstrap 死锁）；契约 = applicable materialization 成功前不可真实 work；U4 pin 更新 = 披露项）+ 与**新 master 621fdba1** 受控同步（combined scanner 重算 + role 测试复核 + gates 重跑 + 最终 HEAD 外审）**— 均无合并授权**。最终报告待 #49/F 最终通过状态后准确落定（不提前 close）。
 
 ### 7.2 系列期间已知债（保持，不扩张）
@@ -169,3 +250,47 @@
 | dev/agent-workflow/graph.yaml `current_phase` | "series closure completed… next item = final series report" | closure 提交时更新 = "handoff closure 完成：DoD 20 报告 + 5 DRAFT 修复 PR（A–J）已发布，待外部复审具体 HEAD + 用户合并指令"（追加式，历史块不动） |
 
 **低优先级登记（非本轮 blocker，不冒充收尾 blocker）**：`tests/kits/` 中 PR-A/B 专属 host-smoke kit 的 `.worktrees` 硬编码路径（归档/canonical-helper 整理）；`tests/homes/`、`references/` 冻结 fork、（本环境新增）`tests/deepseek-harness-test-use` 的迁移/重建协议已按 TEST_METHODS 执行并在 §1/§5 留痕。
+
+## 9. 剩余环境验收 gate（需用户环境动作 —— 收尾表述）
+
+> 本节 = DoD #20 中本环境无法安全执行的验收面的**精确边界 + 补齐动作**。用户已获告知；**不弱化/不绕过/不改内核与容器配置/不安装/不进入 Alpha3/不现在改环境**。
+
+| Gate | 受阻检查 | 精确缺口（分阶段诊断在案 §5.3） | 补齐动作（用户环境动作，均为宿主/运行时级） | 补齐后验证 |
+|---|---|---|---|---|
+| 1. 宿主 bash 沙箱侧效 | pr-d C1/C2a（侧效文件存在性）+ prf G6（300KB spill 事实链） | harness wrapper 子树（CapBnd=0 + NoNewPrivs=1 + setgroups=deny）内第二层非特权 userns+mountns 组合 + uid_map 写入被拒；**Landlock = 运行内核 active（§9 更正），DSH landlock 轮缺 helper 二进制**；**非 kernel 禁止**（裸 `-U` 成功） | 候选（仅报告，执行待用户 action-time 确认）：**O1 prebuilt landlock-run 落位 pinned 树 bin/（gitignored、可逆）→ 后端自动切 landlock（保留 fs 隔离；隔离维度差异：无新 pid/mount ns；kit deny-lane 文案需适配）** / O2 musl-gcc + 完整 native build / O3 用户普通 SSH 手工跑（脚本已备，用户实测同形 bwrap EXIT=0）；O4（宽模式/danger）= 安全弱化不采用；O5（外层 wrapper 机制）= 安全设置变更明令禁止 | 同一 tracked kit（test-infra PR #51 内容）**零改动**重跑 pr-d + prf → 40/40 + G6 腿绿 |
+| 2. 真实浏览器渲染（与 HTTP 数据面单列） | 浏览器 UI 实跑维度（plan browser gate 的渲染面） | 本环境无浏览器二进制（chromium/chrome/playwright 均无）；G8 HTTP 数据面（plan scenario-18 检查形态）已随 prf 跑绿 = **不等同于浏览器实跑** | 提供浏览器运行环境（headless 浏览器 + 授权） | 浏览器实跑 scenario-18 渲染面（独立记录，不与 G8 混标） |
+| 3. pr-b seed 世界（数据缺失，非环境能力） | pr-b effective-policy 实宿主 kit | seed 世界从未 commit + kit 路径机器耦合 + 成员实例 id 非确定 → 无法忠实重建（重建 = 伪造输入，不做） | 提供原 seed 世界（committed blueprint 目录 + 对应 world），或裁决以覆盖回退为准（#47 树时代实宿主证据 + 合并树 suite policy 测试 + 已验证零 policy delta） | 提供后：tracked pr-b kit 零改动重跑 |
+
+**收尾表述（用户批准口径）：剩余环境验收 gate 需用户环境动作。** 本报告不声称"所有 DoD PASS"；已落定腿 = §5.3 逐项在案。
+
+## 12. 外部记录（verbatim 摘录 + 权威源引用）
+
+> 权威源 = 仓库 append-only 日志 `dev/agent-workflow/SESSION_ROUTER_LOG.md`（零改写纪律）；本节摘录关键外部裁决/指令的 verbatim 核心句 + 条目定位，供报告自包含引用。closure span 的日志 append 随 closure commit 落盘。
+
+### 12.1 #50（finding F）span 外部裁决（router log 条目定位）
+
+| 记录 | 权威源条目 | verbatim 核心句（摘录） |
+|---|---|---|
+| FINAL-INPUT VERDICT（同步后外审） | `…2026-10-02 — fix-mcp-target-materialization: … RESIDUAL-F 轮收口 … FINAL-VERDICT 轮`（L4975 区） | "外部 bounded report @ 4820ecdb: REQUIREMENT-AWARE FINAL-INPUT VERDICT, 6 腿 RED→GREEN, FINAL HEAD gates + S6" |
+| CONSOLIDATED REVISION 外审 | `…2026-10-01 — fix-mcp-target-materialization: CONSOLIDATED REVISION 轮`（L4989 区） | "用户外部 FINAL bounded re-review @ 64cd6614: 旧类 CONFIRMED FIXED, 三个残余 LOCAL 问题 P1/P2a/P2b — ALL within the existing frozen matrix; ONE consolidated revision, RED-first" |
+| PARENT FINAL ADDENDUM（合并前最终集成验证指令） | `…2026-10-01 — fix-mcp-target-materialization (PR #50 finding-F): 同步后 master sync + 同步后全门（PARENT FINAL ADDENDUM 执行记录）`（L5059 区） | "任务（parent 末轮 addendum，逐项执行）：(1) same-harness master baseline（26c48c87 临时 detached worktree …harness 同一性证明 = lockfile/manifests diff EMPTY …）" + "权威 post-recovery candidate full gate（2b0aef87, clean tree）= 19F \| 4865P (4884)" |
+| 证据精度更正（外部审查 finding） | 同 L5059 条目末行 correction | "correction（2026-10-01, 证据精度, 外部审查 finding — append-only, 本条目以上各行零改写）: 本条目中对 c9-pcb-red-1.log / c9-pcb-green-1.log 的 'CMD-first + true-exit' 表述…更正为：两文件各携完整 Vitest stdout…文件内无命令行、无 exit 行（逐字节核验）…两 log 文件零改动（按原样保留）" |
+
+### 12.2 #50 合并授权与 FINAL PASS（执行记录 = §4 合并状态最终更新行，此处核引）
+
+- **用户精确 FINAL PASS @ `aab727574601bd9b891a71ddc05eb7e45ca641d0`**（2026-10-01 10:5xZ 转达）+ **条件合并授权**，条件 = "内部门 3/3 pass-class + 无其他 blocks + head/base re-verify" —— **全条件满足在案**（11:01Z 复核 aab72757/26c48c87 未变，MERGEABLE/clean；执行 = `gh pr ready` + `gh pr merge --merge --match-head-commit`（expectedHead 守卫），11:02:39Z MERGE_EXIT=0；合并后 API merged=true 11:02:43Z + merge_commit_sha = `c19af1954239c6b3933e708fd9bdb0d50dbe1ea4` + origin/master 一致 + 双父 26c48c87+aab72757 + 5/5 已审 commit 包含性（aab72757/2b0aef87/29479b70/bcaeb64b/26c48c87 全 is-ancestor））。
+- 用户独立核实（11:0xZ 转达）："#50 合并我们已独立核实，master c19af1954239c6b3933e708fd9bdb0d50dbe1ea4。"
+- **授权范围严格 per-HEAD**：仅覆盖 #50 该 HEAD；closure PR 与 test-infra PR #51 均**无**合并授权。
+
+### 12.3 closure span 用户指令（verbatim 核心句，2026-10-01 本 span 转达）
+
+1. **DoD #20 治理指令**："#50 合并我们已独立核实，master c19af1954239c6b3933e708fd9bdb0d50dbe1ea4。closure 的 DoD #20 不得静默降低原 exit gate：请先准确引用原 DoD20 要求，列当前 committed real-host kits 哪些适用于最终 merged tree、必要覆盖范围和既有证据；…若所需 real-host 检查在已授权 workspace、独立端口/test home 下安全可行，请执行必要的有界检查，不碰 stable :3080。…不得把 required exit gate 任意标 deferred 即宣告阶段完成。19 PASS 也须每条实际充分证据，partial 就标 partial/pending；Draft 报告可先保留 pending。不扩到正式 Alpha3 功能开发或无关测试。"
+2. **证据标准**："DoD20 执行证据要求：保留原始失败日志、scratch patch 逐行 diff、修前/修后准确命令和产品 mergeSHA。prf/E.12 若 kit bug 需要长期修复，独立 focused test-infra commit/PR 供审，不可只留不可复用 scratch 成功证据且暗称原 kit 通过；测试断言不弱化。"
+3. **pr-b 语义**："读原始 seed 字段/语义，找当前等价 deterministic fixture；可从既定 spec 忠实重建 → 隔离 realm 创建 fixture，明确'重建 fixture'而非声称原 seed 存在，原断言保持；无法忠实重建 → 报告精确缺失依赖和 blocker。"
+4. **浏览器/F15 单列**："浏览器 UI 要求仍与 HTTP Scenario18 分开，不能把 HTTP 检查标成实际浏览器跑过。F15 通过记准确 c19af195 产品树/mergeSHA、命令与证据。保持 stable:3080 不动。"
+5. **pr-d 安全边界**："PR-D 宿主 bash 缺 sandbox backend 请保留精确 tool_result 与失败检查，不得为使测试通过而禁用/弱化 sandbox 或改安全配置、全局/稳定服务设置。…control-plane 通过与实际 bash 侧效未验证分开记录，不能据前者称整 kit 全过。"
+6. **S9 严格断言 + 分阶段诊断 + 早发 DRAFT（最新指令）**："保留准确分阶段 sandbox 诊断（userns 单独成功、mountnamespace/UID map 步骤拒绝、bwrap 所用命令与 exit、Landlock 状态），不要再概括为内核完全无 userns。S9 新相关 ID 断言要忠实当前生产 nonce 契约：核 randomUUID 及平台 fallback 真实形状，精确 prefix 并验证每次 attempt 新鲜/不同，不要用任意 .* 放宽为'什么都通过'。保持其余 payload/digest 断言。test-infra 源码 + 测试已连贯即可尽早发 Draft PR 供外审，后续长 kit 重跑结果追加准确证据，不必等所有日志/文档才发表。仍不合并。"
+
+### 12.4 模型路由冲突（仅报告，不改设置）
+
+- 本会话模型 = `qwen3.8-27b`；`docs/ROUTER_RULES.md` §1 要求 `qiyuan-self/qwen3.8-27b` —— 基模型名一致，provider 前缀 `qiyuan-self` 无法在会话内自证。按用户 2026-10-01 指令：保持已配置模型、只报告冲突、不改设置。

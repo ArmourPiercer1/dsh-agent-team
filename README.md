@@ -77,6 +77,24 @@ gitignored) — this section is a pointer summary, not the authority:
   (`fix/mcp-target-materialization`) for the independently confirmed findings
   A–J (5 P1 + 5 P2) from the 2026-10-01 external review of the merged series — see
   `dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md`.
+  **Superseded (2026-10-01 closure-complete):** master has since advanced via the
+  #49 authorized merge `26c48c87ff8687464636839d16e5303c275a202a` and the #50 authorized
+  merge `c19af1954239c6b3933e708fd9bdb0d50dbe1ea4` (**= current origin/master**, user
+  independently re-verified) — all five finding-fix PRs #46–#50 merged, each on an
+  external-final-delta PASS + per-HEAD explicit user instruction + expectedHeadOid guard.
+  Post-merge battery on c19af195 (independent ports; :3080/:3180 zero-touch): F15 10/10,
+  pr-c PASS, pr-d 38/40 (2 host-bash side-effect legs environment-blocked, split-recorded),
+  prf tracked t1 E.12 16/16 EXIT=0 / t2+t3 20 PASS + 1 G6 (environment-blocked) EXIT=2,
+  zero-core bookends PASS. **DoD #20 = PARTIAL — 剩余环境验收 gate 需用户环境动作**
+  (host-bash side-effect legs: user self-installed landlock-run + restarted the DSH
+  backend on 2026-10-01; an independent environment session performs the real
+  verification — the main session has stopped environment probing; browser-rendering
+  dimension: no browser binaries in this environment). Test-infra PR #51 (tracked kit
+  fixes + tracked-run evidence) = DRAFT @ `43a4274c2b5af262a5fd4108076897da730d0e82`
+  (base c19af195; external final code/assertions PASS @ 509751ad; internal 3-review in
+  flight; merge pending the gated conditions). See
+  `dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md` and
+  `…/realhost-battery-post-merge/` (battery logs + namespace-sandbox-diagnostics §1-9).
 - **Pre-1.0 branch policy:** `master` carries ongoing alpha development; `stable` tracks only release-candidate baselines and RC-qualified fixes. Do not merge unqualified alpha work from `master` directly into `stable`.
 - **Product foundation:** the full vNext product (P0–P9 + T12 vertical +
   upstream-0.1.2-rc.1 compat + fresh-machine install chain, 1284 files / +85,679)

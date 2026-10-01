@@ -1,0 +1,26 @@
+== battery-02-ereq-recovery (closure real-host battery @ post-#50-merge) ==
+HEAD: 59b619c6b9638ab10aebf7ef9e5f89107b7823c8 (closure head; product tree byte-identical to merged master c19af1954239c6b3933e708fd9bdb0d50dbe1ea4 — see post-merge-identity-proof.txt)
+date: 2026-10-01T11:12:40Z
+git status --porcelain:
+ M dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-check-artifacts.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-focused-mtm.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-identity-proof.txt
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-lint.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-p4t6.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-scratch-teardown.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-closure-realhost-battery.sh
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-post-merge-sanity.sh
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-post-sync-battery.sh
+$ node tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs
+(kit run dir: dev/agent-workflow/evidence/.../pr-e-requirement-recovery-smoke/<stamp>/ — the kit's own captures)
+[2026-10-01T11:12:40.107Z] === pre-alpha3 PR-E E.12 real-host gate (14 scenarios) prereq-2026-10-01T11-12-40 ===
+[2026-10-01T11:12:40.107Z] worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure
+[2026-10-01T11:12:40.107Z] testuse=/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-10-01T11:12:40.107Z] world=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/tests/homes/prereq-2026-10-01T11-12-40
+[2026-10-01T11:12:40.107Z] evidence=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T11-12-40
+TypeError: r.text is not a function
+    at probeStableInstance (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:462:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:1841:55)
+BATTERY-02-EREQ-RECOVERY_EXIT=1

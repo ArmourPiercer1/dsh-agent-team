@@ -1,0 +1,81 @@
+== battery-r2-ereq-recovery-rerun (SCRATCH-ADAPTED RE-RUN — probeStableInstance fix only; see in-file disclosure; tracked kit unchanged) ==
+HEAD: 59b619c6b9638ab10aebf7ef9e5f89107b7823c8 (closure head; product tree byte-identical to merged master c19af1954239c6b3933e708fd9bdb0d50dbe1ea4)
+date: 2026-10-01T11:21:04Z
+scratch kit: tests/kits-scratch/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs (re-built layout: <worktree>/tests/kits-scratch/<kit>/ so ../../ = tests/ (real) and ../../../ = the closure worktree root) (diff vs tracked = ONLY probeStableInstance, disclosed)
+git status --porcelain:
+ M dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md
+?? dev/agent-workflow/evidence/f15-mcp-live-loss/f15-2026-10-01-11-12-45/
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/merged-tree-static-reverify.txt
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-check-artifacts.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-focused-mtm.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-identity-proof.txt
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-lint.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-p4t6.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-scratch-teardown.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/realhost-battery-post-merge/
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-closure-realhost-battery.sh
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-post-merge-sanity.sh
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-post-sync-battery.sh
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-realhost-battery-rerun-prf-ereq.sh
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/pr-c/prc-mcp-2026-10-01T11-15-34/
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/pr-d/prd-control-2026-10-01T11-13-39/
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T11-12-40/
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/pr-f/prf-2026-10-01T11-12-35/
+?? tests/kits-scratch/
+$ diff tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs tests/kits-scratch/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs   (the complete adaptation delta)
+461c461,470
+<   const r = await fetch(url, { signal: AbortSignal.timeout(10_000) }).catch((e) => ({ status: 0, error: String(e?.message ?? e) }))
+---
+>   // SCRATCH ADAPTATION (2026-10-01, closure real-host battery, re-built after the first
+>   // scratch layout was accidentally removed): the tracked kit's fetch().catch() returns a
+>   // bare object on a refused connection (e.g. :3180 not listening in this environment),
+>   // which then throws 'r.text is not a function'. The probe is RED-LINE OBSERVATION ONLY
+>   // (EVID.stableBefore/stableAfter) — no test semantic. The adaptation records the refusal
+>   // correctly instead of crashing. Nothing else in the kit differs from the tracked byte.
+>   // (Long-term fix for the TRACKED kits = the focused test-infra PR; this scratch copy is
+>   // the disclosed stopgap that lets the legs run unchanged.)
+>   let r
+>   try { r = await fetch(url, { signal: AbortSignal.timeout(10_000) }) } catch (e) { return { status: 0, error: String(e?.message ?? e) } }
+DIFF_EXIT=1 (1 = the disclosed probe-only delta)
+$ node tests/kits-scratch/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs
+[2026-10-01T11:21:04.658Z] === pre-alpha3 PR-E E.12 real-host gate (14 scenarios) prereq-2026-10-01T11-21-04 ===
+[2026-10-01T11:21:04.659Z] worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure
+[2026-10-01T11:21:04.659Z] testuse=/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-10-01T11:21:04.659Z] world=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/tests/homes/prereq-2026-10-01T11-21-04
+[2026-10-01T11:21:04.659Z] evidence=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T11-21-04
+[2026-10-01T11:21:04.674Z] stable pre-probes: 3080=401 3180=0
+[2026-10-01T11:21:04.729Z] [H1] PASS — test-use pristine BEFORE :: head=46a7f68b0922
+[2026-10-01T11:21:04.730Z] ports: host=3182 mock=3497 mcpRepo=3492 mcpLeaderreq=3491 mcpWeb=3493 (mcp_signal: never configured — the S2 supply axis)
+[2026-10-01T11:21:04.730Z] world materialized: home=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/tests/homes/prereq-2026-10-01T11-21-04 blueprints=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/tests/homes/prereq-2026-10-01T11-21-04/blueprints
+[2026-10-01T11:21:04.734Z] mock DeepSeek endpoint up at 127.0.0.1:3497
+[2026-10-01T11:21:04.735Z] mini MCP mcp_repo up on 127.0.0.1:3492
+[2026-10-01T11:21:04.735Z] mini MCP mcp_leaderreq up on 127.0.0.1:3491
+[2026-10-01T11:21:04.735Z] mini MCP mcp_web up on 127.0.0.1:3493
+[2026-10-01T11:21:04.736Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-10-01T11:21:05.990Z] throwaway boot OK: http://127.0.0.1:3182/?token=[REDACTED]
+[2026-10-01T11:21:06.057Z] web profile ensured (throwaway boot if first use)
+[2026-10-01T11:21:06.058Z] B1-CREATE: patch (bootPhase=create, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[{"name":"mcp_repo","port":3492},{"name":"mcp_leaderreq","port":3491},{"name":"mcp_web","port":3493}], preset=live root=default member=default) + directive (boot=1) written
+[2026-10-01T11:21:07.579Z] B1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-10-01T11:21:07.587Z] B1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-10-01T11:21:07.678Z] B1-CREATE: row ready — toolCount=13
+[2026-10-01T11:21:07.690Z] [S1] PASS — live preconditions: row config CARRIES all three mcpServers (supply axis) + every mini-MCP ANSWERS initialize on its port :: dumpCarries=true live={"mcp_repo":true,"mcp_leaderreq":true,"mcp_web":true}
+[2026-10-01T11:21:07.740Z] remote team.create v1 [t13-create] -> 200 ok=true
+[2026-10-01T11:21:07.740Z] T13 (v1 frozen) created: durable={"teamSession":{"schemaVersion":1,"rootSessionId":"session-prereq-v1-prereq-2026-10-01T11-21-04","blueprint":{"blueprintId":"team.mpr-anchor","revision":"1","contentHash":"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37"},"createdAt":"2026-10-01T11:21:07.712Z","generation":1,
+[2026-10-01T11:21:07.752Z] remote intent.probe v1 [s1-probe] -> 200 ok=true
+[2026-10-01T11:21:07.752Z] [S1] PASS — all-ready cell: intent.probe(T) — team scope OPEN (both team requirements PASS) :: status=OPEN reqs=["team.mcp.repo=PASS","team.mcp.leaderreq=PASS"]
+[2026-10-01T11:21:07.766Z] remote team.create v1 [t-create-pre-consent] -> 200 ok=false code=TEAM_RUNTIME_COMPATIBILITY_BLOCKED
+[2026-10-01T11:21:07.766Z] [S1] PASS — pre-consent gate: team.create(T) REFUSED — typed COMPATIBILITY_BLOCKED {source creation-preflight, outcome consentRequired, consentRequiredRequirementIds [lead.mcp.signal]} (the designed W2-A gate) :: code=TEAM_RUNTIME_COMPATIBILITY_BLOCKED details={"rootSessionId":"session-prereq-main-prereq-2026-10-01T11-21-04","source":"creation-preflight","outcome":"consentRequired","blockedScopes":[],"consentRequiredRequirementIds":["lead.mcp.signal"],"fixOrDisableRequirementIds":[],"fatalRequirementIds":[]}
+[2026-10-01T11:21:07.837Z] B1-CREATE: stopped (killed=true portFree=true)
+[2026-10-01T11:21:07.837Z] [S13] PASS — frozen v1 under PR-E code: registry contentHash == pre-PR-E constant + source byte-exact :: hash=sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37 expected=sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37
+[2026-10-01T11:21:07.837Z] [S13] PASS — frozen v1 under PR-E code: team_sessions blueprint hash == pre-PR-E constant :: sessionHash=sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37
+[2026-10-01T11:21:07.837Z] [S1] PASS — pre-consent refusal: ZERO durable effect — no team_sessions row for T after boot 1 (T13 row present, T absent) :: T13=present T=absent
+[2026-10-01T11:21:07.838Z] world: seeded optional-requirement-accepted seq=1 root=session-prereq-main-prereq-2026-10-01T11-21-04 payload={"requirementId":"lead.mcp.signal","generation":1,"consentedAt":1790853667837,"consentedBy":"kit-e12"}
+[2026-10-01T11:21:07.839Z] world: seeded optional-requirement-accepted seq=2 root=session-prereq-iso-prereq-2026-10-01T11-21-04 payload={"requirementId":"lead.mcp.signal","generation":1,"consentedAt":1790853667838,"consentedBy":"kit-e12"}
+[2026-10-01T11:21:07.839Z] [S1] PASS — B1 consent grant (durable, host stopped): optional-requirement-accepted rows seeded for T + T2 (lead.mcp.signal — the W2-A create-gate consent) :: T seq=1 T2 seq=2 T={"consentedAt":1790853667837,"consentedBy":"kit-e12","generation":1,"requirementId":"lead.mcp.signal"} T2={"consentedAt":1790853667838,"consentedBy":"kit-e12","generation":1,"requirementId":"lead.mcp.signal"}
+[2026-10-01T11:21:07.839Z] B1B-RESUME: patch (bootPhase=resume, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[{"name":"mcp_repo","port":3492},{"name":"mcp_leaderreq","port":3491},{"name":"mcp_web","port":3493}], preset=live root=default member=default) + directive (boot=2) written
+[2026-10-01T11:21:09.348Z] B1B-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-10-01T11:21:09.350Z] B1B-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-10-01T11:21:09.447Z] B1B-RESUME: row ready — toolCount=13
+[2026-10-01T11:21:09.484Z] remote team.create v1 [t-create] -> 200 ok=false code=TEAM_RUNTIME_COMPATIBILITY_BLOCKED
+[2026-10-01T11:21:09.484Z] FATAL: team.create (T main, post-consent) failed: TEAM_RUNTIME_COMPATIBILITY_BLOCKED — TeamRuntime: the creation preflight of "session-prereq-main-prereq-2026-10-01T11-21-04" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive th
+BATTERY-R2-EREQ-RECOVERY-RERUN_EXIT=1

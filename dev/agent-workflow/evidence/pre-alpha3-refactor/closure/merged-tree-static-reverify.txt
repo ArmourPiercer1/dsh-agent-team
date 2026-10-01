@@ -1,0 +1,29 @@
+== merged-tree static re-verification (DoD #1/#3/#4/#7) — v2 (supersedes the v1 capture: v1 had a wrong assumed path for governance/service.ts and a pipeline-exit annotation slip on the StepClock line; both corrected here; v1 was never committed) ==
+HEAD: 59b619c6b9638ab10aebf7ef9e5f89107b7823c8 (closure head; product tree byte-identical to merged master c19af1954239c6b3933e708fd9bdb0d50dbe1ea4 — post-merge-identity-proof.txt)
+date: 2026-10-01T11:13:33Z
+
+── DoD #1 (governance write authority unique) + #3 (durable-before-ack) ──
+$ git diff --name-only 31ad828d06b5bcca858532f1930ac10c51c0f1bb c19af1954239c6b3933e708fd9bdb0d50dbe1ea4 -- packages/runtime/governance packages/domain/policy packages/runtime/effective-policy packages/runtime/readiness
+packages/runtime/effective-policy/reader.ts
+packages/runtime/effective-policy/select.ts
+EXIT=0 — ANNOTATION CORRECTION (the raw diff output above is the truth): the diff is NOT empty — packages/runtime/effective-policy/{reader,select}.ts WERE changed, by #47 only (per-merge attribution: #47 = effective-policy/reader.ts + select.ts + src/plugin/s6-remote.ts = exactly the finding E/G policy-reset-fallback area, reviewed per-PR with its tests green in the merged-tree full run). governance/ + domain/policy/ + readiness/ = BYTE-UNTOUCHED by all 5 merges → the #1/#3 authority + durable-before-ack claims of the 31ad828d static check hold unmodified at the merged head.
+$ sed -n '1,45p' packages/runtime/governance/service.ts | grep -n 'single production write path\|BEFORE the ack\|override.reset\|fire-and-schedule'
+3: * the single production write path for the two durable governance truths
+6: * (the P8-S5B coordinator) and committed durably BEFORE the ack.
+15: * - `override.reset` deleted the durable row directly (a member could
+19: *   process-local store) whose durable write was fire-and-schedule — the
+(the service header at the merged head: L3 'the single production write path for the two durable governance truths', L6 'committed durably BEFORE the ack'; the two old authorities [P8-S5B coordinator direct row delete; fire-and-schedule process-local store] are the documented removed violations — the file is unchanged 31ad828d..c19af195)
+
+── DoD #4 (no production StepClock authority) ──
+$ grep -rn 'StepClock' packages/runtime/src packages/remote/src packages/domain/src | grep -v '\.test\.'   (production src only)
+grep exit=1 (1 = ZERO StepClock references in production src at the merged head; the p6t6 bypass-scan suite test is green in the merged-tree full run [4865P, not in the 19F debt set])
+
+── DoD #7 (five-plane separation) ──
+$ git diff --name-only 31ad828d06b5bcca858532f1930ac10c51c0f1bb c19af1954239c6b3933e708fd9bdb0d50dbe1ea4 -- packages/ | grep -E 'src/.*\.(ts|mjs)$' | grep -vE 'dist/'
+packages/remote/src/handlers/dispatch.ts
+packages/runtime/src/plugin/host.ts
+packages/runtime/src/plugin/live/agent-bindings.mjs
+packages/runtime/src/plugin/root.ts
+packages/runtime/src/plugin/s6-remote.ts
+packages/runtime/src/plugin/types.ts
+(the COMPLETE product-src change set of the 5 fix merges at the merged head = the per-PR reviewed files only [persona preflight #46 / policy reset #47 / template consent #48 / control authz #49 / MCP target materialization #50]; the #48 finding-I fix is itself the plane-separation strengthening (consent key = scope+contentHash+requirementId, fail-closed) and its tests are green in the merged-tree full run)
