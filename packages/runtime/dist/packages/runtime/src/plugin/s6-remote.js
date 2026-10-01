@@ -1438,7 +1438,27 @@ export function createS6RemotePorts(options) {
                 const root = assertBoundRoot('override.get', teamSessionId);
                 const records = options.overrideRecords(root);
                 const effectiveScope = scope ?? 'team';
+                // ENDPOINT SEMANTICS (the mixed-kind closure, external review of
+                // PR #47): `override.get` is the HUMAN read plane. The durable
+                // slot identity (governance/slot.ts) is KIND + scope +
+                // rootSessionId + instanceId — the capability is a VALUE inside
+                // the row (the full-slot re-issue `values` map), never part of
+                // the key. The TeamGovernance per-member editor reads and writes
+                // the EXPLICIT HUMAN override slot (the client documents the read
+                // as "the Explicit Human Override record"; the set/reset handlers
+                // close the slot by the host-derived authority — a human caller
+                // lands in the human-override slot). So the LATEST row is
+                // selected per the FULL slot identity INCLUDING KIND:
+                // member/leader-kind rows (autonomy-overlay) live in their own
+                // lane — the canonical effective-policy read consumes them as
+                // the overlay layers — and a member-kind generation is NEVER
+                // surfaced here: each kind's slot has its OWN independent
+                // generation sequence (the write-path guard, selectSlotWinner,
+                // is already kind-scoped — a non-human generation is never a
+                // valid human CAS input).
                 const inSlot = (record) => {
+                    if (record['kind'] !== 'human-override')
+                        return false;
                     if (record['scope'] !== effectiveScope)
                         return false;
                     if (effectiveScope === 'instance' && record['instanceId'] !== targetInstanceId)
@@ -1447,9 +1467,10 @@ export function createS6RemotePorts(options) {
                         return false;
                     return true;
                 };
-                // The CURRENT LATEST slot winner (any capability). The slot is a
-                // FULL-SLOT re-issue lane: the latest row is the COMPLETE current
-                // state of the slot, so the read derives from THAT row ONLY:
+                // The CURRENT LATEST slot winner (any capability) WITHIN the
+                // human slot. The slot is a FULL-SLOT re-issue lane: the latest
+                // row is the COMPLETE current state of the slot, so the read
+                // derives from THAT row ONLY:
                 //
                 // - the target capability present in the latest row -> that row
                 //   (value + its generation — the generation the WRITE path

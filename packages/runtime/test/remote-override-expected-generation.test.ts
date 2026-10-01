@@ -67,6 +67,11 @@ import type {
   PolicyStateTransitionRecord,
 } from '../mutation/index.js'
 import type { PolicyEntry } from '../../domain/policy/src/index.js'
+import { createMemberIdentity } from '../../domain/policy/src/index.js'
+import type { MemberIdentity } from '../../domain/policy/src/index.js'
+import { createTeamDomain } from '../../storage/repositories/index.js'
+import { FileStorageSeam, destroyDir, scratchDir } from '../../testkit/fault-injection/file-seam.mjs'
+import { readEffectivePolicy } from '../effective-policy/index.js'
 
 const ROOT_SID = 'root-session-remote-override-gen'
 const NOW = '2026-09-29T00:00:00.000Z'
@@ -746,5 +751,256 @@ describe('G-regression — override.get derives from the CURRENT LATEST slot win
     expect((override['values'] as Record<string, unknown>)['model']).toEqual({ kind: 'allow', items: ['m-b'] })
     expect((override['values'] as Record<string, unknown>)['mcp']).toEqual({ kind: 'allow', items: ['srv-s'] })
     expect(dataOf(D.d9)['override']).toBeNull()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Part E — the EXTERNAL-REVIEW mixed-kind regression (PR #47 BLOCK,
+// 2026-09-29): the durable slot identity INCLUDES the override KIND
+// (`governance/slot.ts` — kind + scope + rootSessionId + instanceId; the
+// storage identity key `governanceOverrideKey` is kind-prefixed the same
+// way). `override.get` is the HUMAN read plane — the TeamGovernance
+// per-member editor reads and writes the EXPLICIT HUMAN override slot
+// (the client documents the read as "the Explicit Human Override record")
+// — so the LATEST row must be selected per the FULL slot identity: a
+// member-kind row (autonomy-overlay) must never shadow a human value,
+// and a member-kind generation must never be surfaced as the HUMAN write
+// path's CAS input (the write-path guard, `selectSlotWinner`, is already
+// kind-scoped — a member generation was never a valid human guard input,
+// exactly the stale-generation class the G fix removed). Each kind's
+// slot has its OWN independent generation sequence.
+//
+// The exact external repro (real governance mutation service + real
+// dispatcher): HUMAN instance-slot model=A @ gen1 (the wire, the human
+// UI write); MEMBER same instance mcp-deny @ gen1 then skills-deny @
+// gen2 (a legitimate member tightening — the member lane is written
+// through the REAL governance mutation service with MEMBER authority,
+// the single PR-A authority the member team-tool path uses; the remote
+// override wire itself is the human UI plane — D-7 rejects
+// agent-actor instance scope on it).
+// ---------------------------------------------------------------------------
+
+const E_ROOT = 'root-session-override-mixed-kind'
+const E_INST = 'inst-e'
+const E_MEMBER = createMemberIdentity(E_ROOT, E_INST)
+
+/** The static-facts + envelope authority: the template grants the MCP
+ *  server `srv/x` (the baseline the member DENY must beat in the
+ *  overlay lane); the model is granted in the envelope so the member's
+ *  own-lane writes are exercised against a declared boundary (deny
+ *  cells always pass — tightening never escalates). */
+const ePolicy: PolicyReader = {
+  readBlueprintEnvelope: () => ({ autonomyEnvelope: { model: { kind: 'allow', items: ['m-a', 'm-b', 'm-x'] } } }),
+  readTemplatePolicy: () => ({
+    values: { mcp: { kind: 'allow', items: ['srv/x'] } },
+    mutationEnvelope: { model: { kind: 'allow', items: ['m-a', 'm-b', 'm-x'] } },
+  }),
+  readExternalFacts: () => ({ hard: {}, capabilityExists: {} }),
+}
+
+// The REAL STORAGE world: the human lane over the wire, the member lane
+// over the real service.
+const eDir = scratchDir('override-mixed-kind')
+destroyDir(eDir) // self-cleaning: a crashed prior run may leave a domain behind
+const eSeam = new FileStorageSeam(eDir)
+const eDomain = await createTeamDomain(eSeam)
+const eStore: OverrideStorePort = {
+  list: (rootSessionId) => Promise.resolve(eDomain.repositories.overrides.list(rootSessionId)),
+  put: (record) => eDomain.repositories.overrides.put(record),
+}
+const eService = createGovernanceMutationService({
+  chain: createTeamOperationCoordinator(),
+  overrides: eStore,
+  transitions: new MemTransitions(),
+  transitionCommit: new MemCommit(),
+  policy: ePolicy,
+  registeredMembers: () => Promise.resolve([E_MEMBER] as MemberIdentity[]),
+  policyStates: () => ['default', 'strict'],
+  now: () => NOW,
+})
+const ePorts = createS6RemotePorts(
+  {
+    rootSessionId: E_ROOT,
+    repositories: tripWireRepositories(),
+    governance: eService,
+    overrideRecords: (rootSessionId: string) =>
+      eDomain.repositories.overrides
+        .list(rootSessionId)
+        .map((record) => record as unknown as Record<string, unknown>),
+    mutationTransitions: () => [],
+    leaderInstanceId: 'inst-leader',
+    now: () => NOW,
+  } as unknown as S6RemoteOptions,
+)
+const eHuman = createS6RemoteDispatcher(ePorts, humanPrincipal)
+
+const E_SET = { teamSessionId: E_ROOT, scope: 'instance', targetInstanceId: E_INST }
+// 1. HUMAN instance-slot model=A @ gen1 (the wire — the human UI write).
+const e1 = await eHuman(
+  'override.set',
+  wire(REMOTE_CONTRACT_VERSION_V7, {
+    ...E_SET,
+    capability: 'model',
+    value: { kind: 'allow', items: ['m-a'] },
+    actor: { kind: 'human' },
+  }),
+)
+// 2. MEMBER same instance mcp-deny @ gen1 (its own lane — the real
+//    service, MEMBER authority, own-instance closure).
+const e2 = await eService.setOverride({
+  authority: { kind: 'member', instanceId: E_INST },
+  rootSessionId: E_ROOT,
+  scope: 'instance',
+  instanceId: E_INST,
+  cells: { mcp: { kind: 'deny' } },
+})
+// 3. MEMBER skills-deny @ gen2 (a legitimate tightening — the full-slot
+//    re-issue carries the merged mcp + skills).
+const e3 = await eService.setOverride({
+  authority: { kind: 'member', instanceId: E_INST },
+  rootSessionId: E_ROOT,
+  scope: 'instance',
+  instanceId: E_INST,
+  cells: { skills: { kind: 'deny' } },
+})
+// The canonical read BEFORE the human mcp write: both lanes coexist.
+const eCanonicalBefore = readEffectivePolicy({
+  rootSessionId: E_ROOT,
+  instanceId: E_INST,
+  policy: ePolicy,
+  transitions: [],
+  overrides: eDomain.repositories.overrides.list(E_ROOT),
+})
+// 4. get(model) on the HUMAN plane: the human A row — NOT null (the
+//    member g2 row is a DIFFERENT slot) and NOT the member row.
+const e4 = await eHuman(
+  'override.get',
+  wire(REMOTE_CONTRACT_VERSION_V7, {
+    teamSessionId: E_ROOT,
+    capability: 'model',
+    scope: 'instance',
+    targetInstanceId: E_INST,
+  }),
+)
+// 5. get(mcp) on the HUMAN plane: the HUMAN slot has no mcp -> null (the
+//    member mcp-deny must NOT become a human value or a human CAS input).
+const e5 = await eHuman(
+  'override.get',
+  wire(REMOTE_CONTRACT_VERSION_V7, {
+    teamSessionId: E_ROOT,
+    capability: 'mcp',
+    scope: 'instance',
+    targetInstanceId: E_INST,
+  }),
+)
+// 6. the HUMAN UI write of mcp, guarded EXACTLY as the client guards
+//    (TeamGovernance readSlotGeneration: the settled wire record's
+//    generation when present, legacy/unguarded when the read is null).
+const e5Override = (dataOf(e5)['override'] ?? null) as Record<string, unknown> | null
+const e6 = await eHuman(
+  'override.set',
+  wire(REMOTE_CONTRACT_VERSION_V7, {
+    ...E_SET,
+    capability: 'mcp',
+    value: { kind: 'allow', items: ['srv-h'] },
+    actor: { kind: 'human' },
+    ...(e5Override !== null ? { expectedGeneration: e5Override['generation'] as number } : {}),
+  }),
+)
+// 7. get(mcp) again: the HUMAN lane's LATEST row (its own sequence).
+const e7 = await eHuman(
+  'override.get',
+  wire(REMOTE_CONTRACT_VERSION_V7, {
+    teamSessionId: E_ROOT,
+    capability: 'mcp',
+    scope: 'instance',
+    targetInstanceId: E_INST,
+  }),
+)
+const eRecordsAfter = eDomain.repositories.overrides.list(E_ROOT)
+destroyDir(eDir)
+
+describe('E-external-review — the mixed-kind regression: the HUMAN read plane is per-KIND (full slot identity)', () => {
+  it('repro leg 1: get(model) returns the HUMAN A row (the member g2 row must NOT shadow the human value)', () => {
+    expect(e1.ok).toBe(true)
+    expect(e2.changed).toBe(true)
+    expect(e3.changed).toBe(true)
+    const override = dataOf(e4)['override'] as Record<string, unknown>
+    expect(override).not.toBeNull()
+    expect(override['recordId']).toBe('ovr-model-inst-e-g0')
+    expect(override['kind']).toBe('human-override')
+    expect(override['generation']).toBe(1)
+    expect(override['values']).toEqual({ model: { kind: 'allow', items: ['m-a'] } })
+  })
+
+  it('repro leg 2: get(mcp) is null on the HUMAN lane (the member mcp-deny is neither a human value nor a human CAS generation)', () => {
+    expect(dataOf(e5)['override']).toBeNull()
+  })
+
+  it('repro leg 3: the human mcp write (guarded by the read) commits without a spurious conflict; the HUMAN lane keeps its own generation sequence', () => {
+    expect(e6.ok).toBe(true)
+    // The human mcp write lands in the HUMAN slot's OWN sequence: the
+    // full-slot re-issue over the human g1 (model A) row -> human g2
+    // (NEVER the member slot's generation — the member lane is at g2
+    // too, but by its own sequence, and the value set differs).
+    expect(dataOf(e6)['generation']).toBe(2)
+    const override = dataOf(e7)['override'] as Record<string, unknown>
+    expect(override['recordId']).toBe('ovr-mcp-inst-e-g1')
+    expect(override['kind']).toBe('human-override')
+    expect(override['generation']).toBe(2)
+    expect(override['values']).toEqual({
+      model: { kind: 'allow', items: ['m-a'] },
+      mcp: { kind: 'allow', items: ['srv-h'] },
+    })
+  })
+
+  it('lane coexistence: the canonical read (before the human mcp write) resolves model from the HUMAN lane and mcp/skills from the MEMBER lane', () => {
+    // model: the HUMAN lane's row (the humanOverride layer).
+    expect(eCanonicalBefore.policy.cells['model'].effective).toEqual({ kind: 'allow', items: ['m-a'] })
+    expect(eCanonicalBefore.policy.cells['model'].team.layer).toBe('humanOverride')
+    expect(eCanonicalBefore.policy.cells['model'].team.recordId).toBe('ovr-model-inst-e-g0')
+    expect(eCanonicalBefore.humanOverride?.overrideId).toBe('ovr-model-inst-e-g0')
+    expect(eCanonicalBefore.humanOverride?.scope).toBe('instance')
+    // mcp + skills: the MEMBER lane's g2 row (the instanceOverlay lane)
+    // — the member's g2 tightening beats the template mcp allow(srv/x).
+    expect(eCanonicalBefore.policy.cells['mcp'].effective).toEqual({ kind: 'deny' })
+    expect(eCanonicalBefore.policy.cells['mcp'].team.layer).toBe('instanceOverlay')
+    expect(eCanonicalBefore.policy.cells['mcp'].team.recordId).toBe('ovr-skills-inst-e-g1')
+    expect(eCanonicalBefore.policy.cells['skills'].effective).toEqual({ kind: 'deny' })
+    expect(eCanonicalBefore.policy.cells['skills'].team.layer).toBe('instanceOverlay')
+    expect(eCanonicalBefore.policy.cells['skills'].team.recordId).toBe('ovr-skills-inst-e-g1')
+    // The staleness anchor counts both lanes' latest events (the member
+    // g2 is the higher generation).
+    expect(eCanonicalBefore.committedGeneration).toBe(2)
+  })
+
+  it('independent sequences: the per-KIND slot winner is selected per the full slot identity (the member lane is intact)', () => {
+    expect(eRecordsAfter).toHaveLength(4)
+    const keys = eRecordsAfter.map((record) => `${record.kind}|${record.recordId}|g${record.generation}`).sort()
+    expect(keys).toEqual([
+      'autonomy-overlay|ovr-mcp-inst-e-g0|g1',
+      'autonomy-overlay|ovr-skills-inst-e-g1|g2',
+      'human-override|ovr-mcp-inst-e-g1|g2',
+      'human-override|ovr-model-inst-e-g0|g1',
+    ])
+    // Per-kind slot winners (the write-path guard's own kernel): the
+    // member lane still shows its g2 tightening; the human lane shows
+    // its own g2 (the human mcp write).
+    const humanWinner = selectSlotWinner(
+      eRecordsAfter as unknown as OverrideRecordView[],
+      slotIdentityOf({ kind: 'human-override', scope: 'instance', origin: undefined, instanceId: E_INST }, E_ROOT),
+    )
+    expect(humanWinner?.recordId).toBe('ovr-mcp-inst-e-g1')
+    expect(humanWinner?.generation).toBe(2)
+    const memberWinner = selectSlotWinner(
+      eRecordsAfter as unknown as OverrideRecordView[],
+      slotIdentityOf({ kind: 'autonomy-overlay', scope: 'instance', origin: 'member', instanceId: E_INST }, E_ROOT),
+    )
+    expect(memberWinner?.recordId).toBe('ovr-skills-inst-e-g1')
+    expect(memberWinner?.generation).toBe(2)
+    expect(memberWinner?.values).toEqual({
+      mcp: { kind: 'deny' },
+      skills: { kind: 'deny' },
+    })
   })
 })
