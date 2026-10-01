@@ -1,0 +1,4 @@
+$ cd packages/runtime && pnpm vitest run test/p6t1-parallel.test.ts
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+EXIT=0 (p6t1-parallel re-run 3 of 3 — flake rotation check)

@@ -1,0 +1,79 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz
+
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts (8 tests | 3 failed) 504ms
+     ✓ C1: pending → parked waiter → explicit abandon: the waiter settles terminal, the router keeps the typed block, ZERO work 106ms
+     ✓ C2: allow → abandon → a fresh await on the abandoned row settles REJECTED terminal (bounded — the cold-retry liveness) 31ms
+     ✓ C3: the abort race over the stale decision (mid-wait abort with BOTH marks durable): the abandon mark wins the cascade (the stale allow never settles the waiter) 28ms
+     ✓ C4: the wait→admission race (allow + abandon both land while the router waits): the typed zero-effect block holds for EVERY interleaving; the abandoned allow never executes 48ms
+     ✓ C5: the effect-admission boundary (the external-review TOCTOU) — a durable abandon landing DURING the gate re-probe (AFTER the pre-dispatch snapshot) NEVER admits the reviewed work: zero admitted / zero effect, the typed abandoned block, the durable close stands 44ms
+     × C6: the COORDINATION reentry (send-message — the recoveryWork impact that bypasses the gated branch) hits the SAME effect-admission boundary — the reentry queued behind the shared runtime lock, a real abandon on the control lock, release ⇒ the coordination fact is NEVER committed unchecked (zero fact / zero delivery, the typed block, the durable close stands) over the REAL MessagingCoordinator 63ms
+     × C7 (residual C-2 leg a): an AbortSignal aborting DURING the gate re-probe await (no explicit abandon) — the serialized boundary sees the live signal, PERSISTS the abandon (the durable close, the same footprint as an explicit abandon) and rejects typed; ZERO work 55ms
+     × C8 (residual C-2 leg b): the signal aborting while the unit is BLOCKED WAITING for the control lock (between queue and acquisition) — the commit is STILL rejected with a durable close; ZERO work 127ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C6: the COORDINATION reentry (send-message — the recoveryWork impact that bypasses the gated branch) hits the SAME effect-admission boundary — the reentry queued behind the shared runtime lock, a real abandon on the control lock, release ⇒ the coordination fact is NEVER committed unchecked (zero fact / zero delivery, the typed block, the durable close stands) over the REAL MessagingCoordinator
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:536:24
+    534|     //     abandoned block, the durable close stands.
+    535|     const outcome = await promise
+    536|     expect(outcome.ok).toBe(false)
+       |                        ^
+    537|     const error = outcome.ok === false ? outcome.error : undefined
+    538|     expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C7 (residual C-2 leg a): an AbortSignal aborting DURING the gate re-probe await (no explicit abandon) — the serialized boundary sees the live signal, PERSISTS the abandon (the durable close, the same footprint as an explicit abandon) and rejects typed; ZERO work
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:618:24
+    616|     // abandoned block; the durable close is PERSISTED (one abandon ma…
+    617|     // — the same footprint as an explicit abandon); zero work.
+    618|     expect(outcome.ok).toBe(false)
+       |                        ^
+    619|     const error = outcome.ok === false ? outcome.error : undefined
+    620|     expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C8 (residual C-2 leg b): the signal aborting while the unit is BLOCKED WAITING for the control lock (between queue and acquisition) — the commit is STILL rejected with a durable close; ZERO work
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:764:24
+    762|     // typed abandoned block + the PERSISTED durable close (one abandon
+    763|     // mark) + zero work.
+    764|     expect(outcome.ok).toBe(false)
+       |                        ^
+    765|     const error = outcome.ok === false ? outcome.error : undefined
+    766|     expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 5 passed (8)
+   Start at  06:51:17
+   Duration  2.93s (transform 1.51s, setup 0ms, import 2.14s, tests 504ms, environment 0ms)
+
+EXIT=1

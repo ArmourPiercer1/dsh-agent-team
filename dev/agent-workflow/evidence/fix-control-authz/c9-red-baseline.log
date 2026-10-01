@@ -1,0 +1,263 @@
+$ cd packages/runtime && pnpm vitest run test/fix-control-authz-c-abandon-terminal.test.ts -t c9 --reporter=verbose
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz
+
+ ↓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C1: pending → parked waiter → explicit abandon: the waiter settles terminal, the router keeps the typed block, ZERO work
+ ↓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C2: allow → abandon → a fresh await on the abandoned row settles REJECTED terminal (bounded — the cold-retry liveness)
+ ↓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C3: the abort race over the stale decision (mid-wait abort with BOTH marks durable): the abandon mark wins the cascade (the stale allow never settles the waiter)
+ ↓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C4: the wait→admission race (allow + abandon both land while the router waits): the typed zero-effect block holds for EVERY interleaving; the abandoned allow never executes
+ ↓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C5: the effect-admission boundary (the external-review TOCTOU) — a durable abandon landing DURING the gate re-probe (AFTER the pre-dispatch snapshot) NEVER admits the reviewed work: zero admitted / zero effect, the typed abandoned block, the durable close stands
+ ↓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C6: the COORDINATION reentry (send-message — the recoveryWork impact that bypasses the gated branch) hits the SAME effect-admission boundary — the reentry queued behind the shared runtime lock, a real abandon on the control lock, release ⇒ the coordination fact is NEVER committed unchecked (zero fact / zero delivery, the typed block, the durable close stands) over the REAL MessagingCoordinator
+ ↓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C7 (residual C-2 leg a): an AbortSignal aborting DURING the gate re-probe await (no explicit abandon) — the serialized boundary sees the live signal, PERSISTS the abandon (the durable close, the same footprint as an explicit abandon) and rejects typed; ZERO work
+ ↓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C8 (residual C-2 leg b): the signal aborting while the unit is BLOCKED WAITING for the control lock (between queue and acquisition) — the commit is STILL rejected with a durable close; ZERO work
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-1: delegate × decision-settle × no-mark 30ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-2: delegate × decision-settle × already-abandoned 17ms
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-3: delegate × terminal-snapshot × no-mark 23ms
+   → expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-4: delegate × terminal-snapshot × already-abandoned 19ms
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-5: delegate × outer-queue × no-mark 18ms
+   → expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-6: delegate × outer-queue × already-abandoned 18ms
+   → expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-7: delegate × gate-success × no-mark 19ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-8: delegate × gate-success × already-abandoned 19ms
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-9: delegate × gate-reject × no-mark 17ms
+   → expected undefined to be 'abandoned' // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-10: delegate × gate-reject × already-abandoned 17ms
+   → expected undefined to be 'abandoned' // Object.is equality
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-11: delegate × control-queue × no-mark 79ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-12: delegate × control-queue × already-abandoned 80ms
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-13: delegate × pre-flight-authority × no-mark 27ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-14: delegate × pre-flight-authority × already-abandoned 22ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-15: delegate × pre-flight-provider-lock × no-mark 43ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-16: delegate × pre-flight-provider-lock × already-abandoned 43ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-17: delegate × pre-flight-external-facts × no-mark 42ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-18: delegate × pre-flight-external-facts × already-abandoned 43ms
+   → expected true to be false // Object.is equality
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-19: delegate × post-commit × no-mark 22ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-20: follow-up × decision-settle × no-mark 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-21: follow-up × decision-settle × already-abandoned 14ms
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-22: follow-up × terminal-snapshot × no-mark 15ms
+   → expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-23: follow-up × terminal-snapshot × already-abandoned 15ms
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-24: follow-up × outer-queue × no-mark (the external named repro) 14ms
+   → expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-25: follow-up × outer-queue × already-abandoned 15ms
+   → expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-26: follow-up × gate-success × no-mark 17ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-27: follow-up × gate-success × already-abandoned 16ms
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-28: follow-up × gate-reject × no-mark 14ms
+   → expected undefined to be 'abandoned' // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-29: follow-up × gate-reject × already-abandoned 15ms
+   → expected undefined to be 'abandoned' // Object.is equality
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-30: follow-up × control-queue × no-mark 78ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-31: follow-up × control-queue × already-abandoned 78ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-32: follow-up × post-commit × no-mark 18ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-33: follow-up × fault-admission × no-mark 78ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-34: send-message × decision-settle × no-mark 15ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-35: send-message × decision-settle × already-abandoned 13ms
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-36: send-message × terminal-snapshot × no-mark 16ms
+   → expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-37: send-message × terminal-snapshot × already-abandoned 16ms
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-38: send-message × outer-queue × no-mark 16ms
+   → expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-39: send-message × outer-queue × already-abandoned 15ms
+   → expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-40: send-message × control-queue × no-mark 77ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-41: send-message × control-queue × already-abandoned 79ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-42: create-member × decision-settle × no-mark 14ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-43: create-member × decision-settle × already-abandoned 15ms
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-44: create-member × terminal-snapshot × no-mark 15ms
+   → expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-45: create-member × terminal-snapshot × already-abandoned 15ms
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-46: create-member × outer-queue × no-mark 15ms
+   → expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-47: create-member × outer-queue × already-abandoned 15ms
+   → expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-48: create-member × gate-success × no-mark 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-49: create-member × gate-success × already-abandoned 15ms
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-50: create-member × gate-reject × no-mark 14ms
+   → expected undefined to be 'abandoned' // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-51: create-member × gate-reject × already-abandoned 15ms
+   → expected undefined to be 'abandoned' // Object.is equality
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-52: create-member × control-queue × no-mark 79ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-53: create-member × control-queue × already-abandoned 78ms
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-54: create-member × pre-flight-authority × no-mark 18ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-55: create-member × pre-flight-authority × already-abandoned 18ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-56: create-member × pre-flight-provider-lock × no-mark 39ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-57: create-member × pre-flight-provider-lock × already-abandoned 40ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-58: create-member × pre-flight-external-facts × no-mark 38ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-59: create-member × pre-flight-external-facts × already-abandoned 39ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-60: create-member × fault-preflight × no-mark 18ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-serial: a cancelled waiter KEEPS its queue slot — a later writer never overtakes the still-running holder (the reviewer sequence: holder start → cancel waiter → later writer → holder end) 3264ms
+   → expected Promise{…} not to be Promise{…} // Object.is equality
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 32 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-3: delegate × terminal-snapshot × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-22: follow-up × terminal-snapshot × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-36: send-message × terminal-snapshot × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-44: create-member × terminal-snapshot × no-mark
+AssertionError: expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+
+- Expected:
+"TEAM_RUNTIME_COMPATIBILITY_BLOCKED"
+
++ Received:
+20
+
+ ❯ c9AssertClose packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1136:46
+    1134|   expect(outcome.ok).toBe(false)
+    1135|   const error = outcome.ok === false ? outcome.error : undefined
+    1136|   expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_C…
+       |                                              ^
+    1137|   expect(asDetails(error)?.['controlDecision']).toBe('abandoned')
+    1138|   expect(asDetails(error)?.['controlRequestId']).toBe(requestId)
+ ❯ c9TerminalSnapshot packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1435:9
+ ❯ c9RunRow packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1341:14
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1277:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/32]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-5: delegate × outer-queue × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-6: delegate × outer-queue × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-24: follow-up × outer-queue × no-mark (the external named repro)
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-25: follow-up × outer-queue × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-38: send-message × outer-queue × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-39: send-message × outer-queue × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-46: create-member × outer-queue × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-47: create-member × outer-queue × already-abandoned
+AssertionError: expected 20 to be 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' // Object.is equality
+
+- Expected:
+"TEAM_RUNTIME_COMPATIBILITY_BLOCKED"
+
++ Received:
+20
+
+ ❯ c9AssertClose packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1136:46
+    1134|   expect(outcome.ok).toBe(false)
+    1135|   const error = outcome.ok === false ? outcome.error : undefined
+    1136|   expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_C…
+       |                                              ^
+    1137|   expect(asDetails(error)?.['controlDecision']).toBe('abandoned')
+    1138|   expect(asDetails(error)?.['controlRequestId']).toBe(requestId)
+ ❯ c9OuterQueue packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1479:9
+ ❯ c9RunRow packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1343:14
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1277:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/32]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-9: delegate × gate-reject × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-10: delegate × gate-reject × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-28: follow-up × gate-reject × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-29: follow-up × gate-reject × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-50: create-member × gate-reject × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-51: create-member × gate-reject × already-abandoned
+AssertionError: expected undefined to be 'abandoned' // Object.is equality
+
+- Expected:
+"abandoned"
+
++ Received:
+undefined
+
+ ❯ c9AssertClose packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1137:49
+    1135|   const error = outcome.ok === false ? outcome.error : undefined
+    1136|   expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_C…
+    1137|   expect(asDetails(error)?.['controlDecision']).toBe('abandoned')
+       |                                                 ^
+    1138|   expect(asDetails(error)?.['controlRequestId']).toBe(requestId)
+    1139|   // ZERO work / ZERO delivery / ZERO coordination.
+ ❯ c9GateReject packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1556:9
+ ❯ c9RunRow packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1347:14
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1277:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/32]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-13: delegate × pre-flight-authority × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-14: delegate × pre-flight-authority × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-15: delegate × pre-flight-provider-lock × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-16: delegate × pre-flight-provider-lock × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-17: delegate × pre-flight-external-facts × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-18: delegate × pre-flight-external-facts × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-54: create-member × pre-flight-authority × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-55: create-member × pre-flight-authority × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-56: create-member × pre-flight-provider-lock × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-57: create-member × pre-flight-provider-lock × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-58: create-member × pre-flight-external-facts × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-59: create-member × pre-flight-external-facts × already-abandoned
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ c9AssertClose packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1134:22
+    1132|   allowCommitted: boolean,
+    1133| ): Promise<void> {
+    1134|   expect(outcome.ok).toBe(false)
+       |                      ^
+    1135|   const error = outcome.ok === false ? outcome.error : undefined
+    1136|   expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_C…
+ ❯ c9PreFlight packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1787:9
+ ❯ c9RunRow packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1353:14
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1277:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/32]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-60: create-member × fault-preflight × no-mark
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ c9AssertFault packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1167:22
+    1165|   memberBaseline: number,
+    1166| ): Promise<void> {
+    1167|   expect(outcome.ok).toBe(false)
+       |                      ^
+    1168|   const error = outcome.ok === false ? outcome.error : undefined
+    1169|   expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_C…
+ ❯ c9FaultPreflight packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1950:11
+ ❯ c9RunRow packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1359:14
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1277:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/32]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-serial: a cancelled waiter KEEPS its queue slot — a later writer never overtakes the still-running holder (the reviewer sequence: holder start → cancel waiter → later writer → holder end)
+AssertionError: expected Promise{…} not to be Promise{…} // Object.is equality
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1305:43
+    1303|       await sleep(1)
+    1304|     }
+    1305|     expect(chains.get('root-serial')).not.toBe(occupationChain)
+       |                                           ^
+    1306|     // Cancel the WAITER (it never acquired the lock).
+    1307|     waiterSignal.abort('c9-serial: the waiter cancelled')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/32]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  32 failed | 29 passed | 8 skipped (69)
+   Start at  07:51:44
+   Duration  5.83s (transform 560ms, setup 0ms, import 715ms, tests 5.03s, environment 0ms)
+
+EXIT=1 (C9 matrix RED capture v2 at a2b3df79)

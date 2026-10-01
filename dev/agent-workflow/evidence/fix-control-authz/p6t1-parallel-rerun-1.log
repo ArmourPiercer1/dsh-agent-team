@@ -1,0 +1,12 @@
+$ cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz && pnpm vitest run packages/runtime/test/p6t1-parallel.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz
+
+ ✓ packages/runtime/test/p6t1-parallel.test.ts (9 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  06:26:25
+   Duration  745ms (transform 444ms, setup 0ms, import 649ms, tests 5ms, environment 0ms)
+
+EXIT=0 (rerun 1/3)

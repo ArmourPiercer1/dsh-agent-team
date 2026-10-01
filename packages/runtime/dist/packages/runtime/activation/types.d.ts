@@ -141,6 +141,56 @@ export interface MemberActivationRequest {
         readonly scopeKeys: readonly string[];
         readonly unavailableSubjects: readonly string[];
     };
+    /**
+     * fix-control-authz C (the residual pre-reservation boundary) — the
+     * invocation's live abort signal (the platform `AbortSignal` shape —
+     * only `aborted` is read; the boundary never listens). Transient,
+     * never serialized. Absent → NO boundary checks (the activation path
+     * is byte-identical). Present and aborted at a boundary check point
+     * (after each preflight await, BEFORE the journal reservation —
+     * step 12, the first durable write) → the activation settles the
+     * durable close (via `persistAbandonClose`, when wired) and rejects
+     * typed `ACTIVATION_REQUEST_ABORTED` with ZERO provisioning (no
+     * journal reservation, no child session, no member row). An abort
+     * that lands AFTER the reservation is the legitimate late close
+     * (the durable operation stands — no retroactive undo).
+     */
+    readonly signal?: {
+        readonly aborted: boolean;
+    };
+    /**
+     * fix-control-authz C — the DURABLE CLOSE callback for the
+     * pre-reservation abort boundary. Wired by the router ONLY for the
+     * recovery re-execution (the marker-carrying request whose control
+     * request must be durably closed): it is the control service's
+     * LOCK-FREE `persistAbandonCloseLocked` (the caller holds the
+     * control lock under the effect-admission unit — no re-acquisition,
+     * no deadlock). Contract: resolves when the durable close is
+     * guaranteed (persisted here or already terminal); rejects only
+     * when the close persist itself faults (the typed
+     * DURABLE_WRITE_FAILED — fail-closed, propagated by the boundary).
+     * Absent (non-marker activations) → the abort boundary rejects typed
+     * with zero provisioning and no close (there is no request to
+     * close).
+     */
+    readonly persistAbandonClose?: () => Promise<void>;
+    /**
+     * fix-control-authz C (residual-3, the marker move) — the
+     * RESERVATION BOUNDARY marker: the caller's commit-started flip for
+     * the router's D2 pre-commit settle gate. The provider calls it
+     * immediately before the journal reservation (step 12 — the unit's
+     * FIRST durable write): the whole pre-reservation region (any reject
+     * / validation throw before it) stays pre-commit — an abort landing
+     * there settles with the durable close (the caller's D2 gate sees the
+     * commit as NOT started — previously the flag flipped at the
+     * router's unit-closure entry, BEFORE the preflight, so a
+     * pre-reservation reject falsely disabled the settle); an abort
+     * landing after the reservation is the legitimate late close (the
+     * caller's gate sees the commit as started — no retroactive undo).
+     * Absent (test worlds / non-router callers) = no marker (the
+     * pre-reservation boundary still runs on its own signal checks).
+     */
+    readonly markReservationStarted?: () => void;
 }
 /** The minimal child-session creation request (the one external effect). */
 export interface ChildSessionCreationRequest {

@@ -1,0 +1,13 @@
+$ cd packages/runtime && pnpm vitest run test/fix-control-authz-c-abandon-terminal.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime
+
+ ✓ test/fix-control-authz-c-abandon-terminal.test.ts (72 tests) 3987ms
+     ✓ c9-serial: a cancelled waiter KEEPS its queue slot — a later writer never overtakes the still-running holder (the reviewer sequence: holder start → cancel waiter → later writer → holder end)  2004ms
+
+ Test Files  1 passed (1)
+      Tests  72 passed (72)
+   Start at  08:55:10
+   Duration  4.81s (transform 582ms, setup 0ms, import 739ms, tests 3.99s, environment 0ms)
+
+EXIT=0 (focused C file after residual-3 fix — expected 72/72 green)
