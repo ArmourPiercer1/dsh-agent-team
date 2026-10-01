@@ -1,0 +1,128 @@
+════════════════════════════════════════════════════════════════════
+scratch-adaptation-diff.txt — FINAL (2026-10-01, closure real-host battery)
+════════════════════════════════════════════════════════════════════
+
+PURPOSE: the COMPLETE, LINE-BY-LINE delta between the tracked kits (the
+merged master c19af1954239c6b3933e708fd9bdb0d50dbe1ea4 versions — the tree
+under test) and the SCRATCH-ADAPTED copies actually executed in this
+battery. Scratch kits live at tests/kits-scratch/<kitdir>/<kit>.mjs so
+their relative imports (../../paths.mjs, ../../../packages/...) resolve
+exactly as the tracked layout. No assertion was WEAKENED anywhere; every
+adaptation is disclosed in-file (SCRATCH ADAPTATION comments) and below.
+
+PRODUCT MERGE SHA (tree under test): c19af1954239c6b3933e708fd9bdb0d50dbe1ea4
+(#50 merge, 2026-10-01T11:02:43Z). Closure HEAD at run time: 59b619c6b9638ab10aebf7ef9e5f89107b7823c8.
+Product tree of the closure HEAD is byte-identical to c19af195 (post-merge-identity-proof.txt).
+
+════════ ADAPTATION 1 — both kits — probeStableInstance refusal-safe ════════
+Bug (tracked): fetch().catch(e => ({status:0,...})) returns a BARE OBJECT on a
+refused connection (:3180 not listening on the test host), then .text() throws
+'r.text is not a function' — the whole kit FAST-FAILS at preflight even though
+the probe is a red-line OBSERVATION only (EVID.stableBefore/After). The F15 kit
+already carries the safe pattern (f15-mcp-live-loss-smoke L294-300).
+Effect of the fix: none on any assertion — the probe result is only recorded.
+
+════════ ADAPTATION 2 — E.12 only — Finding-J keyed-consent fixture ═════════
+Finding J (60b6b16a92edda8c287cdb544f81faf973a3d49d, merged in #48 621fdba1):
+the durable optional-requirement-accepted consent is KEYED (consentCovers,
+startup-preflight.ts: requirementId + scopeKey + contentHash; keyed evaluation
+fails CLOSED on legacy rows). The kit's world seeds are DETERMINISTIC FIXTURES
+(the gate READ is the behavior under test; no live consent writer exists for
+this increment) and predate Finding J (last committed green E.12 =
+2026-09-30T03:07, pre-Finding-J). Fix: the 3 seed sites (T, T2, S2-reseed)
+gain scopeKey:'template:leader' + contentHash computed with the HOST'S OWN
+parse pipeline (domain parseBlueprint, dist validate.js L848) over the kit's
+exact blueprint source strings — so the seeded consent binds the SAME
+contentHash the host derives at create. Assertions UNCHANGED.
+
+════════ ADAPTATION 3 — E.12 only — S9 correlation charset (r4 run) ═════════
+#49 fix-control-authz replaced the recovery attempt id (pre-#49 monotonic
+recoveryDispatchSequence) with nextRecoveryAttemptId() = crypto.randomUUID()
+(lowercase 8-4-4-4-12 hex) / platform fallback 'fallback-<base36>-<base36>'.
+The #48-era S9 regex '[0-9a-z]+$' no longer matches a UUID. The r4 scratch
+run used the widened charset '[0-9a-zA-Z-]+' (structure + all other payload/
+digest assertions unchanged). The TRACKED kit (test-infra PR)
+asserts the STRICT production contract: exact prefix recovery:rt-b3a-<NONCE>:
++ the exact UUID-or-fallback id shape + per-attempt freshness (b3a/b3b/b3c
+pairwise distinct) — see the test-infra PR; the scratch run below is the
+interim evidence (16/16).
+
+════════ COMMANDS (pre-fix tracked / post-fix scratch) ══════════════════════
+Pre-fix (tracked kits, merged master; preserved logs battery-01/02 = fast-fail):
+  $ node tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs            # EXIT=1 (probe bug)
+  $ node tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs  # EXIT=1 (probe bug)
+Post-fix (scratch kits, the runs actually executed):
+  $ node tests/kits-scratch/pr-f-closure-smoke/pr-f-closure-smoke.mjs            # battery-r1: VERDICT FAIL — G5 (stale expectation) + G6 (env block)
+  $ node tests/kits-scratch/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs  # battery-r3: 15/16 (S9 regex); battery-r4: VERDICT PASS 16/16
+  (E.12 = 16 criteria: 14 scenarios + H1/H2 hygiene; ~5 min per run)
+
+════════ R1 — prf scratch vs tracked (complete delta) ═══════════════════════
+480c480,489
+<   const r = await fetch(url, { signal: AbortSignal.timeout(10_000) }).catch((e) => ({ status: 0, error: String(e?.message ?? e) }))
+---
+>   // SCRATCH ADAPTATION (2026-10-01, closure real-host battery, re-built after the first
+>   // scratch layout was accidentally removed): the tracked kit's fetch().catch() returns a
+>   // bare object on a refused connection (e.g. :3180 not listening in this environment),
+>   // which then throws 'r.text is not a function'. The probe is RED-LINE OBSERVATION ONLY
+>   // (EVID.stableBefore/stableAfter) — no test semantic. The adaptation records the refusal
+>   // correctly instead of crashing. Nothing else in the kit differs from the tracked byte.
+>   // (Long-term fix for the TRACKED kits = the focused test-infra PR; this scratch copy is
+>   // the disclosed stopgap that lets the legs run unchanged.)
+>   let r
+>   try { r = await fetch(url, { signal: AbortSignal.timeout(10_000) }) } catch (e) { return { status: 0, error: String(e?.message ?? e) } }
+PRF_DIFF_EXIT=1 (1 = the disclosed delta above)
+
+════════ R2 — E.12 scratch vs tracked (complete delta) ══════════════════════
+233a234,243
+> // SCRATCH ADAPTATION #2 (2026-10-01, closure real-host battery): the Finding-J
+> // consent-key fixture update (committed contract change 60b6b16a, merged in #48):
+> // the durable `optional-requirement-accepted` rows the kit seeds must carry the
+> // KEYED consent shape (scopeKey + contentHash) or the merged tree's keyed startup
+> // preflight fails closed on the legacy rows (consentCovers, startup-preflight.ts
+> // L64-81). The hash is computed with the HOST'S OWN parse pipeline (domain
+> // parseBlueprint, dist) over the exact blueprint source strings the kit writes,
+> // so the seeded consent binds the same contentHash the host derives at create.
+> // Assertions are UNCHANGED — only the seeded fixture rows gain two payload fields.
+> import { parseBlueprint } from '../../../packages/runtime/dist/packages/domain/blueprint/src/validate.js'
+461c471,480
+<   const r = await fetch(url, { signal: AbortSignal.timeout(10_000) }).catch((e) => ({ status: 0, error: String(e?.message ?? e) }))
+---
+>   // SCRATCH ADAPTATION (2026-10-01, closure real-host battery, re-built after the first
+>   // scratch layout was accidentally removed): the tracked kit's fetch().catch() returns a
+>   // bare object on a refused connection (e.g. :3180 not listening in this environment),
+>   // which then throws 'r.text is not a function'. The probe is RED-LINE OBSERVATION ONLY
+>   // (EVID.stableBefore/stableAfter) — no test semantic. The adaptation records the refusal
+>   // correctly instead of crashing. Nothing else in the kit differs from the tracked byte.
+>   // (Long-term fix for the TRACKED kits = the focused test-infra PR; this scratch copy is
+>   // the disclosed stopgap that lets the legs run unchanged.)
+>   let r
+>   try { r = await fetch(url, { signal: AbortSignal.timeout(10_000) }) } catch (e) { return { status: 0, error: String(e?.message ?? e) } }
+2060a2080,2084
+>       // SCRATCH ADAPTATION #2 (Finding-J keyed consent fixture): scopeKey of the
+>       // warning requirement (the leader template scope) + the bound blueprint's
+>       // contentHash (the host's own parse pipeline over the kit's exact source).
+>       scopeKey: 'template:leader',
+>       contentHash: parseBlueprint(mainTeamBlueprintYaml()).contentHash,
+2066a2091,2095
+>       // SCRATCH ADAPTATION #2 (Finding-J keyed consent fixture): same keyed shape;
+>       // the ISO blueprint's hash (inert for its gate — the iso blueprint carries
+>       // no template requirements — but seeded faithful).
+>       scopeKey: 'template:leader',
+>       contentHash: parseBlueprint(isoTeamBlueprintYaml()).contentHash,
+2173a2203,2205
+>       // SCRATCH ADAPTATION #2 (Finding-J keyed consent fixture): keyed shape.
+>       scopeKey: 'template:leader',
+>       contentHash: parseBlueprint(mainTeamBlueprintYaml()).contentHash,
+2265c2297
+<         && typeof rp?.correlation === 'string' && new RegExp(`^recovery:rt-b3a-` + NONCE + `:[0-9a-z]+$`).test(rp.correlation)
+---
+>         && typeof rp?.correlation === 'string' && new RegExp(`^recovery:rt-b3a-` + NONCE + `:[0-9a-zA-Z-]+$`).test(rp.correlation) // SCRATCH ADAPTATION #3 (2026-10-01, closure real-host battery): #49 fix-control-authz changed the recovery attempt id from the pre-#49 monotonic sequence to crypto.randomUUID() (router.ts nextRecoveryAttemptId) — the correlation suffix is now a UUID (hyphens). The #48-era kit regex [0-9a-z]+$ predates it. The correlation STRUCTURE (recovery:rt-b3a-<NONCE>:<attemptId>) and the reviewed-payload assertions are UNCHANGED; only the id charset class is widened to the shipped format.
+EREQ_DIFF_EXIT=1 (1 = the disclosed delta above)
+
+NOTE: the long-term fixes for ALL adaptations above land in the focused
+test-infra PR (branch test/kits-stable-probe-consent-fix from
+c19af1954239c6b3933e708fd9bdb0d50dbe1ea4 — probe fix both kits, keyed
+consent fixture, strict S9 + S10 freshness, G5 gate-lane post-resolution
+update). Scratch kits are interim and are deleted after the test-infra
+evidence runs. Scratch success NEVER implies the original tracked kits
+pass — the tracked runs from the test-infra branch are the record.

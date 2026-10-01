@@ -1,0 +1,58 @@
+diff --git a/dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md b/dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md
+index 25d30de1..fd76bde4 100644
+--- a/dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md
++++ b/dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md
+@@ -14,6 +14,8 @@
+ 3. **5 个 DRAFT 修复 PR**（与文档 closure PR 分离、可独立审查）：persona(A) / control(B,C,D,H) / policy(E,G) / mcp-scoped(F) / runtime-template-consent(I,J)。全部 DRAFT、未合并、无自动合并；合并仅等待用户对外部复审通过的**具体 HEAD** 的明确指令。
+ 4. **本轮真实执行 vs 历史证据**的区分贯穿全报告：标注 `[本轮]` 的是 2026-10-01 本环境实跑；标注 `[历史]` 的是 2026-09-28..30 系列期间证据（路径在案）。
+ 
++> **最终状态（2026-10-01 11:0xZ 追加，不取代上文 08:0xZ 时的状态行）**：5 个修复 PR **全部已按用户 per-HEAD 明确指令合并入 master** — #47 @ `2bfbca12…`（06:24Z）/ #46 @ `8e18819c…`（07:07Z）/ #48 @ `621fdba1…`（08:07Z）/ #49 @ `26c48c87ff8687464636839d16e5303c275a202a`（10:0xZ）/ **#50（finding F）@ merge commit `c19af1954239c6b3933e708fd9bdb0d50dbe1ea4`（11:02:43Z，head `aab727574601bd9b891a71ddc05eb7e45ca641d0` / base `26c48c87…`，expectedHead 守卫 + 双父 + 5/5 已审 commit 包含性已验）= 当前 MASTER**。DoD 20 项最终判定 = **19 pass（finding 注记全部经已授权合并收口）+ 1 deferred（#20，实宿主重跑前置不变）**（§3.1）。A–J 10 条 finding 全部修复在 master（§4 更新行）。本 closure 分支 = 文档/证据线（产品树与合并后 master 字节一致，identity proof 在案 §5.1），closure DRAFT PR 待发布——**closure PR 无合并授权**；DoD #20 解除条件 = 环境齐备（homes 重建 + 宿主授权轮）后在 post-merge 树上重跑。系列收口完成。
++
+ ## 1. 基线复核（本轮）
+ 
+ | 项 | 值 | 核验方式 |
+@@ -80,6 +82,35 @@
+ | 19 | **fail** | **finding D（P1）[本轮复现]**：冷重启后 recovery approval 回放（process-local counter 重置 → correlation 重推 → 复用已 decided 行），fresh Human per attempt 被违反；finding C 的 cold-retry liveness 同注记 |
+ | 20 | **deferred** | 历史收口树门全绿 `[历史]`（closure-gates-summary.md：静态门 + full suite ×2 零新增 + p6t1 隔离 ×24 + 实宿主三跑全绿 + 20-scenario 20/20 映射）= "当时记录"保持。本轮本环境：套件/静态门按 §5 重跑（同环境同命令），**实宿主三跑（E.12/F15/prf）与 browser（F.6 scenario 18）未重跑** —— 本环境 `tests/homes/` 未随 clone 迁移、无浏览器实跑条件；**不声称本轮实宿主/浏览器重跑**。解除条件：环境齐备（homes 重建 + 宿主授权轮）后在修复 PR 合并树上重跑。meta 注记：10 条 finding 本轮复现表明历史门禁集存在探测盲区（套件门当时"零新增"通过但缺陷潜伏）——本轮每个 finding 的新增回归测试即为门禁集补强。 |
+ 
++## 3.1 20 条 DoD —— 最终判定（post-#50-merge master = `c19af195…`，2026-10-01 落定）
++
++> 判定口径同 §3：pass = 性质在该基线成立（历史 + 本轮/合并后证据）；fail = 实测复现违反缺陷且修复 pending；deferred = 环境内无法执行。上表（§3，31ad828d 时点）保留为历史判定；本节为合并完成后的最终判定。**最终 = 19 pass（所有 finding 注记经 5 个已授权合并全部收口）+ 1 deferred（#20）**。19F 既有债集（§5.1/§7.2）身份在案、非本轮回归；与 DoD 项性质面积重叠处如实带 debt 注记——债**不声称已修**。
++
++合并引用：A = #46 MERGED @ `8e18819c…` / B,C,D,H = #49 MERGED @ `26c48c87ff8687464636839d16e5303c275a202a` / E,G = #47 MERGED @ `2bfbca12c0b4b7260e8bc9b5b05cd339189c74e4` / I,J = #48 MERGED @ `621fdba1f9feaf7dc192f8c8e89e2b9c848881b7` / F = #50 MERGED @ `c19af1954239c6b3933e708fd9bdb0d50dbe1ea4`（head `aab727574601bd9b891a71ddc05eb7e45ca641d0`，外部 FINAL PASS @ 精确 HEAD + 内部 3 审 R1 通过/R2 通过/R3 投机通过（MINOR 父裁决 = PR body 记录充分）+ 用户条件合并授权全条件满足）。
++
++| # | DoD（plan §9 缩写） | 最终判定 | 依据（finding 收口 → 证据） |
++|---|---|---|---|
++| 1 | governance write authority 唯一 | **pass** | §3 本轮静态核验（唯一 mutation 入口）+ 历史 pr-a host-smoke；后续合并未触该平面（closure 头全量门零新增佐证，§5.1） |
++| 2 | effective policy read authority 唯一 | **pass**（注记 E 已收口） | 唯一性成立；finding E（P1，reset tombstone slot 优先级）经 #47 MERGED 收口（2bfbca12…，外部复审 + 内部 3/3 + per-HEAD 指令）；E/G 修复测试在 master 树全量门零新增 |
++| 3 | security/governance mutation durable-before-ack | **pass** | §3 本轮静态核验 + 历史 pr-a；平面未动 |
++| 4 | no production StepClock authority | **pass**（debt 注记） | §3 grep 核验 + p6t6 bypass scan；p6t6-actions 1F = pre-existing debt（基线身份在案 §7.2），非本轮回归 |
++| 5 | v1 frozen Blueprint 可恢复 | **pass**（debt 注记） | v1 frozen 套件本轮绿 + E.12 S13 历史；t2-blueprint-hash 1F + d3-member-identity-context 1F = pre-existing debt（身份在案） |
++| 6 | v2 per-template requirements 可运行 | **pass**（注记 I 已收口 + debt 注记） | finding I（P2）经 #48 MERGED 收口（621fdba1…）；t1-capability-schema 9F = pre-existing debt（能力 schema 面积，身份在案） |
++| 7 | requirement/policy/supply/readiness/materialization 分离 | **pass**（注记 I 已收口） | §3 五平面分离静态核验；finding I 强制缺口经 #48 收口 |
++| 8 | cold member 未 mounted 不构成 required failure | **pass**（注记 F 已收口） | W3-A 语义本轮绿；finding F 的回归底线（T5 场景）由 #50 的 21/21 focused legs（含 T5 冷路径）+ 合并树全量门 zero-new（三桶 (iii)=ZERO）保护 |
++| 9 | MCP per-server failure 不拖垮其他 server | **pass**（注记 F 已收口） | per-server 隔离本轮绿 + F15 10/10 历史；finding F（P1，target failed materialization 跨 session 聚合掩盖 / scope identity 未接通）经 #50 MERGED 收口：外部最终 delta 外审 CODE PASS（无 P1/P2；独立验证 test code @ 2b0aef87 + docs-only head、相同 19F/3 collection、无新增 lint、pin 908）+ 内部 3 审 pass-class + 用户精确 FINAL PASS @ aab72757 + 条件合并授权执行（c19af195） |
++| 10 | optional startup consent / runtime auto-degrade 正确 | **pass**（注记 J 已收口） | finding J（P2，consent 丢失 scope/hash）经 #48 MERGED 收口（621fdba1…；consent key = (scopeKey, contentHash, requirementId) + fail-closed legacy + 真链 10 测试） |
++| 11 | required outage Recovery 不扩权 | **pass**（注记 B+D 已收口） | finding B（P1）+ D（P1）经 #49 MERGED 收口（26c48c87…：frozen snapshot 单一来源 + restart-unique attempt identity + C9 有界矩阵 + 全量门 zero-new） |
++| 12 | Recovery cross-Agent work Human synchronous review | **pass**（注记 B 已收口 + debt 注记） | finding B 经 #49 收口（reviewPayload/execution 字段冻结 + digest 覆盖）；p6t3-mediation 5F = pre-existing debt（身份在案），非 B/D 回归 |
++| 13 | approval abort zero effect + durable audit | **pass**（注记 C 已收口） | finding C（P2）经 #49 收口（durable abandon 优先级 + waiter settle + terminal 边界；C6/C7/C8 + C9 矩阵 RED→GREEN） |
++| 14 | Recovery mode 无第二 durable flag authority | **pass** | §3 本轮测试绿 + E.12 S8 历史；平面未动 |
++| 15 | telemetry 完整并推进 durableGeneration | **pass** | §3 本轮测试绿 + F15 R2/R3 历史 |
++| 16 | persona preflight 与 actual runtime substrate 同源 | **pass**（注记 A 已收口） | finding A（P1）经 #46 MERGED 收口（8e18819c…，外部最终 DELTA PASS + 9/9 已审 commit 包含性已验） |
++| 17 | Remote v1–v7 保持兼容 | **pass** | §3 本轮 v1–v7 兼容测试绿 + prf G7 历史 |
++| 18 | old Control rows 保持兼容 | **pass** | §3 本轮 control 兼容测试绿 + PR-D D.6 40/40 历史 |
++| 19 | restart 精确恢复 durable intent | **pass**（注记 D 已收口 + debt 注记） | finding D（P1，冷重启 approval 回放）经 #49 收口（nextRecoveryAttemptId per-attempt identity 取代 process-local counter）；p6t3-restart 2F = pre-existing debt（身份在案） |
++| 20 | full host/browser/dual-team/concurrency/zero-core gates 通过 | **deferred**（不变） | 历史收口树门全绿 `[历史]`（静态门 + full suite ×2 零新增 + p6t1 隔离 ×24 + 实宿主三跑全绿 + 20-scenario 20/20）保持为"当时记录"；本环境 `tests/homes/` 未随 clone 迁移、无浏览器实跑条件——**不声称本轮实宿主/浏览器重跑**。解除条件（更新）：环境齐备（homes 重建 + 宿主授权轮）后在 post-#50-merge 树（master `c19af195…`）上重跑。meta 注记（不变）：10 条 finding 本轮复现表明历史门禁集存在探测盲区；每项 finding 的新增回归测试 = 门禁集补强（已全部在 master） |
++
+ ## 4. Finding 登记（A–J：5 P1 + 5 P2）
+ 
+ > 每条：状态 / 复现证据（本轮命令 + 日志）/ 修复 commit / 测试 / DRAFT PR。修复 PR 与文档 closure 分离，可独立审查。外部复审通过具体 HEAD 前**不合并、不自动合并**。
+@@ -109,6 +140,8 @@
+ - **#48 覆盖裁决（用户 07:05Z）**：最终 tip 相对前一簿记 commit 若为纯文档 delta（13 行 router-log，parent 字节核验 packages/+evidence/ 为空），则**不重复全量重测**——最终 HEAD 覆盖 = 全量已审 commit 的面板 + 针对该 delta 的明确专项审（SHA 对应精确记录）。
+ - **#48 顺序集成预告（用户 07:06Z）**：#46 合并后 #48 必须再同步含 #46 的新 master、修 scope role 接线（template-disable L198 等 template-scope 构造缺 role → MALFORMED_DTO 风险）、**实际重算** scanner（预计 901 = 896+2A+3IJ）、重跑 gates、新 tip 外审；旧 base 的 PASS 不自动覆盖未来集成。
+ 
++> **合并状态最终更新（2026-10-01 11:0xZ；上表各行保留为当时记录，以下为准）**：A = **#46 MERGED @ `8e18819c4e589f685b99a86769251565ee4fc7ec`**（07:07:11Z）；B/C/D/H = **#49 MERGED @ `26c48c87ff8687464636839d16e5303c275a202a`**（10:0xZ，head `aa97fc2caecc2a6596dc681ce4439b6e8489b060`，expectedHead 守卫 + 双父 + 24/24 已审 commit 包含性已验）；E/G = **#47 MERGED @ `2bfbca12c0b4b7260e8bc9b5b05cd339189c74e4`**（06:24Z，precheck + expectedHead 守卫 + parents 已验）；I/J = **#48 MERGED @ `621fdba1f9feaf7dc192f8c8e89e2b9c848881b7`**（08:07Z，外部最终 delta PASS + per-HEAD 指令 + 15/15 包含性已验）；F = **#50 MERGED @ `c19af1954239c6b3933e708fd9bdb0d50dbe1ea4`**（11:02:43Z，head `aab727574601bd9b891a71ddc05eb7e45ca641d0` / base `26c48c87…`；外部最终 delta 外审 CODE PASS 无 P1/P2 + 用户精确 FINAL PASS + 内部 3 审 pass-class（R1 通过 2 NOTEs / R2 通过 1 INFO+1 MINOR / R3 投机通过 1 MINOR 父裁决+6 NOTEs，零 block）+ 用户条件合并授权全条件满足：内部门 3/3 pass-class + head/base 合并前未变（11:01Z 复核 aab72757/26c48c87，MERGEABLE/clean）+ 已验证路线（gh pr ready + gh pr merge --merge --match-head-commit expectedHead 守卫，11:02:39Z MERGE_EXIT=0）+ 合并后验证（API merged=true 11:02:43Z + merge_commit_sha + origin/master = c19af195… + 双父 26c48c87+aab72757 + 5/5 已审 commit 包含性 aab72757/2b0aef87/29479b70/bcaeb64b/26c48c87 全 is-ancestor of origin/master）。**10/10 finding 全部修复在 master；每条 finding 的新增回归测试均在 master 全量门零新增失败集内（三桶分类 (iii)=ZERO，§3.1 #9 与 fix-report §17.6 在案）。**
++
+ ## 5. 本轮验证记录（31ad828d 基线树，handoff-closure worktree）
+ 
+ > 纪律：所有命令保留真实退出码与完整日志（`.worktrees/.scratch-logs/closure-baseline*`）；安装成功只记环境准备，不计测试验证。base/changed 对比口径：同一 harness/环境/依赖版本/命令/配置；基线 SHA = `31ad828d06b5bcca858532f1930ac10c51c0f1bb`（在案 `.worktrees/.scratch-logs/closure-baseline-v2/base-sha.txt`）。

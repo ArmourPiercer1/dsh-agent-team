@@ -1,0 +1,15 @@
+== .tmp-fault scratch teardown (pre-sanity, TEST_METHODS §7) ==
+HEAD: 59b619c6b9638ab10aebf7ef9e5f89107b7823c8
+date: 2026-10-01T11:04:12Z
+$ ls packages/testkit/test/.tmp-fault/ (pre-cleanup)
+f15-mcp-live-loss
+f15-mcp-live-loss-characterization
+rmrcoo-boot
+EXIT_LS_PRE=0
+$ rm -rf packages/testkit/test/.tmp-fault/*
+EXIT_RM=0
+$ ls -la packages/testkit/test/.tmp-fault/ (post-cleanup)
+total 8
+drwxr-xr-x 2 user user 4096 Oct  1 11:04 .
+drwxr-xr-x 3 user user 4096 Oct  1 11:03 ..
+EXIT_LS_POST=0

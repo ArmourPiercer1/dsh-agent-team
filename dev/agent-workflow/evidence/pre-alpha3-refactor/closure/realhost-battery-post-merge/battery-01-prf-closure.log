@@ -1,0 +1,26 @@
+== battery-01-prf-closure (closure real-host battery @ post-#50-merge) ==
+HEAD: 59b619c6b9638ab10aebf7ef9e5f89107b7823c8 (closure head; product tree byte-identical to merged master c19af1954239c6b3933e708fd9bdb0d50dbe1ea4 — see post-merge-identity-proof.txt)
+date: 2026-10-01T11:12:34Z
+git status --porcelain:
+ M dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-check-artifacts.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-focused-mtm.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-identity-proof.txt
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-lint.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-p4t6.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-scratch-teardown.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-closure-realhost-battery.sh
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-post-merge-sanity.sh
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-post-sync-battery.sh
+$ node tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs
+(kit run dir: dev/agent-workflow/evidence/.../pr-f-closure-smoke/<stamp>/ — the kit's own captures)
+[2026-10-01T11:12:35.031Z] === pre-alpha3 PR-F F.6 real-host GAP kit (11 criteria: G1-G9 + H1/H2) prf-2026-10-01T11-12-35 ===
+[2026-10-01T11:12:35.031Z] worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure
+[2026-10-01T11:12:35.031Z] testuse=/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 46a7f68b09
+[2026-10-01T11:12:35.031Z] world=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/tests/homes/prf-2026-10-01T11-12-35
+[2026-10-01T11:12:35.031Z] evidence=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-f/prf-2026-10-01T11-12-35
+TypeError: r.text is not a function
+    at probeStableInstance (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:481:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:2041:55)
+BATTERY-01-PRF-CLOSURE_EXIT=1

@@ -1,0 +1,26 @@
+== battery-99-post (closure real-host battery @ post-#50-merge) ==
+HEAD: 59b619c6b9638ab10aebf7ef9e5f89107b7823c8 (closure head; product tree byte-identical to merged master c19af1954239c6b3933e708fd9bdb0d50dbe1ea4 — see post-merge-identity-proof.txt)
+date: 2026-10-01T11:16:18Z
+git status --porcelain:
+ M dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-check-artifacts.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-focused-mtm.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-identity-proof.txt
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-lint.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-p4t6.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-scratch-teardown.log
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-closure-realhost-battery.sh
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-post-merge-sanity.sh
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-post-sync-battery.sh
+$ git -C /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use rev-parse HEAD   (expect unchanged 46a7f68b0922371ce7144b668b90e377d8e799f4)
+46a7f68b0922371ce7144b668b90e377d8e799f4
+TESTUSE_REV_EXIT=0
+$ git -C /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use status --porcelain   (expect EMPTY = still pristine = zero-core hold)
+TESTUSE_PORCELAIN_EXIT=0
+$ ss -ltn | grep -E ':(318[0-6]|349[1-8]|350[0-6])'   (expect: no lingering kit ports)
+SS_POST_EXIT=1  (1 = all kit ports freed)
+$ ss -ltn | grep :3080   (stable still present, untouched)
+LISTEN 0      511        127.0.0.1:3080      0.0.0.0:*          
+SS_3080_POST_EXIT=0
+$ ls /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/   (worlds left behind, if any)
+LS_HOMES_EXIT=0

@@ -1,0 +1,16 @@
+== home-world cleanup (2026-10-01 11:37:14Z, TEST_METHODS §7 — ephemeral DSH_HOME worlds, gitignored) ==
+reason: forensic capture complete (S9 recorded payload extracted from the r3 run; r4 world self-cleaned on PASS)
+NOTE: the tracked E.12 run from the test-infra branch (battery-t1) is IN FLIGHT concurrently — its own fresh world stamp is untouched; only the STALE pre-#51 worlds below are removed.
+$ rm -rf tests/homes/prereq-2026-10-01T11-21-04 tests/homes/prereq-2026-10-01T11-21-04.lock
+  size: 116K
+  removed OK
+$ rm -rf tests/homes/prereq-2026-10-01T11-25-41 tests/homes/prereq-2026-10-01T11-25-41.lock
+  size: 452K
+  removed OK
+$ rm -rf tests/homes/prf-2026-10-01T11-18-43 tests/homes/prf-2026-10-01T11-18-43.lock
+  size: 296K
+  removed OK
+$ rm -f tests/homes/prc-mcp-2026-10-01T11-15-34.lock  (stale lock; world self-cleaned on PASS)
+remaining:
+drwxr-xr-x 2 user user 4096 Oct  1 11:37 .
+drwxr-xr-x 8 user user 4096 Oct  1 11:18 ..

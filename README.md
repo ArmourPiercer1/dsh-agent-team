@@ -54,12 +54,50 @@ gitignored) — this section is a pointer summary, not the authority:
 ## Release status
 
 - **Current RC baseline:** `0.1.0-rc.1` (`origin/stable` @ `b0e5aeb4`, unchanged). This release freezes the manually tested and Playwright-validated Team vNext product as the baseline for future work.
-- **Current master (alpha):** `0.1.1-alpha.2` (all 9 packages) at master @ `e22c659a`
-  (PR #35 team-view-sync-complete merged, 2026-09-28); host pin
+- **Current master (alpha):** `0.1.1-alpha.2` (all 9 packages) at master @
+  `31ad828d` (2026-10-01 re-verified = origin/master) — the pre-Alpha.3 refactor
+  series (PR-0 #37 + A #38 + B #39 + C #40 + D #41 + E #42 + w1a #43 + F15 #44 +
+  F #45) is fully merged on master via series-closure merge `533dfcbb`
+  (2026-09-30) + bookkeeping `5e1832a3` + skill sync `31ad828d`. Host pin
   `@deepseek-ai/dsh@0.1.7-rc.1` (root `peerDependencies`). `0.1.1-alpha.1`
-  (frozen 2026-09-11) is superseded. Open PR as of 2026-09-28: **PR #22**
-  (fix/persona-requirement-kind @ `d30397b8`, persona requirement kind-matching
-  fix, awaiting review/merge ruling).
+  (frozen 2026-09-11) is superseded.
+  **Superseded (2026-10-01 handoff closure):** the 2026-09-28 lines "master @
+  `e22c659a`" and "Open PR = **PR #22**" — PR #22 is CLOSED as superseded
+  (plan §8.6; the persona kind-matching semantics re-landed inside PR-E #42 of
+  the pre-alpha3 series), and the series-closure merges moved master to
+  `31ad828d`. **Superseded (2026-10-01 07:07Z):** master has since advanced via
+  three user-authorized single-HEAD merges — #47 (E+G) → merge commit
+  `2bfbca12c0b4b7260e8bc9b5b05cd339189c74e4` (06:24Z), then #46 (A) → merge commit
+  `8e18819c4e589f685b99a86769251565ee4fc7ec` (07:07Z), then #48 (I+J) → merge commit
+  `621fdba1f9feaf7dc192f8c8e89e2b9c848881b7` (08:07Z, = origin/master); each
+  prechecked (head/base unchanged, MERGEABLE/CLEAN) + expectedHeadOid-guarded with
+  reviewed-commit inclusion verified (15/15 for #48). Open work as of 2026-10-01:
+  three fix lines (#47/#46/#48 MERGED; #49 B/C/D/H final batch in flight [external residual P2 + bounded C matrix + seriality + sync onto 621fdba1]; F = PR #50, external confirmed 1 residual P1 [first-mount pending window] — repro+fix in flight, then sync onto 621fdba1
+  HEADs under final-HEAD review) + the unpublished F fix branch
+  (`fix/mcp-target-materialization`) for the independently confirmed findings
+  A–J (5 P1 + 5 P2) from the 2026-10-01 external review of the merged series — see
+  `dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md`.
+  **Superseded (2026-10-01 closure-complete):** master has since advanced via the
+  #49 authorized merge `26c48c87ff8687464636839d16e5303c275a202a` and the #50 authorized
+  merge `c19af1954239c6b3933e708fd9bdb0d50dbe1ea4` (**= current origin/master**, user
+  independently re-verified) — all five finding-fix PRs #46–#50 merged, each on an
+  external-final-delta PASS + per-HEAD explicit user instruction + expectedHeadOid guard.
+  Post-merge battery on c19af195 (independent ports; :3080/:3180 zero-touch): F15 10/10,
+  pr-c PASS, pr-d 38/40 (2 host-bash side-effect legs environment-blocked, split-recorded),
+  prf tracked t1 E.12 16/16 EXIT=0 / t2+t3 20 PASS + 1 G6 (environment-blocked) EXIT=2,
+  zero-core bookends PASS. **DoD #20 = PARTIAL — 剩余环境验收 gate 需用户环境动作** *[2026-10-02 superseded: (a)(b)(c) all closed with recorded non-blocking constraints — see the 2026-10-02 CURRENT block below]*
+  (host-bash side-effect legs: user self-installed landlock-run + restarted the DSH
+  backend on 2026-10-01; an independent environment session performs the real
+  verification — the main session has stopped environment probing; browser-rendering
+  dimension: no browser binaries in this environment). Test-infra PR #51 (tracked kit
+  fixes + tracked-run evidence) = **MERGED 2026-10-01 12:27:37Z (user-authorized guarded
+  SQUASH)**: final HEAD `4757112c7153b12ed9a81f31699bb39d69c51fa7` → mergeSHA `427219e443ece4d57ac8558f13850c5f42ff8330`
+  (base c19af195; external final delta PASS @ 509751ad + external exact-HEAD review PASS @ 4757112c;
+  internal 3-review PASS @ 4757112c — delta re-review after the R3-F1 liveToken redaction fix;
+  credential values from the 509751ad era remain in the fork branch history — NOT claimed
+  cleared/invalidated). See
+  `dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md` and
+  `…/realhost-battery-post-merge/` (battery logs + namespace-sandbox-diagnostics §1-9).
 - **Pre-1.0 branch policy:** `master` carries ongoing alpha development; `stable` tracks only release-candidate baselines and RC-qualified fixes. Do not merge unqualified alpha work from `master` directly into `stable`.
 - **Product foundation:** the full vNext product (P0–P9 + T12 vertical +
   upstream-0.1.2-rc.1 compat + fresh-machine install chain, 1284 files / +85,679)
@@ -93,17 +131,25 @@ gitignored) — this section is a pointer summary, not the authority:
   intentional deferral per the upgrade plan U3 (see `docs/TEST_METHODS.md`
   §1/§4.2). History: 0.1.2-rc.1 @ `76fda72979` (2026-09-04, R122) →
   0.1.5-rc.2 @ `fb2c4b9e` (2026-09-17, rc2-repair) → 0.1.7-rc.1 (2026-09-24).
-- Push: origin/master updated through 2026-09-28 under per-round one-shot user
-  push authorizations — PRs #16–#21 and #23–#35 merged (latest: PR #35
-  team-view-sync-complete, merged @ `e22c659a`); **PR #22
-  (fix/persona-requirement-kind @ `d30397b8`) still open**. **origin/master @
-  `e22c659a`**;
+- Push: origin/master updated through 2026-10-01 under per-round one-shot user
+  push authorizations — PRs #16–#21 and #23–#35 merged, then the pre-alpha3
+  series PRs #37–#45 merged (latest: PR #45 (PR-F) merged @ `365f635c`,
+  2026-09-30); **PR #22 CLOSED as superseded (2026-09-30, plan §8.6)**.
+  2026-10-02 CURRENT — **origin/master = `3262fbc88cecf5b389e4ed83e3c5d5613779f106`** (2026-10-01 23:13:34Z = PR #56 guarded SQUASH @ approved head `284169779ec3be4a113fc2c4c47d7be9ff742ee1`; tree `f889abbb…` == pre-merge simulation; 36 files == reviewed diff; frozen blobs css `35d884486d18…` / client-bundle `38b136f8fc76…` byte-equal to the reviewed head) ← `57c044e3a91be24e8b119ded29cfc890a273eae1` (23:13:05Z = PR #54 guarded SQUASH @ `ac603c28c5ce77ce5830b8bac27be1626ad319e4` = reviewed source `034b7418…` + evidence-only import [non-evidence diff = 0]; tree `40ad8743…` == simulation; 63 files == reviewed diff) ← `d8953d6a…` (#57–#59) ← `1385f1ee…` (#53). Post-merge `check-artifacts-committed` = **OK 1392 files, real rc=0 (pipefail)**. **Browser lane CLOSED (2026-10-02): stage-2 LIVE run-7** (dedicated env session, MEMBER_MODE=1, real member perspective `session-team-child-6a296fb…`): observer **40/40**; kit **VERDICT PASS 16/16 criteria (59 PASS / 0 FAIL)**; runner=0 kit=0 paired=0; signals=0; runtime-restore proof captured; tested carrier `e63da125…`/tree `da83b95b…` is **local acceptance-carrier environment evidence, never pushed — not a remote-review object**; raw kept at carrier `dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T22-46-27/`; tracked import = `ac603c28` (semantics in its `IMPORT-MANIFEST.md`). Semantics kept exact: observer only observed and **never clicked Allow/Deny** (`decisions[]` untouched); the marker = observation claim, **never HumanAllow**; the scripted `team.resolveControl` = a separate pre-planned kit step executed AFTER marker verification. Recorded constraints kept: DoD-20 **E4 remains historical unit/E2E — no new browser run of E4 and none claimed**; full-suite pre-existing baseline failures stand (not re-run this round; **no all-green claim**); (A) legacy control requests lacking payload+digest fields = accepted limitation; (B) backend-frozen-context hardening = deferred (no normally-reachable trigger), non-blocking. **DoD #20 (b) real-browser-rendering dimension = CLOSED** ((a) closed via landlock acceptance; (c) PR-B gate-meaning closed with #53). PR #52 (this branch) = **no merge authority** — this closure delta awaits parent doc review; PR #60 = **no merge authority** (sole writer implementing the ruled fix batch). Superseded 14:30Z snapshot, kept as history: origin/master was `1385f1ee060830bb0f550860d4bd81901c319063` (2026-10-01 14:30:21Z = PR #53 guarded SQUASH @ approved head `4200c4b6`, tree-identity verified; test-infra only); browser lane then: Chromium-1228 + headless-shell present under `tests/homes/.playwright-browsers/`; two sandbox:true probes failed (observed: AppArmor unprivileged_userns DENIED CAP_SYS_ADMIN); official-Chrome install lane in progress with no result claimed; real UI rendering pending. The line below is the 12:27Z snapshot, kept as history:
+  **origin/master = `427219e443ece4d57ac8558f13850c5f42ff8330`** (2026-10-01 12:27Z = PR #51 guarded SQUASH; history: `31ad828d` → 07:07Z `8e18819c…` (#47+#46) → 08:07Z `621fdba1…` (#48) → 10:0xZ `26c48c87…` (#49) → 11:02Z `c19af195…` (#50) → 12:27Z `427219e4…` (#51));
   **origin/stable @ `b0e5aeb4`** (0.1.0-rc.1 freeze, unchanged). Zero force-push
   on gated history; each push verified via ls-remote.
-- Next: no in-flight task round (2026-09-28); open PR = **PR #22**
-  (fix/persona-requirement-kind — match persona requirements by persona kind,
-  not preset id; head `d30397b8`, base master, mergeable/clean) awaiting
-  review/merge ruling. Awaiting user direction: **PR #22**, **G8-S (P9 proper
+- [HISTORY — 2026-10-01 morning snapshot; superseded 12:3xZ — see CURRENT block below] Next (2026-10-01 handoff closure round): five fix PRs for findings
+  A–J (5 P1 + 5 P2) confirmed by the 2026-10-01 independent external review of
+  the merged series — `fix/persona-kind-preflight` (A) /
+  `fix/control-authz-boundary` (B, C, D, H) / `fix/effective-policy-reset-fallback`
+  (E, G) / `fix/mcp-target-materialization` (F) / `fix/runtime-template-consent`
+  (I, J), all base `31ad828d`, plus the handoff-closure branch carrying the
+  final DoD-20 series report — **NONE merged, NO auto-merge; merging waits
+  exclusively on the user's explicit per-HEAD instruction after external review
+  passes a specific HEAD**. **CURRENT (2026-10-01 12:3xZ, post-PR#51-merge):** all five fix PRs MERGED (#46 @ `8e18819c…` / #47 @ `2bfbca12…` / #48 @ `621fdba1…` / #49 @ `26c48c87…` / #50 @ `c19af195…`) + **test-infra PR #51 MERGED @ `427219e443ece4d57ac8558f13850c5f42ff8330`** (2026-10-01 12:27:37Z, user-authorized guarded SQUASH of final HEAD `4757112c7153b12ed9a81f31699bb39d69c51fa7`; internal 3-review PASS @ 4757112c (delta re-review) + external final delta PASS @ 509751ad + external exact-HEAD review PASS @ 4757112c + user per-HEAD authorization; final tree == approved head verified empty; credential values from the 509751ad era remain in the fork branch history — NOT claimed cleared/invalidated) + **closure PR #52 DRAFT published** (`task/pre-alpha3-handoff-closure`, docs/evidence-only; **NO merge authorization** — user's independent review + internal 3-review in progress; external exact-HEAD review @ a9bf52b4 = 4 doc-accuracy BLOCKs, closed by this bounded revision). [Superseded, 2026-09-28:] no in-flight task round;
+  open PR = **PR #22** awaiting review/merge ruling. Still awaiting user
+  direction: **G8-S (P9 proper
   line)** ruling (graph `blocked`, pending prototype outcome) and the
   registered follow-up backlog (per-PR `followups` in `graph.yaml`: c1/rc2 kit
   0.1.7 re-adaptation, g5 real-host re-run, p6t1-parallel load flake, F-rc1
