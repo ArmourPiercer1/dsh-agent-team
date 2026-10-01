@@ -8,7 +8,7 @@
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, symlinkSync, realpathSync, lstatSync, chmodSync, rmSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, symlinkSync, realpathSync, lstatSync, chmodSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createHash } from 'node:crypto'
@@ -400,7 +400,9 @@ test('FIX-3: a tests/homes symlink escaping the authorized repo root is rejected
   mkdirSync(join(base, 'tests'), { recursive: true })
   const elsewhere = mkTmp('uio-homesout-')
   symlinkSync(elsewhere, join(base, 'tests', 'homes'))
-  throwsCode(() => validateAccessRecordPath({ repoRoot: base, worldDir: join(base, 'tests', 'homes', 'w1') }), 'UI_ACCESS_HOMES_ESCAPES_REPO')
+  // P2-A re-review: the homes ROOT is now PINNED non-symlink (typed, earliest) —
+  // an out-of-repo target is refused by the root pin before containment even runs.
+  throwsCode(() => validateAccessRecordPath({ repoRoot: base, worldDir: join(base, 'tests', 'homes', 'w1') }), 'UI_ACCESS_HOMES_ROOT_SYMLINK')
 })
 
 test('FIX-3: observe dir may NOT contain the world (inverse disjointness)', () => {
@@ -436,4 +438,37 @@ test('FIX-3: leaf symlink + loose-mode leaf refused UNTOUCHED; happy path writes
   // this lane only ever writes NEW fixtures it created — a re-write is refused
   throwsCode(() => writePrivateAccessRecord({ repoRoot: root, worldDir: world, payload }), 'UI_ACCESS_LEAF_EXISTS')
   assert.deepEqual(JSON.parse(readFileSync(written.path, 'utf8')), payload, 'refused re-write left the created record intact')
+})
+
+// ── 12. RE-REVIEW P2-A: canonical homes pin (in-repo symlink redirect is the
+//         reproducible attack) + evidence-segment refusal ─────────────────────
+
+test('P2-A: homes ROOT symlinked to an IN-REPO evidence dir is refused; target stays UNWRITTEN', () => {
+  const { root, world } = mkFakeRepo() // real tests/homes
+  // rebuild: real homes replaced by a symlink to an in-repo evidence location
+  const homes = join(root, 'tests', 'homes')
+  rmSync(homes, { recursive: true })
+  const evidenceWorlds = join(root, 'dev', 'agent-workflow', 'evidence', 'auth-worlds')
+  mkdirSync(join(evidenceWorlds, 'w1'), { recursive: true })
+  symlinkSync(evidenceWorlds, homes)
+  throwsCode(() => validateAccessRecordPath({ repoRoot: root, worldDir: join(homes, 'w1') }), 'UI_ACCESS_HOMES_ROOT_SYMLINK')
+  throwsCode(() => writePrivateAccessRecord({ repoRoot: root, worldDir: join(homes, 'w1'), payload: { launchUrl: 'https://x' } }), 'UI_ACCESS_HOMES_ROOT_SYMLINK')
+  // the previous out-of-repo-target coverage is NOT enough — this in-repo
+  // evidence target is the one that passed every containment check:
+  assert.equal(readdirSync(join(evidenceWorlds, 'w1')).length, 0, 'evidence target dir must stay UNWRITTEN')
+  void world
+})
+
+test('P2-A: a world whose realpath lands under an .../evidence/... segment is refused even via legitimate layouts', () => {
+  const { root } = mkFakeRepo()
+  const evidenceWorld = join(root, 'dev', 'agent-workflow', 'evidence', 'auth-worlds', 'w1')
+  mkdirSync(evidenceWorld, { recursive: true })
+  symlinkSync(evidenceWorld, join(root, 'tests', 'homes', 'w1')) // homes root stays REAL — world alone redirects
+  throwsCode(() => validateAccessRecordPath({ repoRoot: root, worldDir: join(root, 'tests', 'homes', 'w1') }), 'UI_ACCESS_WORLD_IN_EVIDENCE')
+})
+
+test('P2-A: normal REAL-DIR homes keeps working (pin does not relax or break the happy path)', () => {
+  const { root, world } = mkFakeRepo()
+  const written = writePrivateAccessRecord({ repoRoot: root, worldDir: world, payload: { ok: 1 } })
+  assert.equal(lstatSync(written.path).mode & 0o777, 0o600)
 })

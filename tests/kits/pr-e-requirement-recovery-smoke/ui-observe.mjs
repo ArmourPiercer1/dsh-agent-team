@@ -197,13 +197,33 @@ export function validateAccessRecordPath({ repoRoot, worldDir, fileName = UI_ACC
     throw new ObserveFlagError('UI_ACCESS_MISSING_REPO', 'validateAccessRecordPath requires repoRoot')
   }
   const repoReal = realpathNearest(resolve(repoRoot))
-  const homesReal = realpathNearest(join(repoReal, 'tests', 'homes'))
-  // FIX-3(a): the HOMES ROOT ITSELF must stay inside the authorized repo tree
-  // (a symlinked tests/homes escaping the repo is refused before anything else).
+  const homesLiteral = join(repoReal, 'tests', 'homes')
+  // RE-REVIEW P2-A (canonical homes PIN): containment alone is NOT enough — a
+  // tests/homes SYMLINKED to another IN-REPO location (e.g. an evidence dir)
+  // passes every containment check yet silently redirects the raw launchUrl
+  // into evidence paths (reproducible without any race). The canonical homes
+  // root is therefore PINNED to a real directory: a symlinked homes root is
+  // refused typed, regardless of where it points.
+  try {
+    if (lstatSync(homesLiteral).isSymbolicLink()) {
+      throw new ObserveFlagError('UI_ACCESS_HOMES_ROOT_SYMLINK', `tests/homes must be a REAL directory (canonical homes pin); ${homesLiteral} is a symlink — refused`)
+    }
+  } catch (error) {
+    if (error instanceof ObserveFlagError) throw error
+    // ENOENT: homes not created yet — not a symlink; realpathNearest below handles it.
+  }
+  const homesReal = realpathNearest(homesLiteral)
+  // FIX-3(a): the HOMES ROOT ITSELF must stay inside the authorized repo tree.
   if (!isInsideOrSame(homesReal, repoReal)) {
     throw new ObserveFlagError('UI_ACCESS_HOMES_ESCAPES_REPO', `tests/homes must stay inside the authorized repo tree (${repoReal}); realpath says ${homesReal}`)
   }
   const worldReal = realpathNearest(resolve(worldDir))
+  // RE-REVIEW P2-A: the auth record may NEVER land under an .../evidence/...
+  // path — raw launch URLs are not evidence and evidence dirs must stay clean,
+  // refused by segment even via layouts that pass every containment check.
+  if (worldReal.split(/[\\/]+/).includes('evidence')) {
+    throw new ObserveFlagError('UI_ACCESS_WORLD_IN_EVIDENCE', `the access record's world resolves under an .../evidence/... path (${worldReal}) — raw auth values never enter evidence trees`)
+  }
   if (worldReal === homesReal) {
     throw new ObserveFlagError('UI_ACCESS_WORLD_IS_HOMES_ROOT', 'the access record belongs INSIDE one tests/homes/<world>, not the homes root')
   }
