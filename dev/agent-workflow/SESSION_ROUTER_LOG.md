@@ -5107,3 +5107,4 @@ pre-e 线自 merge-base `aa8391ac` 之后未含 master 线的 2 条 w1a 日志�
 - **PR-B gate 意义 CLOSED**：参数化 fresh world 6/6 EXIT=0（`run-pr-b-2026-10-01T13-53-35`，C3 = F11 bound-set 契约、durable 五度量、非 byte-hash 声明）随 #53 入 master；历史 seed 世界数据缺失保留为数据记录。
 - **文档修订**：final-series-report §6 追加 supersession 行 + 新 §13；phase2 文档 helper-placement 位置注记；STATUS/graph 追加 (b)(c) 14:3xZ 注记与新条目；两 MINOR（三者需动作 supersession、helper-placement）闭合。**liveToken 两处代码注释修正不入本轮**（52 保持 docs-only；队列状态见 #53 记录）。
 - **红线**：CORE 0；零 force-push；:3080/:3180 零触碰；零 host/browser 启动；零清理（历史现场原样）；无凭据值输出；PR #52 无 merge 授权（新 HEAD 待三审+外审）。
+- [2026-10-01 14:4xZ 状态更新，closure writer] Chrome/探针审批时点：用户 14:37Z 已批准独立 env session 安装 Google 官方系统 Chrome 并执行临时 full 安全探针（**sandbox 保持开启**）；该 lane 独立执行中。**主 session 零安装、零探针、零安全/网络配置变更、零重复测试**。当前 = 探针结果待验证（不预支成功）；DoD #20 host/UI 未启动，UI gate 仍 pending；探针成功后由协调方统一 lease 唯一 host。此前 14:3xZ "审批 pending" 表述为该时点历史，保留不抹。
