@@ -1,0 +1,4 @@
+$ pnpm run check:artifacts  (worktree: .worktrees/fix-persona-kind; HEAD 3c340110; post-merge-commit, fresh build in working tree)
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1372 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+EXIT=0

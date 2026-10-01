@@ -40,7 +40,13 @@
  *   FATAL (the MEMBER observation — R8: the member requirement uses the
  *   member's actual observation, not the root's);
  * - T3: root observes `complete` → the team scope FATALs (the structural
- *   §13.5 conflict — NO downgrade through the kind path);
+ *   §13.5 conflict — NO downgrade through the kind path); the complete
+ *   observation ALSO surfaces the OBSERVED kind as an alongside world fact
+ *   (`(persona, 'complete')`, B3 typed-diagnostics fix — the engine's
+ *   FROZEN typed lane keys on exactly that fact): the test asserts the
+ *   explicit `reasonCode = TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` end-to-
+ *   end over the real provider feed (T2's worker scope and T6's e2e
+ *   world carry the same assertion);
  * - T4: the observer fails typed → `unresolved` → `unknown` → no seed ⇒
  *   FATAL (fail-closed, and NOT reclassified `pending`: persona is
  *   non-probeable — the legacy 2-state stands); WITH a bootstrap seed
@@ -76,6 +82,10 @@ import { describe, expect, it } from 'vitest'
 
 import { parseBlueprint } from '../../domain/blueprint/src/index.js'
 import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
+import {
+  COMPATIBILITY_REASON_CODES,
+  evaluateCompatibility,
+} from '../../domain/compatibility/src/index.js'
 import {
   createCapabilityReadinessProvider,
   PROBE_VERDICTS,
@@ -398,9 +408,23 @@ describe('T2 — root observes `standard`, member observes `complete` (R8 split)
     })
     expect(workerResolution.observations[0]!.readinessReason).toContain('ptc/member-custom')
     expect(workerResolution.observations[0]!.readinessReason).toContain('complete effective persona')
+    // B3: the complete observation surfaces the OBSERVED kind as an
+    // alongside world fact (the engine's typed §13.5 lane keys on exactly
+    // that fact — the kind-subject fact keying is preserved).
     expect(workerResolution.environmentFacts).toEqual([
+      { domain: 'persona', subject: 'complete', available: true, generation: 1 },
       { domain: 'persona', subject: 'standard', available: false, generation: 1 },
     ])
+    // The typed lane end-to-end over the REAL provider feed: the worker
+    // requirement's engine verdict carries the FROZEN conflict code.
+    const workerEngine = evaluateCompatibility({
+      requirements: scopeRequirementInputsOf(PK_FULL).templates['worker'] ?? [],
+      environmentFacts: workerResolution.environmentFacts,
+    })
+    expect(workerEngine.requirements[0]?.outcome).toBe('FATAL')
+    expect(workerEngine.requirements[0]?.reasonCode).toBe(
+      COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT,
+    )
 
     const result = await world.preflight(PK_FULL)
     // The team scope is ready (root observation); the WORKER template scope
@@ -449,9 +473,24 @@ describe('T3 — root observes `complete` (the §13.5 conflict)', () => {
       readiness: PROBE_VERDICTS.unreachable,
     })
     expect(resolution.observations[0]!.readinessReason).toContain('complete effective persona')
+    // B3: the complete observation surfaces the OBSERVED kind as an
+    // alongside world fact — the engine's typed §13.5 lane keys on exactly
+    // that fact (without it the host lane degraded to the generic
+    // PERSONA_INCOMPATIBLE).
     expect(resolution.environmentFacts).toEqual([
+      { domain: 'persona', subject: 'complete', available: true, generation: 1 },
       { domain: 'persona', subject: 'standard', available: false, generation: 1 },
     ])
+    // The typed lane end-to-end over the REAL provider feed: the explicit
+    // FROZEN conflict reasonCode (not just prose/FATAL).
+    const engineResult = evaluateCompatibility({
+      requirements: scopeRequirementInputsOf(PK_TEAM).team,
+      environmentFacts: resolution.environmentFacts,
+    })
+    expect(engineResult.requirements[0]?.outcome).toBe('FATAL')
+    expect(engineResult.requirements[0]?.reasonCode).toBe(
+      COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT,
+    )
     const result = await world.preflight(PK_TEAM)
     // A confirmed team-level required down → the FATAL outcome (not
     // reclassified pending: a confirmed down stands — D-3 precedence).
@@ -670,6 +709,15 @@ describe('T6 — end-to-end through the creation preflight (root.ts port shape)'
     expect(result.outcome).toBe(PREFLIGHT_OUTCOMES.fatal)
     expect(result.fatalRequirementIds).toEqual([TEAM_REQ_ID])
     expect(blockedScopeKeysOf(result)).toEqual(['team'])
+    // B3: the typed lane end-to-end — the SAME shipped-chain feed drives
+    // the engine's FROZEN §13.5 conflict code.
+    const engineResult = evaluateCompatibility({
+      requirements: scopeRequirementInputsOf(PK_TEAM).team,
+      environmentFacts: (await world.teamRead(PK_TEAM)).environmentFacts,
+    })
+    expect(engineResult.requirements[0]?.reasonCode).toBe(
+      COMPATIBILITY_REASON_CODES.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT,
+    )
   })
 })
 

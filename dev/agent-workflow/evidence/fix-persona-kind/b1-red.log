@@ -1,0 +1,95 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-persona-kind
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts (14 tests | 3 failed) 18ms
+     ✓ the team-scope preflight PASSES (pre-fix the kind subject was unknown ⇒ seed-less FATAL) 4ms
+     ✓ evaluateCreationScopes agrees: the team verdict is PASS with the typed reason 1ms
+     ✓ the team scope PASSES on the ROOT observation; the member template scope FATALs on the MEMBER observation 2ms
+     ✓ the team scope FATALs with the typed conflict observation (no downgrade through the kind path) 1ms
+     ✓ no seed ⇒ unknown ⇒ the fact is omitted ⇒ the preflight FATALs (fail-closed, NOT pending) 1ms
+     ✓ WITH a bootstrap seed available:true the seed truth decides ⇒ proceed (the documented 2-state) 1ms
+     ✓ WITH a bootstrap seed available:false the seed truth decides ⇒ FATAL (the 2-state is not a blanket OPEN) 0ms
+     ✓ a NON-kind subject keeps the legacy root/member preset-id matching (v1 frozen Blueprint cold resume) 0ms
+     ✓ a kind subject resolves through the KIND path even when the mounted id equals a preset (no legacy shadowing) 0ms
+     ✓ a v2 blueprint with the persona teamRequirement `standard` + a mounted composable preset PASSES with no seed 1ms
+     ✓ the SAME chain with a complete mounted preset FATALs end-to-end (no false OPEN) 0ms
+     × BL1: a HEALTHY leader template PASSES on the leader OWN (root) observation — no member requirement in the world (pre-fix: judged by the MEMBER entry ⇒ spurious FATAL) 5ms
+     × BL2: a leader whose OWN observation is `complete` FATALs with the leader observation (pre-fix: FALSE PASS — the leader was judged by the member entry) 1ms
+     × BL3: in ONE world, the leader template is judged by the ROOT observation and the member template by the MEMBER observation (per-template role dispatch) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > Blocker-1 — the template scope carries its role (leader ≠ member observation) > BL1: a HEALTHY leader template PASSES on the leader OWN (root) observation — no member requirement in the world (pre-fix: judged by the MEMBER entry ⇒ spurious FATAL)
+AssertionError: expected { …(8) } to match object { subject: 'standard', …(1) }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "readiness": "reachable",
++   "readiness": "unreachable",
+    "subject": "standard",
+  }
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:725:40
+    723|     })
+    724|     const resolution = await world.templateRead(PK_LEADER, 'leader')
+    725|     expect(resolution.observations[0]).toMatchObject({
+       |                                        ^
+    726|       subject: 'standard',
+    727|       readiness: PROBE_VERDICTS.reachable,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > Blocker-1 — the template scope carries its role (leader ≠ member observation) > BL2: a leader whose OWN observation is `complete` FATALs with the leader observation (pre-fix: FALSE PASS — the leader was judged by the member entry)
+AssertionError: expected { …(7) } to match object { subject: 'standard', …(1) }
+(5 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "readiness": "unreachable",
++   "readiness": "reachable",
+    "subject": "standard",
+  }
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:757:40
+    755|     })
+    756|     const resolution = await world.templateRead(PK_LEADER, 'leader')
+    757|     expect(resolution.observations[0]).toMatchObject({
+       |                                        ^
+    758|       subject: 'standard',
+    759|       readiness: PROBE_VERDICTS.unreachable,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > Blocker-1 — the template scope carries its role (leader ≠ member observation) > BL3: in ONE world, the leader template is judged by the ROOT observation and the member template by the MEMBER observation (per-template role dispatch)
+AssertionError: expected [ Array(2) ] to deeply equal [ 'template:worker' ]
+
+- Expected
++ Received
+
+  [
++   "template:leader",
+    "template:worker",
+  ]
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:799:40
+    797|     const result = await world.preflight(PK_LEADER_AND_WORKER)
+    798|     expect(result.outcome).toBe(PREFLIGHT_OUTCOMES.fixOrDisable)
+    799|     expect(blockedScopeKeysOf(result)).toEqual([scopeKey({ level: 'tem…
+       |                                        ^
+    800|     const leaderScope = result.scopes.find(
+    801|       (scope) => scope.scope.level === 'template' && scope.scope.templ…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 11 passed (14)
+   Start at  06:04:01
+   Duration  468ms (transform 260ms, setup 0ms, import 352ms, tests 18ms, environment 0ms)
+
+EXIT=1

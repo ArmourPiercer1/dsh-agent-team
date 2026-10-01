@@ -1510,30 +1510,63 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
     // Scanner unchanged. The 896 value is the scanner run on the merged
     // tree (authoritative; not hand-computed).
-    // finding F (fix/mcp-target-materialization, this commit): +3 on top
-    // of the 896 pin = 899 — the three new scannable files of the
-    // finding-F line: (a) packages/runtime/test/mcp-target-
-    // materialization.test.ts (the real production-chain T1–T5 regression
-    // matrix: the host entry + the production glue + the bridge agents
-    // double + the per-server fiber doubles — the target-specific MCP
-    // materialization worlds: opposite-slot two instances / different-
-    // roots same templateId / the v2 leader judged by its OWN (root)
-    // observation / the cold-inactive NOT-APPLICABLE guard + the scope-
-    // incident bookkeeping leg) + (b) packages/runtime/test/mcp-target-
-    // materialization-unit.test.ts (the T6 unit matrix U1–U5 over the
-    // real provider + the real 2-state engine + the real repositories) +
-    // (c) packages/runtime/test/persona-kind-provider-preflight.test.ts
-    // (the PR #46 finding-A persona-kind preflight spec — cherry-picked
-    // with -x from the contract commit 1461a6f2 as 9162e0f1, content-
-    // verified byte-identical against the post-sync tree). The finding-F
-    // product modifications (action-router/router.ts, requirement-facts/
-    // provider.ts + pending.ts, plugin/host.ts) and the modified test /
-    // gate files are already-scanned files (no count delta). Carries zero
-    // denylist vocabulary; the frozen quarantine hit set is unchanged at
-    // fifteen. Scanner unchanged. The 899 value is the scanner run on
-    // this tree (authoritative; not hand-computed).
-    expect(scanResult.filesScanned).toBe(899)
-    expect(scanResult.files.length).toBe(899)
+    // fix-persona-kind (finding A, the pre-alpha3 review P1 — the persona
+    // KIND subject vs presetId mismatch in the production provider →
+    // preflight → gate chain) pin (+1): this branch adds
+    // packages/runtime/test/persona-kind-provider-preflight.test.ts (the
+    // persona-KIND-convention regression suite over the REAL production
+    // chain: the real createRuntimeRequirementFactsProvider + the real
+    // resolveRuntimeSubstrate over the production observer-seam double +
+    // the real runCreationPreflight / evaluateCreationScopes — T1 bespoke
+    // composable preset ids pass with no seed, T2 the R8 root/member role
+    // split, T3 the complete-conflict no-downgrade, T4 the typed
+    // unresolved fail-closed + the documented 2-state seed legs, T5 the
+    // frozen v1 preset-id legacy path, T6 the end-to-end creation
+    // preflight). The product change (the requirement-facts/provider.ts
+    // persona case — the kind path ahead of the byte-identical legacy
+    // preset-id path) is an in-place edit on an already-scanned file (no
+    // count delta). Carries zero denylist vocabulary (the scan over it
+    // passes — the frozen quarantine hit set is unchanged at fifteen
+    // occurrences). The 897 value is the scanner run on the fixed tree
+    // (authoritative; not hand-computed).
+    // fix-persona-kind (PR #46 external-review fix round — Blocker-2, the
+    // SHIPPED DIST) pin (+1): this branch adds
+    // packages/runtime/test/persona-kind-shipped-dist-smoke.test.ts (the
+    // SHIPPED DIST SMOKE — the finding-A persona-KIND semantics + the
+    // Blocker-1 role identity + the Blocker-3 typed §13.5 lane asserted
+    // over the BUILT dist artifact via the file-URL import precedent; the
+    // companion commit rebuilds the dist mirror — the rebuilt
+    // provider.js/types.js/index.js/root.js + their .d.ts/.map — which
+    // are already-scanned artifacts (no count delta)). Carries zero
+    // denylist vocabulary (the scan over it passes — the frozen
+    // quarantine hit set is unchanged at fifteen occurrences). Scanner
+    // unchanged. The 898 value is the scanner run on this tree
+    // (authoritative; not hand-computed).
+    // finding F (fix/mcp-target-materialization, this merge): +2 on top of
+    // the 898 pin = 900 — the two new scannable files of the finding-F
+    // line: (a) packages/runtime/test/mcp-target-materialization.test.ts
+    // (the real production-chain T1–T5 regression matrix: the host entry
+    // + the production glue + the bridge agents double + the per-server
+    // fiber doubles — the target-specific MCP materialization worlds:
+    // opposite-slot two instances / different-roots same templateId / the
+    // v2 leader judged by its OWN (root) observation / the cold-inactive
+    // NOT-APPLICABLE guard + the scope-incident bookkeeping leg) +
+    // (b) packages/runtime/test/mcp-target-materialization-unit.test.ts
+    // (the T6 unit matrix U1–U5 over the real provider + the real 2-state
+    // engine + the real repositories). The finding-F third file in my
+    // pre-merge tree, persona-kind-provider-preflight.test.ts, is already
+    // counted by the fix-persona-kind Blocker-1 pin above (no double count
+    // on the merged tree — it arrived here via the pick 9162e0f1 of the
+    // contract commit 1461a6f2, the same file origin/master carries via
+    // the PR #46 merge). The finding-F product modifications
+    // (action-router/router.ts, requirement-facts/provider.ts + pending.ts,
+    // plugin/host.ts) and the modified test / gate files are
+    // already-scanned files (no count delta). Carries zero denylist
+    // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
+    // Scanner unchanged. The 900 value is the scanner run on the merged
+    // tree (authoritative; not hand-computed).
+    expect(scanResult.filesScanned).toBe(900)
+    expect(scanResult.files.length).toBe(900)
 
   })
 
