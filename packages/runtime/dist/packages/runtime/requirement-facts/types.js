@@ -77,6 +77,41 @@
  * @module @dsh-agent-team/runtime/requirement-facts/types
  */
 import { deepFreeze, teamContractError } from '../../contracts/src/index.js';
+// --- the boundary scope (guide §2.3) -----------------------------------------
+/**
+ * The closed ROLE identity of a template-scope boundary (Blocker-1 shared
+ * contract, external review of PR #46 — the template scope carries the role
+ * it addresses).
+ *
+ * The LEADER template IS the root session's template, and the root mounts
+ * `config.rootPresetId` (agent-bindings v3: "the root mounts
+ * config.rootPresetId and the member mounts config.memberPresetId"; the
+ * leader IS the root — plan §C.2: the plan's ROOT entry is "the actual
+ * preset used by the Leader"; the bind-time persona slot reads the ROOT
+ * entry, root.ts presetSeam — members inherit the root's bind substrate,
+ * Architecture §13.1). So a `leader` scope addresses the leader's OWN
+ * mounted-preset observation (the plan's ROOT entry); a `member` scope
+ * addresses the MEMBER entry (plan §C.2 R8: the member requirement uses the
+ * member's actual observation, not the root's).
+ */
+export const REQUIREMENT_FACT_SCOPE_ROLES = {
+    /** The leader template (the root session's template — the ROOT plan entry). */
+    leader: 'leader',
+    /** A member template (the MEMBER plan entry). */
+    member: 'member',
+};
+/**
+ * The role identity of one template scope for a bound blueprint (the bound
+ * blueprint knows its leader template id — the ONLY knowledge the
+ * construction sites need): the leader template addresses the leader's own
+ * mounted preset (the ROOT plan entry), every other template addresses the
+ * MEMBER entry (plan §C.2 R8).
+ */
+export function requirementFactScopeRoleOf(leaderTemplateId, templateId) {
+    return templateId === leaderTemplateId
+        ? REQUIREMENT_FACT_SCOPE_ROLES.leader
+        : REQUIREMENT_FACT_SCOPE_ROLES.member;
+}
 /**
  * Assert that `value` is a well-formed boundary scope.
  * @param value - the raw scope.
@@ -103,6 +138,13 @@ export function assertRequirementFactScope(value) {
                 problem: 'missing or non-string templateId',
             });
         }
+        const role = record['role'];
+        if (role !== REQUIREMENT_FACT_SCOPE_ROLES.leader && role !== REQUIREMENT_FACT_SCOPE_ROLES.member) {
+            throw teamContractError('MALFORMED_DTO', `template scope requires the role identity 'leader' or 'member' at $.role`, {
+                path: '$.role',
+                problem: 'missing or non-closed role',
+            });
+        }
         const instanceId = record['instanceId'];
         if (instanceId !== undefined && (typeof instanceId !== 'string' || instanceId.length === 0)) {
             throw teamContractError('MALFORMED_DTO', 'instanceId must be a non-empty string at $.instanceId', {
@@ -111,8 +153,8 @@ export function assertRequirementFactScope(value) {
             });
         }
         return deepFreeze(instanceId === undefined
-            ? { kind: 'template', templateId }
-            : { kind: 'template', templateId, instanceId });
+            ? { kind: 'template', templateId, role }
+            : { kind: 'template', templateId, role, instanceId });
     }
     throw teamContractError('MALFORMED_DTO', `unknown requirement-fact scope kind '${String(kind)}' at $.kind`, {
         path: '$.kind',

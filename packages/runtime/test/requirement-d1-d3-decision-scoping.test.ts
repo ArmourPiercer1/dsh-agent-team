@@ -116,6 +116,7 @@ import {
   createRuntimeRequirementFactsProvider,
   classifyScopeReadiness,
   dropSeedFilledPendingFacts,
+  requirementFactScopeRoleOf,
 } from '../requirement-facts/index.js'
 import type {
   RequirementFactsResolution,
@@ -447,7 +448,11 @@ function makeDWorld(opts: {
   const templateReadSource = (bp: TeamBlueprint, templateId: string): Promise<RequirementFactsResolution> =>
     provider.resolveFacts({
       requirements: scopeRequirementInputsOf(bp).templates[templateId] ?? [],
-      scope: { kind: 'template', templateId },
+      // Blocker-1: the template scope carries its role identity (the bound
+      // blueprint knows its leader template id — the leader IS the root:
+      // the root mounts config.rootPresetId; the member is the MEMBER entry,
+      // plan §C.2 R8).
+      scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(bp.leader.templateId, templateId) },
     })
 
   return {

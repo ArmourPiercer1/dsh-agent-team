@@ -19,5 +19,5 @@
  */
 export { createRuntimeRequirementFactsProvider, } from './provider.js';
 export { classifyScopeReadiness, dropSeedFilledPendingFacts, type LiveReadinessSubject, type ScopeReadinessClassification, } from './pending.js';
-export { assertRequirementFactScope, type MemberMaterializationView, type RequirementFactScope, type RequirementFactsPorts, type RequirementFactsResolution, type RequirementObservation, type RuntimeRequirementFactsProvider, type SeedEnvironmentFact, } from './types.js';
+export { assertRequirementFactScope, REQUIREMENT_FACT_SCOPE_ROLES, requirementFactScopeRoleOf, type MemberMaterializationView, type RequirementFactScope, type RequirementFactScopeRole, type RequirementFactsPorts, type RequirementFactsResolution, type RequirementObservation, type RuntimeRequirementFactsProvider, type SeedEnvironmentFact, } from './types.js';
 //# sourceMappingURL=index.d.ts.map

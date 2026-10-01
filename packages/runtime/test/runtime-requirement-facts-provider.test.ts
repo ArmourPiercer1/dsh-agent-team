@@ -90,7 +90,11 @@ function ports(args: {
 }
 
 const TEAM = { kind: 'team' as const }
-const TEMPLATE = { kind: 'template' as const, templateId: 'dev' }
+// Blocker-1: the scope carries its role identity — the `dev` template in
+// this suite is a MEMBER boundary (the R8 tests read the MEMBER entry;
+// the mcpServer tests only select the template scope kind — the role
+// does not change their assertions).
+const TEMPLATE = { kind: 'template' as const, templateId: 'dev', role: 'member' as const }
 
 describe('guide §2.5 — scenario 1: static available:true + live unreachable (the false-OPEN fix)', () => {
   it('required → the feed is available:false (the gate BLOCKs); optional → the gate DEGRADEs', async () => {
