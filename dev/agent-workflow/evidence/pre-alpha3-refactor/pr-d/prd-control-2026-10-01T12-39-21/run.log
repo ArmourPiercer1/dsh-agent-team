@@ -1,0 +1,98 @@
+[2026-10-01T12:39:21.004Z] PR-D D.6 real-host gate — stamp=prd-control-2026-10-01T12-39-21 hostPort=3182 mockPort=3497
+[2026-10-01T12:39:21.004Z] worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-kits-probe-consent-fix testuse=/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-10-01T12:39:21.076Z] H1 pre: stable={"http://127.0.0.1:3080/":{"url":"http://127.0.0.1:3080/","status":401},"http://127.0.0.1:3180/":{"url":"http://127.0.0.1:3180/","status":"unreachable: fetch failed"}} testuse head=46a7f68b0922371ce7144b668b90e377d8e799f4 statusEmpty=true
+[2026-10-01T12:39:21.080Z] mock: mock: listening on 127.0.0.1:3497
+[2026-10-01T12:39:21.080Z] mock model up on 127.0.0.1:3497
+[2026-10-01T12:39:21.081Z] HOST1-CREATE: patch (bootPhase=create) + directive (boot=1) written
+[2026-10-01T12:39:22.373Z] HOST1-CREATE: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-10-01T12:39:23.484Z] HOST1-CREATE: row ready — toolCount=13
+[2026-10-01T12:39:23.489Z] HOST1: state ready (boot team session-prdctrl-boot-prd-control-2026-10-01T12-39-21)
+[2026-10-01T12:39:23.601Z] mock: mock: 1 [messages] text reply (13 chars): "PRD_DISC_DONE"
+[2026-10-01T12:39:23.602Z] mock: mock: 2 [messages] text reply (24 chars): "prd control gate session"
+[2026-10-01T12:39:23.907Z] L0 surface (39 tools) → strict builtinToolDeny = 19 names: ask_user_question, create_goal, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, present, send_message, skill, subagent_fork, update_goal, web_fetch, web_search, workflow
+[2026-10-01T12:39:23.952Z] PR-D team created at session-prdctrl-p-prd-control-2026-10-01T12-39-21
+[2026-10-01T12:39:23.994Z] mock: mock: 3 [messages] tool-call reply: team_create_member
+[2026-10-01T12:39:23.995Z] mock: mock: 4 [messages] text reply (24 chars): "prd control gate session"
+[2026-10-01T12:39:24.071Z] mock: mock: 5 [messages] tool-call reply: team_delegate
+[2026-10-01T12:39:24.134Z] mock: mock: 6 [messages] text reply (15 chars): "PRD_CREATE_DONE"
+[2026-10-01T12:39:24.159Z] mock: mock: 7 [messages] tool-call reply: bash
+[2026-10-01T12:39:24.160Z] mock: mock: 8 [messages] text reply (24 chars): "prd control gate session"
+[2026-10-01T12:39:24.218Z] mock: mock: 9 [messages] tool-call reply: team_list_pending_control
+[2026-10-01T12:39:24.258Z] mock: mock: 10 [messages] tool-call reply: team_resolve_control
+[2026-10-01T12:39:24.281Z] mock: mock: 11 [messages] text reply (14 chars): "PRD_NOTIF_DONE"
+[2026-10-01T12:39:24.362Z] C1: ask request ctrl-00k0w7v01cjsva1cx938d1f4 (target=inst-0mf1qqt0m5g2 kind=leader-approval)
+[2026-10-01T12:39:24.463Z] mock: mock: 12 [messages] text reply (11 chars): "PRD_W1_DONE"
+[2026-10-01T12:39:24.555Z] mock: mock: 13 [messages] text reply (14 chars): "PRD_NOTIF_DONE"
+[2026-10-01T12:39:24.769Z] C1 PASS — the member bash ask created a durable leader-approval request with the LEGACY shape (instance subject derived from targetInstanceId; NO executionCoupling field) over the REMOTE ledger page :: req={"actionName":"parameter-permission","correlation":"call-prd-csetbfl6","kind":"leader-approval","operationFingerprint":"sha256:7d8faadcf92c432c889f955f64529efd5214d493693efb7d457a4a050a6ce5ad","requestId":"ctrl-00k0w7v01cjsva1cx938d1f4","requester":{"instanceId":"inst-0mf1qqt0m5g2","kind":"insta
+[2026-10-01T12:39:24.769Z] C1 PASS — the leader resolved allow through the model-facing approval tools (terminal state `decided` — derived from the durable decision fact) :: status=decided
+[2026-10-01T12:39:24.769Z] C1 PASS — durable facts over the REMOTE ledger page: control-request-recorded / control-decision-recorded (allow, decider = the LEADER principal — the model-tool path, not a human) / control-allow-consumed each present exactly once for this request :: recorded=1 decisions=1 consumptions=1 decider={"instanceId":"inst-leader","kind":"instance","role":"leader"}
+[2026-10-01T12:39:24.769Z] C1 PASS — the read-only team_domain.json cross-check agrees (the durable ledger is the single source) :: recorded=1 decisions=1 consumptions=1
+[2026-10-01T12:39:24.769Z] C1 PASS — the execution PROCEEDED: the side-effect file exists with the marker (the one-shot allow was consumed by the guard) :: file=/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/tmp/.prd-gate/prd-control-2026-10-01T12-39-21/prd-c1-prd-control-2026-10-01T12-39-21.txt exists=true
+[2026-10-01T12:39:24.769Z] C1: PASS (5/5 checks)
+[2026-10-01T12:39:24.799Z] mock: mock: 14 [messages] tool-call reply: team_delegate
+[2026-10-01T12:39:24.872Z] mock: mock: 15 [messages] tool-call reply: bash
+[2026-10-01T12:39:24.875Z] mock: mock: 16 [messages] text reply (12 chars): "PRD_C2L_DONE"
+[2026-10-01T12:39:24.956Z] mock: mock: 17 [messages] text reply (31 chars): "PRD_NOTIF_IGNORED_REMOTE_DRIVEN"
+[2026-10-01T12:39:25.307Z] C2 PASS — remote v4 team.resolveControl ALLOW: the closed v4 success envelope (requestId + decision=allow + host-derived HUMAN decider + scope) :: status=200 err=null data={"decision":{"requestId":"ctrl-0e0fg740qy5y9x1kxhks21kh","decision":"allow","decider":{"kind":"human","humanId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21"},"scope":{"rootSessionId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21","subject":{"kind":"instance","ins
+[2026-10-01T12:39:25.434Z] mock: mock: 18 [messages] tool-call reply: bash
+[2026-10-01T12:39:25.470Z] mock: mock: 19 [messages] text reply (31 chars): "PRD_NOTIF_IGNORED_REMOTE_DRIVEN"
+[2026-10-01T12:39:25.823Z] C2 PASS — remote v4 team.resolveControl DENY: the closed v4 success envelope (decision=deny + human decider) :: status=200 err=null data={"decision":{"requestId":"ctrl-09noaye1eb6mzv038zcjw023","decision":"deny","decider":{"kind":"human","humanId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21"},"scope":{"rootSessionId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21","subject":{"kind":"instance","inst
+[2026-10-01T12:39:25.958Z] mock: mock: 20 [messages] text reply (11 chars): "PRD_W2_DONE"
+[2026-10-01T12:39:26.049Z] mock: mock: 21 [messages] text reply (31 chars): "PRD_NOTIF_IGNORED_REMOTE_DRIVEN"
+[2026-10-01T12:39:26.227Z] C2 PASS — terminal states: both requests `decided` after the remote resolutions (derived from the durable decision facts) :: c2a=decided c2b=decided
+[2026-10-01T12:39:26.227Z] C2 PASS — the ALLOWED scope EXECUTED (one-shot allow consumed; side-effect file present) and the DENIED scope was BLOCKED (no consumption; side-effect file absent) :: c2aFile=true c2bFile=false
+[2026-10-01T12:39:26.229Z] C2 PASS — guard behavior after the deny: a guarded-lane attempt on the denied scope is blocked with reason `decision-deny` (zero effect — still no side-effect file, no consumption) :: guard={"ok":true,"action":"guard","value":{"allowed":false,"reason":"decision-deny","requestId":"ctrl-09noaye1eb6mzv038zcjw023","decisionSequence":15}}
+[2026-10-01T12:39:26.229Z] C2: PASS (5/5 checks)
+[2026-10-01T12:39:26.237Z] C3 PASS — the TEMPLATE-subject inline request is created (the instance stale validator does NOT kill it — creation succeeds; subject recorded as kind=template, NO targetInstanceId) :: status=200 err={"code":"NO_RESULT","message":"[object Object]"} record={"requestId":"ctrl-0wxpyvx1ot9bk20yz3bgz1fg","rootSessionId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21","kind":"user-approval","requester":{"kind":"human","humanId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21"},"s
+[2026-10-01T12:39:26.241Z] C3 PASS — display over the REMOTE ledger page: the durable control-request-recorded row carries subject={kind:template,templateId:worker} + executionCoupling=inline :: fact={"sequence":18,"payload":{"actionName":"parameter-permission","correlation":"prd-c3-corr-prd-control-2026-10-01T12-39-21","executionCoupling":"inline","kind":"user-approval","operationFingerprint":"prd-c3-fp-prd-control-2026-10-01T12-39-21","requestId":"ctrl-0wxpyvx1ot9bk20yz3bgz1fg","requester
+[2026-10-01T12:39:26.241Z] C3 PASS — display state over the durable facts: the request is `pending` before its resolution (derived status — no decision/abandonment fact yet) :: status=pending
+[2026-10-01T12:39:26.249Z] C3 PASS — remote v4 team.resolveControl ALLOW on the template-subject inline request (the resolve-time instance stale validator skips the template subject — resolution succeeds; scope carries the subject) :: status=200 err=null scope={"rootSessionId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21","subject":{"kind":"template","templateId":"worker"},"actionName":"parameter-permission","correlation":"prd-c3-corr-prd-control-2026-10-01T12-39-21","toolName":"bash","operationFingerprint":"prd-c3-fp-prd-c
+[2026-10-01T12:39:26.253Z] C3 PASS — D.4 lane disjointness: the inline allow produced NO control-allow-consumed fact (the inline allow authorizes the frozen invocation only, never the guard lane) :: consumptionsForC3=0
+[2026-10-01T12:39:26.253Z] C3 PASS — D.4 lane disjointness: the guarded-lane attempt against the inline-allowed scope is blocked with reason `no-request` (the template subject survives the guard stale validator — the verdict is no-request, NOT target-stale) :: guard={"ok":true,"action":"guard","value":{"allowed":false,"reason":"no-request"}}
+[2026-10-01T12:39:26.253Z] C3 PASS — terminal state: the inline request is `decided` (derived from the durable decision fact — the decision is durable) :: status=decided
+[2026-10-01T12:39:26.253Z] C3: PASS (7/7 checks)
+[2026-10-01T12:39:26.262Z] C4 PASS — leg A: the template-subject INLINE request is created over the p6t6 thin route (pending, coupling inline, template subject) :: status=200 err={"code":"NO_RESULT","message":"[object Object]"} record={"requestId":"ctrl-1fkxbct0n198ca02oibqj0n1","rootSessionId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21","kind":"user-approval","requester":{"kind":"human","humanId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21"},"s
+[2026-10-01T12:39:26.262Z] C4: parking the real HTTP wait on ctrl-1fkxbct0n198ca02oibqj0n1 (p6t6 wait route — the production awaitControlDecision wired to the client connection)
+[2026-10-01T12:39:28.762Z] C4: aborting the wait's HTTP connection (TRUE client disconnect)
+[2026-10-01T12:39:28.763Z] C4: disconnect landed (outcome={"aborted":true,"error":"This operation was aborted"})
+[2026-10-01T12:39:29.272Z] C4 PASS — the disconnect durably ABANDONED the SAME inline request (the coupling-aware cascade — exactly ONE control-request-abandoned fact, reason wait-aborted) :: status=abandoned abandonFacts=1 reason=wait-aborted
+[2026-10-01T12:39:29.272Z] C4 PASS — zero execution side effects after the cascade (no decision fact, no consumption fact for the abandoned request) :: decisions=0 consumptions=0
+[2026-10-01T12:39:29.274Z] C4 PASS — guarded-lane attempt on the cascaded-abandoned scope is blocked with reason `request-abandoned` (zero effect, zero consumption) :: guard={"ok":true,"action":"guard","value":{"allowed":false,"reason":"request-abandoned","requestId":"ctrl-1fkxbct0n198ca02oibqj0n1"}}
+[2026-10-01T12:39:29.279Z] C4 PASS — the typed CONTROL_REQUEST_ABANDONED passes through the REMOTE v4 boundary UNCHANGED for the late allow on the cascaded request (invariant 4b — no decision fact is written) :: errCode=CONTROL_REQUEST_ABANDONED decisions=0
+[2026-10-01T12:39:29.312Z] mock: mock: 22 [messages] tool-call reply: team_delegate
+[2026-10-01T12:39:29.382Z] mock: mock: 23 [messages] tool-call reply: bash
+[2026-10-01T12:39:29.789Z] C4: ask request ctrl-1xyapw41go3wih0y4v2pu1ai parked — aborting the client connection (TRUE disconnect)
+[2026-10-01T12:39:29.790Z] C4: disconnect landed (outcome={"status":200,"body":{"type":"server-response","rpcId":"c4-delegate-tjtt7xjms6","result":{"ok":true,"value":{"accepted":true}}}})
+[2026-10-01T12:40:15.058Z] mock wait timed out: C4a worker turn post-disconnect (abort cascade) (requests=23)
+[2026-10-01T12:40:25.072Z] mock wait timed out: C4a leader turn post-disconnect (abort cascade) (requests=23)
+[2026-10-01T12:40:25.072Z] C4: disconnect observation {"abortOutcome":{"status":200,"body":{"type":"server-response","rpcId":"c4-delegate-tjtt7xjms6","result":{"ok":true,"value":{"accepted":true}}}},"workerWaitAborted":false,"leaderTurnSettled":false,"note":"the legacy ask-lane flow never abandons on abort (CONTROL_WAIT_ABORTED -> deny; the durable request stands as pending for the recovery paths)"}
+[2026-10-01T12:40:25.077Z] C4 PASS — leg A2: the disconnect left the LEGACY ask-lane request durably PENDING (the untouched contract — abort never fabricates an abandon; no decision, no abandon mark; the request stands for the recovery paths) :: status=pending observation={"abortOutcome":{"status":200,"body":{"type":"server-response","rpcId":"c4-delegate-tjtt7xjms6","result":{"ok":true,"value":{"accepted":true}}}},"workerWaitAborted":false,"leaderTurnSettled":false,"note":"the legacy ask-lane flow never abandons on abort (CONTROL_WAIT_ABORT
+[2026-10-01T12:40:25.077Z] C4 PASS — leg A2: zero execution side effects after the disconnect (no consumption, the side-effect file was never written) :: c4aFile=false
+[2026-10-01T12:40:25.090Z] C4 PASS — the invalidation request is created (instance subject, GUARDED lane — the lane the abandon must void; no executionCoupling field = legacy coupling) :: status=200 err={"code":"NO_RESULT","message":"[object Object]"} record={"requestId":"ctrl-1ltxjew0m37mjt1h0wce21ph","rootSessionId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21","kind":"user-approval","requester":{"kind":"human","humanId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21"},"s
+[2026-10-01T12:40:25.101Z] C4 PASS — the pre-abandon durable ALLOW lands over the REMOTE v4 wire (the allow is committed durably before the abandon; human decider) :: status=200 err=null
+[2026-10-01T12:40:25.106Z] C4 PASS — the ABANDON writes the durable terminal mark {requestId, rootSessionId, abandonedAt, reason} (the control-request-abandoned close fact) :: status=200 value={"requestId":"ctrl-1ltxjew0m37mjt1h0wce21ph","rootSessionId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21","abandonedAt":"2026-10-01T12:40:25.102Z","abandonmentSequence":27,"reason":"prd-c4 aborted-work-unit"}
+[2026-10-01T12:40:25.106Z] C4 PASS — exactly ONE durable control-request-abandoned fact for the request (exactly-once terminal mark) :: abandonFacts=1
+[2026-10-01T12:40:25.108Z] C4 PASS — guarded-lane attempt on the abandoned scope is blocked with reason `request-abandoned` EVEN OVER the pre-abandon durable allow (allow-voiding; zero consumption, zero execution) :: guard={"ok":true,"action":"guard","value":{"allowed":false,"reason":"request-abandoned","requestId":"ctrl-1ltxjew0m37mjt1h0wce21ph","decisionSequence":26}}
+[2026-10-01T12:40:25.115Z] C4 PASS — the typed CONTROL_REQUEST_ABANDONED passes through the REMOTE v4 boundary UNCHANGED for the late allow (invariant 4b) — zero durable side effects (no second decision fact) :: errCode=CONTROL_REQUEST_ABANDONED errMessage=ControlService: request 'ctrl-1ltxjew0m37mjt1h0wce21ph' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects) decisions=1
+[2026-10-01T12:40:25.116Z] C4 PASS — the REPEAT abandon is rejected typed (CONTROL_REQUEST_ABANDONED) with NO duplicate durable fact (exactly-once) :: status=409 code=CONTROL_REQUEST_ABANDONED abandonFacts=1
+[2026-10-01T12:40:25.119Z] C4 PASS — the durable read plane shows status `abandoned` (the terminal mark wins over the pre-abandon decision) + the control-request-abandoned fact {requestId, rootSessionId, abandonedAt} :: status=abandoned abandon={"abandonedAt":"2026-10-01T12:40:25.102Z","reason":"prd-c4 aborted-work-unit","requestId":"ctrl-1ltxjew0m37mjt1h0wce21ph","rootSessionId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21"}
+[2026-10-01T12:40:25.119Z] C4: PASS (15/15 checks)
+[2026-10-01T12:40:25.207Z] HOST1-CREATE: stopped (killed=true portFree=true)
+[2026-10-01T12:40:25.207Z] C5: host killed; port 3182 free=true
+[2026-10-01T12:40:25.208Z] HOST2-RESUME: patch (bootPhase=resume) + directive (boot=2) written
+[2026-10-01T12:40:26.716Z] HOST2-RESUME: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-10-01T12:40:26.803Z] HOST2-RESUME: row ready — toolCount=13
+[2026-10-01T12:40:26.809Z] HOST2: resumed state ready (phase=resume)
+[2026-10-01T12:40:26.818Z] C5 PASS — after the restart, the REMOTE ledger page carries the FULL control history: 7 recorded / 5 decided / 2 consumed / 2 abandoned (every durable fact intact) :: recorded=7 decided=5 consumed=2 abandoned=2 total=27
+[2026-10-01T12:40:26.818Z] C5 PASS — the DERIVED request statuses after restart (from the full durable history over the REMOTE endpoints): C1/C2a/C2b/C3 `decided`, C4a `abandoned` (the SAME-request cascade durably closed it — the abandon history is intact), C4a-legacy `pending` (the ask-lane disconnect never decided it — the pending history is intact), C4b `abandoned` (the terminal mark wins over its pre-abandon decision) :: statuses={"c1":"decided","c2a":"decided","c2b":"decided","c3":"decided","c4a":"abandoned","c4al":"pending","c4b":"abandoned"}
+[2026-10-01T12:40:26.818Z] C5 PASS — the REMOTE endpoint history returns BOTH abandonments after restart: the C4a cascade fact {requestId, rootSessionId, abandonedAt, reason: wait-aborted} and the C4b explicit fact {requestId, rootSessionId, abandonedAt} are durable and readable (exactly two, one per request) :: abandonments=[{"sequence":21,"payload":{"abandonedAt":"2026-10-01T12:39:28.765Z","reason":"wait-aborted","requestId":"ctrl-1fkxbct0n198ca02oibqj0n1","rootSessionId":"session-prdctrl-p-prd-control-2026-10-01T12-39-21"}},{"sequence":27,"payload":{"abandonedAt":"2026-10-01T12:40:25.102Z","reason":"prd-
+[2026-10-01T12:40:26.828Z] C5 PASS — the abandoned request CANNOT be re-decided after the restart (a late allow over the REMOTE v4 wire is still rejected typed — the terminal mark is durable across the host restart) :: errCode=CONTROL_REQUEST_ABANDONED errMessage=ControlService: request 'ctrl-1ltxjew0m37mjt1h0wce21ph' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)
+[2026-10-01T12:40:26.828Z] C5: PASS (4/4 checks)
+[2026-10-01T12:40:26.894Z] HOST2-RESUME: stopped (killed=true portFree=true)
+[2026-10-01T12:40:26.944Z] H1 PASS — test-use repo: HEAD == baseline + porcelain empty BEFORE the run :: pre: head=46a7f68b0922371ce7144b668b90e377d8e799f4 statusEmpty=true diffEmpty=true
+[2026-10-01T12:40:26.945Z] H1 PASS — test-use repo: HEAD == baseline + porcelain empty AFTER the run (the kit touched the host source tree not at all) :: post: head=46a7f68b0922371ce7144b668b90e377d8e799f4 statusEmpty=true diffEmpty=true
+[2026-10-01T12:40:26.945Z] H1 PASS — the stable instances :3080/:3180 are zero-touch: read-only GET probes pre == post (the kit sent no write/control to them) :: before={"http://127.0.0.1:3080/":{"url":"http://127.0.0.1:3080/","status":401},"http://127.0.0.1:3180/":{"url":"http://127.0.0.1:3180/","status":"unreachable: fetch failed"}} after={"http://127.0.0.1:3080/":{"url":"http://127.0.0.1:3080/","status":401},"http://127.0.0.1:3180/":{"url":"http://127.0.0
+[2026-10-01T12:40:26.945Z] H1: PASS (3/3 checks)
+[2026-10-01T12:40:26.945Z] H2 PASS — every allocated port is released after teardown (host + mock) :: hostPort=3182 free=true mockPort=3497 free=true
+[2026-10-01T12:40:26.945Z] H2: PASS (1/1 checks)
+[2026-10-01T12:40:26.969Z] GATE RESULT: PASS (exitCode=0) — evidence: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-kits-probe-consent-fix/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-d/prd-control-2026-10-01T12-39-21

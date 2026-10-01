@@ -1,0 +1,24 @@
+{
+  "read": {
+    "override": {
+      "schemaVersion": 2,
+      "kind": "human-override",
+      "recordId": "ovr-mcp-team-g2",
+      "scope": "team",
+      "rootSessionId": "session-prf-main-prf-2026-10-01T12-41-15",
+      "values": {
+        "mcp": {
+          "items": [
+            "mcp_repo",
+            "mcp_web",
+            "mcp_leaderreq",
+            "extra-surface"
+          ],
+          "kind": "allow"
+        }
+      },
+      "generation": 3,
+      "updatedAt": "2026-10-01T12:41:18.456Z"
+    }
+  }
+}

@@ -5088,3 +5088,13 @@ pre-e 线自 merge-base `aa8391ac` 之后未含 master 线的 2 条 w1a 日志�
   - **D**：5 文档文件（AGENTS/README/STATUS/graph/router-log 新增条目）的 PR #51 "DRAFT @ 43a4274c 裁决在途" 旧引用 + README "5 个 fix 无一合并" 当前块 + STATUS 一句话现状早段快照 → 同步实际（#46–#50 全 MERGED + #51 squash 427219e4 = 当前 master + #52 DRAFT 已发布无合并授权）；早期状态标 **HISTORY**，不冒充 current。
 - 并入内部 3-review findings：R1（scope/contract）= FAIL 2 MAJOR（#51 状态过时 ×5 文件 + STATUS 内部矛盾）→ 本修订关闭（D + A）；R3（sensitive/hygiene）= **PASS** 1 MINOR（7 处脱敏点未在例外记录列名）→ 本修订关闭（⑦ 更新为 7 处列名 + 例外记录指针）；R2（evidence authenticity）= 裁决在途（status request 已发，待回复）。
 - 红线：docs/evidence only（产品树零改动）；raw 日志零触碰（本修订 = 纯文档）；不重跑测试；零 force-push；:3080/:3180 零触碰；**PR #52 仍无合并授权**（用户独立审查 + 内部 3 审后）。
+
+## 2026-10-01 12:4xZ — fresh 证据导入：宿主 bash 侧效 gate CLOSED + 剩余 2 类缺口（round-8）
+
+- 本轮模型 = `qiyuan-self/qwen3.8-flash-next`（用户菜单授权选用已配置模型，UI 确认生效；provider/全局配置零改动；旧"不切换"指令被用户新指令取代）。
+- **独立环境 session 实证导入**（协调方确认 + 本 writer 独立脱敏复审 = raw 值 0）：kit 身份 = 审定 `4757112c…`（tree `56181249…` ≡ master `427219e4…`）+ test-use `46a7f68b09` porcelain=0；**pr-d D.6（stamp 12-39-21）= 7 criteria / 40 checks EXIT=0**（C1/C2a 真实执行 marker 落位；C2b = control `decision-deny` 无文件 = control 语义，**非 FS 越界，不扩张安全结论**；backend 直接确证 = mock.log 10× `landlock-run: partial enforcement`，bwrap 签名 0）+ **prf F.6（stamp 12-41-15）= 11/11 criteria / run.log 21/21 断言行 EXIT=0**（G6 = 真实 300KB spill → durable `artifact-read-granted` grants=1；PR-F backend = 同树同拓扑间接确证，分类如实）。汇总 = `landlock-install-acceptance/phase2-kits-run-20261001.md`（来源 = 验收会话，本 branch 只读复制导入，未改其文件）。
+- **DoD #20 gate 重分类**：(a) 宿主 bash 侧效腿 = **CLOSED**（12:39–12:41Z 重跑，用户自装 landlock-run 落位获验收）；剩余 2 类 = (b) **真实浏览器实渲染**（pending —— 既有机理 = `browser-smoke-host.mjs` 宿主生命周期 + agent 侧 `browser_*` 工具驱动浏览器，本环境无浏览器二进制且主 session 无 browser_* 工具；其 SRC_WORLD 与 pr-b 同一 seed 依赖）+ (c) **PR-B 历史 world/seed**（pending —— `inst-1p8kqfl09bhr` 随机 mint id 不可按契约再生；唯一忠实恢复路径 = 原机世界目录逐字节副本 → kit 零改动可跑）。**#20 维持 partial/pending，不宣称完成**。11:4x 失败轮 = historical 保留，不改写。
+- 外审残留两处修复（同段一致性）：L32 尾部 "DRAFT/无合并授权/t2 在途" → 与开头 MERGED 一致 + t2/t3 落定；L33 FINAL 缺口枚举 → 2 类（bash 关闭标注 + browser/PR-B pending + 恢复路径）。§5.3 增 [7]/[8] 行；§6 gate 表 + STATUS/graph ②③/当前行 + prd 记录 + battery-06 同步。
+- **观察项（单独记录，不改 kit 产品行为）**：PRF console boot 行曾打印完整 launch-token —— 发射点 = `tests/characterization/lib/instance.mjs:212`（`throwaway boot OK: ${url}` 含 `?token=`）；落盘 evidence 已 scrub，但 console/后台 job stdout 留存面存在。交 test-infra owner 后续脱敏该输出（本 closure 仅记录）。
+- 内部 3-review：R1 FAIL（2 MAJOR，已由 round-7 修订关闭）/ R3 PASS（1 MINOR，已关闭）/ **R2 = 裁决在途**（已再次催办）。
+- 红线：docs/evidence only；raw 日志零触碰；无测试重跑（本 writer）；:3080/:3180 零触碰；**PR #52 无合并授权**。

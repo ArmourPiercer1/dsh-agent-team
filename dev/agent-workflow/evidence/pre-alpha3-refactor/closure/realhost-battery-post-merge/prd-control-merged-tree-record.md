@@ -52,3 +52,5 @@
 
 - pr-d（#49 control 面积）= **PARTIAL**：38/40 控制面语义在合并树（产品 mergeSHA c19af195）实宿主验证；2 项 bash 侧效执行 = 环境 blocker（**2026-10-01 更正口径**：wrapper 子树内第二层非特权 userns+mountns 组合 + uid_map 写入被拒 —— 非 kernel 全局禁止 + DSH landlock 轮 helper 缺失（pinned 树）；用户已自行安装 landlock-run，安装是否落正确路径 = 独立环境 session 验证中），具体技术 blocker、非耗时、非产品回归。
 - 该 blocker 同样约束其他 kit 中**依赖宿主 bash 真实执行**的腿（已见实例：prf G6 的 300KB spill → artifact-read-granted 链 = 同因未验证；E.12 各腿不依赖宿主 bash 执行 —— 见其 keyed re-run 结果）。
+
+- **[2026-10-01 12:4xZ 更新]** 本记录 = 11:4x 历史轮（helper 未落位，嵌套 bwrap fail-closed），保留不改写；该 bash 侧效 gate 已由 12:39–12:41Z UTC 独立环境 session 重跑 **CLOSED** = 7 criteria / 40 checks / EXIT=0（C1/C2a 真实执行、C2b control `decision-deny`；landlock backend 直接确证），证据 = `dev/agent-workflow/evidence/landlock-install-acceptance/phase2-kits-run-20261001.md` + `dev/agent-workflow/evidence/pre-alpha3-refactor/pr-d/prd-control-2026-10-01T12-39-21/`。

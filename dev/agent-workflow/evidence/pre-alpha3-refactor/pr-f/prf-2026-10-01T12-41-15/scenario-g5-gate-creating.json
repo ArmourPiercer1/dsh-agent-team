@@ -1,0 +1,14 @@
+{
+  "finding": "PR-F-G5",
+  "expectation": "RESOLVED on master (persona-kind work, A-contract PR #46; encoded by persona-kind-provider-preflight + the shipped-dist smoke, both green in the merged full suite): the create under the mounted ptc with the v2 persona kind subject is ACCEPTED — true OPEN (durable team-root T9 with POSITIVE durableGeneration per the v6 team-root contract), never a false OPEN (fail-closed direction asserted CROSS-KIT: E.12 S12b leg + suite persona-kind complete-mounted-preset FATAL — this kit carries no bare-preset cell of its own). Pre-#46 behavior (typed FATAL, zero durable effect) is historical — see the closure battery record realhost-battery-post-merge (prf gate-lane stale-expectation diagnosis).",
+  "createError": null,
+  "createData": "{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-prf-persona-prf-2026-10-01T12-41-15\",\"blueprint\":{\"blueprintId\":\"team.prf-persona\",\"revision\":\"1\",\"contentHash\":\"sha256:7fa689933663ef6728deb02d3fcf192498961e1f81d5b2efe63f161a0e1001b3\"},\"createdAt\":\"2026-10-01T12:41:30.077Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-prf-persona-prf-2026-10-01T12-41-15\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-prf-persona-prf-2026-10-01T12-41-15\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"createdAt\":\"2026-10-01T12:41:30.083Z\",\"activityVersion\":1}},\"bind\":{\"requested\":\"fresh-root\",\"bound\":true,\"installed\":true,\"identity\":{\"kind\":\"root\",\"sessionId\":\"session-prf-persona-prf-2026-10-01T12-41-15\",\"rootSessionId\":\"session-prf-persona-prf-2026-10-01T12-41-15\"},\"admitted\":true,\"admissionCode\":\"ADMISSION_OPEN\",\"emittedEvents\":[{\"name\":\"agent-setup/overlay-installed\",\"detail\":\"persona\"},{\"name\":\"agent-setup/overlay-installed\",\"detail\":\"model\"},{\"name\":\"agent-setup/overlay-installed\",\"detail\":\"capability\"},{\"name\":\"agent-setup/admission-decided\",\"detail\":\"ADMISSION_OPEN\"}]}}",
+  "readStateT9": {
+    "relation": "team-root",
+    "teamSessionId": "session-prf-persona-prf-2026-10-01T12-41-15",
+    "memberInstanceId": null,
+    "disposed": false,
+    "durableGeneration": 1,
+    "liveToken": "lt-v1-REDACTED"
+  }
+}
