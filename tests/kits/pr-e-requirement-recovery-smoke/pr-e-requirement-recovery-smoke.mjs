@@ -260,7 +260,7 @@ import {
   planUiHoldStep, summarizeUiObserve, reviewPayloadDigestOf,
   sha256Hex, canonicalJson,
   UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
-  UI_LEDGER_READ_BUDGET_MS, boundedUiLedgerRead, uiObservePollFlow, uiPumpHookDisposition,
+  UI_LEDGER_READ_BUDGET_MS, boundedUiLedgerRead, uiObservePollFlow, uiPumpHookDisposition, abortableSleep,
 } from './ui-observe.mjs'
 import {
   TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH,
@@ -524,10 +524,13 @@ function dieFatal(msg) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-async function fetchJson(url, init, timeoutMs = 30_000) {
+async function fetchJson(url, init, timeoutMs = 30_000, signal = undefined) {
+  // ITEM-B: OPTIONAL trailing AbortSignal, COMBINED with (not replacing) the
+  // self-timeout. signal === undefined keeps the exact historical signal —
+  // every non-UI call site behaves byte-identically.
   let res
   try {
-    res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) })
+    res = await fetch(url, { ...init, signal: signal ? AbortSignal.any([AbortSignal.timeout(timeoutMs), signal]) : AbortSignal.timeout(timeoutMs) })
   } catch (error) {
     return { status: 0, body: null, error: String(error?.message ?? error) }
   }
@@ -583,7 +586,7 @@ function scrubTokens(text) {
     .replace(/\blt-v1-[0-9a-f]{16,}/g, 'lt-v1-REDACTED')
 }
 
-async function remoteCall(host, method, params, tag, version = 1, timeoutMs = 60_000) {
+async function remoteCall(host, method, params, tag, version = 1, timeoutMs = 60_000, signal = undefined) {
   const body = {
     type: 'client-request',
     rpcId: `${tag}-${randomUUID().slice(0, 8)}`,
@@ -594,7 +597,7 @@ async function remoteCall(host, method, params, tag, version = 1, timeoutMs = 60
     method: 'POST',
     headers: { 'content-type': 'application/json', cookie: host.cookie },
     body: JSON.stringify(body),
-  }, timeoutMs)
+  }, timeoutMs, signal)
   const entry = {
     at: new Date().toISOString(),
     boot: host.boot,
@@ -613,12 +616,21 @@ async function remoteCall(host, method, params, tag, version = 1, timeoutMs = 60
   return r
 }
 
-async function remoteCallReady(host, method, params, tag, version = 1, retries = 20) {
+async function remoteCallReady(host, method, params, tag, version = 1, retries = 20, signal = undefined) {
+  // ITEM-B: OPTIONAL trailing AbortSignal. With signal === undefined the loop
+  // below is behaviorally identical to the historical one (no abort check
+  // fires, plain sleep). With a signal the retry chain aborts BEFORE and
+  // AFTER every attempt/sleep — an abort stops the chain mid-sleep.
+  const uiAbort = () => Object.assign(new Error('UI read aborted (AbortSignal)'), { name: 'AbortError', code: 'ABORT_ERR' })
   let last = null
   for (let i = 0; i < retries; i += 1) {
-    last = await remoteCall(host, method, params, tag, version)
+    if (signal?.aborted === true) throw uiAbort()
+    last = await remoteCall(host, method, params, tag, version, 60_000, signal)
     if (last.status !== 429) return last
-    await sleep(1500)
+    if (signal?.aborted === true) throw uiAbort()
+    if (signal) await abortableSleep(1500, signal)
+    else await sleep(1500)
+    if (signal?.aborted === true) throw uiAbort()
   }
   return last
 }
@@ -1876,13 +1888,33 @@ async function uiObserveHold(rec, rootSessionId, req, rid, tag) {
     deadlineAt,
     holdStartedAt: startedAt,
     sleepFn: sleep,
-    readLedger: async () => boundedUiLedgerRead({
-      deadlineAt,
-      fetchPage: async (afterSequence) => remoteValue(
-        await remoteCallReady(rec, 'team.getLedgerPage', { teamSessionId: rootSessionId, afterSequence, limit: 500 }, `ui-ledger-p${afterSequence}`, 1),
-        'team.getLedgerPage',
-      ),
-    }),
+    readLedger: async () => {
+      // ITEM-B: the UI read carries a REAL AbortSignal end-to-end
+      // (fetchPage → remoteCallReady → remoteCall → fetchJson → fetch).
+      // Any overrun aborts it: the in-flight HTTP is cancelled and the
+      // 429-retry chain stops mid-sleep — nothing keeps running or logging
+      // after the boundary. Residual honesty: a client-side abort cannot
+      // recall server-side work already received; the guarantee is that
+      // past the boundary nothing is waited on, adopted, retried or logged
+      // CLIENT-side.
+      const ctrl = new AbortController()
+      try {
+        const read = await boundedUiLedgerRead({
+          deadlineAt,
+          fetchPage: async (afterSequence) => {
+            if (ctrl.signal.aborted) throw Object.assign(new Error('UI read aborted (AbortSignal)'), { name: 'AbortError', code: 'ABORT_ERR' })
+            return remoteValue(
+              await remoteCallReady(rec, 'team.getLedgerPage', { teamSessionId: rootSessionId, afterSequence, limit: 500 }, `ui-ledger-p${afterSequence}`, 1, 20, ctrl.signal),
+              'team.getLedgerPage',
+            )
+          },
+        })
+        if (read.ok !== true) ctrl.abort()
+        return read
+      } finally {
+        ctrl.abort()
+      }
+    },
     onEvent: (event) => {
       if (event.type === 'summary') writeSummary(event.outcome, event.claim)
       else if (event.type === 'poll-error') log(`${tag}: UI OBSERVE poll error (transient): ${event.message}`)

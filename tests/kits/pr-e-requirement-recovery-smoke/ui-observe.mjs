@@ -589,7 +589,7 @@ export function writePrivateAccessRecord({ repoRoot, worldDir, payload, fileName
 
 // ── P2-B: real bounded UI ledger read (absolute deadline + page cap) ────────
 
-export const UI_READ_OVERRUN = Object.freeze({ DEADLINE: 'UI_READ_DEADLINE', PAGE_CAP: 'UI_READ_PAGE_CAP' })
+export const UI_READ_OVERRUN = Object.freeze({ DEADLINE: 'UI_READ_DEADLINE', PAGE_CAP: 'UI_READ_PAGE_CAP', ABORTED: 'UI_READ_ABORTED' })
 const UI_BOUNDED_READ_TIMEOUT = Symbol('ui-bounded-read-timeout')
 
 /**
@@ -608,10 +608,17 @@ const UI_BOUNDED_READ_TIMEOUT = Symbol('ui-bounded-read-timeout')
  *   - ANY overrun returns `entries: null` — a bounded-read overrun is NEVER
  *     partially adopted (same fail-closed family as READ_BUDGET_EXCEEDED).
  *
- * HONEST LIMITATION: a race stops the UI lane from WAITING and from ADOPTING —
- * it does NOT cancel the underlying in-flight HTTP (Node fetch without an
- * AbortSignal keeps running to completion in the background). The durable-truth
- * contract only requires that nothing past the boundary is ever VERIFIED.
+ * CANCELLATION (ITEM-B, end-to-end): the caller may thread an AbortSignal
+ * through its `fetchPage` — the kit does, all the way down (fetchPage →
+ * remoteCallReady → remoteCall → fetchJson → fetch, via OPTIONAL trailing
+ * signal params whose defaults keep the signal-less path byte-identical).
+ * On any overrun the kit aborts the controller: the in-flight HTTP is
+ * CANCELLED, the 429-retry chain stops mid-sleep (abortableSleep), and a
+ * fetchPage that rejects with an AbortError yields the typed overrun
+ * 'UI_READ_ABORTED' — never adopted. RESIDUAL HONESTY: a client-side abort
+ * cannot recall work the server already received; what is guaranteed is that
+ * nothing past the boundary is ever WAITED on or ADOPTED and no client-side
+ * fetches/retries keep running or logging.
  */
 export async function boundedUiLedgerRead({ fetchPage, deadlineAt, maxPages = 20 } = {}) {
   if (typeof fetchPage !== 'function') throw new TypeError('boundedUiLedgerRead requires a fetchPage(afterSequence) function')
@@ -624,10 +631,19 @@ export async function boundedUiLedgerRead({ fetchPage, deadlineAt, maxPages = 20
     let timer = null
     let page
     try {
+      const pagePromise = Promise.resolve().then(() => fetchPage(afterSequence))
+      // a race-loser rejection (e.g. the abort that follows an overrun) must
+      // never surface as an unhandled rejection
+      pagePromise.catch(() => {})
       page = await Promise.race([
-        Promise.resolve().then(() => fetchPage(afterSequence)),
+        pagePromise,
         new Promise((resolve) => { timer = setTimeout(() => resolve(UI_BOUNDED_READ_TIMEOUT), remaining) }),
       ])
+    } catch (error) {
+      if (error && (error.name === 'AbortError' || error.code === 'ABORT_ERR')) {
+        return { ok: false, overrun: UI_READ_OVERRUN.ABORTED, entries: null }
+      }
+      throw error
     } finally {
       if (timer !== null) clearTimeout(timer)
     }
@@ -729,4 +745,22 @@ export function uiPumpHookDisposition({ held } = {}) {
   if (held.claim === 'observed-pending') return 'record-observation'
   if (held.claim === 'surface-close') return 'continue-scripted'
   return 'record-durable-decision'
+}
+
+// ── ITEM-B: abortable sleep (shared by the kit's UI retry chain) ────────────
+
+/** sleep(ms) that rejects with an AbortError the INSTANT `signal` aborts.
+ *  Without a signal it is an ordinary sleep — the signal-less default path
+ *  behaves exactly as before (flag-off byte identity). */
+export function abortableSleep(ms, signal) {
+  return new Promise((resolve, reject) => {
+    const abortError = () => Object.assign(new Error('aborted (AbortSignal)'), { name: 'AbortError', code: 'ABORT_ERR' })
+    if (signal && signal.aborted) { reject(abortError()); return }
+    const onAbort = () => { clearTimeout(timer); reject(abortError()) }
+    const timer = setTimeout(() => {
+      if (signal) signal.removeEventListener('abort', onAbort)
+      resolve()
+    }, ms)
+    if (signal) signal.addEventListener('abort', onAbort, { once: true })
+  })
 }

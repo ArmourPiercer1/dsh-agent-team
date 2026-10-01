@@ -19,7 +19,7 @@ import {
   verifyUiTruth, planUiHoldStep, summarizeUiObserve,
   UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
   UI_LEDGER_READ_BUDGET_MS, evaluateUiReadResult, writePrivateAccessRecord, boundedUiLedgerRead,
-  uiObservePollFlow, uiPumpHookDisposition,
+  uiObservePollFlow, uiPumpHookDisposition, abortableSleep,
 } from './ui-observe.mjs'
 
 // ── fixtures ────────────────────────────────────────────────────────────────
@@ -656,4 +656,81 @@ test('ITEM-A: caller flow — read SUCCEEDING past the boundary is never adopted
   })
   assert.equal(flow.ok, false)
   assert.equal(flow.outcome, 'UI TIMEOUT')
+})
+
+// ── 16. ITEM-B: AbortSignal END-TO-END (the UI lane CANCELS in-flight HTTP +
+//         retry chains — not merely stops adopting them) ─────────────────────
+
+test('ITEM-B: abort of an in-flight page read — signal aborted, NO further attempts, NO transcript appends after the abort', async () => {
+  const ctrl = new AbortController()
+  const transcript = []
+  let attempts = 0
+  const fetchPage = (afterSequence) => new Promise((resolve, reject) => {
+    attempts += 1
+    transcript.push({ phase: 'request', attempt: attempts, afterSequence })
+    const onAbort = () => {
+      transcript.push({ phase: 'abort', attempt: attempts })
+      const e = new Error('aborted')
+      e.name = 'AbortError'
+      reject(e)
+    }
+    if (ctrl.signal.aborted) { onAbort(); return }
+    ctrl.signal.addEventListener('abort', onAbort, { once: true })
+    // in-flight stays pending unless aborted — models the slow fetch + retry chain
+  })
+  const p = boundedUiLedgerRead({ fetchPage, deadlineAt: Date.now() + 5000 })
+  await tick(10)
+  ctrl.abort()
+  const res = await p
+  assert.equal(res.ok, false)
+  assert.equal(res.overrun, 'UI_READ_ABORTED')
+  assert.equal(res.entries, null)
+  assert.ok(ctrl.signal.aborted)
+  const frozenAttempts = attempts
+  const frozenLen = transcript.length
+  await tick(60)
+  assert.equal(attempts, frozenAttempts, 'no further fetch/retry attempts after the abort')
+  assert.equal(transcript.length, frozenLen, 'no further transcript/log appends after the abort timestamp')
+})
+
+test('ITEM-B: abort DURING a 429-retry sleep stops the retry chain mid-sleep', async () => {
+  const ctrl = new AbortController()
+  const marks = []
+  const fetchPage = async () => {
+    marks.push('req1')
+    for (;;) {
+      try {
+        await abortableSleep(400, ctrl.signal)
+      } catch {
+        marks.push('sleep-aborted')
+        const e = new Error('aborted')
+        e.name = 'AbortError'
+        throw e
+      }
+      marks.push('req-next') // 429 again — never reached once aborted
+    }
+  }
+  const p = boundedUiLedgerRead({ fetchPage, deadlineAt: Date.now() + 5000 })
+  setTimeout(() => ctrl.abort(), 30)
+  const res = await p
+  assert.equal(res.overrun, 'UI_READ_ABORTED')
+  assert.deepEqual(marks, ['req1', 'sleep-aborted'])
+})
+
+test('ITEM-B: abortableSleep rejects immediately on abort; plain sleep preserved without a signal', async () => {
+  const ctrl = new AbortController()
+  setTimeout(() => ctrl.abort(), 10)
+  const started = Date.now()
+  await assert.rejects(() => abortableSleep(5000, ctrl.signal), (error) => error.name === 'AbortError')
+  assert.ok(Date.now() - started < 2000, 'rejected at the abort, not after the sleep')
+  const t0 = Date.now()
+  await abortableSleep(20, undefined) // no signal — unchanged plain-sleep behavior
+  assert.ok(Date.now() - t0 >= 15)
+})
+
+test('ITEM-B: no-signal default path unchanged — deadline overrun stays a pure race (UI_READ_DEADLINE, never ABORTED)', async () => {
+  const res = await boundedUiLedgerRead({ fetchPage: () => new Promise(() => {}), deadlineAt: Date.now() + 30 })
+  assert.equal(res.ok, false)
+  assert.equal(res.overrun, 'UI_READ_DEADLINE')
+  assert.equal(res.entries, null)
 })
