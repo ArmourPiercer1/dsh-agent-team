@@ -1,7 +1,7 @@
 # 阶段二 kit 执行留痕（PR-D C1/C2a + PR-F G6，landlock backend 生效态）
 
 时间：2026-10-01 12:39–12:41 UTC。执行者：本会话（验收会话，独占 3182/3497 等测试口）。
-授权链：helper 安装已获用户授权并留痕（helper-placement-20261001.md）；kit 精确身份由主协调方下达：
+授权链：helper 安装已获用户授权并留痕（helper-placement-20261001.md）【位置注记 2026-10-01：该留痕文件未提交入本仓——原件属独立 env session 记录，主仓 `dev/agent-workflow/evidence/` 无此文件；此引用保留为出处指向，非本仓可核路径。landlock-run helper 的用户自装动作另有 §9/图注在案】；kit 精确身份由主协调方下达：
 审定 head `4757112c7153b12ed9a81f31699bb39d69c51fa7` = master merge `427219e443ece4d57ac8558f13850c5f42ff8330`
 （tree 恒等，实测两 SHA `^{tree}` 均为 `5618124982bfb910e43bd7bbb6b3af86e396418f`）。
 

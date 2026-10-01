@@ -217,6 +217,7 @@
 
 - **可行性（本轮落定）**：test-use 0.1.7-rc.1 @ `46a7f68b09` pristine + 预构建 lib 在位（主仓）；homes 工作区内可建（TEST_METHODS §7）；3180 族端口全空闲；kit 自包含（WORKTREE 相对解析）。**实宿主电池已执行 = §5.3**（此前"环境缺失无法重跑"的理由已不成立——test-use 本就在位，旧 deferred 理由作废）。
 - **具体技术/权限 blocker（与耗时区分）**：(a) 宿主 bash 侧效 = harness wrapper 子树特权链缺口（分阶段诊断 §5.3；非配置漏接、非 kernel 禁止、非耗时）；(b) 浏览器渲染 = 无浏览器二进制（非耗时）；(c) pr-b seed 世界不可忠实重建（数据缺失，非耗时）。三者均 = **环境验收 gate，需用户环境动作**（用户已获告知）。
+- **[2026-10-01 14:3xZ 追加 supersession]** (a) **CLOSED**（12:4xZ 导入，见 §5.3 [7]/[8] 与 §9 gate 1——本行首版文字保留为当时记录）；(b) 更新：官方 Chromium+依赖已在独立 env session 安装，两次 sandbox:true about-blank 均 "No usable sandbox"，observed 阻断机制 = AppArmor unprivileged_userns 路径 DENIED CAP_SYS_ADMIN（临时 full-access+NNP0 重试亦失败 → 不归因外 PID-namespace；见 §13 与 `browser-plugin-diagnostics-20261001/`），真实渲染仍 pending；(c) **gate 意义 CLOSED**：PR-B 以参数化 fresh world 达成 **6/6 EXIT=0**（`run-pr-b-2026-10-01T13-53-35`，C3 = F11 bound-set 契约 + 五 durable 度量，已随 **#53** 入 master），历史 seed 世界数据缺失保留为数据记录、不再是 gate blocker。
 - **安全/纪律边界（用户裁决，遵守）**：不弱化/不绕过/不禁用 sandbox；不改内核配置；不安装后端；不改安全配置；stable :3080 零触碰（逐跑核验）；scratch 成功证据与 tracked kit 通过严格分开（test-infra PR #51 = 长期修复通道；断言不弱化）。
 - zero-core：`references/` 冻结 fork 不在本环境；以 test-use pristine 自证（bookends 在案）+ suite 级 private-import 扫描（合并树 full run 绿）+ core-budget grep 零新增；历史 zero-core 证据 `[历史]`（t12/closure 在案）。
 
@@ -297,3 +298,11 @@
 ### 12.4 模型路由冲突（仅报告，不改设置）
 
 - 本会话模型 = `qwen3.8-27b`；`docs/ROUTER_RULES.md` §1 要求 `qiyuan-self/qwen3.8-27b` —— 基模型名一致，provider 前缀 `qiyuan-self` 无法在会话内自证。按用户 2026-10-01 指令：保持已配置模型、只报告冲突、不改设置。
+
+## 13. post-#53 sync 轮（2026-10-01 14:3xZ 追加；本 closure 分支唯一 writer = 主 session）
+
+- **PR #53 MERGED**：guarded squash `1385f1ee060830bb0f550860d4bd81901c319063` @ 14:30:21Z（用户 per-HEAD 授权 + `--match-head-commit 4200c4b6…` 守卫 + base `427219e4` 双通道核；`origin/master^{tree}` == `4200c4b6^{tree}` == `c543d5c6…`，squash patch 与分支累计 patch **字节级恒等**；内部 3 审 + 外部精确-HEAD 复审全 PASS @ 4200c4b6）。审查链/事故审计/liveToken 分类撤回 = `dev/agent-workflow/evidence/test-infra-fixture-param/RECORD.md` §11–§16（随 #53 入 master，本分支经 merge 继承）。
+- **本分支同步**：merge `152524ca`（parent b7c82884 + origin/master 1385f1ee，非 force；merge 后 `tests/`+`packages/` 与 master **零差异**，delta 仅 docs/evidence）。
+- **DoD #20 现状（取代 §9 首版两类缺口的表述位置，历史保留）**：宿主 bash 侧效腿 CLOSED（12:4xZ）+ PR-B gate CLOSED（参数化 fresh 6/6，见 §6 追加行）→ **剩余唯一环境验收 gate = 真实浏览器渲染**。observed 阻断 = AppArmor userns/CAP_SYS_ADMIN DENIED（两次 sandbox:true 失败，含临时 full+NNP0；`chromium-sandbox-probe-20261001/` 审计 + `browser-plugin-diagnostics-20261001/diagnosis.md` §4，本 commit 导入件）；inferred/未验证边界按该文件 §8 原样（loaded profile 集合未验证）。ready/HTTP 面绿 ≠ 真实 render，不混标。
+- **#20 维持 partial/pending**；不声称"所有 DoD PASS"。#53 通过 = test-infra 通过，不替代 browser UI / DoD #20。
+- **PR #52**：本 sync 后需按新 HEAD 重新三审 + 外审；**无 merge 授权**；52 无授权合并前保持 DRAFT/OPEN。事故恢复、未知损失、虚报纠正、lt-v1 非 auth 撤回与 launch-token hygiene 记录全部保留。

@@ -5098,3 +5098,12 @@ pre-e 线自 merge-base `aa8391ac` 之后未含 master 线的 2 条 w1a 日志�
 - **观察项（单独记录，不改 kit 产品行为）**：PRF console boot 行曾打印完整 launch-token —— 发射点 = `tests/characterization/lib/instance.mjs:212`（`throwaway boot OK: ${url}` 含 `?token=`）；落盘 evidence 已 scrub，但 console/后台 job stdout 留存面存在。交 test-infra owner 后续脱敏该输出（本 closure 仅记录）。
 - 内部 3-review：R1 FAIL（2 MAJOR，已由 round-7 修订关闭）/ R3 PASS（1 MINOR，已关闭）/ **R2 = 裁决在途**（已再次催办）。
 - 红线：docs/evidence only；raw 日志零触碰；无测试重跑（本 writer）；:3080/:3180 零触碰；**PR #52 无合并授权**。
+
+## 2026-10-01 14:3xZ — post-#53 sync 轮（closure 分支唯一 writer = 主 session；docs/evidence only）
+
+- **PR #53 MERGED** @ `1385f1ee060830bb0f550860d4bd81901c319063`（2026-10-01T14:30:21Z）。链：外部精确-HEAD PASS + 内部三审 PASS（R1 0B/1m · R2 0B · R3 0B/1m @ `4200c4b68bc375e0287b042ba6725b9121159fd0`，base `427219e4`）→ 用户条件授权 → 守卫（ls-remote+gh api 双通道 base/head；mergeable CLEAN）→ `gh pr ready` → `gh pr merge --squash --match-head-commit 4200c4b6…` → MERGED。**tree/patch 验证**：`origin/master^{tree}` == `4200c4b6^{tree}` == `c543d5c6e49489da12093c69aaa2e2d8066b70a8`；squash patch vs 分支累计 patch 字节恒等；PR 关联回读 mergeCommit/mergedAt/base/head-ref 一致。**body 元数据时序披露**：合并与协调方 body 更新指令交错（body 在合并瞬间为旧版）→ 14:30:53Z 起 body-only 两轮修正（准确摘要 + HISTORY 标记 + 撤回节 + AppArmor 精确归因）；不改 HEAD。
+- **本分支**：merge `152524ca`（b7c82884 + origin/master 1385f1ee；非 force；merge 后 `tests/`+`packages/` 与 master diff = 0）；`2559335e` 导入独立浏览器环境诊断（`browser-plugin-diagnostics-20261001/`：diagnosis.md 字节等复制 sha256 `2aef68f8…` + sandbox-probe audit `bdd08478…` + COPY-MANIFEST + 本 writer ADDENDUM；原件 0600 未动；导入前凭据扫描 = 0 命中）。
+- **DoD #20 剩余唯一 gate = 真实浏览器渲染**。observed：官方 Chromium+依赖已装（env session，转述）；两次 sandbox:true about-blank 失败 "No usable sandbox"（受限 + 临时 full/NNP0）；kernel journal 13:51:49 `userns_create` admitted → AppArmor `unprivileged_userns` `DENIED capability=21 sys_admin` ⇒ 阻断机制 = AppArmor userns 路径，非外 PID-namespace。inferred/未验证（勿升级）：loaded profile 集合（读被拒）等 = diagnosis.md §8。ready/HTTP ≠ render。
+- **PR-B gate 意义 CLOSED**：参数化 fresh world 6/6 EXIT=0（`run-pr-b-2026-10-01T13-53-35`，C3 = F11 bound-set 契约、durable 五度量、非 byte-hash 声明）随 #53 入 master；历史 seed 世界数据缺失保留为数据记录。
+- **文档修订**：final-series-report §6 追加 supersession 行 + 新 §13；phase2 文档 helper-placement 位置注记；STATUS/graph 追加 (b)(c) 14:3xZ 注记与新条目；两 MINOR（三者需动作 supersession、helper-placement）闭合。**liveToken 两处代码注释修正不入本轮**（52 保持 docs-only；队列状态见 #53 记录）。
+- **红线**：CORE 0；零 force-push；:3080/:3180 零触碰；零 host/browser 启动；零清理（历史现场原样）；无凭据值输出；PR #52 无 merge 授权（新 HEAD 待三审+外审）。
