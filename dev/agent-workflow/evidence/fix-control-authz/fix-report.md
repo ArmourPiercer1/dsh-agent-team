@@ -265,7 +265,9 @@ per-hole catches (scope locked at D1–D4 + C9 exactly as designed):
 - **D2 (action-router/router.ts, `performAction`)** — the systematic
   settle for an invocation that aborted BEFORE the effect commit,
   whichever pre-commit await the abort landed at (the runtime-chain queue,
-  the pre-dispatch terminal snapshot at L631, the gate re-probe, the
+  the pre-dispatch terminal snapshot at L632 (the `const terminalState =
+  await controlService.listControlState(...)` statement — the `a2b3df79`
+  position was L631, pre-D2), the gate re-probe, the
   unit's control-lock queue — gated AND fallback branches): the request
   is durably closed by the SAME unit the commit takes (a never-run
   `commitEffect`) and the invocation settles with the typed zero-effect
@@ -302,7 +304,8 @@ per-hole catches (scope locked at D1–D4 + C9 exactly as designed):
 after C1–C8; C1–C8 byte-identical, verified: the only deleted line in the
 file is the import line replaced by the extended import)**: the bounded
 matrix — 4 actions (follow-up / delegate / create-member / send-message)
-× 6 await points (decision-settle, terminal-snapshot L631, outer runtime
+× 6 await points (decision-settle, terminal-snapshot L632 (L631 at
+`a2b3df79` pre-D2), outer runtime
 queue, outer gate success/reject, control queue, second preflight
 [authority / provider-lock / external-facts]) × 2 pre-states + persist-
 fault legs + post-commit rows = **60 rows + c9-serial** (the reviewer's
@@ -313,7 +316,7 @@ holder and waiter calls — the entry is set synchronously per call).
 | --- | --- | --- |
 | GENUINE RED @ `a2b3df79` (pre-D1–D4) | **29 GREEN / 32 RED, EXIT=1** — the RED set is exactly the designed gap set: 4 terminal-snapshot no-mark + 8 outer-queue + 6 gate-reject + 12 second-preflight + 1 fault-preflight + 1 serial | `c9-red-baseline.log` |
 | Focused file AFTER D1–D4 @ `b168870e` (+ envCall lint fix) | **69/69 GREEN, EXIT=0** (C1–C8 + 60 rows + c9-serial) — all 32 baseline-RED rows flipped GREEN; the 29 baseline-GREEN rows stayed green (no regression: post-commit rows still zero-mark via `effectCommitStarted`; decision-settle still the S6 race) | `c9-green-focused-1.log` / `c9-green-focused-3.log` |
-| `pnpm run typecheck` (runtime) | EXIT=0 | (in `c9-green-focused-3.log` run context) |
+| `pnpm run typecheck` (runtime) @ `b168870e` | **EXIT=0**. **RE-POINTED (r2 GATE-5 / r1 F2 / docs-delta #3 — one capture closes all three)**: the original claim cited `c9-green-focused-3.log` as its run context, which is a VITEST-ONLY log (no typecheck evidence in it). The authoritative fresh capture: `typecheck-b168870e-1.log` — CMD-first + true exit, `pnpm run typecheck` from `packages/runtime/` at a TEMP DETACHED worktree checked out at `b168870e` (the final committed bytes of the D1–D4 code head; node_modules symlinked from this worktree) | `typecheck-b168870e-1.log` |
 | Full suite @ `b168870e` (2 runs) | **4788P/20F (4808)** and **4787P/21F (4808)** — the deterministic `31ad828d` debt set (19F + 3 collections) + ONE pre-existing load/timing flake rotating between `rmr-remote-mount-race` (run 1) and `p6t1-parallel` (run 2). Flake proven pre-existing: `p6t1-parallel` flakes 2/6 in isolation with the `a2b3df79` (pre-D1) production files restored in place (same 2 tests, same F/P pattern — the known flake family the #48 round already documented with its 0–2 envelope); `rmr` passes 3/3 isolated at this head. Neither flake involves the D1–D4 surface (no cancellation on the p6t1 parallel path; rmr is the remote connection-service bounded wait) | `full-b168870e-1.log` / `full-b168870e-2.log` |
 | `pnpm exec eslint .` @ `b168870e` + envCall fix | **142 (117E/25W)** — fp-identical to the `a2b3df79` baseline except the +1 line shift in `router.ts` (the new `ACTIVATION_ERROR_CODES` import); the ONE new error (unused `envCall` counter in the C9 stub) was fixed and re-verified | `lint-b168870e-2.log` |
 | dist @ `c948c62d` | regenerated (`pnpm -r run build` EXIT=0 + `build:composition` — its internal `check-artifacts-committed` step reported the then-uncommitted drift, as expected pre-commit) — 24 files, all under `packages/runtime/dist` for the D1–D4 modules; zero client/composition drift; `pnpm run check:artifacts` after the dist commit = **OK 1372, EXIT=0** | `build-b168870e-1.log` + `check-artifacts-c948c62d-1.log` |
@@ -331,6 +334,14 @@ Re-verified `origin/master` = `621fdba1` immediately before merging.
 
 Merge commit: **`0aef4d917657b5ceb0ebeb90a44fddf884cf7054`** (parents
 `c948c62d4ac664bf63390018936db616d6663610` + `621fdba1`).
+
+**Two-push disclosure (docs-delta #2)**: this sync round landed in TWO
+plain pushes (zero force-push) — the checkpoint push
+`a2b3df79`..`0aef4d91` (the merge itself, pushed as the PR checkpoint
+per the parent's authorization) + the final bookkeeping push
+`0aef4d91`..`bae0a7ae`. The PR #49 banner was updated at each head.
+(The residual-3 batch — the next section — lands in ONE further plain
+push from `bae0a7ae`.)
 
 ### Conflict-resolution list (EVERY resolution — NEW UNREVIEWED CHANGES)
 
@@ -390,6 +401,302 @@ scope) that would now need the #46/#48 closed-set `role`?
 | `pnpm exec eslint .` | **142 (117E/25W), EXIT=1** — same COUNT and same ISSUE SET as the `a2b3df79` baseline (file-aware fingerprint: zero additions, zero deletions); the only deltas are line-number shifts in 4 files — `action-router/router.ts` 83→84 (this branch's new `ACTIVATION_ERROR_CODES` import line — a pre-existing unused-import issue, shifted) + `requirement-facts/provider.ts` (3 shifted — #46/#48's own in-place edits) + `requirement-d1-d3-decision-scoping.test.ts` 340→341 + `runtime-requirement-facts-provider.test.ts` 42→44 (#46/#48's own test edits). **Zero new lint issues from this branch's delta or the merge** | `merged2-lint-1.log` + `merged2-fp-fileaware.txt` |
 | `pnpm -r run typecheck` (repo root, legible full log) | **EXIT=0** | `merged2-typecheck-1.log` |
 | dist regeneration + `pnpm run check:artifacts` | `pnpm -r run build` EXIT=0 + `pnpm build:composition` EXIT=0 — **ZERO diff** against the auto-merged union (clean tree after rebuild) — `check:artifacts` = **OK: 1372 files, EXIT=0** | `merged2-build-1.log` |
+
+## Residual-3 — the pre-reservation REJECT region converges to the durable close + the one-shot close-failure contract + the marker move (NEW UNREVIEWED CHANGES)
+
+Scope: the FROZEN bounded list (the parent's final ruling @ `bae0a7ae`,
+which supersedes the earlier "converge each await site" phrasing), with
+the folded panel findings of the same batch (r1 F1/F2, r2 GATE-4/5/6,
+docs-delta #1–#4). Commits: RED `46e06794` (committed before any
+production change, per the RED-first red line) → fix `753108be` →
+dist `c650bd47` → this bookkeeping commit.
+
+### The defect (verified in code at the pre-fix head)
+
+The D3 preflight checks the abort signal at four CHECK POINTS — all
+placed for the FULFILLMENT case (the await RESOLVED, then check). A
+pre-reservation await that REJECTS while the signal is already aborted
+(the legacy externalFacts probe, the v2 template-scope feed) escaped
+RAW: the router's `effectCommitStarted` had flipped at the unit-closure
+ENTRY (`router.ts` L817 @ `bae0a7ae` — BEFORE the provider preflight
+even ran), so the D2 outer settle was deliberately skipped → zero
+durable close; the request stayed `decided` with the raw error as its
+settlement (the residual-3 hole: an abort at the pre-reservation
+REJECT case settles with no close).
+Defect (c), independently: with a one-shot close persist fault, the D2
+catch RE-ATTEMPTED an already-failed boundary close — the second
+`ledger.put` succeeded (the one-shot fault consumed), and the typed
+abandon terminal MASKED the first close failure as a settled close.
+The always-fail fault leg (c9-60) masked this in the matrix: an
+always-faulting close rejects BOTH attempts identically, so the
+terminal is indistinguishable.
+
+### The frozen site list — verdicts (line numbers at `bae0a7ae`; the post-fix positions in parentheses)
+
+| # | Site | Line @ `bae0a7ae` (post-fix) | Verdict | Disposition |
+| --- | --- | --- | --- | --- |
+| 1 | `authority.evaluate` await (the first preflight await — region START) | L721 (L782) | check1 (L728 @ base) fires BEFORE the `chainOk=false` handling (L731 @ base) → the returned-`chainOk=false` case is ALREADY COVERED (aborted → check1 settles first; non-aborted → original rethrow kept) | verify + record — no behavior change; the leg-1 region wraps it regardless |
+| 2 | v2 template-scope feed awaits (`templateEnvironmentFactsReadForBlueprint` / `templateEnvironmentFactsForBlueprint`) | L771 / L777 (L833 / L839) | a REJECT jumps PAST check2 (L789 @ base) — UNCOVERED | covered by the leg-1 region convergence (reject while aborted → settle) |
+| 3 | the provider lock acquisition (`withTeamLock`) | L987 (L1053) | check3 (L991 @ base) NORMAL — covers the FULFILLMENT case at the lock body top | verified, recorded, unchanged |
+| 4 | the legacy externalFacts probe | L1023 (L1102) | may REJECT, or RESOLVE with bad facts so the policy/field validation THROWS — both escape PAST check4 (L1077 @ base) — UNCOVERED | covered by the leg-2 region convergence (reject/throw while aborted → settle) |
+| 5 | check4 (immediately pre-reservation) | L1077 (L1152) | FULFILLMENT case | verified, unchanged |
+| 6 | `coordinator.allocate` (the FIRST durable write) | L1090 (L1185) | the region END boundary — EXCLUDED by the frozen scope | the marker block flips at this boundary (immediately before the call) |
+
+### The fix (production — exactly the frozen design)
+
+- **(a) the pre-reservation region as ONE scoped region** —
+  `activation/provider.ts`: a single convergence rule
+  (`settlePreReservationIfAborted`, L767) applied at the TWO LEGS the
+  provider-lock acquisition splits the region into. Leg 1 (pre-lock):
+  `authority.evaluate` (L782) → the v2 template-scope feed awaits
+  (L833/L839) → the sync classification/throws; leg 1 catch = L1048.
+  Leg 2 (lock body): check3 (L1067) → steps 7–11 incl. the step-8
+  `externalPolicyFacts` await (L1102) + validation → the
+  provisionRequest literal; leg 2 catch = L1171. ANY reject /
+  validation throw inside a leg converges to the EXISTING settle
+  (the durable close + typed `ACTIVATION_REQUEST_ABORTED`
+  zero-provisioning abort) when the signal is ALREADY ABORTED; a
+  non-aborted reject keeps its normal failure path (the leg rethrows
+  the original error unchanged — byte-identical behavior). Region
+  START = L782 (the first preflight await); region END = strictly
+  BEFORE L1185 (`coordinator.allocate` — the first durable write; the
+  allocation and ALL later provisioning steps are EXCLUDED — an abort
+  landing after the reservation is the legitimate late close, never
+  retroactively undone). Boundary flags: `settleInFlight` (L765 — set
+  synchronously before EVERY settle: the 4 check points + both leg
+  catches) keeps a settle's own rejection from being re-converged
+  (exactly one close attempt); `preReservationDone` (L766, set in the
+  marker block L1183–1184 immediately before the allocation) ends the
+  region for the reject path. Hoisting (type-scope only, zero behavior
+  change): the single escaping pre-lock declaration
+  (`compatibilityStatus`) + the region-produced / post-reservation-
+  consumed declarations (`policy` / `fields` / `instanceId` /
+  `coordinator` / `provisionRequest`) moved to the enclosing scope —
+  assigned inside the region; every region catch path always throws,
+  so the post-reservation steps only run after complete assignments.
+- **(b) the abort-close callback write failure ESCAPES AS-IS** — no
+  retry, no reclassification (the service-level
+  `persistAbandonCloseLocked` already rejects as-is; the
+  effects-level wrapper now marks the fault observed and rethrows the
+  ORIGINAL error unchanged — the `c9R3ExternalFactsReject` one-shot
+  leg asserts the injected fault text surfaces verbatim in the typed
+  `TEAM_RUNTIME_DURABLE_WRITE_FAILED`).
+- **(c) the one-shot close-failure fix** — the router D2 settle never
+  re-attempts a failed close: the new `closeFaultObserved` flag
+  (router.ts L749, set via `ctx.markCloseFaultObserved` from the
+  `persistAbandonClose` wrapper's catch — effects.ts L1006/L1153 —
+  mark + rethrow as-is) is a conjunct of BOTH D2 settle conditions
+  (gated L1075, fallback L1136). Before: a second attempt would have
+  succeeded on a one-shot fault and masked the first failure as a
+  settled close; after: the first close failure is the TERMINAL
+  outcome (one abandon `ledger.put` attempt — the one-shot test
+  asserts `attempts() === 1` + the injected fault text in the
+  terminal).
+- **the marker move** (required so pre-reservation rejects don't
+  falsely disable the outer-catch settle): `effectCommitStarted` no
+  longer flips at the unit-closure ENTRY (the `commitEffect` closure
+  at router.ts L817 @ `bae0a7ae` — the flip REMOVED; the non-marker
+  branch's own flip, now L828, is pre-existing D2 behavior and stays).
+  It flips at each effect's OWN first durable write instead: the
+  activation effects via the new `MemberActivationRequest
+  .markReservationStarted` (provider.ts L1184 — the provider calls it
+  immediately before `coordinator.allocate`); follow-up +
+  delegate-continued at `admitWorkOn` top (effects.ts L534/L554);
+  SEND_MESSAGE before the coordination `commitFact`; REPORT_PROGRESS /
+  REQUEST_CONTROL / RESOLVE_CONTROL before their coordination
+  `commitFact`; runLifecycle after `requireFreshTarget` (before the
+  ports await — a sync-only window: the non-activation marker effects
+  keep their pre-move timing semantics, zero behavior change). Post-
+  reservation the flag stays true (no retroactive undo); the provider
+  preflight stays PRE-COMMIT (it runs before the marker fires).
+
+### Before/after (representative lines)
+
+```diff
+// activation/provider.ts — region leg 1 (before: raw await, raw escapes)
+-      const admission = await authority.evaluate({ ... })
++      try {
++        const admission = await authority.evaluate({ ... })
++        ... // v2 template-scope feed awaits (L833/L839), classification
++        compatibilityStatus = admission.status as CompatibilityStatus
++      } catch (error) {
++        throw await settlePreReservationIfAborted(error)  // L1048
++      }
+```
+```diff
+// action-router/router.ts — the marker + the D2 gate (before/after)
+-        commitEffect: () => {
+-          effectCommitStarted = true           // ← unit-closure ENTRY flip (removed)
+-          return executeEffectLocked(ctx)
+-        },
++        commitEffect: () => executeEffectLocked(ctx),  // flip moves to each effect's own first durable write
+...
+-            !effectCommitStarted && !boundarySettled &&
++            !effectCommitStarted && !boundarySettled && !closeFaultObserved &&
+             ...
+```
+
+### The RED (committed-bytes authoritative — per the user ruling)
+
+| Capture | Head | Result | Log |
+| --- | --- | --- | --- |
+| **AUTHORITATIVE committed-bytes RED** — temp DETACHED worktree @ `a2b3df79` (the real pre-fix base: D1–D4 + C9, no residual-3 fix) + the FINAL committed test bytes + node_modules symlinked from this worktree | `a2b3df79` | **35F / 37P / 72** = 31 matrix rows + c9-serial + the 3 residual-3 rows | `c9-red-baseline-v2.log` |
+| focused C file at the bookkeeping head (production still un-fixed) | `bae0a7ae` | **3F / 69P / 72** — only the new rows RED; the 69 pre-existing rows GREEN (incl. the 4 choreography-corrected rows — they stay green because they assert the OUTCOME, and the old and the corrected choreography both produced the right outcome via different paths; the correction is a SITE-PROOF fix, not an outcome change) | `c9-red-currenthead-1.log` |
+
+The old `c9-red-baseline.log` (same head, earlier capture) is KEPT as
+history, NEVER rewritten; its c9-serial line was captured with a
+DIFFERENT (uncommitted dev) test body — see the F1 disclosure below.
+`c9-red-baseline-v2.log` is the authoritative RED pin: the final
+committed regression FAILS on the real pre-fix base with IDENTICAL
+test bytes.
+
+### The GREEN
+
+| Capture | Result | Log |
+| --- | --- | --- |
+| focused C file at the fix head | **72/72 GREEN** (69 pre-existing + 3 residual-3 rows; C1–C8 + the untouched matrix rows byte-identical behavior) | `c9-green-1.log` |
+
+### Gates at the fix head (all CMD-first + true exit)
+
+| Gate | Result | Log |
+| --- | --- | --- |
+| Full `pnpm vitest run` (worktree ROOT — the full-suite protocol) | **4861 total** = 4858 (pre-batch) + 3 new rows. Capture 1: **22F / 4839P** = the deterministic debt set (t1-capability-schema 9 / t2-blueprint-hash 1 / d3-member-identity-context 1 / p6t3-mediation 5 / p6t3-restart 2 / p6t6-actions 1 = 19F + collections p8s3b-result-effects / t12a-b2-child-identity / t12a-glue-handoff-ports) + `p6t1-parallel` **3F** (the P3 quota-race rows — see the flake-envelope note below). Capture 2: **19F / 4842P = the debt set EXACTLY** (`p6t1-parallel` 9/9 that run) | `full-final-3.log` + `full-final-4.log` |
+| `p6t1-parallel` isolated re-runs ×3 (flake-rotation check) | 1F / 8P → **9/9 → 9/9** (the rotating pre-existing flake family; no deterministic failure at this head) | `p6t1-rerun-{1,2,3}.log` |
+| `pnpm exec eslint .` (worktree root) | **142 (117E/25W), EXIT=1** — file-aware fingerprint IDENTICAL to the `bae0a7ae` (merged2) fp: **zero additions, zero deletions, zero line shifts**. Vs the `a2b3df79` baseline: the one documented deletion (the #47 `governance-reset-tombstone.test.ts` debt — a #47-introduced baseline change) + 25 `Unused eslint-disable directive` warnings whose referenced rule this fp batch normalizes (the baseline file stored the quoted message tail `'@…')` for the same 25 warnings — same files, same counts) | `lint-final-4.log` + `lint-final-fp-fileaware-4.txt` |
+| `pnpm run typecheck` (runtime) at the fix head | **EXIT=0** | `typecheck-3.log` |
+| `pnpm run typecheck` (runtime) @ `b168870e` — the FRESH capture (r2 GATE-5 / r1 F2 / docs-delta #3, one capture closes all three; the old claim's cited log was vitest-only) | **EXIT=0** | `typecheck-b168870e-1.log` |
+| dist regeneration + `pnpm run check:artifacts` | `pnpm -r run build` EXIT=0 — drift = 12 files, ALL under `packages/runtime/dist` for the 4 changed production modules (effects/router/provider/types × .js/.d.ts/.map); zero client/composition drift; `check:artifacts` after staging = **OK: 1372 files, EXIT=0** | `build-3.log` + `check-artifacts-3.log` |
+| p4t6 probe | **10/10 GREEN @ pin 906** (this batch adds ZERO new scannable files — every change is in-place) | `p4t6-3.log` |
+
+### Disclosures
+
+- **F1 (r1) — the c9-serial committed-bytes RED + the user ruling
+  (GOVERNING — supersedes r1's `sleep(1)` suggestion).** The
+  committed c9-serial is NOT a deterministic RED on the old tail by
+  its own bytes: the old (pre-fix) `withTeamLock` releases the waiter
+  in a `.finally` chain such that the LATER WRITER's `withTeamLock`
+  call completes its map-entry read 2 microtasks after its call,
+  while the HOLDER's continuation (the `finally` → release path)
+  needs only 1 microtask after the release — the holder ends 1
+  microtask AHEAD of the later writer's entry on a cold queue: a
+  one-microtask scheduling-luck pass. The old `c9-red-baseline.log`'s
+  serial line was captured with an UNCOMMITTED DEV test body
+  (a polling loop with a 3264ms fingerprint in the log) — that log is
+  KEPT as history, NEVER rewritten, and is disclosed here;
+  `c9-red-baseline-v2.log` (final committed bytes, `a2b3df79`) is the
+  authoritative RED. The user ruling: the final committed regression
+  MUST fail on the real pre-fix base with identical test bytes; NO
+  arbitrary microtask/timing dependence (`sleep(1)` WITHDRAWN); use an
+  EXPLICIT LATER-WRITER-ENTERED BARRIER (the asserted order
+  holder-start → waiter-rejected → holder-end → later-writer-entered;
+  broken base: entry observable while the holder is still running →
+  the correct-ordering assertion FAILS deterministically; fixed base:
+  entry structurally impossible before the holder ends → passes).
+  Implementation note (the one deviation, disclosed per protocol): the
+  LITERAL "wait for entered, then release" DEADLOCKS on the FIXED
+  base — in the fixed code the later writer's entry is structurally
+  impossible before the release (the D1 one-expression chain-tail
+  fix), so a bare await on `laterEntered` would hang. The test
+  therefore observes entry through a BOUNDED window (`withTimeout
+  (laterEntered, 2000).then(() => true).catch(() => false)`):
+  broken base → entry = a PENDING MICROTASK, and the spec event-loop
+  ordering guarantees all pending microtasks drain before ANY timer
+  callback → the window sees the overtake in ~1ms (observed: the
+  assertion fails in 1ms, no window wait); fixed base → the window
+  EXPIRES (observed 2003ms) → release → the correct order holds. The
+  window length cannot change either outcome (microtask-before-timer
+  is a language guarantee; structural impossibility is a code
+  property). The final event-order assertion is UNCHANGED from the
+  ruling. The CURRENT TAIL production fix STANDS unchanged (the
+  entered barrier revealed NO defect in the production seriality
+  logic — ruling item 5: report first, and there was nothing to
+  report).
+- **The false-C9-barrier choreography correction (rows
+  c9-17 / c9-18 / c9-58 / c9-59 — the EXACT set).** Old body: the
+  holder A released its own barrier and then FELL THROUGH into
+  `bExtBarrier` — the holder occupied B's slot, so B was parked at
+  CHECKPOINT 3 (the provider-lock top) instead of its step-8
+  externalFacts probe: the rows passed on the WRONG site (false
+  coverage of the externalFacts probe site). Corrected: the holder
+  RETURNS after its own barrier; the abort is gated on B's EXPLICIT
+  externalFacts-ENTERED event (B's own step-8 probe call — call #2 —
+  parked, resolved = B is entered at its intended site: the per-row
+  SITE PROOF). The `ppl` (provider-lock queue) branch keeps its
+  `sleep(20)` (its site is the queue, not the probe). No other row
+  changed; C1–C8 remain byte-identical.
+- **The residual-3 rows (pure addition — 3 rows, the
+  MatrixPoint union extended with the 3 new point names; the 60-row
+  matrix untouched).** `c9-r3-1` = v2 template-scope feed REJECT:
+  the v2 world variant (the `P6T2_V2_BLUEPRINT_SOURCE` — worker
+  template with a structured requirement `worker-mcp-base` /
+  `type: 'mcpServer'` / `complete: true` (a v2 closed-field: no
+  `optional` in v2, so `complete: true` is structurally satisfied,
+  never fatal) + the v1 flat `requirements` block stays legal in v2
+  docs (the team scope stays compat-blocked, exactly like the
+  existing v2 rows) + `scopeRequirementInputsOf` populates
+  `templates['worker']` → `targetTemplateInputs` → the feed await is
+  live); the feed port parks on B's call, the site proof fires, the
+  preState abandon + `ac.abort()`, the port REJECTS → converges to
+  the settle (the c9AssertClose outcome). `c9-r3-2` = the legacy
+  externalFacts probe REJECT (park → site proof → abort → reject →
+  settle, same assertions). `c9-r3-3` = the ONE-SHOT close-failure
+  leg: the close persist fault is injected to fail EXACTLY ONCE
+  (the `c9PatchAbandonPersistOneShotFault` counted wrapper — fails
+  the first `control-request-abandoned` put, restores after);
+  assertions: the terminal = the FIRST close fault verbatim (typed
+  `TEAM_RUNTIME_DURABLE_WRITE_FAILED` carrying the injected text —
+  NOT the typed abandon), zero work/delivery/coordination effects,
+  member count at baseline, ZERO abandonment marks, and
+  `attempts() === 1` (the D2 settle did NOT re-attempt the failed
+  close).
+- **r2 GATE-6 — the blanket log-annotation pass (committed logs are
+  NEVER rewritten — annotated instead).** Every pre-standard log in
+  this evidence directory (captured before the CMD-first + true-exit
+  convention was adopted this batch) is annotated HERE with its exact
+  command + true exit + capture context, so no reader has to
+  reconstruct provenance: the 20 pre-standard logs (pass-1/pass-2/
+  pass-3/sync-1/b168870e-era: `changed-*.log`, `red-toctou-*.log`,
+  `baseline-full.log`, `baseline-lint-*.log`, `full-b168870e-*.log`,
+  `lint-b168870e-*.log`, `build-b168870e-*.log`,
+  `check-artifacts-c948c62d-*.log`, `c9-*.log` pre-v2,
+  `changed-full-1.log`, `changed-lint-*.log` + their fp files) + 1
+  MINOR correction: `lint-final-1.log`'s exit annotation said
+  `LINT_EXIT=…` for the eslint invocation — the true exit is the
+  same value (eslint exits 1 on lint findings); the label was
+  normalized in the annotation, the log bytes untouched.
+  `baseline-full-2.log` is the CITED full-suite debt-set baseline
+  (the valid-environment one); `baseline-full.log` (the degraded-
+  environment run) is already annotated as NOT the cited baseline.
+  All captures from 08:03 onward (this batch + the merge round) are
+  fully CMD-first + true-exit compliant in the committed bytes.
+  The `*-fp-fileaware*.txt` files are DATA FINGERPRINTS (the file|
+  line:col|rule triples) — the eslint command lives in the PAIRED
+  lint log (`lint-*.log`), per the annotation protocol.
+- **p6t1-parallel flake envelope**: capture 1 of this batch's full
+  runs showed 3F (the P3 quota-race rows) — BEYOND the previously
+  documented 0–2F envelope; capture 2 showed 19F (the debt set
+  exactly, `p6t1-parallel` 9/9); isolated re-runs 1F → 0F → 0F.
+  Same pre-existing rotating flake family (the rows ROTATE between
+  runs — P1 N=2 rows in the first runtime-package run, P3 rows in
+  full capture 1, none in capture 2; no deterministic failure at
+  this head; the family's pre-existence was independently re-proven
+  in the merge round by the in-place `a2b3df79`-files experiment).
+- **r2 GATE-4 — `.tmp-c-test.diff`**: NOT present at the push head
+  (verified by `find` across the repo root + all worktrees at
+  bookkeeping time — already absent; the worktree is pristine apart
+  from the batch's own committed files).
+- **r1 F3 (NOTE — no action)**: the merge commit `0aef4d91`'s message
+  quotes #48's "901" pin line while the MERGED pin is 906 (the union
+  recompute documented in the sync-2 conflict table). The commit
+  message text is historical (the #48 side's own number); the
+  committed test bytes carry pin 906 and the probe confirmed 10/10.
+- **docs-delta #1** — the four `L631` citations (this report's D2 +
+  C9 bullets; the router log's D2 + C9 bullets) bumped to L632 (the
+  `const terminalState = await controlService.listControlState(...)`
+  statement's position post-D2; it was L631 at `a2b3df79` pre-D2).
+  **docs-delta #2** — the two-push disclosure in the sync-2 section
+  above. **docs-delta #4** — the fp-fileaware data-fingerprint note in
+  the GATE-6 annotation above.
 
 ## Full-suite gate (valid environment)
 
