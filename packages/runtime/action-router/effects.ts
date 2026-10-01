@@ -187,6 +187,30 @@ export interface EffectContext {
   readonly controlServiceRef?: {
     readonly current?: import('../control/index.js').ControlService
   }
+  /**
+   * fix-control-authz C (residual-3, the marker move) — the
+   * commit-started marker (the router's D2 settle-gate flip). The
+   * router wires it for every effect context: each effect calls it at
+   * its OWN first durable write (the activation effects through the
+   * provider's `markReservationStarted` at the reservation boundary;
+   * the work / coordination / lifecycle effects synchronously before
+   * their first commit — the marker no longer flips at the unit's
+   * closure entry, so the activation unit's pre-reservation region
+   * stays pre-commit for the D2 settle). Absent = no-op.
+   */
+  readonly markEffectCommitStarted?: () => void
+  /**
+   * fix-control-authz C (residual-3, defect c — the one-shot
+   * close-failure contract) — the close-fault observer: the durable
+   * close persist FAULTED on this admission (the typed
+   * DURABLE_WRITE_FAILED escapes AS-IS from the `persistAbandonClose`
+   * wrapper — no retry, no reclassification). The router's D2 settle
+   * must never re-settle (re-attempt the boundary close) after this:
+   * a second close attempt would succeed where the first failed and
+   * MASK the first fault as a settled close — the first close failure
+   * is the terminal outcome.
+   */
+  readonly markCloseFaultObserved?: () => void
 }
 
 /**
@@ -503,6 +527,11 @@ async function runEffect(ctx: EffectContext): Promise<RuntimeActionEffect | Work
       const target = recipient.instanceId === LEADER_INSTANCE_ID
         ? recipient
         : requireLiveTarget(ctx)
+      // fix-control-authz C (residual-3, the marker move): the
+      // coordination fact commit below is this effect's first durable
+      // write (the resolve-instance / live-target checks above are
+      // synchronous — no pre-write await window).
+      ctx.markEffectCommitStarted?.()
       const sequence = await commitFact(ctx, FACT_COORDINATION, {
         action: spec.name,
         caller: callerRef(ctx.caller),
@@ -519,6 +548,10 @@ async function runEffect(ctx: EffectContext): Promise<RuntimeActionEffect | Work
     case ACTION_NAMES.REQUEST_CONTROL:
     case ACTION_NAMES.RESOLVE_CONTROL: {
       const target = requireLiveTarget(ctx)
+      // fix-control-authz C (residual-3, the marker move): the
+      // coordination fact commit below is this effect's first durable
+      // write (the live-target check above is synchronous).
+      ctx.markEffectCommitStarted?.()
       const sequence = await commitFact(ctx, FACT_COORDINATION, {
         action: spec.name,
         caller: callerRef(ctx.caller),
@@ -638,6 +671,14 @@ async function admitWorkOn(
   fresh: MemberInstanceRecordDto,
   actionLabel: string,
 ): Promise<RuntimeActionEffect | WorkChainStage> {
+  // fix-control-authz C (residual-3, the marker move): the work-chain
+  // Phase A / the legacy transition + fact commits below are this
+  // effect's first durable writes — the D2 settle gate flips to the
+  // post-commit world here (covers follow-up + delegate-continued; the
+  // fresh delegate path's marker comes from the provider's
+  // reservation-boundary callback instead — the provider preflight
+  // stays pre-commit).
+  ctx.markEffectCommitStarted?.()
   const chain = workChainPorts(ctx)
   if (chain !== undefined) {
     return stageWorkChainOn(ctx, fresh, actionLabel, chain)
@@ -837,6 +878,12 @@ async function runLifecycle(
   requestedTo: 'ARCHIVED' | 'SETTLED' | 'DISPOSED',
 ): Promise<RuntimeActionEffect> {
   const fresh = requireFreshTarget(ctx)
+  // fix-control-authz C (residual-3, the marker move): the lifecycle
+  // commit below (the ports steps or the legacy transition) is this
+  // effect's first durable write — the D2 settle gate flips BEFORE the
+  // ports await (the marker move keeps the non-activation effects
+  // byte-identical: no pre-write await window remains open).
+  ctx.markEffectCommitStarted?.()
   const ports = ctx.lifecyclePorts
   if (ports !== undefined) {
     const target = { rootSessionId: ctx.rootSessionId, instanceId: fresh.instanceId }
@@ -950,11 +997,34 @@ async function runDelegate(ctx: EffectContext): Promise<RuntimeActionEffect | Wo
       : {}),
     ...(recoveryControlRequestId !== undefined && ctx.controlServiceRef?.current !== undefined
       ? {
-          persistAbandonClose: () =>
-            ctx.controlServiceRef!.current!.persistAbandonCloseLocked({
-              rootSessionId: ctx.rootSessionId,
-              requestId: recoveryControlRequestId,
-            }),
+          // fix-control-authz C (residual-3, defect c — the one-shot
+          // close-failure contract): the durable close persist fault
+          // ESCAPES AS-IS (no retry, no reclassification) after marking
+          // it observed — the router's D2 settle must never re-attempt
+          // a failed close (a second attempt would succeed where the
+          // first failed and mask the fault as a settled close).
+          persistAbandonClose: async () => {
+            try {
+              await ctx.controlServiceRef!.current!.persistAbandonCloseLocked({
+                rootSessionId: ctx.rootSessionId,
+                requestId: recoveryControlRequestId,
+              })
+            } catch (closeFault) {
+              ctx.markCloseFaultObserved?.()
+              throw closeFault
+            }
+          },
+          // fix-control-authz C (residual-3, the marker move): the
+          // D2 settle gate flips at the RESERVATION BOUNDARY (the
+          // provider calls this immediately before the journal
+          // allocation — the unit's first durable write), not at the
+          // router's unit-closure entry (the preflight stays
+          // pre-commit: an abort landing in the pre-reservation region
+          // settles with the durable close, not a re-mark of a
+          // "committed" effect).
+          markReservationStarted: () => {
+            ctx.markEffectCommitStarted?.()
+          },
         }
       : {}),
   }
@@ -1074,11 +1144,34 @@ async function runCreateMember(ctx: EffectContext): Promise<RuntimeActionEffect>
       : {}),
     ...(recoveryControlRequestId !== undefined && ctx.controlServiceRef?.current !== undefined
       ? {
-          persistAbandonClose: () =>
-            ctx.controlServiceRef!.current!.persistAbandonCloseLocked({
-              rootSessionId: ctx.rootSessionId,
-              requestId: recoveryControlRequestId,
-            }),
+          // fix-control-authz C (residual-3, defect c — the one-shot
+          // close-failure contract): the durable close persist fault
+          // ESCAPES AS-IS (no retry, no reclassification) after marking
+          // it observed — the router's D2 settle must never re-attempt
+          // a failed close (a second attempt would succeed where the
+          // first failed and mask the fault as a settled close).
+          persistAbandonClose: async () => {
+            try {
+              await ctx.controlServiceRef!.current!.persistAbandonCloseLocked({
+                rootSessionId: ctx.rootSessionId,
+                requestId: recoveryControlRequestId,
+              })
+            } catch (closeFault) {
+              ctx.markCloseFaultObserved?.()
+              throw closeFault
+            }
+          },
+          // fix-control-authz C (residual-3, the marker move): the
+          // D2 settle gate flips at the RESERVATION BOUNDARY (the
+          // provider calls this immediately before the journal
+          // allocation — the unit's first durable write), not at the
+          // router's unit-closure entry (the preflight stays
+          // pre-commit: an abort landing in the pre-reservation region
+          // settles with the durable close, not a re-mark of a
+          // "committed" effect).
+          markReservationStarted: () => {
+            ctx.markEffectCommitStarted?.()
+          },
         }
       : {}),
   }
