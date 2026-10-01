@@ -108,6 +108,103 @@ The S2 "change-only-the-prompt changes the digest" leg previously ALSO changed t
 | `pnpm typecheck` (runtime) | exit 0 | — |
 | Dist mirror | rebuilt (`tsc -p tsconfig.build.json`), 11 files (router/service/admission-types/control-types `.js`/`.map`/`.d.ts`/`.d.ts.map` — the public `.d.ts` surface GAINED the `commitEffectIfAuthorized` method + the `controlRequestId` marker field this pass), CO-COMMITTED; `node scripts/check-artifacts-committed.mjs` = OK (1372 files) | — |
 
+## Third pass — the two residual C defects (external re-review STILL BLOCK at `d100ada7`)
+
+### Residual C-1 — the coordination (send-message) reentry bypassed the unit
+
+The reviewed send-message reentry has impact `recoveryWork` (requirement-gate
+classification — the recovery marker) and `spec.category = 'coordination'`, so
+the router's gated-branch condition (`isNewWorkAdmission(spec) ||
+impact === crossAgentTrigger`) is FALSE: it fell to the plain
+`executeEffect(teamLocks, ctx)` fallback — NO gate, NO boundary unit. An
+abandoned request could therefore still commit a coordination fact (zero
+effects of ANY kind was not actually enforced).
+
+**Fix (category-agnostic, at the effect boundary):** the unit is factored into
+one helper, `commitReviewedEffect()` (router.ts), keyed ONLY on
+`request.recovery?.controlRequestId !== undefined` — never on the spec
+category — and the non-gated fallback now routes marker-carrying requests
+through the SAME serialized path: `withTeamLock(chain (a))` →
+`commitEffectIfAuthorized` (control lock (b)) → `executeEffectLocked`.
+`executeEffect` (which acquires (a) itself) is NEVER called inside the unit —
+that would be (b) → (a), a new lock cycle; the unit's caller always owns (a).
+
+**Exact call sites changed (the full enumeration, per the review's demand):**
+
+| # | Site (router.ts, new head) | Before | After |
+| --- | --- | --- | --- |
+| 1 | the gated-branch effect commit (the follow-up / delegate / create-member reentry — work admission) | inline `commitEffectIfAuthorized` wrap (pass-2 shape, no signal) | `commitReviewedEffect()` (same unit + the C-2 signal threaded) |
+| 2 | the non-gated fallback (the send-message / any coordination reentry — the C-1 gap) | bare `executeEffect(teamLocks, ctx)` | `withTeamLock(chain) → commitReviewedEffect()` when `recovery.controlRequestId` present; bare `executeEffect` otherwise (byte-identical) |
+| 3 | the unit itself (`commitEffectIfAuthorized`, control/service.ts) | mark check only | mark check + the C-2 live-signal check + persisted durable close (see below) |
+
+The ONLY other effect-commit site in `performAction` is Phase B (`complete` —
+the post-admission delivery outside the chain) — the documented bounded CCR-4
+residual (the work was durably admitted before any close), unchanged.
+
+### Residual C-2 — the live AbortSignal was not honored at the boundary
+
+An abort landing after the wait settled (at ANY admission wait point — the
+gate re-probe await, the control-lock queue) was never rechecked: the unit had
+no signal parameter and only the pre-dispatch check existed (before the
+reentry). The work was admitted with NO durable close.
+
+**Fix (thread the live signal to the serialized final admission boundary):**
+`commitEffectIfAuthorized` gains `signal?`; INSIDE THE SAME LOCK HOLD as the
+terminal-state read: (1) abandon mark → typed reject (unchanged); (2) signal
+aborted → **persist the abandon** (the durable close — the exactly-once
+terminal mark, the same footprint as an explicit abandon; a later
+late-abandon then no-ops on the already-terminal state) + typed reject
+(new closed code `CONTROL_REQUEST_ADMISSION_ABORTED` — errors.ts; the
+documented fail-closed exception where the durable write IS the rejection's
+evidence); (3) else the effect commit runs — with NO signal check DURING the
+commit: a post-commit abort is the legitimate late close (CCR-4 — the
+settle semantics for already-committed effects are preserved: never
+retroactively undone or re-marked). The router threads
+`asAbortLike(request.signal)` through the unit on both paths.
+
+### RED captures (both new repros, true exit codes — `red-toctou-2.log`)
+
+- **C6** (residual C-1, the precise queued-lock race over the REAL
+  MessagingCoordinator): a TEST-OWNED shared runtime-lock map (the router's
+  `teamLocks` option) is held by the test; the blocked Leader send-message is
+  allowed; the reentry is observed QUEUED behind the hold (the chain-map
+  entry change — deterministic proof the pre-dispatch snapshot ran with NO
+  mark); the real `abandonControlRequest` persists on the control lock;
+  release. RED: `outcome.ok === true` (the coordination fact committed
+  unchecked). GREEN: zero `team-coordination-recorded`, zero delivery, typed
+  `abandoned` block + `controlRequestId`, the durable close stands.
+- **C7** (residual C-2 leg a — the exact external repro): follow-up with a
+  live `AbortController` signal; allow; the recursive environmentFacts is
+  paused AFTER the router's pre-dispatch signal check (the gate re-probe);
+  the signal is aborted ONLY (no explicit abandon); release. RED: the work is
+  still admitted, NO durable close. GREEN: the typed `abandoned` block; the
+  abandon IS persisted by the boundary (one mark — the same footprint as an
+  explicit abandon); zero work / zero delivery.
+- **C8** (residual C-2 leg b — abort while BLOCKED WAITING for the control
+  lock): dual barriers — the reentry pinned in its gate re-probe while a
+  separate toolName-bearing request's `resolveControl(allow)` holds the
+  control lock across its external-policy probe (real occupancy); the
+  re-probe is released (the unit queues on the control lock behind the
+  occupancy), the signal aborts, the occupancy releases. RED: the work is
+  admitted, no close. GREEN: the commit is rejected with the persisted
+  durable close; zero work. (The outcome is deterministic for any abort
+  before the unit's check — the check runs only after the occupancy
+  releases, which the test controls; the queue placement is asserted by the
+  barrier sequence.)
+
+### Gates at the new head (third pass — all green)
+
+| Gate | Result | Log |
+| --- | --- | --- |
+| C suite (C1–C5 + **C6/C7/C8**) | 8/8 GREEN | `green-focused-2.log` |
+| Prior pins (B 2, D 2, H 4, S6 10/10, recovery review 8/8, a6a 52) | 86/86 GREEN (8 files) | `green-focused-2.log` |
+| Control family + p6t4 + p4t6 scanner @ 901 (unchanged — C6–C8 joined the EXISTING C-suite file) | 119/119 GREEN (20 files) | re-run of the second-pass batch, no new failures |
+| Full `pnpm vitest run` | 9F files / 402P (411); 19F tests / 4716P (4735); EXIT=1 — **failed-set diff vs the `31ad828d` debt set = EMPTY** (the exact 9 debt files / 19 debt tests; p6t1 flake 0 occurrences this run, within 0–2) | `full-final-2.log` |
+| `pnpm exec eslint .` | 143 (118E/25W) — **plain AND file-aware fp diffs vs the committed baseline = EMPTY** (one transient `prefer-const` in the new C6 poll code was fixed before commit; fp clean at the committed bytes) | `lint-final-3.log` + `lint-3-fp-{plain,fileaware}.txt` |
+| `pnpm run typecheck` (repo root, per-package lines + final status) | exit 0 (full legible log) | `typecheck-final-2.log` |
+| Dist mirror | rebuilt (`tsc -p tsconfig.build.json`), 12 files (router/control service+types+errors `.js`/`.map`/`.d.ts`/`.d.ts.map` — the public `.d.ts` surface GAINED the `signal?` input + the new error code this pass), CO-COMMITTED | — |
+| `pnpm run check:artifacts` (full 1372-file verification output) | OK: 1372 files (full legible log) | `check-artifacts-3.log` |
+
 ## Full-suite gate (valid environment)
 
 Environment validity: the test-use checkout `tests/deepseek-harness-test-use` was verified valid before the baseline — pristine @ `46a7f68b0922371ce7144b668b90e377d8e799f4` (0.1.7-rc.1), `node_modules` present, `packages/boot/app-boot/lib/index.js` built. (The earlier `baseline-full.log` run — kept in evidence — was taken BEFORE this environment was valid and is NOT the cited baseline; its two extra failed files, `plugin-dsh-compat` + `a2c7-subtree-matcher`, were environmental — missing test-use build.)
@@ -155,6 +252,7 @@ Label note (per the addendum): all focused captures below run the same REAL comp
 8. **Second pass — the B digest false-oracle test correction** (disclosed above under "Test correction"): a TEST correction (like the masking adjustments), with before/after recorded; no assertion weakened — the pin is STRICTER (the token is held constant for the attribution).
 9. **Second pass — label correction**: the focused-green captures are component-chain coverage (Runtime + Control + MessagingCoordinator where applicable), NOT production-root wiring (the report wording corrected; the log entry records the same).
 10. **Second pass — push**: the earlier "no push" red line was OVERRIDDEN by the parent's explicit instruction for this PR flow ("push the new HEAD (plain, no force)") — a PLAIN push of the new head to origin `fix/control-authz-boundary` was performed (PR #49 update); no force-push, no other ref touched.
+11. **Third pass — shared spy interface-surface completion** (`recovery-dispatch-helpers.ts`): the shared recovery-dispatch spy gained `commitEffectIfAuthorized` (transparent: it holds no durable abandon mark — empty `listControlState` — so it runs the effect commit, the real service's no-mark path). The C-1 fix routes the coordination reentry through the unit, which the spy must expose (previously the bypass masked the missing surface). A test-helper completion, NOT a weakening: the affected test (`recovery-send-message-review` #3, allow → exactly-one delivery) keeps its exact assertions and now exercises the real boundary path.
 
 ## Red-line compliance
 
