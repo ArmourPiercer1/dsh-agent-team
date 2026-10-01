@@ -221,7 +221,16 @@
  *      abandoned — THIS KIT'S TRIGGER: the 120s executeTool abort seam, a
  *      product lifecycle fact, never written by the kit), surface-close
  *      (asserts ONLY zero new durable facts for the requestId, is NEVER a
- *      deny/allow/abandon, then the original automation continues). The
+ *      deny/allow/abandon, then the original automation continues; RESERVED
+ *      for a future closeable surface — the MERGED UI has none: packages/
+ *      client/src/ui/TeamLedger.tsx @ 1385f1ee, inline §26.2 detail panel
+ *      data-control-detail* fields L436-447, "the detail panel stays visible
+ *      for the pending state" L101, only resolve allow/deny buttons L497-512,
+ *      ZERO close affordance), and observed-pending (the observer FINISHED
+ *      INSPECTING a STILL-PENDING, zero-durable-effect request — distinct
+ *      refusals DECIDED_EXISTS / ABANDONED_EXISTS; after verification the
+ *      kit's pre-existing SCRIPTED policy resumes: a SCRIPT decision, never a
+ *      UI approval). The
  *      observe dir must be a controlled dir INSIDE the authorized workspace
  *      (suggested: <repo>/.worktrees/.scratch-logs/pr54-ui-observe/), never
  *      the world and never under tests/homes; it only ever holds
@@ -1973,7 +1982,23 @@ async function leaderAttempt(rec, tag, policy, { timeoutMs = 200_000 } = {}) {
               // resolves this request; the durable truth gate decides.
               uiTargetClaimed = true
               const held = await uiObserveHold(rec, rootSessionId, req, rid, tag)
-              if (held.ok && held.claim !== 'surface-close') {
+              if (held.ok && held.claim === 'observed-pending') {
+                // FIX-4 (coordinator ruling 2026-10-01): the MERGED UI has NO
+                // closeable pending-review surface (packages/client/src/ui/
+                // TeamLedger.tsx @ 1385f1ee — inline §26.2 detail panel data-
+                // control-detail* fields L436-447; "the detail panel stays
+                // visible for the pending state" L101; only resolve allow/deny
+                // buttons L497-512; ZERO close affordance) — observed-pending
+                // is the lawful completion signal: the observer FINISHED
+                // INSPECTING the still-pending, zero-durable-effect request
+                // (durable verification inside verifyUiTruth). Record the
+                // VERIFIED OBSERVATION, then CONTINUE the pre-existing
+                // scripted policy below: the scripted ALLOW that resumes is a
+                // SCRIPT decision, NEVER a UI approval / Human authorization.
+                decisions.push({ requestId: rid, class: 'recovery', decision: null, resolveStatus: 'ui-observe', resolveError: null })
+                log(`${tag}: UI OBSERVE observed-pending verified — inspection finished on a STILL-PENDING request (zero durable effect asserted); the pre-existing scripted policy resumes (a SCRIPT decision, never a UI approval)`)
+              }
+              if (held.ok && held.claim !== 'surface-close' && held.claim !== 'observed-pending') {
                 // Durable truth ALREADY recorded the decision / the abandon —
                 // NEVER re-resolve; feed the EXISTING assertion branches with
                 // the durable decision the real UI (or the product lifecycle)
@@ -1994,7 +2019,9 @@ async function leaderAttempt(rec, tag, policy, { timeoutMs = 200_000 } = {}) {
               // abandon, and the UI gate NEVER proceeds to those assertions on
               // this hint). The original automation for the remaining flow
               // continues below, unchanged.
-              log(`${tag}: UI OBSERVE surface-close verified — zero durable effect asserted; the original automation continues`)
+              if (held.claim === 'surface-close') {
+                log(`${tag}: UI OBSERVE surface-close verified — zero durable effect asserted; the original automation continues`)
+              }
             }
             if (policy.recovery === 'abandon') continue // NEVER resolve — the 120s abort seam
             const r = await resolveControl(rec, rootSessionId, rid, policy.recovery, `kit e12 ${tag} (${policy.recovery})`, `resolve-${tag}-${rid.slice(0, 8)}`)

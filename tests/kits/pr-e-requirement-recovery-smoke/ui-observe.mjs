@@ -54,7 +54,14 @@ export function reviewPayloadDigestOf(reviewPayload) {
 // ── typed errors / constants ────────────────────────────────────────────────
 
 /** Closed claim set of the observer marker. Anything else is rejected. */
-export const UI_CLAIMS = Object.freeze(['resolved:deny', 'resolved:allow', 'abandon-observed', 'surface-close'])
+// FIX-4 (coordinator ruling 2026-10-01): 'observed-pending' joins the closed
+// set — the MERGED UI has NO closeable pending-review surface (packages/client/
+// src/ui/TeamLedger.tsx @ 1385f1ee: inline §26.2 detail panel data-control-
+// detail* fields L436-447; "the detail panel stays visible for the pending
+// state" L101; only resolve allow/deny buttons L497-512; ZERO close
+// affordance), so surface-close is RESERVED for a future closeable surface and
+// observed-pending is the lawful completion signal for Option A.
+export const UI_CLAIMS = Object.freeze(['resolved:deny', 'resolved:allow', 'abandon-observed', 'surface-close', 'observed-pending'])
 const UI_CLAIM_SET = new Set(UI_CLAIMS)
 
 /** Hold cap (constraint: <= 300000). The DEFAULT exceeds the 120s
@@ -294,7 +301,13 @@ export function readMarkerHint(dir) {
  *                             executeTool abort seam — a product lifecycle
  *                             fact, never written by the kit)
  *       surface-close      -> ZERO new fact for the requestId (assertion
- *                             ONLY — never treated as deny/allow/abandon)
+ *                             ONLY — never treated as deny/allow/abandon;
+ *                             RESERVED: the merged UI has no close affordance)
+ *       observed-pending   -> STILL PENDING at completion time: the recorded
+ *                             control-request fact + FULL marker digest + no
+ *                             control-decision-recorded (DECIDED_EXISTS) and
+ *                             no control-request-abandoned (ABANDONED_EXISTS)
+ *                             for the rid — zero durable effect verified
  * The marker ts is IGNORED for truth (a stale hint is judged solely by the
  * durable fact).
  */
@@ -328,11 +341,28 @@ export function verifyUiTruth({ marker, ledgerFacts, expectedRequestId, expected
   const decisionFact = forReq.find((e) => e?.factType === 'control-decision-recorded')
   const abandonFact = forReq.find((e) => e?.factType === 'control-request-abandoned')
   if (claimed === 'surface-close') {
+    // RESERVED for a future closeable surface: the MERGED UI has none (see the
+    // TeamLedger.tsx @ 1385f1ee citation on UI_CLAIMS) — the branch code stays
+    // but it is not the lawful completion path today (observed-pending is).
     const newFacts = forReq.filter((e) => e?.factType !== 'control-request-recorded')
     if (newFacts.length > 0) {
       return { ok: false, reason: 'SURFACE_CLOSE_NOT_ZERO_EFFECT' }
     }
     return { ok: true, decision: 'surface-close-zero-effect', claim: claimed }
+  }
+  if (claimed === 'observed-pending') {
+    // The observer asserts it FINISHED INSPECTING the pending request. The
+    // shared gates above already enforced exact requestId + FULL marker digest
+    // (string equality, never the 18-char summary prefix) + the recorded/
+    // recomputed/expected triple digest equality on control-request-recorded.
+    // Completion additionally requires ZERO durable effect — still pending:
+    if (decisionFact !== undefined) {
+      return { ok: false, reason: 'DECIDED_EXISTS' }
+    }
+    if (abandonFact !== undefined) {
+      return { ok: false, reason: 'ABANDONED_EXISTS' }
+    }
+    return { ok: true, decision: null, claim: claimed }
   }
   if (claimed === 'abandon-observed') {
     if (abandonFact === undefined) {

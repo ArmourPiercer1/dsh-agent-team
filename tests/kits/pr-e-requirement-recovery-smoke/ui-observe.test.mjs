@@ -526,3 +526,42 @@ test('P2-B: page-count cap — an unbounded ledger is an OVERRUN (partial truth 
   assert.equal(res.overrun, 'UI_READ_PAGE_CAP')
   assert.equal(res.entries, null)
 })
+
+// ── 14. FIX-4: observed-pending completion claim (coordinator ruling
+//         2026-10-01 — the MERGED UI has NO closeable pending-review surface:
+//         packages/client/src/ui/TeamLedger.tsx @ 1385f1ee: inline §26.2 detail
+//         panel data-control-detail* fields L436-447; "the detail panel stays
+//         visible for the pending state" L101; only resolve allow/deny buttons
+//         L497-512; ZERO close affordance. surface-close is therefore RESERVED;
+//         observed-pending is the lawful completion signal for Option A.) ─────
+
+test('FIX-4: observed-pending — STILL-PENDING zero-effect request verifies; decision stays null (script policy unaffected)', () => {
+  const res = verifyUiTruth({ marker: markerFor('observed-pending'), ledgerFacts: ledgerWith(), expectedRequestId: RID, expectedDigest: EXPECTED_DIGEST })
+  assert.deepEqual(res, { ok: true, decision: null, claim: 'observed-pending' })
+  assert.ok(UI_CLAIMS.includes('observed-pending'))
+})
+
+test('FIX-4: observed-pending rejected with DISTINCT reasons when durable effect exists (DECIDED_EXISTS / ABANDONED_EXISTS)', () => {
+  const base = { expectedRequestId: RID, expectedDigest: EXPECTED_DIGEST }
+  const decided = verifyUiTruth({ marker: markerFor('observed-pending'), ledgerFacts: ledgerWith({ factType: 'control-decision-recorded', payload: { requestId: RID, decision: 'allow' } }), ...base })
+  assert.equal(decided.ok, false)
+  assert.equal(decided.reason, 'DECIDED_EXISTS')
+  const abandoned = verifyUiTruth({ marker: markerFor('observed-pending'), ledgerFacts: ledgerWith({ factType: 'control-request-abandoned', payload: { requestId: RID } }), ...base })
+  assert.equal(abandoned.ok, false)
+  assert.equal(abandoned.reason, 'ABANDONED_EXISTS')
+})
+
+test('FIX-4: observed-pending requires the FULL marker digest — the 18-char summary prefix is NOT accepted', () => {
+  const prefixOnly = EXPECTED_DIGEST.slice(0, 18)
+  assert.notEqual(prefixOnly, EXPECTED_DIGEST)
+  const res = verifyUiTruth({ marker: markerFor('observed-pending', { digest: prefixOnly }), ledgerFacts: ledgerWith(), expectedRequestId: RID, expectedDigest: EXPECTED_DIGEST })
+  assert.equal(res.ok, false)
+  assert.equal(res.reason, 'MARKER_DIGEST_MISMATCH')
+})
+
+test('FIX-4: observed-pending keeps the shared durable-request gate (recorded fact + recorded/recomputed/expected triple digest equality)', () => {
+  const base = { expectedRequestId: RID, expectedDigest: EXPECTED_DIGEST }
+  assert.equal(verifyUiTruth({ marker: markerFor('observed-pending'), ledgerFacts: [], ...base }).reason, 'NO_DURABLE_REQUEST_FACT')
+  const tampered = [{ factType: 'control-request-recorded', payload: { requestId: RID, reviewPayload: RP, reviewPayloadDigest: 'sha256:tampered' } }]
+  assert.equal(verifyUiTruth({ marker: markerFor('observed-pending'), ledgerFacts: tampered, ...base }).reason, 'RECORDED_DIGEST_MISMATCH')
+})
