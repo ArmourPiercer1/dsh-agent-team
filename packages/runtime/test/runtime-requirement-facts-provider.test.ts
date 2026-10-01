@@ -28,6 +28,7 @@ import { describe, expect, it } from 'vitest'
 import {
   createRuntimeRequirementFactsProvider,
   assertRequirementFactScope,
+  type RequirementFactScope,
   type RequirementFactsPorts,
   type SeedEnvironmentFact,
 } from '../requirement-facts/index.js'
@@ -443,7 +444,9 @@ describe('the template scope ROLE identity (the PR #46 contract — RED at the p
         readiness: {
           probe: async (type, name) => {
             probeCalls += 1
-            throw new Error('the readiness probe must NOT be reached (scope validation is first)')
+            throw new Error(
+              `the readiness probe must NOT be reached (scope validation is first) — got (${type}, ${name})`,
+            )
           },
         },
       }),
@@ -452,7 +455,11 @@ describe('the template scope ROLE identity (the PR #46 contract — RED at the p
     try {
       await provider.resolveFacts({
         requirements: [{ requirementId: 'req-mcp', type: 'mcpServer', subjects: ['github'], complete: true }],
-        scope: { kind: 'template', templateId: 'dev' },
+        // INTENTIONALLY MALFORMED (the leg under test): a role-less template
+        // scope. The type cast bypasses the compile-time contract on purpose —
+        // this leg pins the RUNTIME fail-closed guard (assertRequirementFactScope
+        // inside resolveFacts) that the type cannot express.
+        scope: { kind: 'template', templateId: 'dev' } as unknown as RequirementFactScope,
       })
     } catch (e) {
       error = e
