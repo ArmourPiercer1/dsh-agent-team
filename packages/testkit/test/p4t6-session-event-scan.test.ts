@@ -1510,8 +1510,27 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
     // Scanner unchanged. The 896 value is the scanner run on the merged
     // tree (authoritative; not hand-computed).
-    expect(scanResult.filesScanned).toBe(896)
-    expect(scanResult.files.length).toBe(896)
+    // fix-persona-kind (finding A, the pre-alpha3 review P1 — the persona
+    // KIND subject vs presetId mismatch in the production provider →
+    // preflight → gate chain) pin (+1): this branch adds
+    // packages/runtime/test/persona-kind-provider-preflight.test.ts (the
+    // persona-KIND-convention regression suite over the REAL production
+    // chain: the real createRuntimeRequirementFactsProvider + the real
+    // resolveRuntimeSubstrate over the production observer-seam double +
+    // the real runCreationPreflight / evaluateCreationScopes — T1 bespoke
+    // composable preset ids pass with no seed, T2 the R8 root/member role
+    // split, T3 the complete-conflict no-downgrade, T4 the typed
+    // unresolved fail-closed + the documented 2-state seed legs, T5 the
+    // frozen v1 preset-id legacy path, T6 the end-to-end creation
+    // preflight). The product change (the requirement-facts/provider.ts
+    // persona case — the kind path ahead of the byte-identical legacy
+    // preset-id path) is an in-place edit on an already-scanned file (no
+    // count delta). Carries zero denylist vocabulary (the scan over it
+    // passes — the frozen quarantine hit set is unchanged at fifteen
+    // occurrences). The 897 value is the scanner run on the fixed tree
+    // (authoritative; not hand-computed).
+    expect(scanResult.filesScanned).toBe(897)
+    expect(scanResult.files.length).toBe(897)
 
   })
 
