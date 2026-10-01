@@ -49,6 +49,8 @@ import type {
 } from '../mutation/index.js'
 import { createMemberIdentity } from '../../domain/policy/src/index.js'
 import type { MemberIdentity, PolicyEntry } from '../../domain/policy/src/index.js'
+import { readEffectivePolicy } from '../effective-policy/index.js'
+import type { GovernanceOverrideRecord } from '../../storage/schema/index.js'
 
 const ROOT = 'session-gov-tombstone'
 const NOW = '2026-09-29T00:00:00.000Z'
@@ -245,13 +247,6 @@ destroyDir(r1Dir)
 // Assertions
 // ---------------------------------------------------------------------------
 
-function instanceSlotId(): ReturnType<typeof slotIdentityOf> {
-  return slotIdentityOf(
-    { kind: 'autonomy-overlay', scope: 'instance', origin: 'member', instanceId: 'inst-alpha' },
-    ROOT,
-  )
-}
-
 describe('PR-A governance reset — the tombstone (history-preserving)', () => {
   it('reset re-issues the slot at generation + 1 with empty values; nothing is deleted', () => {
     expect(t1seed1.changed).toBe(true)
@@ -352,5 +347,143 @@ describe('PR-A governance reset — the real-storage tombstone round trip', () =
     if (tombstone === undefined) throw new Error('tombstone missing after reopen')
     expect(tombstone.values).toEqual({})
     expect(tombstone.kind).toBe('human-override')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// E-regression (fix/effective-policy-reset-fallback): the instance-slot
+// RESET TOMBSTONE must not mask a still-effective TEAM human deny in the
+// canonical read (the PR-B regression: the slot selector picked the
+// tombstone row as the human-slot winner, the tombstone's empty value set
+// contributed nothing, and the cell fell through to the template/static
+// layer — a reset into ALLOW). Ruling: a slot whose LATEST event is a
+// reset tombstone has NO effective value for that slot; precedence falls
+// back to the team slot; an OLDER event of the SAME slot is never
+// resurrected.
+// ---------------------------------------------------------------------------
+
+/** The static-facts authority for the canonical-read legs: the template
+ *  grants the MCP server `srv/x` (the baseline ALLOW a human deny must
+ *  beat); no blueprint values; no external restrictions. */
+const eReader: PolicyReader = {
+  readBlueprintEnvelope: () => ({}),
+  readTemplatePolicy: () => ({ values: { mcp: { kind: 'allow', items: ['srv/x'] } } }),
+  readExternalFacts: () => ({ hard: {}, capabilityExists: {} }),
+}
+
+/** One canonical read over the durable records (fresh, stateless — the
+ *  canonical read is pure; each call re-reads the facts it is given). */
+function eRead(overrides: readonly GovernanceOverrideRecord[]): ReturnType<typeof readEffectivePolicy> {
+  return readEffectivePolicy({
+    rootSessionId: ROOT,
+    instanceId: 'inst-alpha',
+    policy: eReader,
+    transitions: [],
+    overrides,
+  })
+}
+
+// The REAL STORAGE world: the full repro sequence through the REAL
+// governance mutation service over the durable TeamDomain.
+const eDir = scratchDir('gov-tombstone-e')
+destroyDir(eDir) // self-cleaning: a crashed prior run may leave a domain behind
+const eSeam = new FileStorageSeam(eDir)
+const eDomain = await createTeamDomain(eSeam)
+const eStore: OverrideStorePort = {
+  list: (rootSessionId) => Promise.resolve(eDomain.repositories.overrides.list(rootSessionId)),
+  put: (record) => eDomain.repositories.overrides.put(record),
+}
+const e = makeService(eStore)
+const eTeamDeny = await e.setOverride({
+  authority: { kind: 'operator' },
+  rootSessionId: ROOT,
+  scope: 'team',
+  cells: { mcp: { kind: 'deny' } },
+})
+const eInstanceDeny = await e.setOverride({
+  authority: { kind: 'operator' },
+  rootSessionId: ROOT,
+  scope: 'instance',
+  instanceId: 'inst-alpha',
+  cells: { mcp: { kind: 'deny' } },
+})
+const eReadBeforeReset = eRead(eDomain.repositories.overrides.list(ROOT))
+const eReset = await e.resetOverride({
+  authority: { kind: 'operator' },
+  rootSessionId: ROOT,
+  scope: 'instance',
+  instanceId: 'inst-alpha',
+})
+const eRecordsAfterInstanceReset = eDomain.repositories.overrides.list(ROOT)
+const eReadAfterReset = eRead(eRecordsAfterInstanceReset)
+// RESTART: a NEW seam over the SAME dir (the durable rows survive) — the
+// reopened canonical read (a fresh read, not a cached one).
+const eSeam2 = new FileStorageSeam(eDir)
+const eDomain2 = await openTeamDomain(eSeam2)
+const eReopenedRecords = eDomain2.repositories.overrides.list(ROOT)
+const eReopenedRead = eRead(eReopenedRecords)
+// Control: the TEAM slot reset too -> NO human slot value at all -> the
+// template baseline comes back (a tombstone is never a value source).
+const eTeamReset = await e.resetOverride({
+  authority: { kind: 'operator' },
+  rootSessionId: ROOT,
+  scope: 'team',
+})
+const eReadBothReset = eRead(eDomain.repositories.overrides.list(ROOT))
+destroyDir(eDir)
+
+describe('E-regression — the instance reset tombstone must not mask a still-effective TEAM human deny (the canonical read)', () => {
+  it('repro: the instance deny resets -> the inherited TEAM deny is restored (not the template allow)', () => {
+    expect(eTeamDeny.changed).toBe(true)
+    expect(eInstanceDeny.changed).toBe(true)
+    // Pre-reset control: the INSTANCE slot's deny is the effective value.
+    expect(eReadBeforeReset.policy.cells['mcp'].effective).toEqual({ kind: 'deny' })
+    expect(eReadBeforeReset.policy.cells['mcp'].team.recordId).toBe('ovr-mcp-inst-alpha-g0')
+    expect(eReadBeforeReset.humanOverride?.overrideId).toBe('ovr-mcp-inst-alpha-g0')
+    expect(eReadBeforeReset.committedGeneration).toBe(1)
+    // The reset is the tombstone (history-preserving; T1 pins the shape).
+    expect(eReset.removed).toBe(true)
+    // Post-reset: the TEAM deny is restored — the instance slot's LATEST
+    // event is a tombstone (NO effective value for that slot), so the
+    // precedence falls back to the team slot.
+    expect(eReadAfterReset.policy.cells['mcp'].effective).toEqual({ kind: 'deny' })
+    expect(eReadAfterReset.policy.cells['mcp'].team.layer).toBe('humanOverride')
+    expect(eReadAfterReset.policy.cells['mcp'].team.recordId).toBe('ovr-mcp-team-g0')
+    // Provenance: the selected human winner is the TEAM record, not the
+    // instance tombstone (a tombstone is never a value source).
+    expect(eReadAfterReset.humanOverride?.overrideId).toBe('ovr-mcp-team-g0')
+    expect(eReadAfterReset.humanOverride?.scope).toBe('team')
+    // The staleness anchor keeps counting the tombstone generation (the
+    // read reflects the state after the instance-slot reset at g2).
+    expect(eReadAfterReset.committedGeneration).toBe(2)
+    // The pre-reset instance value is NOT resurrected, and the history
+    // rows are untouched (audit-only).
+    expect(eRecordsAfterInstanceReset).toHaveLength(3)
+    const ids = eRecordsAfterInstanceReset.map((record) => record.recordId).sort()
+    expect(ids).toEqual(['ovr-mcp-inst-alpha-g0', 'ovr-mcp-team-g0', 'ovr-reset-inst-alpha-g1'])
+    const tombstone = eRecordsAfterInstanceReset.find((record) => record.recordId === 'ovr-reset-inst-alpha-g1')
+    expect(tombstone).toBeTruthy()
+    if (tombstone === undefined) throw new Error('tombstone missing')
+    expect(tombstone.values).toEqual({})
+  })
+
+  it('the reopened canonical read (fresh read from the durable store) still sees the TEAM deny', () => {
+    expect(eReopenedRecords).toHaveLength(3)
+    const tombstone = eReopenedRecords.find((record) => record.recordId === 'ovr-reset-inst-alpha-g1')
+    expect(tombstone).toBeTruthy()
+    if (tombstone === undefined) throw new Error('tombstone missing after reopen')
+    expect(tombstone.values).toEqual({})
+    expect(eReopenedRead.policy.cells['mcp'].effective).toEqual({ kind: 'deny' })
+    expect(eReopenedRead.policy.cells['mcp'].team.layer).toBe('humanOverride')
+    expect(eReopenedRead.policy.cells['mcp'].team.recordId).toBe('ovr-mcp-team-g0')
+    expect(eReopenedRead.humanOverride?.overrideId).toBe('ovr-mcp-team-g0')
+  })
+
+  it('control: a TEAM-slot tombstone contributes no value either (the template baseline returns)', () => {
+    expect(eTeamReset.removed).toBe(true)
+    expect(eReadBothReset.policy.cells['mcp'].effective).toEqual({ kind: 'allow', items: ['srv/x'] })
+    expect(eReadBothReset.policy.cells['mcp'].team.layer).toBe('template')
+    expect(eReadBothReset.humanOverride).toBeUndefined()
+    expect(eReadBothReset.committedGeneration).toBe(2)
   })
 })

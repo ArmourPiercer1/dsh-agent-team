@@ -1,0 +1,36 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-policy-reset
+
+ ✓ packages/remote/test/p8t3-round-trip.test.ts (14 tests) 5ms
+ ✓ packages/runtime/test/governance-stale-ui-generation.test.ts (4 tests) 3ms
+ ✓ packages/runtime/test/governance-reset-tombstone.test.ts (10 tests) 4ms
+ ✓ packages/runtime/test/remote-override-expected-generation.test.ts (23 tests) 6ms
+ ✓ packages/runtime/test/remote-control-abandoned-code.test.ts (4 tests) 2ms
+stderr | packages/runtime/test/p8s6-remote-commands.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-principal.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-pagination.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-pagination.test.ts > p8s6-pagination teardown > the C6 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-pagination.test.ts (9 tests) 4ms
+stderr | packages/runtime/test/p8s6-remote-commands.test.ts > p8s6-remote-commands teardown > the C4 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-remote-commands.test.ts (8 tests) 5ms
+stderr | packages/runtime/test/p8s6-principal.test.ts > p8s6-principal teardown > the C3 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-principal.test.ts (20 tests) 5ms
+
+ Test Files  8 passed (8)
+      Tests  92 passed (92)
+   Start at  06:04:55
+   Duration  1.28s (transform 3.01s, setup 0ms, import 4.95s, tests 34ms, environment 1ms)
+
+EXIT=0
