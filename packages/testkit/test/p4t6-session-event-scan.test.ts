@@ -1549,8 +1549,20 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (this branch) and 906 (origin/master 26c48c87) are both stale — each
     // predates the other line's scannable additions; union disjoint by
     // file name). Scanner .mjs byte-identical on both sides.
-    expect(scanResult.filesScanned).toBe(908)
-    expect(scanResult.files.length).toBe(908)
+    // ALPHA.3 PR1 pin (PermissionOverlay Foundation, 2026-10-02): 908 + 14 =
+    // 922 — the fourteen scannable files this PR adds: two storage sources
+    // (schema/permission-overlay.ts + repositories/permission-overlays.ts),
+    // four runtime permission-governance sources (types.ts + port.ts +
+    // overlay-repository.ts + index.ts), the shared spec helper
+    // (runtime/test/permission-overlay-helpers.ts) and the seven
+    // permission-overlay spec files (append + latest-generation +
+    // restart-persistence + history-immutability + generation-conflict +
+    // validation + port-surface). Zero new denylist vocabulary: the frozen
+    // quarantine hit set stays at fifteen occurrences. Scanner .mjs
+    // unchanged. The 922 value is the scanner run on this tree
+    // (authoritative; not hand-computed).
+    expect(scanResult.filesScanned).toBe(922)
+    expect(scanResult.files.length).toBe(922)
 
   })
 
