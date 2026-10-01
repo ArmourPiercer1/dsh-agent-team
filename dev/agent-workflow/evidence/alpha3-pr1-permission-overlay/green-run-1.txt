@@ -1,0 +1,17 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay
+
+ ✓ packages/runtime/test/permission-overlay-append.test.ts (8 tests) 17ms
+ ✓ packages/runtime/test/permission-overlay-port-surface.test.ts (4 tests) 28ms
+ ✓ packages/runtime/test/permission-overlay-history-immutability.test.ts (6 tests) 18ms
+ ✓ packages/runtime/test/permission-overlay-generation-conflict.test.ts (8 tests) 32ms
+ ✓ packages/runtime/test/permission-overlay-latest-generation.test.ts (6 tests) 33ms
+ ✓ packages/runtime/test/permission-overlay-restart-persistence.test.ts (5 tests) 14ms
+ ✓ packages/runtime/test/permission-overlay-validation.test.ts (31 tests) 22ms
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 4ms
+
+ Test Files  8 passed (8)
+      Tests  78 passed (78)
+   Start at  17:58:50
+   Duration  638ms (transform 755ms, setup 0ms, import 1.28s, tests 166ms, environment 1ms)
+
