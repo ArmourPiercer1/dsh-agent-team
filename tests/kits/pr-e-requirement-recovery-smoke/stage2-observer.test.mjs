@@ -1845,3 +1845,99 @@ test('95 rider (reviewer MINOR): forged --member-session shape is CLI-typed, and
     'the durable file alone never picks an entry session',
   )
 })
+
+// — PARENT-ORDERED GEOMETRY READS (this PR #54 round): additive proofs —
+// container/field widths and clipping of the resolve-bar buttons and the
+// activity rows. jsdom hosts have NO layout engine (clientWidth is 0 for
+// EVERY element) → the check must report UNASSERTED there (proven by the
+// wiring leg: all pre-existing legs keep their markers). RED fixture models
+// the REAL run5 380px geometry read off evidence comparisons.json (bar box
+// rendered at 356px while dd boxes collapsed to 0/12px); GREEN fixture
+// models the post-PR56-fixed-CSS shape. Offline legs + static reasoning —
+// NO live run.
+
+function geometryHtml() {
+  return `
+  <div data-team-view>
+    <div data-ledger-rows-box>
+      <div data-ledger-row><span data-ledger-time>21:44</span><span data-ledger-summary>w-b3a delegate</span></div>
+    </div>
+    <div data-ledger-resolve-bar data-request-id="${RID}" data-control-surface="enabled">
+      <dl data-control-detail class="controlDetail">
+        <div data-control-detail-request-id><dt>request</dt><dd>${RID}</dd></div>
+        <div data-digest-source="ledger-wire"><dt>digest</dt><dd>sha256:abc</dd></div>
+        <div data-control-detail-payload><dt>payload</dt><pre>{"a":1}</pre></div>
+      </dl>
+      <button data-ledger-resolve-allow>Allow</button>
+      <button data-ledger-resolve-deny>Deny</button>
+    </div>
+  </div>`
+}
+
+function boxOf(win, selector, { width, left = 0, right = null }) {
+  const el = win.document.querySelector(selector)
+  assert.ok(el !== null, `fixture element ${selector} present`)
+  Object.defineProperty(el, 'clientWidth', { value: width, configurable: true })
+  el.getBoundingClientRect = () => ({ left, right: right ?? left + width, width, top: 0, bottom: 0, height: 10, x: left, y: 0 })
+}
+
+test('96 GEOMETRY READS: run5-era 380px collapse FAILS widths+buttons+rows; post-fix widths GREEN; layout-less jsdom host UNASSERTED', async () => {
+  const { checkGeometryDom } = await import('./stage2-observer.mjs')
+  // RED fixture — numbers transcribed from the live run5 comparisons.json
+  // (bar rendered, VALUE track collapsed: ridDd 0, digestDd 0, payloadPre 12)
+  // + buttons/rows clipped by the same non-collapsing sidebar squeeze.
+  const broken = withDom(geometryHtml(), (win) => {
+    boxOf(win, '[data-ledger-resolve-bar]', { width: 356 })
+    boxOf(win, '[data-control-detail]', { width: 336, left: 10, right: 346 })
+    boxOf(win, '[data-control-detail-request-id] dd', { width: 0 })
+    boxOf(win, '[data-digest-source="ledger-wire"] dd', { width: 0 })
+    boxOf(win, '[data-control-detail-payload] pre', { width: 12, left: 12, right: 24 })
+    boxOf(win, '[data-ledger-resolve-allow]', { width: 70, left: 286, right: 356 })
+    boxOf(win, '[data-ledger-resolve-deny]', { width: 70, left: 300, right: 370 }) // right PAST the 356 bar
+    boxOf(win, '[data-ledger-rows-box]', { width: 340, right: 350 })
+    boxOf(win, '[data-ledger-summary]', { width: 300, left: 60, right: 360 }) // clipped past rows box
+    return checkGeometryDom({ rid: RID })
+  })
+  const byName = Object.fromEntries(broken.rows.map((r) => [r.name, r]))
+  assert.equal(broken.ok, false, 'run5-era geometry MUST fail the new legs')
+  assert.equal(byName.GEO_FIELD_WIDTHS.ok, false)
+  assert.match(byName.GEO_FIELD_WIDTHS.detail, /collapsed=\[ridDd,digestDd\]/)
+  assert.equal(byName.GEO_RESOLVE_BUTTONS_FIT.ok, false)
+  assert.match(byName.GEO_RESOLVE_BUTTONS_FIT.detail, /overflow=\[deny\]/)
+  assert.equal(byName.GEO_ROWS_CHILDREN_FIT.ok, false)
+  assert.match(byName.GEO_ROWS_CHILDREN_FIT.detail, /overflow=\[row0:summary\]/)
+  // GREEN fixture — the post-PR56 shape (fields get real widths, everything fits)
+  const fixed = withDom(geometryHtml(), (win) => {
+    boxOf(win, '[data-ledger-resolve-bar]', { width: 356 })
+    boxOf(win, '[data-control-detail]', { width: 336, left: 10, right: 346 })
+    boxOf(win, '[data-control-detail-request-id] dd', { width: 300, left: 40, right: 340 })
+    boxOf(win, '[data-digest-source="ledger-wire"] dd', { width: 300, left: 40, right: 340 })
+    boxOf(win, '[data-control-detail-payload] pre', { width: 344, left: 12, right: 356 })
+    boxOf(win, '[data-ledger-resolve-allow]', { width: 70, left: 190, right: 260 })
+    boxOf(win, '[data-ledger-resolve-deny]', { width: 70, left: 266, right: 336 })
+    boxOf(win, '[data-ledger-rows-box]', { width: 340, right: 350 })
+    boxOf(win, '[data-ledger-summary]', { width: 260, left: 60, right: 320 })
+    return checkGeometryDom({ rid: RID })
+  })
+  assert.equal(fixed.ok, true, `post-fix geometry passes: ${JSON.stringify(fixed.rows)}`)
+  // UNASSERTED honesty — a layout-less jsdom host (all-zero widths) never
+  // asserts false: only a LIVE browser reports a rendered bar box > 0.
+  const unasserted = withDom(geometryHtml(), () => checkGeometryDom({ rid: RID }))
+  assert.equal(unasserted.ok, true)
+  assert.ok(unasserted.rows.every((r) => /unasserted/.test(r.detail)), 'layout-less host ⇒ every geometry row UNASSERTED, never fake-fail')
+})
+
+test('97 GEOMETRY wiring: full runObservation success still emits the marker AND comparisons.json carries the GEO_ rows in the unchanged {name,ok,detail} shape (both phases)', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ html: wireHtml() })
+  const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...fakeClock() })
+  assert.equal(res.ok, true, 'the additive reads never veto a healthy observation')
+  const comp = JSON.parse(readFileSync(join(res.evidenceDir, 'comparisons.json'), 'utf8'))
+  for (const phase of ['normal', 'narrow']) {
+    const names = comp[phase].narrow.map((r) => r.name)
+    assert.ok(names.includes('GEO_FIELD_WIDTHS') && names.includes('GEO_RESOLVE_BUTTONS_FIT') && names.includes('GEO_ROWS_CHILDREN_FIT'), `${phase} carries the geometry rows`)
+    assert.ok(comp[phase].narrow.every((r) => typeof r.name === 'string' && typeof r.ok === 'boolean' && typeof r.detail === 'string'), 'artifact SHAPE unchanged')
+  }
+  // the pre-existing legibility legs are BYTE-KEPT in order ahead of the new rows
+  assert.equal(comp.narrow.narrow[0].name, 'NARROW_RID_LENGTH')
+})

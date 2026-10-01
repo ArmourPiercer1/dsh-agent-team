@@ -583,6 +583,85 @@ export function checkNarrowLegibility(arg) {
   return { ok: rows.every((row) => row.ok), rows }
 }
 
+/** PARENT-ORDERED GEOMETRY READS (PR #54 round, additive ONLY — the
+ *  readability predicates above are byte-kept and never relaxed): the minimal
+ *  evidence to PROVE (1) container/field widths at the pass viewport (bar
+ *  box, dl[data-control-detail], the dd/pre content boxes) and (2) clipping:
+ *  the Allow/Deny buttons fully inside the resolve-bar box and every
+ *  activity row's element children right/left edges inside the rows box
+ *  (parent of the first [data-ledger-row], TeamLedger.tsx L639). A
+ *  layout-less host (jsdom fixtures) reports ZERO box widths EVERYWHERE —
+ *  there geometry is UNASSERTED (never asserted-false): a live browser
+ *  always renders the bar (run5's panel box was >0 while the VALUE track
+ *  collapsed to 0px), so the unasserted branch cannot mask a real collapse.
+ *  Rows ride the existing comparisons {name,ok,detail} shape — zero new
+ *  artifacts, zero new viewports. */
+export function checkGeometryDom(arg) {
+  const doc = globalThis.document
+  const rows = []
+  const push = (name, ok, detail) => rows.push({ name, ok, detail })
+  const all = Array.from(doc.querySelectorAll('[data-ledger-resolve-bar][data-request-id]'))
+  const matches = all.filter((el) => el.getAttribute('data-request-id') === arg.rid)
+  if (matches.length !== 1) {
+    push('GEO_PANEL_UNIQUE', false, `matchCount=${matches.length}`)
+    return { ok: false, rows }
+  }
+  const panel = matches[0]
+  const cw = (el) => (el != null && Number.isFinite(el.clientWidth) ? el.clientWidth : null)
+  const rect = (el) => {
+    try {
+      const r = el.getBoundingClientRect()
+      return r != null && Number.isFinite(r.left) && Number.isFinite(r.right) ? r : null
+    } catch { return null }
+  }
+  const widths = {
+    panel: cw(panel),
+    dl: cw(panel.querySelector('[data-control-detail]')),
+    ridDd: cw(panel.querySelector('[data-control-detail-request-id] dd')),
+    digestDd: cw(panel.querySelector('[data-digest-source="ledger-wire"] dd')),
+    payloadPre: cw(panel.querySelector('[data-control-detail-payload] pre')),
+  }
+  if (widths.panel === null || widths.panel <= 0) {
+    push('GEO_FIELD_WIDTHS', true, `unasserted (panel box width ${String(widths.panel)} — layout-less host, no real geometry here) ${JSON.stringify(widths)}`)
+    push('GEO_RESOLVE_BUTTONS_FIT', true, 'unasserted (layout-less host)')
+    push('GEO_ROWS_CHILDREN_FIT', true, 'unasserted (layout-less host)')
+    return { ok: true, rows }
+  }
+  const collapsed = Object.entries(widths).filter(([, v]) => v === null || v <= 0).map(([k]) => k)
+  push('GEO_FIELD_WIDTHS', collapsed.length === 0, `widths=${JSON.stringify(widths)}${collapsed.length > 0 ? ` collapsed=[${collapsed}] (a rendered bar whose field content-box is 0px IS the run5 collapse)` : ''}`)
+  const barRect = rect(panel)
+  const btns = [['allow', panel.querySelector('[data-ledger-resolve-allow]')], ['deny', panel.querySelector('[data-ledger-resolve-deny]')]]
+  const present = btns.filter(([, el]) => el != null)
+  if (barRect === null || present.length === 0) {
+    push('GEO_RESOLVE_BUTTONS_FIT', true, 'unasserted (no rects/buttons in this host)')
+  } else {
+    const over = present.filter(([, el]) => {
+      const r = rect(el)
+      return r !== null && (r.right > barRect.right + 1 || r.left < barRect.left - 1)
+    }).map(([name]) => name)
+    const absent = btns.filter(([, el]) => el == null).map(([name]) => name)
+    push('GEO_RESOLVE_BUTTONS_FIT', over.length === 0, `bar=[${barRect.left},${barRect.right}] overflow=[${over}] absent=[${absent}] (presence itself is other legs' ground; fit is asserted for PRESENT ones)`)
+  }
+  const rowEls = Array.from(doc.querySelectorAll('[data-ledger-row]'))
+  if (rowEls.length === 0) {
+    push('GEO_ROWS_CHILDREN_FIT', true, 'unasserted (activity rows=0 at this moment)')
+  } else {
+    const boxR = rect(rowEls[0].parentElement)
+    if (boxR === null) push('GEO_ROWS_CHILDREN_FIT', true, 'unasserted (no rows-box rect)')
+    else {
+      const over = []
+      rowEls.forEach((rowEl, i) => Array.from(rowEl.children).forEach((child) => {
+        const cr = rect(child)
+        if (cr !== null && (cr.right > boxR.right + 1 || cr.left < boxR.left - 1)) {
+          over.push(`row${i}:${child.getAttribute('data-ledger-summary') !== null ? 'summary' : child.getAttribute('data-ledger-actor') !== null ? 'actor' : 'child'}`)
+        }
+      }))
+      push('GEO_ROWS_CHILDREN_FIT', over.length === 0, `rows=${rowEls.length} box=[${boxR.left},${boxR.right}] overflow=[${over}]`)
+    }
+  }
+  return { ok: rows.every((r) => r.ok), rows }
+}
+
 /** The coordinator-pinned Team-entry resolution (final wording 2026-10-02):
  *  the UNIQUE button[role=tab] UNDER [data-conversation-tabs] whose accessible
  *  label is EXACTLY one of TEAM_TAB_LABELS. LAYOUT-AGNOSTIC: the scoped
@@ -1113,9 +1192,12 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
         await page.waitForSelector(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`, { timeout: OBSERVE_TIMEOUT_MS })
         const fields = await page.evaluate(extractPanelFields, opts.rid)
         const narrow = await page.evaluate(checkNarrowLegibility, { rid: opts.rid, expected: durableLens })
+        // GEOMETRY READS ride the SAME narrow-rows array (shape unchanged);
+        // readability predicates above are byte-kept, this only ANDs in.
+        const geoNormal = await page.evaluate(checkGeometryDom, { rid: opts.rid })
         const shotFull = await page.screenshot({ fullPage: true })
         const shotPanel = await page.locator(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`).screenshot()
-        passes.normal = { fields, narrow, shotFull, shotPanel }
+        passes.normal = { fields, narrow: { ok: narrow.ok === true && geoNormal.ok === true, rows: [...narrow.rows, ...geoNormal.rows] }, shotFull, shotPanel }
         // ── narrow pass: RESIZE the SAME page (no re-navigation, no re-login,
         // no sidebar demand). ROOT BINDING on narrow = the PANEL, not header
         // text (external runtime ruling @23a43f20: the header renders the
@@ -1144,9 +1226,10 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
         await page.waitForSelector(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`, { timeout: OBSERVE_TIMEOUT_MS })
         const fieldsNarrow = await page.evaluate(extractPanelFields, opts.rid)
         const narrowNarrow = await page.evaluate(checkNarrowLegibility, { rid: opts.rid, expected: durableLens })
+        const geoNarrow = await page.evaluate(checkGeometryDom, { rid: opts.rid })
         const shotFullNarrow = await page.screenshot({ fullPage: true })
         const shotPanelNarrow = await page.locator(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`).screenshot()
-        passes.narrow = { fields: fieldsNarrow, narrow: narrowNarrow, shotFull: shotFullNarrow, shotPanel: shotPanelNarrow }
+        passes.narrow = { fields: fieldsNarrow, narrow: { ok: narrowNarrow.ok === true && geoNarrow.ok === true, rows: [...narrowNarrow.rows, ...geoNarrow.rows] }, shotFull: shotFullNarrow, shotPanel: shotPanelNarrow }
     } finally {
         await context.close()
     }
