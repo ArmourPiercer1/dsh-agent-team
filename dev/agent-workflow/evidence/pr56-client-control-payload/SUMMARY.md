@@ -58,3 +58,51 @@ using `canonicalJsonStringify` imported from `packages/contracts/src/remote-safe
 - No `:3080` / `:3180` interaction; no `tests/deepseek-harness-test-use` host boot; no
   DSH_HOME world; no real browser UI acceptance (stage-2 pending).
 - No push to master; no force-push; single forward push of this task branch (authorized).
+
+## ADDENDUM — coordinator-frozen external batch (three items, this commit)
+
+Scope: exactly three externally-verified defects + the Option-A wording
+resolution; all other source accepted; NOTHING ELSE touched; option B
+NOT implemented (deferred to Alpha3, no protocol fields).
+
+1. LEGAL `reviewPayload: null` CRASHED the whole TeamView —
+   `typeof null === 'object'` passed the classifier guard and the schema
+   leaf read indexed into null (`TypeError: Cannot read properties of
+   null (reading 'schema')` — captured in `07-batch-red.txt`). FIX:
+   null-guard in the schemaId classifier. GREEN pins: null/scalar/array
+   payloads survive the FULL adapter→DOM pipeline as inert safe text,
+   never classified recovery-v1, Allow unaffected (model + render).
+2. STRICT subject-leaf validation (parseSubject mirror, service.ts
+   L436-462) + legacy-leaf rule (L610-616): the kind's own id leaf must
+   be present AND the other two kind leaves ABSENT; a non-instance
+   subject carrying `targetInstanceId` fails closed; an orphan decision
+   with an EXPLICIT malformed `scope.subject` becomes an
+   unsupported-subject chain with NO legacy fallback (ABSENT subject +
+   targetInstanceId stays the byte-stable legacy flow — regression
+   guard included). This is the malformed-input fail-closed promise this
+   PR made — the server rejects these shapes at WRITE time; NOT an
+   authorization bypass; no protocol fields.
+3. DIGEST TRUNCATION CSS: `.controlField dd` (0,1,1, ellipsis trio)
+   out-specified the lone `.controlDigestValue` (0,1,0) — full wire
+   digest could render TRUNCATED in narrow panels. FIX: selector raised
+   to `.controlField dd.controlDigestValue` (0,1,2) with the beating
+   declarations; nothing else restyled. Test honesty: jsdom does NOT
+   apply the CSS-module cascade, so the test asserts class application
+   through the real pipeline + the STATIC stylesheet specificity
+   (labelled in the test name); the narrow-panel wrap check lands in the
+   real-UI acceptance round.
+
+Wording resolution (user decision, same batch): DECLARED UNKNOWN #1 →
+ACCEPTED LIMITATION — USER OPTION A (payload+digest-absent rows are not
+protocol-identifiable; plain subject mode, disclosed); the two
+`PENDING USER DECISION (options A/B)` skipped tests converted to GREEN
+pins of the accepted behavior (suite now has ZERO skips). UNKNOWN #2
+relabeled deferred; NOT implemented.
+
+RED→GREEN (both specs): `07-batch-red.txt` 9 failed | 60 passed →
+`08-batch-green.txt` 69 passed | 0 failed.
+FULL suite (`09-full-suite-batch.txt`): 846 passed | 3 failed | 0 skipped
+(849) — failure set IDENTICAL to the three pre-existing out-of-scope
+failures (`team-creation-panel` persona-probe ×2, `team-governance`
+override-reset); zero new failures. tsc -r exit 0 (`10`); eslint exit 0
+(`11`); composition regen + freshness gate (`12`+`13`).

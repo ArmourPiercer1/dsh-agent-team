@@ -220,17 +220,21 @@ export interface TeamUiControlSubject {
  *  - `recovery-v1` — a recovery-dispatch request, classified by the
  *    SHIPPED POSITIVE ID ONLY: the `reviewPayload` `schema` leaf
  *    `dsh-agent-team/recovery-dispatch/v1`
- *    (`packages/runtime/action-router/router.ts` L331). DECLARED
- *    UNKNOWN #1 (decision pending — options A/B before the user): with
- *    payload AND digest both absent, recovery-requiredness is not
- *    identifiable from the protocol fields; NO heuristic ships (the
- *    router's `recovery:` correlation prefix, router.ts L524, is a
- *    producer convention, not a reserved contract token). The
- *    contract-required payload integrity applies (see
+ *    (`packages/runtime/action-router/router.ts` L331). ACCEPTED
+ *    LIMITATION — USER OPTION A (scope locked): with payload AND digest
+ *    both absent, recovery-requiredness is not protocol-identifiable;
+ *    the row keeps its plain subject mode, disclosed — NO heuristic
+ *    ships (the router's `recovery:` correlation prefix, router.ts
+ *    L524, is a producer convention, not a reserved contract token) and
+ *    option B (protocol marker + integrity re-check) is DEFERRED to
+ *    Alpha3. The contract-required payload integrity applies (see
  *    `reviewIntegrity`);
  *  - `unsupported-subject` — the subject is absent / malformed /
- *    unknown (fail-closed): the request STAYS VISIBLE, non-decidable
- *    (Allow disabled), never a silent drop.
+ *    unknown (fail-closed, STRICTLY so — the parseSubject mirror admits
+ *    ONLY the kind's own id leaf with the other two kind leaves absent,
+ *    service.ts L436-462, and a legacy targetInstanceId outside an
+ *    instance subject, L610-616): the request STAYS VISIBLE,
+ *    non-decidable (Allow disabled), never a silent drop.
  * DIGEST NOTE: the client ships NO canonicalization / hash (display ≠
  * verification): the digest renders verbatim as WIRE-SOURCED evidence,
  * never as a client-verified value.

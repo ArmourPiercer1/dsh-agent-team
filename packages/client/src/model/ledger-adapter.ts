@@ -183,28 +183,30 @@ function isLosslessJsonValue(value: unknown): boolean {
  * `packages/runtime/action-router/router.ts` L331 —
  * `schema: 'dsh-agent-team/recovery-dispatch/v1'`).
  *
- * DECLARED UNKNOWN #1 (protocol gap — decision pending, options A/B
- * before the USER; NOT resolved by this client): with `reviewPayload`
- * AND `reviewPayloadDigest` both absent, recovery-requiredness is NOT
- * identifiable from the protocol fields: the `kind` vocabulary is the
- * three generic values; the write path accepts ANY non-empty
- * actionName/correlation (service.ts L1287-1294); the `recovery:`
- * correlation prefix (router.ts L524) is a producer convention, NOT a
- * reserved contract token. Normal producers ALWAYS write
- * payload+digest together (router.ts L516-531) and NO normal path
- * strips them; with both absent the current service treats the row as
- * legacy and accepts Allow, and the post-resolve execution
- * continuation re-checks ONLY the decision value, the frozen
+ * ACCEPTED LIMITATION — USER OPTION A (user resolution; scope locked):
+ * payload+digest-absent rows are not protocol-identifiable; the row
+ * keeps its plain subject mode, disclosed. WHY it is not resolvable
+ * from the client: with `reviewPayload` AND `reviewPayloadDigest` both
+ * absent, recovery-requiredness is NOT identifiable from the protocol
+ * fields: the `kind` vocabulary is the three generic values; the write
+ * path accepts ANY non-empty actionName/correlation (service.ts
+ * L1287-1294); the `recovery:` correlation prefix (router.ts L524) is
+ * a producer convention, NOT a reserved contract token. Normal
+ * producers ALWAYS write payload+digest together (router.ts L516-531)
+ * and NO normal path strips them; with both absent the current service
+ * treats the row as legacy and accepts Allow, and the post-resolve
+ * execution continuation re-checks ONLY the decision value, the frozen
  * invocation's abort signal and the terminal abandon mark before
  * invoking the frozen in-memory call (router.ts L619 decision, L645
  * abort signal, L682 terminal-abandon mark) —
  * i.e. NO integrity re-check exists for a HYPOTHETICAL payload-less
  * recovery row; there is NO demonstrated authorization bypass and NO
- * normal producer path that creates one. Option A keeps this client's
- * pure-contract behavior + the disclosed limitation (SHIPPED); option
- * B (a protocol marker + pre-execution integrity check) is BACKEND
- * scope only after the user's approval — NOT implemented here.
- * DECLARED UNKNOWN #2 (NOT implemented, pending): the
+ * normal producer path that creates one.
+ * Option B (a protocol marker + pre-execution integrity check) is
+ * DEFERRED to Alpha3 — nothing B-shaped ships here (no protocol
+ * fields); GREEN pins of the accepted A behavior live in the PR #56
+ * specs (labelled ACCEPTED LIMITATION — USER OPTION A).
+ * UNKNOWN #2 (deferred; NOT implemented): the
  * template/team-subject absent-payload producer-invariant option
  * (coordinator's B/C options).
  */
@@ -229,11 +231,14 @@ const SUBJECT_ID_LEAF: Readonly<Record<TeamUiControlSubject['kind'], string>> = 
 /**
  * The fail-safe read of the durable `ControlSubject` over the CLOSED
  * canonical map (`instance→instanceId | template→templateId |
- * team→rootSessionId`, `packages/runtime/control/types.ts` L256-259 —
- * exactly ONE id leaf per kind, non-empty string). A defined kind with
- * its matching id leaf → the subject verbatim; anything else →
+ * team→rootSessionId`, `packages/runtime/control/types.ts` L256-259).
+ * STRICT, mirroring the backend `parseSubject` (service.ts L436-462):
+ * the kind's OWN non-empty id leaf must be present AND the OTHER two
+ * kind leaves must be ABSENT — a contradictory shape (e.g.
+ * `template` + an extra `instanceId`) is malformed input and yields
  * `undefined` (the caller decides legacy-compat vs unsupported — NEVER
- * a guessed subject).
+ * a trusted pick, frozen batch #2 of PR #56; the server rejects such
+ * rows at WRITE time, this is the display-side fail-closed mirror).
  */
 function readControlSubject(payload: Payload): TeamUiControlSubject | undefined {
   const raw = payload['subject']
@@ -243,6 +248,9 @@ function readControlSubject(payload: Payload): TeamUiControlSubject | undefined 
   if (kind !== 'instance' && kind !== 'template' && kind !== 'team') return undefined
   const id = str(record, SUBJECT_ID_LEAF[kind])
   if (id === undefined || id.length === 0) return undefined
+  for (const leaf of Object.values(SUBJECT_ID_LEAF)) {
+    if (leaf !== SUBJECT_ID_LEAF[kind] && record[leaf] !== undefined) return undefined
+  }
   return { kind, id }
 }
 
@@ -392,10 +400,14 @@ function adaptControlRequestDraft(
   const legacyTarget = str(payload, 'targetInstanceId')
   let subjectState: 'defined' | 'legacy-instance' | 'unsupported'
   if (subject !== undefined) {
-    // A PR-D instance row carries BOTH leaves; a contradiction is
-    // malformed input → fail closed, never a trusted pick.
-    subjectState =
-      subject.kind === 'instance' && legacyTarget !== undefined && legacyTarget !== subject.id
+    // A PR-D row carries BOTH leaves ONLY for a matching instance
+    // subject; any other combination is contradictory input → fail
+    // closed, never a trusted pick (frozen batch #2 of PR #56 — the
+    // backend rejects a targetInstanceId that disagrees with / stands
+    // outside an instance subject, service.ts L610-616).
+    subjectState = subject.kind === 'instance'
+      ? (legacyTarget !== undefined && legacyTarget !== subject.id ? 'unsupported' : 'defined')
+      : legacyTarget !== undefined
         ? 'unsupported'
         : 'defined'
   } else if (payload['subject'] === undefined && legacyTarget !== undefined && legacyTarget.length > 0) {
@@ -419,14 +431,20 @@ function adaptControlRequestDraft(
   // recovery-dispatch/v1 classification (display side): the SHIPPED
   // classifier is the payload `schema` leaf POSITIVE ID ONLY (router.ts
   // L331). The `recovery:` correlation-prefix fallback (router.ts L524)
-  // is NOT shipped — DECLARED UNKNOWN #1, decision pending (options
-  // A/B before the user; see RECOVERY_DISPATCH_V1_SCHEMA for the full
-  // neutral gap statement): a payload+digest-absent row keeps its
-  // plain subject mode with NO integrity gate (disclosed, PR body;
-  // skipped tests carry the same label). The DEFENSE-IN-DEPTH
+  // is NOT shipped — ACCEPTED LIMITATION, USER OPTION A (locked): with
+  // payload+digest both absent the row is not protocol-identifiable; it
+  // keeps its plain subject mode with NO integrity gate, disclosed (see
+  // RECOVERY_DISPATCH_V1_SCHEMA; green pins in the PR #56 specs).
+  // Option B (protocol marker + pre-execution integrity check) is
+  // DEFERRED to Alpha3 — nothing B-shaped here. The DEFENSE-IN-DEPTH
   // digest-without-payload guard below is classification-NEUTRAL.
+  // NOTE (frozen batch #1): `typeof null === 'object'`, and null is a
+  // LEGAL RemoteSafeJsonValue — the null check below is load-bearing:
+  // without it the schema read indexes into null and the WHOLE TeamView
+  // crashes on a legal non-recovery row.
   const schemaId =
-    rawReviewPayload !== undefined && typeof rawReviewPayload === 'object' && !Array.isArray(rawReviewPayload)
+    rawReviewPayload !== undefined && rawReviewPayload !== null
+      && typeof rawReviewPayload === 'object' && !Array.isArray(rawReviewPayload)
       ? str(rawReviewPayload as Payload, 'schema')
       : undefined
   const correlation = str(payload, 'correlation')
@@ -524,14 +542,33 @@ function adaptControlDecisionDraft(
   }
   // ORPHAN (no loaded request fact): the writer's own `scope` names the
   // identity — the PR-D scope carries the durable `subject`
-  // (`service.ts` `scopeOf` L1075-1078), the legacy scope names
-  // `targetInstanceId` (instance-only flow). Either way: no invented
-  // values; a scope naming neither → still skipped.
+  // (`service.ts` `scopeOf` L1075-1078), the LEGACY scope names
+  // `targetInstanceId` (instance-only flow, only when the `subject`
+  // leaf is ABSENT). Either way: no invented values; a scope naming
+  // neither → still skipped. Frozen batch #2 of PR #56: an EXPLICIT
+  // but malformed `scope.subject` is NOT the legacy flow — fail closed
+  // to an unsupported chain (visible, non-decidable), never a silent
+  // fallback onto the legacy leaf.
   const scopeSubject = scope === undefined ? undefined : readControlSubject(scope)
+  const scopeSubjectPresent = scope !== undefined && scope['subject'] !== undefined
   const targetInstanceId = scope === undefined ? undefined : str(scope, 'targetInstanceId')
   const actionName = scope === undefined ? undefined : str(scope, 'actionName')
   const requestSequence = num(payload, 'requestSequence')
   if (actionName === undefined || requestSequence === undefined) return
+  if (scopeSubject === undefined && scopeSubjectPresent && scope !== undefined) {
+    orphans.push({
+      requestId,
+      requestSequence,
+      subjectKindRaw: rawSubjectKind(scope),
+      actionName,
+      requestedAt: entry.createdAt,
+      pending: false,
+      renderMode: 'unsupported-subject',
+      toolName: str(scope, 'toolName'),
+      decision: block,
+    })
+    return
+  }
   if (scopeSubject === undefined && (targetInstanceId === undefined || targetInstanceId.length === 0)) return
   orphans.push({
     requestId,

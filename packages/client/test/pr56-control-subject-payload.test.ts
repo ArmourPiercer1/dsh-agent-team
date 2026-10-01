@@ -503,26 +503,18 @@ describe('PR56 (3) — recovery-dispatch/v1 integrity (display side)', () => {
     expect(chain.renderMode).toBe('unsupported-subject')
   })
 
-  // DECLARED UNKNOWN #1 — decision pending (options A/B before the user) on
-  // the PAYLOAD-ABSENT recovery-request classifier (correlation-prefix
-  // heuristic NOT shipped; see the PENDING block in ledger-adapter.ts).
-  it.skip('PENDING USER DECISION (options A/B) — ABSENT reviewPayload on a recovery correlation → recovery-v1 + incomplete (not shipped)', () => {
-    const model = adaptTeamLedger([
-      entry(1, 'control-request-recorded', v1Payload()),
-    ], true)
-    const chain = must(model.controls[0], 'v1 chain')
-    expect(chain.renderMode).toBe('recovery-v1')
-    expect(chain.reviewIntegrity).toBe('incomplete')
-    expect(chain.reviewPayload).toBe(undefined)
-  })
-
-  it('DISCLOSED PENDING-RULING GAP (today\'s shipped behavior): a payload-absent recovery-correlation request is NOT classified v1 and gains NO integrity gate', () => {
+  // ACCEPTED LIMITATION — USER OPTION A (locked): payload+digest-absent
+  // rows are not protocol-identifiable; the row keeps its plain subject
+  // mode, disclosed. Option B (protocol marker + integrity re-check) is
+  // DEFERRED to Alpha3 — nothing B-shaped ships here.
+  it('ACCEPTED LIMITATION — USER OPTION A (pinned): payload-absent recovery-correlation row → standard mode, NO integrity gate, Allow unchanged (never classified recovery-v1)', () => {
     const model = adaptTeamLedger([
       entry(1, 'control-request-recorded', v1Payload()),
     ], true)
     const chain = must(model.controls[0], 'payload-absent chain')
     expect(chain.renderMode).toBe('standard')
     expect(chain.reviewIntegrity).toBe(undefined)
+    expect(chain.reviewPayload).toBe(undefined)
   })
 
   it('a CORRUPTED (non-lossless) reviewPayload is OMITTED + the request is incomplete', () => {
@@ -573,6 +565,148 @@ describe('PR56 (3) — recovery-dispatch/v1 integrity (display side)', () => {
     expect(chain.reviewIntegrity).toBe('incomplete')
     expect(chain.reviewPayload).toBe(undefined)
     expect(chain.reviewPayloadDigest).toBe(VALID_SHA)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 7b. FROZEN BATCH item 1 (external client-contract review, MAIN-verified
+// @11bce13f): the classifier guard `typeof rawReviewPayload === 'object'`
+// passes for NULL (`typeof null === 'object'`), and null is a LEGAL
+// RemoteSafeJsonValue (isLosslessJsonValue accepts it) — so the schemaId
+// read indexed into null → TypeError → the whole TeamView crashed on a
+// legal non-recovery row. Null must be guarded; scalars/arrays must keep
+// rendering verbatim with NO classification.
+// ---------------------------------------------------------------------------
+
+describe('PR56 batch#1 — legal null/scalar/array reviewPayload: NO crash, no v1 classification, no gate', () => {
+  it('reviewPayload NULL (legal RemoteSafeJsonValue — the crash shape) → row survives, standard mode, no gate, no v1 claim', () => {
+    const model = adaptTeamLedger([
+      entry(1, 'control-request-recorded', {
+        requestId: 'r-null', kind: 'user-approval', actionName: 'write_file', correlation: 'c-null',
+        subject: { kind: 'instance', instanceId: 'i1' }, targetInstanceId: 'i1',
+        reviewPayload: null,
+      }),
+    ], true)
+    const chain = must(model.controls[0], 'null-payload chain')
+    expect(chain.renderMode).toBe('standard')
+    expect(chain.reviewIntegrity).toBe(undefined)
+    expect(chain.pending).toBe(true)
+  })
+
+  for (const [label, value] of [
+    ['number', 42],
+    ['boolean', true],
+    ['string', 'a plain string payload'],
+    ['array', ['alpha', 1, null]],
+  ] as const) {
+    it(`reviewPayload ${label} → verbatim carry, standard/legacy mode, never recovery-v1, no gate`, () => {
+      const model = adaptTeamLedger([
+        entry(1, 'control-request-recorded', {
+          requestId: `r-sc-${label}`, kind: 'user-approval', actionName: 'write_file', correlation: `c-sc-${label}`,
+          targetInstanceId: 'i1',
+          reviewPayload: value,
+        }),
+      ], true)
+      const chain = must(model.controls[0], `${label}-payload chain`)
+      expect(chain.renderMode).toBe('legacy-compat')
+      expect(chain.reviewIntegrity).toBe(undefined)
+      expect(chain.reviewPayload).toEqual(value)
+      expect(chain.pending).toBe(true)
+    })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// 7c. FROZEN BATCH item 2 (external client-contract review, MAIN-verified
+// @11bce13f): the malformed-input fail-closed promise this PR made is not
+// fully ENFORCED yet. The backend is strict — parseSubject demands
+// EXACTLY ONE id leaf for the declared kind (service.ts L436-462), and a
+// targetInstanceId disagreeing with / absent from an instance subject is
+// rejected (service.ts L610-616). The client must mirror the fail-closed
+// shape: contradictory input is NEVER a trusted pick. These shapes are
+// rejected at WRITE time server-side — this is display-side defense, NOT
+// an authorization bypass, and NO protocol field changes.
+// ---------------------------------------------------------------------------
+
+describe('PR56 batch#2 — strict subject leaves: contradictory input fails CLOSED to unsupported', () => {
+  it('template subject with an EXTRA instanceId leaf → unsupported (parseSubject-mirror: exactly one id leaf)', () => {
+    const model = adaptTeamLedger([
+      entry(1, 'control-request-recorded', {
+        requestId: 'r-b2a', kind: 'user-approval', actionName: 'delegate', correlation: 'c-b2a',
+        subject: { kind: 'template', templateId: 'worker', instanceId: 'ghost' },
+      }),
+    ], true)
+    const chain = must(model.controls[0], 'contradictory template chain')
+    expect(chain.renderMode).toBe('unsupported-subject')
+    expect(chain.subject).toBe(undefined)
+    expect(chain.targetInstanceId).toBe(undefined)
+  })
+
+  it('instance subject with an EXTRA rootSessionId leaf → unsupported', () => {
+    const model = adaptTeamLedger([
+      entry(1, 'control-request-recorded', {
+        requestId: 'r-b2b', kind: 'user-approval', actionName: 'write_file', correlation: 'c-b2b',
+        subject: { kind: 'instance', instanceId: 'i1', rootSessionId: 'root-x' },
+      }),
+    ], true)
+    const chain = must(model.controls[0], 'contradictory instance chain')
+    expect(chain.renderMode).toBe('unsupported-subject')
+  })
+
+  it('team subject carrying the legacy targetInstanceId leaf → unsupported (backend rejects: service.ts L610-616)', () => {
+    const model = adaptTeamLedger([
+      entry(1, 'control-request-recorded', {
+        requestId: 'r-b2c', kind: 'user-approval', actionName: 'team.close', correlation: 'c-b2c',
+        subject: { kind: 'team', rootSessionId: 'root-1' }, targetInstanceId: 'i1',
+      }),
+    ], true)
+    const chain = must(model.controls[0], 'team+target chain')
+    expect(chain.renderMode).toBe('unsupported-subject')
+    expect(chain.targetInstanceId).toBe(undefined)
+  })
+
+  it('REGRESSION GUARD (byte-stable): team subject WITHOUT the targetInstanceId leaf stays defined/standard', () => {
+    const model = adaptTeamLedger([
+      entry(1, 'control-request-recorded', {
+        requestId: 'r-b2d', kind: 'user-approval', actionName: 'team.close', correlation: 'c-b2d',
+        subject: { kind: 'team', rootSessionId: 'root-1' },
+      }),
+    ], true)
+    expect(must(model.controls[0], 'clean team chain').renderMode).toBe('standard')
+  })
+
+  it('ORPHAN decision with an EXPLICIT malformed scope.subject → unsupported chain, NO legacy targetInstanceId fallback', () => {
+    const model = adaptTeamLedger([
+      entry(1, 'control-decision-recorded', {
+        requestId: 'r-b2e', decision: 'allow_once', requestSequence: 7,
+        scope: {
+          targetInstanceId: 'i1', actionName: 'write_file',
+          subject: { kind: 'quantum', qId: 'x' },
+        },
+      }),
+    ], true)
+    const chain = must(model.controls[0], 'malformed-subject orphan')
+    expect(chain.renderMode).toBe('unsupported-subject')
+    expect(chain.subject).toBe(undefined)
+    expect(chain.subjectKindRaw).toBe('quantum')
+    // the legacy leaf is NOT trusted on a row that carries an explicit
+    // (malformed) subject: no instance identity is invented.
+    expect(chain.targetInstanceId).toBe(undefined)
+    expect(chain.pending).toBe(false)
+    expect(chain.decision?.value).toBe('allow_once')
+  })
+
+  it('REGRESSION GUARD (byte-stable): orphan with ABSENT scope.subject + targetInstanceId → the legacy compat chain stays', () => {
+    const model = adaptTeamLedger([
+      entry(1, 'control-decision-recorded', {
+        requestId: 'r-b2f', decision: 'deny', requestSequence: 8,
+        scope: { targetInstanceId: 'i1', actionName: 'write_file' },
+      }),
+    ], true)
+    const chain = must(model.controls[0], 'legacy orphan')
+    expect(chain.renderMode).toBe('legacy-compat')
+    expect(chain.targetInstanceId).toBe('i1')
+    expect(chain.subject).toEqual({ kind: 'instance', id: 'i1' })
   })
 })
 

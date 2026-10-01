@@ -1,0 +1,14 @@
+$ npx vitest run test/pr56-control-subject-payload.test.ts test/pr56-control-panel-payload.client.spec.tsx  (FROZEN BATCH GREEN — after the three fixes: null-guard, strict subject leaves + orphan no-fallback, (0,1,2) digest override)
+2026-10-01T17:37:35Z
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr56-client-panel/packages/client
+
+ ✓ test/pr56-control-subject-payload.test.ts (42 tests) 8ms
+ ✓ test/pr56-control-panel-payload.client.spec.tsx (27 tests) 123ms
+
+ Test Files  2 passed (2)
+      Tests  69 passed (69)
+   Start at  17:37:35
+   Duration  2.23s (transform 1.08s, setup 19ms, import 1.72s, tests 130ms, environment 353ms)
+
+[exit code: 0]

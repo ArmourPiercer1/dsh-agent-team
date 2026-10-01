@@ -268,18 +268,23 @@ describe('PR56 render — recovery-dispatch/v1 integrity gate (Allow disabled, d
     expect(deny?.disabled).toBe(false)
   })
 
-  // DECLARED UNKNOWN #1 — decision pending (options A/B before the user) on
-  // the PAYLOAD-ABSENT recovery-request classifier (positive-ID-only
-  // shipped; see the PENDING block in ledger-adapter.ts).
-  it.skip('PENDING USER DECISION (options A/B) — v1 with a MISSING reviewPayload (recovery correlation) → banner + Allow disabled (not shipped)', () => {
+  // ACCEPTED LIMITATION — USER OPTION A (locked): payload+digest-absent
+  // rows are not protocol-identifiable; the row keeps its plain SUBJECT
+  // mode (here: defined template) with NO integrity gate, disclosed.
+  // Option B (protocol marker + pre-execution integrity check) is
+  // DEFERRED to Alpha3 — nothing B-shaped ships here. This is the GREEN
+  // PIN of that accepted behavior (was a skipped PENDING test).
+  it('ACCEPTED LIMITATION — USER OPTION A (pinned): MISSING reviewPayload (recovery correlation) → standard mode, NO banner, payload omitted, Allow ENABLED', () => {
     const model = pipeline([s9Request({ reviewPayload: undefined, reviewPayloadDigest: undefined })])
     const view = renderLedger(model)
     const panel = panelOf(view, S9_REQUEST_ID)
     if (panel === null) throw new Error('the control panel did not materialize')
-    expect(panel.querySelector('[data-control-detail-cannot-review]')).not.toBeNull()
+    expect(detailField(panel, 'render-mode')?.textContent).toContain('standard')
+    expect(panel.querySelector('[data-control-detail-cannot-review]')).toBeNull()
+    // the payload block is OMITTED (never a 'null'/'undefined' invention).
     expect(detailField(panel, 'payload')).toBeNull()
     const allow = panel.querySelector('[data-ledger-resolve-allow]') as HTMLButtonElement | null
-    expect(allow?.disabled).toBe(true)
+    expect(allow?.disabled).toBe(false)
   })
 
   it('v1 with a CORRUPTED (non-lossless) reviewPayload → omitted + banner + Allow disabled', () => {
@@ -458,5 +463,193 @@ describe('PR56 render — compat modes', () => {
     const allow = panel.querySelector('[data-ledger-resolve-allow]') as HTMLButtonElement | null
     expect(allow?.disabled).toBe(false)
     expect(panel.querySelector('[data-control-detail-cannot-review]')).toBeNull()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// FROZEN BATCH item 1 (render): legal null/scalar/array reviewPayload
+// values must survive the WHOLE adapter→DOM pipeline as inert safe text
+// (the stock classifier crashed the entire TeamView on `null` — the
+// `typeof null === 'object'` trap; see the model-level batch group).
+// ---------------------------------------------------------------------------
+
+describe('PR56 batch#1 render — null/scalar/array payloads are SAFE TEXT end-to-end, Allow unaffected', () => {
+  it('reviewPayload NULL renders the inert text "null" — panel survives, standard-family mode, no banner, Allow ENABLED', () => {
+    const model = pipeline([wireEntry(1, 'control-request-recorded', {
+      requestId: 'r-null-p',
+      kind: 'user-approval',
+      targetInstanceId: 'mate',
+      actionName: 'write_file',
+      correlation: 'c-null-p',
+      reviewPayload: null,
+    })])
+    const view = renderLedger(model)
+    const panel = panelOf(view, 'r-null-p')
+    if (panel === null) throw new Error('the control panel did not materialize')
+    const pre = detailField(panel, 'payload')?.querySelector('pre') ?? null
+    expect(pre?.textContent).toBe('null')
+    expect(detailField(panel, 'render-mode')?.textContent).toContain('legacy-compatible')
+    expect(panel.querySelector('[data-control-detail-cannot-review]')).toBeNull()
+    const allow = panel.querySelector('[data-ledger-resolve-allow]') as HTMLButtonElement | null
+    expect(allow?.disabled).toBe(false)
+  })
+
+  for (const [label, value, safeText] of [
+    ['number', 42, '42'],
+    ['boolean', true, 'true'],
+    ['string', 'plain text', '"plain text"'],
+  ] as const) {
+    it(`reviewPayload ${label} renders as inert JSON text (${safeText}), never classified v1, Allow ENABLED`, () => {
+      const model = pipeline([wireEntry(1, 'control-request-recorded', {
+        requestId: `r-sc-${label}`,
+        kind: 'user-approval',
+        targetInstanceId: 'mate',
+        actionName: 'write_file',
+        correlation: `c-sc-${label}`,
+        reviewPayload: value,
+      })])
+      const view = renderLedger(model)
+      const panel = panelOf(view, `r-sc-${label}`)
+      if (panel === null) throw new Error('the control panel did not materialize')
+      expect(detailField(panel, 'payload')?.querySelector('pre')?.textContent).toBe(safeText)
+      expect(detailField(panel, 'render-mode')?.textContent).toContain('legacy-compatible')
+      const allow = panel.querySelector('[data-ledger-resolve-allow]') as HTMLButtonElement | null
+      expect(allow?.disabled).toBe(false)
+    })
+  }
+
+  it('reviewPayload ARRAY renders losslessly as JSON text (round-trips through JSON.parse)', () => {
+    const value = ['alpha', 1, null]
+    const model = pipeline([wireEntry(1, 'control-request-recorded', {
+      requestId: 'r-sc-array',
+      kind: 'user-approval',
+      targetInstanceId: 'mate',
+      actionName: 'write_file',
+      correlation: 'c-sc-array',
+      reviewPayload: value,
+    })])
+    const view = renderLedger(model)
+    const panel = panelOf(view, 'r-sc-array')
+    if (panel === null) throw new Error('the control panel did not materialize')
+    const pre = detailField(panel, 'payload')?.querySelector('pre') ?? null
+    if (pre === null) throw new Error('the payload block did not materialize')
+    expect(JSON.parse(pre.textContent ?? '')).toEqual(value)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// FROZEN BATCH item 2 (render): contradictory subject shapes are
+// non-decidable END-TO-END (explicit malformed subject → unsupported
+// presentation, Allow disabled; the server rejects these at write time —
+// display-side fail-closed, no protocol change).
+// ---------------------------------------------------------------------------
+
+describe('PR56 batch#2 render — contradictory subjects are non-decidable end-to-end', () => {
+  it('template subject + EXTRA instanceId leaf → unsupported-subject panel + Allow DISABLED + Deny enabled', () => {
+    const model = pipeline([wireEntry(1, 'control-request-recorded', {
+      requestId: 'r-b2a-p',
+      kind: 'user-approval',
+      actionName: 'delegate',
+      correlation: 'c-b2a-p',
+      subject: { kind: 'template', templateId: 'worker', instanceId: 'ghost' },
+    })])
+    const view = renderLedger(model)
+    const panel = panelOf(view, 'r-b2a-p')
+    if (panel === null) throw new Error('the contradictory panel did not materialize')
+    expect(detailField(panel, 'render-mode')?.textContent).toContain('unsupported-subject')
+    const allow = panel.querySelector('[data-ledger-resolve-allow]') as HTMLButtonElement | null
+    const deny = panel.querySelector('[data-ledger-resolve-deny]') as HTMLButtonElement | null
+    expect(allow?.disabled).toBe(true)
+    expect(deny?.disabled).toBe(false)
+    // the row STAYS visible (never a silent drop).
+    expect(view.container.querySelector('[data-ledger-row]')).not.toBeNull()
+  })
+
+  it('team subject + legacy targetInstanceId leaf → unsupported-subject panel + Allow DISABLED', () => {
+    const model = pipeline([wireEntry(1, 'control-request-recorded', {
+      requestId: 'r-b2c-p',
+      kind: 'user-approval',
+      actionName: 'team.close',
+      correlation: 'c-b2c-p',
+      subject: { kind: 'team', rootSessionId: LEADER },
+      targetInstanceId: 'mate',
+    })])
+    const view = renderLedger(model)
+    const panel = panelOf(view, 'r-b2c-p')
+    if (panel === null) throw new Error('the team+target panel did not materialize')
+    expect(detailField(panel, 'render-mode')?.textContent).toContain('unsupported-subject')
+    const allow = panel.querySelector('[data-ledger-resolve-allow]') as HTMLButtonElement | null
+    expect(allow?.disabled).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// FROZEN BATCH item 3 (CSS specificity): `.controlField dd` (0,1,1) with
+// the ellipsis trio (overflow:hidden / text-overflow:ellipsis /
+// white-space:nowrap) OUT-SPECIFIES a lone `.controlDigestValue` (0,1,0)
+// — in a narrow panel the FULL wire digest would render TRUNCATED,
+// breaking the never-truncated promise. The override must be
+// `.controlField dd.controlDigestValue` (0,1,2). HONEST ASSERTION SCOPE:
+// jsdom does not apply the CSS-module cascade to the document, so the
+// test asserts (a) the class lands on the digest dd through the REAL
+// pipeline and (b) the stylesheet carries the (0,1,2) override with the
+// beating declarations — a STATIC specificity assertion, not a rendered
+// layout check (the narrow-panel wrap check lands in real-UI acceptance).
+// ---------------------------------------------------------------------------
+
+describe('PR56 batch#3 — the full digest beats the ellipsis: (0,1,2) stylesheet override + class application', () => {
+  it('the digest dd carries controlDigestValue through the real pipeline', () => {
+    const model = pipeline([s9Request()])
+    const view = renderLedger(model)
+    const panel = panelOf(view, S9_REQUEST_ID)
+    if (panel === null) throw new Error('the control panel did not materialize')
+    const dd = panel.querySelector('[data-control-detail-digest] dd')
+    if (dd === null) throw new Error('the digest field did not materialize')
+    expect(dd.getAttribute('class') ?? '').toContain('controlDigestValue')
+    expect(dd.textContent).toContain(S9_WIRE_DIGEST)
+  })
+
+  it('the stylesheet defines .controlField dd.controlDigestValue (0,1,2) beating the .controlField dd ellipsis (0,1,1) — STATIC specificity assertion (jsdom does not apply the CSS-module cascade)', async () => {
+    const { readFileSync, existsSync } = await import('node:fs')
+    // Env-agnostic path resolution (jsdom rewrites import.meta.url and
+    // vitest's css:false stubs `?raw` for CSS): walk up from the cwd to
+    // the client package root and read the stylesheet as TEXT.
+    const { join } = await import('node:path')
+    let cssPath: string | undefined
+    let dir = process.cwd()
+    for (let i = 0; i < 7; i += 1) {
+      for (const candidate of [
+        join(dir, 'src', 'ui', 'TeamLedger.module.css'),
+        join(dir, 'packages', 'client', 'src', 'ui', 'TeamLedger.module.css'),
+      ]) {
+        if (existsSync(candidate)) { cssPath = candidate; break }
+      }
+      if (cssPath !== undefined) break
+      const parent = join(dir, '..')
+      if (parent === dir) break
+      dir = parent
+    }
+    if (cssPath === undefined) throw new Error('TeamLedger.module.css not found from the test cwd')
+    const css = readFileSync(cssPath, 'utf8')
+    /** The specificity of a plain selector (a,b,c) as a comparable tuple sum-free key. */
+    const specificity = (selector: string): string => {
+      const classes = (selector.match(/\.[\w-]+/g) ?? []).length
+      const elements = (selector.replace(/[#.][\w-]+/g, '').match(/[a-z][\w-]*/gi) ?? []).length
+      return `${classes},${elements}`
+    }
+    const ellipsisRule = css.match(/\.controlField dd\s*\{[^}]*\}/)
+    const overrideRule = css.match(/\.controlField dd\.controlDigestValue\s*\{[^}]*\}/)
+    if (ellipsisRule === null || overrideRule === null) {
+      throw new Error('the ellipsis rule or the (0,1,2) digest override rule is missing from the stylesheet')
+    }
+    expect(specificity('.controlField dd')).toBe('1,1')
+    expect(specificity('.controlField dd.controlDigestValue')).toBe('2,1')
+    // the override re-declares the ellipsis trio's beating pair.
+    expect(overrideRule[0]).toMatch(/overflow:\s*visible/)
+    expect(overrideRule[0]).toMatch(/white-space:\s*normal/)
+    expect(overrideRule[0]).toMatch(/word-break:\s*break-all/)
+    // and the ellipsis trio stays where it belongs (the base rule).
+    expect(ellipsisRule[0]).toMatch(/text-overflow:\s*ellipsis/)
+    expect(ellipsisRule[0]).toMatch(/white-space:\s*nowrap/)
   })
 })

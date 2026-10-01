@@ -333,7 +333,10 @@
   white-space: normal;
 }
 
-.controlDigestValue {
+/* FROZEN BATCH #3: this selector MUST out-specify the `.controlField dd`
+   ellipsis trio (0,1,1) or the FULL wire digest renders TRUNCATED in a
+   narrow panel — `.controlField dd.controlDigestValue` is (0,1,2). */
+.controlField dd.controlDigestValue {
   overflow: visible;
   white-space: normal;
   font-family: var(--dsw-font-family-mono, ui-monospace, monospace);
