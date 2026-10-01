@@ -23,7 +23,7 @@
  *   11 cancel approval → durable abandon  — E.12 S10 (abort leg)
  *   12 v1 frozen Blueprint cold resume    — E.12 S13
  *   13 v2 Blueprint create/resume         — E.12 S1 (v2 create) + F15 C1 + G1
- *   14 persona `ptc` regression           — G5 (the registry `ptc` preset actually mounted on the real host — the C.8 actual-mount donor; gate lane POST-RESOLUTION: finding PR-F-G5 (v2 kind subject vs provider preset-id lookup -> typed FATAL) was resolved on master by the persona-kind work (A-contract PR #46) — the create under the mounted ptc is now ACCEPTED with the persona genuinely satisfied (true OPEN, T9 durable team-root); the fail-closed direction stays asserted by the S12b cell (bare preset -> FATAL PERSONA_INCOMPATIBLE))
+ *   14 persona `ptc` regression           — G5 (the registry `ptc` preset actually mounted on the real host — the C.8 actual-mount donor; gate lane POST-RESOLUTION: finding PR-F-G5 (v2 kind subject vs provider preset-id lookup -> typed FATAL) was resolved on master by the persona-kind work (A-contract PR #46) — the create under the mounted ptc is now ACCEPTED with the persona genuinely satisfied (true OPEN, T9 durable team-root with positive durableGeneration); the fail-closed direction is asserted cross-kit (E.12 S12b leg + merged suite; this kit has no bare-preset cell of its own))
  *   15 dual Team isolation                — E.12 S14
  *   16 spill ArtifactReadGrant regression — G6 (read-spill → `artifact-read-granted` ledger fact)
  *   17 Remote v1–v7 compatibility         — G7 (the wire matrix; the plan's "v1–v6" wording
@@ -135,24 +135,36 @@
  *       preset, ACTUALLY MOUNTED on the real host through the public row
  *       config — no scripted seam; the C.8 actual-mount donor). The persona
  *       team (team.persona.standard required): PROBE lane = the U5
- *       caller-only wire intent fact PASSes (OPEN). GATE lane = FINDING
- *       PR-F-G5 recorded as current-branch behavior: the v2 persona
- *       requirement's only legal subject is the required KIND `standard`
- *       (domain schema closed set), while the requirement-facts provider
- *       matches the subject against the mounted PRESET ID (the v1
- *       bespoke-preset-name semantics) — under a ptc mount the kind subject
- *       finds no root/member entry -> typed unknown -> the required
- *       Team-level requirement is down -> team.create is REFUSED typed
- *       (TEAM_RUNTIME_COMPATIBILITY_BLOCKED + the typed reason), ZERO
- *       durable effect. Target design §16.1 / ADR-24 (composable ptc must
- *       not be judged a conflict merely because the preset id is not
- *       `standard`) is NOT satisfied on this branch on this path — a
- *       PR-E lineage cross-layer tension, out of PR-F scope, escalated in
- *       the PR body + parent report; the cell asserts the FAIL-CLOSED
- *       contract the branch does hold (typed FATAL + zero effect + honest
- *       reason — never a false OPEN). The other recorded cells (standard
- *       open — E.12 S12a; bare/absent FATAL — E.12 S12b) are covered by
- *       the E.12 gate record on this same lineage.
+ *       caller-only wire intent fact PASSes (OPEN). GATE lane = POST-
+ *       RESOLUTION (2026-10-01 test-infra; review precision pass): the
+ *       original finding PR-F-G5 was RECORDED at PR-F time as
+ *       current-branch behavior — the v2 persona requirement's only legal
+ *       subject is the required KIND `standard` (domain schema closed set)
+ *       while the requirement-facts provider matched the subject against
+ *       the mounted PRESET ID (v1 bespoke-preset-name semantics), so under
+ *       a ptc mount the kind subject found no entry -> typed unknown ->
+ *       the required Team-level requirement down -> team.create REFUSED
+ *       typed (TEAM_RUNTIME_COMPATIBILITY_BLOCKED + the typed reason),
+ *       ZERO durable effect; target design §16.1 / ADR-24 was NOT
+ *       satisfied on that branch — a PR-E lineage cross-layer tension,
+ *       escalated, out of PR-F scope. It has since been RESOLVED on
+ *       master by the persona-kind work (A-contract, PR #46 — the kind
+ *       subject resolves through the KIND path, no legacy preset-id
+ *       shadowing; §16.1/ADR-24 satisfied). The cell now asserts the
+ *       post-resolution contract: team.create ACCEPTED under the mounted
+ *       ptc with the persona genuinely satisfied — TRUE OPEN, T9 minted
+ *       durable as team-root with a POSITIVE durableGeneration (v6
+ *       team-root contract: null only on the `none` relation — the
+ *       remote handler rejects a null team-root answer,
+ *       packages/remote/src/handlers/team.ts L563-566). The fail-closed
+ *       direction (never a false OPEN) is asserted CROSS-KIT: the E.12
+ *       S12b leg (bare/absent preset -> FATAL PERSONA_INCOMPATIBLE,
+ *       admitInitialWork blocked) + the merged suite persona-kind tests
+ *       (complete-mounted-preset chain FATALs end-to-end); this kit
+ *       carries no bare-preset boot cell of its own. (The pre-resolution
+ *       typed-FATAL + zero-effect behavior remains documented in the
+ *       closure battery record — realhost-battery-post-merge — as
+ *       historical evidence, unchanged.)
  *  G6  spill ArtifactReadGrant         — scenario 16, the PR#35 real-spill
  *       pattern (the proven E2E writer path — the run-3 worker-read variant
  *       produced NO durable fact): the leader-only spill team (the A2C-1
@@ -418,7 +430,7 @@ const CRITERIA = [
   { id: 'G2', name: 'governance mutation + restart (scenario 2, F10 guard): v7 override.set ack g1 -> second writer v7 set ack g2 -> FIRST writer stale expectedGeneration=g1 -> typed OVERRIDE_GENERATION_CONFLICT, zero write (read still g2) -> RESTART -> override.get durable g2 + values intact' },
   { id: 'G3', name: 'PolicyState + restart (scenario 3, F11 re-land): bound team policyState.get closed set = default + paused (the bound blueprint, not the boot anchor); set paused -> changed + entryId; unknown state -> typed POLICY_STATE_UNKNOWN; foreign root -> typed FOREIGN_TEAM; RESTART -> still paused (durable)' },
   { id: 'G4', name: 'multi-MCP A/B healthy, C down (scenario 4, the W2-A pre-boot-stop down mechanism — the E.12 B3 pattern): all-up delegate DONE; C(3493) STOPPED BEFORE the B2 boot (leader web mount fails at attach -> unreachable at the gate) -> probe still shows team.mcp.repo + team.mcp.leaderreq PASS (A/B multi-MCP isolation) while worker delegate BLOCKED -> typed COMPATIBILITY_BLOCKED (the recovery request is OFFERED then DENIED — zero effect, no work fact); B3 boot with C remounted -> delegate DONE (next boundary NORMAL, web auto-mounted; no incident opens at the restored boundary)' },
-  { id: 'G5', name: 'persona ptc regression (scenario 14): the registry ptc preset ACTUALLY MOUNTED on the real host (rootPresetId/memberPresetId = ptc — the C.8 actual-mount donor); probe lane = the U5 caller-only wire intent fact PASSes (OPEN); GATE lane (POST-RESOLUTION — finding PR-F-G5 was resolved on master by the persona-kind work, A-contract PR #46: the v2 persona kind subject resolves through the KIND path, no legacy preset-id shadowing; §16.1/ADR-24 satisfied) = team.create ACCEPTED under the mounted ptc with the persona requirement genuinely satisfied — TRUE OPEN (T9 minted durable as team-root — the inverse of the pre-fix zero-effect assertion; the fail-closed direction remains asserted by the S12b cell: bare preset -> FATAL PERSONA_INCOMPATIBLE, never a false OPEN)' },
+  { id: 'G5', name: 'persona ptc regression (scenario 14): the registry ptc preset ACTUALLY MOUNTED on the real host (rootPresetId/memberPresetId = ptc — the C.8 actual-mount donor); probe lane = the U5 caller-only wire intent fact PASSes (OPEN); GATE lane (POST-RESOLUTION — finding PR-F-G5 was resolved on master by the persona-kind work, A-contract PR #46: the v2 persona kind subject resolves through the KIND path, no legacy preset-id shadowing; §16.1/ADR-24 satisfied) = team.create ACCEPTED under the mounted ptc with the persona requirement genuinely satisfied — TRUE OPEN (T9 minted durable as team-root — the inverse of the pre-fix zero-effect assertion; the fail-closed direction is asserted cross-kit by the E.12 S12b leg + the merged suite persona-kind tests: bare preset -> FATAL PERSONA_INCOMPATIBLE, never a false OPEN)' },
   { id: 'G6', name: 'spill ArtifactReadGrant regression (scenario 16, the PR#35 real-spill pattern): the leader-only spill team (bash allow-lane + teamEnvelope exec token + 19-unmanaged builtinToolDeny + permissions policy) is created via team.create v1 + initialWork; the creation-time work unit runs one bash command (300KB stdout > 64KB inline cap) -> the durable artifact-read-granted fact lands in the spill team ledger (instanceId inst-leader, source shell-foreground/bash — the executor spill -> observer -> authority -> durable fact chain)' },
   { id: 'G7', name: 'Remote v1-v7 compatibility (scenario 17, the v1-v7 wording correction): every version 1..7 accepted on the stable read set (catalog.list/team.getProjection/team.getLedgerPage/override.get/policyState.get); projection v<6 base vs v>=6 durableGeneration+liveToken (shape-sensitive); gated methods served at their own version (listRoots v3, getReadState v6, resolveControl v4 — well-formed typed dispatch); the v7-only expectedGeneration is REJECTED on the v6 wire (typed — the v1-v6 closed field set is byte-exact); v8 -> contract-version-unsupported; v0 / 1.5 -> malformed-request' },
   { id: 'G8', name: 'browser tab / ledger / pending review (scenario 18, endpoint-level): GET / serves the UI; team.getReadState (v6) worker session = member read state; team.getProjection (v6) live shape; the worker bash ASK opens a control request -> visible in team.getLedgerPage (the pending-review surface) -> v4 team.resolveControl allow -> bash executes -> DONE' },
@@ -2806,28 +2818,39 @@ async function main() {
       // mounted ptc — a TRUE OPEN, proven durable (T9 minted as team-root;
       // the probe lane above already pins the persona PASS). The
       // fail-closed direction (an unresolvable persona must NEVER open) is
-      // asserted by the S12b cell in this same kit (bare preset, no persona
-      // row -> FATAL PERSONA_INCOMPATIBLE, admitInitialWork blocked).
+      // asserted CROSS-KIT: the E.12 S12b leg (bare preset, no persona row
+      // -> FATAL PERSONA_INCOMPATIBLE, admitInitialWork blocked — no false
+      // OPEN) + the merged suite (persona-kind-provider-preflight: the
+      // complete-mounted-preset chain FATALs end-to-end). This kit
+      // (prf) carries no bare-preset boot cell of its own.
       const cr = await remoteCallReady(B, 'team.create', { rootSessionId: T9, blueprintId: BP_PERSONA_ID }, 'g5-create', 1)
       const cErr = resultError(cr.body)
       const cData = resultData(cr.body)
       // True OPEN, never a false OPEN: the accepted create mints T9
       // DURABLY as a team root — the v6 read state is the closed
       // 'team-root' relation for T9 (the inverse of the pre-fix
-      // zero-effect 'none' assertion).
+      // zero-effect 'none' assertion). Contract precision (review,
+      // 2026-10-01): `durableGeneration` is null ONLY on the `none`
+      // relation; the team-root answer MUST carry it — the remote
+      // handler REJECTS a team-root answer with null durableGeneration
+      // (packages/remote/src/handlers/team.ts L563-566; the wire
+      // validation accepts safe-integer >= 1 or null, L504-511) — so a
+      // genuinely persisted T9 asserts a POSITIVE safe integer, no
+      // null tolerance (T9 persistence is guaranteed by the accepted
+      // create: the team-root row is the durable mint).
       const zrs = await remoteCallReady(B, 'team.getReadState', { sessionId: T9 }, 'g5-created-state', 6)
       const zrsErr = resultError(zrs.body)
       const zrsData = resultData(zrs.body)
       const createdDurable = zrsErr === null
         && zrsData?.relation === 'team-root'
         && zrsData?.teamSessionId === T9
-        && (zrsData.durableGeneration === null || (Number.isSafeInteger(zrsData.durableGeneration) && zrsData.durableGeneration >= 1))
-      check('G5', 'ptc mounted GATE lane (PR-F-G5 RESOLVED by the persona-kind work — the v2 kind subject resolves through the KIND path): team.create ACCEPTED — the persona requirement is genuinely satisfied under the mounted ptc (true OPEN — T9 minted durable as team-root; the probe lane above pins the persona PASS; the fail-closed direction stays asserted by the S12b cell: bare preset -> FATAL PERSONA_INCOMPATIBLE, no false OPEN)',
+        && Number.isSafeInteger(zrsData.durableGeneration) && zrsData.durableGeneration >= 1
+      check('G5', 'ptc mounted GATE lane (PR-F-G5 RESOLVED by the persona-kind work — the v2 kind subject resolves through the KIND path): team.create ACCEPTED — the persona requirement is genuinely satisfied under the mounted ptc (true OPEN — T9 minted durable as team-root; the probe lane above pins the persona PASS; the fail-closed direction is asserted cross-kit by the E.12 S12b leg + the merged suite persona-kind tests: bare preset -> FATAL PERSONA_INCOMPATIBLE, no false OPEN)',
         cErr === null && createdDurable,
         `createErr=${cErr === null ? 'null' : String(cErr.code)} createData=${scrubTokens(JSON.stringify(cData)).slice(0, 200)} readState=${scrubTokens(JSON.stringify(zrsErr !== null ? { error: zrsErr.code } : zrsData))}`)
       saveScenario('g5-gate-creating', {
         finding: 'PR-F-G5',
-        expectation: 'RESOLVED on master (persona-kind work, A-contract PR #46; encoded by persona-kind-provider-preflight + the shipped-dist smoke, both green in the merged full suite): the create under the mounted ptc with the v2 persona kind subject is ACCEPTED — true OPEN (durable team-root T9), never a false OPEN (fail-closed direction: S12b cell + suite L701 complete-mounted-preset FATAL). Pre-#46 behavior (typed FATAL, zero durable effect) is historical — see the closure battery record realhost-battery-post-merge (prf gate-lane stale-expectation diagnosis).',
+        expectation: 'RESOLVED on master (persona-kind work, A-contract PR #46; encoded by persona-kind-provider-preflight + the shipped-dist smoke, both green in the merged full suite): the create under the mounted ptc with the v2 persona kind subject is ACCEPTED — true OPEN (durable team-root T9 with POSITIVE durableGeneration per the v6 team-root contract), never a false OPEN (fail-closed direction asserted CROSS-KIT: E.12 S12b leg + suite persona-kind complete-mounted-preset FATAL — this kit carries no bare-preset cell of its own). Pre-#46 behavior (typed FATAL, zero durable effect) is historical — see the closure battery record realhost-battery-post-merge (prf gate-lane stale-expectation diagnosis).',
         createError: cErr === null ? null : { code: cErr.code, message: scrubTokens(String(cErr.message)), details: scrubTokens(JSON.stringify(cErr.details ?? null)) },
         createData: cData === null ? null : scrubTokens(JSON.stringify(cData)),
         readStateT9: zrsErr !== null ? { error: zrsErr.code } : zrsData,
