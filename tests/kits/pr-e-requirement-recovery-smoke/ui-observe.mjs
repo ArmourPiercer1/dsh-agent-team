@@ -556,3 +556,61 @@ export function writePrivateAccessRecord({ repoRoot, worldDir, payload, fileName
   }
   return { path, mode: 0o600 }
 }
+
+// ── P2-B: real bounded UI ledger read (absolute deadline + page cap) ────────
+
+export const UI_READ_OVERRUN = Object.freeze({ DEADLINE: 'UI_READ_DEADLINE', PAGE_CAP: 'UI_READ_PAGE_CAP' })
+const UI_BOUNDED_READ_TIMEOUT = Symbol('ui-bounded-read-timeout')
+
+/**
+ * boundedUiLedgerRead({ fetchPage, deadlineAt, maxPages = 20 }) ->
+ *   { ok: true, entries } | { ok: false, overrun: 'UI_READ_DEADLINE' | 'UI_READ_PAGE_CAP', entries: null }
+ *
+ * The UI hold lane's ONLY ledger read path (the shared `ledgerEntries` is
+ * untouched — non-UI semantics unchanged). The UI-mode pump reached the shared
+ * walker unbounded: one round could internally do up to 100 pages × (20×429
+ * retry × ~60s fetch), so a 1s hold could stall ~60s+. This walker bounds the
+ * UI round for real:
+ *   - every page fetch is raced against the ABSOLUTE `deadlineAt` (the hold
+ *     boundary itself) — no page is ever waited on past it;
+ *   - the page count is capped (`maxPages`, default 20 — a UI truth is small;
+ *     the cap is an OVERRUN, never silently-truncated partial truth);
+ *   - ANY overrun returns `entries: null` — a bounded-read overrun is NEVER
+ *     partially adopted (same fail-closed family as READ_BUDGET_EXCEEDED).
+ *
+ * HONEST LIMITATION: a race stops the UI lane from WAITING and from ADOPTING —
+ * it does NOT cancel the underlying in-flight HTTP (Node fetch without an
+ * AbortSignal keeps running to completion in the background). The durable-truth
+ * contract only requires that nothing past the boundary is ever VERIFIED.
+ */
+export async function boundedUiLedgerRead({ fetchPage, deadlineAt, maxPages = 20 } = {}) {
+  if (typeof fetchPage !== 'function') throw new TypeError('boundedUiLedgerRead requires a fetchPage(afterSequence) function')
+  if (typeof deadlineAt !== 'number') throw new TypeError('boundedUiLedgerRead requires a numeric absolute deadlineAt')
+  const entries = []
+  let afterSequence = 0
+  for (let pageNo = 0; pageNo < maxPages; pageNo += 1) {
+    const remaining = deadlineAt - Date.now()
+    if (remaining <= 0) return { ok: false, overrun: UI_READ_OVERRUN.DEADLINE, entries: null }
+    let timer = null
+    let page
+    try {
+      page = await Promise.race([
+        Promise.resolve().then(() => fetchPage(afterSequence)),
+        new Promise((resolve) => { timer = setTimeout(() => resolve(UI_BOUNDED_READ_TIMEOUT), remaining) }),
+      ])
+    } finally {
+      if (timer !== null) clearTimeout(timer)
+    }
+    if (page === UI_BOUNDED_READ_TIMEOUT) {
+      return { ok: false, overrun: UI_READ_OVERRUN.DEADLINE, entries: null }
+    }
+    const pageEntries = Array.isArray(page?.entries) ? page.entries : []
+    entries.push(...pageEntries)
+    const next = page?.nextAfterSequence
+    if (typeof next !== 'number' || pageEntries.length === 0) {
+      return { ok: true, entries: entries.sort((a, b) => (a?.sequence ?? 0) - (b?.sequence ?? 0)) }
+    }
+    afterSequence = next
+  }
+  return { ok: false, overrun: UI_READ_OVERRUN.PAGE_CAP, entries: null }
+}

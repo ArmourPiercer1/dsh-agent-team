@@ -18,7 +18,7 @@ import {
   parseObserveFlags, validateAccessRecordPath, readMarkerHint,
   verifyUiTruth, planUiHoldStep, summarizeUiObserve,
   UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
-  UI_LEDGER_READ_BUDGET_MS, evaluateUiReadResult, writePrivateAccessRecord,
+  UI_LEDGER_READ_BUDGET_MS, evaluateUiReadResult, writePrivateAccessRecord, boundedUiLedgerRead,
 } from './ui-observe.mjs'
 
 // ── fixtures ────────────────────────────────────────────────────────────────
@@ -471,4 +471,58 @@ test('P2-A: normal REAL-DIR homes keeps working (pin does not relax or break the
   const { root, world } = mkFakeRepo()
   const written = writePrivateAccessRecord({ repoRoot: root, worldDir: world, payload: { ok: 1 } })
   assert.equal(lstatSync(written.path).mode & 0o777, 0o600)
+})
+
+// ── 13. P2-B: bounded UI ledger read (real absolute bound; never adopt past
+//         the boundary; shared ledgerEntries semantics untouched) ─────────────
+
+test('P2-B: STALLED page fetch — bounded read fails closed at the boundary WITHOUT waiting for the fake', async () => {
+  const started = Date.now()
+  const neverResolves = new Promise(() => { /* simulates 100 pages × retries × slow fetch */ })
+  const res = await boundedUiLedgerRead({ fetchPage: () => neverResolves, deadlineAt: started + 30 })
+  const elapsed = Date.now() - started
+  assert.equal(res.ok, false)
+  assert.equal(res.overrun, 'UI_READ_DEADLINE')
+  assert.equal(res.entries, null, 'an overrun is NEVER partially adopted')
+  assert.ok(elapsed < 2000, `bounded at the deadline, not by the stall (took ${elapsed}ms)`)
+})
+
+test('P2-B: page fetch SUCCEEDING AFTER the boundary is never adopted/verified', async () => {
+  let resolvedLate = false
+  const slow = () => new Promise((resolve) => setTimeout(() => {
+    resolvedLate = true
+    resolve({ entries: [{ sequence: 1, kind: 'control-decision-recorded' }], nextAfterSequence: undefined })
+  }, 80))
+  const res = await boundedUiLedgerRead({ fetchPage: slow, deadlineAt: Date.now() + 20 })
+  assert.equal(res.ok, false)
+  assert.equal(res.overrun, 'UI_READ_DEADLINE')
+  assert.equal(resolvedLate, false, 'the adjudication returned at the boundary, not on the late result')
+  await new Promise((resolve) => setTimeout(resolve, 120)) // late fetch lands…
+  assert.equal(res.ok, false, '…and STILL never flips the overrun into a success (never adopted)')
+})
+
+test('P2-B: in-boundary multi-page success still reads the durable truth (cursor-walk + sort preserved)', async () => {
+  const seen = []
+  const res = await boundedUiLedgerRead({
+    deadlineAt: Date.now() + 5000,
+    fetchPage: async (afterSequence) => {
+      seen.push(afterSequence)
+      if (afterSequence === 0) return { entries: [{ sequence: 3, kind: 'b' }], nextAfterSequence: 3 }
+      return { entries: [{ sequence: 1, kind: 'a' }], nextAfterSequence: undefined }
+    },
+  })
+  assert.equal(res.ok, true)
+  assert.deepEqual(seen, [0, 3], 'page walker advances via nextAfterSequence like ledgerEntries')
+  assert.deepEqual(res.entries.map((e) => e.sequence), [1, 3], 'sorted by sequence like ledgerEntries')
+})
+
+test('P2-B: page-count cap — an unbounded ledger is an OVERRUN (partial truth never adopted)', async () => {
+  const res = await boundedUiLedgerRead({
+    deadlineAt: Date.now() + 5000,
+    maxPages: 3,
+    fetchPage: async (afterSequence) => ({ entries: [{ sequence: afterSequence + 1 }], nextAfterSequence: afterSequence + 1 }),
+  })
+  assert.equal(res.ok, false)
+  assert.equal(res.overrun, 'UI_READ_PAGE_CAP')
+  assert.equal(res.entries, null)
 })

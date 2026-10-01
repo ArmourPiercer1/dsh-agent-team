@@ -251,7 +251,7 @@ import {
   planUiHoldStep, summarizeUiObserve, reviewPayloadDigestOf,
   sha256Hex, canonicalJson,
   UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
-  UI_LEDGER_READ_BUDGET_MS, evaluateUiReadResult,
+  UI_LEDGER_READ_BUDGET_MS, evaluateUiReadResult, boundedUiLedgerRead,
 } from './ui-observe.mjs'
 import {
   TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH,
@@ -1878,16 +1878,31 @@ async function uiObserveHold(rec, rootSessionId, req, rid, tag) {
         markerSeen = true
         if (hintRes.hint.requestId === rid) {
           const readStartedAt = Date.now()
-          const entries = await ledgerEntries(rec, rootSessionId) // durable truth — EXISTING read path
+          // P2-B: the UI round's durable read is BOUNDED for real — every page
+          // fetch is raced against the hold's ABSOLUTE deadline and page-capped
+          // (the shared `ledgerEntries` walker, if reached raw, could internally
+          // do 100 pages × retries × slow fetches and stall the hold far past
+          // its boundary). An overrun is NEVER partially adopted — same
+          // fail-closed family as READ_BUDGET_EXCEEDED. The shared read path
+          // itself stays untouched for non-UI callers; this walker reuses the
+          // same remoteCallReady call-by-call. HONEST LIMITATION: the race
+          // stops the UI lane from WAITING/ADOPTING past the boundary — it
+          // CANNOT cancel the underlying in-flight HTTP (Node fetch without a
+          // signal keeps running to completion in the background).
+          const read = await boundedUiLedgerRead({
+            deadlineAt,
+            fetchPage: async (afterSequence) => remoteValue(
+              await remoteCallReady(rec, 'team.getLedgerPage', { teamSessionId: rootSessionId, afterSequence, limit: 500 }, `ui-ledger-p${afterSequence}`, 1),
+              'team.getLedgerPage',
+            ),
+          })
           const readDoneAt = Date.now()
-          // A read over the poll budget is NEVER adopted as verification —
-          // the kit bounds the POLL LOOP, never the shared ledgerEntries path.
-          const budgetExceeded = readDoneAt - readStartedAt > UI_LEDGER_READ_BUDGET_MS
+          const budgetExceeded = read.ok !== true || readDoneAt - readStartedAt > UI_LEDGER_READ_BUDGET_MS
           const truth = budgetExceeded
             ? null
-            : verifyUiTruth({ marker: hintRes.hint, ledgerFacts: entries, expectedRequestId: rid, expectedDigest })
+            : verifyUiTruth({ marker: hintRes.hint, ledgerFacts: read.entries, expectedRequestId: rid, expectedDigest })
           if (truth === null) {
-            lastReason = 'READ_BUDGET_EXCEEDED'
+            lastReason = read.ok !== true ? String(read.overrun ?? 'UI_READ_OVERRUN') : 'READ_BUDGET_EXCEEDED'
             writeSummary(`REJECTED:${lastReason}`, hintRes.hint.claimed ?? null)
           } else if (!truth.ok) {
             lastReason = truth.reason ?? 'TRUTH_REJECTED'
