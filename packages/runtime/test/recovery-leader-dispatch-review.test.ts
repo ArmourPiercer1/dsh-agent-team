@@ -79,8 +79,16 @@ describe('E.11 recovery-leader-dispatch-review: the human-reviewed recovery offe
     // the review identity the UI shows).
     expect(typeof calls?.lastReviewPayloadDigest).toBe('string')
     expect((calls?.lastReviewPayloadDigest as string).length).toBeGreaterThan(0)
-    // The correlation is NEW per attempt (the attempt sequence = 1).
-    expect(calls?.lastCorrelation).toBe('recovery:req-recovery-review-1:1')
+    // The correlation is NEW per attempt. (fix-control-authz D —
+    // DISCLOSED MASKING-TEST ADJUSTMENT: the old pin
+    // `recovery:req-recovery-review-1:1` asserted the BUGGY process-local
+    // counter identity — the `:1` suffix a COLD-RESTART retry of the same
+    // token could re-derive to directly re-arm a stale approval (the D
+    // finding; target-design §11.3 forbids approval replay). The attempt
+    // identity is now a restart-unique nonce (a UUID).)
+    expect(calls?.lastCorrelation).toMatch(
+      /^recovery:req-recovery-review-1:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+    )
     // The subject is the recovery dispatch subject: a follow-up on a member
     // → the instance subject.
     expect(calls?.lastSubject).toEqual({ kind: 'instance', instanceId: recoveryWorkerInstanceId() })

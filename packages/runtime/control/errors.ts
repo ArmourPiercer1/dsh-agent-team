@@ -20,6 +20,9 @@
  * {@link CONTROL_ERROR_CODES.CONTROL_REQUEST_STALE} and
  * {@link CONTROL_ERROR_CODES.CONTROL_EXTERNAL_POLICY_DENIED} first record
  * the durable decision row (stale-denied / deny-with-external-policy)
+ * and {@link CONTROL_ERROR_CODES.CONTROL_REQUEST_ADMISSION_ABORTED}
+ * first persists the durable abandon (the close fact — the
+ * abort-during-wait leaves the same footprint as an explicit abandon),
  * and THEN throw, so the closed request state survives restart (the
  * documented recovery semantics; see `index.ts`).
  *
@@ -35,7 +38,10 @@
  * - external hard policy: CONTROL_EXTERNAL_POLICY_DENIED;
  * - last-mile guard: CONTROL_GUARD_MALFORMED, CONTROL_GUARD_AMBIGUOUS;
  * - synchronous wait bridge (alpha.2 §9.4): CONTROL_WAIT_ABORTED,
- *   CONTROL_WAIT_CLOSED.
+ *   CONTROL_WAIT_CLOSED;
+ * - effect-admission boundary (the inline recovery re-execution's first
+ *   effect — the abort path persists the durable abandon first):
+ *   CONTROL_REQUEST_ADMISSION_ABORTED.
  *
  * @module @dsh-agent-team/runtime/control/errors
  */
@@ -124,6 +130,21 @@ export const CONTROL_ERROR_CODES = {
    * never decides).
    */
   CONTROL_WAIT_CLOSED: 'CONTROL_WAIT_CLOSED',
+  /**
+   * The effect-admission boundary (`commitEffectIfAuthorized`) saw the
+   * invocation's live signal ABORTED before the effect committed —
+   * checked inside the same control-lock hold as the terminal-state
+   * read (an abort at ANY wait point of the admission — the gate
+   * re-probe await, the control-lock queue — lands here). The durable
+   * abandon is PERSISTED FIRST (the additive close fact
+   * `control-request-abandoned` — the terminal mark written exactly
+   * once; an abort-during-wait leaves the SAME durable footprint as an
+   * explicit abandon — the documented fail-closed exception, like
+   * CONTROL_REQUEST_STALE), and this typed error is thrown second. A
+   * LATER explicit abandon (the legitimate late-close path) then
+   * no-ops on the already-terminal state (exactly-once).
+   */
+  CONTROL_REQUEST_ADMISSION_ABORTED: 'CONTROL_REQUEST_ADMISSION_ABORTED',
 } as const
 
 /** One of the closed control-service error codes. */

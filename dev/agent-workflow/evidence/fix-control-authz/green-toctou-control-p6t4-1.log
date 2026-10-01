@@ -1,0 +1,34 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/control-legacy-row-compat.test.ts (4 tests) 11ms
+ ✓ packages/runtime/test/control-team-subject.test.ts (3 tests) 7ms
+ ✓ packages/runtime/test/control-inline-review.test.ts (5 tests) 7ms
+ ✓ packages/runtime/test/control-template-subject.test.ts (5 tests) 8ms
+ ✓ packages/runtime/test/control-inline-abandon.test.ts (6 tests) 11ms
+ ✓ packages/runtime/test/p6t4-allow-once.test.ts (4 tests) 8ms
+ ✓ packages/runtime/test/f9-control-exactly-once.test.ts (8 tests) 16ms
+ ✓ packages/runtime/test/control-abandon-without-resolve-envelope.test.ts (8 tests) 10ms
+ ✓ packages/runtime/test/remote-control-abandoned-code.test.ts (4 tests) 6ms
+ ✓ packages/runtime/test/a4a-control-exact-scope.test.ts (28 tests) 24ms
+ ✓ packages/runtime/test/p6t4-external-policy.test.ts (6 tests) 18ms
+ ✓ packages/runtime/test/control-abandon-storage-fault.test.ts (4 tests) 2ms
+ ✓ packages/runtime/test/p6t4-restart.test.ts (3 tests) 3ms
+ ✓ packages/runtime/test/control-guard-leader.test.ts (13 tests) 14ms
+ ✓ packages/runtime/test/p6t4-negatives.test.ts (11 tests) 7ms
+ ✓ packages/runtime/test/control-subject-normalization.test.ts (9 tests) 6ms
+ ✓ packages/runtime/test/control-subject-cross-kind-alias.test.ts (2 tests) 12ms
+ ✓ packages/runtime/test/c1-control-notification.test.ts (8 tests) 7ms
+ ✓ packages/runtime/test/p6t4-stale.test.ts (5 tests) 11ms
+ ✓ packages/runtime/test/p6t4-deny.test.ts (3 tests) 3ms
+ ✓ packages/runtime/test/f9-s6-resolve-control.test.ts (14 tests) 7ms
+ ✓ packages/runtime/test/control-review-payload-roundtrip.test.ts (6 tests) 4ms
+ ✓ packages/runtime/test/control-guard-coupling.test.ts (2 tests) 2ms
+
+ Test Files  24 passed (24)
+      Tests  171 passed (171)
+   Start at  06:22:01
+   Duration  4.72s (transform 5.67s, setup 0ms, import 17.50s, tests 211ms, environment 2ms)
+
+EXIT=0

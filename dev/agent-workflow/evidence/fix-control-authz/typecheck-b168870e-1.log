@@ -1,0 +1,3 @@
+$ cd packages/runtime && pnpm run typecheck
+$ tsc -p tsconfig.json
+EXIT=0 (typecheck at b168870e — the fix-control-authz code head; fresh capture for the fix-report typecheck claim)

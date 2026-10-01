@@ -848,5 +848,96 @@ export interface ControlService {
         readonly requestId: string;
         readonly signal?: ControlWaitSignal;
     }): Promise<ControlDecisionRecord>;
+    /**
+     * fix-control-authz C (the external-review TOCTOU) — the EFFECT-
+     * ADMISSION BOUNDARY: the linearized authorization check for the
+     * inline recovery re-execution's FIRST EFFECT. Runs the caller's
+     * effect commit (the router's `executeEffectLocked` — the work
+     * admission fact / the effect commit) as ONE unit under the SAME
+     * per-team lock the durable abandon write goes through (this
+     * service's team chain — `abandonControlRequest` / the inline-abort
+     * cascade write the terminal mark under it): inside the lock the
+     * durable terminal state is read and, if the request is durably
+     * ABANDONED (the terminal mark), the unit rejects typed
+     * CONTROL_REQUEST_ABANDONED WITHOUT running the effect. This is what
+     * closes the TOCTOU window the pre-dispatch snapshot could not: a
+     * durable abandon landing AFTER the pre-dispatch read (e.g. during
+     * the gate re-probe await) and BEFORE the effect commit is either
+     * (i) committed before this unit → the unit sees the mark and the
+     * effect NEVER commits, or (ii) queued/committed after the unit →
+     * the effect had already durably committed before the terminal mark
+     * (the legitimate late close — the CCR-4 semantics; the mark closes
+     * the request for the future). No abandon can land between the check
+     * and the effect commit (both inside the one lock hold).
+     *
+     * C-2 (the live signal): when `input.signal` is present, the SAME
+     * lock hold also checks the invocation's abort state AFTER the
+     * terminal-state read and BEFORE the effect commit — an abort that
+     * landed at ANY wait point of the admission (the gate re-probe
+     * await, this unit's control-lock queue) is honored HERE: the
+     * durable abandon is PERSISTED first (the additive close fact —
+     * exactly-once, the same durable footprint as an explicit abandon;
+     * a later late-abandon then no-ops on the already-terminal state)
+     * and the unit rejects typed
+     * CONTROL_REQUEST_ADMISSION_ABORTED (the effect never runs). The
+     * settle semantics for an ALREADY-COMMITTED effect are preserved:
+     * the signal is checked only up to the commit — an abort that
+     * lands after the unit returns is the legitimate late close (the
+     * committed effect is never retroactively undone or re-marked).
+     *
+     * This writes NO control facts on the authorization path (no
+     * synthetic "consumed" mark — the linearization is the lock
+     * itself); the ONLY durable write this unit performs is the
+     * abandon close on the abort path (the rejection's evidence),
+     * changes NO request state, and never alters the outcome of a
+     * non-abandoned, non-aborted request (the unit is transparent: it
+     * runs the caller's effect and returns its result).
+     * The caller (the router) translates the typed rejection into the
+     * recovery dispatch's typed zero-effect block.
+     * @param input.rootSessionId - the team (root) session id.
+     * @param input.requestId - the recovery Control request id (the
+     *   reviewed inline request whose terminal state authorizes this
+     *   effect).
+     * @param input.commitEffect - the caller's first-effect commit (runs
+     *   under the lock, ONLY when no abandon mark is durable and the
+     *   signal is not aborted).
+     * @param input.signal - the invocation's live abort signal (the
+     *   caller-cancellation — the platform `AbortSignal` shape;
+     *   transient, never serialized). Absent → the signal check is
+     *   skipped (byte-identical authorization path).
+     */
+    commitEffectIfAuthorized<T>(input: {
+        readonly rootSessionId: string;
+        readonly requestId: string;
+        readonly commitEffect: () => Promise<T>;
+        readonly signal?: ControlWaitSignal;
+    }): Promise<T>;
+    /**
+     * fix-control-authz C (the residual pre-reservation boundary) — the
+     * LOCK-FREE durable close for the activation provider's
+     * pre-reservation abort boundary.
+     *
+     * Precondition: the caller ALREADY holds this service's per-team
+     * lock (the effect-admission unit `commitEffectIfAuthorized` runs
+     * its commitEffect — where the provider preflight lives — under the
+     * SAME lock hold). This method performs NO lock acquisition
+     * (re-acquiring would deadlock on the caller's own hold).
+     *
+     * Contract: resolves when the durable close is GUARANTEED — either
+     * this call persisted the terminal mark (the additive close fact,
+     * exactly-once, the same `commitAbandonmentFact` primitive the
+     * explicit abandon and the unit's abort branch use) or the mark was
+     * ALREADY durable (the idempotent no-op). Rejects ONLY when the
+     * close persist itself faults (the typed DURABLE_WRITE_FAILED —
+     * fail-closed) or the request id is unknown (typed
+     * CONTROL_REQUEST_NOT_FOUND — loud).
+     * @param input.rootSessionId - the team (root) session id.
+     * @param input.requestId - the recovery Control request id whose
+     *   durable close this settles.
+     */
+    persistAbandonCloseLocked(input: {
+        readonly rootSessionId: string;
+        readonly requestId: string;
+    }): Promise<void>;
 }
 //# sourceMappingURL=types.d.ts.map

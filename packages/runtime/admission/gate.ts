@@ -226,6 +226,17 @@ export function mapActivationError(error: ActivationError): TeamRuntimeError {
         error.message,
         { ...base, ...error.details },
       )
+    case ACTIVATION_ERROR_CODES.REQUEST_ABORTED:
+      // fix-control-authz C (the residual pre-reservation boundary):
+      // the invocation aborted before the journal reservation — zero
+      // provisioning, the durable close settled (when wired). The
+      // caller sees the typed block (the `status` marks the pre-
+      // reservation abort — distinct from a compatibility verdict).
+      return new TeamRuntimeError(
+        TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+        error.message,
+        { ...base, ...error.details, status: 'ABORTED_PRE_RESERVATION' },
+      )
     default:
       return new TeamRuntimeError(
         TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED,

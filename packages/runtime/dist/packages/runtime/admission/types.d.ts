@@ -173,6 +173,17 @@ export interface TeamRuntimeActionRequest {
          *   subjects across the covered scopes) — the reduced authority
          *   excludes exactly these (plan §E.9). */
         readonly unavailableSubjects: readonly string[];
+        /** fix-control-authz C (the external-review TOCTOU) — the recovery
+         *   Control request id (the reviewed inline request). Present ONLY
+         *   on the router's recovery re-execution: the effect-admission
+         *   boundary re-validates the durable terminal state of THIS
+         *   request AT the effect boundary (the linearized authorization
+         *   check — `commitEffectIfAuthorized`, the same lock the durable
+         *   abandon write goes through); a durably abandoned request's
+         *   effect is never committed (the pre-dispatch snapshot alone
+         *   cannot close the window — the abandon may land between it and
+         *   the effect commit, e.g. during the gate re-probe). */
+        readonly controlRequestId?: string;
     };
 }
 /** One durable effect of an executed action (lossless JSON, no live data). */

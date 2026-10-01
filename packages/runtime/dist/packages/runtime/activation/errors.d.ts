@@ -97,6 +97,13 @@ export declare const ACTIVATION_ERROR_CODES: {
      *  FAILED operation: the caller must start a NEW logical operation
      *  (new requestToken). */
     readonly OPERATION_FAILED: "ACTIVATION_OPERATION_FAILED";
+    /** fix-control-authz C (the residual pre-reservation boundary): the
+     *  invocation aborted in the pre-reservation preflight (after a
+     *  preflight await, BEFORE the journal reservation — step 12, the
+     *  first durable write). Zero provisioning (no journal reservation,
+     *  no child session, no member row); the durable close is settled
+     *  when the close callback is wired (the recovery re-execution). */
+    readonly REQUEST_ABORTED: "ACTIVATION_REQUEST_ABORTED";
 };
 /** One of the closed activation error codes. */
 export type ActivationErrorCode = (typeof ACTIVATION_ERROR_CODES)[keyof typeof ACTIVATION_ERROR_CODES];

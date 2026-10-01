@@ -45,6 +45,7 @@
  */
 import { actionImpactOf, checkCallerRoleAuthority, callerEnvelope, enforceEnvelope, enforceRequirementGate, isNewWorkAdmission, resolveCaller, resolveTeamAndTarget, validateActionRequest, workExecutionModeOf, } from '../admission/index.js';
 import { ACTION_IMPACT_CLASSES } from '../requirements/index.js';
+import { ACTIVATION_ERROR_CODES } from '../activation/index.js';
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError, isTeamRuntimeError, } from '../admission/errors.js';
 import { CONTROL_ERROR_CODES, CONTROL_EXECUTION_COUPLINGS, CONTROL_REQUEST_KINDS, isControlError, } from '../control/index.js';
 import { sha256Hex } from '../../domain/blueprint/src/index.js';
@@ -146,31 +147,115 @@ function recoveryDispatchSubject(request, targetTemplateId, rootSessionId) {
     if (request.action === 'follow-up' && request.targetInstanceId !== undefined) {
         return { kind: 'instance', instanceId: String(request.targetInstanceId) };
     }
+    // fix-control-authz H: a send-message is INSTANCE-addressed — the
+    // messaging coordinator (and the facade's own addressing) carry the
+    // RECIPIENT in `targetInstanceId`; the recovery subject must be that
+    // recipient instance. The old mapping fell through to the recipient's
+    // TEMPLATE subject while the dispatch still passed `targetInstanceId`
+    // — a combination the real control validator rejects fail-closed
+    // (CONTROL_REQUEST_MALFORMED), so the recovery send-message never
+    // reached review.
+    if (request.action === 'send-message' && request.targetInstanceId !== undefined) {
+        return { kind: 'instance', instanceId: String(request.targetInstanceId) };
+    }
     if (targetTemplateId !== undefined) {
         return { kind: 'template', templateId: targetTemplateId };
     }
     return { kind: 'team', rootSessionId };
 }
 /**
- * pre-alpha3 PR-E (plan §E.9) — the COMPLETE normalized review payload of
- * one recovery dispatch (lossless JSON): every fact a human reviewer needs
- * to decide — the exact operation, the blocked scopes with their fatal
- * requirements and the downed capability subjects, and the reduced-
- * authority preview (the reduced ORIGINAL authority: the downed subjects
- * unavailable, everything else unchanged, the external hard ceiling
- * absolute). The digest of this payload is the review identity the UI
- * shows (the "exact reviewed payload" — scenario: the UI must display
- * what was actually approved).
+ * fix-control-authz B — the FROZEN review snapshot: a deep copy of the
+ * dispatched request (the `payload` deep-copied + recursively frozen;
+ * the transient `signal` rides by reference — it is never serialized or
+ * persisted) taken ONCE at dispatch time, before anything durable is
+ * written. The SAME frozen snapshot feeds the review payload (persist +
+ * digest) and the post-approval re-execution — the review UI and the
+ * execution share ONE immutable object (target-design §11.2/§11.3:
+ * "UI 展示的 payload 与实际执行使用同一个 frozen object"): a mutation of
+ * the caller's original request while the approval is pending can never
+ * change what is reviewed or what is executed.
+ */
+function deepFreezeCopyValue(value) {
+    if (Array.isArray(value)) {
+        return Object.freeze(value.map((entry) => deepFreezeCopyValue(entry)));
+    }
+    if (value !== null && typeof value === 'object') {
+        const copy = {};
+        for (const [key, entry] of Object.entries(value)) {
+            copy[key] = deepFreezeCopyValue(entry);
+        }
+        return Object.freeze(copy);
+    }
+    return value;
+}
+function freezeRequestSnapshot(request) {
+    const snapshot = {
+        rootSessionId: request.rootSessionId,
+        action: request.action,
+        caller: { ...request.caller },
+        requestToken: request.requestToken,
+        ...(request.payload !== undefined
+            ? { payload: deepFreezeCopyValue(request.payload) }
+            : {}),
+        ...(request.targetInstanceId !== undefined ? { targetInstanceId: request.targetInstanceId } : {}),
+        ...(request.delegationTemplateId !== undefined
+            ? { delegationTemplateId: request.delegationTemplateId }
+            : {}),
+        ...(request.delegationInstanceId !== undefined
+            ? { delegationInstanceId: request.delegationInstanceId }
+            : {}),
+        ...(request.execution !== undefined ? { execution: request.execution } : {}),
+        ...(request.signal !== undefined ? { signal: request.signal } : {}),
+    };
+    Object.freeze(snapshot.caller);
+    return Object.freeze(snapshot);
+}
+/**
+ * pre-alpha3 PR-E (plan §E.9) + fix-control-authz B — the COMPLETE
+ * normalized review payload of one recovery dispatch (lossless JSON):
+ * every fact a human reviewer needs to decide — the COMPLETE normalized
+ * invocation (target-design §11.3: toolName, rootSessionId, requestToken,
+ * subject, arguments — the work prompt / attachedContext / the message
+ * recipient + body — execution mode, the delegation identity), the
+ * blocked scopes with their fatal requirements and the downed capability
+ * subjects, and the reduced-authority preview (the reduced ORIGINAL
+ * authority: the downed subjects unavailable, everything else unchanged,
+ * the external hard ceiling absolute). Built from the FROZEN snapshot
+ * (the `request` argument is the `freezeRequestSnapshot` result) so the
+ * persisted payload, its digest and the post-approval execution share
+ * one immutable object. The digest of this payload is the review
+ * identity the UI shows (the "exact reviewed payload" — scenario: the UI
+ * must display what was actually approved; a work-content-only change —
+ * e.g. the prompt — MUST change the digest).
  */
 function buildRecoveryDispatchPayload(args) {
+    const { request } = args;
     return {
         schema: 'dsh-agent-team/recovery-dispatch/v1',
+        // The COMPLETE normalized invocation (spec §11.3 — the human
+        // reviews exactly what will execute):
+        toolName: request.action,
         rootSessionId: args.rootSessionId,
-        action: args.request.action,
-        caller: args.request.caller,
-        ...(args.request.targetInstanceId !== undefined
-            ? { targetInstanceId: args.request.targetInstanceId }
+        requestToken: request.requestToken,
+        subject: args.subject,
+        // The full model-visible arguments of the reviewed operation (the
+        // work prompt / attachedContext / taskSummary / label — or, for a
+        // send-message, the recipient + subject + body). Deep-frozen: a
+        // caller mutation of the original payload after this point cannot
+        // change the reviewed content.
+        arguments: (request.payload !== undefined ? request.payload : {}),
+        ...(request.execution !== undefined ? { execution: request.execution } : {}),
+        ...(request.delegationTemplateId !== undefined
+            ? { delegationTemplateId: request.delegationTemplateId }
             : {}),
+        ...(request.delegationInstanceId !== undefined
+            ? { delegationInstanceId: request.delegationInstanceId }
+            : {}),
+        // The existing review context (the blocked scope + the reduced
+        // authority preview):
+        action: request.action,
+        caller: request.caller,
+        ...(request.targetInstanceId !== undefined ? { targetInstanceId: request.targetInstanceId } : {}),
         ...(args.targetTemplateId !== undefined ? { templateId: args.targetTemplateId } : {}),
         requestedOperation: `one recovery attempt of '${args.request.action}'${args.request.targetInstanceId !== undefined
             ? ` on member '${args.request.targetInstanceId}'`
@@ -216,10 +301,33 @@ export function createTeamRuntime(options) {
     // (one entry per in-flight Phase B/C of an `execution: 'async'` work
     // admission; removed on settlement or fail-closed throw).
     const inFlightDetachedWork = new Set();
-    // pre-alpha3 PR-E (plan §E.9): the per-runtime recovery-dispatch
-    // sequence — the control `correlation` must be NEW per attempt (a retry
-    // after a deny creates a NEW control request; the control service docs).
-    let recoveryDispatchSequence = 0;
+    // pre-alpha3 PR-E (plan §E.9) + fix-control-authz D: the recovery-
+    // dispatch ATTEMPT identity. Each attempt carries a FRESH unique nonce
+    // in its control correlation (the correlation is the logical-operation
+    // identity that ties one request + decision to one logical operation).
+    // EVERY attempt requires a fresh Human (target-design §11.3 "每次
+    // Recovery dispatch attempt 都重新审批；不做 approval replay"; ADR-19
+    // "每一次真实执行尝试都重新审批，不复用上一次批准"): a retry after a
+    // deny AND a COLD-RESTART retry of the SAME requestToken must create a
+    // NEW pending request — never re-arm an existing approval. The old
+    // process-local COUNTER reset to 0 on restart: a cold retry re-derived
+    // the first attempt's correlation and directly re-armed the stale
+    // inline approval (the persisted allow executed the new invocation
+    // with no fresh Human; work idempotency could not protect — no work
+    // had been committed yet). A RESTART-UNIQUE per-attempt nonce
+    // (randomUUID — never derivable from the requestToken alone) makes
+    // that impossible by construction.
+    const platformCrypto = globalThis;
+    let recoveryAttemptCounter = 0;
+    function nextRecoveryAttemptId() {
+        recoveryAttemptCounter += 1;
+        const uuid = typeof platformCrypto.crypto?.randomUUID === 'function'
+            ? platformCrypto.crypto.randomUUID()
+            : undefined;
+        return uuid !== undefined
+            ? uuid
+            : `fallback-${recoveryAttemptCounter.toString(36)}-${Date.now().toString(36)}`;
+    }
     /**
      * pre-alpha3 PR-E (plan §E.9) — the recovery dispatch: when the
      * requirement gate blocked a NEW WORK attempt with
@@ -257,25 +365,40 @@ export function createTeamRuntime(options) {
             return undefined;
         }
         const { request } = args;
+        // fix-control-authz B: the request is normalized + deep-frozen
+        // ONCE, now — before anything durable is written. Every consumer
+        // below (the subject, the review payload, the digest, the
+        // post-approval re-execution) reads this ONE frozen snapshot: the
+        // review UI and the execution share the same immutable object
+        // (target-design §11.2/§11.3), and a mutation of the caller's
+        // original request while the approval is pending can never change
+        // what is reviewed or what is executed.
+        const frozen = freezeRequestSnapshot(request);
+        const subject = recoveryDispatchSubject(frozen, args.targetTemplateId, args.rootSessionId);
         const payload = buildRecoveryDispatchPayload({
-            request,
+            request: frozen,
+            subject,
             rootSessionId: args.rootSessionId,
             targetTemplateId: args.targetTemplateId,
             blockedScopes,
             unavailableSubjects,
         });
-        recoveryDispatchSequence += 1;
+        // fix-control-authz D: the restart-unique per-attempt identity (a
+        // retry after a deny AND a cold-restart retry of the same token are
+        // NEW attempts — a NEW pending request, a fresh Human; the stale
+        // approval can never authorize a new invocation).
+        const attemptId = nextRecoveryAttemptId();
         const record = await controlService.requestControl({
             rootSessionId: args.rootSessionId,
-            caller: request.caller,
+            caller: frozen.caller,
             kind: CONTROL_REQUEST_KINDS.USER_APPROVAL,
-            subject: recoveryDispatchSubject(request, args.targetTemplateId, args.rootSessionId),
-            ...(request.targetInstanceId !== undefined
-                ? { targetInstanceId: String(request.targetInstanceId) }
+            subject,
+            ...(frozen.targetInstanceId !== undefined
+                ? { targetInstanceId: String(frozen.targetInstanceId) }
                 : {}),
-            actionName: request.action,
-            correlation: `recovery:${request.requestToken}:${recoveryDispatchSequence.toString(36)}`,
-            summary: `recovery dispatch: one reviewed attempt of '${request.action}' on the blocked ` +
+            actionName: frozen.action,
+            correlation: `recovery:${frozen.requestToken}:${attemptId}`,
+            summary: `recovery dispatch: one reviewed attempt of '${frozen.action}' on the blocked ` +
                 `scope(s) [${blockedScopes.join(', ')}] on the reduced original authority`,
             reviewPayload: payload,
             reviewPayloadDigest: `sha256:${sha256Hex(canonicalJsonStringify(payload))}`,
@@ -286,15 +409,22 @@ export function createTeamRuntime(options) {
             decision = await controlService.awaitControlDecision({
                 rootSessionId: args.rootSessionId,
                 requestId: record.requestId,
-                ...(request.signal !== undefined
-                    ? { signal: request.signal }
+                ...(frozen.signal !== undefined
+                    ? { signal: frozen.signal }
                     : {}),
             });
         }
         catch (waitError) {
             if (isControlError(waitError) &&
                 (waitError.code === CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED ||
-                    waitError.code === CONTROL_ERROR_CODES.CONTROL_WAIT_CLOSED)) {
+                    waitError.code === CONTROL_ERROR_CODES.CONTROL_WAIT_CLOSED ||
+                    // fix-control-authz C: the request was DURABLY ABANDONED while
+                    // the wait parked (the terminal mark settled the waiter — the
+                    // wait bridge's typed terminal outcome, fix-control-authz C):
+                    // the same zero-effect typed block stands (the terminal mark
+                    // is already durable — the abandon below is the tolerated
+                    // concurrent-abandon no-op).
+                    waitError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED)) {
                 // Abort: the requester ABANDONS the request — the durable
                 // `control-request-abandoned` terminal mark is written BEFORE
                 // return (the zero durable effect is guaranteed by the terminal
@@ -302,7 +432,7 @@ export function createTeamRuntime(options) {
                 try {
                     await controlService.abandonControlRequest({
                         rootSessionId: args.rootSessionId,
-                        caller: request.caller,
+                        caller: frozen.caller,
                         requestId: record.requestId,
                         reason: String(waitError.code),
                     });
@@ -352,16 +482,82 @@ export function createTeamRuntime(options) {
                 controlRequestId: record.requestId,
             });
         }
+        // fix-control-authz C: the FINAL inline-authorization / terminal
+        // check immediately before the side effects (the wait→admission
+        // race): the wait bridge settles on the decision it OBSERVED; if the
+        // terminal abandon mark landed AFTER that observation (an allow +
+        // abandon race — every interleaving), or the caller's signal aborted
+        // after the settle (the frozen invocation is dead), the allow must
+        // NEVER execute — the typed zero-effect block stands (the same
+        // `controlDecision: 'abandoned'` contract as the abort path).
+        const frozenSignal = asAbortLike(frozen.signal);
+        if (frozenSignal !== undefined && frozenSignal.aborted) {
+            // The invocation was cancelled after the wait settled: durably
+            // close the request (legal for a decided request — the abandon
+            // closes the durable allow; the tolerated outcome is the mark
+            // already present) and keep the typed zero-effect block.
+            try {
+                await controlService.abandonControlRequest({
+                    rootSessionId: args.rootSessionId,
+                    caller: frozen.caller,
+                    requestId: record.requestId,
+                    reason: 'wait-aborted',
+                });
+            }
+            catch (abandonError) {
+                if (!(isControlError(abandonError) &&
+                    abandonError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED)) {
+                    throw abandonError;
+                }
+            }
+            throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, 'TeamRuntime: the recovery dispatch was abandoned (the invocation aborted after the wait settled) — zero durable effect (the operation remains blocked)', {
+                rootSessionId: args.rootSessionId,
+                status: 'BLOCKED_FATAL',
+                gateReason: 'requiredScopeDown',
+                blockedScopes: [...blockedScopes],
+                source: 'requirement-gate',
+                controlDecision: 'abandoned',
+                controlRequestId: record.requestId,
+            });
+        }
+        const terminalState = await controlService.listControlState(args.rootSessionId);
+        if (terminalState.abandonments.some((a) => a.requestId === record.requestId)) {
+            // The terminal mark won after the wait settled (the stale allow is
+            // closed — the abandon is the terminal mark, like `stale-denied`):
+            // the allow never executes. The mark is already durable — no
+            // abandon call (exactly-once).
+            throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, 'TeamRuntime: the recovery dispatch was abandoned (the durable abandon mark landed after the wait settled — the stale allow is closed) — zero durable effect (the operation remains blocked)', {
+                rootSessionId: args.rootSessionId,
+                status: 'BLOCKED_FATAL',
+                gateReason: 'requiredScopeDown',
+                blockedScopes: [...blockedScopes],
+                source: 'requirement-gate',
+                controlDecision: 'abandoned',
+                controlRequestId: record.requestId,
+            });
+        }
         // Allow: the FRESH admission with the reviewed recovery marker (the
         // full chain re-runs — the gate now classifies the action as
         // recoveryWork and allows it on the blocked scopes, writing the
         // incident-opened fact; the provider admits the activation on the
-        // reduced original authority).
+        // reduced original authority). fix-control-authz B: the re-execution
+        // uses the SAME frozen snapshot the review payload was built from —
+        // the reviewed immutable object, never the caller's (possibly
+        // mutated) original request.
+        // fix-control-authz C (the external-review TOCTOU): the marker ALSO
+        // carries the reviewed control request id — the terminal check above
+        // is a FAST PATH, not the boundary (a durable abandon may land AFTER
+        // it — e.g. during the gate re-probe await of this re-execution).
+        // The effect-admission boundary re-validates THIS request's durable
+        // terminal state at the first-effect commit (the linearized check —
+        // see `commitEffectIfAuthorized`); an abandon that lands in the
+        // window is seen there and the effect never commits.
         return performAction({
-            ...request,
+            ...frozen,
             recovery: {
                 scopeKeys: [...blockedScopes],
                 unavailableSubjects: [...unavailableSubjects],
+                controlRequestId: record.requestId,
             },
         });
     }
@@ -409,6 +605,30 @@ export function createTeamRuntime(options) {
         // of the attempted work).
         const targetTemplateId = newWorkTargetTemplateId(request, spec, resolved, repositories);
         const impact = actionImpactOf(request.action, targetTemplateId, request.recovery !== undefined);
+        // fix-control-authz C (the residual pre-commit awaits) — the
+        // SETTLE TRACKING for the systematic pre-commit abort settle
+        // (declared ABOVE the ctx — the ctx marker callbacks close over
+        // them): `effectCommitStarted` flips at the EFFECT'S OWN first
+        // durable write (the residual-3 marker move — previously it
+        // flipped at the unit's closure entry, BEFORE the provider
+        // preflight, so a pre-reservation reject falsely disabled this
+        // settle; the pre-reservation region of the activation unit is now
+        // pre-commit by construction). A durable write may have landed
+        // after the flip — the post-commit world: the typed effect fault
+        // surfaces unchanged and the committed fact is NEVER re-marked.
+        // `boundarySettled` flips when the unit's pre-commit rejection was
+        // already converted into the typed abandon block (the close is
+        // settled — no double settle). `closeFaultObserved` flips when the
+        // durable close persist FAULTED on this admission (the residual-3
+        // one-shot close-failure contract, defect c): the settle must never
+        // re-attempt a failed close (a second attempt would succeed and
+        // mask the first fault as a settled close — the first close
+        // failure is the terminal outcome, the typed DURABLE_WRITE_FAILED
+        // escapes as-is). All false = the admission is still pre-commit
+        // (the settle applies).
+        let effectCommitStarted = false;
+        let boundarySettled = false;
+        let closeFaultObserved = false;
         const ctx = {
             repositories,
             activationProvider: options.activationProvider,
@@ -424,6 +644,13 @@ export function createTeamRuntime(options) {
             workActivity: options.workActivity,
             lifecyclePorts: options.lifecyclePorts,
             teamLocks,
+            controlServiceRef: options.controlServiceRef,
+            markEffectCommitStarted: () => {
+                effectCommitStarted = true;
+            },
+            markCloseFaultObserved: () => {
+                closeFaultObserved = true;
+            },
             staticModel: options.staticModel,
             policy: options.policy,
             policyStateTransitions: options.policyStateTransitions,
@@ -440,6 +667,205 @@ export function createTeamRuntime(options) {
         // trigger (the `recovery` marker → `recoveryWork` impact) is allowed and
         // escalates the wake to synchronous Human Review via the same
         // `dispatchRecoveryIfOffered` inline coupling below.
+        //
+        // fix-control-authz C + C-1 + C-2 (the external-review residuals) —
+        // the EFFECT-ADMISSION BOUNDARY for EVERY reviewed recovery reentry
+        // effect. The unit is NOT gated on the spec category (C-1: the
+        // send-message reentry — the `recoveryWork` impact, the
+        // `coordination` spec — bypasses the gated branch below and must
+        // hit the same boundary; an abandoned / aborted request commits
+        // ZERO effects of ANY kind). Invoked WITH the team chain (a) held
+        // — the caller owns the acquisition (the gated chain; the
+        // coordination fallback) — it re-validates the reviewed request's
+        // durable terminal state AND the invocation's live signal (C-2)
+        // as one unit with the first effect commit under the control lock
+        // (b) (the same lock the durable abandon write goes through,
+        // `commitEffectIfAuthorized`). The pre-dispatch terminal snapshot
+        // is a fast path, not this boundary: an abandon (or an abort) that
+        // landed after it — e.g. during the gate re-probe await, or while
+        // this unit queued for (b) — is seen here, and the effect NEVER
+        // commits.
+        //
+        // C-2 signal semantics: an abort BEFORE the commit is honored at
+        // the boundary — the abandon is PERSISTED there (the durable
+        // close, exactly-once, the same footprint as an explicit abandon;
+        // a later late-abandon then no-ops on the already-terminal state)
+        // and the unit rejects typed; an abort AFTER the commit is the
+        // legitimate late close (the committed effect is never
+        // retroactively undone or re-marked — the CCR-4 settle semantics
+        // for already-committed effects are preserved).
+        //
+        // Lock ordering (deadlock argument): this is the only new
+        // acquisition direction, the router's team chain (a) → the control
+        // lock (b); the control service never acquires (a) and never calls
+        // back into the router, and the effect commit runs no other
+        // control operation (no (b) re-entry) — consistent global order
+        // (a) → (b) → storage seam, no new lock cycles. A non-abandoned,
+        // non-aborted request is transparent (the unit runs the effect and
+        // returns its result unchanged).
+        const commitReviewedEffect = () => {
+            const recoveryControlRequestId = request.recovery?.controlRequestId;
+            const controlService = options.controlServiceRef?.current;
+            // fix-control-authz C (the direct shared pre-callback one-shot
+            // close-fault residual): the PRE-callback fault recognition flag
+            // — flips the moment the commitEffect callback is ACTUALLY
+            // ENTERED. A typed DURABLE_WRITE_FAILED rejection that reaches
+            // the boundary catch below with the callback NEVER entered is
+            // the shared unit's OWN pre-callback durable close fault (the
+            // C-2 abort branch of `commitEffectIfAuthorized` — the sequence
+            // allocation or the abandon put; control/service.ts): the same
+            // one-shot close-failure contract the activation callbacks
+            // carry — the original typed fault propagates as-is and the D2
+            // settle must NEVER re-attempt the failed close (a second
+            // attempt would succeed on a one-shot fault and mask the first
+            // failure as a settled close).
+            let callbackEntered = false;
+            if (recoveryControlRequestId === undefined || controlService === undefined) {
+                effectCommitStarted = true;
+                return executeEffectLocked(ctx);
+            }
+            return controlService
+                .commitEffectIfAuthorized({
+                rootSessionId,
+                requestId: recoveryControlRequestId,
+                // fix-control-authz C (residual-3, the marker move): the
+                // commit-started flag flips at the effect's OWN first durable
+                // write (the marker callback — the activation effects at the
+                // provider's reservation boundary; the others synchronously
+                // before their first commit), NOT here at the closure entry
+                // (the pre-reservation region must stay pre-commit for the
+                // D2 settle). The `callbackEntered` flag (the direct shared
+                // pre-callback residual) flips at the callback entry itself —
+                // it observes ONLY whether the commit was entered at all
+                // (the pre-callback window = the C-2 abort close), not when
+                // the first durable write lands.
+                commitEffect: () => {
+                    callbackEntered = true;
+                    return executeEffectLocked(ctx);
+                },
+                signal: asAbortLike(request.signal),
+            })
+                .catch((boundaryError) => {
+                // fix-control-authz C (the residual pre-reservation boundary):
+                // the provider preflight settled the aborted invocation at a
+                // pre-reservation check point (the durable close is settled —
+                // the lock-free callback ran FIRST, exactly-once) and rejected
+                // typed `ACTIVATION_REQUEST_ABORTED` (the gate maps it to the
+                // compatibility block carrying the provider code). The caller
+                // sees the SAME typed zero-effect abandon terminal as every
+                // other pre-commit abort settle (the request IS durably
+                // closed — exactly one mark — the idempotent composition
+                // stands). `boundarySettled` = true: the D2 wrapper must not
+                // settle again (the close already landed).
+                if (boundaryError instanceof TeamRuntimeError &&
+                    boundaryError.code === TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED &&
+                    boundaryError.details?.['providerCode'] === ACTIVATION_ERROR_CODES.REQUEST_ABORTED) {
+                    boundarySettled = true;
+                    throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, 'TeamRuntime: the recovery dispatch was abandoned (the invocation aborted in the activation pre-reservation preflight — the durable close is settled) — zero durable effect (the operation remains blocked)', {
+                        rootSessionId,
+                        status: 'BLOCKED_FATAL',
+                        gateReason: 'requiredScopeDown',
+                        blockedScopes: [...(request.recovery?.scopeKeys ?? [])],
+                        source: 'requirement-gate',
+                        controlDecision: 'abandoned',
+                        controlRequestId: recoveryControlRequestId,
+                    });
+                }
+                if (isControlError(boundaryError) &&
+                    (boundaryError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED ||
+                        boundaryError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ADMISSION_ABORTED)) {
+                    boundarySettled = true;
+                    throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, boundaryError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ADMISSION_ABORTED
+                        ? 'TeamRuntime: the recovery dispatch was abandoned (the invocation aborted before the effect-admission boundary — the durable close was persisted at the boundary) — zero durable effect (the operation remains blocked)'
+                        : 'TeamRuntime: the recovery dispatch was abandoned (the durable abandon mark landed before the effect-admission boundary — after the pre-dispatch snapshot — the terminal mark closed the authorization) — zero durable effect (the operation remains blocked)', {
+                        rootSessionId,
+                        status: 'BLOCKED_FATAL',
+                        gateReason: 'requiredScopeDown',
+                        blockedScopes: [...(request.recovery?.scopeKeys ?? [])],
+                        source: 'requirement-gate',
+                        controlDecision: 'abandoned',
+                        controlRequestId: recoveryControlRequestId,
+                    });
+                }
+                // fix-control-authz C (the direct shared pre-callback
+                // one-shot close-fault residual): the unit's OWN pre-callback
+                // durable close faulted (the C-2 abort branch — the sequence
+                // allocation or the abandon put — the commitEffect callback
+                // never entered). Mark the shared closeFaultObserved flag
+                // the same way the activation callbacks do: the D2 settle
+                // (the gated AND the fallback catch — the same flag both
+                // read) must NEVER re-attempt the failed close (a second
+                // attempt would succeed on a one-shot fault and mask the
+                // first failure as a settled close). The original typed
+                // DURABLE_WRITE_FAILED (the service's durableFailure mapping
+                // — the original fault's message) propagates UNCHANGED below
+                // (no reclassification, no retry, no new typed abandon).
+                // A fault AFTER the callback entered is the effect's OWN
+                // write — effectCommitStarted already stands (the marker
+                // flips at the effect's first durable write), the settle is
+                // already prohibited, and this recognition does not apply.
+                if (!callbackEntered &&
+                    boundaryError instanceof TeamRuntimeError &&
+                    boundaryError.code === TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED) {
+                    ctx.markCloseFaultObserved?.();
+                }
+                throw boundaryError;
+            });
+        };
+        // fix-control-authz C (the residual pre-commit awaits) — the
+        // SYSTEMATIC SETTLE for an invocation that aborted BEFORE the
+        // effect commit: whatever await of this admission the abort landed
+        // at (the runtime-chain queue, the pre-dispatch terminal snapshot,
+        // the gate re-probe, the unit's control-lock queue), the request
+        // is durably closed by the SAME unit the commit takes (a never-run
+        // commitEffect — the unit then only performs its mark check +
+        // signal check, persisting the close exactly-once) and the
+        // invocation settles with the typed zero-effect abandon block.
+        // This runs OUTSIDE any chain hold (the reentry that reached here
+        // rejected from inside the chain acquisition and released it, or
+        // never acquired it) — the settle acquires the control lock alone
+        // → no deadlock, and the close composes idempotently with the
+        // pre-dispatch best-effort abandon and with a concurrent explicit
+        // abandon (already-terminal → the typed no-op). A settle persist
+        // fault (the typed DURABLE_WRITE_FAILED) propagates — fail-closed.
+        const settleAbortedPreCommit = async (controlRequestId) => {
+            const controlService = options.controlServiceRef?.current;
+            if (controlService === undefined) {
+                // Unreachable: the settle callers check presence first.
+                throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED, 'TeamRuntime: the aborted recovery dispatch cannot be settled (the control service is absent) — zero durable effect (internal wiring defect)', { rootSessionId });
+            }
+            try {
+                await controlService.commitEffectIfAuthorized({
+                    rootSessionId,
+                    requestId: controlRequestId,
+                    commitEffect: () => Promise.reject(new Error('unreachable: the aborted-pre-commit settle never runs the effect commit')),
+                    signal: asAbortLike(request.signal),
+                });
+            }
+            catch (settleError) {
+                if (isControlError(settleError) &&
+                    (settleError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED ||
+                        settleError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ADMISSION_ABORTED)) {
+                    // The close is durable (the unit just persisted it —
+                    // ADMISSION_ABORTED — or it was already terminal —
+                    // ABANDONED): the typed zero-effect abandon block stands
+                    // (the same contract as the pre-dispatch abort path).
+                    throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, 'TeamRuntime: the recovery dispatch was abandoned (the invocation aborted before the effect commit — the durable close is settled) — zero durable effect (the operation remains blocked)', {
+                        rootSessionId,
+                        status: 'BLOCKED_FATAL',
+                        gateReason: 'requiredScopeDown',
+                        blockedScopes: [...(request.recovery?.scopeKeys ?? [])],
+                        source: 'requirement-gate',
+                        controlDecision: 'abandoned',
+                        controlRequestId,
+                    });
+                }
+                throw settleError;
+            }
+            // Unreachable: the unit rejects in the aborted state (the settle
+            // precondition) or on the durable mark.
+            throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED, 'TeamRuntime: the aborted recovery dispatch settle returned without a typed reject (internal defect) — zero durable effect (the operation remains blocked)', { rootSessionId, controlRequestId });
+        };
         if (isNewWorkAdmission(spec) ||
             impact.impact === ACTION_IMPACT_CLASSES.crossAgentTrigger) {
             try {
@@ -487,10 +913,53 @@ export function createTeamRuntime(options) {
                             : {}),
                         ...(options.now !== undefined ? { now: options.now } : {}),
                     }, impact);
-                    return executeEffectLocked(ctx);
+                    // fix-control-authz C + C-1 + C-2 (the external-review
+                    // residuals) — the EFFECT-ADMISSION BOUNDARY: the gate (with
+                    // its fresh re-probe await) has now resolved; the first
+                    // durable effect of this admission is about to commit. For
+                    // the recovery re-execution (the marker carries the reviewed
+                    // control request id), the terminal state of THAT request
+                    // (the durable abandon mark) AND the invocation's live
+                    // signal are re-validated HERE — at the effect boundary
+                    // itself, after every await of this admission — as one unit
+                    // with the effect commit under the SAME per-team lock the
+                    // durable abandon write goes through
+                    // (`commitEffectIfAuthorized`). See the
+                    // `commitReviewedEffect` helper (defined above) for the full
+                    // contract: the C-1 coverage (every reviewed reentry effect,
+                    // no spec-category gate), the C-2 signal semantics (abort
+                    // before the commit → persisted durable close + typed
+                    // reject; abort after the commit → the legitimate late
+                    // close), and the lock-ordering deadlock argument.
+                    return await commitReviewedEffect();
                 }, asAbortLike(request.signal));
             }
             catch (error) {
+                // fix-control-authz C (the residual pre-commit awaits) — the
+                // systematic settle, first: the invocation aborted BEFORE the
+                // effect commit (the effect commit never started — no durable
+                // write of this admission landed) and the boundary did not
+                // already settle the close (its typed block is in flight) and
+                // the durable close did not ALREADY fault on this admission
+                // (the residual-3 one-shot close-failure contract, defect c —
+                // a close persist fault is the terminal outcome: the typed
+                // DURABLE_WRITE_FAILED escapes as-is, never re-attempted — a
+                // second attempt would succeed and mask the first fault):
+                // durably close the request and settle with the typed
+                // zero-effect abandon block (the settle ALWAYS throws — the
+                // recovery dispatch below is then skipped; a committed effect
+                // is never retroactively marked — the post-commit fault
+                // surfaces unchanged). Non-aborted / non-marker /
+                // commit-started / already-settled / close-fault-observed
+                // errors: byte-identical.
+                if (!effectCommitStarted &&
+                    !boundarySettled &&
+                    !closeFaultObserved &&
+                    request.recovery?.controlRequestId !== undefined &&
+                    options.controlServiceRef?.current !== undefined &&
+                    asAbortLike(request.signal)?.aborted === true) {
+                    await settleAbortedPreCommit(request.recovery.controlRequestId);
+                }
                 // OUTSIDE the lock: the recovery dispatch (the human-reviewed
                 // Control inline coupling). A non-offer error returns `undefined`
                 // (the ORIGINAL typed error is re-thrown unchanged); a durable
@@ -509,7 +978,46 @@ export function createTeamRuntime(options) {
             }
         }
         else {
-            staged = await executeEffect(teamLocks, ctx);
+            // fix-control-authz C-1 (the external-review residual): the
+            // reviewed recovery reentry may reach this fallback — the
+            // send-message reentry (the `recoveryWork` impact, the
+            // `coordination` spec) bypasses the gated branch above. The
+            // effect-admission boundary applies to ALL reviewed effects (no
+            // spec-category gate): a marker-carrying request takes the same
+            // serialized path — chain (a) + boundary (b) + effect commit —
+            // the unit is invoked WITH the chain already held (it commits
+            // via `executeEffectLocked`, so `executeEffect` — which acquires
+            // (a) itself — is NEVER called inside the unit: that would be
+            // (b) → (a), a new lock cycle). Everything else stays
+            // byte-identical (`executeEffect`).
+            const recoveryControlRequestId = request.recovery?.controlRequestId;
+            if (recoveryControlRequestId !== undefined &&
+                options.controlServiceRef?.current !== undefined) {
+                try {
+                    staged = await withTeamLock(teamLocks, rootSessionId, () => commitReviewedEffect(), asAbortLike(request.signal));
+                }
+                catch (error) {
+                    // fix-control-authz C (the residual pre-commit awaits) — the
+                    // systematic settle (the fallback reentry has no gate re-
+                    // probe, but the same pre-commit await points stand: the
+                    // chain queue and the unit's control-lock queue). Same
+                    // condition (incl. the residual-3 `closeFaultObserved`
+                    // half — a close persist fault is the terminal outcome,
+                    // never re-attempted), same settle — ALWAYS throws; the
+                    // original error is unreachable (the typed abandon block /
+                    // the settle fault is the terminal).
+                    if (!effectCommitStarted &&
+                        !boundarySettled &&
+                        !closeFaultObserved &&
+                        asAbortLike(request.signal)?.aborted === true) {
+                        await settleAbortedPreCommit(recoveryControlRequestId);
+                    }
+                    throw error;
+                }
+            }
+            else {
+                staged = await executeEffect(teamLocks, ctx);
+            }
         }
         // INV-9.1 (repair-r1 F3-A): a full-wiring work admission returns the
         // STAGED chain — Phase A completed inside the acquisition above and

@@ -110,6 +110,42 @@ export interface EffectContext {
      *  (settlement / fail-closed) re-acquires the SAME map after delivery,
      *  without the request signal. */
     readonly teamLocks: Map<string, Promise<unknown>>;
+    /**
+     * fix-control-authz C (the residual pre-reservation boundary) — the
+     * control-service reference (the controlServiceRef pattern; absent
+     * when the recovery dispatch is unavailable). The activation
+     * provider's pre-reservation abort boundary settles the recovery
+     * request's durable close through its LOCK-FREE
+     * `persistAbandonCloseLocked` (the caller holds the control lock
+     * under the effect-admission unit — no re-acquisition, no deadlock).
+     */
+    readonly controlServiceRef?: {
+        readonly current?: import('../control/index.js').ControlService;
+    };
+    /**
+     * fix-control-authz C (residual-3, the marker move) — the
+     * commit-started marker (the router's D2 settle-gate flip). The
+     * router wires it for every effect context: each effect calls it at
+     * its OWN first durable write (the activation effects through the
+     * provider's `markReservationStarted` at the reservation boundary;
+     * the work / coordination / lifecycle effects synchronously before
+     * their first commit — the marker no longer flips at the unit's
+     * closure entry, so the activation unit's pre-reservation region
+     * stays pre-commit for the D2 settle). Absent = no-op.
+     */
+    readonly markEffectCommitStarted?: () => void;
+    /**
+     * fix-control-authz C (residual-3, defect c — the one-shot
+     * close-failure contract) — the close-fault observer: the durable
+     * close persist FAULTED on this admission (the typed
+     * DURABLE_WRITE_FAILED escapes AS-IS from the `persistAbandonClose`
+     * wrapper — no retry, no reclassification). The router's D2 settle
+     * must never re-settle (re-attempt the boundary close) after this:
+     * a second close attempt would succeed where the first failed and
+     * MASK the first fault as a settled close — the first close failure
+     * is the terminal outcome.
+     */
+    readonly markCloseFaultObserved?: () => void;
 }
 /**
  * A staged work-chain effect (INV-9.1, repair-r1 F3-A). The full P8-S3

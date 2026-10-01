@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz
+
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts (74 tests) 4152ms
+     ✓ c9-serial: a cancelled waiter KEEPS its queue slot — a later writer never overtakes the still-running holder (the reviewer sequence: holder start → cancel waiter → later writer → holder end)  2003ms
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  09:26:46
+   Duration  5.02s (transform 613ms, setup 0ms, import 776ms, tests 4.15s, environment 0ms)
+

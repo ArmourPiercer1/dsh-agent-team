@@ -105,6 +105,18 @@ export function makeSpyControlService(behavior: RecoveryDispatchBehavior): {
       calls.abandon += 1
       return {} as never
     },
+    // fix-control-authz C (disclosed masking adjustment): the
+    // EFFECT-ADMISSION BOUNDARY — the fix-control-authz C-1 coverage
+    // routes EVERY reviewed reentry effect (work AND coordination)
+    // through this unit, so the spy must expose it. The spy holds NO
+    // durable abandon mark (its `listControlState` is empty), so the
+    // unit is transparent — it runs the caller's effect commit and
+    // returns its result (the real service's no-mark path).
+    async commitEffectIfAuthorized(input: {
+      readonly commitEffect: () => Promise<unknown>
+    }) {
+      return input.commitEffect()
+    },
     // Typed stubs — the router never calls these on the recovery-dispatch path.
     async resolveControl() {
       throw new Error('not implemented in the recovery-dispatch spy')
@@ -116,6 +128,14 @@ export function makeSpyControlService(behavior: RecoveryDispatchBehavior): {
       throw new Error('not implemented in the recovery-dispatch spy')
     },
     async checkExternalOperation() {
+      throw new Error('not implemented in the recovery-dispatch spy')
+    },
+    // fix-control-authz C (the residual pre-reservation boundary): the
+    // spy unit is a transparent pass-through (no preflight abort rows in
+    // the recovery-dispatch family) — the lock-free close stub throws
+    // loudly if a boundary ever fires against this spy (a wiring defect,
+    // not a test expectation).
+    async persistAbandonCloseLocked() {
       throw new Error('not implemented in the recovery-dispatch spy')
     },
   }
