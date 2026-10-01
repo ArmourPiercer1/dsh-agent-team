@@ -1,0 +1,14 @@
+GREEN (after the implementation landed) $ node_modules/.bin/vitest run packages/runtime/test/a3p2-permission-assembler-precedence.test.ts packages/runtime/test/a3p2-permission-assembler-provenance.test.ts
+2026-10-01T19:26:48Z
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr2-effective-assembler
+
+ ✓ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts (24 tests) 10ms
+ ✓ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts (29 tests) 25ms
+
+ Test Files  2 passed (2)
+      Tests  53 passed (53)
+   Start at  19:26:48
+   Duration  746ms (transform 962ms, setup 0ms, import 1.26s, tests 35ms, environment 0ms)
+
+[exit code: 0]

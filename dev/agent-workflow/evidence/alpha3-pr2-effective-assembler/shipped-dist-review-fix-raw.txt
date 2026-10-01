@@ -1,0 +1,11 @@
+# SHIPPED-DIST smoke for the review-fix batch: the SAME checks run against the
+# rebuilt committed artifacts (packages/runtime/dist/**), not the TypeScript source.
+# node .dist-smoke-review.mjs   |  date: 2026-10-01T19:57:47Z
+# (two earlier attempts of the 'full view' leg were refused typed instead of
+#  answering — a CanonicalOperation without resource.key, and one with the
+#  RULE-side resource kind instead of the operation-side 'file' kind — genuine
+#  fail-closed witnesses, kept here as observed)
+SHIPPED-DIST views=[]: THREW EFFECTIVE_PERMISSION_OVERLAY_RULE_REFERENCE_INVALID / overlay-rule-view-incomplete missing=[0]
+SHIPPED-DIST full view: RETURNED decision=deny win=overlay
+SHIPPED-DIST frozen vocabulary: {"layers":true,"lookup":true,"codes":true}
+[node exit: 0]

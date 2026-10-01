@@ -1,0 +1,6 @@
+a.txt        allow rule    win=overlay  fb=blueprint:ask overridden=[template:ask] snap=session-root-1#inst-alpha#1
+blocked.txt  deny  rule    win=template fb=blueprint:ask overridden=[] snap=-
+other.txt    ask   default win=null     fb=blueprint:ask overridden=[] snap=-
+frozen: true true true true
+explanation: write[fskey:/workspace/a.txt]: effective allow; decided by overlay(snapshot=session-root-1#inst-alpha#1, generation=1, mutation=mut-g1, actor=leader:inst-root) allow[lane index 0, source 0]; layers (highest first): overlay=matched, template=matched, blueprint=no-match; overridden lower: template ask
+policy.fallback: {"layer":"blueprint","effect":"ask"} | layer order: blueprint<template<overlay

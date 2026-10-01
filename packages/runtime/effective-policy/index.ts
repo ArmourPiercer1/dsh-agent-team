@@ -31,3 +31,38 @@ export type {
   EffectivePolicyReadArgs,
 } from './types.js'
 export { selectPolicyOverrides } from './select.js'
+
+// --- Alpha.3 PR2: the EffectivePermissionAssembler -------------------------
+//
+// The dynamic (overlay) plane of the permission assembly. It is a separate
+// stage from the capability-plane read above: `readEffectivePolicy` resolves
+// the §19.6 capability cells, the assembler composes the per-operation
+// permission layers (Blueprint < Template < MemberInstance overlay) and hands
+// each one to the frozen Alpha.2 resolver. Neither plane imports the other's
+// semantics.
+export {
+  EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES,
+  EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODE_VALUES,
+  EFFECTIVE_PERMISSION_LAYERS,
+  EFFECTIVE_PERMISSION_LOOKUP_ORDER,
+  EffectivePermissionAssemblyError,
+  assembleEffectivePermission,
+  assembleEffectivePermissionPolicy,
+  effectivePermissionLayerPrecedence,
+  resolveEffectiveOperationPermission,
+} from './permission-assembler.js'
+export type {
+  EffectivePermissionAssemblyErrorCode,
+  EffectivePermissionAssemblyInput,
+  EffectivePermissionDecision,
+  EffectivePermissionLayerKind,
+  EffectivePermissionLayerOutcome,
+  EffectivePermissionOverlayAuthority,
+  EffectivePermissionOverlayLayer,
+  EffectivePermissionOverlayRuleView,
+  EffectivePermissionPolicy,
+  EffectivePermissionPolicyLayer,
+  EffectivePermissionRule,
+  EffectivePermissionRuleProvenance,
+  EffectivePermissionStaticLayer,
+} from './permission-assembler.js'

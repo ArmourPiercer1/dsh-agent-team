@@ -1,0 +1,19 @@
+# MUTATION PROBES for the review-fix batch (each mutant is a temporary edit to
+# permission-assembler.ts, restored from a byte copy after each run).
+# Target: a3p2-permission-assembler-provenance.test.ts (35 legs).
+
+M8  coverage check removed (the P1 defect re-introduced)
+  -> result:  [vitest exit: 1]  Tests  2 failed | 33 passed (35)
+    killed: × an OMITTED view of a snapshot rule is refused: a FULL snapshot is read in full 4ms
+    killed: × empty views against a non-empty snapshot are refused (the overlay cannot vanish) 5ms
+
+M9  view comparison back to raw array order (the false-conflict defect re-introduced)
+  -> result:  [vitest exit: 1]  Tests  1 failed | 34 passed (35)
+    killed: × the same canonical mapping supplied in a DIFFERENT ORDER is the same authority 3ms
+
+M10 exported vocabulary unfrozen (as const only)
+  -> result:  [vitest exit: 1]  Tests  1 failed | 34 passed (35)
+    killed: × the exported layer vocabulary cannot be mutated in place 4ms
+
+CONTROL  restored shipped source
+  -> result:  [vitest exit: 0]  Tests  35 passed (35)

@@ -1,0 +1,18 @@
+TOKEN SCAN over every staged blob of this commit (36 paths, incl. the rebuilt dist and the evidence raws)
+2026-10-01T19:38:50Z
+
+Patterns: sk-[A-Za-z0-9]{8,} | lt-v1-… | ghp_… | github_pat_… | xox[baprs]-… | AIza… |
+          token= <literal> | api_key:… | secret: <literal> | "bearer <16+>" | AKIA… |
+          -----BEGIN … PRIVATE KEY-----
+
+$ git diff --cached | grep -inE <patterns>   (a HIT would print the offending diff line)
+
+NO HITS — clean
+
+staged path count: 36
+staged diff size: 386186 bytes
+
+## Delta scan for the review-fix batch
+date: 2026-10-01T20:01:38Z   staged paths: 18   staged diff bytes: 129437
+$ git diff --cached | grep -inE <same pattern set as above>
+NO HITS — clean

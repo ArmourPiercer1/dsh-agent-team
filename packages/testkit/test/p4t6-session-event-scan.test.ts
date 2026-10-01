@@ -1569,8 +1569,21 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // the frozen quarantine hit set stays at fifteen occurrences; scanner
     // .mjs unchanged. The 924 value is the scanner run on this tree
     // (authoritative; not hand-computed).
-    expect(scanResult.filesScanned).toBe(924)
-    expect(scanResult.files.length).toBe(924)
+    // ALPHA.3 PR2 effective-assembler round: 924 + 5 = 929 — the Effective
+    // Permission Assembler module (`runtime/effective-policy/permission-
+    // assembler.ts`), its fixture helper, and the three targeted specs
+    // (`a3p2-permission-assembler-precedence` / `-provenance` /
+    // `a3p2-effective-policy-lane-import`, the last one pinning that re-exporting
+    // the assembler through this lane does not put the admission surface into an
+    // initialization cycle). No new denylist vocabulary and no new adapter: the
+    // assembler COMPOSES the frozen Alpha.2 resolver and READS the PR1 snapshot
+    // type, so the lane words allow/ask/deny it carries are the same
+    // canonical-grammar tokens every Alpha.2 module already uses (outside this
+    // scanner's denylist). The frozen quarantine hit set stays at fifteen
+    // occurrences; scanner .mjs unchanged. The 929 value is the scanner run on
+    // this tree (authoritative; not hand-computed).
+    expect(scanResult.filesScanned).toBe(929)
+    expect(scanResult.files.length).toBe(929)
 
   })
 
