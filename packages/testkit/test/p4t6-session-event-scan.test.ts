@@ -1529,8 +1529,21 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // passes — the frozen quarantine hit set is unchanged at fifteen
     // occurrences). The 897 value is the scanner run on the fixed tree
     // (authoritative; not hand-computed).
-    expect(scanResult.filesScanned).toBe(897)
-    expect(scanResult.files.length).toBe(897)
+    // fix-persona-kind (PR #46 external-review fix round — Blocker-2, the
+    // SHIPPED DIST) pin (+1): this branch adds
+    // packages/runtime/test/persona-kind-shipped-dist-smoke.test.ts (the
+    // SHIPPED DIST SMOKE — the finding-A persona-KIND semantics + the
+    // Blocker-1 role identity + the Blocker-3 typed §13.5 lane asserted
+    // over the BUILT dist artifact via the file-URL import precedent; the
+    // companion commit rebuilds the dist mirror — the rebuilt
+    // provider.js/types.js/index.js/root.js + their .d.ts/.map — which
+    // are already-scanned artifacts (no count delta)). Carries zero
+    // denylist vocabulary (the scan over it passes — the frozen
+    // quarantine hit set is unchanged at fifteen occurrences). Scanner
+    // unchanged. The 898 value is the scanner run on this tree
+    // (authoritative; not hand-computed).
+    expect(scanResult.filesScanned).toBe(898)
+    expect(scanResult.files.length).toBe(898)
 
   })
 

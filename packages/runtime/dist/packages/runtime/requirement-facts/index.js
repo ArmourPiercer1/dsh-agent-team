@@ -19,5 +19,5 @@
  */
 export { createRuntimeRequirementFactsProvider, } from './provider.js';
 export { classifyScopeReadiness, dropSeedFilledPendingFacts, } from './pending.js';
-export { assertRequirementFactScope, } from './types.js';
+export { assertRequirementFactScope, REQUIREMENT_FACT_SCOPE_ROLES, requirementFactScopeRoleOf, } from './types.js';
 //# sourceMappingURL=index.js.map
