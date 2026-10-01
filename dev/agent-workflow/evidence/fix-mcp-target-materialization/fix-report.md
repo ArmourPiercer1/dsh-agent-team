@@ -80,6 +80,19 @@ identity vs the prior RED run was verified before the GREEN claim).
 
 ## 3. T1–T6: before → after
 
+**Committed RED evidence**: `gate-red-matrix.log` (this evidence dir) — FRESH
+capture @ `30ed0d68` in a temporary detached worktree (CMD-first line + full
+output + TRUE-EXIT=1): `Test Files 2 failed (2)` / `Tests 4 failed | 1 passed
+(5)` — the unit leg U1–U4 RED (U5 guard green) + the real-chain leg's RED
+signature thrown during suite setup: "the action was ALLOWED — the
+target-specific block is missing (the Finding F false OPEN)" (T1 follow-up B —
+the pre-fix tree admits the target action the gate must block; T2–T5 share the
+same pre-fix world construction, which throws at T1 before their `it` legs
+execute — the RED-frozen shape). The original 06:15 scratch run of the same
+matrix shows the identical totals (that capture lacked the CMD-first line and
+was gitignored — the fresh capture is the committed evidence; substance
+identical).
+
 | Test | World / leg | BEFORE (RED @ 30ed0d68) | AFTER (GREEN @ 8dddab74+) |
 | --- | --- | --- | --- |
 | T1 | recovery OFFER on the blocked path | offer rejection REPLACED the typed block with ENVELOPE_OUT_OF_BOUNDS | offer rejected → `undefined` → the original typed block (COMPATIBILITY_BLOCKED) stands; zero durable effect |
@@ -95,8 +108,26 @@ templateId; T4 = world (3) the v2 leader judged by its OWN (root) observation;
 T5 = world (4) cold-inactive NOT-APPLICABLE. T2 = the world-A incident
 bookkeeping leg (not a fifth world).
 
+**Second test-hunk disclosure (reviewer r2 finding, verified)**: beyond the
+T5 world-D fixture correction, the real-chain test carries ONE further change —
+the **T2 `closeRows` query precision fix, committed in `a8ac28e8` (increment (a),
+verified by per-commit diff: the RED-frozen 30ed0d68 call
+`incidentsOf(world, A_ROOT, 'template:worker')` passed a scope argument to a
+2-argument helper that SILENTLY IGNORED it — the scope filter was never applied
+at RED); `a8ac28e8` replaced it with
+`incidentsOf(world, A_ROOT).filter((row) => row.scope === 'template:worker')`
+(+ a `firstClose` toBeDefined guard on the assertion). This is strictly
+STRICTER than the RED baseline (the filter is now actually applied; the added
+guard), matches the leg's intent, and T2 is GREEN-verified at the tip — a
+precision correction, NOT a weakening. The +18 world-D fixture correction
+(8dddab74) remains the only FIX-COMMIT fixture change; the `a8ac28e8` hunk is
+disclosed here and in the PR body as the second test change on the branch.
+
 **GREEN**: 2 files / 10 tests, TRUE-EXIT=0 (`gate-focused-matrix.log`; the
-post-incident verification run on the 06:59 tree: `matrix-after-0659-writes.log`).
+post-incident verification run on the 06:59 tree: `matrix-after-0659-writes.log`
+— annotated: that capture predates the CMD-first log standard (no command line
+in the file); its substance = the 10/10 post-incident GREEN matrix run, the
+authoritative CMD-first GREEN capture is `gate-focused-matrix.log`).
 
 ## 4. The A-contract pick (content-verified)
 
@@ -212,16 +243,36 @@ command line first line + full stdout + TRUE exit):
 | build | **9/9, EXIT=0** + dist delta 34 files co-committed (`9063c671`) | `gate-build.log` |
 | combined tests w/ A contract | **15 files / 163 tests green** (focused 13 + F 2) | (in the focused-matrix run) |
 
+**Log annotation (reviewer r2 finding, S3)**: `gate-fullsuite.log` (the
+INTERMEDIATE full-suite run @ 66591aab, kept for the record) ends
+`TRUE-EXIT=0` although 19 tests failed — a piped-capture artifact in its exit
+line (the command's exit was captured through a pipe). It is NOT rewritten (no
+history rewrite); the **authoritative pre-sync full-suite log is
+`gate-fullsuite-final.log` (TRUE-EXIT=1, exact debt-set match)**.
+
 **Merged head `5e599790`**:
 
 | gate | result | log |
 | --- | --- | --- |
-| full suite | **20F\|4737P (4757) = exact 19-failure debt set + 1 p6t1-parallel flake** (documented 0–2 envelope; isolated re-run 9/9 green — zero NEW) | `gate-fullsuite-merged.log` |
+| full suite | **20F\|4737P (4757) = exact 19-failure debt set + 1 p6t1-parallel flake** (documented 0–2 envelope; isolated re-run 9/9 green — zero NEW; committed isolated capture: `gate-p6t1-isolated-merged.log`, CMD-first + TRUE-EXIT=0) | `gate-fullsuite-merged.log` |
 | check:artifacts | **OK 1372, TRUE-EXIT=0** | `gate-check-artifacts-merged.log` |
 | typecheck | **9/9, TRUE-EXIT=0** | `gate-typecheck-merged.log` |
 | lint file-aware | **136 fingerprints, NEW = 0** (143 − 6 my removals − 1 removed by their side) | `gate-lint-merged.log` + fp |
-| p4t6 | **10/10 @ 900** | (recomputed; pin asserts 900) |
-| focused 13 + F 2 + their new shipped-dist-smoke | **16 files / 165 tests green** | (merged-head run) |
+| p4t6 | **10/10 @ 900** (recomputed; pin asserts 900; fresh re-verification at the final tip `e45d22fe`: 10/10, TRUE-EXIT=0 — the evidence `.log` additions are not scannable `packages/**` files, no pin impact) | (recomputed; pin asserts 900) |
+| focused 13 + F 2 + their new shipped-dist-smoke (combined A-contract + finding-F set) | **16 files / 165 tests green** — fresh CMD-first capture at the final tip | `gate-combined-a-contract-f.log` |
+
+**Test-count arithmetic (corrected, S4)**: merged-head total 4757 =
+**4719** (base `31ad828d` full-suite total) **+ 12** (PR #47:
+governance-reset-tombstone 7→10 tests, remote-override-expected-generation
+14→23 — per-suite counts verified against both trees) **+ 16** (PR #46:
+persona-kind-provider-preflight 14 + persona-kind-shipped-dist-smoke 2) **+ 10**
+(finding-F matrix: 5 real-chain + 5 unit) = 4757. Pre-sync tip total 4743 =
+4719 + 14 (the pick carried only the preflight suite — the shipped-dist-smoke
+arrived via the sync merge, not the pick) + 10 (F matrix). A reviewer's
+decomposition using "+13" for the #47 delta was wrong; the verified delta is
++12, and no editable surface of this branch (fix-report / PR body / the
+bookkeeping log entry) carried the "+13" form — this decomposition is the
+recorded correction.
 
 **shipped-dist smoke over the public export path (`composition-smoke.mjs`)**: RUN
 (`gate-composition-smoke.log`) — **both legs fail PRE-EXISTING, not a regression of
@@ -246,7 +297,13 @@ this branch). Repairing the stale smoke is a separate authorized task.
   simulated a state the guard never sees in production) with the T5 assertions
   BYTE-IDENTICAL; T5 was RED before the correction (there is no weaker prior
   pass). The dead-code lint removals touch zero assertions. All RED matrix
-  assertions are preserved verbatim.
+  assertions are preserved verbatim. Plus the T2 `closeRows` query precision
+  fix (committed in `a8ac28e8`, the increment-(a) commit — verified by
+  per-commit diff): the RED-frozen 3-arg `incidentsOf` call silently ignored
+  its scope argument (2-arg helper); replaced with an explicit filter —
+  stricter than the RED baseline, T2 GREEN verified; the +18 world-D fixture
+  correction remains the only FIX-COMMIT fixture change (see §3, the second
+  test-hunk disclosure).
 
 ## 10. Post-#46 integration readiness (the role audit — parent's warning)
 
