@@ -15,7 +15,13 @@
  *                       live MCP state — template/instance boundary only;
  *                       a cold member is `not-applicable`, never `failed`)
  * persona            -> ports.substratePlan (the RuntimeSubstrateResolver +
- *                       the production persona observer, plan §C.2)
+ *                       the production persona observer, plan §C.2); the
+ *                       persona KIND convention (the v2 SUBJECT convention,
+ *                       plan §E.3): a subject that is a closed required
+ *                       persona kind resolves the OBSERVED kind of the role
+ *                       the scope addresses (team ⇒ root, template ⇒ member,
+ *                       R8); a non-kind subject keeps the frozen v1 preset-id
+ *                       path byte-for-byte
  * other domains      -> ports.readiness (the existing authoritative probe
  *                       ports; a missing port is `unknown`, fail-soft)
  * ```
@@ -72,9 +78,9 @@
  * @module @dsh-agent-team/runtime/requirement-facts/provider
  */
 import { deepFreeze } from '../../contracts/src/index.js';
-import { parseEnvironmentFacts, parseRequirements, } from '../../domain/compatibility/src/index.js';
-import { MEMBER_LIVENESS, PROBE_VERDICTS, SUPPLY_AXIS, deriveMaterializationStatus, } from '../readiness/index.js';
-import { assertRequirementFactScope, } from './types.js';
+import { isRequiredPersonaKind, parseEnvironmentFacts, parseRequirements, } from '../../domain/compatibility/src/index.js';
+import { MATERIALIZATION_STATES, MEMBER_LIVENESS, PROBE_VERDICTS, SUPPLY_AXIS, deriveMaterializationStatus, } from '../readiness/index.js';
+import { assertRequirementFactScope, REQUIREMENT_FACT_SCOPE_ROLES, } from './types.js';
 /**
  * The initial live generation of the 2-state engine feed (a probe port that
  * reports no generation of its own). The engine's fingerprint folds
@@ -157,17 +163,11 @@ export function createRuntimeRequirementFactsProvider(ports) {
                 }
                 return planPromise;
             };
-            // The member materialization view resolves at most once per call.
-            let materializationPromise;
-            const materializationView = () => {
-                if (materializationPromise === undefined) {
-                    materializationPromise =
-                        scope.kind === 'template' && ports.memberMaterialization !== undefined
-                            ? ports.memberMaterialization(scope)
-                            : Promise.resolve(undefined);
-                }
-                return materializationPromise;
-            };
+            // The member materialization view is resolved per (scope, subject)
+            // INSIDE the mcpServer branch, after that subject's readiness probe
+            // (Finding F: the probe of this very call may have just stamped the
+            // slot `failed` — the view must read the post-stamp truth; see the
+            // mcpServer case). No memoization: the port is a pure state read.
             // The readiness probe memoized per (type, subject) within this call.
             const probeCache = new Map();
             const probe = (type, subject) => {
@@ -190,8 +190,6 @@ export function createRuntimeRequirementFactsProvider(ports) {
             // observation-count-based guess).
             const hasProbe = ports.readiness.hasProbe;
             const isProbeable = (type) => hasProbe === undefined ? true : hasProbe(type);
-            // One materialization view for the whole call (the scope is one).
-            const view = await materializationView();
             const observations = [];
             // The feed is per (domain, subject) — unique (the engine rejects
             // duplicate pairs), deterministically ordered.
@@ -221,6 +219,26 @@ export function createRuntimeRequirementFactsProvider(ports) {
                                 live = await probe('mcpServer', subject);
                                 readiness = observationToView(live);
                             }
+                            // Finding F (confirmed-loss ordering) — the materialization
+                            // view is resolved AFTER this subject's readiness probe: the
+                            // aggregate probe of THIS VERY resolution may have just
+                            // witnessed the confirmed loss (retired the fiber, stamped
+                            // the slot `failed`) — the view must read the POST-stamp
+                            // truth, so the scope verdict and the target verdict agree
+                            // on the same boundary state within one gate passage (a
+                            // pre-probe capture left the scope verdict `mounted` while
+                            // the target verdict saw `failed` — the same boundary, two
+                            // truths, one passage). One port call per (scope, subject):
+                            // the port is a pure state read (the host's member row list
+                            // + the ephemeral consumption state), and a LATER subject's
+                            // probe may stamp its own slot after this one's view was
+                            // read (no per-call memoization — the fresh read is the
+                            // point). Template scopes only (the team scope has no
+                            // instance boundary); port absent (factory / test worlds) →
+                            // `undefined` → the cold default (byte-identical legacy).
+                            const view = scope.kind === 'template' && ports.memberMaterialization !== undefined
+                                ? await ports.memberMaterialization(scope)
+                                : undefined;
                             const materialization = scope.kind === 'template'
                                 ? deriveMaterializationStatus({
                                     liveness: view === undefined ? MEMBER_LIVENESS.cold : view.liveness,
@@ -249,11 +267,35 @@ export function createRuntimeRequirementFactsProvider(ports) {
                         }
                         case 'persona': {
                             const plan = await substratePlan();
-                            const entry = subject === plan.root.presetId
-                                ? { presetId: plan.root.presetId, persona: plan.root.persona }
-                                : subject === plan.member.presetId
-                                    ? { presetId: plan.member.presetId, persona: plan.member.persona }
-                                    : undefined;
+                            // The persona KIND convention (the v2 SUBJECT convention —
+                            // plan §E.3 / ADR-24 / SKILL.md §4.1; the domain compatibility
+                            // closed set is the single source of truth): a subject that IS a
+                            // closed required persona kind names the REQUIRED kind — the world
+                            // fact is the OBSERVED kind of the role the SCOPE addresses
+                            // (plan §C.2 R8): team scope ⇒ the ROOT entry; template scope ⇒
+                            // the entry of the role the scope CARRIES (Blocker-1 shared
+                            // contract — the scope's `role` identity):
+                            //   - role `leader` ⇒ the ROOT entry — the leader IS the root
+                            //     (the root mounts config.rootPresetId, agent-bindings v3;
+                            //     plan §C.2: the ROOT entry is "the actual preset used by
+                            //     the Leader"; the bind-time persona slot reads the ROOT
+                            //     entry, root.ts presetSeam — Architecture §13.1: members
+                            //     inherit the root's bind substrate);
+                            //   - role `member` ⇒ the MEMBER entry — the member requirement
+                            //     uses the member's actual observation, not the root's.
+                            // A subject that is NOT a kind keeps the LEGACY preset-id path
+                            // byte-for-byte (the frozen v1 convention: the subject is the
+                            // observed root/member preset id — the v1 frozen Blueprint cold
+                            // resume is unchanged).
+                            const entry = isRequiredPersonaKind(subject)
+                                ? scope.kind === 'template' && scope.role === REQUIREMENT_FACT_SCOPE_ROLES.member
+                                    ? plan.member
+                                    : plan.root
+                                : subject === plan.root.presetId
+                                    ? { presetId: plan.root.presetId, persona: plan.root.persona }
+                                    : subject === plan.member.presetId
+                                        ? { presetId: plan.member.presetId, persona: plan.member.persona }
+                                        : undefined;
                             const now = ports.now();
                             let readiness;
                             if (entry === undefined) {
@@ -355,6 +397,26 @@ function observationToView(observation) {
  * @returns the fact, or `undefined` (omitted — the engine's unprobed sentinel).
  */
 function deriveEngineFact(domain, subject, observation, seedBySubject) {
+    // Finding F (target-specific gating) — the FIRST check, beating the
+    // readiness verdict and the bootstrap seed: a confirmed materialization
+    // FAILURE is the 2-state DOWN even when the aggregate readiness is
+    // `reachable` (the mask Finding F reports: a healthy sibling's fiber
+    // keeps the SERVER-level probe up while the boundary's own mount is
+    // `failed`) and even when the seed says `available` (the seed is a
+    // bootstrap truth, never the boundary truth). Guide §2.5.5: a resident
+    // member with a failed slot blocks that template's normal work. The
+    // axis is present only for the mcpServer domain (the template/instance
+    // boundary) — `pending` / `mounted` / `not-applicable` never flip the
+    // feed (the readiness axis decides there: the liveness adjudication —
+    // PENDING must never be a state only the blocked action can settle).
+    if (observation.materialization === MATERIALIZATION_STATES.failed) {
+        return deepFreeze({
+            domain: domain,
+            subject,
+            available: false,
+            generation: observationGeneration(observation),
+        });
+    }
     if (observation.readiness === PROBE_VERDICTS.reachable) {
         return deepFreeze({
             domain: domain,
@@ -385,7 +447,7 @@ function deriveEngineFact(domain, subject, observation, seedBySubject) {
     });
 }
 /** The generation of the live feed fact (the observation's, or the initial). */
-function observationGeneration(observation) {
+function observationGeneration(_observation) {
     // The readiness view carried the optional generation; it is provenance of
     // the probe port. The observation surface does not re-expose it (the gate
     // reads the 3-state observation), so the feed uses the initial live

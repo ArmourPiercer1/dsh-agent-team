@@ -93,6 +93,7 @@ import { createFreshMember, createMemberDomainWritePort, rehydrateColdMember, } 
 import { TeamAgentBinder, createTeamDomainReadHandle, } from '../../agent-setup/binder/index.js';
 import { createPersonaOverlaySlot } from '../../agent-setup/persona/index.js';
 import { blockedScopeKeysOf, grantDegradationConsent, PENDING_BLOCK, PREFLIGHT_OUTCOMES, runCreationPreflight, setTemplateAvailabilityFact, SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID, scopeRequirementInputsOf, shippedStatePersonaObserver, } from '../../requirements/index.js';
+import { requirementFactScopeRoleOf } from '../../requirement-facts/index.js';
 import { TeamModelOverlaySlot, TeamModelSelectionAdapter, resolveDurableModelSelection, initialTemplateModelGrantOf, } from '../../agent-setup/model/index.js';
 import { CAPABILITY_FACETS, createCapabilityOverlaySlot, resolveDurableMcpFacet, } from '../../agent-setup/capability/index.js';
 import { createActivationProvider } from '../../activation/index.js';
@@ -408,7 +409,10 @@ export function createTeamProductionRoot(params) {
             return requirementFacts.provider
                 .resolveFacts({
                 requirements,
-                scope: { kind: 'template', templateId },
+                // Blocker-1: the template scope carries its role identity
+                // (the bound blueprint knows its leader template id — the
+                // leader IS the root: the root mounts config.rootPresetId).
+                scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(blueprint.leader.templateId, templateId) },
             })
                 .then((resolution) => resolution.environmentFacts);
         };
@@ -451,12 +455,26 @@ export function createTeamProductionRoot(params) {
             .then((resolution) => resolution.environmentFacts);
     const templateEnvironmentFactsForBlueprint = requirementFacts === undefined
         ? undefined
-        : (target, templateId) => {
+        : (target, templateId, context) => {
             const requirements = scopeRequirementInputsOf(target).templates[templateId] ?? [];
             return requirementFacts.provider
                 .resolveFacts({
                 requirements,
-                scope: { kind: 'template', templateId },
+                // Blocker-1: the template scope carries its role identity
+                // (the bound blueprint knows its leader template id — the
+                // leader IS the root: the root mounts config.rootPresetId).
+                // Finding F (scoped identity): the feed context's OWNING
+                // root + target instance (the orthogonal coordinates — the
+                // host port lists the owning root's instances and reads the
+                // target's own boundary; absent = the legacy template-only
+                // scope, byte-identical).
+                scope: {
+                    kind: 'template',
+                    templateId,
+                    role: requirementFactScopeRoleOf(target.leader.templateId, templateId),
+                    ...(context?.instanceId !== undefined ? { instanceId: context.instanceId } : {}),
+                    ...(context?.rootSessionId !== undefined ? { rootSessionId: context.rootSessionId } : {}),
+                },
             })
                 .then((resolution) => resolution.environmentFacts);
         };
@@ -489,11 +507,24 @@ export function createTeamProductionRoot(params) {
         });
     const templateEnvironmentFactsReadForBlueprint = requirementFacts === undefined
         ? undefined
-        : (target, templateId) => {
+        : (target, templateId, context) => {
             const requirements = scopeRequirementInputsOf(target).templates[templateId] ?? [];
             return requirementFacts.provider.resolveFacts({
                 requirements,
-                scope: { kind: 'template', templateId },
+                // Blocker-1: the template scope carries its role identity
+                // (the bound blueprint knows its leader template id — the
+                // leader IS the root: the root mounts config.rootPresetId).
+                // Finding F (scoped identity): the feed context's OWNING
+                // root + target instance (the atomic pair the decision and
+                // the bookkeeping read — same seam, same coordinates;
+                // absent = the legacy template-only scope, byte-identical).
+                scope: {
+                    kind: 'template',
+                    templateId,
+                    role: requirementFactScopeRoleOf(target.leader.templateId, templateId),
+                    ...(context?.instanceId !== undefined ? { instanceId: context.instanceId } : {}),
+                    ...(context?.rootSessionId !== undefined ? { rootSessionId: context.rootSessionId } : {}),
+                },
             });
         };
     const externalPolicyFacts = async () => config.externalPolicyFacts;
@@ -810,7 +841,10 @@ export function createTeamProductionRoot(params) {
                 return authority.provider
                     .resolveFacts({
                     requirements: templateInputs[templateId] ?? [],
-                    scope: { kind: 'template', templateId },
+                    // Blocker-1: the template scope carries its role identity
+                    // (the bound blueprint knows its leader template id — the
+                    // leader IS the root: the root mounts config.rootPresetId).
+                    scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(bound.leader.templateId, templateId) },
                 })
                     .then((resolution) => resolution.environmentFacts);
             };
@@ -2393,7 +2427,10 @@ export function createTeamProductionRoot(params) {
             return authority.provider
                 .resolveFacts({
                 requirements: templateInputs[templateId] ?? [],
-                scope: { kind: 'template', templateId },
+                // Blocker-1: the template scope carries its role identity
+                // (the bound blueprint knows its leader template id — the
+                // leader IS the root: the root mounts config.rootPresetId).
+                scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(bound.leader.templateId, templateId) },
             })
                 .then((resolution) => resolution.environmentFacts);
         };

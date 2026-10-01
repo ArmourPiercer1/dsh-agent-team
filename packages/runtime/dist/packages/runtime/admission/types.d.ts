@@ -645,6 +645,25 @@ export interface WorkActivityPort {
  * The facade ports (injected, mock-first; every durable write flows
  * through `teamDomain` — invariant 41).
  */
+/**
+ * Finding F (scoped identity, additive) — the per-template FEED CONTEXT the
+ * requirement gate passes to the per-template live-read seams: WHICH team
+ * root the boundary resolves under (`rootSessionId` — the multi-root host
+ * shape: the port lists THAT root's member instances, never the entry's
+ * boot root) and, for the ACTION's target template only, WHICH instance's
+ * own boundary (`instanceId`) — the target's materialization is the
+ * decision's truth (the healthy sibling must not mask the failed target,
+ * and vice versa). The conservative scope read (the incident/recovery
+ * bookkeeping) omits `instanceId` (the template-level worst case). Both
+ * fields are optional: absent = the legacy single-root, template-only
+ * contract (every pre-fix caller stays byte-identical).
+ */
+export interface TemplateFeedContext {
+    /** The owning team root (the action's target root). */
+    readonly rootSessionId?: string;
+    /** The action's target instance (the target-template decision read only). */
+    readonly instanceId?: string;
+}
 export interface TeamRuntimeOptions {
     /** The open TeamDomain (the durable control-plane authority, inv 41). */
     readonly teamDomain: import('../../storage/repositories/index.js').TeamDomain;
@@ -662,7 +681,7 @@ export interface TeamRuntimeOptions {
      * scope against the single `environmentFacts` array (the legacy
      * behavior, byte-identical).
      */
-    readonly templateEnvironmentFacts?: (templateId: string) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>;
+    readonly templateEnvironmentFacts?: (templateId: string, context?: TemplateFeedContext) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>;
     /**
      * PF-1 fix (2026-09-30, adjudicated product defect) — the per-BLUEPRINT
      * live environment-facts source (the SAME seam the remote surface's
@@ -682,7 +701,7 @@ export interface TeamRuntimeOptions {
      * ABSENT in factory worlds — the legacy single-array gate stands,
      * byte-identical).
      */
-    readonly templateEnvironmentFactsForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint, templateId: string) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>;
+    readonly templateEnvironmentFactsForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint, templateId: string, context?: TemplateFeedContext) => Promise<readonly import('../../domain/compatibility/src/index.js').EnvironmentFact[]>;
     /**
      * D-3 fix (2026-09-30, adjudicated product semantics — fail-closed
      * PENDING) — the per-BLUEPRINT FULL-RESOLUTION live read (the atomic
@@ -701,7 +720,7 @@ export interface TeamRuntimeOptions {
      * live read (the twin of `templateEnvironmentFactsForBlueprint`; same
      * presence/absence semantics).
      */
-    readonly templateEnvironmentFactsReadForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint, templateId: string) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
+    readonly templateEnvironmentFactsReadForBlueprint?: (blueprint: import('../../domain/blueprint/src/index.js').TeamBlueprint, templateId: string, context?: TemplateFeedContext) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
     /** The external hard facts (effective-config read, stage 2). */
     readonly externalPolicyFacts: () => Promise<import('../../domain/policy/src/index.js').ExternalPolicyFacts>;
     /** The deployment default model (the `staticModel`) — REQUIRED (PR #30
