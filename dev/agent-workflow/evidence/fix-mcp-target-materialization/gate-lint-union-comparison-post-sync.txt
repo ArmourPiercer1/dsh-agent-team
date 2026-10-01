@@ -1,0 +1,49 @@
+== LINT FILE-AWARE NEW=0 — UNION comparison (the missing gate, per parent 10:38Z) ==
+date: 2026-10-01 (post-sync, before the bookkeeping commit)
+
+Sets (entries = (file, line, col, rule), file paths normalized by stripping the
+.worktrees/<name>/ prefix — the two worktree roots are the same repo):
+  A = pre-sync candidate head 29479b70 set = 136 entries (111E/25W)
+      source: gate-lint-fp-consolidated-revision.txt (the bcaeb64b fp file — 29479b70
+      = bcaeb64b + dev-files-only bookkeeping, zero lint-surface delta)
+  B = master 26c48c87 set (same-harness baseline worktree, measured this batch) = 142 entries (117E/25W)
+      source: gate-lint-master-baseline-26c48c87.log
+  C = post-sync candidate head 2b0aef87 set = 136 entries (111E/25W)
+      source: gate-lint-post-sync.log
+
+union A|B = 142 entries
+NEW = C - (A|B) = 0  (strict set; identifier-verified line-shift normalized: also 0)
+A - C = 0 (the post-sync set contains EVERY pre-sync candidate finding — zero drift on own set)
+C - A = 0 (the post-sync set is EXACTLY the pre-sync candidate set)
+A - B = 0 (the candidate set is a STRICT SUBSET of the master set)
+
+B - A = the 6 master-only findings (all @typescript-eslint/no-unused-vars):
+  packages/runtime/action-router/router.ts  84:15  @typescript-eslint/no-unused-vars
+  packages/runtime/requirement-facts/provider.ts  94:8  @typescript-eslint/no-unused-vars
+  packages/runtime/requirement-facts/provider.ts  104:8  @typescript-eslint/no-unused-vars
+  packages/runtime/requirement-facts/provider.ts  505:32  @typescript-eslint/no-unused-vars
+  packages/runtime/src/plugin/host.ts  1790:37  @typescript-eslint/no-unused-vars
+  packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts  341:7  @typescript-eslint/no-unused-vars
+
+Why the 6 master-only findings are absent from the post-sync tree (verified, not asserted):
+every one of the 6 lives in a file whose merged content DIFFERS from master (my
+branch changed these files in the round-1/consolidated-revision work; the merge
+auto-merged my version with master). The merged file no longer declares the
+unused symbol master flagged. Example: master router.ts:84 =
+  import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
+(unused in master; the post-sync merged import block carries no such line). The
+safety of the vanished declarations is proven by the same gate batch: typecheck
+9/9 EXIT=0 + build 9/9 EXIT=0 (zero TS errors) at 2b0aef87. This is a semantic
+merge outcome of the disclosed code delta — NOT a lint-surface change: NEW=0.
+
+master-vs-post-sync diff stat of the 6 files:
+  packages/runtime/action-router/router.ts                            | 111 insertions(+), 39 deletions(-)
+  packages/runtime/requirement-facts/provider.ts                      |  48 insertions(+), 18 deletions(-)
+  packages/runtime/src/plugin/host.ts                                 | 129 insertions(+), 27 deletions(-)
+  packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts    |  1 deletion(-)
+(host.ts:1790:37 and provider.ts:94/104/505 share the provider.ts/host.ts deltas above;
+requirement-d1-d3-decision-scoping.test.ts:341:7 sits on the single deleted line.)
+
+CONCLUSION: lint file-aware NEW=0 vs the UNION of the pre-sync candidate set and the
+master 26c48c87 set — ZERO issues in neither set. Post-sync 136 (111E/25W) = the
+pre-sync candidate set EXACTLY (strict, zero GONE, zero NEW-on-own-set).

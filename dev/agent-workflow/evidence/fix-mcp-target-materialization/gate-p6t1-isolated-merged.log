@@ -1,0 +1,12 @@
+CMD: pnpm vitest run packages/runtime/test/p6t1-parallel.test.ts @ e45d22fe (p6t1-parallel ISOLATED rerun @ tip — backs the router-log '隔离重跑 9/9 绿' claim)
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization
+
+ ✓ packages/runtime/test/p6t1-parallel.test.ts (9 tests) 6ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  07:50:26
+   Duration  656ms (transform 387ms, setup 0ms, import 562ms, tests 6ms, environment 0ms)
+
+TRUE-EXIT=0

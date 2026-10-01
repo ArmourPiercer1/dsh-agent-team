@@ -1,0 +1,14 @@
+== CHECK:ARTIFACTS (clean tree) @ consolidated-revision head bcaeb64b (checkpoint) ==
+HEAD: bcaeb64bc198b56e75d36b08b5cde215ac2c721f
+date: 2026-10-01T10:12:48Z
+git status --porcelain:
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-check-artifacts-consolidated-revision.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-fullsuite-consolidated-revision.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-lint-consolidated-revision.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-p4t6-consolidated-revision.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-typecheck-consolidated-revision.log
+(clean tree — the checkpoint head; untracked = this batch's evidence logs as they land)
+$ pnpm check:artifacts
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1372 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+ARTIFACTS_EXIT=0

@@ -671,7 +671,15 @@ export function createAdmitRootInitialWork(input) {
                     : input.environmentFacts(),
                 ...(input.templateEnvironmentFactsForBlueprint !== undefined
                     ? {
-                        templateEnvironmentFacts: (templateId) => input.templateEnvironmentFactsForBlueprint(args.blueprint, templateId),
+                        // Finding F residual-2 (external ruling): FORWARD the
+                        // gate's FEED CONTEXT (the target team's OWNING root —
+                        // `args.rootSessionId`) to the read seam. The pre-fix
+                        // wrapper dropped it: the template feed then resolved
+                        // under the BOOT root (the host port's legacy
+                        // fallback), and a cross-root healthy boot leader
+                        // permitted this root's initial work (the false OPEN;
+                        // ADR 334-347: affected scopes only).
+                        templateEnvironmentFacts: (templateId, context) => input.templateEnvironmentFactsForBlueprint(args.blueprint, templateId, context),
                     }
                     : input.templateEnvironmentFacts !== undefined
                         ? { templateEnvironmentFacts: input.templateEnvironmentFacts }
@@ -687,7 +695,15 @@ export function createAdmitRootInitialWork(input) {
                     : {}),
                 ...(input.templateEnvironmentFactsReadForBlueprint !== undefined
                     ? {
-                        templateEnvironmentFactsRead: (templateId) => input.templateEnvironmentFactsReadForBlueprint(args.blueprint, templateId),
+                        // Finding F residual-2 (external ruling): FORWARD the
+                        // gate's FEED CONTEXT (the target team's OWNING root —
+                        // `args.rootSessionId`, conservative root-only here: the
+                        // initial work carries no target instance) to the
+                        // full-resolution read seam. The pre-fix wrapper dropped
+                        // it: B's initial work read the BOOT root's leader
+                        // materialization and was permitted on its health (the
+                        // cross-root false OPEN; ADR 334-347 + 188-199).
+                        templateEnvironmentFactsRead: (templateId, context) => input.templateEnvironmentFactsReadForBlueprint(args.blueprint, templateId, context),
                     }
                     : {}),
                 now: input.now,

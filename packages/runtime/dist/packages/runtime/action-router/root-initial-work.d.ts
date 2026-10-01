@@ -155,6 +155,7 @@ import type { TeamBlueprint } from '../../domain/blueprint/src/index.js';
 import type { EnvironmentFact } from '../../domain/compatibility/src/index.js';
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js';
 import type { ResolvedCaller } from '../admission/resolve.js';
+import type { TemplateFeedContext } from '../admission/types.js';
 import type { RequirementScope } from '../requirements/types.js';
 import type { TeamOperationChainMap } from '../coordination/index.js';
 /**
@@ -420,7 +421,7 @@ export interface RootInitialWorkClosureInput {
      * of `templateEnvironmentFacts` scoped to the target root's bound
      * blueprint; ABSENT in factory worlds — legacy behavior, byte-identical).
      */
-    readonly templateEnvironmentFactsForBlueprint?: (blueprint: TeamBlueprint, templateId: string) => Promise<readonly EnvironmentFact[]>;
+    readonly templateEnvironmentFactsForBlueprint?: (blueprint: TeamBlueprint, templateId: string, context?: TemplateFeedContext) => Promise<readonly EnvironmentFact[]>;
     /**
      * D-3 fix (2026-09-30, adjudicated product semantics — fail-closed
      * PENDING) — the per-BLUEPRINT FULL-RESOLUTION live read (the atomic
@@ -437,7 +438,7 @@ export interface RootInitialWorkClosureInput {
      * live read (the twin of `templateEnvironmentFactsForBlueprint`; same
      * presence/absence semantics).
      */
-    readonly templateEnvironmentFactsReadForBlueprint?: (blueprint: TeamBlueprint, templateId: string) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
+    readonly templateEnvironmentFactsReadForBlueprint?: (blueprint: TeamBlueprint, templateId: string, context?: TemplateFeedContext) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>;
     /** The deterministic clock (ISO-8601). */
     readonly now: () => string;
     /** The live Root input delivery port (the glue's `deliverRootWork`). */

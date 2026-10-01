@@ -1,0 +1,25 @@
+== p4t6 RECOMPUTE from the actual merged tree (pre-merge-commit) ==
+HEAD: 29479b70e93bc6c71e42c9cbe2a62bc5c8ad57ee (pre-merge-commit; worktree = the resolved merge)
+date: 2026-10-01T10:24:55Z
+git status --porcelain (short):
+M  dev/agent-workflow/SESSION_ROUTER_LOG.md
+A  dev/agent-workflow/evidence/fix-control-authz/baseline-full-2.log
+A  dev/agent-workflow/evidence/fix-control-authz/baseline-full.log
+A  dev/agent-workflow/evidence/fix-control-authz/baseline-lint-2.log
+A  dev/agent-workflow/evidence/fix-control-authz/baseline-lint-fp-fileaware.txt
+A  dev/agent-workflow/evidence/fix-control-authz/baseline-lint-fp-plain.txt
+A  dev/agent-workflow/evidence/fix-control-authz/build-3.log
+A  dev/agent-workflow/evidence/fix-control-authz/build-b168870e-1.log
+...
+$ cd packages/testkit && npx vitest run test/p4t6-session-event-scan.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/testkit
+
+ ✓ test/p4t6-session-event-scan.test.ts (10 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  10:24:55
+   Duration  329ms (transform 44ms, setup 0ms, import 235ms, tests 4ms, environment 0ms)
+
+P4T6_EXIT=0

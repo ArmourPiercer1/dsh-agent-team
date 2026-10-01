@@ -455,7 +455,7 @@ export function createTeamProductionRoot(params) {
             .then((resolution) => resolution.environmentFacts);
     const templateEnvironmentFactsForBlueprint = requirementFacts === undefined
         ? undefined
-        : (target, templateId) => {
+        : (target, templateId, context) => {
             const requirements = scopeRequirementInputsOf(target).templates[templateId] ?? [];
             return requirementFacts.provider
                 .resolveFacts({
@@ -463,7 +463,18 @@ export function createTeamProductionRoot(params) {
                 // Blocker-1: the template scope carries its role identity
                 // (the bound blueprint knows its leader template id — the
                 // leader IS the root: the root mounts config.rootPresetId).
-                scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(target.leader.templateId, templateId) },
+                // Finding F (scoped identity): the feed context's OWNING
+                // root + target instance (the orthogonal coordinates — the
+                // host port lists the owning root's instances and reads the
+                // target's own boundary; absent = the legacy template-only
+                // scope, byte-identical).
+                scope: {
+                    kind: 'template',
+                    templateId,
+                    role: requirementFactScopeRoleOf(target.leader.templateId, templateId),
+                    ...(context?.instanceId !== undefined ? { instanceId: context.instanceId } : {}),
+                    ...(context?.rootSessionId !== undefined ? { rootSessionId: context.rootSessionId } : {}),
+                },
             })
                 .then((resolution) => resolution.environmentFacts);
         };
@@ -496,14 +507,24 @@ export function createTeamProductionRoot(params) {
         });
     const templateEnvironmentFactsReadForBlueprint = requirementFacts === undefined
         ? undefined
-        : (target, templateId) => {
+        : (target, templateId, context) => {
             const requirements = scopeRequirementInputsOf(target).templates[templateId] ?? [];
             return requirementFacts.provider.resolveFacts({
                 requirements,
                 // Blocker-1: the template scope carries its role identity
                 // (the bound blueprint knows its leader template id — the
                 // leader IS the root: the root mounts config.rootPresetId).
-                scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(target.leader.templateId, templateId) },
+                // Finding F (scoped identity): the feed context's OWNING
+                // root + target instance (the atomic pair the decision and
+                // the bookkeeping read — same seam, same coordinates;
+                // absent = the legacy template-only scope, byte-identical).
+                scope: {
+                    kind: 'template',
+                    templateId,
+                    role: requirementFactScopeRoleOf(target.leader.templateId, templateId),
+                    ...(context?.instanceId !== undefined ? { instanceId: context.instanceId } : {}),
+                    ...(context?.rootSessionId !== undefined ? { rootSessionId: context.rootSessionId } : {}),
+                },
             });
         };
     const externalPolicyFacts = async () => config.externalPolicyFacts;
@@ -823,7 +844,20 @@ export function createTeamProductionRoot(params) {
                     // Blocker-1: the template scope carries its role identity
                     // (the bound blueprint knows its leader template id — the
                     // leader IS the root: the root mounts config.rootPresetId).
-                    scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(bound.leader.templateId, templateId) },
+                    // Finding F residual-2 (external ruling): the CREATION's own
+                    // root (the future root this preflight serves) — the pre-fix
+                    // boot-root fallback conflated a multi-root host's creation
+                    // with the boot root's materialization (ADR 334-347:
+                    // affected scopes only). Pre-bind, the future root carries no
+                    // member rows: the conservative read resolves to the
+                    // not-applicable/seed truth of ITS OWN root, never the boot
+                    // root's.
+                    scope: {
+                        kind: 'template',
+                        templateId,
+                        role: requirementFactScopeRoleOf(bound.leader.templateId, templateId),
+                        rootSessionId: input.rootSessionId,
+                    },
                 })
                     .then((resolution) => resolution.environmentFacts);
             };
@@ -845,7 +879,14 @@ export function createTeamProductionRoot(params) {
                 environmentFactsRead: () => environmentFactsReadForBlueprint(bound),
                 ...(templateEnvironmentFactsReadForBlueprint !== undefined
                     ? {
-                        templateEnvironmentFactsRead: (templateId) => templateEnvironmentFactsReadForBlueprint(bound, templateId),
+                        // Finding F residual-2 (external ruling): the CREATION's own
+                        // root as the read seam's feed context (the preflight
+                        // classifier passes no gate context of its own — the
+                        // default stands; a future context-bearing classifier wins
+                        // over the default). Pre-fix the wrapper dropped the
+                        // context: the full-resolution read resolved under the BOOT
+                        // root — the cross-root false OPEN on the creation path.
+                        templateEnvironmentFactsRead: (templateId, context) => templateEnvironmentFactsReadForBlueprint(bound, templateId, context ?? { rootSessionId: input.rootSessionId }),
                     }
                     : {}),
                 consents: durable.consents,

@@ -1,0 +1,16 @@
+== p6t1-parallel ISOLATED re-run (flake confirmation) — pre-sync tip ==
+HEAD: a49bc5ecbc26a7544757582831870681bf8a9365
+date: 2026-10-01T08:43:49Z
+\$ cd packages/runtime && npx vitest run test/p6t1-parallel.test.ts
+
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/runtime
+
+ ✓ test/p6t1-parallel.test.ts (9 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  08:43:49
+   Duration  757ms (transform 451ms, setup 0ms, import 659ms, tests 5ms, environment 0ms)
+
+VITEST_EXIT=0

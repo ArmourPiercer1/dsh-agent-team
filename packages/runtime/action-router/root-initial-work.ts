@@ -161,6 +161,7 @@ import type { LedgerEntry } from '../../storage/schema/index.js'
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from '../admission/errors.js'
 import { enforceRequirementGate } from '../admission/requirement-gate.js'
 import type { ResolvedCaller } from '../admission/resolve.js'
+import type { TemplateFeedContext } from '../admission/types.js'
 import { normalWorkImpact } from '../requirements/action-impact.js'
 import { teamScope, templateScope } from '../requirements/types.js'
 import type { RequirementScope } from '../requirements/types.js'
@@ -852,6 +853,11 @@ export interface RootInitialWorkClosureInput {
   readonly templateEnvironmentFactsForBlueprint?: (
     blueprint: TeamBlueprint,
     templateId: string,
+    // Finding F residual-2 (external ruling): the gate's FEED CONTEXT
+    // (the OWNING root of the initial work's target team — the root the
+    // materialization boundary resolves under; absent = the legacy
+    // boot-root fallback the ruling found a cross-root false OPEN).
+    context?: TemplateFeedContext,
   ) => Promise<readonly EnvironmentFact[]>
   /**
    * D-3 fix (2026-09-30, adjudicated product semantics — fail-closed
@@ -874,6 +880,9 @@ export interface RootInitialWorkClosureInput {
   readonly templateEnvironmentFactsReadForBlueprint?: (
     blueprint: TeamBlueprint,
     templateId: string,
+    // Finding F residual-2 (external ruling): the gate's FEED CONTEXT —
+    // forwarded to the read seam (see the D-1 twin above).
+    context?: TemplateFeedContext,
   ) => Promise<import('../requirement-facts/index.js').RequirementFactsResolution>
   /** The deterministic clock (ISO-8601). */
   readonly now: () => string
@@ -983,8 +992,16 @@ export function createAdmitRootInitialWork(
                 : input.environmentFacts(),
             ...(input.templateEnvironmentFactsForBlueprint !== undefined
               ? {
-                  templateEnvironmentFacts: (templateId: string) =>
-                    input.templateEnvironmentFactsForBlueprint!(args.blueprint, templateId),
+                  // Finding F residual-2 (external ruling): FORWARD the
+                  // gate's FEED CONTEXT (the target team's OWNING root —
+                  // `args.rootSessionId`) to the read seam. The pre-fix
+                  // wrapper dropped it: the template feed then resolved
+                  // under the BOOT root (the host port's legacy
+                  // fallback), and a cross-root healthy boot leader
+                  // permitted this root's initial work (the false OPEN;
+                  // ADR 334-347: affected scopes only).
+                  templateEnvironmentFacts: (templateId: string, context?: TemplateFeedContext) =>
+                    input.templateEnvironmentFactsForBlueprint!(args.blueprint, templateId, context),
                 }
               : input.templateEnvironmentFacts !== undefined
                 ? { templateEnvironmentFacts: input.templateEnvironmentFacts }
@@ -1001,8 +1018,16 @@ export function createAdmitRootInitialWork(
               : {}),
             ...(input.templateEnvironmentFactsReadForBlueprint !== undefined
               ? {
-                  templateEnvironmentFactsRead: (templateId: string) =>
-                    input.templateEnvironmentFactsReadForBlueprint!(args.blueprint, templateId),
+                  // Finding F residual-2 (external ruling): FORWARD the
+                  // gate's FEED CONTEXT (the target team's OWNING root —
+                  // `args.rootSessionId`, conservative root-only here: the
+                  // initial work carries no target instance) to the
+                  // full-resolution read seam. The pre-fix wrapper dropped
+                  // it: B's initial work read the BOOT root's leader
+                  // materialization and was permitted on its health (the
+                  // cross-root false OPEN; ADR 334-347 + 188-199).
+                  templateEnvironmentFactsRead: (templateId: string, context?: TemplateFeedContext) =>
+                    input.templateEnvironmentFactsReadForBlueprint!(args.blueprint, templateId, context),
                 }
               : {}),
             now: input.now,

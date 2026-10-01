@@ -70,6 +70,7 @@ export type {
   TeamRuntimeActionOutcome,
   TeamRuntimeActionRequest,
   TeamRuntimeOptions,
+  TemplateFeedContext,
   WorkActivityPort,
   WorkDeliveryPort,
   WorkDeliveryResult,

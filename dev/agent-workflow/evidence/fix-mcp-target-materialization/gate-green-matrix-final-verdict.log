@@ -1,0 +1,62 @@
+== GREEN matrix (focused, 18 legs) @ FINAL head 64cd6614 ==
+HEAD: 64cd6614eea623531a79a5061a18410f6288572d
+date: 2026-10-01T09:37:51Z
+git status --porcelain:
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-check-artifacts-final-verdict.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-fullsuite-final-verdict.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-green-matrix-final-verdict.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-isolated-flake-reruns-final-verdict.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-lint-final-verdict.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-lint-fp-final-verdict.txt
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-typecheck-final-verdict.log
+(uncommitted = this batch's evidence logs only)
+$ cd packages/runtime && npx vitest run test/mcp-target-materialization.test.ts test/mcp-target-materialization-unit.test.ts
+
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/runtime
+
+ ✓ test/mcp-target-materialization-unit.test.ts (5 tests) 3ms
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ test/mcp-target-materialization.test.ts (13 tests) 4ms
+
+ Test Files  2 passed (2)
+      Tests  18 passed (18)
+   Start at  09:37:52
+   Duration  1.86s (transform 1.29s, setup 0ms, import 2.43s, tests 7ms, environment 0ms)
+
+VITEST_EXIT=0

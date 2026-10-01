@@ -141,18 +141,32 @@ export function requirementFactScopeRoleOf(
  * - `template` — the template/instance applicable boundary: supply + fresh
  *   readiness + materialization (the `instanceId` is present for an
  *   instance-addressed boundary; a template-only boundary omits it). The
- *   `role` identity (Blocker-1) carries WHICH observation the template
- *   addresses: `leader` ⇒ the leader's own mounted preset (the ROOT plan
- *   entry — the root mounts config.rootPresetId, the leader IS the root),
- *   `member` ⇒ the MEMBER entry (plan §C.2 R8).
+ *   `role` identity (Blocker-1 shared contract) carries WHICH observation
+ *   the template addresses: `leader` ⇒ the leader's own mounted preset (the
+ *   ROOT plan entry — the root mounts config.rootPresetId, the leader IS
+ *   the root), `member` ⇒ the MEMBER entry (plan §C.2 R8).
+ *
+ * Finding F (scoped identity, additive): `rootSessionId` is the OWNING team
+ * root the boundary resolves under. A production host row hosts EVERY team
+ * root of the domain (the multi-root host shape — the router resolves ANY
+ * root in the domain), so a boundary MUST name its own root: the host's
+ * `memberMaterialization` port lists the member instances of that root
+ * (never the entry's boot root — the cross-root conflation Finding F
+ * reports). Absent = the legacy single-root contract (the port falls back
+ * to the entry's boot root — byte-identical for every pre-fix caller).
+ * `role`, `instanceId` and `rootSessionId` are ORTHOGONAL coordinates: the
+ * role names WHICH observation the template addresses (persona axis), the
+ * instance names WHICH boundary (one instance's own mount state), the root
+ * names WHERE (which team root's instances). None re-derives another.
  */
 export type RequirementFactScope =
-  | { readonly kind: 'team' }
+  | { readonly kind: 'team'; readonly rootSessionId?: string }
   | {
       readonly kind: 'template'
       readonly templateId: string
       readonly role: RequirementFactScopeRole
       readonly instanceId?: string
+      readonly rootSessionId?: string
     }
 
 /**
@@ -170,8 +184,21 @@ export function assertRequirementFactScope(value: unknown): RequirementFactScope
   }
   const record = value as Record<string, unknown>
   const kind = record['kind']
+  // Finding F (scoped identity): the owning team root (optional — the
+  // multi-root host shape; absent = the legacy boot-root fallback).
+  const rootSessionId = record['rootSessionId']
+  if (rootSessionId !== undefined && (typeof rootSessionId !== 'string' || rootSessionId.length === 0)) {
+    throw teamContractError('MALFORMED_DTO', 'rootSessionId must be a non-empty string at $.rootSessionId', {
+      path: '$.rootSessionId',
+      problem: 'non-string rootSessionId',
+    })
+  }
   if (kind === 'team') {
-    return deepFreeze({ kind: 'team' as const })
+    return deepFreeze(
+      rootSessionId === undefined
+        ? { kind: 'team' as const }
+        : { kind: 'team' as const, rootSessionId },
+    )
   }
   if (kind === 'template') {
     const templateId = record['templateId']
@@ -199,10 +226,18 @@ export function assertRequirementFactScope(value: unknown): RequirementFactScope
         problem: 'non-string instanceId',
       })
     }
+    // Blocker-1 shared contract: `role` is REQUIRED (the closed identity);
+    // Finding F: `instanceId` / `rootSessionId` are orthogonal optional
+    // coordinates (absent = the legacy template-only, single-root shape).
+    const base = { kind: 'template' as const, templateId, role }
     return deepFreeze(
-      instanceId === undefined
-        ? { kind: 'template' as const, templateId, role }
-        : { kind: 'template' as const, templateId, role, instanceId },
+      rootSessionId === undefined && instanceId === undefined
+        ? base
+        : {
+            ...base,
+            ...(instanceId !== undefined ? { instanceId } : {}),
+            ...(rootSessionId !== undefined ? { rootSessionId } : {}),
+          },
     )
   }
   throw teamContractError('MALFORMED_DTO', `unknown requirement-fact scope kind '${String(kind)}' at $.kind`, {

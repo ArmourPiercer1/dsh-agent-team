@@ -1,0 +1,75 @@
+diff --git a/packages/runtime/requirement-facts/pending.ts b/packages/runtime/requirement-facts/pending.ts
+index 846dd60a..be8ec5da 100644
+--- a/packages/runtime/requirement-facts/pending.ts
++++ b/packages/runtime/requirement-facts/pending.ts
+@@ -197,8 +197,29 @@ export function classifyScopeReadiness(args: {
+     inputs.filter((input) => input.complete === true).map((input) => input.requirementId),
+   )
+ 
+-  // Per required requirement: fold the 3-state readiness of its subjects.
+-  const stateByRequirement = new Map<string, { unreachable: boolean; unknown: boolean }>()
++  // Finding F (target-specific gating) — the per-observation DOWN signal:
++  // a confirmed server-level `unreachable` readiness OR a confirmed
++  // materialization FAILURE (the mcpServer domain only). The second disjunct
++  // is the axis the aggregate probe CANNOT see: a healthy sibling's fiber
++  // keeps the SERVER-level verdict `reachable` while this boundary's own
++  // mount is `failed` (the mask Finding F reports) — the boundary truth
++  // (guide §2.5.5) still sets the requirement down. `pending` / `mounted` /
++  // `not-applicable` never set it (the liveness adjudication: PENDING must
++  // never be a state only the blocked action itself can settle — the target
++  // self-mounts at its own boundary, and a failed mount is then gated as
++  // `failed` on the next passage).
++  const isDownObservation = (observation: RequirementObservation): boolean =>
++    observation.readiness === PROBE_VERDICTS.unreachable ||
++    (observation.type === 'mcpServer' &&
++      observation.materialization === MATERIALIZATION_STATES.failed)
++
++  // Per required requirement: fold the 3-state readiness of its subjects
++  // (the three flags are ORTHOGONAL axes — a masked failure is `reachable`
++  // readiness + a `failed` materialization at once).
++  const stateByRequirement = new Map<
++    string,
++    { unreachable: boolean; unknown: boolean; materializationFailed: boolean }
++  >()
+   for (const observation of observations) {
+     if (!requiredIds.has(observation.requirementId)) continue
+     // Applicability: a COLD member's mcpServer capability (materialization
+@@ -213,12 +234,21 @@ export function classifyScopeReadiness(args: {
+     const state = stateByRequirement.get(observation.requirementId) ?? {
+       unreachable: false,
+       unknown: false,
++      materializationFailed: false,
+     }
+     if (observation.readiness === PROBE_VERDICTS.unreachable) state.unreachable = true
+     // D-3 narrowing + PF-2 tri-state: only an IN-FLIGHT unknown of a
+     // PROBEABLE type is the transient window (one shared predicate —
+     // never-observed is exempt, in-flight/absent-default stands).
+-    else if (observation.readiness === PROBE_VERDICTS.unknown && isPendingWindow(observation)) state.unknown = true
++    if (observation.readiness === PROBE_VERDICTS.unknown && isPendingWindow(observation)) state.unknown = true
++    // Finding F: the boundary's own confirmed mount failure (the masked
++    // failure the readiness axis alone cannot see).
++    if (
++      observation.type === 'mcpServer' &&
++      observation.materialization === MATERIALIZATION_STATES.failed
++    ) {
++      state.materializationFailed = true
++    }
+     stateByRequirement.set(observation.requirementId, state)
+   }
+ 
+@@ -228,11 +258,12 @@ export function classifyScopeReadiness(args: {
+   const downSeen = new Set<string>()
+   for (const [requirementId, state] of stateByRequirement) {
+     // A confirmed down SETS the requirement (it is not reclassified as
+-    // pending by a sibling subject still unknown).
+-    if (state.unreachable) {
++    // pending by a sibling subject still unknown): a server-level
++    // `unreachable` OR a confirmed materialization failure (Finding F).
++    if (state.unreachable || state.materializationFailed) {
+       for (const observation of observations) {
+         if (observation.requirementId !== requirementId) continue
+-        if (observation.readiness !== PROBE_VERDICTS.unreachable) continue
++        if (!isDownObservation(observation)) continue
+         const key = `${scopeKey}|${requirementId}|${observation.subject}`
+         if (downSeen.has(key)) continue
+         downSeen.add(key)

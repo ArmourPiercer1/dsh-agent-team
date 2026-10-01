@@ -631,12 +631,24 @@ export function createActivationProvider(ports) {
             let templateRead;
             let templateFacts;
             if (targetTemplateInputs !== undefined) {
+                // Finding F residual-2 (external ruling): the FRESH-CREATE path's
+                // template feed reads must carry the TARGET root's feed context —
+                // the pre-fix calls dropped it, so the host port resolved the
+                // template materialization under the BOOT root (the legacy
+                // fallback) and a cross-root healthy boot instance stood in for
+                // this root's own (ADR 334-347: affected scopes only). No target
+                // instance exists yet (the create is in flight) — the context is
+                // root-only; the conservative template-level read is the correct
+                // scope for a not-yet-minted member.
+                // (merge re-application of the round-1 change onto the
+                // fix-control-authz provider structure — see the conflict
+                // resolution disclosure in the fix-report sync section.)
                 if (ports.templateEnvironmentFactsReadForBlueprint !== undefined) {
-                    templateRead = await ports.templateEnvironmentFactsReadForBlueprint(blueprint, createTemplateId);
+                    templateRead = await ports.templateEnvironmentFactsReadForBlueprint(blueprint, createTemplateId, { rootSessionId });
                     templateFacts = templateRead.environmentFacts;
                 }
                 else if (ports.templateEnvironmentFactsForBlueprint !== undefined) {
-                    templateFacts = await ports.templateEnvironmentFactsForBlueprint(blueprint, createTemplateId);
+                    templateFacts = await ports.templateEnvironmentFactsForBlueprint(blueprint, createTemplateId, { rootSessionId });
                 }
                 else {
                     templateFacts = admission.facts;

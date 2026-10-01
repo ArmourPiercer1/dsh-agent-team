@@ -220,6 +220,17 @@ export interface WorkChainDeps {
   readonly taskSummary?: string
   /** Transient cancellation signal for the live delivery; never durable. */
   readonly signal?: unknown
+  /** The human-reviewed RECOVERY marker of the request (the router's
+   *  recovery dispatch: the reviewed re-run of a blocked action — NEVER
+   *  caller-forged; a present marker without a blocked scope is a no-op
+   *  at the gate). Propagated to the delivery port so the requirement-
+   *  aware final-input verdict can EXEMPT the reviewed scope (a failed
+   *  required mcp server named in `unavailableSubjects` does not block
+   *  the human-reviewed re-run — the L4c anti-over-block shape). */
+  readonly recovery?: {
+    readonly scopeKeys: readonly string[]
+    readonly unavailableSubjects: readonly string[]
+  }
   /** The shared per-team operation chain (the router's `teamLocks` map —
    *  the same map the production root wires into the activity ledger's
    *  guarded commit, the lifecycle service and the Root initial-work
@@ -621,6 +632,7 @@ export async function deliverWork(deps: WorkChainDeps, admitted: { readonly chil
     prompt: deps.prompt,
     ...(deps.attachedContext !== undefined ? { attachedContext: deps.attachedContext } : {}),
     ...(deps.signal !== undefined ? { signal: deps.signal } : {}),
+    ...(deps.recovery !== undefined ? { recovery: deps.recovery } : {}),
   })
 }
 

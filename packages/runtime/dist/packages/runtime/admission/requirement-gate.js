@@ -57,6 +57,7 @@ import { OPTIONAL_REQUIREMENT_ACCEPTED_FACT_TYPE, RECOVERY_INCIDENT_CLOSED_FACT_
 import { projectVerdicts, scopeRequirementInputsOf, } from '../requirements/scope-requirements.js';
 import { classifyScopeReadiness, } from '../requirement-facts/index.js';
 import { ACTION_IMPACT_CLASSES, PENDING_BLOCK, SCOPE_STATES, scopeKey, teamScope, templateScope, } from '../requirements/types.js';
+import { recoveryExitReady } from '../requirements/recovery.js';
 import { createCompatibilityAuthority } from '../compatibility/index.js';
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from './errors.js';
 // D-3 (2026-09-30) — the closed typed-code family of the PENDING outcome
@@ -324,6 +325,33 @@ function analyzeLiveReadiness(blueprint, impact, teamRead, templateReads) {
     return { pendingRequired, downRequired };
 }
 /**
+ * Finding F (target-specific close) — whether the SCOPE's OWN
+ * materialization is satisfied on the scope's captured conservative
+ * (template-only) read: every mcpServer observation `mounted` or
+ * `not-applicable` (the converged / never-applicable truth). A `failed`
+ * or `pending` live instance — or the omitted mixed worst case (the host
+ * port withholds the axis when the live instances have not ALL
+ * converged) — keeps the scope's materialization UNSATISFIED: the
+ * incident stays open until the scope's own instances converge
+ * (plan §E.10 + Finding F: a healthy sibling's fresh verdict is not the
+ * scope's truth). Observations without a materialization axis
+ * (non-mcpServer types) are unconstrained.
+ *
+ * @returns `true` (the legacy verdict-only exit) when no scope read was
+ *   captured for the scope (legacy / factory worlds, the team scope).
+ */
+function scopeMaterializationSatisfied(scopeKey, templateReads) {
+    const prefix = 'template:';
+    if (!scopeKey.startsWith(prefix))
+        return true;
+    const read = templateReads.get(scopeKey.slice(prefix.length));
+    if (read === undefined)
+        return true;
+    return read.observations.every((observation) => observation.type !== 'mcpServer' ||
+        observation.materialization === 'mounted' ||
+        observation.materialization === 'not-applicable');
+}
+/**
  * Step 4a (PR-E) — the requirement gate for NEW WORK (invariant 50).
  *
  * Consumes the full scope evaluation (every declared scope, one fresh facts
@@ -361,15 +389,69 @@ export async function enforceRequirementGate(options, impact) {
     const templateReads = new Map();
     const templateFacts = options.templateEnvironmentFactsRead !== undefined
         ? async (templateId) => {
-            const resolution = await options.templateEnvironmentFactsRead(templateId);
+            // Finding F (scoped identity): the scope read is the TEMPLATE-
+            // ONLY conservative read, scoped to the action's OWNING root
+            // (the multi-root host shape: the port lists THIS root's
+            // instances — never the entry's boot root, the cross-root
+            // conflation Finding F reports). This read feeds the scope
+            // verdicts (the incident/recovery bookkeeping's own truth).
+            const resolution = await options.templateEnvironmentFactsRead(templateId, { rootSessionId });
             templateReads.set(templateId, resolution);
             return resolution.environmentFacts;
         }
         : options.templateEnvironmentFacts;
     const { scopeVerdicts, scopeStates } = await evaluateAllScopes(repositories, blueprint, rootSessionId, teamFacts, options.now, templateFacts);
     const { consents, availability, openIncidents } = readRequirementFacts(repositories, rootSessionId);
+    // Finding F (target-specific decision) — the TARGET instance's OWN
+    // boundary read (the decision read). Performed only when the action
+    // names a target instance AND the full-resolution read port is present
+    // (the production host world — the legacy facts-only worlds have no
+    // instance axis and stay byte-identical). The action's impact names at
+    // most ONE template scope, and the router passes `targetInstanceId`
+    // only for an instance of that named template (the router resolved the
+    // row), so the target template is the impact's single template ref.
+    // The DECISION reads the target's own boundary (a failed target gates
+    // the action — the masked failure Finding F reports — while a healthy
+    // target passes under a failed sibling); the scope verdicts above keep
+    // the conservative worst case (the incident bookkeeping's truth). A
+    // read failure is a chain failure (fail-closed, the same contract as
+    // the scope read, invariant 50).
+    const targetInstanceId = options.targetInstanceId;
+    const targetTemplateId = targetInstanceId !== undefined
+        ? impact.scopeRefs.find((ref) => ref.level === 'template')?.templateId
+        : undefined;
+    let targetRead;
+    const decisionScopeVerdicts = { ...scopeVerdicts };
+    if (targetInstanceId !== undefined && targetTemplateId !== undefined && options.templateEnvironmentFactsRead !== undefined) {
+        let resolution;
+        try {
+            resolution = await options.templateEnvironmentFactsRead(targetTemplateId, {
+                rootSessionId,
+                instanceId: targetInstanceId,
+            });
+        }
+        catch (error) {
+            throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, `TeamRuntime: the target-instance environment-facts read failed for template '${targetTemplateId}' instance '${targetInstanceId}' — new work admission fails closed (invariant 50)`, {
+                rootSessionId,
+                source: 'requirement-gate',
+                reason: 'facts-unavailable',
+                templateId: targetTemplateId,
+                cause: error instanceof Error ? error.message : undefined,
+            });
+        }
+        targetRead = resolution;
+        // The decision's view of the target template: the target instance's
+        // OWN 2-state feed (the engine re-validates its inputs itself).
+        decisionScopeVerdicts[scopeKey({ level: 'template', templateId: targetTemplateId })] = projectVerdicts(evaluateCompatibility({
+            requirements: scopeRequirementInputsOf(blueprint).templates[targetTemplateId] ?? [],
+            environmentFacts: resolution.environmentFacts,
+        }));
+    }
+    // The decision reads the TARGET boundary (the merged view); the scope
+    // states + recovery keep the conservative worst case (the bookkeeping
+    // truth — the incident closes only on the scope's own convergence).
     const decision = gateAction(impact, {
-        scopeVerdicts,
+        scopeVerdicts: decisionScopeVerdicts,
         consents,
         availability,
     });
@@ -422,7 +504,17 @@ export async function enforceRequirementGate(options, impact) {
     // `compatibility.reprobe` seam — a stuck slot is honest, not a
     // deadlock. Absent read ports (legacy / factory worlds) → no
     // observations → the rule is off (byte-identical).
-    const liveReadiness = analyzeLiveReadiness(blueprint, impact, teamRead, templateReads);
+    // Finding F (target-specific decision) — the live-readiness analysis
+    // consumes the DECISION's read view: the target template's observations
+    // come from the target instance's OWN read (no spurious PENDING/down for
+    // a healthy target under a failed sibling; the target's own failed
+    // materialization is the down signal the mask hides from the aggregate
+    // probe). Non-target templates keep their own scope reads.
+    const decisionReads = new Map(templateReads);
+    if (targetRead !== undefined && targetTemplateId !== undefined) {
+        decisionReads.set(targetTemplateId, targetRead);
+    }
+    const liveReadiness = analyzeLiveReadiness(blueprint, impact, teamRead, decisionReads);
     const hasLiveDown = liveReadiness.downRequired.length > 0;
     const hasLivePending = liveReadiness.pendingRequired.length > 0;
     const noSeedFatalReclassify = !decision.allowed && decision.reason === 'requiredScopeDown';
@@ -495,12 +587,27 @@ export async function enforceRequirementGate(options, impact) {
     // Exit record (plan §E.10): an open incident whose scope is no longer
     // blocked on the fresh evaluation is CLOSED (the exit is the derived
     // state flipping; the record is the durable history, never a flag).
+    // Finding F (target-specific close): the exit reads the SCOPE's OWN
+    // materialization (the conservative worst-case scope read — every
+    // mcpServer observation `mounted` or `not-applicable`): fixing a
+    // healthy sibling must NOT close the incident of a scope that still
+    // carries a failed or in-flight instance. The pure exit check is the
+    // shared {@link recoveryExitReady} (verdict PASS + materialization).
+    // No captured scope read (legacy / factory worlds, the team scope) →
+    // `materializationSatisfied: true` → the legacy verdict-only exit
+    // stands byte-identically.
     for (const incident of openIncidents) {
         const verdict = scopeStates.find((v) => scopeKey(v.scope) === incident.scopeKey);
         if (verdict === undefined)
             continue;
         if (verdict.state === SCOPE_STATES.blocked)
             continue;
+        if (!recoveryExitReady({
+            scopeVerdicts: [verdict],
+            materializationSatisfied: scopeMaterializationSatisfied(incident.scopeKey, templateReads),
+        }).canExit) {
+            continue;
+        }
         await writeRequirementFact(repositories.ledger, rootSessionId, RECOVERY_INCIDENT_CLOSED_FACT_TYPE, recoveryIncidentClosedPayload({
             scope: incident.scopeKey,
             requirementIds: incident.requirementIds,

@@ -1,0 +1,84 @@
+== a2c7 environment recovery (post-sync merged head; per the final addendum: diagnose -> repair -> re-run) ==
+HEAD: 2b0aef879b93a2d851e29886f6b2d74148ebd784
+date: 2026-10-01T10:28:00Z
+git status --porcelain:
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-a2c7-env-recovery-post-sync.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-a2c7-isolated-post-sync-pre-repair.log
+?? packages/runtime/test/z-diag-a2c7-reason.test.ts
+(clean tree — the merge commit; the untracked z-diag file is removed before this log's final state)
+
+DIAGNOSIS (recorded):
+1. The a2c7 guard's pinned-lib walk (WALK_START = the worktree root, a2c7-subtree-matcher.test.ts L515-538)
+   resolves the MAIN repo's gitignored test-use checkout at /srv/workspace/dsh-plugins/dsh-agent-team/tests/
+   deepseek-harness-test-use (depth 2 from the worktree root; the worktree carries NO local test-use copy).
+2. That checkout is CLEAN: git status --porcelain empty, HEAD = 46a7f68b0922371ce7144b668b90e377d8e799f4 (dsh-v0.1.7-rc.1),
+   prebuilt lib packages/fs/fs-local/lib/index.js present (built 05:32-05:33Z, unchanged since).
+3. A node probe with the section's EXACT ctx double ({ reflect: { provide() {} } }) imported the lib, constructed
+   LocalFileSystem, mkdtemp'd under /tmp (writable), built the fixture tree + symlink, and ran resolve/contains
+   successfully — the pinned-lib mechanics are NOT the failure.
+4. The real section's failure reason (captured via a temporary diagnostic it in a COPY of the test file,
+   z-diag-a2c7-reason.test.ts, deleted after the capture): TeamDomainError: 'team_domain already exists
+   (schema_meta holds 9 stamp row(s)); use openTeamDomain' at createP6T1World (p6t1-helpers.ts:359) via
+   createTeamDomain (storage/repositories/team-domain.ts:180) — the section's fixed-basename worlds
+   (a2c7-real-g5/g6/.../g1, scratchDir = packages/testkit/test/.tmp-fault/<basename>, file-seam.mjs L416-421:
+   'the seam creates it lazily on first open; delete it with destroyDir in the test's finally block').
+5. LEFTOVER PROOF: packages/testkit/test/.tmp-fault/a2c7-real-g6/ (team_domain + team_domain.meta.json,
+   mtime 09:31Z — the round-1 09:31Z full-run's residue) survived its run's teardown; every later run
+   (09:35Z / 10:10Z / 10:2xZ) re-hit the SAME fixed dir at realEnv('a2c7-real-g6') -> the section throws
+   -> available:false -> the guard 1F + 8 downstream TypeErrors (REAL undefined). The 09:01Z green run
+   hit clean state; this is the 'host state flipped between runs' class — a DIRTY-SCRATCH residual,
+   NOT the pinned lib and NOT product code.
+
+REPAIR (the authorized test realm only: the worktree's .tmp-fault scratch + tests/homes; nothing else touched):
+$ ls packages/testkit/test/.tmp-fault/ (pre-cleanup)
+a2c7-real-g6
+f15-mcp-live-loss
+f15-mcp-live-loss-characterization
+h5-b8
+mtm-a
+mtm-b
+mtm-d
+mtm-e
+mtm-l1
+mtm-l2
+mtm-l3
+mtm-l4a
+mtm-l4b
+mtm-l4c
+mtm-l5
+mtm-l6
+mtm-l7
+mtm-r1
+mtm-r2
+mtm-zz
+p7t1x-ack-s1
+rmrcoo-boot
+EXIT_LS_PRE=0
+$ rm -rf packages/testkit/test/.tmp-fault/* (the documented destroyDir teardown, manual; all entries are test-world scratch)
+EXIT_RM=0
+$ ls -la packages/testkit/test/.tmp-fault/ (post-cleanup)
+total 8
+drwxr-xr-x 2 user user 4096 Oct  1 10:28 .
+drwxr-xr-x 3 user user 4096 Oct  1 10:21 ..
+EXIT_LS_POST=0
+$ ls tests/homes/ (the DSH_HOME worlds — already EMPTY, nothing to clean)
+ls: cannot access 'tests/homes/': No such file or directory
+EXIT_LS_HOMES=2
+(the temporary z-diag-a2c7-reason.test.ts copy removed — no tracked test file was ever modified)
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-a2c7-env-recovery-post-sync.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-a2c7-isolated-post-sync-pre-repair.log
+GIT_STATUS_CLEAN_AFTER=2
+
+RE-RUN (the restored clean state):
+$ cd packages/runtime && npx vitest run test/a2c7-subtree-matcher.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/runtime
+
+ ✓ test/a2c7-subtree-matcher.test.ts (31 tests) 10ms
+
+ Test Files  1 passed (1)
+      Tests  31 passed (31)
+   Start at  10:28:05
+   Duration  10.71s (transform 582ms, setup 0ms, import 10.61s, tests 10ms, environment 0ms)
+
+A2C7_POST_RECOVERY_EXIT=0

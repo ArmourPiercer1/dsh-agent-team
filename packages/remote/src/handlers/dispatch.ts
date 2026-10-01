@@ -388,6 +388,21 @@ export const REMOTE_BACKING_ERROR_CODES = [
    // surfaced by the pre-alpha3 PR-E E.12 real-host gate, scenario S10
    // late-allow-after-abandon).
    'CONTROL_REQUEST_ABANDONED',
+    // Finding F (final-input verdict, PR #50) — runtime/messaging
+    // MESSAGING_* (the P6-T3 coordinator surface): the `member.send` remote
+    // method routes the FULL coordinator path (facade admission + durable
+    // intent fact + live attributed-input delivery + confirmation fact), so
+    // the coordinator's typed surface errors reach this boundary and must
+    // pass through with their closed code + lossless details (the
+    // MessagingError shape: `code` + `details`). The FIVE OPERATIONAL codes
+    // are admitted; MESSAGING_INTERNAL (the internal invariant violation —
+    // a programming error) is deliberately NOT in the vocabulary and keeps
+    // degrading to internal-error (invariant 5: no leak of internals).
+    'MESSAGING_REQUEST_MALFORMED',
+    'MESSAGING_SELF_SEND_REJECTED',
+    'MESSAGING_TARGET_NOT_LIVE',
+    'MESSAGING_DELIVERY_FAILED',
+    'MESSAGING_LEDGER_WRITE_FAILED',
 ] as const
 
 /** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */
