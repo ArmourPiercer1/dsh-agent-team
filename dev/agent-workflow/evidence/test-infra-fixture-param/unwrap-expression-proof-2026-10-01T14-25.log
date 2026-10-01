@@ -1,0 +1,8 @@
+replayed captured envelope: top keys = type,rpcId,result | result keys = ok,value
+OLD expression -> null
+NEW expression -> {"relation":"team-member","teamSessionId":"session-mpr-t1-mpr-2026-10-01T13-21-34","memberInstanceId":"inst-0iin89s0dvix","disposed":false,"durableGeneration":32,"liveToken":"lt-v1-REDACTED"}
+readiness predicate on OLD: false | on NEW: true
+typed error {result.ok:false} -> null
+bare {value:{data}} -> "team-root"
+404 body {error:...} -> null
+null body -> null

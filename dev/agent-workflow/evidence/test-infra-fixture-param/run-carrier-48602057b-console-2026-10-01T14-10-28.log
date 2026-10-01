@@ -1,0 +1,23 @@
+[smoke-host 2026-10-01T14:10:28.216Z] kit: served-bundle browser smoke host
+[smoke-host 2026-10-01T14:10:28.217Z] worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/browser-carrier-48602057b testuse=/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+[smoke-host 2026-10-01T14:10:28.217Z] world=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-10-01T14-10-28 (seed from /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-10-01T13-21-34)
+[smoke-host 2026-10-01T14:10:28.217Z] commit binding: worktree HEAD=48602057fcb1b78a47bd4471bf518e3b0c08a744 porcelain='' bundle=1147053B sha256=d3868d3c74613d62…
+[smoke-host 2026-10-01T14:10:28.234Z] stable pre={"http://127.0.0.1:3080/":401,"http://127.0.0.1:3180/":null} hostPort=3181 mockPort=3496
+[smoke-host 2026-10-01T14:10:28.234Z] seeding world /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-10-01T14-10-28 from /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-10-01T13-21-34
+[smoke-host 2026-10-01T14:10:28.237Z] removed stale session.lock: session-mpr-boot-mpr-2026-10-01T13-21-34/session.lock
+[smoke-host 2026-10-01T14:10:28.238Z] removed stale session.lock: session-mpr-t1-mpr-2026-10-01T13-21-34/session.lock
+[smoke-host 2026-10-01T14:10:28.238Z] removed stale session.lock: session-mpr-ta-mpr-2026-10-01T13-21-34/session.lock
+[smoke-host 2026-10-01T14:10:28.238Z] removed stale session.lock: session-mpr-tb-mpr-2026-10-01T13-21-34/session.lock
+[smoke-host 2026-10-01T14:10:28.238Z] removed stale session.lock: session-team-child-06aa43ccaacb075f1817b151e64b9d52/session.lock
+[smoke-host 2026-10-01T14:10:28.238Z] removed stale session.lock: session-team-child-259520eccdc5502ef43ef3f0762921e6/session.lock
+[smoke-host 2026-10-01T14:10:28.238Z] removed stale session.lock: session-team-child-52860b5a204e428e1cb00690a10eb02f/session.lock
+[smoke-host 2026-10-01T14:10:28.238Z] removed stale session.lock: session-team-child-99f55d74e63446f6137197e7eda0160c/session.lock
+[smoke-host 2026-10-01T14:10:28.238Z] removed stale session.lock: session-team-child-9cad1397bef9632e3e1ebf73027145f9/session.lock
+[smoke-host 2026-10-01T14:10:28.238Z] removed stale session.lock: session-team-child-d9de2bb5f0a146971394aef7ba4920d0/session.lock
+[smoke-host 2026-10-01T14:10:28.238Z] member identity derived from the world: session=session-team-child-52860b5a204e428e1cb00690a10eb02f instance=inst-0iin89s0dvix template=worker label=w-deleg lifecycle=SETTLED owner=session-mpr-t1-mpr-2026-10-01T13-21-34 binding=team-member (4 corroborated member(s) of session-mpr-t1-mpr-2026-10-01T13-21-34)
+[smoke-host 2026-10-01T14:10:28.238Z] world seeded (row patch retargeted to this worktree; stale locks cleared)
+[smoke-host 2026-10-01T14:10:28.239Z] mock model on 127.0.0.1:3496
+[smoke-host 2026-10-01T14:10:29.758Z] route ready (12ms after boot marker; readState={"relation":"team-member","teamSessionId":"session-mpr-t1-mpr-2026-10-01T13-21-34","memberInstanceId":"inst-0iin89s0dvix","disposed":false,"durableGeneration":32,"liveToken":"lt-v1-REDACTED"})
+[smoke-host 2026-10-01T14:10:29.758Z] READY access-record=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-10-01T14-10-28/browser-access.json origin=http://127.0.0.1:3181 tokenUrl=http://127.0.0.1:3181/?token=REDACTED
+[smoke-host 2026-10-01T14:10:31.104Z] stop (SIGTERM): tearing down
+[smoke-host 2026-10-01T14:10:31.644Z] teardown done

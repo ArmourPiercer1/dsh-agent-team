@@ -1,0 +1,75 @@
+### environment facts — captured 2026-10-01T13:27:18Z
+
+worktree HEAD : 984b910c80319bb0efb051089483e56e9fb8a285
+base (origin/master): 427219e443ece4d57ac8558f13850c5f42ff8330
+test runtime  : tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4 porcelain=0
+
+#### the 4 module-resolution symlinks (coordinator Option A ruling)
+links (created by this task, environment provisioning, NOT an install):
+  packages/runtime  /node_modules -> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/packages/runtime/node_modules
+  packages/domain   /node_modules -> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/packages/domain/node_modules
+  packages/client   /node_modules -> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/packages/client/node_modules
+  packages/testkit  /node_modules -> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/handoff-closure/packages/testkit/node_modules
+
+git check-ignore -v on each (NO match => untracked, never added):
+  packages/runtime  /node_modules : (no match)
+  packages/domain   /node_modules : (no match)
+  packages/client   /node_modules : (no match)
+  packages/testkit  /node_modules : (no match)
+
+git status --porcelain (the 4 symlink lines are the only non-evidence entries):
+  ?? packages/client/node_modules
+  ?? packages/domain/node_modules
+  ?? packages/runtime/node_modules
+  ?? packages/testkit/node_modules
+
+precedent (same environment, same remedy, recorded today):
+  dev/agent-workflow/evidence/landlock-install-acceptance/phase2-kits-run-20261001.md
+  ("porcelain: 7 条，全部 untracked（3 个 reviewer evidence 目录 + 4 个 node_modules 符号链接）")
+
+revert: rm packages/{runtime,domain,client,testkit}/node_modules   (inside this worktree only)
+
+#### third-party deps resolved through those links (realpath + version)
+  yaml     domain -> .worktrees/handoff-closure/node_modules/.pnpm/yaml@2.9.0/node_modules/yaml (v2.9.0)
+  yaml     runtime -> .worktrees/handoff-closure/node_modules/.pnpm/yaml@2.9.0/node_modules/yaml (v2.9.0)
+  zod      domain -> .worktrees/handoff-closure/packages/domain/node_modules/zod (v)
+  zod      runtime -> .worktrees/handoff-closure/node_modules/.pnpm/zod@4.4.3/node_modules/zod (v4.4.3)
+
+  @deepseek-ai/* (packages/runtime/node_modules/@deepseek-ai):
+    cordis                         v4.0.4        @deepseek-ai+cordis@4.0.4_@deepseek-ai+cordis-plugin-include@1.0.9_@deepseek-ai+cordis-plugin-loader@1.0.5/node_modules/@deepseek-ai/cordis
+    cordis-plugin-group            v1.0.4        @deepseek-ai+cordis-plugin-group@1.0.4_@deepseek-ai+cordis-plugin-loader@1.0.5_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/cordis-plugin-group
+    cordis-plugin-include          v1.0.9        @deepseek-ai+cordis-plugin-include@1.0.9_@deepseek-ai+cordis-plugin-loader@1.0.5_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/cordis-plugin-include
+    cordis-plugin-loader           v1.0.5        @deepseek-ai+cordis-plugin-loader@1.0.5_@deepseek-ai+cordis@4.0.4_node-addon-require-builtin@0.1.6/node_modules/@deepseek-ai/cordis-plugin-loader
+    dsh-agent                      v0.1.7-rc.1   @deepseek-ai+dsh-agent@0.1.7-rc.1_d8c71e7a116df1d698534a033638d3d5/node_modules/@deepseek-ai/dsh-agent
+    dsh-agent-loop                 v0.1.7-rc.1   @deepseek-ai+dsh-agent-loop@0.1.7-rc.1_2803e5ae3dc5dc61e39aec549cfc864a/node_modules/@deepseek-ai/dsh-agent-loop
+    dsh-agent-preset-registry      v0.1.7-rc.1   @deepseek-ai+dsh-agent-preset-registry@0.1.7-rc.1_6d2986f53dffb18ef0e3c8f4b89964e1/node_modules/@deepseek-ai/dsh-agent-preset-registry
+    dsh-llm                        v0.1.7-rc.1   @deepseek-ai+dsh-llm@0.1.7-rc.1_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-llm
+    dsh-mcp-client                 v0.1.7-rc.1   @deepseek-ai+dsh-mcp-client@0.1.7-rc.1_71640fa2c5c35911978cc76fe093a9e4/node_modules/@deepseek-ai/dsh-mcp-client
+    dsh-scope                      v0.1.7-rc.1   @deepseek-ai+dsh-scope@0.1.7-rc.1_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-invariants_5063d5f85a6b85a2804ef3841f4653f8/node_modules/@deepseek-ai/dsh-scope
+    dsh-session                    v0.1.7-rc.1   @deepseek-ai+dsh-session@0.1.7-rc.1_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-scope@0._d0632e5334fc6fa9e0d505304507fe7f/node_modules/@deepseek-ai/dsh-session
+    dsh-session-projection         v0.1.7-rc.1   @deepseek-ai+dsh-session-projection@0.1.7-rc.1_@deepseek-ai+cordis@4.0.4_@deepseek-ai+d_439b3d67d41460d0d7bbbc1e2fc46ba9/node_modules/@deepseek-ai/dsh-session-projection
+    dsh-skill                      v0.1.7-rc.1   @deepseek-ai+dsh-skill@0.1.7-rc.1_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-llm@0.1.7-_2920af34ff58cbcbf22c3a3b923279aa/node_modules/@deepseek-ai/dsh-skill
+    dsh-spill                      v0.1.7-rc.1   @deepseek-ai+dsh-spill@0.1.7-rc.1_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-brand@0.1._62808d5173c8c0403b119634e42b8fa1/node_modules/@deepseek-ai/dsh-spill
+    dsh-spill-local                v0.1.7-rc.1   @deepseek-ai+dsh-spill-local@0.1.7-rc.1_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-spil_f0dfd1209439415fc211b6fcd77a8661/node_modules/@deepseek-ai/dsh-spill-local
+    dsh-storage-domain             v0.1.7-rc.1   @deepseek-ai+dsh-storage-domain@0.1.7-rc.1_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-i_be1f4902863912c2181c100ecd92e9b9/node_modules/@deepseek-ai/dsh-storage-domain
+    dsh-system-prompt              v0.1.7-rc.1   @deepseek-ai+dsh-system-prompt@0.1.7-rc.1_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-in_3ec507b55d70bddf3fe952d9e00e5596/node_modules/@deepseek-ai/dsh-system-prompt
+    dsh-tools                      v0.1.7-rc.1   @deepseek-ai+dsh-tools@0.1.7-rc.1_6324813fb9cb1806690265a65e1db43b/node_modules/@deepseek-ai/dsh-tools
+
+  note: the dsh-* entries above are the published 0.1.7-rc.1 npm packages (the same baseline the
+  host tree is pinned to), NOT this repository's product code.
+
+#### product code loads from THIS worktree (not from the link target)
+  instance log, boot 1 (mpr run 2):
+  the generated world's profile rows:
+    "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+    "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+    "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/packages/runtime/root-binding/harness/seam.mjs"
+    "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/packages/tools/harness/plugin.mjs"
+
+#### frozen PR #52 worktree (.worktrees/handoff-closure) — read-only use
+  tracked-diff lines: 0
+  untracked lines (pre-existing, not created by this task): 8
+
+#### ports
+  3181-3186 / 3491-3500: all free (no kit process alive)
+  :3080 LISTEN = the user's stable instance, never bound or written by this task (read-only GET probes only)

@@ -1,0 +1,37 @@
+# validation-rejection probe — captured 2026-10-01T13:27:06Z against worktree HEAD 984b910c80319bb0efb051089483e56e9fb8a285
+# every case must exit 1 with a specific fatal and MUST NOT print a boot line
+
+== pr-b rejections
+empty value (--seed-world "")                | exit=1 | FATAL (invalid kit argument): --seed-world: empty value
+missing world                                | exit=1 | FATAL (invalid kit argument): --seed-world: does not resolve: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/no-such-world-xyz
+dot-dot escape (--seed-world ..)             | exit=1 | FATAL (invalid kit argument): --seed-world: path escape ".."
+dot-dot escape (--seed-world ../x)           | exit=1 | FATAL (invalid kit argument): --seed-world: path escape "../homes/nope"
+world name with separators                   | exit=1 | FATAL (invalid kit argument): --seed-world: a world name must not contain separators: "a/b"
+absolute path outside homes (/etc)           | exit=1 | FATAL (invalid kit argument): --seed-world: resolves outside the homes root /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes: /etc
+symlink escape (-> test-use tree)            | exit=1 | FATAL (invalid kit argument): --seed-world: resolves outside the homes root /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes: /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+symlink escape (-> /etc)                     | exit=1 | FATAL (invalid kit argument): --seed-world: resolves outside the homes root /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes: /etc
+dot value                                    | exit=1 | FATAL (invalid kit argument): --seed-world: path escape "."
+whitespace value                             | exit=1 | FATAL (invalid kit argument): --seed-world: empty value
+empty both path flags (first reported)       | exit=1 | FATAL (invalid kit argument): --seed-world: empty value
+empty --seed-blueprint-dir alone             | exit=1 | FATAL (invalid kit argument): --seed-blueprint-dir: empty value
+--seed-blueprint-dir outside homes           | exit=1 | FATAL (invalid kit argument): --seed-blueprint-dir: resolves outside the homes root /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes: /tmp
+--seed-blueprint-dir dot-dot                 | exit=1 | FATAL (invalid kit argument): --seed-blueprint-dir: path escape "../../etc"
+--t1 empty                                   | exit=1 | FATAL (invalid kit argument): --t1: empty value
+--t1 wrong shape (no prefix)                 | exit=1 | FATAL (invalid kit argument): --t1: "session-prb-t1-x" does not match /^session-mpr-t1-[A-Za-z0-9T:-]+$/
+--t1 truncated prefix only                   | exit=1 | FATAL (invalid kit argument): --t1: "session-mpr-t1-" does not match /^session-mpr-t1-[A-Za-z0-9T:-]+$/
+--t1 path-ish value                          | exit=1 | FATAL (invalid kit argument): --t1: "session-mpr-t1-../../x" does not match /^session-mpr-t1-[A-Za-z0-9T:-]+$/
+--worker-instance empty                      | exit=1 | FATAL (invalid kit argument): --worker-instance: empty value
+--worker-instance uppercase                  | exit=1 | FATAL (invalid kit argument): --worker-instance: "inst-1P8KQFL09BHR" does not match /^inst-[a-z0-9]+$/
+--worker-instance no prefix                  | exit=1 | FATAL (invalid kit argument): --worker-instance: "1p8kqfl09bhr" does not match /^inst-[a-z0-9]+$/
+--worker-instance trailing sep               | exit=1 | FATAL (invalid kit argument): --worker-instance: "inst-abc/" does not match /^inst-[a-z0-9]+$/
+
+== browser-smoke-host rejections
+empty --seed-world                           | exit=1 | [smoke-host 2026-10-01T13:27:07.694Z] FATAL --seed-world: empty value
+dot-dot escape                               | exit=1 | [smoke-host 2026-10-01T13:27:07.758Z] FATAL --seed-world: path escape "../homes/nope"
+absolute outside homes                       | exit=1 | [smoke-host 2026-10-01T13:27:07.806Z] FATAL --seed-world: resolves outside the homes root /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes: /etc
+symlink escape (-> test-use tree)            | exit=1 | [smoke-host 2026-10-01T13:27:07.852Z] FATAL --seed-world: resolves outside the homes root /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes: /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+world name with separators                   | exit=1 | [smoke-host 2026-10-01T13:27:07.896Z] FATAL --seed-world: a world name must not contain separators: "x/y"
+missing world                                | exit=1 | [smoke-host 2026-10-01T13:27:07.945Z] FATAL --seed-world: does not resolve: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/no-such-world-xyz
+dot value                                    | exit=1 | [smoke-host 2026-10-01T13:27:07.991Z] FATAL --seed-world: path escape "."
+--t1 wrong shape                             | exit=1 | [smoke-host 2026-10-01T13:27:08.032Z] FATAL --t1: "session-tvs-t1-x" does not match /^session-mpr-t1-[A-Za-z0-9T:-]+$/
+--t1 empty                                   | exit=1 | [smoke-host 2026-10-01T13:27:08.076Z] FATAL --t1: empty value

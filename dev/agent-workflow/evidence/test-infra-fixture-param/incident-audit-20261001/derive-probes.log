@@ -1,0 +1,37 @@
+# B2 derivation probes (dry; every case ends in a FATAL at the derivation or at the untouched empty-porcelain gate; no host booted, no browser started, nothing written)
+# run at: 2026-10-01T13:50:49Z
+
+### --seed-world mpr-2026-09-27T08-35-52 --t1 session-mpr-t1-mpr-2026-09-27T08-35-52 ###
+[smoke-host 2026-10-01T13:50:49.093Z] FATAL --seed-world: does not resolve: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-27T08-35-52
+[exit 1]
+
+### --seed-world mpr-2026-10-01T13-21-34 --t1 session-mpr-t1-mpr-2026-10-01T13-21-34 ###
+[smoke-host 2026-10-01T13:50:49.209Z] FATAL worktree porcelain not empty (the smoke must run on a clean commit): M tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs
+ M tests/kits/team-view-sync-complete-e2e/brows
+[exit 1]
+
+### --seed-world mpr-2026-10-01T13-21-34 --t1 session-mpr-ta-mpr-2026-10-01T13-21-34 ###
+[smoke-host 2026-10-01T13:50:49.246Z] FATAL --t1: "session-mpr-ta-mpr-2026-10-01T13-21-34" does not match /^session-mpr-t1-[A-Za-z0-9T:-]+$/
+[exit 1]
+
+### --seed-world mpr-2026-10-01T13-21-34 --t1 session-mpr-boot-mpr-2026-10-01T13-21-34 ###
+[smoke-host 2026-10-01T13:50:49.284Z] FATAL --t1: "session-mpr-boot-mpr-2026-10-01T13-21-34" does not match /^session-mpr-t1-[A-Za-z0-9T:-]+$/
+[exit 1]
+
+### --seed-world prb-ep-2026-10-01T13-22-22 --t1 session-mpr-t1-does-not-exist ###
+[smoke-host 2026-10-01T13:50:49.321Z] FATAL seed world: the durable store carries no member_instances row rooted at session-mpr-t1-does-not-exist — the selected world does not contain the selected team
+[exit 1]
+
+
+### NEGATIVE A — probe copy whose T1 member bindings are stripped (expect: no corroborated member, rows listed) ###
+[smoke-host 2026-10-01T13:51:23.306Z] FATAL seed world: no member of session-mpr-t1-mpr-2026-10-01T13-21-34 has a child session corroborated by a team-member binding (rows: inst-leader/leader/no-child-session, inst-0iin89s0dvix/worker/session-team-child-52860b5a204e428e1cb00690a10eb02f, inst-1722vhu1h1z1/worker/session-team-child-9cad1397bef9632e3e1ebf73027145f9, inst-1qazuqc1ylx9/expert/session-team-child-259520eccdc5502ef43ef3f0762921e6, inst-0e84f9t1xgok/control/session-team-child-06aa43ccaacb075f1817b151e64b9d52)
+[exit 1]
+
+### NEGATIVE B — an existing world with NO durable store at all (expect: durable store missing) ###
+[smoke-host 2026-10-01T13:51:23.347Z] FATAL seed world: durable store missing: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/tvs-derive-probe-empty-20261001T135123Z/storages/team_domain.json
+[exit 1]
+
+### POSITIVE cross-check (independent recomputation of the same documented rule) ###
+  world=mpr-2026-10-01T13-21-34 t1=session-mpr-t1-mpr-2026-10-01T13-21-34 rooted=5 corroborated=4
+  -> session=session-team-child-52860b5a204e428e1cb00690a10eb02f instance=inst-0iin89s0dvix template=worker label=w-deleg lifecycle=SETTLED
+  (the kit's own derivation reached the untouched empty-porcelain gate on this world, i.e. it resolved a pair; the success-path log line itself can only be observed from a clean carrier — that is the browser lane's run)

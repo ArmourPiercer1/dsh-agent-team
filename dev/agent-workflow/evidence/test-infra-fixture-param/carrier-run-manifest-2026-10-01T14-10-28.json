@@ -1,0 +1,36 @@
+{
+  "what": "CREATE copies only, from the carrier run dir into this evidence dir. Nothing moved, deleted or modified at the source.",
+  "source_run_dir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/browser-carrier-48602057b/dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T14-10-28",
+  "carrier_worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/browser-carrier-48602057b",
+  "carrier_head": "48602057fcb1b78a47bd4471bf518e3b0c08a744",
+  "world": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-10-01T14-10-28",
+  "deliberately_NOT_copied": {
+    "instance.log": "holds the host's RAW boot banner (?token=<launch token>) \u2014 pre-existing kit behavior; stays in the untracked kit run dir only, and the kit itself also writes instance.log.scrubbed",
+    "instance.log.scrubbed / mock.log / mock.log.scrubbed": "not needed for this record; available in the untracked run dir",
+    "browser-access.json": "PRIVATE operational access record (mode 0600) inside the testhome; by design it never enters evidence"
+  },
+  "credential_scan": {
+    "command_form": "grep -rao 'lt-v1-[0-9a-f]{8,}|?token=[A-Za-z0-9_-]{8,}' <copies> | grep -vE 'REDACTED|SCRUBBED'",
+    "raw_lt_v1_values": 0,
+    "raw_token_url_values": 0,
+    "marker_self_matches_excluded": [
+      "?token=REDACTED",
+      "?token=SCRUBBED"
+    ],
+    "note": "the first pass over the copies reported 2 hits; both were the mask strings themselves ('REDACTED'/'SCRUBBED' are 8 chars and satisfy the {8,} quantifier). Excluding the masks, zero raw values remain. Recorded as-run rather than restated as a clean 0."
+  },
+  "files": {
+    "run-carrier-48602057b-console-2026-10-01T14-10-28.log": {
+      "sha256": "b0f9f4fcb0e861320839cf21baad2af8262bd4f192c638f09e2d79d4f804dc3e",
+      "note": "masked copy of the console (kit output already self-scrubs; re-masked defensively)"
+    },
+    "run-carrier-48602057b-smoke-host-2026-10-01T14-10-28.json": {
+      "sha256": "8d676824bb9a167be3603a2597dcc691923303b2760e5028f053af42992cd41d",
+      "note": "byte copy \u2014 verified to contain no raw credential (liveToken masked by the kit, tokenUrl SCRUBBED)"
+    },
+    "run-carrier-48602057b-teardown-2026-10-01T14-10-28.json": {
+      "sha256": "5940fe88887f5930e5c7c9ce21bbd57907cd347615442702143198b9da4221ba",
+      "note": "byte copy \u2014 structural teardown record, no credentials"
+    }
+  }
+}

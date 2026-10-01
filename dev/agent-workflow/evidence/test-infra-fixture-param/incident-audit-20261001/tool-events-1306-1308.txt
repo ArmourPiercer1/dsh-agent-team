@@ -1,0 +1,104 @@
+--- 13:06:01.704Z seq=416 tool=bash
+    cmd| cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param && grep -n "export function\|export const" tests/characterization/lib/util.mjs; echo '=== instance.mjs exports:'; grep -n "^export\|^const BOOT_MARKER\|log(" tests/characterization/lib/instance.mjs | head -20
+--- 13:06:04.816Z seq=421 tool=read
+    file_path: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/tests/characterization/lib/instance.mjs
+--- 13:06:10.933Z seq=426 tool=edit
+    file_path: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/tests/characterization/lib/instance.mjs
+--- 13:06:15.460Z seq=431 tool=edit
+    file_path: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/tests/characterization/lib/instance.mjs
+--- 13:06:29.740Z seq=436 tool=write
+    file_path: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/test-infra-fixture-param/redaction-check.mjs
+--- 13:06:34.795Z seq=441 tool=edit
+    file_path: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/test-infra-fixture-param/redaction-check.mjs
+--- 13:06:36.881Z seq=446 tool=bash
+    cmd| cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param && node dev/agent-workflow/evidence/test-infra-fixture-param/redaction-check.mjs; echo "exit=$?"
+--- 13:06:39.074Z seq=451 tool=bash
+    cmd| cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param && git diff --stat && git diff tests/characterization/lib/instance.mjs tests/kits/model-preference-routing-smoke/
+--- 13:06:41.512Z seq=456 tool=bash
+    cmd| cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param && git diff tests/kits/pr-b-effective-policy-smoke/ tests/kits/team-view-sync-complete-e2e/
+--- 13:06:48.846Z seq=461 tool=bash
+    cmd| cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param && git add tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs tests/kits/team-view-sync-complete-e2e/browser-smoke-host.mjs tests/characterization/lib/instance.mjs && git -c user.name="${GIT_AUTHOR_NAME:-dsh-agent-team}" c
+    cmd| test(infra): seed-fixture parameterization for the real-host kits + launch-token log redaction
+    cmd| 
+    cmd| Scope: test infrastructure only. ZERO assertion changes — every C1-C6 leg,
+    cmd| shape guard ('members: []' / 'policyStates: []' / 'mcpServers: []'), T-PS
+    cmd| embedded blueprint, criterion and tally line is byte-preserved; only the
+    cmd| ORIGIN of seed-identity constants changed.
+    cmd| 
+    cmd| Sub-items 1-3 (fixture parameterization, defaults = previous literals so an
+    cmd| unflagged run is byte-identical):
+    cmd|   * pr-b-effective-policy-smoke: --seed-world / --seed-blueprint-dir / --t1 /
+    cmd|     --worker-instance now feed SEED_WORLD / SEED_BLUEPRINT_DIR / T1 / W_CREATE.
+    cmd|   * model-preference-routing-smoke: summary.json now records the real rootT1
+    cmd|     (one extra field next to retainedHome / wCreate / expertId).
+    cmd|   * team-view-sync-complete-e2e/browser-smoke-host: --seed-world / --t1 feed
+    cmd|     SRC_WORLD / T1.
+    cmd|   Input validation in both parameterized kits: a seed path must resolve
+    cmd|   (realpath) INSIDE <main>/tests/homes; '..', path escapes, symlink escapes,
+    cmd|   empty/ambiguous values and separator-carrying world names are a hard fatal
+    cmd|   before anything runs. --t1 must match ^session-mpr-t1-[A-Za-z0-9T:-]+$,
+    cmd|   --worker-instance ^inst-[a-z0-9]+$.
+    cmd| 
+    cmd| Sub-item 4 (separate repair, tests/characterization/lib/instance.mjs):
+    cmd|   ensureProfile's `throwaway boot OK: <url>` console line printed the raw
+    cmd|   launch token. Only the LOGGED rendering is redacted now (new
+    cmd|   redactLaunchToken helper: token VALUE -> REDACTED, token-SHAPED so
+    cmd|   BOOT_MARKER and the kits' boot-line parsers still match); the URL value
+    cmd|   start() returns and every request path stay verbatim. No consumer parses
+    cmd|   the token from this line (all boot-token readers use start()'s value or the
+    cmd|   instance log's `dsh web:` line) - confirmation + a 7-assertion deterministic
+    cmd|   check in dev/agent-workflow/evidence/test-infra-fixture-param/.
+    cmd| MSG
+--- 13:06:59.988Z seq=466 tool=write
+    file_path: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.probe/param-accept.sh
+--- 13:07:03.989Z seq=471 tool=bash
+    cmd| cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param && git status --porcelain && echo "(clean apart from untracked evidence)" && git show --stat HEAD
+--- 13:07:07.756Z seq=476 tool=bash
+    cmd| cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param && mv dev/agent-workflow/evidence/test-infra-fixture-param /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.probe/tmp-evidence && git status --porcelain && echo "(porcelain empty above = clean)" && bash /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.probe/param-accept.sh 2>&1
+--- 13:07:11.299Z seq=481 tool=bash
+    cmd| cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param && git status --porcelain | grep '^ D' | wc -l && git restore dev/agent-workflow/evidence/ && git status --porcelain | head && echo "RESTORED — porcelain now:" && git status --porcelain | wc -l
+--- 13:07:17.079Z seq=486 tool=bash
+    cmd| cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param && echo "=== integrity vs HEAD:" && git diff HEAD --stat | tail -3 && git status --porcelain | wc -l && git fsck --no-progress 2>/dev/null | head -3; echo "=== restored tracked evidence count:"; git ls-files dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b | wc -l; git ls-files dev/agent-workflow/evidence/team-vie
+--- 13:07:25.017Z seq=491 tool=write
+    file_path: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.probe/param-accept.sh
+--- 13:07:28.721Z seq=496 tool=bash
+    cmd| cd /srv/workspace/dsh-plugins/dsh-agent-team && mkdir -p tests/homes/paramprobe-empty tests/homes/paramprobe-browser/sessions && ln -sfn ../deepseek-harness-test-use tests/homes/paramprobe-escape && ln -sfn /etc tests/homes/paramprobe-etc && bash tests/homes/.probe/param-accept.sh 2>&1
+--- 13:07:41.822Z seq=501 tool=bash
+    cmd| cd /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.probe/out && cat prb-accept.log
+--- 13:07:56.327Z seq=506 tool=send_message
+--- 13:08:00.948Z seq=511 tool=bash
+    cmd| ss -ltn | awk '{print $4}' | grep -oE '[0-9]+$' | sort -n | uniq | tr '\n' ' '; echo; echo "--- 3181-3186 / 3491-3500 occupancy:"; for p in 3181 3182 3183 3184 3185 3186 3491 3492 3496 3497; do if ss -ltn "sport = :$p" 2>/dev/null | grep -q LISTEN; then echo "$p BUSY"; fi; done; echo "(no BUSY lines = all free)"; date -u +%Y-%m-%dT%H:%M:%SZ
+--- 13:08:04.236Z seq=516 tool=bash
+    cmd| cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param && node tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs > /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.probe/out/mpr-console.log 2>&1; echo "MPR_EXIT=$?" | tee -a /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.probe/out/mpr-console.log
+--- 13:08:09.238Z seq=521 tool=bash
+    cmd| sleep 90; tail -25 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.probe/out/mpr-console.log
+[tool/call in window = 22]
+=== seq=466 param-accept.sh v1 | time=13:06:59.988Z | file=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.probe/param-accept.sh
+    | WT=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param
+    | HOMES=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes
+    | rm -rf "$HOMES"/prb-ep-* "$HOMES"/tvs-smoke-*
+    | find "$WT/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b" -maxdepth 1 -name 'host-smoke-*' -newermt '-10 minutes' -print -exec rm -rf {} + 2>/dev/null
+    | find "$WT/dev/agent-workflow/evidence/team-view-sync-complete" -maxdepth 1 -name 'wp9b-browser-smoke-*' -newermt '-10 minutes' -print -exec rm -rf {} + 2>/dev/null
+=== seq=491 param-accept.sh v2 (overwrite) | time=13:07:25.017Z | file=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.probe/param-accept.sh
+    | # (A previous version of this probe used `find -newermt` for cleanup and
+    | WT=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param
+    | HOMES=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes
+    |   rm -rf "$HOMES/prb-ep-$s" "$HOMES/tvs-smoke-$s" \
+    | rm -rf "$HOMES/paramprobe-empty" "$HOMES/paramprobe-browser" "$HOMES/paramprobe-escape" "$HOMES/paramprobe-etc"
+
+=== FORENSIC CONCLUSIONS (tool-event history, window 13:06-13:08, subagent fddfe10d session record only) ===
+1. TRIGGERING CALL (seq 476 @ 13:07:07.756Z, PROVEN): cwd via `cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param && mv <own evidence dir> tests/homes/.probe/tmp-evidence && git status --porcelain && bash /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.probe/param-accept.sh 2>&1`. Effective cwd for the script's finds = its own internal `cd "$WT"` (WT = the param worktree, script-absolute).
+2. INCIDENT COMMAND TEXT lives in the write event seq 466 @ 13:06:59.988Z (file tests/homes/.probe/param-accept.sh, v1); overwritten by seq 491 @ 13:07:25.017Z (v2). Journal proves existence/time/path; the find lines extracted above match the writer's transcript quotes verbatim (roots = the TWO per-kit dirs under the param worktree; -maxdepth 1; -name globs; -newermt '-10 minutes'; -print -exec rm -rf {} +; NO -L/-follow/-delete; 2>/dev/null).
+3. RESTORE (seq 481 @ 13:07:11.299Z): git restore dev/agent-workflow/evidence/ — matches disk mtime window 11.299-11.522.
+4. Writer's verbatim audit claims: CONFIRMED against independent journal extraction (time, cwd, roots, flags, window). Residual UNKNOWN unchanged: victim-dir contents; hypothetical subshell-written files in .probe.
+5. Method compliance: only MY OWN subagent's session file read; no sibling session bytes; no writes outside workspace scratch; extraction persisted at tool-events-1306-1308.txt; tmp plaintext removed after extraction.
+
+=== BOUNDARY FACTS (streamed from the SAME authorized 13:06-13:08 window; zero new on-disk plaintext; second -c script had one own-syntax error, fixed, recorded) ===
+WT/HOMES raw assignments (v1, seq466 verbatim): WT=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param  HOMES=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes
+Runtime realpath (read-only, verified): both expand UNCHANGED (no symlink hops) — matches above character-for-character.
+find -print GROUND TRUTH (seq477, script stdout @13:07:08): pr-b root printed EXACTLY 8 dirs = 7 historical 2026-09-28 host-smoke-* + host-smoke-2026-10-01T13-07-07-c3; tvs root printed EXACTLY 7 dirs = wp9b-browser-smoke-round2 + 6x wp9b-browser-smoke-tvs-smoke-2026-09-28* (05-31-39/05-43-23/05-49-08/07-39-41/08-54-21/09-36-36). 15 dirs total; porcelain ' D' lines follow in same output.
+HOMES-glob ground truth: ls -d (same stdout, pre-rm) listed EXACTLY ONE match = /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/prb-ep-2026-10-01T13-07-07 (created ~1 s earlier BY THE SAME v1 RUN: kit line "world copied: .../paramprobe-empty -> .../prb-ep-2026-10-01T13-07-07"). No tvs-smoke-* and no older prb-ep-* matched => glob self-cannibalized the run's own world; scope PROVEN by ls output, not inferred.
+Two untracked victims, full paths aligned to their deleting command:
+  A (find -exec): /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-07-07-c3 — verbatim in -print. Contents UNKNOWN (not enumerated; not guessed).
+  B (HOMES glob): /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/prb-ep-2026-10-01T13-07-07 — verbatim in ls -d. Base content PROVEN = copy of tests/homes/paramprobe-empty (kit log line); any delta the dying kit wrote in its ~0.4 s lifetime UNKNOWN.
+Later-window observation (NOT incident): v2 rerun 13:07:28 (seq497/502) created prb-ep-2026-10-01T13-07-28 + host-smoke-13-07-28-c3, fatal ENOENT cordis.patch.yml, then removed by v2's own EXPLICIT-LITERAL-path cleanup block (seq492 text; exact removal timestamp not independently pinned) — a THIRD, by-design untracked-self-artifact loss class; transcript retains its logs.

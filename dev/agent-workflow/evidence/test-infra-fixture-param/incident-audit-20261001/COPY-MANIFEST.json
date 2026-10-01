@@ -1,0 +1,39 @@
+{
+  "generatedAt": "2026-10-01T13:53:00Z",
+  "copiedFrom": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/incident-audit-20261001/ (+ .scratch-logs/fixture-param-b2-probes/derive-probes.log)",
+  "operation": "CREATE copies only \u2014 the source scratch files were not moved, modified or deleted",
+  "redaction": "none applied: a token-shaped scan of every source (token=[A-Za-z0-9_-]{8,}, lt-v1-, sk-, Bearer , JWT, PEM) produced zero hits before copying; re-run after copying is recorded below",
+  "files": [
+    {
+      "name": "affected-87-paths.txt",
+      "bytes": 7232,
+      "sha256": "5c2ae275368978a8c6fc976fac9c3bb221f242ba5adf7a16a987868509cfb943"
+    },
+    {
+      "name": "derive-probes.log",
+      "bytes": 3076,
+      "sha256": "45eadaacad9b9895debb1e9886475f73bb6036a9dd0d5ebfb993deea5721fbf9"
+    },
+    {
+      "name": "hash-table-evidence-subtree.txt",
+      "bytes": 1596820,
+      "sha256": "a95a87e1fb1daa1580d5fc091dc406b245c48701c482f9014decff1ace685f06"
+    },
+    {
+      "name": "poststate-proof.txt",
+      "bytes": 453,
+      "sha256": "5c026d3e099a524896742954c31177cce357952d06570e32a0261a5ecf4b9593"
+    },
+    {
+      "name": "tool-events-1306-1308.txt",
+      "bytes": 12687,
+      "sha256": "d3410db5032909e01d6233da42ca7fc3103170d516d96a15eb0793e413d606ed"
+    },
+    {
+      "name": "verbatim-commands.txt",
+      "bytes": 1451,
+      "sha256": "84f50a54a3e99a71125e3ebc2315a1a512a2c2f5b58bc30980c7698aa8c48055"
+    }
+  ],
+  "note": "sha256 values are of the copied source files at copy time; RECORD.md is tracked separately and evolves after this manifest."
+}

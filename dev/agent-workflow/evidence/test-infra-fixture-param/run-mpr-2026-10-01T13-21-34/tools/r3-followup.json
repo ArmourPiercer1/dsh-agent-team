@@ -1,0 +1,29 @@
+{
+  "status": 200,
+  "body": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "follow-up",
+      "rootSessionId": "session-mpr-t1-mpr-2026-10-01T13-21-34",
+      "callerRole": "leader",
+      "targetInstanceId": "inst-1722vhu1h1z1",
+      "effect": {
+        "kind": "work-admitted",
+        "instanceId": "inst-1722vhu1h1z1",
+        "fromLifecycle": "CREATED",
+        "lifecycleCommitted": true,
+        "sequence": 9,
+        "replayed": false,
+        "settled": true,
+        "settledSequence": 12,
+        "memberResult": {
+          "requestToken": "tok-r3-follow-bz7bicue",
+          "status": "succeeded",
+          "body": "ack:role-worker:create:mpr-2026-10-01T13-21-34"
+        }
+      },
+      "requestToken": "tok-r3-follow-bz7bicue"
+    }
+  }
+}

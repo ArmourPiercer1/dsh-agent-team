@@ -1,0 +1,243 @@
+{
+  "kit": "pr-b-effective-policy-smoke",
+  "stamp": "2026-10-01T13-53-35",
+  "world": "prb-ep-2026-10-01T13-53-35",
+  "worldCleaned": true,
+  "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param",
+  "seedWorld": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-10-01T13-21-34",
+  "testUse": {
+    "tree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "clean": true,
+    "detail": "HEAD at pinned baseline, clean"
+  },
+  "ports": {
+    "hostPort": 3182,
+    "mockPort": 3497,
+    "mcpA": 3491,
+    "mcpB": 3492
+  },
+  "stable": {
+    "before": [
+      {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      {
+        "url": "http://127.0.0.1:3180/",
+        "status": "unreachable: fetch http://127.0.0.1:3180/ failed: fetch failed"
+      }
+    ],
+    "after": [
+      {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      {
+        "url": "http://127.0.0.1:3180/",
+        "status": "unreachable: fetch http://127.0.0.1:3180/ failed: fetch failed"
+      }
+    ]
+  },
+  "criteria": [
+    {
+      "id": "C1",
+      "label": "model override -> next request (wire body.model)",
+      "pass": true,
+      "detail": "wire body.model=prb-c1-model (override ovr-model-inst-1722vhu1h1z1-g0 gen=1)"
+    },
+    {
+      "id": "C2",
+      "label": "MCP override -> next request (wire body.tools mcp__)",
+      "pass": true,
+      "detail": "wire mcp__ tools=[\"mcp__prb-mcp-a__ping\"] (override ovr-mcp-inst-1qazuqc1ylx9-g0)"
+    },
+    {
+      "id": "C3",
+      "label": "PolicyState switch -> next request (T1 negative + T-C3 positive)",
+      "pass": true,
+      "detail": "negative=POLICY_STATE_UNKNOWN; C3a baseline=global-default -> C3b=prb-c3-strict (entryId ps-strict-0); structural=bound-set(default, focus) positive-on-bound=ps-focus-0 boot-only-rejected=POLICY_STATE_UNKNOWN durable-inert=yes"
+    },
+    {
+      "id": "C4",
+      "label": "mutation || concurrent request (no activation error, no lost update)",
+      "pass": true,
+      "detail": "concurrent followup OK; winner=ovr-model-inst-0e84f9t1xgok-g0 gen=1; next-boundary model=prb-c4-model"
+    },
+    {
+      "id": "C5",
+      "label": "restart (same DSH_HOME): committed state still governs next request",
+      "pass": true,
+      "detail": "post-restart model=prb-c1-model mcp=[\"mcp__prb-mcp-a__ping\"] T-C3 ps=prb-c3-strict"
+    },
+    {
+      "id": "C6",
+      "label": "inspect-config parity (getProjection route vs wire body.model)",
+      "pass": true,
+      "detail": "route=deepseek-official/prb-c1-model (state=pending-next-boundary) == wire body.model=prb-c1-model"
+    }
+  ],
+  "legs": {
+    "C1": {
+      "recordId": "ovr-model-inst-1722vhu1h1z1-g0",
+      "generation": 1,
+      "wireModel": "prb-c1-model",
+      "mockSeq": 1,
+      "marker": "PRB-C1-4t8lp16w"
+    },
+    "C6": {
+      "route": "deepseek-official/prb-c1-model",
+      "state": "pending-next-boundary",
+      "source": "explicit-human-override",
+      "provenance": {
+        "layer": "humanOverride",
+        "origin": "human",
+        "recordId": "ovr-model-inst-1722vhu1h1z1-g0",
+        "explanation": "model: effective allow[deepseek-official/prb-c1-model]; team humanOverride(origin=human, ovr-model-inst-1722vhu1h1z1-g0) allow[deepseek-official/prb-c1-model]; external exists=yes, hard=unspecified"
+      },
+      "availability": "available",
+      "effectiveConfigModel": {
+        "value": "deepseek-official/prb-c1-model",
+        "source": "explicit-human-override",
+        "state": "pending-next-boundary"
+      },
+      "readState": null,
+      "wireModel": "prb-c1-model"
+    },
+    "C2": {
+      "recordId": "ovr-mcp-inst-1qazuqc1ylx9-g0",
+      "wireMcp": [
+        "mcp__prb-mcp-a__ping"
+      ],
+      "allToolCount": 43,
+      "mockSeq": 2,
+      "marker": "PRB-C2-5mbm6jl0"
+    },
+    "C3": {
+      "negative": {
+        "code": "POLICY_STATE_UNKNOWN",
+        "detail": "{\"method\":\"policyState.set\",\"endpoint\":\"policyState.set\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"POLICY_STATE_UNKNOWN\",\"message\":\"policyState target 'focus' is outside the bound blueprint's closed set (default, default)\",\"details\":{\"reason\":\"unknown-state\",\"stateId\":\"focus\",\"closedStates\":[\"default\",\"default\"]}}}",
+        "message": "policyState target 'focus' is outside the bound blueprint's closed set (default, default)"
+      },
+      "positive": {
+        "workerId": "inst-0u1oxz41prk9",
+        "baseModel": "global-default",
+        "strictModel": "prb-c3-strict",
+        "entryId": "ps-strict-0",
+        "psAck": {
+          "transition": {
+            "entryId": "ps-strict-0",
+            "origin": "human",
+            "state": {
+              "stateId": "strict",
+              "cells": {
+                "model": {
+                  "value": {
+                    "kind": "allow",
+                    "items": [
+                      "deepseek-official/prb-c3-strict"
+                    ]
+                  }
+                }
+              }
+            },
+            "requestedAtStep": 0,
+            "effectiveFromStep": 1
+          }
+        },
+        "mockSeqBase": 3,
+        "mockSeqStrict": 5,
+        "positiveDemonstrable": true
+      },
+      "structural": {
+        "code": "POLICY_STATE_UNKNOWN",
+        "message": "policyState target 'strict' is outside the bound blueprint's closed set (default, default, focus)",
+        "closedSet": "default, focus",
+        "boundBlueprint": "team.prb-ps",
+        "boundStates": [
+          "default",
+          "focus"
+        ],
+        "bootStates": [
+          "strict"
+        ],
+        "positiveEntryId": "ps-focus-0",
+        "positiveModelCell": [
+          "deepseek-official/role-ps-focus"
+        ],
+        "readActive": "focus",
+        "readAvailableTransitions": [
+          "default"
+        ],
+        "durable": {
+          "ledgerMaxSequence": 63,
+          "overrideRecords": 3,
+          "overrideGenerations": [
+            "ovr-mcp-inst-1qazuqc1ylx9-g0/1",
+            "ovr-model-inst-0iin89s0dvix-g0/1",
+            "ovr-model-inst-1722vhu1h1z1-g0/1"
+          ],
+          "psTransitionEntryIds": [
+            "ps-focus-0"
+          ],
+          "tableCounts": {
+            "schema_meta": 9,
+            "team_sessions": 6,
+            "member_instances": 13,
+            "session_bindings": 13,
+            "overrides": 3,
+            "compatibility": 5,
+            "operations": 7,
+            "ledger": 64,
+            "blueprint_registry": 6
+          }
+        },
+        "structuralFinding": "F11 (pre-alpha3 W1 fix-A, 3b7039e8, an ancestor of this base): the policyState closed set is the ADDRESSED team's BOUND Blueprint and a BOUND ref never consults the host boot Blueprint. Demonstrated on one team bound to team.prb-ps: the bound-only 'focus' COMMITTED (entryId ps-focus-0) although the boot blueprint (team.mpr-anchor: [\"strict\"]) does not declare it; the boot-only 'strict' was rejected POLICY_STATE_UNKNOWN reporting the bound set [default, focus]; the rejection left the durable store byte-invariant (ledger high-water 63, 3 override record(s), T-PS transitions [\"ps-focus-0\"]). Supersedes the 10add920-era boot-blueprint oracle. Sources: packages/runtime/src/plugin/s6-remote.ts (policyState.read precheck + switchState, F11), governance service closed-set check, bound-blueprint.ts."
+      }
+    },
+    "C4": {
+      "winner": "ovr-model-inst-0e84f9t1xgok-g0",
+      "generation": 1,
+      "nextModel": "prb-c4-model",
+      "mockSeqNext": 7,
+      "marker": "PRB-C4-khzltrva",
+      "nextMarker": "PRB-C4N-68x3uz1d"
+    },
+    "C5": {
+      "model": "prb-c1-model",
+      "mcp": [
+        "mcp__prb-mcp-a__ping"
+      ],
+      "ps": "prb-c3-strict"
+    }
+  },
+  "findings": {
+    "structural": "F11 (pre-alpha3 W1 fix-A, 3b7039e8, an ancestor of this base): the policyState closed set is the ADDRESSED team's BOUND Blueprint and a BOUND ref never consults the host boot Blueprint. Demonstrated on one team bound to team.prb-ps: the bound-only 'focus' COMMITTED (entryId ps-focus-0) although the boot blueprint (team.mpr-anchor: [\"strict\"]) does not declare it; the boot-only 'strict' was rejected POLICY_STATE_UNKNOWN reporting the bound set [default, focus]; the rejection left the durable store byte-invariant (ledger high-water 63, 3 override record(s), T-PS transitions [\"ps-focus-0\"]). Supersedes the 10add920-era boot-blueprint oracle. Sources: packages/runtime/src/plugin/s6-remote.ts (policyState.read precheck + switchState, F11), governance service closed-set check, bound-blueprint.ts.",
+    "structuralClosedSet": "default, focus",
+    "structuralRejection": "policyState target 'strict' is outside the bound blueprint's closed set (default, default, focus)",
+    "c3PositiveIsUiGovernanceFlow": "C3 positive = the functional UI governance flow: the committed cells originate from the client target (verbatim, normalizeStateView, mutation/service.ts:839), supplied by the governance panel cell editor (TeamGovernance.tsx runPolicyCommit). There is NO client-side gap — the governance panel sends the edited cell map (not just the stateId).",
+    "c3PositiveDemonstrated": true,
+    "c3Wire": {
+      "c3aBaselineModel": "global-default",
+      "policyStateSetEntryId": "ps-strict-0",
+      "c3bNextRequestModel": "prb-c3-strict"
+    }
+  },
+  "hostLogs": [
+    {
+      "bootNum": 1,
+      "phase": "resume",
+      "port": 3182,
+      "src": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-53-35-c3/logs/instance-port3182.log",
+      "dest": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-53-35-c3/host1-resume-port3182.log"
+    },
+    {
+      "bootNum": 2,
+      "phase": "resume",
+      "port": 3182,
+      "src": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-53-35-c3/logs/instance-port3182.log",
+      "dest": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-53-35-c3/host2-resume-port3182.log"
+    }
+  ],
+  "fatal": null,
+  "exitCode": 0
+}

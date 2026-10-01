@@ -20,13 +20,20 @@
  *   C2 — MCP override → next request: `override.set` (capability mcp) acks;
  *        the followup request CARRIES the overridden MCP (body.tools has
  *        `mcp__prb-mcp-a__ping` present and NO `mcp__prb-mcp-b__*` tool).
- *   C3 — PolicyState switch → next request: on T1 (closed set ['default'])
- *        a `policyState.set` to an undeclared state is rejected typed
+ *   C3 — PolicyState switch → next request: on T1 (closed set ['default']) a
+ *        `policyState.set` to an undeclared state is rejected typed
  *        (POLICY_STATE_UNKNOWN — the negative); on a NEW saved-source team
  *        T-PS (blueprint team.prb-ps with policyStates [default, focus],
  *        worker template with NO modelPreference) a `policyState.set`
  *        (stateId focus + a model cell) acks and the followup's next
- *        request has body.model === the state's model value.
+ *        request has body.model === the state's model value. The structural
+ *        sub-leg pins WHERE the closed set comes from, per F11 (fix-A,
+ *        3b7039e8 — an ancestor of this base): on a team bound to team.prb-ps
+ *        the bound-only `focus` COMMITS even though the boot blueprint does
+ *        not declare it, `policyState.get` reports the bound set, a set to the
+ *        boot-only `strict` is rejected POLICY_STATE_UNKNOWN reporting that
+ *        bound set, and the rejection is durably inert (zero ledger /
+ *        generation change).
  *   C4 — mutation ∥ concurrent request: `override.set` run CONCURRENTLY
  *        (Promise.all) with a `member.followup`; the followup completes with
  *        no activation error, the mutation commits (the durable winner is
@@ -50,6 +57,22 @@
  *   - The ephemeral world is DELETED at G9 (with a stable-instance re-probe
  *     + port-release check). Nothing is committed or pushed.
  *
+ * USAGE (fixture identity is CLI-overridable; every default is the literal
+ * this kit was proven against, so an unflagged run behaves EXACTLY as before
+ * — only the ORIGIN of those constants changes, never an assertion):
+ *   node pr-b-effective-policy-smoke.mjs
+ *     [--seed-world <world>]            seed DSH_HOME: a name under
+ *                                       <main>/tests/homes or an absolute path
+ *                                       INSIDE it (default: the retained mpr
+ *                                       world mpr-2026-09-27T08-35-52)
+ *     [--seed-blueprint-dir <dir>]      the profile blueprintDir literal to
+ *                                       retarget — a dir INSIDE tests/homes
+ *     [--t1 <rootSessionId>]            the seed world's main team, matching
+ *                                       ^session-mpr-t1-[A-Za-z0-9T:-]+$
+ *     [--worker-instance <inst-id>]     the seed's settled worker (C1/C6),
+ *                                       matching ^inst-[a-z0-9]+$
+ *   An invalid/escaping value is a hard fatal before anything runs (exit 1).
+ *
  * Exit codes: 0 = all six criteria pass; 2 = one or more criteria failed
  * (raw wire evidence preserved in the run dir); 1 = fatal (the host never
  * became usable / the harness itself broke). A criterion that cannot be
@@ -58,10 +81,10 @@
  */
 
 import {
-  cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync,
+  cpSync, existsSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync,
 } from 'node:fs'
 import { execSync } from 'node:child_process'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, isAbsolute, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DshInstance } from '../../../tests/characterization/lib/instance.mjs'
 import {
@@ -75,7 +98,83 @@ const KIT_DIR = dirname(fileURLToPath(import.meta.url))
 const WORKTREE = resolve(KIT_DIR, '..', '..', '..')
 const MAIN = resolve(WORKTREE, '..', '..')
 const TESTUSE = join(MAIN, 'tests', 'deepseek-harness-test-use')
-const SEED_WORLD = join(MAIN, 'tests', 'homes', 'mpr-2026-09-27T08-35-52')
+
+// ── CLI: fixture-identity overrides ────────────────────────────────────────
+// Every flag DEFAULTS to the literal this kit was proven against, so an
+// unflagged run is identical to before; a flag only changes where the
+// constant comes FROM (its origin). No assertion, shape guard, criterion or
+// tally reads the CLI — they keep consuming the same constants.
+//   --seed-world <world>        the seed DSH_HOME: a name under <MAIN>/tests/homes
+//                               or an absolute path INSIDE it (realpath-checked)
+//   --seed-blueprint-dir <dir>  the blueprintDir literal the copied profile is
+//                               retargeted from — a directory INSIDE <MAIN>/tests/homes
+//   --t1 <rootSessionId>        the seed world's main team (default pattern
+//                               `session-mpr-t1-<world stamp>`)
+//   --worker-instance <id>      the seed world's settled worker (C1/C6),
+//                               `inst-<lowercase alnum>`
+//   --expert-instance <id>      the seed world's settled expert (C2/C5),
+//                               `inst-<lowercase alnum>`
+//   --control-instance <id>     the seed world's settled control member (C4),
+//                               `inst-<lowercase alnum>`
+// Every passed-in id is additionally CHECKED against the copied world's
+// durable `member_instances` rows before anything boots (assertSeedIdentities):
+// an id whose real MemberInstance template is not the one the criterion
+// addresses dies as a typed `instance-type-mismatch`, never as a guessed
+// request against the wrong member.
+function usageFatal(msg) {
+  process.stderr.write(`FATAL (invalid kit argument): ${msg}\n`)
+  process.stderr.write('usage: node pr-b-effective-policy-smoke.mjs [--seed-world <world-under-tests/homes>] [--seed-blueprint-dir <dir-under-tests/homes>] [--t1 session-mpr-t1-<stamp>] [--worker-instance inst-<id>] [--expert-instance inst-<id>] [--control-instance inst-<id>]\n')
+  process.exit(1)
+}
+function parseArgs(argv) {
+  const out = { _: [] }
+  // A known flag with no value (or with another flag as its value) is fatal:
+  // silently keeping the default would make an override look applied when it
+  // is not.
+  const value = (a, raw) => {
+    if (raw === undefined) usageFatal(`${a}: missing value`)
+    if (raw.startsWith('--')) usageFatal(`${a}: expected a value, got another flag ${JSON.stringify(raw)}`)
+    return raw
+  }
+  for (let i = 0; i < argv.length; i += 1) {
+    const a = argv[i]
+    if (a === '--seed-world') out.seedWorld = value(a, argv[++i])
+    else if (a === '--seed-blueprint-dir') out.seedBlueprintDir = value(a, argv[++i])
+    else if (a === '--t1') out.t1 = value(a, argv[++i])
+    else if (a === '--worker-instance') out.workerInstance = value(a, argv[++i])
+    else if (a === '--expert-instance') out.expertInstance = value(a, argv[++i])
+    else if (a === '--control-instance') out.controlInstance = value(a, argv[++i])
+    else out._.push(a)
+  }
+  return out
+}
+const HOMES_ROOT = join(MAIN, 'tests', 'homes')
+/** Resolve a seed path (world name under HOMES_ROOT, or absolute path) and
+ *  require that its REAL path stays inside HOMES_ROOT — '..', symlink escapes,
+ *  empty/ambiguous values and separator-carrying world names are all fatal. */
+function insideHomes(flag, raw) {
+  if (typeof raw !== 'string' || raw.trim().length === 0) usageFatal(`${flag}: empty value`)
+  if (/\s/.test(raw) || raw.startsWith('-') || raw.includes('\\')) usageFatal(`${flag}: ambiguous value ${JSON.stringify(raw)}`)
+  if (raw === '.' || raw.split('/').includes('..')) usageFatal(`${flag}: path escape ${JSON.stringify(raw)}`)
+  if (!isAbsolute(raw) && raw.includes('/')) usageFatal(`${flag}: a world name must not contain separators: ${JSON.stringify(raw)}`)
+  const candidate = isAbsolute(raw) ? resolve(raw) : resolve(HOMES_ROOT, raw)
+  let real = null
+  let root = null
+  try { real = realpathSync(candidate) } catch { usageFatal(`${flag}: does not resolve: ${candidate}`) }
+  try { root = realpathSync(HOMES_ROOT) } catch { usageFatal(`homes root missing: ${HOMES_ROOT}`) }
+  if (real !== root && !real.startsWith(root + sep)) usageFatal(`${flag}: resolves outside the homes root ${root}: ${real}`)
+  if (!statSync(real).isDirectory()) usageFatal(`${flag}: not a directory: ${real}`)
+  return candidate
+}
+function matchingToken(flag, raw, pattern) {
+  if (typeof raw !== 'string' || raw.trim().length === 0) usageFatal(`${flag}: empty value`)
+  if (!pattern.test(raw)) usageFatal(`${flag}: ${JSON.stringify(raw)} does not match ${pattern}`)
+  return raw
+}
+const CLI = parseArgs(process.argv.slice(2))
+const SEED_WORLD = CLI.seedWorld === undefined
+  ? join(MAIN, 'tests', 'homes', 'mpr-2026-09-27T08-35-52')
+  : insideHomes('--seed-world', CLI.seedWorld)
 
 const STAMP = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
 const WORLD = `prb-ep-${STAMP}`
@@ -90,13 +189,23 @@ const LOG_DIR = join(RUN_DIR, 'logs')
 // THIS worktree's dist (the row `name`, glueUrl, seamUrl, p6t6 `name`).
 const STALE_WT_SEG = 'async-default-contract'
 const THIS_WT_SEG = 'pre-alpha3-prb-effective-policy'
-const SEED_BLUEPRINT_DIR = '/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-27T08-35-52/blueprints'
+const SEED_BLUEPRINT_DIR = CLI.seedBlueprintDir === undefined
+  ? '/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-27T08-35-52/blueprints'
+  : insideHomes('--seed-blueprint-dir', CLI.seedBlueprintDir)
 
 // The T1 team (the seed world's main team) + its SETTLED members.
-const T1 = 'session-mpr-t1-mpr-2026-09-27T08-35-52'
-const W_CREATE = 'inst-1p8kqfl09bhr' // worker (template modelPreference role-worker) — C1/C6
-const EXPERT = 'inst-04eix3v0rhrj'   // expert (no capabilities → no initial MCP grant) — C2
-const CONTROL = 'inst-0f6c37a0hpcj'  // control (NO modelPreference → baseline global-default) — C4
+const T1 = CLI.t1 === undefined
+  ? 'session-mpr-t1-mpr-2026-09-27T08-35-52'
+  : matchingToken('--t1', CLI.t1, /^session-mpr-t1-[A-Za-z0-9T:-]+$/)
+const W_CREATE = CLI.workerInstance === undefined
+  ? 'inst-1p8kqfl09bhr' // worker (template modelPreference role-worker) — C1/C6
+  : matchingToken('--worker-instance', CLI.workerInstance, /^inst-[a-z0-9]+$/)
+const EXPERT = CLI.expertInstance === undefined
+  ? 'inst-04eix3v0rhrj' // expert (no capabilities → no initial MCP grant) — C2
+  : matchingToken('--expert-instance', CLI.expertInstance, /^inst-[a-z0-9]+$/)
+const CONTROL = CLI.controlInstance === undefined
+  ? 'inst-0f6c37a0hpcj' // control (NO modelPreference → baseline global-default) — C4
+  : matchingToken('--control-instance', CLI.controlInstance, /^inst-[a-z0-9]+$/)
 
 // The saved-source team's minted root (the client-minted create-root id).
 // T-PS (team.prb-ps) keeps the per-team `focus` state for the STRUCTURAL
@@ -132,6 +241,7 @@ const STABLE_PROBES = ['http://127.0.0.1:3080/', 'http://127.0.0.1:3180/']
 const C1_MODEL = 'deepseek-official/prb-c1-model'
 const C4_MODEL = 'deepseek-official/prb-c4-model'
 const PS_FOCUS_MODEL = 'deepseek-official/role-ps-focus'
+const PS_FOCUS_STATE_ID = 'focus' // declared ONLY in the per-team saved source team.prb-ps
 const MCP_A = 'prb-mcp-a'
 const MCP_B = 'prb-mcp-b'
 const BASELINE_MODEL = 'global-default' // the world staticModel.model
@@ -450,6 +560,17 @@ function prepareWorld() {
   // :398) are built from) with (a) a no-modelPreference worker template (so a
   // worker can be created whose baseline request carries the world model) and
   // (b) a non-default `strict` policyState (so the closed set includes `strict`).
+  // [F11 NOTE, revalidated 2026-10-01: since 3b7039e8 the closed set is the
+  // ADDRESSED team's BOUND Blueprint, resolved per root by the Governance
+  // service (bound-blueprint.ts), so this host-profile blueprintSource edit is
+  // no longer what ANY leg's closed set comes from — the catalog resolves the
+  // boot blueprint to the STEP 1b saved source rev 2, and every team binds to
+  // its own snapshot. STEP 1a is kept because (i) the two shape guards below
+  // are the kit's world-shape preconditions and would themselves change if this
+  // step were removed, and (ii) removing it would silently change the world the
+  // C1/C2/C4/C5/C6 legs run against. The boot-vs-bound discrimination that
+  // C3-structural asserts is carried by STEP 1b (rev 2 declares `strict` and not
+  // `focus`) against team.prb-ps (declares `focus` and not `strict`).]
   // This is a TEST-WORLD edit of the DSH_HOME world copy's blueprintSource —
   // NOT a production patch. blueprintSource is a YAML double-quoted string;
   // `members: []` and `policyStates: []` each occur exactly once (the boot
@@ -497,6 +618,34 @@ function prepareWorld() {
   const sessions = sessionKeys.map((k) => { const v = rawSessions[k]; return { key: k, ...(typeof v === 'string' ? JSON.parse(v) : v) } })
   const t1Present = sessionKeys.includes(T1) || sessions.some((s) => s.rootSessionId === T1)
   if (!t1Present) dieFatal(`seed T1 team missing from copied store (sessions=${sessionKeys.join(',') || 'none'})`)
+
+  // ID USE GUARD — before ANY of the three member identities is used, it must
+  // be a real MemberInstance of T1 in the copied durable store whose
+  // `templateId` is the one the criteria address (worker → C1/C6, expert →
+  // C2/C5, control → C4). A stale or guessed id therefore fails here as a
+  // typed instance-type-mismatch, never as a criterion run against the wrong
+  // member. (MemberInstanceRecordDto v1: rootSessionId + instanceId +
+  // templateId; the store's `member_instances` table keys rows by
+  // memberIdentityKey({rootSessionId, instanceId}).)
+  const rawMembers = store.tables?.member_instances ?? {}
+  const members = Object.entries(rawMembers)
+    .map(([key, v]) => { try { return { key, ...(typeof v === 'string' ? JSON.parse(v) : v) } } catch { return null } })
+    .filter((m) => m !== null && m.rootSessionId === T1)
+  const ID_USE_CONTRACT = [
+    ['--worker-instance', W_CREATE, 'worker', 'C1/C6'],
+    ['--expert-instance', EXPERT, 'expert', 'C2/C5'],
+    ['--control-instance', CONTROL, 'control', 'C4'],
+  ]
+  for (const [flag, id, templateId, criteria] of ID_USE_CONTRACT) {
+    const row = members.find((m) => m.instanceId === id)
+    if (row === undefined) {
+      dieFatal(`instance-type-mismatch: ${flag} ${id} is not a MemberInstance of ${T1} in the copied world (T1 members=${members.length || 'none'}) — pass the id of a settled '${templateId}' member (used by ${criteria})`)
+    }
+    if (row.templateId !== templateId) {
+      dieFatal(`instance-type-mismatch: ${flag} ${id} is a '${row.templateId}' member but ${criteria} address it as a '${templateId}' member (label=${JSON.stringify(row.label)}, lifecycle=${row.lifecycle})`)
+    }
+  }
+  log(`id-use guard: ${ID_USE_CONTRACT.map(([, id, t]) => `${t}=${id}`).join(' ')} verified against the copied durable store`)
   log(`world ready (T1 present in the copied durable store; sessions: ${sessionKeys.join(', ')})`)
 }
 
@@ -723,9 +872,15 @@ async function legC2(host) {
   return { recordId: rec.recordId, wireMcp: mcp, allToolCount: all.length, mockSeq: req.seq, marker }
 }
 
-/** C3-negative — on T1 (closed set ['default','strict'] after STEP 1) a
- *  policyState.set to an undeclared state is rejected typed
- *  (POLICY_STATE_UNKNOWN / TEAM_REMOTE_POLICY_STATE_UNKNOWN). */
+/** C3-negative — on T1 a policyState.set to an undeclared state is rejected
+ *  typed (POLICY_STATE_UNKNOWN / TEAM_REMOTE_POLICY_STATE_UNKNOWN).
+ *  [F11 NOTE: T1's closed set is the SEED team's own bound Blueprint — for the
+ *  mpr seed the wire reports it as (default, default), i.e. `focus` and the
+ *  boot-side `strict` are BOTH outside it. The pre-F11 text of this comment
+ *  claimed ['default','strict'] "after STEP 1"; that was the boot-blueprint
+ *  reading the structural leg has now been recalibrated away from. The
+ *  assertion itself is unchanged and stays: an undeclared target is a typed
+ *  rejection.] */
 async function legC3Negative(host) {
   const res = await remoteCallReady(host, 'policyState.set', {
     teamSessionId: T1, target: { stateId: 'focus' }, actor: { kind: 'human' },
@@ -895,33 +1050,215 @@ async function legC3Positive(host) {
   }
 }
 
-/** C3-structural — the STRUCTURAL finding re-demonstrated on the per-team
- *  blueprint (team.prb-ps declares `focus`): a policyState.set to a state
- *  declared ONLY in the per-team blueprint is REJECTED (the closed set is the
- *  boot blueprint's {default, strict}, NOT the per-team blueprint's
- *  {default, focus}). Source-verified: s6-remote.ts:2689 builds the closed set
- *  from the single boot blueprint (options.blueprint = parseBlueprint(
- *  config.blueprintSource), root.ts:738). */
+// ── durable-store observation for C3-structural (READ-ONLY: nothing here
+// writes, and the kit's only deletion sites are its own HOME) ────────────────
+/** A count/identity snapshot of the copied world's durable store. Counters and
+ *  ids only — never row payloads — so the comparison is cheap and readable in a
+ *  failure message. `psTransitionEntryIds` is the T-PS-scoped PolicyState
+ *  ledger, which is exactly what a governance switch must (positive) or must
+ *  not (negative) touch. */
+function durableSnapshot() {
+  const store = JSON.parse(readFileSync(join(HOME, 'storages', 'team_domain.json'), 'utf8'))
+  const tables = store.tables ?? {}
+  const rowsOf = (name) => Object.values(tables[name] ?? {})
+    .map((v) => { try { return typeof v === 'string' ? JSON.parse(v) : v } catch { return null } })
+    .filter((v) => v !== null)
+  const ledger = rowsOf('ledger')
+  const overrides = rowsOf('overrides')
+  const psTransitions = ledger.filter((r) => r?.factType === 'policy-state-transitioned' && r?.rootSessionId === T_PS)
+  const counts = {}
+  for (const [name, table] of Object.entries(tables)) counts[name] = Object.keys(table ?? {}).length
+  return {
+    tableCounts: counts,
+    ledgerMaxSequence: ledger.reduce((m, r) => Math.max(m, Number(r?.sequence) || 0), 0),
+    psTransitionEntryIds: psTransitions.map((r) => r?.payload?.entryId ?? '?').sort(),
+    overrideRecords: overrides.length,
+    overrideGenerations: overrides.map((o) => `${o?.recordId ?? '?'}/${o?.generation ?? '?'}`).sort(),
+  }
+}
+
+/** The kit is the only writer, but member activation and projection work flush
+ *  to the store asynchronously, so a single read can catch an unrelated flush.
+ *  Return the first snapshot that repeats itself (up to ~2s). */
+async function durableSnapshotQuiescent() {
+  let prev = durableSnapshot()
+  for (let i = 0; i < 8; i += 1) {
+    await sleep(250)
+    const next = durableSnapshot()
+    if (JSON.stringify(next) === JSON.stringify(prev)) return next
+    prev = next
+  }
+  return prev
+}
+
+function durableDiff(before, after) {
+  const out = []
+  for (const key of ['ledgerMaxSequence', 'psTransitionEntryIds', 'overrideRecords', 'overrideGenerations']) {
+    if (JSON.stringify(before[key]) !== JSON.stringify(after[key])) out.push(`${key}: ${JSON.stringify(before[key])} -> ${JSON.stringify(after[key])}`)
+  }
+  for (const name of new Set([...Object.keys(before.tableCounts), ...Object.keys(after.tableCounts)])) {
+    if (before.tableCounts[name] !== after.tableCounts[name]) out.push(`table ${name}: ${before.tableCounts[name]} -> ${after.tableCounts[name]}`)
+  }
+  return out
+}
+
+/** C3-structural — the closed-set AUTHORITY, revalidated against production.
+ *
+ *  ORIGINAL ORACLE (text last written at 10add920, 2026-09-29): the closed set
+ *  was the host BOOT blueprint (config.blueprintSource parsed once per host at
+ *  root.ts:738, read by the precheck at the then-current s6-remote.ts:2689), so
+ *  a state declared only in a per-team saved source was expected to be
+ *  REJECTED. That oracle was only ever green against pre-F11 hosts (every green
+ *  pr-b run recorded in this repo is stamped 2026-09-28).
+ *
+ *  SUPERSEDED by pre-alpha3 W1 fix-A (F11), landed at
+ *  3b7039e89f2ab9a072d89e2e3caa2af01fe7d355 (2026-09-30, "pre-alpha3 PR-F
+ *  increment 1 (F.2 + F.3 + F11 re-land …)") — verified an ANCESTOR of this
+ *  kit's base 427219e4: the closed
+ *  set is the ADDRESSED team's BOUND Blueprint, resolved by the Governance
+ *  service per root (bound-blueprint.ts), and "a BOUND ref NEVER consults the
+ *  host boot Blueprint" (packages/runtime/src/plugin/s6-remote.ts, the
+ *  policyState.read precheck and policyState.set switchState F11 comments; the
+ *  Remote does shape validation only). PR #53 external review ruled this leg
+ *  STALE CONTRACT; the coordinator directed a recalibration to the production
+ *  rule — a documented revalidation, keeping strength rather than removing it.
+ *
+ *  The two blueprints are made to DISAGREE on purpose and the disagreement is
+ *  asserted live from the catalog first (otherwise neither direction
+ *  discriminates): the boot blueprint team.mpr-anchor@latest declares `strict`
+ *  and NOT `focus`; the bound blueprint team.prb-ps declares `focus` and NOT
+ *  `strict`. On ONE team bound to team.prb-ps the leg then pins:
+ *    POSITIVE — policyState.set(`focus`) COMMITS (entryId, no noChange, the
+ *      acked state carries the committed model cell) although `focus` is absent
+ *      from the boot blueprint — precisely the shape the stale oracle demanded
+ *      be rejected; and the committed transition is durable BEFORE the next
+ *      observation (the ledger row carrying its entryId is already present).
+ *    READ     — policyState.get reports the BOUND set: `focus` active,
+ *      `strict` NOT advertised in availableTransitions, every bound state
+ *      accounted for.
+ *    NEGATIVE — policyState.set(`strict`) (boot-only) on the SAME team is
+ *      rejected the typed POLICY_STATE_UNKNOWN, and the rejection REPORTS the
+ *      bound closed set (details…closedStates), which must equal the bound
+ *      blueprint's set and must not contain `strict`.
+ *    DURABLE  — the rejection is durably inert: every table row count, the
+ *      ledger high-water mark, every override record/generation pair and the
+ *      T-PS transition ledger are identical before and after it. */
 async function legC3Structural(host) {
-  // create a team bound to the per-team blueprint (team.prb-ps, declares focus).
+  // (0) pre-flight — the boot set and the bound set must genuinely disagree.
+  const bootRes = await remoteCallReady(host, 'catalog.get', { blueprintId: BOOT_BLUEPRINT }, 'c3s-boot-get')
+  const bootErr = resultError(bootRes.body)
+  if (bootErr !== null) throw new Error(`C3-structural: boot blueprint ${BOOT_BLUEPRINT} failed to resolve: ${JSON.stringify(bootErr).slice(0, 240)}`)
+  const bootIds = (((resultData(bootRes.body) ?? {}).blueprint ?? {}).policyStates ?? []).map((s) => s.id)
+  const boundRes = await remoteCallReady(host, 'catalog.get', { blueprintId: T_PS_BLUEPRINT }, 'c3s-bound-get')
+  const boundErr = resultError(boundRes.body)
+  if (boundErr !== null) throw new Error(`C3-structural: bound blueprint ${T_PS_BLUEPRINT} failed to resolve: ${JSON.stringify(boundErr).slice(0, 240)}`)
+  const boundIds = (((resultData(boundRes.body) ?? {}).blueprint ?? {}).policyStates ?? []).map((s) => s.id)
+  if (!bootIds.includes(C3_STATE_ID)) throw new Error(`C3-structural: the boot blueprint does not declare '${C3_STATE_ID}' — the negative direction would be vacuous (boot=${JSON.stringify(bootIds)})`)
+  if (bootIds.includes(PS_FOCUS_STATE_ID)) throw new Error(`C3-structural: the boot blueprint ALSO declares '${PS_FOCUS_STATE_ID}', so the positive would not discriminate bound from boot (boot=${JSON.stringify(bootIds)})`)
+  if (!boundIds.includes(PS_FOCUS_STATE_ID)) throw new Error(`C3-structural: the bound blueprint does not declare '${PS_FOCUS_STATE_ID}' (bound=${JSON.stringify(boundIds)})`)
+  if (boundIds.includes(C3_STATE_ID)) throw new Error(`C3-structural: the bound blueprint ALSO declares '${C3_STATE_ID}', so the negative would not discriminate (bound=${JSON.stringify(boundIds)})`)
+  const boundClosedSorted = [...new Set(['default', ...boundIds])].sort()
+  log(`C3-structural pre-flight: boot(${BOOT_BLUEPRINT})=${JSON.stringify(bootIds)} bound(${T_PS_BLUEPRINT})=${JSON.stringify(boundIds)} — disjoint on the two states, both directions discriminate`)
+
+  // (1) create the team bound to the per-team saved source (unchanged).
   const create = await remoteCallReady(host, 'team.create', { rootSessionId: T_PS, blueprintId: T_PS_BLUEPRINT }, 'c3s-create')
   const cErr = resultError(create.body)
   if (cErr !== null) throw new Error(`C3-structural team.create (per-team blueprint) failed: ${cErr.code} — ${String(cErr.message).slice(0, 240)}`)
-  // the per-team state (focus) is declared in team.prb-ps but NOT in the boot
-  // blueprint's closed set -> rejected typed.
+
+  // (2) POSITIVE — the bound-only state commits although the boot set lacks it.
   const psSet = await remoteCallReady(host, 'policyState.set', {
     teamSessionId: T_PS,
-    target: { stateId: 'focus', cells: { model: { value: { kind: 'allow', items: [PS_FOCUS_MODEL] } } } },
+    target: { stateId: PS_FOCUS_STATE_ID, cells: { model: { value: { kind: 'allow', items: [PS_FOCUS_MODEL] } } } },
     actor: { kind: 'human' },
   }, 'c3s-psset')
-  const err = resultError(psSet.body)
-  if (err === null) throw new Error('C3-structural: policyState.set(focus) on the per-team team was ACCEPTED (expected a typed rejection — the closed set should be the boot blueprint {default, strict})')
-  const closedSetMatch = String(err.message ?? '').match(/closed set \(([^)]*)\)/)
+  const setErr = resultError(psSet.body)
+  if (setErr !== null) {
+    throw new Error(`C3-structural: policyState.set(${PS_FOCUS_STATE_ID}) on the team bound to ${T_PS_BLUEPRINT} was REJECTED (${setErr.code} — ${String(setErr.message).slice(0, 200)}); under F11 the closed set is the ADDRESSED team's bound blueprint, which declares '${PS_FOCUS_STATE_ID}'`)
+  }
+  // the policyState.set handler wraps the switch result in { data: { transition } }.
+  const setData = resultData(psSet.body) ?? {}
+  const ack = setData.transition ?? setData
+  if (ack?.noChange === true) throw new Error(`C3-structural: the positive switch reported noChange (expected a committed transition): ${JSON.stringify(ack).slice(0, 240)}`)
+  const entryId = ack?.entryId ?? null
+  if (typeof entryId !== 'string' || entryId.length === 0) throw new Error(`C3-structural: the committed transition ack has no entryId: ${JSON.stringify(ack).slice(0, 240)}`)
+  if (ack?.state?.stateId !== PS_FOCUS_STATE_ID) throw new Error(`C3-structural: the acked state is ${JSON.stringify(ack?.state?.stateId)}, expected '${PS_FOCUS_STATE_ID}'`)
+  const ackedItems = ack?.state?.cells?.model?.value?.items ?? []
+  if (!ackedItems.includes(PS_FOCUS_MODEL)) throw new Error(`C3-structural: the acked state does not carry the committed model cell (items=${JSON.stringify(ackedItems)}, expected ${PS_FOCUS_MODEL})`)
+  log(`C3-structural POSITIVE: policyState.set(${PS_FOCUS_STATE_ID}) COMMITTED on the bound team — entryId=${entryId} model=${JSON.stringify(ackedItems)} (a state the boot blueprint does not declare)`)
+
+  // (3) the committed transition is durable (the ledger row is there, not just
+  //     the ack) — and it is the ONLY T-PS transition so far.
+  const afterPositive = await durableSnapshotQuiescent()
+  if (afterPositive.psTransitionEntryIds.length !== 1 || afterPositive.psTransitionEntryIds[0] !== entryId) {
+    throw new Error(`C3-structural: after the positive switch the T-PS PolicyState ledger holds ${JSON.stringify(afterPositive.psTransitionEntryIds)}, expected exactly [${entryId}] (a governance commit must be durable before its ack is observable)`)
+  }
+  log(`C3-structural DURABLE: the committed transition is in the ledger (entryId=${entryId}, T-PS transition rows=1)`)
+
+  // (4) the READ plane reports the BOUND set, not the boot set.
+  const getRes = await remoteCallReady(host, 'policyState.get', { teamSessionId: T_PS }, 'c3s-psget')
+  const getView = (resultData(getRes.body) ?? {}).state ?? {}
+  const available = getView.availableTransitions ?? []
+  if (getView.stateId !== PS_FOCUS_STATE_ID) throw new Error(`C3-structural: policyState.get reports stateId=${JSON.stringify(getView.stateId)} after the commit, expected '${PS_FOCUS_STATE_ID}'`)
+  if (available.includes(C3_STATE_ID)) throw new Error(`C3-structural: policyState.get advertises the BOOT-only '${C3_STATE_ID}' (availableTransitions=${JSON.stringify(available)}) — the read plane must report the bound set`)
+  for (const id of boundClosedSorted) {
+    if (id !== getView.stateId && !available.includes(id)) throw new Error(`C3-structural: policyState.get does not account for the bound state '${id}' (active=${JSON.stringify(getView.stateId)} available=${JSON.stringify(available)})`)
+  }
+  log(`C3-structural READ: active=${getView.stateId} availableTransitions=${JSON.stringify(available)} — the bound set, '${C3_STATE_ID}' absent`)
+
+  // (5) NEGATIVE — a BOOT-only state on the SAME addressed team, and nothing
+  //     durable may change because of it.
+  const before = durableSnapshot()
+  const neg = await remoteCallReady(host, 'policyState.set', {
+    teamSessionId: T_PS, target: { stateId: C3_STATE_ID }, actor: { kind: 'human' },
+  }, 'c3s-negative')
+  const negErr = resultError(neg.body)
+  if (negErr === null) {
+    throw new Error(`C3-structural: policyState.set(${C3_STATE_ID}) — a state the ADDRESSED team's bound blueprint does not declare — was ACCEPTED; F11 requires POLICY_STATE_UNKNOWN because a bound ref never consults the boot blueprint (boot=${JSON.stringify(bootIds)} bound=${JSON.stringify(boundIds)})`)
+  }
+  if (negErr.code !== 'POLICY_STATE_UNKNOWN' && negErr.code !== 'TEAM_REMOTE_POLICY_STATE_UNKNOWN') {
+    throw new Error(`C3-structural: the negative rejection was ${negErr.code}, not the typed POLICY_STATE_UNKNOWN (message=${String(negErr.message).slice(0, 200)})`)
+  }
+  const reportedClosed = negErr?.details?.cause?.details?.closedStates ?? negErr?.details?.closedStates ?? null
+  if (!Array.isArray(reportedClosed)) throw new Error(`C3-structural: the rejection does not report the bound closed set in its details (details=${JSON.stringify(negErr.details ?? {}).slice(0, 260)})`)
+  // Set equality, not string equality: the host's bound snapshot lists the
+  // default state twice (observed raw: closed set "(default, default, focus)"),
+  // which is a rendering artifact of `['default', …bound.policyStates]` over a
+  // blueprint that also declares a state named `default`. The message keeps the
+  // raw list verbatim in evidence; the assertion compares the SET.
+  const reportedSorted = [...new Set(reportedClosed)].sort()
+  if (reportedSorted.includes(C3_STATE_ID)) throw new Error(`C3-structural: the rejection reports '${C3_STATE_ID}' inside its own closed set (${JSON.stringify(reportedSorted)})`)
+  if (JSON.stringify(reportedSorted) !== JSON.stringify(boundClosedSorted)) {
+    throw new Error(`C3-structural: the rejection reports closed set ${JSON.stringify(reportedSorted)} but the bound blueprint ${T_PS_BLUEPRINT} declares ${JSON.stringify(boundClosedSorted)}`)
+  }
+  log(`C3-structural NEGATIVE: policyState.set(${C3_STATE_ID}) rejected ${negErr.code} reporting the bound set ${JSON.stringify(reportedSorted)}`)
+
+  // (6) DURABLE — the rejection left no trace anywhere.
+  const after = await durableSnapshotQuiescent()
+  const drift = durableDiff(before, after)
+  if (drift.length > 0) throw new Error(`C3-structural: the REJECTED policyState.set(${C3_STATE_ID}) changed the durable store (${drift.join('; ')}) — a rejected governance mutation must be durably inert`)
+  const readBack = (resultData((await remoteCallReady(host, 'policyState.get', { teamSessionId: T_PS }, 'c3s-psget2')).body) ?? {}).state ?? {}
+  if (readBack.stateId !== PS_FOCUS_STATE_ID) throw new Error(`C3-structural: after the rejection the active state is ${JSON.stringify(readBack.stateId)}, expected the still-committed '${PS_FOCUS_STATE_ID}'`)
+  log(`C3-structural DURABLE: the rejection changed nothing (ledger high-water ${after.ledgerMaxSequence}, overrides ${after.overrideRecords}, T-PS transitions ${JSON.stringify(after.psTransitionEntryIds)})`)
+
   return {
-    code: err.code,
-    message: String(err.message ?? '').slice(0, 280),
-    closedSet: closedSetMatch ? closedSetMatch[1] : null,
-    structuralFinding: 'the policyState closed set is the BOOT blueprint (config.blueprintSource, team.mpr-anchor — after STEP 1: policyStates [strict]), NOT the per-team bound blueprint (team.prb-ps declares `focus` yet policyState.set(focus) is rejected with the boot blueprint closed set). Source: s6-remote.ts:2689 (closed set from options.blueprint) + root.ts:738 (blueprint = parseBlueprint(config.blueprintSource), built once per host).',
+    code: negErr.code,
+    message: String(negErr.message ?? '').slice(0, 280),
+    closedSet: reportedSorted.join(', '),
+    boundBlueprint: T_PS_BLUEPRINT,
+    boundStates: boundIds,
+    bootStates: bootIds,
+    positiveEntryId: entryId,
+    positiveModelCell: ackedItems,
+    readActive: getView.stateId,
+    readAvailableTransitions: available,
+    durable: {
+      ledgerMaxSequence: after.ledgerMaxSequence,
+      overrideRecords: after.overrideRecords,
+      overrideGenerations: after.overrideGenerations,
+      psTransitionEntryIds: after.psTransitionEntryIds,
+      tableCounts: after.tableCounts,
+    },
+    structuralFinding: `F11 (pre-alpha3 W1 fix-A, 3b7039e8, an ancestor of this base): the policyState closed set is the ADDRESSED team's BOUND Blueprint and a BOUND ref never consults the host boot Blueprint. Demonstrated on one team bound to ${T_PS_BLUEPRINT}: the bound-only '${PS_FOCUS_STATE_ID}' COMMITTED (entryId ${entryId}) although the boot blueprint (${BOOT_BLUEPRINT}: ${JSON.stringify(bootIds)}) does not declare it; the boot-only '${C3_STATE_ID}' was rejected ${negErr.code} reporting the bound set [${reportedSorted.join(', ')}]; the rejection left the durable store unchanged on every metric this kit measures — durableDiff() found no difference in per-table row counts, in the ledger high-water (after: ${after.ledgerMaxSequence}), in the T-PS transition entryIds ${JSON.stringify(after.psTransitionEntryIds)}, in the override record count (after: ${after.overrideRecords}) or in the override generations ${JSON.stringify(after.overrideGenerations)}, each compared after quiescence polling; these are counts, IDs and generations, not byte hashes — the kit takes no hash of the store file, so a same-count mutation of row contents would not be detected and no such claim is made. Supersedes the 10add920-era boot-blueprint oracle. Sources: packages/runtime/src/plugin/s6-remote.ts (policyState.read precheck + switchState, F11), governance service closed-set check, bound-blueprint.ts.`,
   }
 }
 
@@ -1218,7 +1555,7 @@ async function main() {
   catch (e) { if (e?.fatalSentinel) throw e; c3str = { error: e.message } }
   const c3ok = c3neg && !(c3neg.error) && c3pos && !(c3pos.error) && c3str && !(c3str.error)
   if (c3ok && c3pos.positiveDemonstrable === true) {
-    mark('C3', true, `negative=${c3neg.code}; C3a baseline=${c3pos.baseModel} -> C3b=${c3pos.strictModel} (entryId ${c3pos.entryId}); structural=${c3str.code} closed-set(${c3str.closedSet})`)
+    mark('C3', true, `negative=${c3neg.code}; C3a baseline=${c3pos.baseModel} -> C3b=${c3pos.strictModel} (entryId ${c3pos.entryId}); structural=bound-set(${c3str.closedSet}) positive-on-bound=${c3str.positiveEntryId} boot-only-rejected=${c3str.code} durable-inert=yes`)
   } else if (c3ok && c3pos.positiveDemonstrable === false) {
     mark('C3', 'partial', `negative=${c3neg.code}; C3a baseline=${c3pos.baseModel}; POSITIVE not demonstrated`)
   } else {
