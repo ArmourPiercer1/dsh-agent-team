@@ -95,11 +95,16 @@ export function readEffectivePolicy(args: EffectivePolicyReadArgs): EffectivePol
   // 5. The committed-generation marker (the in-process staleness anchor —
   //    the frozen v1 wire carries no client expectedGeneration, pre-alpha3
   //    PR-A ruling) + the member-scoped durable refs (the provenance
-  //    input of the per-capability views).
+  //    input of the per-capability views). The human slots contribute the
+  //    generation of EACH slot's LATEST event (tombstone included): the
+  //    reset commit is a fact the read reflects, so a writer that
+  //    committed before it is stale against this read even when the
+  //    tombstone contributes no value.
   const committedGeneration = Math.max(
     winnerGeneration(overrides, selected.templateOverlay?.overlayId),
     winnerGeneration(overrides, selected.instanceOverlay?.overlayId),
-    winnerGeneration(overrides, selected.humanOverride?.overrideId),
+    winnerGeneration(overrides, selected.humanSlotEvents?.instance?.recordId),
+    winnerGeneration(overrides, selected.humanSlotEvents?.team?.recordId),
   )
 
   return {
