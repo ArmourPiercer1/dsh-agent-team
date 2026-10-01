@@ -18,6 +18,7 @@ import {
   parseObserveFlags, validateAccessRecordPath, readMarkerHint,
   verifyUiTruth, planUiHoldStep, summarizeUiObserve,
   UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
+  UI_LEDGER_READ_BUDGET_MS, evaluateUiReadResult,
 } from './ui-observe.mjs'
 
 // ── fixtures ────────────────────────────────────────────────────────────────
@@ -352,4 +353,41 @@ test('FIX-1: client row golden — the S8 contract shape (browser-smoke-host rew
   assert.equal(uiClientShimIndexHref('/repo'), 'file:///repo/packages/client/composition-shim/index.js')
   assert.equal(uiClientBundlePath('/repo'), '/repo/packages/client/composition-shim/client-bundle.js')
   assert.equal(UI_CLIENT_ROW_ID, 'dsh-agent-team-client')
+})
+
+// ── 10. FIX-2: absolute deadline (a late truth NEVER verifies) ──────────────
+
+test('FIX-2: fake-clock — truth arriving just before the deadline verifies', () => {
+  assert.deepEqual(
+    evaluateUiReadResult({ readDoneMs: 999, deadlineMs: 1000, truthOk: true, budgetExceeded: false }),
+    { action: 'verified', autoResolve: false })
+})
+
+test('FIX-2: fake-clock — a ledger read completing AT/PAST the deadline is UI TIMEOUT even with truth.ok', () => {
+  for (const readDoneMs of [1000, 1001]) {
+    const r = evaluateUiReadResult({ readDoneMs, deadlineMs: 1000, truthOk: true, budgetExceeded: false })
+    assert.equal(r.action, 'fail-closed')
+    assert.equal(r.reason, 'UI TIMEOUT')
+    assert.equal(r.autoResolve, false)
+    assert.ok(!('decision' in r) && !('resolve' in r), 'no resolve/auto-allow may ride on a late truth')
+  }
+})
+
+test('FIX-2: fake-clock — a marker appearing past the deadline is rejected (pre-read boundary)', () => {
+  // the kit loop consults planUiHoldStep BEFORE the ledger read: past the
+  // boundary there is NO read, NO truth evaluation and NO verified path.
+  const step = planUiHoldStep({ nowMs: 1001, deadlineMs: 1000, markerSeen: false })
+  assert.equal(step.action, 'fail-closed')
+  assert.equal(step.reason, 'UI NOT_RUN')
+  // and even a marker+read that crossed the deadline together cannot verify:
+  assert.equal(evaluateUiReadResult({ readDoneMs: 1200, deadlineMs: 1000, truthOk: true, budgetExceeded: false }).action, 'fail-closed')
+})
+
+test('FIX-2: fake-clock — read-budget overrun is not-yet-verified, never verified', () => {
+  const r = evaluateUiReadResult({ readDoneMs: 900, deadlineMs: 1000, truthOk: true, budgetExceeded: true })
+  assert.equal(r.action, 'not-verified')
+  assert.equal(r.reason, 'READ_BUDGET_EXCEEDED')
+  assert.equal(r.autoResolve, false)
+  assert.ok(!('decision' in r) && !('resolve' in r))
+  assert.ok(UI_LEDGER_READ_BUDGET_MS > 0 && UI_LEDGER_READ_BUDGET_MS < DEFAULT_UI_HOLD_MS)
 })

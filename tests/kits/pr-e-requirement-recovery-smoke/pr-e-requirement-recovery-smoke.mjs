@@ -251,6 +251,7 @@ import {
   planUiHoldStep, summarizeUiObserve, reviewPayloadDigestOf,
   sha256Hex, canonicalJson,
   UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
+  UI_LEDGER_READ_BUDGET_MS, evaluateUiReadResult,
 } from './ui-observe.mjs'
 import {
   TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH,
@@ -1849,41 +1850,62 @@ async function uiObserveHold(rec, rootSessionId, req, rid, tag) {
   const deadlineAt = startedAt + UI_OBSERVE.holdMs
   let markerSeen = false
   let lastReason = null
+  const failClosed = (stepReason) => {
+    writeSummary(stepReason)
+    const record = { tag, requestId: rid, digestPrefix: expectedDigest.slice(0, 18), outcome: stepReason, claim: null, holdMs: UI_OBSERVE.holdMs, waitedMs: Date.now() - startedAt, lastReason, at: new Date().toISOString() }
+    uiObserveRecords.push(record)
+    saveScenario('ui-observe', { records: uiObserveRecords })
+    check('S9', `${stepReason}: UI OBSERVE hold point expired FAIL-CLOSED — no auto-allow, no kit resolve-on-behalf`, false, `tag=${tag} requestId=${rid} lastReason=${lastReason ?? 'no marker seen'} holdMs=${UI_OBSERVE.holdMs}`)
+    return { ok: false, outcome: stepReason, reason: lastReason }
+  }
   for (;;) {
+    // ABSOLUTE hold boundary (FIX-2): the deadline is checked BEFORE the
+    // ledger read — past the boundary no marker and no read result can ever
+    // be VERIFIED.
+    const preStep = planUiHoldStep({ nowMs: Date.now(), deadlineMs: deadlineAt, markerSeen })
+    if (preStep.action === 'fail-closed') return failClosed(preStep.reason)
     try {
       const hintRes = readMarkerHint(observeDir)
       if (hintRes.ok) {
         markerSeen = true
         if (hintRes.hint.requestId === rid) {
+          const readStartedAt = Date.now()
           const entries = await ledgerEntries(rec, rootSessionId) // durable truth — EXISTING read path
-          const truth = verifyUiTruth({ marker: hintRes.hint, ledgerFacts: entries, expectedRequestId: rid, expectedDigest })
-          if (truth.ok) {
+          const readDoneAt = Date.now()
+          // A read over the poll budget is NEVER adopted as verification —
+          // the kit bounds the POLL LOOP, never the shared ledgerEntries path.
+          const budgetExceeded = readDoneAt - readStartedAt > UI_LEDGER_READ_BUDGET_MS
+          const truth = budgetExceeded
+            ? null
+            : verifyUiTruth({ marker: hintRes.hint, ledgerFacts: entries, expectedRequestId: rid, expectedDigest })
+          if (truth === null) {
+            lastReason = 'READ_BUDGET_EXCEEDED'
+            writeSummary(`REJECTED:${lastReason}`, hintRes.hint.claimed ?? null)
+          } else if (!truth.ok) {
+            lastReason = truth.reason ?? 'TRUTH_REJECTED'
+            writeSummary(`REJECTED:${lastReason}`, hintRes.hint.claimed ?? null)
+          }
+          // Deadline checked AGAIN after the read (FIX-2): a truth that
+          // crosses the deadline is fail-closed even when truth.ok — the
+          // boundary is absolute; the hold NEVER verifies late.
+          const decided = evaluateUiReadResult({ readDoneMs: readDoneAt, deadlineMs: deadlineAt, truthOk: truth?.ok === true, budgetExceeded })
+          if (decided.action === 'verified') {
             const outcome = truth.claim === 'surface-close' ? 'SURFACE_CLOSE_ZERO_EFFECT' : `VERIFIED:${truth.claim}`
             writeSummary(outcome, truth.claim)
-            const record = { tag, requestId: rid, digestPrefix: expectedDigest.slice(0, 18), outcome, claim: truth.claim, holdMs: UI_OBSERVE.holdMs, waitedMs: Date.now() - startedAt, at: new Date().toISOString() }
+            const record = { tag, requestId: rid, digestPrefix: expectedDigest.slice(0, 18), outcome, claim: truth.claim, holdMs: UI_OBSERVE.holdMs, waitedMs: readDoneAt - startedAt, at: new Date().toISOString() }
             uiObserveRecords.push(record)
             saveScenario('ui-observe', { records: uiObserveRecords })
-            log(`${tag}: UI OBSERVE VERIFIED (${truth.claim}) — durable ledger truth confirmed (the marker hint itself is never trusted)`)
+            log(`${tag}: UI OBSERVE VERIFIED (${truth.claim}) — durable ledger truth confirmed BEFORE the deadline (the marker hint itself is never trusted)`)
             return { ok: true, decision: truth.decision, claim: truth.claim }
           }
-          lastReason = truth.reason ?? 'TRUTH_REJECTED'
-          writeSummary(`REJECTED:${lastReason}`, hintRes.hint.claimed ?? null)
-        } else {
-          lastReason = 'MARKER_REQUEST_ID_MISMATCH'
+          if (decided.action === 'fail-closed') return failClosed(decided.reason ?? 'UI TIMEOUT')
         }
       }
     } catch (error) {
       log(`${tag}: UI OBSERVE poll error (transient): ${String(error?.message ?? error).slice(0, 200)}`)
     }
     const step = planUiHoldStep({ nowMs: Date.now(), deadlineMs: deadlineAt, markerSeen })
-    if (step.action === 'fail-closed') {
-      writeSummary(step.reason)
-      const record = { tag, requestId: rid, digestPrefix: expectedDigest.slice(0, 18), outcome: step.reason, claim: null, holdMs: UI_OBSERVE.holdMs, waitedMs: Date.now() - startedAt, lastReason, at: new Date().toISOString() }
-      uiObserveRecords.push(record)
-      saveScenario('ui-observe', { records: uiObserveRecords })
-      check('S9', `${step.reason}: UI OBSERVE hold point expired FAIL-CLOSED — no auto-allow, no kit resolve-on-behalf`, false, `tag=${tag} requestId=${rid} lastReason=${lastReason ?? 'no marker seen'} holdMs=${UI_OBSERVE.holdMs}`)
-      return { ok: false, outcome: step.reason, reason: lastReason }
-    }
+    if (step.action === 'fail-closed') return failClosed(step.reason)
     await sleep(1000)
   }
 }

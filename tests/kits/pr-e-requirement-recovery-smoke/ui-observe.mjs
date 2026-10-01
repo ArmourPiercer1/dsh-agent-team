@@ -409,3 +409,38 @@ export function uiClientPatchLines({ worktree, enabled = true } = {}) {
     `      name: "${uiClientShimIndexHref(worktree)}"`,
   ]
 }
+
+// ── FIX-2: absolute hold deadline (post-read adjudication) ──────────────────
+
+/** Per-poll bound on the DURABLE ledger read inside the UI hold loop. A read
+ *  over budget is NEVER adopted as verification — the loop simply keeps
+ *  waiting and fails closed at the absolute deadline (the poll loop carries a
+ *  read budget instead of the kit changing `ledgerEntries` semantics for the
+ *  non-UI paths). */
+export const UI_LEDGER_READ_BUDGET_MS = 15_000
+
+/**
+ * evaluateUiReadResult({ readDoneMs, deadlineMs, truthOk, budgetExceeded }) ->
+ *   { action:'verified'|'not-verified'|'fail-closed', autoResolve:false, reason? }
+ *
+ * The hold boundary is ABSOLUTE: a durable read that COMPLETES at or past the
+ * deadline is fail-closed 'UI TIMEOUT' even when truthOk is true — a late
+ * marker or a slow ledger answer crossing the deadline is NEVER VERIFIED.
+ * Before the boundary the truth decides; a budget-overrun read is
+ * not-yet-verified. NEVER returns a resolve / auto-allow.
+ */
+export function evaluateUiReadResult({ readDoneMs, deadlineMs, truthOk = false, budgetExceeded = false } = {}) {
+  if (typeof readDoneMs !== 'number' || typeof deadlineMs !== 'number') {
+    throw new TypeError('evaluateUiReadResult requires numeric readDoneMs and deadlineMs')
+  }
+  if (readDoneMs >= deadlineMs) {
+    return { action: 'fail-closed', autoResolve: false, reason: 'UI TIMEOUT' }
+  }
+  if (budgetExceeded) {
+    return { action: 'not-verified', autoResolve: false, reason: 'READ_BUDGET_EXCEEDED' }
+  }
+  if (truthOk === true) {
+    return { action: 'verified', autoResolve: false }
+  }
+  return { action: 'not-verified', autoResolve: false }
+}
