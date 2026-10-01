@@ -109,6 +109,22 @@ const L4B_ROOT = 'session-mtm-l4b'
 const L4B_SERVER = 'mtm_srv_l4b'
 const L4C_ROOT = 'session-mtm-l4c'
 const L4C_SERVER = 'mtm_srv_l4c'
+// The consolidated revision legs (external final bounded re-review of
+// 64cd6614 — the three remaining local issues, all within the existing
+// frozen matrix): L5 the RENAMED leader template slug (the verdict's
+// root classification must use the bound blueprint's ACTUAL leader
+// template id, not a literal), L6 the CONTROL-NOTIFICATION liveness
+// (the C1 pending-approval channel is the liveness-preserved class —
+// never the gated work-input class — while normal root work stays
+// gated), L7 the PER-SCOPE recovery identity (a recovery marker exempts
+// an occurrence only when it matches BOTH the scope AND the subject of
+// that specific occurrence).
+const L5_ROOT = 'session-mtm-l5'
+const L5_SERVER = 'mtm_srv_l5'
+const L6_ROOT = 'session-mtm-l6'
+const L6_SERVER = 'mtm_srv_l6'
+const L7_ROOT = 'session-mtm-l7'
+const L7_SERVER = 'mtm_srv_l7'
 
 // --- the v2 blueprints (template-level required mcpServer) ----------------------
 
@@ -122,7 +138,24 @@ const L4C_SERVER = 'mtm_srv_l4c'
 function mtmBlueprint(
   bpId: string,
   serverName: string,
-  opts: { workerReq: boolean; leaderReq: boolean; leaderCaps: boolean; workerCaps: boolean; reqComplete?: boolean },
+  opts: {
+    workerReq: boolean
+    leaderReq: boolean
+    leaderCaps: boolean
+    workerCaps: boolean
+    reqComplete?: boolean
+    // Additive revision variants (the consolidated re-review legs):
+    // `leaderSlug` renames the LEADER template's templateId (a legal
+    // blueprint slug is ANY non-empty string — the L5 P1 leg renames it
+    // to `captain`); `teamReq` moves the same required mcpServer into
+    // the TEAM scope (the v2 `teamRequirements` block — the L7 P2b leg
+    // carries the subject in BOTH scopes); `controlOps` grants the
+    // leader envelope the `request-control` op (the L6 P2a leg's direct
+    // production control-service trigger).
+    leaderSlug?: string
+    teamReq?: boolean
+    controlOps?: boolean
+  },
 ): string {
   // `indent` = the member-level shift (the leader's template properties sit
   // at 2 spaces; a member item's at 4 — the same block, +2).
@@ -156,7 +189,7 @@ function mtmBlueprint(
     `blueprintId: ${bpId}`,
     'revision: "1"',
     'leader:',
-    '  templateId: leader',
+    `  templateId: ${opts.leaderSlug ?? 'leader'}`,
     `  persona: "You lead the ${bpId} team."`,
     ...(opts.leaderCaps ? indent(capsBlock(serverName), 2) : []),
     ...(opts.leaderReq ? indent(reqBlock(), 2) : []),
@@ -167,7 +200,20 @@ function mtmBlueprint(
     ...(opts.workerCaps ? indent(capsBlock(serverName), 4) : []),
     ...(opts.workerReq ? indent(reqBlock(), 4) : []),
     'requirements: []',
-    'teamRequirements: []',
+    // The TEAM scope (v2 `teamRequirements` — the L7 P2b leg carries the
+    // same required subject in BOTH the team scope and the worker
+    // template scope; the distinct requirementId keeps the per-scope
+    // occurrences addressable).
+    ...(opts.teamReq
+      ? [
+          'teamRequirements:',
+          `  - requirementId: req-team-mcp-${serverName}`,
+          '    type: mcpServer',
+          '    subjects:',
+          `      - ${serverName}`,
+          `    complete: ${opts.reqComplete === false ? 'false' : 'true'}`,
+        ]
+      : ['teamRequirements: []']),
     // The leader's mutation envelope (invariant 36): the work actions'
     // required ops (follow-up → assign-task; create-member → create-member;
     // send-message / report-progress for the member envelopes below).
@@ -177,6 +223,7 @@ function mtmBlueprint(
     '    - create-member',
     '    - send-message',
     '    - report-progress',
+    ...(opts.controlOps ? ['    - request-control'] : []),
     '  deny: []',
     'memberEnvelopes:',
     '  - templateId: worker',
@@ -298,6 +345,42 @@ const BP_L4C = mtmBlueprint('mtm.l4c', L4C_SERVER, {
   leaderReq: false,
   leaderCaps: true,
   workerCaps: true,
+})
+// L5 — P1 (the renamed leader slug): the LEADER template's templateId is
+// `captain` (a legal non-`leader` slug) carrying the REQUIRED mcpServer —
+// the verdict's root classification must use the bound blueprint's
+// ACTUAL leader template id (the same accessor the scope extraction
+// uses), never a literal.
+const BP_L5 = mtmBlueprint('mtm.l5', L5_SERVER, {
+  workerReq: false,
+  leaderReq: true,
+  leaderCaps: true,
+  workerCaps: true,
+  leaderSlug: 'captain',
+})
+// L6 — P2a (the control-notification liveness): the LEADER template's
+// REQUIRED mcpServer (the L3/R2 shape) + the leader envelope's
+// `request-control` op (the direct production control-service trigger —
+// the service fires the leader-approval notification on
+// `outcome.created && kind === LEADER_APPROVAL`).
+const BP_L6 = mtmBlueprint('mtm.l6', L6_SERVER, {
+  workerReq: false,
+  leaderReq: true,
+  leaderCaps: true,
+  workerCaps: true,
+  controlOps: true,
+})
+// L7 — P2b (the per-scope recovery identity): the SAME subject
+// REQUIRED in BOTH scopes — the TEAM scope (the v2 `teamRequirements`
+// block) and the WORKER template scope — two distinct requirement
+// occurrences; a recovery marker covering only ONE scope must not
+// exempt the other scope's occurrence.
+const BP_L7 = mtmBlueprint('mtm.l7', L7_SERVER, {
+  workerReq: true,
+  leaderReq: false,
+  leaderCaps: true,
+  workerCaps: true,
+  teamReq: true,
 })
 
 // --- the world boot (production host entry + production glue) --------------------
@@ -663,6 +746,56 @@ function captureRemoteDispatcher(
     throw new Error('mtm: the registration never installed a dispatcher')
   }
   return dispatcher
+}
+
+// --- the L6 control-notification observation (the fire-and-forget C1 channel) ---
+
+/**
+ * The rendered text of every recorded follow-up on one session (the
+ * bridge double records the `createUserMessage` object verbatim —
+ * `content: [{ type: 'text', text }]`).
+ */
+function followupTextsOf(world: MtMWorld, sessionId: string): string[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the bridge agents double (dynamic surface)
+  const followups: Array<{ sessionId: string; message: unknown }> = (world.agents as any).followups
+  return followups
+    .filter((entry) => entry.sessionId === sessionId)
+    .map((entry) => {
+      const message = entry.message as { content?: unknown }
+      if (Array.isArray(message?.content)) {
+        return (message.content as Array<{ type?: unknown; text?: unknown }>)
+          .map((part) => (part?.type === 'text' && typeof part.text === 'string' ? part.text : ''))
+          .join('')
+      }
+      return typeof message === 'string' ? message : ''
+    })
+}
+
+/**
+ * Bounded await over the FIRE-AND-FORGET leader-approval notification
+ * (the control service fires `notifyLeaderRequest` without awaiting — a
+ * delivery failure is a LIVENESS failure only, swallowed by the
+ * service's liveness-failure sink). The L6 leg polls the recorded
+ * follow-ups for the rendered `[team-control requestId=...]`
+ * notification on the root session; the RED shape is the ABSENCE after
+ * the window (the pre-fix gated delivery threw before the first
+ * model-visible input and the swallow left the pending-approval leader
+ * never notified).
+ */
+async function waitForControlNotification(
+  world: MtMWorld,
+  rootSessionId: string,
+  timeoutMs = 5000,
+): Promise<string | undefined> {
+  const t0 = Date.now()
+  for (;;) {
+    const hit = followupTextsOf(world, rootSessionId).find((text) =>
+      text.startsWith('[team-control requestId='),
+    )
+    if (hit !== undefined) return hit
+    if (Date.now() - t0 >= timeoutMs) return undefined
+    await new Promise((resolve) => setTimeout(resolve, 20))
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -1590,6 +1723,252 @@ const L4C = await (async () => {
 })()
 
 // ══════════════════════════════════════════════════════════════════════════
+// WORLD L5 — the consolidated re-review, P1 (the renamed leader slug —
+// the verdict's root classification must use the bound blueprint's
+// ACTUAL leader template id, not a hardcoded literal)
+// ══════════════════════════════════════════════════════════════════════════
+
+const L5 = await (async () => {
+  destroyDir(scratchDir('mtm-l5'))
+  const mcpFailures: Record<string, string> = {}
+  const world = await bootMtmWorld('l5', L5_ROOT, BP_L5, L5_SERVER, 4005, undefined, mcpFailures)
+
+  // The boot root's leader (the RENAMED template — templateId
+  // `captain`) is mounted (healthy) on the root session at boot.
+  const slotLeaderAtBoot = slotOf(world, L5_ROOT, L5_SERVER)
+
+  // THE COLD SEAM: the leader's residency is dropped (the liveness-only
+  // removal — the materialization port then sees the root COLD: the
+  // stale truth carries no fresh failure → the admission gate ADMIPTS).
+  const drop = await world.root.live.dropResidency(L5_ROOT)
+  const slotLeaderAfterDrop = slotOf(world, L5_ROOT, L5_SERVER)
+
+  // THE FAULT: the remount (the cold-resume setup reconcile) will fail.
+  mcpFailures[L5_SERVER] = 'mtm-l5: leader remount failure (the renamed-slug fault)'
+
+  // THE LEG: the root's INITIAL WORK through the PRODUCTION v2 remote
+  // command (`team.admitInitialWork`) — the L3 choreography with the
+  // leader template RENAMED to `captain`. Phase A's gate reads the cold
+  // / stale truth and ADMIPTS (the durable `team-work-admitted` fact);
+  // the delivery resumes the root agent, whose setup reconcile stamps
+  // the remount failure; the prepare's cooldown SKIP leaves the attempt
+  // clock untouched. The pre-fix verdict classifies the root through
+  // the HARDCODED `leader` template id (the requirement sits under
+  // `captain` — invisible to `templates['leader']`) → the failed
+  // required mount is treated as OPTIONAL → degraded → the root input
+  // is DELIVERED (the P1 defect: a legal blueprint's required outage
+  // degrades and the work ships). The fix derives the bound
+  // blueprint's ACTUAL leader template id → the required occurrence is
+  // visible → BLOCKED before the first model-visible input (the
+  // strategy maps the rejection to WORK_DELIVERY_FAILED → the remote
+  // TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED; the admission stays for the
+  // same-token retry; NO terminal root-work fact).
+  const dispatcher = captureRemoteDispatcher(world)
+  const initialWorkToken = tok()
+  const rootFollowupsBefore = followupsOf(world, L5_ROOT)
+  const initialWorkResponse: Record<string, unknown> = await dispatcher('team.admitInitialWork', {
+    version: 2,
+    params: { rootSessionId: L5_ROOT, requestToken: initialWorkToken, prompt: 'mtm-l5 initial work' },
+  })
+  const rootFollowupsAfter = followupsOf(world, L5_ROOT)
+  const workAdmitted = factWithToken(world, L5_ROOT, 'team-work-admitted', initialWorkToken)
+  const rootWorkDelivered = rootWorkDeliveredOf(world, L5_ROOT, initialWorkToken)
+  const slotLeaderAfter = slotOf(world, L5_ROOT, L5_SERVER)
+
+  return {
+    world,
+    slotLeaderAtBoot,
+    drop,
+    slotLeaderAfterDrop,
+    initialWorkToken,
+    initialWorkResponse,
+    rootFollowupsBefore,
+    rootFollowupsAfter,
+    workAdmitted,
+    rootWorkDelivered,
+    slotLeaderAfter,
+  }
+})()
+
+// ══════════════════════════════════════════════════════════════════════════
+// WORLD L6 — the consolidated re-review, P2a (the control-notification
+// liveness vs normal root work — the C1 pending-approval channel must
+// keep liveness under the failed required MCP while NORMAL root work
+// stays gated; no liveness exemption for work input)
+// ══════════════════════════════════════════════════════════════════════════
+
+const L6 = await (async () => {
+  destroyDir(scratchDir('mtm-l6'))
+  const mcpFailures: Record<string, string> = {}
+  const world = await bootMtmWorld('l6', L6_ROOT, BP_L6, L6_SERVER, 4006, undefined, mcpFailures)
+
+  // The boot root's leader (REQUIRED mcpServer — the L3/R2 shape) is
+  // mounted (healthy) on the root session at boot.
+  const slotLeaderAtBoot = slotOf(world, L6_ROOT, L6_SERVER)
+
+  // THE COLD SEAM: the leader's residency is dropped (the stale truth).
+  const drop = await world.root.live.dropResidency(L6_ROOT)
+  const slotLeaderAfterDrop = slotOf(world, L6_ROOT, L6_SERVER)
+
+  // THE FAULT: the remount (the cold-resume setup reconcile) will fail.
+  mcpFailures[L6_SERVER] = 'mtm-l6: leader remount failure (the control-notification fault)'
+
+  // (1) NORMAL ROOT WORK first (the leader is still COLD — Phase A
+  // reads the stale truth and ADMIPTS; the delivery boundary must
+  // block): the L3 shape — the admission is durable, the delivery
+  // resumes the root agent (the setup reconcile stamps the remount
+  // failure), the verdict blocks BEFORE the first model-visible input
+  // → the remote TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED, zero root
+  // input, no terminal fact. (Normal root work stays gated — NO
+  // liveness exemption for model-visible work input.)
+  const dispatcher = captureRemoteDispatcher(world)
+  const workToken = tok()
+  const rootFollowupsBeforeWork = followupsOf(world, L6_ROOT)
+  const workResponse: Record<string, unknown> = await dispatcher('team.admitInitialWork', {
+    version: 2,
+    params: { rootSessionId: L6_ROOT, requestToken: workToken, prompt: 'mtm-l6 normal root work' },
+  })
+  const rootFollowupsAfterWork = followupsOf(world, L6_ROOT)
+  const workAdmitted = factWithToken(world, L6_ROOT, 'team-work-admitted', workToken)
+  const rootWorkDelivered = rootWorkDeliveredOf(world, L6_ROOT, workToken)
+
+  // (2) THE CONTROL NOTIFICATION (the C1 pending-approval liveness
+  // channel): a fresh durable LEADER_APPROVAL control request through
+  // the PRODUCTION control service (the pre-execute adapter's ask-lane
+  // kind derivation is orthogonal — the service fires the notification
+  // on `outcome.created && kind === LEADER_APPROVAL` for ANY derived
+  // path; the team subject resolves the team without a target). The
+  // service fires the leader-approval notification FIRE-AND-FORGET (a
+  // delivery failure is a LIVENESS failure only — the durable row
+  // stands; the swallow is the service's liveness-failure sink). The
+  // notification path (deliverRootControlNotification) must KEEP
+  // LIVENESS under the failed required MCP — it is NOT model-visible
+  // work input (the frozen matrix's liveness-preserved class, same
+  // family as the completion notification). (RED shape at a0918b90:
+  // the control notification routes through the now-gated
+  // deliverRootInput → the verdict's throw is swallowed → the
+  // pending-approval leader is NEVER notified — the liveness hole.)
+  const controlRequest = await world.root.control.requestControl({
+    rootSessionId: L6_ROOT,
+    caller: LEADER_CALLER,
+    kind: 'leader-approval',
+    subject: { kind: 'team', rootSessionId: L6_ROOT },
+    actionName: 'mtm-l6',
+    correlation: `mtm-l6-ctrl-${tokenSeq}`,
+    summary: 'mtm-l6 pending approval (the control-notification liveness leg)',
+  })
+  const controlNotifiedText = await waitForControlNotification(world, L6_ROOT)
+  const rootFollowupsAfter = followupsOf(world, L6_ROOT)
+  const slotLeaderAfter = slotOf(world, L6_ROOT, L6_SERVER)
+
+  return {
+    world,
+    slotLeaderAtBoot,
+    drop,
+    slotLeaderAfterDrop,
+    workToken,
+    workResponse,
+    rootFollowupsBeforeWork,
+    rootFollowupsAfterWork,
+    rootFollowupsAfter,
+    workAdmitted,
+    rootWorkDelivered,
+    controlRequestId: String(controlRequest.requestId),
+    controlNotifiedText,
+    slotLeaderAfter,
+  }
+})()
+
+// ══════════════════════════════════════════════════════════════════════════
+// WORLD L7 — the consolidated re-review, P2b (the per-scope recovery
+// identity — the SAME subject required in BOTH the team scope and the
+// worker template scope; a recovery marker covering only ONE scope
+// must not exempt the other scope's occurrence)
+// ══════════════════════════════════════════════════════════════════════════
+
+const L7 = await (async () => {
+  destroyDir(scratchDir('mtm-l7'))
+  const mcpFailures: Record<string, string> = {}
+  const world = await bootMtmWorld('l7', L7_ROOT, BP_L7, L7_SERVER, 4007, undefined, mcpFailures)
+
+  const instA = await activateMember(world, 'mtm-l7-A')
+  const instB = await activateMember(world, 'mtm-l7-B')
+
+  // Both healthy + mounted at their first boundary (the failure map is
+  // still empty — the mounts succeed).
+  await expectWorkAdmitted(world, followUpRequest(L7_ROOT, instA.instanceId), 'L7 A first delivery (mount)')
+  await expectWorkAdmitted(world, followUpRequest(L7_ROOT, instB.instanceId), 'L7 B first delivery (mount)')
+  const slotBAtMount = slotOf(world, instB.childSessionId, L7_SERVER)
+
+  // THE FAULT: B's remount will keep failing (the PERSISTENT outage).
+  mcpFailures[L7_SERVER] = 'mtm-l7: B remount failure (the persistent per-scope-recovery fault)'
+  // The confirmed loss on B (the T1 shape — the public-seam withdrawal:
+  // the tools leave B's scope; the fiber handle stays).
+  const fiberB = fiberOf(world, instB.childSessionId, L7_SERVER)
+  if (fiberB?.withdrawTools === undefined) throw new Error('mtm L7: B carries no withdrawable fiber')
+  fiberB.withdrawTools()
+
+  // The gate's FRESH probe (this passage) classifies B's loss: the
+  // witness retires B's exhausted fiber (slot stamped `failed`).
+  await expectWorkAdmitted(world, followUpRequest(L7_ROOT, instA.instanceId), 'L7 probe passage (follow-up A)')
+  const slotBAfterProbe = slotOf(world, instB.childSessionId, L7_SERVER)
+
+  // The cooldown rewind (the test stand-in for the 30 s elapse — the
+  // boundary retry is admissible at the next passage).
+  if (slotBAfterProbe === undefined || typeof slotBAfterProbe.lastAttemptAt !== 'number') {
+    throw new Error('mtm L7: B carries no failed slot to rewind')
+  }
+  slotBAfterProbe.lastAttemptAt = Date.now() - 61_000
+
+  // THE LEG: the SAME subject is REQUIRED in BOTH scopes (the team
+  // scope — the v2 `teamRequirements` block — and the worker template
+  // scope) — two distinct requirement occurrences with distinct scope
+  // identities. The recovery marker covers ONLY the TEAM scope
+  // (`scopeKeys: ['team']` + the subject). The pre-fix verdict
+  // FLATTENS team + template into one subject set → the subject ∈
+  // unavailableSubjects → EVERY occurrence is exempt → the recovery
+  // re-run is DELIVERED (the P2b defect: the worker-scope occurrence
+  // is uncovered yet exempted). The fix preserves the PER-SCOPE
+  // occurrence identity: a required occurrence is exempt ONLY when the
+  // marker matches BOTH the scope AND the subject of that specific
+  // occurrence (the scopeKeys are actually read) → the covered team
+  // occurrence stays exempt but the uncovered WORKER-scope occurrence
+  // BLOCKS the delivery (zero input; the typed delivery failure).
+  const recoveryMarker = {
+    scopeKeys: ['team'],
+    unavailableSubjects: [L7_SERVER],
+  }
+  const bRequest = followUpRequest(L7_ROOT, instB.instanceId, { recovery: recoveryMarker })
+  const bFollowupsBefore = followupsOf(world, instB.childSessionId)
+  let bOutcome: { instanceId?: string } | undefined
+  let bThrown: unknown
+  try {
+    bOutcome = await expectWorkAdmitted(
+      world,
+      bRequest,
+      'L7 recovery passage (team-scope-only marker — the worker-scope occurrence must still block)',
+    )
+  } catch (error) {
+    bThrown = error
+  }
+  const bFollowupsAfter = followupsOf(world, instB.childSessionId)
+  const slotBAfterRecovery = slotOf(world, instB.childSessionId, L7_SERVER)
+
+  return {
+    world,
+    instA,
+    instB,
+    slotBAtMount,
+    slotBAfterProbe,
+    bOutcome,
+    bThrown,
+    bFollowupsBefore,
+    bFollowupsAfter,
+    slotBAfterRecovery,
+  }
+})()
+
+// ══════════════════════════════════════════════════════════════════════════
 // the assertions (synchronous `it` bodies over the captured worlds)
 // ══════════════════════════════════════════════════════════════════════════
 
@@ -1950,5 +2329,98 @@ describe('Finding F — residual legs (external review of e45d22fe: R1 first-mou
     expect(L4C.bFollowupsAfter - L4C.bFollowupsBefore, 'the recovery work delivered (the reviewed scope is allowed)').toBe(1)
     expect(L4C.slotBAfterRecovery?.status, 'the remount failed AGAIN (the exemption is the reviewed scope, not a remount success)').toBe('failed')
     expect(L4C.incidentOpened, 'the reviewed recovery is durably recorded (the scope incident)').toBe(true)
+  })
+
+  it('L5 (re-review P1) — the RENAMED leader slug: the bound blueprint\'s leader templateId is `captain` (a legal non-`leader` slug) carrying the REQUIRED mcpServer — the L3 root choreography with the slug renamed. The admission reads the stale cold truth and ADMITS; the cold-resume delivery\'s setup reconcile fails the remount. The pre-fix verdict classifies the root through the HARDCODED `leader` template id (the requirement sits under `captain` — invisible) and DEGRADES: the root input is DELIVERED (the required outage treated as optional — the work ships). The fix derives the bound blueprint\'s ACTUAL leader template id → the required occurrence is visible → BLOCKED (zero root input; the strategy maps the rejection to WORK_DELIVERY_FAILED → the remote TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED; the admission stays for the same-token retry; no terminal root-work fact)', () => {
+    // The setup truth: the `captain` leader mounted (healthy) at boot;
+    // the residency drop is the liveness-only removal (the stale slot
+    // survives).
+    expect(L5.slotLeaderAtBoot?.status, 'the renamed-slug leader mounted (healthy) at boot').toBe('mounted')
+    expect(L5.drop.dropped, 'residency dropped').toBe(true)
+    expect(L5.slotLeaderAfterDrop?.status, 'the stale slot survives the residency drop').toBe('mounted')
+
+    // THE VERDICT (RED shape: the pre-fix hardcoded `leader` id misses
+    // the `captain` requirement → the failed required mount degrades
+    // → the initial work is PERMITTED and the terminal fact commits).
+    expect(
+      L5.initialWorkResponse['ok'],
+      'the renamed-slug required outage was PERMITTED (the external P1 gap: the verdict hardcodes the `leader` template id)',
+    ).toBe(false)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the remote failure envelope (dynamic surface)
+    const error = L5.initialWorkResponse['error'] as Record<string, any>
+    expect(String(error?.['code'] ?? '')).toBe('TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED')
+    expect(L5.rootFollowupsAfter - L5.rootFollowupsBefore, 'zero root input on the failed passage').toBe(0)
+    expect(L5.workAdmitted, 'the Phase A admission stays durable (the same-token retry keeps it)').toBe(true)
+    expect(L5.rootWorkDelivered, 'no terminal root-work fact').toBeUndefined()
+    expect(L5.slotLeaderAfter?.status, 'the remount failed on the resume setup reconcile').toBe('failed')
+  })
+
+  it('L6 (re-review P2a) — the CONTROL NOTIFICATION vs normal root work under the SAME failed required MCP: (1) normal root work — the admission reads the stale cold truth and ADMITS, the cold-resume delivery\'s setup reconcile fails the remount, the verdict BLOCKS (zero root input + TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED; the admission stays; no terminal fact) — normal root work stays gated, NO liveness exemption for model-visible work input; (2) the pending-approval leader notification (the C1 liveness channel — the production control service fires the leader-approval notification fire-and-forget on the created durable row) — the pre-fix deliverRootControlNotification routes through the now-gated deliverRootInput → the verdict\'s throw is SWALLOWED by the service\'s liveness-failure sink → the pending-approval leader is NEVER notified (the liveness hole). The fix keeps the control notification LIVENESS (not model-visible work input — the frozen matrix\'s liveness-preserved class, same family as the completion notification) → DELIVERED', () => {
+    // The setup truth: the leader mounted (healthy) at boot; the
+    // residency drop is the liveness-only removal (the stale slot
+    // survives).
+    expect(L6.slotLeaderAtBoot?.status, 'the leader mounted (healthy) at boot').toBe('mounted')
+    expect(L6.drop.dropped, 'residency dropped').toBe(true)
+    expect(L6.slotLeaderAfterDrop?.status, 'the stale slot survives the residency drop').toBe('mounted')
+
+    // (1) NORMAL ROOT WORK — the gated work-input class (the L3
+    // contract): the typed delivery failure, zero root input, the
+    // durable admission, no terminal fact — NO liveness exemption.
+    expect(
+      L6.workResponse['ok'],
+      'normal root work was PERMITTED on the failed remount passage (the P2a exemption leak: normal root work must stay gated)',
+    ).toBe(false)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the remote failure envelope (dynamic surface)
+    const workError = L6.workResponse['error'] as Record<string, any>
+    expect(String(workError?.['code'] ?? '')).toBe('TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED')
+    expect(L6.rootFollowupsAfterWork - L6.rootFollowupsBeforeWork, 'zero root input on the normal-work passage').toBe(0)
+    expect(L6.workAdmitted, 'the Phase A admission stays durable (the same-token retry keeps it)').toBe(true)
+    expect(L6.rootWorkDelivered, 'no terminal root-work fact').toBeUndefined()
+
+    // (2) THE CONTROL NOTIFICATION — DELIVERED to the pending-approval
+    // leader (the liveness-preserved class). (RED shape: the pre-fix
+    // notification rides the gated deliverRootInput — the verdict\'s
+    // throw is swallowed by the service\'s liveness-failure sink: the
+    // notification NEVER arrives and no follow-up records it.)
+    expect(
+      L6.controlNotifiedText,
+      'the pending-approval leader was NEVER notified (the external P2a liveness hole: the control notification is swallowed by the gated work-input path)',
+    ).toBeDefined()
+    expect(
+      String(L6.controlNotifiedText).startsWith('[team-control requestId='),
+      'the notification is the rendered leader-approval text (the machine-dedup token leads)',
+    ).toBe(true)
+    expect(
+      String(L6.controlNotifiedText).includes(L6.controlRequestId),
+      'the notification names the EXACT requestId (the team_resolve_control argument)',
+    ).toBe(true)
+    expect(
+      L6.rootFollowupsAfter - L6.rootFollowupsAfterWork,
+      'the control notification is the ONLY root input after the gated work passage',
+    ).toBe(1)
+    expect(L6.slotLeaderAfter?.status, 'the remount failed (the liveness exemption does not heal the outage)').toBe('failed')
+  })
+
+  it('L7 (re-review P2b) — the PER-SCOPE recovery identity: the SAME mcpServer subject is REQUIRED in BOTH scopes (the TEAM scope — the v2 `teamRequirements` block — AND the WORKER template scope) — two distinct requirement occurrences with distinct scope identities. The recovery marker covers ONLY the team scope (`scopeKeys: [\'team\']` + the subject). The pre-fix verdict FLATTENS team + template into one subject set → the subject ∈ unavailableSubjects → EVERY occurrence exempt → the recovery re-run is DELIVERED (the worker-scope occurrence uncovered yet exempted — the defect). The fix preserves the per-scope occurrence identity (a required occurrence is exempt only when the marker matches BOTH the scope AND the subject of that specific occurrence — the scopeKeys are actually read) → the covered team occurrence stays exempt, but the uncovered WORKER-scope occurrence BLOCKS the delivery (zero input; the typed delivery failure)', () => {
+    // The setup truth: B mounted at its first boundary; the probe
+    // passage classified B's loss (the slot is the failed boundary
+    // truth — the T1/L4c shape); the cooldown is rewound (the boundary
+    // retry is admissible).
+    expect(L7.slotBAtMount?.status, 'B mounted at its first boundary').toBe('mounted')
+    expect(L7.slotBAfterProbe?.status, 'B classified failed by the probe passage').toBe('failed')
+
+    // THE VERDICT (RED shape: the flattened subject set exempts EVERY
+    // occurrence of the subject — the team-scope-only marker exempts
+    // the WORKER-scope occurrence too → the recovery re-run is
+    // DELIVERED and nothing throws).
+    expect(
+      L7.bThrown,
+      'the uncovered worker-scope occurrence was NOT blocked (the external P2b gap: the verdict flattens the scopes — a team-scope-only marker exempts every occurrence of the subject)',
+    ).toBeInstanceOf(TeamRuntimeError)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the typed failure (dynamic surface)
+    const thrown = L7.bThrown as Record<string, any>
+    expect(String(thrown?.['code'] ?? '')).toBe(String(TEAM_RUNTIME_ERROR_CODES.WORK_DELIVERY_FAILED))
+    expect(L7.bFollowupsAfter - L7.bFollowupsBefore, 'zero input on the uncovered-scope passage').toBe(0)
+    expect(L7.slotBAfterRecovery?.status, 'the remount failed again (the block is the per-scope identity, not a remount success)').toBe('failed')
   })
 })
