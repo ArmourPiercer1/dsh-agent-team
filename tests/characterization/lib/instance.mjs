@@ -22,6 +22,25 @@ import { logTail, portInUse, waitForLogLine, waitForPortFree } from './util.mjs'
 
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
 
+/**
+ * The LOG rendering of a boot URL: ONLY the launch-token value is replaced
+ * (with the token-shaped placeholder `REDACTED`). Scheme, origin, port, path,
+ * the `?token=` key and any remaining query params are preserved byte for
+ * byte, so a redacted line keeps the exact shape the readiness readers match
+ * (`BOOT_MARKER` above, and the kits' `^http://127\.0\.0\.1:(\d+)\/\?token=…`
+ * boot-line parsers). A URL without a token query comes back unchanged.
+ *
+ * LOGGING ONLY — never request code. The value `DshInstance.start()` returns
+ * is the real launch URL and is what authentication uses; this helper must
+ * not be applied to anything that talks to the host.
+ *
+ * @param {string} url - a boot URL as printed by the host (`…/?token=…`)
+ * @returns {string} the same URL with the token value redacted
+ */
+export function redactLaunchToken(url) {
+  return String(url).replace(/([?&]token=)[^&#\s]*/g, '$1REDACTED')
+}
+
 /** One booted (or about-to-boot) DSH instance under harness control. */
 export class DshInstance {
   /**
@@ -209,7 +228,9 @@ export async function ensureProfile({ instance, log, timeoutMs = 90_000 }) {
   if (instance.profileInitialized()) return { initialized: true, created: false }
   log('profile not initialized yet — running a throwaway boot to let the host create it')
   const { url } = await instance.start({ timeoutMs })
-  log(`throwaway boot OK: ${url}`)
+  // The launch token is a credential: the LOGGED rendering is redacted (shape
+  // preserved — see redactLaunchToken); `url` itself stays verbatim above.
+  log(`throwaway boot OK: ${redactLaunchToken(url)}`)
   const { portFree } = await instance.stop()
   if (!portFree) throw new Error('port did not free after throwaway boot')
   if (!instance.profileInitialized()) throw new Error('host did not initialize the web profile')

@@ -27,6 +27,17 @@
  *
  *   node browser-smoke-host.mjs --worktree <wt> [--testuse <testuse>]
  *
+ * SEED IDENTITY (defaults = the literals this kit was proven against, so an
+ * unflagged run is unchanged; a flag only changes where the seed world and
+ * its main-team id come FROM, never a durable fact or a check):
+ *
+ *   [--seed-world <world>]  seed DSH_HOME — a name under <main>/tests/homes
+ *                           or an absolute path INSIDE it (realpath-checked;
+ *                           '..', symlink escapes, empty/ambiguous values and
+ *                           separator-carrying world names are fatal)
+ *   [--t1 <rootSessionId>]  the seed world's main team, matching
+ *                           ^session-mpr-t1-[A-Za-z0-9T:-]+$
+ *
  * writes smoke-host.json (origin / tokenUrl / world / facts — the
  * launch token is scrubbed BEFORE any retained copy) and prints
  *   READY <tokenUrl>
@@ -41,11 +52,11 @@
 import { spawn, spawnSync } from 'node:child_process'
 import {
   closeSync, existsSync, mkdirSync, openSync, readFileSync,
-  readdirSync, rmSync, statSync, writeFileSync,
+  readdirSync, realpathSync, rmSync, statSync, writeFileSync,
 } from 'node:fs'
 import net from 'node:net'
 import { createHash } from 'node:crypto'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, isAbsolute, join, resolve, sep } from 'node:path'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
 
 const args = process.argv.slice(2)
@@ -66,7 +77,47 @@ if (!existsSync(TESTUSE) && existsSync(join(WORKTREE, '..', '..', 'tests', 'deep
 const MAIN = resolve(WORKTREE, '..', '..')
 const HOST_BASELINE_SHA = '46a7f68b0922371ce7144b668b90e377d8e799f4' // DSH 0.1.7-rc.1 release point
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
-const SRC_WORLD = join(MAIN, 'tests', 'homes', 'mpr-2026-09-27T08-35-52')
+
+// ── seed-identity overrides ────────────────────────────────────────────────
+// Both defaults are the literals this kit was proven against, so an unflagged
+// run behaves EXACTLY as before: the flags only change where the seed world
+// and its main-team id come FROM. Nothing downstream re-derives a fact or a
+// check from the CLI — the durable facts below stay as recorded.
+const HOMES_ROOT = join(MAIN, 'tests', 'homes')
+function flagValue(flag) {
+  const i = args.indexOf(flag)
+  if (i === -1) return undefined
+  const v = args[i + 1]
+  if (v === undefined || v.startsWith('--')) dieFatal(`${flag} requires a value`)
+  return v
+}
+/** A seed world: a name under HOMES_ROOT or an absolute path INSIDE it. The
+ *  REAL path must stay inside HOMES_ROOT — '..', symlink escapes, empty or
+ *  ambiguous values and separator-carrying world names are fatal. */
+function insideHomes(flag, raw) {
+  if (typeof raw !== 'string' || raw.trim().length === 0) dieFatal(`${flag}: empty value`)
+  if (/\s/.test(raw) || raw.startsWith('-') || raw.includes('\\')) dieFatal(`${flag}: ambiguous value ${JSON.stringify(raw)}`)
+  if (raw === '.' || raw.split('/').includes('..')) dieFatal(`${flag}: path escape ${JSON.stringify(raw)}`)
+  if (!isAbsolute(raw) && raw.includes('/')) dieFatal(`${flag}: a world name must not contain separators: ${JSON.stringify(raw)}`)
+  const candidate = isAbsolute(raw) ? resolve(raw) : resolve(HOMES_ROOT, raw)
+  let real = null
+  let root = null
+  try { real = realpathSync(candidate) } catch { dieFatal(`${flag}: does not resolve: ${candidate}`) }
+  try { root = realpathSync(HOMES_ROOT) } catch { dieFatal(`homes root missing: ${HOMES_ROOT}`) }
+  if (real !== root && !real.startsWith(root + sep)) dieFatal(`${flag}: resolves outside the homes root ${root}: ${real}`)
+  if (!statSync(real).isDirectory()) dieFatal(`${flag}: not a directory: ${real}`)
+  return candidate
+}
+function matchingToken(flag, raw, pattern) {
+  if (typeof raw !== 'string' || raw.trim().length === 0) dieFatal(`${flag}: empty value`)
+  if (!pattern.test(raw)) dieFatal(`${flag}: ${JSON.stringify(raw)} does not match ${pattern}`)
+  return raw
+}
+function seedInput(flag, dflt, check) {
+  const raw = flagValue(flag)
+  return raw === undefined ? dflt : check(flag, raw)
+}
+const SRC_WORLD = seedInput('--seed-world', join(MAIN, 'tests', 'homes', 'mpr-2026-09-27T08-35-52'), insideHomes)
 const HOST_PORT_MIN = 3181
 const HOST_PORT_MAX = 3186
 const MOCK_PORTS = [3496, 3497]
@@ -78,7 +129,7 @@ const EVIDENCE_DIR = join(WORKTREE, 'dev', 'agent-workflow', 'evidence', 'team-v
 const INSTANCE_LOG = join(EVIDENCE_DIR, 'instance.log')
 
 // The seeded world's fixed durable facts (same as the spill kit).
-const T1 = 'session-mpr-t1-mpr-2026-09-27T08-35-52'
+const T1 = seedInput('--t1', 'session-mpr-t1-mpr-2026-09-27T08-35-52', (flag, raw) => matchingToken(flag, raw, /^session-mpr-t1-[A-Za-z0-9T:-]+$/))
 const T1_MEMBER_SESSION = 'session-team-child-796562d4284593654607730948ad2b04'
 const T1_MEMBER_INSTANCE = 'inst-17legoh0ti27'
 

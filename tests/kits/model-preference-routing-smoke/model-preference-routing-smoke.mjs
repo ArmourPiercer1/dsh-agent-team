@@ -1522,7 +1522,7 @@ async function main() {
   log(`world home RETAINED (per TEST_METHODS §7): ${HOME}`)
 
   const pass = Object.values(criteria).every((c) => c.pass === true)
-  writeSummary({ fatal: null, exitCode: pass ? 0 : 2, retainedHome: HOME, wDeleg: created?.wDeleg, wCreate: created?.wCreate, expertId: created?.expertId })
+  writeSummary({ fatal: null, exitCode: pass ? 0 : 2, retainedHome: HOME, rootT1: ROOT_T1, wDeleg: created?.wDeleg, wCreate: created?.wCreate, expertId: created?.expertId })
   const table = Object.entries(criteria).map(([id, c]) => ({
     id,
     pass: c.pass === true,

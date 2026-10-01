@@ -50,6 +50,22 @@
  *   - The ephemeral world is DELETED at G9 (with a stable-instance re-probe
  *     + port-release check). Nothing is committed or pushed.
  *
+ * USAGE (fixture identity is CLI-overridable; every default is the literal
+ * this kit was proven against, so an unflagged run behaves EXACTLY as before
+ * — only the ORIGIN of those constants changes, never an assertion):
+ *   node pr-b-effective-policy-smoke.mjs
+ *     [--seed-world <world>]            seed DSH_HOME: a name under
+ *                                       <main>/tests/homes or an absolute path
+ *                                       INSIDE it (default: the retained mpr
+ *                                       world mpr-2026-09-27T08-35-52)
+ *     [--seed-blueprint-dir <dir>]      the profile blueprintDir literal to
+ *                                       retarget — a dir INSIDE tests/homes
+ *     [--t1 <rootSessionId>]            the seed world's main team, matching
+ *                                       ^session-mpr-t1-[A-Za-z0-9T:-]+$
+ *     [--worker-instance <inst-id>]     the seed's settled worker (C1/C6),
+ *                                       matching ^inst-[a-z0-9]+$
+ *   An invalid/escaping value is a hard fatal before anything runs (exit 1).
+ *
  * Exit codes: 0 = all six criteria pass; 2 = one or more criteria failed
  * (raw wire evidence preserved in the run dir); 1 = fatal (the host never
  * became usable / the harness itself broke). A criterion that cannot be
@@ -58,10 +74,10 @@
  */
 
 import {
-  cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync,
+  cpSync, existsSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync,
 } from 'node:fs'
 import { execSync } from 'node:child_process'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, isAbsolute, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DshInstance } from '../../../tests/characterization/lib/instance.mjs'
 import {
@@ -75,7 +91,64 @@ const KIT_DIR = dirname(fileURLToPath(import.meta.url))
 const WORKTREE = resolve(KIT_DIR, '..', '..', '..')
 const MAIN = resolve(WORKTREE, '..', '..')
 const TESTUSE = join(MAIN, 'tests', 'deepseek-harness-test-use')
-const SEED_WORLD = join(MAIN, 'tests', 'homes', 'mpr-2026-09-27T08-35-52')
+
+// ── CLI: fixture-identity overrides ────────────────────────────────────────
+// Every flag DEFAULTS to the literal this kit was proven against, so an
+// unflagged run is identical to before; a flag only changes where the
+// constant comes FROM (its origin). No assertion, shape guard, criterion or
+// tally reads the CLI — they keep consuming the same constants.
+//   --seed-world <world>        the seed DSH_HOME: a name under <MAIN>/tests/homes
+//                               or an absolute path INSIDE it (realpath-checked)
+//   --seed-blueprint-dir <dir>  the blueprintDir literal the copied profile is
+//                               retargeted from — a directory INSIDE <MAIN>/tests/homes
+//   --t1 <rootSessionId>        the seed world's main team (default pattern
+//                               `session-mpr-t1-<world stamp>`)
+//   --worker-instance <id>      the seed world's settled worker (C1/C6),
+//                               `inst-<lowercase alnum>`
+function usageFatal(msg) {
+  process.stderr.write(`FATAL (invalid kit argument): ${msg}\n`)
+  process.stderr.write('usage: node pr-b-effective-policy-smoke.mjs [--seed-world <world-under-tests/homes>] [--seed-blueprint-dir <dir-under-tests/homes>] [--t1 session-mpr-t1-<stamp>] [--worker-instance inst-<id>]\n')
+  process.exit(1)
+}
+function parseArgs(argv) {
+  const out = { _: [] }
+  for (let i = 0; i < argv.length; i += 1) {
+    const a = argv[i]
+    if (a === '--seed-world') out.seedWorld = argv[++i]
+    else if (a === '--seed-blueprint-dir') out.seedBlueprintDir = argv[++i]
+    else if (a === '--t1') out.t1 = argv[++i]
+    else if (a === '--worker-instance') out.workerInstance = argv[++i]
+    else out._.push(a)
+  }
+  return out
+}
+const HOMES_ROOT = join(MAIN, 'tests', 'homes')
+/** Resolve a seed path (world name under HOMES_ROOT, or absolute path) and
+ *  require that its REAL path stays inside HOMES_ROOT — '..', symlink escapes,
+ *  empty/ambiguous values and separator-carrying world names are all fatal. */
+function insideHomes(flag, raw) {
+  if (typeof raw !== 'string' || raw.trim().length === 0) usageFatal(`${flag}: empty value`)
+  if (/\s/.test(raw) || raw.startsWith('-') || raw.includes('\\')) usageFatal(`${flag}: ambiguous value ${JSON.stringify(raw)}`)
+  if (raw === '.' || raw.split('/').includes('..')) usageFatal(`${flag}: path escape ${JSON.stringify(raw)}`)
+  if (!isAbsolute(raw) && raw.includes('/')) usageFatal(`${flag}: a world name must not contain separators: ${JSON.stringify(raw)}`)
+  const candidate = isAbsolute(raw) ? resolve(raw) : resolve(HOMES_ROOT, raw)
+  let real = null
+  let root = null
+  try { real = realpathSync(candidate) } catch { usageFatal(`${flag}: does not resolve: ${candidate}`) }
+  try { root = realpathSync(HOMES_ROOT) } catch { usageFatal(`homes root missing: ${HOMES_ROOT}`) }
+  if (real !== root && !real.startsWith(root + sep)) usageFatal(`${flag}: resolves outside the homes root ${root}: ${real}`)
+  if (!statSync(real).isDirectory()) usageFatal(`${flag}: not a directory: ${real}`)
+  return candidate
+}
+function matchingToken(flag, raw, pattern) {
+  if (typeof raw !== 'string' || raw.trim().length === 0) usageFatal(`${flag}: empty value`)
+  if (!pattern.test(raw)) usageFatal(`${flag}: ${JSON.stringify(raw)} does not match ${pattern}`)
+  return raw
+}
+const CLI = parseArgs(process.argv.slice(2))
+const SEED_WORLD = CLI.seedWorld === undefined
+  ? join(MAIN, 'tests', 'homes', 'mpr-2026-09-27T08-35-52')
+  : insideHomes('--seed-world', CLI.seedWorld)
 
 const STAMP = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
 const WORLD = `prb-ep-${STAMP}`
@@ -90,11 +163,17 @@ const LOG_DIR = join(RUN_DIR, 'logs')
 // THIS worktree's dist (the row `name`, glueUrl, seamUrl, p6t6 `name`).
 const STALE_WT_SEG = 'async-default-contract'
 const THIS_WT_SEG = 'pre-alpha3-prb-effective-policy'
-const SEED_BLUEPRINT_DIR = '/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-27T08-35-52/blueprints'
+const SEED_BLUEPRINT_DIR = CLI.seedBlueprintDir === undefined
+  ? '/home/user/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-09-27T08-35-52/blueprints'
+  : insideHomes('--seed-blueprint-dir', CLI.seedBlueprintDir)
 
 // The T1 team (the seed world's main team) + its SETTLED members.
-const T1 = 'session-mpr-t1-mpr-2026-09-27T08-35-52'
-const W_CREATE = 'inst-1p8kqfl09bhr' // worker (template modelPreference role-worker) — C1/C6
+const T1 = CLI.t1 === undefined
+  ? 'session-mpr-t1-mpr-2026-09-27T08-35-52'
+  : matchingToken('--t1', CLI.t1, /^session-mpr-t1-[A-Za-z0-9T:-]+$/)
+const W_CREATE = CLI.workerInstance === undefined
+  ? 'inst-1p8kqfl09bhr' // worker (template modelPreference role-worker) — C1/C6
+  : matchingToken('--worker-instance', CLI.workerInstance, /^inst-[a-z0-9]+$/)
 const EXPERT = 'inst-04eix3v0rhrj'   // expert (no capabilities → no initial MCP grant) — C2
 const CONTROL = 'inst-0f6c37a0hpcj'  // control (NO modelPreference → baseline global-default) — C4
 
