@@ -47,12 +47,24 @@
  * relation=team-member for THIS instance under THIS root; a bare non-405, a
  * 404, or another member's state is NOT readiness.
  *
- * writes smoke-host.json (origin / tokenUrl / world / facts — the
- * launch token is scrubbed BEFORE any retained copy) and prints
- *   READY <tokenUrl>
+ * writes smoke-host.json (origin / world / derived member / facts) and prints
+ *   READY access-record=<world>/browser-access.json origin=<origin> tokenUrl=<scrubbed>
  * when the route is ready; stays alive until SIGTERM/SIGINT, then
  * tears down (host + mock) and writes teardown.json (stable probes
  * pre==post, ports released, test-use porcelain still empty).
+ *
+ * *** CONTRACT CHANGE (PR #53 review): the raw launch URL is NO LONGER printed
+ * to the console and NEVER enters evidence. A browser lane reads it from the
+ * private access record inside the testhome (0600, gitignored), NOT from the
+ * READY line. Credentials leave this process only through that record.
+ *
+ * CREDENTIAL HYGIENE: a v6 team.getReadState answer carries the team's live
+ * token (s6-remote.ts gives every team relation its liveToken cell), so BOTH
+ * outbound channels are sanitized — scrub() masks `?token=` URL values AND
+ * `liveToken`/`lt-v1-…` values in JSON text, and the persisted readyReadState is
+ * a redactLiveTokenFields() copy. Assertions always run on the ORIGINAL response
+ * object; redaction happens only on the way out. Deterministic check:
+ * live-token-redaction-check.mjs (no host, no network, synthetic fixture).
  *
  * PORTS: host = first free of 3181..3186; mock = 3496 (fallback 3497).
  * :3080/:3180 are NEVER bound — read-only probes pre and post.
@@ -67,6 +79,7 @@ import net from 'node:net'
 import { createHash } from 'node:crypto'
 import { dirname, isAbsolute, join, resolve, sep } from 'node:path'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
+import { redactLiveTokenFields, redactLiveTokenText } from './live-token-redact.mjs'
 
 const args = process.argv.slice(2)
 function argValue(name, dflt) {
@@ -236,7 +249,13 @@ async function probe(url, timeoutMs = 5_000) {
   } catch { return null }
 }
 function scrub(text) {
-  return String(text).replace(/token=[A-Za-z0-9_-]+/g, 'token=SCRUBBED')
+  // Two credential channels, both must be closed on the way OUT (this is a
+  // sanitize-for-log helper; the wire and the assertions never see it):
+  //  - `?token=<launch token>` URL parameters (the original case);
+  //  - `liveToken` / `lt-v1-…` values sitting in JSON fields or free text — a
+  //    v6 team.getReadState answer carries the team's live token, so a
+  //    token=URL-only scrub leaves it intact (external review block on PR #53).
+  return redactLiveTokenText(String(text).replace(/token=[A-Za-z0-9_-]+/g, 'token=SCRUBBED'))
 }
 
 /** The launch token -> the session cookie the browser would hold (303 +
@@ -503,7 +522,11 @@ async function main() {
     if (readState === null) {
       dieFatal(`the /team-remote route never became READY for member ${MEMBER.memberInstance} of ${T1} (never an affirmative team-member read state; last status=${lastStatus}, last answer=${scrub(JSON.stringify(lastBody ?? null)).slice(0, 300)})`)
     }
-    log(`route ready (${Date.now() - tRoute}ms after boot marker; readState=${JSON.stringify(readState).slice(0, 220)})`)
+    log(`route ready (${Date.now() - tRoute}ms after boot marker; readState=${scrub(JSON.stringify(readState)).slice(0, 220)})`)
+    // The assertions above ran against the ORIGINAL response object. Only the
+    // retained copy is redacted — a field-aware deep copy, so the record still
+    // shows WHICH member was verified and on what generation (see
+    // live-token-redact.mjs; deterministic check: live-token-redaction-check.mjs).
     READY_READ_STATE = readState
   } catch (e) {
     stopHost(h)
@@ -538,10 +561,27 @@ async function main() {
       corroboratedMembers: MEMBER.corroboratedMembers,
       seedAndCopyAgree: true,
     },
-    readyReadState: READY_READ_STATE,
+    // Persisted copy only: liveToken is masked here, the in-memory object the
+    // assertions judged is untouched (its raw form is never written anywhere).
+    readyReadState: redactLiveTokenFields(READY_READ_STATE),
     stablePre,
   }, null, 2))
-  log(`READY ${tokenUrl}`)
+
+  // The operational launch URL never enters logs or sanitized evidence. It goes
+  // to ONE private access record inside the testhome (gitignored, 0600), which
+  // is where a real browser lane reads it from; the console and smoke-host.json
+  // carry only the scrubbed form plus the pointer (external review on PR #53).
+  const accessRecord = join(WORLD, 'browser-access.json')
+  writeFileSync(accessRecord, JSON.stringify({
+    note: 'PRIVATE operational record — raw launch URL. Not evidence: never commit, never paste into a log or a report. Valid only while this host is alive.',
+    runStamp: RUN_STAMP,
+    world: WORLD,
+    origin,
+    launchUrl: tokenUrl,
+    memberSession: MEMBER.memberSession,
+    memberInstance: MEMBER.memberInstance,
+  }, null, 2), { mode: 0o600 })
+  log(`READY access-record=${accessRecord} origin=${origin} tokenUrl=${scrub(tokenUrl)}`)
 
   // ── stay alive until the agent tears us down ──────────────────────────────
   let stopping = false
