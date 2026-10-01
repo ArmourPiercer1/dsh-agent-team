@@ -1,0 +1,74 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+ ❯ test/a3p4-pr4-decision-routing-regression.test.ts (13 tests | 4 failed) 2168ms
+     × exact: the member install creates the durable approval row (leader-approval), waits, and a human allow executes 549ms
+     × subtree: an overlay ASK subtree rule over the static default deny reaches approval (containment judged per decision) 529ms
+     × exec: an overlay ASK on the EXACT canonical fingerprint of THIS command reaches approval on the member install (leader-approval) 528ms
+     × exec (merged ask): the adapter routes a seam-answered EXEC ASK to approval — one durable row, never an outright deny 524ms
+     ✓ POSITIVE: no overlay + template DEFAULT deny + valid spill grant ⇒ the read EXECUTES through the floor 6ms
+     ✓ NEGATIVE: an EXPLICIT overlay RULE deny + a valid grant still blocks (a grant is a floor, never a ceiling override) 4ms
+     ✓ NON-REGRESSION: an overlay ASK + valid grant authorizes the read WITHOUT any control row 5ms
+     ✓ a blueprint-lane exec answer reports winningLayer "blueprint" (never a hard-coded "template"), a template answer "template", the overlay "overlay", the default fallback null 5ms
+     ✓ the seam input.staticRules carries the canonicalized allow rule (same identity), never a fabricated empty declared-none 4ms
+     ✓ source pin: the removed `canonicalRules ?? { allow: [], ask: [], deny: [] }` fallback does not survive into the routing 1ms
+     ✓ lifecycle class: an ARCHIVED instance is hard-denied with the code preserved, although the static lane ALLOWS 4ms
+     ✓ authority-read class: a static ALLOW + a seam refusal (undecodable overlay) denies with the code and the loud observation row — no static fallback 3ms
+     ✓ context/fact class: a seam STATIC_FACTS_UNKNOWN refusal hard-denies the static allow (UNKNOWN never degrades to the static answer) 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p4-pr4-decision-routing-regression.test.ts > R2 — an overlay ASK over a static deny enters APPROVAL through the real adapter (BLOCK-2) > exact: the member install creates the durable approval row (leader-approval), waits, and a human allow executes
+AssertionError: the ask-over-static-deny must create a durable control row: expected 0 to be greater than 0
+ ❯ test/a3p4-pr4-decision-routing-regression.test.ts:449:93
+    447|         await new Promise((done) => setTimeout(done, 10))
+    448|       }
+    449|       expect(requests.length, 'the ask-over-static-deny must create a …
+       |                                                                                             ^
+    450|       expect(requests[0]?.kind).toBe('leader-approval')
+    451|       expect(requests[0]?.status).toBe('pending')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/a3p4-pr4-decision-routing-regression.test.ts > R2 — an overlay ASK over a static deny enters APPROVAL through the real adapter (BLOCK-2) > subtree: an overlay ASK subtree rule over the static default deny reaches approval (containment judged per decision)
+AssertionError: the subtree ask must create a durable control row: expected 0 to be greater than 0
+ ❯ test/a3p4-pr4-decision-routing-regression.test.ts:493:80
+    491|         await new Promise((done) => setTimeout(done, 10))
+    492|       }
+    493|       expect(rows.length, 'the subtree ask must create a durable contr…
+       |                                                                                ^
+    494|       controller.abort()
+    495|       const result = await pending
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/a3p4-pr4-decision-routing-regression.test.ts > R2 — an overlay ASK over a static deny enters APPROVAL through the real adapter (BLOCK-2) > exec: an overlay ASK on the EXACT canonical fingerprint of THIS command reaches approval on the member install (leader-approval)
+AssertionError: the exec overlay ASK over the static deny must create a durable approval row: expected 0 to be greater than 0
+ ❯ test/a3p4-pr4-decision-routing-regression.test.ts:531:107
+    529|         await new Promise((done) => setTimeout(done, 10))
+    530|       }
+    531|       expect(rows.length, 'the exec overlay ASK over the static deny m…
+       |                                                                                                           ^
+    532|       expect(rows[0]?.kind).toBe('leader-approval')
+    533|       expect(rows[0]?.toolName).toBe('bash')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/a3p4-pr4-decision-routing-regression.test.ts > R2 — an overlay ASK over a static deny enters APPROVAL through the real adapter (BLOCK-2) > exec (merged ask): the adapter routes a seam-answered EXEC ASK to approval — one durable row, never an outright deny
+AssertionError: a merged exec ASK must create a durable approval row: expected 0 to be greater than 0
+ ❯ test/a3p4-pr4-decision-routing-regression.test.ts:567:83
+    565|         await new Promise((done) => setTimeout(done, 10))
+    566|       }
+    567|       expect(rows.length, 'a merged exec ASK must create a durable app…
+       |                                                                                   ^
+    568|       expect(rows[0]?.kind).toBe('leader-approval')
+    569|       expect(rows[0]?.toolName).toBe('bash')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 9 passed (13)
+   Start at  22:58:49
+   Duration  3.29s (transform 821ms, setup 0ms, import 1.04s, tests 2.17s, environment 0ms)
+

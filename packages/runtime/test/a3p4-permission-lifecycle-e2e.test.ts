@@ -75,6 +75,10 @@ import type { PolicyStateTransitionRecord } from '../mutation/types.js'
 import { createPermissionOverlayRepositoryPort } from '../permission-governance/index.js'
 import type { PermissionOverlayRepositoryPort } from '../permission-governance/index.js'
 import { createPermissionLifecycleMutationLane, createPermissionDecisionLane } from '../permission-lifecycle/index.js'
+// The production assembly helper: the faulting-containment leg below drives
+// the SAME mapping the host entry installs (a containment FAULT is the
+// kernel's typed UNKNOWN coverage, never a `false` verdict).
+import { createPermissionGovernanceLane } from '../src/plugin/permission-plane.js'
 import {
   PERMISSION_LIFECYCLE_ERROR_CODES,
   PermissionLifecycleError,
@@ -220,7 +224,12 @@ interface LaneWorld {
  *   MUST supply it); omit it to pin the merged PR3 typed refusal instead.
  */
 async function openLaneWorld(
-  options: { predicate?: boolean; envelope?: PermissionMutationEnvelope } = {},
+  options: {
+    /** `true`/omitted = the working predicate; `false` = ABSENT; `'throws'` =
+     *  the PRODUCTION wrapper over a predicate that FAULTS. */
+    predicate?: boolean | 'throws'
+    envelope?: PermissionMutationEnvelope
+  } = {},
 ): Promise<LaneWorld> {
   const lifecycle = await createLifecycleWorld(
     `a3p4-${Math.random().toString(36).slice(2, 8)}`,
@@ -261,9 +270,20 @@ async function openLaneWorld(
       ...(options.envelope === undefined
         ? {}
         : { permissionEnvelope: () => options.envelope as PermissionMutationEnvelope }),
-      ...(options.predicate === false
-        ? {}
-        : { subtreeContains: (root: string, child: string) => keyContains(root, child) }),
+      ...(options.predicate === 'throws'
+        ? createPermissionGovernanceLane({
+            overlay,
+            staticLayers: () => ({ layers: [] }),
+            // The provider is OFFLINE: the production wrapper must surface
+            // this as the kernel's typed UNKNOWN coverage, never as a
+            // negative verdict.
+            fsContainsKeys: () => {
+              throw new Error('the fs provider is offline (injected fault)')
+            },
+          })
+        : options.predicate === false
+          ? {}
+          : { subtreeContains: (root: string, child: string) => keyContains(root, child) }),
     },
   }
   const governance = createGovernanceMutationService(deps)
@@ -540,6 +560,40 @@ describe('PR4 leg C — the subtree grant rides the injected containment predica
         staticFacts: STATIC_NONE,
       })
       expect(decision.kind === 'effective' && decision.effect).toBe('allow')
+    } finally {
+      await world.close()
+    }
+  })
+
+  it('a FAULTING containment predicate is UNKNOWN coverage, not a negative verdict: typed refusal, zero write', async () => {
+    // The containment authority can be present and still FAIL (the fs service
+    // is gone mid-round). Reading that as "not contained" would silently
+    // relabel a covered region as uncovered and let a Leader subtree grant
+    // through on a fault, so the production wrapper in
+    // `src/plugin/permission-plane.ts` maps the fault to the kernel's OWN
+    // typed `PERMISSION_EFFECT_CONTEXT_UNAVAILABLE`. This leg drives THAT
+    // wrapper (not a hand-rolled stand-in), pinning the mapping the host
+    // entry actually installs.
+    const envelope: PermissionMutationEnvelope = {
+      rules: [{ operationClass: 'write', matcher: subtree(ROOT_DIR), maximumEffect: 'allow' }],
+    }
+    const world = await openLaneWorld({ predicate: 'throws', envelope })
+    try {
+      const error = await world.lane
+        .grantInstance(
+          mutationArgs(
+            world,
+            [{ operationClass: 'write', matcher: exact(KEY_A), effect: 'allow' }],
+            { authority: LEADER, mutationId: 'mut-faulting-containment' },
+          ),
+        )
+        .then(() => undefined)
+        .catch((caught: unknown) => caught)
+      expect((error as { code?: string }).code).toBe(
+        PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+      )
+      // Zero write: a round whose coverage cannot be judged appends nothing.
+      expect(await world.history(world.instanceA)).toEqual([])
     } finally {
       await world.close()
     }

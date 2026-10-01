@@ -320,7 +320,7 @@ function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances)
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params) {
-    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, permissionOverlay, fsContainsKeys, permissionPlaneRef, } = params;
+    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, permissionOverlay, fsContainsKeys, permissionPlaneRef, permissionEnvelope, permissionStaticLayers, } = params;
     const repos = domain.repositories;
     const rootSid = config.rootSessionId;
     // --- A02 handle / write ports ------------------------------------------------------
@@ -1789,6 +1789,11 @@ export function createTeamProductionRoot(params) {
         : createPermissionGovernanceLane({
             overlay: permissionOverlay,
             ...(fsContainsKeys === undefined ? {} : { fsContainsKeys }),
+            // Round 3 (BLOCK-1): the two fact readers pass through VERBATIM —
+            // this factory neither synthesizes nor withholds them (absent =
+            // the kernel's distinct UNKNOWN / zero-envelope postures).
+            ...(permissionStaticLayers === undefined ? {} : { staticLayers: permissionStaticLayers }),
+            ...(permissionEnvelope === undefined ? {} : { permissionEnvelope }),
         });
     const mutation = {
         // R2-1: the durable-backed store is exposed on the root surface (an
@@ -1885,7 +1890,11 @@ export function createTeamProductionRoot(params) {
         : createTeamPermissionLanes({
             governance: mutation.governance,
             overlay: permissionOverlay,
-            members: createMemberLifecycleReader(repos.memberInstances),
+            // Round 3 (BLOCK-4): the reader is LEADER-AWARE over the durable
+            // TeamSession row (the control service's authority semantics — the
+            // v2 Leader has NO member row in a real boot); member reads are
+            // byte-identical to the pre-PR4 member-rows-only reader.
+            members: createMemberLifecycleReader(repos.memberInstances, repos.teamSessions),
             lifecycle: {
                 restore: (target) => lifecycleService.restoreMember({
                     rootSessionId: target.rootSessionId,
@@ -2564,6 +2573,9 @@ export function createTeamProductionRoot(params) {
         runtime,
         lifecycle: { service: lifecycleService, commit: lifecycleCommit },
         mutation,
+        // pre-alpha3 PR4 — the assembled permission plane (undefined when the
+        // overlay port was not injected; see TeamProductionRoot.permissionPlane).
+        permissionPlane,
         messaging,
         control,
         activity,

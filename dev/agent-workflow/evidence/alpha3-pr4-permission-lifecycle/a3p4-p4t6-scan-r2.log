@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/testkit
+
+··········
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  22:23:28
+   Duration  325ms (transform 44ms, setup 0ms, import 231ms, tests 4ms, environment 0ms)
+

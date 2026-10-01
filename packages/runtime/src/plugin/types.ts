@@ -425,6 +425,19 @@ export const TEAM_PLUGIN_ERROR_CODES = {
    */
   TEAM_PLUGIN_WORKSPACE_ATTACH_FAILED: 'TEAM_PLUGIN_WORKSPACE_ATTACH_FAILED',
   /**
+   * pre-alpha3 PR4 (round 3, BLOCK-5) — the DURABLE permission authority of
+   * this row's TeamDomain could not be brought up: the overlay store does
+   * not answer its first read-only probe at boot. The production entry
+   * treats the durable permission authority as MANDATORY: a row whose
+   * bound templates declare `capabilities.permissions` must never boot into
+   * a warn-only, mutation-refusing-but-execution-running half-state (the
+   * fail-open this code closes). The bootstrap FAILS typed; the loud
+   * pre-flight names every permissions-bearing template. (The authority
+   * itself is always-on for every row — this is a startup FAILURE code, not
+   * a configuration flag.)
+   */
+  TEAM_PLUGIN_PERMISSION_AUTHORITY_UNAVAILABLE: 'TEAM_PLUGIN_PERMISSION_AUTHORITY_UNAVAILABLE',
+  /**
    * BP3 (issue #2 blueprint-loading) — the configured `blueprintDir`
    * exists but the directory scan failed with an I/O error other than
    * ENOENT (EACCES/ENOTDIR/...): the saved-source catalog is fail-closed
@@ -694,6 +707,14 @@ export interface TeamProductionRoot {
   readonly catalog: BlueprintCatalog
   /** The bound Team Blueprint (parsed from `config.blueprintSource`). */
   readonly blueprint: TeamBlueprint
+  /**
+   * pre-alpha3 PR4 — the assembled permission plane (mutation write
+   * entries + decision read plane), `undefined` when this root was assembled
+   * WITHOUT the durable overlay port (test/legacy assemblers; the production
+   * host entry always provides it — a store that cannot open FAILS the boot,
+   * `TEAM_PLUGIN_PERMISSION_AUTHORITY_UNAVAILABLE`).
+   */
+  readonly permissionPlane?: import('./permission-plane.js').TeamPermissionPlane
   /**
    * pre-alpha3 PR-B (plan §B.2) — the production PolicyReader (the bound-
    * snapshot static authority: the blueprint envelope / the durable

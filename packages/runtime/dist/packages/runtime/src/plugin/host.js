@@ -65,8 +65,9 @@ import { createOrOpenTeamDomainDetailed, createTeamDomain, openTeamDomain, } fro
 // handed to the production root as a port. The persistence-only face
 // (`append`/`latest`/`history`) is what crosses; nothing else reaches the
 // repository (PR1 ADR §1).
-import { openPermissionOverlayStore } from '../../../storage/repositories/permission-overlays.js';
 import { createPermissionOverlayRepositoryPort } from '../../permission-governance/index.js';
+import { createPermissionAuthorityFacts } from './permission-plane.js';
+import { parseBlueprint } from '../../../domain/blueprint/src/index.js';
 import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../../storage/schema/index.js';
 import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js';
 import { createBlueprintAuthority } from './blueprint-authority.js';
@@ -796,7 +797,6 @@ export async function apply(ctx, config) {
     // apply scope (like the artifact-authority reference above): `bootstrap()`
     // opens it, the row teardown closes it (the durable rows stay on the
     // medium; only this handle is released).
-    let permissionOverlayStore;
     // The row-scope BRIDGE the host provides under
     // TEAM_ARTIFACT_AUTHORITY_SERVICE (module docs for the visibility and
     // lifetime contract): the Team-aware spill provider row (the
@@ -1211,21 +1211,79 @@ export async function apply(ctx, config) {
             }
             return backend.contains({ targetKey: parentKey }, { targetKey: childKey }) === true;
         };
-        // pre-alpha3 PR4 — open the durable overlay store of THIS row's TeamDomain.
-        // A failure to open is NOT swallowed into a fake authority: the port stays
-        // absent, the governance service gets no permission lane, and every
-        // permission mutation refuses `PERMISSION_MUTATION_NOT_CONFIGURED` (fail
-        // closed, zero write) while the rest of the team keeps booting.
-        let permissionOverlay;
+        // pre-alpha3 PR4 (round 3, BLOCK-0 + BLOCK-5) — the durable permission
+        // authority is MANDATORY at the production entry. Its repository RIDES
+        // the ONE legal handle of this row's TeamDomain (`domain.repositories.
+        // permissionOverlays`): the upstream facility enforces
+        // single-open-per-domain-name, so the pre-fix shape (a SECOND
+        // `openPermissionOverlayStore(seam)` while the domain handle was live)
+        // ALWAYS failed with `already-open`, the catch downgraded it to a warn,
+        // and the row booted with no overlay port at all — mutations refusing
+        // while execution ran on static rules alone: the fail-open this closes.
+        // The boot now PROVES the authority answers: one read-only probe, and any
+        // fault is a typed startup failure — never a warn-only half-state. The
+        // handle's release stays the facade's single `close()` (no second close).
+        const permissionOverlay = createPermissionOverlayRepositoryPort({
+            repository: domain.repositories.permissionOverlays,
+        });
         try {
-            permissionOverlayStore = await openPermissionOverlayStore(seam);
-            permissionOverlay = createPermissionOverlayRepositoryPort({
-                repository: permissionOverlayStore.repository,
+            // The repository is LAZY (table access per call): without this eager
+            // probe the first touch of a broken store would be a runtime decision
+            // AFTER the world shipped. An absent snapshot is a fine answer; a
+            // faulting store is not.
+            await permissionOverlay.latest({
+                teamSessionId: rowConfig.rootSessionId,
+                memberInstanceId: LEADER_INSTANCE_ID,
             });
         }
         catch (error) {
-            console.warn(`[dsh-agent-team] the permission overlay store could not be opened (${error instanceof Error ? error.message : String(error)}) — the permission mutation lane stays unconfigured (fail closed)`);
+            throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_PERMISSION_AUTHORITY_UNAVAILABLE, `the durable permission authority of this row could not be read (${error instanceof Error ? error.message : String(error)}) — the production entry treats it as MANDATORY: booting past this would run every bound permission decision without the durable overlay while mutations refuse, which is exactly the fail-open this entry refuses to ship`);
         }
+        // pre-alpha3 PR4 (round 3, BLOCK-1) — the identity-bound authority facts
+        // (the Leader's §6 expansion ceiling + the per-member static layers),
+        // DERIVED from the same bound snapshot the root runs on. The documents
+        // build at the POST-BOOT async boundary below (the durable TeamSession
+        // must exist first, and the fs provider is consulted only for rules that
+        // actually exist — a world without `capabilities.permissions` performs
+        // ZERO fs calls here); the kernel consumes them SYNCHRONOUSLY afterwards
+        // and abstains on snapshot drift (UNKNOWN / zero envelope — never stale
+        // facts, never a second authority).
+        const factsBlueprint = parseBlueprint(resolvedRowConfig.blueprintSource);
+        const factsTemplates = [
+            factsBlueprint.leader,
+            ...factsBlueprint.members,
+        ].map((template) => ({
+            templateId: template.templateId,
+            ...(template.capabilities?.permissions !== undefined
+                ? { policy: template.capabilities.permissions }
+                : {}),
+        }));
+        const permissionFacts = createPermissionAuthorityFacts({
+            templateIds: factsTemplates.map((entry) => entry.templateId),
+            policyOf: (templateId) => factsTemplates.find((entry) => entry.templateId === templateId)?.policy,
+            leaderTemplateId: () => factsBlueprint.leader.templateId,
+            memberTemplateId: (teamSessionId, memberInstanceId) => domain.repositories.memberInstances
+                .get(teamSessionId, memberInstanceId)
+                ?.templateId,
+            canonicalize: async (path) => {
+                const resolved = (await fsBackend().resolve(path, {
+                    cwd: resolvedRowConfig.defaultWorkspace,
+                }));
+                const key = resolved?.targetKey;
+                if (typeof key !== 'string' || key.length === 0) {
+                    throw new Error(`permission authority facts: the fs provider returned no canonical key for ${JSON.stringify(path)}`);
+                }
+                return key;
+            },
+            identity: () => ({
+                blueprintId: String(factsBlueprint.blueprintId),
+                revision: String(factsBlueprint.revision),
+                contentHash: String(factsBlueprint.contentHash),
+            }),
+        });
+        const permissionsBearingTemplates = factsTemplates
+            .filter((entry) => entry.policy !== undefined)
+            .map((entry) => entry.templateId);
         const live = glue.createAgentBindings({
             agents,
             sessionPersistence,
@@ -1730,9 +1788,13 @@ export async function apply(ctx, config) {
             // pre-alpha3 PR4 (plan PR4 "production entry wiring"): the durable
             // overlay port + the runtime containment predicate + the plane reference
             // the root fills.
-            ...(permissionOverlay === undefined ? {} : { permissionOverlay }),
+            permissionOverlay,
             fsContainsKeys,
             permissionPlaneRef,
+            // pre-alpha3 PR4 (round 3, BLOCK-1): the identity-bound fact readers
+            // (the root forwards them VERBATIM into the pure governance lane).
+            permissionEnvelope: permissionFacts.permissionEnvelope,
+            permissionStaticLayers: permissionFacts.staticLayers,
             legacyInspect,
             // BP5 (issue #2 blueprint-loading, plan §9): the live catalog over the
             // saved sources + the frozen registry + this row's anchor (the legacy
@@ -1943,6 +2005,28 @@ export async function apply(ctx, config) {
         // route from it, never the world from it).
         try {
             await builtRoot.boot();
+            // pre-alpha3 PR4 (round 3, BLOCK-1): build the authority documents at
+            // this async boundary — AFTER the boot effect (the durable TeamSession
+            // row exists from here on; the only entry that could reach
+            // `mutatePermission` remotely is gated on `teamRuntimeReadiness`, which
+            // flips below) and BEFORE readiness (no consumer can observe a
+            // half-built facts state). A build failure ships NO facts: the readers
+            // abstain (Leader expansions refuse typed, zero envelope authority)
+            // behind the loud line — never half-canonicalized authority, never a
+            // silent UNKNOWN (the artifact-authority rebuild precedent: the
+            // permission vertical never comes up half-built quietly).
+            try {
+                await permissionFacts.refresh();
+            }
+            catch (error) {
+                console.error(`[dsh-agent-team] the permission authority facts could not be derived from the bound snapshot (${error instanceof Error ? error.message : String(error)}) — Leader permission EXPANSIONS refuse typed (EFFECT_CONTEXT_UNAVAILABLE) until the facts build succeeds; decisions and execution are unaffected`);
+            }
+            if (permissionsBearingTemplates.length > 0) {
+                console.info(`[dsh-agent-team] durable permission authority ACTIVE for row ${rowConfig.rootSessionId}: ` +
+                    `templates declaring capabilities.permissions = ${JSON.stringify(permissionsBearingTemplates)}, ` +
+                    `facts bound to blueprint ${String(factsBlueprint.blueprintId)}@${String(factsBlueprint.revision)} ` +
+                    `(expansion ceiling derived from the leader lane; facts healthy: ${String(permissionFacts.healthy())})`);
+            }
             teamRuntimeReadiness = 'ready';
         }
         catch (error) {
@@ -2104,7 +2188,6 @@ export async function apply(ctx, config) {
             // (the durable rows stay on the medium; the plane is stateless).
             // Never fails the row teardown.
             try {
-                void permissionOverlayStore?.close().catch(() => undefined);
             }
             catch {
                 // a throwing close is swallowed: the row teardown proceeds

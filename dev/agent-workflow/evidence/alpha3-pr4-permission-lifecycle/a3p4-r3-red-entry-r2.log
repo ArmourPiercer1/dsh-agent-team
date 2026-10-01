@@ -1,0 +1,134 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts (9 tests | 7 failed) 404ms
+     × the LEADER resolves LIVE for a decision over the real TeamSession (no member row exists for the leader — v2 design) 22ms
+     ✓ member semantics unchanged: a ghost instance still refuses INSTANCE_UNKNOWN 5ms
+     × a LEADER exact grant inside the injected envelope COMMITS at the assembled root and the plane answers the overlay allow (BLOCK-1) 7ms
+     × NEGATIVE: an envelope region WITHOUT coverage refuses typed EXPANSION_DENIED and writes nothing 5ms
+     ✓ UNKNOWN static facts refuse EFFECT_CONTEXT_UNAVAILABLE (never a guessed baseline) 4ms
+     × a booted permissions row lets the LEADER expansion commit through the DERIVED envelope and the plane answers allow (i-host) 154ms
+     × store-open failure at apply(): typed startup failure, never a warn-only boot (BLOCK-5, fail-open closed) 11ms
+     × NEGATIVE CONTROL: a healthy no-permissions world gains ZERO new startup failures and no permission warning 9ms
+     × a persisted overlay DENY beats the template ALLOW through the real glue pipeline 186ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E1 — the root-assembled lane consumes the fact readers and the leader liveness (BLOCK-1 + BLOCK-4) > the LEADER resolves LIVE for a decision over the real TeamSession (no member row exists for the leader — v2 design)
+AssertionError: leader decision refused: PERMISSION_LIFECYCLE_EXECUTION_STATE_UNKNOWN: expected 'refused' to be 'effective' // Object.is equality
+
+Expected: "effective"
+Received: "refused"
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:303:83
+    301|       // Today: refused EXECUTION_STATE_UNKNOWN (the reader reads memb…
+    302|       // blindly and v2 never seeds a leader row).
+    303|       expect(decision.kind, `leader decision refused: ${decision.code …
+       |                                                                                   ^
+    304|       expect(decision.effect).toBe('allow')
+    305|     } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E1 — the root-assembled lane consumes the fact readers and the leader liveness (BLOCK-1 + BLOCK-4) > a LEADER exact grant inside the injected envelope COMMITS at the assembled root and the plane answers the overlay allow (BLOCK-1)
+PermissionMutationError: the effective before/after of at least one affected region cannot be decided without the missing context (1 region(s)) — zero write (problem: effect-context-unavailable)
+ ❯ refuse governance/permission-mutation.ts:206:9
+    204|   details: Record<string, unknown> = {},
+    205| ): never {
+    206|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    207|     problem,
+    208|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeLeaderPermissionMutation governance/permission-mutation.ts:1197:5
+ ❯ governance/service.ts:646:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E1 — the root-assembled lane consumes the fact readers and the leader liveness (BLOCK-1 + BLOCK-4) > NEGATIVE: an envelope region WITHOUT coverage refuses typed EXPANSION_DENIED and writes nothing
+AssertionError: expected 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE' to include undefined
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:393:71
+    391|         .catch((caught: unknown) => caught)
+    392|       const code = (error as { code?: string })?.code
+    393|       expect(typeof code === 'string' ? code : JSON.stringify(error)).…
+       |                                                                       ^
+    394|         PERMISSION_MUTATION_ERROR_CODES.EXPANSION_DENIED,
+    395|       )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry derives the facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > a booted permissions row lets the LEADER expansion commit through the DERIVED envelope and the plane answers allow (i-host)
+PermissionMutationError: the permission-mutation lane is not configured on this governance service (PR3 ships the authority with zero production wiring)
+ ❯ Object.mutatePermission governance/service.ts:558:13
+    556|     const lane = deps.permissionLane
+    557|     if (lane === undefined) {
+    558|       throw new PermissionMutationError(
+       |             ^
+    559|         PERMISSION_MUTATION_ERROR_CODES.NOT_CONFIGURED,
+    560|         'the permission-mutation lane is not configured on this govern…
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:664:54
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry derives the facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > store-open failure at apply(): typed startup failure, never a warn-only boot (BLOCK-5, fail-open closed)
+AssertionError: the boot must NOT succeed when the durable permission authority cannot be read: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:744:104
+    742|       // Today (BLOCK-5): the boot RESOLVES (warn-only posture) — the …
+    743|       // agents then execute on static allow with the authority absent.
+    744|       expect(booted, 'the boot must NOT succeed when the durable permi…
+       |                                                                                                        ^
+    745|       const code = (rejection as { code?: string } | null)?.code
+    746|       expect(String(code)).toBe(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_PE…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry derives the facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > NEGATIVE CONTROL: a healthy no-permissions world gains ZERO new startup failures and no permission warning
+AssertionError: unexpected permission warnings: ["[dsh-agent-team] the permission overlay store could not be opened (storage seam failure during 'open' on store 'team_domain': already-open — domain 'team_domain' is already open) — the permission mutation lane stays unconfigured (fail closed)"]: expected [ Array(1) ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:760:101
+    758|       expect(root, 'the no-permissions world boots green').toBeTruthy()
+    759|       const permissionWarns = warnings.filter((row) => /permission/i.t…
+    760|       expect(permissionWarns, `unexpected permission warnings: ${JSON.…
+       |                                                                                                     ^
+    761|     } finally {
+    762|       await world.dispose()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK-5 decision side, t12a blind spot) > a persisted overlay DENY beats the template ALLOW through the real glue pipeline
+AssertionError: the glue executed despite the persisted overlay deny (decision: {"kind":"allow","nextCalls":1}): expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:1006:9
+    1004|         denied.nextCalls,
+    1005|         `the glue executed despite the persisted overlay deny (decisio…
+    1006|       ).toBe(0)
+       |         ^
+    1007|       expect(denied.kind).toBe('deny')
+    1008|       expect(String(denied.reason)).toContain('permission denied')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 2 passed (9)
+   Start at  22:49:54
+   Duration  1.68s (transform 1.07s, setup 0ms, import 1.19s, tests 404ms, environment 0ms)
+

@@ -1,0 +1,2 @@
+1a2
+>  FAIL  test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions

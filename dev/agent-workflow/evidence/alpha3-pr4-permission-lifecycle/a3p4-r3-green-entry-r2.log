@@ -1,0 +1,13 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry derives the facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > a booted permissions row lets the LEADER expansion commit through the DERIVED envelope and the plane answers allow (i-host)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: templates declaring capabilities.permissions = ["leader","worker"], facts bound to blueprint A3P4E2-BP@1 (expansion ceiling derived from the leader lane; facts healthy: true)
+
+ ✓ test/a3p4-pr4-production-entry-regression.test.ts (9 tests) 406ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  23:02:56
+   Duration  1.61s (transform 1.02s, setup 0ms, import 1.12s, tests 406ms, environment 0ms)
+

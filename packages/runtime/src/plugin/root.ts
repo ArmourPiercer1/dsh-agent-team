@@ -256,6 +256,7 @@ import type { ProjectionService } from '../../projection/index.js'
 import { createTeamTools } from '../../../tools/src/index.js'
 import type { TeamToolSet } from '../../../tools/src/index.js'
 import { createGovernanceMutationService } from '../../governance/index.js'
+import type { PermissionMutationEnvelope, PermissionStaticLayerFacts } from '../../governance/index.js'
 // pre-alpha3 PR4 (plan "PR4: Grant/Revoke/Lifecycle", production entry
 // wiring): the production PERMISSION PLANE assembly (the overlay port's
 // lane deps + the two lifecycle lanes). The root owns the wiring only —
@@ -768,6 +769,28 @@ export interface TeamProductionRootParams {
    * decision point; the root fills it, the entry calls `boot()` only after.
    */
   readonly permissionPlaneRef?: { current: TeamPermissionPlane | undefined }
+  /**
+   * pre-alpha3 PR4 (round 3, BLOCK-1) — the bound §6 expansion ceiling
+   * reader, forwarded VERBATIM into the governance permission lane. This
+   * factory grants NOTHING of its own: absent → the service's zero-envelope
+   * default (no Leader expansion authority). The host entry injects the
+   * document derived from the SAME bound snapshot (the permission-plane
+   * module's authority-facts builder); test/legacy assemblers hand-author or
+   * omit it. Synchronous data reader — no authority, no I/O.
+   */
+  readonly permissionEnvelope?: (teamSessionId: string) => PermissionMutationEnvelope
+  /**
+   * pre-alpha3 PR4 (round 3, BLOCK-1) — the lower-layer static-facts reader
+   * for the Leader's expansion comparisons, forwarded VERBATIM. The three
+   * states stay DISTINCT (governance/types.ts): absent / `undefined` →
+   * UNKNOWN (typed `PERMISSION_EFFECT_CONTEXT_UNAVAILABLE`), `{layers: []}`
+   * → DECLARED-NONE. The host entry injects the identity-bound documents
+   * built by the permission-plane module's authority-facts builder.
+   */
+  readonly permissionStaticLayers?: (
+    teamSessionId: string,
+    memberInstanceId: string,
+  ) => PermissionStaticLayerFacts | undefined
 
 }
 
@@ -801,6 +824,8 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     permissionOverlay,
     fsContainsKeys,
     permissionPlaneRef,
+    permissionEnvelope,
+    permissionStaticLayers,
   } = params
   const repos: TeamDomainRepositories = domain.repositories
   const rootSid: string = config.rootSessionId
@@ -2450,6 +2475,11 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       : createPermissionGovernanceLane({
           overlay: permissionOverlay,
           ...(fsContainsKeys === undefined ? {} : { fsContainsKeys }),
+          // Round 3 (BLOCK-1): the two fact readers pass through VERBATIM —
+          // this factory neither synthesizes nor withholds them (absent =
+          // the kernel's distinct UNKNOWN / zero-envelope postures).
+          ...(permissionStaticLayers === undefined ? {} : { staticLayers: permissionStaticLayers }),
+          ...(permissionEnvelope === undefined ? {} : { permissionEnvelope }),
         })
 
   const mutation = {
@@ -2560,7 +2590,11 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       : createTeamPermissionLanes({
           governance: mutation.governance,
           overlay: permissionOverlay,
-          members: createMemberLifecycleReader(repos.memberInstances),
+          // Round 3 (BLOCK-4): the reader is LEADER-AWARE over the durable
+          // TeamSession row (the control service's authority semantics — the
+          // v2 Leader has NO member row in a real boot); member reads are
+          // byte-identical to the pre-PR4 member-rows-only reader.
+          members: createMemberLifecycleReader(repos.memberInstances, repos.teamSessions),
           lifecycle: {
             restore: (target) =>
               lifecycleService.restoreMember({
@@ -3286,6 +3320,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     runtime,
     lifecycle: { service: lifecycleService, commit: lifecycleCommit },
     mutation,
+    // pre-alpha3 PR4 — the assembled permission plane (undefined when the
+    // overlay port was not injected; see TeamProductionRoot.permissionPlane).
+    permissionPlane,
     messaging,
     control,
     activity,

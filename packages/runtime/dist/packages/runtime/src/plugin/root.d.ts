@@ -89,6 +89,7 @@ import type { ControlService } from '../../control/index.js';
 import type { HandoffOperationState } from '../../handoff/index.js';
 import type { LegacyHomePort, LegacyInspectFn } from './legacy-surface.js';
 import type { TeamToolSet } from '../../../tools/src/index.js';
+import type { PermissionMutationEnvelope, PermissionStaticLayerFacts } from '../../governance/index.js';
 import type { CanonicalKeyContains, TeamPermissionPlane } from './permission-plane.js';
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js';
 import type { TeamDomain } from '../../../storage/repositories/index.js';
@@ -344,6 +345,25 @@ export interface TeamProductionRootParams {
     readonly permissionPlaneRef?: {
         current: TeamPermissionPlane | undefined;
     };
+    /**
+     * pre-alpha3 PR4 (round 3, BLOCK-1) — the bound §6 expansion ceiling
+     * reader, forwarded VERBATIM into the governance permission lane. This
+     * factory grants NOTHING of its own: absent → the service's zero-envelope
+     * default (no Leader expansion authority). The host entry injects the
+     * document derived from the SAME bound snapshot (the permission-plane
+     * module's authority-facts builder); test/legacy assemblers hand-author or
+     * omit it. Synchronous data reader — no authority, no I/O.
+     */
+    readonly permissionEnvelope?: (teamSessionId: string) => PermissionMutationEnvelope;
+    /**
+     * pre-alpha3 PR4 (round 3, BLOCK-1) — the lower-layer static-facts reader
+     * for the Leader's expansion comparisons, forwarded VERBATIM. The three
+     * states stay DISTINCT (governance/types.ts): absent / `undefined` →
+     * UNKNOWN (typed `PERMISSION_EFFECT_CONTEXT_UNAVAILABLE`), `{layers: []}`
+     * → DECLARED-NONE. The host entry injects the identity-bound documents
+     * built by the permission-plane module's authority-facts builder.
+     */
+    readonly permissionStaticLayers?: (teamSessionId: string, memberInstanceId: string) => PermissionStaticLayerFacts | undefined;
 }
 /**
  * Assemble the complete production root (A01–A29 + the four S6 seams).

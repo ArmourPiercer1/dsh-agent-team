@@ -101,13 +101,19 @@ describe('the governance lane stays loadable from the admission surface', () => 
   })
 })
 
-describe('ZERO production consumers (PR3 lands dormant)', () => {
-  it('no shipped source outside the governance lane imports the permission-mutation module', () => {
+describe('production consumers: exactly the PR4 assembly layer (PR3 landed dormant; PR4 wired it)', () => {
+  it('no shipped source outside the governance lane and the PR4 permission-plane assembly imports the permission-mutation module', () => {
     // Walk every runtime directory + the other plugin packages, mirroring the
-    // PR2 walk leg: a production importer of the new path would mean the
-    // PR3 scope line ("ZERO production wiring: no pre-execute adapter
-    // changes, no plugin-root/live bindings, no tools/remote/client imports")
-    // had been crossed.
+    // PR2 walk leg. PR3's scope line ("ZERO production wiring") held AT PR3;
+    // pre-alpha3 PR4 SUPERSEDES it by design — the production entry now
+    // consumes the SHARED PURE algebra (parse/answer helpers) through ONE
+    // audited seam: `src/plugin/permission-plane.ts` (the assembly layer that
+    // builds the identity-bound authority facts). The pin's MEANING survives
+    // intact: no OTHER production file may import the module — the kernel
+    // stays the single algebra, the lanes stay the only writers, and any new
+    // importer must arrive as a reviewed amendment to this allow-list.
+    // (Round-3 note: the first amendment, recorded in
+    // `dev/agent-workflow/evidence/alpha3-pr4-permission-lifecycle/`.)
     const offenders: string[] = []
     const roots = ['runtime', 'tools', 'remote', 'client']
     const visit = (dir: string): void => {
@@ -127,6 +133,10 @@ describe('ZERO production consumers (PR3 lands dormant)', () => {
         if (rel.startsWith(`governance${sep}service.ts`)) continue
         if (rel.startsWith(`governance${sep}types.ts`)) continue
         if (rel.startsWith(`governance${sep}index.ts`)) continue
+        // PR4 (round 3) amendment: the ONE production consumer — the plugin
+        // assembly layer that derives the identity-bound authority facts
+        // (pure parse/answer helpers only; zero write path, zero grammar).
+        if (rel === join('src', 'plugin', 'permission-plane.ts')) continue
         const text = readFileSync(full, 'utf8')
         if (/governance\/permission-mutation\.js|permission-mutation\.js['"]/.test(text)) offenders.push(rel)
       }

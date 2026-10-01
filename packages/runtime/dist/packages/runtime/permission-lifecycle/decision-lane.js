@@ -215,7 +215,7 @@ export function createPermissionDecisionLane(deps) {
         // (4a) the execspace plane: the kernel's algebra over the fingerprint
         // region (design §5 — exact identity, no subtree, no `any`, no predicate).
         if (operationClass === 'exec') {
-            return decideExec({ deps, snapshot, staticLayers, operation, gate, overlayGeneration });
+            return decideExec({ deps, snapshot, staticLayers, staticFacts, operation, gate, overlayGeneration });
         }
         // (4b) the filespace plane: the merged assembler + the frozen resolver.
         // The subtree verdicts are awaited BEFORE the pure kernel runs (the
@@ -284,7 +284,33 @@ function decideExec(input) {
             lifecycleState: input.gate.state,
         };
     }
-    const winningLayer = answer.source === 'overlay' ? 'overlay' : answer.source === 'layer' ? 'template' : null;
+    // MINOR-1 (round 3): the kernel answer carries NO layer identity — the
+    // pre-fix map hard-coded 'layer' ⇒ 'template', which could never report
+    // a blueprint-lane answer (a silently WRONG provenance). The honest
+    // attribution re-runs the SAME pure algebra (this lane owns ZERO
+    // precedence — it only asks the kernel where its own fold answered) once
+    // per declared slot, highest slot first (mirroring the kernel's own
+    // top-down fold): the first solo layer that answers `layer` IS the winner.
+    // A win attributable to no slot answers `null` (unknown provenance is
+    // reported as unknown, never guessed).
+    let winningLayer = answer.source === 'overlay' ? 'overlay' : answer.source === 'fallback' ? null : null;
+    if (answer.source === 'layer' && input.deps.effectiveAnswer !== undefined) {
+        const answerAlone = (layer) => {
+            const solo = input.deps.effectiveAnswer({
+                overlayRules: [],
+                staticFacts: toKernelStaticFacts([layer]),
+                operationClass: input.operation.tool,
+                region: { kind: 'fingerprint', resource: input.operation.fingerprint },
+            });
+            return solo.status === 'decided' && solo.source === 'layer';
+        };
+        if (input.staticFacts.template !== undefined && answerAlone(input.staticFacts.template)) {
+            winningLayer = 'template';
+        }
+        else if (input.staticFacts.blueprint !== undefined && answerAlone(input.staticFacts.blueprint)) {
+            winningLayer = 'blueprint';
+        }
+    }
     return {
         kind: 'effective',
         plane: 'exec',

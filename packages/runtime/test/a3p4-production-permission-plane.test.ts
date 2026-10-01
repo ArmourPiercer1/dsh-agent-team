@@ -514,23 +514,32 @@ describe('P6 — the EXISTING pre-execute pipeline consumes the plane', () => {
           },
           ...(withPlane
             ? {
-                // The exact closure the live glue installs at agent setup.
+                // The exact closure the live glue installs at agent setup
+                // (round-3 contract: `staticRules` may be undefined = the
+                // adapter canonicalized NOTHING — static facts then ride
+                // ABSENT, the lane's typed STATIC_FACTS_UNKNOWN posture,
+                // never a fabricated declared-none; the merged answer's
+                // `source` rides through for the adapter's floor routing).
                 resolveDynamicDecision: async (input: {
                   operation: CanonicalOperation
-                  staticRules: CanonicalRules
+                  staticRules: CanonicalRules | undefined
                   staticDefault: 'ask' | 'deny'
                 }) => {
                   const outcome = (await world.plane.decisions.decide({
                     teamSessionId: ROOT_SID,
                     memberInstanceId: WORKER_ID,
                     operation: input.operation,
-                    staticFacts: {
-                      template: {
-                        label: 'worker',
-                        default: input.staticDefault,
-                        rules: input.staticRules,
-                      },
-                    },
+                    ...(input.staticRules === undefined
+                      ? {}
+                      : {
+                          staticFacts: {
+                            template: {
+                              label: 'worker',
+                              default: input.staticDefault,
+                              rules: input.staticRules,
+                            },
+                          },
+                        }),
                     containment: (rootKey: string, target: { key: string }) =>
                       world.containKeys(rootKey, target.key),
                   })) as
@@ -538,6 +547,7 @@ describe('P6 — the EXISTING pre-execute pipeline consumes the plane', () => {
                     | {
                         kind: 'effective'
                         effect: 'allow' | 'ask' | 'deny'
+                        source: 'rule' | 'default'
                         plane: string
                         winningLayer: string | null
                         overlayGeneration: number | null
@@ -551,6 +561,7 @@ describe('P6 — the EXISTING pre-execute pipeline consumes the plane', () => {
                         winningLayer: outcome.winningLayer,
                         overlayGeneration: outcome.overlayGeneration,
                         explanation: outcome.explanation,
+                        source: outcome.source,
                       }
                 },
               }

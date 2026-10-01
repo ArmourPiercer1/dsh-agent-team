@@ -408,6 +408,19 @@ export type DynamicPermissionDecision = {
     readonly overlayGeneration: number | null;
     /** A deterministic one-line explanation (observation only). */
     readonly explanation: string;
+    /**
+     * PR4 round 3 (BLOCK-3) — the merged answer's OWN provenance class:
+     * `'rule'` = an explicit rule answered (overlay OR a template/blueprint
+     * lane rule); `'default'` = no rule matched and the layer DEFAULT
+     * answered. The adapter routes the artifact-grant floor on THIS
+     * (a merged DEFAULT deny keeps flowing the floor — the strict-read
+     * core-spill use case survives the plane being wired; an EXPLICIT
+     * deny never does — a grant is a floor, never a ceiling override).
+     * Absent = a pre-round-3 producer: treated as `'rule'` (conservative
+     * — byte-identical to the pre-fix posture where NO dynamic deny ever
+     * reached the floor).
+     */
+    readonly source?: 'rule' | 'default';
 } | {
     readonly refused: true;
     readonly code: string;
@@ -525,7 +538,16 @@ export interface InstallParameterPermissionListenerParams {
      */
     readonly resolveDynamicDecision?: (input: {
         readonly operation: CanonicalOperation;
-        readonly staticRules: CanonicalRules;
+        /**
+         * PR4 round 3 (INFO-3): THIS decision's freshly canonicalized rules
+         * PASSED THROUGH VERBATIM. The pre-fix `?? { allow: [], ask: [], deny: []
+         * }` fallback claimed DECLARED-NONE where the adapter merely had no
+         * value — a state the decision lane deliberately keeps DISTINCT
+         * (UNKNOWN must never arrive as declared-none). The adapter always
+         * canonicalizes before reaching the seam today; the `undefined` member
+         * exists so no future path can re-fabricate the empty claim.
+         */
+        readonly staticRules: CanonicalRules | undefined;
         readonly staticDefault: 'ask' | 'deny';
     }) => Promise<DynamicPermissionDecision | undefined>;
     readonly execEnvelopeOps?: readonly string[];

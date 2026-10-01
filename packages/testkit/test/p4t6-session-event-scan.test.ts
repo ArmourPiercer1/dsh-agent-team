@@ -1618,8 +1618,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // occurrences and the scanner .mjs is unchanged. The 941 value is the
     // scanner run on this tree (authoritative: this suite reported
     // `expected 941 to be 934` before the recount; not hand-computed).
-    expect(scanResult.filesScanned).toBe(941)
-    expect(scanResult.files.length).toBe(941)
+    // ALPHA.3 PR4 permission-lifecycle ROUND 3 (2026-10-06): 941 + 2 = 943 —
+    // the two RED-first regression specs of the consolidated fix
+    // (`a3p4-pr4-decision-routing-regression.test.ts`,
+    // `a3p4-pr4-production-entry-regression.test.ts`; both SessionEvent-free
+    // — every other pin of this suite, the fifteen-occurrence quarantine hit
+    // set included, is UNCHANGED). The 943 value is the scanner run on this
+    // tree (authoritative: this suite reported `expected 943 to be 941`
+    // before the recount; not hand-computed).
+    expect(scanResult.filesScanned).toBe(943)
+    expect(scanResult.files.length).toBe(943)
 
   })
 

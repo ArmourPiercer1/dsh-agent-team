@@ -2532,17 +2532,28 @@ export function createAgentBindings(deps) {
                     teamSessionId: teamRoot,
                     memberInstanceId: instanceId,
                     operation,
-                    staticFacts: {
-                      template: {
-                        label: String(
-                          (boundTemplate !== undefined && boundTemplate !== null && boundTemplate.templateId !== undefined)
-                            ? boundTemplate.templateId
-                            : 'template',
-                        ),
-                        default: staticDefault,
-                        rules: staticRules,
-                      },
-                    },
+                    // PR4 round 3 (INFO-3): static facts ride ONLY when the
+                    // adapter canonicalized them. Absent rules arrive as
+                    // ABSENT facts — the decision lane's own typed
+                    // STATIC_FACTS_UNKNOWN refusal (hard deny downstream) —
+                    // never a fabricated DECLARED-NONE empty rule set, a
+                    // state the lane deliberately keeps distinct from
+                    // UNKNOWN and this glue must not launder.
+                    ...(staticRules === undefined || staticRules === null
+                      ? {}
+                      : {
+                          staticFacts: {
+                            template: {
+                              label: String(
+                                (boundTemplate !== undefined && boundTemplate !== null && boundTemplate.templateId !== undefined)
+                                  ? boundTemplate.templateId
+                                  : 'template',
+                              ),
+                              default: staticDefault,
+                              rules: staticRules,
+                            },
+                          },
+                        }),
                     containment: (subtreeRootKey, target) => containOverlayKeys(subtreeRootKey, target.key),
                   })
                   if (outcome.kind === 'refused') {
@@ -2554,6 +2565,11 @@ export function createAgentBindings(deps) {
                     winningLayer: outcome.winningLayer,
                     overlayGeneration: outcome.overlayGeneration,
                     explanation: outcome.explanation,
+                    // Round 3 (BLOCK-3 routing): the merged answer's own
+                    // provenance class ('rule' | 'default') — the adapter
+                    // routes the artifact-grant floor on THIS, not on the
+                    // static decision it no longer is.
+                    source: outcome.source,
                   }
                 },
               }),

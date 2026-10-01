@@ -1,0 +1,57 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+ ❯ test/a3p4-production-red-probe.test.ts (4 tests | 3 failed) 28ms
+     × A1 a Leader FIRST exact allow commits (RED expected: typed refusal) 12ms
+     × A2 a Leader flipping an existing deny to allow commits (RED expected: EXPANSION_DENIED) 6ms
+     ✓ A3 (bounding) the same HUMAN exact grant commits (expected GREEN) 3ms
+     × B1 static deny + overlay ask enters approval, not an outright deny (RED expected: deny) 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p4-production-red-probe.test.ts > BLOCK A — the configured Leader mutation path (production-shaped lane) > A1 a Leader FIRST exact allow commits (RED expected: typed refusal)
+PermissionMutationError: the effective before/after of at least one affected region cannot be decided without the missing context (1 region(s)) — zero write (problem: effect-context-unavailable)
+ ❯ refuse governance/permission-mutation.ts:206:9
+    204|   details: Record<string, unknown> = {},
+    205| ): never {
+    206|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    207|     problem,
+    208|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeLeaderPermissionMutation governance/permission-mutation.ts:1197:5
+ ❯ governance/service.ts:646:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a3p4-production-red-probe.test.ts > BLOCK A — the configured Leader mutation path (production-shaped lane) > A2 a Leader flipping an existing deny to allow commits (RED expected: EXPANSION_DENIED)
+PermissionMutationError: a LEADER mutation raises the EFFECTIVE effect in 1 region(s) the envelope does not cover (ladder-strict; reveals included; all-or-nothing) — zero write (problem: expansion-region-uncovered)
+ ❯ refuse governance/permission-mutation.ts:206:9
+    204|   details: Record<string, unknown> = {},
+    205| ): never {
+    206|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    207|     problem,
+    208|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeLeaderPermissionMutation governance/permission-mutation.ts:1206:5
+ ❯ governance/service.ts:646:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a3p4-production-red-probe.test.ts > BLOCK B — the pre-execute routing must consume one effective effect > B1 static deny + overlay ask enters approval, not an outright deny (RED expected: deny)
+AssertionError: B1: a static deny + an overlay ASK must not be an outright deny; saw {"kind":"deny","reason":"permission denied by the static permission policy: the template's deny rule 0 denies write on vol-root/src/a.ts"}: expected 'deny' not to be 'deny' // Object.is equality
+ ❯ test/a3p4-production-red-probe.test.ts:292:13
+    290|         outcome.kind,
+    291|         `B1: a static deny + an overlay ASK must not be an outright de…
+    292|       ).not.toBe('deny')
+       |             ^
+    293|     } finally {
+    294|       await world.close()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed (4)
+   Start at  22:26:33
+   Duration  880ms (transform 598ms, setup 0ms, import 762ms, tests 28ms, environment 0ms)
+
