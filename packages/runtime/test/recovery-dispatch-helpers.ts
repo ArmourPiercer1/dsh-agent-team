@@ -130,6 +130,14 @@ export function makeSpyControlService(behavior: RecoveryDispatchBehavior): {
     async checkExternalOperation() {
       throw new Error('not implemented in the recovery-dispatch spy')
     },
+    // fix-control-authz C (the residual pre-reservation boundary): the
+    // spy unit is a transparent pass-through (no preflight abort rows in
+    // the recovery-dispatch family) — the lock-free close stub throws
+    // loudly if a boundary ever fires against this spy (a wiring defect,
+    // not a test expectation).
+    async persistAbandonCloseLocked() {
+      throw new Error('not implemented in the recovery-dispatch spy')
+    },
   }
   return { service: service as unknown as ControlService, calls }
 }

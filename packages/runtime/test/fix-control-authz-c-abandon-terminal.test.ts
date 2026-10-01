@@ -67,8 +67,10 @@ import {
   CONTROL_REQUEST_KINDS,
   createControlService,
   isControlError,
+  type ControlService,
 } from '../control/index.js'
-import { TEAM_RUNTIME_ERROR_CODES } from '../admission/index.js'
+import { TEAM_RUNTIME_ERROR_CODES, type WorkDeliveryPort } from '../admission/index.js'
+import { createActivationProvider, type ActivationProvider } from '../activation/index.js'
 import {
   P6T2_NOW,
   TEST_STATIC_MODEL,
@@ -775,3 +777,1183 @@ describe('fix-control-authz C — the durable abandonment is the TERMINAL mark',
     expect(stateFinal.decisions.some((d) => d.requestId === occupancy.requestId && d.decision === 'allow')).toBe(true)
   })
 })
+
+// =====================================================================
+// C9 — the bounded C matrix (external review completeness)
+//
+// Spec (bounded — the parent's six cells, no expansion): EVERY await
+// point between the approval (allow) and the FIRST durable commit must
+// settle an abort into exactly ONE durable close + a typed terminal
+// outcome — and a commit that has already landed is never retroactively
+// undone (post-commit settle stands; a late abort is a documented no-op).
+//
+// Rows = action {delegate, follow-up, send-message/coordination, fresh
+// create-member (incl. delegate-create)} × abort point {decision-settle,
+// terminal-snapshot, outer-runtime-queue, outer-gate (success-path live
+// check + gate-REJECT-while-aborted), second-preflight (authority /
+// provider-lock / external-facts — BEFORE the journal reservation),
+// control-queue} × pre-state {no mark, already-abandoned}, plus the
+// persist-fault legs and the post-commit settle rows.
+//
+// Structurally absent cells (documented N/A, not executed):
+//  - second-preflight × follow-up / send-message: the follow-up's first
+//    commit is the work CAS (the direct admission under the chain — no
+//    activation preflight); the coordination effect has no activation.
+//    (This absence is exactly why the pre-reservation window was never
+//    covered by the old tests: existing-member delegates short-circuit
+//    (L637-646) and follow-ups go direct CAS.)
+//  - second-preflight `templateFacts` sub-point: v2-blueprint only
+//    (`targetTemplateInputs` is present only for schemaVersion 2). The
+//    P6-T2 fixture blueprint is schemaVersion 1 — the await is
+//    structurally absent here (the boundary check is placed in code
+//    after that await regardless).
+//  - outer-gate × send-message: the recovery reentry takes the fallback
+//    (no gate on the reentry — the original attempt's gate ran BEFORE
+//    approval, outside the covered span).
+//  - post-commit × already-abandoned: the unit rejects a pre-commit
+//    mark before any commit can land — the combination is impossible.
+//  - post-commit × create-member (plain): the effect completes INSIDE
+//    the chain (the activation commit is the last write) — the
+//    post-commit window is observationally empty there; the staged
+//    work-chain rows (follow-up, delegate-create) pin the semantics.
+//
+// RED baseline (captured at a2b3df79 before the fix): cells 2
+// (terminal-snapshot no-mark, outer-queue), 3 (gate-reject) and 5
+// (second-preflight) are RED (the raw abort escapes — the request is
+// left `decided`, no durable close); cells 1 (decision-settle), 4
+// (control-queue), 6 (post-commit) and the already-abandoned
+// terminal-snapshot rows are the GREEN baseline (the existing L595 /
+// L632-650 / C-2 unit checks). The persist-fault legs: the admission
+// close leg is GREEN at a2b3df79 (the unit's close persist already
+// types through the service's durableFailure mapping →
+// TEAM_RUNTIME_DURABLE_WRITE_FAILED, fail-closed, zero effects — the
+// row pins the verified contract); the second-preflight close leg is
+// RED at a2b3df79 (NO boundary exists — the reservation still runs).
+// =====================================================================
+
+type MatrixAction = 'follow-up' | 'delegate' | 'create-member' | 'send-message'
+type MatrixPoint =
+  | 'decision-settle'
+  | 'terminal-snapshot'
+  | 'outer-queue'
+  | 'gate-success'
+  | 'gate-reject'
+  | 'control-queue'
+  | 'pre-flight-authority'
+  | 'pre-flight-provider-lock'
+  | 'pre-flight-external-facts'
+  | 'post-commit'
+  | 'fault-admission'
+  | 'fault-preflight'
+type MatrixPreState = 'no-mark' | 'already-abandoned'
+
+interface MatrixRow {
+  readonly id: string
+  readonly action: MatrixAction
+  readonly point: MatrixPoint
+  readonly preState: MatrixPreState
+  /** The external-review named repro (follow-up × outer-runtime-queue ×
+   *  no mark) — the C6-style shared hold + live AbortSignal. */
+  readonly namedRepro?: boolean
+}
+
+function c9Applicable(action: MatrixAction, point: MatrixPoint, preState: MatrixPreState): boolean {
+  switch (point) {
+    case 'pre-flight-authority':
+    case 'pre-flight-provider-lock':
+    case 'pre-flight-external-facts':
+      // The pre-reservation window exists ONLY for the fresh-activation
+      // actions (delegate-create / fresh create-member).
+      return action === 'delegate' || action === 'create-member'
+    case 'gate-success':
+    case 'gate-reject':
+      // The reentry re-gates ONLY for the gated (new-work) actions.
+      return action !== 'send-message'
+    case 'post-commit':
+      // The staged work-chain actions only (see the N/A notes above).
+      return (action === 'follow-up' || action === 'delegate') && preState === 'no-mark'
+    case 'fault-admission':
+      return action === 'follow-up' && preState === 'no-mark'
+    case 'fault-preflight':
+      return action === 'create-member' && preState === 'no-mark'
+    default:
+      return true
+  }
+}
+
+const MATRIX_ACTIONS: readonly MatrixAction[] = ['delegate', 'follow-up', 'send-message', 'create-member']
+const MATRIX_POINTS: readonly MatrixPoint[] = [
+  'decision-settle',
+  'terminal-snapshot',
+  'outer-queue',
+  'gate-success',
+  'gate-reject',
+  'control-queue',
+  'pre-flight-authority',
+  'pre-flight-provider-lock',
+  'pre-flight-external-facts',
+  'post-commit',
+  'fault-admission',
+  'fault-preflight',
+]
+const MATRIX_PRE_STATES: readonly MatrixPreState[] = ['no-mark', 'already-abandoned']
+
+const MATRIX_ROWS: readonly MatrixRow[] = (() => {
+  const rows: MatrixRow[] = []
+  let n = 0
+  for (const action of MATRIX_ACTIONS) {
+    for (const point of MATRIX_POINTS) {
+      for (const preState of MATRIX_PRE_STATES) {
+        if (!c9Applicable(action, point, preState)) continue
+        n++
+        rows.push({
+          id: `c9-${n}`,
+          action,
+          point,
+          preState,
+          ...(action === 'follow-up' && point === 'outer-queue' && preState === 'no-mark'
+            ? { namedRepro: true }
+            : {}),
+        })
+      }
+    }
+  }
+  return rows
+})()
+
+/** One deterministic barrier (the pause/release pair used by every
+ *  pausable port, the holds and the proxy pin): the intercepted call
+ *  signals `pauseArrive()` (the `paused` signal — the test knows the
+ *  call is held), and the test later calls `release()` (the `held`
+ *  promise resolves — the call proceeds). */
+function c9Barrier(): {
+  readonly held: Promise<void>
+  readonly paused: Promise<void>
+  pauseArrive: () => void
+  release: () => void
+} {
+  let releaseBarrier: (() => void) | undefined
+  const held = new Promise<void>((resolve) => {
+    releaseBarrier = resolve
+  })
+  let pausedResolve: (() => void) | undefined
+  const paused = new Promise<void>((resolve) => {
+    pausedResolve = resolve
+  })
+  return {
+    held,
+    paused,
+    pauseArrive: () => {
+      pausedResolve?.()
+    },
+    release: () => {
+      releaseBarrier?.()
+    },
+  }
+}
+
+/** Wait until the map entry for the root CHANGED relative to the
+ *  occupation's entry — the C6 proof that the reentry queued on the
+ *  shared runtime chain behind the hold. */
+async function c9WaitQueued(chains: Map<string, Promise<unknown>>, occupationChain: Promise<unknown>): Promise<void> {
+  for (let i = 0; i < 3000; i++) {
+    const current = chains.get(AUTHZ_ROOT)
+    if (current !== undefined && current !== occupationChain) return
+    await sleep(1)
+  }
+  throw new Error('c9: the reentry never queued on the shared runtime lock')
+}
+
+/** The control-service proxy: delegates EVERY method to the real
+ *  service except `listControlState`, which — once ARMED — holds its
+ *  first call at the barrier. That call is the reentry's pre-dispatch
+ *  terminal snapshot (the first listControlState on the ref after the
+ *  wait settles) — the deterministic L631 pin. */
+function c9ProxyControl(
+  real: ControlService,
+  pause: () => Promise<void>,
+): ControlService & { arm: () => void } {
+  let armed = false
+  return {
+    requestControl: (args) => real.requestControl(args),
+    resolveControl: (args) => real.resolveControl(args),
+    abandonControlRequest: (args) => real.abandonControlRequest(args),
+    listControlState: async (rootSessionId: string) => {
+      if (armed) {
+        armed = false
+        await pause()
+        return real.listControlState(rootSessionId)
+      }
+      return real.listControlState(rootSessionId)
+    },
+    guardOperation: (scope) => real.guardOperation(scope),
+    checkExternalOperation: (input) => real.checkExternalOperation(input),
+    awaitControlDecision: (input) => real.awaitControlDecision(input),
+    commitEffectIfAuthorized(input) {
+      return real.commitEffectIfAuthorized(input)
+    },
+    persistAbandonCloseLocked(input) {
+      return real.persistAbandonCloseLocked(input)
+    },
+    arm: () => {
+      armed = true
+    },
+  } as ControlService & { arm: () => void }
+}
+
+/** The base runtime rebuild over a C9 world (the D/C5 rebuild pattern
+ *  without a restart) with per-row overrides (the override field types
+ *  are derived from the runtime options — no duplicated port typings). */
+type C9RuntimeOptions = Parameters<typeof createTeamRuntime>[0]
+function c9Runtime(
+  w: AuthzWorld,
+  overrides: {
+    envFacts?: C9RuntimeOptions['environmentFacts']
+    external?: C9RuntimeOptions['externalPolicyFacts']
+    delivery?: WorkDeliveryPort
+    provider?: ActivationProvider
+    chains?: Map<string, Promise<unknown>>
+    control?: ControlService
+  } = {},
+): ReturnType<typeof createTeamRuntime> {
+  return createTeamRuntime({
+    teamDomain: w.world.domain,
+    activationProvider: overrides.provider ?? w.world.provider,
+    blueprintCatalog: w.world.catalog,
+    environmentFacts: overrides.envFacts ?? w.world.ports.environmentFacts,
+    externalPolicyFacts: overrides.external ?? w.world.ports.externalPolicyFacts,
+    staticModel: TEST_STATIC_MODEL,
+    now: () => P6T2_NOW,
+    lifecycleCommit: createFakeLifecycleCommitPort(w.world),
+    workDelivery: overrides.delivery ?? w.deliveryPort,
+    workActivity: createWorkActivityWriter({ teamDomain: w.world.domain, now: () => P6T2_NOW }),
+    ...(overrides.chains !== undefined ? { teamLocks: overrides.chains } : {}),
+    controlServiceRef: { current: overrides.control ?? w.control },
+  })
+}
+
+/** The row's action request (the leader caller on every recovery-
+ *  dispatch action of the fixture world). */
+function c9ActionRequest(row: MatrixRow, token: string, signal: AbortSignal) {
+  switch (row.action) {
+    case 'follow-up':
+      return authzFollowUp({
+        requestToken: token,
+        signal,
+        payload: { prompt: `C9 ${row.id} follow-up prompt (abort point ${row.point})` },
+      })
+    case 'delegate':
+      return makeActionRequest({
+        action: 'delegate',
+        delegationTemplateId: 'scout',
+        requestToken: token,
+        signal,
+        payload: { label: `c9-${row.id}-scout`, prompt: `C9 ${row.id} delegate prompt` },
+      })
+    case 'create-member':
+      return makeActionRequest({
+        action: 'create-member',
+        delegationTemplateId: 'worker',
+        requestToken: token,
+        signal,
+        payload: { label: `c9-${row.id}-worker` },
+      })
+    case 'send-message':
+      return makeActionRequest({
+        action: 'send-message',
+        targetInstanceId: AUTHZ_WORKER,
+        requestToken: token,
+        signal,
+        payload: {
+          recipientInstanceId: AUTHZ_WORKER,
+          subject: `C9 ${row.id}`,
+          body: `C9 ${row.id} message body (abort point ${row.point})`,
+        },
+      })
+  }
+}
+
+/** Start the row's invocation over the given runtime. EVERY action —
+ *  including send-message — goes through the direct `performAction`
+ *  action request (the H-suite shape): the signal THREADS only through
+ *  the action request — the MessagingCoordinator seam carries no signal
+ *  channel, so a coordinator-built send-message would make the abort
+ *  invisible to the runtime (the C6 coordinator row pins that lane
+ *  separately, signal-free). */
+function c9Start(
+  runtime: ReturnType<typeof createTeamRuntime>,
+  row: MatrixRow,
+  token: string,
+  signal: AbortSignal,
+): { readonly promise: Promise<{ readonly ok: boolean; readonly error?: unknown }>; readonly sessionInputCalls: unknown[] } {
+  const wrapped = (p: Promise<unknown>) =>
+    withTimeout(p, 30_000, `the C9 ${row.action} (${row.point})`).then(
+      () => ({ ok: true as const }),
+      (error: unknown) => ({ ok: false as const, error }),
+    )
+  return { promise: wrapped(runtime.performAction(c9ActionRequest(row, token, signal))), sessionInputCalls: [] }
+}
+
+/** Find the row's durable control request (the recovery correlation). */
+async function c9WaitRow(control: ControlService, token: string): Promise<string> {
+  const { requests } = await withTimeout(waitForControlRequests(control, 1), 15_000, 'the durable request row')
+  const row = requests.find((r) => String(r.correlation).startsWith(`recovery:${token}:`))
+  expect(row).toBeDefined()
+  return String(row?.requestId)
+}
+
+async function c9Allow(control: ControlService, requestId: string): Promise<void> {
+  await control.resolveControl({
+    rootSessionId: AUTHZ_ROOT,
+    caller: authzHumanCaller(),
+    requestId,
+    decision: 'allow',
+  })
+}
+
+/** The EXPLICIT abandon (the `already-abandoned` pre-state) — the
+ *  legal human abandoner on every request. */
+function c9Abandon(control: ControlService, requestId: string, reason: string) {
+  return control.abandonControlRequest({
+    rootSessionId: AUTHZ_ROOT,
+    caller: authzHumanCaller(),
+    requestId,
+    reason,
+  })
+}
+
+/** The shared close assertions (every close-typed row): the typed
+ *  abandoned block, zero work / delivery / coordination / reservation,
+ *  exactly ONE durable mark, the stale allow closed, status `abandoned`. */
+async function c9AssertClose(
+  outcome: { readonly ok: boolean; readonly error?: unknown },
+  w: AuthzWorld,
+  control: ControlService,
+  requestId: string,
+  memberBaseline: number,
+  sessionInputCalls: readonly unknown[],
+  allowCommitted: boolean,
+): Promise<void> {
+  expect(outcome.ok).toBe(false)
+  const error = outcome.ok === false ? outcome.error : undefined
+  expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
+  expect(asDetails(error)?.['controlDecision']).toBe('abandoned')
+  expect(asDetails(error)?.['controlRequestId']).toBe(requestId)
+  // ZERO work / ZERO delivery / ZERO coordination.
+  expect(authzFacts(w.world, 'team-work-admitted').length).toBe(0)
+  expect(w.deliveryCalls.length).toBe(0)
+  expect(authzFacts(w.world, 'team-coordination-recorded').length).toBe(0)
+  expect(sessionInputCalls.length).toBe(0)
+  // ZERO reservation / ZERO provisioning (cell 5): the member set is
+  // unchanged (only the seed instances).
+  expect(w.world.domain.repositories.memberInstances.list(AUTHZ_ROOT).length).toBe(memberBaseline)
+  // Exactly ONE durable mark (or the documented idempotent no-op).
+  const state = await control.listControlState(AUTHZ_ROOT)
+  expect(state.abandonments.filter((a) => a.requestId === requestId).length).toBe(1)
+  if (allowCommitted) {
+    // The stale allow decision row is closed by the terminal mark.
+    expect(state.decisions.some((d) => d.requestId === requestId && d.decision === 'allow')).toBe(true)
+  }
+  expect(state.requests.find((r) => r.requestId === requestId)?.status).toBe('abandoned')
+}
+
+/** The persist-fault leg assertions: the TYPED fail-closed fault code,
+ *  zero effects, NO half-abandoned mark (the state could not be made
+ *  terminal — the effect must NEVER commit). */
+async function c9AssertFault(
+  outcome: { readonly ok: boolean; readonly error?: unknown },
+  w: AuthzWorld,
+  control: ControlService,
+  requestId: string,
+  memberBaseline: number,
+): Promise<void> {
+  expect(outcome.ok).toBe(false)
+  const error = outcome.ok === false ? outcome.error : undefined
+  expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED)
+  expect(authzFacts(w.world, 'team-work-admitted').length).toBe(0)
+  expect(w.deliveryCalls.length).toBe(0)
+  expect(authzFacts(w.world, 'team-coordination-recorded').length).toBe(0)
+  expect(w.world.domain.repositories.memberInstances.list(AUTHZ_ROOT).length).toBe(memberBaseline)
+  const state = await control.listControlState(AUTHZ_ROOT)
+  expect(state.abandonments.filter((a) => a.requestId === requestId).length).toBe(0)
+}
+
+/** Patch the control ledger so that ONLY the abandon-mark persist
+ *  faults (the `control-request-abandoned` fact write — the service's
+ *  close write goes through `ledger.put(entry)`) — every other control
+ *  write (decision rows, etc.) stays healthy. Restores the real write
+ *  in `finally` (the S-suite storage-fault pattern, narrowed to the
+ *  close write). The service's own `durableFailure` mapping types the
+ *  faulted close as TEAM_RUNTIME_DURABLE_WRITE_FAILED (the
+ *  fail-closed contract these legs pin). */
+function c9PatchAbandonPersistFault(w: AuthzWorld): () => void {
+  const ledger = w.world.domain.repositories.ledger
+  const realPut = ledger.put.bind(ledger)
+  ledger.put = (entry: unknown) => {
+    if (
+      entry !== null &&
+      typeof entry === 'object' &&
+      'factType' in entry &&
+      (entry as { readonly factType?: unknown }).factType === 'control-request-abandoned'
+    ) {
+      throw new Error('c9: the durable close write faulted (injected)')
+    }
+    return realPut(entry)
+  }
+  return () => {
+    ledger.put = realPut
+  }
+}
+
+/** The C8 occupancy: a toolName-bearing request whose allow resolution
+ *  parks at the external probe — holding the CONTROL lock (b). */
+function c9Occupancy(
+  w: AuthzWorld,
+  rowId: string,
+): {
+  readonly control: ControlService
+  /** Creates the toolName-bearing occupancy request (its allow parks at
+   *  the external probe — holding the control lock (b)). */
+  create: () => Promise<string>
+  /** Starts the occupancy's allow resolution (un-awaited — parks at the
+   *  probe, holding the lock). Returns the resolution promise. */
+  startAllow: () => Promise<unknown>
+  releaseProbe: () => void
+  readonly probePaused: Promise<void>
+} {
+  const barrier = c9Barrier()
+  let nextProbePause = false
+  const pausableExternal: C9RuntimeOptions['externalPolicyFacts'] = () => {
+    if (nextProbePause) {
+      nextProbePause = false
+      barrier.pauseArrive()
+      return barrier.held.then(() => w.world.ports.externalPolicyFacts())
+    }
+    return w.world.ports.externalPolicyFacts()
+  }
+  const control = createControlService({
+    teamDomain: w.world.domain,
+    blueprintCatalog: w.world.catalog,
+    externalPolicyFacts: pausableExternal,
+    now: () => P6T2_NOW,
+    waitPollIntervalMs: 5,
+  })
+  let occupancyRequestId = ''
+  return {
+    control,
+    create: async () => {
+      const occupancy = await control.requestControl({
+        rootSessionId: AUTHZ_ROOT,
+        caller: makeActionRequest({}).caller,
+        kind: CONTROL_REQUEST_KINDS.USER_APPROVAL,
+        subject: { kind: 'instance', instanceId: AUTHZ_WORKER },
+        actionName: 'follow-up',
+        toolName: 'follow-up',
+        correlation: `c9-${rowId}-occupancy:1`,
+        summary: `C9 ${rowId} occupancy (holds the control lock across the external probe)`,
+      })
+      occupancyRequestId = occupancy.requestId
+      return occupancyRequestId
+    },
+    startAllow: () => {
+      nextProbePause = true
+      // Un-awaited: parks at the external probe, HOLDING THE CONTROL LOCK.
+      return control.resolveControl({
+        rootSessionId: AUTHZ_ROOT,
+        caller: authzHumanCaller(),
+        requestId: occupancyRequestId,
+        decision: 'allow',
+      })
+    },
+    releaseProbe: () => barrier.release(),
+    probePaused: barrier.paused,
+  }
+}
+
+describe('fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close)', () => {
+  // (The module-level `world` + the file's top-level afterEach handle
+  //  the world teardown — c9RunRow assigns `world` per row.)
+  for (const row of MATRIX_ROWS) {
+    it(
+      `${row.id}: ${row.action} × ${row.point} × ${row.preState}${row.namedRepro ? ' (the external named repro)' : ''}`,
+      async () => {
+        await c9RunRow(row)
+      },
+    )
+  }
+
+  it('c9-serial: a cancelled waiter KEEPS its queue slot — a later writer never overtakes the still-running holder (the reviewer sequence: holder start → cancel waiter → later writer → holder end)', async () => {
+    const chains = new Map<string, Promise<unknown>>()
+    const events: string[] = []
+    const hold = c9Barrier()
+    const holder = withTeamLock(chains, 'root-serial', async () => {
+      events.push('holder-start')
+      await hold.held
+      events.push('holder-end')
+      return undefined
+    })
+    // The holder's map entry (the occupation chain the waiter must queue
+    // BEHIND). withTeamLock sets the map entry synchronously on the call,
+    // so the holder's entry is captured BETWEEN the two calls — after
+    // the waiter's call the entry is already the waiter's (replaced).
+    const occupationChain = chains.get('root-serial')
+    if (occupationChain === undefined) throw new Error('c9-serial: the holder chain entry is missing')
+    const waiterSignal = new AbortController()
+    const waiter = withTeamLock(chains, 'root-serial', async () => {
+      events.push('waiter-ran')
+      return undefined
+    }, waiterSignal.signal).catch((error: unknown) => {
+      events.push('waiter-rejected')
+      return error
+    })
+    // The waiter is queued behind the holder (the map entry changed).
+    expect(chains.get('root-serial')).not.toBe(occupationChain)
+    // Cancel the WAITER (it never acquired the lock).
+    waiterSignal.abort('c9-serial: the waiter cancelled')
+    await withTimeout(waiter, 5_000, 'the waiter rejection')
+    // The LATER writer (enqueued after the cancelled waiter) must NOT
+    // overtake the still-running holder: its slot sits behind the
+    // holder's settlement.
+    const later = withTeamLock(chains, 'root-serial', async () => {
+      events.push('later-writer')
+      return undefined
+    })
+    hold.release()
+    await withTimeout(holder, 15_000, 'the holder settlement')
+    await withTimeout(later, 15_000, 'the later writer')
+    // The waiter rejected (the raw cancellation is visible to the
+    // caller) — and the later writer ran AFTER the holder ended.
+    expect(events).toContain('waiter-rejected')
+    expect(events).not.toContain('waiter-ran')
+    expect(events.indexOf('later-writer')).toBeGreaterThan(events.indexOf('holder-end'))
+    // The full order: holder-start → waiter-rejected → holder-end →
+    // later-writer (the cancelled waiter's tail kept the serial chain
+    // intact — the close is a side effect, never a chain detach).
+    expect(events).toEqual(['holder-start', 'waiter-rejected', 'holder-end', 'later-writer'])
+  })
+})
+
+async function c9RunRow(row: MatrixRow): Promise<void> {
+  const w = await createAuthzWorld(`authz-${row.id}`)
+  world = w
+  const ac = new AbortController()
+  const token = `tok-${row.id}`
+  const memberBaseline = w.world.domain.repositories.memberInstances.list(AUTHZ_ROOT).length
+  switch (row.point) {
+    case 'decision-settle':
+      return await c9DecisionSettle(row, w, ac, token, memberBaseline)
+    case 'terminal-snapshot':
+      return await c9TerminalSnapshot(row, w, ac, token, memberBaseline)
+    case 'outer-queue':
+      return await c9OuterQueue(row, w, ac, token, memberBaseline)
+    case 'gate-success':
+      return await c9GateSuccess(row, w, ac, token, memberBaseline)
+    case 'gate-reject':
+      return await c9GateReject(row, w, ac, token, memberBaseline)
+    case 'control-queue':
+      return await c9ControlQueue(row, w, ac, token, memberBaseline)
+    case 'pre-flight-authority':
+    case 'pre-flight-provider-lock':
+    case 'pre-flight-external-facts':
+      return await c9PreFlight(row, w, ac, token, memberBaseline)
+    case 'post-commit':
+      return await c9PostCommit(row, w, ac, token, memberBaseline)
+    case 'fault-admission':
+      return await c9FaultAdmission(row, w, ac, token, memberBaseline)
+    case 'fault-preflight':
+      return await c9FaultPreflight(row, w, ac, token, memberBaseline)
+  }
+}
+
+/** Cell 1 (GREEN baseline): the abort is visible at the decision-settle
+ *  boundary — the post-settle signal check (L594-630). no-mark: the S6
+ *  race (the durable allow wins the poll; the cascade resolves it; the
+ *  post-settle check closes durably + typed). already-abandoned: the
+ *  explicit mark lands while the router waits — the terminal-mark
+ *  poll settles rejected; the signal abort is a no-op. */
+async function c9DecisionSettle(
+  row: MatrixRow,
+  w: AuthzWorld,
+  ac: AbortController,
+  token: string,
+  memberBaseline: number,
+): Promise<void> {
+  const runtime = c9Runtime(w)
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(w.control, token)
+  if (row.preState === 'no-mark') {
+    await c9Allow(w.control, requestId)
+    // ABORT immediately (same tick, before the bridge's next 5 ms
+    // poll): the cascade reads the already-durable allow → resolves it
+    // (the first decision is authoritative — S6); the router's
+    // post-settle signal check then closes durably + typed.
+    ac.abort()
+    const outcome = await started.promise
+    await c9AssertClose(outcome, w, w.control, requestId, memberBaseline, started.sessionInputCalls, true)
+    return
+  }
+  // already-abandoned: the explicit close lands while the router waits
+  // (the terminal mark); the signal abort fires at the settle point —
+  // a documented no-op (the invocation is already dead).
+  await c9Abandon(w.control, requestId, `c9 ${row.id}: pre-settle abandon`)
+  ac.abort()
+  const outcome = await started.promise
+  await c9AssertClose(outcome, w, w.control, requestId, memberBaseline, started.sessionInputCalls, false)
+}
+
+/** Cell 2 (RED no-mark / GREEN already-abandoned): the abort lands AT
+ *  the terminal-snapshot await (L631) — the reentry is pinned there by
+ *  the proxy. no-mark: the snapshot completes with no mark; the reentry
+ *  then dies at the chain post-wait check (the RAW abort — the unit is
+ *  never consulted — the residual P2 gap). already-abandoned: the mark
+ *  lands while the snapshot is held — the post-snapshot mark check
+ *  (L632-650) catches it (GREEN baseline). */
+async function c9TerminalSnapshot(
+  row: MatrixRow,
+  w: AuthzWorld,
+  ac: AbortController,
+  token: string,
+  memberBaseline: number,
+): Promise<void> {
+  // The proxy's pause barrier: the reentry's first listControlState on
+  // the ref (its pre-dispatch terminal snapshot) holds here.
+  const barrier = c9Barrier()
+  const proxy = c9ProxyControl(w.control, () => {
+    barrier.pauseArrive()
+    return barrier.held
+  })
+  const runtime = c9Runtime(w, { control: proxy })
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(w.control, token)
+  await c9Allow(w.control, requestId)
+  proxy.arm()
+  await withTimeout(barrier.paused, 15_000, 'the terminal-snapshot barrier hold (the reentry is pinned at L631)')
+  if (row.preState === 'already-abandoned') {
+    // The mark lands while the snapshot is held — the fresh snapshot
+    // read (post-release) sees it; the post-snapshot mark check
+    // (L632-650) stops the reentry (the GREEN baseline path).
+    await c9Abandon(w.control, requestId, `c9 ${row.id}: abandon during the snapshot hold`)
+  }
+  ac.abort()
+  barrier.release()
+  const outcome = await started.promise
+  await c9AssertClose(outcome, w, w.control, requestId, memberBaseline, started.sessionInputCalls, true)
+}
+
+/** Cell 2 (RED both pre-states): the abort lands at the OUTER RUNTIME
+ *  QUEUE — the C6-style shared-chain hold (the external named repro for
+ *  follow-up × no mark). The reentry is proven QUEUED behind the hold
+ *  (the map entry changed) before the abort; the release lets the chain
+ *  post-wait check reject with the RAW abort (no close, the unit never
+ *  runs). */
+async function c9OuterQueue(
+  row: MatrixRow,
+  w: AuthzWorld,
+  ac: AbortController,
+  token: string,
+  memberBaseline: number,
+): Promise<void> {
+  const chains = new Map<string, Promise<unknown>>()
+  const runtime = c9Runtime(w, { chains })
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(w.control, token)
+  // The test HOLDS the shared runtime chain BEFORE the allow.
+  const hold = c9Barrier()
+  let holdAcquiredResolve: (() => void) | undefined
+  const holdAcquired = new Promise<void>((resolve) => {
+    holdAcquiredResolve = resolve
+  })
+  const occupation = withTeamLock(chains, AUTHZ_ROOT, () => {
+    holdAcquiredResolve?.()
+    return hold.held
+  })
+  await withTimeout(holdAcquired, 15_000, 'the runtime-chain hold')
+  const occupationChain = chains.get(AUTHZ_ROOT)
+  if (occupationChain === undefined) throw new Error('c9: the occupation chain entry is missing')
+  await c9Allow(w.control, requestId)
+  await c9WaitQueued(chains, occupationChain)
+  if (row.preState === 'already-abandoned') {
+    // The mark is durable while the reentry is queued on the runtime
+    // chain (the control lock is free — it persists now).
+    await c9Abandon(w.control, requestId, `c9 ${row.id}: abandon while queued on the runtime lock`)
+  }
+  ac.abort()
+  hold.release()
+  await withTimeout(occupation, 15_000, 'the occupation settlement')
+  const outcome = await started.promise
+  await c9AssertClose(outcome, w, w.control, requestId, memberBaseline, started.sessionInputCalls, true)
+}
+
+/** Cell 3 (GREEN): the abort lands during the OUTER GATE re-probe
+ *  (success path) — the C7 live check: the gate resolves; the unit's
+ *  in-hold check settles the close (no-mark: persist + typed;
+ *  already-abandoned: the mark check — the idempotent no-op). */
+async function c9GateSuccess(
+  row: MatrixRow,
+  w: AuthzWorld,
+  ac: AbortController,
+  token: string,
+  memberBaseline: number,
+): Promise<void> {
+  const realEnvFacts = w.world.ports.environmentFacts
+  const barrier = c9Barrier()
+  let pauseNext = false
+  const pausableEnvFacts: typeof realEnvFacts = () => {
+    if (pauseNext) {
+      pauseNext = false
+      barrier.pauseArrive()
+      return barrier.held.then(() => realEnvFacts())
+    }
+    return realEnvFacts()
+  }
+  const runtime = c9Runtime(w, { envFacts: pausableEnvFacts })
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(w.control, token)
+  await c9Allow(w.control, requestId)
+  pauseNext = true
+  await withTimeout(barrier.paused, 15_000, 'the gate re-probe barrier hold')
+  if (row.preState === 'already-abandoned') {
+    await c9Abandon(w.control, requestId, `c9 ${row.id}: abandon during the re-probe`)
+  }
+  ac.abort()
+  barrier.release()
+  const outcome = await started.promise
+  await c9AssertClose(outcome, w, w.control, requestId, memberBaseline, started.sessionInputCalls, true)
+}
+
+/** Cell 3 (RED both pre-states): the gate REJECTS (the re-probe faults
+ *  — the fail-closed reject) while the signal is ALREADY aborted. At
+ *  a2b3df79 the fault propagates raw through the gated-branch catch
+ *  (no offer → rethrow) — no close. Expected: the pre-commit settlement
+ *  catches the aborted pre-commit reject → the durable close + typed. */
+async function c9GateReject(
+  row: MatrixRow,
+  w: AuthzWorld,
+  ac: AbortController,
+  token: string,
+  memberBaseline: number,
+): Promise<void> {
+  const realEnvFacts = w.world.ports.environmentFacts
+  const barrier = c9Barrier()
+  let pauseNext = false
+  const pausableFaultyEnvFacts: typeof realEnvFacts = () => {
+    if (pauseNext) {
+      pauseNext = false
+      barrier.pauseArrive()
+      return barrier.held.then(() => {
+        throw new Error(`c9 ${row.id}: the gate re-probe faulted (injected)`)
+      })
+    }
+    return realEnvFacts()
+  }
+  const runtime = c9Runtime(w, { envFacts: pausableFaultyEnvFacts })
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(w.control, token)
+  await c9Allow(w.control, requestId)
+  pauseNext = true
+  await withTimeout(barrier.paused, 15_000, 'the gate re-probe barrier hold (the reject window)')
+  if (row.preState === 'already-abandoned') {
+    await c9Abandon(w.control, requestId, `c9 ${row.id}: abandon during the re-probe`)
+  }
+  ac.abort()
+  barrier.release()
+  const outcome = await started.promise
+  await c9AssertClose(outcome, w, w.control, requestId, memberBaseline, started.sessionInputCalls, true)
+}
+
+/** Cell 4 (GREEN both pre-states): the abort lands while the unit is
+ *  queued on the CONTROL lock (the C8 repro — the occupancy holds (b)
+ *  at its external probe). The reentry is pinned on the shared RUNTIME
+ *  chain (the hold), so the (b) occupancy is established BEFORE the
+ *  reentry can reach the unit; the hold release lets the reentry pass
+ *  its chain post-wait check (the signal is not aborted yet) and queue
+ *  on (b) behind the occupancy. The unit's in-hold check settles the
+ *  close after the occupancy releases (no-mark: persist + typed;
+ *  already-abandoned: the concurrent explicit abandon — queued on (b)
+ *  BEHIND the unit (it was fired later) — rejects exactly-once after
+ *  the unit's close persist; exactly ONE mark either way). */
+async function c9ControlQueue(
+  row: MatrixRow,
+  w: AuthzWorld,
+  ac: AbortController,
+  token: string,
+  memberBaseline: number,
+): Promise<void> {
+  const chains = new Map<string, Promise<unknown>>()
+  const occ = c9Occupancy(w, row.id)
+  const runtime = c9Runtime(w, { chains, control: occ.control })
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(occ.control, token)
+  // The test HOLDS the shared runtime chain BEFORE the allow (the
+  // reentry can only queue behind it).
+  const hold = c9Barrier()
+  let holdAcquiredResolve: (() => void) | undefined
+  const holdAcquired = new Promise<void>((resolve) => {
+    holdAcquiredResolve = resolve
+  })
+  const occupation = withTeamLock(chains, AUTHZ_ROOT, () => {
+    holdAcquiredResolve?.()
+    return hold.held
+  })
+  await withTimeout(holdAcquired, 15_000, 'the runtime-chain hold')
+  const occupationChain = chains.get(AUTHZ_ROOT)
+  if (occupationChain === undefined) throw new Error('c9: the occupation chain entry is missing')
+  await c9Allow(occ.control, requestId)
+  // The reentry is in flight: pin it on the runtime chain (proven by
+  // the changed map entry — it passed the pre-dispatch checks with no
+  // abort yet).
+  await c9WaitQueued(chains, occupationChain)
+  // The occupancy's allow parks at the external probe — holding (b)
+  // NOW (before the hold release, so the reentry CANNOT reach the unit
+  // before the (b) hold is established).
+  await occ.create()
+  const occupancyResolve = occ.startAllow()
+  await withTimeout(occ.probePaused, 15_000, 'the control-lock hold (the occupancy probe)')
+  // Release the hold: the reentry passes its chain post-wait check
+  // (the signal is not aborted yet) and queues on (b) behind the
+  // occupancy.
+  hold.release()
+  await sleep(60)
+  if (row.preState === 'already-abandoned') {
+    // The explicit abandon is FIRED (not awaited — (b) is held by the
+    // occupancy; the abandon queues on (b) behind the unit, which
+    // queued earlier). After the release the unit's check runs first
+    // and persists the close; the abandon then rejects exactly-once
+    // (tolerated — the mark is already durable).
+    void occ.control
+      .abandonControlRequest({
+        rootSessionId: AUTHZ_ROOT,
+        caller: authzHumanCaller(),
+        requestId,
+        reason: `c9 ${row.id}: abandon queued behind the occupancy`,
+      })
+      .catch((error: unknown) => {
+        expect(isControlError(error) && error.code).toBe(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED)
+      })
+  }
+  ac.abort()
+  occ.releaseProbe()
+  await withTimeout(occupancyResolve, 15_000, 'the occupancy resolution')
+  await withTimeout(occupation, 15_000, 'the occupation settlement')
+  const outcome = await started.promise
+  await c9AssertClose(outcome, w, occ.control, requestId, memberBaseline, started.sessionInputCalls, true)
+}
+
+/** Cell 5 (RED both pre-states): the SECOND PREFLIGHT on the fresh
+ *  activation — the abort lands in the pre-reservation window (the
+ *  provider preflight awaits: authority.evaluate / the provider lock
+ *  acquisition / the legacy external-facts probe — the P6-T2 v1 world
+ *  exercises these three; the templateFacts await is v2-only). At
+ *  a2b3df79 the reservation STILL RUNS (the member is created — the
+ *  `MemberActivationRequest` carries no signal). Expected: the
+ *  pre-reservation boundary persists the lock-free close (the unit
+ *  holds (b) — no re-acquisition) and rejects with zero reservation /
+ *  zero provisioning. */
+async function c9PreFlight(
+  row: MatrixRow,
+  w: AuthzWorld,
+  ac: AbortController,
+  token: string,
+  memberBaseline: number,
+): Promise<void> {
+  // The provider's pausable ports (indexed by call: the holder
+  // activation A takes call #1 on each port, the row activation B
+  // takes call #2 — the authority row has no holder, so B is call #1).
+  const realEnv = w.world.ports.environmentFacts
+  const realExt = w.world.ports.externalPolicyFacts
+  const authorityBarrier = c9Barrier()
+  const holderExtBarrier = c9Barrier()
+  const bExtBarrier = c9Barrier()
+  let envCall = 0
+  const providerEnvFacts = async () => {
+    envCall++
+    if (row.point === 'pre-flight-authority') {
+      // B's authority probe (call #1 — no holder) holds.
+      authorityBarrier.pauseArrive()
+      await authorityBarrier.held
+    }
+    return realEnv()
+  }
+  let extCall = 0
+  const providerExternal = async () => {
+    extCall++
+    const isHolder = extCall === 1
+    if (row.point === 'pre-flight-provider-lock') {
+      if (isHolder) {
+        // A holds the provider lock at its step-8 probe.
+        holderExtBarrier.pauseArrive()
+        await holderExtBarrier.held
+      }
+      return realExt()
+    }
+    if (row.point === 'pre-flight-external-facts') {
+      if (isHolder) {
+        holderExtBarrier.pauseArrive()
+        await holderExtBarrier.held
+      }
+      // B's step-8 probe (call #2) holds.
+      bExtBarrier.pauseArrive()
+      await bExtBarrier.held
+    }
+    return realExt()
+  }
+  const provider = createActivationProvider({
+    teamDomain: w.world.domain,
+    blueprintCatalog: w.world.catalog,
+    environmentFacts: providerEnvFacts,
+    externalPolicyFacts: providerExternal,
+    staticModel: TEST_STATIC_MODEL,
+    childSessionFactory: w.world.childFactory,
+    sessionDurability: w.world.durability,
+    surface: w.world.surface,
+  })
+  const runtime = c9Runtime(w, { provider })
+  // The holder activation A (provider-lock / external-facts only): a
+  // direct provider call with a synthetic recovery marker (the provider
+  // admits the blocked team scope when the marker covers it — the
+  // router's control-service verification is not the provider's). A is
+  // a SCOUT (the authz world seeds no scout — template count 0, full
+  // headroom to the per-template cap of 2): A must NOT exhaust the
+  // worker template quota, or the row's activation B (a worker on the
+  // create-member rows) would fail the quota check BEFORE the
+  // pre-reservation window. A parks at its step-8 external probe —
+  // holding the PROVIDER lock. A's own member (created on completion)
+  // is part of the expected final member count for these rows.
+  const hasHolder =
+    row.point === 'pre-flight-provider-lock' || row.point === 'pre-flight-external-facts'
+  if (hasHolder) {
+    const holder = provider
+      .activate({
+        rootSessionId: AUTHZ_ROOT,
+        source: 'leader-explicit',
+        templateId: 'scout',
+        label: `c9-${row.id}-holder`,
+        requestToken: `tok-${row.id}-holder`,
+        callerId: 'inst-leader',
+        recovery: { scopeKeys: ['team'], unavailableSubjects: [] },
+      })
+      .catch(() => undefined) // A's outcome is irrelevant (it completes after the release)
+    await withTimeout(holderExtBarrier.paused, 15_000, 'the holder activation holds the provider lock')
+    void holder
+  }
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(w.control, token)
+  await c9Allow(w.control, requestId)
+  // Pin B at the sub-point:
+  if (row.point === 'pre-flight-authority') {
+    await withTimeout(authorityBarrier.paused, 15_000, 'B is pinned at its authority probe')
+  } else {
+    // B progresses past its authority (real) and QUEUES on the provider
+    // lock behind A (the hold is still parked). A short settle lets B
+    // reach the lock queue deterministically (every remaining step is a
+    // fast in-memory call; B cannot pass the held lock before the
+    // release, which happens AFTER the abort).
+    await sleep(20)
+  }
+  if (row.preState === 'already-abandoned') {
+    // The mark must land AFTER the unit's check (the unit passed — no
+    // mark then) and before the reservation. The abandon is FIRED, not
+    // awaited: the unit holds the control lock (b) while B is inside
+    // the preflight, so an awaited abandon would deadlock on (b) until
+    // the pin releases. After the release the boundary (the fixed
+    // behavior) persists the close and rejects; the abandon then runs
+    // and rejects exactly-once (tolerated — the mark is already
+    // durable). At a2b3df79 (no boundary) the abandon simply lands
+    // after the (unfixed) commit — the row's close assertions carry
+    // the RED.
+    void w.control
+      .abandonControlRequest({
+        rootSessionId: AUTHZ_ROOT,
+        caller: authzHumanCaller(),
+        requestId,
+        reason: `c9 ${row.id}: abandon in the pre-reservation window`,
+      })
+      .catch((error: unknown) => {
+        expect(isControlError(error) && error.code).toBe(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED)
+      })
+  }
+  ac.abort()
+  // Release the pins (B proceeds to the pre-reservation boundary).
+  if (row.point === 'pre-flight-authority') {
+    authorityBarrier.release()
+  } else {
+    holderExtBarrier.release()
+    if (row.point === 'pre-flight-external-facts') {
+      // B now acquires the provider lock and reaches its step-8 probe.
+      await withTimeout(bExtBarrier.paused, 15_000, 'B is pinned at its step-8 external probe')
+      bExtBarrier.release()
+    }
+  }
+  const outcome = await started.promise
+  // The expected member count includes the holder A's member (it
+  // completes on the release — a choreography side effect, not the
+  // row's effect); B's member is the violation the fixed boundary
+  // prevents.
+  await c9AssertClose(
+    outcome,
+    w,
+    w.control,
+    requestId,
+    memberBaseline + (hasHolder ? 1 : 0),
+    started.sessionInputCalls,
+    true,
+  )
+}
+
+/** Cell 6 (GREEN): the commit has ALREADY LANDED (the Phase A work
+ *  admission / the staged activation) when the abort fires (during the
+ *  live delivery). The committed effect STANDS (no retroactive undo),
+ *  the fail-closed settle runs WITHOUT the signal (N6/H4), the typed
+ *  WORK_DELIVERY_FAILED surfaces, and NO abandon mark is written (the
+ *  committed effect is never re-marked). */
+async function c9PostCommit(
+  row: MatrixRow,
+  w: AuthzWorld,
+  ac: AbortController,
+  token: string,
+  memberBaseline: number,
+): Promise<void> {
+  const realDelivery = w.deliveryPort
+  const barrier = c9Barrier()
+  let pauseNext = false
+  const deliveryCalls: unknown[] = []
+  const pausableDelivery: WorkDeliveryPort = {
+    async deliver(args) {
+      deliveryCalls.push(args)
+      if (pauseNext) {
+        pauseNext = false
+        barrier.pauseArrive()
+        await barrier.held
+        if (args.signal !== undefined && (args.signal as { aborted: boolean }).aborted) {
+          // The live delivery honors the cancellation.
+          const reason =
+            args.signal !== undefined
+              ? (args.signal as { reason?: unknown }).reason
+              : undefined
+          throw new Error(`c9 ${row.id}: the live delivery aborted (reason: ${String(reason ?? 'aborted')})`)
+        }
+      }
+      return realDelivery.deliver(args)
+    },
+  }
+  const runtime = c9Runtime(w, { delivery: pausableDelivery })
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(w.control, token)
+  await c9Allow(w.control, requestId)
+  pauseNext = true
+  await withTimeout(barrier.paused, 15_000, 'the live-delivery barrier hold (the Phase A commit has landed)')
+  // The commit evidence (BEFORE the abort): the Phase A admission fact.
+  expect(authzFacts(w.world, 'team-work-admitted').length).toBe(1)
+  ac.abort()
+  barrier.release()
+  const outcome = await started.promise
+  expect(outcome.ok).toBe(false)
+  const error = outcome.ok === false ? outcome.error : undefined
+  expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_CODES.WORK_DELIVERY_FAILED)
+  // The committed effect STANDS — no retroactive undo.
+  expect(authzFacts(w.world, 'team-work-admitted').length).toBe(1)
+  // No re-mark: the committed effect is never abandoned retroactively.
+  const state = await w.control.listControlState(AUTHZ_ROOT)
+  expect(state.abandonments.filter((a) => a.requestId === requestId).length).toBe(0)
+  expect(state.requests.find((r) => r.requestId === requestId)?.status).toBe('decided')
+  if (row.action === 'delegate') {
+    // The staged activation (the scout member) is a committed write too.
+    expect(w.world.domain.repositories.memberInstances.list(AUTHZ_ROOT).length).toBe(memberBaseline + 1)
+  }
+  void deliveryCalls
+}
+
+/** Persist-fault leg 1 (GREEN baseline — the verified contract): the
+ *  admission close itself faults (the C8 control-queue shape + the
+ *  abandon-only persist fault). The unit's close persist fault types
+ *  through the service's durableFailure mapping →
+ *  TEAM_RUNTIME_DURABLE_WRITE_FAILED (fail-closed — the effect NEVER
+ *  commits, no half-abandoned mark). Must STAY green after the fix
+ *  (the settlement's persist retry takes the same typed path). */
+async function c9FaultAdmission(
+  row: MatrixRow,
+  w: AuthzWorld,
+  ac: AbortController,
+  token: string,
+  memberBaseline: number,
+): Promise<void> {
+  const realEnvFacts = w.world.ports.environmentFacts
+  const reprobeBarrier = c9Barrier()
+  let pauseNextReprobe = false
+  const pausableEnvFacts: typeof realEnvFacts = () => {
+    if (pauseNextReprobe) {
+      pauseNextReprobe = false
+      reprobeBarrier.pauseArrive()
+      return reprobeBarrier.held.then(() => realEnvFacts())
+    }
+    return realEnvFacts()
+  }
+  const occ = c9Occupancy(w, row.id)
+  const runtime = c9Runtime(w, { envFacts: pausableEnvFacts, control: occ.control })
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(occ.control, token)
+  await occ.create()
+  const restoreFault = c9PatchAbandonPersistFault(w)
+  try {
+    await c9Allow(occ.control, requestId)
+    pauseNextReprobe = true
+    await withTimeout(reprobeBarrier.paused, 15_000, 'the re-probe barrier hold')
+    const occupancyResolve = occ.startAllow()
+    await withTimeout(occ.probePaused, 15_000, 'the control-lock hold')
+    reprobeBarrier.release()
+    await sleep(60)
+    ac.abort()
+    occ.releaseProbe()
+    await withTimeout(occupancyResolve, 15_000, 'the occupancy resolution')
+    const outcome = await started.promise
+    await c9AssertFault(outcome, w, occ.control, requestId, memberBaseline)
+  } finally {
+    restoreFault()
+  }
+}
+
+/** Persist-fault leg 2 (RED at a2b3df79): the SECOND-PREFLIGHT close
+ *  faults (the authority pin + the abandon-only persist fault). At
+ *  a2b3df79 there is no boundary — the reservation runs (the member is
+ *  created). Expected: the boundary's lock-free close persist faults →
+ *  the settlement maps it to TEAM_RUNTIME_DURABLE_WRITE_FAILED with
+ *  ZERO reservation. */
+async function c9FaultPreflight(
+  row: MatrixRow,
+  w: AuthzWorld,
+  ac: AbortController,
+  token: string,
+  memberBaseline: number,
+): Promise<void> {
+  const realEnv = w.world.ports.environmentFacts
+  const authorityBarrier = c9Barrier()
+  const providerEnvFacts = async () => {
+    authorityBarrier.pauseArrive()
+    await authorityBarrier.held
+    return realEnv()
+  }
+  const provider = createActivationProvider({
+    teamDomain: w.world.domain,
+    blueprintCatalog: w.world.catalog,
+    environmentFacts: providerEnvFacts,
+    externalPolicyFacts: w.world.ports.externalPolicyFacts,
+    staticModel: TEST_STATIC_MODEL,
+    childSessionFactory: w.world.childFactory,
+    sessionDurability: w.world.durability,
+    surface: w.world.surface,
+  })
+  const runtime = c9Runtime(w, { provider })
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(w.control, token)
+  const restoreFault = c9PatchAbandonPersistFault(w)
+  try {
+    await c9Allow(w.control, requestId)
+    await withTimeout(authorityBarrier.paused, 15_000, 'B is pinned at its authority probe')
+    ac.abort()
+    authorityBarrier.release()
+    const outcome = await started.promise
+    await c9AssertFault(outcome, w, w.control, requestId, memberBaseline)
+  } finally {
+    restoreFault()
+  }
+}

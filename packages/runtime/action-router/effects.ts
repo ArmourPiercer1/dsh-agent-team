@@ -175,6 +175,18 @@ export interface EffectContext {
    *  (settlement / fail-closed) re-acquires the SAME map after delivery,
    *  without the request signal. */
   readonly teamLocks: Map<string, Promise<unknown>>
+  /**
+   * fix-control-authz C (the residual pre-reservation boundary) — the
+   * control-service reference (the controlServiceRef pattern; absent
+   * when the recovery dispatch is unavailable). The activation
+   * provider's pre-reservation abort boundary settles the recovery
+   * request's durable close through its LOCK-FREE
+   * `persistAbandonCloseLocked` (the caller holds the control lock
+   * under the effect-admission unit — no re-acquisition, no deadlock).
+   */
+  readonly controlServiceRef?: {
+    readonly current?: import('../control/index.js').ControlService
+  }
 }
 
 /**
@@ -299,7 +311,22 @@ export function withTeamLock<T>(
     if (signal?.aborted) return Promise.reject(signal.reason ?? new Error('operation aborted'))
     return work()
   })
-  teamLocks.set(rootSessionId, next.catch(() => undefined))
+  // fix-control-authz C (seriality): the map entry a LATER caller chains
+  // onto must settle only when BOTH the previous chain has settled AND
+  // this call has settled. The naive `next.catch(() => undefined)` entry
+  // resolves the moment a cancelled waiter's `next` rejects — while the
+  // holder is still running — so a later caller enqueued behind the
+  // cancelled waiter OVERTAKES the holder (queue-slot loss). Chaining
+  // the entry on `previous` (both settlement legs) keeps the cancelled
+  // waiter's slot in the serial chain; the close/reject stays a side
+  // effect on `next` only, never a chain detach.
+  teamLocks.set(
+    rootSessionId,
+    previous.then(
+      () => next.catch(() => undefined),
+      () => next.catch(() => undefined),
+    ),
+  )
   return next
 }
 
@@ -886,6 +913,7 @@ async function runLifecycle(
  */
 async function runDelegate(ctx: EffectContext): Promise<RuntimeActionEffect | WorkChainStage> {
   const request = ctx.request
+  const recoveryControlRequestId = request.recovery?.controlRequestId
   const activationRequest: MemberActivationRequest = {
     rootSessionId: ctx.rootSessionId,
     source: ACTIVATION_SOURCES.LEADER_DELEGATE,
@@ -908,6 +936,27 @@ async function runDelegate(ctx: EffectContext): Promise<RuntimeActionEffect | Wo
     // provider admits a blocked scope when the marker covers it — the
     // reduced original authority).
     ...(request.recovery !== undefined ? { recovery: request.recovery } : {}),
+    // fix-control-authz C (the residual pre-reservation boundary) — the
+    // invocation's live signal threads to the provider preflight (an
+    // abort before the journal reservation → the typed zero-provisioning
+    // reject; an abort after the reservation is the legitimate late
+    // close). The durable close of the recovery request is settled by
+    // the LOCK-FREE callback under the effect-admission unit's control
+    // lock hold (wired ONLY for the marker request — a non-marker
+    // creation gets the typed abort with zero provisioning and no
+    // close — there is no request to close).
+    ...(asAbortLike(request.signal) !== undefined
+      ? { signal: asAbortLike(request.signal) }
+      : {}),
+    ...(recoveryControlRequestId !== undefined && ctx.controlServiceRef?.current !== undefined
+      ? {
+          persistAbandonClose: () =>
+            ctx.controlServiceRef!.current!.persistAbandonCloseLocked({
+              rootSessionId: ctx.rootSessionId,
+              requestId: recoveryControlRequestId,
+            }),
+        }
+      : {}),
   }
   const result = await callProvider(ctx, activationRequest)
   if (result.kind === 'activated') {
@@ -992,6 +1041,7 @@ async function runDelegate(ctx: EffectContext): Promise<RuntimeActionEffect | Wo
  */
 async function runCreateMember(ctx: EffectContext): Promise<RuntimeActionEffect> {
   const request = ctx.request
+  const recoveryControlRequestId = request.recovery?.controlRequestId
   const isHuman = ctx.caller.role === 'human'
   const activationRequest: MemberActivationRequest = {
     rootSessionId: ctx.rootSessionId,
@@ -1010,6 +1060,27 @@ async function runCreateMember(ctx: EffectContext): Promise<RuntimeActionEffect>
     // provider admits a blocked scope when the marker covers it — the
     // reduced original authority).
     ...(request.recovery !== undefined ? { recovery: request.recovery } : {}),
+    // fix-control-authz C (the residual pre-reservation boundary) — the
+    // invocation's live signal threads to the provider preflight (an
+    // abort before the journal reservation → the typed zero-provisioning
+    // reject; an abort after the reservation is the legitimate late
+    // close). The durable close of the recovery request is settled by
+    // the LOCK-FREE callback under the effect-admission unit's control
+    // lock hold (wired ONLY for the marker request — a non-marker
+    // creation gets the typed abort with zero provisioning and no
+    // close — there is no request to close).
+    ...(asAbortLike(request.signal) !== undefined
+      ? { signal: asAbortLike(request.signal) }
+      : {}),
+    ...(recoveryControlRequestId !== undefined && ctx.controlServiceRef?.current !== undefined
+      ? {
+          persistAbandonClose: () =>
+            ctx.controlServiceRef!.current!.persistAbandonCloseLocked({
+              rootSessionId: ctx.rootSessionId,
+              requestId: recoveryControlRequestId,
+            }),
+        }
+      : {}),
   }
   const result = await callProvider(ctx, activationRequest)
   if (result.kind !== 'activated') {
