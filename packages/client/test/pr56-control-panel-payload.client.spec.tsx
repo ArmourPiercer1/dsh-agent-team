@@ -653,3 +653,81 @@ describe('PR56 batch#3 — the full digest beats the ellipsis: (0,1,2) styleshee
     expect(ellipsisRule[0]).toMatch(/white-space:\s*nowrap/)
   })
 })
+
+// ---------------------------------------------------------------------------
+// FORMAL GO (parent ruling) — run5 380px geometry FAIL, minimal CSS width
+// budget fix. ROOT CAUSE (read-only diagnosis, evidence in the PR #56
+// SUMMARY addendum): `.resolveBar` is ONE non-wrapping flex line, so the
+// `flex:none` command buttons + gaps (~128px) squeeze `.controlDetail`
+// (`flex: 1 1 auto; min-width: 0`) to ~60px; inside it the non-shrinking
+// `.controlField dt` labels (~160px max-content) leave ≤0 for the
+// `min-width: 0` values, and the digest's deliberate `break-all` makes
+// the value's min-content ONE CHARACTER (980px one-char column at 380).
+// THE RULES ASSERTED HERE (arithmetic, not declaration count — at the
+// 380 panel the bar content box is ~181px):
+//   ① `.resolveBar{ flex-wrap: wrap }` — the bar may break to two lines;
+//   ② `.controlDetail{ flex: 1 1 min(100%, 20rem) }` — basis floor: at a
+//     181px bar the dl basis resolves through min() to 181 → it takes
+//     line 1 ALONE (grow fills it), the ~112px button pair moves to line
+//     2 (181+8+112 > 181 wraps); at a wide bar (≥ ~452px) the 20rem
+//     basis + grow keeps buttons right beside it — the 1440/675 layout
+//     is preserved by the SAME min() (basis = min(container, 320) ≤
+//     container, so line 1 fits);
+//   ③ `.controlField{ flex-wrap: wrap }` — a line break is forced
+//     exactly when dt + gap + dd flex-BASES exceed the field box, so the
+//     value lands on its own line at the FULL dl width (the parent
+//     warning — dt 160 + dd sharing the line with a collapsed basis —
+//     cannot occur: same-line presence REQUIRES both bases to fit);
+//   ④ `.row{ flex-wrap: wrap }` — a chip/badge too wide for the row
+//     drops to its own line instead of clipping under `.rows` overflow.
+// STATIC stylesheet assertions (jsdom performs no layout — same honesty
+// discipline as the batch #3 specificity pin).
+// ---------------------------------------------------------------------------
+
+async function readLedgerStylesheet(): Promise<string> {
+  const { readFileSync, existsSync } = await import('node:fs')
+  const { join } = await import('node:path')
+  let dir = process.cwd()
+  for (let i = 0; i < 7; i += 1) {
+    for (const candidate of [
+      join(dir, 'src', 'ui', 'TeamLedger.module.css'),
+      join(dir, 'packages', 'client', 'src', 'ui', 'TeamLedger.module.css'),
+    ]) {
+      if (existsSync(candidate)) return readFileSync(candidate, 'utf8')
+    }
+    const parent = join(dir, '..')
+    if (parent === dir) break
+    dir = parent
+  }
+  throw new Error('TeamLedger.module.css not found from the test cwd')
+}
+
+describe('PR56 run5 geometry fix — STATIC width-budget rules (wrap + flex-basis floor; jsdom performs no layout)', () => {
+  it('① .resolveBar wraps (the flex:none command buttons may take their own line)', async () => {
+    const css = await readLedgerStylesheet()
+    const rule = css.match(/\.resolveBar\s*\{[^}]*\}/)
+    if (rule === null) throw new Error('the .resolveBar rule is missing')
+    expect(rule[0]).toMatch(/flex-wrap:\s*wrap/)
+  })
+
+  it('② .controlDetail carries the min(100%, 20rem) flex-basis floor (full bar width at 380, right-beside buttons at 1440)', async () => {
+    const css = await readLedgerStylesheet()
+    const rule = css.match(/\.controlDetail\s*\{[^}]*\}/)
+    if (rule === null) throw new Error('the .controlDetail rule is missing')
+    expect(rule[0]).toMatch(/flex:\s*1 1 min\(100%,\s*20rem\)/)
+  })
+
+  it('③ .controlField wraps (dt + dd share a line ONLY while both bases fit; the value then gets the full dl width on its own line)', async () => {
+    const css = await readLedgerStylesheet()
+    const rule = css.match(/\.controlField\s*\{[^}]*\}/)
+    if (rule === null) throw new Error('the .controlField rule is missing')
+    expect(rule[0]).toMatch(/flex-wrap:\s*wrap/)
+  })
+
+  it('④ .row wraps (fixed flex:none siblings drop to their own line instead of clipping under .rows)', async () => {
+    const css = await readLedgerStylesheet()
+    const rule = css.match(/\.row\s*\{[^}]*\}/)
+    if (rule === null) throw new Error('the .row rule is missing')
+    expect(rule[0]).toMatch(/flex-wrap:\s*wrap/)
+  })
+})

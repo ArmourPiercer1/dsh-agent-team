@@ -1,0 +1,14 @@
+$ npx vitest run test/pr56-control-panel-payload.client.spec.tsx test/pr56-control-subject-payload.test.ts  (RUN5 LAYOUT FIX — GREEN: four static width-budget pins + all prior PR56 assertions)
+2026-10-01T21:57:51Z
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr56-client-panel/packages/client
+
+ ✓ test/pr56-control-subject-payload.test.ts (42 tests) 7ms
+ ✓ test/pr56-control-panel-payload.client.spec.tsx (31 tests) 118ms
+
+ Test Files  2 passed (2)
+      Tests  73 passed (73)
+   Start at  21:57:52
+   Duration  2.14s (transform 1.04s, setup 19ms, import 1.65s, tests 125ms, environment 338ms)
+
+[exit code: 0]

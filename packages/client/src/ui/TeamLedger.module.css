@@ -70,6 +70,9 @@
 
 .row {
   display: flex;
+  /* run5 geometry fix ④: a chip/badge too wide for the row drops to its
+     own line instead of clipping under `.rows` (overflow: hidden). */
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   width: 100%;
@@ -198,6 +201,12 @@
    unchanged). */
 .resolveBar {
   display: flex;
+  /* run5 geometry fix ①: on a narrow bar the flex:none command buttons
+     (+gaps, ~128px) used to squeeze the detail list below ~60px. With
+     wrap + the `.controlDetail` flex-basis floor (②) the list takes the
+     first line at full width and the buttons move to a line of their
+     own — never an overflow, never a collapse. */
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   min-width: 0;
@@ -277,13 +286,23 @@
   display: flex;
   flex-wrap: wrap;
   gap: 2px 12px;
-  flex: 1 1 auto;
+  /* run5 geometry fix ②: flex-basis floor via min(). A 181px bar: the
+     basis resolves to 181, the list fills the first line and the
+     buttons wrap below. A wide bar (≥ ~452px content): the basis is
+     20rem, list + buttons share one line and the list grows — the
+     1440/675 layout is preserved by construction. */
+  flex: 1 1 min(100%, 20rem);
   margin: 0;
   min-width: 0;
 }
 
 .controlField {
   display: flex;
+  /* run5 geometry fix ③: dt and dd keep one line ONLY while both flex
+     bases fit (a line break is forced exactly when they do not, so the
+     value can never be squeezed beside a long label — it lands on its
+     own line at the FULL list width instead). */
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 6px;
   min-width: 0;
