@@ -1486,6 +1486,8 @@ test('81 ENTRY-STAGE failure writes ONE 0600 sanitized DOM dump into the evidenc
   const dump = join(f.evidence, 's2o-entry-dump.html')
   assert.ok(existsSync(dump), 'the failure dump exists')
   assert.equal(statSync(dump).mode & 0o777, 0o600, 'dump is 0600')
+  assert.equal(existsSync(join(f.evidence, 's2o-entry-dump.png')), false, 'entry dump is DOM-only: NO whole-page PNG is ever written (external-found ruling — pixels unsanitizable)')
+  assert.equal(readdirSync(f.evidence).filter((n) => n.startsWith('s2o-entry-dump')).length, 1, 'exactly ONE entry-dump artifact')
   const text = readFileSync(dump, 'utf8')
   assert.ok(text.includes('Ungrouped'), 'the region content survives sanitization')
   assert.ok(!text.includes('PRIVATE-tok-launch'), 'the launch token never rides the dump')

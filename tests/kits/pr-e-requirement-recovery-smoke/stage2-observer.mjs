@@ -836,11 +836,15 @@ async function activateFreshBootRail(page, { rootSessionId, nowFn, sleep }) {
   throw new ObserverError('S2O_OVERFLOW_UNBOUNDED', 'the session overflow kept offering more pages past the bounded 5 expansions — refusing an unbounded rail walk')
 }
 
-/** BATCH-6 entry-stage failure dump — ONE sanitized file (0600) in the
- *  evidence dir, plus a screenshot ONLY when the RAW region html carries no
- *  launch secret at all (pixels cannot be sanitized; a clean raw DOM is the
- *  bound that makes the screenshot lawful). Fully best-effort: ANY dump
- *  failure is swallowed so the typed failure it documents still rides out. */
+/** BATCH-6 entry-stage failure dump — ONE sanitized DOM file (0600) in the
+ *  evidence dir. DOM ONLY by ruling: the external review found that a
+ *  whole-page screenshot could capture pixels OUTSIDE the scanned region
+ *  (body portals — e.g. the WelcomeNotice), and PNG pixels cannot be
+ *  sanitized; the optional entry-failure PNG is therefore OMITTED entirely
+ *  (coordinator ruling on the external finding — no scanning framework, no
+ *  scope-widening). The success-path S9 screenshots ride their own already
+ *  reviewed code path and are untouched. Fully best-effort: ANY dump failure
+ *  is swallowed so the typed failure it documents still rides out. */
 async function captureEntryFailureDump(page, { evidenceDir, secrets, code }) {
   try {
     const region = await page.evaluate(entryRegionDumpDom)
@@ -848,12 +852,7 @@ async function captureEntryFailureDump(page, { evidenceDir, secrets, code }) {
     const sanitized = sanitizeDomDump(raw, secrets)
     const header = `<!-- s2o entry-stage failure dump\n     code: ${String(code).replace(/[^\w.:-]/g, '_').slice(0, 64)}\n     region: ${String(region?.region ?? 'unknown')}\n     url queries/fragments and launch secrets sanitized by sanitizeDomDump\n-->\n`
     const capped = (header + sanitized).slice(0, ENTRY_DUMP_MAX_CHARS)
-    const written = writeEntryDumpAtomic({ dir: evidenceDir, text: capped })
-    if (written.written && scanForSecrets(raw, secrets).length === 0 && typeof page.screenshot === 'function') {
-      const shot = join(evidenceDir, 's2o-entry-dump.png')
-      await page.screenshot({ path: shot })
-      try { chmodSync(shot, 0o600) } catch { /* best effort */ }
-    }
+    writeEntryDumpAtomic({ dir: evidenceDir, text: capped })
   } catch { /* the dump NEVER masks or replaces the typed failure */ }
 }
 
