@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-policy-reset
+
+ ✓ packages/runtime/test/governance-reset-tombstone.test.ts (10 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  05:39:27
+   Duration  413ms (transform 235ms, setup 0ms, import 312ms, tests 5ms, environment 0ms)
+
+EXIT=0

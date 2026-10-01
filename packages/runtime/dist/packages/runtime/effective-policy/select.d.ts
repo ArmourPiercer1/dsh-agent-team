@@ -12,7 +12,13 @@
  * - `kind: 'autonomy-overlay'`, `scope: 'instance'` (this instance) → the
  *   `instanceOverlay` slot;
  * - `kind: 'human-override'` → the `humanOverride` slot (the instance-
- *   scoped record wins over the team-scoped one, per the policy contract);
+ *   scoped slot's LATEST event wins over the team-scoped slot's LATEST
+ *   event, per the policy contract; a slot whose latest event is a RESET
+ *   TOMBSTONE — an empty values set, the audit-preserving reset, PR-A /
+ *   ADR-05 — has NO effective value for that slot and the precedence
+ *   falls to the team slot, which falls to the lower layers when IT is a
+ *   tombstone; an OLDER event of the same slot is never resurrected —
+ *   the pre-reset history is audit-only);
  * - multiple candidates for one slot: the HIGHEST `generation` wins, ties
  *   broken by the LEXICOGRAPHICALLY SMALLEST `recordId` (deterministic;
  *   multi-overlay composition is owned by the later governance work).
@@ -31,5 +37,15 @@ export declare function selectPolicyOverrides(overrides: readonly GovernanceOver
     readonly templateOverlay?: AutonomyOverlayRecord;
     readonly instanceOverlay?: AutonomyOverlayRecord;
     readonly humanOverride?: HumanOverrideRecord;
+    /**
+     * The LATEST durable event of each human-override slot (tombstone
+     * included) — the staleness anchor of the canonical read counts every
+     * slot commit the read reflects (a reset tombstone is such a commit
+     * even though it contributes no value).
+     */
+    readonly humanSlotEvents?: {
+        readonly instance?: GovernanceOverrideRecord;
+        readonly team?: GovernanceOverrideRecord;
+    };
 };
 //# sourceMappingURL=select.d.ts.map

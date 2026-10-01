@@ -1,0 +1,150 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-policy-reset
+
+ ❯ packages/runtime/test/governance-reset-tombstone.test.ts (10 tests | 3 failed) 10ms
+     ✓ reset re-issues the slot at generation + 1 with empty values; nothing is deleted 2ms
+     ✓ the tombstone winner contributes nothing to the merged read 0ms
+     ✓ the tombstone recordId is deterministic; a re-reset is a typed no-op 0ms
+     ✓ a member cannot reset the TEAM slot (typed rejection, the reset-hole closure) 0ms
+     ✓ a member cannot reset ANOTHER instance slot (typed rejection) 0ms
+     ✓ a stale expectedGeneration conflicts; the fresh guard resets 0ms
+     ✓ the tombstone passes the storage validator: seed + re-issue + tombstone all survive the reopen 0ms
+     × repro: the instance deny resets -> the inherited TEAM deny is restored (not the template allow) 4ms
+     × the reopened canonical read (fresh read from the durable store) still sees the TEAM deny 1ms
+     × control: a TEAM-slot tombstone contributes no value either (the template baseline returns) 1ms
+ ❯ packages/runtime/test/remote-override-expected-generation.test.ts (18 tests | 1 failed) 8ms
+     ✓ v7 override.set carries the optional expectedGeneration (present → the value, verbatim) 1ms
+     ✓ v7 override.set without the field parses it as structurally absent (the legacy shape) 0ms
+     ✓ every v1–v6 closed set rejects the field (malformed-params / unknown-field) 0ms
+     ✓ a malformed v7 expectedGeneration (1.5 / -1 / "4" / null) → malformed-params on the field 0ms
+     ✓ v7 override.reset mirrors the set closed set (present → parses; v6 field → rejected; string → rejected) 0ms
+     ✓ v7 absent guard commits (the legacy shape on v7); provenance echoes v7 0ms
+     ✓ the v1 byte-for-byte call still works (no field, v1 envelope); provenance echoes v1 0ms
+     ✓ a stale v7 guard → the typed OVERRIDE_GENERATION_CONFLICT passes through (invariant 4b), zero write 0ms
+     ✓ a matching v7 guard commits (g3); provenance echoes v7 0ms
+     ✓ v7 absent guard after the slot moved → legacy: the write lands (g4) 0ms
+     ✓ a stale v7 reset guard → the typed conflict on the wire, no tombstone 0ms
+     ✓ v7 absent reset → legacy: removes (the g5 tombstone) 0ms
+     ✓ present: the parsed number is forwarded verbatim into the service guard (set + reset) 0ms
+     ✓ absent: the field is structurally ABSENT from the service call (no undefined key — the legacy shape) 0ms
+     × model->reset->mcp: get(model) is null at the slot (NOT the resurrected g1 value A / stale generation 1) 4ms
+     ✓ get(mcp) returns the LATEST row (g3) with the current slot generation 0ms
+     ✓ the next UI write guarded by the CURRENT slot generation commits (no spurious conflict); the resurrected stale generation still conflicts 0ms
+     ✓ control: get(model) after the fresh write returns the LATEST row; the untouched TEAM slot reads null 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/governance-reset-tombstone.test.ts > E-regression — the instance reset tombstone must not mask a still-effective TEAM human deny (the canonical read) > repro: the instance deny resets -> the inherited TEAM deny is restored (not the template allow)
+AssertionError: expected { kind: 'allow', items: [ 'srv/x' ] } to deeply equal { kind: 'deny' }
+
+- Expected
++ Received
+
+  {
+-   "kind": "deny",
++   "items": [
++     "srv/x",
++   ],
++   "kind": "allow",
+  }
+
+ ❯ packages/runtime/test/governance-reset-tombstone.test.ts:456:59
+    454|     // event is a tombstone (NO effective value for that slot), so the
+    455|     // precedence falls back to the team slot.
+    456|     expect(eReadAfterReset.policy.cells['mcp'].effective).toEqual({ ki…
+       |                                                           ^
+    457|     expect(eReadAfterReset.policy.cells['mcp'].team.layer).toBe('human…
+    458|     expect(eReadAfterReset.policy.cells['mcp'].team.recordId).toBe('ov…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/runtime/test/governance-reset-tombstone.test.ts > E-regression — the instance reset tombstone must not mask a still-effective TEAM human deny (the canonical read) > the reopened canonical read (fresh read from the durable store) still sees the TEAM deny
+AssertionError: expected { kind: 'allow', items: [ 'srv/x' ] } to deeply equal { kind: 'deny' }
+
+- Expected
++ Received
+
+  {
+-   "kind": "deny",
++   "items": [
++     "srv/x",
++   ],
++   "kind": "allow",
+  }
+
+ ❯ packages/runtime/test/governance-reset-tombstone.test.ts:483:57
+    481|     if (tombstone === undefined) throw new Error('tombstone missing af…
+    482|     expect(tombstone.values).toEqual({})
+    483|     expect(eReopenedRead.policy.cells['mcp'].effective).toEqual({ kind…
+       |                                                         ^
+    484|     expect(eReopenedRead.policy.cells['mcp'].team.layer).toBe('humanOv…
+    485|     expect(eReopenedRead.policy.cells['mcp'].team.recordId).toBe('ovr-…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/runtime/test/governance-reset-tombstone.test.ts > E-regression — the instance reset tombstone must not mask a still-effective TEAM human deny (the canonical read) > control: a TEAM-slot tombstone contributes no value either (the template baseline returns)
+AssertionError: expected { …(3) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "overrideId": "ovr-reset-inst-alpha-g1",
+  "scope": "instance",
+  "values": {},
+}
+
+ ❯ packages/runtime/test/governance-reset-tombstone.test.ts:493:42
+    491|     expect(eReadBothReset.policy.cells['mcp'].effective).toEqual({ kin…
+    492|     expect(eReadBothReset.policy.cells['mcp'].team.layer).toBe('templa…
+    493|     expect(eReadBothReset.humanOverride).toBeUndefined()
+       |                                          ^
+    494|     expect(eReadBothReset.committedGeneration).toBe(2)
+    495|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/runtime/test/remote-override-expected-generation.test.ts > G-regression — override.get derives from the CURRENT LATEST slot winner only (no history resurrection) > model->reset->mcp: get(model) is null at the slot (NOT the resurrected g1 value A / stale generation 1)
+AssertionError: expected { schemaVersion: 2, …(8) } to be null
+
+- Expected:
+null
+
++ Received:
+{
+  "generation": 1,
+  "instanceId": "inst-d",
+  "kind": "human-override",
+  "recordId": "ovr-model-inst-d-g0",
+  "rootSessionId": "root-session-remote-override-gen",
+  "schemaVersion": 2,
+  "scope": "instance",
+  "updatedAt": "2026-09-29T00:00:00.000Z",
+  "values": {
+    "model": {
+      "items": [
+        "m-a",
+      ],
+      "kind": "allow",
+    },
+  },
+}
+
+ ❯ packages/runtime/test/remote-override-expected-generation.test.ts:721:38
+    719|     expect(D.d3.ok).toBe(true)
+    720|     expect(dataOf(D.d3)['generation']).toBe(3)
+    721|     expect(dataOf(D.d4)['override']).toBeNull()
+       |                                      ^
+    722|   })
+    723|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 24 passed (28)
+   Start at  05:35:59
+   Duration  717ms (transform 691ms, setup 0ms, import 963ms, tests 18ms, environment 0ms)
+
+EXIT=1
