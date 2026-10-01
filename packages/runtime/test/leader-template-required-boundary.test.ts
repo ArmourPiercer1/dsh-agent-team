@@ -47,6 +47,7 @@ import {
 import type { EnvironmentFact } from '../../domain/compatibility/src/index.js'
 import {
   createRuntimeRequirementFactsProvider,
+  requirementFactScopeRoleOf,
   type RequirementFactsPorts,
 } from '../requirement-facts/index.js'
 import {
@@ -201,7 +202,11 @@ function templateFeedOf(
     (
       await provider.resolveFacts({
         requirements: templates[templateId] ?? [],
-        scope: { kind: 'template', templateId },
+        // Blocker-1: the template scope carries its role identity (the
+        // bound blueprint knows its leader template id — the leader IS
+        // the root: the root mounts config.rootPresetId; the member is the
+        // MEMBER entry, plan §C.2 R8).
+        scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(world.blueprint.leader.templateId, templateId) },
       })
     ).environmentFacts
 }
