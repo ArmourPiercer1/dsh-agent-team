@@ -1,0 +1,3 @@
+$ cd packages/runtime && pnpm run typecheck
+$ tsc -p tsconfig.json
+EXIT=0 (typecheck at the pre-callback fix head)

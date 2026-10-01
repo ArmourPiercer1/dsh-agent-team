@@ -1,0 +1,21 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-policy-reset
+
+ ✓ packages/runtime/test/governance-idempotence.test.ts (6 tests) 3ms
+ ✓ packages/runtime/test/governance-concurrency.test.ts (5 tests) 4ms
+ ✓ packages/runtime/test/p7t2-override-precedence.test.ts (12 tests) 4ms
+ ✓ packages/runtime/test/governance-restart.test.ts (5 tests) 4ms
+ ✓ packages/runtime/test/governance-mutation-authority.test.ts (20 tests) 5ms
+ ✓ packages/runtime/test/effective-policy-policy-state-live.test.ts (3 tests) 3ms
+ ✓ packages/runtime/test/boundary-committed-applied.test.ts (3 tests) 3ms
+ ✓ packages/runtime/test/restart-effective-policy.test.ts (2 tests) 2ms
+ ✓ packages/runtime/test/effective-policy-single-source.test.ts (3 tests) 3ms
+ ✓ packages/runtime/test/p8s4b-cell-provenance.test.ts (10 tests) 4ms
+ ✓ packages/runtime/test/multi-mcp-wiring.test.ts (49 tests) 6ms
+
+ Test Files  11 passed (11)
+      Tests  118 passed (118)
+   Start at  06:05:05
+   Duration  1.19s (transform 1.73s, setup 0ms, import 2.85s, tests 41ms, environment 1ms)
+
+EXIT=0

@@ -1438,7 +1438,27 @@ export function createS6RemotePorts(options) {
                 const root = assertBoundRoot('override.get', teamSessionId);
                 const records = options.overrideRecords(root);
                 const effectiveScope = scope ?? 'team';
+                // ENDPOINT SEMANTICS (the mixed-kind closure, external review of
+                // PR #47): `override.get` is the HUMAN read plane. The durable
+                // slot identity (governance/slot.ts) is KIND + scope +
+                // rootSessionId + instanceId — the capability is a VALUE inside
+                // the row (the full-slot re-issue `values` map), never part of
+                // the key. The TeamGovernance per-member editor reads and writes
+                // the EXPLICIT HUMAN override slot (the client documents the read
+                // as "the Explicit Human Override record"; the set/reset handlers
+                // close the slot by the host-derived authority — a human caller
+                // lands in the human-override slot). So the LATEST row is
+                // selected per the FULL slot identity INCLUDING KIND:
+                // member/leader-kind rows (autonomy-overlay) live in their own
+                // lane — the canonical effective-policy read consumes them as
+                // the overlay layers — and a member-kind generation is NEVER
+                // surfaced here: each kind's slot has its OWN independent
+                // generation sequence (the write-path guard, selectSlotWinner,
+                // is already kind-scoped — a non-human generation is never a
+                // valid human CAS input).
                 const inSlot = (record) => {
+                    if (record['kind'] !== 'human-override')
+                        return false;
                     if (record['scope'] !== effectiveScope)
                         return false;
                     if (effectiveScope === 'instance' && record['instanceId'] !== targetInstanceId)
@@ -1447,14 +1467,26 @@ export function createS6RemotePorts(options) {
                         return false;
                     return true;
                 };
-                // The slot winner (any capability). A RESET re-issues the slot as a
-                // higher-generation TOMBSTONE (empty `values`) — the durable
-                // audit-preserving reset (PR-A / ADR-03). When the slot winner IS
-                // the tombstone, the slot is revoked: report null — the pre-PR-A
-                // wire behavior (the old reset deleted the record, so a read after
-                // a reset found nothing). The effective-policy path
-                // (`selectPolicyOverrides`) already treats the tombstone's empty
-                // values as contributing nothing.
+                // The CURRENT LATEST slot winner (any capability) WITHIN the
+                // human slot. The slot is a FULL-SLOT re-issue lane: the latest
+                // row is the COMPLETE current state of the slot, so the read
+                // derives from THAT row ONLY:
+                //
+                // - the target capability present in the latest row -> that row
+                //   (value + its generation — the generation the WRITE path
+                //   validates the next `expectedGeneration` guard against);
+                // - the target capability ABSENT from the latest row -> null at
+                //   the slot. This covers the RESET TOMBSTONE (the empty `values`
+                //   re-issue — the durable audit-preserving reset, PR-A / ADR-03;
+                //   the pre-PR-A wire behavior, when the old reset deleted the
+                //   record and a read after a reset found nothing) AND a latest
+                //   row written for a DIFFERENT capability after a reset: an older
+                //   history row carrying the capability is AUDIT-ONLY and is NEVER
+                //   scanned (resurrecting it would (a) show a value the reset
+                //   revoked and (b) hand the client the OLD row's generation,
+                //   making the next guarded write false-conflict against the
+                //   LATEST row the guard actually checks — a deterministic
+                //   OVERRIDE_GENERATION_CONFLICT with zero concurrent writers).
                 let slotWinner = null;
                 for (const record of records) {
                     if (!inSlot(record))
@@ -1465,27 +1497,12 @@ export function createS6RemotePorts(options) {
                     if (slotWinner === null || generation > slotWinner['generation'])
                         slotWinner = record;
                 }
-                if (slotWinner !== null) {
-                    const values = slotWinner['values'];
-                    if (isPlainRecord(values) && Object.keys(values).length === 0)
-                        return null;
-                }
-                const matches = records.filter((record) => {
-                    if (!inSlot(record))
-                        return false;
-                    const values = record['values'];
-                    return isPlainRecord(values) && capability in values;
-                });
-                // The most-recently-written record wins (the slot winner by generation).
-                let winner = null;
-                for (const record of matches) {
-                    const generation = record['generation'];
-                    if (!isSafeInt(generation))
-                        continue;
-                    if (winner === null || generation > winner['generation'])
-                        winner = record;
-                }
-                return winner;
+                if (slotWinner === null)
+                    return null;
+                const values = slotWinner['values'];
+                if (!isPlainRecord(values) || !(capability in values))
+                    return null;
+                return slotWinner;
             },
             async set(request, caller) {
                 const root = assertBoundRoot('override.set', request.teamSessionId);

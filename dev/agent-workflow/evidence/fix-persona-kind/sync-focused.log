@@ -1,0 +1,18 @@
+$ pnpm vitest run packages/runtime/test/persona-kind-provider-preflight.test.ts packages/runtime/test/persona-kind-shipped-dist-smoke.test.ts packages/runtime/test/runtime-requirement-facts-provider.test.ts packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts packages/runtime/test/leader-template-required-boundary.test.ts packages/runtime/test/leader-recovery-next-boundary-exit.test.ts packages/runtime/test/mcp-live-readiness-to-requirement-fact.test.ts  (HEAD 3c340110)
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-persona-kind
+
+ ✓ packages/runtime/test/runtime-requirement-facts-provider.test.ts (15 tests) 10ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts (14 tests) 23ms
+ ✓ packages/runtime/test/mcp-live-readiness-to-requirement-fact.test.ts (10 tests) 9ms
+ ✓ packages/runtime/test/persona-kind-shipped-dist-smoke.test.ts (2 tests) 5ms
+ ✓ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts (1 test) 35ms
+ ✓ packages/runtime/test/leader-template-required-boundary.test.ts (7 tests) 86ms
+ ✓ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts (42 tests) 7ms
+
+ Test Files  7 passed (7)
+      Tests  91 passed (91)
+   Start at  06:43:25
+   Duration  1.47s (transform 3.64s, setup 0ms, import 5.13s, tests 176ms, environment 0ms)
+
+EXIT=0

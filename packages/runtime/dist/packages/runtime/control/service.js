@@ -1905,17 +1905,24 @@ export function createControlService(options) {
             if (request.payload.executionCoupling !== CONTROL_EXECUTION_COUPLINGS.INLINE) {
                 return { kind: 'none' };
             }
-            // A durable decision won the race: the first decision is
-            // authoritative — no second terminal mark over it; the wait
-            // RESOLVES with the decision (today's poll fast path).
+            // fix-control-authz C: the durable ABANDON mark is TERMINAL — it
+            // is consulted FIRST, before any decision (the pre-fix order let a
+            // decision recorded BEFORE the abandon win: the wait resolved with
+            // the stale allow — the key negative "abort 后旧 allow/decision
+            // 不得执行 operation", refactor-plan D.4/D.5). The abandon closes
+            // the allow: no terminal mark is written over it (exactly-once)
+            // and the caller settles the waiter rejected typed.
+            if (state.abandonments.some((a) => a.payload.requestId === requestId)) {
+                return { kind: 'already-abandoned' };
+            }
+            // A durable decision WITHOUT an abandon mark is authoritative — no
+            // second terminal mark over it; the wait RESOLVES with the
+            // decision (today's poll fast path — the S6 pin is preserved: a
+            // racing decision with NO abandon mark still settles the wait with
+            // the decision and writes no abandon fact).
             const decision = state.decisions.find((d) => d.payload.requestId === requestId);
             if (decision !== undefined) {
                 return { kind: 'decided', decision: toDecisionRecord(decision.entry, decision.payload) };
-            }
-            // Already terminal via the abandon mark (a concurrent explicit
-            // abandon landed first): exactly-once — no second fact.
-            if (state.abandonments.some((a) => a.payload.requestId === requestId)) {
-                return { kind: 'already-abandoned' };
             }
             // PENDING inline: durably close it FIRST (the shared terminal-mark
             // write — exactly-once + storage-fault contract by code reuse),
@@ -2035,6 +2042,21 @@ export function createControlService(options) {
                     return;
                 try {
                     const state = loadControlState(root);
+                    // fix-control-authz C: the durable ABANDON mark is TERMINAL —
+                    // the waiter settles REJECTED now. The pre-fix poll consulted
+                    // decisions only: a parked waiter on an abandoned row with a
+                    // pre-abandon decision RESOLVED the stale allow, and a waiter
+                    // on an abandoned row without one (including the COLD waiter
+                    // of a restart retry hitting the abandoned row — the row's
+                    // scope key is reused) polled FOREVER for a decision that can
+                    // no longer land. The terminal mark beats any stale decision —
+                    // the same precedence the inline-abort cascade applies on the
+                    // signal path (refactor-plan D.4/D.5: abort 后旧 allow/
+                    // decision 不得执行 operation).
+                    if (state.abandonments.some((a) => a.payload.requestId === requestId)) {
+                        settle(() => reject(new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED, `ControlService: the request '${requestId}' was abandoned before the wait could settle (the durable abandon mark is the terminal outcome — no decision can land on an abandoned request)`, { rootSessionId: root, requestId })));
+                        return;
+                    }
                     const decision = state.decisions.find((d) => d.payload.requestId === requestId);
                     if (decision !== undefined) {
                         settle(() => resolve(toDecisionRecord(decision.entry, decision.payload)));
@@ -2063,6 +2085,132 @@ export function createControlService(options) {
             poll();
         });
     }
+    // --- commitEffectIfAuthorized (fix-control-authz C — the effect-admission boundary) ---
+    /**
+     * The EFFECT-ADMISSION BOUNDARY (the external-review TOCTOU fix): the
+     * linearized authorization check for the inline recovery
+     * re-execution's FIRST EFFECT.
+     *
+     * The serialization point (the lock ordering, documented): this unit
+     * runs under THIS SERVICE'S per-team lock — the SAME promise chain
+     * the durable abandon write goes through (`abandonControlRequest` and
+     * the inline-abort cascade commit the terminal mark under it via
+     * `withTeamLock(teamLocks, ...)`). Inside the one lock hold: (1) the
+     * durable terminal state is read fresh from the ledger, (2) if the
+     * request carries the terminal ABANDON mark the unit rejects typed
+     * CONTROL_REQUEST_ABANDONED without running the effect, (3) if the
+     * invocation's live signal (C-2 — `input.signal`) is ABORTED the unit
+     * persists the abandon (the durable close — the same footprint as an
+     * explicit abandon, exactly-once) and rejects typed
+     * CONTROL_REQUEST_ADMISSION_ABORTED without running the effect,
+     * (4) otherwise the caller's effect commit (the router's
+     * `executeEffectLocked` — the work admission fact / the effect
+     * commit) runs, still under the lock. That is what linearizes
+     * (authorization + first effect) against the durable abandon AND the
+     * live abort: a durable abandon or a signal abort is either committed
+     * BEFORE the unit (→ the check sees it; the effect never commits) or
+     * strictly AFTER the unit (→ the effect had already durably committed
+     * before the terminal state — the legitimate late close, the CCR-4
+     * semantics; for an abort that lands after the commit the committed
+     * effect is NEVER retroactively undone or re-marked). Nothing can
+     * land BETWEEN the checks and the effect commit — all are inside the
+     * one hold.
+     *
+     * Deadlock argument: the ONLY new acquisition direction is the
+     * router's team chain (a) → this lock (b) (the router's gated chain
+     * work invokes this unit after the gate, while holding its chain).
+     * Every (b) section (requestControl / resolveControl /
+     * abandonControlRequest / the cascade / guardOperation / this unit)
+     * acquires (a) NEVER — the control service never takes the router's
+     * chain and never calls back into the router; and the unit's caller
+     * work (the effect commit) performs only storage-seam writes + port
+     * calls (no (b) re-entry — the inline effect path consults no other
+     * control operation). Consistent global order (a) → (b) → storage
+     * seam, no (b) → (a) anywhere → no new lock cycles.
+     *
+     * This writes NO control facts on the authorization path (no
+     * synthetic "consumed" mark — the linearization is the lock
+     * itself); the ONLY durable write this unit performs is the abandon
+     * close on the abort path (the rejection's evidence — the documented
+     * fail-closed exception, like CONTROL_REQUEST_STALE), changes NO
+     * request state, and is transparent for a non-abandoned, non-aborted
+     * request (the unit runs the caller's effect and returns its result
+     * unchanged).
+     */
+    async function commitEffectIfAuthorized(input) {
+        const root = parseRoot(input.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'wait');
+        if (typeof input.requestId !== 'string' || input.requestId.length === 0) {
+            throw malformed('wait', 'requestId', 'requestId must be a non-empty string');
+        }
+        return withTeamLock(teamLocks, root, async () => {
+            const state = loadControlState(root);
+            if (state.abandonments.some((a) => a.payload.requestId === input.requestId)) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED, `ControlService: the request '${input.requestId}' is durably abandoned — the terminal mark closed the authorization; the effect admission is rejected (zero effect)`, { rootSessionId: root, requestId: input.requestId });
+            }
+            // C-2 (the external-review residual) — the LIVE signal check,
+            // inside the SAME lock hold as the terminal-state read and
+            // BEFORE the effect commit: an abort that landed at ANY wait
+            // point of the admission (the gate re-probe await, this
+            // unit's control-lock queue) lands here. The durable abandon is
+            // PERSISTED first (exactly-once — a later late-abandon then
+            // no-ops on the already-terminal state) so an
+            // abort-during-wait leaves the SAME durable footprint as an
+            // explicit abandon; then the typed reject. An abort that lands
+            // AFTER the commit is the legitimate late close (CCR-4 — the
+            // committed effect is never retroactively undone or re-marked).
+            if (input.signal !== undefined && input.signal.aborted === true) {
+                await commitAbandonmentFact(root, input.requestId, 'the invocation aborted at the effect-admission boundary (the durable close)');
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ADMISSION_ABORTED, `ControlService: the invocation aborted before the effect commit — the durable abandon was persisted at the effect-admission boundary (the same footprint as an explicit abandon); the effect admission is rejected (zero effect)`, { rootSessionId: root, requestId: input.requestId });
+            }
+            return input.commitEffect();
+        });
+    }
+    /**
+     * fix-control-authz C (the residual pre-reservation boundary) — the
+     * LOCK-FREE durable close for the activation provider's
+     * pre-reservation abort boundary (the provider preflight awaits —
+     * the compatibility authority, the v2 template-scope feed, the
+     * provider-lock queue, the step-8 external-facts read — which run
+     * INSIDE `commitEffectIfAuthorized`'s commitEffect, i.e. under this
+     * service's per-team lock hold).
+     *
+     * Precondition: the caller ALREADY holds this service's per-team
+     * lock (the effect-admission unit's lock hold). This function
+     * performs NO lock acquisition: re-acquiring would deadlock on the
+     * caller's own hold. It is the same `commitAbandonmentFact`
+     * primitive the explicit abandon and the unit's abort branch use —
+     * the terminal mark is written exactly once; the re-read below is
+     * the lock's fresh-state verification (invariant 45).
+     *
+     * Contract: resolves when the durable close is GUARANTEED — either
+     * this call persisted the terminal mark, or the mark was ALREADY
+     * durable (the idempotent no-op — the pre-dispatch best-effort
+     * abandon, a concurrent explicit abandon, or a prior unit settle).
+     * Rejects ONLY when the close persist itself faults (the typed
+     * DURABLE_WRITE_FAILED via `putEntry`'s fault admission —
+     * fail-closed) or the request id is unknown (typed
+     * CONTROL_REQUEST_NOT_FOUND — loud). The caller (the provider
+     * boundary) propagates the reject unchanged and rejects typed
+     * ACTIVATION_REQUEST_ABORTED after the settle.
+     */
+    async function persistAbandonCloseLocked(input) {
+        const root = parseRoot(input.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'wait');
+        if (typeof input.requestId !== 'string' || input.requestId.length === 0) {
+            throw malformed('wait', 'requestId', 'requestId must be a non-empty string');
+        }
+        try {
+            await commitAbandonmentFact(root, input.requestId, 'the invocation aborted in the pre-reservation preflight (the durable close)');
+        }
+        catch (error) {
+            if (error instanceof ControlError &&
+                error.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED) {
+                // The terminal mark is already durable — the close is
+                // guaranteed; the idempotent no-op resolves.
+                return;
+            }
+            throw error;
+        }
+    }
     return {
         requestControl,
         resolveControl,
@@ -2071,6 +2219,8 @@ export function createControlService(options) {
         guardOperation,
         checkExternalOperation,
         awaitControlDecision,
+        commitEffectIfAuthorized,
+        persistAbandonCloseLocked,
     };
 }
 //# sourceMappingURL=service.js.map

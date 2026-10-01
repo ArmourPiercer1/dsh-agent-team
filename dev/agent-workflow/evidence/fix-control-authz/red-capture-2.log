@@ -1,0 +1,175 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz
+
+ ❯ packages/runtime/test/fix-control-authz-b-frozen-snapshot.test.ts (2 tests | 2 failed) 73ms
+     × S1+S2: the durable row fully represents the workDelivery; a prompt-only change changes the digest; deny ⇒ zero effect 32ms
+     × S3: a pending-approval payload mutation NEVER executes — the frozen snapshot is what runs 40ms
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts (4 tests | 3 failed) 5067ms
+     × C1: pending → parked waiter → explicit abandon: the waiter settles terminal, the router keeps the typed block, ZERO work 5005ms
+     × C2: allow → abandon → a fresh await on the abandoned row settles REJECTED terminal (bounded — the cold-retry liveness) 11ms
+     ✓ C3: allow → abandon → an ABORTED-signal await: the abandon mark wins the cascade (the stale allow never settles the waiter) 6ms
+     × C4: the wait→admission race (allow + abandon both land while the router waits): the typed zero-effect block holds for EVERY interleaving; the abandoned allow never executes 44ms
+ ❯ packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts (2 tests | 2 failed) 10005ms
+     × D1: an approved-then-crashed token re-arms NO stale approval on the cold-restart retry (NEW pending request; zero work before the fresh approval; then exactly-once work) 5004ms
+     × D2: a crashed-mid-wait (abandoned) token re-arms NO stale review on the cold-restart retry (NEW pending request; exactly-once work after the fresh approval) 5001ms
+ ❯ packages/runtime/test/fix-control-authz-h-send-message.test.ts (4 tests | 3 failed) 15013ms
+     × S1: a blocked Leader send-message creates the durable inline request (recipient instance subject + the full message in the review payload); deny ⇒ typed zero-effect block + ZERO delivery 5005ms
+     × S2: allow ⇒ EXACTLY ONE delivery (one coordination fact, one session-input call, the body preserved) 5001ms
+     × S3: abort ⇒ the durable abandon + the typed zero-effect block + ZERO delivery (real router + real control) 5000ms
+     ✓ the old-code defect is a real-validator rejection (evidence guard: a template subject + targetInstanceId is CONTROL_REQUEST_MALFORMED) 6ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-b-frozen-snapshot.test.ts > fix-control-authz B — the frozen review snapshot is the single source > S1+S2: the durable row fully represents the workDelivery; a prompt-only change changes the digest; deny ⇒ zero effect
+AssertionError: expected undefined to be 'tok-b-1' // Object.is equality
+
+- Expected:
+"tok-b-1"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/fix-control-authz-b-frozen-snapshot.test.ts:94:38
+     92|     const payload1 = (row1?.reviewPayload ?? {}) as Record<string, unk…
+     93|     expect(payload1['rootSessionId']).toBe(AUTHZ_ROOT)
+     94|     expect(payload1['requestToken']).toBe('tok-b-1')
+       |                                      ^
+     95|     expect(payload1['action']).toBe('follow-up')
+     96|     expect(payload1['toolName']).toBe('follow-up')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-b-frozen-snapshot.test.ts > fix-control-authz B — the frozen review snapshot is the single source > S3: a pending-approval payload mutation NEVER executes — the frozen snapshot is what runs
+AssertionError: expected 'B-MUTATED-DURING-WAIT — must never be…' to be 'B-repro prompt — distinctive work ins…' // Object.is equality
+
+Expected: "B-repro prompt — distinctive work instruction (original)"
+Received: "B-MUTATED-DURING-WAIT — must never be executed"
+
+ ❯ packages/runtime/test/fix-control-authz-b-frozen-snapshot.test.ts:189:44
+    187|     // prompt + context (the mutation is never observed by the executi…
+    188|     expect(world.deliveryCalls.length).toBe(1)
+    189|     expect(world.deliveryCalls[0]?.prompt).toBe(DISTINCTIVE_PROMPT)
+       |                                            ^
+    190|     expect(world.deliveryCalls[0]?.attachedContext).toBe(DISTINCTIVE_C…
+    191|     expect(world.deliveryCalls[0]?.prompt).not.toBe(MUTATED_PROMPT)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C1: pending → parked waiter → explicit abandon: the waiter settles terminal, the router keeps the typed block, ZERO work
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:91:3
+     89|
+     90| describe('fix-control-authz C — the durable abandonment is the TERMINA…
+     91|   it('C1: pending → parked waiter → explicit abandon: the waiter settl…
+       |   ^
+     92|     world = await createAuthzWorld('authz-c-1')
+     93|     const promise = withTimeout(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C2: allow → abandon → a fresh await on the abandoned row settles REJECTED terminal (bounded — the cold-retry liveness)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:165:31
+    163|       'the fresh await on the abandoned row (must settle, not hang)',
+    164|     )
+    165|     expect(rejected.resolved).toBe(false)
+       |                               ^
+    166|     const error = rejected.resolved === false ? rejected.error : undef…
+    167|     expect(isControlError(error)).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C4: the wait→admission race (allow + abandon both land while the router waits): the typed zero-effect block holds for EVERY interleaving; the abandoned allow never executes
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:248:24
+    246|     // yield the SAME typed block, never a raw ControlError and never …
+    247|     // execution).
+    248|     expect(outcome.ok).toBe(false)
+       |                        ^
+    249|     const error = outcome.ok === false ? outcome.error : undefined
+    250|     expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts > fix-control-authz D — every restart-unique attempt requires a fresh Human > D1: an approved-then-crashed token re-arms NO stale approval on the cold-restart retry (NEW pending request; zero work before the fresh approval; then exactly-once work)
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts:123:3
+    121|
+    122| describe('fix-control-authz D — every restart-unique attempt requires …
+    123|   it('D1: an approved-then-crashed token re-arms NO stale approval on …
+       |   ^
+    124|     world = await createAuthzWorld('authz-d-1')
+    125|     const promise = capture(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts > fix-control-authz D — every restart-unique attempt requires a fresh Human > D2: a crashed-mid-wait (abandoned) token re-arms NO stale review on the cold-restart retry (NEW pending request; exactly-once work after the fresh approval)
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts:232:3
+    230|   })
+    231|
+    232|   it('D2: a crashed-mid-wait (abandoned) token re-arms NO stale review…
+       |   ^
+    233|     world = await createAuthzWorld('authz-d-2')
+    234|     const ac = new AbortController()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-h-send-message.test.ts > fix-control-authz H — the recovery send-message reaches review over the REAL chain > S1: a blocked Leader send-message creates the durable inline request (recipient instance subject + the full message in the review payload); deny ⇒ typed zero-effect block + ZERO delivery
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/fix-control-authz-h-send-message.test.ts:107:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-h-send-message.test.ts > fix-control-authz H — the recovery send-message reaches review over the REAL chain > S2: allow ⇒ EXACTLY ONE delivery (one coordination fact, one session-input call, the body preserved)
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/fix-control-authz-h-send-message.test.ts:161:3
+    159|   })
+    160|
+    161|   it('S2: allow ⇒ EXACTLY ONE delivery (one coordination fact, one ses…
+       |   ^
+    162|     world = await createAuthzWorld('authz-h-2')
+    163|     const coordinator = coordinatorOf(world)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-h-send-message.test.ts > fix-control-authz H — the recovery send-message reaches review over the REAL chain > S3: abort ⇒ the durable abandon + the typed zero-effect block + ZERO delivery (real router + real control)
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/fix-control-authz-h-send-message.test.ts:194:3
+    192|   })
+    193|
+    194|   it('S3: abort ⇒ the durable abandon + the typed zero-effect block + …
+       |   ^
+    195|     world = await createAuthzWorld('authz-h-3')
+    196|     const ac = new AbortController()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  4 failed (4)
+      Tests  10 failed | 2 passed (12)
+   Start at  05:38:14
+   Duration  15.78s (transform 1.75s, setup 0ms, import 2.65s, tests 30.16s, environment 0ms)
+
+EXIT=1

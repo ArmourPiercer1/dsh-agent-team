@@ -15,7 +15,13 @@
  *                       live MCP state — template/instance boundary only;
  *                       a cold member is `not-applicable`, never `failed`)
  * persona            -> ports.substratePlan (the RuntimeSubstrateResolver +
- *                       the production persona observer, plan §C.2)
+ *                       the production persona observer, plan §C.2); the
+ *                       persona KIND convention (the v2 SUBJECT convention,
+ *                       plan §E.3): a subject that is a closed required
+ *                       persona kind resolves the OBSERVED kind of the role
+ *                       the scope addresses (team ⇒ root, template ⇒ member,
+ *                       R8); a non-kind subject keeps the frozen v1 preset-id
+ *                       path byte-for-byte
  * other domains      -> ports.readiness (the existing authoritative probe
  *                       ports; a missing port is `unknown`, fail-soft)
  * ```

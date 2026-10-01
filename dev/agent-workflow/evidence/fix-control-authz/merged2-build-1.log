@@ -1,0 +1,39 @@
+$ cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz && pnpm -r run build
+Scope: 9 of 10 workspace projects
+packages/contracts build$ tsc -p tsconfig.build.json
+packages/domain build$ tsc -p tsconfig.build.json
+packages/legacy build$ tsc -p tsconfig.build.json
+packages/remote build$ tsc -p tsconfig.build.json
+packages/domain build: Done
+packages/runtime build$ tsc -p tsconfig.build.json
+packages/legacy build: Done
+packages/storage build$ tsc -p tsconfig.build.json
+packages/contracts build: Done
+packages/testkit build$ tsc -p tsconfig.build.json
+packages/remote build: Done
+packages/tools build$ tsc -p tsconfig.build.json
+packages/storage build: Done
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+EXIT=0 (build at merged head 0aef4d91)
+
+$ pnpm build:composition
+$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition: 91 modules, 11 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/client/composition-shim/client-bundle.js (1146091 B)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/client/composition-shim/package.json
+[check-artifacts-committed] OK: 1372 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+EXIT=0 (build:composition at merged head 0aef4d91)
+
+$ pnpm run check:artifacts
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1372 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+EXIT=0 (check:artifacts at merged head 0aef4d91)

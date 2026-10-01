@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz
+
+ ✓ packages/runtime/test/fix-control-authz-b-frozen-snapshot.test.ts (2 tests) 100ms
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts (5 tests | 1 failed) 178ms
+     ✓ C1: pending → parked waiter → explicit abandon: the waiter settles terminal, the router keeps the typed block, ZERO work 82ms
+     ✓ C2: allow → abandon → a fresh await on the abandoned row settles REJECTED terminal (bounded — the cold-retry liveness) 7ms
+     ✓ C3: the abort race over the stale decision (mid-wait abort with BOTH marks durable): the abandon mark wins the cascade (the stale allow never settles the waiter) 23ms
+     ✓ C4: the wait→admission race (allow + abandon both land while the router waits): the typed zero-effect block holds for EVERY interleaving; the abandoned allow never executes 38ms
+     × C5: the effect-admission boundary (the external-review TOCTOU) — a durable abandon landing DURING the gate re-probe (AFTER the pre-dispatch snapshot) NEVER admits the reviewed work: zero admitted / zero effect, the typed abandoned block, the durable close stands 28ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C5: the effect-admission boundary (the external-review TOCTOU) — a durable abandon landing DURING the gate re-probe (AFTER the pre-dispatch snapshot) NEVER admits the reviewed work: zero admitted / zero effect, the typed abandoned block, the durable close stands
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:382:24
+    380|     //     typed abandoned zero-effect block, the durable close stands.
+    381|     const outcome = await promise
+    382|     expect(outcome.ok).toBe(false)
+       |                        ^
+    383|     const error = outcome.ok === false ? outcome.error : undefined
+    384|     expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 6 passed (7)
+   Start at  06:12:59
+   Duration  902ms (transform 928ms, setup 0ms, import 1.26s, tests 278ms, environment 0ms)
+
+EXIT=1

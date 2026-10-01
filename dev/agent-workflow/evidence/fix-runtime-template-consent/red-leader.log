@@ -1,0 +1,45 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent
+
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts (5 tests | 2 failed) 47ms
+     ✓ premise: the leader template declares NO requirements (its scope has no verdict inputs) 14ms
+     × IL1: a DISABLED requirement-free leader BLOCKS admitInitialWork (zero model, zero work) 13ms
+     ✓ IL2: the SUBSEQUENT root-boundary admission (follow-up to the leader instance) is blocked the same way 8ms
+     ✓ IL3: with the leader disabled the legitimate control/recovery lanes still function 6ms
+     × IL4: re-enable RESUMES the initial work through the same checks (allowed again) 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL1: a DISABLED requirement-free leader BLOCKS admitInitialWork (zero model, zero work)
+Error: expected the disabled leader to BLOCK the initial work
+ ❯ result packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:297:15
+    295|     }).then(
+    296|       () => {
+    297|         throw new Error('expected the disabled leader to BLOCK the ini…
+       |               ^
+    298|       },
+    299|       (error: unknown) => error,
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:289:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL4: re-enable RESUMES the initial work through the same checks (allowed again)
+Error: expected the disabled leader to BLOCK the initial work
+ ❯ blocked packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:416:15
+    414|     }).then(
+    415|       () => {
+    416|         throw new Error('expected the disabled leader to BLOCK the ini…
+       |               ^
+    417|       },
+    418|       (error: unknown) => error,
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:408:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  06:15:24
+   Duration  828ms (transform 535ms, setup 0ms, import 685ms, tests 47ms, environment 0ms)
+
+EXIT=1

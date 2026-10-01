@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-policy-reset
+
+ ✓ packages/runtime/test/remote-override-expected-generation.test.ts (18 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  05:41:18
+   Duration  808ms (transform 535ms, setup 0ms, import 709ms, tests 5ms, environment 0ms)
+
+EXIT=0

@@ -167,6 +167,14 @@ export interface ScopeVerdict {
  * SURVIVES restart (authority negative #10), but it is orthogonal to the
  * governance policy: a consented optional requirement still does not ALLOW a
  * denied/ask operation (authority negative #8: consent ≠ governance allow).
+ *
+ * Finding J (2026-10-01, ADR-12) — the consent KEY is the immutable
+ * (scope, blueprint content hash, requirementId) triple: a consent binds to
+ * the EXACT scope + blueprint content hash it was granted for. A different
+ * scope or a different hash means NOT consented (no blanket approve). The
+ * key fields are ADDITIVE: a legacy row written before the keying carries
+ * neither, and a keyed evaluation treats such a row as NOT consented
+ * (fail-closed — it must be re-granted).
  */
 export interface DegradationConsent {
   /** The OPTIONAL requirementId the consent covers (complete must be false). */
@@ -177,6 +185,19 @@ export interface DegradationConsent {
   readonly consentedAt: number
   /** The human principal who consented (opaque). */
   readonly consentedBy: string
+  /**
+   * The scope identity the consent was granted for (the {@link scopeKey} —
+   * `team` or `template:<id>`). ABSENT on legacy rows (pre-keying) — a keyed
+   * evaluation never treats a legacy row as consented (fail-closed).
+   */
+  readonly scopeKey?: string
+  /**
+   * The bound blueprint's content hash the consent was granted against
+   * (ADR-12: the consent is durable per Team + immutable Blueprint
+   * contentHash + requirement scope). ABSENT on legacy rows — same
+   * fail-closed semantics as {@link scopeKey}.
+   */
+  readonly contentHash?: string
 }
 
 // ---------------------------------------------------------------------------

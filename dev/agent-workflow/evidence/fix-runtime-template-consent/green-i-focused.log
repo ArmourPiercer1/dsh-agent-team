@@ -1,0 +1,14 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 6ms
+ ✓ packages/runtime/test/template-disable-enable.test.ts (8 tests) 4ms
+ ✓ packages/runtime/test/requirement-authority-negatives.test.ts (10 tests) 20ms
+ ✓ packages/runtime/test/template-disable-no-requirements-gate.test.ts (4 tests) 36ms
+
+ Test Files  4 passed (4)
+      Tests  32 passed (32)
+   Start at  05:45:44
+   Duration  740ms (transform 1.20s, setup 0ms, import 1.77s, tests 66ms, environment 0ms)
+
+EXIT=0
