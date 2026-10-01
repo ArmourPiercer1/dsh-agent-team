@@ -1126,6 +1126,56 @@ export async function runDriverCore (cfg, io) {
 // browser-smoke-host kit). Nothing in this section runs for the offline tests.
 
 export const ALLOWED_TAB_NAMES = Object.freeze(['Team', '团队'])
+
+/**
+ * SHARED team-tab activation routine — THE production algorithm, exported so
+ * the offline fakes and the live Playwright adapter exercise the SAME code
+ * (external review of b52151ab, point 1: "不能再复制算法"). Pure dependency
+ * injection — { now, sleep, countRoleTabs, isTabVisible, clickTab,
+ * readAriaSelected, viewVisible } — no DOM framework, no clock of its own.
+ * Semantics: bounded DISCOVERY of a unique, visible scoped role=tab inside
+ * the absolute budgetMs; >1 at any instant fail-closes ambiguous (never
+ * clicks, never guesses); discovery exhaustion and any un-armed outcome are
+ * { ok:false, reason } (core turns them into NOT_RUN — never a product
+ * FAIL). Point 2 (absolute budget discipline): the click timeout and every
+ * success check are bounded by the REMAINING budget; a deadline breach
+ * yields NOT_RUN even if the control would arm later (late success refused).
+ */
+export async function runTeamTabActivation (opts) {
+  const { names = [], phase = '', budgetMs = 6000, now, sleep, countRoleTabs, isTabVisible, clickTab, readAriaSelected, viewVisible } = opts
+  const t0 = now()
+  const left = () => budgetMs - (now() - t0)
+  let total = 0
+  let which = null
+  for (;;) {
+    const per = await countRoleTabs(names)
+    total = per.reduce((a, b) => a + (b || 0), 0)
+    if (total > 1) return { ok: false, phase, hits: total, reason: 'team-tab-ambiguous (' + total + ' role=tab hits) — never guess' }
+    if (total === 1) {
+      which = names[per.findIndex((c) => c > 0)]
+      if (await isTabVisible(which)) break
+    }
+    if (left() <= 0) return { ok: false, phase, hits: total, reason: 'team-tab-not-found under [data-conversation-tabs] role=tab allowlist (' + names.join('/') + ') — never appeared within ' + budgetMs + 'ms bounded discovery' }
+    await sleep(Math.min(250, left()))
+  }
+  // POINT-2 DISCIPLINE: the click gets only the REMAINING absolute budget
+  // (never a fixed 5000 stacking onto discovery), and EVERY success check is
+  // preceded by the deadline check — a control that would arm only at/after
+  // the budget is NOT_RUN territory: late success is refused.
+  const clickBudget = Math.min(5000, left())
+  if (clickBudget <= 0) return { ok: false, phase, hits: 1, reason: 'team-tab-not-armed: absolute budget exhausted before click (late success refused; bounded ' + budgetMs + 'ms)' }
+  try { await clickTab(which, clickBudget) } catch (e) { return { ok: false, phase, hits: 1, reason: 'team-tab-click-failed: ' + String((e && e.message) || e).slice(0, 140) } }
+  let sel = null
+  let vis = false
+  for (;;) {
+    if (left() <= 0) return { ok: false, phase, hits: 1, reason: 'team-tab-not-armed: aria-selected=' + String(sel) + ' data-team-view-visible=' + vis + ' exceeded ' + budgetMs + 'ms absolute budget (late success refused)' }
+    sel = await readAriaSelected(which)
+    vis = await viewVisible()
+    if (sel === 'true' && vis) return { ok: true, phase, hits: 1, armedMs: now() - t0 }
+    await sleep(Math.min(250, left()))
+  }
+}
+
 export const ALLOWED_REFRESH_NAMES = Object.freeze(['刷新团队视图', 'Refresh team view'])
 const WEAK = ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu-sandbox', '--disable-web-security', '--disable-features=Sandbox', '--disable-seccomp-filter-sandbox']
 
@@ -1219,40 +1269,16 @@ export function createPlaywrightPage (page, cfg) {
     // ConversationSession.tsx:143-154; [data-team-view] TeamView.tsx:1295;
     // button[data-team-refresh] TeamView.tsx:1321-1329. The TeamDock's same-
     // text label is OUTSIDE this scope and can never be clicked here.) ──
-    activateTeamTab: async ({ names = [], phase = '', budgetMs = 6000 } = {}) => {
-      const t0 = Date.now() // ONE absolute budget bounds discovery AND ready-verify
-      const tablist = page.locator('[data-conversation-tabs]')
-      // BOUNDED DISCOVERY (live-2 E1 @2922918d: after reload+notice-dismiss the
-      // tab bar remounts ASYNC — an immediate count saw 0 and the leg fail-
-      // closed while the product was fine). Wait for the scoped role=tab to
-      // APPEAR, be UNIQUE and VISIBLE; >1 at any instant fail-closes as
-      // ambiguous (never guess); never appearing stays a NOT_RUN with reason.
-      let total = 0
-      let which = null
-      let tab = null
-      for (;;) {
-        const per = []
-        for (const n of names) per.push(await tablist.getByRole('tab', { name: n, exact: true }).count().catch(() => 0))
-        total = per.reduce((a, b) => a + b, 0)
-        if (total > 1) return { ok: false, phase, hits: total, reason: 'team-tab-ambiguous (' + total + ' role=tab hits) — never guess' }
-        if (total === 1) {
-          which = names[per.findIndex((c) => c > 0)]
-          tab = tablist.getByRole('tab', { name: which, exact: true }).first()
-          if (await tab.isVisible().catch(() => false)) break
-        }
-        if (Date.now() - t0 > budgetMs) return { ok: false, phase, hits: total, reason: 'team-tab-not-found under [data-conversation-tabs] role=tab allowlist (' + names.join('/') + ') — never appeared within ' + budgetMs + 'ms bounded discovery' }
-        await page.waitForTimeout(250)
-      }
-      try { await tab.click({ timeout: 5000 }) } catch (e) { return { ok: false, phase, hits: total, reason: 'team-tab-click-failed: ' + String(e && e.message || e).slice(0, 140) } }
-      const view = page.locator('[data-team-view]').first()
-      for (;;) {
-        const sel = await tab.getAttribute('aria-selected').catch(() => null)
-        const vis = await view.isVisible().catch(() => false)
-        if (sel === 'true' && vis) return { ok: true, phase, hits: total, armedMs: Date.now() - t0 }
-        if (Date.now() - t0 > budgetMs) return { ok: false, phase, hits: total, reason: 'team-tab-not-armed: aria-selected=' + JSON.stringify(sel) + ' data-team-view-visible=' + vis + ' within ' + budgetMs + 'ms bounded verify' }
-        await page.waitForTimeout(250)
-      }
-    },
+    activateTeamTab: (o = {}) => runTeamTabActivation({
+      names: o.names || [], phase: o.phase || '', budgetMs: o.budgetMs || 6000,
+      now: Date.now,
+      sleep: (ms) => page.waitForTimeout(ms),
+      countRoleTabs: async (names) => { const per = []; for (const n of names) per.push(await page.locator('[data-conversation-tabs]').getByRole('tab', { name: n, exact: true }).count().catch(() => 0)); return per },
+      isTabVisible: async (n) => page.locator('[data-conversation-tabs]').getByRole('tab', { name: n, exact: true }).first().isVisible().catch(() => false),
+      clickTab: async (n, timeoutMs) => { await page.locator('[data-conversation-tabs]').getByRole('tab', { name: n, exact: true }).first().click({ timeout: Math.max(250, Math.floor(timeoutMs)) }) },
+      readAriaSelected: async (n) => page.locator('[data-conversation-tabs]').getByRole('tab', { name: n, exact: true }).first().getAttribute('aria-selected').catch(() => null),
+      viewVisible: async () => page.locator('[data-team-view]').first().isVisible().catch(() => false),
+    }),
     teamRefreshControl: async ({ names = [], click = false } = {}) => {
       const btn = page.locator('[data-team-view] button[data-team-refresh]').first()
       const n = await page.locator('[data-team-view] button[data-team-refresh]').count().catch(() => 0)

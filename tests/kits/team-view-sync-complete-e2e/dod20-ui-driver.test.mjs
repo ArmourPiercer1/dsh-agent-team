@@ -656,3 +656,57 @@ test('redactOut keeps criteria-bearing fields byte-identical while masking liveT
   assert.equal(out.disposed, false)
   assert.ok(!JSON.stringify(out).includes('REALSECRET99'))
 })
+
+// ───── SHARED activation routine — DIRECT production-function tests
+// (external review of b52151ab point 1: tests must hit the REAL routine, not
+// a fake re-implementation; point 2: one absolute budget bounds click and
+// every success check — a deadline breach is NOT_RUN, late success refused).
+import { runTeamTabActivation } from './dod20-ui-driver.mjs'
+
+function activationProbe (script) {
+  const p = { clock: 0, maxClock: 0, clicks: 0, clickTimeouts: [] }
+  p.now = () => p.clock
+  p.sleep = async (ms) => { p.clock += ms; if (p.clock > p.maxClock) p.maxClock = p.clock }
+  p.countRoleTabs = async (names) => names.map((n, i) => {
+    if (i !== 0 || script.never) return 0
+    if (script.ambiguousFrom !== undefined && p.clock >= script.ambiguousFrom) return 2
+    return p.clock >= (script.countFrom || 0) ? 1 : 0
+  })
+  p.isTabVisible = async () => true
+  p.clickTab = async (n, timeoutMs) => { p.clicks += 1; p.clickTimeouts.push(timeoutMs) }
+  p.readAriaSelected = async () => (p.clock >= (script.readyAt || 0) ? 'true' : 'false')
+  p.viewVisible = async () => p.clock >= (script.readyAt || 0)
+  return p
+}
+
+test('SHARED routine: bounded discovery absorbs a late remount; the click is bounded by the REMAINING absolute budget', async () => {
+  const p = activationProbe({ countFrom: 300, readyAt: 400 })
+  const r = await runTeamTabActivation({ ...p, names: ['Team', '团队'], phase: 't1', budgetMs: 5000 })
+  assert.equal(r.ok, true, 'late tab discovered and armed: ' + JSON.stringify(r))
+  assert.equal(r.armedMs, 500)
+  assert.equal(p.clicks, 1)
+  assert.ok(p.clickTimeouts[0] <= 4500, 'click timeout must not exceed the remaining budget at click time: ' + p.clickTimeouts[0])
+})
+test('SHARED routine: a never-appearing tab fails closed WITHIN the absolute budget (no clock overrun, reason discriminates)', async () => {
+  const p = activationProbe({ never: true })
+  const r = await runTeamTabActivation({ ...p, names: ['Team', '团队'], phase: 't2', budgetMs: 5000 })
+  assert.equal(r.ok, false)
+  assert.match(r.reason, /never appeared within 5000ms bounded discovery/)
+  assert.ok(p.maxClock <= 5000, 'discovery must not overrun the budget: ' + p.maxClock)
+  assert.equal(p.clicks, 0)
+})
+test('SHARED routine: ambiguous role=tab fail-closes immediately and NEVER clicks', async () => {
+  const p = activationProbe({ ambiguousFrom: 0 })
+  const r = await runTeamTabActivation({ ...p, names: ['Team', '团队'], phase: 't3', budgetMs: 5000 })
+  assert.equal(r.ok, false)
+  assert.match(r.reason, /team-tab-ambiguous \(2 role=tab hits\) — never guess/)
+  assert.equal(p.clicks, 0)
+})
+test('SHARED routine: success that lands only AT/PAST the deadline is REFUSED — the absolute budget is a hard bound, not a hint', async () => {
+  const p = activationProbe({ readyAt: 1000 })
+  const r = await runTeamTabActivation({ ...p, names: ['Team', '团队'], phase: 't4', budgetMs: 1000 })
+  assert.equal(r.ok, false, 'a success exactly at/after the deadline must NOT be accepted: ' + JSON.stringify(r))
+  assert.match(r.reason, /team-tab-not-armed/)
+  assert.ok(p.maxClock <= 1000, 'verify must not overrun the budget: ' + p.maxClock)
+  assert.ok(p.clickTimeouts[0] <= 1000, 'click timeout bounded by the remaining budget: ' + p.clickTimeouts[0])
+})

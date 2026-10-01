@@ -314,30 +314,35 @@ function makeWorld (opts = {}) {
         },
         // ── seam activation / ready actions (the SAME call runDriverCore makes
         // live through the Playwright adapter — no selector-string-only test) ──
-        async activateTeamTab ({ names = [], phase = '', budgetMs = 6000 } = {}) {
+        // The fake is DOM/TIME STATE ONLY — the activation ALGORITHM lives in
+        // the driver's exported runTeamTabActivation, the SAME routine the
+        // live Playwright adapter injects into (external review of b52151ab,
+        // point 1). Deleting the shared discovery loop now reddens BOTH the
+        // fake-driven orchestration tests AND the direct production-function
+        // tests — adapter-only divergence is no longer offline-uncoverable.
+        async activateTeamTab (o = {}) {
           w.v += 10
           if (leg === 'E3' && opts.breakBeforeE3) throw new Error('fake break before E3')
           const t = st.teamTab
+          const phase = (o && o.phase) || ''
           if (!st.selected || st.selected.relation === 'none') return { ok: false, phase, reason: 'team-tab-not-found (no conversation view for this session)' }
           if (t.active && t.mounted) return { ok: true, phase, alreadyArmed: true }
-          // BOUNDED DISCOVERY — the SAME absolute budget as the ready-verify
-          // (live-2 E1: post-reload the tab remounts async; an immediate count
-          // saw 0). Ambiguity fail-closes the moment >1 appears; the tab never
-          // appearing within the budget stays a NOT_RUN with reason.
-          const d0 = w.v
-          for (;;) {
-            const found = t.present && w.v >= t.presentAt
-            if (found && t.hits > 1) return { ok: false, phase, hits: t.hits, reason: 'team-tab-ambiguous (' + t.hits + ' role=tab hits) — never guess' }
-            if (found && t.hits === 1) break
-            if (w.v - d0 >= budgetMs) return { ok: false, phase, hits: 0, reason: 'team-tab-not-found under [data-conversation-tabs] role=tab allowlist (' + names.join('/') + ') — never appeared within ' + budgetMs + 'ms bounded discovery' }
-            w.v += 250
-          }
-          if (!names.includes(t.label)) return { ok: false, phase, reason: 'team-tab-label-not-in-allowlist ' + JSON.stringify(t.label) }
-          if (st.persistBroken) { w.v += budgetMs; return { ok: false, phase, reason: 'team-tab-not-armed: aria-selected=false within ' + budgetMs + 'ms bounded verify — selection did not persist across reload' } }
-          if (opts.e3TabNoop && leg === 'E3') { w.v += budgetMs; return { ok: false, phase, reason: 'team-tab-not-armed: aria-selected=false data-team-view-visible=false within ' + budgetMs + 'ms bounded verify' } }
-          t.active = true; t.mounted = true; st.teamFace = true
-          if (st.nextTickAt == null) st.nextTickAt = w.v + tickMs
-          return { ok: true, phase, armed: true }
+          const res = await D.runTeamTabActivation({
+            names: (o && o.names) || [], phase, budgetMs: (o && o.budgetMs) || 6000,
+            now: () => w.v,
+            sleep: async (ms) => { w.v += ms },
+            countRoleTabs: async (names) => names.map((n) => (t.present && w.v >= t.presentAt && t.label === n) ? t.hits : 0),
+            isTabVisible: async () => true,
+            clickTab: async () => {
+              if ((opts.e3TabNoop && leg === 'E3') || st.persistBroken) { t.noopClicked = true; return }
+              t.active = true; t.mounted = true; st.teamFace = true
+              if (st.nextTickAt == null) st.nextTickAt = w.v + tickMs
+            },
+            readAriaSelected: async () => (t.active ? 'true' : 'false'),
+            viewVisible: async () => t.mounted,
+          })
+          if (!res.ok && st.persistBroken) res.reason += ' — selection did not persist across reload'
+          return res
         },
         async teamRefreshControl ({ names = [], click = false } = {}) {
           if (!st.teamTab.mounted) return { ok: false, reason: 'team-refresh-control-not-found ([data-team-view] absent — TeamView not mounted/ready)' }
