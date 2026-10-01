@@ -56,6 +56,18 @@ export interface EvaluationInput {
   readonly consents?: readonly DegradationConsent[]
   /** The durable template availability (disable/enable). */
   readonly availability?: readonly TemplateAvailability[]
+  /**
+   * Finding J (2026-10-01) — the content hash of the bound blueprint the
+   * evaluation runs against (the ADR-12 consent key: a consent binds to the
+   * EXACT scope + blueprint content hash it was granted for). PRESENT in the
+   * production creation preflight (the bound snapshot is always resolved);
+   * ABSENT in the pre-J unit face — when absent, the consent match falls back
+   * to the legacy requirementId-only semantics (byte-identical for
+   * hash-unaware callers). When present, a consent row matches a warning only
+   * if its `scopeKey` AND `contentHash` BOTH match — a legacy row without the
+   * key never matches (fail-closed: it must be re-granted).
+   */
+  readonly blueprintContentHash?: string
 }
 
 /** Classify one scope's verdicts into its closed scope state. */

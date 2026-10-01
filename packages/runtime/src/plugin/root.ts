@@ -3074,6 +3074,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             requirementId: input.requirementId,
             generation: input.generation,
             consentedBy: input.consentedBy,
+            // Finding J (2026-10-01): the consent scope (explicit or
+            // derived by the writer; the stamp keys the durable fact).
+            ...(input.scopeKey !== undefined ? { scopeKey: input.scopeKey } : {}),
             environmentFacts: freshTeamFacts(bound),
             templateEnvironmentFacts: freshTemplateFacts(bound),
             now,

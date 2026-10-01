@@ -776,6 +776,11 @@ export interface TeamProductionRoot {
             readonly requirementId: string;
             readonly generation: number;
             readonly consentedBy: string;
+            /** Finding J (2026-10-01, ADR-12) — the scope the consent is granted
+             *   FOR (`team` / `template:<id>`). ABSENT → derived (the requirement
+             *   must be unmet in exactly ONE scope; unmet in several = the typed
+             *   `DUPLICATE_REQUIREMENT_SCOPE` refusal — the grant must name it). */
+            readonly scopeKey?: string;
         }) => Promise<import('../../requirements/index.js').OptionalRequirementAccepted>;
         /** Durably set ONE template's availability (the `fixOrDisable`
          *   resolution): validated against the bound blueprint's template

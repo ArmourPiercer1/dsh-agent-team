@@ -206,6 +206,16 @@ export interface ConsentGrantOptions {
     readonly generation: number;
     /** The human principal who consented (opaque). */
     readonly consentedBy: string;
+    /**
+     * Finding J (2026-10-01, ADR-12) — the scope the consent is granted FOR
+     * (the scopeKey: `team` or `template:<id>`). PRESENT → the target is
+     * validated against that scope's verdicts (the requirement must be unmet
+     * there). ABSENT → the scope is DERIVED: the requirement must be unmet in
+     * exactly ONE scope (unmet in several = the closed
+     * `DUPLICATE_REQUIREMENT_SCOPE` typed refusal — the grant must name the
+     * scope; unmet in none = `CONSENT_TARGET_SATISFIED` as before).
+     */
+    readonly scopeKey?: string;
     /** The Team scope's FRESH facts port (the validation evaluation). */
     readonly environmentFacts: () => Promise<readonly EnvironmentFact[]>;
     /** The per-template FRESH facts port (the validation evaluation). */
