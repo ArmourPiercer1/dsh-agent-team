@@ -24,3 +24,10 @@ agent 会话位于 harness bwrap wrapper 子树（uid 1000，CapBnd=0，NoNewPri
 3. prf scenario-14 header（旧 L133-155 区）：G5 段更新为 POST-RESOLUTION 准确表述（PR-F-G5 历史记录保留为 historical；与已改契约不再冲突）；不改历史证据。
 
 **逐跑 world/run 目录**（本 worktree，untracked，保留供检）：`dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T11-36-44/`（t1）、`pr-f/prf-2026-10-01T11-41-33/`（t2）、`pr-f/prf-2026-10-01T11-4x-*/`（t3）。
+
+## credential-redaction 例外记录（2026-10-01，外审 BLOCK 修复）
+
+- **对象**：本目录 3 个 tracked log 各 1 行 `throwaway boot OK: http://127.0.0.1:3182/?token=<值>`（t1 L27 / t2 L27 / t3 L28）中的 **launch-token 值** → 替换为显式 marker `token=[REDACTED]`；URL host/path/query key 及其他原始输出全部保留。有界检查 = 仅这 3 log 的 `token=<值>` 同类字段（各 1 处；验证：值形态 0 残留，marker 各 1）。
+- **性质**：credential-redaction 例外（证据卫生），**不是**测试结果/exit 的改动 —— VERDICT 行、EXIT 行、判定逻辑零触碰。
+- **git 历史声明**：token 值仍存在于本分支历史（commit `509751ad` 引入）；按仓库政策**不 force-push / 不改写历史** —— 当前删除值不能抹去旧 commit。
+- **throwaway host 生命周期事实（只读核验 @ 2026-10-01T11:57:33Z）**：3182-3186/3491-3506 无监听端口；会话子树内无宿主进程；t1（E.12）world 已按 PASS 自清；t2/t3（prf）world 目录 + `.lock` 仍在本 worktree `tests/homes/`（untracked / gitignored / 未提交）。**不声称 token 已失效/已轮换/不可重用**（仅记录"此刻宿主未运行"这一事实）。

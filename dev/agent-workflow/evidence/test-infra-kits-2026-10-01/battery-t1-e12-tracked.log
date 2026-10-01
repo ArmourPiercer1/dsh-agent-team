@@ -24,7 +24,7 @@ $ node tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smok
 [2026-10-01T11:36:44.840Z] mini MCP mcp_leaderreq up on 127.0.0.1:3491
 [2026-10-01T11:36:44.840Z] mini MCP mcp_web up on 127.0.0.1:3493
 [2026-10-01T11:36:44.840Z] profile not initialized yet — running a throwaway boot to let the host create it
-[2026-10-01T11:36:46.094Z] throwaway boot OK: http://127.0.0.1:3182/?token=1IhHWscsbwMRh31xP9Hj72miHqGnqCsvZv6g9OStld8
+[2026-10-01T11:36:46.094Z] throwaway boot OK: http://127.0.0.1:3182/?token=[REDACTED]
 [2026-10-01T11:36:46.157Z] web profile ensured (throwaway boot if first use)
 [2026-10-01T11:36:46.158Z] B1-CREATE: patch (bootPhase=create, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[{"name":"mcp_repo","port":3492},{"name":"mcp_leaderreq","port":3491},{"name":"mcp_web","port":3493}], preset=live root=default member=default) + directive (boot=1) written
 [2026-10-01T11:36:47.668Z] B1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)

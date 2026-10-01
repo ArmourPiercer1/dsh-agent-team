@@ -24,7 +24,7 @@ $ node tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs
 [2026-10-01T11:41:33.206Z] mini MCP mcp_leaderreq up on 127.0.0.1:3491
 [2026-10-01T11:41:33.206Z] mini MCP mcp_web up on 127.0.0.1:3493
 [2026-10-01T11:41:33.206Z] profile not initialized yet — running a throwaway boot to let the host create it
-[2026-10-01T11:41:34.459Z] throwaway boot OK: http://127.0.0.1:3182/?token=uHlnWeGvDcnE0WdagSzYsQreeF_lxL4XI-FEvtEmdB0
+[2026-10-01T11:41:34.459Z] throwaway boot OK: http://127.0.0.1:3182/?token=[REDACTED]
 [2026-10-01T11:41:34.519Z] web profile ensured (throwaway boot if first use)
 [2026-10-01T11:41:34.520Z] B1-CREATE: patch (bootPhase=create, facts=["mcp_repo=true","mcp_leaderreq=true","mcp_web=true","mcp_signal=true"], mcp=[{"name":"mcp_repo","port":3492},{"name":"mcp_leaderreq","port":3491},{"name":"mcp_web","port":3493}], preset=live root=default member=default) + directive (boot=1) written
 [2026-10-01T11:41:35.829Z] B1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
