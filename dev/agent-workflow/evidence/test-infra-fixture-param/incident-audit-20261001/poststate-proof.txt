@@ -1,0 +1,8 @@
+git diff HEAD --name-only whole worktree: 0 files
+?? dev/agent-workflow/evidence/model-preference-routing/real-host/mpr-2026-10-01T13-08-04/
+?? dev/agent-workflow/evidence/model-preference-routing/real-host/mpr-2026-10-01T13-21-34/
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-22-22-c3/
+?? packages/client/node_modules
+?? packages/domain/node_modules
+?? packages/runtime/node_modules
+?? packages/testkit/node_modules
