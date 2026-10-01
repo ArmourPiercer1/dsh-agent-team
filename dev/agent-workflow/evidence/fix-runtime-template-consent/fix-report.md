@@ -1,10 +1,19 @@
-# fix-runtime-template-consent — findings I + J fix report (2026-10-01)
+# fix-runtime-template-consent — findings I + J fix report (2026-10-01, updated for the I-residual round)
 
 Branch: `fix/runtime-template-consent` (worktree `.worktrees/fix-runtime-template-consent`)
 Base (pristine, recorded): `31ad828d06b5bcca858532f1930ac10c51c0f1bb` (= master)
-Commits (2, separable; no push):
+Commits (separable):
 - `8569ff96` — finding I (disabled-set derivation) + its real-chain regression test + p4t6 pin 896→897
 - `60b6b16a` — finding J (consent scope/hash keying) + its real-chain regression test + p4t6 pin 897→898
+- `4a066408` — bookkeeping (evidence + this report + SESSION_ROUTER_LOG entry)
+- `26994b97` (full: `26994b97923ded367b5d74eb20ebdc91f4010dd0`) — **I residual** (the leader-scope fix
+  + real-chain regression legs + reviewer r1/r2 addenda S1/S2/S3/r2-minor pins) + p4t6 pin 898→899
+  + rebuilt dist
+- (this report update) — bookkeeping round 2 (raw gate logs + this report update + log entry)
+
+Push status (corrected per reviewer r2): push = the user-authorized one-time DRAFT
+publication (05:53:01Z, PR #48, at `4a066408`) + the forthcoming new-HEAD push under
+the same authorization; no force-push; master never pushed.
 
 ## Finding I (P2) — disabled template with empty requirements
 
@@ -34,7 +43,123 @@ requirement inputs (the empty case).
 
 **RED (pre-fix)**: 2/4 fail (the block + re-enable legs — gate allowed the
 delegate; `expected true to be false`), premise + enabled control pass (world
-soundness). Log: `.worktrees/.scratch-logs/template-consent/red-ij.log` (EXIT=1).
+soundness). Log: `red-ij.log` (EXIT=1; committed below).
+
+## Finding I residual (P2, external review 2026-10-01) — the LEADER scope at the initial-work boundary
+
+**Root cause**: `leaderTemplateScopeRefs` (packages/runtime/action-router/
+root-initial-work.ts L183–193) added the LEADER template scope to the Root
+initial-work gate's scope refs ONLY WHEN `leader.requirements` was non-empty
+(and the document was v2). A requirement-free leader produced NO scope ref at
+all — and the finding-I availability fix derives the disabled set from
+`impact.scopeRefs` ∩ the durable `available:false` INDEPENDENT of the verdicts
+(a requirement-free template produces no verdict row) — so an accepted durable
+LEADER disable was invisible to the gate: `team.admitInitialWork` returned
+allowed and the initial model/work was admitted into a disabled leader. The
+existing finding-I suite pinned only the WORKER delegate path.
+
+**Fix (consistent scope-set construction, audited at every construction site)**:
+- `leaderTemplateScopeRefs` now returns `[teamScope(), templateScope(leader.
+  templateId)]` UNCONDITIONALLY (v1 + v2): a scope exists because the template
+  exists in the blueprint, not because it has requirements (target-design §10
+  matrix: "Leader normal model turn | Team + Leader template"; the production
+  writer `setTemplateAvailabilityFact` validates the leader as a disable target
+  for BOTH versions, so a disabled v1 leader must block too). When the leader
+  is NOT disabled the added ref changes nothing observable (no verdict row →
+  not blocked; the availability fold is empty).
+- Audit of the other construction sites: the router's `actionImpactOf` /
+  `newWorkTargetTemplateId` already key the follow-up impact on the addressed
+  template id, unconditional of the requirement set (correct — unchanged);
+  `scopeRequirementInputsOf` extracts the per-scope REQUIREMENT INPUTS (verdict
+  rows) and intentionally skips empty template scopes (audit note now documented
+  in code — it is NOT the availability scope-ref set; the availability decision
+  reads no verdicts).
+- No behavior change on the enabled path (the W3-C leader-boundary suites stay
+  byte-green).
+
+**New real-wiring regression legs** (`packages/runtime/test/leader-disable-no-
+requirements-initial-work.test.ts`, 5 tests — the production closure
+`createAdmitRootInitialWork` + the production router + the production durable
+writer `setTemplateAvailabilityFact`; only the model-visible delivery port is a
+fake that records the exact submission):
+- **premise**: the leader declares NO requirements (its scope is absent from
+  the verdict-input extraction — the exact empty case).
+- **IL1 (RED pre-fix)**: a disabled requirement-free leader BLOCKS
+  `admitInitialWork` — typed `COMPATIBILITY_BLOCKED`, `gateReason:
+  'templateDisabled'`, `blockedScopes: ['template:leader']`, ZERO delivery
+  calls, ZERO Root work facts (the gate runs before the Phase A admission).
+- **IL2 (green pre-fix — the subsequent boundary was already correct)**: the
+  follow-up to the leader instance through the production router is blocked the
+  same way; zero work facts for that token.
+- **IL3 (green pre-fix — the control/recovery lanes)**: with the leader
+  disabled, `list-members` executes, `report-progress` executes, and the
+  gate-level `controlImpact` stays `alwaysAllowed` / `recoveryWorkImpact`
+  `allowed` on the leader scope — the gate blocks WORK (model/work), not
+  control (target-design §10: control = "none / keep available").
+- **IL4 (RED pre-fix)**: re-enable RESUMES the initial work through the same
+  production chain (fresh admission + delivery + terminal fact).
+
+**RED (at HEAD `4a066408`, pre-fix)**: IL1 + IL4 fail (the gate allowed the
+initial work — the bug itself); premise + IL2 + IL3 pass; EXIT=1. Log:
+`red-leader.log`. The first capture `red-leader-attempt1.log` is committed too
+(transparent): its only extra failure was a TEST assertion bug in the first IL3
+form (`.allowed` vs `.reason` on `RequirementGateOutcome`) — fixed in the test
+before the final RED capture; the product behavior at HEAD on the IL3 lane was
+correct throughout.
+
+**GREEN (post-fix)**: all 5 legs + the W3-C boundary/exit suites + the finding-I
+suite green (`green-leader-focused.log` EXIT=0); the wider focused-area set is
+`green-focused.log`.
+
+**Reviewer addenda (r1/r2) — ADDITIONS to existing test files only (no
+weakening)**:
+- **S1 (required)**: the fail-closed LEGACY-ROW branch is now pinned on the
+  REAL production chain (new J3 arc in `consent-scope-hash-binding.test.ts`): a
+  legacy 4-field consent row (no scopeKey/contentHash) seeded via the
+  PRODUCTION payload builder + the PRE-TEAM durable writer (`putPreTeam`, the
+  production root's own selection); the keyed PRODUCTION re-drive STILL stays
+  `consentRequired` with zero durable effect (the unkeyed row is NEVER treated
+  as consented); the production re-grant then mints a KEYED row (scope derived
+  — unmet in exactly one scope: the team — + the bound contentHash) and the
+  re-drive proceeds (the migration path end-to-end). The optional legacy-face
+  pair is pinned at the pure `startupPreflight` level: the SAME row IS honored
+  when the hash is unmodeled (the pre-J unit face, byte-identical
+  requirementId-only match).
+- **S2 (required)**: the `DUPLICATE_REQUIREMENT_SCOPE` typed refusal pinned
+  (closed code literal `REQUIREMENT_DUPLICATE_SCOPE`, verified in
+  requirements/errors.ts): a grant WITHOUT an explicit scopeKey while the
+  requirement is unmet in two scopes (the J1 world) → the typed refusal with
+  the ambiguous scope set in the details, zero durable rows.
+- **S3 (optional → done)**: the finding-I suite gains the follow-up leg — the
+  same durable disable blocks `actionImpactOf('follow-up', worker)` (the same
+  normalWork class with the identical scopeRefs).
+- **r2-minor (optional → done)**: an EXPLICIT scopeKey naming a scope that does
+  NOT declare the requirement → the typed `CONSENT_TARGET_SATISFIED` refusal
+  (`requirement-not-unmet-in-scope`, zero writes).
+
+**Files changed (this round's product commit)**: action-router/
+root-initial-work.ts (the fix + doc), requirements/scope-requirements.ts (audit
+note only — no behavior change), test/leader-disable-no-requirements-initial-
+work.test.ts (NEW), test/template-disable-no-requirements-gate.test.ts (+S3),
+test/consent-scope-hash-binding.test.ts (+S1/S2/r2-minor), testkit p4t6 pin
+898→899, + 8 rebuilt dist artifacts (exactly the two changed source faces × 4).
+
+## Compatibility disclosure — finding J (PROMINENT; migration behavior)
+
+**Legacy 4-field consent rows still PARSE** (backward-compatible:
+omit-when-absent, byte-identical round-trip — the existing round-trip test is
+untouched and green), **but under the keyed PRODUCTION path an unkeyed legacy
+row is NEVER treated as consented.** The production creation preflight ALWAYS
+models the bound blueprint's content hash, so the real path is always the keyed
+one: an unkeyed legacy row matches ONLY in a legacy (hash-unmodeled) evaluation
+— the pre-J unit face, retained for the unit tests. Affected teams with pre-fix
+consent rows must **RE-CONSENT through the human flow**
+(`requirementAuthority.grantDegradationConsent` — one call; the scope is
+derived or explicit; the row is stamped `scopeKey` + `contentHash`). This is
+the disclosed migration behavior: **fail-closed, no silent auto-consent** —
+pre-fix consent rows stop covering at the next keyed evaluation (pinned by the
+J3 arc above). No new Remote/UI APIs; the frozen remote contract is untouched
+(the service-input `scopeKey` is a root-level surface only).
 
 ## Finding J (P2) — startup consent loses scope / hash
 
@@ -149,6 +274,43 @@ the run already included the uncommitted RED-I test + p4t6 pin drift 897-vs-896)
   `packages/runtime/dist` artifacts committed in each fix commit (install-surface drift = exactly
   the changed source faces; glue placement 1, byte-identical).
 
+### New round (I residual + reviewer addenda) gates — all logs committed below
+
+- **Baseline re-verification** (worktree detached @ pristine `31ad828d`
+  reusing the fix worktree's node_modules — the throwaway-worktree `pnpm
+  install` failed on the store DB, `baseline-install.log`; provenance in the
+  `baseline-full.log` header): **10 failed files / 21 failed tests | 397 passed
+  (407) files, 4698 passed (4719) tests, EXIT=1** — exactly the recorded debt
+  set (`p6t1-parallel` flake family fired 2 in this run).
+- **RED (new leader legs at HEAD `4a066408`, pre-fix)**: IL1 + IL4 fail,
+  premise + IL2 + IL3 pass, EXIT=1 (`red-leader.log`; the attempt-1 capture
+  kept for transparency).
+- **Focused areas (18 files** — leader legs + finding-I suite + W3-C
+  boundary/exit + every consent/preflight/facts/authority/startup suite +
+  tcm-m3 + f3b lock-scope + p8s7r1 wire + p4t6): **18 files / 197 tests GREEN**
+  (`green-focused.log`, EXIT=0).
+- **Full `pnpm vitest run` (new head)**: **Test Files 9 failed | 401 passed
+  (410); Tests 19 failed | 4730 passed (4749), EXIT=1** — failed-file set =
+  the recorded debt set; **setdiff vs the pristine-base run: EMPTY** (the only
+  delta is `p6t1-parallel`, the recorded flake family, 0 this run vs 2 at the
+  base — inside the recorded 0–2 envelope). `full-setdiff.md` + the two raw
+  logs + both failed-file sets.
+- **`pnpm run lint`**: EXIT=1 (the pre-existing 143 problems = 118 errors |
+  25 warnings — IDENTICAL counts); file-aware fingerprint diff vs the committed
+  baseline: **ZERO new entries, ZERO deletions** (`lint-fp-newhead-{plain,
+  fileaware}.txt`, `lint-newhead.log`).
+- **`pnpm run typecheck`**: **EXIT=0** (`typecheck-newhead.log`) — after a
+  one-pass fix of two TS2339 union-narrowing errors in the NEW S2/r2
+  assertions (discriminant narrowing; no semantic change).
+- **`pnpm build` (9/9) + `pnpm run build:composition` + `pnpm run
+  check:artifacts`: EXIT=0 (OK 1372 files)** after staging the rebuilt dist in
+  the product commit — the drift was exactly the two changed source faces × 4
+  artifacts (8 files, `check-artifacts-newhead.log`); glue placement 1,
+  byte-identical.
+- **p4t6 pin 898 → 899** (+1 scannable `.ts`: the new leader test file — the
+  in-pin justification is in the coverage test title; scanner `.mjs`
+  byte-identical) — GREEN.
+
 ### SET DIFF (final failed set vs baseline failed set)
 
 | file | baseline | final | classification |
@@ -164,8 +326,8 @@ the run already included the uncommitted RED-I test + p4t6 pin drift 897-vs-896)
 | t12a-glue-handoff-ports | collection | collection | historical debt (unchanged, NOT touched per protocol) |
 | a2c7-subtree-matcher | 9 | — | **environmental, CLEARED** (test-use restore completed mid-work — allowed debt-fix, listed) |
 | plugin-dsh-compat | 6 | — | **environmental, CLEARED** (same — allowed debt-fix, listed) |
-| template-disable-no-requirements-gate | 2 (RED I) | — | my fix I GREEN |
-| p4t6-session-event-scan | 1 (pin drift) | — | pin updated 896→897→898 per commit, GREEN |
+| template-disable-no-requirements-gate | 2 (RED I) | — | my fix I GREEN (+ the S3 follow-up leg this round — green) |
+| p4t6-session-event-scan | 1 (pin drift) | — | pin updated 896→897→898→899 per commit, GREEN |
 | p6t1-parallel | — | 1–2 (flake) | **known P1/P2/P3 flake family** — same family = record. GREEN-I run: P2 ("five activated
   results…", errors.length 3 of 5); GREEN-J run: P1 pair (2 tests). Isolated re-runs ×3: **9/9 GREEN
   all 3**. NOT a new signature (my I change only acts when availability says `available:false`;
@@ -187,25 +349,72 @@ the run already included the uncommitted RED-I test + p4t6 pin drift 897-vs-896)
 
 - CORE PATCH BUDGET = 0: zero upstream / test-use touches (test-use pristine @
   `46a7f68b09` — only READ by the suites that consume it).
-- No push / merge / force-push (branch local, 2 commits + this booking commit).
+- Push (CORRECTED per reviewer r2 — the earlier "no push" line was inaccurate):
+  push = the user-authorized one-time DRAFT publication (05:53:01Z, PR #48, at
+  `4a066408`) + the forthcoming new-HEAD push under the same authorization;
+  NO force-push; master NEVER pushed; no merge.
 - No :3080 / :3180 / ~/.dsh / host instances (zero instances started; all tests are
   in-repo vitest worlds).
 - No model/config changes; no new error codes (J reuses the reserved closed
-  `DUPLICATE_REQUIREMENT_SCOPE`); no new scannable files beyond the 2 new test files
-  (pin updated per sanctioned precedent with recorded justification in the coverage
-  test title, per commit).
-- No weakening/deletion of existing tests: the only existing-test edits are the
+  `DUPLICATE_REQUIREMENT_SCOPE`; the residual round added none); no new scannable
+  files beyond the 3 new test files (pin updated per sanctioned precedent
+  896→897→898→899 with recorded justification in the coverage test title, per
+  commit).
+- No weakening/deletion of existing tests: the only existing-test edits are (a) the
   disclosed closed-field pin (4→6 additive) in requirement-facts.test.ts (+ its new
-  keyed round-trip test) — both are the contract change itself, not a relaxation.
+  keyed round-trip test) — the contract change itself, not a relaxation — and (b)
+  the reviewer addenda S1/S2/S3/r2-minor this round — ALL ADDITIONS to existing
+  test files (no assertion deleted or relaxed).
+- J scope NOT expanded: disclosure only — no new Remote/UI APIs; the frozen remote
+  contract untouched; the `scopeKey` service input is a root-level surface only.
 - `dev/agent-workflow/graph.yaml` untouched (this entry appends to the log only).
 
-## Log paths (scratch, absolute)
+## Evidence index (all committed in this directory; raw logs scrubbed — token-free)
 
-`.worktrees/.scratch-logs/template-consent/`:
-`baseline-focused.log` (19F/173T green EXIT=0), `baseline-full-prefix.log` (full baseline),
-`baseline-lint.log` (EXIT=1) + `lint-fp-baseline{,-fileaware}.txt`, `red-ij.log` (RED I+J, EXIT=1),
-`green-i-focused.log` (EXIT=0), `build-i.log`, `check-artifacts-i.log` (EXIT=0),
-`green-i-full.log`, `green-i-lint.log` + `lint-fp-i-{plain,fileaware}.txt`,
-`p6t1-rerun-{1,2,3}.log` (all EXIT=0), `green-j-focused.log` (EXIT=0), `build-j.log`,
-`check-artifacts-j.log` (EXIT=0), `green-j-full.log`, `green-j-lint-final.log` +
-`lint-fp-final-{plain,fileaware}.txt`.
+### RED captures
+- `red-ij.log` — prior round: findings I + J RED at the pre-fix base (EXIT=1).
+- `red-leader.log` — this round: NEW leader legs at HEAD `4a066408` pre-fix —
+  IL1 + IL4 fail (EXIT=1); premise + IL2 + IL3 pass (final test form).
+- `red-leader-attempt1.log` — this round: first leader RED capture (kept for
+  transparency; its extra IL3 failure was a test assertion bug fixed before the
+  final capture — product behavior at HEAD on that lane was correct).
+
+### GREEN captures
+- `green-i-focused.log`, `green-j-focused.log` — prior round focused (EXIT=0).
+- `green-leader-focused.log` — this round: leader legs + W3-C boundary/exit +
+  finding-I suite + disable-enable (5 files / 25 tests, EXIT=0, post-fix).
+- `green-j-additions.log` — this round: consent J suite (S1/S2/r2) + p4t6 +
+  finding-I + leader legs (4 files / 39 tests, EXIT=0).
+- `green-focused.log` — this round: full focused-area set (18 files / 197
+  tests, EXIT=0).
+- `green-i-full.log`, `green-j-full.log` — prior round full runs.
+
+### Full-suite (raw + failed-file sets + setdiff)
+- `baseline-full.log` — pristine base `31ad828d` re-verified this round
+  (10F files / 21F tests; provenance header inside), `baseline-failed-files.txt`.
+- `baseline-full-prefix.log`, `baseline-focused.log` — prior round baseline runs.
+- `full-newhead.log` — new head (9F files / 19F tests; 4730/4749 pass),
+  `full-newhead-failed-files.txt`.
+- `full-setdiff.md` — the setdiff table + method (EMPTY beyond the recorded
+  debt set; the p6t1-parallel flake family inside its recorded 0–2 envelope).
+- `baseline-install.log` — the failed throwaway-worktree `pnpm install` (store
+  DB) that motivated the detached-baseline method.
+- `p6t1-rerun-{1,2,3}.log` — prior round isolated flake re-runs (all EXIT=0).
+
+### Lint (raw + fingerprints, both formats)
+- `baseline-lint.log` (prior baseline, EXIT=1, 118E|25W),
+  `green-i-lint.log`, `green-j-lint-final.log` (prior final state).
+- `lint-newhead.log` — this round (EXIT=1, 143 problems = 118E|25W identical).
+- Fingerprints (143 lines each): `lint-fp-baseline-{plain,fileaware}.txt`
+  (committed prior round — the gate baseline), `lint-fp-final-{plain,
+  fileaware}.txt` (prior round final), `lint-fp-newhead-{plain,fileaware}.txt`
+  (this round). File-aware diff baseline→newhead: **ZERO new entries, ZERO
+  deletions**.
+
+### Build / artifacts / typecheck
+- `build-i.log`, `build-j.log`, `check-artifacts-i.log`, `check-artifacts-j.log`
+  (prior rounds; check:artifacts EXIT=0 each).
+- `build-newhead.log` (9/9, EXIT=0), `build-composition-newhead.log`,
+  `check-artifacts-newhead.log` — this round (EXIT=0, OK 1372 files, after
+  staging the rebuilt dist in the product commit).
+- `typecheck-newhead.log` — this round (EXIT=0).
