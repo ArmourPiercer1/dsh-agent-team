@@ -249,13 +249,16 @@ export function fakeProjcacheTitles ({ rootTitle = ROOT_TITLE, memberTitle = MEM
 
 /** A fake access record (the shape of the world's 0600 browser-access.json).
  *  The token value below is a NON-SECRET TEST STRING used to prove the
- *  scrubber never lets a launch URL into output — it is not a real credential. */
+ *  scrubber never lets a launch URL into output — it is not a real credential.
+ *  It is deliberately a legal wire shape at 19 alnum chars (< 20) so strict
+ *  repo-wide scans (`?token=[A-Za-z0-9]{20,}`) stay unambiguous (PR54
+ *  precedent); the paired test assertions track this exact value. */
 export function fakeAccessRecord () {
   return JSON.stringify({
     note: 'PRIVATE operational record',
     world: 'tests/homes/tvs-smoke-FAKE',
     origin: 'http://127.0.0.1:3181',
-    launchUrl: 'http://127.0.0.1:3181/?token=FAKEt0kenValueForTestsOnly',
+    launchUrl: 'http://127.0.0.1:3181/?token=FAKEt0kenValue4Test',
     memberSession: MEMBER_ID,
     memberInstance: MEMBER_INSTANCE,
   })

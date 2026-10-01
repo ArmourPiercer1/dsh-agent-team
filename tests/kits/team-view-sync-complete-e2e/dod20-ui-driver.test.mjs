@@ -360,15 +360,26 @@ test('scrubEvidence masks token=, lt-v1-*, and liveToken JSON fields', () => {
   assert.ok(!s.includes('ANOTHERsecret9'))
 })
 
+test('scrubEvidence masks a token= query value end-to-end whatever the value form (spaced-word tail stays prose)', () => {
+  const s = scrubEvidence('launch GET http://127.0.0.1:3181/?token=FAKEt0kenValue4Test opened the lane')
+  assert.ok(!s.includes('FAKEt0kenValue4Test'), 'the token value must be gone whatever its shape')
+  assert.ok(s.includes('token=SCRUBBED'), 'the query parameter keeps a masked marker')
+  assert.ok(s.includes('opened the lane'), 'masking is scoped to the value — surrounding prose survives')
+})
+
 test('redactOut: a serialized fake access record NEVER carries its fake launch token; the 0600 path pointer stays', () => {
   const access = JSON.parse(F.fakeAccessRecord())
   const out = redactOut({
     accessRecordPath: '/worlds/fake/browser-access.json',
     origin: access.origin,
-    note: 'opened via the private record',
+    // A writer that QUOTES the launch URL into a string field must still be
+    // scrubbed end-to-end (value form irrelevant): the fake token is a legal
+    // 19-char wire shape kept below strict scanner thresholds on purpose.
+    note: 'opened via the private record at ' + access.launchUrl,
   })
   const text = JSON.stringify(out)
-  assert.ok(!text.includes('FAKEt0kenValueForTestsOnly'), 'launch token must never appear in output')
+  assert.ok(!text.includes('FAKEt0kenValue4Test'), 'launch token must never appear in output')
+  assert.ok(text.includes('token=SCRUBBED'), 'the quoted URL survives only in masked form')
   assert.ok(!text.includes('launchUrl'), 'the raw launch URL field must never be copied into output')
   assert.equal(out.accessRecordPath, '/worlds/fake/browser-access.json')
 })
