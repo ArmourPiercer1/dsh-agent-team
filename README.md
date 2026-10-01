@@ -66,11 +66,13 @@ gitignored) — this section is a pointer summary, not the authority:
   (plan §8.6; the persona kind-matching semantics re-landed inside PR-E #42 of
   the pre-alpha3 series), and the series-closure merges moved master to
   `31ad828d`. **Superseded (2026-10-01 07:07Z):** master has since advanced via
-  two user-authorized single-HEAD merges — #47 (E+G) → merge commit
+  three user-authorized single-HEAD merges — #47 (E+G) → merge commit
   `2bfbca12c0b4b7260e8bc9b5b05cd339189c74e4` (06:24Z), then #46 (A) → merge commit
-  `8e18819c4e589f685b99a86769251565ee4fc7ec` (07:07Z, = origin/master); both
-  expectedHeadOid-guarded with reviewed-commit inclusion verified. Open work as of 2026-10-01:
-  four fix PRs (#47 and #46 now MERGED; #48 I+J and #49 B/C/D/H at post-sync
+  `8e18819c4e589f685b99a86769251565ee4fc7ec` (07:07Z), then #48 (I+J) → merge commit
+  `621fdba1f9feaf7dc192f8c8e89e2b9c848881b7` (08:07Z, = origin/master); each
+  prechecked (head/base unchanged, MERGEABLE/CLEAN) + expectedHeadOid-guarded with
+  reviewed-commit inclusion verified (15/15 for #48). Open work as of 2026-10-01:
+  three fix lines (#47/#46/#48 MERGED; #49 B/C/D/H final batch in flight [external residual P2 + bounded C matrix + seriality + sync onto 621fdba1]; F = PR #50, external confirmed 1 residual P1 [first-mount pending window] — repro+fix in flight, then sync onto 621fdba1
   HEADs under final-HEAD review) + the unpublished F fix branch
   (`fix/mcp-target-materialization`) for the independently confirmed findings
   A–J (5 P1 + 5 P2) from the 2026-10-01 external review of the merged series — see
@@ -112,7 +114,7 @@ gitignored) — this section is a pointer summary, not the authority:
   push authorizations — PRs #16–#21 and #23–#35 merged, then the pre-alpha3
   series PRs #37–#45 merged (latest: PR #45 (PR-F) merged @ `365f635c`,
   2026-09-30); **PR #22 CLOSED as superseded (2026-09-30, plan §8.6)**.
-  **origin/master @ `31ad828d`** (2026-10-01 re-verified; superseded 07:07Z → `8e18819c…` after the two authorized merges above);
+  **origin/master @ `31ad828d`** (2026-10-01 re-verified; superseded 07:07Z → `8e18819c…` after #47+#46, then 08:07Z → `621fdba1…` after the #48 authorized merge);
   **origin/stable @ `b0e5aeb4`** (0.1.0-rc.1 freeze, unchanged). Zero force-push
   on gated history; each push verified via ls-remote.
 - Next (2026-10-01 handoff closure round): five DRAFT fix PRs for findings
