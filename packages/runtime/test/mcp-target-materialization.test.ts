@@ -465,7 +465,6 @@ function openIncidentOf(world: MtMWorld, rootSessionId: string, scopeKey: string
 const A = await (async () => {
   destroyDir(scratchDir('mtm-a'))
   const world = await bootMtmWorld('a', A_ROOT, BP_A, A_SERVER, 3991)
-  const runtime = world.root.runtime
 
   // The two live instances of `worker` (A healthy, B the future loss).
   const instA = await activateMember(world, 'mtm-a-A')

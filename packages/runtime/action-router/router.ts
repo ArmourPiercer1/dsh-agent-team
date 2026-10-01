@@ -81,7 +81,6 @@ import type {
   ControlSubject,
   ControlWaitSignal,
 } from '../control/index.js'
-import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
 import { sha256Hex } from '../../domain/blueprint/src/index.js'
 import { canonicalJsonStringify } from '../../contracts/src/index.js'
 import type { RemoteSafeJsonValue } from '../../contracts/src/index.js'

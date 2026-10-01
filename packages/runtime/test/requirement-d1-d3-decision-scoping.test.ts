@@ -338,7 +338,6 @@ const PROBE_CATALOG = createBlueprintCatalog([B0, B1, B1C, B1P, V2])
 
 const REPO_ID = 'req-mcp-mcp_repo'
 const LEADERREQ_ID = 'req-mcp-mcp_leaderreq'
-const SIGNAL_ID = 'req-mcp-mcp_signal'
 const PERSONA_ID = 'req-persona-d-other-preset'
 const WEB_ID = 'req-mcp-mcp_web-worker'
 

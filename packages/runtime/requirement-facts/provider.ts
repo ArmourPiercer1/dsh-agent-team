@@ -92,7 +92,6 @@ import {
   SUPPLY_AXIS,
   deriveMaterializationStatus,
   type CapabilityObservation,
-  type ObservationState,
   type ProbeVerdict,
 } from '../readiness/index.js'
 import {
@@ -101,7 +100,6 @@ import {
   type RequirementFactsPorts,
   type RequirementFactsResolution,
   type RequirementObservation,
-  type RequirementFactScope,
   type RuntimeRequirementFactsProvider,
 } from './types.js'
 import type { RuntimeSubstratePlan, RuntimeSubstratePlanEntry } from '../agent-setup/preset/index.js'
@@ -502,7 +500,7 @@ function deriveEngineFact(
 }
 
 /** The generation of the live feed fact (the observation's, or the initial). */
-function observationGeneration(observation: RequirementObservation): number {
+function observationGeneration(_observation: RequirementObservation): number {
   // The readiness view carried the optional generation; it is provenance of
   // the probe port. The observation surface does not re-expose it (the gate
   // reads the 3-state observation), so the feed uses the initial live

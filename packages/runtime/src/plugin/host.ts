@@ -1788,7 +1788,7 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // 'standard' guess, guide §5 B). The seam is keyed by the root session
     // id (Architecture §13.1 — members inherit the root substrate); the
     // row plan is row-global, so the id is provenance, not a plan axis.
-    resolvePersonaSubstrate: async (rootSessionId: string) => {
+    resolvePersonaSubstrate: async (_rootSessionId: string) => {
       const plan = await resolveSubstratePlan()
       const entry = plan.root
       return {

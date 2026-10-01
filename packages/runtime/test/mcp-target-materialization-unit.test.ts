@@ -46,7 +46,6 @@
 
 import { describe, expect, it } from 'vitest'
 import { parseBlueprint } from '../../domain/blueprint/src/index.js'
-import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
 import {
   createRuntimeRequirementFactsProvider,
   requirementFactScopeRoleOf,
