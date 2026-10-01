@@ -7,15 +7,19 @@ model, no key and no network. Vitest 4.1.11 via `node_modules/.bin/vitest`.
 
 ## 1. Governing-document baseline (local authoritative copies, hashes pinned in the PR body)
 
-| document | bytes | sha256 |
-| --- | --- | --- |
-| `docs/plans/active/2026-10-01_alpha3-dynamic-permission-governance-adr.md` | 4282 | `1af9899c30533a8bc4151b4bf0ab9527563c91c56f655b414f94896b88fcbf57` |
-| `docs/plans/active/2026-10-01_alpha3-dynamic-permission-governance-corrected-design.md` | 3731 | `cb916ce33fb61741adbe811828e5a6ab1411e7c7604071ce9e7557e141e022e6` |
-| `docs/plans/active/2026-10-01_alpha3-dynamic-permission-governance-implementation-plan.md` | 2959 | `2d4c0d44a7feca238a8e469dfb63db9897ea1fd2a618baeda2b41306a9bd4a7b` |
+`docs/plans/active/` is gitignored, so these three documents are NOT inside the
+worktree; they were read and hashed from the local copies in the primary
+checkout of the same repository. The hashes below are those LOCAL copies — no
+cross-source byte-identity with any other copy is claimed.
 
-Size + hash verified against the local copies before any implementation was
-written; no implementation decision was made without re-reading the relevant
-paragraph.
+| document (path relative to the primary checkout) | bytes | sha256 |
+| --- | --- | --- |
+| `docs/plans/active/dsh-agent-team-alpha3-permission-governance-ADR-revised.md` | 4282 | `1af9899c30533a8bc4151b4bf0ab9527563c91c56f655b414f94896b88fcbf57` |
+| `docs/plans/active/dsh-agent-team-alpha3-permission-governance-design-revised.md` | 3731 | `cb916ce33fb61741adbe811828e5a6ab1411e7c7604071ce9e7557e141e022e6` |
+| `docs/plans/active/dsh-agent-team-alpha3-permission-governance-implementation-plan-revised.md` | 2959 | `2d4c0d44a7feca238a8e469dfb63db9897ea1fd2a618baeda2b41306a9bd4a7b` |
+
+Re-verified after the last commit (size + sha256 unchanged); no implementation
+decision was made without re-reading the relevant paragraph.
 
 ## 2. RED — `red-run-1.txt`, `red-run-2-final-specs.txt`
 
