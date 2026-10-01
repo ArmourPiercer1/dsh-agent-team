@@ -3,7 +3,7 @@
  * P4-T1).
  *
  * `createTeamDomain` opens the domain through the seam and stamps all
- * nine stores (nine single-write durable writes; a crash between stamps
+ * ten stores (ten single-write durable writes; a crash between stamps
  * leaves a partial domain that `openTeamDomain` diagnoses precisely). It
  * is the STRICT fresh-world entry: an already-stamped domain is a
  * `TEAM_DOMAIN_EXISTS` failure (the harness/test-world boot semantics — a
@@ -13,9 +13,21 @@
  * L2 per-store stamps here, L3 record `schemaVersion` at every read).
  * `createOrOpenTeamDomain` is the RESTART-SAFE production entry (the
  * shipped bundle row's `bootPhase: "create-or-open"`): adopt an existing stamped
- * domain, or initialize a fresh medium with the full nine-store stamp
+ * domain, or initialize a fresh medium with the full ten-store stamp
  * when `schema_meta` is empty; a PARTIAL create is diagnosed exactly as
  * `openTeamDomain` diagnoses it (never papered over).
+ *
+ * ADDITIVE STORES (Alpha.3 PR1). A store declared at a version AFTER media
+ * were stamped at that version (today: `permission_overlays`) legitimately
+ * has no L2 stamp row on such a medium, and the pinned backend initializes
+ * its declared table EMPTY inside the same version. `verifyStamps` therefore
+ * bootstraps that store's stamp row, and ONLY that store's, ONLY when its
+ * table holds zero rows. The nine baseline stamps are verified exactly as
+ * before, FIRST, and nothing else is ever bootstrapped, repaired, or
+ * recreated: a baseline stamp missing or at a foreign version, an additive
+ * table that has rows but no stamp, a foreign domain version — all fail
+ * loudly with zero writes. This is not a migration: no version changes, no
+ * row is read, rewritten, or deleted.
  *
  * Failure paths release the handle: every error raised after `open`
  * closes the handle before re-throwing, so the domain name is freed and a
@@ -36,7 +48,15 @@ import { OverridesRepository } from './overrides.js';
 import { SchemaMetaRepository } from './schema-meta.js';
 import { SessionBindingsRepository } from './session-bindings.js';
 import { TeamSessionsRepository } from './team-sessions.js';
-/** The nine store repositories of an open TeamDomain. */
+/**
+ * The store repositories of an open TeamDomain.
+ *
+ * The tenth store (`permission_overlays`, Alpha.3 PR1) is intentionally NOT
+ * a member of this facade: its only consumer is the Alpha.3
+ * GovernanceMutationService (PR3), and PR1 ships the persistence layer with
+ * ZERO production-path imports of it. Its repository takes the same
+ * `StorageDomainHandle` as these nine (`new PermissionOverlayRepository(handle)`).
+ */
 export interface TeamDomainRepositories {
     /** Per-store schema stamps (L2). */
     readonly schemaMeta: SchemaMetaRepository;
@@ -63,15 +83,15 @@ export interface TeamDomainRepositories {
 export interface TeamDomain {
     /** The durable domain name (`team_domain`). */
     readonly name: string;
-    /** The nine store repositories. */
+    /** The store repositories of this domain (see {@link TeamDomainRepositories}). */
     readonly repositories: TeamDomainRepositories;
     /** Close the domain (idempotent; the state persists on the medium). */
     close(): Promise<void>;
 }
 /**
- * Create the TeamDomain: open `team_domain` and stamp all nine stores.
+ * Create the TeamDomain: open `team_domain` and stamp all ten stores.
  *
- * The nine stamp writes are sequential single-write durable writes; a
+ * The ten stamp writes are sequential single-write durable writes; a
  * crash between them leaves a partial domain (openable, but diagnosed by
  * `openTeamDomain` as `SCHEMA_STAMP_MISSING` for the exact first missing
  * store in canonical order).

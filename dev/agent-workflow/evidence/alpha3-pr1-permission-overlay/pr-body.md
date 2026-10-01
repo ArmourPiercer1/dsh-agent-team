@@ -278,12 +278,55 @@ $ node_modules/.bin/vitest run packages/runtime/test/permission-overlay-append.t
 ```
 
 `tsc -p tsconfig.json` → exit 0 in `packages/storage`, `packages/runtime` and
-`packages/testkit`; `eslint` over every changed `.ts`/`.mjs` → exit 0;
-`node scripts/check-artifacts-committed.mjs` →
-`OK: 1372 files` (no composition surface changed — the store has zero
-production-path imports). The CAS mutation probe was re-run on this tree: three
-probes, each caught by the pinned specs, source restored byte-identical
-(`mutation-probe-additive.txt`).
+`packages/testkit`; `eslint` over every changed `.ts`/`.mjs` → exit 0. The CAS
+mutation probe was re-run on this tree: three probes, each caught by the pinned
+specs, source restored byte-identical (`mutation-probe-additive.txt`).
+
+### Install-surface artifacts (external-review block, fixed forward)
+
+An external review caught a real release block on `8f33b25c`: the committed
+**install-surface** mirror (`packages/runtime/dist`, which the root
+`exports["./host"]` resolves through and which compiles the whole dependency
+graph — including `packages/storage/**`) still carried the **nine-store** build,
+so a `dsh plugin add github:…` install would execute the pre-batch
+`stores.js` / `team-domain.js` and never see the tenth store or its stamp
+bootstrap. The earlier `check-artifacts-committed` "OK" was a **false green**:
+that gate compares the on-disk build output against the git index, so running it
+**without a preceding build** compares stale dist against stale index. Freshness
+must run **after** `pnpm build` (and after `git add`, since it diffs against the
+index) — `pnpm setup` / `pnpm build:composition` encode exactly that order.
+
+Rebuilt with the sanctioned chain only (no hand-edited artifact):
+
+```
+$ pnpm build            # pnpm -r run build (tsc -p tsconfig.build.json per package)
+[exit code: 0]
+$ pnpm build:composition  # place-dist-glue -> build-client-composition -> check-artifacts-committed
+place-dist-glue: done (1 placement(s))
+build-client-composition: 91 modules, 11 css files; wrote client-bundle.js (1147053 B)
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/runtime/dist/packages/storage/repositories/team-domain.{js,d.ts,js.map,d.ts.map}
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/stores.{js,d.ts,js.map,d.ts.map}
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/version-policy.{js,d.ts,js.map,d.ts.map}
+[exit code: 1]
+$ git add <those twelve files> && node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1372 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+[exit code: 0]
+```
+
+Exactly twelve tracked files moved — the mirror copies of the three sources this
+PR changed (`schema/stores.ts`, `repositories/team-domain.ts`,
+`schema/version-policy.ts`) plus their `.d.ts` / `.map`. The rebuilt mirror
+contains `TEAM_PERMISSION_OVERLAY_STORE = 'permission_overlays'`,
+`TEAM_DOMAIN_STORES = [...BASELINE, ...ADDITIVE]`, `verifyStamps` and
+`problem: 'rows-without-stamp'`, and keeps
+`TEAM_DOMAIN_SCHEMA_VERSION = 2` / `SUPPORTED_TEAM_DOMAIN_SCHEMA_VERSIONS = [2]`.
+The composition bundle is byte-unchanged (no client-reachable source moved), and
+the overlay/repositories modules themselves stay OUT of the mirror, which is
+consistent with their zero production-path imports. Full offline suite after the
+rebuild: `10 failed / 417 passed (427)`, the only difference from the baseline
+set being the documented `p6t1-parallel` flake
+(`full-suite-branch-after-dist.txt`, `after-dist-fail-files.txt`).
 
 ### Full offline suite — parity against the pristine base
 
