@@ -9,7 +9,12 @@ Commits (separable):
 - `26994b97` (full: `26994b97923ded367b5d74eb20ebdc91f4010dd0`) — **I residual** (the leader-scope fix
   + real-chain regression legs + reviewer r1/r2 addenda S1/S2/S3/r2-minor pins) + p4t6 pin 898→899
   + rebuilt dist
-- (this report update) — bookkeeping round 2 (raw gate logs + this report update + log entry)
+- (bookkeeping round 2 = `dce6d4a3`) — raw gate logs + report update + log entry
+- `67df74eb` — **master sync**: merge origin/master `2bfbca12` (PR #47 E+G) — single
+  conflict (SESSION_ROUTER_LOG.md, both append sides kept verbatim); dist re-canonicalized
+  by fresh build (zero drift); p4t6 pin recomputed (899 unchanged); full re-test green
+  (see the "Master sync" section below)
+- (this bookkeeping round) — sync raw gate logs + this report update
 
 Push status (corrected per reviewer r2): push = the user-authorized one-time DRAFT
 publication (05:53:01Z, PR #48, at `4a066408`) + the forthcoming new-HEAD push under
@@ -369,6 +374,86 @@ the run already included the uncommitted RED-I test + p4t6 pin drift 897-vs-896)
   contract untouched; the `scopeKey` service input is a root-level surface only.
 - `dev/agent-workflow/graph.yaml` untouched (this entry appends to the log only).
 
+## Master sync (2026-10-01) — merge of origin/master `2bfbca12` (PR #47 E+G) — NEW UNREVIEWED CHANGES
+
+The branch was mergeable=false against the NEW master `2bfbca12c0b4b7260e8bc9b5b05cd339189c74e4`
+(#47 effective-policy-reset-fallback E+G merged there). Per the parent's controlled-sync
+instruction (same protocol as #46's parallel sync): **MERGE strategy, no rebase** — merge
+commit on the fix branch, no history rewrite, plain push afterward (no force-push of any
+kind).
+
+- **Merge commit**: `67df74eb` (parents `dce6d4a3` + `2bfbca12`).
+- **Conflict list (complete — every resolution)**:
+  1. `dev/agent-workflow/SESSION_ROUTER_LOG.md` — content conflict, both sides appended
+     after the last common entry. Resolved by keeping BOTH append sides VERBATIM
+     (append-only union, chronological): master's two 2026-09-29
+     fix/effective-policy-reset-fallback entries first, then this branch's two 2026-10-01
+     fix-runtime-template-consent entries. Nothing deleted.
+  2. **No other conflicts** — #47's changed files (`effective-policy/{reader,select}.ts`,
+     `src/plugin/s6-remote.ts`, 2 existing test files +147/+433 lines, their rebuilt dist,
+     their evidence dir) are disjoint from this branch's changes (root-initial-work.ts,
+     scope-requirements.ts, 3 new test files + p4t6 test, evidence, log). No dist-file
+     overlap (disjoint module sets — this branch's 8 dist files vs #47's dist files).
+     p4t6 test: #47 left it unchanged (pin 896 at master, "zero new scannable files" per
+     #47's own log) so this branch's pin-899 version won without conflict.
+- **Dist re-canonicalization (protocol a)**: fresh `pnpm build` (9/9 Done, EXIT=0) +
+  `pnpm run build:composition` on the MERGED tree; `pnpm run check:artifacts`
+  **EXIT=0 (OK 1372 files, 1 glue placement)**; post-build `git status` = ZERO drift —
+  the fresh build is byte-identical to the merged committed dist (this branch's 8 dist
+  files + #47's dist files, disjoint module sets) → the merged dist is canonical; no
+  dist re-commit needed.
+- **p4t6 pin recomputation (protocol c)**: recomputed from the actual integrated tree —
+  scanner authoritative count = **899 UNCHANGED** (896 base + this branch's 3 new test
+  files; #47 added zero scannable files — both its regression suites went into existing
+  test files, per #47's log). 10/10 GREEN @ 899 (`merge-p4t6.log`). Scanner `.mjs`
+  byte-identical (untouched by the merge).
+- **Gates on the merged head** (raw logs committed below; FULL-legible standard —
+  command line first line + complete stdout + true exit line, per the #49 standard):
+  - focused areas (20 files: the 3 task test files + all requirement/preflight/
+    consent/facts/authority/startup suites + W3-C boundary/exit + tcm-m3 + f3b +
+    p8s7r1 + requirement-facts + #47's two regression suites): **20 files / 234 tests
+    GREEN** (EXIT=0, `merge-focused.log`).
+  - **full `pnpm vitest run` RUN 1**: 12F|398P (410) / 29F|4722P (4751) — the 3 extra
+    failed files were ALL environmental, diagnosed and documented: (a)
+    `p4t5-retry-restart` (collection: `team_domain already exists (schema_meta holds 9
+    stamp row(s))`) and (b) `a2c7-subtree-matcher` (9F, its REAL backend section — the
+    P6T1-world realm creation hit the SAME stale-realm error, confirmed by a temporary
+    one-line diagnostic in the catch block that was reverted byte-identical before any
+    commit; the fs-local lib itself imports and resolves fine from the merged tree) —
+    both caused by STALE scratch realms under the gitignored
+    `packages/testkit/test/.tmp-fault/` left by a crashed concurrent vitest run at
+    06:37:53Z (this writer ran no tests at that timestamp — flagged to the parent as a
+    possible cross-worktree stray run from the #46 parallel sync); (c) `p6t1-parallel`
+    1F (the recorded flake family, inside its 0–2 envelope). After `rm -rf` of the 5
+    stale `.tmp-fault` scratch dirs (gitignored, regenerable test scratch), **full RUN
+    2**: **9F|401P (410) / 19F|4742P (4761), EXIT=1 — failed-file set IDENTICAL to the
+    recorded pristine-base debt set** (t1-capability-schema 9 / t2-blueprint-hash 1 /
+    d3-member-identity-context 1 / p6t3-mediation 5 / p6t3-restart 2 / p6t6-actions 1 +
+    3 collection files; p6t1-parallel 0 this run — inside the recorded 0–2 envelope;
+    4761 = 4749 + #47's 12 new tests — arithmetic closed). **New failures beyond the
+    recorded debt set: NONE** (the #47 merge adds no failing tests — verified).
+  - **lint**: 142 problems (117 errors | 25 warnings, EXIT=1 — the pre-existing debt);
+    file-aware fingerprint diff vs the committed baseline: **ZERO new entries, exactly
+    ONE deletion** — `governance-reset-tombstone.test.ts 248:10 no-unused-vars` (the
+    dead helper `instanceSlotId` removed by #47's E fix in that same file; a pre-existing
+    baseline debt entry, its deletion disclosed in #47's own log) — allowed, listed.
+  - **`pnpm run typecheck`**: **EXIT=0** — 8/8 projects Done (`merge-typecheck.log`,
+    full-legible: command line first line + complete stdout + true exit line).
+  - **`pnpm run check:artifacts`**: **EXIT=0, OK 1372 files** (`merge-build-composition.log`
+    carries the full legible run incl. the command line + true exit line).
+  - p4t6 at the recomputed pin 899: GREEN (above).
+- **Scope ruling acknowledged (parent relay, external)**: the disabled-template
+  existing-instance send-message exemption = **intentional, out of scope this round,
+  future semantic clarification** — not a blocker, no new change made for it, no
+  functional scope expansion (a disabled template's existing instances keep sending
+  messages; disable is an environmental disposition, not a deny).
+- **UNREVIEWED**: the merge commit `67df74eb` + this sync (the #47 delta now present on
+  this branch: effective-policy/{reader,select}.ts, s6-remote.ts, their tests + dist,
+  their log entries) is covered by NO review pass — the #48 content review (PASSED on
+  the leader fix + J per the external ruling) continues against the #48 source, which
+  the sync left unchanged (only dist canonicalization-verified / log / pins moved). The
+  post-sync HEAD goes to external re-review.
+
 ## Evidence index (all committed in this directory; raw logs scrubbed — token-free)
 
 ### RED captures
@@ -418,3 +503,19 @@ the run already included the uncommitted RED-I test + p4t6 pin drift 897-vs-896)
   `check-artifacts-newhead.log` — this round (EXIT=0, OK 1372 files, after
   staging the rebuilt dist in the product commit).
 - `typecheck-newhead.log` — this round (EXIT=0).
+
+### Master sync (merged head `67df74eb`; full-legible logs)
+- `merge-p4t6.log` — pin recomputation on the merged tree (10/10 @ 899, EXIT=0).
+- `merge-focused.log` — focused areas (20 files / 234 tests, EXIT=0).
+- `merge-full.log` — full suite RUN 1 (12F|398P / 29F|4722P — the 3 environmental
+  extras, documented in the Master-sync section), `merge-failed-files-run1.txt`.
+- `merge-isolated-rerun.log` — isolated re-run of the 3 non-debt files (confirming
+  the stale-realm signature).
+- `merge-full-run2.log` — full suite RUN 2 after stale-scratch cleanup (**9F|401P
+  (410) / 19F|4742P (4761) — failed-file set IDENTICAL to the recorded debt set**),
+  `merge-failed-files-run2.txt`.
+- `merge-lint.log` + `lint-fp-merged-fileaware.txt` (142 lines) — lint on the merged
+  head (117E|25W; file-aware diff vs baseline = zero new, one allowed deletion).
+- `merge-typecheck.log` — full-legible typecheck (EXIT=0, 8/8 Done).
+- `merge-build.log` (9/9, EXIT=0), `merge-build-composition.log` (glue + composition
+  + check:artifacts **EXIT=0, OK 1372 files** — full-legible).
