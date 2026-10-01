@@ -662,6 +662,91 @@ export function checkGeometryDom(arg) {
   return { ok: rows.every((r) => r.ok), rows }
 }
 
+/** ROUND-5 STABILITY GATE (parent CODE GO). MECHANISM (weighted per the
+ *  parent's independent pins): the host tracks the viewport through a
+ *  rAF-throttled ResizeObserver — AppFrame.tsx L151-168 — and admits "The JS
+ *  solve lags the viewport by a ResizeObserver + rAF frame" (L252-258), so a
+ *  resize lands the responsive auto-collapse ONE frame late; the CSS grid
+ *  easing (AppFrame.module.css L16, --ds-transition-duration-slow=0.3s at
+ *  ui-theme base.css L14) is a TOGGLE-ONLY path (the viewportChanged guard,
+ *  L218-224, deliberately skips easing for resize-driven collapses). Expected
+ *  settle: 1-3 samples. The gate keys STRICTLY on consecutive-identical
+ *  GEOMETRY samples (never on oracle results — waiting for a PASS is
+ *  forbidden); bounded ~50ms polls inside the existing OBSERVE_TIMEOUT_MS
+ *  deadline; the deadline is typed fail-closed with NO marker. All original
+ *  oracles then run ONCE against the settled layout, byte-kept. */
+export function sampleFrameGeometryDom(arg) {
+  const doc = globalThis.document
+  const win = globalThis.window
+  const rect4 = (el) => {
+    try {
+      const r = el.getBoundingClientRect()
+      return [Math.round(r.left * 2) / 2, Math.round(r.top * 2) / 2, Math.round(r.width * 2) / 2, Math.round(r.height * 2) / 2]
+    } catch { return null }
+  }
+  const chainOf = (start) => {
+    const out = []
+    let el = start
+    let i = 0
+    while (el != null && el.tagName !== 'HTML' && i < 24) {
+      let trans = null
+      try {
+        const cs = win.getComputedStyle(el)
+        trans = `${String(cs.transitionProperty)}|${String(cs.transitionDuration)}`
+      } catch { /* computed style unavailable — the sample stays structural */ }
+      out.push({
+        tag: String(el.tagName),
+        cls: String(el.getAttribute('class') ?? '').slice(0, 40),
+        rect: rect4(el),
+        trans,
+        animating: typeof el.hasAttribute === 'function' && el.hasAttribute('data-animating')
+          ? String(el.getAttribute('data-animating') ?? 'true') : null,
+      })
+      el = el.parentElement
+      i += 1
+    }
+    return out
+  }
+  const bars = Array.from(doc.querySelectorAll('[data-ledger-resolve-bar][data-request-id]'))
+    .filter((el) => el.getAttribute('data-request-id') === arg.rid)
+  const panel = bars.length === 1 ? bars[0] : null
+  let sidebarCollapsed = null
+  try {
+    const n = doc.querySelector('[data-sidebar-collapsed]')
+    sidebarCollapsed = n === null ? null : String(n.getAttribute('data-sidebar-collapsed'))
+  } catch { /* never fatal */ }
+  const railRow = doc.querySelector('[data-row-key]')
+  return {
+    viewport: [Number.isFinite(win.innerWidth) ? win.innerWidth : null, Number.isFinite(win.innerHeight) ? win.innerHeight : null],
+    sidebarCollapsed,
+    panelChain: chainOf(panel),
+    railChain: railRow === null ? [] : chainOf(railRow),
+  }
+}
+
+/** Driver: poll sample→sleep→sample until TWO consecutive samples are
+ *  byte-identical (easing/relayout is monotonic — equal consecutive samples
+ *  means the layout quiesced). Every pre-stability (transient) sample is
+ *  kept (bounded) as raw evidence so a future run6-style race is PROVABLE
+ *  from the raws. The deadline never degrades into a blind sleep or a
+ *  pass-wait: it throws S2O_GEOMETRY_UNSTABLE. */
+export async function waitForStableFrameGeometry({ evaluateSample, nowFn, sleepFn, deadlineAt, pollMs = 50, maxPreSamples = 10 }) {
+  const preSamples = []
+  let prev = await evaluateSample()
+  let polls = 1
+  for (;;) {
+    await sleepFn(pollMs)
+    const next = await evaluateSample()
+    polls += 1
+    if (next === prev) return { gated: true, stable: true, polls, preSamples, settled: next }
+    if (preSamples.length < maxPreSamples) preSamples.push(String(next).slice(0, 600))
+    if (nowFn() >= deadlineAt) {
+      throw new ObserverError('S2O_GEOMETRY_UNSTABLE', `frame geometry never quiesced (${polls} consecutive samples still differing at the bounded deadline) — refusing to measure a mid-relayout state (fail closed, no marker)`)
+    }
+    prev = next
+  }
+}
+
 /** The coordinator-pinned Team-entry resolution (final wording 2026-10-02):
  *  the UNIQUE button[role=tab] UNDER [data-conversation-tabs] whose accessible
  *  label is EXACTLY one of TEAM_TAB_LABELS. LAYOUT-AGNOSTIC: the scoped
@@ -1190,6 +1275,9 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
         }
         await page.locator('[data-team-view]').first().waitFor({ state: 'visible', timeout: OBSERVE_TIMEOUT_MS })
         await page.waitForSelector(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`, { timeout: OBSERVE_TIMEOUT_MS })
+        // Wide pass: NO gate (no resize happened) — ONE whitelisted geometry
+        // diagnostic sample per the round-5 ruling (1440/380 only, no ladder).
+        const geometryNormalSample = await page.evaluate(sampleFrameGeometryDom, { rid: opts.rid })
         const fields = await page.evaluate(extractPanelFields, opts.rid)
         const narrow = await page.evaluate(checkNarrowLegibility, { rid: opts.rid, expected: durableLens })
         // GEOMETRY READS ride the SAME narrow-rows array (shape unchanged);
@@ -1197,7 +1285,7 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
         const geoNormal = await page.evaluate(checkGeometryDom, { rid: opts.rid })
         const shotFull = await page.screenshot({ fullPage: true })
         const shotPanel = await page.locator(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`).screenshot()
-        passes.normal = { fields, narrow: { ok: narrow.ok === true && geoNormal.ok === true, rows: [...narrow.rows, ...geoNormal.rows] }, shotFull, shotPanel }
+        passes.normal = { fields, narrow: { ok: narrow.ok === true && geoNormal.ok === true, rows: [...narrow.rows, ...geoNormal.rows] }, geometry: { gated: false, samples: [geometryNormalSample] }, shotFull, shotPanel }
         // ── narrow pass: RESIZE the SAME page (no re-navigation, no re-login,
         // no sidebar demand). ROOT BINDING on narrow = the PANEL, not header
         // text (external runtime ruling @23a43f20: the header renders the
@@ -1224,12 +1312,22 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
         }
         await page.locator('[data-team-view]').first().waitFor({ state: 'visible', timeout: OBSERVE_TIMEOUT_MS })
         await page.waitForSelector(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`, { timeout: OBSERVE_TIMEOUT_MS })
+        // ROUND-5 STABILITY GATE (run6): wait for the RESIZED layout to
+        // QUIESCE (two consecutive identical geometry samples — keyed ONLY
+        // on geometry identity, never on oracle results) before any oracle
+        // is evaluated; bounded deadline is typed fail-closed, no marker.
+        const stabilityNarrow = await waitForStableFrameGeometry({
+          evaluateSample: async () => JSON.stringify(await page.evaluate(sampleFrameGeometryDom, { rid: opts.rid })),
+          nowFn,
+          sleepFn: sleep,
+          deadlineAt: nowFn() + OBSERVE_TIMEOUT_MS,
+        })
         const fieldsNarrow = await page.evaluate(extractPanelFields, opts.rid)
         const narrowNarrow = await page.evaluate(checkNarrowLegibility, { rid: opts.rid, expected: durableLens })
         const geoNarrow = await page.evaluate(checkGeometryDom, { rid: opts.rid })
         const shotFullNarrow = await page.screenshot({ fullPage: true })
         const shotPanelNarrow = await page.locator(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`).screenshot()
-        passes.narrow = { fields: fieldsNarrow, narrow: { ok: narrowNarrow.ok === true && geoNarrow.ok === true, rows: [...narrowNarrow.rows, ...geoNarrow.rows] }, shotFull: shotFullNarrow, shotPanel: shotPanelNarrow }
+        passes.narrow = { fields: fieldsNarrow, narrow: { ok: narrowNarrow.ok === true && geoNarrow.ok === true, rows: [...narrowNarrow.rows, ...geoNarrow.rows] }, geometry: { gated: stabilityNarrow.gated, stable: stabilityNarrow.stable, polls: stabilityNarrow.polls, preSamples: stabilityNarrow.preSamples, settled: stabilityNarrow.settled }, shotFull: shotFullNarrow, shotPanel: shotPanelNarrow }
     } finally {
         await context.close()
     }
@@ -1279,8 +1377,8 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
       'dom-narrow.json': JSON.stringify(passes.narrow.fields, null, 2),
       'comparisons.json': JSON.stringify({
         allPassed,
-        normal: { fields: verdict.normalChecks.checks, narrow: passes.normal.narrow.rows },
-        narrow: { fields: verdict.narrowChecks.checks, narrow: passes.narrow.narrow.rows },
+        normal: { fields: verdict.normalChecks.checks, narrow: passes.normal.narrow.rows, geometry: passes.normal.geometry ?? null },
+        narrow: { fields: verdict.narrowChecks.checks, narrow: passes.narrow.narrow.rows, geometry: passes.narrow.geometry ?? null },
       }, null, 2),
       'shot-normal.png': passes.normal.shotFull,
       'shot-narrow.png': passes.narrow.shotFull,

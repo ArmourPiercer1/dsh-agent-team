@@ -1941,3 +1941,92 @@ test('97 GEOMETRY wiring: full runObservation success still emits the marker AND
   // the pre-existing legibility legs are BYTE-KEPT in order ahead of the new rows
   assert.equal(comp.narrow.narrow[0].name, 'NARROW_RID_LENGTH')
 })
+
+// — STABILITY GATE (round 5, parent CODE GO): the narrow pass must NOT
+// measure mid-relayout (run6 proved an RO/rAF-lag transient). Gate keys
+// STRICTLY on consecutive-identical GEOMETRY samples (never on oracle
+// results), bounded ~50ms polls inside the existing OBSERVE_TIMEOUT
+// deadline, typed S2O_GEOMETRY_UNSTABLE fail-closed with NO marker.
+// Transient (pre-stability) samples ride the raws as evidence.
+
+function wrapEvaluate(pageLike, { samplerName = 'sampleFrameGeometryDom', scripted }) {
+  const orig = pageLike.evaluate.bind(pageLike)
+  const order = []
+  pageLike.evaluate = async (fn, arg) => {
+    const name = typeof fn === 'function' ? fn.name : String(fn)
+    order.push(name)
+    if (name === samplerName) {
+      const s = scripted(name)
+      if (s !== undefined) return s
+    }
+    return orig(fn, arg)
+  }
+  return order
+}
+
+test('98 GATE: transient geometry samples → the gate WAITS (never evaluates mid-ease), then evaluates ONCE the samples are consecutive-identical; transient samples recorded as evidence', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ html: wireHtml() })
+  const origNewContext = browser.newContext.bind(browser)
+  browser.newContext = async (o) => {
+    const ctx = await origNewContext(o)
+    const baseNewPage = ctx.newPage.bind(ctx)
+    ctx.newPage = async () => {
+      const p = await baseNewPage()
+      let n = 0
+      wrapEvaluate(p, {
+        scripted: () => {
+          n += 1
+          // call #1 is the WIDE diagnostic; transients ride calls #2-#3,
+          // then REAL (consecutive-identical) samples settle the narrow gate.
+          return n >= 2 && n <= 3 ? { transient: n, bar: [327.5 - n, 347.5 - n] } : undefined
+        },
+      })
+      return p
+    }
+    return ctx
+  }
+  const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...fakeClock() })
+  assert.equal(res.ok, true, 'a transient that SETTLES must still succeed on the settled layout')
+  const comp = JSON.parse(readFileSync(join(res.evidenceDir, 'comparisons.json'), 'utf8'))
+  const g = comp.narrow.geometry
+  assert.equal(g.gated, true)
+  assert.ok(g.preSamples.length >= 2, `pre-stability evidence recorded: ${g.preSamples.length}`)
+  assert.ok(JSON.stringify(g.preSamples[0]) !== JSON.stringify(g.preSamples[1]), 'transient samples really differed (run6-style window captured in raws)')
+  assert.ok(g.polls >= 4, `gate polled through the transient: polls=${g.polls}`)
+})
+
+test('99 GATE: geometry that NEVER settles ⇒ typed S2O_GEOMETRY_UNSTABLE at the bounded deadline, ZERO marker on disk (fail-closed; the gate never waits for a PASS)', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ html: wireHtml() })
+  const origNewContext = browser.newContext.bind(browser)
+  browser.newContext = async (o) => {
+    const ctx = await origNewContext(o)
+    const baseNewPage = ctx.newPage.bind(ctx)
+    ctx.newPage = async () => {
+      const p = await baseNewPage()
+      let n = 0
+      wrapEvaluate(p, { scripted: () => ({ always: (n += 1) }) }) // samples NEVER repeat
+      return p
+    }
+    return ctx
+  }
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...fakeClock() }),
+    (err) => { assert.ok(err instanceof ObserverError); assert.equal(err.code, 'S2O_GEOMETRY_UNSTABLE'); return true },
+  )
+  assert.deepEqual(readdirSync(f.markerDir), [], 'no marker may exist when the geometry never quiesced')
+})
+
+test('100 GATE: already-stable data (every prior fixture) pays exactly ONE redundant identical pair — verdicts byte-unchanged; geometry diagnostics land BOTH viewports', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ html: wireHtml() })
+  const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...fakeClock() })
+  assert.equal(res.ok, true)
+  const comp = JSON.parse(readFileSync(join(res.evidenceDir, 'comparisons.json'), 'utf8'))
+  assert.equal(comp.narrow.geometry.gated, true)
+  assert.equal(comp.narrow.geometry.polls, 2, 'stable data: sample, poll, identical — exactly one redundant pair')
+  assert.deepEqual(comp.narrow.geometry.preSamples, [], 'no transient, no evidence clutter')
+  assert.equal(comp.normal.geometry.gated, false, 'wide pass: diagnostic sampling only — it never resized')
+  assert.equal(comp.normal.narrow[0].name, 'NARROW_RID_LENGTH', 'oracle rows byte-kept in front')
+})
