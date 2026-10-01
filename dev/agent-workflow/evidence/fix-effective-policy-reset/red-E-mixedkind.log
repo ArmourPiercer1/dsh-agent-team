@@ -1,0 +1,124 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-policy-reset
+
+ ❯ packages/runtime/test/remote-override-expected-generation.test.ts (23 tests | 4 failed) 12ms
+     ✓ v7 override.set carries the optional expectedGeneration (present → the value, verbatim) 1ms
+     ✓ v7 override.set without the field parses it as structurally absent (the legacy shape) 0ms
+     ✓ every v1–v6 closed set rejects the field (malformed-params / unknown-field) 0ms
+     ✓ a malformed v7 expectedGeneration (1.5 / -1 / "4" / null) → malformed-params on the field 0ms
+     ✓ v7 override.reset mirrors the set closed set (present → parses; v6 field → rejected; string → rejected) 0ms
+     ✓ v7 absent guard commits (the legacy shape on v7); provenance echoes v7 0ms
+     ✓ the v1 byte-for-byte call still works (no field, v1 envelope); provenance echoes v1 0ms
+     ✓ a stale v7 guard → the typed OVERRIDE_GENERATION_CONFLICT passes through (invariant 4b), zero write 0ms
+     ✓ a matching v7 guard commits (g3); provenance echoes v7 0ms
+     ✓ v7 absent guard after the slot moved → legacy: the write lands (g4) 0ms
+     ✓ a stale v7 reset guard → the typed conflict on the wire, no tombstone 0ms
+     ✓ v7 absent reset → legacy: removes (the g5 tombstone) 0ms
+     ✓ present: the parsed number is forwarded verbatim into the service guard (set + reset) 0ms
+     ✓ absent: the field is structurally ABSENT from the service call (no undefined key — the legacy shape) 0ms
+     ✓ model->reset->mcp: get(model) is null at the slot (NOT the resurrected g1 value A / stale generation 1) 0ms
+     ✓ get(mcp) returns the LATEST row (g3) with the current slot generation 0ms
+     ✓ the next UI write guarded by the CURRENT slot generation commits (no spurious conflict); the resurrected stale generation still conflicts 0ms
+     ✓ control: get(model) after the fresh write returns the LATEST row; the untouched TEAM slot reads null 0ms
+     × repro leg 1: get(model) returns the HUMAN A row (the member g2 row must NOT shadow the human value) 3ms
+     × repro leg 2: get(mcp) is null on the HUMAN lane (the member mcp-deny is neither a human value nor a human CAS generation) 2ms
+     × repro leg 3: the human mcp write (guarded by the read) commits without a spurious conflict; the HUMAN lane keeps its own generation sequence 1ms
+     ✓ lane coexistence: the canonical read (before the human mcp write) resolves model from the HUMAN lane and mcp/skills from the MEMBER lane 0ms
+     × independent sequences: the per-KIND slot winner is selected per the full slot identity (the member lane is intact) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/remote-override-expected-generation.test.ts > E-external-review — the mixed-kind regression: the HUMAN read plane is per-KIND (full slot identity) > repro leg 1: get(model) returns the HUMAN A row (the member g2 row must NOT shadow the human value)
+AssertionError: expected null not to be null
+ ❯ packages/runtime/test/remote-override-expected-generation.test.ts:929:26
+    927|     expect(e3.changed).toBe(true)
+    928|     const override = dataOf(e4)['override'] as Record<string, unknown>
+    929|     expect(override).not.toBeNull()
+       |                          ^
+    930|     expect(override['recordId']).toBe('ovr-model-inst-e-g0')
+    931|     expect(override['kind']).toBe('human-override')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/runtime/test/remote-override-expected-generation.test.ts > E-external-review — the mixed-kind regression: the HUMAN read plane is per-KIND (full slot identity) > repro leg 2: get(mcp) is null on the HUMAN lane (the member mcp-deny is neither a human value nor a human CAS generation)
+AssertionError: expected { schemaVersion: 2, …(9) } to be null
+
+- Expected:
+null
+
++ Received:
+{
+  "generation": 2,
+  "instanceId": "inst-e",
+  "kind": "autonomy-overlay",
+  "origin": "member",
+  "recordId": "ovr-skills-inst-e-g1",
+  "rootSessionId": "root-session-override-mixed-kind",
+  "schemaVersion": 2,
+  "scope": "instance",
+  "updatedAt": "2026-09-29T00:00:00.000Z",
+  "values": {
+    "mcp": {
+      "kind": "deny",
+    },
+    "skills": {
+      "kind": "deny",
+    },
+  },
+}
+
+ ❯ packages/runtime/test/remote-override-expected-generation.test.ts:937:36
+    935|
+    936|   it('repro leg 2: get(mcp) is null on the HUMAN lane (the member mcp-…
+    937|     expect(dataOf(e5)['override']).toBeNull()
+       |                                    ^
+    938|   })
+    939|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/runtime/test/remote-override-expected-generation.test.ts > E-external-review — the mixed-kind regression: the HUMAN read plane is per-KIND (full slot identity) > repro leg 3: the human mcp write (guarded by the read) commits without a spurious conflict; the HUMAN lane keeps its own generation sequence
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/remote-override-expected-generation.test.ts:941:19
+    939|
+    940|   it('repro leg 3: the human mcp write (guarded by the read) commits w…
+    941|     expect(e6.ok).toBe(true)
+       |                   ^
+    942|     // The human mcp write lands in the HUMAN slot's OWN sequence: the
+    943|     // full-slot re-issue over the human g1 (model A) row -> human g2
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/runtime/test/remote-override-expected-generation.test.ts > E-external-review — the mixed-kind regression: the HUMAN read plane is per-KIND (full slot identity) > independent sequences: the per-KIND slot winner is selected per the full slot identity (the member lane is intact)
+AssertionError: expected [ { schemaVersion: 2, …(9) }, …(2) ] to have a length of 4 but got 3
+
+- Expected
++ Received
+
+- 4
++ 3
+
+ ❯ packages/runtime/test/remote-override-expected-generation.test.ts:978:27
+    976|
+    977|   it('independent sequences: the per-KIND slot winner is selected per …
+    978|     expect(eRecordsAfter).toHaveLength(4)
+       |                           ^
+    979|     const keys = eRecordsAfter.map((record) => `${record.kind}|${recor…
+    980|     expect(keys).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 19 passed (23)
+   Start at  06:03:40
+   Duration  816ms (transform 532ms, setup 0ms, import 707ms, tests 12ms, environment 0ms)
+
+EXIT=1
