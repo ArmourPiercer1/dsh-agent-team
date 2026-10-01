@@ -260,27 +260,64 @@ export function canonicalTargets ({ projcache, rootId, memberIds }) {
   return { ok: true, targets: { root: { id: rootId, title: root.title }, member: members[0] || null, members } }
 }
 
-/** OFFLINE fixture adapter only (pure tests): builds the dialog MODEL from a
- *  hand-modeled static HTML string. The live lane NEVER calls this — it reads
- *  real DOM state through DIALOG_STATE_SOURCE below; page text (innerText) is
- *  not HTML and must never be fed to htmlLeaves (external review P2). */
-export function detectBlockingModal (html) {
-  const leaves = htmlLeaves(html)
-  const title = leaves.find((l) => l.text === 'Select Workspace Directory')
-  if (!title) return { blocking: false, open: false, title: null, rootLabel: null, crumbLabel: null, folders: [], buttons: [] }
-  return {
-    blocking: true,
-    open: true,
-    title: title.text,
-    rootLabel: leaves.find((l) => String(l.cls || '').includes('crumb'))?.text ?? null,
-    crumbLabel: leaves.find((l) => String(l.cls || '').includes('crumb'))?.text ?? null,
-    folders: leaves.filter((l) => String(l.cls || '').includes('folderName')).map((l) => l.text),
-    buttons: leaves.filter((l) => l.tag === 'button').map((l) => l.text),
-  }
+// ── dialog state: the REAL DirectoryBrowser structure (external review P2,
+// round 2) ───────────────────────────────────────────────────────────────────
+// The probe below mirrors the pinned upstream component STRUCTURE, read at
+// tests/deepseek-harness-test-use @ 46a7f68b09,
+// packages/client/ui-directory-picker-browse/src/client/DirectoryBrowser.tsx:
+//  - the crumb trail is a [role=navigation] region of INDEPENDENT crumb
+//    BUTTONS (one per ancestor, chevron icons between; :818) — flattening the
+//    trail's textContent welds the ancestors into one string, so the probe
+//    reads the BUTTON LABELS as an ordered array;
+//  - a selected row keeps its selection on the ROW'S OWN BUTTON through
+//    aria-current (:238) — NOT on the [role=listitem] wrapper;
+//  - clicking a row selects immediately, but the selected folder's own
+//    listing (and therefore the crumb trail, which is derived from
+//    child ?? parent; :506, :688) arrives ASYNC — the consumer must bounded-
+//    WAIT for the exact crumb path, never snapshot-on-click;
+//  - i18n (src/client/index.ts:39-62): title EN 'Select Workspace Directory'
+//    / ZH '选择工作区目录'; home crumb 'Home' / '主目录'; Open 'Open'/'打开';
+//    Cancel 'Cancel'/'取消'. The allowlists below are EXACT values of this
+//    frozen table — no substring matching.
+export const DIALOG_TITLES = Object.freeze(['Select Workspace Directory', '选择工作区目录'])
+export const DIALOG_HOME_LABELS = Object.freeze(['Home', '主目录'])
+export const DIALOG_OPEN_LABELS = Object.freeze(['Open', '打开'])
+export const DIALOG_CANCEL_LABELS = Object.freeze(['Cancel', '取消'])
+
+/** THE dialog-state probe — the ONE dialog-state implementation: the live
+ *  adapter evaluates it verbatim inside the page over REAL DOM (embedded in
+ *  DIALOG_STATE_SOURCE below), and the offline faithful-markup fixtures are
+ *  read through the SAME serialized source under a real DOM implementation
+ *  (jsdom from the repo's own test-use runtime — no hand-rolled DOM shim).
+ *  It uses only standard DOM APIs (querySelector/querySelectorAll on tag and
+ *  [role=...] selectors, getAttribute, textContent) — if a DOM engine cannot
+ *  run these selectors the test FAILS; nothing is stubbed.
+ *  Rows carry their Miller COLUMN level (each [role=list] is one level), so
+ *  the consumer always acts on the CURRENT (deepest) listing.
+ *  @returns { open, title, crumbLabels: string[], rows: [{level, name, selected}], buttons: string[] } */
+export function dialogStateFrom (dlg) {
+  const TITLES = ['Select Workspace Directory', '选择工作区目录']
+  const all = (root, sel) => Array.prototype.slice.call((root && root.querySelectorAll(sel)) || [])
+  const txt = (el) => ((el && el.textContent) || '').replace(/\s+/g, ' ').trim()
+  const heads = all(dlg, 'h1, h2, h3, [role="heading"]').map(txt)
+  const title = heads.find((t) => TITLES.includes(t)) || (heads.length ? heads[0] : null)
+  const open = title !== null && TITLES.includes(title)
+  const nav = (dlg.querySelector && dlg.querySelector('[role="navigation"]')) || null
+  const crumbLabels = nav ? all(nav, 'button').map(txt).filter(Boolean) : []
+  const rows = []
+  all(dlg, '[role="list"]').forEach((col, level) => {
+    all(col, '[role="listitem"]').forEach((li) => {
+      const btn = li.querySelector && li.querySelector('button')
+      rows.push({ level, name: txt(btn || li), selected: !!btn && btn.getAttribute('aria-current') === 'true' })
+    })
+  })
+  const buttons = all(dlg, 'button').map(txt).filter(Boolean)
+  return { open, title, crumbLabels, rows, buttons }
 }
 
 /** The dialog root label the live world uses for the host home directory
- *  (shot-E2-ordinary-v3.png breadcrumb). The dialog browses from here. */
+ *  (shot-E2-ordinary-v3.png breadcrumb; EN value of t('browser.home')).
+ *  Authorization compares against DIALOG_HOME_LABELS (exact, i18n-aware). */
 export const DIALOG_HOME_LABEL = 'Home'
 
 /** FILESYSTEM authorization (external review P6): authorization is REALPATH
@@ -310,32 +347,36 @@ export function authorizeWorkspace ({ testWorkspaceReal, authorizedRootReal, hom
 }
 
 /** The fixed E2 dialog plan (pure): steps generated from the REAL-path
- *  authorization + the CURRENT dialog state. Only the current level can be
+ *  authorization + the CURRENT dialog state. The dialog state is the output of
+ *  the REAL probe (dialogStateFrom over the served DOM — crumb BUTTON labels,
+ *  rows with aria-current selection). Only the current level can be
  *  listing-checked here — the live loop re-verifies EVERY deeper level from
- *  real DOM state before clicking (crumb advanced, folder unique-exact), and
- *  anything unexpected is a fail-closed Cancel, never an Open on a broader
- *  directory. crumbLabel is compared against the dialog's proven root. */
+ *  real DOM state before clicking and BOUNDED-WAITS for the exact crumb path
+ *  (the listing is async: click selects now, the child listing/crumbs land
+ *  later), and anything unexpected is a fail-closed Cancel, never an Open on
+ *  a broader directory. */
 export function e2WorkspaceSteps ({ dialog, authz, absPath }) {
-  if (!dialog || !(dialog.open ?? dialog.blocking)) return { ok: false, reason: 'workspace dialog not open (Select Workspace Directory never appeared)' }
-  if (dialog.title !== 'Select Workspace Directory') return { ok: false, reason: `workspace dialog title ${JSON.stringify(dialog.title)} is not the proven 'Select Workspace Directory' (shot-E2-ordinary-v3.png)` }
-  if ((dialog.crumbLabel ?? dialog.rootLabel) !== DIALOG_HOME_LABEL) return { ok: false, reason: `dialog root label ${JSON.stringify(dialog.crumbLabel ?? dialog.rootLabel)} is not the authorized '${DIALOG_HOME_LABEL}' — foreign root, never browse into it` }
+  if (!dialog || !dialog.open) return { ok: false, reason: 'workspace dialog not open (Select Workspace Directory never appeared)' }
+  if (!DIALOG_TITLES.includes(dialog.title)) return { ok: false, reason: `workspace dialog title ${JSON.stringify(dialog.title)} is not the proven '${DIALOG_TITLES[0]}' (shot-E2-ordinary-v3.png; ZH title also accepted)` }
+  const rootLabel = (dialog.crumbLabels || [])[0] ?? null
+  if (!DIALOG_HOME_LABELS.includes(rootLabel)) return { ok: false, reason: `dialog root crumb ${JSON.stringify(rootLabel)} is not the authorized home crumb (${DIALOG_HOME_LABELS.join('/')}) — foreign root, never browse into it` }
   if (!authz || !Array.isArray(authz.ancestors) || !authz.folder) return { ok: false, reason: 'no filesystem authorization was resolved (run authorizeWorkspace first)' }
   if (typeof absPath !== 'string' || !absPath.startsWith('/')) return { ok: false, reason: `authorized workspace must be an absolute realpath (got ${JSON.stringify(absPath)})` }
   const want = authz.ancestors[0] ?? authz.folder
-  const hits = (dialog.folders || []).filter((f) => f === want).length
+  const hits = (dialog.rows || []).filter((r) => r.name === want).length
   if (hits === 0) return { ok: false, reason: `authorized workspace folder '${want}' not offered by the dialog (never pick a neighbor or near-miss folder)` }
   if (hits > 1) return { ok: false, reason: `'${want}' rendered ${hits} times — ambiguous listing, fail closed before Open` }
-  if (!(dialog.buttons || []).includes('Open')) return { ok: false, reason: 'dialog offers no exact Open button' }
-  if (!(dialog.buttons || []).includes('Cancel')) return { ok: false, reason: 'dialog offers no exact Cancel button (fail-closed abort unavailable)' }
+  if (!(dialog.buttons || []).some((b) => DIALOG_OPEN_LABELS.includes(b))) return { ok: false, reason: 'dialog offers no exact Open button' }
+  if (!(dialog.buttons || []).some((b) => DIALOG_CANCEL_LABELS.includes(b))) return { ok: false, reason: 'dialog offers no exact Cancel button (fail-closed abort unavailable)' }
   const steps = [...authz.ancestors.map((a) => 'cd:' + a), 'select:' + authz.folder, 'open', 'assert-dialog-closed', 'verify-session-cwd:' + absPath]
-  return { ok: true, folder: authz.folder, steps }
+  return { ok: true, folder: authz.folder, rootLabel, steps }
 }
 
 /** Fail-closed BEFORE Open => leave the modal UNCONFIRMED via the asserted
  *  Cancel path (coordinator ruling: Cancel is acceptable, and closed). */
 export function e2AbortSteps ({ dialog, failedBeforeOpen }) {
-  if (!failedBeforeOpen || !dialog || !(dialog.open ?? dialog.blocking)) return { steps: [] }
-  if (!(dialog.buttons || []).includes('Cancel')) return { steps: ['assert-dialog-still-open-recorded'], note: 'no Cancel button offered — record and let the leg die fail-closed' }
+  if (!failedBeforeOpen || !dialog || !dialog.open) return { steps: [] }
+  if (!(dialog.buttons || []).some((b) => DIALOG_CANCEL_LABELS.includes(b))) return { steps: ['assert-dialog-still-open-recorded'], note: 'no Cancel button offered — record and let the leg die fail-closed' }
   return { steps: ['click-cancel', 'assert-dialog-closed'] }
 }
 
@@ -381,8 +422,16 @@ export function verifySelection ({ headerLeaves, freshRequests, freshResponses, 
 
 /** The created-session id (E2) comes from a SUCCESS relation-none readState
  *  response CORRELATED to its own request — never from popping/last/exclusion
- *  guessing over an id array (external review P4). Ambiguous => fail-closed. */
-export function findCreatedSession ({ responses = [], requests = [], excludeIds = [], afterT = 0 }) {
+ *  guessing over an id array (external review P4). Round-2 strictness (frozen
+ *  item 5): BOTH sides must be FRESH (request.t AND response.t >= afterT, so
+ *  a PRE-Open request of an old ordinary session can never have its
+ *  late-arriving response impersonate the created session), the wire rpcId
+ *  must be NON-NULL and EQUAL on both sides (a response without rpcId never
+ *  authenticates — symmetric with verifySelection), and every session id seen
+ *  in requests BEFORE the Open boundary (excludeSeenBefore) is refused — the
+ *  created session is brand-new, an already-polled id is by definition not
+ *  it. Ambiguous => fail-closed. */
+export function findCreatedSession ({ responses = [], requests = [], excludeIds = [], excludeSeenBefore = [], afterT = 0 }) {
   const reqById = new Map(requests.map((r) => [r.seq, r]))
   const ids = new Set()
   for (const r of responses) {
@@ -390,14 +439,15 @@ export function findCreatedSession ({ responses = [], requests = [], excludeIds 
     if (!(r.t >= afterT) || r.ok !== true) continue
     if (!(r.status >= 200 && r.status < 300)) continue
     if (!r.data || r.data.relation !== 'none') continue
-    if (r.reqSeq == null) continue
+    if (r.reqSeq == null || r.rpcId == null) continue
     const q = reqById.get(r.reqSeq)
     if (!q || !q.p || typeof q.p.sessionId !== 'string') continue
-    if (q.rpcId != null && r.rpcId != null && String(q.rpcId) !== String(r.rpcId)) continue
-    if (excludeIds.includes(q.p.sessionId)) continue
+    if (!(q.t >= afterT)) continue
+    if (q.rpcId == null || String(q.rpcId) !== String(r.rpcId)) continue
+    if (excludeIds.includes(q.p.sessionId) || excludeSeenBefore.includes(q.p.sessionId)) continue
     ids.add(q.p.sessionId)
   }
-  if (ids.size === 0) return { ok: false, reason: 'no successful relation-none readState response identified the created session' }
+  if (ids.size === 0) return { ok: false, reason: 'no fresh correlated relation-none readState response identified the created session' }
   if (ids.size > 1) return { ok: false, reason: `ambiguous created-session candidates (${[...ids].join(', ')}) — fail closed, never pick one` }
   return { ok: true, sessionId: [...ids][0] }
 }
@@ -452,15 +502,24 @@ export function evalE3 ({ net, expectedRootId, t0, intervalMs, toleranceMs }) {
 }
 
 /** E5 — one manual refresh click => exactly 1 ledger{afterSequence:0,
- *  limit:50}, >=1 readState reprobe, >=1 listRoots, 0 projections. FROZEN. */
+ *  limit:50}, >=1 readState reprobe, >=1 listRoots, 0 projections. FROZEN
+ *  shape — plus the frozen round-2 tightening (item 6): every request in the
+ *  post-refresh window must target the VERIFIED target root (ledger
+ *  p.teamSessionId === expectedRootId, readState p.sessionId ===
+ *  expectedRootId). Without an expectedRootId the refresh cannot be bound to
+ *  the verified session at all — FAIL, never a silent any-root pass (a T1
+ *  refresh fetching T2's ledger is a product FAIL, not a PASS). */
 export function evalE5 ({ after, expectedRootId }) {
   const lg = reqsOf(after, 'team.getLedgerPage')
   const pj = reqsOf(after, 'team.getProjection')
   const rs = reqsOf(after, 'team.getReadState')
   const lr = reqsOf(after, 'team.listRoots')
   const shape = lg.length > 0 && lg.every((e) => e.p && e.p.afterSequence === 0 && e.p.limit === 50)
-  const verdict = (lg.length === 1 && shape && rs.length >= 1 && lr.length >= 1 && pj.length === 0) ? 'PASS' : 'FAIL'
-  return { verdict, measured: { ledger: lg.length, ledgerShapeOk: shape, reprobes: rs.length, listRoots: lr.length, projectionsAfter: pj.length, note: '16ms latency was historical; latency reported, not required' } }
+  const rootBound = typeof expectedRootId === 'string' && expectedRootId.length > 0
+  const ledgerOnRoot = rootBound && lg.length > 0 && lg.every((e) => e.p && e.p.teamSessionId === expectedRootId)
+  const reprobesOnRoot = rootBound && rs.length >= 1 && rs.every((e) => e.p && e.p.sessionId === expectedRootId)
+  const verdict = (lg.length === 1 && shape && ledgerOnRoot && reprobesOnRoot && rs.length >= 1 && lr.length >= 1 && pj.length === 0) ? 'PASS' : 'FAIL'
+  return { verdict, measured: { ledger: lg.length, ledgerShapeOk: shape, ledgerOnExpectedRoot: ledgerOnRoot, reprobesOnExpectedRoot: reprobesOnRoot, reprobes: rs.length, listRoots: lr.length, projectionsAfter: pj.length, note: '16ms latency was historical; latency reported, not required' } }
 }
 
 /** E2 — ordinary (UI-created) session: >=2 readStates in window, ZERO
@@ -552,9 +611,17 @@ class Fatal extends Error {
   constructor (reason) { super(reason); this.name = 'Fatal' }
 }
 
-/** Correlated request/response recorder. Requests carry {seq, rpcId, params};
- *  responses bind to THEIR request via the transport-level request object at
- *  record time and the wire rpcId, and parse into {status, ok, data, error}. */
+/** Correlated request/response recorder. Requests carry {seq, rpcId, params}.
+ *  Round-2 frozen item 1 (representation unification): the recorder's ONLY
+ *  response input is the RAW wire body TEXT — the same bytes the served
+ *  transport sent. parseServerResponseEnvelope is the SINGLE parse point, so
+ *  the offline fakes (which feed real wire JSON text) and the live Playwright
+ *  callback (which feeds response.text()) exercise the identical parse→entry
+ *  chain; a caller can no longer hand in a pre-parsed object that diverges
+ *  from what the real parser accepts (the round-1 live defect: the fake's raw
+ *  {result:{ok,value}} records passed while the adapter's flat parse recorded
+ *  ok:false on every real success). Responses bind to THEIR request via the
+ *  transport-level request object at record time and the wire rpcId. */
 export function createNetworkLog () {
   const entries = []
   let seq = 0
@@ -567,15 +634,15 @@ export function createNetworkLog () {
       entries.push(e)
       return e
     },
-    recordResponse ({ leg, m, req, status, t, envelope, bodyText }) {
-      const rpcId = envelope && Object.prototype.hasOwnProperty.call(envelope, 'rpcId') ? envelope.rpcId : null
-      const ok = !!(envelope && envelope.result && envelope.result.ok === true)
+    recordResponse ({ leg, m, req, status, t, bodyText }) {
+      const raw = bodyText == null ? '' : String(bodyText)
+      const env = parseServerResponseEnvelope(raw)
       const e = {
         seq: ++seq, leg, kind: 'res', t, m: m || (req && req.m) || null,
-        reqSeq: req ? req.seq : null, rpcId, status,
-        ok, data: ok ? (envelope.result.value && envelope.result.value.data) ?? null : null,
-        error: envelope && envelope.result && envelope.result.ok === false ? (envelope.result.error && envelope.result.error.code) || 'error' : null,
-        body: bodyText ?? '',
+        reqSeq: req ? req.seq : null, rpcId: env ? env.rpcId : null, status,
+        ok: !!env && env.ok === true, data: env && env.ok === true ? env.data : null,
+        error: env && env.ok === false ? env.error : (env ? null : 'unparseable-envelope'),
+        body: raw.slice(0, 640),
       }
       entries.push(e)
       return e
@@ -588,7 +655,6 @@ export function createNetworkLog () {
 
 const railLeavesOf = (leaves) => (leaves || []).filter((l) => l.region === 'rail')
 const mainLeavesOf = (leaves) => (leaves || []).filter((l) => l.region === 'main')
-const crumbTail = (label) => String(label ?? '').split('/').pop().trim()
 
 /** THE fixed navigation (v1/v3 killer steps 1–3 + exact locate + verified
  *  selection). Returns the click boundary (clickT + clickSeq) the leg
@@ -673,32 +739,71 @@ async function waitForDialogClosed (page, io, tries = 10) {
 async function abortDialog (page, io, dialog) {
   const abort = e2AbortSteps({ dialog: dialog || { open: false }, failedBeforeOpen: true })
   for (const step of abort.steps) {
-    if (step === 'click-cancel') await page.dialogClickButton('Cancel')
+    if (step === 'click-cancel') {
+      const cancel = ((dialog && dialog.buttons) || []).find((b) => DIALOG_CANCEL_LABELS.includes(b)) || DIALOG_CANCEL_LABELS[0]
+      await page.dialogClickButton(cancel)
+    }
     if (step === 'assert-dialog-closed') await waitForDialogClosed(page, io)
   }
 }
 
-/** Live execution of the workspace plan: EVERY level is verified from real
- *  DOM state before clicking; any divergence fails CLOSED via the asserted
- *  Cancel path — a broader directory is NEVER opened. */
-async function runWorkspacePlan (page, io, plan, authz) {
-  for (const seg of authz.ancestors) {
-    const before = await page.dialogSnapshot()
-    if (!before || !before.open) throw new FailClosed('e2-workspace-dialog: dialog vanished before cd:' + seg)
-    if ((before.folders || []).filter((f) => f === seg).length !== 1) throw new FailClosed(`e2-workspace-dialog: cd:${seg} not uniquely offered at ${JSON.stringify(before.crumbLabel)} — never pick a neighbor or near-miss folder`)
-    await page.dialogClickFolder(seg)
-    const after = await page.dialogSnapshot()
-    if (!after || !after.open) throw new FailClosed('e2-workspace-dialog: dialog vanished after cd:' + seg)
-    if (crumbTail(after.crumbLabel) !== seg) throw new FailClosed(`e2-workspace-dialog: cd:${seg} crumb did not advance (expected ${JSON.stringify(seg)}, saw ${JSON.stringify(after.crumbLabel)})`)
+// Bounded async dialog waits (frozen round-2 item 3). The REAL component
+// selects a row immediately but loads the selected folder's listing ASYNC
+// (DirectoryBrowser.tsx select() -> launchListing -> scan.then), and the
+// crumb trail only follows once that listing lands (:688 crumbSource =
+// child ?? parent). Snapshot-on-click would Cancel a legitimately-lagging
+// listing; a fixed blind sleep is forbidden. The pattern below is a BOUNDED
+// DEADLINE POLL: re-probe the real DOM state until the exact expected state
+// is observed, fail closed (asserted Cancel) at the budget — never Open on
+// unconfirmed state. The budget is generous for local listing latency and
+// the wait ENDS as soon as the state is reached.
+const DIALOG_LISTING_BUDGET_MS = 15000
+const samePath = (a, b) => Array.isArray(a) && a.length === b.length && a.every((x, i) => x === b[i])
+
+async function waitForDialogState (page, io, predicate, { ms = DIALOG_LISTING_BUDGET_MS, label }) {
+  const deadline = io.now() + ms
+  let last = null
+  for (;;) {
+    last = await page.dialogSnapshot()
+    if (last && predicate(last)) return last
+    if (io.now() >= deadline) {
+      const seen = last ? { open: last.open, crumbs: last.crumbLabels, selected: (last.rows || []).filter((r) => r.selected).map((r) => r.name) } : null
+      throw new FailClosed(`e2-workspace-dialog: ${label} not reached within ${ms}ms bounded wait (last state ${JSON.stringify(seen)}) — fail closed before Open`)
+    }
+    await io.sleep(400)
   }
-  const at = await page.dialogSnapshot()
-  if (!at || !at.open) throw new FailClosed('e2-workspace-dialog: dialog vanished before select:' + authz.folder)
-  if ((at.folders || []).filter((f) => f === authz.folder).length !== 1) throw new FailClosed(`e2-workspace-dialog: select:${authz.folder} not uniquely offered at ${JSON.stringify(at.crumbLabel)}`)
-  await page.dialogClickFolder(authz.folder)
-  const sel = await page.dialogSnapshot()
-  if (!sel || !sel.open) throw new FailClosed('e2-workspace-dialog: dialog vanished after select:' + authz.folder)
-  const confirmed = sel.selectedFolder === authz.folder || crumbTail(sel.crumbLabel) === authz.folder
-  if (!confirmed) throw new FailClosed(`e2-workspace-dialog: select:${authz.folder} not confirmed (selected=${JSON.stringify(sel.selectedFolder)}, crumb=${JSON.stringify(sel.crumbLabel)}) — fail closed before Open`)
+}
+
+/** Live execution of the workspace plan: every level (ancestors THEN the
+ *  workspace folder) must be uniquely offered on the CURRENT (deepest)
+ *  listing column, is clicked, and the click must produce — each within its
+ *  own bounded wait — (a) the aria-current selection on that row and (b) the
+ *  EXACT full crumb path ending at that folder (async listing). Any
+ *  divergence fails CLOSED via the asserted Cancel path — a broader directory
+ *  is NEVER opened. */
+async function runWorkspacePlan (page, io, plan, authz) {
+  const open0 = await page.dialogSnapshot()
+  if (!open0 || !open0.open) throw new FailClosed('e2-workspace-dialog: dialog not open at plan start')
+  const rootLabel = (open0.crumbLabels || [])[0] ?? null
+  if (!DIALOG_HOME_LABELS.includes(rootLabel)) throw new FailClosed(`e2-workspace-dialog: root crumb ${JSON.stringify(rootLabel)} is not the authorized home crumb`)
+  let expect = [rootLabel]
+  for (const seg of [...authz.ancestors, authz.folder]) {
+    const deepestRows = (s) => {
+      const rows = s.rows || []
+      const deepest = rows.reduce((m, r) => Math.max(m, r.level | 0), 0)
+      return rows.filter((r) => (r.level | 0) === deepest)
+    }
+    await waitForDialogState(page, io, (s) => s.open && deepestRows(s).filter((r) => r.name === seg).length === 1,
+      { label: `cd:${seg} uniquely offered at crumb ${expect[expect.length - 1]}` })
+    await page.dialogClickFolder(seg)
+    // selection lands on the CLICKED row (its own level — the new column may
+    // already be present by the time we re-probe, so match by name+aria-current)
+    await waitForDialogState(page, io, (s) => s.open && (s.rows || []).some((r) => r.name === seg && r.selected === true),
+      { label: `select:${seg} aria-current on its row button` })
+    expect = [...expect, seg]
+    await waitForDialogState(page, io, (s) => s.open && samePath(s.crumbLabels, expect),
+      { label: `crumb path to exact ${JSON.stringify(expect.join('/'))} (async listing)` })
+  }
 }
 
 /** Parse the product tick cadence from the frozen mount config source.
@@ -892,14 +997,16 @@ export async function runDriverCore (cfg, io) {
       try {
         await runWorkspacePlan(page, io, plan, authz)
       } catch (e) {
-        if (e instanceof FailClosed) {
-          await abortDialog(page, io, await page.dialogSnapshot())
-          await page.screenshot('shot-E2-workspace-anomaly.png')
-        }
-        throw e
+        // ANY pre-Open error (including a Playwright action timeout escaping
+        // as a plain Error) takes the asserted Cancel path — best-effort,
+        // never silently leave the modal up for the context to kill.
+        try { await abortDialog(page, io, await page.dialogSnapshot()) } catch { /* best effort */ }
+        await page.screenshot('shot-E2-workspace-anomaly.png')
+        throw e instanceof FailClosed ? e : new FailClosed('e2-workspace-dialog: ' + String(e.message || e).slice(0, 200))
       }
+      const openLabel = ((await page.dialogSnapshot()).buttons || []).find((b) => DIALOG_OPEN_LABELS.includes(b)) || DIALOG_OPEN_LABELS[0]
       const openT = io.now()
-      await page.dialogClickButton('Open')
+      await page.dialogClickButton(openLabel)
       if (!await waitForDialogClosed(page, io)) throw new FailClosed('e2-dialog-did-not-close')
       await page.fillComposer('ping')
       // POST-ACTION WORKSPACE STATE (coordinator ruling): the created
@@ -908,7 +1015,31 @@ export async function runDriverCore (cfg, io) {
       // (never an exclusion guess). Signal source: the world's projcache
       // record -> record.identity.cwd (shape verified read-only against the
       // retained world; see fixtures).
-      const found = findCreatedSession({ responses: net.resps('E2'), requests: net.reqs('E2'), excludeIds: [targets.targets.root.id, targets.targets.member.id], afterT: openT })
+      // The created session's readState runs on the product's OWN poll loop
+      // (tickMs cadence) after the Open commits, so the fresh correlated
+      // relation-none response is awaited on a BOUNDED deadline DERIVED FROM
+      // THAT CADENCE (5 ticks + 2s response margin, 400ms re-probes) — not a
+      // single-shot read (false-NOT_RUN on normal latency) and not a blind
+      // fixed sleep. Bounded wait never fabricates a response: absence fails
+      // closed at the budget, and per frozen item 5 a PRE-Open request of an
+      // already-known ordinary session can never impersonate the created one
+      // (request-side freshness + non-null rpcId + excludeSeenBefore).
+      const createdBudgetMs = 5 * io.tickMs + 2000
+      const seenBeforeOpen = [...new Set(net.reqs('E2').filter((e) => e.m === 'team.getReadState' && e.t < openT && e.p && typeof e.p.sessionId === 'string').map((e) => e.p.sessionId))]
+      const createdDeadline = io.now() + createdBudgetMs
+      let found = { ok: false, reason: 'no fresh correlated relation-none readState response identified the created session' }
+      let createdWaits = 0
+      for (;;) {
+        found = findCreatedSession({ responses: net.resps('E2'), requests: net.reqs('E2'), excludeIds: [targets.targets.root.id, targets.targets.member.id], excludeSeenBefore: seenBeforeOpen, afterT: openT })
+        if (found.ok) break
+        if (io.now() >= createdDeadline) { found = { ok: false, reason: found.reason + ` (bounded ${createdBudgetMs}ms = 5 product ticks + margin exhausted)` }; break }
+        createdWaits += 1
+        // wait ON THE PAGE: the product's poll loop runs on page timers, so
+        // the poll gap is spent as real page time (offline: boundary-accurate
+        // virtual ticks), not driver-side time the page never sees.
+        await page.wait(400)
+      }
+      out.legs.E2.createdSessionWait = { budgetMs: createdBudgetMs, polls: createdWaits, ok: found.ok }
       let cwdCheck = found.ok ? { ok: false, reason: 'projcache record unreadable' } : { ok: false, reason: found.reason }
       if (found.ok) {
         const recPath = path.join(cfg.world, 'storages', 'session_projcache', 'sessions', found.sessionId + '.json')
@@ -1001,28 +1132,19 @@ export function railCollectorSource (railMaxX) {
   })()`
 }
 
-/** THE single live dialog-state probe: reads REAL DOM state (live elements,
- *  not innerText text, not an HTML string fed to our parser — review P2):
- *  dialog presence + exact title, the browse crumb, folder rows + selection,
- *  buttons. Actions go through Playwright semantic locators (getByRole). */
+/** THE single live dialog-state probe: REAL DOM evaluated in-page — the
+ *  serialized dialogStateFrom above (the ONE implementation; the offline
+ *  faithful-markup tests run the SAME serialized string under jsdom). It
+ *  reads the actual DirectoryBrowser structure: crumb BUTTON labels in the
+ *  [role=navigation] trail, Miller columns ([role=list]) of [role=listitem]
+ *  rows whose inner button carries aria-current when selected, footer
+ *  buttons — never innerText through an HTML parser, never class guessing
+ *  beyond the frozen i18n allowlists. Actions go through Playwright semantic
+ *  locators (getByRole) scoped to the dialog and the DEEPEST listing column. */
 export const DIALOG_STATE_SOURCE = `(() => {
   const dlg = document.querySelector('[role="dialog"], dialog')
-  if (!dlg) return { open: false, title: null, crumbLabel: null, folders: [], buttons: [], selectedFolder: null }
-  const txt = (el) => ((el && el.textContent) || '').replace(/\\s+/g, ' ').trim()
-  const titles = [...dlg.querySelectorAll('h1,h2,h3,[role="heading"]')].map(txt)
-  const title = titles.find((t) => t === 'Select Workspace Directory') || titles[0] || null
-  const crumbEl = dlg.querySelector('[class*="crumb"], [class*="breadcrumb"], [data-crumb]')
-  const folders = []
-  let selectedFolder = null
-  for (const row of dlg.querySelectorAll('li, [role="listitem"], [role="treeitem"], [role="option"]')) {
-    const name = txt(row.querySelector('[class*="folderName"], [class*="folder"]')) || txt(row)
-    if (!name || name.length > 200) continue
-    folders.push(name)
-    const sel = row.getAttribute('aria-selected') || row.getAttribute('data-selected')
-    if (sel === 'true') selectedFolder = name
-  }
-  const buttons = [...dlg.querySelectorAll('button')].map(txt).filter(Boolean)
-  return { open: title === 'Select Workspace Directory', title, crumbLabel: crumbEl ? txt(crumbEl) : null, folders, buttons, selectedFolder }
+  if (!dlg) return { open: false, title: null, crumbLabels: [], rows: [], buttons: [] }
+  return (${dialogStateFrom.toString()})(dlg)
 })()`
 
 export function loadPlaywright (testuseDir) {
@@ -1053,8 +1175,11 @@ export function createPlaywrightPage (page, cfg) {
       return still ? 'present-undismissable' : 'dismissed'
     },
     dialogSnapshot: async () => page.evaluate(DIALOG_STATE_SOURCE),
-    dialogClickFolder: async (name) => { await dialogScope().getByText(name, { exact: true }).first().click({ timeout: 5000 }) },
-    dialogClickButton: async (name) => { await dialogScope().getByRole('button', { name, exact: true }).first().click({ timeout: 5000 }) },
+    // Rows are the listitem BUTTONs of the DEEPEST [role=list] column (the
+    // current Miller level — the structure dialogStateFrom reports rows for);
+    // footer controls live after the listings in DOM order => last().
+    dialogClickFolder: async (name) => { await dialogScope().locator('[role="list"]').last().getByRole('listitem').getByRole('button', { name, exact: true }).first().click({ timeout: 5000 }) },
+    dialogClickButton: async (name) => { await dialogScope().getByRole('button', { name, exact: true }).last().click({ timeout: 5000 }) },
     fillComposer: async (text) => {
       const loc = page.locator('textarea, [contenteditable="true"]').first()
       if (!(await loc.isVisible().catch(() => false))) throw new FailClosed('e2-composer-missing')
@@ -1103,14 +1228,16 @@ export async function runLiveDriver (cfg, { log = (m) => process.stdout.write(m 
           const u = res.url(); if (!u.includes('/team-remote/')) return
           let text = ''
           try { text = (await res.body()).toString('utf8') } catch { /* ignore */ }
+          // RAW wire text is the single response representation (frozen item
+          // 1): recordResponse parses via parseServerResponseEnvelope — the
+          // identical chain the offline fakes drive with real wire JSON.
           net.recordResponse({
             leg: name,
             m: (u.split('/team-remote/')[1] || '').split('?')[0],
             req: requestBindings.get(res.request()) ?? null,
             status: res.status(),
             t: Date.now(),
-            envelope: parseServerResponseEnvelope(text),
-            bodyText: text.slice(0, 640),
+            bodyText: text,
           })
         })
         const page = await ctx.newPage()

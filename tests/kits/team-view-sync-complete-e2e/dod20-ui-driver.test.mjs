@@ -1,7 +1,8 @@
 /**
  * dod20-ui-driver.test.mjs — OFFLINE tests for the DDoD20 UI driver's pure
  * navigation/locator/verdict core (node --test; no browser, no host, no
- * network, no jsdom). The CALLER-side coverage (the real leg orchestration
+ * network; the dialog-state section runs the real exported probe under the
+ * repo's own jsdom runtime — see below). The CALLER-side coverage (the real leg orchestration
  * driven through fake pages/networks) lives in
  * dod20-ui-driver-orchestration.test.mjs — this file is not, and does not
  * claim to be, a substitute for it.
@@ -9,10 +10,19 @@
  *   node --test tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.test.mjs
  *
  * Every fixture is a static HTML string or a plain data model hand-modeled on
- * the read-only env evidence (see dod20-ui-driver-fixtures.mjs). The tests
- * encode the failure lessons of driver v1–v3 AND the external-review P2 list
- * of the PR #55 round (correlated responses, product-derived cadence,
- * realpath authorization, consistent aggregation).
+ * the read-only env evidence (see dod20-ui-driver-fixtures.mjs). The dialog
+ * fixtures are FAITHFUL TRANSCRIPTIONS of the pinned upstream DirectoryBrowser
+ * structure, and the dialog-state tests execute the driver's REAL exported
+ * probe source (DIALOG_STATE_SOURCE) against that markup inside jsdom — the
+ * repo's standard DOM engine from the pinned test-use runtime (paths.mjs
+ * TEST_USE_REL), NOT a hand-rolled DOM shim: if the engine cannot run the
+ * probe, the test fails loudly. This jsdom layer still does NOT substitute
+ * for the real Chromium live lane (the live-only gaps stay honestly listed
+ * in the PR body); no browser, host, or network is started here.
+ * The tests encode the failure lessons of driver v1–v3 AND the external-review
+ * P2 list of the PR #55 rounds (correlated responses, product-derived cadence,
+ * realpath authorization, consistent aggregation, real-DOM dialog state,
+ * response-representation unification).
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -26,7 +36,9 @@ import {
   parseRequestEnvelope,
   parseServerResponseEnvelope,
   canonicalTargets,
-  detectBlockingModal,
+  DIALOG_STATE_SOURCE,
+  DIALOG_TITLES,
+  DIALOG_HOME_LABELS,
   authorizeWorkspace,
   e2WorkspaceSteps,
   e2AbortSteps,
@@ -173,15 +185,54 @@ test('canonicalTargets: null title (the boot-row shape) is never a matchable tit
   assert.match(t.reason, /title/i)
 })
 
-// ── E2 workspace picker (shot-E2-ordinary-v3.png root cause) ───────────────
-test('detectBlockingModal (OFFLINE fixture adapter): the dialog model is built from modeled HTML — never from innerText', () => {
-  const d = detectBlockingModal(F.MODAL_WORKSPACE_PICKER)
-  assert.equal(d.blocking, true)
+// ── E2 workspace picker (shot-E2-ordinary-v3.png root cause) ═══════════════
+// FROZEN ROUND-2 ITEM 2: the dialog MODEL comes from the REAL exported probe.
+// probe(markup) executes the driver's exported DIALOG_STATE_SOURCE string,
+// verbatim, inside a real jsdom document parsed from FAITHFUL upstream markup
+// (fixtures pickerMarkup = transcription of DirectoryBrowser.tsx @46a7f68b09).
+// No hand-rolled DOM, no stubbed probe — selector/parent/child/text failures
+// would fail here exactly as they would in the page.
+const probe = (html) => F.probeMarkup(html, DIALOG_STATE_SOURCE).state
+
+test('probe (real exported source, real jsdom): open/title/crumbs/rows/buttons from faithful DirectoryBrowser markup', () => {
+  const d = probe(F.MODAL_WORKSPACE_PICKER)
   assert.equal(d.open, true)
   assert.equal(d.title, 'Select Workspace Directory')
-  assert.equal(d.crumbLabel, 'Home')
-  assert.equal(detectBlockingModal('plain innerText has no tags at all — the P2 defect input').blocking, false,
-    'innerText fed in finds nothing, which is exactly why the live lane reads REAL DOM dialog state instead')
+  assert.deepEqual(d.crumbLabels, ['Home'])
+  assert.deepEqual(d.rows.map((r) => r.name), ['bin', 'deepseek-harness', 'workspace', 'testhome'])
+  assert.equal(d.rows.every((r) => r.selected === false), true, 'nothing selected => no aria-current')
+  assert.equal(d.rows.every((r) => r.level === 0), true, 'single Miller column')
+  assert.ok(d.buttons.includes('Open') && d.buttons.includes('Cancel') && d.buttons.includes('New folder'))
+})
+
+test('probe: crumb trail is an ORDERED ARRAY OF BUTTONS — flattened text welding (Hometesthome) is structurally impossible', () => {
+  const { document, state } = F.probeMarkup(F.MODAL_PICKER_DEEP, DIALOG_STATE_SOURCE)
+  assert.deepEqual(state.crumbLabels, ['Home', 'testhome'], 'two INDEPENDENT crumb buttons (:818), read per-button')
+  const nav = document.querySelector('[role="navigation"]')
+  assert.equal(nav.textContent.replace(/\s+/g, ' ').trim(), 'Hometesthome', 'sanity: the flattened text really IS the welded hazard the old single-crumb probe consumed')
+  assert.notEqual(state.crumbLabels.join(), undefined)
+  assert.equal(state.crumbLabels.length, 2, 'the weld would have produced ONE label; the probe sees two')
+  assert.equal(state.rows.find((r) => r.name === 'testhome').selected, true, 'aria-current on the row BUTTON (:238)')
+  assert.equal(state.rows.find((r) => r.name === 'fixtures').selected, false)
+  assert.equal(state.rows.find((r) => r.name === 'fixtures').level, 1, 'second Miller column = level 1')
+})
+
+test('probe: selection marker is the BUTTON aria-current — a listitem-wrapper marker is NOT believed', () => {
+  const wrongShape = '<div role="dialog"><h2>Select Workspace Directory</h2><span role="navigation"><button>Home</button></span><div role="list"><span role="listitem" aria-current="true"><button><span class="_rowName_h">ws</span></button></span></div></div>'
+  const d = probe(wrongShape)
+  assert.equal(d.rows[0].name, 'ws')
+  assert.equal(d.rows[0].selected, false, 'the real component marks selection on the row button, never the listitem wrapper (:238) — the probe mirrors the component, not any aria-current')
+})
+
+test('probe: ZH exact i18n values open the dialog; foreign titles do not', () => {
+  assert.deepEqual([...DIALOG_TITLES], ['Select Workspace Directory', '选择工作区目录'])
+  assert.deepEqual([...DIALOG_HOME_LABELS], ['Home', '主目录'])
+  const zh = probe(F.MODAL_PICKER_ZH)
+  assert.equal(zh.open, true)
+  assert.deepEqual(zh.crumbLabels, ['主目录'])
+  const plain = probe('<p>plain innerText has no dialog at all — exactly why the live lane reads REAL DOM state</p>')
+  assert.equal(plain.open, false)
+  assert.equal(plain.title, null)
 })
 
 // ── realpath authorization (external review P6) ────────────────────────────
@@ -223,14 +274,14 @@ const AUTH_WS = '/home/user/workspace'
 const flatAuthz = { ancestors: [], folder: 'workspace' }
 
 test('e2WorkspaceSteps: authorized dir under the authorized root => OK, exact-name select + post-action cwd verify', () => {
-  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER), authz: flatAuthz, absPath: AUTH_WS })
+  const s = e2WorkspaceSteps({ dialog: probe(F.MODAL_WORKSPACE_PICKER), authz: flatAuthz, absPath: AUTH_WS })
   assert.equal(s.ok, true)
   assert.deepEqual(s.steps, ['select:workspace', 'open', 'assert-dialog-closed', 'verify-session-cwd:' + AUTH_WS])
 })
 
 test('e2WorkspaceSteps: a NESTED approved fixture emits the level-by-level cd plan (no direct-child-of-home rule)', () => {
   const s = e2WorkspaceSteps({
-    dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_NESTED),
+    dialog: probe(F.MODAL_WORKSPACE_PICKER_NESTED),
     authz: { ancestors: ['testhome', 'fixtures'], folder: 'ws' },
     absPath: '/home/user/testhome/fixtures/ws',
   })
@@ -239,25 +290,25 @@ test('e2WorkspaceSteps: a NESTED approved fixture emits the level-by-level cd pl
 })
 
 test('e2WorkspaceSteps: authorized dir absent from the listing => NOT_RUN (no neighbor pick)', () => {
-  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_NO_FOLDER), authz: flatAuthz, absPath: AUTH_WS })
+  const s = e2WorkspaceSteps({ dialog: probe(F.MODAL_WORKSPACE_PICKER_NO_FOLDER), authz: flatAuthz, absPath: AUTH_WS })
   assert.equal(s.ok, false)
   assert.match(s.reason, /workspace folder|folder/i)
 })
 
 test('e2WorkspaceSteps: near-miss names (same prefix / suffix / spaced copy) are REJECTED', () => {
-  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_NEAR_MISS), authz: flatAuthz, absPath: AUTH_WS })
+  const s = e2WorkspaceSteps({ dialog: probe(F.MODAL_WORKSPACE_PICKER_NEAR_MISS), authz: flatAuthz, absPath: AUTH_WS })
   assert.equal(s.ok, false)
   assert.match(s.reason, /never pick/i)
 })
 
 test('e2WorkspaceSteps: dialog browsed to a foreign root => NOT_RUN (exact-root discipline, even when the folder name is offered)', () => {
-  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_FOREIGN_ROOT), authz: flatAuthz, absPath: AUTH_WS })
+  const s = e2WorkspaceSteps({ dialog: probe(F.MODAL_WORKSPACE_PICKER_FOREIGN_ROOT), authz: flatAuthz, absPath: AUTH_WS })
   assert.equal(s.ok, false)
   assert.match(s.reason, /root/i)
 })
 
 test('e2WorkspaceSteps: a non-absolute authorized realpath never reaches Open', () => {
-  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER), authz: flatAuthz, absPath: 'workspace' })
+  const s = e2WorkspaceSteps({ dialog: probe(F.MODAL_WORKSPACE_PICKER), authz: flatAuthz, absPath: 'workspace' })
   assert.equal(s.ok, false)
   assert.match(s.reason, /absolute/i)
 })
@@ -269,11 +320,11 @@ test('e2WorkspaceSteps: no dialog open => NOT_RUN reason', () => {
 })
 
 test('e2AbortSteps: fail-closed BEFORE Open leaves the modal UNCONFIRMED via the asserted Cancel path', () => {
-  const s = e2WorkspaceSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_NO_FOLDER), authz: flatAuthz, absPath: AUTH_WS })
-  const a = e2AbortSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER_NO_FOLDER), failedBeforeOpen: !s.ok })
+  const s = e2WorkspaceSteps({ dialog: probe(F.MODAL_WORKSPACE_PICKER_NO_FOLDER), authz: flatAuthz, absPath: AUTH_WS })
+  const a = e2AbortSteps({ dialog: probe(F.MODAL_WORKSPACE_PICKER_NO_FOLDER), failedBeforeOpen: !s.ok })
   assert.deepEqual(a.steps, ['click-cancel', 'assert-dialog-closed'])
   assert.equal(e2AbortSteps({ dialog: { open: false }, failedBeforeOpen: true }).steps.length, 0, 'nothing to cancel when no dialog is open')
-  assert.equal(e2AbortSteps({ dialog: detectBlockingModal(F.MODAL_WORKSPACE_PICKER), failedBeforeOpen: false }).steps.length, 0, 'after Open there is no modal to cancel')
+  assert.equal(e2AbortSteps({ dialog: probe(F.MODAL_WORKSPACE_PICKER), failedBeforeOpen: false }).steps.length, 0, 'after Open there is no modal to cancel')
 })
 
 test('assertSessionCwd: the created session\'s projcache identity.cwd must equal the authorized path exactly', () => {
@@ -391,6 +442,23 @@ test('findCreatedSession: failed / uncorrelated / stale / ambiguous candidates n
   assert.match(two.reason, /ambiguous/)
 })
 
+test('findCreatedSession (frozen item 5): the REQUEST must also be fresh — a pre-Open request with a late response never impersonates the created session', () => {
+  const staleReq = { seq: 20, kind: 'req', m: 'team.getReadState', rpcId: 'r-old', p: { sessionId: 'session-ordinary-old-1' }, t: 5 }
+  const lateRes = { seq: 21, kind: 'res', m: 'team.getReadState', reqSeq: 20, rpcId: 'r-old', status: 200, ok: true, t: 500, data: { relation: 'none', liveToken: null } }
+  const f = findCreatedSession({ responses: [lateRes], requests: [staleReq], excludeIds: [], afterT: 100 })
+  assert.equal(f.ok, false, 'response-side freshness alone was the round-1 hole: the old ordinary session is NOT the created one')
+  assert.match(f.reason, /fresh|correlated/)
+  const withSeen = findCreatedSession({ responses: [lateRes], requests: [staleReq], excludeIds: [], excludeSeenBefore: ['session-ordinary-old-1'], afterT: 0 })
+  assert.equal(withSeen.ok, false, 'a session id already polled before Open is by definition not brand-new')
+})
+
+test('findCreatedSession (frozen item 5): a response without a wire rpcId never authenticates (non-null on BOTH sides)', () => {
+  const noRpcRes = { ...resNone, rpcId: null }
+  assert.equal(findCreatedSession({ responses: [noRpcRes], requests: [reqNew], excludeIds: [], afterT: 50 }).ok, false, 'null response rpcId — symmetric with verifySelection (:rpcid-mismatch-or-uncorrelated)')
+  const reqNull = { ...reqNew, rpcId: null }
+  assert.equal(findCreatedSession({ responses: [resNone], requests: [reqNull], excludeIds: [], afterT: 50 }).ok, false, 'null request rpcId cannot correlate either')
+})
+
 // ── leg oracles ──────────────────────────────────────────────────────────────
 const rs = (t, sessionId) => ({ kind: 'req', t, m: 'team.getReadState', p: { sessionId } })
 const pj = (t, teamSessionId) => ({ kind: 'req', t, m: 'team.getProjection', p: { teamSessionId } })
@@ -464,6 +532,17 @@ test('evalE5: exactly 1 ledger{afterSequence:0,limit:50} + reprobe + listRoots, 
 test('evalE5: wrong ledger shape or an extra projection FAILs', () => {
   assert.equal(evalE5({ after: [lg(0, F.ROOT_ID, 7, 50), rs(5, F.ROOT_ID), lr(6)], expectedRootId: F.ROOT_ID }).verdict, 'FAIL')
   assert.equal(evalE5({ after: [lg(0, F.ROOT_ID), pj(7, F.ROOT_ID), rs(5, F.ROOT_ID), lr(6)], expectedRootId: F.ROOT_ID }).verdict, 'FAIL')
+})
+
+test('evalE5 (frozen item 6): the post-refresh window is BOUND to the verified root — T1 refresh fetching T2\'s ledger/reprobe is a FAIL, never an unbound pass', () => {
+  const foreignLedger = evalE5({ after: [lg(0, 'session-OTHER-root'), rs(5, F.ROOT_ID), lr(6)], expectedRootId: F.ROOT_ID })
+  assert.equal(foreignLedger.verdict, 'FAIL')
+  assert.equal(foreignLedger.measured.ledgerOnExpectedRoot, false)
+  const foreignReprobe = evalE5({ after: [lg(0, F.ROOT_ID), rs(5, 'session-OTHER-root'), lr(6)], expectedRootId: F.ROOT_ID })
+  assert.equal(foreignReprobe.verdict, 'FAIL')
+  assert.equal(foreignReprobe.measured.reprobesOnExpectedRoot, false)
+  const unbound = evalE5({ after: [lg(0, F.ROOT_ID), rs(5, F.ROOT_ID), lr(6)] })
+  assert.equal(unbound.verdict, 'FAIL', 'without an expectedRootId nothing can be bound — the round-1 silently-unused parameter is now mandatory for PASS')
 })
 
 test('evalE2: ordinary session zero-state — none relation + liveToken null + ZERO projections', () => {

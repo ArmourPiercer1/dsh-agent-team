@@ -1,0 +1,13 @@
+== GREEN: batch working tree, both offline suites (zero-install, zero-browser, virtual clock) ==
+-- pure --
+ℹ tests 73
+ℹ pass 73
+ℹ fail 0
+-- orchestration --
+ℹ tests 38
+ℹ pass 38
+ℹ fail 0
+-- both (single invocation) --
+ℹ tests 111
+ℹ pass 111
+ℹ fail 0

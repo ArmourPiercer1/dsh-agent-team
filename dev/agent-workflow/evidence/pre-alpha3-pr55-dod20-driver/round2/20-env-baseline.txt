@@ -1,0 +1,19 @@
+# round-2 frozen-batch validation baseline
+# generated 2026-02-11 by the sole task writer (single-writer branch, worktree .worktrees/pr55-dod20-driver)
+base committed head      d6f940aea85499c5345658474ab457bf0d12e824 (remote-verified PR55 head before this batch)
+node                     v24.21.0
+jsdom (repo runtime)     29.1.1 — resolved from tests/deepseek-harness-test-use/node_modules via
+                         createRequire(<test-use>/package.json) walking up from the kit dir (fixtures loadRepoJsdom).
+                         PRE-EXISTING repo runtime dependency (vitest/happy-dom/jsdom world) — NOTHING was
+                         installed this round; if unresolvable the loader THROWS (no DOM stub).
+test-use checkout        tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4 (pristine, pinned)
+markup transcription pin packages/client/ui-directory-picker-browse/src/client/DirectoryBrowser.tsx @ the same SHA:
+                         crumb trail = [role=navigation] of independent crumb BUTTONS (:818); selection =
+                         aria-current on the row's own BUTTON (:238); Miller columns div[role=list];
+                         i18n exact titles/home/Open/Cancel (src/client/index.ts:39-62 incl. zh).
+product tick interval    packages/client/src/plugin/team-mount-core.ts:900 PRODUCT_REFRESH_INTERVAL_MS = 3000,
+                         injected as cfg.tickMs/io.tickMs — the created-session wait budget (5*3000+2000ms) and
+                         the E3 cadence band DERIVE from it; not a driver-side invention.
+coverage honesty         the offline jsdom probe layer executes the REAL exported DIALOG_STATE_SOURCE verbatim
+                         over faithful markup; it is NOT the Chromium live lane and replaces nothing — the
+                         live lane stays gated (no --confirm-live was run; see 50-gate-and-coverage-notes.txt).

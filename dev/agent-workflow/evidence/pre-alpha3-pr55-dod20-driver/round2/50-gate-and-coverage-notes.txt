@@ -1,0 +1,10 @@
+== live-lane gate refusal (entry gate; NO live run performed this round) ==
+REFUSED: the DoD20 live lane is gated on external review (PR #55). Run `node --test .../dod20-ui-driver.test.mjs` and `node --test .../dod20-ui-driver-orchestration.test.mjs` for the offline suites. Pass --confirm-live ONLY in the carrier acceptance environment.
+exit=2
+
+== auth hygiene ==
+raw token-shaped strings in batch diff: 0
+unexpected token/lt-v1 lines in diff: 0
+== ports: no new 318x/349x listeners (live lane never started); :3080 host instance untouched ==
+0
+== real adapter->core chain coverage (frozen item 1 evidence): the offline suites feed RAW WIRE bodyText through the SAME parseServerResponseEnvelope single-parse path the live Playwright response callback uses — tests: 'R2-1 raw wire body -> parseServerResponseEnvelope -> record -> verifySelection' (pure-contract level) and every orchestration PASS/NOT_RUN leg (record->verify->eval chain). jsdom probe layer executes the exported DIALOG_STATE_SOURCE verbatim under the repo jsdom 29.1.1 over faithful DirectoryBrowser markup; this is NOT the Chromium live lane and does not replace it. ==

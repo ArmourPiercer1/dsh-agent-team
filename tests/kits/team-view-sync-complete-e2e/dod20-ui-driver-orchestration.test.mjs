@@ -67,6 +67,7 @@ function makeWorld (opts = {}) {
     legsOpened: [],
     closedContexts: 0,
     opened: [], // per-leg snapshots for cross-leg assertions
+    walk: null, // set by the leg's page.wait: boundary-accurate tick walk
   }
   const tickMs = opts.tickMs || 3000
   const listings = opts.listings || DEFAULT_LISTINGS
@@ -76,6 +77,9 @@ function makeWorld (opts = {}) {
     realpathSync: (p) => (opts.realpaths && opts.realpaths[p]) || p,
     homedir: () => HOME,
     now: () => w.v,
+    // product ticks fire on PAGE-side time (page.wait) at exact nextTickAt
+    // boundaries; driver-side io.sleep is driver wall time and must not
+    // conjure product polls (that would let stale worlds self-heal).
     sleep: async (ms) => { w.v += ms },
     log: () => {},
     tickMs,
@@ -89,8 +93,10 @@ function makeWorld (opts = {}) {
         selected: null,
         teamFace: false,
         dialogOpen: false,
-        dialog: { crumb: 0, selected: null },
+        dialog: { crumbs: ['Home'], selected: null, pending: null }, // probe-shaped state, async listing (pending) — DirectoryBrowser semantics
         newSessionCreated: false,
+        staleReq: null,
+        walk: null,
       }
       w.opened.push(st)
       const leg = name
@@ -113,14 +119,20 @@ function makeWorld (opts = {}) {
           : { relation: 'none', liveToken: null }
 
       const fireReq = (m, p, t = w.v) => net.recordRequest({ leg, m, rpcId: String(++w.rpc), p, t })
+      // RESPONSE REPRESENTATION = the RAW WIRE BODY (frozen round-2 item 1).
+      // The fake and the live Playwright callback now hand recordResponse the
+      // SAME bytes ({rpcId,result:{ok,value:{data}}} JSON — push/types.ts +
+      // contracts/response.ts), so the driver's parseServerResponseEnvelope
+      // → record → verify chain runs offline exactly as it does live; the
+      // round-1 flat-vs-raw split (fake raw object vs adapter flat parse) is
+      // structurally impossible now.
       const fireRes = (req, status, data, o = {}) => net.recordResponse({
         leg,
         m: req.m,
         req,
         status,
         t: o.t ?? w.v,
-        envelope: o.envelope !== undefined ? o.envelope : { rpcId: o.rpcId ?? req.rpcId, result: o.result !== undefined ? o.result : { ok: true, value: { data } } },
-        bodyText: o.rawBody ?? JSON.stringify(data ?? {}),
+        bodyText: o.rawBody !== undefined ? o.rawBody : JSON.stringify(o.envelope !== undefined ? o.envelope : { rpcId: o.rpcId ?? req.rpcId, result: o.result !== undefined ? o.result : { ok: true, value: { data } } }),
       })
       const coldRound = (sel, at = w.v) => {
         const rs = fireReq('team.getReadState', { sessionId: sel.id }, at)
@@ -135,8 +147,12 @@ function makeWorld (opts = {}) {
       }
       const tick = () => {
         if (st.newSessionCreated) {
+          // the created session's poll: REQUEST every tick; the RESPONSE only
+          // when the world says the transport answers (createdNoResponse keeps
+          // the request unanswered — bounded wait must exhaust fail-closed).
           const rs = fireReq('team.getReadState', { sessionId: NEW_ID })
-          fireRes(rs, 200, { relation: 'none', liveToken: null })
+          if (opts.createdNullRpcRes) fireRes(rs, 200, undefined, { rawBody: '{"result":{"ok":true,"value":{"data":{"relation":"none","liveToken":null}}}}' })
+          else if (!opts.createdNoResponse) fireRes(rs, 200, { relation: 'none', liveToken: null })
           fireReq('team.listRoots', {})
           return
         }
@@ -147,7 +163,27 @@ function makeWorld (opts = {}) {
         fireRes(rs, 200, readData(sel))
       }
 
-      const crumbOf = () => st.dialog.crumb === 0 ? 'Home' : (opts.cdSegments || ['testhome'])[st.dialog.crumb - 1]
+      // boundary-accurate tick walk for ANY clock advance of the CURRENT leg
+      const walk = (ms) => {
+        const target = w.v + ms
+        while (st.selected || st.newSessionCreated) {
+          if (st.nextTickAt == null) st.nextTickAt = w.v + tickMs
+          if (st.nextTickAt > target) break
+          w.v = st.nextTickAt
+          tick()
+          st.nextTickAt += tickMs
+        }
+        w.v = target
+      }
+      st.walk = walk
+      w.walk = walk
+      const landDialogListing = () => {
+        if (st.dialog.pending && w.v >= st.dialog.pending.at) {
+          st.dialog.crumbs = [...st.dialog.crumbs, st.dialog.pending.seg]
+          st.dialog.pending = null
+        }
+      }
+      const crumbOf = () => st.dialog.crumbs[st.dialog.crumbs.length - 1]
       const page = {
         async gotoApp () {
           w.v += 50
@@ -162,15 +198,7 @@ function makeWorld (opts = {}) {
           // never per-chunk — a boundary-accurate fake keeps every inter-tick
           // delta exactly tickMs so the cadence oracle tests the driver, not
           // fake artifacts.
-          const target = w.v + ms
-          while (st.selected || st.newSessionCreated) {
-            if (st.nextTickAt == null) st.nextTickAt = w.v + tickMs
-            if (st.nextTickAt > target) break
-            w.v = st.nextTickAt
-            tick()
-            st.nextTickAt += tickMs
-          }
-          w.v = target
+          walk(ms)
         },
         async screenshot (name) { w.shots.push(leg + '/' + name) },
         async collectLeaves () {
@@ -191,14 +219,26 @@ function makeWorld (opts = {}) {
           w.clicks.push(leg + ':' + l.text)
           if (l.text === 'Ungrouped') { if (!opts.railStuckCollapsed) st.rail = 'expanded'; w.v += 20; return }
           if (/^Show \d+ more sessions$/.test(l.text)) { st.rail = 'all'; w.v += 20; return }
-          if (l.text === 'New Session') { st.dialogOpen = true; st.dialog = { crumb: 0, selected: null }; w.v += 30; return }
-          if (l.text === 'Team') { st.teamFace = true; w.v += 20; return }
+          if (l.text === 'New Session') {
+            st.dialogOpen = true
+            st.dialog = { crumbs: ['Home'], selected: null, pending: null }
+            // stale bait: an ordinary session that ALREADY existed gets a
+            // PRE-Open readState request; its response lands late (after
+            // Open). Its request is pre-Open and its id was seen pre-Open —
+            // findCreatedSession must refuse it (frozen item 5).
+            if (opts.staleBait) st.staleReq = fireReq('team.getReadState', { sessionId: 'session-ordinary-old-1' })
+            w.v += 30
+            return
+          }
+          if (l.text === 'Team') { if (opts.breakBeforeE3 && leg === 'E3') throw new Error('fake break before E3'); st.teamFace = true; w.v += 20; return }
           if (l.text === 'Refresh team view') {
             if (opts.breakAfterE3) throw new Error('fake break after E3')
             const t5 = w.v
-            const lg = fireReq('team.getLedgerPage', { teamSessionId: ROOT_ID, afterSequence: 0, limit: 50 }, t5)
+            const lgRoot = opts.foreignLedgerOnRefresh ? OTHER_ID : ROOT_ID
+            const lg = fireReq('team.getLedgerPage', { teamSessionId: lgRoot, afterSequence: 0, limit: 50 }, t5)
             fireRes(lg, 200, { ledger: true }, { t: t5 + 16 })
-            const rs = fireReq('team.getReadState', { sessionId: st.selected.id }, t5 + 20)
+            const reprobeId = opts.foreignReprobeOnRefresh ? OTHER_ID : st.selected.id
+            const rs = fireReq('team.getReadState', { sessionId: reprobeId }, t5 + 20)
             fireRes(rs, 200, readData(st.selected))
             fireReq('team.listRoots', {}, t5 + 25)
             w.v = t5 + 60
@@ -219,34 +259,58 @@ function makeWorld (opts = {}) {
           st.notice = false; w.v += 10; return 'dismissed'
         },
         async dialogSnapshot () {
-          if (!st.dialogOpen) return { open: false, title: null, crumbLabel: null, folders: [], buttons: [], selectedFolder: null }
-          const crumb = crumbOf()
-          if (opts.foreignCrumbRoot) return { open: true, title: 'Select Workspace Directory', crumbLabel: 'Documents', folders: ['workspace'], buttons: ['Cancel', 'Open'], selectedFolder: null }
-          let here = listings[crumb] || { folders: [], buttons: ['Cancel', 'Open'] }
-          if (crumb === 'Home' && opts.listingsWithNearMiss) here = { folders: ['workspace-old', 'team-workspace', 'workspace copy'], buttons: ['New folder', 'Cancel', 'Open'] }
-          return { open: true, title: 'Select Workspace Directory', crumbLabel: crumb, folders: here.folders.slice(), buttons: here.buttons.slice(), selectedFolder: st.dialog.selected }
+          if (!st.dialogOpen) return { open: false, title: null, crumbLabels: [], rows: [], buttons: [] }
+          // async listDirectory landing: the crumb trail advances ONLY when
+          // the selected folder's listing arrives (DirectoryBrowser :506/:688
+          // child ?? parent) — never synchronously on click.
+          landDialogListing()
+          const crumbs = opts.foreignCrumbRoot ? ['Documents'] : st.dialog.crumbs.slice()
+          const cols = crumbs.map((c) => {
+            if (c === 'Home' && opts.listingsWithNearMiss) return { folders: ['workspace-old', 'team-workspace', 'workspace copy'], buttons: ['New folder', 'Show hidden files', 'Cancel', 'Open'] }
+            return listings[c] || { folders: [], buttons: ['New folder', 'Show hidden files', 'Cancel', 'Open'] }
+          })
+          const rows = []
+          cols.forEach((here, level) => here.folders.forEach((name) => rows.push({
+            level,
+            name,
+            selected: !!st.dialog.selected && st.dialog.selected.level === level && st.dialog.selected.name === name,
+          })))
+          const deepestButtons = cols[cols.length - 1].buttons
+          // shape parity with the REAL probe output: dialogStateFrom returns
+          // EVERY button in the dialog (crumb buttons + row buttons + footer).
+          const footer = ['New folder', 'Show hidden files', ...deepestButtons.filter((b) => b !== 'New folder' && b !== 'Show hidden files')]
+          return {
+            open: true,
+            title: opts.dialogTitleZh ? '选择工作区目录' : 'Select Workspace Directory',
+            crumbLabels: crumbs,
+            rows,
+            buttons: [...crumbs, ...rows.map((r) => r.name), ...footer],
+          }
         },
         async dialogClickFolder (name) {
           w.v += 15
           w.clicks.push(leg + ':dialog:' + name)
-          const behavior = opts.dialogBehavior || 'drill'
-          const here = listings[crumbOf()] || { folders: [] }
+          landDialogListing()
+          const deepest = st.dialog.crumbs.length - 1
+          let here = listings[crumbOf()] || { folders: [] }
+          if (deepest === 0 && opts.listingsWithNearMiss) here = { folders: ['workspace-old', 'team-workspace', 'workspace copy'] }
           if (!here.folders.includes(name)) return // click on nothing — state MUST not advance
-          if (behavior === 'select-only') { st.dialog.selected = name; return }
-          if (name === (opts.leafFolder || 'ws')) { st.dialog.selected = name; return } // the target row SELECTS (real UI shape)
-          st.dialog.crumb += 1 // drill into an ancestor
+          st.dialog.selected = { level: deepest, name } // select(): aria-current lands on the row button IMMEDIATELY (:499-503)
+          if ((opts.dialogBehavior || 'drill') === 'select-only') return // listing NEVER lands => crumb never advances (drill-in broken world)
+          st.dialog.pending = { seg: name, at: w.v + (opts.dialogListingDelayMs ?? 0) } // child listing arrives ASYNC (:506)
         },
         async dialogClickButton (name) {
           w.v += 15
-          if (name === 'Cancel') { st.dialogOpen = false; w.canceledDialogs += 1; return }
-          if (name !== 'Open') return
+          if (name === 'Cancel' || name === '取消') { st.dialogOpen = false; w.canceledDialogs += 1; return }
+          if (name !== 'Open' && name !== '打开') return
           st.dialogOpen = false
           st.newSessionCreated = true
           st.selected = { id: NEW_ID, relation: 'none', title: 'ping' }
-          st.nextTickAt = w.v + tickMs
-          const rs = fireReq('team.getReadState', { sessionId: NEW_ID })
-          fireRes(rs, 200, { relation: 'none', liveToken: null })
-          fireReq('team.listRoots', {})
+          // the created session's readState runs on the PRODUCT CADENCE from
+          // the Open commit — the round-1 fake emitted it synchronously and
+          // hid the live E2 race; the driver must bounded-WAIT for it.
+          st.nextTickAt = w.v + tickMs * (opts.createdResponseDelayTicks || 1)
+          if (opts.staleBait && st.staleReq) fireRes(st.staleReq, 200, { relation: 'none', liveToken: null }, { t: w.v + 1500 })
           w.v += 30
         },
         async fillComposer (text) { st.composerText = text; w.v += 10 },
@@ -336,9 +400,10 @@ test('P1: the member cold open never visits the root session first — zero pre-
 test('P4: a response with a FOREIGN rpcId never authenticates the selection — NOT_RUN fail-closed', async () => {
   const { out } = await runCore({
     coldResponseOverride: ({ req, fireRes }) => {
+      // RAW wire text with a FOREIGN rpcId (the real transport shape) — the
+      // parse succeeds, the correlation fails.
       fireRes(req, 200, undefined, {
-        envelope: { rpcId: 'ffffffff', result: { ok: true, value: { data: { relation: 'team-member', memberInstanceId: MEMBER_INSTANCE } } } },
-        rawBody: '{"relation":"team-member","memberInstanceId":"inst-0iin89s0dvix"}',
+        rawBody: JSON.stringify({ rpcId: 'ffffffff', result: { ok: true, value: { data: { relation: 'team-member', memberInstanceId: MEMBER_INSTANCE, liveToken: 'lt-v1-fakevalue' } } } }),
       })
     },
   })
@@ -349,7 +414,8 @@ test('P4: a response with a FOREIGN rpcId never authenticates the selection — 
 test('P4: a FAILED response for the exact request (envelope ok:false) rejects verification', async () => {
   const { out } = await runCore({
     coldResponseOverride: ({ req, fireRes }) => {
-      fireRes(req, 200, undefined, { envelope: { rpcId: req.rpcId, result: { ok: false, error: { code: 'internal', message: 'boom', details: {} } } }, rawBody: '{"ok":false}' })
+      // RAW wire text of a FAILED envelope for the RIGHT rpcId — 2xx + ok:false
+      fireRes(req, 200, undefined, { rawBody: JSON.stringify({ rpcId: req.rpcId, result: { ok: false, error: { code: 'internal', message: 'boom', details: {} } } }) })
     },
   })
   assert.match(out.legs.E1.reason, /selection-unverified/)
@@ -553,4 +619,96 @@ test('AUTH: the launch token and liveToken values never reach the written out.js
   assert.ok(!text.includes('FAKEt0kenValue4Test'), 'launch token must never be serialized')
   assert.ok(!/"launchUrl"/.test(text), 'the launchUrl key is stripped')
   assert.ok(!/lt-v1-fakevalue/.test(text), 'liveToken values are masked end-to-end')
+})
+
+// ══════════════ round-2 frozen batch (external review @ d6f940ae) ═══════════
+// R2-1 RESPONSE REPRESENTATION: the fakes now hand the SAME raw wire body the
+// live Playwright callback hands the NetworkLog; the real parse→record→verify
+// chain is exercised offline on every PASS (a flat pre-parsed body can no
+// longer pass as success — the round-1 live-vs-fake split).
+test('R2-1: raw wire body -> parseServerResponseEnvelope -> record -> verifySelection (the live adapter chain, offline)', () => {
+  const net = D.createNetworkLog()
+  const req = net.recordRequest({ leg: 'E1', m: 'team.getReadState', rpcId: '42', p: { sessionId: MEMBER_ID }, t: 100 })
+  net.recordResponse({
+    leg: 'E1', m: 'team.getReadState', req, status: 200, t: 110,
+    bodyText: JSON.stringify({ type: 'server-response', rpcId: '42', result: { ok: true, value: { data: { relation: 'team-member', memberInstanceId: MEMBER_INSTANCE, liveToken: 'lt-v1-fakevalue' } } } }),
+  })
+  const e = net.resps('E1')[0]
+  assert.equal(e.ok, true, 'a REAL success envelope body records ok:true (round-1: the adapter recorded ok:false for every real success)')
+  assert.equal(e.rpcId, '42')
+  assert.equal(e.data.memberInstanceId, MEMBER_INSTANCE)
+  const v = D.verifySelection({
+    headerLeaves: [{ text: MEMBER_ID }],
+    freshRequests: net.reqs('E1'),
+    freshResponses: net.resps('E1'),
+    expected: { sessionId: MEMBER_ID, relation: 'team-member', instance: MEMBER_INSTANCE },
+    clickT: 50,
+  })
+  assert.equal(v.verified, true, JSON.stringify(v))
+  // the round-1 adapter's PRE-PARSED FLAT shape is not the wire shape: it now
+  // records as uncorrelated (fails closed), never as a silent ok:false success
+  // that verifySelection might misread — and never as ok:true.
+  const req2 = net.recordRequest({ leg: 'E1', m: 'team.getReadState', rpcId: '43', p: { sessionId: MEMBER_ID }, t: 200 })
+  net.recordResponse({ leg: 'E1', m: 'team.getReadState', req: req2, status: 200, t: 210, bodyText: JSON.stringify({ rpcId: '43', ok: true, data: { relation: 'team-member', memberInstanceId: MEMBER_INSTANCE } }) })
+  const flat = net.entries[net.entries.length - 1]
+  assert.equal(flat.ok, false)
+  assert.equal(flat.error, 'unparseable-envelope')
+})
+
+test('R2-3: an ancestor listing that lands LATE (async listDirectory) is BOUNDED-WAITED for the exact crumb path — no premature Cancel; E2 PASSES', async () => {
+  const { out, w } = await runCore({ dialogListingDelayMs: 2500 })
+  assert.equal(out.legs.E2.verdict, 'PASS', JSON.stringify(out.legs.E2))
+  assert.equal(w.canceledDialogs, 0, 'a legitimately-lagging listing must never trigger the fail-closed Cancel')
+})
+
+test('R2-4: the created-session response arriving only on the product cadence (delayed ticks) still verifies E2 through the bounded wait', async () => {
+  const { out } = await runCore({ createdResponseDelayTicks: 3 })
+  assert.equal(out.legs.E2.verdict, 'PASS', JSON.stringify(out.legs.E2))
+  assert.equal(out.legs.E2.workspaceCwdCheck.sessionId, NEW_ID)
+  assert.ok(out.legs.E2.createdSessionWait.polls >= 5, 'the driver really waited across cadence boundaries: ' + JSON.stringify(out.legs.E2.createdSessionWait))
+})
+
+test('R2-4b: no created-session response within the cadence-derived budget => bounded NOT_RUN fail-closed (no identity is ever fabricated)', async () => {
+  const { out, w } = await runCore({ createdNoResponse: true })
+  assert.equal(out.legs.E2.verdict, 'NOT_RUN')
+  assert.match(out.legs.E2.reason, /bounded|exhausted/, JSON.stringify(out.legs.E2.reason))
+  assert.equal(out.legs.E2.workspaceCwdCheck.ok, false)
+  assert.equal(out.legs.E2.createdSessionWait.budgetMs, 5 * 3000 + 2000)
+  assert.ok(w.closedContexts >= 1, 'the leg dies fail-closed with its context closed')
+})
+
+test('R2-5: a PRE-Open ordinary request whose response lands after Open can never impersonate the created session', async () => {
+  const { out } = await runCore({ staleBait: true })
+  assert.equal(out.legs.E2.verdict, 'PASS', JSON.stringify(out.legs.E2))
+  assert.equal(out.legs.E2.workspaceCwdCheck.sessionId, NEW_ID, 'never the stale ordinary session that was already being polled pre-Open')
+})
+
+test('R2-5b: a relation-none response WITHOUT a wire rpcId never authenticates anything (non-null correlation, symmetric with verifySelection)', async () => {
+  const { out } = await runCore({ createdNullRpcRes: true })
+  assert.equal(out.legs.E2.verdict, 'NOT_RUN')
+  assert.match(out.legs.E2.reason, /bounded|exhausted|correlated/, JSON.stringify(out.legs.E2.reason))
+})
+
+test('R2-6: a post-refresh ledger page fetched for a FOREIGN teamSessionId FAILS E5 (root binding, orchestration-level)', async () => {
+  const { out } = await runCore({ foreignLedgerOnRefresh: true, tickMs: 1000 })
+  assert.equal(out.legs.E3E5.E3.verdict, 'PASS', 'E5 root binding must not regress E3')
+  assert.equal(out.legs.E3E5.E5.verdict, 'FAIL')
+  assert.equal(out.legs.E3E5.E5.measured.ledgerOnExpectedRoot, false)
+  assert.equal(D.summarize(out).exitCode, 1)
+})
+
+test('R2-6b: a post-refresh reprobe of a FOREIGN sessionId FAILS E5', async () => {
+  const { out } = await runCore({ foreignReprobeOnRefresh: true, tickMs: 1000 })
+  assert.equal(out.legs.E3E5.E5.verdict, 'FAIL')
+  assert.equal(out.legs.E3E5.E5.measured.reprobesOnExpectedRoot, false)
+})
+
+test('P7b: a crash BEFORE E3 is computed materializes BOTH nested legs as NOT_RUN (exit 2, no parent stamping)', async () => {
+  const { out } = await runCore({ breakBeforeE3: true })
+  assert.equal(out.legs.E3E5.E3, undefined)
+  assert.equal(out.legs.E3E5.E5, undefined)
+  const s = D.summarize(out)
+  assert.equal(s.verdicts.E3, 'NOT_RUN')
+  assert.equal(s.verdicts.E5, 'NOT_RUN')
+  assert.equal(s.exitCode, 2, 'NOT_RUN is never a PASS: ' + JSON.stringify(s.verdicts))
 })
