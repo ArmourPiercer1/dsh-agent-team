@@ -916,13 +916,19 @@ function wireHtml(panelOpts = {}, { rootRow = true, shown = FIXTURE_TITLE } = {}
  *  L107/L109 welcomeTitle 'Internal Testing Notice' / welcomeContinue
  *  'Continue' @46a7f68b09). canary= goes into an href INSIDE the tree so the
  *  entry-failure dump proves query/token sanitization against live DOM. */
-function collapsedTreeHtml({ notice = false, canary = null } = {}) {
+function collapsedTreeHtml({ notice = false, canary = null, groupLabel = 'Ungrouped' } = {}) {
   const noticeHtml = notice ? '<div data-welcome-notice><p>Internal Testing Notice</p><button>Continue</button></div>' : ''
   const canaryHtml = canary === null ? '' : `<a href="${canary}">launch</a>`
-  return `${noticeHtml}<div role="tree" data-workspace-browser><div role="treeitem" aria-label="Ungrouped">Ungrouped</div>${canaryHtml}</div>`
+  return `${noticeHtml}<div role="tree" data-workspace-browser><div role="treeitem" aria-label="${groupLabel}" aria-expanded="false">${groupLabel}</div>${canaryHtml}</div>`
 }
 function wireCollapsedHtml(opts = {}) {
   return headerHtml(FIXTURE_TITLE) + collapsedTreeHtml(opts) + tablistHtml(['Chat', 'Team']) + goodHtml({})
+}
+/** P-b family: the session lives under a NAMED workspace group — NO
+ *  'Ungrouped' header exists at all; the structured diagnostic must EVIDENCE
+ *  that (ungroupedCount=0) while activation keeps refusing to guess. */
+function wireNamedGroupHtml() {
+  return headerHtml(FIXTURE_TITLE) + collapsedTreeHtml({ groupLabel: 'dsh-agent-team' }) + tablistHtml(['Chat', 'Team']) + goodHtml({})
 }
 /** Rows rendered (group already open) but the root rides behind the
  *  'Show N more sessions' overflow — a button that exists ONLY post-
@@ -1056,7 +1062,10 @@ function makeFakeBrowser({ html, gotoError = null, neverActivate = false, activa
             if (el.tagName === 'BUTTON' && noticeBox !== null) { noticeBox.remove(); return }
             if (/^Ungrouped/.test(acc)) {
               if (groupExpand === 'render') {
-                tree.innerHTML = `<div role="treeitem" aria-label="Ungrouped">Ungrouped</div>${(expandIds ?? [ROOT, DECOY]).map(rowHtml).join('')}`
+                // honest toggle: the header's OWN aria-expanded flips and the
+                // rows append — the structured diagnostic reads exactly this.
+                el.setAttribute('aria-expanded', 'true')
+                tree.insertAdjacentHTML('beforeend', (expandIds ?? [ROOT, DECOY]).map(rowHtml).join(''))
               }
               return
             }
@@ -1418,7 +1427,11 @@ test('75 source pins: ONE context/page/goto, the narrow pass is a setViewportSiz
   assert.equal((src.match(/\.newPage\(/g) ?? []).length, 1)
   assert.ok(/page\.setViewportSize\(/.test(src), 'narrow pass resizes the SAME page')
   assert.ok(!/for \(const \[phase, viewport\]/.test(src), 'no per-viewport newContext loop remains')
-  assert.equal((src.match(/\[role="treeitem"\]/g) ?? []).length, 1, 'treeitems are demanded once (wide pass) — NEVER after resize')
+  // BATCH-6 STRUCTURED DIAGNOSTIC amendment, semantics UNCHANGED: the pin is
+  // about WAITING on the treeitem SURFACE (a second wait would re-demand
+  // treeitems after resize); the read-only diagnostic adapter legitimately
+  // QUERIES the same selector inside page.evaluate, so count WAIT SITES.
+  assert.equal((src.match(/waitForSelector\(\s*'\[role="treeitem"\]'/g) ?? []).length, 1, 'the treeitem surface is waited on EXACTLY once (wide pass) — NEVER after resize')
 })
 
 test('60 source pin: the OLD object-return can never gate a wait again (wait sites use the BOOLEAN predicate + driver)', () => {
@@ -1442,7 +1455,7 @@ test('77 collapsed-by-default fresh boot: ONE scoped group-header click reveals 
   assert.equal(res.ok, true, 'the collapsed group is host DEFAULT state, not a failure')
   assert.ok(browser.calls.clicks >= 3, 'group + root row + Team tab clicks')
   assert.deepEqual(readdirSync(f.markerDir), ['marker.json'])
-  assert.equal(existsSync(join(f.evidence, 's2o-entry-dump.html')), false, 'entry dump is failure-only')
+  assert.equal(readdirSync(f.evidence).filter((n) => n.startsWith('s2o-entry-dump')).length, 0, 'the structured entry diagnostic is failure-only — success writes NO diagnostic file')
 })
 
 test('78 WelcomeNotice present (fresh profile) is dismissed with ONE scoped Continue click BEFORE the group step, then the full pass completes', async () => {
@@ -1474,7 +1487,50 @@ test('80 root row rides behind the post-expansion overflow: one scoped overflow 
   assert.deepEqual(readdirSync(f.markerDir), ['marker.json'])
 })
 
-test('81 ENTRY-STAGE failure writes ONE 0600 sanitized DOM dump into the evidence dir: launch token scrubbed, URL queries stripped, region content kept', async () => {
+// — parent-authorized STRUCTURED ENTRY DIAGNOSTIC (diagnostic-only; the
+// per-stage snapshot adapter is READ-ONLY; secrets are structurally
+// impossible: booleans, integers, closed enums, and the already-held
+// synthetic rootSessionId; the residual tripwire stays as defense-in-depth).
+
+const STAGE_KEYS = ['expectedRootPresent', 'matchGroupState', 'matchKeyAttr', 'rowCount', 'stage', 'treeitemCount', 'ungroupedCount', 'ungroupedExpanded', 'welcomeCount', 'welcomeVisible']
+const GROUP_STATES = ['expanded', 'collapsed', 'absent']
+
+function assertDiagnosticShape(diag) {
+  assert.deepEqual(Object.keys(diag).sort(), ['code', 'kind', 'rootSessionId', 'stages'], 'top level is EXACTLY the whitelist')
+  assert.equal(diag.kind, 's2o-entry-diagnostic')
+  assert.equal(diag.rootSessionId, ROOT, 'the synthetic root id already held in typed form is the only id-bearing string')
+  assert.ok(Array.isArray(diag.stages) && diag.stages.length > 0)
+  for (const s of diag.stages) {
+    assert.deepEqual(Object.keys(s).sort(), STAGE_KEYS, `stage keys EXACTLY whitelisted, zero free-text keys: ${JSON.stringify(Object.keys(s))}`)
+    assert.equal(typeof s.stage, 'string')
+    assert.equal(typeof s.welcomeVisible, 'boolean')
+    assert.equal(typeof s.welcomeCount, 'number')
+    assert.equal(typeof s.ungroupedCount, 'number')
+    assert.ok(typeof s.ungroupedExpanded === 'boolean' || s.ungroupedExpanded === null, 'expanded is bool/absent')
+    assert.equal(typeof s.treeitemCount, 'number')
+    assert.equal(typeof s.rowCount, 'number')
+    assert.equal(typeof s.expectedRootPresent, 'boolean')
+    assert.equal(typeof s.matchKeyAttr, 'boolean')
+    assert.ok(GROUP_STATES.includes(s.matchGroupState), 'group state is CLOSED enum')
+    for (const v of Object.values(s)) assert.ok(v === null || ['string', 'number', 'boolean'].includes(typeof v), 'no nested objects/arrays')
+  }
+  return diag.stages
+}
+
+function readDiagnostic(f) {
+  const path = join(f.evidence, 's2o-entry-dump.json')
+  assert.ok(existsSync(path), 'the structured entry diagnostic exists')
+  assert.equal(statSync(path).mode & 0o777, 0o600, '0600')
+  assert.equal(existsSync(join(f.evidence, 's2o-entry-dump.png')), false, 'still DOM-only: NO PNG (external-found ruling stands)')
+  assert.equal(readdirSync(f.evidence).filter((n) => n.startsWith('s2o-entry-dump')).length, 1, 'exactly ONE entry-diagnostic artifact')
+  const text = readFileSync(path, 'utf8')
+  assert.ok(!text.includes('PRIVATE-tok-launch'), 'the launch token cannot ride a structured value')
+  assert.ok(!text.includes('CANARY-QUERY-VALUE'), 'no URL query values in the structured shape')
+  assert.ok(!text.includes('http'), 'no URLs at all')
+  return text
+}
+
+test('81 ENTRY-STAGE failure writes ONE 0600 STRUCTURED diagnostic: exact whitelisted shape, zero free-text keys, canaries structurally absent', async () => {
   const f = mkCliFixture()
   const canary = 'http://127.0.0.1:3181/session?auth=CANARY-QUERY-VALUE&s2o=PRIVATE-tok-launch'
   const browser = makeFakeBrowser({ html: wireCollapsedHtml({ canary }), groupExpand: 'nothing' })
@@ -1483,15 +1539,62 @@ test('81 ENTRY-STAGE failure writes ONE 0600 sanitized DOM dump into the evidenc
     () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
     (err) => { assert.ok(err instanceof ObserverError); return true },
   )
-  const dump = join(f.evidence, 's2o-entry-dump.html')
-  assert.ok(existsSync(dump), 'the failure dump exists')
-  assert.equal(statSync(dump).mode & 0o777, 0o600, 'dump is 0600')
-  assert.equal(existsSync(join(f.evidence, 's2o-entry-dump.png')), false, 'entry dump is DOM-only: NO whole-page PNG is ever written (external-found ruling — pixels unsanitizable)')
-  assert.equal(readdirSync(f.evidence).filter((n) => n.startsWith('s2o-entry-dump')).length, 1, 'exactly ONE entry-dump artifact')
-  const text = readFileSync(dump, 'utf8')
-  assert.ok(text.includes('Ungrouped'), 'the region content survives sanitization')
-  assert.ok(!text.includes('PRIVATE-tok-launch'), 'the launch token never rides the dump')
-  assert.ok(!text.includes('CANARY-QUERY-VALUE'), 'URL query values are stripped')
-  assert.ok(!text.includes('?auth='), 'no URL query survives at all')
+  const text = readDiagnostic(f)
+  const stages = assertDiagnosticShape(JSON.parse(text))
+  const byStage = Object.fromEntries(stages.map((s) => [s.stage, s]))
+  assert.equal(byStage['pre-group'].ungroupedCount, 1)
+  assert.equal(byStage['pre-group'].ungroupedExpanded, false, 'collapsed-by-default is EVIDENCED before the action')
+  assert.equal(byStage['pre-group'].rowCount, 0)
+  assert.equal(byStage['post-group'].ungroupedExpanded, false, 'the no-op fake never flipped the toggle')
+  assert.equal(byStage['post-group'].expectedRootPresent, false)
   assert.equal(existsSync(join(f.markerDir, 'marker.json')), false)
+})
+
+test('82 collapsed-group EVIDENCE: pre-action ungroupedCount=1/expanded=false, POST-action expanded=true with rowCount=0 → GROUP_EXPAND_NO_ROWS carries the evidence', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ html: wireCollapsedHtml(), groupExpand: 'render', expandIds: [] })
+  const clock = fakeClock()
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
+    (err) => { assert.equal(err.code, 'S2O_GROUP_EXPAND_NO_ROWS'); return true },
+  )
+  const stages = assertDiagnosticShape(JSON.parse(readDiagnostic(f)))
+  const byStage = Object.fromEntries(stages.map((s) => [s.stage, s]))
+  assert.equal(byStage['pre-group'].ungroupedCount, 1)
+  assert.equal(byStage['pre-group'].ungroupedExpanded, false)
+  assert.equal(byStage['post-group'].ungroupedExpanded, true, 'the toggle really flipped — the rail is open and EMPTY')
+  assert.equal(byStage['post-group'].rowCount, 0)
+})
+
+test('83 named-group fixture (P-b family EVIDENCED): ungroupedCount=0 at every stage, treeitemCount=1, activation refuses to guess, typed MISSING', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ html: wireNamedGroupHtml() })
+  const clock = fakeClock()
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
+    (err) => { assert.equal(err.code, 'S2O_ROOT_ROW_MISSING'); return true },
+  )
+  const stages = assertDiagnosticShape(JSON.parse(readDiagnostic(f)))
+  for (const s of stages) {
+    assert.equal(s.ungroupedCount, 0, 'no Ungrouped header exists — the diagnostic says so WITHOUT any guessing')
+    assert.equal(s.treeitemCount, 1, 'the named group header is the one treeitem')
+    assert.equal(s.rowCount, 0)
+    assert.equal(s.expectedRootPresent, false)
+  }
+})
+
+test('84 rows-present-different-key (P-a family EVIDENCED): rowCount>0 with expectedRootPresent=false at every stage, typed MISSING', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ html: wireHtml({}, { rootRow: false }) })
+  const clock = fakeClock()
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
+    (err) => { assert.equal(err.code, 'S2O_ROOT_ROW_MISSING'); return true },
+  )
+  const stages = assertDiagnosticShape(JSON.parse(readDiagnostic(f)))
+  for (const s of stages) {
+    assert.equal(s.rowCount, 2, 'rows ARE rendered')
+    assert.equal(s.expectedRootPresent, false, 'none carries the expected key')
+    assert.equal(s.matchKeyAttr, false)
+  }
 })

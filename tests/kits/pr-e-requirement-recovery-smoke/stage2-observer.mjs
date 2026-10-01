@@ -784,9 +784,10 @@ function defaultTestuseRoot() {
  *  A page whose rows already rendered takes ONLY step 1 (count 0 → no click)
  *  and then the untouched pre-BATCH-6 path — the group click is a TOGGLE, so
  *  it may fire ONLY while zero session rows are rendered. */
-async function activateFreshBootRail(page, { rootSessionId, nowFn, sleep }) {
+async function activateFreshBootRail(page, { rootSessionId, nowFn, sleep, onStage = async () => {} }) {
   // step 1 — WelcomeNotice (fresh profile): dismiss via the Continue button,
   // assert-gone; present-but-undismissable and ambiguous are typed refusals.
+  await onStage('pre-notice')
   const notice = page.getByRole('button', { name: WELCOME_CONTINUE, exact: true })
   const noticeCount = await notice.count()
   if (noticeCount > 1) throw new ObserverError('S2O_NOTICE_AMBIGUOUS', `${noticeCount} Continue buttons — refusing to guess which dismisses the notice`)
@@ -798,12 +799,14 @@ async function activateFreshBootRail(page, { rootSessionId, nowFn, sleep }) {
       nowFn,
       sleepFn: sleep,
     })
+    await onStage('post-notice')
     if (gone !== true) throw new ObserverError('S2O_NOTICE_NOT_DISMISSED', 'the Continue click never dismissed the WelcomeNotice (fail closed, no marker)')
   }
   // steps 2–3 run ONLY while the root row is absent.
   if ((await page.evaluate(rootSessionRowsDom, rootSessionId)) > 0) return
   // step 2 — the collapsed-by-default group header (host e2e
   // agent-preset-selection.e2e.ts:382-383 @46a7f68b09 does exactly this).
+  await onStage('pre-group')
   if ((await page.evaluate(sessionRowsAnyDom)) === 0) {
     const group = page.getByRole('treeitem', { name: UNGROUPED_GROUP_NAME })
     const groupCount = await group.count()
@@ -816,15 +819,19 @@ async function activateFreshBootRail(page, { rootSessionId, nowFn, sleep }) {
         nowFn,
         sleepFn: sleep,
       })
+      await onStage('post-group')
       if (rowsOn !== true) throw new ObserverError('S2O_GROUP_EXPAND_NO_ROWS', 'the group header click rendered ZERO session rows — refusing to observe an unopened rail (no positional guessing, no marker)')
     }
     // groupCount === 0: no Ungrouped header (sessions may live under a named
     // workspace group already open) — fall through; the EXACT root-row demand
-    // below stays the arbiter and refuses typed if nothing carries it.
+    // below stays the arbiter and refuses typed if nothing carries it. The
+    // structured diagnostic EVIDENCES this state (ungroupedCount=0) without
+    // the activation ever guessing a target.
   }
   // step 3 — the post-expansion overflow (PR55: "THE OVERFLOW BUTTON ONLY
   // EXISTS AFTER THE GROUP EXPANSION"); bounded loop, each click must remove
   // the button it acted on, and the loop stops the moment the root appears.
+  await onStage('pre-overflow')
   for (let opened = 0; opened < 5; opened += 1) {
     if ((await page.evaluate(rootSessionRowsDom, rootSessionId)) > 0) return
     const more = page.getByRole('button', { name: OVERFLOW_BUTTON_NAME })
@@ -832,28 +839,32 @@ async function activateFreshBootRail(page, { rootSessionId, nowFn, sleep }) {
     if (moreCount === 0) return
     if (moreCount > 1) throw new ObserverError('S2O_OVERFLOW_AMBIGUOUS', `${moreCount} overflow buttons visible at once — refusing to guess which list to expand`)
     await more.click()
+    await onStage('post-overflow')
   }
   throw new ObserverError('S2O_OVERFLOW_UNBOUNDED', 'the session overflow kept offering more pages past the bounded 5 expansions — refusing an unbounded rail walk')
 }
 
-/** BATCH-6 entry-stage failure dump — ONE sanitized DOM file (0600) in the
- *  evidence dir. DOM ONLY by ruling: the external review found that a
- *  whole-page screenshot could capture pixels OUTSIDE the scanned region
- *  (body portals — e.g. the WelcomeNotice), and PNG pixels cannot be
- *  sanitized; the optional entry-failure PNG is therefore OMITTED entirely
- *  (coordinator ruling on the external finding — no scanning framework, no
- *  scope-widening). The success-path S9 screenshots ride their own already
- *  reviewed code path and are untouched. Fully best-effort: ANY dump failure
- *  is swallowed so the typed failure it documents still rides out. */
-async function captureEntryFailureDump(page, { evidenceDir, secrets, code }) {
+/** PARENT-AUTHORIZED STRUCTURED ENTRY DIAGNOSTIC — replaces the sanitized-DOM
+ *  dump CONTENT (0600 atomic first-writer writer byte-kept; still NO PNG per
+ *  the external-found ruling). Values come ONLY from entryDiagnosticDom's
+ *  whitelist (booleans / integers / closed enums) plus kind, typed code and
+ *  the already-held rootSessionId — secrets are structurally impossible. The
+ *  residual scanForSecrets tripwire STAYS as-is (defense-in-depth): clean by
+ *  construction means it should never fire, weakening it is not on the table.
+ *  Fully best-effort: a diagnostic failure never masks the typed failure. */
+function captureEntryFailureDiagnostic({ evidenceDir, secrets, code, stages, rootSessionId }) {
   try {
-    const region = await page.evaluate(entryRegionDumpDom)
-    const raw = String(region?.html ?? '')
-    const sanitized = sanitizeDomDump(raw, secrets)
-    const header = `<!-- s2o entry-stage failure dump\n     code: ${String(code).replace(/[^\w.:-]/g, '_').slice(0, 64)}\n     region: ${String(region?.region ?? 'unknown')}\n     url queries/fragments and launch secrets sanitized by sanitizeDomDump\n-->\n`
-    const capped = (header + sanitized).slice(0, ENTRY_DUMP_MAX_CHARS)
-    writeEntryDumpAtomic({ dir: evidenceDir, text: capped })
-  } catch { /* the dump NEVER masks or replaces the typed failure */ }
+    const payload = {
+      kind: 's2o-entry-diagnostic',
+      code: String(code).replace(/[^\w.:-]/g, '_').slice(0, 64),
+      rootSessionId,
+      stages,
+    }
+    while (JSON.stringify(payload).length > ENTRY_DUMP_MAX_CHARS && payload.stages.length > 1) payload.stages.pop()
+    let text = JSON.stringify(payload, null, 2)
+    if (scanForSecrets(text, secrets).length > 0) text = '{"kind":"s2o-entry-diagnostic","suppressed":"tripwire"}'
+    writeEntryDumpAtomic({ dir: evidenceDir, text })
+  } catch { /* the diagnostic NEVER masks or replaces the typed failure */ }
 }
 
 export async function runObservation(opts, { launch = null, nowFn = () => Date.now(), sleepFn = null } = {}) {
@@ -924,10 +935,16 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
         // activation (dismiss-notice → expand-group → expand-overflow, one
         // scoped click each) now runs BEFORE the exact-row demand; every
         // refusal stays typed, and any ENTRY-stage failure first writes ONE
-        // sanitized DOM dump into the evidence dir (new standing rule).
+        // structured whitelisted diagnostic into the evidence dir (parent-
+        // authorized; read-only snapshots, NO behavior influence).
+        const entryStages = []
+        const snapEntryStage = async (stage) => {
+          entryStages.push({ stage, ...(await page.evaluate(entryDiagnosticDom, rootSessionId)) })
+        }
         try {
+          await snapEntryStage('nav')
           await page.waitForSelector('[role="treeitem"]', { timeout: OBSERVE_TIMEOUT_MS })
-          await activateFreshBootRail(page, { rootSessionId, nowFn, sleep })
+          await activateFreshBootRail(page, { rootSessionId, nowFn, sleep, onStage: snapEntryStage })
           const rootCount = await page.evaluate(rootSessionRowsDom, rootSessionId)
           if (rootCount === 0) {
             throw new ObserverError('S2O_ROOT_ROW_MISSING', `no session-browser row carries data-row-key="session:${rootSessionId}" even after the bounded fresh-boot activation (notice/group/overflow) — refusing to observe whatever session the page landed on`)
@@ -955,7 +972,10 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
             throw new ObserverError(`S2O_${rootCheck.code}`, `root identity verification refused: ${rootCheck.code}`)
           }
         } catch (error) {
-          await captureEntryFailureDump(page, { evidenceDir: opts.evidenceDir, secrets, code: error?.code ?? 'ENTRY_UNTYPED' })
+          captureEntryFailureDiagnostic({
+            evidenceDir: opts.evidenceDir, secrets, code: error?.code ?? 'ENTRY_UNTYPED',
+            stages: entryStages, rootSessionId,
+          })
           throw error
         }
         await page.waitForSelector('[data-conversation-tabs][role="tablist"] button[role="tab"]', { timeout: OBSERVE_TIMEOUT_MS })
@@ -1133,47 +1153,51 @@ export function sessionRowsAnyDom() {
   return globalThis.document.querySelectorAll('[data-row-key^="session:"]').length
 }
 
-/** BATCH-6 ENTRY-STAGE DUMP source (transportable): serialize the workspace/
- *  session REGION (tree first, then the Notice overlay when present), never
- *  the whole document, so the bound buys real depth. Values are sanitized
- *  NODE-SIDE after transfer — this adapter must never touch storage/auth. */
-export function entryRegionDumpDom() {
+/** PARENT-AUTHORIZED STRUCTURED ENTRY DIAGNOSTIC (transportable, READ-ONLY —
+ *  zero behavior influence). One per-stage snapshot for the entry-failure
+ *  artifact. VALUES ARE STRICTLY booleans / integers / closed enums (plus the
+ *  rootSessionId the caller already holds in typed form) — secrets are
+ *  STRUCTURALLY impossible, so the residual tripwire can simply never fire
+ *  (it stays, defense-in-depth, unweakened). The queries reuse the exact
+ *  role-scoped predicates the activation itself uses — no new surface. */
+export function entryDiagnosticDom(rootSessionId) {
   const doc = globalThis.document
-  const parts = []
-  const tree = doc.querySelector('[role="tree"]')
-  const keyed = doc.querySelector('[data-row-key]')
-  const notice = doc.querySelector('[data-welcome-notice]')
-  let region = 'body'
-  if (tree !== null) { parts.push(tree.outerHTML); region = 'tree' }
-  else if (keyed !== null && keyed.parentElement !== null) { parts.push(keyed.parentElement.outerHTML); region = 'row-parent' }
-  if (notice !== null) parts.push(notice.outerHTML)
-  if (parts.length === 0 && doc.body !== null) parts.push(doc.body.outerHTML)
-  return { region, html: parts.join('\n<!-- + -->\n') }
-}
-
-/** BATCH-6 sanitizer (pure, node-side): (1) every launch secret (launchUrl +
- *  its query VALUES via collectLaunchSecrets) is split-out replaced; (2) URL
- *  ATTRIBUTE VALUES lose everything from '?'/'#' on (query/fragment = token
- *  carriers, per the launch-URL threat model); (3) token-shaped assignments
- *  are redacted; (4) a final scanForSecrets tripwire replaces the WHOLE dump
- *  if anything survives. Never logs the dump itself. */
-export function sanitizeDomDump(html, secrets) {
-  let text = String(html)
-  for (const secret of secrets) {
-    if (typeof secret === 'string' && secret.length >= 8) text = text.split(secret).join('[scrubbed-launch-secret]')
+  const esc = String(rootSessionId).replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  const acc = (el) => String(el.getAttribute('aria-label') ?? el.textContent ?? '').trim()
+  const continueButtons = Array.from(doc.querySelectorAll('button, [role="button"]')).filter((el) => acc(el) === 'Continue').length
+  const ungrouped = Array.from(doc.querySelectorAll('[role="treeitem"]')).filter((el) => /^Ungrouped/.test(acc(el)))
+  const match = doc.querySelector(`[data-row-key="session:${esc}"]`)
+  let matchGroupState = 'absent'
+  if (match !== null) {
+    let group = typeof match.closest === 'function' ? match.closest('[role="treeitem"][aria-expanded]') : null
+    if (group === null && typeof match.closest === 'function') {
+      const tree = match.closest('[role="tree"]')
+      group = tree === null ? null : tree.querySelector('[role="treeitem"][aria-expanded]')
+    }
+    if (group !== null) matchGroupState = group.getAttribute('aria-expanded') === 'true' ? 'expanded' : 'collapsed'
   }
-  text = text.replace(/\s(href|src|action)="([^"]*)"/gi, (match, attr, value) => ` ${attr}="${value.split(/[?#]/)[0]}"`)
-  text = text.replace(/\b(s2o|token|authUrl|authorization|apiKey|api_key)\b(\s*[=:]\s*)("[^"]*"|[^&"'{}\s<>]+)/gi, (match, key) => `${key}=[redacted]`)
-  if (scanForSecrets(text, secrets).length > 0) return '[entry dump suppressed by token tripwire]'
-  return text
+  const sole = ungrouped.length === 1 ? ungrouped[0].getAttribute('aria-expanded') : null
+  return {
+    welcomeVisible: continueButtons > 0,
+    welcomeCount: continueButtons,
+    ungroupedCount: ungrouped.length,
+    ungroupedExpanded: ungrouped.length === 1 && sole !== null ? sole === 'true' : null,
+    treeitemCount: doc.querySelectorAll('[role="treeitem"]').length,
+    rowCount: doc.querySelectorAll('[data-row-key^="session:"]').length,
+    expectedRootPresent: match !== null,
+    matchKeyAttr: match !== null,
+    matchGroupState,
+  }
 }
 
-/** BATCH-6 one-file 0600 dump, tmp+rename (mirrors writeMarkerAtomic's fd
- *  discipline). First-writer-wins: a later failure never overwrites the dump
- *  of the FIRST one. Best-effort — a dump failure never masks the typed
- *  failure it documents. */
+/** BATCH-6 one-file 0600 artifact, tmp+rename (mirrors writeMarkerAtomic's fd
+ *  discipline). First-writer-wins: a later failure never overwrites the
+ *  artifact of the FIRST one. Best-effort — a write failure never masks the
+ *  typed failure it documents. CONTENT since the parent-authorized structured
+ *  diagnostic: whitelisted JSON (s2o-entry-dump.json); the mechanics here are
+ *  byte-kept from the sanitized-dump era. */
 export function writeEntryDumpAtomic({ dir, text }) {
-  const finalPath = join(dir, 's2o-entry-dump.html')
+  const finalPath = join(dir, 's2o-entry-dump.json')
   if (existsSync(finalPath)) return { written: false, path: finalPath }
   const tmpPath = `${finalPath}.tmp-${process.pid}`
   let fd = null
