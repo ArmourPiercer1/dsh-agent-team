@@ -146,3 +146,22 @@ FULL suite `16-full-suite-layout.txt`: 850 passed | 3 failed | 0 skipped
 (`17`); eslint 0 (`18`); composition bundle regenerated in THIS commit
 (`19`/`20`). Real-UI 380/1440 oracle re-run stays with the stage2-live
 observer (no new acceptance system added here).
+
+## ADDENDUM 3 — TINY FIX (dt cap + break): long CJK labels clipped at 380
+
+Parent-identified real gap in 7816423d: `.controlField dt` stays
+flex:none, so its flex base is the label's MAX-CONTENT width (max-content
+ignores soft-wrap opportunities) — a longer CJK digest label (or a long
+embedded Latin token) made the non-shrinking LABEL itself exceed the
+~181px field and clip under `.rows` even after the value stacked. Delta
+(nothing else): dt += `max-width: 100%` (cap resolves against the field
+box) + `overflow-wrap: break-word` (breaks the label's own lines); short
+labels stay bit-identical inline (basis below the cap). Completes the
+parent's "long labels wrap" requirement for CJK. Pin ⑤ (STATIC,
+jsdom-performs-no-layout, same discipline): RED 1f/31p (`22`) -> GREEN
+74/74 focused (`23`). tsc -r 0 (`24`); composition regenerated in THIS
+commit — expected pre-stage drift (`25`), post-stage gate OK 1372 files
+(`26`). Full client suite NOT re-run and stated so honestly: the delta
+touches CSS + the static pin + regenerated dist only — no behavior file
+moved since 7816423d, whose 850p/3f byte-identical fail-list baseline
+stands.

@@ -310,6 +310,15 @@
 
 .controlField dt {
   flex: none;
+  /* TINY FIX (parent gap in 7816423d): flex:none sizes the label by its
+     MAX-CONTENT width (which ignores soft-wrap opportunities), so a
+     longer CJK digest label — or a long embedded Latin token — let the
+     NON-SHRINKING label itself overflow the field and clip under
+     `.rows`. The cap resolves against the field box and
+     overflow-wrap:break-word breaks the label's own lines; short
+     labels keep their inline behavior bit-identical (basis below cap). */
+  max-width: 100%;
+  overflow-wrap: break-word;
   color: var(--dsw-alias-label-caption);
   font: var(--dsw-font-xxxs-11);
 }

@@ -1,0 +1,14 @@
+$ npx vitest run test/pr56-control-panel-payload.client.spec.tsx test/pr56-control-subject-payload.test.ts  (TINY FIX — GREEN: pin ⑤ + all prior PR56 assertions)
+2026-10-01T22:07:04Z
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr56-client-panel/packages/client
+
+ ✓ test/pr56-control-subject-payload.test.ts (42 tests) 11ms
+ ✓ test/pr56-control-panel-payload.client.spec.tsx (32 tests) 189ms
+
+ Test Files  2 passed (2)
+      Tests  74 passed (74)
+   Start at  22:07:04
+   Duration  3.00s (transform 1.63s, setup 22ms, import 2.42s, tests 200ms, environment 365ms)
+
+[exit code: 0]

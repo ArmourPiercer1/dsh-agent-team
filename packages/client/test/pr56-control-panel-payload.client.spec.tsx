@@ -730,4 +730,22 @@ describe('PR56 run5 geometry fix — STATIC width-budget rules (wrap + flex-basi
     if (rule === null) throw new Error('the .row rule is missing')
     expect(rule[0]).toMatch(/flex-wrap:\s*wrap/)
   })
+
+  // TINY FIX (parent-identified gap in 7816423d, STATIC assertion —
+  // jsdom performs no layout): `.controlField dt` is flex:none, so its
+  // flex base size is the label's MAX-CONTENT width — max-content
+  // ignores soft-wrap opportunities — and a longer CJK digest label (or
+  // a long embedded Latin token) made the NON-SHRINKING label itself
+  // exceed the ~181px field and clip under `.rows` even after the value
+  // stacked. The cap (max-width:100%, resolving against the field box)
+  // plus overflow-wrap:break-word lets the LABEL break its own lines;
+  // a short label stays bit-identical inline (its basis sits below the
+  // cap, and nothing else in the rule moves).
+  it('⑤ .controlField dt is capped + breakable (long CJK labels wrap instead of clipping; short labels inline-unchanged)', async () => {
+    const css = await readLedgerStylesheet()
+    const rule = css.match(/\.controlField dt\s*\{[^}]*\}/)
+    if (rule === null) throw new Error('the .controlField dt rule is missing')
+    expect(rule[0]).toMatch(/max-width:\s*100%/)
+    expect(rule[0]).toMatch(/overflow-wrap:\s*break-word/)
+  })
 })
