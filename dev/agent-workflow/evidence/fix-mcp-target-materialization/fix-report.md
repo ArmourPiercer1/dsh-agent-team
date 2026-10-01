@@ -479,19 +479,78 @@ U1–U3, U5 byte-identical between the RED and GREEN commits — the only test
 diffs in `1b99ef40` are the two new legs, the two helpers/constants, the
 `mcpFailures` boot param, and the U4 prose).
 
-### 14.4 The ordinary follow-up path — already-fixed record + consumer state
+### 14.4 The ordinary follow-up path — already-fixed record + the CONSUMER SWEEP TABLE (anti-partial-wiring proof)
 
-The ordinary member follow-up path (`router.ts` `performAction`, the L621–
-660 blueprint-seam region) ALREADY forwards the gate's feed context through
-both blueprint seams — that exact-scope fix landed earlier on this branch
-(§1–§3; the external review's "ordinary follow-up fixed" confirmation). It
-is recorded here as the reference consumer for the residual round.
-`reDriveActivation` (`activation/provider.ts` L482) was audited for the
-sweep: it re-drives an already-admitted operation (replay/retry) and
-performs NO template read-seam calls (blueprint config resolution only) —
-no context to forward. The end-to-end CONSUMER SWEEP TABLE (every consumer
-of the three seams + the ordinary follow-up, full-context verification, the
-anti-partial-wiring proof) lands with the final batch (see remaining list).
+The ordinary member follow-up path (`router.ts` `performAction`) ALREADY
+forwards the gate's feed context through both blueprint seams — that
+exact-scope fix landed earlier on this branch (§1–§3; the external review's
+"ordinary follow-up fixed" confirmation). It is the reference consumer below.
+
+**The sweep.** The residual-F ruling: *every consumer* of the root-context
+read seams must forward the complete context. The host port's boot-root
+fallback (`host.ts` L2085, `scope.rootSessionId ?? bootRoot`) lives in ONE
+place — and it is TEMPLATE-SCOPE-ONLY: `host.ts` L2084
+`if (scope.kind !== 'template') return Promise.resolve(undefined)` proves
+the team-scope seams carry no root axis by design (team scope = the
+blueprint's team-level requirements on the team feed — no member
+materialization; no context to forward, the boot-root default is the
+identity there). The complete inventory of the two template-scope read
+seams (`templateEnvironmentFactsForBlueprint` D-1 /
+`templateEnvironmentFactsReadForBlueprint` D-3, defined in `root.ts`
+L916–952 / L959–975 with the `context?: TemplateFeedContext` param
+forwarded into the scope at L947–948):
+
+| # | consumer | location | context forwarded | status |
+| --- | --- | --- | --- | --- |
+| 1 | requirement-gate — conservative SCOPE read | `admission/requirement-gate.ts` L637 | `{ rootSessionId }` (the gate's input root — the context ORIGIN) | verified (pre-existing, Finding F round) |
+| 2 | requirement-gate — TARGET-INSTANCE decision read | `admission/requirement-gate.ts` L677–679 | `{ rootSessionId, instanceId: targetInstanceId }` | verified (pre-existing, Finding F round) |
+| 3a | router `performAction` — D-1 facts wrapper (the ordinary follow-up) | `action-router/router.ts` L628–633 | the gate's `context` param, verbatim | **already fixed** (this branch's earlier exact-scope increment — the external review's "ordinary follow-up fixed") |
+| 3b | router `performAction` — D-3 read wrapper | `action-router/router.ts` L657–662 | the gate's `context` param, verbatim | **already fixed** (same increment) |
+| 4a | root-initial-work — D-1 facts wrapper | `action-router/root-initial-work.ts` L993–997 | the gate's `context` param, verbatim | **fixed this round** (R2 seam 1) |
+| 4b | root-initial-work — D-3 read wrapper | `action-router/root-initial-work.ts` L1019–1023 | the gate's `context` param, verbatim (root-only: initial work carries no target instance — the impact is the leader template scope refs, L1025) | **fixed this round** (R2 seam 1) |
+| 5 | activation fresh-create — D-3 read | `activation/provider.ts` L745–750 | `{ rootSessionId }` (the activate() scope's target root; no target instance exists yet — root-only is the correct scope for a not-yet-minted member) | **fixed this round** (R2 seam 2) |
+| 6 | activation fresh-create — D-1 facts | `activation/provider.ts` L751–757 | `{ rootSessionId }` | **fixed this round** (R2 seam 2) |
+| 7a | creation preflight — D-1 facts thunk | `src/plugin/root.ts` L1370–1393 | direct `resolveFacts` with `scope.rootSessionId: input.rootSessionId` (the future root — pre-bind, ITS OWN not-applicable/seed truth, never the boot root's) | **fixed this round** (R2 seam 3) |
+| 7b | creation preflight — D-3 read wrapper | `src/plugin/root.ts` L1411–1426 | `context ?? { rootSessionId: input.rootSessionId }` (the preflight classifier passes no gate context — the default stands; a future context-bearing classifier wins) | **fixed this round** (R2 seam 3) |
+| 8 | activation `reDriveActivation` | `activation/provider.ts` L482 | **NO template read-seam calls** (re-drives an already-admitted operation; blueprint config resolution only — verified by full body scan) | N/A (audited, no call) |
+
+**Upstream rootSessionId sources** (what each gate input / direct call
+actually carries — end-to-end, not just at the wrapper):
+
+- **router path** (rows 1–3): `router.ts` L516 `const rootSessionId =
+  resolved.rootSessionId` — the TARGET session's owning root (invariant-18
+  `(rootSessionId, instanceId)` addressing → row resolution). The gate
+  (rows 1–2) derives both contexts from it.
+- **initial-work path** (rows 1–2 via row 4): `root-initial-work.ts` L975
+  `rootSessionId: args.rootSessionId` — the TARGET root, passed by the
+  production closure (`root.ts` `createAdmitRootInitialWork` wiring,
+  `s6-remote.ts` L2335–2387 after `assertBoundRoot` — the bound root the
+  v2 command addressed).
+- **activation path** (rows 5–6): the `activate()` scope's `rootSessionId`
+  (the delegation's target root).
+- **creation path** (rows 7a–7b): `input.rootSessionId` (the FUTURE root —
+  the client-minted id the creation binds; pre-bind there is no TeamSession
+  row, so no boot-root stand-in exists to conflate with).
+
+**Non-consumers (verified team-scope-only — no template seam, no root
+axis):** the per-root compatibility prober (`root.ts` L1690–1704,
+`environmentFacts` team thunk only) and the remote surface's `intent.probe`
+(`root.ts` L2650–2675, team `environmentFacts` + `environmentFactsRead`
+only). Repo-wide grep: zero template-seam consumers outside
+`packages/runtime` (no remote/client/legacy/tools usage; the seams are
+runtime-internal, typed in `admission/types.ts` + `activation/types.ts`).
+
+**Sweep verdict: zero partial-wiring gaps.** Every template-scope read
+consumer forwards the complete context (the gate's context verbatim where a
+gate feeds it; the target root where the path has no gate); the team-scope
+seams have no root axis by design (host.ts L2084); the one path without a
+call (`reDriveActivation`) was audited, not assumed. The T8 RED→GREEN leg
+is the end-to-end proof for the initial-work path (row 4 + upstream
+source); the T1–T5 legs cover the router path end-to-end (row 3 + upstream
+source); the creation + activation seams are the same shape (context at the
+consumer, target-root source) with the single-root byte-identity property
+(shared by all three: future/target root = boot root in single-root
+worlds).
 
 ### 14.5 T5 no-weakening (evidence note)
 
