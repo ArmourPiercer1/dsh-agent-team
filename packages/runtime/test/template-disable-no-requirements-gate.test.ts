@@ -280,6 +280,43 @@ describe('finding I: a disabled template with NO requirements blocks its work (r
     }
   })
 
+  it('the same disable BLOCKS the follow-up to the worker (same normalWork class, same scopeRefs)', async () => {
+    world = await createFindingIWorld('fndi-followup-blocks')
+    await setTemplateAvailabilityFact({
+      ledger: world.domain.repositories.ledger,
+      blueprint: world.blueprint,
+      rootSessionId: P6T2_ROOT,
+      templateId: 'worker',
+      available: false,
+      now: () => P6T2_NOW,
+    })
+    // The follow-up's real impact (the router's `actionImpactOf`): the SAME
+    // normalWork class with the IDENTICAL scopeRefs as the delegate — the
+    // availability block keys on the scope refs, never on the action name.
+    const readiness = mutableReadiness({ [TEAM_BASE]: PROBE_VERDICTS.reachable })
+    const provider = createRuntimeRequirementFactsProvider(livePorts(readiness.provider))
+    const outcome = await enforceRequirementGate(
+      {
+        repositories: world.domain.repositories,
+        blueprint: world.blueprint,
+        rootSessionId: P6T2_ROOT,
+        environmentFacts: teamFeedOf(world, provider),
+        templateEnvironmentFacts: templateFeedOf(world, provider),
+        now: () => P6T2_NOW,
+      },
+      actionImpactOf('follow-up', 'worker', false),
+    ).then(
+      () => {
+        throw new Error('expected the disabled worker to BLOCK the follow-up')
+      },
+      (error: unknown) => error,
+    )
+    const typed = outcome as { code?: string; details?: Record<string, unknown> }
+    expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
+    expect(typed.details?.['gateReason']).toBe('templateDisabled')
+    expect(typed.details?.['blockedScopes']).toEqual(['template:worker'])
+  })
+
   it('re-enabling resumes the delegate through the SAME checks (the block did not key on requirements)', async () => {
     world = await createFindingIWorld('fndi-reenabled-resumes')
     await setTemplateAvailabilityFact({

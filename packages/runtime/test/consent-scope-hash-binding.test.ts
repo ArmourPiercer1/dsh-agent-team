@@ -31,6 +31,25 @@
  *      different content hash) BEFORE the team record is minted; the
  *      re-drive against rev2 must NOT inherit the rev1 consent — it stays
  *      `consentRequired`. Re-consenting against rev2 then admits.
+ *   J3 (S1 ADDENDUM, 2026-10-01 — the fail-closed LEGACY-ROW branch, real
+ *      production chain): a LEGACY 4-field consent row (no scopeKey /
+ *      contentHash — the pre-keying shape, seeded through the production
+ *      payload builder + the pre-team durable writer) is NEVER treated as
+ *      consented by the KEYED production re-drive (the host entry always
+ *      models the bound hash) — it stays `consentRequired` with zero
+ *      durable effect; the production re-grant then mints a KEYED row and
+ *      the re-drive proceeds (the migration path, end-to-end). The same
+ *      row IS honored by the LEGACY evaluation face (no hash modeled —
+ *      the pre-J unit face, byte-identical requirementId-only match) —
+ *      pinned at the pure `startupPreflight` level.
+ *   S2 (r1 ADDENDUM, 2026-10-01): a grant WITHOUT an explicit scopeKey
+ *      while the requirement is unmet in MORE THAN ONE scope (the J1 world)
+ *      is the typed `DUPLICATE_REQUIREMENT_SCOPE` refusal (closed code
+ *      `REQUIREMENT_DUPLICATE_SCOPE`; zero writes).
+ *   r2 ADDENDUM (2026-10-01, minor): an EXPLICIT scopeKey naming a scope
+ *      that does NOT declare the requirement → the typed
+ *      `CONSENT_TARGET_SATISFIED` refusal (`requirement-not-unmet-in-scope`;
+ *      zero writes).
  *
  * Migration behavior (disclosed): durable consent rows written WITHOUT the
  * scope/hash key (the pre-fix shape) are FAIL-CLOSED — a keyed evaluation
@@ -59,7 +78,14 @@ import {
 } from '../admission/index.js'
 import {
   OPTIONAL_REQUIREMENT_ACCEPTED_FACT_TYPE,
+  PREFLIGHT_OUTCOMES,
+  REQUIREMENT_ERROR_CODES,
+  isRequirementError,
+  optionalRequirementAcceptedPayload,
+  startupPreflight,
+  writeRequirementFact,
 } from '../requirements/index.js'
+import type { DegradationConsent, RequirementVerdict } from '../requirements/index.js'
 import { stubGlueUrl } from './p8s5a-artifacts.mjs'
 import { agentPresetsStandardDouble } from './agent-presets-double.mjs'
 
@@ -67,6 +93,7 @@ import { agentPresetsStandardDouble } from './agent-presets-double.mjs'
 
 const ROOT_J1 = 'session-fndj-r1'
 const ROOT_J2 = 'session-fndj-r2'
+const ROOT_J3 = 'session-fndj-r3'
 
 // --- the v2 blueprint builder (the closed document shape, plan §E.2) ----------------
 
@@ -205,6 +232,24 @@ const DOC_J2_REV2 = v2Doc(
 const HASH_J1 = parseBlueprint(DOC_J1).contentHash
 const HASH_J2_REV1 = parseBlueprint(DOC_J2_REV1).contentHash
 const HASH_J2_REV2 = parseBlueprint(DOC_J2_REV2).contentHash
+
+// --- J3 (S1 addendum, 2026-10-01): the LEGACY unkeyed consent row under the
+// keyed PRODUCTION evaluation — one optional requirement, TEAM scope only
+// (the worker declares nothing — the derived grant scope is unambiguous).
+
+const TEAM_REQS_J3 = [
+  requirementLines('req-skill-base', 'skill', ['base'], true),
+  requirementLines('req-opt', 'mcpServer', ['opt'], false),
+]
+const DOC_J3 = v2Doc(
+  'JND-3-BP',
+  '1',
+  TEAM_REQS_J3,
+  [{ templateId: 'worker', displayName: 'Worker' }],
+  'You lead the J3 team.',
+  'The legacy-row scenario team.',
+)
+const HASH_J3 = parseBlueprint(DOC_J3).contentHash
 
 // --- the row config (the host entry's ONLY input channel) ----------------------------
 
@@ -390,6 +435,20 @@ const j1a = await applyWorld(world1a, rowConfig(ROOT_J1, DOC_J1))
 // reqID in two scopes).
 const j1Refusal = preflightRefusal(j1a.bootError)
 
+// S2 (r1 addendum, 2026-10-01): a grant WITHOUT an explicit scopeKey while
+// the requirement is unmet in MORE THAN ONE scope is the typed
+// DUPLICATE_REQUIREMENT_SCOPE refusal (a consent is per-scope, ADR-12 —
+// the grant must name the scope; zero writes).
+const j1GrantAmbiguous = await grantOf(j1a.teamRoot, {
+  rootSessionId: ROOT_J1,
+  blueprintId: 'JND-1-BP',
+  revision: '1',
+  requirementId: 'req-opt',
+  generation: 1,
+  consentedBy: ROOT_J1,
+})
+const j1AuditAmbiguous = await openTeamDomain(new FileStorageSeam(dir1))
+
 // The human consents the TEAM scope's `req-opt` (the scoped grant).
 const j1Grant1 = await grantOf(j1a.teamRoot, {
   rootSessionId: ROOT_J1,
@@ -469,11 +528,88 @@ const world2c = makeWorld(new FileStorageSeam(dir2))
 const j2c = await applyWorld(world2c, rowConfig(ROOT_J2, DOC_J2_REV2, sourcesDir2, 'create-or-open'))
 const j2Audit2 = await openTeamDomain(new FileStorageSeam(dir2))
 
+// --- J3 arc (S1 addendum, 2026-10-01): the LEGACY unkeyed row under the
+// keyed PRODUCTION evaluation — fail-closed, the human re-grants ---------
+
+const dir3 = scratchDir('fndj-legacy-row')
+destroyDir(dir3)
+const world3a = makeWorld(new FileStorageSeam(dir3))
+const j3a = await applyWorld(world3a, rowConfig(ROOT_J3, DOC_J3))
+// Precondition: the create is refused (one unconsented warning — the team
+// scope's `req-opt`; the worker declares nothing).
+const j3Refusal = preflightRefusal(j3a.bootError)
+
+// Seed a LEGACY 4-field consent row (the pre-keying shape: requirementId +
+// generation + consentedAt + consentedBy — NO scopeKey / contentHash) via
+// the PRODUCTION payload builder + the PRODUCTION durable writer (the
+// pre-team ledger port, the production root's own selection: no team
+// record yet → `putPreTeam`).
+const j3SeedDomain = await openTeamDomain(new FileStorageSeam(dir3))
+const j3FactLedger = {
+  allocateSequence: (): Promise<number> => j3SeedDomain.repositories.ledger.allocateSequence(),
+  put: (entry: Record<string, unknown>): Promise<unknown> =>
+    j3SeedDomain.repositories.teamSessions.get(ROOT_J3) === undefined
+      ? j3SeedDomain.repositories.ledger.putPreTeam(entry)
+      : j3SeedDomain.repositories.ledger.put(entry),
+}
+await writeRequirementFact(
+  j3FactLedger,
+  ROOT_J3,
+  OPTIONAL_REQUIREMENT_ACCEPTED_FACT_TYPE,
+  optionalRequirementAcceptedPayload({
+    requirementId: 'req-opt',
+    generation: 1,
+    consentedAt: 1756696800000,
+    consentedBy: 'legacy-human',
+  }),
+  () => '2026-08-31T12:00:00.000Z',
+)
+const j3SeedAudit = await openTeamDomain(new FileStorageSeam(dir3))
+
+// r2 minor addendum (2026-10-01): an EXPLICIT scopeKey naming a scope that
+// does NOT declare the requirement → the typed CONSENT_TARGET_SATISFIED
+// refusal (`requirement-not-unmet-in-scope`; zero writes).
+const j3GrantWrongScope = await grantOf(j3a.teamRoot, {
+  rootSessionId: ROOT_J3,
+  blueprintId: 'JND-3-BP',
+  revision: '1',
+  requirementId: 'req-opt',
+  generation: 2,
+  consentedBy: ROOT_J3,
+  scopeKey: 'template:worker',
+})
+
+// THE KEYED PRODUCTION RE-DRIVE: the unkeyed legacy row is NEVER treated
+// as consented (fail-closed — there is no silent auto-consent; the human
+// must re-grant). The host entry's creation preflight always models the
+// bound blueprint content hash → the keyed face.
+const world3b = makeWorld(new FileStorageSeam(dir3))
+const j3b = await applyWorld(world3b, rowConfig(ROOT_J3, DOC_J3, undefined, 'create-or-open'))
+const j3Audit1 = await openTeamDomain(new FileStorageSeam(dir3))
+
+// The human RE-GRANTS through the production writer (the migration path):
+// no explicit scopeKey — the requirement is unmet in exactly ONE scope
+// (the team), so the writer DERIVES it and stamps it together with the
+// bound content hash.
+const j3Grant = await grantOf(j3b.teamRoot, {
+  rootSessionId: ROOT_J3,
+  blueprintId: 'JND-3-BP',
+  revision: '1',
+  requirementId: 'req-opt',
+  generation: 3,
+  consentedBy: ROOT_J3,
+})
+
+// RE-DRIVE: the keyed row matches (same scope + hash) → proceeds.
+const world3c = makeWorld(new FileStorageSeam(dir3))
+const j3c = await applyWorld(world3c, rowConfig(ROOT_J3, DOC_J3, undefined, 'create-or-open'))
+const j3Audit2 = await openTeamDomain(new FileStorageSeam(dir3))
+
 // --- the teardown ----------------------------------------------------------------------
 
 await teardownWorlds(
-  [world1a, world1b, world1c, world2a, world2b, world2c],
-  [dir1, dir2, sourcesDir2],
+  [world1a, world1b, world1c, world2a, world2b, world2c, world3a, world3b, world3c],
+  [dir1, dir2, sourcesDir2, dir3],
 )
 
 // --- the assertions (sync it() bodies) --------------------------------------------------
@@ -548,6 +684,21 @@ describe('J1: a consent is bound to the SCOPE it was granted for (cross-scope, s
     expect(record).toBeDefined()
     expect(record?.blueprint.blueprintId).toBe('JND-1-BP')
   })
+
+  it('S2: a grant WITHOUT an explicit scopeKey (the reqID unmet in TWO scopes) is the typed DUPLICATE_REQUIREMENT_SCOPE refusal', () => {
+    expect(j1GrantAmbiguous.ok).toBe(false)
+    const error: unknown = j1GrantAmbiguous.ok === false ? j1GrantAmbiguous.error : undefined
+    expect(isRequirementError(error)).toBe(true)
+    if (!isRequirementError(error)) return
+    // The closed code (verified against the closed set — errors.ts):
+    expect(error.code).toBe(REQUIREMENT_ERROR_CODES.DUPLICATE_REQUIREMENT_SCOPE)
+    expect(error.code).toBe('REQUIREMENT_DUPLICATE_SCOPE')
+    // The details name the requirement + the ambiguous scope set.
+    expect(error.details?.['requirementId']).toBe('req-opt')
+    expect(error.details?.['scopeKeys']).toEqual(['team', 'template:worker'])
+    // Zero durable effect: the refusal wrote NO consent row.
+    expect(consentRowsOf(j1AuditAmbiguous, ROOT_J1)).toEqual([])
+  })
 })
 
 describe('J2: a consent is bound to the BLUEPRINT HASH it was granted for (stale-hash, same root)', () => {
@@ -607,5 +758,135 @@ describe('J2: a consent is bound to the BLUEPRINT HASH it was granted for (stale
         contentHash: HASH_J2_REV2,
       },
     ])
+  })
+})
+
+describe('J3 (S1 addendum): the LEGACY unkeyed row under the keyed PRODUCTION evaluation is fail-closed', () => {
+  it('the first create is refused consentRequired (one unconsented warning — team scope)', () => {
+    expect(j3Refusal['outcome']).toBe('consentRequired')
+    expect(j3Refusal['consentRequiredRequirementIds']).toContain('req-opt')
+  })
+
+  it('the seeded legacy row carries NO key (the pre-keying 4-field shape, byte-identical round-trip)', () => {
+    const rows = consentRowsOf(j3SeedAudit, ROOT_J3)
+    expect(rows).toEqual([
+      {
+        requirementId: 'req-opt',
+        generation: 1,
+        consentedBy: 'legacy-human',
+        scopeKey: undefined,
+        contentHash: undefined,
+      },
+    ])
+  })
+
+  it('the KEYED production re-drive does NOT inherit the legacy row: stays consentRequired (fail-closed, zero durable effect)', () => {
+    // The disclosed migration behavior: a legacy 4-field row still PARSES
+    // (backward-compatible), but under the keyed PRODUCTION evaluation it
+    // is NEVER treated as consented — the human must re-grant (there is no
+    // silent auto-consent).
+    expect(j3b.bootError).toBeInstanceOf(TeamRuntimeError)
+    const details = preflightRefusal(j3b.bootError)
+    expect(details['outcome']).toBe('consentRequired')
+    expect(details['consentRequiredRequirementIds']).toContain('req-opt')
+    expect(j3b.root).toBeNull()
+    // Zero durable effect: no team record under the root; the legacy row
+    // is untouched (append-only, still unkeyed).
+    expect(j3Audit1.repositories.teamSessions.get(ROOT_J3)).toBeUndefined()
+    expect(consentRowsOf(j3Audit1, ROOT_J3)).toEqual([
+      {
+        requirementId: 'req-opt',
+        generation: 1,
+        consentedBy: 'legacy-human',
+        scopeKey: undefined,
+        contentHash: undefined,
+      },
+    ])
+  })
+
+  it('the production re-grant mints a KEYED row (scope derived — team — + the bound hash)', () => {
+    expect(j3Grant.ok).toBe(true)
+    const rows = consentRowsOf(j3Audit2, ROOT_J3)
+    // The legacy row persists (append-only) + the re-grant row is keyed.
+    expect(rows).toEqual([
+      {
+        requirementId: 'req-opt',
+        generation: 1,
+        consentedBy: 'legacy-human',
+        scopeKey: undefined,
+        contentHash: undefined,
+      },
+      {
+        requirementId: 'req-opt',
+        generation: 3,
+        consentedBy: ROOT_J3,
+        scopeKey: 'team',
+        contentHash: HASH_J3,
+      },
+    ])
+  })
+
+  it('after the re-grant the re-drive proceeds (the migration path works end-to-end)', () => {
+    expect(j3c.bootError).toBeNull()
+    expect(j3c.root).not.toBeNull()
+    const record = j3Audit2.repositories.teamSessions.get(ROOT_J3)
+    expect(record).toBeDefined()
+    expect(record?.blueprint.blueprintId).toBe('JND-3-BP')
+  })
+
+  it('r2 addendum: an EXPLICIT scopeKey naming a scope that does not declare the requirement → typed CONSENT_TARGET_SATISFIED', () => {
+    expect(j3GrantWrongScope.ok).toBe(false)
+    const error: unknown = j3GrantWrongScope.ok === false ? j3GrantWrongScope.error : undefined
+    expect(isRequirementError(error)).toBe(true)
+    if (!isRequirementError(error)) return
+    expect(error.code).toBe(REQUIREMENT_ERROR_CODES.CONSENT_TARGET_SATISFIED)
+    expect(error.details?.['requirementId']).toBe('req-opt')
+    expect(error.details?.['scopeKey']).toBe('template:worker')
+    expect(error.details?.['reason']).toBe('requirement-not-unmet-in-scope')
+  })
+})
+
+describe('S1 unit face (pure startupPreflight): the same legacy row — keyed vs legacy evaluation', () => {
+  /** The one warning-only team scope of the J3 world (the unmet `req-opt`). */
+  const J3_TEAM_VERDICTS: Record<string, readonly RequirementVerdict[]> = {
+    team: [
+      {
+        requirementId: 'req-skill-base',
+        complete: true,
+        outcome: 'pass',
+        unavailableSubjects: [],
+      },
+      {
+        requirementId: 'req-opt',
+        complete: false,
+        outcome: 'warning',
+        unavailableSubjects: ['opt'],
+      },
+    ],
+  }
+  /** The LEGACY 4-field consent row (no key fields — the pre-keying shape). */
+  const J3_LEGACY_ROW: DegradationConsent = {
+    requirementId: 'req-opt',
+    generation: 1,
+    consentedAt: 1756696800000,
+    consentedBy: 'legacy-human',
+  }
+
+  it('KEYED evaluation (blueprintContentHash modeled — the production face): the unkeyed row is NEVER consented (fail-closed)', () => {
+    const keyed = startupPreflight({
+      scopeVerdicts: J3_TEAM_VERDICTS,
+      consents: [J3_LEGACY_ROW],
+      blueprintContentHash: HASH_J3,
+    })
+    expect(keyed.outcome).toBe(PREFLIGHT_OUTCOMES.consentRequired)
+    expect(keyed.consentRequiredRequirementIds).toEqual(['req-opt'])
+  })
+
+  it('LEGACY evaluation (no blueprintContentHash — the pre-J unit face): the same row IS honored (byte-identical requirementId-only match)', () => {
+    const legacy = startupPreflight({
+      scopeVerdicts: J3_TEAM_VERDICTS,
+      consents: [J3_LEGACY_ROW],
+    })
+    expect(legacy.outcome).toBe(PREFLIGHT_OUTCOMES.proceed)
   })
 })

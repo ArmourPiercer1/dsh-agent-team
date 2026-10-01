@@ -23,6 +23,19 @@
  * v1 world is byte-identical to the pre-PR-E compatibility bridge (the
  * frozen v1 reader is untouched; no v2 rule leaks into v1).
  *
+ * AUDIT NOTE (finding I residual, 2026-10-01): this extraction is the
+ * per-scope REQUIREMENT INPUTS (the verdict rows) — it intentionally skips
+ * template scopes with an empty requirement set (no requirement row, no
+ * verdict row; such a scope can never be `blocked` by a required failure).
+ * It is NOT the availability scope-ref set: the gate's template-DISABLED
+ * decision (`gateAction`'s `disabledRefs`) keys on the ACTION's scope refs
+ * (the initial-work closure's `leaderTemplateScopeRefs` — UNCONDITIONAL,
+ * the scope exists because the template exists — and the router's
+ * `actionImpactOf` / `newWorkTargetTemplateId`, keyed on the addressed
+ * template id) + the durable `available:false` fact, INDEPENDENT of the
+ * verdicts. A disabled requirement-free template therefore blocks its
+ * work even though it never appears here.
+ *
  * Pure module: no I/O, no `node:` builtins.
  * @module @dsh-agent-team/runtime/requirements/scope-requirements
  */
