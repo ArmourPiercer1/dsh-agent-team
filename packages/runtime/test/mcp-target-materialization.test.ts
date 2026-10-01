@@ -83,6 +83,14 @@ const E_ROOT = 'session-mtm-e'
 const E_SERVER = 'mtm_srv_e'
 const D_ROOT = 'session-mtm-d'
 const D_SERVER = 'mtm_srv_d'
+// The residual worlds (external review of e45d22fe — the two confirmed
+// residual-F rulings: R1 the first-mount PENDING window, R2 the
+// initial-work cross-root read).
+const R1_ROOT = 'session-mtm-r1'
+const R1_SERVER = 'mtm_srv_r1'
+const R2_ROOT = 'session-mtm-r2'
+const R2_ROOT2 = 'session-mtm-r2b'
+const R2_SERVER = 'mtm_srv_r2'
 
 // --- the v2 blueprints (template-level required mcpServer) ----------------------
 
@@ -200,6 +208,25 @@ const BP_D = mtmBlueprint('mtm.d', D_SERVER, {
   leaderCaps: true,
   workerCaps: true,
 })
+// R1 — the first-mount PENDING window: the worker's required mcpServer
+// (the member-boundary shape of world A: A mounts healthy, B's own first
+// mount fails on its first passage).
+const BP_R1 = mtmBlueprint('mtm.r1', R1_SERVER, {
+  workerReq: true,
+  leaderReq: false,
+  leaderCaps: true,
+  workerCaps: true,
+})
+// R2 — the initial-work cross-root read: the LEADER template's required
+// mcpServer (the T4 shape — the v2 Leader row's own materialization,
+// mounted on the root session), so each root's initial work is gated on
+// that root's OWN leader materialization.
+const BP_R2 = mtmBlueprint('mtm.r2', R2_SERVER, {
+  workerReq: false,
+  leaderReq: true,
+  leaderCaps: true,
+  workerCaps: true,
+})
 
 // --- the world boot (production host entry + production glue) --------------------
 
@@ -224,6 +251,13 @@ async function bootMtmWorld(
   environmentFacts: unknown[] = [
     { domain: 'mcpServer', subject: serverName, available: true, generation: 1 },
   ],
+  // The MUTABLE per-server mount-failure map (the world's fault seam — the
+  // bridge agents double's `mcpFailures`: a recorded fiber whose
+  // `serverName` has an entry REJECTS on await, modeling the real
+  // mcpClient fiber's `failOnStartupError` rejection). The map reference
+  // is shared: entries added AFTER boot fail only the mounts attempted
+  // AFTER the addition (already-mounted fibers are never re-attempted).
+  mcpFailures?: Record<string, string>,
 ): Promise<MtMWorld> {
   const provided: Record<string, unknown> = {}
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the test Cordis context double
@@ -239,6 +273,7 @@ async function bootMtmWorld(
   provided.agents = createAgentsDouble({
     passExplicitAgent: true,
     mcpToolNames: { [serverName]: [`mcp__${serverName}__ping`] },
+    ...(mcpFailures !== undefined ? { mcpFailures } : {}),
   })
   // The durable-session truth (the upstream `SessionPersistence.stat`
   // contract, synthesized by the host's sessionPersistence wrapper into
@@ -456,6 +491,51 @@ function openIncidentOf(world: MtMWorld, rootSessionId: string, scopeKey: string
   const opened = rows.filter((row) => row.type === RECOVERY_INCIDENT_OPENED_FACT_TYPE && row.scope === scopeKey).length
   const closed = rows.filter((row) => row.type === RECOVERY_INCIDENT_CLOSED_FACT_TYPE && row.scope === scopeKey).length
   return opened > closed
+}
+
+/**
+ * The durable `workOutcome` of one member work token (the fail-closed
+ * settlement record: a delivery fault settles `delivery-failed` — the
+ * R1 leg asserts the same-passage gate leaves NO fake success and NO
+ * fake settlement success behind).
+ */
+function workOutcomeOf(world: MtMWorld, rootSessionId: string, requestToken: string): string | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the domain (dynamic surface)
+  const domain: any = world.root.domain
+  for (const entry of domain.repositories.ledger.list()) {
+    const record = entry as {
+      rootSessionId?: unknown
+      factType?: unknown
+      payload?: { requestToken?: unknown; workOutcome?: unknown }
+    }
+    if (record.rootSessionId !== rootSessionId) continue
+    if (record.factType !== 'member-lifecycle-changed') continue
+    if (record.payload?.requestToken !== requestToken) continue
+    if (record.payload?.workOutcome !== undefined) return String(record.payload.workOutcome)
+  }
+  return undefined
+}
+
+/**
+ * The terminal ROOT-work fact of one token (the delivered record — the
+ * R2 leg asserts B's initial work leaves NO root input and NO terminal
+ * root-work fact).
+ */
+function rootWorkDeliveredOf(world: MtMWorld, rootSessionId: string, requestToken: string): { workOutcome: string } | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the domain (dynamic surface)
+  const domain: any = world.root.domain
+  for (const entry of domain.repositories.ledger.list()) {
+    const record = entry as {
+      rootSessionId?: unknown
+      factType?: unknown
+      payload?: { requestToken?: unknown; workOutcome?: unknown }
+    }
+    if (record.rootSessionId !== rootSessionId) continue
+    if (record.factType !== 'team-root-work-delivered') continue
+    if (record.payload?.requestToken !== requestToken) continue
+    return { workOutcome: String(record.payload?.workOutcome ?? '') }
+  }
+  return undefined
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -735,6 +815,201 @@ const D = await (async () => {
 })()
 
 // ══════════════════════════════════════════════════════════════════════════
+// WORLD R1 — T7 (external residual-1: the first-mount PENDING window —
+// the mount attempt is admissible; a same-passage failed first mount
+// must deliver ZERO work on THAT passage)
+// ══════════════════════════════════════════════════════════════════════════
+
+const R1 = await (async () => {
+  destroyDir(scratchDir('mtm-r1'))
+  // The MUTABLE per-server failure map (the world's fault seam — the
+  // bridge double's `mcpFailures`, keyed by serverName: a recorded fiber
+  // whose server has an entry REJECTS on await — the real mcpClient
+  // fiber's `failOnStartupError` shape). EMPTY at boot: A mounts healthy
+  // at its first boundary; the entry is added AFTER A's mount and BEFORE
+  // B's first follow-up (B's own first mount then fails on that passage).
+  const mcpFailures: Record<string, string> = {}
+  const world = await bootMtmWorld('r1', R1_ROOT, BP_R1, R1_SERVER, 3997, undefined, mcpFailures)
+
+  const instA = await activateMember(world, 'mtm-r1-A')
+  const instB = await activateMember(world, 'mtm-r1-B')
+
+  // A healthy + MOUNTED (its first delivery runs the boundary reconcile;
+  // the failure map is still empty → the mount succeeds).
+  await expectWorkAdmitted(world, followUpRequest(R1_ROOT, instA.instanceId), 'R1 A first delivery (mount)')
+  const slotAAtMount = slotOf(world, instA.childSessionId, R1_SERVER)
+  // B FRESH: no slot yet — the first-mount PENDING window (B's
+  // materialization settles only at B's own first boundary; the U4
+  // liveness shape: masked `pending` → admissible, never a blanket
+  // block).
+  const slotBAtBoot = slotOf(world, instB.childSessionId, R1_SERVER)
+
+  // THE FAULT: B's own first mount will fail on its first passage (set
+  // AFTER A's mount — the shared map reference is read at MOUNT time, so
+  // the already-mounted A is never re-attempted; B's first attempt hits
+  // the failure).
+  mcpFailures[R1_SERVER] = 'mtm-r1: B first-mount failure (the external residual-1 fault)'
+
+  // THE RESIDUAL LEG: B's first follow-up. Admission consults the
+  // PRE-attempt `pending` (A's healthy mount keeps the aggregate
+  // `reachable` — the admissible bootstrap shape). The delivery's prepare
+  // runs B's own boundary reconcile, where B's OWN mount attempt fails
+  // and stamps the slot `failed`. Contract (the applicable
+  // materialization must succeed BEFORE real work): the SAME passage
+  // must deliver ZERO model-visible input (the pre-fix window delivered
+  // the follow-up on the very passage that failed the first mount).
+  const bRequest = followUpRequest(R1_ROOT, instB.instanceId)
+  const bFollowupsBefore = followupsOf(world, instB.childSessionId)
+  let bThrown: unknown
+  try {
+    await world.root.runtime.performAction(bRequest)
+  } catch (error) {
+    bThrown = error
+  }
+  const bFollowupsAfter = followupsOf(world, instB.childSessionId)
+  const slotBAfterPassage = slotOf(world, instB.childSessionId, R1_SERVER)
+  const bWorkOutcome = workOutcomeOf(world, R1_ROOT, String(bRequest.requestToken))
+
+  // THE NEXT PASSAGE: B is now gated as `failed` at ADMISSION (the feed's
+  // failed → DOWN — the T1 shape on the passage after the window).
+  const bBlockNext = await expectBlocked(world, followUpRequest(R1_ROOT, instB.instanceId), 'R1 next-passage follow-up B (gated as failed)')
+
+  // THE CONTROL: A keeps working (the healthy sibling is not masked; the
+  // already-mounted fiber is never re-attempted against the failure map).
+  const aFollowup = await expectWorkAdmitted(world, followUpRequest(R1_ROOT, instA.instanceId), 'R1 control follow-up A')
+
+  return {
+    world,
+    instA,
+    instB,
+    slotAAtMount,
+    slotBAtBoot,
+    bRequest,
+    bThrown,
+    bFollowupsBefore,
+    bFollowupsAfter,
+    slotBAfterPassage,
+    bWorkOutcome,
+    bBlockNext,
+    aFollowup,
+  }
+})()
+
+// ══════════════════════════════════════════════════════════════════════════
+// WORLD R2 — T8 (external residual-2: the initial-work cross-root read —
+// root B's initial work must be gated on B OWN failed leader
+// materialization, never the boot root A's healthy one)
+// ══════════════════════════════════════════════════════════════════════════
+
+const R2 = await (async () => {
+  destroyDir(scratchDir('mtm-r2'))
+  const mcpFailures: Record<string, string> = {}
+  const world = await bootMtmWorld('r2', R2_ROOT, BP_R2, R2_SERVER, 3998, undefined, mcpFailures)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the domain (dynamic surface)
+  const repos: any = world.root.domain.repositories
+
+  // Root A (the boot root): the v2 Leader's fiber is mounted on the ROOT
+  // session at boot (the leader mounts config.rootPresetId — the T4
+  // shape; A = healthy/mounted throughout this world).
+  const slotLeaderAAtBoot = slotOf(world, R2_ROOT, R2_SERVER)
+
+  // Root B (the second OWNED root — the T3 multi-root host shape): the
+  // durable rows with the SAME blueprint snapshot (same leader template)
+  // + the production leader-row shape (childSessionId = the root session:
+  // the v2 Leader IS the root session).
+  const nowIso = new Date().toISOString()
+  const blueprint = repos.teamSessions.get(R2_ROOT).blueprint
+  await repos.teamSessions.put({
+    blueprint,
+    createdAt: nowIso,
+    defaultWorkspace: '/data',
+    generation: 1,
+    rootSessionId: R2_ROOT2,
+  })
+  await repos.sessionBindings.put({ kind: 'team-root', schemaVersion: 1, sessionId: R2_ROOT2 })
+  await repos.memberInstances.put({
+    rootSessionId: R2_ROOT2,
+    instanceId: 'inst-leader',
+    templateId: 'leader',
+    label: 'mtm-r2 leader (root B)',
+    childSessionId: R2_ROOT2,
+    lifecycle: 'RUNNING',
+    createdAt: nowIso,
+    activityVersion: 1,
+  })
+
+  // THE FAULT: B's Leader mount (the root agent's setup reconcile) will
+  // fail — set BEFORE B's root agent is created, so the first mount on
+  // B's root session hits the failure.
+  mcpFailures[R2_SERVER] = 'mtm-r2: root-B leader first-mount failure (the external residual-2 fault)'
+  await world.root.live.createRootAgent(R2_ROOT2)
+  const slotLeaderBAfterCreate = slotOf(world, R2_ROOT2, R2_SERVER)
+
+  // THE RESIDUAL LEG: B's INITIAL WORK — driven through the PRODUCTION
+  // v2 remote command (`team.admitInitialWork`): the captured S6
+  // dispatcher is the exact production wiring — the bound-root guard
+  // (B is durably owned, asserted above), the host-derived caller, the
+  // TARGET team's bound blueprint, and the plan §15.8 closure (the
+  // Phase A gate with the read-seam wrappers + the two-fact scanner +
+  // the live Root input seam). Contract (the applicable
+  // materialization before work + affected scopes only): B's delivery
+  // decision uses B's OWN leader materialization; nothing from root
+  // A's healthy state may permit B's work (the pre-fix wrapper read
+  // the BOOT root's leader materialization and permitted B's initial
+  // work — the cross-root false OPEN).
+  let remoteDispatcher:
+    | ((endpoint: string, payload: unknown) => Promise<Record<string, unknown>>)
+    | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic seam surface (untyped by design)
+  ;(world.root.seams.remoteHandlerRegistration as any).current()({
+    rpc: {
+      handle: (_channel: string, dispatcher: unknown) => {
+        remoteDispatcher = dispatcher as (
+          endpoint: string,
+          payload: unknown,
+        ) => Promise<Record<string, unknown>>
+        return () => {}
+      },
+    },
+  })
+  if (remoteDispatcher === undefined) {
+    throw new Error('mtm R2: the registration never installed a dispatcher')
+  }
+  const rootBFollowupsBefore = followupsOf(world, R2_ROOT2)
+  const bInitialWorkToken = tok()
+  const bInitialWorkResponse: Record<string, unknown> = await remoteDispatcher(
+    'team.admitInitialWork',
+    {
+      version: 2,
+      params: { rootSessionId: R2_ROOT2, requestToken: bInitialWorkToken, prompt: 'mtm-r2 initial work' },
+    },
+  )
+  const rootBFollowupsAfter = followupsOf(world, R2_ROOT2)
+  const bRootWorkDelivered = rootWorkDeliveredOf(world, R2_ROOT2, bInitialWorkToken)
+  const slotLeaderAAfter = slotOf(world, R2_ROOT, R2_SERVER)
+
+  // THE RECOVERY STAYS TYPED/OPEN FOR B: no incident closure under B's
+  // root for the leader scope (A's health settled nothing on B) and no
+  // incident rows under A at all (A is not involved).
+  const incidentB = incidentsOf(world, R2_ROOT2).filter((row) => row.scope === 'template:leader')
+  const incidentA = incidentsOf(world, R2_ROOT).filter((row) => row.scope === 'template:leader')
+
+  return {
+    world,
+    slotLeaderAAtBoot,
+    slotLeaderBAfterCreate,
+    bInitialWorkToken,
+    bInitialWorkResponse,
+    rootBFollowupsBefore,
+    rootBFollowupsAfter,
+    bRootWorkDelivered,
+    slotLeaderAAfter,
+    incidentB,
+    incidentA,
+  }
+})()
+
+// ══════════════════════════════════════════════════════════════════════════
 // the assertions (synchronous `it` bodies over the captured worlds)
 // ══════════════════════════════════════════════════════════════════════════
 
@@ -858,5 +1133,95 @@ describe('Finding F — target-specific MCP materialization (real chain: host en
     expect(D.cResumed, 'the delivery resumes the cold agent').toBe(true)
     // The boundary re-materialized the server (fresh mount on resume).
     expect(D.slotCAfterResume?.status).toBe('mounted')
+  })
+})
+
+// ══════════════════════════════════════════════════════════════════════════
+// the residual legs (external review of e45d22fe — the two confirmed
+// residual-F rulings; the ordinary follow-up path's exact-scope fix
+// already landed in this branch's earlier increment)
+// ══════════════════════════════════════════════════════════════════════════
+
+describe('Finding F — residual legs (external review of e45d22fe: R1 first-mount PENDING window + R2 initial-work cross-root read)', () => {
+  it('T7 (external residual 1) — the first-mount PENDING window: B is admitted (masked pending), its own first mount fails on the passage, and the SAME-passage delivery is blocked (zero model-visible input; fail-closed settlement; A unaffected; the next passage is gated as failed)', () => {
+    // The setup truth: A mounted at its first boundary (the healthy
+    // sibling); B FRESH — no slot yet (the pending window: the
+    // materialization settles only at B's own first boundary).
+    expect(R1.slotAAtMount?.status, 'A mounted at its first delivery').toBe('mounted')
+    expect(R1.slotBAtBoot, 'B carries no slot before its first boundary').toBeUndefined()
+
+    // THE SAME-PASSAGE GATE: after B's own mount attempt FAILED on this
+    // passage, NO model-visible work reached B — the typed fail-closed
+    // fault (the work chain's settle-then-throw) and zero deliveries.
+    // (RED shape: the pre-fix window delivered the follow-up on the very
+    // passage that failed the first mount — the count grew and nothing
+    // threw.)
+    expect(
+      R1.bThrown,
+      'the same-passage delivery was NOT blocked after B\'s own first-mount failure (the external residual-1 window: real work delivered on the failed-mount passage)',
+    ).toBeInstanceOf(TeamRuntimeError)
+    expect((R1.bThrown as TeamRuntimeError).code).toBe(TEAM_RUNTIME_ERROR_CODES.WORK_DELIVERY_FAILED)
+    expect(R1.bFollowupsAfter - R1.bFollowupsBefore, 'zero work on the failed-mount passage').toBe(0)
+
+    // The durable truth: B's own slot is the failed boundary truth (the
+    // stamp the gate read) and the work unit settled FAIL-CLOSED (no
+    // fake RUNNING success, no fake settlement success).
+    expect(R1.slotBAfterPassage?.status, 'B\'s slot is the failed boundary truth').toBe('failed')
+    expect(R1.bWorkOutcome, 'the fail-closed settlement is durable').toBe('delivery-failed')
+
+    // The NEXT passage: B is gated as `failed` at admission (the T1
+    // shape on the passage after the window — the feed's failed → DOWN).
+    expect(R1.bBlockNext.status).toBe('BLOCKED_FATAL')
+    expect(R1.bBlockNext.gateReason).toBe('requiredScopeDown')
+    expect(R1.bBlockNext.blockedScopes).toEqual(['template:worker'])
+
+    // The control: A keeps working (the healthy sibling is not masked;
+    // the already-mounted fiber is never re-attempted against the
+    // failure map).
+    expect(R1.aFollowup.instanceId).toBe(R1.instA.instanceId)
+  })
+
+  it('T8 (external residual 2) — the initial-work cross-root read: root B\'s initial work is gated on B OWN failed leader materialization (zero delivery; the recovery stays typed/open — the healthy root A neither permits B nor settles B)', () => {
+    // The setup truth: A's leader mounted at boot (healthy); B's leader
+    // RESIDENT + FAILED (its own root agent's first mount failed — the
+    // world's fault seam).
+    expect(R2.slotLeaderAAtBoot?.status, 'root A leader mounted at boot').toBe('mounted')
+    expect(R2.slotLeaderBAfterCreate?.status, 'root B leader failed its own first mount').toBe('failed')
+
+    // THE CROSS-ROOT GATE: B's initial work is the typed FATAL block on
+    // B's own leader scope (the v2 command's failure envelope carries the
+    // gate's details under `cause.details`). The pre-fix wrapper dropped
+    // the feed context: the read resolved under the BOOT root A, whose
+    // healthy leader permitted B's initial work — the cross-root false
+    // OPEN (the command answered `ok: true` and delivered).
+    expect(
+      R2.bInitialWorkResponse['ok'],
+      'B\'s initial work was PERMITTED via the boot root\'s materialization (the external residual-2 cross-root false OPEN)',
+    ).toBe(false)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the remote failure envelope (dynamic surface)
+    const error = R2.bInitialWorkResponse['error'] as Record<string, any>
+    expect(String(error?.['code'] ?? '')).toBe('TEAM_RUNTIME_COMPATIBILITY_BLOCKED')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the remote failure envelope (dynamic surface)
+    const details = (((error?.['details'] as Record<string, any>)?.['cause'] as Record<string, any>)?.['details'] ?? {}) as Record<string, unknown>
+    expect(String(details['status'] ?? '')).toBe('BLOCKED_FATAL')
+    expect(Array.isArray(details['blockedScopes']) ? details['blockedScopes'].map(String) : []).toEqual(['template:leader'])
+    expect(Array.isArray(details['unavailableSubjects']) ? details['unavailableSubjects'].map(String) : []).toEqual([R2_SERVER])
+    expect(details['recoveryDispatchAvailable'], 'the recovery dispatch stays offered for B\'s own scope').toBe(true)
+
+    // ZERO DELIVERY on B's initial work (no root input, no terminal
+    // root-work fact).
+    expect(R2.rootBFollowupsAfter - R2.rootBFollowupsBefore, 'zero work on B root').toBe(0)
+    expect(R2.bRootWorkDelivered, 'no terminal root-work fact for B').toBeUndefined()
+
+    // THE RECOVERY STAYS TYPED/OPEN FOR B: the healthy root A neither
+    // permitted B's work nor settled B's scope (no incident closure
+    // under B; A's ledger untouched — A is not involved).
+    expect(
+      R2.incidentB.filter((row) => row.type === RECOVERY_INCIDENT_CLOSED_FACT_TYPE),
+      'no incident closure under B (B\'s recovery is not closed by A\'s health)',
+    ).toEqual([])
+    expect(R2.incidentA, 'no incident rows under A').toEqual([])
+    // A's own state is unchanged (the cross-root read must not touch A).
+    expect(R2.slotLeaderAAfter?.status, 'root A leader still mounted').toBe('mounted')
   })
 })

@@ -385,8 +385,12 @@ const U6 = await (async () => {
   // itself can settle (the parent's liveness adjudication: excluded). The
   // unmasked in-flight window (readiness `unknown` + in-flight) is the
   // typed PENDING (the readiness axis, pre-existing); the masked in-flight
-  // (readiness settled `reachable`) is allowed, and a FAILED mount is then
-  // gated as `failed` (U2) at the next passage.
+  // (readiness settled `reachable`) is ALLOWED — the allow admits the MOUNT
+  // ATTEMPT (the bootstrap path, never a blanket pending block). Corrected
+  // contract (external residual-F ruling on e45d22fe): a FAILED first
+  // mount is gated at the SAME passage's delivery gate (no real work
+  // before the applicable materialization succeeds — T7, the real-chain
+  // leg) AND gated as `failed` (U2) at the NEXT passage's admission.
   const u4 = makeU6World({
     verdict: 'reachable',
     viewFor: (instanceId) =>
@@ -478,15 +482,20 @@ describe('Finding F T6 — the scoped-identity plumbing + materialization axis (
     expect(teamVerdict?.state).not.toBe(SCOPE_STATES.blocked)
   })
 
-  it('U4 — the masked in-flight target is NOT spurious-PENDING-blocked (liveness: the target settles at its own boundary; a failed mount is gated later as failed)', () => {
+  it('U4 — the masked in-flight target is NOT spurious-PENDING-blocked (liveness: the mount attempt is admissible — bootstrap; a same-passage failed mount is gated at the delivery gate, the next admission as failed)', () => {
     // THE LIVENESS GUARD: the target's materialization is `pending`
-    // (in-flight) while the aggregate readiness is `reachable` (masked by
-    // the healthy sibling). PENDING here would be a state only the blocked
-    // action itself can settle (the delivery runs the target's boundary) —
-    // the parent's liveness adjudication excludes it. The action is
-    // ALLOWED (the target self-mounts at its boundary; a failed mount is
-    // then gated as `failed` — U2). The fix must NOT turn this shape into
-    // a PENDING block.
+    // (not yet attempted) while the aggregate readiness is `reachable`
+    // (masked by the healthy sibling). PENDING here would be a state only
+    // the blocked action itself can settle (the delivery runs the
+    // target's boundary) — the parent's liveness adjudication excludes
+    // it. The action is ALLOWED: the allow admits the MOUNT ATTEMPT
+    // (the bootstrap path — never a blanket pending block). Corrected
+    // contract (external residual-F ruling on e45d22fe): the SAME-passage
+    // handling of a failed first mount is the delivery gate — no real
+    // work before the applicable materialization succeeds (T7, the
+    // real-chain leg) — and the NEXT admission gates the failed mount
+    // as `failed` (U2). The fix must NOT turn this shape into a PENDING
+    // block.
     expect(U6.u4Gate.kind).toBe('allowed')
     // The instance-scoped read of the target carried its `pending`
     // materialization (the plumbing reached the port; the axis was read
