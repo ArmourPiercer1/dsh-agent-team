@@ -260,7 +260,7 @@ import {
   planUiHoldStep, summarizeUiObserve, reviewPayloadDigestOf,
   sha256Hex, canonicalJson,
   UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
-  UI_LEDGER_READ_BUDGET_MS, evaluateUiReadResult, boundedUiLedgerRead,
+  UI_LEDGER_READ_BUDGET_MS, boundedUiLedgerRead, uiObservePollFlow, uiPumpHookDisposition,
 } from './ui-observe.mjs'
 import {
   TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH,
@@ -1865,81 +1865,45 @@ async function uiObserveHold(rec, rootSessionId, req, rid, tag) {
   writeSummary('AWAITING')
   log(`${tag}: UI OBSERVE hold — requestId=${rid} digest=${expectedDigest.slice(0, 18)}… holdMs=${UI_OBSERVE.holdMs}; access record ${accessPath} (0600, world-only); awaiting ${join(observeDir, 'marker.json')} (HINT ONLY — durable truth decides)`)
   const deadlineAt = startedAt + UI_OBSERVE.holdMs
-  let markerSeen = false
-  let lastReason = null
-  const failClosed = (stepReason) => {
-    writeSummary(stepReason)
-    const record = { tag, requestId: rid, digestPrefix: expectedDigest.slice(0, 18), outcome: stepReason, claim: null, holdMs: UI_OBSERVE.holdMs, waitedMs: Date.now() - startedAt, lastReason, at: new Date().toISOString() }
+  // ITEM-A: the loop's decision logic is the SHARED single implementation
+  // (uiObservePollFlow — tests drive the SAME logic with a fake remote
+  // surface); this wrapper keeps ALL persistence: summary.json, the
+  // uiObserveRecords/S9 evidence bookkeeping and the fail-closed check().
+  const flow = await uiObservePollFlow({
+    observeDir,
+    expectedRequestId: rid,
+    expectedDigest,
+    deadlineAt,
+    holdStartedAt: startedAt,
+    sleepFn: sleep,
+    readLedger: async () => boundedUiLedgerRead({
+      deadlineAt,
+      fetchPage: async (afterSequence) => remoteValue(
+        await remoteCallReady(rec, 'team.getLedgerPage', { teamSessionId: rootSessionId, afterSequence, limit: 500 }, `ui-ledger-p${afterSequence}`, 1),
+        'team.getLedgerPage',
+      ),
+    }),
+    onEvent: (event) => {
+      if (event.type === 'summary') writeSummary(event.outcome, event.claim)
+      else if (event.type === 'poll-error') log(`${tag}: UI OBSERVE poll error (transient): ${event.message}`)
+    },
+  })
+  if (!flow.ok) {
+    const lastReason = flow.lastReason
+    writeSummary(flow.outcome)
+    const record = { tag, requestId: rid, digestPrefix: expectedDigest.slice(0, 18), outcome: flow.outcome, claim: null, holdMs: UI_OBSERVE.holdMs, waitedMs: Date.now() - startedAt, lastReason, at: new Date().toISOString() }
     uiObserveRecords.push(record)
     saveScenario('ui-observe', { records: uiObserveRecords })
-    check('S9', `${stepReason}: UI OBSERVE hold point expired FAIL-CLOSED — no auto-allow, no kit resolve-on-behalf`, false, `tag=${tag} requestId=${rid} lastReason=${lastReason ?? 'no marker seen'} holdMs=${UI_OBSERVE.holdMs}`)
-    return { ok: false, outcome: stepReason, reason: lastReason }
+    check('S9', `${flow.outcome}: UI OBSERVE hold point expired FAIL-CLOSED — no auto-allow, no kit resolve-on-behalf`, false, `tag=${tag} requestId=${rid} lastReason=${lastReason ?? 'no marker seen'} holdMs=${UI_OBSERVE.holdMs}`)
+    return { ok: false, outcome: flow.outcome, reason: lastReason }
   }
-  for (;;) {
-    // ABSOLUTE hold boundary (FIX-2): the deadline is checked BEFORE the
-    // ledger read — past the boundary no marker and no read result can ever
-    // be VERIFIED.
-    const preStep = planUiHoldStep({ nowMs: Date.now(), deadlineMs: deadlineAt, markerSeen })
-    if (preStep.action === 'fail-closed') return failClosed(preStep.reason)
-    try {
-      const hintRes = readMarkerHint(observeDir)
-      if (hintRes.ok) {
-        markerSeen = true
-        if (hintRes.hint.requestId === rid) {
-          const readStartedAt = Date.now()
-          // P2-B: the UI round's durable read is BOUNDED for real — every page
-          // fetch is raced against the hold's ABSOLUTE deadline and page-capped
-          // (the shared `ledgerEntries` walker, if reached raw, could internally
-          // do 100 pages × retries × slow fetches and stall the hold far past
-          // its boundary). An overrun is NEVER partially adopted — same
-          // fail-closed family as READ_BUDGET_EXCEEDED. The shared read path
-          // itself stays untouched for non-UI callers; this walker reuses the
-          // same remoteCallReady call-by-call. HONEST LIMITATION: the race
-          // stops the UI lane from WAITING/ADOPTING past the boundary — it
-          // CANNOT cancel the underlying in-flight HTTP (Node fetch without a
-          // signal keeps running to completion in the background).
-          const read = await boundedUiLedgerRead({
-            deadlineAt,
-            fetchPage: async (afterSequence) => remoteValue(
-              await remoteCallReady(rec, 'team.getLedgerPage', { teamSessionId: rootSessionId, afterSequence, limit: 500 }, `ui-ledger-p${afterSequence}`, 1),
-              'team.getLedgerPage',
-            ),
-          })
-          const readDoneAt = Date.now()
-          const budgetExceeded = read.ok !== true || readDoneAt - readStartedAt > UI_LEDGER_READ_BUDGET_MS
-          const truth = budgetExceeded
-            ? null
-            : verifyUiTruth({ marker: hintRes.hint, ledgerFacts: read.entries, expectedRequestId: rid, expectedDigest })
-          if (truth === null) {
-            lastReason = read.ok !== true ? String(read.overrun ?? 'UI_READ_OVERRUN') : 'READ_BUDGET_EXCEEDED'
-            writeSummary(`REJECTED:${lastReason}`, hintRes.hint.claimed ?? null)
-          } else if (!truth.ok) {
-            lastReason = truth.reason ?? 'TRUTH_REJECTED'
-            writeSummary(`REJECTED:${lastReason}`, hintRes.hint.claimed ?? null)
-          }
-          // Deadline checked AGAIN after the read (FIX-2): a truth that
-          // crosses the deadline is fail-closed even when truth.ok — the
-          // boundary is absolute; the hold NEVER verifies late.
-          const decided = evaluateUiReadResult({ readDoneMs: readDoneAt, deadlineMs: deadlineAt, truthOk: truth?.ok === true, budgetExceeded })
-          if (decided.action === 'verified') {
-            const outcome = truth.claim === 'surface-close' ? 'SURFACE_CLOSE_ZERO_EFFECT' : `VERIFIED:${truth.claim}`
-            writeSummary(outcome, truth.claim)
-            const record = { tag, requestId: rid, digestPrefix: expectedDigest.slice(0, 18), outcome, claim: truth.claim, holdMs: UI_OBSERVE.holdMs, waitedMs: readDoneAt - startedAt, at: new Date().toISOString() }
-            uiObserveRecords.push(record)
-            saveScenario('ui-observe', { records: uiObserveRecords })
-            log(`${tag}: UI OBSERVE VERIFIED (${truth.claim}) — durable ledger truth confirmed BEFORE the deadline (the marker hint itself is never trusted)`)
-            return { ok: true, decision: truth.decision, claim: truth.claim }
-          }
-          if (decided.action === 'fail-closed') return failClosed(decided.reason ?? 'UI TIMEOUT')
-        }
-      }
-    } catch (error) {
-      log(`${tag}: UI OBSERVE poll error (transient): ${String(error?.message ?? error).slice(0, 200)}`)
-    }
-    const step = planUiHoldStep({ nowMs: Date.now(), deadlineMs: deadlineAt, markerSeen })
-    if (step.action === 'fail-closed') return failClosed(step.reason)
-    await sleep(1000)
-  }
+  const outcome = flow.claim === 'surface-close' ? 'SURFACE_CLOSE_ZERO_EFFECT' : `VERIFIED:${flow.claim}`
+  writeSummary(outcome, flow.claim)
+  const record = { tag, requestId: rid, digestPrefix: expectedDigest.slice(0, 18), outcome, claim: flow.claim, holdMs: UI_OBSERVE.holdMs, waitedMs: flow.waitedMs, at: new Date().toISOString() }
+  uiObserveRecords.push(record)
+  saveScenario('ui-observe', { records: uiObserveRecords })
+  log(`${tag}: UI OBSERVE VERIFIED (${flow.claim}) — durable ledger truth confirmed BEFORE the deadline (the marker hint itself is never trusted)`)
+  return { ok: true, decision: flow.decision, claim: flow.claim }
 }
 
 /**
@@ -1982,23 +1946,8 @@ async function leaderAttempt(rec, tag, policy, { timeoutMs = 200_000 } = {}) {
               // resolves this request; the durable truth gate decides.
               uiTargetClaimed = true
               const held = await uiObserveHold(rec, rootSessionId, req, rid, tag)
-              if (held.ok && held.claim === 'observed-pending') {
-                // FIX-4 (coordinator ruling 2026-10-01): the MERGED UI has NO
-                // closeable pending-review surface (packages/client/src/ui/
-                // TeamLedger.tsx @ 1385f1ee — inline §26.2 detail panel data-
-                // control-detail* fields L436-447; "the detail panel stays
-                // visible for the pending state" L101; only resolve allow/deny
-                // buttons L497-512; ZERO close affordance) — observed-pending
-                // is the lawful completion signal: the observer FINISHED
-                // INSPECTING the still-pending, zero-durable-effect request
-                // (durable verification inside verifyUiTruth). Record the
-                // VERIFIED OBSERVATION, then CONTINUE the pre-existing
-                // scripted policy below: the scripted ALLOW that resumes is a
-                // SCRIPT decision, NEVER a UI approval / Human authorization.
-                decisions.push({ requestId: rid, class: 'recovery', decision: null, resolveStatus: 'ui-observe', resolveError: null })
-                log(`${tag}: UI OBSERVE observed-pending verified — inspection finished on a STILL-PENDING request (zero durable effect asserted); the pre-existing scripted policy resumes (a SCRIPT decision, never a UI approval)`)
-              }
-              if (held.ok && held.claim !== 'surface-close' && held.claim !== 'observed-pending') {
+              const disposition = uiPumpHookDisposition({ held })
+              if (disposition === 'record-durable-decision') {
                 // Durable truth ALREADY recorded the decision / the abandon —
                 // NEVER re-resolve; feed the EXISTING assertion branches with
                 // the durable decision the real UI (or the product lifecycle)
@@ -2006,20 +1955,32 @@ async function leaderAttempt(rec, tag, policy, { timeoutMs = 200_000 } = {}) {
                 decisions.push({ requestId: rid, class: 'recovery', decision: held.decision, resolveStatus: 'ui-observe', resolveError: null })
                 continue
               }
-              if (!held.ok) {
+              if (disposition === 'record-fail-closed') {
                 // Fail-closed ('UI NOT_RUN' / 'UI TIMEOUT' recorded by
                 // uiObserveHold as an explicit criterion failure). NEVER
                 // auto-allow, NEVER fall back to the kit's default resolve.
                 decisions.push({ requestId: rid, class: 'recovery', decision: null, resolveStatus: 'ui-fail-closed', resolveError: held.reason ?? held.outcome ?? 'UI NOT_RUN' })
                 continue
               }
-              // VERIFIED surface-close: the ONLY assertion is that the ledger
-              // gained NO new fact for the requestId (zero durable effect —
-              // enforced inside verifyUiTruth; never treated as deny/allow/
-              // abandon, and the UI gate NEVER proceeds to those assertions on
-              // this hint). The original automation for the remaining flow
-              // continues below, unchanged.
-              if (held.claim === 'surface-close') {
+              if (disposition === 'record-observation') {
+                // ITEM-A (coordinator-approved): the VERIFIED observed-pending
+                // observation lives ONLY in uiObserveRecords + the S9 UI
+                // evidence (recorded inside uiObserveHold) — NEVER in
+                // decisions[]. decisions[] keeps EXACTLY the pre-FIX-4
+                // semantics (entries only for real durable decision/abandon
+                // facts and the post-hold scripted push), so the S6/S7-style
+                // find-based consumers (UNCHANGED) see the SCRIPTED entry
+                // exactly like flag-off. The scripted policy resumes below —
+                // the scripted ALLOW is a SCRIPT decision, NEVER a UI
+                // approval / Human authorization.
+                log(`${tag}: UI OBSERVE observed-pending verified — observation recorded (uiObserveRecords/S9 evidence only; decisions[] untouched); the pre-existing scripted policy resumes (a SCRIPT decision, never a UI approval)`)
+              } else {
+                // VERIFIED surface-close (continue-scripted): the ONLY
+                // assertion is that the ledger gained NO new fact for the
+                // requestId (zero durable effect — enforced inside
+                // verifyUiTruth; never treated as deny/allow/abandon, and the
+                // UI gate NEVER proceeds to those assertions on this hint).
+                // The original automation continues below, unchanged.
                 log(`${tag}: UI OBSERVE surface-close verified — zero durable effect asserted; the original automation continues`)
               }
             }

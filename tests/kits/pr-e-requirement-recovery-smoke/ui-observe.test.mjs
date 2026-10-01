@@ -19,6 +19,7 @@ import {
   verifyUiTruth, planUiHoldStep, summarizeUiObserve,
   UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
   UI_LEDGER_READ_BUDGET_MS, evaluateUiReadResult, writePrivateAccessRecord, boundedUiLedgerRead,
+  uiObservePollFlow, uiPumpHookDisposition,
 } from './ui-observe.mjs'
 
 // ── fixtures ────────────────────────────────────────────────────────────────
@@ -564,4 +565,95 @@ test('FIX-4: observed-pending keeps the shared durable-request gate (recorded fa
   assert.equal(verifyUiTruth({ marker: markerFor('observed-pending'), ledgerFacts: [], ...base }).reason, 'NO_DURABLE_REQUEST_FACT')
   const tampered = [{ factType: 'control-request-recorded', payload: { requestId: RID, reviewPayload: RP, reviewPayloadDigest: 'sha256:tampered' } }]
   assert.equal(verifyUiTruth({ marker: markerFor('observed-pending'), ledgerFacts: tampered, ...base }).reason, 'RECORDED_DIGEST_MISMATCH')
+})
+
+// ── 15. ITEM-A (coordinator-approved): the VERIFIED observed-pending
+//         observation lives ONLY in uiObserveRecords + S9 evidence — NEVER in
+//         decisions[]; S6-style consumers read the SCRIPTED entry like flag-off.
+//         These tests drive the REAL caller flow (uiObservePollFlow is the
+//         single implementation the kit's uiObserveHold loop delegates to). ───
+
+function writeMarker(dir, marker) {
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, 'marker.json'), JSON.stringify(marker))
+}
+const tick = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+test('ITEM-A: caller flow — observed-pending verifies through the REAL poll flow; scripted resume keeps decisions[] pre-FIX-4', async () => {
+  const dir = mkTmp('uio-flow-op-')
+  writeMarker(dir, markerFor('observed-pending'))
+  const flow = await uiObservePollFlow({
+    observeDir: dir,
+    expectedRequestId: RID,
+    expectedDigest: EXPECTED_DIGEST,
+    deadlineAt: Date.now() + 5000,
+    holdStartedAt: Date.now(),
+    sleepFn: tick,
+    readLedger: async () => { await tick(5); return { ok: true, entries: ledgerWith() } }, // fake remote surface: recorded fact ONLY (still pending)
+  })
+  assert.equal(flow.ok, true)
+  assert.equal(flow.claim, 'observed-pending')
+  assert.equal(flow.decision, null)
+
+  // kit pump-hook semantics, single-sourced via uiPumpHookDisposition:
+  assert.equal(uiPumpHookDisposition({ held: flow }), 'record-observation')
+  const decisions = []
+  const uiObserveRecords = []
+  const disposition = uiPumpHookDisposition({ held: flow })
+  if (disposition === 'record-observation') {
+    uiObserveRecords.push({ requestId: RID, outcome: 'VERIFIED:observed-pending', claim: 'observed-pending' }) // ONLY here (+ S9 detail)
+  } else if (disposition === 'record-durable-decision') {
+    decisions.push({ requestId: RID, class: 'recovery', decision: flow.decision, resolveStatus: 'ui-observe', resolveError: null })
+  } else if (disposition === 'record-fail-closed') {
+    decisions.push({ requestId: RID, class: 'recovery', decision: null, resolveStatus: 'ui-fail-closed', resolveError: flow.outcome })
+  }
+  // scripted policy resumes (S5 resolve path):
+  decisions.push({ requestId: RID, class: 'recovery', decision: 'allow', resolveStatus: 'resolved', resolveError: null })
+  // S6-style find consumer (mirrors the untouched find-based assertions):
+  const entry = decisions.find((d) => d.requestId === RID)
+  assert.equal(entry.decision, 'allow')
+  assert.equal(entry.resolveStatus, 'resolved', 'S6 sees the SCRIPTED entry exactly like flag-off')
+  assert.equal(decisions.length, 1, 'observed-pending added NOTHING to decisions[]')
+  assert.equal(uiObserveRecords.length, 1, 'the observation is visible in uiObserveRecords/S9 only')
+})
+
+test('ITEM-A: disposition matrix — durable decision/abandon record, observed-pending and surface-close do NOT', () => {
+  assert.equal(uiPumpHookDisposition({ held: { ok: true, decision: 'deny', claim: 'resolved:deny' } }), 'record-durable-decision')
+  assert.equal(uiPumpHookDisposition({ held: { ok: true, decision: 'abandoned', claim: 'abandon-observed' } }), 'record-durable-decision')
+  assert.equal(uiPumpHookDisposition({ held: { ok: true, decision: null, claim: 'observed-pending' } }), 'record-observation')
+  assert.equal(uiPumpHookDisposition({ held: { ok: true, decision: 'surface-close-zero-effect', claim: 'surface-close' } }), 'continue-scripted')
+  assert.equal(uiPumpHookDisposition({ held: { ok: false, outcome: 'UI TIMEOUT' } }), 'record-fail-closed')
+})
+
+test('ITEM-A: caller flow — NO marker ever: fail-closed UI NOT_RUN at the boundary (real async, never resolves on behalf)', async () => {
+  const dir = mkTmp('uio-flow-none-')
+  const started = Date.now()
+  const flow = await uiObservePollFlow({
+    observeDir: dir,
+    expectedRequestId: RID,
+    expectedDigest: EXPECTED_DIGEST,
+    deadlineAt: started + 60,
+    holdStartedAt: started,
+    sleepFn: tick,
+    readLedger: async () => ({ ok: true, entries: [] }),
+  })
+  assert.equal(flow.ok, false)
+  assert.equal(flow.outcome, 'UI NOT_RUN')
+  assert.ok(Date.now() - started >= 50, 'waited to the boundary, did not shortcut')
+})
+
+test('ITEM-A: caller flow — read SUCCEEDING past the boundary is never adopted (real async, UI TIMEOUT)', async () => {
+  const dir = mkTmp('uio-flow-slow-')
+  writeMarker(dir, markerFor('observed-pending'))
+  const flow = await uiObservePollFlow({
+    observeDir: dir,
+    expectedRequestId: RID,
+    expectedDigest: EXPECTED_DIGEST,
+    deadlineAt: Date.now() + 40,
+    holdStartedAt: Date.now(),
+    sleepFn: tick,
+    readLedger: async () => { await tick(150); return { ok: true, entries: ledgerWith() } },
+  })
+  assert.equal(flow.ok, false)
+  assert.equal(flow.outcome, 'UI TIMEOUT')
 })

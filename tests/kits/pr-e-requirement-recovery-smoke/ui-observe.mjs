@@ -644,3 +644,89 @@ export async function boundedUiLedgerRead({ fetchPage, deadlineAt, maxPages = 20
   }
   return { ok: false, overrun: UI_READ_OVERRUN.PAGE_CAP, entries: null }
 }
+
+// ── ITEM-A: the UI OBSERVE poll flow (single implementation the kit's
+//    uiObserveHold loop delegates to — tests drive the SAME real logic) ──────
+
+/**
+ * uiObservePollFlow({ observeDir, expectedRequestId, expectedDigest,
+ *                    deadlineAt, holdStartedAt, readLedger, sleepFn, onEvent })
+ *   -> { ok:true, claim, decision, waitedMs }
+ *    | { ok:false, outcome:'UI NOT_RUN'|'UI TIMEOUT', lastReason }
+ *
+ * The ABSOLUTE-boundary poll loop: planUiHoldStep BEFORE the durable read
+ * (past the boundary nothing verifies); marker HINT via readMarkerHint; the
+ * durable read via the injected bounded `readLedger()` (never adopted on
+ * overrun/budget or when crossing the deadline — evaluateUiReadResult keeps
+ * the boundary absolute); every rejection reason recorded, never resolved.
+ * Persistence (summary/records/S9 evidence) belongs to the CALLER — the flow
+ * only decides, via `onEvent({type:'summary'|'poll-error'})`.
+ */
+export async function uiObservePollFlow({
+  observeDir, expectedRequestId, expectedDigest, deadlineAt, holdStartedAt,
+  readLedger, sleepFn = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  onEvent = () => {},
+} = {}) {
+  if (typeof readLedger !== 'function') throw new TypeError('uiObservePollFlow requires readLedger()')
+  let markerSeen = false
+  let lastReason = null
+  for (;;) {
+    const preStep = planUiHoldStep({ nowMs: Date.now(), deadlineMs: deadlineAt, markerSeen })
+    if (preStep.action === 'fail-closed') return { ok: false, outcome: preStep.reason, lastReason }
+    try {
+      const hintRes = readMarkerHint(observeDir)
+      if (hintRes.ok) {
+        markerSeen = true
+        if (hintRes.hint.requestId === expectedRequestId) {
+          const readStartedAt = Date.now()
+          const read = await readLedger()
+          const readDoneAt = Date.now()
+          const budgetExceeded = read.ok !== true || readDoneAt - readStartedAt > UI_LEDGER_READ_BUDGET_MS
+          const truth = budgetExceeded
+            ? null
+            : verifyUiTruth({ marker: hintRes.hint, ledgerFacts: read.entries, expectedRequestId, expectedDigest })
+          if (truth === null) {
+            lastReason = read.ok !== true ? String(read.overrun ?? 'UI_READ_OVERRUN') : 'READ_BUDGET_EXCEEDED'
+            onEvent({ type: 'summary', outcome: `REJECTED:${lastReason}`, claim: hintRes.hint.claimed ?? null })
+          } else if (!truth.ok) {
+            lastReason = truth.reason ?? 'TRUTH_REJECTED'
+            onEvent({ type: 'summary', outcome: `REJECTED:${lastReason}`, claim: hintRes.hint.claimed ?? null })
+          }
+          const decided = evaluateUiReadResult({ readDoneMs: readDoneAt, deadlineMs: deadlineAt, truthOk: truth?.ok === true, budgetExceeded })
+          if (decided.action === 'verified') {
+            return { ok: true, claim: truth.claim, decision: truth.decision, waitedMs: readDoneAt - holdStartedAt }
+          }
+          if (decided.action === 'fail-closed') {
+            return { ok: false, outcome: decided.reason ?? 'UI TIMEOUT', lastReason }
+          }
+        }
+      }
+    } catch (error) {
+      onEvent({ type: 'poll-error', message: String(error?.message ?? error).slice(0, 200) })
+    }
+    const step = planUiHoldStep({ nowMs: Date.now(), deadlineMs: deadlineAt, markerSeen })
+    if (step.action === 'fail-closed') return { ok: false, outcome: step.reason, lastReason }
+    await sleepFn(1000)
+  }
+}
+
+/**
+ * uiPumpHookDisposition({ held }) -> pump-hook action, SINGLE SOURCE:
+ *  'record-durable-decision' — verified deny/allow/abandon durable fact:
+ *                              decisions.push(decision,'ui-observe'); consume.
+ *  'record-fail-closed'      — UI NOT_RUN/UI TIMEOUT: decisions.push(null,
+ *                              'ui-fail-closed'); consume. NEVER auto-allow.
+ *  'record-observation'      — verified observed-pending: the observation
+ *                              lives ONLY in uiObserveRecords + the S9 UI
+ *                              evidence — NEVER in decisions[] (pre-FIX-4
+ *                              decisions[] semantics; S6-style find
+ *                              consumers keep seeing the scripted entry).
+ *  'continue-scripted'       — verified surface-close: zero-effect assertion
+ *                              already enforced; scripted policy continues.
+ */
+export function uiPumpHookDisposition({ held } = {}) {
+  if (held == null || held.ok !== true) return 'record-fail-closed'
+  if (held.claim === 'observed-pending') return 'record-observation'
+  if (held.claim === 'surface-close') return 'continue-scripted'
+  return 'record-durable-decision'
+}
