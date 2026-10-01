@@ -66,6 +66,10 @@ export interface OptionalRequirementAccepted {
     readonly generation: number;
     readonly consentedAt: number;
     readonly consentedBy: string;
+    /** The scope identity the consent was granted for (`team` / `template:<id>`); absent on legacy rows. */
+    readonly scopeKey?: string;
+    /** The bound blueprint's content hash the consent was granted against; absent on legacy rows. */
+    readonly contentHash?: string;
 }
 /** The closed payload fields of `template-availability-set`. */
 export declare const TEMPLATE_AVAILABILITY_SET_FIELDS: readonly string[];
@@ -107,6 +111,10 @@ export declare function optionalRequirementAcceptedPayload(args: {
     readonly generation: number;
     readonly consentedAt: number;
     readonly consentedBy: string;
+    /** Finding J (2026-10-01) — the consent key: the granted scope (omit-when-absent, legacy rows). */
+    readonly scopeKey?: string;
+    /** Finding J (2026-10-01) — the consent key: the bound blueprint content hash (omit-when-absent, legacy rows). */
+    readonly contentHash?: string;
 }): OptionalRequirementAccepted;
 /** Build a deep-frozen `template-availability-set` payload. */
 export declare function templateAvailabilitySetPayload(args: {

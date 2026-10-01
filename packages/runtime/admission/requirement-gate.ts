@@ -297,11 +297,16 @@ export function readRequirementFacts(
     try {
       if (row.factType === OPTIONAL_REQUIREMENT_ACCEPTED_FACT_TYPE) {
         const payload = parseOptionalRequirementAccepted(row.payload, `ledger/${row.sequence}`)
+        // Finding J (2026-10-01): the consent key (scope + bound blueprint
+        // content hash) rides through the durable read — a legacy row
+        // carries neither (absent = the fail-closed legacy match semantics).
         consents.push({
           requirementId: payload.requirementId,
           generation: payload.generation,
           consentedAt: payload.consentedAt,
           consentedBy: payload.consentedBy,
+          ...(payload.scopeKey !== undefined ? { scopeKey: payload.scopeKey } : {}),
+          ...(payload.contentHash !== undefined ? { contentHash: payload.contentHash } : {}),
         })
       } else if (row.factType === TEMPLATE_AVAILABILITY_SET_FACT_TYPE) {
         const payload = parseTemplateAvailabilitySet(row.payload, `ledger/${row.sequence}`)

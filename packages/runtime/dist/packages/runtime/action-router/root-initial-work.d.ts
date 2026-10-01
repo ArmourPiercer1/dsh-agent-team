@@ -161,12 +161,26 @@ import type { TeamOperationChainMap } from '../coordination/index.js';
 /**
  * pre-alpha3 W3-C (review fix F8, guide §7.2) — the scope refs of the
  * Leader's real request boundary (the Root initial work): the Team scope
- * ALWAYS + the Leader template scope when the leader template declares v2
- * structured requirements. The Leader's normal model request depends on
- * the leader template's requirements (the leader IS the resident member of
- * its own template) — not just the team scope. A v1 document (no
- * per-template requirements) and a v2 leader template that declares no
- * requirements keep the Team scope only (byte-identical pre-W3-C).
+ * ALWAYS + the Leader template scope. The Leader's normal model request
+ * depends on the leader template's requirements (the leader IS the
+ * resident member of its own template) — not just the team scope.
+ *
+ * finding I residual (2026-10-01, external review) — the Leader template
+ * scope is present UNCONDITIONALLY: a scope exists because the template
+ * exists in the blueprint, not because it has requirements (the target
+ * design §10 matrix: "Leader normal model turn | Team + Leader template"
+ * — version- and requirement-set-agnostic; v1 documents carry no
+ * per-template requirements, so a v1 leader template ALWAYS falls in this
+ * case). This is what the finding-I availability fix
+ * (gateAction derives the disabled set from the action's scope refs + the
+ * durable `available:false` INDEPENDENT of the verdicts — a
+ * requirement-free template produces no verdict row) needs to key on:
+ * before, a requirement-free leader produced NO scope ref, and an
+ * accepted durable LEADER disable was invisible to the gate
+ * (`admitInitialWork` admitted the initial model/work into a disabled
+ * leader). When the leader template is NOT disabled the added ref changes
+ * nothing observable (no verdict row → not blocked; the availability fold
+ * is empty), so the enabled path is byte-identical in behavior.
  *
  * Member template scopes are NEVER referenced here: an unrelated member
  * requirement down must not block the Leader (guide §7.3 case 4).

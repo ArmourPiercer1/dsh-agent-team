@@ -87,6 +87,12 @@ export const OPTIONAL_REQUIREMENT_ACCEPTED_FIELDS: readonly string[] = [
   'generation',
   'consentedAt',
   'consentedBy',
+  // Finding J (2026-10-01, ADR-12) — the ADDITIVE consent key fields (the
+  // scope + blueprint content hash the consent binds to). Absent on legacy
+  // rows (written before the keying); a keyed evaluation treats a legacy row
+  // as NOT consented (fail-closed — it must be re-granted).
+  'scopeKey',
+  'contentHash',
 ]
 
 /** The durable optional-requirement-accepted payload (the DegradationConsent). */
@@ -95,6 +101,10 @@ export interface OptionalRequirementAccepted {
   readonly generation: number
   readonly consentedAt: number
   readonly consentedBy: string
+  /** The scope identity the consent was granted for (`team` / `template:<id>`); absent on legacy rows. */
+  readonly scopeKey?: string
+  /** The bound blueprint's content hash the consent was granted against; absent on legacy rows. */
+  readonly contentHash?: string
 }
 
 /** The closed payload fields of `template-availability-set`. */
@@ -167,12 +177,29 @@ export function parseOptionalRequirementAccepted(payload: unknown, path: string)
     throw teamContractError('MALFORMED_DTO', `${path} must be a plain object`, { path })
   }
   const record = payload as Record<string, unknown>
-  return deepFreeze({
+  const out: {
+    requirementId: string
+    generation: number
+    consentedAt: number
+    consentedBy: string
+    scopeKey?: string
+    contentHash?: string
+  } = {
     requirementId: assertNonEmptyString(record.requirementId, 'requirementId', path),
     generation: assertInt(record.generation, 'generation', path),
     consentedAt: assertInt(record.consentedAt, 'consentedAt', path),
     consentedBy: assertNonEmptyString(record.consentedBy, 'consentedBy', path),
-  })
+  }
+  // Finding J (2026-10-01) — the ADDITIVE consent key fields: absent on
+  // legacy rows (a legacy row is legal — it is honored fail-closed by the
+  // keyed matching); present-but-wrong-type = malformed (fail closed).
+  if (record.scopeKey !== undefined) {
+    out.scopeKey = assertNonEmptyString(record.scopeKey, 'scopeKey', path)
+  }
+  if (record.contentHash !== undefined) {
+    out.contentHash = assertNonEmptyString(record.contentHash, 'contentHash', path)
+  }
+  return deepFreeze(out)
 }
 
 /** Parse a fail-closed `template-availability-set` payload. */
@@ -224,6 +251,10 @@ export function optionalRequirementAcceptedPayload(args: {
   readonly generation: number
   readonly consentedAt: number
   readonly consentedBy: string
+  /** Finding J (2026-10-01) — the consent key: the granted scope (omit-when-absent, legacy rows). */
+  readonly scopeKey?: string
+  /** Finding J (2026-10-01) — the consent key: the bound blueprint content hash (omit-when-absent, legacy rows). */
+  readonly contentHash?: string
 }): OptionalRequirementAccepted {
   return parseOptionalRequirementAccepted(
     {
@@ -231,6 +262,8 @@ export function optionalRequirementAcceptedPayload(args: {
       generation: args.generation,
       consentedAt: args.consentedAt,
       consentedBy: args.consentedBy,
+      ...(args.scopeKey !== undefined ? { scopeKey: args.scopeKey } : {}),
+      ...(args.contentHash !== undefined ? { contentHash: args.contentHash } : {}),
     },
     'optional-requirement-accepted',
   )
