@@ -367,8 +367,29 @@ the two name globs matched historical directories exactly as well as fresh ones.
 * the coordinator independently hashed the **whole** evidence subtree —
   `hash-table-evidence-subtree.txt` records **11,276 files compared (11,275 regular + 1 symlink),
   0 mismatches** at HEAD `519559f7`;
-* blast radius: 87 files in this writer's worktree only — 0 in the main checkout and 0 in each of the other
-  8 worktrees; no symlink existed under either root at any point (`-maxdepth 1` + no `-L`).
+* blast radius — **what was actually observed, and where the claim stops**. Observed, with method:
+  (i) `affected-87-paths.txt` puts all 87 paths under this worktree's two roots
+  (`dev/agent-workflow/evidence/pre-alpha3-refactor/**`, `…/team-view-sync-complete/**`), 0 elsewhere in the
+  listing; (ii) the restore's own post-state read-back `git diff HEAD --name-only` over the whole worktree =
+  **0 files**, recorded in `incident-audit-20261001/poststate-proof.txt` at HEAD `519559f7` (the artifact
+  does **not** carry a wall-clock time — UNKNOWN); (iii) the coordinator's subtree hash covered
+  **11,276 files** of *this worktree's* `dev/agent-workflow/evidence` at HEAD `519559f7`, symlinks hashed as
+  link-target text, **0 mismatches**, and it counted exactly **one** symlink inside that subtree; (iv) the
+  two `find` command roots were `$WT/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b` and
+  `$WT/dev/agent-workflow/evidence/team-view-sync-complete` with `-maxdepth 1`, no `-L`, no `-follow`, no
+  `-delete`, and the `tests/homes` globs were `"$HOMES"/prb-ep-* "$HOMES"/tvs-smoke-*`.
+  **Inference, not measurement** (stated as such, because an earlier revision of this bullet asserted it as
+  fact): "0 in the main checkout and 0 in each of the other 8 worktrees". Those worktrees were never hashed
+  or diffed at the incident time; the conclusion rests on the command roots never naming them, on no
+  symlink-following flag being present, and on the four `packages/*/node_modules` links being created at
+  **13:16:25** — about nine minutes *after* the 13:07:07 deletion — and sitting under `packages/*`, outside
+  both command roots. That bounds the radius tightly, but it is reasoning about commands, not observation of
+  those trees.
+  Likewise **"no symlink existed under either root at any point" is inference**: what is proven is that these
+  commands could not follow one (`-maxdepth 1`, no `-L`/`-follow`) and that the 11,276-file audit found no
+  hash difference among the one symlink it did meet. No pre-deletion `find -type l` listing exists, so a
+  symlink that was present and then removed inside those roots is **not excluded by observation** — it is
+  judged unlikely by the same command-shape reasoning. Paths and instants outside (i)–(iv) are unproven.
 
 **87/87 tracked files are byte-identical to the base tree, and the 11,276-file hash audit shows no
 difference in the evidence subtree.** That statement is about *tracked content*. It does **not** extend to
@@ -623,17 +644,34 @@ Created by this round (all under `/srv/workspace/dsh-plugins/dsh-agent-team/test
 | `tvs-derive-probe-20261001T135123Z` | 13:51:23.249 | B2 negative probe: copy of `mpr-2026-10-01T13-21-34` with its 4 T1 `team-member` `session_bindings` rows stripped **in the copy only** | retained, read-only since |
 | `tvs-derive-probe-empty-20261001T135123Z` | 13:51:23.251 | B2 negative probe: `mkdir`, deliberately storeless | retained, read-only since |
 
-Read-only throughout this round (never written, never deleted):
-`mpr-2026-10-01T13-08-04`, `mpr-2026-10-01T13-21-34` (the seed; only ever a `cpSync`/`cp -r` **source**),
-`prb-ep-2026-10-01T13-22-22`, plus `.audit-paths.txt` and everything under
-`dev/agent-workflow/evidence/pre-alpha3-refactor/**` and `…/team-view-sync-complete/**`.
+**Pre-existing historical material was not modified by this round — and these roots were NOT write-free,
+because this round added new directories inside them.** Stated in two classes so it cannot be read as more
+than it is (a previous revision of this bullet said "read-only … everything under `pre-alpha3-refactor/**`
+and `…/team-view-sync-complete/**`", which is false as written):
+
+* **unchanged** — every file that already existed under `dev/agent-workflow/evidence/pre-alpha3-refactor/**`
+  and `dev/agent-workflow/evidence/team-view-sync-complete/**` (evidence: §11.4's 87/87 blob comparison and
+  the 11,276-file subtree hash; post-restore `git diff HEAD --name-only` = 0 in
+  `incident-audit-20261001/poststate-proof.txt`); `tests/homes/.audit-paths.txt` (untouched, retained); and
+  the worlds `mpr-2026-10-01T13-08-04`, `mpr-2026-10-01T13-21-34` (the seed; only ever a `cpSync`/`cp -r`
+  **source**), `prb-ep-2026-10-01T13-22-22` — never written, never deleted;
+* **new additions created during this round** (created, not modified; all untracked, none added to git) —
+  this kit's own run directories `…/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-22-22-c3/`,
+  `…/host-smoke-2026-10-01T13-52-56-c3/`, `…/host-smoke-2026-10-01T13-53-35-c3/`; the redaction copies under
+  `dev/agent-workflow/evidence/test-infra-fixture-param/`; and the browser-kit run directories under
+  `.worktrees/browser-carrier-*/dev/agent-workflow/evidence/team-view-sync-complete/`.
 
 **The single deletion moment of this round** — `rmSync(tests/homes/prb-ep-2026-10-01T13-53-35)` executed by
 the kit itself (kit file `pr-b-effective-policy-smoke.mjs`, G9 block, gated on `EXIT_CODE === 0`), after the
-post-run stable probes and after all wire evidence had been captured:
+post-run stable probes and after the run's wire traffic had been captured **in memory** (the evidence
+*files* came later — see the three classes below):
 
-* removing the directory entry updated the parent's mtime: `mtime(tests/homes)` = **2026-10-01T13:53:41.034 Z**
-  — that is the deletion moment, to the millisecond;
+* removing the directory entry updated the parent's mtime: `mtime(tests/homes)` =
+  **2026-10-01T13:53:41.034 Z**. This is an **inferred** timestamp, not a direct observation: a directory's
+  mtime advances on any entry create/remove, so what is observed is "the last entry change to `tests/homes`
+  happened at 13:53:41.034", and the identification of that change with this removal rests on the source
+  order plus the absence of any later create/remove. Granularity is 1 ms, and `api-transcript.json` was
+  written in that same millisecond, so ordering inside that ms comes from the code, not from the clock;
 * the next write in the same code path, `summary.json` of run directory
   `dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-53-35-c3`, carries
   mtime **13:53:41.045 Z** (11 ms later), and the console redirect
@@ -641,10 +679,39 @@ post-run stable probes and after all wire evidence had been captured:
 * the console line printed after the removal is
   `world: tests/homes/prb-ep-2026-10-01T13-53-35  (cleaned on PASS)` (line 61), and the line before it is the
   post-run stable probe `post stable probes: 3080=401 3180=unreachable…` (line 57), which brackets the event;
-* the world was brand-new this round (its name is this run's own ISO stamp, no collision at launch — the kit
-  additionally removes any same-stamp path before copying), and its evidence was complete before the removal:
-  `api-transcript.json`, `mock-requests.json`, `mock.log`, `logs/`, `host1-resume-port3182.log`,
-  `host2-resume-port3182.log`, `summary.json`, plus the external console redirect.
+* the world was brand-new this round (its name is this run's own ISO stamp; no collision at launch — the kit
+  additionally removes any same-stamp path before copying).
+
+**Which artifacts existed when the world was deleted — three classes (correcting this section's earlier
+wording, which said "its evidence was complete before the removal" and listed `summary.json` among
+pre-existing files; that was wrong).** The kit's own order at this head is: `rmSync(HOME)` at kit line 1454
+→ `writeEvidence({...})` at line 1457 → the writes inside `writeEvidence` (defined at line 1393:
+`mkdirSync(LOG_DIR)` at 1394, `api-transcript.json` at 1395, `mock-requests.json` at 1396, the scrubbed
+host-log copies at 1403, `summary.json` at 1431). So:
+
+* **(a) held in RAM during the run, serialized to disk only AFTER the deletion** — the transcript
+  (`EVID.transcript` → `api-transcript.json`, mtime 13:53:41.034), the mock request log
+  (`MOCK.requests` → `mock-requests.json`, 13:53:41.044), and all of the criteria/legs/findings/stable-probe
+  data (`summary.json`, 13:53:41.045). Nothing in this class was at risk from removing the world, because it
+  never lived there;
+* **(b) already on disk BEFORE the deletion, outside `HOME`** — the live host log
+  `…/host-smoke-2026-10-01T13-53-35-c3/logs/instance-port3182.log` (13:53:40.434, streamed by the spawned
+  host) and `mock.log` (13:53:40.926). Both sit in the run directory, not in the world, which is why the
+  deletion could not touch them;
+* **(c) written AFTER the deletion** — the class-(a) files, plus the scrubbed host-log copies
+  `host1-resume-port3182.log` / `host2-resume-port3182.log` (13:53:41.045), which `writeEvidence` produced by
+  reading those live `logs/` paths (their `src` is recorded in `summary.json` → `hostLogs[]` as
+  `…/host-smoke-2026-10-01T13-53-35-c3/logs/instance-port3182.log`, a run-directory path, **not** a world
+  path), and the final flush of the external console redirect.
+
+The consequence the earlier sentence should have drawn, stated as the check it is: **no evidence artifact was
+lost by the deletion**, and that is verifiable rather than assumed — the two host-log copies contain real
+boot output (399 bytes each, beginning `[dsh-agent-team] registered 2 bundled team skill(s) from /srv/…`)
+rather than the `ENOENT` stubs `writeEvidence` writes when a source is missing (`hostLogs[]` carries no
+`error` field). What the deletion *did* take is the world itself: the durable store
+`tests/homes/prb-ep-2026-10-01T13-53-35/storages/team_domain.json` is gone, and the durable facts cited for
+this run are the kit's in-RAM snapshot recorded in `summary.json` → `legs.C3.structural.durable` (see §16 for
+exactly which metrics that is), not an inspectable store.
 
 No other root was created or removed by me this round; the two probe worlds are retained rather than cleaned
 up, and this round contains **no** glob, mtime predicate, `git clean`, `reset` or `mv` anywhere.
@@ -822,3 +889,90 @@ Carriers left in place: `browser-carrier-cc5a011e` (HEAD `cc5a011e`, porcelain 1
 `browser-carrier-48602057` (porcelain 1), `browser-carrier-48602057b` (porcelain 1). Each carries
 `node_modules` as real directories from the frozen lockfile, and `pnpm-workspace.yaml` restored to the
 committed content after each install attempt.
+
+## 16. Precision batch (external audit) — measurement definitions, verbatim install facts
+
+Prose-and-comment revision only, at head `e1c894af418e33a7eb902c78c301df03a5311fe3`. No test was re-run for
+this section, no historical evidence file was modified, and no kit logic changed (the only non-prose change
+is a comment/report-string correction in the pr-b kit, listed at §16.3).
+
+### 16.1 What the C3 "durable inert" assertion actually measures
+
+`durableSnapshot()` (pr-b kit) reads `tests/homes/<world>/storages/team_domain.json` and returns exactly
+five metrics; `durableDiff(before, after)` compares them by `JSON.stringify` equality, after
+`durableSnapshotQuiescent()` has polled up to 8 times at 250 ms until two consecutive snapshots agree:
+
+| field | what it is |
+| --- | --- |
+| `tableCounts` | row count of **every** table present in the store (`blueprint_registry`, `compatibility`, `ledger`, `member_instances`, `operations`, `overrides`, `schema_meta`, `session_bindings`, `team_sessions`) |
+| `ledgerMaxSequence` | max `sequence` over all `ledger` rows (high-water mark) |
+| `psTransitionEntryIds` | sorted `payload.entryId` of `ledger` rows with `factType === 'policy-state-transitioned'` **and** `rootSessionId === T_PS` |
+| `overrideRecords` | number of `overrides` rows |
+| `overrideGenerations` | sorted `recordId/generation` pairs of every `overrides` row |
+
+So the claim is: **no table row-count moved, the ledger high-water did not advance, no new T-PS transition row
+appeared, and no override record or generation changed** across the rejected `strict` commit. It is **not** a
+byte or hash comparison of the store file — none is performed — and therefore it would not notice a
+same-count mutation of row contents (including inside `ledger` rows below the high-water mark, or timestamps
+within rows). The values measured in the 6/6 run were `ledger` 64 rows / high-water 63, 3 override records
+(`ovr-mcp-inst-1qazuqc1ylx9-g0/1`, `ovr-model-inst-0iin89s0dvix-g0/1`, `ovr-model-inst-1722vhu1h1z1-g0/1`)
+and `psTransitionEntryIds = ["ps-focus-0"]`, recorded in that run's `summary.json` →
+`legs.C3.structural.durable`.
+
+### 16.2 pnpm attempts: exit codes and messages verbatim, kept separate from what also happened
+
+Four invocations, all `pnpm` 11.7.0 on node v24.21.0, all `--frozen-lockfile`. Saved logs:
+`.worktrees/.scratch-logs/browser-carrier/pnpm-install*.log` (mtimes give the attempt times; the logs
+themselves record no timestamp).
+
+| # | carrier | store | log (mtime) | exit | message, verbatim |
+| --- | --- | --- | --- | --- | --- |
+| 1 | `browser-carrier-cc5a011e` | global `/home/user/.local/share/pnpm/store/v11` | `pnpm-install.log` (14:03:10.789) | `1` | `pnpm: unable to open database file` + `at StoreIndex.openDatabase (file:///home/user/deepseek-harness/node_modules/.pnpm/pnpm@11.7.0/node_modules/pnpm/dist/pnpm.mjs:54417:9)` |
+| 2 | `browser-carrier-cc5a011e` | workspace `.pnpm-store` | `pnpm-install-workspacestore.log` (14:03:42.704) | `1` | `[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: @deepseek-ai/dsh-subprocess-local@0.1.7-rc.1, @google/genai@1.52.0, koffi@3.3.1, node-pty@1.2.0-beta.15, protobufjs@7.6.6` (followed by `Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.`) |
+| 3 | `browser-carrier-48602057` | workspace `.pnpm-store` | `pnpm-install-carrier2.log` (14:09:23.584) | `1` | the identical `[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: …` line |
+| 4 | `browser-carrier-48602057b` | workspace `.pnpm-store` | `pnpm-install-carrier3.log` (14:10:20.015) | `1` | the identical `[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: …` line |
+
+For attempts 3 and 4 the exit code was printed to the tool's terminal output (`PNPM_EXIT=1`), not appended to
+the log file; attempts 1 and 2 have the `PNPM_EXIT=1` line inside the log because they were `tee -a`-appended.
+**These exit codes are separate facts from the following, and must not be read as contradicting them:** (a) in
+attempts 2–4 the dependency graph did resolve — `node_modules/.pnpm` counted **697** linked packages and every
+externally-declared dependency of every workspace package resolved (`packages/client` 0, `packages/domain` 1,
+`packages/runtime` 9, root 1; `unresolved=[]` in all four; the packages with no external dependencies get no
+`node_modules`, which is normal pnpm); and (b) the browser-kit host **booted and served** in the carrier
+(`route ready … readState={"relation":"team-member",…}`, `teardown done`, exit 0 — §15.3). No build script was
+approved, so `@deepseek-ai/dsh-subprocess-local`, `@google/genai`, `koffi`, `node-pty` and `protobufjs` are
+present without their install-time builds having run; nothing in the legs executed above needed them
+(observed, not assumed).
+
+### 16.3 `pnpm-workspace.yaml`: identity of the committed content, the rewrites, and what was never captured
+
+* committed blob, verified in this worktree at both ends of the branch:
+  `git rev-parse <commit>:pnpm-workspace.yaml` → **`5175937fc820780ed18ac68c088676bf5e20dd64`** at
+  `427219e443ece4d57ac8558f13850c5f42ff8330` **and** at `e1c894af418e33a7eb902c78c301df03a5311fe3`;
+  `pnpm-lock.yaml` → **`8db966010f97e19d064063f721444720b576ee30`** at both. Nothing on this branch changed
+  either file.
+* pnpm rewrote the tracked `pnpm-workspace.yaml` (the five `allowBuilds:` placeholder lines quoted in
+  §15.1); **attribution by observation, not assumption**: in the first carrier the modified state was first
+  read back *after attempt 2*, and no `git status` was taken between attempts 1 and 2, so in that worktree
+  the rewrite is **not attributable to a specific attempt** — it may have come from attempt 1. For attempts 3
+  and 4 each install was followed immediately by a porcelain read-back showing ` M pnpm-workspace.yaml`, so
+  those two are attributable individually. Each time it was reverted to the committed blob with
+  `git restore pnpm-workspace.yaml`. Restore moments, taken from the mtime `git restore` left on the file:
+  **14:04:10.561** (`browser-carrier-cc5a011e`), **14:09:28.576** (`browser-carrier-48602057`),
+  **14:10:20.050** (`browser-carrier-48602057b`). All three carriers now report an empty tracked diff, i.e.
+  the on-disk content equals that blob.
+* **UNKNOWN, and not to be restated as captured:** the content hash of pnpm's *modified* `pnpm-workspace.yaml`
+  was never recorded before the restore. What exists is the `git diff` text (reproduced in §15.1) — a diff,
+  not a blob hash; the modified object was never `git add`ed, so it is not in the object store and its hash
+  cannot be recovered now.
+* Same-class UNKNOWN, for symmetry: attempt 1's log contains no timestamp, so its wall-clock time is known
+  only from the log file's mtime (14:03:10.789), and the pnpm process' own start instant is not recorded
+  anywhere.
+
+### 16.4 The kit-side correction in this batch
+
+`pr-b-effective-policy-smoke.mjs` line 1261 (the `structuralFinding` report string) said the rejection left
+the durable store **"byte-invariant"**. It does not measure bytes, so it now names the five metrics above and
+states that no byte/hash comparison is performed. Comment/report-string only: no assertion, criterion or
+control flow changed, and `mark('C3', …)`'s `durable-inert=yes` field is untouched (it means "inert on the
+measured metrics", which is what the check establishes).
