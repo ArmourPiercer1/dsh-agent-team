@@ -105,19 +105,38 @@ const TESTUSE = join(MAIN, 'tests', 'deepseek-harness-test-use')
 //                               `session-mpr-t1-<world stamp>`)
 //   --worker-instance <id>      the seed world's settled worker (C1/C6),
 //                               `inst-<lowercase alnum>`
+//   --expert-instance <id>      the seed world's settled expert (C2/C5),
+//                               `inst-<lowercase alnum>`
+//   --control-instance <id>     the seed world's settled control member (C4),
+//                               `inst-<lowercase alnum>`
+// Every passed-in id is additionally CHECKED against the copied world's
+// durable `member_instances` rows before anything boots (assertSeedIdentities):
+// an id whose real MemberInstance template is not the one the criterion
+// addresses dies as a typed `instance-type-mismatch`, never as a guessed
+// request against the wrong member.
 function usageFatal(msg) {
   process.stderr.write(`FATAL (invalid kit argument): ${msg}\n`)
-  process.stderr.write('usage: node pr-b-effective-policy-smoke.mjs [--seed-world <world-under-tests/homes>] [--seed-blueprint-dir <dir-under-tests/homes>] [--t1 session-mpr-t1-<stamp>] [--worker-instance inst-<id>]\n')
+  process.stderr.write('usage: node pr-b-effective-policy-smoke.mjs [--seed-world <world-under-tests/homes>] [--seed-blueprint-dir <dir-under-tests/homes>] [--t1 session-mpr-t1-<stamp>] [--worker-instance inst-<id>] [--expert-instance inst-<id>] [--control-instance inst-<id>]\n')
   process.exit(1)
 }
 function parseArgs(argv) {
   const out = { _: [] }
+  // A known flag with no value (or with another flag as its value) is fatal:
+  // silently keeping the default would make an override look applied when it
+  // is not.
+  const value = (a, raw) => {
+    if (raw === undefined) usageFatal(`${a}: missing value`)
+    if (raw.startsWith('--')) usageFatal(`${a}: expected a value, got another flag ${JSON.stringify(raw)}`)
+    return raw
+  }
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]
-    if (a === '--seed-world') out.seedWorld = argv[++i]
-    else if (a === '--seed-blueprint-dir') out.seedBlueprintDir = argv[++i]
-    else if (a === '--t1') out.t1 = argv[++i]
-    else if (a === '--worker-instance') out.workerInstance = argv[++i]
+    if (a === '--seed-world') out.seedWorld = value(a, argv[++i])
+    else if (a === '--seed-blueprint-dir') out.seedBlueprintDir = value(a, argv[++i])
+    else if (a === '--t1') out.t1 = value(a, argv[++i])
+    else if (a === '--worker-instance') out.workerInstance = value(a, argv[++i])
+    else if (a === '--expert-instance') out.expertInstance = value(a, argv[++i])
+    else if (a === '--control-instance') out.controlInstance = value(a, argv[++i])
     else out._.push(a)
   }
   return out
@@ -174,8 +193,12 @@ const T1 = CLI.t1 === undefined
 const W_CREATE = CLI.workerInstance === undefined
   ? 'inst-1p8kqfl09bhr' // worker (template modelPreference role-worker) — C1/C6
   : matchingToken('--worker-instance', CLI.workerInstance, /^inst-[a-z0-9]+$/)
-const EXPERT = 'inst-04eix3v0rhrj'   // expert (no capabilities → no initial MCP grant) — C2
-const CONTROL = 'inst-0f6c37a0hpcj'  // control (NO modelPreference → baseline global-default) — C4
+const EXPERT = CLI.expertInstance === undefined
+  ? 'inst-04eix3v0rhrj' // expert (no capabilities → no initial MCP grant) — C2
+  : matchingToken('--expert-instance', CLI.expertInstance, /^inst-[a-z0-9]+$/)
+const CONTROL = CLI.controlInstance === undefined
+  ? 'inst-0f6c37a0hpcj' // control (NO modelPreference → baseline global-default) — C4
+  : matchingToken('--control-instance', CLI.controlInstance, /^inst-[a-z0-9]+$/)
 
 // The saved-source team's minted root (the client-minted create-root id).
 // T-PS (team.prb-ps) keeps the per-team `focus` state for the STRUCTURAL
@@ -576,6 +599,34 @@ function prepareWorld() {
   const sessions = sessionKeys.map((k) => { const v = rawSessions[k]; return { key: k, ...(typeof v === 'string' ? JSON.parse(v) : v) } })
   const t1Present = sessionKeys.includes(T1) || sessions.some((s) => s.rootSessionId === T1)
   if (!t1Present) dieFatal(`seed T1 team missing from copied store (sessions=${sessionKeys.join(',') || 'none'})`)
+
+  // ID USE GUARD — before ANY of the three member identities is used, it must
+  // be a real MemberInstance of T1 in the copied durable store whose
+  // `templateId` is the one the criteria address (worker → C1/C6, expert →
+  // C2/C5, control → C4). A stale or guessed id therefore fails here as a
+  // typed instance-type-mismatch, never as a criterion run against the wrong
+  // member. (MemberInstanceRecordDto v1: rootSessionId + instanceId +
+  // templateId; the store's `member_instances` table keys rows by
+  // memberIdentityKey({rootSessionId, instanceId}).)
+  const rawMembers = store.tables?.member_instances ?? {}
+  const members = Object.entries(rawMembers)
+    .map(([key, v]) => { try { return { key, ...(typeof v === 'string' ? JSON.parse(v) : v) } } catch { return null } })
+    .filter((m) => m !== null && m.rootSessionId === T1)
+  const ID_USE_CONTRACT = [
+    ['--worker-instance', W_CREATE, 'worker', 'C1/C6'],
+    ['--expert-instance', EXPERT, 'expert', 'C2/C5'],
+    ['--control-instance', CONTROL, 'control', 'C4'],
+  ]
+  for (const [flag, id, templateId, criteria] of ID_USE_CONTRACT) {
+    const row = members.find((m) => m.instanceId === id)
+    if (row === undefined) {
+      dieFatal(`instance-type-mismatch: ${flag} ${id} is not a MemberInstance of ${T1} in the copied world (T1 members=${members.length || 'none'}) — pass the id of a settled '${templateId}' member (used by ${criteria})`)
+    }
+    if (row.templateId !== templateId) {
+      dieFatal(`instance-type-mismatch: ${flag} ${id} is a '${row.templateId}' member but ${criteria} address it as a '${templateId}' member (label=${JSON.stringify(row.label)}, lifecycle=${row.lifecycle})`)
+    }
+  }
+  log(`id-use guard: ${ID_USE_CONTRACT.map(([, id, t]) => `${t}=${id}`).join(' ')} verified against the copied durable store`)
   log(`world ready (T1 present in the copied durable store; sessions: ${sessionKeys.join(', ')})`)
 }
 

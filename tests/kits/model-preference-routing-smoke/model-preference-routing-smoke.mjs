@@ -1325,8 +1325,9 @@ async function run() {
 
   // ── R7: fallback control (no modelPreference → global-default) ───────────
   log('── R7: control template (no modelPreference) → global-default ──')
+  let controlId = null
   {
-    await teamTool(HOST1, 'team_delegate', {
+    const { value: controlValue } = await teamTool(HOST1, 'team_delegate', {
       rootSessionId: ROOT_T1,
       requestToken: `tok-r7-control-${Math.random().toString(36).slice(2, 10)}`,
       delegationTemplateId: 'control',
@@ -1334,6 +1335,10 @@ async function run() {
       prompt: `${MK_CONTROL} Control task: acknowledge and finish.`,
       async: false, // EXPLICIT sync — pre-restart world must be deterministically settled (the cold-resume boundary follows).
     }, ROOT_T1, 'r7-control-deleg')
+    // The world's SETTLED control member — the identity a downstream kit
+    // (pr-b C4) needs to address. Binding it changes nothing about the
+    // assertions below; it only stops discarding the created instance id.
+    controlId = controlValue?.effect?.instanceId ?? null
     const controlReq = await waitForRequest(MOCK, (r) => anyText(bodyOf(r)).includes(MK_CONTROL) && !isTitleSideCall(r), 180_000, 'the R7 control first LLM request (marker ' + MK_CONTROL + ')')
     writeEvidence('r7', 'control-first-request.json', controlReq === null ? null : { seq: controlReq.seq, model: modelOf(controlReq), reply: controlReq.reply?.content ?? null })
     check('R7', "the control member (NO modelPreference) LLM request body.model === 'global-default' (the staticModel baseline — backward compatibility locked)",
@@ -1423,7 +1428,7 @@ async function run() {
     finishCriterion('R5')
   }
 
-  return { created, wDeleg, wCreate, expertId }
+  return { created, wDeleg, wCreate, expertId, controlId }
 }
 
 // ── teardown ───────────────────────────────────────────────────────────────
@@ -1522,7 +1527,7 @@ async function main() {
   log(`world home RETAINED (per TEST_METHODS §7): ${HOME}`)
 
   const pass = Object.values(criteria).every((c) => c.pass === true)
-  writeSummary({ fatal: null, exitCode: pass ? 0 : 2, retainedHome: HOME, rootT1: ROOT_T1, wDeleg: created?.wDeleg, wCreate: created?.wCreate, expertId: created?.expertId })
+  writeSummary({ fatal: null, exitCode: pass ? 0 : 2, retainedHome: HOME, rootT1: ROOT_T1, wDeleg: created?.wDeleg, wCreate: created?.wCreate, expertId: created?.expertId, controlId: created?.controlId })
   const table = Object.entries(criteria).map(([id, c]) => ({
     id,
     pass: c.pass === true,
