@@ -107,11 +107,11 @@
  * session list is wide-only, so below the breakpoint ZERO treeitems render
  * (ui-workspace rows/WorkspaceBrowser.tsx L1275-1278): a fresh 380px context
  * could never re-select the root. The narrow re-check demands NOTHING
- * invisible — root retention is PROVEN from the open session's header
- * identity ([data-conversation-header-corner]-scoped raw sessionId crumb,
- * ConversationSession.tsx L125/L136-138) cross-checked against the durable
- * rootSessionId, then the full digest/payload/legibility checks re-run on the
- * visible content. ALL per-viewport checks stay; none loosened. Fail-closed
+ * invisible and asserts NO header text (runtime ruling @23a43f20: the header
+ * shows the display TITLE, not the raw sessionId, inside ancestry): Team
+ * stays active + same RID + full wire digest + reviewPayload deep-equal —
+ * payload.rootSessionId is bound whenever the durable reviewed payload
+ * carries it — all re-verified against the durable source. ALL per-viewport checks stay; none loosened. Fail-closed
  * typing: any narrow failure ⇒ typed error, NO marker; exactly ONE marker
  * only after BOTH passes pass.
  *
@@ -878,19 +878,16 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
         const shotPanel = await page.locator(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`).screenshot()
         passes.normal = { fields, narrow, shotFull, shotPanel }
         // ── narrow pass: RESIZE the SAME page (no re-navigation, no re-login,
-        // no sidebar demand). Root retention is PROVEN, not assumed: the open
-        // session header must still name the durable rootSessionId before any
-        // narrow measurement counts (fail-closed typed either way).
+        // no sidebar demand). ROOT BINDING on narrow = the PANEL, not header
+        // text (external runtime ruling @23a43f20: the header renders the
+        // display TITLE, never the raw sessionId, for sessions inside
+        // ancestry — asserting raw-id header text is a known-fail live path).
+        // Same RID + full wire digest + reviewPayload DEEP-EQUAL (which
+        // includes payload.rootSessionId whenever the durable reviewed payload
+        // carries it), all re-verified against the durable source below; the
+        // wide pass remains the root-ENTRY proof (two sanctioned clicks +
+        // typed re-validation on this same page/session).
         await page.setViewportSize({ width: opts.narrow.width, height: opts.narrow.height })
-        const rootHeld = await waitUntilTruthy({
-          probe: () => page.evaluate(rootSessionHeaderDom, rootSessionId),
-          deadlineAt: nowFn() + OBSERVE_TIMEOUT_MS,
-          nowFn,
-          sleepFn: sleep,
-        })
-        if (rootHeld !== true) {
-          throw new ObserverError('S2O_ROOT_MISMATCH', 'after resize the open session header no longer proves the durable root identity (fail closed, no marker)')
-        }
         const tabStill = await waitUntilTruthy({
           probe: () => page.evaluate(teamViewReadyDom, tab.index),
           deadlineAt: nowFn() + OBSERVE_TIMEOUT_MS,
@@ -1007,20 +1004,6 @@ export function rootSessionReadyDom(rootSessionId) {
 }
 
 /** Post-selection POSITIVE verification (typed). */
-/** BATCH-4 narrow-pass ROOT RETENTION proof: the ALREADY-OPEN session's
- *  header must still name the durable root id. Pinned structure
- *  (ConversationSession.tsx @46a7f68b09): crumbCurrent renders the RAW
- *  sessionId for an ancestry-less session (L125); the stable
- *  [data-conversation-header-corner] region anchor (L136-138) scopes the
- *  check to the header container. BOOLEAN by design — it gates
- *  waitUntilTruthy after the resize (no sidebar element is ever demanded). */
-export function rootSessionHeaderDom(rootSessionId) {
-  const doc = globalThis.document
-  const corner = doc.querySelector('[data-conversation-header-corner]')
-  if (corner === null || corner.parentElement === null) return false
-  return (corner.parentElement.textContent ?? '').includes(String(rootSessionId))
-}
-
 export function rootSessionValidatedDom(rootSessionId) {
   const doc = globalThis.document
   const esc = String(rootSessionId).replace(/\\/g, '\\\\').replace(/"/g, '\\"')

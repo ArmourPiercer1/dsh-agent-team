@@ -66,7 +66,6 @@ import {
   narrowExpectedLengths, evaluatePasses, scrubErrorText, setLaunchSecrets, cliMain,
   waitUntilTruthy, teamViewReadyDom, runObservation,
   buildLaunchOptions, DEFAULT_CHROME_PATH, rootSessionRowsDom, rootSessionReadyDom, rootSessionValidatedDom,
-  rootSessionHeaderDom,
 } from './stage2-observer.mjs'
 // the kit's OWN exported contract (the marker reader the roundtrip must satisfy):
 import { UI_CLAIMS, reviewPayloadDigestOf, readMarkerHint, verifyUiTruth } from './ui-observe.mjs'
@@ -108,6 +107,12 @@ const PAYLOAD = { schema: 'recovery-dispatch/v1', instanceId: 'inst-7', note: '�
 // (shape mirrors the real world: 'session-mpr-t1-mpr-2026-10-01T13-21-34').
 const ROOT = 'session-pr-e-root-01'
 const DECOY = 'session-pr-e-decoy-other'
+// EXTERNAL runtime fact (review @23a43f20): the header shows the session's
+// DISPLAY TITLE (kit meta.cwd → 'prreq smoke session'), never the raw
+// sessionId, whenever the session is inside ancestry. The fixture header
+// mirrors THAT reality so a raw-ID header dependency can never pass here.
+const FIXTURE_TITLE = 'prreq smoke session'
+const WRONG_ROOT = 'session-pr-e-root-02'
 const DIGEST = reviewPayloadDigestOf(PAYLOAD) // sha256:<64hex> via the kit's SINGLE canonical impl
 
 /** Panel mirror of TeamLedger.tsx @ aa677a34 (pins in the file header).
@@ -888,15 +893,16 @@ function sessionTreeHtml(ids, { selected = null } = {}) {
     <div data-row-key="session:${id}" role="treeitem" aria-selected="${id === selected}"><span class="title">${id}</span></div>`).join('')}</div>`
 }
 
-/** Header mirror of ConversationSession.tsx @46a7f68b09: crumbCurrent renders
- *  the RAW sessionId for an ancestry-less session (L125); the stable
- *  [data-conversation-header-corner] anchor (L136-138) scopes the identity
- *  check to the header region (rootSessionHeaderDom walks corner.parentElement). */
-function headerHtml(shownSessionId) {
-  return `<div data-fixture-header><nav aria-label="hierarchy"><span data-fixture-crumb>${shownSessionId}</span></nav><div data-conversation-header-corner=""></div></div>`
+/** Header mirror of ConversationSession.tsx @46a7f68b09 AS IT RENDERS FOR
+ *  THIS WORLD (external runtime fact): the displayed crumb is the session's
+ *  DISPLAY TITLE — crumbCurrent's raw-sessionId branch (L125) applies only
+ *  when ancestry.length === 0, which does NOT hold here. NO narrow-pass
+ *  assertion may depend on the header carrying the id. */
+function headerHtml(shown = FIXTURE_TITLE) {
+  return `<div data-fixture-header><nav aria-label="hierarchy"><span data-fixture-crumb>${shown}</span></nav><div data-conversation-header-corner=""></div></div>`
 }
 
-function wireHtml(panelOpts = {}, { rootRow = true, shown = DECOY } = {}) {
+function wireHtml(panelOpts = {}, { rootRow = true, shown = FIXTURE_TITLE } = {}) {
   const ids = rootRow ? [ROOT, DECOY] : ['session-unrelated-1', 'session-unrelated-2']
   return headerHtml(shown) + sessionTreeHtml(ids, { selected: DECOY }) + tablistHtml(['Chat', 'Team']) + goodHtml(panelOpts)
 }
@@ -929,8 +935,6 @@ function makeFakeBrowser({ html, gotoError = null, neverActivate = false, activa
         if (neverSelectRoot) return
         const siblings = el.parentElement === null ? [] : Array.from(el.parentElement.querySelectorAll('[role="treeitem"]'))
         for (const r of siblings) r.setAttribute('aria-selected', String(r === el))
-        const crumb = doc.querySelector('[data-fixture-crumb]')
-        if (crumb !== null) crumb.textContent = (el.getAttribute('data-row-key') ?? '').replace(/^session:/, '')
         return
       }
       if (neverActivate) return
@@ -1261,8 +1265,7 @@ test('72 viewport-honest fake models the PINNED rule (columns.ts L23, WorkspaceB
   const wide = await browser.newContext({ viewport: { width: 1440, height: 900 } })
   const pWide = await wide.newPage()
   assert.equal(await pWide.evaluate(rootSessionRowsDom, ROOT), 1)
-  assert.equal(await pWide.evaluate(rootSessionHeaderDom, ROOT), false, 'landing shows the DECOY session — header proves identity')
-  assert.equal(await pWide.evaluate(rootSessionHeaderDom, DECOY), true)
+  assert.equal(withDom(wireHtml(), () => globalThis.document.querySelector('[data-fixture-crumb]').textContent), FIXTURE_TITLE, 'header carries a TITLE, never the raw id (external runtime fact)')
   const freshNarrow = await browser.newContext({ viewport: { width: 380, height: 800 } })
   const pFresh = await freshNarrow.newPage()
   assert.equal(await pFresh.evaluate(rootSessionRowsDom, ROOT), 0, 'wide-only list: ZERO treeitems at 380 — this is WHY the entry is one-page-resize')
@@ -1270,7 +1273,7 @@ test('72 viewport-honest fake models the PINNED rule (columns.ts L23, WorkspaceB
   assert.equal(await pWide.evaluate(rootSessionRowsDom, ROOT), 0, 'resize collapses the list too — the narrow pass must demand NOTHING invisible')
 })
 
-test('73 resize-then-verify: ONE context/page/goto + one resize to 380; header-proven root, both passes deep-equal the durable source, marker EXACTLY once', async () => {
+test('73 resize-then-verify: ONE context/page/goto + one resize to 380; both passes deep-equal the durable source (RID+digest+payload incl. rootSessionId), marker EXACTLY once', async () => {
   const f = mkCliFixture()
   const browser = makeFakeBrowser({ html: wireHtml() })
   const clock = fakeClock()
@@ -1289,21 +1292,55 @@ test('73 resize-then-verify: ONE context/page/goto + one resize to 380; header-p
   assert.deepEqual(readdirSync(f.markerDir), ['marker.json'], 'exactly one marker after BOTH passes')
 })
 
-test('74 narrow header identity MUST name the durable root: crumb naming a DIFFERENT session after resize ⇒ typed S2O_ROOT_MISMATCH, no marker (root retention is PROVEN, not assumed)', async () => {
+const durableRow = (payloadValue, expectedDigest) => JSON.stringify({
+  factType: 'control-request-recorded', createdAt: '2026-10-02T00:00:00.000Z', sequence: '42',
+  schemaVersion: 2, rootSessionId: ROOT, payload: { requestId: RID, reviewPayloadDigest: expectedDigest, reviewPayload: payloadValue },
+})
+
+test('74 narrow pass binds the durable root THROUGH THE PANEL: payload.rootSessionId diverging (same length) after resize ⇒ PAYLOAD_DEEP_EQUAL typed fail, no marker', async () => {
   const f = mkCliFixture()
+  const PAY2 = { ...PAYLOAD, rootSessionId: ROOT }
+  const DIG2 = reviewPayloadDigestOf(PAY2)
+  writeFileSync(f.payloadFile, JSON.stringify(PAY2))
+  writeFileSync(f.digestFile, durableRow(PAY2, DIG2))
+  writeFileSync(f.access, JSON.stringify({ ...JSON.parse(readFileSync(f.access, 'utf8')), reviewPayloadDigest: DIG2 }))
+  chmodSync(f.access, 0o600)
   const browser = makeFakeBrowser({
-    html: wireHtml(),
+    html: wireHtml({ payloadValue: PAY2, digest: DIG2 }),
     narrowTransform: (doc) => {
-      const c = doc.querySelector('[data-fixture-crumb]')
-      if (c !== null) c.textContent = DECOY // resized page somehow shows a different session — refuse
+      const pre = doc.querySelector('[data-control-detail-payload] pre')
+      if (pre !== null) pre.textContent = JSON.stringify({ ...PAY2, rootSessionId: WRONG_ROOT }, null, 2)
     },
   })
   const clock = fakeClock()
   await assert.rejects(
     () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
-    (err) => { assert.equal(err.code, 'S2O_ROOT_MISMATCH'); return true },
+    (err) => { assert.ok(err instanceof ObserverError); assert.equal(err.code, 'S2O_CHECKS_FAILED'); return true },
   )
-  assert.deepEqual(readdirSync(f.markerDir), [])
+  assert.equal(existsSync(join(f.markerDir, 'marker.json')), false)
+  const comparisons = JSON.parse(readFileSync(join(f.evidence, 'comparisons.json'), 'utf8'))
+  assert.equal(comparisons.allPassed, false)
+  assert.ok(comparisons.narrow.fields.some((r) => r.name === 'PAYLOAD_DEEP_EQUAL' && r.ok === false), 'the root/payload binding row is the one that refused')
+  assert.ok(comparisons.narrow.fields.filter((r) => r.name === 'RID_ATTR_BINDING' || r.name === 'DIGEST_EXACT').every((r) => r.ok === true), 'RID+digest still matched — payload.rootSessionId alone carried the refusal')
+})
+
+test('76 narrow header shows a TITLE (never the raw id) while RID/digest/payload incl. payload.rootSessionId ALL match ⇒ PASS + exactly one marker — zero title/ID dependency in the narrow pass', async () => {
+  const f = mkCliFixture()
+  const PAY2 = { ...PAYLOAD, rootSessionId: ROOT }
+  const DIG2 = reviewPayloadDigestOf(PAY2)
+  writeFileSync(f.payloadFile, JSON.stringify(PAY2))
+  writeFileSync(f.digestFile, durableRow(PAY2, DIG2))
+  writeFileSync(f.access, JSON.stringify({ ...JSON.parse(readFileSync(f.access, 'utf8')), reviewPayloadDigest: DIG2 }))
+  chmodSync(f.access, 0o600)
+  const html = wireHtml({ payloadValue: PAY2, digest: DIG2 })
+  assert.ok(html.includes(`data-fixture-crumb>${FIXTURE_TITLE}<`), 'fixture header really displays the title, not the id')
+  const browser = makeFakeBrowser({ html })
+  const clock = fakeClock()
+  const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...clock })
+  assert.equal(res.ok, true, 'title≠id is the REAL product behavior — it must not gate the narrow pass')
+  const comparisons = JSON.parse(readFileSync(join(f.evidence, 'comparisons.json'), 'utf8'))
+  assert.ok(comparisons.narrow.fields.some((r) => r.name === 'PAYLOAD_DEEP_EQUAL' && r.ok === true), 'payload incl. rootSessionId deep-equals the durable source')
+  assert.deepEqual(readdirSync(f.markerDir), ['marker.json'], 'exactly one marker')
 })
 
 test('75 source pins: ONE context/page/goto, the narrow pass is a setViewportSize re-check, the per-viewport loop is dead, the treeitem surface is demanded EXACTLY ONCE (normal pass only)', () => {
