@@ -23,11 +23,18 @@ browser-smoke-host; `rootT1` published into the mpr summary) + the launch-token 
 Commit `984b910c` — the completed pin: `--expert-instance` / `--control-instance`, the pre-boot durable-store
 ID USE GUARD, `controlId` capture in the mpr kit, and value-less flags becoming usage fatals.
 
-**Assertions are byte-identical to the base.** Everything below changed only constant *origins*, pre-flight
-validation, header documentation and one logged string. C1–C6, the profile/world shape guards
-(`members: []`, `policyStates: []`, `mcpServers: []`), the T-PS embedded-blueprint step, the R1–R8 + H1/H2
-legs, all criteria names and tallies are untouched (`git diff origin/master...HEAD` shows no `-` line
-inside any assertion body).
+**Assertions were byte-identical to the base across `8f3e3018`, `984b910c` and `519559f7`.** Everything those
+three commits changed was constant *origins*, pre-flight validation, header documentation and one logged
+string: C1–C6, the profile/world shape guards (`members: []`, `policyStates: []`, `mcpServers: []`), the T-PS
+embedded-blueprint step, the R1–R8 + H1/H2 legs, all criteria names and tallies were untouched
+(`git diff origin/master...984b910c` shows no `-` line inside any assertion body).
+
+**That sentence no longer describes the whole branch, and is deliberately not extended to it.** Round 2
+changes two things by coordinator ruling, each recorded where it happens rather than silently: the
+C3-structural **oracle** (section 5.1 + 12.1 — a documented recalibration to the production F11 contract,
+which makes the leg stronger: it now pins both directions, the read plane and durable inertness), and the
+browser kit's **member identity handling** (section 12.2 — literals replaced by a derivation the host must
+positively verify). No assertion was weakened, no criterion removed, and no past run record edited.
 
 ## 2. Generated fixture identity (the new seed world)
 
