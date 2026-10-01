@@ -62,6 +62,9 @@ import type {
   RequirementFactsResolution,
 } from '../requirement-facts/index.js'
 import type {
+  TemplateFeedContext,
+} from '../admission/types.js'
+import type {
   ModelSelection,
 } from '../agent-setup/model/index.js'
 import type {
@@ -258,6 +261,12 @@ export interface ActivationPorts {
   readonly templateEnvironmentFactsForBlueprint?: (
     blueprint: TeamBlueprint,
     templateId: string,
+    // Finding F residual-2 (external ruling): the FEED CONTEXT (the OWNING
+    // root of the activation's target team — the root the materialization
+    // boundary resolves under; absent = the legacy boot-root fallback the
+    // ruling found a cross-root false OPEN). Root-only on the fresh-create
+    // path (no target instance exists yet).
+    context?: TemplateFeedContext,
   ) => Promise<readonly EnvironmentFact[]>
   /**
    * D-3 (2026-09-30, adjudicated product semantics — fail-closed PENDING,
@@ -289,6 +298,9 @@ export interface ActivationPorts {
   readonly templateEnvironmentFactsReadForBlueprint?: (
     blueprint: TeamBlueprint,
     templateId: string,
+    // Finding F residual-2 (external ruling): the FEED CONTEXT — see the
+    // D-1 twin above (the same root-only context on the fresh-create path).
+    context?: TemplateFeedContext,
   ) => Promise<RequirementFactsResolution>
   /** The external hard policy + capability-existence facts (step 8: policy
    *  resolver stage 2, Architecture §19.2/§19.6). */

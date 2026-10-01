@@ -742,16 +742,27 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
     let templateRead: RequirementFactsResolution | undefined
     let templateFacts: readonly EnvironmentFact[] | undefined
     if (targetTemplateInputs !== undefined) {
+      // Finding F residual-2 (external ruling): the FRESH-CREATE path's
+      // template feed reads must carry the TARGET root's feed context —
+      // the pre-fix calls dropped it, so the host port resolved the
+      // template materialization under the BOOT root (the legacy
+      // fallback) and a cross-root healthy boot instance stood in for
+      // this root's own (ADR 334-347: affected scopes only). No target
+      // instance exists yet (the create is in flight) — the context is
+      // root-only; the conservative template-level read is the correct
+      // scope for a not-yet-minted member.
       if (ports.templateEnvironmentFactsReadForBlueprint !== undefined) {
         templateRead = await ports.templateEnvironmentFactsReadForBlueprint(
           blueprint,
           createTemplateId,
+          { rootSessionId },
         )
         templateFacts = templateRead.environmentFacts
       } else if (ports.templateEnvironmentFactsForBlueprint !== undefined) {
         templateFacts = await ports.templateEnvironmentFactsForBlueprint(
           blueprint,
           createTemplateId,
+          { rootSessionId },
         )
       } else {
         templateFacts = admission.facts as readonly EnvironmentFact[]

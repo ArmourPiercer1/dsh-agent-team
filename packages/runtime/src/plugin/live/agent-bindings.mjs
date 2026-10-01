@@ -3123,16 +3123,26 @@ export function createAgentBindings(deps) {
    * @param {string} sessionId
    * @param {string} [teamRootSid] - the team root the session belongs to
    *   (T12-GLUE; absent = this row's boot root, as before).
-   * @returns {Promise<void>}
+   * @returns {Promise<{mcpFailedApplicable: string[]}>} the SAME-PASSAGE
+   *   truth (Finding F residual-1): the APPLICABLE (target-set) mcp
+   *   servers whose slot is `failed` because THIS passage's mount attempt
+   *   just failed (the attempt clock advanced during the prepare). The
+   *   mount attempt itself is ALLOWED (the bootstrap path: a fresh member
+   *   that never mounted is admissible — never a blanket block); a
+   *   same-passage failure must block the delivery that follows this
+   *   boundary (no real work before the materialization succeeds). A
+   *   pre-passage failure (the cooldown skip / the existing failed slot
+   *   admission already gates / the recovery re-run) is NOT reported here.
    */
   async function prepareAgentForRequest(sessionId, teamRootSid) {
     const state = consumptionState.get(sessionId)
-    if (state === undefined) return // defensive: every row agent has consumption state
+    if (state === undefined) return { mcpFailedApplicable: [] } // defensive: every row agent has consumption state
     const { modelView, mcpViews } = resolveConsumptionViews(sessionId, undefined, teamRootSid)
     const selection = modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection
     if (state.ref.current.provider !== selection.provider || state.ref.current.model !== selection.model) {
       state.ref.current = selection
     }
+    let mcpFailedApplicable = []
     const handle = liveAgents.get(sessionId)
     if (handle !== undefined && Object.keys(mcpViews).length > 0) {
       // alpha.1 (plan §10.8) + multi-mcp (contract I4 §2.3): the
@@ -3149,11 +3159,39 @@ export function createAgentBindings(deps) {
           ? filterMcpServers(configuredMcpNames, caps.mcp)
           : [...configuredMcpNames]
       const target = templateAllowedNames.filter((name) => mcpViews[name]?.allowed === true)
+      // Finding F residual-1 (the first-mount PENDING window): the
+      // PRE-prepare attempt clock per target server. The gate must fire
+      // ONLY when THIS passage's prepare made the mount attempt and it
+      // failed (the attempt's `lastAttemptAt` advanced during the
+      // reconcile). A pre-passage failure is NOT this passage's attempt
+      // and must not be blocked here: the cooldown skip leaves the slot
+      // untouched, an existing failed slot is already gated at admission
+      // (the feed's failed -> DOWN), and the human-reviewed recovery
+      // re-run MUST be allowed to run its boundary.
+      const preAttemptAt = new Map(
+        target.map((name) => {
+          const preSlot = state.mcpMaterialization?.get(name)
+          return [name, preSlot !== undefined && typeof preSlot.lastAttemptAt === 'number' ? preSlot.lastAttemptAt : undefined]
+        }),
+      )
       await reconcileMcpSet(state, target)
+      // Post-prepare truth (the attempt IS allowed — the bootstrap path:
+      // a fresh member that never mounted is admissible, never a blanket
+      // block): an APPLICABLE (target-set) server whose slot is `failed`
+      // because THIS passage's attempt just failed has NOT succeeded its
+      // materialization before this boundary's actual input — the truth
+      // the delivery gate reads.
+      mcpFailedApplicable = target.filter((name) => {
+        const slot = state.mcpMaterialization?.get(name)
+        if (slot === undefined || slot.status !== 'failed') return false
+        // This passage's attempt ran (the clock advanced) and failed.
+        return preAttemptAt.get(name) !== slot.lastAttemptAt
+      })
     }
     applyBoundaryRecords(state, modelView, mcpViews)
     state.modelView = modelView
     state.mcpViews = mcpViews
+    return { mcpFailedApplicable }
   }
 
   // ── the activation ports (real external effects, minimal surface) ─────
@@ -3409,7 +3447,26 @@ export function createAgentBindings(deps) {
       // TCM-D4: under the child's OWNING root (the boot root only when the
       // child belongs to it — a member of another team root resolves
       // under its own root's truth).
-      await prepareAgentForRequest(String(args.childSessionId), teamRootOfSession(args.childSessionId))
+      const prepared = await prepareAgentForRequest(String(args.childSessionId), teamRootOfSession(args.childSessionId))
+      // Finding F residual-1 (the first-mount PENDING window): the
+      // SAME-PASSAGE materialization gate — BEFORE ACTUAL INPUT (the
+      // model-visible followup below). The prepare above ran the target's
+      // own boundary reconcile: the MOUNT ATTEMPT — ALLOWED even for the
+      // PENDING bootstrap phase (a fresh member that never mounted is
+      // admissible; never a blanket pending block). If that attempt FAILED
+      // the target's own applicable materialization, the contract (the
+      // applicable materialization must succeed BEFORE real work) forbids
+      // THIS passage's delivery — the pre-fix window delivered the
+      // follow-up on the very passage that failed the first mount. The
+      // throw is the fail-closed signal: the work chain settles
+      // delivery-failed (durable, N3 throw-after-settle) and ZERO
+      // model-visible input reaches the member; the NEXT passage is
+      // gated as `failed` at admission (the feed's failed -> DOWN).
+      if (prepared.mcpFailedApplicable.length > 0) {
+        throw new Error(
+          `team work delivery blocked before input: the target's applicable mcp materialization failed on this passage [${prepared.mcpFailedApplicable.join(', ')}] — the materialization must succeed before real work (Finding F residual-1: the first-mount PENDING window)`,
+        )
+      }
       const text = args.attachedContext !== undefined && args.attachedContext.length > 0
         ? `${args.prompt}\n\n[attached-context]\n${args.attachedContext}`
         : args.prompt
