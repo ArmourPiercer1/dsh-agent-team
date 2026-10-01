@@ -521,7 +521,7 @@ required, no change):**
 - `packages/runtime/control/types.ts:258` — the control SUBJECT union (`{kind:'template'; templateId}`).
 - `packages/runtime/effective-policy/select.ts:101` — the policy OVERLAY origin kind (`'template' | 'instance'`), mirrored by the `packages/domain/policy` overlay type.
 - `packages/testkit/test/t6-9-negative-matrix.test.ts:180` — an `EffectivePolicyInput.templateOverlay.kind` fixture.
-- `packages/runtime/test/control-template-subject.test.ts` (6 sites), `control-guard-coupling.test.ts` (1), `control-subject-cross-kind-alias.test.ts` (3), `control-subject-normalization.test.ts` (2) — control-subject fixtures (the T-vocabulary above).
+- `packages/runtime/test/control-template-subject.test.ts` (6 sites — construction count; a raw line sweep yields 9 lines, the extra 3 being `toEqual` expected-value assertions on the same out-of-scope control-subject vocabulary), `control-guard-coupling.test.ts` (1), `control-subject-cross-kind-alias.test.ts` (3), `control-subject-normalization.test.ts` (2) — control-subject fixtures (the T-vocabulary above).
 - The LEVEL-based `RequirementScope` (`{level:'template', templateId}` via `templateScope()`, `packages/runtime/requirements/types.ts`) — a DIFFERENT shape (level, not kind) used by this branch's own `scope-requirements.ts` and `action-router/root-initial-work.ts` `leaderTemplateScopeRefs` (L197–199): unaffected by the role contract (it is the gate's verdict scope, not the provider's boundary scope).
 - `packages/runtime/src/plugin/host.ts` — references `RequirementFactScope` as a TYPE ONLY (L136 import, L2055 parameter annotation); constructs no scope object.
 - Team-scope-only `resolveFacts` callers (unaffected: no template scope constructed): `restart-readiness-unknown.test.ts`, `optional-mcp-live-outage-degraded.test.ts`, `required-mcp-live-outage-recovery.test.ts`, `requirement-probe-blueprint-scoping.test.ts`.
@@ -532,6 +532,14 @@ required, no change):**
 all via #46); 1 missing at this tip (T1, a test fixture); PRODUCTION GAP: NONE
 (explicit — the audit found no production construction without a role, because #46 fixed
 all five; the only correction this round makes is the test fixture T1).**
+
+Tip-time re-sweep after the merge (external re-review r1 S1, 2026-10-01): **13 in-scope
+RequirementFactScope template-scope sites** = the 11 pre-merge sites + 2 further sites
+inside #46's own persona-kind-provider-preflight.test.ts (L309–313 inline identity
+derivation — `role: templateId === blueprint.leader.templateId ? 'leader' : 'member'` —
+semantically identical to the helper; L616 `'member'` literal for the non-leader
+`worker` fixture — both verified correct, #46-owned). All 13 carry the closed-set role;
+**zero role-less constructions at tip.**
 
 ### Role fix (RED→GREEN) — commits `35b7c67e` (RED) + `01243a68` (fix) + `1c84435c` (post-merge gate fixes)
 
@@ -582,15 +590,19 @@ MERGE strategy, no rebase, no history rewrite, no force-push of any kind.
   1. `packages/testkit/test/p4t6-session-event-scan.test.ts` — both sides changed the
      pin region (and this side the title). Resolution: title = UNION (this branch's
      three file records + the two #46 file records appended — #46 itself recorded its
-     increments in the pin comment only); pin region = the chronological union of both
-     comment blocks (this branch's 899 record + #46's 896→897→898 records verbatim) +
-     the new merged-union block; pin set to the RECOMPUTED value (below).
+     increments in the pin comment only); pin region = the union of both comment
+     blocks (branch record condensed, content preserved; master's 896 historical line
+     dropped — subsumed by the 896-base arithmetic in the union block; pin value,
+     arithmetic, file records and recompute provenance all intact) + the new
+     merged-union block; pin set to the RECOMPUTED value (below).
   2. `dev/agent-workflow/SESSION_ROUTER_LOG.md` — both sides appended after the last
      common entry (the 2026-09-29 #47 pair). Resolution: BOTH append sides kept
      VERBATIM — this branch's three 2026-10-01 entries (I+J / I-residual / #47 sync)
      then #46's three entries (2026-10-01 finding A / 2026-10-02 BLOCK fix round /
      2026-10-02 master-integration sync) — date-nondecreasing union, zero rewrites,
-     zero deletions (only the three marker lines removed; 4883 → 4881 lines).
+     zero deletions (4883 → 4880 lines — git pre-deduplicated the shared leading
+     blank line; only the 3 marker lines removed; zero content lines dropped,
+     verified byte-exact).
   3. `packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map` +
      `root.js.map` — dist conflicts (both sides' root.js deltas touched the source;
      the .map offsets disagreed). Resolution: taken from the #46 side as placeholder,
