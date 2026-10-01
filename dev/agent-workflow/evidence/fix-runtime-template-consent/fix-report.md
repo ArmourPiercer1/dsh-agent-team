@@ -454,6 +454,88 @@ kind).
   the sync left unchanged (only dist canonicalization-verified / log / pins moved). The
   post-sync HEAD goes to external re-review.
 
+## Master sync round 2 (2026-10-01) — merge of origin/master `8e18819c` (PR #46 A: persona KIND + role contract) — NEW UNREVIEWED CHANGES
+
+The user ruling: #48's external PASS @ `45b5b975` was against the OLD base and does not
+auto-cover the future integration. PR #46 (finding A: persona KIND + role contract) was
+merged to master at `8e18819c4e589f685b99a86769251565ee4fc7ec` (parents `2bfbca12` +
+`a6e2d90c`). It carries the A ROLE CONTRACT: the requirement-facts template scope
+(`RequirementFactScope`, `packages/runtime/requirement-facts/types.ts`) REQUIRES a
+closed-set `role` field (`REQUIREMENT_FACT_SCOPE_ROLES = {leader, member}`) — absence or
+a non-closed value = typed `MALFORMED_DTO` from `assertRequirementFactScope`, which the
+production provider enforces as the FIRST step of `resolveFacts` (fail-closed, no I/O).
+The shared helper `requirementFactScopeRoleOf(leaderTemplateId, templateId)` derives the
+role from the bound blueprint's leader template identity (leader template → `leader`,
+any other template → `member`; the bound blueprint's leader template id is the ONLY
+knowledge the construction sites need — no hardcoded roles).
+
+Protocol (parent work order): MERGE strategy, NO rebase, NO history rewrite, NO
+force-push; role-wiring audit FIRST (before the merge); RED-first the role fix;
+recompute the p4t6 pin from the actual merged tree (never assume); full re-test; plain
+push; external re-review. **NO merge to master, NO merge authorization — this branch's
+new HEAD goes to external re-review only.**
+
+### Role-wiring audit (done at tip `45b5b975`, BEFORE the merge; raw grep log committed)
+
+Method: the work-order grep (`grep -rn "kind: 'template'|kind: \"template\"|kind: TEMPLATE"
+packages/runtime/ --include=*.ts | grep -v dist`) + an extended sweep (all
+`kind: 'template'` object literals repo-wide incl. testkit, every `resolveFacts` call
+site, every `assertRequirementFactScope` call site, every `RequirementFactScope` type
+reference in src, the testkit fixture builders, `scope-requirements.ts`,
+`root-initial-work.ts`). The role contract applies ONLY to objects typed
+`RequirementFactScope` (the provider's boundary scope, validated by
+`assertRequirementFactScope`); the other `kind: 'template'` literals are different
+closed vocabularies (listed below as audited-out).
+
+**In-scope sites (RequirementFactScope template scopes): 11 total — 5 production + 6 test.**
+
+Production — all 5 in `packages/runtime/src/plugin/root.ts`, ALL ALREADY FIXED BY #46
+(Blocker-1) with the identity-derived helper; this branch touched none of these lines
+(its root.ts delta is the consent write-port `scopeKey` spread at L3074+, a disjoint
+region) — so the merge brings #46's fixed production code in cleanly and **NO production
+gap exists on this branch (no product fix required — only the one test fixture below)**:
+
+| # | site (at tip `45b5b975`) | role after #46 | why |
+|---|---|---|---|
+| P1 | root.ts L865 `templateEnvironmentFacts` (boot-blueprint feed thunk) | `requirementFactScopeRoleOf(blueprint.leader.templateId, templateId)` | the boot root's bound blueprint knows its leader template id; the thunk is generic over templateId, so the role must be derived per call, never hardcoded |
+| P2 | root.ts L923 `templateEnvironmentFactsForBlueprint` (per-request blueprint feed) | `requirementFactScopeRoleOf(target.leader.templateId, templateId)` | the create/admission request names an ARBITRARY blueprint; its leader identity decides |
+| P3 | root.ts L969 `templateEnvironmentFactsReadForBlueprint` (full-resolution seam) | `requirementFactScopeRoleOf(target.leader.templateId, templateId)` | same target-blueprint scoping as P2 |
+| P4 | root.ts L1326 creation-preflight `preflightTemplateFacts` | `requirementFactScopeRoleOf(bound.leader.templateId, templateId)` | the create's bound blueprint |
+| P5 | root.ts L3046 `freshTemplateFacts` (the consent write port's template feed) | `requirementFactScopeRoleOf(bound.leader.templateId, templateId)` | the same bound blueprint as the consent grant |
+
+Test — 6 sites:
+
+| # | site | role decided | why |
+|---|---|---|---|
+| T1 | **`packages/runtime/test/template-disable-no-requirements-gate.test.ts` L189 (this branch's finding-I suite) — THE ONE MISSING SITE** | `requirementFactScopeRoleOf(world.blueprint.leader.templateId, templateId)` (fix applied this round — see below) | the template-scope live-feed thunk closes over `world.blueprint` (fixture: leader `leader`, member `worker`) and is generic over templateId; deriving from the blueprint's ACTUAL leader identity keeps it correct for any templateId (it is consumed for the delegate target `worker` → `member`; a hardcoded `'member'` would mis-address the observation if the feed were ever called with the leader id — e.g. a world where the leader declares requirements) |
+| T2 | `leader-recovery-next-boundary-exit.test.ts` L179 | `requirementFactScopeRoleOf(world.blueprint.leader.templateId, templateId)` | #46-owned (fixed by #46; this branch untouched → merge takes #46 verbatim) |
+| T3 | `leader-template-required-boundary.test.ts` L209 | `requirementFactScopeRoleOf(world.blueprint.leader.templateId, templateId)` | #46-owned (same) |
+| T4 | `mcp-live-readiness-to-requirement-fact.test.ts` L123 (module `TEMPLATE` const) | `role: 'member'` (const) | #46-owned; documented in #46: this suite's `dev` template is a MEMBER boundary (the mcpServer legs only select the template scope kind — the role does not change their assertions) |
+| T5 | `requirement-d1-d3-decision-scoping.test.ts` L455 | `requirementFactScopeRoleOf(bp.leader.templateId, templateId)` | #46-owned (same as T2) |
+| T6 | `runtime-requirement-facts-provider.test.ts` L96 (module `TEMPLATE` const) | `role: 'member'` (const) | #46-owned; documented in #46 (same rationale as T4) |
+
+**Audited-out (different closed vocabularies — NOT `RequirementFactScope`, no role
+required, no change):**
+
+- `packages/runtime/action-router/router.ts:212` — the action-router's template TARGET ref (its own vocabulary).
+- `packages/runtime/control/types.ts:258` — the control SUBJECT union (`{kind:'template'; templateId}`).
+- `packages/runtime/effective-policy/select.ts:101` — the policy OVERLAY origin kind (`'template' | 'instance'`), mirrored by the `packages/domain/policy` overlay type.
+- `packages/testkit/test/t6-9-negative-matrix.test.ts:180` — an `EffectivePolicyInput.templateOverlay.kind` fixture.
+- `packages/runtime/test/control-template-subject.test.ts` (6 sites), `control-guard-coupling.test.ts` (1), `control-subject-cross-kind-alias.test.ts` (3), `control-subject-normalization.test.ts` (2) — control-subject fixtures (the T-vocabulary above).
+- The LEVEL-based `RequirementScope` (`{level:'template', templateId}` via `templateScope()`, `packages/runtime/requirements/types.ts`) — a DIFFERENT shape (level, not kind) used by this branch's own `scope-requirements.ts` and `action-router/root-initial-work.ts` `leaderTemplateScopeRefs` (L197–199): unaffected by the role contract (it is the gate's verdict scope, not the provider's boundary scope).
+- `packages/runtime/src/plugin/host.ts` — references `RequirementFactScope` as a TYPE ONLY (L136 import, L2055 parameter annotation); constructs no scope object.
+- Team-scope-only `resolveFacts` callers (unaffected: no template scope constructed): `restart-readiness-unknown.test.ts`, `optional-mcp-live-outage-degraded.test.ts`, `required-mcp-live-outage-recovery.test.ts`, `requirement-probe-blueprint-scoping.test.ts`.
+- This branch's other task files: `leader-disable-no-requirements-initial-work.test.ts` + `consent-scope-hash-binding.test.ts` construct NO RequirementFactScope (they drive the PRODUCTION chain — root.ts / host entry — which carries the role after the merge); `requirement-facts.test.ts` (this branch's +39) exercises only the durable PAYLOAD vocabulary (the string scope keys `'team'` / `'template:worker'`), no boundary scope.
+- Testkit fixture builders (`packages/testkit/src/`): no scope construction (swept; zero hits).
+
+**Audit verdict: 11 in-scope sites; 10 already carry the role (5 production + 5 test —
+all via #46); 1 missing at this tip (T1, a test fixture); PRODUCTION GAP: NONE
+(explicit — the audit found no production construction without a role, because #46 fixed
+all five; the only correction this round makes is the test fixture T1).**
+
+(The role-fix RED→GREEN record and the merge-sync section of this round follow in this
+section's bookkeeping commit.)
+
 ## Evidence index (all committed in this directory; raw logs scrubbed — token-free)
 
 ### RED captures
