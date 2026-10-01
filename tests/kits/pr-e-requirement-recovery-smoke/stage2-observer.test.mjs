@@ -41,7 +41,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync,
-  symlinkSync, chmodSync, lstatSync, rmSync, existsSync,
+  symlinkSync, chmodSync, lstatSync, rmSync, existsSync, statSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -907,6 +907,34 @@ function wireHtml(panelOpts = {}, { rootRow = true, shown = FIXTURE_TITLE } = {}
   return headerHtml(shown) + sessionTreeHtml(ids, { selected: DECOY }) + tablistHtml(['Chat', 'Team']) + goodHtml(panelOpts)
 }
 
+/** FRESH-BOOT rail mirror of the PINNED host + PR55 probe3 facts: the
+ *  'Ungrouped' group header renders as a treeitem but the group COLLAPSES BY
+ *  DEFAULT ("the group collapses by default" — apps/web/tests/
+ *  agent-preset-selection.e2e.ts:382 @46a7f68b09; its own e2e clicks the group
+ *  header BEFORE any session row exists), so ZERO session rows are rendered;
+ *  a fresh profile additionally shows the WelcomeNotice (locales.ts
+ *  L107/L109 welcomeTitle 'Internal Testing Notice' / welcomeContinue
+ *  'Continue' @46a7f68b09). canary= goes into an href INSIDE the tree so the
+ *  entry-failure dump proves query/token sanitization against live DOM. */
+function collapsedTreeHtml({ notice = false, canary = null } = {}) {
+  const noticeHtml = notice ? '<div data-welcome-notice><p>Internal Testing Notice</p><button>Continue</button></div>' : ''
+  const canaryHtml = canary === null ? '' : `<a href="${canary}">launch</a>`
+  return `${noticeHtml}<div role="tree" data-workspace-browser><div role="treeitem" aria-label="Ungrouped">Ungrouped</div>${canaryHtml}</div>`
+}
+function wireCollapsedHtml(opts = {}) {
+  return headerHtml(FIXTURE_TITLE) + collapsedTreeHtml(opts) + tablistHtml(['Chat', 'Team']) + goodHtml({})
+}
+/** Rows rendered (group already open) but the root rides behind the
+ *  'Show N more sessions' overflow — a button that exists ONLY post-
+ *  expansion (PR55 driver header @46043f78: "THE OVERFLOW BUTTON ONLY EXISTS
+ *  AFTER THE GROUP EXPANSION"). */
+function wireOverflowHtml() {
+  const tree = `<div role="tree" data-workspace-browser><div role="treeitem" aria-label="Ungrouped">Ungrouped</div>
+    <div data-row-key="session:${DECOY}" role="treeitem" aria-selected="false"><span class="title">${DECOY}</span></div>
+    <button>Show 1 more sessions</button></div>`
+  return headerHtml(FIXTURE_TITLE) + tree + tablistHtml(['Chat', 'Team']) + goodHtml({})
+}
+
 // VIEWPORT-HONEST fake — models the PINNED layout rule (all verified at
 // 46a7f68b09 this session via git show):
 //   * sidebar auto-collapses below SIDEBAR_AUTO_COLLAPSE = 1024
@@ -920,7 +948,7 @@ function wireHtml(panelOpts = {}, { rootRow = true, shown = FIXTURE_TITLE } = {}
 //     L1275-1278: "the list itself is wide-only").
 // The header crumb (ConversationSession.tsx L125 raw sessionId) tracks
 // whichever session this fake actually opened — landing shows the decoy.
-function makeFakeBrowser({ html, gotoError = null, neverActivate = false, activateAfterPolls = 0, neverSelectRoot = false, narrowTransform = null } = {}) {
+function makeFakeBrowser({ html, gotoError = null, neverActivate = false, activateAfterPolls = 0, neverSelectRoot = false, narrowTransform = null, groupExpand = 'render', expandIds = null, overflowHidden = null } = {}) {
   const SIDEBAR_AUTO_COLLAPSE = 1024 // mirrors columns.ts L23
   const calls = { gotos: [], evaluates: 0, clicks: 0, contexts: 0, pages: 0, resizes: [] }
   const activateTeamTab = (doc) => {
@@ -997,6 +1025,46 @@ function makeFakeBrowser({ html, gotoError = null, neverActivate = false, activa
           first: () => ({ async waitFor() { if (doc.querySelector(sel) === null) throw new Error(`fake locator missing: ${sel}`) } }),
           async screenshot() { return PNG },
           async waitFor() { if (doc.querySelector(sel) === null) throw new Error(`fake locator missing: ${sel}`) },
+        }
+      },
+      // Mirrors Playwright getByRole used by the PR55-proven driver and the
+      // PINNED host's own e2e (agent-preset-selection.e2e.ts:382-383 clicks
+      // getByRole('treeitem', { name: /^Ungrouped/ }) because "the group
+      // collapses by default"). Accessible name = aria-label else trimmed
+      // text — role-SCOPED only, never a generic text search.
+      getByRole(role, opts = {}) {
+        const { name = null, exact = false } = opts
+        const matches = () => {
+          const sel = role === 'button' ? 'button, [role="button"]' : `[role="${role}"]`
+          return Array.from(doc.querySelectorAll(sel)).filter((el) => {
+            if (name === null) return true
+            const acc = String(el.getAttribute('aria-label') ?? el.textContent ?? '').trim()
+            return name instanceof RegExp ? name.test(acc) : (exact ? acc === name : acc.includes(name))
+          })
+        }
+        const rowHtml = (id) => `<div data-row-key="session:${id}" role="treeitem" aria-selected="false"><span class="title">${id}</span></div>`
+        return {
+          async count() { return matches().length },
+          async click() {
+            const els = matches()
+            if (els.length === 0) throw new Error(`fake getByRole: empty match set for ${role}`)
+            calls.clicks += 1
+            const el = els[0]
+            const acc = String(el.getAttribute('aria-label') ?? el.textContent ?? '').trim()
+            const tree = (typeof el.closest === 'function' ? el.closest('[role="tree"]') : null) ?? el.parentElement
+            const noticeBox = typeof el.closest === 'function' ? el.closest('[data-welcome-notice]') : null
+            if (el.tagName === 'BUTTON' && noticeBox !== null) { noticeBox.remove(); return }
+            if (/^Ungrouped/.test(acc)) {
+              if (groupExpand === 'render') {
+                tree.innerHTML = `<div role="treeitem" aria-label="Ungrouped">Ungrouped</div>${(expandIds ?? [ROOT, DECOY]).map(rowHtml).join('')}`
+              }
+              return
+            }
+            if (/^Show \d+ more sessions$/.test(acc)) {
+              tree.innerHTML += (overflowHidden ?? []).map(rowHtml).join('')
+              el.remove()
+            }
+          },
         }
       },
       async screenshot() { return PNG },
@@ -1358,4 +1426,70 @@ test('60 source pin: the OLD object-return can never gate a wait again (wait sit
   assert.ok(!/waitForFunction\s*\(\s*teamViewActivatedDom/.test(src), 'the object helper must NEVER be a wait expression again')
   assert.ok(/waitUntilTruthy\s*\(/.test(src) && /evaluate\(\s*teamViewReadyDom/.test(src), 'the wait sites use the boolean predicate through the driver')
   assert.ok(/S2O_TEAM_TAB_NEVER_ACTIVATED/.test(src), 'timeout is the typed fail-closed path')
+})
+
+// — BATCH-6 (LIVE FAILURE S2O_ROOT_ROW_MISSING): fresh-boot activation —
+// PR55-proven navigation order (dod20-ui-driver.mjs @46043f78): dismiss the
+// WelcomeNotice IF present → expand the collapsed-by-default Ungrouped group
+// (host e2e agent-preset-selection.e2e.ts:382-383 @46a7f68b09) → open the
+// post-expansion overflow — then, and only then, demand the EXACT root row.
+
+test('77 collapsed-by-default fresh boot: ONE scoped group-header click reveals the rows; root opens, verifies, observes — exactly one marker, NO entry dump on success', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ html: wireCollapsedHtml() })
+  const clock = fakeClock()
+  const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...clock })
+  assert.equal(res.ok, true, 'the collapsed group is host DEFAULT state, not a failure')
+  assert.ok(browser.calls.clicks >= 3, 'group + root row + Team tab clicks')
+  assert.deepEqual(readdirSync(f.markerDir), ['marker.json'])
+  assert.equal(existsSync(join(f.evidence, 's2o-entry-dump.html')), false, 'entry dump is failure-only')
+})
+
+test('78 WelcomeNotice present (fresh profile) is dismissed with ONE scoped Continue click BEFORE the group step, then the full pass completes', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ html: wireCollapsedHtml({ notice: true }) })
+  const clock = fakeClock()
+  const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...clock })
+  assert.equal(res.ok, true)
+  assert.deepEqual(readdirSync(f.markerDir), ['marker.json'])
+})
+
+test('79 group header present but click renders NO rows ⇒ typed S2O_GROUP_EXPAND_NO_ROWS fail-closed (no positional guessing, no marker)', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ html: wireCollapsedHtml(), groupExpand: 'nothing' })
+  const clock = fakeClock()
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
+    (err) => { assert.ok(err instanceof ObserverError); assert.equal(err.code, 'S2O_GROUP_EXPAND_NO_ROWS'); return true },
+  )
+  assert.equal(existsSync(join(f.markerDir, 'marker.json')), false)
+})
+
+test('80 root row rides behind the post-expansion overflow: one scoped overflow click reveals it; flow completes — rows already present means NO group click', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ html: wireOverflowHtml(), overflowHidden: [ROOT] })
+  const clock = fakeClock()
+  const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...clock })
+  assert.equal(res.ok, true)
+  assert.deepEqual(readdirSync(f.markerDir), ['marker.json'])
+})
+
+test('81 ENTRY-STAGE failure writes ONE 0600 sanitized DOM dump into the evidence dir: launch token scrubbed, URL queries stripped, region content kept', async () => {
+  const f = mkCliFixture()
+  const canary = 'http://127.0.0.1:3181/session?auth=CANARY-QUERY-VALUE&s2o=PRIVATE-tok-launch'
+  const browser = makeFakeBrowser({ html: wireCollapsedHtml({ canary }), groupExpand: 'nothing' })
+  const clock = fakeClock()
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
+    (err) => { assert.ok(err instanceof ObserverError); return true },
+  )
+  const dump = join(f.evidence, 's2o-entry-dump.html')
+  assert.ok(existsSync(dump), 'the failure dump exists')
+  assert.equal(statSync(dump).mode & 0o777, 0o600, 'dump is 0600')
+  const text = readFileSync(dump, 'utf8')
+  assert.ok(text.includes('Ungrouped'), 'the region content survives sanitization')
+  assert.ok(!text.includes('PRIVATE-tok-launch'), 'the launch token never rides the dump')
+  assert.ok(!text.includes('CANARY-QUERY-VALUE'), 'URL query values are stripped')
+  assert.ok(!text.includes('?auth='), 'no URL query survives at all')
+  assert.equal(existsSync(join(f.markerDir, 'marker.json')), false)
 })

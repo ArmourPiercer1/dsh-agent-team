@@ -123,7 +123,7 @@
  */
 
 import {
-  constants, closeSync, existsSync, fstatSync, lstatSync, mkdirSync,
+  constants, chmodSync, closeSync, existsSync, fstatSync, lstatSync, mkdirSync,
   openSync, readFileSync, renameSync, rmSync, writeSync,
 } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -161,6 +161,29 @@ const BOOT_TIMEOUT_MS = 60_000
 const OBSERVE_TIMEOUT_MS = 45_000
 /** Item-4 wait driver cadence (bounded by OBSERVE_TIMEOUT_MS). */
 const TEAM_WAIT_POLL_MS = 250
+
+// ── BATCH-6: FRESH-BOOT ENTRY ACTIVATION + ENTRY-STAGE FAILURE DUMP ─────────
+// The stage-2 LIVE run @2026-10-01T20-10-50 died S2O_ROOT_ROW_MISSING after
+// the token goto: the fresh context lands on a rail whose 'Ungrouped' group
+// COLLAPSES BY DEFAULT (PINNED host apps/web/tests/agent-preset-selection.
+// e2e.ts:382-383 @46a7f68b09 — "the group collapses by default", its own e2e
+// clicks getByRole('treeitem', { name: /^Ungrouped/ }) before any session
+// row exists), and a FRESH profile additionally fronts the WelcomeNotice
+// (locales.ts L107 'Internal Testing Notice' / L109 welcomeContinue
+// 'Continue' @46a7f68b09). The PR55 driver LIVE-proved the navigation order
+// (tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs @46043f78
+// header: dismiss-notice → expand-ungrouped-group → expand-overflow, ONE
+// scoped real click per step, fail-closed after). Reusing exactly that
+// semantics here: each step is a ROLE-SCOPED locator (never a generic text
+// search), runs at most once, and only ever INSIDE the rootCount===0 branch
+// — a page whose rows already rendered takes the pre-BATCH-6 path untouched.
+// The entry click budget grows from 2 to at most 5 (notice + group + overflow
+// are all conditional); every refusal stays typed and markerless.
+const WELCOME_CONTINUE = 'Continue'
+const UNGROUPED_GROUP_NAME = /^Ungrouped/
+const OVERFLOW_BUTTON_NAME = /^Show \d+ more sessions$/
+/** Entry-failure dump bound (chars of sanitized DOM). */
+const ENTRY_DUMP_MAX_CHARS = 262_144
 
 export class ObserverError extends Error {
   constructor(code, message) {
@@ -755,6 +778,85 @@ function defaultTestuseRoot() {
 // ── the live observation flow (ONLY the env executor runs this; offline
 //    tests cover every adapter above as the SAME function bodies) ────────────
 
+/** BATCH-6 steps 1–3, PR55-frozen order (dod20-ui-driver.mjs @46043f78 nav
+ *  order: dismiss-notice → expand-ungrouped-group → expand-overflow), ONE
+ *  scoped role locator per step, each acting at most once, fail-closed after.
+ *  A page whose rows already rendered takes ONLY step 1 (count 0 → no click)
+ *  and then the untouched pre-BATCH-6 path — the group click is a TOGGLE, so
+ *  it may fire ONLY while zero session rows are rendered. */
+async function activateFreshBootRail(page, { rootSessionId, nowFn, sleep }) {
+  // step 1 — WelcomeNotice (fresh profile): dismiss via the Continue button,
+  // assert-gone; present-but-undismissable and ambiguous are typed refusals.
+  const notice = page.getByRole('button', { name: WELCOME_CONTINUE, exact: true })
+  const noticeCount = await notice.count()
+  if (noticeCount > 1) throw new ObserverError('S2O_NOTICE_AMBIGUOUS', `${noticeCount} Continue buttons — refusing to guess which dismisses the notice`)
+  if (noticeCount === 1) {
+    await notice.click()
+    const gone = await waitUntilTruthy({
+      probe: async () => (await notice.count()) === 0,
+      deadlineAt: nowFn() + OBSERVE_TIMEOUT_MS,
+      nowFn,
+      sleepFn: sleep,
+    })
+    if (gone !== true) throw new ObserverError('S2O_NOTICE_NOT_DISMISSED', 'the Continue click never dismissed the WelcomeNotice (fail closed, no marker)')
+  }
+  // steps 2–3 run ONLY while the root row is absent.
+  if ((await page.evaluate(rootSessionRowsDom, rootSessionId)) > 0) return
+  // step 2 — the collapsed-by-default group header (host e2e
+  // agent-preset-selection.e2e.ts:382-383 @46a7f68b09 does exactly this).
+  if ((await page.evaluate(sessionRowsAnyDom)) === 0) {
+    const group = page.getByRole('treeitem', { name: UNGROUPED_GROUP_NAME })
+    const groupCount = await group.count()
+    if (groupCount > 1) throw new ObserverError('S2O_GROUP_AMBIGUOUS', `${groupCount} Ungrouped headers — refusing to guess which group holds the root`)
+    if (groupCount === 1) {
+      await group.click()
+      const rowsOn = await waitUntilTruthy({
+        probe: async () => (await page.evaluate(sessionRowsAnyDom)) > 0,
+        deadlineAt: nowFn() + OBSERVE_TIMEOUT_MS,
+        nowFn,
+        sleepFn: sleep,
+      })
+      if (rowsOn !== true) throw new ObserverError('S2O_GROUP_EXPAND_NO_ROWS', 'the group header click rendered ZERO session rows — refusing to observe an unopened rail (no positional guessing, no marker)')
+    }
+    // groupCount === 0: no Ungrouped header (sessions may live under a named
+    // workspace group already open) — fall through; the EXACT root-row demand
+    // below stays the arbiter and refuses typed if nothing carries it.
+  }
+  // step 3 — the post-expansion overflow (PR55: "THE OVERFLOW BUTTON ONLY
+  // EXISTS AFTER THE GROUP EXPANSION"); bounded loop, each click must remove
+  // the button it acted on, and the loop stops the moment the root appears.
+  for (let opened = 0; opened < 5; opened += 1) {
+    if ((await page.evaluate(rootSessionRowsDom, rootSessionId)) > 0) return
+    const more = page.getByRole('button', { name: OVERFLOW_BUTTON_NAME })
+    const moreCount = await more.count()
+    if (moreCount === 0) return
+    if (moreCount > 1) throw new ObserverError('S2O_OVERFLOW_AMBIGUOUS', `${moreCount} overflow buttons visible at once — refusing to guess which list to expand`)
+    await more.click()
+  }
+  throw new ObserverError('S2O_OVERFLOW_UNBOUNDED', 'the session overflow kept offering more pages past the bounded 5 expansions — refusing an unbounded rail walk')
+}
+
+/** BATCH-6 entry-stage failure dump — ONE sanitized file (0600) in the
+ *  evidence dir, plus a screenshot ONLY when the RAW region html carries no
+ *  launch secret at all (pixels cannot be sanitized; a clean raw DOM is the
+ *  bound that makes the screenshot lawful). Fully best-effort: ANY dump
+ *  failure is swallowed so the typed failure it documents still rides out. */
+async function captureEntryFailureDump(page, { evidenceDir, secrets, code }) {
+  try {
+    const region = await page.evaluate(entryRegionDumpDom)
+    const raw = String(region?.html ?? '')
+    const sanitized = sanitizeDomDump(raw, secrets)
+    const header = `<!-- s2o entry-stage failure dump\n     code: ${String(code).replace(/[^\w.:-]/g, '_').slice(0, 64)}\n     region: ${String(region?.region ?? 'unknown')}\n     url queries/fragments and launch secrets sanitized by sanitizeDomDump\n-->\n`
+    const capped = (header + sanitized).slice(0, ENTRY_DUMP_MAX_CHARS)
+    const written = writeEntryDumpAtomic({ dir: evidenceDir, text: capped })
+    if (written.written && scanForSecrets(raw, secrets).length === 0 && typeof page.screenshot === 'function') {
+      const shot = join(evidenceDir, 's2o-entry-dump.png')
+      await page.screenshot({ path: shot })
+      try { chmodSync(shot, 0o600) } catch { /* best effort */ }
+    }
+  } catch { /* the dump NEVER masks or replaces the typed failure */ }
+}
+
 export async function runObservation(opts, { launch = null, nowFn = () => Date.now(), sleepFn = null } = {}) {
   const expected = resolveExpected({
     rid: opts.rid, digestRaw: opts.digestRaw, digestFile: opts.digestFile, payloadFile: opts.payloadFile,
@@ -815,35 +917,47 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
           const scrubbed = scrubErrorText(error?.message ?? String(error), secrets)
           throw new ObserverError('S2O_NAV_FAILED', `navigation refused: ${scrubbed.suppressed ? '[suppressed by token tripwire]' : scrubbed.text.slice(0, 300)}`)
         }
-        // BATCH-3 BLOCK-B: EXPLICIT root entry — a fresh context may land on
-        // any session; opening the durable rootSessionId's row is the ONLY
-        // sanctioned entry (Rows.tsx L571/577-578/580; no URL selection
-        // exists in the pinned checkout). Then VERIFY before any Team work.
-        await page.waitForSelector('[role="treeitem"]', { timeout: OBSERVE_TIMEOUT_MS })
-        const rootCount = await page.evaluate(rootSessionRowsDom, rootSessionId)
-        if (rootCount === 0) {
-          throw new ObserverError('S2O_ROOT_ROW_MISSING', `no session-browser row carries data-row-key="session:${rootSessionId}" — refusing to observe whatever session the page landed on`)
-        }
-        if (rootCount > 1) {
-          throw new ObserverError('S2O_ROOT_ROW_AMBIGUOUS', `${rootCount} rows carry the root session id — refusing to pick one`)
-        }
-        const rootRow = await page.$(`[data-row-key="session:${rootSessionId.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"]`)
-        if (rootRow === null) throw new ObserverError('S2O_ROOT_ROW_MISSING', 'the root row vanished between count and click')
-        // THE second sanctioned click (root session selection, coordinator
-        // ruling 2026-10-02). Still never allow/deny/refresh/filters.
-        await rootRow.click()
-        const rootReady = await waitUntilTruthy({
-          probe: () => page.evaluate(rootSessionReadyDom, rootSessionId),
-          deadlineAt: nowFn() + OBSERVE_TIMEOUT_MS,
-          nowFn,
-          sleepFn: sleep,
-        })
-        if (rootReady !== true) {
-          throw new ObserverError('S2O_ROOT_NEVER_SELECTED', `the root row never reached aria-selected=true within ${OBSERVE_TIMEOUT_MS}ms (fail closed, no marker)`)
-        }
-        const rootCheck = await page.evaluate(rootSessionValidatedDom, rootSessionId)
-        if (rootCheck.ok !== true) {
-          throw new ObserverError(`S2O_${rootCheck.code}`, `root identity verification refused: ${rootCheck.code}`)
+        // BATCH-3 BLOCK-B + BATCH-6: EXPLICIT root entry. BATCH-6 LIVE FACT
+        // (@2026-10-01T20-10-50): a FRESH context lands on a rail whose group
+        // collapses by default (host e2e agent-preset-selection.e2e.ts:382
+        // @46a7f68b09) behind a WelcomeNotice — the pre-BATCH-6 path demanded
+        // the root row there and died S2O_ROOT_ROW_MISSING. The PR55-proven
+        // activation (dismiss-notice → expand-group → expand-overflow, one
+        // scoped click each) now runs BEFORE the exact-row demand; every
+        // refusal stays typed, and any ENTRY-stage failure first writes ONE
+        // sanitized DOM dump into the evidence dir (new standing rule).
+        try {
+          await page.waitForSelector('[role="treeitem"]', { timeout: OBSERVE_TIMEOUT_MS })
+          await activateFreshBootRail(page, { rootSessionId, nowFn, sleep })
+          const rootCount = await page.evaluate(rootSessionRowsDom, rootSessionId)
+          if (rootCount === 0) {
+            throw new ObserverError('S2O_ROOT_ROW_MISSING', `no session-browser row carries data-row-key="session:${rootSessionId}" even after the bounded fresh-boot activation (notice/group/overflow) — refusing to observe whatever session the page landed on`)
+          }
+          if (rootCount > 1) {
+            throw new ObserverError('S2O_ROOT_ROW_AMBIGUOUS', `${rootCount} rows carry the root session id — refusing to pick one`)
+          }
+          const rootRow = await page.$(`[data-row-key="session:${rootSessionId.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"]`)
+          if (rootRow === null) throw new ObserverError('S2O_ROOT_ROW_MISSING', 'the root row vanished between count and click')
+          // THE root selection click (coordinator ruling 2026-10-02; the
+          // notice/group/overflow clicks above are the PR55-proven activation
+          // steps, each scoped + at-most-once). Never allow/deny/refresh.
+          await rootRow.click()
+          const rootReady = await waitUntilTruthy({
+            probe: () => page.evaluate(rootSessionReadyDom, rootSessionId),
+            deadlineAt: nowFn() + OBSERVE_TIMEOUT_MS,
+            nowFn,
+            sleepFn: sleep,
+          })
+          if (rootReady !== true) {
+            throw new ObserverError('S2O_ROOT_NEVER_SELECTED', `the root row never reached aria-selected=true within ${OBSERVE_TIMEOUT_MS}ms (fail closed, no marker)`)
+          }
+          const rootCheck = await page.evaluate(rootSessionValidatedDom, rootSessionId)
+          if (rootCheck.ok !== true) {
+            throw new ObserverError(`S2O_${rootCheck.code}`, `root identity verification refused: ${rootCheck.code}`)
+          }
+        } catch (error) {
+          await captureEntryFailureDump(page, { evidenceDir: opts.evidenceDir, secrets, code: error?.code ?? 'ENTRY_UNTYPED' })
+          throw error
         }
         await page.waitForSelector('[data-conversation-tabs][role="tablist"] button[role="tab"]', { timeout: OBSERVE_TIMEOUT_MS })
         const tab = await page.evaluate(resolveTeamTabDom, TEAM_TAB_LABELS)
@@ -1012,6 +1126,72 @@ export function rootSessionValidatedDom(rootSessionId) {
   if (rows.length > 1) return { ok: false, code: 'ROOT_ROW_AMBIGUOUS' }
   if (rows[0].getAttribute('aria-selected') !== 'true') return { ok: false, code: 'ROOT_MISMATCH' }
   return { ok: true }
+}
+
+/** BATCH-6 activation predicate: ANY session row rendered (the group is open
+ *  — Rows.tsx L571 key convention @46a7f68b09). Transportable adapter. */
+export function sessionRowsAnyDom() {
+  return globalThis.document.querySelectorAll('[data-row-key^="session:"]').length
+}
+
+/** BATCH-6 ENTRY-STAGE DUMP source (transportable): serialize the workspace/
+ *  session REGION (tree first, then the Notice overlay when present), never
+ *  the whole document, so the bound buys real depth. Values are sanitized
+ *  NODE-SIDE after transfer — this adapter must never touch storage/auth. */
+export function entryRegionDumpDom() {
+  const doc = globalThis.document
+  const parts = []
+  const tree = doc.querySelector('[role="tree"]')
+  const keyed = doc.querySelector('[data-row-key]')
+  const notice = doc.querySelector('[data-welcome-notice]')
+  let region = 'body'
+  if (tree !== null) { parts.push(tree.outerHTML); region = 'tree' }
+  else if (keyed !== null && keyed.parentElement !== null) { parts.push(keyed.parentElement.outerHTML); region = 'row-parent' }
+  if (notice !== null) parts.push(notice.outerHTML)
+  if (parts.length === 0 && doc.body !== null) parts.push(doc.body.outerHTML)
+  return { region, html: parts.join('\n<!-- + -->\n') }
+}
+
+/** BATCH-6 sanitizer (pure, node-side): (1) every launch secret (launchUrl +
+ *  its query VALUES via collectLaunchSecrets) is split-out replaced; (2) URL
+ *  ATTRIBUTE VALUES lose everything from '?'/'#' on (query/fragment = token
+ *  carriers, per the launch-URL threat model); (3) token-shaped assignments
+ *  are redacted; (4) a final scanForSecrets tripwire replaces the WHOLE dump
+ *  if anything survives. Never logs the dump itself. */
+export function sanitizeDomDump(html, secrets) {
+  let text = String(html)
+  for (const secret of secrets) {
+    if (typeof secret === 'string' && secret.length >= 8) text = text.split(secret).join('[scrubbed-launch-secret]')
+  }
+  text = text.replace(/\s(href|src|action)="([^"]*)"/gi, (match, attr, value) => ` ${attr}="${value.split(/[?#]/)[0]}"`)
+  text = text.replace(/\b(s2o|token|authUrl|authorization|apiKey|api_key)\b(\s*[=:]\s*)("[^"]*"|[^&"'{}\s<>]+)/gi, (match, key) => `${key}=[redacted]`)
+  if (scanForSecrets(text, secrets).length > 0) return '[entry dump suppressed by token tripwire]'
+  return text
+}
+
+/** BATCH-6 one-file 0600 dump, tmp+rename (mirrors writeMarkerAtomic's fd
+ *  discipline). First-writer-wins: a later failure never overwrites the dump
+ *  of the FIRST one. Best-effort — a dump failure never masks the typed
+ *  failure it documents. */
+export function writeEntryDumpAtomic({ dir, text }) {
+  const finalPath = join(dir, 's2o-entry-dump.html')
+  if (existsSync(finalPath)) return { written: false, path: finalPath }
+  const tmpPath = `${finalPath}.tmp-${process.pid}`
+  let fd = null
+  try {
+    fd = openSync(tmpPath, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600)
+    writeSync(fd, text)
+    closeSync(fd)
+    fd = null
+    const st = lstatSync(tmpPath)
+    if (!st.isFile() || (st.mode & 0o777) !== 0o600) chmodSync(tmpPath, 0o600)
+    renameSync(tmpPath, finalPath)
+    return { written: true, path: finalPath }
+  } catch (error) {
+    if (fd !== null) { try { closeSync(fd) } catch { /* best effort */ } }
+    try { rmSync(tmpPath, { force: true }) } catch { /* our own tmp only */ }
+    return { written: false, path: finalPath, error: String(error?.message ?? error).slice(0, 160) }
+  }
 }
 
 // ── EXTERNAL BATCH ITEM-2: durable narrow lengths + BOTH-viewport verdict ───
