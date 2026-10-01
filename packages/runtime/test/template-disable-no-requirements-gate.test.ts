@@ -48,6 +48,7 @@ import {
 import type { EnvironmentFact } from '../../domain/compatibility/src/index.js'
 import {
   createRuntimeRequirementFactsProvider,
+  requirementFactScopeRoleOf,
   type RequirementFactsPorts,
 } from '../requirement-facts/index.js'
 import {
@@ -186,7 +187,20 @@ function templateFeedOf(
     (
       await provider.resolveFacts({
         requirements: templates[templateId] ?? [],
-        scope: { kind: 'template', templateId },
+        // PR #46 ROLE CONTRACT (audit site T1, 2026-10-01 master-sync round 2):
+        // the template scope carries its role identity, DERIVED from this
+        // world's bound blueprint leader template identity — the leader
+        // template -> 'leader' (its own / root observation), any other
+        // template -> 'member'. Never hardcoded: the thunk is generic over
+        // templateId (this world's delegate target 'worker' -> 'member').
+        // Pre-merge note: the helper import resolves from the master-sync
+        // merge onward (the PR #46 contract); at the pre-merge tip this
+        // file's collection is intentionally RED (see fix-report).
+        scope: {
+          kind: 'template',
+          templateId,
+          role: requirementFactScopeRoleOf(world.blueprint.leader.templateId, templateId),
+        },
       })
     ).environmentFacts
 }
