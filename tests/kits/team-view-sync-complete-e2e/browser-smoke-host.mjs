@@ -291,7 +291,21 @@ async function remoteReadState(origin, cookie, sessionId, tag) {
   const status = res === null ? -1 : res.status
   let body = null
   try { body = res === null ? null : await res.json() } catch { body = null }
-  const data = body?.value?.data ?? body?.value ?? null
+  // Unwrap the RPC envelope with the HOUSE convention — the sibling spill driver
+  // reads the same answer as `body.result.ok === true ? body.result.value.data`
+  // — and the wire confirms it here:
+  //   {"type":"server-response","rpcId":…,"result":{"ok":true,"value":{"data":{…}}}}
+  // A `{ok:false}` result is a typed error, not a record, so it yields null data.
+  // `body.value.data` alone (what this helper did until 2026-10-01) reads a
+  // perfectly AFFIRMATIVE answer as null, so readiness polled for its whole 60 s
+  // budget and died: observed live in the carrier run, where status=200 and
+  // relation / teamSessionId / memberInstanceId / disposed were ALL already
+  // satisfied (masked console: dev/agent-workflow/evidence/
+  // test-infra-fixture-param/run-carrier-boot-2026-10-01T14-04-27.log).
+  const value = body?.result?.ok === true ? body.result.value
+    : body?.result != null ? null
+      : body?.value ?? null
+  const data = value?.data ?? (typeof value?.relation === 'string' ? value : null) ?? null
   return { status, body, data }
 }
 
