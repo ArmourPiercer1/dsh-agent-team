@@ -75,6 +75,8 @@
  */
 
 import {
+  INSTANCE_ID_MAX_LENGTH,
+  SESSION_ID_MAX_LENGTH,
   assertNoLegacyFields,
   canonicalJsonStringify,
   deepFreeze,
@@ -202,9 +204,6 @@ export const PERMISSION_OVERLAY_MAX_RULES = 256
 /** Structural bound of the audit `reason` text. */
 export const PERMISSION_OVERLAY_MAX_REASON_LENGTH = 512
 
-/** Structural bound of the `previousSnapshotId` reference text. */
-export const PERMISSION_OVERLAY_MAX_SNAPSHOT_ID_LENGTH = 256
-
 /**
  * The separator inside a derived snapshot key. The public session-id grammar
  * does not forbid `#`, so the store rejects that character in an identity
@@ -212,6 +211,47 @@ export const PERMISSION_OVERLAY_MAX_SNAPSHOT_ID_LENGTH = 256
  * ambiguous key form.
  */
 export const PERMISSION_OVERLAY_KEY_SEPARATOR = '#'
+
+/**
+ * The widest a generation number can render as: a generation is a SAFE
+ * integer >= 1 (see the metadata gate), so the largest legal value is
+ * `Number.MAX_SAFE_INTEGER` = `9007199254740991` = 16 characters.
+ */
+const MAX_GENERATION_DIGITS = String(Number.MAX_SAFE_INTEGER).length
+
+/**
+ * The bound of the DERIVED snapshot id / `previousSnapshotId` reference —
+ * DERIVED from the component maxima so it can never drift away from them.
+ *
+ * A snapshotId is not free-form text; it is derived by
+ * {@link permissionOverlaySnapshotKey} as
+ *
+ *     teamSessionId + SEP + memberInstanceId + SEP + generation
+ *
+ * so its maximum length is exactly the sum of the component maxima:
+ *
+ * | component                                     | bound | source                       |
+ * | --------------------------------------------- | ----- | ---------------------------- |
+ * | the longest legal TeamSession id               | 255   | `SESSION_ID_MAX_LENGTH`       |
+ * | the separator                                   | 1     | `PERMISSION_OVERLAY_KEY_SEPARATOR` |
+ * | the longest legal MemberInstance id (`inst-` + 32) | 37 | `INSTANCE_ID_MAX_LENGTH`      |
+ * | the separator                                   | 1     | `PERMISSION_OVERLAY_KEY_SEPARATOR` |
+ * | the widest legal generation                     | 16    | `MAX_GENERATION_DIGITS`       |
+ * | **total**                                       | **310** |                             |
+ *
+ * A hand-picked bound BELOW this sum is a latent contract break, not a
+ * tightening: a legal max-length identity would append generation 1 (whose
+ * `previousSnapshotId` is null) and then be unable to append generation 2,
+ * because generation 2's reference names generation 1's key — a row that IS
+ * durable — and would be rejected by its own length bound. The chain could
+ * never advance past its first snapshot for that identity.
+ */
+export const PERMISSION_OVERLAY_MAX_SNAPSHOT_ID_LENGTH =
+  SESSION_ID_MAX_LENGTH +
+  PERMISSION_OVERLAY_KEY_SEPARATOR.length +
+  INSTANCE_ID_MAX_LENGTH +
+  PERMISSION_OVERLAY_KEY_SEPARATOR.length +
+  MAX_GENERATION_DIGITS
 
 // ---------------------------------------------------------------------------
 // The record types

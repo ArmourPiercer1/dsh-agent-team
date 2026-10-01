@@ -1,0 +1,40 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay
+
+ ❯ packages/runtime/test/permission-overlay-append.test.ts (9 tests | 1 failed | 8 skipped) 8ms
+     ↓ appends one snapshot and reads it back with the four ADR §2 sections intact
+     ↓ writes one durable row into the overlay store of the overlay domain
+     ↓ is idempotent for the identical snapshot at the same generation (no second row, no rewrite)
+     ↓ keeps MemberInstances of one TeamSession apart (no cross-instance read)
+     ↓ keeps TeamSessions apart for the same instance id (no cross-team read)
+     ↓ reports no authority and an empty history for an identity that has no snapshot
+     ↓ rejects a structurally invalid append WITHOUT writing a row
+     × chains TWO generations on a MAX-length identity (the snapshot-id bound must be derived) 7ms
+     ↓ names the overlay domain and store exactly (the durable placement contract)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/permission-overlay-append.test.ts > permission-overlay append (PR1 plan test 1) > chains TWO generations on a MAX-length identity (the snapshot-id bound must be derived)
+TeamDomainError: PermissionOverlaySnapshot metadata.previousSnapshotId must be null or a non-empty string of at most 256 chars
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ invalid packages/storage/schema/permission-overlay.ts:335:9
+ ❯ parseMetadata packages/storage/schema/permission-overlay.ts:430:7
+ ❯ createPermissionOverlaySnapshot packages/storage/schema/permission-overlay.ts:503:20
+ ❯ PermissionOverlayRepository.append packages/storage/repositories/permission-overlays.ts:152:18
+ ❯ Object.append packages/runtime/permission-governance/overlay-repository.ts:71:25
+ ❯ packages/runtime/test/permission-overlay-append.test.ts:156:37
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 skipped (9)
+   Start at  18:11:05
+   Duration  300ms (transform 156ms, setup 0ms, import 197ms, tests 8ms, environment 0ms)
+

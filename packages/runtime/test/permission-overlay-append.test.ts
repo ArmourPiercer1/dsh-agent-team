@@ -131,6 +131,35 @@ describe('permission-overlay append (PR1 plan test 1)', () => {
     world.destroy()
   })
 
+  it('chains TWO generations on a MAX-length identity (the snapshot-id bound must be derived)', async () => {
+    // Contract bound: a snapshotId is DERIVED as
+    //   teamSessionId + '#' + memberInstanceId + '#' + generation
+    // so its bound must be the sum of the component maxima (the session-id
+    // maximum + one separator + the instance-id maximum + one separator + the
+    // digits of the largest legal generation), never a hand-picked number. A
+    // hand-picked bound BELOW that sum breaks a legal max-length identity at
+    // generation 2: generation 1 appends (previousSnapshotId null), but its
+    // own derived key exceeds the bound, so generation 2's
+    // previousSnapshotId — naming a row that IS durable — is necessarily
+    // rejected and the chain can never advance past its first snapshot.
+    const longestTeamSessionId = 'session-root-'.padEnd(255, 'x')
+    const longestInstanceId = `inst-${'0'.repeat(32)}`
+    expect(longestTeamSessionId).toHaveLength(255)
+    expect(longestInstanceId).toHaveLength(37)
+
+    const world = await openWorld('append-max-identity-chain')
+    const identity = { teamSessionId: longestTeamSessionId, memberInstanceId: longestInstanceId }
+    const first = await world.port.append(snapshotInput(1, identity))
+    expect(first.snapshotId).toBe(`${longestTeamSessionId}#${longestInstanceId}#1`)
+    expect(first.metadata.previousSnapshotId).toBeNull()
+
+    const second = await world.port.append(snapshotInput(2, identity))
+    expect(second.metadata.previousSnapshotId).toBe(first.snapshotId)
+    expect((await world.port.latest(identity))?.metadata.generation).toBe(2)
+    expect((await world.port.history(identity)).map((s) => s.metadata.generation)).toEqual([1, 2])
+    world.destroy()
+  })
+
   it('names the overlay domain and store exactly (the durable placement contract)', async () => {
     const world = await openWorld('append-placement')
     expect(PERMISSION_OVERLAY_DOMAIN_NAME).toBe('team_permission_overlay')
