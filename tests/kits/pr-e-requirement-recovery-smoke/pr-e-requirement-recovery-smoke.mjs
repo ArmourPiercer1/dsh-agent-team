@@ -231,6 +231,31 @@ import {
   serializeLedgerSequenceCounter,
 } from '../../../packages/runtime/dist/packages/storage/schema/ledger.js'
 import { canonicalJsonStringify } from '../../../packages/runtime/dist/packages/contracts/src/remote-safe.js'
+// Finding J (2026-10-01, 60b6b16a — merged in #48): the durable
+// `optional-requirement-accepted` consent is now KEYED — scope + bound
+// blueprint content hash (consentCovers, startup-preflight.ts: a keyed
+// evaluation fails CLOSED on legacy rows; the production grant stamps both
+// fields). The kit's world seeds are DETERMINISTIC FIXTURES standing in for
+// that grant (no live consent writer exists for this increment — the gate's
+// READ is the behavior under test), so they must carry the current keyed
+// shape. The contentHash is computed with the HOST'S OWN parse pipeline
+// (domain parseBlueprint, dist) over the exact blueprint source strings the
+// kit writes, so the seeded consent binds the same contentHash the host
+// derives at create. Assertions unchanged — the seeded rows gain two payload
+// fields; every check (S1 post-consent re-drive, S2/S11 readability) reads
+// the rows it seeded.
+import { parseBlueprint } from '../../../packages/runtime/dist/packages/domain/blueprint/src/validate.js'
+
+// The production recovery attempt-id contract (asserted, not re-invented):
+// `recovery:${requestToken}:${attemptId}` with attemptId = crypto.randomUUID()
+// (lowercase 8-4-4-4-12 hex) or the platform fallback `fallback-<base36>-<base36>`
+// (router.ts nextRecoveryAttemptId, since #49 fix-control-authz).
+const ATTEMPT_ID_SHAPE = '([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|fallback-[0-9a-z]+-[0-9a-z]+)'
+function recoveryAttemptIdOf(correlation, token) {
+  if (typeof correlation !== 'string') return null
+  const m = correlation.match(new RegExp(`^recovery:${token}:${ATTEMPT_ID_SHAPE}$`))
+  return m === null ? null : m[1]
+}
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
 
@@ -458,7 +483,17 @@ async function fetchJson(url, init, timeoutMs = 30_000) {
 }
 
 async function probeStableInstance(url) {
-  const r = await fetch(url, { signal: AbortSignal.timeout(10_000) }).catch((e) => ({ status: 0, error: String(e?.message ?? e) }))
+  // Refusal-safe (2026-10-01, test-infra): the stable-instance probe is a
+  // RED-LINE OBSERVATION (EVID.stableBefore/stableAfter — the zero-touch
+  // record for :3080/:3180), never a test input. The previous form's
+  // fetch().catch() returned a bare object on a REFUSED connection
+  // (e.g. :3180 not listening on the test host) and then threw
+  // 'r.text is not a function', fast-failing the whole kit in environments
+  // where the stable slot is empty. Record the refusal as data instead —
+  // the same semantics the F15 kit's safe probe (f15-mcp-live-loss-smoke,
+  // L294) has always used. No assertion changes.
+  let r
+  try { r = await fetch(url, { signal: AbortSignal.timeout(10_000) }) } catch (e) { return { status: 0, error: String(e?.message ?? e) } }
   const text = await r.text().catch(() => '')
   return { status: r.status, length: text.length, head: text.slice(0, 200) }
 }
@@ -2058,12 +2093,22 @@ async function main() {
       generation: 1,
       consentedAt: Date.now(),
       consentedBy: 'kit-e12',
+      // Finding-J keyed consent: the warning requirement's scope (the leader
+      // template scope) + the bound blueprint's contentHash (the host's own
+      // parse pipeline over this kit's exact main blueprint source).
+      scopeKey: 'template:leader',
+      contentHash: parseBlueprint(mainTeamBlueprintYaml()).contentHash,
     })
     const consentSeqT2 = seedFact(T2, 'optional-requirement-accepted', {
       requirementId: 'lead.mcp.signal',
       generation: 1,
       consentedAt: Date.now(),
       consentedBy: 'kit-e12',
+      // Finding-J keyed consent: same keyed shape; the ISO blueprint's hash
+      // (inert for the iso gate — the iso blueprint carries no template
+      // requirements — but seeded faithful).
+      scopeKey: 'template:leader',
+      contentHash: parseBlueprint(isoTeamBlueprintYaml()).contentHash,
     })
     {
       const world = readWorld()
@@ -2171,6 +2216,9 @@ async function main() {
       generation: 1,
       consentedAt: Date.now(),
       consentedBy: 'kit-e12',
+      // Finding-J keyed consent: keyed shape (S2/S11 read the LATEST row).
+      scopeKey: 'template:leader',
+      contentHash: parseBlueprint(mainTeamBlueprintYaml()).contentHash,
     })
 
     // ══ B2b (resume): consent readable, gate still ignores it ═════════════
@@ -2262,7 +2310,16 @@ async function main() {
         // K15 (run-6 finding): a REGEX LITERAL never interpolates ${NONCE}
         // (the pattern would contain the literal text '${NONCE}' and never
         // match) — the anchor must be built as a RegExp from the template.
-        && typeof rp?.correlation === 'string' && new RegExp(`^recovery:rt-b3a-` + NONCE + `:[0-9a-z]+$`).test(rp.correlation)
+        && typeof rp?.correlation === 'string'
+        // Post-#49 attempt-id contract (router.ts nextRecoveryAttemptId —
+        // #49 fix-control-authz replaced the pre-#49 monotonic
+        // recoveryDispatchSequence): crypto.randomUUID() (lowercase
+        // 8-4-4-4-12 hex) or the platform-crypto-absent fallback
+        // `fallback-<base36 counter>-<base36 ms>`. The EXACT prefix
+        // (recovery:rt-b3a-<NONCE>:) + the exact id shape are asserted —
+        // no wildcard relaxation; per-attempt freshness (pairwise-distinct
+        // ids for b3a/b3b/b3c) is asserted by the S10 check below.
+        && recoveryAttemptIdOf(rp.correlation, `rt-b3a-${NONCE}`) !== null
       check('S9', 'exact reviewed payload: recovery-dispatch/v1 shape + reducedAuthority + effect + kind + inline + correlation',
         shapeOk, `shape=${JSON.stringify({ schema: rpv?.schema, op: rpv?.requestedOperation, blocked: rpv?.blockedScopes, downed: rpv?.downedCapabilitySubjects, subject: rp?.subject, kind: rp?.kind, coupling: rp?.executionCoupling, correlation: rp?.correlation }).slice(0, 400)}`)
       check('S9', 'exact reviewed payload: reviewPayloadDigest == sha256(canonicalJson(reviewPayload)) recomputed',
@@ -2380,6 +2437,21 @@ async function main() {
         `elapsedMs=${elapsedMs} err=${JSON.stringify(tool.body?.error ?? null).slice(0, 200)}`)
       check('S10', 'abort durable: control-request-abandoned fact recorded for the b3c request',
         abandonedId !== null, `abandoned=${JSON.stringify(b3cAbandon?.payload ?? null).slice(0, 250)}`)
+      // Attempt-id freshness (the post-#49 contract): each B3 recovery
+      // attempt (b3a allow / b3b deny / b3c abort) minted its OWN attempt
+      // id — a reused id would conflate the review correlation of distinct
+      // human-approval requests. Collected from the durable
+      // control-request-recorded facts (the wire correlation rides in the
+      // fact payload); each must match the shipped UUID/fallback shape and
+      // the three must be pairwise distinct.
+      const b3AttemptIds = ['b3a', 'b3b', 'b3c'].map((x) => {
+        const rec = factEntries(entries, 'control-request-recorded').find(
+          (e) => typeof e?.payload?.correlation === 'string' && e.payload.correlation.startsWith(`recovery:rt-${x}-`))
+        return rec === undefined ? null : recoveryAttemptIdOf(rec.payload.correlation, `rt-${x}-${NONCE}`)
+      })
+      check('S10', 'attempt-id freshness: the b3a/b3b/b3c recovery attempts carry FRESH pairwise-distinct attempt ids, each in the shipped UUID/fallback shape (post-#49 nextRecoveryAttemptId contract)',
+        b3AttemptIds.every((v) => v !== null) && new Set(b3AttemptIds).size === 3,
+        `ids=${JSON.stringify(b3AttemptIds)}`)
 
       // A LATER allow on the abandoned request is rejected (terminal).
       if (abandonedId !== null) {
