@@ -345,3 +345,94 @@ mcpServer probe port is registered, so the persona observation is
    deleted; the probe path deliberately not patched.
 5. Environment: node v24.21.0, pnpm 11.7.0; all git/pnpm from inside
    `.worktrees/fix-persona-kind` only (single writer).
+
+---
+
+# SYNC ROUND — integration with master `2bfbca12` (PR #47 E+G) @ merge commit `3c340110`
+
+**Trigger**: the external content review of `4cebc0c6` PASSED (all 3 blockers
+verified fixed), but the integration BLOCK stood: the branch was
+`mergeable=false` against the NEW master `2bfbca12c0b4b7260e8bc9b5b05cd339189c74e4`
+(PR #47 `fix/effective-policy-reset-fallback` E+G merged: `s6-remote.ts` /
+`effective-policy` / `governance` + its rebuilt dist + router-log append).
+Parent instruction: CONTROLLED SYNC — **MERGE** strategy on the fix branch
+(merge commit, NOT a rebase: no history rewrite → plain fast-forward push
+afterward, zero force-push).
+
+**Merge**: `git merge origin/master` → commit **`3c340110e53f7b3b321e497fff46a1efe69a9d5e`**
+(parents `4cebc0c6` + `2bfbca12`; default merge message + conflict-resolution
+trailer).
+
+## NEW UNREVIEWED CHANGES (sync) — the prior review pass (including the
+just-PASSED content review at `4cebc0c6`) does NOT cover these
+
+### Conflict resolution list (protocol d — file + hunk + what was kept)
+
+1. **`dev/agent-workflow/SESSION_ROUTER_LOG.md` — the ONLY conflict**
+   (append/append at EOF; both sides appended after the common anchor
+   entry). Resolution = **append-only union, zero rewrites**: master's two
+   `2026-09-29` `fix/effective-policy-reset-fallback` (#47) entries kept
+   **verbatim** (neither dropped) + this branch's `2026-10-01` /
+   `2026-10-02` fix-persona-kind entries kept **verbatim**; only the block
+   boundary whitespace was normalized (one blank line between the master
+   block and the branch block). No entry text, ordering, or content
+   changed on either side.
+2. **All other 54 files: clean auto-merge — ZERO manual hunks** (disjoint
+   paths, verified by `git diff --name-only` overlap check BEFORE the
+   merge: the router log was the only file both sides touched).
+   - #47 side brought in: `packages/runtime/src/plugin/s6-remote.ts`,
+     `packages/runtime/effective-policy/{reader,select}.ts`,
+     `packages/runtime/test/{governance-reset-tombstone,
+     remote-override-expected-generation}.test.ts`, its rebuilt dist
+     (10 files under `packages/runtime/dist/.../effective-policy/` +
+     `src/plugin/s6-remote.{js,d.ts.map,js.map}`), its evidence dir
+     (`dev/agent-workflow/evidence/fix-effective-policy-reset/`, 39 files).
+   - This branch kept: the finding-A product changes (requirement-facts
+     contract/provider, root.ts, its 15 dist files), the 7 persona test
+     files, the p4t6 pin 898, the round-1+2 evidence.
+3. **Generated artifacts (protocol a — never keep either side's stale
+   artifacts)**: after resolving the source-side conflict, a FRESH
+   `pnpm build` (9/9 Done, true EXIT=0) ran on the MERGED tree
+   (`sync-build.log`); the working-tree dist came out **byte-identical to
+   the auto-merged staged dist** (zero unstaged drift after the build) —
+   i.e. the fresh build defines all dist and it is canonical: #47's
+   `s6-remote.js` / `effective-policy/*.js` reproduce byte-for-byte from
+   the merged sources, and this branch's `requirement-facts/*` +
+   `root.js` are unchanged by the merge. `pnpm run build:composition` NOT
+   run — the composition surface is unchanged by BOTH sides (no
+   `packages/client/**` or `composition-shim` change in #47's diff or in
+   this branch's).
+4. **p4t6 scanner PIN (protocol c — recompute from the actual integrated
+   tree)**: authoritative scanner run on the merged tree = **10/10 @ 898**
+   (`sync-p4t6.log`, true EXIT=0) — **delta 0** versus this branch's
+   pre-merge pin 898. Justification: #47 **MODIFIED 5 existing scannable
+   files and ADDED none** (verified with
+   `git diff --name-status 31ad828d..origin/master -- 'packages/**/*.ts'`
+   — all five are `M`; `remote-override-expected-generation.test.ts`
+   exists at the base already, its content extended), so the merged
+   tree's scannable set = base 896 + this branch's 2 new files (the
+   regression suite + the shipped-dist smoke) = **898**. The scanner
+   `.mjs`/`.d.mts` is **byte-identical** (not in #47's diff). No pin edit
+   was needed (898 → 898); the recomputation is recorded here and in the
+   sync log.
+
+### Gate totals at the merged head `3c340110` (all logs in this directory,
+legible standard: real command line as first line + complete stdout + true
+exit line)
+
+| Gate | Result | Log |
+| --- | --- | --- |
+| Focused persona area (14-suite + smoke + frozen v1 + d1-d3 + leader-template + leader-recovery + mcp-live) | **91/91, EXIT=0** | `sync-focused.log` |
+| Full suite | **10F \| 399P (409) files / 21F \| 4726P (4747) tests**; failed-file SET DIFF vs the 31ad828d baseline debt set = **only `p6t1-parallel.test.ts`** = the documented **P1 flake signature** ("P6-T1 P1: N=2 same-template parallel activations both succeed", 2 tests — inside the parent-sanctioned 0–2 flake envelope; **9/9 in isolation ×2** — same recorded family, zero new signatures; `sync-p6t1-isolated.log`) | `sync-full-suite.log`, `sync-failed-files.txt`, `sync-setdiff-failed-files.txt` |
+| Typecheck (FULL legible log: command line + complete stdout + true exit) | **EXIT=0** (8 packages that define the script; `legacy` has none) | `sync-typecheck.log` |
+| Lint FILE-AWARE vs the committed BASELINE fingerprint (protocol: NEW = gate fail) | **142 vs 143 — ZERO additions**: exactly the 3 pre-existing provider.ts errors line-shifted by this fix's insertions (87→94 / 96→104 / 442→505) + 1 pre-existing d1-d3 error shifted (340→341) + **1 baseline error REMOVED** — `governance-reset-tombstone.test.ts:248 'instanceSlotId' unused`, fixed by #47's rewrite of that test (a removal, not a new error) | `sync-lint.log`, `sync-lint-fa-baseline.txt` vs `sync-lint-fa-new.txt` |
+| check:artifacts (FULL legible log) | **EXIT=0 — "OK: 1372 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))"** | `sync-check-artifacts.log` |
+| p4t6 @ recomputed pin | **10/10 @ 898, EXIT=0** (delta 0, §above) | `sync-p4t6.log` |
+| Fresh build (merged tree) | **9/9 Done, EXIT=0**; dist canonical (zero drift) | `sync-build.log` |
+
+**Post-sync invariants**: the B1 role-contract commit keeps its SHA in the
+MERGE — **`1461a6f2bf2a5dc18f1a16b671b6ea5bf552e3fb`** (verified by
+`git log` after the merge; content-identity checkable against any
+cherry-pick of that SHA). The PR base remains `31ad828d` (unless GitHub
+re-bases the PR); the branch now ALSO carries master ancestor
+`2bfbca12` — the merge makes the tip a descendant of both.
