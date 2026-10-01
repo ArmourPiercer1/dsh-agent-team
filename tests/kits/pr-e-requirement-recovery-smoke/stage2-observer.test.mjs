@@ -116,10 +116,11 @@ const MEMBER = 'session-team-child-f47ac10b58cc4372a5670e02b2c3d479'
 const PAYLOAD = { schema: 'recovery-dispatch/v1', instanceId: 'inst-7', note: 'ünïcode ✓', rootSessionId: ROOT }
 const DECOY = 'session-pr-e-decoy-other'
 // EXTERNAL runtime fact (review @23a43f20): the header shows the session's
-// DISPLAY TITLE (kit meta.cwd → 'prreq smoke session'), never the raw
-// sessionId, whenever the session is inside ancestry. The fixture header
-// mirrors THAT reality so a raw-ID header dependency can never pass here.
-const FIXTURE_TITLE = 'prreq smoke session'
+// DISPLAY TITLE, never the raw sessionId, whenever the session is inside
+// ancestry. P1-round correction: the LIVE kit text is 'prereq smoke session'
+// (kit source L936, verified this round) — the earlier 'prreq' typo mirrored
+// nothing and is fixed HERE, not hidden.
+const FIXTURE_TITLE = 'prereq smoke session'
 const WRONG_ROOT = 'session-pr-e-root-02'
 const DIGEST = reviewPayloadDigestOf(PAYLOAD) // sha256:<64hex> via the kit's SINGLE canonical impl
 
@@ -1703,7 +1704,7 @@ test('88 member mode COMPOSES with fresh-boot activation: collapsed group expand
   assert.equal(res.entryPerspective, 'member')
 })
 
-test('89 durable binding DRIFT between checks is typed (direct resolveMemberBinding — the post-marker recheck semantics)', async () => {
+test('89 durable binding DRIFT between checks is typed (direct resolveMemberBinding — the PRE-PUBLICATION recheck semantics, P1 ordering)', async () => {
   const mod = await import('./stage2-observer.mjs')
   assert.equal(typeof mod.resolveMemberBinding, 'function', 'exported for the reviewer to audit the ONE binding authority')
   const dir = mkTmp('s2o-domain-')
@@ -1743,4 +1744,104 @@ test('91 ENTRY failure in member mode: the diagnostic records BOTH bounded ids (
   )
   const text = readDiagnostic(f)
   assertDiagnosticShape(JSON.parse(text), { entry: MEMBER })
+})
+
+// — PARENT P1 (ORDERING): the marker is an ATOMIC PUBLICATION consumed by a
+// LIVE kit the moment it exists — therefore EVERY required verification
+// (comparison oracles, durable-binding drift recheck, marker-content guard)
+// must complete BEFORE publication, and the marker write is the LAST
+// consequential action. Leg 92 orchestrates the REAL flow and injects binding
+// drift AFTER the pre-UI resolve but strictly BEFORE the publish point; the
+// pre-fix ordering published the marker first and only THEN failed (defect
+// proven in the RED raw) — the contract asserted here is the fixed one.
+
+test('92 P1 ORDERING: binding drift injected between pre-UI resolve and the publish point ⇒ typed refusal AND ZERO MARKER ON DISK (marker is published only after ALL verification)', async () => {
+  const f = mkCliFixture({ member: true })
+  const browser = makeFakeBrowser({ html: wireMemberHtml() })
+  let drifted = false
+  let evals = 0
+  const origNewContext = browser.newContext.bind(browser)
+  browser.newContext = async (o) => {
+    const ctx = await origNewContext(o)
+    const origNewPage = ctx.newPage.bind(ctx)
+    ctx.newPage = async () => {
+      const p = await origNewPage()
+      const origEval = p.evaluate.bind(p)
+      p.evaluate = async (...a) => {
+        const r = await origEval(...a)
+        // ONE injection on the 3rd in-page evaluate — strictly AFTER the
+        // pre-UI durable resolve, strictly BEFORE the publish point.
+        if ((evals += 1) === 3 && !drifted) {
+          drifted = true
+          writeFileSync(f.domain, mkTeamDomainJson({ childOverride: `session-team-child-${'c'.repeat(32)}` }))
+        }
+        return r
+      }
+      return p
+    }
+    return ctx
+  }
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...fakeClock() }),
+    (err) => { assert.ok(err instanceof ObserverError); assert.equal(err.code, 'S2O_MEMBER_BINDING_MISMATCH'); return true },
+  )
+  assert.equal(drifted, true, 'the drift really rode the REAL observation path (not a unit mock)')
+  assert.ok(evals > 3, 'the flow ran well past the injection point')
+  assert.deepEqual(readdirSync(f.markerDir), [], 'NOTHING may be published before required verification completes')
+})
+
+test('93 rider (reviewer MINOR): TWO member_instances rows naming the same {instance,root}→child ⇒ matches!==1 typed MISMATCH', async () => {
+  const { resolveMemberBinding } = await import('./stage2-observer.mjs')
+  const base = JSON.parse(mkTeamDomainJson())
+  const k = Object.keys(base.tables.member_instances)[0]
+  const v = base.tables.member_instances[k]
+  const parts = k.slice(1, -1).split(',') // {"instanceId":…,"rootSessionId":…} — rebuild REVERSED
+  const reversed = `{${parts[1]},${parts[0]}}` // different raw key, SAME parsed fields
+  base.tables.member_instances[reversed] = v
+  const dir = mkTmp('s2o-dup-')
+  const p = join(dir, 'team_domain.json')
+  writeFileSync(p, JSON.stringify(base))
+  assert.throws(
+    () => resolveMemberBinding({ teamDomainPath: p, memberSessionId: MEMBER, expectedRootSessionId: ROOT }),
+    (err) => { assert.equal(err.code, 'S2O_MEMBER_BINDING_MISMATCH'); return true },
+    'exactly-one provenance row is a hard bound — ambiguity never picks',
+  )
+})
+
+test('94 rider (reviewer MINOR): --team-domain fail-closed branches — unparseable / missing tables / >16MiB cap all typed, symlink refused at parse', async () => {
+  const { resolveMemberBinding } = await import('./stage2-observer.mjs')
+  const dir = mkTmp('s2o-dom-')
+  const bad = join(dir, 'bad.json')
+  writeFileSync(bad, 'not json at all {{{')
+  assert.throws(() => resolveMemberBinding({ teamDomainPath: bad, memberSessionId: MEMBER, expectedRootSessionId: ROOT }), (err) => { assert.equal(err.code, 'S2O_MEMBER_DOMAIN_SHAPE'); return true })
+  const empty = join(dir, 'empty.json')
+  writeFileSync(empty, JSON.stringify({ unit: { name: 'team_domain', version: 2 }, global: null, tables: {} }))
+  assert.throws(() => resolveMemberBinding({ teamDomainPath: empty, memberSessionId: MEMBER, expectedRootSessionId: ROOT }), (err) => { assert.equal(err.code, 'S2O_MEMBER_DOMAIN_SHAPE'); return true }, 'missing session_bindings/member_instances tables is NOT a team_domain file')
+  const huge = join(dir, 'huge.json')
+  writeFileSync(huge, `{"pad":"${'x'.repeat(16 * 1024 * 1024 + 1)}"}`)
+  assert.throws(() => resolveMemberBinding({ teamDomainPath: huge, memberSessionId: MEMBER, expectedRootSessionId: ROOT }), (err) => { assert.equal(err.code, 'S2O_MEMBER_DOMAIN_SHAPE'); return true }, 'bounded read: a domain file beyond the cap is refused BEFORE parsing')
+  const link = join(dir, 'link.json')
+  const real = join(dir, 'real.json')
+  writeFileSync(real, mkTeamDomainJson())
+  symlinkSync(real, link)
+  const f = mkCliFixture({ member: true })
+  assert.throws(() => parseCli([...f.args.filter((a) => a !== f.domain), link]), (err) => { assert.equal(err.code, 'CLI_NOT_REGULAR_FILE'); return true }, 'symlinked domain files never parse')
+})
+
+test('95 rider (reviewer MINOR): forged --member-session shape is CLI-typed, and --team-domain alone (no member) is a typed pairing refusal', () => {
+  const f = mkCliFixture({ member: true })
+  assert.throws(
+    () => parseCli(f.args.map((a) => (a === MEMBER ? 'session-team-child-ZZZZ' : a))),
+    (err) => { assert.equal(err.code, 'CLI_MEMBER_SESSION_SHAPE'); return true },
+  )
+  assert.throws(
+    () => parseCli(f.args.filter((a) => a !== f.domain && a !== '--team-domain')),
+    (err) => { assert.equal(err.code, 'CLI_MISSING_TEAM_DOMAIN'); return true },
+    'member id without the durable file: never trusted',
+  )
+  assert.throws(
+    () => parseCli(f.args.filter((a) => a !== MEMBER && a !== '--member-session')),
+    (err) => { assert.equal(err.code, 'CLI_MISSING_MEMBER_SESSION'); return true },
+    'the durable file alone never picks an entry session',
+  )
 })

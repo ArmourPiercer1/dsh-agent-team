@@ -1157,6 +1157,31 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
       expected: { rid: opts.rid, expectedDigest: expected.expectedDigest, payloadValue: expected.payloadValue },
     })
     const allPassed = verdict.ok === true
+    // PARENT P1 (BINDING ORDERING LAW): the marker is an ATOMIC PUBLICATION
+    // a LIVE kit can consume the instant it exists — so EVERY required
+    // verification (all comparison oracles above, the durable-binding drift
+    // recheck and the marker-content guard here) completes BEFORE the
+    // publication point; after writeMarkerIfAllPass NOTHING required remains,
+    // and a typed failure can therefore never coexist with a marker it
+    // rejects. (The earlier "an orphan marker is never consumed" reasoning is
+    // RETRACTED — it is false for live consumers.) Runs only on the publish
+    // branch (allPassed) — a failed verdict publishes nothing anyway.
+    if (memberMode && allPassed) {
+      const recheck = resolveMemberBinding({
+        teamDomainPath: opts.teamDomainPath,
+        memberSessionId: opts.memberSessionId,
+        expectedRootSessionId: rootSessionId,
+      })
+      if (JSON.stringify(recheck) !== JSON.stringify(memberBinding)) {
+        throw new ObserverError('S2O_MEMBER_BINDING_MISMATCH', 'the durable member binding CHANGED between entry and the pre-publication recheck — provenance drift (fail closed, NOTHING published)')
+      }
+      // Marker-content guard: the exact values about to be published are
+      // re-verified against the durable access record BEFORE the write —
+      // same pending RID + durable digest, never after.
+      if (access.requestId !== opts.rid || (typeof access.reviewPayloadDigest === 'string' && access.reviewPayloadDigest !== expected.expectedDigest)) {
+        throw new ObserverError('S2O_MEMBER_BINDING_MISMATCH', 'the marker content guard refused the pending RID / durable digest pair BEFORE publication (fail closed, NOTHING published)')
+      }
+    }
     const evidenceFiles = {
       'meta.json': JSON.stringify({
         kit: 'pr-e-requirement-recovery-smoke/stage2-observer',
@@ -1194,26 +1219,8 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
     if (marker.ok !== true) {
       throw new ObserverError('S2O_CHECKS_FAILED', `observation refused the marker (${marker.reason}) — see ${join(evidence.dir, 'comparisons.json')}`)
     }
-    if (memberMode) {
-      // Parent-ordered binding cross-checks AFTER the marker (the ordering is
-      // the ruling): durable re-read must be drift-free, and the marker must
-      // carry the SAME pending RID + the durable digest. A typed failure here
-      // exits non-zero — the kit/paired lane then records UI NOT_RUN and the
-      // orphaned marker is NEVER consumed (the observer deletes nothing).
-      const recheck = resolveMemberBinding({
-        teamDomainPath: opts.teamDomainPath,
-        memberSessionId: opts.memberSessionId,
-        expectedRootSessionId: rootSessionId,
-      })
-      if (JSON.stringify(recheck) !== JSON.stringify(memberBinding)) {
-        throw new ObserverError('S2O_MEMBER_BINDING_MISMATCH', 'the durable member binding CHANGED between entry and post-marker recheck — provenance drift (fail closed)')
-      }
-      let markerDoc = null
-      try { markerDoc = JSON.parse(readFileSync(marker.path, 'utf8')) } catch { markerDoc = null }
-      if (markerDoc === null || markerDoc.requestId !== opts.rid || markerDoc.digest !== expected.expectedDigest) {
-        throw new ObserverError('S2O_MEMBER_BINDING_MISMATCH', 'the written marker does not carry the same pending RID + durable digest the entry was bound to (fail closed)')
-      }
-    }
+    // P1 ORDERING: the marker write above is the LAST consequential action;
+    // nothing required follows it — only the result handoff.
     return {
       ok: true, markerPath: marker.path, evidenceDir: evidence.dir,
       entryPerspective: memberMode ? 'member' : 'root',
