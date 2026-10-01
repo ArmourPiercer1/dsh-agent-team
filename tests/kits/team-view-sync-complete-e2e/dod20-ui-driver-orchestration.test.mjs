@@ -801,6 +801,7 @@ test('LIVE-INCIDENT: dock-Team + role=tab Team coexist (old text count saw 2 hit
 test('LIVE-INCIDENT wall-clock: phase windows recorded as driver WALL time (network span is not a substitute)', async () => {
   const { out } = await runCore({})
   const w1 = out.legs.E1.observationWindow
+  assert.equal(out.legs.E1.teamTabActivationPostReload.alreadyArmed, true, 'post-reload verify takes the idempotent alreadyArmed path')
   assert.ok(w1 && w1.wallMs >= 10000, 'E1 reload window wall time recorded and >= the 10000ms wait: ' + JSON.stringify(w1))
   const w3 = out.legs.E3E5.E3WindowWall
   assert.ok(w3 && w3.wallMs >= 29000, 'E3 window = 10000 + 6*tickMs+1000 recorded: ' + JSON.stringify(w3))
@@ -844,4 +845,30 @@ test('E5: refresh label outside the allowlist (after correct scoping) → NOT_RU
   assert.equal(out.legs.E3E5.E3.verdict, 'PASS')
   assert.equal(out.legs.E3E5.E5.verdict, 'NOT_RUN')
   assert.match(out.legs.E3E5.E5.reason, /team-refresh-label-not-in-allowlist/)
+})
+// R2 supplement (delta-3, P2): pin the fake MOUNT GATE itself so the 18/18
+// RED reproducibility no longer rests on an unasserted world property.
+test('WORLD-FIDELITY: unattached Chat+dock = COLD ROUNDS ONLY across a long wait; only real activation arms ticks (kills the selected-gate mutation)', async () => {
+  const { io } = makeWorld({})
+  const seen = []
+  const netStub = {
+    recordRequest: (e) => { const en = { ...e, seq: seen.length + 1 }; seen.push(en); return en },
+    recordResponse: (e) => ({ ...e }),
+  }
+  const leg = await io.openLeg('E3', netStub)
+  const page = leg.page
+  await page.gotoApp('http://127.0.0.1:3181/app')
+  await page.clickLeaf((await page.collectLeaves()).find((l) => l.text === 'Ungrouped'))
+  const root = (await page.collectLeaves()).find((l) => l.text === ROOT_TITLE)
+  await page.clickLeaf(root) // the nav click's COLD round (readState+projection+ledger)
+  const rs = () => seen.filter((e) => e.kind === undefined || e.kind === 'req').filter((e) => e.m === 'team.getReadState').length
+  const cold = rs()
+  assert.equal(cold, 1, 'the cold round produced exactly one readState')
+  await page.wait(20000) // Chat view active, TeamDock label present: the product's ticks are PAUSED
+  assert.equal(rs(), cold, 'unattached: 20 virtual seconds add ZERO readStates (hidden->paused, coordinator :7-8)')
+  const act = await page.activateTeamTab({ names: ['Team', '团队'], phase: 'world-fidelity' })
+  assert.equal(act.ok, true)
+  await page.wait(20000)
+  assert.ok(rs() >= cold + 5, 'attached: ticks flow at cadence — readStates ' + rs())
+  await leg.close()
 })
