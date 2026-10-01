@@ -81,6 +81,22 @@
  * `--testuse <dir>` overrides the TestUse tree root; the default resolves
  * through tests/paths.mjs (the single path source).
  *
+ * BATCH-3 (2026-10-02, two security-config blocks):
+ *  BLOCK-A: the browser launches ONLY as the verified system Chrome with the
+ *  chromium SANDBOX ENABLED over the pipe transport — buildLaunchOptions
+ *  returns {headless:true, executablePath, chromiumSandbox:true, pipe:true}
+ *  with NO args array at all (nothing can pass --no-sandbox); the chrome path
+ *  (default /opt/google/chrome/chrome, --chrome override) is verified to be a
+ *  regular non-symlink file BEFORE launch (S2O_CHROME_MISSING/NOT_FILE).
+ *  BLOCK-B: the root session is NEVER assumed — the SAME durable fact row's
+ *  rootSessionId (kit seedFact L785-797; resolveExpected binds it) is the
+ *  only key; the pinned checkout has NO URL-level session selection, so the
+ *  entry goes through the real session-browser row (Rows.tsx @46a7f68b09:
+ *  L571 data-row-key="session:<id>", L577-578 role=treeitem+aria-selected,
+ *  L580 click opens by id) — selected via the second sanctioned click, then
+ *  POSITIVELY verified (boolean ready wait + typed re-validation) before any
+ *  Team-tab work; every mismatch is a typed fail-closed with no marker.
+ *
  * EXIT: 0 = all checks passed + marker written; 2 = a fail-closed validation/
  * comparison refusal (no marker); 1 = infrastructure error (no marker).
  *
@@ -138,7 +154,7 @@ export class ObserverError extends Error {
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
 
-const CLI_FLAGS = Object.freeze(['access', 'rid', 'digest', 'digest-file', 'payload-file', 'evidence', 'viewport', 'marker-dir', 'testuse'])
+const CLI_FLAGS = Object.freeze(['access', 'rid', 'digest', 'digest-file', 'payload-file', 'evidence', 'viewport', 'marker-dir', 'testuse', 'chrome'])
 const CLI_REQUIRED = Object.freeze(['access', 'rid', 'payload-file', 'evidence', 'viewport', 'marker-dir'])
 
 function flagCode(name) {
@@ -208,6 +224,9 @@ export function parseCli(argv) {
     viewport,
     narrow: { width: Math.min(NARROW_WIDTH, viewport.width), height: viewport.height },
     testuse: values.has('testuse') ? resolve(values.get('testuse')) : null,
+    // BATCH-3: optional system-Chrome override; existence/regularity are
+    // verified at launch (buildLaunchOptions), not at parse time.
+    chromePath: values.has('chrome') ? resolve(values.get('chrome')) : null,
   }
   return opts
 }
@@ -295,6 +314,23 @@ function findRequestFact(parsed) {
   return null
 }
 
+/** BATCH-3 BLOCK-B: collect every rootSessionId leaf in a fact document
+ *  (the durable ledger ROW carries it at top level; nested copies count as
+ *  candidates too — a conflict fails closed, never first-wins). */
+function collectRootCandidates(parsed) {
+  const found = []
+  const queue = [parsed]
+  while (queue.length > 0) {
+    const node = queue.shift()
+    if (node === null || typeof node !== 'object') continue
+    if (!Array.isArray(node) && Object.prototype.hasOwnProperty.call(node, 'rootSessionId')) found.push(node.rootSessionId)
+    for (const value of Object.values(node)) queue.push(value)
+  }
+  return found
+}
+
+const ROOT_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/
+
 export function resolveExpected({ rid, digestRaw = null, digestFile = null, payloadFile }) {
   let payloadValue
   try {
@@ -303,8 +339,8 @@ export function resolveExpected({ rid, digestRaw = null, digestFile = null, payl
     throw new ObserverError('S2O_PAYLOAD_NOT_JSON', `--payload-file is not parseable JSON: ${String(error?.message ?? error)}`)
   }
   let expectedDigest = digestRaw
+  let factDoc = null
   if (digestFile !== null) {
-    let factDoc
     try {
       factDoc = JSON.parse(readFileSync(digestFile, 'utf8'))
     } catch (error) {
@@ -328,7 +364,25 @@ export function resolveExpected({ rid, digestRaw = null, digestFile = null, payl
   if (recomputed !== expectedDigest) {
     throw new ObserverError('S2O_DIGEST_PAYLOAD_UNBOUND', 'the expected digest does NOT match reviewPayloadDigestOf(payload-file) — digest and payload must come from the SAME durable request')
   }
-  return { expectedDigest, payloadValue }
+  // BATCH-3 BLOCK-B: the root session identity, bound to the SAME durable
+  // document (row-carried rootSessionId and/or the payload). Absent → null
+  // (runObservation fails closed — no default-session guessing); conflicting
+  // values → typed refusal (never first-wins).
+  const rootCandidates = factDoc !== null ? collectRootCandidates(factDoc) : []
+  if (payloadValue !== null && typeof payloadValue === 'object' && !Array.isArray(payloadValue)
+    && Object.prototype.hasOwnProperty.call(payloadValue, 'rootSessionId')) {
+    rootCandidates.push(payloadValue.rootSessionId)
+  }
+  for (const candidate of rootCandidates) {
+    if (typeof candidate !== 'string' || !ROOT_ID_RE.test(candidate)) {
+      throw new ObserverError('S2O_ROOT_ID_SHAPE', `a durable rootSessionId candidate is not a valid session id: ${String(candidate).slice(0, 40)}`)
+    }
+  }
+  const rootDistinct = [...new Set(rootCandidates)]
+  if (rootDistinct.length > 1) {
+    throw new ObserverError('S2O_ROOT_ID_AMBIGUOUS', `the fact document carries CONFLICTING rootSessionId values (${rootDistinct.slice(0, 3).join(', ')}) — refusing to guess`)
+  }
+  return { expectedDigest, payloadValue, rootSessionId: rootDistinct.length === 1 ? rootDistinct[0] : null }
 }
 
 // ── transportable DOM adapters (the EXACT bodies page.evaluate serializes) ──
@@ -698,11 +752,21 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
   // Item-1: from this line on, EVERY error boundary (cliMain included)
   // scrubs the launch URL and its token values from printed text.
   setLaunchSecrets(secrets)
+  // BATCH-3 BLOCK-B: the root identity is a durable prerequisite — refuse
+  // BEFORE touching the browser if the same fact doc does not carry it.
+  const rootSessionId = expected.rootSessionId
+  if (typeof rootSessionId !== 'string') {
+    throw new ObserverError('S2O_ROOT_ID_MISSING', 'the durable fact carries no rootSessionId — the root session to open MUST come from the same durable request (--digest-file with the ledger row); no default-session guessing')
+  }
   const sleep = sleepFn ?? ((ms) => new Promise((done) => setTimeout(done, ms)))
   const testuseDir = opts.testuse ?? defaultTestuseRoot()
+  // BATCH-3 BLOCK-A: the verified config (system Chrome, sandbox ON, pipe) is
+  // built HERE — the seam receives it too, so an injected launcher can never
+  // mask what the real branch would have used.
+  const launchOptions = buildLaunchOptions({ chromePath: opts.chromePath ?? DEFAULT_CHROME_PATH })
   const browser = typeof launch === 'function'
-    ? await launch()
-    : await (async () => { const { chromium } = loadPlaywrightFrom(testuseDir); return chromium.launch({ headless: true }) })()
+    ? await launch(launchOptions)
+    : await (async () => { const { chromium } = loadPlaywrightFrom(testuseDir); return chromium.launch(launchOptions) })()
   try {
     // Item-2: ONE durable expectation for BOTH viewport passes — RID length,
     // FULL wire-digest length, and the DURABLE payload JSON length (never a
@@ -723,6 +787,36 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
         } catch (error) {
           const scrubbed = scrubErrorText(error?.message ?? String(error), secrets)
           throw new ObserverError('S2O_NAV_FAILED', `navigation refused: ${scrubbed.suppressed ? '[suppressed by token tripwire]' : scrubbed.text.slice(0, 300)}`)
+        }
+        // BATCH-3 BLOCK-B: EXPLICIT root entry — a fresh context may land on
+        // any session; opening the durable rootSessionId's row is the ONLY
+        // sanctioned entry (Rows.tsx L571/577-578/580; no URL selection
+        // exists in the pinned checkout). Then VERIFY before any Team work.
+        await page.waitForSelector('[role="treeitem"]', { timeout: OBSERVE_TIMEOUT_MS })
+        const rootCount = await page.evaluate(rootSessionRowsDom, rootSessionId)
+        if (rootCount === 0) {
+          throw new ObserverError('S2O_ROOT_ROW_MISSING', `no session-browser row carries data-row-key="session:${rootSessionId}" — refusing to observe whatever session the page landed on`)
+        }
+        if (rootCount > 1) {
+          throw new ObserverError('S2O_ROOT_ROW_AMBIGUOUS', `${rootCount} rows carry the root session id — refusing to pick one`)
+        }
+        const rootRow = await page.$(`[data-row-key="session:${rootSessionId.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"]`)
+        if (rootRow === null) throw new ObserverError('S2O_ROOT_ROW_MISSING', 'the root row vanished between count and click')
+        // THE second sanctioned click (root session selection, coordinator
+        // ruling 2026-10-02). Still never allow/deny/refresh/filters.
+        await rootRow.click()
+        const rootReady = await waitUntilTruthy({
+          probe: () => page.evaluate(rootSessionReadyDom, rootSessionId),
+          deadlineAt: nowFn() + OBSERVE_TIMEOUT_MS,
+          nowFn,
+          sleepFn: sleep,
+        })
+        if (rootReady !== true) {
+          throw new ObserverError('S2O_ROOT_NEVER_SELECTED', `the root row never reached aria-selected=true within ${OBSERVE_TIMEOUT_MS}ms (fail closed, no marker)`)
+        }
+        const rootCheck = await page.evaluate(rootSessionValidatedDom, rootSessionId)
+        if (rootCheck.ok !== true) {
+          throw new ObserverError(`S2O_${rootCheck.code}`, `root identity verification refused: ${rootCheck.code}`)
         }
         await page.waitForSelector('[data-conversation-tabs][role="tablist"] button[role="tab"]', { timeout: OBSERVE_TIMEOUT_MS })
         const tab = await page.evaluate(resolveTeamTabDom, TEAM_TAB_LABELS)
@@ -800,6 +894,67 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
   } finally {
     await browser.close()
   }
+}
+
+// ── BATCH-3 BLOCK-A: verified system Chrome + sandbox ON + pipe transport ───
+
+/** The user's explicit stage-2 condition: run the VERIFIED system Chrome with
+ *  the chromium sandbox ENABLED over Playwright's pipe transport. Playwright
+ *  defaults are the opposite (its own cached browser, sandbox off) — so the
+ *  options are built HERE, explicitly, and the call site takes nothing else. */
+export const DEFAULT_CHROME_PATH = '/opt/google/chrome/chrome'
+
+export function buildLaunchOptions({ chromePath = DEFAULT_CHROME_PATH } = {}) {
+  if (typeof chromePath !== 'string' || chromePath === '') {
+    throw new ObserverError('S2O_CHROME_MISSING', 'chromePath must be a non-empty string')
+  }
+  if (!existsSync(chromePath)) {
+    throw new ObserverError('S2O_CHROME_MISSING', `system Chrome not found at ${chromePath} — the verified-system-Chrome condition is unmet (pass --chrome <path>) — refusing to launch (fail closed)`)
+  }
+  const st = lstatSync(chromePath) // lstat: a SYMLINK is not a regular file
+  if (!st.isFile()) {
+    throw new ObserverError('S2O_CHROME_NOT_FILE', `${chromePath} is not a regular file (symlink/dir refused)`)
+  }
+  // NO args array at all: nothing can carry --no-sandbox/--disable-gpu-sandbox.
+  return { headless: true, executablePath: chromePath, chromiumSandbox: true, pipe: true }
+}
+
+// ── BATCH-3 BLOCK-B: explicit root-session entry (no random-default trust) ──
+// Target identity = the SAME durable fact row's rootSessionId (kit seedFact
+// L785-797 writes {factType, createdAt, payload, rootSessionId, schemaVersion,
+// sequence}; real-world shape 'session-mpr-t1-mpr-2026-10-01T13-21-34').
+// The pinned TestUse checkout has NO URL-level session selection
+// (apps/web/src/main.ts boots AppWebEntry with no query/route session param),
+// so the ONLY supported affordance is the session browser row:
+//   packages/client/ui-workspace/src/client/rows/Rows.tsx @46a7f68b09
+//     L571  data-row-key={`session:${node.id}`}   (identity carrier)
+//     L577  role="treeitem"  L578 aria-selected={node.id === currentId}
+//     L580  onClick={() => onOpen(node.id)}       (currentId: WorkspaceBrowser.tsx L506)
+// All three adapters are transportable (globalThis.document + JSON arg).
+
+export function rootSessionRowsDom(rootSessionId) {
+  const esc = String(rootSessionId).replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  return globalThis.document.querySelectorAll(`[data-row-key="session:${esc}"]`).length
+}
+
+/** BOOLEAN wait expression (false while not ready — same discipline as
+ *  teamViewReadyDom): exactly ONE row carrying the root id AND selected. */
+export function rootSessionReadyDom(rootSessionId) {
+  const doc = globalThis.document
+  const esc = String(rootSessionId).replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  const rows = doc.querySelectorAll(`[data-row-key="session:${esc}"]`)
+  return rows.length === 1 && rows[0].getAttribute('aria-selected') === 'true'
+}
+
+/** Post-selection POSITIVE verification (typed). */
+export function rootSessionValidatedDom(rootSessionId) {
+  const doc = globalThis.document
+  const esc = String(rootSessionId).replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  const rows = doc.querySelectorAll(`[data-row-key="session:${esc}"]`)
+  if (rows.length === 0) return { ok: false, code: 'ROOT_ROW_MISSING' }
+  if (rows.length > 1) return { ok: false, code: 'ROOT_ROW_AMBIGUOUS' }
+  if (rows[0].getAttribute('aria-selected') !== 'true') return { ok: false, code: 'ROOT_MISMATCH' }
+  return { ok: true }
 }
 
 // ── EXTERNAL BATCH ITEM-2: durable narrow lengths + BOTH-viewport verdict ───

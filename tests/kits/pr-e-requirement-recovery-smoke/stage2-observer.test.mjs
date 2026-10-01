@@ -65,6 +65,7 @@ import {
   writeMarkerIfAllPass,
   narrowExpectedLengths, evaluatePasses, scrubErrorText, setLaunchSecrets, cliMain,
   waitUntilTruthy, teamViewReadyDom, runObservation,
+  buildLaunchOptions, DEFAULT_CHROME_PATH, rootSessionRowsDom, rootSessionReadyDom, rootSessionValidatedDom,
 } from './stage2-observer.mjs'
 // the kit's OWN exported contract (the marker reader the roundtrip must satisfy):
 import { UI_CLAIMS, reviewPayloadDigestOf, readMarkerHint, verifyUiTruth } from './ui-observe.mjs'
@@ -102,6 +103,10 @@ function withDom(html, fn) {
 
 const RID = 'pr-e-s9-recovery-dispatch-0123456789abcdef'
 const PAYLOAD = { schema: 'recovery-dispatch/v1', instanceId: 'inst-7', note: 'ünïcode ✓' }
+// BATCH-3 BLOCK-B: the root session identity from the SAME durable fact row
+// (shape mirrors the real world: 'session-mpr-t1-mpr-2026-10-01T13-21-34').
+const ROOT = 'session-pr-e-root-01'
+const DECOY = 'session-pr-e-decoy-other'
 const DIGEST = reviewPayloadDigestOf(PAYLOAD) // sha256:<64hex> via the kit's SINGLE canonical impl
 
 /** Panel mirror of TeamLedger.tsx @ aa677a34 (pins in the file header).
@@ -195,15 +200,27 @@ function mkCliFixture({ mode = 0o600, digestMode = 'file' } = {}) {
   }))
   chmodSync(access, mode)
   writeFileSync(payloadFile, JSON.stringify(PAYLOAD))
-  writeFileSync(digestFile, JSON.stringify({ requestId: RID, reviewPayloadDigest: DIGEST }))
+  // BATCH-3: ledger-ROW shape (mirrors seedFact: {factType,createdAt,payload,
+  // rootSessionId,schemaVersion,sequence} — the root identity rides the SAME
+  // durable row; findRequestFact BFS reaches the payload leaves).
+  writeFileSync(digestFile, JSON.stringify({
+    factType: 'control-request-recorded', createdAt: '2026-10-02T00:00:00.000Z', sequence: '42',
+    schemaVersion: 2, rootSessionId: ROOT, payload: { requestId: RID, reviewPayloadDigest: DIGEST, reviewPayload: PAYLOAD },
+  }))
   const evidence = join(dir, 'evidence')
   const markerDir = join(dir, 'marker')
+  // BATCH-3 BLOCK-A: a REGULAR FILE standing in for the system chrome binary
+  // (buildLaunchOptions verifies existence + regular-file BEFORE launch).
+  const chrome = join(dir, 'fake-chrome')
+  writeFileSync(chrome, '#!/bin/sh\n')
+  chmodSync(chrome, 0o755)
   return {
-    dir, access, payloadFile, digestFile, evidence, markerDir,
-    args: digestMode === 'file'
+    dir, access, payloadFile, digestFile, evidence, markerDir, chrome,
+    args: (digestMode === 'file'
       ? baseArgs({ access, digestFile, payloadFile, evidence, markerDir })
       : ['--access', access, '--rid', RID, '--digest', DIGEST, '--payload-file', payloadFile,
-        '--evidence', evidence, '--viewport', '1440x900', '--marker-dir', markerDir],
+        '--evidence', evidence, '--viewport', '1440x900', '--marker-dir', markerDir]
+    ).concat(['--chrome', chrome]),
   }
 }
 
@@ -859,11 +876,23 @@ test('53 teamViewReadyDom is BOOLEAN (never the truthy-object trap); waitUntilTr
 
 // — WIRE-LEVEL: the REAL runObservation with a duck-typed fake page + REAL DOM probe —
 
-function wireHtml(panelOpts = {}) {
-  return tablistHtml(['Chat', 'Team']) + goodHtml(panelOpts)
+/** Session-browser mirror of Rows.tsx @46a7f68b09: rows carry
+ *  data-row-key="session:<id>" (L571), role=treeitem + aria-selected
+ *  (L577-578, currentId from WorkspaceBrowser L506), click opens by id
+ *  (L580). NO URL-level session selection exists in the pinned checkout
+ *  (apps/web/src/main.ts boots AppWebEntry with no query/route session
+ *  param; zero URLSearchParams in packages/client/web/src). */
+function sessionTreeHtml(ids, { selected = null } = {}) {
+  return `<div role="tree" data-workspace-browser>${ids.map((id) => `
+    <div data-row-key="session:${id}" role="treeitem" aria-selected="${id === selected}"><span class="title">${id}</span></div>`).join('')}</div>`
 }
 
-function makeFakeBrowser({ normalHtml, narrowHtml, gotoError = null, neverActivate = false, activateAfterPolls = 0 } = {}) {
+function wireHtml(panelOpts = {}, { rootRow = true } = {}) {
+  const ids = rootRow ? [ROOT, DECOY] : ['session-unrelated-1', 'session-unrelated-2']
+  return sessionTreeHtml(ids, { selected: DECOY }) + tablistHtml(['Chat', 'Team']) + goodHtml(panelOpts)
+}
+
+function makeFakeBrowser({ normalHtml, narrowHtml, gotoError = null, neverActivate = false, activateAfterPolls = 0, neverSelectRoot = false } = {}) {
   const fixtures = [normalHtml, narrowHtml]
   const calls = { gotos: [], evaluates: 0, clicks: 0, contexts: 0 }
   const activateTeamTab = (doc) => {
@@ -874,6 +903,12 @@ function makeFakeBrowser({ normalHtml, narrowHtml, gotoError = null, neverActiva
     async $$(sel) { return Array.from(el.querySelectorAll(sel)).map((child) => makeHandle(child, doc)) },
     async click() {
       calls.clicks += 1
+      if (el.getAttribute('role') === 'treeitem') {
+        if (neverSelectRoot) return
+        const siblings = el.parentElement === null ? [] : Array.from(el.parentElement.querySelectorAll('[role="treeitem"]'))
+        for (const r of siblings) r.setAttribute('aria-selected', String(r === el))
+        return
+      }
       if (neverActivate) return
       const tabs = Array.from(doc.querySelectorAll('[data-conversation-tabs] button[role="tab"]'))
       for (const t of tabs) t.setAttribute('aria-selected', String(t === el))
@@ -1025,6 +1060,151 @@ test('59 WIRING item-4: never-active tab → typed timeout failure through runOb
   const clock2 = fakeClock()
   const res = await runObservation(parseCli(f2.args), { launch: async () => transient, ...clock2 })
   assert.equal(res.ok, true, 'first polls false, later true ⇒ proceeds (the boolean wait REALLY waits)')
+})
+
+// ── BATCH-3 BLOCK-A: verified system Chrome + chromiumSandbox + pipe ────────
+
+test('61 buildLaunchOptions: EXACT verified-config shape (sandbox ON, system executablePath, pipe transport, NO args array); missing/symlink chrome fails closed', () => {
+  assert.equal(DEFAULT_CHROME_PATH, '/opt/google/chrome/chrome')
+  const dir = mkTmp('s2o-chrome-')
+  const chrome = join(dir, 'chrome')
+  writeFileSync(chrome, '#!/bin/sh\n')
+  chmodSync(chrome, 0o755)
+  const opts = buildLaunchOptions({ chromePath: chrome })
+  assert.deepEqual(opts, { headless: true, executablePath: chrome, chromiumSandbox: true, pipe: true })
+  assert.ok(!('args' in opts), 'no args array at all (nothing can disable the sandbox)')
+  assert.ok(!JSON.stringify(opts).includes('--no-sandbox') && !JSON.stringify(opts).includes('--disable-gpu-sandbox'))
+  throwsCode(() => buildLaunchOptions({ chromePath: join(dir, 'nope') }), 'S2O_CHROME_MISSING')
+  const link = join(dir, 'link-chrome')
+  symlinkSync(chrome, link)
+  throwsCode(() => buildLaunchOptions({ chromePath: link }), 'S2O_CHROME_NOT_FILE')
+})
+
+test('62 source pin: the default launch branch passes buildLaunchOptions output to chromium.launch — bare options objects are dead', () => {
+  const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'stage2-observer.mjs'), 'utf8')
+  assert.ok(/const launchOptions = buildLaunchOptions\(/.test(src), 'launch options come from the ONE builder')
+  assert.ok(/chromium\.launch\(launchOptions\)/.test(src), 'the call site receives the built options')
+  assert.ok(!/chromium\.launch\(\{/.test(src), 'no bare chromium.launch({...}) remains')
+})
+
+test('63 WIRING: the fake launch CANNOT mask the real config — captured options carry sandbox+executablePath+pipe verbatim', async () => {
+  const f = mkCliFixture()
+  let captured = null
+  const base = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml() })
+  const clock = fakeClock()
+  const res = await runObservation(parseCli(f.args), {
+    launch: async (options) => { captured = captured ?? options; return base },
+    ...clock,
+  })
+  assert.equal(res.ok, true)
+  assert.deepEqual(captured, { headless: true, executablePath: f.chrome, chromiumSandbox: true, pipe: true })
+})
+
+test('64 CLI: --chrome is the ONLY new optional flag (parsed into opts.chromePath); unknown flags stay rejected', () => {
+  const f = mkCliFixture()
+  const opts = parseCli(f.args)
+  assert.equal(opts.chromePath, f.chrome)
+  const bare = parseCli(baseArgs({ access: f.access, digestFile: f.digestFile, payloadFile: f.payloadFile, evidence: f.evidence, markerDir: f.markerDir }))
+  assert.equal(bare.chromePath, null)
+  throwsCode(() => parseCli([...f.args, '--chromex', 'x']), 'CLI_UNKNOWN_FLAG')
+})
+
+test('65 WIRING: chrome verification happens BEFORE launch (fail closed, launcher never called, no marker)', async () => {
+  const f = mkCliFixture()
+  const missing = join(f.dir, 'no-chrome-here')
+  const idx = f.args.indexOf('--chrome')
+  const args = [...f.args.slice(0, idx + 1), missing]
+  const base = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml() })
+  let launched = 0
+  const clock = fakeClock()
+  await assert.rejects(
+    () => runObservation(parseCli(args), { launch: async () => { launched += 1; return base }, ...clock }),
+    (err) => { assert.ok(err instanceof ObserverError); assert.equal(err.code, 'S2O_CHROME_MISSING'); return true },
+  )
+  assert.equal(launched, 0, 'typed refusal BEFORE any launch')
+  assert.deepEqual(readdirSync(f.markerDir), [])
+})
+
+// ── BATCH-3 BLOCK-B: the root session is EXPLICITLY selected and verified ───
+
+test('66 root adapters (Rows.tsx mirror): exact-id row count, BOOLEAN ready, typed validation object (decoy-selected = MISMATCH)', () => {
+  const tree = sessionTreeHtml([ROOT, DECOY], { selected: DECOY })
+  assert.equal(withDom(tree, () => rootSessionRowsDom(ROOT)), 1)
+  assert.equal(withDom(tree, () => rootSessionRowsDom('session-absent')), 0)
+  assert.equal(withDom(sessionTreeHtml([ROOT, ROOT]), () => rootSessionRowsDom(ROOT)), 2)
+  assert.equal(withDom(tree, () => rootSessionReadyDom(ROOT)), false, 'decoy selected ⇒ NOT ready (no random-default trust)')
+  assert.equal(withDom(tree, () => rootSessionValidatedDom(ROOT)).ok, false)
+  assert.equal(withDom(tree, () => rootSessionValidatedDom(ROOT)).code, 'ROOT_MISMATCH')
+  const selected = withDom(tree, (win) => {
+    const rows = win.document.querySelectorAll('[role="treeitem"]')
+    rows[0].setAttribute('aria-selected', 'true')
+    rows[1].setAttribute('aria-selected', 'false')
+    return rootSessionReadyDom(ROOT)
+  })
+  assert.equal(selected, true)
+  assert.equal(withDom(sessionTreeHtml([DECOY], { selected: DECOY }), () => rootSessionValidatedDom(ROOT)).code, 'ROOT_ROW_MISSING')
+  assert.equal(withDom(sessionTreeHtml([ROOT, ROOT]), () => rootSessionValidatedDom(ROOT)).code, 'ROOT_ROW_AMBIGUOUS')
+})
+
+test('67 resolveExpected binds rootSessionId from the SAME durable fact doc (row-carried); absent ⇒ null (runObservation fails closed); conflict ⇒ ambiguous', () => {
+  const f = mkCliFixture()
+  const expected = resolveExpected({ rid: RID, digestFile: f.digestFile, payloadFile: f.payloadFile })
+  assert.equal(expected.rootSessionId, ROOT)
+  const dir = mkTmp('s2o-root-')
+  const flat = join(dir, 'flat.json')
+  const pay = join(dir, 'pay.json')
+  writeFileSync(pay, JSON.stringify(PAYLOAD))
+  writeFileSync(flat, JSON.stringify({ requestId: RID, reviewPayloadDigest: DIGEST }))
+  assert.equal(resolveExpected({ rid: RID, digestFile: flat, payloadFile: pay }).rootSessionId, null)
+  const conflict = join(dir, 'conflict.json')
+  writeFileSync(conflict, JSON.stringify({
+    rootSessionId: 'session-A', rows: [{ requestId: RID, reviewPayloadDigest: DIGEST, rootSessionId: 'session-B' }],
+  }))
+  throwsCode(() => resolveExpected({ rid: RID, digestFile: conflict, payloadFile: pay }), 'S2O_ROOT_ID_AMBIGUOUS')
+})
+
+test('68 WIRING: NO matching root row in the page ⇒ typed fail-closed, no marker (decoy rows are NEVER opened)', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ normalHtml: wireHtml({}, { rootRow: false }), narrowHtml: wireHtml({}, { rootRow: false }) })
+  const clock = fakeClock()
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
+    (err) => { assert.equal(err.code, 'S2O_ROOT_ROW_MISSING'); return true },
+  )
+  assert.equal(existsSync(join(f.markerDir, 'marker.json')), false)
+})
+
+test('69 WIRING: root row present but the click never lands (decoy stays selected) ⇒ typed NEVER_SELECTED timeout, nothing written', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml(), neverSelectRoot: true })
+  const clock = fakeClock()
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
+    (err) => { assert.equal(err.code, 'S2O_ROOT_NEVER_SELECTED'); return true },
+  )
+  assert.deepEqual(readdirSync(f.markerDir), [])
+})
+
+test('70 WIRING: durable fact without rootSessionId ⇒ S2O_ROOT_ID_MISSING fail-closed (no default-session guessing)', async () => {
+  const f = mkCliFixture()
+  writeFileSync(f.digestFile, JSON.stringify({ requestId: RID, reviewPayloadDigest: DIGEST }))
+  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml() })
+  const clock = fakeClock()
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
+    (err) => { assert.equal(err.code, 'S2O_ROOT_ID_MISSING'); return true },
+  )
+  assert.equal(existsSync(join(f.markerDir, 'marker.json')), false)
+})
+
+test('71 WIRING happy path WITH root selection: decoy selected on landing, root explicitly opened + verified — still exactly one marker', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml() })
+  const clock = fakeClock()
+  const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...clock })
+  assert.equal(res.ok, true)
+  assert.ok(browser.calls.clicks >= 2, 'root row + Team tab clicks happened')
+  assert.deepEqual(readdirSync(f.markerDir), ['marker.json'])
 })
 
 test('60 source pin: the OLD object-return can never gate a wait again (wait sites use the BOOLEAN predicate + driver)', () => {
