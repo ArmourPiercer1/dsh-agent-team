@@ -124,3 +124,52 @@ fold riders applied (kernel header cites → verified `types.ts:37-45,284-295` +
 
 Production (all in `packages/runtime/governance/`): `permission-mutation.ts` (new kernel),
 `service.ts` / `types.ts` / `index.ts` (additive). Tests: `packages/runtime/test/a3p3-permission-mutation-authority.test.ts` (20), `packages/runtime/test/a3p3-governance-lane-hygiene.test.ts` (8, incl. init-cycle canary, zero-consumer walk, persistence-only consumer pin, legacy-surface pin). Pin edit: `packages/testkit/test/p4t6-session-event-scan.test.ts` (929→932). Rebuilt dist shipped in the same commit (governance dist files + new `governance/permission-mutation.*` and newly-emitted `permission-governance/port.*` artifacts).
+
+# EXTERNAL REVIEW ROUND 2 — UNKNOWN-CONTAINMENT CLASS (guard fix)
+
+Parent-verified P1 class on 1e39acb0, two counterexamples (both RED-captured
+against the real 1e39acb0 build before any fix): the kernel treated
+`matcherCovers(…).undeterminable` as a silent NO-MATCH at both consumption
+sites (`overlayEffectForRegion`/`staticEffectForRegion`), and `matcherCovers`
+answered its equality shortcut AFTER the `subtreeContains === undefined`
+check — so even the provable-by-identity equal-subtree pair was "unknown".
+Verified hotspots (pre-fix lines): strictSubsetVerdict :906-908 (scope-kind
+`exact` branch returned 'out' before any relation test — partition-wise
+decidable for a singleton, but the pairing with the drop made it fail-open);
+consumption :833/:851; matcherCovers :661-664 (equality-after-unknown).
+Fix (bounded, parent-briefed): PRE-CLASSIFICATION GATE — if the relevant
+family (mutation matcher ∪ latest ∪ planned ∪ static rules of the mutation's
+classes) contains any subtree matcher and no containment predicate is
+injected, refuse `EFFECT_CONTEXT_UNAVAILABLE` before ANY classification
+(exact/fingerprint-only contexts flow unchanged — pinned by X4); identity
+coverage moved BEFORE the unknown check; consumption sites never drop
+undeterminable coverage (a definite deny still answers — lattice bottom —
+anything else becomes undecidable); the exact-scope verdict answers honestly
+(identity / predicate-decided / 'undeterminable'); a subtree ENVELOPE matcher
+whose coverage is unknown now refuses as CONTEXT, never a mislabeled
+EXPANSION (authority leg re-labeled honestly).
+
+## Raw logs (round 2, chronological)
+
+| File | Command | Result |
+| --- | --- | --- |
+| `aggregate-2-red.log` | directed(28)+parity(11) vs the REAL 1e39acb0 build | rc=1 — the four defect legs X1 (canonical ancestor-revoke ACCEPTS), X2 (equal-subtree deny->ask rewrite ACCEPTS), X3 (static-subtree reveal ACCEPTS), X5 (envelope-side unknown mislabeled EXPANSION) FAIL = the parent-claimed P1 reproduced verbatim; 35 pass. |
+| `round2-all-pr3-green.log` | all four PR3 suites vs the fix | rc=0 — 68 passed (28+11+12+…; before P12 was appended). |
+| `round2-probe-C-gate-removal.log` | mutant: gate disabled | rc=1 — 2 die (X2/X3); X1/X5 survive BY the redundant layers (defense-in-depth, stated). Mutant KILLED. |
+| `round2-probe-D-consumption-restore.log` | mutant: consumption restored to silent-drop (gate intact) | rc=1 — P12 (the new parity belt-pin) dies ALONE: the gate provably covers the authorize path, the belt covers the EXPORTED `permissionEffectiveAnswer`. Mutant KILLED. |
+| `red-directed-vs-d68f9a10-final-28leg.log` | FINAL 28-leg directed suite vs the ORIGINAL d68f9a10 production files (checkout + restore, round-2 fix stashed/popped) | rc=1 — 17 failed / 11 passed (28). Honest re-capture of the first-batch behavioral RED with the final suite (supersedes the interim 19-leg count). |
+| `round2-typecheck-runtime.log` / `round2-typecheck-testkit.log` | `npx tsc -p tsconfig.json` (runtime / testkit) | rc=0 / rc=0 — captured with self-describing headers: the empty body IS the success capture (the "empty tsc log" claim-drop rider is resolved in this form). |
+| `round2-full-runtime-suite.log` | `npx vitest run` final | rc=1 — 8 failed / 3148 passed (+10 new legs over the prior 3138); failure set byte-IDENTICAL to the base (`diff` → FAILURE-SET-IDENTICAL). |
+| `round2-p4t6-934-green.log` | p4t6 scanner spec | rc=0 — 10 passed; 934 UNCHANGED (no new scannable files this round — all new legs live in already-counted specs). |
+| `round2-build.log` / `round2-build-composition.log` | `pnpm build` / `pnpm build:composition` (dist staged) | rc=0 / rc=0 — `OK: 1392 files … (incl. 1 glue placement(s))`; 4 drifted dist files (governance kernel + maps) in the same commit. |
+
+## Round-2 files
+
+Production: `packages/runtime/governance/permission-mutation.ts` ONLY
+(runtime wiring untouched — root.ts untouched, no new deps, service/types/
+index unchanged: the gate lives inside the single pure kernel function).
+Tests: directed spec +`containment:'no'` fixture option + 8 legs (X1/X1p/X2/
+X2p/X3/X3p/X4/X5); parity +P12; authority spec: envelope-side no-containment
+leg re-labeled CONTEXT (honest semantics), + malformed-envelope-no-rise
+service leg (parse precedes classification — fail-closed has no decidable
+escape hatch). Evidence README round-2 section = this.

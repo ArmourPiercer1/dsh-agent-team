@@ -234,4 +234,17 @@ describe('kernel effective-answer == merged assembler (matrix)', () => {
     const miss = permissionEffectiveAnswer({ overlayRules: overlay, staticFacts: { layers: [] }, operationClass: 'bash', region: { kind: 'fingerprint', resource: other } })
     expect(miss).toEqual({ status: 'decided', effect: 'deny', source: 'fallback' }) // declared-none fail-closed, NOT the overlay rule
   })
+
+  it('P12: unknown subtree COVERAGE is its own state — with NO predicate a subtree overlay rule answers neither its effect NOR the fallback (the round-2 drop was a deny/allow masquerade on the consumption side)', () => {
+    const overlay = carriers([{ operation: 'write', resource: `subtree:${SUBTREE_ROOT}`, effect: 'allow' } as unknown as Carrier])
+    const answer = permissionEffectiveAnswer({ overlayRules: overlay, staticFacts: { layers: [] }, operationClass: 'write', region: { kind: 'exact', resource: FILE_KEY } })
+    expect(answer).toEqual({ status: 'context-unavailable' })
+    // …while the SAME pair with a predicate is decidable, and the EQUAL-
+    // RESOURCE subtree is provable by identity even without one (round-2
+    // ordering fix: equality precedes the unknown check).
+    const withPredicate = permissionEffectiveAnswer({ overlayRules: overlay, staticFacts: { layers: [] }, operationClass: 'write', region: { kind: 'exact', resource: FILE_KEY }, subtreeContains: contains })
+    expect(withPredicate).toEqual({ status: 'decided', effect: 'allow', source: 'overlay' })
+    const rootPoint = permissionEffectiveAnswer({ overlayRules: overlay, staticFacts: { layers: [] }, operationClass: 'write', region: { kind: 'exact', resource: SUBTREE_ROOT } })
+    expect(rootPoint).toEqual({ status: 'decided', effect: 'allow', source: 'overlay' })
+  })
 })

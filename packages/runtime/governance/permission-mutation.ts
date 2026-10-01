@@ -658,10 +658,14 @@ export function matcherCovers(
     return { covers: target.kind === 'exact' && envelope.resource === target.resource, undeterminable: false }
   }
   // envelope.kind === 'subtree'
+  // Identity FIRST (external round 2): a subtree covers its own resource and
+  // the exact point at its root — provable WITHOUT any predicate. The old
+  // ordering marked even this pair unknown whenever the predicate was absent,
+  // and the consumption sites then dropped the rule as a non-match.
+  if (envelope.resource === target.resource) return { covers: true, undeterminable: false }
   if (subtreeContains === undefined) {
     return { covers: false, undeterminable: true }
   }
-  if (envelope.resource === target.resource) return { covers: true, undeterminable: false }
   return { covers: subtreeContains(envelope.resource, target.resource), undeterminable: false }
 }
 
@@ -817,8 +821,9 @@ function overlayEffectForRegion(
   operationClass: string,
   region: PermissionResourceMatcher,
   subtreeContains?: SubtreeContains,
-): PermissionOverlayEffect | undefined {
+): PermissionOverlayEffect | 'unknown' | undefined {
   let best: PermissionOverlayEffect | undefined
+  let unknown = false
   for (const rule of rules) {
     if (rule.operation !== operationClass) continue
     const matcher = parsePermissionResourceText(rule.resource)
@@ -830,9 +835,19 @@ function overlayEffectForRegion(
         { resource: rule.resource },
       )
     }
-    if (!matcherCovers(matcher, region, subtreeContains).covers) continue
+    const verdict = matcherCovers(matcher, region, subtreeContains)
+    // Unknown is NEVER a silent non-match (round 2): a possibly-matching rule
+    // can only make the answer MORE restrictive, so a definite `deny` already
+    // answers (the lattice bottom); anything else is undecidable.
+    if (verdict.undeterminable) {
+      unknown = true
+      continue
+    }
+    if (!verdict.covers) continue
     if (best === undefined || PERMISSION_EFFECT_PRECEDENCE[rule.effect] < PERMISSION_EFFECT_PRECEDENCE[best]) best = rule.effect
   }
+  if (best === 'deny') return 'deny'
+  if (unknown) return 'unknown'
   return best
 }
 
@@ -841,17 +856,30 @@ function staticEffectForRegion(
   operationClass: string,
   region: PermissionResourceMatcher,
   subtreeContains?: SubtreeContains,
-): { readonly effect: PermissionOverlayEffect; readonly source: 'layer' | 'fallback' } {
+): { readonly effect: PermissionOverlayEffect; readonly source: 'layer' | 'fallback' } | 'unknown' {
   for (let index = facts.layers.length - 1; index >= 0; index -= 1) {
     const layer = facts.layers[index]
     if (layer === undefined) continue
     let best: PermissionOverlayEffect | undefined
+    let unknown = false
     for (const rule of layer.rules) {
       if (rule.operationClass !== operationClass) continue
-      if (rule.matcher.kind === 'any' || matcherCovers(rule.matcher as PermissionResourceMatcher, region, subtreeContains).covers) {
+      const verdict =
+        rule.matcher.kind === 'any'
+          ? ({ covers: true, undeterminable: false } as const)
+          : matcherCovers(rule.matcher as PermissionResourceMatcher, region, subtreeContains)
+      if (verdict.undeterminable) {
+        unknown = true
+        continue
+      }
+      if (verdict.covers) {
         if (best === undefined || PERMISSION_EFFECT_PRECEDENCE[rule.effect] < PERMISSION_EFFECT_PRECEDENCE[best]) best = rule.effect
       }
     }
+    // A layer that COULD answer through an unknown-coverage rule answers
+    // undecidably — a lower layer may not fill the gap optimistically.
+    if (best === 'deny') return { effect: 'deny', source: 'layer' }
+    if (unknown) return 'unknown'
     if (best !== undefined) return { effect: best, source: 'layer' }
   }
   // The effective fallback: the LOWEST declared layer's default; DECLARED-NONE
@@ -864,12 +892,16 @@ function staticEffectForRegion(
  * The effective answer of ONE closed region (pure; exported for the
  * assembler-parity spec — production classification runs it INSIDE
  * {@link authorizeLeaderPermissionMutation}, never re-reads context).
+ * `context-unavailable` covers BOTH unknown lower facts AND any coverage
+ * relation the injected predicates cannot decide — unknown never answers.
  */
 export function permissionEffectiveAnswer(query: PermissionEffectiveAnswerQuery): PermissionEffectiveAnswer {
   const overlay = overlayEffectForRegion(query.overlayRules, query.operationClass, query.region, query.subtreeContains)
+  if (overlay === 'unknown') return { status: 'context-unavailable' }
   if (overlay !== undefined) return { status: 'decided', effect: overlay, source: 'overlay' }
   if (query.staticFacts === undefined) return { status: 'context-unavailable' }
   const lower = staticEffectForRegion(query.staticFacts, query.operationClass, query.region, query.subtreeContains)
+  if (lower === 'unknown') return { status: 'context-unavailable' }
   return { status: 'decided', effect: lower.effect, source: lower.source }
 }
 
@@ -904,7 +936,19 @@ function strictSubsetVerdict(
     return 'out'
   }
   if (scope.kind === 'exact') {
-    return boundary.kind === 'exact' && boundary.resource === scope.resource ? 'whole' : 'out'
+    if (boundary.kind === 'exact') {
+      return boundary.resource === scope.resource ? 'whole' : 'out'
+    }
+    // Subtree boundary vs point scope (external round 2, claim (a)): the old
+    // branch answered 'out' UNCONDITIONALLY here, before any relation test —
+    // the split conclusion (never split a singleton) is fine, but the
+    // containment relation itself must be answered honestly: provable by
+    // identity at equal resources (a root covers itself), decided by the
+    // predicate otherwise, and UNDETERMINABLE without one — unknown is never
+    // silently 'out'.
+    if (boundary.resource === scope.resource) return 'whole'
+    if (subtreeContains === undefined) return 'undeterminable'
+    return subtreeContains(boundary.resource, scope.resource) ? 'whole' : 'out'
   }
   if (boundary.kind === 'subtree' && boundary.resource === scope.resource) return 'whole'
   if (subtreeContains === undefined) return 'undeterminable'
@@ -1032,6 +1076,29 @@ export function authorizeLeaderPermissionMutation(input: LeaderMutationAuthoriza
       family.push({ operationClass: rule.operationClass, matcher: rule.matcher as PermissionResourceMatcher })
     }
   }
+  // PRE-CLASSIFICATION GATE (external review round 2, parent-binding): if
+  // ANY relevant family (mutation matcher ∪ latest ∪ planned ∪ static rules
+  // of the mutation's operation classes) carries a subtree matcher and no
+  // containment predicate is injected, the covering relations are genuinely
+  // unknown — refuse typed EFFECT_CONTEXT_UNAVAILABLE BEFORE anything is
+  // classified (unknown is never 'no match' and never 'out'; silent drops
+  // are the fail-open P1 class this gate exists to kill). Exact- and
+  // fingerprint-only families are decidable without a predicate and keep
+  // flowing normally.
+  if (subtreeContains === undefined) {
+    const relevantClasses = new Set(mutationRules.map((rule) => rule.operationClass))
+    const unknownSubtreeRelation =
+      mutationRules.some((rule) => rule.matcher.kind === 'subtree') ||
+      family.some((entry) => relevantClasses.has(entry.operationClass) && entry.matcher.kind === 'subtree')
+    if (unknownSubtreeRelation) {
+      refuse(
+        PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+        'subtree-relation-unknown',
+        'subtree matchers exist in the affected classes but no subtree-containment predicate is injected: covering relations are unknown and are never assumed to be non-matching — inject subtreeContains (zero write)',
+        { operationClasses: [...relevantClasses].sort() },
+      )
+    }
+  }
   const undeterminable: { readonly detail: Record<string, unknown> }[] = []
   const unmet: { readonly detail: Record<string, unknown> }[] = []
   for (const mutationRule of mutationRules) {
@@ -1060,13 +1127,37 @@ export function authorizeLeaderPermissionMutation(input: LeaderMutationAuthoriza
       if (before.status === 'decided' && after.status === 'decided') {
         if (PERMISSION_EFFECT_PRECEDENCE[after.effect] <= PERMISSION_EFFECT_PRECEDENCE[before.effect]) continue // no rise (tightening or identity)
         const risen = after.effect
-        const covered = envelope.rules.some(
-          (rule) =>
-            rule.operationClass === operationClass &&
-            PERMISSION_EFFECT_PRECEDENCE[risen] <= PERMISSION_EFFECT_PRECEDENCE[rule.maximumEffect] &&
-            matcherCovers(rule.matcher, mutationRule.matcher, subtreeContains).covers,
-        )
-        if (!covered) {
+        // Envelope coverage must itself be decidable: a subtree ENVELOPE
+        // matcher whose coverage of the mutation matcher is unknown without
+        // a predicate refuses as CONTEXT (X5) — never a mislabeled EXPANSION.
+        let covered = false
+        let coverageUnknown = false
+        for (const rule of envelope.rules) {
+          if (rule.operationClass !== operationClass) continue
+          if (PERMISSION_EFFECT_PRECEDENCE[risen] > PERMISSION_EFFECT_PRECEDENCE[rule.maximumEffect]) continue
+          const verdict = matcherCovers(rule.matcher, mutationRule.matcher, subtreeContains)
+          if (verdict.undeterminable) {
+            coverageUnknown = true
+            continue
+          }
+          if (verdict.covers) {
+            covered = true
+            break
+          }
+        }
+        if (covered) continue
+        if (coverageUnknown) {
+          undeterminable.push({
+            detail: {
+              ...cellDetail,
+              mutationMatcher: renderPermissionResourceText(mutationRule.matcher),
+              missing: 'subtree-containment',
+              why: 'a rise was found, but a subtree ENVELOPE matcher cannot be judged to cover the WHOLE mutation matcher without an injected containment predicate — typed context refusal, never a label on unknown coverage (zero write)',
+            },
+          })
+          continue
+        }
+        {
           unmet.push({
             detail: {
               ...cellDetail,

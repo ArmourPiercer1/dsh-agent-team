@@ -362,6 +362,8 @@ export interface PermissionEffectiveAnswerQuery {
  * The effective answer of ONE closed region (pure; exported for the
  * assembler-parity spec — production classification runs it INSIDE
  * {@link authorizeLeaderPermissionMutation}, never re-reads context).
+ * `context-unavailable` covers BOTH unknown lower facts AND any coverage
+ * relation the injected predicates cannot decide — unknown never answers.
  */
 export declare function permissionEffectiveAnswer(query: PermissionEffectiveAnswerQuery): PermissionEffectiveAnswer;
 export interface LeaderMutationAuthorizationInput {

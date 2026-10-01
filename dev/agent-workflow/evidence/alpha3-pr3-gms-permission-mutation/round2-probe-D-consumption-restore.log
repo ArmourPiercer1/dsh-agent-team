@@ -1,0 +1,49 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr3-gms-permission-mutation/packages/runtime
+
+ ❯ test/a3p3-effective-parity.test.ts (12 tests | 1 failed) 10ms
+     ✓ P1: matching overlay deny wins over a template allow (overlay precedence) 2ms
+     ✓ P2: within one overlay layer the MOST RESTRICTIVE matching rule answers (deny shadows a surviving subtree… child pair) 0ms
+     ✓ P3: overlay silent, template allow answers 0ms
+     ✓ P4: template denies over a blueprint allow (layer precedence, template higher) 0ms
+     ✓ P5: no rule matches ANYWHERE — the LOWEST declared layer default answers (blueprint deny over template ask) 0ms
+     ✓ P6: DECLARED-NONE (no static layer) fails closed to deny exactly like the assembler 0ms
+     ✓ P7: a static `any` rule answers its whole class 0ms
+     ✓ P8: reveal-by-remaining-overlay — the surviving child allow answers 0ms
+     ✓ P9: a subtree overlay rule covers the point via containment (predicate == the live containsOperation verdict) 0ms
+     ✓ P10: UNKNOWN facts is its OWN state — context-unavailable, never a decided deny/ask/allow 0ms
+     ✓ P11: exec fingerprint answers by EXACT identity only (kernel side; exec canonicalization is exact-equality by design) 0ms
+     × P12: unknown subtree COVERAGE is its own state — with NO predicate a subtree overlay rule answers neither its effect NOR the fallback (the round-2 drop was a deny/allow masquerade on the consumption side) 4ms
+ ✓ test/a3p3-revoke-reveal-semantics.test.ts (28 tests) 110ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p3-effective-parity.test.ts > kernel effective-answer == merged assembler (matrix) > P12: unknown subtree COVERAGE is its own state — with NO predicate a subtree overlay rule answers neither its effect NOR the fallback (the round-2 drop was a deny/allow masquerade on the consumption side)
+AssertionError: expected { status: 'decided', …(2) } to deeply equal { status: 'context-unavailable' }
+
+- Expected
++ Received
+
+  {
+-   "status": "context-unavailable",
++   "effect": "deny",
++   "source": "fallback",
++   "status": "decided",
+  }
+
+ ❯ test/a3p3-effective-parity.test.ts:241:20
+    239|     const overlay = carriers([{ operation: 'write', resource: `subtree…
+    240|     const answer = permissionEffectiveAnswer({ overlayRules: overlay, …
+    241|     expect(answer).toEqual({ status: 'context-unavailable' })
+       |                    ^
+    242|     // …while the SAME pair with a predicate is decidable, and the EQU…
+    243|     // RESOURCE subtree is provable by identity even without one (roun…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 39 passed (40)
+   Start at  21:13:28
+   Duration  543ms (transform 488ms, setup 0ms, import 635ms, tests 120ms, environment 0ms)
+

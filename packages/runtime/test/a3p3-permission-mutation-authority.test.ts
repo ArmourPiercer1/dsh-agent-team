@@ -439,7 +439,7 @@ describe('Leader mutation OUTSIDE the envelope (plan PR3)', () => {
     }
   })
 
-  it('a subtree envelope matcher with NO injected containment refuses coverage fail-closed', async () => {
+  it('a subtree envelope matcher with NO injected containment refuses typed fail-closed (round 2: unknown coverage is CONTEXT, never a label on coverage nobody can judge)', async () => {
     const w = await openServiceWorld({
       envelope: { rules: [{ operationClass: 'write', matcher: subtree(SUBTREE_ROOT), maximumEffect: 'allow' }] },
     })
@@ -451,7 +451,38 @@ describe('Leader mutation OUTSIDE the envelope (plan PR3)', () => {
           }),
         )
         .catch((error: unknown) => error)
-      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE)
+      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE)
+    } finally {
+      await w.close()
+    }
+  })
+
+  it('a MALFORMED envelope refuses a change-mutation that rises NOTHING (parse precedes classification — fail-closed has no decidable escape hatch)', async () => {
+    const w = await openServiceWorld({
+      envelope: {
+        rules: [{ operationClass: 'write', matcher: exact(FILE_KEY), maximumEffect: 'permitted' }],
+      } as unknown as PermissionMutationEnvelope, // maximumEffect outside the closed set
+    })
+    try {
+      await w.service.mutatePermission(
+        grant([{ operationClass: 'write', matcher: exact(FILE_KEY), effect: 'allow' }], {
+          authority: HUMAN,
+          mutationId: 'seed-malformed-norise',
+        }),
+      )
+      const before = await w.world.port.latest({ teamSessionId: 'session-root-1', memberInstanceId: 'inst-alpha' })
+      // Pure tightening (overlay answers both sides): no rise ANYWHERE — still
+      // refused, because the authority document is malformed, not absent.
+      const denied = await w.service
+        .mutatePermission(
+          grant([{ operationClass: 'write', matcher: exact(FILE_KEY), effect: 'deny' }], {
+            mutationId: 'mut-malformed-norise',
+          }),
+        )
+        .catch((error: unknown) => error)
+      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.MALFORMED_ENVELOPE)
+      const after = await w.world.port.latest({ teamSessionId: 'session-root-1', memberInstanceId: 'inst-alpha' })
+      expect(after?.metadata.generation).toBe(before?.metadata.generation)
     } finally {
       await w.close()
     }

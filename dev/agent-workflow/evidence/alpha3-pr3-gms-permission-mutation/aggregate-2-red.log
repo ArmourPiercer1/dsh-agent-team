@@ -1,0 +1,123 @@
+$ (packages/runtime) npx vitest run test/a3p3-revoke-reveal-semantics.test.ts test/a3p3-effective-parity.test.ts — HEAD 1e39acb0a0792f79a7a7015125d7c501fe2b4287 (PRE round-2 fix)
+$ external review round 2 AGGREGATE-2 RED anchor: the four unknown-containment defect legs (X1 canonical ancestor-revoke ACCEPTS, X2 equal-subtree rewrite ACCEPTS, X3 static-subtree reveal ACCEPTS, X5 envelope-side unknown mislabeled EXPANSION) FAIL here; the decidable with-predicate contrasts (X1p/X2p/X3p) and the gate-specificity guard (X4) already pass.
+
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr3-gms-permission-mutation/packages/runtime
+
+ ✓ test/a3p3-effective-parity.test.ts (11 tests) 6ms
+ ❯ test/a3p3-revoke-reveal-semantics.test.ts (28 tests | 4 failed) 105ms
+     ✓ S1: revoke revealing a STATIC allow refuses under an empty envelope, with ZERO write 9ms
+     ✓ S1b: the same revoke passes ONLY with allow-ceiling coverage of the WHOLE matcher 3ms
+     ✓ S3: deny->ASK reveal is expansion VERBATIM (ADR §6): refused without ceiling, accepted at ceiling-ask 5ms
+     ✓ S2: deny revealing DENY (equal) is legal with no envelope 2ms
+     ✓ S4: DECLARED-NONE facts (declared deny fallback) is DECIDABLE — reveal-equal is legal… 3ms
+     ✓ S4b: …but UNKNOWN facts refuse EFFECT_CONTEXT_UNAVAILABLE even when the envelope would cover (unknown ≠ declared-none; the envelope cannot substitute for facts) 5ms
+     ✓ S5: revoking an ALLOW rule can never raise anything — legal WITHOUT any facts (provable case iii) 3ms
+     ✓ S7: lifting a shadowing subtree deny so a surviving child ALLOW answers needs allow-ceiling coverage — refused at empty envelope (reveal channel: the REMAINING overlay rule, under declared-none facts) 3ms
+     ✓ S7c: the SAME revoke under UNKNOWN facts refuses EFFECT_CONTEXT_UNAVAILABLE — the subtree RESIDUAL reveal is genuinely undecidable and is never assumed harmless 3ms
+     ✓ S7b: the same revoke with envelope coverage of the removed matcher (ceiling allow) commits; the surviving allow now ANSWERS 3ms
+     ✓ B1 (BUG2): exact ask under an overlay-matching subtree allow is a TIGHTENING — accepted with no envelope and no facts, for EVERY fallback hypothesis 16ms
+     ✓ B2 (unknown): a first-ever overlay rule over UNKNOWN lower facts refuses CONTEXT — never a deny-masquerade EXPANSION label 2ms
+     ✓ B2c (declared deny): over DECLARED-NONE facts the same ask grant IS a real deny->ask expansion — envelope-coded refusal 2ms
+     ✓ B2b (known allow): over a STATIC allow layer the same ask grant is a KNOWN tightening — accepted 2ms
+     ✓ S6: subtree-deny removal revealing a STATIC allow under its root is refused at empty envelope, needs subtree-ceiling-allow coverage 4ms
+     ✓ S6c: coverage of the matcher with a too-LOW ceiling refuses (the reveal rises to allow, the envelope says ask) 2ms
+     ✓ S6d: fallback-ASK region (no rule below, declared ask fallback): subtree-deny removal rises deny->ask — needs ceiling-ask 5ms
+     ✓ (e) WIDTH-conservative: an envelope covering ONE child of a granted subtree does not pass the other rising regions 2ms
+     ✓ (f) nested exception: a non-rising child region cannot rescue the rising residual — ceiling ask refuses, ceiling allow passes 4ms
+     ✓ all-or-nothing across mutation rules: one uncovered rising class refuses the WHOLE mutation, zero write 2ms
+     × X1 CANONICAL (parent fixture): subtree(R)=allow + exact(R/file)=deny; DECLARED-NONE; EMPTY envelope; revoke the exact deny with NO subtreeContains ⇒ truth deny->allow reveal must REFUSE (pre-fix build ACCEPTS) 7ms
+     ✓ X1p: the SAME revoke WITH the predicate is the decidable deny->allow reveal — EXPANSION-coded refusal (the gate changes nothing when the relation is known) 2ms
+     × X2 EQUAL-SUBTREE REWRITE (parent addition): subtree(R)=deny updated to ask with NO predicate; DECLARED-NONE; EMPTY envelope ⇒ truth deny->ask VERBATIM expansion must REFUSE (pre-fix drops the rule BOTH sides => false deny/deny identity, ACCEPTS) 2ms
+     ✓ X2p: the SAME equal-subtree deny->ask WITH the predicate is refused EXPANSION-coded (ladder-strict: deny->ask VERBATIM needs ceiling-ask coverage) 2ms
+     × X3 STATIC subtree allow exposed by revoking the overlay subtree deny, NO predicate ⇒ typed refusal (pre-fix drops BOTH the overlay deny and the static allow => declared-none deny/deny identity, ACCEPTS) 4ms
+     ✓ X3p: the SAME static-subtree reveal WITH the predicate is the decidable deny->allow expansion — EXPANSION-coded refusal 2ms
+     ✓ X4 GATE SPECIFICITY: EXACT-ONLY context with NO predicate flows NORMALLY — decidable tightening accepted, decidable expansion still EXPANSION-coded (the gate never over-refuses what contains no subtree matcher) 2ms
+     × X5 ENVELOPE-side unknown coverage is CONTEXT, not a mislabeled EXPANSION: exact grant over declared-none with ONLY a subtree envelope matcher and NO predicate 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X1 CANONICAL (parent fixture): subtree(R)=allow + exact(R/file)=deny; DECLARED-NONE; EMPTY envelope; revoke the exact deny with NO subtreeContains ⇒ truth deny->allow reveal must REFUSE (pre-fix build ACCEPTS)
+AssertionError: expected typed refusal PERMISSION_EFFECT_CONTEXT_UNAVAILABLE: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith test/a3p3-revoke-reveal-semantics.test.ts:239:80
+    237| ): Promise<void> {
+    238|   const outcome = await run().catch((error: unknown) => error)
+    239|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    240|   expect((outcome as { code: string }).code).toBe(code)
+    241| }
+ ❯ test/a3p3-revoke-reveal-semantics.test.ts:755:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X2 EQUAL-SUBTREE REWRITE (parent addition): subtree(R)=deny updated to ask with NO predicate; DECLARED-NONE; EMPTY envelope ⇒ truth deny->ask VERBATIM expansion must REFUSE (pre-fix drops the rule BOTH sides => false deny/deny identity, ACCEPTS)
+AssertionError: expected typed refusal PERMISSION_EFFECT_CONTEXT_UNAVAILABLE: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith test/a3p3-revoke-reveal-semantics.test.ts:239:80
+    237| ): Promise<void> {
+    238|   const outcome = await run().catch((error: unknown) => error)
+    239|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    240|   expect((outcome as { code: string }).code).toBe(code)
+    241| }
+ ❯ test/a3p3-revoke-reveal-semantics.test.ts:800:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X3 STATIC subtree allow exposed by revoking the overlay subtree deny, NO predicate ⇒ typed refusal (pre-fix drops BOTH the overlay deny and the static allow => declared-none deny/deny identity, ACCEPTS)
+AssertionError: expected typed refusal PERMISSION_EFFECT_CONTEXT_UNAVAILABLE: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith test/a3p3-revoke-reveal-semantics.test.ts:239:80
+    237| ): Promise<void> {
+    238|   const outcome = await run().catch((error: unknown) => error)
+    239|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    240|   expect((outcome as { code: string }).code).toBe(code)
+    241| }
+ ❯ test/a3p3-revoke-reveal-semantics.test.ts:844:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X5 ENVELOPE-side unknown coverage is CONTEXT, not a mislabeled EXPANSION: exact grant over declared-none with ONLY a subtree envelope matcher and NO predicate
+AssertionError: expected 'PERMISSION_ENVELOPE_EXPANSION_DENIED' to be 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE' // Object.is equality
+
+Expected: "PERMISSION_EFFECT_CONTEXT_UNAVAILABLE"
+Received: "PERMISSION_ENVELOPE_EXPANSION_DENIED"
+
+ ❯ expectRefusedWith test/a3p3-revoke-reveal-semantics.test.ts:240:46
+    238|   const outcome = await run().catch((error: unknown) => error)
+    239|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+    240|   expect((outcome as { code: string }).code).toBe(code)
+       |                                              ^
+    241| }
+    242|
+ ❯ test/a3p3-revoke-reveal-semantics.test.ts:918:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 failed | 35 passed (39)
+   Start at  21:10:27
+   Duration  501ms (transform 439ms, setup 0ms, import 575ms, tests 111ms, environment 0ms)
+
+AGGREGATE-2 RED rc=1

@@ -81,6 +81,11 @@ let worldSeq = 0
 async function world(options: {
   readonly envelopeRules?: unknown[]
   readonly facts?: FactsState
+  /** Fixture-defect repair (external round 2): the FIRST batch ALWAYS injected
+   *  containment, so the unknown-subtree-relation class was untested. `no`
+   *  builds the lane WITHOUT `subtreeContains` — every subtree-vs-X relation
+   *  is then genuinely unknown. */
+  readonly containment?: 'yes' | 'no'
 }): Promise<{ w: World; service: ReturnType<typeof createGovernanceMutationService> }> {
   worldSeq += 1
   const w = await openWorld(`region-${String(worldSeq)}`)
@@ -101,7 +106,9 @@ async function world(options: {
     now: () => '2026-10-05T12:00:00.000Z',
     permissionLane: {
       overlay: w.port,
-      subtreeContains: (root, child) => child === root || child.startsWith(`${root}/`),
+      ...(options.containment === 'no'
+        ? {}
+        : { subtreeContains: (root: string, child: string) => child === root || child.startsWith(`${root}/`) }),
       ...(envelopeRulesRaw === undefined
         ? {}
         // Untrusted pass-through: the SERVICE validates (typed refusal).
@@ -712,6 +719,213 @@ describe('regions: subtree partition, width conservatism, all-or-nothing', () =>
         PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
       )
       expect((await latest(w))?.metadata.generation).toBe(generationBefore)
+    } finally {
+      await w.store.close()
+      w.destroy()
+    }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// EXTERNAL REVIEW ROUND 2 — the UNKNOWN-CONTAINMENT class (parent-briefed).
+// With no `subtreeContains` injected, every subtree-vs-X relation is
+// genuinely unknown. Unknown must refuse TYPED (EFFECT_CONTEXT_UNAVAILABLE)
+// wherever the classification would need the relation — it must never be
+// silently dropped as a non-match (the fail-open drop this round proved:
+// `overlayEffectForRegion`/`staticEffectForRegion` treated
+// `matcherCovers(…).undeterminable` as no-match, and `matcherCovers` marked
+// even the provable-BY-IDENTITY equal-subtree pair unknown because its
+// `subtreeContains === undefined` check sits BEFORE the equality shortcut).
+// Exact-only contexts (no subtree matcher anywhere relevant) keep flowing
+// normally — the pre-classification gate must not over-refuse them.
+// ---------------------------------------------------------------------------
+
+const FACTS_SUBTREE_ALLOW: FactsState = {
+  kind: 'declared',
+  facts: { layers: [{ label: 'tmpl', default: 'deny', rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'allow' }] }] },
+}
+
+describe('unknown subtree relation refuses typed — never a silent non-match (round 2)', () => {
+  it('X1 CANONICAL (parent fixture): subtree(R)=allow + exact(R/file)=deny; DECLARED-NONE; EMPTY envelope; revoke the exact deny with NO subtreeContains ⇒ truth deny->allow reveal must REFUSE (pre-fix build ACCEPTS)', async () => {
+    const { w, service } = await world({ envelopeRules: [], facts: DECLARED_NONE, containment: 'no' })
+    try {
+      await service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'allow' }], 'seed-x1-allow'))
+      await service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'exact', resource: FILE_KEY }, effect: 'deny' }], 'seed-x1-deny'))
+      const generationBefore = (await latest(w))?.metadata.generation
+      await expectRefusedWith(
+        () =>
+          service.mutatePermission(
+            leaderMutation({
+              kind: 'revoke_permission',
+              mutationId: 'x1-revoke',
+              rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: FILE_KEY }, effect: 'deny' }],
+            }),
+          ),
+        PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+      )
+      expect((await latest(w))?.metadata.generation).toBe(generationBefore)
+    } finally {
+      await w.store.close()
+      w.destroy()
+    }
+  })
+
+  it('X1p: the SAME revoke WITH the predicate is the decidable deny->allow reveal — EXPANSION-coded refusal (the gate changes nothing when the relation is known)', async () => {
+    const { w, service } = await world({ envelopeRules: [], facts: DECLARED_NONE })
+    try {
+      await service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'allow' }], 'seed-x1p-allow'))
+      await service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'exact', resource: FILE_KEY }, effect: 'deny' }], 'seed-x1p-deny'))
+      await expectRefusedWith(
+        () =>
+          service.mutatePermission(
+            leaderMutation({
+              kind: 'revoke_permission',
+              mutationId: 'x1p-revoke',
+              rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: FILE_KEY }, effect: 'deny' }],
+            }),
+          ),
+        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+      )
+    } finally {
+      await w.store.close()
+      w.destroy()
+    }
+  })
+
+  it('X2 EQUAL-SUBTREE REWRITE (parent addition): subtree(R)=deny updated to ask with NO predicate; DECLARED-NONE; EMPTY envelope ⇒ truth deny->ask VERBATIM expansion must REFUSE (pre-fix drops the rule BOTH sides => false deny/deny identity, ACCEPTS)', async () => {
+    const { w, service } = await world({ envelopeRules: [], facts: DECLARED_NONE, containment: 'no' })
+    try {
+      await service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }], 'seed-x2-deny'))
+      const generationBefore = (await latest(w))?.metadata.generation
+      await expectRefusedWith(
+        () =>
+          service.mutatePermission(
+            leaderMutation({
+              kind: 'update_permission',
+              mutationId: 'x2-rewrite',
+              rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'ask' }],
+            }),
+          ),
+        PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+      )
+      expect((await latest(w))?.metadata.generation).toBe(generationBefore)
+    } finally {
+      await w.store.close()
+      w.destroy()
+    }
+  })
+
+  it('X2p: the SAME equal-subtree deny->ask WITH the predicate is refused EXPANSION-coded (ladder-strict: deny->ask VERBATIM needs ceiling-ask coverage)', async () => {
+    const { w, service } = await world({ envelopeRules: [], facts: DECLARED_NONE })
+    try {
+      await service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }], 'seed-x2p-deny'))
+      await expectRefusedWith(
+        () =>
+          service.mutatePermission(
+            leaderMutation({
+              kind: 'update_permission',
+              mutationId: 'x2p-rewrite',
+              rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'ask' }],
+            }),
+          ),
+        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+      )
+    } finally {
+      await w.store.close()
+      w.destroy()
+    }
+  })
+
+  it('X3 STATIC subtree allow exposed by revoking the overlay subtree deny, NO predicate ⇒ typed refusal (pre-fix drops BOTH the overlay deny and the static allow => declared-none deny/deny identity, ACCEPTS)', async () => {
+    const { w, service } = await world({ envelopeRules: [], facts: FACTS_SUBTREE_ALLOW, containment: 'no' })
+    try {
+      await service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }], 'seed-x3-deny'))
+      const generationBefore = (await latest(w))?.metadata.generation
+      await expectRefusedWith(
+        () =>
+          service.mutatePermission(
+            leaderMutation({
+              kind: 'revoke_permission',
+              mutationId: 'x3-revoke',
+              rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }],
+            }),
+          ),
+        PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+      )
+      expect((await latest(w))?.metadata.generation).toBe(generationBefore)
+    } finally {
+      await w.store.close()
+      w.destroy()
+    }
+  })
+
+  it('X3p: the SAME static-subtree reveal WITH the predicate is the decidable deny->allow expansion — EXPANSION-coded refusal', async () => {
+    const { w, service } = await world({ envelopeRules: [], facts: FACTS_SUBTREE_ALLOW })
+    try {
+      await service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }], 'seed-x3p-deny'))
+      await expectRefusedWith(
+        () =>
+          service.mutatePermission(
+            leaderMutation({
+              kind: 'revoke_permission',
+              mutationId: 'x3p-revoke',
+              rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }],
+            }),
+          ),
+        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+      )
+    } finally {
+      await w.store.close()
+      w.destroy()
+    }
+  })
+
+  it('X4 GATE SPECIFICITY: EXACT-ONLY context with NO predicate flows NORMALLY — decidable tightening accepted, decidable expansion still EXPANSION-coded (the gate never over-refuses what contains no subtree matcher)', async () => {
+    const { w, service } = await world({ envelopeRules: [], facts: DECLARED_NONE, containment: 'no' })
+    try {
+      await service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'exact', resource: FILE_KEY }, effect: 'allow' }], 'seed-x4-allow'))
+      // Decidable tightening (overlay answers both sides): accepted, no facts needed either.
+      const ok = await service.mutatePermission(
+        leaderMutation({
+          kind: 'update_permission',
+          mutationId: 'x4-tighten',
+          rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: FILE_KEY }, effect: 'deny' }],
+        }),
+      )
+      expect(ok).toBeTruthy()
+      // Decidable expansion over declared-none facts (fresh pair, deny
+      // fallback -> ask rise): still EXPANSION-coded, NOT the context code.
+      await expectRefusedWith(
+        () =>
+          service.mutatePermission(
+            leaderMutation({
+              kind: 'grant_instance',
+              mutationId: 'x4-expand',
+              rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: OTHER_KEY }, effect: 'ask' }],
+            }),
+          ),
+        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+      )
+    } finally {
+      await w.store.close()
+      w.destroy()
+    }
+  })
+
+  it('X5 ENVELOPE-side unknown coverage is CONTEXT, not a mislabeled EXPANSION: exact grant over declared-none with ONLY a subtree envelope matcher and NO predicate', async () => {
+    const { w, service } = await world({ envelopeRules: ENVELOPE_SUBTREE_ALLOW, facts: DECLARED_NONE, containment: 'no' })
+    try {
+      await expectRefusedWith(
+        () =>
+          service.mutatePermission(
+            leaderMutation({
+              kind: 'grant_instance',
+              mutationId: 'x5-grant',
+              rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: FILE_KEY }, effect: 'ask' }],
+            }),
+          ),
+        PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+      )
     } finally {
       await w.store.close()
       w.destroy()
