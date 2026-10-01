@@ -1,0 +1,9 @@
+packages/domain/test/t1-capability-schema.test.ts
+packages/domain/test/t2-blueprint-hash.test.ts
+packages/runtime/test/d3-member-identity-context.test.ts
+packages/runtime/test/p6t3-mediation.test.ts
+packages/runtime/test/p6t3-restart.test.ts
+packages/runtime/test/p8s3b-result-effects.test.ts
+packages/runtime/test/t12a-b2-child-identity.test.ts
+packages/runtime/test/t12a-glue-handoff-ports.test.ts
+packages/tools/test/p6t6-actions.test.ts

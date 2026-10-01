@@ -178,6 +178,7 @@ import {
   shippedStatePersonaObserver,
 } from '../../requirements/index.js'
 import type { RequirementFactLedger } from '../../requirements/index.js'
+import { requirementFactScopeRoleOf } from '../../requirement-facts/index.js'
 import type { RequirementFactsResolution } from '../../requirement-facts/index.js'
 import {
   TeamModelOverlaySlot,
@@ -862,7 +863,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           return requirementFacts.provider
             .resolveFacts({
               requirements,
-              scope: { kind: 'template', templateId },
+              // Blocker-1: the template scope carries its role identity
+              // (the bound blueprint knows its leader template id — the
+              // leader IS the root: the root mounts config.rootPresetId).
+              scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(blueprint.leader.templateId, templateId) },
             })
             .then((resolution) => resolution.environmentFacts)
         }
@@ -920,7 +924,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           return requirementFacts.provider
             .resolveFacts({
               requirements,
-              scope: { kind: 'template', templateId },
+              // Blocker-1: the template scope carries its role identity
+              // (the bound blueprint knows its leader template id — the
+              // leader IS the root: the root mounts config.rootPresetId).
+              scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(target.leader.templateId, templateId) },
             })
             .then((resolution) => resolution.environmentFacts)
         }
@@ -966,7 +973,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             scopeRequirementInputsOf(target).templates[templateId] ?? []
           return requirementFacts.provider.resolveFacts({
             requirements,
-            scope: { kind: 'template', templateId },
+            // Blocker-1: the template scope carries its role identity
+            // (the bound blueprint knows its leader template id — the
+            // leader IS the root: the root mounts config.rootPresetId).
+            scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(target.leader.templateId, templateId) },
           })
         }
 
@@ -1325,7 +1335,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         return authority.provider
           .resolveFacts({
             requirements: templateInputs[templateId] ?? [],
-            scope: { kind: 'template', templateId },
+            // Blocker-1: the template scope carries its role identity
+            // (the bound blueprint knows its leader template id — the
+            // leader IS the root: the root mounts config.rootPresetId).
+            scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(bound.leader.templateId, templateId) },
           })
           .then((resolution) => resolution.environmentFacts)
       }
@@ -3045,7 +3058,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         return authority.provider
           .resolveFacts({
             requirements: templateInputs[templateId] ?? [],
-            scope: { kind: 'template', templateId },
+            // Blocker-1: the template scope carries its role identity
+            // (the bound blueprint knows its leader template id — the
+            // leader IS the root: the root mounts config.rootPresetId).
+            scope: { kind: 'template', templateId, role: requirementFactScopeRoleOf(bound.leader.templateId, templateId) },
           })
           .then((resolution) => resolution.environmentFacts)
       }
@@ -3074,6 +3090,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             requirementId: input.requirementId,
             generation: input.generation,
             consentedBy: input.consentedBy,
+            // Finding J (2026-10-01): the consent scope (explicit or
+            // derived by the writer; the stamp keys the durable fact).
+            ...(input.scopeKey !== undefined ? { scopeKey: input.scopeKey } : {}),
             environmentFacts: freshTeamFacts(bound),
             templateEnvironmentFacts: freshTemplateFacts(bound),
             now,

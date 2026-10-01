@@ -57,8 +57,14 @@ describe('E.5 the closed fact vocabulary', () => {
   })
 
   it('the frozen payload field sets are the exact closed shapes', () => {
+    // Finding J (2026-10-01) — ADDITIVE contract change (disclosed): the
+    // consent fact gains its key fields (the scope + bound blueprint content
+    // hash the consent binds to, ADR-12). Legacy rows (written before the
+    // keying) carry neither and remain LEGAL — the keyed matching honors a
+    // legacy row only in a legacy (hash-unmodeled) evaluation, fail-closed
+    // otherwise (it must be re-granted).
     expect([...OPTIONAL_REQUIREMENT_ACCEPTED_FIELDS].sort()).toEqual(
-      ['consentedAt', 'consentedBy', 'generation', 'requirementId'].sort(),
+      ['consentedAt', 'consentedBy', 'contentHash', 'generation', 'requirementId', 'scopeKey'].sort(),
     )
     expect([...TEMPLATE_AVAILABILITY_SET_FIELDS].sort()).toEqual(['at', 'available', 'templateId'].sort())
     expect([...RECOVERY_INCIDENT_OPENED_FIELDS].sort()).toEqual(['openedAt', 'requirementIds', 'scope'].sort())
@@ -75,6 +81,37 @@ describe('E.5 payload builders + fail-closed parsers round-trip', () => {
       consentedBy: 'human-42',
     })
     expect(parseOptionalRequirementAccepted(payload, 'optional-requirement-accepted')).toEqual(payload)
+  })
+
+  it('optional-requirement-accepted round-trips WITH the consent key (Finding J — additive)', () => {
+    // The keyed row: the scope + bound blueprint content hash ride the
+    // durable payload (ADR-12 consent key). The key fields are
+    // omit-when-absent: a legacy 4-field row still round-trips byte-identical
+    // (the test above), a keyed row carries both.
+    const keyed = optionalRequirementAcceptedPayload({
+      requirementId: 'work.optional-mcp',
+      generation: 3,
+      consentedAt: 1234567890,
+      consentedBy: 'human-42',
+      scopeKey: 'template:worker',
+      contentHash: 'sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+    })
+    expect(parseOptionalRequirementAccepted(keyed, 'optional-requirement-accepted')).toEqual(keyed)
+    expect(keyed.scopeKey).toBe('template:worker')
+    expect(keyed.contentHash).toBeDefined()
+    // A key field PRESENT but malformed = fail-closed (never a silent drop).
+    expect(() =>
+      parseOptionalRequirementAccepted(
+        { requirementId: 'a', generation: 1, consentedAt: 1, consentedBy: 'h', scopeKey: '' },
+        'optional-requirement-accepted',
+      ),
+    ).toThrow(/scopeKey/)
+    expect(() =>
+      parseOptionalRequirementAccepted(
+        { requirementId: 'a', generation: 1, consentedAt: 1, consentedBy: 'h', contentHash: 42 },
+        'optional-requirement-accepted',
+      ),
+    ).toThrow(/contentHash/)
   })
 
   it('template-availability-set round-trips', () => {

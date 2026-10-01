@@ -31,8 +31,11 @@ export {
 
 export {
   assertRequirementFactScope,
+  REQUIREMENT_FACT_SCOPE_ROLES,
+  requirementFactScopeRoleOf,
   type MemberMaterializationView,
   type RequirementFactScope,
+  type RequirementFactScopeRole,
   type RequirementFactsPorts,
   type RequirementFactsResolution,
   type RequirementObservation,

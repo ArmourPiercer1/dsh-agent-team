@@ -327,6 +327,11 @@ export async function runCreationPreflight(options: CreationPreflightOptions): P
     scopeVerdicts: evaluation.scopeVerdicts,
     ...(options.consents !== undefined ? { consents: options.consents } : {}),
     ...(options.availability !== undefined ? { availability: options.availability } : {}),
+    // Finding J (2026-10-01, ADR-12) — the consent key carries the bound
+    // blueprint's content hash: a durable consent is honored for exactly the
+    // scope + hash it was granted for (a legacy unkeyed row fails closed
+    // against a keyed evaluation).
+    blueprintContentHash: options.blueprint.contentHash,
   })
   if (evaluation.liveReads === undefined) return base
   return applyPendingOverlay(base, evaluation, options)
@@ -466,6 +471,16 @@ export interface ConsentGrantOptions {
   readonly generation: number
   /** The human principal who consented (opaque). */
   readonly consentedBy: string
+  /**
+   * Finding J (2026-10-01, ADR-12) — the scope the consent is granted FOR
+   * (the scopeKey: `team` or `template:<id>`). PRESENT → the target is
+   * validated against that scope's verdicts (the requirement must be unmet
+   * there). ABSENT → the scope is DERIVED: the requirement must be unmet in
+   * exactly ONE scope (unmet in several = the closed
+   * `DUPLICATE_REQUIREMENT_SCOPE` typed refusal — the grant must name the
+   * scope; unmet in none = `CONSENT_TARGET_SATISFIED` as before).
+   */
+  readonly scopeKey?: string
   /** The Team scope's FRESH facts port (the validation evaluation). */
   readonly environmentFacts: () => Promise<readonly EnvironmentFact[]>
   /** The per-template FRESH facts port (the validation evaluation). */
@@ -500,9 +515,19 @@ export async function grantDegradationConsent(options: ConsentGrantOptions): Pro
       ? { templateEnvironmentFacts: options.templateEnvironmentFacts }
       : {}),
   })
-  const allVerdicts: readonly RequirementVerdict[] = Object.values(evaluation.scopeVerdicts).flat()
-  const verdict = allVerdicts.find((row) => row.requirementId === options.requirementId)
-  if (verdict === undefined) {
+  // Finding J (2026-10-01, ADR-12) — the consent is keyed by
+  // (scope, blueprint content hash, requirementId). The same requirementId
+  // may be declared in MULTIPLE scopes (the v2 validator guarantees
+  // uniqueness WITHIN a list only), so a consent must be bound to the EXACT
+  // scope it covers — a flat ID-only match let one consent bleed across
+  // scopes (and, unkeyed by hash, across blueprint revisions).
+  const matches: Array<{ scopeKey: string; verdict: RequirementVerdict }> = []
+  for (const [key, verdicts] of Object.entries(evaluation.scopeVerdicts)) {
+    for (const row of verdicts) {
+      if (row.requirementId === options.requirementId) matches.push({ scopeKey: key, verdict: row })
+    }
+  }
+  if (matches.length === 0) {
     // Not declared in ANY scope of the bound blueprint: there is nothing to
     // consent to. `CONSENT_TARGET_SATISFIED` in the closed vocabulary is
     // the code for "not unmet in the current evaluation" — an undeclared
@@ -513,7 +538,53 @@ export async function grantDegradationConsent(options: ConsentGrantOptions): Pro
       { requirementId: options.requirementId, reason: 'requirement-not-in-evaluation' },
     )
   }
-  // The PR-E validation (required-target / satisfied-target = typed).
+
+  // Resolve the consent's SCOPE: an explicit `scopeKey` names it (the target
+  // must be unmet in THAT scope); otherwise the requirement must be unmet in
+  // exactly ONE scope (the derived scope). Unmet in several scopes is an
+  // ambiguous binding — the closed `DUPLICATE_REQUIREMENT_SCOPE` code; the
+  // grant must name the scope.
+  const unmetMatches = matches.filter((m) => m.verdict.outcome === 'warning')
+  let targetScopeKey: string
+  if (options.scopeKey !== undefined) {
+    const inScope = matches.find((m) => m.scopeKey === options.scopeKey)
+    if (inScope === undefined) {
+      throw new RequirementError(
+        REQUIREMENT_ERROR_CODES.CONSENT_TARGET_SATISFIED,
+        `consent names requirement '${options.requirementId}' for scope '${options.scopeKey}' which is not unmet in that scope (the bound blueprint does not declare it there, or it is met there) — nothing to consent to in that scope`,
+        { requirementId: options.requirementId, scopeKey: options.scopeKey, reason: 'requirement-not-unmet-in-scope' },
+      )
+    }
+    targetScopeKey = inScope.scopeKey
+  } else if (unmetMatches.length === 1) {
+    targetScopeKey = unmetMatches[0]!.scopeKey
+  } else if (unmetMatches.length > 1) {
+    throw new RequirementError(
+      REQUIREMENT_ERROR_CODES.DUPLICATE_REQUIREMENT_SCOPE,
+      `consent for requirement '${options.requirementId}' is ambiguous: the requirement is unmet in more than one scope (${unmetMatches.map((m) => m.scopeKey).join(', ')}) — a consent is per-scope (ADR-12); name the scope (scopeKey) in the grant`,
+      { requirementId: options.requirementId, scopeKeys: unmetMatches.map((m) => m.scopeKey) },
+    )
+  } else {
+    // Declared but met in every scope: classify the first match (the
+    // pre-J flat semantics — required-target / satisfied-target, typed).
+    const first = matches[0]!
+    if (first.verdict.complete === true) {
+      throw new RequirementError(
+        REQUIREMENT_ERROR_CODES.CONSENT_TARGET_NOT_OPTIONAL,
+        `consent targets a REQUIRED requirement '${options.requirementId}' (a consent covers an OPTIONAL requirement only)`,
+        { requirementId: options.requirementId },
+      )
+    }
+    throw new RequirementError(
+      REQUIREMENT_ERROR_CODES.CONSENT_TARGET_SATISFIED,
+      `consent targets a SATISFIED requirement '${options.requirementId}' (there is nothing to consent to)`,
+      { requirementId: options.requirementId },
+    )
+  }
+  // The PR-E validation against the TARGET SCOPE's verdict (a consent is
+  // per-scope — a required / satisfied target in another scope does not
+  // make this grant valid, and vice versa).
+  const targetVerdict = matches.find((m) => m.scopeKey === targetScopeKey)!.verdict
   validateConsent(
     {
       requirementId: options.requirementId,
@@ -521,13 +592,18 @@ export async function grantDegradationConsent(options: ConsentGrantOptions): Pro
       consentedAt: nowMs(),
       consentedBy: options.consentedBy,
     },
-    allVerdicts,
+    [targetVerdict],
   )
+  // The consent is STAMPED with its key: the granted scope + the bound
+  // blueprint's content hash (ADR-12: durable per Team + immutable
+  // Blueprint contentHash + requirement scope).
   const payload = optionalRequirementAcceptedPayload({
     requirementId: options.requirementId,
     generation: options.generation,
     consentedAt: nowMs(),
     consentedBy: options.consentedBy,
+    scopeKey: targetScopeKey,
+    contentHash: options.blueprint.contentHash,
   })
   await writeRequirementFact(
     options.ledger,

@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-persona-kind
+
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/t12a-b2-child-identity.test.ts [ packages/runtime/test/t12a-b2-child-identity.test.ts ]
+Error: agent-bindings: capability template unresolved for 'session-team-child-0921004bd8be78e1e76cb9359d5805b4' (reason=template-id-missing instanceId=inst-t12ab2member) (code: capability-template-unresolved)
+ ❯ capabilityTemplateUnresolved packages/runtime/src/plugin/live/agent-bindings.mjs:3884:19
+    3882|     if (details.instanceId !== undefined) parts.push(`instanceId=${det…
+    3883|     if (details.templateId !== undefined) parts.push(`templateId=${det…
+    3884|     const error = new Error(`agent-bindings: capability template unres…
+       |                   ^
+    3885|     error.code = 'capability-template-unresolved'
+    3886|     error.reason = reason
+ ❯ locateTemplate packages/runtime/src/plugin/live/agent-bindings.mjs:1881:13
+ ❯ resolveConsumptionViews packages/runtime/src/plugin/live/agent-bindings.mjs:1202:27
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1984:76
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:990:20
+ ❯ makeHandle packages/runtime/test/t12a-live-bridge.mjs:870:60
+ ❯ Object.resume packages/runtime/test/t12a-live-bridge.mjs:930:28
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1032:14
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1017:20
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:806:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  05:29:39
+   Duration  2.36s (transform 1.49s, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+EXIT=1

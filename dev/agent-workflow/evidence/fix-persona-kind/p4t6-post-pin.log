@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-persona-kind
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  05:35:34
+   Duration  315ms (transform 41ms, setup 0ms, import 220ms, tests 4ms, environment 0ms)
+
+EXIT=0

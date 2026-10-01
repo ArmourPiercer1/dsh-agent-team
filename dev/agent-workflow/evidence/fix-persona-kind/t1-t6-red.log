@@ -1,0 +1,172 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-persona-kind
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts (11 tests | 7 failed) 16ms
+     × the team-scope preflight PASSES (pre-fix the kind subject was unknown ⇒ seed-less FATAL) 7ms
+     × evaluateCreationScopes agrees: the team verdict is PASS with the typed reason 2ms
+     × the team scope PASSES on the ROOT observation; the member template scope FATALs on the MEMBER observation 1ms
+     × the team scope FATALs with the typed conflict observation (no downgrade through the kind path) 1ms
+     × no seed ⇒ unknown ⇒ the fact is omitted ⇒ the preflight FATALs (fail-closed, NOT pending) 1ms
+     ✓ WITH a bootstrap seed available:true the seed truth decides ⇒ proceed (the documented 2-state) 1ms
+     ✓ WITH a bootstrap seed available:false the seed truth decides ⇒ FATAL (the 2-state is not a blanket OPEN) 1ms
+     ✓ a NON-kind subject keeps the legacy root/member preset-id matching (v1 frozen Blueprint cold resume) 1ms
+     × a kind subject resolves through the KIND path even when the mounted id equals a preset (no legacy shadowing) 1ms
+     × a v2 blueprint with the persona teamRequirement `standard` + a mounted composable preset PASSES with no seed 1ms
+     ✓ the SAME chain with a complete mounted preset FATALs end-to-end (no false OPEN) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T1 — bespoke composable preset ids, v2 teamRequirement `standard`, no seed > the team-scope preflight PASSES (pre-fix the kind subject was unknown ⇒ seed-less FATAL)
+AssertionError: expected { …(8) } to match object { type: 'persona', …(3) }
+(4 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "readiness": "reachable",
++   "readiness": "unknown",
+    "readinessSource": "substrate-resolver",
+    "subject": "standard",
+    "type": "persona",
+  }
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:314:40
+    312|     // (the subject is the required kind, not a preset id — neither mo…
+    313|     // id equals `standard`).
+    314|     expect(resolution.observations[0]).toMatchObject({
+       |                                        ^
+    315|       type: 'persona',
+    316|       subject: 'standard',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T1 — bespoke composable preset ids, v2 teamRequirement `standard`, no seed > evaluateCreationScopes agrees: the team verdict is PASS with the typed reason
+AssertionError: expected [ { …(4) } ] to deeply equal [ ObjectContaining{…} ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "outcome": "PASS",
++     "complete": true,
++     "outcome": "fatal",
+      "requirementId": "req-persona-standard-team",
++     "unavailableSubjects": [
++       "standard",
++     ],
+    },
+  ]
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:346:46
+    344|       environmentFactsRead: () => world.teamRead(PK_TEAM),
+    345|     })
+    346|     expect(evaluation.scopeVerdicts['team']).toEqual([
+       |                                              ^
+    347|       expect.objectContaining({ requirementId: TEAM_REQ_ID, outcome: '…
+    348|     ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T2 — root observes `standard`, member observes `complete` (R8 split) > the team scope PASSES on the ROOT observation; the member template scope FATALs on the MEMBER observation
+AssertionError: expected { …(8) } to match object { subject: 'standard', …(1) }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "readiness": "reachable",
++   "readiness": "unknown",
+    "subject": "standard",
+  }
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:366:44
+    364|     // Team scope: the ROOT entry observes `standard` → reachable.
+    365|     const teamResolution = await world.teamRead(PK_FULL)
+    366|     expect(teamResolution.observations[0]).toMatchObject({
+       |                                            ^
+    367|       subject: 'standard',
+    368|       readiness: PROBE_VERDICTS.reachable,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T3 — root observes `complete` (the §13.5 conflict) > the team scope FATALs with the typed conflict observation (no downgrade through the kind path)
+AssertionError: expected { …(8) } to match object { subject: 'standard', …(1) }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "readiness": "unreachable",
++   "readiness": "unknown",
+    "subject": "standard",
+  }
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:425:40
+    423|     })
+    424|     const resolution = await world.teamRead(PK_TEAM)
+    425|     expect(resolution.observations[0]).toMatchObject({
+       |                                        ^
+    426|       subject: 'standard',
+    427|       readiness: PROBE_VERDICTS.unreachable,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T4 — the observer fails typed (unresolved) > no seed ⇒ unknown ⇒ the fact is omitted ⇒ the preflight FATALs (fail-closed, NOT pending)
+AssertionError: expected 'persona requirement subject \'standar…' to contain 'unresolved'
+
+Expected: "unresolved"
+Received: "persona requirement subject 'standard' is not the observed root/member preset of this plan"
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:458:57
+    456|       readiness: PROBE_VERDICTS.unknown,
+    457|     })
+    458|     expect(resolution.observations[0]!.readinessReason).toContain('unr…
+       |                                                         ^
+    459|     expect(resolution.observations[0]!.readinessReason).toContain('age…
+    460|     // The persona observation is NON-probeable (no `persona` probe po…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T5 — the frozen v1 preset-ID convention (unchanged legacy path) > a kind subject resolves through the KIND path even when the mounted id equals a preset (no legacy shadowing)
+AssertionError: expected 'unknown' to be 'reachable' // Object.is equality
+
+Expected: "reachable"
+Received: "unknown"
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:582:51
+    580|     })
+    581|     const resolution = await world.teamRead(PK_TEAM)
+    582|     expect(resolution.observations[0]!.readiness).toBe(PROBE_VERDICTS.…
+       |                                                   ^
+    583|     expect(resolution.environmentFacts).toEqual([
+    584|       { domain: 'persona', subject: 'standard', available: true, gener…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T6 — end-to-end through the creation preflight (root.ts port shape) > a v2 blueprint with the persona teamRequirement `standard` + a mounted composable preset PASSES with no seed
+AssertionError: expected 'fatal' to be 'proceed' // Object.is equality
+
+Expected: "proceed"
+Received: "fatal"
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:622:28
+    620|     // the review flagged is closed by the shared kind semantics).
+    621|     const result = await world.preflight(PK_TEAM)
+    622|     expect(result.outcome).toBe(PREFLIGHT_OUTCOMES.proceed)
+       |                            ^
+    623|     expect(blockedScopeKeysOf(result)).toEqual([])
+    624|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 4 passed (11)
+   Start at  05:28:46
+   Duration  450ms (transform 251ms, setup 0ms, import 340ms, tests 16ms, environment 0ms)
+
+EXIT=1

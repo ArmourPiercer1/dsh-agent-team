@@ -1,0 +1,243 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent
+
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts (4 tests | 2 failed) 39ms
+     ✓ premise: the fixture worker template produces NO requirement inputs / verdicts (the empty case) 14ms
+     ✓ control: with the worker ENABLED the delegate is admitted (healthy world, empty worker) 8ms
+     × the durable disable BLOCKS the delegate to the worker — regardless of its (empty) requirement set 10ms
+     × re-enabling resumes the delegate through the SAME checks (the block did not key on requirements) 6ms
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r1" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:1368:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2098:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2920:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r2" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:1368:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2098:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2920:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts (10 tests | 5 failed) 11ms
+     ✓ J1: the team list and the worker list carry the SAME reqID (validate allows it — within-list uniqueness only) 2ms
+     ✓ J2: rev1 and rev2 carry the SAME requirement ids but DIFFERENT content hashes 1ms
+     ✓ the first create is refused consentRequired (both scopes carry the unconsented reqID) 0ms
+     × a consent granted for the TEAM scope does NOT cover the WORKER scope: re-drive #1 stays consentRequired 2ms
+     × the two scoped grants are distinct durable rows (scopeKey + contentHash stamped) 3ms
+     ✓ after BOTH scopes are consented the re-drive proceeds (the consent is per-scope, not per-id) 0ms
+     ✓ the first create (rev1) is refused consentRequired 0ms
+     × the rev1 consent row is stamped with the derived scope (team) and rev1 content hash 1ms
+     × the pre-team rev2 re-drive does NOT inherit the rev1 consent: stays consentRequired (the stale hash fails closed) 0ms
+     × re-consenting against rev2 admits the re-drive (the consent keys on scope + hash, both must match) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/consent-scope-hash-binding.test.ts > J1: a consent is bound to the SCOPE it was granted for (cross-scope, same reqID) > a consent granted for the TEAM scope does NOT cover the WORKER scope: re-drive #1 stays consentRequired
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts:515:27
+    513|     // The bug (flat ID-only match): re-drive #1 PROCEEDED because the…
+    514|     // consent "covered" the worker's same-id warning.
+    515|     expect(j1b.bootError).toBeInstanceOf(TeamRuntimeError)
+       |                           ^
+    516|     const details = preflightRefusal(j1b.bootError)
+    517|     expect(details['outcome']).toBe('consentRequired')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  packages/runtime/test/consent-scope-hash-binding.test.ts > J1: a consent is bound to the SCOPE it was granted for (cross-scope, same reqID) > the two scoped grants are distinct durable rows (scopeKey + contentHash stamped)
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+    {
+      "consentedBy": "session-fndj-r1",
+-     "contentHash": "sha256:5bcf19ffb29428d88f5cd24d37fca5e86ac6ac93949ef7cebbc4c8abc9d9c873",
++     "contentHash": undefined,
+      "generation": 1,
+      "requirementId": "req-opt",
+-     "scopeKey": "team",
++     "scopeKey": undefined,
+    },
+    {
+      "consentedBy": "session-fndj-r1",
+-     "contentHash": "sha256:5bcf19ffb29428d88f5cd24d37fca5e86ac6ac93949ef7cebbc4c8abc9d9c873",
++     "contentHash": undefined,
+      "generation": 2,
+      "requirementId": "req-opt",
+-     "scopeKey": "template:worker",
++     "scopeKey": undefined,
+    },
+  ]
+
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts:527:46
+    525|     expect(j1Grant1.ok).toBe(true)
+    526|     expect(j1Grant2.ok).toBe(true)
+    527|     expect(consentRowsOf(j1Audit2, ROOT_J1)).toEqual([
+       |                                              ^
+    528|       {
+    529|         requirementId: 'req-opt',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  packages/runtime/test/consent-scope-hash-binding.test.ts > J2: a consent is bound to the BLUEPRINT HASH it was granted for (stale-hash, same root) > the rev1 consent row is stamped with the derived scope (team) and rev1 content hash
+AssertionError: expected [ { requirementId: 'req-opt', …(4) } ] to deeply equal [ { requirementId: 'req-opt', …(4) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "consentedBy": "session-fndj-r2",
+-     "contentHash": "sha256:9c96c9caac987d1b227067f6d81fb4ccae128f113a6042d916e6855a07ab912a",
++     "contentHash": undefined,
+      "generation": 1,
+      "requirementId": "req-opt",
+-     "scopeKey": "team",
++     "scopeKey": undefined,
+    },
+  ]
+
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts:563:46
+    561|   it('the rev1 consent row is stamped with the derived scope (team) an…
+    562|     expect(j2Grant1.ok).toBe(true)
+    563|     expect(consentRowsOf(j2Audit1, ROOT_J2)).toEqual([
+       |                                              ^
+    564|       {
+    565|         requirementId: 'req-opt',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  packages/runtime/test/consent-scope-hash-binding.test.ts > J2: a consent is bound to the BLUEPRINT HASH it was granted for (stale-hash, same root) > the pre-team rev2 re-drive does NOT inherit the rev1 consent: stays consentRequired (the stale hash fails closed)
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts:577:27
+    575|     // The bug (ID-only match): the rev1 consent (same root, same reqI…
+    576|     // was honored for rev2 — the re-drive PROCEEDED.
+    577|     expect(j2b.bootError).toBeInstanceOf(TeamRuntimeError)
+       |                           ^
+    578|     const details = preflightRefusal(j2b.bootError)
+    579|     expect(details['outcome']).toBe('consentRequired')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  packages/runtime/test/consent-scope-hash-binding.test.ts > J2: a consent is bound to the BLUEPRINT HASH it was granted for (stale-hash, same root) > re-consenting against rev2 admits the re-drive (the consent keys on scope + hash, both must match)
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+    {
+      "consentedBy": "session-fndj-r2",
+-     "contentHash": "sha256:9c96c9caac987d1b227067f6d81fb4ccae128f113a6042d916e6855a07ab912a",
++     "contentHash": undefined,
+      "generation": 1,
+      "requirementId": "req-opt",
+-     "scopeKey": "team",
++     "scopeKey": undefined,
+    },
+    {
+      "consentedBy": "session-fndj-r2",
+-     "contentHash": "sha256:a55e4e39ec51b94ff63c7d7bde554414d23534dff279bbf1b88b0e0567427c40",
++     "contentHash": undefined,
+      "generation": 2,
+      "requirementId": "req-opt",
+-     "scopeKey": "team",
++     "scopeKey": undefined,
+    },
+  ]
+
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts:595:46
+    593|     expect(String(record?.blueprint.revision)).toBe('2')
+    594|     // Both rows persist (append-only): the rev1 row (stale) + the rev…
+    595|     expect(consentRowsOf(j2Audit2, ROOT_J2)).toEqual([
+       |                                              ^
+    596|       {
+    597|         requirementId: 'req-opt',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > the durable disable BLOCKS the delegate to the worker — regardless of its (empty) requirement set
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts:273:29
+    271|
+    272|     const outcome = await gateDelegateToWorker(world)
+    273|     expect(outcome.allowed).toBe(false)
+       |                             ^
+    274|     if (!outcome.allowed) {
+    275|       expect(outcome.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > re-enabling resumes the delegate through the SAME checks (the block did not key on requirements)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts:294:29
+    292|     })
+    293|     const blocked = await gateDelegateToWorker(world)
+    294|     expect(blocked.allowed).toBe(false)
+       |                             ^
+    295|
+    296|     // Re-enable (the production writer again — latest wins on the dur…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  7 failed | 7 passed (14)
+   Start at  05:34:56
+   Duration  1.18s (transform 1.20s, setup 0ms, import 1.79s, tests 50ms, environment 0ms)
+
+EXIT=1

@@ -72,6 +72,12 @@ export const OPTIONAL_REQUIREMENT_ACCEPTED_FIELDS = [
     'generation',
     'consentedAt',
     'consentedBy',
+    // Finding J (2026-10-01, ADR-12) — the ADDITIVE consent key fields (the
+    // scope + blueprint content hash the consent binds to). Absent on legacy
+    // rows (written before the keying); a keyed evaluation treats a legacy row
+    // as NOT consented (fail-closed — it must be re-granted).
+    'scopeKey',
+    'contentHash',
 ];
 /** The closed payload fields of `template-availability-set`. */
 export const TEMPLATE_AVAILABILITY_SET_FIELDS = ['templateId', 'available', 'at'];
@@ -112,12 +118,22 @@ export function parseOptionalRequirementAccepted(payload, path) {
         throw teamContractError('MALFORMED_DTO', `${path} must be a plain object`, { path });
     }
     const record = payload;
-    return deepFreeze({
+    const out = {
         requirementId: assertNonEmptyString(record.requirementId, 'requirementId', path),
         generation: assertInt(record.generation, 'generation', path),
         consentedAt: assertInt(record.consentedAt, 'consentedAt', path),
         consentedBy: assertNonEmptyString(record.consentedBy, 'consentedBy', path),
-    });
+    };
+    // Finding J (2026-10-01) — the ADDITIVE consent key fields: absent on
+    // legacy rows (a legacy row is legal — it is honored fail-closed by the
+    // keyed matching); present-but-wrong-type = malformed (fail closed).
+    if (record.scopeKey !== undefined) {
+        out.scopeKey = assertNonEmptyString(record.scopeKey, 'scopeKey', path);
+    }
+    if (record.contentHash !== undefined) {
+        out.contentHash = assertNonEmptyString(record.contentHash, 'contentHash', path);
+    }
+    return deepFreeze(out);
 }
 /** Parse a fail-closed `template-availability-set` payload. */
 export function parseTemplateAvailabilitySet(payload, path) {
@@ -165,6 +181,8 @@ export function optionalRequirementAcceptedPayload(args) {
         generation: args.generation,
         consentedAt: args.consentedAt,
         consentedBy: args.consentedBy,
+        ...(args.scopeKey !== undefined ? { scopeKey: args.scopeKey } : {}),
+        ...(args.contentHash !== undefined ? { contentHash: args.contentHash } : {}),
     }, 'optional-requirement-accepted');
 }
 /** Build a deep-frozen `template-availability-set` payload. */

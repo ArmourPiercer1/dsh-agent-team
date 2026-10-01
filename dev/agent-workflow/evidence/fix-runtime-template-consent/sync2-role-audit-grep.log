@@ -1,0 +1,131 @@
+grep -rn "kind: 'template'\|kind: \"template\"\|kind: TEMPLATE" packages/runtime/ --include=*.ts | grep -v dist
+EXIT=0
+
+=== extended: all kind-template object literals incl. double-space + const variants (source+test, no dist) ===
+packages/testkit/test/t6-9-negative-matrix.test.ts:180:    kind: 'template',
+packages/testkit/test/t6-4-policy-precedence.test.ts:164:          kind: 'template',
+packages/domain/policy/src/types.ts:257: * - `kind: 'template'` — the TeamSession template-scoped overlay (the
+packages/domain/policy/src/types.ts:270:  kind: 'template' | 'instance'
+packages/domain/test/t4-policy-explain.test.ts:117:        templateOverlay: { overlayId: 'ov-tpl-1', kind: 'template', origin: 'leader', values: { [cap]: entry } },
+packages/domain/test/t4-policy-explain.test.ts:181:      templateOverlay: { overlayId: 'ovt-1', kind: 'template', origin: 'leader', values: { [cap]: allow(['ovt-item']) } },
+packages/domain/test/t4-policy-explain.test.ts:244:      templateOverlay: { overlayId: 'ov-ld', kind: 'template', origin: 'leader', values: { [cap]: allow(['ld-item']) } },
+packages/domain/test/t4-policy-explain.test.ts:275:        kind: 'template',
+packages/domain/test/t4-policy-explain.test.ts:431:          kind: 'template',
+packages/domain/test/t4-policy-explain.test.ts:459:      templateOverlay: { overlayId: 'ov-1', kind: 'template', origin: 'leader', values: { tools: allow(['ld']) } },
+packages/domain/test/t4-policy-matrix.test.ts:162:          kind: 'template',
+packages/domain/test/t4-policy-negative.test.ts:204:        kind: 'template',
+packages/domain/test/t4-policy-negative.test.ts:522:          kind: 'template',
+packages/domain/test/t4-policy-negative.test.ts:536:          kind: 'template',
+packages/domain/test/t4-policy-negative.test.ts:550:          kind: 'template',
+packages/domain/test/t4-policy-negative.test.ts:718:            else if (layer === 'templateOverlay') input = { ...input, templateOverlay: { overlayId: `ov-t-${i}`, kind: 'template', origin: rng() < 0.5 ? 'leader' : 'member', values: { [cap]: entry } } }
+packages/domain/test/t4-policy-negative.test.ts:774:        input.templateOverlay = { overlayId: `ov-t-${i}`, kind: 'template', origin, values: { [cap]: allow(badItems) } }
+packages/runtime/src/plugin/root.ts:865:              scope: { kind: 'template', templateId },
+packages/runtime/src/plugin/root.ts:923:              scope: { kind: 'template', templateId },
+packages/runtime/src/plugin/root.ts:969:            scope: { kind: 'template', templateId },
+packages/runtime/src/plugin/root.ts:1328:            scope: { kind: 'template', templateId },
+packages/runtime/src/plugin/root.ts:3048:            scope: { kind: 'template', templateId },
+packages/runtime/effective-policy/select.ts:101:      kind: 'template',
+packages/runtime/requirement-facts/types.ts:105:  | { readonly kind: 'template'; readonly templateId: string; readonly instanceId?: string }
+packages/runtime/requirement-facts/types.ts:142:        ? { kind: 'template' as const, templateId }
+packages/runtime/requirement-facts/types.ts:143:        : { kind: 'template' as const, templateId, instanceId },
+packages/runtime/control/types.ts:258:  | { readonly kind: 'template'; readonly templateId: string }
+packages/runtime/control/service.ts:1324:          `subject must be {kind:'instance',instanceId} | {kind:'template',templateId} | {kind:'team',rootSessionId} (got ${JSON.stringify(args.subject)})`,
+packages/runtime/control/service.ts:2083:          `subject must be {kind:'instance',instanceId} | {kind:'template',templateId} | {kind:'team',rootSessionId} (got ${JSON.stringify(scope.subject)})`,
+packages/runtime/action-router/router.ts:212:    return { kind: 'template', templateId: targetTemplateId }
+packages/runtime/test/template-disable-no-requirements-gate.test.ts:189:        scope: { kind: 'template', templateId },
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:92:const TEMPLATE = { kind: 'template' as const, templateId: 'dev' }
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:381:    expect(() => assertRequirementFactScope({ kind: 'template' })).toThrowError(/templateId/)
+packages/runtime/test/control-subject-cross-kind-alias.test.ts:54:// id, so a template subject {kind:'template', templateId:'inst-abc'} is a
+packages/runtime/test/control-subject-cross-kind-alias.test.ts:150:      subject: { kind: 'template' as const, templateId: ALIAS_ID },
+packages/runtime/test/control-subject-cross-kind-alias.test.ts:155:      subject: { kind: 'template' as const, templateId: ALIAS_ID },
+packages/runtime/test/control-subject-cross-kind-alias.test.ts:187:    expect(s1.templateSubject).toEqual({ kind: 'template', templateId: ALIAS_ID })
+packages/runtime/test/control-subject-normalization.test.ts:175:          subject: { kind: 'template', templateId: 'worker' },
+packages/runtime/test/control-subject-normalization.test.ts:308:      subject: { kind: 'template', templateId: 'worker' },
+packages/runtime/test/control-guard-coupling.test.ts:48:const TEMPLATE_SUBJECT = { kind: 'template' as const, templateId: 'worker' }
+packages/runtime/test/leader-template-required-boundary.test.ts:204:        scope: { kind: 'template', templateId },
+packages/runtime/test/control-template-subject.test.ts:2: * pre-alpha3 PR-D, D.2 — the TEMPLATE subject (`{kind:'template',
+packages/runtime/test/control-template-subject.test.ts:78:      subject: { kind: 'template', templateId: 'worker' },
+packages/runtime/test/control-template-subject.test.ts:96:      subject: { kind: 'template' as const, templateId: 'worker' },
+packages/runtime/test/control-template-subject.test.ts:127:      subject: { kind: 'template', templateId: 'worker' },
+packages/runtime/test/control-template-subject.test.ts:165:          subject: { kind: 'template', templateId: 'ghost-template' },
+packages/runtime/test/control-template-subject.test.ts:194:      subject: { kind: 'template', templateId: 'scout' },
+packages/runtime/test/control-template-subject.test.ts:225:          subject: { kind: 'template', templateId: 'worker' },
+packages/runtime/test/control-template-subject.test.ts:243:    expect(s1.request.subject).toEqual({ kind: 'template', templateId: 'worker' })
+packages/runtime/test/control-template-subject.test.ts:254:    expect(s2.request.subject).toEqual({ kind: 'template', templateId: 'worker' })
+packages/runtime/test/control-template-subject.test.ts:271:    expect(s4.request.subject).toEqual({ kind: 'template', templateId: 'scout' })
+packages/runtime/test/mcp-live-readiness-to-requirement-fact.test.ts:120:const TEMPLATE = { kind: 'template' as const, templateId: 'dev' }
+packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts:450:      scope: { kind: 'template', templateId },
+packages/runtime/test/leader-recovery-next-boundary-exit.test.ts:174:        scope: { kind: 'template', templateId },
+
+=== all resolveFacts call sites (source+test, no dist) ===
+packages/runtime/src/plugin/host.ts:2178:    // `observations` of `resolveFacts`, the 2-state feed keeps the engine's
+packages/runtime/src/plugin/types.ts:651: * decision consumes the 3-state `observations` of `resolveFacts`, and the
+packages/runtime/src/plugin/s6-remote.ts:870:   * `resolveFacts` call (the same seam the admission gates consume).
+packages/runtime/src/plugin/s6-remote.ts:2067:          // ONE resolveFacts call): drop the SEED-FILLED facts of every
+packages/runtime/src/plugin/root.ts:839:            await requirementFacts.provider.resolveFacts({
+packages/runtime/src/plugin/root.ts:863:            .resolveFacts({
+packages/runtime/src/plugin/root.ts:906:          .resolveFacts({
+packages/runtime/src/plugin/root.ts:921:            .resolveFacts({
+packages/runtime/src/plugin/root.ts:930:  // observations pair of ONE `resolveFacts` call). The D-1 facts seams
+packages/runtime/src/plugin/root.ts:954:      : requirementFacts.provider.resolveFacts({
+packages/runtime/src/plugin/root.ts:967:          return requirementFacts.provider.resolveFacts({
+packages/runtime/src/plugin/root.ts:1321:          .resolveFacts({ requirements: scopeRequirementInputsOf(bound).team, scope: { kind: 'team' } })
+packages/runtime/src/plugin/root.ts:1326:          .resolveFacts({
+packages/runtime/src/plugin/root.ts:3039:          .resolveFacts({ requirements: scopeRequirementInputsOf(bound).team, scope: { kind: 'team' } })
+packages/runtime/src/plugin/root.ts:3046:          .resolveFacts({
+packages/runtime/test/restart-readiness-unknown.test.ts:94:      await provider.resolveFacts({
+packages/runtime/test/template-disable-no-requirements-gate.test.ts:172:      await provider.resolveFacts({
+packages/runtime/test/template-disable-no-requirements-gate.test.ts:187:      await provider.resolveFacts({
+packages/runtime/test/optional-mcp-live-outage-degraded.test.ts:97:        await provider.resolveFacts({
+packages/runtime/test/required-mcp-live-outage-recovery.test.ts:113:      await provider.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:105:    const resolution = await provider.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:133:    const resolution = await provider.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:154:    const first = await before.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:174:    const second = await after.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:193:    const resolution = await provider.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:214:    const resolution = await provider.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:230:    const resolution = await provider.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:253:    const resolution = await provider.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:275:    const resolution = await provider.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:292:    const resolution = await provider.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:304:    const resolution = await provider.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:317:    const resolution = await provider.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:336:    const resolution = await provider.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:347:    const resolution = await provider.resolveFacts({
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:363:    const resolution = await provider.resolveFacts({
+packages/runtime/test/leader-template-required-boundary.test.ts:187:      await provider.resolveFacts({
+packages/runtime/test/leader-template-required-boundary.test.ts:202:      await provider.resolveFacts({
+packages/runtime/test/mcp-live-readiness-to-requirement-fact.test.ts:19: * RuntimeRequirementFactsProvider.resolveFacts(requirements, scope)
+packages/runtime/test/mcp-live-readiness-to-requirement-fact.test.ts:128:    const resolution = await provider.resolveFacts({ requirements: [GITHUB_REQ], scope: TEAM })
+packages/runtime/test/mcp-live-readiness-to-requirement-fact.test.ts:142:    const resolution = await provider.resolveFacts({ requirements: [GITHUB_REQ], scope: TEAM })
+packages/runtime/test/mcp-live-readiness-to-requirement-fact.test.ts:152:    const resolution = await provider.resolveFacts({ requirements: [GITHUB_REQ], scope: TEAM })
+packages/runtime/test/mcp-live-readiness-to-requirement-fact.test.ts:164:    const resolution = await provider.resolveFacts({ requirements: [GITHUB_REQ], scope: TEAM })
+packages/runtime/test/mcp-live-readiness-to-requirement-fact.test.ts:175:    const resolution = await provider.resolveFacts({ requirements: [GITHUB_REQ], scope: TEAM })
+packages/runtime/test/mcp-live-readiness-to-requirement-fact.test.ts:189:    const resolution = await provider.resolveFacts({ requirements: [GITHUB_REQ], scope: TEMPLATE })
+packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts:441:    provider.resolveFacts({
+packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts:448:    provider.resolveFacts({
+packages/runtime/test/leader-recovery-next-boundary-exit.test.ts:158:      await provider.resolveFacts({
+packages/runtime/test/leader-recovery-next-boundary-exit.test.ts:172:      await provider.resolveFacts({
+packages/runtime/test/requirement-probe-blueprint-scoping.test.ts:285:      .resolveFacts({
+packages/runtime/requirement-facts/index.ts:13: * to `resolveFacts` (fresh 3-state), keeping the 2-state engine feed for the
+packages/runtime/requirement-facts/types.ts:227: * The resolution of one `resolveFacts` call — the live observations of every
+packages/runtime/requirement-facts/types.ts:337:  resolveFacts(args: {
+packages/runtime/requirement-facts/provider.ts:181:    async resolveFacts(args): Promise<RequirementFactsResolution> {
+
+=== assertRequirementFactScope call sites ===
+packages/runtime/requirement-facts/index.ts:33:  assertRequirementFactScope,
+packages/runtime/requirement-facts/types.ts:113:export function assertRequirementFactScope(value: unknown): RequirementFactScope {
+packages/runtime/requirement-facts/provider.ts:91:  assertRequirementFactScope,
+packages/runtime/requirement-facts/provider.ts:182:      const scope = assertRequirementFactScope(args.scope)
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:30:  assertRequirementFactScope,
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:380:  it('assertRequirementFactScope rejects a malformed scope', () => {
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:381:    expect(() => assertRequirementFactScope({ kind: 'template' })).toThrowError(/templateId/)
+packages/runtime/test/runtime-requirement-facts-provider.test.ts:382:    expect(() => assertRequirementFactScope({ kind: 'bogus' })).toThrowError(/unknown requirement-fact scope kind/)
+
+=== requirementFactScopeRoleOf references (should be zero at pre-merge tip) ===
+EXIT=1
+
+=== team-scope-only check: the 4 files untouched by #46 ===
+packages/runtime/test/restart-readiness-unknown.test.ts:102:const TEAM_SCOPE = { kind: 'team' as const }
+packages/runtime/test/optional-mcp-live-outage-degraded.test.ts:52:const TEAM_SCOPE = { kind: 'team' as const }
+packages/runtime/test/required-mcp-live-outage-recovery.test.ts:124:const TEAM_SCOPE = { kind: 'team' as const }
