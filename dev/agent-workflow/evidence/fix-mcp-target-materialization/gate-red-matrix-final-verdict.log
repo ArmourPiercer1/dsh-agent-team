@@ -1,0 +1,215 @@
+== RED matrix — the requirement-aware final-input verdict legs (L1/L2/L3/L4a/L4b/L4c) ==
+HEAD: 42e810cd0c8ee3e4fb3f865e4d6af33b420dde76
+date: 2026-10-01T09:26:13Z
+git status --porcelain (uncommitted = the new RED legs, pure additions):
+ M packages/runtime/test/mcp-target-materialization.test.ts
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-red-matrix-final-verdict.log
+$ cd packages/runtime && npx vitest run test/mcp-target-materialization.test.ts test/mcp-target-materialization-unit.test.ts
+
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/runtime
+
+ ✓ test/mcp-target-materialization-unit.test.ts (5 tests) 3ms
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ❯ test/mcp-target-materialization.test.ts (13 tests | 6 failed) 11ms
+     ✓ T1 — the failed target instance is gated with ZERO work; the healthy sibling passes (no masking in either direction) 1ms
+     ✓ T2 — the scope incident stays open until the scope OWN materialization converges (fixing A alone does not close it; fixing B does) 0ms
+     ✓ T3 — two roots, same templateId: the target root OWN failed instance gates the target root (no cross-root conflation) 0ms
+     ✓ T4 — the v2 Leader template: the Leader OWN (root session) materialization gates leader-targeted work, masked by a healthy sibling 0ms
+     ✓ T5 — the cold member: the not-applicable materialization is preserved (no spurious block; resume + mount + delivery) 0ms
+     ✓ T7 (external residual 1) — the first-mount PENDING window: B is admitted (masked pending), its own first mount fails on the passage, and the SAME-passage delivery is blocked (zero model-visible input; fail-closed settlement; A unaffected; the next passage is gated as failed) 0ms
+     ✓ T8 (external residual 2) — the initial-work cross-root read: root B's initial work is gated on B OWN failed leader materialization (zero delivery; the recovery stays typed/open — the healthy root A neither permits B nor settles B) 0ms
+     × L1 (residual class 1) — the COLD-RESUME gap: the stale cold truth admits, the resume setup reconcile fails the remount, the prepare cooldown SKIPs, and the pre-fix SAME-PASSAGE gate (the attempt-clock delta) is BLIND — the delivery reaches B. The requirement-aware final-input verdict reads the FINAL failed truth and blocks (zero input; fail-closed settlement; the next passage gated as failed) 3ms
+     × L2 (residual class 2) — the MESSAGING consumer: the coordinator commits the intent and delivers the attributed input to B whose prepare FAILED the required server — the pre-fix submitAttributedInput IGNORES the prepare result (the input reaches B's inbox + the confirmation commits). The requirement-aware final-input verdict blocks (the coordinator maps the rejection to MESSAGING_DELIVERY_FAILED; the intent stays pending — NO confirmation) 2ms
+     × L3 (residual class 2) — the ROOT consumer: root B's initial work — the admission reads the stale cold truth and ADMITS (the durable `team-work-admitted` fact), the cold-resume delivery's setup reconcile fails the remount, and the pre-fix deliverRootInput IGNORES the prepare result (the root input reaches B + the terminal fact commits). The requirement-aware final-input verdict blocks (the strategy maps the rejection to WORK_DELIVERY_FAILED → the remote TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED; the admission stays for the same-token retry; NO terminal root-work fact) 0ms
+     × L4a (residual class 3) — the anti-over-block (NO requirement): B's first mount fails on its own first passage, but the failed server carries NO requirement — the pre-fix SAME-PASSAGE gate over-blocks (requirement-blind); the requirement-aware final-input verdict DEGRADES (the work delivers with the server down; the slot is the failed truth) 1ms
+     × L4b (residual class 3) — the anti-over-block (OPTIONAL requirement): B's first mount fails on its own first passage, but the failed server's requirement is `complete: false` (the engine's WARNING verdict — the degraded scope, never a block) — the pre-fix SAME-PASSAGE gate over-blocks (requirement-blind); the requirement-aware final-input verdict DEGRADES (the work delivers with the server down) 0ms
+     × L4c (residual class 3) — the anti-over-block (REVIEWED recovery): the human-reviewed recovery re-run of the blocked follow-up to B (the `recovery` marker, the T2 shape) — the gate allows the recovery work (the reviewed scope; the durable incident record), the prepare re-attempts the remount past cooldown and it FAILS AGAIN (the persistent fault), and the pre-fix SAME-PASSAGE gate over-blocks the reviewed recovery (recovery-blind). The requirement-aware final-input verdict EXEMPTS the reviewed scope (the marker names the unavailable subject) and delivers 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/mcp-target-materialization.test.ts > Finding F — residual legs (external review of e45d22fe: R1 first-mount PENDING window + R2 initial-work cross-root read) > L1 (residual class 1) — the COLD-RESUME gap: the stale cold truth admits, the resume setup reconcile fails the remount, the prepare cooldown SKIPs, and the pre-fix SAME-PASSAGE gate (the attempt-clock delta) is BLIND — the delivery reaches B. The requirement-aware final-input verdict reads the FINAL failed truth and blocks (zero input; fail-closed settlement; the next passage gated as failed)
+AssertionError: the cold-resume delivery was NOT blocked after the remount failure (the external class-1 gap: a timestamp-delta judgment misses the failure stamped by the resume setup reconcile): expected undefined to be an instance of TeamRuntimeError
+ ❯ test/mcp-target-materialization.test.ts:1825:7
+    1823|       L1.bThrown,
+    1824|       'the cold-resume delivery was NOT blocked after the remount fail…
+    1825|     ).toBeInstanceOf(TeamRuntimeError)
+       |       ^
+    1826|     expect((L1.bThrown as TeamRuntimeError).code).toBe(TEAM_RUNTIME_ER…
+    1827|     expect(L1.bFollowupsAfter - L1.bFollowupsBefore, 'zero work on the…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  test/mcp-target-materialization.test.ts > Finding F — residual legs (external review of e45d22fe: R1 first-mount PENDING window + R2 initial-work cross-root read) > L2 (residual class 2) — the MESSAGING consumer: the coordinator commits the intent and delivers the attributed input to B whose prepare FAILED the required server — the pre-fix submitAttributedInput IGNORES the prepare result (the input reaches B's inbox + the confirmation commits). The requirement-aware final-input verdict blocks (the coordinator maps the rejection to MESSAGING_DELIVERY_FAILED; the intent stays pending — NO confirmation)
+AssertionError: the messaging delivery was NOT blocked after B's first-mount failure (the external class-2 gap: submitAttributedInput ignores the prepare result): expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/mcp-target-materialization.test.ts:1856:7
+    1854|       L2.sendResponse['ok'],
+    1855|       'the messaging delivery was NOT blocked after B\'s first-mount f…
+    1856|     ).toBe(false)
+       |       ^
+    1857|     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- …
+    1858|     const error = L2.sendResponse['error'] as Record<string, any>
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  test/mcp-target-materialization.test.ts > Finding F — residual legs (external review of e45d22fe: R1 first-mount PENDING window + R2 initial-work cross-root read) > L3 (residual class 2) — the ROOT consumer: root B's initial work — the admission reads the stale cold truth and ADMITS (the durable `team-work-admitted` fact), the cold-resume delivery's setup reconcile fails the remount, and the pre-fix deliverRootInput IGNORES the prepare result (the root input reaches B + the terminal fact commits). The requirement-aware final-input verdict blocks (the strategy maps the rejection to WORK_DELIVERY_FAILED → the remote TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED; the admission stays for the same-token retry; NO terminal root-work fact)
+AssertionError: B's initial work was PERMITTED on the failed remount passage (the external class-2 root gap: deliverRootInput ignores the prepare result): expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/mcp-target-materialization.test.ts:1885:7
+    1883|       L3.bInitialWorkResponse['ok'],
+    1884|       'B\'s initial work was PERMITTED on the failed remount passage (…
+    1885|     ).toBe(false)
+       |       ^
+    1886|     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- …
+    1887|     const error = L3.bInitialWorkResponse['error'] as Record<string, a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  test/mcp-target-materialization.test.ts > Finding F — residual legs (external review of e45d22fe: R1 first-mount PENDING window + R2 initial-work cross-root read) > L4a (residual class 3) — the anti-over-block (NO requirement): B's first mount fails on its own first passage, but the failed server carries NO requirement — the pre-fix SAME-PASSAGE gate over-blocks (requirement-blind); the requirement-aware final-input verdict DEGRADES (the work delivers with the server down; the slot is the failed truth)
+AssertionError: the no-requirement outage was NOT allowed (the external class-3 over-block: the pre-fix gate blocks on ALL policy-allowed targets' same-passage failures): expected TeamRuntimeError: TeamRuntime: work deliv… { …(2) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+TeamRuntimeError {
+  "message": "TeamRuntime: work delivery to 'session-team-child-5f010450892f5247d4f209c918642180' of 'inst-0gpm2ln17nuw' failed: team work delivery blocked before input: the target's applicable mcp materialization failed on this passage [mtm_srv_l4a] — the materialization must succeed before real work (Finding F residual-1: the first-mount PENDING window)",
+  "code": "TEAM_RUNTIME_WORK_DELIVERY_FAILED",
+  "details": {
+    "cause": {
+      "message": "team work delivery blocked before input: the target's applicable mcp materialization failed on this passage [mtm_srv_l4a] — the materialization must succeed before real work (Finding F residual-1: the first-mount PENDING window)",
+    },
+    "childSessionId": "session-team-child-5f010450892f5247d4f209c918642180",
+    "instanceId": "inst-0gpm2ln17nuw",
+    "requestToken": "mtm-tok-49",
+  },
+  "name": "TeamRuntimeError",
+}
+
+ ❯ test/mcp-target-materialization.test.ts:1908:7
+    1906|       L4A.bThrown,
+    1907|       'the no-requirement outage was NOT allowed (the external class-3…
+    1908|     ).toBeUndefined()
+       |       ^
+    1909|     expect(L4A.bOutcome?.instanceId, 'B\'s work is admitted').toBe(L4A…
+    1910|     expect(L4A.bFollowupsAfter - L4A.bFollowupsBefore, 'the work deliv…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  test/mcp-target-materialization.test.ts > Finding F — residual legs (external review of e45d22fe: R1 first-mount PENDING window + R2 initial-work cross-root read) > L4b (residual class 3) — the anti-over-block (OPTIONAL requirement): B's first mount fails on its own first passage, but the failed server's requirement is `complete: false` (the engine's WARNING verdict — the degraded scope, never a block) — the pre-fix SAME-PASSAGE gate over-blocks (requirement-blind); the requirement-aware final-input verdict DEGRADES (the work delivers with the server down)
+AssertionError: the optional-requirement outage was NOT allowed (the external class-3 over-block: the pre-fix gate is requirement-blind): expected TeamRuntimeError: TeamRuntime: work deliv… { …(2) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+TeamRuntimeError {
+  "message": "TeamRuntime: work delivery to 'session-team-child-526efa9ce4d4b8ddc1d7c95a723a0f2e' of 'inst-1au2foj1eynf' failed: team work delivery blocked before input: the target's applicable mcp materialization failed on this passage [mtm_srv_l4b] — the materialization must succeed before real work (Finding F residual-1: the first-mount PENDING window)",
+  "code": "TEAM_RUNTIME_WORK_DELIVERY_FAILED",
+  "details": {
+    "cause": {
+      "message": "team work delivery blocked before input: the target's applicable mcp materialization failed on this passage [mtm_srv_l4b] — the materialization must succeed before real work (Finding F residual-1: the first-mount PENDING window)",
+    },
+    "childSessionId": "session-team-child-526efa9ce4d4b8ddc1d7c95a723a0f2e",
+    "instanceId": "inst-1au2foj1eynf",
+    "requestToken": "mtm-tok-53",
+  },
+  "name": "TeamRuntimeError",
+}
+
+ ❯ test/mcp-target-materialization.test.ts:1926:7
+    1924|       L4B.bThrown,
+    1925|       'the optional-requirement outage was NOT allowed (the external c…
+    1926|     ).toBeUndefined()
+       |       ^
+    1927|     expect(L4B.bOutcome?.instanceId, 'B\'s work is admitted').toBe(L4B…
+    1928|     expect(L4B.bFollowupsAfter - L4B.bFollowupsBefore, 'the work deliv…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  test/mcp-target-materialization.test.ts > Finding F — residual legs (external review of e45d22fe: R1 first-mount PENDING window + R2 initial-work cross-root read) > L4c (residual class 3) — the anti-over-block (REVIEWED recovery): the human-reviewed recovery re-run of the blocked follow-up to B (the `recovery` marker, the T2 shape) — the gate allows the recovery work (the reviewed scope; the durable incident record), the prepare re-attempts the remount past cooldown and it FAILS AGAIN (the persistent fault), and the pre-fix SAME-PASSAGE gate over-blocks the reviewed recovery (recovery-blind). The requirement-aware final-input verdict EXEMPTS the reviewed scope (the marker names the unavailable subject) and delivers
+AssertionError: the reviewed recovery re-run was NOT allowed (the external class-3 over-block: the pre-fix gate blocks even the human-reviewed recovery re-run): expected TeamRuntimeError: TeamRuntime: work deliv… { …(2) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+TeamRuntimeError {
+  "message": "TeamRuntime: work delivery to 'session-team-child-534b6ddf1af283d0c4d1924b62ea5f60' of 'inst-19hd7ra15nd4' failed: team work delivery blocked before input: the target's applicable mcp materialization failed on this passage [mtm_srv_l4c] — the materialization must succeed before real work (Finding F residual-1: the first-mount PENDING window)",
+  "code": "TEAM_RUNTIME_WORK_DELIVERY_FAILED",
+  "details": {
+    "cause": {
+      "message": "team work delivery blocked before input: the target's applicable mcp materialization failed on this passage [mtm_srv_l4c] — the materialization must succeed before real work (Finding F residual-1: the first-mount PENDING window)",
+    },
+    "childSessionId": "session-team-child-534b6ddf1af283d0c4d1924b62ea5f60",
+    "instanceId": "inst-19hd7ra15nd4",
+    "requestToken": "mtm-tok-59",
+  },
+  "name": "TeamRuntimeError",
+}
+
+ ❯ test/mcp-target-materialization.test.ts:1948:7
+    1946|       L4C.bThrown,
+    1947|       'the reviewed recovery re-run was NOT allowed (the external clas…
+    1948|     ).toBeUndefined()
+       |       ^
+    1949|     expect(L4C.bOutcome?.instanceId, 'the recovery work is admitted').…
+    1950|     expect(L4C.bFollowupsAfter - L4C.bFollowupsBefore, 'the recovery w…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  6 failed | 12 passed (18)
+   Start at  09:26:17
+   Duration  1.80s (transform 1.24s, setup 0ms, import 2.33s, tests 14ms, environment 0ms)
+
+VITEST_EXIT=1

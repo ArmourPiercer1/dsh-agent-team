@@ -127,8 +127,19 @@ export function assertRequirementFactScope(value) {
     }
     const record = value;
     const kind = record['kind'];
+    // Finding F (scoped identity): the owning team root (optional — the
+    // multi-root host shape; absent = the legacy boot-root fallback).
+    const rootSessionId = record['rootSessionId'];
+    if (rootSessionId !== undefined && (typeof rootSessionId !== 'string' || rootSessionId.length === 0)) {
+        throw teamContractError('MALFORMED_DTO', 'rootSessionId must be a non-empty string at $.rootSessionId', {
+            path: '$.rootSessionId',
+            problem: 'non-string rootSessionId',
+        });
+    }
     if (kind === 'team') {
-        return deepFreeze({ kind: 'team' });
+        return deepFreeze(rootSessionId === undefined
+            ? { kind: 'team' }
+            : { kind: 'team', rootSessionId });
     }
     if (kind === 'template') {
         const templateId = record['templateId'];
@@ -152,9 +163,17 @@ export function assertRequirementFactScope(value) {
                 problem: 'non-string instanceId',
             });
         }
-        return deepFreeze(instanceId === undefined
-            ? { kind: 'template', templateId, role }
-            : { kind: 'template', templateId, role, instanceId });
+        // Blocker-1 shared contract: `role` is REQUIRED (the closed identity);
+        // Finding F: `instanceId` / `rootSessionId` are orthogonal optional
+        // coordinates (absent = the legacy template-only, single-root shape).
+        const base = { kind: 'template', templateId, role };
+        return deepFreeze(rootSessionId === undefined && instanceId === undefined
+            ? base
+            : {
+                ...base,
+                ...(instanceId !== undefined ? { instanceId } : {}),
+                ...(rootSessionId !== undefined ? { rootSessionId } : {}),
+            });
     }
     throw teamContractError('MALFORMED_DTO', `unknown requirement-fact scope kind '${String(kind)}' at $.kind`, {
         path: '$.kind',

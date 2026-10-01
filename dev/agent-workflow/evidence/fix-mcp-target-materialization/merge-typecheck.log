@@ -1,0 +1,24 @@
+== PROVENANCE: handoff capture from .worktrees/.scratch-logs/mcp/merge-typecheck.log (gitignored scratch; captured by the pre-sync session at merged head e28dfef3, 2026-10-01T09:0xZ; committed here verbatim below the banner — the original scratch file is PRESERVED, not moved) ==
+
+== TYPECHECK @ merged head e28dfef3 ==
+date: 2026-10-01T09:00:19Z
+\$ pnpm -r typecheck (9 packages)
+
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+TYPECHECK_EXIT=0

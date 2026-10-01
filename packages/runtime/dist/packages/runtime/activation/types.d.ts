@@ -38,6 +38,7 @@ import type { TeamDomain } from '../../storage/repositories/index.js';
 import type { AdmissionGuard, OverlaySlot, OverlaySlotName, TeamAgentSetupSurface } from '../agent-setup/binder/index.js';
 import type { SessionDurabilityPort } from '../member-residency/index.js';
 import type { RequirementFactsResolution } from '../requirement-facts/index.js';
+import type { TemplateFeedContext } from '../admission/types.js';
 import type { ModelSelection } from '../agent-setup/model/index.js';
 import type { PolicyReader, PolicyStateTransitionRecord } from '../mutation/index.js';
 /**
@@ -260,7 +261,7 @@ export interface ActivationPorts {
      * scope. ABSENT → the legacy behavior (the authority's facts) stands
      * byte-identically.
      */
-    readonly templateEnvironmentFactsForBlueprint?: (blueprint: TeamBlueprint, templateId: string) => Promise<readonly EnvironmentFact[]>;
+    readonly templateEnvironmentFactsForBlueprint?: (blueprint: TeamBlueprint, templateId: string, context?: TemplateFeedContext) => Promise<readonly EnvironmentFact[]>;
     /**
      * D-3 (2026-09-30, adjudicated product semantics — fail-closed PENDING,
      * plan §C.3 "否则 unresolved fail closed；禁止 false OPEN" + E.3 "no
@@ -286,7 +287,7 @@ export interface ActivationPorts {
      * the template-boundary feed). Same ABSENT semantics as
      * {@link ActivationPorts.environmentFactsReadForBlueprint}.
      */
-    readonly templateEnvironmentFactsReadForBlueprint?: (blueprint: TeamBlueprint, templateId: string) => Promise<RequirementFactsResolution>;
+    readonly templateEnvironmentFactsReadForBlueprint?: (blueprint: TeamBlueprint, templateId: string, context?: TemplateFeedContext) => Promise<RequirementFactsResolution>;
     /** The external hard policy + capability-existence facts (step 8: policy
      *  resolver stage 2, Architecture §19.2/§19.6). */
     readonly externalPolicyFacts: () => Promise<ExternalPolicyFacts>;

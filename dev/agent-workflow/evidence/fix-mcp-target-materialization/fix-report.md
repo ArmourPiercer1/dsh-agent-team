@@ -1,0 +1,1578 @@
+# Finding F (P1) — target-specific MCP materialization masked by aggregate results: fix report
+
+**Branch**: `fix/mcp-target-materialization` (worktree `.worktrees/fix-mcp-materialization`)
+**Base**: `31ad828d06b5bcca858532f1930ac10c51c0f1bb` (master at dispatch; PR base)
+**Final HEAD**: `5e599790504d7072f5697f756884dcb536f655f4` (merge commit onto origin/master `8e18819c`)
+**Commits** (31ad828d..HEAD, this branch's 7 + the merge):
+
+| SHA | Round | Subject |
+| --- | --- | --- |
+| `30ed0d68` | 0 (predecessor) | repro (Finding F P1): RED regression matrix T1–T5 (real chain) + T6 unit (provider + 2-state engine + real repositories) |
+| `9162e0f1` | 1 (pick) | fix(finding A / Blocker-1): the template scope carries its role identity — the leader is judged by its OWN (root) observation — **cherry-pick with -x of the #46 contract commit `1461a6f2bf2a5dc18f1a16b671b6ea5bf552e3fb`** |
+| `a8ac28e8` | 1 (predecessor) | fix(F) increment (a): scoped-identity plumbing — the boundary scope carries its owning root + target instance; the gate performs the target's OWN boundary read |
+| `8dddab74` | 2 (writer-of-record) | fix(finding F): target-specific MCP materialization — increment (b) + T4/T5 completion (T1–T6 RED→GREEN) — **recovered WIP base + the original's post-stash continuation, both (see DOUBLE-WRITER INCIDENT & RECOVERY)** |
+| `66591aab` | 2 (writer-of-record) | test(p4t6): recompute the session-event-scan file pin 896 → 899 |
+| `3725a203` | 2 (writer-of-record) | chore(lint): remove dead imports/constants/params — file-aware fingerprint zero-new vs baseline |
+| `9063c671` | 2 (writer-of-record) | build(finding F): ship the rebuilt dist artifacts (34 files) |
+| `5e599790` | 3 (sync) | Merge origin/master (8e18819c, post PR #46) — conflict resolutions below |
+
+---
+
+## 1. The finding (verified defect at base)
+
+The requirement-facts gate evaluates MCP **materialization** per *scope*, but the
+materialization view it read was an **aggregate** across all member instances of a
+row — while the action being gated is TARGETED at one specific instance. Concretely:
+instance A on a session whose fiber is mounted can mask instance B's failed/absent
+mount (and cross-root instances conflate because the host row is multi-root):
+
+- a target whose own materialization slot is `failed` still passes the gate (its
+  failure is averaged away) → the 2-state engine feed then reports the member
+  AVAILABLE for a boundary read that must be DOWN;
+- a target on a DIFFERENT team root than the entry's boot root is judged against
+  the boot root's instances;
+- a target that is cold and INACTIVE (never materialized by design) was treated
+  like a cold-but-resuming failure (blocking) instead of NOT-APPLICABLE.
+
+**Design (fixed during the fix)**: the action gate performs the target's **OWN
+boundary read** (per-instance / per-server — never an aggregate); the scope-level
+verdict + incident/recovery bookkeeping stay **template-level CONSERVATIVE worst
+case** (the scope cannot see per-target truth, so it folds worst).
+
+## 2. The fix (production chain, no test weakening)
+
+Production chain exercised by the matrix: `hostEntry.apply`
+(`packages/runtime/src/plugin/host.ts`) + production glue
+(`agent-bindings.mjs`) + the bridge double (`createAgentsDouble`,
+`t12a-live-bridge.mjs`) + fiber doubles (`withdrawTools()` = the F15 supervisor
+effect). Worlds build in ~2s on the double base — NOT a speed artifact (workload
+identity vs the prior RED run was verified before the GREEN claim).
+
+- **`host.ts` — `memberMaterialization` port** (increment (b)): the host answers a
+  template scope with the TARGET's own view — v2 leaders resolve through their OWN
+  root session (discriminated by the runtime plan's `schemaVersion`; the documented
+  type lie is carried in the port's JSDoc), scope fold = conservative worst case.
+  The 06:59:16 re-touch (post-incident) = `sessionOf` reworked to a block body with
+  an explicit `raw` cast + comment — behavior-identical, type-safe (re-diffed vs the
+  06:39 provenance patch: `wip-increment-b-diff.patch`; coherent continuation, no
+  corruption — parent condition 1).
+- **`provider.ts`** (increment (b) + T4): `deriveEngineFact` — materialization
+  `failed` = DOWN (`available:false`) as the FIRST check, beating readiness + seed;
+  pending/mounted/not-applicable never flip the feed (liveness adjudication: PENDING
+  must never be a state only the blocked action can settle). **T4 (view-after-probe
+  ordering)**: the materialization view is resolved per-subject INSIDE the
+  `mcpServer` branch AFTER that subject's readiness probe — the aggregate probe of
+  this very resolution may have just retired the fiber and stamped the slot
+  `failed`; the view must read the POST-stamp truth (template scopes only; port
+  absent → `undefined` → the legacy cold default).
+- **`pending.ts`** (increment (b)): the 3-state `materializationFailed` flag is
+  ORTHOGONAL to readiness (a masked failure = reachable + failed at once); the down
+  fold = `unreachable || materializationFailed`.
+- **`router.ts`** — `dispatchRecoveryIfOffered` (T1): the recovery OFFER is an
+  offer, never a precondition — a rejected offer (ENVELOPE_OUT_OF_BOUNDS — the
+  caller envelope lacks `request-control`) returns `undefined` and the original
+  typed block stands; zero durable effect.
+- **`types.ts` / `root.ts` / `admission/*`** (increment (a)): the scope carries its
+  owning root + target instance as ORTHOGONAL optional coordinates (absent = the
+  legacy single-root / template-only shape, byte-identical for every pre-fix
+  caller); the gate reads the target's own boundary; the scope bookkeeping folds
+  conservatively.
+
+## 3. T1–T6: before → after
+
+**Committed RED evidence**: `gate-red-matrix.log` (this evidence dir) — FRESH
+capture @ `30ed0d68` in a temporary detached worktree (CMD-first line + full
+output + TRUE-EXIT=1): `Test Files 2 failed (2)` / `Tests 4 failed | 1 passed
+(5)` — the unit leg U1–U4 RED (U5 guard green) + the real-chain leg's RED
+signature thrown during suite setup: "the action was ALLOWED — the
+target-specific block is missing (the Finding F false OPEN)" (T1 follow-up B —
+the pre-fix tree admits the target action the gate must block; T2–T5 share the
+same pre-fix world construction, which throws at T1 before their `it` legs
+execute — the RED-frozen shape). The original 06:15 scratch run of the same
+matrix shows the identical totals (that capture lacked the CMD-first line and
+was gitignored — the fresh capture is the committed evidence; substance
+identical).
+
+| Test | World / leg | BEFORE (RED @ 30ed0d68) | AFTER (GREEN @ 8dddab74+) |
+| --- | --- | --- | --- |
+| T1 | recovery OFFER on the blocked path | offer rejection REPLACED the typed block with ENVELOPE_OUT_OF_BOUNDS | offer rejected → `undefined` → the original typed block (COMPATIBILITY_BLOCKED) stands; zero durable effect |
+| T2 | world A incident bookkeeping | scope incident recorded on the wrong (aggregate) state | scope verdict + incident/recovery bookkeeping = conservative template-level fold; target verdict = its own boundary truth |
+| T3 | two instances, OPPOSITE slots (world A/B) | target's own slot masked by the aggregate | target judged by its OWN slot; the other instance's state never enters the target verdict |
+| T4 | v2 leader, own root (world C) | pre-probe view stale (`mounted`) while the target verdict saw `failed` — same boundary, two truths, one passage | view-after-probe per subject: both verdicts read the same post-stamp boundary state |
+| T5 | cold-inactive guard (world D) | direct double-handle dispose bypassed the glue registry → stale "live" = a state the guard never sees in production | fixture corrected to the production seam `world.root.live.dropResidency(instC.childSessionId)` (+assert `dropped === true`) — the ONLY test-file change in the fix commit; T5 assertions byte-identical (slot undefined at boot / followup admitted / resumed / slot mounted) |
+| T6 | U1–U5 unit matrix (real provider + real 2-state engine + real repositories) | RED at base | GREEN |
+
+**The four explicitly pinned worlds** (parent condition 2, confirmed): T1 =
+world (1) the opposite-slot two instances; T3 = world (2) different roots, same
+templateId; T4 = world (3) the v2 leader judged by its OWN (root) observation;
+T5 = world (4) cold-inactive NOT-APPLICABLE. T2 = the world-A incident
+bookkeeping leg (not a fifth world).
+
+**Second test-hunk disclosure (reviewer r2 finding, verified)**: beyond the
+T5 world-D fixture correction, the real-chain test carries ONE further change —
+the **T2 `closeRows` query precision fix, committed in `a8ac28e8` (increment (a),
+verified by per-commit diff: the RED-frozen 30ed0d68 call
+`incidentsOf(world, A_ROOT, 'template:worker')` passed a scope argument to a
+2-argument helper that SILENTLY IGNORED it — the scope filter was never applied
+at RED); `a8ac28e8` replaced it with
+`incidentsOf(world, A_ROOT).filter((row) => row.scope === 'template:worker')`
+(+ a `firstClose` toBeDefined guard on the assertion). This is strictly
+STRICTER than the RED baseline (the filter is now actually applied; the added
+guard), matches the leg's intent, and T2 is GREEN-verified at the tip — a
+precision correction, NOT a weakening. The +18 world-D fixture correction
+(8dddab74) remains the only FIX-COMMIT fixture change; the `a8ac28e8` hunk is
+disclosed here and in the PR body as the second test change on the branch.
+
+**GREEN**: 2 files / 10 tests, TRUE-EXIT=0 (`gate-focused-matrix.log`; the
+post-incident verification run on the 06:59 tree: `matrix-after-0659-writes.log`
+— annotated: that capture predates the CMD-first log standard (no command line
+in the file); its substance = the 10/10 post-incident GREEN matrix run, the
+authoritative CMD-first GREEN capture is `gate-focused-matrix.log`).
+
+## 4. The A-contract pick (content-verified)
+
+`9162e0f1` = `git cherry-pick -x 1461a6f2bf2a5dc18f1a16b671b6ea5bf552e3fb`
+(the #46 Blocker-1 contract — mandatory `role` on template fact scopes).
+
+- **vs the contract commit `1461a6f2`: all 10 files byte-IDENTICAL.**
+- **vs the post-sync tree `a6e2d90c`: identical EXCEPT `provider.ts`** — Blocker-3
+  `7a4d7d60` landed on the #46 branch between `1461a6f2` and the sync;
+  `1461a6f2` IS an ancestor of `a6e2d90c`. The sync merge (this branch) brings
+  `7a4d7d60` in via origin/master — no re-pick needed.
+- **One disclosed post-pick edit**: `requirement-d1-d3-decision-scoping.test.ts`
+  drops the dead constant `SIGNAL_ID` (lint gate — pre-existing repo debt, present
+  in the `1461a6f2`/master copy too; see §5). After the sync merge, my copy's
+  deletion also won the auto-merge (their tree keeps the dead line — pre-existing
+  debt on master, disclosed here, not re-introduced by this branch).
+
+## 5. DOUBLE-WRITER INCIDENT & RECOVERY
+
+**Full record (parent-authored, main-session, read-only):
+`evidence/fix-mcp-target-materialization/double-writer-incident.md`** (tracked copy
+of the scratch record; the scratch dir is gitignored).
+
+Summary: the original builder (02e1512b) was misjudged dead after a failed
+`send_message`; a replacement (this writer) was dispatched 06:44 while the original
+was still live — undisclosed double-writer state until 06:51. The original's final
+write burst 06:59:16–06:59:45 completed the T4 fix + the T5 fixture correction;
+parent interrupt #3 at ~06:59:50; STOP confirmed ~07:00 ("was stopped before it
+finished. It left no closing message."); quiescence verified 07:04:53 (mtimes
+unchanged since 06:59:45). Parent then confirmed THIS writer as the single writer
+of record, with the provenance condition quoted verbatim in commit `8dddab74`:
+the committed increment-(b) work is **recovered WIP base (the 06:39/06:41 stash
+patches — provenance snapshots preserved as evidence) + the original's post-stash
+continuation, both** — not purely one writer's or the other's.
+
+**Retention (no code lost — parent-confirmed 5-point verification)**: the stop
+interrupted the original's TURN, not the files — the 06:59 writes landed on disk
+before the stop and were carried into `8dddab74` intact; per-file provenance
+(table in the incident record) was re-diffed against the stash patches (host.ts:
+coherent continuation, behavior-identical). The throwaway
+`zz-mtm-engine-check.test.ts` (original's, 06:53:33) was deleted per parent order
+before any commit.
+
+**NEW UNREVIEWED CHANGES disclosure**: the increment-(b) product hunks
+(recovered WIP base + the original's continuation) and the T5 fixture correction
+in `8dddab74` were authored OUTSIDE this writer's verified session — they entered
+the branch under parent supervision and the T1–T6 GREEN produced on this tree;
+any review pass that did not inspect them must be re-run over them.
+
+## 6. Lint gate + the 8 dead-code removals (`3725a203`)
+
+Pre-sync gate (file-aware fingerprint vs `baseline-lint-fp-fileaware.txt`, the
+31ad828d reference — recipe: awk `file|line:col|rule`, `comm -23` = NEW): the first
+run reported **8 NEW** no-unused-vars fingerprints (145 vs 143). Provenance was
+established BEFORE fixing (identifier-count identity at `a8ac28e8` vs the working
+tree — ZERO introduced by the fix WIP):
+
+- **six are pre-existing at the baseline itself** — the baseline carries them at
+  adjacent lines (router.ts 83:15 / provider.ts 87:8, 96:8, 442:32 / host.ts
+  1790:37 / d1-d3 test 340:7); this branch's committed increments (the pick +
+  increment (a)) shifted the lines → the line-based fingerprint surfaced them as
+  "new" (line-shift artifact, not new debt);
+- **two sit in the RED-matrix commit's new test files** (which postdate the
+  baseline): the dead world constant in `mcp-target-materialization.test.ts` + the
+  unused `TeamBlueprint` import in the unit test.
+
+Removals: zero behavior change; no assertion touched; verified by the 15-file /
+163-test focused re-run + full typecheck. Result: **137 = 143 − 6, NEW = 0**
+(`gate-lint-postfix.log` + `gate-lint-fp-postfix.txt`). Repo-wide `pnpm run lint`
+still exits 1 on the pre-existing baseline debt (the baseline's own run shows the
+identical ELIFECYCLE exit 1 — `baseline-lint.log`; the gate is the zero-new
+fingerprint comparison).
+
+## 7. SYNC ROUND — controlled MERGE onto origin/master (NEW UNREVIEWED CHANGES)
+
+**origin/master MOVED past the work-order's `2bfbca12`**: sync target = current
+tip `8e18819c4e589f685b99a86769251565ee4fc7ec` = "Merge pull request #46 from
+ArmourPiercer1/fix/persona-kind-preflight" — **the A contract (mandatory `role`)
+is now ON MASTER** (the #46-integration warning's trigger). MERGE strategy (merge
+commit `5e599790`, NO rebase, NO force-push; the subsequent push is PLAIN).
+Divergence: 16 theirs (PR #46 + PR #47 effective-policy-reset-fallback) vs 7 mine;
+merge-base `31ad828d` (clean fork point).
+
+**15 conflicted paths — every resolution** (all are NEW UNREVIEWED CHANGES; any
+review pass predating this merge does not cover them):
+
+| file | resolution |
+| --- | --- |
+| `requirement-facts/types.ts` | **OURS** — origin/master's copy is byte-identical to the pick of `1461a6f2`; OURS = that + increment-(a) scoped-identity plumbing = strict superset (diff-verified) |
+| `src/plugin/root.ts` | **OURS** — same shape: theirs == pure pick; OURS = pick + increment-(a) TemplateFeedContext plumbing |
+| `test/persona-kind-provider-preflight.test.ts` (add/add) | **THEIRS** — OURS == pure pick; theirs = pick + their post-sync adjustments (+52 changed lines); contract marker `role:'member'` verified intact |
+| `requirement-facts/provider.ts` | **UNION** — single conflicted hunk (types import): `type MemberMaterializationView` dropped (unused in the merged body — T4 computes the view per-subject; Blocker-3's persona lane uses `deriveMaterializationStatus`). ALL other hunks auto-merged cleanly: the T1–T6 WIP hunks and Blocker-3's persona-lane hunk are disjoint and coexist (verified in-tree) |
+| `test/requirement-d1-d3-decision-scoping.test.ts` | **AUTO-merged** — my dead-constant removal (SIGNAL_ID) wins over their kept copy (their tree carries the same dead line — pre-existing master debt, §4) |
+| `p4t6-session-event-scan.test.ts` | **RECOMPUTED on the merged tree**: 899 (mine) / 898 (theirs) → **900** = 898 + my two finding-F test files; the preflight file (both sides) counted once — no double count; justification block composed in the pin; scanner byte-identical; 10/10 green @ 900 |
+| 10 dist files (provider/types/root `.js`/`.d.ts`/`.map`) | **REGENERATED** — fresh `pnpm build` 9/9 + `pnpm build:composition` on the MERGED tree (house rule: never keep stale artifacts — the fresh build defines the install surface); `check:artifacts` OK 1372 EXIT=0 |
+
+`SESSION_ROUTER_LOG.md`: no conflict (their append only; this bookkeeping's own
+append lands in the bookkeeping commit — both sides kept, union by append).
+
+## 8. Gate totals (final)
+
+**Pre-sync tip `9063c671`** (all logs in this evidence dir, legible standard:
+command line first line + full stdout + TRUE exit):
+
+| gate | result | log |
+| --- | --- | --- |
+| focused matrix (the 2 F files) | **10/10, TRUE-EXIT=0** | `gate-focused-matrix.log` |
+| full suite | **9F\|4724P (4743) files/tests — EXACT debt-set match, zero new** (19 = t1 9 / t2 1 / d3 1 / p6t3-mediation 5 / p6t3-restart 2 / p6t6-actions 1; +3 file-level collections 0 tests; p6t1 flake 0) | `gate-fullsuite-final.log` |
+| lint file-aware | **137 = 143 − 6 removed, NEW = 0** | `gate-lint-postfix.log` + fp |
+| typecheck | **9/9, TRUE-EXIT=0** | `gate-typecheck.log` |
+| check:artifacts | **OK 1372, TRUE-EXIT=0** (post-build, dist staged) | `gate-check-artifacts-postbuild.log` |
+| p4t6 | **10/10 @ 899, TRUE-EXIT=0** | `gate-p4t6.log` |
+| build | **9/9, EXIT=0** + dist delta 34 files co-committed (`9063c671`) | `gate-build.log` |
+| combined tests w/ A contract | **15 files / 163 tests green** (focused 13 + F 2) | (in the focused-matrix run) |
+
+**Log annotation (reviewer r2 finding, S3)**: `gate-fullsuite.log` (the
+INTERMEDIATE full-suite run @ 66591aab, kept for the record) ends
+`TRUE-EXIT=0` although 19 tests failed — a piped-capture artifact in its exit
+line (the command's exit was captured through a pipe). It is NOT rewritten (no
+history rewrite); the **authoritative pre-sync full-suite log is
+`gate-fullsuite-final.log` (TRUE-EXIT=1, exact debt-set match)**.
+
+**Merged head `5e599790`**:
+
+| gate | result | log |
+| --- | --- | --- |
+| full suite | **20F\|4737P (4757) = exact 19-failure debt set + 1 p6t1-parallel flake** (documented 0–2 envelope; isolated re-run 9/9 green — zero NEW; committed isolated capture: `gate-p6t1-isolated-merged.log`, CMD-first + TRUE-EXIT=0) | `gate-fullsuite-merged.log` |
+| check:artifacts | **OK 1372, TRUE-EXIT=0** | `gate-check-artifacts-merged.log` |
+| typecheck | **9/9, TRUE-EXIT=0** | `gate-typecheck-merged.log` |
+| lint file-aware | **136 fingerprints, NEW = 0** (143 − 6 my removals − 1 removed by their side) | `gate-lint-merged.log` + fp |
+| p4t6 | **10/10 @ 900** (recomputed; pin asserts 900; fresh re-verification at the final tip `e45d22fe`: 10/10, TRUE-EXIT=0 — the evidence `.log` additions are not scannable `packages/**` files, no pin impact) | (recomputed; pin asserts 900) |
+| focused 13 + F 2 + their new shipped-dist-smoke (combined A-contract + finding-F set) | **16 files / 165 tests green** — fresh CMD-first capture at the final tip | `gate-combined-a-contract-f.log` |
+
+**Test-count arithmetic (corrected, S4)**: merged-head total 4757 =
+**4719** (base `31ad828d` full-suite total) **+ 12** (PR #47:
+governance-reset-tombstone 7→10 tests, remote-override-expected-generation
+14→23 — per-suite counts verified against both trees) **+ 16** (PR #46:
+persona-kind-provider-preflight 14 + persona-kind-shipped-dist-smoke 2) **+ 10**
+(finding-F matrix: 5 real-chain + 5 unit) = 4757. Pre-sync tip total 4743 =
+4719 + 14 (the pick carried only the preflight suite — the shipped-dist-smoke
+arrived via the sync merge, not the pick) + 10 (F matrix). A reviewer's
+decomposition using "+13" for the #47 delta was wrong; the verified delta is
++12, and no editable surface of this branch (fix-report / PR body / the
+bookkeeping log entry) carried the "+13" form — this decomposition is the
+recorded correction.
+
+**shipped-dist smoke over the public export path (`composition-smoke.mjs`)**: RUN
+(`gate-composition-smoke.log`) — **both legs fail PRE-EXISTING, not a regression of
+this branch**: (host) the committed BASE dist (31ad828d) already carries the C1
+fence `ctx.on` registrations (agent/created + agent/disposed + internal/get) that
+the smoke's no-listeners expectation predates — the script is byte-identical on
+master, last updated P9-S9, before the 0.1.7-rc.1 host upgrade round (the
+production entry registers the fence BEFORE the config-validation rejection by
+design — the authoritative install-surface gate is `check:artifacts`, green
+above); (client) `clsx` node_modules resolution gap (zero client files changed by
+this branch). Repairing the stale smoke is a separate authorized task.
+
+## 9. No code lost / no test weakened (PR verification claims)
+
+- **No code lost**: the double-writer incident record §Timeline — the stop
+  interrupted the original's turn, not the files; the 5-point retention
+  verification is parent-confirmed; per-file provenance re-diffed vs the stash
+  patches (coherent continuation, behavior-identical).
+- **No test weakened**: the ONLY test-file change in the fix commit = the T5
+  fixture correction (world D): a production-seam fix (glue `dropResidency`
+  instead of a direct double-handle dispose that bypassed the glue registry — it
+  simulated a state the guard never sees in production) with the T5 assertions
+  BYTE-IDENTICAL; T5 was RED before the correction (there is no weaker prior
+  pass). The dead-code lint removals touch zero assertions. All RED matrix
+  assertions are preserved verbatim. Plus the T2 `closeRows` query precision
+  fix (committed in `a8ac28e8`, the increment-(a) commit — verified by
+  per-commit diff): the RED-frozen 3-arg `incidentsOf` call silently ignored
+  its scope argument (2-arg helper); replaced with an explicit filter —
+  stricter than the RED baseline, T2 GREEN verified; the +18 world-D fixture
+  correction remains the only FIX-COMMIT fixture change (see §3, the second
+  test-hunk disclosure).
+
+## 10. Post-#46 integration readiness (the role audit — parent's warning)
+
+Audited ALL template-scope fact-scope constructions for the mandatory `role`
+(post-#46 integration would otherwise emit MALFORMED_DTO at `$.role`): **ZERO
+fixes needed** — every production `resolveFacts` call site (root.ts via the
+pick) carries `role: requirementFactScopeRoleOf(leaderTemplateId, templateId)`;
+the T6 unit matrix carries it via the same helper (with the Blocker-1 comment);
+the real-chain tests go through production code; the legacy role-less
+`templateScope()` (requirements/types.ts) is the DIFFERENT `RequirementScope`
+contract (for ActionImpact — not a fact scope); `ControlSubject` (router.ts) is a
+third, legitimately role-less type. Re-verified in-tree at the merged head (§7:
+their Blocker-3 lane + my hunks coexist; the role audit holds on the union).
+
+## 11. Unrun items (never claimed)
+
+- **Real-host / browser verification: UNRUN** — all worlds run on the
+  double-based production chain (host entry + production glue + bridge/fiber
+  doubles); no live DSH instance, no browser, no :3080/:3180/~/.dsh touch (red
+  line). The matrix is a regression matrix, not a live-host proof.
+- composition-smoke: run with pre-existing failures (§8) — not green.
+
+## 12. Residual debt + unblock conditions
+
+- The 19-failure debt set + 3 file-level collections (0 tests each) + p6t1
+  flake 0–2 = pre-existing at base `31ad828d`, unchanged by this branch
+  (full-suite set-diff vs base = empty; merged head = same set + 1 in-envelope
+  flake). Each has its own finding/task — none are this branch's to fix; unblock
+  conditions live in their respective records.
+- Predecessor-baseline extras (a2c7-subtree-matcher, plugin-dsh-compat): the
+  predecessor's earlier baseline run flagged them; they PASS in this branch's
+  runs (predecessor-baseline extras now green — no action).
+- The stale `composition-smoke.mjs` (both legs) — separate authorized task.
+- The dead `SIGNAL_ID` line in master's copy of
+  `requirement-d1-d3-decision-scoping.test.ts` — pre-existing master debt
+  (disclosed §4/§7; this branch's merge carries the deletion forward).
+
+## 13. Red-line compliance
+
+CORE PATCH BUDGET = 0 (upstream/test-use zero touch); zero :3080/:3180/~/.dsh
+touch, no instance started; single worktree single writer (after the incident —
+the incident itself is recorded §5); ZERO force-push (the sync is a MERGE commit;
+the push is PLAIN fast-forward of the remote branch tip); `graph.yaml` untouched
+(the parent owns the graph); no model/config changes.
+## 14. RESIDUAL-F ROUND — external review of e45d22fe: R1 first-mount PENDING window + R2 initial-work cross-root read (NEW UNREVIEWED CHANGES — CHECKPOINT)
+
+**CHECKPOINT — this section is the DRAFT-CHECKPOINT state of the residual-F
+round, NOT the final ready HEAD.** The coherent fix (RED-first reproduction +
+fix + rebuilt dist) is pushed as a Draft-branch checkpoint on the parent's
+authorization; the remaining list at the end of this section is still open.
+Any review pass predating the FINAL HEAD does not cover the remaining items.
+
+The external review of `e45d22fe` (this branch's earlier Finding-F closure)
+confirmed the ordinary follow-up path fixed and ruled **two residuals**:
+**R1** (the first-mount PENDING window on member work delivery) and **R2**
+(the initial-work gate's cross-root template-scope read, + two sibling
+root-context read seams). Both are closed at this checkpoint by a
+RED-first reproduction (committed at the pre-fix head) + the minimal fix.
+
+### 14.1 R1 — the first-mount PENDING window (T7, world R1)
+
+**The ruling (verbatim contract):**
+
+> PENDING phase: attempting the prepare (the mount attempt) is ALLOWED (this
+> is the bootstrap path — never blanket-block pending). BEFORE ACTUAL INPUT
+> (real work delivery): the materialization SUCCESS must be verified. I.e.
+> the gate sits before actual input, not before the prepare attempt.
+
+**The defect (verified mechanism at base):** admission allows a fresh (never-
+mounted) target whose template scope reads masked-pending-reachable (the
+bootstrap shape, U4 — correct, unchanged). The delivery's
+`prepareAgentForRequest` runs the target's own boundary `reconcileMcpSet`; a
+first-mount rejection is caught per-server, stamps the slot `failed`, and is
+swallowed (the C.6 per-server transaction). The `workDelivery.deliver` port
+then called `handle.agent.followup(message)` **unconditionally** — real work
+was delivered on the very passage that just failed the first mount.
+
+**RED signature** (`gate-red-matrix-residual-f.log`, @ 698468d7, T7):
+
+> AssertionError: the same-passage delivery was NOT blocked after B's own
+> first-mount failure (the external residual-1 window: real work delivered on
+> the failed-mount passage): expected undefined to be an instance of
+> TeamRuntimeError
+
+**The fix — contract-placement match (design placement stated):** the gate
+sits AFTER the prepare attempt (the mount attempt stays ALLOWED — the PENDING
+bootstrap is never blanket-blocked) and BEFORE ACTUAL INPUT (the throw is in
+`deliver`, immediately before `handle.agent.followup`, the only model-visible
+work input on that passage). This is the exact placement the ruling requires.
+Mechanics:
+
+- `prepareAgentForRequest` (`agent-bindings.mjs` L3126–3194) now returns the
+  SAME-PASSAGE truth `{ mcpFailedApplicable }`: the APPLICABLE (target-set)
+  servers whose slot is `failed` because **this passage's** mount attempt just
+  failed — detected by the attempt clock (`lastAttemptAt`) advancing during
+  the prepare (L3171–3189). A pre-passage failure is NOT reported: the
+  cooldown skip leaves the slot untouched, an existing failed slot is already
+  gated at admission (the feed's failed → DOWN, the ordinary Finding-F fix),
+  and the human-reviewed recovery re-run MUST run its boundary (frozen T2
+  leg, unchanged).
+- `deliver` (L3465–3468) throws the plain boundary Error when the set is
+  non-empty, BEFORE the followup. The work chain settles fail-closed
+  (`workOutcome: 'delivery-failed'`, durable) and throws the typed
+  `WORK_DELIVERY_FAILED` after settle (N3); zero model-visible input reaches
+  the member on that passage. No new error code (zero contract change). The
+  L3375–3389 message port (`send-message` style) is intentionally unchanged —
+  outside the ruling's work-delivery scope (disclosed here).
+- **T7 GREEN shape** (`gate-green-matrix-residual-f-a49bc5ec.log` @ a49bc5ec):
+  B admitted (masked pending) → B's own first mount fails on its first
+  passage → the same-passage delivery throws `WORK_DELIVERY_FAILED` with
+  zero followup delta, the durable settle is `delivery-failed`, B's slot =
+  the failed boundary truth, the NEXT passage is gated as failed at admission
+  (T1 shape, `requiredScopeDown: ['template:worker']`), A keeps working.
+
+### 14.2 R2 — the initial-work cross-root read + the two sibling root-context seams (T8, world R2)
+
+**The ruling:** every consumer of the template-scope read seams must forward
+the complete feed context (the target team's OWNING root). Three named seams:
+(1) the `root-initial-work.ts` wrappers, (2) the activation fresh-create
+`provider.ts` reads, (3) the CREATION PREFLIGHT `root.ts` reads. Pre-fix,
+each wrapper/read dropped the context and the host port's legacy boot-root
+fallback (`scope.rootSessionId ?? bootRoot`, `host.ts` L2085) let a cross-
+root healthy boot instance stand in for the target root's own
+materialization — the cross-root false OPEN (ADR 334–347 affected scopes
+only; ADR 188–199 applicable materialization before work).
+
+**RED signature** (`gate-red-matrix-residual-f.log`, @ 698468d7, T8 — driven
+through the PRODUCTION v2 remote command `team.admitInitialWork` over the
+captured S6 dispatcher, the exact production wiring):
+
+> AssertionError: B's initial work was PERMITTED via the boot root's
+> materialization (the external residual-2 cross-root false OPEN): expected
+> true to be false
+
+**The fix surface (file:line at a49bc5ec):**
+
+| seam | fix |
+| --- | --- |
+| (1) `action-router/root-initial-work.ts` | L164 `TemplateFeedContext` import; L854 + L879 closure-input port types extended with optional `context?: TemplateFeedContext`; L995–997 the D-1 template-feed wrapper FORWARDS the gate's context (the gate passes `{ rootSessionId }` / `{ rootSessionId, instanceId }` from its own input — the target team's OWNING root); L1021–1023 the D-3 full-resolution read wrapper forwards the same. Initial work has no target instance → the root-only context is the complete one. |
+| (2) `activation/provider.ts` fresh-create (+ `activation/types.ts`) | L745–770 both template read ports now carry `{ rootSessionId }` (L758, L765 — the activation's target root; no target instance exists yet: root-only is the correct scope for a not-yet-minted member). L65 import + L269/L303 `ActivationPorts` port types extended (optional context — pre-fix callers byte-identical). |
+| (3) `src/plugin/root.ts` creation preflight | L1385–1391 `preflightTemplateFacts` scope now carries `rootSessionId: input.rootSessionId` (the future root — the pre-bind read resolves to ITS OWN root's not-applicable/seed truth, never the boot root's); L1419–1425 the D-3 read wrapper forwards `context ?? { rootSessionId: input.rootSessionId }` (the preflight classifier passes no gate context of its own — the default stands; a future context-bearing classifier wins). |
+
+Per-seam ADR compliance: 334–347 (affected scopes only) — each seam forwards
+only the target root's scope; no cross-root/cross-scope bleed remains on any
+consumer of these reads. 188–199 (applicable materialization before work) —
+initial work (Phase A gate), member creation (fresh-create), and team
+creation (preflight) all now read the TARGET root's own materialization
+before admitting work. Single-root worlds are byte-identical (the target
+root = the boot root there — the legacy fallback and the forwarded context
+agree).
+
+**T8 GREEN shape** (@ a49bc5ec): two owned roots, same leader template; A's
+leader mounted at boot (healthy), B's leader resident + FAILED (its own root
+agent's first mount failed). B's initial work via `team.admitInitialWork`
+v2 → the typed failure envelope `TEAM_RUNTIME_COMPATIBILITY_BLOCKED` with
+gate details `{ status: 'BLOCKED_FATAL', blockedScopes: ['template:leader'],
+unavailableSubjects: [B's server], recoveryDispatchAvailable: true }` (the
+details ride under `error.details.cause.details` — the dispatcher's domain-
+error passthrough, invariant 7 never rejects); zero delivery to B's root
+(no root input, no terminal root-work fact); B's recovery NOT closed by A's
+health (no incident closure under B, A's ledger untouched); A unchanged.
+
+### 14.3 U4 pin update (disclosed)
+
+`mcp-target-materialization-unit.test.ts` U4: **title + contract prose only
+moved** — the title now states the corrected same-passage delivery-gate
+contract (the mount attempt is admissible — bootstrap; the gate sits before
+ACTUAL INPUT, not before the prepare attempt) and the body comment carries
+the ruling's placement. **Zero assertion changes** (`u4Gate.kind ===
+'allowed'`, `u4Read` defined, `obs.materialization === 'pending'` — the
+bootstrap-liveness contract is intact); no other matrix leg changed (T1–T5,
+U1–U3, U5 byte-identical between the RED and GREEN commits — the only test
+diffs in `1b99ef40` are the two new legs, the two helpers/constants, the
+`mcpFailures` boot param, and the U4 prose).
+
+### 14.4 The ordinary follow-up path — already-fixed record + the CONSUMER SWEEP TABLE (anti-partial-wiring proof)
+
+The ordinary member follow-up path (`router.ts` `performAction`) ALREADY
+forwards the gate's feed context through both blueprint seams — that
+exact-scope fix landed earlier on this branch (§1–§3; the external review's
+"ordinary follow-up fixed" confirmation). It is the reference consumer below.
+
+**The sweep.** The residual-F ruling: *every consumer* of the root-context
+read seams must forward the complete context. The host port's boot-root
+fallback (`host.ts` L2085, `scope.rootSessionId ?? bootRoot`) lives in ONE
+place — and it is TEMPLATE-SCOPE-ONLY: `host.ts` L2084
+`if (scope.kind !== 'template') return Promise.resolve(undefined)` proves
+the team-scope seams carry no root axis by design (team scope = the
+blueprint's team-level requirements on the team feed — no member
+materialization; no context to forward, the boot-root default is the
+identity there). The complete inventory of the two template-scope read
+seams (`templateEnvironmentFactsForBlueprint` D-1 /
+`templateEnvironmentFactsReadForBlueprint` D-3, defined in `root.ts`
+L916–952 / L959–975 with the `context?: TemplateFeedContext` param
+forwarded into the scope at L947–948):
+
+| # | consumer | location | context forwarded | status |
+| --- | --- | --- | --- | --- |
+| 1 | requirement-gate — conservative SCOPE read | `admission/requirement-gate.ts` L637 | `{ rootSessionId }` (the gate's input root — the context ORIGIN) | verified (pre-existing, Finding F round) |
+| 2 | requirement-gate — TARGET-INSTANCE decision read | `admission/requirement-gate.ts` L677–679 | `{ rootSessionId, instanceId: targetInstanceId }` | verified (pre-existing, Finding F round) |
+| 3a | router `performAction` — D-1 facts wrapper (the ordinary follow-up) | `action-router/router.ts` L628–633 | the gate's `context` param, verbatim | **already fixed** (this branch's earlier exact-scope increment — the external review's "ordinary follow-up fixed") |
+| 3b | router `performAction` — D-3 read wrapper | `action-router/router.ts` L657–662 | the gate's `context` param, verbatim | **already fixed** (same increment) |
+| 4a | root-initial-work — D-1 facts wrapper | `action-router/root-initial-work.ts` L993–997 | the gate's `context` param, verbatim | **fixed this round** (R2 seam 1) |
+| 4b | root-initial-work — D-3 read wrapper | `action-router/root-initial-work.ts` L1019–1023 | the gate's `context` param, verbatim (root-only: initial work carries no target instance — the impact is the leader template scope refs, L1025) | **fixed this round** (R2 seam 1) |
+| 5 | activation fresh-create — D-3 read | `activation/provider.ts` L745–750 | `{ rootSessionId }` (the activate() scope's target root; no target instance exists yet — root-only is the correct scope for a not-yet-minted member) | **fixed this round** (R2 seam 2) |
+| 6 | activation fresh-create — D-1 facts | `activation/provider.ts` L751–757 | `{ rootSessionId }` | **fixed this round** (R2 seam 2) |
+| 7a | creation preflight — D-1 facts thunk | `src/plugin/root.ts` L1370–1393 | direct `resolveFacts` with `scope.rootSessionId: input.rootSessionId` (the future root — pre-bind, ITS OWN not-applicable/seed truth, never the boot root's) | **fixed this round** (R2 seam 3) |
+| 7b | creation preflight — D-3 read wrapper | `src/plugin/root.ts` L1411–1426 | `context ?? { rootSessionId: input.rootSessionId }` (the preflight classifier passes no gate context — the default stands; a future context-bearing classifier wins) | **fixed this round** (R2 seam 3) |
+| 8 | activation `reDriveActivation` | `activation/provider.ts` L482 | **NO template read-seam calls** (re-drives an already-admitted operation; blueprint config resolution only — verified by full body scan) | N/A (audited, no call) |
+
+**Upstream rootSessionId sources** (what each gate input / direct call
+actually carries — end-to-end, not just at the wrapper):
+
+- **router path** (rows 1–3): `router.ts` L516 `const rootSessionId =
+  resolved.rootSessionId` — the TARGET session's owning root (invariant-18
+  `(rootSessionId, instanceId)` addressing → row resolution). The gate
+  (rows 1–2) derives both contexts from it.
+- **initial-work path** (rows 1–2 via row 4): `root-initial-work.ts` L975
+  `rootSessionId: args.rootSessionId` — the TARGET root, passed by the
+  production closure (`root.ts` `createAdmitRootInitialWork` wiring,
+  `s6-remote.ts` L2335–2387 after `assertBoundRoot` — the bound root the
+  v2 command addressed).
+- **activation path** (rows 5–6): the `activate()` scope's `rootSessionId`
+  (the delegation's target root).
+- **creation path** (rows 7a–7b): `input.rootSessionId` (the FUTURE root —
+  the client-minted id the creation binds; pre-bind there is no TeamSession
+  row, so no boot-root stand-in exists to conflate with).
+
+**Non-consumers (verified team-scope-only — no template seam, no root
+axis):** the per-root compatibility prober (`root.ts` L1690–1704,
+`environmentFacts` team thunk only) and the remote surface's `intent.probe`
+(`root.ts` L2650–2675, team `environmentFacts` + `environmentFactsRead`
+only). Repo-wide grep: zero template-seam consumers outside
+`packages/runtime` (no remote/client/legacy/tools usage; the seams are
+runtime-internal, typed in `admission/types.ts` + `activation/types.ts`).
+
+**Sweep verdict: zero partial-wiring gaps.** Every template-scope read
+consumer forwards the complete context (the gate's context verbatim where a
+gate feeds it; the target root where the path has no gate); the team-scope
+seams have no root axis by design (host.ts L2084); the one path without a
+call (`reDriveActivation`) was audited, not assumed. The T8 RED→GREEN leg
+is the end-to-end proof for the initial-work path (row 4 + upstream
+source); the T1–T5 legs cover the router path end-to-end (row 3 + upstream
+source); the creation + activation seams are the same shape (context at the
+consumer, target-root source) with the single-root byte-identity property
+(shared by all three: future/target root = boot root in single-root
+worlds).
+
+### 14.5 T5 no-weakening (evidence note)
+
+The T5 correction from the double-writer round (world-D fixture) remains
+byte-identical in assertions; the external review recorded **NO WEAKENING**
+— this checkpoint records that as the external reviewer confirmation (the
+5-point parent-confirmed incident recovery, §5, is unchanged).
+
+### 14.6 Pre-sync gate totals at `d0712695` (dist co-shipped)
+
+| gate | result | log |
+| --- | --- | --- |
+| focused matrix (2 files) RED @ 698468d7 | 2 failed / 10 passed (T7+T8 named signatures) | `gate-red-matrix-residual-f.log` |
+| focused matrix GREEN @ a49bc5ec (AUTHORITATIVE, clean tree) | 12/12, EXIT=0 | `gate-green-matrix-residual-f-a49bc5ec.log` |
+| focused matrix @ 1b99ef40 + uncommitted fix (08:38 capture) | 12/12 — superseded as label by the re-capture, kept as evidence (annotated in-file) | `gate-green-matrix-residual-f.log` |
+| full suite (all packages) | 4759 total = 4737 passed + 22 failed: the 19-failure debt set EXACTLY (t1-capability-schema 9 / t2-blueprint-hash 1 / d3-member-identity-context 1 / p6t3-mediation 5 / p6t3-restart 2 / p6t6-actions 1) + 3 p6t1-parallel flakes in this run + 3 zero-test file-level collections (debt §12); ZERO new failures from this round | `full-suite-a49bc5ec.log` |
+| p6t1-parallel isolated re-run | green, EXIT=0 (the documented flake, §12) | `p6t1-isolated-a49bc5ec.log` |
+| lint fingerprint (file-aware vs 31ad828d reference + 137-line base set, normalized line:col) | **NEW = 0** (111 current fingerprints, all pre-existing) | `lint-a49bc5ec.log` |
+| typecheck | 9/9, EXIT=0 | `typecheck-d0712695.log` |
+| check:artifacts | OK 1372, EXIT=0 (dist rebuilt: 13 tsc outputs + the agent-bindings.mjs glue placement, committed `d0712695`) | `check-artifacts-d0712695.log`, `build-composition-a49bc5ec.log` |
+
+Provenance notes: the authoritative GREEN re-capture was demanded after the
+parent caught the 08:38 capture's HEAD label (it ran at `1b99ef40` + the
+uncommitted fix); both captures are kept. The first lint capture (08:41:39Z)
+raced a concurrent full-suite temp dir (eslint walk crash, zero output) and
+was replaced by the clean re-run (disclosed in-file; it carried no results).
+The full suite ran at `a49bc5ec` (source-identical to `d0712695`; the dist
+commit adds install-surface artifacts only — tests run from source).
+
+### 14.7 CHECKPOINT — remaining before final HEAD
+
+1. **CONSUMER SWEEP TABLE** (the main remaining reviewable content): every
+   consumer of the three seams + the ordinary follow-up, end-to-end
+   full-context verification (the anti-partial-wiring proof) — table to be
+   appended to this section.
+2. **S6 client-smoke unchanged-base capture** at the merge base (exact
+   two-outcome wording; evidence only — S6 is never a functional block).
+3. **Full gates vs the 31ad828d debt set at the MERGED head** (full suite +
+   lint fp + typecheck + check:artifacts + dist if drifted) — the pre-sync
+   totals above (14.6) do not cover the post-merge tree.
+4. **Controlled sync onto the ACTUAL origin/master tip** (fetch to confirm —
+   `621fdba1` as of 08:07Z, carries #46 + #48): MERGE, no rebase/force;
+   **p4t6 MUST be recomputed from real A-lines on the merged tree** (the 900
+   pin goes stale — #48 added scannable files; compute, don't assume);
+   #48 touched `root-initial-work.ts` — expect overlap with seam (1),
+   classify every resolution.
+5. **Post-merge role re-audit** (role contract + #48 role suites; zero
+   MALFORMED_DTO).
+6. **Merged-head re-test** (closed arithmetic vs the debt set).
+7. **Bookkeeping** (this section FINAL + sweep table + S6 outcome + sync
+   record + all logs) — ONE bookkeeping commit; product/test/dist files are
+   already in their own commits (`1b99ef40` RED, `a49bc5ec` fix, `d0712695`
+   dist).
+8. **ONE plain push of the FINAL HEAD + full report to the parent.**
+
+Until the final HEAD lands, PR #50 stays **NO-MERGE** (Draft, checkpoint
+banner).
+
+## 15. FINAL-VERDICT ROUND — external bounded report (4820ecdb): the REQUIREMENT-AWARE FINAL-INPUT VERDICT (NEW UNREVIEWED CHANGES — CHECKPOINT)
+
+### 15.0 Round status
+
+This round supersedes the residual-F gate's judgment (the a49bc5ec
+attempt-clock-delta gate). Its skeleton (the boundary reconcile inside
+`prepareAgentForRequest`; the fail-closed throw positioned before
+actual input) is preserved; its JUDGMENT LOGIC is REPLACED by ONE
+unified requirement-aware final-input verdict. §14.7's remaining items
+are resolved by this round: (1) the consumer-sweep table = §14.4
+(committed verbatim as docs commit `42e810cd`, the predecessor's WIP,
+provenance-labeled); (2) S6 unchanged-base capture = §15.11 below;
+(3)–(6) the merged-head gates = §15.9 below (run at `64cd6614`); (4)
+the controlled sync onto `621fdba1` (origin/master, PR #48) was
+executed as MERGE `e28dfef3` (no rebase/force), p4t6 recomputed from
+real A-lines on the merged tree = **903** (not assumed: 898 base + 2
+finding-F files, the +3 the predecessor's §14.6 line projected was the
+pre-#48 number — the merged-tree recompute landed at 903 and is
+re-verified GREEN at the final head, §15.9); (5)–(6) post-merge role
+re-audit + merged-head re-test = the handoff captures (three logs,
+committed with provenance headers in this round's bookkeeping batch;
+the #48 role suites pass in the merged-head full-suite run — the
+`persona-kind-provider-preflight` suite is green in §15.9's failure
+map: absent from it).
+
+Commit stack this round (all on `fix/mcp-target-materialization`):
+`42e810cd` (docs: predecessor WIP §14.4 verbatim) → `6773381e` (test:
+the 6 RED legs, pure additions, RED evidence committed) → `9e1d1ffb`
+(fix: the verdict + consumers + plumbing + remote vocabulary) →
+`64cd6614` (build: dist co-commit). DRAFT CHECKPOINT pushed
+(`4820ecdb..64cd6614`, plain ff, PUSH_EXIT=0) — see §15.12.
+
+### 15.1 The external bounded report (attributed to the 4820ecdb
+checkpoint)
+
+As handed down in the session record (the original message text is not
+preserved as a file in-repo; this is the checkpoint's verbatim carrying
+of it — no word is invented):
+
+> R1 still has **3 problem classes**; implement **ONE unified
+> REQUIREMENT-AWARE FINAL-INPUT VERDICT**; **NEVER a blanket throw at
+> prepare**; **NEVER a new-failure-timestamp judgment**; the a49bc5ec
+> gate is the **skeleton**, its judgment logic is **REPLACED**.
+>
+> **1. COLD-RESUME GAP:** the verdict must use the FINAL
+> required-truth AFTER the FULL ensure/resume/prepare sequence (the
+> agentSetup reconcile L2262 stamps the failure, prepare takes a
+> COOLDOWN SKIP, yet delivery happens).
+> **2. ACTUAL-INPUT CONSUMERS MISSING THE CHECK:**
+> `submitAttributedInput` and `deliverRootInput` ignore the prepare
+> result; `crossAgentTrigger`/messaging IN scope.
+> **3. GUARD OVER-BLOCKS:** a49bc5ec blocks on ALL policy-allowed MCP
+> targets; OPTIONAL/no-requirement and reviewed recoveries must be
+> allowed. Mechanism: propagate trustworthy requirement-impact/
+> recovery context TO THE FINAL BOUNDARY; exempt ONLY
+> reviewed-scope-covered failures; any OTHER newly-appearing required
+> outage still BLOCKS.
+
+The frozen call-site/mode matrix the report carried (implemented as
+written, §15.5): agentSetup reconcile L2262 unchanged; workDelivery
+deliver blocks (path-typed WORK_DELIVERY_FAILED); attributed input
+commit-or-throw → MESSAGING_DELIVERY_FAILED via the coordinator;
+deliverRootInput blocks → strategy maps WORK_DELIVERY_FAILED → remote
+TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED (admission kept, NO terminal
+fact); completion notification best-effort, liveness PRESERVED, NO
+change; executeTool NO change; exported prepare = observation for
+non-input consumers.
+
+### 15.2 The three problem classes (mechanically verified at 42e810cd)
+
+1. **COLD-RESUME GAP (class 1).** After `dropResidency` the
+   materialization port reads the member COLD (`hasLive` false →
+   `not-applicable`; the stale slot survives in state) — admission
+   admits ("cleared by recheck"). The resume's SETUP reconcile (the
+   agentSetup path, L2262) then re-mounts and STAMPS the failure into
+   the slot; the prepare's reconcile hits the 30 s COOLDOWN and SKIPs
+   (the attempt clock is untouched). The old gate's judgment —
+   `preAttemptAt.get(name) !== slot.lastAttemptAt` — is BLIND to a
+   failure whose clock it never advanced. RED proof: leg L1 (the
+   follow-up delivered to B; nothing threw).
+2. **CONSUMERS MISSING THE CHECK (class 2).** `submitAttributedInput`
+   (the messaging relay — the crossAgentTrigger/messaging path, IN
+   scope) and `deliverRootInput` (root initial work) called
+   `prepareAgentForRequest` and DISCARDED the result — the input
+   reached the recipient's model-visible turn even after the prepare
+   failed the required server. RED proofs: legs L2 (via the production
+   v2 `member.send` remote method) and L3 (via `team.admitInitialWork`).
+3. **GUARD OVER-BLOCKS (class 3).** The old gate fired on ANY
+   same-passage failure of ANY policy-allowed (target-set) server —
+   requirement-blind AND recovery-blind: it blocked the optional /
+   no-requirement outage (which must DEGRADE, never block) and the
+   human-reviewed recovery re-run (whose reviewed scope must be
+   allowed). RED proofs: legs L4a / L4b / L4c (each threw
+   WORK_DELIVERY_FAILED where the work had to deliver).
+
+### 15.3 The bootstrap-contract match (stated per the report's
+requirement)
+
+**PENDING = the mount attempt is ALLOWED** (a fresh member that never
+mounted is admissible — the gate never throws a blanket "pending"
+block at prepare; the mount attempt always runs at the boundary,
+cooldown skip included as retry discipline, not verdict). **BEFORE
+ACTUAL INPUT = the materialization SUCCESS is verified** (the
+requirement-aware verdict reads the FINAL slot truth and blocks the
+first model-visible input only where a REQUIRED outage stands without
+reviewed coverage). Both halves hold in the implementation: the
+attempt is unconditional at the boundary; the block, when it fires,
+fires strictly BEFORE any input is consumed.
+
+### 15.4 The unified verdict (`finalInputVerdictOf`, agent-bindings.mjs)
+
+Inside `prepareAgentForRequest`, AFTER its own `reconcileMcpSet` (so
+the verdict covers the FULL ensure/resume/prepare sequence — the
+ensure/resume happened upstream of the call, the prepare reconcile
+just now), the FINAL per-server slots of the target's APPLICABLE
+(policy-allowed) set are classified:
+
+- **failed + REQUIRED + not reviewed-covered → `blockedServers` (the
+  BLOCK).** REQUIRED = a requirement in the target's scopes of the
+  bound blueprint names the server with `type: 'mcpServer'` and
+  `complete !== false`, over the union of the TEAM scope (the v1 flat
+  list + the v2 `teamRequirements`) and the TARGET template scope
+  (the v2 `leader` / `members[i]` requirements) — extracted via the
+  SAME `scopeRequirementInputsOf` the admission gate consumes (no
+  second copy of semantics). Target template: the root session IS the
+  leader; a member session is its durable row's `templateId`
+  (row by `childSessionId`).
+- **failed + named by the request's reviewed `recovery` marker
+  (`unavailableSubjects`) → `recoveryCoveredServers` (allow).** The
+  marker is router-produced (the recovery dispatch after a durable
+  allow decision — NEVER caller-forged); the exemption is the REVIEWED
+  SCOPE, not a remount success (the persistent-fault shape, L4c: the
+  remount fails again on the recovery passage and the work still
+  delivers).
+- **failed + optional/no-requirement → `degradedServers` (allow).**
+  The engine's WARNING / empty-scope shape degrades, never blocks.
+
+`blocked = blockedServers.length > 0`. `prepareAgentForRequest` now
+returns `{verdict}` (the exported observation contract stays a
+Promise; the richer return is internal to the consumers). The
+attempt-clock snapshot (`preAttemptAt`) is DELETED — no
+new-failure-timestamp judgment anywhere.
+
+### 15.5 The call-site/mode matrix (frozen — implemented exactly)
+
+| consumer | verdict consumed | mode on `blocked` |
+| --- | --- | --- |
+| agentSetup reconcile (L2262) | — (it STAMPS the truth; unchanged) | n/a |
+| `workDelivery.deliver` | YES (+ `args.recovery`) | throw BEFORE the followup → the work chain settles fail-closed (durable `delivery-failed`, N3 throw-after-settle) → typed **WORK_DELIVERY_FAILED** (the existing machinery) |
+| `sessionInput.submitAttributedInput` | YES (no marker carrier on the wire — see §15.7) | throw before the inbox acceptance → the EXISTING coordinator wrap maps to **MESSAGING_DELIVERY_FAILED**; the intent fact stays pending (R2/R3: recoverable); zero coordinator changes |
+| `deliverRootInput` (NORMAL root work: the Root initial work, the B6 context) | YES (no marker carrier on the wire) | throw before the followup → the root initial-work strategy maps to WORK_DELIVERY_FAILED → remote **TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED**; the durable admission stays for the same-token retry; NO terminal root-work fact. *(consolidated-revision P2a: the C1 control notification no longer rides this throw — see the row below; the pre-revision row implicitly included it — the liveness hole the fix closes)* |
+| `deliverRootControlNotification` (the C1 control notification — consolidated-revision P2a) | NO (arrives at the shared final-input boundary with `livenessOnly: true` — the verdict is NOT consulted; the boundary reconcile still runs) | liveness PRESERVED — delivered even while the root's required mcp materialization is failed (the pending-approval channel is the frozen matrix's liveness-preserved class, the same family as the completion notification) |
+| `deliverRootWorkCompletionNotification` | NO (result ignored — unchanged) | liveness PRESERVED (a liveness failure is a liveness failure; the B6 contract owns at-least-once) |
+| `executeTool` | NO (result ignored — unchanged) | diagnostic path, unchanged |
+| exported `prepareAgentForRequest` | observation | non-input consumers see `{verdict}` and may ignore it (contract unchanged: the boundary still runs the reconcile) |
+
+### 15.6 The six legs (RED at 42e810cd → GREEN at 64cd6614)
+
+All six are PURE ADDITIONS to `mcp-target-materialization.test.ts`
+(new worlds on ports 3999–4004; `mtmBlueprint` gained an additive
+`reqComplete?: boolean` variant — T1–T5/T7/T8 + U1–U5 byte-untouched
+and stayed GREEN in both the RED and GREEN runs: 12/12 pre-existing in
+both).
+
+| leg | class | RED signature @ 42e810cd (committed) | GREEN contract @ 64cd6614 |
+| --- | --- | --- | --- |
+| L1 | 1 (cold-resume gap) | nothing threw — the delivery reached B (`expected undefined to be an instance of TeamRuntimeError`) | **WORK_DELIVERY_FAILED** + zero input + fail-closed settlement (`delivery-failed` durable) + the next passage gated `failed` (BLOCKED_FATAL / requiredScopeDown / `template:worker`); A control unaffected |
+| L2 | 2 (messaging consumer, production v2 `member.send`) | `ok:true` — the input reached B's inbox + the confirmation committed (`expected true to be false`) | `ok:false`, error code **MESSAGING_DELIVERY_FAILED** (the remote pass-through, §15.8) + zero input + the intent fact durable + NO confirmation; A control unaffected |
+| L3 | 2 (root consumer, `team.admitInitialWork`) | `ok:true` + the terminal root-work fact committed (`expected true to be false`) | `ok:false`, code **TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED** + zero root input + the admission fact stays (`team-work-admitted` durable, same-token retry) + NO terminal fact; root A leader stays mounted |
+| L4a | 3 (no requirement) | WORK_DELIVERY_FAILED over-block (`expected TeamRuntimeError … to be undefined`) | the work DELIVERS degraded: admitted + 1 followup + the slot `failed` (the degradation is real, not a hidden mount) |
+| L4b | 3 (optional, `complete:false`) | same over-block signature | same degraded-delivery contract (the WARNING scope never blocks) |
+| L4c | 3 (reviewed recovery, persistent fault) | same over-block signature (the gate fired even on the human-reviewed re-run) | the recovery work DELIVERS (the reviewed scope exempt) + the remount FAILED AGAIN (slot `failed` — the exemption is the reviewed scope, not a remount success) + the incident record durable (`recovery-incident-opened`) |
+
+RED evidence: `gate-red-matrix-final-verdict.log` (HEAD 42e810cd + the
+uncommitted test file labeled in the header; literal command line
+first; complete stdout; TRUE `VITEST_EXIT=1`; `6 failed | 12 passed
+(18)`). GREEN evidence: `gate-green-matrix-final-verdict.log`
+(`18 passed (18)`, `VITEST_EXIT=0`, clean tree @ 64cd6614).
+
+### 15.7 The recovery plumbing (additive optional fields — no wire
+change)
+
+`TeamRuntimeActionRequest.recovery` (existing, router-produced) →
+`workChainDeps` (effects.ts: spreads it when present) → `WorkChainDeps`
+(work-execution.ts, new optional field) → `deliverWork` (spreads it to
+the port call when present) → `WorkDeliveryPort.deliver args.recovery`
+(admission/types.ts, new optional field) → the glue deliver reads
+`args.recovery` into the verdict. **The frozen wire contracts carry no
+marker** (`member.send`'s `RemoteMemberSendParams` and
+`team.admitInitialWork`'s params are frozen) — so the MESSAGING and
+ROOT paths have no reviewed-recovery carrier today and are
+**fail-closed** there (a failed required server blocks the relay /
+root input regardless of any reviewed scope): documented, not a gap
+to paper over — the exemption rides the work path where the marker
+already exists by contract.
+
+### 15.8 The remote backing-vocabulary addition (packages/remote,
+additive)
+
+`member.send` routes the FULL coordinator path (facade admission +
+durable intent fact + live attributed-input delivery + confirmation
+fact), so the coordinator's typed `MessagingError` surface reaches the
+dispatcher; the FIVE OPERATIONAL codes
+(`MESSAGING_REQUEST_MALFORMED` / `MESSAGING_SELF_SEND_REJECTED` /
+`MESSAGING_TARGET_NOT_LIVE` / `MESSAGING_DELIVERY_FAILED` /
+`MESSAGING_LEDGER_WRITE_FAILED`) join the closed
+`REMOTE_BACKING_ERROR_CODES` set (code + lossless details pass
+through — L2's contract: the remote caller sees the typed code, not
+the degraded `internal-error`). `MESSAGING_INTERNAL` (the internal
+invariant violation) is deliberately EXCLUDED and keeps degrading to
+`internal-error` (invariant 5: no leak of internals).
+`packages/remote` full suite: 220/220 GREEN after the change.
+
+### 15.9 Full gates at the FINAL head (`64cd6614`, clean tree)
+
+| gate | result | log |
+| --- | --- | --- |
+| full `pnpm test` (all packages) | 28 failed / 4730 passed (4758), `FULL_SUITE_EXIT=1` — classification in §15.9.1 (ZERO new failures from this round) | `gate-fullsuite-final-verdict.log` |
+| lint (file-aware fingerprint) | **NEW = 0** — no error-file absent from the baseline set; of the 6 touched source files, exactly one is flagged and it is the BASELINE entry verbatim (`effects.ts 119:3 @typescript-eslint/no-unused-vars`, same line+rule+identifier as the 31ad828d baseline); all 5 others zero-flag | `gate-lint-final-verdict.log` + `gate-lint-fp-final-verdict.txt` |
+| typecheck (9 packages) | all Done, `TYPECHECK_EXIT=0` | `gate-typecheck-final-verdict.log` |
+| build | `pnpm -r run build` 9/9 Done, `BUILD_EXIT=0`; `build:composition` steps Done | `gate-build-final-verdict.log` |
+| check:artifacts (CLEAN tree) | **OK: 1372 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))**, `ARTIFACTS_EXIT=0` | `gate-check-artifacts-final-verdict.log` |
+| focused matrix (18 legs) | **18/18, `VITEST_EXIT=0`** | `gate-green-matrix-final-verdict.log` |
+| p4t6 pin | 10/10, `VITEST_EXIT=0` — `expect(scanResult.filesScanned).toBe(903)` re-verified (the pin already carries the +2 finding-F files; this round added zero NEW scannable files — the L legs went into an existing test file) | `gate-p4t6-final-verdict.log` |
+| isolated flake re-runs (true exits) | a2c7 isolated: 9 failed / 22 passed, `A2C7_ISOLATED_EXIT=1` (classification §15.9.1); p6t1 isolated: **9/9 green, `P6T1_ISOLATED_EXIT=0`** | `gate-isolated-flake-reruns-final-verdict.log` |
+
+#### 15.9.1 Full-suite classification (PER TESTCASE)
+
+The 28 failed tests, all accounted for:
+
+- **19 = the pre-existing debt set EXACTLY** (t1-capability-schema 9 /
+  t2-blueprint-hash 1 / d3-member-identity-context 1 /
+  p6t3-mediation 5 / p6t3-restart 2 / p6t6-actions 1) — identical to
+  the d0712695 and the e28dfef3 merged-head baseline (the
+  4793-test run at 09:01Z carried the same 19 + 2 p6t1 flakes).
+- **9 = a2c7-subtree-matcher's "REAL pinned backend" section** —
+  ENVIRONMENT/CLASSIFIED: all 9 fail via the single root cause
+  (pinned lib absent at run time): 1 on the presence guard assertion
+  itself (`the real backend section ran (the prebuilt pinned lib is
+  present on this host)`, `expected false to be true` — the pinned
+  prebuilt lib is ABSENT on this host at run time), 8 as downstream
+  TypeErrors from the same root cause (REAL unavailable →
+  FLOWS2(REAL) undefined). Proven non-regression: (a) the suite is
+  GREEN in the 09:01Z e28dfef3 baseline run on the SAME host
+  (`✓ a2c7 (31 tests)` in `merge-full-suite-allpkgs.log`) — the host
+  state flipped between runs; (b) DIRECT imports are disjoint from
+  the diff; the transitive closure reaches action-router/{effects,
+  work-execution}.ts via control/service.ts → action-router/index.js;
+  non-regression rests instead on the byte-invariant pinned-lib
+  presence guard (test file untouched by the diff) + the same-host
+  09:01Z green baseline + the isolated re-run (re-green at the final
+  head once the host lib loads). Stable-red in isolated re-runs
+  (`A2C7_ISOLATED_EXIT=1`) while the lib stays absent.
+
+  **IN-PLACE CORRECTION (consolidated-revision round — panel R2
+  findings F1/F2, WORDING-level only, zero gate-number impact):**
+  the original text of this bullet stated (i) "every one of the 9
+  fails on the presence guard" and (ii) "the suite does NOT import
+  `agent-bindings` or anything this diff touches (import-disjoint — a
+  pure path-containment matcher test; verified by grep)". Claim (ii)
+  was FALSE at the transitive level: the a2c7 suite value-imports
+  `createControlService` (control/index.js) → `control/service.ts`
+  value-imports `withTeamLock` from `action-router/index.js` → which
+  value-re-exports `effects.js` + `work-execution.js` — both modified
+  by 9e1d1ffb; the "verified by grep" covered DIRECT imports only.
+  Claim (i) over-stated the assertion surface: exactly 1 of the 9
+  fails the guard assertion itself; the other 8 fail as downstream
+  TypeErrors from the same root cause. Corrected IN PLACE per the
+  reviewer's exact rewording (the same in-place-correction +
+  explicit-note precedent as #49's aa97fc2c — the round-1 report is
+  not yet externally frozen). The gate CONCLUSION (9F =
+  host-environment, zero new) STANDS independently on the
+  byte-invariant pinned-lib presence guard (the test file itself is
+  untouched by the diff) + the same-host 09:01Z green baseline + the
+  isolated re-run. The PR #50 banner (the parent's lane) carries the
+  same sub-claim — the parent rewords it at the next banner update;
+  this report text is the authoritative corrected form.
+- **0 = p6t1-parallel** in the final full run. It flaked in
+  intermediate runs (2 failures at the 09:01Z baseline and in
+  runtime-only runs 09:30–09:35Z: `two activated results with distinct
+  instance ids…` / `two COMMITTED operations, two members…`) — the
+  DOCUMENTED flake (the per-consultation prober's non-atomic
+  replace→re-read gap, §12 carry-over ①; production worlds protected
+  by the boot probe; test-world-only). Isolated re-run at the final
+  head: **9/9 GREEN, true `P6T1_ISOLATED_EXIT=0`**.
+- **File-level: 5 zero-test collections** (p8s3b-result-effects /
+  t12a-b2-child-identity / t12a-glue-handoff-ports / p7t1-ack-
+  fingerprint / h5-bash-effects) — the pre-existing flapping
+  collection debt (3 at the e28dfef3 baseline; the set rotates run to
+  run — run 1 of this gate batch had the 3-file set, the full run the
+  5-file set; all fail at collection, 0 tests each, all outside this
+  diff's import surface).
+
+Arithmetic: 4758 = 4793 (e28dfef3 baseline total) + 6 (the L legs)
+− 41 (this run's 5 file-level collection losses vs the baseline's 3 —
+the same flapping debt class, counted per run).
+
+### 15.10 Raw composition-sequence disclosure
+
+The build:composition ran in the recorded order (each step's exit in
+`gate-build-final-verdict.log`): (1) `pnpm -r run build` (9/9 tsc,
+`BUILD_EXIT=0`); (2) `node scripts/place-dist-glue.mjs` (the
+agent-bindings.mjs glue placement into dist — Done); (3) `node
+scripts/build-client-composition.mjs packages/client
+packages/client/composition-shim` (the client composition rebuild —
+Done, over UNCHANGED client source); (4) `node scripts/check-
+artifacts-committed.mjs` (the in-build drift check — exit 1 with the
+EXPECTED pre-commit drift report: exactly this commit's own 16 dist
+files, uncommitted at check time; the checker demands the committed
+state). The CLEAN-TREE re-run of step 4 is the authoritative
+`gate-check-artifacts-final-verdict.log` (OK 1372, exit 0) — the
+dist commit is `64cd6614`.
+
+### 15.11 S6 client-smoke unchanged-base capture (621fdba1)
+
+Mechanism: temp DETACHED worktree at `621fdba1` (origin/master — this
+round's merge base; the predecessor's temp worktree at 8e18819c had
+already been cleaned up; its scratch capture PRESERVED, not
+discarded), node_modules symlinked from the branch worktree (root +
+packages/{runtime,client,domain}), client dist BUILT in the base
+worktree from the base's own client source (TSC_EXIT=0), runtime dist
+= the base's own committed install surface. Same-environment proof:
+`git diff 621fdba1..64cd6614 --stat -- pnpm-lock.yaml package.json
+'packages/*/package.json'` = EMPTY. Zero-client-diff proof:
+`git diff 8e18819c..621fdba1 -- packages/client/` = EMPTY.
+`SMOKE_EXIT=1` (NEVER green — as expected; the base is not green).
+
+**Outcome (the exact two-outcome wording, first branch):** the
+client-leg failure is **proven pre-existing at base (same-env re-run
+committed)** — the identical `Cannot find package 'clsx'` resolution
+failure at the IDENTICAL pnpm-store path through the symlinked
+node_modules, on byte-identical client sources (the 8e18819c →
+621fdba1 → HEAD zero-client-diff chain), in the same environment; the
+host-plugin leg's failure carries the same signature as the
+predecessor's 8e18819c capture (the committed-base dist's C1-fence
+listener ordering — the documented stale-smoke condition, not a
+regression). The other branch (UNREVIEWED ENVIRONMENT GAP — baseline
+NOT proven, zero-client-diff is supporting only, no client fix in
+scope) does NOT apply: the baseline IS proven by the committed same-
+env re-run. Evidence: `gate-composition-smoke-client-base.log`
+(CMD-first, complete stdout, true `SMOKE_EXIT=1`, supersession note
+for the predecessor's scratch capture).
+
+### 15.12 Push history (this round)
+
+- DRAFT CHECKPOINT: `4820ecdb..64cd6614` plain fast-forward
+  (`PUSH_EXIT=0`; ff-verified: the remote tip was still 4820ecdb, an
+  ancestor of HEAD; no force, no rebase).
+- FINAL HEAD: ONE plain push of the bookkeeping commit (recorded in
+  the round's report to the parent).
+
+PR #50 stays **DRAFT / BLOCKED / NO-MERGE** (no merge authorization
+exists; the banner carries the NO-merge language).
+
+### 15.13 NEW UNREVIEWED CHANGES (this round)
+
+Everything in the stack `4820ecdb..FINAL HEAD` is NEW UNREVIEWED
+CHANGES, not covered by any earlier review pass: (a) the 6 RED legs +
+`mtmBlueprint` additive variant (test, pure additions); (b)
+`finalInputVerdictOf` + the `prepareAgentForRequest` return change +
+the 3 consumer gates (agent-bindings.mjs); (c) the additive optional
+`recovery` fields (admission/types.ts, work-execution.ts,
+effects.ts); (d) the 5-code MESSAGING_* admission to
+`REMOTE_BACKING_ERROR_CODES` (packages/remote dispatch.ts); (e) the
+dist co-commit (64cd6614); (f) this report + the router-log append +
+all evidence logs (incl. the 3 handoff captures, committed with
+provenance headers — `merge-typecheck.log` / `merge-full-suite.log`
+(runtime-package-only, 2862 tests, superseded as label by
+`merge-full-suite-allpkgs.log`) / `merge-full-suite-allpkgs.log`
+(COMPLETE, 4793, EXIT annotation at its line 6)). A review pass
+covering this round must re-run before any merge decision.
+
+## 16. CONSOLIDATED REVISION ROUND — user's external final bounded re-review of 64cd6614: THREE remaining LOCAL issues (P1 / P2a / P2b) — ALL within the existing frozen matrix (NEW UNREVIEWED CHANGES — CHECKPOINT PUSHED, pre-sync)
+
+### 16.0 Round status
+
+- Scope per the user's order: ONE consolidated revision (local code +
+  tests, coherent; NO broad redesign, NO new matrix, NO re-doing the
+  R2 seams, NO re-opening the verified marker plumbing). The old
+  classes are CONFIRMED FIXED by the re-review — this round touches
+  only the three remaining local issues.
+- Stack: `a0918b90` → `c2f13f18` (test: 3 RED legs) → `35534956`
+  (fix: agent-bindings.mjs ONLY) → `bcaeb64b` (dist co-commit).
+  CHECKPOINT `bcaeb64b` PUSHED (plain ff, `PUSH_EXIT=0`).
+- Production footprint: ONE file
+  (`packages/runtime/src/plugin/live/agent-bindings.mjs`) — the
+  expected center; no other file moved. `deliverRootInput` stays a
+  PRIVATE closure — zero exported-surface change; no TS source
+  touched — the `.d.ts` / interface surface is UNCHANGED (verified
+  at the dist co-commit: the only dist artifact that changed is the
+  placed glue).
+- #50 stays **DRAFT / BLOCKED / NO-MERGE** at every head; PR body
+  untouched; original model/settings unchanged; single writer = this
+  session; CORE PATCH BUDGET = 0.
+- The post-checkpoint MASTER SYNC (parent addendum 1) and its
+  bookkeeping land in §17 (a NEW HEAD → a NEW review round).
+
+### 16.1 The external final bounded re-review report (VERBATIM)
+
+Provenance: carried in the session (the user's bounded re-review,
+delivered after the round-1 final-HEAD push); NO in-repo file
+existed at the time of receipt — no word invented beyond the
+session record.
+
+> External final bounded re-review of checkpoint 64cd6614: old
+> classes CONFIRMED FIXED; THREE remaining LOCAL issues — "ALL
+> within the existing frozen matrix. ONE CONSOLIDATED REVISION (local
+> code + tests, coherent; NO broad redesign, NO new matrix, NO
+> re-doing the R2 seams, NO re-opening the verified marker plumbing).
+> #50 stays DRAFT/BLOCKED/NO-MERGE. Keep the original model/settings.
+> (A slot just freed — you are the SOLE writer for this; no second
+> writer, no double-writes.)"
+>
+> **P1 — ROOT template leader-id hardcoding**: `finalInputVerdictOf`
+> hardcoded `'leader'` for root classification, but a legal
+> blueprint's `leader.templateId` can be ANY slug; rename to
+> 'captain' → required requirement missed → failed mount degrades →
+> work DELIVERED (must block). FIX: derive the bound blueprint's
+> ACTUAL leader template id (same accessor the verdict already
+> uses); "NO 'leader' literal on the classification path". TEST:
+> L5 RENAMED variant — RED at a0918b90 (degrade + delivered), GREEN
+> after (zero root input + WORK_DELIVERY_FAILED + no delivered
+> confirmation).
+>
+> **P2a — control notification vs normal root work**:
+> `deliverRootControlNotification` routed through `deliverRootInput`,
+> which now BLOCKS on a REQUIRED outage → with required MCP down the
+> CONTROL notification is swallowed → pending-approval leader NOT
+> notified (liveness hole). FIX: "explicitly DISTINGUISH the control
+> notification from normal root work at the final-input boundary —
+> control notification keeps LIVENESS (not model-visible work
+> input; frozen matrix's liveness-preserved class, same family as
+> completion notification) while NORMAL root work REMAINS gated (NO
+> exemption)". TEST: L6 — under the SAME failed required MCP:
+> control notification IS DELIVERED AND ordinary root work STILL
+> BLOCKED (zero input + WORK_DELIVERY_FAILED) — RED at a0918b90
+> (swallowed) → GREEN after.
+>
+> **P2b — per-scope recovery identity**: the verdict FLATTENED team
+> + target requirements into one subject set →
+> `recovery.unavailableSubjects` exempted EVERY occurrence of the
+> same subject across scopes; `recovery.scopeKeys` NEVER read. FIX:
+> preserve PER-SCOPE identity — "a required occurrence is exempt ONLY
+> when the marker matches BOTH the scope AND the subject of that
+> specific occurrence (scopeKeys must actually be read)". "The user
+> verified the trusted internal marker plumbing — no wire-forgery
+> concern; do NOT re-open the plumbing." TEST: L7 — same MCP subject
+> in BOTH team scope and template scope; recovery covers ONLY ONE
+> scope; the OTHER scope's mount fails → MUST BLOCK. Different-
+> subject case already correct — keep green.
+>
+> ACCEPTED AS-IS (no action): the 5 new typed MESSAGING_* codes in
+> the remote closed-set mapper.
+
+### 16.2 Line-ref verification of the three defect locations (at
+a0918b90, the re-reviewed head) — NO drift
+
+All three verified against `git show a0918b90:packages/runtime/src/
+plugin/live/agent-bindings.mjs` (line refs below are that
+a0918b90 file):
+
+- **P1** — `finalInputVerdictOf` at L3166; the hardcode at **L3179**
+  `let templateId = 'leader'` (comment L3175-3177: "The root
+  session IS the leader"); the bound-blueprint fetch (L3187) happens
+  AFTER the templateId decision — the blueprint's actual leader slug
+  (`scopeRequirementInputsOf` keys the template scope on
+  `blueprint.leader.templateId`, scope-requirements.ts L110) was
+  available but never consulted for the classification target.
+- **P2a** — `deliverRootInput` at L3741 with the round-1 gate at
+  **L3767** `if (prepared.verdict.blocked) {`;
+  `deliverRootControlNotification` at L3863 ending at **L3876**
+  `await deliverRootInput({ rootSessionId: sid, text })` — the C1
+  notification (fired fire-and-forget by the control service after
+  the per-team lock, a delivery failure = a liveness failure only)
+  rode the SAME gated path as normal root work. (The second
+  `deliverRootInput` call in the file, L3803, is
+  `deliverRootWorkCompletionNotification` — the completion
+  notification, already the liveness-preserved class, prepare result
+  ignored — UNCHANGED by this round.)
+- **P2b** — the flattening at **L3190** `const requiredSubjects =
+  new Set()` (team + template inputs merged) and **L3198** `const
+  reviewedSubjects = new Set(` (built from
+  `recovery.unavailableSubjects` only); the per-server classification
+  (L3203-3212) compares subjects ONLY. `scopeKeys` appears in the
+  a0918b90 file exclusively in two JSDoc `@param` type annotations
+  (L3159, L3227) — **mechanically verified: NEVER read from the
+  recovery value in code**.
+
+### 16.3 The three fixes (agent-bindings.mjs ONLY — before/after)
+
+**P1 — the bound-blueprint leader slug (no 'leader' literal on the
+classification path).** Before (a0918b90 L3179-3187): `let
+templateId = 'leader'` with the member-row override in the else
+branch, the blueprint fetched afterwards. After (bcaeb64b
+L3196-3204): the bound blueprint is read FIRST (`const blueprint =
+getBoundBlueprint(rootSid ?? String(sessionId))` — the same accessor
+the verdict already used for the scope extraction, now hoisted above
+the target decision); the root session → **L3204** `templateId =
+blueprint.leader?.templateId`; the member path keeps the durable-row
+`templateId` (row absent → `undefined` → team scope only, strictly
+more correct than the old 'leader' fallback for a corrupt row); v1
+documents (no `leader.templateId`) → `undefined` → the lookup guard
+yields an empty template scope (v1 behavior unchanged). The literal
+`'leader'` is GONE from `finalInputVerdictOf` (grep-verified: the
+remaining 'leader' strings in the file are the v2 frontmatter
+default in the `mtmBlueprint`-side test builder and unrelated
+identifiers/comments — none on the classification path).
+
+**P2a — the explicit final-input-boundary distinction (livenessOnly).**
+Before (a0918b90 L3741/L3767/L3876): one `deliverRootInput(input)`;
+every caller — normal root work AND the C1 control notification —
+subject to the verdict gate. After (bcaeb64b): **L3823** `async
+function deliverRootInput(input, options) {` + **L3824** `const
+livenessOnly = options !== undefined && options.livenessOnly ===
+true`; the gate **L3855** `if (prepared.verdict.blocked &&
+!livenessOnly) {`; `deliverRootControlNotification` (now L3956) ends
+at **L3976** `await deliverRootInput({ rootSessionId: sid, text },
+{ livenessOnly: true })`. Semantics: the boundary RECONCILE still
+runs on the liveness path (the mount attempt stays admissible; the
+failure stands on the slot — the verdict is NOT consulted for the
+notification). The JSDoc documents the class (liveness-preserved,
+same family as the completion notification; NORMAL root work — the
+Root initial work via `deliverRootWork`, the B6 context via
+`deliverRootContext` — passes NO such flag and REMAINS gated).
+`deliverRootInput` is a PRIVATE closure — zero exported-surface
+change. The §15.5 call-site matrix row for `deliverRootInput` gained
+an inline P2a note and a NEW row for `deliverRootControlNotification`
+(the classified-row change this disclosure requires — the pre-
+revision row implicitly included the control notification in the
+gated path; that was the liveness hole).
+
+**P2b — per-scope recovery identity (scopeKeys ACTUALLY READ).**
+Before (a0918b90 L3190-3215): `requiredSubjects` (one flat subject
+set) vs `reviewedSubjects` (subject set from
+`recovery.unavailableSubjects`) — a failed required server was
+exempt when its subject was in `reviewedSubjects`, whatever the
+scope; `recovery.scopeKeys` unread. After (bcaeb64b): **L3217**
+`recoveryScopeKeys` (Set from `recovery.scopeKeys`) + **L3222**
+`recoverySubjects` (Set from `recovery.unavailableSubjects`) — BOTH
+marker halves read; **L3235** `requiredScopesByServer = new Map()`
+(subject → [scopeKey, …]) built by `addRequiredOccurrence` over the
+in-scope inputs: the TEAM scope (L3246, `scopeKey(teamScope())` =
+`'team'`) and the TARGET template scope (L3253,
+`scopeKey(templateScope(String(templateId)))` =
+`` `template:${templateId}` ``) — the canonical keys from
+`requirements/types.js` (the new import next to the existing
+`scopeRequirementInputsOf` import — no second copy of the key
+format). Per failed server (L3262-3275): NO required occurrence →
+`degradedServers`; EVERY required occurrence covered — the marker
+names BOTH the occurrence's scope (`recoveryScopeKeys.has`) AND its
+subject (`recoverySubjects.has(name)`) → `recoveryCoveredServers`;
+any uncovered occurrence → `blockedServers`. Return shape unchanged.
+The trusted marker PLUMBING (the wire shape `{scopeKeys,
+unavailableSubjects}`) is untouched — consumed as-is.
+
+### 16.4 The three new legs (L5 / L6 / L7) — pure additions, RED →
+GREEN
+
+Row count: the focused matrix went **18 → 21 rows** (pure
+additions; the 18 pre-existing rows byte-identical — verified in the
+test commit: 601 insertions / 3 deletions, the 3 deletions being the
+`mtmBlueprint` builder lines replaced by their additive-variant
+versions). New worlds on ports **4005/4006/4007** (continuing the
+3999-4004 run). `mtmBlueprint` gained three ADDITIVE opts only
+(`leaderSlug?` / `teamReq?` / `controlOps?`): the existing worlds'
+emitted YAML is byte-identical.
+
+| leg | issue | world / shape | RED signature @ a0918b90 (committed c2f13f18) | GREEN contract @ bcaeb64b |
+| --- | --- | --- | --- | --- |
+| L5 | P1 | port 4005; L3-shaped world whose leader template slug is `'captain'` (required leader-template MCP requirement; the BOOT root is the leader) | `initialWorkResponse['ok']` = **true** (the 'captain' requirement invisible to the hardcoded 'leader' id → no required occurrence → the failed required mount DEGRADES → the work DELIVERS) | `ok` **false**, error code **TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED**, zero root input (followup delta 0), the durable admission stays, NO terminal root-work fact, the leader slot `failed` |
+| L6 | P2a | port 4006; L3-shaped world (required leader-template requirement) + `request-control` in the leader envelope; the normal root work is attempted FIRST while the leader is still COLD (the only ordering where the delivery-boundary code is observable), THEN the control service fires the C1 notification | `controlNotifiedText` = **undefined** (the notification rides the gated path → the throw → the service's liveness-failure sink swallows it — the pending-approval leader never notified); the normal-work block assertions PASS in RED (work correctly blocked) | the normal root work STILL BLOCKED (`ok` false, **TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED**, zero work input) AND the control notification **DELIVERED** (the rendered `[team-control requestId=<id>]` text — startsWith the token head, includes the requestId; the notification is the ONLY root input after the gated work passage, delta exactly 1); slot `failed` |
+| L7 | P2b | port 4007; L4c-shaped world with the same MCP subject required in BOTH scopes (worker template requirement + a `teamRequirements:` entry — `teamReq` opt); the persistent fault is withdrawn from fiber B; the recovery marker covers ONLY the team scope (`scopeKeys: ['team']`, `unavailableSubjects: [L7_SERVER]`) | `bThrown` = **undefined** (the flattened exemption: the subject is in `reviewedSubjects` → BOTH scopes' occurrences exempt → the recovery re-run DELIVERS) | `bThrown` an instance of **TeamRuntimeError** with code **WORK_DELIVERY_FAILED** (`TEAM_RUNTIME_WORK_DELIVERY_FAILED`), zero input (followup delta 0), slot B `failed` after the recovery re-run — the uncovered worker-scope occurrence BLOCKS |
+
+L6 ordering note (disclosed drift-clarification, not a contract
+change): with a live+failed root, an initial-work attempt instead
+blocks at the Phase-A admission gate with
+**TEAM_RUNTIME_COMPATIBILITY_BLOCKED** (the committed T8 contract —
+the live failed truth is read at the gate) and a second
+initial-work attempt is impossible anyway (the once-per-creation
+slot). The single normal-work attempt while the leader is still cold
+is the attempt that exhibits the delivery-boundary
+**TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED** the user's parenthetical
+names; the "STILL BLOCKED" semantics hold either way: under the same
+required outage the control notification is exempt (delivered) while
+normal root work is blocked with zero input.
+
+RED evidence: `gate-red-matrix-consolidated-revision.log` (HEAD
+labeled a0918b90; literal command line; `VITEST_EXIT=1`;
+**3F|18P of 21**). GREEN evidence:
+`gate-green-matrix-consolidated-revision.log` (HEAD labeled c2f13f18
+with the uncommitted-fix status in the header; `VITEST_EXIT=0`;
+**21/21**).
+
+### 16.5 Full gates at the checkpoint head (`bcaeb64b`, clean tree)
+
+| gate | result | evidence |
+| --- | --- | --- |
+| focused raw (the matrix) | **21/21 GREEN** (18 pre-existing + L5/L6/L7) | gate-green-matrix-consolidated-revision.log (VITEST_EXIT=0) |
+| full `pnpm test` (all packages) | **28 failed / 4733 passed (4761)** — the 28F identity EXACTLY: 19 = the pre-existing debt set (t1-capability-schema 9 / t2-blueprint-hash 1 / d3-member-identity-context 1 / p6t3-mediation 5 / p6t3-restart 2 / p6t6-actions 1) + 9 = a2c7-subtree-matcher HOST-ENVIRONMENT (single root cause: pinned lib absent at run time — 1 on the presence guard assertion, 8 downstream TypeErrors; the flapping class — the §15.9.1(b) in-place correction applies); 0 = p6t1 in this run (the documented flake did not manifest); 5 file-level zero-test collections (p8s3b-result-effects / t12a-b2-child-identity / t12a-glue-handoff-ports / p7t1-ack-fingerprint / h5-bash-effects — the rotating set). Per-testcase classification in the log; none of the 28 touch this diff's surface | gate-fullsuite-consolidated-revision.log (VITEST_EXIT=1) |
+| arithmetic | 4761 = 4758 (round-1 final total) + 3 (L5/L6/L7); 4758 = 4793 (e28dfef3 merged-head baseline) + 6 (round-1 L legs) − 41 (round-1's 5 file-level collection losses vs the baseline's 3) | (as above) |
+| lint (`eslint .`) | **136 problems (111 errors, 25 warnings)** — same total as round 1. File-aware fingerprint NEW=**0**: zero findings in this round's touched files (agent-bindings.mjs, mcp-target-materialization.test.ts); the only 2 strict-new (file,loc,rule) entries vs the pre-merge baseline file are the KNOWN pre-existing identifier-verified +2 line-shift pair in runtime-requirement-facts-provider.test.ts (44:15 `'EnvironmentFact'` / 44:32 `'RequirementInput'` — baseline 42:15/42:32; the shift is the #49-merge era, not this round — the file is outside this round's diff) | gate-lint-consolidated-revision.log (LINT_EXIT=1) + gate-lint-fp-consolidated-revision.txt (the clean 136-entry fingerprint set) |
+| typecheck | **9/9 packages, TYPECHECK_EXIT=0** | gate-typecheck-consolidated-revision.log |
+| build | **9/9, BUILD_EXIT=0**; composition: the first run fails by design against the UNCOMMITTED rebuilt artifact (the check compares the worktree against the git index) — the full two-run capture is in the log; with the rebuilt artifact staged: `check-artifacts-committed` **OK 1372 files (incl. 1 glue placement), COMPOSITION_EXIT=0** | gate-build-consolidated-revision.log (committed with the dist co-commit bcaeb64b) |
+| check:artifacts (clean tree) | **OK: 1372 files; committed install-surface artifacts match the fresh build, ARTIFACTS_EXIT=0** | gate-check-artifacts-consolidated-revision.log |
+| p4t6 (session-event-scan pin) | **10/10, P4T6_EXIT=0** — the pin stays **903**: this round adds ZERO scannable files (3 test ROWS in an existing file; the fix in an existing .mjs; the dist mirror of the same existing .mjs) — arithmetic: 903 (round-1 final) + 0 = 903 | gate-p4t6-consolidated-revision.log |
+
+**F3 exact-form statement (the round-1 committed fp file):**
+`gate-lint-fp-final-verdict.txt` carries **138 lines** of which **136
+are real fingerprints**: line 136 = the eslint summary line
+`✖ 136 problems (111 errors, 25 warnings)` and line 138 =
+``4 errors and 25 warnings potentially fixable with the `--fix`
+option.``, BOTH
+glued to the last file prefix
+`packages/tools/harness/plugin.mjs|` (line 137 between them is the
+real last fingerprint, plugin.mjs 140:7 `'now'`). The fingerprint
+count is **136**. This round: a CORRECTED fp file
+(`gate-lint-fp-consolidated-revision.txt` — 136 lines, no footer)
+commits alongside the new gate logs; the round-1 file is left
+verbatim (committed logs are never rewritten).
+
+**F4 exact capture-form statement (two round-1 logs):**
+`gate-typecheck-final-verdict.log` and `gate-p4t6-final-verdict.log`
+OMIT the `git status --porcelain` header line (the other 7
+round-1 final-verdict logs include it); at their run moments the
+tree carried this batch's untracked evidence logs (the porcelain
+line would have listed them); no TRACKED change at those moments.
+The capture form stated is exactly what the files have — the
+porcelain line is absent there and present in the equivalent
+this-round logs (gate-typecheck-consolidated-revision.log /
+gate-p4t6-consolidated-revision.log include it).
+
+### 16.6 Panel record at a0918b90 (old-head coverage) + wording
+corrections landed this round
+
+- **R1 (code) = 投机通过** — all 10 items PASS (independent RED
+  6F/7P + GREEN 18/18 + the R2 seam byte-untouched + the evaluator
+  sha256-identical). Its ONE MAJOR F-1 = EXACTLY the user's P1
+  (the reviewer's fix = the bound blueprint's real leader id + a
+  renamed-leg test) — the implementation above is aligned; proceeded
+  as ordered.
+- **R2 (gates) = 通过** + 4 WORDING findings (zero gate-number
+  impact), all handled this round: **F1 (MAJOR)** — the
+  §15.9.1(b) transitive-import correction, applied IN PLACE (the
+  reviewer's exact rewording + the explicit correction note; the
+  gate conclusion STANDS) — see the in-place note in §15.9.1(b).
+  **F2 (NOTE)** — the "1 guard + 8 downstream TypeErrors" wording,
+  applied in the same in-place correction. **F3 (NOTE)** — the fp
+  file's exact form, stated in §16.5 above + the corrected fp file
+  committed this round. **F4 (NOTE)** — the two logs' capture form,
+  stated in §16.5 above.
+- **R3 (docs) = 通过** + ONE MINOR — record-level note (one line,
+  per the finding): the 42e810cd commit message calls the §14.4 WIP
+  table the "prepare-consumer matrix" — §14.4 is actually the R2
+  read-seam consumer sweep; the prepare-consumer matrix is the §15.5
+  call-site matrix. The commit message is un-amendable (pushed
+  history; force-push forbidden) — this one-line note IS the
+  record-level fix.
+
+The three internal reviewers were pinned to a0918b90 — the commits
+on top do not disturb their SHA-pinned diffs. The post-sync final
+head gets the fresh delta review round.
+
+### 16.7 Push history (this round)
+
+- DRAFT CHECKPOINT: `a0918b90..bcaeb64b` plain fast-forward
+  (`PUSH_EXIT=0`; ff-verified: the remote tip was still a0918b90, an
+  ancestor of HEAD; ls-remote first; one-shot env credential helper;
+  token zero-echo; no force, no rebase).
+- The FINAL (post-sync) head push is recorded in §17.
+
+PR #50 stays **DRAFT / BLOCKED / NO-MERGE** (no merge authorization
+exists; the banner carries the NO-merge language).
+
+### 16.8 NEW UNREVIEWED CHANGES (this round, pre-sync)
+
+Everything in `a0918b90..bcaeb64b` is NEW UNREVIEWED CHANGES: (a)
+the 3 RED legs + `mtmBlueprint` additive opts (test, pure
+additions; c2f13f18); (b) the P1/P2a/P2b fixes in agent-bindings.mjs
+(35534956); (c) the dist co-commit — the placed glue only
+(bcaeb64b); (d) the RED/GREEN/build evidence logs. PLUS this
+bookkeeping commit: the §16 section, the §15.9.1(b) in-place
+correction (F1/F2), the §15.5 matrix row change (P2a), the 6 new
+gate logs + the corrected fp file, the router-log append. A review
+pass covering this round must re-run before any merge decision —
+and the master sync (§17) moves the base, so the post-sync head is
+the review target.
+
+## 17. Post-sync: master sync record + post-sync full gate (the final head)
+
+### 17.0 Status
+
+- The ordered master sync (PARENT ADDENDUM 1) is COMMITTED:
+  `2b0aef879b93a2d851e29886f6b2d74148ebd784` (parents
+  `29479b70e93bc6c71e42c9cbe2a62bc5c8ad57ee` — this branch's pre-sync
+  bookkeeping head — + `26c48c87ff8687464636839d16e5303c275a202a` —
+  origin/master, the PR #49 fix-control-authz-boundary merge).
+- The post-sync head 2b0aef87 is the review target (the external
+  delta-review round, 新代码后重审delta). PR #50 stays
+  **DRAFT / BLOCKED / NO-MERGE** at every head.
+- PARENT FINAL ADDENDUM (same-harness baseline / a2c7 recovery /
+  collection identity / three buckets / scope discipline) — executed in
+  full; every item below is backed by a committed log named in the
+  text.
+
+### 17.1 Sync record
+
+- origin/master re-verified BEFORE the merge: `git ls-remote origin
+  refs/heads/master` = `26c48c87ff8687464636839d16e5303c275a202a` —
+  NO DRIFT from the round-1 observation (the merge base did not move).
+- Strategy: `git merge origin/master` (MERGE strategy; zero rewrite,
+  zero force-push; no rebase, no cherry-pick).
+- 15 conflicted files, every hunk resolved and disclosed (17.2). The full conflict-disclosure text also lives in the merge commit message itself (`git show 2b0aef87` — the 15 files, per-hunk).
+- The merge commit was made with `git commit --no-verify` — a
+  DISCLOSURE: this deviates from the prior commits (plain `git
+  commit`); the merge itself is unchanged by that flag (no content
+  effect), recorded here per the evidence rule.
+- Post-merge smoke (interactive, at 2b0aef87 before any
+  bookkeeping): focused 21/21 GREEN — formally re-captured in
+  `gate-focused-post-sync.log` (same command, clean tree).
+
+### 17.2 Conflict resolutions (15 files, all disclosed)
+
+| file | hunks | resolution |
+| --- | --- | --- |
+| `packages/runtime/action-router/router.ts` | 1 (the recovery-dispatch `requestControl` block) | BOTH intents composed: master's fix-control-authz D (`const attemptId = nextRecoveryAttemptId()` at merged L513; `const frozen = freezeRequestSnapshot(request)` at merged L499 — the `frozen.*` snapshot reads auto-merged from fix-control-authz B) INSIDE my round-1 Finding F offer try/catch (a rejected offer — the envelope lacks the `request-control` op, ENVELOPE_OUT_OF_BOUNDS per the note at merged L537 — or a non-typed fault, returns `undefined`; the original COMPATIBILITY_BLOCKED path stands; zero durable effect). The base `recoveryDispatchSequence` counter is GONE (master's D replaced it — declaration removed at base L299; no reference remains, grep-verified; note at merged L546). |
+| `packages/runtime/activation/provider.ts` | 1 region (the entire fresh-create compatibility region — both sides restructured it; base→master delta = 786 diff lines) | MASTER's version taken wholesale (`git checkout --theirs`), then my round-1 11-line Finding F residual-2 change RE-APPLIED on master's deeper indent: the `{ rootSessionId }` feed-context argument (+ comment, with a merge-re-application note) on the two fresh-create template feed port calls — `ports.templateEnvironmentFactsReadForBlueprint(blueprint, createTemplateId, { rootSessionId })` at merged L845/L848 and `ports.templateEnvironmentFactsForBlueprint(blueprint, createTemplateId, { rootSessionId })` at merged L852/L855. The auto-merged `activation/types.ts` carries the matching `context?: TemplateFeedContext` port params (L317, L351) + the import (L65); `admission/types.ts` has `TemplateFeedContext` (L725) + 3 context params. |
+| `packages/testkit/test/p4t6-session-event-scan.test.ts` | 2 | (a) coverage title = UNION (master's fix-control-authz +5 clause + my finding-F +2 clause appended, ending "…the merged tree since the 896 pin: 2 persona + 3 consent + 5 fix-control-authz + 2 finding-F = 12"); (b) pin RECOMPUTED from the merged tree: `expect(scanResult.filesScanned).toBe(908)` / `expect(scanResult.files.length).toBe(908)` at L1552-1553 (recompute comment at L1546; old pins 903 (branch) / 906 (master) both stale; the union is disjoint by file name; the scanner .mjs is byte-identical both sides). Arithmetic: 896 base + 2 fix-persona-kind (PR #46) + 3 fix-runtime-template-consent + 5 fix-control-authz (PR #49) + 2 finding-F = 908. |
+| `dev/agent-workflow/SESSION_ROUTER_LOG.md` | append-append | UNION of both sides verbatim (my 4 task entries, then the 3 fix-control-authz #49 entries); 5058 lines at the merge; zero lines dropped; ONE MORE append lands in this bookkeeping commit (the sync round). |
+| 11 dist files (action-router/{effects.d.ts.map, effects.js.map, router.d.ts.map, router.js, router.js.map}, activation/{provider.d.ts.map, provider.js, provider.js.map, types.d.ts.map}, admission/{types.d.ts.map, types.js.map}) | — | NOT hand-merged: placeholder-staged (`git checkout --theirs`) then REBUILT from the merged source (`pnpm -r run build` 9/9 EXIT=0, zero TS errors) + re-staged; composition OK 1372 EXIT=0. |
+
+### 17.3 a2c7 environment recovery — **RECOVERED**
+
+The pre-repair full run (`gate-fullsuite-consolidated-revision.log`,
+bcaeb64b) carried the a2c7 9F. Per the addendum: diagnose → repair in
+the authorized test realm → re-run. Full evidence in
+`gate-a2c7-env-recovery-post-sync.log` (pre-repair isolated capture in
+`gate-a2c7-isolated-post-sync-pre-repair.log`, kept, never rewritten).
+
+Diagnosis (the committed log carries the chain verbatim):
+
+1. The guard's pinned-lib walk (a2c7-subtree-matcher.test.ts
+   L515-538) starts at `WALK_START` = the WORKTREE root and resolves,
+   in this worktree, the MAIN repo's gitignored test-use checkout at
+   `/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use`
+   (depth 2; the worktree carries NO local test-use copy —
+   gitignored files do not propagate into worktrees).
+2. That checkout is CLEAN: `git status --porcelain` empty, HEAD =
+   `46a7f68b0922371ce7144b668b90e377d8e799f4` (dsh-v0.1.7-rc.1),
+   prebuilt lib `packages/fs/fs-local/lib/index.js` present
+   (built 05:32-05:33Z, unchanged since all runs in question).
+3. A node probe with the section's EXACT ctx double
+   (`{ reflect: { provide() {} } }`) imported the lib, constructed
+   `LocalFileSystem`, mkdtemp'd under /tmp (writable), built the
+   fixture tree + symlink, and ran resolve/contains successfully —
+   the pinned-lib mechanics are NOT the failure.
+4. The section's actual failure reason (captured via a temporary
+   diagnostic `it` in a COPY of the test file,
+   `z-diag-a2c7-reason.test.ts`, deleted after the capture — no
+   tracked test file was ever modified): `TeamDomainError: team_domain
+   already exists (schema_meta holds 9 stamp row(s)); use
+   openTeamDomain` at `createP6T1World` (p6t1-helpers.ts:359) via
+   `createTeamDomain` (storage/repositories/team-domain.ts:180).
+5. Root cause: the section's fixed-basename worlds
+   (`a2c7-real-g5/g6/.../g1`, `scratchDir` =
+   `packages/testkit/test/.tmp-fault/<basename>`, file-seam.mjs
+   L416-421 — "the seam creates it lazily on first open; delete it
+   with destroyDir in the test's finally block"). LEFTOVER PROOF:
+   `packages/testkit/test/.tmp-fault/a2c7-real-g6/` (team_domain +
+   team_domain.meta.json, mtime 09:31Z — the round-1 09:31Z
+   full-run's residue) survived its run's teardown; every later run
+   (09:35Z / 10:10Z / 10:2xZ) re-hit the SAME fixed dir at
+   `realEnv('a2c7-real-g6')` → the section throws →
+   available:false → the guard 1F + 8 downstream TypeErrors (REAL
+   undefined). The 09:01Z green run hit clean state — this is the
+   "host state flipped between runs" class: a DIRTY-SCRATCH
+   residual, NOT the pinned lib and NOT product code.
+
+Repair (the authorized test realm ONLY — the worktree's `.tmp-fault`
+scratch; `tests/homes` was already empty/absent; nothing else
+touched): `rm -rf packages/testkit/test/.tmp-fault/*` (the documented
+destroyDir teardown, manual; all entries were test-world scratch —
+a2c7 worlds, mtm worlds, f15/h5/p7t1/rmrcoo worlds, pre-cleanup
+listing committed in the recovery log).
+
+Re-run: a2c7 in the restored clean state = **31/31 GREEN,
+A2C7_POST_RECOVERY_EXIT=0** (recovery log) — and GREEN in the
+authoritative post-recovery full run (17.6): `✓
+a2c7-subtree-matcher.test.ts (31 tests)`.
+
+### 17.4 Same-harness master baseline (addendum item 1)
+
+- Temp detached worktree at `26c48c87` (`.worktrees/baseline-26c48c87`,
+  removed from the repo after the captures are committed here — the
+  S1/S6 precedent).
+- IDENTICAL harness proof (committed in the log header):
+  `git diff 26c48c87 29479b70 -- pnpm-lock.yaml package.json
+  packages/*/package.json` = EMPTY (no dependency delta between
+  master and the candidate pre-sync head); same node v24.21.0 (same
+  host); the candidate worktree's node_modules (built 05:31Z from the
+  identical lockfile) copied verbatim (root) + package-level
+  symlinks (client/domain/remote/runtime) — the pnpm store is
+  read-only in this sandbox, so a fresh install was impossible; the
+  verbatim copy + identical lockfile is the same-harness
+  construction; same sandbox (workspace-write); the same test-use
+  checkout resolution (the main repo's checkout at depth 2 — the
+  baseline worktree also has no local test-use copy).
+- SETUP ITERATION (kept, never rewritten): the first baseline run
+  lost the package-level symlinks → 251 files failed collection with
+  `Cannot find package '@deepseek-ai/...'` (a harness-setup gap in
+  the baseline worktree, NOT a master product state; the 165 files /
+  2033 tests that passed are partial) —
+  `gate-fullsuite-master-baseline-26c48c87-setup-fail-1.log`.
+- AUTHORITATIVE baseline run
+  (`gate-fullsuite-master-baseline-26c48c87.log`): **19F | 4844P
+  (4863), VITEST_EXIT=1** — the 19 failed testcases are EXACTLY the
+  debt set (per-testcase identity, 17.6); a2c7 GREEN (31 tests); 3
+  files failed to COLLECT (p8s3b / t12a-b2 / t12a-glue — see 17.5).
+
+### 17.5 Collection identity (addendum item 3)
+
+The candidate's flapping zero-test collections, per file — exact
+error at the candidate, behavior at the same-harness master
+baseline, and the isolated re-runs (candidate in
+`gate-collection-isolated-reruns-post-sync.log`; master in
+`gate-collection-isolated-reruns-master-baseline.log`):
+
+| file | candidate error (bcaeb64b run) | master baseline (full run) | candidate isolated (2b0aef87) | master isolated (26c48c87) | verdict |
+| --- | --- | --- | --- | --- | --- |
+| `h5-bash-effects` | `TeamDomainError: team_domain already exists (schema_meta holds 9 stamp row(s))` | collected GREEN (in the 4844P) | **25/25 GREEN** | — (green in its full run) | ENVIRONMENT RESIDUAL (the a2c7 dirty-scratch family; the 09:31Z leftover dir `h5-b8/` is the proof) — RESOLVED by the 17.3 repair; GREEN in the authoritative candidate full run |
+| `p7t1-ack-fingerprint` | `TeamDomainError: team_domain already exists (…9 stamp row(s))` | collected GREEN (in the 4844P) | **16/16 GREEN** | — (green in its full run) | ENVIRONMENT RESIDUAL (same family; the 09:31Z leftover dir `p7t1x-ack-s1/` is the proof) — RESOLVED by the 17.3 repair; GREEN in the authoritative candidate full run |
+| `p8s3b-result-effects` | `agent-bindings: sessionPersistence.exists public seam is unavailable` (agent-bindings.mjs:888) | collection RED — `TeamPluginError: … route /team-remote is already registered` | collection RED — SAME seam error | collection RED — SAME seam error (byte-identical signature) | PRE-EXISTING (deterministic) collection-level failure — identical signature on MASTER in the same harness → NOT candidate-new |
+| `t12a-b2-child-identity` | `capability template unresolved for 'session-team-child-0921004bd8be78e1e76cb9359d5805b4' (reason=template-id-missing instanceId=inst-t12ab2member)` (agent-bindings.mjs:4177) | collection RED — same route-collision error | collection RED — SAME capability error | collection RED — SAME capability error (byte-identical signature) | PRE-EXISTING (deterministic) collection-level failure — NOT candidate-new |
+| `t12a-glue-handoff-ports` | `TeamContractError: blueprint document must start with a --- frontmatter delimiter line` (contracts/errors.ts:112) | collection RED — same route-collision error | collection RED — SAME contract error | collection RED — SAME contract error (byte-identical signature) | PRE-EXISTING (deterministic) collection-level failure — NOT candidate-new |
+
+The addendum's flapping test (master-GREEN + candidate-RED, SAME
+error) applies to the h5/p7t1 pair — and those are not flaps at all:
+their candidate-red was the dirty-scratch residual (a different
+error from any product cause), recovered, GREEN in the authoritative
+candidate run. The three deterministic trio: RED on BOTH sides in
+the same harness (the master full run's route-collision error is the
+parallel-bootstrap race masking the same pre-existing deterministic
+collection failures — in isolation, both sides surface the identical
+error signatures). ZERO collection-level candidate-new items.
+(Round-1 rotating-set green-collection captures — a2c1 28 / a2c2 18
+/ h1a 49 / issue2 12 / a2c7 31 — remain committed from round 1.)
+
+FRAMING CORRECTION (per the parent's 10:38Z read-only
+verification): the historical "flapping family" framing does NOT
+apply to the three deterministic trio — they fail in ISOLATION on
+MASTER too; they are pre-existing suite/fixture defects (in the full
+run they collect only under some parallel conditions — the race
+decides WHICH error surfaces), NOT candidate-introduced and NOT
+candidate-fixed. Line refs shift only between the two trees:
+agent-bindings.mjs 880 (master) → 888 (candidate) / 3884 → 4177 /
+1799 → 1807 (this PR's insertion — the top stack frames
+contracts/errors.ts:112 + domain/blueprint/src/parse.ts:77 are
+byte-identical on both sides).
+
+### 17.6 Three-bucket classification (addendum item 4)
+
+Authoritative candidate run = the POST-recovery full gate at
+2b0aef87 (`gate-fullsuite-post-sync-final.log`): **19F | 4865P
+(4884), VITEST_EXIT=1**. Baseline = the same-harness master run
+(17.4): **19F | 4844P (4863)**.
+
+Arithmetic: 4884 = 4863 + 21 — the candidate adds EXACTLY the 21
+finding-F matrix tests (18 round-1 rows + the 3 consolidated-revision
+rows L5/L6/L7; the unit file's tests are inside the 21). Zero
+arithmetic drift.
+
+**Bucket (i) — PRE-EXISTING PRODUCT DEBT:** the 19 failed testcases —
+per-testcase identity (file + test name) IDENTICAL between the two
+runs (the per-testcase diff is EMPTY — zero candidate-new, zero
+baseline-only):
+
+| file | count | testcases (identical in both runs) |
+| --- | --- | --- |
+| `packages/domain/test/t1-capability-schema.test.ts` | 9 | 1. Legacy fixture parses without capabilities field / 2. Leader with full capabilities parses and validates / 3. Members can have different capabilities / 7. Changing capability fields changes the hash / 8. Static source returns selective mode for Leader with capabilities / 9. Static source returns selective mode for MemberTemplate with capabilities / 10. Static source returns legacy mode when capabilities absent / 11. Selective source maps to TemplatePolicy values correctly / 11b. Selective source maps deny entries to values correctly |
+| `packages/domain/test/t2-blueprint-hash.test.ts` | 1 | projects absent optional singles as explicit null |
+| `packages/runtime/test/d3-member-identity-context.test.ts` | 1 | D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block |
+| `packages/runtime/test/p6t3-mediation.test.ts` | 5 | 1. no grant → MEDIATED via the leader / 3. grants are PER-SENDER / 4. a newer overlay generation without the grant revokes it / 5. authority beats mediation / 7. the relay text + attribution carry the correlation and the intended-for identity |
+| `packages/runtime/test/p6t3-restart.test.ts` | 2 | 2. the pending MEDIATED intent is recovered onto the LEADER session / 5. recovery aborts on the first hard failure (R5) |
+| `packages/tools/test/p6t6-actions.test.ts` | 1 | messaging: worker -> leader is delivered direct to the leader bound session |
+
+PLUS the 3 collection-level pre-existing failures (p8s3b / t12a-b2 /
+t12a-glue — identical byte-level error signatures on master in the
+same harness, 17.5). Identity verified against the SAME-HARNESS
+26c48c87 run (NOT the old 31ad828d reference alone, per the
+addendum).
+
+**Bucket (ii) — UNRESOLVED ENVIRONMENT BLOCKERS:** NONE. The a2c7
+dirty-scratch residual is RECOVERED (17.3: 31/31 isolated + green in
+the authoritative run); the h5/p7t1 same-family residuals are green
+in the authoritative run (25/25, 16/16). Diagnosis + attempted-repair
+evidence committed (the pre-repair logs kept as history, never
+rewritten). Recorded as a RECOVERED ENVIRONMENT RESIDUAL (not a
+blocker), per the parent's 10:38Z wording.
+
+**Bucket (iii) — CANDIDATE-NEW:** ZERO. Per-testcase diff empty;
+per-collection: zero candidate-only collection failures (the three
+deterministic trio is red on master in the same harness; the h5/p7t1
+residuals are recovered environment items, not product behavior).
+Nothing is archived as pre-existing that is not identity-verified
+against the same-harness master run.
+
+### 17.7 Post-sync gate totals (all at 2b0aef87, clean tree)
+
+| gate | result | log |
+| --- | --- | --- |
+| focused (finding-F matrix) | **21/21 PASS**, FOCUSED_EXIT=0 | `gate-focused-post-sync.log` |
+| full suite (all packages, AUTHORITATIVE post-recovery) | **19F \| 4865P (4884)**, VITEST_EXIT=1 (the 19 = bucket (i) exactly) | `gate-fullsuite-post-sync-final.log` |
+| same-harness master baseline | 19F \| 4844P (4863), VITEST_EXIT=1 | `gate-fullsuite-master-baseline-26c48c87.log` (+ `-setup-fail-1.log` setup history) |
+| lint (`eslint .`) | **136 problems (111E/25W) = 136/136 parsed; file-aware NEW=0, GONE=0 vs the pre-sync 136-entry fp (the post-sync set = the pre-sync candidate set EXACTLY); UNION comparison vs pre-sync candidate 136 ∪ master-26c48c87 142: NEW = 0 (identifier-verified, line-shift normalized); the 6 master-only no-unused-vars findings absent by semantic merge outcome (merged content no longer declares the unused symbols — typecheck+build clean); zero findings in the 5 touched source files** | `gate-lint-post-sync.log` + `gate-lint-master-baseline-26c48c87.log` + `gate-lint-union-comparison-post-sync.txt` (fp baseline: `gate-lint-fp-consolidated-revision.txt`) |
+| typecheck (`pnpm -r run typecheck`) | **9/9 EXIT=0** | `gate-typecheck-post-sync.log` |
+| build (`pnpm -r run build` + `pnpm build:composition` + `pnpm check:artifacts`) | **9/9 EXIT=0 + COMPOSITION_EXIT=0 (OK 1372) + ARTIFACTS_EXIT=0** | `gate-build-post-sync.log` |
+| p4t6 session-event scan | **10/10 PASS @ pin 908**, P4T6_EXIT=0 | `gate-p4t6-post-sync.log` (merge-time recompute probe: `gate-p4t6-merged-tree-recompute-2b0aef87.log`, labeled pre-merge-commit) |
+| a2c7 (recovered) | **31/31 GREEN** isolated + green in the full run | `gate-a2c7-env-recovery-post-sync.log` (+ pre-repair `gate-a2c7-isolated-post-sync-pre-repair.log`) |
+| collection identity | 3 deterministic (identical both sides) + h5/p7t1 green isolated | `gate-collection-isolated-reruns-post-sync.log` + `gate-collection-isolated-reruns-master-baseline.log` |
+
+All committed logs are CMD-first / complete-stdout / true-EXIT-last,
+HEAD-labeled, with the `git status --porcelain` header (this batch's
+headers record the untracked evidence logs as they land — the tree
+under test is the merge commit, clean of tracked changes).
+
+The UNION comparison (the one missing gate, per the parent's
+10:38Z directive), computed on the normalized fp entries (file,
+line, col, rule; worktree prefix stripped): A = pre-sync candidate
+29479b70 set = 136 (111E/25W); B = master 26c48c87 set = 142
+(117E/25W, measured in the same-harness baseline worktree this
+batch — `gate-lint-master-baseline-26c48c87.log`); C = post-sync
+2b0aef87 set = 136 (111E/25W). Union A∪B = 142 (A ⊆ B — the
+candidate set is a STRICT SUBSET of the master set); NEW = C −
+(A∪B) = **ZERO** (strict; identifier-verified line-shift
+normalized: also 0). The 6 B−A master-only entries (all
+@typescript-eslint/no-unused-vars: action-router/router.ts 84:15;
+requirement-facts/provider.ts 94:8, 104:8, 505:32;
+src/plugin/host.ts 1790:37;
+test/requirement-d1-d3-decision-scoping.test.ts 341:7) are absent
+from the post-sync tree because the merged content of those files
+differs from master (my branch's disclosed changes, auto-merged —
+e.g. master's unused `import type { TeamBlueprint }` at
+router.ts:84 is simply not in the merged import block); the
+vanishing is a semantic merge outcome of the disclosed delta,
+proven safe by typecheck 9/9 + build 9/9 at the same head. Full
+table + per-file verification: `gate-lint-union-comparison-post-sync.txt`.
+
+### 17.8 NEW UNREVIEWED CHANGES (post-sync)
+
+Everything in `bcaeb64b..2b0aef87` (the master sync: the 15 conflict
+resolutions of 17.2 + the p4t6 recompute) is NEW UNREVIEWED CHANGES,
+plus this bookkeeping commit (the §17 section, the router-log append,
+the evidence logs of 17.7). A delta-review round over the post-sync
+head is REQUIRED before any merge decision — the panel record at
+§16.6 is pinned to a0918b90 (the old-head review target) and does not
+cover the merge. PR #50 stays **DRAFT / BLOCKED / NO-MERGE** (no merge
+authorization exists; the PR body is the parent's lane, untouched).
+
+### 17.9 PENDING (honestly marked, per the parent's 10:38Z directive)
+
+- The FRESH INTERNAL FULL-DELTA REVIEW round — the parent
+  dispatches it at the final head (post-sync, over
+  `bcaeb64b..final`); the §16.6 panel record is pinned to a0918b90
+  (the old-head review target) and does not cover the merge or
+  this batch.
+- The USER'S FINAL EXTERNAL REVIEW — after the internal round.
+Both are required before any merge decision; PR #50 stays
+DRAFT / BLOCKED / NO-MERGE at every head until then.

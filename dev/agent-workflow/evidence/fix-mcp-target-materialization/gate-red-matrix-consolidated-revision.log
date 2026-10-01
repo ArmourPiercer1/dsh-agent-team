@@ -1,0 +1,126 @@
+== RED matrix — the consolidated re-review legs (L5 P1 / L6 P2a / L7 P2b) at the round-1 FINAL HEAD ==
+HEAD: a0918b9026527ffcbe38f302bd8cc068e3417662
+date: 2026-10-01T10:06:09Z
+git status --porcelain (uncommitted = the new RED legs + builder additive variants, zero production change):
+ M packages/runtime/test/mcp-target-materialization.test.ts
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-red-matrix-consolidated-revision.log
+$ cd packages/runtime && npx vitest run test/mcp-target-materialization.test.ts test/mcp-target-materialization-unit.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/runtime
+
+ ✓ test/mcp-target-materialization-unit.test.ts (5 tests) 3ms
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ❯ test/mcp-target-materialization.test.ts (16 tests | 3 failed) 13ms
+     ✓ T1 — the failed target instance is gated with ZERO work; the healthy sibling passes (no masking in either direction) 1ms
+     ✓ T2 — the scope incident stays open until the scope OWN materialization converges (fixing A alone does not close it; fixing B does) 0ms
+     ✓ T3 — two roots, same templateId: the target root OWN failed instance gates the target root (no cross-root conflation) 0ms
+     ✓ T4 — the v2 Leader template: the Leader OWN (root session) materialization gates leader-targeted work, masked by a healthy sibling 0ms
+     ✓ T5 — the cold member: the not-applicable materialization is preserved (no spurious block; resume + mount + delivery) 0ms
+     ✓ T7 (external residual 1) — the first-mount PENDING window: B is admitted (masked pending), its own first mount fails on the passage, and the SAME-passage delivery is blocked (zero model-visible input; fail-closed settlement; A unaffected; the next passage is gated as failed) 0ms
+     ✓ T8 (external residual 2) — the initial-work cross-root read: root B's initial work is gated on B OWN failed leader materialization (zero delivery; the recovery stays typed/open — the healthy root A neither permits B nor settles B) 1ms
+     ✓ L1 (residual class 1) — the COLD-RESUME gap: the stale cold truth admits, the resume setup reconcile fails the remount, the prepare cooldown SKIPs, and the pre-fix SAME-PASSAGE gate (the attempt-clock delta) is BLIND — the delivery reaches B. The requirement-aware final-input verdict reads the FINAL failed truth and blocks (zero input; fail-closed settlement; the next passage gated as failed) 0ms
+     ✓ L2 (residual class 2) — the MESSAGING consumer: the coordinator commits the intent and delivers the attributed input to B whose prepare FAILED the required server — the pre-fix submitAttributedInput IGNORES the prepare result (the input reaches B's inbox + the confirmation commits). The requirement-aware final-input verdict blocks (the coordinator maps the rejection to MESSAGING_DELIVERY_FAILED; the intent stays pending — NO confirmation) 0ms
+     ✓ L3 (residual class 2) — the ROOT consumer: root B's initial work — the admission reads the stale cold truth and ADMITS (the durable `team-work-admitted` fact), the cold-resume delivery's setup reconcile fails the remount, and the pre-fix deliverRootInput IGNORES the prepare result (the root input reaches B + the terminal fact commits). The requirement-aware final-input verdict blocks (the strategy maps the rejection to WORK_DELIVERY_FAILED → the remote TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED; the admission stays for the same-token retry; NO terminal root-work fact) 0ms
+     ✓ L4a (residual class 3) — the anti-over-block (NO requirement): B's first mount fails on its own first passage, but the failed server carries NO requirement — the pre-fix SAME-PASSAGE gate over-blocks (requirement-blind); the requirement-aware final-input verdict DEGRADES (the work delivers with the server down; the slot is the failed truth) 0ms
+     ✓ L4b (residual class 3) — the anti-over-block (OPTIONAL requirement): B's first mount fails on its own first passage, but the failed server's requirement is `complete: false` (the engine's WARNING verdict — the degraded scope, never a block) — the pre-fix SAME-PASSAGE gate over-blocks (requirement-blind); the requirement-aware final-input verdict DEGRADES (the work delivers with the server down) 0ms
+     ✓ L4c (residual class 3) — the anti-over-block (REVIEWED recovery): the human-reviewed recovery re-run of the blocked follow-up to B (the `recovery` marker, the T2 shape) — the gate allows the recovery work (the reviewed scope; the durable incident record), the prepare re-attempts the remount past cooldown and it FAILS AGAIN (the persistent fault), and the pre-fix SAME-PASSAGE gate over-blocks the reviewed recovery (recovery-blind). The requirement-aware final-input verdict EXEMPTS the reviewed scope (the marker names the unavailable subject) and delivers 0ms
+     × L5 (re-review P1) — the RENAMED leader slug: the bound blueprint's leader templateId is `captain` (a legal non-`leader` slug) carrying the REQUIRED mcpServer — the L3 root choreography with the slug renamed. The admission reads the stale cold truth and ADMITS; the cold-resume delivery's setup reconcile fails the remount. The pre-fix verdict classifies the root through the HARDCODED `leader` template id (the requirement sits under `captain` — invisible) and DEGRADES: the root input is DELIVERED (the required outage treated as optional — the work ships). The fix derives the bound blueprint's ACTUAL leader template id → the required occurrence is visible → BLOCKED (zero root input; the strategy maps the rejection to WORK_DELIVERY_FAILED → the remote TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED; the admission stays for the same-token retry; no terminal root-work fact) 5ms
+     × L6 (re-review P2a) — the CONTROL NOTIFICATION vs normal root work under the SAME failed required MCP: (1) normal root work — the admission reads the stale cold truth and ADMITS, the cold-resume delivery's setup reconcile fails the remount, the verdict BLOCKS (zero root input + TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED; the admission stays; no terminal fact) — normal root work stays gated, NO liveness exemption for model-visible work input; (2) the pending-approval leader notification (the C1 liveness channel — the production control service fires the leader-approval notification fire-and-forget on the created durable row) — the pre-fix deliverRootControlNotification routes through the now-gated deliverRootInput → the verdict's throw is SWALLOWED by the service's liveness-failure sink → the pending-approval leader is NEVER notified (the liveness hole). The fix keeps the control notification LIVENESS (not model-visible work input — the frozen matrix's liveness-preserved class, same family as the completion notification) → DELIVERED 1ms
+     × L7 (re-review P2b) — the PER-SCOPE recovery identity: the SAME mcpServer subject is REQUIRED in BOTH scopes (the TEAM scope — the v2 `teamRequirements` block — AND the WORKER template scope) — two distinct requirement occurrences with distinct scope identities. The recovery marker covers ONLY the team scope (`scopeKeys: ['team']` + the subject). The pre-fix verdict FLATTENS team + template into one subject set → the subject ∈ unavailableSubjects → EVERY occurrence exempt → the recovery re-run is DELIVERED (the worker-scope occurrence uncovered yet exempted — the defect). The fix preserves the per-scope occurrence identity (a required occurrence is exempt only when the marker matches BOTH the scope AND the subject of that specific occurrence — the scopeKeys are actually read) → the covered team occurrence stays exempt, but the uncovered WORKER-scope occurrence BLOCKS the delivery (zero input; the typed delivery failure) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/mcp-target-materialization.test.ts > Finding F — residual legs (external review of e45d22fe: R1 first-mount PENDING window + R2 initial-work cross-root read) > L5 (re-review P1) — the RENAMED leader slug: the bound blueprint's leader templateId is `captain` (a legal non-`leader` slug) carrying the REQUIRED mcpServer — the L3 root choreography with the slug renamed. The admission reads the stale cold truth and ADMITS; the cold-resume delivery's setup reconcile fails the remount. The pre-fix verdict classifies the root through the HARDCODED `leader` template id (the requirement sits under `captain` — invisible) and DEGRADES: the root input is DELIVERED (the required outage treated as optional — the work ships). The fix derives the bound blueprint's ACTUAL leader template id → the required occurrence is visible → BLOCKED (zero root input; the strategy maps the rejection to WORK_DELIVERY_FAILED → the remote TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED; the admission stays for the same-token retry; no terminal root-work fact)
+AssertionError: the renamed-slug required outage was PERMITTED (the external P1 gap: the verdict hardcodes the `leader` template id): expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/mcp-target-materialization.test.ts:2348:7
+    2346|       L5.initialWorkResponse['ok'],
+    2347|       'the renamed-slug required outage was PERMITTED (the external P1…
+    2348|     ).toBe(false)
+       |       ^
+    2349|     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- …
+    2350|     const error = L5.initialWorkResponse['error'] as Record<string, an…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/mcp-target-materialization.test.ts > Finding F — residual legs (external review of e45d22fe: R1 first-mount PENDING window + R2 initial-work cross-root read) > L6 (re-review P2a) — the CONTROL NOTIFICATION vs normal root work under the SAME failed required MCP: (1) normal root work — the admission reads the stale cold truth and ADMITS, the cold-resume delivery's setup reconcile fails the remount, the verdict BLOCKS (zero root input + TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED; the admission stays; no terminal fact) — normal root work stays gated, NO liveness exemption for model-visible work input; (2) the pending-approval leader notification (the C1 liveness channel — the production control service fires the leader-approval notification fire-and-forget on the created durable row) — the pre-fix deliverRootControlNotification routes through the now-gated deliverRootInput → the verdict's throw is SWALLOWED by the service's liveness-failure sink → the pending-approval leader is NEVER notified (the liveness hole). The fix keeps the control notification LIVENESS (not model-visible work input — the frozen matrix's liveness-preserved class, same family as the completion notification) → DELIVERED
+AssertionError: the pending-approval leader was NEVER notified (the external P2a liveness hole: the control notification is swallowed by the gated work-input path): expected undefined to be defined
+ ❯ test/mcp-target-materialization.test.ts:2388:7
+    2386|       L6.controlNotifiedText,
+    2387|       'the pending-approval leader was NEVER notified (the external P2…
+    2388|     ).toBeDefined()
+       |       ^
+    2389|     expect(
+    2390|       String(L6.controlNotifiedText).startsWith('[team-control request…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/mcp-target-materialization.test.ts > Finding F — residual legs (external review of e45d22fe: R1 first-mount PENDING window + R2 initial-work cross-root read) > L7 (re-review P2b) — the PER-SCOPE recovery identity: the SAME mcpServer subject is REQUIRED in BOTH scopes (the TEAM scope — the v2 `teamRequirements` block — AND the WORKER template scope) — two distinct requirement occurrences with distinct scope identities. The recovery marker covers ONLY the team scope (`scopeKeys: ['team']` + the subject). The pre-fix verdict FLATTENS team + template into one subject set → the subject ∈ unavailableSubjects → EVERY occurrence exempt → the recovery re-run is DELIVERED (the worker-scope occurrence uncovered yet exempted — the defect). The fix preserves the per-scope occurrence identity (a required occurrence is exempt only when the marker matches BOTH the scope AND the subject of that specific occurrence — the scopeKeys are actually read) → the covered team occurrence stays exempt, but the uncovered WORKER-scope occurrence BLOCKS the delivery (zero input; the typed delivery failure)
+AssertionError: the uncovered worker-scope occurrence was NOT blocked (the external P2b gap: the verdict flattens the scopes — a team-scope-only marker exempts every occurrence of the subject): expected undefined to be an instance of TeamRuntimeError
+ ❯ test/mcp-target-materialization.test.ts:2419:7
+    2417|       L7.bThrown,
+    2418|       'the uncovered worker-scope occurrence was NOT blocked (the exte…
+    2419|     ).toBeInstanceOf(TeamRuntimeError)
+       |       ^
+    2420|     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- …
+    2421|     const thrown = L7.bThrown as Record<string, any>
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  3 failed | 18 passed (21)
+   Start at  10:06:10
+   Duration  6.99s (transform 1.32s, setup 0ms, import 7.57s, tests 16ms, environment 0ms)
+
+VITEST_EXIT=1

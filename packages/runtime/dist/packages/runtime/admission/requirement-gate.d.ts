@@ -52,6 +52,7 @@
 import type { CompatibilityResult, EnvironmentFact } from '../../domain/compatibility/src/index.js';
 import type { TeamBlueprint } from '../../domain/blueprint/src/index.js';
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js';
+import type { TemplateFeedContext } from './types.js';
 import { type RequirementFactsResolution } from '../requirement-facts/index.js';
 import { PENDING_BLOCK } from '../requirements/types.js';
 import type { ActionImpact, DegradationConsent, GateDecision, RecoveryState, RequirementScope, RequirementVerdict, ScopeVerdict, TemplateAvailability } from '../requirements/types.js';
@@ -98,7 +99,7 @@ export interface RequirementGateOptions {
      * probes by (domain, subject): unioning the feeds into one array would
      * conflate the scopes.
      */
-    readonly templateEnvironmentFacts?: (templateId: string) => Promise<readonly EnvironmentFact[]>;
+    readonly templateEnvironmentFacts?: (templateId: string, context?: TemplateFeedContext) => Promise<readonly EnvironmentFact[]>;
     /**
      * D-3 (2026-09-30) — the FULL-resolution facts source (the atomic
      * facts + 3-state observations pair of ONE `resolveFacts` call) for the
@@ -123,12 +124,32 @@ export interface RequirementGateOptions {
      * TEMPLATE scope (the atomic pair of the template-boundary feed). Same
      * ABSENT semantics as {@link RequirementGateOptions.environmentFactsRead}.
      */
-    readonly templateEnvironmentFactsRead?: (templateId: string) => Promise<RequirementFactsResolution>;
+    readonly templateEnvironmentFactsRead?: (templateId: string, context?: TemplateFeedContext) => Promise<RequirementFactsResolution>;
     /** The deterministic ISO-8601 clock (defaults to the authority clock). */
     readonly now?: () => string;
     /** The epoch-ms clock for the requirement fact payloads (defaults to
      *   `Date.now` — facts are provenance, never a token input). */
     readonly nowMs?: () => number;
+    /**
+     * Finding F (scoped identity) — the ACTION's target member instance
+     * (the follow-up / delegate target, the send-message recipient). When
+     * present AND it belongs to a template in the action's impact, the
+     * gate performs a SECOND full-resolution read of that template scope
+     * for the target instance's OWN boundary (the atomic facts +
+     * observations pair) and the DECISION (the gateAction verdict merge)
+     * reads the target's boundary instead of the scope's conservative
+     * worst case — a failed target instance gates the action (the masked
+     * failure Finding F reports: the aggregate probe says `reachable`
+     * because a healthy sibling's fiber is live, while the target's own
+     * mount is `failed`), while a healthy target passes even under a
+     * failed sibling. The scope-level verdict (the incident/recovery
+     * bookkeeping, `scopeStates`, `deriveRecovery`) keeps the conservative
+     * worst case (the scope's incident closes only on the scope's own
+     * convergence). Absent = the legacy template-only evaluation
+     * (byte-identical: create-member has no target instance — the new
+     * member's window is settled at its own boundary, never here).
+     */
+    readonly targetInstanceId?: string;
 }
 /** One open recovery incident (derived from the durable fact history). */
 export interface OpenIncident {

@@ -1,0 +1,82 @@
+== BUILD — the requirement-aware final-input verdict (post-fix tree) ==
+HEAD: 9e1d1ffbdf2f2bfa5ceae0dacadedfa38c638781
+date: 2026-10-01T09:34:56Z
+git status --porcelain:
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-build-final-verdict.log
+CMD: pnpm build (pnpm -r run build) + pnpm build:composition + pnpm check:artifacts @ 9e1d1ffb
+
+$ pnpm -r run build
+
+Scope: 9 of 10 workspace projects
+packages/contracts build$ tsc -p tsconfig.build.json
+packages/domain build$ tsc -p tsconfig.build.json
+packages/legacy build$ tsc -p tsconfig.build.json
+packages/remote build$ tsc -p tsconfig.build.json
+packages/domain build: Done
+packages/runtime build$ tsc -p tsconfig.build.json
+packages/legacy build: Done
+packages/storage build$ tsc -p tsconfig.build.json
+packages/contracts build: Done
+packages/testkit build$ tsc -p tsconfig.build.json
+packages/remote build: Done
+packages/tools build$ tsc -p tsconfig.build.json
+packages/storage build: Done
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+BUILD_EXIT=0
+
+$ pnpm build:composition
+
+$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition: 91 modules, 11 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/client/composition-shim/client-bundle.js (1147053 B)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/client/composition-shim/package.json
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/client/composition-shim/client-bundle.js
+  C content-drift (git add): packages/runtime/dist/packages/remote/src/handlers/dispatch.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/remote/src/handlers/dispatch.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/remote/src/handlers/dispatch.js
+  C content-drift (git add): packages/runtime/dist/packages/remote/src/handlers/dispatch.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/effects.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/effects.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/effects.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/work-execution.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/work-execution.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/work-execution.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/work-execution.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/types.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/types.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/types.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+[ELIFECYCLE] Command failed with exit code 1.
+COMPOSITION_EXIT=1
+$ pnpm check:artifacts
+
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/client/composition-shim/client-bundle.js
+  C content-drift (git add): packages/runtime/dist/packages/remote/src/handlers/dispatch.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/remote/src/handlers/dispatch.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/remote/src/handlers/dispatch.js
+  C content-drift (git add): packages/runtime/dist/packages/remote/src/handlers/dispatch.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/effects.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/effects.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/effects.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/work-execution.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/work-execution.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/work-execution.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/action-router/work-execution.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/types.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/types.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/types.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+[ELIFECYCLE] Command failed with exit code 1.
+ARTIFACTS_EXIT=1

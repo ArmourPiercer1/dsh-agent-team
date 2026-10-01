@@ -818,6 +818,12 @@ function workChainDeps(
     prompt: String(ctx.request.payload?.['prompt'] ?? ''),
     ...(optionalStringField(ctx.request.payload, 'attachedContext')),
     ...(optionalStringField(ctx.request.payload, 'taskSummary')),
+    // Finding F (final-input verdict, L4c): propagate the human-reviewed
+    // RECOVERY marker (the router's recovery dispatch — NEVER caller-
+    // forged) to the delivery port so the requirement-aware final-input
+    // verdict can EXEMPT the reviewed scope (a failed required mcp server
+    // named in `unavailableSubjects` does not block the reviewed re-run).
+    ...(ctx.request.recovery !== undefined ? { recovery: ctx.request.recovery } : {}),
     teamLocks: ctx.teamLocks,
   }
 }
