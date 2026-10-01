@@ -109,7 +109,7 @@ Pristine base `1385f1ee` with this PR's files stashed out
 `mine-fail-files.txt` / `baseline-fail-files.txt` are the sorted failing-file
 sets. The delta is exactly `+7 test files` (this PR's specs) and `+68 passing
 tests`, and one extra entry: `packages/runtime/test/p6t1-parallel.test.ts`,
-which is FLAKY on the pristine base as well — 20 repeat runs of that single
+which is FLAKY on the pristine base as well — 24 repeat runs of that single
 file (12 with this PR's files present, 12 at the stashed pristine base):
 
     MINE (with my files): 2/12 runs failed
@@ -120,7 +120,35 @@ not a regression from this PR. The other nine failing files fail identically
 at the base (`baseline-probe-ten.txt` shows the same ten files run in
 isolation: 9 failed / 1 passed, 19 failed tests / 56 passed — identical with
 and without this PR's files). None of them touches the permission-overlay
-sources.
+sources. Per the coordinator's baseline discipline the pre-existing failures
+are recorded by identity only —
+`packages/domain/test/t1-capability-schema.test.ts`,
+`packages/domain/test/t2-blueprint-hash.test.ts`,
+`packages/runtime/test/d3-member-identity-context.test.ts`,
+`packages/runtime/test/p6t1-parallel.test.ts`,
+`packages/runtime/test/p6t3-mediation.test.ts`,
+`packages/runtime/test/p6t3-restart.test.ts`,
+`packages/runtime/test/p8s3b-result-effects.test.ts`,
+`packages/runtime/test/t12a-b2-child-identity.test.ts`,
+`packages/runtime/test/t12a-glue-handoff-ports.test.ts`,
+`packages/tools/test/p6t6-actions.test.ts` — they are NOT attributed or fixed
+here; this PR neither causes nor touches them.
+
+## 5b. Environment honesty: the node_modules in this worktree
+
+`pnpm install` could not run here: the store index lives at
+`/home/user/.local/share/pnpm`, outside the workspace sandbox, and the install
+failed with `ERR_SQLITE_ERROR: unable to open database file` — an offline copy
+workaround, NOT "install succeeded". `node_modules/` (and the
+`packages/*/node_modules/` links) in this worktree were COPIED READ-ONLY from
+the existing worktree `/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr56-client-panel/node_modules`
+(realpath `/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr56-client-panel/node_modules`),
+whose porcelain status was verified clean (0 entries) by the coordinator before
+the copy and re-verified at 0 entries in this session; nothing was written into
+it, no install ran, no package was added, removed or version-bumped, and no
+dependency manifest changed. Every
+test result in this PR was produced with that inherited tree; no new broad copy
+and no cleanup sweep was performed.
 
 ## 6. Gates
 

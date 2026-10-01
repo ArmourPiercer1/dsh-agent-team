@@ -1549,7 +1549,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (this branch) and 906 (origin/master 26c48c87) are both stale — each
     // predates the other line's scannable additions; union disjoint by
     // file name). Scanner .mjs byte-identical on both sides.
-    // ALPHA.3 PR1 pin (PermissionOverlay Foundation, 2026-10-02): 908 + 14 =
+    // ALPHA.3 PR1 pin (PermissionOverlay Foundation, 2026-10-01): 908 + 14 =
     // 922 — the fourteen scannable files this PR adds: two storage sources
     // (schema/permission-overlay.ts + repositories/permission-overlays.ts),
     // four runtime permission-governance sources (types.ts + port.ts +
