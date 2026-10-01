@@ -63,6 +63,8 @@ import {
   extractPanelFields, checkNarrowLegibility, resolveTeamTabDom, teamViewActivatedDom,
   checkFields, scanForSecrets, writeEvidenceBundle, writeMarkerAtomic,
   writeMarkerIfAllPass,
+  narrowExpectedLengths, evaluatePasses, scrubErrorText, setLaunchSecrets, cliMain,
+  waitUntilTruthy, teamViewReadyDom, runObservation,
 } from './stage2-observer.mjs'
 // the kit's OWN exported contract (the marker reader the roundtrip must satisfy):
 import { UI_CLAIMS, reviewPayloadDigestOf, readMarkerHint, verifyUiTruth } from './ui-observe.mjs'
@@ -103,17 +105,30 @@ const PAYLOAD = { schema: 'recovery-dispatch/v1', instanceId: 'inst-7', note: '�
 const DIGEST = reviewPayloadDigestOf(PAYLOAD) // sha256:<64hex> via the kit's SINGLE canonical impl
 
 /** Panel mirror of TeamLedger.tsx @ aa677a34 (pins in the file header).
- *  `styles` mirror TeamLedger.module.css @ aa677a34 verbatim (see header). */
-const DD_GENERIC = 'overflow:hidden;white-space:nowrap;text-overflow:ellipsis' // .controlField dd L298-306
-const DD_DIGEST = 'overflow:visible;white-space:normal;word-break:break-all' // .controlField dd.controlDigestValue L339-344
-const PRE_PAYLOAD = 'white-space:pre-wrap;word-break:break-all;overflow:auto' // .controlPayload L347-360
+ *  EXTERNAL-BATCH ITEM-3: styles carry the REAL cascade the browser sees —
+ *  the digest dd gets the base trio THEN the override (source order):
+ *  computed = overflow:visible + white-space:normal + word-break:break-all
+ *  with text-overflow STAYING 'ellipsis' (the reviewed override does NOT
+ *  reset it — ellipsis is neutralized by overflow:visible, not removed).
+ *  (jsdom probe: the shorthand cascade resolves identically; jsdom does NOT
+ *  expand overflow into overflowX/Y, so checks read the shorthand.) */
+const DD_BASE = 'overflow:hidden;white-space:nowrap;text-overflow:ellipsis' // .controlField dd trio L298-306
+const DD_BASE_GENERIC = `${DD_BASE};min-width:0` // base trio as committed (min-width:0)
+const DD_OVERRIDE = 'overflow:visible;white-space:normal;word-break:break-all' // .controlField dd.controlDigestValue L339-344
+const DD_GENERIC = DD_BASE_GENERIC
+const DD_DIGEST = `${DD_BASE};${DD_OVERRIDE}` // cascade: computed normal/visible + textOverflow STILL ellipsis
+const PRE_PAYLOAD = 'overflow:auto;white-space:pre-wrap;word-break:break-all' // .controlPayload L347-360
+const DD_REAL_CLIP = `${DD_BASE};height:1.2em` // real clipping: trio + short fixed height, NO override
 
 function panelHtml({
   rid = RID, digest = DIGEST, payloadValue = PAYLOAD, renderMode = 'recovery-v1',
   omitDigest = false, omitPayload = false, omitRequestIdField = false,
   digestStyle = DD_DIGEST, preStyle = PRE_PAYLOAD, requestIdText = null,
+  payloadTextRaw = undefined,
 } = {}) {
-  const payloadText = (omitPayload || payloadValue === undefined) ? null : JSON.stringify(payloadValue, null, 2)
+  const payloadText = payloadTextRaw !== undefined
+    ? payloadTextRaw
+    : ((omitPayload || payloadValue === undefined) ? null : JSON.stringify(payloadValue, null, 2))
   return `
     <div class="resolveBar" data-ledger-resolve-bar data-request-id="${rid}" data-control-surface="enabled">
       <dl data-control-detail>
@@ -649,4 +664,372 @@ test('45 deepJsonEqual: structural equality regardless of key order; nested arra
   assert.equal(deepJsonEqual([1, 2], [2, 1]), false)
   assert.equal(deepJsonEqual(null, null), true)
   assert.equal(deepJsonEqual(null, {}), false)
+})
+
+// ── EXTERNAL REVIEW BATCH (frozen 4 items) + WIRE-LEVEL TESTS ───────────────
+// Items: 1 error-path secret scrub; 2 BOTH viewports deep-equal the durable
+// source; 3 layout check vs the REAL cascade (ellipsis computed is accepted
+// when neutralized — real clipping fails); 4 waitForFunction BOOLEAN wiring
+// (the old object-return {ok:false} is TRUTHY and must never gate again).
+// The wiring tests drive the REAL runObservation end-to-end with a duck-typed
+// fake page + REAL jsdom DOM probe path — no chromium, no ports, no host.
+
+const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47])
+
+// — item 2 units: durable lengths + both-viewport verdict —
+
+test('46 narrowExpectedLengths derives EVERY length from the DURABLE source (never from rendered text)', () => {
+  const lens = narrowExpectedLengths({ rid: RID, expectedDigest: DIGEST, payloadValue: PAYLOAD })
+  assert.deepEqual(lens, {
+    ridLen: RID.length,
+    digestLen: DIGEST.length,
+    payloadLen: JSON.stringify(PAYLOAD, null, 2).length,
+  })
+})
+
+test('47 fail-closed: narrow-ONLY truncated payload (normal full, narrow clipped) — durable lengths FAIL where self-length was tautological; verdict refuses the marker', () => {
+  const durableText = JSON.stringify(PAYLOAD, null, 2)
+  const clipped = durableText.slice(0, durableText.length - 12) // cut mid-JSON
+  const narrowHtmlClip = goodHtml({ payloadTextRaw: clipped })
+  const narrowExtraction = withDom(narrowHtmlClip, () => extractPanelFields(RID))
+  const durableLens = narrowExpectedLengths({ rid: RID, expectedDigest: DIGEST, payloadValue: PAYLOAD })
+  const narrowRows = withDom(narrowHtmlClip, () => checkNarrowLegibility({ rid: RID, expected: durableLens }))
+  assert.equal(narrowRows.rows.some((r) => !r.ok && r.name === 'NARROW_PAYLOAD_LENGTH'), true)
+  // THE TAUTOLOGY, DOCUMENTED: the pre-fix code fed the narrow's OWN rendered
+  // length as the expectation — the same clipped DOM then passes the length row.
+  const selfRows = withDom(narrowHtmlClip, () => checkNarrowLegibility({ rid: RID, expected: { ridLen: RID.length, digestLen: DIGEST.length, payloadLen: clipped.length } }))
+  assert.equal(selfRows.rows.find((r) => r.name === 'NARROW_PAYLOAD_LENGTH').ok, true, 'self-length tautology is real — durable lengths are the fix')
+  const verdict = evaluatePasses({
+    expected: { rid: RID, expectedDigest: DIGEST, payloadValue: PAYLOAD },
+    phases: {
+      normal: { fields: goodFields(), narrow: { ok: true, rows: [] } },
+      narrow: { fields: narrowExtraction, narrow: narrowRows },
+    },
+  })
+  assert.equal(verdict.ok, false)
+  assert.ok(verdict.narrowChecks.checks.some((c) => !c.ok && (c.name === 'PAYLOAD_PARSE' || c.name === 'PAYLOAD_DEEP_EQUAL')))
+  const dir = join(mkTmp('s2o-v-'), 'marker')
+  assert.equal(writeMarkerIfAllPass({ allPassed: verdict.ok, markerDir: dir, requestId: RID, digest: DIGEST }).ok, false)
+  assert.deepEqual(readdirSync(dir), [])
+})
+
+test('48 fail-closed: narrow-ONLY SAME-LENGTH wrong digest → deep equality (not length) catches it', () => {
+  const wrong = `sha256:${DIGEST[7] === 'a' ? 'b' : 'a'}${DIGEST.slice(8)}`
+  assert.equal(wrong.length, DIGEST.length)
+  assert.ok(!verifyUiTruthDigestEq(wrong)) // not equal, same shape
+  const narrowExtraction = goodFields({ digest: wrong })
+  const verdict = evaluatePasses({
+    expected: { rid: RID, expectedDigest: DIGEST, payloadValue: PAYLOAD },
+    phases: {
+      normal: { fields: goodFields(), narrow: { ok: true, rows: [] } },
+      narrow: { fields: narrowExtraction, narrow: { ok: true, rows: [] } },
+    },
+  })
+  assert.equal(verdict.ok, false)
+  assert.ok(verdict.narrowChecks.checks.some((c) => !c.ok && c.name === 'DIGEST_EXACT'))
+  const dir = join(mkTmp('s2o-v-'), 'marker')
+  assert.equal(writeMarkerIfAllPass({ allPassed: verdict.ok, markerDir: dir, requestId: RID, digest: DIGEST }).ok, false)
+  assert.equal(existsSync(join(dir, 'marker.json')), false)
+})
+function verifyUiTruthDigestEq(d) { return d === DIGEST }
+
+test('49 verdict: BOTH viewports deep-equal + layout rows green → all-pass (and nothing relaxed)', () => {
+  const extraction = goodFields()
+  const lens = narrowExpectedLengths({ rid: RID, expectedDigest: DIGEST, payloadValue: PAYLOAD })
+  const rows = withDom(goodHtml({}), () => checkNarrowLegibility({ rid: RID, expected: lens }))
+  const verdict = evaluatePasses({
+    expected: { rid: RID, expectedDigest: DIGEST, payloadValue: PAYLOAD },
+    phases: {
+      normal: { fields: extraction, narrow: rows },
+      narrow: { fields: goodFields(), narrow: rows },
+    },
+  })
+  assert.equal(verdict.ok, true, JSON.stringify({ n: verdict.normalChecks.checks.filter((c) => !c.ok), m: verdict.narrowChecks.checks.filter((c) => !c.ok), rows: rows.rows.filter((r) => !r.ok) }))
+})
+
+// — item 1 units: the shared secret scrub —
+
+const LAUNCH_URL = 'http://127.0.0.1:3181/?token=PRIVATE-tok-launch'
+const LAUNCH_SECRET = 'PRIVATE-tok-launch'
+
+test('50 scrubErrorText: known launch secrets AND unknown token= VALUES are scrubbed; residual uncertainty SUPPRESSES the text', () => {
+  setLaunchSecrets([LAUNCH_URL, LAUNCH_SECRET])
+  const nasty = `page.goto: Timeout exceeded.\n navigating to "${LAUNCH_URL}" waiting until "load" (also ?token=anothersecretvalue987654321 in headers)`
+  const out = scrubErrorText(nasty)
+  assert.equal(out.suppressed, false)
+  assert.ok(!out.text.includes(LAUNCH_SECRET))
+  assert.ok(!out.text.includes('anothersecretvalue987654321'))
+  assert.ok(out.text.includes('Timeout exceeded'))
+  // un-scrubbable uncertainty (empty-valued token= marker): suppress entirely
+  const weird = scrubErrorText('weird ?token=&y=1 remainder of a message')
+  assert.equal(weird.suppressed, true)
+  setLaunchSecrets([])
+})
+
+test('51 cliMain (the REAL top-level handler): unknown error with token-bearing stack → exit 1, output scrubbed; ObserverError → exit 2 typed; suppressed branch keeps no message body', async () => {
+  const f = mkCliFixture()
+  const sink = []
+  setLaunchSecrets([LAUNCH_URL, LAUNCH_SECRET])
+  const code1 = await cliMain({
+    argv: f.args,
+    run: async () => {
+      const e = new Error(`page.goto: Timeout 60000ms exceeded.\nnavigating to "${LAUNCH_URL}"`)
+      e.name = 'TimeoutError'
+      e.stack = `TimeoutError: page.goto\n  navigating to "${LAUNCH_URL}"\n  at runObservation`
+      throw e
+    },
+    stdout: (s) => sink.push(String(s)),
+    stderr: (s) => sink.push(String(s)),
+  })
+  assert.equal(code1, 1)
+  const joined1 = sink.join('')
+  assert.ok(joined1.includes('STAGE2_OBSERVER_FATAL'))
+  assert.ok(joined1.includes('Timeout'))
+  assert.ok(!joined1.includes(LAUNCH_SECRET), 'the token value must never reach the output boundary')
+  const sink2 = []
+  const code2 = await cliMain({
+    argv: f.args,
+    run: async () => { throw new ObserverError('S2O_NAV_FAILED', 'navigation refused: [scrubbed]') },
+    stdout: (s) => sink2.push(String(s)),
+    stderr: (s) => sink2.push(String(s)),
+  })
+  assert.equal(code2, 2)
+  assert.ok(sink2.join('').includes('STAGE2_OBSERVER_FAIL S2O_NAV_FAILED'))
+  const sink3 = []
+  const code3 = await cliMain({
+    argv: f.args,
+    run: async () => { throw new Error('weird ?token=&y=1 secret tail') },
+    stdout: (s) => sink3.push(String(s)),
+    stderr: (s) => sink3.push(String(s)),
+  })
+  assert.equal(code3, 1)
+  assert.ok(sink3.join('').includes('[suppressed by token tripwire]'))
+  assert.ok(!sink3.join('').includes('secret tail'))
+  setLaunchSecrets([])
+})
+
+// — item 3 units: real cascade PASS (computed ellipsis ACCEPTED) vs real clip FAIL —
+
+test('52 narrow layout vs the REAL cascade: digest with base trio + override (computed white-space normal, overflow visible, text-overflow STILL ellipsis, full-height) PASSES; real clipping (trio + short fixed height) fails typed', () => {
+  const lens = narrowExpectedLengths({ rid: RID, expectedDigest: DIGEST, payloadValue: PAYLOAD })
+  const good = withDom(goodHtml({}), () => checkNarrowLegibility({ rid: RID, expected: lens }))
+  // sanity that the fixture really carries the conflict the browser sees:
+  const computedEllipsis = withDom(goodHtml({}), () => {
+    const dd = globalThis.document.querySelector('[data-digest-source="ledger-wire"] dd')
+    return globalThis.window.getComputedStyle(dd).textOverflow
+  })
+  assert.equal(computedEllipsis, 'ellipsis', 'fixture must carry the real cascade (ellipsis computed, neutralized by overflow:visible)')
+  assert.equal(good.ok, true, JSON.stringify(good.rows.filter((r) => !r.ok)))
+  const clipped = withDom(goodHtml({ digestStyle: DD_REAL_CLIP }), () => checkNarrowLegibility({ rid: RID, expected: lens }))
+  assert.equal(clipped.ok, false)
+  assert.ok(clipped.rows.some((r) => !r.ok && /NARROW_DIGEST_(WHITESPACE|EFFECTIVE_CLIP)/.test(r.name)))
+})
+
+// — item 4 units: BOOLEAN wait predicate + wait driver —
+
+test('53 teamViewReadyDom is BOOLEAN (never the truthy-object trap); waitUntilTruthy polls false→false→true and times out honestly', async () => {
+  const html = tablistHtml(['Chat', 'Team']) + teamViewHtml(panelHtml())
+  const readyFalse = withDom(html, () => teamViewReadyDom(1))
+  assert.equal(readyFalse, false, 'wait expression must return a BOOLEAN false while not ready')
+  const activated = withDom(html, (win) => {
+    const tabs = win.document.querySelectorAll('[data-conversation-tabs] button[role="tab"]')
+    tabs[1].setAttribute('aria-selected', 'true')
+    return teamViewReadyDom(1)
+  })
+  assert.equal(activated, true)
+  assert.ok(teamViewActivatedDom !== undefined, 'the object helper remains for post-wait POSITIVE validation')
+  const polls = [false, false, true]
+  let now = 0
+  const ok = await waitUntilTruthy({
+    probe: async () => polls.shift(),
+    deadlineAt: 10_000,
+    nowFn: () => now,
+    sleepFn: async (ms) => { now += ms },
+  })
+  assert.equal(ok, true)
+  let now2 = 0
+  const never = await waitUntilTruthy({
+    probe: async () => false,
+    deadlineAt: 1000,
+    nowFn: () => now2,
+    sleepFn: async (ms) => { now2 += ms },
+  })
+  assert.equal(never, false)
+})
+
+// — WIRE-LEVEL: the REAL runObservation with a duck-typed fake page + REAL DOM probe —
+
+function wireHtml(panelOpts = {}) {
+  return tablistHtml(['Chat', 'Team']) + goodHtml(panelOpts)
+}
+
+function makeFakeBrowser({ normalHtml, narrowHtml, gotoError = null, neverActivate = false, activateAfterPolls = 0 } = {}) {
+  const fixtures = [normalHtml, narrowHtml]
+  const calls = { gotos: [], evaluates: 0, clicks: 0, contexts: 0 }
+  const activateTeamTab = (doc) => {
+    const tabs = Array.from(doc.querySelectorAll('[data-conversation-tabs] button[role="tab"]'))
+    for (const t of tabs) t.setAttribute('aria-selected', String(TEAM_TAB_LABELS.includes(t.textContent.trim())))
+  }
+  const makeHandle = (el, doc) => ({
+    async $$(sel) { return Array.from(el.querySelectorAll(sel)).map((child) => makeHandle(child, doc)) },
+    async click() {
+      calls.clicks += 1
+      if (neverActivate) return
+      const tabs = Array.from(doc.querySelectorAll('[data-conversation-tabs] button[role="tab"]'))
+      for (const t of tabs) t.setAttribute('aria-selected', String(t === el))
+    },
+  })
+  const buildPage = (html) => {
+    const dom = new JSDOM(`<!doctype html><html><body>${html}</body></html>`)
+    const win = dom.window
+    const doc = win.document
+    let pending = activateAfterPolls
+    const page = {
+      async goto(url) {
+        calls.gotos.push(url)
+        if (gotoError !== null && gotoError !== undefined) throw gotoError
+      },
+      async waitForSelector(sel) {
+        if (doc.querySelector(sel) === null) throw new Error(`fake page: selector not found: ${sel}`)
+        return true
+      },
+      async evaluate(fn, arg) {
+        calls.evaluates += 1
+        if (pending > 0 && calls.evaluates >= pending) { pending = -1; activateTeamTab(doc) }
+        const prevDoc = globalThis.document
+        const prevWin = globalThis.window
+        globalThis.document = doc
+        globalThis.window = win
+        try {
+          return await fn(arg)
+        } finally {
+          if (prevDoc === undefined) delete globalThis.document; else globalThis.document = prevDoc
+          if (prevWin === undefined) delete globalThis.window; else globalThis.window = prevWin
+        }
+      },
+      async waitForFunction(fn, arg) {
+        // Playwright semantics: resolves on the FIRST TRUTHY value — an
+        // object-returning predicate ALWAYS resolves (the ITEM-4 bug).
+        const v = await page.evaluate(fn, arg)
+        if (v) return true
+        throw new Error('waitForFunction predicate false')
+      },
+      async $(sel) {
+        const el = doc.querySelector(sel)
+        return el === null ? null : makeHandle(el, doc)
+      },
+      locator(sel) {
+        return {
+          first: () => ({ async waitFor() { if (doc.querySelector(sel) === null) throw new Error(`fake locator missing: ${sel}`) } }),
+          async screenshot() { return PNG },
+          async waitFor() { if (doc.querySelector(sel) === null) throw new Error(`fake locator missing: ${sel}`) },
+        }
+      },
+      async screenshot() { return PNG },
+    }
+    return page
+  }
+  return {
+    calls,
+    async newContext() {
+      calls.contexts += 1
+      const html = fixtures.shift() ?? normalHtml
+      return { async newPage() { return buildPage(html) }, async close() {} }
+    },
+    async close() {},
+  }
+}
+
+function fakeClock() {
+  let now = 0
+  return { nowFn: () => now, sleepFn: async (ms) => { now += ms } }
+}
+
+test('55 WIRING happy path: REAL runObservation end-to-end (fake page + real DOM probe, both viewports) → marker written ONCE, 0600, kit-reader accepts', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml() })
+  const clock = fakeClock()
+  const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...clock })
+  assert.equal(res.ok, true)
+  assert.equal(browser.calls.contexts, 2, 'both viewport passes ran')
+  const markers = readdirSync(f.markerDir)
+  assert.deepEqual(markers, ['marker.json'], 'exactly one marker, no tmp residue')
+  assert.equal(lstatSync(join(f.markerDir, 'marker.json')).mode & 0o777, 0o600)
+  const hint = readMarkerHint(f.markerDir)
+  assert.equal(hint.ok, true)
+  assert.equal(hint.hint.claimed, 'observed-pending')
+  const comparisons = JSON.parse(readFileSync(join(f.evidence, 'comparisons.json'), 'utf8'))
+  assert.equal(comparisons.allPassed, true)
+  assert.equal(existsSync(join(f.evidence, 'manifest.json')), true)
+})
+
+test('56 WIRING item-1: token-bearing goto rejection through the REAL CLI boundary → scrubbed stdout/stderr, exit 2, no marker', async () => {
+  const f = mkCliFixture()
+  const navErr = new Error('page.goto: Timeout 60000ms exceeded.\nCall log:\n navigating to "http://127.0.0.1:3181/?token=PRIVATE-tok-launch", waiting until "domcontentloaded"')
+  navErr.name = 'TimeoutError'
+  navErr.stack = `TimeoutError: page.goto: Timeout\n  navigating to "http://127.0.0.1:3181/?token=PRIVATE-tok-launch"\n  at runObservation`
+  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml(), gotoError: navErr })
+  const clock = fakeClock()
+  const sink = []
+  const code = await cliMain({
+    argv: f.args,
+    run: (opts) => runObservation(opts, { launch: async () => browser, ...clock }),
+    stdout: (s) => sink.push(String(s)),
+    stderr: (s) => sink.push(String(s)),
+  })
+  const joined = sink.join('')
+  assert.ok(joined.includes('S2O_NAV_FAILED'), `typed reason must remain useful: ${joined}`)
+  assert.ok(!joined.includes('PRIVATE-tok-launch'), 'token value NEVER crosses the output boundary')
+  assert.equal(code, 2)
+  assert.deepEqual(readdirSync(f.markerDir), [], 'no marker on the rejection path')
+})
+
+test('57 WIRING item-2: narrow viewport carries a same-LENGTH WRONG digest while normal looks fine → deep equality fails INSIDE runObservation, no marker', async () => {
+  const wrong = `sha256:${DIGEST[7] === 'a' ? 'b' : 'a'}${DIGEST.slice(8)}`
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml({ digest: wrong }) })
+  const clock = fakeClock()
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
+    (err) => { assert.ok(err instanceof ObserverError); assert.equal(err.code, 'S2O_CHECKS_FAILED'); return true },
+  )
+  assert.equal(existsSync(join(f.markerDir, 'marker.json')), false, 'no marker when only the NARROW viewport content is wrong')
+  const comparisons = JSON.parse(readFileSync(join(f.evidence, 'comparisons.json'), 'utf8'))
+  assert.equal(comparisons.allPassed, false)
+  const narrowDigest = JSON.stringify(comparisons).includes('DIGEST_EXACT')
+  assert.ok(narrowDigest, 'the narrow field comparison is logged')
+})
+
+test('58 WIRING item-3: REAL-clipping narrow fixture (trio + short fixed height, no override) fails typed through the real check sequence; the real-cascade fixture (computed ellipsis, neutralized) passes — see 55', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml({ digestStyle: DD_REAL_CLIP }) })
+  const clock = fakeClock()
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
+    (err) => { assert.equal(err.code, 'S2O_CHECKS_FAILED'); return true },
+  )
+  assert.equal(existsSync(join(f.markerDir, 'marker.json')), false)
+})
+
+test('59 WIRING item-4: never-active tab → typed timeout failure through runObservation (no marker); transient inactive→active PROCEEDS', async () => {
+  const f1 = mkCliFixture()
+  const never = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml(), neverActivate: true })
+  const clock1 = fakeClock()
+  await assert.rejects(
+    () => runObservation(parseCli(f1.args), { launch: async () => never, ...clock1 }),
+    (err) => { assert.equal(err.code, 'S2O_TEAM_TAB_NEVER_ACTIVATED'); return true },
+  )
+  assert.deepEqual(readdirSync(f1.markerDir), [], 'the timeout path writes NOTHING to the marker dir')
+  const f2 = mkCliFixture()
+  const transient = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml(), neverActivate: true, activateAfterPolls: 4 })
+  const clock2 = fakeClock()
+  const res = await runObservation(parseCli(f2.args), { launch: async () => transient, ...clock2 })
+  assert.equal(res.ok, true, 'first polls false, later true ⇒ proceeds (the boolean wait REALLY waits)')
+})
+
+test('60 source pin: the OLD object-return can never gate a wait again (wait sites use the BOOLEAN predicate + driver)', () => {
+  const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'stage2-observer.mjs'), 'utf8')
+  assert.ok(!/waitForFunction\s*\(\s*teamViewActivatedDom/.test(src), 'the object helper must NEVER be a wait expression again')
+  assert.ok(/waitUntilTruthy\s*\(/.test(src) && /evaluate\(\s*teamViewReadyDom/.test(src), 'the wait sites use the boolean predicate through the driver')
+  assert.ok(/S2O_TEAM_TAB_NEVER_ACTIVATED/.test(src), 'timeout is the typed fail-closed path')
 })

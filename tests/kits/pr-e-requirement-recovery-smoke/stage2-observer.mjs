@@ -12,8 +12,20 @@
  *   (c) the payload <pre> JSON-parses deep-equal to --payload-file;
  *   (d) in a narrow viewport pass the values stay FULLY READABLE (digest
  *       computed white-space normal per the PR #56 frozen batch #3 CSS pin;
- *       payload pre wraps (pre-wrap per TeamLedger.module.css); no ellipsis;
- *       DOM text length equals the full expected length; no overflow clip).
+ *       payload pre wraps (pre-wrap per TeamLedger.module.css); length
+ *       expectations come from the DURABLE source, never the rendered text;
+ *       EFFECTIVE clipping decides readability — a COMPUTED text-overflow:
+ *       ellipsis is ACCEPTED when the reviewed cascade neutralizes it).
+ *   EXTERNAL REVIEW BATCH (2026-10-02, four frozen items): (1) every error
+ *   printed by ANY boundary passes the shared secret scrub (launch secrets +
+ *   token= values; un-scrubbable uncertainty prints ONLY a typed code);
+ *   (2) BOTH viewport passes run the FULL durable-source field checks (the
+ *   narrow pass is checked independently, not just measured against itself);
+ *   (3) layout readability follows the REAL committed cascade (see
+ *   checkNarrowLegibility); (4) Team activation waits on a BOOLEAN predicate
+ *   via waitUntilTruthy + post-wait positive re-validation — the object-
+ *   returning helper can no longer be a wait expression (truthy {ok:false}
+ *   resolved instantly and skipped the wait).
  * ANY mismatch/missing field is FAIL-CLOSED: non-zero exit, NOTHING written
  * to the marker dir. Only after ALL checks pass an ATOMIC `marker.json`
  * (tmp + rename, mode 0600) lands: { requestId, digest, claimed, ts } with
@@ -113,6 +125,8 @@ const VIEWPORT_RE = /^([1-9][0-9]{1,4})x([1-9][0-9]{1,4})$/
 const NARROW_WIDTH = 380
 const BOOT_TIMEOUT_MS = 60_000
 const OBSERVE_TIMEOUT_MS = 45_000
+/** Item-4 wait driver cadence (bounded by OBSERVE_TIMEOUT_MS). */
+const TEAM_WAIT_POLL_MS = 250
 
 export class ObserverError extends Error {
   constructor(code, message) {
@@ -358,8 +372,17 @@ export function extractPanelFields(rid) {
 
 /** Narrow-pass legibility (contract (d)): the digest must compute to
  *  white-space NORMAL (the frozen-batch-3 CSS pin), the payload pre must
- *  WRAP (real CSS: pre-wrap), neither ellipsized, DOM text length equals the
- *  full expected length, and no overflow clip. */
+ *  WRAP (real CSS: pre-wrap), DOM text length equals the FULL (durable-
+ *  source) expected length, and EFFECTIVE CLIPPING governs readability
+ *  (EXTERNAL BATCH ITEM-3): the reviewed PR #56 CSS KEEPS text-overflow:
+ *  'ellipsis' computed on the digest dd (the `.controlField dd` trio L298-306
+ *  is never reset — the L339-344 override neutralizes it via overflow:visible
+ *  + white-space:normal; `.controlPayload` keeps pre-wrap + overflow:auto
+ *  L347-360). A computed ellipsis is therefore ACCEPTED; a field fails when
+ *  it does not wrap (un-neutralized trio = real truncation regime), when
+ *  geometry shows horizontal overflow, or when wrapped content is vertically
+ *  unreachable (overflow hidden + clipped height). Product CSS is NEVER
+ *  adjusted to satisfy this check — the check follows the committed cascade. */
 export function checkNarrowLegibility(arg) {
   const doc = globalThis.document
   const win = globalThis.window
@@ -375,8 +398,33 @@ export function checkNarrowLegibility(arg) {
   }
   const panel = matches[0]
   const styleOf = (el) => win.getComputedStyle(el)
-  const fits = (el) => el.scrollWidth <= el.clientWidth + 1
+  const fitsX = (el) => el.scrollWidth <= el.clientWidth + 1
   const wrappable = (style) => style.whiteSpace === 'normal' || style.whiteSpace === 'pre-wrap' || style.whiteSpace === 'pre-line' || style.whiteSpace === 'break-spaces'
+  // Per-axis overflow with cascade honesty: an explicit non-visible longhand
+  // wins; otherwise parse the shorthand (jsdom does NOT expand `overflow`
+  // into overflowX/Y — the real browser may report either form).
+  const axis = (style, which) => {
+    const long = style[which]
+    if (typeof long === 'string' && long !== '' && long !== 'visible') return long
+    const ov = String(style.overflow ?? '').trim()
+    if (ov === '' || ov === 'visible') return typeof long === 'string' && long !== '' ? long : 'visible'
+    const parts = ov.split(/\s+/)
+    if (parts.length >= 2) return which === 'overflowX' ? parts[0] : parts[1]
+    return parts[0]
+  }
+  const reachableY = (el, style) => {
+    const y = axis(style, 'overflowY')
+    return y === 'visible' || y === 'auto' || y === 'scroll' || el.scrollHeight <= el.clientHeight + 1
+  }
+  // EFFECTIVE-clip (item 3): a WRAPPING field is readable iff nothing is
+  // clipped out of reach. text-overflow:'ellipsis' COMPUTED is accepted —
+  // with wrapping + visible/auto overflow it never bites (the reviewed
+  // cascade's exact state). A non-wrapping field is the un-neutralized base
+  // trio regime (real truncation) → fail closed.
+  const effectiveClip = (el, style) => ({
+    ok: wrappable(style) && fitsX(el) && reachableY(el, style),
+    detail: `whiteSpace=${style.whiteSpace} overflow=${String(style.overflow ?? '')}/${axis(style, 'overflowX')}/${axis(style, 'overflowY')} textOverflow=${style.textOverflow} (computed ellipsis ACCEPTED when neutralized) scrollWidth=${el.scrollWidth} clientWidth=${el.clientWidth} scrollHeight=${el.scrollHeight} clientHeight=${el.clientHeight}`,
+  })
 
   const ridEl = panel.querySelector('[data-control-detail-request-id] dd')
   if (ridEl === null) {
@@ -387,7 +435,7 @@ export function checkNarrowLegibility(arg) {
     // The requestId field carries the BASE .controlField dd ellipsis CSS —
     // readable iff it WRAPS or fully FITS (an ellipsis only bites when the
     // text overflows, which the FIT measurement catches).
-    push('NARROW_RID_READABLE', wrappable(style) || fits(ridEl), `whiteSpace=${style.whiteSpace} textOverflow=${style.textOverflow} scrollWidth=${ridEl.scrollWidth} clientWidth=${ridEl.clientWidth}`)
+    push('NARROW_RID_READABLE', wrappable(style) || fitsX(ridEl), `whiteSpace=${style.whiteSpace} textOverflow=${style.textOverflow} scrollWidth=${ridEl.scrollWidth} clientWidth=${ridEl.clientWidth}`)
   }
 
   const digestEl = panel.querySelector('[data-digest-source="ledger-wire"] dd')
@@ -396,9 +444,9 @@ export function checkNarrowLegibility(arg) {
   } else {
     const style = styleOf(digestEl)
     push('NARROW_DIGEST_WHITESPACE', style.whiteSpace === 'normal', `whiteSpace=${style.whiteSpace} (frozen batch #3 pin: normal)`)
-    push('NARROW_DIGEST_NO_ELLIPSIS', style.textOverflow !== 'ellipsis', `textOverflow=${style.textOverflow}`)
-    push('NARROW_DIGEST_LENGTH', (digestEl.textContent ?? '').length === expected.digestLen, `len=${(digestEl.textContent ?? '').length} expected=${expected.digestLen}`)
-    push('NARROW_DIGEST_FIT', wrappable(style) || fits(digestEl), `scrollWidth=${digestEl.scrollWidth} clientWidth=${digestEl.clientWidth}`)
+    const clip = effectiveClip(digestEl, style)
+    push('NARROW_DIGEST_EFFECTIVE_CLIP', clip.ok, clip.detail)
+    push('NARROW_DIGEST_LENGTH', (digestEl.textContent ?? '').length === expected.digestLen, `len=${(digestEl.textContent ?? '').length} expected=${expected.digestLen} (durable source)`)
   }
 
   const pre = panel.querySelector('[data-control-detail-payload] pre')
@@ -406,13 +454,13 @@ export function checkNarrowLegibility(arg) {
     push('NARROW_PAYLOAD_PRESENT', false, 'missing [data-control-detail-payload] pre')
   } else {
     const style = styleOf(pre)
-    // The real controlPayload CSS is white-space:pre-wrap (TeamLedger.module.css
-    // L347-360) — wrapping IS the source-verified "fully readable" shape;
-    // nowrap/clip fails closed.
+    // The real controlPayload CSS is white-space:pre-wrap + overflow:auto
+    // (TeamLedger.module.css L347-360) — wrapping IS the source-verified
+    // "fully readable" shape; nowrap/clip fails closed.
     push('NARROW_PAYLOAD_WHITESPACE', wrappable(style), `whiteSpace=${style.whiteSpace} (pinned: pre-wrap)`)
-    push('NARROW_PAYLOAD_NO_ELLIPSIS', style.textOverflow !== 'ellipsis', `textOverflow=${style.textOverflow}`)
-    push('NARROW_PAYLOAD_LENGTH', (pre.textContent ?? '').length === expected.payloadLen, `len=${(pre.textContent ?? '').length} expected=${expected.payloadLen}`)
-    push('NARROW_PAYLOAD_FIT', wrappable(style) || fits(pre), `scrollWidth=${pre.scrollWidth} clientWidth=${pre.clientWidth}`)
+    const clip = effectiveClip(pre, style)
+    push('NARROW_PAYLOAD_EFFECTIVE_CLIP', clip.ok, clip.detail)
+    push('NARROW_PAYLOAD_LENGTH', (pre.textContent ?? '').length === expected.payloadLen, `len=${(pre.textContent ?? '').length} expected=${expected.payloadLen} (durable source)`)
   }
   return { ok: rows.every((row) => row.ok), rows }
 }
@@ -453,6 +501,34 @@ export function teamViewActivatedDom(index) {
   if (tab === undefined || tab.getAttribute('aria-selected') !== 'true') return { ok: false, code: 'TEAM_TAB_NOT_SELECTED' }
   if (doc.querySelector('[data-team-view]') === null) return { ok: false, code: 'TEAM_VIEW_MISSING' }
   return { ok: true }
+}
+
+/** EXTERNAL BATCH ITEM-4: the BOOLEAN wait expression. The object-returning
+ *  teamViewActivatedDom is a TRAP for any wait predicate — {ok:false} is
+ *  TRUTHY, so waitForFunction-style polling resolves instantly on it. The
+ *  wait sites therefore poll THIS function (strict true/false, false while
+ *  not ready) through waitUntilTruthy, and ONLY AFTER it resolves run the
+ *  object helper again as positive re-validation. */
+export function teamViewReadyDom(index) {
+  const doc = globalThis.document
+  const list = doc.querySelector('[data-conversation-tabs][role="tablist"]')
+  if (list === null) return false
+  const tab = list.querySelectorAll('button[role="tab"]')[index]
+  if (tab === undefined || tab.getAttribute('aria-selected') !== 'true') return false
+  return doc.querySelector('[data-team-view]') !== null
+}
+
+/** Node-side bounded polling driver (host-free and testable — the live run
+ *  and the offline suite share this exact body). Resolves true the first
+ *  probe returns STRICT true; false at the deadline. Never assumes truthy
+ *  objects mean ready (probe results are compared with === true). */
+export async function waitUntilTruthy({ probe, deadlineAt, sleepFn, nowFn = () => Date.now() }) {
+  for (;;) {
+    const value = await probe()
+    if (value === true) return true
+    if (nowFn() >= deadlineAt) return false
+    await sleepFn(TEAM_WAIT_POLL_MS)
+  }
 }
 
 // ── field comparisons (pure — run in Node over the extracted DOM JSON) ─────
@@ -607,7 +683,7 @@ function defaultTestuseRoot() {
 // ── the live observation flow (ONLY the env executor runs this; offline
 //    tests cover every adapter above as the SAME function bodies) ────────────
 
-export async function runObservation(opts) {
+export async function runObservation(opts, { launch = null, nowFn = () => Date.now(), sleepFn = null } = {}) {
   const expected = resolveExpected({
     rid: opts.rid, digestRaw: opts.digestRaw, digestFile: opts.digestFile, payloadFile: opts.payloadFile,
   })
@@ -619,16 +695,35 @@ export async function runObservation(opts) {
     throw new ObserverError('S2O_ACCESS_DIGEST_MISMATCH', 'the access record digest differs from the expected digest (wrong run — fail closed)')
   }
   const secrets = collectLaunchSecrets(access)
+  // Item-1: from this line on, EVERY error boundary (cliMain included)
+  // scrubs the launch URL and its token values from printed text.
+  setLaunchSecrets(secrets)
+  const sleep = sleepFn ?? ((ms) => new Promise((done) => setTimeout(done, ms)))
   const testuseDir = opts.testuse ?? defaultTestuseRoot()
-  const { chromium } = loadPlaywrightFrom(testuseDir)
-  const browser = await chromium.launch({ headless: true })
+  const browser = typeof launch === 'function'
+    ? await launch()
+    : await (async () => { const { chromium } = loadPlaywrightFrom(testuseDir); return chromium.launch({ headless: true }) })()
   try {
+    // Item-2: ONE durable expectation for BOTH viewport passes — RID length,
+    // FULL wire-digest length, and the DURABLE payload JSON length (never a
+    // viewport's own rendered text).
+    const durableLens = narrowExpectedLengths({
+      rid: opts.rid, expectedDigest: expected.expectedDigest, payloadValue: expected.payloadValue,
+    })
     const passes = {}
     for (const [phase, viewport] of [['normal', opts.viewport], ['narrow', opts.narrow]]) {
       const context = await browser.newContext({ viewport })
       try {
         const page = await context.newPage()
-        await page.goto(access.launchUrl, { waitUntil: 'domcontentloaded', timeout: BOOT_TIMEOUT_MS })
+        // Item-1: Playwright navigation failures embed the launch URL (token
+        // query) in their message/stack — route them through the scrub and a
+        // typed code BEFORE anything can print them.
+        try {
+          await page.goto(access.launchUrl, { waitUntil: 'domcontentloaded', timeout: BOOT_TIMEOUT_MS })
+        } catch (error) {
+          const scrubbed = scrubErrorText(error?.message ?? String(error), secrets)
+          throw new ObserverError('S2O_NAV_FAILED', `navigation refused: ${scrubbed.suppressed ? '[suppressed by token tripwire]' : scrubbed.text.slice(0, 300)}`)
+        }
         await page.waitForSelector('[data-conversation-tabs][role="tablist"] button[role="tab"]', { timeout: OBSERVE_TIMEOUT_MS })
         const tab = await page.evaluate(resolveTeamTabDom, TEAM_TAB_LABELS)
         if (tab.ok !== true) throw new ObserverError(`S2O_${tab.code}`, `Team tab activation refused: ${tab.code}`)
@@ -637,21 +732,27 @@ export async function runObservation(opts) {
         // THE single sanctioned click (coordinator-pinned Team-entry
         // activation). Never allow/deny, never refresh, never any other control.
         await handles[tab.index].click()
-        await page.waitForFunction(teamViewActivatedDom, tab.index, { timeout: OBSERVE_TIMEOUT_MS })
+        // Item-4: the wait polls the BOOLEAN predicate (false while not
+        // ready — the old object-return {ok:false} was TRUTHY and made the
+        // wait a no-op). Timeout = typed fail-closed, nothing written.
+        const ready = await waitUntilTruthy({
+          probe: () => page.evaluate(teamViewReadyDom, tab.index),
+          deadlineAt: nowFn() + OBSERVE_TIMEOUT_MS,
+          nowFn,
+          sleepFn: sleep,
+        })
+        if (ready !== true) {
+          throw new ObserverError('S2O_TEAM_TAB_NEVER_ACTIVATED', `the Team tab never reached aria-selected=true with [data-team-view] visible within ${OBSERVE_TIMEOUT_MS}ms (fail closed, no marker)`)
+        }
+        // Post-resolve POSITIVE re-validation with the typed object helper.
+        const activated = await page.evaluate(teamViewActivatedDom, tab.index)
+        if (activated.ok !== true) {
+          throw new ObserverError(`S2O_TEAM_ACTIVATION_INVALID`, `post-activation validation refused: ${activated.code}`)
+        }
         await page.locator('[data-team-view]').first().waitFor({ state: 'visible', timeout: OBSERVE_TIMEOUT_MS })
         await page.waitForSelector(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`, { timeout: OBSERVE_TIMEOUT_MS })
         const fields = await page.evaluate(extractPanelFields, opts.rid)
-        const payloadRendered = typeof fields?.fields?.payloadText === 'string'
-          ? fields.fields.payloadText
-          : JSON.stringify(expected.payloadValue, null, 2)
-        const narrow = await page.evaluate(checkNarrowLegibility, {
-          rid: opts.rid,
-          expected: {
-            ridLen: opts.rid.length,
-            digestLen: expected.expectedDigest.length,
-            payloadLen: payloadRendered.length,
-          },
-        })
+        const narrow = await page.evaluate(checkNarrowLegibility, { rid: opts.rid, expected: durableLens })
         const shotFull = await page.screenshot({ fullPage: true })
         const shotPanel = await page.locator(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`).screenshot()
         passes[phase] = { fields, narrow, shotFull, shotPanel }
@@ -659,15 +760,13 @@ export async function runObservation(opts) {
         await context.close()
       }
     }
-    const normalChecks = checkFields({
-      fields: passes.normal.fields,
-      expectedRid: opts.rid,
-      expectedDigest: expected.expectedDigest,
-      payloadValue: expected.payloadValue,
+    // Item-2: the gate — BOTH viewports deep-equal the durable source AND
+    // BOTH layout passes hold, or nothing ships.
+    const verdict = evaluatePasses({
+      phases: passes,
+      expected: { rid: opts.rid, expectedDigest: expected.expectedDigest, payloadValue: expected.payloadValue },
     })
-    const allPassed = normalChecks.ok
-      && passes.normal.narrow.ok === true
-      && passes.narrow.narrow.ok === true
+    const allPassed = verdict.ok === true
     const evidenceFiles = {
       'meta.json': JSON.stringify({
         kit: 'pr-e-requirement-recovery-smoke/stage2-observer',
@@ -682,9 +781,8 @@ export async function runObservation(opts) {
       'dom-narrow.json': JSON.stringify(passes.narrow.fields, null, 2),
       'comparisons.json': JSON.stringify({
         allPassed,
-        fields: normalChecks.checks,
-        narrowNormal: passes.normal.narrow.rows,
-        narrowNarrow: passes.narrow.narrow.rows,
+        normal: { fields: verdict.normalChecks.checks, narrow: passes.normal.narrow.rows },
+        narrow: { fields: verdict.narrowChecks.checks, narrow: passes.narrow.narrow.rows },
       }, null, 2),
       'shot-normal.png': passes.normal.shotFull,
       'shot-narrow.png': passes.narrow.shotFull,
@@ -704,22 +802,105 @@ export async function runObservation(opts) {
   }
 }
 
+// ── EXTERNAL BATCH ITEM-2: durable narrow lengths + BOTH-viewport verdict ───
+
+/** Item-2: the narrow-pass length expectations come from the DURABLE source
+ *  ONLY (rid CLI value, the durable wire digest, the durable payload JSON) —
+ *  NEVER from the narrow viewport's own rendered text (self-length made the
+ *  narrow check tautological). Both viewport passes get the SAME object. */
+export function narrowExpectedLengths({ rid, expectedDigest, payloadValue }) {
+  return {
+    ridLen: rid.length,
+    digestLen: expectedDigest.length,
+    payloadLen: JSON.stringify(payloadValue, null, 2).length,
+  }
+}
+
+/** Item-2: the pure all-pass gate over BOTH viewport passes — EACH viewport
+ *  runs checkFields against the SAME durable expected (RID equality, FULL
+ *  wire digest equality, payload deep-equality) AND its layout rows. The
+ *  marker may be considered ONLY when every check across BOTH passes holds
+ *  (thresholds are never relaxed for the narrow pass). */
+export function evaluatePasses({ phases, expected }) {
+  const args = { expectedRid: expected.rid, expectedDigest: expected.expectedDigest, payloadValue: expected.payloadValue }
+  const normalChecks = checkFields({ fields: phases.normal.fields, ...args })
+  const narrowChecks = checkFields({ fields: phases.narrow.fields, ...args })
+  const ok = normalChecks.ok === true
+    && narrowChecks.ok === true
+    && phases.normal.narrow?.ok === true
+    && phases.narrow.narrow?.ok === true
+  return { ok, normalChecks, narrowChecks }
+}
+
+// ── EXTERNAL BATCH ITEM-1: the SHARED secret scrub (every output boundary) ──
+
+/** Launch-time secrets learned when the access record is read (launchUrl and
+ *  its query values). Held module-side so ANY error printed later — including
+ *  Playwright navigation stacks embedding the URL — passes the same scrub. */
+let launchSecrets = []
+
+export function setLaunchSecrets(secrets) {
+  launchSecrets = Array.isArray(secrets) ? secrets.filter((s) => typeof s === 'string' && s.length >= 8) : []
+}
+
+/** The single scrub used by ALL error-output boundaries: known secret
+ *  substrings → '[scrubbed]', any `token=` VALUE → '[scrubbed]'. If ANY
+ *  token-shaped uncertainty survives (a `token=` whose value we could not
+ *  demonstrably replace), the text is SUPPRESSED — the caller prints only
+ *  the typed code, never the underlying message. */
+export function scrubErrorText(text, secrets = launchSecrets) {
+  let out = String(text ?? '')
+  for (const secret of secrets) {
+    if (typeof secret === 'string' && secret.length >= 8) out = out.split(secret).join('[scrubbed]')
+  }
+  out = out.replace(/(\btoken\s*=\s*)(?:%20|\s)*[^\s&;"'`}<>)\],]+/gi, '$1[scrubbed]')
+  let suppressed = /\btoken\s*=\s*(?!\[scrubbed\])/i.test(out)
+  for (const secret of secrets) {
+    if (typeof secret === 'string' && out.includes(secret)) suppressed = true
+  }
+  return { text: suppressed ? '' : out, suppressed }
+}
+
+// ── EXTERNAL BATCH ITEM-1: the REAL CLI boundary (testable, single impl) ────
+
+/** The one CLI boundary: parses, runs, and formats ALL output. EVERY printed
+ *  byte passes scrubErrorText; typed ObserverError → exit 2, unknown error
+ *  (Playwright timeouts included — their stacks embed the token URL) → exit
+ *  1, suppression keeps no message body. main() delegates here; the offline
+ *  suite drives THIS function, never a reimplementation. */
+export async function cliMain({
+  argv, run = runObservation,
+  stdout = (s) => process.stdout.write(s),
+  stderr = (s) => process.stderr.write(s),
+} = {}) {
+  try {
+    const opts = parseCli(argv)
+    const result = await run(opts)
+    stdout(`STAGE2_OBSERVE_PASS ${result.markerPath}\n`)
+    return 0
+  } catch (error) {
+    if (error instanceof ObserverError) {
+      const scrubbed = scrubErrorText(error.message)
+      stderr(`STAGE2_OBSERVER_FAIL ${error.code} :: ${scrubbed.suppressed ? '[suppressed by token tripwire]' : scrubbed.text.slice(0, 400)}\n`)
+      return 2
+    }
+    const scrubbed = scrubErrorText(`${error?.name ?? 'Error'}: ${error?.message ?? ''}\n${error?.stack ?? ''}`)
+    stderr(`STAGE2_OBSERVER_FATAL ${scrubbed.suppressed ? '[suppressed by token tripwire]' : scrubbed.text.slice(0, 800)}\n`)
+    return 1
+  }
+}
+
 async function main() {
-  const opts = parseCli(process.argv.slice(2))
-  const result = await runObservation(opts)
-  process.stdout.write(`STAGE2_OBSERVE_PASS ${result.markerPath}\n`)
-  process.exitCode = 0
+  process.exitCode = await cliMain({ argv: process.argv.slice(2) })
 }
 
 const invokedDirectly = process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 if (invokedDirectly) {
   main().catch((error) => {
-    if (error instanceof ObserverError) {
-      process.stderr.write(`STAGE2_OBSERVER_FAIL ${error.code} :: ${String(error.message).slice(0, 400)}\n`)
-      process.exitCode = 2
-    } else {
-      process.stderr.write(`STAGE2_OBSERVER_FATAL ${String(error?.stack ?? error).slice(0, 800)}\n`)
-      process.exitCode = 1
-    }
+    // Belt for main() itself (cliMain swallows run errors; a fault in the
+    // delegation is still scrubbed — NO raw stack ever reaches stderr).
+    const scrubbed = scrubErrorText(`${error?.name ?? 'Error'}: ${error?.message ?? ''}\n${error?.stack ?? ''}`)
+    process.stderr.write(`STAGE2_OBSERVER_FATAL ${scrubbed.suppressed ? '[suppressed by token tripwire]' : scrubbed.text.slice(0, 800)}\n`)
+    process.exitCode = 1
   })
 }
