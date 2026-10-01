@@ -205,6 +205,46 @@ retroactively undone or re-marked). The router threads
 | Dist mirror | rebuilt (`tsc -p tsconfig.build.json`), 12 files (router/control service+types+errors `.js`/`.map`/`.d.ts`/`.d.ts.map` — the public `.d.ts` surface GAINED the `signal?` input + the new error code this pass), CO-COMMITTED | — |
 | `pnpm run check:artifacts` (full 1372-file verification output) | OK: 1372 files (full legible log) | `check-artifacts-3.log` |
 
+## Controlled master sync (per the parent's strategy correction: MERGE, not rebase)
+
+Protocol: `git fetch origin master` → **`git merge origin/master`** (merge
+commit on the fix branch — NO history rewrite → plain fast-forward push; the
+pre-merge tip `414c9698` and `d100ada7` stay ancestors — the external already
+saw `d100ada7`, so the new HEAD is a clean descendant and the delta is
+exactly [the two residual fixes] + [the master merge] + [the sync
+bookkeeping]). New base: **`2bfbca12c0b4b7260e8bc9b5b05cd339189c74e4`**
+(PR #47 merged — E+G: effective-policy reset-tombstone canonical read +
+s6-remote `override.get` latest-slot-winner/mixed-kind, + the
+`remote-override-expected-generation` test file, governance-reset-tombstone
+extensions, their evidence dir, their two router-log entries, their dist).
+
+Merge commit: **`b45d7ff5`** (parents `414c9698` + `2bfbca12`).
+
+### Conflict-resolution list (EVERY resolution — NEW UNREVIEWED CHANGES)
+
+| # | File | Hunk | Resolution |
+| --- | --- | --- | --- |
+| 1 | `dev/agent-workflow/SESSION_ROUTER_LOG.md` | the file tail (both sides appended entries after the common base — the merge base predates ALL of them) | **KEPT BOTH SIDES** (protocol for the router log): the two `2026-09-29 (fix/effective-policy-reset-fallback)` entries (#47's E+G closure + mixed-kind closure) in their original order FIRST, then my three `2026-10-01` fix-control-authz entries (pass-1 / pass-2 / pass-3) — chronological. Byte-verified: each side's appended block is present in the resolved file exactly (substring check against both parents' file contents). |
+| 2 | generated/artifact files (dist) | none conflicted (zero overlap: #47 touched `dist/.../effective-policy/*` + `dist/.../src/plugin/s6-remote.*`; this branch touched `dist/.../action-router/*` + `dist/.../control/*`) — the auto-merged union was then **REGENERATED from the merged source tree** per protocol: `packages/runtime` `pnpm run build` (tsc) + `packages/client` `pnpm run build` (tsc) + `pnpm run build:composition` (glue placement + client composition + `check-artifacts-committed`) — the regeneration produced **ZERO diff** against the auto-merged union (both sides' dists were current for their own source; the union IS the fresh build) | **REGENERATED + verified**: `pnpm run check:artifacts` = **OK 1372 files, EXIT=0** on the merged tree — "the merged dist is the canonical one" (no stale side kept: the check proves the committed/staged dist equals the fresh build of the MERGED source) |
+| 3 | p4t6 scanner pin | the new #47 test file `remote-override-expected-generation.test.ts` — checked for scanner coverage | **PIN UNCHANGED (901)**: p4t6 runs 10/10 on the merged head — #47's new file is not in the scanner's scannable set (their own log confirms "p4t6 896 unchanged — zero new scannable files"; my 5 files from this branch keep 901) |
+| 4 | every other file | auto-merged clean (no content overlap between the branches' change sets — source files are disjoint: #47 = effective-policy/s6-remote/governance tests; this branch = action-router/control/fix-control-authz tests + recovery-dispatch-helpers) | KEPT the merge (no manual resolution needed) |
+
+Nothing from #47 was dropped, rewritten, or cherry-picked: the merge
+carries their commits `ae51385b` / `958e96a3` / `5ada3453` / `80607c6b` /
+`a509cffa` verbatim; their evidence dir
+(`dev/agent-workflow/evidence/fix-effective-policy-reset/`, 39 files) is
+in the tree untouched.
+
+### Gates at the merged head (full re-test — the failed-set baseline REMAINS the `31ad828d` debt set; the #47 merge adds no failing tests — verified below)
+
+| Gate | Result | Log |
+| --- | --- | --- |
+| Fix family + all prior pins (C 8, B 2, D 2, H 4, S6 10/10, recovery review 8/8, a6a 52) + control family + p6t4 + p4t6 @ 901 + #47's two suites (`remote-override-expected-generation`, `governance-reset-tombstone`) | **29 files / 228 tests GREEN**, EXIT=0 | `merged-focused-1.log` |
+| Full `pnpm vitest run` | **9F files / 402P (411); 19F tests / 4728P (4747); EXIT=1 — failed SET DIFF vs the `31ad828d` debt set = EMPTY** (the exact 9 debt files / 19 debt tests; p6t1 flake 0 occurrences; #47 adds NO failing tests — 4747 = 4719 base + 13 this branch's new + 3 C6–C8 + 12 #47's new — arithmetic closes) | `merged-full-1.log` |
+| `pnpm exec eslint .` | **142 (117E/25W), EXIT=1** — plain AND file-aware fp diffs vs the committed baseline = **exactly ONE deletion, zero additions/shifts**: `governance-reset-tombstone.test.ts 248:10 @typescript-eslint/no-unused-vars ('instanceSlotId' defined but never used)` — the PRE-EXISTING baseline debt #47 dropped when it deleted the dead test helper (documented in #47's own commit `ae51385b` + their log entry — a #47-introduced baseline change, NOT this branch's regression; recorded here per protocol as part of the new unreviewed changes) | `merged-lint-1.log` + `merged-fp-{plain,fileaware}.txt` |
+| `pnpm run typecheck` (repo root, legible full log — per-package lines + final status, command line first, true exit last) | **EXIT=0** | `merged-typecheck-1.log` |
+| `pnpm run check:artifacts` (legible full 1372-file verification output, command line first, true exit last) | **OK: 1372 files, EXIT=0** (also the `build:composition` step during the regeneration) | `merged-check-artifacts-1.log` |
+
 ## Full-suite gate (valid environment)
 
 Environment validity: the test-use checkout `tests/deepseek-harness-test-use` was verified valid before the baseline — pristine @ `46a7f68b0922371ce7144b668b90e377d8e799f4` (0.1.7-rc.1), `node_modules` present, `packages/boot/app-boot/lib/index.js` built. (The earlier `baseline-full.log` run — kept in evidence — was taken BEFORE this environment was valid and is NOT the cited baseline; its two extra failed files, `plugin-dsh-compat` + `a2c7-subtree-matcher`, were environmental — missing test-use build.)
