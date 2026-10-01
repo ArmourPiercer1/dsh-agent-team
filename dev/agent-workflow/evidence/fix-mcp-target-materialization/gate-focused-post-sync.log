@@ -1,0 +1,77 @@
+== FOCUSED (the finding-F matrix: 21 rows) @ post-sync merged head 2b0aef87 ==
+HEAD: 2b0aef879b93a2d851e29886f6b2d74148ebd784
+date: 2026-10-01T10:37:17Z
+git status --porcelain:
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/.base-fails.txt
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/.cand-final-fails.txt
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-a2c7-env-recovery-post-sync.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-a2c7-isolated-post-sync-pre-repair.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-build-post-sync.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-collection-isolated-reruns-master-baseline.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-collection-isolated-reruns-post-sync.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-focused-post-sync.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-fullsuite-master-baseline-26c48c87-setup-fail-1.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-fullsuite-master-baseline-26c48c87.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-fullsuite-post-sync-final.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-lint-post-sync.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-p4t6-post-sync.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-typecheck-post-sync.log
+(clean tree = the merge commit; untracked = this batch's evidence logs as they land)
+$ cd packages/runtime && npx vitest run test/mcp-target-materialization.test.ts test/mcp-target-materialization-unit.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/runtime
+
+ ✓ test/mcp-target-materialization-unit.test.ts (5 tests) 4ms
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ test/mcp-target-materialization.test.ts (16 tests) 5ms
+
+ Test Files  2 passed (2)
+      Tests  21 passed (21)
+   Start at  10:37:17
+   Duration  2.08s (transform 1.38s, setup 0ms, import 2.71s, tests 9ms, environment 0ms)
+
+FOCUSED_EXIT=0

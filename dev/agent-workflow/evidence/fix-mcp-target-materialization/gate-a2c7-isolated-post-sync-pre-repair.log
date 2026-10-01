@@ -1,0 +1,167 @@
+== a2c7 isolated re-run (post-sync merged head; PRE-repair diagnostic run) ==
+HEAD: 2b0aef879b93a2d851e29886f6b2d74148ebd784
+date: 2026-10-01T10:26:24Z
+git status --porcelain:
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-a2c7-isolated-post-sync-pre-repair.log
+(clean tree — the merge commit)
+$ cd packages/runtime && npx vitest run test/a2c7-subtree-matcher.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/runtime
+
+ ❯ test/a2c7-subtree-matcher.test.ts (31 tests | 9 failed) 9ms
+     ✓ R1 — the Blueprint schema REJECTS `{ kind: subtree }` pre-fix (the grammar gap) 1ms
+     × R2 — the prefix trap: the labeled startsWith fixture WRONGLY matches, the REAL contains() rejects (demonstration on both trees) 1ms
+     ✓ read + subtree is accepted in ask and deny lanes (and all five file-class tools in allow) 0ms
+     ✓ bash/pwsh + subtree is schema-REJECTED in EVERY lane (the A2C-1 shell contract is not regressed) 0ms
+     ✓ the A2C-1 shell rejections are BYTE-IDENTICAL (exact in any lane; any in the allow lane) 1ms
+     ✓ the exact path constraints ride on subtree: trim-normalized, empty/blank/control-char/too-long/extra-field all reject 0ms
+     ✓ a truly-unknown kind (glob) still rejects; exact and any are unchanged (any stays closed) 0ms
+     ✓ containsOperation=true matches; false never matches; rootKey is NEVER consulted 0ms
+     ✓ the tool must match; file-class operations only; deny > ask > allow with RULE provenance 0ms
+     ✓ exact and any are unchanged at A3 0ms
+     ✓ the root itself matches (directory root and file root) 0ms
+     ✓ a child and a deep descendant match (the subtree the exact lane could not express) 0ms
+     ✓ a sibling is a NON-MATCH (the default outcome, zero interference) 0ms
+     ✓ the exact lane is unchanged; a different-tool rule is NEVER canonicalized (H4: rules that cannot match are never resolved) 0ms
+     ✓ any is unchanged: file-class any allow (static allow + external recheck + next) and shell-class any deny 0ms
+     ✓ deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows 0ms
+     ✓ deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next) 0ms
+     ✓ deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped) 0ms
+     ✓ deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract) 0ms
+     ✓ allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny) 0ms
+     ✓ ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default 0ms
+     ✓ allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted) 0ms
+     ✓ the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside 0ms
+     × the real backend section ran (the prebuilt pinned lib is present on this host) 2ms
+     × G5 the prefix trap: the deny rule rooted at `src` does NOT deny the sibling-prefix `src2/f.txt` (the default does); a true child IS denied by the rule 0ms
+     × G6 relative/absolute aliases: one canonical identity — cross-spelling containment holds both ways 0ms
+     × G7 `..` traversal: the traversal spelling canonicalizes to the SAME identity — containment holds 0ms
+     × G8 casing semantics BY BACKEND: this (case-sensitive) backend treats the case variant as a DIFFERENT identity → non-match (the module never case-folds; the Windows delta is recorded) 0ms
+     × G9 symlink alias identity: the rule `./alias` matches the TARGET's own paths (and the alias spelling) 0ms
+     × G10 junction retarget — the H4 fresh-decision proof: one install, the authority FOLLOWS the new target on the next decision (no install-time freeze) 0ms
+     × G1 (real) the root itself matches on the real backend (contains(self) = true) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 RED probes (fail on the base tree; the file LOADS on the base tree) > R2 — the prefix trap: the labeled startsWith fixture WRONGLY matches, the REAL contains() rejects (demonstration on both trees)
+TypeError: Cannot read properties of undefined (reading 'startsWithAuthorityTrap')
+ ❯ test/a2c7-subtree-matcher.test.ts:1433:17
+    1431|       realContainsRejectsTrap: boolean
+    1432|     }
+    1433|     expect(trap.startsWithAuthorityTrap).toBe(true)
+       |                 ^
+    1434|     expect(trap.realContainsRejectsTrap).toBe(false)
+    1435|     // The root and operation keys really differ only by the sibling p…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > the real backend section ran (the prebuilt pinned lib is present on this host)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a2c7-subtree-matcher.test.ts:1704:28
+    1702| describe('A2C-7 G5-G10 — the REAL pinned backend (the authority is the…
+    1703|   it('the real backend section ran (the prebuilt pinned lib is present…
+    1704|     expect(REAL.available).toBe(true)
+       |                            ^
+    1705|   })
+    1706|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G5 the prefix trap: the deny rule rooted at `src` does NOT deny the sibling-prefix `src2/f.txt` (the default does); a true child IS denied by the rule
+TypeError: Cannot read properties of undefined (reading 'g5TrapDefault')
+ ❯ test/a2c7-subtree-matcher.test.ts:1708:30
+    1706|
+    1707|   it('G5 the prefix trap: the deny rule rooted at `src` does NOT deny …
+    1708|     const trap = FLOWS2(REAL).g5TrapDefault
+       |                              ^
+    1709|     expect(trap.decisionKind).toBe('deny')
+    1710|     expect(hasFrag(trap.decisionReason, 'the template\'s default (deny…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G6 relative/absolute aliases: one canonical identity — cross-spelling containment holds both ways
+TypeError: Cannot read properties of undefined (reading 'g6RelRuleAbsOp')
+ ❯ test/a2c7-subtree-matcher.test.ts:1721:14
+    1719|   it('G6 relative/absolute aliases: one canonical identity — cross-spe…
+    1720|     const f = FLOWS2(REAL)
+    1721|     expect(f.g6RelRuleAbsOp.decisionKind).toBe('allow')
+       |              ^
+    1722|     expect((f.g6RelRuleAbsOp.request) === undefined).toBe(true)
+    1723|     expect(f.g6AbsRuleRelOp.decisionKind).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G7 `..` traversal: the traversal spelling canonicalizes to the SAME identity — containment holds
+TypeError: Cannot read properties of undefined (reading 'sameIdentity')
+ ❯ test/a2c7-subtree-matcher.test.ts:1729:14
+    1727|   it('G7 `..` traversal: the traversal spelling canonicalizes to the S…
+    1728|     const c = REAL.cases?.traversal as { directKey: string; traversalK…
+    1729|     expect(c.sameIdentity).toBe(true)
+       |              ^
+    1730|     expect(c.containsDirect).toBe(true)
+    1731|     expect(FLOWS2(REAL).g7Traversal.decisionKind).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G8 casing semantics BY BACKEND: this (case-sensitive) backend treats the case variant as a DIFFERENT identity → non-match (the module never case-folds; the Windows delta is recorded)
+TypeError: Cannot read properties of undefined (reading 'caseSensitiveBackend')
+ ❯ test/a2c7-subtree-matcher.test.ts:1737:14
+    1735|   it('G8 casing semantics BY BACKEND: this (case-sensitive) backend tr…
+    1736|     const c = REAL.cases?.casing as { baseKey: string; variantKey: str…
+    1737|     expect(c.caseSensitiveBackend).toBe(true)
+       |              ^
+    1738|     expect(c.containsVariant).toBe(false)
+    1739|     expect(FLOWS2(REAL).g8CaseVariantNoMatch.decisionKind).toBe('deny')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G9 symlink alias identity: the rule `./alias` matches the TARGET's own paths (and the alias spelling)
+TypeError: Cannot read properties of undefined (reading 'sameIdentity')
+ ❯ test/a2c7-subtree-matcher.test.ts:1746:14
+    1744|   it('G9 symlink alias identity: the rule `./alias` matches the TARGET…
+    1745|     const c = REAL.cases?.aliasIdentity as { aliasKey: string; dirAKey…
+    1746|     expect(c.sameIdentity).toBe(true)
+       |              ^
+    1747|     const f = FLOWS2(REAL)
+    1748|     expect(f.g9ViaTargetPath.decisionKind).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G10 junction retarget — the H4 fresh-decision proof: one install, the authority FOLLOWS the new target on the next decision (no install-time freeze)
+TypeError: Cannot read properties of undefined (reading 'g10T0TargetMatches')
+ ❯ test/a2c7-subtree-matcher.test.ts:1756:14
+    1754|   it('G10 junction retarget — the H4 fresh-decision proof: one install…
+    1755|     const f = FLOWS2(REAL)
+    1756|     expect(f.g10T0TargetMatches.decisionKind).toBe('allow')
+       |              ^
+    1757|     const oldTarget = f.g10T1OldTargetNoMatch
+    1758|     expect(oldTarget.decisionKind).toBe('deny')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G1 (real) the root itself matches on the real backend (contains(self) = true)
+TypeError: Cannot read properties of undefined (reading 'containsSelf')
+ ❯ test/a2c7-subtree-matcher.test.ts:1767:14
+    1765|   it('G1 (real) the root itself matches on the real backend (contains(…
+    1766|     const c = REAL.cases?.rootItself as { containsSelf: boolean }
+    1767|     expect(c.containsSelf).toBe(true)
+       |              ^
+    1768|     expect(FLOWS2(REAL).g1RealRootItself.decisionKind).toBe('allow')
+    1769|     expect((FLOWS2(REAL).g1RealRootItself.request) === undefined).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 22 passed (31)
+   Start at  10:26:25
+   Duration  7.57s (transform 588ms, setup 0ms, import 7.45s, tests 9ms, environment 0ms)
+
+A2C7_EXIT=1

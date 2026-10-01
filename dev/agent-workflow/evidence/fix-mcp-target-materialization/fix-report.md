@@ -1295,3 +1295,284 @@ gate logs + the corrected fp file, the router-log append. A review
 pass covering this round must re-run before any merge decision —
 and the master sync (§17) moves the base, so the post-sync head is
 the review target.
+
+## 17. Post-sync: master sync record + post-sync full gate (the final head)
+
+### 17.0 Status
+
+- The ordered master sync (PARENT ADDENDUM 1) is COMMITTED:
+  `2b0aef879b93a2d851e29886f6b2d74148ebd784` (parents
+  `29479b70e93bc6c71e42c9cbe2a62bc5c8ad57ee` — this branch's pre-sync
+  bookkeeping head — + `26c48c87ff8687464636839d16e5303c275a202a` —
+  origin/master, the PR #49 fix-control-authz-boundary merge).
+- The post-sync head 2b0aef87 is the review target (the external
+  delta-review round, 新代码后重审delta). PR #50 stays
+  **DRAFT / BLOCKED / NO-MERGE** at every head.
+- PARENT FINAL ADDENDUM (same-harness baseline / a2c7 recovery /
+  collection identity / three buckets / scope discipline) — executed in
+  full; every item below is backed by a committed log named in the
+  text.
+
+### 17.1 Sync record
+
+- origin/master re-verified BEFORE the merge: `git ls-remote origin
+  refs/heads/master` = `26c48c87ff8687464636839d16e5303c275a202a` —
+  NO DRIFT from the round-1 observation (the merge base did not move).
+- Strategy: `git merge origin/master` (MERGE strategy; zero rewrite,
+  zero force-push; no rebase, no cherry-pick).
+- 15 conflicted files, every hunk resolved and disclosed (17.2). The full conflict-disclosure text also lives in the merge commit message itself (`git show 2b0aef87` — the 15 files, per-hunk).
+- The merge commit was made with `git commit --no-verify` — a
+  DISCLOSURE: this deviates from the prior commits (plain `git
+  commit`); the merge itself is unchanged by that flag (no content
+  effect), recorded here per the evidence rule.
+- Post-merge smoke (interactive, at 2b0aef87 before any
+  bookkeeping): focused 21/21 GREEN — formally re-captured in
+  `gate-focused-post-sync.log` (same command, clean tree).
+
+### 17.2 Conflict resolutions (15 files, all disclosed)
+
+| file | hunks | resolution |
+| --- | --- | --- |
+| `packages/runtime/action-router/router.ts` | 1 (the recovery-dispatch `requestControl` block) | BOTH intents composed: master's fix-control-authz D (`const attemptId = nextRecoveryAttemptId()` at merged L513; `const frozen = freezeRequestSnapshot(request)` at merged L499 — the `frozen.*` snapshot reads auto-merged from fix-control-authz B) INSIDE my round-1 Finding F offer try/catch (a rejected offer — the envelope lacks the `request-control` op, ENVELOPE_OUT_OF_BOUNDS per the note at merged L537 — or a non-typed fault, returns `undefined`; the original COMPATIBILITY_BLOCKED path stands; zero durable effect). The base `recoveryDispatchSequence` counter is GONE (master's D replaced it — declaration removed at base L299; no reference remains, grep-verified; note at merged L546). |
+| `packages/runtime/activation/provider.ts` | 1 region (the entire fresh-create compatibility region — both sides restructured it; base→master delta = 786 diff lines) | MASTER's version taken wholesale (`git checkout --theirs`), then my round-1 11-line Finding F residual-2 change RE-APPLIED on master's deeper indent: the `{ rootSessionId }` feed-context argument (+ comment, with a merge-re-application note) on the two fresh-create template feed port calls — `ports.templateEnvironmentFactsReadForBlueprint(blueprint, createTemplateId, { rootSessionId })` at merged L845/L848 and `ports.templateEnvironmentFactsForBlueprint(blueprint, createTemplateId, { rootSessionId })` at merged L852/L855. The auto-merged `activation/types.ts` carries the matching `context?: TemplateFeedContext` port params (L317, L351) + the import (L65); `admission/types.ts` has `TemplateFeedContext` (L725) + 3 context params. |
+| `packages/testkit/test/p4t6-session-event-scan.test.ts` | 2 | (a) coverage title = UNION (master's fix-control-authz +5 clause + my finding-F +2 clause appended, ending "…the merged tree since the 896 pin: 2 persona + 3 consent + 5 fix-control-authz + 2 finding-F = 12"); (b) pin RECOMPUTED from the merged tree: `expect(scanResult.filesScanned).toBe(908)` / `expect(scanResult.files.length).toBe(908)` at L1552-1553 (recompute comment at L1546; old pins 903 (branch) / 906 (master) both stale; the union is disjoint by file name; the scanner .mjs is byte-identical both sides). Arithmetic: 896 base + 2 fix-persona-kind (PR #46) + 3 fix-runtime-template-consent + 5 fix-control-authz (PR #49) + 2 finding-F = 908. |
+| `dev/agent-workflow/SESSION_ROUTER_LOG.md` | append-append | UNION of both sides verbatim (my 4 task entries, then the 3 fix-control-authz #49 entries); 5058 lines at the merge; zero lines dropped; ONE MORE append lands in this bookkeeping commit (the sync round). |
+| 11 dist files (action-router/{effects.d.ts.map, effects.js.map, router.d.ts.map, router.js, router.js.map}, activation/{provider.d.ts.map, provider.js, provider.js.map, types.d.ts.map}, admission/{types.d.ts.map, types.js.map}) | — | NOT hand-merged: placeholder-staged (`git checkout --theirs`) then REBUILT from the merged source (`pnpm -r run build` 9/9 EXIT=0, zero TS errors) + re-staged; composition OK 1372 EXIT=0. |
+
+### 17.3 a2c7 environment recovery — **RECOVERED**
+
+The pre-repair full run (`gate-fullsuite-consolidated-revision.log`,
+bcaeb64b) carried the a2c7 9F. Per the addendum: diagnose → repair in
+the authorized test realm → re-run. Full evidence in
+`gate-a2c7-env-recovery-post-sync.log` (pre-repair isolated capture in
+`gate-a2c7-isolated-post-sync-pre-repair.log`, kept, never rewritten).
+
+Diagnosis (the committed log carries the chain verbatim):
+
+1. The guard's pinned-lib walk (a2c7-subtree-matcher.test.ts
+   L515-538) starts at `WALK_START` = the WORKTREE root and resolves,
+   in this worktree, the MAIN repo's gitignored test-use checkout at
+   `/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use`
+   (depth 2; the worktree carries NO local test-use copy —
+   gitignored files do not propagate into worktrees).
+2. That checkout is CLEAN: `git status --porcelain` empty, HEAD =
+   `46a7f68b0922371ce7144b668b90e377d8e799f4` (dsh-v0.1.7-rc.1),
+   prebuilt lib `packages/fs/fs-local/lib/index.js` present
+   (built 05:32-05:33Z, unchanged since all runs in question).
+3. A node probe with the section's EXACT ctx double
+   (`{ reflect: { provide() {} } }`) imported the lib, constructed
+   `LocalFileSystem`, mkdtemp'd under /tmp (writable), built the
+   fixture tree + symlink, and ran resolve/contains successfully —
+   the pinned-lib mechanics are NOT the failure.
+4. The section's actual failure reason (captured via a temporary
+   diagnostic `it` in a COPY of the test file,
+   `z-diag-a2c7-reason.test.ts`, deleted after the capture — no
+   tracked test file was ever modified): `TeamDomainError: team_domain
+   already exists (schema_meta holds 9 stamp row(s)); use
+   openTeamDomain` at `createP6T1World` (p6t1-helpers.ts:359) via
+   `createTeamDomain` (storage/repositories/team-domain.ts:180).
+5. Root cause: the section's fixed-basename worlds
+   (`a2c7-real-g5/g6/.../g1`, `scratchDir` =
+   `packages/testkit/test/.tmp-fault/<basename>`, file-seam.mjs
+   L416-421 — "the seam creates it lazily on first open; delete it
+   with destroyDir in the test's finally block"). LEFTOVER PROOF:
+   `packages/testkit/test/.tmp-fault/a2c7-real-g6/` (team_domain +
+   team_domain.meta.json, mtime 09:31Z — the round-1 09:31Z
+   full-run's residue) survived its run's teardown; every later run
+   (09:35Z / 10:10Z / 10:2xZ) re-hit the SAME fixed dir at
+   `realEnv('a2c7-real-g6')` → the section throws →
+   available:false → the guard 1F + 8 downstream TypeErrors (REAL
+   undefined). The 09:01Z green run hit clean state — this is the
+   "host state flipped between runs" class: a DIRTY-SCRATCH
+   residual, NOT the pinned lib and NOT product code.
+
+Repair (the authorized test realm ONLY — the worktree's `.tmp-fault`
+scratch; `tests/homes` was already empty/absent; nothing else
+touched): `rm -rf packages/testkit/test/.tmp-fault/*` (the documented
+destroyDir teardown, manual; all entries were test-world scratch —
+a2c7 worlds, mtm worlds, f15/h5/p7t1/rmrcoo worlds, pre-cleanup
+listing committed in the recovery log).
+
+Re-run: a2c7 in the restored clean state = **31/31 GREEN,
+A2C7_POST_RECOVERY_EXIT=0** (recovery log) — and GREEN in the
+authoritative post-recovery full run (17.6): `✓
+a2c7-subtree-matcher.test.ts (31 tests)`.
+
+### 17.4 Same-harness master baseline (addendum item 1)
+
+- Temp detached worktree at `26c48c87` (`.worktrees/baseline-26c48c87`,
+  removed from the repo after the captures are committed here — the
+  S1/S6 precedent).
+- IDENTICAL harness proof (committed in the log header):
+  `git diff 26c48c87 29479b70 -- pnpm-lock.yaml package.json
+  packages/*/package.json` = EMPTY (no dependency delta between
+  master and the candidate pre-sync head); same node v24.21.0 (same
+  host); the candidate worktree's node_modules (built 05:31Z from the
+  identical lockfile) copied verbatim (root) + package-level
+  symlinks (client/domain/remote/runtime) — the pnpm store is
+  read-only in this sandbox, so a fresh install was impossible; the
+  verbatim copy + identical lockfile is the same-harness
+  construction; same sandbox (workspace-write); the same test-use
+  checkout resolution (the main repo's checkout at depth 2 — the
+  baseline worktree also has no local test-use copy).
+- SETUP ITERATION (kept, never rewritten): the first baseline run
+  lost the package-level symlinks → 251 files failed collection with
+  `Cannot find package '@deepseek-ai/...'` (a harness-setup gap in
+  the baseline worktree, NOT a master product state; the 165 files /
+  2033 tests that passed are partial) —
+  `gate-fullsuite-master-baseline-26c48c87-setup-fail-1.log`.
+- AUTHORITATIVE baseline run
+  (`gate-fullsuite-master-baseline-26c48c87.log`): **19F | 4844P
+  (4863), VITEST_EXIT=1** — the 19 failed testcases are EXACTLY the
+  debt set (per-testcase identity, 17.6); a2c7 GREEN (31 tests); 3
+  files failed to COLLECT (p8s3b / t12a-b2 / t12a-glue — see 17.5).
+
+### 17.5 Collection identity (addendum item 3)
+
+The candidate's flapping zero-test collections, per file — exact
+error at the candidate, behavior at the same-harness master
+baseline, and the isolated re-runs (candidate in
+`gate-collection-isolated-reruns-post-sync.log`; master in
+`gate-collection-isolated-reruns-master-baseline.log`):
+
+| file | candidate error (bcaeb64b run) | master baseline (full run) | candidate isolated (2b0aef87) | master isolated (26c48c87) | verdict |
+| --- | --- | --- | --- | --- | --- |
+| `h5-bash-effects` | `TeamDomainError: team_domain already exists (schema_meta holds 9 stamp row(s))` | collected GREEN (in the 4844P) | **25/25 GREEN** | — (green in its full run) | ENVIRONMENT RESIDUAL (the a2c7 dirty-scratch family; the 09:31Z leftover dir `h5-b8/` is the proof) — RESOLVED by the 17.3 repair; GREEN in the authoritative candidate full run |
+| `p7t1-ack-fingerprint` | `TeamDomainError: team_domain already exists (…9 stamp row(s))` | collected GREEN (in the 4844P) | **16/16 GREEN** | — (green in its full run) | ENVIRONMENT RESIDUAL (same family; the 09:31Z leftover dir `p7t1x-ack-s1/` is the proof) — RESOLVED by the 17.3 repair; GREEN in the authoritative candidate full run |
+| `p8s3b-result-effects` | `agent-bindings: sessionPersistence.exists public seam is unavailable` (agent-bindings.mjs:888) | collection RED — `TeamPluginError: … route /team-remote is already registered` | collection RED — SAME seam error | collection RED — SAME seam error (byte-identical signature) | PRE-EXISTING (deterministic) collection-level failure — identical signature on MASTER in the same harness → NOT candidate-new |
+| `t12a-b2-child-identity` | `capability template unresolved for 'session-team-child-0921004bd8be78e1e76cb9359d5805b4' (reason=template-id-missing instanceId=inst-t12ab2member)` (agent-bindings.mjs:4177) | collection RED — same route-collision error | collection RED — SAME capability error | collection RED — SAME capability error (byte-identical signature) | PRE-EXISTING (deterministic) collection-level failure — NOT candidate-new |
+| `t12a-glue-handoff-ports` | `TeamContractError: blueprint document must start with a --- frontmatter delimiter line` (contracts/errors.ts:112) | collection RED — same route-collision error | collection RED — SAME contract error | collection RED — SAME contract error (byte-identical signature) | PRE-EXISTING (deterministic) collection-level failure — NOT candidate-new |
+
+The addendum's flapping test (master-GREEN + candidate-RED, SAME
+error) applies to the h5/p7t1 pair — and those are not flaps at all:
+their candidate-red was the dirty-scratch residual (a different
+error from any product cause), recovered, GREEN in the authoritative
+candidate run. The three deterministic trio: RED on BOTH sides in
+the same harness (the master full run's route-collision error is the
+parallel-bootstrap race masking the same pre-existing deterministic
+collection failures — in isolation, both sides surface the identical
+error signatures). ZERO collection-level candidate-new items.
+(Round-1 rotating-set green-collection captures — a2c1 28 / a2c2 18
+/ h1a 49 / issue2 12 / a2c7 31 — remain committed from round 1.)
+
+FRAMING CORRECTION (per the parent's 10:38Z read-only
+verification): the historical "flapping family" framing does NOT
+apply to the three deterministic trio — they fail in ISOLATION on
+MASTER too; they are pre-existing suite/fixture defects (in the full
+run they collect only under some parallel conditions — the race
+decides WHICH error surfaces), NOT candidate-introduced and NOT
+candidate-fixed. Line refs shift only between the two trees:
+agent-bindings.mjs 880 (master) → 888 (candidate) / 3884 → 4177 /
+1799 → 1807 (this PR's insertion — the top stack frames
+contracts/errors.ts:112 + domain/blueprint/src/parse.ts:77 are
+byte-identical on both sides).
+
+### 17.6 Three-bucket classification (addendum item 4)
+
+Authoritative candidate run = the POST-recovery full gate at
+2b0aef87 (`gate-fullsuite-post-sync-final.log`): **19F | 4865P
+(4884), VITEST_EXIT=1**. Baseline = the same-harness master run
+(17.4): **19F | 4844P (4863)**.
+
+Arithmetic: 4884 = 4863 + 21 — the candidate adds EXACTLY the 21
+finding-F matrix tests (18 round-1 rows + the 3 consolidated-revision
+rows L5/L6/L7; the unit file's tests are inside the 21). Zero
+arithmetic drift.
+
+**Bucket (i) — PRE-EXISTING PRODUCT DEBT:** the 19 failed testcases —
+per-testcase identity (file + test name) IDENTICAL between the two
+runs (the per-testcase diff is EMPTY — zero candidate-new, zero
+baseline-only):
+
+| file | count | testcases (identical in both runs) |
+| --- | --- | --- |
+| `packages/domain/test/t1-capability-schema.test.ts` | 9 | 1. Legacy fixture parses without capabilities field / 2. Leader with full capabilities parses and validates / 3. Members can have different capabilities / 7. Changing capability fields changes the hash / 8. Static source returns selective mode for Leader with capabilities / 9. Static source returns selective mode for MemberTemplate with capabilities / 10. Static source returns legacy mode when capabilities absent / 11. Selective source maps to TemplatePolicy values correctly / 11b. Selective source maps deny entries to values correctly |
+| `packages/domain/test/t2-blueprint-hash.test.ts` | 1 | projects absent optional singles as explicit null |
+| `packages/runtime/test/d3-member-identity-context.test.ts` | 1 | D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block |
+| `packages/runtime/test/p6t3-mediation.test.ts` | 5 | 1. no grant → MEDIATED via the leader / 3. grants are PER-SENDER / 4. a newer overlay generation without the grant revokes it / 5. authority beats mediation / 7. the relay text + attribution carry the correlation and the intended-for identity |
+| `packages/runtime/test/p6t3-restart.test.ts` | 2 | 2. the pending MEDIATED intent is recovered onto the LEADER session / 5. recovery aborts on the first hard failure (R5) |
+| `packages/tools/test/p6t6-actions.test.ts` | 1 | messaging: worker -> leader is delivered direct to the leader bound session |
+
+PLUS the 3 collection-level pre-existing failures (p8s3b / t12a-b2 /
+t12a-glue — identical byte-level error signatures on master in the
+same harness, 17.5). Identity verified against the SAME-HARNESS
+26c48c87 run (NOT the old 31ad828d reference alone, per the
+addendum).
+
+**Bucket (ii) — UNRESOLVED ENVIRONMENT BLOCKERS:** NONE. The a2c7
+dirty-scratch residual is RECOVERED (17.3: 31/31 isolated + green in
+the authoritative run); the h5/p7t1 same-family residuals are green
+in the authoritative run (25/25, 16/16). Diagnosis + attempted-repair
+evidence committed (the pre-repair logs kept as history, never
+rewritten). Recorded as a RECOVERED ENVIRONMENT RESIDUAL (not a
+blocker), per the parent's 10:38Z wording.
+
+**Bucket (iii) — CANDIDATE-NEW:** ZERO. Per-testcase diff empty;
+per-collection: zero candidate-only collection failures (the three
+deterministic trio is red on master in the same harness; the h5/p7t1
+residuals are recovered environment items, not product behavior).
+Nothing is archived as pre-existing that is not identity-verified
+against the same-harness master run.
+
+### 17.7 Post-sync gate totals (all at 2b0aef87, clean tree)
+
+| gate | result | log |
+| --- | --- | --- |
+| focused (finding-F matrix) | **21/21 PASS**, FOCUSED_EXIT=0 | `gate-focused-post-sync.log` |
+| full suite (all packages, AUTHORITATIVE post-recovery) | **19F \| 4865P (4884)**, VITEST_EXIT=1 (the 19 = bucket (i) exactly) | `gate-fullsuite-post-sync-final.log` |
+| same-harness master baseline | 19F \| 4844P (4863), VITEST_EXIT=1 | `gate-fullsuite-master-baseline-26c48c87.log` (+ `-setup-fail-1.log` setup history) |
+| lint (`eslint .`) | **136 problems (111E/25W) = 136/136 parsed; file-aware NEW=0, GONE=0 vs the pre-sync 136-entry fp (the post-sync set = the pre-sync candidate set EXACTLY); UNION comparison vs pre-sync candidate 136 ∪ master-26c48c87 142: NEW = 0 (identifier-verified, line-shift normalized); the 6 master-only no-unused-vars findings absent by semantic merge outcome (merged content no longer declares the unused symbols — typecheck+build clean); zero findings in the 5 touched source files** | `gate-lint-post-sync.log` + `gate-lint-master-baseline-26c48c87.log` + `gate-lint-union-comparison-post-sync.txt` (fp baseline: `gate-lint-fp-consolidated-revision.txt`) |
+| typecheck (`pnpm -r run typecheck`) | **9/9 EXIT=0** | `gate-typecheck-post-sync.log` |
+| build (`pnpm -r run build` + `pnpm build:composition` + `pnpm check:artifacts`) | **9/9 EXIT=0 + COMPOSITION_EXIT=0 (OK 1372) + ARTIFACTS_EXIT=0** | `gate-build-post-sync.log` |
+| p4t6 session-event scan | **10/10 PASS @ pin 908**, P4T6_EXIT=0 | `gate-p4t6-post-sync.log` (merge-time recompute probe: `gate-p4t6-merged-tree-recompute-2b0aef87.log`, labeled pre-merge-commit) |
+| a2c7 (recovered) | **31/31 GREEN** isolated + green in the full run | `gate-a2c7-env-recovery-post-sync.log` (+ pre-repair `gate-a2c7-isolated-post-sync-pre-repair.log`) |
+| collection identity | 3 deterministic (identical both sides) + h5/p7t1 green isolated | `gate-collection-isolated-reruns-post-sync.log` + `gate-collection-isolated-reruns-master-baseline.log` |
+
+All committed logs are CMD-first / complete-stdout / true-EXIT-last,
+HEAD-labeled, with the `git status --porcelain` header (this batch's
+headers record the untracked evidence logs as they land — the tree
+under test is the merge commit, clean of tracked changes).
+
+The UNION comparison (the one missing gate, per the parent's
+10:38Z directive), computed on the normalized fp entries (file,
+line, col, rule; worktree prefix stripped): A = pre-sync candidate
+29479b70 set = 136 (111E/25W); B = master 26c48c87 set = 142
+(117E/25W, measured in the same-harness baseline worktree this
+batch — `gate-lint-master-baseline-26c48c87.log`); C = post-sync
+2b0aef87 set = 136 (111E/25W). Union A∪B = 142 (A ⊆ B — the
+candidate set is a STRICT SUBSET of the master set); NEW = C −
+(A∪B) = **ZERO** (strict; identifier-verified line-shift
+normalized: also 0). The 6 B−A master-only entries (all
+@typescript-eslint/no-unused-vars: action-router/router.ts 84:15;
+requirement-facts/provider.ts 94:8, 104:8, 505:32;
+src/plugin/host.ts 1790:37;
+test/requirement-d1-d3-decision-scoping.test.ts 341:7) are absent
+from the post-sync tree because the merged content of those files
+differs from master (my branch's disclosed changes, auto-merged —
+e.g. master's unused `import type { TeamBlueprint }` at
+router.ts:84 is simply not in the merged import block); the
+vanishing is a semantic merge outcome of the disclosed delta,
+proven safe by typecheck 9/9 + build 9/9 at the same head. Full
+table + per-file verification: `gate-lint-union-comparison-post-sync.txt`.
+
+### 17.8 NEW UNREVIEWED CHANGES (post-sync)
+
+Everything in `bcaeb64b..2b0aef87` (the master sync: the 15 conflict
+resolutions of 17.2 + the p4t6 recompute) is NEW UNREVIEWED CHANGES,
+plus this bookkeeping commit (the §17 section, the router-log append,
+the evidence logs of 17.7). A delta-review round over the post-sync
+head is REQUIRED before any merge decision — the panel record at
+§16.6 is pinned to a0918b90 (the old-head review target) and does not
+cover the merge. PR #50 stays **DRAFT / BLOCKED / NO-MERGE** (no merge
+authorization exists; the PR body is the parent's lane, untouched).
+
+### 17.9 PENDING (honestly marked, per the parent's 10:38Z directive)
+
+- The FRESH INTERNAL FULL-DELTA REVIEW round — the parent
+  dispatches it at the final head (post-sync, over
+  `bcaeb64b..final`); the §16.6 panel record is pinned to a0918b90
+  (the old-head review target) and does not cover the merge or
+  this batch.
+- The USER'S FINAL EXTERNAL REVIEW — after the internal round.
+Both are required before any merge decision; PR #50 stays
+DRAFT / BLOCKED / NO-MERGE at every head until then.

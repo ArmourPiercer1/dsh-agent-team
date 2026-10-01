@@ -1,0 +1,118 @@
+== COLLECTION IDENTITY — isolated re-runs of the 3 deterministically-failing collections @ MASTER 26c48c87 (same harness) ==
+HEAD: 26c48c87ff8687464636839d16e5303c275a202a
+date: 2026-10-01T10:36:37Z
+git status --porcelain:
+?? gate-collection-isolated-reruns-master-baseline.log
+?? gate-fullsuite-master-baseline-26c48c87.log
+?? packages/client/node_modules
+?? packages/domain/node_modules
+?? packages/remote/node_modules
+?? packages/runtime/node_modules
+(clean detached master worktree; untracked = this log + node_modules install)
+Method: one file per vitest invocation; if any file fails on MASTER in isolation with the SAME
+error as the candidate, the collection failure is pre-existing (not candidate-new); if any
+file collects GREEN on master in isolation, it is a candidate-new regression (STOP + report)
+
+$ cd packages/runtime && npx vitest run test/p8s3b-result-effects.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/baseline-26c48c87/packages/runtime
+
+ ❯ test/p8s3b-result-effects.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/p8s3b-result-effects.test.ts [ test/p8s3b-result-effects.test.ts ]
+Error: agent-bindings: sessionPersistence.exists public seam is unavailable
+ ❯ durableSessionExists src/plugin/live/agent-bindings.mjs:880:13
+    878|   async function durableSessionExists(sessionId) {
+    879|     if (typeof sessionPersistence?.exists !== 'function') {
+    880|       throw new Error(
+       |             ^
+    881|         'agent-bindings: sessionPersistence.exists public seam is unav…
+    882|       )
+ ❯ Object.createRootAgent src/plugin/live/agent-bindings.mjs:3532:15
+ ❯ test/p8s3b-result-effects.test.ts:604:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  10:36:38
+   Duration  1.15s (transform 744ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+EXIT_p8s3b-result-effects=1
+
+$ cd packages/runtime && npx vitest run test/t12a-b2-child-identity.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/baseline-26c48c87/packages/runtime
+
+ ❯ test/t12a-b2-child-identity.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/t12a-b2-child-identity.test.ts [ test/t12a-b2-child-identity.test.ts ]
+Error: agent-bindings: capability template unresolved for 'session-team-child-0921004bd8be78e1e76cb9359d5805b4' (reason=template-id-missing instanceId=inst-t12ab2member) (code: capability-template-unresolved)
+ ❯ capabilityTemplateUnresolved src/plugin/live/agent-bindings.mjs:3884:19
+    3882|     if (details.instanceId !== undefined) parts.push(`instanceId=${det…
+    3883|     if (details.templateId !== undefined) parts.push(`templateId=${det…
+    3884|     const error = new Error(`agent-bindings: capability template unres…
+       |                   ^
+    3885|     error.code = 'capability-template-unresolved'
+    3886|     error.reason = reason
+ ❯ locateTemplate src/plugin/live/agent-bindings.mjs:1881:13
+ ❯ resolveConsumptionViews src/plugin/live/agent-bindings.mjs:1202:27
+ ❯ src/plugin/live/agent-bindings.mjs:1984:76
+ ❯ src/plugin/live/agent-bindings.mjs:990:20
+ ❯ makeHandle test/t12a-live-bridge.mjs:870:60
+ ❯ Object.resume test/t12a-live-bridge.mjs:930:28
+ ❯ src/plugin/live/agent-bindings.mjs:1032:14
+ ❯ src/plugin/live/agent-bindings.mjs:1017:20
+ ❯ src/plugin/live/agent-bindings.mjs:806:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  10:36:39
+   Duration  1.11s (transform 694ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+EXIT_t12a-b2-child-identity=1
+
+$ cd packages/runtime && npx vitest run test/t12a-glue-handoff-ports.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/baseline-26c48c87/packages/runtime
+
+ ❯ test/t12a-glue-handoff-ports.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/t12a-glue-handoff-ports.test.ts [ test/t12a-glue-handoff-ports.test.ts ]
+TeamContractError: blueprint document must start with a --- frontmatter delimiter line
+ ❯ teamContractError ../contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ splitFrontmatter ../domain/blueprint/src/parse.ts:77:11
+ ❯ parseBlueprint ../domain/blueprint/src/validate.ts:1292:15
+ ❯ test/t12a-live-bridge.mjs:1446:18
+ ❯ getBoundBlueprint src/plugin/live/agent-bindings.mjs:1799:19
+ ❯ locateTemplate src/plugin/live/agent-bindings.mjs:1839:23
+ ❯ resolveConsumptionViews src/plugin/live/agent-bindings.mjs:1202:27
+ ❯ src/plugin/live/agent-bindings.mjs:1984:76
+ ❯ src/plugin/live/agent-bindings.mjs:990:20
+ ❯ makeHandle test/t12a-live-bridge.mjs:870:60
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  10:36:41
+   Duration  1.10s (transform 690ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+EXIT_t12a-glue-handoff-ports=1

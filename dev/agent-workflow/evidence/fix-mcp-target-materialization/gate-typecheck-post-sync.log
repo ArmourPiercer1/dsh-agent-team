@@ -1,0 +1,28 @@
+== TYPECHECK (9 packages) @ post-sync merged head 2b0aef87 ==
+HEAD: 2b0aef879b93a2d851e29886f6b2d74148ebd784
+date: 2026-10-01T10:31:14Z
+git status --porcelain:
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-a2c7-env-recovery-post-sync.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-a2c7-isolated-post-sync-pre-repair.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-typecheck-post-sync.log
+(clean tree = the merge commit; untracked = this batch's evidence logs as they land)
+$ pnpm typecheck
+$ pnpm -r run typecheck
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+TYPECHECK_EXIT=0

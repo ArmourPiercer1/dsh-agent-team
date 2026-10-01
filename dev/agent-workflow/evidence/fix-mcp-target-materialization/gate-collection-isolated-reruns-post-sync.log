@@ -1,0 +1,149 @@
+== COLLECTION IDENTITY — isolated re-runs of the flapping zero-test collections @ post-sync merged head ==
+HEAD: 2b0aef879b93a2d851e29886f6b2d74148ebd784
+date: 2026-10-01T10:36:06Z
+git status --porcelain:
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/.base-fails.txt
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/.cand-final-fails.txt
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-a2c7-env-recovery-post-sync.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-a2c7-isolated-post-sync-pre-repair.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-build-post-sync.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-collection-isolated-reruns-post-sync.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-fullsuite-master-baseline-26c48c87-setup-fail-1.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-fullsuite-master-baseline-26c48c87.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-fullsuite-post-sync-final.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-lint-post-sync.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-typecheck-post-sync.log
+(clean tree = the merge commit; untracked = this batch's evidence logs as they land)
+Method: ONE file per vitest invocation (zero concurrency — the flapping class is a
+parallel-bootstrap race; the committed round-1 captures already proved green collection for
+the round-1 rotating set: a2c1 28 / a2c2 18 / h1a 49 / issue2 12 / a2c7 31)
+
+$ cd packages/runtime && npx vitest run test/p8s3b-result-effects.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/runtime
+
+ ❯ test/p8s3b-result-effects.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/p8s3b-result-effects.test.ts [ test/p8s3b-result-effects.test.ts ]
+Error: agent-bindings: sessionPersistence.exists public seam is unavailable
+ ❯ durableSessionExists src/plugin/live/agent-bindings.mjs:888:13
+    886|   async function durableSessionExists(sessionId) {
+    887|     if (typeof sessionPersistence?.exists !== 'function') {
+    888|       throw new Error(
+       |             ^
+    889|         'agent-bindings: sessionPersistence.exists public seam is unav…
+    890|       )
+ ❯ Object.createRootAgent src/plugin/live/agent-bindings.mjs:3775:15
+ ❯ test/p8s3b-result-effects.test.ts:604:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  10:36:06
+   Duration  1.13s (transform 733ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+EXIT_p8s3b-result-effects=1
+
+$ cd packages/runtime && npx vitest run test/t12a-b2-child-identity.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/runtime
+
+ ❯ test/t12a-b2-child-identity.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/t12a-b2-child-identity.test.ts [ test/t12a-b2-child-identity.test.ts ]
+Error: agent-bindings: capability template unresolved for 'session-team-child-0921004bd8be78e1e76cb9359d5805b4' (reason=template-id-missing instanceId=inst-t12ab2member) (code: capability-template-unresolved)
+ ❯ capabilityTemplateUnresolved src/plugin/live/agent-bindings.mjs:4177:19
+    4175|     if (details.instanceId !== undefined) parts.push(`instanceId=${det…
+    4176|     if (details.templateId !== undefined) parts.push(`templateId=${det…
+    4177|     const error = new Error(`agent-bindings: capability template unres…
+       |                   ^
+    4178|     error.code = 'capability-template-unresolved'
+    4179|     error.reason = reason
+ ❯ locateTemplate src/plugin/live/agent-bindings.mjs:1889:13
+ ❯ resolveConsumptionViews src/plugin/live/agent-bindings.mjs:1210:27
+ ❯ src/plugin/live/agent-bindings.mjs:1992:76
+ ❯ src/plugin/live/agent-bindings.mjs:998:20
+ ❯ makeHandle test/t12a-live-bridge.mjs:870:60
+ ❯ Object.resume test/t12a-live-bridge.mjs:930:28
+ ❯ src/plugin/live/agent-bindings.mjs:1040:14
+ ❯ src/plugin/live/agent-bindings.mjs:1025:20
+ ❯ src/plugin/live/agent-bindings.mjs:814:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  10:36:08
+   Duration  1.06s (transform 659ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+EXIT_t12a-b2-child-identity=1
+
+$ cd packages/runtime && npx vitest run test/t12a-glue-handoff-ports.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/runtime
+
+ ❯ test/t12a-glue-handoff-ports.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/t12a-glue-handoff-ports.test.ts [ test/t12a-glue-handoff-ports.test.ts ]
+TeamContractError: blueprint document must start with a --- frontmatter delimiter line
+ ❯ teamContractError ../contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ splitFrontmatter ../domain/blueprint/src/parse.ts:77:11
+ ❯ parseBlueprint ../domain/blueprint/src/validate.ts:1292:15
+ ❯ test/t12a-live-bridge.mjs:1446:18
+ ❯ getBoundBlueprint src/plugin/live/agent-bindings.mjs:1807:19
+ ❯ locateTemplate src/plugin/live/agent-bindings.mjs:1847:23
+ ❯ resolveConsumptionViews src/plugin/live/agent-bindings.mjs:1210:27
+ ❯ src/plugin/live/agent-bindings.mjs:1992:76
+ ❯ src/plugin/live/agent-bindings.mjs:998:20
+ ❯ makeHandle test/t12a-live-bridge.mjs:870:60
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  10:36:09
+   Duration  1.05s (transform 653ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+EXIT_t12a-glue-handoff-ports=1
+
+$ cd packages/runtime && npx vitest run test/h5-bash-effects.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/runtime
+
+ ✓ test/h5-bash-effects.test.ts (25 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+   Start at  10:36:11
+   Duration  2.85s (transform 586ms, setup 0ms, import 2.75s, tests 4ms, environment 0ms)
+
+EXIT_h5-bash-effects=0
+
+$ cd packages/runtime && npx vitest run test/p7t1-ack-fingerprint.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-mcp-materialization/packages/runtime
+
+ ✓ test/p7t1-ack-fingerprint.test.ts (16 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  10:36:14
+   Duration  655ms (transform 400ms, setup 0ms, import 558ms, tests 5ms, environment 0ms)
+
+EXIT_p7t1-ack-fingerprint=0
