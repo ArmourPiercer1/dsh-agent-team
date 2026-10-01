@@ -1,0 +1,41 @@
+{
+  "runStamp": "tvs-smoke-2026-10-01T14-10-28",
+  "origin": "http://127.0.0.1:3181",
+  "tokenUrl": "http://127.0.0.1:3181/?token=SCRUBBED",
+  "hostPort": 3181,
+  "mockPort": 3496,
+  "world": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-10-01T14-10-28",
+  "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/browser-carrier-48602057b",
+  "worktreeHead": "48602057fcb1b78a47bd4471bf518e3b0c08a744",
+  "worktreePorcelain": "",
+  "clientBundle": {
+    "path": "packages/client/composition-shim/client-bundle.js",
+    "sizeBytes": 1147053,
+    "sha256": "d3868d3c74613d62519494f2ba3e4499e7bf0d8bec723b851dc0aadfcb763d08"
+  },
+  "t1": "session-mpr-t1-mpr-2026-10-01T13-21-34",
+  "t1MemberSession": "session-team-child-52860b5a204e428e1cb00690a10eb02f",
+  "t1MemberInstance": "inst-0iin89s0dvix",
+  "memberIdentity": {
+    "derivedFrom": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-10-01T13-21-34/storages/team_domain.json",
+    "templateId": "worker",
+    "label": "w-deleg",
+    "lifecycle": "SETTLED",
+    "owningRootSessionId": "session-mpr-t1-mpr-2026-10-01T13-21-34",
+    "bindingKind": "team-member",
+    "corroboratedMembers": 4,
+    "seedAndCopyAgree": true
+  },
+  "readyReadState": {
+    "relation": "team-member",
+    "teamSessionId": "session-mpr-t1-mpr-2026-10-01T13-21-34",
+    "memberInstanceId": "inst-0iin89s0dvix",
+    "disposed": false,
+    "durableGeneration": 32,
+    "liveToken": "lt-v1-REDACTED"
+  },
+  "stablePre": {
+    "http://127.0.0.1:3080/": 401,
+    "http://127.0.0.1:3180/": null
+  }
+}

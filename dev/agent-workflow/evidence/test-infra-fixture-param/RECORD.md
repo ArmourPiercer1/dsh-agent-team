@@ -745,3 +745,80 @@ console `run-carrier-boot-2026-10-01T14-04-27.log`, 20 lines):
   and the carrier's own post-gate evidence dir `wp9b-browser-smoke-tvs-smoke-2026-10-01T14-04-27`
   (untracked, inside the carrier; its `instance.log` holds the raw boot banner — the pre-existing kit
   behavior, kept as-run and never committed).
+
+### 15.3 Carrier runs, and the positive readiness + structural legs executed
+
+Three carriers exist now, which needs a word: the coordinator authorized one. `browser-carrier-cc5a011e`
+was created as specified and used for the install verification; the fix then moved the head, so
+`browser-carrier-48602057` was created fresh (never reused, never cleaned) to run the fixed code; and the
+**carrier turns out to be single-use by design** — after a run, the kit's own evidence dir
+(`dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-<stamp>/`) is untracked content
+in that worktree, and the next run's `porcelain=''` gate correctly refuses: carrier 2's second attempt died
+with `FATAL worktree porcelain not empty (the smoke must run on a clean commit): ?? …wp9b-browser-smoke-tvs-smoke-2026-10-01T14-09-38/`,
+which is the gate doing its job, not a defect. Rather than delete that directory (no deletions this
+envelope), a third fresh carrier `browser-carrier-48602057b` was created for the teardown leg. All three sit
+under `.worktrees/` (gitignored), each at a named commit, each left in place.
+
+Environment fact that shaped the runs: **every bash tool call runs in its own PID namespace**
+(`bwrap --unshare-pid … --die-with-parent`), so a kit started in one call cannot be seen or signalled from
+the next, and it dies with the call that spawned it. That is why the carrier-2 run produced no
+`teardown.json`: the process was killed when its spawning call returned, not by a signal the handler
+understands. The teardown leg therefore had to be executed inside a single call — start, await readiness,
+verify, `kill -TERM $pid`, read the result.
+
+The executed leg on `browser-carrier-48602057b` @ `48602057fcb1…` (fresh install, porcelain 0, 697
+packages linked, test runtime pristine 0; pre-run cleanup-block verification re-read on that copy: `rmSync`
+at kit lines 463 and 473 only, both scoped to `WORLD = tests/homes/tvs-smoke-<this run's ISO stamp>`; fresh
+port check 3181/3496/3497 free, `:3080` probed read-only at 401 and never bound):
+
+```
+14:10:28.238Z  member identity derived from the world: session=session-team-child-52860b5a204e428e1cb00690a10eb02f
+               instance=inst-0iin89s0dvix template=worker label=w-deleg lifecycle=SETTLED
+               owner=session-mpr-t1-mpr-2026-10-01T13-21-34 binding=team-member (4 corroborated member(s))
+14:10:29.758Z  route ready (12ms after boot marker; readState={"relation":"team-member",
+               "teamSessionId":"session-mpr-t1-mpr-2026-10-01T13-21-34","memberInstanceId":"inst-0iin89s0dvix",
+               "disposed":false,"durableGeneration":32,"liveToken":"lt-v1-REDACTED"})
+14:10:29.758Z  READY access-record=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/
+               tvs-smoke-2026-10-01T14-10-28/browser-access.json origin=http://127.0.0.1:3181 tokenUrl=…SCRUBBED
+14:10:31.104Z  stop (SIGTERM): tearing down          ← signal sent by me to my own known pid
+14:10:31.644Z  teardown done                          exit code 0
+```
+
+`teardown.json`: `stableUnchanged: true` (`:3080` 401 pre and post, `:3180` unreachable pre and post),
+`porcelainPost: ""`, `headPost: 46a7f68b0922371ce7144b668b90e377d8e799f4`, `portFreeHost: true`,
+`portFreeMock: true`. `smoke-host.json`: gate `porcelain ''`, head `48602057fcb1…`, `readyReadState` with
+the criteria fields intact and `liveToken: "lt-v1-REDACTED"`, `tokenUrl: …?token=SCRUBBED`,
+`memberIdentity{templateId: worker, owningRootSessionId: session-mpr-t1…, corroboratedMembers: 4,
+seedAndCopyAgree: true}`. The private access record exists at mode `0600` inside the testhome and is the
+only place the raw launch URL lives.
+
+Scan of the copied evidence: patterns `lt-v1-[0-9a-f]{8,}` and `?token=[A-Za-z0-9_-]{8,}` → the first pass
+reported 2 hits, and both were **the mask strings themselves** (`?token=REDACTED`, `?token=SCRUBBED`:
+8 characters, so they satisfy `{8,}`). Excluding the masks: zero raw values. Kept as reported, not
+silently restated as a clean 0.
+
+**Known raw-credential location, unchanged and disclosed:** the kit still writes its host's boot banner to
+`instance.log` inside the run dir, which contains `?token=<real launch token>` (pre-existing behavior, and
+the kit also writes an `instance.log.scrubbed` sibling at teardown). That run dir is untracked kit output
+and never enters the branch, so nothing raw is committed; making the raw capture itself field-scrubbed is a
+separate decision for the coordinator, not part of this block, and the browser lane no longer needs the
+console URL anyway (it reads the access record).
+
+#### Run-root ledger for round 3
+
+| exact root | created (birth) | outcome |
+| --- | --- | --- |
+| `tests/homes/tvs-smoke-2026-10-01T14-04-27` | 14:04:27.591 | carrier-1 leg: readiness FATAL (unwrap defect) — retained |
+| `tests/homes/tvs-smoke-2026-10-01T14-09-38` | 14:09:38.626 | carrier-2 leg: **positive readiness OK**, killed by namespace teardown → no teardown.json; retained |
+| `tests/homes/tvs-smoke-2026-10-01T14-10-28` | 14:10:28.235 | carrier-3 leg: **positive readiness + structural teardown, exit 0**; retained |
+
+**No root was removed in this round.** The browser kit deletes nothing on teardown (its only `rmSync` on a
+world is a pre-copy guard against a same-stamp path, which by construction does not exist). Note for
+reading the filesystem as proof: `mtime(tests/homes)` = 14:10:28.2355 here is the *creation* of the last
+world — a parent mtime updates on create as well as remove, so it proves a deletion only when it postdates
+the last known create, unlike the round-2 case where nothing created the entry afterwards.
+
+Carriers left in place: `browser-carrier-cc5a011e` (HEAD `cc5a011e`, porcelain 1 = its own run dir),
+`browser-carrier-48602057` (porcelain 1), `browser-carrier-48602057b` (porcelain 1). Each carries
+`node_modules` as real directories from the frozen lockfile, and `pnpm-workspace.yaml` restored to the
+committed content after each install attempt.
