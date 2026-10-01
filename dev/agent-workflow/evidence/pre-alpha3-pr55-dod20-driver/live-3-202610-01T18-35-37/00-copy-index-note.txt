@@ -1,0 +1,57 @@
+LIVE-3 DIAGNOSTIC IMPORT — PR55 (evidence-only; code frozen at 960d2e14)
+
+TESTED HEAD (actual) = b52151ab3ff72a1ffd1a8144e8d06cb40fa1a53e  carrier tree = 8f7e21151c53d9ae47f3439acd44e7b2097c966e
+driver file sha256 = 114fb013622cf293ef337016dce461b4a68a220ee04a3852f9299fffcc9b0c07 (manifest-recorded)
+RESULT: driver exit 0 | E1 PASS (readStates=4 preClick=0 projections=1 ledger=1 firstIsMember=true memberFaceSeen=true activation armedMs 87 + postReload armedMs 301, observationWindow.wallMs=10595) | E2 PASS | E3 PASS (wallMs 28912, deltas 8/9 in band, interval 3000) | E5 PASS | E4 NOT_RUN (frozen, non-browser layer).
+
+ATTRIBUTION — HARD RULE: the live browser-leg PASSes belong to b52151ab ONLY.
+This PR's SOURCE PASS + offline suites (126/126 = 77 pure + 49 orchestration)
++ all three internal reviews were executed at 960d2e14; 960d2e14 was NEVER
+executed live and this import does not claim otherwise. The b52151ab ->
+960d2e14 delta touches only the activation routine (shared exported function +
+absolute-budget tightening); E1/E2/E3/E5 oracles, thresholds and leg flow are
+byte-identical — oracle/scenario continuity between the tested b52151ab and
+the source-frozen 960d2e14 was explicitly accepted by the parent.
+
+FILES IMPORTED (12 whitelist copies, hashes = manifest rows, verified 12/12
+independently at copy time): dod20-driver-out.json, 14-driver-exit.txt (=0),
+12-driver-argv-actual.txt, 20-verdict-note.txt, 17-teardown-post-raw.txt,
+18-final-process-accounting.txt, 21-runtime-restored-raw.txt, shot-E1-member-
+pure.png, shot-E2-ordinary.png, shot-E3-root-team.png, shot-E5-refresh.png,
+22-review-package-manifest.txt (self-SHA 9321c953a0d9c05f991c7ac4b331ec8eaed1
+82ac044ce7c7e7d6a42783cb5b9d, single revision hashed once after completion).
+EXCLUDED (by manifest design, not back-filled): carrier instance.log carrying
+the real launch-URL token, tests/homes/.../browser-access.json (0600, never
+read), run.env/00/02/06/11/13/19 (redundant here), 01-ports (superseded).
+raw bytes in the env run-dir are untouched; no prior-attempt file re-imported.
+
+SECURITY/RESTORE (raw in 21-runtime-restored-raw.txt + 17/18): NNP=1,
+CapBnd=0, bwrap enforce held; owned processes 0, test ports (3181-3186/
+3491-3500) 0 listeners after teardown; stable :3080 = HTTP 401 throughout and
+untouched; pristine test-use checkout clean at 46a7f68b09. Package-wide real
+credentials: token=0 liveToken=0 auth/cookie=0 api-key=0. Synthetic fixture
+fields (192 requestToken occurrences in out.json, prompts, displayNames) are
+NON-SECRETS per contracts/params.ts:241-249 and the live-1 ERRATUM policy;
+they are disclosed here rather than masked, masking at source would be a
+redactOut change (not made).
+
+PRIOR-RUN DISCLOSURES (no separate audit commit; originals untouched):
+- live-1 (2026-10-01T17-43-09, head 1a04d7ca, exit 1): fully tracked at
+  ../live-1-202610-01T17-43-09/ (13 files, manifest 71b05791...). Verbatim.
+- live-2 (2026-10-01T18-18-11, head 2922918d, exit 2: E2/E3/E5 PASS, E1
+  NOT_RUN that motivated b52151ab): env-held, NOT imported — per parent
+  ruling only the key items are referenced here. Location:
+  dev/agent-workflow/evidence/dod20-browser-20261001/2026-10-01T18-18-11/.
+  Pins: manifest CURRENT sha256 = 3463110aea21f1a6b182d95c3e052ac83821555cdf
+  dd40448e7dd8b4668ddf8a (mtime 18:27:59Z, 5207 bytes, rev2); dod20-driver-
+  out.json ab3eb1df08e920ec93642291f4fee4c988cff2a706757c94d8693f8353bc03bb;
+  14-driver-exit.txt 53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b0106
+  55bfdd3c3 (=2). SOURCE-DIFF NOTE (as instructed, disclosed only): an earlier
+  relay quoted manifest sha e9a05f0b2d1cec1a... — env later confirmed the
+  value was computed at 18:26:49 (before an end-of-file addendum appended at
+  18:27:59) and never refreshed; no pre-append backup exists, so the verbatim
+  diff is not provable. The 8 raw files originally recommended MATCH the
+  current rev2 manifest rows 8/8; the old manifest was NOT rewritten to fit.
+- shot-E2 in live-1 and live-2 was byte-identical (same seeded zero-state);
+  live-3's E2 shot differs (de08ec92...). live-3 shot-E3/E5 differ from
+  earlier rounds, consistent with a truly active Team view.

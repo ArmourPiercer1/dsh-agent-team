@@ -1,0 +1,52 @@
+captured_utc=2026-10-01T18:39:09Z
+owned this attempt: kit bash wrapper 461089 / kit node 461090 (SIGTERM); host child + in-process mock kit-owned; chrome tree 461458 461460 461462 461468 461469 461471 461492 461494 461509 (driver-reported alive=false)
+--- kit console tail ---
+[smoke-host 2026-10-01T18:36:15.445Z] READY access-record=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-10-01T18-36-13/browser-access.json origin=http://127.0.0.1:3181 tokenUrl=http://127.0.0.1:3181/?token=SCRUBBED
+[smoke-host 2026-10-01T18:39:08.499Z] stop (SIGTERM): tearing down
+[smoke-host 2026-10-01T18:39:09.037Z] teardown done
+--- teardown.json ---
+{
+  "stablePost": {
+    "http://127.0.0.1:3080/": 401,
+    "http://127.0.0.1:3180/": null
+  },
+  "stableUnchanged": true,
+  "porcelainPost": "",
+  "headPost": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "portFreeHost": true,
+  "portFreeMock": true
+}
+--- ports post (3181..3186 / 3491..3497) ---
+listeners=0
+--- 3080 post (pre=401) ---
+3080 GET=401
+--- residual (self-match-safe) ---
+kit=2 host=0 chrome=0 driver=0
+--- carrier identity/status post-run ---
+b52151ab3ff72a1ffd1a8144e8d06cb40fa1a53e
+8f7e21151c53d9ae47f3439acd44e7b2097c966e
+  ?? dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T18-36-13/instance.log
+  ?? dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T18-36-13/instance.log.scrubbed
+  ?? dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T18-36-13/mock.log
+  ?? dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T18-36-13/mock.log.scrubbed
+  ?? dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T18-36-13/smoke-host.json
+  ?? dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T18-36-13/teardown.json
+--- TestUse + hashes ---
+TestUse HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4 porcelain=0
+f9f2e2e0c0659ba25e6e9b55eef1615857231465cc58b9422d47c29e154c0e88  /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/browser-carrier-b52151ab-dod20/pnpm-lock.yaml
+7454b10c7f5162daf6fd59fd6de16e5cde6bcc501b30b3fef38485dae9ff3939  /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/browser-carrier-b52151ab-dod20/pnpm-workspace.yaml
+c393073192f7a8a0d0d93ff5d2f43e2623c1009d8827ebbae516633913f7a733  /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/browser-carrier-b52151ab-dod20/package.json
+5f947ee7a93b78e2d3131807d3f9b355b5bb237b9a88b6909113f4a3fb6de740  /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/browser-carrier-b52151ab-dod20/.npmrc
+--- prior scenes untouched ---
+  browser-carrier-1a04d7ca-dod20 present
+  browser-carrier-2922918d-dod20 present
+  tvs-smoke-2026-10-01T17-32-57 present
+  tvs-smoke-2026-10-01T17-43-13 present
+  tvs-smoke-2026-10-01T18-18-15 present
+  tvs-smoke-2026-10-01T18-36-13 present
+  fixture/evidence 2026-10-01T17-32-33 present
+  fixture/evidence 2026-10-01T17-43-09 present
+  fixture/evidence 2026-10-01T18-18-11 present
+  fixture/evidence 2026-10-01T18-35-37 present
+--- staged/commits ---
+staged=0 commits=0 push=none

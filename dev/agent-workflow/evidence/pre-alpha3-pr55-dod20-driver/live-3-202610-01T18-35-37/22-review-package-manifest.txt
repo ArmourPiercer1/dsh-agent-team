@@ -1,0 +1,31 @@
+PR55 DIAGNOSTIC live, TESTED b52151ab — MINIMAL SAFE IMPORT MANIFEST (single revision, hashed once after completion)
+generated_utc=2026-10-01T18:43:53Z   files=17   dir=/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/dod20-browser-20261001/2026-10-01T18-35-37/
+TESTED HEAD=b52151ab3ff72a1ffd1a8144e8d06cb40fa1a53e  tree=8f7e21151c53d9ae47f3439acd44e7b2097c966e  driver blob=d4639fd03379c64c320b9db3ec1d50d0dfb23eab  driver file sha256=114fb013622cf293ef337016dce461b4a68a220ee04a3852f9299fffcc9b0c07
+STATUS: root-approved DIAGNOSTIC live, NOT SOURCE PASS, NOT merge permission. Result applies to tested b52151ab ONLY; root's later final source (960) was NOT executed here, and the un-run E4 NOT_RUN record is preserved.
+VERDICTS: driver process exit 0 | E1 PASS  readStates=4 preClick=0 projections=1 ledger=1 firstIsMember=true memberFaceSeen=true  activation{hits:1,armedMs:87}+postReload{hits:1,armedMs:301} observationWindow.wallMs=10595 | E2 PASS readStates=4 listRoots=4 projectionsWholeLeg=0 noneClosedSixFields=true | E3 PASS readStates=10 deltasInBand=8/9 intervalMs=3000 rootIdentityOk=true projections=1 ledger=1 E3WindowWall.wallMs=28912 | E5 PASS ledger=1 onRoot reprobes=3 listRoots=1 projectionsAfter=0 | E4 NOT_RUN (frozen)
+EXCLUDED BY DESIGN (not back-filled): the host instance log carrying the real launch-URL token (stays inside the carrier run dir: .worktrees/browser-carrier-b52151ab-dod20/dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T18-36-13/instance.log) and tests/homes/tvs-smoke-2026-10-01T18-36-13/browser-access.json (0600, content never read). Also excluded as redundant: 01-ports-ss-pre-raw.txt (superseded by the port records inside 00/17/18).
+SECRET AUDIT SCOPE: real credentials only — launch-URL token= (value length>=8), liveToken, authorization:/cookie:, API keys. Synthetic fixture fields (requestToken / prompt / displayName) are NOT secrets; 192 requestToken occurrences in dod20-driver-out.json are listed for transparency only.
+PACKAGE-WIDE REAL-CREDENTIAL TOTALS: token=0 | liveToken=0 | auth/cookie=0 | api-key=0 (values were scrubbed at capture time: token=SCRUBBED, lt-v1-REDACTED).
+COUNTING NOTE: a naive 'token=[A-Za-z0-9_-]+' scan reports hits only in 18-final-process-accounting.txt and 19-credential-audit.txt, where the matches are those files' own label text (e.g. 'raw-token=0', 'chrome=0'); the credential-strength pattern returns 0 everywhere.
+
+FILE                                SHA256                                                            bytes
+run.env                             69039461ca77e77198814c9145b24e278a81a8158b1dbff236ae6d31f6e1a05a  721
+00-runtime-and-gate-raw.txt         4707f9252d01e911b7824f017068c46a1da9b3fce0fd6587fee1f03715c0ba12  13362
+02-stable-3080-http-pre.txt         a1e478075ddf6c9a583e28da09e63a8456cf867072841617a7fa8e3f8a27a716  41
+06-fixture-create-raw.txt           8c2ef08b874e5198b7d6b7b3a6b26e894659e04c315adacfd812298d339fba43  395
+11-param-gates.txt                  eb09178a44b281b7aa0ed7068409473aab26378e010070e576db72daf63e7a67  2665
+12-driver-argv-actual.txt           882c9b4d6c4de5998a32b2dbc03a61f5463e1d1fe2b1df570d06b30b1a9bb012  1275
+13-driver-console-raw.log           4ddd7bf91bbc8a9e4cff4584c5e8ab5b227cb5bfb6ecd54de2e7b16d45beb201  378
+14-driver-exit.txt                  9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  2
+17-teardown-post-raw.txt            148057af5738913878c55f1d6a619377c15472633c094d799872e36a3ab891b5  3182
+18-final-process-accounting.txt     20d5a47340d78eb870265ca7945968949d93a91488be860155b1bed0b00d986c  1782
+20-verdict-note.txt                 9aedb44933a78d1a0bcb7d64bc3e6568960a68cccc1552c2086ff7afdc30dfa6  2933
+21-runtime-restored-raw.txt         0dac2cfe4e34dc5ee499b61aba68f1e0688c03c439f2fc9087123a79ec5bb009  3988
+dod20-driver-out.json               9783e8f3ee34da5c322da08df4b028f252c1c810a6c9fc61a7e6047daad49f54  225327
+shot-E1-member-pure.png             c6b77ad9096572e49377a79788b8633b634287dfdc5581922685ab0318bc7c3d  87360
+shot-E2-ordinary.png                de08ec92775121f1355260a3b2959d8478d64c9e638984dcc299cc0f9adbddf9  145048
+shot-E3-root-team.png               431b3c9335ccd28d6638f41de81f491c4ee79139486400b94291d1b344883643  93104
+shot-E5-refresh.png                 5d70c4a46ad6598b48a60a5b7344564f9ea7d5c52bed357f52919deaf5cba9ae  93064
+
+NOT INCLUDED IN THIS PACKAGE BUT PRESENT AND UNCHANGED: 10-kit-console.log, 19-credential-audit.txt, 01-ports-ss-pre-raw.txt, and the earlier attempts' evidence dirs (2026-10-01T17-32-33, 2026-10-01T17-43-09, 2026-10-01T18-18-11) with their own manifests; carriers browser-carrier-1a04d7ca-dod20 and browser-carrier-2922918d-dod20; worlds tvs-smoke-2026-10-01T17-32-57 / 17-43-13 / 18-18-15 / 18-36-13; fixtures under /home/user/testhome-dod20-*; the relocated private run dir under tests/homes/.dod20-private-2026-10-01T17-32-33/.
+INTEGRITY: no original artefact in this dir was modified after capture; this manifest is the only new text file besides 21-runtime-restored-raw.txt, and it is hashed exactly once after completion.

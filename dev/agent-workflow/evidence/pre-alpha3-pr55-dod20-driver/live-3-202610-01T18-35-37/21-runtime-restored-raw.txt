@@ -1,0 +1,52 @@
+=== tested-b521 attempt: runtime-restored (new read-only commands; this text file is the only write) ===
+captured_utc=2026-10-01T18:43:26Z   harness snapshot at capture: file=workspace-write approval=ask (UI restore 18:42Z)
+--- PID1 ---
+bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /srv/workspace/dsh-plugins/dsh-agent-team /s
+{ echo "=== tested-b521 attempt: runtime-restored (new read-only commands; this text file is the only write) ==="
+  echo "captured_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)   harness snapshot at capture: file=workspace-write approval=ask (UI restore 18:42Z)"
+  echo "--- PID1 ---"; tr '\0' ' ' </proc/1/cmdline | cut -c1-140; echo
+  echo "--- /proc/self/status ---"; grep -E 'NoNewPrivs|CapBnd|CapEff|CapPrm|Seccomp' /proc/self/status
+  echo "--- AppArmor ---"; cat /proc/self/attr/current 2>/dev/null || echo none
+  echo "--- writable attributes read only (no write probes) ---"; for p in /srv/workspace/dsh-plugins/dsh-agent-team /home/user /tmp; do pri
+  echo "--- owned PIDs of the b521 attempt (authoritative /proc walk, pattern assembled to avoid self-match) ---"
+  PAT=$(printf '%s' 'node tests/kits/team-view-'; printf '%s' 'sync-complete-e2e/browser-s'; printf '%s' 'moke-host.mjs'); n=0; for d in /pr
+  m=0; CHR=$(printf '%s' '/opt/google/'; printf '%s' 'chrome/chrome'); for d in /proc/[0-9]*; do c=$(tr '\0' ' ' < "$d/cmdline" 2>/dev/null 
+  echo "  named PIDs 461089 461090 + chrome tree 461458 461460 461462 461468 461469 461471 461492 461494 461509: $(for p in 461089 461090 46
+  echo "--- test port families ---"; echo "  listeners 3181..3186 / 3491..3497 = $(ss -ltn|awk '/:(318[0-6]|349[0-9])([[:space:]]|$)/'|wc -l
+  echo "--- stable instance ---"; node -e 'fetch("http://127.0.0.1:3080/").then(r=>console.log("  3080 GET status="+r.status+"  (pre-attempt
+  echo "--- TestUse pin + status ---"; echo "  HEAD=$(git -C $REPO/tests/deepseek-harness-test-use rev-parse HEAD) porcelain=$(git -C $REPO/
+  echo "--- tested carrier (untouched by these commands) ---"; echo "  HEAD=$(git -C $WT rev-parse HEAD) tree=$(git -C $WT rev-parse 'HEAD^{
+  echo "--- nothing new started this turn: no host, no Chrome, no driver, no carrier, no rerun, no run-dir move ---"
+  echo "--- scope ---"; echo "  result of record = TESTED b52151ab (four legs PASS, E4 NOT_RUN not erased). root's later final source 960 wa
+} > "$EVID/21-runtime-restored-raw.txt" 2>&1
+cat "$EVID/21-runtime-restored-raw.txt" 
+
+--- /proc/self/status ---
+CapPrm:	0000000000000000
+CapEff:	0000000000000000
+CapBnd:	0000000000000000
+NoNewPrivs:	1
+Seccomp:	0
+Seccomp_filters:	0
+--- AppArmor ---
+bwrap//&unpriv_bwrap (enforce)
+--- writable attributes read only (no write probes) ---
+  /srv/workspace/dsh-plugins/dsh-agent-team      writable_attr=yes
+  /home/user                                     writable_attr=no
+  /tmp                                           writable_attr=yes
+--- owned PIDs of the b521 attempt (authoritative /proc walk, pattern assembled to avoid self-match) ---
+  real kit processes=0
+  real chrome processes=0
+  named PIDs 461089 461090 + chrome tree 461458 461460 461462 461468 461469 461471 461492 461494 461509: none-alive
+--- test port families ---
+  listeners 3181..3186 / 3491..3497 = 0   (3180 never bound by me; kit teardown stablePost 3180=null)
+--- stable instance ---
+  3080 GET status=401  (pre-attempt baseline 401; read-only at both ends)
+--- TestUse pin + status ---
+  HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4 porcelain=0
+--- tested carrier (untouched by these commands) ---
+  HEAD=b52151ab3ff72a1ffd1a8144e8d06cb40fa1a53e tree=8f7e21151c53d9ae47f3439acd44e7b2097c966e
+  run-dir untracked files = 6 (kept as produced; raw instance.log stays inside)
+--- nothing new started this turn: no host, no Chrome, no driver, no carrier, no rerun, no run-dir move ---
+--- scope ---
+  result of record = TESTED b52151ab (four legs PASS, E4 NOT_RUN not erased). root's later final source 960 was NOT executed here.
