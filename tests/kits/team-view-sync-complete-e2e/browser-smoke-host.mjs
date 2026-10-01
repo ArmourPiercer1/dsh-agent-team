@@ -38,6 +38,15 @@
  *   [--t1 <rootSessionId>]  the seed world's main team, matching
  *                           ^session-mpr-t1-[A-Za-z0-9T:-]+$
  *
+ * MEMBER IDENTITY is NOT a flag and not a literal: the (member session,
+ * member instance) pair this host addresses is DERIVED from the durable store
+ * of the selected world and corroborated by its own session_bindings row (the
+ * same authority team.getReadState resolves an affiliation from), then
+ * re-derived from the COPY that boots. Readiness is positive on that pair —
+ * authenticate with the launch token, then require team.getReadState to answer
+ * relation=team-member for THIS instance under THIS root; a bare non-405, a
+ * 404, or another member's state is NOT readiness.
+ *
  * writes smoke-host.json (origin / tokenUrl / world / facts — the
  * launch token is scrubbed BEFORE any retained copy) and prints
  *   READY <tokenUrl>
@@ -128,10 +137,82 @@ const WORLD = join(MAIN, 'tests', 'homes', RUN_STAMP)
 const EVIDENCE_DIR = join(WORKTREE, 'dev', 'agent-workflow', 'evidence', 'team-view-sync-complete', `wp9b-browser-smoke-${RUN_STAMP}`)
 const INSTANCE_LOG = join(EVIDENCE_DIR, 'instance.log')
 
-// The seeded world's fixed durable facts (same as the spill kit).
+// The seeded world's team root (CLI-overridable, validated by shape).
 const T1 = seedInput('--t1', 'session-mpr-t1-mpr-2026-09-27T08-35-52', (flag, raw) => matchingToken(flag, raw, /^session-mpr-t1-[A-Za-z0-9T:-]+$/))
-const T1_MEMBER_SESSION = 'session-team-child-796562d4284593654607730948ad2b04'
-const T1_MEMBER_INSTANCE = 'inst-17legoh0ti27'
+
+// The member identity this smoke addresses is DERIVED from the world that is
+// actually selected — it is not a literal. An earlier revision pinned
+// `session-team-child-…` / `inst-…` here; when the world became --seed-world
+// overridable those two literals stayed behind, so a run against a new seed
+// still probed (and reported) a member of the OLD world. That is an identity
+// coupling, not a parameterization (external review on PR #53 — fix B2). The
+// pair now comes from the durable store of the selected world, corroborated by
+// the SAME rows team.getReadState resolves an affiliation from:
+//   member_instances row -> rootSessionId === T1, a non-leader template, its own
+//                           childSessionId;
+//   session_bindings row -> kind 'team-member', sessionId === that child
+//                           session, and it names THAT instance under THAT root.
+// A member of another root, a leader row, or an uncorroborated session id is
+// not acceptable here; an unresolvable pair is fatal before anything boots.
+const DURABLE_STORE = join('storages', 'team_domain.json')
+
+function durableMemberFacts(storePath, where) {
+  if (!existsSync(storePath)) dieFatal(`${where}: durable store missing: ${storePath}`)
+  let store = null
+  try { store = JSON.parse(readFileSync(storePath, 'utf8')) } catch (e) {
+    dieFatal(`${where}: durable store unreadable (${storePath}): ${e.message}`)
+  }
+  const tables = store?.tables
+  if (tables === null || typeof tables !== 'object') dieFatal(`${where}: durable store has no tables object: ${storePath}`)
+  const rowOf = (v) => { try { return typeof v === 'string' ? JSON.parse(v) : v } catch { return null } }
+  const members = Object.values(tables.member_instances ?? {}).map(rowOf)
+    .filter((r) => r !== null && typeof r?.instanceId === 'string')
+  const bindings = new Map()
+  for (const b of Object.values(tables.session_bindings ?? {}).map(rowOf)) {
+    if (b !== null && typeof b?.sessionId === 'string') bindings.set(b.sessionId, b)
+  }
+  return { members, bindings }
+}
+
+/** The single (member session, member instance) pair this smoke addresses. */
+function deriveT1MemberPair(storePath, where) {
+  const { members, bindings } = durableMemberFacts(storePath, where)
+  const rooted = members.filter((r) => r.rootSessionId === T1)
+  if (rooted.length === 0) {
+    dieFatal(`${where}: the durable store carries no member_instances row rooted at ${T1} — the selected world does not contain the selected team`)
+  }
+  const explained = rooted.map((r) => `${r.instanceId}/${r.templateId}/${r.childSessionId ?? 'no-child-session'}`)
+  const candidates = rooted
+    .filter((r) => r.templateId !== 'leader' && typeof r.childSessionId === 'string' && r.childSessionId !== '')
+    .filter((r) => {
+      const b = bindings.get(r.childSessionId)
+      return b?.kind === 'team-member' && b.sessionId === r.childSessionId && b.instanceId === r.instanceId && b.rootSessionId === T1
+    })
+    // deterministic pick: a plain worker first (the member shape this smoke was
+    // proven against), then any corroborated member; instanceId breaks ties.
+    .sort((a, b) => (a.templateId === b.templateId ? 0 : a.templateId === 'worker' ? -1 : b.templateId === 'worker' ? 1 : 0)
+      || (a.instanceId === b.instanceId ? 0 : a.instanceId < b.instanceId ? -1 : 1))
+  if (candidates.length === 0) {
+    dieFatal(`${where}: no member of ${T1} has a child session corroborated by a team-member binding (rows: ${explained.join(', ')})`)
+  }
+  const row = candidates[0]
+  const binding = bindings.get(row.childSessionId)
+  return {
+    memberSession: row.childSessionId,
+    memberInstance: row.instanceId,
+    templateId: row.templateId,
+    label: row.label ?? null,
+    lifecycle: row.lifecycle ?? null,
+    owningRoot: row.rootSessionId,
+    bindingKind: binding.kind,
+    corroboratedMembers: candidates.length,
+    derivedFrom: storePath,
+  }
+}
+
+const MEMBER = deriveT1MemberPair(join(SRC_WORLD, DURABLE_STORE), 'seed world')
+// The affirmative read state observed at readiness (recorded into evidence).
+let READY_READ_STATE = null
 
 function log(msg) { process.stdout.write(`[smoke-host ${new Date().toISOString()}] ${msg}\n`) }
 function dieFatal(msg) { log(`FATAL ${msg}`); process.exit(1) }
@@ -156,6 +237,43 @@ async function probe(url, timeoutMs = 5_000) {
 }
 function scrub(text) {
   return String(text).replace(/token=[A-Za-z0-9_-]+/g, 'token=SCRUBBED')
+}
+
+/** The launch token -> the session cookie the browser would hold (303 +
+ *  set-cookie), same handshake the spill e2e driver uses. The readiness probe
+ *  needs it: an UNAUTHENTICATED POST to /team-remote answers something (a 4xx),
+ *  and "answered something" is exactly what the old readiness check mistook for
+ *  a ready route. */
+async function authenticate(origin, token) {
+  const res = await fetch(`${origin}/?token=${token}`, { redirect: 'manual', signal: AbortSignal.timeout(30_000) })
+  const setCookie = res.headers.get('set-cookie')
+  if (res.status !== 303 || setCookie === null) {
+    throw new Error(`dsh web authentication returned HTTP ${res.status} (expected 303 + set-cookie)`)
+  }
+  return setCookie.split(';', 1)[0]
+}
+
+/** One lightweight v6 team.getReadState probe. Returns the status, the parsed
+ *  body and the unwrapped result record (null when the host did not answer with
+ *  one — a 404 / an auth failure / a typed error all leave `data` null). */
+async function remoteReadState(origin, cookie, sessionId, tag) {
+  const res = await fetch(`${origin}/team-remote/team.getReadState`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', cookie },
+    body: JSON.stringify({
+      type: 'client-request',
+      rpcId: `smoke-${tag}-${Date.now()}`,
+      method: 'team.getReadState',
+      payload: { version: 6, params: { sessionId } },
+    }),
+    redirect: 'manual',
+    signal: AbortSignal.timeout(10_000),
+  }).catch(() => null)
+  const status = res === null ? -1 : res.status
+  let body = null
+  try { body = res === null ? null : await res.json() } catch { body = null }
+  const data = body?.value?.data ?? body?.value ?? null
+  return { status, body, data }
 }
 
 function waitForLogLine(logPath, predicate, timeoutMs, alive) {
@@ -325,6 +443,13 @@ async function main() {
     }
   }
   rewriteWorldProfile()
+  // Re-derive against the COPY that is about to boot: the pair this smoke
+  // addresses must be a fact of the booted world, not only of the seed.
+  const memberCopy = deriveT1MemberPair(join(WORLD, DURABLE_STORE), 'seeded copy')
+  if (memberCopy.memberSession !== MEMBER.memberSession || memberCopy.memberInstance !== MEMBER.memberInstance) {
+    dieFatal(`member identity drifted between seed and copy: seed=${MEMBER.memberSession}/${MEMBER.memberInstance} copy=${memberCopy.memberSession}/${memberCopy.memberInstance}`)
+  }
+  log(`member identity derived from the world: session=${MEMBER.memberSession} instance=${MEMBER.memberInstance} template=${MEMBER.templateId} label=${MEMBER.label} lifecycle=${MEMBER.lifecycle} owner=${MEMBER.owningRoot} binding=${MEMBER.bindingKind} (${MEMBER.corroboratedMembers} corroborated member(s) of ${T1})`)
   log('world seeded (row patch retargeted to this worktree; stale locks cleared)')
 
   // ── mock model (world fidelity: the boot side-calls need a model) ─────────
@@ -351,28 +476,35 @@ async function main() {
     const m = /^http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)$/.exec(line.replace(/.*dsh web:\s*/, ''))
     if (m === null || m[1] !== String(hostPort)) dieFatal(`boot marker port mismatch: ${scrub(line)}`)
     tokenUrl = `http://127.0.0.1:${hostPort}/?token=${m[2]}`
-    // Route-ready wait (the 405 window, same as the spill kit).
+    // Readiness = the /team-remote route is mounted AND the derived member's
+    // own read state answers positively. The old wait stopped at the first
+    // NON-405 status, which a 401/404/typed-error answer also satisfies — it
+    // proved nothing about the member the smoke is about to drive (external
+    // review on PR #53, fix B2). So: authenticate with the launch token, then
+    // poll until team.getReadState(derived member session) answers
+    // relation=team-member for THIS instance under THIS root and not disposed.
+    const cookie = await authenticate(origin, m[2])
     const tRoute = Date.now()
-    let routeStatus = 0
+    let lastStatus = 0
+    let lastBody = null
+    let readState = null
     while (Date.now() - tRoute < 60_000) {
-      const res = await fetch(`${origin}/team-remote/team.getReadState`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          type: 'client-request',
-          rpcId: `smoke-${Date.now()}`,
-          method: 'team.getReadState',
-          payload: { version: 6, params: { sessionId: T1_MEMBER_SESSION } },
-        }),
-        redirect: 'manual',
-        signal: AbortSignal.timeout(10_000),
-      }).catch(() => null)
-      routeStatus = res === null ? -1 : res.status
-      if (routeStatus !== 405) break
-      await new Promise((r) => setTimeout(r, 250))
+      const r = await remoteReadState(origin, cookie, MEMBER.memberSession, 'ready')
+      lastStatus = r.status
+      lastBody = r.body
+      const d = r.data
+      if (r.status === 200 && d?.relation === 'team-member' && d?.teamSessionId === T1
+        && d?.memberInstanceId === MEMBER.memberInstance && d?.disposed === false) {
+        readState = d
+        break
+      }
+      await new Promise((rr) => setTimeout(rr, 250))
     }
-    if (routeStatus === 405) dieFatal('the /team-remote route never became ready (405 for 60s)')
-    log(`route ready (${Date.now() - tRoute}ms after boot marker; status=${routeStatus})`)
+    if (readState === null) {
+      dieFatal(`the /team-remote route never became READY for member ${MEMBER.memberInstance} of ${T1} (never an affirmative team-member read state; last status=${lastStatus}, last answer=${scrub(JSON.stringify(lastBody ?? null)).slice(0, 300)})`)
+    }
+    log(`route ready (${Date.now() - tRoute}ms after boot marker; readState=${JSON.stringify(readState).slice(0, 220)})`)
+    READY_READ_STATE = readState
   } catch (e) {
     stopHost(h)
     try { await MOCK.close() } catch { /* ignore */ }
@@ -392,8 +524,21 @@ async function main() {
     worktreePorcelain: wtPorcelain.out,
     clientBundle: { path: 'packages/client/composition-shim/client-bundle.js', sizeBytes: bundleBytes.length, sha256: bundleHash },
     t1: T1,
-    t1MemberSession: T1_MEMBER_SESSION,
-    t1MemberInstance: T1_MEMBER_INSTANCE,
+    // The addressed member is DERIVED from the booted world's durable rows (see
+    // deriveT1MemberPair); the record proves which pair and on whose authority.
+    t1MemberSession: MEMBER.memberSession,
+    t1MemberInstance: MEMBER.memberInstance,
+    memberIdentity: {
+      derivedFrom: MEMBER.derivedFrom,
+      templateId: MEMBER.templateId,
+      label: MEMBER.label,
+      lifecycle: MEMBER.lifecycle,
+      owningRootSessionId: MEMBER.owningRoot,
+      bindingKind: MEMBER.bindingKind,
+      corroboratedMembers: MEMBER.corroboratedMembers,
+      seedAndCopyAgree: true,
+    },
+    readyReadState: READY_READ_STATE,
     stablePre,
   }, null, 2))
   log(`READY ${tokenUrl}`)
