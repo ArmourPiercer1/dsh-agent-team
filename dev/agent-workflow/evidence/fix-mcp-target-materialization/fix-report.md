@@ -608,3 +608,344 @@ commit adds install-surface artifacts only — tests run from source).
 
 Until the final HEAD lands, PR #50 stays **NO-MERGE** (Draft, checkpoint
 banner).
+
+## 15. FINAL-VERDICT ROUND — external bounded report (4820ecdb): the REQUIREMENT-AWARE FINAL-INPUT VERDICT (NEW UNREVIEWED CHANGES — CHECKPOINT)
+
+### 15.0 Round status
+
+This round supersedes the residual-F gate's judgment (the a49bc5ec
+attempt-clock-delta gate). Its skeleton (the boundary reconcile inside
+`prepareAgentForRequest`; the fail-closed throw positioned before
+actual input) is preserved; its JUDGMENT LOGIC is REPLACED by ONE
+unified requirement-aware final-input verdict. §14.7's remaining items
+are resolved by this round: (1) the consumer-sweep table = §14.4
+(committed verbatim as docs commit `42e810cd`, the predecessor's WIP,
+provenance-labeled); (2) S6 unchanged-base capture = §15.11 below;
+(3)–(6) the merged-head gates = §15.9 below (run at `64cd6614`); (4)
+the controlled sync onto `621fdba1` (origin/master, PR #48) was
+executed as MERGE `e28dfef3` (no rebase/force), p4t6 recomputed from
+real A-lines on the merged tree = **903** (not assumed: 898 base + 2
+finding-F files, the +3 the predecessor's §14.6 line projected was the
+pre-#48 number — the merged-tree recompute landed at 903 and is
+re-verified GREEN at the final head, §15.9); (5)–(6) post-merge role
+re-audit + merged-head re-test = the handoff captures (three logs,
+committed with provenance headers in this round's bookkeeping batch;
+the #48 role suites pass in the merged-head full-suite run — the
+`persona-kind-provider-preflight` suite is green in §15.9's failure
+map: absent from it).
+
+Commit stack this round (all on `fix/mcp-target-materialization`):
+`42e810cd` (docs: predecessor WIP §14.4 verbatim) → `6773381e` (test:
+the 6 RED legs, pure additions, RED evidence committed) → `9e1d1ffb`
+(fix: the verdict + consumers + plumbing + remote vocabulary) →
+`64cd6614` (build: dist co-commit). DRAFT CHECKPOINT pushed
+(`4820ecdb..64cd6614`, plain ff, PUSH_EXIT=0) — see §15.12.
+
+### 15.1 The external bounded report (attributed to the 4820ecdb
+checkpoint)
+
+As handed down in the session record (the original message text is not
+preserved as a file in-repo; this is the checkpoint's verbatim carrying
+of it — no word is invented):
+
+> R1 still has **3 problem classes**; implement **ONE unified
+> REQUIREMENT-AWARE FINAL-INPUT VERDICT**; **NEVER a blanket throw at
+> prepare**; **NEVER a new-failure-timestamp judgment**; the a49bc5ec
+> gate is the **skeleton**, its judgment logic is **REPLACED**.
+>
+> **1. COLD-RESUME GAP:** the verdict must use the FINAL
+> required-truth AFTER the FULL ensure/resume/prepare sequence (the
+> agentSetup reconcile L2262 stamps the failure, prepare takes a
+> COOLDOWN SKIP, yet delivery happens).
+> **2. ACTUAL-INPUT CONSUMERS MISSING THE CHECK:**
+> `submitAttributedInput` and `deliverRootInput` ignore the prepare
+> result; `crossAgentTrigger`/messaging IN scope.
+> **3. GUARD OVER-BLOCKS:** a49bc5ec blocks on ALL policy-allowed MCP
+> targets; OPTIONAL/no-requirement and reviewed recoveries must be
+> allowed. Mechanism: propagate trustworthy requirement-impact/
+> recovery context TO THE FINAL BOUNDARY; exempt ONLY
+> reviewed-scope-covered failures; any OTHER newly-appearing required
+> outage still BLOCKS.
+
+The frozen call-site/mode matrix the report carried (implemented as
+written, §15.5): agentSetup reconcile L2262 unchanged; workDelivery
+deliver blocks (path-typed WORK_DELIVERY_FAILED); attributed input
+commit-or-throw → MESSAGING_DELIVERY_FAILED via the coordinator;
+deliverRootInput blocks → strategy maps WORK_DELIVERY_FAILED → remote
+TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED (admission kept, NO terminal
+fact); completion notification best-effort, liveness PRESERVED, NO
+change; executeTool NO change; exported prepare = observation for
+non-input consumers.
+
+### 15.2 The three problem classes (mechanically verified at 42e810cd)
+
+1. **COLD-RESUME GAP (class 1).** After `dropResidency` the
+   materialization port reads the member COLD (`hasLive` false →
+   `not-applicable`; the stale slot survives in state) — admission
+   admits ("cleared by recheck"). The resume's SETUP reconcile (the
+   agentSetup path, L2262) then re-mounts and STAMPS the failure into
+   the slot; the prepare's reconcile hits the 30 s COOLDOWN and SKIPs
+   (the attempt clock is untouched). The old gate's judgment —
+   `preAttemptAt.get(name) !== slot.lastAttemptAt` — is BLIND to a
+   failure whose clock it never advanced. RED proof: leg L1 (the
+   follow-up delivered to B; nothing threw).
+2. **CONSUMERS MISSING THE CHECK (class 2).** `submitAttributedInput`
+   (the messaging relay — the crossAgentTrigger/messaging path, IN
+   scope) and `deliverRootInput` (root initial work) called
+   `prepareAgentForRequest` and DISCARDED the result — the input
+   reached the recipient's model-visible turn even after the prepare
+   failed the required server. RED proofs: legs L2 (via the production
+   v2 `member.send` remote method) and L3 (via `team.admitInitialWork`).
+3. **GUARD OVER-BLOCKS (class 3).** The old gate fired on ANY
+   same-passage failure of ANY policy-allowed (target-set) server —
+   requirement-blind AND recovery-blind: it blocked the optional /
+   no-requirement outage (which must DEGRADE, never block) and the
+   human-reviewed recovery re-run (whose reviewed scope must be
+   allowed). RED proofs: legs L4a / L4b / L4c (each threw
+   WORK_DELIVERY_FAILED where the work had to deliver).
+
+### 15.3 The bootstrap-contract match (stated per the report's
+requirement)
+
+**PENDING = the mount attempt is ALLOWED** (a fresh member that never
+mounted is admissible — the gate never throws a blanket "pending"
+block at prepare; the mount attempt always runs at the boundary,
+cooldown skip included as retry discipline, not verdict). **BEFORE
+ACTUAL INPUT = the materialization SUCCESS is verified** (the
+requirement-aware verdict reads the FINAL slot truth and blocks the
+first model-visible input only where a REQUIRED outage stands without
+reviewed coverage). Both halves hold in the implementation: the
+attempt is unconditional at the boundary; the block, when it fires,
+fires strictly BEFORE any input is consumed.
+
+### 15.4 The unified verdict (`finalInputVerdictOf`, agent-bindings.mjs)
+
+Inside `prepareAgentForRequest`, AFTER its own `reconcileMcpSet` (so
+the verdict covers the FULL ensure/resume/prepare sequence — the
+ensure/resume happened upstream of the call, the prepare reconcile
+just now), the FINAL per-server slots of the target's APPLICABLE
+(policy-allowed) set are classified:
+
+- **failed + REQUIRED + not reviewed-covered → `blockedServers` (the
+  BLOCK).** REQUIRED = a requirement in the target's scopes of the
+  bound blueprint names the server with `type: 'mcpServer'` and
+  `complete !== false`, over the union of the TEAM scope (the v1 flat
+  list + the v2 `teamRequirements`) and the TARGET template scope
+  (the v2 `leader` / `members[i]` requirements) — extracted via the
+  SAME `scopeRequirementInputsOf` the admission gate consumes (no
+  second copy of semantics). Target template: the root session IS the
+  leader; a member session is its durable row's `templateId`
+  (row by `childSessionId`).
+- **failed + named by the request's reviewed `recovery` marker
+  (`unavailableSubjects`) → `recoveryCoveredServers` (allow).** The
+  marker is router-produced (the recovery dispatch after a durable
+  allow decision — NEVER caller-forged); the exemption is the REVIEWED
+  SCOPE, not a remount success (the persistent-fault shape, L4c: the
+  remount fails again on the recovery passage and the work still
+  delivers).
+- **failed + optional/no-requirement → `degradedServers` (allow).**
+  The engine's WARNING / empty-scope shape degrades, never blocks.
+
+`blocked = blockedServers.length > 0`. `prepareAgentForRequest` now
+returns `{verdict}` (the exported observation contract stays a
+Promise; the richer return is internal to the consumers). The
+attempt-clock snapshot (`preAttemptAt`) is DELETED — no
+new-failure-timestamp judgment anywhere.
+
+### 15.5 The call-site/mode matrix (frozen — implemented exactly)
+
+| consumer | verdict consumed | mode on `blocked` |
+| --- | --- | --- |
+| agentSetup reconcile (L2262) | — (it STAMPS the truth; unchanged) | n/a |
+| `workDelivery.deliver` | YES (+ `args.recovery`) | throw BEFORE the followup → the work chain settles fail-closed (durable `delivery-failed`, N3 throw-after-settle) → typed **WORK_DELIVERY_FAILED** (the existing machinery) |
+| `sessionInput.submitAttributedInput` | YES (no marker carrier on the wire — see §15.7) | throw before the inbox acceptance → the EXISTING coordinator wrap maps to **MESSAGING_DELIVERY_FAILED**; the intent fact stays pending (R2/R3: recoverable); zero coordinator changes |
+| `deliverRootInput` | YES (no marker carrier on the wire) | throw before the followup → the root initial-work strategy maps to WORK_DELIVERY_FAILED → remote **TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED**; the durable admission stays for the same-token retry; NO terminal root-work fact |
+| `deliverRootWorkCompletionNotification` | NO (result ignored — unchanged) | liveness PRESERVED (a liveness failure is a liveness failure; the B6 contract owns at-least-once) |
+| `executeTool` | NO (result ignored — unchanged) | diagnostic path, unchanged |
+| exported `prepareAgentForRequest` | observation | non-input consumers see `{verdict}` and may ignore it (contract unchanged: the boundary still runs the reconcile) |
+
+### 15.6 The six legs (RED at 42e810cd → GREEN at 64cd6614)
+
+All six are PURE ADDITIONS to `mcp-target-materialization.test.ts`
+(new worlds on ports 3999–4004; `mtmBlueprint` gained an additive
+`reqComplete?: boolean` variant — T1–T5/T7/T8 + U1–U5 byte-untouched
+and stayed GREEN in both the RED and GREEN runs: 12/12 pre-existing in
+both).
+
+| leg | class | RED signature @ 42e810cd (committed) | GREEN contract @ 64cd6614 |
+| --- | --- | --- | --- |
+| L1 | 1 (cold-resume gap) | nothing threw — the delivery reached B (`expected undefined to be an instance of TeamRuntimeError`) | **WORK_DELIVERY_FAILED** + zero input + fail-closed settlement (`delivery-failed` durable) + the next passage gated `failed` (BLOCKED_FATAL / requiredScopeDown / `template:worker`); A control unaffected |
+| L2 | 2 (messaging consumer, production v2 `member.send`) | `ok:true` — the input reached B's inbox + the confirmation committed (`expected true to be false`) | `ok:false`, error code **MESSAGING_DELIVERY_FAILED** (the remote pass-through, §15.8) + zero input + the intent fact durable + NO confirmation; A control unaffected |
+| L3 | 2 (root consumer, `team.admitInitialWork`) | `ok:true` + the terminal root-work fact committed (`expected true to be false`) | `ok:false`, code **TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED** + zero root input + the admission fact stays (`team-work-admitted` durable, same-token retry) + NO terminal fact; root A leader stays mounted |
+| L4a | 3 (no requirement) | WORK_DELIVERY_FAILED over-block (`expected TeamRuntimeError … to be undefined`) | the work DELIVERS degraded: admitted + 1 followup + the slot `failed` (the degradation is real, not a hidden mount) |
+| L4b | 3 (optional, `complete:false`) | same over-block signature | same degraded-delivery contract (the WARNING scope never blocks) |
+| L4c | 3 (reviewed recovery, persistent fault) | same over-block signature (the gate fired even on the human-reviewed re-run) | the recovery work DELIVERS (the reviewed scope exempt) + the remount FAILED AGAIN (slot `failed` — the exemption is the reviewed scope, not a remount success) + the incident record durable (`recovery-incident-opened`) |
+
+RED evidence: `gate-red-matrix-final-verdict.log` (HEAD 42e810cd + the
+uncommitted test file labeled in the header; literal command line
+first; complete stdout; TRUE `VITEST_EXIT=1`; `6 failed | 12 passed
+(18)`). GREEN evidence: `gate-green-matrix-final-verdict.log`
+(`18 passed (18)`, `VITEST_EXIT=0`, clean tree @ 64cd6614).
+
+### 15.7 The recovery plumbing (additive optional fields — no wire
+change)
+
+`TeamRuntimeActionRequest.recovery` (existing, router-produced) →
+`workChainDeps` (effects.ts: spreads it when present) → `WorkChainDeps`
+(work-execution.ts, new optional field) → `deliverWork` (spreads it to
+the port call when present) → `WorkDeliveryPort.deliver args.recovery`
+(admission/types.ts, new optional field) → the glue deliver reads
+`args.recovery` into the verdict. **The frozen wire contracts carry no
+marker** (`member.send`'s `RemoteMemberSendParams` and
+`team.admitInitialWork`'s params are frozen) — so the MESSAGING and
+ROOT paths have no reviewed-recovery carrier today and are
+**fail-closed** there (a failed required server blocks the relay /
+root input regardless of any reviewed scope): documented, not a gap
+to paper over — the exemption rides the work path where the marker
+already exists by contract.
+
+### 15.8 The remote backing-vocabulary addition (packages/remote,
+additive)
+
+`member.send` routes the FULL coordinator path (facade admission +
+durable intent fact + live attributed-input delivery + confirmation
+fact), so the coordinator's typed `MessagingError` surface reaches the
+dispatcher; the FIVE OPERATIONAL codes
+(`MESSAGING_REQUEST_MALFORMED` / `MESSAGING_SELF_SEND_REJECTED` /
+`MESSAGING_TARGET_NOT_LIVE` / `MESSAGING_DELIVERY_FAILED` /
+`MESSAGING_LEDGER_WRITE_FAILED`) join the closed
+`REMOTE_BACKING_ERROR_CODES` set (code + lossless details pass
+through — L2's contract: the remote caller sees the typed code, not
+the degraded `internal-error`). `MESSAGING_INTERNAL` (the internal
+invariant violation) is deliberately EXCLUDED and keeps degrading to
+`internal-error` (invariant 5: no leak of internals).
+`packages/remote` full suite: 220/220 GREEN after the change.
+
+### 15.9 Full gates at the FINAL head (`64cd6614`, clean tree)
+
+| gate | result | log |
+| --- | --- | --- |
+| full `pnpm test` (all packages) | 28 failed / 4730 passed (4758), `FULL_SUITE_EXIT=1` — classification in §15.9.1 (ZERO new failures from this round) | `gate-fullsuite-final-verdict.log` |
+| lint (file-aware fingerprint) | **NEW = 0** — no error-file absent from the baseline set; of the 6 touched source files, exactly one is flagged and it is the BASELINE entry verbatim (`effects.ts 119:3 @typescript-eslint/no-unused-vars`, same line+rule+identifier as the 31ad828d baseline); all 5 others zero-flag | `gate-lint-final-verdict.log` + `gate-lint-fp-final-verdict.txt` |
+| typecheck (9 packages) | all Done, `TYPECHECK_EXIT=0` | `gate-typecheck-final-verdict.log` |
+| build | `pnpm -r run build` 9/9 Done, `BUILD_EXIT=0`; `build:composition` steps Done | `gate-build-final-verdict.log` |
+| check:artifacts (CLEAN tree) | **OK: 1372 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))**, `ARTIFACTS_EXIT=0` | `gate-check-artifacts-final-verdict.log` |
+| focused matrix (18 legs) | **18/18, `VITEST_EXIT=0`** | `gate-green-matrix-final-verdict.log` |
+| p4t6 pin | 10/10, `VITEST_EXIT=0` — `expect(scanResult.filesScanned).toBe(903)` re-verified (the pin already carries the +2 finding-F files; this round added zero NEW scannable files — the L legs went into an existing test file) | `gate-p4t6-final-verdict.log` |
+| isolated flake re-runs (true exits) | a2c7 isolated: 9 failed / 22 passed, `A2C7_ISOLATED_EXIT=1` (classification §15.9.1); p6t1 isolated: **9/9 green, `P6T1_ISOLATED_EXIT=0`** | `gate-isolated-flake-reruns-final-verdict.log` |
+
+#### 15.9.1 Full-suite classification (PER TESTCASE)
+
+The 28 failed tests, all accounted for:
+
+- **19 = the pre-existing debt set EXACTLY** (t1-capability-schema 9 /
+  t2-blueprint-hash 1 / d3-member-identity-context 1 /
+  p6t3-mediation 5 / p6t3-restart 2 / p6t6-actions 1) — identical to
+  the d0712695 and the e28dfef3 merged-head baseline (the
+  4793-test run at 09:01Z carried the same 19 + 2 p6t1 flakes).
+- **9 = a2c7-subtree-matcher's "REAL pinned backend" section** —
+  ENVIRONMENT/CLASSIFIED: every one of the 9 fails on the
+  `the real backend section ran (the prebuilt pinned lib is present
+  on this host)` presence guard (`expected false to be true` — the
+  pinned prebuilt lib is ABSENT on this host at run time). Proven
+  non-regression: (a) the suite is GREEN in the 09:01Z e28dfef3
+  baseline run on the SAME host (`✓ a2c7 (31 tests)` in
+  `merge-full-suite-allpkgs.log`) — the host state flipped between
+  runs; (b) the suite does NOT import `agent-bindings` or anything
+  this diff touches (import-disjoint — a pure path-containment
+  matcher test; verified by grep). Stable-red in isolated re-runs
+  (`A2C7_ISOLATED_EXIT=1`) while the lib stays absent.
+- **0 = p6t1-parallel** in the final full run. It flaked in
+  intermediate runs (2 failures at the 09:01Z baseline and in
+  runtime-only runs 09:30–09:35Z: `two activated results with distinct
+  instance ids…` / `two COMMITTED operations, two members…`) — the
+  DOCUMENTED flake (the per-consultation prober's non-atomic
+  replace→re-read gap, §12 carry-over ①; production worlds protected
+  by the boot probe; test-world-only). Isolated re-run at the final
+  head: **9/9 GREEN, true `P6T1_ISOLATED_EXIT=0`**.
+- **File-level: 5 zero-test collections** (p8s3b-result-effects /
+  t12a-b2-child-identity / t12a-glue-handoff-ports / p7t1-ack-
+  fingerprint / h5-bash-effects) — the pre-existing flapping
+  collection debt (3 at the e28dfef3 baseline; the set rotates run to
+  run — run 1 of this gate batch had the 3-file set, the full run the
+  5-file set; all fail at collection, 0 tests each, all outside this
+  diff's import surface).
+
+Arithmetic: 4758 = 4793 (e28dfef3 baseline total) + 6 (the L legs)
+− 41 (this run's 5 file-level collection losses vs the baseline's 3 —
+the same flapping debt class, counted per run).
+
+### 15.10 Raw composition-sequence disclosure
+
+The build:composition ran in the recorded order (each step's exit in
+`gate-build-final-verdict.log`): (1) `pnpm -r run build` (9/9 tsc,
+`BUILD_EXIT=0`); (2) `node scripts/place-dist-glue.mjs` (the
+agent-bindings.mjs glue placement into dist — Done); (3) `node
+scripts/build-client-composition.mjs packages/client
+packages/client/composition-shim` (the client composition rebuild —
+Done, over UNCHANGED client source); (4) `node scripts/check-
+artifacts-committed.mjs` (the in-build drift check — exit 1 with the
+EXPECTED pre-commit drift report: exactly this commit's own 16 dist
+files, uncommitted at check time; the checker demands the committed
+state). The CLEAN-TREE re-run of step 4 is the authoritative
+`gate-check-artifacts-final-verdict.log` (OK 1372, exit 0) — the
+dist commit is `64cd6614`.
+
+### 15.11 S6 client-smoke unchanged-base capture (621fdba1)
+
+Mechanism: temp DETACHED worktree at `621fdba1` (origin/master — this
+round's merge base; the predecessor's temp worktree at 8e18819c had
+already been cleaned up; its scratch capture PRESERVED, not
+discarded), node_modules symlinked from the branch worktree (root +
+packages/{runtime,client,domain}), client dist BUILT in the base
+worktree from the base's own client source (TSC_EXIT=0), runtime dist
+= the base's own committed install surface. Same-environment proof:
+`git diff 621fdba1..64cd6614 --stat -- pnpm-lock.yaml package.json
+'packages/*/package.json'` = EMPTY. Zero-client-diff proof:
+`git diff 8e18819c..621fdba1 -- packages/client/` = EMPTY.
+`SMOKE_EXIT=1` (NEVER green — as expected; the base is not green).
+
+**Outcome (the exact two-outcome wording, first branch):** the
+client-leg failure is **proven pre-existing at base (same-env re-run
+committed)** — the identical `Cannot find package 'clsx'` resolution
+failure at the IDENTICAL pnpm-store path through the symlinked
+node_modules, on byte-identical client sources (the 8e18819c →
+621fdba1 → HEAD zero-client-diff chain), in the same environment; the
+host-plugin leg's failure carries the same signature as the
+predecessor's 8e18819c capture (the committed-base dist's C1-fence
+listener ordering — the documented stale-smoke condition, not a
+regression). The other branch (UNREVIEWED ENVIRONMENT GAP — baseline
+NOT proven, zero-client-diff is supporting only, no client fix in
+scope) does NOT apply: the baseline IS proven by the committed same-
+env re-run. Evidence: `gate-composition-smoke-client-base.log`
+(CMD-first, complete stdout, true `SMOKE_EXIT=1`, supersession note
+for the predecessor's scratch capture).
+
+### 15.12 Push history (this round)
+
+- DRAFT CHECKPOINT: `4820ecdb..64cd6614` plain fast-forward
+  (`PUSH_EXIT=0`; ff-verified: the remote tip was still 4820ecdb, an
+  ancestor of HEAD; no force, no rebase).
+- FINAL HEAD: ONE plain push of the bookkeeping commit (recorded in
+  the round's report to the parent).
+
+PR #50 stays **DRAFT / BLOCKED / NO-MERGE** (no merge authorization
+exists; the banner carries the NO-merge language).
+
+### 15.13 NEW UNREVIEWED CHANGES (this round)
+
+Everything in the stack `4820ecdb..FINAL HEAD` is NEW UNREVIEWED
+CHANGES, not covered by any earlier review pass: (a) the 6 RED legs +
+`mtmBlueprint` additive variant (test, pure additions); (b)
+`finalInputVerdictOf` + the `prepareAgentForRequest` return change +
+the 3 consumer gates (agent-bindings.mjs); (c) the additive optional
+`recovery` fields (admission/types.ts, work-execution.ts,
+effects.ts); (d) the 5-code MESSAGING_* admission to
+`REMOTE_BACKING_ERROR_CODES` (packages/remote dispatch.ts); (e) the
+dist co-commit (64cd6614); (f) this report + the router-log append +
+all evidence logs (incl. the 3 handoff captures, committed with
+provenance headers — `merge-typecheck.log` / `merge-full-suite.log`
+(runtime-package-only, 2862 tests, superseded as label by
+`merge-full-suite-allpkgs.log`) / `merge-full-suite-allpkgs.log`
+(COMPLETE, 4793, EXIT annotation at its line 6)). A review pass
+covering this round must re-run before any merge decision.

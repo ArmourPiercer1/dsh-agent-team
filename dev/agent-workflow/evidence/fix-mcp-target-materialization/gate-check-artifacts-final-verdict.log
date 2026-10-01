@@ -1,0 +1,16 @@
+== CHECK:ARTIFACTS (clean tree) @ FINAL head 64cd6614 ==
+HEAD: 64cd6614eea623531a79a5061a18410f6288572d
+date: 2026-10-01T09:37:47Z
+git status --porcelain:
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-check-artifacts-final-verdict.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-fullsuite-final-verdict.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-isolated-flake-reruns-final-verdict.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-lint-final-verdict.log
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-lint-fp-final-verdict.txt
+?? dev/agent-workflow/evidence/fix-mcp-target-materialization/gate-typecheck-final-verdict.log
+(uncommitted = this batch's evidence logs only)
+$ pnpm check:artifacts
+
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1372 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+ARTIFACTS_EXIT=0
