@@ -97,6 +97,24 @@
  *  POSITIVELY verified (boolean ready wait + typed re-validation) before any
  *  Team-tab work; every mismatch is a typed fail-closed with no marker.
  *
+ * BATCH-4 (2026-10-02, external real-entry BLOCK — entry model changed for
+ * SESSION CONTINUITY, driven by the real auto-collapse behavior cited below):
+ * ONE context/page at the normal viewport (login ONCE, root row selected
+ * once at wide width where the session list exists); the narrow pass RESIZES
+ * the same page (page.setViewportSize) — at width < SIDEBAR_AUTO_COLLAPSE
+ * (1024) the sidebar auto-collapses (ui-layout/src/client/columns.ts L23;
+ * AppFrame.tsx L178-182; stores.ts fresh narrowExpanded:false) and the
+ * session list is wide-only, so below the breakpoint ZERO treeitems render
+ * (ui-workspace rows/WorkspaceBrowser.tsx L1275-1278): a fresh 380px context
+ * could never re-select the root. The narrow re-check demands NOTHING
+ * invisible — root retention is PROVEN from the open session's header
+ * identity ([data-conversation-header-corner]-scoped raw sessionId crumb,
+ * ConversationSession.tsx L125/L136-138) cross-checked against the durable
+ * rootSessionId, then the full digest/payload/legibility checks re-run on the
+ * visible content. ALL per-viewport checks stay; none loosened. Fail-closed
+ * typing: any narrow failure ⇒ typed error, NO marker; exactly ONE marker
+ * only after BOTH passes pass.
+ *
  * EXIT: 0 = all checks passed + marker written; 2 = a fail-closed validation/
  * comparison refusal (no marker); 1 = infrastructure error (no marker).
  *
@@ -775,9 +793,18 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
       rid: opts.rid, expectedDigest: expected.expectedDigest, payloadValue: expected.payloadValue,
     })
     const passes = {}
-    for (const [phase, viewport] of [['normal', opts.viewport], ['narrow', opts.narrow]]) {
-      const context = await browser.newContext({ viewport })
-      try {
+    // BATCH-4 (single-page entry — SESSION CONTINUITY): ONE context/page at
+    // the normal viewport, login ONCE, root row selected once at wide width;
+    // the narrow pass RESIZES the same page. A fresh 380px context could
+    // never re-select the root — below SIDEBAR_AUTO_COLLAPSE=1024 the sidebar
+    // auto-collapses (ui-layout/src/client/columns.ts L23; AppFrame.tsx
+    // L178-182 `narrow ⇒ !narrowExpanded`; stores.ts fresh narrowExpanded:
+    // false) and the session list is WIDE-ONLY, rendering ZERO treeitems
+    // below the breakpoint (ui-workspace/.../WorkspaceBrowser.tsx L1275-1278
+    // "the list itself is wide-only"). The narrow pass demands NOTHING
+    // invisible and re-proves identity from the open session's HEADER.
+    const context = await browser.newContext({ viewport: opts.viewport })
+    try {
         const page = await context.newPage()
         // Item-1: Playwright navigation failures embed the launch URL (token
         // query) in their message/stack — route them through the scrub and a
@@ -849,10 +876,43 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
         const narrow = await page.evaluate(checkNarrowLegibility, { rid: opts.rid, expected: durableLens })
         const shotFull = await page.screenshot({ fullPage: true })
         const shotPanel = await page.locator(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`).screenshot()
-        passes[phase] = { fields, narrow, shotFull, shotPanel }
-      } finally {
+        passes.normal = { fields, narrow, shotFull, shotPanel }
+        // ── narrow pass: RESIZE the SAME page (no re-navigation, no re-login,
+        // no sidebar demand). Root retention is PROVEN, not assumed: the open
+        // session header must still name the durable rootSessionId before any
+        // narrow measurement counts (fail-closed typed either way).
+        await page.setViewportSize({ width: opts.narrow.width, height: opts.narrow.height })
+        const rootHeld = await waitUntilTruthy({
+          probe: () => page.evaluate(rootSessionHeaderDom, rootSessionId),
+          deadlineAt: nowFn() + OBSERVE_TIMEOUT_MS,
+          nowFn,
+          sleepFn: sleep,
+        })
+        if (rootHeld !== true) {
+          throw new ObserverError('S2O_ROOT_MISMATCH', 'after resize the open session header no longer proves the durable root identity (fail closed, no marker)')
+        }
+        const tabStill = await waitUntilTruthy({
+          probe: () => page.evaluate(teamViewReadyDom, tab.index),
+          deadlineAt: nowFn() + OBSERVE_TIMEOUT_MS,
+          nowFn,
+          sleepFn: sleep,
+        })
+        if (tabStill !== true) {
+          throw new ObserverError('S2O_TEAM_TAB_NEVER_ACTIVATED', 'the Team view is no longer active on the resized page (fail closed, no marker)')
+        }
+        const activatedNarrow = await page.evaluate(teamViewActivatedDom, tab.index)
+        if (activatedNarrow.ok !== true) {
+          throw new ObserverError('S2O_TEAM_ACTIVATION_INVALID', `post-resize activation validation refused: ${activatedNarrow.code}`)
+        }
+        await page.locator('[data-team-view]').first().waitFor({ state: 'visible', timeout: OBSERVE_TIMEOUT_MS })
+        await page.waitForSelector(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`, { timeout: OBSERVE_TIMEOUT_MS })
+        const fieldsNarrow = await page.evaluate(extractPanelFields, opts.rid)
+        const narrowNarrow = await page.evaluate(checkNarrowLegibility, { rid: opts.rid, expected: durableLens })
+        const shotFullNarrow = await page.screenshot({ fullPage: true })
+        const shotPanelNarrow = await page.locator(`[data-ledger-resolve-bar][data-request-id="${opts.rid}"]`).screenshot()
+        passes.narrow = { fields: fieldsNarrow, narrow: narrowNarrow, shotFull: shotFullNarrow, shotPanel: shotPanelNarrow }
+    } finally {
         await context.close()
-      }
     }
     // Item-2: the gate — BOTH viewports deep-equal the durable source AND
     // BOTH layout passes hold, or nothing ships.
@@ -947,6 +1007,20 @@ export function rootSessionReadyDom(rootSessionId) {
 }
 
 /** Post-selection POSITIVE verification (typed). */
+/** BATCH-4 narrow-pass ROOT RETENTION proof: the ALREADY-OPEN session's
+ *  header must still name the durable root id. Pinned structure
+ *  (ConversationSession.tsx @46a7f68b09): crumbCurrent renders the RAW
+ *  sessionId for an ancestry-less session (L125); the stable
+ *  [data-conversation-header-corner] region anchor (L136-138) scopes the
+ *  check to the header container. BOOLEAN by design — it gates
+ *  waitUntilTruthy after the resize (no sidebar element is ever demanded). */
+export function rootSessionHeaderDom(rootSessionId) {
+  const doc = globalThis.document
+  const corner = doc.querySelector('[data-conversation-header-corner]')
+  if (corner === null || corner.parentElement === null) return false
+  return (corner.parentElement.textContent ?? '').includes(String(rootSessionId))
+}
+
 export function rootSessionValidatedDom(rootSessionId) {
   const doc = globalThis.document
   const esc = String(rootSessionId).replace(/\\/g, '\\\\').replace(/"/g, '\\"')

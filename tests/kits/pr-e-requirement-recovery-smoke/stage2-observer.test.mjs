@@ -66,6 +66,7 @@ import {
   narrowExpectedLengths, evaluatePasses, scrubErrorText, setLaunchSecrets, cliMain,
   waitUntilTruthy, teamViewReadyDom, runObservation,
   buildLaunchOptions, DEFAULT_CHROME_PATH, rootSessionRowsDom, rootSessionReadyDom, rootSessionValidatedDom,
+  rootSessionHeaderDom,
 } from './stage2-observer.mjs'
 // the kit's OWN exported contract (the marker reader the roundtrip must satisfy):
 import { UI_CLAIMS, reviewPayloadDigestOf, readMarkerHint, verifyUiTruth } from './ui-observe.mjs'
@@ -887,14 +888,35 @@ function sessionTreeHtml(ids, { selected = null } = {}) {
     <div data-row-key="session:${id}" role="treeitem" aria-selected="${id === selected}"><span class="title">${id}</span></div>`).join('')}</div>`
 }
 
-function wireHtml(panelOpts = {}, { rootRow = true } = {}) {
-  const ids = rootRow ? [ROOT, DECOY] : ['session-unrelated-1', 'session-unrelated-2']
-  return sessionTreeHtml(ids, { selected: DECOY }) + tablistHtml(['Chat', 'Team']) + goodHtml(panelOpts)
+/** Header mirror of ConversationSession.tsx @46a7f68b09: crumbCurrent renders
+ *  the RAW sessionId for an ancestry-less session (L125); the stable
+ *  [data-conversation-header-corner] anchor (L136-138) scopes the identity
+ *  check to the header region (rootSessionHeaderDom walks corner.parentElement). */
+function headerHtml(shownSessionId) {
+  return `<div data-fixture-header><nav aria-label="hierarchy"><span data-fixture-crumb>${shownSessionId}</span></nav><div data-conversation-header-corner=""></div></div>`
 }
 
-function makeFakeBrowser({ normalHtml, narrowHtml, gotoError = null, neverActivate = false, activateAfterPolls = 0, neverSelectRoot = false } = {}) {
-  const fixtures = [normalHtml, narrowHtml]
-  const calls = { gotos: [], evaluates: 0, clicks: 0, contexts: 0 }
+function wireHtml(panelOpts = {}, { rootRow = true, shown = DECOY } = {}) {
+  const ids = rootRow ? [ROOT, DECOY] : ['session-unrelated-1', 'session-unrelated-2']
+  return headerHtml(shown) + sessionTreeHtml(ids, { selected: DECOY }) + tablistHtml(['Chat', 'Team']) + goodHtml(panelOpts)
+}
+
+// VIEWPORT-HONEST fake — models the PINNED layout rule (all verified at
+// 46a7f68b09 this session via git show):
+//   * sidebar auto-collapses below SIDEBAR_AUTO_COLLAPSE = 1024
+//     (packages/client/ui-layout/src/client/columns.ts L23; AppFrame.tsx
+//     L178-182 `narrow = viewport < SIDEBAR_AUTO_COLLAPSE;
+//     sidebarCollapsed = narrow ? !layoutInfo.narrowExpanded : …`; stores.ts
+//     fresh-state narrowExpanded:false — cite behavior, line drifts);
+//   * the session LIST is wide-only — below the breakpoint ZERO treeitems
+//     render, on a FRESH narrow context AND after a resize
+//     (packages/client/ui-workspace/src/client/rows/WorkspaceBrowser.tsx
+//     L1275-1278: "the list itself is wide-only").
+// The header crumb (ConversationSession.tsx L125 raw sessionId) tracks
+// whichever session this fake actually opened — landing shows the decoy.
+function makeFakeBrowser({ html, gotoError = null, neverActivate = false, activateAfterPolls = 0, neverSelectRoot = false, narrowTransform = null } = {}) {
+  const SIDEBAR_AUTO_COLLAPSE = 1024 // mirrors columns.ts L23
+  const calls = { gotos: [], evaluates: 0, clicks: 0, contexts: 0, pages: 0, resizes: [] }
   const activateTeamTab = (doc) => {
     const tabs = Array.from(doc.querySelectorAll('[data-conversation-tabs] button[role="tab"]'))
     for (const t of tabs) t.setAttribute('aria-selected', String(TEAM_TAB_LABELS.includes(t.textContent.trim())))
@@ -907,6 +929,8 @@ function makeFakeBrowser({ normalHtml, narrowHtml, gotoError = null, neverActiva
         if (neverSelectRoot) return
         const siblings = el.parentElement === null ? [] : Array.from(el.parentElement.querySelectorAll('[role="treeitem"]'))
         for (const r of siblings) r.setAttribute('aria-selected', String(r === el))
+        const crumb = doc.querySelector('[data-fixture-crumb]')
+        if (crumb !== null) crumb.textContent = (el.getAttribute('data-row-key') ?? '').replace(/^session:/, '')
         return
       }
       if (neverActivate) return
@@ -914,15 +938,26 @@ function makeFakeBrowser({ normalHtml, narrowHtml, gotoError = null, neverActiva
       for (const t of tabs) t.setAttribute('aria-selected', String(t === el))
     },
   })
-  const buildPage = (html) => {
+  const buildPage = (viewport) => {
     const dom = new JSDOM(`<!doctype html><html><body>${html}</body></html>`)
     const win = dom.window
     const doc = win.document
     let pending = activateAfterPolls
+    const dropTree = () => {
+      for (const tree of Array.from(doc.querySelectorAll('[role="tree"]'))) tree.remove()
+    }
+    if (viewport !== undefined && viewport.width < SIDEBAR_AUTO_COLLAPSE) dropTree()
     const page = {
       async goto(url) {
         calls.gotos.push(url)
         if (gotoError !== null && gotoError !== undefined) throw gotoError
+      },
+      async setViewportSize(v) {
+        calls.resizes.push({ ...v })
+        if (v.width < SIDEBAR_AUTO_COLLAPSE) {
+          dropTree() // wide-only list: the treeitems CANNOT exist below the breakpoint
+          if (narrowTransform !== null) narrowTransform(doc)
+        }
       },
       async waitForSelector(sel) {
         if (doc.querySelector(sel) === null) throw new Error(`fake page: selector not found: ${sel}`)
@@ -966,10 +1001,9 @@ function makeFakeBrowser({ normalHtml, narrowHtml, gotoError = null, neverActiva
   }
   return {
     calls,
-    async newContext() {
+    async newContext({ viewport } = {}) {
       calls.contexts += 1
-      const html = fixtures.shift() ?? normalHtml
-      return { async newPage() { return buildPage(html) }, async close() {} }
+      return { async newPage() { calls.pages += 1; return buildPage(viewport) }, async close() {} }
     },
     async close() {},
   }
@@ -982,11 +1016,14 @@ function fakeClock() {
 
 test('55 WIRING happy path: REAL runObservation end-to-end (fake page + real DOM probe, both viewports) → marker written ONCE, 0600, kit-reader accepts', async () => {
   const f = mkCliFixture()
-  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml() })
+  const browser = makeFakeBrowser({ html: wireHtml() })
   const clock = fakeClock()
   const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...clock })
   assert.equal(res.ok, true)
-  assert.equal(browser.calls.contexts, 2, 'both viewport passes ran')
+  assert.equal(browser.calls.contexts, 1, 'SINGLE context — both passes share one session')
+  assert.equal(browser.calls.pages, 1)
+  assert.equal(browser.calls.gotos.length, 1, 'one login/navigation, narrow pass is a RESIZE')
+  assert.deepEqual(browser.calls.resizes, [{ width: 380, height: 900 }])
   const markers = readdirSync(f.markerDir)
   assert.deepEqual(markers, ['marker.json'], 'exactly one marker, no tmp residue')
   assert.equal(lstatSync(join(f.markerDir, 'marker.json')).mode & 0o777, 0o600)
@@ -1003,7 +1040,7 @@ test('56 WIRING item-1: token-bearing goto rejection through the REAL CLI bounda
   const navErr = new Error('page.goto: Timeout 60000ms exceeded.\nCall log:\n navigating to "http://127.0.0.1:3181/?token=PRIVATE-tok-launch", waiting until "domcontentloaded"')
   navErr.name = 'TimeoutError'
   navErr.stack = `TimeoutError: page.goto: Timeout\n  navigating to "http://127.0.0.1:3181/?token=PRIVATE-tok-launch"\n  at runObservation`
-  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml(), gotoError: navErr })
+  const browser = makeFakeBrowser({ html: wireHtml(), gotoError: navErr })
   const clock = fakeClock()
   const sink = []
   const code = await cliMain({
@@ -1019,25 +1056,37 @@ test('56 WIRING item-1: token-bearing goto rejection through the REAL CLI bounda
   assert.deepEqual(readdirSync(f.markerDir), [], 'no marker on the rejection path')
 })
 
-test('57 WIRING item-2: narrow viewport carries a same-LENGTH WRONG digest while normal looks fine → deep equality fails INSIDE runObservation, no marker', async () => {
+test('57 WIRING item-2: same page until RESIZE, then the narrow render diverges (same-LENGTH WRONG digest) → deep equality fails INSIDE runObservation, no marker', async () => {
   const wrong = `sha256:${DIGEST[7] === 'a' ? 'b' : 'a'}${DIGEST.slice(8)}`
   const f = mkCliFixture()
-  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml({ digest: wrong }) })
+  const browser = makeFakeBrowser({
+    html: wireHtml(),
+    narrowTransform: (doc) => {
+      const el = doc.querySelector('[data-control-detail-digest] dd')
+      if (el !== null) el.textContent = wrong
+    },
+  })
   const clock = fakeClock()
   await assert.rejects(
     () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
     (err) => { assert.ok(err instanceof ObserverError); assert.equal(err.code, 'S2O_CHECKS_FAILED'); return true },
   )
-  assert.equal(existsSync(join(f.markerDir, 'marker.json')), false, 'no marker when only the NARROW viewport content is wrong')
+  assert.equal(existsSync(join(f.markerDir, 'marker.json')), false, 'no marker when only the NARROW pass content is wrong')
   const comparisons = JSON.parse(readFileSync(join(f.evidence, 'comparisons.json'), 'utf8'))
   assert.equal(comparisons.allPassed, false)
-  const narrowDigest = JSON.stringify(comparisons).includes('DIGEST_EXACT')
-  assert.ok(narrowDigest, 'the narrow field comparison is logged')
+  assert.ok(comparisons.normal.fields.every((r) => r.ok === true), 'the NORMAL pass was fully green — only the resized pass diverged')
+  assert.ok(JSON.stringify(comparisons).includes('DIGEST_EXACT'), 'the narrow field comparison is logged')
 })
 
-test('58 WIRING item-3: REAL-clipping narrow fixture (trio + short fixed height, no override) fails typed through the real check sequence; the real-cascade fixture (computed ellipsis, neutralized) passes — see 55', async () => {
+test('58 WIRING item-3: REAL-clipping narrow render (trio + short fixed height appearing ONLY after resize) fails typed through the real check sequence; the real-cascade fixture (computed ellipsis, neutralized) passes — see 55', async () => {
   const f = mkCliFixture()
-  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml({ digestStyle: DD_REAL_CLIP }) })
+  const browser = makeFakeBrowser({
+    html: wireHtml(),
+    narrowTransform: (doc) => {
+      const el = doc.querySelector('[data-control-detail-digest] dd')
+      if (el !== null) el.setAttribute('style', DD_REAL_CLIP)
+    },
+  })
   const clock = fakeClock()
   await assert.rejects(
     () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
@@ -1048,7 +1097,7 @@ test('58 WIRING item-3: REAL-clipping narrow fixture (trio + short fixed height,
 
 test('59 WIRING item-4: never-active tab → typed timeout failure through runObservation (no marker); transient inactive→active PROCEEDS', async () => {
   const f1 = mkCliFixture()
-  const never = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml(), neverActivate: true })
+  const never = makeFakeBrowser({ html: wireHtml(), neverActivate: true })
   const clock1 = fakeClock()
   await assert.rejects(
     () => runObservation(parseCli(f1.args), { launch: async () => never, ...clock1 }),
@@ -1056,7 +1105,7 @@ test('59 WIRING item-4: never-active tab → typed timeout failure through runOb
   )
   assert.deepEqual(readdirSync(f1.markerDir), [], 'the timeout path writes NOTHING to the marker dir')
   const f2 = mkCliFixture()
-  const transient = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml(), neverActivate: true, activateAfterPolls: 4 })
+  const transient = makeFakeBrowser({ html: wireHtml(), neverActivate: true, activateAfterPolls: 4 })
   const clock2 = fakeClock()
   const res = await runObservation(parseCli(f2.args), { launch: async () => transient, ...clock2 })
   assert.equal(res.ok, true, 'first polls false, later true ⇒ proceeds (the boolean wait REALLY waits)')
@@ -1090,7 +1139,7 @@ test('62 source pin: the default launch branch passes buildLaunchOptions output 
 test('63 WIRING: the fake launch CANNOT mask the real config — captured options carry sandbox+executablePath+pipe verbatim', async () => {
   const f = mkCliFixture()
   let captured = null
-  const base = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml() })
+  const base = makeFakeBrowser({ html: wireHtml() })
   const clock = fakeClock()
   const res = await runObservation(parseCli(f.args), {
     launch: async (options) => { captured = captured ?? options; return base },
@@ -1114,7 +1163,7 @@ test('65 WIRING: chrome verification happens BEFORE launch (fail closed, launche
   const missing = join(f.dir, 'no-chrome-here')
   const idx = f.args.indexOf('--chrome')
   const args = [...f.args.slice(0, idx + 1), missing]
-  const base = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml() })
+  const base = makeFakeBrowser({ html: wireHtml() })
   let launched = 0
   const clock = fakeClock()
   await assert.rejects(
@@ -1165,7 +1214,7 @@ test('67 resolveExpected binds rootSessionId from the SAME durable fact doc (row
 
 test('68 WIRING: NO matching root row in the page ⇒ typed fail-closed, no marker (decoy rows are NEVER opened)', async () => {
   const f = mkCliFixture()
-  const browser = makeFakeBrowser({ normalHtml: wireHtml({}, { rootRow: false }), narrowHtml: wireHtml({}, { rootRow: false }) })
+  const browser = makeFakeBrowser({ html: wireHtml({}, { rootRow: false }) })
   const clock = fakeClock()
   await assert.rejects(
     () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
@@ -1176,7 +1225,7 @@ test('68 WIRING: NO matching root row in the page ⇒ typed fail-closed, no mark
 
 test('69 WIRING: root row present but the click never lands (decoy stays selected) ⇒ typed NEVER_SELECTED timeout, nothing written', async () => {
   const f = mkCliFixture()
-  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml(), neverSelectRoot: true })
+  const browser = makeFakeBrowser({ html: wireHtml(), neverSelectRoot: true })
   const clock = fakeClock()
   await assert.rejects(
     () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
@@ -1188,7 +1237,7 @@ test('69 WIRING: root row present but the click never lands (decoy stays selecte
 test('70 WIRING: durable fact without rootSessionId ⇒ S2O_ROOT_ID_MISSING fail-closed (no default-session guessing)', async () => {
   const f = mkCliFixture()
   writeFileSync(f.digestFile, JSON.stringify({ requestId: RID, reviewPayloadDigest: DIGEST }))
-  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml() })
+  const browser = makeFakeBrowser({ html: wireHtml() })
   const clock = fakeClock()
   await assert.rejects(
     () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
@@ -1199,12 +1248,72 @@ test('70 WIRING: durable fact without rootSessionId ⇒ S2O_ROOT_ID_MISSING fail
 
 test('71 WIRING happy path WITH root selection: decoy selected on landing, root explicitly opened + verified — still exactly one marker', async () => {
   const f = mkCliFixture()
-  const browser = makeFakeBrowser({ normalHtml: wireHtml(), narrowHtml: wireHtml() })
+  const browser = makeFakeBrowser({ html: wireHtml() })
   const clock = fakeClock()
   const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...clock })
   assert.equal(res.ok, true)
   assert.ok(browser.calls.clicks >= 2, 'root row + Team tab clicks happened')
   assert.deepEqual(readdirSync(f.markerDir), ['marker.json'])
+})
+
+test('72 viewport-honest fake models the PINNED rule (columns.ts L23, WorkspaceBrowser L1275-1278 wide-only): FRESH narrow context AND resize below 1024 render ZERO treeitems — a fresh 380px context can NEVER select the root', async () => {
+  const browser = makeFakeBrowser({ html: wireHtml() })
+  const wide = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  const pWide = await wide.newPage()
+  assert.equal(await pWide.evaluate(rootSessionRowsDom, ROOT), 1)
+  assert.equal(await pWide.evaluate(rootSessionHeaderDom, ROOT), false, 'landing shows the DECOY session — header proves identity')
+  assert.equal(await pWide.evaluate(rootSessionHeaderDom, DECOY), true)
+  const freshNarrow = await browser.newContext({ viewport: { width: 380, height: 800 } })
+  const pFresh = await freshNarrow.newPage()
+  assert.equal(await pFresh.evaluate(rootSessionRowsDom, ROOT), 0, 'wide-only list: ZERO treeitems at 380 — this is WHY the entry is one-page-resize')
+  await pWide.setViewportSize({ width: 380, height: 900 })
+  assert.equal(await pWide.evaluate(rootSessionRowsDom, ROOT), 0, 'resize collapses the list too — the narrow pass must demand NOTHING invisible')
+})
+
+test('73 resize-then-verify: ONE context/page/goto + one resize to 380; header-proven root, both passes deep-equal the durable source, marker EXACTLY once', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({ html: wireHtml() })
+  const clock = fakeClock()
+  const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...clock })
+  assert.equal(res.ok, true)
+  assert.equal(browser.calls.contexts, 1)
+  assert.equal(browser.calls.pages, 1)
+  assert.equal(browser.calls.gotos.length, 1, 'no re-navigation, no re-login')
+  assert.deepEqual(browser.calls.resizes, [{ width: 380, height: 900 }])
+  const cmp = JSON.parse(readFileSync(join(f.evidence, 'comparisons.json'), 'utf8'))
+  assert.equal(cmp.allPassed, true)
+  for (const phase of ['normal', 'narrow']) {
+    assert.ok(cmp[phase].fields.length > 0 && cmp[phase].fields.every((r) => r.ok === true), `${phase} field rows all ok`)
+    assert.ok(cmp[phase].narrow.length > 0 && cmp[phase].narrow.every((r) => r.ok === true), `${phase} legibility rows all ok`)
+  }
+  assert.deepEqual(readdirSync(f.markerDir), ['marker.json'], 'exactly one marker after BOTH passes')
+})
+
+test('74 narrow header identity MUST name the durable root: crumb naming a DIFFERENT session after resize ⇒ typed S2O_ROOT_MISMATCH, no marker (root retention is PROVEN, not assumed)', async () => {
+  const f = mkCliFixture()
+  const browser = makeFakeBrowser({
+    html: wireHtml(),
+    narrowTransform: (doc) => {
+      const c = doc.querySelector('[data-fixture-crumb]')
+      if (c !== null) c.textContent = DECOY // resized page somehow shows a different session — refuse
+    },
+  })
+  const clock = fakeClock()
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...clock }),
+    (err) => { assert.equal(err.code, 'S2O_ROOT_MISMATCH'); return true },
+  )
+  assert.deepEqual(readdirSync(f.markerDir), [])
+})
+
+test('75 source pins: ONE context/page/goto, the narrow pass is a setViewportSize re-check, the per-viewport loop is dead, the treeitem surface is demanded EXACTLY ONCE (normal pass only)', () => {
+  const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'stage2-observer.mjs'), 'utf8')
+  assert.equal((src.match(/\.goto\(/g) ?? []).length, 1, 'one navigation, two passes')
+  assert.equal((src.match(/browser\.newContext\(/g) ?? []).length, 1)
+  assert.equal((src.match(/\.newPage\(/g) ?? []).length, 1)
+  assert.ok(/page\.setViewportSize\(/.test(src), 'narrow pass resizes the SAME page')
+  assert.ok(!/for \(const \[phase, viewport\]/.test(src), 'no per-viewport newContext loop remains')
+  assert.equal((src.match(/\[role="treeitem"\]/g) ?? []).length, 1, 'treeitems are demanded once (wide pass) — NEVER after resize')
 })
 
 test('60 source pin: the OLD object-return can never gate a wait again (wait sites use the BOOLEAN predicate + driver)', () => {
