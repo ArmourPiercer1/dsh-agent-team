@@ -851,6 +851,11 @@ type MatrixPoint =
   | 'post-commit'
   | 'fault-admission'
   | 'fault-preflight'
+  // direct shared pre-callback one-shot close-fault residual — the
+  // dedicated rows below (NOT enumerated in MATRIX_POINTS, the
+  // 60-row matrix and its arithmetic are untouched):
+  | 'pre-callback-oneshot-gated'
+  | 'pre-callback-oneshot-fallback'
 type MatrixPreState = 'no-mark' | 'already-abandoned'
 
 interface MatrixRow {
@@ -1182,6 +1187,41 @@ async function c9AssertFault(
   expect(w.world.domain.repositories.memberInstances.list(AUTHZ_ROOT).length).toBe(memberBaseline)
   const state = await control.listControlState(AUTHZ_ROOT)
   expect(state.abandonments.filter((a) => a.requestId === requestId).length).toBe(0)
+}
+
+/** The ONE-SHOT close-fault contract assertions (the direct shared
+ *  pre-callback residual): the ORIGINAL typed DURABLE_WRITE_FAILED
+ *  (the service's `durableFailure` wrapper carrying the injected
+ *  fault text — the original fault's identity) propagates UNCHANGED
+ *  to the caller — NOT a second-attempt success, NOT a reclassified
+ *  code, no typed-abandoned terminal standing in for it — ZERO
+ *  effects (no work / delivery / coordination / reservation), ZERO
+ *  abandon marks (the put failed — the state could not be made
+ *  terminal), and EXACTLY ONE abandon put attempt (a second attempt
+ *  = the retry that would mask the first fault). */
+async function c9AssertOneShotCloseFault(
+  outcome: { readonly ok: boolean; readonly error?: unknown },
+  w: AuthzWorld,
+  control: ControlService,
+  requestId: string,
+  memberBaseline: number,
+  attempts: () => number,
+): Promise<void> {
+  expect(outcome.ok).toBe(false)
+  const error = outcome.ok === false ? outcome.error : undefined
+  expect((error as { code?: string } | undefined)?.code).toBe(
+    TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED,
+  )
+  expect(String((error as { message?: unknown } | undefined)?.message ?? '')).toContain(
+    'c9 residual-3: the durable close write faulted (one-shot injected)',
+  )
+  expect(authzFacts(w.world, 'team-work-admitted').length).toBe(0)
+  expect(w.deliveryCalls.length).toBe(0)
+  expect(authzFacts(w.world, 'team-coordination-recorded').length).toBe(0)
+  expect(w.world.domain.repositories.memberInstances.list(AUTHZ_ROOT).length).toBe(memberBaseline)
+  const state = await control.listControlState(AUTHZ_ROOT)
+  expect(state.abandonments.filter((a) => a.requestId === requestId).length).toBe(0)
+  expect(attempts()).toBe(1)
 }
 
 /** Patch the control ledger so that ONLY the abandon-mark persist
@@ -2339,5 +2379,157 @@ describe('fix-control-authz C9 residual-3: the pre-reservation REJECT region', (
   })
   it('c9-r3-3: one-shot close-failure on the reject path — the FIRST close fault propagates UNCHANGED (typed DURABLE_WRITE_FAILED carrying the injected error), zero effects, zero marks, EXACTLY ONE abandon put attempt (never re-attempted — a second attempt would succeed and mask the fault)', async () => {
     await c9R3ExternalFactsReject('c9-r3-3', true)
+  })
+})
+
+/** The direct shared pre-callback one-shot close-fault residual,
+ *  GATED branch (the follow-up recovery reentry — the WORK category
+ *  re-gates: the gated catch's D2 settle is the retry path). The
+ *  shared unit's C-2 abort-close (the `commitEffectIfAuthorized`
+ *  abort branch — the sequence allocation / the abandon put — BEFORE
+ *  the commitEffect callback is entered) FAULTS ONCE (the one-shot
+ *  abandon-persist fault). At the pre-fix head the shared boundary
+ *  catch rethrows UNMARKED → the gated D2 settle RE-ENTERS the unit's
+ *  close (attempt 2 — the one-shot is consumed — succeeds) and
+ *  settles the typed abandon terminal (the mask: 2 attempts + typed
+ *  abandoned). The fix recognizes the PRE-callback
+ *  DURABLE_WRITE_FAILED (the callback never entered) at the shared
+ *  boundary and sets closeFaultObserved: the settle is PROHIBITED and
+ *  the ORIGINAL typed fault propagates as-is (attempts = 1, zero
+ *  effects, zero marks). Choreography = the c9FaultAdmission shape
+ *  (the reentry's gate re-probe pin + the occupancy holding the
+ *  control lock (b)). */
+async function c9PreCallbackOneShotGated(rowId: string): Promise<void> {
+  const w = await createAuthzWorld(`authz-${rowId}`)
+  world = w
+  const ac = new AbortController()
+  const token = `tok-${rowId}`
+  const memberBaseline = w.world.domain.repositories.memberInstances.list(AUTHZ_ROOT).length
+  // The reentry's gate re-probe pin (the gated reentry re-gates).
+  const realEnvFacts = w.world.ports.environmentFacts
+  const reprobeBarrier = c9Barrier()
+  let pauseNextReprobe = false
+  const pausableEnvFacts: typeof realEnvFacts = () => {
+    if (pauseNextReprobe) {
+      pauseNextReprobe = false
+      reprobeBarrier.pauseArrive()
+      return reprobeBarrier.held.then(() => realEnvFacts())
+    }
+    return realEnvFacts()
+  }
+  const occ = c9Occupancy(w, rowId)
+  const runtime = c9Runtime(w, { envFacts: pausableEnvFacts, control: occ.control })
+  const row: MatrixRow = {
+    id: rowId,
+    action: 'follow-up',
+    point: 'pre-callback-oneshot-gated',
+    preState: 'no-mark',
+  }
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(occ.control, token)
+  await occ.create()
+  await c9Allow(occ.control, requestId)
+  // THE ONE-SHOT: installed after the allow — the only abandon-fact
+  // write from here on is the row's C-2 close (attempt 1 at the unit;
+  // attempt 2 = the pre-fix settle retry the contract must forbid).
+  const oneShotFault = c9PatchAbandonPersistOneShotFault(w)
+  try {
+    pauseNextReprobe = true
+    await withTimeout(reprobeBarrier.paused, 15_000, 'the re-probe barrier hold')
+    const occupancyResolve = occ.startAllow()
+    await withTimeout(occ.probePaused, 15_000, 'the control-lock hold (the occupancy probe)')
+    // Release the re-probe: the reentry passes its chain post-wait
+    // check (the signal is not aborted yet) and queues on (b) behind
+    // the occupancy.
+    reprobeBarrier.release()
+    await sleep(60)
+    ac.abort()
+    occ.releaseProbe()
+    await withTimeout(occupancyResolve, 15_000, 'the occupancy resolution')
+    const outcome = await started.promise
+    await c9AssertOneShotCloseFault(outcome, w, occ.control, requestId, memberBaseline, oneShotFault.attempts)
+  } finally {
+    oneShotFault.restore()
+  }
+}
+
+/** The direct shared pre-callback one-shot close-fault residual,
+ *  FALLBACK branch (the send-message recovery reentry — the
+ *  COORDINATION spec + the `recoveryWork` impact bypasses the gated
+ *  branch: the C-1 fallback marker path; the fallback catch's D2
+ *  settle is the retry path). Same one-shot C-2 abort-close fault,
+ *  same contract: the original typed fault as-is, attempts = 1, zero
+ *  effects, zero marks. Choreography = the c9ControlQueue shape (the
+ *  fallback reentry has NO gate re-probe — the shared runtime chain
+ *  hold pins the reentry before it can reach the unit's control-lock
+ *  queue). */
+async function c9PreCallbackOneShotFallback(rowId: string): Promise<void> {
+  const w = await createAuthzWorld(`authz-${rowId}`)
+  world = w
+  const ac = new AbortController()
+  const token = `tok-${rowId}`
+  const memberBaseline = w.world.domain.repositories.memberInstances.list(AUTHZ_ROOT).length
+  const chains = new Map<string, Promise<unknown>>()
+  const occ = c9Occupancy(w, rowId)
+  const runtime = c9Runtime(w, { chains, control: occ.control })
+  const row: MatrixRow = {
+    id: rowId,
+    action: 'send-message',
+    point: 'pre-callback-oneshot-fallback',
+    preState: 'no-mark',
+  }
+  const started = c9Start(runtime, row, token, ac.signal)
+  const requestId = await c9WaitRow(occ.control, token)
+  // The test HOLDS the shared runtime chain BEFORE the allow (the
+  // reentry can only queue behind it).
+  const hold = c9Barrier()
+  let holdAcquiredResolve: (() => void) | undefined
+  const holdAcquired = new Promise<void>((resolve) => {
+    holdAcquiredResolve = resolve
+  })
+  const occupation = withTeamLock(chains, AUTHZ_ROOT, () => {
+    holdAcquiredResolve?.()
+    return hold.held
+  })
+  await withTimeout(holdAcquired, 15_000, 'the runtime-chain hold')
+  const occupationChain = chains.get(AUTHZ_ROOT)
+  if (occupationChain === undefined) throw new Error('c9: the occupation chain entry is missing')
+  await c9Allow(occ.control, requestId)
+  // The reentry is in flight: pin it on the runtime chain (proven by
+  // the changed map entry — it passed the pre-dispatch checks with no
+  // abort yet).
+  await c9WaitQueued(chains, occupationChain)
+  // The occupancy's allow parks at the external probe — holding (b)
+  // NOW (before the hold release, so the reentry CANNOT reach the
+  // unit before the (b) hold is established).
+  await occ.create()
+  // THE ONE-SHOT: installed before the (b) hold is established — the
+  // only abandon-fact write from here on is the row's C-2 close.
+  const oneShotFault = c9PatchAbandonPersistOneShotFault(w)
+  try {
+    const occupancyResolve = occ.startAllow()
+    await withTimeout(occ.probePaused, 15_000, 'the control-lock hold (the occupancy probe)')
+    // Release the hold: the reentry passes its chain post-wait check
+    // (the signal is not aborted yet) and queues on (b) behind the
+    // occupancy.
+    hold.release()
+    await sleep(60)
+    ac.abort()
+    occ.releaseProbe()
+    await withTimeout(occupancyResolve, 15_000, 'the occupancy resolution')
+    await withTimeout(occupation, 15_000, 'the occupation settlement')
+    const outcome = await started.promise
+    await c9AssertOneShotCloseFault(outcome, w, occ.control, requestId, memberBaseline, oneShotFault.attempts)
+  } finally {
+    oneShotFault.restore()
+  }
+}
+
+describe('fix-control-authz C9 direct shared pre-callback one-shot close-fault residual', () => {
+  it('c9-pcb-1: GATED branch (follow-up reentry) — the unit C-2 abort-close faults ONCE before the commitEffect callback enters: the ORIGINAL typed DURABLE_WRITE_FAILED propagates unchanged (not masked by a typed-abandoned terminal), the close attempted EXACTLY ONCE, zero effects, zero marks', async () => {
+    await c9PreCallbackOneShotGated('c9-pcb-1')
+  })
+  it('c9-pcb-2: FALLBACK branch (send-message reentry) — same one-shot pre-callback close fault on the fallback D2 settle path: the ORIGINAL typed DURABLE_WRITE_FAILED propagates unchanged, the close attempted EXACTLY ONCE, zero effects, zero marks', async () => {
+    await c9PreCallbackOneShotFallback('c9-pcb-2')
   })
 })
