@@ -648,3 +648,100 @@ post-run stable probes and after all wire evidence had been captured:
 
 No other root was created or removed by me this round; the two probe worlds are retained rather than cleaned
 up, and this round contains **no** glob, mtime predicate, `git clean`, `reset` or `mv` anywhere.
+
+## 15. Round 3 — the clean carrier, its install, and two defects the first positive leg exposed
+
+### 15.1 Carrier creation and install (authorized by the coordinator, B3)
+
+One new worktree, created (never cleaned, never reused) at the exact head:
+
+```
+$ git worktree add --detach .worktrees/browser-carrier-cc5a011e cc5a011ec5a9d1f05fcd46ae8f6daebfe323d9ba
+Preparing worktree (detached HEAD cc5a011e)      # exit 0
+carrier HEAD read-back: cc5a011ec5a9d1f05fcd46ae8f6daebfe323d9ba
+carrier porcelain: 0 lines
+```
+
+`packages/runtime/dist/**` (1369 tracked files) and `packages/client/composition-shim/client-bundle.js`
+are tracked in this repo (`.gitignore` re-includes them), so the carrier has the built product with no
+build step and no copy of any product source.
+
+Install, attempt 1 — **failed, and the reason is environmental**:
+
+```
+$ pnpm install --frozen-lockfile                     # pnpm 11.7.0, node v24.21.0
+pnpm: unable to open database file   … StoreIndex.openDatabase      [exit 1]
+$ touch /home/user/.local/share/pnpm/store/v11/.write-probe   → Read-only file system
+```
+
+The global store (2.0 G, `files/ index.db projects/`) sits on a read-only filesystem in this sandbox;
+pnpm must open its index DB for writing. `/home/user` is read-only entirely.
+
+Install, attempt 2 — used the workspace's own writable store (2.3 G, gitignored at `.gitignore:4`,
+already populated; precedent: the handoff-closure worktree was installed with real `node_modules`
+directories in this same environment):
+
+```
+$ pnpm install --frozen-lockfile --store-dir /srv/workspace/dsh-plugins/dsh-agent-team/.pnpm-store
++ @deepseek-ai/dsh 0.1.7-rc.1 … typescript 6.0.3, vitest 4.1.11      [exit 1]
+[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: @deepseek-ai/dsh-subprocess-local@0.1.7-rc.1,
+@google/genai@1.52.0, koffi@3.3.1, node-pty@1.2.0-beta.15, protobufjs@7.6.6
+```
+
+The non-zero exit is pnpm's ignored-builds policy, **not** a resolution failure: 697 packages linked
+into `node_modules/.pnpm`, and every externally-declared dependency of every workspace package resolves
+(`packages/client` 0, `packages/domain` 1, `packages/runtime` 9, root 1 — `unresolved=[]` for all;
+packages with no external deps get no `node_modules`, which is normal pnpm). The build scripts were left
+ignored: allowing them would mean editing the tracked `allowBuilds` list, i.e. a source change plus
+running dependency build code — both outside the authorization. **Reported rather than worked around.**
+
+One thing pnpm did on its own, disclosed because it touched a tracked file: `pnpm-workspace.yaml` came
+out modified, with five placeholder `allowBuilds:` entries (`'@deepseek-ai/dsh-subprocess-local': set
+this to true or false`, `@google/genai`, `koffi`, `node-pty`, `protobufjs`). That is a tracked-source
+modification I did not authorize, so it was reverted by restoring that one file from the commit
+(`git restore pnpm-workspace.yaml`, exit 0; nothing else touched, nothing deleted). No further pnpm
+command is run in the carrier.
+
+Verification read-backs the coordinator asked for:
+
+* **(a) carrier porcelain EMPTY** — `git status --porcelain | wc -l` → `0` after the restore. The gate is
+  satisfiable here precisely because `node_modules` are real directories matched by `.gitignore:25
+  node_modules/`; the four top-level symlinks in the other worktree are not.
+* **(b) product refs load from the carrier's own `cc5a` tree** — dynamic `import()` of the three refs the
+  kit uses, each resolving under the carrier path:
+  `…/browser-carrier-cc5a011e/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs`,
+  `…/browser-carrier-cc5a011e/packages/runtime/root-binding/harness/seam.mjs`,
+  `…/browser-carrier-cc5a011e/packages/runtime/dist/packages/runtime/src/plugin/host.js`; plus
+  `yaml` → `.pnpm/yaml@2.9.0/…` and `zod` → `.pnpm/zod@4.4.3/…` inside the carrier. (`cordis` /
+  `@deepseek-ai/dsh-plugin` are not declared at the runtime-package layer, so a `createRequire` probe
+  from there reports not-found; the modules that use them import them from their own layer, and they
+  loaded — recorded so the read-back is not over-claimed.)
+* **(c) test runtime pristine** — `tests/deepseek-harness-test-use` HEAD
+  `46a7f68b0922371ce7144b668b90e377d8e799f4`, porcelain 0.
+
+### 15.2 The first positive-leg attempt: one live success, one leak, one real defect
+
+Run in the carrier (`--seed-world mpr-2026-10-01T13-21-34 --t1 session-mpr-t1-mpr-2026-10-01T13-21-34`,
+fresh port check: 3181–3186 free, 3496/3497 free, `:3080` probed read-only at 401 and never bound; masked
+console `run-carrier-boot-2026-10-01T14-04-27.log`, 20 lines):
+
+* **B2's derivation is now EXECUTED evidence, not dry**: `member identity derived from the world:
+  session=session-team-child-52860b5a204e428e1cb00690a10eb02f instance=inst-0iin89s0dvix
+  template=worker label=w-deleg lifecycle=SETTLED owner=session-mpr-t1-mpr-2026-10-01T13-21-34
+  binding=team-member (4 corroborated member(s))` — matching the pair the independent recomputation
+  predicted in §12.2, from the world that actually booted.
+* **The leak the review predicted fired.** The never-became-READY FATAL printed `last answer=` with
+  `"liveToken":"lt-v1-fa4d71…"` — a raw live token in the console, exactly because `scrub()` only matched
+  `token=` URLs. Fixed in `26c1547a`; the credential-shaped value is masked in the saved copy of this
+  console and the saved copy was scanned (0 raw `lt-v1-` / `?token=` values). The token belonged to a
+  throwaway host that has since exited; nothing was committed with it.
+* **A real defect in my own readiness code**: the RPC record is at `result.value.data`, not
+  `body.value.data`, so a fully affirmative answer (`status=200`, `relation=team-member`, the derived
+  instance, `disposed:false`) was judged not-ready for the whole 60 s budget. Fixed in `ba75ade5` with the
+  envelope replayed against the captured answer (`unwrap-expression-proof-2026-10-01T14-25.log`:
+  old → `null`/predicate false, new → record/predicate true, typed-error → null, 404 → null, null → null).
+  The criteria themselves were right; only the unwrap was wrong.
+* Kept, untouched: world `tests/homes/tvs-smoke-2026-10-01T14-04-27` (the kit does not delete on a fatal)
+  and the carrier's own post-gate evidence dir `wp9b-browser-smoke-tvs-smoke-2026-10-01T14-04-27`
+  (untracked, inside the carrier; its `instance.log` holds the raw boot banner — the pre-existing kit
+  behavior, kept as-run and never committed).
