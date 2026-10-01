@@ -203,24 +203,34 @@ export function validateAccessRecordPath({ repoRoot, worldDir, fileName = UI_ACC
   if (typeof repoRoot !== 'string' || repoRoot === '') {
     throw new ObserveFlagError('UI_ACCESS_MISSING_REPO', 'validateAccessRecordPath requires repoRoot')
   }
+  // CANONICAL HOMES PIN (coordinator-approved ITEM-C; supersedes the
+  // final-component-only P2-A pin). Compute the CANONICAL repo FIRST — this
+  // legitimately canonicalizes layout aliases (e.g. /home/user/workspace →
+  // /srv/...): the real repo reached through a symlink must NOT be
+  // mis-refused. Then require realpath(<canonicalRepo>/tests/homes) to be
+  // EXACTLY join(<canonicalRepo>,'tests','homes'): EVERY ancestor component
+  // must be real, so no symlink (repo/tests → an in-repo artifacts dir was the
+  // reproducible bypass of the old pin) can silently redirect the raw
+  // launchUrl. The EQUALITY PIN is the authority; the per-segment lstat walk
+  // only exists to NAME the first offending component. No name blacklists.
   const repoReal = realpathNearest(resolve(repoRoot))
-  const homesLiteral = join(repoReal, 'tests', 'homes')
-  // RE-REVIEW P2-A (canonical homes PIN): containment alone is NOT enough — a
-  // tests/homes SYMLINKED to another IN-REPO location (e.g. an evidence dir)
-  // passes every containment check yet silently redirects the raw launchUrl
-  // into evidence paths (reproducible without any race). The canonical homes
-  // root is therefore PINNED to a real directory: a symlinked homes root is
-  // refused typed, regardless of where it points.
-  try {
-    if (lstatSync(homesLiteral).isSymbolicLink()) {
-      throw new ObserveFlagError('UI_ACCESS_HOMES_ROOT_SYMLINK', `tests/homes must be a REAL directory (canonical homes pin); ${homesLiteral} is a symlink — refused`)
+  let homesWalk = repoReal
+  for (const seg of ['tests', 'homes']) {
+    homesWalk = join(homesWalk, seg)
+    let st = null
+    try { st = lstatSync(homesWalk) } catch { /* absent — not a symlink; the equality pin still guards */ }
+    if (st !== null && st.isSymbolicLink()) {
+      if (seg === 'homes') {
+        throw new ObserveFlagError('UI_ACCESS_HOMES_ROOT_SYMLINK', `tests/homes must be a REAL directory (canonical homes pin); ${homesWalk} is a symlink — refused`)
+      }
+      throw new ObserveFlagError('UI_ACCESS_HOMES_ANCESTOR_SYMLINK', `an ancestor of the canonical homes path (${homesWalk}) is a symlink — raw auth must never be redirected by ancestor links — refused`)
     }
-  } catch (error) {
-    if (error instanceof ObserveFlagError) throw error
-    // ENOENT: homes not created yet — not a symlink; realpathNearest below handles it.
   }
-  const homesReal = realpathNearest(homesLiteral)
-  // FIX-3(a): the HOMES ROOT ITSELF must stay inside the authorized repo tree.
+  const homesReal = realpathNearest(join(repoReal, 'tests', 'homes'))
+  if (homesReal !== join(repoReal, 'tests', 'homes')) {
+    throw new ObserveFlagError('UI_ACCESS_HOMES_ANCESTOR_SYMLINK', `tests/homes must be canonically EXACTLY ${join(repoReal, 'tests', 'homes')} (canonical homes equality pin); realpath says ${homesReal}`)
+  }
+  // FIX-3(a) belt — subsumed by the equality pin, kept as explicit proof:
   if (!isInsideOrSame(homesReal, repoReal)) {
     throw new ObserveFlagError('UI_ACCESS_HOMES_ESCAPES_REPO', `tests/homes must stay inside the authorized repo tree (${repoReal}); realpath says ${homesReal}`)
   }

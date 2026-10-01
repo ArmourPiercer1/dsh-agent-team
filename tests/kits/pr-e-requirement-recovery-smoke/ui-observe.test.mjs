@@ -734,3 +734,32 @@ test('ITEM-B: no-signal default path unchanged — deadline overrun stays a pure
   assert.equal(res.overrun, 'UI_READ_DEADLINE')
   assert.equal(res.entries, null)
 })
+
+// ── 17. ITEM-C: CANONICAL HOMES equality pin — every ANCESTOR component of
+//         tests/homes must be real (a symlinked repo/tests redirecting into an
+//         in-repo artifacts dir passed the final-component-only pin) ─────────
+
+test('ITEM-C: ancestor symlink (repo/tests → in-repo artifacts dir) refused; target asserted UNWRITTEN', () => {
+  const base = mkTmp('uio-repo3-')
+  mkdirSync(join(base, 'packages'), { recursive: true })
+  const artifacts = join(base, 'dev', 'review-artifacts')
+  mkdirSync(join(artifacts, 'homes', 'w1'), { recursive: true })
+  symlinkSync(artifacts, join(base, 'tests')) // repo/tests itself symlinked — in-repo, no evidence segment
+  const worldDir = join(base, 'tests', 'homes', 'w1')
+  throwsCode(() => validateAccessRecordPath({ repoRoot: base, worldDir }), 'UI_ACCESS_HOMES_ANCESTOR_SYMLINK')
+  throwsCode(() => writePrivateAccessRecord({ repoRoot: base, worldDir, payload: { launchUrl: 'https://x' } }), 'UI_ACCESS_HOMES_ANCESTOR_SYMLINK')
+  assert.equal(readdirSync(join(artifacts, 'homes', 'w1')).length, 0, 'artifacts target dir must stay UNWRITTEN')
+})
+
+test('ITEM-C: legit ALIASED repo root (whole repo reached through a symlink) still passes with the pinned equality', () => {
+  const { root, world } = mkFakeRepo()
+  const aliasBase = mkTmp('uio-alias-')
+  const alias = join(aliasBase, 'repo')
+  symlinkSync(root, alias)
+  const realRoot = realpathSync(root)
+  const path = validateAccessRecordPath({ repoRoot: alias, worldDir: join(alias, 'tests', 'homes', 'world-1') })
+  assert.equal(path, join(realRoot, 'tests', 'homes', 'world-1', 'browser-access.json'), 'canonicalized to the REAL repo, not mis-refused')
+  const written = writePrivateAccessRecord({ repoRoot: alias, worldDir: world.replace(root, alias), payload: { ok: 1 } })
+  assert.ok(written.path.startsWith(join(realRoot, 'tests', 'homes')))
+  assert.equal(lstatSync(written.path).mode & 0o777, 0o600)
+})
