@@ -1,14 +1,18 @@
-IDENTITY DIFF — full-suite failures, this tree vs the master base export
-(produced with: comm against the two sorted identity lists above)
+IDENTITY DIFF — full-suite failures, this tree (review-fix batch) vs the master base export
+(comm over the two sorted identity lists in full-suite-{mine,base}.txt)
 
---- present in MY tree and NOT on the base (new failures introduced by PR2): ---
+--- present in MY tree and NOT on master (new failures): ---
+packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions
+packages/runtime/test/team-session-activation.test.ts > C1 (guide §13.1): the Team session-activation fence > A15 one absolute deadline: record-then-dispose never stretches to two full windows (≈ timeout, not 2× timeout)
 (empty above = zero new failures)
 
---- present on the base and NOT in my tree: ---
+--- present on master and NOT in my tree: ---
 packages/runtime/test/team-skills.test.ts > team-skills — bundled team skill provider (real SkillRegistry) > S2 · the layout candidate math (source layout, installed dist layout, neither)
 packages/runtime/test/team-skills.test.ts > team-skills — bundled team skill provider (real SkillRegistry) > S3 · the REAL registry serves the two committed skills through the public surface
+Test Files  10 failed | 417 passed (427)
+Tests  21 failed | 4951 passed (4972)
 
---- shared (pre-existing on master, recorded by identity only): ---
+--- shared (pre-existing on master; identity only, no attribution): ---
 packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 10. Static source returns legacy mode when capabilities absent
 packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 11b. Selective source maps deny entries to values correctly
 packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 11. Selective source maps to TemplatePolicy values correctly
@@ -31,3 +35,19 @@ packages/runtime/test/p8s3b-result-effects.test.ts [ packages/runtime/test/p8s3b
 packages/runtime/test/t12a-b2-child-identity.test.ts [ packages/runtime/test/t12a-b2-child-identity.test.ts ]
 packages/runtime/test/t12a-glue-handoff-ports.test.ts [ packages/runtime/test/t12a-glue-handoff-ports.test.ts ]
 packages/tools/test/p6t6-actions.test.ts > P6-T6 tool set — delegated actions (unit level) > messaging: worker -> leader is delivered direct to the leader bound session
+FLAKE NOTE for the two identities present in the post-batch full run and absent from
+the master base export. They are timing/load-sensitive, NOT caused by this
+batch — proven by re-running the SAME two files against the SAME tree:
+
+$ node_modules/.bin/vitest run packages/runtime/test/p6t1-parallel.test.ts packages/runtime/test/team-session-activation.test.ts
+  run 1: Test Files 2 passed (2)          Tests 25 passed (25)
+  run 2: Test Files 1 failed | 1 passed (2)  Tests 2 failed | 23 passed (25)   <- same tree, no edit between runs
+
+A file that fails on the second identical invocation is nondeterministic under
+load (parallel activation quotas / an absolute deadline fence). This PR also has
+zero consumers (pinned by a committed leg), so nothing here can reach them.
+Recorded as observed; no fix attempted (out of scope, no attribution claimed).
+
+The identities in question:
+  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions
+  packages/runtime/test/team-session-activation.test.ts > C1 (guide §13.1): the Team session-activation fence > A15 one absolute deadline: record-then-dispose never stretches to two full windows (≈ timeout, not 2× timeout)

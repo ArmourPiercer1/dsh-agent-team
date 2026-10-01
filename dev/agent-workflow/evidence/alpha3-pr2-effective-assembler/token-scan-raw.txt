@@ -11,3 +11,8 @@ NO HITS — clean
 
 staged path count: 36
 staged diff size: 386186 bytes
+
+## Delta scan for the review-fix batch
+date: 2026-10-01T20:01:38Z   staged paths: 18   staged diff bytes: 129437
+$ git diff --cached | grep -inE <same pattern set as above>
+NO HITS — clean

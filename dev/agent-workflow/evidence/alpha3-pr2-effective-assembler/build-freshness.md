@@ -47,3 +47,24 @@ the emitted import specifier), the dist was re-staged, and steps 4-5 were green 
     $ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
     [check-artifacts-committed] OK: 1384 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
     [build:composition exit: 0]
+
+---
+
+## Review-fix batch (same rule, again)
+
+`pnpm build` exit 0 → `pnpm build:composition` exit **1**, listing exactly the
+four rebuilt files of the changed module:
+
+```
+C content-drift (git add): packages/runtime/dist/packages/runtime/effective-policy/permission-assembler.js
+C content-drift (git add): …permission-assembler.d.ts
+C content-drift (git add): …permission-assembler.js.map
+C content-drift (git add): …permission-assembler.d.ts.map
+```
+
+Nothing else drifted (4 of 4), i.e. no other owned file moved. After staging
+exactly those paths: `pnpm build:composition` exit 0 with
+`[check-artifacts-committed] OK: 1384 files; committed install-surface artifacts
+match the fresh build (incl. 1 glue placement(s))`, and `pnpm check:artifacts`
+standalone exit 0. The fix and its artifacts ship in the SAME commit; no pre-fix
+dist is left behind in the tree.

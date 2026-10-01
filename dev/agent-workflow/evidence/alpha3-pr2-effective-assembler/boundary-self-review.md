@@ -83,3 +83,14 @@ by identity diff against a `git archive` export of the base commit (same
 node_modules, same command), and pinned by `a3p2-effective-policy-lane-import.test.ts`,
 which fails with the original symptom when the barrel import is restored
 (`import-cycle-regression-raw.txt`).
+
+## Review-fix batch
+
+Same boundary, no growth: one assertion added inside `validateOverlayViews`, one
+module-private `canonicalViewKey` helper, `Object.freeze` on the exported
+vocabulary. No new import in the module (the lane-import spec, which pins the
+exact closed import set, is still green); no new exported symbol; no consumer;
+the "PR2 wires NOTHING" leg still passes; `permission-resolver.ts`,
+`TeamDomain/stores.ts`, PR1 overlay sources, client/tools/remote: zero diff.
+The refusal is a new `details.problem` VALUE inside an existing closed error
+code — no new code, no API widening.

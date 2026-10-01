@@ -326,6 +326,17 @@ export function errorProblem(error: unknown): string | undefined {
 }
 
 /** Run `fn`, returning its result or the error it threw. */
+/** One `details` member of a thrown assembly error (the typed refusal context). */
+export function errorDetail(error: unknown, key: string): unknown {
+  if (typeof error === 'object' && error !== null && 'details' in error) {
+    const details = (error as { details?: unknown }).details
+    if (typeof details === 'object' && details !== null) {
+      return (details as Record<string, unknown>)[key]
+    }
+  }
+  return undefined
+}
+
 export function capture<T>(fn: () => T): { ok: true; value: T } | { ok: false; error: unknown } {
   try {
     return { ok: true, value: fn() }

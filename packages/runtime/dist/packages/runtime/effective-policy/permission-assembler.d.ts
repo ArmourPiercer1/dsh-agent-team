@@ -91,6 +91,10 @@
  *   carrying a different canonical view is a conflict;
  * - a rule view that misstates the effect its snapshot rule carries, or that
  *   does not address exactly one snapshot rule, is refused;
+ * - a rule view that leaves a snapshot rule uninterpreted is refused: the
+ *   overlay layer is a FULL reading of the authority snapshot, so an omitted
+ *   view would silently retire a durable rule (and silently retire a `deny`
+ *   while still reporting that the overlay layer decided);
  * - a malformed canonical rule, static lane or snapshot section is refused.
  *
  * # Boundaries (PR2 scope — nothing more)
@@ -114,6 +118,11 @@ import type { CanonicalRule, CanonicalRules, PermissionLane } from '../operation
 import type { CanonicalOperation } from '../operation-permission/types.js';
 import type { PermissionOverlaySnapshot } from '../permission-governance/types.js';
 /** The permission layers, ASCENDING precedence (the ADR §4 order). */
+/**
+ * Frozen: `as const` is a type-level promise only, and this array IS the ADR §4
+ * layer order — an in-place `.sort()` in any consumer would silently invert the
+ * precedence for every other caller in the process.
+ */
 export declare const EFFECTIVE_PERMISSION_LAYERS: readonly ["blueprint", "template", "overlay"];
 /** One permission layer. */
 export type EffectivePermissionLayerKind = (typeof EFFECTIVE_PERMISSION_LAYERS)[number];
@@ -127,7 +136,7 @@ export interface EffectivePermissionOverlayRuleCarrier {
     readonly resource: string;
 }
 /** The closed assembly error codes. */
-export declare const EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES: {
+export declare const EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES: Readonly<{
     /** The assembly input itself is malformed (identity, layer shape). */
     readonly ASSEMBLY_INPUT_MALFORMED: "EFFECTIVE_PERMISSION_ASSEMBLY_INPUT_MALFORMED";
     /** An overlay snapshot belongs to another TeamSession / MemberInstance. */
@@ -142,7 +151,7 @@ export declare const EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES: {
     readonly RULE_MALFORMED: "EFFECTIVE_PERMISSION_RULE_MALFORMED";
     /** A static layer or an overlay snapshot is structurally malformed. */
     readonly LAYER_MALFORMED: "EFFECTIVE_PERMISSION_LAYER_MALFORMED";
-};
+}>;
 /** One of the closed assembly error codes. */
 export type EffectivePermissionAssemblyErrorCode = (typeof EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES)[keyof typeof EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES];
 /** Every assembly error code value, for membership checks. */
@@ -202,7 +211,12 @@ export interface EffectivePermissionOverlayRuleView {
 export interface EffectivePermissionOverlayLayer {
     /** The PR1 PermissionOverlaySnapshot (the ADR §2 record). */
     readonly snapshot: PermissionOverlaySnapshot;
-    /** The canonical view of the snapshot rules to feed the matcher. */
+    /**
+     * The canonical view of the snapshot rules to feed the matcher: EXACTLY one
+     * view per snapshot rule, in any order. A short list is a truncated reading of
+     * a FULL snapshot and is refused (`overlay-rule-view-incomplete`); an empty
+     * list is legal only for a snapshot that carries no rules at all.
+     */
     readonly rules: readonly EffectivePermissionOverlayRuleView[];
 }
 /** The assembler input (ADR §3 Stage 1: load, load, merge, preserve). */

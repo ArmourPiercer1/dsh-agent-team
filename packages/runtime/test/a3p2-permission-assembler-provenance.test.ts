@@ -36,6 +36,8 @@ import { describe, expect, it } from 'vitest'
 import {
   assembleEffectivePermission,
   assembleEffectivePermissionPolicy,
+  EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES,
+  EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODE_VALUES,
   EFFECTIVE_PERMISSION_LAYERS,
   EFFECTIVE_PERMISSION_LOOKUP_ORDER,
 } from '../effective-policy/index.js'
@@ -44,6 +46,7 @@ import {
   capture,
   deepClone,
   errorCode,
+  errorDetail,
   errorProblem,
   exactRule,
   fileOp,
@@ -409,8 +412,7 @@ describe('fail-closed validation (no silent authority)', () => {
     expect(errorProblem(thrown.error)).toBe('overlay-rule-index-out-of-range')
   })
 
-  it('the same snapshot rule addressed twice is refused (an ambiguous lane entry)', () => {
-    const overlay = snapshot(1, [overlayRule('write', KEY_A, 'allow')])
+  it('the same snapshot rule addressed twice is refused (an ambiguous lane entry)', () => {    const overlay = snapshot(1, [overlayRule('write', KEY_A, 'allow')])
     const view = { ruleIndex: 0, lane: 'allow' as const, rule: exactRule('write', KEY_A) }
     const thrown = capture(() =>
       assembleEffectivePermission(
@@ -426,6 +428,83 @@ describe('fail-closed validation (no silent authority)', () => {
     if (thrown.ok) return
     expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_OVERLAY_RULE_REFERENCE_INVALID')
     expect(errorProblem(thrown.error)).toBe('overlay-rule-index-duplicate')
+  })
+
+  it('an OMITTED view of a snapshot rule is refused: a FULL snapshot is read in full', () => {
+    // The durable snapshot carries two rules (PR1 rejects a repeated
+    // (operation, resource) pair, so the second row carries a distinct carrier
+    // token; both canonicalize onto the SAME key, which is what makes the pair a
+    // real allow/deny tension for this operation). Supplying only the `allow`
+    // view is not a smaller overlay — it is a truncated reading that would
+    // silently retire the snapshot's `deny` row and answer `allow` while still
+    // reporting that the overlay layer decided.
+    const overlay = snapshot(1, [overlayRule('write', KEY_A, 'allow'), overlayRule('write', `${KEY_A}#row-2`, 'deny')])
+    const allowOnly = { ruleIndex: 0, lane: 'allow' as const, rule: exactRule('write', KEY_A) }
+    const thrown = capture(() =>
+      assembleEffectivePermission(
+        {
+          teamSessionId: TEAM_SESSION,
+          memberInstanceId: INSTANCE_A,
+          template: staticLayer({ label: 'tpl-worker', default: 'deny', allow: [], ask: [], deny: [] }),
+          overlays: [{ snapshot: overlay, rules: [allowOnly] }],
+        },
+        WRITE_A,
+      ),
+    )
+    expect(thrown.ok).toBe(false)
+    if (thrown.ok) return
+    expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_OVERLAY_RULE_REFERENCE_INVALID')
+    expect(errorProblem(thrown.error)).toBe('overlay-rule-view-incomplete')
+    // The refusal names exactly what was left out, so a caller fixing the view
+    // does not have to diff the snapshot by hand.
+    expect(errorDetail(thrown.error, 'missingRuleIndexes')).toEqual([1])
+    expect(errorDetail(thrown.error, 'snapshotRuleCount')).toBe(2)
+    expect(errorDetail(thrown.error, 'viewCount')).toBe(1)
+  })
+
+  it('empty views against a non-empty snapshot are refused (the overlay cannot vanish)', () => {
+    // The smallest legal form of the same defect: ONE durable deny rule, no view
+    // for it, and a Template that allows the operation. Without the coverage
+    // check the dynamic layer assembles EMPTY, the snapshot's deny never applies,
+    // and the answer is the template's `allow` — a durable deny silently
+    // inverted by an omission three lines from the call site.
+    const overlay = snapshot(1, [overlayRule('write', KEY_A, 'deny')])
+    const input = {
+      teamSessionId: TEAM_SESSION,
+      memberInstanceId: INSTANCE_A,
+      template: staticLayer({ label: 'tpl-worker', default: 'deny', allow: [exactRule('write', KEY_A)], ask: [], deny: [] }),
+    }
+    const thrown = capture(() =>
+      assembleEffectivePermission({ ...input, overlays: [{ snapshot: overlay, rules: [] }] }, WRITE_A),
+    )
+    expect(thrown.ok).toBe(false)
+    if (thrown.ok) return
+    expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_OVERLAY_RULE_REFERENCE_INVALID')
+    expect(errorProblem(thrown.error)).toBe('overlay-rule-view-incomplete')
+    expect(errorDetail(thrown.error, 'missingRuleIndexes')).toEqual([0])
+    expect(errorDetail(thrown.error, 'generation')).toBe(1)
+
+    // Full coverage of the same snapshot is unaffected: the overlay deny still
+    // beats the template allow (the behaviour every other leg relies on).
+    const { decision } = assembleEffectivePermission({ ...input, overlays: [overlayLayer(overlay)] }, WRITE_A)
+    expect(decision.decision).toBe('deny')
+    expect(decision.winningLayer).toBe('overlay')
+  })
+
+  it('an overlay snapshot that carries no rules at all still assembles, with no views', () => {
+    // The coverage rule is exact, not "non-empty": 0 rows read by 0 views is a
+    // complete (if empty) reading of the authority, and the layer stays present
+    // with its authority for the audit trail.
+    const empty = snapshot(2, [])
+    const policy = assembleEffectivePermissionPolicy({
+      teamSessionId: TEAM_SESSION,
+      memberInstanceId: INSTANCE_A,
+      template: staticLayer({ label: 'tpl-worker', default: 'deny', allow: [exactRule('write', KEY_A)], ask: [], deny: [] }),
+      overlays: [overlayLayer(empty)],
+    })
+    const layer = policy.layers.find((entry) => entry.layer === 'overlay')
+    expect(layer?.ruleCount).toBe(0)
+    expect(layer?.authority?.generation).toBe(2)
   })
 
   it('two different snapshots claiming ONE generation are an ambiguous authority and are refused', () => {
@@ -483,6 +562,100 @@ describe('fail-closed validation (no silent authority)', () => {
     if (thrown.ok) return
     expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_AUTHORITY_CONFLICT')
     expect(errorProblem(thrown.error)).toBe('overlay-authority-view-mismatch')
+  })
+
+  it('the same canonical mapping supplied in a DIFFERENT ORDER is the same authority', () => {
+    // Lane contents are normalized to the snapshot's declaration order before
+    // they are compared (and before they reach the matcher), so the ORDER the
+    // caller happened to hand the views over in carries no meaning. Reading it
+    // as a conflict would make a purely cosmetic difference — a caller iterating
+    // its canonicalization map the other way round — look like two
+    // irreconcilable interpretations of one authority.
+    const many = snapshot(1, [
+      overlayRule('write', KEY_A, 'allow'),
+      overlayRule('write', KEY_B, 'ask'),
+      overlayRule('read', KEY_A, 'deny'),
+    ])
+    const forward = overlayLayer(many)
+    const reversed = overlayLayer(many, { rules: [...forward.rules].reverse() })
+    const { decision } = assembleEffectivePermission(
+      {
+        teamSessionId: TEAM_SESSION,
+        memberInstanceId: INSTANCE_A,
+        template: TEMPLATE,
+        overlays: [forward, reversed],
+      },
+      WRITE_A,
+    )
+    expect(decision.decision).toBe('allow')
+    expect(decision.winningLayer).toBe('overlay')
+    // The assembled layer is byte-identical either way: order never reaches the
+    // matcher, so neither the answer nor the audit can depend on it.
+    const policy = assembleEffectivePermissionPolicy({
+      teamSessionId: TEAM_SESSION,
+      memberInstanceId: INSTANCE_A,
+      template: TEMPLATE,
+      overlays: [forward],
+    })
+    const policyReversed = assembleEffectivePermissionPolicy({
+      teamSessionId: TEAM_SESSION,
+      memberInstanceId: INSTANCE_A,
+      template: TEMPLATE,
+      overlays: [reversed],
+    })
+    expect(policy).toEqual(policyReversed)
+  })
+
+  it('the same snapshot supplied twice with a DIFFERENT canonical view is still refused', () => {
+    // Order-insensitive, content-SENSITIVE: a second copy that maps a row onto a
+    // different canonical rule is a genuine second interpretation, and it stays
+    // a typed conflict.
+    const only = snapshot(1, [overlayRule('write', KEY_A, 'allow'), overlayRule('write', KEY_B, 'allow')])
+    const first = overlayLayer(only)
+    const remapped = overlayLayer(only, {
+      rules: first.rules.map((view, index) =>
+        index === 0 ? { ...view, rule: exactRule('write', 'fskey:/other') } : view,
+      ),
+    })
+    const thrown = capture(() =>
+      assembleEffectivePermission(
+        {
+          teamSessionId: TEAM_SESSION,
+          memberInstanceId: INSTANCE_A,
+          overlays: [first, remapped],
+        },
+        WRITE_A,
+      ),
+    )
+    expect(thrown.ok).toBe(false)
+    if (thrown.ok) return
+    expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_AUTHORITY_CONFLICT')
+    expect(errorProblem(thrown.error)).toBe('overlay-authority-view-mismatch')
+  })
+
+  it('the exported layer vocabulary cannot be mutated in place', () => {
+    // The layer order is the ADR §4 rule itself. `as const` is a TYPE-level
+    // promise: one consumer calling `.sort()` / `.reverse()` on the exported
+    // array would silently invert the precedence for every other caller in the
+    // process, with no error anywhere. Frozen, that call is a no-op (strict mode)
+    // instead of a process-wide precedence edit.
+    expect(Object.isFrozen(EFFECTIVE_PERMISSION_LAYERS)).toBe(true)
+    expect(Object.isFrozen(EFFECTIVE_PERMISSION_LOOKUP_ORDER)).toBe(true)
+    expect(Object.isFrozen(EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODE_VALUES)).toBe(true)
+    expect(Object.isFrozen(EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES)).toBe(true)
+    expect(EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODE_VALUES).toContain(
+      'EFFECTIVE_PERMISSION_OVERLAY_RULE_REFERENCE_INVALID',
+    )
+    const orderBefore = [...EFFECTIVE_PERMISSION_LOOKUP_ORDER]
+    try {
+      ;(EFFECTIVE_PERMISSION_LOOKUP_ORDER as string[]).sort()
+    } catch {
+      // frozen arrays in strict mode: sorted in place is a TypeError — either
+      // outcome must leave the vocabulary untouched.
+    }
+    expect(EFFECTIVE_PERMISSION_LOOKUP_ORDER).toEqual(orderBefore)
+    expect(EFFECTIVE_PERMISSION_LOOKUP_ORDER).toEqual(['overlay', 'template', 'blueprint'])
+    expect(EFFECTIVE_PERMISSION_LAYERS).toEqual(['blueprint', 'template', 'overlay'])
   })
 
   it('a malformed canonical rule is refused (the matcher input is validated, not guessed)', () => {

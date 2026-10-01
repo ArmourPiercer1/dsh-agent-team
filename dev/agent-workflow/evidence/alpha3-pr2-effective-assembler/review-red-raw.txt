@@ -1,0 +1,123 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr2-effective-assembler
+
+ ✓ packages/runtime/test/a3p2-effective-policy-lane-import.test.ts (6 tests) 4ms
+ ✓ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts (24 tests) 12ms
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts (35 tests | 4 failed) 30ms
+     ✓ an overlay win names layer + derived snapshotId + generation + actor + mutationId + timestamp + reason + the deciding snapshot rule 3ms
+     ✓ the overlay authority block is the snapshot sections verbatim (never rewritten or summarized) 1ms
+     ✓ a static win names its layer + label + lane + lane index and carries no overlay block 0ms
+     ✓ a default decision has no winning provenance and names the layer whose fallback answered 0ms
+     ✓ overriddenLower names the deciding rule of each lower layer that MATCHED (never a non-matching layer) 0ms
+     ✓ the explanation is deterministic and names the winning layer, the effect and the mutation 1ms
+     ✓ ADR §7: a Human-attributed rule wins by LAYER, not by actor — the same rule attributed to a Leader decides identically 1ms
+     ✓ layers are carried ASCENDING by precedence with the overlay authority attached 0ms
+     ✓ the layer vocabulary and the lookup order are the frozen ADR §4 order 0ms
+     ✓ an absent static layer simply is not in the policy, and an empty overlay snapshot is 0ms
+     ✓ the overlay of instance A changes A only; instance B keeps the static answer 0ms
+     ✓ a snapshot of another MemberInstance is REFUSED, not filtered out (fail closed) 0ms
+     ✓ a snapshot of another TeamSession is refused too (no cross-session leak) 0ms
+     ✓ the decision and the policy both carry the identity they were assembled for 0ms
+     ✓ consumes the PR1 port output shape: `latest` is the authority, `history` is audit-only 1ms
+     ✓ a view that misstates the snapshot effect is refused 0ms
+     ✓ a rule view addressing a snapshot rule that does not exist is refused 0ms
+     ✓ the same snapshot rule addressed twice is refused (an ambiguous lane entry) 0ms
+     × an OMITTED view of a snapshot rule is refused: a FULL snapshot is read in full 4ms
+     × empty views against a non-empty snapshot are refused (the overlay cannot vanish) 3ms
+     ✓ an overlay snapshot that carries no rules at all still assembles, with no views 1ms
+     ✓ two different snapshots claiming ONE generation are an ambiguous authority and are refused 0ms
+     ✓ the identical snapshot handed in twice is the same authority and is accepted 0ms
+     ✓ the same snapshot supplied twice with a DIFFERENT canonical view is refused 0ms
+     × the same canonical mapping supplied in a DIFFERENT ORDER is the same authority 1ms
+     ✓ the same snapshot supplied twice with a DIFFERENT canonical view is still refused 0ms
+     × the exported layer vocabulary cannot be mutated in place 0ms
+     ✓ a malformed canonical rule is refused (the matcher input is validated, not guessed) 0ms
+     ✓ a malformed static layer is refused 0ms
+     ✓ a malformed assembly identity is refused before any decision is produced 0ms
+     ✓ the same input yields a deeply-equal decision, across fresh-but-equal input objects 0ms
+     ✓ nothing is mutated: the snapshots and the caller-owned lane arrays are byte-stable across assembly 0ms
+     ✓ both outputs are deeply frozen (the Alpha.2 resolver convention) 0ms
+     ✓ the input snapshot object is the PR1 frozen record — the assembler keeps it that way (no copy-on-read rewrite of authority) 0ms
+     ✓ PR2 wires NOTHING: no production source imports the assembler or calls it 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > an OMITTED view of a snapshot rule is refused: a FULL snapshot is read in full
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:453:23
+    451|       ),
+    452|     )
+    453|     expect(thrown.ok).toBe(false)
+       |                       ^
+    454|     if (thrown.ok) return
+    455|     expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_OVERLAY…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > empty views against a non-empty snapshot are refused (the overlay cannot vanish)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:479:23
+    477|       assembleEffectivePermission({ ...input, overlays: [{ snapshot: o…
+    478|     )
+    479|     expect(thrown.ok).toBe(false)
+       |                       ^
+    480|     if (thrown.ok) return
+    481|     expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_OVERLAY…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > the same canonical mapping supplied in a DIFFERENT ORDER is the same authority
+EffectivePermissionAssemblyError: the snapshot of generation 1 was supplied twice with different canonical rule views (problem: overlay-authority-view-mismatch)
+ ❯ refuse packages/runtime/effective-policy/permission-assembler.ts:226:9
+    224|   // `toRemoteSafeDetail` keeps the record lossless-JSON (the freeze i…
+    225|   // error asserts it) and never leaks a live caller object into the e…
+    226|   throw new EffectivePermissionAssemblyError(code, `${message} (proble…
+       |         ^
+    227|     problem,
+    228|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ buildOverlayLayer packages/runtime/effective-policy/permission-assembler.ts:919:13
+ ❯ assembleEffectivePermissionPolicy packages/runtime/effective-policy/permission-assembler.ts:476:19
+ ❯ assembleEffectivePermission packages/runtime/effective-policy/permission-assembler.ts:600:18
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:580:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > the exported layer vocabulary cannot be mutated in place
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:641:58
+    639|     // process, with no error anywhere. Frozen, that call is a no-op (…
+    640|     // instead of a process-wide precedence edit.
+    641|     expect(Object.isFrozen(EFFECTIVE_PERMISSION_LAYERS)).toBe(true)
+       |                                                          ^
+    642|     expect(Object.isFrozen(EFFECTIVE_PERMISSION_LOOKUP_ORDER)).toBe(tr…
+    643|     expect(Object.isFrozen(EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODE_VA…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  4 failed | 61 passed (65)
+   Start at  19:55:50
+   Duration  749ms (transform 1.34s, setup 0ms, import 1.83s, tests 47ms, environment 0ms)
+

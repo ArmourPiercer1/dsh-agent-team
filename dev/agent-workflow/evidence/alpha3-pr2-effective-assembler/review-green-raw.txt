@@ -1,0 +1,13 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr2-effective-assembler
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/a3p2-effective-policy-lane-import.test.ts (6 tests) 4ms
+ ✓ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts (24 tests) 11ms
+ ✓ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts (35 tests) 27ms
+
+ Test Files  4 passed (4)
+      Tests  75 passed (75)
+   Start at  19:56:43
+   Duration  769ms (transform 1.45s, setup 0ms, import 2.17s, tests 46ms, environment 0ms)
+

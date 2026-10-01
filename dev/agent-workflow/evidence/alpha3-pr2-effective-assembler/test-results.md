@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | RED (specs written, module absent) | `red-run-1-raw.txt` | `Test Files 2 failed (2)`; `Tests 52 failed \| 1 passed (53)`; exit 1. The failure is `TypeError: assembleEffectivePermission is not a function` in every leg that calls the module. The ONE passing leg is the "PR2 wires NOTHING" witness — true before the implementation, which is exactly what it is for. |
 | GREEN (module landed) | `green-run-1-raw.txt` | `Tests 53 passed (53)`; exit 0. |
-| GREEN, final (after the two bugs the tests caught + the import-cycle fix + the 4th spec) | `green-run-final-raw.txt` | `Test Files 3 passed (3)`; `Tests 59 passed (59)`; exit 0. Same file records `tsc -p tsconfig.json` exit 0 and `eslint` exit 0 on all seven touched paths. |
+| GREEN, final (after the two bugs the tests caught + the import-cycle fix + the 4th spec) | `green-run-final-raw.txt` | `Test Files 3 passed (3)`; `Tests 65 passed (65)`; exit 0. Same file records `tsc -p tsconfig.json` exit 0 and `eslint` exit 0 on all seven touched paths. |
 | Mutation probes on the new logic | `mutation-probes-raw.txt` | 7 mutants, 7 killed. |
 | Import-cycle regression | `import-cycle-regression-raw.txt` | the witness fails with the original `reading 'LEADER'` TypeError on the barrel-import shape, passes on the shipped leaf-import shape. |
 | Shipped-dist smoke | `shipped-dist-smoke-raw.txt` | the BUILT `packages/runtime/dist/.../effective-policy/index.js` answers overlay-allow-over-template-ask / template-deny-on-no-overlay-match / lowest-layer-fallback, all outputs deeply frozen. |
@@ -82,3 +82,27 @@ read-only from `.worktrees/pr56-client-panel`**; there was no `pnpm install` and
 none is possible offline. Nothing in this PR claims an install succeeded. The
 `pnpm build` / `pnpm build:composition` runs used the toolchain inside that copied
 tree (see `build-freshness.md`).
+
+---
+
+## REVIEW FIX BATCH (external review of PR #58, one P1 BLOCK)
+
+Externally found: `validateOverlayViews` checked every view against the snapshot
+but never that every snapshot rule had a view — a short view list silently
+retired durable rules (see `review-fix-batch.md` for the STEP-1 reproduction on
+the committed blob, which was CONFIRMED, not refuted).
+
+| Phase | Raw | Counts |
+| --- | --- | --- |
+| RED (module reverted to the reviewed commit `0bb4da3a`, new legs only) | `review-red-raw.txt` | `Tests 4 failed \| 61 passed (65)` |
+| GREEN (fix in place, whole spec set + P4-T6) | `review-green-raw.txt` | `Test Files 4 passed (4)`, `Tests 75 passed (75)` |
+| Mutation probes M8/M9/M10 + control | `mutation-probes-review-fix-raw.txt` | 2 / 1 / 1 legs killed, control green |
+| Shipped-dist behaviour (rebuilt `dist`, not source) | `shipped-dist-review-fix-raw.txt` | `overlay-rule-view-incomplete missing=[0]`; full view `deny/win=overlay` |
+
+PR2 spec legs: **65** (precedence 24, provenance/isolation/fail-closed 35,
+lane-import/purity 6). `tsc -p tsconfig.json` exit 0, `eslint` exit 0 on the
+touched paths. Whole-repo suite re-run after the batch: the two identities that
+appear here and not on master are demonstrated **load-flaky** by re-running the
+same two files against the same tree twice (`25 passed`, then `2 failed` with no
+edit between runs) — recorded in `failure-identity-diff.txt` as observed, no
+attribution, no fix attempted.

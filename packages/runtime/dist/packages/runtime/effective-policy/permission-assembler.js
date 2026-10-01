@@ -91,6 +91,10 @@
  *   carrying a different canonical view is a conflict;
  * - a rule view that misstates the effect its snapshot rule carries, or that
  *   does not address exactly one snapshot rule, is refused;
+ * - a rule view that leaves a snapshot rule uninterpreted is refused: the
+ *   overlay layer is a FULL reading of the authority snapshot, so an omitted
+ *   view would silently retire a durable rule (and silently retire a `deny`
+ *   while still reporting that the overlay layer decided);
  * - a malformed canonical rule, static lane or snapshot section is refused.
  *
  * # Boundaries (PR2 scope — nothing more)
@@ -124,24 +128,29 @@ import { resolveOperationPermission } from '../operation-permission/permission-r
 // The frozen layer vocabulary (ADR §4)
 // ---------------------------------------------------------------------------
 /** The permission layers, ASCENDING precedence (the ADR §4 order). */
-export const EFFECTIVE_PERMISSION_LAYERS = ['blueprint', 'template', 'overlay'];
+/**
+ * Frozen: `as const` is a type-level promise only, and this array IS the ADR §4
+ * layer order — an in-place `.sort()` in any consumer would silently invert the
+ * precedence for every other caller in the process.
+ */
+export const EFFECTIVE_PERMISSION_LAYERS = Object.freeze(['blueprint', 'template', 'overlay']);
 /** The order the layers are consulted in: HIGHEST precedence first. */
-export const EFFECTIVE_PERMISSION_LOOKUP_ORDER = [
+export const EFFECTIVE_PERMISSION_LOOKUP_ORDER = Object.freeze([
     'overlay',
     'template',
     'blueprint',
-];
+]);
 /** The numeric precedence of one layer (0 = lowest). */
 export function effectivePermissionLayerPrecedence(layer) {
     return EFFECTIVE_PERMISSION_LAYERS.indexOf(layer);
 }
 /** The three lanes in the frozen same-layer priority order (ADR §4). */
-const LANE_PRIORITY = ['deny', 'ask', 'allow'];
+const LANE_PRIORITY = Object.freeze(['deny', 'ask', 'allow']);
 // ---------------------------------------------------------------------------
 // The closed error surface (fail closed: ambiguity is refused, not decided)
 // ---------------------------------------------------------------------------
 /** The closed assembly error codes. */
-export const EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES = {
+export const EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES = Object.freeze({
     /** The assembly input itself is malformed (identity, layer shape). */
     ASSEMBLY_INPUT_MALFORMED: 'EFFECTIVE_PERMISSION_ASSEMBLY_INPUT_MALFORMED',
     /** An overlay snapshot belongs to another TeamSession / MemberInstance. */
@@ -156,9 +165,9 @@ export const EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES = {
     RULE_MALFORMED: 'EFFECTIVE_PERMISSION_RULE_MALFORMED',
     /** A static layer or an overlay snapshot is structurally malformed. */
     LAYER_MALFORMED: 'EFFECTIVE_PERMISSION_LAYER_MALFORMED',
-};
+});
 /** Every assembly error code value, for membership checks. */
-export const EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODE_VALUES = Object.values(EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES);
+export const EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODE_VALUES = Object.freeze(Object.values(EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES));
 /**
  * A typed assembly refusal. Branch on `code` + `details.problem`, never on the
  * message text. A refusal produces NO decision: the assembler never answers a
@@ -521,7 +530,17 @@ function buildOverlayLayer(overlays, teamSessionId, memberInstanceId) {
         }
         // The identical durable row supplied twice is the same authority (an
         // idempotent read). A second copy that interprets it differently is not.
-        if (JSON.stringify(existing.views) !== JSON.stringify(views)) {
+        //
+        // The comparison is CONTENT-sensitive and ORDER-insensitive, because order
+        // carries no meaning here: the lane contents are normalized to the
+        // snapshot's own declaration order before they reach the matcher, so two
+        // view lists that map each snapshot row onto the same canonical rule are the
+        // same interpretation even if the caller iterated its canonicalization map
+        // the other way round. Comparing the raw arrays instead would report a
+        // purely cosmetic difference as an irreconcilable authority conflict.
+        // `ruleIndex` is unique per view list (duplicates are refused above), so
+        // sorting by it is a canonical form.
+        if (canonicalViewKey(existing.views) !== canonicalViewKey(views)) {
             throw refuse(EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES.AUTHORITY_CONFLICT, 'overlay-authority-view-mismatch', `the snapshot of generation ${String(snapshot.metadata.generation)} was supplied twice with different canonical rule views`, { generation: snapshot.metadata.generation, snapshotId: snapshot.snapshotId });
         }
     }
@@ -649,7 +668,18 @@ function requireEffect(value, detail) {
     }
     return value;
 }
-/** Each view must address exactly one snapshot rule and carry its effect. */
+/**
+ * The views must account for the snapshot's rule rows EXACTLY: each view
+ * addresses one row and carries its effect (checked per view below), no row is
+ * addressed twice, and every row is addressed at all (the coverage check at the
+ * end). `views.length === rules.length` plus per-view uniqueness and in-range
+ * indices is therefore a bijection onto the durable rows: the assembled dynamic
+ * layer always corresponds to the FULL authority snapshot.
+ */
+/** A canonical, order-independent key for one layer's view list (see above). */
+function canonicalViewKey(views) {
+    return JSON.stringify([...views].sort((left, right) => left.ruleIndex - right.ruleIndex));
+}
 function validateOverlayViews(snapshot, value) {
     if (!Array.isArray(value)) {
         throw refuse(EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES.LAYER_MALFORMED, 'overlay-rules-not-an-array', 'an overlay layer rule view list must be an array', { snapshotId: snapshot.snapshotId });
@@ -682,6 +712,33 @@ function validateOverlayViews(snapshot, value) {
             ruleIndex,
             lane: carrier.effect,
             rule: validateCanonicalRule(raw['rule'], { layer: 'overlay', lane: carrier.effect, index: ruleIndex }),
+        });
+    }
+    // COVERAGE: the views must account for EVERY rule row of the authority
+    // snapshot — no more (duplicates and out-of-range are refused above) and no
+    // less. A short view list is not a smaller overlay, it is a TRUNCATED reading
+    // of a durable FULL snapshot: the rows it omits would silently stop applying,
+    // which is the same family of defect design §3.1 forbids (the effective view
+    // stops corresponding to the authority) and it fails in the unsafe direction —
+    // dropping one `deny` row turns the answer into a lower layer's `allow` while
+    // the decision still reports `winningLayer: 'overlay'`. An empty rule set is
+    // legal ONLY when the snapshot itself is empty (`0` views for `0` rows): the
+    // rule that stops applying has to have been removed durably, by a higher
+    // generation, not by the caller leaving a row out.
+    if (views.length !== snapshot.state.rules.length) {
+        const missing = [];
+        for (let index = 0; index < snapshot.state.rules.length; index += 1) {
+            if (!seen.has(index))
+                missing.push(index);
+        }
+        throw refuse(EFFECTIVE_PERMISSION_ASSEMBLY_ERROR_CODES.OVERLAY_RULE_REFERENCE_INVALID, 'overlay-rule-view-incomplete', `the overlay rule view of ${snapshot.snapshotId} addresses ${String(views.length)} of the ${String(snapshot.state.rules.length)} rules its snapshot carries (missing rule indexes ${missing
+            .map((index) => String(index))
+            .join(', ')}); a FULL snapshot is read in full — a rule that must stop applying is superseded by a later generation, never by an omitted view`, {
+            snapshotId: snapshot.snapshotId,
+            generation: snapshot.metadata.generation,
+            snapshotRuleCount: snapshot.state.rules.length,
+            viewCount: views.length,
+            missingRuleIndexes: missing,
         });
     }
     return views;
