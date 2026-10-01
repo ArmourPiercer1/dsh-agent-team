@@ -359,6 +359,38 @@ export function createRuntimeRequirementFactsProvider(ports: RequirementFactsPor
                 // legacy 2-state, it is not the transient probe window).
                 ...(isProbeable(requirement.type) ? {} : { probeable: false }),
               })
+              // B3 (external review, P2) — typed end-to-end diagnostics:
+              // the KIND convention's world fact reports the OBSERVED kind
+              // (the engine's typed §13.5 lane keys on exactly that —
+              // engine.ts: `facts.some(f => f.domain === 'persona' &&
+              // f.subject === 'complete')`). When the observed kind of the
+              // scope's role is `complete`, emit the `(persona, 'complete')`
+              // world fact ALONGSIDE the kind-subject fact so the host lane
+              // surfaces the FROZEN typed conflict (
+              // TEAM_PERSONA_COMPLETE_PRESET_CONFLICT) instead of degrading
+              // to the generic PERSONA_INCOMPATIBLE. The kind-subject fact
+              // keying is preserved (the engine still probes `standard`
+              // unmet); the legacy preset-id path does NOT emit this
+              // (the frozen v1 feed stays byte-identical).
+              if (
+                isRequiredPersonaKind(subject) &&
+                entry !== undefined &&
+                entry.persona.kind === 'complete'
+              ) {
+                const alongsideKey = subjectKey('persona', 'complete')
+                if (!feedEntries.has(alongsideKey)) {
+                  feedEntries.set(alongsideKey, {
+                    domain: 'persona',
+                    subject: 'complete',
+                    fact: {
+                      domain: 'persona',
+                      subject: 'complete',
+                      available: true,
+                      generation: INITIAL_LIVE_GENERATION,
+                    },
+                  })
+                }
+              }
               break
             }
             default: {
