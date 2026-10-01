@@ -1,0 +1,776 @@
+$ node_modules/.bin/vitest run packages/runtime/test/a3p2-permission-assembler-precedence.test.ts packages/runtime/test/a3p2-permission-assembler-provenance.test.ts
+$ date -u +%Y-%m-%dT%H:%M:%SZ
+2026-10-01T19:20:21Z
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr2-effective-assembler
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts (24 tests | 24 failed) 12ms
+     × an overlay ALLOW wins over a template deny AND a blueprint deny on the same operation 4ms
+     × the design §2 example verbatim: blueprint ask, overlay allow → allow (source = the Leader mutation) 1ms
+     × a higher layer wins in every effect direction (overlay ask > template allow, template deny > blueprint allow) 0ms
+     × NO global-deny shortcut: a lower-layer deny never suppresses a higher-layer allow 0ms
+     × a higher-layer rule that does not address this operation never shadows the lower deny 0ms
+     × no overlay match → the template decides; no template match → the blueprint decides 0ms
+     × an absent layer is skipped, not treated as a deny 0ms
+     × every layer is consulted (so the audit names what lost), but precedence picks the highest match 0ms
+     × a template layer with matching deny + ask + allow decides deny, provenance names the deny lane 0ms
+     × matching ask + allow (no matching deny) decides ask; matching allow only decides allow 0ms
+     × the same-layer priority applies INSIDE the overlay layer too (matching allow + deny in one snapshot → deny) 0ms
+     × the first matching rule in the winning lane decides (declaration order) 0ms
+     × the LOWEST layer that declares a fallback answers it (blueprint wins over template) 0ms
+     × with no blueprint layer the template fallback answers 0ms
+     × an overlay never supplies the fallback: it carries no default, so the static fallback answers 0ms
+     × no static layer at all fails closed to deny 0ms
+     × the per-layer outcome IS resolveOperationPermission for that layer (decision + lane + ruleIndex) 0ms
+     × an exact rule whose key differs never matches, so the operation falls through to the lower layer 0ms
+     × a subtree rule matches on the caller-supplied containment verdict only (false → fall through) 0ms
+     × the shell class keeps its Alpha.2 shape: an `any` overlay rule matches the shell operation, an exact one never does 0ms
+     × a rule for another tool never matches (write != edit, bash != pwsh) 0ms
+     × generation 2 replaces generation 1 completely (a FULL snapshot, not a delta) 0ms
+     × the highest generation wins where both generations address the same pair 0ms
+     × the order the snapshots arrive in does not matter 0ms
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts (29 tests | 28 failed) 23ms
+     × an overlay win names layer + derived snapshotId + generation + actor + mutationId + timestamp + reason + the deciding snapshot rule 4ms
+     × the overlay authority block is the snapshot sections verbatim (never rewritten or summarized) 1ms
+     × a static win names its layer + label + lane + lane index and carries no overlay block 0ms
+     × a default decision has no winning provenance and names the layer whose fallback answered 0ms
+     × overriddenLower names the deciding rule of each lower layer that MATCHED (never a non-matching layer) 0ms
+     × the explanation is deterministic and names the winning layer, the effect and the mutation 0ms
+     × ADR §7: a Human-attributed rule wins by LAYER, not by actor — the same rule attributed to a Leader decides identically 0ms
+     × layers are carried ASCENDING by precedence with the overlay authority attached 0ms
+     × the layer vocabulary and the lookup order are the frozen ADR §4 order 2ms
+     × an absent static layer simply is not in the policy, and an empty overlay snapshot is 0ms
+     × the overlay of instance A changes A only; instance B keeps the static answer 0ms
+     × a snapshot of another MemberInstance is REFUSED, not filtered out (fail closed) 1ms
+     × a snapshot of another TeamSession is refused too (no cross-session leak) 0ms
+     × the decision and the policy both carry the identity they were assembled for 0ms
+     × consumes the PR1 port output shape: `latest` is the authority, `history` is audit-only 0ms
+     × a view that misstates the snapshot effect is refused 0ms
+     × a rule view addressing a snapshot rule that does not exist is refused 0ms
+     × the same snapshot rule addressed twice is refused (an ambiguous lane entry) 0ms
+     × two different snapshots claiming ONE generation are an ambiguous authority and are refused 0ms
+     × the identical snapshot handed in twice is the same authority and is accepted 0ms
+     × the same snapshot supplied twice with a DIFFERENT canonical view is refused 0ms
+     × a malformed canonical rule is refused (the matcher input is validated, not guessed) 0ms
+     × a malformed static layer is refused 0ms
+     × a malformed assembly identity is refused before any decision is produced 0ms
+     × the same input yields a deeply-equal decision, across fresh-but-equal input objects 0ms
+     × nothing is mutated: the snapshots and the caller-owned lane arrays are byte-stable across assembly 0ms
+     × both outputs are deeply frozen (the Alpha.2 resolver convention) 0ms
+     × the input snapshot object is the PR1 frozen record — the assembler keeps it that way (no copy-on-read rewrite of authority) 0ms
+     ✓ PR2 wires NOTHING: no production source imports the assembler or calls it 8ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 52 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay overrides static deny (ADR §4, design §2) > an overlay ALLOW wins over a template deny AND a blueprint deny on the same operation
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:64:26
+     62|   it('an overlay ALLOW wins over a template deny AND a blueprint deny …
+     63|     const overlay = snapshot(1, [overlayRule('write', KEY_A, 'allow')])
+     64|     const { decision } = assembleEffectivePermission(
+       |                          ^
+     65|       {
+     66|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay overrides static deny (ADR §4, design §2) > the design §2 example verbatim: blueprint ask, overlay allow → allow (source = the Leader mutation)
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:84:26
+     82|       mutationId: 'mut-1',
+     83|     })
+     84|     const { decision } = assembleEffectivePermission(
+       |                          ^
+     85|       {
+     86|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay overrides static deny (ADR §4, design §2) > a higher layer wins in every effect direction (overlay ask > template allow, template deny > blueprint allow)
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:100:21
+     98|   it('a higher layer wins in every effect direction (overlay ask > tem…
+     99|     const overlay = snapshot(1, [overlayRule('write', KEY_A, 'ask')])
+    100|     const askWins = assembleEffectivePermission(
+       |                     ^
+    101|       {
+    102|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay overrides static deny (ADR §4, design §2) > NO global-deny shortcut: a lower-layer deny never suppresses a higher-layer allow
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:131:19
+    129|     // answers deny too; only the frozen layer order answers allow.
+    130|     const overlay = snapshot(1, [overlayRule('write', KEY_A, 'allow')])
+    131|     const first = assembleEffectivePermission(
+       |                   ^
+    132|       {
+    133|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay overrides static deny (ADR §4, design §2) > a higher-layer rule that does not address this operation never shadows the lower deny
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:160:26
+    158|     // KEY_B's allow into the same decision.
+    159|     const overlay = snapshot(1, [overlayRule('write', KEY_B, 'allow')])
+    160|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    161|       {
+    162|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > fallback (absence falls through, it never inherits) > no overlay match → the template decides; no template match → the blueprint decides
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:190:29
+    188|       overlays: [overlayLayer(overlay)],
+    189|     }
+    190|     const templateDecides = assembleEffectivePermission(args, fileOp('…
+       |                             ^
+    191|     expect(templateDecides.decision).toBe('ask')
+    192|     expect(templateDecides.winningLayer).toBe('template')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > fallback (absence falls through, it never inherits) > an absent layer is skipped, not treated as a deny
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:200:26
+    198|
+    199|   it('an absent layer is skipped, not treated as a deny', () => {
+    200|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    201|       {
+    202|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > fallback (absence falls through, it never inherits) > every layer is consulted (so the audit names what lost), but precedence picks the highest match
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:215:26
+    213|   it('every layer is consulted (so the audit names what lost), but pre…
+    214|     const overlay = snapshot(1, [overlayRule('write', KEY_A, 'allow')])
+    215|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    216|       {
+    217|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > same-layer priority deny > ask > allow (and only within one layer) > a template layer with matching deny + ask + allow decides deny, provenance names the deny lane
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:238:26
+    236| describe('same-layer priority deny > ask > allow (and only within one …
+    237|   it('a template layer with matching deny + ask + allow decides deny, …
+    238|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    239|       {
+    240|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > same-layer priority deny > ask > allow (and only within one layer) > matching ask + allow (no matching deny) decides ask; matching allow only decides allow
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:266:12
+    264|       }),
+    265|     }
+    266|     expect(assembleEffectivePermission(askLayer, WRITE_A).decision.dec…
+       |            ^
+    267|     const allowOnly = {
+    268|       teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > same-layer priority deny > ask > allow (and only within one layer) > the same-layer priority applies INSIDE the overlay layer too (matching allow + deny in one snapshot → deny)
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:284:26
+    282|       overlayRule('write', `${KEY_A}#tightening`, 'deny'),
+    283|     ])
+    284|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    285|       {
+    286|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > same-layer priority deny > ask > allow (and only within one layer) > the first matching rule in the winning lane decides (declaration order)
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:311:26
+    309|
+    310|   it('the first matching rule in the winning lane decides (declaration…
+    311|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    312|       {
+    313|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > default (no layer matched at all) > the LOWEST layer that declares a fallback answers it (blueprint wins over template)
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:331:26
+    329| describe('default (no layer matched at all)', () => {
+    330|   it('the LOWEST layer that declares a fallback answers it (blueprint …
+    331|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    332|       {
+    333|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > default (no layer matched at all) > with no blueprint layer the template fallback answers
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:348:26
+    346|
+    347|   it('with no blueprint layer the template fallback answers', () => {
+    348|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    349|       {
+    350|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > default (no layer matched at all) > an overlay never supplies the fallback: it carries no default, so the static fallback answers
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:362:26
+    360|   it('an overlay never supplies the fallback: it carries no default, s…
+    361|     const overlay = snapshot(1, [overlayRule('write', KEY_B, 'allow')])
+    362|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    363|       {
+    364|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > default (no layer matched at all) > no static layer at all fails closed to deny
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:378:26
+    376|   it('no static layer at all fails closed to deny', () => {
+    377|     const overlay = snapshot(1, [overlayRule('read', KEY_B, 'allow')])
+    378|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    379|       {
+    380|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > Alpha.2 matching semantics reused, not reimplemented > the per-layer outcome IS resolveOperationPermission for that layer (decision + lane + ruleIndex)
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:401:26
+    399|     }
+    400|     const layer = staticLayer({ label: 'tpl', default: 'deny', ...rule…
+    401|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    402|       { teamSessionId: TEAM_SESSION, memberInstanceId: INSTANCE_A, tem…
+    403|       WRITE_A,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > Alpha.2 matching semantics reused, not reimplemented > an exact rule whose key differs never matches, so the operation falls through to the lower layer
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:420:26
+    418|   it('an exact rule whose key differs never matches, so the operation …
+    419|     const overlay = snapshot(1, [overlayRule('write', `${KEY_A}x`, 'al…
+    420|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    421|       {
+    422|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > Alpha.2 matching semantics reused, not reimplemented > a subtree rule matches on the caller-supplied containment verdict only (false → fall through)
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:435:17
+    433|   it('a subtree rule matches on the caller-supplied containment verdic…
+    434|     const contained = snapshot(1, [overlayRule('write', SUB_ROOT, 'ask…
+    435|     const hit = assembleEffectivePermission(
+       |                 ^
+    436|       {
+    437|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > Alpha.2 matching semantics reused, not reimplemented > the shell class keeps its Alpha.2 shape: an `any` overlay rule matches the shell operation, an exact one never does
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:479:26
+    477|   it('the shell class keeps its Alpha.2 shape: an `any` overlay rule m…
+    478|     const anyOverlay = snapshot(1, [overlayRule('bash', 'any', 'deny')…
+    479|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    480|       {
+    481|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > Alpha.2 matching semantics reused, not reimplemented > a rule for another tool never matches (write != edit, bash != pwsh)
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:507:26
+    505|   it('a rule for another tool never matches (write != edit, bash != pw…
+    506|     const overlay = snapshot(1, [overlayRule('edit', KEY_A, 'deny'), o…
+    507|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    508|       {
+    509|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay authority: the highest generation, never a fold or a replay > generation 2 replaces generation 1 completely (a FULL snapshot, not a delta)
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:527:26
+    525|     const generation1 = snapshot(1, [overlayRule('write', KEY_A, 'allo…
+    526|     const generation2 = snapshot(2, [overlayRule('write', KEY_B, 'deny…
+    527|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    528|       {
+    529|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay authority: the highest generation, never a fold or a replay > the highest generation wins where both generations address the same pair
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:547:26
+    545|     const generation1 = snapshot(1, [overlayRule('write', KEY_A, 'allo…
+    546|     const generation2 = snapshot(2, [overlayRule('write', KEY_A, 'deny…
+    547|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    548|       {
+    549|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay authority: the highest generation, never a fold or a replay > the order the snapshots arrive in does not matter
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-precedence.test.ts:564:23
+    562|     const generation1 = snapshot(1, [overlayRule('write', KEY_A, 'allo…
+    563|     const generation2 = snapshot(2, [overlayRule('write', KEY_A, 'ask'…
+    564|     const ascending = assembleEffectivePermission(
+       |                       ^
+    565|       {
+    566|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > provenance: the winning rule is explainable > an overlay win names layer + derived snapshotId + generation + actor + mutationId + timestamp + reason + the deciding snapshot rule
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:78:26
+     76|       timestamp: '2026-10-02T08:15:30.000Z',
+     77|     })
+     78|     const { decision } = assembleEffectivePermission(
+       |                          ^
+     79|       {
+     80|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > provenance: the winning rule is explainable > the overlay authority block is the snapshot sections verbatim (never rewritten or summarized)
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:113:26
+    111|       reason: '',
+    112|     })
+    113|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    114|       { teamSessionId: TEAM_SESSION, memberInstanceId: INSTANCE_A, ove…
+    115|       WRITE_A,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > provenance: the winning rule is explainable > a static win names its layer + label + lane + lane index and carries no overlay block
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:129:26
+    127|
+    128|   it('a static win names its layer + label + lane + lane index and car…
+    129|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    130|       { teamSessionId: TEAM_SESSION, memberInstanceId: INSTANCE_A, blu…
+    131|       WRITE_A,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > provenance: the winning rule is explainable > a default decision has no winning provenance and names the layer whose fallback answered
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:143:26
+    141|
+    142|   it('a default decision has no winning provenance and names the layer…
+    143|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    144|       { teamSessionId: TEAM_SESSION, memberInstanceId: INSTANCE_A, tem…
+    145|       fileOp('write', KEY_B),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > provenance: the winning rule is explainable > overriddenLower names the deciding rule of each lower layer that MATCHED (never a non-matching layer)
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:155:26
+    153|   it('overriddenLower names the deciding rule of each lower layer that…
+    154|     const overlay = snapshot(1, [overlayRule('write', KEY_A, 'allow')])
+    155|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    156|       {
+    157|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > provenance: the winning rule is explainable > the explanation is deterministic and names the winning layer, the effect and the mutation
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:180:19
+    178|       overlays: [overlayLayer(overlay)],
+    179|     }
+    180|     const first = assembleEffectivePermission(args, WRITE_A).decision.…
+       |                   ^
+    181|     const second = assembleEffectivePermission(args, WRITE_A).decision…
+    182|     expect(second).toBe(first)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > provenance: the winning rule is explainable > ADR §7: a Human-attributed rule wins by LAYER, not by actor — the same rule attributed to a Leader decides identically
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:191:19
+    189|     const byHuman = snapshot(1, [overlayRule('write', KEY_A, 'allow')]…
+    190|     const byLeader = snapshot(1, [overlayRule('write', KEY_A, 'allow')…
+    191|     const human = assembleEffectivePermission(
+       |                   ^
+    192|       { teamSessionId: TEAM_SESSION, memberInstanceId: INSTANCE_A, tem…
+    193|       WRITE_A,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > the assembled policy: layers in precedence order, provenance attached > layers are carried ASCENDING by precedence with the overlay authority attached
+TypeError: assembleEffectivePermissionPolicy is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:211:20
+    209|   it('layers are carried ASCENDING by precedence with the overlay auth…
+    210|     const overlay = snapshot(3, [overlayRule('write', KEY_A, 'allow')])
+    211|     const policy = assembleEffectivePermissionPolicy({
+       |                    ^
+    212|       teamSessionId: TEAM_SESSION,
+    213|       memberInstanceId: INSTANCE_A,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > the assembled policy: layers in precedence order, provenance attached > the layer vocabulary and the lookup order are the frozen ADR §4 order
+AssertionError: expected undefined to deeply equal [ 'blueprint', 'template', 'overlay' ]
+
+- Expected:
+[
+  "blueprint",
+  "template",
+  "overlay",
+]
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:234:41
+    232|
+    233|   it('the layer vocabulary and the lookup order are the frozen ADR §4 …
+    234|     expect(EFFECTIVE_PERMISSION_LAYERS).toEqual(['blueprint', 'templat…
+       |                                         ^
+    235|     expect(EFFECTIVE_PERMISSION_LOOKUP_ORDER).toEqual(['overlay', 'tem…
+    236|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > the assembled policy: layers in precedence order, provenance attached > an absent static layer simply is not in the policy, and an empty overlay snapshot is
+TypeError: assembleEffectivePermissionPolicy is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:240:20
+    238|   it('an absent static layer simply is not in the policy, and an empty…
+    239|     const empty = snapshot(1, [])
+    240|     const policy = assembleEffectivePermissionPolicy({
+       |                    ^
+    241|       teamSessionId: TEAM_SESSION,
+    242|       memberInstanceId: INSTANCE_A,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > MemberInstance isolation (two overlays never cross) > the overlay of instance A changes A only; instance B keeps the static answer
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:268:15
+    266|       template: TEMPLATE,
+    267|     }
+    268|     const a = assembleEffectivePermission(
+       |               ^
+    269|       { ...args, memberInstanceId: INSTANCE_A, overlays: [overlayLayer…
+    270|       WRITE_A,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > MemberInstance isolation (two overlays never cross) > a snapshot of another MemberInstance is REFUSED, not filtered out (fail closed)
+AssertionError: expected undefined to be 'EFFECTIVE_PERMISSION_IDENTITY_MISMATCH' // Object.is equality
+
+- Expected:
+"EFFECTIVE_PERMISSION_IDENTITY_MISMATCH"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:299:37
+    297|     expect(thrown.ok).toBe(false)
+    298|     if (thrown.ok) return
+    299|     expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_IDENTIT…
+       |                                     ^
+    300|     expect(errorProblem(thrown.error)).toBe('overlay-identity-mismatch…
+    301|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > MemberInstance isolation (two overlays never cross) > a snapshot of another TeamSession is refused too (no cross-session leak)
+AssertionError: expected undefined to be 'EFFECTIVE_PERMISSION_IDENTITY_MISMATCH' // Object.is equality
+
+- Expected:
+"EFFECTIVE_PERMISSION_IDENTITY_MISMATCH"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:321:37
+    319|     expect(thrown.ok).toBe(false)
+    320|     if (thrown.ok) return
+    321|     expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_IDENTIT…
+       |                                     ^
+    322|   })
+    323|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > MemberInstance isolation (two overlays never cross) > the decision and the policy both carry the identity they were assembled for
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:325:34
+    323|
+    324|   it('the decision and the policy both carry the identity they were as…
+    325|     const { policy, decision } = assembleEffectivePermission(
+       |                                  ^
+    326|       { teamSessionId: TEAM_SESSION, memberInstanceId: INSTANCE_B, tem…
+    327|       WRITE_A,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > MemberInstance isolation (two overlays never cross) > consumes the PR1 port output shape: `latest` is the authority, `history` is audit-only
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:347:24
+    345|     expect(history.map((row) => row.metadata.generation)).toEqual([1, …
+    346|
+    347|     const fromLatest = assembleEffectivePermission(
+       |                        ^
+    348|       { ...identity, template: TEMPLATE, overlays: [overlayLayer(autho…
+    349|       WRITE_A,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > a view that misstates the snapshot effect is refused
+AssertionError: expected undefined to be 'EFFECTIVE_PERMISSION_OVERLAY_EFFECT_M…' // Object.is equality
+
+- Expected:
+"EFFECTIVE_PERMISSION_OVERLAY_EFFECT_MISMATCH"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:385:37
+    383|     expect(thrown.ok).toBe(false)
+    384|     if (thrown.ok) return
+    385|     expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_OVERLAY…
+       |                                     ^
+    386|     expect(errorProblem(thrown.error)).toBe('overlay-effect-mismatch')
+    387|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > a rule view addressing a snapshot rule that does not exist is refused
+AssertionError: expected undefined to be 'EFFECTIVE_PERMISSION_OVERLAY_RULE_REF…' // Object.is equality
+
+- Expected:
+"EFFECTIVE_PERMISSION_OVERLAY_RULE_REFERENCE_INVALID"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:403:37
+    401|     expect(thrown.ok).toBe(false)
+    402|     if (thrown.ok) return
+    403|     expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_OVERLAY…
+       |                                     ^
+    404|     expect(errorProblem(thrown.error)).toBe('overlay-rule-index-out-of…
+    405|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > the same snapshot rule addressed twice is refused (an ambiguous lane entry)
+AssertionError: expected undefined to be 'EFFECTIVE_PERMISSION_OVERLAY_RULE_REF…' // Object.is equality
+
+- Expected:
+"EFFECTIVE_PERMISSION_OVERLAY_RULE_REFERENCE_INVALID"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:422:37
+    420|     expect(thrown.ok).toBe(false)
+    421|     if (thrown.ok) return
+    422|     expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_OVERLAY…
+       |                                     ^
+    423|     expect(errorProblem(thrown.error)).toBe('overlay-rule-index-duplic…
+    424|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > two different snapshots claiming ONE generation are an ambiguous authority and are refused
+AssertionError: expected undefined to be 'EFFECTIVE_PERMISSION_AUTHORITY_CONFLI…' // Object.is equality
+
+- Expected:
+"EFFECTIVE_PERMISSION_AUTHORITY_CONFLICT"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:441:37
+    439|     expect(thrown.ok).toBe(false)
+    440|     if (thrown.ok) return
+    441|     expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_AUTHORI…
+       |                                     ^
+    442|     expect(errorProblem(thrown.error)).toBe('generation-claims-two-sna…
+    443|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > the identical snapshot handed in twice is the same authority and is accepted
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:447:26
+    445|   it('the identical snapshot handed in twice is the same authority and…
+    446|     const only = snapshot(1, [overlayRule('write', KEY_A, 'allow')])
+    447|     const { decision } = assembleEffectivePermission(
+       |                          ^
+    448|       {
+    449|         teamSessionId: TEAM_SESSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > the same snapshot supplied twice with a DIFFERENT canonical view is refused
+AssertionError: expected undefined to be 'EFFECTIVE_PERMISSION_AUTHORITY_CONFLI…' // Object.is equality
+
+- Expected:
+"EFFECTIVE_PERMISSION_AUTHORITY_CONFLICT"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:479:37
+    477|     expect(thrown.ok).toBe(false)
+    478|     if (thrown.ok) return
+    479|     expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_AUTHORI…
+       |                                     ^
+    480|     expect(errorProblem(thrown.error)).toBe('overlay-authority-view-mi…
+    481|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > a malformed canonical rule is refused (the matcher input is validated, not guessed)
+AssertionError: expected undefined to be 'EFFECTIVE_PERMISSION_RULE_MALFORMED' // Object.is equality
+
+- Expected:
+"EFFECTIVE_PERMISSION_RULE_MALFORMED"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:508:42
+    506|     expect(badResource.ok).toBe(false)
+    507|     if (badResource.ok) return
+    508|     expect(errorCode(badResource.error)).toBe('EFFECTIVE_PERMISSION_RU…
+       |                                          ^
+    509|     expect(errorProblem(badResource.error)).toBe('rule-resource-kind-u…
+    510|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > a malformed static layer is refused
+AssertionError: expected undefined to be 'EFFECTIVE_PERMISSION_LAYER_MALFORMED' // Object.is equality
+
+- Expected:
+"EFFECTIVE_PERMISSION_LAYER_MALFORMED"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:540:41
+    538|     expect(badDefault.ok).toBe(false)
+    539|     if (badDefault.ok) return
+    540|     expect(errorCode(badDefault.error)).toBe('EFFECTIVE_PERMISSION_LAY…
+       |                                         ^
+    541|     expect(errorProblem(badDefault.error)).toBe('layer-default-outside…
+    542|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > a malformed assembly identity is refused before any decision is produced
+AssertionError: expected undefined to be 'EFFECTIVE_PERMISSION_ASSEMBLY_INPUT_M…' // Object.is equality
+
+- Expected:
+"EFFECTIVE_PERMISSION_ASSEMBLY_INPUT_MALFORMED"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:568:37
+    566|     expect(thrown.ok).toBe(false)
+    567|     if (thrown.ok) return
+    568|     expect(errorCode(thrown.error)).toBe('EFFECTIVE_PERMISSION_ASSEMBL…
+       |                                     ^
+    569|     expect(errorProblem(thrown.error)).toBe('assembly-identity-malform…
+    570|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > purity, determinism, and zero production wiring > the same input yields a deeply-equal decision, across fresh-but-equal input objects
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:587:19
+    585|
+    586|   it('the same input yields a deeply-equal decision, across fresh-but-…
+    587|     const first = assembleEffectivePermission(fixture(), WRITE_A).deci…
+       |                   ^
+    588|     const second = assembleEffectivePermission(fixture(), WRITE_A).dec…
+    589|     expect(second).toEqual(first)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > purity, determinism, and zero production wiring > nothing is mutated: the snapshots and the caller-owned lane arrays are byte-stable across assembly
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:597:5
+    595|     const before = deepClone(input)
+    596|     const snapshotBefore = deepClone(input.overlays?.[0]?.snapshot ?? …
+    597|     assembleEffectivePermission(input, WRITE_A)
+       |     ^
+    598|     expect(deepClone(input)).toEqual(before)
+    599|     expect(deepClone(input.overlays?.[0]?.snapshot ?? null)).toEqual(s…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > purity, determinism, and zero production wiring > both outputs are deeply frozen (the Alpha.2 resolver convention)
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:603:34
+    601|
+    602|   it('both outputs are deeply frozen (the Alpha.2 resolver convention)…
+    603|     const { policy, decision } = assembleEffectivePermission(fixture()…
+       |                                  ^
+    604|     expect(isDeepFrozen(policy)).toBe(true)
+    605|     expect(isDeepFrozen(decision)).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/52]⎯
+
+ FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > purity, determinism, and zero production wiring > the input snapshot object is the PR1 frozen record — the assembler keeps it that way (no copy-on-read rewrite of authority)
+TypeError: assembleEffectivePermission is not a function
+ ❯ packages/runtime/test/a3p2-permission-assembler-provenance.test.ts:612:24
+    610|     const original = input.overlays?.[0]?.snapshot
+    611|     expect(Object.isFrozen(original)).toBe(true)
+    612|     const { policy } = assembleEffectivePermission(input, WRITE_A)
+       |                        ^
+    613|     const view = policy.layers[2]?.authority
+    614|     expect(view?.snapshotId).toBe(original?.snapshotId)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/52]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  52 failed | 1 passed (53)
+   Start at  19:20:21
+   Duration  875ms (transform 1.08s, setup 0ms, import 1.39s, tests 35ms, environment 0ms)
+
+[exit code: 1]

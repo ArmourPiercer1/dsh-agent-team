@@ -1,0 +1,88 @@
+MUTATION PROBES — the NEW precedence/authority logic of Alpha.3 PR2
+2026-10-01T19:37:13Z
+
+Method: each mutant is ONE textual edit to
+packages/runtime/effective-policy/permission-assembler.ts (pristine sha256
+b12b8bc42044ab89bfd5907f16960399b0ee561690d54ac460cbfcd1f41372d5, restored from that
+copy after every probe and re-hashed at the end), followed by an UNCHANGED run of
+a3p2-permission-assembler-precedence / -provenance / a3p2-effective-policy-lane-import.
+A surviving mutant would mean the suite does not actually pin the frozen rule.
+All seven are killed; the two named "incorrect readings" in design 3.1 are M1 and M2.
+
+=== MUTANT M1-global-deny-wins (design 3.1 incorrect reading #2: a deny anywhere beats a higher-layer allow)
+--- applied: const winnerIndex = outcomes.findIndex((outcome) => outcome.matched) -> const denyIndex = outcomes.findIndex((outcome) => outcome.winningProvenance?.lane === 'deny')
+  const winnerIndex = denyIndex === -1 ? outcomes.findIn
+--- vitest exit code: 1   killed=True
+--- summary: 7 failed | 50 passed (57)
+--- caught by (up to 6 failing test names):
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay overrides static deny (ADR §4, design §2) > an overlay ALLOW wins over a template deny AND a blueprint deny on the same operation
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay overrides static deny (ADR §4, design §2) > NO global-deny shortcut: a lower-layer deny never suppresses a higher-layer allow
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > fallback (absence falls through, it never inherits) > no overlay match → the template decides; no template match → the blueprint decides
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > fallback (absence falls through, it never inherits) > every layer is consulted (so the audit names what lost), but precedence picks the highest match
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > Alpha.2 matching semantics reused, not reimplemented > a subtree rule matches on the caller-supplied containment verdict only (false → fall through)
+      FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > provenance: the winning rule is explainable > an overlay win names layer + derived snapshotId + generation + actor + mutationId + timestamp + reason + the deciding snapshot rule
+
+=== MUTANT M2-merged-flat-rule-set (design 3.1 incorrect reading #1: one merged set, no layer boundary)
+--- applied: const overlay = buildOverlayLayer(input.overlays ?? [], teamSessionId, memberInstanceId)
+  if (overlay !== und -> const overlay = buildOverlayLayer(input.overlays ?? [], teamSessionId, memberInstanceId)
+  if (overlay !== undefined) {
+    const flat = {
+      allow
+--- vitest exit code: 1   killed=True
+--- summary: 22 failed | 35 passed (57)
+--- caught by (up to 6 failing test names):
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay overrides static deny (ADR §4, design §2) > an overlay ALLOW wins over a template deny AND a blueprint deny on the same operation
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay overrides static deny (ADR §4, design §2) > the design §2 example verbatim: blueprint ask, overlay allow → allow (source = the Leader mutation)
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay overrides static deny (ADR §4, design §2) > NO global-deny shortcut: a lower-layer deny never suppresses a higher-layer allow
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay overrides static deny (ADR §4, design §2) > a higher-layer rule that does not address this operation never shadows the lower deny
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > fallback (absence falls through, it never inherits) > no overlay match → the template decides; no template match → the blueprint decides
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > fallback (absence falls through, it never inherits) > every layer is consulted (so the audit names what lost), but precedence picks the highest match
+
+=== MUTANT M3-no-fallthrough (the highest present layer always answers, even on its own default)
+--- applied: const matched = answer.provenance.source === 'rule' -> const matched = true
+--- vitest exit code: 1   killed=True
+--- summary: 7 failed | 50 passed (57)
+--- caught by (up to 6 failing test names):
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay overrides static deny (ADR §4, design §2) > a higher-layer rule that does not address this operation never shadows the lower deny
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > fallback (absence falls through, it never inherits) > no overlay match → the template decides; no template match → the blueprint decides
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > Alpha.2 matching semantics reused, not reimplemented > an exact rule whose key differs never matches, so the operation falls through to the lower layer
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > Alpha.2 matching semantics reused, not reimplemented > a subtree rule matches on the caller-supplied containment verdict only (false → fall through)
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > Alpha.2 matching semantics reused, not reimplemented > the shell class keeps its Alpha.2 shape: an `any` overlay rule matches the shell operation, an exact one never does
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > Alpha.2 matching semantics reused, not reimplemented > a rule for another tool never matches (write != edit, bash != pwsh)
+
+=== MUTANT M4-highest-layer-moves-the-fallback (the declared fallback read from the top instead of the bottom)
+--- applied: const declared = layers.find((layer) => layer.fallback !== null) -> const declared = [...layers].reverse().find((layer) => layer.fallback !== null)
+--- vitest exit code: 1   killed=True
+--- summary: 2 failed | 55 passed (57)
+--- caught by (up to 6 failing test names):
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > default (no layer matched at all) > the LOWEST layer that declares a fallback answers it (blueprint wins over template)
+      FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > the assembled policy: layers in precedence order, provenance attached > layers are carried ASCENDING by precedence with the overlay authority attached
+
+=== MUTANT M5-foreign-snapshot-filtered-not-refused (MemberInstance isolation leak)
+--- applied: if (
+      snapshot.identity.teamSessionId !== teamSessionId ||
+      snapshot.identity.memberInstanceId !== m -> if (false) {
+--- vitest exit code: 1   killed=True
+--- summary: 2 failed | 55 passed (57)
+--- caught by (up to 6 failing test names):
+      FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > MemberInstance isolation (two overlays never cross) > a snapshot of another MemberInstance is REFUSED, not filtered out (fail closed)
+      FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > MemberInstance isolation (two overlays never cross) > a snapshot of another TeamSession is refused too (no cross-session leak)
+
+=== MUTANT M6-lowest-generation-is-the-authority (history folded/replayed instead of read at the top)
+--- applied: claim.snapshot.metadata.generation > authority.snapshot.metadata.generation -> claim.snapshot.metadata.generation < authority.snapshot.metadata.generation
+--- vitest exit code: 1   killed=True
+--- summary: 4 failed | 53 passed (57)
+--- caught by (up to 6 failing test names):
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay authority: the highest generation, never a fold or a replay > generation 2 replaces generation 1 completely (a FULL snapshot, not a delta)
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay authority: the highest generation, never a fold or a replay > the highest generation wins where both generations address the same pair
+      FAIL  packages/runtime/test/a3p2-permission-assembler-precedence.test.ts > overlay authority: the highest generation, never a fold or a replay > the order the snapshots arrive in does not matter
+      FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > MemberInstance isolation (two overlays never cross) > consumes the PR1 port output shape: `latest` is the authority, `history` is audit-only
+
+=== MUTANT M7-overlay-effect-fidelity-removed (a caller view may relabel a deny as an allow)
+--- applied: if (claimed !== carrier.effect) { -> if (false) {
+--- vitest exit code: 1   killed=True
+--- summary: 1 failed | 56 passed (57)
+--- caught by (up to 6 failing test names):
+      FAIL  packages/runtime/test/a3p2-permission-assembler-provenance.test.ts > fail-closed validation (no silent authority) > a view that misstates the snapshot effect is refused
+
+=== RESTORED pristine: sha256 b12b8bc42044ab89bfd5907f16960399b0ee561690d54ac460cbfcd1f41372d5 expected b12b8bc42044ab89bfd5907f16960399b0ee561690d54ac460cbfcd1f41372d5

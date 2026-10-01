@@ -1,0 +1,67 @@
+PROOF that the lane-import witness is not vacuous: the assembler is temporarily rewired to the
+operation-permission LANE BARREL again (the first PR2 shape), which closes an initialization
+cycle admission/types -> effective-policy/index -> permission-assembler ->
+operation-permission/index -> canonical-operation -> ... -> admission/types.
+
+$ <temporarily rewired, then> node_modules/.bin/vitest run packages/runtime/test/a3p2-effective-policy-lane-import.test.ts packages/runtime/test/p6t2-quota.test.ts
+2026-10-01T19:36:45Z
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr2-effective-assembler
+
+ ❯ packages/runtime/test/a3p2-effective-policy-lane-import.test.ts (0 test)
+ ❯ packages/runtime/test/p6t2-quota.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a3p2-effective-policy-lane-import.test.ts [ packages/runtime/test/a3p2-effective-policy-lane-import.test.ts ]
+TypeError: Cannot read properties of undefined (reading 'LEADER')
+ ❯ packages/runtime/admission/actions.ts:175:26
+    173|     ops: [RUNTIME_OPS.ASSIGN_TASK, RUNTIME_OPS.CREATE_MEMBER],
+    174|     instanceTargeted: false,
+    175|     roles: [CALLER_ROLES.LEADER],
+       |                          ^
+    176|     creates: true,
+    177|   },
+ ❯ packages/runtime/admission/index.ts:85:1
+ ❯ packages/runtime/control/service.ts:188:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/p6t2-quota.test.ts [ packages/runtime/test/p6t2-quota.test.ts ]
+TypeError: Cannot read properties of undefined (reading 'LEADER')
+ ❯ packages/runtime/admission/actions.ts:175:26
+    173|     ops: [RUNTIME_OPS.ASSIGN_TASK, RUNTIME_OPS.CREATE_MEMBER],
+    174|     instanceTargeted: false,
+    175|     roles: [CALLER_ROLES.LEADER],
+       |                          ^
+    176|     creates: true,
+    177|   },
+ ❯ packages/runtime/action-router/effects.ts:111:1
+ ❯ packages/runtime/action-router/router.ts:90:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  no tests
+   Start at  19:36:45
+   Duration  687ms (transform 771ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+[exit code: 1]
+
+$ <restored to the leaf-module import — the shipped shape> node_modules/.bin/vitest run <same two files>
+2026-10-01T19:36:46Z
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr2-effective-assembler
+
+ ✓ packages/runtime/test/a3p2-effective-policy-lane-import.test.ts (4 tests) 3ms
+ ✓ packages/runtime/test/p6t2-quota.test.ts (6 tests) 3ms
+
+ Test Files  2 passed (2)
+      Tests  10 passed (10)
+   Start at  19:36:46
+   Duration  784ms (transform 962ms, setup 0ms, import 1.33s, tests 6ms, environment 0ms)
+
+[exit code: 0]
+b12b8bc42044ab89bfd5907f16960399b0ee561690d54ac460cbfcd1f41372d5  packages/runtime/effective-policy/permission-assembler.ts
+b12b8bc42044ab89bfd5907f16960399b0ee561690d54ac460cbfcd1f41372d5  .mutation-tmp/assembler.fixed.ts
