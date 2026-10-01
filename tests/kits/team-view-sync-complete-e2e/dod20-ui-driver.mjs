@@ -1220,15 +1220,29 @@ export function createPlaywrightPage (page, cfg) {
     // button[data-team-refresh] TeamView.tsx:1321-1329. The TeamDock's same-
     // text label is OUTSIDE this scope and can never be clicked here.) ──
     activateTeamTab: async ({ names = [], phase = '', budgetMs = 6000 } = {}) => {
-      const t0 = Date.now()
+      const t0 = Date.now() // ONE absolute budget bounds discovery AND ready-verify
       const tablist = page.locator('[data-conversation-tabs]')
-      const per = []
-      for (const n of names) per.push(await tablist.getByRole('tab', { name: n, exact: true }).count().catch(() => 0))
-      const total = per.reduce((a, b) => a + b, 0)
-      if (total === 0) return { ok: false, phase, hits: 0, reason: 'team-tab-not-found under [data-conversation-tabs] role=tab allowlist (' + names.join('/') + ')' }
-      if (total > 1) return { ok: false, phase, hits: total, reason: 'team-tab-ambiguous (' + total + ' role=tab hits) — never guess' }
-      const which = names[per.findIndex((c) => c > 0)]
-      const tab = tablist.getByRole('tab', { name: which, exact: true }).first()
+      // BOUNDED DISCOVERY (live-2 E1 @2922918d: after reload+notice-dismiss the
+      // tab bar remounts ASYNC — an immediate count saw 0 and the leg fail-
+      // closed while the product was fine). Wait for the scoped role=tab to
+      // APPEAR, be UNIQUE and VISIBLE; >1 at any instant fail-closes as
+      // ambiguous (never guess); never appearing stays a NOT_RUN with reason.
+      let total = 0
+      let which = null
+      let tab = null
+      for (;;) {
+        const per = []
+        for (const n of names) per.push(await tablist.getByRole('tab', { name: n, exact: true }).count().catch(() => 0))
+        total = per.reduce((a, b) => a + b, 0)
+        if (total > 1) return { ok: false, phase, hits: total, reason: 'team-tab-ambiguous (' + total + ' role=tab hits) — never guess' }
+        if (total === 1) {
+          which = names[per.findIndex((c) => c > 0)]
+          tab = tablist.getByRole('tab', { name: which, exact: true }).first()
+          if (await tab.isVisible().catch(() => false)) break
+        }
+        if (Date.now() - t0 > budgetMs) return { ok: false, phase, hits: total, reason: 'team-tab-not-found under [data-conversation-tabs] role=tab allowlist (' + names.join('/') + ') — never appeared within ' + budgetMs + 'ms bounded discovery' }
+        await page.waitForTimeout(250)
+      }
       try { await tab.click({ timeout: 5000 }) } catch (e) { return { ok: false, phase, hits: total, reason: 'team-tab-click-failed: ' + String(e && e.message || e).slice(0, 140) } }
       const view = page.locator('[data-team-view]').first()
       for (;;) {

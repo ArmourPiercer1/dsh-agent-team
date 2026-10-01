@@ -103,6 +103,7 @@ function makeWorld (opts = {}) {
           present: !((name === 'E1' && opts.e1TabAbsent) || (name === 'E3' && opts.e3TabAbsent)),
           hits: name === 'E3' && opts.e3TabDouble ? 2 : 1,
           label: 'Team',
+          presentAt: 0, // virtual time the scoped role=tab becomes countable/visible (post-reload async remount)
           active: false, // aria-selected=true
           mounted: false, // [data-team-view] visible => coordinator ATTACHED
         },
@@ -231,6 +232,11 @@ function makeWorld (opts = {}) {
           // activation after reload rather than assuming it. The knob models
           // a restore failure (aria-selected never returns).
           if (opts.e1ReloadBreak) { st.persistBroken = true; st.teamTab.active = false; st.teamTab.mounted = false; st.teamFace = false }
+          // LIVE-2 E1 (real run @2922918d): after reload+notice-dismiss the tab bar
+          // REMOUNTS ASYNC — an immediate scoped count saw 0. The knob models the
+          // tab re-appearing at a real DELAY (or NEVER); nothing renders sync here.
+          if (opts.e1ReloadLateMs) { st.teamTab.active = false; st.teamTab.mounted = false; st.teamFace = false; st.teamTab.presentAt = w.v + opts.e1ReloadLateMs }
+          if (opts.e1ReloadNever) { st.teamTab.active = false; st.teamTab.mounted = false; st.teamFace = false; st.teamTab.presentAt = Infinity }
           if (st.selected) coldRound(st.selected)
         },
         async wait (ms) {
@@ -313,10 +319,20 @@ function makeWorld (opts = {}) {
           if (leg === 'E3' && opts.breakBeforeE3) throw new Error('fake break before E3')
           const t = st.teamTab
           if (!st.selected || st.selected.relation === 'none') return { ok: false, phase, reason: 'team-tab-not-found (no conversation view for this session)' }
-          if (!t.present) return { ok: false, phase, reason: 'team-tab-not-found under [data-conversation-tabs] role=tab allowlist (' + names.join('/') + ') — Chat-only mount' }
-          if (t.hits > 1) return { ok: false, phase, reason: 'team-tab-ambiguous (' + t.hits + ' role=tab hits) — never guess' }
-          if (!names.includes(t.label)) return { ok: false, phase, reason: 'team-tab-label-not-in-allowlist ' + JSON.stringify(t.label) }
           if (t.active && t.mounted) return { ok: true, phase, alreadyArmed: true }
+          // BOUNDED DISCOVERY — the SAME absolute budget as the ready-verify
+          // (live-2 E1: post-reload the tab remounts async; an immediate count
+          // saw 0). Ambiguity fail-closes the moment >1 appears; the tab never
+          // appearing within the budget stays a NOT_RUN with reason.
+          const d0 = w.v
+          for (;;) {
+            const found = t.present && w.v >= t.presentAt
+            if (found && t.hits > 1) return { ok: false, phase, hits: t.hits, reason: 'team-tab-ambiguous (' + t.hits + ' role=tab hits) — never guess' }
+            if (found && t.hits === 1) break
+            if (w.v - d0 >= budgetMs) return { ok: false, phase, hits: 0, reason: 'team-tab-not-found under [data-conversation-tabs] role=tab allowlist (' + names.join('/') + ') — never appeared within ' + budgetMs + 'ms bounded discovery' }
+            w.v += 250
+          }
+          if (!names.includes(t.label)) return { ok: false, phase, reason: 'team-tab-label-not-in-allowlist ' + JSON.stringify(t.label) }
           if (st.persistBroken) { w.v += budgetMs; return { ok: false, phase, reason: 'team-tab-not-armed: aria-selected=false within ' + budgetMs + 'ms bounded verify — selection did not persist across reload' } }
           if (opts.e3TabNoop && leg === 'E3') { w.v += budgetMs; return { ok: false, phase, reason: 'team-tab-not-armed: aria-selected=false data-team-view-visible=false within ' + budgetMs + 'ms bounded verify' } }
           t.active = true; t.mounted = true; st.teamFace = true
@@ -871,4 +887,22 @@ test('WORLD-FIDELITY: unattached Chat+dock = COLD ROUNDS ONLY across a long wait
   await page.wait(20000)
   assert.ok(rs() >= cold + 5, 'attached: ticks flow at cadence — readStates ' + rs())
   await leg.close()
+})
+// ── LIVE-2 E1 (real run @2922918d): post-reload ASYNC tab remount vs the
+// activation routine's discovery. Coordinator-approved scope: the SAME
+// absolute budgetMs must bound a DISCOVERY wait for the scoped role=tab to
+// appear/unique/visible BEFORE the original click+verify; >1 => fail-closed
+// ambiguous; never appears => still NOT_RUN. E1 oracle/product/E2/E3/E5: 0 hunks.
+test('E1 post-reload tab remounts LATE (virtual 400ms) — same-absolute-budget discovery absorbs it, activation OK, E1 PASSES', async () => {
+  const { out } = await runCore({ e1ReloadLateMs: 400 })
+  assert.equal(out.legs.E1.teamTabActivation.ok, true, 'pre-reload activation unaffected')
+  assert.equal(out.legs.E1.teamTabActivationPostReload.ok, true, 'discovery waited for the async remount within the budget')
+  assert.equal(out.legs.E1.verdict, 'PASS')
+})
+test('E1 post-reload tab NEVER re-appears → bounded-discovery NOT_RUN with reason (never a FAIL, no unbounded wait)', async () => {
+  const { out } = await runCore({ e1ReloadNever: true })
+  assert.equal(out.legs.E1.teamTabActivation.ok, true)
+  assert.equal(out.legs.E1.teamTabActivationPostReload.ok, false)
+  assert.equal(out.legs.E1.verdict, 'NOT_RUN')
+  assert.match(out.legs.E1.reason, /never appeared within 6000ms bounded discovery/)
 })
