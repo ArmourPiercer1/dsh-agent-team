@@ -1,0 +1,223 @@
+✔ 01 claim: OBSERVED_PENDING_CLAIM is the exported-set member (FIX-4 lawful signal), never a remembered literal (1.156304ms)
+✔ 02 cli: full valid argv parses (digest-file mode); evidence/marker dirs created (0.709696ms)
+✔ 03 cli: digest-mode vs digest-file-mode are mutually exclusive and one is required (0.589574ms)
+✔ 04 cli: --digest must match ^sha256:[0-9a-f]{64}$ (fail closed) (0.302038ms)
+✔ 05 cli: required flags, unknown flags, malformed viewport / rid fail closed (0.34532ms)
+✔ 06 cli: every input path must be an EXISTING REGULAR file; dirs/symlinks/absent refused (0.35688ms)
+✔ 07 access: 0600 regular record parses; launchUrl/requestId/digest fields required (0.338089ms)
+✔ 08 access: mode 0644 (any looser-than-0600) is REJECTED (0.174249ms)
+✔ 09 access: symlink leaf is REJECTED (never followed) even when the target is a perfect 0600 record (0.482116ms)
+✔ 10 access: directory / malformed JSON / missing launchUrl refused (0.491407ms)
+✔ 11 digest-file: flat request-fact extraction resolves; requestId cross-checks the --rid (0.919236ms)
+✔ 12 digest-file: nested ledger-entry extraction shape accepted (fact under .payload) (0.336085ms)
+✔ 13 digest-file: requestId drift from --rid fails closed (different durable request) (0.278564ms)
+✔ 14 digest/payload CROSS-CHECK: the expected digest MUST equal reviewPayloadDigestOf(payload-file) — the kit truth recomputation pins it (0.324398ms)
+✔ 15 digest-file carrying reviewPayload must deep-equal the payload-file (same durable request, never hand-typed twice) (0.211356ms)
+✔ 16 payload:null is legal (PR #56 frozen batch #1) and binds to sha256(canonicalJson(null)) (0.211737ms)
+✔ 17 extract: panel found by rid; requestId/digest/payload fields extracted verbatim (64.107522ms)
+✔ 18 checks: all-pass on the faithful fixture (10.052921ms)
+✔ 19 fail-closed: requestId dd drifts from --rid → RID_TEXT mismatch (7.981374ms)
+✔ 20 fail-closed: digest shape-invalid (rendered) → DIGEST_SHAPE (8.099849ms)
+✔ 21 fail-closed: digest mismatch (valid shape, wrong value) → DIGEST_EXACT (7.91936ms)
+✔ 22 fail-closed: payload deep-inequality (one nested leaf) → PAYLOAD_DEEP_EQUAL (8.229188ms)
+✔ 23 fail-closed: payload <pre> text not JSON-parseable → PAYLOAD_PARSE (7.651508ms)
+✔ 24 fail-closed: MISSING panel (no resolve-bar for the rid) → PANEL_PRESENT (12.205123ms)
+✔ 25 fail-closed: EXTRA duplicate panel for the SAME rid is ambiguous → PANEL_PRESENT (7.875473ms)
+✔ 26 other-rid panels are ignored (multiple pending controls is legal UI; only the target must be unique) (7.929867ms)
+✔ 27 fail-closed: digest field absent (data-digest-source="ledger-wire" missing) → DIGEST_PRESENT (6.180188ms)
+✔ 28 fail-closed: payload block absent (pre missing) → PAYLOAD_PRESENT (5.204866ms)
+✔ 29 payload:null renders as text "null" and deep-equals parsed null (PR #56 legal shape) (5.449299ms)
+✔ 30 tab: unique exact-label tab INSIDE the tablist wins over decoy labels outside it (E3.teamTabHits=2 trap) (5.555613ms)
+✔ 31 REJECT: a second in-tablist tab with the same exact label is ambiguous → fail closed (3.845401ms)
+✔ 32 REJECT: label-matching elements OUTSIDE the tablist never qualify; missing in-tablist tab → fail closed (4.251041ms)
+✔ 33 tab: locale label 团队 (locales.ts L292) is equally accepted; tablist missing → fail closed (9.433072ms)
+✔ 33b tab: LAYOUT-AGNOSTIC predicate (coordinator final wording) — the UNIQUE exact-label [role=tab] under [data-conversation-tabs] wins whatever group it sits in: a two-group mirror (strip tabs + separator + team-action group), Team placed in EITHER group, never any first/last or group requirement (20.650858ms)
+✔ 34 activation state: aria-selected=true on the resolved tab + [data-team-view] present; both required (15.806306ms)
+✔ 35 narrow: faithful CSS (digest white-space:normal, payload pre-wrap) passes (52.911675ms)
+✔ 36 fail-closed narrow: digest loses its CSS override (frozen batch #3 regression: white-space:nowrap + ellipsis) (21.563636ms)
+✔ 37 fail-closed narrow: payload pre switched to nowrap+ellipsis (truncation) fails (10.921359ms)
+✔ 38 fail-closed narrow: DOM text shorter than the full expected length (any truncation) fails (12.181138ms)
+✔ 39 scan: raw token AND any URL-with-token query are caught; clean text passes (0.259482ms)
+✔ 40 fail-closed: a leaking evidence bundle is REFUSED and NOTHING is written (0.309381ms)
+✔ 41 evidence: clean bundle writes every file + sha256 manifest that verifies (0.497891ms)
+✔ 42 marker: atomic tmp+rename write, mode 0600, exact contract shape (0.307762ms)
+✔ 43 KIT-READER ROUNDTRIP: readMarkerHint accepts the marker; verifyUiTruth accepts the observed-pending claim against pending durable facts (0.393227ms)
+✔ 44 no-marker-on-failure: any failed check → the marker dir stays EMPTY (fail closed) (0.254262ms)
+✔ 45 deepJsonEqual: structural equality regardless of key order; nested arrays; leaf type strictness (0.07889ms)
+✔ 46 narrowExpectedLengths derives EVERY length from the DURABLE source (never from rendered text) (0.107383ms)
+✔ 47 fail-closed: narrow-ONLY truncated payload (normal full, narrow clipped) — durable lengths FAIL where self-length was tautological; verdict refuses the marker (37.938231ms)
+✔ 48 fail-closed: narrow-ONLY SAME-LENGTH wrong digest → deep equality (not length) catches it (12.053883ms)
+✔ 49 verdict: BOTH viewports deep-equal + layout rows green → all-pass (and nothing relaxed) (29.548127ms)
+✔ 50 scrubErrorText: known launch secrets AND unknown token= VALUES are scrubbed; residual uncertainty SUPPRESSES the text (0.324381ms)
+✔ 51 cliMain (the REAL top-level handler): unknown error with token-bearing stack → exit 1, output scrubbed; ObserverError → exit 2 typed; suppressed branch keeps no message body (1.177054ms)
+✔ 52 narrow layout vs the REAL cascade: digest with base trio + override (computed white-space normal, overflow visible, text-overflow STILL ellipsis, full-height) PASSES; real clipping (trio + short fixed height) fails typed (29.545712ms)
+✔ 53 teamViewReadyDom is BOOLEAN (never the truthy-object trap); waitUntilTruthy polls false→false→true and times out honestly (9.749139ms)
+✖ 55 WIRING happy path: REAL runObservation end-to-end (fake page + real DOM probe, both viewports) → marker written ONCE, 0600, kit-reader accepts (16.697372ms)
+✔ 56 WIRING item-1: token-bearing goto rejection through the REAL CLI boundary → scrubbed stdout/stderr, exit 2, no marker (5.310696ms)
+✖ 57 WIRING item-2: same page until RESIZE, then the narrow render diverges (same-LENGTH WRONG digest) → deep equality fails INSIDE runObservation, no marker (15.573319ms)
+✖ 58 WIRING item-3: REAL-clipping narrow render (trio + short fixed height appearing ONLY after resize) fails typed through the real check sequence; the real-cascade fixture (computed ellipsis, neutralized) passes — see 55 (15.369052ms)
+✖ 59 WIRING item-4: never-active tab → typed timeout failure through runObservation (no marker); transient inactive→active PROCEEDS (28.010642ms)
+✔ 61 buildLaunchOptions: EXACT verified-config shape (sandbox ON, system executablePath, pipe transport, NO args array); missing/symlink chrome fails closed (0.347165ms)
+✔ 62 source pin: the default launch branch passes buildLaunchOptions output to chromium.launch — bare options objects are dead (0.222202ms)
+✖ 63 WIRING: the fake launch CANNOT mask the real config — captured options carry sandbox+executablePath+pipe verbatim (17.596553ms)
+✔ 64 CLI: --chrome is the ONLY new optional flag (parsed into opts.chromePath); unknown flags stay rejected (0.443986ms)
+✔ 65 WIRING: chrome verification happens BEFORE launch (fail closed, launcher never called, no marker) (0.561119ms)
+✔ 66 root adapters (Rows.tsx mirror): exact-id row count, BOOLEAN ready, typed validation object (decoy-selected = MISMATCH) (33.834248ms)
+✔ 67 resolveExpected binds rootSessionId from the SAME durable fact doc (row-carried); absent ⇒ null (runObservation fails closed); conflict ⇒ ambiguous (0.52265ms)
+✔ 68 WIRING: NO matching root row in the page ⇒ typed fail-closed, no marker (decoy rows are NEVER opened) (5.868225ms)
+✔ 69 WIRING: root row present but the click never lands (decoy stays selected) ⇒ typed NEVER_SELECTED timeout, nothing written (20.348868ms)
+✔ 70 WIRING: durable fact without rootSessionId ⇒ S2O_ROOT_ID_MISSING fail-closed (no default-session guessing) (0.636963ms)
+✖ 71 WIRING happy path WITH root selection: decoy selected on landing, root explicitly opened + verified — still exactly one marker (17.165507ms)
+✔ 72 viewport-honest fake models the PINNED rule (columns.ts L23, WorkspaceBrowser L1275-1278 wide-only): FRESH narrow context AND resize below 1024 render ZERO treeitems — a fresh 380px context can NEVER select the root (25.405351ms)
+✖ 73 resize-then-verify: ONE context/page/goto + one resize to 380; header-proven root, both passes deep-equal the durable source, marker EXACTLY once (13.909016ms)
+✖ 74 narrow pass binds the durable root THROUGH THE PANEL: payload.rootSessionId diverging (same length) after resize ⇒ PAYLOAD_DEEP_EQUAL typed fail, no marker (0.845968ms)
+✖ 76 narrow header shows a TITLE (never the raw id) while RID/digest/payload incl. payload.rootSessionId ALL match ⇒ PASS + exactly one marker — zero title/ID dependency in the narrow pass (0.419873ms)
+✔ 75 source pins: ONE context/page/goto, the narrow pass is a setViewportSize re-check, the per-viewport loop is dead, the treeitem surface is demanded EXACTLY ONCE (normal pass only) (0.268798ms)
+✔ 60 source pin: the OLD object-return can never gate a wait again (wait sites use the BOOLEAN predicate + driver) (0.235364ms)
+ℹ tests 76
+ℹ suites 0
+ℹ pass 67
+ℹ fail 9
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1051.189517
+
+✖ failing tests:
+
+test at tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1021:1
+✖ 55 WIRING happy path: REAL runObservation end-to-end (fake page + real DOM probe, both viewports) → marker written ONCE, 0600, kit-reader accepts (16.697372ms)
+  Error [ObserverError]: after resize the open session header no longer proves the durable root identity (fail closed, no marker)
+      at runObservation (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.mjs:892:17)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1025:15)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'S2O_ROOT_MISMATCH'
+  }
+
+test at tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1063:1
+✖ 57 WIRING item-2: same page until RESIZE, then the narrow render diverges (same-LENGTH WRONG digest) → deep equality fails INSIDE runObservation, no marker (15.573319ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'S2O_ROOT_MISMATCH'
+  - 'S2O_CHECKS_FAILED'
+         ^
+  
+      at Object.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1076:64)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1074:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'S2O_ROOT_MISMATCH',
+    expected: 'S2O_CHECKS_FAILED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1085:1
+✖ 58 WIRING item-3: REAL-clipping narrow render (trio + short fixed height appearing ONLY after resize) fails typed through the real check sequence; the real-cascade fixture (computed ellipsis, neutralized) passes — see 55 (15.369052ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'S2O_ROOT_MISMATCH'
+  - 'S2O_CHECKS_FAILED'
+         ^
+  
+      at Object.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1097:23)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1095:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'S2O_ROOT_MISMATCH',
+    expected: 'S2O_CHECKS_FAILED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1102:1
+✖ 59 WIRING item-4: never-active tab → typed timeout failure through runObservation (no marker); transient inactive→active PROCEEDS (28.010642ms)
+  Error [ObserverError]: after resize the open session header no longer proves the durable root identity (fail closed, no marker)
+      at runObservation (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.mjs:892:17)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1114:15)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'S2O_ROOT_MISMATCH'
+  }
+
+test at tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1143:1
+✖ 63 WIRING: the fake launch CANNOT mask the real config — captured options carry sandbox+executablePath+pipe verbatim (17.596553ms)
+  Error [ObserverError]: after resize the open session header no longer proves the durable root identity (fail closed, no marker)
+      at runObservation (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.mjs:892:17)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1148:15)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'S2O_ROOT_MISMATCH'
+  }
+
+test at tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1253:1
+✖ 71 WIRING happy path WITH root selection: decoy selected on landing, root explicitly opened + verified — still exactly one marker (17.165507ms)
+  Error [ObserverError]: after resize the open session header no longer proves the durable root identity (fail closed, no marker)
+      at runObservation (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.mjs:892:17)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1257:15)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'S2O_ROOT_MISMATCH'
+  }
+
+test at tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1276:1
+✖ 73 resize-then-verify: ONE context/page/goto + one resize to 380; header-proven root, both passes deep-equal the durable source, marker EXACTLY once (13.909016ms)
+  Error [ObserverError]: after resize the open session header no longer proves the durable root identity (fail closed, no marker)
+      at runObservation (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.mjs:892:17)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1280:15)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'S2O_ROOT_MISMATCH'
+  }
+
+test at tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1300:1
+✖ 74 narrow pass binds the durable root THROUGH THE PANEL: payload.rootSessionId diverging (same length) after resize ⇒ PAYLOAD_DEEP_EQUAL typed fail, no marker (0.845968ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'S2O_ACCESS_DIGEST_MISMATCH'
+  - 'S2O_CHECKS_FAILED'
+         ^
+  
+      at Object.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1316:64)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1314:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'S2O_ACCESS_DIGEST_MISMATCH',
+    expected: 'S2O_CHECKS_FAILED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1325:1
+✖ 76 narrow header shows a TITLE (never the raw id) while RID/digest/payload incl. payload.rootSessionId ALL match ⇒ PASS + exactly one marker — zero title/ID dependency in the narrow pass (0.419873ms)
+  Error [ObserverError]: the access record digest differs from the expected digest (wrong run — fail closed)
+      at runObservation (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.mjs:767:11)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1335:21)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'S2O_ACCESS_DIGEST_MISMATCH'
+  }
+RED-EXIT=1

@@ -1,0 +1,636 @@
+{
+  "allPassed": true,
+  "normal": {
+    "fields": [
+      {
+        "name": "PANEL_PRESENT",
+        "ok": true,
+        "detail": "panelTotal=1 matchCount=1"
+      },
+      {
+        "name": "RID_ATTR_BINDING",
+        "ok": true,
+        "detail": "attr=ctrl-0vl9ypc11b9h7308kmqom0hy"
+      },
+      {
+        "name": "RID_TEXT_VISIBLE",
+        "ok": true,
+        "detail": "rendered=ctrl-0vl9ypc11b9h7308kmqom0hy"
+      },
+      {
+        "name": "DIGEST_PRESENT",
+        "ok": true,
+        "detail": "present=true"
+      },
+      {
+        "name": "DIGEST_SHAPE",
+        "ok": true,
+        "detail": "sha256:<64hex>"
+      },
+      {
+        "name": "DIGEST_EXACT",
+        "ok": true,
+        "detail": "rendered=sha256:7d3904c82d8… expected=sha256:7d3904c82d8…"
+      },
+      {
+        "name": "PAYLOAD_PRESENT",
+        "ok": true,
+        "detail": "present=true"
+      },
+      {
+        "name": "PAYLOAD_PARSE",
+        "ok": true,
+        "detail": "len=1222"
+      },
+      {
+        "name": "PAYLOAD_DEEP_EQUAL",
+        "ok": true,
+        "detail": "renderedLen=1222 expectedLen=1222"
+      }
+    ],
+    "narrow": [
+      {
+        "name": "NARROW_RID_LENGTH",
+        "ok": true,
+        "detail": "len=29 expected=29"
+      },
+      {
+        "name": "NARROW_RID_READABLE",
+        "ok": true,
+        "detail": "whiteSpace=nowrap textOverflow=ellipsis scrollWidth=164 clientWidth=164"
+      },
+      {
+        "name": "NARROW_DIGEST_WHITESPACE",
+        "ok": true,
+        "detail": "whiteSpace=normal (frozen batch #3 pin: normal)"
+      },
+      {
+        "name": "NARROW_DIGEST_EFFECTIVE_CLIP",
+        "ok": true,
+        "detail": "whiteSpace=normal overflow=visible/visible/visible textOverflow=ellipsis (computed ellipsis ACCEPTED when neutralized) scrollWidth=470 clientWidth=470 scrollHeight=14 clientHeight=14"
+      },
+      {
+        "name": "NARROW_DIGEST_LENGTH",
+        "ok": true,
+        "detail": "len=71 expected=71 (durable source)"
+      },
+      {
+        "name": "NARROW_PAYLOAD_WHITESPACE",
+        "ok": true,
+        "detail": "whiteSpace=pre-wrap (pinned: pre-wrap)"
+      },
+      {
+        "name": "NARROW_PAYLOAD_EFFECTIVE_CLIP",
+        "ok": true,
+        "detail": "whiteSpace=pre-wrap overflow=auto/auto/auto textOverflow=clip (computed ellipsis ACCEPTED when neutralized) scrollWidth=540 clientWidth=540 scrollHeight=568 clientHeight=264"
+      },
+      {
+        "name": "NARROW_PAYLOAD_LENGTH",
+        "ok": true,
+        "detail": "len=1222 expected=1222 (durable source)"
+      },
+      {
+        "name": "GEO_FIELD_WIDTHS",
+        "ok": true,
+        "detail": "widths={\"panel\":674,\"dl\":542,\"ridDd\":164,\"digestDd\":470,\"payloadPre\":540}"
+      },
+      {
+        "name": "GEO_RESOLVE_BUTTONS_FIT",
+        "ok": true,
+        "detail": "bar=[519.296875,1193.6875] overflow=[] absent=[] (presence itself is other legs' ground; fit is asserted for PRESENT ones)"
+      },
+      {
+        "name": "GEO_ROWS_CHILDREN_FIT",
+        "ok": true,
+        "detail": "rows=14 box=[518.296875,1194.6875] overflow=[]"
+      }
+    ],
+    "geometry": {
+      "gated": false,
+      "samples": [
+        {
+          "viewport": [
+            1440,
+            900
+          ],
+          "sidebarCollapsed": null,
+          "panelChain": [
+            {
+              "tag": "DIV",
+              "cls": "resolveBar",
+              "rect": [
+                519.5,
+                2309,
+                674.5,
+                433
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "rows",
+              "rect": [
+                518.5,
+                1566,
+                676.5,
+                1177
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "root",
+              "rect": [
+                517.5,
+                1535,
+                678.5,
+                1209
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "SECTION",
+              "cls": "section",
+              "rect": [
+                485.5,
+                1507,
+                742.5,
+                1237
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "body",
+              "rect": [
+                461.5,
+                -111,
+                790.5,
+                2871
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "",
+              "rect": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "S7OPSW_viewArea",
+              "rect": [
+                280,
+                -111,
+                1153,
+                2871
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "",
+              "rect": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "S7OPSW_scrollBody",
+              "rect": [
+                280,
+                76,
+                1158,
+                824
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "S7OPSW_body",
+              "rect": [
+                280,
+                76,
+                1160,
+                824
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "S7OPSW_root",
+              "rect": [
+                280,
+                0,
+                1160,
+                900
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "",
+              "rect": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "",
+              "rect": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "gAs4jW_centerCol",
+              "rect": [
+                280,
+                0,
+                1160,
+                900
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "gAs4jW_frame",
+              "rect": [
+                0,
+                0,
+                1440,
+                900
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "",
+              "rect": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "",
+              "rect": [
+                0,
+                0,
+                1440,
+                900
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "BODY",
+              "cls": "",
+              "rect": [
+                0,
+                0,
+                1440,
+                900
+              ],
+              "trans": "all|0s",
+              "animating": null
+            }
+          ],
+          "railChain": [
+            {
+              "tag": "DIV",
+              "cls": "W0d-vW_projectRow",
+              "rect": [
+                12,
+                206,
+                256,
+                34
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "HVH6QW_groupSection",
+              "rect": [
+                12,
+                206,
+                256,
+                68
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "HVH6QW_list",
+              "rect": [
+                8,
+                206,
+                270,
+                606
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "HVH6QW_treeBody HVH6QW_wide",
+              "rect": [
+                12,
+                206,
+                268,
+                606
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "HVH6QW_listArea",
+              "rect": [
+                8,
+                206,
+                272,
+                606
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "HVH6QW_root",
+              "rect": [
+                12,
+                164,
+                268,
+                648
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "",
+              "rect": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "_25B0JG_regionArea",
+              "rect": [
+                8,
+                164,
+                272,
+                648
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "_25B0JG_root",
+              "rect": [
+                0,
+                0,
+                280,
+                900
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "",
+              "rect": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "gAs4jW_sidebarCol",
+              "rect": [
+                0,
+                0,
+                280,
+                900
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "gAs4jW_frame",
+              "rect": [
+                0,
+                0,
+                1440,
+                900
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "",
+              "rect": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "DIV",
+              "cls": "",
+              "rect": [
+                0,
+                0,
+                1440,
+                900
+              ],
+              "trans": "all|0s",
+              "animating": null
+            },
+            {
+              "tag": "BODY",
+              "cls": "",
+              "rect": [
+                0,
+                0,
+                1440,
+                900
+              ],
+              "trans": "all|0s",
+              "animating": null
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "narrow": {
+    "fields": [
+      {
+        "name": "PANEL_PRESENT",
+        "ok": true,
+        "detail": "panelTotal=1 matchCount=1"
+      },
+      {
+        "name": "RID_ATTR_BINDING",
+        "ok": true,
+        "detail": "attr=ctrl-0vl9ypc11b9h7308kmqom0hy"
+      },
+      {
+        "name": "RID_TEXT_VISIBLE",
+        "ok": true,
+        "detail": "rendered=ctrl-0vl9ypc11b9h7308kmqom0hy"
+      },
+      {
+        "name": "DIGEST_PRESENT",
+        "ok": true,
+        "detail": "present=true"
+      },
+      {
+        "name": "DIGEST_SHAPE",
+        "ok": true,
+        "detail": "sha256:<64hex>"
+      },
+      {
+        "name": "DIGEST_EXACT",
+        "ok": true,
+        "detail": "rendered=sha256:7d3904c82d8… expected=sha256:7d3904c82d8…"
+      },
+      {
+        "name": "PAYLOAD_PRESENT",
+        "ok": true,
+        "detail": "present=true"
+      },
+      {
+        "name": "PAYLOAD_PARSE",
+        "ok": true,
+        "detail": "len=1222"
+      },
+      {
+        "name": "PAYLOAD_DEEP_EQUAL",
+        "ok": true,
+        "detail": "renderedLen=1222 expectedLen=1222"
+      }
+    ],
+    "narrow": [
+      {
+        "name": "NARROW_RID_LENGTH",
+        "ok": true,
+        "detail": "len=29 expected=29"
+      },
+      {
+        "name": "NARROW_RID_READABLE",
+        "ok": true,
+        "detail": "whiteSpace=nowrap textOverflow=ellipsis scrollWidth=164 clientWidth=164"
+      },
+      {
+        "name": "NARROW_DIGEST_WHITESPACE",
+        "ok": true,
+        "detail": "whiteSpace=normal (frozen batch #3 pin: normal)"
+      },
+      {
+        "name": "NARROW_DIGEST_EFFECTIVE_CLIP",
+        "ok": true,
+        "detail": "whiteSpace=normal overflow=visible/visible/visible textOverflow=ellipsis (computed ellipsis ACCEPTED when neutralized) scrollWidth=181 clientWidth=181 scrollHeight=42 clientHeight=42"
+      },
+      {
+        "name": "NARROW_DIGEST_LENGTH",
+        "ok": true,
+        "detail": "len=71 expected=71 (durable source)"
+      },
+      {
+        "name": "NARROW_PAYLOAD_WHITESPACE",
+        "ok": true,
+        "detail": "whiteSpace=pre-wrap (pinned: pre-wrap)"
+      },
+      {
+        "name": "NARROW_PAYLOAD_EFFECTIVE_CLIP",
+        "ok": true,
+        "detail": "whiteSpace=pre-wrap overflow=auto/auto/auto textOverflow=clip (computed ellipsis ACCEPTED when neutralized) scrollWidth=179 clientWidth=179 scrollHeight=792 clientHeight=264"
+      },
+      {
+        "name": "NARROW_PAYLOAD_LENGTH",
+        "ok": true,
+        "detail": "len=1222 expected=1222 (durable source)"
+      },
+      {
+        "name": "GEO_FIELD_WIDTHS",
+        "ok": true,
+        "detail": "widths={\"panel\":201,\"dl\":181,\"ridDd\":164,\"digestDd\":181,\"payloadPre\":179}"
+      },
+      {
+        "name": "GEO_RESOLVE_BUTTONS_FIT",
+        "ok": true,
+        "detail": "bar=[114,315] overflow=[] absent=[] (presence itself is other legs' ground; fit is asserted for PRESENT ones)"
+      },
+      {
+        "name": "GEO_ROWS_CHILDREN_FIT",
+        "ok": true,
+        "detail": "rows=14 box=[113,316] overflow=[]"
+      }
+    ],
+    "geometry": {
+      "gated": true,
+      "stable": true,
+      "polls": 3,
+      "preSamples": [
+        "{\"viewport\":[380,900],\"sidebarCollapsed\":\"true\",\"panelChain\":[{\"tag\":\"DIV\",\"cls\":\"resolveBar\",\"rect\":[114,356,201,609],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"rows\",\"rect\":[113,-670,203,1636],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"root\",\"rect\":[112,-701,205,1668],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"SECTION\",\"cls\":\"section\",\"rect\":[80,-729,269,1696],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"body\",\"rect\":[56,-3485,317,4468],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"\",\"rect\":[0,0,0,0],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\""
+      ],
+      "settled": "{\"viewport\":[380,900],\"sidebarCollapsed\":\"true\",\"panelChain\":[{\"tag\":\"DIV\",\"cls\":\"resolveBar\",\"rect\":[114,356,201,609],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"rows\",\"rect\":[113,-670,203,1636],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"root\",\"rect\":[112,-701,205,1668],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"SECTION\",\"cls\":\"section\",\"rect\":[80,-729,269,1696],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"body\",\"rect\":[56,-3485,317,4468],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"\",\"rect\":[0,0,0,0],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"S7OPSW_viewArea\",\"rect\":[56,-3485,317,4468],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"\",\"rect\":[0,0,0,0],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"S7OPSW_scrollBody\",\"rect\":[56,76,322,824],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"S7OPSW_body\",\"rect\":[56,76,324,824],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"S7OPSW_root\",\"rect\":[56,0,324,900],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"\",\"rect\":[0,0,0,0],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"\",\"rect\":[0,0,0,0],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"gAs4jW_centerCol\",\"rect\":[56,0,324,900],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"gAs4jW_frame\",\"rect\":[0,0,380,900],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"\",\"rect\":[0,0,0,0],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"\",\"rect\":[0,0,380,900],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"BODY\",\"cls\":\"\",\"rect\":[0,0,380,900],\"trans\":\"all|0s\",\"animating\":null}],\"railChain\":[{\"tag\":\"DIV\",\"cls\":\"W0d-vW_projectRow\",\"rect\":[12,206,256,34],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"HVH6QW_groupSection\",\"rect\":[12,206,256,68],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"HVH6QW_list\",\"rect\":[8,206,270,606],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"HVH6QW_treeBody HVH6QW_wide\",\"rect\":[12,206,268,606],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"HVH6QW_listArea\",\"rect\":[8,206,272,606],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"HVH6QW_root\",\"rect\":[12,164,268,648],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"\",\"rect\":[0,0,0,0],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"_25B0JG_regionArea\",\"rect\":[8,164,272,648],\"trans\":\"opacity|0.15s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"_25B0JG_root _25B0JG_fading\",\"rect\":[0,0,280,900],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"\",\"rect\":[0,0,0,0],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"gAs4jW_sidebarCol\",\"rect\":[0,0,56,900],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"gAs4jW_frame\",\"rect\":[0,0,380,900],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"\",\"rect\":[0,0,0,0],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"DIV\",\"cls\":\"\",\"rect\":[0,0,380,900],\"trans\":\"all|0s\",\"animating\":null},{\"tag\":\"BODY\",\"cls\":\"\",\"rect\":[0,0,380,900],\"trans\":\"all|0s\",\"animating\":null}]}"
+    }
+  }
+}

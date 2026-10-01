@@ -1,0 +1,32 @@
+=== run-7 result — STAGE-2 LIVE PASS ===
+captured_utc=2026-10-01T22:50:48.859Z  launch_utc=2026-10-01T22:46:27Z  world=prereq-2026-10-01T22-46-27 (cleaned by the kit itself on PASS)
+carrier HEAD=e63da1256f7313822a2205b34696d330bba79e65 tree=da83b95bce459aa0b525535d5431200a5b2524d6 parents=76dfd4c7… + 034b7418…; observer/test blobs = commit 034b7418; css/bundle = commit 28416977; packages delta 0
+launchers runner=301e8e57… paired=042a5981…; MEMBER_MODE=1 exported before paired; S2O_MEMBER_SESSION never set; recorder_pid=1031299
+
+--- exits (all normal, no signal ever issued in this run) ---
+  [2026-10-01T22:50:18.780Z] runner=0 kit=0
+  11-paired-exit.txt=0  recorder=paired_exit=0
+
+--- observer ---
+  STAGE2_OBSERVE_PASS /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T22-46-27/observe/marker.json
+  comparisons: allPassed=true  40 passed / 0 failed (40 checks = 9 binding fields + 11 presentation/geometry, x2 viewports)
+  entryPerspective=member entrySessionId=session-team-child-6a296fb58e40d621917fb8d99e32f337 memberInstanceId=inst-06sldmg0yore
+  marker.json: {"requestId":"ctrl-0vl9ypc11b9h7308kmqom0hy","digest":"sha256:7d3904c82d8978ec04294a35c6d2dcc48e24d3f30967f6152feb4b79f3eaee29","claimed":"observed-pending","ts":"2026-10-01T22:46:42.526Z"}
+  kit summary: {"kit":"pr-e-requirement-recovery-smoke/ui-observe","runStamp":"prereq-2026-10-01T22-46-27","origin":"http://127.0.0.1:3182","requestId":"ctrl-0vl9ypc11b9h7308kmqom0hy","digestPrefix":"sha256:7d3904c82d8","outcome":"VERIFIED:observed-pending","claim":"observed-pending","holdMs":180000,"at":"2026-10-01T22:46:42.908Z"}
+  identity cross-check (kit AWAITING -> durable row -> observer): requestId ctrl-0vl9ypc11b9h7308kmqom0hy / digest sha256:7d3904c82d8978ec04294a35c6d2dcc48e24d3f30967f6152feb4b79f3eaee29 / rootSessionId session-prereq-main-prereq-2026-10-01T22-46-27 — same Tmain, same RID, full payload deep-equal, full digest, both viewports, zero-effect observation (no Allow/Deny click by the observer; the kit's own scripted resolve drove the effect).
+
+--- kit verdict ---
+  VERDICT: PASS — all 16 criteria green (14 scenarios + hygiene); world cleaned
+  criteria printed: PASS=59 FAIL=0
+  S9: [S9] PASS — exact reviewed payload
+  hygiene: [H1] PASS — |[H1] PASS — test-use pristine AFTER (porcelain empty + HEAD baseline; the worker b|[H1] PASS — test-use pristine BEFORE |[H2] PASS — run ports released after teardown (worldCleaned=true on PASS only) |
+  S9 timeline: AWAITING 22:46:40 -> marker 22:46:42.526 -> kit VERIFIED:observed-pending 22:46:42.908 -> full assertions to 22:50:18 (no early termination by me).
+
+--- housekeeping attribution ---
+  done by the kit on PASS (not by me): evidence scrubbed: 14 file(s) rewritten (sk- token redactions); portsHeld=[] worldCleaned=true -> tests/homes/prereq-2026-10-01T22-46-27 removed by the kit's own PASS path.
+  my observer artifacts are byte-identical to its own manifest (8/8 MATCH), so the scrub did not alter them.
+  done by me: identity census at launch, one read-only finally. Signals issued in run 7: ZERO.
+
+--- retention ---
+  earlier worlds all RETAINED: 19-42-45, 20-10-50, 20-33-43, 20-57-09, 21-44-23, 22-15-13. 7 run dirs present; nothing deleted by me.
+  no eighth run authorized or started.

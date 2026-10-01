@@ -1,0 +1,63 @@
+=== run-5 result — MEMBER-perspective entry reached the panel; 3 narrow-layout checks failed; marker refused; fast cancel ===
+captured_utc=2026-10-01T21:46:37.773Z   launch_utc=2026-10-01T21:44:23.429Z   world=prereq-2026-10-01T21-44-23
+carrier HEAD=d9ca5eccb0e0cc618be88ef2b0c25b9d2b33a33d tree=758dbfe0b2282b29aa18adbabbca31fe72140cb8
+launchers runner=301e8e5726f978842f05eff55fb2de6983f4b328b3da62f0fbdf3f5b41b8b2e4 paired=042a5981a093ffe8ae1a1bb844f3bf7949ad238f3ee321872b3925931b500d5e
+MEMBER_MODE=1 exported before paired; S2O_MEMBER_SESSION never set. recorder_pid=910728 direct_child=910732
+
+--- STEP timeline, actual output ---
+  S2O STEP1 start iso=2026-10-01T21:44:23.485Z monotonicMs=0 observeDir=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/p
+  S2O STEP1 accept iso=2026-10-01T21:44:35.489Z waitedMs=12004 polls=25 observeDir=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3
+  snapshot: runStamp=prereq-2026-10-01T21-44-23 requestId=ctrl-17falkx0uxa9zi1wtjg030e3 digestPrefix=sha256:f625a702b4c
+  kit-log cross-check: OK
+  durable row extracted; rootSessionId=session-prereq-main-prereq-2026-10-01T21-44-23 digest=sha256:f625a702b4c7095c6a6538d4a7866bea9dd686b2ee882965fccaf8857c08634f
+  member-extract: eligible=1 child=session-team-child-66c2b1fcb5d203166a77a29de66964ed
+  STAGE2_OBSERVER_FAIL S2O_CHECKS_FAILED :: observation refused the marker (CHECKS_FAILED) — see /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/dev/agent-workflow/evi
+
+--- what the observer actually entered (meta.json) ---
+  entryPerspective=member  entrySessionId=session-team-child-66c2b1fcb5d203166a77a29de66964ed  memberInstanceId=inst-1puwj8u0i5t0  claimed=observed-pending  viewports=normal 1440x900 + narrow 380x900
+
+--- checks ---
+  31 passed / 3 failed, allPassed=false
+  FAIL NARROW_RID_READABLE :: whiteSpace=nowrap textOverflow=ellipsis scrollWidth=147 clientWidth=0
+  FAIL NARROW_DIGEST_EFFECTIVE_CLIP :: whiteSpace=normal overflow=visible/visible/visible textOverflow=ellipsis (computed ellipsis ACCEPTED when neutralized) scrollWidth=13 clientWidth=0 scrollHeight=980 clientHeight=980
+  FAIL NARROW_PAYLOAD_EFFECTIVE_CLIP :: whiteSpace=pre-wrap overflow=auto/auto/auto textOverflow=clip (computed ellipsis ACCEPTED when neutralized) scrollWidth=29 clientWidth=12 scrollHeight=12398 clientHeight=264
+  the identical 8 narrow checks passed in the normal pass with clientWidth=147/12; in the narrow pass three came back clientWidth=0 or 12-vs-scrollWidth=29. Whether that is a real 380px layout defect or a measure-time relayout race is NOT concluded here.
+
+--- marker / token ---
+  marker.json=ABSENT, observer refused it with CHECKS_FAILED; kit summary.json present=yes
+  token consumed exactly once by the observer's own first goto; access record mode=600 never read/echoed
+
+--- cancel, authorized fast path ---
+  utc=2026-10-01T21:45:59.881Z — fast cancel: observer terminal FAIL (S2O_CHECKS_FAILED) and no marker.json
+  supported abort seam present? hits=0 (searched-and-not-found, not an exhaustive absence claim)
+  --- recorder roots ---
+    recorder_pid=910728 recorder_startticks=10242435 start_utc=2026-10-01T21:44:23.440Z
+    command: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh
+    verifying roots live: 910728 910732 
+  --- identity re-verification (field-keyed pid + startticks + current chain reaches root) ---
+    pid=910732 startticks_verified=10242435 chain_ok=YES :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-log
+    pid=910747 startticks_verified=10242436 chain_ok=YES :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-s
+    pid=910748 -> already exited
+    pid=910757 -> already exited
+    pid=911900 -> already exited
+    pid=912995 -> already exited
+    pid=915231 -> already exited
+    pid=918286 startticks_verified=10243405 chain_ok=YES :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js we
+  --- signals (deepest first) ---
+    SIGTERM -> 918286
+    SIGTERM -> 910747
+    SIGTERM -> 910732
+  --- after ---
+    listeners_all_test_families=0  3080=401  chrome=0 node=0
+
+--- kit criteria ledger ---
+  kit-printed PASS=15 FAIL=0; VERDICT lines=0; last kit line: [2026-10-01T21:44:35.339Z] b3a: UI OBSERVE hold — requestId=ctrl-17falkx0uxa9zi1wtjg03
+  ledger: already-printed criteria keep their printed verdicts; scenarios after the b3a hold = CANCELLED / NOT_RUN; kit final verdict = NOT_RUN, cancelled before the 10-minute cascade. Nothing inferred as PASS.
+  exits: paired=143, SIGTERM from my cancel and NOT a kit verdict; 11-paired-exit.txt=143; recorder paired_exit=143
+
+--- health ---
+  owned_pairs=8 alive_after_cancel=0; test-family listeners=0; 3180=0; stable 3080 GET=401
+  chrome=0 node=0
+  TestUse HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4 porcelain=0; carrier tracked-modified=0; launchers=301e8e5726f97884/042a5981a093ffe8 never edited by me
+  census limitation unchanged: chrome_lines=0 at 0.5 s sampling.
+  retention: 2026-10-01T19-42-45=R 2026-10-01T20-10-50=R 2026-10-01T20-33-43=R 2026-10-01T20-57-09=R 2026-10-01T21-44-23=R  run_dirs=5 deleted=0

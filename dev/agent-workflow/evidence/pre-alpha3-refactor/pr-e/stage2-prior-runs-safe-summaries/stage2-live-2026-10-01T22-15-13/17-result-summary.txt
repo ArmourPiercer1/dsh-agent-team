@@ -1,0 +1,64 @@
+=== run-6 result — MEMBER entry, PR56 client layout fix; 34 PASS / 6 FAIL, marker refused, fast cancel ===
+captured_utc=2026-10-01T22:16:12.230Z   launch_utc=2026-10-01T22:15:13.581Z   world=prereq-2026-10-01T22-15-13
+carrier HEAD=76dfd4c7f49da5c8f0b632a8b9c62f7a66aab57d tree=a370b34244e711018bfac610b337722e0436e5cc
+blob equality at launch: observer cd742e9b305e… / test c2ae9a1d93b6… = commit e42d87c5; TeamLedger.module.css 35d884486d18… / client-bundle.js 38b136f8fc76… / TeamLedger.tsx 89bfe57a186f… = commit 28416977
+launchers runner=301e8e57… paired=042a5981…; MEMBER_MODE=1 exported before paired; S2O_MEMBER_SESSION never set; recorder_pid=994163 direct_child=994167
+
+--- timeline (actual) ---
+  S2O STEP1 start iso=2026-10-01T22:15:13.628Z monotonicMs=0 observeDir=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refac
+  S2O STEP1 accept iso=2026-10-01T22:15:27.633Z waitedMs=14005 polls=29 observeDir=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-a
+  snapshot: runStamp=prereq-2026-10-01T22-15-13 requestId=ctrl-1p62bfj0vohbqk00euzk91a5 digestPrefix=sha256:8b003840764
+  kit-log cross-check: OK
+  durable row extracted; rootSessionId=session-prereq-main-prereq-2026-10-01T22-15-13 digest=sha256:8b003840764e99266cdf6c4fb7cbbe517b7a7443df05a6cbbbf9149e3bc7b902
+  member-extract: eligible=1 child=session-team-child-82d831481d20851d11f4189f7e3e7cab
+  STAGE2_OBSERVER_FAIL S2O_CHECKS_FAILED :: observation refused the marker (CHECKS_FAILED) — see /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/dev/agent-workflo
+  (recorder stderr also shows a few 'line 27: /proc/<pid>/cmdline: No such file or directory' races — my census touching a PID that exited mid-tick; no effect on identity lines, no signalling basis)
+
+--- observer entered as (meta.json) ---
+  entryPerspective=member  entrySessionId=session-team-child-82d831481d20851d11f4189f7e3e7cab  memberInstanceId=inst-02lq5061jkqb  claimed=observed-pending  viewports=1440x900 + 380x900
+
+--- checks (comparisons.json, allPassed=false) ---
+  34 passed / 6 failed; normal pass: fields 9/9, narrow-group 11/11; narrow pass: fields 9/9, narrow-group 5/11
+  FAIL NARROW_RID_READABLE :: whiteSpace=nowrap textOverflow=ellipsis scrollWidth=156 clientWidth=0
+  FAIL NARROW_DIGEST_EFFECTIVE_CLIP :: whiteSpace=normal overflow=visible/visible/visible textOverflow=ellipsis (computed ellipsis ACCEPTED when neutralized) scrollWidth=13 clientWidth=0 scrollHeight=980 clientHeight=980
+  FAIL NARROW_PAYLOAD_EFFECTIVE_CLIP :: whiteSpace=pre-wrap overflow=auto/auto/auto textOverflow=clip (computed ellipsis ACCEPTED when neutralized) scrollWidth=29 clientWidth=12 scrollHeight=12398 clientHeight=264
+  FAIL GEO_FIELD_WIDTHS :: widths={"panel":20,"dl":0,"ridDd":0,"digestDd":0,"payloadPre":12} collapsed=[dl,ridDd,digestDd] (a rendered bar whose field content-box is 0px IS the run5 collapse)
+  FAIL GEO_RESOLVE_BUTTONS_FIT :: bar=[327.5,347.5] overflow=[allow,deny] absent=[] (presence itself is other legs' ground; fit is asserted for PRESENT ones)
+  FAIL GEO_ROWS_CHILDREN_FIT :: rows=14 box=[326.5,328.5] overflow=[row0:child,row0:child,row0:child,row0:actor,row0:summary,row1:child,row1:child,row1:child,row1:actor,row1:summary,row2:child,row2:child,row2:child,row2:actor,row2:summary,row3:child,row3:child,row3:child,row3:actor,row3:summary,row4:child,row4:child,row4:child,row
+  headline geometry reading: at 380px the resolve panel measured panel=20px, dl=0, ridDd=0, digestDd=0, payloadPre=12 with collapsed=[dl,ridDd,digestDd]; the same 8 narrow checks passed in the 1440 pass. This is a measured 0px content-box on a rendered bar, i.e. the run-5 collapse reproduced under the PR56 layout.
+
+--- marker/token: marker.json=ABSENT (refused); token consumed once by the observer's own first goto; access record mode=600 never read/echoed ---
+
+--- cancel (authorized fast path) ---
+  utc=2026-10-01T22:15:49.117Z — fast cancel: observer terminal FAIL (S2O_CHECKS_FAILED, marker refused)
+  supported abort seam: searched hits=0 (searched-and-not-found, not exhaustive absence)
+    recorder_pid=994163 recorder_startticks=10427447 start_utc=2026-10-01T22:15:13.586Z
+    command: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh
+    roots: 994163 994167 
+    pid=1000978 -> already exited
+    pid=1002080 -> already exited
+    pid=1002892 startticks_verified=10428596 chain_ok=YES :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web 
+    pid=994167 startticks_verified=10427447 chain_ok=YES :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/
+    pid=994182 startticks_verified=10427448 chain_ok=YES :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-sta
+    pid=994183 -> already exited
+    pid=994193 -> already exited
+    pid=995346 -> already exited
+    pid=997476 -> already exited
+    pid=999708 -> already exited
+  --- signals, deepest first ---
+    SIGTERM -> 1002892
+    SIGTERM -> 994182
+    SIGTERM -> 994167
+    after: listeners_all=0 3080=401 chrome=0 node=0
+
+--- kit ledger ---
+  kit-printed PASS=15 FAIL=0; VERDICT lines=0; last kit line: [2026-10-01T22:15:27.280Z] b3a: UI OBSERVE hold — requestId=ctrl-1p62bfj0vohbqk00e
+  ledger: printed verdicts stand; scenarios after the b3a hold = CANCELLED / NOT_RUN; kit final verdict = NOT_RUN (cancelled at ~T+36s). Nothing inferred as PASS.
+  exits: paired=143 = SIGTERM from my cancel, not a kit verdict; recorder paired_exit=143
+
+--- health ---
+  owned_pairs=10 alive_after_cancel=0; test-family listeners=0; 3180=0; stable 3080 GET=401
+  chrome=0 node=0
+  TestUse HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4 porcelain=0; carrier tracked-modified=0; launchers untouched
+  census limitation unchanged: chrome_lines=0 at 0.5s sampling.
+  retention: 2026-10-01T19-42-45=R 2026-10-01T20-10-50=R 2026-10-01T20-33-43=R 2026-10-01T20-57-09=R 2026-10-01T21-44-23=R 2026-10-01T22-15-13=R  run_dirs=6 deleted=0; no seventh run authorized or started

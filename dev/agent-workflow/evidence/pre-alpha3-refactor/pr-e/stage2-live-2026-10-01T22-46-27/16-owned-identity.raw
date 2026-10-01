@@ -1,0 +1,657 @@
+=== owned-identity recorder v3 (field-keyed, 0.5s census) ===
+recorder_pid=1031299 recorder_startticks=10614793 start_utc=2026-10-01T22:46:27.209Z
+command: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh
+direct_child_pid=1031303 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<-1031299
+--- census #1 utc=2026-10-01T22:46:28.189Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031319 ppid=1031303 startticks=10614794 chain=1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-runner.sh 
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1031328 ppid=1031319 startticks=10614795 chain=1031328<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node -e  const { readFileSync, existsSync } = require("fs") const d = process.env.OBSERVE_DIR const margin = M
+--- census #2 utc=2026-10-01T22:46:29.703Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031319 ppid=1031303 startticks=10614794 chain=1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-runner.sh 
+pid=1032471 ppid=1031318 startticks=10614917 chain=1032471<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1031328 ppid=1031319 startticks=10614795 chain=1031328<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node -e  const { readFileSync, existsSync } = require("fs") const d = process.env.OBSERVE_DIR const margin = M
+--- census #3 utc=2026-10-01T22:46:31.231Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031319 ppid=1031303 startticks=10614794 chain=1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-runner.sh 
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1031328 ppid=1031319 startticks=10614795 chain=1031328<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node -e  const { readFileSync, existsSync } = require("fs") const d = process.env.OBSERVE_DIR const margin = M
+pid=1033565 ppid=1031318 startticks=10615076 chain=1033565<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #4 utc=2026-10-01T22:46:32.728Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031319 ppid=1031303 startticks=10614794 chain=1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-runner.sh 
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1031328 ppid=1031319 startticks=10614795 chain=1031328<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node -e  const { readFileSync, existsSync } = require("fs") const d = process.env.OBSERVE_DIR const margin = M
+pid=1033565 ppid=1031318 startticks=10615076 chain=1033565<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #5 utc=2026-10-01T22:46:34.270Z ---
+pid=1035798 ppid=1031318 startticks=10615380 chain=1035798<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031319 ppid=1031303 startticks=10614794 chain=1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-runner.sh 
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1031328 ppid=1031319 startticks=10614795 chain=1031328<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node -e  const { readFileSync, existsSync } = require("fs") const d = process.env.OBSERVE_DIR const margin = M
+--- census #6 utc=2026-10-01T22:46:35.799Z ---
+pid=1035798 ppid=1031318 startticks=10615380 chain=1035798<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: 
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031319 ppid=1031303 startticks=10614794 chain=1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-runner.sh 
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1031328 ppid=1031319 startticks=10614795 chain=1031328<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node -e  const { readFileSync, existsSync } = require("fs") const d = process.env.OBSERVE_DIR const margin = M
+--- census #7 utc=2026-10-01T22:46:37.315Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031319 ppid=1031303 startticks=10614794 chain=1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-runner.sh 
+pid=1037574 ppid=1031318 startticks=10615612 chain=1037574<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1031328 ppid=1031319 startticks=10614795 chain=1031328<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node -e  const { readFileSync, existsSync } = require("fs") const d = process.env.OBSERVE_DIR const margin = M
+--- census #8 utc=2026-10-01T22:46:38.846Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031319 ppid=1031303 startticks=10614794 chain=1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-runner.sh 
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1031328 ppid=1031319 startticks=10614795 chain=1031328<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node -e  const { readFileSync, existsSync } = require("fs") const d = process.env.OBSERVE_DIR const margin = M
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #9 utc=2026-10-01T22:46:40.343Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031319 ppid=1031303 startticks=10614794 chain=1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1031328 ppid=1031319 startticks=10614795 chain=1031328<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #10 utc=2026-10-01T22:46:41.916Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031319 ppid=1031303 startticks=10614794 chain=1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1041370 ppid=1041368 startticks=10616131 chain=1041370<-1041368<-1041357<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /opt/google/chrome/chrome --type=zygote --headless --crashpad-handler-pid=1041359 --enable-crash-reporter=, --
+pid=1041392 ppid=1041367 startticks=10616132 chain=1041392<-1041367<-1041357<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /opt/google/chrome/chrome --type=gpu-process --gpu-recent-crash-count=0 --disable-dev-shm-usage --disable-brea
+pid=1041394 ppid=1041357 startticks=10616132 chain=1041394<-1041357<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /opt/google/chrome/chrome --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --servic
+pid=1041448 ppid=1041370 startticks=10616138 chain=1041448<-1041370<-1041368<-1041357<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=1041359 --enable-crash-reporter=, --noerrdial
+pid=1041446 ppid=1041370 startticks=10616138 chain=1041446<-1041370<-1041368<-1041357<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=1041359 --enable-crash-reporter=, --noerrdial
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1041437 ppid=1041370 startticks=10616137 chain=1041437<-1041370<-1041368<-1041357<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /opt/google/chrome/chrome --type=renderer --top-chrome-webui --crashpad-handler-pid=1041359 --enable-crash-rep
+pid=1041409 ppid=1041370 startticks=10616133 chain=1041409<-1041370<-1041368<-1041357<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /opt/google/chrome/chrome --type=utility --utility-sub-type=storage.mojom.StorageService --lang=en-US --servic
+pid=1041367 ppid=1041357 startticks=10616129 chain=1041367<-1041357<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /opt/google/chrome/chrome --type=zygote --no-zygote-sandbox --headless --crashpad-handler-pid=1041359 --enable
+pid=1041368 ppid=1041357 startticks=10616129 chain=1041368<-1041357<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /opt/google/chrome/chrome --type=zygote --headless --crashpad-handler-pid=1041359 --enable-crash-reporter=, --
+pid=1041357 ppid=1031319 startticks=10616126 chain=1041357<-1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /opt/google/chrome/chrome --disable-field-trial-config --disable-background-networking --disable-background-ti
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #11 utc=2026-10-01T22:46:43.428Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031319 ppid=1031303 startticks=10614794 chain=1031319<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: 
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #12 utc=2026-10-01T22:46:44.906Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #13 utc=2026-10-01T22:46:46.368Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #14 utc=2026-10-01T22:46:47.838Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #15 utc=2026-10-01T22:46:49.312Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #16 utc=2026-10-01T22:46:50.775Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #17 utc=2026-10-01T22:46:52.244Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #18 utc=2026-10-01T22:46:53.715Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #19 utc=2026-10-01T22:46:55.178Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #20 utc=2026-10-01T22:46:56.654Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #21 utc=2026-10-01T22:46:58.127Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #22 utc=2026-10-01T22:46:59.600Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #23 utc=2026-10-01T22:47:01.085Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #24 utc=2026-10-01T22:47:02.569Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #25 utc=2026-10-01T22:47:04.037Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #26 utc=2026-10-01T22:47:05.573Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #27 utc=2026-10-01T22:47:07.039Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #28 utc=2026-10-01T22:47:08.508Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #29 utc=2026-10-01T22:47:09.997Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #30 utc=2026-10-01T22:47:11.464Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #31 utc=2026-10-01T22:47:12.940Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #32 utc=2026-10-01T22:47:14.426Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #33 utc=2026-10-01T22:47:15.892Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #34 utc=2026-10-01T22:47:17.356Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #35 utc=2026-10-01T22:47:18.829Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #36 utc=2026-10-01T22:47:20.302Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #37 utc=2026-10-01T22:47:21.772Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #38 utc=2026-10-01T22:47:23.252Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #39 utc=2026-10-01T22:47:24.729Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #40 utc=2026-10-01T22:47:26.193Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #41 utc=2026-10-01T22:47:27.659Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #42 utc=2026-10-01T22:47:29.136Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #43 utc=2026-10-01T22:47:30.610Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #44 utc=2026-10-01T22:47:32.080Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #45 utc=2026-10-01T22:47:33.553Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #46 utc=2026-10-01T22:47:35.060Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #47 utc=2026-10-01T22:47:36.518Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #48 utc=2026-10-01T22:47:37.997Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #49 utc=2026-10-01T22:47:39.488Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #50 utc=2026-10-01T22:47:40.962Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #51 utc=2026-10-01T22:47:42.442Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #52 utc=2026-10-01T22:47:43.950Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #53 utc=2026-10-01T22:47:45.428Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #54 utc=2026-10-01T22:47:46.897Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #55 utc=2026-10-01T22:47:48.400Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #56 utc=2026-10-01T22:47:49.875Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #57 utc=2026-10-01T22:47:51.344Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #58 utc=2026-10-01T22:47:52.848Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #59 utc=2026-10-01T22:47:54.322Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #60 utc=2026-10-01T22:47:55.795Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #61 utc=2026-10-01T22:51:05.313Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #62 utc=2026-10-01T22:47:58.768Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #63 utc=2026-10-01T22:48:00.237Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #64 utc=2026-10-01T22:48:01.725Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #65 utc=2026-10-01T22:48:03.207Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #66 utc=2026-10-01T22:48:04.689Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #67 utc=2026-10-01T22:48:06.175Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #68 utc=2026-10-01T22:48:07.684Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #69 utc=2026-10-01T22:48:09.194Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #70 utc=2026-10-01T22:48:10.660Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #71 utc=2026-10-01T22:48:12.135Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #72 utc=2026-10-01T22:48:13.636Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #73 utc=2026-10-01T22:48:15.099Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #74 utc=2026-10-01T22:48:16.582Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #75 utc=2026-10-01T22:48:18.095Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #76 utc=2026-10-01T22:48:19.568Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #77 utc=2026-10-01T22:48:21.046Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #78 utc=2026-10-01T22:48:22.555Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #79 utc=2026-10-01T22:48:24.033Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #80 utc=2026-10-01T22:48:25.503Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #81 utc=2026-10-01T22:48:26.992Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #82 utc=2026-10-01T22:48:28.469Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #83 utc=2026-10-01T22:48:29.936Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #84 utc=2026-10-01T22:48:31.431Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #85 utc=2026-10-01T22:48:32.913Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #86 utc=2026-10-01T22:48:34.391Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #87 utc=2026-10-01T22:48:35.874Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #88 utc=2026-10-01T22:48:37.347Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #89 utc=2026-10-01T22:48:38.827Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #90 utc=2026-10-01T22:48:40.316Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #91 utc=2026-10-01T22:48:41.796Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #92 utc=2026-10-01T22:48:43.278Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #93 utc=2026-10-01T22:48:44.756Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #94 utc=2026-10-01T22:48:46.228Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1039142 ppid=1031318 startticks=10615841 chain=1039142<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #95 utc=2026-10-01T22:48:47.768Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1132415 ppid=1031318 startticks=10628715 chain=1132415<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #96 utc=2026-10-01T22:48:49.262Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1132415 ppid=1031318 startticks=10628715 chain=1132415<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: 
+--- census #97 utc=2026-10-01T22:48:50.747Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #98 utc=2026-10-01T22:48:52.244Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #99 utc=2026-10-01T22:48:53.717Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #100 utc=2026-10-01T22:48:55.194Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #101 utc=2026-10-01T22:48:56.686Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #102 utc=2026-10-01T22:48:58.158Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #103 utc=2026-10-01T22:48:59.620Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #104 utc=2026-10-01T22:49:01.120Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #105 utc=2026-10-01T22:49:02.599Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #106 utc=2026-10-01T22:49:04.074Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #107 utc=2026-10-01T22:49:05.556Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #108 utc=2026-10-01T22:49:07.033Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #109 utc=2026-10-01T22:49:08.514Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #110 utc=2026-10-01T22:49:09.988Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #111 utc=2026-10-01T22:49:11.466Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #112 utc=2026-10-01T22:49:12.943Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #113 utc=2026-10-01T22:49:14.406Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #114 utc=2026-10-01T22:49:15.880Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #115 utc=2026-10-01T22:49:17.368Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #116 utc=2026-10-01T22:49:18.834Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #117 utc=2026-10-01T22:49:20.300Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #118 utc=2026-10-01T22:49:21.802Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #119 utc=2026-10-01T22:49:23.268Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #120 utc=2026-10-01T22:49:24.741Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #121 utc=2026-10-01T22:49:26.248Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #122 utc=2026-10-01T22:49:27.727Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #123 utc=2026-10-01T22:49:29.207Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #124 utc=2026-10-01T22:49:30.707Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #125 utc=2026-10-01T22:49:32.232Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #126 utc=2026-10-01T22:49:33.773Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #127 utc=2026-10-01T22:49:35.280Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #128 utc=2026-10-01T22:49:36.745Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #129 utc=2026-10-01T22:49:38.218Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #130 utc=2026-10-01T22:49:39.708Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #131 utc=2026-10-01T22:49:41.195Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #132 utc=2026-10-01T22:49:42.664Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #133 utc=2026-10-01T22:49:44.158Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #134 utc=2026-10-01T22:49:45.629Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #135 utc=2026-10-01T22:49:47.118Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #136 utc=2026-10-01T22:49:48.612Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #137 utc=2026-10-01T22:49:50.104Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #138 utc=2026-10-01T22:49:51.611Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #139 utc=2026-10-01T22:49:53.079Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #140 utc=2026-10-01T22:49:54.566Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #141 utc=2026-10-01T22:49:56.161Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #142 utc=2026-10-01T22:49:57.640Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #143 utc=2026-10-01T22:49:59.128Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #144 utc=2026-10-01T22:50:00.625Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #145 utc=2026-10-01T22:50:02.101Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #146 utc=2026-10-01T22:50:03.573Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #147 utc=2026-10-01T22:50:05.070Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #148 utc=2026-10-01T22:50:06.547Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1134051 ppid=1031318 startticks=10628946 chain=1134051<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #149 utc=2026-10-01T22:50:08.070Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1190472 ppid=1031318 startticks=10636756 chain=1190472<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #150 utc=2026-10-01T22:50:09.594Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1190472 ppid=1031318 startticks=10636756 chain=1190472<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: 
+--- census #151 utc=2026-10-01T22:50:11.101Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1192148 ppid=1031318 startticks=10636986 chain=1192148<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #152 utc=2026-10-01T22:50:12.621Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1192148 ppid=1031318 startticks=10636986 chain=1192148<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: 
+--- census #153 utc=2026-10-01T22:50:14.133Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1194015 ppid=1031318 startticks=10637257 chain=1194015<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: /home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open 
+--- census #154 utc=2026-10-01T22:50:15.649Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+--- census #155 utc=2026-10-01T22:50:17.169Z ---
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+pid=1196073 ppid=1031318 startticks=10637549 chain=1196073<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: 
+--- census #156 utc=2026-10-01T22:50:18.702Z ---
+pid=1197864 ppid=1031318 startticks=10637764 chain=1197864<-1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: 
+pid=1031318 ppid=1031303 startticks=10614794 chain=1031318<-1031303<-1031299<-1031283<-290972<-290971<-290638<- :: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirement-recove
+pid=1031303 ppid=1031299 startticks=10614794 chain=1031303<-1031299<-1031283<-290972<-290971<-290638<- :: bash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh 
+paired_exit=0 recorder_end_utc=2026-10-01T22:50:19.210Z

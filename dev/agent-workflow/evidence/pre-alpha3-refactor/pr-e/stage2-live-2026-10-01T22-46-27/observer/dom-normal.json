@@ -1,0 +1,14 @@
+{
+  "panelTotal": 1,
+  "matchCount": 1,
+  "fields": {
+    "ridAttr": "ctrl-0vl9ypc11b9h7308kmqom0hy",
+    "controlSurface": "enabled",
+    "requestIdText": "ctrl-0vl9ypc11b9h7308kmqom0hy",
+    "digestPresent": true,
+    "digestText": "sha256:7d3904c82d8978ec04294a35c6d2dcc48e24d3f30967f6152feb4b79f3eaee29",
+    "payloadPresent": true,
+    "payloadText": "{\n  \"action\": \"delegate\",\n  \"arguments\": {\n    \"label\": \"w-b3a\",\n    \"prompt\": \"PRREQ_W_b3a_prereq-2026-10-01T22-46-27 work unit b3a (nonce prereq-2026-10-01T22-46-27)\"\n  },\n  \"blockedScopes\": [\n    \"template:worker\"\n  ],\n  \"caller\": {\n    \"instanceId\": \"inst-leader\",\n    \"kind\": \"instance\"\n  },\n  \"delegationTemplateId\": \"worker\",\n  \"downedCapabilitySubjects\": [\n    \"mcp_web\"\n  ],\n  \"effect\": \"allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)\",\n  \"execution\": \"sync\",\n  \"reducedAuthority\": {\n    \"externalHardCeiling\": \"absolute (never bypassed)\",\n    \"otherwise\": \"unchanged (the original permissions apply)\",\n    \"policy\": \"reduced original authority (plan §E.9)\",\n    \"unavailableSubjects\": [\n      \"mcp_web\"\n    ]\n  },\n  \"requestToken\": \"rt-b3a-prereq-2026-10-01T22-46-27\",\n  \"requestedOperation\": \"one recovery attempt of 'delegate' on template 'worker'\",\n  \"rootSessionId\": \"session-prereq-main-prereq-2026-10-01T22-46-27\",\n  \"schema\": \"dsh-agent-team/recovery-dispatch/v1\",\n  \"subject\": {\n    \"kind\": \"template\",\n    \"templateId\": \"worker\"\n  },\n  \"templateId\": \"worker\",\n  \"toolName\": \"delegate\"\n}",
+    "renderMode": "recovery-v1"
+  }
+}

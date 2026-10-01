@@ -1,0 +1,130 @@
+✔ 01 claim: OBSERVED_PENDING_CLAIM is the exported-set member (FIX-4 lawful signal), never a remembered literal (1.492737ms)
+✔ 02 cli: full valid argv parses (digest-file mode); evidence/marker dirs created (1.021914ms)
+✔ 03 cli: digest-mode vs digest-file-mode are mutually exclusive and one is required (0.727807ms)
+✔ 04 cli: --digest must match ^sha256:[0-9a-f]{64}$ (fail closed) (0.307644ms)
+✔ 05 cli: required flags, unknown flags, malformed viewport / rid fail closed (1.045678ms)
+✔ 06 cli: every input path must be an EXISTING REGULAR file; dirs/symlinks/absent refused (0.355286ms)
+✔ 07 access: 0600 regular record parses; launchUrl/requestId/digest fields required (0.53506ms)
+✔ 08 access: mode 0644 (any looser-than-0600) is REJECTED (0.219841ms)
+✔ 09 access: symlink leaf is REJECTED (never followed) even when the target is a perfect 0600 record (0.312413ms)
+✔ 10 access: directory / malformed JSON / missing launchUrl refused (0.472266ms)
+✔ 11 digest-file: flat request-fact extraction resolves; requestId cross-checks the --rid (0.816917ms)
+✔ 12 digest-file: nested ledger-entry extraction shape accepted (fact under .payload) (0.247263ms)
+✔ 13 digest-file: requestId drift from --rid fails closed (different durable request) (0.222709ms)
+✔ 14 digest/payload CROSS-CHECK: the expected digest MUST equal reviewPayloadDigestOf(payload-file) — the kit truth recomputation pins it (0.277021ms)
+✔ 15 digest-file carrying reviewPayload must deep-equal the payload-file (same durable request, never hand-typed twice) (0.192143ms)
+✔ 16 payload:null is legal (PR #56 frozen batch #1) and binds to sha256(canonicalJson(null)) (0.21246ms)
+✔ 17 extract: panel found by rid; requestId/digest/payload fields extracted verbatim (75.231698ms)
+✔ 18 checks: all-pass on the faithful fixture (18.095558ms)
+✔ 19 fail-closed: requestId dd drifts from --rid → RID_TEXT mismatch (10.248852ms)
+✔ 20 fail-closed: digest shape-invalid (rendered) → DIGEST_SHAPE (8.634574ms)
+✔ 21 fail-closed: digest mismatch (valid shape, wrong value) → DIGEST_EXACT (11.431838ms)
+✔ 22 fail-closed: payload deep-inequality (one nested leaf) → PAYLOAD_DEEP_EQUAL (8.972696ms)
+✔ 23 fail-closed: payload <pre> text not JSON-parseable → PAYLOAD_PARSE (9.229979ms)
+✔ 24 fail-closed: MISSING panel (no resolve-bar for the rid) → PANEL_PRESENT (15.173168ms)
+✔ 25 fail-closed: EXTRA duplicate panel for the SAME rid is ambiguous → PANEL_PRESENT (9.416868ms)
+✔ 26 other-rid panels are ignored (multiple pending controls is legal UI; only the target must be unique) (8.735254ms)
+✔ 27 fail-closed: digest field absent (data-digest-source="ledger-wire" missing) → DIGEST_PRESENT (7.629119ms)
+✔ 28 fail-closed: payload block absent (pre missing) → PAYLOAD_PRESENT (6.428259ms)
+✔ 29 payload:null renders as text "null" and deep-equals parsed null (PR #56 legal shape) (5.82509ms)
+✔ 30 tab: unique exact-label tab INSIDE the tablist wins over decoy labels outside it (E3.teamTabHits=2 trap) (7.858123ms)
+✔ 31 REJECT: a second in-tablist tab with the same exact label is ambiguous → fail closed (4.855881ms)
+✔ 32 REJECT: label-matching elements OUTSIDE the tablist never qualify; missing in-tablist tab → fail closed (7.611739ms)
+✔ 33 tab: locale label 团队 (locales.ts L292) is equally accepted; tablist missing → fail closed (12.891144ms)
+✔ 33b tab: LAYOUT-AGNOSTIC predicate (coordinator final wording) — the UNIQUE exact-label [role=tab] under [data-conversation-tabs] wins whatever group it sits in: a two-group mirror (strip tabs + separator + team-action group), Team placed in EITHER group, never any first/last or group requirement (32.100935ms)
+✔ 34 activation state: aria-selected=true on the resolved tab + [data-team-view] present; both required (22.740503ms)
+✔ 35 narrow: faithful CSS (digest white-space:normal, payload pre-wrap) passes (80.159986ms)
+✔ 36 fail-closed narrow: digest loses its CSS override (frozen batch #3 regression: white-space:nowrap + ellipsis) (23.048168ms)
+✔ 37 fail-closed narrow: payload pre switched to nowrap+ellipsis (truncation) fails (10.368255ms)
+✔ 38 fail-closed narrow: DOM text shorter than the full expected length (any truncation) fails (13.868437ms)
+✔ 39 scan: raw token AND any URL-with-token query are caught; clean text passes (0.355705ms)
+✔ 40 fail-closed: a leaking evidence bundle is REFUSED and NOTHING is written (0.291396ms)
+✔ 41 evidence: clean bundle writes every file + sha256 manifest that verifies (0.438543ms)
+✔ 42 marker: atomic tmp+rename write, mode 0600, exact contract shape (0.307237ms)
+✔ 43 KIT-READER ROUNDTRIP: readMarkerHint accepts the marker; verifyUiTruth accepts the observed-pending claim against pending durable facts (0.375307ms)
+✔ 44 no-marker-on-failure: any failed check → the marker dir stays EMPTY (fail closed) (0.256063ms)
+✔ 45 deepJsonEqual: structural equality regardless of key order; nested arrays; leaf type strictness (0.079481ms)
+✔ 46 narrowExpectedLengths derives EVERY length from the DURABLE source (never from rendered text) (0.071292ms)
+✔ 47 fail-closed: narrow-ONLY truncated payload (normal full, narrow clipped) — durable lengths FAIL where self-length was tautological; verdict refuses the marker (42.947905ms)
+✔ 48 fail-closed: narrow-ONLY SAME-LENGTH wrong digest → deep equality (not length) catches it (13.458988ms)
+✔ 49 verdict: BOTH viewports deep-equal + layout rows green → all-pass (and nothing relaxed) (37.618586ms)
+✔ 50 scrubErrorText: known launch secrets AND unknown token= VALUES are scrubbed; residual uncertainty SUPPRESSES the text (0.281979ms)
+✔ 51 cliMain (the REAL top-level handler): unknown error with token-bearing stack → exit 1, output scrubbed; ObserverError → exit 2 typed; suppressed branch keeps no message body (0.951405ms)
+✔ 52 narrow layout vs the REAL cascade: digest with base trio + override (computed white-space normal, overflow visible, text-overflow STILL ellipsis, full-height) PASSES; real clipping (trio + short fixed height) fails typed (34.193102ms)
+✔ 53 teamViewReadyDom is BOOLEAN (never the truthy-object trap); waitUntilTruthy polls false→false→true and times out honestly (12.321039ms)
+✔ 55 WIRING happy path: REAL runObservation end-to-end (fake page + real DOM probe, both viewports) → marker written ONCE, 0600, kit-reader accepts (23.800273ms)
+✔ 56 WIRING item-1: token-bearing goto rejection through the REAL CLI boundary → scrubbed stdout/stderr, exit 2, no marker (4.666596ms)
+✔ 57 WIRING item-2: same page until RESIZE, then the narrow render diverges (same-LENGTH WRONG digest) → deep equality fails INSIDE runObservation, no marker (16.794362ms)
+✔ 58 WIRING item-3: REAL-clipping narrow render (trio + short fixed height appearing ONLY after resize) fails typed through the real check sequence; the real-cascade fixture (computed ellipsis, neutralized) passes — see 55 (17.207433ms)
+✔ 59 WIRING item-4: never-active tab → typed timeout failure through runObservation (no marker); transient inactive→active PROCEEDS (30.672629ms)
+✔ 61 buildLaunchOptions: EXACT verified-config shape (sandbox ON, system executablePath, pipe transport, NO args array); missing/symlink chrome fails closed (0.282921ms)
+✔ 62 source pin: the default launch branch passes buildLaunchOptions output to chromium.launch — bare options objects are dead (1.486185ms)
+✔ 63 WIRING: the fake launch CANNOT mask the real config — captured options carry sandbox+executablePath+pipe verbatim (25.163168ms)
+✔ 64 CLI: --chrome is the ONLY new optional flag (parsed into opts.chromePath); unknown flags stay rejected (0.402278ms)
+✔ 65 WIRING: chrome verification happens BEFORE launch (fail closed, launcher never called, no marker) (0.641421ms)
+✔ 66 root adapters (Rows.tsx mirror): exact-id row count, BOOLEAN ready, typed validation object (decoy-selected = MISMATCH) (39.44855ms)
+✔ 67 resolveExpected binds rootSessionId from the SAME durable fact doc (row-carried); absent ⇒ null (runObservation fails closed); conflict ⇒ ambiguous (0.487764ms)
+✔ 68 WIRING: NO matching root row in the page ⇒ typed fail-closed, no marker (decoy rows are NEVER opened) (8.156958ms)
+✔ 69 WIRING: root row present but the click never lands (decoy stays selected) ⇒ typed NEVER_SELECTED timeout, nothing written (29.408798ms)
+✔ 70 WIRING: durable fact without rootSessionId ⇒ S2O_ROOT_ID_MISSING fail-closed (no default-session guessing) (0.580161ms)
+✔ 71 WIRING happy path WITH root selection: decoy selected on landing, root explicitly opened + verified — still exactly one marker (18.336942ms)
+✔ 72 viewport-honest fake models the PINNED rule (columns.ts L23, WorkspaceBrowser L1275-1278 wide-only): FRESH narrow context AND resize below 1024 render ZERO treeitems — a fresh 380px context can NEVER select the root (28.540577ms)
+✔ 73 resize-then-verify: ONE context/page/goto + one resize to 380; both passes deep-equal the durable source (RID+digest+payload incl. rootSessionId), marker EXACTLY once (13.413261ms)
+✔ 74 narrow pass binds the durable root THROUGH THE PANEL: payload.rootSessionId diverging (same length) after resize ⇒ PAYLOAD_DEEP_EQUAL typed fail, no marker (13.681086ms)
+✔ 76 narrow header shows a TITLE (never the raw id) while RID/digest/payload incl. payload.rootSessionId ALL match ⇒ PASS + exactly one marker — zero title/ID dependency in the narrow pass (14.000412ms)
+✔ 75 source pins: ONE context/page/goto, the narrow pass is a setViewportSize re-check, the per-viewport loop is dead, the treeitem surface is demanded EXACTLY ONCE (normal pass only) (0.547646ms)
+✔ 60 source pin: the OLD object-return can never gate a wait again (wait sites use the BOOLEAN predicate + driver) (0.391917ms)
+✔ 77 collapsed-by-default fresh boot: ONE scoped group-header click reveals the rows; root opens, verifies, observes — exactly one marker, NO entry dump on success (16.499042ms)
+✔ 78 WelcomeNotice present (fresh profile) is dismissed with ONE scoped Continue click BEFORE the group step, then the full pass completes (18.979582ms)
+✔ 79 group header present but click renders NO rows ⇒ typed S2O_GROUP_EXPAND_NO_ROWS fail-closed (no positional guessing, no marker) (30.40118ms)
+✔ 80 root row rides behind the post-expansion overflow: one scoped overflow click reveals it; flow completes — rows already present means NO group click (16.750944ms)
+✔ 81 ENTRY-STAGE failure writes ONE 0600 STRUCTURED diagnostic: exact whitelisted shape, zero free-text keys, canaries structurally absent (22.546708ms)
+✔ 82 collapsed-group EVIDENCE: pre-action ungroupedCount=1/expanded=false, POST-action expanded=true with rowCount=0 → GROUP_EXPAND_NO_ROWS carries the evidence (21.718207ms)
+✔ 83 named-group fixture (P-b family EVIDENCED): ungroupedCount=0 at every stage, treeitemCount=1, activation refuses to guess, typed MISSING (8.647123ms)
+✔ 84 rows-present-different-key (P-a family EVIDENCED): rowCount>0 with expectedRootPresent=false at every stage, typed MISSING (10.241939ms)
+✔ 85 MEMBER MODE (blank-root world): durable binding green ⇒ entry opens the MEMBER row (root row absent), observes, marks — entryPerspective=member HONEST in result AND meta, NO diagnostic on success (19.112657ms)
+✔ 86 member bound to a FOREIGN root (durable mismatch): typed refusal BEFORE any UI action, browser NEVER touched, zero writes (0.577822ms)
+✔ 87 member NOT in this world's session_bindings: S2O_MEMBER_NOT_IN_BINDINGS before any UI, zero writes — never the "first visible row" (0.418459ms)
+✔ 88 member mode COMPOSES with fresh-boot activation: collapsed group expands, the revealed MEMBER row becomes the entry (19.925496ms)
+✔ 89 durable binding DRIFT between checks is typed (direct resolveMemberBinding — the PRE-PUBLICATION recheck semantics, P1 ordering) (0.472741ms)
+✔ 90 member mode refuses a reviewPayload WITHOUT the durable rootSessionId BEFORE the browser — an unprovable perspective never observes (4.964765ms)
+✔ 91 ENTRY failure in member mode: the diagnostic records BOTH bounded ids (root + entry=member), stage shape unchanged (24.558309ms)
+✔ 92 P1 ORDERING: binding drift injected between pre-UI resolve and the publish point ⇒ typed refusal AND ZERO MARKER ON DISK (marker is published only after ALL verification) (29.235314ms)
+✔ 93 rider (reviewer MINOR): TWO member_instances rows naming the same {instance,root}→child ⇒ matches!==1 typed MISMATCH (0.418063ms)
+✔ 94 rider (reviewer MINOR): --team-domain fail-closed branches — unparseable / missing tables / >16MiB cap all typed, symlink refused at parse (20.191278ms)
+✔ 95 rider (reviewer MINOR): forged --member-session shape is CLI-typed, and --team-domain alone (no member) is a typed pairing refusal (0.792238ms)
+✖ 96 GEOMETRY READS: run5-era 380px collapse FAILS widths+buttons+rows; post-fix widths GREEN; layout-less jsdom host UNASSERTED (6.275543ms)
+✖ 97 GEOMETRY wiring: full runObservation success still emits the marker AND comparisons.json carries the GEO_ rows in the unchanged {name,ok,detail} shape (both phases) (14.391854ms)
+ℹ tests 97
+ℹ suites 0
+ℹ pass 95
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1639.732767
+
+✖ failing tests:
+
+test at tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1884:1
+✖ 96 GEOMETRY READS: run5-era 380px collapse FAILS widths+buttons+rows; post-fix widths GREEN; layout-less jsdom host UNASSERTED (6.275543ms)
+  TypeError: checkGeometryDom is not a function
+      at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1899:12
+      at withDom (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:97:12)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1889:18)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1930:1
+✖ 97 GEOMETRY wiring: full runObservation success still emits the marker AND comparisons.json carries the GEO_ rows in the unchanged {name,ok,detail} shape (both phases) (14.391854ms)
+  AssertionError [ERR_ASSERTION]: normal carries the geometry rows
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs:1938:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
