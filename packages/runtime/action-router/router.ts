@@ -824,6 +824,20 @@ export function createTeamRuntime(
     const commitReviewedEffect = (): Promise<RuntimeActionEffect | WorkChainStage> => {
       const recoveryControlRequestId = request.recovery?.controlRequestId
       const controlService = options.controlServiceRef?.current
+      // fix-control-authz C (the direct shared pre-callback one-shot
+      // close-fault residual): the PRE-callback fault recognition flag
+      // — flips the moment the commitEffect callback is ACTUALLY
+      // ENTERED. A typed DURABLE_WRITE_FAILED rejection that reaches
+      // the boundary catch below with the callback NEVER entered is
+      // the shared unit's OWN pre-callback durable close fault (the
+      // C-2 abort branch of `commitEffectIfAuthorized` — the sequence
+      // allocation or the abandon put; control/service.ts): the same
+      // one-shot close-failure contract the activation callbacks
+      // carry — the original typed fault propagates as-is and the D2
+      // settle must NEVER re-attempt the failed close (a second
+      // attempt would succeed on a one-shot fault and mask the first
+      // failure as a settled close).
+      let callbackEntered = false
       if (recoveryControlRequestId === undefined || controlService === undefined) {
         effectCommitStarted = true
         return executeEffectLocked(ctx)
@@ -838,8 +852,15 @@ export function createTeamRuntime(
           // provider's reservation boundary; the others synchronously
           // before their first commit), NOT here at the closure entry
           // (the pre-reservation region must stay pre-commit for the
-          // D2 settle).
-          commitEffect: () => executeEffectLocked(ctx),
+          // D2 settle). The `callbackEntered` flag (the direct shared
+          // pre-callback residual) flips at the callback entry itself —
+          // it observes ONLY whether the commit was entered at all
+          // (the pre-callback window = the C-2 abort close), not when
+          // the first durable write lands.
+          commitEffect: () => {
+            callbackEntered = true
+            return executeEffectLocked(ctx)
+          },
           signal: asAbortLike(request.signal),
         })
         .catch((boundaryError: unknown) => {
@@ -895,6 +916,30 @@ export function createTeamRuntime(
                 controlRequestId: recoveryControlRequestId,
               },
             )
+          }
+          // fix-control-authz C (the direct shared pre-callback
+          // one-shot close-fault residual): the unit's OWN pre-callback
+          // durable close faulted (the C-2 abort branch — the sequence
+          // allocation or the abandon put — the commitEffect callback
+          // never entered). Mark the shared closeFaultObserved flag
+          // the same way the activation callbacks do: the D2 settle
+          // (the gated AND the fallback catch — the same flag both
+          // read) must NEVER re-attempt the failed close (a second
+          // attempt would succeed on a one-shot fault and mask the
+          // first failure as a settled close). The original typed
+          // DURABLE_WRITE_FAILED (the service's durableFailure mapping
+          // — the original fault's message) propagates UNCHANGED below
+          // (no reclassification, no retry, no new typed abandon).
+          // A fault AFTER the callback entered is the effect's OWN
+          // write — effectCommitStarted already stands (the marker
+          // flips at the effect's first durable write), the settle is
+          // already prohibited, and this recognition does not apply.
+          if (
+            !callbackEntered &&
+            boundaryError instanceof TeamRuntimeError &&
+            boundaryError.code === TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED
+          ) {
+            ctx.markCloseFaultObserved?.()
           }
           throw boundaryError
         })
