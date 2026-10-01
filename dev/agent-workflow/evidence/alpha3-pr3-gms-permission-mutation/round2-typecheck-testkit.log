@@ -1,0 +1,3 @@
+$ (packages/testkit) npx tsc -p tsconfig.json — real capture
+rc=0
+# empty between markers = success (the genuine capture).

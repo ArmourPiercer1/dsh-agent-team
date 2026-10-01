@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr3-gms-permission-mutation/packages/runtime
+
+stdout | test/a3p3-revoke-reveal-semantics.test.ts > P1 probe — revoke-reveals-lower-permission under an EMPTY envelope > S1: BEFORE=deny (overlay shadows template allow), Leader revoke with envelope=[] is ACCEPTED, AFTER=allow
+[PROBE S1] {"beforeAnswer":{"decision":"deny","winningLayer":"overlay"},"revokeAccepted":true,"afterAnswer":{"decision":"allow","winningLayer":"template"}}
+
+stdout | test/a3p3-revoke-reveal-semantics.test.ts > P1 probe — revoke-reveals-lower-permission under an EMPTY envelope > S2: template DENY below — revoke stays deny (legitimate no-envelope work)
+[PROBE S2] {"decision":"deny","winningLayer":"template"}
+
+stdout | test/a3p3-revoke-reveal-semantics.test.ts > P1 probe — revoke-reveals-lower-permission under an EMPTY envelope > S3: template ASK below — Leader revoke with envelope=[] ACCEPTED, deny->ask revealed (ladder bump)
+[PROBE S3] {"accepted":true,"answer":{"decision":"ask","winningLayer":"template"}}
+
+stdout | test/a3p3-revoke-reveal-semantics.test.ts > P1 probe — revoke-reveals-lower-permission under an EMPTY envelope > S4: no lower rule, fallback ASK — revoke falls to ask (fallback reveal)
+[PROBE S4] {"accepted":true,"answer":{"decision":"ask","winningLayer":null}}
+
+stdout | test/a3p3-revoke-reveal-semantics.test.ts > P1 probe — revoke-reveals-lower-permission under an EMPTY envelope > S5: revoke an overlay ALLOW revealing template deny — accepted, reveal is a tightening (must stay allowed)
+[PROBE S5] {"accepted":true,"answer":{"decision":"deny","winningLayer":"template"}}
+
+stdout | test/a3p3-revoke-reveal-semantics.test.ts > P1 probe — revoke-reveals-lower-permission under an EMPTY envelope > S7: region-partition witness — revoke a deny whose REMAINING overlay child rule was shadowed: reveal channel = REMAINING overlay rule, not static layer
+[PROBE S7] {"beforeAnswer":{"decision":"deny","winningLayer":"overlay"},"accepted":true,"afterAnswer":{"decision":"allow","winningLayer":"overlay"}}
+
+stdout | test/a3p3-revoke-reveal-semantics.test.ts > P1 probe — revoke-reveals-lower-permission under an EMPTY envelope > S6: subtree deny over an exact template allow — Leader revoke ACCEPTED, reveal is allow
+[PROBE S6] {"beforeAnswer":{"decision":"deny","winningLayer":"overlay"},"accepted":true,"afterAnswer":{"decision":"allow","winningLayer":"template"}}
+
+stdout | test/a3p3-revoke-reveal-semantics.test.ts > P1-BUG2 probe — same-layer specificity: new exact pair OVER a covering allow > B1: overlay subtree(R)=allow exists; Leader adds exact(R/file)=ask with EMPTY envelope — currently REFUSED, but effective allow->ask is TIGHTENING
+[PROBE B1] {"beforeAnswer":{"decision":"allow","winningLayer":"overlay"},"refused":true,"code":"PERMISSION_ENVELOPE_EXPANSION_DENIED","afterAnswer":{"decision":"ask","winningLayer":"overlay"}}
+
+stdout | test/a3p3-revoke-reveal-semantics.test.ts > P1-BUG2 probe — same-layer specificity: new exact pair OVER a covering allow > B2: bounded sibling — no overlay match at all, no static context: the conservative DENY baseline REFUSAL is the fail-closed behavior to keep
+[PROBE B2] {"refused":true,"wouldBe":{"decision":"ask","winningLayer":"overlay"}}
+
+ ✓ test/a3p3-revoke-reveal-semantics.test.ts (9 tests) 34ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  20:35:34
+   Duration  444ms (transform 250ms, setup 0ms, import 317ms, tests 34ms, environment 0ms)
+

@@ -82,9 +82,26 @@ import type {
   GovernanceOverrideResetResult,
   GovernanceOverrideSetArgs,
   GovernanceOverrideSetResult,
+  GovernancePermissionMutationArgs,
+  GovernancePermissionMutationResult,
   GovernancePolicyStateSetArgs,
   GovernancePolicyStateSetResult,
 } from './types.js'
+// Alpha.3 PR3 — the permission-mutation kernel (pure) and the TYPE-ONLY
+// overlay vocabulary. Type-only on the PR1 lane is the PR2 load-order
+// discipline (the durable store object is INJECTED through
+// `deps.permissionLane.overlay`, so this lane gains no runtime edge to
+// storage); the kernel is a pure sibling module.
+import type { PermissionOverlayRepositoryPort } from '../permission-governance/port.js'
+import {
+  authorizeLeaderPermissionMutation,
+  parsePermissionMutation,
+  parsePermissionMutationEnvelope,
+  parsePermissionStaticLayerFacts,
+  planPermissionMutation,
+  PERMISSION_MUTATION_ERROR_CODES,
+  PermissionMutationError,
+} from './permission-mutation.js'
 
 /** The storage duplicate code string (mirrors TEAM_DOMAIN_ERROR_CODES). */
 const STORAGE_RECORD_DUPLICATE = 'RECORD_DUPLICATE'
@@ -504,9 +521,182 @@ export function createGovernanceMutationService(
     })
   }
 
+  /**
+   * Alpha.3 PR3 (additive — the legacy methods above are byte-unchanged):
+   * the permission-mutation path of the ONE governance mutation authority
+   * (ADR §1: every permission mutation flows through HERE, never around;
+   * the PR1 repository port is persistence-only and stays that way — this
+   * method validates, the port stores).
+   *
+   * Pipeline (ADR §1 order, design §2 responsibilities):
+   * 1. authenticate authority — the same derived server-side
+   *    `MutationAuthority` vocabulary as the legacy methods: leader and
+   *    operator act, an ordinary member is unauthorized on this lane;
+   * 2. validate the PermissionMutation (grammar, class/matcher pairing,
+   *    design §5 exec exactness) and the §6 MutationEnvelope (fail-closed:
+   *    no envelope configured = no Leader expansion authority);
+   * 3. serialize on the SAME shared per-team chain, read the current
+   *    authority snapshot, apply the expectedGeneration CAS;
+   * 4. for every Leader EXPANSION (rank UP — ADR §6; ABSENCE counts as
+   *    `deny`), require an envelope rule covering matcher + maximum-effect
+   *    ceiling; TIGHTENINGS need none (pinned both directions by test);
+   *    Human mutations skip the envelope check (ADR §7) and record Human
+   *    provenance — which is audit data, never precedence (the port stores
+   *    `actor` verbatim; the read side selects authority by GENERATION —
+   *    PR2's assembler never interprets `actor`);
+   * 5. commit ONE new FULL snapshot through the port (commit-before-ack)
+   *    and return the durable row (provenance: actor / mutationId /
+   *    timestamp from the injected clock / reason).
+   */
+  const mutatePermission = async (
+    args: GovernancePermissionMutationArgs,
+  ): Promise<GovernancePermissionMutationResult> => {
+    // 1. Lane configuration (PR3 lands the capability dormant: the
+    // production root does not wire the lane, so the refusal is typed).
+    const lane = deps.permissionLane
+    if (lane === undefined) {
+      throw new PermissionMutationError(
+        PERMISSION_MUTATION_ERROR_CODES.NOT_CONFIGURED,
+        'the permission-mutation lane is not configured on this governance service (PR3 ships the authority with zero production wiring)',
+        { problem: 'permission-lane-absent' },
+      )
+    }
+    // 2a. Authority closure (pure, outside the chain — same discipline as
+    // slotOf above the legacy paths). leader -> expansion-bound actor;
+    // operator -> the Human surface (ADR §7); anything else -> refused.
+    const actor: 'leader' | 'human' = (() => {
+      switch (args.authority.kind) {
+        case 'leader':
+          return 'leader'
+        case 'operator':
+          return 'human'
+        case 'member':
+        default:
+          throw new PermissionMutationError(
+            PERMISSION_MUTATION_ERROR_CODES.UNAUTHORIZED_ACTOR,
+            'an ordinary member is unauthorized on the permission-mutation lane (the ADR §6 leader / ADR §7 human surfaces only)',
+            { problem: 'actor-outside-closed-set', actorKind: String((args.authority as { kind?: unknown }).kind) },
+          )
+      }
+    })()
+    // 2b. Structural validation of the mutation (typed refusal, zero write).
+    const mutation = parsePermissionMutation({
+      kind: args.kind,
+      mutationId: args.mutationId,
+      teamSessionId: args.teamSessionId,
+      memberInstanceId: args.memberInstanceId,
+      reason: args.reason,
+      rules: args.rules,
+      ...(args.expectedGeneration !== undefined ? { expectedGeneration: args.expectedGeneration } : {}),
+    })
+    // The envelope document is validated the moment it is read (fail-closed:
+    // a malformed envelope refuses EVERY Leader expansion attempt, never a
+    // silently relaxed one). Human mutations need no envelope (ADR §7) — but
+    // the read happens inside the serialized section like every other fact.
+    // 3. Serialize on the shared per-team chain (the SAME chain the legacy
+    // overrides/policyState lanes use — one chain, one mutation order per
+    // team; ADR §1's "bypass mutation serialization" MUST-NOT is honored by
+    // construction).
+    return deps.chain.run(args.teamSessionId, async () => {
+      const overlay: PermissionOverlayRepositoryPort = lane.overlay
+      const latest = await overlay.latest({
+        teamSessionId: mutation.teamSessionId,
+        memberInstanceId: mutation.memberInstanceId,
+      })
+      const currentGeneration = latest === undefined ? 0 : latest.metadata.generation
+      // 3b. The optimistic CAS (the legacy OVERRIDE_GENERATION_CONFLICT
+      // discipline transposed to the overlay chain: typed conflict, the
+      // durable rows untouched, no partial write possible — the append
+      // below is the only write and it is never reached).
+      if (mutation.expectedGeneration !== undefined && mutation.expectedGeneration !== currentGeneration) {
+        throw new PermissionMutationError(
+          PERMISSION_MUTATION_ERROR_CODES.GENERATION_CONFLICT,
+          'the permission overlay moved since the caller read it',
+          {
+            problem: 'expected-generation-conflict',
+            expectedGeneration: mutation.expectedGeneration,
+            actualGeneration: currentGeneration,
+          },
+        )
+      }
+      // 4. Plan the FULL next snapshot (pure kernel). NO direction lives here:
+      // classification compares the COMPLETE latest-vs-planned rule sets by
+      // EFFECTIVE effect over the closed region partition (design v2 — the
+      // external P1 batch: verb/pair-key direction mislabels both ways).
+      const plan = planPermissionMutation(latest, mutation)
+      if (!plan.changed) {
+        return { changed: false as const, reason: 'no-change' as const, current: latest }
+      }
+      if (actor === 'leader') {
+        // Authority facts bind ONCE, inside the serialized section (never
+        // mid-check): the envelope document + the LOWER-LAYER FACTS.
+        // `undefined` (no reader / reader abstains) = UNKNOWN;
+        // `{ layers: [] }` = DECLARED-NONE (known deny fallback) — distinct.
+        const envelopeDoc =
+          lane.permissionEnvelope === undefined
+            ? parsePermissionMutationEnvelope({ rules: [] })
+            : parsePermissionMutationEnvelope(lane.permissionEnvelope(mutation.teamSessionId))
+        const factsRaw = lane.staticLayers?.(mutation.teamSessionId, mutation.memberInstanceId)
+        const staticFacts = factsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(factsRaw)
+        // ONE pure authorization step: effective rises inside the mutation's
+        // closed regions need whole-matcher envelope coverage with the risen
+        // effect ceiling (all-or-nothing, ladder-strict, ADR §6); a region
+        // whose verdict depends on unknown lower facts refuses typed
+        // (EFFECT_CONTEXT_UNAVAILABLE) — never a guessed deny.
+        authorizeLeaderPermissionMutation({
+          latestRules: latest === undefined ? [] : latest.state.rules,
+          plannedRules: plan.rules,
+          mutationRules: mutation.rules,
+          envelope: envelopeDoc,
+          staticFacts,
+          subtreeContains: lane.subtreeContains,
+        })
+      }
+      // 5. Commit ONE new FULL snapshot THROUGH the persistence-only port
+      // (commit-before-ack; the derived snapshotId / chain terms are the
+      // PR1 store's, never caller-supplied). A durable CAS conflict (the
+      // cross-process case ADR §1 keeps out of the port) maps to the same
+      // typed GENERATION_CONFLICT — the caller never sees a raw store error.
+      const nextGeneration = currentGeneration + 1
+      const input = {
+        identity: {
+          teamSessionId: mutation.teamSessionId,
+          memberInstanceId: mutation.memberInstanceId,
+        },
+        state: { rules: plan.rules },
+        metadata: {
+          generation: nextGeneration,
+          previousSnapshotId: latest === undefined ? null : latest.snapshotId,
+        },
+        provenance: {
+          actor,
+          mutationId: mutation.mutationId,
+          timestamp: deps.now(),
+          reason: mutation.reason,
+        },
+      }
+      let snapshot
+      try {
+        snapshot = await overlay.append(input)
+      } catch (error) {
+        const code = error instanceof Error ? (error as { code?: unknown }).code : undefined
+        if (code === STORAGE_RECORD_DUPLICATE) {
+          throw new PermissionMutationError(
+            PERMISSION_MUTATION_ERROR_CODES.GENERATION_CONFLICT,
+            'the durable overlay chain rejected the append (a concurrent writer occupied the generation)',
+            { problem: 'durable-append-conflict', generation: nextGeneration },
+          )
+        }
+        throw error
+      }
+      return { changed: true as const, snapshot }
+    })
+  }
+
   return {
     setOverride,
     resetOverride,
     switchPolicyState,
+    mutatePermission,
   }
 }

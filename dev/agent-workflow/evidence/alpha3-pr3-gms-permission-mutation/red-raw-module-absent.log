@@ -1,0 +1,289 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr3-gms-permission-mutation/packages/runtime
+
+ ❯ test/a3p3-governance-lane-hygiene.test.ts (0 test)
+ ❯ test/a3p3-permission-mutation-authority.test.ts (20 tests | 20 failed) 40ms
+     × deny->ask, deny->allow, ask->allow are EXPANSIONS; the reverse are TIGHTENINGS 3ms
+     × the unified mutation model carries exactly the three kinds (design §3.4) 0ms
+     × an ask->allow expansion covered by maximumEffect=allow commits a new snapshot 4ms
+     × a from-absence GRANT is an expansion measured from `deny` (fail-closed baseline) 2ms
+     × TIGHTENINGS need NO expansion authority: all three, with an EMPTY envelope 2ms
+     × an expansion the envelope does not cover is refused and writes NOTHING 3ms
+     × a maxEffect ceiling is a CEILING: ask covers deny->ask but never ask->allow 2ms
+     × exact envelope rules do not cover wider matchers; subtree roots cover what they contain 2ms
+     × a subtree envelope matcher with NO injected containment refuses coverage fail-closed 2ms
+     × may exceed the Leader envelope and records Human provenance 2ms
+     × creates NO permanent priority: the Leader recovers by tightening without any envelope, and still cannot expand beyond it 2ms
+     × a stale expectedGeneration is a typed conflict with NO partial write 2ms
+     × every state-changing mutation appends exactly ONE FULL snapshot; the no-op writes none 2ms
+     × revoke_permission produces the unified snapshot WITHOUT the addressed pairs and needs no expansion authority 2ms
+     × exec rules carry EXACT canonical fingerprints ONLY: subtree and any matchers are malformed 2ms
+     × an exec expansion is covered ONLY by the identical fingerprint (no subtree, no any) 2ms
+     × an envelope rule that MISPAIRS matcher kind and operation class is malformed (never silently inert) 0ms
+     × a member authority on the permission lane is UNAUTHORIZED with zero write 2ms
+     × without permissionLane deps the method fails typed NOT_CONFIGURED and the legacy methods still work 0ms
+     × a nested-subtree grant is covered only by a subtree envelope root the containment accepts 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p3-governance-lane-hygiene.test.ts [ test/a3p3-governance-lane-hygiene.test.ts ]
+Error: Cannot find module '../governance/permission-mutation.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr3-gms-permission-mutation/packages/runtime/test/a3p3-governance-lane-hygiene.test.ts
+ ❯ test/a3p3-governance-lane-hygiene.test.ts:51:1
+     49| import { describe, expect, it } from 'vitest'
+     50| import * as lane from '../governance/index.js'
+     51| import * as mutationModule from '../governance/permission-mutation.js'
+       | ^
+     52| import { createTeamOperationCoordinator } from '../coordination/index.…
+     53| import type { OverrideStorePort, OverrideRecordView } from '../mutatio…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/21]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 20 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > the §6 lane arithmetic (both directions, pinned in the kernel) > deny->ask, deny->allow, ask->allow are EXPANSIONS; the reverse are TIGHTENINGS
+TypeError: permissionEffectDirection is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:219:12
+    217| describe('the §6 lane arithmetic (both directions, pinned in the kerne…
+    218|   it('deny->ask, deny->allow, ask->allow are EXPANSIONS; the reverse a…
+    219|     expect(permissionEffectDirection('deny', 'ask')).toBe('expansion')
+       |            ^
+    220|     expect(permissionEffectDirection('deny', 'allow')).toBe('expansion…
+    221|     expect(permissionEffectDirection('ask', 'allow')).toBe('expansion')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > the §6 lane arithmetic (both directions, pinned in the kernel) > the unified mutation model carries exactly the three kinds (design §3.4)
+TypeError: PERMISSION_MUTATION_KINDS is not iterable
+ ❯ test/a3p3-permission-mutation-authority.test.ts:232:16
+    230|
+    231|   it('the unified mutation model carries exactly the three kinds (desi…
+    232|     expect([...PERMISSION_MUTATION_KINDS].sort()).toEqual([
+       |                ^
+    233|       'grant_instance',
+    234|       'revoke_permission',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Leader mutation inside the envelope (plan PR3) > an ask->allow expansion covered by maximumEffect=allow commits a new snapshot
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:245:38
+    243|     try {
+    244|       // Seed: the pair stands at `ask` (a Human seed keeps the fixtur…
+    245|       const seeded = await w.service.mutatePermission(
+       |                                      ^
+    246|         grant([{ operationClass: 'write', matcher: exact(FILE_KEY), ef…
+    247|           authority: HUMAN,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Leader mutation inside the envelope (plan PR3) > a from-absence GRANT is an expansion measured from `deny` (fail-closed baseline)
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:280:34
+    278|     const w = await openServiceWorld({ envelope: ENVELOPE_ALLOW_FILE })
+    279|     try {
+    280|       const ok = await w.service.mutatePermission(
+       |                                  ^
+    281|         grant([{ operationClass: 'write', matcher: exact(FILE_KEY), ef…
+    282|           mutationId: 'mut-grant-inside',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Leader mutation inside the envelope (plan PR3) > TIGHTENINGS need NO expansion authority: all three, with an EMPTY envelope
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:304:23
+    302|     try {
+    303|       // Seed at allow through HUMAN (Human may seed what the Leader m…
+    304|       await w.service.mutatePermission(
+       |                       ^
+    305|         grant([{ operationClass: 'write', matcher: exact(FILE_KEY), ef…
+    306|           authority: HUMAN,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > an expansion the envelope does not cover is refused and writes NOTHING
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:346:10
+    344|     try {
+    345|       const denied = await w.service
+    346|         .mutatePermission(
+       |          ^
+    347|           grant([{ operationClass: 'write', matcher: exact(FILE_KEY), …
+    348|             mutationId: 'mut-outside-ceiling',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > a maxEffect ceiling is a CEILING: ask covers deny->ask but never ask->allow
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:375:34
+    373|     })
+    374|     try {
+    375|       const ok = await w.service.mutatePermission(
+       |                                  ^
+    376|         grant([{ operationClass: 'write', matcher: exact(FILE_KEY), ef…
+    377|           mutationId: 'mut-ceiling-ask-ok',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > exact envelope rules do not cover wider matchers; subtree roots cover what they contain
+TypeError: w1.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:399:10
+    397|     try {
+    398|       const denied = await w1.service
+    399|         .mutatePermission(
+       |          ^
+    400|           grant([{ operationClass: 'write', matcher: subtree(FILE_KEY)…
+    401|             mutationId: 'mut-exact-not-cover-subtree',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > a subtree envelope matcher with NO injected containment refuses coverage fail-closed
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:440:10
+    438|     try {
+    439|       const denied = await w.service
+    440|         .mutatePermission(
+       |          ^
+    441|           grant([{ operationClass: 'write', matcher: exact(FILE_KEY), …
+    442|             mutationId: 'mut-no-containment-port',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Human mutation (ADR §7) > may exceed the Leader envelope and records Human provenance
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:457:38
+    455|     const w = await openServiceWorld({ envelope: { rules: [] } })
+    456|     try {
+    457|       const result = await w.service.mutatePermission(
+       |                                      ^
+    458|         grant([{ operationClass: 'write', matcher: exact(FILE_KEY), ef…
+    459|           authority: HUMAN,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Human mutation (ADR §7) > creates NO permanent priority: the Leader recovers by tightening without any envelope, and still cannot expand beyond it
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:476:23
+    474|     const w = await openServiceWorld({ envelope: { rules: [] } })
+    475|     try {
+    476|       await w.service.mutatePermission(
+       |                       ^
+    477|         grant([{ operationClass: 'write', matcher: exact(FILE_KEY), ef…
+    478|           authority: HUMAN,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > CAS conflict (plan PR3) > a stale expectedGeneration is a typed conflict with NO partial write
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:519:23
+    517|     const w = await openServiceWorld({ envelope: { rules: [] } })
+    518|     try {
+    519|       await w.service.mutatePermission(
+       |                       ^
+    520|         grant([{ operationClass: 'write', matcher: exact(FILE_KEY), ef…
+    521|           authority: HUMAN,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > snapshot-per-mutation through the persistence-only port (ADR §1/§5) > every state-changing mutation appends exactly ONE FULL snapshot; the no-op writes none
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:563:34
+    561|     const w = await openServiceWorld({ envelope: ENVELOPE_ALLOW_FILE, …
+    562|     try {
+    563|       const g1 = await w.service.mutatePermission(
+       |                                  ^
+    564|         grant([{ operationClass: 'write', matcher: exact(FILE_KEY), ef…
+    565|           mutationId: 'mut-snap-1',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > snapshot-per-mutation through the persistence-only port (ADR §1/§5) > revoke_permission produces the unified snapshot WITHOUT the addressed pairs and needs no expansion authority
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:612:23
+    610|     const w = await openServiceWorld({ envelope: { rules: [] } })
+    611|     try {
+    612|       await w.service.mutatePermission(
+       |                       ^
+    613|         grant(
+    614|           [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > exec exactness (design §5) > exec rules carry EXACT canonical fingerprints ONLY: subtree and any matchers are malformed
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:647:10
+    645|     try {
+    646|       const badSubtree = await w.service
+    647|         .mutatePermission(
+       |          ^
+    648|           grant([{ operationClass: 'bash', matcher: subtree(SUBTREE_RO…
+    649|             authority: HUMAN,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > exec exactness (design §5) > an exec expansion is covered ONLY by the identical fingerprint (no subtree, no any)
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:687:34
+    685|     const w = await openServiceWorld({ envelope })
+    686|     try {
+    687|       const ok = await w.service.mutatePermission(
+       |                                  ^
+    688|         grant([{ operationClass: 'bash', matcher: fingerprint(EXEC_FIN…
+    689|           mutationId: 'mut-exec-exact-ok',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > exec exactness (design §5) > an envelope rule that MISPAIRS matcher kind and operation class is malformed (never silently inert)
+TypeError: isPermissionMutationError is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:726:12
+    724|       bad = error
+    725|     }
+    726|     expect(isPermissionMutationError(bad)).toBe(true)
+       |            ^
+    727|     expect((bad as { code: string }).code).toBe(PERMISSION_MUTATION_ER…
+    728|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > authority and configuration boundaries > a member authority on the permission lane is UNAUTHORIZED with zero write
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:736:10
+    734|     try {
+    735|       const denied = await w.service
+    736|         .mutatePermission(
+       |          ^
+    737|           grant([{ operationClass: 'write', matcher: exact(FILE_KEY), …
+    738|             authority: MEMBER,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > authority and configuration boundaries > without permissionLane deps the method fails typed NOT_CONFIGURED and the legacy methods still work
+TypeError: service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:768:8
+    766|     const service = createGovernanceMutationService(deps)
+    767|     const refused = await service
+    768|       .mutatePermission(
+       |        ^
+    769|         grant([{ operationClass: 'write', matcher: exact(FILE_KEY), ef…
+    770|           authority: HUMAN,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/21]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > authority and configuration boundaries > a nested-subtree grant is covered only by a subtree envelope root the containment accepts
+TypeError: w.service.mutatePermission is not a function
+ ❯ test/a3p3-permission-mutation-authority.test.ts:798:34
+    796|     })
+    797|     try {
+    798|       const ok = await w.service.mutatePermission(
+       |                                  ^
+    799|         grant([{ operationClass: 'write', matcher: subtree(NESTED_SUBT…
+    800|           mutationId: 'mut-nested-subtree-ok',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/21]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  20 failed (20)
+   Start at  20:21:04
+   Duration  515ms (transform 582ms, setup 0ms, import 373ms, tests 40ms, environment 0ms)
+

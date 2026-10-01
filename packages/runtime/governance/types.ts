@@ -42,6 +42,18 @@ import type {
   PolicyReader,
   PolicyStateTransitionRecord,
 } from '../mutation/types.js'
+// Alpha.3 PR3 — the permission-mutation lane additions. The overlay
+// vocabulary is TYPE-ONLY (the PR2 discipline: no runtime edge from this
+// lane to the PR1 store); the kernel types come from the module next door.
+import type { PermissionOverlayRepositoryPort } from '../permission-governance/port.js'
+import type { PermissionOverlaySnapshot } from '../permission-governance/types.js'
+import type {
+  PermissionMutationEnvelope,
+  PermissionMutationKind,
+  PermissionMutationRule,
+  PermissionStaticLayerFacts,
+  SubtreeContains,
+} from './permission-mutation.js'
 
 /**
  * The per-team serialization seam the service serializes every mutation
@@ -108,6 +120,67 @@ export interface GovernanceTransitionCommit {
  */
 export type GovernancePolicyReader = PolicyReader
 
+/**
+ * Alpha.3 PR3 — the OPTIONAL permission-lane dependencies of the ONE
+ * governance mutation authority (coordinator D1: the existing class is
+ * EXTENDED with the permission-mutation path; the legacy capability lanes
+ * and their deps are byte-unchanged, so the production root.ts wiring
+ * compiles and behaves exactly as before until a later PR wires this lane).
+ *
+ * When absent, {@link GovernanceMutationService.mutatePermission} fails with
+ * the typed `PERMISSION_MUTATION_NOT_CONFIGURED` — the capability stays
+ * dormant (PR3 scope: ZERO production wiring).
+ */
+export interface GovernancePermissionLaneDeps {
+  /**
+   * The PR1 persistence-only overlay port — the ONE durable write target of
+   * the permission path (ADR §1: GovernanceMutationService → this port →
+   * durable store). The port validates nothing about authority or the
+   * envelope (its four MUST-NOTs) and the service never reaches past its
+   * three members (pinned by `a3p3-governance-lane-hygiene.test.ts`).
+   */
+  readonly overlay: PermissionOverlayRepositoryPort
+  /**
+   * The bound §6 MutationEnvelope for one team (the Leader's expansion
+   * authority; design §4 model, ADR §6 semantics). Absent = NO envelope =
+   * no Leader expansion authority (tightenings unaffected) — fail closed.
+   * The returned document is validated (typed refusal on a malformed
+   * envelope, before any write).
+   * @param teamSessionId - the team whose bound envelope is read.
+   */
+  readonly permissionEnvelope?: (teamSessionId: string) => PermissionMutationEnvelope
+  /**
+   * The LOWER-LAYER FACTS the Leader authorization compares effective
+   * before/after against (design v2 — expansion is a property of the
+   * EFFECTIVE decision, so removing/revealing rules is judged against the
+   * declared template/blueprint, never against a guessed baseline). A pure
+   * DATA reader on the same injection pattern as {@link permissionEnvelope}
+   * — it grants no authority and is read ONCE inside the serialized
+   * section, before the pure kernel pass. The states are DISTINCT: absent
+   * reader (or a reader returning `undefined`) = UNKNOWN → regions whose
+   * verdict depends on lower facts refuse EFFECT_CONTEXT_UNAVAILABLE; a
+   * reader returning `{ layers: [] }` = DECLARED-NONE (known deny fallback)
+   * → decidable. Never conflated.
+   * @param teamSessionId - the team whose static permission layers are read.
+   * @param memberInstanceId - the instance the effective policy is for.
+   */
+  readonly staticLayers?: (
+    teamSessionId: string,
+    memberInstanceId: string,
+  ) => PermissionStaticLayerFacts | undefined
+  /**
+   * The WHOLE-MATCHER containment predicate over two canonical identities
+   * of the SAME backend namespace — the ONLY containment relation this lane
+   * ever consults (region partition, subtree boundary nesting, envelope
+   * coverage; the A2 `containsOperation` is a POINT judgement owned by the
+   * live resolver and never enters here). Canonical keys are opaque (A2
+   * contract), so this mirrors why the frozen Alpha.2 matcher never
+   * `startsWith` — the containment verdict is the seam's. Absent → every
+   * subtree-vs-boundary question fails closed.
+   */
+  readonly subtreeContains?: SubtreeContains
+}
+
 /** The service dependencies (every durable home injected). */
 export interface GovernanceMutationServiceDeps {
   /** The shared per-team operation chain (serialization authority). */
@@ -136,6 +209,13 @@ export interface GovernanceMutationServiceDeps {
   readonly policyStates: (rootSessionId: string) => readonly string[]
   /** The write clock (injected; ISO-8601 strings). */
   readonly now: () => string
+  /**
+   * Alpha.3 PR3 (additive): the permission-mutation lane. OPTIONAL by
+   * construction — the legacy lanes never read it and the production root
+   * keeps constructing the service without it until a later PR wires the
+   * permission plane (see {@link GovernancePermissionLaneDeps}).
+   */
+  readonly permissionLane?: GovernancePermissionLaneDeps
 }
 
 // ---------------------------------------------------------------------------
@@ -260,6 +340,67 @@ export type GovernancePolicyStateSetResult =
     }
 
 // ---------------------------------------------------------------------------
+// Alpha.3 PR3 — the permission mutation request / result (additive)
+// ---------------------------------------------------------------------------
+
+/**
+ * One requested PermissionMutation (Alpha.3 PR3; plan PR3, design §3.4): the
+ * unified model — `grant_instance` / `update_permission` / `revoke_permission`
+ * are ONE shape, and every accepted mutation produces ONE NEW
+ * PermissionOverlaySnapshot through the PR1 persistence-only port (ADR §5).
+ *
+ * The authority closes the actor exactly like the legacy methods
+ * (`MutationAuthority`, derived server-side, never payload-claimed): `leader`
+ * acts inside the §6 envelope; `operator` is the Human surface (ADR §7 — may
+ * exceed the envelope, records Human provenance, creates no permanent
+ * priority); an ordinary `member` is unauthorized on this lane. The target
+ * MemberInstance is ADDRESSED (a Leader mutation addresses the instance the
+ * overlay belongs to; the durable row keeps the (teamSessionId,
+ * memberInstanceId) identity of ADR §2).
+ */
+export interface GovernancePermissionMutationArgs {
+  /** The acting authority (leader / operator; member is refused). */
+  readonly authority: MutationAuthority
+  /** The owning TeamSession (ADR §2 identity). */
+  readonly teamSessionId: string
+  /** The addressed MemberInstance (ADR §2 identity). */
+  readonly memberInstanceId: string
+  /** The unified mutation kind (design §3.4). */
+  readonly kind: PermissionMutationKind
+  /** The caller-chosen mutation id (ADR §2 provenance.mutationId; it is the
+   *  replay idempotency key: the same desired state twice is a no-op). */
+  readonly mutationId: string
+  /** The audit reason (provenance.reason; <= 512, may be empty). */
+  readonly reason: string
+  /** The addressed rule set (non-empty; the unified rule shape). */
+  readonly rules: readonly PermissionMutationRule[]
+  /**
+   * Optional optimistic-concurrency guard: the overlay generation the caller
+   * believes is current (0 = none yet). Mismatch -> the typed
+   * `PERMISSION_OVERLAY_GENERATION_CONFLICT`, zero partial write (plan PR3
+   * "CAS conflict" — the same guard discipline as the legacy
+   * `expectedGeneration`, types L176/213 lineage).
+   */
+  readonly expectedGeneration?: number
+}
+
+/**
+ * The mutation outcome. `changed: true` — ONE new FULL snapshot was appended
+ * through the PR1 port BEFORE the ack (commit-before-ack, unchanged from
+ * PR-A); the snapshot is the backend truth. `changed: false` — the desired
+ * state already holds (same desired effect, or a revoke of pairs that never
+ * existed): NO snapshot, NO generation bump.
+ */
+export type GovernancePermissionMutationResult =
+  | { readonly changed: true; readonly snapshot: PermissionOverlaySnapshot }
+  | {
+      readonly changed: false
+      readonly reason: 'no-change'
+      /** The current authority snapshot (undefined when none exists). */
+      readonly current: PermissionOverlaySnapshot | undefined
+    }
+
+// ---------------------------------------------------------------------------
 // The service
 // ---------------------------------------------------------------------------
 
@@ -295,4 +436,22 @@ export interface GovernanceMutationService {
    *   `POLICY_STATE_UNKNOWN`, `MALFORMED_MUTATION_INPUT`.
    */
   switchPolicyState(args: GovernancePolicyStateSetArgs): Promise<GovernancePolicyStateSetResult>
+  /**
+   * Alpha.3 PR3 (additive): mutate a MemberInstance permission overlay —
+   * the SOLE permission mutation authority path (ADR §1/§5, design §2).
+   * The unified pipeline: authenticate authority (leader / operator — the
+   * same derived-server-side vocabulary as the legacy methods) → validate
+   * the PermissionMutation and, for every Leader EXPANSION, the §6
+   * MutationEnvelope (tightening needs no expansion authority — ADR §6) →
+   * serialize on the SAME shared per-team chain with the
+   * expectedGeneration CAS → commit ONE new FULL PermissionOverlaySnapshot
+   * THROUGH the PR1 persistence-only repository port (commit-before-ack) →
+   * provenance (actor / mutationId / timestamp / reason).
+   * A refusal is typed and performs ZERO writes; Human mutations may exceed
+   * the envelope and record Human provenance without any permanent
+   * resolver priority (ADR §7).
+   * @throws PermissionMutationError — the closed code vocabulary of
+   *   `./permission-mutation.js` (branch on `code` + `details.problem`).
+   */
+  mutatePermission(args: GovernancePermissionMutationArgs): Promise<GovernancePermissionMutationResult>
 }

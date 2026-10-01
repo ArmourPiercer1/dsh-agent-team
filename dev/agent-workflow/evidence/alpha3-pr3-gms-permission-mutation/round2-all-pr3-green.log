@@ -1,0 +1,13 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr3-gms-permission-mutation/packages/runtime
+
+ ✓ test/a3p3-effective-parity.test.ts (11 tests) 6ms
+ ✓ test/a3p3-permission-mutation-authority.test.ts (21 tests) 56ms
+ ✓ test/a3p3-governance-lane-hygiene.test.ts (8 tests) 35ms
+ ✓ test/a3p3-revoke-reveal-semantics.test.ts (28 tests) 105ms
+
+ Test Files  4 passed (4)
+      Tests  68 passed (68)
+   Start at  21:12:30
+   Duration  597ms (transform 1.18s, setup 0ms, import 1.54s, tests 202ms, environment 0ms)
+

@@ -1582,8 +1582,24 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // scanner's denylist). The frozen quarantine hit set stays at fifteen
     // occurrences; scanner .mjs unchanged. The 929 value is the scanner run on
     // this tree (authoritative; not hand-computed).
-    expect(scanResult.filesScanned).toBe(929)
-    expect(scanResult.files.length).toBe(929)
+    // ALPHA.3 PR3 governance-mutation round: 929 + 3 = 932 — the three
+    // scannable files this PR adds: the permission-mutation kernel
+    // (`runtime/governance/permission-mutation.ts` — the unified
+    // PermissionMutation model, the §6 envelope model, the carrier grammar)
+    // and its specs (`a3p3-permission-mutation-authority` /
+    // `a3p3-governance-lane-hygiene`, the latter pinning zero production
+    // consumers + the persistence-only consumer leg; plus the external P1
+    // bounded-repair batch's two: `a3p3-revoke-reveal-semantics` — the
+    // directed effective-region regressions — and `a3p3-effective-parity`,
+    // the kernel-vs-merged-assembler parity matrix). The service/types/
+    // index edits are in-place changes on already-scanned files (no count
+    // delta). Zero new denylist vocabulary — the lane words allow/ask/deny
+    // carry the same canonical-grammar tokens PR1/PR2 established
+    // (outside the scanner's denylist); the frozen quarantine hit set stays
+    // at fifteen occurrences; scanner .mjs unchanged. The 934 value is the
+    // scanner run on this tree (authoritative; not hand-computed).
+    expect(scanResult.filesScanned).toBe(934)
+    expect(scanResult.files.length).toBe(934)
 
   })
 

@@ -1,0 +1,125 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr3-gms-permission-mutation/packages/runtime
+
+ ❯ test/a3p3-effective-parity.test.ts (11 tests | 1 failed) 10ms
+     ✓ P1: matching overlay deny wins over a template allow (overlay precedence) 3ms
+     ✓ P2: within one overlay layer the MOST RESTRICTIVE matching rule answers (deny shadows a surviving subtree… child pair) 0ms
+     ✓ P3: overlay silent, template allow answers 0ms
+     ✓ P4: template denies over a blueprint allow (layer precedence, template higher) 0ms
+     ✓ P5: no rule matches ANYWHERE — the LOWEST declared layer default answers (blueprint deny over template ask) 0ms
+     ✓ P6: DECLARED-NONE (no static layer) fails closed to deny exactly like the assembler 0ms
+     ✓ P7: a static `any` rule answers its whole class 0ms
+     ✓ P8: reveal-by-remaining-overlay — the surviving child allow answers 0ms
+     ✓ P9: a subtree overlay rule covers the point via containment (predicate == the live containsOperation verdict) 0ms
+     × P10: UNKNOWN facts is its OWN state — context-unavailable, never a decided deny/ask/allow 4ms
+     ✓ P11: exec fingerprint answers by EXACT identity only (kernel side; exec canonicalization is exact-equality by design) 0ms
+ ❯ test/a3p3-revoke-reveal-semantics.test.ts (20 tests | 3 failed) 89ms
+     ✓ S1: revoke revealing a STATIC allow refuses under an empty envelope, with ZERO write 12ms
+     ✓ S1b: the same revoke passes ONLY with allow-ceiling coverage of the WHOLE matcher 4ms
+     ✓ S3: deny->ASK reveal is expansion VERBATIM (ADR §6): refused without ceiling, accepted at ceiling-ask 6ms
+     ✓ S2: deny revealing DENY (equal) is legal with no envelope 3ms
+     ✓ S4: DECLARED-NONE facts (declared deny fallback) is DECIDABLE — reveal-equal is legal… 3ms
+     × S4b: …but UNKNOWN facts refuse EFFECT_CONTEXT_UNAVAILABLE even when the envelope would cover (unknown ≠ declared-none; the envelope cannot substitute for facts) 7ms
+     ✓ S5: revoking an ALLOW rule can never raise anything — legal WITHOUT any facts (provable case iii) 3ms
+     ✓ S7: lifting a shadowing subtree deny so a surviving child ALLOW answers needs allow-ceiling coverage — refused at empty envelope (reveal channel: the REMAINING overlay rule, under declared-none facts) 3ms
+     × S7c: the SAME revoke under UNKNOWN facts refuses EFFECT_CONTEXT_UNAVAILABLE — the subtree RESIDUAL reveal is genuinely undecidable and is never assumed harmless 4ms
+     ✓ S7b: the same revoke with envelope coverage of the removed matcher (ceiling allow) commits; the surviving allow now ANSWERS 3ms
+     ✓ B1 (BUG2): exact ask under an overlay-matching subtree allow is a TIGHTENING — accepted with no envelope and no facts, for EVERY fallback hypothesis 15ms
+     × B2 (unknown): a first-ever overlay rule over UNKNOWN lower facts refuses CONTEXT — never a deny-masquerade EXPANSION label 3ms
+     ✓ B2c (declared deny): over DECLARED-NONE facts the same ask grant IS a real deny->ask expansion — envelope-coded refusal 2ms
+     ✓ B2b (known allow): over a STATIC allow layer the same ask grant is a KNOWN tightening — accepted 2ms
+     ✓ S6: subtree-deny removal revealing a STATIC allow under its root is refused at empty envelope, needs subtree-ceiling-allow coverage 4ms
+     ✓ S6c: coverage of the matcher with a too-LOW ceiling refuses (the reveal rises to allow, the envelope says ask) 2ms
+     ✓ S6d: fallback-ASK region (no rule below, declared ask fallback): subtree-deny removal rises deny->ask — needs ceiling-ask 5ms
+     ✓ (e) WIDTH-conservative: an envelope covering ONE child of a granted subtree does not pass the other rising regions 2ms
+     ✓ (f) nested exception: a non-rising child region cannot rescue the rising residual — ceiling ask refuses, ceiling allow passes 4ms
+     ✓ all-or-nothing across mutation rules: one uncovered rising class refuses the WHOLE mutation, zero write 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p3-effective-parity.test.ts > kernel effective-answer == merged assembler (matrix) > P10: UNKNOWN facts is its OWN state — context-unavailable, never a decided deny/ask/allow
+AssertionError: expected { status: 'decided', …(2) } to deeply equal { status: 'context-unavailable' }
+
+- Expected
++ Received
+
+  {
+-   "status": "context-unavailable",
++   "effect": "deny",
++   "source": "fallback",
++   "status": "decided",
+  }
+
+ ❯ test/a3p3-effective-parity.test.ts:225:20
+    223|       subtreeContains: contains,
+    224|     })
+    225|     expect(answer).toEqual({ status: 'context-unavailable' })
+       |                    ^
+    226|   })
+    227|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/a3p3-revoke-reveal-semantics.test.ts > reveals are expansions (ladder-strict) — static reveal channel > S4b: …but UNKNOWN facts refuse EFFECT_CONTEXT_UNAVAILABLE even when the envelope would cover (unknown ≠ declared-none; the envelope cannot substitute for facts)
+AssertionError: expected typed refusal PERMISSION_EFFECT_CONTEXT_UNAVAILABLE: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith test/a3p3-revoke-reveal-semantics.test.ts:232:80
+    230| ): Promise<void> {
+    231|   const outcome = await run().catch((error: unknown) => error)
+    232|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    233|   expect((outcome as { code: string }).code).toBe(code)
+    234| }
+ ❯ test/a3p3-revoke-reveal-semantics.test.ts:327:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/a3p3-revoke-reveal-semantics.test.ts > reveals via the REMAINING overlay rule (S7) and same-layer specificity (B1/B2) > S7c: the SAME revoke under UNKNOWN facts refuses EFFECT_CONTEXT_UNAVAILABLE — the subtree RESIDUAL reveal is genuinely undecidable and is never assumed harmless
+AssertionError: expected typed refusal PERMISSION_EFFECT_CONTEXT_UNAVAILABLE: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith test/a3p3-revoke-reveal-semantics.test.ts:232:80
+    230| ): Promise<void> {
+    231|   const outcome = await run().catch((error: unknown) => error)
+    232|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    233|   expect((outcome as { code: string }).code).toBe(code)
+    234| }
+ ❯ test/a3p3-revoke-reveal-semantics.test.ts:393:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/a3p3-revoke-reveal-semantics.test.ts > reveals via the REMAINING overlay rule (S7) and same-layer specificity (B1/B2) > B2 (unknown): a first-ever overlay rule over UNKNOWN lower facts refuses CONTEXT — never a deny-masquerade EXPANSION label
+AssertionError: expected 'PERMISSION_ENVELOPE_EXPANSION_DENIED' to be 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE' // Object.is equality
+
+Expected: "PERMISSION_EFFECT_CONTEXT_UNAVAILABLE"
+Received: "PERMISSION_ENVELOPE_EXPANSION_DENIED"
+
+ ❯ expectRefusedWith test/a3p3-revoke-reveal-semantics.test.ts:233:46
+    231|   const outcome = await run().catch((error: unknown) => error)
+    232|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+    233|   expect((outcome as { code: string }).code).toBe(code)
+       |                                              ^
+    234| }
+    235|
+ ❯ test/a3p3-revoke-reveal-semantics.test.ts:467:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 27 passed (31)
+   Start at  20:56:52
+   Duration  485ms (transform 442ms, setup 0ms, import 560ms, tests 99ms, environment 0ms)
+
