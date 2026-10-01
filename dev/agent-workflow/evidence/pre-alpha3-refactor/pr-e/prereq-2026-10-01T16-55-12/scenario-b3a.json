@@ -1,0 +1,80 @@
+{
+  "W1": "inst-0adbbjy13nt1",
+  "toolOk": true,
+  "decisions": [
+    {
+      "requestId": "ctrl-0iuc5nj123i3m80w2p3c50po",
+      "class": "recovery",
+      "decision": "allow",
+      "resolveStatus": 200,
+      "resolveError": null
+    },
+    {
+      "requestId": "ctrl-02k2q9i03149jj0ha8xgk1op",
+      "class": "ask",
+      "decision": "allow",
+      "resolveStatus": 200,
+      "resolveError": null
+    }
+  ],
+  "pendingSeen": [
+    {
+      "requestId": "ctrl-0iuc5nj123i3m80w2p3c50po",
+      "kind": "user-approval",
+      "correlation": "recovery:rt-b3a-prereq-2026-10-01T16-55-12:1a68d3ae-6509-4b01-a36d-e6618b5ae958",
+      "toolName": null,
+      "actionName": "delegate",
+      "reviewPayload": {
+        "action": "delegate",
+        "arguments": {
+          "label": "w-b3a",
+          "prompt": "PRREQ_W_b3a_prereq-2026-10-01T16-55-12 work unit b3a (nonce prereq-2026-10-01T16-55-12)"
+        },
+        "blockedScopes": [
+          "template:worker"
+        ],
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance"
+        },
+        "delegationTemplateId": "worker",
+        "downedCapabilitySubjects": [
+          "mcp_web"
+        ],
+        "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+        "execution": "sync",
+        "reducedAuthority": {
+          "externalHardCeiling": "absolute (never bypassed)",
+          "otherwise": "unchanged (the original permissions apply)",
+          "policy": "reduced original authority (plan §E.9)",
+          "unavailableSubjects": [
+            "mcp_web"
+          ]
+        },
+        "requestToken": "rt-b3a-prereq-2026-10-01T16-55-12",
+        "requestedOperation": "one recovery attempt of 'delegate' on template 'worker'",
+        "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+        "schema": "dsh-agent-team/recovery-dispatch/v1",
+        "subject": {
+          "kind": "template",
+          "templateId": "worker"
+        },
+        "templateId": "worker",
+        "toolName": "delegate"
+      },
+      "reviewPayloadDigest": "sha256:0936ff2f0ff28ad225266b43dc722fc88e973784c0f6d935b104ba347e40d3f6",
+      "executionCoupling": "inline"
+    },
+    {
+      "requestId": "ctrl-02k2q9i03149jj0ha8xgk1op",
+      "kind": "leader-approval",
+      "correlation": "call-prereq-ee34f695",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "reviewPayload": null,
+      "reviewPayloadDigest": null,
+      "executionCoupling": null
+    }
+  ],
+  "baselineLedgerEntries": 15
+}
