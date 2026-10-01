@@ -604,7 +604,14 @@ test bytes.
   callback → the window sees the overtake in ~1ms (observed: the
   assertion fails in 1ms, no window wait); fixed base → the window
   EXPIRES (observed 2003ms) → release → the correct order holds. The
-  window length cannot change either outcome (microtask-before-timer
+  window length cannot change either outcome — for ANY window W ≫ the
+  microtask-drain time: broken base → the entry (a pending microtask)
+  is observed at a delay ≪ W, because the spec event-loop drains ALL
+  pending microtasks before ANY timer callback, so the overtake is
+  recorded long before W and the order assertion FAILS; fixed base →
+  the entry is structurally impossible before the release, so the wait
+  hits W's timeout → release → the correct order holds — no choice of
+  W can flip either outcome (the two premises: microtask-before-timer
   is a language guarantee; structural impossibility is a code
   property). The final event-order assertion is UNCHANGED from the
   ruling. The CURRENT TAIL production fix STANDS unchanged (the
