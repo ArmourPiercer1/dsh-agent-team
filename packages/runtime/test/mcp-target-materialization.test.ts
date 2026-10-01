@@ -91,6 +91,24 @@ const R1_SERVER = 'mtm_srv_r1'
 const R2_ROOT = 'session-mtm-r2'
 const R2_ROOT2 = 'session-mtm-r2b'
 const R2_SERVER = 'mtm_srv_r2'
+// The requirement-aware final-input-verdict legs (external residual round —
+// the three problem classes of the bounded report at 4820ecdb): L1 the
+// COLD-RESUME gap (class 1), L2 the MESSAGING consumer (class 2), L3 the
+// ROOT consumer (class 2), L4a/L4b/L4c the anti-over-block legs (class 3:
+// the no-requirement / optional / reviewed-recovery allow shapes).
+const L1_ROOT = 'session-mtm-l1'
+const L1_SERVER = 'mtm_srv_l1'
+const L2_ROOT = 'session-mtm-l2'
+const L2_SERVER = 'mtm_srv_l2'
+const L3_ROOT = 'session-mtm-l3'
+const L3_ROOT2 = 'session-mtm-l3b'
+const L3_SERVER = 'mtm_srv_l3'
+const L4A_ROOT = 'session-mtm-l4a'
+const L4A_SERVER = 'mtm_srv_l4a'
+const L4B_ROOT = 'session-mtm-l4b'
+const L4B_SERVER = 'mtm_srv_l4b'
+const L4C_ROOT = 'session-mtm-l4c'
+const L4C_SERVER = 'mtm_srv_l4c'
 
 // --- the v2 blueprints (template-level required mcpServer) ----------------------
 
@@ -104,7 +122,7 @@ const R2_SERVER = 'mtm_srv_r2'
 function mtmBlueprint(
   bpId: string,
   serverName: string,
-  opts: { workerReq: boolean; leaderReq: boolean; leaderCaps: boolean; workerCaps: boolean },
+  opts: { workerReq: boolean; leaderReq: boolean; leaderCaps: boolean; workerCaps: boolean; reqComplete?: boolean },
 ): string {
   // `indent` = the member-level shift (the leader's template properties sit
   // at 2 spaces; a member item's at 4 — the same block, +2).
@@ -130,7 +148,7 @@ function mtmBlueprint(
     '    type: mcpServer',
     '    subjects:',
     `      - ${serverName}`,
-    '    complete: true',
+    `    complete: ${opts.reqComplete === false ? 'false' : 'true'}`,
   ]
   const lines: string[] = [
     '---',
@@ -224,6 +242,60 @@ const BP_R1 = mtmBlueprint('mtm.r1', R1_SERVER, {
 const BP_R2 = mtmBlueprint('mtm.r2', R2_SERVER, {
   workerReq: false,
   leaderReq: true,
+  leaderCaps: true,
+  workerCaps: true,
+})
+// L1 — the cold-resume gap: the worker's REQUIRED mcpServer (the T1/A
+// shape: a live mounted instance whose remount fails after the residency
+// drop).
+const BP_L1 = mtmBlueprint('mtm.l1', L1_SERVER, {
+  workerReq: true,
+  leaderReq: false,
+  leaderCaps: true,
+  workerCaps: true,
+})
+// L2 — the messaging consumer: the worker's REQUIRED mcpServer (the
+// relayed recipient's own materialization gates its first input).
+const BP_L2 = mtmBlueprint('mtm.l2', L2_SERVER, {
+  workerReq: true,
+  leaderReq: false,
+  leaderCaps: true,
+  workerCaps: true,
+})
+// L3 — the root consumer: the LEADER template's REQUIRED mcpServer (the
+// R2/T4 shape — the root's own leader materialization gates the root's
+// initial work).
+const BP_L3 = mtmBlueprint('mtm.l3', L3_SERVER, {
+  workerReq: false,
+  leaderReq: true,
+  leaderCaps: true,
+  workerCaps: true,
+})
+// L4a — the anti-over-block (no requirement): the worker consumes the
+// server (the mount target) but NO template carries a requirement for it —
+// the failed server is OPTIONAL-by-absence (the degraded allow shape).
+const BP_L4A = mtmBlueprint('mtm.l4a', L4A_SERVER, {
+  workerReq: false,
+  leaderReq: false,
+  leaderCaps: true,
+  workerCaps: true,
+})
+// L4b — the anti-over-block (optional requirement): the worker carries the
+// requirement with `complete: false` (the engine's WARNING verdict — the
+// degraded scope, never a block).
+const BP_L4B = mtmBlueprint('mtm.l4b', L4B_SERVER, {
+  workerReq: true,
+  leaderReq: false,
+  leaderCaps: true,
+  workerCaps: true,
+  reqComplete: false,
+})
+// L4c — the anti-over-block (reviewed recovery): the worker's REQUIRED
+// mcpServer (the T2 shape — the human-reviewed recovery re-run must be
+// allowed even while the remount keeps failing).
+const BP_L4C = mtmBlueprint('mtm.l4c', L4C_SERVER, {
+  workerReq: true,
+  leaderReq: false,
   leaderCaps: true,
   workerCaps: true,
 })
@@ -536,6 +608,61 @@ function rootWorkDeliveredOf(world: MtMWorld, rootSessionId: string, requestToke
     return { workOutcome: String(record.payload?.workOutcome ?? '') }
   }
   return undefined
+}
+
+/**
+ * Whether one durable fact of the given type carrying the given request
+ * token exists under the root (the L2/L3 legs: the intent fact / the
+ * admission fact / the absence of a confirmation fact).
+ */
+function factWithToken(
+  world: MtMWorld,
+  rootSessionId: string,
+  factType: string,
+  requestToken: string,
+): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the domain (dynamic surface)
+  const domain: any = world.root.domain
+  for (const entry of domain.repositories.ledger.list()) {
+    const record = entry as {
+      rootSessionId?: unknown
+      factType?: unknown
+      payload?: { requestToken?: unknown }
+    }
+    if (record.rootSessionId !== rootSessionId) continue
+    if (record.factType !== factType) continue
+    if (record.payload?.requestToken !== requestToken) continue
+    return true
+  }
+  return false
+}
+
+/**
+ * Capture the PRODUCTION v2 remote dispatcher through the host's own
+ * registration seam (the T8 shape — the exact production wiring: the
+ * bound-root guard, the host-derived caller, the per-root bound
+ * blueprint). The returned dispatcher drives the v2 commands by name
+ * (`team.admitInitialWork`, `member.send`, ...).
+ */
+function captureRemoteDispatcher(
+  world: MtMWorld,
+): (endpoint: string, payload: unknown) => Promise<Record<string, unknown>> {
+  let dispatcher:
+    | ((endpoint: string, payload: unknown) => Promise<Record<string, unknown>>)
+    | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic seam surface (untyped by design)
+  ;(world.root.seams.remoteHandlerRegistration as any).current()({
+    rpc: {
+      handle: (_channel: string, next: unknown) => {
+        dispatcher = next as (endpoint: string, payload: unknown) => Promise<Record<string, unknown>>
+        return () => {}
+      },
+    },
+  })
+  if (dispatcher === undefined) {
+    throw new Error('mtm: the registration never installed a dispatcher')
+  }
+  return dispatcher
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -1010,6 +1137,459 @@ const R2 = await (async () => {
 })()
 
 // ══════════════════════════════════════════════════════════════════════════
+// WORLD L1 — L1 (residual class 1: the COLD-RESUME gap — the verdict must
+// read the FINAL required-truth AFTER the full ensure/resume/prepare
+// sequence, never an attempt-clock delta)
+// ══════════════════════════════════════════════════════════════════════════
+
+const L1 = await (async () => {
+  destroyDir(scratchDir('mtm-l1'))
+  const mcpFailures: Record<string, string> = {}
+  const world = await bootMtmWorld('l1', L1_ROOT, BP_L1, L1_SERVER, 3999, undefined, mcpFailures)
+
+  const instA = await activateMember(world, 'mtm-l1-A')
+  const instB = await activateMember(world, 'mtm-l1-B')
+
+  // Both healthy + mounted at their first boundary (the failure map is
+  // still empty — the mounts succeed).
+  await expectWorkAdmitted(world, followUpRequest(L1_ROOT, instA.instanceId), 'L1 A first delivery (mount)')
+  const slotAAtMount = slotOf(world, instA.childSessionId, L1_SERVER)
+  await expectWorkAdmitted(world, followUpRequest(L1_ROOT, instB.instanceId), 'L1 B first delivery (mount)')
+  const slotBAtMount = slotOf(world, instB.childSessionId, L1_SERVER)
+
+  // THE COLD SEAM: B's residency is dropped (the liveness-only removal —
+  // the durable row survives; the materialization port then sees the
+  // member COLD (`hasLive` false → `not-applicable` — the T5 shape), so
+  // the admission gate ADMIPTS the next passage (the stale truth carries
+  // no fresh failure).
+  const drop = await world.root.live.dropResidency(instB.childSessionId)
+  const slotBAfterDrop = slotOf(world, instB.childSessionId, L1_SERVER)
+
+  // THE FAULT: B's REMOUNT (the cold-resume setup reconcile) will fail.
+  mcpFailures[L1_SERVER] = 'mtm-l1: B cold-resume remount failure (the external class-1 fault)'
+
+  // THE RESIDUAL LEG: B's follow-up. The admission sees the cold / stale
+  // truth (no fresh failure yet — the remount has not run) and admits.
+  // The resume runs the setup reconcile on a FRESH consumption state,
+  // where the remount attempt FAILS and stamps the slot `failed`; the
+  // prepare's cooldown SKIP leaves the attempt clock untouched, so the
+  // pre-fix SAME-PASSAGE gate (the attempt-clock delta) reports nothing —
+  // the pre-fix delivery reaches B. The requirement-aware final-input
+  // verdict must read the FINAL failed slot (the required server's
+  // materialization is failed after the full ensure/resume/prepare
+  // sequence) and block BEFORE the first model-visible input.
+  const bRequest = followUpRequest(L1_ROOT, instB.instanceId)
+  const bFollowupsBefore = followupsOf(world, instB.childSessionId)
+  let bThrown: unknown
+  try {
+    await world.root.runtime.performAction(bRequest)
+  } catch (error) {
+    bThrown = error
+  }
+  const bFollowupsAfter = followupsOf(world, instB.childSessionId)
+  const slotBAfterPassage = slotOf(world, instB.childSessionId, L1_SERVER)
+  const bWorkOutcome = workOutcomeOf(world, L1_ROOT, String(bRequest.requestToken))
+
+  // THE NEXT PASSAGE: B is gated as `failed` at admission (the feed's
+  // failed → DOWN — the T1 shape on the passage after the window).
+  const bBlockNext = await expectBlocked(world, followUpRequest(L1_ROOT, instB.instanceId), 'L1 next-passage follow-up B (gated as failed)')
+
+  // THE CONTROL: A keeps working (the healthy sibling is not masked).
+  const aFollowup = await expectWorkAdmitted(world, followUpRequest(L1_ROOT, instA.instanceId), 'L1 control follow-up A')
+
+  return {
+    world,
+    instA,
+    instB,
+    drop,
+    slotAAtMount,
+    slotBAtMount,
+    slotBAfterDrop,
+    bRequest,
+    bThrown,
+    bFollowupsBefore,
+    bFollowupsAfter,
+    slotBAfterPassage,
+    bWorkOutcome,
+    bBlockNext,
+    aFollowup,
+  }
+})()
+
+// ══════════════════════════════════════════════════════════════════════════
+// WORLD L2 — L2 (residual class 2: the MESSAGING consumer — the
+// coordinator's attributed-input path must consume the final-input verdict)
+// ══════════════════════════════════════════════════════════════════════════
+
+const L2 = await (async () => {
+  destroyDir(scratchDir('mtm-l2'))
+  const mcpFailures: Record<string, string> = {}
+  const world = await bootMtmWorld('l2', L2_ROOT, BP_L2, L2_SERVER, 4000, undefined, mcpFailures)
+
+  const instA = await activateMember(world, 'mtm-l2-A')
+  const instB = await activateMember(world, 'mtm-l2-B')
+
+  // A healthy + mounted (the mask shape: the aggregate `reachable` keeps
+  // the fresh B admissible — the T7 admission shape).
+  await expectWorkAdmitted(world, followUpRequest(L2_ROOT, instA.instanceId), 'L2 A first delivery (mount)')
+  const slotAAtMount = slotOf(world, instA.childSessionId, L2_SERVER)
+  // B FRESH: never mounted (no slot — the masked pending shape).
+  const slotBAtBoot = slotOf(world, instB.childSessionId, L2_SERVER)
+
+  // THE FAULT: B's first mount (the delivery's boundary reconcile) will
+  // fail.
+  mcpFailures[L2_SERVER] = 'mtm-l2: B first-mount failure on the messaging passage (the external class-2 fault)'
+
+  // THE RESIDUAL LEG: the leader RELAYS a message to B through the
+  // PRODUCTION v2 remote command (`member.send` — the coordinator's
+  // facade admission + durable intent fact + LIVE attributed-input
+  // delivery + confirmation fact). The admission gates the fresh (masked
+  // pending) target and ADMIPTS; the coordinator commits the durable
+  // `team-coordination-recorded` intent and delivers — whose prepare runs
+  // B's own boundary reconcile (the first mount, FAILED). The pre-fix
+  // submitAttributedInput IGNORES the prepare result and hands the input
+  // to B's inbox. The requirement-aware final-input verdict must block
+  // (the required server's materialization is failed BEFORE the first
+  // model-visible input): the coordinator maps the rejection to
+  // MESSAGING_DELIVERY_FAILED and the intent stays pending (R2/R3: the
+  // coordination is recoverable — NO confirmation fact).
+  const dispatcher = captureRemoteDispatcher(world)
+  const sendToken = tok()
+  const bFollowupsBefore = followupsOf(world, instB.childSessionId)
+  const sendResponse: Record<string, unknown> = await dispatcher('member.send', {
+    version: 2,
+    params: {
+      teamSessionId: L2_ROOT,
+      caller: { kind: 'instance', instanceId: 'inst-leader' },
+      recipientInstanceId: instB.instanceId,
+      body: 'mtm-l2 relay body (the class-2 messaging leg)',
+      subject: 'mtm-l2',
+      requestToken: sendToken,
+    },
+  })
+  const bFollowupsAfter = followupsOf(world, instB.childSessionId)
+  const slotBAfter = slotOf(world, instB.childSessionId, L2_SERVER)
+  const intentRecorded = factWithToken(world, L2_ROOT, 'team-coordination-recorded', sendToken)
+  const confirmationRecorded = factWithToken(world, L2_ROOT, 'team-message-delivered', sendToken)
+
+  // THE CONTROL: A keeps working (the healthy sibling is not masked).
+  const aFollowup = await expectWorkAdmitted(world, followUpRequest(L2_ROOT, instA.instanceId), 'L2 control follow-up A')
+
+  return {
+    world,
+    instA,
+    instB,
+    slotAAtMount,
+    slotBAtBoot,
+    sendToken,
+    sendResponse,
+    bFollowupsBefore,
+    bFollowupsAfter,
+    slotBAfter,
+    intentRecorded,
+    confirmationRecorded,
+    aFollowup,
+  }
+})()
+
+// ══════════════════════════════════════════════════════════════════════════
+// WORLD L3 — L3 (residual class 2: the ROOT consumer — the root initial
+// work's input path must consume the final-input verdict; the admission
+// reads the stale cold truth and admits, the failure stands at the
+// boundary)
+// ══════════════════════════════════════════════════════════════════════════
+
+const L3 = await (async () => {
+  destroyDir(scratchDir('mtm-l3'))
+  const mcpFailures: Record<string, string> = {}
+  const world = await bootMtmWorld('l3', L3_ROOT, BP_L3, L3_SERVER, 4001, undefined, mcpFailures)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the domain (dynamic surface)
+  const repos: any = world.root.domain.repositories
+
+  // Root A (the boot root): the v2 Leader's fiber is mounted on the ROOT
+  // session at boot (the T4 shape; A = healthy/mounted throughout).
+  const slotLeaderAAtBoot = slotOf(world, L3_ROOT, L3_SERVER)
+
+  // Root B (the second OWNED root — the R2 multi-root host shape): the
+  // durable rows with the SAME blueprint snapshot (same leader template)
+  // + the production leader-row shape (childSessionId = the root session:
+  // the v2 Leader IS the root session).
+  const nowIso = new Date().toISOString()
+  const blueprint = repos.teamSessions.get(L3_ROOT).blueprint
+  await repos.teamSessions.put({
+    blueprint,
+    createdAt: nowIso,
+    defaultWorkspace: '/data',
+    generation: 1,
+    rootSessionId: L3_ROOT2,
+  })
+  await repos.sessionBindings.put({ kind: 'team-root', schemaVersion: 1, sessionId: L3_ROOT2 })
+  await repos.memberInstances.put({
+    rootSessionId: L3_ROOT2,
+    instanceId: 'inst-leader',
+    templateId: 'leader',
+    label: 'mtm-l3 leader (root B)',
+    childSessionId: L3_ROOT2,
+    lifecycle: 'RUNNING',
+    createdAt: nowIso,
+    activityVersion: 1,
+  })
+
+  // B's root agent starts HEALTHY (the failure map is still empty — the
+  // first mount succeeds).
+  await world.root.live.createRootAgent(L3_ROOT2)
+  const slotLeaderBAtCreate = slotOf(world, L3_ROOT2, L3_SERVER)
+
+  // THE COLD SEAM: B's residency is dropped (the liveness-only removal —
+  // the materialization port then sees the root COLD: `hasLive` false →
+  // `not-applicable`; the admission gate ADMIPTS — the "cleared by
+  // recheck" shape: the stale truth carries no fresh failure).
+  const drop = await world.root.live.dropResidency(L3_ROOT2)
+  const slotLeaderBAfterDrop = slotOf(world, L3_ROOT2, L3_SERVER)
+
+  // THE FAULT: B's remount (the cold-resume setup reconcile) will fail.
+  mcpFailures[L3_SERVER] = 'mtm-l3: root-B leader remount failure (the external class-1/class-2 root fault)'
+
+  // THE RESIDUAL LEG: B's INITIAL WORK through the PRODUCTION v2 remote
+  // command (`team.admitInitialWork`). Phase A's gate reads the cold /
+  // stale truth and ADMIPTS (the durable `team-work-admitted` fact);
+  // Phase B's delivery resumes B's root agent (the FRESH consumption
+  // state), whose setup reconcile stamps the remount failure; the
+  // prepare's cooldown SKIP leaves the attempt clock untouched; the
+  // pre-fix deliverRootInput IGNORES the prepare result and delivers the
+  // root input. The requirement-aware final-input verdict must block
+  // BEFORE the first model-visible input: the strategy maps the
+  // rejection to WORK_DELIVERY_FAILED (the remote code
+  // TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED) and KEEPS the durable
+  // admission for the same-token retry (NO terminal
+  // `team-root-work-delivered` fact).
+  const dispatcher = captureRemoteDispatcher(world)
+  const bInitialWorkToken = tok()
+  const rootBFollowupsBefore = followupsOf(world, L3_ROOT2)
+  const bInitialWorkResponse: Record<string, unknown> = await dispatcher('team.admitInitialWork', {
+    version: 2,
+    params: { rootSessionId: L3_ROOT2, requestToken: bInitialWorkToken, prompt: 'mtm-l3 initial work' },
+  })
+  const rootBFollowupsAfter = followupsOf(world, L3_ROOT2)
+  const bWorkAdmitted = factWithToken(world, L3_ROOT2, 'team-work-admitted', bInitialWorkToken)
+  const bRootWorkDelivered = rootWorkDeliveredOf(world, L3_ROOT2, bInitialWorkToken)
+  const slotLeaderBAfter = slotOf(world, L3_ROOT2, L3_SERVER)
+  const slotLeaderAAfter = slotOf(world, L3_ROOT, L3_SERVER)
+
+  return {
+    world,
+    slotLeaderAAtBoot,
+    slotLeaderBAtCreate,
+    drop,
+    slotLeaderBAfterDrop,
+    bInitialWorkToken,
+    bInitialWorkResponse,
+    rootBFollowupsBefore,
+    rootBFollowupsAfter,
+    bWorkAdmitted,
+    bRootWorkDelivered,
+    slotLeaderBAfter,
+    slotLeaderAAfter,
+  }
+})()
+
+// ══════════════════════════════════════════════════════════════════════════
+// WORLD L4A — L4a (residual class 3: the anti-over-block — the NO-
+// REQUIREMENT allow shape: a failed policy-allowed server with no
+// requirement degrades, never blocks)
+// ══════════════════════════════════════════════════════════════════════════
+
+const L4A = await (async () => {
+  destroyDir(scratchDir('mtm-l4a'))
+  const mcpFailures: Record<string, string> = {}
+  const world = await bootMtmWorld('l4a', L4A_ROOT, BP_L4A, L4A_SERVER, 4002, undefined, mcpFailures)
+
+  const instA = await activateMember(world, 'mtm-l4a-A')
+  const instB = await activateMember(world, 'mtm-l4a-B')
+
+  // A healthy + mounted (the mask shape).
+  await expectWorkAdmitted(world, followUpRequest(L4A_ROOT, instA.instanceId), 'L4a A first delivery (mount)')
+  const slotAAtMount = slotOf(world, instA.childSessionId, L4A_SERVER)
+
+  // THE FAULT: B's first mount (its own first passage) will fail.
+  mcpFailures[L4A_SERVER] = 'mtm-l4a: B first-mount failure (the over-block fault — the server carries NO requirement)'
+
+  // THE ANTI-OVER-BLOCK LEG: the failed server carries NO requirement
+  // (the blueprint declares none anywhere — the worker template's scope
+  // has an empty requirement set; the team scope is empty too). The
+  // pre-fix SAME-PASSAGE gate blocks EVERY policy-allowed target's
+  // same-passage failure (requirement-blind); the requirement-aware
+  // final-input verdict must DEGRADE (allow): the optional / no-
+  // requirement outage never blocks — the work is delivered WITH the
+  // server down (the slot is the failed truth; the degradation is real).
+  const bRequest = followUpRequest(L4A_ROOT, instB.instanceId)
+  const bFollowupsBefore = followupsOf(world, instB.childSessionId)
+  let bOutcome: { instanceId?: string } | undefined
+  let bThrown: unknown
+  try {
+    bOutcome = await expectWorkAdmitted(world, bRequest, 'L4a B follow-up (no requirement — must degrade, never block)')
+  } catch (error) {
+    bThrown = error
+  }
+  const bFollowupsAfter = followupsOf(world, instB.childSessionId)
+  const slotBAfter = slotOf(world, instB.childSessionId, L4A_SERVER)
+
+  return {
+    world,
+    instA,
+    instB,
+    slotAAtMount,
+    bRequest,
+    bOutcome,
+    bThrown,
+    bFollowupsBefore,
+    bFollowupsAfter,
+    slotBAfter,
+  }
+})()
+
+// ══════════════════════════════════════════════════════════════════════════
+// WORLD L4B — L4b (residual class 3: the anti-over-block — the OPTIONAL
+// requirement (`complete: false`) allow shape: the engine's WARNING
+// verdict degrades, never blocks)
+// ══════════════════════════════════════════════════════════════════════════
+
+const L4B = await (async () => {
+  destroyDir(scratchDir('mtm-l4b'))
+  const mcpFailures: Record<string, string> = {}
+  const world = await bootMtmWorld('l4b', L4B_ROOT, BP_L4B, L4B_SERVER, 4003, undefined, mcpFailures)
+
+  const instA = await activateMember(world, 'mtm-l4b-A')
+  const instB = await activateMember(world, 'mtm-l4b-B')
+
+  // A healthy + mounted (the mask shape).
+  await expectWorkAdmitted(world, followUpRequest(L4B_ROOT, instA.instanceId), 'L4b A first delivery (mount)')
+  const slotAAtMount = slotOf(world, instA.childSessionId, L4B_SERVER)
+
+  // THE FAULT: B's first mount (its own first passage) will fail.
+  mcpFailures[L4B_SERVER] = 'mtm-l4b: B first-mount failure (the over-block fault — the requirement is OPTIONAL)'
+
+  // THE ANTI-OVER-BLOCK LEG: the failed server carries an OPTIONAL
+  // requirement (`complete: false` — the engine's WARNING verdict, the
+  // degraded scope). The pre-fix SAME-PASSAGE gate blocks EVERY
+  // policy-allowed target's same-passage failure (requirement-blind);
+  // the requirement-aware final-input verdict must DEGRADE (allow): an
+  // optional outage degrades, never blocks — the work is delivered WITH
+  // the server down.
+  const bRequest = followUpRequest(L4B_ROOT, instB.instanceId)
+  const bFollowupsBefore = followupsOf(world, instB.childSessionId)
+  let bOutcome: { instanceId?: string } | undefined
+  let bThrown: unknown
+  try {
+    bOutcome = await expectWorkAdmitted(world, bRequest, 'L4b B follow-up (optional requirement — must degrade, never block)')
+  } catch (error) {
+    bThrown = error
+  }
+  const bFollowupsAfter = followupsOf(world, instB.childSessionId)
+  const slotBAfter = slotOf(world, instB.childSessionId, L4B_SERVER)
+
+  return {
+    world,
+    instA,
+    instB,
+    slotAAtMount,
+    bRequest,
+    bOutcome,
+    bThrown,
+    bFollowupsBefore,
+    bFollowupsAfter,
+    slotBAfter,
+  }
+})()
+
+// ══════════════════════════════════════════════════════════════════════════
+// WORLD L4C — L4c (residual class 3: the anti-over-block — the REVIEWED
+// RECOVERY allow shape: the human-reviewed recovery re-run (the `recovery`
+// marker) must be allowed even while the remount keeps failing)
+// ══════════════════════════════════════════════════════════════════════════
+
+const L4C = await (async () => {
+  destroyDir(scratchDir('mtm-l4c'))
+  const mcpFailures: Record<string, string> = {}
+  const world = await bootMtmWorld('l4c', L4C_ROOT, BP_L4C, L4C_SERVER, 4004, undefined, mcpFailures)
+
+  const instA = await activateMember(world, 'mtm-l4c-A')
+  const instB = await activateMember(world, 'mtm-l4c-B')
+
+  // Both healthy + mounted at their first boundary (the failure map is
+  // still empty — the mounts succeed).
+  await expectWorkAdmitted(world, followUpRequest(L4C_ROOT, instA.instanceId), 'L4c A first delivery (mount)')
+  await expectWorkAdmitted(world, followUpRequest(L4C_ROOT, instB.instanceId), 'L4c B first delivery (mount)')
+  const slotBAtMount = slotOf(world, instB.childSessionId, L4C_SERVER)
+
+  // THE FAULT: B's remount will keep failing (the PERSISTENT outage —
+  // unlike T2, the server never comes back in this world).
+  mcpFailures[L4C_SERVER] = 'mtm-l4c: B remount failure (the persistent reviewed-recovery fault)'
+  // The confirmed loss on B (the T1 shape — the public-seam withdrawal:
+  // the tools leave B's scope; the fiber handle stays).
+  const fiberB = fiberOf(world, instB.childSessionId, L4C_SERVER)
+  if (fiberB?.withdrawTools === undefined) throw new Error('mtm L4c: B carries no withdrawable fiber')
+  fiberB.withdrawTools()
+
+  // The gate's FRESH probe (this passage) classifies B's loss: the
+  // witness retires B's exhausted fiber (slot stamped `failed`) while A's
+  // healthy fiber keeps the aggregate `reachable` — the mask.
+  await expectWorkAdmitted(world, followUpRequest(L4C_ROOT, instA.instanceId), 'L4c probe passage (follow-up A)')
+  const slotBAfterProbe = slotOf(world, instB.childSessionId, L4C_SERVER)
+
+  // The cooldown rewind (the test stand-in for the 30 s elapse — the
+  // boundary retry is admissible at the next passage).
+  if (slotBAfterProbe === undefined || typeof slotBAfterProbe.lastAttemptAt !== 'number') {
+    throw new Error('mtm L4c: B carries no failed slot to rewind')
+  }
+  slotBAfterProbe.lastAttemptAt = Date.now() - 61_000
+
+  // THE ANTI-OVER-BLOCK LEG: the HUMAN-REVIEWED recovery re-run of the
+  // blocked follow-up to B (the `recovery` marker — the router's recovery
+  // dispatch shape, T2). The gate allows the recovery work (the reviewed
+  // scope — the durable `recovery-incident-opened` record); the delivery's
+  // prepare re-attempts the remount (past cooldown) and it FAILS AGAIN
+  // (the persistent fault — the slot stays `failed`, the attempt clock
+  // advances on this passage). The pre-fix SAME-PASSAGE gate blocks the
+  // reviewed recovery (the over-block: it fires on EVERY policy-allowed
+  // target's same-passage failure — requirement-blind AND recovery-
+  // blind); the requirement-aware final-input verdict must EXEMPT the
+  // reviewed scope (the marker names the unavailable subject) and
+  // deliver — the recovery re-run is the human's decision, not the gate's.
+  const recoveryMarker = {
+    scopeKeys: ['template:worker'],
+    unavailableSubjects: [L4C_SERVER],
+  }
+  const bRequest = followUpRequest(L4C_ROOT, instB.instanceId, { recovery: recoveryMarker })
+  const bFollowupsBefore = followupsOf(world, instB.childSessionId)
+  let bOutcome: { instanceId?: string } | undefined
+  let bThrown: unknown
+  try {
+    bOutcome = await expectWorkAdmitted(world, bRequest, 'L4c recovery passage (reviewed scope — must be allowed)')
+  } catch (error) {
+    bThrown = error
+  }
+  const bFollowupsAfter = followupsOf(world, instB.childSessionId)
+  const slotBAfterRecovery = slotOf(world, instB.childSessionId, L4C_SERVER)
+  const incidentOpened = openIncidentOf(world, L4C_ROOT, 'template:worker')
+
+  return {
+    world,
+    instA,
+    instB,
+    slotBAtMount,
+    slotBAfterProbe,
+    bRequest,
+    bOutcome,
+    bThrown,
+    bFollowupsBefore,
+    bFollowupsAfter,
+    slotBAfterRecovery,
+    incidentOpened,
+  }
+})()
+
+// ══════════════════════════════════════════════════════════════════════════
 // the assertions (synchronous `it` bodies over the captured worlds)
 // ══════════════════════════════════════════════════════════════════════════
 
@@ -1223,5 +1803,152 @@ describe('Finding F — residual legs (external review of e45d22fe: R1 first-mou
     expect(R2.incidentA, 'no incident rows under A').toEqual([])
     // A's own state is unchanged (the cross-root read must not touch A).
     expect(R2.slotLeaderAAfter?.status, 'root A leader still mounted').toBe('mounted')
+  })
+
+  it('L1 (residual class 1) — the COLD-RESUME gap: the stale cold truth admits, the resume setup reconcile fails the remount, the prepare cooldown SKIPs, and the pre-fix SAME-PASSAGE gate (the attempt-clock delta) is BLIND — the delivery reaches B. The requirement-aware final-input verdict reads the FINAL failed truth and blocks (zero input; fail-closed settlement; the next passage gated as failed)', () => {
+    // The setup truth: both mounted at their first boundary; the
+    // residency drop is the liveness-only removal (the slot record
+    // survives — the stale truth).
+    expect(L1.drop.dropped, 'B residency dropped').toBe(true)
+    expect(L1.slotAAtMount?.status).toBe('mounted')
+    expect(L1.slotBAtMount?.status, 'B mounted at its first boundary').toBe('mounted')
+    expect(L1.slotBAfterDrop?.status, 'the stale slot survives the residency drop').toBe('mounted')
+
+    // THE VERDICT: the typed fail-closed fault (the work chain's
+    // settle-then-throw) and ZERO deliveries on the cold-resume passage.
+    // (RED shape: the pre-fix passage delivered the follow-up to B after
+    // the remount failed — the attempt-clock delta gate is blind to the
+    // setup-stamped failure: the count grew and nothing threw.)
+    expect(
+      L1.bThrown,
+      'the cold-resume delivery was NOT blocked after the remount failure (the external class-1 gap: a timestamp-delta judgment misses the failure stamped by the resume setup reconcile)',
+    ).toBeInstanceOf(TeamRuntimeError)
+    expect((L1.bThrown as TeamRuntimeError).code).toBe(TEAM_RUNTIME_ERROR_CODES.WORK_DELIVERY_FAILED)
+    expect(L1.bFollowupsAfter - L1.bFollowupsBefore, 'zero work on the cold-resume passage').toBe(0)
+    expect(L1.slotBAfterPassage?.status, 'B remount failed on the resume setup reconcile').toBe('failed')
+    expect(L1.bWorkOutcome, 'the fail-closed settlement is durable').toBe('delivery-failed')
+
+    // THE NEXT PASSAGE: B is gated as `failed` at admission (the feed's
+    // failed → DOWN).
+    expect(L1.bBlockNext.status).toBe('BLOCKED_FATAL')
+    expect(L1.bBlockNext.gateReason).toBe('requiredScopeDown')
+    expect(L1.bBlockNext.blockedScopes).toEqual(['template:worker'])
+
+    // THE CONTROL: A keeps working (the healthy sibling is not masked).
+    expect(L1.aFollowup.instanceId).toBe(L1.instA.instanceId)
+  })
+
+  it('L2 (residual class 2) — the MESSAGING consumer: the coordinator commits the intent and delivers the attributed input to B whose prepare FAILED the required server — the pre-fix submitAttributedInput IGNORES the prepare result (the input reaches B\'s inbox + the confirmation commits). The requirement-aware final-input verdict blocks (the coordinator maps the rejection to MESSAGING_DELIVERY_FAILED; the intent stays pending — NO confirmation)', () => {
+    // The setup truth: A mounted (the mask); B fresh (never mounted — the
+    // masked pending admission shape).
+    expect(L2.slotAAtMount?.status).toBe('mounted')
+    expect(L2.slotBAtBoot, 'B fresh — never mounted').toBeUndefined()
+
+    // THE VERDICT: the typed delivery failure at the INPUT boundary (NOT
+    // an admission block — the admission saw the masked pending shape and
+    // admitted; the failure stands where the first model-visible input
+    // would go). (RED shape: the pre-fix delivery answered ok and the
+    // confirmation fact exists — the input reached B's inbox after its
+    // first mount failed.)
+    expect(
+      L2.sendResponse['ok'],
+      'the messaging delivery was NOT blocked after B\'s first-mount failure (the external class-2 gap: submitAttributedInput ignores the prepare result)',
+    ).toBe(false)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the remote failure envelope (dynamic surface)
+    const error = L2.sendResponse['error'] as Record<string, any>
+    expect(String(error?.['code'] ?? '')).toBe('MESSAGING_DELIVERY_FAILED')
+    expect(L2.bFollowupsAfter - L2.bFollowupsBefore, 'zero input on the failed passage').toBe(0)
+    expect(L2.intentRecorded, 'the intent fact stays durable (R2: the coordination is recoverable)').toBe(true)
+    expect(L2.confirmationRecorded, 'no confirmation — the delivery never succeeded').toBe(false)
+    expect(L2.slotBAfter?.status, 'B\'s first mount failed on the delivery\'s boundary').toBe('failed')
+
+    // THE CONTROL: A keeps working (the healthy sibling is not masked).
+    expect(L2.aFollowup.instanceId).toBe(L2.instA.instanceId)
+  })
+
+  it('L3 (residual class 2) — the ROOT consumer: root B\'s initial work — the admission reads the stale cold truth and ADMITS (the durable `team-work-admitted` fact), the cold-resume delivery\'s setup reconcile fails the remount, and the pre-fix deliverRootInput IGNORES the prepare result (the root input reaches B + the terminal fact commits). The requirement-aware final-input verdict blocks (the strategy maps the rejection to WORK_DELIVERY_FAILED → the remote TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED; the admission stays for the same-token retry; NO terminal root-work fact)', () => {
+    // The setup truth: A's leader mounted at boot (healthy throughout);
+    // B's leader mounted (healthy) at creation; the residency drop is the
+    // liveness-only removal (the stale slot survives).
+    expect(L3.slotLeaderAAtBoot?.status, 'root A leader mounted at boot').toBe('mounted')
+    expect(L3.slotLeaderBAtCreate?.status, 'root B leader mounted (healthy) at creation').toBe('mounted')
+    expect(L3.drop.dropped, 'B residency dropped').toBe(true)
+    expect(L3.slotLeaderBAfterDrop?.status, 'the stale slot survives the residency drop').toBe('mounted')
+
+    // THE VERDICT: the typed delivery failure on the initial-work
+    // boundary. (RED shape: the pre-fix delivery answered ok:true and
+    // committed the terminal root-work fact — the root input reached B
+    // after the remount failed.)
+    expect(
+      L3.bInitialWorkResponse['ok'],
+      'B\'s initial work was PERMITTED on the failed remount passage (the external class-2 root gap: deliverRootInput ignores the prepare result)',
+    ).toBe(false)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the remote failure envelope (dynamic surface)
+    const error = L3.bInitialWorkResponse['error'] as Record<string, any>
+    expect(String(error?.['code'] ?? '')).toBe('TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED')
+    expect(L3.rootBFollowupsAfter - L3.rootBFollowupsBefore, 'zero root input on the failed passage').toBe(0)
+    expect(L3.bWorkAdmitted, 'the Phase A admission stays durable (the same-token retry keeps it)').toBe(true)
+    expect(L3.bRootWorkDelivered, 'no terminal root-work fact').toBeUndefined()
+    expect(L3.slotLeaderBAfter?.status, 'B\'s remount failed on the resume setup reconcile').toBe('failed')
+    expect(L3.slotLeaderAAfter?.status, 'root A leader still mounted').toBe('mounted')
+  })
+
+  it('L4a (residual class 3) — the anti-over-block (NO requirement): B\'s first mount fails on its own first passage, but the failed server carries NO requirement — the pre-fix SAME-PASSAGE gate over-blocks (requirement-blind); the requirement-aware final-input verdict DEGRADES (the work delivers with the server down; the slot is the failed truth)', () => {
+    // The setup truth: A mounted (the mask); B fresh (its first passage
+    // is the first boundary).
+    expect(L4A.slotAAtMount?.status).toBe('mounted')
+
+    // THE VERDICT: the no-requirement outage is ADMITTED + DELIVERED
+    // (the degraded allow). (RED shape: the pre-fix gate threw
+    // WORK_DELIVERY_FAILED on the same-passage failure — the over-block:
+    // it fires on EVERY policy-allowed target, required or not.)
+    expect(
+      L4A.bThrown,
+      'the no-requirement outage was NOT allowed (the external class-3 over-block: the pre-fix gate blocks on ALL policy-allowed targets\' same-passage failures)',
+    ).toBeUndefined()
+    expect(L4A.bOutcome?.instanceId, 'B\'s work is admitted').toBe(L4A.instB.instanceId)
+    expect(L4A.bFollowupsAfter - L4A.bFollowupsBefore, 'the work delivered (degraded — the server stays down)').toBe(1)
+    expect(L4A.slotBAfter?.status, 'B\'s first mount DID fail (the degradation is real, not a hidden mount)').toBe('failed')
+  })
+
+  it('L4b (residual class 3) — the anti-over-block (OPTIONAL requirement): B\'s first mount fails on its own first passage, but the failed server\'s requirement is `complete: false` (the engine\'s WARNING verdict — the degraded scope, never a block) — the pre-fix SAME-PASSAGE gate over-blocks (requirement-blind); the requirement-aware final-input verdict DEGRADES (the work delivers with the server down)', () => {
+    // The setup truth: A mounted (the mask); B fresh.
+    expect(L4B.slotAAtMount?.status).toBe('mounted')
+
+    // THE VERDICT: the optional-requirement outage is ADMITTED +
+    // DELIVERED (the degraded allow — the WARNING scope never blocks).
+    // (RED shape: the pre-fix gate threw WORK_DELIVERY_FAILED on the
+    // same-passage failure — the over-block: required or optional, it
+    // fires on EVERY policy-allowed target.)
+    expect(
+      L4B.bThrown,
+      'the optional-requirement outage was NOT allowed (the external class-3 over-block: the pre-fix gate is requirement-blind)',
+    ).toBeUndefined()
+    expect(L4B.bOutcome?.instanceId, 'B\'s work is admitted').toBe(L4B.instB.instanceId)
+    expect(L4B.bFollowupsAfter - L4B.bFollowupsBefore, 'the work delivered (degraded — the server stays down)').toBe(1)
+    expect(L4B.slotBAfter?.status, 'B\'s first mount DID fail (the degradation is real, not a hidden mount)').toBe('failed')
+  })
+
+  it('L4c (residual class 3) — the anti-over-block (REVIEWED recovery): the human-reviewed recovery re-run of the blocked follow-up to B (the `recovery` marker, the T2 shape) — the gate allows the recovery work (the reviewed scope; the durable incident record), the prepare re-attempts the remount past cooldown and it FAILS AGAIN (the persistent fault), and the pre-fix SAME-PASSAGE gate over-blocks the reviewed recovery (recovery-blind). The requirement-aware final-input verdict EXEMPTS the reviewed scope (the marker names the unavailable subject) and delivers', () => {
+    // The setup truth: both mounted; the probe passage classified B's
+    // loss (the slot is the failed boundary truth — the T1 shape); the
+    // cooldown is rewound (the boundary retry is admissible).
+    expect(L4C.slotBAtMount?.status, 'B mounted at its first boundary').toBe('mounted')
+    expect(L4C.slotBAfterProbe?.status, 'B classified failed by the probe passage').toBe('failed')
+
+    // THE VERDICT: the reviewed recovery re-run is ADMITTED + DELIVERED
+    // (the reviewed-scope exemption) — even though the remount FAILED
+    // AGAIN on this passage (the persistent outage). (RED shape: the
+    // pre-fix gate threw WORK_DELIVERY_FAILED on the same-passage
+    // failure — the over-block: it fires even on the human-reviewed
+    // recovery re-run.)
+    expect(
+      L4C.bThrown,
+      'the reviewed recovery re-run was NOT allowed (the external class-3 over-block: the pre-fix gate blocks even the human-reviewed recovery re-run)',
+    ).toBeUndefined()
+    expect(L4C.bOutcome?.instanceId, 'the recovery work is admitted').toBe(L4C.instB.instanceId)
+    expect(L4C.bFollowupsAfter - L4C.bFollowupsBefore, 'the recovery work delivered (the reviewed scope is allowed)').toBe(1)
+    expect(L4C.slotBAfterRecovery?.status, 'the remount failed AGAIN (the exemption is the reviewed scope, not a remount success)').toBe('failed')
+    expect(L4C.incidentOpened, 'the reviewed recovery is durably recorded (the scope incident)').toBe(true)
   })
 })
