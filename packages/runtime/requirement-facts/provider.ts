@@ -15,7 +15,13 @@
  *                       live MCP state — template/instance boundary only;
  *                       a cold member is `not-applicable`, never `failed`)
  * persona            -> ports.substratePlan (the RuntimeSubstrateResolver +
- *                       the production persona observer, plan §C.2)
+ *                       the production persona observer, plan §C.2); the
+ *                       persona KIND convention (the v2 SUBJECT convention,
+ *                       plan §E.3): a subject that is a closed required
+ *                       persona kind resolves the OBSERVED kind of the role
+ *                       the scope addresses (team ⇒ root, template ⇒ member,
+ *                       R8); a non-kind subject keeps the frozen v1 preset-id
+ *                       path byte-for-byte
  * other domains      -> ports.readiness (the existing authoritative probe
  *                       ports; a missing port is `unknown`, fail-soft)
  * ```
@@ -74,6 +80,7 @@
 
 import { deepFreeze } from '../../contracts/src/index.js'
 import {
+  isRequiredPersonaKind,
   parseEnvironmentFacts,
   parseRequirements,
 } from '../../domain/compatibility/src/index.js'
@@ -89,6 +96,7 @@ import {
 } from '../readiness/index.js'
 import {
   assertRequirementFactScope,
+  REQUIREMENT_FACT_SCOPE_ROLES,
   type MemberMaterializationView,
   type RequirementFactsPorts,
   type RequirementFactsResolution,
@@ -96,7 +104,7 @@ import {
   type RequirementFactScope,
   type RuntimeRequirementFactsProvider,
 } from './types.js'
-import type { RuntimeSubstratePlan } from '../agent-setup/preset/index.js'
+import type { RuntimeSubstratePlan, RuntimeSubstratePlanEntry } from '../agent-setup/preset/index.js'
 
 /**
  * The initial live generation of the 2-state engine feed (a probe port that
@@ -294,8 +302,31 @@ export function createRuntimeRequirementFactsProvider(ports: RequirementFactsPor
             }
             case 'persona': {
               const plan = await substratePlan()
-              const entry =
-                subject === plan.root.presetId
+              // The persona KIND convention (the v2 SUBJECT convention —
+              // plan §E.3 / ADR-24 / SKILL.md §4.1; the domain compatibility
+              // closed set is the single source of truth): a subject that IS a
+              // closed required persona kind names the REQUIRED kind — the world
+              // fact is the OBSERVED kind of the role the SCOPE addresses
+              // (plan §C.2 R8): team scope ⇒ the ROOT entry; template scope ⇒
+              // the entry of the role the scope CARRIES (Blocker-1 shared
+              // contract — the scope's `role` identity):
+              //   - role `leader` ⇒ the ROOT entry — the leader IS the root
+              //     (the root mounts config.rootPresetId, agent-bindings v3;
+              //     plan §C.2: the ROOT entry is "the actual preset used by
+              //     the Leader"; the bind-time persona slot reads the ROOT
+              //     entry, root.ts presetSeam — Architecture §13.1: members
+              //     inherit the root's bind substrate);
+              //   - role `member` ⇒ the MEMBER entry — the member requirement
+              //     uses the member's actual observation, not the root's.
+              // A subject that is NOT a kind keeps the LEGACY preset-id path
+              // byte-for-byte (the frozen v1 convention: the subject is the
+              // observed root/member preset id — the v1 frozen Blueprint cold
+              // resume is unchanged).
+              const entry: RuntimeSubstratePlanEntry | undefined = isRequiredPersonaKind(subject)
+                ? scope.kind === 'template' && scope.role === REQUIREMENT_FACT_SCOPE_ROLES.member
+                  ? plan.member
+                  : plan.root
+                : subject === plan.root.presetId
                   ? { presetId: plan.root.presetId, persona: plan.root.persona }
                   : subject === plan.member.presetId
                     ? { presetId: plan.member.presetId, persona: plan.member.persona }
@@ -328,6 +359,38 @@ export function createRuntimeRequirementFactsProvider(ports: RequirementFactsPor
                 // legacy 2-state, it is not the transient probe window).
                 ...(isProbeable(requirement.type) ? {} : { probeable: false }),
               })
+              // B3 (external review, P2) — typed end-to-end diagnostics:
+              // the KIND convention's world fact reports the OBSERVED kind
+              // (the engine's typed §13.5 lane keys on exactly that —
+              // engine.ts: `facts.some(f => f.domain === 'persona' &&
+              // f.subject === 'complete')`). When the observed kind of the
+              // scope's role is `complete`, emit the `(persona, 'complete')`
+              // world fact ALONGSIDE the kind-subject fact so the host lane
+              // surfaces the FROZEN typed conflict (
+              // TEAM_PERSONA_COMPLETE_PRESET_CONFLICT) instead of degrading
+              // to the generic PERSONA_INCOMPATIBLE. The kind-subject fact
+              // keying is preserved (the engine still probes `standard`
+              // unmet); the legacy preset-id path does NOT emit this
+              // (the frozen v1 feed stays byte-identical).
+              if (
+                isRequiredPersonaKind(subject) &&
+                entry !== undefined &&
+                entry.persona.kind === 'complete'
+              ) {
+                const alongsideKey = subjectKey('persona', 'complete')
+                if (!feedEntries.has(alongsideKey)) {
+                  feedEntries.set(alongsideKey, {
+                    domain: 'persona',
+                    subject: 'complete',
+                    fact: {
+                      domain: 'persona',
+                      subject: 'complete',
+                      available: true,
+                      generation: INITIAL_LIVE_GENERATION,
+                    },
+                  })
+                }
+              }
               break
             }
             default: {

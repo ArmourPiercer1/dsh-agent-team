@@ -1510,8 +1510,40 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // vocabulary; the frozen quarantine hit set is unchanged at fifteen.
     // Scanner unchanged. The 896 value is the scanner run on the merged
     // tree (authoritative; not hand-computed).
-    expect(scanResult.filesScanned).toBe(896)
-    expect(scanResult.files.length).toBe(896)
+    // fix-persona-kind (finding A, the pre-alpha3 review P1 — the persona
+    // KIND subject vs presetId mismatch in the production provider →
+    // preflight → gate chain) pin (+1): this branch adds
+    // packages/runtime/test/persona-kind-provider-preflight.test.ts (the
+    // persona-KIND-convention regression suite over the REAL production
+    // chain: the real createRuntimeRequirementFactsProvider + the real
+    // resolveRuntimeSubstrate over the production observer-seam double +
+    // the real runCreationPreflight / evaluateCreationScopes — T1 bespoke
+    // composable preset ids pass with no seed, T2 the R8 root/member role
+    // split, T3 the complete-conflict no-downgrade, T4 the typed
+    // unresolved fail-closed + the documented 2-state seed legs, T5 the
+    // frozen v1 preset-id legacy path, T6 the end-to-end creation
+    // preflight). The product change (the requirement-facts/provider.ts
+    // persona case — the kind path ahead of the byte-identical legacy
+    // preset-id path) is an in-place edit on an already-scanned file (no
+    // count delta). Carries zero denylist vocabulary (the scan over it
+    // passes — the frozen quarantine hit set is unchanged at fifteen
+    // occurrences). The 897 value is the scanner run on the fixed tree
+    // (authoritative; not hand-computed).
+    // fix-persona-kind (PR #46 external-review fix round — Blocker-2, the
+    // SHIPPED DIST) pin (+1): this branch adds
+    // packages/runtime/test/persona-kind-shipped-dist-smoke.test.ts (the
+    // SHIPPED DIST SMOKE — the finding-A persona-KIND semantics + the
+    // Blocker-1 role identity + the Blocker-3 typed §13.5 lane asserted
+    // over the BUILT dist artifact via the file-URL import precedent; the
+    // companion commit rebuilds the dist mirror — the rebuilt
+    // provider.js/types.js/index.js/root.js + their .d.ts/.map — which
+    // are already-scanned artifacts (no count delta)). Carries zero
+    // denylist vocabulary (the scan over it passes — the frozen
+    // quarantine hit set is unchanged at fifteen occurrences). Scanner
+    // unchanged. The 898 value is the scanner run on this tree
+    // (authoritative; not hand-computed).
+    expect(scanResult.filesScanned).toBe(898)
+    expect(scanResult.files.length).toBe(898)
 
   })
 

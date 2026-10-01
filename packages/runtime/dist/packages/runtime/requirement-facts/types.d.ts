@@ -80,18 +80,55 @@ import type { EnvironmentFact, RequirementInput, RequirementType } from '../../d
 import type { CapabilityReadinessProvider, MaterializationSlot, MaterializationStatus, MemberLiveness, ObservationState, ProbeVerdict, SupplyAxis } from '../readiness/index.js';
 import type { RuntimeSubstratePlan } from '../agent-setup/preset/index.js';
 /**
+ * The closed ROLE identity of a template-scope boundary (Blocker-1 shared
+ * contract, external review of PR #46 — the template scope carries the role
+ * it addresses).
+ *
+ * The LEADER template IS the root session's template, and the root mounts
+ * `config.rootPresetId` (agent-bindings v3: "the root mounts
+ * config.rootPresetId and the member mounts config.memberPresetId"; the
+ * leader IS the root — plan §C.2: the plan's ROOT entry is "the actual
+ * preset used by the Leader"; the bind-time persona slot reads the ROOT
+ * entry, root.ts presetSeam — members inherit the root's bind substrate,
+ * Architecture §13.1). So a `leader` scope addresses the leader's OWN
+ * mounted-preset observation (the plan's ROOT entry); a `member` scope
+ * addresses the MEMBER entry (plan §C.2 R8: the member requirement uses the
+ * member's actual observation, not the root's).
+ */
+export declare const REQUIREMENT_FACT_SCOPE_ROLES: {
+    /** The leader template (the root session's template — the ROOT plan entry). */
+    readonly leader: "leader";
+    /** A member template (the MEMBER plan entry). */
+    readonly member: "member";
+};
+/** A closed template-scope role identity. */
+export type RequirementFactScopeRole = (typeof REQUIREMENT_FACT_SCOPE_ROLES)[keyof typeof REQUIREMENT_FACT_SCOPE_ROLES];
+/**
+ * The role identity of one template scope for a bound blueprint (the bound
+ * blueprint knows its leader template id — the ONLY knowledge the
+ * construction sites need): the leader template addresses the leader's own
+ * mounted preset (the ROOT plan entry), every other template addresses the
+ * MEMBER entry (plan §C.2 R8).
+ */
+export declare function requirementFactScopeRoleOf(leaderTemplateId: string, templateId: string): RequirementFactScopeRole;
+/**
  * The boundary scope of one fact resolution (guide §2.3).
  *
  * - `team` — the Team-level requirement: supply + fresh readiness;
  * - `template` — the template/instance applicable boundary: supply + fresh
  *   readiness + materialization (the `instanceId` is present for an
- *   instance-addressed boundary; a template-only boundary omits it).
+ *   instance-addressed boundary; a template-only boundary omits it). The
+ *   `role` identity (Blocker-1) carries WHICH observation the template
+ *   addresses: `leader` ⇒ the leader's own mounted preset (the ROOT plan
+ *   entry — the root mounts config.rootPresetId, the leader IS the root),
+ *   `member` ⇒ the MEMBER entry (plan §C.2 R8).
  */
 export type RequirementFactScope = {
     readonly kind: 'team';
 } | {
     readonly kind: 'template';
     readonly templateId: string;
+    readonly role: RequirementFactScopeRole;
     readonly instanceId?: string;
 };
 /**
