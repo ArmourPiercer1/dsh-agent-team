@@ -203,6 +203,37 @@
  *  The ENTIRE evidence dir is token-scrubbed (`\bsk-[A-Za-z0-9]{24,}` = 0
  *  matches); `mock-requests.json` is NOT part of the evidence.
  *
+ * UI OBSERVE mode (OPT-IN; pre-alpha3 pending-review / reviewed-payload UI
+ * gate — pure helpers + unit tests in `ui-observe.mjs`/`ui-observe.test.mjs`):
+ *  --ui-observe <dir>   Enables the hold point. The FIRST recovery-class
+ *      pending request the pump observes (the S9 reviewed payload + digest
+ *      carrier) is NOT resolved by the kit: it writes the browser ACCESS
+ *      record (launch URL/token, mode 0600 — the browser-smoke-host pattern)
+ *      ONLY inside the gitignored test world
+ *      (tests/homes/<world>/browser-access.json, realpath-guarded) and a
+ *      token-free `summary.json` into the observe dir, then waits for the
+ *      observer tooling's `marker.json` HINT. The marker is NEVER truth:
+ *      the kit proceeds only after re-reading durable truth through the
+ *      EXISTING `team.getLedgerPage` path and matching requestId +
+ *      reviewPayloadDigest (recomputed sha256 over canonicalJson) + the
+ *      actual durable fact for the claim — resolved:deny / resolved:allow
+ *      (control-decision-recorded), abandon-observed (control-request-
+ *      abandoned — THIS KIT'S TRIGGER: the 120s executeTool abort seam, a
+ *      product lifecycle fact, never written by the kit), surface-close
+ *      (asserts ONLY zero new durable facts for the requestId, is NEVER a
+ *      deny/allow/abandon, then the original automation continues). The
+ *      observe dir must be a controlled dir INSIDE the authorized workspace
+ *      (suggested: <repo>/.worktrees/.scratch-logs/pr54-ui-observe/), never
+ *      the world and never under tests/homes; it only ever holds
+ *      marker.json + summary.json (never auth values).
+ *  --ui-hold-ms <n>     Hold budget in ms (1000..300000; default 180000 —
+ *      above the 120s abort seam so abandon-observed stays verifiable).
+ *  Timeout is FAIL-CLOSED: an explicit "UI NOT_RUN"/"UI TIMEOUT" criterion
+ *  failure, world retained; the kit NEVER auto-allows and NEVER resolves on
+ *  behalf. FLAGS OFF = byte-identical previous behavior. Verification of
+ *  this module = `node --test tests/kits/pr-e-requirement-recovery-smoke/
+ *  ui-observe.test.mjs`; live-host runs stay the env's job.
+ *
  * EXIT: 0 = all 14 scenarios + hygiene PASS (world deleted);
  *        2 = a criterion failed (evidence dumped, world retained);
  *        1 = fatal (infrastructure / pre-flight).
@@ -210,8 +241,16 @@
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import { createHash, randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
+// OPT-IN UI observe hold-point helpers (flag-off = never executed). This module
+// is the ONE implementation of canonicalJson/sha256Hex (the kit's former local
+// copies — results pinned byte-identical by ui-observe.test.mjs golden vectors).
+import {
+  parseObserveFlags, validateAccessRecordPath, readMarkerHint, verifyUiTruth,
+  planUiHoldStep, summarizeUiObserve, reviewPayloadDigestOf,
+  sha256Hex, canonicalJson,
+} from './ui-observe.mjs'
 import {
   TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH,
 } from '../../paths.mjs'
@@ -359,6 +398,22 @@ const LOCK_FILE = `${HOME}.lock`
 const BLUEPRINT_DIR = join(HOME, 'blueprints') // saved sources live IN the world home
 const WORLD_FILE = join(HOME, 'storages', 'team_domain.json')
 
+// ── OPT-IN UI observe mode (pre-alpha3 pending-review / payload UI gate) ────
+// FLAGS OFF (default) => UI_OBSERVE.enabled === false and EVERY path below is
+// never entered — the kit keeps its previous behavior byte-identically. The
+// observe dir must be a controlled dir INSIDE the authorized workspace, never
+// the world, never under tests/homes (the 0600 access record stays world-only).
+const WORKSPACE_ROOT = /(^|[\\/])\.worktrees([\\/]|$)/.test(WORKTREE) ? resolve(WORKTREE, '..', '..') : WORKTREE
+let UI_OBSERVE = { enabled: false, observeDir: null, holdMs: 0 }
+try {
+  UI_OBSERVE = parseObserveFlags(args, { workspaceRoot: WORKSPACE_ROOT, worldDir: HOME })
+} catch (error) {
+  process.stderr.write(`FATAL (ui-observe flags, fail closed): ${String(error?.code ?? '')} ${String(error?.message ?? error)}\n`)
+  process.exit(1)
+}
+let uiTargetClaimed = false // UI mode: the FIRST observed recovery request is the observe target
+const uiObserveRecords = []
+
 const ROOT = `session-prereq-boot-${RUN_STAMP}` // the row anchor's boot root
 const T = `session-prereq-main-${RUN_STAMP}` // the main scenario team (v2)
 const T2 = `session-prereq-iso-${RUN_STAMP}` // the dual-team isolation team (v2)
@@ -452,20 +507,9 @@ function dieFatal(msg) {
 
 // ── small utils ─────────────────────────────────────────────────────────────
 
-function sha256Hex(s) {
-  return createHash('sha256').update(s, 'utf8').digest('hex')
-}
-
-/** Deterministic JSON: keys in ascending code-unit order, compact (the
- *  contracts `canonicalJsonStringify` — recomputed for the S9 digest). */
-function canonicalJson(value) {
-  if (value === null || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') {
-    return JSON.stringify(value)
-  }
-  if (Array.isArray(value)) return `[${value.map((item) => canonicalJson(item)).join(',')}]`
-  const entries = Object.entries(value).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-  return `{${entries.map(([key, item]) => `${JSON.stringify(key)}:${canonicalJson(item)}`).join(',')}}`
-}
+// sha256Hex / canonicalJson are imported from ./ui-observe.mjs (ONE canonical
+// implementation; the S9 digest pattern rides on them unchanged — pinned by
+// the ui-observe.test.mjs golden vectors against the kit's former local fns).
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -1732,6 +1776,95 @@ async function sweepLiveHosts() {
 // ── the scripted delegate attempt (the heart of the gate) ───────────────────
 
 /**
+ * UI OBSERVE hold point (entered ONLY when UI_OBSERVE.enabled — flags-off
+ * runs never call this). The kit does NOT resolve the target request. It
+ * writes (a) the PRIVATE 0600 browser access record (origin + launch URL)
+ * ONLY inside the gitignored test world — realpath-guarded, never logged,
+ * never evidence — and (b) a token-free `summary.json` into the observe dir,
+ * then waits for the observer tooling's `marker.json` HINT. The marker is
+ * NEVER truth: every iteration re-reads the durable ledger through the
+ * EXISTING `ledgerEntries` path (`team.getLedgerPage`) and only proceeds when
+ * `verifyUiTruth` matches requestId + recomputed reviewPayloadDigest + the
+ * actual durable fact for the claimed action. Expiry is FAIL-CLOSED
+ * ('UI NOT_RUN' / 'UI TIMEOUT' — an explicit criterion failure; the kit
+ * NEVER auto-allows and NEVER resolves on behalf).
+ */
+async function uiObserveHold(rec, rootSessionId, req, rid, tag) {
+  const observeDir = UI_OBSERVE.observeDir
+  const expectedDigest = reviewPayloadDigestOf(req.reviewPayload ?? null)
+  let accessPath = null
+  try {
+    accessPath = validateAccessRecordPath({ repoRoot: WORKTREE, worldDir: HOME })
+    writeFileSync(accessPath, JSON.stringify({
+      note: 'PRIVATE operational record — raw launch URL. Not evidence: never commit, never paste into a log or a report. Valid only while this boot is live.',
+      runStamp: RUN_STAMP,
+      world: HOME,
+      boot: rec.label,
+      origin: rec.origin,
+      launchUrl: rec.url,
+      requestId: rid,
+      reviewPayloadDigest: expectedDigest,
+    }, null, 2), { mode: 0o600 })
+  } catch (error) {
+    const reason = `ACCESS_RECORD_REJECTED :: ${String(error?.code ?? error?.message ?? error).slice(0, 200)}`
+    check('S9', 'UI NOT_RUN: UI OBSERVE access record rejected by the placement guard (fail closed)', false, reason)
+    return { ok: false, outcome: 'UI NOT_RUN', reason }
+  }
+  const startedAt = Date.now()
+  const writeSummary = (outcome, claim = null) => {
+    try {
+      mkdirSync(observeDir, { recursive: true })
+      writeFileSync(join(observeDir, 'summary.json'), JSON.stringify(summarizeUiObserve({
+        runStamp: RUN_STAMP, origin: rec.origin, requestId: rid, digest: expectedDigest,
+        outcome, holdMs: UI_OBSERVE.holdMs, claim,
+      }), null, 2))
+    } catch { /* observe-dir summary is best effort — the ledger is the truth */ }
+  }
+  writeSummary('AWAITING')
+  log(`${tag}: UI OBSERVE hold — requestId=${rid} digest=${expectedDigest.slice(0, 18)}… holdMs=${UI_OBSERVE.holdMs}; access record ${accessPath} (0600, world-only); awaiting ${join(observeDir, 'marker.json')} (HINT ONLY — durable truth decides)`)
+  const deadlineAt = startedAt + UI_OBSERVE.holdMs
+  let markerSeen = false
+  let lastReason = null
+  for (;;) {
+    try {
+      const hintRes = readMarkerHint(observeDir)
+      if (hintRes.ok) {
+        markerSeen = true
+        if (hintRes.hint.requestId === rid) {
+          const entries = await ledgerEntries(rec, rootSessionId) // durable truth — EXISTING read path
+          const truth = verifyUiTruth({ marker: hintRes.hint, ledgerFacts: entries, expectedRequestId: rid, expectedDigest })
+          if (truth.ok) {
+            const outcome = truth.claim === 'surface-close' ? 'SURFACE_CLOSE_ZERO_EFFECT' : `VERIFIED:${truth.claim}`
+            writeSummary(outcome, truth.claim)
+            const record = { tag, requestId: rid, digestPrefix: expectedDigest.slice(0, 18), outcome, claim: truth.claim, holdMs: UI_OBSERVE.holdMs, waitedMs: Date.now() - startedAt, at: new Date().toISOString() }
+            uiObserveRecords.push(record)
+            saveScenario('ui-observe', { records: uiObserveRecords })
+            log(`${tag}: UI OBSERVE VERIFIED (${truth.claim}) — durable ledger truth confirmed (the marker hint itself is never trusted)`)
+            return { ok: true, decision: truth.decision, claim: truth.claim }
+          }
+          lastReason = truth.reason ?? 'TRUTH_REJECTED'
+          writeSummary(`REJECTED:${lastReason}`, hintRes.hint.claimed ?? null)
+        } else {
+          lastReason = 'MARKER_REQUEST_ID_MISMATCH'
+        }
+      }
+    } catch (error) {
+      log(`${tag}: UI OBSERVE poll error (transient): ${String(error?.message ?? error).slice(0, 200)}`)
+    }
+    const step = planUiHoldStep({ nowMs: Date.now(), deadlineMs: deadlineAt, markerSeen })
+    if (step.action === 'fail-closed') {
+      writeSummary(step.reason)
+      const record = { tag, requestId: rid, digestPrefix: expectedDigest.slice(0, 18), outcome: step.reason, claim: null, holdMs: UI_OBSERVE.holdMs, waitedMs: Date.now() - startedAt, lastReason, at: new Date().toISOString() }
+      uiObserveRecords.push(record)
+      saveScenario('ui-observe', { records: uiObserveRecords })
+      check('S9', `${step.reason}: UI OBSERVE hold point expired FAIL-CLOSED — no auto-allow, no kit resolve-on-behalf`, false, `tag=${tag} requestId=${rid} lastReason=${lastReason ?? 'no marker seen'} holdMs=${UI_OBSERVE.holdMs}`)
+      return { ok: false, outcome: step.reason, reason: lastReason }
+    }
+    await sleep(1000)
+  }
+}
+
+/**
  * Fire ONE leader team-tool call through the p6t6 seam (async:false — the
  * call returns when the work unit settles) and, in parallel, resolve the
  * control requests it opens per `policy`:
@@ -1764,6 +1897,36 @@ async function leaderAttempt(rec, tag, policy, { timeoutMs = 200_000 } = {}) {
           pendingSeen.push({ requestId: rid, kind: req.kind, correlation: req.correlation ?? null, toolName: req.toolName ?? null, actionName: req.actionName ?? null, reviewPayload: req.reviewPayload ?? null, reviewPayloadDigest: req.reviewPayloadDigest ?? null, executionCoupling: req.executionCoupling ?? null })
           const isRecovery = typeof req.correlation === 'string' && req.correlation.startsWith('recovery:')
           if (isRecovery) {
+            if (UI_OBSERVE.enabled && !uiTargetClaimed) {
+              // UI OBSERVE mode: the FIRST observed recovery-class pending
+              // request is the observe target (the S9 reviewed payload + digest
+              // the external UI session reviews). The kit HOLDS — it never
+              // resolves this request; the durable truth gate decides.
+              uiTargetClaimed = true
+              const held = await uiObserveHold(rec, rootSessionId, req, rid, tag)
+              if (held.ok && held.claim !== 'surface-close') {
+                // Durable truth ALREADY recorded the decision / the abandon —
+                // NEVER re-resolve; feed the EXISTING assertion branches with
+                // the durable decision the real UI (or the product lifecycle)
+                // produced for the SAME real request.
+                decisions.push({ requestId: rid, class: 'recovery', decision: held.decision, resolveStatus: 'ui-observe', resolveError: null })
+                continue
+              }
+              if (!held.ok) {
+                // Fail-closed ('UI NOT_RUN' / 'UI TIMEOUT' recorded by
+                // uiObserveHold as an explicit criterion failure). NEVER
+                // auto-allow, NEVER fall back to the kit's default resolve.
+                decisions.push({ requestId: rid, class: 'recovery', decision: null, resolveStatus: 'ui-fail-closed', resolveError: held.reason ?? held.outcome ?? 'UI NOT_RUN' })
+                continue
+              }
+              // VERIFIED surface-close: the ONLY assertion is that the ledger
+              // gained NO new fact for the requestId (zero durable effect —
+              // enforced inside verifyUiTruth; never treated as deny/allow/
+              // abandon, and the UI gate NEVER proceeds to those assertions on
+              // this hint). The original automation for the remaining flow
+              // continues below, unchanged.
+              log(`${tag}: UI OBSERVE surface-close verified — zero durable effect asserted; the original automation continues`)
+            }
             if (policy.recovery === 'abandon') continue // NEVER resolve — the 120s abort seam
             const r = await resolveControl(rec, rootSessionId, rid, policy.recovery, `kit e12 ${tag} (${policy.recovery})`, `resolve-${tag}-${rid.slice(0, 8)}`)
             decisions.push({ requestId: rid, class: 'recovery', decision: policy.recovery, resolveStatus: r.status, resolveError: resultError(r.body)?.code ?? null })
