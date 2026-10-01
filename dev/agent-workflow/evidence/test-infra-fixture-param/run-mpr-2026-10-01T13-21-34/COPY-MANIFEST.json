@@ -1,0 +1,272 @@
+{
+  "copiedFrom": "dev/agent-workflow/evidence/model-preference-routing/real-host/mpr-2026-10-01T13-21-34",
+  "copiedAt": "2026-10-01T13:25:16.925Z",
+  "note": "Independent REDACTION copy: credential VALUES replaced by markers; all other bytes (fields, results, exit codes, counts, paths, ids) preserved.",
+  "totalRedactions": 2,
+  "files": [
+    {
+      "rel": "dump-config-boot1.log",
+      "bytes": 46434,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "mock/requests-summary.json",
+      "bytes": 7881,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "post/git-post.json",
+      "bytes": 169,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "post/stable-post.json",
+      "bytes": 177,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "pre/git-pre.json",
+      "bytes": 169,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "pre/stable-pre.json",
+      "bytes": 177,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r1/leader-first-request.json",
+      "bytes": 94,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r1/state.json",
+      "bytes": 2873,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r2/override-get.json",
+      "bytes": 505,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r2/worker-first-request.json",
+      "bytes": 113,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r3/create-window.json",
+      "bytes": 353,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r3/worker-first-request.json",
+      "bytes": 101,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r4/override-get-post.json",
+      "bytes": 1087,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r4/override-get-pre.json",
+      "bytes": 505,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r4/override-set.json",
+      "bytes": 988,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r4/state-pending.json",
+      "bytes": 4130,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r4/worker-next-request.json",
+      "bytes": 107,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r5/expert-post-request.json",
+      "bytes": 100,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r5/expert-pre-request.json",
+      "bytes": 98,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r5/override-get-expert-pre.json",
+      "bytes": 505,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r5/sessions-before-restart.json",
+      "bytes": 1376,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r6/p6t6-state.json",
+      "bytes": 3595,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r6/projection.json",
+      "bytes": 10903,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r7/control-first-request.json",
+      "bytes": 101,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r8/ta-leader-first-request.json",
+      "bytes": 43,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r8/ta-worker-first-request.json",
+      "bytes": 36,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r8/tb-leader-first-request.json",
+      "bytes": 43,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "r8/tb-worker-first-request.json",
+      "bytes": 36,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "run.log",
+      "bytes": 11977,
+      "redactions": 2,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "summary.json",
+      "bytes": 14848,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "teams/r1-t1-create.json",
+      "bytes": 2851,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "teams/r8-ta-create.json",
+      "bytes": 2848,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "teams/r8-tb-create.json",
+      "bytes": 2848,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "tools/r2-deleg.json",
+      "bytes": 884,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "tools/r3-create.json",
+      "bytes": 647,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "tools/r3-followup.json",
+      "bytes": 788,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "tools/r4-followup.json",
+      "bytes": 791,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "tools/r4-members.json",
+      "bytes": 1020,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "tools/r5-expert-create.json",
+      "bytes": 648,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "tools/r5-expert-follow-post.json",
+      "bytes": 797,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "tools/r5-expert-follow-pre.json",
+      "bytes": 794,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "tools/r7-control-deleg.json",
+      "bytes": 888,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "tools/r8-a-deleg.json",
+      "bytes": 879,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "tools/r8-b-deleg.json",
+      "bytes": 879,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    }
+  ]
+}

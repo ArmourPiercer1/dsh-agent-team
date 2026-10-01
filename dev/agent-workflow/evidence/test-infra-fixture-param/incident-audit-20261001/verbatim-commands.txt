@@ -1,0 +1,10 @@
+# Incident verbatim commands — SOURCE: writer's own session record (session.v4.jsonl.zstd), delivered via agent transcript 2026-10-01, seq 476 @ 13:07:07.756-08.141, script tests/homes/.probe/param-accept.sh v1 (written 13:06:59), cwd=$WT via internal cd.
+find "$WT/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b" -maxdepth 1 -name 'host-smoke-*' -newermt '-10 minutes' -print -exec rm -rf {} + 2>/dev/null
+find "$WT/dev/agent-workflow/evidence/team-view-sync-complete" -maxdepth 1 -name 'wp9b-browser-smoke-*' -newermt '-10 minutes' -print -exec rm -rf {} + 2>/dev/null
+# same cleanup block, same script (glob removals in homes):
+ls -d "$HOMES"/prb-ep-* "$HOMES"/tvs-smoke-* 2>/dev/null
+rm -rf "$HOMES"/prb-ep-* "$HOMES"/tvs-smoke-*
+# WT=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param  HOMES=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes
+# FLAGS: NO -L, NO -follow, NO -delete; -maxdepth 1 (matched DIRS only; -exec rm -rf recursed); 2>/dev/null suppressed rm diagnostics (writer-flagged error).
+# Root cause of the 87: name globs matched HISTORICAL dirs equally; -newermt passed for ALL files because fresh worktree checkout @12:58:10 = mtime within 10 minutes.
+# PROVEN untracked victims (from find's own -print / ls -d in the same run): dev/.../pr-b/host-smoke-2026-10-01T13-07-07-c3 (kit dir of the very probe run; died in prepareWorld; contents UNKNOWN) and tests/homes/prb-ep-2026-10-01T13-07-07.

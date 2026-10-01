@@ -1,0 +1,63 @@
+[prb-smoke] PR-B effective-policy real-host smoke kit
+PR-B effective-policy real-host smoke kit
+[prb-smoke]   worktree : /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param
+  worktree : /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param
+[prb-smoke]   world    : tests/homes/prb-ep-2026-10-01T13-22-22 (copy of the mpr seed)
+  world    : tests/homes/prb-ep-2026-10-01T13-22-22 (copy of the mpr seed)
+[prb-smoke]   evidence : /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-22-22-c3
+  evidence : /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-22-22-c3
+[prb-smoke] pre stable probes: 3080=401 3180=unreachable: fetch http://127.0.0.1:3180/ failed: fetch failed
+[prb-smoke]   host port 3182, mock 3497, mini-MCP 3491/3492
+  host port 3182, mock 3497, mini-MCP 3491/3492
+[prb-smoke] world copied: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/mpr-2026-10-01T13-21-34 -> /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/prb-ep-2026-10-01T13-22-22
+[prb-smoke] boot blueprint (team.mpr-anchor) extended: +worker template (no modelPreference) + `strict` policyState (test-world edit)
+[prb-smoke] profile retargeted: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/prb-ep-2026-10-01T13-22-22/profiles/web/cordis.patch.yml
+[prb-smoke] T-PS blueprint written: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/prb-ep-2026-10-01T13-22-22/blueprints/prb-ps.yaml
+[prb-smoke] boot blueprint saved source written: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/prb-ep-2026-10-01T13-22-22/blueprints/prb-c3-boot.yaml (team.mpr-anchor@2: +worker template + 'strict' policyState)
+[prb-smoke] id-use guard: worker=inst-1722vhu1h1z1 expert=inst-1qazuqc1ylx9 control=inst-0e84f9t1xgok verified against the copied durable store
+[prb-smoke] world ready (T1 present in the copied durable store; sessions: session-mpr-boot-mpr-2026-10-01T13-21-34, session-mpr-t1-mpr-2026-10-01T13-21-34, session-mpr-ta-mpr-2026-10-01T13-21-34, session-mpr-tb-mpr-2026-10-01T13-21-34)
+[prb-smoke] mock model on 127.0.0.1:3497
+[prb-smoke] mini-MCP prb-mcp-a:3491 prb-mcp-b:3492
+[prb-smoke] booting host 1 (resume) on port 3182 …
+[prb-smoke] host 1 up: http://127.0.0.1:3182 (cookie acquired; log /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-22-22-c3/logs/instance-port3182.log)
+[prb-smoke] team-remote mounted and ready (catalog.list answered)
+[prb-smoke] C1 override ack: ovr-model-inst-1722vhu1h1z1-g0 gen=1 origin=undefined values={"model":{"kind":"allow","items":["deepseek-official/prb-c1-model"]}}
+[prb-smoke] C1 followup work-admitted (settled=true)
+[prb-smoke]   C1 PASS — wire body.model=prb-c1-model (override ovr-model-inst-1722vhu1h1z1-g0 gen=1)
+[prb-smoke]   C6 PASS — route=deepseek-official/prb-c1-model (state=pending-next-boundary) == wire body.model=prb-c1-model
+[prb-smoke] C2 mcp override ack: ovr-mcp-inst-1qazuqc1ylx9-g0 gen=1
+[prb-smoke]   C2 PASS — wire mcp__ tools=["mcp__prb-mcp-a__ping"] (override ovr-mcp-inst-1qazuqc1ylx9-g0)
+[prb-smoke] C3-negative: {"code":"POLICY_STATE_UNKNOWN","detail":"{\"method\":\"policyState.set\",\"endpoint\":\"policyState.set\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"POLICY_STATE_UNKNOWN\",\"message\":\"policyState target 'focus' is outside the bound blueprint's closed set (default, default)\",\"details\":{\"reason\":\"unknown-state\",\"stateId\":\"focus\",\"closedStates\":[\"default\",\"default\"]}}}","message":"policyState target 'focus' is outside the bound blueprint's closed set (default, default)"}
+[prb-smoke] C3-positive: boot blueprint team.mpr-anchor resolves (rev 2) with policyStates=["strict"] + worker template (STEP 1b saved source confirmed live)
+[prb-smoke] C3-positive: T-C3 team created (bound to the boot blueprint)
+[prb-smoke] C3-positive: worker inst-14m3wip1ismk activated
+[prb-smoke] C3-positive: C3a baseline wire model=global-default (the worker has no template modelPreference)
+[prb-smoke] C3-positive: policyState.set(strict) committed — entryId=ps-strict-0 acked state carries the model cell (items=["deepseek-official/prb-c3-strict"])
+[prb-smoke] C3-positive DIAG: policyState.get stateId=strict modelCell={"value":{"items":["deepseek-official/prb-c3-strict"],"kind":"allow"}}
+[prb-smoke] C3-positive DIAG: team.getProjection worker modelState={"current":{"value":"deepseek-official/prb-c3-strict","source":"policy-state","state":"overridden"},"provenance":{"layer":"policyState","origin":"static","recordId":null,"explanation":"model: effective allow[deepseek-official/prb-c3-strict]; team policyState(origin=static) allow[deepseek-official/prb-c3-strict]; external exists=yes, hard=unspecified"},"availability":"available","pendingNextBoundary":{"value":"deepseek-official/prb-c3-strict","source":"policy-state","state":"pending-next-boundary
+[prb-smoke] C3-positive DIAG: team.getProjection worker route="deepseek-official/prb-c3-strict" state="overridden"
+[prb-smoke] C3-positive: C3b wire model=prb-c3-strict (the committed PolicyState governed the next request)
+[prb-smoke]   C3 FAIL — negative={"code":"POLICY_STATE_UNKNOWN","detail":"{\"method\":\"policyState.set\",\"endpoint\":\"policyState.set\",\"contractVersion\":1,\"requestTok; positive={"workerId":"inst-14m3wip1ismk","baseModel":"global-default","strictModel":"prb-c3-strict","entryId":"ps-strict-0","psAck":{"transition":{"e; structural={"error":"C3-structural: policyState.set(focus) on the per-team team was ACCEPTED (expected a typed rejection — the closed set should be the
+[prb-smoke] C4: the concurrent followup completed work-admitted (no activation error)
+[prb-smoke] C4: the mutation committed — durable winner ovr-model-inst-0e84f9t1xgok-g0 gen=1
+[prb-smoke]   C4 PASS — concurrent followup OK; winner=ovr-model-inst-0e84f9t1xgok-g0 gen=1; next-boundary model=prb-c4-model
+[prb-smoke] stopping host 1 (pre-restart) on port 3182 …
+[prb-smoke] booting host 2 (resume) on port 3182 …
+[prb-smoke] host 2 up: http://127.0.0.1:3182 (cookie acquired; log /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-22-22-c3/logs/instance-port3182.log)
+[prb-smoke]   C5 PASS — post-restart model=prb-c1-model mcp=["mcp__prb-mcp-a__ping"] T-C3 ps=prb-c3-strict
+[prb-smoke] stopping host 2 (final) on port 3182 …
+[prb-smoke] stopping host 1 (final) on port 3182 …
+[prb-smoke] post stable probes: 3080=401 3180=unreachable: fetch http://127.0.0.1:3180/ failed: fetch failed
+[prb-smoke] evidence written: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-22-22-c3
+
+PR-B effective-policy real-host smoke — 2026-10-01T13-22-22
+world: tests/homes/prb-ep-2026-10-01T13-22-22  (retained — non-zero exit, for inspection)
+evidence: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-22-22-c3
+  C1 PASS  model override -> next request (wire body.model)  [wire body.model=prb-c1-model (override ovr-model-inst-1722vhu1h1z1-g0 gen=1)]
+  C2 PASS  MCP override -> next request (wire body.tools mcp__)  [wire mcp__ tools=["mcp__prb-mcp-a__ping"] (override ovr-mcp-inst-1qazuqc1ylx9-g0)]
+  C3 FAIL  PolicyState switch -> next request (T1 negative + T-C3 positive)  [negative={"code":"POLICY_STATE_UNKNOWN","detail":"{\"method\":\"policyState.set\",\"endpoint\":\"policyState.set\",\"contractVersion\":1,\"requestTok; positive={"workerId":"inst-14m3wip1ismk","baseModel":"global-default","strictModel":"prb-c3-strict","entryId":"ps-strict-0","psAck":{"transition":{"e; structural={"error":"C3-structural: policyState.set(focus) on the per-team team was ACCEPTED (expected a typed rejection — the closed set should be the]
+  C4 PASS  mutation || concurrent request (no activation error, no lost update)  [concurrent followup OK; winner=ovr-model-inst-0e84f9t1xgok-g0 gen=1; next-boundary model=prb-c4-model]
+  C5 PASS  restart (same DSH_HOME): committed state still governs next request  [post-restart model=prb-c1-model mcp=["mcp__prb-mcp-a__ping"] T-C3 ps=prb-c3-strict]
+  C6 PASS  inspect-config parity (getProjection route vs wire body.model)  [route=deepseek-official/prb-c1-model (state=pending-next-boundary) == wire body.model=prb-c1-model]
+exit=2  fatal=none
+PRB_EXIT=2

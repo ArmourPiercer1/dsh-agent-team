@@ -1,0 +1,44 @@
+{
+  "copiedFrom": "dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-52-56-c3",
+  "copiedAt": "2026-10-01T13:53:59.959Z",
+  "note": "Independent REDACTION copy: credential VALUES replaced by markers; all other bytes (fields, results, exit codes, counts, paths, ids) preserved.",
+  "totalRedactions": 0,
+  "files": [
+    {
+      "rel": "api-transcript.json",
+      "bytes": 2,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "logs/instance-port3182.log",
+      "bytes": 1671,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "mock-requests.json",
+      "bytes": 2,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "mock.log",
+      "bytes": 34,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "setup-failure.json",
+      "bytes": 1452,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    },
+    {
+      "rel": "summary.json",
+      "bytes": 4103,
+      "redactions": 0,
+      "mode": "redacted-copy"
+    }
+  ]
+}

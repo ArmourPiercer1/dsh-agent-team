@@ -1,0 +1,30 @@
+[prb-smoke] PR-B effective-policy real-host smoke kit
+PR-B effective-policy real-host smoke kit
+[prb-smoke]   worktree : /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param
+  worktree : /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param
+[prb-smoke]   world    : tests/homes/prb-ep-2026-10-01T13-07-28 (copy of the mpr seed)
+  world    : tests/homes/prb-ep-2026-10-01T13-07-28 (copy of the mpr seed)
+[prb-smoke]   evidence : /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-07-28-c3
+  evidence : /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-07-28-c3
+[prb-smoke] pre stable probes: 3080=401 3180=unreachable: fetch http://127.0.0.1:3180/ failed: fetch failed
+[prb-smoke]   host port 3182, mock 3497, mini-MCP 3491/3492
+  host port 3182, mock 3497, mini-MCP 3491/3492
+[prb-smoke] world copied: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/paramprobe-empty -> /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/prb-ep-2026-10-01T13-07-28
+[prb-smoke] main threw: Error: ENOENT: no such file or directory, open '/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/prb-ep-2026-10-01T13-07-28/profiles/web/cordis.patch.yml'
+    at readFileSync (node:fs:483:20)
+    at prepareWorld (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs:514:14)
+    at main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs:1244:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[prb-smoke] post stable probes: 3080=401 3180=unreachable: fetch http://127.0.0.1:3180/ failed: fetch failed
+[prb-smoke] evidence written: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-07-28-c3
+
+PR-B effective-policy real-host smoke — 2026-10-01T13-07-28
+world: tests/homes/prb-ep-2026-10-01T13-07-28  (retained — non-zero exit, for inspection)
+evidence: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-07-28-c3
+  C1 N/A  model override -> next request (wire body.model)
+  C2 N/A  MCP override -> next request (wire body.tools mcp__)
+  C3 N/A  PolicyState switch -> next request (T1 negative + T-C3 positive)
+  C4 N/A  mutation || concurrent request (no activation error, no lost update)
+  C5 N/A  restart (same DSH_HOME): committed state still governs next request
+  C6 N/A  inspect-config parity (getProjection route vs wire body.model)
+exit=1  fatal=unhandled: ENOENT: no such file or directory, open '/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/prb-ep-2026-10-01T13-07-28/profiles/web/cordis.patch.yml'

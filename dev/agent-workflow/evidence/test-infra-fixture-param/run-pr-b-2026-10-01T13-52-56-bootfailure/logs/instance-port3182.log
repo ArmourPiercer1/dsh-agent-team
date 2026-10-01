@@ -1,0 +1,13 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/test-infra-fixture-param/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] bootstrap FAILED: Error: agent "session-mpr-boot-mpr-2026-10-01T13-21-34" setup aborted: owner disposed during setup
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1891:38
+    at runDisposable (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+    at dispose (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1181:20)
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1244:40
+    at finalizeDisposal (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1224:14)
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1242:11
+    at runDisposable (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:965:17)
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1378:12
+    at async file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1375:5
+    at async Promise.all (index 0)
