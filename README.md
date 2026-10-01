@@ -135,6 +135,7 @@ gitignored) — this section is a pointer summary, not the authority:
   push authorizations — PRs #16–#21 and #23–#35 merged, then the pre-alpha3
   series PRs #37–#45 merged (latest: PR #45 (PR-F) merged @ `365f635c`,
   2026-09-30); **PR #22 CLOSED as superseded (2026-09-30, plan §8.6)**.
+  **origin/master = `1385f1ee060830bb0f550860d4bd81901c319063`** (2026-10-01 14:30:21Z = PR #53 guarded SQUASH @ approved head `4200c4b6`, tree-identity verified; test-infra only). Browser lane current (14:5xZ): Chromium-1228 + headless-shell present under `tests/homes/.playwright-browsers/`; two sandbox:true probes failed (observed: AppArmor unprivileged_userns DENIED CAP_SYS_ADMIN); the approved official-Chrome install lane is in progress with no result claimed; **real UI rendering still pending**. The line below is the 12:27Z snapshot, kept as history:
   **origin/master = `427219e443ece4d57ac8558f13850c5f42ff8330`** (2026-10-01 12:27Z = PR #51 guarded SQUASH; history: `31ad828d` → 07:07Z `8e18819c…` (#47+#46) → 08:07Z `621fdba1…` (#48) → 10:0xZ `26c48c87…` (#49) → 11:02Z `c19af195…` (#50) → 12:27Z `427219e4…` (#51));
   **origin/stable @ `b0e5aeb4`** (0.1.0-rc.1 freeze, unchanged). Zero force-push
   on gated history; each push verified via ls-remote.
