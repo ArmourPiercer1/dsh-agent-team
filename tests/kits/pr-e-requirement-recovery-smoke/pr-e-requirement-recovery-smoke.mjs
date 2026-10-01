@@ -522,6 +522,10 @@ function scrubTokens(text) {
     // — redact both the query-param form and the bare `token=<long>` form.
     .replace(/[?&]token=[A-Za-z0-9_-]{16,}/g, (m) => `${m[0]}token=REDACTED`)
     .replace(/\btoken=[A-Za-z0-9_-]{24,}/g, 'token=REDACTED')
+    // Credential hygiene (2026-10-01 internal R3): DSH session liveToken values
+    // (`lt-v1-<64hex>`) leaked via the G5 readState detail JSON — redact them too
+    // so reruns (e.g. the user-side/environment completion runs) cannot re-leak.
+    .replace(/\blt-v1-[0-9a-f]{16,}/g, 'lt-v1-REDACTED')
 }
 
 async function remoteCall(host, method, params, tag, version = 1, timeoutMs = 60_000) {

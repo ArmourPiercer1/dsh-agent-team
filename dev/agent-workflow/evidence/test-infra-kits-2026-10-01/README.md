@@ -31,3 +31,10 @@ agent 会话位于 harness bwrap wrapper 子树（uid 1000，CapBnd=0，NoNewPri
 - **性质**：credential-redaction 例外（证据卫生），**不是**测试结果/exit 的改动 —— VERDICT 行、EXIT 行、判定逻辑零触碰。
 - **git 历史声明**：token 值仍存在于本分支历史（commit `509751ad` 引入）；按仓库政策**不 force-push / 不改写历史** —— 当前删除值不能抹去旧 commit。
 - **throwaway host 生命周期事实（只读核验 @ 2026-10-01T11:57:33Z）**：3182-3186/3491-3506 无监听端口；会话子树内无宿主进程；t1（E.12）world 已按 PASS 自清；t2/t3（prf）world 目录 + `.lock` 仍在本 worktree `tests/homes/`（untracked / gitignored / 未提交）。**不声称 token 已失效/已轮换/不可重用**（仅记录"此刻宿主未运行"这一事实）。
+
+## credential-redaction 例外记录 2（2026-10-01，内部 3 审 R3-F1 BLOCK 修复）
+
+- **对象**：battery-t2-prf-tracked.log L245 与 battery-t3-prf-tracked-fixed.log L246 的 G5 check detail 行中 readState JSON 携带的 DSH 会话 **liveToken** 值（`lt-v1-<64hex>`，两次运行同值 = 设计使然：live-token.ts 仅对排序后的 [instanceId, residency] 对取 sha256，T9 零成员实例）→ 替换为 `lt-v1-[REDACTED]`（字段名保留；其他 raw fields/results/exit 零触碰；t1 无该值）。
+- **根因 + 防再泄漏**：两 kit 的 `scrubTokens` 原仅覆盖 `sk-` / `token=<long>` 形态 → 各追加 1 条 `lt-v1-[0-9a-f]{16,}` → `lt-v1-REDACTED` 规则（kit 源码 L523 区，注释注明 2026-10-01 内部 R3）。重跑（含环境 session 的完成跑）不再泄漏同类值。
+- **性质**：credential-redaction 例外（证据卫生 + kit scrub 补强），**非**测试结果/exit/断言改动（VERDICT/EXIT/断言行零触碰；scrub 仅作用于 check detail 展示串）。
+- **git 历史声明**：原值仍存在于 `509751ad` 历史（同 8d723736 声明）；不 force-push 不抹除；throwaway 测试 world（prf-2026-10-01T11-41-33 / T11-49-38，untracked 留盘）—— 已知 server 已停止，**历史未保证失效，不声称 token 已失效/不可重用**。
