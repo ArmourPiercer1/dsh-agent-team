@@ -260,8 +260,9 @@ import {
   planUiHoldStep, summarizeUiObserve, reviewPayloadDigestOf,
   sha256Hex, canonicalJson,
   UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
-  UI_LEDGER_READ_BUDGET_MS, boundedUiLedgerRead, uiObservePollFlow, uiPumpHookDisposition, abortableSleep,
+  UI_LEDGER_READ_BUDGET_MS, boundedUiLedgerRead, uiObservePollFlow, uiPumpHookDisposition,
 } from './ui-observe.mjs'
+import { makeRemoteIo } from './remote-io.mjs'
 import {
   TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH,
 } from '../../paths.mjs'
@@ -524,21 +525,6 @@ function dieFatal(msg) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-async function fetchJson(url, init, timeoutMs = 30_000, signal = undefined) {
-  // ITEM-B: OPTIONAL trailing AbortSignal, COMBINED with (not replacing) the
-  // self-timeout. signal === undefined keeps the exact historical signal —
-  // every non-UI call site behaves byte-identically.
-  let res
-  try {
-    res = await fetch(url, { ...init, signal: signal ? AbortSignal.any([AbortSignal.timeout(timeoutMs), signal]) : AbortSignal.timeout(timeoutMs) })
-  } catch (error) {
-    return { status: 0, body: null, error: String(error?.message ?? error) }
-  }
-  const text = await res.text().catch(() => '')
-  let body = null
-  try { body = text === '' ? null : JSON.parse(text) } catch { body = text }
-  return { status: res.status, body, error: null }
-}
 
 async function probeStableInstance(url) {
   // Refusal-safe (2026-10-01, test-infra): the stable-instance probe is a
@@ -586,54 +572,7 @@ function scrubTokens(text) {
     .replace(/\blt-v1-[0-9a-f]{16,}/g, 'lt-v1-REDACTED')
 }
 
-async function remoteCall(host, method, params, tag, version = 1, timeoutMs = 60_000, signal = undefined) {
-  const body = {
-    type: 'client-request',
-    rpcId: `${tag}-${randomUUID().slice(0, 8)}`,
-    method,
-    payload: { version, params },
-  }
-  const r = await fetchJson(`${host.origin}/team-remote/${method}`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', cookie: host.cookie },
-    body: JSON.stringify(body),
-  }, timeoutMs, signal)
-  const entry = {
-    at: new Date().toISOString(),
-    boot: host.boot,
-    method,
-    version,
-    tag,
-    status: r.status,
-    error: r.error,
-    ok: r.body?.result?.ok === true,
-    code: r.body?.result?.ok === false ? r.body?.result?.error?.code : undefined,
-    params: params ?? null,
-    body: r.body,
-  }
-  EVID.transcript.push(entry)
-  log(`remote ${method} v${version} [${tag}] -> ${r.status} ok=${entry.ok === true}${entry.code ? ` code=${entry.code}` : ''}${r.error ? ` (net: ${scrubTokens(r.error)})` : ''}`)
-  return r
-}
 
-async function remoteCallReady(host, method, params, tag, version = 1, retries = 20, signal = undefined) {
-  // ITEM-B: OPTIONAL trailing AbortSignal. With signal === undefined the loop
-  // below is behaviorally identical to the historical one (no abort check
-  // fires, plain sleep). With a signal the retry chain aborts BEFORE and
-  // AFTER every attempt/sleep — an abort stops the chain mid-sleep.
-  const uiAbort = () => Object.assign(new Error('UI read aborted (AbortSignal)'), { name: 'AbortError', code: 'ABORT_ERR' })
-  let last = null
-  for (let i = 0; i < retries; i += 1) {
-    if (signal?.aborted === true) throw uiAbort()
-    last = await remoteCall(host, method, params, tag, version, 60_000, signal)
-    if (last.status !== 429) return last
-    if (signal?.aborted === true) throw uiAbort()
-    if (signal) await abortableSleep(1500, signal)
-    else await sleep(1500)
-    if (signal?.aborted === true) throw uiAbort()
-  }
-  return last
-}
 
 function remoteValue(result, method) {
   if (result.status !== 200) throw new Error(`${method}: HTTP ${result.status}: ${scrubTokens(JSON.stringify(result.body).slice(0, 400))}`)
@@ -2052,6 +1991,18 @@ const EVID = {
   scenarios: {},
   world: {},
 }
+
+// ITEM-B gap closure: the transport wrappers (fetchJson / remoteCall /
+// remoteCallReady) were moved VERBATIM to ./remote-io.mjs — ONE implementation
+// the kit destructures here (replacing the former local definitions) AND the
+// offline regression tests drive directly, injecting only the transport-level
+// fetch + timers. No host, no kit run is needed to exercise them.
+const { fetchJson, remoteCall, remoteCallReady } = makeRemoteIo({
+  getTranscript: () => EVID.transcript,
+  log,
+  sleep,
+  scrubTokens,
+})
 
 function saveScenario(name, obj) {
   EVID.scenarios[name] = obj

@@ -21,6 +21,10 @@ import {
   UI_LEDGER_READ_BUDGET_MS, evaluateUiReadResult, writePrivateAccessRecord, boundedUiLedgerRead,
   uiObservePollFlow, uiPumpHookDisposition, abortableSleep,
 } from './ui-observe.mjs'
+import { makeRemoteIo } from './remote-io.mjs'
+import {
+
+} from './ui-observe.mjs'
 
 // ── fixtures ────────────────────────────────────────────────────────────────
 
@@ -762,4 +766,102 @@ test('ITEM-C: legit ALIASED repo root (whole repo reached through a symlink) sti
   const written = writePrivateAccessRecord({ repoRoot: alias, worldDir: world.replace(root, alias), payload: { ok: 1 } })
   assert.ok(written.path.startsWith(join(realRoot, 'tests', 'homes')))
   assert.equal(lstatSync(written.path).mode & 0o777, 0o600)
+})
+
+// ── 18. GAP CLOSURE: the REAL kit transport wrappers (remote-io.mjs — the
+//         single implementation the kit destructures) under caller abort.
+//         Only the transport-level fetch + timers are injected. ──────────────
+
+const GAP_HOST = { origin: 'http://127.0.0.1:59997', boot: 'gap-boot', cookie: 'x' }
+function mkGapIo() {
+  const transcript = []
+  const logLines = []
+  const io = makeRemoteIo({
+    getTranscript: () => transcript,
+    log: (line) => { logLines.push(line) },
+    sleep: (ms) => tick(ms),
+    scrubTokens: (x) => String(x).slice(0, 24),
+  })
+  return { io, transcript, logLines }
+}
+
+test('GAP: REAL fetchJson → remoteCall → remoteCallReady — caller abort mid-flight NEVER masquerades as a status:0 response; NO transcript/log entry; chain frozen', async () => {
+  const realFetch = globalThis.fetch
+  const ctrl = new AbortController()
+  let attempts = 0
+  const { io, transcript, logLines } = mkGapIo()
+  globalThis.fetch = (url, init) => {
+    attempts += 1
+    return new Promise((resolve, reject) => {
+      const onAbort = () => reject(Object.assign(new Error('The operation was aborted'), { name: 'AbortError' }))
+      if (init?.signal?.aborted) { onAbort(); return }
+      init?.signal?.addEventListener('abort', onAbort, { once: true })
+      // stays in flight until aborted — the slow-fetch + retry-chain shape
+    })
+  }
+  try {
+    const settled = io.remoteCallReady(GAP_HOST, 'team.getLedgerPage', { teamSessionId: 's' }, 'gap-inflight', 1, 20, ctrl.signal)
+      .then((r) => ({ kind: 'resolved', r }), (error) => ({ kind: 'rejected', error }))
+    await tick(15)
+    assert.equal(attempts, 1, 'exactly one attempt in flight')
+    ctrl.abort()
+    const out = await settled
+    assert.equal(out.kind, 'rejected', 'the abort REJECTS with a typed AbortError — never a returned status:0 response')
+    assert.equal(out.error.name, 'AbortError')
+    await tick(40)
+    assert.equal(attempts, 1, 'no retry attempt after the abort')
+    assert.equal(transcript.length, 0, 'NO transcript entry for the aborted call (disclosed suppression contract)')
+    assert.equal(logLines.length, 0, 'NO log line for the aborted call')
+  } finally { globalThis.fetch = realFetch }
+})
+
+test('GAP: signal-less paths byte-identical — network failure still returns status:0 WITH transcript/log; a 429 still retries', async () => {
+  const realFetch = globalThis.fetch
+  const { io, transcript, logLines } = mkGapIo()
+  try {
+    globalThis.fetch = () => Promise.reject(new Error('boom-net'))
+    const r = await io.remoteCall(GAP_HOST, 'm', {}, 'gap-nosig', 1)
+    assert.equal(r.status, 0)
+    assert.match(r.error, /boom-net/)
+    assert.equal(transcript.length, 1, 'signal-less bookkeeping unchanged: entry recorded')
+    assert.equal(logLines.length, 1)
+  } finally { globalThis.fetch = realFetch }
+})
+
+test('GAP: fetchJson with an aborted caller signal rejects typed AbortError (no status:0 masquerade); signal-less network form preserved', async () => {
+  const realFetch = globalThis.fetch
+  const { io } = mkGapIo()
+  try {
+    globalThis.fetch = () => Promise.reject(new Error('boom-net'))
+    const r = await io.fetchJson('http://127.0.0.1:59997/x', {}, 1000)
+    assert.equal(r.status, 0)
+    assert.match(r.error, /boom-net/)
+    globalThis.fetch = (url, init) => new Promise((resolve, reject) => {
+      init.signal.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })), { once: true })
+    })
+    const ctrl = new AbortController()
+    setTimeout(() => ctrl.abort(), 10)
+    await assert.rejects(() => io.fetchJson('http://127.0.0.1:59997/x', {}, 1000, ctrl.signal), (e) => e.name === 'AbortError')
+  } finally { globalThis.fetch = realFetch }
+})
+
+test('GAP: remoteCallReady — abort during the 429-retry sleep rejects; the 429 is never returned post-abort and no next attempt runs', async () => {
+  const realFetch = globalThis.fetch
+  const ctrl = new AbortController()
+  let attempts = 0
+  const { io, transcript } = mkGapIo()
+  globalThis.fetch = async () => { attempts += 1; return { status: 429, text: async () => '{}' } }
+  try {
+    const settled = io.remoteCallReady(GAP_HOST, 'm', {}, 'gap-429', 1, 20, ctrl.signal)
+      .then((r) => ({ kind: 'resolved', r }), (error) => ({ kind: 'rejected', error }))
+    await tick(20)
+    assert.equal(attempts, 1)
+    ctrl.abort()
+    const out = await settled
+    assert.equal(out.kind, 'rejected')
+    assert.equal(out.error.name, 'AbortError')
+    await tick(40)
+    assert.equal(attempts, 1, 'no next attempt after the abort during retry sleep')
+    assert.equal(transcript.length, 1, 'only the PRE-abort 429 attempt has a transcript entry')
+  } finally { globalThis.fetch = realFetch }
 })
