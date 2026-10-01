@@ -348,3 +348,204 @@ touch, no instance started; single worktree single writer (after the incident �
 the incident itself is recorded §5); ZERO force-push (the sync is a MERGE commit;
 the push is PLAIN fast-forward of the remote branch tip); `graph.yaml` untouched
 (the parent owns the graph); no model/config changes.
+## 14. RESIDUAL-F ROUND — external review of e45d22fe: R1 first-mount PENDING window + R2 initial-work cross-root read (NEW UNREVIEWED CHANGES — CHECKPOINT)
+
+**CHECKPOINT — this section is the DRAFT-CHECKPOINT state of the residual-F
+round, NOT the final ready HEAD.** The coherent fix (RED-first reproduction +
+fix + rebuilt dist) is pushed as a Draft-branch checkpoint on the parent's
+authorization; the remaining list at the end of this section is still open.
+Any review pass predating the FINAL HEAD does not cover the remaining items.
+
+The external review of `e45d22fe` (this branch's earlier Finding-F closure)
+confirmed the ordinary follow-up path fixed and ruled **two residuals**:
+**R1** (the first-mount PENDING window on member work delivery) and **R2**
+(the initial-work gate's cross-root template-scope read, + two sibling
+root-context read seams). Both are closed at this checkpoint by a
+RED-first reproduction (committed at the pre-fix head) + the minimal fix.
+
+### 14.1 R1 — the first-mount PENDING window (T7, world R1)
+
+**The ruling (verbatim contract):**
+
+> PENDING phase: attempting the prepare (the mount attempt) is ALLOWED (this
+> is the bootstrap path — never blanket-block pending). BEFORE ACTUAL INPUT
+> (real work delivery): the materialization SUCCESS must be verified. I.e.
+> the gate sits before actual input, not before the prepare attempt.
+
+**The defect (verified mechanism at base):** admission allows a fresh (never-
+mounted) target whose template scope reads masked-pending-reachable (the
+bootstrap shape, U4 — correct, unchanged). The delivery's
+`prepareAgentForRequest` runs the target's own boundary `reconcileMcpSet`; a
+first-mount rejection is caught per-server, stamps the slot `failed`, and is
+swallowed (the C.6 per-server transaction). The `workDelivery.deliver` port
+then called `handle.agent.followup(message)` **unconditionally** — real work
+was delivered on the very passage that just failed the first mount.
+
+**RED signature** (`gate-red-matrix-residual-f.log`, @ 698468d7, T7):
+
+> AssertionError: the same-passage delivery was NOT blocked after B's own
+> first-mount failure (the external residual-1 window: real work delivered on
+> the failed-mount passage): expected undefined to be an instance of
+> TeamRuntimeError
+
+**The fix — contract-placement match (design placement stated):** the gate
+sits AFTER the prepare attempt (the mount attempt stays ALLOWED — the PENDING
+bootstrap is never blanket-blocked) and BEFORE ACTUAL INPUT (the throw is in
+`deliver`, immediately before `handle.agent.followup`, the only model-visible
+work input on that passage). This is the exact placement the ruling requires.
+Mechanics:
+
+- `prepareAgentForRequest` (`agent-bindings.mjs` L3126–3194) now returns the
+  SAME-PASSAGE truth `{ mcpFailedApplicable }`: the APPLICABLE (target-set)
+  servers whose slot is `failed` because **this passage's** mount attempt just
+  failed — detected by the attempt clock (`lastAttemptAt`) advancing during
+  the prepare (L3171–3189). A pre-passage failure is NOT reported: the
+  cooldown skip leaves the slot untouched, an existing failed slot is already
+  gated at admission (the feed's failed → DOWN, the ordinary Finding-F fix),
+  and the human-reviewed recovery re-run MUST run its boundary (frozen T2
+  leg, unchanged).
+- `deliver` (L3465–3468) throws the plain boundary Error when the set is
+  non-empty, BEFORE the followup. The work chain settles fail-closed
+  (`workOutcome: 'delivery-failed'`, durable) and throws the typed
+  `WORK_DELIVERY_FAILED` after settle (N3); zero model-visible input reaches
+  the member on that passage. No new error code (zero contract change). The
+  L3375–3389 message port (`send-message` style) is intentionally unchanged —
+  outside the ruling's work-delivery scope (disclosed here).
+- **T7 GREEN shape** (`gate-green-matrix-residual-f-a49bc5ec.log` @ a49bc5ec):
+  B admitted (masked pending) → B's own first mount fails on its first
+  passage → the same-passage delivery throws `WORK_DELIVERY_FAILED` with
+  zero followup delta, the durable settle is `delivery-failed`, B's slot =
+  the failed boundary truth, the NEXT passage is gated as failed at admission
+  (T1 shape, `requiredScopeDown: ['template:worker']`), A keeps working.
+
+### 14.2 R2 — the initial-work cross-root read + the two sibling root-context seams (T8, world R2)
+
+**The ruling:** every consumer of the template-scope read seams must forward
+the complete feed context (the target team's OWNING root). Three named seams:
+(1) the `root-initial-work.ts` wrappers, (2) the activation fresh-create
+`provider.ts` reads, (3) the CREATION PREFLIGHT `root.ts` reads. Pre-fix,
+each wrapper/read dropped the context and the host port's legacy boot-root
+fallback (`scope.rootSessionId ?? bootRoot`, `host.ts` L2085) let a cross-
+root healthy boot instance stand in for the target root's own
+materialization — the cross-root false OPEN (ADR 334–347 affected scopes
+only; ADR 188–199 applicable materialization before work).
+
+**RED signature** (`gate-red-matrix-residual-f.log`, @ 698468d7, T8 — driven
+through the PRODUCTION v2 remote command `team.admitInitialWork` over the
+captured S6 dispatcher, the exact production wiring):
+
+> AssertionError: B's initial work was PERMITTED via the boot root's
+> materialization (the external residual-2 cross-root false OPEN): expected
+> true to be false
+
+**The fix surface (file:line at a49bc5ec):**
+
+| seam | fix |
+| --- | --- |
+| (1) `action-router/root-initial-work.ts` | L164 `TemplateFeedContext` import; L854 + L879 closure-input port types extended with optional `context?: TemplateFeedContext`; L995–997 the D-1 template-feed wrapper FORWARDS the gate's context (the gate passes `{ rootSessionId }` / `{ rootSessionId, instanceId }` from its own input — the target team's OWNING root); L1021–1023 the D-3 full-resolution read wrapper forwards the same. Initial work has no target instance → the root-only context is the complete one. |
+| (2) `activation/provider.ts` fresh-create (+ `activation/types.ts`) | L745–770 both template read ports now carry `{ rootSessionId }` (L758, L765 — the activation's target root; no target instance exists yet: root-only is the correct scope for a not-yet-minted member). L65 import + L269/L303 `ActivationPorts` port types extended (optional context — pre-fix callers byte-identical). |
+| (3) `src/plugin/root.ts` creation preflight | L1385–1391 `preflightTemplateFacts` scope now carries `rootSessionId: input.rootSessionId` (the future root — the pre-bind read resolves to ITS OWN root's not-applicable/seed truth, never the boot root's); L1419–1425 the D-3 read wrapper forwards `context ?? { rootSessionId: input.rootSessionId }` (the preflight classifier passes no gate context of its own — the default stands; a future context-bearing classifier wins). |
+
+Per-seam ADR compliance: 334–347 (affected scopes only) — each seam forwards
+only the target root's scope; no cross-root/cross-scope bleed remains on any
+consumer of these reads. 188–199 (applicable materialization before work) —
+initial work (Phase A gate), member creation (fresh-create), and team
+creation (preflight) all now read the TARGET root's own materialization
+before admitting work. Single-root worlds are byte-identical (the target
+root = the boot root there — the legacy fallback and the forwarded context
+agree).
+
+**T8 GREEN shape** (@ a49bc5ec): two owned roots, same leader template; A's
+leader mounted at boot (healthy), B's leader resident + FAILED (its own root
+agent's first mount failed). B's initial work via `team.admitInitialWork`
+v2 → the typed failure envelope `TEAM_RUNTIME_COMPATIBILITY_BLOCKED` with
+gate details `{ status: 'BLOCKED_FATAL', blockedScopes: ['template:leader'],
+unavailableSubjects: [B's server], recoveryDispatchAvailable: true }` (the
+details ride under `error.details.cause.details` — the dispatcher's domain-
+error passthrough, invariant 7 never rejects); zero delivery to B's root
+(no root input, no terminal root-work fact); B's recovery NOT closed by A's
+health (no incident closure under B, A's ledger untouched); A unchanged.
+
+### 14.3 U4 pin update (disclosed)
+
+`mcp-target-materialization-unit.test.ts` U4: **title + contract prose only
+moved** — the title now states the corrected same-passage delivery-gate
+contract (the mount attempt is admissible — bootstrap; the gate sits before
+ACTUAL INPUT, not before the prepare attempt) and the body comment carries
+the ruling's placement. **Zero assertion changes** (`u4Gate.kind ===
+'allowed'`, `u4Read` defined, `obs.materialization === 'pending'` — the
+bootstrap-liveness contract is intact); no other matrix leg changed (T1–T5,
+U1–U3, U5 byte-identical between the RED and GREEN commits — the only test
+diffs in `1b99ef40` are the two new legs, the two helpers/constants, the
+`mcpFailures` boot param, and the U4 prose).
+
+### 14.4 The ordinary follow-up path — already-fixed record + consumer state
+
+The ordinary member follow-up path (`router.ts` `performAction`, the L621–
+660 blueprint-seam region) ALREADY forwards the gate's feed context through
+both blueprint seams — that exact-scope fix landed earlier on this branch
+(§1–§3; the external review's "ordinary follow-up fixed" confirmation). It
+is recorded here as the reference consumer for the residual round.
+`reDriveActivation` (`activation/provider.ts` L482) was audited for the
+sweep: it re-drives an already-admitted operation (replay/retry) and
+performs NO template read-seam calls (blueprint config resolution only) —
+no context to forward. The end-to-end CONSUMER SWEEP TABLE (every consumer
+of the three seams + the ordinary follow-up, full-context verification, the
+anti-partial-wiring proof) lands with the final batch (see remaining list).
+
+### 14.5 T5 no-weakening (evidence note)
+
+The T5 correction from the double-writer round (world-D fixture) remains
+byte-identical in assertions; the external review recorded **NO WEAKENING**
+— this checkpoint records that as the external reviewer confirmation (the
+5-point parent-confirmed incident recovery, §5, is unchanged).
+
+### 14.6 Pre-sync gate totals at `d0712695` (dist co-shipped)
+
+| gate | result | log |
+| --- | --- | --- |
+| focused matrix (2 files) RED @ 698468d7 | 2 failed / 10 passed (T7+T8 named signatures) | `gate-red-matrix-residual-f.log` |
+| focused matrix GREEN @ a49bc5ec (AUTHORITATIVE, clean tree) | 12/12, EXIT=0 | `gate-green-matrix-residual-f-a49bc5ec.log` |
+| focused matrix @ 1b99ef40 + uncommitted fix (08:38 capture) | 12/12 — superseded as label by the re-capture, kept as evidence (annotated in-file) | `gate-green-matrix-residual-f.log` |
+| full suite (all packages) | 4759 total = 4737 passed + 22 failed: the 19-failure debt set EXACTLY (t1-capability-schema 9 / t2-blueprint-hash 1 / d3-member-identity-context 1 / p6t3-mediation 5 / p6t3-restart 2 / p6t6-actions 1) + 3 p6t1-parallel flakes in this run + 3 zero-test file-level collections (debt §12); ZERO new failures from this round | `full-suite-a49bc5ec.log` |
+| p6t1-parallel isolated re-run | green, EXIT=0 (the documented flake, §12) | `p6t1-isolated-a49bc5ec.log` |
+| lint fingerprint (file-aware vs 31ad828d reference + 137-line base set, normalized line:col) | **NEW = 0** (111 current fingerprints, all pre-existing) | `lint-a49bc5ec.log` |
+| typecheck | 9/9, EXIT=0 | `typecheck-d0712695.log` |
+| check:artifacts | OK 1372, EXIT=0 (dist rebuilt: 13 tsc outputs + the agent-bindings.mjs glue placement, committed `d0712695`) | `check-artifacts-d0712695.log`, `build-composition-a49bc5ec.log` |
+
+Provenance notes: the authoritative GREEN re-capture was demanded after the
+parent caught the 08:38 capture's HEAD label (it ran at `1b99ef40` + the
+uncommitted fix); both captures are kept. The first lint capture (08:41:39Z)
+raced a concurrent full-suite temp dir (eslint walk crash, zero output) and
+was replaced by the clean re-run (disclosed in-file; it carried no results).
+The full suite ran at `a49bc5ec` (source-identical to `d0712695`; the dist
+commit adds install-surface artifacts only — tests run from source).
+
+### 14.7 CHECKPOINT — remaining before final HEAD
+
+1. **CONSUMER SWEEP TABLE** (the main remaining reviewable content): every
+   consumer of the three seams + the ordinary follow-up, end-to-end
+   full-context verification (the anti-partial-wiring proof) — table to be
+   appended to this section.
+2. **S6 client-smoke unchanged-base capture** at the merge base (exact
+   two-outcome wording; evidence only — S6 is never a functional block).
+3. **Full gates vs the 31ad828d debt set at the MERGED head** (full suite +
+   lint fp + typecheck + check:artifacts + dist if drifted) — the pre-sync
+   totals above (14.6) do not cover the post-merge tree.
+4. **Controlled sync onto the ACTUAL origin/master tip** (fetch to confirm —
+   `621fdba1` as of 08:07Z, carries #46 + #48): MERGE, no rebase/force;
+   **p4t6 MUST be recomputed from real A-lines on the merged tree** (the 900
+   pin goes stale — #48 added scannable files; compute, don't assume);
+   #48 touched `root-initial-work.ts` — expect overlap with seam (1),
+   classify every resolution.
+5. **Post-merge role re-audit** (role contract + #48 role suites; zero
+   MALFORMED_DTO).
+6. **Merged-head re-test** (closed arithmetic vs the debt set).
+7. **Bookkeeping** (this section FINAL + sweep table + S6 outcome + sync
+   record + all logs) — ONE bookkeeping commit; product/test/dist files are
+   already in their own commits (`1b99ef40` RED, `a49bc5ec` fix, `d0712695`
+   dist).
+8. **ONE plain push of the FINAL HEAD + full report to the parent.**
+
+Until the final HEAD lands, PR #50 stays **NO-MERGE** (Draft, checkpoint
+banner).

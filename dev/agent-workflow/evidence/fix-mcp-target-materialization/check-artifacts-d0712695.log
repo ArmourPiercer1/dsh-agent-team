@@ -1,0 +1,8 @@
+== CHECK:ARTIFACTS — post-dist-commit d0712695 ==
+HEAD: d07126958332db52d4da158206fd46636c40ea8a
+date: 2026-10-01T08:45:57Z
+\$ pnpm check:artifacts
+
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1372 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+CHECK_ARTIFACTS_EXIT=0
