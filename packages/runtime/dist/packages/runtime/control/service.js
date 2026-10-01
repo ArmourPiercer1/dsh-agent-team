@@ -2085,6 +2085,61 @@ export function createControlService(options) {
             poll();
         });
     }
+    // --- commitEffectIfAuthorized (fix-control-authz C — the effect-admission boundary) ---
+    /**
+     * The EFFECT-ADMISSION BOUNDARY (the external-review TOCTOU fix): the
+     * linearized authorization check for the inline recovery
+     * re-execution's FIRST EFFECT.
+     *
+     * The serialization point (the lock ordering, documented): this unit
+     * runs under THIS SERVICE'S per-team lock — the SAME promise chain
+     * the durable abandon write goes through (`abandonControlRequest` and
+     * the inline-abort cascade commit the terminal mark under it via
+     * `withTeamLock(teamLocks, ...)`). Inside the one lock hold: (1) the
+     * durable terminal state is read fresh from the ledger, (2) if the
+     * request carries the terminal ABANDON mark the unit rejects typed
+     * CONTROL_REQUEST_ABANDONED without running the effect, (3) otherwise
+     * the caller's effect commit (the router's `executeEffectLocked` —
+     * the work admission fact / the effect commit) runs, still under the
+     * lock. That is what linearizes (authorization + first effect)
+     * against the durable abandon: a durable abandon is either committed
+     * BEFORE the unit (→ the check sees the mark; the effect never
+     * commits) or strictly AFTER the unit (→ the effect had already
+     * durably committed before the terminal mark — the legitimate late
+     * close, the CCR-4 semantics; the mark closes the request for the
+     * future). No abandon can land BETWEEN the check and the effect
+     * commit — both are inside the one hold.
+     *
+     * Deadlock argument: the ONLY new acquisition direction is the
+     * router's team chain (a) → this lock (b) (the router's gated chain
+     * work invokes this unit after the gate, while holding its chain).
+     * Every (b) section (requestControl / resolveControl /
+     * abandonControlRequest / the cascade / guardOperation / this unit)
+     * acquires (a) NEVER — the control service never takes the router's
+     * chain and never calls back into the router; and the unit's caller
+     * work (the effect commit) performs only storage-seam writes + port
+     * calls (no (b) re-entry — the inline effect path consults no other
+     * control operation). Consistent global order (a) → (b) → storage
+     * seam, no (b) → (a) anywhere → no new lock cycles.
+     *
+     * This writes NO control facts (no synthetic "consumed" mark — the
+     * linearization is the lock itself), changes NO request state, and is
+     * transparent for a non-abandoned request (the unit runs the caller's
+     * effect and returns its result unchanged).
+     */
+    async function commitEffectIfAuthorized(input) {
+        const root = parseRoot(input.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'wait');
+        if (typeof input.requestId !== 'string' || input.requestId.length === 0) {
+            throw malformed('wait', 'requestId', 'requestId must be a non-empty string');
+        }
+        return withTeamLock(teamLocks, root, async () => {
+            const state = loadControlState(root);
+            if (state.abandonments.some((a) => a.payload.requestId === input.requestId)) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED, `ControlService: the request '${input.requestId}' is durably abandoned — the terminal mark closed the authorization; the effect admission is rejected (zero effect)`, { rootSessionId: root, requestId: input.requestId });
+            }
+            return input.commitEffect();
+        });
+    }
     return {
         requestControl,
         resolveControl,
@@ -2093,6 +2148,7 @@ export function createControlService(options) {
         guardOperation,
         checkExternalOperation,
         awaitControlDecision,
+        commitEffectIfAuthorized,
     };
 }
 //# sourceMappingURL=service.js.map

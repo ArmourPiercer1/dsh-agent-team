@@ -543,11 +543,20 @@ export function createTeamRuntime(options) {
         // uses the SAME frozen snapshot the review payload was built from —
         // the reviewed immutable object, never the caller's (possibly
         // mutated) original request.
+        // fix-control-authz C (the external-review TOCTOU): the marker ALSO
+        // carries the reviewed control request id — the terminal check above
+        // is a FAST PATH, not the boundary (a durable abandon may land AFTER
+        // it — e.g. during the gate re-probe await of this re-execution).
+        // The effect-admission boundary re-validates THIS request's durable
+        // terminal state at the first-effect commit (the linearized check —
+        // see `commitEffectIfAuthorized`); an abandon that lands in the
+        // window is seen there and the effect never commits.
         return performAction({
             ...frozen,
             recovery: {
                 scopeKeys: [...blockedScopes],
                 unavailableSubjects: [...unavailableSubjects],
+                controlRequestId: record.requestId,
             },
         });
     }
@@ -673,6 +682,54 @@ export function createTeamRuntime(options) {
                             : {}),
                         ...(options.now !== undefined ? { now: options.now } : {}),
                     }, impact);
+                    // fix-control-authz C (the external-review TOCTOU) — the
+                    // EFFECT-ADMISSION BOUNDARY. The gate (with its fresh
+                    // re-probe await) has now resolved; the first durable effect
+                    // of this admission is about to commit. For the recovery
+                    // re-execution (the marker carries the reviewed control
+                    // request id), the terminal state of THAT request is
+                    // re-validated HERE — at the effect boundary itself, after
+                    // every await of this admission — as one unit with the
+                    // effect commit under the SAME per-team lock the durable
+                    // abandon write goes through (`commitEffectIfAuthorized`).
+                    // The pre-dispatch terminal snapshot is a fast path, not
+                    // this boundary: an abandon that landed after it (e.g.
+                    // during the re-probe await above) is seen here — the mark
+                    // closed the authorization, so the effect NEVER commits.
+                    // Lock ordering (deadlock argument): this is the only new
+                    // acquisition direction, the router's team chain (a) → the
+                    // control lock (b); the control service never acquires (a)
+                    // and never calls back into the router, and the effect
+                    // commit runs no other control operation (no (b) re-entry) —
+                    // consistent global order (a) → (b) → storage seam, no new
+                    // lock cycles. A non-abandoned request is transparent (the
+                    // unit runs the effect and returns its result unchanged).
+                    const recoveryControlRequestId = request.recovery?.controlRequestId;
+                    if (recoveryControlRequestId !== undefined &&
+                        options.controlServiceRef?.current !== undefined) {
+                        try {
+                            return await options.controlServiceRef.current.commitEffectIfAuthorized({
+                                rootSessionId,
+                                requestId: recoveryControlRequestId,
+                                commitEffect: () => executeEffectLocked(ctx),
+                            });
+                        }
+                        catch (boundaryError) {
+                            if (isControlError(boundaryError) &&
+                                boundaryError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED) {
+                                throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, 'TeamRuntime: the recovery dispatch was abandoned (the durable abandon mark landed before the effect-admission boundary — after the pre-dispatch snapshot — the terminal mark closed the authorization) — zero durable effect (the operation remains blocked)', {
+                                    rootSessionId,
+                                    status: 'BLOCKED_FATAL',
+                                    gateReason: 'requiredScopeDown',
+                                    blockedScopes: [...(request.recovery?.scopeKeys ?? [])],
+                                    source: 'requirement-gate',
+                                    controlDecision: 'abandoned',
+                                    controlRequestId: recoveryControlRequestId,
+                                });
+                            }
+                            throw boundaryError;
+                        }
+                    }
                     return executeEffectLocked(ctx);
                 }, asAbortLike(request.signal));
             }

@@ -29,7 +29,15 @@
  *   C4: the wait→admission race (an allow and an abandon BOTH land while
  *       the router waits — every interleaving): the router settles with
  *       the typed zero-effect block; ZERO work — the abandoned allow
- *       never executes.
+ *       never executes;
+ *   C5 (the external-review TOCTOU): a durable abandon landing DURING
+ *       the recursive admission's gate re-probe (AFTER the dispatch's
+ *       pre-dispatch terminal snapshot — the window an earlier snapshot
+ *       cannot close): the terminal mark is re-validated AT THE EFFECT-
+ *       ADMISSION BOUNDARY (the authorization check + the first effect
+ *       commit linearized against the durable abandon — the same lock
+ *       the abandon write goes through): ZERO work admission, ZERO
+ *       delivery, the typed zero-effect block, the durable close stands.
  *
  * @module @dsh-agent-team/runtime/test/fix-control-authz-c-abandon-terminal
  */
@@ -44,7 +52,13 @@ import {
   isControlError,
 } from '../control/index.js'
 import { TEAM_RUNTIME_ERROR_CODES } from '../admission/index.js'
-import { P6T2_NOW } from './p6t2-helpers.js'
+import {
+  P6T2_NOW,
+  TEST_STATIC_MODEL,
+  createFakeLifecycleCommitPort,
+} from './p6t2-helpers.js'
+import { createTeamRuntime } from '../action-router/index.js'
+import { createWorkActivityWriter } from '../activity/index.js'
 import {
   AUTHZ_ROOT,
   AUTHZ_WORKER,
@@ -273,5 +287,112 @@ describe('fix-control-authz C — the durable abandonment is the TERMINAL mark',
     // ZERO side effects: the abandoned allow never executed.
     expect(authzFacts(world.world, 'team-work-admitted').length).toBe(0)
     expect(world.deliveryCalls.length).toBe(0)
+  })
+
+  it('C5: the effect-admission boundary (the external-review TOCTOU) — a durable abandon landing DURING the gate re-probe (AFTER the pre-dispatch snapshot) NEVER admits the reviewed work: zero admitted / zero effect, the typed abandoned block, the durable close stands', async () => {
+    world = await createAuthzWorld('authz-c-5')
+    // The pausable environmentFacts port: wraps the REAL port; the NEXT
+    // call (the recursive admission's gate re-probe — the fresh facts
+    // read inside the gate, LATER than the dispatch's pre-dispatch
+    // terminal snapshot) holds at the barrier.
+    const realEnvFacts = world.world.ports.environmentFacts
+    let pauseNextProbe = false
+    let probePausedResolve: (() => void) | undefined
+    const probePaused = new Promise<void>((resolve) => {
+      probePausedResolve = resolve
+    })
+    let releaseBarrier: (() => void) | undefined
+    const barrierHeld = new Promise<void>((resolve) => {
+      releaseBarrier = resolve
+    })
+    const pausableEnvFacts: typeof realEnvFacts = () => {
+      if (pauseNextProbe) {
+        pauseNextProbe = false
+        probePausedResolve?.()
+        return barrierHeld.then(() => realEnvFacts())
+      }
+      return realEnvFacts()
+    }
+    // The REAL chain rebuilt over the SAME world with the pausable port
+    // (the D suite's rebuild pattern without a restart: same real
+    // control service, same recording delivery port).
+    const runtime5 = createTeamRuntime({
+      teamDomain: world.world.domain,
+      activationProvider: world.world.provider,
+      blueprintCatalog: world.world.catalog,
+      environmentFacts: pausableEnvFacts,
+      externalPolicyFacts: world.world.ports.externalPolicyFacts,
+      staticModel: TEST_STATIC_MODEL,
+      now: () => P6T2_NOW,
+      lifecycleCommit: createFakeLifecycleCommitPort(world.world),
+      workDelivery: world.deliveryPort,
+      workActivity: createWorkActivityWriter({ teamDomain: world.world.domain, now: () => P6T2_NOW }),
+      controlServiceRef: { current: world.control },
+    })
+    // (1) A real control recovery follow-up, approved through the real
+    //     chain.
+    const promise = withTimeout(
+      runtime5.performAction(
+        authzFollowUp({
+          requestToken: 'tok-c-5',
+          payload: { prompt: 'C-repro prompt (the TOCTOU abandon-during-admission window)' },
+        }),
+      ),
+      30_000,
+      'the recovery follow-up (the TOCTOU repro)',
+    ).then(
+      () => ({ ok: true as const }),
+      (error: unknown) => ({ ok: false as const, error }),
+    )
+    const { requests } = await withTimeout(waitForControlRequests(world.control, 1), 15_000, 'the durable request row')
+    const row = requests.find((r) => String(r.correlation).startsWith('recovery:tok-c-5:'))
+    expect(row).toBeDefined()
+    await world.control.resolveControl({
+      rootSessionId: AUTHZ_ROOT,
+      caller: authzHumanCaller(),
+      requestId: String(row?.requestId),
+      decision: 'allow',
+    })
+    // (2) Arm the barrier for the NEXT environmentFacts call — the
+    //     recursive admission's gate re-probe (LATER than the dispatch's
+    //     pre-dispatch terminal snapshot, which already passed with no
+    //     mark durable).
+    pauseNextProbe = true
+    await withTimeout(probePaused, 15_000, 'the re-probe barrier hold (the recursive admission is inside the gate)')
+    // (3) While the barrier holds: the REAL abandon lands (its own
+    //     control lock — the in-flight admission holds the team chain,
+    //     not the control lock — the durable abandon commits NOW).
+    await world.control.abandonControlRequest({
+      rootSessionId: AUTHZ_ROOT,
+      caller: authzHumanCaller(),
+      requestId: String(row?.requestId),
+      reason: 'reviewer withdrew mid-admission (the TOCTOU window)',
+    })
+    const stateAbandoned = await world.control.listControlState(AUTHZ_ROOT)
+    expect(stateAbandoned.abandonments.some((a) => a.requestId === row?.requestId)).toBe(true)
+    // (4) Release the provider (the gate resolves with its facts).
+    releaseBarrier?.()
+    // (5) The outcome: the terminal mark must be re-validated AT THE
+    //     EFFECT-ADMISSION BOUNDARY — the pre-dispatch snapshot is stale
+    //     here (the abandon landed after it). RED (unfixed): the effect
+    //     STILL commits (work admitted + delivered). Expected (fixed):
+    //     NO team-work-admitted, NO delivery — zero admitted/effect, the
+    //     typed abandoned zero-effect block, the durable close stands.
+    const outcome = await promise
+    expect(outcome.ok).toBe(false)
+    const error = outcome.ok === false ? outcome.error : undefined
+    expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
+    expect(asDetails(error)?.['controlDecision']).toBe('abandoned')
+    expect(asDetails(error)?.['controlRequestId']).toBe(row?.requestId)
+    // ZERO admitted / ZERO effect.
+    expect(authzFacts(world.world, 'team-work-admitted').length).toBe(0)
+    expect(world.deliveryCalls.length).toBe(0)
+    // The durable close stands: exactly one abandon mark; the stale
+    // allow decision row is closed by the terminal mark (derived state
+    // `abandoned`).
+    const stateFinal = await world.control.listControlState(AUTHZ_ROOT)
+    expect(stateFinal.abandonments.filter((a) => a.requestId === row?.requestId).length).toBe(1)
+    expect(stateFinal.decisions.some((d) => d.requestId === row?.requestId && d.decision === 'allow')).toBe(true)
+    expect(stateFinal.requests.find((r) => r.requestId === row?.requestId)?.status).toBe('abandoned')
   })
 })

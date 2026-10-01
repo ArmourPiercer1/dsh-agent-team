@@ -21,8 +21,13 @@
  *       (distinctive prompt + attachedContext in the review payload,
  *       requestToken / subject / root, the digest consistent with the
  *       durable payload);
- *   S2: changing ONLY the prompt changes the digest (digest sensitivity
- *       to the work content — the old payloads hashed identically);
+ *   S2: changing ONLY the prompt (the requestToken and every other
+ *       field byte-identical — the false-oracle correction: the token
+ *       is part of the hash, so a token change would not attribute the
+ *       digest move to the work content) changes the digest; changing
+ *       ONLY the token (the work content byte-identical) changes it
+ *       too (the full attribution pin — the old payloads dropped the
+ *       work content and hashed identically);
  *   S3: mutating `request.payload.prompt` while the approval is pending
  *       → execution uses the reviewed immutable snapshot (the delivery
  *       port receives the ORIGINAL prompt; the mutated payload is never
@@ -64,7 +69,7 @@ afterEach(async () => {
 })
 
 describe('fix-control-authz B — the frozen review snapshot is the single source', () => {
-  it('S1+S2: the durable row fully represents the workDelivery; a prompt-only change changes the digest; deny ⇒ zero effect', async () => {
+  it('S1+S2: the durable row fully represents the workDelivery; prompt-only change (token constant) and token-only change (content constant) each move the digest (the full attribution pin); deny ⇒ zero effect', async () => {
     world = await createAuthzWorld('authz-b-1')
     // --- attempt 1 (the distinctive work content) -------------------------
     const promise1 = withTimeout(
@@ -106,11 +111,14 @@ describe('fix-control-authz B — the frozen review snapshot is the single sourc
       `sha256:${sha256Hex(canonicalJsonStringify(row1?.reviewPayload))}`,
     )
 
-    // --- attempt 2 (SAME work except the prompt — the digest must move) --
+    // --- attempt 2 (the SAME requestToken + attachedContext — ONLY the
+    //     prompt changes; the token is part of the hash, so it must be
+    //     held constant for the attribution — the false-oracle
+    //     correction) ---------------------------------------------
     const promise2 = withTimeout(
       world.runtime.performAction(
         authzFollowUp({
-          requestToken: 'tok-b-2',
+          requestToken: 'tok-b-1',
           payload: { prompt: `${DISTINCTIVE_PROMPT} (CHANGED)`, attachedContext: DISTINCTIVE_CONTEXT },
         }),
       ),
@@ -121,16 +129,46 @@ describe('fix-control-authz B — the frozen review snapshot is the single sourc
       (error: unknown) => ({ ok: false as const, error }),
     )
     const state2 = await withTimeout(waitForControlRequests(world.control, 2), 15_000, 'attempt-2 row')
-    const row2 = state2.requests.find((r) => String(r.correlation).startsWith('recovery:tok-b-2:'))
+    // Both rows share the correlation prefix (the same token — the
+    // restart-unique nonce is what separates the attempts): disambiguate
+    // by the reviewed work content.
+    const row2 = state2.requests.find(
+      (r) =>
+        r.requestId !== row1?.requestId &&
+        ((((r.reviewPayload ?? {}) as Record<string, unknown>)['arguments'] as Record<string, unknown> | undefined)?.['prompt'] === `${DISTINCTIVE_PROMPT} (CHANGED)`),
+    )
     expect(row2).toBeDefined()
-    const args2 = ((row2?.reviewPayload ?? {}) as Record<string, unknown>)['arguments'] as Record<string, unknown>
-    expect(args2['prompt']).toBe(`${DISTINCTIVE_PROMPT} (CHANGED)`)
-    // Digest sensitivity: prompt-only change ⇒ different digest (the old
-    // payloads dropped the prompt and hashed identically).
+    // Digest sensitivity: prompt-only change (token + every other field
+    // byte-identical) ⇒ different digest — the move is attributable to
+    // the work content (the old payloads dropped the prompt and hashed
+    // identically).
     expect(row2?.reviewPayloadDigest).not.toBe(row1?.reviewPayloadDigest)
 
-    // --- deny both: the typed zero-effect block, zero work ---------------
-    for (const row of [row1, row2]) {
+    // --- attempt 3 (the SAME work content — ONLY the token changes; the
+    //     complementary attribution leg: the token is part of the
+    //     reviewed identity too) -------------------------------------
+    const promise3 = withTimeout(
+      world.runtime.performAction(
+        authzFollowUp({
+          requestToken: 'tok-b-1-token-leg',
+          payload: { prompt: DISTINCTIVE_PROMPT, attachedContext: DISTINCTIVE_CONTEXT },
+        }),
+      ),
+      20_000,
+      'the recovery follow-up attempt 3',
+    ).then(
+      () => ({ ok: true as const }),
+      (error: unknown) => ({ ok: false as const, error }),
+    )
+    const state3 = await withTimeout(waitForControlRequests(world.control, 3), 15_000, 'attempt-3 row')
+    const row3 = state3.requests.find((r) => String(r.correlation).startsWith('recovery:tok-b-1-token-leg:'))
+    expect(row3).toBeDefined()
+    // Token-only change (work content byte-identical) ⇒ different
+    // digest.
+    expect(row3?.reviewPayloadDigest).not.toBe(row1?.reviewPayloadDigest)
+
+    // --- deny all three: the typed zero-effect block, zero work ----------
+    for (const row of [row1, row2, row3]) {
       if (row === undefined) continue
       await world.control.resolveControl({
         rootSessionId: AUTHZ_ROOT,
@@ -141,7 +179,8 @@ describe('fix-control-authz B — the frozen review snapshot is the single sourc
     }
     const o1 = await promise1
     const o2 = await promise2
-    for (const o of [o1, o2]) {
+    const o3 = await promise3
+    for (const o of [o1, o2, o3]) {
       expect(o.ok).toBe(false)
       const err = o.ok === false ? (o as { error: unknown }).error : undefined
       expect((err as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
