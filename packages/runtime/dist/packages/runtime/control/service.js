@@ -2098,17 +2098,23 @@ export function createControlService(options) {
      * `withTeamLock(teamLocks, ...)`). Inside the one lock hold: (1) the
      * durable terminal state is read fresh from the ledger, (2) if the
      * request carries the terminal ABANDON mark the unit rejects typed
-     * CONTROL_REQUEST_ABANDONED without running the effect, (3) otherwise
-     * the caller's effect commit (the router's `executeEffectLocked` —
-     * the work admission fact / the effect commit) runs, still under the
-     * lock. That is what linearizes (authorization + first effect)
-     * against the durable abandon: a durable abandon is either committed
-     * BEFORE the unit (→ the check sees the mark; the effect never
-     * commits) or strictly AFTER the unit (→ the effect had already
-     * durably committed before the terminal mark — the legitimate late
-     * close, the CCR-4 semantics; the mark closes the request for the
-     * future). No abandon can land BETWEEN the check and the effect
-     * commit — both are inside the one hold.
+     * CONTROL_REQUEST_ABANDONED without running the effect, (3) if the
+     * invocation's live signal (C-2 — `input.signal`) is ABORTED the unit
+     * persists the abandon (the durable close — the same footprint as an
+     * explicit abandon, exactly-once) and rejects typed
+     * CONTROL_REQUEST_ADMISSION_ABORTED without running the effect,
+     * (4) otherwise the caller's effect commit (the router's
+     * `executeEffectLocked` — the work admission fact / the effect
+     * commit) runs, still under the lock. That is what linearizes
+     * (authorization + first effect) against the durable abandon AND the
+     * live abort: a durable abandon or a signal abort is either committed
+     * BEFORE the unit (→ the check sees it; the effect never commits) or
+     * strictly AFTER the unit (→ the effect had already durably committed
+     * before the terminal state — the legitimate late close, the CCR-4
+     * semantics; for an abort that lands after the commit the committed
+     * effect is NEVER retroactively undone or re-marked). Nothing can
+     * land BETWEEN the checks and the effect commit — all are inside the
+     * one hold.
      *
      * Deadlock argument: the ONLY new acquisition direction is the
      * router's team chain (a) → this lock (b) (the router's gated chain
@@ -2122,10 +2128,14 @@ export function createControlService(options) {
      * control operation). Consistent global order (a) → (b) → storage
      * seam, no (b) → (a) anywhere → no new lock cycles.
      *
-     * This writes NO control facts (no synthetic "consumed" mark — the
-     * linearization is the lock itself), changes NO request state, and is
-     * transparent for a non-abandoned request (the unit runs the caller's
-     * effect and returns its result unchanged).
+     * This writes NO control facts on the authorization path (no
+     * synthetic "consumed" mark — the linearization is the lock
+     * itself); the ONLY durable write this unit performs is the abandon
+     * close on the abort path (the rejection's evidence — the documented
+     * fail-closed exception, like CONTROL_REQUEST_STALE), changes NO
+     * request state, and is transparent for a non-abandoned, non-aborted
+     * request (the unit runs the caller's effect and returns its result
+     * unchanged).
      */
     async function commitEffectIfAuthorized(input) {
         const root = parseRoot(input.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'wait');
@@ -2136,6 +2146,21 @@ export function createControlService(options) {
             const state = loadControlState(root);
             if (state.abandonments.some((a) => a.payload.requestId === input.requestId)) {
                 throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED, `ControlService: the request '${input.requestId}' is durably abandoned — the terminal mark closed the authorization; the effect admission is rejected (zero effect)`, { rootSessionId: root, requestId: input.requestId });
+            }
+            // C-2 (the external-review residual) — the LIVE signal check,
+            // inside the SAME lock hold as the terminal-state read and
+            // BEFORE the effect commit: an abort that landed at ANY wait
+            // point of the admission (the gate re-probe await, this
+            // unit's control-lock queue) lands here. The durable abandon is
+            // PERSISTED first (exactly-once — a later late-abandon then
+            // no-ops on the already-terminal state) so an
+            // abort-during-wait leaves the SAME durable footprint as an
+            // explicit abandon; then the typed reject. An abort that lands
+            // AFTER the commit is the legitimate late close (CCR-4 — the
+            // committed effect is never retroactively undone or re-marked).
+            if (input.signal !== undefined && input.signal.aborted === true) {
+                await commitAbandonmentFact(root, input.requestId, 'the invocation aborted at the effect-admission boundary (the durable close)');
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ADMISSION_ABORTED, `ControlService: the invocation aborted before the effect commit — the durable abandon was persisted at the effect-admission boundary (the same footprint as an explicit abandon); the effect admission is rejected (zero effect)`, { rootSessionId: root, requestId: input.requestId });
             }
             return input.commitEffect();
         });

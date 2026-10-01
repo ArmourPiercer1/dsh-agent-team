@@ -870,10 +870,28 @@ export interface ControlService {
      * the request for the future). No abandon can land between the check
      * and the effect commit (both inside the one lock hold).
      *
-     * This writes NO control facts (no synthetic "consumed" mark — the
-     * linearization is the lock itself), changes NO request state, and
-     * never alters the outcome of a non-abandoned request (the unit is
-     * transparent: it runs the caller's effect and returns its result).
+     * C-2 (the live signal): when `input.signal` is present, the SAME
+     * lock hold also checks the invocation's abort state AFTER the
+     * terminal-state read and BEFORE the effect commit — an abort that
+     * landed at ANY wait point of the admission (the gate re-probe
+     * await, this unit's control-lock queue) is honored HERE: the
+     * durable abandon is PERSISTED first (the additive close fact —
+     * exactly-once, the same durable footprint as an explicit abandon;
+     * a later late-abandon then no-ops on the already-terminal state)
+     * and the unit rejects typed
+     * CONTROL_REQUEST_ADMISSION_ABORTED (the effect never runs). The
+     * settle semantics for an ALREADY-COMMITTED effect are preserved:
+     * the signal is checked only up to the commit — an abort that
+     * lands after the unit returns is the legitimate late close (the
+     * committed effect is never retroactively undone or re-marked).
+     *
+     * This writes NO control facts on the authorization path (no
+     * synthetic "consumed" mark — the linearization is the lock
+     * itself); the ONLY durable write this unit performs is the
+     * abandon close on the abort path (the rejection's evidence),
+     * changes NO request state, and never alters the outcome of a
+     * non-abandoned, non-aborted request (the unit is transparent: it
+     * runs the caller's effect and returns its result).
      * The caller (the router) translates the typed rejection into the
      * recovery dispatch's typed zero-effect block.
      * @param input.rootSessionId - the team (root) session id.
@@ -881,12 +899,18 @@ export interface ControlService {
      *   reviewed inline request whose terminal state authorizes this
      *   effect).
      * @param input.commitEffect - the caller's first-effect commit (runs
-     *   under the lock, ONLY when no abandon mark is durable).
+     *   under the lock, ONLY when no abandon mark is durable and the
+     *   signal is not aborted).
+     * @param input.signal - the invocation's live abort signal (the
+     *   caller-cancellation — the platform `AbortSignal` shape;
+     *   transient, never serialized). Absent → the signal check is
+     *   skipped (byte-identical authorization path).
      */
     commitEffectIfAuthorized<T>(input: {
         readonly rootSessionId: string;
         readonly requestId: string;
         readonly commitEffect: () => Promise<T>;
+        readonly signal?: ControlWaitSignal;
     }): Promise<T>;
 }
 //# sourceMappingURL=types.d.ts.map

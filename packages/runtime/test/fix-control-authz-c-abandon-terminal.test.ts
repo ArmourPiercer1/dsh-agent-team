@@ -37,7 +37,24 @@
  *       ADMISSION BOUNDARY (the authorization check + the first effect
  *       commit linearized against the durable abandon — the same lock
  *       the abandon write goes through): ZERO work admission, ZERO
- *       delivery, the typed zero-effect block, the durable close stands.
+ *       delivery, the typed zero-effect block, the durable close stands;
+ *   C6 (the external-review residual C-1): the COORDINATION reentry
+ *       (send-message — the recoveryWork impact bypasses the gated
+ *       branch) hits the SAME boundary: the reentry queued behind the
+ *       shared runtime lock, a real abandon persisting on the control
+ *       lock, release → the coordination fact is NEVER committed
+ *       unchecked: zero `team-coordination-recorded`, zero delivery,
+ *       the typed block, the durable close stands (over the REAL
+ *       MessagingCoordinator);
+ *   C7 (the external-review residual C-2, leg a): an AbortSignal
+ *       aborting DURING the gate re-probe await (no explicit abandon):
+ *       the serialized boundary sees the live signal, PERSISTS the
+ *       abandon (the durable close — the same footprint as an explicit
+ *       abandon) and rejects typed; ZERO work;
+ *   C8 (the external-review residual C-2, leg b): the signal aborting
+ *       while the unit is BLOCKED WAITING for the control lock (between
+ *       queue and acquisition): the commit is STILL rejected with a
+ *       durable close; ZERO work.
  *
  * @module @dsh-agent-team/runtime/test/fix-control-authz-c-abandon-terminal
  */
@@ -57,8 +74,10 @@ import {
   TEST_STATIC_MODEL,
   createFakeLifecycleCommitPort,
 } from './p6t2-helpers.js'
-import { createTeamRuntime } from '../action-router/index.js'
+import { createTeamRuntime, withTeamLock } from '../action-router/index.js'
 import { createWorkActivityWriter } from '../activity/index.js'
+import { createMessagingCoordinator } from '../messaging/index.js'
+import type { SessionInputPort } from '../messaging/index.js'
 import {
   AUTHZ_ROOT,
   AUTHZ_WORKER,
@@ -394,5 +413,365 @@ describe('fix-control-authz C — the durable abandonment is the TERMINAL mark',
     expect(stateFinal.abandonments.filter((a) => a.requestId === row?.requestId).length).toBe(1)
     expect(stateFinal.decisions.some((d) => d.requestId === row?.requestId && d.decision === 'allow')).toBe(true)
     expect(stateFinal.requests.find((r) => r.requestId === row?.requestId)?.status).toBe('abandoned')
+  })
+
+  it('C6: the COORDINATION reentry (send-message — the recoveryWork impact that bypasses the gated branch) hits the SAME effect-admission boundary — the reentry queued behind the shared runtime lock, a real abandon on the control lock, release ⇒ the coordination fact is NEVER committed unchecked (zero fact / zero delivery, the typed block, the durable close stands) over the REAL MessagingCoordinator', async () => {
+    world = await createAuthzWorld('authz-c-6')
+    // A TEST-OWNED shared runtime lock map (the production root wiring
+    // precedent — the router's `teamLocks` option): the test holds the
+    // runtime chain and QUEUES the reviewed reentry behind it.
+    const sharedChains = new Map<string, Promise<unknown>>()
+    const runtime6 = createTeamRuntime({
+      teamDomain: world.world.domain,
+      activationProvider: world.world.provider,
+      blueprintCatalog: world.world.catalog,
+      environmentFacts: world.world.ports.environmentFacts,
+      externalPolicyFacts: world.world.ports.externalPolicyFacts,
+      staticModel: TEST_STATIC_MODEL,
+      now: () => P6T2_NOW,
+      lifecycleCommit: createFakeLifecycleCommitPort(world.world),
+      workDelivery: world.deliveryPort,
+      workActivity: createWorkActivityWriter({ teamDomain: world.world.domain, now: () => P6T2_NOW }),
+      teamLocks: sharedChains,
+      controlServiceRef: { current: world.control },
+    })
+    const sessionInputCalls: unknown[] = []
+    const sessionInput: SessionInputPort = {
+      async submitAttributedInput(input: unknown): Promise<void> {
+        sessionInputCalls.push(input)
+      },
+    }
+    const coordinator = createMessagingCoordinator({
+      teamRuntime: runtime6,
+      teamDomain: world.world.domain,
+      sessionInput,
+      now: () => P6T2_NOW,
+    })
+    // (1) the real blocked Leader send-message (the recovery offer over
+    //     the real chain).
+    const promise = withTimeout(
+      coordinator.sendTeamMessage({
+        rootSessionId: AUTHZ_ROOT,
+        caller: makeActionRequest({}).caller,
+        recipientInstanceId: AUTHZ_WORKER,
+        body: 'C6-repro message (the TOCTOU coordination lane)',
+        subject: 'C6-repro',
+        requestToken: 'tok-c-6',
+      }),
+      30_000,
+      'the recovery send-message (the coordination TOCTOU repro)',
+    ).then(
+      () => ({ ok: true as const }),
+      (error: unknown) => ({ ok: false as const, error }),
+    )
+    const { requests } = await withTimeout(waitForControlRequests(world.control, 1), 15_000, 'the durable request row')
+    const row = requests.find((r) => String(r.correlation).startsWith('recovery:tok-c-6:'))
+    expect(row).toBeDefined()
+    // (2) the test HOLDS the shared runtime lock BEFORE the allow —
+    //     the reviewed reentry (initiated after the settle) can only
+    //     QUEUE behind the hold (deterministic placement).
+    let releaseBarrier: (() => void) | undefined
+    const barrierHeld = new Promise<void>((resolve) => {
+      releaseBarrier = resolve
+    })
+    let holdAcquiredResolve: (() => void) | undefined
+    const holdAcquired = new Promise<void>((resolve) => {
+      holdAcquiredResolve = resolve
+    })
+    const occupation = withTeamLock(sharedChains, AUTHZ_ROOT, () => {
+      holdAcquiredResolve?.()
+      return barrierHeld
+    })
+    await withTimeout(holdAcquired, 15_000, 'the runtime-chain hold (the reentry queues behind it)')
+    // The occupation's chain entry (the map stores a fresh chained
+    // promise per acquisition — a CHANGED entry proves the reentry has
+    // queued on the runtime lock behind the hold).
+    const occupationChain = sharedChains.get(AUTHZ_ROOT)
+    // (3) approve — the reentry is in flight behind the hold: its
+    //     pre-dispatch terminal snapshot runs (no mark yet) and it
+    //     QUEUES on the runtime lock.
+    await world.control.resolveControl({
+      rootSessionId: AUTHZ_ROOT,
+      caller: authzHumanCaller(),
+      requestId: String(row?.requestId),
+      decision: 'allow',
+    })
+    // Wait for the reentry's runtime-lock queue (its `executeEffect`
+    // acquisition replaces the map entry) — deterministic proof that
+    // the snapshot ran with NO mark before the queue.
+    const queued = new Promise<void>((resolve, reject) => {
+      const poll = setInterval(() => {
+        if (sharedChains.get(AUTHZ_ROOT) !== undefined && sharedChains.get(AUTHZ_ROOT) !== occupationChain) {
+          clearInterval(poll)
+          clearTimeout(fail)
+          resolve()
+        }
+      }, 1)
+      const fail = setTimeout(() => {
+        clearInterval(poll)
+        reject(new Error('timeout: the reentry never queued on the runtime lock (behind the hold)'))
+      }, 15_000)
+    })
+    await queued
+    // (4) while the hold is up (the reentry queued), the REAL abandon
+    //     persists on its own control lock (the in-flight reentry holds
+    //     no control lock).
+    await world.control.abandonControlRequest({
+      rootSessionId: AUTHZ_ROOT,
+      caller: authzHumanCaller(),
+      requestId: String(row?.requestId),
+      reason: 'reviewer withdrew mid-admission (the coordination lane)',
+    })
+    // (4) release the runtime lock — the reentry proceeds.
+    releaseBarrier?.()
+    await withTimeout(occupation, 15_000, 'the runtime-chain hold release')
+    // (5) the outcome: the terminal mark must be re-validated AT THE
+    //     EFFECT-ADMISSION BOUNDARY for the coordination effect too.
+    //     RED (unfixed): the fallback path commits the coordination
+    //     fact UNCHECKED (outcome ok, one fact, one delivery). Expected
+    //     (fixed): zero coordination fact, zero delivery, the typed
+    //     abandoned block, the durable close stands.
+    const outcome = await promise
+    expect(outcome.ok).toBe(false)
+    const error = outcome.ok === false ? outcome.error : undefined
+    expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
+    expect(asDetails(error)?.['controlDecision']).toBe('abandoned')
+    expect(asDetails(error)?.['controlRequestId']).toBe(row?.requestId)
+    expect(authzFacts(world.world, 'team-coordination-recorded').length).toBe(0)
+    expect(sessionInputCalls.length).toBe(0)
+    const stateFinal = await world.control.listControlState(AUTHZ_ROOT)
+    expect(stateFinal.abandonments.filter((a) => a.requestId === row?.requestId).length).toBe(1)
+    expect(stateFinal.requests.find((r) => r.requestId === row?.requestId)?.status).toBe('abandoned')
+  })
+
+  it('C7 (residual C-2 leg a): an AbortSignal aborting DURING the gate re-probe await (no explicit abandon) — the serialized boundary sees the live signal, PERSISTS the abandon (the durable close, the same footprint as an explicit abandon) and rejects typed; ZERO work', async () => {
+    world = await createAuthzWorld('authz-c-7')
+    // The pausable environmentFacts port (the C5 barrier shape).
+    const realEnvFacts = world.world.ports.environmentFacts
+    let pauseNextProbe = false
+    let probePausedResolve: (() => void) | undefined
+    const probePaused = new Promise<void>((resolve) => {
+      probePausedResolve = resolve
+    })
+    let releaseBarrier: (() => void) | undefined
+    const barrierHeld = new Promise<void>((resolve) => {
+      releaseBarrier = resolve
+    })
+    const pausableEnvFacts: typeof realEnvFacts = () => {
+      if (pauseNextProbe) {
+        pauseNextProbe = false
+        probePausedResolve?.()
+        return barrierHeld.then(() => realEnvFacts())
+      }
+      return realEnvFacts()
+    }
+    const runtime7 = createTeamRuntime({
+      teamDomain: world.world.domain,
+      activationProvider: world.world.provider,
+      blueprintCatalog: world.world.catalog,
+      environmentFacts: pausableEnvFacts,
+      externalPolicyFacts: world.world.ports.externalPolicyFacts,
+      staticModel: TEST_STATIC_MODEL,
+      now: () => P6T2_NOW,
+      lifecycleCommit: createFakeLifecycleCommitPort(world.world),
+      workDelivery: world.deliveryPort,
+      workActivity: createWorkActivityWriter({ teamDomain: world.world.domain, now: () => P6T2_NOW }),
+      controlServiceRef: { current: world.control },
+    })
+    const ac = new AbortController()
+    const promise = withTimeout(
+      runtime7.performAction(
+        authzFollowUp({
+          requestToken: 'tok-c-7',
+          signal: ac.signal,
+          payload: { prompt: 'C7-repro prompt (abort during the gate await — no explicit abandon)' },
+        }),
+      ),
+      30_000,
+      'the recovery follow-up (the signal-abort repro)',
+    ).then(
+      () => ({ ok: true as const }),
+      (error: unknown) => ({ ok: false as const, error }),
+    )
+    const { requests } = await withTimeout(waitForControlRequests(world.control, 1), 15_000, 'the durable request row')
+    const row = requests.find((r) => String(r.correlation).startsWith('recovery:tok-c-7:'))
+    expect(row).toBeDefined()
+    await world.control.resolveControl({
+      rootSessionId: AUTHZ_ROOT,
+      caller: authzHumanCaller(),
+      requestId: String(row?.requestId),
+      decision: 'allow',
+    })
+    // Arm the barrier for the recursive admission's gate re-probe (AFTER
+    // the router's pre-dispatch signal check — the exact repro window).
+    pauseNextProbe = true
+    await withTimeout(probePaused, 15_000, 'the re-probe barrier hold')
+    // ABORT the signal ONLY (no explicit abandon).
+    ac.abort()
+    releaseBarrier?.()
+    const outcome = await promise
+    // RED (unfixed): the work is STILL admitted (outcome ok) and there is
+    // NO durable close (no abandon mark). Expected (fixed): the typed
+    // abandoned block; the durable close is PERSISTED (one abandon mark
+    // — the same footprint as an explicit abandon); zero work.
+    expect(outcome.ok).toBe(false)
+    const error = outcome.ok === false ? outcome.error : undefined
+    expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
+    expect(asDetails(error)?.['controlDecision']).toBe('abandoned')
+    expect(asDetails(error)?.['controlRequestId']).toBe(row?.requestId)
+    expect(authzFacts(world.world, 'team-work-admitted').length).toBe(0)
+    expect(world.deliveryCalls.length).toBe(0)
+    const stateFinal = await world.control.listControlState(AUTHZ_ROOT)
+    expect(stateFinal.abandonments.filter((a) => a.requestId === row?.requestId).length).toBe(1)
+    expect(stateFinal.decisions.some((d) => d.requestId === row?.requestId && d.decision === 'allow')).toBe(true)
+    expect(stateFinal.requests.find((r) => r.requestId === row?.requestId)?.status).toBe('abandoned')
+  })
+
+  it('C8 (residual C-2 leg b): the signal aborting while the unit is BLOCKED WAITING for the control lock (between queue and acquisition) — the commit is STILL rejected with a durable close; ZERO work', async () => {
+    world = await createAuthzWorld('authz-c-8')
+    // TWO pausable ports: the environmentFacts (pins the reentry in its
+    // gate re-probe) and the EXTERNAL policy (a separate
+    // toolName-bearing request's `resolveControl(allow)` holds the
+    // control lock ACROSS its probe await — the occupancy the unit
+    // queues behind).
+    const realEnvFacts = world.world.ports.environmentFacts
+    let pauseNextReprobe = false
+    let reprobePausedResolve: (() => void) | undefined
+    const reprobePaused = new Promise<void>((resolve) => {
+      reprobePausedResolve = resolve
+    })
+    let releaseReprobe: (() => void) | undefined
+    const reprobeHeld = new Promise<void>((resolve) => {
+      releaseReprobe = resolve
+    })
+    const pausableEnvFacts: typeof realEnvFacts = () => {
+      if (pauseNextReprobe) {
+        pauseNextReprobe = false
+        reprobePausedResolve?.()
+        return reprobeHeld.then(() => realEnvFacts())
+      }
+      return realEnvFacts()
+    }
+    const realExternal = world.world.ports.externalPolicyFacts
+    let pauseNextProbe = false
+    let probePausedResolve: (() => void) | undefined
+    const probePaused = new Promise<void>((resolve) => {
+      probePausedResolve = resolve
+    })
+    let releaseBarrier: (() => void) | undefined
+    const barrierHeld = new Promise<void>((resolve) => {
+      releaseBarrier = resolve
+    })
+    const pausableExternal: typeof realExternal = () => {
+      if (pauseNextProbe) {
+        pauseNextProbe = false
+        probePausedResolve?.()
+        return barrierHeld.then(() => realExternal())
+      }
+      return realExternal()
+    }
+    const control8 = createControlService({
+      teamDomain: world.world.domain,
+      blueprintCatalog: world.world.catalog,
+      externalPolicyFacts: pausableExternal,
+      now: () => P6T2_NOW,
+      waitPollIntervalMs: 5,
+    })
+    const runtime8 = createTeamRuntime({
+      teamDomain: world.world.domain,
+      activationProvider: world.world.provider,
+      blueprintCatalog: world.world.catalog,
+      environmentFacts: pausableEnvFacts,
+      externalPolicyFacts: world.world.ports.externalPolicyFacts,
+      staticModel: TEST_STATIC_MODEL,
+      now: () => P6T2_NOW,
+      lifecycleCommit: createFakeLifecycleCommitPort(world.world),
+      workDelivery: world.deliveryPort,
+      workActivity: createWorkActivityWriter({ teamDomain: world.world.domain, now: () => P6T2_NOW }),
+      controlServiceRef: { current: control8 },
+    })
+    const ac = new AbortController()
+    const promise = withTimeout(
+      runtime8.performAction(
+        authzFollowUp({
+          requestToken: 'tok-c-8',
+          signal: ac.signal,
+          payload: { prompt: 'C8-repro prompt (abort while queued on the control lock)' },
+        }),
+      ),
+      30_000,
+      'the recovery follow-up (the queued-signal-abort repro)',
+    ).then(
+      () => ({ ok: true as const }),
+      (error: unknown) => ({ ok: false as const, error }),
+    )
+    const { requests: rows1 } = await withTimeout(waitForControlRequests(control8, 1), 15_000, 'the durable request row')
+    const row = rows1.find((r) => String(r.correlation).startsWith('recovery:tok-c-8:'))
+    expect(row).toBeDefined()
+    // The OCCUPANCY row: a separate toolName-bearing request (its allow
+    // resolution probes the external policy — holding the control lock
+    // across the probe await).
+    const occupancy = await control8.requestControl({
+      rootSessionId: AUTHZ_ROOT,
+      caller: makeActionRequest({}).caller,
+      kind: CONTROL_REQUEST_KINDS.USER_APPROVAL,
+      subject: { kind: 'instance', instanceId: AUTHZ_WORKER },
+      actionName: 'follow-up',
+      toolName: 'follow-up',
+      correlation: 'c8-occupancy:1',
+      summary: 'C8 occupancy (holds the control lock across the external probe)',
+    })
+    // Approve the reviewed request (the control lock is free — the
+    // decision lands; the reentry is in flight).
+    await control8.resolveControl({
+      rootSessionId: AUTHZ_ROOT,
+      caller: authzHumanCaller(),
+      requestId: String(row?.requestId),
+      decision: 'allow',
+    })
+    // PIN the reentry in its gate re-probe (deterministic placement:
+    // the unit cannot reach the control lock yet).
+    pauseNextReprobe = true
+    await withTimeout(reprobePaused, 15_000, 'the re-probe barrier hold')
+    // Start the occupancy's allow resolution (un-awaited — it parks at
+    // the external probe, HOLDING THE CONTROL LOCK).
+    pauseNextProbe = true
+    const occupancyResolve = control8.resolveControl({
+      rootSessionId: AUTHZ_ROOT,
+      caller: authzHumanCaller(),
+      requestId: occupancy.requestId,
+      decision: 'allow',
+    })
+    await withTimeout(probePaused, 15_000, 'the control-lock hold (the occupancy probe)')
+    // Release the re-probe: the gate completes and the unit's
+    // control-lock acquisition QUEUES behind the occupancy (which still
+    // holds the lock). Give the queue a moment, then ABORT the signal —
+    // between the unit's queue and its acquisition. (The outcome is
+    // identical for any abort before the unit's check: the check runs
+    // only after the occupancy releases, which the test controls.)
+    releaseReprobe?.()
+    await sleep(60)
+    ac.abort()
+    // Release the occupancy (the unit acquires the lock next).
+    releaseBarrier?.()
+    await withTimeout(occupancyResolve, 15_000, 'the occupancy resolution')
+    const outcome = await promise
+    // RED (unfixed): the unit has no signal check — the work is still
+    // admitted (outcome ok), no durable close. Expected (fixed): the
+    // typed abandoned block + the PERSISTED durable close (one abandon
+    // mark) + zero work.
+    expect(outcome.ok).toBe(false)
+    const error = outcome.ok === false ? outcome.error : undefined
+    expect((error as { code?: string })?.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
+    expect(asDetails(error)?.['controlDecision']).toBe('abandoned')
+    expect(asDetails(error)?.['controlRequestId']).toBe(row?.requestId)
+    expect(authzFacts(world.world, 'team-work-admitted').length).toBe(0)
+    expect(world.deliveryCalls.length).toBe(0)
+    const stateFinal = await control8.listControlState(AUTHZ_ROOT)
+    expect(stateFinal.abandonments.filter((a) => a.requestId === row?.requestId).length).toBe(1)
+    expect(stateFinal.requests.find((r) => r.requestId === row?.requestId)?.status).toBe('abandoned')
+    // The occupancy evidence: the hold really ran under the control lock
+    // (the occupancy's allow decision is durable).
+    expect(stateFinal.decisions.some((d) => d.requestId === occupancy.requestId && d.decision === 'allow')).toBe(true)
   })
 })

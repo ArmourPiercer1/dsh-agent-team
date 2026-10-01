@@ -635,6 +635,74 @@ export function createTeamRuntime(options) {
         // trigger (the `recovery` marker → `recoveryWork` impact) is allowed and
         // escalates the wake to synchronous Human Review via the same
         // `dispatchRecoveryIfOffered` inline coupling below.
+        //
+        // fix-control-authz C + C-1 + C-2 (the external-review residuals) —
+        // the EFFECT-ADMISSION BOUNDARY for EVERY reviewed recovery reentry
+        // effect. The unit is NOT gated on the spec category (C-1: the
+        // send-message reentry — the `recoveryWork` impact, the
+        // `coordination` spec — bypasses the gated branch below and must
+        // hit the same boundary; an abandoned / aborted request commits
+        // ZERO effects of ANY kind). Invoked WITH the team chain (a) held
+        // — the caller owns the acquisition (the gated chain; the
+        // coordination fallback) — it re-validates the reviewed request's
+        // durable terminal state AND the invocation's live signal (C-2)
+        // as one unit with the first effect commit under the control lock
+        // (b) (the same lock the durable abandon write goes through,
+        // `commitEffectIfAuthorized`). The pre-dispatch terminal snapshot
+        // is a fast path, not this boundary: an abandon (or an abort) that
+        // landed after it — e.g. during the gate re-probe await, or while
+        // this unit queued for (b) — is seen here, and the effect NEVER
+        // commits.
+        //
+        // C-2 signal semantics: an abort BEFORE the commit is honored at
+        // the boundary — the abandon is PERSISTED there (the durable
+        // close, exactly-once, the same footprint as an explicit abandon;
+        // a later late-abandon then no-ops on the already-terminal state)
+        // and the unit rejects typed; an abort AFTER the commit is the
+        // legitimate late close (the committed effect is never
+        // retroactively undone or re-marked — the CCR-4 settle semantics
+        // for already-committed effects are preserved).
+        //
+        // Lock ordering (deadlock argument): this is the only new
+        // acquisition direction, the router's team chain (a) → the control
+        // lock (b); the control service never acquires (a) and never calls
+        // back into the router, and the effect commit runs no other
+        // control operation (no (b) re-entry) — consistent global order
+        // (a) → (b) → storage seam, no new lock cycles. A non-abandoned,
+        // non-aborted request is transparent (the unit runs the effect and
+        // returns its result unchanged).
+        const commitReviewedEffect = () => {
+            const recoveryControlRequestId = request.recovery?.controlRequestId;
+            const controlService = options.controlServiceRef?.current;
+            if (recoveryControlRequestId === undefined || controlService === undefined) {
+                return executeEffectLocked(ctx);
+            }
+            return controlService
+                .commitEffectIfAuthorized({
+                rootSessionId,
+                requestId: recoveryControlRequestId,
+                commitEffect: () => executeEffectLocked(ctx),
+                signal: asAbortLike(request.signal),
+            })
+                .catch((boundaryError) => {
+                if (isControlError(boundaryError) &&
+                    (boundaryError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED ||
+                        boundaryError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ADMISSION_ABORTED)) {
+                    throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, boundaryError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ADMISSION_ABORTED
+                        ? 'TeamRuntime: the recovery dispatch was abandoned (the invocation aborted before the effect-admission boundary — the durable close was persisted at the boundary) — zero durable effect (the operation remains blocked)'
+                        : 'TeamRuntime: the recovery dispatch was abandoned (the durable abandon mark landed before the effect-admission boundary — after the pre-dispatch snapshot — the terminal mark closed the authorization) — zero durable effect (the operation remains blocked)', {
+                        rootSessionId,
+                        status: 'BLOCKED_FATAL',
+                        gateReason: 'requiredScopeDown',
+                        blockedScopes: [...(request.recovery?.scopeKeys ?? [])],
+                        source: 'requirement-gate',
+                        controlDecision: 'abandoned',
+                        controlRequestId: recoveryControlRequestId,
+                    });
+                }
+                throw boundaryError;
+            });
+        };
         if (isNewWorkAdmission(spec) ||
             impact.impact === ACTION_IMPACT_CLASSES.crossAgentTrigger) {
             try {
@@ -682,55 +750,25 @@ export function createTeamRuntime(options) {
                             : {}),
                         ...(options.now !== undefined ? { now: options.now } : {}),
                     }, impact);
-                    // fix-control-authz C (the external-review TOCTOU) — the
-                    // EFFECT-ADMISSION BOUNDARY. The gate (with its fresh
-                    // re-probe await) has now resolved; the first durable effect
-                    // of this admission is about to commit. For the recovery
-                    // re-execution (the marker carries the reviewed control
-                    // request id), the terminal state of THAT request is
-                    // re-validated HERE — at the effect boundary itself, after
-                    // every await of this admission — as one unit with the
-                    // effect commit under the SAME per-team lock the durable
-                    // abandon write goes through (`commitEffectIfAuthorized`).
-                    // The pre-dispatch terminal snapshot is a fast path, not
-                    // this boundary: an abandon that landed after it (e.g.
-                    // during the re-probe await above) is seen here — the mark
-                    // closed the authorization, so the effect NEVER commits.
-                    // Lock ordering (deadlock argument): this is the only new
-                    // acquisition direction, the router's team chain (a) → the
-                    // control lock (b); the control service never acquires (a)
-                    // and never calls back into the router, and the effect
-                    // commit runs no other control operation (no (b) re-entry) —
-                    // consistent global order (a) → (b) → storage seam, no new
-                    // lock cycles. A non-abandoned request is transparent (the
-                    // unit runs the effect and returns its result unchanged).
-                    const recoveryControlRequestId = request.recovery?.controlRequestId;
-                    if (recoveryControlRequestId !== undefined &&
-                        options.controlServiceRef?.current !== undefined) {
-                        try {
-                            return await options.controlServiceRef.current.commitEffectIfAuthorized({
-                                rootSessionId,
-                                requestId: recoveryControlRequestId,
-                                commitEffect: () => executeEffectLocked(ctx),
-                            });
-                        }
-                        catch (boundaryError) {
-                            if (isControlError(boundaryError) &&
-                                boundaryError.code === CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED) {
-                                throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED, 'TeamRuntime: the recovery dispatch was abandoned (the durable abandon mark landed before the effect-admission boundary — after the pre-dispatch snapshot — the terminal mark closed the authorization) — zero durable effect (the operation remains blocked)', {
-                                    rootSessionId,
-                                    status: 'BLOCKED_FATAL',
-                                    gateReason: 'requiredScopeDown',
-                                    blockedScopes: [...(request.recovery?.scopeKeys ?? [])],
-                                    source: 'requirement-gate',
-                                    controlDecision: 'abandoned',
-                                    controlRequestId: recoveryControlRequestId,
-                                });
-                            }
-                            throw boundaryError;
-                        }
-                    }
-                    return executeEffectLocked(ctx);
+                    // fix-control-authz C + C-1 + C-2 (the external-review
+                    // residuals) — the EFFECT-ADMISSION BOUNDARY: the gate (with
+                    // its fresh re-probe await) has now resolved; the first
+                    // durable effect of this admission is about to commit. For
+                    // the recovery re-execution (the marker carries the reviewed
+                    // control request id), the terminal state of THAT request
+                    // (the durable abandon mark) AND the invocation's live
+                    // signal are re-validated HERE — at the effect boundary
+                    // itself, after every await of this admission — as one unit
+                    // with the effect commit under the SAME per-team lock the
+                    // durable abandon write goes through
+                    // (`commitEffectIfAuthorized`). See the
+                    // `commitReviewedEffect` helper (defined above) for the full
+                    // contract: the C-1 coverage (every reviewed reentry effect,
+                    // no spec-category gate), the C-2 signal semantics (abort
+                    // before the commit → persisted durable close + typed
+                    // reject; abort after the commit → the legitimate late
+                    // close), and the lock-ordering deadlock argument.
+                    return await commitReviewedEffect();
                 }, asAbortLike(request.signal));
             }
             catch (error) {
@@ -752,7 +790,26 @@ export function createTeamRuntime(options) {
             }
         }
         else {
-            staged = await executeEffect(teamLocks, ctx);
+            // fix-control-authz C-1 (the external-review residual): the
+            // reviewed recovery reentry may reach this fallback — the
+            // send-message reentry (the `recoveryWork` impact, the
+            // `coordination` spec) bypasses the gated branch above. The
+            // effect-admission boundary applies to ALL reviewed effects (no
+            // spec-category gate): a marker-carrying request takes the same
+            // serialized path — chain (a) + boundary (b) + effect commit —
+            // the unit is invoked WITH the chain already held (it commits
+            // via `executeEffectLocked`, so `executeEffect` — which acquires
+            // (a) itself — is NEVER called inside the unit: that would be
+            // (b) → (a), a new lock cycle). Everything else stays
+            // byte-identical (`executeEffect`).
+            const recoveryControlRequestId = request.recovery?.controlRequestId;
+            if (recoveryControlRequestId !== undefined &&
+                options.controlServiceRef?.current !== undefined) {
+                staged = await withTeamLock(teamLocks, rootSessionId, () => commitReviewedEffect(), asAbortLike(request.signal));
+            }
+            else {
+                staged = await executeEffect(teamLocks, ctx);
+            }
         }
         // INV-9.1 (repair-r1 F3-A): a full-wiring work admission returns the
         // STAGED chain — Phase A completed inside the acquisition above and
