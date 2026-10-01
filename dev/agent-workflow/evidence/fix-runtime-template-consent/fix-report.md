@@ -533,8 +533,176 @@ all via #46); 1 missing at this tip (T1, a test fixture); PRODUCTION GAP: NONE
 (explicit — the audit found no production construction without a role, because #46 fixed
 all five; the only correction this round makes is the test fixture T1).**
 
-(The role-fix RED→GREEN record and the merge-sync section of this round follow in this
-section's bookkeeping commit.)
+### Role fix (RED→GREEN) — commits `35b7c67e` (RED) + `01243a68` (fix) + `1c84435c` (post-merge gate fixes)
+
+- **RED (captured at the pre-contract tip, commit `35b7c67e`)**: a new
+  role-behavior `describe` block appended to
+  `packages/runtime/test/runtime-requirement-facts-provider.test.ts` (the natural
+  home — the file already carries the `assertRequirementFactScope` malformed-scope
+  suite; the append region is disjoint from #46's L89–96 TEMPLATE-const edit, so the
+  merge auto-merged it cleanly). Four legs pinning the POST-CONTRACT behavior:
+  (1) a role-less template scope is rejected `MALFORMED_DTO` at `$.role`;
+  (2) a non-closed role (`'boss'`) is rejected the same way; (3) the production
+  provider `resolveFacts` rejects the role-less scope BEFORE any port call (a
+  throw-counting probe port proves no I/O); (4) `requirementFactScopeRoleOf`
+  derives the role from the bound blueprint leader template identity (leader
+  template → `leader`, any other → `member`) and a derived-role scope round-trips
+  frozen. Run at tip `45b5b975`: **4 failed | 15 passed (19), EXIT=1** — genuine
+  assertion RED (the old contract accepts role-less template scopes; the helper
+  does not exist yet). `sync2-role-red.log` (full-legible). The helper is referenced
+  through a DYNAMIC import so the file stays collectable at both tips (RED is an
+  assertion failure, never a broken module graph).
+- **The fix (`01243a68`)**: the audit's single missing site T1 — the finding-I
+  template-scope live-feed thunk in `template-disable-no-requirements-gate.test.ts`
+  — now constructs the scope WITH `role: requirementFactScopeRoleOf(world.blueprint.leader.templateId, templateId)`
+  (derived from the world's bound blueprint leader identity, never hardcoded — the
+  thunk is generic over templateId; this world's delegate target `worker` → `member`).
+  This mirrors #46's own idiom at its five production sites and three helper-based
+  test sites. DISCLOSED pre-merge state: at the pre-merge tip the static helper
+  import is unresolved, so this file's collection is RED by design there; the merge
+  commit is the GREEN point for the T1 suite (the contract's home).
+- **Post-merge gate fixes (`1c84435c`, test file only, zero behavior change)**:
+  the first merged-head pass surfaced (a) 2 NEW `no-unused-vars` lint entries at
+  the no-I/O leg's throw-only probe (`(type, name)` unused) and (b) 1 typecheck
+  error — the INTENTIONALLY MALFORMED role-less literal is not assignable to
+  `RequirementFactScope` under the new contract (exactly the compile-time face of
+  the contract the leg tests at runtime). Fixes: the probe now uses `(type, name)`
+  in its error message; the malformed literal is cast `as unknown as RequirementFactScope`
+  with an explanatory comment (the cast bypasses the compile-time contract on
+  purpose — the leg pins the RUNTIME fail-closed guard, which the type cannot
+  express). Provider file = the ONLY post-merge change; suite re-verified 19/19
+  GREEN at the final head.
+
+### Merge sync (commit `29c7b99e`, parents `01243a68` + `8e18819c`)
+
+MERGE strategy, no rebase, no history rewrite, no force-push of any kind.
+`origin/master` verified = `8e18819c4e589f685b99a86769251565ee4fc7ec` before the merge.
+
+- **Conflict list (complete — every resolution)**:
+  1. `packages/testkit/test/p4t6-session-event-scan.test.ts` — both sides changed the
+     pin region (and this side the title). Resolution: title = UNION (this branch's
+     three file records + the two #46 file records appended — #46 itself recorded its
+     increments in the pin comment only); pin region = the chronological union of both
+     comment blocks (this branch's 899 record + #46's 896→897→898 records verbatim) +
+     the new merged-union block; pin set to the RECOMPUTED value (below).
+  2. `dev/agent-workflow/SESSION_ROUTER_LOG.md` — both sides appended after the last
+     common entry (the 2026-09-29 #47 pair). Resolution: BOTH append sides kept
+     VERBATIM — this branch's three 2026-10-01 entries (I+J / I-residual / #47 sync)
+     then #46's three entries (2026-10-01 finding A / 2026-10-02 BLOCK fix round /
+     2026-10-02 master-integration sync) — date-nondecreasing union, zero rewrites,
+     zero deletions (only the three marker lines removed; 4883 → 4881 lines).
+  3. `packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map` +
+     `root.js.map` — dist conflicts (both sides' root.js deltas touched the source;
+     the .map offsets disagreed). Resolution: taken from the #46 side as placeholder,
+     then REGENERATED from the merged tree (below) — the fresh build's output
+     committed (it differs from BOTH sides: the merged source carries #46's role
+     lines + this branch's consent scopeKey spread).
+  4. **Auto-merged without conflict** (verified content-correct):
+     `packages/runtime/src/plugin/root.ts` (all five #46 role sites at L869/930/979/
+     1341/3064 + the #46 import + this branch's consent scopeKey spread at L3095 —
+     disjoint regions), `dist/.../root.js` (byte-identical to the fresh build after
+     regeneration), `packages/runtime/test/runtime-requirement-facts-provider.test.ts`
+     (#46's L97 `TEMPLATE` const with `role: 'member'` + this branch's appended
+     role-behavior suite + the `isTeamContractError` import), all of #46's
+     requirement-facts sources (this branch never touched them), #46's two new test
+     files, #46's evidence dir (disjoint), #46's persona test edits (this branch
+     never touched those files).
+- **Dist re-canonicalization (protocol a)**: fresh `pnpm build` (9/9 Done, EXIT=0) +
+  `pnpm run build:composition` (glue 1 placement, 91 modules, 11 css) on the MERGED
+  tree. The composition check's first pass flagged exactly the two conflict .map files
+  as stale (the `--theirs` placeholders); after staging the fresh build's output,
+  `pnpm run check:artifacts` **EXIT=0 — OK: 1372 files (incl. 1 glue placement)**, and
+  post-build `git status` = ZERO drift under `packages/` (the fresh build IS the
+  merged dist — canonical). `sync2-merged-build.log` + `sync2-check-artifacts-merged.log`
+  (full-legible). Re-verified at the final head: `sync2-p4t6-artifacts-finalhead.log`
+  (check:artifacts EXIT=0 1372 again — the only post-merge change is a test file,
+  outside the dist surface).
+- **p4t6 pin recomputation (protocol c — RECOMPUTED, never assumed)**: the scanner
+  `.mjs` is BYTE-IDENTICAL on both sides (verified `git diff HEAD origin/master --
+  packages/testkit/fault-injection/session-event-scan.mjs` = empty). The probe run at
+  the old pin (899) FAILED as the recompute signal: **"expected 901 to be 899"**
+  (1 failed | 9 passed — the 9 non-count assertions all passed, i.e. no scan-content
+  drift; `sync2-p4t6-recompute-probe.log`). The pin was set to the COMPUTED value
+  **901** = 896 base + 2 (#46: persona-kind-provider-preflight +
+  persona-kind-shipped-dist-smoke) + 3 (#48: template-disable / consent /
+  leader-disable) — matching the prediction, confirmed by the scanner, with the
+  in-pin comment carrying old→new (899/898 → 901) + why. GREEN at 901: 10/10
+  (`sync2-p4t6-green-901.log`), re-verified at the final head
+  (`sync2-p4t6-artifacts-finalhead.log`).
+- **Role-wiring note**: #46's five production role sites arrive from master
+  (auto-merged; this branch's root.ts delta disjoint); this branch's only role-wiring
+  gap (T1, the test fixture) was corrected pre-merge (`01243a68`); the 5 #46-owned
+  test sites arrive verbatim; NO production gap existed on this branch (audit above).
+
+### Full re-test at the merged head (all full-legible logs committed)
+
+- **Focused (merge head `29c7b99e`)**: 11 files / **138 tests GREEN, EXIT=0**
+  (`sync2-focused-merged-head.log`): the 3 task suites (template-disable 5 /
+  leader-disable 5 / consent 19) + the role-fix RED→GREEN suite (provider file 19/19
+  — the 4 RED legs now GREEN) + #46's two new suites (persona-kind 14/14 + shipped
+  dist smoke 2/2 — part of the new PASSING surface; #46's merge adds NO failing
+  tests) + #46's four role-fixed test files (mcp-live / d1-d3 / leader-template /
+  leader-recovery) + this branch's requirement-facts.test.ts.
+- **Full `pnpm vitest run` RUN 1 (merge head)**: **9F|403P (412 files) / 19F|4762P
+  (4781 tests), EXIT=1** (`sync2-full-run1-mergehead.log`) — failed-file set:
+  t1-capability-schema 9 / t2-blueprint-hash 1 / d3-member-identity-context 1 /
+  p6t3-mediation 5 / p6t3-restart 2 / p6t6-actions 1 + the 3 file-level collection
+  failures (p8s3b-result-effects / t12a-b2-child-identity / t12a-glue-handoff-ports)
+  = **IDENTICAL to the recorded 31ad828d pristine-base debt set**; p6t1-parallel 0
+  this run (inside the recorded 0–2 flake envelope). **New failures beyond the debt
+  set: NONE.** Arithmetic closed: 4781 = 4761 (prior merged head 67df74eb) + 16
+  (#46: 14 suite + 2 smoke) + 4 (this round's role legs).
+- **Post-merge gate fixes** (`1c84435c`, above) → **full RUN 2 (final head
+  `1c84435c`)**: **9F|403P (412) / 19F|4762P (4781), EXIT=1 — BYTE-IDENTICAL
+  failed-file set and per-file counts to RUN 1** (`sync2-full-run2-finalhead.log`).
+  The final head is the fully-verified one.
+- **lint**: 142 problems (117 errors | 25 warnings), EXIT=1 — the pre-existing debt
+  (`sync2-lint-merged-final.log`). File-aware fingerprint diff vs the committed
+  baseline (`lint-fp-merged-fileaware.txt`, 142 lines): **ZERO new entries, ZERO
+  deleted entries** — exactly SIX shifted pairs (same rule + message, line:col moved
+  by documented insertions): provider.ts 87:8→94:8 / 96:8→104:8 / 442:32→505:32
+  (#46's in-place provider edits — the same shift pairs #46's own sync entry
+  recorded), d1-d3 test 340:7→341:7 (#46's role line), provider test 42:15→44:15 /
+  42:32→44:32 (this round's +2 import lines). The FIRST merged-head pass
+  (`sync2-lint-merged-firstpass.log` / `sync2-lint-fp-merged-firstpass-fileaware.txt`,
+  kept for transparency) had 144 lines = the 6 shifts + the 2 NEW entries from the
+  new test code — both FIXED in `1c84435c` before pushing (NEW = fixed). The one
+  #47-era deletion (governance-reset-tombstone 248:10) was already in the baseline
+  (absent) and stayed absent; #46's own dead-helper removal likewise does not
+  re-appear.
+- **typecheck FULL**: **EXIT=0, 8/8 projects Done** (`sync2-typecheck-merged.log`,
+  full-legible — after the `1c84435c` cast fix; the first merged-head pass carried
+  the 1 TS2322 on the intentionally-malformed literal, fixed before pushing).
+- **check:artifacts FULL**: **EXIT=0, OK 1372 files** at the merge head
+  (`sync2-check-artifacts-merged.log`) and re-verified at the final head
+  (`sync2-p4t6-artifacts-finalhead.log`).
+- **p4t6 @ the recomputed pin 901**: 10/10 GREEN at both heads (above).
+
+### Red-line compliance (this round)
+
+CORE PATCH BUDGET = 0 (upstream / test-use untouched); no host instances
+(:3080/:3180/~/.dsh zero — no DSH instance started); no model/config changes;
+no test weakening — the role additions make the T1 construction VALID under the new
+contract (a correction; the RED→GREEN suite pins the fail-closed behavior it
+enforces; the frozen T-leg assertions untouched — the only test-file changes:
+adding the missing `role` to the T1 construction + the role-behavior RED→GREEN suite
++ the 2 zero-behavior post-merge lint/typecheck fixes); NO credentials in any
+output/file; MERGE non-rebase, zero history rewrite, zero force-push; the scope
+ruling (disabled-template existing-instance send-message exemption = intentional,
+NOT a finding, no change this round) stays recorded in the #47 sync entry above and
+is untouched by this round.
+
+### UNREVIEWED (protocol d)
+
+The merge commit `29c7b99e` + `1c84435c` + this sync (the #46 delta now present on
+this branch: requirement-facts/{types,provider,index}.ts, src/plugin/root.ts role
+sites, the persona test files, their dist, their evidence; the p4t6 899/898→901
+recompute; the router-log union; the dist re-canonicalization) is covered by NO
+review pass — the #48 content review (PASSED on the leader fix + J per the external
+ruling @ `45b5b975`) continues against the #48 source, which the sync left
+semantically unchanged (the T1 role addition is the only #48-side test correction;
+production #48 sources untouched by the merge). **NO merge to master, NO merge
+authorization — this branch's new HEAD goes to external re-review only.**
 
 ## Evidence index (all committed in this directory; raw logs scrubbed — token-free)
 
@@ -601,3 +769,38 @@ section's bookkeeping commit.)
 - `merge-typecheck.log` — full-legible typecheck (EXIT=0, 8/8 Done).
 - `merge-build.log` (9/9, EXIT=0), `merge-build-composition.log` (glue + composition
   + check:artifacts **EXIT=0, OK 1372 files** — full-legible).
+
+### Master sync round 2 (PR #46 role contract; all full-legible — command line
+first line + complete stdout/stderr + true EXIT line; token-free)
+
+- `sync2-role-audit-grep.log` — the pre-merge role-wiring audit raw grep sweep
+  (work-order grep + extended: all kind-'template' literals repo-wide, every
+  resolveFacts / assertRequirementFactScope call site, RequirementFactScope type
+  references, testkit builders).
+- `sync2-role-red.log` — RED capture at the pre-contract tip `45b5b975` (role-
+  behavior suite: **4 failed | 15 passed, EXIT=1** — genuine assertion RED).
+- `sync2-p4t6-recompute-probe.log` — the RECOMPUTE SIGNAL: p4t6 at the old pin 899
+  on the merged tree (1 failed | 9 passed, EXIT=1 — **"expected 901 to be 899"**;
+  scanner authoritative count = 901).
+- `sync2-p4t6-green-901.log` — p4t6 GREEN at the computed pin 901 (10/10, EXIT=0).
+- `sync2-merged-build.log` — `pnpm build` (9/9, EXIT=0) + `pnpm run build:composition`
+  on the merged tree (the composition check's stale-.map flag = the two conflict
+  .map placeholders, expected).
+- `sync2-check-artifacts-merged.log` — `pnpm run check:artifacts` after staging the
+  fresh dist (**EXIT=0, OK 1372 files**).
+- `sync2-focused-merged-head.log` — focused 11 files / 138 tests GREEN at merge head
+  `29c7b99e` (EXIT=0).
+- `sync2-full-run1-mergehead.log` — full suite RUN 1 at merge head (9F|403P (412) /
+  19F|4762P (4781), EXIT=1 — failed-file set = the 31ad828d debt set; zero new).
+- `sync2-lint-merged-firstpass.log` + `sync2-lint-fp-merged-firstpass-fileaware.txt`
+  (144 lines) — first merged-head lint pass (144 = 142 baseline + 2 NEW from the new
+  test code — kept for transparency; the 2 NEW were fixed before pushing).
+- `sync2-lint-merged-final.log` + `sync2-lint-fp-merged-final-fileaware.txt`
+  (142 lines) — final lint (117E|25W; file-aware diff vs the committed baseline =
+  ZERO new, ZERO deleted, six documented shift pairs).
+- `sync2-typecheck-merged.log` — full-legible typecheck (**EXIT=0, 8/8 Done** —
+  after the `1c84435c` cast fix).
+- `sync2-full-run2-finalhead.log` — full suite RUN 2 at the FINAL head `1c84435c`
+  (byte-identical to RUN 1: 9F|403P (412) / 19F|4762P (4781), EXIT=1).
+- `sync2-p4t6-artifacts-finalhead.log` — final-head re-verification: p4t6 10/10 @ 901
+  + check:artifacts EXIT=0 OK 1372 files.
