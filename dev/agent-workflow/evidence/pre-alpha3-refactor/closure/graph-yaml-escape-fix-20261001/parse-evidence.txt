@@ -1,0 +1,11 @@
+== identical command: python3 -c 'import yaml,sys; yaml.safe_load(open(sys.argv[1])); print(PARSE OK)' <file>  (PyYAML 6.0.1) ==
+--- BEFORE: master 1385f1ee copy ---
+ParserError: while parsing a block mapping; in master copy, line 742, column 5; expected <block end>, but found '<scalar>'; in master copy, line 743, column 3078
+--- BEFORE: pr52 a04681a4 copy ---
+ParserError: IDENTICAL positions (line 742 col 5 -> line 743 col 3078); line743 byte-identical to master (sha256 01fdb7d01b3ba7a3642b8bd24ee7f5b32ea9ae4090faa9bbe3622e237cdf3820, 5499 chars)
+--- BEFORE attribution ---
+git blame 1385f1ee -- graph.yaml -L743 => 401e8a125 (armourpiercer1 2026-09-30 15:22:07 +0800)
+--- defect ---
+L743 key progress: single-line double-quoted scalar; internal pair around 4 commits at offsets 3076/3086 unescaped; open=14 close=5498. L744-748 each exactly 2 quotes (clean).
+--- AFTER fix (this commit; sole change: escape those two quotes) ---
+PARSE OK; safe_load round-trip preserves literal text including the quoted phrase; full file parses (all other additions incl. 14:3xZ/14:4xZ notes validated).
