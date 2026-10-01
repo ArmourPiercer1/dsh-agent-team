@@ -102,10 +102,18 @@ function withDom(html, fn) {
 }
 
 const RID = 'pr-e-s9-recovery-dispatch-0123456789abcdef'
-const PAYLOAD = { schema: 'recovery-dispatch/v1', instanceId: 'inst-7', note: 'ünïcode ✓' }
-// BATCH-3 BLOCK-B: the root session identity from the SAME durable fact row
-// (shape mirrors the real world: 'session-mpr-t1-mpr-2026-10-01T13-21-34').
-const ROOT = 'session-pr-e-root-01'
+// BATCH-3 BLOCK-B: the root session identity from the SAME durable fact row.
+// MEMBER-ROUND rename: the fixture root mirrors the REAL kit world's shape
+// ('session-prereq-main-…') so the structured diagnostic's bounded id
+// whitelist (^session-prereq-|^session-team-child-) is exercised FOR REAL.
+const ROOT = 'session-prereq-main-fixture-01'
+// PARENT-AUTHORIZED member mode: the child-session id shape of the live
+// durable world (session-team-child-<32 hex> @prereq-2026-10-01T20-10-50).
+const MEMBER = 'session-team-child-f47ac10b58cc4372a5670e02b2c3d479'
+// LIVE FACT (prereq evidence): a delegate reviewPayload carries a TOP-LEVEL
+// rootSessionId (pendingSeen[].reviewPayload keys verified) — the member-mode
+// cross-check needs it, so the fixture payload mirrors that shape.
+const PAYLOAD = { schema: 'recovery-dispatch/v1', instanceId: 'inst-7', note: 'ünïcode ✓', rootSessionId: ROOT }
 const DECOY = 'session-pr-e-decoy-other'
 // EXTERNAL runtime fact (review @23a43f20): the header shows the session's
 // DISPLAY TITLE (kit meta.cwd → 'prreq smoke session'), never the raw
@@ -195,24 +203,43 @@ function baseArgs(paths) {
     '--viewport', '1440x900', '--marker-dir', paths.markerDir]
 }
 
-function mkCliFixture({ mode = 0o600, digestMode = 'file' } = {}) {
+/** MEMBER-MODE durable world file, mirroring the LIVE shape verified at
+ *  tests/homes/prereq-2026-10-01T20-10-50/storages/team_domain.json:
+ *  tables.session_bindings[sessionId] = JSON string {instanceId, kind:
+ *  'team-member', rootSessionId, schemaVersion, sessionId}; member_instances
+ *  is keyed by the JSON string {"instanceId","rootSessionId"} and its value
+ *  carries childSessionId. Overrides exist ONLY to stage typed-refusal legs. */
+function mkTeamDomainJson({ member = MEMBER, root = ROOT, instanceId = 'inst-a1b2c3', bindingOverride = null, omitBinding = false, childOverride = null } = {}) {
+  const binding = { instanceId, kind: 'team-member', rootSessionId: root, schemaVersion: 1, sessionId: member }
+  const bindings = omitBinding ? {} : { [member]: JSON.stringify(bindingOverride === null ? binding : { ...binding, ...bindingOverride }) }
+  const instKey = JSON.stringify({ instanceId, rootSessionId: root })
+  const inst = { childSessionId: childOverride ?? member, instanceId, rootSessionId: root, label: 'w-b1', lifecycle: 'SETTLED', templateId: 'worker', schemaVersion: 1 }
+  return JSON.stringify({ unit: { name: 'team_domain', version: 2 }, global: null, tables: { session_bindings: bindings, member_instances: { [instKey]: JSON.stringify(inst) } } })
+}
+
+function mkCliFixture({ mode = 0o600, digestMode = 'file', member = false, payloadOverride = null, domainJson = null } = {}) {
   const dir = mkTmp('s2o-cli-')
   const access = join(dir, 'browser-access.json')
   const payloadFile = join(dir, 'payload.json')
   const digestFile = join(dir, 'fact.json')
+  const payloadValue = payloadOverride ?? PAYLOAD
+  const digest = reviewPayloadDigestOf(payloadValue)
   writeFileSync(access, JSON.stringify({
     launchUrl: 'http://127.0.0.1:3181/?token=PRIVATE-tok-launch', origin: 'http://127.0.0.1:3181',
-    requestId: RID, reviewPayloadDigest: DIGEST, world: '/x/tests/homes/w',
+    requestId: RID, reviewPayloadDigest: digest, world: '/x/tests/homes/w',
   }))
   chmodSync(access, mode)
-  writeFileSync(payloadFile, JSON.stringify(PAYLOAD))
+  writeFileSync(payloadFile, JSON.stringify(payloadValue))
   // BATCH-3: ledger-ROW shape (mirrors seedFact: {factType,createdAt,payload,
   // rootSessionId,schemaVersion,sequence} — the root identity rides the SAME
   // durable row; findRequestFact BFS reaches the payload leaves).
   writeFileSync(digestFile, JSON.stringify({
     factType: 'control-request-recorded', createdAt: '2026-10-02T00:00:00.000Z', sequence: '42',
-    schemaVersion: 2, rootSessionId: ROOT, payload: { requestId: RID, reviewPayloadDigest: DIGEST, reviewPayload: PAYLOAD },
+    schemaVersion: 2, rootSessionId: ROOT, payload: { requestId: RID, reviewPayloadDigest: digest, reviewPayload: payloadValue },
   }))
+  // MEMBER-MODE: this world's durable team_domain (member→instance→root).
+  const domain = join(dir, 'team_domain.json')
+  if (member) writeFileSync(domain, domainJson ?? mkTeamDomainJson())
   const evidence = join(dir, 'evidence')
   const markerDir = join(dir, 'marker')
   // BATCH-3 BLOCK-A: a REGULAR FILE standing in for the system chrome binary
@@ -221,12 +248,12 @@ function mkCliFixture({ mode = 0o600, digestMode = 'file' } = {}) {
   writeFileSync(chrome, '#!/bin/sh\n')
   chmodSync(chrome, 0o755)
   return {
-    dir, access, payloadFile, digestFile, evidence, markerDir, chrome,
+    dir, access, payloadFile, digestFile, evidence, markerDir, chrome, domain,
     args: (digestMode === 'file'
       ? baseArgs({ access, digestFile, payloadFile, evidence, markerDir })
-      : ['--access', access, '--rid', RID, '--digest', DIGEST, '--payload-file', payloadFile,
+      : ['--access', access, '--rid', RID, '--digest', digest, '--payload-file', payloadFile,
         '--evidence', evidence, '--viewport', '1440x900', '--marker-dir', markerDir]
-    ).concat(['--chrome', chrome]),
+    ).concat(['--chrome', chrome], member ? ['--member-session', MEMBER, '--team-domain', domain] : []),
   }
 }
 
@@ -930,6 +957,13 @@ function wireCollapsedHtml(opts = {}) {
 function wireNamedGroupHtml() {
   return headerHtml(FIXTURE_TITLE) + collapsedTreeHtml({ groupLabel: 'dsh-agent-team' }) + tablistHtml(['Chat', 'Team']) + goodHtml({})
 }
+/** BLANK-ROOT WORLD (journal truth: Tmain has ZERO turn/start — its row is
+ *  permanently invisible, and the pinned host returns null chrome for blank
+ *  roots): the root row does NOT render at all; the DURABLY BOUND member
+ *  child session row is visible and is the lawful entry. */
+function wireMemberHtml(panelOpts = {}) {
+  return headerHtml(FIXTURE_TITLE) + sessionTreeHtml([DECOY, MEMBER], { selected: DECOY }) + tablistHtml(['Chat', 'Team']) + goodHtml(panelOpts)
+}
 /** Rows rendered (group already open) but the root rides behind the
  *  'Show N more sessions' overflow — a button that exists ONLY post-
  *  expansion (PR55 driver header @46043f78: "THE OVERFLOW BUTTON ONLY EXISTS
@@ -1283,12 +1317,18 @@ test('67 resolveExpected binds rootSessionId from the SAME durable fact doc (row
   const dir = mkTmp('s2o-root-')
   const flat = join(dir, 'flat.json')
   const pay = join(dir, 'pay.json')
-  writeFileSync(pay, JSON.stringify(PAYLOAD))
-  writeFileSync(flat, JSON.stringify({ requestId: RID, reviewPayloadDigest: DIGEST }))
+  // MEMBER-ROUND note: the live reviewPayload carries a rootSessionId, so the
+  // "absent ⇒ null" leg must use a payload WITHOUT one (the collector binds
+  // the root from the row AND the payload — by design).
+  const noRoot = { ...PAYLOAD }
+  delete noRoot.rootSessionId
+  const noRootDigest = reviewPayloadDigestOf(noRoot)
+  writeFileSync(pay, JSON.stringify(noRoot))
+  writeFileSync(flat, JSON.stringify({ requestId: RID, reviewPayloadDigest: noRootDigest }))
   assert.equal(resolveExpected({ rid: RID, digestFile: flat, payloadFile: pay }).rootSessionId, null)
   const conflict = join(dir, 'conflict.json')
   writeFileSync(conflict, JSON.stringify({
-    rootSessionId: 'session-A', rows: [{ requestId: RID, reviewPayloadDigest: DIGEST, rootSessionId: 'session-B' }],
+    rootSessionId: 'session-A', rows: [{ requestId: RID, reviewPayloadDigest: noRootDigest, rootSessionId: 'session-B' }],
   }))
   throwsCode(() => resolveExpected({ rid: RID, digestFile: conflict, payloadFile: pay }), 'S2O_ROOT_ID_AMBIGUOUS')
 })
@@ -1316,8 +1356,13 @@ test('69 WIRING: root row present but the click never lands (decoy stays selecte
 })
 
 test('70 WIRING: durable fact without rootSessionId ⇒ S2O_ROOT_ID_MISSING fail-closed (no default-session guessing)', async () => {
-  const f = mkCliFixture()
-  writeFileSync(f.digestFile, JSON.stringify({ requestId: RID, reviewPayloadDigest: DIGEST }))
+  // MEMBER-ROUND note: the payload ALSO carries the root by live shape, so
+  // this leg's fixture payload must not carry one — else the binding would
+  // (correctly) resolve and the refusal would not fire.
+  const noRoot = { ...PAYLOAD }
+  delete noRoot.rootSessionId
+  const f = mkCliFixture({ payloadOverride: noRoot })
+  writeFileSync(f.digestFile, JSON.stringify({ requestId: RID, reviewPayloadDigest: reviewPayloadDigestOf(noRoot) }))
   const browser = makeFakeBrowser({ html: wireHtml() })
   const clock = fakeClock()
   await assert.rejects(
@@ -1495,10 +1540,11 @@ test('80 root row rides behind the post-expansion overflow: one scoped overflow 
 const STAGE_KEYS = ['expectedRootPresent', 'matchGroupState', 'matchKeyAttr', 'rowCount', 'stage', 'treeitemCount', 'ungroupedCount', 'ungroupedExpanded', 'welcomeCount', 'welcomeVisible']
 const GROUP_STATES = ['expanded', 'collapsed', 'absent']
 
-function assertDiagnosticShape(diag) {
-  assert.deepEqual(Object.keys(diag).sort(), ['code', 'kind', 'rootSessionId', 'stages'], 'top level is EXACTLY the whitelist')
+function assertDiagnosticShape(diag, { entry = ROOT } = {}) {
+  assert.deepEqual(Object.keys(diag).sort(), ['code', 'entrySessionId', 'kind', 'rootSessionId', 'stages'], 'top level is EXACTLY the whitelist')
   assert.equal(diag.kind, 's2o-entry-diagnostic')
-  assert.equal(diag.rootSessionId, ROOT, 'the synthetic root id already held in typed form is the only id-bearing string')
+  assert.equal(diag.rootSessionId, ROOT, 'the synthetic root id rides the bounded ^session-prereq- whitelist (null for foreign shapes)')
+  assert.equal(diag.entrySessionId, entry, 'entry perspective is EVIDENCED: root-entry echoes the root, member-entry the bounded child id')
   assert.ok(Array.isArray(diag.stages) && diag.stages.length > 0)
   for (const s of diag.stages) {
     assert.deepEqual(Object.keys(s).sort(), STAGE_KEYS, `stage keys EXACTLY whitelisted, zero free-text keys: ${JSON.stringify(Object.keys(s))}`)
@@ -1597,4 +1643,104 @@ test('84 rows-present-different-key (P-a family EVIDENCED): rowCount>0 with expe
     assert.equal(s.expectedRootPresent, false, 'none carries the expected key')
     assert.equal(s.matchKeyAttr, false)
   }
+})
+
+// — PARENT-AUTHORIZED MEMBER-PERSPECTIVE ENTRY (test-lane only; VERIFIED
+// FACTS: the root view of a blank-root world is DEAD (zero turn/start on
+// Tmain — row permanently invisible), the member child session is the lawful
+// entry, and its DURABLE BINDING (storages/team_domain.json, shape verified
+// @prereq-2026-10-01T20-10-50) is the ONLY entry authority — no fallback row,
+// no product change. entryPerspective=member is stated HONEST everywhere.
+
+test('85 MEMBER MODE (blank-root world): durable binding green ⇒ entry opens the MEMBER row (root row absent), observes, marks — entryPerspective=member HONEST in result AND meta, NO diagnostic on success', async () => {
+  const f = mkCliFixture({ member: true })
+  const browser = makeFakeBrowser({ html: wireMemberHtml() })
+  const clock = fakeClock()
+  const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...clock })
+  assert.equal(res.ok, true, 'member perspective completes where the root row is invisible (journal truth)')
+  assert.equal(res.entryPerspective, 'member', 'NEVER claimed leader/root')
+  assert.equal(res.memberInstanceId, 'inst-a1b2c3')
+  assert.deepEqual(readdirSync(f.markerDir), ['marker.json'])
+  assert.equal(readdirSync(f.evidence).filter((n) => n.startsWith('s2o-entry-dump')).length, 0, 'success writes NO diagnostic')
+  const meta = JSON.parse(readFileSync(join(f.evidence, 'meta.json'), 'utf8'))
+  assert.equal(meta.entryPerspective, 'member')
+  assert.equal(meta.entrySessionId, MEMBER, 'the bounded child id is EVIDENCED in the evidence meta')
+  assert.equal(meta.memberInstanceId, 'inst-a1b2c3')
+})
+
+test('86 member bound to a FOREIGN root (durable mismatch): typed refusal BEFORE any UI action, browser NEVER touched, zero writes', async () => {
+  const f = mkCliFixture({ member: true, domainJson: mkTeamDomainJson({ bindingOverride: { rootSessionId: WRONG_ROOT } }) })
+  const browser = makeFakeBrowser({ html: wireMemberHtml() })
+  let launches = 0
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => { launches += 1; return browser }, ...fakeClock() }),
+    (err) => { assert.ok(err instanceof ObserverError); assert.equal(err.code, 'S2O_MEMBER_BINDING_MISMATCH'); return true },
+  )
+  assert.equal(launches, 0, 'the DURABLE check precedes any UI action')
+  assert.deepEqual(readdirSync(f.markerDir), [])
+  assert.deepEqual(readdirSync(f.evidence), [])
+})
+
+test('87 member NOT in this world\'s session_bindings: S2O_MEMBER_NOT_IN_BINDINGS before any UI, zero writes — never the "first visible row"', async () => {
+  const f = mkCliFixture({ member: true, domainJson: mkTeamDomainJson({ omitBinding: true }) })
+  const browser = makeFakeBrowser({ html: wireMemberHtml() })
+  let launches = 0
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => { launches += 1; return browser }, ...fakeClock() }),
+    (err) => { assert.equal(err.code, 'S2O_MEMBER_NOT_IN_BINDINGS'); return true },
+  )
+  assert.equal(launches, 0)
+  assert.deepEqual(readdirSync(f.markerDir), [])
+  assert.deepEqual(readdirSync(f.evidence), [])
+})
+
+test('88 member mode COMPOSES with fresh-boot activation: collapsed group expands, the revealed MEMBER row becomes the entry', async () => {
+  const f = mkCliFixture({ member: true })
+  const browser = makeFakeBrowser({ html: wireCollapsedHtml(), groupExpand: 'render', expandIds: [MEMBER, DECOY] })
+  const clock = fakeClock()
+  const res = await runObservation(parseCli(f.args), { launch: async () => browser, ...clock })
+  assert.equal(res.ok, true)
+  assert.equal(res.entryPerspective, 'member')
+})
+
+test('89 durable binding DRIFT between checks is typed (direct resolveMemberBinding — the post-marker recheck semantics)', async () => {
+  const mod = await import('./stage2-observer.mjs')
+  assert.equal(typeof mod.resolveMemberBinding, 'function', 'exported for the reviewer to audit the ONE binding authority')
+  const dir = mkTmp('s2o-domain-')
+  const p = join(dir, 'team_domain.json')
+  writeFileSync(p, mkTeamDomainJson())
+  const first = mod.resolveMemberBinding({ teamDomainPath: p, memberSessionId: MEMBER, expectedRootSessionId: ROOT })
+  assert.deepEqual(first, { memberInstanceId: 'inst-a1b2c3', memberRootSessionId: ROOT, memberSessionId: MEMBER })
+  writeFileSync(p, mkTeamDomainJson({ childOverride: `session-team-child-${'b'.repeat(32)}` }))
+  assert.throws(
+    () => mod.resolveMemberBinding({ teamDomainPath: p, memberSessionId: MEMBER, expectedRootSessionId: ROOT }),
+    (err) => { assert.equal(err.code, 'S2O_MEMBER_BINDING_MISMATCH'); return true },
+    'the instance row no longer names OUR child session — provenance broke',
+  )
+})
+
+test('90 member mode refuses a reviewPayload WITHOUT the durable rootSessionId BEFORE the browser — an unprovable perspective never observes', async () => {
+  const noRoot = { schema: 'recovery-dispatch/v1', instanceId: 'inst-7', note: 'ünïcode ✓' }
+  const f = mkCliFixture({ member: true, payloadOverride: noRoot })
+  let launches = 0
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), {
+      launch: async () => { launches += 1; return makeFakeBrowser({ html: wireMemberHtml({ payloadValue: noRoot }) }) },
+      ...fakeClock(),
+    }),
+    (err) => { assert.equal(err.code, 'S2O_MEMBER_BINDING_MISMATCH'); return true },
+  )
+  assert.equal(launches, 0)
+  assert.deepEqual(readdirSync(f.markerDir), [])
+})
+
+test('91 ENTRY failure in member mode: the diagnostic records BOTH bounded ids (root + entry=member), stage shape unchanged', async () => {
+  const f = mkCliFixture({ member: true })
+  const browser = makeFakeBrowser({ html: wireCollapsedHtml(), groupExpand: 'nothing' })
+  await assert.rejects(
+    () => runObservation(parseCli(f.args), { launch: async () => browser, ...fakeClock() }),
+    (err) => { assert.equal(err.code, 'S2O_GROUP_EXPAND_NO_ROWS'); return true },
+  )
+  const text = readDiagnostic(f)
+  assertDiagnosticShape(JSON.parse(text), { entry: MEMBER })
 })

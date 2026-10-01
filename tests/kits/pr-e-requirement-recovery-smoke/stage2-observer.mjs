@@ -195,8 +195,19 @@ export class ObserverError extends Error {
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
 
-const CLI_FLAGS = Object.freeze(['access', 'rid', 'digest', 'digest-file', 'payload-file', 'evidence', 'viewport', 'marker-dir', 'testuse', 'chrome'])
+const CLI_FLAGS = Object.freeze(['access', 'rid', 'digest', 'digest-file', 'payload-file', 'evidence', 'viewport', 'marker-dir', 'testuse', 'chrome', 'member-session', 'team-domain'])
 const CLI_REQUIRED = Object.freeze(['access', 'rid', 'payload-file', 'evidence', 'viewport', 'marker-dir'])
+
+// PARENT-AUTHORIZED MEMBER-PERSPECTIVE ENTRY (test-lane only). The member
+// session id must be a child-session id of THIS world (live durable shape:
+// session-team-child-<32 hex>, verified @prereq-2026-10-01T20-10-50); the
+// team-domain file is this world's storages/team_domain.json, from which the
+// member→instance→root binding is verified DURABLY before any UI action.
+const MEMBER_SESSION_RE = /^session-team-child-[0-9a-f]{32}$/
+const MEMBER_INSTANCE_ID_RE = /^inst-[0-9a-z]{4,32}$/
+// The structured diagnostic only ever echoes world-shaped synthetic ids.
+const DIAG_ID_RE = /^(?:session-prereq-|session-team-child-)/
+const TEAM_DOMAIN_MAX_BYTES = 16 * 1024 * 1024
 
 function flagCode(name) {
   return `CLI_MISSING_${name.toUpperCase().replace(/-/g, '_')}`
@@ -268,6 +279,18 @@ export function parseCli(argv) {
     // BATCH-3: optional system-Chrome override; existence/regularity are
     // verified at launch (buildLaunchOptions), not at parse time.
     chromePath: values.has('chrome') ? resolve(values.get('chrome')) : null,
+    // PARENT-AUTHORIZED MEMBER PERSPECTIVE (both together or neither; the
+    // durable binding is verified from --team-domain BEFORE any UI action).
+    memberSessionId: null,
+    teamDomainPath: null,
+  }
+  if (values.has('member-session') || values.has('team-domain')) {
+    if (!values.has('member-session')) throw new ObserverError('CLI_MISSING_MEMBER_SESSION', '--team-domain without --member-session: the member entry must name the child session whose binding is checked')
+    if (!values.has('team-domain')) throw new ObserverError('CLI_MISSING_TEAM_DOMAIN', '--member-session without --team-domain: member entry MUST be proven from this world\'s durable storages/team_domain.json, never from the CLI id alone')
+    const memberId = values.get('member-session')
+    if (!MEMBER_SESSION_RE.test(memberId)) throw new ObserverError('CLI_MEMBER_SESSION_SHAPE', `--member-session must match ${MEMBER_SESSION_RE}: ${memberId}`)
+    opts.memberSessionId = memberId
+    opts.teamDomainPath = requireRegularFile(values.get('team-domain'), '--team-domain')
   }
   return opts
 }
@@ -844,6 +867,65 @@ async function activateFreshBootRail(page, { rootSessionId, nowFn, sleep, onStag
   throw new ObserverError('S2O_OVERFLOW_UNBOUNDED', 'the session overflow kept offering more pages past the bounded 5 expansions — refusing an unbounded rail walk')
 }
 
+/** PARENT-AUTHORIZED MEMBER PERSPECTIVE: bounded durable provenance check
+ *  (member session → member instance → Tmain root) over THIS world's
+ *  storages/team_domain.json — the exact shape verified live at
+ *  tests/homes/prereq-2026-10-01T20-10-50 (@2026-10-01): tables.session_bindings
+ *  [sessionId] = JSON string {instanceId, kind:'team-member', rootSessionId,
+ *  schemaVersion, sessionId}; tables.member_instances is keyed by the JSON
+ *  string {"instanceId","rootSessionId"} and its value carries childSessionId.
+ *  ZERO UI involvement, ZERO writes; every refusal typed. NEVER a fallback to
+ *  "first visible row" — the binding is the ONLY entry authority. */
+export function resolveMemberBinding({ teamDomainPath, memberSessionId, expectedRootSessionId }) {
+  if (!MEMBER_SESSION_RE.test(String(memberSessionId))) {
+    throw new ObserverError('CLI_MEMBER_SESSION_SHAPE', `--member-session must match ${MEMBER_SESSION_RE}`)
+  }
+  let st = null
+  try { st = lstatSync(teamDomainPath) } catch { /* typed below */ }
+  if (st === null || !st.isFile() || st.isSymbolicLink()) {
+    throw new ObserverError('S2O_MEMBER_DOMAIN_SHAPE', `--team-domain must be a regular file (the world's storages/team_domain.json): ${teamDomainPath}`)
+  }
+  if (st.size > TEAM_DOMAIN_MAX_BYTES) {
+    throw new ObserverError('S2O_MEMBER_DOMAIN_SHAPE', `--team-domain is ${st.size}B > ${TEAM_DOMAIN_MAX_BYTES}B bound — refusing to parse a domain file this large`)
+  }
+  let doc = null
+  try { doc = JSON.parse(readFileSync(teamDomainPath, 'utf8')) } catch {
+    throw new ObserverError('S2O_MEMBER_DOMAIN_SHAPE', `--team-domain is not parseable JSON: ${teamDomainPath}`)
+  }
+  const bindings = doc?.tables?.session_bindings
+  const instances = doc?.tables?.member_instances
+  if (!isPlainObjectDoc(bindings) || !isPlainObjectDoc(instances)) {
+    throw new ObserverError('S2O_MEMBER_DOMAIN_SHAPE', 'team_domain.json lacks tables.session_bindings / tables.member_instances (this is not a team_domain file)')
+  }
+  const rawBinding = bindings[memberSessionId]
+  if (typeof rawBinding !== 'string') {
+    throw new ObserverError('S2O_MEMBER_NOT_IN_BINDINGS', `no session_bindings row exists for ${memberSessionId} — the member session is not a durable child of THIS world (no guessing, no fallback row)`)
+  }
+  let binding = null
+  try { binding = JSON.parse(rawBinding) } catch { /* typed below */ }
+  if (binding === null || typeof binding !== 'object') {
+    throw new ObserverError('S2O_MEMBER_BINDING_MISMATCH', `the session_bindings row for ${memberSessionId} is not a JSON object — refusing`)
+  }
+  if (binding.kind !== 'team-member' || binding.sessionId !== memberSessionId || binding.rootSessionId !== expectedRootSessionId || !MEMBER_INSTANCE_ID_RE.test(String(binding.instanceId))) {
+    throw new ObserverError('S2O_MEMBER_BINDING_MISMATCH', `the durable binding of ${memberSessionId} does not name kind=team-member / itself / the expected rootSessionId / a shaped instanceId — the member belongs to a DIFFERENT world or root (fail closed, no marker)`)
+  }
+  let matches = 0
+  for (const [rawKey, rawVal] of Object.entries(instances)) {
+    let key = null
+    let val = null
+    try { key = JSON.parse(rawKey); val = JSON.parse(String(rawVal)) } catch { continue }
+    if (key?.instanceId === binding.instanceId && key?.rootSessionId === expectedRootSessionId && val?.childSessionId === memberSessionId) matches += 1
+  }
+  if (matches !== 1) {
+    throw new ObserverError('S2O_MEMBER_BINDING_MISMATCH', `member_instances holds ${matches} row(s) for {instance:${binding.instanceId}, root:expected} → child ${memberSessionId} (exactly 1 required) — the durable provenance chain is not singular (fail closed, no marker)`)
+  }
+  return { memberInstanceId: binding.instanceId, memberRootSessionId: binding.rootSessionId, memberSessionId }
+}
+
+function isPlainObjectDoc(v) {
+  return v !== null && typeof v === 'object' && !Array.isArray(v)
+}
+
 /** PARENT-AUTHORIZED STRUCTURED ENTRY DIAGNOSTIC — replaces the sanitized-DOM
  *  dump CONTENT (0600 atomic first-writer writer byte-kept; still NO PNG per
  *  the external-found ruling). Values come ONLY from entryDiagnosticDom's
@@ -852,12 +934,16 @@ async function activateFreshBootRail(page, { rootSessionId, nowFn, sleep, onStag
  *  residual scanForSecrets tripwire STAYS as-is (defense-in-depth): clean by
  *  construction means it should never fire, weakening it is not on the table.
  *  Fully best-effort: a diagnostic failure never masks the typed failure. */
-function captureEntryFailureDiagnostic({ evidenceDir, secrets, code, stages, rootSessionId }) {
+function captureEntryFailureDiagnostic({ evidenceDir, secrets, code, stages, rootSessionId, entrySessionId }) {
   try {
+    // Bounded ids ONLY: the world-shaped synthetic prefixes; anything else
+    // serializes as null (the shape stays structural, never arbitrary text).
+    const diagId = (v) => (typeof v === 'string' && DIAG_ID_RE.test(v) ? v : null)
     const payload = {
       kind: 's2o-entry-diagnostic',
       code: String(code).replace(/[^\w.:-]/g, '_').slice(0, 64),
-      rootSessionId,
+      rootSessionId: diagId(rootSessionId),
+      entrySessionId: diagId(entrySessionId),
       stages,
     }
     while (JSON.stringify(payload).length > ENTRY_DUMP_MAX_CHARS && payload.stages.length > 1) payload.stages.pop()
@@ -888,6 +974,26 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
   if (typeof rootSessionId !== 'string') {
     throw new ObserverError('S2O_ROOT_ID_MISSING', 'the durable fact carries no rootSessionId — the root session to open MUST come from the same durable request (--digest-file with the ledger row); no default-session guessing')
   }
+  // PARENT-AUTHORIZED MEMBER PERSPECTIVE (test-lane): the DEFAULT entry is
+  // the root row (unchanged); --member-session switches the entry TARGET to
+  // the durable child session — but ONLY after the member→instance→Tmain
+  // provenance chain has been verified from this world's team_domain.json,
+  // BEFORE any browser launch. The reviewPayload (live-verified) carries a
+  // top-level rootSessionId; member mode demands it equal the durable root,
+  // or the member perspective would be unprovable. No fallback, ever.
+  const memberMode = typeof opts.memberSessionId === 'string'
+  let memberBinding = null
+  if (memberMode) {
+    memberBinding = resolveMemberBinding({
+      teamDomainPath: opts.teamDomainPath,
+      memberSessionId: opts.memberSessionId,
+      expectedRootSessionId: rootSessionId,
+    })
+    if (expected.payloadValue === null || typeof expected.payloadValue !== 'object' || expected.payloadValue.rootSessionId !== rootSessionId) {
+      throw new ObserverError('S2O_MEMBER_BINDING_MISMATCH', 'member mode requires the durable reviewPayload to carry a rootSessionId EQUAL to the durable root — the observed perspective would be unprovable (fail closed, no marker)')
+    }
+  }
+  const entrySessionId = memberMode ? opts.memberSessionId : rootSessionId
   const sleep = sleepFn ?? ((ms) => new Promise((done) => setTimeout(done, ms)))
   const testuseDir = opts.testuse ?? defaultTestuseRoot()
   // BATCH-3 BLOCK-A: the verified config (system Chrome, sandbox ON, pipe) is
@@ -939,42 +1045,42 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
         // authorized; read-only snapshots, NO behavior influence).
         const entryStages = []
         const snapEntryStage = async (stage) => {
-          entryStages.push({ stage, ...(await page.evaluate(entryDiagnosticDom, rootSessionId)) })
+          entryStages.push({ stage, ...(await page.evaluate(entryDiagnosticDom, entrySessionId)) })
         }
         try {
           await snapEntryStage('nav')
           await page.waitForSelector('[role="treeitem"]', { timeout: OBSERVE_TIMEOUT_MS })
-          await activateFreshBootRail(page, { rootSessionId, nowFn, sleep, onStage: snapEntryStage })
-          const rootCount = await page.evaluate(rootSessionRowsDom, rootSessionId)
+          await activateFreshBootRail(page, { rootSessionId: entrySessionId, nowFn, sleep, onStage: snapEntryStage })
+          const rootCount = await page.evaluate(rootSessionRowsDom, entrySessionId)
           if (rootCount === 0) {
-            throw new ObserverError('S2O_ROOT_ROW_MISSING', `no session-browser row carries data-row-key="session:${rootSessionId}" even after the bounded fresh-boot activation (notice/group/overflow) — refusing to observe whatever session the page landed on`)
+            throw new ObserverError('S2O_ROOT_ROW_MISSING', `no session-browser row carries data-row-key="session:${entrySessionId}" even after the bounded fresh-boot activation (notice/group/overflow) — refusing to observe whatever session the page landed on (entry perspective: ${memberMode ? 'member' : 'root'})`)
           }
           if (rootCount > 1) {
             throw new ObserverError('S2O_ROOT_ROW_AMBIGUOUS', `${rootCount} rows carry the root session id — refusing to pick one`)
           }
-          const rootRow = await page.$(`[data-row-key="session:${rootSessionId.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"]`)
-          if (rootRow === null) throw new ObserverError('S2O_ROOT_ROW_MISSING', 'the root row vanished between count and click')
-          // THE root selection click (coordinator ruling 2026-10-02; the
+          const rootRow = await page.$(`[data-row-key="session:${entrySessionId.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"]`)
+          if (rootRow === null) throw new ObserverError('S2O_ROOT_ROW_MISSING', 'the entry row vanished between count and click')
+          // THE entry selection click (coordinator ruling 2026-10-02; the
           // notice/group/overflow clicks above are the PR55-proven activation
           // steps, each scoped + at-most-once). Never allow/deny/refresh.
           await rootRow.click()
           const rootReady = await waitUntilTruthy({
-            probe: () => page.evaluate(rootSessionReadyDom, rootSessionId),
+            probe: () => page.evaluate(rootSessionReadyDom, entrySessionId),
             deadlineAt: nowFn() + OBSERVE_TIMEOUT_MS,
             nowFn,
             sleepFn: sleep,
           })
           if (rootReady !== true) {
-            throw new ObserverError('S2O_ROOT_NEVER_SELECTED', `the root row never reached aria-selected=true within ${OBSERVE_TIMEOUT_MS}ms (fail closed, no marker)`)
+            throw new ObserverError('S2O_ROOT_NEVER_SELECTED', `the entry row never reached aria-selected=true within ${OBSERVE_TIMEOUT_MS}ms (fail closed, no marker)`)
           }
-          const rootCheck = await page.evaluate(rootSessionValidatedDom, rootSessionId)
+          const rootCheck = await page.evaluate(rootSessionValidatedDom, entrySessionId)
           if (rootCheck.ok !== true) {
-            throw new ObserverError(`S2O_${rootCheck.code}`, `root identity verification refused: ${rootCheck.code}`)
+            throw new ObserverError(`S2O_${rootCheck.code}`, `entry identity verification refused: ${rootCheck.code}`)
           }
         } catch (error) {
           captureEntryFailureDiagnostic({
             evidenceDir: opts.evidenceDir, secrets, code: error?.code ?? 'ENTRY_UNTYPED',
-            stages: entryStages, rootSessionId,
+            stages: entryStages, rootSessionId, entrySessionId,
           })
           throw error
         }
@@ -1073,14 +1179,46 @@ export async function runObservation(opts, { launch = null, nowFn = () => Date.n
       'panel-normal.png': passes.normal.shotPanel,
       'panel-narrow.png': passes.narrow.shotPanel,
     }
-    const evidence = writeEvidenceBundle(opts.evidenceDir, evidenceFiles, secrets)
+    const evidence = writeEvidenceBundle(opts.evidenceDir, {
+      ...evidenceFiles,
+      'meta.json': JSON.stringify({
+        ...JSON.parse(evidenceFiles['meta.json']),
+        entryPerspective: memberMode ? 'member' : 'root', // HONEST (DoD f): never claimed leader
+        entrySessionId: typeof entrySessionId === 'string' && DIAG_ID_RE.test(entrySessionId) ? entrySessionId : null,
+        memberInstanceId: memberBinding?.memberInstanceId ?? null,
+      }, null, 2),
+    }, secrets)
     const marker = writeMarkerIfAllPass({
       allPassed, markerDir: opts.markerDir, requestId: opts.rid, digest: expected.expectedDigest,
     })
     if (marker.ok !== true) {
       throw new ObserverError('S2O_CHECKS_FAILED', `observation refused the marker (${marker.reason}) — see ${join(evidence.dir, 'comparisons.json')}`)
     }
-    return { ok: true, markerPath: marker.path, evidenceDir: evidence.dir }
+    if (memberMode) {
+      // Parent-ordered binding cross-checks AFTER the marker (the ordering is
+      // the ruling): durable re-read must be drift-free, and the marker must
+      // carry the SAME pending RID + the durable digest. A typed failure here
+      // exits non-zero — the kit/paired lane then records UI NOT_RUN and the
+      // orphaned marker is NEVER consumed (the observer deletes nothing).
+      const recheck = resolveMemberBinding({
+        teamDomainPath: opts.teamDomainPath,
+        memberSessionId: opts.memberSessionId,
+        expectedRootSessionId: rootSessionId,
+      })
+      if (JSON.stringify(recheck) !== JSON.stringify(memberBinding)) {
+        throw new ObserverError('S2O_MEMBER_BINDING_MISMATCH', 'the durable member binding CHANGED between entry and post-marker recheck — provenance drift (fail closed)')
+      }
+      let markerDoc = null
+      try { markerDoc = JSON.parse(readFileSync(marker.path, 'utf8')) } catch { markerDoc = null }
+      if (markerDoc === null || markerDoc.requestId !== opts.rid || markerDoc.digest !== expected.expectedDigest) {
+        throw new ObserverError('S2O_MEMBER_BINDING_MISMATCH', 'the written marker does not carry the same pending RID + durable digest the entry was bound to (fail closed)')
+      }
+    }
+    return {
+      ok: true, markerPath: marker.path, evidenceDir: evidence.dir,
+      entryPerspective: memberMode ? 'member' : 'root',
+      memberInstanceId: memberBinding?.memberInstanceId ?? null,
+    }
   } finally {
     await browser.close()
   }
