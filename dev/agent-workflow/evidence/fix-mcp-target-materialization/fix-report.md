@@ -759,7 +759,8 @@ new-failure-timestamp judgment anywhere.
 | agentSetup reconcile (L2262) | — (it STAMPS the truth; unchanged) | n/a |
 | `workDelivery.deliver` | YES (+ `args.recovery`) | throw BEFORE the followup → the work chain settles fail-closed (durable `delivery-failed`, N3 throw-after-settle) → typed **WORK_DELIVERY_FAILED** (the existing machinery) |
 | `sessionInput.submitAttributedInput` | YES (no marker carrier on the wire — see §15.7) | throw before the inbox acceptance → the EXISTING coordinator wrap maps to **MESSAGING_DELIVERY_FAILED**; the intent fact stays pending (R2/R3: recoverable); zero coordinator changes |
-| `deliverRootInput` | YES (no marker carrier on the wire) | throw before the followup → the root initial-work strategy maps to WORK_DELIVERY_FAILED → remote **TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED**; the durable admission stays for the same-token retry; NO terminal root-work fact |
+| `deliverRootInput` (NORMAL root work: the Root initial work, the B6 context) | YES (no marker carrier on the wire) | throw before the followup → the root initial-work strategy maps to WORK_DELIVERY_FAILED → remote **TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED**; the durable admission stays for the same-token retry; NO terminal root-work fact. *(consolidated-revision P2a: the C1 control notification no longer rides this throw — see the row below; the pre-revision row implicitly included it — the liveness hole the fix closes)* |
+| `deliverRootControlNotification` (the C1 control notification — consolidated-revision P2a) | NO (arrives at the shared final-input boundary with `livenessOnly: true` — the verdict is NOT consulted; the boundary reconcile still runs) | liveness PRESERVED — delivered even while the root's required mcp materialization is failed (the pending-approval channel is the frozen matrix's liveness-preserved class, the same family as the completion notification) |
 | `deliverRootWorkCompletionNotification` | NO (result ignored — unchanged) | liveness PRESERVED (a liveness failure is a liveness failure; the B6 contract owns at-least-once) |
 | `executeTool` | NO (result ignored — unchanged) | diagnostic path, unchanged |
 | exported `prepareAgentForRequest` | observation | non-input consumers see `{verdict}` and may ignore it (contract unchanged: the boundary still runs the reconcile) |
@@ -844,17 +845,47 @@ The 28 failed tests, all accounted for:
   the d0712695 and the e28dfef3 merged-head baseline (the
   4793-test run at 09:01Z carried the same 19 + 2 p6t1 flakes).
 - **9 = a2c7-subtree-matcher's "REAL pinned backend" section** —
-  ENVIRONMENT/CLASSIFIED: every one of the 9 fails on the
-  `the real backend section ran (the prebuilt pinned lib is present
-  on this host)` presence guard (`expected false to be true` — the
-  pinned prebuilt lib is ABSENT on this host at run time). Proven
-  non-regression: (a) the suite is GREEN in the 09:01Z e28dfef3
-  baseline run on the SAME host (`✓ a2c7 (31 tests)` in
-  `merge-full-suite-allpkgs.log`) — the host state flipped between
-  runs; (b) the suite does NOT import `agent-bindings` or anything
-  this diff touches (import-disjoint — a pure path-containment
-  matcher test; verified by grep). Stable-red in isolated re-runs
+  ENVIRONMENT/CLASSIFIED: all 9 fail via the single root cause
+  (pinned lib absent at run time): 1 on the presence guard assertion
+  itself (`the real backend section ran (the prebuilt pinned lib is
+  present on this host)`, `expected false to be true` — the pinned
+  prebuilt lib is ABSENT on this host at run time), 8 as downstream
+  TypeErrors from the same root cause (REAL unavailable →
+  FLOWS2(REAL) undefined). Proven non-regression: (a) the suite is
+  GREEN in the 09:01Z e28dfef3 baseline run on the SAME host
+  (`✓ a2c7 (31 tests)` in `merge-full-suite-allpkgs.log`) — the host
+  state flipped between runs; (b) DIRECT imports are disjoint from
+  the diff; the transitive closure reaches action-router/{effects,
+  work-execution}.ts via control/service.ts → action-router/index.js;
+  non-regression rests instead on the byte-invariant pinned-lib
+  presence guard (test file untouched by the diff) + the same-host
+  09:01Z green baseline + the isolated re-run (re-green at the final
+  head once the host lib loads). Stable-red in isolated re-runs
   (`A2C7_ISOLATED_EXIT=1`) while the lib stays absent.
+
+  **IN-PLACE CORRECTION (consolidated-revision round — panel R2
+  findings F1/F2, WORDING-level only, zero gate-number impact):**
+  the original text of this bullet stated (i) "every one of the 9
+  fails on the presence guard" and (ii) "the suite does NOT import
+  `agent-bindings` or anything this diff touches (import-disjoint — a
+  pure path-containment matcher test; verified by grep)". Claim (ii)
+  was FALSE at the transitive level: the a2c7 suite value-imports
+  `createControlService` (control/index.js) → `control/service.ts`
+  value-imports `withTeamLock` from `action-router/index.js` → which
+  value-re-exports `effects.js` + `work-execution.js` — both modified
+  by 9e1d1ffb; the "verified by grep" covered DIRECT imports only.
+  Claim (i) over-stated the assertion surface: exactly 1 of the 9
+  fails the guard assertion itself; the other 8 fail as downstream
+  TypeErrors from the same root cause. Corrected IN PLACE per the
+  reviewer's exact rewording (the same in-place-correction +
+  explicit-note precedent as #49's aa97fc2c — the round-1 report is
+  not yet externally frozen). The gate CONCLUSION (9F =
+  host-environment, zero new) STANDS independently on the
+  byte-invariant pinned-lib presence guard (the test file itself is
+  untouched by the diff) + the same-host 09:01Z green baseline + the
+  isolated re-run. The PR #50 banner (the parent's lane) carries the
+  same sub-claim — the parent rewords it at the next banner update;
+  this report text is the authoritative corrected form.
 - **0 = p6t1-parallel** in the final full run. It flaked in
   intermediate runs (2 failures at the 09:01Z baseline and in
   runtime-only runs 09:30–09:35Z: `two activated results with distinct
@@ -949,3 +980,318 @@ provenance headers — `merge-typecheck.log` / `merge-full-suite.log`
 `merge-full-suite-allpkgs.log`) / `merge-full-suite-allpkgs.log`
 (COMPLETE, 4793, EXIT annotation at its line 6)). A review pass
 covering this round must re-run before any merge decision.
+
+## 16. CONSOLIDATED REVISION ROUND — user's external final bounded re-review of 64cd6614: THREE remaining LOCAL issues (P1 / P2a / P2b) — ALL within the existing frozen matrix (NEW UNREVIEWED CHANGES — CHECKPOINT PUSHED, pre-sync)
+
+### 16.0 Round status
+
+- Scope per the user's order: ONE consolidated revision (local code +
+  tests, coherent; NO broad redesign, NO new matrix, NO re-doing the
+  R2 seams, NO re-opening the verified marker plumbing). The old
+  classes are CONFIRMED FIXED by the re-review — this round touches
+  only the three remaining local issues.
+- Stack: `a0918b90` → `c2f13f18` (test: 3 RED legs) → `35534956`
+  (fix: agent-bindings.mjs ONLY) → `bcaeb64b` (dist co-commit).
+  CHECKPOINT `bcaeb64b` PUSHED (plain ff, `PUSH_EXIT=0`).
+- Production footprint: ONE file
+  (`packages/runtime/src/plugin/live/agent-bindings.mjs`) — the
+  expected center; no other file moved. `deliverRootInput` stays a
+  PRIVATE closure — zero exported-surface change; no TS source
+  touched — the `.d.ts` / interface surface is UNCHANGED (verified
+  at the dist co-commit: the only dist artifact that changed is the
+  placed glue).
+- #50 stays **DRAFT / BLOCKED / NO-MERGE** at every head; PR body
+  untouched; original model/settings unchanged; single writer = this
+  session; CORE PATCH BUDGET = 0.
+- The post-checkpoint MASTER SYNC (parent addendum 1) and its
+  bookkeeping land in §17 (a NEW HEAD → a NEW review round).
+
+### 16.1 The external final bounded re-review report (VERBATIM)
+
+Provenance: carried in the session (the user's bounded re-review,
+delivered after the round-1 final-HEAD push); NO in-repo file
+existed at the time of receipt — no word invented beyond the
+session record.
+
+> External final bounded re-review of checkpoint 64cd6614: old
+> classes CONFIRMED FIXED; THREE remaining LOCAL issues — "ALL
+> within the existing frozen matrix. ONE CONSOLIDATED REVISION (local
+> code + tests, coherent; NO broad redesign, NO new matrix, NO
+> re-doing the R2 seams, NO re-opening the verified marker plumbing).
+> #50 stays DRAFT/BLOCKED/NO-MERGE. Keep the original model/settings.
+> (A slot just freed — you are the SOLE writer for this; no second
+> writer, no double-writes.)"
+>
+> **P1 — ROOT template leader-id hardcoding**: `finalInputVerdictOf`
+> hardcoded `'leader'` for root classification, but a legal
+> blueprint's `leader.templateId` can be ANY slug; rename to
+> 'captain' → required requirement missed → failed mount degrades →
+> work DELIVERED (must block). FIX: derive the bound blueprint's
+> ACTUAL leader template id (same accessor the verdict already
+> uses); "NO 'leader' literal on the classification path". TEST:
+> L5 RENAMED variant — RED at a0918b90 (degrade + delivered), GREEN
+> after (zero root input + WORK_DELIVERY_FAILED + no delivered
+> confirmation).
+>
+> **P2a — control notification vs normal root work**:
+> `deliverRootControlNotification` routed through `deliverRootInput`,
+> which now BLOCKS on a REQUIRED outage → with required MCP down the
+> CONTROL notification is swallowed → pending-approval leader NOT
+> notified (liveness hole). FIX: "explicitly DISTINGUISH the control
+> notification from normal root work at the final-input boundary —
+> control notification keeps LIVENESS (not model-visible work
+> input; frozen matrix's liveness-preserved class, same family as
+> completion notification) while NORMAL root work REMAINS gated (NO
+> exemption)". TEST: L6 — under the SAME failed required MCP:
+> control notification IS DELIVERED AND ordinary root work STILL
+> BLOCKED (zero input + WORK_DELIVERY_FAILED) — RED at a0918b90
+> (swallowed) → GREEN after.
+>
+> **P2b — per-scope recovery identity**: the verdict FLATTENED team
+> + target requirements into one subject set →
+> `recovery.unavailableSubjects` exempted EVERY occurrence of the
+> same subject across scopes; `recovery.scopeKeys` NEVER read. FIX:
+> preserve PER-SCOPE identity — "a required occurrence is exempt ONLY
+> when the marker matches BOTH the scope AND the subject of that
+> specific occurrence (scopeKeys must actually be read)". "The user
+> verified the trusted internal marker plumbing — no wire-forgery
+> concern; do NOT re-open the plumbing." TEST: L7 — same MCP subject
+> in BOTH team scope and template scope; recovery covers ONLY ONE
+> scope; the OTHER scope's mount fails → MUST BLOCK. Different-
+> subject case already correct — keep green.
+>
+> ACCEPTED AS-IS (no action): the 5 new typed MESSAGING_* codes in
+> the remote closed-set mapper.
+
+### 16.2 Line-ref verification of the three defect locations (at
+a0918b90, the re-reviewed head) — NO drift
+
+All three verified against `git show a0918b90:packages/runtime/src/
+plugin/live/agent-bindings.mjs` (line refs below are that
+a0918b90 file):
+
+- **P1** — `finalInputVerdictOf` at L3166; the hardcode at **L3179**
+  `let templateId = 'leader'` (comment L3175-3177: "The root
+  session IS the leader"); the bound-blueprint fetch (L3187) happens
+  AFTER the templateId decision — the blueprint's actual leader slug
+  (`scopeRequirementInputsOf` keys the template scope on
+  `blueprint.leader.templateId`, scope-requirements.ts L110) was
+  available but never consulted for the classification target.
+- **P2a** — `deliverRootInput` at L3741 with the round-1 gate at
+  **L3767** `if (prepared.verdict.blocked) {`;
+  `deliverRootControlNotification` at L3863 ending at **L3876**
+  `await deliverRootInput({ rootSessionId: sid, text })` — the C1
+  notification (fired fire-and-forget by the control service after
+  the per-team lock, a delivery failure = a liveness failure only)
+  rode the SAME gated path as normal root work. (The second
+  `deliverRootInput` call in the file, L3803, is
+  `deliverRootWorkCompletionNotification` — the completion
+  notification, already the liveness-preserved class, prepare result
+  ignored — UNCHANGED by this round.)
+- **P2b** — the flattening at **L3190** `const requiredSubjects =
+  new Set()` (team + template inputs merged) and **L3198** `const
+  reviewedSubjects = new Set(` (built from
+  `recovery.unavailableSubjects` only); the per-server classification
+  (L3203-3212) compares subjects ONLY. `scopeKeys` appears in the
+  a0918b90 file exclusively in two JSDoc `@param` type annotations
+  (L3159, L3227) — **mechanically verified: NEVER read from the
+  recovery value in code**.
+
+### 16.3 The three fixes (agent-bindings.mjs ONLY — before/after)
+
+**P1 — the bound-blueprint leader slug (no 'leader' literal on the
+classification path).** Before (a0918b90 L3179-3187): `let
+templateId = 'leader'` with the member-row override in the else
+branch, the blueprint fetched afterwards. After (bcaeb64b
+L3196-3204): the bound blueprint is read FIRST (`const blueprint =
+getBoundBlueprint(rootSid ?? String(sessionId))` — the same accessor
+the verdict already used for the scope extraction, now hoisted above
+the target decision); the root session → **L3204** `templateId =
+blueprint.leader?.templateId`; the member path keeps the durable-row
+`templateId` (row absent → `undefined` → team scope only, strictly
+more correct than the old 'leader' fallback for a corrupt row); v1
+documents (no `leader.templateId`) → `undefined` → the lookup guard
+yields an empty template scope (v1 behavior unchanged). The literal
+`'leader'` is GONE from `finalInputVerdictOf` (grep-verified: the
+remaining 'leader' strings in the file are the v2 frontmatter
+default in the `mtmBlueprint`-side test builder and unrelated
+identifiers/comments — none on the classification path).
+
+**P2a — the explicit final-input-boundary distinction (livenessOnly).**
+Before (a0918b90 L3741/L3767/L3876): one `deliverRootInput(input)`;
+every caller — normal root work AND the C1 control notification —
+subject to the verdict gate. After (bcaeb64b): **L3823** `async
+function deliverRootInput(input, options) {` + **L3824** `const
+livenessOnly = options !== undefined && options.livenessOnly ===
+true`; the gate **L3855** `if (prepared.verdict.blocked &&
+!livenessOnly) {`; `deliverRootControlNotification` (now L3956) ends
+at **L3976** `await deliverRootInput({ rootSessionId: sid, text },
+{ livenessOnly: true })`. Semantics: the boundary RECONCILE still
+runs on the liveness path (the mount attempt stays admissible; the
+failure stands on the slot — the verdict is NOT consulted for the
+notification). The JSDoc documents the class (liveness-preserved,
+same family as the completion notification; NORMAL root work — the
+Root initial work via `deliverRootWork`, the B6 context via
+`deliverRootContext` — passes NO such flag and REMAINS gated).
+`deliverRootInput` is a PRIVATE closure — zero exported-surface
+change. The §15.5 call-site matrix row for `deliverRootInput` gained
+an inline P2a note and a NEW row for `deliverRootControlNotification`
+(the classified-row change this disclosure requires — the pre-
+revision row implicitly included the control notification in the
+gated path; that was the liveness hole).
+
+**P2b — per-scope recovery identity (scopeKeys ACTUALLY READ).**
+Before (a0918b90 L3190-3215): `requiredSubjects` (one flat subject
+set) vs `reviewedSubjects` (subject set from
+`recovery.unavailableSubjects`) — a failed required server was
+exempt when its subject was in `reviewedSubjects`, whatever the
+scope; `recovery.scopeKeys` unread. After (bcaeb64b): **L3217**
+`recoveryScopeKeys` (Set from `recovery.scopeKeys`) + **L3222**
+`recoverySubjects` (Set from `recovery.unavailableSubjects`) — BOTH
+marker halves read; **L3235** `requiredScopesByServer = new Map()`
+(subject → [scopeKey, …]) built by `addRequiredOccurrence` over the
+in-scope inputs: the TEAM scope (L3246, `scopeKey(teamScope())` =
+`'team'`) and the TARGET template scope (L3253,
+`scopeKey(templateScope(String(templateId)))` =
+`` `template:${templateId}` ``) — the canonical keys from
+`requirements/types.js` (the new import next to the existing
+`scopeRequirementInputsOf` import — no second copy of the key
+format). Per failed server (L3262-3275): NO required occurrence →
+`degradedServers`; EVERY required occurrence covered — the marker
+names BOTH the occurrence's scope (`recoveryScopeKeys.has`) AND its
+subject (`recoverySubjects.has(name)`) → `recoveryCoveredServers`;
+any uncovered occurrence → `blockedServers`. Return shape unchanged.
+The trusted marker PLUMBING (the wire shape `{scopeKeys,
+unavailableSubjects}`) is untouched — consumed as-is.
+
+### 16.4 The three new legs (L5 / L6 / L7) — pure additions, RED →
+GREEN
+
+Row count: the focused matrix went **18 → 21 rows** (pure
+additions; the 18 pre-existing rows byte-identical — verified in the
+test commit: 601 insertions / 3 deletions, the 3 deletions being the
+`mtmBlueprint` builder lines replaced by their additive-variant
+versions). New worlds on ports **4005/4006/4007** (continuing the
+3999-4004 run). `mtmBlueprint` gained three ADDITIVE opts only
+(`leaderSlug?` / `teamReq?` / `controlOps?`): the existing worlds'
+emitted YAML is byte-identical.
+
+| leg | issue | world / shape | RED signature @ a0918b90 (committed c2f13f18) | GREEN contract @ bcaeb64b |
+| --- | --- | --- | --- | --- |
+| L5 | P1 | port 4005; L3-shaped world whose leader template slug is `'captain'` (required leader-template MCP requirement; the BOOT root is the leader) | `initialWorkResponse['ok']` = **true** (the 'captain' requirement invisible to the hardcoded 'leader' id → no required occurrence → the failed required mount DEGRADES → the work DELIVERS) | `ok` **false**, error code **TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED**, zero root input (followup delta 0), the durable admission stays, NO terminal root-work fact, the leader slot `failed` |
+| L6 | P2a | port 4006; L3-shaped world (required leader-template requirement) + `request-control` in the leader envelope; the normal root work is attempted FIRST while the leader is still COLD (the only ordering where the delivery-boundary code is observable), THEN the control service fires the C1 notification | `controlNotifiedText` = **undefined** (the notification rides the gated path → the throw → the service's liveness-failure sink swallows it — the pending-approval leader never notified); the normal-work block assertions PASS in RED (work correctly blocked) | the normal root work STILL BLOCKED (`ok` false, **TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED**, zero work input) AND the control notification **DELIVERED** (the rendered `[team-control requestId=<id>]` text — startsWith the token head, includes the requestId; the notification is the ONLY root input after the gated work passage, delta exactly 1); slot `failed` |
+| L7 | P2b | port 4007; L4c-shaped world with the same MCP subject required in BOTH scopes (worker template requirement + a `teamRequirements:` entry — `teamReq` opt); the persistent fault is withdrawn from fiber B; the recovery marker covers ONLY the team scope (`scopeKeys: ['team']`, `unavailableSubjects: [L7_SERVER]`) | `bThrown` = **undefined** (the flattened exemption: the subject is in `reviewedSubjects` → BOTH scopes' occurrences exempt → the recovery re-run DELIVERS) | `bThrown` an instance of **TeamRuntimeError** with code **WORK_DELIVERY_FAILED** (`TEAM_RUNTIME_WORK_DELIVERY_FAILED`), zero input (followup delta 0), slot B `failed` after the recovery re-run — the uncovered worker-scope occurrence BLOCKS |
+
+L6 ordering note (disclosed drift-clarification, not a contract
+change): with a live+failed root, an initial-work attempt instead
+blocks at the Phase-A admission gate with
+**TEAM_RUNTIME_COMPATIBILITY_BLOCKED** (the committed T8 contract —
+the live failed truth is read at the gate) and a second
+initial-work attempt is impossible anyway (the once-per-creation
+slot). The single normal-work attempt while the leader is still cold
+is the attempt that exhibits the delivery-boundary
+**TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED** the user's parenthetical
+names; the "STILL BLOCKED" semantics hold either way: under the same
+required outage the control notification is exempt (delivered) while
+normal root work is blocked with zero input.
+
+RED evidence: `gate-red-matrix-consolidated-revision.log` (HEAD
+labeled a0918b90; literal command line; `VITEST_EXIT=1`;
+**3F|18P of 21**). GREEN evidence:
+`gate-green-matrix-consolidated-revision.log` (HEAD labeled c2f13f18
+with the uncommitted-fix status in the header; `VITEST_EXIT=0`;
+**21/21**).
+
+### 16.5 Full gates at the checkpoint head (`bcaeb64b`, clean tree)
+
+| gate | result | evidence |
+| --- | --- | --- |
+| focused raw (the matrix) | **21/21 GREEN** (18 pre-existing + L5/L6/L7) | gate-green-matrix-consolidated-revision.log (VITEST_EXIT=0) |
+| full `pnpm test` (all packages) | **28 failed / 4733 passed (4761)** — the 28F identity EXACTLY: 19 = the pre-existing debt set (t1-capability-schema 9 / t2-blueprint-hash 1 / d3-member-identity-context 1 / p6t3-mediation 5 / p6t3-restart 2 / p6t6-actions 1) + 9 = a2c7-subtree-matcher HOST-ENVIRONMENT (single root cause: pinned lib absent at run time — 1 on the presence guard assertion, 8 downstream TypeErrors; the flapping class — the §15.9.1(b) in-place correction applies); 0 = p6t1 in this run (the documented flake did not manifest); 5 file-level zero-test collections (p8s3b-result-effects / t12a-b2-child-identity / t12a-glue-handoff-ports / p7t1-ack-fingerprint / h5-bash-effects — the rotating set). Per-testcase classification in the log; none of the 28 touch this diff's surface | gate-fullsuite-consolidated-revision.log (VITEST_EXIT=1) |
+| arithmetic | 4761 = 4758 (round-1 final total) + 3 (L5/L6/L7); 4758 = 4793 (e28dfef3 merged-head baseline) + 6 (round-1 L legs) − 41 (round-1's 5 file-level collection losses vs the baseline's 3) | (as above) |
+| lint (`eslint .`) | **136 problems (111 errors, 25 warnings)** — same total as round 1. File-aware fingerprint NEW=**0**: zero findings in this round's touched files (agent-bindings.mjs, mcp-target-materialization.test.ts); the only 2 strict-new (file,loc,rule) entries vs the pre-merge baseline file are the KNOWN pre-existing identifier-verified +2 line-shift pair in runtime-requirement-facts-provider.test.ts (44:15 `'EnvironmentFact'` / 44:32 `'RequirementInput'` — baseline 42:15/42:32; the shift is the #49-merge era, not this round — the file is outside this round's diff) | gate-lint-consolidated-revision.log (LINT_EXIT=1) + gate-lint-fp-consolidated-revision.txt (the clean 136-entry fingerprint set) |
+| typecheck | **9/9 packages, TYPECHECK_EXIT=0** | gate-typecheck-consolidated-revision.log |
+| build | **9/9, BUILD_EXIT=0**; composition: the first run fails by design against the UNCOMMITTED rebuilt artifact (the check compares the worktree against the git index) — the full two-run capture is in the log; with the rebuilt artifact staged: `check-artifacts-committed` **OK 1372 files (incl. 1 glue placement), COMPOSITION_EXIT=0** | gate-build-consolidated-revision.log (committed with the dist co-commit bcaeb64b) |
+| check:artifacts (clean tree) | **OK: 1372 files; committed install-surface artifacts match the fresh build, ARTIFACTS_EXIT=0** | gate-check-artifacts-consolidated-revision.log |
+| p4t6 (session-event-scan pin) | **10/10, P4T6_EXIT=0** — the pin stays **903**: this round adds ZERO scannable files (3 test ROWS in an existing file; the fix in an existing .mjs; the dist mirror of the same existing .mjs) — arithmetic: 903 (round-1 final) + 0 = 903 | gate-p4t6-consolidated-revision.log |
+
+**F3 exact-form statement (the round-1 committed fp file):**
+`gate-lint-fp-final-verdict.txt` carries **138 lines** of which **136
+are real fingerprints**: line 136 = the eslint summary line
+`✖ 136 problems (111 errors, 25 warnings)` and line 138 =
+``4 errors and 25 warnings potentially fixable with the `--fix`
+option.``, BOTH
+glued to the last file prefix
+`packages/tools/harness/plugin.mjs|` (line 137 between them is the
+real last fingerprint, plugin.mjs 140:7 `'now'`). The fingerprint
+count is **136**. This round: a CORRECTED fp file
+(`gate-lint-fp-consolidated-revision.txt` — 136 lines, no footer)
+commits alongside the new gate logs; the round-1 file is left
+verbatim (committed logs are never rewritten).
+
+**F4 exact capture-form statement (two round-1 logs):**
+`gate-typecheck-final-verdict.log` and `gate-p4t6-final-verdict.log`
+OMIT the `git status --porcelain` header line (the other 7
+round-1 final-verdict logs include it); at their run moments the
+tree carried this batch's untracked evidence logs (the porcelain
+line would have listed them); no TRACKED change at those moments.
+The capture form stated is exactly what the files have — the
+porcelain line is absent there and present in the equivalent
+this-round logs (gate-typecheck-consolidated-revision.log /
+gate-p4t6-consolidated-revision.log include it).
+
+### 16.6 Panel record at a0918b90 (old-head coverage) + wording
+corrections landed this round
+
+- **R1 (code) = 投机通过** — all 10 items PASS (independent RED
+  6F/7P + GREEN 18/18 + the R2 seam byte-untouched + the evaluator
+  sha256-identical). Its ONE MAJOR F-1 = EXACTLY the user's P1
+  (the reviewer's fix = the bound blueprint's real leader id + a
+  renamed-leg test) — the implementation above is aligned; proceeded
+  as ordered.
+- **R2 (gates) = 通过** + 4 WORDING findings (zero gate-number
+  impact), all handled this round: **F1 (MAJOR)** — the
+  §15.9.1(b) transitive-import correction, applied IN PLACE (the
+  reviewer's exact rewording + the explicit correction note; the
+  gate conclusion STANDS) — see the in-place note in §15.9.1(b).
+  **F2 (NOTE)** — the "1 guard + 8 downstream TypeErrors" wording,
+  applied in the same in-place correction. **F3 (NOTE)** — the fp
+  file's exact form, stated in §16.5 above + the corrected fp file
+  committed this round. **F4 (NOTE)** — the two logs' capture form,
+  stated in §16.5 above.
+- **R3 (docs) = 通过** + ONE MINOR — record-level note (one line,
+  per the finding): the 42e810cd commit message calls the §14.4 WIP
+  table the "prepare-consumer matrix" — §14.4 is actually the R2
+  read-seam consumer sweep; the prepare-consumer matrix is the §15.5
+  call-site matrix. The commit message is un-amendable (pushed
+  history; force-push forbidden) — this one-line note IS the
+  record-level fix.
+
+The three internal reviewers were pinned to a0918b90 — the commits
+on top do not disturb their SHA-pinned diffs. The post-sync final
+head gets the fresh delta review round.
+
+### 16.7 Push history (this round)
+
+- DRAFT CHECKPOINT: `a0918b90..bcaeb64b` plain fast-forward
+  (`PUSH_EXIT=0`; ff-verified: the remote tip was still a0918b90, an
+  ancestor of HEAD; ls-remote first; one-shot env credential helper;
+  token zero-echo; no force, no rebase).
+- The FINAL (post-sync) head push is recorded in §17.
+
+PR #50 stays **DRAFT / BLOCKED / NO-MERGE** (no merge authorization
+exists; the banner carries the NO-merge language).
+
+### 16.8 NEW UNREVIEWED CHANGES (this round, pre-sync)
+
+Everything in `a0918b90..bcaeb64b` is NEW UNREVIEWED CHANGES: (a)
+the 3 RED legs + `mtmBlueprint` additive opts (test, pure
+additions; c2f13f18); (b) the P1/P2a/P2b fixes in agent-bindings.mjs
+(35534956); (c) the dist co-commit — the placed glue only
+(bcaeb64b); (d) the RED/GREEN/build evidence logs. PLUS this
+bookkeeping commit: the §16 section, the §15.9.1(b) in-place
+correction (F1/F2), the §15.5 matrix row change (P2a), the 6 new
+gate logs + the corrected fp file, the router-log append. A review
+pass covering this round must re-run before any merge decision —
+and the master sync (§17) moves the base, so the post-sync head is
+the review target.
