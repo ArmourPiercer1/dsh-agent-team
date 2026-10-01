@@ -90,6 +90,14 @@ describe('the governance lane stays loadable from the admission surface', () => 
     // edge to the PR1 lane or, through it, to storage).
     expect(MUTATION_SOURCE).toContain("import type {")
     expect(MUTATION_SOURCE).not.toMatch(/^import \{[^}]*\} from '\.\.\/\.\.\/storage\//m)
+    // Parent req 2 (external P1 batch): `permission-coverage.ts` is a
+    // DIFFERENT tool owner's module — the region algebra uses ONLY the
+    // kernel's own matcherCovers/subtreeContains whole-matcher relations.
+    expect(MUTATION_SOURCE).not.toContain('permission-coverage')
+    expect(SERVICE_SOURCE).not.toContain('permission-coverage')
+    // Req 1 (no deny-masquerade): the unknown-context refusal is the ONLY
+    // new code; the classification never invents a baseline.
+    expect(MUTATION_SOURCE).toContain("EFFECT_CONTEXT_UNAVAILABLE: 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE'")
   })
 })
 

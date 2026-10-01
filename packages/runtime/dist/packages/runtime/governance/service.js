@@ -54,7 +54,7 @@ import { MUTATION_ERROR_CODES, MutationError } from '../mutation/errors.js';
 import { normalizeStateView } from '../mutation/service.js';
 import { committedPolicyState } from '../effective-policy/index.js';
 import { assertCells, buildReissueRecord, buildTombstoneRecord, checkCellsAgainstEnvelope, checkCellsExternalHard, isNoChange, mergedSlotValues, mintRecordId, selectSlotWinner, slotIdentityOf, slotOf, } from './slot.js';
-import { envelopeAuthorizesExpansion, parsePermissionMutation, parsePermissionMutationEnvelope, planPermissionMutation, PERMISSION_MUTATION_ERROR_CODES, PermissionMutationError, } from './permission-mutation.js';
+import { authorizeLeaderPermissionMutation, parsePermissionMutation, parsePermissionMutationEnvelope, parsePermissionStaticLayerFacts, planPermissionMutation, PERMISSION_MUTATION_ERROR_CODES, PermissionMutationError, } from './permission-mutation.js';
 /** The storage duplicate code string (mirrors TEAM_DOMAIN_ERROR_CODES). */
 const STORAGE_RECORD_DUPLICATE = 'RECORD_DUPLICATE';
 /**
@@ -469,29 +469,37 @@ export function createGovernanceMutationService(deps) {
                     actualGeneration: currentGeneration,
                 });
             }
-            // 4. Plan the FULL next snapshot (pure kernel) — the expansions it
-            // performs are exactly the §6 direction `expansion` pairs.
+            // 4. Plan the FULL next snapshot (pure kernel). NO direction lives here:
+            // classification compares the COMPLETE latest-vs-planned rule sets by
+            // EFFECTIVE effect over the closed region partition (design v2 — the
+            // external P1 batch: verb/pair-key direction mislabels both ways).
             const plan = planPermissionMutation(latest, mutation);
             if (!plan.changed) {
                 return { changed: false, reason: 'no-change', current: latest };
             }
-            if (actor === 'leader' && plan.expansions.length > 0) {
+            if (actor === 'leader') {
+                // Authority facts bind ONCE, inside the serialized section (never
+                // mid-check): the envelope document + the LOWER-LAYER FACTS.
+                // `undefined` (no reader / reader abstains) = UNKNOWN;
+                // `{ layers: [] }` = DECLARED-NONE (known deny fallback) — distinct.
                 const envelopeDoc = lane.permissionEnvelope === undefined
-                    ? { rules: [] }
+                    ? parsePermissionMutationEnvelope({ rules: [] })
                     : parsePermissionMutationEnvelope(lane.permissionEnvelope(mutation.teamSessionId));
-                for (const expansion of plan.expansions) {
-                    const verdict = envelopeAuthorizesExpansion(envelopeDoc, expansion.operationClass, expansion.matcher, expansion.to, lane.subtreeContains);
-                    if (!verdict.authorized) {
-                        throw new PermissionMutationError(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE, `a Leader ${expansion.from}->${expansion.to} expansion on ${JSON.stringify(expansion.operationClass)} / ${JSON.stringify(expansion.resource)} is not covered by the bound MutationEnvelope (ADR §6: expansion needs a covering rule with the matcher AND the maximum-effect ceiling; zero write)`, {
-                            problem: verdict.undeterminable ? 'subtree-coverage-undeterminable' : 'no-covering-envelope-rule',
-                            operationClass: expansion.operationClass,
-                            resource: expansion.resource,
-                            from: expansion.from,
-                            to: expansion.to,
-                            undeterminable: verdict.undeterminable,
-                        });
-                    }
-                }
+                const factsRaw = lane.staticLayers?.(mutation.teamSessionId, mutation.memberInstanceId);
+                const staticFacts = factsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(factsRaw);
+                // ONE pure authorization step: effective rises inside the mutation's
+                // closed regions need whole-matcher envelope coverage with the risen
+                // effect ceiling (all-or-nothing, ladder-strict, ADR §6); a region
+                // whose verdict depends on unknown lower facts refuses typed
+                // (EFFECT_CONTEXT_UNAVAILABLE) — never a guessed deny.
+                authorizeLeaderPermissionMutation({
+                    latestRules: latest === undefined ? [] : latest.state.rules,
+                    plannedRules: plan.rules,
+                    mutationRules: mutation.rules,
+                    envelope: envelopeDoc,
+                    staticFacts,
+                    subtreeContains: lane.subtreeContains,
+                });
             }
             // 5. Commit ONE new FULL snapshot THROUGH the persistence-only port
             // (commit-before-ack; the derived snapshotId / chain terms are the

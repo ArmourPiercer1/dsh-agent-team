@@ -52,6 +52,7 @@ import {
   type GovernanceMutationService,
   type GovernanceMutationServiceDeps,
   type PermissionMutationEnvelope,
+  type PermissionStaticLayerFacts,
   type GovernancePermissionMutationArgs,
   type PermissionResourceMatcher,
 } from '../governance/index.js'
@@ -157,6 +158,7 @@ interface World0 {
 async function openServiceWorld(options: {
   envelope?: PermissionMutationEnvelope | (() => PermissionMutationEnvelope)
   subtreeContains?: (root: string, child: string) => boolean
+  staticFacts?: PermissionStaticLayerFacts
 }): Promise<World0> {
   const world = await openWorld(`a3p3-${Math.random().toString(36).slice(2, 8)}`)
   const clock = { now: NOW_A }
@@ -179,6 +181,12 @@ async function openServiceWorld(options: {
       overlay: world.port,
       ...(envelope === undefined ? {} : { permissionEnvelope: () => envelope() }),
       ...(options.subtreeContains === undefined ? {} : { subtreeContains: options.subtreeContains }),
+      // Design v2: these legs measure the EXPANSION-coded semantics over a
+      // KNOWN lower answer, so the fixture injects the DECLARED-NONE facts
+      // (`{ layers: [] }` = decidable deny fallback — never conflated with
+      // unknown, which types as EFFECT_CONTEXT_UNAVAILABLE and is pinned in
+      // a3p3-revoke-reveal-semantics.test.ts instead).
+      staticLayers: () => options.staticFacts ?? { layers: [] },
     },
   }
   return {
@@ -274,7 +282,7 @@ describe('Leader mutation inside the envelope (plan PR3)', () => {
     }
   })
 
-  it('a from-absence GRANT is an expansion measured from `deny` (fail-closed baseline)', async () => {
+  it('a from-absence GRANT is an expansion measured from the DECLARED-NONE deny fallback (known fact, not a masquerade)', async () => {
     const w = await openServiceWorld({ envelope: ENVELOPE_ALLOW_FILE })
     try {
       const ok = await w.service.mutatePermission(

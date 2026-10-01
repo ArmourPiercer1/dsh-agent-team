@@ -16,9 +16,10 @@
  * ---------------------------------------------------------------------------
  *
  * The pre-existing `MutationEnvelope` in
- * `packages/domain/blueprint/src/types.ts:270` (`{ allow, deny }` op-token
- * sets) is the OPERATION-TOKEN CAPABILITY concept: a set-intersection over
- * mutation operation tokens (`packages/runtime/admission/envelope.ts:100-131`
+ * `packages/domain/blueprint/src/types.ts:284-295` (interface at :270; the
+ * op-token `allow, deny` sets; its runtime-recognition comment at :37-45) is
+ * the OPERATION-TOKEN CAPABILITY concept: a set-intersection over
+ * mutation operation tokens (`packages/runtime/admission/envelope.ts:108-111`
  * — teamEnvelope ∩ template entry, further narrowed by the instance
  * autonomy-overlay) feeding the exec-token dual gate. It is NOT the ADR §6
  * per-rule envelope and this PR does not touch it — no rename, no mass
@@ -73,28 +74,46 @@
  * different plane, untouched here).
  *
  * ---------------------------------------------------------------------------
- * The §6/§7 semantics this kernel computes
+ * The §6/§7 semantics this kernel computes (design v2 — EFFECTIVE, not verbal)
  * ---------------------------------------------------------------------------
  *
  * - the ladder: `deny < ask < allow` on the expansion axis (ADR §6);
- * - EXPANSION = a pair's effect rank goes UP. The PRIOR effect is the pair's
- *   rule in the current authority snapshot; ABSENCE counts as `deny`
- *   (fail-closed: a fresh grant is the widest expansion, which is what makes
- *   the ADR §6 envelope actually bound grants — and it needs no live
- *   lower-layer read, which is impossible here because the static layers match
- *   OPERATIONS through the live canonicalization seam, not rule text);
- * - TIGHTENING = rank goes DOWN → needs NO expansion authority (ADR §6,
- *   pinned by test in both directions per coordinator D1);
- * - coverage: an envelope rule covers a mutation rule iff the operationClass
- *   token is EQUAL (no wildcards) AND `matcherCovers` holds AND the new effect
- *   is at or below `maximumEffect`. Matcher coverage: fingerprint covers only
- *   the IDENTICAL fingerprint (exact only, design §5); exact covers only the
- *   identical exact; a subtree root covers an exact/subtree identity strictly
- *   below it — and "below" is the INJECTED containment predicate (the
- *   canonical keys are opaque: the same reason the frozen Alpha.2 matcher
- *   refuses `startsWith`, `operation-permission/permission-resolver.ts:64-70`).
- *   With no predicate injected, subtree coverage FAILS CLOSED
- *   ({@link CoverageVerdict.undeterminable});
+ * - EXPANSION is a property of the EFFECTIVE decision, not of the mutation
+ *   verb or of a stored pair: a mutation expands iff, comparing the FULL
+ *   latest-vs-planned rule sets through the merged assembler's layer semantics
+ *   (overlay > template > blueprint; within one layer the MOST RESTRICTIVE
+ *   matching rule answers; no match falls through to the lowest declared
+ *   fallback; declared-none fails closed to `deny`) the effect RISES in any
+ *   cell of the affected CLOSED REGION PARTITION. So (external P1 batch,
+ *   reproduced in `test/a3p3-revoke-reveal-semantics.test.ts`): a `revoke`
+ *   that reveals a remaining overlay / template / fallback ALLOW is an
+ *   expansion (deny->ask/deny->allow/ask->allow VERBATIM, ladder-strict),
+ *   and a NEW exact rule under a covering subtree allow that only
+ *   TIGHTENS that resource is NOT an expansion;
+ * - TIGHTENING / identity (rank down or equal per cell) needs NO expansion
+ *   authority (ADR §6, pinned by test in both directions per coordinator D1);
+ * - coverage of a rise: an envelope rule must name an EQUAL operationClass
+ *   token (no wildcards), FULLY cover the mutation matcher (width-conservative
+ *   — a narrower-than-rises envelope refuses, pinned), and carry
+ *   `maximumEffect` at least the RISEN effective effect; ALL-OR-NOTHING over
+ *   the batch. Matcher coverage: fingerprint covers only the IDENTICAL
+ *   fingerprint (exact only, design §5); exact covers only the identical
+ *   exact; a subtree root covers identities the INJECTED containment
+ *   predicate places under it (canonical keys are opaque — the same reason
+ *   the frozen Alpha.2 matcher refuses `startsWith`,
+ *   `operation-permission/permission-resolver.ts:64-70`; WHOLE-MATCHER
+ *   containment is the ONLY relation this algebra uses — the A2
+ *   `containsOperation` is a point judgement owned by the live resolver and
+ *   never appears here). With no predicate injected, subtree questions FAIL
+ *   CLOSED ({@link CoverageVerdict.undeterminable});
+ * - unknown lower facts NEVER masquerade as `deny`: where a region's
+ *   effective verdict depends on lower layers the service was not given
+ *   (outside the four snapshot-provable cases of
+ *   {@link authorizeLeaderPermissionMutation}, each quantified over every
+ *   fallback hypothesis), the mutation refuses
+ *   EFFECT_CONTEXT_UNAVAILABLE — an unknown prior is never labeled
+ *   expansion OR tightening. `{ layers: [] }` (declared-none, known deny
+ *   fallback) is a DISTINCT, decidable case;
  * - Human mutation may exceed the envelope and records Human provenance
  *   (ADR §7) — the actor decides WHETHER the envelope applies, never anything
  *   else: provenance stays audit data (ADR §2; ADR §7 "does NOT create
@@ -120,6 +139,12 @@ export declare const PERMISSION_MUTATION_ERROR_CODES: Readonly<{
     readonly UNAUTHORIZED_ACTOR: "PERMISSION_MUTATION_UNAUTHORIZED_ACTOR";
     /** A Leader expansion no envelope rule covers (ADR §6) — zero write. */
     readonly EXPANSION_OUTSIDE_ENVELOPE: "PERMISSION_ENVELOPE_EXPANSION_DENIED";
+    /** The effective before/after of a region depends on lower-layer facts the
+     *  service was not given (`staticLayers` not injected) and the outcome is
+     *  NOT provably independent of those facts — refuse, never let an unknown
+     *  fallback masquerade as `deny` (an unknown prior must never be labeled
+     *  expansion OR tightening) — zero write. */
+    readonly EFFECT_CONTEXT_UNAVAILABLE: "PERMISSION_EFFECT_CONTEXT_UNAVAILABLE";
     /** The expectedGeneration CAS moved (plan PR3 "CAS conflict") — zero write. */
     readonly GENERATION_CONFLICT: "PERMISSION_OVERLAY_GENERATION_CONFLICT";
     /** The lane dependencies were not injected — the capability stays dormant. */
@@ -273,42 +298,140 @@ export interface CoverageVerdict {
  *   covers itself); cross-class coverage never holds.
  */
 export declare function matcherCovers(envelope: PermissionResourceMatcher, target: PermissionResourceMatcher, subtreeContains?: SubtreeContains): CoverageVerdict;
-/** The envelope answer to one expansion step (ADR §6: the covering rule
- *  names BOTH the matcher and the maximum-effect ceiling). */
-export declare function envelopeAuthorizesExpansion(envelope: PermissionMutationEnvelope, operationClass: string, matcher: PermissionResourceMatcher, toEffect: PermissionOverlayEffect, subtreeContains?: SubtreeContains): {
-    readonly authorized: boolean;
-    readonly undeterminable: boolean;
-};
-/** One expansion a Leader mutation attempts (the service checks each against
- *  the envelope; Human mutations skip the check by ADR §7). */
-export interface RequiredExpansion {
+/**
+ * One rule of a declared static permission layer (the Template policy or the
+ * Blueprint baseline), already canonicalized to THIS module's matcher grammar.
+ * `any` exists here because the A2 static lanes carry whole-tool rules; the
+ * OVERLAY grammar deliberately has no `any` (there is no unbounded overlay
+ * matcher to remove or shadow).
+ */
+export interface PermissionStaticLayerRule {
     readonly operationClass: string;
-    readonly resource: string;
-    readonly from: PermissionOverlayEffect;
-    readonly to: PermissionOverlayEffect;
-    readonly matcher: PermissionResourceMatcher;
+    readonly matcher: {
+        readonly kind: 'exact' | 'subtree' | 'fingerprint' | 'any';
+        readonly resource?: string;
+    };
+    readonly effect: PermissionOverlayEffect;
 }
-/** The plan of one mutation against the current authority snapshot. */
+/** One declared static layer: its fallback for an unmatched operation (the A1
+ *  `TemplatePermissionPolicy.default` vocabulary) and its canonical rules. */
+export interface PermissionStaticLayer {
+    readonly label?: string;
+    readonly default: 'ask' | 'deny';
+    readonly rules: readonly PermissionStaticLayerRule[];
+}
+/**
+ * The LOWER-LAYER FACTS the Leader authorization compares against, ASCENDING
+ * by precedence (`[blueprint?, template?]` — the last entry wins).
+ *
+ * The three states are DISTINCT and stay distinct (parent ruling, req 3):
+ * - `undefined` (no `staticLayers` reader, or a reader that returns
+ *   `undefined`) — the lower answer is UNKNOWN: regions whose effective
+ *   verdict depends on it refuse with EFFECT_CONTEXT_UNAVAILABLE;
+ * - `{ layers: [] }` — DECLARED-NONE: there is provably no lower layer, the
+ *   answer is the assembler's fail-closed `deny` fallback, and evaluation is
+ *   DECIDABLE;
+ * - `{ layers: [...] }` — the declared rules/fallbacks, decidable.
+ * An unknown prior must never masquerade as `deny` (either direction).
+ */
+export interface PermissionStaticLayerFacts {
+    readonly layers: readonly PermissionStaticLayer[];
+}
+/** Validate + freeze injected static-layer facts (the lane-boundary shape is
+ *  untrusted input). Malformed facts are an authority-CONFIG defect and
+ *  refuse with the envelope-malformed family (both are authority-side
+ *  documents; the mutation itself may be perfectly shaped). */
+export declare function parsePermissionStaticLayerFacts(raw: unknown): PermissionStaticLayerFacts;
+/** The three states of one region's effective answer. */
+export type PermissionEffectiveAnswer = {
+    readonly status: 'decided';
+    readonly effect: PermissionOverlayEffect;
+    readonly source: 'overlay' | 'layer' | 'fallback';
+} | {
+    readonly status: 'context-unavailable';
+};
+export interface PermissionEffectiveAnswerQuery {
+    readonly overlayRules: readonly PermissionOverlayRule[];
+    readonly staticFacts: PermissionStaticLayerFacts | undefined;
+    readonly operationClass: string;
+    /** The closed region being answered (a point probe is an `exact` matcher). */
+    readonly region: PermissionResourceMatcher;
+    readonly subtreeContains?: SubtreeContains;
+}
+/**
+ * The effective answer of ONE closed region (pure; exported for the
+ * assembler-parity spec — production classification runs it INSIDE
+ * {@link authorizeLeaderPermissionMutation}, never re-reads context).
+ */
+export declare function permissionEffectiveAnswer(query: PermissionEffectiveAnswerQuery): PermissionEffectiveAnswer;
+export interface LeaderMutationAuthorizationInput {
+    /** The durable rule set BEFORE (latest snapshot, `[]` when none). */
+    readonly latestRules: readonly PermissionOverlayRule[];
+    /** The FULL final-batch rule set AFTER (the planned snapshot). The
+     *  comparison is COMPLETE-STATE vs COMPLETE-STATE — never a per-verb
+     *  sequential classification (parent req 4). */
+    readonly plannedRules: readonly PermissionOverlayRule[];
+    /** The mutation's parsed rules — their matchers are the affected closed
+     *  regions (the mutation's claimed scope doubles as the coverage width). */
+    readonly mutationRules: readonly PermissionMutationRule[];
+    readonly envelope: PermissionMutationEnvelope;
+    /** `undefined` = UNKNOWN lower facts (typed refusal wherever observable);
+     *  `{ layers: [] }` = declared-none (decidable deny fallback). Never
+     *  conflated. */
+    readonly staticFacts: PermissionStaticLayerFacts | undefined;
+    readonly subtreeContains?: SubtreeContains;
+}
+/**
+ * Authorize (or refuse, typed, zero write) one LEADER mutation by comparing
+ * the FULL effective before/after over every affected closed region
+ * (ADR §6 ladder-strict: deny->ask is expansion VERBATIM, so it needs
+ * ceiling-ask coverage; reveal of an equal-or-stricter answer is no rise).
+ *
+ * A rise in ANY cell demands that the envelope cover the WHOLE mutation
+ * matcher (width-conservative: a narrower-than-rises envelope refuses — the
+ * conservative edge is pinned) with `maximumEffect` at least the risen
+ * effect, for EVERY rising cell of the batch (all-or-nothing).
+ *
+ * Context-free provable cases (each holds for ALL fallback hypotheses —
+ * declared `ask`, declared `deny`, and declared-none `deny`):
+ *   (i)   a cell where the OVERLAY answers BOTH sides — the lower layer can
+ *         never win, so the comparison is snapshot-only (B1 class);
+ *   (ii)  the AFTER overlay answer of a cell is `deny` — nothing ranks below
+ *         deny to rise FROM, whatever the unknown prior is;
+ *   (iii) the BEFORE overlay answer of a cell is `allow` — nothing ranks
+ *         above allow to reveal, whatever the unknown fallback reveals;
+ *   (iv)  a cell the overlay answers on NEITHER side — the lower answer is
+ *         the same function of the same unchanged facts both sides: equal.
+ * Anything else with `staticFacts === undefined` refuses
+ * EFFECT_CONTEXT_UNAVAILABLE — an unknown prior is never labeled expansion
+ * OR tightening.
+ */
+export declare function authorizeLeaderPermissionMutation(input: LeaderMutationAuthorizationInput): void;
+/** The plan of one mutation against the current authority snapshot.
+ *  DIRECTION IS NOT PLANNED HERE (design v2): an exact-key pair diff cannot
+ *  see same-layer specificity (a new exact rule over a covering subtree rule)
+ *  or reveal (a removal letting a remaining overlay/static rule ANSWER) —
+ *  expansion/tightening is decided SEMANTICALLY over the closed region
+ *  partition by {@link authorizeLeaderPermissionMutation}, comparing the
+ *  complete latest-vs-planned rule sets. */
 export type PermissionMutationPlan = {
     readonly changed: true;
     /** The FULL next rule set (a snapshot, never a delta — ADR §2). */
     readonly rules: readonly PermissionOverlayRule[];
-    readonly expansions: readonly RequiredExpansion[];
 } | {
     readonly changed: false;
     readonly reason: 'no-change';
 };
 /**
  * Plan one mutation against the current authority snapshot (pure): produce
- * the FULL next rule set and the expansions it performs, or the typed
- * no-change. The absence baseline is `deny` (fail-closed, module header).
+ * the FULL next rule set or the typed no-change. The rule-set mechanics are
+ * pair upserts/removals (the durable record shape); ALL semantic direction
+ * classification lives in {@link authorizeLeaderPermissionMutation}.
  *
  * A revoke carrying an effect that does NOT match the durable effect at the
- * addressed pair is a STALE VIEW and refuses with MALFORMED_MUTATION's
- * sibling — no: it refuses GENERATION_CONFLICT-shaped staleness through the
- * CAS by design (the expectedGeneration guard is the honest staleness
- * signal); the carried-effect mismatch itself refuses as
- * MALFORMED_MUTATION/problem `revoke-effect-mismatch`, still ZERO write.
+ * addressed pair is a STALE VIEW and refuses as MALFORMED_MUTATION/problem
+ * `revoke-effect-mismatch`, still ZERO write (the expectedGeneration CAS
+ * remains the honest staleness signal for everything else).
  */
 export declare function planPermissionMutation(latest: PermissionOverlaySnapshot | undefined, mutation: PermissionMutation): PermissionMutationPlan;
 //# sourceMappingURL=permission-mutation.d.ts.map

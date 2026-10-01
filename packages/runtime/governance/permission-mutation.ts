@@ -16,9 +16,10 @@
  * ---------------------------------------------------------------------------
  *
  * The pre-existing `MutationEnvelope` in
- * `packages/domain/blueprint/src/types.ts:270` (`{ allow, deny }` op-token
- * sets) is the OPERATION-TOKEN CAPABILITY concept: a set-intersection over
- * mutation operation tokens (`packages/runtime/admission/envelope.ts:100-131`
+ * `packages/domain/blueprint/src/types.ts:284-295` (interface at :270; the
+ * op-token `allow, deny` sets; its runtime-recognition comment at :37-45) is
+ * the OPERATION-TOKEN CAPABILITY concept: a set-intersection over
+ * mutation operation tokens (`packages/runtime/admission/envelope.ts:108-111`
  * — teamEnvelope ∩ template entry, further narrowed by the instance
  * autonomy-overlay) feeding the exec-token dual gate. It is NOT the ADR §6
  * per-rule envelope and this PR does not touch it — no rename, no mass
@@ -73,28 +74,46 @@
  * different plane, untouched here).
  *
  * ---------------------------------------------------------------------------
- * The §6/§7 semantics this kernel computes
+ * The §6/§7 semantics this kernel computes (design v2 — EFFECTIVE, not verbal)
  * ---------------------------------------------------------------------------
  *
  * - the ladder: `deny < ask < allow` on the expansion axis (ADR §6);
- * - EXPANSION = a pair's effect rank goes UP. The PRIOR effect is the pair's
- *   rule in the current authority snapshot; ABSENCE counts as `deny`
- *   (fail-closed: a fresh grant is the widest expansion, which is what makes
- *   the ADR §6 envelope actually bound grants — and it needs no live
- *   lower-layer read, which is impossible here because the static layers match
- *   OPERATIONS through the live canonicalization seam, not rule text);
- * - TIGHTENING = rank goes DOWN → needs NO expansion authority (ADR §6,
- *   pinned by test in both directions per coordinator D1);
- * - coverage: an envelope rule covers a mutation rule iff the operationClass
- *   token is EQUAL (no wildcards) AND `matcherCovers` holds AND the new effect
- *   is at or below `maximumEffect`. Matcher coverage: fingerprint covers only
- *   the IDENTICAL fingerprint (exact only, design §5); exact covers only the
- *   identical exact; a subtree root covers an exact/subtree identity strictly
- *   below it — and "below" is the INJECTED containment predicate (the
- *   canonical keys are opaque: the same reason the frozen Alpha.2 matcher
- *   refuses `startsWith`, `operation-permission/permission-resolver.ts:64-70`).
- *   With no predicate injected, subtree coverage FAILS CLOSED
- *   ({@link CoverageVerdict.undeterminable});
+ * - EXPANSION is a property of the EFFECTIVE decision, not of the mutation
+ *   verb or of a stored pair: a mutation expands iff, comparing the FULL
+ *   latest-vs-planned rule sets through the merged assembler's layer semantics
+ *   (overlay > template > blueprint; within one layer the MOST RESTRICTIVE
+ *   matching rule answers; no match falls through to the lowest declared
+ *   fallback; declared-none fails closed to `deny`) the effect RISES in any
+ *   cell of the affected CLOSED REGION PARTITION. So (external P1 batch,
+ *   reproduced in `test/a3p3-revoke-reveal-semantics.test.ts`): a `revoke`
+ *   that reveals a remaining overlay / template / fallback ALLOW is an
+ *   expansion (deny->ask/deny->allow/ask->allow VERBATIM, ladder-strict),
+ *   and a NEW exact rule under a covering subtree allow that only
+ *   TIGHTENS that resource is NOT an expansion;
+ * - TIGHTENING / identity (rank down or equal per cell) needs NO expansion
+ *   authority (ADR §6, pinned by test in both directions per coordinator D1);
+ * - coverage of a rise: an envelope rule must name an EQUAL operationClass
+ *   token (no wildcards), FULLY cover the mutation matcher (width-conservative
+ *   — a narrower-than-rises envelope refuses, pinned), and carry
+ *   `maximumEffect` at least the RISEN effective effect; ALL-OR-NOTHING over
+ *   the batch. Matcher coverage: fingerprint covers only the IDENTICAL
+ *   fingerprint (exact only, design §5); exact covers only the identical
+ *   exact; a subtree root covers identities the INJECTED containment
+ *   predicate places under it (canonical keys are opaque — the same reason
+ *   the frozen Alpha.2 matcher refuses `startsWith`,
+ *   `operation-permission/permission-resolver.ts:64-70`; WHOLE-MATCHER
+ *   containment is the ONLY relation this algebra uses — the A2
+ *   `containsOperation` is a point judgement owned by the live resolver and
+ *   never appears here). With no predicate injected, subtree questions FAIL
+ *   CLOSED ({@link CoverageVerdict.undeterminable});
+ * - unknown lower facts NEVER masquerade as `deny`: where a region's
+ *   effective verdict depends on lower layers the service was not given
+ *   (outside the four snapshot-provable cases of
+ *   {@link authorizeLeaderPermissionMutation}, each quantified over every
+ *   fallback hypothesis), the mutation refuses
+ *   EFFECT_CONTEXT_UNAVAILABLE — an unknown prior is never labeled
+ *   expansion OR tightening. `{ layers: [] }` (declared-none, known deny
+ *   fallback) is a DISTINCT, decidable case;
  * - Human mutation may exceed the envelope and records Human provenance
  *   (ADR §7) — the actor decides WHETHER the envelope applies, never anything
  *   else: provenance stays audit data (ADR §2; ADR §7 "does NOT create
@@ -136,6 +155,12 @@ export const PERMISSION_MUTATION_ERROR_CODES = Object.freeze({
   UNAUTHORIZED_ACTOR: 'PERMISSION_MUTATION_UNAUTHORIZED_ACTOR',
   /** A Leader expansion no envelope rule covers (ADR §6) — zero write. */
   EXPANSION_OUTSIDE_ENVELOPE: 'PERMISSION_ENVELOPE_EXPANSION_DENIED',
+  /** The effective before/after of a region depends on lower-layer facts the
+   *  service was not given (`staticLayers` not injected) and the outcome is
+   *  NOT provably independent of those facts — refuse, never let an unknown
+   *  fallback masquerade as `deny` (an unknown prior must never be labeled
+   *  expansion OR tightening) — zero write. */
+  EFFECT_CONTEXT_UNAVAILABLE: 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE',
   /** The expectedGeneration CAS moved (plan PR3 "CAS conflict") — zero write. */
   GENERATION_CONFLICT: 'PERMISSION_OVERLAY_GENERATION_CONFLICT',
   /** The lane dependencies were not injected — the capability stays dormant. */
@@ -640,47 +665,478 @@ export function matcherCovers(
   return { covers: subtreeContains(envelope.resource, target.resource), undeterminable: false }
 }
 
-/** The envelope answer to one expansion step (ADR §6: the covering rule
- *  names BOTH the matcher and the maximum-effect ceiling). */
-export function envelopeAuthorizesExpansion(
-  envelope: PermissionMutationEnvelope,
-  operationClass: string,
-  matcher: PermissionResourceMatcher,
-  toEffect: PermissionOverlayEffect,
-  subtreeContains?: SubtreeContains,
-): { readonly authorized: boolean; readonly undeterminable: boolean } {
-  let undeterminable = false
-  for (const rule of envelope.rules) {
-    if (rule.operationClass !== operationClass) continue
-    if (PERMISSION_EFFECT_PRECEDENCE[toEffect] > PERMISSION_EFFECT_PRECEDENCE[rule.maximumEffect]) continue
-    const verdict = matcherCovers(rule.matcher, matcher, subtreeContains)
-    if (verdict.covers) return { authorized: true, undeterminable: false }
-    if (verdict.undeterminable) undeterminable = true
+// ---------------------------------------------------------------------------
+// The STATIC LAYER context — injected facts, never injected judgement
+// ---------------------------------------------------------------------------
+
+/**
+ * One rule of a declared static permission layer (the Template policy or the
+ * Blueprint baseline), already canonicalized to THIS module's matcher grammar.
+ * `any` exists here because the A2 static lanes carry whole-tool rules; the
+ * OVERLAY grammar deliberately has no `any` (there is no unbounded overlay
+ * matcher to remove or shadow).
+ */
+export interface PermissionStaticLayerRule {
+  readonly operationClass: string
+  readonly matcher: {
+    readonly kind: 'exact' | 'subtree' | 'fingerprint' | 'any'
+    readonly resource?: string
   }
-  return { authorized: false, undeterminable }
+  readonly effect: PermissionOverlayEffect
+}
+
+/** One declared static layer: its fallback for an unmatched operation (the A1
+ *  `TemplatePermissionPolicy.default` vocabulary) and its canonical rules. */
+export interface PermissionStaticLayer {
+  readonly label?: string
+  readonly default: 'ask' | 'deny'
+  readonly rules: readonly PermissionStaticLayerRule[]
+}
+
+/**
+ * The LOWER-LAYER FACTS the Leader authorization compares against, ASCENDING
+ * by precedence (`[blueprint?, template?]` — the last entry wins).
+ *
+ * The three states are DISTINCT and stay distinct (parent ruling, req 3):
+ * - `undefined` (no `staticLayers` reader, or a reader that returns
+ *   `undefined`) — the lower answer is UNKNOWN: regions whose effective
+ *   verdict depends on it refuse with EFFECT_CONTEXT_UNAVAILABLE;
+ * - `{ layers: [] }` — DECLARED-NONE: there is provably no lower layer, the
+ *   answer is the assembler's fail-closed `deny` fallback, and evaluation is
+ *   DECIDABLE;
+ * - `{ layers: [...] }` — the declared rules/fallbacks, decidable.
+ * An unknown prior must never masquerade as `deny` (either direction).
+ */
+export interface PermissionStaticLayerFacts {
+  readonly layers: readonly PermissionStaticLayer[]
+}
+
+/** The bound on declared static rules per layer (mirrored, pinned — same
+ *  discipline as {@link MAX_RULES_BOUND}): a layer larger than the durable
+ *  rule-set bound could never be reflected by an overlay anyway. */
+const MAX_STATIC_RULES_BOUND = 256
+const MAX_STATIC_LAYERS_BOUND = 4
+
+/** Validate + freeze injected static-layer facts (the lane-boundary shape is
+ *  untrusted input). Malformed facts are an authority-CONFIG defect and
+ *  refuse with the envelope-malformed family (both are authority-side
+ *  documents; the mutation itself may be perfectly shaped). */
+export function parsePermissionStaticLayerFacts(raw: unknown): PermissionStaticLayerFacts {
+  const code = PERMISSION_MUTATION_ERROR_CODES.MALFORMED_ENVELOPE
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    refuse(code, 'static-facts-shape', 'static layer facts must be an object { layers: [...] }', {})
+  }
+  const layersRaw = (raw as { layers?: unknown }).layers
+  if (!Array.isArray(layersRaw)) {
+    refuse(code, 'static-facts-layers-array', 'static layer facts must carry a layers ARRAY ({ layers: [] } is the DECLARED-NONE case)', {})
+  }
+  if (layersRaw.length > MAX_STATIC_LAYERS_BOUND) {
+    refuse(code, 'static-facts-layers-bound', `at most ${String(MAX_STATIC_LAYERS_BOUND)} static layers (blueprint, template) are comparable`, { layers: layersRaw.length })
+  }
+  const layers: PermissionStaticLayer[] = []
+  for (const [layerIndex, layerRaw] of layersRaw.entries()) {
+    const where = { layerIndex }
+    if (typeof layerRaw !== 'object' || layerRaw === null || Array.isArray(layerRaw)) {
+      refuse(code, 'static-layer-shape', 'each static layer must be an object { label?, default, rules }', where)
+    }
+    const layer = layerRaw as { label?: unknown; default?: unknown; rules?: unknown }
+    if (layer.default !== 'ask' && layer.default !== 'deny') {
+      refuse(code, 'static-layer-fallback-closed-set', 'static layer default must be ask | deny', { ...where, default: layer.default })
+    }
+    if (!Array.isArray(layer.rules)) {
+      refuse(code, 'static-layer-rules-array', 'each static layer must carry a rules ARRAY', where)
+    }
+    if ((layer.rules as unknown[]).length > MAX_STATIC_RULES_BOUND) {
+      refuse(code, 'static-layer-rules-bound', `a static layer carries at most ${String(MAX_STATIC_RULES_BOUND)} rules`, where)
+    }
+    const rules: PermissionStaticLayerRule[] = []
+    for (const [ruleIndex, ruleRaw] of (layer.rules as unknown[]).entries()) {
+      const ruleWhere = { ...where, ruleIndex }
+      if (typeof ruleRaw !== 'object' || ruleRaw === null || Array.isArray(ruleRaw)) {
+        refuse(code, 'static-rule-shape', 'each static rule must be { operationClass, matcher, effect }', ruleWhere)
+      }
+      const rule = ruleRaw as { operationClass?: unknown; matcher?: unknown; effect?: unknown }
+      if (typeof rule.operationClass !== 'string' || rule.operationClass.length === 0) {
+        refuse(code, 'static-rule-class-string', 'static rule operationClass must be a non-empty string', ruleWhere)
+      }
+      const opClass = classifyPermissionOperationClass(rule.operationClass)
+      if (opClass === 'unknown') {
+        refuse(code, 'static-rule-class-unknown', `static rule class ${JSON.stringify(rule.operationClass)} is outside the closed permission vocabulary`, ruleWhere)
+      }
+      if (rule.effect !== 'allow' && rule.effect !== 'ask' && rule.effect !== 'deny') {
+        refuse(code, 'static-rule-effect-closed-set', 'static rule effect must be allow | ask | deny', ruleWhere)
+      }
+      if (typeof rule.matcher !== 'object' || rule.matcher === null || Array.isArray(rule.matcher)) {
+        refuse(code, 'static-rule-matcher-shape', 'static rule matcher must be { kind, resource? }', ruleWhere)
+      }
+      const matcher = rule.matcher as { kind?: unknown; resource?: unknown }
+      if (matcher.kind === 'any') {
+        if (matcher.resource !== undefined) {
+          refuse(code, 'static-rule-any-resource', 'an any-matcher carries no resource', ruleWhere)
+        }
+        rules.push(deepFreeze({ operationClass: rule.operationClass, matcher: { kind: 'any' }, effect: rule.effect }) as PermissionStaticLayerRule)
+        continue
+      }
+      const validated = validateMatcher(matcher, rule.operationClass, opClass, code, ruleWhere)
+      rules.push(deepFreeze({ operationClass: rule.operationClass, matcher: validated, effect: rule.effect }) as PermissionStaticLayerRule)
+    }
+    const label = typeof layer.label === 'string' ? layer.label : undefined
+    layers.push(deepFreeze({ ...(label === undefined ? {} : { label }), default: layer.default, rules }) as PermissionStaticLayer)
+  }
+  return deepFreeze({ layers }) as PermissionStaticLayerFacts
+}
+
+// ---------------------------------------------------------------------------
+// The effective-answer semantics of ONE closed region (the merged PR2
+// assembler's layer rules, restated PURELY for matcher-shaped inputs):
+//   overlay > template > blueprint; within ONE layer the MOST RESTRICTIVE
+//   matching rule answers (deny > ask > allow); no match falls through; the
+//   effective fallback is the LOWEST declared layer's default; with NO layer
+//   declared at all the assembler fails closed to `deny`.
+// A2's `containsOperation` is a POINT judgement owned by the live resolver —
+// this algebra never uses it; every containment question here is a WHOLE-
+// MATCHER relation over the injected {@link SubtreeContains} (or equality).
+// ---------------------------------------------------------------------------
+
+/** The three states of one region's effective answer. */
+export type PermissionEffectiveAnswer =
+  | { readonly status: 'decided'; readonly effect: PermissionOverlayEffect; readonly source: 'overlay' | 'layer' | 'fallback' }
+  | { readonly status: 'context-unavailable' }
+
+export interface PermissionEffectiveAnswerQuery {
+  readonly overlayRules: readonly PermissionOverlayRule[]
+  readonly staticFacts: PermissionStaticLayerFacts | undefined
+  readonly operationClass: string
+  /** The closed region being answered (a point probe is an `exact` matcher). */
+  readonly region: PermissionResourceMatcher
+  readonly subtreeContains?: SubtreeContains
+}
+
+function overlayEffectForRegion(
+  rules: readonly PermissionOverlayRule[],
+  operationClass: string,
+  region: PermissionResourceMatcher,
+  subtreeContains?: SubtreeContains,
+): PermissionOverlayEffect | undefined {
+  let best: PermissionOverlayEffect | undefined
+  for (const rule of rules) {
+    if (rule.operation !== operationClass) continue
+    const matcher = parsePermissionResourceText(rule.resource)
+    if (matcher === undefined) {
+      refuse(
+        PERMISSION_MUTATION_ERROR_CODES.MALFORMED_MUTATION,
+        'overlay-carrier-unparsable',
+        `the durable overlay carrier ${JSON.stringify(rule.resource)} does not parse under the PR3 grammar — the durable record is unreadable and every mutation refuses until it is`,
+        { resource: rule.resource },
+      )
+    }
+    if (!matcherCovers(matcher, region, subtreeContains).covers) continue
+    if (best === undefined || PERMISSION_EFFECT_PRECEDENCE[rule.effect] < PERMISSION_EFFECT_PRECEDENCE[best]) best = rule.effect
+  }
+  return best
+}
+
+function staticEffectForRegion(
+  facts: PermissionStaticLayerFacts,
+  operationClass: string,
+  region: PermissionResourceMatcher,
+  subtreeContains?: SubtreeContains,
+): { readonly effect: PermissionOverlayEffect; readonly source: 'layer' | 'fallback' } {
+  for (let index = facts.layers.length - 1; index >= 0; index -= 1) {
+    const layer = facts.layers[index]
+    if (layer === undefined) continue
+    let best: PermissionOverlayEffect | undefined
+    for (const rule of layer.rules) {
+      if (rule.operationClass !== operationClass) continue
+      if (rule.matcher.kind === 'any' || matcherCovers(rule.matcher as PermissionResourceMatcher, region, subtreeContains).covers) {
+        if (best === undefined || PERMISSION_EFFECT_PRECEDENCE[rule.effect] < PERMISSION_EFFECT_PRECEDENCE[best]) best = rule.effect
+      }
+    }
+    if (best !== undefined) return { effect: best, source: 'layer' }
+  }
+  // The effective fallback: the LOWEST declared layer's default; DECLARED-NONE
+  // (`layers: []`) fails closed to `deny` exactly as the merged assembler does.
+  const lowest = facts.layers[0]
+  return { effect: lowest === undefined ? 'deny' : lowest.default, source: 'fallback' }
+}
+
+/**
+ * The effective answer of ONE closed region (pure; exported for the
+ * assembler-parity spec — production classification runs it INSIDE
+ * {@link authorizeLeaderPermissionMutation}, never re-reads context).
+ */
+export function permissionEffectiveAnswer(query: PermissionEffectiveAnswerQuery): PermissionEffectiveAnswer {
+  const overlay = overlayEffectForRegion(query.overlayRules, query.operationClass, query.region, query.subtreeContains)
+  if (overlay !== undefined) return { status: 'decided', effect: overlay, source: 'overlay' }
+  if (query.staticFacts === undefined) return { status: 'context-unavailable' }
+  const lower = staticEffectForRegion(query.staticFacts, query.operationClass, query.region, query.subtreeContains)
+  return { status: 'decided', effect: lower.effect, source: lower.source }
+}
+
+// ---------------------------------------------------------------------------
+// The closed region PARTITION — laminar boundaries, residual cells, never a
+// single sample point and never resource enumeration
+// ---------------------------------------------------------------------------
+
+interface RegionCell {
+  readonly operationClass: string
+  readonly parent: PermissionResourceMatcher
+}
+
+type SubsetVerdict = 'in' | 'out' | 'whole' | 'undeterminable'
+
+/** WHOLE-MATCHER relation: is `boundary` a strict sub-region of `scope`?
+ *  Subtrees are laminar on the canonical-key tree (nested-or-disjoint): a
+ *  boundary is inside iff the injected predicate places it under the scope
+ *  root (a root-point exact counts as strictly inside its subtree — the
+ *  subtree's own identity is answered by `whole`). Without a predicate every
+ *  subtree-vs-boundary question is `undeterminable` and the CALLER refuses
+ *  (fail closed; pure exact/fingerprint regions need no predicate at all). */
+function strictSubsetVerdict(
+  boundary: PermissionResourceMatcher,
+  scope: PermissionResourceMatcher,
+  subtreeContains?: SubtreeContains,
+): SubsetVerdict {
+  if (boundary.kind === 'fingerprint' || scope.kind === 'fingerprint') {
+    if (boundary.kind === 'fingerprint' && scope.kind === 'fingerprint') {
+      return boundary.resource === scope.resource ? 'whole' : 'out'
+    }
+    return 'out'
+  }
+  if (scope.kind === 'exact') {
+    return boundary.kind === 'exact' && boundary.resource === scope.resource ? 'whole' : 'out'
+  }
+  if (boundary.kind === 'subtree' && boundary.resource === scope.resource) return 'whole'
+  if (subtreeContains === undefined) return 'undeterminable'
+  return subtreeContains(scope.resource, boundary.resource) ? 'in' : 'out'
+}
+
+function sameMatcher(a: PermissionResourceMatcher, b: PermissionResourceMatcher): boolean {
+  return a.kind === b.kind && a.resource === b.resource
+}
+
+/** Partition the mutation matcher `scope` into CELLS: every family matcher
+ *  that strictly contains a region boundary splits it, recursively. Within a
+ *  cell every family rule matches ALL resources or NONE (laminar + complete
+ *  refinement), so the effective answer is CONSTANT per cell — comparing
+ *  cells compares the full region, not a sample.
+ *  RESIDUAL cells (scope minus children) are treated as NON-EMPTY even when
+ *  emptiness would need resource enumeration to decide: that can only
+ *  over-refuse, never under-refuse. Returns `undeterminable` if any split
+ *  needed a containment verdict no predicate could give. */
+function cellsForRegion(
+  operationClass: string,
+  scope: PermissionResourceMatcher,
+  family: readonly { readonly operationClass: string; readonly matcher: PermissionResourceMatcher }[],
+  subtreeContains?: SubtreeContains,
+): readonly RegionCell[] | 'undeterminable' {
+  const cells: RegionCell[] = []
+  const seen = new Set<string>()
+  const push = (parent: PermissionResourceMatcher): void => {
+    const key = `${parent.kind}\u0000${parent.resource}`
+    if (seen.has(key)) return
+    seen.add(key)
+    cells.push({ operationClass, parent })
+  }
+  const visit = (parent: PermissionResourceMatcher): 'ok' | 'undeterminable' => {
+    push(parent)
+    const contained: PermissionResourceMatcher[] = []
+    for (const entry of family) {
+      if (entry.operationClass !== operationClass) continue
+      const verdict = strictSubsetVerdict(entry.matcher, parent, subtreeContains)
+      if (verdict === 'undeterminable') return 'undeterminable'
+      if (verdict === 'in' && !contained.some((c) => sameMatcher(c, entry.matcher))) contained.push(entry.matcher)
+    }
+    for (const child of contained) {
+      // DIRECT children only: a boundary nested inside another boundary is
+      // handled by recursing into its parent child cell.
+      if (contained.some((other) => !sameMatcher(other, child) && strictSubsetVerdict(child, other, subtreeContains) === 'in')) continue
+      if (child.kind === 'exact') push(child) // a point cell
+      else {
+        const nested = visit(child)
+        if (nested === 'undeterminable') return 'undeterminable'
+      }
+    }
+    return 'ok'
+  }
+  return visit(scope) === 'ok' ? cells : 'undeterminable'
+}
+
+// ---------------------------------------------------------------------------
+// The Leader authorization — the ONE semantic classification (design v2)
+// ---------------------------------------------------------------------------
+
+export interface LeaderMutationAuthorizationInput {
+  /** The durable rule set BEFORE (latest snapshot, `[]` when none). */
+  readonly latestRules: readonly PermissionOverlayRule[]
+  /** The FULL final-batch rule set AFTER (the planned snapshot). The
+   *  comparison is COMPLETE-STATE vs COMPLETE-STATE — never a per-verb
+   *  sequential classification (parent req 4). */
+  readonly plannedRules: readonly PermissionOverlayRule[]
+  /** The mutation's parsed rules — their matchers are the affected closed
+   *  regions (the mutation's claimed scope doubles as the coverage width). */
+  readonly mutationRules: readonly PermissionMutationRule[]
+  readonly envelope: PermissionMutationEnvelope
+  /** `undefined` = UNKNOWN lower facts (typed refusal wherever observable);
+   *  `{ layers: [] }` = declared-none (decidable deny fallback). Never
+   *  conflated. */
+  readonly staticFacts: PermissionStaticLayerFacts | undefined
+  readonly subtreeContains?: SubtreeContains
+}
+
+/**
+ * Authorize (or refuse, typed, zero write) one LEADER mutation by comparing
+ * the FULL effective before/after over every affected closed region
+ * (ADR §6 ladder-strict: deny->ask is expansion VERBATIM, so it needs
+ * ceiling-ask coverage; reveal of an equal-or-stricter answer is no rise).
+ *
+ * A rise in ANY cell demands that the envelope cover the WHOLE mutation
+ * matcher (width-conservative: a narrower-than-rises envelope refuses — the
+ * conservative edge is pinned) with `maximumEffect` at least the risen
+ * effect, for EVERY rising cell of the batch (all-or-nothing).
+ *
+ * Context-free provable cases (each holds for ALL fallback hypotheses —
+ * declared `ask`, declared `deny`, and declared-none `deny`):
+ *   (i)   a cell where the OVERLAY answers BOTH sides — the lower layer can
+ *         never win, so the comparison is snapshot-only (B1 class);
+ *   (ii)  the AFTER overlay answer of a cell is `deny` — nothing ranks below
+ *         deny to rise FROM, whatever the unknown prior is;
+ *   (iii) the BEFORE overlay answer of a cell is `allow` — nothing ranks
+ *         above allow to reveal, whatever the unknown fallback reveals;
+ *   (iv)  a cell the overlay answers on NEITHER side — the lower answer is
+ *         the same function of the same unchanged facts both sides: equal.
+ * Anything else with `staticFacts === undefined` refuses
+ * EFFECT_CONTEXT_UNAVAILABLE — an unknown prior is never labeled expansion
+ * OR tightening.
+ */
+export function authorizeLeaderPermissionMutation(input: LeaderMutationAuthorizationInput): void {
+  const { latestRules, plannedRules, mutationRules, envelope, staticFacts, subtreeContains } = input
+  const family: { readonly operationClass: string; readonly matcher: PermissionResourceMatcher }[] = []
+  for (const rules of [latestRules, plannedRules]) {
+    for (const rule of rules) {
+      const matcher = parsePermissionResourceText(rule.resource)
+      if (matcher === undefined) {
+        refuse(
+          PERMISSION_MUTATION_ERROR_CODES.MALFORMED_MUTATION,
+          'overlay-carrier-unparsable',
+          `the durable overlay carrier ${JSON.stringify(rule.resource)} does not parse under the PR3 grammar`,
+          { resource: rule.resource },
+        )
+      }
+      family.push({ operationClass: rule.operation, matcher })
+    }
+  }
+  for (const layer of staticFacts?.layers ?? []) {
+    for (const rule of layer.rules) {
+      if (rule.matcher.kind === 'any') continue // uniform over the class: never a boundary
+      family.push({ operationClass: rule.operationClass, matcher: rule.matcher as PermissionResourceMatcher })
+    }
+  }
+  const undeterminable: { readonly detail: Record<string, unknown> }[] = []
+  const unmet: { readonly detail: Record<string, unknown> }[] = []
+  for (const mutationRule of mutationRules) {
+    const operationClass = mutationRule.operationClass
+    const cells = cellsForRegion(operationClass, mutationRule.matcher, family, subtreeContains)
+    if (cells === 'undeterminable') {
+      undeterminable.push({
+        detail: {
+          operationClass,
+          region: renderPermissionResourceText(mutationRule.matcher),
+          missing: 'subtree-containment',
+          why: 'the region partition needs a containment verdict no injected predicate could give (constraint: unknown subtree relation fails closed)',
+        },
+      })
+      continue
+    }
+    for (const cell of cells) {
+      const before = permissionEffectiveAnswer({ overlayRules: latestRules, staticFacts, operationClass, region: cell.parent, subtreeContains })
+      const after = permissionEffectiveAnswer({ overlayRules: plannedRules, staticFacts, operationClass, region: cell.parent, subtreeContains })
+      const cellDetail = {
+        operationClass,
+        region: renderPermissionResourceText(cell.parent),
+        before: before.status === 'decided' ? `${before.effect}:${before.source}` : 'unknown',
+        after: after.status === 'decided' ? `${after.effect}:${after.source}` : 'unknown',
+      }
+      if (before.status === 'decided' && after.status === 'decided') {
+        if (PERMISSION_EFFECT_PRECEDENCE[after.effect] <= PERMISSION_EFFECT_PRECEDENCE[before.effect]) continue // no rise (tightening or identity)
+        const risen = after.effect
+        const covered = envelope.rules.some(
+          (rule) =>
+            rule.operationClass === operationClass &&
+            PERMISSION_EFFECT_PRECEDENCE[risen] <= PERMISSION_EFFECT_PRECEDENCE[rule.maximumEffect] &&
+            matcherCovers(rule.matcher, mutationRule.matcher, subtreeContains).covers,
+        )
+        if (!covered) {
+          unmet.push({
+            detail: {
+              ...cellDetail,
+              mutationMatcher: renderPermissionResourceText(mutationRule.matcher),
+              why: `the effective effect RISES ${before.effect}->${risen} in this cell; the envelope must cover the WHOLE mutation matcher (width-conservative) with maximumEffect at least ${risen} (ADR §6, ladder-strict)`,
+            },
+          })
+        }
+        continue
+      }
+      // At least one side answers from UNKNOWN lower facts. Provable
+      // independence (quantified over every fallback hypothesis — see header):
+      if (before.status === 'context-unavailable' && after.status === 'context-unavailable') continue // (iv) same lower function both sides: equal
+      const decided = before.status === 'decided' ? before : null
+      const afterDecided = after.status === 'decided' ? after : null
+      if (decided !== null && afterDecided === null) {
+        if (decided.effect === 'allow') continue // (iii) nothing ranks above allow
+      }
+      if (afterDecided !== null && decided === null) {
+        if (afterDecided.effect === 'deny') continue // (ii) nothing ranks below deny to rise from
+      }
+      undeterminable.push({
+        detail: {
+          ...cellDetail,
+          mutationMatcher: renderPermissionResourceText(mutationRule.matcher),
+          missing: 'static-layers',
+          why: 'the region answer depends on lower-layer facts that were not injected — a typed refusal is issued because an unknown prior is never labeled expansion OR tightening (inject staticLayers; { layers: [] } is the decidable declared-none case)',
+        },
+      })
+    }
+  }
+  // Deterministic fail-closed order: an unevaluable batch refuses as
+  // context-unavailable BEFORE a partial rise could be reported (the whole
+  // mutation is refused either way — zero write).
+  const firstUndeterminable = undeterminable[0]
+  if (firstUndeterminable !== undefined) {
+    refuse(
+      PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+      'effect-context-unavailable',
+      `the effective before/after of at least one affected region cannot be decided without the missing context (${String(undeterminable.length)} region(s)) — zero write`,
+      firstUndeterminable.detail,
+    )
+  }
+  const firstUnmet = unmet[0]
+  if (firstUnmet !== undefined) {
+    refuse(
+      PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+      'expansion-region-uncovered',
+      `a LEADER mutation raises the EFFECTIVE effect in ${String(unmet.length)} region(s) the envelope does not cover (ladder-strict; reveals included; all-or-nothing) — zero write`,
+      firstUnmet.detail,
+    )
+  }
 }
 
 // ---------------------------------------------------------------------------
 // The pure planning step: (authority snapshot, mutation) -> next snapshot
 // ---------------------------------------------------------------------------
 
-/** One expansion a Leader mutation attempts (the service checks each against
- *  the envelope; Human mutations skip the check by ADR §7). */
-export interface RequiredExpansion {
-  readonly operationClass: string
-  readonly resource: string
-  readonly from: PermissionOverlayEffect
-  readonly to: PermissionOverlayEffect
-  readonly matcher: PermissionResourceMatcher
-}
-
-/** The plan of one mutation against the current authority snapshot. */
+/** The plan of one mutation against the current authority snapshot.
+ *  DIRECTION IS NOT PLANNED HERE (design v2): an exact-key pair diff cannot
+ *  see same-layer specificity (a new exact rule over a covering subtree rule)
+ *  or reveal (a removal letting a remaining overlay/static rule ANSWER) —
+ *  expansion/tightening is decided SEMANTICALLY over the closed region
+ *  partition by {@link authorizeLeaderPermissionMutation}, comparing the
+ *  complete latest-vs-planned rule sets. */
 export type PermissionMutationPlan =
   | {
       readonly changed: true
       /** The FULL next rule set (a snapshot, never a delta — ADR §2). */
       readonly rules: readonly PermissionOverlayRule[]
-      readonly expansions: readonly RequiredExpansion[]
     }
   | { readonly changed: false; readonly reason: 'no-change' }
 
@@ -692,15 +1148,14 @@ function pairKey(operation: string, resource: string): string {
 
 /**
  * Plan one mutation against the current authority snapshot (pure): produce
- * the FULL next rule set and the expansions it performs, or the typed
- * no-change. The absence baseline is `deny` (fail-closed, module header).
+ * the FULL next rule set or the typed no-change. The rule-set mechanics are
+ * pair upserts/removals (the durable record shape); ALL semantic direction
+ * classification lives in {@link authorizeLeaderPermissionMutation}.
  *
  * A revoke carrying an effect that does NOT match the durable effect at the
- * addressed pair is a STALE VIEW and refuses with MALFORMED_MUTATION's
- * sibling — no: it refuses GENERATION_CONFLICT-shaped staleness through the
- * CAS by design (the expectedGeneration guard is the honest staleness
- * signal); the carried-effect mismatch itself refuses as
- * MALFORMED_MUTATION/problem `revoke-effect-mismatch`, still ZERO write.
+ * addressed pair is a STALE VIEW and refuses as MALFORMED_MUTATION/problem
+ * `revoke-effect-mismatch`, still ZERO write (the expectedGeneration CAS
+ * remains the honest staleness signal for everything else).
  */
 export function planPermissionMutation(
   latest: PermissionOverlaySnapshot | undefined,
@@ -710,7 +1165,6 @@ export function planPermissionMutation(
   if (latest !== undefined) {
     for (const rule of latest.state.rules) base.set(pairKey(rule.operation, rule.resource), rule)
   }
-  const expansions: RequiredExpansion[] = []
   let changed = false
   if (mutation.kind === 'revoke_permission') {
     for (const rule of mutation.rules) {
@@ -734,16 +1188,6 @@ export function planPermissionMutation(
       const resource = renderPermissionResourceText(rule.matcher)
       const key = pairKey(rule.operationClass, resource)
       const standing = base.get(key)
-      const from: PermissionOverlayEffect = standing === undefined ? 'deny' : standing.effect
-      if (permissionEffectDirection(from, rule.effect) === 'expansion') {
-        expansions.push({
-          operationClass: rule.operationClass,
-          resource,
-          from,
-          to: rule.effect,
-          matcher: rule.matcher,
-        })
-      }
       if (standing !== undefined && standing.effect === rule.effect) continue // identity at the pair
       base.set(key, deepFreeze({ operation: rule.operationClass, resource, effect: rule.effect }) as PermissionOverlayRule)
       changed = true
@@ -762,7 +1206,7 @@ export function planPermissionMutation(
   // upserted new pairs): the full-snapshot bytes are a pure function of the
   // chain, so a byte-identical replay stays idempotent at the PR1 store.
   const rules = [...base.values()]
-  return { changed: true, rules, expansions }
+  return { changed: true, rules }
 }
 
 /** The PR1 structural rule-set bound (storage

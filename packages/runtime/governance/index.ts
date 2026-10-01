@@ -62,12 +62,14 @@ export type { MutationErrorCode } from '../mutation/errors.js'
 // ZERO production consumers until a later PR wires it — pinned by
 // test/a3p3-governance-lane-hygiene.test.ts).
 export {
-  envelopeAuthorizesExpansion,
+  authorizeLeaderPermissionMutation,
   isPermissionMutationError,
   matcherCovers,
   parsePermissionMutation,
   parsePermissionMutationEnvelope,
   parsePermissionResourceText,
+  parsePermissionStaticLayerFacts,
+  permissionEffectiveAnswer,
   PERMISSION_EFFECT_PRECEDENCE,
   PERMISSION_MUTATION_ERROR_CODES,
   PERMISSION_MUTATION_ERROR_CODE_VALUES,
@@ -80,8 +82,11 @@ export {
 } from './permission-mutation.js'
 export type {
   CoverageVerdict,
+  LeaderMutationAuthorizationInput,
   PermissionEnvelopeRule,
   PermissionEffectDirection,
+  PermissionEffectiveAnswer,
+  PermissionEffectiveAnswerQuery,
   PermissionMutation,
   PermissionMutationEnvelope,
   PermissionMutationErrorCode,
@@ -91,7 +96,9 @@ export type {
   PermissionMutationRule,
   PermissionOperationClass,
   PermissionResourceMatcher,
-  RequiredExpansion,
+  PermissionStaticLayer,
+  PermissionStaticLayerFacts,
+  PermissionStaticLayerRule,
   SubtreeContains,
 } from './permission-mutation.js'
 export type {

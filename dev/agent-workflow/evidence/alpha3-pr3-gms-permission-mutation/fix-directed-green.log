@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr3-gms-permission-mutation/packages/runtime
+
+ ✓ test/a3p3-revoke-reveal-semantics.test.ts (20 tests) 84ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  20:54:46
+   Duration  481ms (transform 248ms, setup 0ms, import 308ms, tests 84ms, environment 0ms)
+

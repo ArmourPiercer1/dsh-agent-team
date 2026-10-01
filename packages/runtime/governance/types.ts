@@ -51,6 +51,7 @@ import type {
   PermissionMutationEnvelope,
   PermissionMutationKind,
   PermissionMutationRule,
+  PermissionStaticLayerFacts,
   SubtreeContains,
 } from './permission-mutation.js'
 
@@ -149,12 +150,33 @@ export interface GovernancePermissionLaneDeps {
    */
   readonly permissionEnvelope?: (teamSessionId: string) => PermissionMutationEnvelope
   /**
-   * The containment predicate over two canonical identities of the SAME
-   * backend namespace, consulted ONLY to decide whether a subtree envelope
-   * matcher covers a mutation matcher. Canonical keys are opaque (A2
+   * The LOWER-LAYER FACTS the Leader authorization compares effective
+   * before/after against (design v2 — expansion is a property of the
+   * EFFECTIVE decision, so removing/revealing rules is judged against the
+   * declared template/blueprint, never against a guessed baseline). A pure
+   * DATA reader on the same injection pattern as {@link permissionEnvelope}
+   * — it grants no authority and is read ONCE inside the serialized
+   * section, before the pure kernel pass. The states are DISTINCT: absent
+   * reader (or a reader returning `undefined`) = UNKNOWN → regions whose
+   * verdict depends on lower facts refuse EFFECT_CONTEXT_UNAVAILABLE; a
+   * reader returning `{ layers: [] }` = DECLARED-NONE (known deny fallback)
+   * → decidable. Never conflated.
+   * @param teamSessionId - the team whose static permission layers are read.
+   * @param memberInstanceId - the instance the effective policy is for.
+   */
+  readonly staticLayers?: (
+    teamSessionId: string,
+    memberInstanceId: string,
+  ) => PermissionStaticLayerFacts | undefined
+  /**
+   * The WHOLE-MATCHER containment predicate over two canonical identities
+   * of the SAME backend namespace — the ONLY containment relation this lane
+   * ever consults (region partition, subtree boundary nesting, envelope
+   * coverage; the A2 `containsOperation` is a POINT judgement owned by the
+   * live resolver and never enters here). Canonical keys are opaque (A2
    * contract), so this mirrors why the frozen Alpha.2 matcher never
-   * `startsWith` — the containment verdict is the seam's. Absent → subtree
-   * coverage fails closed.
+   * `startsWith` — the containment verdict is the seam's. Absent → every
+   * subtree-vs-boundary question fails closed.
    */
   readonly subtreeContains?: SubtreeContains
 }
