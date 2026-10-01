@@ -705,6 +705,244 @@ test bytes.
   above. **docs-delta #4** — the fp-fileaware data-fingerprint note in
   the GATE-6 annotation above.
 
+## Direct shared pre-callback one-shot close-fault residual (NEW UNREVIEWED CHANGES)
+
+The final close-fault audit item (user-located; the source fault audit is
+COMPLETE with this — the parent's correction ruling: the two feedbacks
+describing it — the "direct-path admission close" and the "pre-callback
+allocation/put window in the shared `commitReviewedEffect`" — are ONE
+AND THE SAME defect; this section records the single-defect form).
+
+### The user ruling (governing clauses, verbatim)
+
+- The defect (user-located; verified at the tip before coding): "The
+  DIRECT Control path's admission close (control/service.ts L2700
+  area): if the close write fails ONCE, the router's rethrow
+  (router.ts L899 area) does NOT set `closeFaultObserved` — so the
+  outer catch (router.ts L1070–1080) `settleAbortedPreCommit` RETRIES
+  the close. Net: 2 attempts; if the second write succeeds, the first
+  failure is masked; observed current behavior = 2 attempts + typed
+  abandoned. The user verified: NO effect-after-abort exists here —
+  the problem is ONLY the cleanup-failure propagation contract. Do NOT
+  rewrite wide code."
+- The precise location + minimal fix plan: "In the shared
+  `commitReviewedEffect`, on the Control signal-abort close, BEFORE
+  the commitEffect callback is entered, a sequence allocation or the
+  abandon put can fail while the flags (`effectCommitStarted` /
+  `callbackEntered`-equivalent) are still false — and the shared
+  boundary catch would then let the D2 settle RETRY (same masking
+  class as the direct path, but on the pre-callback window of the
+  shared unit)." Fix: "A LOCAL `callbackEntered` flag in the shared
+  boundary: set it when the commitEffect callback is actually entered;
+  in the shared boundary catch, a PRE-callback DURABLE_WRITE_FAILED
+  (callback never entered) is recognized and the D2 retry is
+  PROHIBITED (the original typed fault + message propagates AS-IS,
+  attempts = 1). KEEP the provider preflight convergence exactly as
+  the residual-3 fix stands. NO new public port / no interface surface
+  change."
+- The audit scope ruling (recorded here as the scope closure): "ONLY
+  the direct shared unit retries. Verified clean (原样传播, correct
+  as-is): the explicit abandon path, the wait cascade, the router wait
+  cleanup, and the D2 cleanup's own propagation. The activation
+  observer + `settleInFlight` are already correct. Do NOT modify any
+  of those paths — the fix-report should record this audit conclusion
+  as the scope closure (which paths were checked, why each is clean)."
+- The test ruling: "write ONLY the required coverage = the
+  gated-branch and fallback-branch one-shot allocation/put regression
+  (pre-callback window, ONE-SHOT fault: the original typed
+  DURABLE_WRITE_FAILED + message propagate unchanged, attempts() ===
+  1, zero effects, zero abandon marks) … Do NOT pad rows, do NOT
+  expand beyond the fixed scope."
+- Reconciliation disclosure (per the correction's requirement): NO
+  code or tests were written under the two-defect framing — the
+  correction arrived while this batch was still in the
+  verify-defect-location phase (before any write). The implemented
+  form IS the single-defect form below; nothing was reconciled
+  after-the-fact.
+
+### The mechanism (verified at `21b7550b`, before coding)
+
+The shared effect-admission unit (`commitEffectIfAuthorized`,
+control/service.ts) runs, on an aborted signal, its C-2 abort branch
+BEFORE the `commitEffect` callback is entered:
+
+- pre-fix line refs (`21b7550b`): control/service.ts **L2699–L2710**
+  — `if (input.signal.aborted === true) { await
+  commitAbandonmentFact(root, input.requestId, '…aborted at the
+  effect-admission boundary (the durable close)') /* L2700–L2704 */;
+  throw new ControlError(CONTROL_REQUEST_ADMISSION_ABORTED, …) /*
+  L2705–L2709 */ }`; the callback entry is `return
+  input.commitEffect()` at **L2711** — the close is strictly
+  pre-callback.
+- the close's durable write (control/service.ts **L1818–L1825**):
+  `putEntry({ …, sequence: await allocateSequence(), …, factType:
+  FACT_ABANDONMENT, … })` — TWO distinct fault sites, both before
+  callback entry, both typed identically: `allocateSequence`
+  (**L1019–L1024** → `durableFailure('ledger sequence allocation')`)
+  and `putEntry` (**L1027+** → `durableFailure('ledger put
+  (control-request-abandoned)')`) — the shared `durableFailure`
+  mapper (**L988–L995**) types both as
+  `TEAM_RUNTIME_DURABLE_WRITE_FAILED` carrying the original fault's
+  message.
+- the pre-fix router behavior: the rejection reaches the shared
+  boundary catch (router.ts `commitReviewedEffect`, pre-fix **L845–
+  L900**); neither handled branch matches a typed
+  `DURABLE_WRITE_FAILED` → the raw `throw boundaryError` (pre-fix
+  **L899**) — NO `closeFaultObserved` mark. The outer D2 catches then
+  settle: the gated condition (pre-fix **L1072–L1079**, settle call
+  **L1080**) and the fallback condition (pre-fix **L1133–L1137**,
+  settle call **L1139**) — both read `!closeFaultObserved` (true) and
+  call `settleAbortedPreCommit` (pre-fix **L918–L971**), which
+  RE-ENTERS `commitEffectIfAuthorized` (pre-fix **L929**) — the unit's
+  C-2 branch runs the close AGAIN. Under a ONE-SHOT fault the second
+  write SUCCEEDS and the settle converts the outcome to the typed
+  zero-effect abandon terminal (pre-fix **L948–L960**) — the mask:
+  **2 attempts + typed abandoned**.
+- the c9-33 masking note (user-observed): the existing fault-admission
+  row (c9-33, the `fault-admission` matrix point) uses the
+  ALWAYS-faulting injector (`c9PatchAbandonPersistFault` — every
+  abandon-fact write rejects), which MASKS this defect: the settle's
+  retry fails identically and the settle propagates the typed fault
+  (`throw settleError`, pre-fix L962) — the row passes either way.
+  Only a ONE-SHOT fault (first write fails, second would succeed)
+  manifests the mask — the original one-shot-masking class, on this
+  path.
+
+### The fix (production — ONE site, `router.ts`, the shared boundary)
+
+- router.ts **L827–L840** (new): the local `let callbackEntered =
+  false` in `commitReviewedEffect` (declaration at **L840**) — the
+  PRE-callback fault recognition flag.
+- router.ts **L859–L863** (changed; the flip at **L861**): the
+  `commitEffect` callback now sets `callbackEntered = true` the moment
+  it is ACTUALLY ENTERED (it observes ONLY whether the commit was
+  entered at all — distinct from `effectCommitStarted`, which flips at
+  the effect's OWN first durable write per the residual-3 marker
+  move; the residual-3 provider preflight convergence is UNTOUCHED).
+- router.ts **L923–L943** (new; the recognition at **L937–L943**): in
+  the shared boundary catch, BEFORE the raw rethrow (**L944**), a
+  rejection with `!callbackEntered` AND typed
+  `TEAM_RUNTIME_DURABLE_WRITE_FAILED` is recognized as the unit's OWN
+  pre-callback close fault (the sequence allocation or the abandon
+  put) and sets the shared `closeFaultObserved` flag via
+  `ctx.markCloseFaultObserved?.()` (the same router-side flag the D2
+  conditions read — the same seam the activation callbacks use). The
+  original typed fault + message propagate UNCHANGED below — no
+  reclassification, no retry, no new typed abandon. A fault AFTER
+  callback entry is the effect's own write: `effectCommitStarted`
+  already stands (the marker flips at the first durable write), the
+  settle is already prohibited, and the recognition deliberately does
+  not apply.
+- post-fix D2 sites (unchanged conditions, now fed the mark): gated
+  condition **L1117–L1124** / settle call **L1125**; fallback
+  condition **L1178–L1183** / settle call **L1184** — ONE shared fix
+  site covers BOTH branches (both catches read the same flag; this one
+  site is verified in code to be the retry path for the direct
+  admission close on every branch — no second mechanism was built).
+- NO new public port; NO interface surface change (the `router.d.ts`
+  is byte-identical after the dist regen — drift is router.js + maps
+  only). The clean paths are UNTOUCHED (see the scope closure below).
+
+### The action set (verified in code at the fix head; recorded per the
+user ruling)
+
+`commitReviewedEffect` is shared by EVERY recovery-marked reentry.
+Branch selection (router.ts `isNewWorkAdmission(spec) ||
+impact.impact === crossAgentTrigger` at the gated entry;
+`actionImpactOf(…, recovery=true)` → `recoveryWorkImpact` for every
+marked re-run, admission/requirement-gate.ts L775–L787):
+
+- GATED branch reentries (work/creation category): `follow-up`,
+  `delegate`, `create-member` — the gated D2 catch is their retry
+  path.
+- FALLBACK branch marker path (not work/creation, not the static
+  crossAgentTrigger impact — the `recoveryWork` re-run impact):
+  `send-message` (the C-1 canonical case — the router's comment at
+  the fallback branch names exactly this shape); in a fixture world
+  where the gate blocks only new-work + cross-agent triggers (the
+  authz worlds), send-message is the only recovery-capable
+  fallback-branch action; in production wiring any
+  non-work/creation recovery-marked action (e.g. a blocked
+  `report-progress` / `request-control` / `resolve-control` reentry)
+  takes the same shared unit window via the fallback catch.
+- the pre-callback window (the C-2 abort close) is ACTION-INDISTINCT
+  (it lives in the shared unit, before any effect code) — the fix and
+  the recognition are identical for all of the above.
+
+### The audit conclusion (the scope closure)
+
+Every other close-fault path was verified in code at the fix head —
+each propagates its close fault AS-IS with NO retry:
+
+| Path | Site (fix head) | Why clean |
+| --- | --- | --- |
+| Explicit abandon | control/service.ts `abandonControlRequest` (L1864–L1945; the shared write at L1936) | single `commitAbandonmentFact`; the typed `DURABLE_WRITE_FAILED` propagates to the caller; never claims abandoned unless the fact is durable (L1856–L1862); no retry loop |
+| Wait cascade (inline abort) | control/service.ts `inlineAbortCascade` (L2387–L2423; the shared write at L2420) | single `commitAbandonmentFact`; "a durable-store failure of the close write PROPAGATES typed … the bridge rejects with the storage fault and NEVER claims a half-abandoned state" (L2380–L2384); the waiter settles once |
+| Router wait cleanup | router.ts L526–L553 (the abandon after a wait abort) | single `abandonControlRequest`; a real durable-commit failure `throw abandonError`s AS-IS (only a concurrent abandon — already-terminal — is tolerated; the W3-E F2 contract) |
+| D2 cleanup's own propagation | router.ts `settleAbortedPreCommit` (the settle function, post-fix ~L959–L1012) | the settle's own close fault `throw settleError`s AS-IS; the typed abandon conversion applies ONLY when the close is durable (ABANDONED / ADMISSION_ABORTED) |
+| Activation observer + `settleInFlight` | action-router/effects.ts `persistAbandonClose` wrappers (residual-3) + provider settle flags | shipped and verified in the residual-3 batch — mark + as-is rethrow; UNTOUCHED by this fix |
+| The direct shared unit (THE defect) | router.ts `commitReviewedEffect` catch (pre-fix L899) | the ONLY path that re-enters a failed close — the gated + fallback D2 catches retry via `settleAbortedPreCommit`; FIXED by the recognition above |
+
+### The test (RED-first; the actual case count)
+
+Two dedicated rows (NOT matrix rows — the 60-row matrix and its
+arithmetic are untouched; named per the dedicated-row convention):
+
+- **c9-pcb-1** (gated branch): follow-up recovery reentry — the
+  `c9FaultAdmission` choreography (the reentry's gate re-probe pin +
+  the occupancy holding the control lock (b)); the ONE-SHOT
+  abandon-persist fault (`c9PatchAbandonPersistOneShotFault` —
+  installed after the allow, so the only abandon-fact write from then
+  on is the row's C-2 close) fires on the close; the original typed
+  `DURABLE_WRITE_FAILED` (the service's `durableFailure` wrapper
+  carrying the injected fault text) must propagate UNCHANGED —
+  attempts() === 1, zero effects (work/delivery/coordination/
+  reservation), zero abandon marks.
+- **c9-pcb-2** (fallback branch): send-message recovery reentry — the
+  `c9ControlQueue` choreography (the shared runtime chain hold + the
+  occupancy; the fallback reentry has NO gate re-probe); the same
+  one-shot fault + the same contract on the fallback D2 catch.
+- allocation-vs-put: the two fault SITES (the `allocateSequence`
+  write, the abandon put) converge to the IDENTICAL typed rejection
+  at the SAME boundary (both `durableFailure` →
+  `TEAM_RUNTIME_DURABLE_WRITE_FAILED` pre-callback) — the router's
+  recognition is code-based, not site-based, so ONE row per branch is
+  the required coverage (no split, no padding — per the test ruling).
+  **Actual case count: 2 new rows** → focused 72 → **74**; full
+  suite 4861 → **4863** (the arithmetic closed below).
+
+### The RED (at `21b7550b`, committed)
+
+`c9-pcb-red-1.log` (CMD-first; true exit): focused C file =
+**2 failed | 72 passed (74)** — both new rows fail on the masked
+terminal: `expected 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' to be
+'TEAM_RUNTIME_DURABLE_WRITE_FAILED'` (the typed abandon terminal
+standing in for the original fault — the 2-attempts + typed-abandoned
+behavior; the `attempts() === 1` assertion is the second gate, the
+retry's second write having consumed the one-shot). All 72 existing
+rows green at the pre-fix head (zero behavior change from the test
+addition).
+
+### The GREEN (at the fix head)
+
+`c9-pcb-green-1.log` (CMD-first; true exit): focused C file =
+**74/74** — c9-pcb-1 + c9-pcb-2 GREEN (the original typed fault
+propagates unchanged, attempts() === 1, zero effects, zero marks) and
+all 72 existing rows byte-identical behavior (C1–C8 + the full C9
+matrix + c9-serial + the residual-3 rows).
+
+### Gates at the fix head (all CMD-first + true exit; provenance labels)
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Focused C file | 74/74 | `c9-pcb-green-1.log` |
+| Full suite (`pnpm vitest run`) | 4863 total (4861 + 2 rows) — 20 failed = the 19F `31ad828d` debt set EXACTLY (timing-normalized set diff empty) + 1 p6t1-parallel flake occurrence (per-occurrence, within the 0–3 rotating envelope) | `full-pcb-1.log` |
+| Lint | 142 (117E/25W) — file-aware fp IDENTICAL to the `lint-final-fp-fileaware-4.txt` baseline (zero new issues from the fix) | `lint-pcb-1.log` + `lint-pcb-fp-fileaware-1.txt` |
+| Typecheck | EXIT=0 | `typecheck-pcb-1.log` |
+| Dist regen | EXIT=0 — drift limited to the action-router module (router.js + 2 maps; `router.d.ts` unchanged — no interface surface) | `build-pcb-1.log` |
+| check:artifacts | OK 1372, EXIT=0 (no new scannable files — all changes in-place) | `check-artifacts-pcb-1.log` |
+| p4t6 | 10/10 @ pin 906 (the pin is the test's own assertion) | `p4t6-pcb-1.log` |
+
 ## Full-suite gate (valid environment)
 
 Environment validity: the test-use checkout `tests/deepseek-harness-test-use` was verified valid before the baseline — pristine @ `46a7f68b0922371ce7144b668b90e377d8e799f4` (0.1.7-rc.1), `node_modules` present, `packages/boot/app-boot/lib/index.js` built. (The earlier `baseline-full.log` run — kept in evidence — was taken BEFORE this environment was valid and is NOT the cited baseline; its two extra failed files, `plugin-dsh-compat` + `a2c7-subtree-matcher`, were environmental — missing test-use build.)
