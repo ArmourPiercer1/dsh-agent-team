@@ -605,6 +605,30 @@ export function createTeamRuntime(options) {
         // of the attempted work).
         const targetTemplateId = newWorkTargetTemplateId(request, spec, resolved, repositories);
         const impact = actionImpactOf(request.action, targetTemplateId, request.recovery !== undefined);
+        // fix-control-authz C (the residual pre-commit awaits) — the
+        // SETTLE TRACKING for the systematic pre-commit abort settle
+        // (declared ABOVE the ctx — the ctx marker callbacks close over
+        // them): `effectCommitStarted` flips at the EFFECT'S OWN first
+        // durable write (the residual-3 marker move — previously it
+        // flipped at the unit's closure entry, BEFORE the provider
+        // preflight, so a pre-reservation reject falsely disabled this
+        // settle; the pre-reservation region of the activation unit is now
+        // pre-commit by construction). A durable write may have landed
+        // after the flip — the post-commit world: the typed effect fault
+        // surfaces unchanged and the committed fact is NEVER re-marked.
+        // `boundarySettled` flips when the unit's pre-commit rejection was
+        // already converted into the typed abandon block (the close is
+        // settled — no double settle). `closeFaultObserved` flips when the
+        // durable close persist FAULTED on this admission (the residual-3
+        // one-shot close-failure contract, defect c): the settle must never
+        // re-attempt a failed close (a second attempt would succeed and
+        // mask the first fault as a settled close — the first close
+        // failure is the terminal outcome, the typed DURABLE_WRITE_FAILED
+        // escapes as-is). All false = the admission is still pre-commit
+        // (the settle applies).
+        let effectCommitStarted = false;
+        let boundarySettled = false;
+        let closeFaultObserved = false;
         const ctx = {
             repositories,
             activationProvider: options.activationProvider,
@@ -621,6 +645,12 @@ export function createTeamRuntime(options) {
             lifecyclePorts: options.lifecyclePorts,
             teamLocks,
             controlServiceRef: options.controlServiceRef,
+            markEffectCommitStarted: () => {
+                effectCommitStarted = true;
+            },
+            markCloseFaultObserved: () => {
+                closeFaultObserved = true;
+            },
             staticModel: options.staticModel,
             policy: options.policy,
             policyStateTransitions: options.policyStateTransitions,
@@ -673,17 +703,6 @@ export function createTeamRuntime(options) {
         // (a) → (b) → storage seam, no new lock cycles. A non-abandoned,
         // non-aborted request is transparent (the unit runs the effect and
         // returns its result unchanged).
-        // fix-control-authz C (the residual pre-commit awaits) — the
-        // SETTLE TRACKING for the systematic pre-commit abort settle:
-        // `effectCommitStarted` flips the moment the effect commit RUNS
-        // (a durable write may have landed — the post-commit world: the
-        // typed effect fault surfaces unchanged and the committed Phase A
-        // fact is NEVER re-marked). `boundarySettled` flips when the
-        // unit's pre-commit rejection was already converted into the typed
-        // abandon block (the close is settled — no double settle). Both
-        // false = the admission is still pre-commit (the settle applies).
-        let effectCommitStarted = false;
-        let boundarySettled = false;
         const commitReviewedEffect = () => {
             const recoveryControlRequestId = request.recovery?.controlRequestId;
             const controlService = options.controlServiceRef?.current;
@@ -695,10 +714,14 @@ export function createTeamRuntime(options) {
                 .commitEffectIfAuthorized({
                 rootSessionId,
                 requestId: recoveryControlRequestId,
-                commitEffect: () => {
-                    effectCommitStarted = true;
-                    return executeEffectLocked(ctx);
-                },
+                // fix-control-authz C (residual-3, the marker move): the
+                // commit-started flag flips at the effect's OWN first durable
+                // write (the marker callback — the activation effects at the
+                // provider's reservation boundary; the others synchronously
+                // before their first commit), NOT here at the closure entry
+                // (the pre-reservation region must stay pre-commit for the
+                // D2 settle).
+                commitEffect: () => executeEffectLocked(ctx),
                 signal: asAbortLike(request.signal),
             })
                 .catch((boundaryError) => {
@@ -873,15 +896,22 @@ export function createTeamRuntime(options) {
                 // systematic settle, first: the invocation aborted BEFORE the
                 // effect commit (the effect commit never started — no durable
                 // write of this admission landed) and the boundary did not
-                // already settle the close (its typed block is in flight):
+                // already settle the close (its typed block is in flight) and
+                // the durable close did not ALREADY fault on this admission
+                // (the residual-3 one-shot close-failure contract, defect c —
+                // a close persist fault is the terminal outcome: the typed
+                // DURABLE_WRITE_FAILED escapes as-is, never re-attempted — a
+                // second attempt would succeed and mask the first fault):
                 // durably close the request and settle with the typed
                 // zero-effect abandon block (the settle ALWAYS throws — the
                 // recovery dispatch below is then skipped; a committed effect
                 // is never retroactively marked — the post-commit fault
                 // surfaces unchanged). Non-aborted / non-marker /
-                // commit-started / already-settled errors: byte-identical.
+                // commit-started / already-settled / close-fault-observed
+                // errors: byte-identical.
                 if (!effectCommitStarted &&
                     !boundarySettled &&
+                    !closeFaultObserved &&
                     request.recovery?.controlRequestId !== undefined &&
                     options.controlServiceRef?.current !== undefined &&
                     asAbortLike(request.signal)?.aborted === true) {
@@ -928,11 +958,14 @@ export function createTeamRuntime(options) {
                     // systematic settle (the fallback reentry has no gate re-
                     // probe, but the same pre-commit await points stand: the
                     // chain queue and the unit's control-lock queue). Same
-                    // condition, same settle — ALWAYS throws; the original
-                    // error is unreachable (the typed abandon block / the
-                    // settle fault is the terminal).
+                    // condition (incl. the residual-3 `closeFaultObserved`
+                    // half — a close persist fault is the terminal outcome,
+                    // never re-attempted), same settle — ALWAYS throws; the
+                    // original error is unreachable (the typed abandon block /
+                    // the settle fault is the terminal).
                     if (!effectCommitStarted &&
                         !boundarySettled &&
+                        !closeFaultObserved &&
                         asAbortLike(request.signal)?.aborted === true) {
                         await settleAbortedPreCommit(recoveryControlRequestId);
                     }

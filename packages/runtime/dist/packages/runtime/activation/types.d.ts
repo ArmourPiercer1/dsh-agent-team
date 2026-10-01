@@ -173,6 +173,23 @@ export interface MemberActivationRequest {
      * close).
      */
     readonly persistAbandonClose?: () => Promise<void>;
+    /**
+     * fix-control-authz C (residual-3, the marker move) — the
+     * RESERVATION BOUNDARY marker: the caller's commit-started flip for
+     * the router's D2 pre-commit settle gate. The provider calls it
+     * immediately before the journal reservation (step 12 — the unit's
+     * FIRST durable write): the whole pre-reservation region (any reject
+     * / validation throw before it) stays pre-commit — an abort landing
+     * there settles with the durable close (the caller's D2 gate sees the
+     * commit as NOT started — previously the flag flipped at the
+     * router's unit-closure entry, BEFORE the preflight, so a
+     * pre-reservation reject falsely disabled the settle); an abort
+     * landing after the reservation is the legitimate late close (the
+     * caller's gate sees the commit as started — no retroactive undo).
+     * Absent (test worlds / non-router callers) = no marker (the
+     * pre-reservation boundary still runs on its own signal checks).
+     */
+    readonly markReservationStarted?: () => void;
 }
 /** The minimal child-session creation request (the one external effect). */
 export interface ChildSessionCreationRequest {
