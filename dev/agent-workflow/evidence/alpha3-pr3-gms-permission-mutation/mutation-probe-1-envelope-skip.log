@@ -1,0 +1,185 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr3-gms-permission-mutation/packages/runtime
+
+ ❯ test/a3p3-permission-mutation-authority.test.ts (20 tests | 8 failed) 53ms
+     ✓ deny->ask, deny->allow, ask->allow are EXPANSIONS; the reverse are TIGHTENINGS 1ms
+     ✓ the unified mutation model carries exactly the three kinds (design §3.4) 0ms
+     ✓ an ask->allow expansion covered by maximumEffect=allow commits a new snapshot 6ms
+     × a from-absence GRANT is an expansion measured from `deny` (fail-closed baseline) 6ms
+     × TIGHTENINGS need NO expansion authority: all three, with an EMPTY envelope 5ms
+     × an expansion the envelope does not cover is refused and writes NOTHING 2ms
+     × a maxEffect ceiling is a CEILING: ask covers deny->ask but never ask->allow 3ms
+     × exact envelope rules do not cover wider matchers; subtree roots cover what they contain 2ms
+     × a subtree envelope matcher with NO injected containment refuses coverage fail-closed 2ms
+     ✓ may exceed the Leader envelope and records Human provenance 2ms
+     × creates NO permanent priority: the Leader recovers by tightening without any envelope, and still cannot expand beyond it 3ms
+     ✓ a stale expectedGeneration is a typed conflict with NO partial write 3ms
+     ✓ every state-changing mutation appends exactly ONE FULL snapshot; the no-op writes none 3ms
+     ✓ revoke_permission produces the unified snapshot WITHOUT the addressed pairs and needs no expansion authority 3ms
+     ✓ exec rules carry EXACT canonical fingerprints ONLY: subtree and any matchers are malformed 2ms
+     × an exec expansion is covered ONLY by the identical fingerprint (no subtree, no any) 2ms
+     ✓ an envelope rule that MISPAIRS matcher kind and operation class is malformed (never silently inert) 0ms
+     ✓ a member authority on the permission lane is UNAUTHORIZED with zero write 3ms
+     ✓ without permissionLane deps the method fails typed NOT_CONFIGURED and the legacy methods still work 1ms
+     ✓ a nested-subtree grant is covered only by a subtree envelope root the containment accepts 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Leader mutation inside the envelope (plan PR3) > a from-absence GRANT is an expansion measured from `deny` (fail-closed baseline)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a3p3-permission-mutation-authority.test.ts:293:49
+    291|         )
+    292|         .catch((error: unknown) => error)
+    293|       expect(isPermissionMutationError(denied)).toBe(true)
+       |                                                 ^
+    294|       expect((denied as { code: string }).code).toBe(PERMISSION_MUTATI…
+    295|     } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Leader mutation inside the envelope (plan PR3) > TIGHTENINGS need NO expansion authority: all three, with an EMPTY envelope
+AssertionError: expected undefined to be 'PERMISSION_ENVELOPE_EXPANSION_DENIED' // Object.is equality
+
+- Expected:
+"PERMISSION_ENVELOPE_EXPANSION_DENIED"
+
++ Received:
+undefined
+
+ ❯ test/a3p3-permission-mutation-authority.test.ts:332:49
+    330|         )
+    331|         .catch((error: unknown) => error)
+    332|       expect((denied as { code: string }).code).toBe(PERMISSION_MUTATI…
+       |                                                 ^
+    333|     } finally {
+    334|       await w.close()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > an expansion the envelope does not cover is refused and writes NOTHING
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a3p3-permission-mutation-authority.test.ts:352:49
+    350|         )
+    351|         .catch((error: unknown) => error)
+    352|       expect(isPermissionMutationError(denied)).toBe(true)
+       |                                                 ^
+    353|       expect((denied as { code: string }).code).toBe(PERMISSION_MUTATI…
+    354|       // ZERO WRITE: the durable chain is untouched.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > a maxEffect ceiling is a CEILING: ask covers deny->ask but never ask->allow
+AssertionError: expected undefined to be 'PERMISSION_ENVELOPE_EXPANSION_DENIED' // Object.is equality
+
+- Expected:
+"PERMISSION_ENVELOPE_EXPANSION_DENIED"
+
++ Received:
+undefined
+
+ ❯ test/a3p3-permission-mutation-authority.test.ts:388:49
+    386|         )
+    387|         .catch((error: unknown) => error)
+    388|       expect((denied as { code: string }).code).toBe(PERMISSION_MUTATI…
+       |                                                 ^
+    389|     } finally {
+    390|       await w.close()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > exact envelope rules do not cover wider matchers; subtree roots cover what they contain
+AssertionError: expected undefined to be 'PERMISSION_ENVELOPE_EXPANSION_DENIED' // Object.is equality
+
+- Expected:
+"PERMISSION_ENVELOPE_EXPANSION_DENIED"
+
++ Received:
+undefined
+
+ ❯ test/a3p3-permission-mutation-authority.test.ts:405:49
+    403|         )
+    404|         .catch((error: unknown) => error)
+    405|       expect((denied as { code: string }).code).toBe(PERMISSION_MUTATI…
+       |                                                 ^
+    406|     } finally {
+    407|       await w1.close()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > a subtree envelope matcher with NO injected containment refuses coverage fail-closed
+AssertionError: expected undefined to be 'PERMISSION_ENVELOPE_EXPANSION_DENIED' // Object.is equality
+
+- Expected:
+"PERMISSION_ENVELOPE_EXPANSION_DENIED"
+
++ Received:
+undefined
+
+ ❯ test/a3p3-permission-mutation-authority.test.ts:446:49
+    444|         )
+    445|         .catch((error: unknown) => error)
+    446|       expect((denied as { code: string }).code).toBe(PERMISSION_MUTATI…
+       |                                                 ^
+    447|     } finally {
+    448|       await w.close()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > Human mutation (ADR §7) > creates NO permanent priority: the Leader recovers by tightening without any envelope, and still cannot expand beyond it
+AssertionError: expected undefined to be 'PERMISSION_ENVELOPE_EXPANSION_DENIED' // Object.is equality
+
+- Expected:
+"PERMISSION_ENVELOPE_EXPANSION_DENIED"
+
++ Received:
+undefined
+
+ ❯ test/a3p3-permission-mutation-authority.test.ts:508:49
+    506|         )
+    507|         .catch((error: unknown) => error)
+    508|       expect((denied as { code: string }).code).toBe(PERMISSION_MUTATI…
+       |                                                 ^
+    509|     } finally {
+    510|       await w.close()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > exec exactness (design §5) > an exec expansion is covered ONLY by the identical fingerprint (no subtree, no any)
+AssertionError: expected undefined to be 'PERMISSION_ENVELOPE_EXPANSION_DENIED' // Object.is equality
+
+- Expected:
+"PERMISSION_ENVELOPE_EXPANSION_DENIED"
+
++ Received:
+undefined
+
+ ❯ test/a3p3-permission-mutation-authority.test.ts:703:48
+    701|         )
+    702|         .catch((error: unknown) => error)
+    703|       expect((other as { code: string }).code).toBe(PERMISSION_MUTATIO…
+       |                                                ^
+    704|       // A DIFFERENT shell tool is a different authority identity (A2C…
+    705|       const pwsh = await w.service
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 12 passed (20)
+   Start at  20:21:28
+   Duration  449ms (transform 240ms, setup 0ms, import 302ms, tests 53ms, environment 0ms)
+

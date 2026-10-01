@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr3-gms-permission-mutation/packages/runtime
+
+ ✓ test/a3p3-permission-mutation-authority.test.ts (20 tests) 51ms
+ ✓ test/a3p3-governance-lane-hygiene.test.ts (8 tests) 32ms
+
+ Test Files  2 passed (2)
+      Tests  28 passed (28)
+   Start at  20:22:07
+   Duration  514ms (transform 566ms, setup 0ms, import 757ms, tests 83ms, environment 0ms)
+

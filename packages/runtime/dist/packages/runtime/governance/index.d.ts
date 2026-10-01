@@ -27,4 +27,7 @@ export { assertCells, buildReissueRecord, buildTombstoneRecord, checkCellsAgains
 export type { GovernanceSlot, SlotIdentity } from './slot.js';
 export { isMutationError, MUTATION_ERROR_CODES, MutationError, } from '../mutation/errors.js';
 export type { MutationErrorCode } from '../mutation/errors.js';
+export { envelopeAuthorizesExpansion, isPermissionMutationError, matcherCovers, parsePermissionMutation, parsePermissionMutationEnvelope, parsePermissionResourceText, PERMISSION_EFFECT_PRECEDENCE, PERMISSION_MUTATION_ERROR_CODES, PERMISSION_MUTATION_ERROR_CODE_VALUES, PERMISSION_MUTATION_KINDS, PERMISSION_RESOURCE_MATCHER_KINDS, PermissionMutationError, permissionEffectDirection, planPermissionMutation, renderPermissionResourceText, } from './permission-mutation.js';
+export type { CoverageVerdict, PermissionEnvelopeRule, PermissionEffectDirection, PermissionMutation, PermissionMutationEnvelope, PermissionMutationErrorCode, PermissionMutationInput, PermissionMutationKind, PermissionMutationPlan, PermissionMutationRule, PermissionOperationClass, PermissionResourceMatcher, RequiredExpansion, SubtreeContains, } from './permission-mutation.js';
+export type { GovernancePermissionLaneDeps, GovernancePermissionMutationArgs, GovernancePermissionMutationResult, } from './types.js';
 //# sourceMappingURL=index.d.ts.map

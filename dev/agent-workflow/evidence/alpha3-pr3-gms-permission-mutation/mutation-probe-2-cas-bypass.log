@@ -1,0 +1,52 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr3-gms-permission-mutation/packages/runtime
+
+ ❯ test/a3p3-permission-mutation-authority.test.ts (20 tests | 1 failed) 54ms
+     ✓ deny->ask, deny->allow, ask->allow are EXPANSIONS; the reverse are TIGHTENINGS 1ms
+     ✓ the unified mutation model carries exactly the three kinds (design §3.4) 0ms
+     ✓ an ask->allow expansion covered by maximumEffect=allow commits a new snapshot 6ms
+     ✓ a from-absence GRANT is an expansion measured from `deny` (fail-closed baseline) 2ms
+     ✓ TIGHTENINGS need NO expansion authority: all three, with an EMPTY envelope 3ms
+     ✓ an expansion the envelope does not cover is refused and writes NOTHING 3ms
+     ✓ a maxEffect ceiling is a CEILING: ask covers deny->ask but never ask->allow 2ms
+     ✓ exact envelope rules do not cover wider matchers; subtree roots cover what they contain 4ms
+     ✓ a subtree envelope matcher with NO injected containment refuses coverage fail-closed 2ms
+     ✓ may exceed the Leader envelope and records Human provenance 2ms
+     ✓ creates NO permanent priority: the Leader recovers by tightening without any envelope, and still cannot expand beyond it 3ms
+     × a stale expectedGeneration is a typed conflict with NO partial write 7ms
+     ✓ every state-changing mutation appends exactly ONE FULL snapshot; the no-op writes none 4ms
+     ✓ revoke_permission produces the unified snapshot WITHOUT the addressed pairs and needs no expansion authority 3ms
+     ✓ exec rules carry EXACT canonical fingerprints ONLY: subtree and any matchers are malformed 2ms
+     ✓ an exec expansion is covered ONLY by the identical fingerprint (no subtree, no any) 2ms
+     ✓ an envelope rule that MISPAIRS matcher kind and operation class is malformed (never silently inert) 0ms
+     ✓ a member authority on the permission lane is UNAUTHORIZED with zero write 2ms
+     ✓ without permissionLane deps the method fails typed NOT_CONFIGURED and the legacy methods still work 1ms
+     ✓ a nested-subtree grant is covered only by a subtree envelope root the containment accepts 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p3-permission-mutation-authority.test.ts > CAS conflict (plan PR3) > a stale expectedGeneration is a typed conflict with NO partial write
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a3p3-permission-mutation-authority.test.ts:540:51
+    538|         )
+    539|         .catch((error: unknown) => error)
+    540|       expect(isPermissionMutationError(conflict)).toBe(true)
+       |                                                   ^
+    541|       expect((conflict as { code: string }).code).toBe(PERMISSION_MUTA…
+    542|       // Nothing was written by the refused call: still exactly genera…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+   Start at  20:22:01
+   Duration  451ms (transform 244ms, setup 0ms, import 306ms, tests 54ms, environment 0ms)
+
