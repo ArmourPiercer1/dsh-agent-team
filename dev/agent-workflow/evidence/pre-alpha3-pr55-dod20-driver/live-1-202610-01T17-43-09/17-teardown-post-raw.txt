@@ -1,0 +1,36 @@
+captured_utc=2026-10-01T17:47:52Z
+owned procs: kit node=438000 (SIGTERM, exit clean), host child= (kit-owned spawn), mock=in-process
+--- kit console tail (scrubbed) ---
+[smoke-host 2026-10-01T17:43:15.315Z] READY access-record=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-10-01T17-43-13/browser-access.json origin=http://127.0.0.1:3181 tokenUrl=http://127.0.0.1:3181/?token=SCRUBBED
+[smoke-host 2026-10-01T17:47:49.683Z] stop (SIGTERM): tearing down
+[smoke-host 2026-10-01T17:47:50.215Z] teardown done
+--- teardown.json ---
+{
+  "stablePost": {
+    "http://127.0.0.1:3080/": 401,
+    "http://127.0.0.1:3180/": null
+  },
+  "stableUnchanged": true,
+  "porcelainPost": "",
+  "headPost": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "portFreeHost": true,
+  "portFreeMock": true
+}
+--- ports post ---
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                 
+--- 3080 post ---
+3080 GET=401  pre was 401
+--- residual procs (this run) ---
+kit=2 host=2 chrome=0
+--- carrier porcelain post ---
+  ?? dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T17-43-13/instance.log
+  ?? dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T17-43-13/instance.log.scrubbed
+  ?? dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T17-43-13/mock.log
+  ?? dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T17-43-13/mock.log.scrubbed
+  ?? dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T17-43-13/smoke-host.json
+  ?? dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T17-43-13/teardown.json
+--- TestUse post ---
+46a7f68b0922371ce7144b668b90e377d8e799f4
+porcelain=0
+--- retained (nothing cleaned) ---
+attempt1 world=yes attempt2 world=yes fixture1=yes fixture2=yes

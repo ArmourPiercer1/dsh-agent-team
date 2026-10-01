@@ -1,0 +1,12 @@
+cwd=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/browser-carrier-1a04d7ca-dod20
+utc=2026-10-01T17:44:29Z
+argv: node tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs --confirm-live
+--access /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-10-01T17-43-13/browser-access.json
+--smoke-host /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/browser-carrier-1a04d7ca-dod20/dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T17-43-13/smoke-host.json
+--world /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-10-01T17-43-13
+--out /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/dod20-browser-20261001/2026-10-01T17-43-09
+--test-workspace /home/user/testhome-dod20-2026-10-01T17-43-09/ws
+--authorized-root /home/user/testhome-dod20-2026-10-01T17-43-09
+--testuse /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/apps/web
+--chrome /opt/google/chrome/chrome
+ATTEMPT=2 (corrected retry; single launch)

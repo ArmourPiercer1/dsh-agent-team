@@ -1,0 +1,12 @@
+captured_utc=2026-10-01T18:39:28Z
+residual, self-match-safe: kit=2 host=0 chrome=0 driver=0
+EXPLANATION of the kit=2 line in 17-teardown-post-raw.txt: the harness bash WRAPPER (PID 461089, cmdline 'cd … && node tests/kits/team-view-sync-complete-e2e/browser-smoke-host.mjs --worktree …') is the parent of kit node 461090 and matched the pattern while it was still reaping. My exact-cmdline filter (case 'node tests/kits/*') correctly identified 461090 as the SIGTERM target; the wrapper exited on its own once node returned (job bash-3070 then reported exit code 0). No orphan remains:
+  (no 'still-present' line = nothing of mine left)
+named PIDs 461089 461090 + chrome tree 461458 461460 461462 461468 461469 461471 461492 461494 461509 alive-check: none-alive
+listeners 3181..3186/3491..3497 = 0 ; 3180 never bound (teardown stablePost 3180=null) ; 3080 pre=401 post=401 read-only
+scope note: result applies to tested b52151ab only; no later/writer tip was executed.
+independent /proc-only recheck (pattern assembled so this scan cannot self-match), utc=2026-10-01T18:40:07Z
+  real kit node processes = 0
+  real chrome processes = 1
+  => the kit=2 figure in the file above is the scan's own command text (this shell + its harness wrapper); the authoritative read is the /proc walk: 0 real kit/chrome processes, named PIDs none-alive, 0 listeners.
+recheck resolution, utc=2026-10-01T18:40:23Z: the 'real chrome processes = 1' line was ANOTHER self-match — the only match was PID 465310, the bash -c scan itself (its own cmdline contains the pattern text; ppid 290972 = harness). Authoritative state: 0 real kit processes, 0 real chrome processes, named PIDs none-alive, 0 listeners on 3181-3186/3491-3497. Pre-boot baseline this attempt also recorded kit=0 host=0 chrome=0.

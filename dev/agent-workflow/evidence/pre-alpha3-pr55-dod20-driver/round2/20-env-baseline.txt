@@ -1,0 +1,46 @@
+# round-2 frozen-batch validation baseline
+# authored 2026-10-01 (UTC) by the sole task writer (single-writer branch, worktree .worktrees/pr55-dod20-driver)
+# CORRECTED same day under coordinator authorization — see CORRECTIONS block at the bottom; this file is a
+# hand-authored env baseline (NOT a raw command capture), which is why in-place correction is permitted; the
+# raw run captures 30-red-vs-d6f940ae.txt and 40-green-offline.txt are kept VERBATIM and were not touched.
+base committed head      d6f940aea85499c5345658474ab457bf0d12e824 (remote-verified PR55 head before this batch)
+node                     v24.21.0
+jsdom (repo runtime)     29.1.1 — resolved from tests/deepseek-harness-test-use/node_modules via
+                         createRequire(<test-use>/package.json) walking up from the kit dir (fixtures loadRepoJsdom).
+                         PRE-EXISTING repo runtime dependency (vitest/happy-dom/jsdom world) — NOTHING was
+                         installed this round; if unresolvable the loader THROWS (no DOM stub).
+test-use checkout        tests/deepseek-harness-test-use @ 46a7f68b0922371ce7144b668b90e377d8e799f4 (pristine, pinned)
+markup transcription pin packages/client/ui-directory-picker-browse/src/client/DirectoryBrowser.tsx @ the same SHA:
+                         crumb trail = span[role=navigation] (:824) of independent crumb BUTTONS (:824-836);
+                         selection = aria-current on the row's own BUTTON — the aria-current PROP is line :241
+                         (rowSeat span :238, button opens :239); the component itself queries
+                         button[aria-current="true"] (:733) — same selector the probe uses;
+                         Miller columns div[role=list] (:232);
+                         i18n exact titles/home/Open/Cancel (src/client/index.ts:39-62 incl. zh).
+product tick interval    packages/client/src/plugin/team-mount-core.ts:900 — the literal line is
+                         `tickMs: 3000,` (there is NO identifier named PRODUCT_REFRESH_INTERVAL_MS in the
+                         repo; the driver's parseTickMsSource parses exactly /tickMs:\s*(\d+)/ from this file).
+                         Injected as cfg.tickMs/io.tickMs — the created-session wait budget (5*3000+2000ms)
+                         and the E3 cadence band DERIVE from it; not a driver-side invention.
+coverage honesty         the offline jsdom probe layer executes the REAL exported DIALOG_STATE_SOURCE verbatim
+                         over faithful markup; it is NOT the Chromium live lane and replaces nothing — the
+                         live lane stays gated (no --confirm-live was run; see 50-gate-and-coverage-notes.txt).
+
+─── CORRECTIONS (authorized by coordinator 2026-10-01; applied in the commit whose parent is 1a04d7ca) ───
+C1  Date header. The first revision of this file read "generated 2026-02-11" — an authoring slip with NO
+    evidentiary basis. Authoring time established from git log (command evidence, values recorded here):
+      d6f940ae  committer 2026-10-01T16:39:57+00:00  — this file did NOT exist there
+                (git ls-tree d6f940ae -- dev/agent-workflow/evidence/pre-alpha3-pr55-dod20-driver/ = empty);
+      1a04d7ca  committer 2026-10-01T17:12:13+00:00  — first commit introducing this file.
+    => the file was authored between 16:39:57Z and 17:12:13Z on 2026-10-01 (UTC). The header now says 2026-10-01
+    solely on that evidence, not on the wall clock of the correcting session.
+C2  Tick-interval citation. The first revision cited "PRODUCT_REFRESH_INTERVAL_MS = 3000" — no such symbol
+    exists (grep over packages/ = zero hits; reviewer R1 nit b / R3 nit 2, both confirmed). The actual source is
+    the literal `tickMs: 3000,` at packages/client/src/plugin/team-mount-core.ts:900, which is precisely what
+    readProductTickMs/parseTickMsSource parse. The line above now cites the literal.
+C3  Component line cites. Crumb trail [role=navigation] is DirectoryBrowser.tsx:824 (first revision cited :818,
+    the header div); the selection marker aria-current PROP is :241 (first revision cited :238, the rowSeat
+    span). Corroboration added: the component's own DOM query button[aria-current="true"] at :733.
+C4  Raw captures untouched: 30-red-vs-d6f940ae.txt and 40-green-offline.txt are outputs of real runs and remain
+    byte-verbatim; 50-gate-and-coverage-notes.txt is an authored note reviewed as accurate and is also unchanged.
+    Nothing else in the delta is modified by this correction; all test/code files are byte-identical to 1a04d7ca.

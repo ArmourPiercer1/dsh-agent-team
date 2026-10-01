@@ -1,0 +1,16 @@
+attempt 4 — DIAGNOSTIC live, TESTED b52151ab3ff72a1ffd1a8144e8d06cb40fa1a53e (root-approved diagnostic; NOT SOURCE PASS, NOT merge permission; no later/writer tip executed)
+utc=2026-10-01T18:40:07Z  carrier=.worktrees/browser-carrier-b52151ab-dod20 tree=8f7e21151c53d9ae47f3439acd44e7b2097c966e driver blob=d4639fd03379c64c320b9db3ec1d50d0dfb23eab sha256(file)=114fb013622cf293ef337016dce461b4a68a220ee04a3852f9299fffcc9b0c07
+install REAL_EXIT=0 (offline --frozen-lockfile --ignore-scripts, main/.pnpm-store); four config hashes pre==post; porcelain 0 before boot; TestUse 46a7f68b09… porcelain 0
+world=tvs-smoke-2026-10-01T18-36-13  fixture=/home/user/testhome-dod20-2026-10-01T18-35-37/ws (0700, non-symlink)  host 3181 mock 3496  3180 never bound  3080 401==401 read-only
+PRE-CHROME GATES 30/30 PASS incl. smoke-host path from kit READY output, lstat/realpath/JSON, new-world durable root(kind=team-root)+member pair corroborated, bundle sha equal, access 0600 same-world origin+port match (values never printed), driver blob == reviewed blob, oracle clauses '>= 3' and '>= 7' present (thresholds untouched)
+DRIVER PROCESS EXIT = 0 (14-driver-exit.txt, no pipe)  ok=true fatal=null  startedAt=2026-10-01T18:37:06.203Z finishedAt=2026-10-01T18:38:47.133Z  net entries=146
+  E1 PASS  preClickTeamReqs=0 readStates=4 projections=1 ledger=1 firstIsMember=true projOnceOnRoot=true memberFaceSeen=true
+           teamTabActivation {ok:true,hits:1,armedMs:87} / teamTabActivationPostReload {ok:true,hits:1,armedMs:301}  observationWindow wallMs=10595
+  E2 PASS  readStates=4 listRoots=4 projectionsWholeLeg=0 noneClosedSixFields=true createdSessionWait {budgetMs:17000,polls:0,ok:true}
+  E3 PASS  readStates=10 deltasMs=[3861,3001,2999,3000,3000,3000,2845,3000,3000] deltasInBand=8 intervalMs=3000 rootIdentityOk=true projections=1 ledger=1  E3WindowWall wallMs=28912
+  E5 PASS  ledger=1 ledgerShapeOk=true ledgerOnExpectedRoot=true reprobes=3 on root listRoots=1 projectionsAfter=0
+  E4 NOT_RUN frozen record (unit/E2E tier only; coordinator ruling 2026-10-01)
+  launch guard: weakFlagsFound=[] remoteDebuggingPipe=true remoteDebuggingPort=false ; chromiumSandbox=true (driver-fixed) ; chrome 154.0.8037.92-1 official
+The E1 fix under test is observable: post-reload discovery now returns hits:1 and arms in 301 ms inside the same absolute budget, where tested 292 returned hits:0 and failed closed.
+Two open review items remain as stated by parent (setup wall-clock possibly ~11 s vs the claimed 6 s; missing actual-routine test coverage) — neither was investigated or patched here; writer is fixing them in parallel on a different tip.
+RETAINED: new world + fixture + this evidence dir (incl. 4 screenshots, shot-E1-member-pure.png now exists); all earlier attempts, both earlier carriers, all earlier worlds/fixtures and the relocated private run dir untouched. raw instance.log stays inside the carrier run dir, never copied.

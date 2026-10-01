@@ -1,0 +1,25 @@
+PR55 DoD20 attempt2 — MINIMAL DESENSITIZED MAINLINE REVIEW PACKAGE (rev3; 20-diag-scenario-attainment.txt section E carries the authoritative retractions)
+generated_utc=2026-10-01T17:56:03Z   files=18   prefix /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/dod20-browser-20261001/2026-10-01T17-43-09/
+EXCLUDED BY POLICY: raw instance.log (carrier run dir; 1 raw launch-URL token) and tests/homes/tvs-smoke-2026-10-01T17-43-13/browser-access.json (0600, never read); nothing from tests/homes/.dod20-private-2026-10-01T17-32-33/.
+NO DOM DUMP EXISTS: no raw DOM/accessibility tree was captured this round; the only DOM-derived value on record is the integer legs.E3E5.teamTabHits=2 plus the 4 screenshots. Nothing back-filled.
+DESENSITIZATION: 9 lt-v1- hits in dod20-driver-out.json are all the placeholder lt-v1-REDACTED; token= appears only as SCRUBBED; 0 Bearer, 0 ?token=, 0 authorization:/cookie: lines; byte-level scan over every file including PNGs.
+
+FILE                                      SHA256                                                            tok  lTok auth  BYTES
+run.env                                   9b2ec27d9ab05adbe4030e2e6e1ad0bac0aacd6adaff31162b09a579db343abd  0    0    0     320
+00-runtime-and-gate-raw.txt               6e0362def716544a5c383f96b7dded913f70b379ac37612161e83d65b24a8e56  0    0    0     1176
+10-kit-console.log                        e12e98045e93a1667fd828acd360fed78907a92a91856fa057dcef54025fe60d  0    0    0     3450
+11-param-gates.txt                        38e575645948f2fbc029d56a059a66209951f969532741b3a4eeb4b96e3ce667  0    0    0     4241
+12-driver-argv-actual.txt                 e9e6b011989216b0f35fed357a5dbb475da03940c0894de39163f1e7f7c7a907  0    0    0     1037
+13-driver-console-raw.log                 8dc632dda3fa705858f0cba3d8e59284ca923f67579a0a14abb7f4dd13c40e2f  0    0    0     382
+14-driver-exit.txt                        4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865  0    0    0     2
+15-verdict-detail.txt                     6cb26b2a8d0f39a9a92be190dda69b4c97486b5f783f5d40945037bf23096c31  0    0    0     2425
+16-net-analysis.txt                       62a2fd6dbc5a28725de7c7557432c9bb5d9ed2c65f3138f3b8a5bd1ec4536013  0    0    0     1177
+17-teardown-post-raw.txt                  bdceb04131db347f87bb64279be45343577fef364bdfa309ab606bb1799106a2  0    0    0     1949
+18-final-process-accounting.txt           57144e84554ce14c48154d4bc4943c6a37ce35a2b1f402a3d22ffaad756ea056  0    0    0     283
+19-runtime-restored-raw.txt               2d743af829dfe63c12bccd5bf749afe8a77e7bf2f66b593c85d91def20dface5  0    0    0     3378
+20-diag-scenario-attainment.txt           5a855cae64ad376f74930a0ba90947231132524e13a599efbbe9e2c6bc275c36  0    0    0     9973
+dod20-driver-out.json                     1f6f2a7f2e6ec46a0bd2e42b2d3b360012dd097b5bbaaeea6f5783bf30a77c8e  0    0    0     131416
+shot-E1-member-pure.png                   bd2b0dbd3a98ed1ae42928c318f67c41c45a720fddc6bb6588236e5e39259568  0    0    0     89079
+shot-E3-root-team.png                     f97ce3d7106402b5a0e980c4e7754dfe89f1a6c9279298441851ef7dd8165472  0    0    0     99152
+shot-E5-control-anomaly.png               f97ce3d7106402b5a0e980c4e7754dfe89f1a6c9279298441851ef7dd8165472  0    0    0     99152
+shot-E2-ordinary.png                      cf70b85e1f75568c956a32d07f3ea126d9bcf88c2157af34661fdbdedbcdb3d3  0    0    0     144872

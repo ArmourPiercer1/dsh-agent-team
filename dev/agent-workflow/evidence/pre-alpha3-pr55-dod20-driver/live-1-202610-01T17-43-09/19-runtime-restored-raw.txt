@@ -1,0 +1,53 @@
+=== attempt2 runtime-restored (new read-only commands; this text file is the only write) ===
+captured_utc=2026-10-01T17:51:21Z
+harness snapshot at capture time: file=workspace-write approval=ask
+--- PID1 ---
+bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /srv/workspace/dsh-plugins/dsh-agent-team /s
+{ echo "=== attempt2 runtime-restored (new read-only commands; this text file is the only write) ==="
+  echo "captured_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  echo "harness snapshot at capture time: file=workspace-write approval=ask"
+  echo "--- PID1 ---"; tr '\0' ' ' </proc/1/cmdline | cut -c1-140; echo
+  echo "--- /proc/self/status ---"; grep -E 'NoNewPrivs|CapBnd|CapEff|CapPrm|Seccomp' /proc/self/status
+  echo "--- AppArmor ---"; cat /proc/self/attr/current 2>/dev/null || echo none
+  echo "--- mountinfo root line (bwrap overlay evidence) ---"; head -3 /proc/self/mountinfo
+  echo "--- writable attribute reads (no write probes, per instruction) ---"
+  for p in /srv/workspace/dsh-plugins/dsh-agent-team /home/user /tmp; do printf '%-46s writable_attr=%s\n' "$p" "$([ -w "$p" ] && echo yes |
+  echo "--- owned PIDs of attempt2 (must be zero) ---"
+  echo "kit_node=$(pgrep -cf 'node tests/kits/team-view-sync-[c]omplete-e2e/browser-smoke-host.mjs' || echo 0) host_child=$(pgrep -cf 'apps/
+  echo "attempt2 PIDs from this round (kit 437999 wrapper / 438000 node / host child / chrome 438374..438425): alive=$(for p in 437999 43800
+  echo "--- listeners on the test port families ---"
+  ss -ltn | awk '/:(318[0-6]|349[0-9])([[:space:]]|$)/{print "  LISTEN "$4}'; echo "  count=$(ss -ltn | awk '/:(318[0-6]|349[0-9])([[:space:
+  echo "--- stable 3080 ---"; node -e 'fetch("http://127.0.0.1:3080/").then(r=>console.log("3080 GET status="+r.status+"   expected 401, pre
+  echo "--- NO new host / Chrome / driver started this turn ---"; echo "no new world, no new fixture, no new evidence line dir"; } > "$EVID/
+cat "$EVID/19-runtime-restored-raw.txt"; echo; sha256sum "$EVID/19-runtime-restored-raw.txt" 
+
+--- /proc/self/status ---
+CapPrm:	0000000000000000
+CapEff:	0000000000000000
+CapBnd:	0000000000000000
+NoNewPrivs:	1
+Seccomp:	0
+Seccomp_filters:	0
+--- AppArmor ---
+bwrap//&unpriv_bwrap (enforce)
+--- mountinfo root line (bwrap overlay evidence) ---
+141 89 252:0 / / ro,nosuid,nodev,relatime master:1 - ext4 /dev/mapper/ubuntu--vg-ubuntu--lv rw
+142 141 0:5 / /dev ro,nosuid,nodev,relatime master:2 - devtmpfs udev rw,size=6058148k,nr_inodes=1514537,mode=755,inode64
+143 142 0:24 / /dev/pts ro,nosuid,nodev,noexec,relatime master:3 - devpts devpts rw,gid=5,mode=620,ptmxmode=000
+--- writable attribute reads (no write probes, per instruction) ---
+/srv/workspace/dsh-plugins/dsh-agent-team      writable_attr=yes
+/home/user                                     writable_attr=no
+/tmp                                           writable_attr=yes
+--- owned PIDs of attempt2 (must be zero) ---
+kit_node=0
+0 host_child=0
+0 chrome=0
+0 driver=0
+0
+attempt2 PIDs from this round (kit 437999 wrapper / 438000 node / host child / chrome 438374..438425): alive=none-alive
+--- listeners on the test port families ---
+  count=0 (0 = all free, 3180 included)
+--- stable 3080 ---
+3080 GET status=401   expected 401, pre-attempt was 401
+--- NO new host / Chrome / driver started this turn ---
+no new world, no new fixture, no new evidence line dir

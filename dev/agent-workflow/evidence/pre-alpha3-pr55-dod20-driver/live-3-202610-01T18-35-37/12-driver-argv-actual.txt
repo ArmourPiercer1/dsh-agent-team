@@ -1,0 +1,14 @@
+cwd=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/browser-carrier-b52151ab-dod20
+utc=2026-10-01T18:37:00Z
+TESTED_HEAD=b52151ab3ff72a1ffd1a8144e8d06cb40fa1a53e driver_blob=d4639fd03379c64c320b9db3ec1d50d0dfb23eab
+DIAGNOSTIC live approved by root; NOT a SOURCE PASS / merge permission. argv (secrets only via the 0600 access-record path, none echoed):
+node tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs --confirm-live
+--access /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-10-01T18-36-13/browser-access.json
+--smoke-host /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/browser-carrier-b52151ab-dod20/dev/agent-workflow/evidence/team-view-sync-complete/wp9b-browser-smoke-tvs-smoke-2026-10-01T18-36-13/smoke-host.json
+--world /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/tvs-smoke-2026-10-01T18-36-13
+--out /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/dod20-browser-20261001/2026-10-01T18-35-37
+--test-workspace /home/user/testhome-dod20-2026-10-01T18-35-37/ws
+--authorized-root /home/user/testhome-dod20-2026-10-01T18-35-37
+--testuse /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/apps/web
+--chrome /opt/google/chrome/chrome
+SINGLE LAUNCH (attempt 4, driver b52151ab)
