@@ -608,3 +608,43 @@ Consequences and what was done about them:
 * standing countermeasure adopted for the rest of this task: every commit is followed by a
   `git show --stat` + `git status --porcelain` read-back, and the push is followed by a
   `git ls-remote` read-back, before anything is reported to the coordinator.
+
+## 14. Run-root ledger (exact paths, no placeholders) and the one deletion moment
+
+Per the coordinator's recording requirement, the worlds this round created and removed are named exactly,
+with the deletion moment derived from the filesystem rather than from memory.
+
+Created by this round (all under `/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/`):
+
+| exact root | created | how | status now |
+| --- | --- | --- | --- |
+| `prb-ep-2026-10-01T13-52-56` | 13:52:56 (kit stamp) | pr-b attempt 1, `cp` of `mpr-2026-10-01T13-21-34` | **retained** (exit 1 boot flake), untouched since |
+| `prb-ep-2026-10-01T13-53-35` | 13:53:35 (kit stamp) | pr-b attempt 2, same seed | **removed by the kit's own G9 block on the clean pass** — see below |
+| `tvs-derive-probe-20261001T135123Z` | 13:51:23.249 | B2 negative probe: copy of `mpr-2026-10-01T13-21-34` with its 4 T1 `team-member` `session_bindings` rows stripped **in the copy only** | retained, read-only since |
+| `tvs-derive-probe-empty-20261001T135123Z` | 13:51:23.251 | B2 negative probe: `mkdir`, deliberately storeless | retained, read-only since |
+
+Read-only throughout this round (never written, never deleted):
+`mpr-2026-10-01T13-08-04`, `mpr-2026-10-01T13-21-34` (the seed; only ever a `cpSync`/`cp -r` **source**),
+`prb-ep-2026-10-01T13-22-22`, plus `.audit-paths.txt` and everything under
+`dev/agent-workflow/evidence/pre-alpha3-refactor/**` and `…/team-view-sync-complete/**`.
+
+**The single deletion moment of this round** — `rmSync(tests/homes/prb-ep-2026-10-01T13-53-35)` executed by
+the kit itself (kit file `pr-b-effective-policy-smoke.mjs`, G9 block, gated on `EXIT_CODE === 0`), after the
+post-run stable probes and after all wire evidence had been captured:
+
+* removing the directory entry updated the parent's mtime: `mtime(tests/homes)` = **2026-10-01T13:53:41.034 Z**
+  — that is the deletion moment, to the millisecond;
+* the next write in the same code path, `summary.json` of run directory
+  `dev/agent-workflow/evidence/pre-alpha3-refactor/pr-b/host-smoke-2026-10-01T13-53-35-c3`, carries
+  mtime **13:53:41.045 Z** (11 ms later), and the console redirect
+  `.worktrees/.scratch-logs/fixture-param-round2/run-pr-b-console.log` the same timestamp;
+* the console line printed after the removal is
+  `world: tests/homes/prb-ep-2026-10-01T13-53-35  (cleaned on PASS)` (line 61), and the line before it is the
+  post-run stable probe `post stable probes: 3080=401 3180=unreachable…` (line 57), which brackets the event;
+* the world was brand-new this round (its name is this run's own ISO stamp, no collision at launch — the kit
+  additionally removes any same-stamp path before copying), and its evidence was complete before the removal:
+  `api-transcript.json`, `mock-requests.json`, `mock.log`, `logs/`, `host1-resume-port3182.log`,
+  `host2-resume-port3182.log`, `summary.json`, plus the external console redirect.
+
+No other root was created or removed by me this round; the two probe worlds are retained rather than cleaned
+up, and this round contains **no** glob, mtime predicate, `git clean`, `reset` or `mv` anywhere.
