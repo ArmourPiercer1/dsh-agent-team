@@ -46,10 +46,22 @@
  *
  * Seam contract (mirrors `packages/storage/schema/seam.ts` 1:1):
  * `open` rejects with `already-open`, `version-mismatch` (detail
- * `{ found, expected }`), and `malformed-medium` (missing/undeclared/
- * unparseable table files); table ops reject with `closed` (closed domain),
- * `invalid-table` (undeclared table), and `missing-key` (update on absent
- * key).
+ * `{ found, expected }`), and `malformed-medium` (undeclared / unparseable /
+ * non-prefix missing table files); table ops reject with `closed` (closed
+ * domain), `invalid-table` (undeclared table), and `missing-key` (update on
+ * absent key).
+ *
+ * SAME-VERSION TABLE ADDITIONS (Alpha.3 PR1 alignment with the pinned
+ * upstream backend): a declared table the medium does not carry is
+ * initialized EMPTY — upstream does the same (`storage-json format.ts`
+ * L77-85, `storage-sqlite index.ts` L110-131), so a store declared after a
+ * medium was created opens as an empty table instead of a corrupt medium.
+ * The initialization is infrastructure (no `writeCount` entry). Deviation
+ * kept deliberately: because this double keeps one file per table, a
+ * missing file in the MIDDLE of the declared (canonical) order is still
+ * `malformed-medium` — silently re-creating such a table would drop a
+ * store's durable rows, and upstream's per-document layout cannot even
+ * express that corruption. See `test/a3p1-seam-additive-tables.test.ts`.
  *
  * One documented deviation from the P4-T1 in-memory fake (unreachable in
  * the provisioning protocol, which only `update`s the bootstrapped ledger
@@ -254,10 +266,37 @@ export class FileStorageSeam {
         })
       }
     }
+    // SAME-VERSION ADDITIVE TABLES (upstream fidelity, Alpha.3 PR1). The
+    // pinned backend initializes a declared table the medium does not carry
+    // as an EMPTY table, inside one version — storage-json `format.ts` L77-85
+    // (`records === undefined` → an empty map) and storage-sqlite
+    // `index.ts` L110-131 (`CREATE TABLE IF NOT EXISTS`) at baseline
+    // 46a7f68b0922371ce7144b668b90e377d8e799f4. A store declared after a
+    // medium was created is therefore an ADDITION, not a corrupt medium.
+    // One piece of strictness upstream cannot express is KEPT on purpose:
+    // this double stores ONE FILE PER TABLE, so a single table file can vanish
+    // by itself, and silently re-creating a store in the MIDDLE of the
+    // canonical order would erase a store's durable rows. So a same-version
+    // table-set change is legal exactly when the persisted set is a canonical
+    // PREFIX of the declared set (a legal addition is appended LAST — the
+    // `blueprint_registry` precedent); a hole in the prefix stays
+    // `malformed-medium`.
+    const missing = spec.tables.filter((table) => !nonTmp.includes(`${table}.json`))
+    const trailingSlots = spec.tables.slice(spec.tables.length - missing.length)
+    const additive = missing.every((table) => trailingSlots.includes(table))
     for (const table of spec.tables) {
       const path = this.pathFor(name, table)
       if (!existsSync(path)) {
-        throw seamError('malformed-medium', `domain '${name}' is missing table file '${table}.json'`, { domain: name, table })
+        if (!additive) {
+          throw seamError('malformed-medium', `domain '${name}' is missing table file '${table}.json'`, { domain: name, table })
+        }
+        // The additive case: an EMPTY table in memory, exactly like the
+        // pinned backend (which materializes nothing either — the table file
+        // appears when the table is FIRST written, mirroring upstream's
+        // "serialize the unit state on write"). So opening a medium that
+        // predates a declared store performs NO write at all.
+        state.rows.set(table, new Map())
+        continue
       }
       const raw = readFileSync(path, 'utf8')
       let rows

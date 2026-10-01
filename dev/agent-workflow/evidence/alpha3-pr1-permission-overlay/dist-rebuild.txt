@@ -1,0 +1,70 @@
+# sanctioned chain step 1: pnpm build (= pnpm -r run build)  [2026-10-01T19:09:01Z]
+$ pnpm build
+$ pnpm -r run build
+Scope: 9 of 10 workspace projects
+packages/contracts build$ tsc -p tsconfig.build.json
+packages/domain build$ tsc -p tsconfig.build.json
+packages/legacy build$ tsc -p tsconfig.build.json
+packages/remote build$ tsc -p tsconfig.build.json
+packages/domain build: Done
+packages/runtime build$ tsc -p tsconfig.build.json
+packages/legacy build: Done
+packages/storage build$ tsc -p tsconfig.build.json
+packages/storage build: Done
+packages/testkit build$ tsc -p tsconfig.build.json
+packages/contracts build: Done
+packages/tools build$ tsc -p tsconfig.build.json
+packages/remote build: Done
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+[exit code: 0]
+# sanctioned chain step 2: pnpm build:composition (= place-dist-glue -> build-client-composition -> check-artifacts-committed)  [2026-10-01T19:09:11Z]
+$ pnpm build:composition
+$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition: 91 modules, 11 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay/packages/client/composition-shim/client-bundle.js (1147053 B)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay/packages/client/composition-shim/package.json
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/runtime/dist/packages/storage/repositories/team-domain.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/storage/repositories/team-domain.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/storage/repositories/team-domain.js
+  C content-drift (git add): packages/runtime/dist/packages/storage/repositories/team-domain.js.map
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/stores.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/stores.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/stores.js
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/stores.js.map
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/version-policy.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/version-policy.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/version-policy.js
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/version-policy.js.map
+[ELIFECYCLE] Command failed with exit code 1.
+[exit code: 1]
+# step 3: freshness re-check AFTER the build (the correct order)
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/runtime/dist/packages/storage/repositories/team-domain.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/storage/repositories/team-domain.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/storage/repositories/team-domain.js
+  C content-drift (git add): packages/runtime/dist/packages/storage/repositories/team-domain.js.map
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/stores.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/stores.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/stores.js
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/stores.js.map
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/version-policy.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/version-policy.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/version-policy.js
+  C content-drift (git add): packages/runtime/dist/packages/storage/schema/version-policy.js.map
+[exit code: 1]
+# step 4: stage the rebuilt artifacts, then re-run the gate (build -> git add -> check is the freshness order)
+$ git add packages/runtime/dist/packages/storage/{repositories/team-domain,schema/stores,schema/version-policy}.{js,d.ts,js.map,d.ts.map}
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1372 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+[exit code: 0]

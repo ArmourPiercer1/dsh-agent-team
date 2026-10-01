@@ -3,7 +3,7 @@
  * P4-T1).
  *
  * `createTeamDomain` opens the domain through the seam and stamps all
- * nine stores (nine single-write durable writes; a crash between stamps
+ * ten stores (ten single-write durable writes; a crash between stamps
  * leaves a partial domain that `openTeamDomain` diagnoses precisely). It
  * is the STRICT fresh-world entry: an already-stamped domain is a
  * `TEAM_DOMAIN_EXISTS` failure (the harness/test-world boot semantics — a
@@ -13,9 +13,21 @@
  * L2 per-store stamps here, L3 record `schemaVersion` at every read).
  * `createOrOpenTeamDomain` is the RESTART-SAFE production entry (the
  * shipped bundle row's `bootPhase: "create-or-open"`): adopt an existing stamped
- * domain, or initialize a fresh medium with the full nine-store stamp
+ * domain, or initialize a fresh medium with the full ten-store stamp
  * when `schema_meta` is empty; a PARTIAL create is diagnosed exactly as
  * `openTeamDomain` diagnoses it (never papered over).
+ *
+ * ADDITIVE STORES (Alpha.3 PR1). A store declared at a version AFTER media
+ * were stamped at that version (today: `permission_overlays`) legitimately
+ * has no L2 stamp row on such a medium, and the pinned backend initializes
+ * its declared table EMPTY inside the same version. `verifyStamps` therefore
+ * bootstraps that store's stamp row, and ONLY that store's, ONLY when its
+ * table holds zero rows. The nine baseline stamps are verified exactly as
+ * before, FIRST, and nothing else is ever bootstrapped, repaired, or
+ * recreated: a baseline stamp missing or at a foreign version, an additive
+ * table that has rows but no stamp, a foreign domain version — all fail
+ * loudly with zero writes. This is not a migration: no version changes, no
+ * row is read, rewritten, or deleted.
  *
  * Failure paths release the handle: every error raised after `open`
  * closes the handle before re-throwing, so the domain name is freed and a
@@ -29,6 +41,8 @@
 
 import { toRemoteSafeDetail } from '../../contracts/src/index.js'
 import {
+  TEAM_DOMAIN_ADDITIVE_STORES,
+  TEAM_DOMAIN_BASELINE_STORES,
   TEAM_DOMAIN_SCHEMA_VERSION,
   TEAM_DOMAIN_STORES,
   assertSupportedTeamDomainSchemaVersion,
@@ -49,7 +63,15 @@ import { SchemaMetaRepository } from './schema-meta.js'
 import { SessionBindingsRepository } from './session-bindings.js'
 import { TeamSessionsRepository } from './team-sessions.js'
 
-/** The nine store repositories of an open TeamDomain. */
+/**
+ * The store repositories of an open TeamDomain.
+ *
+ * The tenth store (`permission_overlays`, Alpha.3 PR1) is intentionally NOT
+ * a member of this facade: its only consumer is the Alpha.3
+ * GovernanceMutationService (PR3), and PR1 ships the persistence layer with
+ * ZERO production-path imports of it. Its repository takes the same
+ * `StorageDomainHandle` as these nine (`new PermissionOverlayRepository(handle)`).
+ */
 export interface TeamDomainRepositories {
   /** Per-store schema stamps (L2). */
   readonly schemaMeta: SchemaMetaRepository
@@ -77,7 +99,7 @@ export interface TeamDomainRepositories {
 export interface TeamDomain {
   /** The durable domain name (`team_domain`). */
   readonly name: string
-  /** The nine store repositories. */
+  /** The store repositories of this domain (see {@link TeamDomainRepositories}). */
   readonly repositories: TeamDomainRepositories
   /** Close the domain (idempotent; the state persists on the medium). */
   close(): Promise<void>
@@ -155,9 +177,75 @@ function buildDomain(handle: StorageDomainHandle): TeamDomain {
 }
 
 /**
- * Create the TeamDomain: open `team_domain` and stamp all nine stores.
+ * Verify the L2 per-store stamps of an EXISTING medium.
  *
- * The nine stamp writes are sequential single-write durable writes; a
+ * The nine BASELINE stamps are verified first, in canonical order, exactly as
+ * always: the first missing one is named (`SCHEMA_STAMP_MISSING`,
+ * `{ store, expected, found: null }`) and a foreign stamp version rejects
+ * (`SCHEMA_STAMP_MISMATCH`). Nothing about that path changed.
+ *
+ * Then the ADDITIVE stores (declared at v2 after media were already stamped
+ * at v2 — today only `permission_overlays`) get their stamp BOOTSTRAPPED,
+ * under three conditions that must all hold:
+ *
+ *  1. all nine baseline stamps are present and supported (checked above, so a
+ *     partial or tampered domain never reaches this point);
+ *  2. the store carries no stamp row at all;
+ *  3. its table holds ZERO rows — i.e. it is exactly what the pinned backend
+ *     hands back for a declared-but-absent table
+ *     (`storage-json format.ts` L77-85 / `storage-sqlite index.ts` L110-131).
+ *
+ * A row-carrying table with no stamp is NOT fresh: it is content without a
+ * schema claim, so it fails `SCHEMA_STAMP_MISSING` with
+ * `problem: 'rows-without-stamp'` and ZERO writes. The bootstrap writes
+ * exactly one row into `schema_meta` — no version changes, no row of any
+ * store is read, rewritten, or deleted, so this is an additive-store stamp,
+ * not a migration (the no-migration policy of `schema/version-policy.ts`
+ * stands unchanged for VERSIONS).
+ *
+ * @param handle - the open, L1-verified domain handle.
+ */
+async function verifyStamps(handle: StorageDomainHandle): Promise<void> {
+  const schemaMeta = new SchemaMetaRepository(handle)
+  const stamps = schemaMeta.listStamps()
+  for (const store of TEAM_DOMAIN_BASELINE_STORES) {
+    const stamp = stamps.get(store)
+    if (stamp === undefined) {
+      throw teamDomainError(
+        'SCHEMA_STAMP_MISSING',
+        `schema_meta stamp for store '${store}' is missing (partial create or corruption)`,
+        { store, expected: TEAM_DOMAIN_SCHEMA_VERSION, found: null },
+      )
+    }
+    assertSupportedTeamDomainSchemaVersion(stamp.version, store)
+  }
+  for (const store of TEAM_DOMAIN_ADDITIVE_STORES) {
+    const stamp = stamps.get(store)
+    if (stamp !== undefined) {
+      assertSupportedTeamDomainSchemaVersion(stamp.version, store)
+      continue
+    }
+    let rows: number
+    try {
+      rows = handle.table(store).size
+    } catch (error) {
+      throw normalizeSeamError(error, store, 'table')
+    }
+    if (rows > 0) {
+      throw teamDomainError(
+        'SCHEMA_STAMP_MISSING',
+        `schema_meta stamp for store '${store}' is missing but its table holds ${String(rows)} row(s); content without a stamp is corruption, never a fresh store`,
+        { store, expected: TEAM_DOMAIN_SCHEMA_VERSION, found: null, problem: 'rows-without-stamp', rows },
+      )
+    }
+    await schemaMeta.stampStore(store, new Date().toISOString())
+  }
+}
+
+/**
+ * Create the TeamDomain: open `team_domain` and stamp all ten stores.
+ *
+ * The ten stamp writes are sequential single-write durable writes; a
  * crash between them leaves a partial domain (openable, but diagnosed by
  * `openTeamDomain` as `SCHEMA_STAMP_MISSING` for the exact first missing
  * store in canonical order).
@@ -211,19 +299,7 @@ export async function openTeamDomain(seam: StorageDomainSeam): Promise<TeamDomai
   }
   const handle = await openHandle(seam)
   try {
-    const schemaMeta = new SchemaMetaRepository(handle)
-    const stamps = schemaMeta.listStamps()
-    for (const store of TEAM_DOMAIN_STORES) {
-      const stamp = stamps.get(store)
-      if (stamp === undefined) {
-        throw teamDomainError(
-          'SCHEMA_STAMP_MISSING',
-          `schema_meta stamp for store '${store}' is missing (partial create or corruption)`,
-          { store, expected: TEAM_DOMAIN_SCHEMA_VERSION, found: null },
-        )
-      }
-      assertSupportedTeamDomainSchemaVersion(stamp.version, store)
-    }
+    await verifyStamps(handle)
     return buildDomain(handle)
   } catch (error) {
     await closeHandleSafe(handle)
@@ -289,20 +365,10 @@ export async function createOrOpenTeamDomainDetailed(seam: StorageDomainSeam): P
       return { domain: buildDomain(handle), created: true }
     }
     // Existing stamped domain (returning home): adopt — the exact L2
-    // verification of openTeamDomain (all nine stamps present at a
-    // supported version, in canonical store order).
-    const stamps = schemaMeta.listStamps()
-    for (const store of TEAM_DOMAIN_STORES) {
-      const stamp = stamps.get(store)
-      if (stamp === undefined) {
-        throw teamDomainError(
-          'SCHEMA_STAMP_MISSING',
-          `schema_meta stamp for store '${store}' is missing (partial create or corruption)`,
-          { store, expected: TEAM_DOMAIN_SCHEMA_VERSION, found: null },
-        )
-      }
-      assertSupportedTeamDomainSchemaVersion(stamp.version, store)
-    }
+    // verification of openTeamDomain (the nine baseline stamps present at a
+    // supported version in canonical store order, plus the additive-store
+    // stamp bootstrap).
+    await verifyStamps(handle)
     return { domain: buildDomain(handle), created: false }
   } catch (error) {
     await closeHandleSafe(handle)

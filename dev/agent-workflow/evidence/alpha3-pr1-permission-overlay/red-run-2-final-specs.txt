@@ -1,0 +1,105 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay
+
+ ❯ packages/runtime/test/permission-overlay-validation.test.ts (0 test)
+ ❯ packages/runtime/test/permission-overlay-latest-generation.test.ts (0 test)
+ ❯ packages/runtime/test/permission-overlay-append.test.ts (0 test)
+ ❯ packages/runtime/test/permission-overlay-generation-conflict.test.ts (0 test)
+ ❯ packages/runtime/test/permission-overlay-history-immutability.test.ts (0 test)
+ ❯ packages/runtime/test/permission-overlay-restart-persistence.test.ts (0 test)
+ ❯ packages/runtime/test/permission-overlay-port-surface.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/permission-overlay-append.test.ts [ packages/runtime/test/permission-overlay-append.test.ts ]
+Error: Cannot find module '../../storage/schema/permission-overlay.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay/packages/runtime/test/permission-overlay-append.test.ts
+ ❯ packages/runtime/test/permission-overlay-append.test.ts:16:1
+     14| import { describe, expect, it } from 'vitest'
+     15|
+     16| import {
+       | ^
+     17|   PERMISSION_OVERLAY_DOMAIN_NAME,
+     18|   PERMISSION_OVERLAY_SCHEMA_VERSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  packages/runtime/test/permission-overlay-generation-conflict.test.ts [ packages/runtime/test/permission-overlay-generation-conflict.test.ts ]
+Error: Cannot find module '../../storage/schema/permission-overlay.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay/packages/runtime/test/permission-overlay-generation-conflict.test.ts
+ ❯ packages/runtime/test/permission-overlay-generation-conflict.test.ts:21:1
+     19|
+     20| import { writeText } from '../../testkit/fault-injection/file-seam.mjs'
+     21| import { PERMISSION_OVERLAY_DOMAIN_NAME, PERMISSION_OVERLAY_STORE } fr…
+       | ^
+     22| import {
+     23|   OTHER_INSTANCE_ID,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  packages/runtime/test/permission-overlay-history-immutability.test.ts [ packages/runtime/test/permission-overlay-history-immutability.test.ts ]
+Error: Cannot find module '../../storage/repositories/permission-overlays.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay/packages/runtime/test/permission-overlay-history-immutability.test.ts
+ ❯ packages/runtime/test/permission-overlay-history-immutability.test.ts:18:1
+     16| import { describe, expect, it } from 'vitest'
+     17|
+     18| import { PermissionOverlayRepository } from '../../storage/repositorie…
+       | ^
+     19| import {
+     20|   capture,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  packages/runtime/test/permission-overlay-latest-generation.test.ts [ packages/runtime/test/permission-overlay-latest-generation.test.ts ]
+Error: Cannot find module '../../storage/schema/permission-overlay.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay/packages/runtime/test/permission-overlay-latest-generation.test.ts
+ ❯ packages/runtime/test/permission-overlay-latest-generation.test.ts:14:1
+     12| import { describe, expect, it } from 'vitest'
+     13|
+     14| import { PERMISSION_OVERLAY_DOMAIN_NAME, PERMISSION_OVERLAY_STORE } fr…
+       | ^
+     15| import {
+     16|   OTHER_INSTANCE_ID,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  packages/runtime/test/permission-overlay-port-surface.test.ts [ packages/runtime/test/permission-overlay-port-surface.test.ts ]
+Error: Cannot find module '../../storage/repositories/permission-overlays.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay/packages/runtime/test/permission-overlay-helpers.ts
+ ❯ packages/runtime/test/permission-overlay-helpers.ts:31:1
+     29| import type { InstanceId, RootSessionId } from '../../contracts/src/in…
+     30| import { destroyDir, FileStorageSeam, scratchDir } from '../../testkit…
+     31| import { openPermissionOverlayStore } from '../../storage/repositories…
+       | ^
+     32| import type { PermissionOverlayStore } from '../../storage/repositorie…
+     33| import {
+ ❯ packages/runtime/test/permission-overlay-port-surface.test.ts:27:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  packages/runtime/test/permission-overlay-restart-persistence.test.ts [ packages/runtime/test/permission-overlay-restart-persistence.test.ts ]
+Error: Cannot find module '../../storage/repositories/permission-overlays.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay/packages/runtime/test/permission-overlay-helpers.ts
+ ❯ packages/runtime/test/permission-overlay-helpers.ts:31:1
+     29| import type { InstanceId, RootSessionId } from '../../contracts/src/in…
+     30| import { destroyDir, FileStorageSeam, scratchDir } from '../../testkit…
+     31| import { openPermissionOverlayStore } from '../../storage/repositories…
+       | ^
+     32| import type { PermissionOverlayStore } from '../../storage/repositorie…
+     33| import {
+ ❯ packages/runtime/test/permission-overlay-restart-persistence.test.ts:13:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  packages/runtime/test/permission-overlay-validation.test.ts [ packages/runtime/test/permission-overlay-validation.test.ts ]
+Error: Cannot find module '../../storage/schema/permission-overlay.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr58-permission-overlay/packages/runtime/test/permission-overlay-validation.test.ts
+ ❯ packages/runtime/test/permission-overlay-validation.test.ts:16:1
+     14| import { describe, expect, it } from 'vitest'
+     15|
+     16| import {
+       | ^
+     17|   PERMISSION_OVERLAY_MAX_RULES,
+     18|   PERMISSION_OVERLAY_SCHEMA_VERSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  7 failed (7)
+      Tests  no tests
+   Start at  17:58:37
+   Duration  366ms (transform 321ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

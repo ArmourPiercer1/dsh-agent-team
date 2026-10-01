@@ -226,7 +226,14 @@ export function destroyScratch(dir: string): void {
 }
 
 /** The nine `schema_meta` stamp writes `createTeamDomain` performs (v2). */
-export const STAMP_WRITE_COUNT = 9
+/**
+ * Durable writes a FRESH realm performs at creation: one `schema_meta` stamp
+ * row per declared TeamDomain store. Alpha.3 PR1 added the tenth store
+ * (`permission_overlays`, additively at schema version 2), so a fresh create
+ * stamps ten rows; a medium that predates the store pays that ONE stamp write
+ * on its first open instead (see `team-domain.ts` `verifyStamps`).
+ */
+export const STAMP_WRITE_COUNT = 10
 
 /**
  * Arm a crash AFTER exactly `base + offset` total seam writes: the first

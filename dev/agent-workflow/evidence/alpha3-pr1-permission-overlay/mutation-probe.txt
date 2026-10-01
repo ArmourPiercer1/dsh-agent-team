@@ -1,0 +1,42 @@
+===== PROBE: occupied generation no longer conflicts (overwrite allowed) =====
+       ✓ exposes no update/delete/overwrite surface on the durable repository 4ms
+       ✓ exposes no update/delete/overwrite surface on the runtime port 1ms
+       ✓ keeps every earlier snapshot byte-stable across later appends 4ms
+       × rejects an append at an already-durable generation and leaves the row untouched 5ms
+       ✓ re-accepts the identical snapshot at a durable generation as a no-op (idempotence is not an update) 1ms
+       ✓ never removes a row: the durable row count only ever grows 4ms
+       × serializes two concurrent appends at one generation: one wins, the loser gets a typed conflict 8ms
+       ✓ keeps the durable result a gapless, one-row-per-generation chain under concurrent appends 3ms
+       ✓ rejects a previousSnapshotId that does not name the durable head 2ms
+       ✓ rejects a previousSnapshotId naming a snapshot that was never durable (no gaps) 1ms
+       ✓ rejects a first generation that names a predecessor (structural, RECORD_INVALID) 1ms
+       ✓ still accepts the correct next append after conflicts (a conflict is not a wedge) 2ms
+       ✓ refuses a late append into a HOLE below the durable head (the head, not the row, is the chain) 4ms
+       ✓ keeps one MemberInstance’s CAS independent of another’s 1ms
+        Tests  2 failed | 12 passed (14)
+===== PROBE: predecessor durability not checked (chain gaps legal) =====
+   ✓ packages/runtime/test/permission-overlay-history-immutability.test.ts (6 tests) 14ms
+       ✓ serializes two concurrent appends at one generation: one wins, the loser gets a typed conflict 6ms
+       ✓ keeps the durable result a gapless, one-row-per-generation chain under concurrent appends 3ms
+       ✓ rejects a previousSnapshotId that does not name the durable head 2ms
+       × rejects a previousSnapshotId naming a snapshot that was never durable (no gaps) 4ms
+       ✓ rejects a first generation that names a predecessor (structural, RECORD_INVALID) 1ms
+       ✓ still accepts the correct next append after conflicts (a conflict is not a wedge) 2ms
+       ✓ refuses a late append into a HOLE below the durable head (the head, not the row, is the chain) 2ms
+       × keeps one MemberInstance’s CAS independent of another’s 1ms
+        Tests  2 failed | 12 passed (14)
+===== PROBE: durable-head check disabled (writes below the head legal) =====
+   ✓ packages/runtime/test/permission-overlay-history-immutability.test.ts (6 tests) 16ms
+       ✓ serializes two concurrent appends at one generation: one wins, the loser gets a typed conflict 7ms
+       ✓ keeps the durable result a gapless, one-row-per-generation chain under concurrent appends 3ms
+       ✓ rejects a previousSnapshotId that does not name the durable head 2ms
+       ✓ rejects a previousSnapshotId naming a snapshot that was never durable (no gaps) 1ms
+       ✓ rejects a first generation that names a predecessor (structural, RECORD_INVALID) 1ms
+       ✓ still accepts the correct next append after conflicts (a conflict is not a wedge) 2ms
+       × refuses a late append into a HOLE below the durable head (the head, not the row, is the chain) 7ms
+       ✓ keeps one MemberInstance’s CAS independent of another’s 1ms
+        Tests  1 failed | 13 passed (14)
+===== restore verification =====
+pristine sha256: 2bf124a86e168c9e47e62db05b10878fbb88f1874fca6cfc4c337a44802b451a
+restored sha256: 2bf124a86e168c9e47e62db05b10878fbb88f1874fca6cfc4c337a44802b451a
+RESTORE: byte-identical

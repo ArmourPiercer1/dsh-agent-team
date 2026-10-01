@@ -8,13 +8,18 @@
  *   the SAME ledger sequence; exactly one committed MemberInstance exists;
  * - **committed-world restart**: the committed `committed-world` fixture is
  *   consumed by a RESTARTED realm (brand-new seam + stack over the same
- *   durable files): the read-back is 0 writes and `recover` is a 0-write
- *   no-op with the same ledger sequence;
+ *   durable files). The fixture is a genuine PRE-Alpha.3 world: nine stores,
+ *   nine stamps. Its FIRST reopen therefore performs exactly ONE durable
+ *   write — the L2 stamp row of the additively declared tenth store
+ *   `permission_overlays` (`team-domain.ts` `verifyStamps`) — and every
+ *   reopen after it is 0-write, which is measured here too (`secondOpen
+ *   Writes`). The read-back itself stays write-free and `recover` is a
+ *   0-write no-op with the same ledger sequence;
  * - **pristine-domain restart**: a realm dropped right after the schema
- *   stamping (nine stamps + the seeded team_sessions row) restarts to
+ *   stamping (ten stamps + the seeded team_sessions row) restarts to
  *   stage `NONE` with the typed `member-not-provisioned` diagnostic (no
  *   orphan, no provisioning state durable yet) and a `recover` commits it
- *   with exactly 9 seam writes;
+ *   with exactly STAMP_WRITE_COUNT + 1 seam writes;
  * - **second member after restart**: a second instance (inst-beta) commits
  *   INDEPENDENTLY in the restarted realm (its own 8 seam writes — the
  *   ledger counter is already bootstrapped — its own ledger sequence 2,
@@ -138,6 +143,7 @@ interface CommittedRestartData {
   readonly openOk: boolean
   readonly openErrorCode: string | undefined
   readonly readWrites: number
+
   readonly stage: string
   readonly committed: boolean
   readonly memberCount: number
@@ -154,11 +160,21 @@ interface CommittedRestartData {
   readonly recoverEffectsSkipped: number
 }
 
+/**
+ * Writes of a SECOND reopen of the committed fixture, measured after the
+ * first realm is fully read: a brand-new seam counts only its own writes, so
+ * 0 here means "the additive tenth store's stamp bootstrap is one-time".
+ */
+let committedSecondOpenWrites = -1
+
 const committedDir = copyFixtureIntoScratch('committed-world', 'p4t5r-committed')
 let committed: CommittedRestartData | undefined
 try {
   const realm = await reopenRealm(committedDir)
-  const readWrites = realm.seam.writeCount // a pure read-back performs no writes
+  // One durable write, and exactly one: the L2 stamp row of the tenth
+  // (additively declared) store on a medium stamped before it existed. The
+  // read-back itself performs no writes (measured by `committedSecondOpenWrites`).
+  const readWrites = realm.seam.writeCount
   const status = realm.coordinator.status({ instanceId: P4T5_FIXTURE.instanceId })
   const member = realm.domain.repositories.memberInstances.get(ROOT, String(P4T5_FIXTURE.instanceId))
   const op = realm.domain.repositories.operations.get(ALPHA_OP_ID)
@@ -205,6 +221,18 @@ try {
     recoverEffectsSkipped: -1,
   }
 } finally {
+  // A brand-new stack over the SAME medium, once every read of the first one
+  // is done: a fresh seam counts only its own writes, so this number is the
+  // SECOND reopen's write count as such — 0, because the tenth store's L2
+  // stamp row written by the FIRST reopen already exists (the additive
+  // bootstrap is one-time).
+  try {
+    const secondRealm = await reopenRealm(committedDir)
+    committedSecondOpenWrites = secondRealm.seam.writeCount
+    await secondRealm.domain.close()
+  } catch {
+    committedSecondOpenWrites = -1
+  }
   destroyScratch(committedDir)
 }
 
@@ -371,10 +399,14 @@ it('both double-retry worlds converge to EXACTLY ONE committed MemberInstance (1
   }
 })
 
-it('committed-world restart (fixture consumed): the restarted realm reads back the committed world with 0 seam writes', () => {
+it('committed-world restart (fixture consumed): the first reopen pays the ONE tenth-store stamp write, the next reopen is 0-write', () => {
   expect(committed).not.toBe(undefined)
-  expect(committed?.openOk).toBe(true)
-  expect(committed?.readWrites).toBe(0)
+  expect(committed?.openOk, `reopen failed: ${String(committed?.openErrorCode)}`).toBe(true)
+  // the fixture is a genuine pre-Alpha.3 nine-store world: its first open
+  // under the tenth store's declaration writes that store's single L2 stamp
+  // row — one write, and never a version change of anything existing.
+  expect(committed?.readWrites).toBe(1)
+
   expect(committed?.stage).toBe(PROVISIONING_STAGES.INSTANCE_COMMITTED)
   expect(committed?.committed).toBe(true)
   expect(committed?.memberCount).toBe(1)
@@ -383,6 +415,10 @@ it('committed-world restart (fixture consumed): the restarted realm reads back t
   expect(committed?.opPhase).toBe('COMMITTED')
   expect(committed?.opChild).toBe(CHILD)
   expect(committed?.memberChild).toBe(CHILD)
+})
+
+it('committed-world restart: a SECOND reopen of the same medium is 0-write (the additive stamp bootstrap is one-time)', () => {
+  expect(committedSecondOpenWrites).toBe(0)
 })
 
 it('committed-world restart: recover is a 0-write no-op with the SAME ledger sequence (nothing is re-applied)', () => {
@@ -396,7 +432,7 @@ it('committed-world restart: recover is a 0-write no-op with the SAME ledger seq
 
 it('pristine-domain restart: process death before ANY provisioning write leaves a stamped domain (the seeded team row is the only durable row) that restarts to NONE + member-not-provisioned (no orphan, no provisioning state)', () => {
   expect(pristine).not.toBe(undefined)
-  expect(pristineBase).toBe(STAMP_WRITE_COUNT + 1) // createFileRealm stamped the nine stores plus the seeded team_sessions row (G8-S1)
+  expect(pristineBase).toBe(STAMP_WRITE_COUNT + 1) // createFileRealm stamped the ten stores plus the seeded team_sessions row (G8-S1; ten since Alpha.3 PR1's additive tenth store)
   expect(pristine?.openOk).toBe(true)
   expect(pristine?.base).toBe(0) // the restarted seam counts no writes (fresh stack)
   expect(pristine?.stage).toBe(PROVISIONING_STAGES.NONE)
@@ -444,5 +480,5 @@ it('second restart: BOTH members survive (2 committed members, 0 orphans, both s
 })
 
 it('the fresh realm always starts at exactly the nine schema_meta stamp writes', () => {
-  expect(STAMP_WRITE_COUNT).toBe(9)
+  expect(STAMP_WRITE_COUNT).toBe(10)
 })
