@@ -1,0 +1,4 @@
+captured_utc=2026-10-01T17:48:01Z
+self-match-safe residual process counts: kit=0 host=0 chrome=0  (the earlier kit=2/host=2 were pgrep matching my own command text)
+listeners on 3181..3186 / 3491..3497: 0
+3080: pre=401 post=401 unchanged; 3180 never bound (kit stablePost 3180=null)

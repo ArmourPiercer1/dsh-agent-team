@@ -1,0 +1,116 @@
+DIAGNOSTIC (read-only over existing raw artifacts; no new launch, no source/oracle change)
+utc=2026-10-01T17:54:23Z   attempt=2   tested HEAD 1a04d7ca86a2227f4afd4f91f942b052be8a720c / tree 82bafa8cf3eb8bd04915378c1fdc1fbdf11797f4
+Method: only dod20-driver-out.json, the 4 screenshots, the kit/driver consoles, and the already-reviewed
+source at the tested commit. No browser was started; no product root cause is asserted here.
+
+A) RAW SCENARIO-ATTAINMENT EVIDENCE
+  A1. out.legs.E3E5.teamTabHits = 2   (verbatim field value; the leaf TEXTS themselves were never
+      recorded anywhere in out.json — only the count. No DOM dump exists in this round's artifacts.)
+  A2. driver :939-941 -> `if (tabHits.length === 1) { clickLeaf }`, ALLOWED_TAB_NAMES = ['Team','团队'] (:1088).
+      With hits=2 the branch never executed: the Team tab was NEVER clicked in the E3E5 leg, and the
+      driver recorded no step and no reason for skipping it (silent by construction).
+  A3. shot-E3-root-team.png shows the actual surface: header session-mpr-t1-mpr-2026-10-01T13-21-34
+      (the verified root), tabs Chat | Trajectory | Team with **Chat underlined/active**, and the composer
+      dock chip "Team · 1 running" -> two leaves whose text is exactly "Team".
+      shot-E5-control-anomaly.png is BYTE-IDENTICAL to it (sha256 f97ce3d7...5472 both): nothing changed
+      between the E3 evaluation and the E5 control search; no refresh control is present on that surface.
+  A4. Positive control, same run: shot-E2-ordinary.png shows **Team underlined/active** with TeamView
+      rendered ("Confirmed: this session is not part of a team", the button "Refresh team view",
+      "Persisted teams", "Start Team from Here") and NO dock chip in the composer -> exactly one "Team"
+      leaf, so the same guard clicked. In that leg the net log shows getReadState+listRoots pairs at
+      +7380/+10380/+13380/+16380 ms => deltas 3000/3000/3000 ms, zero projections (relation none).
+  A5. SOURCE (same commit): the coordinator ticks "per ATTACHED (Team-view-visible) SESSION while the
+      host tab is visible; hidden -> paused", tickMs: 3000 (team-mount-core.ts:856-900). The two "Team"
+      texts both come from the product: conversation.view tab label t('view.team')='Team'
+      (team-mount-core.ts:1219-1229, locales.ts:551) and the input dock dock.title='Team'
+      (locales.ts:723). The dock's own activation path is a documented no-op:
+      `const openTeamTab = (): void => {}` (team-mount-core.ts:850, D-T9-4 degraded, Seam 4 absent).
+      The refresh control label is view.refresh = '刷新团队视图' (locales.ts:306) /
+      'Refresh team view' (locales.ts:565), rendered inside TeamView (TeamView.tsx:783 region) —
+      identical to ALLOWED_REFRESH_NAMES (:1089), and E2's screenshot shows that button live.
+
+B) CLASSIFICATION CONSEQUENCE (does not edit any original file)
+  E3: the oracle window WAS long enough — driver :942 `await page.wait(6 * tickMs + 1000)` = 19000 ms
+      after :937 `wait(10000)`, window start w0 = nav.clickT (raw t=1790876705397); the E2 leg opens at
+      t=1790876750491, i.e. ~45.1 s of elapsed leg time, of which >=19 s is the specified post-tab
+      cadence window. So >=6 tick opportunities existed and 0 periodic getReadState appeared.
+      BUT per A2/A3/A5 the Team view was never made visible in that leg, i.e. the surface the frozen
+      E3 oracle is about was never reached. Therefore the honest classification is
+      **target window not attained -> NOT_RUN**, NOT a product FAIL.
+      The original files keep their FAIL labels, unedited: dod20-driver-out.json
+      (legs.E3E5.E3.verdict="FAIL", readStates=1, deltasMs=[], deltasInBand=0, intervalMs=3000) and
+      14-driver-exit.txt (exit 1). This note is the only place the reclassification is stated.
+  E5: NOT_RUN for the same attainment reason — rfHits=0 because TeamView (which owns view.refresh) was
+      never rendered; A4 shows the control exists with the exact allowlisted name when TeamView IS shown.
+      Original label "refresh-control-not-found (exact-name allowlist, zero hits)" kept unedited.
+  E1: NOT reinterpreted by E3's mechanism. Facts only:
+      - E1's flow (:901-924) contains NO tab step at all: gotoApp, wait 4500, navigate(member),
+        wait 2500, lt0=now, reload, dismissNoticeIfVisible, wait 10000, screenshot, evalE1.
+      - shot-E1-member-pure.png: header = session-team-child-52860b5a204e428e1cb00690a10eb02f (the
+        correct member session, selection verified), tabs Chat active, and the "Team · 1 running" dock
+        chip present -> the member page also renders two exact-"Team" leaves.
+      - evalE1 window = net.reqs('E1') filtered by `t >= lt0` (no upper bound). Raw seq: the pre-reload
+        cold round is seq<click-boundary (readState req seq=... see below) and is EXCLUDED; the only
+        in-window readState is the post-reload cold round. So "two readState pairs, measured 1" is the
+        lower bound excluding the pre-reload round, not a lost sample.
+      - lt0 is not recorded in out.json (observability gap). Bounded from raw: after the last
+        pre-reload entry t=1790876683855 and before the post-reload req t=1790876687399; with the
+        source's wait(2500) the scored window is ~10.1 s and contains 1 getReadState, 1 getProjection,
+        1 getLedgerPage. The unmet clause is exactly `rs.length >= 3`.
+      - OPEN QUESTION for the coordinator, not answered here: whether the frozen E1 "pure member view"
+        oracle intends the Team view to be visible on the member page. If it does, E1's >=3-readStates
+        clause is unattainable through E1's current flow (no tab step); if it does not, E1's observed
+        single cold round stands as the measurement. Reporting both readings, choosing neither.
+
+C) TIMING ANSWERS REQUESTED
+  tickMs: cfg.tickMs = 3000, product-derived (readProductTickMs :812 parses `tickMs: N` from
+    packages/client/src/plugin/team-mount-core.ts; out.cfg.tickMs recorded).
+  E1 window: ~10.1 s (wait(10000) after reload), 1 in-window readState, 0 deltas.
+  E3 window: 10000 + 19000 = 29000 ms of specified waits from w0 (>=6 ticks required, 18000 ms);
+    observed 1 readState (cold), deltasMs=[] . My earlier "~10 s" phrasing was prose, NOT raw:
+    the raw leg span is ~45.1 s to the next leg's start, with >=19 s of specified cadence window.
+  E2 window: w0 -> evalE2; readState+listRoots pairs exactly 3000 ms apart, projections=0 whole leg.
+
+D) E1 getReadState raw seq (from C above): 
+E1 getReadState entries with SEQ (the drivers window filter is t >= lt0, kind req):
+  seq=1 kind=req t=1790876683804
+  seq=3 kind=res t=1790876683814
+  seq=7 kind=req t=1790876687399
+  seq=9 kind=res t=1790876687404
+
+E) RETRACTION AND NARROWING (authoritative correction of this note and of my earlier chat report)
+  RETRACTED, in full:
+   1. "E1's whole leg is 3641 ms, so its scored window is shorter than one 3000 ms tick."
+      FALSE. 3641 ms is only the first-to-last RECORDED NETWORK TIMESTAMP of leg E1
+      (net req/res t=1790876683804 .. 1790876687445). It is not an observation window.
+      The E1 scored window is unconditional: lt0=io.now() -> page.reload() ->
+      dismissNoticeIfVisible() -> await page.wait(10000) (driver :913-918), and page.wait is
+      the live Playwright page-clock wait; driver :1162 defines it as wait = page.waitForTimeout(ms), i.e. real page time, not a virtual clock.
+      So the scored window is ~10 s = ~3 tick periods. My "window shorter than a tick"
+      inference is withdrawn, as is any "the >=3 clause is unattainable by construction" claim.
+   2. RETRACTED: my "product-side cadence discrepancy between the team page and the ordinary
+      session" framing, and the loose "~10 s" / "insufficient ticks" phrasing about E3.
+      This round's raw does not establish any product defect.
+   3. RETRACTED: the presentation of E2's 3000 ms cadence vs E1/E3's silence as evidence about
+      the product. The difference is fully accounted for by which surface was active (below).
+  NARROWED TO RAW-PLUS-CITED-SOURCE FACTS:
+   - E1: fresh context lands on Chat (shot-E1-member-pure.png: Chat underlined; header = the
+     member session; "Team · 1 running" dock chip present). The E1 flow (:901-924) contains NO
+     tab-activation step, so TeamView was never rendered in E1.
+   - E3: raw legs.E3E5.teamTabHits = 2; driver :939-941 clicks only when hits === 1, so the
+     Team tab was never clicked; shot-E3 and shot-E5 are byte-identical -> TeamView never rendered.
+   - The product's tick engine polls only ATTACHED (Team-view-visible) sessions, hidden -> paused,
+     tickMs 3000 (team-mount-core.ts:856-900). With TeamView never visible in E1/E3, no periodic
+     getReadState is expected on that surface; the single cold round observed is not a cadence sample.
+   - E5: the control is button[data-team-refresh] (TeamView.tsx:1150 and :1324) inside
+     div[data-team-view] (TeamView.tsx:1295), label {t('view.refresh')} (:1154) = '刷新团队视图' /
+     'Refresh team view' (locales.ts:306/565) — exactly ALLOWED_REFRESH_NAMES (:1089). Labels are
+     correct; the zero hits are explained by TeamView not being mounted. shot-E2-ordinary.png shows
+     that very button live, proving it renders when the Team tab is active.
+   - Frozen E1 requirement (PR35, parent source finding): after the reload the Team tab is to be
+     cold-opened and the window then measures PURE 3 s polling; the >=3 readStates threshold is
+     frozen and must NOT be lowered. Under that frozen requirement E1's flow performed no tab
+     activation, so E1's target scenario was likewise not attained — stated as a scenario-attainment
+     fact, with the classification left to the parent; the raw FAIL labels are kept unedited.
+  UNCHANGED RAW FILES: dod20-driver-out.json, 13-driver-console-raw.log, 14-driver-exit.txt,
+  15-verdict-detail.txt, 16-net-analysis.txt, the 4 screenshots, 10-kit-console.log — none edited.

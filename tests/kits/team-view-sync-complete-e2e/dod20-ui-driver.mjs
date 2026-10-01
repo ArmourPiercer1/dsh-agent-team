@@ -599,7 +599,7 @@ export function redactOut (value) {
 
 // ══════════════════ ORCHESTRATION CORE (offline-tested via fakes) ═══════════
 // runDriverCore owns the leg orchestration and talks to the outside ONLY
-// through `io` — openLeg(name, net) hands out the 12-method UiPage seam the
+// through `io` — openLeg(name, net) hands out the 14-method UiPage seam the
 // Playwright adapter implements; fs/clock/log/tickMs come from the host. The
 // offline suite injects scripted worlds through the SAME seams, so the legs
 // under test here are the ones the live lane runs.
@@ -909,11 +909,25 @@ export async function runDriverCore (cfg, io) {
       out.legs.E1.navSteps = nav.steps
       out.legs.E1.clickSeq = nav.clickSeq
       out.legs.E1.preClickNavReqs = preClick // pre-click traffic only — the click's own cold round is NOT preClick (P1)
+      // LIVE-INCIDENT FIX (raw 2026-10-01T17-43-09): the product's ticks are
+      // armed ONLY while TeamView is ATTACHED (team-refresh-coordinator.ts
+      // :7-8/346-351) — the PR#35 original E1 is cold-OPEN-TEAM-TAB + member
+      // reload. Activate the REAL conversation tab (role=tab inside
+      // [data-conversation-tabs], NOT the same-text dock label) and VERIFY
+      // armament (aria-selected=true + [data-team-view]) BEFORE the window.
+      // The ≥3-readStates threshold is UNCHANGED — activation is the spec's
+      // own precondition, not a bar we lower.
+      const act1 = await page.activateTeamTab({ names: ALLOWED_TAB_NAMES, phase: 'E1-pre-reload' })
+      out.legs.E1.teamTabActivation = act1
+      if (!act1.ok) throw new FailClosed('E1-team-view-not-armed: ' + act1.reason + ' (attach precondition unmet — driver-side NOT_RUN, never attributed to the product)')
       await page.wait(2500)
       const lt0 = io.now()
       await page.reload()
       const nd = await page.dismissNoticeIfVisible()
       if (nd === 'present-undismissable') throw new FailClosed('notice-present-but-undismissable-after-reload')
+      const act1b = await page.activateTeamTab({ names: ALLOWED_TAB_NAMES, phase: 'E1-post-reload' }) // idempotent; RE-VERIFIES the restore instead of assuming it
+      out.legs.E1.teamTabActivationPostReload = act1b
+      if (!act1b.ok) throw new FailClosed('E1-team-view-not-armed-after-reload: ' + act1b.reason)
       await page.wait(10000)
       await page.screenshot('shot-E1-member-pure.png')
       Object.assign(out.legs.E1, evalE1({
@@ -922,6 +936,9 @@ export async function runDriverCore (cfg, io) {
         expectedMember: { sessionId: targets.targets.member.id, instance: host.t1MemberInstance },
         expectedRootId: host.t1, preClick, t0: lt0,
       }))
+      // phase WALL-CLOCK evidence for the observation window (the network
+      // first/last span is NOT a substitute for how long we actually watched)
+      out.legs.E1.observationWindow = { startT: lt0, endT: io.now(), wallMs: io.now() - lt0 }
     })
 
     // ── E3+E5: fresh context; root cold round (window STARTS at the click),
@@ -935,29 +952,52 @@ export async function runDriverCore (cfg, io) {
       const nav = await navigate(page, net, 'E3', 'E3E5', { sessionId: targets.targets.root.id, title: targets.targets.root.title, relation: 'team-root' }, io, out)
       out.legs.E3E5.navSteps = nav.steps
       const w0 = nav.clickT // P3: the cold round IS in the window
+      // LIVE-INCIDENT FIX (raw: teamTabHits=2 — dock label + role=tab share
+      // the text; the old text-count refused and silently never activated).
+      // Activate the REAL conversation tab via the seam action (scoped to
+      // [data-conversation-tabs] role=tab, verified via aria-selected +
+      // [data-team-view]) BEFORE the observation window; ambiguity or a
+      // click that never arms is a driver/environment NOT_RUN — never a
+      // product FAIL, and never a guessed click.
+      const act = await page.activateTeamTab({ names: ALLOWED_TAB_NAMES, phase: 'E3-pre-window' })
+      out.legs.E3E5.teamTabActivation = act
+      if (!act.ok) {
+        out.legs.E3E5.E3 = { verdict: 'NOT_RUN', reason: 'team-view-not-armed: ' + act.reason + ' (attach precondition — never attributed to the product)' }
+        out.legs.E3E5.E5 = { verdict: 'NOT_RUN', reason: 'team-view-not-armed (E3 window never opened)' }
+        await page.screenshot('shot-E3-team-tab-anomaly.png')
+        return
+      }
+      const w3Start = io.now()
       await page.wait(10000)
-      const tabHits = mainLeavesOf(await page.collectLeaves()).filter((l) => ALLOWED_TAB_NAMES.includes(l.text))
-      out.legs.E3E5.teamTabHits = tabHits.length
-      if (tabHits.length === 1) { await page.clickLeaf(tabHits[0]); await page.wait(1200) }
       await page.wait(6 * tickMs + 1000)
       await page.screenshot('shot-E3-root-team.png')
+      out.legs.E3E5.E3WindowWall = { startT: w3Start, endT: io.now(), wallMs: io.now() - w3Start } // phase wall-clock evidence
       out.legs.E3E5.E3 = evalE3({ net: net.reqs('E3'), expectedRootId: host.t1, t0: w0, intervalMs: tickMs })
-      const rfHits = mainLeavesOf(await page.collectLeaves()).filter((l) => l.tag === 'button' && ALLOWED_REFRESH_NAMES.includes(l.text))
-      if (rfHits.length !== 1) {
-        out.legs.E3E5.E5 = { verdict: 'NOT_RUN', reason: rfHits.length === 0 ? 'refresh-control-not-found (exact-name allowlist, zero hits)' : 'refresh-control-ambiguous (exact-name allowlist, multiple hits — fail-closed)' }
+      // E5: the refresh control is button[data-team-refresh] INSIDE
+      // [data-team-view] (TeamView.tsx:1321-1329) — scoped stable attributes,
+      // label still checked against the exact-name allowlist; TeamView-ready
+      // is a precondition, its absence is NOT_RUN with reason.
+      const rf = await page.teamRefreshControl({ names: ALLOWED_REFRESH_NAMES })
+      out.legs.E3E5.teamRefresh = rf
+      if (!rf.ok) {
+        out.legs.E3E5.E5 = { verdict: 'NOT_RUN', reason: 'team-refresh-control: ' + rf.reason }
         await page.screenshot('shot-E5-control-anomaly.png')
-      } else {
-        const t5 = io.now()
-        await page.clickLeaf(rfHits[0])
-        await page.wait(6500)
-        await page.screenshot('shot-E5-refresh.png')
-        const after = net.reqs('E3').filter((e) => e.t >= t5)
-        const ledRes = net.resps('E3', 'team.getLedgerPage').find((r) => {
-          const q = net.byId(r.reqSeq)
-          return r.t > t5 && q && q.t >= t5
-        })
-        out.legs.E3E5.E5 = { ...evalE5({ after, expectedRootId: host.t1 }), measuredExtra: { ledgerResponseLatencyMs: ledRes ? ledRes.t - t5 : null } }
+        return
       }
+      const t5 = io.now()
+      const rfClick = await page.teamRefreshControl({ names: ALLOWED_REFRESH_NAMES, click: true })
+      if (!rfClick.ok) {
+        out.legs.E3E5.E5 = { verdict: 'NOT_RUN', reason: 'team-refresh-control: ' + rfClick.reason }
+        return
+      }
+      await page.wait(6500)
+      await page.screenshot('shot-E5-refresh.png')
+      const after = net.reqs('E3').filter((e) => e.t >= t5)
+      const ledRes = net.resps('E3', 'team.getLedgerPage').find((r) => {
+        const q = net.byId(r.reqSeq)
+        return r.t > t5 && q && q.t >= t5
+      })
+      out.legs.E3E5.E5 = { ...evalE5({ after, expectedRootId: host.t1 }), measuredExtra: { ledgerResponseLatencyMs: ledRes ? ledRes.t - t5 : null } }
     }, { nested: true })
 
     // ── E2: fresh context; UI-created ordinary session (zero-state) ──────────
@@ -1152,7 +1192,7 @@ export function loadPlaywright (testuseDir) {
   return req('playwright')
 }
 
-/** The UiPage adapter over a real Playwright page — the SAME 12-method seam
+/** The UiPage adapter over a real Playwright page — the SAME 14-method seam
  *  the offline fakes implement. */
 export function createPlaywrightPage (page, cfg) {
   const dialogScope = () => page.locator('[role="dialog"], dialog').last()
@@ -1173,6 +1213,42 @@ export function createPlaywrightPage (page, cfg) {
       await page.waitForTimeout(1500)
       const still = await page.getByRole('button', { name: 'Continue' }).first().isVisible().catch(() => false)
       return still ? 'present-undismissable' : 'dismissed'
+    },
+    // ── team-view activation / ready (LIVE-INCIDENT fix; stable attributes
+    // only: [data-conversation-tabs] + role=tab + aria-selected upstream
+    // ConversationSession.tsx:143-154; [data-team-view] TeamView.tsx:1295;
+    // button[data-team-refresh] TeamView.tsx:1321-1329. The TeamDock's same-
+    // text label is OUTSIDE this scope and can never be clicked here.) ──
+    activateTeamTab: async ({ names = [], phase = '', budgetMs = 6000 } = {}) => {
+      const t0 = Date.now()
+      const tablist = page.locator('[data-conversation-tabs]')
+      const per = []
+      for (const n of names) per.push(await tablist.getByRole('tab', { name: n, exact: true }).count().catch(() => 0))
+      const total = per.reduce((a, b) => a + b, 0)
+      if (total === 0) return { ok: false, phase, hits: 0, reason: 'team-tab-not-found under [data-conversation-tabs] role=tab allowlist (' + names.join('/') + ')' }
+      if (total > 1) return { ok: false, phase, hits: total, reason: 'team-tab-ambiguous (' + total + ' role=tab hits) — never guess' }
+      const which = names[per.findIndex((c) => c > 0)]
+      const tab = tablist.getByRole('tab', { name: which, exact: true }).first()
+      try { await tab.click({ timeout: 5000 }) } catch (e) { return { ok: false, phase, hits: total, reason: 'team-tab-click-failed: ' + String(e && e.message || e).slice(0, 140) } }
+      const view = page.locator('[data-team-view]').first()
+      for (;;) {
+        const sel = await tab.getAttribute('aria-selected').catch(() => null)
+        const vis = await view.isVisible().catch(() => false)
+        if (sel === 'true' && vis) return { ok: true, phase, hits: total, armedMs: Date.now() - t0 }
+        if (Date.now() - t0 > budgetMs) return { ok: false, phase, hits: total, reason: 'team-tab-not-armed: aria-selected=' + JSON.stringify(sel) + ' data-team-view-visible=' + vis + ' within ' + budgetMs + 'ms bounded verify' }
+        await page.waitForTimeout(250)
+      }
+    },
+    teamRefreshControl: async ({ names = [], click = false } = {}) => {
+      const btn = page.locator('[data-team-view] button[data-team-refresh]').first()
+      const n = await page.locator('[data-team-view] button[data-team-refresh]').count().catch(() => 0)
+      if (n !== 1) return { ok: false, reason: 'team-refresh-control-' + (n === 0 ? 'not-found' : 'ambiguous(' + n + ' hits)') + ' in [data-team-view] scope — TeamView-ready precondition' }
+      if (!(await btn.isVisible().catch(() => false))) return { ok: false, reason: 'team-refresh-control hidden — TeamView not ready' }
+      const label = (await btn.innerText().catch(() => '')).trim()
+      if (!names.includes(label)) return { ok: false, reason: 'team-refresh-label-not-in-allowlist ' + JSON.stringify(label) }
+      if (!click) return { ok: true, label }
+      try { await btn.click({ timeout: 5000 }) } catch (e) { return { ok: false, reason: 'team-refresh-click-failed: ' + String(e && e.message || e).slice(0, 140) } }
+      return { ok: true, label, clicked: true }
     },
     dialogSnapshot: async () => page.evaluate(DIALOG_STATE_SOURCE),
     // Rows are the listitem BUTTONs of the DEEPEST [role=list] column (the

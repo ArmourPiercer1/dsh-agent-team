@@ -1,0 +1,13 @@
+E5 = {"verdict":"NOT_RUN","reason":"refresh-control-not-found (exact-name allowlist, zero hits)"}
+E5 refreshClicked=undefined refreshLatencyMs=undefined notRunReason=undefined
+E4 = {"verdict":"NOT_RUN","reason":"frozen record: unit/E2E layer only; no browser-level original assertion exists in the frozen tree; coordinator ruling 2026-10-01"}
+E1: entries=12 methods={"team.getReadState":4,"team.getProjection":4,"team.getLedgerPage":4}
+   readState count=4 gapsMs=[10,3585,5] (product tickMs=3000)
+   readState sessionIds=["session-team-child-52860b5a204e428e1cb00690a10eb02f",null]
+E3: entries=6 methods={"team.getReadState":2,"team.getProjection":2,"team.getLedgerPage":2}
+   readState count=2 gapsMs=[7] (product tickMs=3000)
+   readState sessionIds=["session-mpr-t1-mpr-2026-10-01T13-21-34",null]
+E2: entries=18 methods={"team.getReadState":10,"team.listRoots":8}
+   readState count=10 gapsMs=[8,7372,5,2995,3,2997,4,2996,5] (product tickMs=3000)
+   readState sessionIds=["session-f9b515d2-4b0a-4738-a266-8a36c60cc4b8",null]
+cold-round order E1 = ["team.getReadState","team.getProjection","team.getLedgerPage","team.getReadState","team.getProjection","team.getLedgerPage"]

@@ -92,6 +92,21 @@ function makeWorld (opts = {}) {
         notice: opts.notice !== false,
         selected: null,
         teamFace: false,
+        // TEAM MOUNT MODEL (mirrors packages/client/src/state/team-refresh-
+        // coordinator.ts:7-8/346-351 — ticks run ONLY while TeamView is
+        // ATTACHED; the Chat view + TeamDock label produce COLD ROUNDS only).
+        // teamTab = the conversation tabstrip state ([data-conversation-tabs]
+        // ConversationSession.tsx:143-154): present/hits count ONLY role=tab
+        // entries; the dock's same-text label span is NOT a tab and never
+        // arms ticks (team-mount-core openTeamTab is a documented no-op).
+        teamTab: {
+          present: !((name === 'E1' && opts.e1TabAbsent) || (name === 'E3' && opts.e3TabAbsent)),
+          hits: name === 'E3' && opts.e3TabDouble ? 2 : 1,
+          label: 'Team',
+          active: false, // aria-selected=true
+          mounted: false, // [data-team-view] visible => coordinator ATTACHED
+        },
+        persistBroken: false,
         dialogOpen: false,
         dialog: { crumbs: ['Home'], selected: null, pending: null }, // probe-shaped state, async listing (pending) — DirectoryBrowser semantics
         newSessionCreated: false,
@@ -145,6 +160,21 @@ function makeWorld (opts = {}) {
           fireRes(lg, 200, { ledger: true }, { t: at + 3 })
         }
       }
+      // the [data-team-refresh] button's forced round (TeamView runRefresh:
+      // ledger re-pull + member re-probe + listRoots), shared by the legacy
+      // leaf click and the scoped teamRefreshControl seam path.
+      const doRefresh = () => {
+        if (opts.breakAfterE3 && leg === 'E3') throw new Error('fake break after E3')
+        const t5 = w.v
+        const lgRoot = opts.foreignLedgerOnRefresh ? OTHER_ID : ROOT_ID
+        const lg = fireReq('team.getLedgerPage', { teamSessionId: lgRoot, afterSequence: 0, limit: 50 }, t5)
+        fireRes(lg, 200, { ledger: true }, { t: t5 + 16 })
+        const reprobeId = opts.foreignReprobeOnRefresh ? OTHER_ID : st.selected.id
+        const rs = fireReq('team.getReadState', { sessionId: reprobeId }, t5 + 20)
+        fireRes(rs, 200, readData(st.selected))
+        fireReq('team.listRoots', {}, t5 + 25)
+        w.v = t5 + 60
+      }
       const tick = () => {
         if (st.newSessionCreated) {
           // the created session's poll: REQUEST every tick; the RESPONSE only
@@ -163,10 +193,15 @@ function makeWorld (opts = {}) {
         fireRes(rs, 200, readData(sel))
       }
 
-      // boundary-accurate tick walk for ANY clock advance of the CURRENT leg
+      // boundary-accurate tick walk for ANY clock advance of the CURRENT leg.
+      // MOUNT GATE (live-incident fix): the product's ticks are armed only
+      // while TeamView is ATTACHED (coordinator :7-8/346-351) — an ordinary
+      // session's created-poll and an ATTACHED team view are the only tick
+      // sources; a selected-but-Chat/Chat+dock world fires COLD ROUNDS ONLY.
+      const armed = () => st.newSessionCreated || (st.selected && st.teamTab.mounted)
       const walk = (ms) => {
         const target = w.v + ms
-        while (st.selected || st.newSessionCreated) {
+        while (armed()) {
           if (st.nextTickAt == null) st.nextTickAt = w.v + tickMs
           if (st.nextTickAt > target) break
           w.v = st.nextTickAt
@@ -191,6 +226,11 @@ function makeWorld (opts = {}) {
         },
         async reload () {
           w.v += 80
+          // DEFAULT: the app restores the ACTIVE conversation view across
+          // reload (selection persisted) — the driver still RE-VERIFIES
+          // activation after reload rather than assuming it. The knob models
+          // a restore failure (aria-selected never returns).
+          if (opts.e1ReloadBreak) { st.persistBroken = true; st.teamTab.active = false; st.teamTab.mounted = false; st.teamFace = false }
           if (st.selected) coldRound(st.selected)
         },
         async wait (ms) {
@@ -210,8 +250,17 @@ function makeWorld (opts = {}) {
           if (st.rail === 'expanded') out.push(leaf('Show 4 more sessions', y, 'button', 'HVH6QW_sessionOverflowButton'))
           if (st.selected) {
             out.push(leaf(st.selected.id, 20, 'h1', 'sessionHeader', 'main', 400))
-            out.push(leaf('Team', 60, 'div', '', 'main', 420))
-            if (st.teamFace) out.push(leaf('Refresh team view', 100, 'button', '', 'main', 420))
+            if (st.selected.relation !== 'none') {
+              // THE LIVE-INCIDENT WORLD (raw 2026-10-01T17-43-09: teamTabHits=2):
+              // the TeamDock title span (team-mount-core:846-851 openTeamTab is
+              // a documented no-op) and the conversation role=tab coexist with
+              // the SAME text. Text-level counting saw 2 hits and refused;
+              // role=tab-scoped activation must still find exactly 1.
+              out.push(leaf('Team', 60, 'span', 'dockTitle', 'main', 420))
+              if (st.teamTab.present) out.push(leaf('Team', 40, 'button', 'convTabTeam', 'main', 300))
+              if (st.teamTab.hits > 1) out.push(leaf('Team', 40, 'button', 'convTabTeam2', 'main', 330))
+            }
+            if (st.teamTab.mounted) out.push(leaf('Refresh team view', 100, 'button', 'teamRefresh', 'main', 420))
           }
           return out
         },
@@ -230,20 +279,19 @@ function makeWorld (opts = {}) {
             w.v += 30
             return
           }
-          if (l.text === 'Team') { if (opts.breakBeforeE3 && leg === 'E3') throw new Error('fake break before E3'); st.teamFace = true; w.v += 20; return }
-          if (l.text === 'Refresh team view') {
-            if (opts.breakAfterE3) throw new Error('fake break after E3')
-            const t5 = w.v
-            const lgRoot = opts.foreignLedgerOnRefresh ? OTHER_ID : ROOT_ID
-            const lg = fireReq('team.getLedgerPage', { teamSessionId: lgRoot, afterSequence: 0, limit: 50 }, t5)
-            fireRes(lg, 200, { ledger: true }, { t: t5 + 16 })
-            const reprobeId = opts.foreignReprobeOnRefresh ? OTHER_ID : st.selected.id
-            const rs = fireReq('team.getReadState', { sessionId: reprobeId }, t5 + 20)
-            fireRes(rs, 200, readData(st.selected))
-            fireReq('team.listRoots', {}, t5 + 25)
-            w.v = t5 + 60
+          if (l.text === 'Team') {
+            // Legacy generic-click path ONLY (the fixed driver uses the seam
+            // action activateTeamTab). The dock title button is a faithful
+            // NO-OP (team-mount-core:846-851); a convTab leaf click activates
+            // exactly like the seam action would.
+            w.v += 20
+            if (l.cls === 'dockTitle') return
+            if (!st.teamTab.present || st.teamTab.hits !== 1) return
+            st.teamTab.active = true; st.teamTab.mounted = true; st.teamFace = true
+            if (st.nextTickAt == null) st.nextTickAt = w.v + tickMs
             return
           }
+          if (l.text === 'Refresh team view') { doRefresh(); return }
           const hit = rows().find(([title]) => title === l.text)
           if (hit) {
             st.selected = { id: hit[1], relation: hit[1] === ROOT_ID ? 'team-root' : 'team-member', title: hit[0] }
@@ -257,6 +305,32 @@ function makeWorld (opts = {}) {
           if (!st.notice) return 'absent'
           if (opts.noticeUndismissable) return 'present-undismissable'
           st.notice = false; w.v += 10; return 'dismissed'
+        },
+        // ── seam activation / ready actions (the SAME call runDriverCore makes
+        // live through the Playwright adapter — no selector-string-only test) ──
+        async activateTeamTab ({ names = [], phase = '', budgetMs = 6000 } = {}) {
+          w.v += 10
+          if (leg === 'E3' && opts.breakBeforeE3) throw new Error('fake break before E3')
+          const t = st.teamTab
+          if (!st.selected || st.selected.relation === 'none') return { ok: false, phase, reason: 'team-tab-not-found (no conversation view for this session)' }
+          if (!t.present) return { ok: false, phase, reason: 'team-tab-not-found under [data-conversation-tabs] role=tab allowlist (' + names.join('/') + ') — Chat-only mount' }
+          if (t.hits > 1) return { ok: false, phase, reason: 'team-tab-ambiguous (' + t.hits + ' role=tab hits) — never guess' }
+          if (!names.includes(t.label)) return { ok: false, phase, reason: 'team-tab-label-not-in-allowlist ' + JSON.stringify(t.label) }
+          if (t.active && t.mounted) return { ok: true, phase, alreadyArmed: true }
+          if (st.persistBroken) { w.v += budgetMs; return { ok: false, phase, reason: 'team-tab-not-armed: aria-selected=false within ' + budgetMs + 'ms bounded verify — selection did not persist across reload' } }
+          if (opts.e3TabNoop && leg === 'E3') { w.v += budgetMs; return { ok: false, phase, reason: 'team-tab-not-armed: aria-selected=false data-team-view-visible=false within ' + budgetMs + 'ms bounded verify' } }
+          t.active = true; t.mounted = true; st.teamFace = true
+          if (st.nextTickAt == null) st.nextTickAt = w.v + tickMs
+          return { ok: true, phase, armed: true }
+        },
+        async teamRefreshControl ({ names = [], click = false } = {}) {
+          if (!st.teamTab.mounted) return { ok: false, reason: 'team-refresh-control-not-found ([data-team-view] absent — TeamView not mounted/ready)' }
+          const label = opts.refreshForeignLabel || 'Refresh team view'
+          if (!names.includes(label)) return { ok: false, reason: 'team-refresh-label-not-in-allowlist ' + JSON.stringify(label) }
+          if (!click) { w.v += 5; return { ok: true, label } }
+          w.clicks.push(leg + ':team-refresh')
+          doRefresh()
+          return { ok: true, label, clicked: true }
         },
         async dialogSnapshot () {
           if (!st.dialogOpen) return { open: false, title: null, crumbLabels: [], rows: [], buttons: [] }
@@ -711,4 +785,63 @@ test('P7b: a crash BEFORE E3 is computed materializes BOTH nested legs as NOT_RU
   assert.equal(s.verdicts.E3, 'NOT_RUN')
   assert.equal(s.verdicts.E5, 'NOT_RUN')
   assert.equal(s.exitCode, 2, 'NOT_RUN is never a PASS: ' + JSON.stringify(s.verdicts))
+})
+
+// ───────── LIVE-INCIDENT batch (raw 2026-10-01T17-43-09, teamTabHits=2) ─────────
+// Scope FROZEN by the coordinator: activation of the REAL conversation tab +
+// attach-verified observation windows. No further scenario additions.
+test('LIVE-INCIDENT: dock-Team + role=tab Team coexist (old text count saw 2 hits) — the driver activates the REAL tab, E3 PASSes, E5 clicks the scoped [data-team-refresh]', async () => {
+  const { out, w } = await runCore({})
+  assert.equal(out.legs.E3E5.teamTabActivation.ok, true)
+  assert.equal(out.legs.E3E5.E3.verdict, 'PASS')
+  assert.equal(out.legs.E3E5.E5.verdict, 'PASS')
+  assert.ok(!w.clicks.some((c) => c.endsWith(':Team')), 'no generic Team-text click ever happens — the dock label is never clicked')
+  assert.ok(w.clicks.includes('E3:team-refresh'), 'E5 goes through the scoped data-team-refresh action')
+})
+test('LIVE-INCIDENT wall-clock: phase windows recorded as driver WALL time (network span is not a substitute)', async () => {
+  const { out } = await runCore({})
+  const w1 = out.legs.E1.observationWindow
+  assert.ok(w1 && w1.wallMs >= 10000, 'E1 reload window wall time recorded and >= the 10000ms wait: ' + JSON.stringify(w1))
+  const w3 = out.legs.E3E5.E3WindowWall
+  assert.ok(w3 && w3.wallMs >= 29000, 'E3 window = 10000 + 6*tickMs+1000 recorded: ' + JSON.stringify(w3))
+})
+test('E3/E5: no role=tab Team anywhere → NOT_RUN (driver precondition), NEVER a product FAIL; other legs unaffected; exit 2', async () => {
+  const { out } = await runCore({ e3TabAbsent: true })
+  assert.equal(out.legs.E3E5.E3.verdict, 'NOT_RUN')
+  assert.match(out.legs.E3E5.E3.reason, /team-view-not-armed: team-tab-not-found/)
+  assert.equal(out.legs.E3E5.E5.verdict, 'NOT_RUN')
+  assert.match(out.legs.E3E5.E5.reason, /team-view-not-armed/)
+  assert.equal(out.legs.E1.verdict, 'PASS')
+  assert.equal(D.summarize(out).exitCode, 2)
+})
+test('E3: two role=tab Team hits → NOT_RUN ambiguous — never guess, never click', async () => {
+  const { out, w } = await runCore({ e3TabDouble: true })
+  assert.equal(out.legs.E3E5.E3.verdict, 'NOT_RUN')
+  assert.match(out.legs.E3E5.E3.reason, /team-tab-ambiguous \(2 role=tab hits\)/)
+  assert.equal(out.legs.E3E5.teamTabActivation.ok, false)
+  assert.ok(!w.clicks.some((c) => c.endsWith(':Team')))
+})
+test('E3: tab click never arms (aria-selected/[data-team-view] never verified true) → bounded-verify NOT_RUN', async () => {
+  const { out } = await runCore({ e3TabNoop: true })
+  assert.equal(out.legs.E3E5.E3.verdict, 'NOT_RUN')
+  assert.match(out.legs.E3E5.E3.reason, /team-tab-not-armed: aria-selected=false/)
+})
+test('E1: activation before the cold reload is the precondition — absent tab → NOT_RUN with reason, never a FAIL', async () => {
+  const { out } = await runCore({ e1TabAbsent: true })
+  assert.equal(out.legs.E1.verdict, 'NOT_RUN')
+  assert.match(out.legs.E1.reason, /E1-team-view-not-armed/)
+  assert.equal(out.legs.E2.verdict, 'PASS')
+})
+test('E1: reload loses the active tab → post-reload re-verification NOT_RUNs the leg (readStates threshold UNCHANGED)', async () => {
+  const { out } = await runCore({ e1ReloadBreak: true })
+  assert.equal(out.legs.E1.teamTabActivation.ok, true, 'armed BEFORE reload')
+  assert.equal(out.legs.E1.teamTabActivationPostReload.ok, false)
+  assert.equal(out.legs.E1.verdict, 'NOT_RUN')
+  assert.match(out.legs.E1.reason, /did not persist across reload/)
+})
+test('E5: refresh label outside the allowlist (after correct scoping) → NOT_RUN, E3 result preserved', async () => {
+  const { out } = await runCore({ refreshForeignLabel: 'Reload view' })
+  assert.equal(out.legs.E3E5.E3.verdict, 'PASS')
+  assert.equal(out.legs.E3E5.E5.verdict, 'NOT_RUN')
+  assert.match(out.legs.E3E5.E5.reason, /team-refresh-label-not-in-allowlist/)
 })
