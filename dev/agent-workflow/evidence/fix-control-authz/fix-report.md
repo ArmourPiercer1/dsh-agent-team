@@ -902,18 +902,39 @@ arithmetic are untouched; named per the dedicated-row convention):
   `c9ControlQueue` choreography (the shared runtime chain hold + the
   occupancy; the fallback reentry has NO gate re-probe); the same
   one-shot fault + the same contract on the fallback D2 catch.
-- allocation-vs-put: the two fault SITES (the `allocateSequence`
-  write, the abandon put) converge to the IDENTICAL typed rejection
-  at the SAME boundary (both `durableFailure` →
-  `TEAM_RUNTIME_DURABLE_WRITE_FAILED` pre-callback) — the router's
-  recognition is code-based, not site-based, so ONE row per branch is
-  the required coverage (no split, no padding — per the test ruling).
+- allocation-vs-put (disclosure, explicit): the allocation-fault
+  site (`allocateSequence`) is source-code-confirmed ONLY via the
+  shared path — both fault sites converge to the identical typed
+  rejection at the same boundary (both `durableFailure` →
+  `TEAM_RUNTIME_DURABLE_WRITE_FAILED` pre-callback) and the
+  recognition is code-based. The added rows c9-pcb-1/c9-pcb-2
+  install the one-shot fault at the ABANDON-PUT site — the
+  allocation site is NOT independently injector-covered by a
+  dedicated row (scope not expanded — no split, no padding, per the
+  test ruling). ONE row per branch is the required coverage.
   **Actual case count: 2 new rows** → focused 72 → **74**; full
   suite 4861 → **4863** (the arithmetic closed below).
 
 ### The RED (at `21b7550b`, committed)
 
-`c9-pcb-red-1.log` (CMD-first; true exit): focused C file =
+`c9-pcb-red-1.log` — capture form (byte-verified, stated exactly):
+the file carries the complete Vitest stdout with a BLANK first line
+(a single `\n`) and the Vitest summary at the tail (`Test Files 1
+failed (1)` / `Tests 2 failed | 72 passed (74)` / Start at /
+Duration); it contains NO command line and NO exit line within the
+file (0 occurrences of each). ASSOCIATED execution (verbatim
+invocation from this session; stdout+stderr redirected into the
+file): `cd
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz
+&& pnpm exec vitest run
+packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts` —
+run at the pre-fix tree at the RED commit `df02a4be` (the tree
+carries the 2 new rows + the RED evidence; production code
+unmodified — the pre-fix production bytes of `21b7550b`). The exit
+is NOT claimed from the log bytes: the `EXIT=$?` echo ran in the
+session terminal, not into the file; the in-file summary (2 failed)
+is consistent with a failed run (EXIT=1 observed in-session) but the
+exit line was not captured into the file. Result: focused C file =
 **2 failed | 72 passed (74)** — both new rows fail on the masked
 terminal: `expected 'TEAM_RUNTIME_COMPATIBILITY_BLOCKED' to be
 'TEAM_RUNTIME_DURABLE_WRITE_FAILED'` (the typed abandon terminal
@@ -925,13 +946,28 @@ addition).
 
 ### The GREEN (at the fix head)
 
-`c9-pcb-green-1.log` (CMD-first; true exit): focused C file =
-**74/74** — c9-pcb-1 + c9-pcb-2 GREEN (the original typed fault
-propagates unchanged, attempts() === 1, zero effects, zero marks) and
-all 72 existing rows byte-identical behavior (C1–C8 + the full C9
-matrix + c9-serial + the residual-3 rows).
+`c9-pcb-green-1.log` — capture form (byte-verified, stated exactly):
+the file carries the complete Vitest stdout with a BLANK first line
+(a single `\n`) and the Vitest summary at the tail (`Test Files 1
+passed (1)` / `Tests 74 passed (74)` / Start at / Duration); it
+contains NO command line and NO exit line within the file (0
+occurrences of each). ASSOCIATED execution (verbatim invocation from
+this session; stdout+stderr redirected into the file): `cd
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz
+&& pnpm exec vitest run
+packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts` —
+run at the post-fix tree (the router.ts fix in place; the committed
+fix `862be874` carries the exact production bytes that ran). The
+exit is NOT claimed from the log bytes: the `EXIT=$?` echo ran in
+the session terminal, not into the file; the in-file summary (74
+passed) is consistent with a passing run (EXIT=0 observed in-session)
+but the exit line was not captured into the file. Result: focused C
+file = **74/74** — c9-pcb-1 + c9-pcb-2 GREEN (the original typed
+fault propagates unchanged, attempts() === 1, zero effects, zero
+marks) and all 72 existing rows byte-identical behavior (C1–C8 + the
+full C9 matrix + c9-serial + the residual-3 rows).
 
-### Gates at the fix head (all CMD-first + true exit; provenance labels)
+### Gates at the fix head (provenance labels — the six outer gates are CMD-first with the true exit line in-file; the two focused captures are plain Vitest stdout — blank first line, summary at the tail, NO command line and NO exit line within the file; the associated verbatim invocations + tree provenance are stated in the RED/GREEN subsections above, and the exit is not claimed from their bytes)
 
 | Gate | Result | Evidence |
 | --- | --- | --- |
